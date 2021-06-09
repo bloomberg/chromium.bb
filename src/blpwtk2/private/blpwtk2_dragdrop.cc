@@ -338,9 +338,12 @@ void DragDrop::StartDragging(
 
     data->MarkOriginatedFromRenderer();
 
-    data->provider().SetDragImage(
-        gfx::ImageSkia(gfx::ImageSkiaRep(bitmap, 1.0f)),
-        bitmap_offset_in_dip);
+    gfx::ImageSkia image(gfx::ImageSkiaRep(bitmap, 1.0f));
+    if (!image.isNull()) {
+        data->provider().SetDragImage(
+            image,
+            bitmap_offset_in_dip);
+    }
 
     auto source = ui::DragSourceWin::Create();
     source->set_data(data.get());
