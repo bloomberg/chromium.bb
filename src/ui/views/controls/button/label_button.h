@@ -133,6 +133,9 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   ui::NativeTheme::State GetForegroundThemeState(
       ui::NativeTheme::ExtraParams* params) const override;
 
+  // Sets the font list used by this button.
+  void SetFontList(const gfx::FontList& font_list);
+
  protected:
   ImageView* image() const { return image_; }
   Label* label() const { return label_; }

@@ -495,6 +495,25 @@ void CookieMonster::SetCookieableSchemes(
   MaybeRunCookieCallback(std::move(callback), true);
 }
 
+void CookieMonster::AddCookieableSchemes(
+    const std::vector<std::string>& schemes,
+    SetCookieableSchemesCallback callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Calls to this method will have no effect if made after a WebView or
+  // CookieManager instance has been created.
+  if (initialized_) {
+    MaybeRunCookieCallback(std::move(callback), false);
+    return;
+  }
+
+  if (!schemes.empty()) {
+    cookieable_schemes_.insert(cookieable_schemes_.begin(), schemes.begin(),
+                               schemes.end());
+  }
+  MaybeRunCookieCallback(std::move(callback), true);
+}
+
 // This function must be called before the CookieMonster is used.
 void CookieMonster::SetPersistSessionCookies(bool persist_session_cookies) {
   DCHECK(thread_checker_.CalledOnValidThread());

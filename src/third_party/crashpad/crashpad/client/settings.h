@@ -115,6 +115,11 @@ class Settings {
   //!     error logged.
   bool SetLastUploadAttemptTime(time_t time);
 
+  bool GetNextUploadAttemptTime(time_t* time);
+  bool SetNextUploadAttemptTime(time_t time);
+  bool GetBackoffStep(int* step);
+  bool SetBackoffStep(int step);
+
  private:
   struct Data;
 

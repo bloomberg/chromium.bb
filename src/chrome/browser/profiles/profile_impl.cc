@@ -979,7 +979,9 @@ Profile* ProfileImpl::GetOffTheRecordProfile(const OTRProfileID& otr_profile_id,
 
   otr_profiles_[otr_profile_id] = std::move(otr_profile);
 
-  NotifyOffTheRecordProfileCreated(raw_otr_profile);
+  // With CEF we want to delay initialization.
+  if (!otr_profile_id.IsUniqueForCEF())
+    NotifyOffTheRecordProfileCreated(raw_otr_profile);
 
   return raw_otr_profile;
 }

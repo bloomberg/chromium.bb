@@ -644,7 +644,9 @@ std::unique_ptr<Profile> Profile::CreateOffTheRecordProfile(
 #endif
   if (!profile)
     profile = std::make_unique<OffTheRecordProfileImpl>(parent, otr_profile_id);
-  profile->Init();
+  // With CEF we want to delay initialization.
+  if (!otr_profile_id.IsUniqueForCEF())
+    profile->Init();
   return std::move(profile);
 }
 

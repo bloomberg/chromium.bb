@@ -91,6 +91,12 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   static void RegisterMenuShownCallbackForTesting(
       base::OnceCallback<void(RenderViewContextMenu*)> cb);
 
+  // Registers a callback that will be called each time a context menu is
+  // created.
+  using MenuCreatedCallback = base::RepeatingCallback<
+      std::unique_ptr<RenderViewContextMenuObserver>(RenderViewContextMenu*)>;
+  static void RegisterMenuCreatedCallback(MenuCreatedCallback cb);
+
  protected:
   Profile* GetProfile() const;
 
@@ -264,6 +270,9 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   bool multiple_profiles_open_;
   ui::SimpleMenuModel protocol_handler_submenu_model_;
   ProtocolHandlerRegistry* protocol_handler_registry_;
+
+  // An observer returned via MenuCreatedCallback that will be called first.
+  std::unique_ptr<RenderViewContextMenuObserver> first_observer_;
 
   // An observer that handles spelling suggestions, "Add to dictionary", and
   // "Use enhanced spell check" items.

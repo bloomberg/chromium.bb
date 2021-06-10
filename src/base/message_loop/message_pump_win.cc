@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/task/current_thread.h"
 #include "base/message_loop/message_pump_win.h"
 
 #include <algorithm>
@@ -493,7 +494,17 @@ bool MessagePumpForUI::ProcessNextWindowsMessage() {
                 ctx.event()->set_chrome_message_pump();
             msg_pump_data->set_sent_messages_in_queue(more_work_is_plausible);
           });
-      has_msg = ::PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE) != FALSE;
+ 
+      // We should not process all window messages if we are in the context of an
+      // OS modal loop, i.e. in the context of a windows API call like MessageBox.
+      // This is to ensure that these messages are peeked out by the OS modal loop.
+      if (CurrentThread::Get()->os_modal_loop()) {
+        // We only peek out WM_PAINT and WM_TIMER here for reasons mentioned above.
+        has_msg = PeekMessage(&msg, NULL, WM_PAINT, WM_PAINT, PM_REMOVE) ||
+                  PeekMessage(&msg, NULL, WM_TIMER, WM_TIMER, PM_REMOVE);
+      } else {
+        has_msg = PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) != FALSE;
+      }
     }
   }
   if (has_msg)

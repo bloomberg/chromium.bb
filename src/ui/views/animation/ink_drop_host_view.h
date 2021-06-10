@@ -142,6 +142,8 @@ class VIEWS_EXPORT InkDropHostView : public View {
   // changes, to trigger the corresponding property change notification here.
   void OnInkDropHighlightedChanged();
 
+  InkDropMode ink_drop_mode() const { return ink_drop_mode_; }
+
  protected:
   // Size used for the default SquareInkDropRipple.
   static constexpr gfx::Size kDefaultInkDropSize = gfx::Size(24, 24);

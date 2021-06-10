@@ -116,7 +116,7 @@ class ProfileManager : public Profile::Delegate {
   // acceptable. Returns null if creation of the new profile fails.
   // TODO(bauerb): Migrate calls from other code to GetProfileByPath(), then
   // make this method private.
-  Profile* GetProfile(const base::FilePath& profile_dir);
+  virtual Profile* GetProfile(const base::FilePath& profile_dir);
 
   // Returns regular or off-the-record profile given its profile key.
   static Profile* GetProfileFromProfileKey(ProfileKey* profile_key);
@@ -150,7 +150,7 @@ class ProfileManager : public Profile::Delegate {
 
   // Returns true if the profile pointer is known to point to an existing
   // profile.
-  bool IsValidProfile(const void* profile);
+  virtual bool IsValidProfile(const void* profile);
 
   // Returns the directory where the first created profile is stored,
   // relative to the user data directory currently in use.
@@ -161,7 +161,7 @@ class ProfileManager : public Profile::Delegate {
   // stored in Local State, hand back the Default profile.
   // TODO(https://crbug.com/1195201): Remove `user_data_dir` parameter since it
   // always must match `user_data_dir_` field.
-  Profile* GetLastUsedProfile(const base::FilePath& user_data_dir);
+  virtual Profile* GetLastUsedProfile(const base::FilePath& user_data_dir);
 
   // Get the path of the last used profile, or if that's undefined, the default
   // profile.

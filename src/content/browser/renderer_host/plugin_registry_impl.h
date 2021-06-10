@@ -24,11 +24,13 @@ class PluginRegistryImpl : public blink::mojom::PluginRegistry {
 
   // blink::mojom::PluginRegistry
   void GetPlugins(bool refresh,
+                  bool is_main_frame,
                   const url::Origin& main_frame_origin,
                   GetPluginsCallback callback) override;
 
  private:
-  void GetPluginsComplete(const url::Origin& main_frame_origin,
+  void GetPluginsComplete(bool is_main_frame,
+                          const url::Origin& main_frame_origin,
                           GetPluginsCallback callback,
                           const std::vector<WebPluginInfo>& all_plugins);
 

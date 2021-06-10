@@ -16,6 +16,7 @@ import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
 import("//build/gn_logs.gni")
 import("//build/util/generate_wrapper.gni")
+import("//cef/libcef/features/features.gni")
 import("//chrome/browser/buildflags.gni")
 import("//chrome/browser/media/router/features.gni")
 import("//components/nacl/features.gni")
@@ -251,6 +252,9 @@ group("gn_all") {
       "//media/cast:cast_unittests",
       "//third_party/catapult/telemetry:bitmaptools($host_toolchain)",
     ]
+    if (enable_cef) {
+      deps += [ "//cef" ]
+    }
   } else if (is_ios) {
     deps += [
       "//ios:all",

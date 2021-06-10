@@ -26,5 +26,5 @@ interface LayeredWindowUpdater {
   // Draws to the HWND by copying pixels from shared memory. Callback must be
   // called after draw operation is complete to signal shared memory can be
   // modified.
-  Draw() => ();
+  Draw(gfx.mojom.Rect damage_rect) => ();
 };

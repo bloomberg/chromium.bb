@@ -1,0 +1,31 @@
+diff --git chrome/renderer/BUILD.gn chrome/renderer/BUILD.gn
+index cd4395923de7..61069e696505 100644
+--- chrome/renderer/BUILD.gn
++++ chrome/renderer/BUILD.gn
+@@ -5,6 +5,7 @@
+ import("//build/config/buildflags_paint_preview.gni")
+ import("//build/config/chromeos/ui_mode.gni")
+ import("//build/config/features.gni")
++import("//cef/libcef/features/features.gni")
+ import("//chrome/common/features.gni")
+ import("//components/nacl/features.gni")
+ import("//components/offline_pages/buildflags/features.gni")
+@@ -147,6 +148,7 @@ static_library("renderer") {
+   deps = [
+     "//base/allocator:buildflags",
+     "//build:chromeos_buildflags",
++    "//cef/libcef/features",
+     "//chrome:resources",
+     "//chrome:strings",
+     "//chrome/common",
+@@ -233,6 +235,10 @@ static_library("renderer") {
+ 
+   configs += [ "//build/config/compiler:wexit_time_destructors" ]
+ 
++  if (enable_cef) {
++    configs += [ "//cef/libcef/features:config" ]
++  }
++
+   if (enable_nacl) {
+     deps += [
+       "//components/nacl/loader",

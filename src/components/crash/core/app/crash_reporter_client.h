@@ -5,7 +5,9 @@
 #ifndef COMPONENTS_CRASH_CORE_APP_CRASH_REPORTER_CLIENT_H_
 #define COMPONENTS_CRASH_CORE_APP_CRASH_REPORTER_CLIENT_H_
 
+#include <map>
 #include <string>
+#include <vector>
 
 #include "build/build_config.h"
 
@@ -87,7 +89,7 @@ class CrashReporterClient {
   virtual int GetResultCodeRespawnFailed();
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MAC)
+#if defined(OS_POSIX)
   // Returns a textual description of the product type and version to include
   // in the crash report. Neither out parameter should be set to NULL.
   // TODO(jperaza): Remove the 2-parameter overload of this method once all
@@ -98,6 +100,7 @@ class CrashReporterClient {
                                         std::string* version,
                                         std::string* channel);
 
+#if !defined(OS_MAC)
   virtual base::FilePath GetReporterLogFilename();
 
   // Custom crash minidump handler after the minidump is generated.
@@ -107,6 +110,7 @@ class CrashReporterClient {
   // libc nor allocate memory normally.
   virtual bool HandleCrashDump(const char* crashdump_filename,
                                uint64_t crash_pid);
+#endif
 #endif
 
   // The location where minidump files should be written. Returns true if
@@ -204,6 +208,27 @@ class CrashReporterClient {
 
   // Returns true if breakpad should run in the given process type.
   virtual bool EnableBreakpadForProcess(const std::string& process_type);
+
+  // Populate |arguments| with additional optional arguments.
+  virtual void GetCrashOptionalArguments(std::vector<std::string>* arguments);
+
+#if defined(OS_WIN)
+  // Returns the absolute path to the external crash handler exe.
+  virtual std::wstring GetCrashExternalHandler(const std::wstring& exe_dir);
+#endif
+
+#if defined(OS_MAC)
+  // Returns true if forwarding of crashes to the system crash reporter is
+  // enabled for the browser process.
+  virtual bool EnableBrowserCrashForwarding();
+#endif
+
+#if defined(OS_POSIX) && !defined(OS_MAC)
+  // Provides an oportunity to modify the parameters that will be sent with a
+  // crash upload.
+  using ParameterMap = std::map<std::string, std::string>;
+  virtual ParameterMap FilterParameters(const ParameterMap& parameters);
+#endif
 };
 
 }  // namespace crash_reporter

@@ -21,6 +21,7 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "cef/libcef/features/runtime.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/printing/print_job.h"
@@ -56,6 +57,10 @@
 
 #if defined(OS_WIN)
 #include "printing/printing_features.h"
+#endif
+
+#if BUILDFLAG(ENABLE_CEF)
+#include "cef/libcef/browser/printing/print_view_manager.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -198,8 +203,13 @@ PrintViewManager* GetPrintViewManager(int render_process_id,
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::WebContents* web_contents =
       GetWebContentsForRenderFrame(render_process_id, render_frame_id);
-  return web_contents ? PrintViewManager::FromWebContents(web_contents)
-                      : nullptr;
+  if (!web_contents)
+    return nullptr;
+#if BUILDFLAG(ENABLE_CEF)
+  if (cef::IsAlloyRuntimeEnabled())
+    return CefPrintViewManager::FromWebContents(web_contents);
+#endif
+  return PrintViewManager::FromWebContents(web_contents);
 }
 
 void NotifySystemDialogCancelled(int render_process_id, int routing_id) {
