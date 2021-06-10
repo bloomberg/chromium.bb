@@ -138,7 +138,6 @@
 <translation id="4227825898293920515">密碼在 <ph name="TIME" />後到期</translation>
 <translation id="4238516577297848345">沒有進行中的列印工作</translation>
 <translation id="4297501883039923494">已停止 - 不明錯誤</translation>
-<translation id="4344214025510306853">附加 APN</translation>
 <translation id="4378373042927530923">未執行</translation>
 <translation id="4382484599443659549">PDF</translation>
 <translation id="4425149324548788773">我的雲端硬碟</translation>
@@ -353,7 +352,7 @@
 <translation id="8475690821716466388">已使用防護力較弱的通訊協定 WEP PSK 保護 Wi-Fi 網絡</translation>
 <translation id="8477551185774834963">DNS 延遲時間稍微超過允許的門檻</translation>
 <translation id="8483248364096924578">IP 位址</translation>
-<translation id="8503813439785031346">使用者名稱</translation>
+<translation id="8503813439785031346">用戶名稱</translation>
 <translation id="8503836310948963452">只需多幾分鐘…</translation>
 <translation id="8575298406870537639">流動網絡供應商可能會要求您必須選擇此選項，才能連接他們的網絡。詳情請聯絡流動網絡供應商。</translation>
 <translation id="8576249514688522074">未初始化</translation>

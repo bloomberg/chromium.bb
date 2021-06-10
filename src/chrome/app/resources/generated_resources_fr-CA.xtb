@@ -2661,7 +2661,7 @@ et sur Ctrl+Alt+diminuer la luminosité pour effectuer un zoom arrière.</transl
 <translation id="3834775135533257713">Impossible d'ajouter l'application « <ph name="TO_INSTALL_APP_NAME" /> », car elle crée un conflit avec « <ph name="INSTALLED_APP_NAME" /> ».</translation>
 <translation id="3835233591525155343">Votre utilisation de l'appareil</translation>
 <translation id="3835522725882634757">Oh, non! Ce serveur envoie des données que <ph name="PRODUCT_NAME" /> ne peut pas comprendre. Veuillez <ph name="BEGIN_LINK" />signaler un bogue<ph name="END_LINK" /> et inclure la <ph name="BEGIN2_LINK" />liste brute<ph name="END2_LINK" />.</translation>
-<translation id="383669374481694771">Ces données d'ordre général concernent votre appareil et son utilisation (comme le niveau de la pile, les erreurs, ainsi que l'activité du système et des applications). Elles serviront à améliorer la plateforme Android. Certaines données collectées aideront également nos partenaires, tels que les concepteurs Android, à améliorer leurs applications et leurs produits.</translation>
+<translation id="383669374481694771">Ces données d'ordre général concernent votre appareil et son utilisation (comme le niveau de la pile, les erreurs, ainsi que l'activité du système et des applications). Elles serviront à améliorer la plateforme Android. Certaines données collectées aideront également nos partenaires, tels que les développeurs Android, à améliorer leurs applications et leurs produits.</translation>
 <translation id="3838085852053358637">Échec du chargement de l'extension</translation>
 <translation id="3838486795898716504">Pages suivantes pour <ph name="PAGE_TITLE" /></translation>
 <translation id="383891835335927981">Aucun site n'a fait l'objet d'un zoom avant ou arrière</translation>
@@ -3613,6 +3613,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4901309472892185668">Sélectionner l'état de la fonctionnalité expérimentale <ph name="EXPERIMENT_NAME" />.</translation>
 <translation id="4902546322522096650">Réseau <ph name="NETWORK_INDEX" /> sur <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, force du signal : <ph name="SIGNAL_STRENGTH" /> %, connexion</translation>
 <translation id="49027928311173603">La règle téléchargée du serveur n'est pas valide : <ph name="VALIDATION_ERROR" />.</translation>
+<translation id="4905269543817054577">L'historique n'est pas enregistré en mode de navigation privée</translation>
 <translation id="4906490889887219338">Configurez ou gérez les partages de fichiers sur le réseau. <ph name="LINK_BEGIN" />En savoir plus<ph name="LINK_END" /></translation>
 <translation id="4906580650526544301">Réseau <ph name="NETWORK_INDEX" /> sur <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, <ph name="PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, puissance du signal : <ph name="SIGNAL_STRENGTH" /> %, pile du téléphone : <ph name="BATTERY_STATUS" /> %, renseignements</translation>
 <translation id="4907161631261076876">Ce fichier n'est pas souvent téléchargé et peut être dangereux.</translation>

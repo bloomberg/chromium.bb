@@ -559,7 +559,7 @@
 <translation id="1596286373007273895">Disponibil</translation>
 <translation id="1598233202702788831">Actualizările sunt dezactivate de administrator.</translation>
 <translation id="1600857548979126453">Accesează procesul de fundal al depanatorului de pagină</translation>
-<translation id="1601560923496285236">Aplicați</translation>
+<translation id="1601560923496285236">Aplică</translation>
 <translation id="1602085790802918092">Se pornește mașina virtuală</translation>
 <translation id="1603914832182249871">(Incognito)</translation>
 <translation id="1604432177629086300">Nu s-a putut printa. Verifică imprimanta și încearcă din nou.</translation>
@@ -3612,6 +3612,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4901309472892185668">Selectează starea experimentului pentru experimentul <ph name="EXPERIMENT_NAME" />.</translation>
 <translation id="4902546322522096650">Rețeaua <ph name="NETWORK_INDEX" /> din <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, puterea semnalului: <ph name="SIGNAL_STRENGTH" /> %, conectează-te</translation>
 <translation id="49027928311173603">Politica descărcată de pe server este nevalidă: <ph name="VALIDATION_ERROR" />.</translation>
+<translation id="4905269543817054577">Istoricul nu este salvat în modul incognito</translation>
 <translation id="4906490889887219338">Configurează sau gestionează spații comune de stocare în rețea. <ph name="LINK_BEGIN" />Află mai multe<ph name="LINK_END" /></translation>
 <translation id="4906580650526544301">Rețeaua <ph name="NETWORK_INDEX" /> din <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, <ph name="PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, puterea semnalului: <ph name="SIGNAL_STRENGTH" /> %, bateria telefonului: <ph name="BATTERY_STATUS" /> %, detalii</translation>
 <translation id="4907161631261076876">Acest fișier nu este descărcat de obicei și ar putea fi periculos.</translation>
@@ -6867,7 +6868,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8498395510292172881">Continuă să citești în Chrome</translation>
 <translation id="8499083585497694743">Activează sunetul microfonului</translation>
 <translation id="8502536196501630039">Ca să folosești aplicații din Google Play, trebuie mai întâi să restabilești aplicațiile. Este posibil ca unele date să se fi pierdut.</translation>
-<translation id="8503813439785031346">Nume utilizator</translation>
+<translation id="8503813439785031346">Nume de utilizator</translation>
 <translation id="8507227974644337342">Rezoluția ecranului</translation>
 <translation id="850875081535031620">Nu s-a găsit software dăunător</translation>
 <translation id="8509177919508253835">Resetează cheile de securitate și creează coduri PIN</translation>

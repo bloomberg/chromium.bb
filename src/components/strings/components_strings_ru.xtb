@@ -254,7 +254,7 @@
 <translation id="1798447301915465742"><ph name="MULTIPLE_ACTIONS_FOCUSED_FRIENDLY_MATCH_TEXT" />. Возможны разные действия. Нажимайте Tab для переключения между ними.</translation>
 <translation id="1800473098294731951">B9</translation>
 <translation id="1803264062614276815">Владелец карты</translation>
-<translation id="1807246157184219062">Светлый</translation>
+<translation id="1807246157184219062">Светлая</translation>
 <translation id="1807528111851433570">Первый лист</translation>
 <translation id="1812527064848182527">горизонтальная ориентация</translation>
 <translation id="1814698615734239189">Это приложение предназначено для мобильных устройств. Сейчас оно работает в режиме совместимости. Если вы разрешите изменять размер окна, это может привести к ошибкам, в том числе к перезапуску приложения.</translation>
@@ -408,7 +408,7 @@
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413155254802890957">Старый</translation>
 <translation id="2413528052993050574">Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Его сертификат безопасности может быть отозван. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.</translation>
-<translation id="2414886740292270097">Темный</translation>
+<translation id="2414886740292270097">Темная</translation>
 <translation id="2438874542388153331">Четыре отверстия справа</translation>
 <translation id="245044156129055925">Вы только что ввели пароль на поддельном сайте. Браузер Chromium рекомендует сменить пароль прямо сейчас.</translation>
 <translation id="2463739503403862330">Заполнить</translation>
@@ -726,6 +726,7 @@
 <translation id="3631244953324577188">Биометрия</translation>
 <translation id="3633738897356909127">Кнопка "Обновить Chrome". Нажмите Ввод, чтобы обновить Chrome.</translation>
 <translation id="3634530185120165534">Лоток 5</translation>
+<translation id="3637662659967048211">Сохранить в аккаунте Google?</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3642638418806704195">Приложение:</translation>
 <translation id="3650584904733503804">Проверка выполнена успешно</translation>
@@ -968,7 +969,7 @@
 <translation id="4515275063822566619">Это карты и адреса, указанные в Chrome и вашем аккаунте Google (<ph name="ACCOUNT_EMAIL" />). Вы можете изменить их на странице <ph name="BEGIN_LINK" />Настройки<ph name="END_LINK" />.</translation>
 <translation id="4517607026994743406">Comm-10 (конверт)</translation>
 <translation id="4521157617044179198"><ph name="WIDTH" /> × <ph name="HEIGHT" /> мм (<ph name="ORIENTATION" />)</translation>
-<translation id="4522570452068850558">Подробнее</translation>
+<translation id="4522570452068850558">Детали</translation>
 <translation id="4524138615196389145">Подтверждайте карты быстрее с помощью WebAuthn</translation>
 <translation id="4524805452350978254">Изменить</translation>
 <translation id="4542971377163063093">Лоток 6</translation>

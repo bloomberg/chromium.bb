@@ -138,7 +138,6 @@
 <translation id="4227825898293920515">Ο κωδικός πρόσβασης λήγει σε <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Δεν υπάρχουν εργασίες εκτύπωσης σε εξέλιξη</translation>
 <translation id="4297501883039923494">Διακοπή - Άγνωστο σφάλμα</translation>
-<translation id="4344214025510306853">Επισύναψη APN</translation>
 <translation id="4378373042927530923">Δεν εκτελέστηκε</translation>
 <translation id="4382484599443659549">PDF</translation>
 <translation id="4425149324548788773">Το Drive μου</translation>
@@ -275,7 +274,7 @@
 <translation id="6618744767048954150">Σε εξέλιξη</translation>
 <translation id="6620487321149975369">Οι εργασίες εκτύπωσης θα εμφανίζονται στο ιστορικό, εκτός εάν καταργηθούν μη αυτόματα.</translation>
 <translation id="6643016212128521049">Διαγραφή</translation>
-<translation id="6657585470893396449">Κωδικός πρόσβασης</translation>
+<translation id="6657585470893396449">Κωδικός Πρόσβασης</translation>
 <translation id="6704062477274546131">Επίλυση DNS</translation>
 <translation id="6747215703636344499">Διακοπή - Ο δίσκος εξόδου είναι γεμάτος</translation>
 <translation id="6756731097889387912">Δεν ήταν δυνατή η ακύρωση της σάρωσης.</translation>

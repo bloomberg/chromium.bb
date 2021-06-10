@@ -138,7 +138,6 @@
 <translation id="4227825898293920515">Passwort läuft in <ph name="TIME" /> ab</translation>
 <translation id="4238516577297848345">Keine laufenden Druckaufträge</translation>
 <translation id="4297501883039923494">Angehalten – Unbekannter Fehler</translation>
-<translation id="4344214025510306853">APN anhängen</translation>
 <translation id="4378373042927530923">Nicht ausgeführt</translation>
 <translation id="4382484599443659549">PDF</translation>
 <translation id="4425149324548788773">Meine Ablage</translation>
@@ -164,7 +163,7 @@
 <translation id="4691278870498629773">Angehalten – Fach fehlt</translation>
 <translation id="469379815867856270">Signalstärke</translation>
 <translation id="4707579418881001319">L2TP/IPSec + Nutzerzertifikat</translation>
-<translation id="4731797938093519117">Elternfreigabe</translation>
+<translation id="4731797938093519117">Elternzugang</translation>
 <translation id="4773299976671772492">Angehalten</translation>
 <translation id="4794140124556169553">Der CPU-Test kann sich auf die Leistung Ihres Systems auswirken</translation>
 <translation id="4808449224298348341">Druckauftrag für "<ph name="DOCUMENT_TITLE" />" wurde abgebrochen</translation>

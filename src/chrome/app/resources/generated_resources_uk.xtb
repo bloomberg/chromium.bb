@@ -3630,6 +3630,7 @@
 <translation id="4901309472892185668">Вибрати статус експерименту "<ph name="EXPERIMENT_NAME" />".</translation>
 <translation id="4902546322522096650">Мережа <ph name="NETWORK_INDEX" /> з <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, рівень сигналу – <ph name="SIGNAL_STRENGTH" />%. Підключитися</translation>
 <translation id="49027928311173603">Завантажене із сервера правило недійсне: <ph name="VALIDATION_ERROR" />.</translation>
+<translation id="4905269543817054577">Історія в анонімному режимі не зберігається</translation>
 <translation id="4906490889887219338">Налаштувати мережеві файлообмінники або керувати ними. <ph name="LINK_BEGIN" />Докладніше<ph name="LINK_END" /></translation>
 <translation id="4906580650526544301">Мережа №<ph name="NETWORK_INDEX" />, загалом мереж: <ph name="NETWORK_COUNT" />, назва пристрою: <ph name="PHONE_NAME" />, оператор: <ph name="PROVIDER_NAME" />, стан з'єднання: <ph name="CONNECTION_STATUS" />, рівень сигналу: <ph name="SIGNAL_STRENGTH" />%, рівень заряду акумулятора телефона: <ph name="BATTERY_STATUS" />%, відомості</translation>
 <translation id="4907161631261076876">Цей файл рідко завантажують. Він може бути небезпечним.</translation>
@@ -3995,7 +3996,7 @@
 <translation id="532247166573571973">Можливо, сервер недоступний. Спробуйте пізніше.</translation>
 <translation id="5324300749339591280">Список додатків</translation>
 <translation id="5324780743567488672">Автоматично визначати часовий пояс на основі ваших геоданих</translation>
-<translation id="5327248766486351172">Назва</translation>
+<translation id="5327248766486351172">Ім’я</translation>
 <translation id="5327570636534774768">Пристрій зареєстровано в іншому домені. Перед налаштуванням демо-режиму деініціалізуйте пристрій у цьому домені.</translation>
 <translation id="5327912693242073631">Функції, яким потрібні сповіщення, не працюватимуть</translation>
 <translation id="532943162177641444">Торкніться сповіщення на пристрої <ph name="PHONE_NAME" />, щоб налаштувати для нього мобільну точку доступу.</translation>

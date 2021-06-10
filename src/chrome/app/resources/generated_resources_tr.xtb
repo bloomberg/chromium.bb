@@ -1803,7 +1803,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="2910318910161511225">Bir ağa bağlanın ve tekrar deneyin</translation>
 <translation id="291056154577034373">OKUNMAYANLAR</translation>
 <translation id="2910718431259223434">Bir hata oluştu. Lütfen tekrar deneyin veya cihaz sahibi ya da yöneticisiyle iletişime geçin. Hata kodu: <ph name="ERROR_CODE" />.</translation>
-<translation id="2911433807131383493">ChromeVox eğiticiyi aç</translation>
+<translation id="2911433807131383493">ChromeVox eğitimini aç</translation>
 <translation id="2913331724188855103">Sitelerin, çerez verilerini kaydetmelerine ve okumalarına izin ver (önerilir)</translation>
 <translation id="2915102088417824677">Etkinlik günlüğünü göster</translation>
 <translation id="2915873080513663243">Otomatik tarama</translation>
@@ -3610,6 +3610,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4901309472892185668"><ph name="EXPERIMENT_NAME" /> denemesi için deneme durumu seçin.</translation>
 <translation id="4902546322522096650">Ağ <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, %<ph name="SIGNAL_STRENGTH" /> Sinyal Gücü, Bağlan</translation>
 <translation id="49027928311173603">Sunucudan indirilen politika geçersiz: <ph name="VALIDATION_ERROR" />.</translation>
+<translation id="4905269543817054577">Geçmiş Gizli modda kaydedilmez</translation>
 <translation id="4906490889887219338">Ağ dosya paylaşımlarını kurun veya yönetin. <ph name="LINK_BEGIN" />Daha fazla bilgi<ph name="LINK_END" /></translation>
 <translation id="4906580650526544301">Ağ <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, <ph name="PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, %<ph name="SIGNAL_STRENGTH" /> Sinyal Gücü, %<ph name="BATTERY_STATUS" /> Telefon Pili, Ayrıntılar</translation>
 <translation id="4907161631261076876">Bu uygulama çok indirilen bir uygulama değil ve tehlikeli olabilir.</translation>

@@ -1358,6 +1358,9 @@ extern const char kStoragePressureEventDescription[];
 extern const char kStoreHoursAndroidName[];
 extern const char kStoreHoursAndroidDescription[];
 
+extern const char kStrictExtensionIsolationName[];
+extern const char kStrictExtensionIsolationDescription[];
+
 extern const char kStrictOriginIsolationName[];
 extern const char kStrictOriginIsolationDescription[];
 
@@ -1545,6 +1548,9 @@ extern const char kWebrtcHideLocalIpsWithMdnsDecription[];
 
 extern const char kWebrtcHybridAgcName[];
 extern const char kWebrtcHybridAgcDescription[];
+
+extern const char kWebrtcAnalogAgcClippingControlName[];
+extern const char kWebrtcAnalogAgcClippingControlDescription[];
 
 extern const char kWebrtcHwDecodingName[];
 extern const char kWebrtcHwDecodingDescription[];

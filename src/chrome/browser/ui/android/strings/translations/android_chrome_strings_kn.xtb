@@ -310,6 +310,7 @@
 <translation id="2961208450284224863">{READING_LIST_UNREAD_PAGE_COUNT,plural, =1{<ph name="READING_LIST_UNREAD_PAGE_COUNT_ONE" /> ಓದದಿರುವ ಪುಟ}one{<ph name="READING_LIST_UNREAD_PAGE_COUNT_MANY" /> ಓದದಿರುವ ಪುಟಗಳು}other{<ph name="READING_LIST_UNREAD_PAGE_COUNT_MANY" /> ಓದದಿರುವ ಪುಟಗಳು}}</translation>
 <translation id="2979025552038692506">ಅದೃಶ್ಯ ಟ್ಯಾಬ್‌ ಆಯ್ಕೆಮಾಡಲಾಗಿದೆ</translation>
 <translation id="2979448359891869301">ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ಅನ್ನು ವಿಸ್ತರಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ. ನಿಮ್ಮ ಫೋನ್ ಬಳಸದೇ ಇರುವಾಗ ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
+<translation id="2979639724566107830">ಹೊಸ ವಿಂಡೋದಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="2987620471460279764">ಬೇರೆ ಸಾಧನದಿಂದ ಪಠ್ಯವನ್ನು ಹಂಚಿಕೊಳ್ಳಲಾಗಿದೆ</translation>
 <translation id="2989523299700148168">ಇತ್ತೀಚೆಗೆ ಭೇಟಿ ನೀಡಿದವು</translation>
 <translation id="2992473221983447149">ಚಿತ್ರದ ವಿವರಣೆಗಳು</translation>
@@ -469,7 +470,7 @@
 <translation id="4062305924942672200">ಕಾನೂನು ಮಾಹಿತಿ</translation>
 <translation id="4084682180776658562">ಬುಕ್‌ಮಾರ್ಕ್</translation>
 <translation id="4084712963632273211"><ph name="PUBLISHER_ORIGIN" /> ಅವರಿಂದ – <ph name="BEGIN_DEEMPHASIZED" />Google ನಿಂದ ವಿತರಿಸಲಾಗಿದೆ<ph name="END_DEEMPHASIZED" /></translation>
-<translation id="4095146165863963773">ಅಪ್ಲಿಕೇಶನ್ ಡೇಟಾ ಅಳಿಸುವುದೇ?</translation>
+<translation id="4095146165863963773">ಆ್ಯಪ್ ಡೇಟಾ ಅಳಿಸಬೇಕೇ?</translation>
 <translation id="4095189195365058471">ನಂತರ ಓದಿ <ph name="BEGIN_NEW" />ಹೊಸತು<ph name="END_NEW" /></translation>
 <translation id="4099578267706723511">Google ಗೆ ಬಳಕೆಯ ಅಂಕಿಅಂಶಗಳು ಮತ್ತು ಕ್ರ್ಯಾಶ್ ವರದಿಗಳನ್ನು ಕಳುಹಿಸುವ ಮೂಲಕ Chrome ಅನ್ನು ಉತ್ತಮಗೊಳಿಸಲು ಸಹಾಯ ಮಾಡಿ.</translation>
 <translation id="410351446219883937">ಆಟೋಪ್ಲೇ</translation>

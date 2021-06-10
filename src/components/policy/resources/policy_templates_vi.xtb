@@ -1849,7 +1849,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Chỉ định khoảng thời gian kể từ lần cuối cùng người dùng nhập cho đến thời điểm hộp thoại cảnh báo hiển thị khi chạy bằng pin.
 
-          Khi bạn đặt, chính sách này sẽ chỉ định khoảng thời gian người dùng phải duy trì chế độ tạm vắng trước khi <ph name="PRODUCT_OS_NAME" /> hiển thị hộp thoại cảnh báo cho người dùng biết rằng hành động ở chế độ tạm vắng đó sắp được thực hiện.
+          Khi bạn đặt, chính sách này sẽ chỉ định khoảng thời gian người dùng phải duy trì chế độ tạm vắng trước khi <ph name="PRODUCT_OS_NAME" /> hiện hộp thoại cảnh báo cho người dùng biết rằng hành động ở chế độ tạm vắng đó sắp được thực hiện.
 
           Khi bạn không đặt chính sách này, sẽ không có hộp thoại cảnh báo nào hiển thị.
 
@@ -3693,9 +3693,6 @@ Nếu bạn đặt chính sách thành Tắt, thì <ph name="PRODUCT_NAME" /> s�
       Nếu bạn đặt thành Tắt hoặc không đặt chính sách này, chế độ sạc pin nâng cao sẽ luôn tắt.
 
       Người dùng không thể quản lý tùy chọn cài đặt này.</translation>
-<translation id="5845686745936515940">Cho phép bạn đưa tất cả cookie về hành vi <ph name="ATTRIBUTE_SAMESITE_NAME" /> cũ. Khi quay lại về hành vi cũ, cookie sẽ không chỉ định việc xử lý thuộc tính <ph name="ATTRIBUTE_SAMESITE_NAME" /> như thể là "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />" và cookie "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />" không cần phải mang thuộc tính "<ph name="ATTRIBUTE_SECURE_NAME" />", đồng thời hệ thống sẽ bỏ qua quy trình so sánh lược đồ khi đánh giá liệu 2 trang web có phải là một hay không. Để xem thông tin chi tiết, vui lòng truy cập https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies.
-
-          Nếu bạn không đặt chính sách này, thì hành vi <ph name="ATTRIBUTE_SAMESITE_NAME" /> mặc định đối với các cookie sẽ phụ thuộc vào cấu hình cá nhân của người dùng cho tính năng <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" />, <ph name="FEATURE_NAME_SAMESITE_NONE_MUST_BE_SECURE" /> và <ph name="FEATURE_NAME_SCHEMEFUL_SAME_SITE" />. Bạn có thể đặt các tính năng này trong giai đoạn thực nghiệm hoặc bằng cách bật/tắt lần lượt cờ <ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES" />, <ph name="FLAG_NAME_SAMESITE_NONE_MUST_BE_SECURE" /> hay <ph name="FLAG_NAME_SCHEMEFUL_SAME_SITE" />.</translation>
 <translation id="5848438019586925019">Thuật toán để tạo cặp khóa.</translation>
 <translation id="585270638818921943">Ngăn người dùng sử dụng các ứng dụng Android từ những nguồn không tin cậy</translation>
 <translation id="5859344336338527083">Nếu bạn đặt chính sách này, thì hệ thống sẽ chỉ định những URL nào có thể cài đặt tiện ích, ứng dụng và giao diện. Trước <ph name="PRODUCT_NAME" /> 21, người dùng có thể nhấp vào một đường liên kết tới tệp *.crx và <ph name="PRODUCT_NAME" /> sẽ đề xuất cài đặt tệp này sau một vài cảnh báo. Về sau, người dùng phải tải các tệp này xuống và kéo vào trang cài đặt <ph name="PRODUCT_NAME" />. Tùy chọn cài đặt này cho phép các URL cụ thể thực hiện theo quy trình cài đặt cũ, dễ dàng hơn.
@@ -3783,7 +3780,7 @@ Nếu bạn đặt chính sách thành Tắt, thì <ph name="PRODUCT_NAME" /> s�
 <translation id="5950069117106131681">Nếu bạn đặt chính sách này thành Bật, đầu trang và chân trang ở chế độ xem trước bản in sẽ được bật. Nếu bạn đặt chính sách này thành Tắt, đầu trang và chân trang ở chế độ xem trước bản in sẽ bị tắt.
 
       Nếu bạn đặt chính sách này, người dùng sẽ không thể thay đổi được. Nếu bạn không đặt chính sách này, người dùng sẽ quyết định có để đầu trang và chân trang xuất hiện hay không.</translation>
-<translation id="5951418260805607969">Hiển thị thông báo khi dung lượng ổ đĩa sắp hết</translation>
+<translation id="5951418260805607969">Hiện thông báo khi dung lượng ổ đĩa sắp hết</translation>
 <translation id="5958746038080720143">Bật tính năng tối ưu hóa Web Proxy Auto-Discovery (WPAD) (Tự động phát hiện proxy web)</translation>
 <translation id="5959428851851090097">Nếu đặt chính sách này thành Bật, thì chính sách đám mây sẽ được ưu tiên nếu chính sách này xung đột với chính sách nền tảng.
 
@@ -3942,6 +3939,9 @@ Nếu bạn đặt chính sách thành Tắt, thì <ph name="PRODUCT_NAME" /> s�
 
       Nếu bạn không đặt chính sách này, người dùng có thể thay đổi giao diện của trình duyệt theo ý muốn.</translation>
 <translation id="6195802366906945965">Xác định xem trình xác minh chứng chỉ tích hợp sẵn có được dùng để xác minh chứng chỉ máy chủ hay không</translation>
+<translation id="6198947200418556248">Chính sách này không còn dùng nữa. Nếu vẫn cần hành vi cookie cũ, vui lòng sử dụng "<ph name="LEGACY_SAMESITE_COOKIE_BEHAVIOR_ENABLED_FOR_DOMAIN_LIST_POLICY_NAME" />". Cho phép bạn đưa tất cả cookie trở lại hành vi <ph name="ATTRIBUTE_SAMESITE_NAME" /> cũ. Việc trở lại hành vi cũ sẽ (1) khiến những cookie không chỉ định thuộc tính <ph name="ATTRIBUTE_SAMESITE_NAME" /> được coi như thể là "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />", (2) bỏ yêu cầu cookie "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />" phải mang thuộc tính "<ph name="ATTRIBUTE_SECURE_NAME" />" và (3) bỏ qua quy trình so sánh lược đồ khi đánh giá liệu hai trang web có phải là một hay không. Hãy truy cập https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies để xem mô tả đầy đủ.
+
+          Nếu bạn không đặt chính sách này, thì hành vi <ph name="ATTRIBUTE_SAMESITE_NAME" /> mặc định đối với các cookie sẽ phụ thuộc vào cấu hình cá nhân của người dùng cho tính năng <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" />, <ph name="FEATURE_NAME_SAMESITE_NONE_MUST_BE_SECURE" /> và <ph name="FEATURE_NAME_SCHEMEFUL_SAME_SITE" />. Bạn có thể đặt các tính năng này trong giai đoạn thử nghiệm hoặc bằng cách bật/tắt cờ <ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES" />, <ph name="FLAG_NAME_SAMESITE_NONE_MUST_BE_SECURE" /> hoặc <ph name="FLAG_NAME_SCHEMEFUL_SAME_SITE" /> tương ứng.</translation>
 <translation id="6208896993204286313">Báo cáo thông tin chính sách của <ph name="PRODUCT_NAME" /></translation>
 <translation id="6210259502936598222">Báo cáo thông tin hệ điều hành và phiên bản của <ph name="PRODUCT_NAME" /></translation>
 <translation id="6212868225782276239">Tất cả các máy in đều hiển thị trừ những máy in trong danh sách cấm.</translation>
@@ -4040,7 +4040,7 @@ Nếu bạn đặt chính sách thành Tắt, thì <ph name="PRODUCT_NAME" /> s�
 
           Chỉ định khoảng thời gian kể từ lần cuối cùng người dùng nhập cho đến thời điểm hộp thoại cảnh báo hiển thị khi chạy bằng nguồn điện xoay chiều.
 
-          Khi bạn đặt, chính sách này sẽ chỉ định khoảng thời gian người dùng phải duy trì chế độ tạm vắng trước khi <ph name="PRODUCT_OS_NAME" /> hiển thị hộp thoại cảnh báo cho người dùng biết rằng hành động ở chế độ tạm vắng đó sắp được thực hiện.
+          Khi bạn đặt, chính sách này sẽ chỉ định khoảng thời gian người dùng phải duy trì chế độ tạm vắng trước khi <ph name="PRODUCT_OS_NAME" /> hiện hộp thoại cảnh báo cho người dùng biết rằng hành động ở chế độ tạm vắng đó sắp được thực hiện.
 
           Khi bạn không đặt chính sách này, sẽ không có hộp thoại cảnh báo nào hiển thị.
 
@@ -5129,7 +5129,7 @@ Nếu bạn đặt chính sách thành Tắt, thì <ph name="PRODUCT_NAME" /> s�
           Lưu ý: <ph name="DEVICE_LOGIN_SCREEN_LARGE_CURSOR_ENABLED" /> (nếu đã được chỉ định) sẽ ghi đè chính sách này.</translation>
 <translation id="7632147323011514740">Các khoảng thời gian mà quá trình cập nhật ảnh chụp nhanh dữ liệu ARC có thể bắt đầu cho Phiên khách được quản lý</translation>
 <translation id="7632724434767231364">Tên thư viện GSSAPI</translation>
-<translation id="7635106595080609261">Khi bạn đặt thành Bật hoặc không đặt chính sách này, Chrome có thể hiển thị hộp thoại chọn tệp và người dùng có thể mở hộp thoại này.
+<translation id="7635106595080609261">Khi bạn đặt thành Bật hoặc không đặt chính sách này, Chrome có thể hiện hộp thoại chọn tệp và người dùng có thể mở hộp thoại này.
 
       Khi bạn đặt chính sách này thành Tắt, bất cứ khi nào người dùng thực hiện thao tác làm kích hoạt hộp thoại chọn tệp (chẳng hạn như nhập dấu trang, tải tệp lên, lưu đường liên kết, v.v), một thông báo sẽ xuất hiện. Người dùng được xem là đã nhấp vào nút Hủy trên hộp thoại chọn tệp.</translation>
 <translation id="7638300388094655454">Google Cast</translation>
@@ -5169,7 +5169,7 @@ Nếu bạn đặt chính sách thành Tắt, thì <ph name="PRODUCT_NAME" /> s�
           Khi bạn không đặt chính sách này, khoảng thời gian mặc định sẽ được sử dụng.
 
           Bạn phải chỉ định giá trị của chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn hoặc bằng thời gian chờ tắt màn hình (nếu có đặt thời gian này) và thời gian chờ khi ở chế độ tạm vắng.</translation>
-<translation id="7680437377926096177">Ngăn hiển thị hộp thoại đăng xuất khi cửa sổ cuối cùng đóng lại.</translation>
+<translation id="7680437377926096177">Ngăn hiện hộp thoại đăng xuất khi cửa sổ cuối cùng đóng lại.</translation>
 <translation id="7683777542468165012">Làm mới chính sách động</translation>
 <translation id="7687943045976362719">Nếu bạn đặt chính sách này, <ph name="PRODUCT_FRAME_NAME" /> sẽ xử lý các loại nội dung được chỉ định.
 
@@ -6045,7 +6045,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
           Đối với những cookie trên miền không khớp với các mẫu nêu ở đây hoặc đối với tất cả cookie, nếu bạn không đặt chính sách này, thì giá trị mặc định chung của chính sách <ph name="LEGACY_SAMESITE_COOKIE_BEHAVIOR_ENABLED_POLICY_NAME" /> (nếu bạn đã đặt chính sách này) hoặc trong cấu hình cá nhân của người dùng sẽ được sử dụng.
 
           Xin lưu ý rằng các mẫu bạn liệt kê ở đây được xử lý như miền, chứ không phải như URL. Vì vậy, bạn không nên chỉ định lược đồ hoặc cổng.</translation>
-<translation id="8887709920496070892">Khoảng thời gian (tính bằng mili giây) kể từ khi không có hoạt động đầu vào của người dùng cho đến thời điểm hệ thống hiển thị hộp thoại cảnh báo</translation>
+<translation id="8887709920496070892">Khoảng thời gian (tính bằng mili giây) kể từ khi không có hoạt động đầu vào của người dùng cho đến thời điểm hệ thống hiện hộp thoại cảnh báo</translation>
 <translation id="8890438048579188548">Ẩn cảnh báo về việc ngừng cung cấp <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="8892286064305622118">Dung lượng ổ đĩa trống cần có cho <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="8892783613915541293">Số lần trì hoãn và các hành động cần thực hiện khi thiết bị ở trạng thái rảnh và chạy bằng nguồn điện AC</translation>
@@ -6303,6 +6303,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       Chính sách này chỉ là biện pháp tạm thời và sẽ bị xóa trong các phiên bản <ph name="PRODUCT_NAME" /> sau này. Sau khi chính sách này bị xóa, <ph name="PRODUCT_NAME" /> luôn có thể truy vấn các loại DNS khác.</translation>
 <translation id="9167719789236691545">Tắt Drive trong ứng dụng Tệp dành cho <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="9187743794267626640">Vô hiệu hóa việc lắp bộ nhớ ngoài</translation>
+<translation id="9190257149451871588">cổng 6566 (hết hạn vào ngày 15/10/2021)</translation>
 <translation id="9190456586252617675">Chính sách này kiểm soát chế độ của trải nghiệm làm quen với Trợ lý.
 
       Nếu bạn không đặt hoặc đặt chính sách này thành <ph name="ASSISTANT_ONBOARDING_MODE_DEFAULT" />, thì chế độ mặc định của trải nghiệm làm quen với Trợ lý sẽ được sử dụng.

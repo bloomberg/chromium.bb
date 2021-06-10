@@ -141,6 +141,32 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Network.Cellular.ESim.DisableProfile.Result"
+    enum="HermesResponseStatus" expires_after="2021-11-01">
+  <owner>azeemarshad@chromium.org</owner>
+  <owner>khorimoto@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Tracks the success rate of disabling an eSIM profile. Note that the result
+    for &quot;already disabled&quot; is considered a success for this metric.
+
+    Emitted once the operation completes.
+  </summary>
+</histogram>
+
+<histogram name="Network.Cellular.ESim.EnableProfile.Result"
+    enum="HermesResponseStatus" expires_after="2021-11-01">
+  <owner>azeemarshad@chromium.org</owner>
+  <owner>khorimoto@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Tracks the success rate of enabling an eSIM profile. Note that the result
+    for &quot;already enabled&quot; is considered a success for this metric.
+
+    Emitted once the operation completes.
+  </summary>
+</histogram>
+
 <histogram name="Network.Cellular.ESim.InstallPendingProfile.Result"
     enum="HermesResponseStatus" expires_after="2022-03-01">
   <owner>azeemarshad@chromium.org</owner>
@@ -153,6 +179,21 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     one of these pending profiles via the UI. The installation process involves
     making a network request to the cellular carrier and downloading a profile
     to the device.
+
+    Emitted once the operation completes.
+  </summary>
+</histogram>
+
+<histogram name="Network.Cellular.ESim.InstallViaQrCode.OperationResult"
+    enum="NetworkCellularESimInstallViaQrCodeResult" expires_after="2021-11-01">
+  <owner>azeemarshad@chromium.org</owner>
+  <owner>khorimoto@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Tracks the result of an attempt to install an eSIM profile via a QR code.
+    This process includes both an attempt to inhibit modem scans as well as a
+    request to install the profile. The metric tracks failures at each step of
+    the process.
 
     Emitted once the operation completes.
   </summary>
@@ -221,6 +262,33 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>Tracks the rate of success of uninstalling a profile.</summary>
 </histogram>
 
+<histogram name="Network.Cellular.ESim.RequestPendingProfiles.OperationResult"
+    enum="NetworkCellularESimRequestPendingProfilesResult"
+    expires_after="2021-11-01">
+  <owner>azeemarshad@chromium.org</owner>
+  <owner>khorimoto@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Tracks the result of an attempt to request pending eSIM profiles (i.e.,
+    those found via an SM-DS scan). This process includes both an attempt to
+    inhibit modem scans as well as a request for the profiles. The metric tracks
+    failures at each step of the process.
+
+    Emitted once the operation completes.
+  </summary>
+</histogram>
+
+<histogram name="Network.Cellular.ESim.RequestPendingProfiles.Result"
+    enum="HermesResponseStatus" expires_after="2021-11-01">
+  <owner>azeemarshad@chromium.org</owner>
+  <owner>khorimoto@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Tracks the success rate of requesting pending eSIM profiles. Emitted once
+    the operation completes.
+  </summary>
+</histogram>
+
 <histogram name="Network.Cellular.ESim.ServiceAtLogin.Count" units="units"
     expires_after="2022-03-01">
   <owner>azeemarshad@chromium.org</owner>
@@ -252,6 +320,32 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Network.Cellular.ESim.UninstallProfile.OperationResult"
+    enum="NetworkCellularESimUninstallOperationResult"
+    expires_after="2021-11-01">
+  <owner>azeemarshad@chromium.org</owner>
+  <owner>khorimoto@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Tracks the result of the high-level operation of uninstalling an eSIM
+    profile. This includes several steps before and after the core step of
+    uninstalling the profile.
+
+    Emitted once the operation completes.
+  </summary>
+</histogram>
+
+<histogram name="Network.Cellular.ESim.UninstallProfile.Result"
+    enum="HermesResponseStatus" expires_after="2021-11-01">
+  <owner>azeemarshad@chromium.org</owner>
+  <owner>khorimoto@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Tracks the success rate of uninstalling an eSIM profile. Emitted once the
+    operation completes.
+  </summary>
+</histogram>
+
 <histogram name="Network.Cellular.ESim.Usage.Count" enum="NetworkCellularUsage"
     expires_after="2022-03-01">
   <owner>azeemarshad@chromium.org</owner>
@@ -259,6 +353,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Tracks the number of times a ESim cellular network is connected as the only
     network, or with other network or not connected at all.
+  </summary>
+</histogram>
+
+<histogram name="Network.Cellular.InhibitResult"
+    enum="NetworkCellularInhibitResult" expires_after="2021-11-01">
+  <owner>azeemarshad@chromium.org</owner>
+  <owner>khorimoto@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Tracks the result of a cellular device inhibit-uninhibit cycle.
+
+    Emitted when uninhibit completes or when any step fails.
   </summary>
 </histogram>
 
@@ -274,6 +380,31 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     <variant name="UnblockSuccess"/>
     <variant name="UnlockSuccess"/>
   </token>
+</histogram>
+
+<histogram name="Network.Cellular.PrepareCellularConnection.OperationResult"
+    enum="NetworkCellularPrepareForConnectionResult" expires_after="2021-11-01">
+  <owner>azeemarshad@chromium.org</owner>
+  <owner>khorimoto@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Tracks the result of the high-level operation of preparing a cellular
+    network for a connection. For eSIM networks, this involves several steps
+    such as enabling the profile, each of which can fail or succeed.
+
+    Emitted once the operation completes.
+  </summary>
+</histogram>
+
+<histogram name="Network.Cellular.PSim.OtaActivationResult"
+    enum="NetworkCellularPSimActivationResult" expires_after="2021-11-01">
+  <owner>azeemarshad@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <owner>hsuregan@chromium.org</owner>
+  <summary>
+    Tracks the result of attempting to activate a physical SIM card via an Over
+    the Air (OTA) activation. Emitted once the operation completes.
+  </summary>
 </histogram>
 
 <histogram name="Network.Cellular.PSim.ServiceAtLogin.Count" units="units"
@@ -482,6 +613,19 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Chrome OS network diagnostic metric sampling the number of auto-connect
     tries that were attempted before the cellular modem successfully connected
     to the network.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Cellular.ConnectResult"
+    enum="PlatformCellularConnectResult" expires_after="2021-12-01">
+  <owner>danielwinkler@google.com</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Reports the result of Cellular connection attempts through the platform
+    layers. This captures any success or failure as a result of a Connect call
+    through ModemManager, or any causes of early failure in shill that prevents
+    a connect attempt altogether. Refer to go/cros-cellular-apn-metrics for
+    details.
   </summary>
 </histogram>
 

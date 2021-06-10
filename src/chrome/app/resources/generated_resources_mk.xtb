@@ -3628,6 +3628,7 @@
 <translation id="4901309472892185668">Изберете состојба на експериментот за <ph name="EXPERIMENT_NAME" />.</translation>
 <translation id="4902546322522096650">Мрежа <ph name="NETWORK_INDEX" /> од <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, јачина на сигналот: <ph name="SIGNAL_STRENGTH" /> %, поврзи</translation>
 <translation id="49027928311173603">Правилото преземено од серверот е неважечко: <ph name="VALIDATION_ERROR" />.</translation>
+<translation id="4905269543817054577">Историјата не се зачувува кога сте во „Инкогнито“</translation>
 <translation id="4906490889887219338">Поставете ги или управувајте со мрежните споделувања. <ph name="LINK_BEGIN" />Дознајте повеќе<ph name="LINK_END" /></translation>
 <translation id="4906580650526544301">Мрежа <ph name="NETWORK_INDEX" /> од <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, <ph name="PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, јачина на сигналот: <ph name="SIGNAL_STRENGTH" /> %, батерија на телефонот: <ph name="BATTERY_STATUS" /> %, детали</translation>
 <translation id="4907161631261076876">Датотекава обично не се презема и може да биде опасна.</translation>
@@ -6319,7 +6320,7 @@
 <translation id="7876027585589532670">Не може да се измени кратенката</translation>
 <translation id="7877451762676714207">Непозната грешка на серверот. Обидете се повторно или контактирајте со администраторот на серверот.</translation>
 <translation id="7879631849810108578">Поставена е кратенка: <ph name="IDS_SHORT_SET_COMMAND" /></translation>
-<translation id="7880685873361171388">Кога е вклучена и статусот е активен, Chrome ја користи вашата историја на прелистување во изминатите 7 дена за да ја одреди групата или „кохортата“ во која припаѓате. Огласувачите може да избираат реклами за групата. Историјата на прелистување останува приватна на вашиот уред. Оваа пробна верзија е активна само во
+<translation id="7880685873361171388">Кога е вклучена и статусот е активен, Chrome ја користи вашата историја на прелистување во минатите 7 дена за да ја одреди групата или „кохортата“ во која припаѓате. Огласувачите може да избираат реклами за групата. Историјата на прелистување останува приватна на вашиот уред. Оваа пробна верзија е активна само во
     <ph name="BEGIN_LINK" />некои региони<ph name="END_LINK" />.</translation>
 <translation id="7880823633812189969">Локалните податоци ќе се избришат кога ќе рестартирате</translation>
 <translation id="7881066108824108340">DNS</translation>

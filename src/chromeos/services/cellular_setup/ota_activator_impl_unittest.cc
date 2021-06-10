@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "chromeos/network/fake_network_activation_handler.h"
@@ -103,10 +104,11 @@ class CellularSetupOtaActivatorImplTest : public testing::Test {
       device_test->SetDeviceProperty(
           kTestCellularDevicePath, shill::kMdnProperty,
           base::Value(kTestCellularDeviceMdn), false /* notify_changed */);
-    } else if (has_physical_slots) {
+    } else {
+      std::string eid = has_physical_slots ? std::string() : "test_eid";
       device_test->SetDeviceProperty(
           kTestCellularDevicePath, shill::kSIMSlotInfoProperty,
-          CreateCellularSIMSlotInfo(kTestCellularServiceIccid),
+          CreateCellularSIMSlotInfo(kTestCellularServiceIccid, eid),
           false /* notify_changed */);
     }
 
@@ -235,6 +237,10 @@ class CellularSetupOtaActivatorImplTest : public testing::Test {
     ASSERT_EQ(1u, activation_results.size());
     EXPECT_EQ(activation_result, activation_results[0]);
 
+    histogram_tester_.ExpectBucketCount(
+        "Network.Cellular.PSim.OtaActivationResult", activation_result,
+        /*expected_count=*/1);
+
     EXPECT_TRUE(is_finished_);
   }
 
@@ -254,10 +260,12 @@ class CellularSetupOtaActivatorImplTest : public testing::Test {
     is_finished_ = true;
   }
 
-  base::Value CreateCellularSIMSlotInfo(const std::string& iccid) {
+  base::Value CreateCellularSIMSlotInfo(
+      const std::string& iccid,
+      const std::string& eid = std::string()) {
     base::Value::ListStorage sim_slot_infos;
     base::Value slot_info_item(base::Value::Type::DICTIONARY);
-    slot_info_item.SetStringKey(shill::kSIMSlotInfoEID, std::string());
+    slot_info_item.SetStringKey(shill::kSIMSlotInfoEID, eid);
     slot_info_item.SetStringKey(shill::kSIMSlotInfoICCID, iccid);
     slot_info_item.SetBoolKey(shill::kSIMSlotInfoPrimary, false);
     sim_slot_infos.push_back(std::move(slot_info_item));
@@ -267,6 +275,7 @@ class CellularSetupOtaActivatorImplTest : public testing::Test {
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   NetworkStateTestHelper test_helper_;
+  base::HistogramTester histogram_tester_;
 
   std::unique_ptr<FakeActivationDelegate> fake_activation_delegate_;
   std::unique_ptr<FakeNetworkConnectionHandler>

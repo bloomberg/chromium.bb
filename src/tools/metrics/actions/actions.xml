@@ -12234,6 +12234,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="LinkNavigationOpenedInForegroundTab">
+  <owner>meiliang@chromium.org</owner>
+  <owner>sbirch@chromium.org</owner>
+  <description>
+    Recorded any time the user opens a link which navigates into a new forground
+    tab.
+  </description>
+</action>
+
 <action name="LinkOpenedInNewTab">
   <owner>yusufo@chromium.org</owner>
   <owner>wychen@chromium.org</owner>
@@ -16771,6 +16780,16 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="NewTabPage.Carts.DismissLastCartHidesModule">
+  <owner>wychen@chromium.org</owner>
+  <owner>yuezhanggg@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <description>
+    The last cart in the module is temporarily hidden or permanently removed,
+    which causes the module to hide.
+  </description>
+</action>
+
 <action name="NewTabPage.Carts.HideModule">
   <owner>wychen@chromium.org</owner>
   <owner>yuezhanggg@chromium.org</owner>
@@ -16798,6 +16817,16 @@ should be able to be added at any place in this file.
   <description>
     The 'Never show carts' option is clicked in the cart module menu to
     permanently remove the module.
+  </description>
+</action>
+
+<action name="NewTabPage.Carts.RestoreLastCartRestoresModule">
+  <owner>wychen@chromium.org</owner>
+  <owner>yuezhanggg@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <description>
+    An attempt to temporarily hide or permanently remove the last cart in module
+    is undone, which causes the hidden module to be restored.
   </description>
 </action>
 
@@ -22020,6 +22049,15 @@ should be able to be added at any place in this file.
   <owner>andzaytsev@google.com</owner>
   <owner>sauski@google.com</owner>
   <description>User enables FLoC on the privacy sandbox page.</description>
+</action>
+
+<action name="Settings.PrivacySandbox.FlocSubpageOpened">
+  <owner>andzaytsev@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <description>
+    User opens the FLoC subpage by clicking on an element on the privacy sandbox
+    page.
+  </description>
 </action>
 
 <action name="Settings.PrivacySandbox.OpenedFromCookiesPageToast">

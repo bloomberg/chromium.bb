@@ -6107,13 +6107,19 @@ void WebContentsImpl::OpenColorChooser(
   color_chooser_ = std::make_unique<ColorChooser>(std::move(chooser_receiver),
                                                   std::move(client));
 
-  content::ColorChooser* new_color_chooser =
+  auto new_color_chooser = base::WrapUnique(
       delegate_ ? delegate_->OpenColorChooser(this, color, suggestions)
-                : nullptr;
-  color_chooser_->SetChooser(base::WrapUnique(new_color_chooser));
-
-  if (!new_color_chooser)
+                : nullptr);
+  if (color_chooser_ && new_color_chooser) {
+    color_chooser_->SetChooser(std::move(new_color_chooser));
+  } else if (new_color_chooser) {
+    // OpenColorChooser synchronously called back to DidEndColorChooser.
+    DCHECK(!color_chooser_);
+    new_color_chooser->End();
+  } else if (color_chooser_) {
+    DCHECK(!new_color_chooser);
     color_chooser_.reset();
+  }
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -6598,6 +6604,7 @@ void WebContentsImpl::RunJavaScriptDialog(
     const std::u16string& message,
     const std::u16string& default_prompt,
     JavaScriptDialogType dialog_type,
+    bool disable_third_party_subframe_suppresion,
     JavaScriptDialogCallback response_callback) {
   OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::RunJavaScriptDialog",
                         "render_frame_host", render_frame_host);
@@ -6635,7 +6642,8 @@ void WebContentsImpl::RunJavaScriptDialog(
   bool has_handlers = page_handlers.size() || has_non_devtools_handlers;
   bool suppress_this_message = should_suppress || !has_handlers;
 
-  if (GetContentClient()->browser()->SuppressDifferentOriginSubframeJSDialogs(
+  if (!disable_third_party_subframe_suppresion &&
+      GetContentClient()->browser()->SuppressDifferentOriginSubframeJSDialogs(
           GetBrowserContext())) {
     // We can't check for opaque origin cases, default to allowing them to
     // trigger dialogs.

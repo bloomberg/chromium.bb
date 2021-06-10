@@ -733,6 +733,7 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="3631244953324577188">Biometri</translation>
 <translation id="3633738897356909127">Knappen Uppdatera Chrome, tryck på retur om du vill uppdatera Chrome i inställningarna för Chrome</translation>
 <translation id="3634530185120165534">Fack 5</translation>
+<translation id="3637662659967048211">Spara i Google-kontot</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3642638418806704195">Program:</translation>
 <translation id="3650584904733503804">Valideringen har genomförts</translation>
@@ -980,7 +981,7 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="4515275063822566619">Kort och adresser har hämtats från Chrome och ditt Google-konto (<ph name="ACCOUNT_EMAIL" />). Du hanterar dessa under <ph name="BEGIN_LINK" />Inställningar<ph name="END_LINK" />.</translation>
 <translation id="4517607026994743406">Comm-10 (kuvert)</translation>
 <translation id="4521157617044179198"><ph name="WIDTH" /> × <ph name="HEIGHT" /> mm (<ph name="ORIENTATION" />)</translation>
-<translation id="4522570452068850558">Info</translation>
+<translation id="4522570452068850558">Detaljer</translation>
 <translation id="4524138615196389145">Verifiera kreditkort snabbare genom att använda WebAuthn från och med nu</translation>
 <translation id="4524805452350978254">Hantera kort</translation>
 <translation id="4542971377163063093">Fack 6</translation>

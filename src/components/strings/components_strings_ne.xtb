@@ -727,6 +727,7 @@
 <translation id="3631244953324577188">बायोमेट्रिक्स</translation>
 <translation id="3633738897356909127">'Chrome अपडेट गर्नुहोस्' नामक बटन, आफ्नो Chrome का सेटिङमा गई Chrome अपडेट गर्न Enter थिच्नुहोस्</translation>
 <translation id="3634530185120165534">ट्रे ५</translation>
+<translation id="3637662659967048211">Google खातामा सेभ गर्नुहोस्</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3642638418806704195">एप:</translation>
 <translation id="3650584904733503804">प्रमाणीकरण सफल भयो</translation>
@@ -909,6 +910,7 @@
 <translation id="4275830172053184480">आफ्नो यन्त्रलाई फेरि सुरु गर्नुहोस्</translation>
 <translation id="4277028893293644418">पासवर्ड रिसेट गर्नुहोस्</translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{यो कार्डलाई तपाईंको Google खातामा सुरक्षित गरिएको छ।}other{यी कार्डहरूलाई तपाईंको Google खातामा सुरक्षित गरिएको छ}}</translation>
+<translation id="4287885627794386150">परीक्षण प्रयोग गर्न सकिन्छ तर सक्रिय भने छैन</translation>
 <translation id="4297502707443874121">पृष्ठ <ph name="THUMBNAIL_PAGE" /> को थम्बनेल</translation>
 <translation id="42981349822642051">विस्तृत गर्नुहोस्</translation>
 <translation id="4300675098767811073">दायाँपट्टि एकभन्दा बढी प्वाल</translation>
@@ -1709,6 +1711,7 @@
 <translation id="7378594059915113390">मिडियासम्बन्धी नियन्त्रणहरू</translation>
 <translation id="7378627244592794276">होइन</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7386364858855961704">लागू नहुने</translation>
 <translation id="7390545607259442187">कार्डको पुष्टि गर्नुहोस्</translation>
 <translation id="7392089738299859607">ठेगाना परिवर्तन गर्नुहोस्</translation>
 <translation id="7399802613464275309">सुरक्षा जाँच</translation>
@@ -2188,7 +2191,7 @@
 <translation id="9158625974267017556">C6 (Envelope)</translation>
 <translation id="9168814207360376865">साइटहरूलाई तपाईंले भुक्तानी विधिहरू सुरक्षित गर्नुभए नभएको कुरा जाँच गर्न दिन्छ</translation>
 <translation id="9169664750068251925">सधैँ यस साइटमा ब्लक गर्नुहोस्</translation>
-<translation id="9169931577761441333"><ph name="APP_NAME" /> लाई गृह स्क्रिनमा थप्नुहोस्‌</translation>
+<translation id="9169931577761441333"><ph name="APP_NAME" /> लाई होम स्क्रिनमा हाल्नुहोस्‌</translation>
 <translation id="9170848237812810038">&amp;पूर्वस्थितिमा फर्काउनुहोस्</translation>
 <translation id="9171296965991013597">एप छोड्ने हो?</translation>
 <translation id="9173282814238175921">एउटा कागजात/नयाँ पाना</translation>

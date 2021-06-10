@@ -4,6 +4,7 @@
 
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 
+#include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -139,25 +140,63 @@ bool IsChromeOs() {
 #endif
 }
 
-const apps::FileHandlers GetFileHandlersForWebApp(Profile* profile,
-                                                  const GURL& url) {
+bool AreFileHandlersAlreadyRegistered(
+    Profile* profile,
+    const GURL& url,
+    const std::vector<blink::Manifest::FileHandler>& new_handlers) {
+  if (new_handlers.empty())
+    return true;
+
+  const apps::FileHandlers old_handlers =
+      GetFileHandlersForAllWebAppsWithOrigin(profile, url);
+  const std::set<std::string> mime_types_set =
+      apps::GetMimeTypesFromFileHandlers(old_handlers);
+  const std::set<std::string> extensions_set =
+      apps::GetFileExtensionsFromFileHandlers(old_handlers);
+
+  for (const blink::Manifest::FileHandler& new_handler : new_handlers) {
+    for (const auto& new_handler_accept : new_handler.accept) {
+      if (!base::Contains(mime_types_set,
+                          base::UTF16ToUTF8(new_handler_accept.first))) {
+        return false;
+      }
+
+      for (const auto& new_extension : new_handler_accept.second) {
+        if (!base::Contains(extensions_set, base::UTF16ToUTF8(new_extension)))
+          return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+apps::FileHandlers GetFileHandlersForAllWebAppsWithOrigin(Profile* profile,
+                                                          const GURL& url) {
   auto* provider = WebAppProviderBase::GetProviderBase(profile);
   if (!provider)
     return {};
 
   const AppRegistrar& registrar = provider->registrar();
-  absl::optional<AppId> app_id = registrar.FindAppWithUrlInScope(url);
-  if (!app_id)
+  std::vector<AppId> app_ids = registrar.FindAppsInScope(url.GetOrigin());
+  if (app_ids.empty())
     return {};
 
-  return *registrar.GetAppFileHandlers(*app_id);
+  apps::FileHandlers aggregated_handlers;
+  for (const AppId& app_id : app_ids) {
+    const apps::FileHandlers* handlers = registrar.GetAppFileHandlers(app_id);
+    aggregated_handlers.insert(aggregated_handlers.end(), handlers->begin(),
+                               handlers->end());
+  }
+
+  return aggregated_handlers;
 }
 
-std::u16string GetFileTypeAssociationsHandledByWebAppDisplayedAsList(
+std::u16string GetFileTypeAssociationsHandledByWebAppsForDisplay(
     Profile* profile,
     const GURL& url) {
   const apps::FileHandlers file_handlers =
-      GetFileHandlersForWebApp(profile, url);
+      GetFileHandlersForAllWebAppsWithOrigin(profile, url);
   std::vector<std::string> associations;
 #if defined(OS_LINUX)
   std::set<std::string> mime_types_set =

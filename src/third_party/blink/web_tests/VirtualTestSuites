@@ -1021,7 +1021,8 @@
   {
     "prefix": "force-renderer-accessibility",
     "bases": ["accessibility/slot-poison.html",
-              "accessibility/details-summary-crash.html"],
+              "accessibility/details-summary-crash.html",
+              "external/wpt/accessibility/crashtests/content-visibility-generated-content-removal.html"],
     "args": ["--force-renderer-accessibility"]
   },
   {
@@ -1047,8 +1048,13 @@
     "args": ["--stable-release-mode"]
   },
   {
-  "prefix": "playback_speed_button",
-  "bases": ["media/controls"],
-  "args": [ "--enable-features=PlaybackSpeedButton" ]
+    "prefix": "playback_speed_button",
+    "bases": ["media/controls"],
+    "args": [ "--enable-features=PlaybackSpeedButton" ]
+  },
+  {
+    "prefix": "webrtc-extensions-senderCaptureTimeOffset",
+    "bases": ["external/wpt/webrtc-extensions/RTCRtpSynchronizationSource-senderCaptureTimeOffset.html"],
+    "args": ["--force-fieldtrials=WebRTC-IncludeCaptureClockOffset/Enabled/"]
   }
 ]

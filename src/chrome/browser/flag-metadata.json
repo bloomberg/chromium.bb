@@ -2668,6 +2668,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "enable-webrtc-analog-agc-clipping-control",
+    "owners": [ "alessiob", "silen", "minyue" ],
+    "expiry_milestone": 103
+  },
+  {
     "name": "enable-webrtc-capture-multi-channel-audio-processing",
     "owners": [ "saza" ],
     "expiry_milestone": 123
@@ -4914,6 +4919,14 @@
     "name": "storage-access-api",
     "owners": [ "brandm@microsoft.com" ],
     "expiry_milestone": 90
+  },
+  {
+    "name": "strict-extension-isolation",
+    "owners": [ "creis" ],
+    // This prevents extensions from sharing a process with each other. It is
+    // useful for improving security but launching it will depend on trials that
+    // will monitor the effect on process count, etc.
+    "expiry_milestone": 100
   },
   {
     "name": "strict-origin-isolation",

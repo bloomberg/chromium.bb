@@ -309,6 +309,7 @@
 <translation id="2961208450284224863">{READING_LIST_UNREAD_PAGE_COUNT,plural, =1{<ph name="READING_LIST_UNREAD_PAGE_COUNT_ONE" /> непрочитана сторінка}one{<ph name="READING_LIST_UNREAD_PAGE_COUNT_MANY" /> непрочитана сторінка}few{<ph name="READING_LIST_UNREAD_PAGE_COUNT_MANY" /> непрочитані сторінки}many{<ph name="READING_LIST_UNREAD_PAGE_COUNT_MANY" /> непрочитаних сторінок}other{<ph name="READING_LIST_UNREAD_PAGE_COUNT_MANY" /> непрочитаної сторінки}}</translation>
 <translation id="2979025552038692506">Вибрана анонімна вкладка</translation>
 <translation id="2979448359891869301">Не вдається розширити знімок екрана. Звільніть пам’ять на телефоні та повторіть спробу.</translation>
+<translation id="2979639724566107830">Відкрити в новому вікні</translation>
 <translation id="2987620471460279764">Текст, яким поділилися з іншого пристрою</translation>
 <translation id="2989523299700148168">Нещодавно відвідані</translation>
 <translation id="2992473221983447149">Описи зображень</translation>
@@ -660,7 +661,7 @@ Privacy Sandbox підтримує існування відкритої мер�
 <translation id="5317780077021120954">Зберегти</translation>
 <translation id="5319359161174645648">Google рекомендує Chrome</translation>
 <translation id="5324858694974489420">Батьківські налаштування</translation>
-<translation id="5327248766486351172">Назва</translation>
+<translation id="5327248766486351172">Ім’я</translation>
 <translation id="5342314432463739672">Запити на дозволи</translation>
 <translation id="5355191726083956201">Покращений захист увімкнено</translation>
 <translation id="5357811892247919462">Вкладку отримано</translation>

@@ -7,19 +7,20 @@
 #include <cstdint>
 #include <memory>
 
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
 #include "base/time/time.h"
 #include "chromeos/network/cellular_connection_handler.h"
 #include "chromeos/network/cellular_esim_profile.h"
 #include "chromeos/network/cellular_inhibitor.h"
+#include "chromeos/network/hermes_metrics_util.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/services/cellular_setup/esim_manager.h"
 #include "chromeos/services/cellular_setup/esim_mojo_utils.h"
 #include "chromeos/services/cellular_setup/esim_profile.h"
-#include "chromeos/services/cellular_setup/metrics_util.h"
 #include "chromeos/services/cellular_setup/public/mojom/esim_manager.mojom-shared.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/qr_code_generator/qr_code_generator.h"
@@ -30,6 +31,11 @@
 namespace chromeos {
 namespace cellular_setup {
 namespace {
+
+// Delay before pending profile refresh callback is called. This ensures that
+// eSIM profiles are updated before callback returns.
+constexpr base::TimeDelta kPendingProfileRefreshDelay =
+    base::TimeDelta::FromMilliseconds(150);
 
 // Prefix for EID when encoded in QR Code.
 const char kEidQrCodePrefix[] = "EID:";
@@ -74,6 +80,20 @@ Euicc::RequestPendingProfilesCallback CreateTimedRequestPendingProfilesCallback(
       std::move(callback), base::Time::Now());
 }
 }  // namespace
+
+// static
+void Euicc::RecordInstallProfileViaQrCodeResult(
+    InstallProfileViaQrCodeResult result) {
+  base::UmaHistogramEnumeration(
+      "Network.Cellular.ESim.InstallViaQrCode.OperationResult", result);
+}
+
+// static
+void Euicc::RecordRequestPendingProfilesResult(
+    RequestPendingProfilesResult result) {
+  base::UmaHistogramEnumeration(
+      "Network.Cellular.ESim.RequestPendingProfiles.OperationResult", result);
+}
 
 Euicc::Euicc(const dbus::ObjectPath& path, ESimManager* esim_manager)
     : esim_manager_(esim_manager),
@@ -243,6 +263,8 @@ void Euicc::PerformInstallProfileFromActivationCode(
     std::unique_ptr<CellularInhibitor::InhibitLock> inhibit_lock) {
   if (!inhibit_lock) {
     NET_LOG(ERROR) << "Error inhibiting cellular device";
+    RecordInstallProfileViaQrCodeResult(
+        InstallProfileViaQrCodeResult::kInhibitFailed);
     std::move(callback).Run(mojom::ProfileInstallResult::kFailure,
                             mojo::NullRemote());
     return;
@@ -260,15 +282,19 @@ void Euicc::OnProfileInstallResult(
     std::unique_ptr<CellularInhibitor::InhibitLock> inhibit_lock,
     HermesResponseStatus status,
     const dbus::ObjectPath* profile_path) {
-  metrics::LogInstallViaQrCodeResult(status);
+  hermes_metrics::LogInstallViaQrCodeResult(status);
 
   if (status != HermesResponseStatus::kSuccess) {
     NET_LOG(ERROR) << "Error Installing profile status="
                    << static_cast<int>(status);
+    RecordInstallProfileViaQrCodeResult(
+        InstallProfileViaQrCodeResult::kHermesInstallFailed);
     std::move(callback).Run(InstallResultFromStatus(status),
                             mojo::NullRemote());
     return;
   }
+
+  RecordInstallProfileViaQrCodeResult(InstallProfileViaQrCodeResult::kSuccess);
 
   install_calls_pending_connect_.emplace(*profile_path, std::move(callback));
   esim_manager_->cellular_connection_handler()
@@ -352,6 +378,8 @@ void Euicc::PerformRequestPendingProfiles(
   if (!inhibit_lock) {
     NET_LOG(ERROR) << "Error requesting installed profiles. Path: "
                    << path_.value();
+    RecordRequestPendingProfilesResult(
+        RequestPendingProfilesResult::kInhibitFailed);
     std::move(callback).Run(mojom::ESimOperationResult::kFailure);
     return;
   }
@@ -368,13 +396,29 @@ void Euicc::OnRequestPendingProfilesResult(
     RequestPendingProfilesCallback callback,
     std::unique_ptr<CellularInhibitor::InhibitLock> inhibit_lock,
     HermesResponseStatus status) {
+  hermes_metrics::LogRequestPendingProfilesResult(status);
+
+  RequestPendingProfilesResult metrics_result;
+  mojom::ESimOperationResult operation_result;
+
   if (status != HermesResponseStatus::kSuccess) {
     NET_LOG(ERROR) << "Request Pending events failed status="
                    << static_cast<int>(status);
+    metrics_result = RequestPendingProfilesResult::kHermesRequestFailed;
+    operation_result = mojom::ESimOperationResult::kFailure;
+  } else {
+    metrics_result = RequestPendingProfilesResult::kSuccess;
+    operation_result = mojom::ESimOperationResult::kSuccess;
   }
-  std::move(callback).Run(status == HermesResponseStatus::kSuccess
-                              ? mojom::ESimOperationResult::kSuccess
-                              : mojom::ESimOperationResult::kFailure);
+
+  RecordRequestPendingProfilesResult(metrics_result);
+
+  // TODO(crbug.com/1216693) Update with more robust way of waiting for eSIM
+  // profile objects to be loaded.
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::BindOnce(std::move(callback), operation_result),
+      kPendingProfileRefreshDelay);
+
   // inhibit_lock goes out of scope and will uninhibit automatically.
 }
 

@@ -280,6 +280,7 @@
 <translation id="3207953481422525583">Пайдаланушы параметрлері</translation>
 <translation id="3217205077783620295">Дыбыс деңгейі қосылып тұр. Түймені қайта бассаңыз, дауыс өшеді.</translation>
 <translation id="3226991577105957773">Тағы <ph name="COUNT" /></translation>
+<translation id="324366796737464147">Шуды өшіру</translation>
 <translation id="3249513730522716925"><ph name="WINDOW_TITLE" /> терезесі <ph name="ACTIVE_DESK" /> үстелінен <ph name="TARGET_DESK" /> үстеліне көшірілді.</translation>
 <translation id="3255483164551725916">Сен не істей аласың?</translation>
 <translation id="3269597722229482060">Тінтуірдің оң жақ түймесін басу</translation>
@@ -817,7 +818,7 @@
 <translation id="7607002721634913082">Кідіртілген</translation>
 <translation id="7618774594543487847">Бейтарап</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
-<translation id="7631906263969450674">Маркер</translation>
+<translation id="7631906263969450674">Фломастер</translation>
 <translation id="7633755430369750696">Nearby Share параметрлерін көрсету.</translation>
 <translation id="7641938616688887143">Жазу</translation>
 <translation id="7642647758716480637"><ph name="NETWORK_NAME" /> параметрлерін ашу, күйі: <ph name="CONNECTION_STATUS" /></translation>

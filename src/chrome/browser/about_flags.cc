@@ -1509,11 +1509,15 @@ const FeatureEntry::FeatureParam kNtpChromeCartModuleAbandonedCartDiscount[] = {
     {ntp_features::kNtpChromeCartModuleAbandonedCartDiscountParam, "true"},
     {"partner-merchant-pattern",
      "(electronicexpress.com|zazzle.com|wish.com|homesquare.com)"}};
+const FeatureEntry::FeatureParam kNtpChromeCartModuleHeuristicsImprovement[] = {
+    {ntp_features::kNtpChromeCartModuleHeuristicsImprovementParam, "true"}};
 const FeatureEntry::FeatureVariation kNtpChromeCartModuleVariations[] = {
     {"- Fake Data And Discount", kNtpChromeCartModuleFakeData,
      base::size(kNtpChromeCartModuleFakeData), nullptr},
     {"- Abandoned Cart Discount", kNtpChromeCartModuleAbandonedCartDiscount,
      base::size(kNtpChromeCartModuleAbandonedCartDiscount), nullptr},
+    {"- Heuristics Improvement", kNtpChromeCartModuleHeuristicsImprovement,
+     base::size(kNtpChromeCartModuleHeuristicsImprovement), nullptr},
 };
 
 const FeatureEntry::FeatureParam kNtpRecipeTasksModuleFakeData[] = {
@@ -2662,6 +2666,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-webrtc-hybrid-agc", flag_descriptions::kWebrtcHybridAgcName,
      flag_descriptions::kWebrtcHybridAgcDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebRtcHybridAgc)},
+    {"enable-webrtc-analog-agc-clipping-control",
+     flag_descriptions::kWebrtcAnalogAgcClippingControlName,
+     flag_descriptions::kWebrtcAnalogAgcClippingControlDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kWebRtcAnalogAgcClippingControl)},
     {"enable-webrtc-hide-local-ips-with-mdns",
      flag_descriptions::kWebrtcHideLocalIpsWithMdnsName,
      flag_descriptions::kWebrtcHideLocalIpsWithMdnsDecription, kOsDesktop,
@@ -5446,6 +5454,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAssistantLauncherIntegrationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kEnableAssistantSearch)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    {"strict-extension-isolation",
+     flag_descriptions::kStrictExtensionIsolationName,
+     flag_descriptions::kStrictExtensionIsolationDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(extensions_features::kStrictExtensionIsolation)},
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
     {"strict-origin-isolation", flag_descriptions::kStrictOriginIsolationName,
      flag_descriptions::kStrictOriginIsolationDescription, kOsAll,

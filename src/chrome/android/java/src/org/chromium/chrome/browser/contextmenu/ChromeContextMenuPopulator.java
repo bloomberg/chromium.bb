@@ -66,6 +66,7 @@ import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.ContentUrlConstants;
+import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
@@ -132,8 +133,8 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                 Action.COPY_EMAIL_ADDRESS, Action.COPY_LINK_TEXT, Action.SAVE_LINK,
                 Action.SAVE_IMAGE, Action.OPEN_IMAGE, Action.OPEN_IMAGE_IN_NEW_TAB,
                 Action.SEARCH_BY_IMAGE, Action.LOAD_ORIGINAL_IMAGE, Action.SAVE_VIDEO,
-                Action.SHARE_IMAGE, Action.OPEN_IN_OTHER_WINDOW, Action.SEND_EMAIL,
-                Action.ADD_TO_CONTACTS, Action.CALL, Action.SEND_TEXT_MESSAGE,
+                Action.SHARE_IMAGE, Action.OPEN_IN_OTHER_WINDOW, Action.OPEN_IN_NEW_WINDOW,
+                Action.SEND_EMAIL, Action.ADD_TO_CONTACTS, Action.CALL, Action.SEND_TEXT_MESSAGE,
                 Action.COPY_PHONE_NUMBER, Action.OPEN_IN_NEW_CHROME_TAB,
                 Action.OPEN_IN_CHROME_INCOGNITO_TAB, Action.OPEN_IN_BROWSER, Action.OPEN_IN_CHROME,
                 Action.SHARE_LINK, Action.OPEN_IN_EPHEMERAL_TAB, Action.OPEN_IMAGE_IN_EPHEMERAL_TAB,
@@ -141,7 +142,8 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                 Action.COPY_IMAGE, Action.SHOP_SIMILAR_PRODUCTS, Action.SHOP_IMAGE_WITH_GOOGLE_LENS,
                 Action.SEARCH_SIMILAR_PRODUCTS, Action.READ_LATER,
                 Action.SHOP_WITH_GOOGLE_LENS_CHIP, Action.TRANSLATE_WITH_GOOGLE_LENS_CHIP,
-                Action.SHARE_HIGHLIGHT, Action.REMOVE_HIGHLIGHT, Action.LEARN_MORE})
+                Action.SHARE_HIGHLIGHT, Action.REMOVE_HIGHLIGHT, Action.LEARN_MORE,
+                Action.OPEN_IN_NEW_TAB_IN_GROUP})
         @Retention(RetentionPolicy.SOURCE)
         public @interface Action {
             int OPEN_IN_NEW_TAB = 0;
@@ -183,7 +185,9 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             int SHARE_HIGHLIGHT = 36;
             int REMOVE_HIGHLIGHT = 37;
             int LEARN_MORE = 38;
-            int NUM_ENTRIES = 39;
+            int OPEN_IN_NEW_TAB_IN_GROUP = 39;
+            int OPEN_IN_NEW_WINDOW = 40;
+            int NUM_ENTRIES = 41;
         }
 
         // Note: these values must match the ContextMenuSaveLinkType enum in enums.xml.
@@ -217,6 +221,37 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             int NUM_ENTRIES = 6;
         }
 
+        // This is used for recording the enum histogram:
+        //   * ContextMenu.SelectedOptionAndroid.ImageLink.NewTabOption
+        //   * ContextMenu.SelectedOptionAndroid.Link.NewTabOption
+        // OPEN_IN_NEW_TAB_FIRST_SELECTED_OPEN_IN_NEW_TAB means the context menu shows the
+        //   'open in new tab' item before the 'open in new tab in group' item and the
+        //   'open in new tab' item is selected.
+        // OPEN_IN_NEW_TAB_FIRST_SELECTED_OPEN_IN_NEW_TAB_IN_GROUP means the context menu shows the
+        //    'open in new tab' item before the 'open in new tab in group' item and the
+        //    'open in new tab in group' item is selected.
+        // OPEN_IN_NEW_TAB_IN_GROUP_FIRST_SELECTED_OPEN_IN_NEW_TAB means the context menu shows the
+        //    'open in new tab in group' item before the 'open in new tab' item and the
+        //    'open in new tab' item is selected.
+        // OPEN_IN_NEW_TAB_IN_GROUP_FIRST_SELECTED_OPEN_IN_NEW_TAB_IN_GROUP means the context menu
+        // shows the
+        //    'open in new tab in group' item before the 'open in new tab' item and the
+        //    'open in new tab in group' item is selected.
+        @IntDef({SelectedNewTabCreationEnum.OPEN_IN_NEW_TAB_FIRST_SELECTED_OPEN_IN_NEW_TAB,
+                SelectedNewTabCreationEnum.OPEN_IN_NEW_TAB_FIRST_SELECTED_OPEN_IN_NEW_TAB_IN_GROUP,
+                SelectedNewTabCreationEnum.OPEN_IN_NEW_TAB_IN_GROUP_FIRST_SELECTED_OPEN_IN_NEW_TAB,
+                SelectedNewTabCreationEnum
+                        .OPEN_IN_NEW_TAB_IN_GROUP_FIRST_SELECTED_OPEN_IN_NEW_TAB_IN_GROUP})
+        @Retention(RetentionPolicy.SOURCE)
+        private @interface SelectedNewTabCreationEnum {
+            int OPEN_IN_NEW_TAB_FIRST_SELECTED_OPEN_IN_NEW_TAB = 0;
+            int OPEN_IN_NEW_TAB_FIRST_SELECTED_OPEN_IN_NEW_TAB_IN_GROUP = 1;
+            int OPEN_IN_NEW_TAB_IN_GROUP_FIRST_SELECTED_OPEN_IN_NEW_TAB = 2;
+            int OPEN_IN_NEW_TAB_IN_GROUP_FIRST_SELECTED_OPEN_IN_NEW_TAB_IN_GROUP = 3;
+
+            int NUM_ENTRIES = 4;
+        }
+
         /**
          * Records a histogram entry when the user selects an item from a context menu.
          * @param params The ContextMenuParams describing the current context menu.
@@ -235,6 +270,16 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                 RecordHistogram.recordEnumeratedHistogram(
                         shoppingHistogramName, action, Action.NUM_ENTRIES);
             }
+
+            if (params.isAnchor() && !params.isVideo() && !params.getOpenedFromHighlight()) {
+                if (params.isImage()) {
+                    assert histogramName.equals("ContextMenu.SelectedOptionAndroid.ImageLink");
+                } else {
+                    assert histogramName.equals("ContextMenu.SelectedOptionAndroid.Link");
+                }
+                tryToRecordGroupRelatedHistogram(histogramName, action);
+            }
+
             if (params.isAnchor()
                     && PerformanceHintsObserver.getPerformanceClassForURL(
                                webContents, params.getLinkUrl())
@@ -242,6 +287,34 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                 RecordHistogram.recordEnumeratedHistogram(
                         histogramName + ".PerformanceClassFast", action, Action.NUM_ENTRIES);
             }
+        }
+
+        private static void tryToRecordGroupRelatedHistogram(
+                String histogramName, @Action int action) {
+            if (TabUiFeatureUtilities.ENABLE_TAB_GROUP_AUTO_CREATION.getValue()) return;
+
+            boolean openInGroupShownFirst =
+                    TabUiFeatureUtilities.showContextMenuOpenNewTabInGroupItemFirst();
+
+            @SelectedNewTabCreationEnum
+            int selectedNewTabCreationEnum =
+                    SelectedNewTabCreationEnum.OPEN_IN_NEW_TAB_FIRST_SELECTED_OPEN_IN_NEW_TAB;
+
+            if (action == Action.OPEN_IN_NEW_TAB) {
+                if (openInGroupShownFirst) {
+                    selectedNewTabCreationEnum =
+                            SelectedNewTabCreationEnum
+                                    .OPEN_IN_NEW_TAB_IN_GROUP_FIRST_SELECTED_OPEN_IN_NEW_TAB;
+                }
+            } else if (action == Action.OPEN_IN_NEW_TAB_IN_GROUP) {
+                selectedNewTabCreationEnum = openInGroupShownFirst
+                        ? SelectedNewTabCreationEnum
+                                  .OPEN_IN_NEW_TAB_IN_GROUP_FIRST_SELECTED_OPEN_IN_NEW_TAB_IN_GROUP
+                        : SelectedNewTabCreationEnum
+                                  .OPEN_IN_NEW_TAB_FIRST_SELECTED_OPEN_IN_NEW_TAB_IN_GROUP;
+            }
+            RecordHistogram.recordEnumeratedHistogram(histogramName + ".NewTabOption",
+                    selectedNewTabCreationEnum, SelectedNewTabCreationEnum.NUM_ENTRIES);
         }
 
         /**
@@ -325,6 +398,11 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                 params.getLinkUrl().getSpec());
     }
 
+    @VisibleForTesting
+    boolean isTabletScreen() {
+        return DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext);
+    }
+
     @Override
     public List<Pair<Integer, ModelList>> buildContextMenu() {
         boolean hasSaveImage = false;
@@ -351,9 +429,10 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                     if (!mItemDelegate.isIncognito() && mItemDelegate.isIncognitoSupported()) {
                         linkGroup.add(createListItem(Item.OPEN_IN_INCOGNITO_TAB));
                     }
-                    if (mItemDelegate.isOpenInOtherWindowSupported()
-                            || mItemDelegate.canEnterMultiWindowMode()) {
+                    if (mItemDelegate.isOpenInOtherWindowSupported()) {
                         linkGroup.add(createListItem(Item.OPEN_IN_OTHER_WINDOW));
+                    } else if (isTabletScreen() && mItemDelegate.canEnterMultiWindowMode()) {
+                        linkGroup.add(createListItem(Item.OPEN_IN_NEW_WINDOW));
                     }
                 }
                 if ((mMode == ContextMenuMode.NORMAL || mMode == ContextMenuMode.CUSTOM_TAB)
@@ -586,12 +665,17 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             recordContextMenuSelection(ContextMenuUma.Action.OPEN_IN_NEW_TAB);
             mItemDelegate.onOpenInNewTab(mParams.getUrl(), mParams.getReferrer());
         } else if (itemId == R.id.contextmenu_open_in_new_tab_in_group) {
+            recordContextMenuSelection(ContextMenuUma.Action.OPEN_IN_NEW_TAB_IN_GROUP);
             mItemDelegate.onOpenInNewTabInGroup(mParams.getUrl(), mParams.getReferrer());
         } else if (itemId == R.id.contextmenu_open_in_incognito_tab) {
             recordContextMenuSelection(ContextMenuUma.Action.OPEN_IN_INCOGNITO_TAB);
             mItemDelegate.onOpenInNewIncognitoTab(mParams.getUrl());
         } else if (itemId == R.id.contextmenu_open_in_other_window) {
             recordContextMenuSelection(ContextMenuUma.Action.OPEN_IN_OTHER_WINDOW);
+            mItemDelegate.onOpenInOtherWindow(mParams.getUrl(), mParams.getReferrer());
+        } else if (itemId == R.id.contextmenu_open_in_new_window) {
+            recordContextMenuSelection(ContextMenuUma.Action.OPEN_IN_NEW_WINDOW);
+            // |openInOtherWindow| can handle opening in a new window as well.
             mItemDelegate.onOpenInOtherWindow(mParams.getUrl(), mParams.getReferrer());
         } else if (itemId == R.id.contextmenu_open_in_ephemeral_tab) {
             recordContextMenuSelection(ContextMenuUma.Action.OPEN_IN_EPHEMERAL_TAB);

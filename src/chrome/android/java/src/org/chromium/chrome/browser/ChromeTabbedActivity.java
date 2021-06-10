@@ -56,7 +56,6 @@ import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.base.supplier.UnownedUserDataSupplier;
 import org.chromium.base.task.PostTask;
-import org.chromium.base.task.TaskTraits;
 import org.chromium.cc.input.BrowserControlsState;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler.IntentHandlerDelegate;
@@ -558,6 +557,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
             // LocaleManager can only function after the native library is loaded.
             mLocaleManager = AppHooks.get().getLocaleManager();
+            mLocaleManager.setSettingsLauncher(SETTINGS_LAUNCHER);
             mLocaleManager.showSearchEnginePromoIfNeeded(this, null);
 
             mTabModelOrchestrator.onNativeLibraryReady(getTabContentManager());
@@ -668,8 +668,9 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                         if (getCompositorViewHolder() == null) return null;
                         return getCompositorViewHolder().getLayerTitleCache();
                     },
-                    mOverviewModeBehaviorSupplier, mLayoutStateProviderOneshotSupplier,
+                    mOverviewModeBehaviorSupplier,
                     mRootUiCoordinator::getTopUiThemeColorProvider);
+            mLayoutStateProviderOneshotSupplier.set(mLayoutManager);
             // clang-format on
             mOverviewModeController = mLayoutManager;
         }
@@ -687,8 +688,9 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                         if (getCompositorViewHolder() == null) return null;
                         return getCompositorViewHolder().getLayerTitleCache();
                     },
-                    mOverviewModeBehaviorSupplier, mLayoutStateProviderOneshotSupplier,
+                    mOverviewModeBehaviorSupplier,
                     mRootUiCoordinator::getTopUiThemeColorProvider);
+            mLayoutStateProviderOneshotSupplier.set(mLayoutManager);
             // clang-format on
             mOverviewModeController = mLayoutManager;
         }
@@ -898,7 +900,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         }
 
         mLocaleManager.setSnackbarManager(getSnackbarManager());
-        mLocaleManager.setSettingsLauncher(SETTINGS_LAUNCHER);
         mLocaleManager.startObservingPhoneChanges();
 
         if (isWarmOnResume()) {
@@ -1847,7 +1848,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
             LauncherShortcutActivity.updateIncognitoShortcut(ChromeTabbedActivity.this);
 
-            ChromeSurveyController.initialize(mTabModelSelectorImpl);
+            ChromeSurveyController.initialize(mTabModelSelectorImpl, getLifecycleDispatcher());
 
             if (mStartSurfaceSupplier.get() != null && mOverviewShownOnStart) {
                 mStartSurfaceSupplier.get().onOverviewShownAtLaunch(getOnCreateTimestampMs());
@@ -2583,11 +2584,9 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     private void reportNewTabShortcutUsed(boolean isIncognito) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N_MR1) return;
 
-        PostTask.postTask(TaskTraits.USER_VISIBLE_MAY_BLOCK, () -> {
-            ShortcutManager shortcutManager = getSystemService(ShortcutManager.class);
-            shortcutManager.reportShortcutUsed(
-                    isIncognito ? "new-incognito-tab-shortcut" : "new-tab-shortcut");
-        });
+        ShortcutManager shortcutManager = getSystemService(ShortcutManager.class);
+        shortcutManager.reportShortcutUsed(
+                isIncognito ? "new-incognito-tab-shortcut" : "new-tab-shortcut");
     }
 
     @VisibleForTesting

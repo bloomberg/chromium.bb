@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.text.TextUtils;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.CommandLine;
@@ -25,6 +26,7 @@ import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.infobar.SurveyInfoBar;
 import org.chromium.chrome.browser.infobar.SurveyInfoBarDelegate;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImpl;
@@ -51,15 +53,18 @@ import java.util.Random;
  */
 public class ChromeSurveyController implements InfoBarAnimationListener {
     private static final String TAG = "ChromeSurveyCtrler";
-    private static final long REQUIRED_VISIBILITY_DURATION_MS = 5000;
+    private static final int DOWNLOAD_ATTEMPTS_HIST_NUM_BUCKETS = 20;
 
     @VisibleForTesting
+    static final long REQUIRED_VISIBILITY_DURATION_MS = 5000;
+    @VisibleForTesting
     public static final String COMMAND_LINE_PARAM_NAME = "survey_override_site_id";
+    @VisibleForTesting
+    static final String MAX_DOWNLOAD_ATTEMPTS = "max-download-attempts";
     @VisibleForTesting
     static final String MAX_NUMBER = "max-number";
     @VisibleForTesting
     static final String SITE_ID_PARAM_NAME = "site-id";
-
     private static boolean sForceUmaEnabledForTesting;
 
     /**
@@ -108,12 +113,18 @@ public class ChromeSurveyController implements InfoBarAnimationListener {
 
     private final String mTriggerId;
     private final String mPrefKeyPromptDisplayed;
+    private final String mPrefKeyDownloadAttempts;
+    private final @Nullable ActivityLifecycleDispatcher mLifecycleDispatcher;
 
     @VisibleForTesting
-    ChromeSurveyController(String triggerId) {
+    ChromeSurveyController(
+            String triggerId, @Nullable ActivityLifecycleDispatcher lifecycleDispatcher) {
         mTriggerId = triggerId;
         mPrefKeyPromptDisplayed =
                 ChromePreferenceKeys.CHROME_SURVEY_PROMPT_DISPLAYED_TIMESTAMP.createKey(mTriggerId);
+        mPrefKeyDownloadAttempts =
+                ChromePreferenceKeys.CHROME_SURVEY_DOWNLOAD_ATTEMPTS.createKey(mTriggerId);
+        mLifecycleDispatcher = lifecycleDispatcher;
     }
 
     /**
@@ -121,11 +132,12 @@ public class ChromeSurveyController implements InfoBarAnimationListener {
      * @param tabModelSelector The tab model selector to access the tab on which the survey will be
      *                         shown.
      */
-    public static void initialize(TabModelSelector tabModelSelector) {
+    public static void initialize(TabModelSelector tabModelSelector,
+            @Nullable ActivityLifecycleDispatcher lifecycleDispatcher) {
         assert tabModelSelector != null;
         if (!isSurveyEnabled() || TextUtils.isEmpty(getTriggerId())) return;
         new StartDownloadIfEligibleTask(
-                new ChromeSurveyController(getTriggerId()), tabModelSelector)
+                new ChromeSurveyController(getTriggerId(), lifecycleDispatcher), tabModelSelector)
                 .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
@@ -257,6 +269,19 @@ public class ChromeSurveyController implements InfoBarAnimationListener {
         return false;
     }
 
+    private void recordDownloadAttempted() {
+        SharedPreferencesManager.getInstance().incrementInt(mPrefKeyDownloadAttempts);
+    }
+
+    /** Return whether the number of download attempts falls within the max cap. */
+    private boolean isDownloadAttemptAllowed() {
+        int maxDownloadAttempts = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                ChromeFeatureList.CHROME_SURVEY_NEXT_ANDROID, MAX_DOWNLOAD_ATTEMPTS, 0);
+        int downloadAttemptsMade =
+                SharedPreferencesManager.getInstance().readInt(mPrefKeyDownloadAttempts, 0);
+        return maxDownloadAttempts <= 0 || downloadAttemptsMade < maxDownloadAttempts;
+    }
+
     /**
      * Checks if the tab is valid for a survey (i.e. not null, no null webcontents & not incognito).
      * @param tab The tab to be checked.
@@ -380,12 +405,18 @@ public class ChromeSurveyController implements InfoBarAnimationListener {
             public void onSurveyTriggered() {
                 recordInfoBarClosingState(InfoBarClosingState.ACCEPTED_SURVEY);
                 recordInfoBarDisplayed();
+                recordSurveyAccepted();
             }
 
             @Override
             public String getSurveyPromptString() {
                 return ContextUtils.getApplicationContext().getString(
                         R.string.chrome_survey_prompt);
+            }
+
+            @Override
+            public ActivityLifecycleDispatcher getLifecycleDispatcher() {
+                return mLifecycleDispatcher;
             }
         };
     }
@@ -422,6 +453,14 @@ public class ChromeSurveyController implements InfoBarAnimationListener {
                 "Android.Survey.InfoBarClosingState", value, InfoBarClosingState.NUM_ENTRIES);
     }
 
+    private void recordSurveyAccepted() {
+        int downloadAttemptsMade =
+                SharedPreferencesManager.getInstance().readInt(mPrefKeyDownloadAttempts, 0);
+        RecordHistogram.recordLinearCountHistogram("Android.Survey.DownloadAttemptsBeforeAccepted",
+                downloadAttemptsMade, 1, DOWNLOAD_ATTEMPTS_HIST_NUM_BUCKETS,
+                DOWNLOAD_ATTEMPTS_HIST_NUM_BUCKETS + 1);
+    }
+
     static class StartDownloadIfEligibleTask extends AsyncTask<Boolean> {
         ChromeSurveyController mController;
         final TabModelSelector mSelector;
@@ -441,13 +480,16 @@ public class ChromeSurveyController implements InfoBarAnimationListener {
                         FilteringResult.FORCE_SURVEY_ON_COMMAND_PRESENT);
                 return true;
             }
-            return !mController.hasInfoBarBeenDisplayed()
+            return !mController.hasInfoBarBeenDisplayed() && mController.isDownloadAttemptAllowed()
                     && mController.isRandomlySelectedForSurvey();
         }
 
         @Override
         protected void onPostExecute(Boolean result) {
-            if (result) mController.startDownload(ContextUtils.getApplicationContext(), mSelector);
+            if (result) {
+                mController.startDownload(ContextUtils.getApplicationContext(), mSelector);
+                mController.recordDownloadAttempted();
+            }
         }
     }
 

@@ -815,16 +815,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
         mLayoutStateObserver = new LayoutStateProvider.LayoutStateObserver() {
             @Override
             public void onStartedShowing(@LayoutType int layoutType, boolean showToolbar) {
-                if (layoutType == LayoutType.TAB_SWITCHER) {
-                    mLocationBarModel.setIsShowingTabSwitcher(true);
-                    mToolbar.setTabSwitcherMode(true, showToolbar, false);
-                    updateButtonStatus();
-                    if (mLocationBarModel.shouldShowLocationBarInOverviewMode()) {
-                        assert mLocationBar instanceof LocationBarCoordinator;
-                        ((LocationBarCoordinator) mLocationBar).startAutocompletePrefetch();
-                    }
-                }
-                mToolbar.setContentAttached(layoutType == LayoutType.BROWSING);
+                updateForLayout(layoutType, showToolbar);
             }
 
             @Override
@@ -846,11 +837,6 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                     mToolbar.onTabSwitcherTransitionFinished();
                     updateButtonStatus();
                 }
-            }
-
-            @Override
-            public void onFinishedShowing(@LayoutType int layoutType) {
-                maybeFocusOmnibox(layoutType, mActivityTabProvider.get());
             }
         };
 
@@ -895,6 +881,26 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
         }));
 
         TraceEvent.end("ToolbarManager.ToolbarManager");
+    }
+
+    /**
+     * Handle a layout change event.
+     * @param layoutType The layout being switched to.
+     * @param showToolbar Whether the toolbar should be shown.
+     */
+    private void updateForLayout(@LayoutType int layoutType, boolean showToolbar) {
+        if (layoutType == LayoutType.TAB_SWITCHER) {
+            mLocationBarModel.setIsShowingTabSwitcher(true);
+            mToolbar.setTabSwitcherMode(true, showToolbar, false);
+            updateButtonStatus();
+            if (mLocationBarModel.shouldShowLocationBarInOverviewMode()) {
+                assert mLocationBar instanceof LocationBarCoordinator;
+                ((LocationBarCoordinator) mLocationBar).startAutocompletePrefetch();
+            }
+        }
+        mToolbar.setContentAttached(layoutType == LayoutType.BROWSING);
+
+        maybeFocusOmnibox(layoutType, mActivityTabProvider.get());
     }
 
     /**
@@ -1771,6 +1777,15 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
 
         mLayoutStateProvider = layoutStateProvider;
         mLayoutStateProvider.addObserver(mLayoutStateObserver);
+
+        if (mLayoutStateProvider.isLayoutVisible(LayoutType.TAB_SWITCHER)) {
+            // TODO(1210431): We shouldn't need to post this. Instead we should wait until the
+            //                dependencies are ready. This logic was introduced to move asynchronous
+            //                observer events from the infra (LayoutManager) into the feature using
+            //                it.
+            mControlContainer.post(() -> updateForLayout(LayoutType.TAB_SWITCHER, true));
+        }
+
         mAppThemeColorProvider.setLayoutStateProvider(mLayoutStateProvider);
         mLocationBarModel.setLayoutStateProvider(mLayoutStateProvider);
         if (mBottomControlsCoordinatorSupplier.get() != null) {

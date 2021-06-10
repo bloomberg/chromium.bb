@@ -35,9 +35,13 @@
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller_util.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "components/session_manager/core/session_manager.h"
 #include "extensions/common/extension.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -47,6 +51,11 @@
 namespace {
 
 AppListClientImpl* g_app_list_client_instance = nullptr;
+
+// Parameters used by the time duration metrics.
+constexpr base::TimeDelta kTimeMetricsMin = base::TimeDelta::FromSeconds(1);
+constexpr base::TimeDelta kTimeMetricsMax = base::TimeDelta::FromDays(7);
+constexpr int kTimeMetricsBucketCount = 100;
 
 bool IsTabletMode() {
   return ash::TabletMode::Get() && ash::TabletMode::Get()->InTabletMode();
@@ -60,6 +69,7 @@ AppListClientImpl::AppListClientImpl()
           std::make_unique<AppListNotifierImpl>(app_list_controller_)) {
   app_list_controller_->SetClient(this);
   user_manager::UserManager::Get()->AddSessionStateObserver(this);
+  session_manager::SessionManager::Get()->AddObserver(this);
 
   DCHECK(!g_app_list_client_instance);
   g_app_list_client_instance = this;
@@ -68,7 +78,22 @@ AppListClientImpl::AppListClientImpl()
 AppListClientImpl::~AppListClientImpl() {
   SetProfile(nullptr);
 
-  user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
+  auto* user_manager = user_manager::UserManager::Get();
+  user_manager->RemoveSessionStateObserver(this);
+
+  // We assume that the current user is new if `state_for_new_user_` has value.
+  if (state_for_new_user_.has_value() &&
+      !state_for_new_user_->showing_recorded) {
+    DCHECK(user_manager->IsCurrentUserNew());
+
+    // Prefer the function to the macro because the usage data is recorded no
+    // more than once per second.
+    base::UmaHistogramEnumeration(
+        "Apps.AppListUsageByNewUsers",
+        AppListUsageStateByNewUsers::kNotUsedBeforeDestruction);
+  }
+
+  session_manager::SessionManager::Get()->RemoveObserver(this);
 
   DCHECK_EQ(this, g_app_list_client_instance);
   g_app_list_client_instance = nullptr;
@@ -148,6 +173,11 @@ void AppListClientImpl::OpenSearchResult(
       launched_from == ash::AppListLaunchedFrom::kLaunchedFromSearchBox)
     RecordZeroStateSuggestionOpenTypeHistogram(result->metrics_type());
 
+  if (launched_from == ash::AppListLaunchedFrom::kLaunchedFromSearchBox)
+    RecordOpenedResultFromSearchBox(result_type);
+
+  MaybeRecordLauncherAction(launched_from);
+
   // OpenResult may cause |result| to be deleted.
   search_controller_->OpenResult(result, event_flags);
 }
@@ -188,6 +218,8 @@ void AppListClientImpl::ViewClosing() {
 }
 
 void AppListClientImpl::ViewShown(int64_t display_id) {
+  MaybeRecordViewShown();
+
   if (current_model_updater_) {
     base::RecordAction(base::UserMetricsAction("Launcher_Show"));
     base::UmaHistogramSparse("Apps.AppListBadgedAppsCount",
@@ -224,6 +256,7 @@ void AppListClientImpl::ActivateItem(int profile_id,
     search_controller_->Train(std::move(launch_data));
   }
 
+  MaybeRecordLauncherAction(ash::AppListLaunchedFrom::kLaunchedFromGrid);
   requested_model_updater->ActivateChromeItem(id, event_flags);
 }
 
@@ -315,6 +348,21 @@ void AppListClientImpl::OnQuickSettingsChanged(
 }
 
 void AppListClientImpl::ActiveUserChanged(user_manager::User* active_user) {
+  if (user_manager::UserManager::Get()->IsCurrentUserNew()) {
+    // In tests, the user before switching and the one after switching may
+    // be both new. It should not happen in the real world.
+    state_for_new_user_ = StateForNewUser();
+  } else if (state_for_new_user_) {
+    if (!state_for_new_user_->showing_recorded) {
+      // We assume that the previous user before switching was new if
+      // `state_for_new_user_` is not null.
+      base::UmaHistogramEnumeration(
+          "Apps.AppListUsageByNewUsers",
+          AppListUsageStateByNewUsers::kNotUsedBeforeSwitchingAccounts);
+    }
+    state_for_new_user_.reset();
+  }
+
   if (!active_user->is_profile_created())
     return;
 
@@ -398,6 +446,22 @@ app_list::SearchController* AppListClientImpl::search_controller() {
 
 AppListModelUpdater* AppListClientImpl::GetModelUpdaterForTest() {
   return current_model_updater_;
+}
+
+void AppListClientImpl::InitializeAsIfNewUserLoginForTest() {
+  new_user_session_activation_time_ = base::Time::Now();
+  state_for_new_user_ = StateForNewUser();
+}
+
+void AppListClientImpl::OnSessionStateChanged() {
+  // Return early if the current user is not new or the session is not active.
+  if (!user_manager::UserManager::Get()->IsCurrentUserNew() ||
+      session_manager::SessionManager::Get()->session_state() !=
+          session_manager::SessionState::ACTIVE) {
+    return;
+  }
+
+  new_user_session_activation_time_ = base::Time::Now();
 }
 
 void AppListClientImpl::OnTemplateURLServiceChanged() {
@@ -492,4 +556,109 @@ void AppListClientImpl::NotifySearchResultsForLogging(
 
 ash::AppListNotifier* AppListClientImpl::GetNotifier() {
   return app_list_notifier_.get();
+}
+
+void AppListClientImpl::MaybeRecordViewShown() {
+  // Record the time duration between session activation and the first launcher
+  // showing if the current user is new.
+
+  // We do not need to worry about the scenario below:
+  // log in to a new account -> switch to another account -> switch back to the
+  // initial account-> show the launcher
+  // In this case, when showing the launcher, the current user is not
+  // new anymore.
+  // TODO(https://crbug.com/1211620): If this bug is fixed, we might need to
+  // do some changes here.
+  if (!user_manager::UserManager::Get()->IsCurrentUserNew()) {
+    DCHECK(!state_for_new_user_);
+    return;
+  }
+
+  if (state_for_new_user_->showing_recorded) {
+    // Showing launcher was recorded before so return early.
+    return;
+  }
+
+  state_for_new_user_->showing_recorded = true;
+
+  DCHECK(new_user_session_activation_time_.has_value());
+  const base::TimeDelta opening_duration =
+      base::Time::Now() - *new_user_session_activation_time_;
+  if (opening_duration >= base::TimeDelta()) {
+    // `base::Time` may skew. Therefore only record when the time duration is
+    // non-negative.
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        /*name=*/
+        "Apps."
+        "TimeDurationBetweenNewUserSessionActivationAndFirstLauncherOpening",
+        /*sample=*/opening_duration, kTimeMetricsMin, kTimeMetricsMax,
+        kTimeMetricsBucketCount);
+  }
+}
+
+void AppListClientImpl::RecordOpenedResultFromSearchBox(
+    ash::AppListSearchResultType result_type) {
+  // Check whether there is any Chrome non-app browser window open and not
+  // minimized.
+  bool non_app_browser_open_and_not_minimzed = false;
+  for (auto* browser : *BrowserList::GetInstance()) {
+    if (browser->type() != Browser::TYPE_NORMAL ||
+        browser->window()->IsMinimized()) {
+      // Skip if `browser` is not a normal browser or `browser` is minimized.
+      continue;
+    }
+
+    non_app_browser_open_and_not_minimzed = true;
+    break;
+  }
+
+  if (non_app_browser_open_and_not_minimzed) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Apps.OpenedAppListSearchResultFromSearchBox."
+        "ExistNonAppBrowserWindowOpenAndNotMinimized",
+        result_type);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Apps.OpenedAppListSearchResultFromSearchBox."
+        "NonAppBrowserWindowsEitherClosedOrMinimized",
+        result_type);
+  }
+}
+
+void AppListClientImpl::MaybeRecordLauncherAction(
+    ash::AppListLaunchedFrom launched_from) {
+  DCHECK(launched_from == ash::AppListLaunchedFrom::kLaunchedFromGrid ||
+         launched_from ==
+             ash::AppListLaunchedFrom::kLaunchedFromSuggestionChip ||
+         launched_from == ash::AppListLaunchedFrom::kLaunchedFromSearchBox);
+
+  // Return early if the current user is not new.
+  if (!user_manager::UserManager::Get()->IsCurrentUserNew()) {
+    DCHECK(!state_for_new_user_);
+    return;
+  }
+
+  // The launcher action has been recorded so return early.
+  if (state_for_new_user_->action_recorded)
+    return;
+
+  state_for_new_user_->action_recorded = true;
+  base::UmaHistogramEnumeration("Apps.FirstLauncherActionByNewUsers",
+                                launched_from);
+
+  DCHECK(new_user_session_activation_time_.has_value());
+  const base::TimeDelta launcher_action_duration =
+      base::Time::Now() - *new_user_session_activation_time_;
+  if (launcher_action_duration >= base::TimeDelta()) {
+    // `base::Time` may skew. Therefore only record when the time duration is
+    // non-negative.
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        /*name=*/
+        "Apps.TimeBetweenNewUserSessionActivationAndFirstLauncherAction",
+        /*sample=*/launcher_action_duration, kTimeMetricsMin, kTimeMetricsMax,
+        kTimeMetricsBucketCount);
+  }
+
+  base::UmaHistogramEnumeration("Apps.AppListUsageByNewUsers",
+                                AppListUsageStateByNewUsers::kUsed);
 }

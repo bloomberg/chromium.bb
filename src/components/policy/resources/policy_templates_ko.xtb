@@ -3685,9 +3685,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 시스템 알림을 사�
       정책을 사용 중지하거나 설정하지 않으면 고급 배터리 충전 모드가 사용 중지됩니다.
 
       사용자가 이 설정을 변경할 수 없습니다.</translation>
-<translation id="5845686745936515940">모든 쿠키를 기존 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 동작으로 되돌릴 수 있습니다. 기존 동작으로 되돌리면 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 속성을 지정하지 않은 쿠키가 '<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />'인 것처럼 처리되고 '<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />' 쿠키가 '<ph name="ATTRIBUTE_SECURE_NAME" />' 속성을 전달하지 않아도 되며, 두 사이트가 동일한 사이트인지 평가할 때 스킴 비교를 건너뜁니다. https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies에서 전체 설명을 확인하세요.
-
-          정책을 설정하지 않으면 쿠키의 기본 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 동작은 <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> 기능, <ph name="FEATURE_NAME_SAMESITE_NONE_MUST_BE_SECURE" /> 기능, <ph name="FEATURE_NAME_SCHEMEFUL_SAME_SITE" /> 기능의 사용자 개인 구성에 따라 달라지며, 이러한 구성은 공개 실험에서 또는 <ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> 플래그, <ph name="FLAG_NAME_SAMESITE_NONE_MUST_BE_SECURE" /> 플래그, <ph name="FLAG_NAME_SCHEMEFUL_SAME_SITE" /> 플래그를 각각 사용 설정 또는 사용 중지하여 설정할 수 있습니다.</translation>
 <translation id="5848438019586925019">키 쌍 생성을 위한 알고리즘입니다.</translation>
 <translation id="585270638818921943">사용자가 신뢰할 수 없는 출처의 Android 앱을 사용하는 것을 방지</translation>
 <translation id="5859344336338527083">정책을 설정하여 확장 프로그램, 앱, 테마를 설치할 수 있는 URL을 지정합니다. <ph name="PRODUCT_NAME" /> 21 이전에는 사용자가 *.crx 파일 링크를 클릭하면 <ph name="PRODUCT_NAME" />에서 몇 가지 경고 후 파일을 설치하도록 허용했습니다. 이후에는 파일을 다운로드하여 <ph name="PRODUCT_NAME" /> 설정 페이지로 드래그해야 합니다. 이 설정을 사용하면 특정 URL에서 더 간편한 기존의 설치 과정을 따를 수 있습니다.
@@ -3934,6 +3931,9 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 시스템 알림을 사�
 
       정책을 설정하지 않으면 사용자가 원하는 대로 브라우저의 테마를 변경할 수 있습니다.</translation>
 <translation id="6195802366906945965">서버 인증서 확인을 위해 내장 인증서 확인 기능을 사용할지 결정</translation>
+<translation id="6198947200418556248">이 정책은 지원 중단되었으므로 기존 쿠키 동작이 계속 필요하면 <ph name="LEGACY_SAMESITE_COOKIE_BEHAVIOR_ENABLED_FOR_DOMAIN_LIST_POLICY_NAME" />를 사용하세요. 모든 쿠키를 기존 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 동작으로 되돌릴 수 있습니다. 기존 동작으로 되돌리면 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 속성이 지정되지 않은 쿠키가 "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />"인 것처럼 처리되고, "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />" 쿠키가 "<ph name="ATTRIBUTE_SECURE_NAME" />" 속성을 전달하지 않아도 되며, 두 사이트가 동일한 사이트인지 평가할 때 스킴 비교를 건너뜁니다. https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies에서 전체 설명을 확인하세요.
+
+          정책을 설정하지 않으면 쿠키의 기본 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 동작은 <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> 기능, <ph name="FEATURE_NAME_SAMESITE_NONE_MUST_BE_SECURE" /> 기능, <ph name="FEATURE_NAME_SCHEMEFUL_SAME_SITE" /> 기능의 사용자 개인 구성에 따라 달라지며, 이러한 구성은 초기 체험판을 통해 또는 <ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> 플래그, <ph name="FLAG_NAME_SAMESITE_NONE_MUST_BE_SECURE" /> 플래그, <ph name="FLAG_NAME_SCHEMEFUL_SAME_SITE" /> 플래그를 각각 사용 설정 또는 사용 중지하여 설정할 수 있습니다.</translation>
 <translation id="6208896993204286313"><ph name="PRODUCT_NAME" /> 정책 정보 보고</translation>
 <translation id="6210259502936598222">OS 및 <ph name="PRODUCT_NAME" /> 버전 정보 보고</translation>
 <translation id="6212868225782276239">차단 목록에 있는 프린터를 제외한 모든 프린터가 표시됨</translation>
@@ -6298,6 +6298,7 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
       정책은 일시적인 조치로, 향후 <ph name="PRODUCT_NAME" /> 버전에서는 삭제될 예정입니다. 정책이 삭제되고 나면 <ph name="PRODUCT_NAME" />에서 항상 추가적인 DNS 유형을 쿼리할 수 있게 됩니다.</translation>
 <translation id="9167719789236691545"><ph name="PRODUCT_OS_NAME" /> 파일 앱에서 드라이브 사용 중지</translation>
 <translation id="9187743794267626640">외부 저장소 마운트 사용 중지</translation>
+<translation id="9190257149451871588">포트 6566(2021년 10월 15일에 만료됨)</translation>
 <translation id="9190456586252617675">이 정책은 어시스턴트 온보딩 환경의 모드를 제어합니다.
 
       이 정책을 설정하지 않거나 <ph name="ASSISTANT_ONBOARDING_MODE_DEFAULT" /> 값으로 설정하면 어시스턴트 온보딩 환경의 기본 모드가 사용됩니다.

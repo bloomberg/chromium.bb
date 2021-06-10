@@ -732,6 +732,7 @@
 <translation id="3631244953324577188">Біяметрыя</translation>
 <translation id="3633738897356909127">Кнопка "Абнавіць Chrome". Каб абнавіць браўзер Chrome праз яго налады, націсніце Enter</translation>
 <translation id="3634530185120165534">Латок 5</translation>
+<translation id="3637662659967048211">Захоўванне даных ва Уліковым запісе Google</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3642638418806704195">Праграма:</translation>
 <translation id="3650584904733503804">Праверка прайшла паспяхова</translation>
@@ -915,7 +916,7 @@
 <translation id="4275830172053184480">Перазапусціце прыладу</translation>
 <translation id="4277028893293644418">Скінуць пароль</translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Гэта картка захавана ў вашым Уліковым запісе Google}one{Гэтыя карткі захаваны ў вашым Уліковым запісе Google}few{Гэтыя карткі захаваны ў вашым Уліковым запісе Google}many{Гэтыя карткі захаваны ў вашым Уліковым запісе Google}other{Гэтыя карткі захаваны ў вашым Уліковым запісе Google}}</translation>
-<translation id="4287885627794386150">Навучанне FLoC можа выкарыстоўвацца на працягу пробнага перыяду, але яшчэ не было актывавана</translation>
+<translation id="4287885627794386150">Пробная версія функцыі можа выкарыстоўвацца, але яшчэ не актывавана</translation>
 <translation id="4297502707443874121">Мініяцюра старонкі <ph name="THUMBNAIL_PAGE" /></translation>
 <translation id="42981349822642051">Разгарнуць</translation>
 <translation id="4300675098767811073">Некалькі дзірак справа</translation>
@@ -1719,7 +1720,7 @@
 <translation id="7378594059915113390">Элементы кіравання мультымедыйным змесцівам</translation>
 <translation id="7378627244592794276">А вось i не!</translation>
 <translation id="7378810950367401542">/</translation>
-<translation id="7386364858855961704">Непрымяніма</translation>
+<translation id="7386364858855961704">Недастасоўна</translation>
 <translation id="7390545607259442187">Пацвердзіце картку</translation>
 <translation id="7392089738299859607">Абнавіць адрас</translation>
 <translation id="7399802613464275309">Праверка бяспекі</translation>

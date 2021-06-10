@@ -3627,6 +3627,7 @@
 <translation id="4901309472892185668"><ph name="EXPERIMENT_NAME" /> பரிசோதனைக்கான பரிசோதனை நிலையைத் தேர்ந்தெடுக்கவும்.</translation>
 <translation id="4902546322522096650">நெட்வொர்க்: <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, சிக்னல் வலிமை: <ph name="SIGNAL_STRENGTH" />%, இணை</translation>
 <translation id="49027928311173603">சேவையகத்திலிருந்து பதிவிறக்கிய கொள்கை தவறானது: <ph name="VALIDATION_ERROR" />.</translation>
+<translation id="4905269543817054577">மறைநிலைப் பயன்முறையில் தேடல் விவரங்கள் சேமிக்கப்படாது</translation>
 <translation id="4906490889887219338">நெட்வொர்க் கோப்புப் பகிர்வுகளை அமைத்தல் அல்லது நிர்வகித்தல். <ph name="LINK_BEGIN" />மேலும் அறிக<ph name="LINK_END" /></translation>
 <translation id="4906580650526544301">நெட்வொர்க்: <ph name="NETWORK_INDEX" /> / <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, <ph name="PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, சிக்னல் வலிமை: <ph name="SIGNAL_STRENGTH" />%, மொபைல் பேட்டரி <ph name="BATTERY_STATUS" />%, விவரங்கள்</translation>
 <translation id="4907161631261076876">பொதுவாக இந்தக் கோப்புப் பதிவிறக்கப்படுவதில்லை, மேலும் ஆபத்தானதாக இருக்கக்கூடும்.</translation>
@@ -4046,7 +4047,7 @@
 <translation id="538822246583124912">நிறுவனத்தின் கொள்கை மாறியுள்ளது. கருவிப்பட்டியில் ’பரிசோதனைகள்’ பட்டன் சேர்க்கப்பட்டது. பரிசோதனைகளை இயக்குவதற்கான உரையாடலைத் திறக்க, இந்த பட்டனைக் கிளிக் செய்யவும்.</translation>
 <translation id="5388885445722491159">சேர்க்கப்பட்டவை</translation>
 <translation id="5390100381392048184">ஒலியை இயக்க, தளங்களை அனுமதி</translation>
-<translation id="5390112241331447203">கருத்து அறிக்கைகளில் அனுப்பிய system_logs.txt கோப்பினைச் சேர்க்கும்.</translation>
+<translation id="5390112241331447203">கருத்து அறிக்கைகளில் அனுப்பிய system_logs.txt ஃபைலைச் சேர்க்கும்.</translation>
 <translation id="5390677308841849479">அடர் சிவப்பு &amp; ஆரஞ்சு</translation>
 <translation id="5390743329570580756">இதற்காக அனுப்பு:</translation>
 <translation id="5392192690789334093">அறிவிப்புகளை அனுப்ப அனுமதிக்கப்பட்டவை</translation>
@@ -4890,7 +4891,7 @@
 <translation id="6317318380444133405">இனி ஆதரிக்கப்படாது.</translation>
 <translation id="6317369057005134371">ஆப்ஸ் சாளரத்திற்காகக் காத்திருக்கிறது...</translation>
 <translation id="6317608858038767920">பிரத்தியேகப் பெயர்மாற்றி <ph name="INPUT_INDEX" /></translation>
-<translation id="6318125393809743217">கொள்கை உள்ளமைவுகளுடன் policies.json கோப்பினைச் சேர்.</translation>
+<translation id="6318125393809743217">கொள்கை உள்ளமைவுகளுடன் policies.json ஃபைலைச் சேர்.</translation>
 <translation id="6318407754858604988">பதிவிறக்கம் தொடங்கியது</translation>
 <translation id="6318944945640833942">பிரிண்டரைக் கண்டறிய இயலவில்லை. பிரிண்டர் முகரியை மீண்டும் உள்ளிடுக.</translation>
 <translation id="6321407676395378991">ஸ்கிரீன் சேவரை இயக்குதல்</translation>
@@ -5484,7 +5485,7 @@
 <translation id="6978121630131642226">தேடல் இன்ஜின்கள்</translation>
 <translation id="6979044105893951891">நிர்வகிக்கப்பட்ட கெஸ்ட் அமர்வுகளைத் தொடங்கும்/வெளியேறும் அனுமதி</translation>
 <translation id="6979440798594660689">முடக்கு (இயல்பு)</translation>
-<translation id="6979737339423435258">எல்லா நேரமும்</translation>
+<translation id="6979737339423435258">இதுவரை அனைத்தும்</translation>
 <translation id="6981553172137913845">தனிப்பட்ட முறையில் உலாவ, புள்ளிகள் ஐகான் மெனுவைக் கிளிக் செய்து மறைநிலைத் தாவலைத் திறக்கவும்</translation>
 <translation id="6981982820502123353">அணுகல் தன்மை</translation>
 <translation id="6983507711977005608">உடனடி இணைப்பு முறை நெட்வொர்க்கைத் துண்டி</translation>

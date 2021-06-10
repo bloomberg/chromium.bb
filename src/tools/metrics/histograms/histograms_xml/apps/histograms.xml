@@ -1414,6 +1414,22 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Apps.AppListUsageByNewUsers"
+    enum="AppListUsageStateByNewUsers" expires_after="M99">
+  <owner>andrewxu@chromium.org</owner>
+  <owner>tbarzic@chromium.org</owner>
+  <summary>
+    Records the launcher usage state during the session started by a new user
+    (i.e. the session completing the OOBE flow). This metric is recorded in the
+    following scenarios: (1) the launcher shows and the current user is new (2)
+    the launcher has never shown before launcher is destructed. Destruction can
+    be triggered by loging out accounts, shuting down the device or system
+    crashes and meanwhile the current user is new (3) the launcher has never
+    shown when the active user has changed and the previous active user was a
+    new user.
+  </summary>
+</histogram>
+
 <histogram name="Apps.AppsCount.{AppType}" units="Apps"
     expires_after="2021-10-28">
   <owner>dominickn@chromium.org</owner>
@@ -1594,6 +1610,19 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>cmumford@chromium.org</owner>
   <summary>
     Records the result of file handler registration for PWA on Windows
+  </summary>
+</histogram>
+
+<histogram name="Apps.FirstLauncherActionByNewUsers" enum="AppListLaunchedFrom"
+    expires_after="M99">
+  <owner>andrewxu@chromium.org</owner>
+  <owner>tbarzic@chromium.org</owner>
+  <summary>
+    Records which launcher action a new user takes for the first time within a
+    session. Launcher actions include the following: activating a launcher app
+    and opening a search result from either a launcher suggestion chip or the
+    search box. The metric is recorded when a launcher action performs on a new
+    user's session for the first time.
   </summary>
 </histogram>
 
@@ -1960,6 +1989,29 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram
+    name="Apps.OpenedAppListSearchResultFromSearchBox.
+          {AnyNonAppBrowserWindowOpenAndNotMinimized}"
+    enum="AppListSearchResult" expires_after="M99">
+  <owner>andrewxu@chromium.org</owner>
+  <owner>tbarzic@chromium.org</owner>
+  <summary>
+    Records the opened launcher search results from the search box. Data is
+    gathered when a search result is opened from the search box.
+    {AnyNonAppBrowserWindowOpenAndNotMinimized} denotes whether there is any
+    non-app browser window open and not minimized when a search result is
+    opened.
+  </summary>
+  <token key="AnyNonAppBrowserWindowOpenAndNotMinimized">
+    <variant name="ExistNonAppBrowserWindowOpenAndNotMinimized"
+        summary="there exists at least one non-app browser window which is
+                 open and not minimized"/>
+    <variant name="NonAppBrowserWindowsEitherClosedOrMinimized"
+        summary="there is no open non-app browser windows or all open non-app
+                 browser windows are minimized"/>
+  </token>
+</histogram>
+
 <histogram name="Apps.PaginationTransition.AnimationSmoothness" units="%"
     expires_after="2021-10-10">
 <!-- Name completed by histogram_suffixes name="TabletOrClamshellMode" -->
@@ -2059,6 +2111,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Records user actions on the full restore for crash notification, when the
     notification is closed.
+  </summary>
+</histogram>
+
+<histogram name="Apps.RestoreInitSetting" enum="RestoreSetting"
+    expires_after="2021-11-01">
+  <owner>nancylingwang@chromium.org</owner>
+  <owner>sammiequon@chromium.org</owner>
+  <summary>
+    Records the restore apps and pages preference setting, when a profile is
+    loaded.
   </summary>
 </histogram>
 
@@ -2214,6 +2276,32 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>newcomer@chromium.org</owner>
   <summary>
     Maximum latency of the presentation time of the app laucnher drag operation.
+  </summary>
+</histogram>
+
+<histogram
+    name="Apps.TimeBetweenNewUserSessionActivationAndFirstLauncherAction"
+    units="ms" expires_after="M99">
+  <owner>andrewxu@chromium.org</owner>
+  <owner>tbarzic@chromium.org</owner>
+  <summary>
+    The time duration between session activation and the first launcher action
+    on a new user session. Launcher actions include the following: activating a
+    launcher app and opening a search result from either a launcher suggestion
+    chip or the search box. This metric is recorded when a new user triggers the
+    launcher action for the first time.
+  </summary>
+</histogram>
+
+<histogram
+    name="Apps.TimeDurationBetweenNewUserSessionActivationAndFirstLauncherOpening"
+    units="ms" expires_after="M99">
+  <owner>andrewxu@chromium.org</owner>
+  <owner>tbarzic@chromium.org</owner>
+  <summary>
+    The time duration between session activation and opening the Launcher for
+    the first time on a new user session. This metric is recorded when a new
+    user opens the laucnher for the first time.
   </summary>
 </histogram>
 

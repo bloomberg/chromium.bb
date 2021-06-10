@@ -40,7 +40,7 @@ TriggerScriptCoordinator::TriggerScriptCoordinator(
     std::unique_ptr<StaticTriggerConditions> static_trigger_conditions,
     std::unique_ptr<DynamicTriggerConditions> dynamic_trigger_conditions,
     ukm::UkmRecorder* ukm_recorder,
-    ukm::SourceId ukm_source_id)
+    ukm::SourceId deeplink_ukm_source_id)
     : content::WebContentsObserver(web_contents),
       starter_delegate_(starter_delegate),
       ui_delegate_(starter_delegate->CreateTriggerScriptUiDelegate()),
@@ -50,7 +50,7 @@ TriggerScriptCoordinator::TriggerScriptCoordinator(
       static_trigger_conditions_(std::move(static_trigger_conditions)),
       dynamic_trigger_conditions_(std::move(dynamic_trigger_conditions)),
       ukm_recorder_(ukm_recorder),
-      ukm_source_id_(ukm_source_id) {}
+      ukm_source_id_(deeplink_ukm_source_id) {}
 
 TriggerScriptCoordinator::~TriggerScriptCoordinator() = default;
 
@@ -94,15 +94,19 @@ void TriggerScriptCoordinator::OnGetTriggerScripts(
   additional_allowed_domains_.clear();
   absl::optional<int> timeout_ms;
   int check_interval_ms;
-  if (!ProtocolUtils::ParseTriggerScripts(response, &trigger_scripts_,
-                                          &additional_allowed_domains_,
-                                          &check_interval_ms, &timeout_ms)) {
+  absl::optional<std::unique_ptr<ScriptParameters>> script_parameters;
+  if (!ProtocolUtils::ParseTriggerScripts(
+          response, &trigger_scripts_, &additional_allowed_domains_,
+          &check_interval_ms, &timeout_ms, &script_parameters)) {
     Stop(Metrics::TriggerScriptFinishedState::GET_ACTIONS_PARSE_ERROR);
     return;
   }
   if (trigger_scripts_.empty()) {
     Stop(Metrics::TriggerScriptFinishedState::NO_TRIGGER_SCRIPT_AVAILABLE);
     return;
+  }
+  if (script_parameters.has_value()) {
+    trigger_context_->SetScriptParameters(std::move(*script_parameters));
   }
   trigger_condition_check_interval_ =
       base::TimeDelta::FromMilliseconds(check_interval_ms);
@@ -321,6 +325,7 @@ void TriggerScriptCoordinator::DidFinishNavigation(
     return;
   }
 
+  ukm_source_id_ = ukm::GetSourceIdForWebContentsDocument(web_contents());
   dynamic_trigger_conditions_->SetURL(GetCurrentURL());
   RunOutOfScheduleTriggerConditionCheck();
 }

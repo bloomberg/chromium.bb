@@ -2342,6 +2342,11 @@ const char kSplitCacheByNetworkIsolationKeyDescription[] =
     "Partitions the HTTP Cache by (top-level site, current-frame site) to "
     "disallow cross-site tracking.";
 
+const char kStrictExtensionIsolationName[] = "Strict Extension Isolation";
+const char kStrictExtensionIsolationDescription[] =
+    "Experimental security mode that prevents extensions from sharing a "
+    "process with each other.";
+
 const char kStrictOriginIsolationName[] = "Strict-Origin-Isolation";
 const char kStrictOriginIsolationDescription[] =
     "Experimental security mode that strengthens the site isolation policy. "
@@ -2684,6 +2689,11 @@ const char kWebrtcHideLocalIpsWithMdnsDecription[] =
 const char kWebrtcHybridAgcName[] = "WebRTC hybrid Agc2/Agc1.";
 const char kWebrtcHybridAgcDescription[] =
     "WebRTC Agc2 digital adaptation with Agc1 analog adaptation.";
+
+const char kWebrtcAnalogAgcClippingControlName[] =
+    "WebRTC Agc1 analog clipping control.";
+const char kWebrtcAnalogAgcClippingControlDescription[] =
+    "WebRTC Agc1 analog clipping controller to reduce saturation.";
 
 const char kWebrtcHwDecodingName[] = "WebRTC hardware video decoding";
 const char kWebrtcHwDecodingDescription[] =

@@ -6,12 +6,14 @@
 
 #include "base/bind.h"
 #include "base/check.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/hermes/hermes_euicc_client.h"
 #include "chromeos/dbus/hermes/hermes_manager_client.h"
 #include "chromeos/dbus/hermes/hermes_profile_client.h"
 #include "chromeos/network/cellular_esim_profile_handler.h"
 #include "chromeos/network/cellular_inhibitor.h"
+#include "chromeos/network/hermes_metrics_util.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
@@ -73,6 +75,33 @@ absl::optional<dbus::ObjectPath> GetProfilePath(const std::string& eid,
 }
 
 }  // namespace
+
+// static
+absl::optional<std::string> CellularConnectionHandler::ResultToErrorString(
+    PrepareCellularConnectionResult result) {
+  switch (result) {
+    case PrepareCellularConnectionResult::kSuccess:
+      return absl::nullopt;
+
+    case PrepareCellularConnectionResult::kCouldNotFindNetworkWithIccid:
+      return NetworkConnectionHandler::kErrorNotFound;
+
+    case PrepareCellularConnectionResult::kInhibitFailed:
+      return NetworkConnectionHandler::kErrorCellularInhibitFailure;
+
+    case PrepareCellularConnectionResult::kCouldNotFindRelevantEuicc:
+      FALLTHROUGH;
+    case PrepareCellularConnectionResult::kRefreshProfilesFailed:
+      FALLTHROUGH;
+    case PrepareCellularConnectionResult::kCouldNotFindRelevantESimProfile:
+      FALLTHROUGH;
+    case PrepareCellularConnectionResult::kEnableProfileFailed:
+      return NetworkConnectionHandler::kErrorESimProfileIssue;
+
+    case PrepareCellularConnectionResult::kTimeoutWaitingForConnectable:
+      return NetworkConnectionHandler::kConnectableCellularTimeout;
+  }
+}
 
 CellularConnectionHandler::ConnectionRequestMetadata::ConnectionRequestMetadata(
     const std::string& iccid,
@@ -192,9 +221,12 @@ void CellularConnectionHandler::TransitionToConnectionState(
 }
 
 void CellularConnectionHandler::CompleteConnectionAttempt(
-    const absl::optional<std::string>& error_name) {
+    PrepareCellularConnectionResult result) {
   DCHECK(state_ != ConnectionState::kIdle);
   DCHECK(!request_queue_.empty());
+
+  base::UmaHistogramEnumeration(
+      "Network.Cellular.PrepareCellularConnection.OperationResult", result);
 
   if (timer_.IsRunning())
     timer_.Stop();
@@ -208,6 +240,8 @@ void CellularConnectionHandler::CompleteConnectionAttempt(
   std::unique_ptr<ConnectionRequestMetadata> metadata =
       std::move(request_queue_.front());
   request_queue_.pop();
+
+  const absl::optional<std::string> error_name = ResultToErrorString(result);
 
   if (error_name) {
     std::move(metadata->error_callback).Run(service_path, *error_name);
@@ -292,14 +326,15 @@ void CellularConnectionHandler::CheckServiceStatus() {
   if (!network_state) {
     NET_LOG(ERROR) << "Could not find network for ICCID "
                    << *request_queue_.front()->iccid;
-    CompleteConnectionAttempt(NetworkConnectionHandler::kErrorNotFound);
+    CompleteConnectionAttempt(
+        PrepareCellularConnectionResult::kCouldNotFindNetworkWithIccid);
     return;
   }
 
   if (CanInitiateShillConnection(network_state)) {
     NET_LOG(USER) << "Cellular service with ICCID " << iccid
                   << " is connectable";
-    CompleteConnectionAttempt(/*error_name=*/absl::nullopt);
+    CompleteConnectionAttempt(PrepareCellularConnectionResult::kSuccess);
     return;
   }
 
@@ -332,8 +367,7 @@ void CellularConnectionHandler::OnInhibitScanResult(
 
   if (!inhibit_lock) {
     NET_LOG(ERROR) << "eSIM connection flow failed to inhibit scan";
-    CompleteConnectionAttempt(
-        NetworkConnectionHandler::kErrorCellularInhibitFailure);
+    CompleteConnectionAttempt(PrepareCellularConnectionResult::kInhibitFailed);
     return;
   }
 
@@ -348,7 +382,8 @@ void CellularConnectionHandler::RequestInstalledProfiles() {
       GetEuiccPathForCurrentOperation();
   if (!euicc_path) {
     NET_LOG(ERROR) << "eSIM connection flow could not find relevant EUICC";
-    CompleteConnectionAttempt(NetworkConnectionHandler::kErrorESimProfileIssue);
+    CompleteConnectionAttempt(
+        PrepareCellularConnectionResult::kCouldNotFindRelevantEuicc);
     return;
   }
 
@@ -366,7 +401,8 @@ void CellularConnectionHandler::OnRefreshProfileListResult(
 
   if (!inhibit_lock) {
     NET_LOG(ERROR) << "eSIM connection flow failed to request profiles";
-    CompleteConnectionAttempt(NetworkConnectionHandler::kErrorESimProfileIssue);
+    CompleteConnectionAttempt(
+        PrepareCellularConnectionResult::kRefreshProfilesFailed);
     return;
   }
 
@@ -390,7 +426,8 @@ void CellularConnectionHandler::EnableProfile() {
       GetProfilePathForCurrentOperation();
   if (!profile_path) {
     NET_LOG(ERROR) << "eSIM connection flow could not find profile";
-    CompleteConnectionAttempt(NetworkConnectionHandler::kErrorESimProfileIssue);
+    CompleteConnectionAttempt(
+        PrepareCellularConnectionResult::kCouldNotFindRelevantESimProfile);
     return;
   }
 
@@ -404,6 +441,8 @@ void CellularConnectionHandler::OnEnableCarrierProfileResult(
     HermesResponseStatus status) {
   DCHECK_EQ(state_, ConnectionState::kEnablingProfile);
 
+  hermes_metrics::LogEnableProfileResult(status);
+
   // If we try to enable and "fail" with an already-enabled error, count this as
   // a success.
   bool success = status == HermesResponseStatus::kSuccess ||
@@ -411,7 +450,8 @@ void CellularConnectionHandler::OnEnableCarrierProfileResult(
 
   if (!success) {
     NET_LOG(ERROR) << "eSIM connection flow failed to enable profile";
-    CompleteConnectionAttempt(NetworkConnectionHandler::kErrorESimProfileIssue);
+    CompleteConnectionAttempt(
+        PrepareCellularConnectionResult::kEnableProfileFailed);
     return;
   }
 
@@ -433,7 +473,7 @@ void CellularConnectionHandler::CheckForConnectable() {
 
   const NetworkState* network_state = GetNetworkStateForCurrentOperation();
   if (network_state && CanInitiateShillConnection(network_state)) {
-    CompleteConnectionAttempt(/*error_name=*/absl::nullopt);
+    CompleteConnectionAttempt(PrepareCellularConnectionResult::kSuccess);
     return;
   }
 
@@ -450,9 +490,10 @@ void CellularConnectionHandler::CheckForConnectable() {
 
 void CellularConnectionHandler::OnWaitForConnectableTimeout() {
   DCHECK_EQ(state_, ConnectionState::kWaitingForConnectable);
-  NET_LOG(ERROR) << "eSIM connection timed out waiting for network to become "
-                 << "connectable";
-  CompleteConnectionAttempt(NetworkConnectionHandler::kErrorESimProfileIssue);
+  NET_LOG(ERROR) << "Cellular connection timed out waiting for network to "
+                    "become connectable";
+  CompleteConnectionAttempt(
+      PrepareCellularConnectionResult::kTimeoutWaitingForConnectable);
 }
 
 std::ostream& operator<<(

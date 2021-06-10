@@ -1608,6 +1608,7 @@ static_library("ui") {
       "//components/search_provider_logos",
       "//components/services/app_service/public/cpp:app_update",
       "//components/services/app_service/public/cpp:preferred_apps",
+      "//components/services/app_service/public/cpp:types",
       "//components/services/app_service/public/mojom",
       "//components/ui_metrics",
       "//components/url_formatter",
@@ -3502,6 +3503,13 @@ static_library("ui") {
       # This is the only component that can interact with gtk.
       deps += [ "//ui/gtk" ]
     }
+  }
+
+  if (is_win || is_mac || is_linux) {
+    sources += [
+      "startup/web_app_protocol_handling_startup_utils.cc",
+      "startup/web_app_protocol_handling_startup_utils.h",
+    ]
   }
 
   if (is_linux || is_chromeos) {  # Both desktop Linux and ChromeOS.

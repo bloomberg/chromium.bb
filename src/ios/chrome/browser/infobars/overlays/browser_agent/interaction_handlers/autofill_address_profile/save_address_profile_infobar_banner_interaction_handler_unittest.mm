@@ -43,8 +43,28 @@ class SaveAddressProfileInfobarBannerInteractionHandlerTest
   std::unique_ptr<InfoBarIOS> infobar_;
 };
 
-// Tests that BannerVisibilityChanged() InfobarDismissed() on the mock delegate.
-TEST_F(SaveAddressProfileInfobarBannerInteractionHandlerTest, Presentation) {
-  EXPECT_CALL(mock_delegate(), InfoBarDismissed());
+// Tests that user_decision is set to message timeout on BannerVisibilityChanged
+// with parameter value as false.
+TEST_F(SaveAddressProfileInfobarBannerInteractionHandlerTest,
+       BannerVisibilityFalse) {
   handler_.BannerVisibilityChanged(infobar_.get(), false);
+  EXPECT_EQ(mock_delegate().user_decision(),
+            autofill::AutofillClient::SaveAddressProfileOfferUserDecision::
+                kMessageTimeout);
+}
+
+// Tests that user_decision is set to message declined on BannerDismissedByUser.
+TEST_F(SaveAddressProfileInfobarBannerInteractionHandlerTest,
+       BannerDismissedByUser) {
+  handler_.BannerDismissedByUser(infobar_.get());
+  EXPECT_EQ(mock_delegate().user_decision(),
+            autofill::AutofillClient::SaveAddressProfileOfferUserDecision::
+                kMessageDeclined);
+
+  handler_.BannerVisibilityChanged(infobar_.get(), false);
+  // Expect the user decision to be message declined even when
+  // BannerVisibilityChanged is called.
+  EXPECT_EQ(mock_delegate().user_decision(),
+            autofill::AutofillClient::SaveAddressProfileOfferUserDecision::
+                kMessageDeclined);
 }

@@ -3285,6 +3285,12 @@ Unknown properties are collapsed to zero. -->
   <int value="10" label="Peeking To Half"/>
 </enum>
 
+<enum name="AppListUsageStateByNewUsers">
+  <int value="0" label="LAUNCHER_USED"/>
+  <int value="1" label="LAUNCHER_NOT_USED_BEFORE_DESTRUCTION"/>
+  <int value="2" label="LAUNCHER_NOT_USED_BEFORE_SWITCHING_ACCOUNTS"/>
+</enum>
+
 <enum name="AppListUserEvent">
   <int value="0" label="Impression"/>
   <int value="1" label="Launch"/>
@@ -13762,6 +13768,7 @@ Called by update_net_error_codes.py.-->
   <int value="36" label="Share an highlighted text"/>
   <int value="37" label="Remove an highlighted text"/>
   <int value="38" label="Learn more about the shared highlighting feature"/>
+  <int value="39" label="Open in new tab in group"/>
 </enum>
 
 <enum name="ContextMenuOptionDesktop">
@@ -32610,6 +32617,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3924" label="FontFaceDescentOverride"/>
   <int value="3925" label="FontFaceLineGapOverride"/>
   <int value="3926" label="FontFaceSizeAdjust"/>
+  <int value="3931" label="DocumentTransition"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -47625,6 +47633,7 @@ from previous Chrome versions.
   <int value="425072496" label="GridLayoutForNtpShortcuts:enabled"/>
   <int value="426199960" label="Commander:enabled"/>
   <int value="427184788" label="WebFeed:enabled"/>
+  <int value="427945554" label="StrictExtensionIsolation:enabled"/>
   <int value="430776375" label="TextureLayerSkipWaitForActivation:disabled"/>
   <int value="430959979" label="SyncStandaloneTransport:disabled"/>
   <int value="431691805" label="MediaDocumentDownloadButton:enabled"/>
@@ -47856,6 +47865,7 @@ from previous Chrome versions.
   <int value="630308195" label="SignInProfileCreation:enabled"/>
   <int value="630776247" label="USBGuard:disabled"/>
   <int value="630947363" label="touch-events"/>
+  <int value="631947048" label="WebRtcAnalogAgcClippingControl:disabled"/>
   <int value="632324382"
       label="ExperimentalAccessibilityDictationListening:disabled"/>
   <int value="632340413" label="network-settings-config"/>
@@ -48148,6 +48158,7 @@ from previous Chrome versions.
   <int value="877238334" label="WebUITabStripTabDragIntegration:enabled"/>
   <int value="877257918"
       label="InterestFeedV2ClickAndViewActionsConditionalUpload:enabled"/>
+  <int value="877907263" label="StrictExtensionIsolation:disabled"/>
   <int value="878773995" label="ChromeHomeBottomNavLabels:disabled"/>
   <int value="879699575" label="disable-gesture-tap-highlight"/>
   <int value="879992337" label="disable-pull-to-refresh-effect"/>
@@ -48811,6 +48822,7 @@ from previous Chrome versions.
       label="OmniboxRemoveSuggestionsFromClipboard:disabled"/>
   <int value="1442798825" label="enable-quic"/>
   <int value="1442830837" label="MemoryAblation:disabled"/>
+  <int value="1446066818" label="WebRtcAnalogAgcClippingControl:enabled"/>
   <int value="1446349255" label="ArcEnableUsap:disabled"/>
   <int value="1446946673" label="DesktopRestructuredLanguageSettings:disabled"/>
   <int value="1447295459" label="SyncPseudoUSSApps:enabled"/>
@@ -56057,6 +56069,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Disconnected"/>
 </enum>
 
+<enum name="NetworkCellularESimInstallViaQrCodeResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Inhibit failed"/>
+  <int value="2" label="Hermes install failed"/>
+</enum>
+
 <enum name="NetworkCellularESimProfileStatus">
   <int value="0" label="Active"/>
   <int value="1" label="ActiveWithPendingProfiles"/>
@@ -56064,10 +56082,52 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="NoProfiles"/>
 </enum>
 
+<enum name="NetworkCellularESimRequestPendingProfilesResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Inhibit failed"/>
+  <int value="2" label="Hermes request failed"/>
+</enum>
+
+<enum name="NetworkCellularESimUninstallOperationResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Network not found"/>
+  <int value="2" label="Disconnect failed"/>
+  <int value="3" label="Inhibit failed"/>
+  <int value="4" label="Refresh profiles failed"/>
+  <int value="5" label="Disable profile failed"/>
+  <int value="6" label="Uninstall profile failed"/>
+  <int value="7" label="Remove service failed"/>
+</enum>
+
+<enum name="NetworkCellularInhibitResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="UninhibitTimeout"/>
+  <int value="2" label="SetInhibitFailed"/>
+  <int value="3" label="SetInhibitTimeout"/>
+  <int value="4" label="SetInhibitNoDevice"/>
+</enum>
+
 <enum name="NetworkCellularOutOfCreditsReason">
   <int value="0" label="Connect-Disconnect Loop"/>
   <int value="1" label="TX-Queue Congestion"/>
   <int value="2" label="Elongated Time Wait"/>
+</enum>
+
+<enum name="NetworkCellularPrepareForConnectionResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Network not found"/>
+  <int value="2" label="Inhibit failed"/>
+  <int value="3" label="EUICC not found"/>
+  <int value="4" label="Refresh profiles failed"/>
+  <int value="5" label="eSIM profile not found"/>
+  <int value="6" label="Enable profile failed"/>
+  <int value="7" label="Timeout waiting for connectable"/>
+</enum>
+
+<enum name="NetworkCellularPSimActivationResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Already activated (activation not needed)"/>
+  <int value="2" label="Failed"/>
 </enum>
 
 <enum name="NetworkCellularPSimActivationState">
@@ -62676,6 +62736,24 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Started"/>
 </enum>
 
+<enum name="PlatformCellularConnectResult">
+  <summary>
+    The return status as a result of a call to connect to a cellular device at
+    the shill layer.
+  </summary>
+  <int value="0" label="Success"/>
+  <int value="1" label="Unknown"/>
+  <int value="2" label="Wrong State"/>
+  <int value="3" label="Operation Failed"/>
+  <int value="4" label="Already Connected"/>
+  <int value="5" label="Not Registered"/>
+  <int value="6" label="Not On Home Network"/>
+  <int value="7" label="Incorrect Pin"/>
+  <int value="8" label="Pin Required"/>
+  <int value="9" label="Pin Blocked"/>
+  <int value="10" label="Invalid APN"/>
+</enum>
+
 <enum name="PlatformFileError">
   <summary>Errors from base::File::Error</summary>
   <int value="0" label="OK"/>
@@ -64582,6 +64660,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="PrivateSetMembershipStatus">
+  <obsolete>
+    Deprecated since June 2021 and replaced with PsmResult.
+  </obsolete>
   <int value="0" label="Attempt"/>
   <int value="1" label="Successful Determination"/>
   <int value="2" label="Error"/>
@@ -65538,6 +65619,19 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 <enum name="PsmHashDanceDifferentResultsComparison">
   <int value="0" label="Hash dance true and PSM false"/>
   <int value="1" label="PSM true and Hash dance false"/>
+</enum>
+
+<enum name="PsmResult">
+  <int value="0" label="Successful Determination"/>
+  <int value="1" label="Create RLWE client library Error"/>
+  <int value="2" label="Create RLWE OPRF request library error"/>
+  <int value="3" label="Create RLWE query request library error"/>
+  <int value="4" label="Processing query response library error"/>
+  <int value="5" label="Empty RLWE OPRF response error"/>
+  <int value="6" label="Empty RLWE query response Error"/>
+  <int value="7" label="Connection Error"/>
+  <int value="8" label="Server Error"/>
+  <int value="9" label="Timeout"/>
 </enum>
 
 <enum name="PublicKeyPinFailedDomain">
@@ -70940,6 +71034,16 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="6" label="Warning"/>
 </enum>
 
+<enum name="SelectedNewTabCreationOption">
+  <int value="0" label="Open in new tab is first, selected open in new tab"/>
+  <int value="1"
+      label="Open in new tab is first, selected open new tab in group"/>
+  <int value="2"
+      label="Open new tab in group is first, selected open in new tab"/>
+  <int value="3"
+      label="Open new tab in group is first, selected open new tab in group"/>
+</enum>
+
 <enum name="SelectFileDialogContent">
   <int value="0" label="Photo uploaded by MediaPicker (as per MIME type)"/>
   <int value="1" label="Video uploaded by MediaPicker (as per MIME type)"/>
@@ -72276,6 +72380,8 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="13" label="Too Many STAs"/>
   <int value="14" label="Bad Passphrase"/>
   <int value="15" label="Bad Wep Key"/>
+  <int value="16" label="Sim Locked"/>
+  <int value="17" label="Not registered"/>
 </enum>
 
 <enum name="ShillSuspendTerminationDarkResumeActionResult">
@@ -76354,6 +76460,24 @@ would be helpful to identify which type is being sent.
   <int value="5" label="Unknown response code"/>
 </enum>
 
+<enum name="SurveyDownloadResponseCodes2">
+<!-- This enum allocations are not without meaning. Thus, these allocations
+     should never be changed, and new possible return values should be appended
+     as new items with new values.
+  -->
+
+  <summary>
+    Results when download survey response is available. Used by
+    Android.Survey.SurveyDownloadResponseCodes2.
+  </summary>
+  <int value="0" label="Success"/>
+  <int value="1" label="Backend timeout"/>
+  <int value="2" label="Failed to fetch survey"/>
+  <int value="3" label="No available survey"/>
+  <int value="4" label="Trigger Id not set"/>
+  <int value="5" label="Unsupported Cronet engine"/>
+</enum>
+
 <enum name="SurveyFilteringResult">
   <int value="0" label="Survey info bar already displayed"/>
   <int value="1" label="Chrome Home enabled for less than one week [removed]"/>
@@ -80422,6 +80546,9 @@ Full version information for the fingerprint enum values:
   <int value="12" label="Not connected"/>
   <int value="13" label="Activate Failed"/>
   <int value="14" label="Enabled or disabled when not available"/>
+  <int value="15" label="Cellular device busy"/>
+  <int value="16" label="Error Connect Timeout"/>
+  <int value="17" label="Cellular waiting for connectable timeout"/>
 </enum>
 
 <enum name="UserInitiatedEvent">

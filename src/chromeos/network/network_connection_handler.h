@@ -45,7 +45,9 @@ class ManagedNetworkConfigurationHandler;
 
 class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConnectionHandler {
  public:
-  // Constants for |error_name| from |error_callback| for Connect.
+  // Constants for |error_name| from |error_callback| for Connect. Whenever a
+  // new error name associated to cellular connections is added,
+  // CellularMetricsLogger should be updated as well.
 
   //  No network matching |service_path| is found (hidden networks must be
   //  configured before connecting).
@@ -122,6 +124,15 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConnectionHandler {
   // Failed due to a connection attempt to a cellular network with a locked SIM.
   // The SIM must be unlocked before a connection can succeed.
   static const char kErrorSimLocked[];
+
+  // Connect failed because cellular device is busy.
+  static const char kErrorCellularDeviceBusy[];
+
+  // Connect failed because connect request timed out.
+  static const char kErrorConnectTimeout[];
+
+  // Connect failed because waiting for connectable timed out.
+  static const char kConnectableCellularTimeout[];
 
   class COMPONENT_EXPORT(CHROMEOS_NETWORK) TetherDelegate {
    public:

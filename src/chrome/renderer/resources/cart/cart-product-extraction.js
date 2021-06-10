@@ -24,7 +24,9 @@ var cartItemTextContentRegex = new RegExp(
 var moveToCartRegex = new RegExp('move to (cart|bag)', 'i');
 var addToCartRegex = new RegExp('add to cart', 'i');
 var productIdHTMLRegex = new RegExp('<a href="#modal-(\\w+)', 'i');
-var productIdURLRegex = new RegExp('(\\w+)-\\d+-medium', 'i');
+var productIdURLRegex = new RegExp(
+    '((\\w+)-\\d+-medium)|(images.cymax.com/Images/\\d+/(\\w+)-)', 'i');
+var saveForLaterRegex = new RegExp('save for later', 'i');
 
 function getLazyLoadingURL(image) {
   // FIXME: some lazy images in Nordstrom and Staples don't have URLs in the
@@ -510,6 +512,22 @@ function extractPrice(item) {
   return choosePrice(captured_prices);
 }
 
+function extractProductId(item, imageUrl) {
+  productIdMatches = item.outerHTML.match(productIdHTMLRegex);
+  if (productIdMatches === null) {
+    productIdMatches = imageUrl.match(productIdURLRegex);
+  }
+  // Return the last valid match result.
+  if (productIdMatches !== null) {
+    for (var i = productIdMatches.length - 1; i >= 0; i--) {
+      if (productIdMatches[i] !== undefined) {
+        return productIdMatches[i];
+      }
+    }
+  }
+  return null;
+}
+
 function extractItem(item) {
   imageUrl = extractImage(item);
   if (imageUrl == null) {
@@ -543,14 +561,9 @@ function extractItem(item) {
   let extractionResult =
       {'url': url, 'imageUrl': imageUrl, 'title': title, 'price': price};
   // productId is an optional field for extraction.
-  productId = item.outerHTML.match(productIdHTMLRegex);
-  if (productId !== null && productId.length >= 2) {
-    extractionResult['productId'] = productId[1];
-    return extractionResult;
-  }
-  productId = imageUrl.match(productIdURLRegex);
-  if (productId !== null && productId.length >= 2) {
-    extractionResult['productId'] = productId[1];
+  const productId = extractProductId(item, imageUrl);
+  if (productId !== null) {
+    extractionResult['productId'] = productId;
   }
   return extractionResult;
 }
@@ -597,7 +610,8 @@ function isCartItem(item) {
       item.outerHTML.toLowerCase().match(cartItemHTMLRegex);
 }
 
-function extractOneItem(item, extracted_items, processed, output) {
+function extractOneItem(item, extracted_items, processed, output,
+  savedForLaterSection) {
   if (!isCartItem(item))
     return;
   if (verbose > 1)
@@ -642,6 +656,8 @@ function extractOneItem(item, extracted_items, processed, output) {
   }
   if (processed.has(item))
     return;
+  if (isInSavedForLater(item, savedForLaterSection))
+    return;
   processed.add(item);
   if (verbose > 0)
     console.log('trying', item);
@@ -650,6 +666,47 @@ function extractOneItem(item, extracted_items, processed, output) {
     output.set(item, extraction);
     extracted_items.push(item);
   }
+}
+
+function isInSavedForLater(item, savedForLaterSection) {
+  return savedForLaterSection !== null
+    && savedForLaterSection.getBoundingClientRect().top
+    < item.getBoundingClientRect().top
+    && !item.textContent.toLowerCase().match(saveForLaterRegex);
+}
+
+function getSavedForLaterSection() {
+  const nodes = document.evaluate(
+    "//*[contains(translate(" +
+    "text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'), " +
+    "'your saved items')" +
+    "or contains(translate(" +
+    "text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), " +
+    "'saved for later')" +
+    "or contains(translate(" +
+    "text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), " +
+    "'my saved items')" +
+    "or contains(translate(" +
+    "text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), " +
+    "'wishlist items')]", document,
+  null, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
+  let node = nodes.iterateNext();
+  let section = null;
+  while (node) {
+    if (node!= null && node.offsetHeight >= 1 && node.offsetWidth >= 1) {
+      section = node;
+    }
+    node = nodes.iterateNext();
+  }
+  return section
+}
+
+function isHeuristicsImprovementEnabled() {
+  if (typeof isImprovementEnabled === 'undefined'
+    || typeof isImprovementEnabled !== 'boolean') {
+    return false;
+  }
+  return isImprovementEnabled;
 }
 
 function documentPositionComparator(a, b) {
@@ -731,8 +788,15 @@ function extractAllItems(root) {
   const outputMap = new Map();
   const processed = new Set();
   const extracted_items = [];
+  let savedForLaterSection = null;
+  if (isHeuristicsImprovementEnabled()) {
+    savedForLaterSection = getSavedForLaterSection();
+    if (verbose > 0)
+      console.log(savedForLaterSection);
+  }
   for (const item of items) {
-    extractOneItem(item, extracted_items, processed, outputMap);
+    extractOneItem(item, extracted_items, processed, outputMap,
+      savedForLaterSection);
   }
   const keysInDocOrder =
       Array.from(outputMap.keys()).sort(documentPositionComparator);
