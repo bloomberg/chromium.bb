@@ -605,6 +605,14 @@
       },
     },
   },
+  'mac_11_x64': {
+    'swarming': {
+      'dimensions': {
+        'cpu': 'x86-64',
+        'os': 'Mac-11|Mac-10.16',
+      },
+    },
+  },
   'mac_arm64_apple_dtk_experimental': {
     'swarming': {
       'dimensions': {
@@ -634,7 +642,7 @@
     'swarming': {
       'dimensions': {
         'gpu': '8086:0a2e',
-        'os': 'Mac-10.15.5',
+        'os': 'Mac-10.15.5|Mac-10.15.7',
       },
     },
   },
@@ -642,7 +650,7 @@
     'swarming': {
       'dimensions': {
         'gpu': '8086:0a2e',
-        'os': 'Mac-10.15.5',
+        'os': 'Mac-10.15.5|Mac-10.15.7',
       },
     },
   },
@@ -654,7 +662,7 @@
       'dimension_sets': [
         {
           'gpu': '8086:0a2e',
-          'os': 'Mac-10.15.5',
+          'os': 'Mac-10.15.5|Mac-10.15.7',
         },
       ],
     },
