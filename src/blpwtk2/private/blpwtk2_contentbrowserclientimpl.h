@@ -140,6 +140,12 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
       network::mojom::NetworkContextParams* network_context_params,
       network::mojom::CertVerifierCreationParams*
           cert_verifier_creation_params) override;
+
+    void RegisterNonNetworkSubresourceURLLoaderFactories(
+        int render_process_id,
+        int render_frame_id,
+        content::ContentBrowserClient::NonNetworkURLLoaderFactoryMap* factories) override;
+
 };
 
 }  // close namespace blpwtk2
