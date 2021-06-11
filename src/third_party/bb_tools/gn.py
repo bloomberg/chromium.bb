@@ -42,6 +42,8 @@ SRC_DIR = os.path.normpath(os.path.join(SCRIPT_DIR,
                                         os.path.pardir,
                                         os.path.pardir))
 
+sys.path.insert(0, os.path.join(SRC_DIR, 'cef', 'tools'))
+import gn_args as cef_gn_args
 
 def name_value_list_to_dict(name_value_list):
   """
@@ -142,7 +144,11 @@ def get_config(is_component_mode, is_debug_mode, cpu, defines):
   gn_env_config = name_value_list_to_dict(shlex_env('GN_DEFINES'))
   cmdline_config = name_value_list_to_dict(defines)
 
-  config = merge_dicts(initial_config, gn_env_config, cmdline_config)
+  config = merge_dicts(initial_config,
+                       cef_gn_args.GetRecommendedDefaultArgs(),
+                       gn_env_config,
+                       cmdline_config,
+                       cef_gn_args.GetRequiredArgs())
 
   if config.get('is_official_build', False):
     if is_component_mode:
@@ -224,10 +230,12 @@ example_text = ('''EXAMPLES
       {prog} -D is_official_build=true -D proprietary_codecs=false
     '''.format(prog='gn.py')).rstrip()
 
-parser = argparse.ArgumentParser(description=summary,
-                                 epilog=example_text,
-                                 formatter_class=argparse.RawDescriptionHelpFormatter)
-parser.add_argument('-o', '--out', default='out', help='Out directory')
+parser = argparse.ArgumentParser(
+    description=summary,
+    epilog=example_text,
+    formatter_class=argparse.RawDescriptionHelpFormatter)
+parser.add_argument('-o', '--out',
+                    help='Out directory (must be directly under src/)')
 parser.add_argument('--shared', action=argparse.BooleanOptionalAction,
                     default=True, help='Generate shared (component) config')
 parser.add_argument('--static', action=argparse.BooleanOptionalAction,
@@ -261,6 +269,11 @@ if args.x86:
 if args.x64:
   cpus.append('x64')
 
+outer_out_dir = args.out if args.out else os.path.join(SRC_DIR, 'out')
+outer_out_dir = os.path.relpath(outer_out_dir, SRC_DIR)
+if '/' in outer_out_dir or '\\' in outer_out_dir:
+  raise Exception('-o output directory must be directly under src/')
+
 for is_component_mode in component_modes:
   for is_debug_mode in debug_modes:
     for cpu in cpus:
@@ -268,7 +281,7 @@ for is_component_mode in component_modes:
       if config is None:
         continue
       out_dir = os.path.join(SRC_DIR,
-                             args.out,
+                             outer_out_dir,
                              '%s_%s%s' % (
                                'shared' if is_component_mode else 'static',
                                'debug' if is_debug_mode else 'release',
