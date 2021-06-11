@@ -1,0 +1,48 @@
+diff --git content/browser/child_process_launcher_helper_linux.cc content/browser/child_process_launcher_helper_linux.cc
+index bbc1d4d05729..a7c7d75f61df 100644
+--- content/browser/child_process_launcher_helper_linux.cc
++++ content/browser/child_process_launcher_helper_linux.cc
+@@ -162,7 +162,7 @@ void ChildProcessLauncherHelper::SetProcessPriorityOnLauncherThread(
+ base::File OpenFileToShare(const base::FilePath& path,
+                            base::MemoryMappedFile::Region* region) {
+   base::FilePath exe_dir;
+-  bool result = base::PathService::Get(base::BasePathKey::DIR_EXE, &exe_dir);
++  bool result = base::PathService::Get(base::BasePathKey::DIR_ASSETS, &exe_dir);
+   DCHECK(result);
+   base::File file(exe_dir.Append(path),
+                   base::File::FLAG_OPEN | base::File::FLAG_READ);
+diff --git sandbox/linux/suid/client/setuid_sandbox_host.cc sandbox/linux/suid/client/setuid_sandbox_host.cc
+index f88c5077c6d6..8a010b882f2b 100644
+--- sandbox/linux/suid/client/setuid_sandbox_host.cc
++++ sandbox/linux/suid/client/setuid_sandbox_host.cc
+@@ -120,7 +120,7 @@ bool SetuidSandboxHost::IsDisabledViaEnvironment() {
+ base::FilePath SetuidSandboxHost::GetSandboxBinaryPath() {
+   base::FilePath sandbox_binary;
+   base::FilePath exe_dir;
+-  if (base::PathService::Get(base::DIR_EXE, &exe_dir)) {
++  if (base::PathService::Get(base::DIR_ASSETS, &exe_dir)) {
+     base::FilePath sandbox_candidate = exe_dir.AppendASCII("chrome-sandbox");
+     if (base::PathExists(sandbox_candidate))
+       sandbox_binary = sandbox_candidate;
+diff --git ui/gl/init/gl_initializer_linux_x11.cc ui/gl/init/gl_initializer_linux_x11.cc
+index 016046d6caa4..116e4919cda0 100644
+--- ui/gl/init/gl_initializer_linux_x11.cc
++++ ui/gl/init/gl_initializer_linux_x11.cc
+@@ -82,7 +82,7 @@ bool InitializeStaticEGLInternalFromLibrary(GLImplementation implementation) {
+   if (implementation == kGLImplementationSwiftShaderGL) {
+ #if BUILDFLAG(ENABLE_SWIFTSHADER)
+     base::FilePath module_path;
+-    if (!base::PathService::Get(base::DIR_MODULE, &module_path))
++    if (!base::PathService::Get(base::DIR_ASSETS, &module_path))
+       return false;
+     module_path = module_path.Append("swiftshader/");
+ 
+@@ -94,7 +94,7 @@ bool InitializeStaticEGLInternalFromLibrary(GLImplementation implementation) {
+   } else if (implementation == kGLImplementationEGLANGLE) {
+ #if !BUILDFLAG(USE_STATIC_ANGLE)
+     base::FilePath module_path;
+-    if (!base::PathService::Get(base::DIR_MODULE, &module_path))
++    if (!base::PathService::Get(base::DIR_ASSETS, &module_path))
+       return false;
+ 
+     const char kGLESv2ANGLELibraryName[] = "libGLESv2.so";

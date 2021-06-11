@@ -66,6 +66,7 @@ class CursorManager;
 class MouseWheelPhaseHandler;
 class RenderWidgetHostImpl;
 class RenderWidgetHostViewBaseObserver;
+class RenderWidgetHostViewGuest;
 class SyntheticGestureTarget;
 class TextInputManager;
 class TouchSelectionControllerClientManager;
@@ -136,6 +137,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
                         const gfx::Size& max_size) override;
   void DisableAutoResize(const gfx::Size& new_size) override;
   float GetDeviceScaleFactor() final;
+  void SetHasExternalParent(bool val) override;
+  bool HasExternalParent() const override;
   TouchSelectionControllerClientManager*
   GetTouchSelectionControllerClientManager() override;
   void SetRecordContentToVisibleTimeRequest(
@@ -430,6 +433,12 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
                            const gfx::Rect& bounds) = 0;
 
+  // Perform all the initialization steps necessary for this object to represent
+  // the platform widget owned by |guest_view| and embedded in
+  // |parent_host_view|.
+  virtual void InitAsGuest(RenderWidgetHostView* parent_host_view,
+                           RenderWidgetHostViewGuest* guest_view) {}
+
   // Sets the cursor for this view to the one associated with the specified
   // cursor_type.
   virtual void UpdateCursor(const WebCursor& cursor) = 0;
@@ -607,6 +616,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
   bool is_currently_scrolling_viewport_ = false;
 
   TooltipObserver* tooltip_observer_for_testing_ = nullptr;
+
+  // True if the widget has a external parent view/window outside of the
+  // Chromium-controlled view/window hierarchy.
+  bool has_external_parent_ = false;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(

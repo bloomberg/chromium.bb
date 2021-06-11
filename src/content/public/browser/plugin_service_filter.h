@@ -30,6 +30,7 @@ class PluginServiceFilter {
   virtual bool IsPluginAvailable(int render_process_id,
                                  int render_frame_id,
                                  const GURL& url,
+                                 bool is_main_frame,
                                  const url::Origin& main_frame_origin,
                                  WebPluginInfo* plugin) = 0;
 

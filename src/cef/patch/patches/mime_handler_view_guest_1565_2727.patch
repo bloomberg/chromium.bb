@@ -1,0 +1,99 @@
+diff --git content/browser/web_contents/web_contents_view.h content/browser/web_contents/web_contents_view.h
+index cdbc0273838e..ee2809a0bb98 100644
+--- content/browser/web_contents/web_contents_view.h
++++ content/browser/web_contents/web_contents_view.h
+@@ -22,7 +22,7 @@ struct DropData;
+ // The WebContentsView is an interface that is implemented by the platform-
+ // dependent web contents views. The WebContents uses this interface to talk to
+ // them.
+-class WebContentsView {
++class CONTENT_EXPORT WebContentsView {
+  public:
+   virtual ~WebContentsView() {}
+ 
+diff --git extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.cc extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.cc
+index a28112a99dfd..bcd58be410e1 100644
+--- extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.cc
++++ extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.cc
+@@ -205,6 +205,8 @@ void MimeHandlerViewGuest::CreateWebContents(
+   WebContents::CreateParams params(browser_context(),
+                                    guest_site_instance.get());
+   params.guest_delegate = this;
++  if (delegate_)
++    delegate_->OverrideWebContentsCreateParams(&params);
+   // TODO(erikchen): Fix ownership semantics for guest views.
+   // https://crbug.com/832879.
+   std::move(callback).Run(
+@@ -215,6 +217,10 @@ void MimeHandlerViewGuest::CreateWebContents(
+ }
+ 
+ void MimeHandlerViewGuest::DidAttachToEmbedder() {
++  is_guest_attached_ = true;
++  if (delegate_)
++    delegate_->OnGuestAttached();
++
+   DCHECK(stream_->handler_url().SchemeIs(extensions::kExtensionScheme));
+   web_contents()->GetController().LoadURL(
+       stream_->handler_url(), content::Referrer(),
+@@ -245,6 +251,11 @@ bool MimeHandlerViewGuest::ShouldDestroyOnDetach() const {
+   return true;
+ }
+ 
++void MimeHandlerViewGuest::WillDestroy() {
++  if (is_guest_attached_ && delegate_)
++    delegate_->OnGuestDetached();
++}
++
+ WebContents* MimeHandlerViewGuest::OpenURLFromTab(
+     WebContents* source,
+     const content::OpenURLParams& params) {
+diff --git extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h
+index 7d27e12c4e9a..fc234840104e 100644
+--- extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h
++++ extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h
+@@ -130,6 +130,7 @@ class MimeHandlerViewGuest
+   void EmbedderFullscreenToggled(bool entered_fullscreen) final;
+   bool ZoomPropagatesFromEmbedderToGuest() const final;
+   bool ShouldDestroyOnDetach() const final;
++  void WillDestroy() override;
+ 
+   // WebContentsDelegate implementation.
+   content::WebContents* OpenURLFromTab(
+@@ -188,6 +189,7 @@ class MimeHandlerViewGuest
+       content::ChildProcessHost::kInvalidUniqueID, MSG_ROUTING_NONE};
+   int embedder_widget_routing_id_ = MSG_ROUTING_NONE;
+ 
++  bool is_guest_attached_ = false;
+   bool is_guest_fullscreen_ = false;
+   bool is_embedder_fullscreen_ = false;
+   bool plugin_can_save_ = false;
+diff --git extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest_delegate.h extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest_delegate.h
+index 98689e261460..a1b08274f455 100644
+--- extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest_delegate.h
++++ extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest_delegate.h
+@@ -8,9 +8,9 @@
+ #include <string>
+ 
+ #include "base/macros.h"
++#include "content/public/browser/web_contents.h"
+ 
+ namespace content {
+-class WebContents;
+ struct ContextMenuParams;
+ }  // namespace content
+ 
+@@ -22,6 +22,14 @@ class MimeHandlerViewGuestDelegate {
+   MimeHandlerViewGuestDelegate() {}
+   virtual ~MimeHandlerViewGuestDelegate() {}
+ 
++  // Provides an opportunity to supply a custom view implementation.
++  virtual void OverrideWebContentsCreateParams(
++      content::WebContents::CreateParams* params) {}
++
++  // Called when a guest is attached or detached.
++  virtual void OnGuestAttached() {}
++  virtual void OnGuestDetached() {}
++
+   // Handles context menu, or returns false if unhandled.
+   virtual bool HandleContextMenu(content::WebContents* web_contents,
+                                  const content::ContextMenuParams& params);

@@ -43,6 +43,7 @@
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/hang_watcher.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -1108,6 +1109,11 @@ void ContentMainRunnerImpl::Shutdown() {
 
   delegate_ = nullptr;
   is_shutdown_ = true;
+}
+
+void ContentMainRunnerImpl::ShutdownOnUIThread() {
+  base::ScopedAllowBaseSyncPrimitivesForTesting allow_wait;
+  discardable_shared_memory_manager_.reset();
 }
 
 // static

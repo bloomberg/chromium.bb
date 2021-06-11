@@ -24,6 +24,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "cef/libcef/features/runtime.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_core_service_impl.h"
@@ -56,6 +57,10 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/ui/pdf/adobe_reader_info_win.h"
+#endif
+
+#if BUILDFLAG(ENABLE_CEF)
+#include "cef/libcef/browser/alloy/alloy_browser_context.h"
 #endif
 
 using content::BrowserContext;
@@ -358,6 +363,11 @@ DownloadPrefs* DownloadPrefs::FromDownloadManager(
 // static
 DownloadPrefs* DownloadPrefs::FromBrowserContext(
     content::BrowserContext* context) {
+#if BUILDFLAG(ENABLE_CEF)
+  if (cef::IsAlloyRuntimeEnabled()) {
+    return static_cast<AlloyBrowserContext*>(context)->GetDownloadPrefs();
+  }
+#endif
   return FromDownloadManager(context->GetDownloadManager());
 }
 

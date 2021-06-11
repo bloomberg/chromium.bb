@@ -83,6 +83,8 @@ class FrameServiceBase : public Interface, public WebContentsObserver {
 
   void DidFinishNavigation(NavigationHandle* navigation_handle) final {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    if (!ShouldCloseOnFinishNavigation())
+      return;
 
     if (!navigation_handle->HasCommitted() ||
         navigation_handle->IsSameDocument() ||
@@ -95,6 +97,9 @@ class FrameServiceBase : public Interface, public WebContentsObserver {
       Close();
     }
   }
+
+  // Used for CEF bindings that outlive navigation.
+  virtual bool ShouldCloseOnFinishNavigation() const { return true; }
 
   // Stops observing WebContents and delete |this|.
   void Close() {

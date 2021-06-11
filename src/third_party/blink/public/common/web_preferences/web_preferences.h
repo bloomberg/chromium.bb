@@ -176,6 +176,8 @@ struct BLINK_COMMON_EXPORT WebPreferences {
 
   bool user_gesture_required_for_presentation;
 
+  uint32_t base_background_color;
+
   bool text_tracks_enabled;
 
   // These fields specify the foreground and background color for WebVTT text

@@ -559,7 +559,8 @@ void URLRequestHttpJob::AddCookieHeaderAndStart() {
   // Read cookies whenever allow_credentials() is true, even if the PrivacyMode
   // is being overridden by NetworkDelegate and will eventually block them, as
   // blocked cookies still need to be logged in that case.
-  if (cookie_store && request_->allow_credentials()) {
+  if (cookie_store && request_->allow_credentials() &&
+      !(request_info_.load_flags & LOAD_DO_NOT_SEND_COOKIES)) {
     bool force_ignore_site_for_cookies =
         request_->force_ignore_site_for_cookies();
     if (cookie_store->cookie_access_delegate() &&

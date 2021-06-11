@@ -177,11 +177,11 @@ PluginData* DocumentInit::GetPluginData(LocalFrame* frame, const KURL& url) {
   // frame()->tree().top()->securityContext() returns nullptr.
   // For that reason, the origin must be retrieved directly from |url|.
   if (frame->IsMainFrame())
-    return frame->GetPage()->GetPluginData(SecurityOrigin::Create(url).get());
+    return frame->GetPage()->GetPluginData(true, SecurityOrigin::Create(url).get());
 
   const SecurityOrigin* main_frame_origin =
       frame->Tree().Top().GetSecurityContext()->GetSecurityOrigin();
-  return frame->GetPage()->GetPluginData(main_frame_origin);
+  return frame->GetPage()->GetPluginData(false, main_frame_origin);
 }
 
 DocumentInit& DocumentInit::WithTypeFrom(const String& mime_type) {

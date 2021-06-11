@@ -29,6 +29,7 @@
 #include "base/trace_event/trace_event_impl.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "cef/libcef/features/runtime.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_resource_bundle_helper.h"
 #include "chrome/browser/defaults.h"
@@ -380,6 +381,8 @@ struct MainFunction {
 
 // Initializes the user data dir. Must be called before InitializeLocalState().
 void InitializeUserDataDir(base::CommandLine* command_line) {
+  if (cef::IsChromeRuntimeEnabled())
+    return;
 #if defined(OS_WIN)
   // Reach out to chrome_elf for the truth on the user data directory.
   // Note that in tests, this links to chrome_elf_test_stubs.
@@ -666,7 +669,9 @@ void ChromeMainDelegate::PostFieldTrialInitialization() {
   }
 
 #if defined(OS_WIN)
+  if (!cef::IsChromeRuntimeEnabled()) {
   SetUpExtendedCrashReporting(is_browser_process);
+  }
   base::sequence_manager::internal::ThreadControllerPowerMonitor::
       InitializeOnMainThread();
 #endif
@@ -959,6 +964,7 @@ void ChromeMainDelegate::PreSandboxStartup() {
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
 
+  if (!cef::IsChromeRuntimeEnabled()) {
   crash_reporter::InitializeCrashKeys();
 
 #if defined(OS_POSIX)
@@ -969,6 +975,7 @@ void ChromeMainDelegate::PreSandboxStartup() {
   InitMacCrashReporter(command_line, process_type);
   SetUpInstallerPreferences(command_line);
 #endif
+  }  // !cef::IsChromeRuntimeEnabled()
 
 #if defined(OS_WIN)
   child_process_logging::Init();
@@ -1092,6 +1099,7 @@ void ChromeMainDelegate::PreSandboxStartup() {
         locale;
   }
 
+  if (!cef::IsChromeRuntimeEnabled()) {
 #if defined(OS_POSIX) && !defined(OS_MAC)
   // Zygote needs to call InitCrashReporter() in RunZygote().
   if (process_type != switches::kZygoteProcess) {
@@ -1124,6 +1132,7 @@ void ChromeMainDelegate::PreSandboxStartup() {
   // After all the platform Breakpads have been initialized, store the command
   // line for crash reporting.
   crash_keys::SetCrashKeysFromCommandLine(command_line);
+  }  // !cef::IsChromeRuntimeEnabled()
 
 #if BUILDFLAG(ENABLE_PDF)
   MaybeInitializeGDI();
@@ -1222,6 +1231,7 @@ void ChromeMainDelegate::ZygoteForked() {
     SetUpProfilingShutdownHandler();
   }
 
+  if (!cef::IsChromeRuntimeEnabled()) {
   // Needs to be called after we have chrome::DIR_USER_DATA.  BrowserMain sets
   // this up for the browser process in a different manner.
   const base::CommandLine* command_line =
@@ -1238,6 +1248,7 @@ void ChromeMainDelegate::ZygoteForked() {
 
   // Reset the command line for the newly spawned process.
   crash_keys::SetCrashKeysFromCommandLine(*command_line);
+  }  // !cef::IsChromeRuntimeEnabled()
 }
 
 #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)

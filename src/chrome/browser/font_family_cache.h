@@ -19,6 +19,8 @@ class Profile;
 
 FORWARD_DECLARE_TEST(FontFamilyCacheTest, Caching);
 
+extern const char kFontFamilyCacheKey[];
+
 // Caches font family preferences associated with a PrefService. This class
 // relies on the assumption that each concatenation of map_name + '.' + script
 // is a unique string. It also relies on the assumption that the (const char*)

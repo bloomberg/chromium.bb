@@ -873,6 +873,11 @@ class BLINK_PLATFORM_EXPORT Platform {
     return nullptr;
   }
 
+  // DevTools ------------------------------------------------------------
+
+  virtual void DevToolsAgentAttached() {}
+  virtual void DevToolsAgentDetached() {}
+
  private:
   static void InitializeMainThreadCommon(Platform* platform,
                                          std::unique_ptr<Thread> main_thread);

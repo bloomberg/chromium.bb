@@ -2386,6 +2386,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       int32_t plugin_child_id,
       const base::FilePath& path) override;
   void GetPluginInfo(const GURL& url,
+                     bool is_main_frame,
                      const url::Origin& main_frame_origin,
                      const std::string& mime_type,
                      GetPluginInfoCallback callback) override;

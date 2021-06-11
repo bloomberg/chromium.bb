@@ -326,6 +326,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // the concept with bubble anchoring a la BubbleDialogDelegateView.
     gfx::NativeView parent = nullptr;
 
+    gfx::AcceleratedWidget parent_widget = gfx::kNullAcceleratedWidget;
+
     // Specifies the initial bounds of the Widget. Default is empty, which means
     // the NativeWidget may specify a default size. If the parent is specified,
     // |bounds| is in the parent's coordinate system. If the parent is not

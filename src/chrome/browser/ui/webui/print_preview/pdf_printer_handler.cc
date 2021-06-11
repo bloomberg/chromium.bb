@@ -21,6 +21,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "cef/libcef/features/runtime.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -59,6 +60,10 @@
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chromeos/crosapi/mojom/holding_space_service.mojom.h"
 #include "chromeos/lacros/lacros_service.h"
+#endif
+
+#if BUILDFLAG(ENABLE_CEF)
+#include "cef/libcef/browser/alloy/alloy_browser_host_impl.h"
 #endif
 
 namespace printing {
@@ -421,9 +426,26 @@ void PdfPrinterHandler::SelectFile(const base::FilePath& default_filename,
   // If the directory is empty there is no reason to create it or use the
   // default location.
   if (path.empty()) {
+#if BUILDFLAG(ENABLE_CEF)
+    if (cef::IsAlloyRuntimeEnabled()) {
+      ShowCefSaveAsDialog(initiator, default_filename, path);
+      return;
+    }
+#endif
     OnDirectorySelected(default_filename, path);
     return;
   }
+
+  auto callback = base::BindOnce(&PdfPrinterHandler::OnDirectorySelected,
+                                 weak_ptr_factory_.GetWeakPtr(),
+                                 default_filename);
+#if BUILDFLAG(ENABLE_CEF)
+  if (cef::IsAlloyRuntimeEnabled()) {
+    callback = base::BindOnce(&PdfPrinterHandler::ShowCefSaveAsDialog,
+                              weak_ptr_factory_.GetWeakPtr(), initiator,
+                              default_filename);
+  }
+#endif
 
   // Get default download directory. This will be used as a fallback if the
   // save directory does not exist.
@@ -432,8 +454,7 @@ void PdfPrinterHandler::SelectFile(const base::FilePath& default_filename,
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&SelectSaveDirectory, path, default_path),
-      base::BindOnce(&PdfPrinterHandler::OnDirectorySelected,
-                     weak_ptr_factory_.GetWeakPtr(), default_filename));
+      std::move(callback));
 }
 
 void PdfPrinterHandler::PostPrintToPdfTask() {
@@ -478,6 +499,40 @@ void PdfPrinterHandler::OnDirectorySelected(const base::FilePath& filename,
       &file_type_info, 0, base::FilePath::StringType(),
       platform_util::GetTopLevel(preview_web_contents_->GetNativeView()), NULL);
 }
+
+#if BUILDFLAG(ENABLE_CEF)
+
+void PdfPrinterHandler::ShowCefSaveAsDialog(content::WebContents* initiator,
+                                            const base::FilePath& filename,
+                                            const base::FilePath& directory) {
+  CefRefPtr<AlloyBrowserHostImpl> cef_browser =
+      AlloyBrowserHostImpl::GetBrowserForContents(initiator);
+  if (!cef_browser)
+    return;
+
+  base::FilePath path = directory.Append(filename);
+
+  CefFileDialogRunner::FileChooserParams params;
+  params.mode = blink::mojom::FileChooserParams::Mode::kSave;
+  params.default_file_name = path;
+  params.accept_types.push_back(CefString(path.Extension()));
+
+  cef_browser->RunFileChooser(
+      params, base::BindOnce(&PdfPrinterHandler::SaveAsDialogDismissed,
+                             weak_ptr_factory_.GetWeakPtr()));
+}
+
+void PdfPrinterHandler::SaveAsDialogDismissed(
+    int selected_accept_filter,
+    const std::vector<base::FilePath>& file_paths) {
+  if (file_paths.size() == 1) {
+    FileSelected(file_paths[0], 0, nullptr);
+  } else {
+    FileSelectionCanceled(nullptr);
+  }
+}
+
+#endif  // BUILDFLAG(ENABLE_CEF)
 
 base::FilePath PdfPrinterHandler::GetSaveLocation() const {
 #if BUILDFLAG(IS_CHROMEOS_ASH)

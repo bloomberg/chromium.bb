@@ -255,6 +255,9 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   std::unique_ptr<blink::WebV8ValueConverter> CreateWebV8ValueConverter()
       override;
 
+  void DevToolsAgentAttached() override;
+  void DevToolsAgentDetached() override;
+
   // Tells this platform that the renderer is locked to a site (i.e., a scheme
   // plus eTLD+1, such as https://google.com), or to a more specific origin.
   void SetIsLockedToSite();

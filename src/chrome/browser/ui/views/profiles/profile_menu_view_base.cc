@@ -511,7 +511,9 @@ void ProfileMenuViewBase::ShowBubble(
 
   ProfileMenuViewBase* bubble = nullptr;
   if (view_mode == profiles::BUBBLE_VIEW_MODE_INCOGNITO) {
-    DCHECK(browser->profile()->IsIncognitoProfile());
+    DCHECK(browser->profile()->IsIncognitoProfile() ||
+           (browser->profile()->IsOffTheRecord() &&
+            browser->profile()->GetOTRProfileID().IsUniqueForCEF()));
     bubble = new IncognitoMenuView(anchor_button, browser);
   } else {
     DCHECK_EQ(profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER, view_mode);

@@ -154,13 +154,17 @@ def _LoadToolchainEnv(cpu, toolchain_root, sdk_dir, target_store):
         del os.environ['INCLUDE']
         del os.environ['LIB']
         del os.environ['LIBPATH']
-      other_path = os.path.normpath(os.path.join(
+      script_path = os.path.normpath(os.path.join(
                                         os.environ['GYP_MSVS_OVERRIDE_PATH'],
                                         'VC/Auxiliary/Build/vcvarsall.bat'))
-      if not os.path.exists(other_path):
-        raise Exception('%s is missing - make sure VC++ tools are installed.' %
-                        script_path)
-      script_path = other_path
+    if not os.path.exists(script_path):
+      # Compiler environment variables must already be specified.
+      variables = []
+      for k in sorted(os.environ.keys()):
+        variables.append('%s=%s' % (str(k), str(os.environ[k])))
+      variables = '\n'.join(variables)
+      return _ExtractImportantEnvironment(variables)
+
     cpu_arg = "amd64"
     if (cpu != 'x64'):
       # x64 is default target CPU thus any other CPU requires a target set

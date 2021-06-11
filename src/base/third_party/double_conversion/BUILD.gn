@@ -9,6 +9,11 @@ config("config") {
     "-Wno-unused-const-variable",
     "-Wno-unused-function",
   ]
+
+  # Build as C++17 to avoid export of templates that should be inlined.
+  if (is_win) {
+    cflags_cc = [ "/std:c++17" ]
+  }
 }
 
 static_library("double_conversion") {

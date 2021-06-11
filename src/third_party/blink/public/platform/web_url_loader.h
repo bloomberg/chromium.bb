@@ -160,11 +160,13 @@ class BLINK_PLATFORM_EXPORT WebURLLoader {
   void SetResourceRequestSenderForTesting(
       std::unique_ptr<WebResourceRequestSender> resource_request_sender);
 
+  // Cancels an asynchronous load.  This will appear as a load error to
+  // the client.
+  void Cancel();
+
  private:
   class Context;
   class RequestPeerImpl;
-
-  void Cancel();
 
   scoped_refptr<Context> context_;
 };

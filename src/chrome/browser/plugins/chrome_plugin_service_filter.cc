@@ -133,6 +133,7 @@ bool ChromePluginServiceFilter::IsPluginAvailable(
     int render_process_id,
     int render_frame_id,
     const GURL& plugin_content_url,
+    bool is_main_frame,
     const url::Origin& main_frame_origin,
     content::WebPluginInfo* plugin) {
   base::AutoLock auto_lock(lock_);

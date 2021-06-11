@@ -263,6 +263,8 @@ CrashReportUploadThread::UploadResult CrashReportUploadThread::UploadReport(
   if (minidump_process_snapshot.Initialize(reader)) {
     parameters =
         BreakpadHTTPFormParametersFromMinidump(&minidump_process_snapshot);
+    if (!parameters.empty())
+      parameters = FilterParameters(parameters);
   }
 
   if (!reader->SeekSet(start_offset)) {

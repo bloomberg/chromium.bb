@@ -244,6 +244,77 @@ bool MenuModelAdapter::IsItemChecked(int id) const {
   return false;
 }
 
+MenuItemView* MenuModelAdapter::GetSiblingMenu(MenuItemView* menu,
+                                               const gfx::Point& screen_point,
+                                               MenuAnchorPosition* anchor,
+                                               bool* has_mnemonics,
+                                               MenuButton** button) {
+  // Look up the menu model for this menu.
+  const std::map<MenuItemView*, ui::MenuModel*>::const_iterator map_iterator =
+      menu_map_.find(menu);
+  if (map_iterator != menu_map_.end()) {
+    map_iterator->second->MouseOutsideMenu(screen_point);
+    return nullptr;
+  }
+
+  NOTREACHED();
+  return nullptr;
+}
+
+void MenuModelAdapter::OnUnhandledOpenSubmenu(MenuItemView* menu,
+                                              bool is_rtl) {
+  // Look up the menu model for this menu.
+  const std::map<MenuItemView*, ui::MenuModel*>::const_iterator map_iterator =
+      menu_map_.find(menu);
+  if (map_iterator != menu_map_.end()) {
+    map_iterator->second->UnhandledOpenSubmenu(is_rtl);
+    return;
+  }
+
+  NOTREACHED();
+}
+
+void MenuModelAdapter::OnUnhandledCloseSubmenu(MenuItemView* menu,
+                                               bool is_rtl) {
+  // Look up the menu model for this menu.
+  const std::map<MenuItemView*, ui::MenuModel*>::const_iterator map_iterator =
+      menu_map_.find(menu);
+  if (map_iterator != menu_map_.end()) {
+    map_iterator->second->UnhandledCloseSubmenu(is_rtl);
+    return;
+  }
+
+  NOTREACHED();
+}
+
+bool MenuModelAdapter::GetTextColor(int command_id,
+                                    bool is_minor,
+                                    bool is_hovered,
+                                    SkColor* override_color) const {
+  ui::MenuModel* model = menu_model_;
+  int index = 0;
+  if (ui::MenuModel::GetModelAndIndexForCommandId(command_id, &model, &index))
+    return model->GetTextColor(index, is_minor, is_hovered, override_color);
+
+  NOTREACHED();
+  return false;
+}
+
+bool MenuModelAdapter::GetBackgroundColor(int command_id,
+                                          bool is_hovered,
+                                          SkColor* override_color) const {
+  if (command_id == -1)
+    return menu_model_->GetBackgroundColor(-1, is_hovered, override_color);
+
+  ui::MenuModel* model = menu_model_;
+  int index = 0;
+  if (ui::MenuModel::GetModelAndIndexForCommandId(command_id, &model, &index))
+    return model->GetBackgroundColor(index, is_hovered, override_color);
+
+  NOTREACHED();
+  return false;
+}
+
 void MenuModelAdapter::WillShowMenu(MenuItemView* menu) {
   // Look up the menu model for this menu.
   const std::map<MenuItemView*, ui::MenuModel*>::const_iterator map_iterator =

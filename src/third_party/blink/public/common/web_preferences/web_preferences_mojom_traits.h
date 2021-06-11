@@ -465,6 +465,11 @@ struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::WebPreferencesDataView,
     return r.user_gesture_required_for_presentation;
   }
 
+  static uint32_t base_background_color(
+      const blink::web_pref::WebPreferences& r) {
+    return r.base_background_color;
+  }
+
   static bool text_tracks_enabled(const blink::web_pref::WebPreferences& r) {
     return r.text_tracks_enabled;
   }

@@ -1,0 +1,332 @@
+diff --git chrome/browser/browser_about_handler.cc chrome/browser/browser_about_handler.cc
+index ba0c5c3fc044..b4df9af95ecd 100644
+--- chrome/browser/browser_about_handler.cc
++++ chrome/browser/browser_about_handler.cc
+@@ -70,6 +70,9 @@ bool HandleNonNavigationAboutURL(const GURL& url) {
+         FROM_HERE, base::BindOnce(&chrome::AttemptExit));
+     return true;
+   }
++  if (base::LowerCaseEqualsASCII(spec, "chrome://ignore/")) {
++    return true;
++  }
+ 
+   return false;
+ }
+diff --git chrome/browser/ui/browser.cc chrome/browser/ui/browser.cc
+index 268f6547ff84..29e1b4b1b4db 100644
+--- chrome/browser/ui/browser.cc
++++ chrome/browser/ui/browser.cc
+@@ -263,6 +263,20 @@
+ #include "components/captive_portal/content/captive_portal_tab_helper.h"
+ #endif
+ 
++#if BUILDFLAG(ENABLE_CEF)
++#define CALL_CEF_DELEGATE(name, ...) \
++  if (cef_browser_delegate_) { \
++    cef_browser_delegate_->name(__VA_ARGS__); \
++  }
++#define CALL_CEF_DELEGATE_RETURN(name, ...) \
++  if (cef_browser_delegate_) { \
++    return cef_browser_delegate_->name(__VA_ARGS__); \
++  }
++#else  // !BUILDFLAG(ENABLE_CEF)
++#define CALL_CEF_DELEGATE(name, ...)
++#define CALL_CEF_DELEGATE_RETURN(name, ...)
++#endif
++
+ #if BUILDFLAG(ENABLE_EXTENSIONS)
+ #include "chrome/browser/extensions/extension_browser_window_helper.h"
+ #endif
+@@ -492,6 +506,13 @@ Browser::Browser(const CreateParams& params)
+ 
+   tab_strip_model_->AddObserver(this);
+ 
++#if BUILDFLAG(ENABLE_CEF)
++  if (cef::IsChromeRuntimeEnabled()) {
++    cef_browser_delegate_ =
++        cef::BrowserDelegate::Create(this, params.cef_params);
++  }
++#endif
++
+   location_bar_model_ = std::make_unique<LocationBarModelImpl>(
+       location_bar_model_delegate_.get(), content::kMaxURLDisplayChars);
+ 
+@@ -1336,6 +1357,14 @@ content::KeyboardEventProcessingResult Browser::PreHandleKeyboardEvent(
+   if (exclusive_access_manager_->HandleUserKeyEvent(event))
+     return content::KeyboardEventProcessingResult::HANDLED;
+ 
++#if BUILDFLAG(ENABLE_CEF)
++  if (cef_browser_delegate_) {
++    auto result = cef_browser_delegate_->PreHandleKeyboardEvent(source, event);
++    if (result != content::KeyboardEventProcessingResult::NOT_HANDLED)
++      return result;
++  }
++#endif
++
+   return window()->PreHandleKeyboardEvent(event);
+ }
+ 
+@@ -1343,8 +1372,18 @@ bool Browser::HandleKeyboardEvent(content::WebContents* source,
+                                   const NativeWebKeyboardEvent& event) {
+   DevToolsWindow* devtools_window =
+       DevToolsWindow::GetInstanceForInspectedWebContents(source);
+-  return (devtools_window && devtools_window->ForwardKeyboardEvent(event)) ||
+-         window()->HandleKeyboardEvent(event);
++  if (devtools_window && devtools_window->ForwardKeyboardEvent(event)) {
++    return true;
++  }
++
++#if BUILDFLAG(ENABLE_CEF)
++  if (cef_browser_delegate_ &&
++      cef_browser_delegate_->HandleKeyboardEvent(source, event)) {
++    return true;
++  }
++#endif
++
++  return window()->HandleKeyboardEvent(event);
+ }
+ 
+ bool Browser::TabsNeedBeforeUnloadFired() {
+@@ -1569,6 +1608,14 @@ WebContents* Browser::OpenURLFromTab(WebContents* source,
+     return window->OpenURLFromTab(source, params);
+   }
+ 
++#if BUILDFLAG(ENABLE_CEF)
++  if (cef_browser_delegate_) {
++    auto web_contents = cef_browser_delegate_->OpenURLFromTab(source, params);
++    if (!web_contents)
++      return nullptr;
++  }
++#endif
++
+   NavigateParams nav_params(this, params.url, params.transition);
+   nav_params.FillNavigateParamsFromOpenURLParams(params);
+   nav_params.source_contents = source;
+@@ -1668,6 +1715,15 @@ void Browser::AddNewContents(WebContents* source,
+                                                         source, disposition);
+   }
+ 
++#if BUILDFLAG(ENABLE_CEF)
++  if (cef_browser_delegate_) {
++    cef_browser_delegate_->AddNewContents(
++        source, std::move(new_contents), target_url, disposition, initial_rect,
++        user_gesture, was_blocked);
++    return;
++  }
++#endif
++
+   chrome::AddWebContents(this, source, std::move(new_contents), target_url,
+                          disposition, initial_rect);
+ }
+@@ -1686,6 +1742,8 @@ void Browser::LoadingStateChanged(WebContents* source,
+                                   bool to_different_document) {
+   ScheduleUIUpdate(source, content::INVALIDATE_TYPE_LOAD);
+   UpdateWindowForLoadingStateChanged(source, to_different_document);
++
++  CALL_CEF_DELEGATE(LoadingStateChanged, source, to_different_document);
+ }
+ 
+ void Browser::CloseContents(WebContents* source) {
+@@ -1713,6 +1771,8 @@ void Browser::SetContentsBounds(WebContents* source, const gfx::Rect& bounds) {
+ }
+ 
+ void Browser::UpdateTargetURL(WebContents* source, const GURL& url) {
++  CALL_CEF_DELEGATE(UpdateTargetURL, source, url);
++
+   if (!GetStatusBubble())
+     return;
+ 
+@@ -1720,6 +1780,17 @@ void Browser::UpdateTargetURL(WebContents* source, const GURL& url) {
+     GetStatusBubble()->SetURL(url);
+ }
+ 
++bool Browser::DidAddMessageToConsole(
++    content::WebContents* source,
++    blink::mojom::ConsoleMessageLevel log_level,
++    const std::u16string& message,
++    int32_t line_no,
++    const std::u16string& source_id) {
++  CALL_CEF_DELEGATE_RETURN(DidAddMessageToConsole, source, log_level, message,
++                           line_no, source_id);
++  return false;
++}
++
+ void Browser::ContentsMouseEvent(WebContents* source,
+                                  bool motion,
+                                  bool exited) {
+@@ -1836,6 +1907,10 @@ void Browser::WebContentsCreated(WebContents* source_contents,
+ 
+   // Make the tab show up in the task manager.
+   task_manager::WebContentsTags::CreateForTabContents(new_contents);
++
++  CALL_CEF_DELEGATE(WebContentsCreated, source_contents,
++                    opener_render_process_id, opener_render_frame_id,
++                    frame_name, target_url, new_contents);
+ }
+ 
+ void Browser::PortalWebContentsCreated(WebContents* portal_web_contents) {
+@@ -1872,6 +1947,8 @@ void Browser::RendererResponsive(
+ void Browser::DidNavigateMainFramePostCommit(WebContents* web_contents) {
+   if (web_contents == tab_strip_model_->GetActiveWebContents())
+     UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
++
++  CALL_CEF_DELEGATE(DidNavigateMainFramePostCommit, web_contents);
+ }
+ 
+ content::JavaScriptDialogManager* Browser::GetJavaScriptDialogManager(
+@@ -1918,11 +1995,15 @@ void Browser::EnterFullscreenModeForTab(
+     const blink::mojom::FullscreenOptions& options) {
+   exclusive_access_manager_->fullscreen_controller()->EnterFullscreenModeForTab(
+       requesting_frame, options.display_id);
++
++  CALL_CEF_DELEGATE(EnterFullscreenModeForTab, requesting_frame, options);
+ }
+ 
+ void Browser::ExitFullscreenModeForTab(WebContents* web_contents) {
+   exclusive_access_manager_->fullscreen_controller()->ExitFullscreenModeForTab(
+       web_contents);
++
++  CALL_CEF_DELEGATE(ExitFullscreenModeForTab, web_contents);
+ }
+ 
+ bool Browser::IsFullscreenForTabOrPending(const WebContents* web_contents) {
+@@ -2767,6 +2848,8 @@ void Browser::SetAsDelegate(WebContents* web_contents, bool set_delegate) {
+     content_translate_driver->RemoveTranslationObserver(this);
+     BookmarkTabHelper::FromWebContents(web_contents)->RemoveObserver(this);
+   }
++
++  CALL_CEF_DELEGATE(SetAsDelegate, web_contents, set_delegate);
+ }
+ 
+ void Browser::TabDetachedAtImpl(content::WebContents* contents,
+diff --git chrome/browser/ui/browser.h chrome/browser/ui/browser.h
+index 946c447afbde..cce4aaade2ea 100644
+--- chrome/browser/ui/browser.h
++++ chrome/browser/ui/browser.h
+@@ -21,6 +21,7 @@
+ #include "base/timer/elapsed_timer.h"
+ #include "build/build_config.h"
+ #include "build/chromeos_buildflags.h"
++#include "cef/libcef/features/runtime.h"
+ #include "chrome/browser/themes/theme_service_observer.h"
+ #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
+ #include "chrome/browser/ui/bookmarks/bookmark_tab_helper_observer.h"
+@@ -45,6 +46,10 @@
+ #include "ui/gfx/geometry/rect.h"
+ #include "ui/shell_dialogs/select_file_dialog.h"
+ 
++#if BUILDFLAG(ENABLE_CEF)
++#include "cef/libcef/browser/chrome/browser_delegate.h"
++#endif
++
+ #if defined(OS_ANDROID)
+ #error This file should only be included on desktop.
+ #endif
+@@ -274,6 +279,11 @@ class Browser : public TabStripModelObserver,
+     // maximizable.
+     bool can_maximize = true;
+ 
++#if BUILDFLAG(ENABLE_CEF)
++    // Opaque CEF-specific configuration. Will be propagated to new Browsers.
++    scoped_refptr<cef::BrowserDelegate::CreateParams> cef_params;
++#endif
++
+    private:
+     friend class Browser;
+     friend class WindowSizerChromeOSTest;
+@@ -338,6 +348,13 @@ class Browser : public TabStripModelObserver,
+ 
+   bool is_focus_mode() const { return is_focus_mode_; }
+ 
++  // Return true if CEF will expose the toolbar to the client. This value is
++  // used to selectively enable toolbar behaviors such as command processing
++  // and omnibox focus without also including the toolbar in BrowserView layout
++  // calculations.
++  void set_toolbar_overridden(bool val) { toolbar_overridden_ = val; }
++  bool toolbar_overridden() const { return toolbar_overridden_; }
++
+   // Accessors ////////////////////////////////////////////////////////////////
+ 
+   const CreateParams& create_params() const { return create_params_; }
+@@ -396,6 +413,12 @@ class Browser : public TabStripModelObserver,
+ 
+   base::WeakPtr<Browser> AsWeakPtr();
+ 
++#if BUILDFLAG(ENABLE_CEF)
++  cef::BrowserDelegate* cef_delegate() const {
++    return cef_browser_delegate_.get();
++  }
++#endif
++
+   // Get the FindBarController for this browser, creating it if it does not
+   // yet exist.
+   FindBarController* GetFindBarController();
+@@ -777,6 +800,11 @@ class Browser : public TabStripModelObserver,
+   void SetContentsBounds(content::WebContents* source,
+                          const gfx::Rect& bounds) override;
+   void UpdateTargetURL(content::WebContents* source, const GURL& url) override;
++  bool DidAddMessageToConsole(content::WebContents* source,
++                              blink::mojom::ConsoleMessageLevel log_level,
++                              const std::u16string& message,
++                              int32_t line_no,
++                              const std::u16string& source_id) override;
+   void ContentsMouseEvent(content::WebContents* source,
+                           bool motion,
+                           bool exited) override;
+@@ -1167,6 +1195,8 @@ class Browser : public TabStripModelObserver,
+   const std::string initial_workspace_;
+   bool initial_visible_on_all_workspaces_state_;
+ 
++  bool toolbar_overridden_ = false;
++
+   // Tracks when this browser is being created by session restore.
+   bool is_session_restore_;
+ 
+@@ -1227,6 +1257,10 @@ class Browser : public TabStripModelObserver,
+       extension_browser_window_helper_;
+ #endif
+ 
++#if BUILDFLAG(ENABLE_CEF)
++  std::unique_ptr<cef::BrowserDelegate> cef_browser_delegate_;
++#endif
++
+   const base::ElapsedTimer creation_timer_;
+ 
+   // The following factory is used for chrome update coalescing.
+diff --git chrome/browser/ui/browser_navigator.cc chrome/browser/ui/browser_navigator.cc
+index 29890d8b342a..514affa254df 100644
+--- chrome/browser/ui/browser_navigator.cc
++++ chrome/browser/ui/browser_navigator.cc
+@@ -456,6 +456,13 @@ std::unique_ptr<content::WebContents> CreateTargetContents(
+   std::unique_ptr<WebContents> target_contents =
+       WebContents::Create(create_params);
+ 
++#if BUILDFLAG(ENABLE_CEF)
++  auto cef_delegate = params.browser->cef_delegate();
++  if (cef_delegate) {
++    cef_delegate->OnWebContentsCreated(target_contents.get());
++  }
++#endif
++
+   // New tabs can have WebUI URLs that will make calls back to arbitrary
+   // tab helpers, so the entire set of tab helpers needs to be set up
+   // immediately.
+diff --git chrome/browser/ui/browser_tabstrip.cc chrome/browser/ui/browser_tabstrip.cc
+index 72ad73468295..668a1b950df6 100644
+--- chrome/browser/ui/browser_tabstrip.cc
++++ chrome/browser/ui/browser_tabstrip.cc
+@@ -30,9 +30,13 @@ void AddTabAt(Browser* browser,
+   // Time new tab page creation time.  We keep track of the timing data in
+   // WebContents, but we want to include the time it takes to create the
+   // WebContents object too.
++  // For CEF use a PageTransition that matches
++  // CefFrameHostImpl::kPageTransitionExplicit.
+   base::TimeTicks new_tab_start_time = base::TimeTicks::Now();
+   NavigateParams params(browser, url.is_empty() ? browser->GetNewTabURL() : url,
+-                        ui::PAGE_TRANSITION_TYPED);
++                        static_cast<ui::PageTransition>(
++                            ui::PAGE_TRANSITION_TYPED |
++                            ui::PAGE_TRANSITION_FROM_ADDRESS_BAR));
+   params.disposition = foreground ? WindowOpenDisposition::NEW_FOREGROUND_TAB
+                                   : WindowOpenDisposition::NEW_BACKGROUND_TAB;
+   params.tabstrip_index = idx;

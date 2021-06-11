@@ -95,6 +95,12 @@ class VIEWS_EXPORT NativeViewHost : public View {
   void set_fast_resize(bool fast_resize) { fast_resize_ = fast_resize; }
   bool fast_resize() const { return fast_resize_; }
 
+  // Sets the color to paint the background during a resize that involves a
+  // clip. This is white by default.
+  void set_resize_background_color(SkColor resize_background_color) {
+    resize_background_color_ = resize_background_color;
+  }
+
   gfx::NativeView native_view() const { return native_view_; }
 
   void NativeViewDestroyed();
@@ -140,6 +146,9 @@ class VIEWS_EXPORT NativeViewHost : public View {
   // True if the native view is being resized using the fast method described
   // in the setter/accessor above.
   bool fast_resize_ = false;
+
+  // Color to paint in the background while resizing.
+  SkColor resize_background_color_ = SK_ColorWHITE;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewHost);
 };

@@ -1608,7 +1608,8 @@ void X11Window::CreateXWindow(const PlatformWindowInitProperties& properties) {
   req.border_pixel = 0;
 
   bounds_in_pixels_ = SanitizeBounds(bounds);
-  req.parent = x_root_window_;
+  req.parent = properties.parent_widget == gfx::kNullAcceleratedWidget ?
+      x_root_window_ : static_cast<x11::Window>(properties.parent_widget);
   req.x = bounds_in_pixels_.x();
   req.y = bounds_in_pixels_.y();
   req.width = bounds_in_pixels_.width();

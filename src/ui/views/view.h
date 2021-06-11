@@ -20,6 +20,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_piece.h"
+#include "base/supports_user_data.h"
 #include "build/build_config.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -268,7 +269,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
                           public ui::EventTarget,
                           public ui::EventHandler,
                           public ui::PropertyHandler,
-                          public ui::metadata::MetaDataProvider {
+                          public ui::metadata::MetaDataProvider,
+                          public base::SupportsUserData {
  public:
   using Views = std::vector<View*>;
 

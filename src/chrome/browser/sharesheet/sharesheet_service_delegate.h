@@ -77,7 +77,9 @@ class SharesheetServiceDelegate : public SharesheetController {
 
   std::u16string active_action_;
   // Owned by views.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   ash::sharesheet::SharesheetBubbleView* sharesheet_bubble_view_;
+#endif
   SharesheetService* sharesheet_service_;
 };
 

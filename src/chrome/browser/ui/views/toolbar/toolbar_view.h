@@ -91,7 +91,8 @@ class ToolbarView : public views::AccessiblePaneView,
                 // needs to be displayed.
   };
 
-  ToolbarView(Browser* browser, BrowserView* browser_view);
+  ToolbarView(Browser* browser, BrowserView* browser_view,
+              base::Optional<DisplayMode> display_mode);
   ToolbarView(const ToolbarView&) = delete;
   ToolbarView& operator=(const ToolbarView&) = delete;
   ~ToolbarView() override;

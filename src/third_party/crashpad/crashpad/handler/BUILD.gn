@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import("//cef/libcef/features/features.gni")
 import("../build/crashpad_buildconfig.gni")
 
 static_library("handler") {
@@ -58,6 +59,17 @@ static_library("handler") {
     ]
   }
 
+  if (enable_cef) {
+    sources += [
+      "//cef/libcef/common/cef_crash_report_upload_thread.cc",
+      "//cef/libcef/common/cef_crash_report_upload_thread.h",
+      "//cef/libcef/common/cef_crash_report_utils.cc",
+      "//cef/libcef/common/cef_crash_report_utils.h",
+    ]
+
+    configs += [ "//cef/libcef/features:config" ]
+  }
+
   public_configs = [ "..:crashpad_config" ]
 
   public_deps = [
@@ -73,6 +85,7 @@ static_library("handler") {
     "../snapshot",
     "../third_party/mini_chromium:chromeos_buildflags",
     "../tools:tool_support",
+    "//cef/libcef/features",
   ]
 
   if (crashpad_is_win) {

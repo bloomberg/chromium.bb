@@ -191,6 +191,11 @@ class COMPONENT_EXPORT(UI_BASE) ResourceBundle {
   // Return the global resource loader instance.
   static ResourceBundle& GetSharedInstance();
 
+  // With CEF's multi-threaded mode the ResourceBundle may be created/destroyed
+  // on the main thread but accessed on the UI thread. Call this method on the
+  // UI thread to clean up resources before destruction.
+  void CleanupOnUIThread();
+
   // Loads a secondary locale data pack using the given file region.
   void LoadSecondaryLocaleDataWithPakFileRegion(
       base::File pak_file,

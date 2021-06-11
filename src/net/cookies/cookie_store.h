@@ -156,6 +156,11 @@ class NET_EXPORT CookieStore {
   // Transfer ownership of a CookieAccessDelegate.
   void SetCookieAccessDelegate(std::unique_ptr<CookieAccessDelegate> delegate);
 
+  // Adds to the list of cookieable schemes. Does nothing if called after first
+  // use of the instance (i.e. after the instance initialization process).
+  virtual void AddCookieableSchemes(const std::vector<std::string>& schemes,
+                                    SetCookieableSchemesCallback callback) = 0;
+
   // Reports the estimate of dynamically allocated memory in bytes.
   virtual void DumpMemoryStats(base::trace_event::ProcessMemoryDump* pmd,
                                const std::string& parent_absolute_name) const;

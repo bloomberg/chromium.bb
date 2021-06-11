@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "cef/libcef/features/runtime.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/prefetch/no_state_prefetch/chrome_no_state_prefetch_contents_delegate.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_contents.h"
@@ -42,6 +43,7 @@ void StreamsPrivateAPI::SendExecuteMimeTypeHandlerEvent(
   if (!web_contents)
     return;
 
+  if (!cef::IsAlloyRuntimeEnabled()) {
   // If the request was for NoStatePrefetch, abort the prefetcher and do not
   // continue. This is because plugins cancel NoStatePrefetch, see
   // http://crbug.com/343590.
@@ -51,6 +53,7 @@ void StreamsPrivateAPI::SendExecuteMimeTypeHandlerEvent(
   if (no_state_prefetch_contents) {
     no_state_prefetch_contents->Destroy(prerender::FINAL_STATUS_DOWNLOAD);
     return;
+  }
   }
 
   auto* browser_context = web_contents->GetBrowserContext();

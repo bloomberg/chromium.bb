@@ -114,7 +114,9 @@ class BrowserView : public BrowserWindow,
                     public webapps::AppBannerManager::Observer {
  public:
   METADATA_HEADER(BrowserView);
+  BrowserView();
   explicit BrowserView(std::unique_ptr<Browser> browser);
+  void InitBrowser(std::unique_ptr<Browser> browser);
   BrowserView(const BrowserView&) = delete;
   BrowserView& operator=(const BrowserView&) = delete;
   ~BrowserView() override;
@@ -640,6 +642,12 @@ class BrowserView : public BrowserWindow,
 
   AccessibilityFocusHighlight* GetAccessibilityFocusHighlightForTesting() {
     return accessibility_focus_highlight_.get();
+  }
+
+ protected:
+  virtual ToolbarView* OverrideCreateToolbar(Browser* browser,
+                                             BrowserView* browser_view) {
+    return nullptr;
   }
 
  private:

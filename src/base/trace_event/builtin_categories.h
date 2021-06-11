@@ -61,6 +61,8 @@
   X("cc")                                                                \
   X("cc.debug")                                                          \
   X("cdp.perf")                                                          \
+  X("cef")                                                               \
+  X("cef.client")                                                        \
   X("chromeos")                                                          \
   X("cma")                                                               \
   X("compositor")                                                        \

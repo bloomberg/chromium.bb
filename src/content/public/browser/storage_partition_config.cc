@@ -7,6 +7,7 @@
 #include <sstream>
 
 #include "base/check.h"
+#include "base/files/file_path.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/public/browser/browser_context.h"
 #include "url/gurl.h"
@@ -36,7 +37,8 @@ StoragePartitionConfig& StoragePartitionConfig::operator=(
 // static
 StoragePartitionConfig StoragePartitionConfig::CreateDefault(
     BrowserContext* browser_context) {
-  return StoragePartitionConfig("", "", browser_context->IsOffTheRecord());
+  return StoragePartitionConfig("", "", browser_context->IsOffTheRecord() ||
+                                        browser_context->GetPath().empty());
 }
 
 // static

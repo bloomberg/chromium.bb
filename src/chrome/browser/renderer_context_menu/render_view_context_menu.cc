@@ -264,6 +264,13 @@ base::OnceCallback<void(RenderViewContextMenu*)>* GetMenuShownCallback() {
   return callback.get();
 }
 
+
+RenderViewContextMenu::MenuCreatedCallback* GetMenuCreatedCallback() {
+  static base::NoDestructor<RenderViewContextMenu::MenuCreatedCallback>
+      callback;
+  return callback.get();
+}
+
 enum class UmaEnumIdLookupType {
   GeneralEnumId,
   ContextSpecificEnumId,
@@ -473,6 +480,10 @@ int FindUMAEnumValueForCommand(int id, UmaEnumIdLookupType type) {
   if (ContextMenuMatcher::IsExtensionsCustomCommandId(id))
     return 1;
 
+  // Match the MENU_ID_USER_FIRST to MENU_ID_USER_LAST range from cef_types.h.
+  if (id >= 26500 && id <= 28500)
+    return 1;
+
   id = CollapseCommandsForUMA(id);
   const auto& map = GetIdcToUmaMap(type);
   auto it = map.find(id);
@@ -628,6 +639,14 @@ RenderViewContextMenu::RenderViewContextMenu(
   }
   set_content_type(
       ContextMenuContentTypeFactory::Create(source_web_contents_, params));
+
+  auto* cb = GetMenuCreatedCallback();
+  if (!cb->is_null()) {
+    first_observer_ = cb->Run(this);
+    if (first_observer_) {
+      observers_.AddObserver(first_observer_.get());
+    }
+  }
 }
 
 RenderViewContextMenu::~RenderViewContextMenu() = default;
@@ -983,6 +1002,12 @@ void RenderViewContextMenu::InitMenu() {
   // menu, meaning that each menu item added/removed in this function will cause
   // it to visibly jump on the screen (see b/173569669).
   AppendQuickAnswersItems();
+
+  if (first_observer_) {
+    // Do this last so that the observer can optionally modify previously
+    // created items.
+    first_observer_->InitMenu(params_);
+  }
 }
 
 Profile* RenderViewContextMenu::GetProfile() const {
@@ -2634,6 +2659,12 @@ void RenderViewContextMenu::AddAccessibilityLabelsServiceItem(bool is_checked) {
 void RenderViewContextMenu::RegisterMenuShownCallbackForTesting(
     base::OnceCallback<void(RenderViewContextMenu*)> cb) {
   *GetMenuShownCallback() = std::move(cb);
+}
+
+// static
+void RenderViewContextMenu::RegisterMenuCreatedCallback(
+    MenuCreatedCallback cb) {
+  *GetMenuCreatedCallback() = cb;
 }
 
 ProtocolHandlerRegistry::ProtocolHandlerList

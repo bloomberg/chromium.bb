@@ -87,7 +87,7 @@ int CrashReporterClient::GetResultCodeRespawnFailed() {
 }
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MAC)
+#if defined(OS_POSIX)
 void CrashReporterClient::GetProductNameAndVersion(const char** product_name,
                                                    const char** version) {
 }
@@ -96,6 +96,7 @@ void CrashReporterClient::GetProductNameAndVersion(std::string* product_name,
                                                    std::string* version,
                                                    std::string* channel) {}
 
+#if !defined(OS_MAC)
 base::FilePath CrashReporterClient::GetReporterLogFilename() {
   return base::FilePath();
 }
@@ -104,6 +105,7 @@ bool CrashReporterClient::HandleCrashDump(const char* crashdump_filename,
                                           uint64_t crash_pid) {
   return false;
 }
+#endif
 #endif
 
 #if defined(OS_WIN)
@@ -138,6 +140,28 @@ bool CrashReporterClient::GetCollectStatsInSample() {
 bool CrashReporterClient::ReportingIsEnforcedByPolicy(bool* breakpad_enabled) {
   return false;
 }
+
+bool CrashReporterClient::EnableBreakpadForProcess(
+    const std::string& process_type) {
+  return false;
+}
+
+void CrashReporterClient::GetCrashOptionalArguments(
+    std::vector<std::string>* arguments) {
+}
+
+#if defined(OS_WIN)
+std::wstring CrashReporterClient::GetCrashExternalHandler(
+    const std::wstring& exe_dir) {
+  return exe_dir + L"\\crashpad_handler.exe";
+}
+#endif
+
+#if defined(OS_MAC)
+bool CrashReporterClient::EnableBrowserCrashForwarding() {
+  return true;
+}
+#endif
 
 #if defined(OS_ANDROID)
 unsigned int CrashReporterClient::GetCrashDumpPercentage() {
@@ -201,9 +225,11 @@ bool CrashReporterClient::ShouldMonitorCrashHandlerExpensively() {
   return false;
 }
 
-bool CrashReporterClient::EnableBreakpadForProcess(
-    const std::string& process_type) {
-  return false;
+#if defined(OS_POSIX) && !defined(OS_MAC)
+CrashReporterClient::ParameterMap
+CrashReporterClient::FilterParameters(const ParameterMap& parameters) {
+  return parameters;
 }
+#endif
 
 }  // namespace crash_reporter

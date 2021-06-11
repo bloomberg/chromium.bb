@@ -249,14 +249,9 @@ void CookieManager::FlushCookieStore(FlushCookieStoreCallback callback) {
 void CookieManager::AllowFileSchemeCookies(
     bool allow,
     AllowFileSchemeCookiesCallback callback) {
-  std::vector<std::string> cookieable_schemes(
-      net::CookieMonster::kDefaultCookieableSchemes,
-      net::CookieMonster::kDefaultCookieableSchemes +
-          net::CookieMonster::kDefaultCookieableSchemesCount);
-  if (allow) {
-    cookieable_schemes.push_back(url::kFileScheme);
-  }
-  cookie_store_->SetCookieableSchemes(cookieable_schemes, std::move(callback));
+  if (!allow)
+    return;
+  cookie_store_->AddCookieableSchemes({url::kFileScheme}, std::move(callback));
 }
 
 void CookieManager::SetForceKeepSessionState() {

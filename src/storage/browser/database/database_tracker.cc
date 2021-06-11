@@ -495,7 +495,7 @@ bool DatabaseTracker::LazyInit() {
     databases_table_ = std::make_unique<DatabasesTable>(db_.get());
     meta_table_ = std::make_unique<sql::MetaTable>();
 
-    is_initialized_ = base::CreateDirectory(db_dir_) &&
+    is_initialized_ = (is_incognito_ ? true : base::CreateDirectory(db_dir_)) &&
                       (db_->is_open() ||
                        (is_incognito_ ? db_->OpenInMemory()
                                       : db_->Open(kTrackerDatabaseFullPath))) &&

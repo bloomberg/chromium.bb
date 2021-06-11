@@ -38,6 +38,10 @@
 #include "ui/gfx/delegated_ink_point.h"
 #include "ui/touch_selection/touch_selection_controller.h"
 
+#if defined(OS_LINUX)
+#include "ui/aura/window_tree_host.h"
+#endif
+
 #if defined(OS_WIN)
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "ui/aura/window_tree_host.h"
@@ -952,6 +956,14 @@ void RenderWidgetHostViewEventHandler::MoveCursorToCenter(
     return;
   }
 #endif
+#if defined(OS_LINUX)
+  if (host_view_->HasExternalParent() &&
+      window_ && window_->delegate()->CanFocus()) {
+    aura::WindowTreeHost* host = window_->GetHost();
+    if (host)
+      host->Show();
+  }
+#endif
   synthetic_move_position_ = center_in_screen;
 }
 
@@ -980,6 +992,17 @@ bool RenderWidgetHostViewEventHandler::MatchesSynthesizedMovePosition(
 }
 
 void RenderWidgetHostViewEventHandler::SetKeyboardFocus() {
+#if defined(OS_WIN)
+  if (host_view_->HasExternalParent() &&
+      window_ && window_->delegate()->CanFocus()) {
+    aura::WindowTreeHost* host = window_->GetHost();
+    if (host) {
+      gfx::AcceleratedWidget hwnd = host->GetAcceleratedWidget();
+      if (!(::GetWindowLong(hwnd, GWL_EXSTYLE) & WS_EX_NOACTIVATE))
+        ::SetFocus(hwnd);
+    }
+  }
+#endif
   // TODO(wjmaclean): can host_ ever be null?
   if (host_ && set_focus_on_mouse_down_or_key_event_) {
     set_focus_on_mouse_down_or_key_event_ = false;

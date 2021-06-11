@@ -621,6 +621,14 @@ float RenderWidgetHostViewBase::GetDeviceScaleFactor() {
   return screen_info.device_scale_factor;
 }
 
+void RenderWidgetHostViewBase::SetHasExternalParent(bool val) {
+  has_external_parent_ = val;
+}
+
+bool RenderWidgetHostViewBase::HasExternalParent() const {
+  return has_external_parent_;
+}
+
 void RenderWidgetHostViewBase::OnAutoscrollStart() {
   if (!GetMouseWheelPhaseHandler())
     return;

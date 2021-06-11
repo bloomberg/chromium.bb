@@ -666,6 +666,10 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   // WebContents has gained/lost focus.
   virtual void OnFocusChangedInPage(FocusedNodeDetails* details) {}
 
+  // Notification that |render_frame_host| for this WebContents has gained
+  // focus.
+  virtual void OnFrameFocused(RenderFrameHost* render_frame_host) {}
+
   // Notifies that the manifest URL for the main frame changed to
   // |manifest_url|. This will be invoked when a document with a manifest loads
   // or when the manifest URL changes (possibly to nothing). It is not invoked

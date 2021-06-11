@@ -1,0 +1,348 @@
+diff --git chrome/browser/download/download_prefs.cc chrome/browser/download/download_prefs.cc
+index f5ce4b6b6649..32a176a7cc8f 100644
+--- chrome/browser/download/download_prefs.cc
++++ chrome/browser/download/download_prefs.cc
+@@ -24,6 +24,7 @@
+ #include "base/strings/utf_string_conversions.h"
+ #include "build/build_config.h"
+ #include "build/chromeos_buildflags.h"
++#include "cef/libcef/features/runtime.h"
+ #include "chrome/browser/download/chrome_download_manager_delegate.h"
+ #include "chrome/browser/download/download_core_service_factory.h"
+ #include "chrome/browser/download/download_core_service_impl.h"
+@@ -58,6 +59,10 @@
+ #include "chrome/browser/ui/pdf/adobe_reader_info_win.h"
+ #endif
+ 
++#if BUILDFLAG(ENABLE_CEF)
++#include "cef/libcef/browser/alloy/alloy_browser_context.h"
++#endif
++
+ using content::BrowserContext;
+ using content::BrowserThread;
+ using content::DownloadManager;
+@@ -358,6 +363,11 @@ DownloadPrefs* DownloadPrefs::FromDownloadManager(
+ // static
+ DownloadPrefs* DownloadPrefs::FromBrowserContext(
+     content::BrowserContext* context) {
++#if BUILDFLAG(ENABLE_CEF)
++  if (cef::IsAlloyRuntimeEnabled()) {
++    return static_cast<AlloyBrowserContext*>(context)->GetDownloadPrefs();
++  }
++#endif
+   return FromDownloadManager(context->GetDownloadManager());
+ }
+ 
+diff --git chrome/browser/printing/print_preview_dialog_controller.cc chrome/browser/printing/print_preview_dialog_controller.cc
+index 74536431f664..3fc69b656029 100644
+--- chrome/browser/printing/print_preview_dialog_controller.cc
++++ chrome/browser/printing/print_preview_dialog_controller.cc
+@@ -17,6 +17,7 @@
+ #include "build/branding_buildflags.h"
+ #include "build/build_config.h"
+ #include "build/chromeos_buildflags.h"
++#include "cef/libcef/features/features.h"
+ #include "chrome/browser/browser_process.h"
+ #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
+ #include "chrome/browser/printing/print_view_manager.h"
+@@ -410,8 +411,11 @@ WebContents* PrintPreviewDialogController::CreatePrintPreviewDialog(
+   content::HostZoomMap::Get(preview_dialog->GetSiteInstance())
+       ->SetZoomLevelForHostAndScheme(print_url.scheme(), print_url.host(), 0);
+   PrintViewManager::CreateForWebContents(preview_dialog);
++
++#if !BUILDFLAG(ENABLE_CEF)
+   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
+       preview_dialog);
++#endif
+ 
+   // Add an entry to the map.
+   preview_dialog_map_[preview_dialog] = initiator;
+diff --git chrome/browser/printing/print_view_manager_base.cc chrome/browser/printing/print_view_manager_base.cc
+index 15dcd3179a27..0c61fb307af4 100644
+--- chrome/browser/printing/print_view_manager_base.cc
++++ chrome/browser/printing/print_view_manager_base.cc
+@@ -21,6 +21,7 @@
+ #include "base/timer/timer.h"
+ #include "build/build_config.h"
+ #include "build/chromeos_buildflags.h"
++#include "cef/libcef/features/runtime.h"
+ #include "chrome/browser/browser_process.h"
+ #include "chrome/browser/chrome_notification_types.h"
+ #include "chrome/browser/printing/print_job.h"
+@@ -58,6 +59,10 @@
+ #include "printing/printing_features.h"
+ #endif
+ 
++#if BUILDFLAG(ENABLE_CEF)
++#include "cef/libcef/browser/printing/print_view_manager.h"
++#endif
++
+ #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+ #include "chrome/browser/printing/print_error_dialog.h"
+ #include "chrome/browser/printing/print_view_manager.h"
+@@ -215,8 +220,13 @@ PrintViewManager* GetPrintViewManager(int render_process_id,
+   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+   content::WebContents* web_contents =
+       GetWebContentsForRenderFrame(render_process_id, render_frame_id);
+-  return web_contents ? PrintViewManager::FromWebContents(web_contents)
+-                      : nullptr;
++  if (!web_contents)
++    return nullptr;
++#if BUILDFLAG(ENABLE_CEF)
++  if (cef::IsAlloyRuntimeEnabled())
++    return CefPrintViewManager::FromWebContents(web_contents);
++#endif
++  return PrintViewManager::FromWebContents(web_contents);
+ }
+ 
+ void NotifySystemDialogCancelled(int render_process_id, int routing_id) {
+diff --git chrome/browser/printing/print_view_manager_base.h chrome/browser/printing/print_view_manager_base.h
+index b19ee4414584..30ceeb346e36 100644
+--- chrome/browser/printing/print_view_manager_base.h
++++ chrome/browser/printing/print_view_manager_base.h
+@@ -124,9 +124,6 @@ class PrintViewManagerBase : public content::NotificationObserver,
+   // Manages the low-level talk to the printer.
+   scoped_refptr<PrintJob> print_job_;
+ 
+- private:
+-  friend class TestPrintViewManager;
+-
+   // content::NotificationObserver implementation.
+   void Observe(int type,
+                const content::NotificationSource& source,
+diff --git chrome/browser/resources/print_preview/ui/destination_dialog.html chrome/browser/resources/print_preview/ui/destination_dialog.html
+index 920f646f0648..76c0b5e5ee04 100644
+--- chrome/browser/resources/print_preview/ui/destination_dialog.html
++++ chrome/browser/resources/print_preview/ui/destination_dialog.html
+@@ -25,10 +25,7 @@
+     </print-preview-destination-list>
+   </div>
+   <div slot="button-container">
+-    <cr-button on-click="onManageButtonClick_">
+-      $i18n{manage}
+-      <iron-icon icon="cr:open-in-new" id="manageIcon"></iron-icon>
+-    </cr-button>
++    <div></div>
+     <cr-button class="cancel-button" on-click="onCancelButtonClick_">
+       $i18n{cancel}
+     </cr-button>
+diff --git chrome/browser/ui/webui/constrained_web_dialog_ui.cc chrome/browser/ui/webui/constrained_web_dialog_ui.cc
+index 3d415a60d436..807ab41ee6ef 100644
+--- chrome/browser/ui/webui/constrained_web_dialog_ui.cc
++++ chrome/browser/ui/webui/constrained_web_dialog_ui.cc
+@@ -26,6 +26,8 @@
+ #include "chrome/browser/extensions/tab_helper.h"
+ #endif
+ 
++#include "cef/libcef/features/features.h"
++
+ using content::RenderFrameHost;
+ using content::WebContents;
+ using content::WebUIMessageHandler;
+@@ -55,8 +57,10 @@ class ConstrainedWebDialogDelegateUserData
+ ConstrainedWebDialogUI::ConstrainedWebDialogUI(content::WebUI* web_ui)
+     : WebUIController(web_ui) {
+ #if BUILDFLAG(ENABLE_EXTENSIONS)
++#if !BUILDFLAG(ENABLE_CEF)
+   extensions::TabHelper::CreateForWebContents(web_ui->GetWebContents());
+ #endif
++#endif
+ }
+ 
+ ConstrainedWebDialogUI::~ConstrainedWebDialogUI() {
+diff --git chrome/browser/ui/webui/print_preview/pdf_printer_handler.cc chrome/browser/ui/webui/print_preview/pdf_printer_handler.cc
+index bb1a2238af55..b825289863d5 100644
+--- chrome/browser/ui/webui/print_preview/pdf_printer_handler.cc
++++ chrome/browser/ui/webui/print_preview/pdf_printer_handler.cc
+@@ -21,6 +21,7 @@
+ #include "base/values.h"
+ #include "build/build_config.h"
+ #include "build/chromeos_buildflags.h"
++#include "cef/libcef/features/runtime.h"
+ #include "chrome/browser/app_mode/app_mode_utils.h"
+ #include "chrome/browser/browser_process.h"
+ #include "chrome/browser/download/download_prefs.h"
+@@ -61,6 +62,10 @@
+ #include "chromeos/lacros/lacros_service.h"
+ #endif
+ 
++#if BUILDFLAG(ENABLE_CEF)
++#include "cef/libcef/browser/alloy/alloy_browser_host_impl.h"
++#endif
++
+ namespace printing {
+ 
+ namespace {
+@@ -421,10 +426,27 @@ void PdfPrinterHandler::SelectFile(const base::FilePath& default_filename,
+   // If the directory is empty there is no reason to create it or use the
+   // default location.
+   if (path.empty()) {
++#if BUILDFLAG(ENABLE_CEF)
++    if (cef::IsAlloyRuntimeEnabled()) {
++      ShowCefSaveAsDialog(initiator, default_filename, path);
++      return;
++    }
++#endif
+     OnDirectorySelected(default_filename, path);
+     return;
+   }
+ 
++  auto callback = base::BindOnce(&PdfPrinterHandler::OnDirectorySelected,
++                                 weak_ptr_factory_.GetWeakPtr(),
++                                 default_filename);
++#if BUILDFLAG(ENABLE_CEF)
++  if (cef::IsAlloyRuntimeEnabled()) {
++    callback = base::BindOnce(&PdfPrinterHandler::ShowCefSaveAsDialog,
++                              weak_ptr_factory_.GetWeakPtr(), initiator,
++                              default_filename);
++  }
++#endif
++
+   // Get default download directory. This will be used as a fallback if the
+   // save directory does not exist.
+   DownloadPrefs* download_prefs = DownloadPrefs::FromBrowserContext(profile_);
+@@ -432,8 +454,7 @@ void PdfPrinterHandler::SelectFile(const base::FilePath& default_filename,
+   base::ThreadPool::PostTaskAndReplyWithResult(
+       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+       base::BindOnce(&SelectSaveDirectory, path, default_path),
+-      base::BindOnce(&PdfPrinterHandler::OnDirectorySelected,
+-                     weak_ptr_factory_.GetWeakPtr(), default_filename));
++      std::move(callback));
+ }
+ 
+ void PdfPrinterHandler::PostPrintToPdfTask() {
+@@ -479,6 +500,40 @@ void PdfPrinterHandler::OnDirectorySelected(const base::FilePath& filename,
+       platform_util::GetTopLevel(preview_web_contents_->GetNativeView()), NULL);
+ }
+ 
++#if BUILDFLAG(ENABLE_CEF)
++
++void PdfPrinterHandler::ShowCefSaveAsDialog(content::WebContents* initiator,
++                                            const base::FilePath& filename,
++                                            const base::FilePath& directory) {
++  CefRefPtr<AlloyBrowserHostImpl> cef_browser =
++      AlloyBrowserHostImpl::GetBrowserForContents(initiator);
++  if (!cef_browser)
++    return;
++
++  base::FilePath path = directory.Append(filename);
++
++  CefFileDialogRunner::FileChooserParams params;
++  params.mode = blink::mojom::FileChooserParams::Mode::kSave;
++  params.default_file_name = path;
++  params.accept_types.push_back(CefString(path.Extension()));
++
++  cef_browser->RunFileChooser(
++      params, base::BindOnce(&PdfPrinterHandler::SaveAsDialogDismissed,
++                             weak_ptr_factory_.GetWeakPtr()));
++}
++
++void PdfPrinterHandler::SaveAsDialogDismissed(
++    int selected_accept_filter,
++    const std::vector<base::FilePath>& file_paths) {
++  if (file_paths.size() == 1) {
++    FileSelected(file_paths[0], 0, nullptr);
++  } else {
++    FileSelectionCanceled(nullptr);
++  }
++}
++
++#endif  // BUILDFLAG(ENABLE_CEF)
++
+ base::FilePath PdfPrinterHandler::GetSaveLocation() const {
+ #if BUILDFLAG(IS_CHROMEOS_ASH)
+   drive::DriveIntegrationService* drive_service =
+diff --git chrome/browser/ui/webui/print_preview/pdf_printer_handler.h chrome/browser/ui/webui/print_preview/pdf_printer_handler.h
+index 143c97225fac..90b6e9549589 100644
+--- chrome/browser/ui/webui/print_preview/pdf_printer_handler.h
++++ chrome/browser/ui/webui/print_preview/pdf_printer_handler.h
+@@ -11,6 +11,7 @@
+ #include "base/memory/ref_counted.h"
+ #include "base/memory/weak_ptr.h"
+ #include "build/chromeos_buildflags.h"
++#include "cef/libcef/features/features.h"
+ #include "chrome/browser/ui/webui/print_preview/printer_handler.h"
+ #include "ui/shell_dialogs/select_file_dialog.h"
+ 
+@@ -91,6 +92,15 @@ class PdfPrinterHandler : public PrinterHandler,
+   void OnDirectorySelected(const base::FilePath& filename,
+                            const base::FilePath& directory);
+ 
++#if BUILDFLAG(ENABLE_CEF)
++  void ShowCefSaveAsDialog(content::WebContents* initiator,
++                           const base::FilePath& filename,
++                           const base::FilePath& directory);
++
++  void SaveAsDialogDismissed(int selected_accept_filter,
++                             const std::vector<base::FilePath>& file_paths);
++#endif
++
+   // Return save location as the Drive mount or fetch from Download Preferences.
+   base::FilePath GetSaveLocation() const;
+ 
+diff --git chrome/browser/ui/webui/print_preview/print_preview_handler.cc chrome/browser/ui/webui/print_preview/print_preview_handler.cc
+index 058c76f2a3f8..3eda3a8f46d9 100644
+--- chrome/browser/ui/webui/print_preview/print_preview_handler.cc
++++ chrome/browser/ui/webui/print_preview/print_preview_handler.cc
+@@ -25,6 +25,7 @@
+ #include "base/values.h"
+ #include "build/build_config.h"
+ #include "build/chromeos_buildflags.h"
++#include "cef/libcef/features/features.h"
+ #include "chrome/browser/account_manager_facade_factory.h"
+ #include "chrome/browser/app_mode/app_mode_utils.h"
+ #include "chrome/browser/bad_message.h"
+@@ -1107,7 +1108,7 @@ PrinterHandler* PrintPreviewHandler::GetPrinterHandler(
+     }
+     return extension_printer_handler_.get();
+   }
+-#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
++#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY) && !BUILDFLAG(ENABLE_CEF)
+   if (printer_type == PrinterType::kPrivet &&
+       GetPrefs()->GetBoolean(prefs::kForceEnablePrivetPrinting)) {
+     if (!privet_printer_handler_) {
+@@ -1116,6 +1117,9 @@ PrinterHandler* PrintPreviewHandler::GetPrinterHandler(
+     }
+     return privet_printer_handler_.get();
+   }
++#else  // !BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
++  if (printer_type == PrinterType::kPrivet)
++    return nullptr;
+ #endif
+   if (printer_type == PrinterType::kPdf) {
+     if (!pdf_printer_handler_) {
+diff --git chrome/browser/ui/webui/print_preview/print_preview_ui.cc chrome/browser/ui/webui/print_preview/print_preview_ui.cc
+index f98201bb3788..7e4d2f2ee19f 100644
+--- chrome/browser/ui/webui/print_preview/print_preview_ui.cc
++++ chrome/browser/ui/webui/print_preview/print_preview_ui.cc
+@@ -29,6 +29,7 @@
+ #include "base/values.h"
+ #include "build/build_config.h"
+ #include "build/chromeos_buildflags.h"
++#include "cef/libcef/features/runtime.h"
+ #include "chrome/browser/browser_process.h"
+ #include "chrome/browser/pdf/pdf_extension_util.h"
+ #include "chrome/browser/printing/background_printing_manager.h"
+@@ -96,6 +97,13 @@ const char16_t kBasicPrintShortcut[] = u"\u0028\u21e7\u2318\u0050\u0029";
+ const char16_t kBasicPrintShortcut[] = u"(Ctrl+Shift+P)";
+ #endif
+ 
++const char16_t* GetBasicPrintShortcut() {
++  if (cef::IsAlloyRuntimeEnabled()) {
++    return u"";
++  }
++  return kBasicPrintShortcut;
++}
++
+ constexpr char kInvalidArgsForDidStartPreview[] =
+     "Invalid arguments for DidStartPreview";
+ constexpr char kInvalidPageNumberForDidPreviewPage[] =
+@@ -381,7 +389,7 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
+                     chrome::kCloudPrintCertificateErrorLearnMoreURL);
+ 
+ #if !defined(OS_CHROMEOS)
+-  const std::u16string shortcut_text(kBasicPrintShortcut);
++  const std::u16string shortcut_text(GetBasicPrintShortcut());
+   source->AddString("systemDialogOption",
+                     l10n_util::GetStringFUTF16(
+                         IDS_PRINT_PREVIEW_SYSTEM_DIALOG_OPTION, shortcut_text));

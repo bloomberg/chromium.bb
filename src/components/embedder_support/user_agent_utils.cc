@@ -8,6 +8,7 @@
 #include "base/no_destructor.h"
 #include "base/strings/strcat.h"
 #include "build/branding_buildflags.h"
+#include "cef/libcef/common/cef_switches.h"
 #include "components/embedder_support/switches.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/web_contents.h"
@@ -21,6 +22,12 @@
 namespace embedder_support {
 
 std::string GetProduct() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kUserAgentProductAndVersion)) {
+    return command_line->GetSwitchValueASCII(
+        switches::kUserAgentProductAndVersion);
+  }
+
   return version_info::GetProductNameAndVersionForUserAgent();
 }
 

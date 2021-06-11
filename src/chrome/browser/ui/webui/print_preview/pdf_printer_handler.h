@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "build/chromeos_buildflags.h"
+#include "cef/libcef/features/features.h"
 #include "chrome/browser/ui/webui/print_preview/printer_handler.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
@@ -90,6 +91,15 @@ class PdfPrinterHandler : public PrinterHandler,
   // the file with name |filename| in |directory|.
   void OnDirectorySelected(const base::FilePath& filename,
                            const base::FilePath& directory);
+
+#if BUILDFLAG(ENABLE_CEF)
+  void ShowCefSaveAsDialog(content::WebContents* initiator,
+                           const base::FilePath& filename,
+                           const base::FilePath& directory);
+
+  void SaveAsDialogDismissed(int selected_accept_filter,
+                             const std::vector<base::FilePath>& file_paths);
+#endif
 
   // Return save location as the Drive mount or fetch from Download Preferences.
   base::FilePath GetSaveLocation() const;

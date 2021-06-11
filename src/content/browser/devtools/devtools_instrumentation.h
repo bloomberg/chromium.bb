@@ -11,6 +11,7 @@
 
 #include <vector>
 
+#include "content/common/content_export.h"
 #include "content/common/navigation_params.mojom.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -81,7 +82,7 @@ bool ApplyUserAgentMetadataOverrides(
     FrameTreeNode* frame_tree_node,
     absl::optional<blink::UserAgentMetadata>* override_out);
 
-bool WillCreateURLLoaderFactory(
+CONTENT_EXPORT bool WillCreateURLLoaderFactory(
     RenderFrameHostImpl* rfh,
     bool is_navigation,
     bool is_download,

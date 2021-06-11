@@ -73,6 +73,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
   ui::WaylandExtension* GetWaylandExtension();
   const ui::WaylandExtension* GetWaylandExtension() const;
 
+  void set_screen_bounds(const gfx::Rect& bounds) { screen_bounds_ = bounds; }
+
  protected:
   // Overridden from DesktopWindowTreeHost:
   void Init(const Widget::InitParams& params) override;
@@ -83,6 +85,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
       const gfx::Vector2d& drag_offset,
       Widget::MoveLoopSource source,
       Widget::MoveLoopEscapeBehavior escape_behavior) override;
+  gfx::Rect GetWindowBoundsInScreen() const override;
+  gfx::Point GetLocationOnScreenInPixels() const override;
 
   // PlatformWindowDelegate:
   void DispatchEvent(ui::Event* event) override;
@@ -137,6 +141,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
   // A list of all (top-level) windows that have been created but not yet
   // destroyed.
   static std::list<gfx::AcceleratedWidget>* open_windows_;
+
+   // Override the screen bounds when the host is a child window.
+  gfx::Rect screen_bounds_;
 
   // The display and the native X window hosting the root window.
   base::WeakPtrFactory<DesktopWindowTreeHostLinux> weak_factory_{this};

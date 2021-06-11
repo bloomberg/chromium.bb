@@ -159,6 +159,7 @@ bool StructTraits<blink::mojom::WebPreferencesDataView,
       data.accelerated_video_decode_enabled();
   out->user_gesture_required_for_presentation =
       data.user_gesture_required_for_presentation();
+  out->base_background_color = data.base_background_color();
   out->text_tracks_enabled = data.text_tracks_enabled();
   out->text_track_margin_percentage = data.text_track_margin_percentage();
   out->immersive_mode_enabled = data.immersive_mode_enabled();

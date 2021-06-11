@@ -1,5 +1,5 @@
 {
-  "branch": "92.0.4515.x/upstream",
+  "branch": "92.0.4515.x/patch/cef",
   "files": {
     "src": {
       ".landmines": "28fa43394fa6fb056af1f35aad48e1bbc45aef73"
@@ -34,6 +34,10 @@
         "mode": 292,
         "sha": "ddd9a0a2d8bc017917f41b8202e3dd5c8e4ceb4d"
       }
+    },
+    "src/cef/include": {
+      "cef_config.h": "1823b097730d382b7cf5502923116ccb481bd50d",
+      "cef_version.h": "9ebf71adef3f8551625f1729455da641f9b9337f"
     },
     "src/gpu/config": {
       "gpu_lists_version.h": "b487e53753680ee5aa5e51f59e5d23e7e0a3b706"

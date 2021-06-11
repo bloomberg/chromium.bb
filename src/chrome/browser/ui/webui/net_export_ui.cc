@@ -21,6 +21,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "cef/libcef/features/runtime.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/net/net_export_helper.h"
@@ -43,6 +44,10 @@
 #include "extensions/buildflags/buildflags.h"
 #include "net/log/net_log_capture_mode.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
+
+#if BUILDFLAG(ENABLE_CEF)
+#include "cef/libcef/browser/alloy/alloy_browser_host_impl.h"
+#endif
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/intent_helper.h"
@@ -136,6 +141,13 @@ class NetExportMessageHandler
   // Opens the SelectFileDialog UI with the default path to save a
   // NetLog file.
   void ShowSelectFileDialog(const base::FilePath& default_path);
+
+#if BUILDFLAG(ENABLE_CEF)
+  void ShowCefSaveAsDialog(content::WebContents* web_contents);
+  void SaveAsDialogDismissed(
+      int selected_accept_filter,
+      const std::vector<base::FilePath>& file_paths);
+#endif
 
   // Cached pointer to SystemNetworkContextManager's NetExportFileWriter.
   net_log::NetExportFileWriter* file_writer_;
@@ -232,6 +244,13 @@ void NetExportMessageHandler::OnStartNetLog(const base::ListValue* list) {
   if (UsingMobileUI()) {
     StartNetLog(base::FilePath());
   } else {
+#if BUILDFLAG(ENABLE_CEF)
+    if (cef::IsAlloyRuntimeEnabled()) {
+      ShowCefSaveAsDialog(web_ui()->GetWebContents());
+      return;
+    }
+#endif
+
     base::FilePath initial_dir = last_save_dir.Pointer()->empty() ?
         DownloadPrefs::FromBrowserContext(
             web_ui()->GetWebContents()->GetBrowserContext())->DownloadPath() :
@@ -248,6 +267,7 @@ void NetExportMessageHandler::OnStopNetLog(const base::ListValue* list) {
   std::unique_ptr<base::DictionaryValue> ui_thread_polled_data(
       new base::DictionaryValue());
 
+  if (!cef::IsAlloyRuntimeEnabled()) {
   Profile* profile = Profile::FromWebUI(web_ui());
   SetIfNotNull(ui_thread_polled_data.get(), "prerenderInfo",
                chrome_browser_net::GetPrerenderInfo(profile));
@@ -257,6 +277,7 @@ void NetExportMessageHandler::OnStopNetLog(const base::ListValue* list) {
   SetIfNotNull(ui_thread_polled_data.get(), "serviceProviders",
                chrome_browser_net::GetWindowsServiceProviders());
 #endif
+  }
 
   file_writer_->StopNetLog(std::move(ui_thread_polled_data));
 }
@@ -372,6 +393,42 @@ void NetExportMessageHandler::ShowSelectFileDialog(
       ui::SelectFileDialog::SELECT_SAVEAS_FILE, std::u16string(), default_path,
       &file_type_info, 0, base::FilePath::StringType(), owning_window, nullptr);
 }
+
+#if BUILDFLAG(ENABLE_CEF)
+
+void NetExportMessageHandler::ShowCefSaveAsDialog(
+    content::WebContents* web_contents) {
+  CefRefPtr<AlloyBrowserHostImpl> cef_browser =
+      AlloyBrowserHostImpl::GetBrowserForContents(web_contents);
+  if (!cef_browser)
+    return;
+
+  base::FilePath initial_dir;
+  if (!last_save_dir.Pointer()->empty())
+    initial_dir = *last_save_dir.Pointer();
+  base::FilePath initial_path =
+      initial_dir.Append(FILE_PATH_LITERAL("chrome-net-export-log.json"));
+
+  CefFileDialogRunner::FileChooserParams params;
+  params.mode = blink::mojom::FileChooserParams::Mode::kSave;
+  params.default_file_name = initial_path;
+  params.accept_types.push_back(CefString(initial_path.Extension()));
+
+  cef_browser->RunFileChooser(
+      params, base::BindOnce(&NetExportMessageHandler::SaveAsDialogDismissed,
+                             weak_ptr_factory_.GetWeakPtr()));
+}
+
+void NetExportMessageHandler::SaveAsDialogDismissed(
+    int selected_accept_filter,
+    const std::vector<base::FilePath>& file_paths) {
+  if (file_paths.size() == 1) {
+    *last_save_dir.Pointer() = file_paths[0].DirName();
+    StartNetLog(file_paths[0]);
+  }
+}
+
+#endif  // BUILDFLAG(ENABLE_CEF)
 
 }  // namespace
 

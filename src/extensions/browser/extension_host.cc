@@ -63,11 +63,12 @@ ExtensionHost::ExtensionHost(const Extension* extension,
   DCHECK(host_type == mojom::ViewType::kExtensionBackgroundPage ||
          host_type == mojom::ViewType::kExtensionDialog ||
          host_type == mojom::ViewType::kExtensionPopup);
-  host_contents_ = WebContents::Create(
+  host_contents_owned_ = WebContents::Create(
       WebContents::CreateParams(browser_context_, site_instance)),
-  content::WebContentsObserver::Observe(host_contents_.get());
+  host_contents_ = host_contents_owned_.get();
+  content::WebContentsObserver::Observe(host_contents_);
   host_contents_->SetDelegate(this);
-  SetViewType(host_contents_.get(), host_type);
+  SetViewType(host_contents_, host_type);
   main_frame_host_ = host_contents_->GetMainFrame();
 
   // Listen for when an extension is unloaded from the same profile, as it may
@@ -78,6 +79,44 @@ ExtensionHost::ExtensionHost(const Extension* extension,
   delegate_->OnExtensionHostCreated(host_contents());
 
   ExtensionWebContentsObserver::GetForWebContents(host_contents())->
+      dispatcher()->set_delegate(this);
+}
+
+ExtensionHost::ExtensionHost(ExtensionHostDelegate* delegate,
+                             const Extension* extension,
+                             content::BrowserContext* browser_context,
+                             content::WebContents* host_contents,
+                             const GURL& url,
+                             mojom::ViewType host_type)
+    : delegate_(delegate),
+      extension_(extension),
+      extension_id_(extension->id()),
+      browser_context_(browser_context),
+      host_contents_(host_contents),
+      initial_url_(url),
+      extension_host_type_(host_type) {
+  DCHECK(delegate);
+  DCHECK(browser_context);
+  DCHECK(host_contents);
+
+  // Not used for panels, see PanelHost.
+  DCHECK(host_type == mojom::ViewType::kExtensionBackgroundPage ||
+         host_type == mojom::ViewType::kExtensionDialog ||
+         host_type == mojom::ViewType::kExtensionPopup);
+
+  content::WebContentsObserver::Observe(host_contents_);
+  SetViewType(host_contents_, host_type);
+
+  main_frame_host_ = host_contents_->GetMainFrame();
+
+  // Listen for when an extension is unloaded from the same profile, as it may
+  // be the same extension that this points to.
+  ExtensionRegistry::Get(browser_context_)->AddObserver(this);
+
+  // Set up web contents observers and pref observers.
+  delegate_->OnExtensionHostCreated(host_contents_);
+
+  ExtensionWebContentsObserver::GetForWebContents(host_contents_)->
       dispatcher()->set_delegate(this);
 }
 

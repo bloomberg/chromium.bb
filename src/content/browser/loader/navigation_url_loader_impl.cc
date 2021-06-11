@@ -633,6 +633,13 @@ NavigationURLLoaderImpl::PrepareForNonInterceptedRequest(
           resource_request_->has_user_gesture,
           resource_request_->request_initiator, &loader_factory);
 
+      if (!handled) {
+        handled = GetContentClient()->browser()->HandleExternalProtocol(
+            web_contents_getter_, frame_tree_node_id_,
+            navigation_ui_data_.get(), *resource_request_,
+            &loader_factory);
+      }
+
       if (loader_factory) {
         factory = base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
             std::move(loader_factory));
@@ -853,7 +860,7 @@ void NavigationURLLoaderImpl::CheckPluginAndContinueOnReceiveResponse(
       frame_tree_node->current_frame_host()->GetProcess()->GetID();
   int routing_id = frame_tree_node->current_frame_host()->GetRoutingID();
   bool has_plugin = PluginService::GetInstance()->GetPluginInfo(
-      render_process_id, routing_id, resource_request_->url, url::Origin(),
+      render_process_id, routing_id, resource_request_->url, true, url::Origin(),
       head->mime_type, false /* allow_wildcard */, &stale, &plugin, nullptr);
 
   if (stale) {

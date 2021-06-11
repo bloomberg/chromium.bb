@@ -3043,6 +3043,11 @@ void RenderWidgetHostImpl::OnInvalidInputEventSource() {
       GetProcess(), bad_message::INPUT_ROUTER_INVALID_EVENT_SOURCE);
 }
 
+void RenderWidgetHostImpl::SetCompositorForFlingScheduler(ui::Compositor* compositor)
+{
+  fling_scheduler_->SetCompositor(compositor);
+}
+
 void RenderWidgetHostImpl::AddPendingUserActivation(
     const WebInputEvent& event) {
   if ((base::FeatureList::IsEnabled(

@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
+#include "content/common/content_export.h"
 #include "ui/gfx/geometry/point_f.h"
 
 namespace ui {
@@ -26,7 +27,8 @@ namespace content {
 
 class RenderWidgetHostImpl;
 
-class SyntheticGestureTargetBase : public SyntheticGestureTarget {
+class CONTENT_EXPORT SyntheticGestureTargetBase :
+    public SyntheticGestureTarget {
  public:
   explicit SyntheticGestureTargetBase(RenderWidgetHostImpl* host);
   ~SyntheticGestureTargetBase() override;

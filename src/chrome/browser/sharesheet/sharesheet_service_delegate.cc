@@ -19,8 +19,10 @@ SharesheetServiceDelegate::SharesheetServiceDelegate(
     gfx::NativeWindow native_window,
     SharesheetService* sharesheet_service)
     : native_window_(native_window),
+#if BUILDFLAG(IS_CHROMEOS_ASH)
       sharesheet_bubble_view_(
           new ash::sharesheet::SharesheetBubbleView(native_window, this)),
+#endif
       sharesheet_service_(sharesheet_service) {}
 
 SharesheetServiceDelegate::~SharesheetServiceDelegate() = default;
@@ -36,8 +38,10 @@ void SharesheetServiceDelegate::ShowBubble(
     }
     return;
   }
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   sharesheet_bubble_view_->ShowBubble(std::move(targets), std::move(intent),
                                       std::move(delivered_callback));
+#endif
   is_bubble_open_ = true;
 }
 
@@ -81,7 +85,9 @@ bool SharesheetServiceDelegate::OnAcceleratorPressed(
 }
 
 void SharesheetServiceDelegate::OnActionLaunched() {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   sharesheet_bubble_view_->ShowActionView();
+#endif
 }
 
 const gfx::VectorIcon* SharesheetServiceDelegate::GetVectorIcon(
@@ -101,11 +107,15 @@ void SharesheetServiceDelegate::SetSharesheetSize(const int& width,
                                                   const int& height) {
   DCHECK_GT(width, 0);
   DCHECK_GT(height, 0);
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   sharesheet_bubble_view_->ResizeBubble(width, height);
+#endif
 }
 
 void SharesheetServiceDelegate::CloseSharesheet() {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   sharesheet_bubble_view_->CloseBubble();
+#endif
 }
 
 }  // namespace sharesheet

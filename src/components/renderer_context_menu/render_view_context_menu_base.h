@@ -82,6 +82,9 @@ class RenderViewContextMenuBase : public ui::SimpleMenuModel::Delegate,
 
   const ui::SimpleMenuModel& menu_model() const { return menu_model_; }
   const content::ContextMenuParams& params() const { return params_; }
+  content::WebContents* source_web_contents() const {
+    return source_web_contents_;
+  }
 
   // Returns true if the specified command id is known and valid for
   // this menu. If the command is known |enabled| is set to indicate
@@ -90,6 +93,9 @@ class RenderViewContextMenuBase : public ui::SimpleMenuModel::Delegate,
 
   // SimpleMenuModel::Delegate implementation.
   bool IsCommandIdChecked(int command_id) const override;
+  bool GetAcceleratorForCommandId(
+      int command_id,
+      ui::Accelerator* accelerator) const override;
   void ExecuteCommand(int command_id, int event_flags) override;
   void OnMenuWillShow(ui::SimpleMenuModel* source) override;
   void MenuClosed(ui::SimpleMenuModel* source) override;
@@ -119,6 +125,9 @@ class RenderViewContextMenuBase : public ui::SimpleMenuModel::Delegate,
   content::RenderViewHost* GetRenderViewHost() const override;
   content::WebContents* GetWebContents() const override;
   content::BrowserContext* GetBrowserContext() const override;
+
+  // May return nullptr if the frame was deleted while the menu was open.
+  content::RenderFrameHost* GetRenderFrameHost() const;
 
  protected:
   friend class RenderViewContextMenuTest;
@@ -156,9 +165,6 @@ class RenderViewContextMenuBase : public ui::SimpleMenuModel::Delegate,
 
   // TODO(oshima): Remove this.
   virtual void AppendPlatformEditableItems() {}
-
-  // May return nullptr if the frame was deleted while the menu was open.
-  content::RenderFrameHost* GetRenderFrameHost() const;
 
   bool IsCustomItemChecked(int id) const;
   bool IsCustomItemEnabled(int id) const;

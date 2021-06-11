@@ -1071,6 +1071,15 @@ void MenuItemView::PaintBackground(gfx::Canvas* canvas,
     spilling_rect.set_y(spilling_rect.y() - corner_radius_);
     spilling_rect.set_height(spilling_rect.height() + corner_radius_);
     canvas->DrawRoundRect(spilling_rect, corner_radius_, flags);
+    return;
+  }
+
+  MenuDelegate *delegate = GetDelegate();
+  SkColor override_color;
+  if (delegate && delegate->GetBackgroundColor(GetCommand(),
+                                               render_selection,
+                                               &override_color)) {
+    canvas->DrawColor(override_color);
   } else if (render_selection) {
     gfx::Rect item_bounds = GetLocalBounds();
     if (type_ == Type::kActionableSubMenu) {
@@ -1139,6 +1148,13 @@ void MenuItemView::PaintMinorIconAndText(
 }
 
 SkColor MenuItemView::GetTextColor(bool minor, bool render_selection) const {
+  SkColor text_color;
+  const MenuDelegate *delegate = GetDelegate();
+  if (delegate && delegate->GetTextColor(GetCommand(), minor, render_selection,
+                                         &text_color)) {
+    return text_color;
+  }
+
   style::TextContext context =
       GetMenuController() && GetMenuController()->use_touchable_layout()
           ? style::CONTEXT_TOUCH_MENU

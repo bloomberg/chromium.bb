@@ -209,15 +209,10 @@ void InitializeMojo(mojo::core::Configuration* config) {
 
 }  // namespace
 
-int RunContentProcess(const ContentMainParams& params,
-                      ContentMainRunner* content_main_runner) {
-  ContentMainParams content_main_params(params);
-
+int ContentMainInitialize(ContentMainParams& params,
+                          ContentMainRunner* content_main_runner) {
   int exit_code = -1;
   base::debug::GlobalActivityTracker* tracker = nullptr;
-#if defined(OS_MAC)
-  std::unique_ptr<base::mac::ScopedNSAutoreleasePool> autorelease_pool;
-#endif
 
   // A flag to indicate whether Main() has been called before. On Android, we
   // may re-run Main() without restarting the browser process. This flag
@@ -299,12 +294,6 @@ int RunContentProcess(const ContentMainParams& params,
 #endif
 
 #if defined(OS_MAC)
-    // We need this pool for all the objects created before we get to the event
-    // loop, but we don't want to leave them hanging around until the app quits.
-    // Each "main" needs to flush this pool right before it goes into its main
-    // event loop to get rid of the cruft.
-    autorelease_pool = std::make_unique<base::mac::ScopedNSAutoreleasePool>();
-    content_main_params.autorelease_pool = autorelease_pool.get();
     InitializeMac();
 #endif
 
@@ -318,7 +307,7 @@ int RunContentProcess(const ContentMainParams& params,
 
     ui::RegisterPathProvider();
     tracker = base::debug::GlobalActivityTracker::Get();
-    exit_code = content_main_runner->Initialize(content_main_params);
+    exit_code = content_main_runner->Initialize(params);
 
     if (exit_code >= 0) {
       if (tracker) {
@@ -377,8 +366,16 @@ int RunContentProcess(const ContentMainParams& params,
 
   if (IsSubprocess())
     CommonSubprocessInit();
-  exit_code = content_main_runner->Run(params.minimal_browser_mode);
 
+  return exit_code;
+}
+
+int ContentMainRun(ContentMainParams& params,
+                   ContentMainRunner* content_main_runner) {
+  int exit_code = content_main_runner->Run(params.minimal_browser_mode);
+
+  base::debug::GlobalActivityTracker* tracker =
+      base::debug::GlobalActivityTracker::Get();
   if (tracker) {
     if (exit_code == 0) {
       tracker->SetProcessPhaseIfEnabled(
@@ -389,19 +386,45 @@ int RunContentProcess(const ContentMainParams& params,
       tracker->process_data().SetInt("exit-code", exit_code);
     }
   }
+  
+  return exit_code;
+}
 
-#if defined(OS_MAC)
-  autorelease_pool.reset();
-#endif
-
+void ContentMainShutdown(ContentMainParams& params,
+                         ContentMainRunner* content_main_runner) {
 #if !defined(OS_ANDROID)
   content_main_runner->Shutdown();
 #endif
+}
+
+int RunContentProcess(ContentMainParams& params,
+                      ContentMainRunner* content_main_runner) {
+#if defined(OS_MAC)
+  // We need this pool for all the objects created before we get to the event
+  // loop, but we don't want to leave them hanging around until the app quits.
+  // Each "main" needs to flush this pool right before it goes into its main
+  // event loop to get rid of the cruft.
+  std::unique_ptr<base::mac::ScopedNSAutoreleasePool> autorelease_pool =
+      std::make_unique<base::mac::ScopedNSAutoreleasePool>();
+  params.autorelease_pool = autorelease_pool.get();
+#endif
+
+  int exit_code = ContentMainInitialize(params, content_main_runner);
+  if (exit_code >= 0)
+    return exit_code;
+  exit_code = ContentMainRun(params, content_main_runner);
+
+#if defined(OS_MAC)
+  params.autorelease_pool = nullptr;
+  autorelease_pool.reset();
+#endif
+
+  ContentMainShutdown(params, content_main_runner);
 
   return exit_code;
 }
 
-int ContentMain(const ContentMainParams& params) {
+int ContentMain(ContentMainParams& params) {
   auto runner = ContentMainRunner::Create();
   return RunContentProcess(params, runner.get());
 }

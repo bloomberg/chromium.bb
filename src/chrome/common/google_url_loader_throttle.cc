@@ -7,6 +7,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "build/build_config.h"
+#include "cef/libcef/features/runtime.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/net/safe_search_util.h"
 #include "components/google/core/common/google_util.h"
@@ -16,6 +17,10 @@
 
 #if defined(OS_ANDROID)
 #include "ui/base/device_form_factor.h"
+#endif
+
+#if BUILDFLAG(ENABLE_CEF)
+#include "cef/libcef/common/extensions/extensions_util.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -157,6 +162,11 @@ void GoogleURLLoaderThrottle::WillProcessResponse(
     const GURL& response_url,
     network::mojom::URLResponseHead* response_head,
     bool* defer) {
+#if BUILDFLAG(ENABLE_CEF)
+  if (cef::IsAlloyRuntimeEnabled() && !extensions::ExtensionsEnabled())
+    return;
+#endif
+
   // Built-in additional protection for the chrome web store origin by ensuring
   // that the X-Frame-Options protection mechanism is set to either DENY or
   // SAMEORIGIN.

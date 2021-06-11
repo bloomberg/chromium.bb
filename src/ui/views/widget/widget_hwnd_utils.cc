@@ -67,7 +67,7 @@ void CalculateWindowStylesFromInitParams(
       if (!widget_delegate->CanResize())
         *style &= ~(WS_THICKFRAME | WS_MAXIMIZEBOX);
       if (params.remove_standard_frame)
-        *style &= ~(WS_MINIMIZEBOX | WS_MAXIMIZEBOX);
+        *style &= ~(WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_CAPTION | WS_SYSMENU);
 
       if (native_widget_delegate->IsDialogBox()) {
         *style |= DS_MODALFRAME;

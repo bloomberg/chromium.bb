@@ -73,13 +73,19 @@ size_t PruneCrashReportDatabase(CrashReportDatabase* database,
 }
 
 // static
-std::unique_ptr<PruneCondition> PruneCondition::GetDefault() {
+std::unique_ptr<PruneCondition> PruneCondition::GetDefault(
+    int max_size_in_mb,
+    int max_age_in_days) {
   // DatabaseSizePruneCondition must be the LHS so that it is always evaluated,
   // due to the short-circuting behavior of BinaryPruneCondition.
+  if (max_size_in_mb <= 0)
+    max_size_in_mb = 128;
+  if (max_age_in_days <= 0)
+    max_age_in_days = 365;
   return std::make_unique<BinaryPruneCondition>(
       BinaryPruneCondition::OR,
-      new DatabaseSizePruneCondition(1024 * 128),
-      new AgePruneCondition(365));
+      new DatabaseSizePruneCondition(1024 * max_size_in_mb),
+      new AgePruneCondition(max_age_in_days));
 }
 
 static const time_t kSecondsInDay = 60 * 60 * 24;

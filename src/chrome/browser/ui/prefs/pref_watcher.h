@@ -29,10 +29,10 @@ class PrefWatcher : public KeyedService {
   void RegisterRendererPreferenceWatcher(
       mojo::PendingRemote<blink::mojom::RendererPreferenceWatcher> watcher);
 
- private:
   // KeyedService overrides:
   void Shutdown() override;
 
+ private:
   void UpdateRendererPreferences();
   void OnWebPrefChanged(const std::string& pref_name);
   void OnLiveCaptionEnabledPrefChanged(const std::string& pref_name);

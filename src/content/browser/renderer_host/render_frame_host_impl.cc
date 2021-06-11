@@ -11223,6 +11223,7 @@ void RenderFrameHostImpl::BindHungDetectorHost(
 }
 
 void RenderFrameHostImpl::GetPluginInfo(const GURL& url,
+                                        bool is_main_frame,
                                         const url::Origin& main_frame_origin,
                                         const std::string& mime_type,
                                         GetPluginInfoCallback callback) {
@@ -11230,7 +11231,8 @@ void RenderFrameHostImpl::GetPluginInfo(const GURL& url,
   WebPluginInfo info;
   std::string actual_mime_type;
   bool found = PluginServiceImpl::GetInstance()->GetPluginInfo(
-      GetProcess()->GetID(), routing_id_, url, main_frame_origin, mime_type,
+      GetProcess()->GetID(), routing_id_, url, is_main_frame,
+      main_frame_origin, mime_type,
       allow_wildcard, nullptr, &info, &actual_mime_type);
   std::move(callback).Run(found, info, actual_mime_type);
 }

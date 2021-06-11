@@ -252,6 +252,9 @@ struct NetworkContextParams {
   // cookies. Otherwise it should be false.
   bool persist_session_cookies = false;
 
+  // Schemes that will be passed to CookieMonster::SetCookieableSchemes.
+  array<string>? cookieable_schemes;
+
   // True if an HTTP cache should be used.
   bool http_cache_enabled = true;
   // Maximum size of the HTTP cache. 0 means to use the default size.
