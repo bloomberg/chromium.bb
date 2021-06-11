@@ -97,6 +97,10 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
     virtual void TerminateGpuProcess(const std::string& message) = 0;
 #endif
 
+    virtual void OnEstablishGpuChannelTimeout(int client_id,
+                                              uint64_t client_tracing_id,
+                                              bool is_gpu_host) = 0;
+
    protected:
     virtual ~Delegate() {}
   };
@@ -124,6 +128,13 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
 
     // Whether this GPU process is used for GPU info collection only.
     bool info_collection_gpu_process = false;
+
+    // The time (milliseconds) waiting for establishing GPU channel
+    //
+    // When running in debug configuration on a Lenovo X1 extreme laptop with
+    // battery saver mode enabled, the GPU process can take upto 12 seconds to
+    // start.
+    std::size_t establish_channel_time_out_ms{13000};
   };
 
   enum class EstablishChannelStatus {
@@ -283,6 +294,7 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
   // These are the channel requests that we have already sent to the GPU
   // service, but haven't heard back about yet.
   base::queue<EstablishChannelCallback> channel_requests_;
+  base::OneShotTimer establish_channel_timeout_;
 
   base::OneShotTimer shutdown_timeout_;
 
