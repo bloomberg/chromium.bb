@@ -31,14 +31,18 @@
 #include <blpwtk2_processhostimpl.h>
 #include <blpwtk2_browsermainparts.h>
 #include <blpwtk2_requestinterceptorimpl.h>
+#include <blpwtk2_resourceloader.h>
 
 #include <base/json/json_reader.h>
 #include <base/task/single_thread_task_executor.h>
 #include <base/threading/thread.h>
 #include <base/threading/platform_thread.h>
+#include "content/browser/loader/file_url_loader_factory.h"
 #include <content/public/browser/browser_main_parts.h>
+#include "content/public/browser/render_frame_host.h"
 #include <content/public/browser/render_view_host.h>
 #include <content/public/browser/render_process_host.h>
+#include "content/public/browser/shared_cors_origin_access_list.h"
 #include <content/public/browser/web_contents.h>
 #include "content/public/common/service_manager_connection.h"
 #include <content/public/common/service_names.mojom.h>
@@ -192,6 +196,36 @@ void ContentBrowserClientImpl::ConfigureNetworkContextParams(
     DCHECK(context);
     BrowserContextImpl* pContextImpl = static_cast<BrowserContextImpl*>(context);
     return pContextImpl->ConfigureNetworkContextParams(GetUserAgent(), network_context_params);
+}
+
+void ContentBrowserClientImpl::RegisterNonNetworkSubresourceURLLoaderFactories(
+    int render_process_id,
+    int render_frame_id,
+    content::ContentBrowserClient::NonNetworkURLLoaderFactoryMap* factories)
+{
+  if (factories->count(url::kFileScheme)) {
+    return;
+  }
+  content::RenderFrameHost* frame_host =
+      content::RenderFrameHost::FromID(render_process_id, render_frame_id);
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(frame_host);
+
+  // Allow file access only if the navigation url can be handled by the embedder
+  const std::string& nativationUrl = web_contents->GetURL().spec();
+  if (!Statics::inProcessResourceLoader ||
+      !Statics::inProcessResourceLoader->canHandleURL(
+          StringRef(nativationUrl))) {
+    return;
+  }
+
+  // Support sub-resource in file type. etc: <img src="file://c:\xxx.png">
+  content::BrowserContext* browser_context = web_contents->GetBrowserContext();
+  factories->emplace(url::kFileScheme,
+                     content::FileURLLoaderFactory::Create(
+                         browser_context->GetPath(),
+                         browser_context->GetSharedCorsOriginAccessList(),
+                         base::TaskPriority::USER_BLOCKING));
 }
 
 }  // close namespace blpwtk2
