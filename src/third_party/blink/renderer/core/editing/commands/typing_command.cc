@@ -862,7 +862,9 @@ void TypingCommand::DeleteKeyPressed(TextGranularity granularity,
 
   // If the caret is at the start of a paragraph after a table, move content
   // into the last table cell (this is done to follows macOS' behavior).
-  if (frame->GetEditor().Behavior().ShouldMergeContentWithTablesOnBackspace() &&
+  bool toReturn = false;
+  if (toReturn && // blpwtk2
+      frame->GetEditor().Behavior().ShouldMergeContentWithTablesOnBackspace() &&
       IsStartOfParagraph(visible_start) &&
       TableElementJustBefore(
           PreviousPositionOf(visible_start, kCannotCrossEditingBoundary))) {
