@@ -2419,8 +2419,8 @@ void RenderWebView::TextInputStateChanged(ui::mojom::TextInputStatePtr text_inpu
 
 void RenderWebView::StartDragging(blink::mojom::DragDataPtr drag_data,
                         blink::DragOperationsMask drag_operations_mask,
-                        const SkBitmap& unsafe_bitmap,
-                        const gfx::Vector2d& bitmap_offset_in_dip,
+                        SkBitmap unsafe_bitmap,
+                        gfx::Vector2d bitmap_offset_in_dip,
                         blink::mojom::DragEventSourceInfoPtr event_info)
 {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
