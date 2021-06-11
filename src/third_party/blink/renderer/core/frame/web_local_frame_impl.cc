@@ -2661,4 +2661,9 @@ void WebLocalFrameImpl::SetAllowsCrossBrowsingInstanceFrameLookup() {
   window->GetMutableSecurityOrigin()->GrantCrossAgentClusterAccess();
 }
 
+bool WebLocalFrameImpl::IsPrintAllowed() const {
+  DCHECK(GetFrame());
+  return GetFrame()->IsPrintAllowed();
+}
+
 }  // namespace blink

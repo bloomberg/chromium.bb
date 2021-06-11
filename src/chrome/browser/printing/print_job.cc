@@ -18,6 +18,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/printing/print_job_worker.h"
 #include "chrome/browser/printing/printer_query.h"
+#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -359,7 +360,7 @@ void PrintJob::StartPdfToEmfConversion(
   content::BrowserContext* context =
       web_contents ? web_contents->GetBrowserContext() : nullptr;
   PrefService* prefs =
-      context ? Profile::FromBrowserContext(context)->GetPrefs() : nullptr;
+      context ? user_prefs::UserPrefs::Get(context) : nullptr;
   bool print_with_reduced_rasterization = PrintWithReducedRasterization(prefs);
 
   using RenderMode = PdfRenderSettings::Mode;

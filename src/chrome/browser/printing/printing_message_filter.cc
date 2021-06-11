@@ -65,12 +65,17 @@ class PrintingMessageFilterShutdownNotifierFactory
 
 }  // namespace
 
+extern PrintJobManager* g_print_job_manager;
+
 PrintingMessageFilter::PrintingMessageFilter(int render_process_id,
-                                             Profile* profile)
+                                             Profile *profile)
     : BrowserMessageFilter(PrintMsgStart),
       render_process_id_(render_process_id),
-      queue_(g_browser_process->print_job_manager()->queue()) {
+      queue_(g_print_job_manager->queue()) {
   DCHECK(queue_.get());
+
+  // blpwtk2: Remove dependency on Profile
+#if 0
   printing_shutdown_notifier_ =
       PrintingMessageFilterShutdownNotifierFactory::GetInstance()
           ->Get(profile)
@@ -78,6 +83,7 @@ PrintingMessageFilter::PrintingMessageFilter(int render_process_id,
                                  base::Unretained(this)));
   is_printing_enabled_.Init(prefs::kPrintingEnabled, profile->GetPrefs());
   is_printing_enabled_.MoveToSequence(content::GetIOThreadTaskRunner({}));
+#endif
 }
 
 PrintingMessageFilter::~PrintingMessageFilter() {
@@ -86,8 +92,11 @@ PrintingMessageFilter::~PrintingMessageFilter() {
 
 void PrintingMessageFilter::ShutdownOnUIThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // blpwtk2: Remove dependency on Profile
+#if 0
   is_printing_enabled_.Destroy();
   printing_shutdown_notifier_.reset();
+#endif
 }
 
 void PrintingMessageFilter::OnDestruct() const {
