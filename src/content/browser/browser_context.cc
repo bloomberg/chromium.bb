@@ -624,6 +624,10 @@ SharedCorsOriginAccessList* BrowserContext::GetSharedCorsOriginAccessList() {
   return empty_list->get();
 }
 
+FontCollection* BrowserContext::GetFontCollection() {
+    return nullptr;
+}
+
 NativeFileSystemPermissionContext*
 BrowserContext::GetNativeFileSystemPermissionContext() {
   return nullptr;
