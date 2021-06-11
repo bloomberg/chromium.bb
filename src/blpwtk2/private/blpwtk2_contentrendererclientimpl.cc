@@ -22,6 +22,8 @@
 
 #include <blpwtk2_contentrendererclientimpl.h>
 #include <blpwtk2_inprocessresourceloaderbridge.h>
+#include <blpwtk2_rendercompositor.h>
+#include <blpwtk2_rendermessagedelegate.h>
 #include <blpwtk2_renderviewobserverimpl.h>
 #include <blpwtk2_resourceloader.h>
 #include <blpwtk2_statics.h>
@@ -66,6 +68,7 @@ ContentRendererClientImpl::ContentRendererClientImpl()
 
 ContentRendererClientImpl::~ContentRendererClientImpl()
 {
+    RenderCompositorFactory::Terminate();
 }
 
 void ContentRendererClientImpl::RenderThreadStarted() {
@@ -160,6 +163,11 @@ void ContentRendererClientImpl::ExposeInterfacesToBrowser(mojo::BinderMap* binde
     // blpwtk2: expose services to browser
 }
 
+bool ContentRendererClientImpl::Dispatch(IPC::Message *msg)
+{
+    return false;
+}
+
 void ContentRendererClientImpl::OnBindInterface(
         const service_manager::BindSourceInfo& source,
         const std::string& name,
@@ -211,4 +219,3 @@ bool ForwardingService::OnServiceManagerConnectionLost() {
 }  // close namespace blpwtk2
 
 // vim: ts=4 et
-

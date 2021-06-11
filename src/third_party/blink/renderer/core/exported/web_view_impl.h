@@ -423,6 +423,9 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   gfx::Size Size();
   IntSize MainFrameSize();
 
+  HWND GetHwnd() override;
+  void SetHwnd(HWND hwnd) override;
+
   PageScaleConstraintsSet& GetPageScaleConstraintsSet() const;
 
   FloatSize ElasticOverscroll() const { return elastic_overscroll_; }
@@ -745,6 +748,9 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   const bool does_composite_;
 
   bool matches_heuristics_for_gpu_rasterization_ = false;
+
+  // hwnd of WebView if available. e.g. blpwtk2::RenderWebview
+  HWND hwnd_;
 
   std::unique_ptr<FullscreenController> fullscreen_controller_;
 
