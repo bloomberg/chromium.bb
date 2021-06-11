@@ -84,6 +84,9 @@ class BrowserMainRunner
     ~BrowserMainRunner();
 
     int run();
+
+  private:
+    void createDiscardableSharedMemoryManager();
 };
 
 }  // close namespace blpwtk2
