@@ -2,7 +2,7 @@
   "branch": "91.0.4472.x/upstream",
   "files": {
     "src": {
-      ".landmines": "28fa43394fa6fb056af1f35aad48e1bbc45aef73"
+      ".landmines": "beed444bc6f1708cadcc2950f809f049ea9765f4"
     },
     "src/build/config": {
       "gclient_args.gni": "ab84a275d10933da44a2e40638d86990915204bf"
@@ -14,8 +14,8 @@
       }
     },
     "src/build/util": {
-      "LASTCHANGE": "89a38eb5f8fe0997416570e426fca1b503a6ace8",
-      "LASTCHANGE.committime": "dd09edf9c249101737c68126d5bf84266c5f920d"
+      "LASTCHANGE": "dbfe7f8e0834934662743716783c7c3629704ed1",
+      "LASTCHANGE.committime": "2943001864e0a45d74b416b450c425d8807d468a"
     },
     "src/buildtools/win": {
       "clang-format.exe": {
@@ -36,10 +36,10 @@
       }
     },
     "src/gpu/config": {
-      "gpu_lists_version.h": "addcb6b86856578ba897ce25d422110ca168b017"
+      "gpu_lists_version.h": "21d148e8e63e2b90d0fa8cabe6e6e79e1109d309"
     },
     "src/skia/ext": {
-      "skia_commit_hash.h": "7886fa30c7150d2e037d46f229ccd92b4e772f87"
+      "skia_commit_hash.h": "1ed9971cb389de822a43dd8eb0365e78dee99b76"
     },
     "src/testing": {
       "location_tags.json": "28cbc2e139fa8c3d3caa62fc0ae869a6fee4cca6"
@@ -133,7 +133,7 @@
       "php7apache2_4.dll": "dd2a2f476801fcd70587f54171120a10f8d148fc"
     },
     "src/third_party/llvm-build/Release+Asserts": {
-      "cr_build_revision": "14b21f6e44ad52805a51fb9b8c50bd324af1b93b"
+      "cr_build_revision": "ff90d696ba2c1750dbb0878a91c0494464d7ce18"
     },
     "src/third_party/llvm-build/Release+Asserts/bin": {
       "clang-cl.exe": {
@@ -2608,10 +2608,10 @@
       "route.js": "0a1fdea689e2a708b6a00f7988b69c27746ee9c7"
     },
     "src/third_party/node/node_modules/color-name": {
-      "LICENSE": "4d9802a89e299942d0ddef0240077019c5676ea7",
-      "index.js": "e42aa68a542d9e176b5fd050c35b1af11659b2a3",
+      "LICENSE": "c6b10012540c24ceec902ae292dbfe31214d40f8",
+      "index.js": "b7c198a6f3d7c579041efc7a54358fd89cddf43a",
       "package.json": "5986ae888ffc223b5e6ffd1c755148b81509ef0e",
-      "test.js": "7a08746215ed3cd497b5592978772c47adc4a71f"
+      "test.js": "6e6bf30bcd6221edb7dc265b2173d3e0924cb279"
     },
     "src/third_party/node/node_modules/command-line-args": {
       "LICENSE": "1998a7f74935904507d39b846a71455de502f5f7",
@@ -5446,8 +5446,8 @@
       "route.js": "1a08521b5a001793a0a2c705d442a29949b1f051"
     },
     "src/third_party/node/node_modules/eslint/node_modules/color-name": {
-      "LICENSE": "4d9802a89e299942d0ddef0240077019c5676ea7",
-      "index.js": "e42aa68a542d9e176b5fd050c35b1af11659b2a3",
+      "LICENSE": "c6b10012540c24ceec902ae292dbfe31214d40f8",
+      "index.js": "b7c198a6f3d7c579041efc7a54358fd89cddf43a",
       "package.json": "73c0ae016b64a7e5ec761fc12418a5c31a78d093"
     },
     "src/third_party/node/node_modules/eslint/node_modules/doctrine": {
@@ -8144,43 +8144,43 @@
       "package.json": "90e1778af93ade7640e29d578c894696702e1650"
     },
     "src/third_party/node/node_modules/parse5": {
-      "LICENSE": "75581bfa5d975df745f1fd06ad85b5256993835e",
-      "index.js": "92464d71dc5709c1b1388247364f448a6af08456",
+      "LICENSE": "3ec9e7c88e6a43e584df8f7745f485f97d76b131",
+      "index.js": "273bf04f84dadd3d3d4e05c8f42a2e8b19aa773e",
       "package.json": "4923ff0d58a22ef727cd0f95c769541743dd3d57"
     },
     "src/third_party/node/node_modules/parse5/lib/common": {
-      "doctype.js": "6cf3c0ac4adac175e3d29b1a61cc66037b791dc4",
-      "foreign_content.js": "a335960cc2493448073038e2585940f967e64a69",
-      "html.js": "808ad4f6a128c16d9a0532bf063a934659916788",
-      "unicode.js": "a70de7bb8e07e11a46cb220fc4968abc4376764a",
-      "utils.js": "2e94e5c59d7b63de63b51cfa21de3ca506f4f5e4"
+      "doctype.js": "217adbec353bf7193d551d63b5e8537c225e35e3",
+      "foreign_content.js": "f094f785d47ba5d5069fe0c18d4dae109f3da050",
+      "html.js": "f17311773807882e8e01e20d15698a4c71bb1840",
+      "unicode.js": "a996dda88f5afa002037dd30b2864a70d6294759",
+      "utils.js": "8b9741d03ef5de413049681a59b7d81bd273037f"
     },
     "src/third_party/node/node_modules/parse5/lib/jsdom": {
-      "jsdom_parser.js": "96fa8d04e9f1ffa246b87fa73450c200c815add0",
-      "parsing_unit.js": "2060896e730fc6db406037faccb103f7694b9f2e"
+      "jsdom_parser.js": "b318d8e01cc48bd588392b97612a73a0092f2c8f",
+      "parsing_unit.js": "852efa888244892781c2d96aed1982e3c58c9e84"
     },
     "src/third_party/node/node_modules/parse5/lib/serialization": {
-      "serializer.js": "3ecf7869f3fde59edff4e115a1e1709d8d930d65"
+      "serializer.js": "f43f4b34f501d2a4c69d6eed55ecd0dfafbcea1c"
     },
     "src/third_party/node/node_modules/parse5/lib/simple_api": {
-      "simple_api_parser.js": "3cfa492b6181ceb4a99a211d9ef44db4b597e5d9",
-      "tokenizer_proxy.js": "8b1dd86651780d65913d9052b790e4048ec4be19"
+      "simple_api_parser.js": "42016e29df45481105a8a6886a1fcfc1989b6b6b",
+      "tokenizer_proxy.js": "cba5f1cd01ae63ef2fe87f5408b62f2f94004532"
     },
     "src/third_party/node/node_modules/parse5/lib/tokenization": {
-      "location_info_mixin.js": "f352ef02154fcb0c456e39b51e22c9fb0aaefe0d",
-      "named_entity_trie.js": "49421c77ad30d7ea83ade577eac59443d6fb1df0",
-      "preprocessor.js": "596cd25943cba36060b318dbb0f895a4cbd12269",
-      "tokenizer.js": "4d563867609108d016a04fb801cd69465b867395"
+      "location_info_mixin.js": "a0ba2aaad3d9b5b7ef755f0352abb78ecb7fda75",
+      "named_entity_trie.js": "37889d99fa57422bf1da1a1aa6b4a5268f44ff94",
+      "preprocessor.js": "badd5d87762bafffa512019e164e4207c0c9cbfc",
+      "tokenizer.js": "9f5f37ebf9c276db6d86e6687fcff560fc4acdef"
     },
     "src/third_party/node/node_modules/parse5/lib/tree_adapters": {
-      "default.js": "c646c3aad86da5b93407f8e1344e71c97cb4aa0b",
-      "htmlparser2.js": "ab10ee6bca71d6baf89d6948df12017fd0750844"
+      "default.js": "5303c923da1cd2813437c259009af5190b66fb3a",
+      "htmlparser2.js": "29ae73b0fe76e17b3100d91cf02c4821f3e2bb08"
     },
     "src/third_party/node/node_modules/parse5/lib/tree_construction": {
-      "formatting_element_list.js": "baf614496bb4bbaa1957097027b1e471fd8d79d4",
-      "location_info_mixin.js": "acf5c863b22b4e1ad66ec6b2b6e8750558a88f01",
-      "open_element_stack.js": "6b458211bbb7b97c87f18f1f47a4290bdb29fcd4",
-      "parser.js": "d9c40482985025d4ef6d828258c8ca607b1337fa"
+      "formatting_element_list.js": "6a0e0bfacbce30516a70a16c11b11859e977b081",
+      "location_info_mixin.js": "0b184cb7932bf544fc2f93516b68aa7292791582",
+      "open_element_stack.js": "60ce52837d350e6163e97e3b79c8e5170a6123a2",
+      "parser.js": "4ca8147d9935c2294c4ad478ae9b4c3b41c19574"
     },
     "src/third_party/node/node_modules/path-is-absolute": {
       "index.js": "22aa6c35607997d2b73fab3e4b831469ca4d5ba1",
@@ -10769,8 +10769,8 @@
     },
     "src/third_party/node/node_modules/typescript": {
       "CopyrightNotice.txt": "fee4889c83ff97feaba4de72846b53e2b7d74016",
-      "LICENSE.txt": "edc24fd6e14090696ed6e30031e2ab346733e898",
-      "ThirdPartyNoticeText.txt": "b4f9cb68deebb01f83bf816d153c0f3734692b01",
+      "LICENSE.txt": "8746124b277914d0f0fd9cf4aef2ed3b587143d9",
+      "ThirdPartyNoticeText.txt": "26aa57f27bd96cbd2be00866515d76b0480336f0",
       "package.json": "ed7b383228b6b58b533b03a2166f62f64c3a60eb"
     },
     "src/third_party/node/node_modules/typescript/bin": {
@@ -10778,62 +10778,62 @@
       "tsserver": "7143b6a73ab8a901ccf93752cc36f8e9f8191d93"
     },
     "src/third_party/node/node_modules/typescript/lib": {
-      "lib.d.ts": "9152c4dfcef7e69de0646f77bba94fa60222e071",
-      "lib.dom.d.ts": "960a6800eaeb4c48c8ac25b1ff4027321b30f281",
-      "lib.dom.iterable.d.ts": "ebd56d76790a8b98285553d2c3ec72b86d3cc646",
-      "lib.es2015.collection.d.ts": "dc154ca17e78b3816538681bada4eab511bd633a",
-      "lib.es2015.core.d.ts": "f33038d6df6d0408dfc3510a68966ad88bda105a",
-      "lib.es2015.d.ts": "791284b6dad0b7e52c20533b85d5587e86c10fca",
-      "lib.es2015.generator.d.ts": "78f9fd5bd430a4d09be375ac452e35f2d278f316",
-      "lib.es2015.iterable.d.ts": "0dcbcfab26c839e52bc8196033820e92b02defe5",
-      "lib.es2015.promise.d.ts": "0f3f59cbb6324c61d5447afb67cb204c8035e838",
-      "lib.es2015.proxy.d.ts": "9e8b8757a4af1f0aa2f75f0de79c7e0758ddc737",
-      "lib.es2015.reflect.d.ts": "d022a2b774a627a76fe5f345a5899e923d81c143",
-      "lib.es2015.symbol.d.ts": "253d2806ce7b08e745e71d91ede121ec7abce868",
-      "lib.es2015.symbol.wellknown.d.ts": "b2831957a1aaa7ad877edc38a359a294310dbc14",
-      "lib.es2016.array.include.d.ts": "6bc6ef30e7e4259df3223bbae857fca941236c4d",
-      "lib.es2016.d.ts": "ade8175f52cd1ee9c8d3e7d37691985f8f2d4176",
-      "lib.es2016.full.d.ts": "ad61d232522c186bdf103566c3005b5c1a613775",
-      "lib.es2017.d.ts": "d89f58071b0cb1d734eaf1464185a2d384411ef6",
-      "lib.es2017.full.d.ts": "f57c645c5c76f7ed62ffadcbc59284d0bf21345e",
-      "lib.es2017.intl.d.ts": "f20c149f2824d19678fce24c39c1e8eab81619de",
-      "lib.es2017.object.d.ts": "4900d9261e2f04f7405c7d1cc474f3969145a39c",
-      "lib.es2017.sharedmemory.d.ts": "3a4ea26bd49bea47e250a5757c564c6a9b03a9b9",
-      "lib.es2017.string.d.ts": "4b219e6c5c570949a5942b6fe3f05be1b3f1c740",
-      "lib.es2017.typedarrays.d.ts": "ac6984100f5c3edafbb0ddb590254831d1d10b50",
-      "lib.es2018.asyncgenerator.d.ts": "546a8c2e996133028a2d49e4e0fd96ea88ce43f6",
-      "lib.es2018.asynciterable.d.ts": "2c3a970854e5d14f191425aa9a7d6b23bde5061e",
-      "lib.es2018.d.ts": "db0a3d1b027cf32f53e49d3bac3ec218ba52291e",
-      "lib.es2018.full.d.ts": "b517dc59003f5415404a45a50f2cc309b2fcbdaa",
-      "lib.es2018.intl.d.ts": "0d7961101e1f01db5a110b8ab891b7282abdd315",
-      "lib.es2018.promise.d.ts": "1a95d7c87c053aa0d56dc903e8d9c49f54f9f674",
-      "lib.es2018.regexp.d.ts": "9cb3710b5d354d8570f7fdbfd77b96ffbdfd222d",
-      "lib.es2019.array.d.ts": "1607483465a27fedbf42d62fd579bddb9187406c",
-      "lib.es2019.d.ts": "5eab0e2c235c7117aa7d434321a379aff233ccb3",
-      "lib.es2019.full.d.ts": "1ebdb1fe0be8c11c831998ff74bc036a3e8972eb",
-      "lib.es2019.object.d.ts": "09b937af044f8efcd458350297eac48f3efb810d",
-      "lib.es2019.string.d.ts": "5322f232038b8c22a29e1d19d6d92db83061ceac",
-      "lib.es2019.symbol.d.ts": "58b38d5f9db20c28e39c6f55eaf705372b5ca4f4",
-      "lib.es2020.bigint.d.ts": "6dc8b25acf2e78ce76d45587e23a6358b2467068",
-      "lib.es2020.d.ts": "3e739ac7f76f2e3556d484071eeca6be99d5c720",
-      "lib.es2020.full.d.ts": "165b566d24f6f2c71b9e5ec668303d95dbcc7448",
-      "lib.es2020.intl.d.ts": "1ec4628bb94ddcdc70b3ccae479959f10b273842",
-      "lib.es2020.promise.d.ts": "a3b2c0aa88aae3fae12a823114f09d28cc5b1513",
-      "lib.es2020.sharedmemory.d.ts": "f86c5ad50b4880c3ea195a7a9d1cebe336ee5bd3",
-      "lib.es2020.string.d.ts": "19c730752fbb300461027159286348c2b76abb89",
-      "lib.es2020.symbol.wellknown.d.ts": "4bac52fecd3d608a98a0576a056fe3a03b8a9d2f",
-      "lib.es5.d.ts": "9e6dfccdf8491560690266607015b1a2ac9a0012",
-      "lib.es6.d.ts": "fabf4386173ae433106e3e7f4831b55db13d6ca0",
-      "lib.esnext.d.ts": "ae7aaecd7ae7a8e86fda006282496d92f6afb8f5",
-      "lib.esnext.full.d.ts": "be12ba8e4771857f9b6182a2726ebd10bededf53",
-      "lib.esnext.intl.d.ts": "165fcf7b3f79e668203ac14505efc8583e9f3f3c",
-      "lib.esnext.promise.d.ts": "6a56c55128861e418ae5a96237ebd90e99405ec7",
-      "lib.esnext.string.d.ts": "89b27e2fe909460e9f94d7f7f5031a55b8b18429",
-      "lib.esnext.weakref.d.ts": "15a6bc60e9139caf02bee42a2e32134f82c7e358",
-      "lib.scripthost.d.ts": "8ac760bab4735c9d94759b7fa60cbf0e1f4b4e63",
-      "lib.webworker.d.ts": "1e0472624ae4131e32f4ff3d9df86ec69512d010",
-      "lib.webworker.importscripts.d.ts": "73bd281664b043a0e08688594821e9613db82481",
-      "lib.webworker.iterable.d.ts": "cef75d9e6d28fdc8cd265a369339aeef7257546d",
+      "lib.d.ts": "107dd400b5843af1c30e695f2026275923c02259",
+      "lib.dom.d.ts": "af71d298c58872cc1a61f0584302cd29c0d2f0f4",
+      "lib.dom.iterable.d.ts": "366de82898122c1196492eb0de9316a32b6d52bc",
+      "lib.es2015.collection.d.ts": "de14c65193d8bf4ca3b859d90ac953d87dc34ea5",
+      "lib.es2015.core.d.ts": "9676fce909b6fa56ed305cba972c3a10898ab52f",
+      "lib.es2015.d.ts": "d8fbcf330e7b77be1559e59efdf5d92d387c2f84",
+      "lib.es2015.generator.d.ts": "8caa9c32a8c22763412f75e9dba965e044aeaece",
+      "lib.es2015.iterable.d.ts": "22037566c69388d044abffb0e3f2e92ca581fd7d",
+      "lib.es2015.promise.d.ts": "ef0c1df92df31a90543c9b151f09f2bc353c887c",
+      "lib.es2015.proxy.d.ts": "39ac6a37817c8258af91b880f00b6e92411b2d49",
+      "lib.es2015.reflect.d.ts": "355b6531afb82a82e09945156fc20dd4f631d558",
+      "lib.es2015.symbol.d.ts": "0e35efc2b02a14f972e05a3d19e4388da64ef70f",
+      "lib.es2015.symbol.wellknown.d.ts": "8b727b851f1555e37b7229dde6376240da1a9a2e",
+      "lib.es2016.array.include.d.ts": "415982467a239da2bacdcc68024d94eb648f71af",
+      "lib.es2016.d.ts": "c4eb7ec4acf27cbdb3040779fa706a643720010b",
+      "lib.es2016.full.d.ts": "23bc4c3a28e0b2d7e39dd1e16b5460c374af05cd",
+      "lib.es2017.d.ts": "9669058deff4c104c54f279421517947effdef16",
+      "lib.es2017.full.d.ts": "3f88394248cb8bc662afeb77f09f9261bd0159f9",
+      "lib.es2017.intl.d.ts": "19d87fe243dfad36df9894065a9700eb43dc1380",
+      "lib.es2017.object.d.ts": "a688e158eb51be888104df493b60bbc53a0537ef",
+      "lib.es2017.sharedmemory.d.ts": "0f69609af920c2abf9b0f1fc9e261f5ea0c265e3",
+      "lib.es2017.string.d.ts": "30d47f9d92f33ef65d033ec3803425c91750f2c7",
+      "lib.es2017.typedarrays.d.ts": "a7dd21cc8ac4c1b048edf2ebea3c0124191a70e3",
+      "lib.es2018.asyncgenerator.d.ts": "4c4c393cb21d1313dba9edec36a607ae31c4875a",
+      "lib.es2018.asynciterable.d.ts": "a8eb2c82aaee0188579a5e0cf8b9ac0d67c25802",
+      "lib.es2018.d.ts": "37d2621555a634dc7d7c111c698209a73447e8d2",
+      "lib.es2018.full.d.ts": "2d97860b5ce78ebae3fd253ad5210a4153824ead",
+      "lib.es2018.intl.d.ts": "071970181a632b5135ff75495a95caaecfdccb37",
+      "lib.es2018.promise.d.ts": "e492c36c5718f9a7eac4d04e4ec313db52c3ef66",
+      "lib.es2018.regexp.d.ts": "30849578a4c0d1e871af063c1ba7e5e0c83b8476",
+      "lib.es2019.array.d.ts": "2fc03344410246f21352a58140bb4c07e0daf022",
+      "lib.es2019.d.ts": "ce792fa560690f04544c6b69dd9b2f7adc710818",
+      "lib.es2019.full.d.ts": "003836d1c54e058a34ced758aace6773c909a439",
+      "lib.es2019.object.d.ts": "059187ea0e05a1b301d4403aa0ee5de2d2613ca5",
+      "lib.es2019.string.d.ts": "6805a223a4469c27457675582ba2ab2b5556de3a",
+      "lib.es2019.symbol.d.ts": "6ac00c1559201545a61a9bae02c7241d1f0e192b",
+      "lib.es2020.bigint.d.ts": "5811f4671d93a62b44335c91aea8af5e57f5030e",
+      "lib.es2020.d.ts": "1f20962f3d1207fded838d8a14f1dafa51805780",
+      "lib.es2020.full.d.ts": "63a043b8af09de37fa6252c4945af9f34d4e2cfb",
+      "lib.es2020.intl.d.ts": "179cd470dc735ce9d2af95b5b6885d7b593a13e6",
+      "lib.es2020.promise.d.ts": "c3e206efa353c9693297f4d0ab3fd78f0b42d994",
+      "lib.es2020.sharedmemory.d.ts": "b0934f0a16ae5facbecd510eaa5ed3bf4f003e82",
+      "lib.es2020.string.d.ts": "95e97f17f9641046a3f41b1c94c0d64c0ab9e44a",
+      "lib.es2020.symbol.wellknown.d.ts": "3ad55f70c443b953b63d5c09dabeca4abfbb2a08",
+      "lib.es5.d.ts": "76564c9c6f52c930956c3308de2afe3f9a830ae2",
+      "lib.es6.d.ts": "8d1363f682b8295b1d9eced38c5ba1fff41ee165",
+      "lib.esnext.d.ts": "380fb6441c515d3b2ce9fc6a9a6a1627d5beb793",
+      "lib.esnext.full.d.ts": "db332a4b9f5b45f046c6c30aa3c7d8f15fc5cd03",
+      "lib.esnext.intl.d.ts": "b355e9fadb83153ebf1575a70747e3d3ca13f84c",
+      "lib.esnext.promise.d.ts": "4df2c942de788a9c83e6bb07b4e3b1f331162b4c",
+      "lib.esnext.string.d.ts": "20ca83984a854ca8fba6a9555220926cb55534fb",
+      "lib.esnext.weakref.d.ts": "e28fede9d044b7897b148ee884b6f8b58aec235c",
+      "lib.scripthost.d.ts": "f15ac1a38067edcfe9b5e78c396da1ad27ec80be",
+      "lib.webworker.d.ts": "adb5619697fee8c4b496dbc3ad36f9c61d829c11",
+      "lib.webworker.importscripts.d.ts": "39999fec70579308ed65fd6676686b80f82052a4",
+      "lib.webworker.iterable.d.ts": "5efc7d391247010cdd25141d13e2cd276d7939d5",
       "tsc.js": {
         "sha": "b3480f2243acbdd4e378ccf2e0fd110a8967e0bc",
         "type": "7z"
