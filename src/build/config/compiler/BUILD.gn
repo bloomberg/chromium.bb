@@ -1834,8 +1834,6 @@ config("thin_archive") {
   # archives.
   if ((is_posix && !is_nacl && (!is_apple || use_lld)) || is_fuchsia) {
     arflags = [ "-T" ]
-  } else if (is_win && use_lld) {
-    arflags = [ "/llvmlibthin" ]
   }
 }
 

@@ -774,6 +774,11 @@ class BLINK_PLATFORM_EXPORT Platform {
   // Returns a sad page bitmap used when the child frame has crashed.
   virtual SkBitmap* GetSadPageBitmap() { return nullptr; }
 
+  // DevTools ------------------------------------------------------------
+
+  virtual void DevToolsAgentAttached() {}
+  virtual void DevToolsAgentDetached() {}
+
  private:
   static void InitializeMainThreadCommon(Platform* platform,
                                          std::unique_ptr<Thread> main_thread);

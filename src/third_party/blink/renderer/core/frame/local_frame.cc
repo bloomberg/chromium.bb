@@ -1967,7 +1967,7 @@ WebContentSettingsClient* LocalFrame::GetContentSettingsClient() {
 PluginData* LocalFrame::GetPluginData() const {
   if (!Loader().AllowPlugins())
     return nullptr;
-  return GetPage()->GetPluginData(
+  return GetPage()->GetPluginData(IsMainFrame(),
       Tree().Top().GetSecurityContext()->GetSecurityOrigin());
 }
 

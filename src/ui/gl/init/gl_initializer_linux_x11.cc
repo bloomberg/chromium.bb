@@ -82,7 +82,7 @@ bool InitializeStaticEGLInternalFromLibrary(GLImplementation implementation) {
   if (implementation == kGLImplementationSwiftShaderGL) {
 #if BUILDFLAG(ENABLE_SWIFTSHADER)
     base::FilePath module_path;
-    if (!base::PathService::Get(base::DIR_MODULE, &module_path))
+    if (!base::PathService::Get(base::DIR_ASSETS, &module_path))
       return false;
     module_path = module_path.Append("swiftshader/");
 
@@ -94,7 +94,7 @@ bool InitializeStaticEGLInternalFromLibrary(GLImplementation implementation) {
   } else if (implementation == kGLImplementationEGLANGLE) {
 #if !BUILDFLAG(USE_STATIC_ANGLE)
     base::FilePath module_path;
-    if (!base::PathService::Get(base::DIR_MODULE, &module_path))
+    if (!base::PathService::Get(base::DIR_ASSETS, &module_path))
       return false;
 
     const char kGLESv2ANGLELibraryName[] = "libGLESv2.so";

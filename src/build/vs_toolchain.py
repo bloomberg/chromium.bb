@@ -102,8 +102,15 @@ def SetEnvironmentAndGetRuntimeDllDirs():
     runtime_path = os.path.pathsep.join(vs_runtime_dll_dirs)
     os.environ['PATH'] = runtime_path + os.path.pathsep + os.environ['PATH']
   elif sys.platform == 'win32' and not depot_tools_win_toolchain:
+    has_override_path = True
     if not 'GYP_MSVS_OVERRIDE_PATH' in os.environ:
+      has_override_path = False
       os.environ['GYP_MSVS_OVERRIDE_PATH'] = DetectVisualStudioPath()
+
+    if has_override_path:
+      # Don't attempt to copy DLLs when using a custom toolchain.
+      # The DLLs should already be discoverable via the PATH env variable.
+      return None
 
     # When using an installed toolchain these files aren't needed in the output
     # directory in order to run binaries locally, but they are needed in order
@@ -153,6 +160,10 @@ def _RegistryGetValue(key, value):
 def GetVisualStudioVersion():
   """Return best available version of Visual Studio.
   """
+  # Return the explicitly requested version, if any.
+  if 'GYP_MSVS_VERSION' in os.environ:
+    return os.environ['GYP_MSVS_VERSION']
+
   supported_versions = list(MSVS_VERSIONS.keys())
 
   # VS installed in depot_tools for Googlers

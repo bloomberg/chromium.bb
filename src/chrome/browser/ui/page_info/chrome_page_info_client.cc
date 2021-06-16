@@ -17,5 +17,9 @@ std::unique_ptr<PageInfoDelegate> ChromePageInfoClient::CreatePageInfoDelegate(
 }
 
 int ChromePageInfoClient::GetJavaResourceId(int native_resource_id) {
+#if defined(OS_ANDROID)
   return ResourceMapper::MapToJavaDrawableId(native_resource_id);
+#else
+  return 0;
+#endif
 }

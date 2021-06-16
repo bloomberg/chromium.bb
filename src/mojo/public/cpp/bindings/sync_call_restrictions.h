@@ -34,6 +34,7 @@ class Compositor;
 
 namespace viz {
 class HostFrameSinkManager;
+class GpuDisplayProvider;
 }
 
 namespace mojo {
@@ -87,6 +88,8 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) SyncCallRestrictions {
   // For preventing frame swaps of wrong size during resize on Windows.
   // (https://crbug.com/811945)
   friend class ui::Compositor;
+  // For query of whether to use SoftwareOutputDevice or not.
+  friend class viz::GpuDisplayProvider;
   // For calling sync mojo API to get cdm origin. The service and the client are
   // running in the same process, so it won't block anything.
   // TODO(159346933) Remove once the origin isolation logic is moved outside of

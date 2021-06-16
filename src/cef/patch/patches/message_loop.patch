@@ -1,0 +1,75 @@
+diff --git base/message_loop/message_pump_win.cc base/message_loop/message_pump_win.cc
+index 0a3f329f4a52..9546c5add9c8 100644
+--- base/message_loop/message_pump_win.cc
++++ base/message_loop/message_pump_win.cc
+@@ -2,6 +2,7 @@
+ // Use of this source code is governed by a BSD-style license that can be
+ // found in the LICENSE file.
+ 
++#include "base/task/current_thread.h"
+ #include "base/message_loop/message_pump_win.h"
+ 
+ #include <algorithm>
+@@ -493,7 +494,17 @@ bool MessagePumpForUI::ProcessNextWindowsMessage() {
+                 ctx.event()->set_chrome_message_pump();
+             msg_pump_data->set_sent_messages_in_queue(more_work_is_plausible);
+           });
+-      has_msg = ::PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE) != FALSE;
++ 
++      // We should not process all window messages if we are in the context of an
++      // OS modal loop, i.e. in the context of a windows API call like MessageBox.
++      // This is to ensure that these messages are peeked out by the OS modal loop.
++      if (CurrentThread::Get()->os_modal_loop()) {
++        // We only peek out WM_PAINT and WM_TIMER here for reasons mentioned above.
++        has_msg = PeekMessage(&msg, NULL, WM_PAINT, WM_PAINT, PM_REMOVE) ||
++                  PeekMessage(&msg, NULL, WM_TIMER, WM_TIMER, PM_REMOVE);
++      } else {
++        has_msg = PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) != FALSE;
++      }
+     }
+   }
+   if (has_msg)
+diff --git base/task/current_thread.cc base/task/current_thread.cc
+index 9641285fde74..51cc852fcc16 100644
+--- base/task/current_thread.cc
++++ base/task/current_thread.cc
+@@ -48,6 +48,8 @@ void CurrentThread::AddDestructionObserver(
+ 
+ void CurrentThread::RemoveDestructionObserver(
+     DestructionObserver* destruction_observer) {
++  if (!current_)
++    return;
+   DCHECK(current_->IsBoundToCurrentThread());
+   current_->RemoveDestructionObserver(destruction_observer);
+ }
+diff --git base/task/current_thread.h base/task/current_thread.h
+index bdcd661bfa28..823a1d02ca85 100644
+--- base/task/current_thread.h
++++ base/task/current_thread.h
+@@ -127,6 +127,12 @@ class BASE_EXPORT CurrentThread {
+   // posted tasks.
+   void SetAddQueueTimeToTasks(bool enable);
+ 
++#if defined(OS_WIN)
++  void set_os_modal_loop(bool os_modal_loop) { os_modal_loop_ = os_modal_loop; }
++
++  bool os_modal_loop() const { return os_modal_loop_; }
++#endif  // OS_WIN
++
+   // Enables nested task processing in scope of an upcoming native message loop.
+   // Some unwanted message loops may occur when using common controls or printer
+   // functions. Hence, nested task processing is disabled by default to avoid
+@@ -192,6 +198,13 @@ class BASE_EXPORT CurrentThread {
+   friend class web::WebTaskEnvironment;
+ 
+   sequence_manager::internal::SequenceManagerImpl* current_;
++
++#if defined(OS_WIN)
++ private:
++  // Should be set to true before calling Windows APIs like TrackPopupMenu, etc.
++  // which enter a modal message loop.
++  bool os_modal_loop_ = false;
++#endif
+ };
+ 
+ #if !defined(OS_NACL)

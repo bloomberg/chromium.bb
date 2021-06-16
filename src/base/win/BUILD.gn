@@ -33,4 +33,7 @@ static_library("pe_image") {
     "pe_image.cc",
     "pe_image.h",
   ]
+
+  # Build as C++17 to avoid export of templates that should be inlined.
+  cflags_cc = [ "/std:c++17" ]
 }

@@ -68,7 +68,16 @@ struct ContentMainParams {
 #endif
 };
 
-CONTENT_EXPORT int RunContentProcess(const ContentMainParams& params,
+// Split RunContentProcess() into separate stages.
+CONTENT_EXPORT int ContentMainInitialize(
+    ContentMainParams& params,
+    ContentMainRunner* content_main_runner);
+CONTENT_EXPORT int ContentMainRun(ContentMainParams& params,
+                                  ContentMainRunner* content_main_runner);
+CONTENT_EXPORT void ContentMainShutdown(ContentMainParams& params,
+                                        ContentMainRunner* content_main_runner);
+
+CONTENT_EXPORT int RunContentProcess(ContentMainParams& params,
                                      ContentMainRunner* content_main_runner);
 
 #if defined(OS_ANDROID)
@@ -91,7 +100,7 @@ ContentMainDelegate* GetContentMainDelegate();
 // initial setup for every process. The embedder has a chance to customize
 // startup using the ContentMainDelegate interface. The embedder can also pass
 // in null for |delegate| if they don't want to override default startup.
-CONTENT_EXPORT int ContentMain(const ContentMainParams& params);
+CONTENT_EXPORT int ContentMain(ContentMainParams& params);
 #endif
 
 }  // namespace content

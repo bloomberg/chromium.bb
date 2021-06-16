@@ -576,11 +576,22 @@ class BrowserView::AccessibilityModeObserver : public ui::AXModeObserver {
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, public:
 
+BrowserView::BrowserView() : BrowserView(nullptr) {}
+
 BrowserView::BrowserView(std::unique_ptr<Browser> browser)
     : views::ClientView(nullptr, nullptr),
-      browser_(std::move(browser)),
       accessibility_mode_observer_(
           std::make_unique<AccessibilityModeObserver>(this)) {
+  if (browser)
+    InitBrowser(std::move(browser));
+}
+
+void BrowserView::InitBrowser(std::unique_ptr<Browser> browser) {
+  DCHECK(!browser_);
+  browser_ = std::move(browser);
+
+  immersive_mode_controller_ = chrome::CreateImmersiveModeController();
+
   SetShowIcon(::ShouldShowWindowIcon(browser_.get()));
 
   // In forced app mode, all size controls are always disabled. Otherwise, use
@@ -594,7 +605,6 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
   }
 
   browser_->tab_strip_model()->AddObserver(this);
-  immersive_mode_controller_ = chrome::CreateImmersiveModeController();
 
   // Top container holds tab strip region and toolbar and lives at the front of
   // the view hierarchy.
@@ -638,8 +648,15 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
   contents_container->SetLayoutManager(std::make_unique<ContentsLayoutManager>(
       devtools_web_view_, contents_web_view_));
 
-  toolbar_ = top_container_->AddChildView(
-      std::make_unique<ToolbarView>(browser_.get(), this));
+  toolbar_ = OverrideCreateToolbar(browser_.get(), this);
+  if (!toolbar_) {
+    toolbar_ = new ToolbarView(browser_.get(), this, base::nullopt);
+  } else {
+    browser_->set_toolbar_overridden(true);
+    // Update state that depends on the above flag.
+    browser_->command_controller()->FullscreenStateChanged();
+  }
+  top_container_->AddChildView(base::WrapUnique(toolbar_));
 
   contents_separator_ =
       top_container_->AddChildView(std::make_unique<ContentsSeparator>());
@@ -1407,6 +1424,8 @@ bool BrowserView::ShouldHideUIForFullscreen() const {
   if (immersive_mode_controller_->IsEnabled())
     return false;
 
+  if (!frame_->GetFrameView())
+    return false;
   return frame_->GetFrameView()->ShouldHideTopUIForFullscreen();
 }
 
@@ -2427,7 +2446,8 @@ BrowserView::GetNativeViewHostsForTopControlsSlide() const {
 }
 
 void BrowserView::ReparentTopContainerForEndOfImmersive() {
-  overlay_view_->SetVisible(false);
+  if (overlay_view_)
+    overlay_view_->SetVisible(false);
   top_container()->DestroyLayer();
   AddChildViewAt(top_container(), 0);
   EnsureFocusOrder();
@@ -2889,8 +2909,10 @@ void BrowserView::Layout() {
 
   // TODO(jamescook): Why was this in the middle of layout code?
   toolbar_->location_bar()->omnibox_view()->SetFocusBehavior(
-      IsToolbarVisible() ? FocusBehavior::ALWAYS : FocusBehavior::NEVER);
-  frame()->GetFrameView()->UpdateMinimumSize();
+      (IsToolbarVisible() || browser_->toolbar_overridden()) ?
+          FocusBehavior::ALWAYS : FocusBehavior::NEVER);
+  if (frame()->GetFrameView())
+    frame()->GetFrameView()->UpdateMinimumSize();
 
   // Some of the situations when the BrowserView is laid out are:
   // - Enter/exit immersive fullscreen mode.
@@ -2947,6 +2969,11 @@ void BrowserView::AddedToWidget() {
   SetThemeProfileForWindow(GetNativeWindow(), browser_->profile());
 #endif
 
+  // This browser view may already have a custom button provider set (e.g the
+  // hosted app frame).
+  if (!toolbar_button_provider_)
+    SetToolbarButtonProvider(toolbar_);
+
   toolbar_->Init();
 
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -2987,13 +3014,9 @@ void BrowserView::AddedToWidget() {
 
   EnsureFocusOrder();
 
-  // This browser view may already have a custom button provider set (e.g the
-  // hosted app frame).
-  if (!toolbar_button_provider_)
-    SetToolbarButtonProvider(toolbar_);
-
   frame_->OnBrowserViewInitViewsComplete();
-  frame_->GetFrameView()->UpdateMinimumSize();
+  if (frame_->GetFrameView())
+    frame_->GetFrameView()->UpdateMinimumSize();
   using_native_frame_ = frame_->ShouldUseNativeFrame();
 
   MaybeInitializeWebUITabStrip();

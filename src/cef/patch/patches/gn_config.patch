@@ -1,0 +1,179 @@
+diff --git .gn .gn
+index 5b010cc8b014..6f7dce7dd8e4 100644
+--- .gn
++++ .gn
+@@ -184,6 +184,8 @@ exec_script_whitelist =
+ 
+       "//chrome/android/webapk/shell_apk/prepare_upload_dir/BUILD.gn",
+ 
++      "//cef/BUILD.gn",
++
+       # TODO(dgn): Layer violation but breaks the build otherwise, see
+       # https://crbug.com/474506.
+       "//clank/java/BUILD.gn",
+diff --git BUILD.gn BUILD.gn
+index 106e853ef817..2d2fa6b9c284 100644
+--- BUILD.gn
++++ BUILD.gn
+@@ -16,6 +16,7 @@ import("//build/config/sanitizers/sanitizers.gni")
+ import("//build/config/ui.gni")
+ import("//build/gn_logs.gni")
+ import("//build/util/generate_wrapper.gni")
++import("//cef/libcef/features/features.gni")
+ import("//chrome/browser/buildflags.gni")
+ import("//chrome/browser/media/router/features.gni")
+ import("//components/nacl/features.gni")
+@@ -251,6 +252,9 @@ group("gn_all") {
+       "//media/cast:cast_unittests",
+       "//third_party/catapult/telemetry:bitmaptools($host_toolchain)",
+     ]
++    if (enable_cef) {
++      deps += [ "//cef" ]
++    }
+   } else if (is_ios) {
+     deps += [
+       "//ios:all",
+diff --git build/config/win/visual_studio_version.gni build/config/win/visual_studio_version.gni
+index 982fbe8d3f0d..e757be4688f1 100644
+--- build/config/win/visual_studio_version.gni
++++ build/config/win/visual_studio_version.gni
+@@ -12,9 +12,8 @@ declare_args() {
+   # Currently always "2015".
+   visual_studio_version = ""
+ 
+-  # Directory of the Windows driver kit. If visual_studio_path is empty, this
+-  # will be auto-filled.
+-  wdk_path = ""
++  # Path to Visual Studio runtime libraries.
++  visual_studio_runtime_dirs = ""
+ 
+   # Full path to the Windows SDK, not including a backslash at the end.
+   # This value is the default location, override if you have a different
+@@ -28,12 +27,11 @@ if (visual_studio_path == "") {
+   visual_studio_path = toolchain_data.vs_path
+   windows_sdk_path = toolchain_data.sdk_path
+   visual_studio_version = toolchain_data.vs_version
+-  wdk_path = toolchain_data.wdk_dir
+   visual_studio_runtime_dirs = toolchain_data.runtime_dirs
+ } else {
+   assert(visual_studio_version != "",
+          "You must set the visual_studio_version if you set the path")
+-  assert(wdk_path != "",
+-         "You must set the wdk_path if you set the visual studio path")
+-  visual_studio_runtime_dirs = []
++  assert(visual_studio_runtime_dirs != "",
++         "You must set the visual_studio_runtime_dirs if you set the visual " +
++         "studio path")
+ }
+diff --git chrome/app/framework.order chrome/app/framework.order
+index 839144aa1e9b..29c8ab32398a 100644
+--- chrome/app/framework.order
++++ chrome/app/framework.order
+@@ -28,3 +28,8 @@ _ChromeMain
+ _lprofDirMode
+ ___llvm_profile_filename
+ ___llvm_profile_raw_version
++
++# Symbols exported for CEF.
++_OBJC_CLASS_$_UnderlayOpenGLHostingWindow
++_OBJC_METACLASS_$_UnderlayOpenGLHostingWindow
++
+diff --git chrome/chrome_paks.gni chrome/chrome_paks.gni
+index 8e17878f175b..3d8fc8848fe9 100644
+--- chrome/chrome_paks.gni
++++ chrome/chrome_paks.gni
+@@ -4,6 +4,7 @@
+ 
+ import("//build/config/chromeos/ui_mode.gni")
+ import("//build/config/locales.gni")
++import("//cef/libcef/features/features.gni")
+ import("//chrome/browser/buildflags.gni")
+ import("//chrome/browser/resources/pdf/ink/ink.gni")
+ import("//chrome/common/features.gni")
+@@ -277,6 +278,10 @@ template("chrome_extra_paks") {
+         "//chrome/browser/resources/welcome:resources",
+       ]
+     }
++    if (enable_cef) {
++      sources += [ "$root_gen_dir/cef/cef_resources.pak" ]
++      deps += [ "//cef:cef_resources" ]
++    }
+     if (enable_extensions) {
+       sources += [
+         "$root_gen_dir/chrome/extensions_resources.pak",
+diff --git chrome/chrome_repack_locales.gni chrome/chrome_repack_locales.gni
+index a64a23560460..b08eee1f789a 100644
+--- chrome/chrome_repack_locales.gni
++++ chrome/chrome_repack_locales.gni
+@@ -6,6 +6,7 @@ import("//build/config/chrome_build.gni")
+ import("//build/config/chromeos/ui_mode.gni")
+ import("//build/config/features.gni")
+ import("//build/config/ui.gni")
++import("//cef/libcef/features/features.gni")
+ import("//extensions/buildflags/buildflags.gni")
+ import("//tools/grit/repack.gni")
+ 
+@@ -83,6 +84,10 @@ template("chrome_repack_locales") {
+       ]
+       compress = true
+     }
++    if (enable_cef) {
++      source_patterns += [ "${root_gen_dir}/cef/cef_strings_" ]
++      deps += [ "//cef:cef_strings" ]
++    }
+     if (enable_extensions) {
+       source_patterns +=
+           [ "${root_gen_dir}/extensions/strings/extensions_strings_" ]
+diff --git chrome/installer/mini_installer/BUILD.gn chrome/installer/mini_installer/BUILD.gn
+index ae43217ef207..2f0b95687263 100644
+--- chrome/installer/mini_installer/BUILD.gn
++++ chrome/installer/mini_installer/BUILD.gn
+@@ -6,6 +6,7 @@ import("//build/config/compiler/compiler.gni")
+ import("//build/config/features.gni")
+ import("//build/config/python.gni")
+ import("//build/config/ui.gni")
++import("//cef/libcef/features/features.gni")
+ import("//chrome/process_version_rc_template.gni")
+ import("//components/nacl/features.gni")
+ import("//third_party/ffmpeg/ffmpeg_options.gni")
+@@ -122,11 +123,13 @@ python2_action("mini_installer_archive") {
+   inputs = [
+     "$root_out_dir/chrome.dll",
+     "$root_out_dir/chrome.exe",
+-    "$root_out_dir/locales/en-US.pak",
+     "$root_out_dir/setup.exe",
+     "//chrome/tools/build/win/makecab.py",
+     release_file,
+   ]
++  if (!enable_cef) {
++    inputs += [ "$root_out_dir/locales/en-US.pak" ]
++  }
+ 
+   outputs = [
+     # See also chrome.packed.7z conditionally added below.
+diff --git tools/grit/grit_defines.gni tools/grit/grit_defines.gni
+index 5b92d7a6cd92..ceb274146131 100644
+--- tools/grit/grit_defines.gni
++++ tools/grit/grit_defines.gni
+@@ -5,6 +5,7 @@
+ import("//build/config/chrome_build.gni")
+ import("//build/config/chromeos/ui_mode.gni")
+ import("//build/config/crypto.gni")
++import("//build/config/locales.gni")
+ import("//build/config/ui.gni")
+ 
+ grit_defines = [
+@@ -104,6 +105,13 @@ if (is_android) {
+   ]
+ }
+ 
++if (enable_pseudolocales) {
++  grit_defines += [
++    "-D",
++    "enable_pseudolocales",
++  ]
++}
++
+ # When cross-compiling, explicitly pass the target system to grit.
+ if (current_toolchain != host_toolchain) {
+   if (is_android) {

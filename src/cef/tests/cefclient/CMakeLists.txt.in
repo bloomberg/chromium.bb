@@ -1,0 +1,318 @@
+# Copyright (c) 2014 The Chromium Embedded Framework Authors. All rights
+# reserved. Use of this source code is governed by a BSD-style license that
+# can be found in the LICENSE file.
+
+#
+# Source files.
+#
+
+# cefclient browser sources.
+{{
+  'prefix': 'cefclient_browser',
+  'set': 'CEFCLIENT_BROWSER_SRCS',
+  'includes': [
+    'shared_sources_browser',
+    'cefclient_sources_browser',
+  ],
+}}
+
+# cefclient common sources.
+{{
+  'prefix': 'cefclient_common',
+  'set': 'CEFCLIENT_COMMON_SRCS',
+  'includes': [
+    'shared_sources_common',
+    'cefclient_sources_common',
+  ],
+}}
+
+# cefclient renderer sources.
+{{
+  'prefix': 'cefclient_renderer',
+  'set': 'CEFCLIENT_RENDERER_SRCS',
+  'includes': [
+    'shared_sources_renderer',
+    'cefclient_sources_renderer',
+  ],
+}}
+
+#cefclient Linux sources
+{{
+  'prefix': 'cefclient_linux',
+  'set': 'CEFCLIENT_LINUX_SRCS',
+  'includes': [
+    'shared_sources_linux',
+    'cefclient_sources_linux',
+  ],
+}}
+
+#cefclient Mac OS X sources
+{{
+  'prefix': 'cefclient_macosx',
+  'set': 'CEFCLIENT_MAC_SRCS',
+  'includes': [
+    'shared_sources_mac',
+    'cefclient_sources_mac',
+  ],
+}}
+
+# cefclient Mac OS X helper sources.
+{{
+  'prefix': 'cefclient_helper',
+  'set': 'CEFCLIENT_MAC_HELPER_SRCS',
+  'includes': [
+    'shared_sources_mac_helper',
+  ],
+}}
+
+#cefclient Windows sources
+{{
+  'prefix': 'cefclient_windows',
+  'set': 'CEFCLIENT_WINDOWS_SRCS',
+  'includes': [
+    'shared_sources_win',
+    'cefclient_sources_win',
+  ],
+}}
+
+# cefclient resources.
+{{
+  'prefix': 'cefclient_resources',
+  'set': 'CEFCLIENT_RESOURCES_SRCS',
+  'includes': [
+    'shared_sources_resources',
+    'cefclient_bundle_resources_mac:MAC',
+    'cefclient_sources_resources',
+    'cefclient_sources_resources_extensions_set_page_color',
+  ],
+}}
+
+
+#
+# Shared configuration.
+#
+
+# Target executable names.
+set(CEF_TARGET "cefclient")
+if(OS_MAC)
+  set(CEF_HELPER_TARGET "cefclient_Helper")
+  set(CEF_HELPER_OUTPUT_NAME "cefclient Helper")
+else()
+  # Logical target used to link the libcef library.
+  ADD_LOGICAL_TARGET("libcef_lib" "${CEF_LIB_DEBUG}" "${CEF_LIB_RELEASE}")
+endif()
+
+# Determine the target output directory.
+SET_CEF_TARGET_OUT_DIR()
+
+
+#
+# Linux configuration.
+#
+
+if(OS_LINUX)
+  # All sources required by the "cefclient" target. Generates an executable that
+  # is used for all processes.
+  set(CEFCLIENT_SRCS
+    ${CEFCLIENT_BROWSER_SRCS}
+    ${CEFCLIENT_COMMON_SRCS}
+    ${CEFCLIENT_RENDERER_SRCS}
+    ${CEFCLIENT_RESOURCES_SRCS}
+    ${CEFCLIENT_LINUX_SRCS}
+    )
+
+  # Find required libraries and update compiler/linker variables.
+  FIND_LINUX_LIBRARIES("gmodule-2.0 gtk+-3.0 gthread-2.0 gtk+-unix-print-3.0 xi")
+
+  # Executable target.
+  add_executable(${CEF_TARGET} ${CEFCLIENT_SRCS})
+  SET_EXECUTABLE_TARGET_PROPERTIES(${CEF_TARGET})
+  add_dependencies(${CEF_TARGET} libcef_dll_wrapper)
+  target_link_libraries(${CEF_TARGET} libcef_lib libcef_dll_wrapper "GL" ${CEF_STANDARD_LIBS})
+
+  # Set rpath so that libraries can be placed next to the executable.
+  set_target_properties(${CEF_TARGET} PROPERTIES INSTALL_RPATH "$ORIGIN")
+  set_target_properties(${CEF_TARGET} PROPERTIES BUILD_WITH_INSTALL_RPATH TRUE)
+  set_target_properties(${CEF_TARGET} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CEF_TARGET_OUT_DIR})
+
+  # We don't call deprecated GTK functions, and they can cause build failures, so disable them.
+  add_definitions("-DGTK_DISABLE_DEPRECATED")
+
+  # Copy CEF binary and resource files to the target output directory.
+  COPY_FILES("${CEF_TARGET}" "${CEF_BINARY_FILES}" "${CEF_BINARY_DIR}" "${CEF_TARGET_OUT_DIR}")
+  COPY_FILES("${CEF_TARGET}" "${CEF_RESOURCE_FILES}" "${CEF_RESOURCE_DIR}" "${CEF_TARGET_OUT_DIR}")
+
+  # Copy cefclient resource files to the target output directory.
+  COPY_FILES("${CEF_TARGET}" "${CEFCLIENT_RESOURCES_SRCS}" "${CMAKE_CURRENT_SOURCE_DIR}" "${CEF_TARGET_OUT_DIR}/cefclient_files")
+
+  # Set SUID permissions on the chrome-sandbox target.
+  SET_LINUX_SUID_PERMISSIONS("${CEF_TARGET}" "${CEF_TARGET_OUT_DIR}/chrome-sandbox")
+endif()
+
+
+#
+# Mac OS X configuration.
+#
+
+if(OS_MAC)
+  option(OPTION_USE_ARC "Build with ARC (automatic Reference Counting) on macOS." ON)
+  if(OPTION_USE_ARC)
+    list(APPEND CEF_COMPILER_FLAGS
+      -fobjc-arc
+      )
+    set_target_properties(${target} PROPERTIES
+      CLANG_ENABLE_OBJC_ARC "YES"
+      )
+  endif()
+
+  # All sources required by the "cefclient" target. Generates an app bundle that
+  # is used only for the browser process.
+  set(CEFCLIENT_SRCS
+    ${CEFCLIENT_BROWSER_SRCS}
+    ${CEFCLIENT_COMMON_SRCS}
+    ${CEFCLIENT_RESOURCES_SRCS}
+    ${CEFCLIENT_MAC_SRCS}
+    )
+
+  # All sources required by the "cefclient Helper" target. Generates an app
+  # bundle that is used only for non-browser processes.
+  set(CEFCLIENT_HELPER_SRCS
+    ${CEFCLIENT_COMMON_SRCS}
+    ${CEFCLIENT_RENDERER_SRCS}
+    ${CEFCLIENT_MAC_HELPER_SRCS}
+    )
+
+  # Output path for the main app bundle.
+  set(CEF_APP "${CEF_TARGET_OUT_DIR}/${CEF_TARGET}.app")
+
+  # Variables referenced from the main Info.plist file.
+  set(EXECUTABLE_NAME "${CEF_TARGET}")
+  set(PRODUCT_NAME "${CEF_TARGET}")
+
+  if(USE_SANDBOX)
+    # Logical target used to link the cef_sandbox library.
+    ADD_LOGICAL_TARGET("cef_sandbox_lib" "${CEF_SANDBOX_LIB_DEBUG}" "${CEF_SANDBOX_LIB_RELEASE}")
+  endif()
+
+  # Main app bundle target.
+  add_executable(${CEF_TARGET} MACOSX_BUNDLE ${CEFCLIENT_RESOURCES_SRCS} ${CEFCLIENT_SRCS})
+  SET_EXECUTABLE_TARGET_PROPERTIES(${CEF_TARGET})
+  add_dependencies(${CEF_TARGET} libcef_dll_wrapper)
+  target_link_libraries(${CEF_TARGET} libcef_dll_wrapper ${CEF_STANDARD_LIBS} "-framework OpenGL")
+  set_target_properties(${CEF_TARGET} PROPERTIES
+    MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/resources/mac/Info.plist
+    )
+
+  # Copy the CEF framework into the Frameworks directory.
+  add_custom_command(
+    TARGET ${CEF_TARGET}
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CEF_BINARY_DIR}/Chromium Embedded Framework.framework"
+            "${CEF_APP}/Contents/Frameworks/Chromium Embedded Framework.framework"
+    VERBATIM
+    )
+
+  # Create the multiple Helper app bundle targets.
+  foreach(_suffix_list ${CEF_HELPER_APP_SUFFIXES})
+    # Convert to a list and extract the suffix values.
+    string(REPLACE ":" ";" _suffix_list ${_suffix_list})
+    list(GET _suffix_list 0 _name_suffix)
+    list(GET _suffix_list 1 _target_suffix)
+    list(GET _suffix_list 2 _plist_suffix)
+
+    # Define Helper target and output names.
+    set(_helper_target "${CEF_HELPER_TARGET}${_target_suffix}")
+    set(_helper_output_name "${CEF_HELPER_OUTPUT_NAME}${_name_suffix}")
+
+    # Create Helper-specific variants of the helper-Info.plist file. Do this
+    # manually because the configure_file command (which is executed as part of
+    # MACOSX_BUNDLE_INFO_PLIST) uses global env variables and would insert the
+    # wrong values with multiple targets.
+    set(_helper_info_plist "${CMAKE_CURRENT_BINARY_DIR}/helper-Info${_target_suffix}.plist")
+    file(READ "${CMAKE_CURRENT_SOURCE_DIR}/resources/mac/helper-Info.plist" _plist_contents)
+    string(REPLACE "\${EXECUTABLE_NAME}" "${_helper_output_name}" _plist_contents ${_plist_contents})
+    string(REPLACE "\${PRODUCT_NAME}" "${_helper_output_name}" _plist_contents ${_plist_contents})
+    string(REPLACE "\${BUNDLE_ID_SUFFIX}" "${_plist_suffix}" _plist_contents ${_plist_contents})
+    file(WRITE ${_helper_info_plist} ${_plist_contents})
+
+    # Create Helper executable target.
+    add_executable(${_helper_target} MACOSX_BUNDLE ${CEFCLIENT_HELPER_SRCS})
+    SET_EXECUTABLE_TARGET_PROPERTIES(${_helper_target})
+    add_dependencies(${_helper_target} libcef_dll_wrapper)
+    target_link_libraries(${_helper_target} libcef_dll_wrapper ${CEF_STANDARD_LIBS})
+    set_target_properties(${_helper_target} PROPERTIES
+      MACOSX_BUNDLE_INFO_PLIST ${_helper_info_plist}
+      OUTPUT_NAME ${_helper_output_name}
+      )
+
+    if(USE_SANDBOX)
+      target_link_libraries(${_helper_target} cef_sandbox_lib)
+    endif()
+
+    # Add the Helper as a dependency of the main executable target.
+    add_dependencies(${CEF_TARGET} "${_helper_target}")
+
+    # Copy the Helper app bundle into the Frameworks directory.
+    add_custom_command(
+      TARGET ${CEF_TARGET}
+      POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_directory
+              "${CEF_TARGET_OUT_DIR}/${_helper_output_name}.app"
+              "${CEF_APP}/Contents/Frameworks/${_helper_output_name}.app"
+      VERBATIM
+      )
+  endforeach()
+
+  # Manually process and copy over resource files.
+  # The Xcode generator can support this via the set_target_properties RESOURCE
+  # directive but that doesn't properly handle nested resource directories.
+  # Remove these prefixes from input file paths.
+  set(PREFIXES
+    "resources/mac/"
+    "resources/"
+    "../shared/resources/"
+    )
+  COPY_MAC_RESOURCES("${CEFCLIENT_RESOURCES_SRCS}" "${PREFIXES}" "${CEF_TARGET}" "${CMAKE_CURRENT_SOURCE_DIR}" "${CEF_APP}")
+endif()
+
+
+#
+# Windows configuration.
+#
+
+if(OS_WINDOWS)
+  # All sources required by the "cefclient" target. Generates an executable that
+  # is used for all processes.
+  set(CEFCLIENT_SRCS
+    ${CEFCLIENT_BROWSER_SRCS}
+    ${CEFCLIENT_COMMON_SRCS}
+    ${CEFCLIENT_RENDERER_SRCS}
+    ${CEFCLIENT_RESOURCES_SRCS}
+    ${CEFCLIENT_WINDOWS_SRCS}
+    )
+
+  # Executable target.
+  add_executable(${CEF_TARGET} WIN32 ${CEFCLIENT_SRCS})
+  SET_EXECUTABLE_TARGET_PROPERTIES(${CEF_TARGET})
+  add_dependencies(${CEF_TARGET} libcef_dll_wrapper)
+  target_link_libraries(${CEF_TARGET} libcef_lib libcef_dll_wrapper ${CEF_STANDARD_LIBS} d3d11.lib glu32.lib imm32.lib opengl32.lib)
+
+  if(USE_ATL)
+    # Required by VS2013 to link accessibility API functions.
+    target_link_libraries(${CEF_TARGET} oleacc.lib)
+  endif()
+
+  if(USE_SANDBOX)
+    # Logical target used to link the cef_sandbox library.
+    ADD_LOGICAL_TARGET("cef_sandbox_lib" "${CEF_SANDBOX_LIB_DEBUG}" "${CEF_SANDBOX_LIB_RELEASE}")
+    target_link_libraries(${CEF_TARGET} cef_sandbox_lib ${CEF_SANDBOX_STANDARD_LIBS})
+  endif()
+
+  # Add the custom manifest files to the executable.
+  ADD_WINDOWS_MANIFEST("${CMAKE_CURRENT_SOURCE_DIR}/resources/win" "${CEF_TARGET}" "exe")
+
+  # Copy CEF binary and resource files to the target output directory.
+  COPY_FILES("${CEF_TARGET}" "${CEF_BINARY_FILES}" "${CEF_BINARY_DIR}" "${CEF_TARGET_OUT_DIR}")
+  COPY_FILES("${CEF_TARGET}" "${CEF_RESOURCE_FILES}" "${CEF_RESOURCE_DIR}" "${CEF_TARGET_OUT_DIR}")
+endif()

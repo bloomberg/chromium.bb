@@ -7,12 +7,23 @@
 
 #include "content/browser/renderer_host/input/fling_controller.h"
 
+namespace ui {
+class Compositor;
+}
+
 namespace content {
 
 class FlingSchedulerBase : public FlingControllerSchedulerClient {
  public:
   virtual void ProgressFlingOnBeginFrameIfneeded(
       base::TimeTicks current_time) = 0;
+
+  void SetCompositor(ui::Compositor* compositor) {
+    compositor_ = compositor;
+  }
+
+protected:
+ ui::Compositor* compositor_ = nullptr;
 };
 
 }  // namespace content

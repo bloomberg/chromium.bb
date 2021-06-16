@@ -262,8 +262,9 @@ bool InputMethodWinBase::IsWindowFocused(const TextInputClient* client) const {
   // receiving keyboard input as long as it is an active window. This works well
   // even when the |attached_window_handle| becomes active but has not received
   // WM_FOCUS yet.
+  // With CEF |toplevel_window_handle_| may be a child window.
   return toplevel_window_handle_ &&
-         GetActiveWindow() == toplevel_window_handle_;
+         GetActiveWindow() == ::GetAncestor(toplevel_window_handle_, GA_ROOT);
 }
 
 LRESULT InputMethodWinBase::OnChar(HWND window_handle,

@@ -42,6 +42,10 @@ SRC_DIR = os.path.normpath(os.path.join(SCRIPT_DIR,
                                         os.path.pardir,
                                         os.path.pardir))
 
+sys.path.insert(0, os.path.join(SRC_DIR, 'cef', 'tools'))
+import gn_args as cef_gn_args
+import issue_1999
+
 
 def name_value_list_to_dict(name_value_list):
   """
@@ -142,7 +146,11 @@ def get_config(is_component_mode, is_debug_mode, cpu, defines):
   gn_env_config = name_value_list_to_dict(shlex_env('GN_DEFINES'))
   cmdline_config = name_value_list_to_dict(defines)
 
-  config = merge_dicts(initial_config, gn_env_config, cmdline_config)
+  config = merge_dicts(initial_config,
+                       cef_gn_args.GetRecommendedDefaultArgs(),
+                       gn_env_config,
+                       cmdline_config,
+                       cef_gn_args.GetRequiredArgs())
 
   if config.get('is_official_build', False):
     if is_component_mode:
@@ -296,3 +304,5 @@ for is_component_mode in component_modes:
       if 'GN_ARGUMENTS' in os.environ.keys():
         cmd.extend(os.environ['GN_ARGUMENTS'].split(' '))
       subprocess.run(cmd, check=True, cwd=SRC_DIR)
+      if sys.platform == 'win32':
+        issue_1999.apply(out_dir)

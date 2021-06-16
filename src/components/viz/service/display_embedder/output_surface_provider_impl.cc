@@ -16,6 +16,7 @@
 #include "build/chromecast_buildflags.h"
 #include "build/chromeos_buildflags.h"
 #include "cc/base/switches.h"
+#include "cef/libcef/browser/osr/software_output_device_proxy.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/service/display/display_compositor_memory_and_task_controller.h"
@@ -244,6 +245,20 @@ OutputSurfaceProviderImpl::CreateSoftwareOutputDeviceForPlatform(
     mojom::DisplayClient* display_client) {
   if (headless_)
     return std::make_unique<SoftwareOutputDevice>();
+
+  {
+    mojo::ScopedAllowSyncCallForTesting allow_sync;
+    DCHECK(display_client);
+    bool use_proxy_output_device = false;
+    if (display_client->UseProxyOutputDevice(&use_proxy_output_device) &&
+        use_proxy_output_device) {
+      mojom::LayeredWindowUpdaterPtr layered_window_updater;
+      display_client->CreateLayeredWindowUpdater(
+          mojo::MakeRequest(&layered_window_updater));
+      return std::make_unique<SoftwareOutputDeviceProxy>(
+          std::move(layered_window_updater));
+    }
+  }
 
 #if defined(OS_WIN)
   return CreateSoftwareOutputDeviceWin(surface_handle, &output_device_backing_,

@@ -27,6 +27,7 @@
 #include "ui/base/page_transition_types.h"
 
 class ExtensionFunctionRegistry;
+class GURL;
 class PrefService;
 
 namespace base {
@@ -62,6 +63,7 @@ class ComponentExtensionResourceManager;
 class Extension;
 class ExtensionCache;
 class ExtensionError;
+class ExtensionHost;
 class ExtensionHostDelegate;
 class ExtensionSet;
 class ExtensionSystem;
@@ -203,6 +205,14 @@ class ExtensionsBrowserClient {
   // Creates a new ExtensionHostDelegate instance.
   virtual std::unique_ptr<ExtensionHostDelegate>
   CreateExtensionHostDelegate() = 0;
+
+  // CEF creates a custom ExtensionHost for background pages. If the return
+  // value is true and |host| is NULL then fail the background host creation.
+  virtual bool CreateBackgroundExtensionHost(
+      const Extension* extension,
+      content::BrowserContext* browser_context,
+      const GURL& url,
+      ExtensionHost** host) { return false; }
 
   // Returns true if the client version has updated since the last run. Called
   // once each time the extensions system is loaded per browser_context. The

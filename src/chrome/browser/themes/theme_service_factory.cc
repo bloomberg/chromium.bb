@@ -7,6 +7,7 @@
 #include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "cef/libcef/features/runtime.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -28,6 +29,10 @@
 #if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/browser/themes/theme_service_aura_linux.h"
 #include "ui/views/linux_ui/linux_ui.h"
+#endif
+
+#if BUILDFLAG(ENABLE_CEF)
+#include "cef/libcef/common/extensions/extensions_util.h"
 #endif
 
 namespace {
@@ -73,7 +78,15 @@ ThemeServiceFactory::ThemeServiceFactory()
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(extensions::ExtensionRegistryFactory::GetInstance());
   DependsOn(extensions::ExtensionPrefsFactory::GetInstance());
+#if BUILDFLAG(ENABLE_CEF)
+  const bool extensions_disabled = cef::IsAlloyRuntimeEnabled() &&
+                                   !extensions::ExtensionsEnabled();
+#else
+  const bool extensions_disabled = false;
+#endif
+  if (!extensions_disabled) {
   DependsOn(extensions::ExtensionSystemFactory::GetInstance());
+  }
 }
 
 ThemeServiceFactory::~ThemeServiceFactory() {}

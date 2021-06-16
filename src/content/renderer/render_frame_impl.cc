@@ -3548,7 +3548,8 @@ blink::WebPlugin* RenderFrameImpl::CreatePlugin(
   WebPluginInfo info;
   std::string mime_type;
   bool found = false;
-  GetPepperHost()->GetPluginInfo(params.url, frame_->Top()->GetSecurityOrigin(),
+  GetPepperHost()->GetPluginInfo(params.url, frame_->Parent() == nullptr,
+                                 frame_->Top()->GetSecurityOrigin(),
                                  params.mime_type.Utf8(), &found, &info,
                                  &mime_type);
   if (!found)

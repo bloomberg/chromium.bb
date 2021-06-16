@@ -29,6 +29,7 @@ component("controller") {
   configs += [
     "//build/config/compiler:noshadowing",
     "//build/config/compiler:wexit_time_destructors",
+    "//cef/libcef/features:config",
     "//third_party/blink/renderer:config",
     "//third_party/blink/renderer:inside_blink",
     "//third_party/blink/renderer:non_test_config",
@@ -53,6 +54,8 @@ component("controller") {
     "performance_manager/v8_detailed_memory_reporter_impl.h",
     "performance_manager/v8_worker_memory_reporter.cc",
     "performance_manager/v8_worker_memory_reporter.h",
+    "//cef/libcef/renderer/blink_glue.cc",
+    "//cef/libcef/renderer/blink_glue.h",
   ]
 
   if (is_linux || is_chromeos) {

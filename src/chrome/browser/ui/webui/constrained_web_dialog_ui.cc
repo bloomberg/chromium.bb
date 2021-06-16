@@ -26,6 +26,8 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #endif
 
+#include "cef/libcef/features/features.h"
+
 using content::RenderFrameHost;
 using content::WebContents;
 using content::WebUIMessageHandler;
@@ -55,7 +57,9 @@ class ConstrainedWebDialogDelegateUserData
 ConstrainedWebDialogUI::ConstrainedWebDialogUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+#if !BUILDFLAG(ENABLE_CEF)
   extensions::TabHelper::CreateForWebContents(web_ui->GetWebContents());
+#endif
 #endif
 }
 

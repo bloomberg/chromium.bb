@@ -1,0 +1,13 @@
+diff --git content/browser/scheduler/browser_task_executor.cc content/browser/scheduler/browser_task_executor.cc
+index 82801d316d76..4616c1caf493 100644
+--- content/browser/scheduler/browser_task_executor.cc
++++ content/browser/scheduler/browser_task_executor.cc
+@@ -240,7 +240,7 @@ void BrowserTaskExecutor::PostFeatureListSetup() {
+ 
+ // static
+ void BrowserTaskExecutor::Shutdown() {
+-  if (!g_browser_task_executor)
++  if (!g_browser_task_executor || !g_browser_task_executor->ui_thread_executor_)
+     return;
+ 
+   DCHECK(Get()->ui_thread_executor_);
