@@ -19,6 +19,10 @@
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/common/manifest_handlers/mime_types_handler.h"
 
+#if BUILDFLAG(ENABLE_CEF)
+#include "cef/libcef/browser/extensions/alloy_extensions_util.h"
+#endif
+
 namespace extensions {
 
 void StreamsPrivateAPI::SendExecuteMimeTypeHandlerEvent(
@@ -81,9 +85,18 @@ void StreamsPrivateAPI::SendExecuteMimeTypeHandlerEvent(
   // forms of zooming won't work).
   // TODO(1042323): Present a coherent representation of a tab id for portal
   // contents.
-  int tab_id = web_contents->GetOuterWebContents()
-                   ? SessionID::InvalidValue().id()
-                   : ExtensionTabUtil::GetTabId(web_contents);
+  int tab_id;
+  if (web_contents->GetOuterWebContents()) {
+    tab_id = SessionID::InvalidValue().id();
+  } else
+#if BUILDFLAG(ENABLE_CEF)
+  if (cef::IsAlloyRuntimeEnabled()) {
+    tab_id = alloy::GetTabIdForWebContents(web_contents);
+  } else
+#endif  // BUILDFLAG(ENABLE_CEF)
+  {
+    tab_id = ExtensionTabUtil::GetTabId(web_contents);
+  }
 
   std::unique_ptr<StreamContainer> stream_container(
       new StreamContainer(tab_id, embedded, handler_url, extension_id,
