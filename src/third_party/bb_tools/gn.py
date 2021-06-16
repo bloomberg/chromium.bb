@@ -44,6 +44,8 @@ SRC_DIR = os.path.normpath(os.path.join(SCRIPT_DIR,
 
 sys.path.insert(0, os.path.join(SRC_DIR, 'cef', 'tools'))
 import gn_args as cef_gn_args
+import issue_1999
+
 
 def name_value_list_to_dict(name_value_list):
   """
@@ -302,3 +304,5 @@ for is_component_mode in component_modes:
       if 'GN_ARGUMENTS' in os.environ.keys():
         cmd.extend(os.environ['GN_ARGUMENTS'].split(' '))
       subprocess.run(cmd, check=True, cwd=SRC_DIR)
+      if sys.platform == 'win32':
+        issue_1999.apply(out_dir)
