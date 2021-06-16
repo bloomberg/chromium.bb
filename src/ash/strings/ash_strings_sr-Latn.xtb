@@ -355,6 +355,7 @@ Evo nekoliko stvari koje možete da probate za početak.</translation>
 <translation id="380165613292957338">Zdravo, kako mogu da pomognem?</translation>
 <translation id="3826099427150913765">Pređi na lozinku</translation>
 <translation id="383058930331066723">Režim uštede baterije je uključen</translation>
+<translation id="3835880383832568924">Da biste videli ažuriranja, otvorite aplikaciju Prečice</translation>
 <translation id="383629559565718788">Pregledajte podešavanja tastature</translation>
 <translation id="3846214748874656680">Izađi iz celog ekrana</translation>
 <translation id="3846575436967432996">Nisu dostupne informacije o mreži</translation>
@@ -681,7 +682,7 @@ Evo nekoliko stvari koje možete da probate za početak.</translation>
 <translation id="649452524636452238">PIN pametne kartice</translation>
 <translation id="6501401484702599040">Ekran se prebacuje na <ph name="RECEIVER_NAME" /></translation>
 <translation id="6520517963145875092">Izaberite prozor za snimanje</translation>
-<translation id="652139407789908527">Tokom ovog ažuriranja ekran će biti prazan duže nego obično (i do minut). Ne pritiskajte dugme za napajanje dok je ažuriranje u toku.</translation>
+<translation id="652139407789908527">Tokom ovog ažuriranja ekran će biti prazan duže nego obično (i do minut). Ne pritiskajte dugme za uključivanje dok je ažuriranje u toku.</translation>
 <translation id="6528179044667508675">Ne uznemiravaj</translation>
 <translation id="65320610082834431">Emodžiji</translation>
 <translation id="6537270692134705506">Snimi ekran</translation>
@@ -733,6 +734,7 @@ Evo nekoliko stvari koje možete da probate za početak.</translation>
 <translation id="6896758677409633944">Kopiraj</translation>
 <translation id="6910714959251846841">Ovo ažuriranje zahteva da obavite powerwash na uređaju. Saznajte više o najnovijem ažuriranju za: <ph name="SYSTEM_APP_NAME" />.</translation>
 <translation id="6919251195245069855">Nismo uspeli da prepoznamo pametnu karticu. Probajte ponovo.</translation>
+<translation id="6921188888306725546">Tasterske prečice su poboljšane</translation>
 <translation id="6945221475159498467">Izaberi</translation>
 <translation id="6961121602502368900">Isključivanje zvuka telefona nije dostupno na poslovnom profilu</translation>
 <translation id="6961840794482373852">Tasterska prečica Ctrl + strelica nagore je promenjena. Da biste koristili taster Page Up, pritisnite taster <ph name="LAUNCHER_KEY_NAME" /> + strelica nagore.</translation>

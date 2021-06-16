@@ -152,6 +152,17 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>Total duration time of the auto-enrollment protocol.</summary>
 </histogram>
 
+<histogram name="Enterprise.AutoEnrollmentPsmDmServerRequestStatus"
+    enum="EnterpriseDeviceManagementStatus" expires_after="2021-10-31">
+<!-- Name completed by histogram_suffixes name="EnterpriseAutoEnrollmentType". -->
+
+  <owner>amraboelkher@google.com</owner>
+  <owner>mpolzer@google.com</owner>
+  <summary>
+    Device management server request status for auto-enrollment PSM requests.
+  </summary>
+</histogram>
+
 <histogram
     name="Enterprise.AutoEnrollmentPsmHashDanceDifferentResultsComparison"
     enum="PsmHashDanceDifferentResultsComparison" expires_after="2021-09-01">
@@ -161,6 +172,17 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Comparison of hash dance and private set membership results used to
     determine the initial enrollment state of the device. Only recorded after
     both protocols have been executed successfully with different results.
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.AutoEnrollmentPsmRequestNetworkErrorCode"
+    enum="NetErrorCodes" expires_after="2021-10-31">
+<!-- Name completed by histogram_suffixes name="EnterpriseAutoEnrollmentType". -->
+
+  <owner>amraboelkher@google.com</owner>
+  <owner>mpolzer@google.com</owner>
+  <summary>
+    Network error code (if applicable) for auto-enrollment PSM requests.
   </summary>
 </histogram>
 

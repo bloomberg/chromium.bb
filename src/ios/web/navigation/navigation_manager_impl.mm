@@ -185,6 +185,7 @@ void NavigationManagerImpl::AddPendingItem(
     const web::Referrer& referrer,
     ui::PageTransition navigation_type,
     NavigationInitiationType initiation_type,
+    bool is_post_navigation,
     bool is_using_https_as_default_scheme) {
   DiscardNonCommittedItems();
 
@@ -260,7 +261,13 @@ void NavigationManagerImpl::AddPendingItem(
         IsSameOrPlaceholderOf(current_item_url, net::GURLWithNSURL(proxy.URL));
   }
 
-  if (proxy.backForwardList.currentItem && isCurrentURLSameAsPending) {
+  bool is_form_post =
+      base::FeatureList::IsEnabled(
+          web::features::kCreatePendingItemForPostFormSubmission) &&
+      is_post_navigation &&
+      (navigation_type & ui::PageTransition::PAGE_TRANSITION_FORM_SUBMIT);
+  if (proxy.backForwardList.currentItem && isCurrentURLSameAsPending &&
+      !is_form_post) {
     pending_item_index_ = web_view_cache_.GetCurrentItemIndex();
 
     // If |currentItem| is not already associated with a NavigationItemImpl,
@@ -268,9 +275,17 @@ void NavigationManagerImpl::AddPendingItem(
     // since it will be a duplicate.
     NavigationItemImpl* current_item =
         GetNavigationItemFromWKItem(current_wk_item);
+    ui::PageTransition transition = pending_item_->GetTransitionType();
     if (!current_item) {
       current_item = pending_item_.get();
       SetNavigationItemInWKItem(current_wk_item, std::move(pending_item_));
+    }
+    if (base::FeatureList::IsEnabled(
+            web::features::kCreatePendingItemForPostFormSubmission)) {
+      // Updating the transition type of the item is needed, for example when
+      // doing a FormSubmit with a GET method on the same URL. See
+      // crbug.com/1211879.
+      current_item->SetTransitionType(transition);
     }
 
     pending_item_.reset();
@@ -695,7 +710,8 @@ void NavigationManagerImpl::LoadURLWithParams(
           ? NavigationInitiationType::RENDERER_INITIATED
           : NavigationInitiationType::BROWSER_INITIATED;
   AddPendingItem(params.url, params.referrer, params.transition_type,
-                 initiation_type, params.is_using_https_as_default_scheme);
+                 initiation_type, /*is_post_navigation=*/false,
+                 params.is_using_https_as_default_scheme);
 
   // Mark pending item as created from hash change if necessary. This is needed
   // because window.hashchange message may not arrive on time.

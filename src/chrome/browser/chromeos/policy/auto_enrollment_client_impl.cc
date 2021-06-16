@@ -350,6 +350,9 @@ class PsmHelper {
       const em::DeviceManagementResponse& response) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+    base::UmaHistogramSparse(kUMAPsmDmServerRequestStatus + uma_suffix_,
+                             status);
+
     switch (status) {
       case DM_STATUS_SUCCESS: {
         // Check if the RLWE OPRF response is empty.
@@ -369,6 +372,8 @@ class PsmHelper {
       case DM_STATUS_REQUEST_FAILED: {
         LOG(ERROR)
             << "PSM error: RLWE OPRF request failed due to connection error";
+        base::UmaHistogramSparse(kUMAPsmNetworkErrorCode + uma_suffix_,
+                                 -net_error);
         StoreErrorAndStop(PsmResult::kConnectionError);
         return;
       }
@@ -428,6 +433,9 @@ class PsmHelper {
       int net_error,
       const em::DeviceManagementResponse& response) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+    base::UmaHistogramSparse(kUMAPsmDmServerRequestStatus + uma_suffix_,
+                             status);
 
     switch (status) {
       case DM_STATUS_SUCCESS: {
@@ -495,6 +503,8 @@ class PsmHelper {
       case DM_STATUS_REQUEST_FAILED: {
         LOG(ERROR)
             << "PSM error: RLWE query request failed due to connection error";
+        base::UmaHistogramSparse(kUMAPsmNetworkErrorCode + uma_suffix_,
+                                 -net_error);
         StoreErrorAndStop(PsmResult::kConnectionError);
         return;
       }

@@ -38,7 +38,7 @@ static void printClapFraction(const char * name, int32_t n, int32_t d)
     printf(", ");
 }
 
-static void avifImageDumpInternal(avifImage * avif, uint32_t gridCols, uint32_t gridRows, avifBool alphaPresent)
+static void avifImageDumpInternal(const avifImage * avif, uint32_t gridCols, uint32_t gridRows, avifBool alphaPresent)
 {
     uint32_t width = avif->width;
     uint32_t height = avif->height;
@@ -49,6 +49,9 @@ static void avifImageDumpInternal(avifImage * avif, uint32_t gridCols, uint32_t 
     printf(" * Resolution     : %ux%u\n", width, height);
     printf(" * Bit Depth      : %u\n", avif->depth);
     printf(" * Format         : %s\n", avifPixelFormatToString(avif->yuvFormat));
+    if (avif->yuvFormat == AVIF_PIXEL_FORMAT_YUV420) {
+        printf(" * Chroma Sam. Pos: %u\n", avif->yuvChromaSamplePosition);
+    }
     printf(" * Alpha          : %s\n", alphaPresent ? (avif->alphaPremultiplied ? "Premultiplied" : "Not premultiplied") : "Absent");
     if (avif->alphaRange == AVIF_RANGE_LIMITED) {
         printf("                    Limited range\n");
@@ -99,9 +102,7 @@ static void avifImageDumpInternal(avifImage * avif, uint32_t gridCols, uint32_t 
             printf("    * irot (Rotation)      : %u\n", avif->irot.angle);
         }
         if (avif->transformFlags & AVIF_TRANSFORM_IMIR) {
-            printf("    * imir (Mirror)        : %u (%s)\n",
-                   avif->imir.axis,
-                   (avif->imir.axis == 0) ? "Vertical axis, \"left-to-right\"" : "Horizontal axis, \"top-to-bottom\"");
+            printf("    * imir (Mirror)        : Mode %u (%s)\n", avif->imir.mode, (avif->imir.mode == 0) ? "top-to-bottom" : "left-to-right");
         }
     }
 }
@@ -210,7 +211,7 @@ avifAppFileFormat avifGuessFileFormat(const char * filename)
     return AVIF_APP_FILE_FORMAT_UNKNOWN;
 }
 
-void avifDumpDiagnostics(struct avifDiagnostics * diag)
+void avifDumpDiagnostics(const avifDiagnostics * diag)
 {
     if (!*diag->error) {
         return;
