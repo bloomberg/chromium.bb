@@ -24,4 +24,4 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 tools_dir=$(dirname "$0")
-exec "$tools_dir/ninja.exe" "$@"
+exec "$tools_dir/ninja.bat" "$@"
