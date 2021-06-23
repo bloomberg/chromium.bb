@@ -480,6 +480,10 @@ void BindingSecurity::FailedAccessCheckFor(v8::Isolate* isolate,
     return;
 
   auto* local_dom_window = CurrentDOMWindow(isolate);
+  // blpwtk2: local_dom_window might be nulllptr
+  if (!local_dom_window)
+    return;
+
   // Determine if the access check failure was because of cross-origin or if the
   // WindowAgentFactory is different. If the WindowAgentFactories are different
   // it indicates that the "disallowdocumentaccess" attribute was used on an
