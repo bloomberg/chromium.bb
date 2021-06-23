@@ -15,10 +15,34 @@ static_library("internal") {
   ]
 
   sources = [
+    "database/metadata_utils.cc",
+    "database/metadata_utils.h",
+    "database/segment_info_database.cc",
     "database/segment_info_database.h",
+    "database/signal_database.h",
+    "database/signal_database_impl.cc",
+    "database/signal_database_impl.h",
+    "database/signal_key.cc",
+    "database/signal_key.h",
+    "database/signal_key_internal.cc",
+    "database/signal_key_internal.h",
     "database/user_action_database.h",
+    "execution/dummy_model_execution_manager.cc",
+    "execution/dummy_model_execution_manager.h",
+    "execution/model_execution_manager.h",
+    "execution/model_execution_manager_factory.cc",
+    "execution/model_execution_manager_factory.h",
+    "execution/model_execution_status.h",
+    "scheduler/model_execution_scheduler.h",
+    "scheduler/model_execution_scheduler_impl.cc",
+    "scheduler/model_execution_scheduler_impl.h",
     "segmentation_platform_service_impl.cc",
     "segmentation_platform_service_impl.h",
+    "selection/segment_selector.h",
+    "selection/segment_selector_impl.cc",
+    "selection/segment_selector_impl.h",
+    "selection/segmentation_result_prefs.cc",
+    "selection/segmentation_result_prefs.h",
     "signals/signal_filter_processor.cc",
     "signals/signal_filter_processor.h",
     "signals/user_action_signal_handler.cc",
@@ -33,11 +57,15 @@ static_library("internal") {
     "//components/segmentation_platform/public",
   ]
 
-  public_deps =
-      [ "//components/optimization_guide/proto:optimization_guide_proto" ]
+  public_deps = [
+    "//components/optimization_guide/core",
+    "//components/optimization_guide/proto:optimization_guide_proto",
+  ]
 
   if (build_with_tflite_lib) {
     sources += [
+      "execution/model_execution_manager_impl.cc",
+      "execution/model_execution_manager_impl.h",
       "execution/segmentation_model_executor.cc",
       "execution/segmentation_model_executor.h",
       "execution/segmentation_model_handler.cc",
@@ -48,8 +76,6 @@ static_library("internal") {
       "//third_party/tflite:tflite_public_headers",
       "//third_party/tflite-support",
     ]
-
-    public_deps += [ "//components/optimization_guide/core" ]
   }
 }
 
@@ -61,17 +87,29 @@ source_set("unit_tests") {
   # IMPORTANT NOTE: When adding new tests, also remember to update the list of
   # tests in //components/segmentation_platform/components_unittests.filter
   sources = [
+    "database/metadata_utils_unittest.cc",
+    "database/segment_info_database_unittest.cc",
+    "database/signal_database_impl_unittest.cc",
+    "database/signal_key_internal_unittest.cc",
+    "database/signal_key_unittest.cc",
     "database/test_segment_info_database.cc",
     "database/test_segment_info_database.h",
+    "execution/dummy_model_execution_manager_unittest.cc",
+    "execution/model_execution_manager_factory_unittest.cc",
+    "scheduler/model_execution_scheduler_unittest.cc",
     "segmentation_platform_service_impl_unittest.cc",
+    "selection/segment_selector_unittest.cc",
     "signals/signal_filter_processor_unittest.cc",
     "signals/user_action_signal_handler_unittest.cc",
   ]
 
   deps = [
     ":internal",
+    "//base",
     "//base/test:test_support",
     "//components/leveldb_proto:test_support",
+    "//components/optimization_guide/core:test_support",
+    "//components/segmentation_platform/internal/proto",
     "//components/segmentation_platform/public",
     "//testing/gmock",
     "//testing/gtest",
@@ -80,11 +118,9 @@ source_set("unit_tests") {
   if (build_with_tflite_lib) {
     # IMPORTANT NOTE: When adding new tests, also remember to update the list of
     # tests in //components/segmentation_platform/components_unittests.filter
-    sources += [ "execution/segmentation_model_executor_unittest.cc" ]
-
-    deps += [
-      "//base",
-      "//components/optimization_guide/core:test_support",
+    sources += [
+      "execution/model_execution_manager_impl_unittest.cc",
+      "execution/segmentation_model_executor_unittest.cc",
     ]
   }
 }

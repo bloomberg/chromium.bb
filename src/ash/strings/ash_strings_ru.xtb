@@ -314,7 +314,7 @@
 <translation id="3465356146291925647">Под управлением администратора</translation>
 <translation id="3477079411857374384">Ctrl + Shift + Пробел</translation>
 <translation id="3485319357743610354">Статус защиты – "<ph name="SECURITY_STATUS" />", статус подключения – "<ph name="CONNECTION_STATUS" />", уровень сигнала – <ph name="SIGNAL_STRENGTH" /></translation>
-<translation id="3486220673238053218">описание</translation>
+<translation id="3486220673238053218">узнать определение</translation>
 <translation id="3510164367642747937">Выделять указатель мыши</translation>
 <translation id="3513798432020909783">Администратор аккаунта: <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3552189655002856821">Нет подключения к Wi-Fi</translation>
@@ -734,7 +734,7 @@
 <translation id="6896758677409633944">Копировать</translation>
 <translation id="6910714959251846841">Чтобы установить это обновление, необходимо сбросить настройки устройства до заводских. Подробнее о последнем обновлении <ph name="SYSTEM_APP_NAME" />…</translation>
 <translation id="6919251195245069855">Не удалось распознать смарт-карту. Повторите попытку.</translation>
-<translation id="6921188888306725546">Сочетания клавиш были улучшены</translation>
+<translation id="6921188888306725546">Сочетания клавиш улучшены</translation>
 <translation id="6945221475159498467">Выбрать</translation>
 <translation id="6961121602502368900">Отключение звука на телефоне недоступно в рабочем профиле</translation>
 <translation id="6961840794482373852">Функция сочетания клавиш Alt + Стрелка вверх изменилась. Чтобы выполнить действие клавиши Page Up, нажмите <ph name="LAUNCHER_KEY_NAME" /> + Стрелка вверх.</translation>

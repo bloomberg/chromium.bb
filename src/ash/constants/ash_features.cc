@@ -422,6 +422,10 @@ const base::Feature kGesturePropertiesDBusService{
 const base::Feature kHandwritingGestureEditing{
     "HandwritingGestureEditing", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the Background Page in the help app.
+const base::Feature kHelpAppBackgroundPage{"HelpAppBackgroundPage",
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables the Discover Tab in the help app.
 const base::Feature kHelpAppDiscoverTab{"HelpAppDiscoverTab",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
@@ -459,7 +463,7 @@ const base::Feature kInstantTethering{"InstantTethering",
 
 // Enables or disables noise cancellation UI toggle.
 const base::Feature kEnableInputNoiseCancellationUi{
-    "EnableInputNoiseCancellationUi", base::FEATURE_DISABLED_BY_DEFAULT};
+    "EnableInputNoiseCancellationUi", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the Kerberos Section in ChromeOS settings. When disabled, Kerberos
 // settings will stay under People Section. https://crbug.com/983041

@@ -757,7 +757,7 @@
 <translation id="1780152987505130652">סגירת הקבוצה</translation>
 <translation id="1781291988450150470">קוד אימות נוכחי</translation>
 <translation id="1781398670452016618">‏כדי להיכנס אל <ph name="DOMAIN" />, עליך להתחבר עכשיו לרשת Wi-Fi ולהוריד עדכון.</translation>
-<translation id="1781502536226964113">פתיחת הדף 'כרטיסייה חדשה'</translation>
+<translation id="1781502536226964113">ייפתח דף 'כרטיסייה חדשה'</translation>
 <translation id="1781771911845953849">חשבונות וסנכרון</translation>
 <translation id="1782101999402987960">העדכונים חסומים על ידי מנהל המערכת</translation>
 <translation id="1782196717298160133">מתבצע חיפוש של הטלפון שלך</translation>
@@ -772,7 +772,6 @@
 <translation id="1795214765651529549">שימוש בעיצוב קלאסי</translation>
 <translation id="1796588414813960292">תכונות שצריכות צלילים לא יפעלו</translation>
 <translation id="1799071797295057738">התוסף "<ph name="EXTENSION_NAME" />" הושבת באופן אוטומטי.</translation>
-<translation id="1800973090344019061">התוסף "<ph name="APP_NAME" />" מבקש הרשאה לשתף את המסך שלך.</translation>
 <translation id="1802624026913571222">מעבר למצב שינה כשסוגרים את הכיסוי</translation>
 <translation id="1802687198411089702">הדף לא מגיב. אפשר לחכות או לצאת.</translation>
 <translation id="1803531841600994172">שפת היעד של התרגום</translation>
@@ -1651,6 +1650,7 @@
 <translation id="2734760316755174687">הפעולה תאפס גם אתרים שהם חלק מ-<ph name="SITE_GROUP_NAME" />.</translation>
 <translation id="2735712963799620190">לוח זמנים</translation>
 <translation id="2737363922397526254">כיווץ...</translation>
+<translation id="2737916598897808047">האפליקציה <ph name="APP_NAME" /> מבקשת הרשאה לשתף את המסך שלך עם <ph name="TARGET_NAME" />.</translation>
 <translation id="2738030019664645674">לא לאפשר לאתרים להשתמש בגופנים שמותקנים במכשיר</translation>
 <translation id="2738771556149464852">לא אחרי</translation>
 <translation id="2739191690716947896">ניפוי באגים</translation>
@@ -2997,7 +2997,7 @@
 <translation id="4190828427319282529">הדגשת מיקוד המקלדת</translation>
 <translation id="4194570336751258953">הפעלת האפשרות 'נגיעה קלה'</translation>
 <translation id="4195643157523330669">פתיחה בכרטיסייה חדשה</translation>
-<translation id="4195814663415092787">להמשיך מהמקום שבו הפסקת</translation>
+<translation id="4195814663415092787">אני רוצה להמשיך מהמקום שבו הפסקתי</translation>
 <translation id="4200689466366162458">מילים מותאמות אישית</translation>
 <translation id="4200983522494130825">&amp;כרטיסייה חדשה</translation>
 <translation id="4201546031411513170">אפשר לבחור מה לסנכרן בכל שלב דרך ההגדרות.</translation>
@@ -4222,14 +4222,14 @@
 <translation id="5582839680698949063">תפריט ראשי</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5584088138253955452">לשמור את שם המשתמש?</translation>
-<translation id="5584091888252706332">בקבוצת ההפעלה</translation>
+<translation id="5584091888252706332">כשפותחים את הדפדפן</translation>
 <translation id="5584915726528712820">‏<ph name="BEGIN_PARAGRAPH1" />זהו מידע כללי לגבי המכשיר שלך ועל אופן השימוש שלך בו (כמו רמת טעינת הסוללה, פעילות במערכת ובאפליקציות ושגיאות). הנתונים ישמשו כדי לשפר את Android. כמו כן, חלק מהמידע שיצטבר יעזור ל-Google ולשותפיה, כמו מפתחי Android, לשפר את האפליקציות והמוצרים שלהם.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />כיבוי התכונה הזו לא משפיע על יכולת המכשיר לשלוח את המידע הנחוץ לשירותים חיוניים, כמו עדכוני מערכת ואבטחה.<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />הבעלים יכולים לשלוט בתכונה הזו דרך 'הגדרות' &gt; 'מתקדם' &gt; 'שליחה אוטומטית של נתוני אבחון ושימוש אל Google'.<ph name="END_PARAGRAPH3" />
     <ph name="BEGIN_PARAGRAPH4" />אם ההגדרה הנוספת של פעילות באינטרנט ובאפליקציות מופעלת, ייתכן שהנתונים האלה יישמרו בחשבון Google שלך. את הנתונים אפשר להציג, למחוק ולשנות דרך הגדרות החשבון בכתובת account.google.com.<ph name="END_PARAGRAPH4" /></translation>
 <translation id="5585019845078534178">כרטיסיות</translation>
 <translation id="5585118885427931890">לא ניתן ליצור תיקיית סימניות.</translation>
-<translation id="558563010977877295">פתיחת דף מסוים או קבוצת דפים</translation>
+<translation id="558563010977877295">ייפתחו דף מסוים או קבוצת דפים</translation>
 <translation id="5585898376467608182">אין מספיק שטח אחסון במכשיר. כדי להשתמש באפליקציה <ph name="APP_NAME" />, נדרש שטח אחסון פנוי של <ph name="MINIMUM_SPACE" />. כדי לפנות שטח אחסון, יש למחוק קבצים מהמכשיר.</translation>
 <translation id="5585912436068747822">הפרמוט נכשל</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
@@ -4721,7 +4721,6 @@
 <translation id="6136114942382973861">סגירת סרגל ההורדות</translation>
 <translation id="6136287496450963112">מפתח האבטחה שלך אינו מוגן באמצעות קוד אימות. כדי לנהל טביעות אצבע, יש ליצור תחילה קוד אימות.</translation>
 <translation id="6138680304137685902">‏חתימת X9.62 ECDSA עם SHA-384</translation>
-<translation id="6138774640412545950">התוסף "<ph name="APP_NAME" />" מבקש הרשאה לשתף את המסך שלך עם <ph name="TARGET_NAME" />.</translation>
 <translation id="6138894911715675297"><ph name="NETWORK_TYPE" />, אין רשת</translation>
 <translation id="6141988275892716286">אישור הורדה</translation>
 <translation id="6143186082490678276">קבלת עזרה</translation>
@@ -6628,6 +6627,7 @@
 <translation id="8189750580333936930">ארגז חול לפרטיות</translation>
 <translation id="8190193592390505034">מתבצע חיבור אל <ph name="PROVIDER_NAME" /></translation>
 <translation id="8191230140820435481">לנהל את היישומים, התוספים והעיצובים שלך</translation>
+<translation id="8192944472786724289">האפליקציה <ph name="APP_NAME" /> מבקשת הרשאה לשתף את המסך שלך.</translation>
 <translation id="8195027750202970175">גודל בדיסק</translation>
 <translation id="8198323535106903877"><ph name="NUMBER_OF_APPS" /> האפליקציות יותקנו</translation>
 <translation id="8198456017687137612">העברת הכרטיסייה</translation>

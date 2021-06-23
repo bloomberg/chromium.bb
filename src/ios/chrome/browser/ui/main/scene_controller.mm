@@ -588,6 +588,15 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 - (void)performActionForShortcutItem:(UIApplicationShortcutItem*)shortcutItem
                    completionHandler:(void (^)(BOOL succeeded))completionHandler
     API_AVAILABLE(ios(13)) {
+  if (self.sceneState.appState.initStage <= InitStageSafeMode ||
+      !self.currentInterface.browserState) {
+    // Don't handle the intent if the browser UI objects aren't yet initialized.
+    // This is the case when the app is in safe mode or may be the case when the
+    // app is going through an odd sequence of lifecyle events (shouldn't happen
+    // but happens somehow), see crbug.com/1211006 for more details.
+    return;
+  }
+
   self.sceneState.startupHadExternalIntent = YES;
 
   // Perform the action in incognito when only incognito mode is available.
@@ -605,10 +614,19 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 
 - (void)sceneState:(SceneState*)sceneState
     receivedUserActivity:(NSUserActivity*)userActivity {
-  if (self.sceneState.appState.initStage <= InitStageSafeMode ||
-      !userActivity) {
+  if (!userActivity) {
     return;
   }
+
+  if (self.sceneState.appState.initStage <= InitStageSafeMode ||
+      !self.currentInterface.browserState) {
+    // Don't handle the intent if the browser UI objects aren't yet initialized.
+    // This is the case when the app is in safe mode or may be the case when the
+    // app is going through an odd sequence of lifecyle events (shouldn't happen
+    // but happens somehow), see crbug.com/1211006 for more details.
+    return;
+  }
+
   BOOL sceneIsActive =
       self.sceneState.activationLevel >= SceneActivationLevelForegroundActive;
   // TODO(crbug.com/1210542): Review this stage threshold; works for now.
@@ -1187,14 +1205,15 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
              name:kChromeFirstRunUIDidFinishNotification
            object:nil];
 
-  Browser* browser = self.mainInterface.browser;
+  Browser* mainBrowser = self.mainInterface.browser;
   id<ApplicationCommands, BrowsingDataCommands> welcomeHandler =
       static_cast<id<ApplicationCommands, BrowsingDataCommands>>(
-          browser->GetCommandDispatcher());
+          mainBrowser->GetCommandDispatcher());
 
   WelcomeToChromeViewController* welcomeToChrome =
       [[WelcomeToChromeViewController alloc]
-          initWithBrowser:browser
+          initWithBrowser:self.currentInterface.browser
+              mainBrowser:mainBrowser
                 presenter:self.currentInterface.bvc
                dispatcher:welcomeHandler];
   self.welcomeToChromeController = welcomeToChrome;
@@ -1219,8 +1238,9 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   FirstRunScreenProvider* provider = [[FirstRunScreenProvider alloc] init];
 
   self.firstRunCoordinator = [[FirstRunCoordinator alloc]
-      initWithBaseViewController:self.mainInterface.bvc
-                         browser:self.mainInterface.browser
+      initWithBaseViewController:self.currentInterface.bvc
+                         browser:self.currentInterface.browser
+                     mainBrowser:self.mainInterface.browser
                    syncPresenter:self.mainInterface.bvc
                   screenProvider:provider];
   self.firstRunCoordinator.delegate = self;
@@ -2883,7 +2903,12 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 
 - (void)openURLContexts:(NSSet<UIOpenURLContext*>*)URLContexts
     API_AVAILABLE(ios(13)) {
-  if (self.sceneState.appState.initStage <= InitStageSafeMode) {
+  if (self.sceneState.appState.initStage <= InitStageSafeMode ||
+      !self.currentInterface.browserState) {
+    // Don't handle the intent if the browser UI objects aren't yet initialized.
+    // This is the case when the app is in safe mode or may be the case when the
+    // app is going through an odd sequence of lifecyle events (shouldn't happen
+    // but happens somehow), see crbug.com/1211006 for more details.
     return;
   }
 

@@ -100,7 +100,8 @@ import java.util.List;
                 LocationBarMediatorTest.GSAStateShadow.class,
                 LocationBarMediatorTest.DownloadUtilsShadow.class})
 @Features.EnableFeatures(ChromeFeatureList.OMNIBOX_ASSISTANT_VOICE_SEARCH)
-@Features.DisableFeatures(ChromeFeatureList.VOICE_BUTTON_IN_TOP_TOOLBAR)
+@Features.DisableFeatures({ChromeFeatureList.VOICE_BUTTON_IN_TOP_TOOLBAR,
+        ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR_CUSTOMIZATION})
 public class LocationBarMediatorTest {
     @Implements(UrlUtilities.class)
     static class ShadowUrlUtilities {
@@ -630,10 +631,20 @@ public class LocationBarMediatorTest {
     public void testUpdateAssistantVoiceSearchDrawablesAndColors() {
         AssistantVoiceSearchService avs = Mockito.mock(AssistantVoiceSearchService.class);
         ColorStateList csl = Mockito.mock(ColorStateList.class);
-        doReturn(csl).when(avs).getMicButtonColorStateList(anyInt(), anyObject());
+        doReturn(csl).when(avs).getButtonColorStateList(anyInt(), anyObject());
         mMediator.setAssistantVoiceSearchServiceForTesting(avs);
 
         verify(mLocationBarLayout).setMicButtonTint(csl);
+    }
+
+    @Test
+    public void testUpdateLensButtonColors() {
+        AssistantVoiceSearchService avs = Mockito.mock(AssistantVoiceSearchService.class);
+        ColorStateList csl = Mockito.mock(ColorStateList.class);
+        doReturn(csl).when(avs).getButtonColorStateList(anyInt(), anyObject());
+        mMediator.setAssistantVoiceSearchServiceForTesting(avs);
+
+        verify(mLocationBarLayout).setLensButtonTint(csl);
     }
 
     @Test

@@ -2428,6 +2428,11 @@ Unknown properties are collapsed to zero. -->
   <int value="2" label="DIRECT"/>
 </enum>
 
+<enum name="AndroidWebViewSafeModeResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Unknown error"/>
+</enum>
+
 <enum name="AndroidWebViewSingleOrMultiProcess">
   <int value="0" label="SINGLE_PROCESS"/>
   <int value="1" label="MULTI_PROCESS"/>
@@ -32619,6 +32624,16 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3926" label="FontFaceSizeAdjust"/>
   <int value="3931" label="DocumentTransition"/>
   <int value="3932" label="SpeculationRules"/>
+  <int value="3933" label="V8AbortSignal_Abort_Method"/>
+  <int value="3934" label="SelectionBackgroundColorInversion"/>
+  <int value="3935" label="RTCPeerConnectionPlanBThrewAnException"/>
+  <int value="3936" label="HTMLRootContained"/>
+  <int value="3937" label="HTMLBodyContained"/>
+  <int value="3938" label="XRFrameGetJointPose"/>
+  <int value="3939" label="XRFrameFillJointRadii"/>
+  <int value="3940" label="XRFrameFillPoses"/>
+  <int value="3941" label="WindowOpenNewPopupBehaviorMismatch"/>
+  <int value="3942" label="ExplicitPointerCaptureClickTargetDiff"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -45154,6 +45169,7 @@ from previous Chrome versions.
   <int value="-1703709912" label="enable-new-ntp"/>
   <int value="-1703308540" label="disable-webaudio"/>
   <int value="-1701123067" label="ShowManagedUi:enabled"/>
+  <int value="-1700764114" label="HelpAppBackgroundPage:enabled"/>
   <int value="-1698438797" label="TabGroupsCollapseFreezing:enabled"/>
   <int value="-1696778023"
       label="HappinessTrackingSurveysForDesktopSettings:disabled"/>
@@ -47346,6 +47362,7 @@ from previous Chrome versions.
   <int value="176773784" label="EnableHardwareMirrorMode:disabled"/>
   <int value="178337215" label="enable-md-history"/>
   <int value="178693406" label="LockScreenMediaControls:disabled"/>
+  <int value="179083323" label="HelpAppBackgroundPage:disabled"/>
   <int value="179687667" label="PwaUpdateDialogForNameAndIcon:enabled"/>
   <int value="179871410" label="ui-debug-tools:disabled"/>
   <int value="180074362" label="memory-pressure-thresholds"/>
@@ -48593,6 +48610,7 @@ from previous Chrome versions.
   <int value="1254952449" label="ContinuousFeeds:enabled"/>
   <int value="1257482622" label="PageAlmostIdle:enabled"/>
   <int value="1257533754" label="UseDownloadOfflineContentProvider:disabled"/>
+  <int value="1257663962" label="CommercePriceTracking:disabled"/>
   <int value="1257980502" label="disable-accelerated-video-decode"/>
   <int value="1258043820" label="AudioFocusEnforcement:enabled"/>
   <int value="1258747457"
@@ -49526,6 +49544,7 @@ from previous Chrome versions.
   <int value="2041570184" label="UsePreferredIntervalForVideo:enabled"/>
   <int value="2043141918" label="DnsOverHttps:enabled"/>
   <int value="2043321329" label="OfflinePagesPrefetchingUI:disabled"/>
+  <int value="2043794900" label="CommercePriceTracking:enabled"/>
   <int value="2047503404" label="FilesSWA:enabled"/>
   <int value="2047695652" label="DelegateOverscrollSwipes:enabled"/>
   <int value="2049432745" label="VaapiWebPImageDecodeAcceleration:enabled"/>
@@ -76498,7 +76517,8 @@ would be helpful to identify which type is being sent.
   <int value="4" label="Max number is missing"/>
   <int value="5" label="Rolled a non-zero number"/>
   <int value="6" label="User selected for survey"/>
-  <int value="7" label="Survey already exists"/>
+  <int value="7" label="Survey already exists [removed]"/>
+  <int value="8" label="First time user"/>
 </enum>
 
 <enum name="SuspendAttempt">

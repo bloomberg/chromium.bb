@@ -9,6 +9,7 @@
 #include "base/test/task_environment.h"
 #include "components/segmentation_platform/internal/database/segment_info_database.h"
 #include "components/segmentation_platform/internal/database/test_segment_info_database.h"
+#include "components/segmentation_platform/internal/proto/aggregation.pb.h"
 #include "components/segmentation_platform/internal/signals/user_action_signal_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,12 +50,13 @@ class SignalFilterProcessorTest : public testing::Test {
 
 TEST_F(SignalFilterProcessorTest, UserActionRegistrationFlow) {
   std::string kUserActionName1 = "some_action_1";
-  segment_database_->AddUserAction(
-      OptimizationTarget::OPTIMIZATION_TARGET_PAGE_TOPICS, kUserActionName1);
+  segment_database_->AddUserActionFeature(
+      OptimizationTarget::OPTIMIZATION_TARGET_SEGMENTATION_NEW_TAB,
+      kUserActionName1, 0, proto::Aggregation::SUM_COUNT);
   std::string kUserActionName2 = "some_action_2";
-  segment_database_->AddUserAction(
-      OptimizationTarget::OPTIMIZATION_TARGET_LANGUAGE_DETECTION,
-      kUserActionName2);
+  segment_database_->AddUserActionFeature(
+      OptimizationTarget::OPTIMIZATION_TARGET_SEGMENTATION_SHARE,
+      kUserActionName2, 0, proto::Aggregation::SUM_COUNT);
 
   std::set<uint64_t> actions;
   EXPECT_CALL(*user_action_signal_handler_, SetRelevantUserActions(_))
