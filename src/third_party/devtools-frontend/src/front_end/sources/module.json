@@ -462,7 +462,7 @@
       "title": "Enable JavaScript source maps",
       "settingName": "jsSourceMapsEnabled",
       "settingType": "boolean",
-      "defaultValue": true,
+      "defaultValue": false,
       "options": [
         {
           "value": true,
