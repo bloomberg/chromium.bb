@@ -91,6 +91,7 @@ class WebWidget {
       bool for_child_local_root_frame,
       const ScreenInfo& screen_info,
       std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
+      int view_id,
       const cc::LayerTreeSettings* settings) = 0;
 
   // This method closes and deletes the WebWidget. If a |cleanup_task| is

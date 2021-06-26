@@ -163,6 +163,7 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
       bool for_child_local_root_frame,
       const ScreenInfo& screen_info,
       std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
+       int view_id,
       const cc::LayerTreeSettings* settings) override;
   scheduler::WebRenderWidgetSchedulingState* RendererWidgetSchedulingState()
       override;
