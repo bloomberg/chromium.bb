@@ -76,6 +76,7 @@
 #include "ui/base/ime/mojom/text_input_state.mojom.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/base/win/rubberband_windows.h"
 #include "ui/display/screen.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/blink/did_overscroll_params.h"
@@ -1141,6 +1142,20 @@ RenderWidgetHostViewAura::GetKeyboardLayoutMap() {
   if (host)
     return host->GetKeyboardLayoutMap();
   return {};
+}
+
+void RenderWidgetHostViewAura::SetRubberbandRect(const gfx::Rect& rect) {
+  if (!rubberband_outline_.get())
+    rubberband_outline_.reset(new ui::RubberbandOutline());
+
+  // TODO(SHEZ): Replace this windows-specific code with an Aura view
+  HWND hwnd = window_->GetHost()->GetAcceleratedWidget();
+  RECT wrect = rect.ToRECT();
+  rubberband_outline_->SetRect(hwnd, wrect);
+}
+
+void RenderWidgetHostViewAura::HideRubberbandRect() {
+  rubberband_outline_.reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
