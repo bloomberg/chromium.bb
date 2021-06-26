@@ -178,12 +178,8 @@ void DesktopWindowTreeHostWin::OnActiveWindowChanged(bool active) {}
 void DesktopWindowTreeHostWin::OnWidgetInitDone() {}
 
 std::unique_ptr<corewm::Tooltip> DesktopWindowTreeHostWin::CreateTooltip() {
-  bool force_legacy_tooltips =
-      (base::win::GetVersion() < base::win::Version::WIN8);
-  if (!force_legacy_tooltips)
-    return std::make_unique<corewm::TooltipAura>();
-
   DCHECK(!tooltip_);
+  // We don't want aura tooltip as it is limited to the boundary of its parent window.
   tooltip_ = new corewm::TooltipWin(GetAcceleratedWidget());
   return base::WrapUnique(tooltip_);
 }
