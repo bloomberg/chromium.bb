@@ -118,6 +118,7 @@ enum {
 
 
     // patch section: diagnostics
+    IDM_TEST_DUMP_GPU_INFO,
 
 
     // patch section: embedder ipc
@@ -1066,6 +1067,10 @@ LRESULT CALLBACK shellWndProc(HWND hwnd,        // handle to window
 
 
         // patch section: diagnostics
+        case IDM_TEST_DUMP_GPU_INFO:
+            shell->d_profile->dumpDiagnostics(
+                    blpwtk2::Profile::DiagnosticInfoType::GPU, "gpuInfo.txt");
+            return 0;
 
 
         // patch section: web cache
@@ -1286,6 +1291,7 @@ Shell* createShell(blpwtk2::Profile* profile, blpwtk2::WebView* webView, bool fo
 
 
     // patch section: diagnostics
+    AppendMenu(testMenu, MF_STRING, IDM_TEST_DUMP_GPU_INFO, L"Dump GPU Information");
 
 
     // patch section: embedder ipc
