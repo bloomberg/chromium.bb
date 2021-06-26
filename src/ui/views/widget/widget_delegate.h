@@ -300,6 +300,10 @@ class VIEWS_EXPORT WidgetDelegate {
   // targeting).
   virtual View* CreateOverlayView();
 
+  // Called to get the default activation window.  Returning NULL will use
+  // the widget's root view's window.
+  virtual aura::Window* GetDefaultActivationWindow();
+
   // Returns true if window has a hit-test mask.
   virtual bool WidgetHasHitTestMask() const;
 
