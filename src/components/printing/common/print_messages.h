@@ -109,6 +109,9 @@ IPC_STRUCT_TRAITS_BEGIN(printing::mojom::PrintParams)
   // Specifies if the header and footer should be rendered.
   IPC_STRUCT_TRAITS_MEMBER(display_header_footer)
 
+  // HTML string to format the header and footer.
+  IPC_STRUCT_TRAITS_MEMBER(header_footer_html)
+
   // Title string to be printed as header if requested by the user.
   IPC_STRUCT_TRAITS_MEMBER(title)
 
