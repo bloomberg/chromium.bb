@@ -159,9 +159,9 @@ class ToolkitImpl : public Toolkit {
     void onTerminating() override;
     void setTraceThreshold(unsigned int timeoutMS) override;
 
-
-
     // patch section: custom-timezone
+    // set the default time zone in ICU using zoneId
+    int setTimeZone(const StringRef& zoneId) override;
 
 
     // patch section: embedder ipc
