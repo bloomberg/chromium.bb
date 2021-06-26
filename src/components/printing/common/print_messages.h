@@ -263,6 +263,7 @@ IPC_STRUCT_TRAITS_BEGIN(printing::mojom::ScriptedPrintParams)
   IPC_STRUCT_TRAITS_MEMBER(is_scripted)
   IPC_STRUCT_TRAITS_MEMBER(is_modifiable)
   IPC_STRUCT_TRAITS_MEMBER(margin_type)
+  IPC_STRUCT_TRAITS_MEMBER(owner_wnd)
 IPC_STRUCT_TRAITS_END()
 
 // Messages sent from the renderer to the browser.

@@ -90,6 +90,7 @@ void PrinterQuery::GetSettings(GetSettingsAskParam ask_user_for_settings,
                                uint32_t expected_page_count,
                                bool has_selection,
                                mojom::MarginType margin_type,
+                               HWND hwnd,
                                bool is_scripted,
                                bool is_modifiable,
                                base::OnceClosure callback) {
@@ -107,7 +108,7 @@ void PrinterQuery::GetSettings(GetSettingsAskParam ask_user_for_settings,
       base::BindOnce(
           &PrintJobWorker::GetSettings, base::Unretained(worker_.get()),
           is_print_dialog_box_shown_, expected_page_count, has_selection,
-          margin_type, is_scripted, is_modifiable,
+          margin_type, hwnd, is_scripted, is_modifiable,
           base::BindOnce(&PrinterQuery::PostSettingsDoneToIO,
                          base::Unretained(this), std::move(callback))));
 }
