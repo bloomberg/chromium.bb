@@ -958,6 +958,10 @@ void Widget::FrameTypeChanged() {
   native_widget_->FrameTypeChanged();
 }
 
+void Widget::CompositionChanged() {
+  native_widget_->CompositionChanged();
+}
+
 const ui::Compositor* Widget::GetCompositor() const {
   return native_widget_->GetCompositor();
 }
