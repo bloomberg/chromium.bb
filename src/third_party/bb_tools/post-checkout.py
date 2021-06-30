@@ -48,8 +48,7 @@ DEFAULT_MODE = (stat.S_IRUSR | stat.S_IWUSR |
                 stat.S_IRGRP | stat.S_IWGRP |
                 stat.S_IROTH | stat.S_IWOTH)
 
-nongit_dir = os.path.normpath(os.path.abspath(os.path.join(
-    os.environ['TEMP'], 'chromium.bb.nongit')))
+nongit_dir = os.path.join(ROOT_DIR, 'nongit')
 
 
 def find_python27():
