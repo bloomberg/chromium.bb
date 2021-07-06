@@ -2366,7 +2366,7 @@ ci.clang_builder(
         short_name = "sim",
     ),
     cores = None,
-    os = os.MAC_10_15_OR_11,
+    os = os.MAC_11,
     ssd = True,
     xcode = xcode.x12d4e,
 )
@@ -2379,7 +2379,7 @@ ci.clang_builder(
         short_name = "dev",
     ),
     cores = None,
-    os = os.MAC_10_15_OR_11,
+    os = os.MAC_11,
     ssd = True,
     xcode = xcode.x12d4e,
 )
@@ -4006,7 +4006,7 @@ ci.fyi_coverage_builder(
         short_name = "ios",
     ),
     cores = None,
-    os = os.MAC_10_15_OR_11,
+    os = os.MAC_11,
     use_clang_coverage = True,
     coverage_exclude_sources = "ios_test_files_and_test_utils",
     coverage_test_types = ["overall", "unit"],
@@ -4240,6 +4240,17 @@ ci.fyi_windows_builder(
     ),
     os = os.WINDOWS_10,
     notifies = ["Win 10 Fast Ring"],
+)
+
+ci.fyi_windows_builder(
+    name = "Win10 Tests x64 20h2",
+    console_view_entry = consoles.console_view_entry(
+        category = "win10|20h2",
+    ),
+    goma_backend = None,
+    main_console_view = None,
+    os = os.WINDOWS_10,
+    triggered_by = ["ci/Win x64 Builder"],
 )
 
 ci.fyi_windows_builder(

@@ -1106,6 +1106,12 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // including nodes that might not be in the tree.
   AXObject* CachedParentObject() const { return parent_; }
 
+  // Get the current unignored children without refreshing them, even if
+  // children_dirty_ aka NeedsToUpdateChildren() is true.
+  const AXObjectVector& CachedChildrenIncludingIgnored() const {
+    return children_;
+  }
+
   // Sets the parent AXObject directly. If the parent of this object is known,
   // this can be faster than using ComputeParent().
   void SetParent(AXObject* new_parent) const;
@@ -1306,7 +1312,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   bool OnNativeShowContextMenuAction();
 
   // Notifications that this object may have changed.
-  virtual void ChildrenChanged() {}
+  virtual void ChildrenChangedWithCleanLayout() {}
   virtual void HandleActiveDescendantChanged() {}
   virtual void HandleAutofillStateChanged(WebAXAutofillState) {}
   virtual void HandleAriaExpandedChanged() {}

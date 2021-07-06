@@ -230,6 +230,12 @@ enum OptimizationTarget {
   OPTIMIZATION_TARGET_LANGUAGE_DETECTION = 2;
   // Target for determining topics present on a page.
   OPTIMIZATION_TARGET_PAGE_TOPICS = 3;
+  // Target for segmentation: New tab page user.
+  OPTIMIZATION_TARGET_SEGMENTATION_NEW_TAB = 4;
+  // Target for segmentation: Share user.
+  OPTIMIZATION_TARGET_SEGMENTATION_SHARE = 5;
+  // Target for segmentation: Voice user.
+  OPTIMIZATION_TARGET_SEGMENTATION_VOICE = 6;
 }
 
 // The types of models that can be evaluated.
@@ -239,6 +245,9 @@ enum ModelType {
   MODEL_TYPE_DECISION_TREE = 1;
   // A model using only operations that are supported by TensorflowLite 2.3.0.
   MODEL_TYPE_TFLITE_2_3_0 = 2;
+  // A model using only operations that are supported by TensorflowLite 2.3.0
+  // with updated FULLY_CONNECTED and BATCH_MUL versions for quantized models.
+  MODEL_TYPE_TFLITE_2_3_0_1 = 3;
 }
 
 // A set of model features and the host that it applies to.

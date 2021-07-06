@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import com.google.android.material.appbar.AppBarLayout;
 
@@ -58,6 +59,9 @@ public class TasksSurfaceCoordinator implements TasksSurface {
     private final Supplier<DynamicResourceLoader> mDynamicResourceLoaderSupplier;
     private final TabContentManager mTabContentManager;
     private final ModalDialogManager mModalDialogManager;
+
+    /** This flag should be reset once {@link mMostVisitedList#destroyMVTiles()} is called. */
+    private boolean mIsMVTilesInitialized;
 
     /** {@see TabManagementDelegate#createTasksSurface} */
     public TasksSurfaceCoordinator(@NonNull Activity activity,
@@ -129,12 +133,16 @@ public class TasksSurfaceCoordinator implements TasksSurface {
         }
     }
 
-    /** TasksSurface implementation. */
+    /**
+     * TasksSurface implementation.
+     */
     @Override
     public void initialize() {
         assert LibraryLoader.getInstance().isInitialized();
-
-        if (mMostVisitedList != null) mMostVisitedList.initWithNative();
+        if (!mIsMVTilesInitialized && mMostVisitedList != null) {
+            mMostVisitedList.initWithNative();
+            mIsMVTilesInitialized = true;
+        }
         mMediator.initialize();
     }
 
@@ -210,5 +218,26 @@ public class TasksSurfaceCoordinator implements TasksSurface {
     @Override
     public void removeFakeSearchBoxShrinkAnimation() {
         mView.removeFakeSearchBoxShrinkAnimation();
+    }
+
+    @Override
+    public void onHide() {
+        if (mMostVisitedList != null) {
+            mMostVisitedList.destroyMVTiles();
+            mIsMVTilesInitialized = false;
+        }
+    }
+
+    @VisibleForTesting
+    @Override
+    public boolean isMVTilesCleanedUp() {
+        assert mMostVisitedList != null;
+        return mMostVisitedList.isMVTilesCleanedUp();
+    }
+
+    @VisibleForTesting
+    @Override
+    public boolean isMVTilesInitialized() {
+        return mIsMVTilesInitialized;
     }
 }

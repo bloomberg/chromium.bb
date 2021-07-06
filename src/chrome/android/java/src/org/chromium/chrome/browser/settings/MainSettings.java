@@ -40,6 +40,7 @@ import org.chromium.chrome.browser.sync.settings.SyncPromoPreference;
 import org.chromium.chrome.browser.sync.settings.SyncPromoPreference.State;
 import org.chromium.chrome.browser.sync.settings.SyncSettingsUtils;
 import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarFeatures;
+import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarStatePredictor;
 import org.chromium.chrome.browser.tracing.settings.DeveloperSettings;
 import org.chromium.components.browser_ui.settings.ChromeBasePreference;
 import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
@@ -207,9 +208,13 @@ public class MainSettings extends PreferenceFragmentCompat
             findPreference(PREF_GOOGLE_SERVICES).setVisible(true);
         }
 
-        if (!AdaptiveToolbarFeatures.isCustomizationEnabled()) {
+        new AdaptiveToolbarStatePredictor().recomputeUiState(uiState -> {
+            // We don't show the toolbar shortcut settings page if disabled from finch.
+            // Note, we can still have the old data collection experiment running for which
+            // |canShowUi| might be true. In that case, just hide the settings page.
+            if (uiState.canShowUi && !AdaptiveToolbarFeatures.isSingleVariantModeEnabled()) return;
             getPreferenceScreen().removePreference(findPreference(PREF_TOOLBAR_SHORTCUT));
-        }
+        });
     }
 
     /**

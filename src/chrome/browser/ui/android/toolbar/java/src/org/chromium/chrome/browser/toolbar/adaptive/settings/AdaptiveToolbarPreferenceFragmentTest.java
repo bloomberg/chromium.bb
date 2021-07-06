@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.toolbar.adaptive.settings;
 import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.ADAPTIVE_TOOLBAR_CUSTOMIZATION_ENABLED;
 import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.ADAPTIVE_TOOLBAR_CUSTOMIZATION_SETTINGS;
 
+import android.util.Pair;
+
 import androidx.test.filters.SmallTest;
 
 import org.junit.After;
@@ -17,12 +19,16 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.browser.toolbar.R;
 import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarFeatures.AdaptiveToolbarButtonVariant;
 import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarPrefs;
+import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarStatePredictor;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.browser_ui.widget.RadioButtonWithDescription;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -31,6 +37,8 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
  * Tests for {@link AdaptiveToolbarPreferenceFragment}.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
+@EnableFeatures({ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR_CUSTOMIZATION})
+@DisableFeatures({ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR})
 public class AdaptiveToolbarPreferenceFragmentTest {
     @Rule
     public SettingsActivityTestRule<AdaptiveToolbarPreferenceFragment> mSettingsActivityTestRule =
@@ -44,6 +52,8 @@ public class AdaptiveToolbarPreferenceFragmentTest {
     public void setUpTest() throws Exception {
         SharedPreferencesManager.getInstance().removeKey(ADAPTIVE_TOOLBAR_CUSTOMIZATION_ENABLED);
         SharedPreferencesManager.getInstance().removeKey(ADAPTIVE_TOOLBAR_CUSTOMIZATION_SETTINGS);
+        AdaptiveToolbarStatePredictor.setSegmentationResultsForTesting(
+                new Pair<>(false, AdaptiveToolbarButtonVariant.NEW_TAB));
         mSettingsActivityTestRule.startSettingsActivity();
         mSettings = mSettingsActivityTestRule.getFragment();
         mSwitchPreference = (ChromeSwitchPreference) mSettings.findPreference(
@@ -54,6 +64,7 @@ public class AdaptiveToolbarPreferenceFragmentTest {
 
     @After
     public void tearDownTest() throws Exception {
+        AdaptiveToolbarStatePredictor.setSegmentationResultsForTesting(null);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SharedPreferencesManager.getInstance().removeKey(
                     ADAPTIVE_TOOLBAR_CUSTOMIZATION_ENABLED);

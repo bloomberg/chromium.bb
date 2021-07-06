@@ -162,8 +162,15 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
     web::NavigationItem* item = [[CRWNavigationItemHolder
         holderForBackForwardListItem:webView.backForwardList.currentItem]
         navigationItem];
-    if (item)
+    if (item) {
       item->SetUserAgentType(userAgentType);
+      if (base::FeatureList::IsEnabled(
+              web::features::kCreatePendingItemForPostFormSubmission)) {
+        if (web::wk_navigation_util::IsRestoreSessionUrl(item->GetURL())) {
+          self.webStateImpl->SetUserAgent(userAgentType);
+        }
+      }
+    }
   }
 
   if (userAgentType != web::UserAgentType::NONE) {
@@ -221,8 +228,15 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
       web::NavigationItem* item = [[CRWNavigationItemHolder
           holderForBackForwardListItem:webView.backForwardList.currentItem]
           navigationItem];
-      if (item)
+      if (item) {
         item->SetUserAgentType(userAgentType);
+        if (base::FeatureList::IsEnabled(
+                web::features::kCreatePendingItemForPostFormSubmission)) {
+          if (web::wk_navigation_util::IsRestoreSessionUrl(item->GetURL())) {
+            self.webStateImpl->SetUserAgent(userAgentType);
+          }
+        }
+      }
     }
 
     if (userAgentType != web::UserAgentType::NONE) {
@@ -1914,7 +1928,9 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   // Create pending item.
   self.navigationManagerImpl->AddPendingItem(
       blockedURL, web::Referrer(), transition,
-      web::NavigationInitiationType::BROWSER_INITIATED);
+      web::NavigationInitiationType::BROWSER_INITIATED,
+      /*is_post_navigation=*/false,
+      /*is_using_https_as_default_scheme=*/false);
 
   // Create context.
   std::unique_ptr<web::NavigationContextImpl> context =

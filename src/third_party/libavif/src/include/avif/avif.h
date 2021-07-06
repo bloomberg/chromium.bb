@@ -58,7 +58,7 @@ extern "C" {
 #define AVIF_VERSION_MAJOR 0
 #define AVIF_VERSION_MINOR 9
 #define AVIF_VERSION_PATCH 1
-#define AVIF_VERSION_DEVEL 0
+#define AVIF_VERSION_DEVEL 1
 #define AVIF_VERSION \
     ((AVIF_VERSION_MAJOR * 1000000) + (AVIF_VERSION_MINOR * 10000) + (AVIF_VERSION_PATCH * 100) + AVIF_VERSION_DEVEL)
 
@@ -360,14 +360,24 @@ typedef struct avifImageRotation
 
 typedef struct avifImageMirror
 {
-    // 'imir' from ISO/IEC 23008-12:2017 6.5.12:
-    // "axis specifies a vertical (axis = 0) or horizontal (axis = 1) axis for the mirroring operation."
+    // 'imir' from ISO/IEC 23008-12:2017 6.5.12 (Draft Amendment 2):
+    //
+    //     'mode' specifies how the mirroring is performed:
+    //
+    //     0 indicates that the top and bottom parts of the image are exchanged;
+    //     1 specifies that the left and right parts are exchanged.
+    //
+    //     NOTE In Exif, orientation tag can be used to signal mirroring operations. Exif
+    //     orientation tag 4 corresponds to mode = 0 of ImageMirror, and Exif orientation tag 2
+    //     corresponds to mode = 1 accordingly.
     //
     // Legal values: [0, 1]
     //
-    // 0: Mirror about a vertical axis ("left-to-right")
-    // 1: Mirror about a horizontal axis ("top-to-bottom")
-    uint8_t axis;
+    // NOTE: As of HEIF Draft Amendment 2, the name of this variable has changed from 'axis' to 'mode' as
+    //       the logic behind it has been *inverted*. Please use the wording above describing the legal
+    //       values for 'mode' and update any code that previously may have used `axis` to use
+    //       the *opposite* value (0 now means top-to-bottom, where it used to mean left-to-right).
+    uint8_t mode;
 } avifImageMirror;
 
 // ---------------------------------------------------------------------------
@@ -385,15 +395,15 @@ typedef struct avifCropRect
 // values are not guaranteed to be complete or correct and should not be used.
 AVIF_API avifBool avifCropRectConvertCleanApertureBox(avifCropRect * cropRect,
                                                       const avifCleanApertureBox * clap,
-                                                      const uint32_t imageW,
-                                                      const uint32_t imageH,
-                                                      const avifPixelFormat yuvFormat,
+                                                      uint32_t imageW,
+                                                      uint32_t imageH,
+                                                      avifPixelFormat yuvFormat,
                                                       avifDiagnostics * diag);
 AVIF_API avifBool avifCleanApertureBoxConvertCropRect(avifCleanApertureBox * clap,
                                                       const avifCropRect * cropRect,
-                                                      const uint32_t imageW,
-                                                      const uint32_t imageH,
-                                                      const avifPixelFormat yuvFormat,
+                                                      uint32_t imageW,
+                                                      uint32_t imageH,
+                                                      avifPixelFormat yuvFormat,
                                                       avifDiagnostics * diag);
 
 // ---------------------------------------------------------------------------

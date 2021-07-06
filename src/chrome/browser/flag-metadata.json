@@ -1458,7 +1458,12 @@
   {
     "name": "enable-commerce-merchant-viewer",
     "owners": [ "chrome-shopping@google.com" ],
-    "expiry_milestone": 94
+    "expiry_milestone": 97
+  },
+  {
+    "name": "enable-commerce-price-tracking",
+    "owners": [ "chrome-shopping@google.com" ],
+    "expiry_milestone": 97
   },
   {
     "name": "enable-compositing-based-throttling",
@@ -3140,6 +3145,11 @@
   {
     "name": "heavy-ad-privacy-mitigations",
     "owners": [ "johnidel", "jkarlin" ],
+    "expiry_milestone": 97
+  },
+  {
+    "name": "help-app-background-page",
+    "owners": [ "//chromeos/components/help_app_ui/OWNERS" ],
     "expiry_milestone": 97
   },
   {

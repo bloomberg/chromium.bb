@@ -1394,6 +1394,9 @@ extern const char kTabGridLayoutAndroidDescription[];
 extern const char kCommerceMerchantViewerAndroidName[];
 extern const char kCommerceMerchantViewerAndroidDescription[];
 
+extern const char kCommercePriceTrackingAndroidName[];
+extern const char kCommercePriceTrackingAndroidDescription[];
+
 extern const char kTabGroupsAndroidName[];
 extern const char kTabGroupsAndroidDescription[];
 
@@ -2630,6 +2633,9 @@ extern const char kFrameThrottleFps30[];
 
 extern const char kFullRestoreName[];
 extern const char kFullRestoreDescription[];
+
+extern const char kHelpAppBackgroundPageName[];
+extern const char kHelpAppBackgroundPageDescription[];
 
 extern const char kHelpAppDiscoverTabName[];
 extern const char kHelpAppDiscoverTabDescription[];

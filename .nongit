@@ -1,11 +1,11 @@
 {
-  "branch": "92.0.4515.x/patch/cef",
+  "branch": "92.0.4515.x/nongit",
   "files": {
     "src": {
       ".landmines": "28fa43394fa6fb056af1f35aad48e1bbc45aef73"
     },
     "src/build/config": {
-      "gclient_args.gni": "ab84a275d10933da44a2e40638d86990915204bf"
+      "gclient_args.gni": "e9ecb6774aceafcf636092d2c9724ed39ecd0f55"
     },
     "src/build/toolchain/win/rc/win": {
       "rc.exe": {
@@ -14,8 +14,8 @@
       }
     },
     "src/build/util": {
-      "LASTCHANGE": "ecabfd114e8aa8de090abe06c9ee76fcd9ff9e5c",
-      "LASTCHANGE.committime": "18216cb2159ed6e677f1867db4330f38313d9116"
+      "LASTCHANGE": "8a13393145a5bb71d8b577793d697984354bd558",
+      "LASTCHANGE.committime": "4d0eb7eb8b9c04c4d755fc8ce1291dd7f3f6dcdc"
     },
     "src/buildtools/win": {
       "clang-format.exe": {
@@ -37,13 +37,13 @@
     },
     "src/cef/include": {
       "cef_config.h": "1823b097730d382b7cf5502923116ccb481bd50d",
-      "cef_version.h": "553ebfc3acdf48cab3c65df709d1375abf1b441a"
+      "cef_version.h": "9e123f2b3270357d723ab374af83754124282b0d"
     },
     "src/gpu/config": {
-      "gpu_lists_version.h": "b487e53753680ee5aa5e51f59e5d23e7e0a3b706"
+      "gpu_lists_version.h": "1eb391547c5aa78cd7d606ed10b803f63227dfc5"
     },
     "src/skia/ext": {
-      "skia_commit_hash.h": "402e114bc56abb49fd91e3a9be9ee797f07a7140"
+      "skia_commit_hash.h": "c66950d9498e290fa1341ddf5da9de213116e89c"
     },
     "src/testing": {
       "location_tags.json": "25ce63e526c363ae1f3de316dc77c086d6da4265"

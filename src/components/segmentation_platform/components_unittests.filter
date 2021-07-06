@@ -1,4 +1,14 @@
+DummyModelExecutionManagerTest.*
+MetadataUtilsTest.*
+ModelExecutionManagerFactoryTest.*
+ModelExecutionManagerTest.*
+ModelExecutionSchedulerTest.*
 SegmentationModelExecutorTest.*
 SegmentationPlatformServiceImplTest.*
+SegmentInfoDatabaseTest.*
+SegmentSelectorTest.*
+SignalDatabaseImplTest.*
 SignalFilterProcessorTest.*
+SignalKeyInternalTest.*
+SignalKeyTest.*
 UserActionSignalHandlerTest.*

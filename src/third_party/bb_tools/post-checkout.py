@@ -148,7 +148,10 @@ def catfile_writefile(stdout, path, chunk_size=4096):
     if char == b'\n':
       break
     first_line += char
-  _, _, size = first_line.split(b' ')
+  try:
+    _, _, size = first_line.split(b' ')
+  except ValueError:
+    raise Exception('Unexpected line: %s (for %s)' % (first_line, path))
   size = int(size.decode('utf-8'))
   remaining = size
   with open(path, 'wb') as f:

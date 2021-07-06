@@ -32,6 +32,7 @@
 #include "cc/base/switches.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_switches.h"
+#include "chrome/browser/commerce/commerce_feature_list.h"
 #include "chrome/browser/flag_descriptions.h"
 #include "chrome/browser/lite_video/lite_video_switches.h"
 #include "chrome/browser/login_detection/login_detection_util.h"
@@ -489,6 +490,34 @@ const FeatureEntry::FeatureVariation kAdaptiveButtonInTopToolbarVariations[] = {
         1,
         nullptr,
     },
+};
+
+const FeatureEntry::FeatureVariation
+    kAdaptiveButtonInTopToolbarCustomizationVariations[] = {
+        {
+            "New Tab",
+            (FeatureEntry::FeatureParam[]){
+                {"default_segment", "new-tab"},
+                {"ignore_segmentation_results", "true"}},
+            1,
+            nullptr,
+        },
+        {
+            "Share",
+            (FeatureEntry::FeatureParam[]){
+                {"default_segment", "share"},
+                {"ignore_segmentation_results", "true"}},
+            1,
+            nullptr,
+        },
+        {
+            "Voice",
+            (FeatureEntry::FeatureParam[]){
+                {"default_segment", "voice"},
+                {"ignore_segmentation_results", "true"}},
+            1,
+            nullptr,
+        },
 };
 #endif  // OS_ANDROID
 
@@ -1754,19 +1783,19 @@ const FeatureEntry::FeatureParam kTabGridLayoutAndroid_TallNTV[] = {
 const FeatureEntry::FeatureParam kTabGridLayoutAndroid_SearchChip[] = {
     {"enable_search_term_chip", "true"}};
 
-const FeatureEntry::FeatureParam kTabGridLayoutAndroid_PriceAlerts[] = {
+const FeatureEntry::FeatureParam kCommercePriceTracking_PriceAlerts[] = {
     {"enable_price_tracking", "true"},
     {"price_tracking_with_optimization_guide", "false"}};
 
 const FeatureEntry::FeatureParam
-    kTabGridLayoutAndroid_PriceAlerts_WithOptimizationGuide[] = {
+    kCommercePriceTracking_PriceAlerts_WithOptimizationGuide[] = {
         {"enable_price_tracking", "true"},
         {"price_tracking_with_optimization_guide", "true"}};
 
 const FeatureEntry::FeatureParam kTabGridLayoutAndroid_TabGroupAutoCreation[] =
     {{"enable_tab_group_auto_creation", "false"}};
 
-const FeatureEntry::FeatureParam kTabGridLayoutAndroid_PriceNotifications[] = {
+const FeatureEntry::FeatureParam kCommercePriceTracking_PriceNotifications[] = {
     {"enable_price_notification", "true"}};
 
 const FeatureEntry::FeatureVariation kTabGridLayoutAndroidVariations[] = {
@@ -1778,16 +1807,20 @@ const FeatureEntry::FeatureVariation kTabGridLayoutAndroidVariations[] = {
      base::size(kTabGridLayoutAndroid_TallNTV), nullptr},
     {"Search term chip", kTabGridLayoutAndroid_SearchChip,
      base::size(kTabGridLayoutAndroid_SearchChip), nullptr},
-    {"Price alerts", kTabGridLayoutAndroid_PriceAlerts,
-     base::size(kTabGridLayoutAndroid_PriceAlerts), nullptr},
-    {"Price alerts with OptimizationGuide",
-     kTabGridLayoutAndroid_PriceAlerts_WithOptimizationGuide,
-     base::size(kTabGridLayoutAndroid_PriceAlerts_WithOptimizationGuide),
-     nullptr},
     {"Without auto group", kTabGridLayoutAndroid_TabGroupAutoCreation,
      base::size(kTabGridLayoutAndroid_TabGroupAutoCreation), nullptr},
-    {"Price notifications", kTabGridLayoutAndroid_PriceNotifications,
-     base::size(kTabGridLayoutAndroid_PriceNotifications), nullptr},
+};
+
+const FeatureEntry::FeatureVariation kCommercePriceTrackingAndroidVariations[] =
+    {
+        {"Price alerts", kCommercePriceTracking_PriceAlerts,
+         base::size(kCommercePriceTracking_PriceAlerts), nullptr},
+        {"Price alerts with OptimizationGuide",
+         kCommercePriceTracking_PriceAlerts_WithOptimizationGuide,
+         base::size(kCommercePriceTracking_PriceAlerts_WithOptimizationGuide),
+         nullptr},
+        {"Price notifications", kCommercePriceTracking_PriceNotifications,
+         base::size(kCommercePriceTracking_PriceNotifications), nullptr},
 };
 
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface[] = {
@@ -3287,8 +3320,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAdaptiveButtonInTopToolbarCustomizationName,
      flag_descriptions::kAdaptiveButtonInTopToolbarCustomizationDescription,
      kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         chrome::android::kAdaptiveButtonInTopToolbarCustomization)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         chrome::android::kAdaptiveButtonInTopToolbarCustomization,
+         kAdaptiveButtonInTopToolbarCustomizationVariations,
+         "OptionalToolbarButtonCustomization")},
     {"reader-mode-heuristics", flag_descriptions::kReaderModeHeuristicsName,
      flag_descriptions::kReaderModeHeuristicsDescription, kOsAndroid,
      MULTI_VALUE_TYPE(kReaderModeHeuristicsChoices)},
@@ -4909,7 +4944,14 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-commerce-merchant-viewer",
      flag_descriptions::kCommerceMerchantViewerAndroidName,
      flag_descriptions::kCommerceMerchantViewerAndroidDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kCommerceMerchantViewer)},
+     FEATURE_VALUE_TYPE(commerce::kCommerceMerchantViewer)},
+
+    {"enable-commerce-price-tracking",
+     flag_descriptions::kCommercePriceTrackingAndroidName,
+     flag_descriptions::kCommercePriceTrackingAndroidDescription, kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(commerce::kCommercePriceTracking,
+                                    kCommercePriceTrackingAndroidVariations,
+                                    "CommercePriceTrackingAndroid")},
 
     {"enable-tab-groups", flag_descriptions::kTabGroupsAndroidName,
      flag_descriptions::kTabGroupsAndroidDescription, kOsAndroid,
@@ -6176,6 +6218,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"os-settings-deep-linking", flag_descriptions::kOsSettingsDeepLinkingName,
      flag_descriptions::kOsSettingsDeepLinkingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kOsSettingsDeepLinking)},
+    {"help-app-background-page", flag_descriptions::kHelpAppBackgroundPageName,
+     flag_descriptions::kHelpAppBackgroundPageDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kHelpAppBackgroundPage)},
     {"help-app-discover-tab", flag_descriptions::kHelpAppDiscoverTabName,
      flag_descriptions::kHelpAppDiscoverTabDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kHelpAppDiscoverTab)},

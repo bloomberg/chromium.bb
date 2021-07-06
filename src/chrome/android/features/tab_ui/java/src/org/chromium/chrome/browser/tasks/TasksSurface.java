@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import com.google.android.material.appbar.AppBarLayout;
 
@@ -100,4 +101,17 @@ public interface TasksSurface {
      * Remove the omnibox shrink animation.
      */
     void removeFakeSearchBoxShrinkAnimation();
+
+    /**
+     * Called when the Tasks surface is hidden.
+     */
+    void onHide();
+
+    @VisibleForTesting
+    /** Returns whether the cleanup of MV tiles has been done after hiding the Start surface. */
+    boolean isMVTilesCleanedUp();
+
+    @VisibleForTesting
+    /** Returns whether the MV tiles has been initialized. */
+    boolean isMVTilesInitialized();
 }

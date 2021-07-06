@@ -281,10 +281,18 @@ public class StartSurfaceCoordinator implements StartSurface {
     public void destroy() {
         if (mTasksSurface != null) {
             mTasksSurface.removeFakeSearchBoxShrinkAnimation();
+            mTasksSurface.onHide();
         }
         if (mOffsetChangedListenerToGenerateScrollEvents != null) {
             removeHeaderOffsetChangeListener(mOffsetChangedListenerToGenerateScrollEvents);
             mOffsetChangedListenerToGenerateScrollEvents = null;
+        }
+    }
+
+    @Override
+    public void onHide() {
+        if (mTasksSurface != null) {
+            mTasksSurface.onHide();
         }
     }
 
@@ -441,6 +449,16 @@ public class StartSurfaceCoordinator implements StartSurface {
         // places. Note that the cached flag may have been set before native initialization.
         return StartSurfaceConfiguration.isStartSurfaceEnabled() ? SurfaceMode.SINGLE_PANE
                                                                  : SurfaceMode.NO_START_SURFACE;
+    }
+
+    @VisibleForTesting
+    public boolean isMVTilesCleanedUpForTesting() {
+        return mTasksSurface.isMVTilesCleanedUp();
+    }
+
+    @VisibleForTesting
+    public boolean isMVTilesInitializedForTesting() {
+        return mTasksSurface.isMVTilesInitialized();
     }
 
     private void createAndSetStartSurface(boolean excludeMVTiles) {

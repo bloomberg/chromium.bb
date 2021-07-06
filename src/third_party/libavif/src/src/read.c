@@ -290,9 +290,9 @@ static avifPixelFormat avifCodecConfigurationBoxGetFormat(const avifCodecConfigu
 {
     if (av1C->monochrome) {
         return AVIF_PIXEL_FORMAT_YUV400;
-    } else if ((av1C->chromaSubsamplingX == 1) && (av1C->chromaSubsamplingY == 1)) {
+    } else if (av1C->chromaSubsamplingY == 1) {
         return AVIF_PIXEL_FORMAT_YUV420;
-    } else if ((av1C->chromaSubsamplingX == 1) && (av1C->chromaSubsamplingY == 0)) {
+    } else if (av1C->chromaSubsamplingX == 1) {
         return AVIF_PIXEL_FORMAT_YUV422;
     }
     return AVIF_PIXEL_FORMAT_YUV444;
@@ -867,12 +867,15 @@ static avifResult avifDecoderItemRead(avifDecoderItem * item, avifIO * io, avifR
                 avifDiagnosticsPrintf(diag, "Item ID %u has impossible extent offset in idat buffer", item->id);
                 return AVIF_RESULT_BMFF_PARSE_FAILED;
             }
-            if (extent->size > idatBuffer->size - extent->offset) {
+            // Since extent->offset (a uint64_t) is not bigger than idatBuffer->size (a size_t),
+            // it is safe to cast extent->offset to size_t.
+            const size_t extentOffset = (size_t)extent->offset;
+            if (extent->size > idatBuffer->size - extentOffset) {
                 avifDiagnosticsPrintf(diag, "Item ID %u has impossible extent size in idat buffer", item->id);
                 return AVIF_RESULT_BMFF_PARSE_FAILED;
             }
-            offsetBuffer.data = idatBuffer->data + extent->offset;
-            offsetBuffer.size = idatBuffer->size - extent->offset;
+            offsetBuffer.data = idatBuffer->data + extentOffset;
+            offsetBuffer.size = idatBuffer->size - extentOffset;
         } else {
             // construction_method: file(0)
 
@@ -1550,10 +1553,10 @@ static avifBool avifParseImageMirrorProperty(avifProperty * prop, const uint8_t 
     BEGIN_STREAM(s, raw, rawLen, diag, "Box[imir]");
 
     avifImageMirror * imir = &prop->u.imir;
-    CHECK(avifROStreamRead(&s, &imir->axis, 1)); // unsigned int (7) reserved = 0; unsigned int (1) axis;
-    if ((imir->axis & 0xfe) != 0) {
+    CHECK(avifROStreamRead(&s, &imir->mode, 1)); // unsigned int (7) reserved = 0; unsigned int (1) mode;
+    if ((imir->mode & 0xfe) != 0) {
         // reserved bits must be 0
-        avifDiagnosticsPrintf(diag, "Box[imir] contains nonzero reserved bits [%u]", imir->axis);
+        avifDiagnosticsPrintf(diag, "Box[imir] contains nonzero reserved bits [%u]", imir->mode);
         return AVIF_FALSE;
     }
     return AVIF_TRUE;
@@ -1578,7 +1581,7 @@ static avifBool avifParsePixelInformationProperty(avifProperty * prop, const uin
 
 static avifBool avifParseItemPropertyContainerBox(avifPropertyArray * properties, const uint8_t * raw, size_t rawLen, avifDiagnostics * diag)
 {
-    BEGIN_STREAM(s, raw, rawLen, diag, "Box[iprp]");
+    BEGIN_STREAM(s, raw, rawLen, diag, "Box[ipco]");
 
     while (avifROStreamHasBytesLeft(&s, 1)) {
         avifBoxHeader header;
@@ -2084,7 +2087,7 @@ static avifBool avifParseMediaHeaderBox(avifTrack * track, const uint8_t * raw, 
 
 static avifBool avifParseChunkOffsetBox(avifSampleTable * sampleTable, avifBool largeOffsets, const uint8_t * raw, size_t rawLen, avifDiagnostics * diag)
 {
-    BEGIN_STREAM(s, raw, rawLen, diag, "Box[stco]");
+    BEGIN_STREAM(s, raw, rawLen, diag, largeOffsets ? "Box[co64]" : "Box[stco]");
 
     CHECK(avifROStreamReadAndEnforceVersion(&s, 0));
 
@@ -2319,9 +2322,9 @@ static avifBool avifTrackReferenceBox(avifTrack * track, const uint8_t * raw, si
     return AVIF_TRUE;
 }
 
-static avifBool avifParseTrackBox(avifDecoderData * data, const uint8_t * raw, size_t rawLen, avifDiagnostics * diag)
+static avifBool avifParseTrackBox(avifDecoderData * data, const uint8_t * raw, size_t rawLen)
 {
-    BEGIN_STREAM(s, raw, rawLen, diag, "Box[trak]");
+    BEGIN_STREAM(s, raw, rawLen, data->diag, "Box[trak]");
 
     avifTrack * track = avifDecoderDataCreateTrack(data);
 
@@ -2344,16 +2347,16 @@ static avifBool avifParseTrackBox(avifDecoderData * data, const uint8_t * raw, s
     return AVIF_TRUE;
 }
 
-static avifBool avifParseMoovBox(avifDecoderData * data, const uint8_t * raw, size_t rawLen, avifDiagnostics * diag)
+static avifBool avifParseMoovBox(avifDecoderData * data, const uint8_t * raw, size_t rawLen)
 {
-    BEGIN_STREAM(s, raw, rawLen, diag, "Box[moov]");
+    BEGIN_STREAM(s, raw, rawLen, data->diag, "Box[moov]");
 
     while (avifROStreamHasBytesLeft(&s, 1)) {
         avifBoxHeader header;
         CHECK(avifROStreamReadBoxHeader(&s, &header));
 
         if (!memcmp(header.type, "trak", 4)) {
-            CHECK(avifParseTrackBox(data, avifROStreamCurrent(&s), header.size, diag));
+            CHECK(avifParseTrackBox(data, avifROStreamCurrent(&s), header.size));
         }
 
         CHECK(avifROStreamSkip(&s, header.size));
@@ -2454,7 +2457,7 @@ static avifResult avifParse(avifDecoder * decoder)
             metaSeen = AVIF_TRUE;
         } else if (!memcmp(header.type, "moov", 4)) {
             CHECKERR(!moovSeen, AVIF_RESULT_BMFF_PARSE_FAILED);
-            CHECKERR(avifParseMoovBox(data, boxContents.data, boxContents.size, data->diag), AVIF_RESULT_BMFF_PARSE_FAILED);
+            CHECKERR(avifParseMoovBox(data, boxContents.data, boxContents.size), AVIF_RESULT_BMFF_PARSE_FAILED);
             moovSeen = AVIF_TRUE;
         }
 
@@ -2745,9 +2748,6 @@ static avifResult avifDecoderFlush(avifDecoder * decoder)
             return AVIF_RESULT_NO_CODEC_AVAILABLE;
         }
         tile->codec->diag = &decoder->diag;
-        if (!tile->codec->open(tile->codec, decoder)) {
-            return AVIF_RESULT_DECODE_COLOR_FAILED;
-        }
     }
     return AVIF_RESULT_OK;
 }
@@ -3234,7 +3234,7 @@ avifResult avifDecoderNextImage(avifDecoder * decoder)
 
         const avifDecodeSample * sample = &tile->input->samples.sample[nextImageIndex];
 
-        if (!tile->codec->getNextImage(tile->codec, sample, tile->input->alpha, tile->image)) {
+        if (!tile->codec->getNextImage(tile->codec, decoder, sample, tile->input->alpha, tile->image)) {
             return tile->input->alpha ? AVIF_RESULT_DECODE_ALPHA_FAILED : AVIF_RESULT_DECODE_COLOR_FAILED;
         }
     }

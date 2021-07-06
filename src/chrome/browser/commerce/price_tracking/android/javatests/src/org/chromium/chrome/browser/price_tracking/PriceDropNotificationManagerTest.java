@@ -68,7 +68,7 @@ import org.chromium.components.browser_ui.notifications.MockNotificationManagerP
 @RunWith(ChromeJUnit4ClassRunner.class)
 // clang-format off
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        "enable-features=" + ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID + "<Study",
+        "enable-features=" + ChromeFeatureList.COMMERCE_PRICE_TRACKING + "<Study",
         "force-fieldtrials=Study/Group",
         "force-fieldtrial-params=Study.Group:enable_price_notification/true"})
 @Features.DisableFeatures({ChromeFeatureList.START_SURFACE_ANDROID})
@@ -253,5 +253,11 @@ public class PriceDropNotificationManagerTest {
                 ACTION_ID_TURN_OFF_ALERT, TEST_URL, offerId);
         verify(mMockSubscriptionsManager, times(1))
                 .unsubscribe(eq(commerceSubscription), any(Callback.class));
+    }
+
+    @Test
+    @MediumTest
+    public void testNotificationTypeEnabled() {
+        assertTrue(mPriceDropNotificationManager.isEnabled());
     }
 }
