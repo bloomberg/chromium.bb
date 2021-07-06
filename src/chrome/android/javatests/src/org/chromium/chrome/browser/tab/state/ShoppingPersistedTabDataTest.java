@@ -38,6 +38,7 @@ import org.chromium.components.optimization_guide.OptimizationGuideDecision;
 import org.chromium.components.optimization_guide.proto.HintsProto;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
+import java.nio.ByteBuffer;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -94,7 +95,7 @@ public class ShoppingPersistedTabDataTest {
         shoppingPersistedTabData.registerIsTabSaveEnabledSupplier(supplier);
         shoppingPersistedTabData.setPriceMicros(
                 ShoppingPersistedTabDataTestUtils.PRICE_MICROS, null);
-        byte[] serialized = shoppingPersistedTabData.getSerializeSupplier().get();
+        ByteBuffer serialized = shoppingPersistedTabData.getSerializeSupplier().get();
         ShoppingPersistedTabData deserialized = new ShoppingPersistedTabData(tab);
         deserialized.deserialize(serialized);
         Assert.assertEquals(
@@ -525,7 +526,7 @@ public class ShoppingPersistedTabDataTest {
                 ShoppingPersistedTabDataTestUtils.IS_INCOGNITO);
         ShoppingPersistedTabData shoppingPersistedTabData = new ShoppingPersistedTabData(tab);
         shoppingPersistedTabData.setPriceMicros(42_000_000L, null);
-        byte[] serialized = shoppingPersistedTabData.getSerializeSupplier().get();
+        ByteBuffer serialized = shoppingPersistedTabData.getSerializeSupplier().get();
         PersistedTabDataConfiguration config = PersistedTabDataConfiguration.get(
                 ShoppingPersistedTabData.class, tab.isIncognito());
         ShoppingPersistedTabData deserialized =
@@ -544,8 +545,7 @@ public class ShoppingPersistedTabDataTest {
         supplier.set(true);
         shoppingPersistedTabData.registerIsTabSaveEnabledSupplier(supplier);
         shoppingPersistedTabData.setMainOfferId(ShoppingPersistedTabDataTestUtils.FAKE_OFFER_ID);
-
-        byte[] serialized = shoppingPersistedTabData.getSerializeSupplier().get();
+        ByteBuffer serialized = shoppingPersistedTabData.getSerializeSupplier().get();
         ShoppingPersistedTabData deserialized = new ShoppingPersistedTabData(tab);
         deserialized.deserialize(serialized);
         Assert.assertEquals(

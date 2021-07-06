@@ -8,6 +8,7 @@
 #include "components/segmentation_platform/internal/selection/segment_selector.h"
 
 #include "base/callback_helpers.h"
+#include "components/segmentation_platform/public/segment_selection_result.h"
 
 namespace segmentation_platform {
 
@@ -20,18 +21,17 @@ class SegmentInfo;
 class SegmentationModelMetadata;
 }  // namespace proto
 
-constexpr base::TimeDelta kSegmentSelectionTTL = base::TimeDelta::FromDays(28);
-
 class SegmentSelectorImpl : public SegmentSelector {
  public:
   SegmentSelectorImpl(SegmentInfoDatabase* segment_database,
-                      SegmentationResultPrefs* result_prefs);
+                      SegmentationResultPrefs* result_prefs,
+                      const std::string& segmentation_key);
 
   ~SegmentSelectorImpl() override;
 
   // SegmentSelector overrides.
   void Initialize(base::OnceClosure callback) override;
-  void GetSelectedSegment(SelectedSegmentCallback callback) override;
+  void GetSelectedSegment(SegmentSelectionCallback callback) override;
   void GetSegmentScore(OptimizationTarget segment_id,
                        SingleSegmentResultCallback callback) override;
   void OnSegmentUsed(OptimizationTarget segment_id) override;
@@ -42,6 +42,7 @@ class SegmentSelectorImpl : public SegmentSelector {
   // best segment, and writes it to the pref.
   void OnModelExecutionCompleted(OptimizationTarget segment_id) override;
 
+  // Must be invoked before Initialize.
   void set_model_execution_scheduler(
       ModelExecutionScheduler* model_execution_scheduler);
 
@@ -83,9 +84,13 @@ class SegmentSelectorImpl : public SegmentSelector {
   // Helper class to read/write results to the prefs.
   SegmentationResultPrefs* result_prefs_;
 
+  // The key specific to this selection, and used for finding the discrete
+  // mapping and writing to prefs.
+  const std::string segmentation_key_;
+
   // These values are read from prefs or db on init and used for serving the
   // clients in the current session.
-  absl::optional<OptimizationTarget> selected_segment_last_session_;
+  SegmentSelectionResult selected_segment_last_session_;
   std::map<OptimizationTarget, float> segment_score_last_session_;
 
   // Whether the initialization is complete through an Initialize call.

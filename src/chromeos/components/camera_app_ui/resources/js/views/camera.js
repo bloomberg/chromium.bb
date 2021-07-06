@@ -369,7 +369,9 @@ export class Camera extends View {
    */
   initOpenPTZPanel_() {
     this.openPTZPanel_.addEventListener('click', () => {
-      nav.open(ViewName.PTZ_PANEL, this.preview_.stream);
+      nav.open(
+          ViewName.PTZ_PANEL,
+          {stream: this.preview_.stream, vidPid: this.preview_.getVidPid()});
       highlight(false);
     });
 
@@ -679,6 +681,7 @@ export class Camera extends View {
    */
   async startWithMode_(deviceId, mode) {
     const deviceOperator = await DeviceOperator.getInstance();
+    state.set(state.State.USE_FAKE_CAMERA, deviceOperator === null);
     let resolCandidates;
     if (deviceOperator) {
       resolCandidates =
@@ -732,7 +735,6 @@ export class Camera extends View {
           this.options_.updateValues(stream, this.facingMode_);
           factory.setPreviewStream(stream);
           factory.setFacing(this.facingMode_);
-          await factory.setupExtraStreams(constraints, captureR);
 
           await this.modes_.updateModeSelectionUI(deviceId);
           await this.modes_.updateMode(

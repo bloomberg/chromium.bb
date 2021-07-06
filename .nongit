@@ -1,5 +1,5 @@
 {
-  "branch": "92.0.4515.x/upstream",
+  "branch": "92.0.4515.x/nongit",
   "files": {
     "src": {
       ".landmines": "28fa43394fa6fb056af1f35aad48e1bbc45aef73"
@@ -14,8 +14,8 @@
       }
     },
     "src/build/util": {
-      "LASTCHANGE": "8a13393145a5bb71d8b577793d697984354bd558",
-      "LASTCHANGE.committime": "4d0eb7eb8b9c04c4d755fc8ce1291dd7f3f6dcdc"
+      "LASTCHANGE": "7748651592698f815872573e904303bbf096a047",
+      "LASTCHANGE.committime": "31cbe17812a8d5ae5a130bc2b60aea53d546ca7e"
     },
     "src/buildtools/win": {
       "clang-format.exe": {
@@ -36,7 +36,7 @@
       }
     },
     "src/gpu/config": {
-      "gpu_lists_version.h": "1eb391547c5aa78cd7d606ed10b803f63227dfc5"
+      "gpu_lists_version.h": "b5ca0a4489dc4f44de2f97ad617b54238390634f"
     },
     "src/skia/ext": {
       "skia_commit_hash.h": "c66950d9498e290fa1341ddf5da9de213116e89c"

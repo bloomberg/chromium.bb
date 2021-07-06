@@ -14,16 +14,20 @@
 #include "components/optimization_guide/core/model_executor.h"
 #include "components/optimization_guide/proto/models.pb.h"
 #include "components/segmentation_platform/internal/database/segment_info_database.h"
+#include "components/segmentation_platform/internal/database/signal_database.h"
 #include "components/segmentation_platform/internal/execution/model_execution_manager.h"
 #include "components/segmentation_platform/internal/execution/segmentation_model_handler.h"
+#include "components/segmentation_platform/internal/proto/aggregation.pb.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace optimization_guide {
-class OptimizationGuideModelProvider;
-using proto::OptimizationTarget;
-}  // namespace optimization_guide
+namespace base {
+class Clock;
+}  // namespace base
 
 namespace segmentation_platform {
+class FeatureAggregator;
+class SignalDatabase;
+
 namespace proto {
 class SegmentInfo;
 }  // namespace proto
@@ -43,11 +47,17 @@ class SegmentInfo;
 // so the SegmentationModelHandler instances can be created early.
 class ModelExecutionManagerImpl : public ModelExecutionManager {
  public:
+  using ModelHandlerCreator =
+      base::RepeatingCallback<std::unique_ptr<SegmentationModelHandler>(
+          optimization_guide::proto::OptimizationTarget)>;
+
   explicit ModelExecutionManagerImpl(
-      optimization_guide::OptimizationGuideModelProvider* model_provider,
-      scoped_refptr<base::SequencedTaskRunner> background_task_runner,
       std::vector<OptimizationTarget> segment_ids,
-      SegmentInfoDatabase* segment_database);
+      ModelHandlerCreator model_handler_creator,
+      base::Clock* clock,
+      SegmentInfoDatabase* segment_database,
+      SignalDatabase* signal_database,
+      std::unique_ptr<FeatureAggregator> feature_aggregator);
   ~ModelExecutionManagerImpl() override;
 
   // Disallow copy/assign.
@@ -61,18 +71,58 @@ class ModelExecutionManagerImpl : public ModelExecutionManager {
 
  private:
   struct ExecutionState;
+  struct FeatureState;
 
+  // Callback method for when the SegmentInfo (segment metadata) has been
+  // loaded.
   void OnSegmentInfoFetched(std::unique_ptr<ExecutionState> state,
                             absl::optional<proto::SegmentInfo> segment_info);
+
+  // ProcessFeatures is the core function for processing all the required ML
+  // features in the correct order. It fetches samples for one feature at a
+  // time, makes sure the data is processed, and then is invoked again to
+  // process the next feature.
   void ProcessFeatures(std::unique_ptr<ExecutionState> state);
 
+  // Callback method for when all relevant samples for a particular feature has
+  // been loaded. Processes the samples, and inserts them into the input tensor
+  // that is later given to the ML execution.
+  void OnGetSamplesForFeature(std::unique_ptr<ExecutionState> state,
+                              std::unique_ptr<FeatureState> feature_state,
+                              std::vector<SignalDatabase::Sample> samples);
+
+  // ExecuteModel takes the current input tensor and passes it to the ML model
+  // for execution.
+  void ExecuteModel(std::unique_ptr<ExecutionState> state);
+
+  // Callback method for when the model execution has completed which gives the
+  // end result to the initial ModelExecutionCallback passed to
+  // ExecuteModel(...).
+  void OnModelExecutionComplete(std::unique_ptr<ExecutionState> state,
+                                const absl::optional<float>& result);
+
+  // Helper function for synchronously invoking the callback with the given
+  // result and status.
   void RunModelExecutionCallback(ModelExecutionCallback callback,
                                  float result,
                                  ModelExecutionStatus status);
 
+  // All the relevant handlers for each of the segments.
   std::map<OptimizationTarget, std::unique_ptr<SegmentationModelHandler>>
       model_handlers_;
+
+  // Used to access the current time.
+  base::Clock* clock_;
+
+  // Database for segment information and metadata.
   SegmentInfoDatabase* segment_database_;
+
+  // Main signal database for user actions and histograms.
+  SignalDatabase* signal_database_;
+
+  // The FeatureAggregator aggregates all the data based on metadata and input.
+  std::unique_ptr<FeatureAggregator> feature_aggregator_;
+
   base::WeakPtrFactory<ModelExecutionManagerImpl> weak_ptr_factory_{this};
 };
 

@@ -37,6 +37,7 @@ import org.chromium.url.GURL;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -185,7 +186,7 @@ public class ShoppingPersistedTabData extends PersistedTabData {
 
     @VisibleForTesting
     protected ShoppingPersistedTabData(
-            Tab tab, byte[] data, PersistedTabDataStorage storage, String persistedTabDataId) {
+            Tab tab, ByteBuffer data, PersistedTabDataStorage storage, String persistedTabDataId) {
         super(tab, storage, persistedTabDataId);
         deserializeAndLog(data);
         setupPersistence(tab);
@@ -600,7 +601,7 @@ public class ShoppingPersistedTabData extends PersistedTabData {
     }
 
     @Override
-    public Supplier<byte[]> getSerializeSupplier() {
+    public Supplier<ByteBuffer> getSerializeSupplier() {
         ShoppingPersistedTabDataProto.Builder builder =
                 ShoppingPersistedTabDataProto.newBuilder()
                         .setPriceMicros(mPriceMicros)
@@ -612,12 +613,12 @@ public class ShoppingPersistedTabData extends PersistedTabData {
         }
 
         return () -> {
-            return builder.build().toByteArray();
+            return builder.build().toByteString().asReadOnlyByteBuffer();
         };
     }
 
     @Override
-    public boolean deserialize(@Nullable byte[] bytes) {
+    public boolean deserialize(@Nullable ByteBuffer bytes) {
         // TODO(crbug.com/1135573) add in metrics for serialize and deserialize
         // Do not attempt to deserialize if the bytes are null
         if (bytes == null) {

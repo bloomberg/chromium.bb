@@ -16,11 +16,8 @@ bool IsWithinOneSecond(base::Time t1, base::Time t2) {
   return (t1 - t2).magnitude() < base::TimeDelta::FromSeconds(1);
 }
 
-void CheckVectorsEqual(
-    const std::vector<std::pair<base::Time, absl::optional<int32_t>>>&
-        expected_list,
-    const std::vector<std::pair<base::Time, absl::optional<int32_t>>>&
-        actual_list) {
+void CheckVectorsEqual(const std::vector<SignalDatabase::Sample>& expected_list,
+                       const std::vector<SignalDatabase::Sample>& actual_list) {
   EXPECT_EQ(expected_list.size(), actual_list.size());
   unsigned int equal_count = 0;
   for (const auto& expected : expected_list) {
@@ -40,8 +37,7 @@ class SignalDatabaseImplTest : public testing::Test {
   SignalDatabaseImplTest() = default;
   ~SignalDatabaseImplTest() override = default;
 
-  void OnGetSamples(
-      std::vector<std::pair<base::Time, absl::optional<int32_t>>> samples) {
+  void OnGetSamples(std::vector<SignalDatabase::Sample> samples) {
     get_samples_result_ = samples;
   }
 
@@ -70,8 +66,7 @@ class SignalDatabaseImplTest : public testing::Test {
 
   base::test::TaskEnvironment task_environment_;
   base::SimpleTestClock test_clock_;
-  std::vector<std::pair<base::Time, absl::optional<int32_t>>>
-      get_samples_result_;
+  std::vector<SignalDatabase::Sample> get_samples_result_;
   std::map<std::string, proto::SignalData> db_entries_;
   leveldb_proto::test::FakeDB<proto::SignalData>* db_{nullptr};
   std::unique_ptr<SignalDatabaseImpl> signal_db_;
@@ -83,7 +78,7 @@ TEST_F(SignalDatabaseImplTest, WriteSampleAndRead) {
       base::Time::Now().UTCMidnight() + base::TimeDelta::FromHours(8);
 
   uint64_t name_hash = 1234;
-  SignalType signal_type = SignalType::HISTOGRAM_VALUE;
+  proto::SignalType signal_type = proto::SignalType::HISTOGRAM_VALUE;
 
   // No entries to begin with.
   signal_db_->GetSamples(signal_type, name_hash, now.UTCMidnight(), now,
@@ -111,7 +106,7 @@ TEST_F(SignalDatabaseImplTest, WriteSampleAndRead) {
 TEST_F(SignalDatabaseImplTest, DeleteSamples) {
   SetUpDB();
 
-  SignalType signal_type = SignalType::USER_ACTION;
+  proto::SignalType signal_type = proto::SignalType::USER_ACTION;
   uint64_t name_hash = 1234;
   base::Time timestamp1 = test_clock_.Now() - base::TimeDelta::FromHours(3);
   base::Time timestamp2 = timestamp1 + base::TimeDelta::FromHours(1);
@@ -161,7 +156,7 @@ TEST_F(SignalDatabaseImplTest, WriteMultipleSamplesAndRunCompaction) {
   SetUpDB();
   EXPECT_EQ(0u, db_entries_.size());
 
-  SignalType signal_type = SignalType::USER_ACTION;
+  proto::SignalType signal_type = proto::SignalType::USER_ACTION;
   uint64_t name_hash = 1234;
 
   // Collect two samples on day1, and one on day2.

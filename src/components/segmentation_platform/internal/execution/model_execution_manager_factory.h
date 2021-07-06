@@ -12,12 +12,18 @@
 #include "components/optimization_guide/proto/models.pb.h"
 #include "components/segmentation_platform/internal/execution/model_execution_manager.h"
 
+namespace base {
+class Clock;
+}  // namespace base
+
 namespace optimization_guide {
 class OptimizationGuideModelProvider;
 }  // namespace optimization_guide
 
 namespace segmentation_platform {
+class FeatureAggregator;
 class SegmentInfoDatabase;
+class SignalDatabase;
 
 // Creates a ModelExecutionManager that is appropriate for the current platform.
 // In particular, it creates a DummyModelExecutionManager in cases where
@@ -27,7 +33,10 @@ std::unique_ptr<ModelExecutionManager> CreateModelExecutionManager(
     optimization_guide::OptimizationGuideModelProvider* model_provider,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner,
     std::vector<optimization_guide::proto::OptimizationTarget> segment_ids,
-    SegmentInfoDatabase* segment_database);
+    base::Clock* clock,
+    SegmentInfoDatabase* segment_database,
+    SignalDatabase* signal_database,
+    std::unique_ptr<FeatureAggregator> feature_aggregator);
 
 }  // namespace segmentation_platform
 

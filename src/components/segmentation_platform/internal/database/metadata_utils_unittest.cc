@@ -5,6 +5,7 @@
 #include "components/segmentation_platform/internal/database/metadata_utils.h"
 
 #include "components/optimization_guide/proto/models.pb.h"
+#include "components/segmentation_platform/internal/proto/aggregation.pb.h"
 #include "components/segmentation_platform/internal/proto/model_metadata.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -54,6 +55,113 @@ TEST_F(MetadataUtilsTest, MetadataValidation) {
             metadata_utils::ValidateMetadata(metadata));
 }
 
+TEST_F(MetadataUtilsTest, MetadataFeatureValidation) {
+  proto::Feature feature;
+  EXPECT_EQ(metadata_utils::ValidationResult::SIGNAL_TYPE_INVALID,
+            metadata_utils::ValidateMetadataFeature(feature));
+
+  feature.set_type(proto::SignalType::UNKNOWN_SIGNAL_TYPE);
+  EXPECT_EQ(metadata_utils::ValidationResult::SIGNAL_TYPE_INVALID,
+            metadata_utils::ValidateMetadataFeature(feature));
+
+  // name not required for USER_ACTION.
+  feature.set_type(proto::SignalType::USER_ACTION);
+  EXPECT_EQ(metadata_utils::ValidationResult::FEATURE_NAME_HASH_NOT_FOUND,
+            metadata_utils::ValidateMetadataFeature(feature));
+
+  feature.set_type(proto::SignalType::HISTOGRAM_ENUM);
+  EXPECT_EQ(metadata_utils::ValidationResult::FEATURE_NAME_NOT_FOUND,
+            metadata_utils::ValidateMetadataFeature(feature));
+
+  feature.set_type(proto::SignalType::HISTOGRAM_VALUE);
+  EXPECT_EQ(metadata_utils::ValidationResult::FEATURE_NAME_NOT_FOUND,
+            metadata_utils::ValidateMetadataFeature(feature));
+
+  feature.set_name("test name");
+  EXPECT_EQ(metadata_utils::ValidationResult::FEATURE_NAME_HASH_NOT_FOUND,
+            metadata_utils::ValidateMetadataFeature(feature));
+
+  feature.set_name_hash(123);
+  EXPECT_EQ(metadata_utils::ValidationResult::FEATURE_AGGREGATION_NOT_FOUND,
+            metadata_utils::ValidateMetadataFeature(feature));
+
+  feature.set_aggregation(proto::Aggregation::COUNT);
+  EXPECT_EQ(metadata_utils::ValidationResult::FEATURE_BUCKET_COUNT_NOT_FOUND,
+            metadata_utils::ValidateMetadataFeature(feature));
+
+  feature.set_bucket_count(456);
+  EXPECT_EQ(metadata_utils::ValidationResult::FEATURE_TENSOR_LENGTH_NOT_FOUND,
+            metadata_utils::ValidateMetadataFeature(feature));
+
+  std::vector<proto::Aggregation> tensor_length_1 = {
+      proto::Aggregation::COUNT,
+      proto::Aggregation::COUNT_BOOLEAN,
+      proto::Aggregation::BUCKETED_COUNT_BOOLEAN_TRUE_COUNT,
+      proto::Aggregation::SUM,
+      proto::Aggregation::SUM_BOOLEAN,
+      proto::Aggregation::BUCKETED_SUM_BOOLEAN_TRUE_COUNT,
+  };
+  std::vector<proto::Aggregation> tensor_length_bucket_count = {
+      proto::Aggregation::BUCKETED_COUNT,
+      proto::Aggregation::BUCKETED_COUNT_BOOLEAN,
+      proto::Aggregation::BUCKETED_CUMULATIVE_COUNT,
+      proto::Aggregation::BUCKETED_SUM,
+      proto::Aggregation::BUCKETED_SUM_BOOLEAN,
+      proto::Aggregation::BUCKETED_CUMULATIVE_SUM,
+  };
+
+  for (auto aggregation : tensor_length_1) {
+    feature.set_aggregation(aggregation);
+
+    // If bucket count is 0, do not use for output, i.e. tensor_length should be
+    // 0.
+    feature.set_bucket_count(0);
+    feature.set_tensor_length(1);
+    EXPECT_EQ(metadata_utils::ValidationResult::FEATURE_TENSOR_LENGTH_INVALID,
+              metadata_utils::ValidateMetadataFeature(feature));
+    feature.set_tensor_length(0);
+    EXPECT_EQ(metadata_utils::ValidationResult::VALIDATION_SUCCESS,
+              metadata_utils::ValidateMetadataFeature(feature));
+
+    // Tensor length should otherwise always be 1 for this aggregation type.
+    feature.set_bucket_count(456);
+    feature.set_tensor_length(10);
+    EXPECT_EQ(metadata_utils::ValidationResult::FEATURE_TENSOR_LENGTH_INVALID,
+              metadata_utils::ValidateMetadataFeature(feature));
+
+    feature.set_bucket_count(456);
+    feature.set_tensor_length(1);
+    EXPECT_EQ(metadata_utils::ValidationResult::VALIDATION_SUCCESS,
+              metadata_utils::ValidateMetadataFeature(feature));
+  }
+
+  for (auto aggregation : tensor_length_bucket_count) {
+    feature.set_aggregation(aggregation);
+
+    // If bucket count is 0, do not use for output, i.e. tensor_length should be
+    // 0.
+    feature.set_bucket_count(0);
+    feature.set_tensor_length(1);
+    EXPECT_EQ(metadata_utils::ValidationResult::FEATURE_TENSOR_LENGTH_INVALID,
+              metadata_utils::ValidateMetadataFeature(feature));
+    feature.set_tensor_length(0);
+    EXPECT_EQ(metadata_utils::ValidationResult::VALIDATION_SUCCESS,
+              metadata_utils::ValidateMetadataFeature(feature));
+
+    // Tensor length should otherwise always be equal to bucket_count for this
+    // aggregation type.
+    feature.set_bucket_count(456);
+    feature.set_tensor_length(1);
+    EXPECT_EQ(metadata_utils::ValidationResult::FEATURE_TENSOR_LENGTH_INVALID,
+              metadata_utils::ValidateMetadataFeature(feature));
+
+    feature.set_bucket_count(456);
+    feature.set_tensor_length(456);
+    EXPECT_EQ(metadata_utils::ValidationResult::VALIDATION_SUCCESS,
+              metadata_utils::ValidateMetadataFeature(feature));
+  }
+}
+
 TEST_F(MetadataUtilsTest, HasFreshResults) {
   proto::SegmentInfo segment_info;
   // No result.
@@ -94,6 +202,83 @@ TEST_F(MetadataUtilsTest, HasExpiredOrUnavailableResult) {
   prediction_result->set_timestamp_us(
       result_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
   EXPECT_TRUE(metadata_utils::HasExpiredOrUnavailableResult(segment_info));
+}
+
+TEST_F(MetadataUtilsTest, GetTimeUnit) {
+  proto::SegmentationModelMetadata metadata;
+  metadata.set_time_unit(proto::TimeUnit::DAY);
+  EXPECT_EQ(base::TimeDelta::FromDays(1),
+            metadata_utils::GetTimeUnit(metadata));
+
+  metadata.set_time_unit(proto::TimeUnit::HOUR);
+  EXPECT_EQ(base::TimeDelta::FromHours(1),
+            metadata_utils::GetTimeUnit(metadata));
+
+  metadata.set_time_unit(proto::TimeUnit::MINUTE);
+  EXPECT_EQ(base::TimeDelta::FromMinutes(1),
+            metadata_utils::GetTimeUnit(metadata));
+
+  metadata.set_time_unit(proto::TimeUnit::SECOND);
+  EXPECT_EQ(base::TimeDelta::FromSeconds(1),
+            metadata_utils::GetTimeUnit(metadata));
+
+  metadata.set_time_unit(proto::TimeUnit::WEEK);
+  EXPECT_EQ(base::TimeDelta::FromDays(7),
+            metadata_utils::GetTimeUnit(metadata));
+
+  metadata.set_time_unit(proto::TimeUnit::MONTH);
+  EXPECT_EQ(base::TimeDelta::FromDays(30),
+            metadata_utils::GetTimeUnit(metadata));
+
+  metadata.set_time_unit(proto::TimeUnit::YEAR);
+  EXPECT_EQ(base::TimeDelta::FromDays(365),
+            metadata_utils::GetTimeUnit(metadata));
+}
+
+TEST_F(MetadataUtilsTest, GetNameHashForFeature) {
+  proto::Feature feature;
+  EXPECT_FALSE(metadata_utils::GetNameHashForFeature(feature).has_value());
+  feature.set_name_hash(42);
+  auto name_hash = metadata_utils::GetNameHashForFeature(feature);
+  EXPECT_TRUE(name_hash.has_value());
+  EXPECT_EQ(42u, name_hash.value());
+}
+
+TEST_F(MetadataUtilsTest, GetSignalTypeForFeature) {
+  proto::Feature feature;
+  EXPECT_EQ(proto::SignalType::UNKNOWN_SIGNAL_TYPE,
+            metadata_utils::GetSignalTypeForFeature(feature));
+
+  feature.set_type(proto::SignalType::UNKNOWN_SIGNAL_TYPE);
+  EXPECT_EQ(proto::SignalType::UNKNOWN_SIGNAL_TYPE,
+            metadata_utils::GetSignalTypeForFeature(feature));
+
+  feature.set_type(proto::SignalType::USER_ACTION);
+  EXPECT_EQ(proto::SignalType::USER_ACTION,
+            metadata_utils::GetSignalTypeForFeature(feature));
+
+  feature.set_type(proto::SignalType::HISTOGRAM_ENUM);
+  EXPECT_EQ(proto::SignalType::HISTOGRAM_ENUM,
+            metadata_utils::GetSignalTypeForFeature(feature));
+
+  feature.set_type(proto::SignalType::HISTOGRAM_VALUE);
+  EXPECT_EQ(proto::SignalType::HISTOGRAM_VALUE,
+            metadata_utils::GetSignalTypeForFeature(feature));
+}
+
+TEST_F(MetadataUtilsTest, SignalTypeToSignalKind) {
+  EXPECT_EQ(
+      SignalKey::Kind::USER_ACTION,
+      metadata_utils::SignalTypeToSignalKind(proto::SignalType::USER_ACTION));
+  EXPECT_EQ(SignalKey::Kind::HISTOGRAM_ENUM,
+            metadata_utils::SignalTypeToSignalKind(
+                proto::SignalType::HISTOGRAM_ENUM));
+  EXPECT_EQ(SignalKey::Kind::HISTOGRAM_VALUE,
+            metadata_utils::SignalTypeToSignalKind(
+                proto::SignalType::HISTOGRAM_VALUE));
+  EXPECT_EQ(SignalKey::Kind::UNKNOWN,
+            metadata_utils::SignalTypeToSignalKind(
+                proto::SignalType::UNKNOWN_SIGNAL_TYPE));
 }
 
 }  // namespace segmentation_platform

@@ -8,15 +8,19 @@
 
 #include "components/segmentation_platform/internal/database/segment_info_database.h"
 #include "components/segmentation_platform/internal/proto/model_prediction.pb.h"
+#include "components/segmentation_platform/internal/proto/types.pb.h"
+#include "components/segmentation_platform/internal/signals/histogram_signal_handler.h"
 #include "components/segmentation_platform/internal/signals/user_action_signal_handler.h"
 
 namespace segmentation_platform {
 
 SignalFilterProcessor::SignalFilterProcessor(
     SegmentInfoDatabase* segment_database,
-    UserActionSignalHandler* user_action_signal_handler)
+    UserActionSignalHandler* user_action_signal_handler,
+    HistogramSignalHandler* histogram_signal_handler)
     : segment_database_(segment_database),
-      user_action_signal_handler_(user_action_signal_handler) {}
+      user_action_signal_handler_(user_action_signal_handler),
+      histogram_signal_handler_(histogram_signal_handler) {}
 
 SignalFilterProcessor::~SignalFilterProcessor() = default;
 
@@ -29,24 +33,39 @@ void SignalFilterProcessor::FilterSignals(
     std::vector<std::pair<OptimizationTarget, proto::SegmentInfo>>
         segment_infos) {
   std::set<uint64_t> user_actions;
+  std::set<std::pair<std::string, proto::SignalType>> histograms;
   for (const auto& pair : segment_infos) {
     const proto::SegmentInfo& segment_info = pair.second;
     const auto& metadata = segment_info.model_metadata();
     for (int i = 0; i < metadata.features_size(); i++) {
       const auto& feature = metadata.features(i);
-      if (feature.has_user_action() &&
-          feature.user_action().has_user_action_hash()) {
-        user_actions.insert(feature.user_action().user_action_hash());
+      if (feature.has_type() &&
+          feature.type() == proto::SignalType::USER_ACTION &&
+          feature.has_name_hash()) {
+        user_actions.insert(feature.name_hash());
+        continue;
       }
-      // TODO(shaktisahu): Do the same for enum and value histograms.
+
+      if (feature.has_type() &&
+          (feature.type() == proto::SignalType::HISTOGRAM_VALUE ||
+           feature.type() == proto::SignalType::HISTOGRAM_ENUM) &&
+          feature.has_name()) {
+        histograms.insert(std::make_pair(feature.name(), feature.type()));
+        continue;
+      }
+
+      // TODO(shaktisahu): We can filter out enum values as an optimization
+      // before storing in DB.
     }
   }
 
-  user_action_signal_handler_->SetRelevantUserActions(user_actions);
+  user_action_signal_handler_->SetRelevantUserActions(std::move(user_actions));
+  histogram_signal_handler_->SetRelevantHistograms(histograms);
 }
 
 void SignalFilterProcessor::EnableMetrics(bool enable_metrics) {
   user_action_signal_handler_->EnableMetrics(enable_metrics);
+  histogram_signal_handler_->EnableMetrics(enable_metrics);
 }
 
 }  // namespace segmentation_platform

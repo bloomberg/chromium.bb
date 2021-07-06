@@ -244,6 +244,8 @@ parser.add_argument('--x64', action=argparse.BooleanOptionalAction,
                     default=True, help='Generate x64 config')
 parser.add_argument('-D', '--define', action='append', default=[],
                     help='Define GN var=value')
+parser.add_argument('--vs-projects', action='append', default=[],
+                    help='Targets to generate VS projects for, e.g: //base/*')
 args = parser.parse_args(sys.argv[1:])
 
 component_modes = []
@@ -293,6 +295,12 @@ for is_component_mode in component_modes:
           '--script-executable=' + sys.executable,
           os.path.relpath(out_dir, SRC_DIR),
       ]
+      if args.vs_projects:
+        cmd.extend([
+          '--ide=vs',
+          '--filters=%s' % ';'.join(args.vs_projects),
+          '--no-deps',
+        ])
       if 'GN_ARGUMENTS' in os.environ.keys():
         cmd.extend(os.environ['GN_ARGUMENTS'].split(' '))
       subprocess.run(cmd, check=True, cwd=SRC_DIR)

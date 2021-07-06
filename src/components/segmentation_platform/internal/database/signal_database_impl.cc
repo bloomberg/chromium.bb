@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/leveldb_proto/public/proto_database.h"
+#include "components/segmentation_platform/internal/database/metadata_utils.h"
 #include "components/segmentation_platform/internal/database/signal_database.h"
 #include "components/segmentation_platform/internal/database/signal_key.h"
 #include "components/segmentation_platform/internal/proto/signal.pb.h"
@@ -24,7 +25,7 @@ namespace segmentation_platform {
 namespace {
 
 // TODO(shaktisahu): May be make this a class member for ease of testing.
-bool FilterKeyBasedOnRange(SignalType signal_type,
+bool FilterKeyBasedOnRange(proto::SignalType signal_type,
                            uint64_t name_hash,
                            base::Time end_time,
                            base::Time start_time,
@@ -33,8 +34,10 @@ bool FilterKeyBasedOnRange(SignalType signal_type,
   SignalKey key;
   SignalKey::FromBinary(signal_key, &key);
   DCHECK(key.IsValid());
-  if (key.kind() != signal_type || key.name_hash() != name_hash)
+  if (key.kind() != metadata_utils::SignalTypeToSignalKind(signal_type) ||
+      key.name_hash() != name_hash) {
     return false;
+  }
 
   // Check if the key range is contained within the given range.
   return key.range_end() <= end_time && start_time <= key.range_start();
@@ -54,12 +57,14 @@ void SignalDatabaseImpl::Initialize(SuccessCallback callback) {
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void SignalDatabaseImpl::WriteSample(SignalType signal_type,
+void SignalDatabaseImpl::WriteSample(proto::SignalType signal_type,
                                      uint64_t name_hash,
                                      absl::optional<int32_t> value,
                                      base::Time timestamp,
                                      SuccessCallback callback) {
-  SignalKey key(signal_type, name_hash, timestamp, timestamp);
+  DCHECK(initialized_);
+  SignalKey key(metadata_utils::SignalTypeToSignalKind(signal_type), name_hash,
+                timestamp, timestamp);
 
   proto::SignalData signal_data;
   proto::Sample* sample = signal_data.add_samples();
@@ -81,12 +86,14 @@ void SignalDatabaseImpl::WriteSample(SignalType signal_type,
                            std::move(keys_to_delete), std::move(callback));
 }
 
-void SignalDatabaseImpl::GetSamples(SignalType signal_type,
+void SignalDatabaseImpl::GetSamples(proto::SignalType signal_type,
                                     uint64_t name_hash,
                                     base::Time start_time,
                                     base::Time end_time,
-                                    SampleCallback callback) {
-  SignalKey dummy_key(signal_type, name_hash, base::Time(), base::Time());
+                                    SamplesCallback callback) {
+  DCHECK(initialized_);
+  SignalKey dummy_key(metadata_utils::SignalTypeToSignalKind(signal_type),
+                      name_hash, base::Time(), base::Time());
   std::string key_prefix = dummy_key.GetPrefixInBinary();
   database_->LoadKeysAndEntriesWithFilter(
       base::BindRepeating(&FilterKeyBasedOnRange, signal_type, name_hash,
@@ -98,12 +105,12 @@ void SignalDatabaseImpl::GetSamples(SignalType signal_type,
 }
 
 void SignalDatabaseImpl::OnGetSamples(
-    SampleCallback callback,
+    SamplesCallback callback,
     base::Time start_time,
     base::Time end_time,
     bool success,
     std::unique_ptr<std::map<std::string, proto::SignalData>> entries) {
-  std::vector<std::pair<base::Time, absl::optional<int32_t>>> out;
+  std::vector<Sample> out;
   if (!success || !entries) {
     std::move(callback).Run(out);
     return;
@@ -132,11 +139,13 @@ void SignalDatabaseImpl::OnGetSamples(
   std::move(callback).Run(out);
 }
 
-void SignalDatabaseImpl::DeleteSamples(SignalType signal_type,
+void SignalDatabaseImpl::DeleteSamples(proto::SignalType signal_type,
                                        uint64_t name_hash,
                                        base::Time end_time,
                                        SuccessCallback callback) {
-  SignalKey dummy_key(signal_type, name_hash, base::Time(), base::Time());
+  DCHECK(initialized_);
+  SignalKey dummy_key(metadata_utils::SignalTypeToSignalKind(signal_type),
+                      name_hash, base::Time(), base::Time());
   std::string key_prefix = dummy_key.GetPrefixInBinary();
   database_->LoadKeysAndEntriesWithFilter(
       base::BindRepeating(&FilterKeyBasedOnRange, signal_type, name_hash,
@@ -169,15 +178,17 @@ void SignalDatabaseImpl::OnGetSamplesForDeletion(
                            std::move(keys_to_delete), std::move(callback));
 }
 
-void SignalDatabaseImpl::CompactSamplesForDay(SignalType signal_type,
+void SignalDatabaseImpl::CompactSamplesForDay(proto::SignalType signal_type,
                                               uint64_t name_hash,
                                               base::Time day_start_time,
                                               SuccessCallback callback) {
+  DCHECK(initialized_);
   // Compact the signals between 00:00:00AM to 23:59:59PM.
   day_start_time = day_start_time.UTCMidnight();
   base::Time day_end_time = day_start_time + base::TimeDelta::FromDays(1) -
                             base::TimeDelta::FromSeconds(1);
-  SignalKey compact_key(signal_type, name_hash, day_end_time, day_start_time);
+  SignalKey compact_key(metadata_utils::SignalTypeToSignalKind(signal_type),
+                        name_hash, day_end_time, day_start_time);
   database_->LoadKeysAndEntriesWithFilter(
       base::BindRepeating(&FilterKeyBasedOnRange, signal_type, name_hash,
                           day_end_time, day_start_time),
@@ -223,6 +234,7 @@ void SignalDatabaseImpl::OnGetSamplesForCompaction(
 void SignalDatabaseImpl::OnDatabaseInitialized(
     SuccessCallback callback,
     leveldb_proto::Enums::InitStatus status) {
+  initialized_ = status == leveldb_proto::Enums::InitStatus::kOK;
   std::move(callback).Run(status == leveldb_proto::Enums::InitStatus::kOK);
 }
 
