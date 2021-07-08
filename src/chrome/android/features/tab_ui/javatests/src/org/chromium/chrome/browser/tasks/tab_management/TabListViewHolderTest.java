@@ -868,9 +868,8 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     @UiThreadTest
-    @CommandLineFlags.
-    Add({"force-fieldtrial-params=Study.Group:price_tracking_with_optimization_guide/true"})
     public void testPriceDropEndToEnd() {
+        ShoppingPersistedTabData.enablePriceTrackingWithOptimizationGuideForTesting();
         PersistedTabDataConfiguration.setUseTestConfig(true);
         PriceTrackingUtilities.ENABLE_PRICE_TRACKING.setForTesting(true);
         mockCurrencyFormatter();
@@ -878,6 +877,7 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
         mockOptimizationGuideResponse(OptimizationGuideDecision.TRUE, ANY_PRICE_TRACKING_DATA);
         MockTab tab = (MockTab) MockTab.createAndInitialize(1, false);
         tab.setGurlOverrideForTesting(TEST_GURL);
+        tab.setIsInitialized(true);
         CriticalPersistedTabData.from(tab).setTimestampMillis(System.currentTimeMillis());
         TabListMediator.ShoppingPersistedTabDataFetcher fetcher =
                 new TabListMediator.ShoppingPersistedTabDataFetcher(tab, null);

@@ -15,6 +15,7 @@
 #include "media/video/gpu_memory_buffer_video_frame_pool.h"
 #include "media/video/mock_gpu_video_accelerator_factories.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/gfx/buffer_format_util.h"
 
 using ::testing::_;
 using ::testing::AtLeast;
