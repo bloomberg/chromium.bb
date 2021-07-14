@@ -103,7 +103,7 @@ entries = {
   'src/tools/skia_goldctl/mac:skia/tools/goldctl/mac-amd64': 'https://chrome-infra-packages.appspot.com/skia/tools/goldctl/mac-amd64@1nOFxZHuuQxDk2FZuVtemcgPk5pGjO91pPQigw8U1u0C',
   'src/tools/skia_goldctl/win:skia/tools/goldctl/windows-amd64': 'https://chrome-infra-packages.appspot.com/skia/tools/goldctl/windows-amd64@FtPuWP_6LNjMR6_ANas5hzv6aNPdqt9zJ7BEqef3uI8C',
   'src/tools/swarming_client': 'https://chromium.googlesource.com/infra/luci/client-py.git@a32a1607f6093d338f756c7e7c7b4333b0c50c9c',
-  'src/v8': 'https://chromium.googlesource.com/v8/v8.git@88bf3883dee5da4e245cfafd920da11050d0a87c',
+  'src/v8': 'https://chromium.googlesource.com/v8/v8.git@01621b70b2fedd756470a79ad1e6cfdc9ba28b49',
   'src\\third_party\\angle\\third_party\\VK-GL-CTS\\src': 'https://chromium.googlesource.com/external/github.com/KhronosGroup/VK-GL-CTS@1c4a387382ea6b27625a358f9c8eb7c817dfdf8b',
   'src\\third_party\\angle\\third_party\\glmark2\\src': 'https://chromium.googlesource.com/external/github.com/glmark2/glmark2@9e01aef1a786b28aca73135a5b00f85c357e8f5e',
   'src\\third_party\\angle\\third_party\\rapidjson\\src': 'https://chromium.googlesource.com/external/github.com/Tencent/rapidjson@7484e06c589873e1ed80382d262087e4fa80fb63',

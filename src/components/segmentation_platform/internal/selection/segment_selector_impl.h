@@ -12,6 +12,7 @@
 
 namespace segmentation_platform {
 
+struct Config;
 class ModelExecutionScheduler;
 class SegmentationResultPrefs;
 class SegmentInfoDatabase;
@@ -25,7 +26,7 @@ class SegmentSelectorImpl : public SegmentSelector {
  public:
   SegmentSelectorImpl(SegmentInfoDatabase* segment_database,
                       SegmentationResultPrefs* result_prefs,
-                      const std::string& segmentation_key);
+                      Config* config);
 
   ~SegmentSelectorImpl() override;
 
@@ -41,10 +42,6 @@ class SegmentSelectorImpl : public SegmentSelector {
   // Called whenever a model eval completes. Runs segment selection to find the
   // best segment, and writes it to the pref.
   void OnModelExecutionCompleted(OptimizationTarget segment_id) override;
-
-  // Must be invoked before Initialize.
-  void set_model_execution_scheduler(
-      ModelExecutionScheduler* model_execution_scheduler);
 
  private:
   // For testing.
@@ -75,18 +72,14 @@ class SegmentSelectorImpl : public SegmentSelector {
                              float score,
                              const proto::SegmentationModelMetadata& metadata);
 
-  // The scheduler for requesting model execution.
-  ModelExecutionScheduler* model_execution_scheduler_;
-
   // The database storing metadata and results.
   SegmentInfoDatabase* segment_database_;
 
   // Helper class to read/write results to the prefs.
   SegmentationResultPrefs* result_prefs_;
 
-  // The key specific to this selection, and used for finding the discrete
-  // mapping and writing to prefs.
-  const std::string segmentation_key_;
+  // The config for providing configuration params.
+  Config* config_;
 
   // These values are read from prefs or db on init and used for serving the
   // clients in the current session.

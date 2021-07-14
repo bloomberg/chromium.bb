@@ -5,6 +5,7 @@
 #include "src/baseline/baseline.h"
 
 #include "src/handles/maybe-handles.h"
+#include "src/objects/shared-function-info.h"
 
 // TODO(v8:11421): Remove #if once baseline compiler is ported to other
 // architectures.
@@ -13,6 +14,7 @@
 
 #include "src/baseline/baseline-assembler-inl.h"
 #include "src/baseline/baseline-compiler.h"
+#include "src/debug/debug.h"
 #include "src/heap/factory-inl.h"
 #include "src/logging/counters.h"
 #include "src/objects/script-inl.h"
@@ -73,6 +75,10 @@ void EmitReturnBaseline(MacroAssembler* masm) {
 
 namespace v8 {
 namespace internal {
+
+bool CanCompileWithBaseline(Isolate* isolate, SharedFunctionInfo shared) {
+  return false;
+}
 
 MaybeHandle<Code> GenerateBaselineCode(Isolate* isolate,
                                        Handle<SharedFunctionInfo> shared) {
