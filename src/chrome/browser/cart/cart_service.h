@@ -11,7 +11,9 @@
 #include "chrome/browser/cart/cart_db.h"
 #include "chrome/browser/cart/cart_db_content.pb.h"
 #include "chrome/browser/cart/cart_discount_link_fetcher.h"
+#include "chrome/browser/cart/cart_metrics_tracker.h"
 #include "chrome/browser/cart/cart_service_factory.h"
+#include "chrome/browser/cart/discount_url_loader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_service_observer.h"
@@ -20,6 +22,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
+class DiscountURLLoader;
 class FetchDiscountWorker;
 
 // Service to maintain and read/write data for chrome cart module.
@@ -52,8 +55,10 @@ class CartService : public history::HistoryServiceObserver,
   void AddCart(const std::string& domain,
                const absl::optional<GURL>& cart_url,
                const cart_db::ChromeCartContentProto& proto);
-  // Delete the cart from certain domain in the cart service.
-  void DeleteCart(const std::string& domain);
+  // Delete the cart from certain domain in the cart service. When not
+  // |ignore_remove_status|, we keep the cart if it has been permanently
+  // removed.
+  void DeleteCart(const std::string& domain, bool ignore_remove_status);
   // Only load carts with fake data in the database.
   void LoadCartsWithFakeData(CartDB::LoadCallback callback);
   // Gets called when discounts are available for the given cart_url.
@@ -92,6 +97,13 @@ class CartService : public history::HistoryServiceObserver,
   // rule-based discount is enabled.
   void GetDiscountURL(const GURL& cart_url,
                       base::OnceCallback<void(const GURL&)> callback);
+  // Gets called when a navigation to |cart_url| is happening or might happen.
+  // |is_navigating| indicates whether the navigation is happening (e.g. left
+  // click on the cart item) or might happen later (e.g. right click to open
+  // context menu). This method 1) Record the latest interacted cart,
+  // and then use that to identify whether a navigation originated from cart
+  // module has happened. 2) Help identify whether to load discount URL.
+  void PrepareForNavigation(const GURL& cart_url, bool is_navigating);
   // history::HistoryServiceObserver:
   void OnURLsDeleted(history::HistoryService* history_service,
                      const history::DeletionInfo& deletion_info) override;
@@ -104,6 +116,7 @@ class CartService : public history::HistoryServiceObserver,
   friend class CartServiceFactory;
   friend class CartServiceTest;
   friend class CartServiceDiscountTest;
+  friend class CartServiceBrowserDiscountTest;
   FRIEND_TEST_ALL_PREFIXES(CartHandlerNtpModuleFakeDataTest,
                            TestEnableFakeData);
 
@@ -168,6 +181,8 @@ class CartService : public history::HistoryServiceObserver,
   bool ShouldSkip(const GURL& url);
   void CacheUsedDiscounts(const cart_db::ChromeCartContentProto& proto);
   void CleanUpDiscounts(cart_db::ChromeCartContentProto proto);
+  // A callback to to keep entries of removed carts when deletion.
+  void OnDeleteCart(bool success, std::vector<CartDB::KeyAndValue> proto_pairs);
 
   Profile* profile_;
   std::unique_ptr<CartDB> cart_db_;
@@ -179,6 +194,8 @@ class CartService : public history::HistoryServiceObserver,
   std::unique_ptr<FetchDiscountWorker> fetch_discount_worker_;
   std::unique_ptr<CartDiscountLinkFetcher> discount_link_fetcher_;
   optimization_guide::OptimizationGuideDecider* optimization_guide_decider_;
+  std::unique_ptr<CartMetricsTracker> metrics_tracker_;
+  std::unique_ptr<DiscountURLLoader> discount_url_loader_;
   base::WeakPtrFactory<CartService> weak_ptr_factory_{this};
 };
 

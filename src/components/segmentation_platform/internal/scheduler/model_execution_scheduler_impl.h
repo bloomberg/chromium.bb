@@ -21,11 +21,13 @@ class SegmentInfo;
 }  // namespace proto
 
 class SegmentInfoDatabase;
+class SignalStorageConfig;
 
 class ModelExecutionSchedulerImpl : public ModelExecutionScheduler {
  public:
   ModelExecutionSchedulerImpl(Observer* observer,
                               SegmentInfoDatabase* segment_database,
+                              SignalStorageConfig* signal_storage_config,
                               ModelExecutionManager* model_execution_manager);
   ~ModelExecutionSchedulerImpl() override;
 
@@ -35,7 +37,7 @@ class ModelExecutionSchedulerImpl : public ModelExecutionScheduler {
       delete;
 
   // ModelExecutionScheduler overrides.
-  void OnNewModelInfoReady(OptimizationTarget segment_id) override;
+  void OnNewModelInfoReady(const proto::SegmentInfo& segment_info) override;
   void RequestModelExecutionForEligibleSegments(bool expired_only) override;
   void RequestModelExecution(OptimizationTarget segment_id) override;
   void OnModelExecutionCompleted(
@@ -47,6 +49,8 @@ class ModelExecutionSchedulerImpl : public ModelExecutionScheduler {
       bool expired_only,
       std::vector<std::pair<OptimizationTarget, proto::SegmentInfo>>
           all_segments);
+  bool ShouldExecuteSegment(bool expired_only,
+                            const proto::SegmentInfo& segment_info);
 
   void OnResultSaved(OptimizationTarget segment_id, bool success);
 
@@ -56,6 +60,9 @@ class ModelExecutionSchedulerImpl : public ModelExecutionScheduler {
 
   // The database storing metadata and results.
   SegmentInfoDatabase* segment_database_;
+
+  // Used for confirming if the signals have been collected long enough.
+  SignalStorageConfig* signal_storage_config_;
 
   // The class that executes the models.
   ModelExecutionManager* model_execution_manager_;

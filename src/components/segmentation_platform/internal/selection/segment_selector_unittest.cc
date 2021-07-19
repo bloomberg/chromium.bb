@@ -6,10 +6,11 @@
 
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
+#include "components/segmentation_platform/internal/constants.h"
 #include "components/segmentation_platform/internal/database/segment_info_database.h"
 #include "components/segmentation_platform/internal/database/test_segment_info_database.h"
-#include "components/segmentation_platform/internal/scheduler/model_execution_scheduler.h"
 #include "components/segmentation_platform/internal/selection/segmentation_result_prefs.h"
+#include "components/segmentation_platform/public/config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,29 +19,32 @@ using testing::Return;
 using testing::SaveArg;
 
 namespace segmentation_platform {
+namespace proto {
+class SegmentInfo;
+}  // namespace proto
+
+namespace {
+
+Config CreateTestConfig() {
+  Config config;
+  config.segmentation_key = "some_key";
+  config.segment_selection_ttl = base::TimeDelta::FromDays(28);
+  config.segment_ids = {
+      OptimizationTarget::OPTIMIZATION_TARGET_SEGMENTATION_NEW_TAB,
+      OptimizationTarget::OPTIMIZATION_TARGET_SEGMENTATION_SHARE};
+  return config;
+}
+}  // namespace
 
 class MockSegmentationResultPrefs : public SegmentationResultPrefs {
  public:
-  MockSegmentationResultPrefs() = default;
+  MockSegmentationResultPrefs() : SegmentationResultPrefs(nullptr) {}
   MOCK_METHOD(void,
               SaveSegmentationResultToPref,
-              (const absl::optional<SelectedSegment>&));
+              (const std::string&, const absl::optional<SelectedSegment>&));
   MOCK_METHOD(absl::optional<SelectedSegment>,
               ReadSegmentationResultFromPref,
-              ());
-};
-
-class MockModelExecutionScheduler : public ModelExecutionScheduler {
- public:
-  MockModelExecutionScheduler() = default;
-  ~MockModelExecutionScheduler() override = default;
-  MOCK_METHOD(void, OnNewModelInfoReady, (OptimizationTarget));
-  MOCK_METHOD(void, RequestModelExecutionForEligibleSegments, (bool));
-  MOCK_METHOD(void, RequestModelExecution, (OptimizationTarget));
-  MOCK_METHOD(void,
-              OnModelExecutionCompleted,
-              (OptimizationTarget,
-               (const std::pair<float, ModelExecutionStatus>&)));
+              (const std::string&));
 };
 
 class SegmentSelectorTest : public testing::Test {
@@ -49,12 +53,11 @@ class SegmentSelectorTest : public testing::Test {
   ~SegmentSelectorTest() override = default;
 
   void SetUp() override {
+    config_ = CreateTestConfig();
     segment_database_ = std::make_unique<test::TestSegmentInfoDatabase>();
     prefs_ = std::make_unique<MockSegmentationResultPrefs>();
     segment_selector_ = std::make_unique<SegmentSelectorImpl>(
-        segment_database_.get(), prefs_.get());
-    segment_selector_->set_model_execution_scheduler(
-        &model_execution_scheduler_);
+        segment_database_.get(), prefs_.get(), &config_);
   }
 
   int ConvertToDiscreteScore(OptimizationTarget segment_id,
@@ -65,70 +68,72 @@ class SegmentSelectorTest : public testing::Test {
                                                      score, metadata);
   }
 
-  void GetSelectedSegment(absl::optional<OptimizationTarget> expected) {
+  void GetSelectedSegment(const SegmentSelectionResult& expected) {
     base::RunLoop loop;
-    segment_selector_->GetSelectedSegment(base::BindOnce(
-        &SegmentSelectorTest::OnGetSelectedSegment, base::Unretained(this),
-        loop.QuitClosure(), std::move(expected)));
+    segment_selector_->GetSelectedSegment(
+        base::BindOnce(&SegmentSelectorTest::OnGetSelectedSegment,
+                       base::Unretained(this), loop.QuitClosure(), expected));
     loop.Run();
   }
 
   void OnGetSelectedSegment(base::RepeatingClosure closure,
-                            absl::optional<OptimizationTarget> expected,
-                            absl::optional<OptimizationTarget> actual) {
-    ASSERT_EQ(expected.has_value(), actual.has_value());
-    ASSERT_EQ(expected.value(), actual.value());
+                            const SegmentSelectionResult& expected,
+                            const SegmentSelectionResult& actual) {
+    ASSERT_EQ(expected, actual);
     std::move(closure).Run();
   }
 
   base::test::TaskEnvironment task_environment_;
+  Config config_;
   std::unique_ptr<test::TestSegmentInfoDatabase> segment_database_;
   std::unique_ptr<MockSegmentationResultPrefs> prefs_;
   std::unique_ptr<SegmentSelectorImpl> segment_selector_;
-  MockModelExecutionScheduler model_execution_scheduler_;
 };
 
 TEST_F(SegmentSelectorTest, CheckDiscreteMapping) {
   OptimizationTarget segment_id =
       OptimizationTarget::OPTIMIZATION_TARGET_SEGMENTATION_NEW_TAB;
   float mapping[][2] = {{0.2, 1}, {0.5, 3}, {0.7, 4}};
-  segment_database_->AddDiscreteMapping(segment_id, mapping, 3);
+  segment_database_->AddDiscreteMapping(segment_id, mapping, 3,
+                                        config_.segmentation_key);
   proto::SegmentInfo* segment_info =
       segment_database_->FindOrCreateSegment(segment_id);
   const proto::SegmentationModelMetadata& metadata =
       segment_info->model_metadata();
 
-  ASSERT_EQ(0,
-            ConvertToDiscreteScore(segment_id, "segmentation", 0.1, metadata));
-  ASSERT_EQ(1,
-            ConvertToDiscreteScore(segment_id, "segmentation", 0.4, metadata));
-  ASSERT_EQ(3,
-            ConvertToDiscreteScore(segment_id, "segmentation", 0.5, metadata));
-  ASSERT_EQ(3,
-            ConvertToDiscreteScore(segment_id, "segmentation", 0.6, metadata));
-  ASSERT_EQ(4,
-            ConvertToDiscreteScore(segment_id, "segmentation", 0.9, metadata));
+  ASSERT_EQ(0, ConvertToDiscreteScore(segment_id, config_.segmentation_key, 0.1,
+                                      metadata));
+  ASSERT_EQ(1, ConvertToDiscreteScore(segment_id, config_.segmentation_key, 0.4,
+                                      metadata));
+  ASSERT_EQ(3, ConvertToDiscreteScore(segment_id, config_.segmentation_key, 0.5,
+                                      metadata));
+  ASSERT_EQ(3, ConvertToDiscreteScore(segment_id, config_.segmentation_key, 0.6,
+                                      metadata));
+  ASSERT_EQ(4, ConvertToDiscreteScore(segment_id, config_.segmentation_key, 0.9,
+                                      metadata));
 }
 
 TEST_F(SegmentSelectorTest, FindBestSegmentFlowWithTwoSegments) {
   OptimizationTarget segment_id =
       OptimizationTarget::OPTIMIZATION_TARGET_SEGMENTATION_NEW_TAB;
   float mapping[][2] = {{0.2, 1}, {0.5, 3}, {0.7, 4}};
-  segment_database_->AddDiscreteMapping(segment_id, mapping, 3);
+  segment_database_->AddDiscreteMapping(segment_id, mapping, 3,
+                                        config_.segmentation_key);
 
   OptimizationTarget segment_id2 =
       OptimizationTarget::OPTIMIZATION_TARGET_SEGMENTATION_SHARE;
   float mapping2[][2] = {{0.3, 1}, {0.4, 4}};
-  segment_database_->AddDiscreteMapping(segment_id2, mapping2, 2);
+  segment_database_->AddDiscreteMapping(segment_id2, mapping2, 2,
+                                        config_.segmentation_key);
 
   base::Time result_timestamp = base::Time::Now();
   segment_database_->AddPredictionResult(segment_id, 0.6, result_timestamp);
   segment_database_->AddPredictionResult(segment_id2, 0.5, result_timestamp);
 
   absl::optional<SelectedSegment> selected_segment;
-  EXPECT_CALL(*prefs_, SaveSegmentationResultToPref(_))
+  EXPECT_CALL(*prefs_, SaveSegmentationResultToPref(_, _))
       .Times(1)
-      .WillOnce(SaveArg<0>(&selected_segment));
+      .WillOnce(SaveArg<1>(&selected_segment));
 
   segment_selector_->OnModelExecutionCompleted(segment_id);
   ASSERT_TRUE(selected_segment.has_value());
@@ -139,15 +144,16 @@ TEST_F(SegmentSelectorTest, NewSegmentResultOverridesThePreviousBest) {
   OptimizationTarget segment_id1 =
       OptimizationTarget::OPTIMIZATION_TARGET_SEGMENTATION_NEW_TAB;
   float mapping1[][2] = {{0.2, 1}, {0.5, 3}, {0.7, 4}};
-  segment_database_->AddDiscreteMapping(segment_id1, mapping1, 3);
+  segment_database_->AddDiscreteMapping(segment_id1, mapping1, 3,
+                                        config_.segmentation_key);
 
   base::Time result_timestamp = base::Time::Now();
   segment_database_->AddPredictionResult(segment_id1, 0.6, result_timestamp);
 
   absl::optional<SelectedSegment> selected_segment;
-  EXPECT_CALL(*prefs_, SaveSegmentationResultToPref(_))
+  EXPECT_CALL(*prefs_, SaveSegmentationResultToPref(_, _))
       .Times(1)
-      .WillOnce(SaveArg<0>(&selected_segment));
+      .WillOnce(SaveArg<1>(&selected_segment));
 
   segment_selector_->OnModelExecutionCompleted(segment_id1);
   ASSERT_TRUE(selected_segment.has_value());
@@ -157,12 +163,13 @@ TEST_F(SegmentSelectorTest, NewSegmentResultOverridesThePreviousBest) {
   OptimizationTarget segment_id2 =
       OptimizationTarget::OPTIMIZATION_TARGET_SEGMENTATION_SHARE;
   float mapping2[][2] = {{0.3, 1}, {0.4, 4}};
-  segment_database_->AddDiscreteMapping(segment_id2, mapping2, 2);
+  segment_database_->AddDiscreteMapping(segment_id2, mapping2, 2,
+                                        config_.segmentation_key);
 
   segment_database_->AddPredictionResult(segment_id2, 0.5, result_timestamp);
-  EXPECT_CALL(*prefs_, SaveSegmentationResultToPref(_))
+  EXPECT_CALL(*prefs_, SaveSegmentationResultToPref(_, _))
       .Times(1)
-      .WillOnce(SaveArg<0>(&selected_segment));
+      .WillOnce(SaveArg<1>(&selected_segment));
 
   segment_selector_->OnModelExecutionCompleted(segment_id2);
   ASSERT_TRUE(selected_segment.has_value());
@@ -171,39 +178,47 @@ TEST_F(SegmentSelectorTest, NewSegmentResultOverridesThePreviousBest) {
 
 TEST_F(SegmentSelectorTest,
        GetSelectedSegmentReturnsResultFromPreviousSession) {
-  // Initialize segment selector. It should read selected segment from prefs.
+  // Set up a selected segment in prefs.
   OptimizationTarget segment_id0 =
       OptimizationTarget::OPTIMIZATION_TARGET_SEGMENTATION_SHARE;
   SelectedSegment from_history(segment_id0);
-  EXPECT_CALL(*prefs_, ReadSegmentationResultFromPref())
+  EXPECT_CALL(*prefs_, ReadSegmentationResultFromPref(_))
       .WillRepeatedly(Return(from_history));
+
+  // Construct a segment selector. It should read result from last session.
+  segment_selector_ = std::make_unique<SegmentSelectorImpl>(
+      segment_database_.get(), prefs_.get(), &config_);
 
   base::RunLoop loop;
   segment_selector_->Initialize(loop.QuitClosure());
   loop.Run();
 
-  GetSelectedSegment(segment_id0);
+  SegmentSelectionResult result;
+  result.segment = segment_id0;
+  result.is_ready = true;
+  GetSelectedSegment(result);
 
   // Add results for a new segment.
   OptimizationTarget segment_id1 =
       OptimizationTarget::OPTIMIZATION_TARGET_SEGMENTATION_NEW_TAB;
   float mapping1[][2] = {{0.2, 1}, {0.5, 3}, {0.7, 4}};
-  segment_database_->AddDiscreteMapping(segment_id1, mapping1, 3);
+  segment_database_->AddDiscreteMapping(segment_id1, mapping1, 3,
+                                        config_.segmentation_key);
 
   base::Time result_timestamp = base::Time::Now();
   segment_database_->AddPredictionResult(segment_id1, 0.6, result_timestamp);
 
   absl::optional<SelectedSegment> selected_segment;
-  EXPECT_CALL(*prefs_, SaveSegmentationResultToPref(_))
+  EXPECT_CALL(*prefs_, SaveSegmentationResultToPref(_, _))
       .Times(1)
-      .WillOnce(SaveArg<0>(&selected_segment));
+      .WillOnce(SaveArg<1>(&selected_segment));
 
   segment_selector_->OnModelExecutionCompleted(segment_id1);
   ASSERT_TRUE(selected_segment.has_value());
   ASSERT_EQ(segment_id1, selected_segment->segment_id);
 
   // GetSelectedSegment should still return value from previous session.
-  GetSelectedSegment(segment_id0);
+  GetSelectedSegment(result);
 }
 
 }  // namespace segmentation_platform

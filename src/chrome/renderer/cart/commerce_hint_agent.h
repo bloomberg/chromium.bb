@@ -33,8 +33,8 @@ class CommerceHintAgent
   static bool IsVisitCheckout(const GURL& main_frame_url);
   // Whether the main frame URL is a purchase page.
   static bool IsPurchase(const GURL& main_frame_url);
-  // Whether the button text corresponds to a purchase.
-  static bool IsPurchase(base::StringPiece button_text);
+  // Whether the button text in a page with |url| corresponds to a purchase.
+  static bool IsPurchase(const GURL& url, base::StringPiece button_text);
   // Whether the product should be skipped, based on product name.
   static bool ShouldSkip(base::StringPiece product_name);
   // Whether the request with navigation URL as |navigation_url| and request URL
@@ -44,9 +44,12 @@ class CommerceHintAgent
 
   void ExtractProducts();
   void OnProductsExtracted(std::unique_ptr<base::Value> result);
-  static std::string ExtractButtonText(const blink::WebFormElement& form);
+  static const std::vector<std::string> ExtractButtonTexts(
+      const blink::WebFormElement& form);
 
  private:
+  void ExtractCartFromCurrentFrame();
+
   GURL starting_url_;
   base::WeakPtrFactory<CommerceHintAgent> weak_factory_{this};
 
@@ -73,6 +76,7 @@ class CommerceHintAgent
   void DidFinishLoad() override;
   void WillSubmitForm(const blink::WebFormElement& form) override;
   void DidObserveLayoutShift(double score, bool after_input_or_scroll) override;
+  void OnMainFrameIntersectionChanged(const gfx::Rect& intersect_rect) override;
 };
 
 }  // namespace cart

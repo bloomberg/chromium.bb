@@ -37,6 +37,7 @@ import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
+import java.nio.ByteBuffer;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -291,7 +292,7 @@ public class StorePersistedTabDataTest {
         StorePersistedTabData storePersistedTabData = new StorePersistedTabData(tab,
                 new StorePersistedTabData.StoreHours(
                         SERIALIZE_DESERIALIZE_OPENING_TIME, SERIALIZE_DESERIALIZE_CLOSING_TIME));
-        byte[] serialized = storePersistedTabData.getSerializeSupplier().get();
+        ByteBuffer serialized = storePersistedTabData.getSerializeSupplier().get();
         StorePersistedTabData deserialized = new StorePersistedTabData(tab);
         deserialized.deserialize(serialized);
         Assert.assertEquals(

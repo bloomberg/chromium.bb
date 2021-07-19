@@ -66,6 +66,8 @@ import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.util.ColorUtils;
 import org.chromium.url.GURL;
 
+import java.nio.ByteBuffer;
+
 /**
  * Implementation of the interface {@link Tab}. Contains and manages a {@link ContentView}.
  * This class is not intended to be extended.
@@ -224,7 +226,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
      */
     @SuppressLint("HandlerLeak")
     TabImpl(int id, boolean incognito, @Nullable @TabLaunchType Integer launchType,
-            @Nullable byte[] serializedCriticalPersistedTabData) {
+            @Nullable ByteBuffer serializedCriticalPersistedTabData) {
         mIsTabSaveEnabledSupplier.set(false);
         mId = TabIdManager.getInstance().generateValidId(id);
         mIncognito = incognito;
@@ -823,6 +825,11 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
     @Override
     public void setIsTabSaveEnabled(boolean isTabSaveEnabled) {
         mIsTabSaveEnabledSupplier.set(isTabSaveEnabled);
+    }
+
+    @VisibleForTesting
+    public ObservableSupplierImpl<Boolean> getIsTabSaveEnabledSupplierForTesting() {
+        return mIsTabSaveEnabledSupplier;
     }
 
     // TabObscuringHandler.Observer
@@ -1580,6 +1587,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
     }
 
     @CalledByNative
+    @Override
     public boolean isCustomTab() {
         ChromeActivity activity = getActivity();
         return activity != null && activity.isCustomTab();

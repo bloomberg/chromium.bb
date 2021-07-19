@@ -595,16 +595,21 @@ gfx::Size CodedSize(const VideoFrame* video_frame,
                     GpuVideoAcceleratorFactories::OutputFormat output_format) {
   DCHECK(gfx::Rect(video_frame->coded_size())
              .Contains(video_frame->visible_rect()));
-  DCHECK((video_frame->visible_rect().x() & 1) == 0);
+  DCHECK_EQ(video_frame->visible_rect().x() % 2, 0);
   gfx::Size output;
   switch (output_format) {
     case GpuVideoAcceleratorFactories::OutputFormat::I420:
     case GpuVideoAcceleratorFactories::OutputFormat::P010:
     case GpuVideoAcceleratorFactories::OutputFormat::NV12_SINGLE_GMB:
     case GpuVideoAcceleratorFactories::OutputFormat::NV12_DUAL_GMB:
-      DCHECK((video_frame->visible_rect().y() & 1) == 0);
-      output = gfx::Size((video_frame->visible_rect().width() + 1) & ~1,
-                         (video_frame->visible_rect().height() + 1) & ~1);
+      if (gfx::AllowOddHeightMultiPlanarBuffers()) {
+        output = gfx::Size((video_frame->visible_rect().width() + 1) & ~1,
+                           video_frame->visible_rect().height());
+      } else {
+        DCHECK((video_frame->visible_rect().y() & 1) == 0);
+        output = gfx::Size((video_frame->visible_rect().width() + 1) & ~1,
+                           (video_frame->visible_rect().height() + 1) & ~1);
+      }
       break;
     case GpuVideoAcceleratorFactories::OutputFormat::XR30:
     case GpuVideoAcceleratorFactories::OutputFormat::XB30:
@@ -702,14 +707,21 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
       }
       passthrough = true;
   }
-  // TODO(dcastagna): Handle odd positioned video frame input, see
-  // https://crbug.com/638906.
-  // TODO(emircan): Eliminate odd size video frame input cases as they are not
-  // valid, see https://crbug.com/webrtc/9033.
-  if ((video_frame->visible_rect().x() & 1) ||
-      (video_frame->visible_rect().y() & 1) ||
-      (video_frame->coded_size().width() & 1) ||
-      (video_frame->coded_size().height() & 1)) {
+
+  // TODO(https://crbug.com/638906): Handle odd positioned video frame input.
+  if (video_frame->visible_rect().x() % 2)
+    passthrough = true;
+  if (video_frame->visible_rect().y() % 2 &&
+      !gfx::AllowOddHeightMultiPlanarBuffers()) {
+    passthrough = true;
+  }
+
+  // TODO(https://crbug.com/webrtc/9033): Eliminate odd size video frame input
+  // cases as they are not valid.
+  if (video_frame->coded_size().width() % 2)
+    passthrough = true;
+  if (video_frame->coded_size().height() % 2 &&
+      !gfx::AllowOddHeightMultiPlanarBuffers()) {
     passthrough = true;
   }
 

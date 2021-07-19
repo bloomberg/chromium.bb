@@ -8,9 +8,11 @@
 #include "components/segmentation_platform/internal/selection/segment_selector.h"
 
 #include "base/callback_helpers.h"
+#include "components/segmentation_platform/public/segment_selection_result.h"
 
 namespace segmentation_platform {
 
+struct Config;
 class ModelExecutionScheduler;
 class SegmentationResultPrefs;
 class SegmentInfoDatabase;
@@ -20,18 +22,17 @@ class SegmentInfo;
 class SegmentationModelMetadata;
 }  // namespace proto
 
-constexpr base::TimeDelta kSegmentSelectionTTL = base::TimeDelta::FromDays(28);
-
 class SegmentSelectorImpl : public SegmentSelector {
  public:
   SegmentSelectorImpl(SegmentInfoDatabase* segment_database,
-                      SegmentationResultPrefs* result_prefs);
+                      SegmentationResultPrefs* result_prefs,
+                      Config* config);
 
   ~SegmentSelectorImpl() override;
 
   // SegmentSelector overrides.
   void Initialize(base::OnceClosure callback) override;
-  void GetSelectedSegment(SelectedSegmentCallback callback) override;
+  void GetSelectedSegment(SegmentSelectionCallback callback) override;
   void GetSegmentScore(OptimizationTarget segment_id,
                        SingleSegmentResultCallback callback) override;
   void OnSegmentUsed(OptimizationTarget segment_id) override;
@@ -41,9 +42,6 @@ class SegmentSelectorImpl : public SegmentSelector {
   // Called whenever a model eval completes. Runs segment selection to find the
   // best segment, and writes it to the pref.
   void OnModelExecutionCompleted(OptimizationTarget segment_id) override;
-
-  void set_model_execution_scheduler(
-      ModelExecutionScheduler* model_execution_scheduler);
 
  private:
   // For testing.
@@ -74,18 +72,18 @@ class SegmentSelectorImpl : public SegmentSelector {
                              float score,
                              const proto::SegmentationModelMetadata& metadata);
 
-  // The scheduler for requesting model execution.
-  ModelExecutionScheduler* model_execution_scheduler_;
-
   // The database storing metadata and results.
   SegmentInfoDatabase* segment_database_;
 
   // Helper class to read/write results to the prefs.
   SegmentationResultPrefs* result_prefs_;
 
+  // The config for providing configuration params.
+  Config* config_;
+
   // These values are read from prefs or db on init and used for serving the
   // clients in the current session.
-  absl::optional<OptimizationTarget> selected_segment_last_session_;
+  SegmentSelectionResult selected_segment_last_session_;
   std::map<OptimizationTarget, float> segment_score_last_session_;
 
   // Whether the initialization is complete through an Initialize call.

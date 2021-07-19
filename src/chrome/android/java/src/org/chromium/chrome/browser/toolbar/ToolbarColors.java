@@ -4,9 +4,11 @@
 
 package org.chromium.chrome.browser.toolbar;
 
+import android.content.Context;
+
 import org.chromium.chrome.browser.device.DeviceClassManager;
+import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
-import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 
 /**
  * Helpers to determine colors in toolbars.
@@ -14,11 +16,13 @@ import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 public class ToolbarColors {
     /**
      * Returns whether the incognito toolbar theme color can be used in overview mode.
+     * @param context The activity context.
      */
-    public static boolean canUseIncognitoToolbarThemeColorInOverview() {
+    public static boolean canUseIncognitoToolbarThemeColorInOverview(Context context) {
         final boolean isAccessibilityEnabled = DeviceClassManager.enableAccessibilityLayout();
-        final boolean isTabGridEnabled = TabUiFeatureUtilities.isGridTabSwitcherEnabled();
-        final boolean isStartSurfaceEnabled = StartSurfaceConfiguration.isStartSurfaceEnabled();
+        final boolean isTabGridEnabled = TabUiFeatureUtilities.isGridTabSwitcherEnabled(context);
+        final boolean isStartSurfaceEnabled =
+                ReturnToChromeExperimentsUtil.isStartSurfaceHomepageEnabled();
         return (isAccessibilityEnabled || isTabGridEnabled || isStartSurfaceEnabled);
     }
 }

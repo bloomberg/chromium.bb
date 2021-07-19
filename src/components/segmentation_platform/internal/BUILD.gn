@@ -15,6 +15,8 @@ static_library("internal") {
   ]
 
   sources = [
+    "constants.cc",
+    "constants.h",
     "database/metadata_utils.cc",
     "database/metadata_utils.h",
     "database/segment_info_database.cc",
@@ -26,9 +28,15 @@ static_library("internal") {
     "database/signal_key.h",
     "database/signal_key_internal.cc",
     "database/signal_key_internal.h",
-    "database/user_action_database.h",
+    "database/signal_storage_config.cc",
+    "database/signal_storage_config.h",
+    "dummy_segmentation_platform_service.cc",
+    "dummy_segmentation_platform_service.h",
     "execution/dummy_model_execution_manager.cc",
     "execution/dummy_model_execution_manager.h",
+    "execution/feature_aggregator.h",
+    "execution/feature_aggregator_impl.cc",
+    "execution/feature_aggregator_impl.h",
     "execution/model_execution_manager.h",
     "execution/model_execution_manager_factory.cc",
     "execution/model_execution_manager_factory.h",
@@ -43,6 +51,8 @@ static_library("internal") {
     "selection/segment_selector_impl.h",
     "selection/segmentation_result_prefs.cc",
     "selection/segmentation_result_prefs.h",
+    "signals/histogram_signal_handler.cc",
+    "signals/histogram_signal_handler.h",
     "signals/signal_filter_processor.cc",
     "signals/signal_filter_processor.h",
     "signals/user_action_signal_handler.cc",
@@ -51,8 +61,10 @@ static_library("internal") {
 
   deps = [
     "//base",
+    "//base/util/values:values_util",
     "//components/keyed_service/core",
     "//components/leveldb_proto",
+    "//components/prefs",
     "//components/segmentation_platform/internal/proto",
     "//components/segmentation_platform/public",
   ]
@@ -77,6 +89,15 @@ static_library("internal") {
       "//third_party/tflite-support",
     ]
   }
+
+  if (is_android) {
+    sources += [
+      "android/segmentation_platform_service_android.cc",
+      "android/segmentation_platform_service_android.h",
+    ]
+
+    deps += [ ":jni_headers" ]
+  }
 }
 
 source_set("unit_tests") {
@@ -88,17 +109,24 @@ source_set("unit_tests") {
   # tests in //components/segmentation_platform/components_unittests.filter
   sources = [
     "database/metadata_utils_unittest.cc",
+    "database/mock_signal_database.cc",
+    "database/mock_signal_database.h",
     "database/segment_info_database_unittest.cc",
     "database/signal_database_impl_unittest.cc",
     "database/signal_key_internal_unittest.cc",
     "database/signal_key_unittest.cc",
+    "database/signal_storage_config_unittest.cc",
     "database/test_segment_info_database.cc",
     "database/test_segment_info_database.h",
+    "dummy_segmentation_platform_service_unittest.cc",
     "execution/dummy_model_execution_manager_unittest.cc",
+    "execution/feature_aggregator_impl_unittest.cc",
     "execution/model_execution_manager_factory_unittest.cc",
     "scheduler/model_execution_scheduler_unittest.cc",
     "segmentation_platform_service_impl_unittest.cc",
     "selection/segment_selector_unittest.cc",
+    "selection/segmentation_result_prefs_unittest.cc",
+    "signals/histogram_signal_handler_unittest.cc",
     "signals/signal_filter_processor_unittest.cc",
     "signals/user_action_signal_handler_unittest.cc",
   ]
@@ -109,6 +137,8 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/leveldb_proto:test_support",
     "//components/optimization_guide/core:test_support",
+    "//components/prefs",
+    "//components/prefs:test_support",
     "//components/segmentation_platform/internal/proto",
     "//components/segmentation_platform/public",
     "//testing/gmock",
@@ -132,8 +162,19 @@ if (is_android) {
 
     deps = [
       "//base:base_java",
+      "//components/optimization_guide/proto:optimization_guide_proto_java",
       "//components/segmentation_platform/public:public_java",
       "//third_party/androidx:androidx_annotation_annotation_java",
     ]
+    annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+  }
+
+  generate_jni("jni_headers") {
+    visibility = [
+      ":*",
+      "//chrome/browser",
+    ]
+
+    sources = [ "android/java/src/org/chromium/components/segmentation_platform/SegmentationPlatformServiceImpl.java" ]
   }
 }

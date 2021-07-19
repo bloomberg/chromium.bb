@@ -41,6 +41,7 @@ import org.chromium.ui.widget.ViewLookupCachingFrameLayout;
  */
 class TabGridViewBinder {
     private static TabListMediator.ThumbnailFetcher sThumbnailFetcherForTesting;
+    private static final String SHOPPING_METRICS_IDENTIFIER = "EnterTabSwitcher";
     /**
      * Bind a closable tab to a view.
      * @param model The model to bind.
@@ -232,6 +233,10 @@ class TabGridViewBinder {
                                         shoppingPersistedTabData.getPriceDrop().previousPrice);
                                 priceCardView.setVisibility(View.VISIBLE);
                             }
+                            if (shoppingPersistedTabData != null) {
+                                shoppingPersistedTabData.logPriceDropMetrics(
+                                        SHOPPING_METRICS_IDENTIFIER);
+                            }
                         });
             } else {
                 priceCardView.setVisibility(View.GONE);
@@ -399,7 +404,7 @@ class TabGridViewBinder {
                     TabUiColorProvider.getThumbnailPlaceHolderColorResource(isIncognito));
         }
 
-        if (TabUiFeatureUtilities.isTabGroupsAndroidEnabled()) {
+        if (TabUiFeatureUtilities.isTabGroupsAndroidEnabled(rootView.getContext())) {
             ViewCompat.setBackgroundTintList(backgroundView,
                     TabUiColorProvider.getHoveredCardBackgroundTintList(
                             backgroundView.getContext(), isIncognito));

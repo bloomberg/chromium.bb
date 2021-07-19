@@ -17,10 +17,12 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Batch;
 import org.chromium.chrome.browser.crypto.CipherFactory;
+import org.chromium.chrome.browser.tab.TabTestUtils;
 import org.chromium.chrome.browser.tab.state.FilePersistedTabDataStorage.FileSaveRequest;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 
 import java.io.File;
+import java.nio.ByteBuffer;
 import java.util.concurrent.Semaphore;
 
 /**
@@ -64,8 +66,8 @@ public class FilePersistedTabDataStorageTest {
                 new EncryptedFilePersistedTabDataStorage();
         final Semaphore semaphore = new Semaphore(0);
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            persistedTabDataStorage.save(
-                    TAB_ID_1, DATA_ID_1, () -> { return DATA_A; }, semaphore::release);
+            persistedTabDataStorage.save(TAB_ID_1, DATA_ID_1,
+                    () -> { return ByteBuffer.wrap(DATA_A); }, semaphore::release);
         });
         semaphore.acquire();
         // Simulate closing the app without saving the keys and reopening
@@ -83,14 +85,13 @@ public class FilePersistedTabDataStorageTest {
             throws InterruptedException {
         final Semaphore semaphore = new Semaphore(0);
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            persistedTabDataStorage.save(
-                    TAB_ID_1, DATA_ID_1, () -> { return DATA_A; }, semaphore::release);
+            persistedTabDataStorage.save(TAB_ID_1, DATA_ID_1,
+                    () -> { return ByteBuffer.wrap(DATA_A); }, semaphore::release);
         });
         semaphore.acquire();
         ThreadUtils.runOnUiThreadBlocking(() -> {
             persistedTabDataStorage.restore(TAB_ID_1, DATA_ID_1, (res) -> {
-                Assert.assertEquals(res.length, 2);
-                Assert.assertArrayEquals(res, DATA_A);
+                TabTestUtils.verifyByteBuffer(DATA_A, res);
                 semaphore.release();
             });
         });
@@ -112,16 +113,16 @@ public class FilePersistedTabDataStorageTest {
         final Semaphore semaphore = new Semaphore(0);
         storage.addSaveRequest(storage.new FileSaveRequest(TAB_ID_1, DATA_ID_1,
                 ()
-                        -> { return DATA_A; },
+                        -> { return ByteBuffer.wrap(DATA_A); },
                 (res) -> {
                     Assert.fail(
                             "First request should not have been executed as there is a subsequent "
                             + "request in the queue with the same Tab ID/Data ID combination");
                 }));
-        storage.addSaveRequest(storage.new FileSaveRequest(
-                TAB_ID_2, DATA_ID_2, () -> { return DATA_A; }, semaphore::release));
-        storage.addSaveRequest(storage.new FileSaveRequest(
-                TAB_ID_1, DATA_ID_1, () -> { return DATA_B; }, semaphore::release));
+        storage.addSaveRequest(storage.new FileSaveRequest(TAB_ID_2, DATA_ID_2,
+                () -> { return ByteBuffer.wrap(DATA_A); }, semaphore::release));
+        storage.addSaveRequest(storage.new FileSaveRequest(TAB_ID_1, DATA_ID_1,
+                () -> { return ByteBuffer.wrap(DATA_B); }, semaphore::release));
         ThreadUtils.runOnUiThreadBlocking(() -> {
             storage.processNextItemOnQueue();
             storage.processNextItemOnQueue();

@@ -401,6 +401,12 @@ class TabListMediator {
                                         .indexOf(toTab);
 
             RecordUserAction.record("MobileTabSwitched." + mComponentName);
+            if (PriceTrackingUtilities.isTrackPricesOnTabsEnabled()
+                    && TabSwitcherCoordinator.COMPONENT_NAME.equals(mComponentName)) {
+                RecordUserAction.record("Commerce.TabGridSwitched."
+                        + (ShoppingPersistedTabData.hasPriceDrop(toTab) ? "HasPriceDrop"
+                                                                        : "NoPriceDrop"));
+            }
             if (TabUiFeatureUtilities.isConditionalTabStripEnabled()) {
                 assert fromFilterIndex != toFilterIndex;
                 RecordHistogram.recordSparseHistogram("Tabs.TabOffsetOfSwitch." + mComponentName,
@@ -466,7 +472,7 @@ class TabListMediator {
 
         @Override
         public void onUrlUpdated(Tab tab) {
-            if (!TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled()) return;
+            if (!TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(mContext)) return;
             int index = mModel.indexFromId(tab.getId());
 
             if (index == TabModel.INVALID_TAB_INDEX && mActionsOnAllRelatedTabs) {
@@ -710,9 +716,9 @@ class TabListMediator {
             }
         };
 
-        mTabGridItemTouchHelperCallback =
-                new TabGridItemTouchHelperCallback(mModel, mTabModelSelector, mTabClosedListener,
-                        mTabGridDialogHandler, mComponentName, mActionsOnAllRelatedTabs);
+        mTabGridItemTouchHelperCallback = new TabGridItemTouchHelperCallback(context, mModel,
+                mTabModelSelector, mTabClosedListener, mTabGridDialogHandler, mComponentName,
+                mActionsOnAllRelatedTabs);
 
         // Right now we need to update layout only if there is a price welcome message card in tab
         // switcher.
@@ -888,7 +894,7 @@ class TabListMediator {
                     .addTabGroupObserver(mTabGroupObserver);
         }
 
-        if (TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled()) {
+        if (TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(mContext)) {
             mTabGroupTitleEditor = new TabGroupTitleEditor(mTabModelSelector) {
                 @Override
                 protected void updateTabGroupTitle(Tab tab, String title) {
@@ -1166,10 +1172,14 @@ class TabListMediator {
         }
 
         if (mMode == TabListMode.GRID && pseudoTab.hasRealTab() && !pseudoTab.isIncognito()) {
-            if (PriceTrackingUtilities.isTrackPricesOnTabsEnabled()) {
+            if (PriceTrackingUtilities.isTrackPricesOnTabsEnabled()
+                    && isUngroupedTab(pseudoTab.getId())) {
                 mModel.get(index).model.set(TabProperties.SHOPPING_PERSISTED_TAB_DATA_FETCHER,
                         new ShoppingPersistedTabDataFetcher(
                                 pseudoTab.getTab(), mPriceWelcomeMessageController));
+            } else {
+                mModel.get(index).model.set(
+                        TabProperties.SHOPPING_PERSISTED_TAB_DATA_FETCHER, null);
             }
             if (StoreTrackingUtilities.isStoreHoursOnTabsEnabled()) {
                 mModel.get(index).model.set(TabProperties.STORE_PERSISTED_TAB_DATA_FETCHER,
@@ -1190,6 +1200,11 @@ class TabListMediator {
                             forceUpdate && !TabUiFeatureUtilities.isTabToGtsAnimationEnabled());
             mModel.get(index).model.set(TabProperties.THUMBNAIL_FETCHER, callback);
         }
+    }
+
+    @VisibleForTesting
+    public boolean isUngroupedTab(int tabId) {
+        return getRelatedTabsForId(tabId).size() == 1;
     }
 
     /**
@@ -1250,7 +1265,7 @@ class TabListMediator {
      * @param helper The {@link TabGridAccessibilityHelper} used to setup accessibility support.
      */
     void setupAccessibilityDelegate(TabGridAccessibilityHelper helper) {
-        if (!TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled()) {
+        if (!TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(mContext)) {
             return;
         }
         mAccessibilityDelegate = new View.AccessibilityDelegate() {
@@ -1337,7 +1352,7 @@ class TabListMediator {
             PropertyModel model = mModel.get(index).model;
             if ((type == UiType.CLOSABLE || type == UiType.SELECTABLE || type == UiType.STRIP)
                     && model.get(TabProperties.TAB_ID) == pseudoTab.getId()
-                    && !TabUiFeatureUtilities.isTabGroupsAndroidEnabled()) {
+                    && !TabUiFeatureUtilities.isTabGroupsAndroidEnabled(mContext)) {
                 return;
             }
         }
@@ -1456,7 +1471,7 @@ class TabListMediator {
     // TODO(wychen): make this work with PseudoTab.
     private String getLastSearchTerm(Tab tab) {
         assert TabUiFeatureUtilities.ENABLE_SEARCH_CHIP.getValue();
-        if (mActionsOnAllRelatedTabs && TabUiFeatureUtilities.isTabGroupsAndroidEnabled()
+        if (mActionsOnAllRelatedTabs && TabUiFeatureUtilities.isTabGroupsAndroidEnabled(mContext)
                 && getRelatedTabsForId(tab.getId()).size() > 1) {
             return null;
         }
@@ -1477,7 +1492,7 @@ class TabListMediator {
 
     // TODO(wychen): make this work with PseudoTab.
     private String getDomainForTab(Tab tab) {
-        if (!TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled()) return "";
+        if (!TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(mContext)) return "";
         if (!mActionsOnAllRelatedTabs) return getDomain(tab);
 
         List<Tab> relatedTabs = getRelatedTabsForId(tab.getId());
@@ -1497,7 +1512,7 @@ class TabListMediator {
         int numOfRelatedTabs = getRelatedTabsForId(pseudoTab.getId()).size();
         if (numOfRelatedTabs > 1) {
             String title = getLatestTitleForTab(pseudoTab);
-            title = title.equals(pseudoTab.getTitle(mTitleProvider)) ? "" : title;
+            title = title.equals(pseudoTab.getTitle(mContext, mTitleProvider)) ? "" : title;
             model.set(TabProperties.CONTENT_DESCRIPTION_STRING,
                     title.isEmpty() ? mContext.getString(R.string.accessibility_expand_tab_group,
                             String.valueOf(numOfRelatedTabs))
@@ -1515,7 +1530,7 @@ class TabListMediator {
             int numOfRelatedTabs = getRelatedTabsForId(pseudoTab.getId()).size();
             if (numOfRelatedTabs > 1) {
                 String title = getLatestTitleForTab(pseudoTab);
-                title = title.equals(pseudoTab.getTitle(mTitleProvider)) ? "" : title;
+                title = title.equals(pseudoTab.getTitle(mContext, mTitleProvider)) ? "" : title;
 
                 if (title.isEmpty()) {
                     model.set(TabProperties.CLOSE_BUTTON_DESCRIPTION_STRING,
@@ -1560,7 +1575,7 @@ class TabListMediator {
 
     @VisibleForTesting
     String getLatestTitleForTab(PseudoTab pseudoTab) {
-        String originalTitle = pseudoTab.getTitle(mTitleProvider);
+        String originalTitle = pseudoTab.getTitle(mContext, mTitleProvider);
         if (!mActionsOnAllRelatedTabs || mTabGroupTitleEditor == null) return originalTitle;
         // If the group degrades to a single tab, delete the stored title.
         if (getRelatedTabsForId(pseudoTab.getId()).size() <= 1) {
@@ -1607,7 +1622,7 @@ class TabListMediator {
         };
 
         if (mActionsOnAllRelatedTabs && relatedTabList.size() > 1) {
-            if (!TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled()) {
+            if (!TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(mContext)) {
                 // For tab group card in grid tab switcher, the favicon is set to be null.
                 mModel.get(modelIndex).model.set(TabProperties.FAVICON, null);
                 return;

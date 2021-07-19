@@ -23,15 +23,12 @@ class SegmentInfo;
 class PredictionResult;
 }  // namespace proto
 
-// The key to be used to find discrete mapping for segmentation.
-constexpr char kSegmentationDiscreteMappingKey[] = "segmentation";
-
 // Represents a DB layer that stores model metadata and prediction results to
 // the disk.
 class SegmentInfoDatabase {
  public:
   using SuccessCallback = base::OnceCallback<void(bool)>;
-  using AllSegmentInfoCallback = base::OnceCallback<void(
+  using MultipleSegmentInfoCallback = base::OnceCallback<void(
       std::vector<std::pair<OptimizationTarget, proto::SegmentInfo>>)>;
   using SegmentInfoCallback =
       base::OnceCallback<void(absl::optional<proto::SegmentInfo>)>;
@@ -48,7 +45,12 @@ class SegmentInfoDatabase {
 
   // Convenient method to return combined info for all the segments in the
   // database.
-  virtual void GetAllSegmentInfo(AllSegmentInfoCallback callback);
+  virtual void GetAllSegmentInfo(MultipleSegmentInfoCallback callback);
+
+  // Called to get metadata for a given list of segments.
+  virtual void GetSegmentInfoForSegments(
+      const std::vector<OptimizationTarget>& segment_ids,
+      MultipleSegmentInfoCallback callback);
 
   // Called to get the metadata for a given segment.
   virtual void GetSegmentInfo(OptimizationTarget segment_id,
@@ -71,8 +73,8 @@ class SegmentInfoDatabase {
  private:
   void OnDatabaseInitialized(SuccessCallback callback,
                              leveldb_proto::Enums::InitStatus status);
-  void OnAllSegmentInfoLoaded(
-      AllSegmentInfoCallback callback,
+  void OnMultipleSegmentInfoLoaded(
+      MultipleSegmentInfoCallback callback,
       bool success,
       std::unique_ptr<std::vector<proto::SegmentInfo>> all_infos);
   void OnGetSegmentInfo(SegmentInfoCallback callback,

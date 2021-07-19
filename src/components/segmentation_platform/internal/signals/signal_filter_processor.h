@@ -16,6 +16,7 @@ namespace proto {
 class SegmentInfo;
 }  // namespace proto
 
+class HistogramSignalHandler;
 class SegmentInfoDatabase;
 class UserActionSignalHandler;
 
@@ -25,7 +26,8 @@ class UserActionSignalHandler;
 class SignalFilterProcessor {
  public:
   SignalFilterProcessor(SegmentInfoDatabase* segment_database,
-                        UserActionSignalHandler* user_action_signal_handler);
+                        UserActionSignalHandler* user_action_signal_handler,
+                        HistogramSignalHandler* histogram_signal_handler);
   ~SignalFilterProcessor();
 
   // Disallow copy/assign.
@@ -39,6 +41,8 @@ class SignalFilterProcessor {
   void OnSignalListUpdated();
 
   // Called to enable or disable metrics collection for segmentation platform.
+  // This is often invoked early even before the signal list is obtained. Must
+  // be explicitly called on startup.
   void EnableMetrics(bool enable_metrics);
 
  private:
@@ -48,6 +52,7 @@ class SignalFilterProcessor {
 
   SegmentInfoDatabase* segment_database_;
   UserActionSignalHandler* user_action_signal_handler_;
+  HistogramSignalHandler* histogram_signal_handler_;
 
   base::WeakPtrFactory<SignalFilterProcessor> weak_ptr_factory_{this};
 };

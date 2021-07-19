@@ -913,6 +913,12 @@
     "expiry_milestone": 92
   },
   {
+    "name": "deprecate-alt-based-six-pack",
+    "owners": [ "zentaro@google.com", "jimmyxgong@google.com",
+                "cros-peripherals@google.com"],
+    "expiry_milestone": 100
+  },
+  {
     "name": "deprecate-alt-click",
     "owners": [ "zentaro@google.com", "jimmyxgong@google.com",
                 "cros-peripherals@google.com"],
@@ -2136,6 +2142,11 @@
     "expiry_milestone": 91
   },
   {
+  "name": "enable-ntp-memory-enhancement",
+  "owners": [ "adamta", "sczs" ],
+  "expiry_milestone": 96
+  },
+  {
     "name": "enable-offline-previews",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     // This flag is used for frequent manual testing and should not be removed.
@@ -2684,8 +2695,8 @@
   },
   {
     "name": "enable-webrtc-hide-local-ips-with-mdns",
-    "owners": [ "qingsi" ],
-    "expiry_milestone": 90
+    "owners": [ "hta" ],
+    "expiry_milestone": 100
   },
   {
     "name": "enable-webrtc-hybrid-agc",

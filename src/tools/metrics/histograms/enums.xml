@@ -8431,6 +8431,16 @@ Called by update_bad_message_reasons.py.-->
   <int value="1" label="Contained me card."/>
 </enum>
 
+<enum name="BooleanContainsPrice">
+  <int value="0" label="Does not contain price"/>
+  <int value="1" label="Contains price"/>
+</enum>
+
+<enum name="BooleanContainsPriceDrop">
+  <int value="0" label="Does not contain price drop"/>
+  <int value="1" label="Contains price drop"/>
+</enum>
+
 <enum name="BooleanContentChangeMode">
   <int value="0" label="Discard Content"/>
   <int value="1" label="Retain Content"/>
@@ -8762,6 +8772,11 @@ Called by update_bad_message_reasons.py.-->
   <int value="1" label="Has CRC"/>
 </enum>
 
+<enum name="BooleanHasDiscount">
+  <int value="0" label="No discount"/>
+  <int value="1" label="has discount"/>
+</enum>
+
 <enum name="BooleanHasDistilledData">
   <int value="0" label="No distilled data"/>
   <int value="1" label="Has distilled data"/>
@@ -8943,6 +8958,11 @@ Called by update_bad_message_reasons.py.-->
 <enum name="BooleanIsPhishing">
   <int value="0" label="Not phishing"/>
   <int value="1" label="Is phishing"/>
+</enum>
+
+<enum name="BooleanIsProductDetailPage">
+  <int value="0" label="Is not a product detail page"/>
+  <int value="1" label="Is a product detail page"/>
 </enum>
 
 <enum name="BooleanIsRepeat">
@@ -10312,6 +10332,12 @@ Called by update_bad_message_reasons.py.-->
   <int value="5" label="No data received and capture stopped within 500ms"/>
   <int value="6" label="Failed to create low latency stream"/>
   <int value="7" label="Failed to open low latency stream"/>
+</enum>
+
+<enum name="CartDiscountDataType">
+  <summary>Discount related data associated with the cart module.</summary>
+  <int value="0" label="cart_discount_info"/>
+  <int value="1" label="cart_discount_link"/>
 </enum>
 
 <enum name="CastCertificateStatus">
@@ -48366,6 +48392,7 @@ from previous Chrome versions.
   <int value="1053743655" label="NewOverviewAnimations:enabled"/>
   <int value="1054910800" label="enable-timezone-tracking-option"/>
   <int value="1057014709" label="EnforceTLS13Downgrade:enabled"/>
+  <int value="1057709415" label="DeprecateAltBasedSixPack:disabled"/>
   <int value="1057741107"
       label="OmniboxTrendingZeroPrefixSuggestionsOnNTP:disabled"/>
   <int value="1057887829" label="AutofillScanThemeDialog:disabled"/>
@@ -49489,6 +49516,7 @@ from previous Chrome versions.
   <int value="1995322219" label="EmojiHandwritingVoiceInput:enabled"/>
   <int value="1995377612"
       label="HappinessTrackingSurveysForDesktopPrivacySandbox:disabled"/>
+  <int value="1996051411" label="DeprecateAltBasedSixPack:enabled"/>
   <int value="1996125159" label="AutoplayMutedVideos:enabled"/>
   <int value="1997047666" label="NTPSnippetsIncreasedVisibility:disabled"/>
   <int value="1997931863" label="OmniboxContextMenuShowFullUrls:enabled"/>

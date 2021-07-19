@@ -5,15 +5,38 @@
 #include "components/segmentation_platform/internal/database/metadata_utils.h"
 
 #include "base/notreached.h"
+#include "base/time/time.h"
+#include "components/segmentation_platform/internal/database/signal_key.h"
+#include "components/segmentation_platform/internal/proto/model_metadata.pb.h"
+#include "components/segmentation_platform/internal/proto/model_prediction.pb.h"
+#include "components/segmentation_platform/internal/proto/types.pb.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace segmentation_platform {
 namespace metadata_utils {
-namespace {
-// Used to determine if the model was executed too recently to run again.
-// TODO(shaktisahu): Make this finch configurable.
-constexpr base::TimeDelta kFreshResultsDurationThreshold =
-    base::TimeDelta::FromHours(24);
 
+namespace {
+uint64_t GetExpectedTensorLength(const proto::Feature& feature) {
+  switch (feature.aggregation()) {
+    case proto::Aggregation::COUNT:
+    case proto::Aggregation::COUNT_BOOLEAN:
+    case proto::Aggregation::BUCKETED_COUNT_BOOLEAN_TRUE_COUNT:
+    case proto::Aggregation::SUM:
+    case proto::Aggregation::SUM_BOOLEAN:
+    case proto::Aggregation::BUCKETED_SUM_BOOLEAN_TRUE_COUNT:
+      return feature.bucket_count() == 0 ? 0 : 1;
+    case proto::Aggregation::BUCKETED_COUNT:
+    case proto::Aggregation::BUCKETED_COUNT_BOOLEAN:
+    case proto::Aggregation::BUCKETED_CUMULATIVE_COUNT:
+    case proto::Aggregation::BUCKETED_SUM:
+    case proto::Aggregation::BUCKETED_SUM_BOOLEAN:
+    case proto::Aggregation::BUCKETED_CUMULATIVE_SUM:
+      return feature.bucket_count();
+    case proto::Aggregation::UNKNOWN:
+      NOTREACHED();
+      return 0;
+  }
+}
 }  // namespace
 
 ValidationResult ValidateSegmentInfo(const proto::SegmentInfo& segment_info) {
@@ -32,6 +55,61 @@ ValidationResult ValidateMetadata(
     return ValidationResult::TIME_UNIT_INVALID;
 
   return ValidationResult::VALIDATION_SUCCESS;
+}
+
+ValidationResult ValidateMetadataFeature(const proto::Feature& feature) {
+  auto signal_type = GetSignalTypeForFeature(feature);
+  if (signal_type == proto::SignalType::UNKNOWN_SIGNAL_TYPE) {
+    return ValidationResult::SIGNAL_TYPE_INVALID;
+  }
+
+  if ((signal_type == proto::SignalType::HISTOGRAM_ENUM ||
+       signal_type == proto::SignalType::HISTOGRAM_VALUE) &&
+      !feature.has_name()) {
+    return ValidationResult::FEATURE_NAME_NOT_FOUND;
+  }
+
+  if (!GetNameHashForFeature(feature).has_value())
+    return ValidationResult::FEATURE_NAME_HASH_NOT_FOUND;
+
+  if (!feature.has_aggregation())
+    return ValidationResult::FEATURE_AGGREGATION_NOT_FOUND;
+
+  if (!feature.has_bucket_count())
+    return ValidationResult::FEATURE_BUCKET_COUNT_NOT_FOUND;
+
+  if (!feature.has_tensor_length())
+    return ValidationResult::FEATURE_TENSOR_LENGTH_NOT_FOUND;
+
+  if (GetExpectedTensorLength(feature) != feature.tensor_length())
+    return ValidationResult::FEATURE_TENSOR_LENGTH_INVALID;
+
+  return ValidationResult::VALIDATION_SUCCESS;
+}
+
+ValidationResult ValidateMetadataAndFeatures(
+    const proto::SegmentationModelMetadata& model_metadata) {
+  auto metadata_result = ValidateMetadata(model_metadata);
+  if (metadata_result != ValidationResult::VALIDATION_SUCCESS)
+    return metadata_result;
+
+  for (int i = 0; i < model_metadata.features_size(); ++i) {
+    auto feature = model_metadata.features(i);
+    auto feature_result = ValidateMetadataFeature(feature);
+    if (feature_result != ValidationResult::VALIDATION_SUCCESS)
+      return feature_result;
+  }
+
+  return ValidationResult::VALIDATION_SUCCESS;
+}
+
+ValidationResult ValidateSegementInfoMetadataAndFeatures(
+    const proto::SegmentInfo& segment_info) {
+  auto segment_info_result = ValidateSegmentInfo(segment_info);
+  if (segment_info_result != ValidationResult::VALIDATION_SUCCESS)
+    return segment_info_result;
+
+  return ValidateMetadataAndFeatures(segment_info.model_metadata());
 }
 
 bool HasExpiredOrUnavailableResult(const proto::SegmentInfo& segment_info) {
@@ -54,12 +132,17 @@ bool HasFreshResults(const proto::SegmentInfo& segment_info) {
   if (!segment_info.has_prediction_result())
     return false;
 
+  DCHECK(segment_info.has_model_metadata());
+  const proto::SegmentationModelMetadata& metadata =
+      segment_info.model_metadata();
+
   base::Time last_result_timestamp =
       base::Time::FromDeltaSinceWindowsEpoch(base::TimeDelta::FromMicroseconds(
           segment_info.prediction_result().timestamp_us()));
+  base::TimeDelta result_ttl =
+      metadata.result_time_to_live() * GetTimeUnit(metadata);
 
-  return base::Time::Now() - last_result_timestamp <
-         kFreshResultsDurationThreshold;
+  return base::Time::Now() - last_result_timestamp < result_ttl;
 }
 
 base::TimeDelta GetTimeUnit(
@@ -68,11 +151,11 @@ base::TimeDelta GetTimeUnit(
   proto::TimeUnit time_unit = model_metadata.time_unit();
   switch (time_unit) {
     case proto::TimeUnit::YEAR:
-      return base::TimeDelta::FromDays(1) * 365;
+      return base::TimeDelta::FromDays(365);
     case proto::TimeUnit::MONTH:
-      return base::TimeDelta::FromDays(1) * 30;
+      return base::TimeDelta::FromDays(30);
     case proto::TimeUnit::WEEK:
-      return base::TimeDelta::FromDays(1) * 7;
+      return base::TimeDelta::FromDays(7);
     case proto::TimeUnit::DAY:
       return base::TimeDelta::FromDays(1);
     case proto::TimeUnit::HOUR:
@@ -86,6 +169,33 @@ base::TimeDelta GetTimeUnit(
     default:
       NOTREACHED();
       return base::TimeDelta();
+  }
+}
+
+absl::optional<uint64_t> GetNameHashForFeature(const proto::Feature& feature) {
+  if (!feature.has_name_hash())
+    return absl::nullopt;
+
+  return feature.name_hash();
+}
+
+proto::SignalType GetSignalTypeForFeature(const proto::Feature& feature) {
+  if (!feature.has_type())
+    return proto::SignalType::UNKNOWN_SIGNAL_TYPE;
+
+  return feature.type();
+}
+
+SignalKey::Kind SignalTypeToSignalKind(proto::SignalType signal_type) {
+  switch (signal_type) {
+    case proto::SignalType::USER_ACTION:
+      return SignalKey::Kind::USER_ACTION;
+    case proto::SignalType::HISTOGRAM_ENUM:
+      return SignalKey::Kind::HISTOGRAM_ENUM;
+    case proto::SignalType::HISTOGRAM_VALUE:
+      return SignalKey::Kind::HISTOGRAM_VALUE;
+    case proto::SignalType::UNKNOWN_SIGNAL_TYPE:
+      return SignalKey::Kind::UNKNOWN;
   }
 }
 

@@ -1860,8 +1860,10 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
     void onStartSurfaceStateChanged(boolean shouldBeVisible, boolean isShowingStartSurface) {
         super.onStartSurfaceStateChanged(shouldBeVisible, isShowingStartSurface);
 
-        // Update visibilities of toolbar layout, progress bar and shadow.
-        setVisibility(shouldBeVisible ? VISIBLE : GONE);
+        // Update visibilities of toolbar layout, progress bar and shadow. When |shouldBeVisible| is
+        // false, set INVISIBLE instead of Gone here because of re-inflation issue. See
+        // https://crbug.com/1226970 for more information.
+        setVisibility(shouldBeVisible ? VISIBLE : INVISIBLE);
         forceHideProgressBar();
         setForceHideShadow(!shouldBeVisible);
         // Url bar should be focusable. This will be set in UrlBar#onDraw but there's a delay which
@@ -2526,6 +2528,12 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
 
         ButtonSpec buttonSpec = buttonData.getButtonSpec();
         mOptionalButton.setOnClickListener(buttonSpec.getOnClickListener());
+        if (buttonSpec.getOnLongClickListener() == null) {
+            mOptionalButton.setLongClickable(false);
+        } else {
+            mOptionalButton.setLongClickable(true);
+            mOptionalButton.setOnLongClickListener(buttonSpec.getOnLongClickListener());
+        }
         mOptionalButton.setImageDrawable(buttonSpec.getDrawable());
         mOptionalButton.setContentDescription(
                 getContext().getResources().getString(buttonSpec.getContentDescriptionResId()));

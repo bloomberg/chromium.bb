@@ -19,7 +19,6 @@ import org.chromium.chrome.browser.notifications.chime.ChimeFeatures;
 import org.chromium.chrome.browser.page_annotations.PageAnnotationsServiceConfig;
 import org.chromium.chrome.browser.paint_preview.StartupPaintPreviewHelper;
 import org.chromium.chrome.browser.subscriptions.CommerceSubscriptionsServiceConfig;
-import org.chromium.chrome.browser.tab.state.ShoppingPersistedTabData;
 import org.chromium.chrome.browser.tasks.ConditionalTabStripUtils;
 import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.tasks.tab_management.PriceTrackingUtilities;
@@ -126,10 +125,6 @@ public class ChromeCachedFlags {
                 MerchantViewerConfig.TRUST_SIGNALS_SHEET_USE_PAGE_TITLE,
                 PageAnnotationsServiceConfig.PAGE_ANNOTATIONS_BASE_URL,
                 ReturnToChromeExperimentsUtil.TAB_SWITCHER_ON_RETURN_MS,
-                ShoppingPersistedTabData.TIME_TO_LIVE_MS,
-                ShoppingPersistedTabData.DISPLAY_TIME_MS,
-                ShoppingPersistedTabData.STALE_TAB_THRESHOLD_SECONDS,
-                ShoppingPersistedTabData.PRICE_TRACKING_WITH_OPTIMIZATION_GUIDE,
                 StartSurfaceConfiguration.HOME_BUTTON_ON_GRID_TAB_SWITCHER,
                 StartSurfaceConfiguration.NEW_SURFACE_FROM_HOME_BUTTON,
                 StartSurfaceConfiguration.OMNIBOX_FOCUSED_ON_NEW_TAB,
@@ -138,6 +133,7 @@ public class ChromeCachedFlags {
                 StartSurfaceConfiguration.START_SURFACE_HIDE_INCOGNITO_SWITCH_NO_TAB,
                 StartSurfaceConfiguration.START_SURFACE_LAST_ACTIVE_TAB_ONLY,
                 StartSurfaceConfiguration.START_SURFACE_OPEN_NTP_INSTEAD_OF_START,
+                StartSurfaceConfiguration.SHOW_NTP_TILES_ON_OMNIBOX,
                 StartSurfaceConfiguration.START_SURFACE_VARIATION,
                 StartSurfaceConfiguration.SUPPORT_ACCESSIBILITY,
                 StartupPaintPreviewHelper.ACCESSIBILITY_SUPPORT_PARAM,

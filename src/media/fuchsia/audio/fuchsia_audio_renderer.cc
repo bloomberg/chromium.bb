@@ -178,6 +178,10 @@ void FuchsiaAudioRenderer::OnBuffersAcquired(
     delayed_packets_.pop_front();
     SendInputPacket(std::move(packet));
   }
+
+  if (is_at_end_of_stream_) {
+    OnSysmemBufferStreamEndOfStream();
+  }
 }
 
 void FuchsiaAudioRenderer::InitializeStreamSink() {
@@ -560,7 +564,9 @@ void FuchsiaAudioRenderer::OnDemuxerStreamReadDone(
     return;
   }
 
-  if (!buffer->end_of_stream()) {
+  if (buffer->end_of_stream()) {
+    is_at_end_of_stream_ = true;
+  } else {
     if (buffer->data_size() > kBufferSize) {
       DLOG(ERROR) << "Demuxer returned buffer that is too big: "
                   << buffer->data_size();
@@ -707,8 +713,12 @@ void FuchsiaAudioRenderer::OnSysmemBufferStreamOutputPacket(
 
 void FuchsiaAudioRenderer::OnSysmemBufferStreamEndOfStream() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(is_at_end_of_stream_);
 
-  is_at_end_of_stream_ = true;
+  // Stream sink is not bound yet, don't send EOS.
+  if (!stream_sink_)
+    return;
+
   stream_sink_->EndOfStream();
 
   // No more data is going to be buffered. Update buffering state to ensure

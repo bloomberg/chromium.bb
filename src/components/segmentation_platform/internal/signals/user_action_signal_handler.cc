@@ -4,14 +4,18 @@
 
 #include "components/segmentation_platform/internal/signals/user_action_signal_handler.h"
 
+#include "base/callback_helpers.h"
 #include "base/metrics/metrics_hashes.h"
-#include "components/segmentation_platform/internal/database/user_action_database.h"
+#include "base/time/clock.h"
+#include "components/segmentation_platform/internal/database/signal_database.h"
+#include "components/segmentation_platform/internal/proto/types.pb.h"
 
 namespace segmentation_platform {
 
 UserActionSignalHandler::UserActionSignalHandler(
-    UserActionDatabase* user_action_database)
-    : db_(user_action_database), metrics_enabled_(false) {
+    SignalDatabase* signal_database,
+    base::Clock* clock)
+    : db_(signal_database), clock_(clock), metrics_enabled_(false) {
   action_callback_ = base::BindRepeating(&UserActionSignalHandler::OnUserAction,
                                          weak_ptr_factory_.GetWeakPtr());
 }
@@ -25,10 +29,14 @@ void UserActionSignalHandler::EnableMetrics(bool enable_metrics) {
     return;
 
   metrics_enabled_ = enable_metrics;
-  if (metrics_enabled_)
+
+  // As an added optimization, we unregister the callback when metrics is
+  // disabled.
+  if (metrics_enabled_) {
     base::AddActionCallback(action_callback_);
-  else
+  } else {
     base::RemoveActionCallback(action_callback_);
+  }
 }
 
 void UserActionSignalHandler::SetRelevantUserActions(
@@ -44,7 +52,8 @@ void UserActionSignalHandler::OnUserAction(const std::string& user_action,
   if (iter == user_actions_.end())
     return;
 
-  db_->WriteUserAction(user_action_hash, action_time);
+  db_->WriteSample(proto::SignalType::USER_ACTION, user_action_hash,
+                   absl::nullopt, clock_->Now(), base::DoNothing());
 }
 
 }  // namespace segmentation_platform
