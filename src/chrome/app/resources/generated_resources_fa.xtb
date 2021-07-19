@@ -594,6 +594,7 @@
 <translation id="1627408615528139100">قبلاً بارگیری شده است</translation>
 <translation id="1628948239858170093">فایل قبل از باز شدن اسکن شود؟</translation>
 <translation id="1629314197035607094">گذرواژه منقضی شده است</translation>
+<translation id="1629451755632656601">‏به Google اجازه می‌دهید تخفیف‌های شخصی‌شده در سبد خریدتان پیدا کند؟</translation>
 <translation id="1629521517399325891">گواهینامه کاربر برای اصالت‌سنجی شبکه دردسترس نیست.</translation>
 <translation id="163072119192489970">اجازه دارد ارسال و دریافت داده را به‌پایان برساند</translation>
 <translation id="1630768113285622200">بازراه‌اندازی و ادامه</translation>
@@ -2349,7 +2350,7 @@
 <translation id="3497560059572256875">‏هم‌رسانی Doodle</translation>
 <translation id="3498215018399854026">در حال حاضر نمی‌توانیم با والدینتان تماس برقرار کنیم. لطفاً دوباره امتحان کنید.</translation>
 <translation id="3500417806337761827">‏هنگام نشاندن هم‌رسانی خطایی روی داد. هم‌رسانی‌های SMB زیادی نشانده شده است.</translation>
-<translation id="3505030558724226696">لغو دسترسی دستگاه</translation>
+<translation id="3505030558724226696">لغو دسترسی به دستگاه</translation>
 <translation id="3505100368357440862">پیشنهادهای خرید</translation>
 <translation id="3507132249039706973">«محافظت استاندارد» روشن است</translation>
 <translation id="3507421388498836150">اجازه‌های فعلی برای «<ph name="EXTENSION_NAME" />»</translation>
@@ -5500,7 +5501,6 @@
 <translation id="6997642619627518301"><ph name="NAME_PH" /> - گزارش فعالیت</translation>
 <translation id="6997707937646349884">در دستگاه‌های شما:</translation>
 <translation id="6998793565256476099">ثبت‌نام دستگاه برای برگزاری کنفرانس ویدیویی</translation>
-<translation id="6999640176621571692">‏به Google اجازه داده شود برای مواردی که به سبد خریدتان اضافه می‌کنید تخفیف پیدا کند؟</translation>
 <translation id="6999956497249459195">گروه جدید</translation>
 <translation id="7000206553895739324"><ph name="PRINTER_NAME" /> متصل شده است اما باید پیکربندی شود</translation>
 <translation id="7000347579424117903">‏باید شامل Ctrl،‏ Alt یا Search‌ باشد</translation>

@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.toolbar.adaptive;
 
+import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.ADAPTIVE_TOOLBAR_CUSTOMIZATION_ENABLED;
 import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.ADAPTIVE_TOOLBAR_CUSTOMIZATION_SETTINGS;
 
 import android.content.Context;
@@ -116,11 +117,6 @@ public class AdaptiveToolbarButtonController implements ButtonDataProvider, Butt
                 != AdaptiveToolbarButtonVariant.NONE : "must not provide NONE button provider";
 
         mButtonDataProviderMap.put(variant, buttonProvider);
-
-        if (AdaptiveToolbarFeatures.isSingleVariantModeEnabled()
-                && variant == AdaptiveToolbarFeatures.getSingleVariantMode()) {
-            setSingleProvider(buttonProvider);
-        }
     }
 
     @Override
@@ -217,18 +213,25 @@ public class AdaptiveToolbarButtonController implements ButtonDataProvider, Butt
 
     @Override
     public void onFinishNativeInitialization() {
-        if (!AdaptiveToolbarFeatures.isCustomizationEnabled()) return;
-        new AdaptiveToolbarStatePredictor().recomputeUiState(uiState -> {
-            setSingleProvider(uiState.canShowUi
-                            ? mButtonDataProviderMap.get(uiState.toolbarButtonState)
-                            : null);
-            notifyObservers(uiState.canShowUi);
-        });
+        if (AdaptiveToolbarFeatures.isSingleVariantModeEnabled()) {
+            @AdaptiveToolbarButtonVariant
+            int variant = AdaptiveToolbarFeatures.getSingleVariantMode();
+            setSingleProvider(mButtonDataProviderMap.get(variant));
+        } else if (AdaptiveToolbarFeatures.isCustomizationEnabled()) {
+            new AdaptiveToolbarStatePredictor().recomputeUiState(uiState -> {
+                setSingleProvider(uiState.canShowUi
+                                ? mButtonDataProviderMap.get(uiState.toolbarButtonState)
+                                : null);
+                notifyObservers(uiState.canShowUi);
+            });
+            // We need the menu handler only if the customization feature is on.
+            if (mMenuHandler != null) return;
+            mMenuHandler = createMenuHandler();
+            if (mMenuHandler == null) return;
+        } else {
+            return;
+        }
 
-        // We need the menu handler only if the customization feature is on.
-        if (mMenuHandler != null) return;
-        mMenuHandler = createMenuHandler();
-        if (mMenuHandler == null) return;
         // Clearing mOriginalButtonSpec forces a refresh of mButtonData on the next get()
         mOriginalButtonSpec = null;
         notifyObservers(mButtonData.canShow());
@@ -249,7 +252,8 @@ public class AdaptiveToolbarButtonController implements ButtonDataProvider, Butt
 
     @Override
     public void onPreferenceChanged(String key) {
-        if (ADAPTIVE_TOOLBAR_CUSTOMIZATION_SETTINGS.equals(key)) {
+        if (ADAPTIVE_TOOLBAR_CUSTOMIZATION_SETTINGS.equals(key)
+                || ADAPTIVE_TOOLBAR_CUSTOMIZATION_ENABLED.equals(key)) {
             assert AdaptiveToolbarFeatures.isCustomizationEnabled();
             new AdaptiveToolbarStatePredictor().recomputeUiState(uiState -> {
                 setSingleProvider(uiState.canShowUi
