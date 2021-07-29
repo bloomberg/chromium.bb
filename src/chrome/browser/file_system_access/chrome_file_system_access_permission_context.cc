@@ -40,6 +40,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "components/permissions/permission_util.h"
 #include "components/safe_browsing/buildflags.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -116,7 +117,7 @@ const char kDeprecatedLastPickedDirectoryKey[] = "default-path";
 const char kDeprecatedLastPickedDirectoryTypeKey[] = "default-path-type";
 
 void ShowFileSystemAccessRestrictedDirectoryDialogOnUIThread(
-    content::GlobalFrameRoutingId frame_id,
+    content::GlobalRenderFrameHostId frame_id,
     const url::Origin& origin,
     const base::FilePath& path,
     HandleType handle_type,
@@ -125,7 +126,7 @@ void ShowFileSystemAccessRestrictedDirectoryDialogOnUIThread(
         callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(frame_id);
-  if (!rfh || !rfh->IsCurrent()) {
+  if (!rfh || !rfh->IsActive()) {
     // Requested from a no longer valid render frame host.
     std::move(callback).Run(ChromeFileSystemAccessPermissionContext::
                                 SensitiveDirectoryResult::kAbort);
@@ -311,7 +312,7 @@ BindResultCallbackToCurrentSequence(
 }
 
 void DoSafeBrowsingCheckOnUIThread(
-    content::GlobalFrameRoutingId frame_id,
+    content::GlobalRenderFrameHostId frame_id,
     std::unique_ptr<content::FileSystemAccessWriteItem> item,
     safe_browsing::CheckDownloadCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -434,7 +435,7 @@ class ChromeFileSystemAccessPermissionContext::PermissionGrantImpl
   }
 
   void RequestPermission(
-      content::GlobalFrameRoutingId frame_id,
+      content::GlobalRenderFrameHostId frame_id,
       UserActivationState user_activation_state,
       base::OnceCallback<void(PermissionRequestOutcome)> callback) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -497,7 +498,7 @@ class ChromeFileSystemAccessPermissionContext::PermissionGrantImpl
     // Otherwise, perform checks and ask the user for permission.
 
     content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(frame_id);
-    if (!rfh || !rfh->IsCurrent()) {
+    if (!rfh || !rfh->IsActive()) {
       // Requested from a no longer valid render frame host.
       RunCallbackAndRecordPermissionRequestOutcome(
           std::move(callback), PermissionRequestOutcome::kInvalidFrame);
@@ -521,8 +522,8 @@ class ChromeFileSystemAccessPermissionContext::PermissionGrantImpl
       return;
     }
 
-    url::Origin embedding_origin =
-        url::Origin::Create(web_contents->GetLastCommittedURL());
+    url::Origin embedding_origin = url::Origin::Create(
+        permissions::PermissionUtil::GetLastCommittedOriginAsURL(web_contents));
     if (embedding_origin != origin_) {
       // Third party iframes are not allowed to request more permissions.
       RunCallbackAndRecordPermissionRequestOutcome(
@@ -1091,7 +1092,7 @@ void ChromeFileSystemAccessPermissionContext::ConfirmSensitiveDirectoryAccess(
     PathType path_type,
     const base::FilePath& path,
     HandleType handle_type,
-    content::GlobalFrameRoutingId frame_id,
+    content::GlobalRenderFrameHostId frame_id,
     base::OnceCallback<void(SensitiveDirectoryResult)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -1116,7 +1117,7 @@ void ChromeFileSystemAccessPermissionContext::ConfirmSensitiveDirectoryAccess(
 
 void ChromeFileSystemAccessPermissionContext::PerformAfterWriteChecks(
     std::unique_ptr<content::FileSystemAccessWriteItem> item,
-    content::GlobalFrameRoutingId frame_id,
+    content::GlobalRenderFrameHostId frame_id,
     base::OnceCallback<void(AfterWriteCheckResult)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   content::GetUIThreadTaskRunner({})->PostTask(
@@ -1141,7 +1142,7 @@ void ChromeFileSystemAccessPermissionContext::
         const url::Origin& origin,
         const base::FilePath& path,
         HandleType handle_type,
-        content::GlobalFrameRoutingId frame_id,
+        content::GlobalRenderFrameHostId frame_id,
         base::OnceCallback<void(SensitiveDirectoryResult)> callback,
         bool should_block) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -1208,7 +1209,7 @@ void ChromeFileSystemAccessPermissionContext::MaybeEvictEntries(
 
   std::vector<std::pair<base::Time, std::string>> entries;
   entries.reserve(value->DictSize());
-  for (const auto& entry : value->DictItems()) {
+  for (auto entry : value->DictItems()) {
     // Don't evict the default ID.
     if (entry.first == kDefaultLastPickedDirectoryKey)
       continue;
@@ -1422,8 +1423,9 @@ void ChromeFileSystemAccessPermissionContext::MaybeCleanupActivePermissions(
     TabStripModel* tabs = browser->tab_strip_model();
     for (int i = 0; i < tabs->count(); ++i) {
       content::WebContents* web_contents = tabs->GetWebContentsAt(i);
-      url::Origin tab_origin =
-          url::Origin::Create(web_contents->GetLastCommittedURL());
+      url::Origin tab_origin = url::Origin::Create(
+          permissions::PermissionUtil::GetLastCommittedOriginAsURL(
+              web_contents));
       // Found a tab for this origin, so early exit and don't revoke grants.
       if (tab_origin == origin)
         return;

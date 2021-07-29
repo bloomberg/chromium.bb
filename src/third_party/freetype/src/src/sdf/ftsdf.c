@@ -22,6 +22,7 @@
 #include <freetype/internal/ftdebug.h>
 #include <freetype/ftoutln.h>
 #include <freetype/fttrigon.h>
+#include <freetype/ftbitmap.h>
 #include "ftsdf.h"
 
 #include "ftsdferrs.h"
@@ -40,7 +41,8 @@
    *     file `ftbsdf.c` for more.
    *
    *   * The basic idea of generating the SDF is taken from Viktor Chlumsky's
-   *     research paper.
+   *     research paper.  The paper explains both single and multi-channel
+   *     SDF, however, this implementation only generates single-channel SDF.
    *
    *       Chlumsky, Viktor: Shape Decomposition for Multi-channel Distance
    *       Fields.  Master's thesis.  Czech Technical University in Prague,
@@ -2897,6 +2899,10 @@
   /* `sdf_generate' is not used at the moment */
 #if 0
 
+  #error "DO NOT USE THIS!"
+  #error "The function still outputs 16-bit data, which might cause memory"
+  #error "corruption.  If required I will add this later."
+
   /**************************************************************************
    *
    * @Function:
@@ -3192,8 +3198,8 @@
     FT_Int  width, rows, i, j;
     FT_Int  sp_sq;            /* max value to check   */
 
-    SDF_Contour*  contours;   /* list of all contours */
-    FT_Short*     buffer;     /* the bitmap buffer    */
+    SDF_Contour*   contours;  /* list of all contours */
+    FT_SDFFormat*  buffer;    /* the bitmap buffer    */
 
     /* This buffer has the same size in indices as the    */
     /* bitmap buffer.  When we check a pixel position for */
@@ -3201,6 +3207,8 @@
     /* This way we can find out which pixel is set,       */
     /* and also determine the signs properly.             */
     SDF_Signed_Distance*  dists = NULL;
+
+    const FT_16D16  fixed_spread = FT_INT_16D16( spread );
 
 
     if ( !shape || !bitmap )
@@ -3222,18 +3230,19 @@
       goto Exit;
     }
 
+    if ( FT_ALLOC( dists,
+                   bitmap->width * bitmap->rows * sizeof ( *dists ) ) )
+      goto Exit;
+
     contours = shape->contours;
     width    = (FT_Int)bitmap->width;
     rows     = (FT_Int)bitmap->rows;
-    buffer   = (FT_Short*)bitmap->buffer;
-
-    if ( FT_ALLOC( dists, width * rows * sizeof ( *dists ) ) )
-      goto Exit;
+    buffer   = (FT_SDFFormat*)bitmap->buffer;
 
     if ( USE_SQUARED_DISTANCES )
-      sp_sq = FT_INT_16D16( spread * spread );
+      sp_sq = fixed_spread * fixed_spread;
     else
-      sp_sq = FT_INT_16D16( spread );
+      sp_sq = fixed_spread;
 
     if ( width == 0 || rows == 0 )
     {
@@ -3307,9 +3316,9 @@
               dist.distance = square_root( dist.distance );
 
             if ( internal_params.flip_y )
-              index = y * width + x;
+              index = (FT_UInt)( y * width + x );
             else
-              index = ( rows - y - 1 ) * width + x;
+              index = (FT_UInt)( ( rows - y - 1 ) * width + x );
 
             /* check whether the pixel is set or not */
             if ( dists[index].sign == 0 )
@@ -3341,26 +3350,26 @@
 
       for ( i = 0; i < width; i++ )
       {
-        index = j * width + i;
+        index = (FT_UInt)( j * width + i );
 
         /* if the pixel is not set                     */
         /* its shortest distance is more than `spread` */
         if ( dists[index].sign == 0 )
-          dists[index].distance = FT_INT_16D16( spread );
+          dists[index].distance = fixed_spread;
         else
           current_sign = dists[index].sign;
 
         /* clamp the values */
-        if ( dists[index].distance > (FT_Int)FT_INT_16D16( spread ) )
-          dists[index].distance = FT_INT_16D16( spread );
+        if ( dists[index].distance > fixed_spread )
+          dists[index].distance = fixed_spread;
 
-        /* convert from 16.16 to 6.10 */
-        dists[index].distance /= 64;
+        /* flip sign if required */
+        dists[index].distance *= internal_params.flip_sign ? -current_sign
+                                                           :  current_sign;
 
-        if ( internal_params.flip_sign )
-          buffer[index] = (FT_Short)dists[index].distance * -current_sign;
-        else
-          buffer[index] = (FT_Short)dists[index].distance * current_sign;
+        /* concatenate to appropriate format */
+        buffer[index] = map_fixed_to_sdf( dists[index].distance,
+                                          fixed_spread );
       }
     }
 
@@ -3497,9 +3506,9 @@
     SDF_Contour*  head;              /* head of the contour list      */
     SDF_Shape     temp_shape;        /* temporary shape               */
 
-    FT_Memory  memory;               /* to allocate memory            */
-    FT_6D10*   t;                    /* target bitmap buffer          */
-    FT_Bool    flip_sign;            /* filp sign?                    */
+    FT_Memory      memory;           /* to allocate memory            */
+    FT_SDFFormat*  t;                /* target bitmap buffer          */
+    FT_Bool        flip_sign;        /* flip sign?                    */
 
     /* orientation of all the separate contours */
     SDF_Contour_Orientation*  orientations;
@@ -3511,6 +3520,11 @@
 
     if ( !shape || !bitmap || !shape->memory )
       return FT_THROW( Invalid_Argument );
+
+    /* Disable `flip_sign` to avoid extra complication */
+    /* during the combination phase.                   */
+    flip_sign                 = internal_params.flip_sign;
+    internal_params.flip_sign = 0;
 
     contour           = shape->contours;
     memory            = shape->memory;
@@ -3527,17 +3541,14 @@
     }
 
     /* allocate the bitmaps to generate SDF for separate contours */
-    if ( FT_ALLOC( bitmaps, num_contours * sizeof ( *bitmaps ) ) )
+    if ( FT_ALLOC( bitmaps,
+                   (FT_UInt)num_contours * sizeof ( *bitmaps ) ) )
       goto Exit;
 
     /* allocate array to hold orientation for all contours */
-    if ( FT_ALLOC( orientations, num_contours * sizeof ( *orientations ) ) )
+    if ( FT_ALLOC( orientations,
+                   (FT_UInt)num_contours * sizeof ( *orientations ) ) )
       goto Exit;
-
-    /* Disable `flip_sign` to avoid extra complication */
-    /* during the combination phase.                   */
-    flip_sign                 = internal_params.flip_sign;
-    internal_params.flip_sign = 0;
 
     contour = shape->contours;
 
@@ -3554,7 +3565,8 @@
       bitmaps[i].pixel_mode = bitmap->pixel_mode;
 
       /* allocate memory for the buffer */
-      if ( FT_ALLOC( bitmaps[i].buffer, bitmap->rows * bitmap->pitch ) )
+      if ( FT_ALLOC( bitmaps[i].buffer,
+                     bitmap->rows * (FT_UInt)bitmap->pitch ) )
         goto Exit;
 
       /* determine the orientation */
@@ -3617,7 +3629,7 @@
     shape->contours = head;
 
     /* cast the output bitmap buffer */
-    t = (FT_6D10*)bitmap->buffer;
+    t = (FT_SDFFormat*)bitmap->buffer;
 
     /* Iterate over all pixels and combine all separate    */
     /* contours.  These are the rules for combining:       */
@@ -3632,18 +3644,18 @@
     {
       for ( i = 0; i < width; i++ )
       {
-        FT_Int   id = j * width + i;         /* index of current pixel    */
-        FT_Int   c;                          /* contour iterator          */
+        FT_Int  id = j * width + i;       /* index of current pixel    */
+        FT_Int  c;                        /* contour iterator          */
 
-        FT_6D10  val_c  = SHRT_MIN;          /* max clockwise value       */
-        FT_6D10  val_ac = SHRT_MAX;          /* min counter-clockwise val */
+        FT_SDFFormat  val_c  = 0;         /* max clockwise value       */
+        FT_SDFFormat  val_ac = UCHAR_MAX; /* min counter-clockwise val */
 
 
         /* iterate through all the contours */
         for ( c = 0; c < num_contours; c++ )
         {
           /* current contour value */
-          FT_6D10  temp = ((FT_6D10*)bitmaps[c].buffer)[id];
+          FT_SDFFormat  temp = ( (FT_SDFFormat*)bitmaps[c].buffer )[id];
 
 
           if ( orientations[c] == SDF_ORIENTATION_CW )
@@ -3654,7 +3666,10 @@
 
         /* Finally find the smaller of the two and assign to output. */
         /* Also apply `flip_sign` if set.                            */
-        t[id] = FT_MIN( val_c, val_ac ) * ( flip_sign ? -1 : 1 );
+        t[id] = FT_MIN( val_c, val_ac );
+
+        if ( flip_sign )
+          t[id] = invert_sign( t[id] );
       }
     }
 
@@ -3676,6 +3691,9 @@
         FT_FREE( bitmaps );
       }
     }
+
+    /* restore the `flip_sign` property */
+    internal_params.flip_sign = flip_sign;
 
     return error;
   }

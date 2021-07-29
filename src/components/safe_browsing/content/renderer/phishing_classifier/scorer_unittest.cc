@@ -22,9 +22,9 @@
 #include "base/test/test_discardable_memory_allocator.h"
 #include "base/threading/thread.h"
 #include "components/safe_browsing/content/renderer/phishing_classifier/features.h"
-#include "components/safe_browsing/core/fbs/client_model_generated.h"
-#include "components/safe_browsing/core/proto/client_model.pb.h"
-#include "components/safe_browsing/core/proto/csd.pb.h"
+#include "components/safe_browsing/core/common/fbs/client_model_generated.h"
+#include "components/safe_browsing/core/common/proto/client_model.pb.h"
+#include "components/safe_browsing/core/common/proto/csd.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -67,8 +67,7 @@ std::string GetFlatBufferString() {
   flatbuffers::Offset<flatbuffers::Vector<uint32_t>> page_word_flat =
       builder.CreateVector(page_words_vector);
 
-  std::vector<
-      flatbuffers::Offset<safe_browsing::flat::TfLiteModelMetadata_::Threshold>>
+  std::vector<flatbuffers::Offset<flat::TfLiteModelMetadata_::Threshold>>
       thresholds_vector = {};
   flatbuffers::Offset<flat::TfLiteModelMetadata> tflite_metadata_flat =
       flat::CreateTfLiteModelMetadataDirect(builder, 0, &thresholds_vector, 0,

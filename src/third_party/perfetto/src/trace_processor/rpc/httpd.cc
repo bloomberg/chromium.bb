@@ -42,6 +42,15 @@ namespace {
 constexpr char kBindPort[] = "9001";
 constexpr size_t kOmitContentLength = static_cast<size_t>(-1);
 
+// Sets the Access-Control-Allow-Origin: $origin on the following origins.
+// This affects only browser clients that use CORS. Other HTTP clients (e.g. the
+// python API) don't look at CORS headers.
+const char* kAllowedCORSOrigins[] = {
+    "https://ui.perfetto.dev",
+    "http://localhost:10000",
+    "http://127.0.0.1:10000",
+};
+
 // 32 MiB payload + 128K for HTTP headers.
 constexpr size_t kMaxRequestSize = (32 * 1024 + 128) * 1024;
 
@@ -71,9 +80,13 @@ class HttpServer : public base::UnixSocket::EventListener {
   ~HttpServer() override;
   void Run(const char*, const char*);
 
+  // This is non-null only while serving an HTTP request.
+  Client* active_client() { return active_client_; }
+
  private:
   size_t ParseOneHttpRequest(Client* client);
   void HandleRequest(Client*, const HttpRequest&);
+  void ServeHelpPage(Client*);
 
   void OnNewIncomingConnection(base::UnixSocket*,
                                std::unique_ptr<base::UnixSocket>) override;
@@ -85,8 +98,12 @@ class HttpServer : public base::UnixSocket::EventListener {
   base::UnixTaskRunner task_runner_;
   std::unique_ptr<base::UnixSocket> sock4_;
   std::unique_ptr<base::UnixSocket> sock6_;
-  std::vector<Client> clients_;
+  std::list<Client> clients_;
+  Client* active_client_ = nullptr;
+  bool origin_error_logged_ = false;
 };
+
+HttpServer* g_httpd_instance;
 
 void Append(std::vector<char>& buf, const char* str) {
   buf.insert(buf.end(), str, str + strlen(str));
@@ -107,6 +124,8 @@ void HttpReply(base::UnixSocket* sock,
   Append(response, http_code);
   Append(response, "\r\n");
   for (const char* hdr : headers) {
+    if (strlen(hdr) == 0)
+      continue;
     Append(response, hdr);
     Append(response, "\r\n");
   }
@@ -134,6 +153,11 @@ HttpServer::~HttpServer() = default;
 void HttpServer::Run(const char* kBindAddr4, const char* kBindAddr6) {
   PERFETTO_ILOG("[HTTP] Starting RPC server on %s and %s", kBindAddr4,
                 kBindAddr6);
+  PERFETTO_LOG(
+      "[HTTP] This server can be used by reloading https://ui.perfetto.dev and "
+      "clicking on YES on the \"Trace Processor native acceleration\" dialog "
+      "or through the Python API (see "
+      "https://perfetto.dev/docs/analysis/trace-processor#python-api).");
 
   sock4_ = base::UnixSocket::Listen(kBindAddr4, this, &task_runner_,
                                     base::SockFamily::kInet,
@@ -197,7 +221,9 @@ void HttpServer::OnDataAvailable(base::UnixSocket* sock) {
   // At this point |rxbuf| can contain a partial HTTP request, a full one or
   // more (in case of HTTP Keepalive pipelining).
   for (;;) {
+    active_client_ = client;
     size_t bytes_consumed = ParseOneHttpRequest(client);
+    active_client_ = nullptr;
     if (bytes_consumed == 0)
       break;
     memmove(rxbuf, &rxbuf[bytes_consumed], client->rxbuf_used - bytes_consumed);
@@ -266,6 +292,11 @@ size_t HttpServer::ParseOneHttpRequest(Client* client) {
 }
 
 void HttpServer::HandleRequest(Client* client, const HttpRequest& req) {
+  if (req.uri == "/") {
+    // If a user tries to open http://127.0.0.1:9001/ show a minimal help page.
+    return ServeHelpPage(client);
+  }
+
   static int last_req_id = 0;
   if (req.id) {
     if (last_req_id && req.id != last_req_id + 1 && req.id != 1)
@@ -273,26 +304,37 @@ void HttpServer::HandleRequest(Client* client, const HttpRequest& req) {
     last_req_id = req.id;
   }
 
-  PERFETTO_LOG("[HTTP] %04d %s %s (body: %zu bytes)", req.id,
+  PERFETTO_LOG("[HTTP] %04d %s %s (body: %zu bytes).", req.id,
                req.method.ToStdString().c_str(), req.uri.ToStdString().c_str(),
                req.body.size());
-  std::string allow_origin_hdr =
-      "Access-Control-Allow-Origin: " + req.origin.ToStdString();
 
-  std::string tp_session_id_header =
-      "X-TP-Session-ID: " + trace_processor_rpc_.GetSessionId();
+  std::string allow_origin_hdr;
+  for (const char* allowed_origin : kAllowedCORSOrigins) {
+    if (req.origin != base::StringView(allowed_origin))
+      continue;
+    allow_origin_hdr =
+        "Access-Control-Allow-Origin: " + req.origin.ToStdString();
+    break;
+  }
+  if (allow_origin_hdr.empty() && !origin_error_logged_) {
+    origin_error_logged_ = true;
+    PERFETTO_ELOG(
+        "The HTTP origin \"%s\" is not trusted, no Access-Control-Allow-Origin "
+        "will be emitted. If this request comes from a browser it will fail. "
+        "For the list of allowed origins see kAllowedCORSOrigins.",
+        req.origin.ToStdString().c_str());
+  }
 
   // This is the default. Overridden by the /query handler for chunked replies.
   char transfer_encoding_hdr[255] = "Transfer-Encoding: identity";
   std::initializer_list<const char*> headers = {
-      "Connection: Keep-Alive",                          //
-      "Cache-Control: no-cache",                         //
-      "Keep-Alive: timeout=5, max=1000",                 //
-      "Content-Type: application/x-protobuf",            //
-      "Access-Control-Expose-Headers: X-TP-Session-ID",  //
-      transfer_encoding_hdr,                             //
+      "Connection: Keep-Alive",                //
+      "Cache-Control: no-cache",               //
+      "Keep-Alive: timeout=5, max=1000",       //
+      "Content-Type: application/x-protobuf",  //
+      "Vary: Origin",                          //
+      transfer_encoding_hdr,                   //
       allow_origin_hdr.c_str(),
-      tp_session_id_header.c_str(),
   };
 
   if (req.method == "OPTIONS") {
@@ -302,8 +344,41 @@ void HttpServer::HandleRequest(Client* client, const HttpRequest& req) {
                          "Access-Control-Allow-Methods: POST, GET, OPTIONS",
                          "Access-Control-Allow-Headers: *",
                          "Access-Control-Max-Age: 86400",
+                         "Vary: Origin",
                          allow_origin_hdr.c_str(),
                      });
+  }
+
+  if (req.uri == "/rpc") {
+    // Start the chunked reply.
+    strncpy(transfer_encoding_hdr, "Transfer-Encoding: chunked",
+            sizeof(transfer_encoding_hdr));
+    base::UnixSocket* cli_sock = client->sock.get();
+    HttpReply(cli_sock, "200 OK", headers, nullptr, kOmitContentLength);
+
+    static auto resp_fn = [](const void* data, uint32_t len) {
+      char chunk_hdr[32];
+      auto hdr_len = static_cast<size_t>(sprintf(chunk_hdr, "%x\r\n", len));
+      auto* http_client = g_httpd_instance->active_client();
+      PERFETTO_CHECK(http_client);
+      if (data == nullptr) {
+        // Unrecoverable RPC error case.
+        http_client->sock->Send("0\r\n\r\n", 5);
+        http_client->sock->Shutdown(/*notify=*/true);
+        return;
+      }
+      http_client->sock->Send(chunk_hdr, hdr_len);
+      http_client->sock->Send(data, len);
+      http_client->sock->Send("\r\n", 2);
+    };
+
+    trace_processor_rpc_.SetRpcResponseFunction(resp_fn);
+    trace_processor_rpc_.OnRpcRequest(req.body.data(), req.body.size());
+    trace_processor_rpc_.SetRpcResponseFunction(nullptr);
+
+    // Terminate chunked stream.
+    cli_sock->Send("0\r\n\r\n", 5);
+    return;
   }
 
   if (req.uri == "/parse") {
@@ -366,23 +441,13 @@ void HttpServer::HandleRequest(Client* client, const HttpRequest& req) {
   }
 
   if (req.uri == "/status") {
-    protozero::HeapBuffered<protos::pbzero::StatusResult> res;
-    res->set_loaded_trace_name(
-        trace_processor_rpc_.GetCurrentTraceName().c_str());
-    std::vector<uint8_t> buf = res.SerializeAsArray();
-    return HttpReply(client->sock.get(), "200 OK", headers, buf.data(),
-                     buf.size());
+    auto status = trace_processor_rpc_.GetStatus();
+    return HttpReply(client->sock.get(), "200 OK", headers, status.data(),
+                     status.size());
   }
 
   if (req.uri == "/compute_metric") {
     std::vector<uint8_t> res = trace_processor_rpc_.ComputeMetric(
-        reinterpret_cast<const uint8_t*>(req.body.data()), req.body.size());
-    return HttpReply(client->sock.get(), "200 OK", headers, res.data(),
-                     res.size());
-  }
-
-  if (req.uri == "/get_metric_descriptors") {
-    std::vector<uint8_t> res = trace_processor_rpc_.GetMetricDescriptors(
         reinterpret_cast<const uint8_t*>(req.body.data()), req.body.size());
     return HttpReply(client->sock.get(), "200 OK", headers, res.data(),
                      res.size());
@@ -407,10 +472,43 @@ void HttpServer::HandleRequest(Client* client, const HttpRequest& req) {
 void RunHttpRPCServer(std::unique_ptr<TraceProcessor> preloaded_instance,
                       std::string port_number) {
   HttpServer srv(std::move(preloaded_instance));
+  g_httpd_instance = &srv;
   std::string port = port_number.empty() ? kBindPort : port_number;
   std::string ipv4_addr = "127.0.0.1:" + port;
   std::string ipv6_addr = "[::1]:" + port;
   srv.Run(ipv4_addr.c_str(), ipv6_addr.c_str());
+}
+
+void HttpServer::ServeHelpPage(Client* client) {
+  static const char kPage[] = R"(Perfetto Trace Processor RPC Server
+
+
+This service can be used in two ways:
+
+1. Open or reload https://ui.perfetto.dev/
+
+It will automatically try to connect and use the server on localhost:9001 when
+available. Click YES when prompted to use Trace Processor Native Acceleration
+in the UI dialog.
+See https://perfetto.dev/docs/visualization/large-traces for more.
+
+
+2. Python API.
+
+Example: perfetto.TraceProcessor(addr='localhost:9001')
+See https://perfetto.dev/docs/analysis/trace-processor#python-api for more.
+
+
+For questions:
+https://perfetto.dev/docs/contributing/getting-started#community
+)";
+
+  char content_length[255];
+  sprintf(content_length, "Content-Length: %zu", sizeof(kPage) - 1);
+  std::initializer_list<const char*> headers{"Content-Type: text/plain",
+                                             content_length};
+  HttpReply(client->sock.get(), "200 OK", headers,
+            reinterpret_cast<const uint8_t*>(kPage), sizeof(kPage) - 1);
 }
 
 }  // namespace trace_processor

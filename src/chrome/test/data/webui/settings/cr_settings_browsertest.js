@@ -8,6 +8,7 @@
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
 GEN('#include "build/branding_buildflags.h"');
+GEN('#include "build/build_config.h"');
 GEN('#include "build/chromeos_buildflags.h"');
 GEN('#include "chrome/browser/ui/ui_features.h"');
 GEN('#include "chrome/common/chrome_features.h"');
@@ -110,6 +111,7 @@ TEST_F('CrSettingsBasicPageRedesignV3Test', 'All', function() {
   runMochaSuite('SettingsBasicPageRedesign');
 });
 
+GEN('#if !BUILDFLAG(IS_CHROMEOS_ASH)');
 // eslint-disable-next-line no-var
 var CrSettingsLanguagesPageV3Test = class extends CrSettingsV3BrowserTest {
   /** @override */
@@ -117,6 +119,10 @@ var CrSettingsLanguagesPageV3Test = class extends CrSettingsV3BrowserTest {
     return 'chrome://settings/test_loader.html?module=settings/languages_page_tests.js';
   }
 };
+
+TEST_F('CrSettingsLanguagesPageV3Test', 'LanguageSettings', function() {
+  mocha.grep(languages_page_tests.TestNames.LanguageSettings).run();
+});
 
 TEST_F('CrSettingsLanguagesPageV3Test', 'Spellcheck', function() {
   mocha.grep(languages_page_tests.TestNames.Spellcheck).run();
@@ -128,7 +134,7 @@ TEST_F('CrSettingsLanguagesPageV3Test', 'SpellcheckOfficialBuild', function() {
 });
 GEN('#endif');
 
-GEN('#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)');
+GEN('#if !BUILDFLAG(IS_CHROMEOS_LACROS)');
 // eslint-disable-next-line no-var
 var CrSettingsLanguagesPageRestructuredV3Test =
     class extends CrSettingsLanguagesPageV3Test {
@@ -141,15 +147,6 @@ TEST_F(
     'CrSettingsLanguagesPageRestructuredV3Test', 'RestructuredLanguageSettings',
     function() {
       mocha.grep(languages_page_tests.TestNames.RestructuredLanguageSettings)
-          .run();
-    });
-GEN('#endif');
-
-GEN('#if BUILDFLAG(IS_CHROMEOS_ASH)');
-TEST_F(
-    'CrSettingsLanguagesPageV3Test', 'ChromeOSLanguagesSettingsUpdate',
-    function() {
-      mocha.grep(languages_page_tests.TestNames.ChromeOSLanguagesSettingsUpdate)
           .run();
     });
 GEN('#endif');
@@ -170,7 +167,7 @@ TEST_F('CrSettingsLanguagesSubpageV3Test', 'LanguageMenu', function() {
   mocha.grep(languages_subpage_tests.TestNames.LanguageMenu).run();
 });
 
-GEN('#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)');
+GEN('#if !BUILDFLAG(IS_CHROMEOS_LACROS)');
 // eslint-disable-next-line no-var
 var CrSettingsLanguagesSubpageDetailedV3Test =
     class extends CrSettingsV3BrowserTest {
@@ -210,6 +207,8 @@ TEST_F(
     function() {
       runMochaSuite('LanguagesPageMetricsBrowser');
     });
+
+GEN('#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)');
 
 // eslint-disable-next-line no-var
 var CrSettingsClearBrowsingDataV3Test = class extends CrSettingsV3BrowserTest {
@@ -374,7 +373,7 @@ var CrSettingsPasswordsCheckV3Test = class extends CrSettingsV3BrowserTest {
 };
 
 // Flaky on Mac builds https://crbug.com/1143801
-GEN('#if defined(OS_MAC)');
+GEN('#if (defined(OS_MAC)) || (defined(OS_LINUX))');
 GEN('#define MAYBE_All DISABLED_All');
 GEN('#else');
 GEN('#define MAYBE_All All');
@@ -509,6 +508,10 @@ TEST_F(
       runMochaSuite('PrivacySandboxSettingsEnabled');
     });
 
+TEST_F('CrSettingsPrivacyPageV3Test', 'PrivacyReviewEnabled', function() {
+  runMochaSuite('PrivacyReviewEnabled');
+});
+
 // TODO(crbug.com/1043665): flaky crash on Linux Tests (dbg).
 TEST_F(
     'CrSettingsPrivacyPageV3Test', 'DISABLED_PrivacyPageSoundTests',
@@ -602,9 +605,7 @@ TEST_F('CrSettingsAdvancedPageV3Test', 'MAYBE_Load', function() {
  ['DropdownMenu', 'dropdown_menu_tests.js'],
  ['ExtensionControlledIndicator', 'extension_controlled_indicator_tests.js'],
  ['HelpPage', 'help_page_test.js'],
- ['Languages', 'languages_tests.js'],
  ['Menu', 'settings_menu_test.js'],
- ['OnStartupPage', 'on_startup_page_tests.js'],
  ['PaymentsSection', 'payments_section_test.js'],
  ['PeoplePage', 'people_page_test.js'],
  ['PeoplePageSyncControls', 'people_page_sync_controls_test.js'],
@@ -637,12 +638,13 @@ TEST_F('CrSettingsAdvancedPageV3Test', 'MAYBE_Load', function() {
  ['ZoomLevels', 'zoom_levels_tests.js'],
 ].forEach(test => registerTest(...test));
 
-// Timeout on MacOS dbg bots
-// https://crbug.com/1133412
-GEN('#if !defined(OS_MAC) || defined(NDEBUG)');
+// Timeout on Linux and MacOS dbg bots: https://crbug.com/1133412
+// Fails on Mac/Arm: https://crbug.com/1222886
+GEN('#if (!defined(OS_LINUX) && !defined(OS_MAC)) || ' +
+    '(defined(NDEBUG) && !defined(ARCH_CPU_ARM64))');
 [['SecurityPage', 'security_page_test.js'],
 ].forEach(test => registerTest(...test));
-GEN('#endif  // !defined(OS_MAC) || defined(NDEBUG)');
+GEN('#endif');
 
 GEN('#if BUILDFLAG(IS_CHROMEOS_ASH)');
 [['PasswordsSectionCros', 'passwords_section_test_cros.js'],
@@ -652,10 +654,10 @@ GEN('#if BUILDFLAG(IS_CHROMEOS_ASH)');
 ].forEach(test => registerTest(...test));
 GEN('#endif  // BUILDFLAG(IS_CHROMEOS_ASH)');
 
-GEN('#if !defined(OS_MAC)');
+GEN('#if !defined(OS_MAC) && !BUILDFLAG(IS_CHROMEOS_ASH)');
 [['EditDictionaryPage', 'edit_dictionary_page_test.js'],
 ].forEach(test => registerTest(...test));
-GEN('#endif  //!defined(OS_MAC)');
+GEN('#endif  // !defined(OS_MAC) && !BUILDFLAG(IS_CHROMEOS_ASH)');
 
 GEN('#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)');
 [['DefaultBrowser', 'default_browser_browsertest.js'],
@@ -666,6 +668,7 @@ GEN('#endif  // !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)');
 GEN('#if !BUILDFLAG(IS_CHROMEOS_ASH)');
 [['ImportDataDialog', 'import_data_dialog_test.js'],
  ['PeoplePageManageProfile', 'people_page_manage_profile_test.js'],
+ ['Languages', 'languages_tests.js'],
 ].forEach(test => registerTest(...test));
 GEN('#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)');
 

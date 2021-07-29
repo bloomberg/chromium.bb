@@ -37,8 +37,9 @@ import type * as Protocol from '../../generated/protocol.js';
 
 import {DebuggerModel, Location} from './DebuggerModel.js';
 import type {RuntimeModel} from './RuntimeModel.js'; // eslint-disable-line no-unused-vars
-import type {Target} from './SDKModel.js';
-import {Capability, SDKModel} from './SDKModel.js';  // eslint-disable-line no-unused-vars
+import type {Target} from './Target.js';
+import {Capability} from './Target.js';
+import {SDKModel} from './SDKModel.js';
 
 const UIStrings = {
   /**
@@ -53,9 +54,7 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class CPUProfilerModel extends SDKModel implements ProtocolProxyApi.ProfilerDispatcher {
   _isRecording: boolean;
   _nextAnonymousConsoleProfileNumber: number;
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  _anonymousConsoleProfileIdToTitle: Map<any, any>;
+  _anonymousConsoleProfileIdToTitle: Map<string, string>;
   _profilerAgent: ProtocolProxyApi.ProfilerApi;
   _preciseCoverageDeltaUpdateCallback:
       ((arg0: number, arg1: string, arg2: Array<Protocol.Profiler.ScriptCoverage>) => void)|null;
@@ -119,9 +118,7 @@ export class CPUProfilerModel extends SDKModel implements ProtocolProxyApi.Profi
     return this._isRecording;
   }
 
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  startRecording(): Promise<any> {
+  startRecording(): Promise<unknown> {
     this._isRecording = true;
     const intervalUs = 100;
     this._profilerAgent.invoke_setSamplingInterval({interval: intervalUs});
@@ -136,9 +133,8 @@ export class CPUProfilerModel extends SDKModel implements ProtocolProxyApi.Profi
   startPreciseCoverage(
       jsCoveragePerBlock: boolean,
       preciseCoverageDeltaUpdateCallback:
-          // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ((arg0: number, arg1: string, arg2: Array<Protocol.Profiler.ScriptCoverage>) => void)|null): Promise<any> {
+          ((arg0: number, arg1: string, arg2: Array<Protocol.Profiler.ScriptCoverage>) => void)|
+      null): Promise<unknown> {
     const callCount = false;
     this._preciseCoverageDeltaUpdateCallback = preciseCoverageDeltaUpdateCallback;
     const allowUpdatesTriggeredByBackend = true;
@@ -156,16 +152,14 @@ export class CPUProfilerModel extends SDKModel implements ProtocolProxyApi.Profi
     return {timestamp, coverage};
   }
 
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  stopPreciseCoverage(): Promise<any> {
+  stopPreciseCoverage(): Promise<unknown> {
     this._preciseCoverageDeltaUpdateCallback = null;
     return this._profilerAgent.invoke_stopPreciseCoverage();
   }
 
-  preciseCoverageDeltaUpdate({timestamp, occassion, result}: Protocol.Profiler.PreciseCoverageDeltaUpdateEvent): void {
+  preciseCoverageDeltaUpdate({timestamp, occasion, result}: Protocol.Profiler.PreciseCoverageDeltaUpdateEvent): void {
     if (this._preciseCoverageDeltaUpdateCallback) {
-      this._preciseCoverageDeltaUpdateCallback(timestamp, occassion, result);
+      this._preciseCoverageDeltaUpdateCallback(timestamp, occasion, result);
     }
   }
 }

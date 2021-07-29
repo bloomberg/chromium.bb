@@ -68,6 +68,7 @@
 #include "conf_def.h"
 #include "internal.h"
 #include "../internal.h"
+#include "../lhash/internal.h"
 
 
 DEFINE_LHASH_OF(CONF_VALUE)
@@ -81,7 +82,7 @@ struct conf_st {
 #define MAX_CONF_VALUE_LENGTH 65536
 
 static uint32_t conf_value_hash(const CONF_VALUE *v) {
-  return (lh_strhash(v->section) << 2) ^ lh_strhash(v->name);
+  return (OPENSSL_strhash(v->section) << 2) ^ OPENSSL_strhash(v->name);
 }
 
 static int conf_value_cmp(const CONF_VALUE *a, const CONF_VALUE *b) {
@@ -155,12 +156,14 @@ static void value_free(CONF_VALUE *value) {
   OPENSSL_free(value);
 }
 
+static void value_free_arg(CONF_VALUE *value, void *arg) { value_free(value); }
+
 void NCONF_free(CONF *conf) {
   if (conf == NULL || conf->data == NULL) {
     return;
   }
 
-  lh_CONF_VALUE_doall(conf->data, value_free);
+  lh_CONF_VALUE_doall_arg(conf->data, value_free_arg, NULL);
   lh_CONF_VALUE_free(conf->data);
   OPENSSL_free(conf);
 }

@@ -15,7 +15,7 @@
 #include "core/fxge/cfx_renderdevice.h"
 #include "core/fxge/text_char_pos.h"
 #include "third_party/base/check.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/numerics/ranges.h"
 #include "v8/include/cppgc/visitor.h"
 #include "xfa/fde/cfde_textout.h"
 #include "xfa/fgas/font/cfgas_gefont.h"
@@ -39,9 +39,9 @@ namespace {
 constexpr int kEditMargin = 3;
 
 #if defined(OS_APPLE)
-constexpr int kEditingModifier = FWL_KEYFLAG_Command;
+constexpr FWL_KeyFlagMask kEditingModifier = FWL_KEYFLAG_Command;
 #else
-constexpr int kEditingModifier = FWL_KEYFLAG_Ctrl;
+constexpr FWL_KeyFlagMask kEditingModifier = FWL_KEYFLAG_Ctrl;
 #endif
 
 }  // namespace
@@ -66,7 +66,6 @@ void CFWL_Edit::PreFinalize() {
 void CFWL_Edit::Trace(cppgc::Visitor* visitor) const {
   CFWL_Widget::Trace(visitor);
   visitor->Trace(m_pVertScrollBar);
-  visitor->Trace(m_pHorzScrollBar);
   visitor->Trace(m_pCaret);
 }
 
@@ -78,13 +77,9 @@ CFX_RectF CFWL_Edit::GetWidgetRect() {
   CFX_RectF rect = m_WidgetRect;
   if (m_Properties.m_dwStyleExes & FWL_STYLEEXT_EDT_OuterScrollbar) {
     float scrollbarWidth = GetThemeProvider()->GetScrollBarWidth();
-    if (IsShowScrollBar(true)) {
+    if (IsShowVertScrollBar()) {
       rect.width += scrollbarWidth;
       rect.width += kEditMargin;
-    }
-    if (IsShowScrollBar(false)) {
-      rect.height += scrollbarWidth;
-      rect.height += kEditMargin;
     }
   }
   return rect;
@@ -126,13 +121,9 @@ void CFWL_Edit::Update() {
 
 FWL_WidgetHit CFWL_Edit::HitTest(const CFX_PointF& point) {
   if (m_Properties.m_dwStyleExes & FWL_STYLEEXT_EDT_OuterScrollbar) {
-    if (IsShowScrollBar(true)) {
+    if (IsShowVertScrollBar()) {
       if (m_pVertScrollBar->GetWidgetRect().Contains(point))
         return FWL_WidgetHit::VScrollBar;
-    }
-    if (IsShowScrollBar(false)) {
-      if (m_pHorzScrollBar->GetWidgetRect().Contains(point))
-        return FWL_WidgetHit::HScrollBar;
     }
   }
   if (m_ClientRect.Contains(point))
@@ -150,7 +141,7 @@ void CFWL_Edit::DrawWidget(CFGAS_GEGraphics* pGraphics,
 
   DrawContent(pGraphics, matrix);
   if (HasBorder())
-    DrawBorder(pGraphics, CFWL_Part::Border, matrix);
+    DrawBorder(pGraphics, CFWL_ThemePart::Part::kBorder, matrix);
 }
 
 void CFWL_Edit::SetText(const WideString& wsText) {
@@ -214,18 +205,18 @@ void CFWL_Edit::SetAliasChar(wchar_t wAlias) {
 
 Optional<WideString> CFWL_Edit::Copy() {
   if (!m_pEditEngine->HasSelection())
-    return {};
+    return pdfium::nullopt;
 
-  return {m_pEditEngine->GetSelectedText()};
+  return m_pEditEngine->GetSelectedText();
 }
 
 Optional<WideString> CFWL_Edit::Cut() {
   if (!m_pEditEngine->HasSelection())
-    return {};
+    return pdfium::nullopt;
 
   WideString cut_text = m_pEditEngine->DeleteSelectedText();
   UpdateCaret();
-  return {cut_text};
+  return cut_text;
 }
 
 bool CFWL_Edit::Paste(const WideString& wsPaste) {
@@ -348,7 +339,7 @@ void CFWL_Edit::DrawContent(CFGAS_GEGraphics* pGraphics,
 
     CFWL_ThemeBackground param(this, pGraphics);
     param.m_matrix = mtMatrix;
-    param.m_iPart = CFWL_Part::Background;
+    param.m_iPart = CFWL_ThemePart::Part::kBackground;
     param.m_pPath = &path;
     GetThemeProvider()->DrawBackground(param);
   }
@@ -371,7 +362,7 @@ void CFWL_Edit::DrawContent(CFGAS_GEGraphics* pGraphics,
 
     CFWL_ThemeBackground param(this, pGraphics);
     param.m_matrix = mtMatrix;
-    param.m_iPart = CFWL_Part::CombTextLine;
+    param.m_iPart = CFWL_ThemePart::Part::kCombTextLine;
     param.m_pPath = &path;
     GetThemeProvider()->DrawBackground(param);
   }
@@ -533,10 +524,7 @@ bool CFWL_Edit::UpdateOffset() {
 }
 
 bool CFWL_Edit::UpdateOffset(CFWL_ScrollBar* pScrollBar, float fPosChanged) {
-  if (pScrollBar == m_pHorzScrollBar)
-    m_fScrollOffsetX += fPosChanged;
-  else
-    m_fScrollOffsetY += fPosChanged;
+  m_fScrollOffsetY += fPosChanged;
   return true;
 }
 
@@ -584,87 +572,45 @@ void CFWL_Edit::UpdateCaret() {
 }
 
 CFWL_ScrollBar* CFWL_Edit::UpdateScroll() {
-  bool bShowHorz = m_pHorzScrollBar && m_pHorzScrollBar->IsVisible();
   bool bShowVert = m_pVertScrollBar && m_pVertScrollBar->IsVisible();
-  if (!bShowHorz && !bShowVert)
+  if (!bShowVert)
     return nullptr;
 
   CFX_RectF contents_bounds = m_pEditEngine->GetContentsBoundingBox();
-  CFWL_ScrollBar* pRepaint = nullptr;
-  if (bShowHorz) {
-    CFX_RectF rtScroll = m_pHorzScrollBar->GetWidgetRect();
-    if (rtScroll.width < contents_bounds.width) {
-      {
-        ScopedUpdateLock update_lock(m_pHorzScrollBar);
-        float fRange = contents_bounds.width - rtScroll.width;
-        m_pHorzScrollBar->SetRange(0.0f, fRange);
-
-        float fPos = pdfium::clamp(m_fScrollOffsetX, 0.0f, fRange);
-        m_pHorzScrollBar->SetPos(fPos);
-        m_pHorzScrollBar->SetTrackPos(fPos);
-        m_pHorzScrollBar->SetPageSize(rtScroll.width);
-        m_pHorzScrollBar->SetStepSize(rtScroll.width / 10);
-        m_pHorzScrollBar->RemoveStates(FWL_WGTSTATE_Disabled);
-      }
-      m_pHorzScrollBar->Update();
-      pRepaint = m_pHorzScrollBar;
-    } else if ((m_pHorzScrollBar->GetStates() & FWL_WGTSTATE_Disabled) == 0) {
-      {
-        ScopedUpdateLock update_lock(m_pHorzScrollBar);
-        m_pHorzScrollBar->SetRange(0, -1);
-        m_pHorzScrollBar->SetStates(FWL_WGTSTATE_Disabled);
-      }
-      m_pHorzScrollBar->Update();
-      pRepaint = m_pHorzScrollBar;
-    }
+  CFX_RectF rtScroll = m_pVertScrollBar->GetWidgetRect();
+  if (rtScroll.height < contents_bounds.height) {
+    float fStep = m_pEditEngine->GetLineSpace();
+    float fRange =
+        std::max(contents_bounds.height - m_EngineRect.height, fStep);
+    m_pVertScrollBar->SetRange(0.0f, fRange);
+    float fPos = pdfium::clamp(m_fScrollOffsetY, 0.0f, fRange);
+    m_pVertScrollBar->SetPos(fPos);
+    m_pVertScrollBar->SetTrackPos(fPos);
+    m_pVertScrollBar->SetPageSize(rtScroll.height);
+    m_pVertScrollBar->SetStepSize(fStep);
+    m_pVertScrollBar->RemoveStates(FWL_WGTSTATE_Disabled);
+    m_pVertScrollBar->Update();
+    return m_pVertScrollBar;
   }
-
-  if (bShowVert) {
-    CFX_RectF rtScroll = m_pVertScrollBar->GetWidgetRect();
-    if (rtScroll.height < contents_bounds.height) {
-      {
-        ScopedUpdateLock update_lock(m_pHorzScrollBar);
-        float fStep = m_pEditEngine->GetLineSpace();
-        float fRange =
-            std::max(contents_bounds.height - m_EngineRect.height, fStep);
-
-        m_pVertScrollBar->SetRange(0.0f, fRange);
-        float fPos = pdfium::clamp(m_fScrollOffsetY, 0.0f, fRange);
-        m_pVertScrollBar->SetPos(fPos);
-        m_pVertScrollBar->SetTrackPos(fPos);
-        m_pVertScrollBar->SetPageSize(rtScroll.height);
-        m_pVertScrollBar->SetStepSize(fStep);
-        m_pVertScrollBar->RemoveStates(FWL_WGTSTATE_Disabled);
-      }
-      m_pVertScrollBar->Update();
-      pRepaint = m_pVertScrollBar;
-    } else if ((m_pVertScrollBar->GetStates() & FWL_WGTSTATE_Disabled) == 0) {
-      {
-        ScopedUpdateLock update_lock(m_pHorzScrollBar);
-        m_pVertScrollBar->SetRange(0, -1);
-        m_pVertScrollBar->SetStates(FWL_WGTSTATE_Disabled);
-      }
-      m_pVertScrollBar->Update();
-      pRepaint = m_pVertScrollBar;
-    }
+  if ((m_pVertScrollBar->GetStates() & FWL_WGTSTATE_Disabled) == 0) {
+    m_pVertScrollBar->SetRange(0, -1);
+    m_pVertScrollBar->SetStates(FWL_WGTSTATE_Disabled);
+    m_pVertScrollBar->Update();
+    return m_pVertScrollBar;
   }
-  return pRepaint;
+  return nullptr;
 }
 
-bool CFWL_Edit::IsShowScrollBar(bool bVert) {
-  if (!bVert)
-    return false;
-  bool bShow =
-      (m_Properties.m_dwStyleExes & FWL_STYLEEXT_EDT_ShowScrollbarFocus)
-          ? (m_Properties.m_dwStates & FWL_WGTSTATE_Focused) ==
-                FWL_WGTSTATE_Focused
-          : true;
+bool CFWL_Edit::IsShowVertScrollBar() const {
+  const bool bShow =
+      !(m_Properties.m_dwStyleExes & FWL_STYLEEXT_EDT_ShowScrollbarFocus) ||
+      (m_Properties.m_dwStates & FWL_WGTSTATE_Focused);
   return bShow && (m_Properties.m_dwStyles & FWL_WGTSTYLE_VScroll) &&
          (m_Properties.m_dwStyleExes & FWL_STYLEEXT_EDT_MultiLine) &&
          IsContentHeightOverflow();
 }
 
-bool CFWL_Edit::IsContentHeightOverflow() {
+bool CFWL_Edit::IsContentHeightOverflow() const {
   return m_pEditEngine->GetContentsBoundingBox().height >
          m_EngineRect.height + 1.0f;
 }
@@ -687,8 +633,7 @@ void CFWL_Edit::Layout() {
                          pUIMargin.height);
   }
 
-  bool bShowVertScrollbar = IsShowScrollBar(true);
-  bool bShowHorzScrollbar = IsShowScrollBar(false);
+  bool bShowVertScrollbar = IsShowVertScrollBar();
   if (bShowVertScrollbar) {
     InitVerticalScrollBar();
 
@@ -699,8 +644,6 @@ void CFWL_Edit::Layout() {
     } else {
       rtVertScr = CFX_RectF(m_ClientRect.right() - fWidth, m_ClientRect.top,
                             fWidth, m_ClientRect.height);
-      if (bShowHorzScrollbar)
-        rtVertScr.height -= fWidth;
       m_EngineRect.width -= fWidth;
     }
 
@@ -710,37 +653,13 @@ void CFWL_Edit::Layout() {
   } else if (m_pVertScrollBar) {
     m_pVertScrollBar->SetStates(FWL_WGTSTATE_Invisible);
   }
-
-  if (bShowHorzScrollbar) {
-    InitHorizontalScrollBar();
-
-    CFX_RectF rtHoriScr;
-    if (m_Properties.m_dwStyleExes & FWL_STYLEEXT_EDT_OuterScrollbar) {
-      rtHoriScr =
-          CFX_RectF(m_ClientRect.left, m_ClientRect.bottom() + kEditMargin,
-                    m_ClientRect.width, fWidth);
-    } else {
-      rtHoriScr = CFX_RectF(m_ClientRect.left, m_ClientRect.bottom() - fWidth,
-                            m_ClientRect.width, fWidth);
-      if (bShowVertScrollbar)
-        rtHoriScr.width -= fWidth;
-      m_EngineRect.height -= fWidth;
-    }
-    m_pHorzScrollBar->SetWidgetRect(rtHoriScr);
-    m_pHorzScrollBar->RemoveStates(FWL_WGTSTATE_Invisible);
-    m_pHorzScrollBar->Update();
-  } else if (m_pHorzScrollBar) {
-    m_pHorzScrollBar->SetStates(FWL_WGTSTATE_Invisible);
-  }
 }
 
 void CFWL_Edit::LayoutScrollBar() {
-  if ((m_Properties.m_dwStyleExes & FWL_STYLEEXT_EDT_ShowScrollbarFocus) == 0) {
+  if (!(m_Properties.m_dwStyleExes & FWL_STYLEEXT_EDT_ShowScrollbarFocus))
     return;
-  }
 
-  bool bShowVertScrollbar = IsShowScrollBar(true);
-  bool bShowHorzScrollbar = IsShowScrollBar(false);
+  bool bShowVertScrollbar = IsShowVertScrollBar();
   IFWL_ThemeProvider* theme = GetThemeProvider();
   float fWidth = theme->GetScrollBarWidth();
   if (bShowVertScrollbar) {
@@ -753,8 +672,6 @@ void CFWL_Edit::LayoutScrollBar() {
       } else {
         rtVertScr = CFX_RectF(m_ClientRect.right() - fWidth, m_ClientRect.top,
                               fWidth, m_ClientRect.height);
-        if (bShowHorzScrollbar)
-          rtVertScr.height -= fWidth;
       }
       m_pVertScrollBar->SetWidgetRect(rtVertScr);
       m_pVertScrollBar->Update();
@@ -763,29 +680,7 @@ void CFWL_Edit::LayoutScrollBar() {
   } else if (m_pVertScrollBar) {
     m_pVertScrollBar->SetStates(FWL_WGTSTATE_Invisible);
   }
-
-  if (bShowHorzScrollbar) {
-    if (!m_pHorzScrollBar) {
-      InitHorizontalScrollBar();
-      CFX_RectF rtHoriScr;
-      if (m_Properties.m_dwStyleExes & FWL_STYLEEXT_EDT_OuterScrollbar) {
-        rtHoriScr =
-            CFX_RectF(m_ClientRect.left, m_ClientRect.bottom() + kEditMargin,
-                      m_ClientRect.width, fWidth);
-      } else {
-        rtHoriScr = CFX_RectF(m_ClientRect.left, m_ClientRect.bottom() - fWidth,
-                              m_ClientRect.width, fWidth);
-        if (bShowVertScrollbar)
-          rtHoriScr.width -= (fWidth);
-      }
-      m_pHorzScrollBar->SetWidgetRect(rtHoriScr);
-      m_pHorzScrollBar->Update();
-    }
-    m_pHorzScrollBar->RemoveStates(FWL_WGTSTATE_Invisible);
-  } else if (m_pHorzScrollBar) {
-    m_pHorzScrollBar->SetStates(FWL_WGTSTATE_Invisible);
-  }
-  if (bShowVertScrollbar || bShowHorzScrollbar)
+  if (bShowVertScrollbar)
     UpdateScroll();
 }
 
@@ -801,17 +696,6 @@ void CFWL_Edit::InitVerticalScrollBar() {
   m_pVertScrollBar = cppgc::MakeGarbageCollected<CFWL_ScrollBar>(
       GetFWLApp()->GetHeap()->GetAllocationHandle(), GetFWLApp(),
       Properties{0, FWL_STYLEEXT_SCB_Vert,
-                 FWL_WGTSTATE_Disabled | FWL_WGTSTATE_Invisible},
-      this);
-}
-
-void CFWL_Edit::InitHorizontalScrollBar() {
-  if (m_pHorzScrollBar)
-    return;
-
-  m_pHorzScrollBar = cppgc::MakeGarbageCollected<CFWL_ScrollBar>(
-      GetFWLApp()->GetHeap()->GetAllocationHandle(), GetFWLApp(),
-      Properties{0, FWL_STYLEEXT_SCB_Horz,
                  FWL_WGTSTATE_Disabled | FWL_WGTSTATE_Invisible},
       this);
 }
@@ -902,10 +786,10 @@ void CFWL_Edit::SetCursorPosition(size_t position) {
 void CFWL_Edit::OnProcessMessage(CFWL_Message* pMessage) {
   switch (pMessage->GetType()) {
     case CFWL_Message::Type::kSetFocus:
-      OnFocusChanged(pMessage, true);
+      OnFocusGained();
       break;
     case CFWL_Message::Type::kKillFocus:
-      OnFocusChanged(pMessage, false);
+      OnFocusLost();
       break;
     case CFWL_Message::Type::kMouse: {
       CFWL_MessageMouse* pMsg = static_cast<CFWL_MessageMouse*>(pMessage);
@@ -951,8 +835,7 @@ void CFWL_Edit::OnProcessEvent(CFWL_Event* pEvent) {
     return;
 
   CFWL_Widget* pSrcTarget = pEvent->GetSrcTarget();
-  if ((pSrcTarget == m_pVertScrollBar && m_pVertScrollBar) ||
-      (pSrcTarget == m_pHorzScrollBar && m_pHorzScrollBar)) {
+  if ((pSrcTarget == m_pVertScrollBar && m_pVertScrollBar)) {
     CFWL_EventScroll* pScrollEvent = static_cast<CFWL_EventScroll*>(pEvent);
     OnScroll(static_cast<CFWL_ScrollBar*>(pSrcTarget),
              pScrollEvent->GetScrollCode(), pScrollEvent->GetPos());
@@ -969,25 +852,25 @@ void CFWL_Edit::DoRButtonDown(CFWL_MessageMouse* pMsg) {
       m_pEditEngine->GetIndexForPoint(DeviceToEngine(pMsg->m_pos)));
 }
 
-void CFWL_Edit::OnFocusChanged(CFWL_Message* pMsg, bool bSet) {
-  bool bRepaint = false;
-  if (bSet) {
-    m_Properties.m_dwStates |= FWL_WGTSTATE_Focused;
+void CFWL_Edit::OnFocusGained() {
+  m_Properties.m_dwStates |= FWL_WGTSTATE_Focused;
+  UpdateVAlignment();
+  UpdateOffset();
+  UpdateCaret();
+  LayoutScrollBar();
+}
 
-    UpdateVAlignment();
-    UpdateOffset();
-    UpdateCaret();
-  } else if (m_Properties.m_dwStates & FWL_WGTSTATE_Focused) {
+void CFWL_Edit::OnFocusLost() {
+  bool bRepaint = false;
+  if (m_Properties.m_dwStates & FWL_WGTSTATE_Focused) {
     m_Properties.m_dwStates &= ~FWL_WGTSTATE_Focused;
     HideCaret(nullptr);
-
     if (HasSelection()) {
       ClearSelection();
       bRepaint = true;
     }
     UpdateOffset();
   }
-
   LayoutScrollBar();
   if (!bRepaint)
     return;

@@ -84,6 +84,8 @@ const emitGlobalTypeDefs = () => {
   emitLine('getError(): string|undefined;');
   numIndents--;
   emitLine('}');
+  emitLine('type OpaqueType<Tag extends string> = {protocolOpaqueTypeTag: Tag};');
+  emitLine('type OpaqueIdentifier<RepresentationType, Tag extends string> = RepresentationType&OpaqueType<Tag>;');
 };
 
 const emitDomain = (domain: Protocol.Domain) => {
@@ -92,7 +94,7 @@ const emitDomain = (domain: Protocol.Domain) => {
   emitDescription(domain.description);
   emitOpenBlock(`export namespace ${domainName}`);
   if (domain.types) {
-    domain.types.forEach(emitDomainType);
+    domain.types.forEach(emitDomainType.bind(null, domain));
   }
   if (domain.commands) {
     domain.commands.forEach(emitCommand);
@@ -215,7 +217,18 @@ const emitInlineEnums = (prefix: string, propertyTypes?: Protocol.PropertyType[]
   }
 };
 
-const emitDomainType = (type: Protocol.DomainType) => {
+
+// Please keep `knownIdentifierTypes` sorted.
+const knownIdentifierTypes = [
+  'Accessibility.AXNodeId',
+  'CacheStorage.CacheId',
+  'DOM.BackendNodeId',
+  'DOM.NodeId',
+  'Fetch.RequestId',
+  'Network.RequestId',
+];
+
+const emitDomainType = (domain: Protocol.Domain, type: Protocol.DomainType) => {
   // Check if this type is an object that declares inline enum types for some of its properties.
   // These inline enums must be emitted first.
   emitInlineEnumForDomainType(type);
@@ -228,6 +241,11 @@ const emitDomainType = (type: Protocol.DomainType) => {
   } else if (type.type === 'string' && type.enum) {
     // Explicit enums declared as separate types that inherit from 'string'.
     emitEnum(type.id, type.enum);
+  } else if (knownIdentifierTypes.includes(`${domain.domain}.${type.id}`)) {
+    const representationType = getPropertyType(type.id, type);
+    const tag = `Protocol.${domain.domain}.${type.id}`;
+    const opaqueType = `OpaqueIdentifier<${representationType}, '${tag}'>`;
+    emitLine(`export type ${type.id} = ${opaqueType};`);
   } else {
     emitLine(`export type ${type.id} = ${getPropertyType(type.id, type)};`);
   }
@@ -388,14 +406,25 @@ const emitApi = (moduleName: string, protocolModuleName: string, domains: Protoc
   emitOpenBlock(`declare namespace ${moduleName}`);
 
   emitLine();
+  emitLine('export type ProtocolDomainName = keyof ProtocolApi;');
+
+  emitLine();
   emitOpenBlock('export interface ProtocolApi');
   domains.forEach(d => {
     emitLine(`${d.domain}: ${d.domain}Api;`);
     emitLine();
   });
   emitCloseBlock();
-  emitLine();
 
+  emitLine();
+  emitOpenBlock('export interface ProtocolDispatchers');
+  domains.forEach(d => {
+    emitLine(`${d.domain}: ${d.domain}Dispatcher;`);
+    emitLine();
+  });
+  emitCloseBlock();
+
+  emitLine();
   const protocolModulePrefix = toTitleCase(protocolModuleName);
   domains.forEach(d => emitDomainApi(d, protocolModulePrefix));
   emitCloseBlock();

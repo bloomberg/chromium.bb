@@ -19,6 +19,7 @@ public class AutofillSuggestion extends DropdownItemBase {
     private final boolean mIsDeletable;
     private final boolean mIsMultilineLabel;
     private final boolean mIsBoldLabel;
+    private final String mFeatureForIPH;
 
     /**
      * Constructs a Autofill suggestion container.
@@ -33,10 +34,12 @@ public class AutofillSuggestion extends DropdownItemBase {
      * @param isDeletable Whether the item can be deleted by the user.
      * @param isMultilineLabel Whether the label is displayed over multiple lines.
      * @param isBoldLabel Whether the label is displayed in {@code Typeface.BOLD}.
+     * @param featureForIPH The IPH feature for the autofill suggestion. If present, it'll be
+     *         attempted to be shown in the keyboard accessory.
      */
     public AutofillSuggestion(String label, String sublabel, String itemTag, int iconId,
             boolean isIconAtStart, int suggestionId, boolean isDeletable, boolean isMultilineLabel,
-            boolean isBoldLabel) {
+            boolean isBoldLabel, String featureForIPH) {
         mLabel = label;
         mSublabel = sublabel;
         mItemTag = itemTag;
@@ -46,6 +49,7 @@ public class AutofillSuggestion extends DropdownItemBase {
         mIsDeletable = isDeletable;
         mIsMultilineLabel = isMultilineLabel;
         mIsBoldLabel = isBoldLabel;
+        mFeatureForIPH = featureForIPH;
     }
 
     @Override
@@ -106,5 +110,81 @@ public class AutofillSuggestion extends DropdownItemBase {
         // Negative suggestion ID indiciates a tool like "settings" or "scan credit card."
         // Non-negative suggestion ID indicates suggestions that can be filled into the form.
         return mSuggestionId >= 0;
+    }
+
+    public String getFeatureForIPH() {
+        return mFeatureForIPH;
+    }
+
+    /**
+     * Builder for the {@link AutofillSuggestion}.
+     */
+    public static final class Builder {
+        private int mIconId;
+        private boolean mIsBoldLabel;
+        private boolean mIsIconAtStart;
+        private boolean mIsDeletable;
+        private boolean mIsMultiLineLabel;
+        private String mFeatureForIPH;
+        private String mItemTag;
+        private String mLabel;
+        private String mSubLabel;
+        private int mSuggestionId;
+
+        public Builder setIconId(int iconId) {
+            this.mIconId = iconId;
+            return this;
+        }
+
+        public Builder setIsBoldLabel(boolean isBoldLabel) {
+            this.mIsBoldLabel = isBoldLabel;
+            return this;
+        }
+
+        public Builder setIsIconAtStart(boolean isIconAtStart) {
+            this.mIsIconAtStart = isIconAtStart;
+            return this;
+        }
+
+        public Builder setIsDeletable(boolean isDeletable) {
+            this.mIsDeletable = isDeletable;
+            return this;
+        }
+
+        public Builder setIsMultiLineLabel(boolean isMultiLineLabel) {
+            this.mIsMultiLineLabel = isMultiLineLabel;
+            return this;
+        }
+
+        public Builder setFeatureForIPH(String featureForIPH) {
+            this.mFeatureForIPH = featureForIPH;
+            return this;
+        }
+
+        public Builder setItemTag(String itemTag) {
+            this.mItemTag = itemTag;
+            return this;
+        }
+
+        public Builder setLabel(String label) {
+            this.mLabel = label;
+            return this;
+        }
+
+        public Builder setSubLabel(String subLabel) {
+            this.mSubLabel = subLabel;
+            return this;
+        }
+
+        public Builder setSuggestionId(int suggestionId) {
+            this.mSuggestionId = suggestionId;
+            return this;
+        }
+
+        public AutofillSuggestion build() {
+            assert !mLabel.isEmpty() : "AutofillSuggestion requires the label to be set.";
+            return new AutofillSuggestion(mLabel, mSubLabel, mItemTag, mIconId, mIsIconAtStart,
+                    mSuggestionId, mIsDeletable, mIsMultiLineLabel, mIsBoldLabel, mFeatureForIPH);
+        }
     }
 }

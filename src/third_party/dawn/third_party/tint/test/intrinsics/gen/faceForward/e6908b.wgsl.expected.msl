@@ -1,0 +1,27 @@
+#include <metal_stdlib>
+
+using namespace metal;
+struct tint_symbol {
+  float4 value [[position]];
+};
+
+void faceForward_e6908b() {
+  float2 res = faceforward(float2(), float2(), float2());
+}
+
+vertex tint_symbol vertex_main() {
+  faceForward_e6908b();
+  tint_symbol const tint_symbol_1 = {.value=float4()};
+  return tint_symbol_1;
+}
+
+fragment void fragment_main() {
+  faceForward_e6908b();
+  return;
+}
+
+kernel void compute_main() {
+  faceForward_e6908b();
+  return;
+}
+

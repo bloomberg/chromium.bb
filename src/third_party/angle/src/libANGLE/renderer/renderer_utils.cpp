@@ -968,10 +968,6 @@ void LogFeatureStatus(const angle::FeatureSetBase &features,
         {
             INFO() << "Feature: " << name << (enabled ? " enabled" : " disabled");
         }
-        else
-        {
-            WARN() << "Feature: " << name << " is not a valid feature name.";
-        }
     }
 }
 
@@ -1045,6 +1041,7 @@ void GetSamplePosition(GLsizei sampleCount, size_t index, GLfloat *xy)
     {                                                                                          \
         if (ANGLE_NOOP_DRAW(instanced))                                                        \
         {                                                                                      \
+            ANGLE_TRY(contextImpl->handleNoopDrawEvent());                                     \
             continue;                                                                          \
         }                                                                                      \
         ANGLE_SET_DRAW_ID_UNIFORM(hasDrawID)(drawID);                                          \
@@ -1279,6 +1276,8 @@ angle::FormatID ConvertToSRGB(angle::FormatID formatID)
     {
         case angle::FormatID::R8_UNORM:
             return angle::FormatID::R8_UNORM_SRGB;
+        case angle::FormatID::R8G8_UNORM:
+            return angle::FormatID::R8G8_UNORM_SRGB;
         case angle::FormatID::R8G8B8_UNORM:
             return angle::FormatID::R8G8B8_UNORM_SRGB;
         case angle::FormatID::R8G8B8A8_UNORM:
@@ -1340,6 +1339,8 @@ angle::FormatID ConvertToLinear(angle::FormatID formatID)
     {
         case angle::FormatID::R8_UNORM_SRGB:
             return angle::FormatID::R8_UNORM;
+        case angle::FormatID::R8G8_UNORM_SRGB:
+            return angle::FormatID::R8G8_UNORM;
         case angle::FormatID::R8G8B8_UNORM_SRGB:
             return angle::FormatID::R8G8B8_UNORM;
         case angle::FormatID::R8G8B8A8_UNORM_SRGB:

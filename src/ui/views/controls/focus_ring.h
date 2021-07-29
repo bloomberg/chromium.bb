@@ -33,9 +33,15 @@ class VIEWS_EXPORT FocusRing : public View, public ViewObserver {
 
   using ViewPredicate = std::function<bool(View* view)>;
 
-  // Create a FocusRing and adds it to |parent|. The returned focus ring is
-  // owned by the |parent|.
-  static FocusRing* Install(View* parent);
+  // Creates a FocusRing and adds it to `host`.
+  static void Install(View* host);
+
+  // Gets the FocusRing, if present, from `host`.
+  static FocusRing* Get(View* host);
+  static const FocusRing* Get(const View* host);
+
+  // Removes the FocusRing, if present, from `host`.
+  static void Remove(View* host);
 
   ~FocusRing() override;
 
@@ -58,10 +64,6 @@ class VIEWS_EXPORT FocusRing : public View, public ViewObserver {
   void SetHasFocusPredicate(const ViewPredicate& predicate);
 
   void SetColor(absl::optional<SkColor> color);
-
-  // Sets |should_paint_focus_aura_| and repaints the focus ring so that it may
-  // or may not include the focus aura.
-  void SetShouldPaintFocusAura(bool should_paint_focus_aura);
 
   // View:
   void Layout() override;
@@ -96,11 +98,6 @@ class VIEWS_EXPORT FocusRing : public View, public ViewObserver {
   // Whether the enclosed View is in an invalid state, which controls whether
   // the focus ring shows an invalid appearance (usually a different color).
   bool invalid_ = false;
-
-  // If true, paint the focus aura (the inside area of the focus ring) with the
-  // color |kColorId_FocusAuraColor|. The focus aura is not painted by default
-  // and can be painted or unpainted by SetShouldSetFocusAura.
-  bool should_paint_focus_aura_ = false;
 
   // Overriding color for the focus ring.
   absl::optional<SkColor> color_;

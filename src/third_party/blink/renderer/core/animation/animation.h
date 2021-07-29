@@ -33,7 +33,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -147,18 +146,12 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
 
   void cancel();
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  V8CSSNumberish* ConvertTimeToCSSNumberish(AnimationTimeDelta) const;
+
   V8CSSNumberish* currentTime() const;
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  void currentTime(CSSNumberish&) const;
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   absl::optional<AnimationTimeDelta> CurrentTimeInternal() const;
   void setCurrentTime(const V8CSSNumberish* current_time,
                       ExceptionState& exception_state);
-#if !defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  void setCurrentTime(CSSNumberish, ExceptionState& exception_state);
-  void setCurrentTime(CSSNumberish);
-#endif  // !defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   void SetCurrentTimeInternal(AnimationTimeDelta);
 
   absl::optional<AnimationTimeDelta> UnlimitedCurrentTime() const;
@@ -214,23 +207,16 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   double playbackRate() const;
   void setPlaybackRate(double, ExceptionState& = ASSERT_NO_EXCEPTION);
   AnimationTimeline* timeline() { return timeline_; }
+  AnimationTimeline* timeline() const { return timeline_; }
   virtual void setTimeline(AnimationTimeline* timeline);
   Document* GetDocument() const;
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   V8CSSNumberish* startTime() const;
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  void startTime(CSSNumberish&) const;
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   absl::optional<AnimationTimeDelta> StartTimeInternal() const {
     return start_time_;
   }
   virtual void setStartTime(const V8CSSNumberish* start_time,
                             ExceptionState& exception_state);
-#if !defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  virtual void setStartTime(CSSNumberish, ExceptionState&);
-  void setStartTime(CSSNumberish);
-#endif  // !defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   const AnimationEffect* effect() const { return content_.Get(); }
   AnimationEffect* effect() { return content_.Get(); }
@@ -319,6 +305,15 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   bool IsInDisplayLockedSubtree();
 
   base::TimeDelta ComputeCompositorTimeOffset() const;
+
+  // Updates |compositor_property_animations_have_no_effect_| and marks the
+  // animation as pending if it changes.
+  void MarkPendingIfCompositorPropertyAnimationChanges(
+      const PaintArtifactCompositor*);
+  bool CompositorPropertyAnimationsHaveNoEffectForTesting() const {
+    return compositor_property_animations_have_no_effect_;
+  }
+  bool AnimationHasNoEffect() const { return animation_has_no_effect_; }
 
  protected:
   DispatchEventResult DispatchEventInternal(Event&) override;
@@ -486,12 +481,14 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
           playback_rate(animation.EffectivePlaybackRate()),
           effect_changed(false),
           pending_action(animation.start_time_ ? kNone : kStart) {}
+    CompositorState(const CompositorState&) = delete;
+    CompositorState& operator=(const CompositorState&) = delete;
+
     absl::optional<double> start_time;
     absl::optional<double> hold_time;
     double playback_rate;
     bool effect_changed;
     CompositorAction pending_action;
-    DISALLOW_COPY_AND_ASSIGN(CompositorState);
   };
 
   enum CompositorPendingChange {
@@ -544,7 +541,15 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   base::TimeTicks last_display_lock_update_time_ = base::TimeTicks();
   bool is_in_display_locked_subtree_ = false;
 
-  FRIEND_TEST_ALL_PREFIXES(AnimationAnimationTestCompositeAfterPaint,
+  // True if we animate compositor properties but they would have no effect due
+  // to being optimized out on the compositor. Updated in |Animation::PreCommit|
+  // and |MarkPendingIfCompositorPropertyAnimationChanges|.
+  bool compositor_property_animations_have_no_effect_;
+  // True if the only reason for not running the animation on the compositor is
+  // that the animation would have no effect. Updated in |Animation::PreCommit|.
+  bool animation_has_no_effect_;
+
+  FRIEND_TEST_ALL_PREFIXES(AnimationAnimationTestCompositing,
                            NoCompositeWithoutCompositedElementId);
   FRIEND_TEST_ALL_PREFIXES(AnimationAnimationTestNoCompositing,
                            PendingActivityWithFinishedEventListener);

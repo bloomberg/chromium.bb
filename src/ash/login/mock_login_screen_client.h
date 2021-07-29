@@ -87,6 +87,7 @@ class MockLoginScreenClient : public LoginScreenClient {
               ShowGaiaSignin,
               (const AccountId& prefilled_account),
               (override));
+  MOCK_METHOD(void, ShowOsInstallScreen, (), (override));
   MOCK_METHOD(void, OnRemoveUserWarningShown, (), (override));
   MOCK_METHOD(void, RemoveUser, (const AccountId& account_id), (override));
   MOCK_METHOD(void,
@@ -104,7 +105,7 @@ class MockLoginScreenClient : public LoginScreenClient {
               (ash::LoginAcceleratorAction action),
               (override));
   MOCK_METHOD(void, ShowAccountAccessHelpApp, (gfx::NativeWindow), (override));
-  MOCK_METHOD(void, ShowParentAccessHelpApp, (gfx::NativeWindow), (override));
+  MOCK_METHOD(void, ShowParentAccessHelpApp, (), (override));
   MOCK_METHOD(void, ShowLockScreenNotificationSettings, (), (override));
   MOCK_METHOD(void, FocusOobeDialog, (), (override));
   MOCK_METHOD(void, OnFocusLeavingSystemTray, (bool reverse), (override));

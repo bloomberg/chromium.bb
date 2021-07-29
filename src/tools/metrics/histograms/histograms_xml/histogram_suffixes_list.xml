@@ -797,6 +797,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="feedv2" label="Feed V2 Module"/>
   <suffix name="image_editor" label="Image Editor Module"/>
   <suffix name="stack_unwinder" label="Stack Unwinder Module"/>
+  <suffix name="survey" label="Survey Module"/>
   <suffix name="tab_ui" label="Tab Management Module"/>
   <suffix name="test_dummy" label="Test Dummy Module"/>
   <suffix name="vr" label="Virtual Reality Module"/>
@@ -853,26 +854,6 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <affected-histogram name="Android.IsolatedSplits.PreloadWaitTime"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="AndroidGATTEvents" separator=".">
-  <obsolete>
-    Removed 2021/04/12. crbug.com/1052934
-  </obsolete>
-  <suffix name="onCharacteristicRead.Status" label=""/>
-  <suffix name="onCharacteristicWrite.Status" label=""/>
-  <suffix name="onConnectionStateChange.Status.Connected"
-      label="While Connected"/>
-  <suffix name="onConnectionStateChange.Status.Disconnected"
-      label="While Disonnected"/>
-  <suffix name="onConnectionStateChange.Status.InvalidState"
-      label="While InvalidState"/>
-  <suffix name="onDescriptorRead.Status" label=""/>
-  <suffix name="onDescriptorWrite.Status" label=""/>
-  <suffix name="onServicesDiscovered.Status.Connected" label="While Connected"/>
-  <suffix name="onServicesDiscovered.Status.Disconnected"
-      label="While Disconnected"/>
-  <affected-histogram name="Bluetooth.Web.Android"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="AndroidGetAccountsTypes" separator="_">
   <suffix name="AccountManager" label="Using Android AccountManager API"/>
   <suffix name="GoogleAuthUtil" label="Using GoogleAuthUtil API"/>
@@ -885,9 +866,24 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>ssid@chromium.org</owner>
   <suffix name="Browser" label="Recorded for Browser crashes."/>
   <suffix name="Browser.Background"
-      label="Recorded for background Browser crashes."/>
+      label="Recorded for background Browser crashes.">
+    <obsolete>
+      Deprecated in M93 in favor of Background2.
+    </obsolete>
+  </suffix>
+  <suffix name="Browser.Background2"
+      label="Recorded for background (application is not in running state)
+             Browser crashes."/>
   <suffix name="Browser.Foreground"
-      label="Recorded for foregound Browser crashes."/>
+      label="Recorded for foregound Browser crashes. Deprecated in M93 in
+             favor of Foreground2.">
+    <obsolete>
+      Deprecated in M93 in favor of Foreground2.
+    </obsolete>
+  </suffix>
+  <suffix name="Browser.Foreground2"
+      label="Recorded for foregound (application is in running state) Browser
+             crashes."/>
   <suffix name="GpuForegroundOom"
       label="Recorded for foreground GPU process OOM crashes."/>
   <suffix name="UtilityForegroundOom"
@@ -928,6 +924,11 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram_suffixes>
 
 <histogram_suffixes name="AndroidWebViewFragments" separator=".">
+  <owner>hazems@chromium.org</owner>
+  <owner>ntfschr@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <suffix name="ComponentsListFragment"
+      label="This is for the components list tool"/>
   <suffix name="CrashesListFragment" label="This is for the crash list tool."/>
   <suffix name="FlagsFragment" label="This is for the flag modification tool."/>
   <suffix name="HomeFragment" label="This is for the home (default) page."/>
@@ -965,6 +966,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram_suffixes>
 
 <histogram_suffixes name="AppListState" separator=".">
+  <suffix name="BubbleAllApps" label=""/>
   <suffix name="Closed" label=""/>
   <suffix name="FullscreenAllApps" label=""/>
   <suffix name="FullscreenSearch" label=""/>
@@ -1074,9 +1076,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram_suffixes>
 
 <histogram_suffixes name="ArcThrottleObservers" separator=".">
-  <suffix name="ArcAppLaunchRequested" label="ARC++ app launch in progress."/>
-  <suffix name="ArcIsBooting" label="ARC++ is booting or restarting."/>
-  <suffix name="ArcWindowIsActiveWindow" label="An ARC++ window is active."/>
+  <suffix name="ArcAppLaunchRequested" label="ARC app launch in progress."/>
+  <suffix name="ArcIsBooting" label="ARC is booting or restarting."/>
+  <suffix name="ArcPipWindowIsVisible" label="An ARC PIP window is active."/>
+  <suffix name="ArcWindowIsActiveWindow" label="An ARC window is active."/>
   <affected-histogram name="Arc.CpuRestrictionDisabled"/>
 </histogram_suffixes>
 
@@ -1093,6 +1096,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <affected-histogram name="Arc.Auth.AccountCheck.TimeDelta"/>
   <affected-histogram name="Arc.Auth.Checkin.Attempts"/>
   <affected-histogram name="Arc.Auth.Checkin.TimeDelta"/>
+  <affected-histogram name="Arc.Auth.CodeFetcher.ProxyBypass"/>
   <affected-histogram name="Arc.Auth.MainAccountResolution.Status"/>
   <affected-histogram name="Arc.Auth.NetworkWait.TimeDelta"/>
   <affected-histogram name="Arc.Auth.SignIn.TimeDelta"/>
@@ -1409,6 +1413,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram_suffixes>
 
 <histogram_suffixes name="AutofillRealPanResultGroups" separator=".">
+  <obsolete>
+    Removed as of 05/2021. Current autofill histograms will use variants.
+  </obsolete>
   <suffix name="Failure" label="Failure"/>
   <suffix name="NetworkError" label="Network errors"/>
   <suffix name="Success" label="Success"/>
@@ -1743,48 +1750,6 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <affected-histogram name="Download.MapErrorNetworkFailed.NetworkService"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="BackgroundFetchDatabaseStorageErrors" separator=".">
-  <suffix name="CleanupTask" label="CleanupTask"/>
-  <suffix name="CreateMetadataTask" label="CreateMetadata DatabaseTask"/>
-  <suffix name="DeleteRegistrationTask"
-      label="DeleteRegistration DatabaseTask"/>
-  <suffix name="GetDeveloperIdsTask" label="GetDeveloperIds DatabaseTask"/>
-  <suffix name="GetInitializationDataTask"
-      label="GetInitializationData DatabaseTask"/>
-  <suffix name="GetRegistrationTask" label="GetRegistration DatabaseTask"/>
-  <suffix name="GetRequestBlobTask" label="GetRequestBlob DatabaseTask"/>
-  <suffix name="GetSettledFetchesTask" label="GetSettledFetches DatabaseTask"/>
-  <suffix name="MarkRegistrationForDeletionTask"
-      label="MarkRegistrationForDeletion DatabaseTask"/>
-  <suffix name="MarkRequestCompleteTask"
-      label="MarkRequestComplete DatabaseTask"/>
-  <suffix name="MatchRequestsTask" label="MatchRequests DatabaseTask"/>
-  <suffix name="StartNextPendingRequestTask"
-      label="StartNextPendingRequest DatabaseTask"/>
-  <suffix name="UpdateRegistrationUITask"
-      label="UpdateRegistrationUI DatabaseTask"/>
-  <affected-histogram name="BackgroundFetch.Storage"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="BackgroundFetchEvents" separator=".">
-  <suffix name="AbortEvent" label="BackgroundFetchAbortEvent"/>
-  <suffix name="ClickEvent" label="BackgroundFetchClickEvent"/>
-  <suffix name="FailEvent" label="BackgroundFetchFailEvent"/>
-  <suffix name="FetchedEvent" label="BackgroundFetchedEvent"/>
-  <suffix name="SuccessEvent" label="BackgroundFetchSuccessEvent"/>
-  <affected-histogram name="BackgroundFetch.EventDispatchFailure.Dispatch"/>
-  <affected-histogram name="BackgroundFetch.EventDispatchFailure.FindWorker"/>
-  <affected-histogram name="BackgroundFetch.EventDispatchFailure.StartWorker"/>
-  <affected-histogram name="BackgroundFetch.EventDispatchResult"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="BackgroundFetchManagerAPIsDuration" separator=".">
-  <suffix name="FetchDuration" label="Duration of fetch"/>
-  <suffix name="GetDuration" label="Duration of get"/>
-  <suffix name="GetIdsDuration" label="Duration of getIds"/>
-  <affected-histogram name="BackgroundFetch.Manager"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="BadBlockCounts" separator=".">
   <suffix name="Backupsys" label="backupsys partition"/>
   <suffix name="Bbt" label="bbt partition"/>
@@ -1840,20 +1805,6 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <affected-histogram name="Media.Audio.Bitstream"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="BlinkCanvasDrawImageSizeType" separator=".">
-  <suffix name="Canvas.CPU" label=""/>
-  <suffix name="Canvas.GPU" label=""/>
-  <suffix name="CssImage" label=""/>
-  <suffix name="ImageBitmap" label=""/>
-  <suffix name="ImageElement" label=""/>
-  <suffix name="OffscreenCanvas.CPU" label=""/>
-  <suffix name="OffscreenCanvas.GPU" label=""/>
-  <suffix name="SVG" label=""/>
-  <suffix name="Unknown" label=""/>
-  <suffix name="Video" label=""/>
-  <affected-histogram name="Blink.Canvas.DrawImage.SqrtNumberOfPixels"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="BlinkCanvasDrawImageType" separator=".">
   <suffix base="true" name="Canvas" label=""/>
   <suffix base="true" name="CssImage" label=""/>
@@ -1903,14 +1854,6 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <affected-histogram name="Blink.Canvas.OffscreenCommitTimer"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="BlinkCanvasRasterDurationType" separator=".">
-  <suffix name="Accelerated.CPU" label=""/>
-  <suffix name="Accelerated.GPU" label=""/>
-  <suffix name="Accelerated.Total" label=""/>
-  <suffix name="Unaccelerated" label=""/>
-  <affected-histogram name="Blink.Canvas.RasterDuration"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="BlinkCanvasToBlobIdleEncodAndDelayType" separator=".">
   <suffix name="JPEG" label=""/>
   <suffix name="PNG" label=""/>
@@ -1921,54 +1864,6 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     </obsolete>
   </affected-histogram>
   <affected-histogram name="Blink.Canvas.ToBlob.InitiateEncodingDelay"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="BlinkCanvasToBlobType" separator=".">
-  <suffix name="JPEG" label=""/>
-  <suffix name="PNG" label=""/>
-  <suffix name="WEBP" label=""/>
-  <affected-histogram name="Blink.Canvas.ToBlob.ScaledDuration"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="BlinkCanvasToDataURLMimeType" separator=".">
-  <suffix name="BMP" label="">
-    <obsolete>
-      Removed in Oct 2016
-    </obsolete>
-  </suffix>
-  <suffix name="GIF" label="">
-    <obsolete>
-      Removed in Oct 2016
-    </obsolete>
-  </suffix>
-  <suffix name="ICON" label="">
-    <obsolete>
-      Removed in Oct 2016
-    </obsolete>
-  </suffix>
-  <suffix name="JPEG" label=""/>
-  <suffix name="PNG" label=""/>
-  <suffix name="TIFF" label="">
-    <obsolete>
-      Removed in Oct 2016
-    </obsolete>
-  </suffix>
-  <suffix name="Unknown" label="">
-    <obsolete>
-      Removed in Oct 2016
-    </obsolete>
-  </suffix>
-  <suffix name="WEBP" label=""/>
-  <affected-histogram name="Blink.Canvas.ToDataURLScaledDuration"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="BlinkCompositingLayerCount" separator=".">
-  <suffix name="ActiveAnimation" label=""/>
-  <suffix name="AssumedOverlap" label=""/>
-  <suffix name="IndirectComposited" label=""/>
-  <suffix name="Overlap" label=""/>
-  <suffix name="TotalComposited" label=""/>
-  <affected-histogram name="Blink.Compositing.LayerPromotionCount"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="BlinkGCReason" separator="_">
@@ -1987,33 +1882,6 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <affected-histogram name="BlinkGC.AtomicPhaseMarking"/>
   <affected-histogram name="BlinkGC.CollectionRate"/>
   <affected-histogram name="BlinkGC.TimeForTotalCollectGarbage"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="BlinkGCTimingTypes" separator=".">
-  <suffix name="Background" label="Includes only background helpers"/>
-  <suffix name="Foreground" label="Includes only the main thread"/>
-  <affected-histogram name="BlinkGC.TimeForMarking"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="BlinkIncrementalDecodeImageTypes" separator=".">
-  <suffix name="Jpeg"
-      label="Byte size of JPEG images that fall into this category."/>
-  <suffix name="WebP"
-      label="Byte size of WebP images that fall into this category."/>
-  <affected-histogram name="Blink.ImageDecoders.IncrementallyDecodedByteSize"/>
-  <affected-histogram name="Blink.ImageDecoders.InitiallyFullyDecodedByteSize"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="BlinkLazyLoadEffectiveConnectionTypeSuffixes"
-    separator=".">
-  <suffix name="2G" label="2G effective connection type"/>
-  <suffix name="3G" label="3G effective connection type"/>
-  <suffix name="4G" label="4G effective connection type"/>
-  <suffix name="Offline" label="Offline effective connection type"/>
-  <suffix name="Slow2G" label="Slow-2G effective connection type"/>
-  <suffix name="Unknown" label="Unknown effective connection type"/>
-  <affected-histogram
-      name="Blink.LazyLoad.CrossOriginFrames.InitialDeferralAction"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="BlinkMainFrameUpdateTimeSuffixes" separator=".">
@@ -2044,6 +1912,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram_suffixes name="BlinkUpdateTimeAggregatedSuffixes" separator=".">
   <suffix name="AggregatedPreFCP"
       label="All the time spent Pre First Contentful Paint in this component"/>
+  <affected-histogram
+      name="Blink.AnchorElementMetricsIntersectionObserver.UpdateTime"/>
   <affected-histogram name="Blink.Animate.UpdateTime"/>
   <affected-histogram name="Blink.Compositing.UpdateTime"/>
   <affected-histogram name="Blink.CompositingAssignments.UpdateTime"/>
@@ -2077,6 +1947,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram_suffixes name="BlinkUpdateTimePostFCPSuffixes" separator=".">
   <suffix name="PostFCP" label="Update occurred after First Contentful Paint."/>
+  <affected-histogram
+      name="Blink.AnchorElementMetricsIntersectionObserver.UpdateTime"/>
   <affected-histogram name="Blink.Animate.UpdateTime"/>
   <affected-histogram name="Blink.Compositing.UpdateTime"/>
   <affected-histogram name="Blink.CompositingAssignments.UpdateTime"/>
@@ -2110,6 +1982,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram_suffixes name="BlinkUpdateTimePreFCPSuffixes" separator=".">
   <suffix name="PreFCP" label="Update occurred before First Contentful Paint."/>
+  <affected-histogram
+      name="Blink.AnchorElementMetricsIntersectionObserver.UpdateTime"/>
   <affected-histogram name="Blink.Animate.UpdateTime"/>
   <affected-histogram name="Blink.Compositing.UpdateTime"/>
   <affected-histogram name="Blink.CompositingAssignments.UpdateTime"/>
@@ -2141,19 +2015,6 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <affected-histogram name="Blink.WaitForCommit.UpdateTime"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="BlinkVisibleLoadTimeSuffixes" separator=".">
-  <suffix name="2G" label="2G effective connection type"/>
-  <suffix name="3G" label="3G effective connection type"/>
-  <suffix name="4G" label="4G effective connection type"/>
-  <suffix name="Slow2G" label="Slow-2G effective connection type"/>
-  <affected-histogram
-      name="Blink.VisibleLoadTime.LazyLoadEligibleFrames.AboveTheFold"/>
-  <affected-histogram
-      name="Blink.VisibleLoadTime.LazyLoadEligibleFrames.BelowTheFold"/>
-  <affected-histogram name="Blink.VisibleLoadTime.LazyLoadImages.AboveTheFold"/>
-  <affected-histogram name="Blink.VisibleLoadTime.LazyLoadImages.BelowTheFold"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="BluetoothPairedStates" separator=".">
   <suffix name="NotPaired" label=""/>
   <suffix name="Paired" label=""/>
@@ -2175,16 +2036,6 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <affected-histogram name="Bluetooth.ChromeOS.Pairing.Duration.Success"/>
   <affected-histogram name="Bluetooth.ChromeOS.Pairing.Result"/>
   <affected-histogram name="Bluetooth.ChromeOS.Pairing.Result.FailureReason"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="BluetoothUISurfaces" separator=".">
-  <suffix name="Settings" label=""/>
-  <suffix name="SystemTray" label=""/>
-  <affected-histogram name="Bluetooth.ChromeOS.DeviceSelectionDuration"/>
-  <affected-histogram
-      name="Bluetooth.ChromeOS.UserInitiatedReconnectionAttempt.Result"/>
-  <affected-histogram
-      name="Bluetooth.ChromeOS.UserInitiatedReconnectionAttempt.Result.FailureReason"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="BlueZPerProfileResult" separator="."
@@ -2539,15 +2390,6 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <affected-histogram name="Scheduler.CancelableTaskTracker.TaskDuration2"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="CanvasRequestedImageMimeTypeFunctions" separator="_">
-  <suffix name="convertToBlobPromise"
-      label="Image formats passed to OffscreenCanvas.convertToBlob (promise)"/>
-  <suffix name="toBlobCallback"
-      label="Image formats passed to canvas.toBlob (callback)"/>
-  <suffix name="toDataURL" label="Image formats passed to canvas.toDataURL"/>
-  <affected-histogram name="Blink.Canvas.RequestedImageMimeTypes"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="CdmFileIOTimes" separator=".">
   <suffix name="Incognito" label="Used from an incognito window."/>
   <suffix name="Normal" label="Used from a non-incognito window."/>
@@ -2842,6 +2684,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram_suffixes>
 
 <histogram_suffixes name="CloudPrintRequests" separator=".">
+  <obsolete>
+    Removed 06/2021. Cloud Print is no longer supported.
+  </obsolete>
   <suffix name="DownloadData" label="Download data request"/>
   <suffix name="Other" label="Other requests"/>
   <suffix name="Register" label="Register request"/>
@@ -3953,6 +3798,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram_suffixes>
 
 <histogram_suffixes name="CrosNotificationActions" separator=".">
+  <suffix name="CountOfNotificationShownInFirstMinutePerUser"
+      label="Count of notifications displayed in the first minute since login
+             for a user"/>
   <suffix name="NotificationAdded"
       label="A notification was created (regardless if it was shown or not)"/>
   <suffix name="Popup.ClickedActionButton"
@@ -6330,6 +6178,13 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <affected-histogram name="EventLatency.GestureTapDown"/>
   <affected-histogram name="EventLatency.GestureTapUnconfirmed"/>
   <affected-histogram name="EventLatency.GestureTwoFingerTap"/>
+  <affected-histogram
+      name="EventLatency.InertialGestureScrollUpdate.Autoscroll"/>
+  <affected-histogram
+      name="EventLatency.InertialGestureScrollUpdate.Scrollbar"/>
+  <affected-histogram
+      name="EventLatency.InertialGestureScrollUpdate.Touchscreen"/>
+  <affected-histogram name="EventLatency.InertialGestureScrollUpdate.Wheel"/>
   <affected-histogram name="EventLatency.KeyPressed"/>
   <affected-histogram name="EventLatency.KeyReleased"/>
   <affected-histogram name="EventLatency.MouseDragged"/>
@@ -6407,6 +6262,13 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <affected-histogram name="EventLatency.GestureScrollUpdate.Scrollbar"/>
   <affected-histogram name="EventLatency.GestureScrollUpdate.Touchscreen"/>
   <affected-histogram name="EventLatency.GestureScrollUpdate.Wheel"/>
+  <affected-histogram
+      name="EventLatency.InertialGestureScrollUpdate.Autoscroll"/>
+  <affected-histogram
+      name="EventLatency.InertialGestureScrollUpdate.Scrollbar"/>
+  <affected-histogram
+      name="EventLatency.InertialGestureScrollUpdate.Touchscreen"/>
+  <affected-histogram name="EventLatency.InertialGestureScrollUpdate.Wheel"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="EventLatencyScrollTypes" separator=".">
@@ -6422,6 +6284,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <affected-histogram name="EventLatency.GestureScrollBegin"/>
   <affected-histogram name="EventLatency.GestureScrollEnd"/>
   <affected-histogram name="EventLatency.GestureScrollUpdate"/>
+  <affected-histogram name="EventLatency.InertialGestureScrollUpdate"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="EventLatencyTotal" separator=".">
@@ -6452,8 +6315,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix base="true" name="GestureScrollEnd"
       label="Event latency for gesture-scroll-end event."/>
   <suffix base="true" name="GestureScrollUpdate"
-      label="Event latency for gesture-scroll-update events in a scroll
-             sequence except for the first one."/>
+      label="Event latency for non-inertial gesture-scroll-update events in a
+             scroll sequence except for the first one."/>
   <suffix base="true" name="GestureShowPress"
       label="Event latency for gesture-show-press event."/>
   <suffix base="true" name="GestureTap"
@@ -6466,6 +6329,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
       label="Event latency for gesture-tap-unconfirmed event."/>
   <suffix base="true" name="GestureTwoFingerTap"
       label="Event latency for gesture-two-finger-tap event."/>
+  <suffix base="true" name="InertialGestureScrollUpdate"
+      label="Event latency for an inertial gesture-scroll-update event in a
+             scroll sequence."/>
   <suffix base="true" name="KeyPressed"
       label="Event latency for key-pressed event."/>
   <suffix base="true" name="KeyReleased"
@@ -6538,6 +6404,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram_suffixes>
 
 <histogram_suffixes name="ExtensionContextType" separator=".">
+  <obsolete>
+    Removed 2021/06.
+  </obsolete>
   <suffix name="BlessedExtensionContext" label="Blessed Extension Context"/>
   <suffix name="BlessedWebPageContext" label="Blessed Web Page Context"/>
   <suffix name="ContentScriptContext" label="Content Script Context"/>
@@ -6762,6 +6631,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
       label="Requests to DiscoFeed to fetch the next page of content"/>
   <suffix name="UnfollowWebFeed" label="Requests to unfollow a web feed"/>
   <suffix name="UploadActions" label="Requests to upload user action data"/>
+  <suffix name="WebFeedListContents"
+      label="Request to fetch the contents of the web feed"/>
+  <affected-histogram name="ContentSuggestions.Feed.Network.Duration"/>
   <affected-histogram name="ContentSuggestions.Feed.Network.ResponseStatus"/>
 </histogram_suffixes>
 
@@ -7812,6 +7684,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
       label="Showing cache patterns only for AnswerSuggestions."/>
   <suffix name="AssistantDetails"
       label="Showing cache patterns only for AssistantDetails."/>
+  <suffix name="AutofillImageFetcher"
+      label="Show customized card art image for credit card."/>
   <suffix name="ContextualSuggestions"
       label="Showing cache patterns only for ContextualSuggestions."/>
   <suffix name="Cryptids" label="Asset fetcher for cryptid rendering."/>
@@ -7830,6 +7704,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
       label="Showing thumbnails for video tutorials IPH."/>
   <suffix name="VideoTutorialsList"
       label="Showing thumbnails for video tutorials list view."/>
+  <suffix name="WebNotes"
+      label="Images fetched and used to render Web Notes templates."/>
   <affected-histogram name="ImageFetcher.Events"/>
   <affected-histogram name="ImageFetcher.ImageLoadFromCacheTime"/>
   <affected-histogram name="ImageFetcher.ImageLoadFromCacheTimeJava"/>
@@ -8215,6 +8091,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
       label="In product help feed card menu on NTP."/>
   <suffix name="IPH_FeedHeaderMenu"
       label="In product help feed header menu on NTP."/>
+  <suffix name="IPH_FeedSwipeRefresh"
+      label="In product help for swipe refreshing feeds on NTP."/>
   <suffix name="IPH_GlobalMediaControls"
       label="In product help for the Global Media Controls."/>
   <suffix name="IPH_HomePageButton" label="In product help home page button.">
@@ -8242,7 +8120,11 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="IPH_KeyboardAccessoryPaymentFilling"
       label="In-product help for payments autofill suggestions."/>
   <suffix name="IPH_KeyboardAccessoryPaymentOffer"
-      label="In-product help for payments autofill suggestions."/>
+      label="In-product help for payments autofill suggestions that have an
+             offer."/>
+  <suffix name="IPH_KeyboardAccessoryPaymentVirtualCard"
+      label="In-product help for payment autofill suggestions that are
+             virtual cards."/>
   <suffix name="IPH_LiveCaption" label="In product help for Live Caption."/>
   <suffix name="IPH_LongPressToolbarTip"
       label="In product help LongPress toolbar."/>
@@ -8275,8 +8157,22 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="IPH_ReadingListEntryPoint"
       label="In product help to educate users to click the star icon to add a
              tab to reading list."/>
+  <suffix name="IPH_ReadLaterAppMenuBookmarks"
+      label="In product help for read later app menu.."/>
+  <suffix name="IPH_ReadLaterAppMenuBookmarkThisPage"
+      label="In product help for read later app menu."/>
+  <suffix name="IPH_ReadLaterBottomSheet"
+      label="In product help for read later bottom sheet entry point."/>
+  <suffix name="IPH_ReadLaterContextMenu"
+      label="In product help for read later context menu entry point."/>
   <suffix name="IPH_ReopenTab"
       label="In product help for reopening closed tabs."/>
+  <suffix name="IPH_SharedHighlightingBuilder"
+      label="The in product help message to notify the user that the share
+             action can preemptively share a link-to-text."/>
+  <suffix name="IPH_StartSurfaceTabSwitcherHomeButton"
+      label="In product help for home button on the tab switcher when start
+             surface is enabled."/>
   <suffix name="IPH_TabGroupsDragAndDrop"
       label="In product help for educating user to drop one tab on another
              tab to create group."/>
@@ -8287,6 +8183,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="IPH_TabGroupsYourTabsTogether"
       label="In product help for tab switcher cards with multiple tab
              thumbnails."/>
+  <suffix name="IPH_TabSearch"
+      label="In product help for tab search discovery."/>
   <suffix name="IPH_TabSwitcherButton"
       label="In product help for tab swticher button."/>
   <suffix name="IPH_TranslateMenuButton"
@@ -8334,24 +8232,6 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="OnBattery" label="System is on battery power."/>
   <affected-histogram
       name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="JankyIntervalsPerThirtySeconds" separator=".">
-  <obsolete>
-    This metric is now only recorded after the main message loop starts and no
-    longer distinguishes the first 30 seconds as &quot;startup&quot;.
-    Startup.BrowserMessageLoopStartTime can be used for the startup phase
-    (before the loop is running) and Startup.FirstWebContents.NonEmptyPaint3 can
-    be used for the user-visible startup performance.
-  </obsolete>
-  <suffix name="NonStartup"
-      label="Does not include jank in the first 30 seconds [startup]."/>
-  <suffix name="NoSuspend"
-      label="Only counts jank without power suspend/resume."/>
-  <suffix name="Startup"
-      label="Only counts jank in the first 30 seconds [startup]."/>
-  <affected-histogram
-      name="Browser.Responsiveness.JankyIntervalsPerThirtySeconds"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="JavaStartMode" separator=".">
@@ -8648,6 +8528,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="SharedDb" label="Shared database"/>
   <suffix name="ShareHistoryDatabase"
       label="Database for third-party share history."/>
+  <suffix name="ShareRankingDatabase"
+      label="Database for third-party share rankings."/>
   <suffix name="SignalDatabase" label="Segmentation platform signal database."/>
   <suffix name="SignalStorageConfigDatabase"
       label="Segmentation platform signal storage config."/>
@@ -11623,6 +11505,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram_suffixes>
 
 <histogram_suffixes name="NewTabPageProviders" separator=".">
+  <obsolete>
+    Removed in 06 2021.
+  </obsolete>
   <suffix name="allowlist"
       label="Installed allowlist entry point suggestions."/>
   <suffix name="client" label="Suggestions coming from the client."/>
@@ -11641,7 +11526,11 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="popular_baked_in" label="Baked-in, popular suggestions."/>
   <suffix name="popular_fetched"
       label="Non-personalized, popular suggestions (fetched from the server)."/>
-  <suffix name="repeatable_query" label="Repeatable Query suggestion."/>
+  <suffix name="repeatable_query" label="Repeatable Query suggestion.">
+    <obsolete>
+      Removed in 05 2021.
+    </obsolete>
+  </suffix>
   <suffix name="search_page" label="Google Search page">
     <obsolete>
       Used for experiment but was never launched, as of 2019-07.
@@ -11694,11 +11583,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
       Deprecated NTP replaced by WebUI NTP M91.
     </obsolete>
   </suffix>
-  <suffix name="MostLikely" label="Loaded server-side suggestions."/>
+  <suffix name="MostLikely" label="Loaded server-side suggestions.">
+    <obsolete>
+      Removed in 06 2021.
+    </obsolete>
+  </suffix>
   <suffix name="MostVisited" label="Loaded client-side suggestions."/>
   <suffix name="NewTab" label="NTP loaded on a new tab."/>
   <suffix name="Startup" label="NTP loaded during browser startup."/>
   <suffix name="Web" label="Loaded server-side NTP."/>
+  <suffix name="WebUI3PNTP" label="Loaded 3P WebUI NTP."/>
   <suffix name="WebUINTP" label="Loaded WebUI NTP."/>
   <affected-histogram name="NewTabPage.LoadTime"/>
   <affected-histogram name="NewTabPage.TilesReceivedTime">
@@ -12545,6 +12439,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram_suffixes name="OptimizationGuide_OptimizationTargets" separator=".">
   <suffix name="LanguageDetection" label="Language detection"/>
+  <suffix name="ModelValidation" label="Model validation triggered via CLI"/>
   <suffix name="PageTopics" label="Page topics"/>
   <suffix name="PainfulPageLoad" label="Painful page load"/>
   <suffix name="SegmentationNewTab" label="Segmentation: New tab page user"/>
@@ -14332,6 +14227,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="LocationBarLeftChip"
       label="A chip on the left-hand side of the location bar that shows a
              bubble when clicked"/>
+  <suffix name="LocationBarLeftQuietChip"
+      label="A less prominent version of a chip on the left-hand side of the
+             location bar that shows a bubble when clicked"/>
   <suffix name="LocationBarRightAnimatedIcon"
       label="An animated indicator on the right-hand side of the location bar"/>
   <suffix name="LocationBarRightStaticIcon"
@@ -14376,6 +14274,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="StorageAccess" label="Storage Access API permission"/>
   <suffix name="VideoCapture" label="Camera permission"/>
   <suffix name="VR" label="VR permission"/>
+  <suffix name="WindowPlacement" label="Window Placement permission"/>
   <affected-histogram name="Permissions.Engagement.Accepted"/>
   <affected-histogram name="Permissions.Engagement.AcceptedOnce"/>
   <affected-histogram name="Permissions.Engagement.Denied"/>
@@ -14403,6 +14302,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="StorageAccess" label="Storage Access API permission actions"/>
   <suffix name="VideoCapture" label="Camera permission actions"/>
   <suffix name="VR" label="VR permission actions"/>
+  <suffix name="WindowPlacement" label="Window Placement permission actions"/>
   <affected-histogram name="ContentSettings.PermissionActions"/>
   <affected-histogram name="ContentSettings.PermissionActionsInsecureOrigin"/>
   <affected-histogram name="ContentSettings.PermissionActionsSecureOrigin"/>
@@ -14704,15 +14604,6 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
       label="Renderer processes on unexpected cores (of any architecture)"/>
   <affected-histogram name="Power.ApproxCpuTimeSecondsPerCoreTypeAndFrequency"/>
   <affected-histogram name="Power.CpuTimeSecondsPerCoreTypeAndFrequency"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="Power_CpuTimeProcessTypes" separator=".">
-  <suffix name="Browser" label=""/>
-  <suffix name="GPU" label=""/>
-  <suffix name="Other" label=""/>
-  <suffix name="Renderer" label=""/>
-  <affected-histogram name="Power.CpuTimeSecondsPerPowerMode"/>
-  <affected-histogram name="Power.CpuTimeSecondsPerThreadType"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="PowerConsumptionSources" separator=".">
@@ -15257,6 +15148,13 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="NumberOfNodes" label=""/>
   <suffix name="OmniboxSuggestions"
       label="Only counting memory used by Omnibox suggestions provider."/>
+  <suffix name="ParkableImage.OnDiskSize"
+      label="Size of encoded image data of ParkableImages that are on disk."/>
+  <suffix name="ParkableImage.TotalSize"
+      label="Total size of encoded image data of ParkableImages."/>
+  <suffix name="ParkableImage.UnparkedSize"
+      label="Size of encoded image data of ParkableImages that are not
+             written to disk."/>
   <suffix name="PartitionAlloc.Partitions.FastMalloc.ThreadCache"
       label="Memory used by all thread caches for the FastMalloc partition.
              Recorded in blink processes, unless PartitionAlloc is used as
@@ -16584,6 +16482,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="ChromeExtMalware" label=""/>
   <suffix name="ChromeUrlClientIncident" label=""/>
   <suffix name="IpMalware" label=""/>
+  <suffix name="UrlAccuracyTips" label=""/>
   <suffix name="UrlBilling" label=""/>
   <suffix name="UrlCsdAllowlist" label=""/>
   <suffix name="UrlCsdDownloadAllowlist" label=""/>
@@ -18443,6 +18342,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <affected-histogram name="SoftwareReporter.RunningTime"/>
   <affected-histogram name="SoftwareReporter.RunningTimeAccordingToChrome"/>
   <affected-histogram name="SoftwareReporter.RunningTimeRegistryError"/>
+  <affected-histogram name="SoftwareReporter.RunningTimeWithoutSleep"/>
   <affected-histogram name="SoftwareReporter.Step"/>
 </histogram_suffixes>
 
@@ -18881,6 +18781,14 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="ClientOutOfDate" label="Client out of date."/>
   <suffix name="PassphraseRequired" label="Passphrase required."/>
   <suffix name="SyncSetupIncomplete" label="Sync setup incomplete."/>
+  <suffix name="TrustedVaultKeyRequiredForEverything"
+      label="Trusted vault keys required for everything."/>
+  <suffix name="TrustedVaultKeyRequiredForPasswords"
+      label="Trusted vault keys required for passwords."/>
+  <suffix name="TrustedVaultRecoverabilityDegradedForEverything"
+      label="Trusted vault recoverability degraded for everything."/>
+  <suffix name="TrustedVaultRecoverabilityDegradedForPasswords"
+      label="Trusted vault recoverability degraded for passwords."/>
   <affected-histogram name="Signin.SyncErrorInfoBar"/>
 </histogram_suffixes>
 
@@ -18911,7 +18819,11 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     </obsolete>
   </affected-histogram>
   <affected-histogram name="Sync.SyncedHistoryFaviconAvailability"/>
-  <affected-histogram name="Sync.SyncedHistoryFaviconLatency"/>
+  <affected-histogram name="Sync.SyncedHistoryFaviconLatency">
+    <obsolete>
+      Deleted in M93.
+    </obsolete>
+  </affected-histogram>
 </histogram_suffixes>
 
 <histogram_suffixes name="SyncKeyDerivationMethod" separator=".">
@@ -19019,6 +18931,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
       This never got launched and is removed.
     </obsolete>
   </suffix>
+  <suffix name="WORKSPACE_DESK" label="WORKSPACE_DESK"/>
   <affected-histogram name="FCMInvalidations.SubscriptionResponseCodeForTopic"/>
   <affected-histogram name="Sync.CommitLatency"/>
   <affected-histogram name="Sync.CommitResponse"/>
@@ -19270,22 +19183,6 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <affected-histogram name="Startup.BrowserOpenTabs"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="TabbedPaintPreviewPlayerUptime" separator=".">
-  <suffix name="RemovedByCompositorFailure"
-      label="Removed by compositor failure"/>
-  <suffix name="RemovedByLinkClick" label="Removed by link click"/>
-  <suffix name="RemovedByNavigation" label="Removed by navigation"/>
-  <suffix name="RemovedByPullToRefresh" label="Removed by pull to refresh"/>
-  <suffix name="RemovedBySnackBar" label="Removed by SnackBar"/>
-  <suffix name="RemovedOnAccessibilityNotSupported"
-      label="Removed on accessibility not supported"/>
-  <suffix name="RemovedOnLoad" label="Removed on load"/>
-  <suffix name="RemovedOnOfflineAvailable"
-      label="Removed on offline page available"/>
-  <suffix name="RemovedOnTabDestroy" label="Removed on tab destroy"/>
-  <affected-histogram name="Browser.PaintPreview.TabbedPlayer.UpTime"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="TabletOrClamshellMode" separator=".">
   <suffix name="ClamshellMode" label="Clamshell Mode Enabled"/>
   <suffix name="TabletMode" label="Tablet Mode Enabled"/>
@@ -19331,57 +19228,6 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <affected-histogram name="Ash.TabDrag.PresentationTime.MaxLatency"/>
   <affected-histogram name="Ash.UnlockAnimation.Jank"/>
   <affected-histogram name="Ash.UnlockAnimation.Smoothness"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="TabSwitchingType" separator=".">
-  <suffix name="NoSavedFrames"
-      label="The time from the input timestamp on a tab switch, until the
-             frame is presented on the screen when there is no saved frame in
-             the cache."/>
-  <suffix name="NoSavedFrames_Loaded"
-      label="Same as NoSavedFrames with the destination tab being loaded
-             (frozen or not frozen)"/>
-  <suffix name="NoSavedFrames_Loaded_Frozen"
-      label="Same as NoSavedFrames with the destination tab being loaded and
-             frozen.">
-    <obsolete>
-      Frozen is no longer a supported state.
-    </obsolete>
-  </suffix>
-  <suffix name="NoSavedFrames_Loaded_NotFrozen"
-      label="Same as NoSavedFrames with the destination tab being loaded and
-             not frozen.">
-    <obsolete>
-      Frozen is no longer a supported state.
-    </obsolete>
-  </suffix>
-  <suffix name="NoSavedFrames_NotLoaded"
-      label="Same as WithSavedFrames with the destination tab being unloaded."/>
-  <suffix name="WithSavedFrames"
-      label="There is a saved frame in the cache when the tab switch starts."/>
-  <affected-histogram name="Browser.Tabs.TabSwitchResult"/>
-  <affected-histogram name="Browser.Tabs.TotalIncompleteSwitchDuration"/>
-  <affected-histogram name="Browser.Tabs.TotalSwitchDuration"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="TabSwitchInputLatency" separator=".">
-  <suffix name="Keyboard"
-      label="The time it takes from receiving a keyboard input event that
-             leads to the active tab changing to just before the TabStrip
-             notifies its observers of the change."/>
-  <suffix name="Mouse"
-      label="The time it takes from receiving a mouse input event that leads
-             to the active tab changing to just before the TabStrip notifies
-             its observers of the change."/>
-  <suffix name="Touch"
-      label="The time it takes from receiving a touch input event that leads
-             to the active tab changing to just before the TabStrip notifies
-             its observers of the change."/>
-  <suffix name="Wheel"
-      label="The time it takes from receiving a mouse scroll event that leads
-             to the active tab changing to just before the TabStrip notifies
-             its observers of the change."/>
-  <affected-histogram name="Browser.Tabs.InputEventToSelectionTime"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="TaskSchedulerCancelledDelayedTasks" separator=".">
@@ -19965,8 +19811,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <affected-histogram name="V8.WasmDecodeFunctionMicroSeconds"/>
   <affected-histogram name="V8.WasmDecodeModuleMicroSeconds"/>
   <affected-histogram name="V8.WasmDecodeModulePeakMemoryBytes"/>
-  <affected-histogram name="V8.WasmFunctionSizeBytes"/>
   <affected-histogram name="V8.WasmFunctionsPerModule"/>
+  <affected-histogram name="V8.WasmHugeFunctionSizeBytes"/>
   <affected-histogram name="V8.WasmInstantiateModuleMicroSeconds"/>
   <affected-histogram name="V8.WasmMaxMemPagesCount"/>
   <affected-histogram name="V8.WasmMinMemPagesCount"/>
@@ -20184,24 +20030,6 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="Policy" label="Policy-installed app"/>
   <suffix base="true" name="System" label="System-installed app"/>
   <affected-histogram name="Webapp.InstallResult"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="WebBluetoothMacOSAPIs" separator=".">
-  <suffix name="DidDisconnectPeripheral" label="Disconnected from peripheral"/>
-  <suffix name="DidDiscoverCharacteristics" label="Discovered characteristics"/>
-  <suffix name="DidDiscoverDescriptors" label="Discovered descriptors"/>
-  <suffix name="DidDiscoverPrimaryServices"
-      label="Discovered primary services"/>
-  <suffix name="DidFailToConnectToPeripheral"
-      label="Failed to connect to peripheral"/>
-  <suffix name="DidUpdateNotificationState" label="Updated notification state"/>
-  <suffix name="DidUpdateValue" label="Updated value for characteristic"/>
-  <suffix name="DidUpdateValueForDescriptor"
-      label="Updated value for descriptor"/>
-  <suffix name="DidWriteValue" label="Wrote value for characteristic"/>
-  <suffix name="DidWriteValueForDescriptor"
-      label="Wrote value value for descriptor"/>
-  <affected-histogram name="Bluetooth.MacOS.Errors"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="WebFontFamily" separator="_">

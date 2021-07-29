@@ -17,6 +17,10 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 
+namespace net {
+class HttpResponseHeaders;
+}
+
 namespace network {
 class SimpleURLLoader;
 }  // namespace network
@@ -39,10 +43,10 @@ class CONTENT_EXPORT ConversionNetworkSenderImpl
 
   // Generates a resource request for |report| and creates a new UrlLoader to
   // send it. A report is only attempted to be sent once, with a timeout of 30
-  // seconds. |report| is destroyed after this call finishes.
+  // seconds.
   // |sent_callback| is run after the request finishes, whether or not it
   // succeeded,
-  void SendReport(ConversionReport* report,
+  void SendReport(const ConversionReport& report,
                   ReportSentCallback sent_callback) override;
 
   // Tests inject a TestURLLoaderFactory so they can mock the network response.

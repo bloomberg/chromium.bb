@@ -37,10 +37,10 @@ public class TabState {
     public @Nullable @TabLaunchType Integer tabLaunchTypeAtCreation;
 
     /** Whether this TabState was created from a file containing info about an incognito Tab. */
-    protected boolean mIsIncognito;
+    public boolean isIncognito;
 
     public boolean isIncognito() {
-        return mIsIncognito;
+        return isIncognito;
     }
 
     /** @return The theme color of the tab or {@link #UNSPECIFIED_THEME_COLOR} if not set. */
@@ -50,6 +50,7 @@ public class TabState {
 
     /** @return True if the tab has a theme color set. */
     public boolean hasThemeColor() {
-        return themeColor != UNSPECIFIED_THEME_COLOR && ColorUtils.isValidThemeColor(themeColor);
+        return themeColor != UNSPECIFIED_THEME_COLOR
+                && !ColorUtils.isThemeColorTooBright(themeColor);
     }
 }

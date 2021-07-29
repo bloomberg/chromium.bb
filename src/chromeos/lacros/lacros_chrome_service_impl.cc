@@ -27,19 +27,25 @@
 #include "chromeos/crosapi/mojom/feedback.mojom.h"
 #include "chromeos/crosapi/mojom/file_manager.mojom.h"
 #include "chromeos/crosapi/mojom/holding_space_service.mojom.h"
+#include "chromeos/crosapi/mojom/image_writer.mojom.h"
 #include "chromeos/crosapi/mojom/keystore_service.mojom.h"
 #include "chromeos/crosapi/mojom/local_printer.mojom.h"
 #include "chromeos/crosapi/mojom/message_center.mojom.h"
 #include "chromeos/crosapi/mojom/metrics_reporting.mojom.h"
+#include "chromeos/crosapi/mojom/networking_attributes.mojom.h"
+#include "chromeos/crosapi/mojom/power.mojom.h"
 #include "chromeos/crosapi/mojom/prefs.mojom.h"
+#include "chromeos/crosapi/mojom/remoting.mojom.h"
+#include "chromeos/crosapi/mojom/resource_manager.mojom.h"
 #include "chromeos/crosapi/mojom/screen_manager.mojom.h"
 #include "chromeos/crosapi/mojom/select_file.mojom.h"
 #include "chromeos/crosapi/mojom/system_display.mojom.h"
 #include "chromeos/crosapi/mojom/task_manager.mojom.h"
 #include "chromeos/crosapi/mojom/test_controller.mojom.h"
 #include "chromeos/crosapi/mojom/url_handler.mojom.h"
-#include "chromeos/lacros/lacros_chrome_service_delegate.h"
+#include "chromeos/crosapi/mojom/web_page_info.mojom.h"
 #include "chromeos/lacros/lacros_chrome_service_impl_never_blocking_state.h"
+#include "chromeos/lacros/native_theme_cache.h"
 #include "chromeos/lacros/system_idle_cache.h"
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "chromeos/startup/startup.h"
@@ -118,85 +124,76 @@ LacrosChromeServiceImpl* LacrosChromeServiceImpl::Get() {
   return g_instance;
 }
 
-LacrosChromeServiceImpl::LacrosChromeServiceImpl(
-    std::unique_ptr<LacrosChromeServiceDelegate> delegate)
-    : delegate_(std::move(delegate)),
-      sequenced_state_(nullptr, base::OnTaskRunnerDeleter(nullptr)),
+LacrosChromeServiceImpl::LacrosChromeServiceImpl()
+    :  // If crosapi is disabled, use the empty params.
+       // Otherwise, read the startup data from the inherited FD.
+      init_params_(disable_crosapi_for_testing_
+                       ? crosapi::mojom::BrowserInitParams::New()
+                       : ReadStartupBrowserInitParams()),
+      never_blocking_sequence_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::TaskPriority::USER_BLOCKING,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
+      sequenced_state_(new LacrosChromeServiceImplNeverBlockingState(),
+                       base::OnTaskRunnerDeleter(never_blocking_sequence_)),
+      weak_sequenced_state_(sequenced_state_->GetWeakPtr()),
       observer_list_(
           base::MakeRefCounted<base::ObserverListThreadSafe<Observer>>()) {
-  if (disable_crosapi_for_testing_) {
-    // Tests don't call BrowserService::InitDeprecated(), so provide
-    // BrowserInitParams with default values.
-    init_params_ = crosapi::mojom::BrowserInitParams::New();
+  DCHECK(init_params_);
+  if (init_params_->idle_info) {
+    // Presence of initial |idle_info| indicates that ash-chrome can stream
+    // idle info updates, so instantiate under Streaming mode, using
+    // |idle_info| as initial cached values.
+    system_idle_cache_ =
+        std::make_unique<SystemIdleCache>(*init_params_->idle_info);
 
-    // To simplify testing, instantiate under Fallback mode.
-    system_idle_cache_ = std::make_unique<SystemIdleCache>();
-
+    // After construction finishes, start caching.
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&LacrosChromeServiceImpl::StartSystemIdleCache,
+                       weak_factory_.GetWeakPtr()));
   } else {
-    // Read the startup data from the inherited FD.
-    init_params_ = ReadStartupBrowserInitParams();
-    DCHECK(init_params_);
-    if (init_params_->idle_info) {
-      // Presence of initial |idle_info| indicates that ash-chrome can stream
-      // idle info updates, so instantiate under Streaming mode, using
-      // |idle_info| as initial cached values.
-      system_idle_cache_ =
-          std::make_unique<SystemIdleCache>(*init_params_->idle_info);
-
-      // After construction finishes, start caching.
-      base::SequencedTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(&LacrosChromeServiceImpl::StartSystemIdleCache,
-                         weak_factory_.GetWeakPtr()));
-    } else {
-      // Ash-chrome cannot stream, so instantiate under fallback mode.
-      system_idle_cache_ = std::make_unique<SystemIdleCache>();
-    }
-
-    // Short term workaround: if --crosapi-mojo-platform-channel-handle is
-    // available, close --mojo-platform-channel-handle, and remove it
-    // from command line. It is for backward compatibility support by
-    // ash-chrome.
-    // TODO(crbug.com/1180712): Remove this, when ash-chrome stops to support
-    // legacy invitation flow.
-    auto* command_line = base::CommandLine::ForCurrentProcess();
-    if (command_line->HasSwitch(crosapi::kCrosapiMojoPlatformChannelHandle) &&
-        command_line->HasSwitch(mojo::PlatformChannel::kHandleSwitch)) {
-      std::ignore = mojo::PlatformChannel::RecoverPassedEndpointFromCommandLine(
-          *command_line);
-      command_line->RemoveSwitch(mojo::PlatformChannel::kHandleSwitch);
-    }
+    // Ash-chrome cannot stream, so instantiate under fallback mode.
+    system_idle_cache_ = std::make_unique<SystemIdleCache>();
   }
 
-  // The sequence on which this object was constructed, and thus affine to.
-  scoped_refptr<base::SequencedTaskRunner> affine_sequence =
-      base::SequencedTaskRunnerHandle::Get();
+  if (init_params_->native_theme_info) {
+    // Start Lacros' native theme caching, since it is available in Ash.
+    native_theme_cache_ =
+        std::make_unique<NativeThemeCache>(*init_params_->native_theme_info);
 
-  never_blocking_sequence_ = base::ThreadPool::CreateSequencedTaskRunner(
-      {base::TaskPriority::USER_BLOCKING,
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
+    // After construction finishes, start caching.
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&LacrosChromeServiceImpl::StartNativeThemeCache,
+                       weak_factory_.GetWeakPtr()));
+  }
 
-  sequenced_state_ = std::unique_ptr<LacrosChromeServiceImplNeverBlockingState,
-                                     base::OnTaskRunnerDeleter>(
-      new LacrosChromeServiceImplNeverBlockingState(affine_sequence,
-                                                    weak_factory_.GetWeakPtr()),
-      base::OnTaskRunnerDeleter(never_blocking_sequence_));
-  weak_sequenced_state_ = sequenced_state_->GetWeakPtr();
+  // Short term workaround: if --crosapi-mojo-platform-channel-handle is
+  // available, close --mojo-platform-channel-handle, and remove it
+  // from command line. It is for backward compatibility support by
+  // ash-chrome.
+  // TODO(crbug.com/1180712): Remove this, when ash-chrome stops to support
+  // legacy invitation flow.
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(crosapi::kCrosapiMojoPlatformChannelHandle) &&
+      command_line->HasSwitch(mojo::PlatformChannel::kHandleSwitch)) {
+    std::ignore = mojo::PlatformChannel::RecoverPassedEndpointFromCommandLine(
+        *command_line);
+    command_line->RemoveSwitch(mojo::PlatformChannel::kHandleSwitch);
+  }
 
   never_blocking_sequence_->PostTask(
       FROM_HERE,
       base::BindOnce(&LacrosChromeServiceImplNeverBlockingState::BindCrosapi,
                      weak_sequenced_state_));
 
-  ConstructRemote<crosapi::mojom::AppPublisher, &Crosapi::BindAppPublisher,
-                  Crosapi::MethodMinVersions::kBindAppPublisherMinVersion>();
-  ConstructRemote<
-      chromeos::machine_learning::mojom::MachineLearningService,
-      &crosapi::mojom::Crosapi::BindMachineLearningService,
-      Crosapi::MethodMinVersions::kBindMachineLearningServiceMinVersion>();
+  // Note: sorted by the Bind method names in the lexicographical order.
   ConstructRemote<
       crosapi::mojom::AutomationFactory, &Crosapi::BindAutomationFactory,
       Crosapi::MethodMinVersions::kBindAutomationFactoryMinVersion>();
+  ConstructRemote<
+      crosapi::mojom::BrowserServiceHost, &Crosapi::BindBrowserServiceHost,
+      Crosapi::MethodMinVersions::kBindBrowserServiceHostMinVersion>();
   ConstructRemote<crosapi::mojom::CertDatabase, &Crosapi::BindCertDatabase,
                   Crosapi::MethodMinVersions::kBindCertDatabaseMinVersion>();
   ConstructRemote<crosapi::mojom::Clipboard, &Crosapi::BindClipboard,
@@ -213,6 +210,10 @@ LacrosChromeServiceImpl::LacrosChromeServiceImpl(
   ConstructRemote<
       crosapi::mojom::DownloadController, &Crosapi::BindDownloadController,
       Crosapi::MethodMinVersions::kBindDownloadControllerMinVersion>();
+  ConstructRemote<
+      crosapi::mojom::DriveIntegrationService,
+      &crosapi::mojom::Crosapi::BindDriveIntegrationService,
+      Crosapi::MethodMinVersions::kBindDriveIntegrationServiceMinVersion>();
   ConstructRemote<crosapi::mojom::Feedback,
                   &crosapi::mojom::Crosapi::BindFeedback,
                   Crosapi::MethodMinVersions::kBindFeedbackMinVersion>();
@@ -229,17 +230,39 @@ LacrosChromeServiceImpl::LacrosChromeServiceImpl(
   ConstructRemote<crosapi::mojom::IdleService,
                   &crosapi::mojom::Crosapi::BindIdleService,
                   Crosapi::MethodMinVersions::kBindIdleServiceMinVersion>();
+  ConstructRemote<crosapi::mojom::ImageWriter,
+                  &crosapi::mojom::Crosapi::BindImageWriter,
+                  Crosapi::MethodMinVersions::kBindImageWriterMinVersion>();
   ConstructRemote<crosapi::mojom::KeystoreService,
                   &crosapi::mojom::Crosapi::BindKeystoreService,
                   Crosapi::MethodMinVersions::kBindKeystoreServiceMinVersion>();
   ConstructRemote<crosapi::mojom::LocalPrinter,
                   &crosapi::mojom::Crosapi::BindLocalPrinter,
                   Crosapi::MethodMinVersions::kBindLocalPrinterMinVersion>();
+  ConstructRemote<
+      chromeos::machine_learning::mojom::MachineLearningService,
+      &crosapi::mojom::Crosapi::BindMachineLearningService,
+      Crosapi::MethodMinVersions::kBindMachineLearningServiceMinVersion>();
   ConstructRemote<crosapi::mojom::MessageCenter,
                   &crosapi::mojom::Crosapi::BindMessageCenter,
                   Crosapi::MethodMinVersions::kBindMessageCenterMinVersion>();
+  ConstructRemote<
+      crosapi::mojom::NativeThemeService,
+      &crosapi::mojom::Crosapi::BindNativeThemeService,
+      Crosapi::MethodMinVersions::kBindNativeThemeServiceMinVersion>();
+  ConstructRemote<crosapi::mojom::Power, &crosapi::mojom::Crosapi::BindPower,
+                  Crosapi::MethodMinVersions::kBindPowerMinVersion>();
+  ConstructRemote<
+      crosapi::mojom::NetworkingAttributes, &Crosapi::BindNetworkingAttributes,
+      Crosapi::MethodMinVersions::kBindNetworkingAttributesMinVersion>();
   ConstructRemote<crosapi::mojom::Prefs, &crosapi::mojom::Crosapi::BindPrefs,
                   Crosapi::MethodMinVersions::kBindPrefsMinVersion>();
+  ConstructRemote<crosapi::mojom::Remoting,
+                  &crosapi::mojom::Crosapi::BindRemoting,
+                  Crosapi::MethodMinVersions::kBindRemotingMinVersion>();
+  ConstructRemote<crosapi::mojom::ResourceManager,
+                  &crosapi::mojom::Crosapi::BindResourceManager,
+                  Crosapi::MethodMinVersions::kBindResourceManagerMinVersion>();
   ConstructRemote<crosapi::mojom::SelectFile,
                   &crosapi::mojom::Crosapi::BindSelectFile,
                   Crosapi::MethodMinVersions::kBindSelectFileMinVersion>();
@@ -251,10 +274,12 @@ LacrosChromeServiceImpl::LacrosChromeServiceImpl(
   ConstructRemote<crosapi::mojom::UrlHandler,
                   &crosapi::mojom::Crosapi::BindUrlHandler,
                   Crosapi::MethodMinVersions::kBindUrlHandlerMinVersion>();
+  ConstructRemote<crosapi::mojom::AppPublisher, &Crosapi::BindWebAppPublisher,
+                  Crosapi::MethodMinVersions::kBindWebAppPublisherMinVersion>();
   ConstructRemote<
-      crosapi::mojom::DriveIntegrationService,
-      &crosapi::mojom::Crosapi::BindDriveIntegrationService,
-      Crosapi::MethodMinVersions::kBindDriveIntegrationServiceMinVersion>();
+      crosapi::mojom::WebPageInfoFactory,
+      &crosapi::mojom::Crosapi::BindWebPageInfoFactory,
+      Crosapi::MethodMinVersions::kBindWebPageInfoFactoryMinVersion>();
 
 #if !BUILDFLAG(IS_CHROMEOS_DEVICE)
   // The test controller is not available on production devices as tests only
@@ -274,44 +299,29 @@ LacrosChromeServiceImpl::~LacrosChromeServiceImpl() {
   g_instance = nullptr;
 }
 
-void LacrosChromeServiceImpl::BindReceiver(
-    mojo::PendingReceiver<crosapi::mojom::BrowserService> receiver) {
-  if (receiver.is_valid()) {
-    // This is legacy invitation flow.
-    // TODO(crbug.com/1180712): Remove this after all base ash-chrome is new
-    // enough supporting new invitation flow.
-    never_blocking_sequence_->PostTask(
-        FROM_HERE, base::BindOnce(&LacrosChromeServiceImplNeverBlockingState::
-                                      BindBrowserServiceReceiver,
-                                  weak_sequenced_state_, std::move(receiver)));
-  } else {
-    // Accept Crosapi invitation here. Mojo IPC support should be initialized
-    // at this stage.
-    auto* command_line = base::CommandLine::ForCurrentProcess();
+void LacrosChromeServiceImpl::BindReceiver(const std::string& browser_version) {
+  // Accept Crosapi invitation here. Mojo IPC support should be initialized
+  // at this stage.
+  auto* command_line = base::CommandLine::ForCurrentProcess();
 
-    // In unittests/browser_tests cases, the mojo pipe may not be set up.
-    // Just ignore the case.
-    if (!command_line->HasSwitch(crosapi::kCrosapiMojoPlatformChannelHandle))
-      return;
+  // In unittests/browser_tests cases, the mojo pipe may not be set up.
+  // Just ignore the case.
+  if (!command_line->HasSwitch(crosapi::kCrosapiMojoPlatformChannelHandle))
+    return;
 
-    mojo::PlatformChannelEndpoint endpoint =
-        mojo::PlatformChannel::RecoverPassedEndpointFromString(
-            command_line->GetSwitchValueASCII(
-                crosapi::kCrosapiMojoPlatformChannelHandle));
-    auto invitation = mojo::IncomingInvitation::Accept(std::move(endpoint));
-    never_blocking_sequence_->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            &LacrosChromeServiceImplNeverBlockingState::FusePipeCrosapi,
-            weak_sequenced_state_,
-            mojo::PendingRemote<crosapi::mojom::Crosapi>(
-                invitation.ExtractMessagePipe(0), /*version=*/0)));
+  mojo::PlatformChannelEndpoint endpoint =
+      mojo::PlatformChannel::RecoverPassedEndpointFromString(
+          command_line->GetSwitchValueASCII(
+              crosapi::kCrosapiMojoPlatformChannelHandle));
+  auto invitation = mojo::IncomingInvitation::Accept(std::move(endpoint));
+  never_blocking_sequence_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &LacrosChromeServiceImplNeverBlockingState::FusePipeCrosapi,
+          weak_sequenced_state_,
+          mojo::PendingRemote<crosapi::mojom::Crosapi>(
+              invitation.ExtractMessagePipe(0), /*version=*/0)));
 
-    // In this case, ash-chrome should be new enough, so init params should be
-    // passed from the startup outband file descriptor.
-  }
-
-  delegate_->OnInitialized(*init_params_);
   did_bind_receiver_ = true;
 
   if (CrosapiVersion()) {
@@ -325,7 +335,7 @@ void LacrosChromeServiceImpl::BindReceiver(
         FROM_HERE,
         base::BindOnce(
             &LacrosChromeServiceImplNeverBlockingState::OnBrowserStartup,
-            weak_sequenced_state_, ToMojo(delegate_->GetChromeVersion())));
+            weak_sequenced_state_, ToMojo(browser_version)));
   }
 }
 
@@ -496,39 +506,6 @@ void LacrosChromeServiceImpl::SetInitParamsForTests(
   init_params_ = std::move(init_params);
 }
 
-void LacrosChromeServiceImpl::NewWindowAffineSequence(bool incognito) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(affine_sequence_checker_);
-  delegate_->NewWindow(incognito);
-}
-
-void LacrosChromeServiceImpl::NewTabAffineSequence() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(affine_sequence_checker_);
-  delegate_->NewTab();
-}
-
-void LacrosChromeServiceImpl::RestoreTabAffineSequence() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(affine_sequence_checker_);
-  delegate_->RestoreTab();
-}
-
-void LacrosChromeServiceImpl::GetFeedbackDataAffineSequence(
-    GetFeedbackDataCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(affine_sequence_checker_);
-  delegate_->GetFeedbackData(std::move(callback));
-}
-
-void LacrosChromeServiceImpl::GetHistogramsAffineSequence(
-    GetHistogramsCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(affine_sequence_checker_);
-  delegate_->GetHistograms(std::move(callback));
-}
-
-void LacrosChromeServiceImpl::GetActiveTabUrlAffineSequence(
-    GetActiveTabUrlCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(affine_sequence_checker_);
-  std::move(callback).Run(delegate_->GetActiveTabUrl());
-}
-
 absl::optional<uint32_t> LacrosChromeServiceImpl::CrosapiVersion() const {
   if (disable_crosapi_for_testing_)
     return absl::nullopt;
@@ -538,6 +515,10 @@ absl::optional<uint32_t> LacrosChromeServiceImpl::CrosapiVersion() const {
 
 void LacrosChromeServiceImpl::StartSystemIdleCache() {
   system_idle_cache_->Start();
+}
+
+void LacrosChromeServiceImpl::StartNativeThemeCache() {
+  native_theme_cache_->Start();
 }
 
 template <typename PendingReceiverOrRemote,
@@ -580,10 +561,10 @@ void LacrosChromeServiceImpl::RemoveObserver(Observer* obs) {
   observer_list_->RemoveObserver(obs);
 }
 
-void LacrosChromeServiceImpl::UpdateDeviceAccountPolicyAffineSequence(
+void LacrosChromeServiceImpl::NotifyPolicyUpdated(
     const std::vector<uint8_t>& policy_fetch_response) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(affine_sequence_checker_);
-  observer_list_->Notify(FROM_HERE, &Observer::NotifyPolicyUpdate,
+  observer_list_->Notify(FROM_HERE, &Observer::OnPolicyUpdated,
                          policy_fetch_response);
 }
 

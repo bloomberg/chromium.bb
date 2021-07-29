@@ -189,7 +189,6 @@ void VerifyNoSubmitMessagesReceived(
 
 FormData CreateAutofillFormData(blink::WebLocalFrame* main_frame) {
   FormData data;
-  data.host_frame = LocalFrameToken(main_frame->GetLocalFrameToken().value());
   data.name = u"name";
   data.url = GURL("http://example.com/");
   data.action = GURL("http://example.com/blade.php");
@@ -207,8 +206,6 @@ FormData CreateAutofillFormData(blink::WebLocalFrame* main_frame) {
   field_data.name = u"fname";
   field_data.value = u"John";
   field_data.is_autofilled = true;
-  field_data.host_frame = LocalFrameToken(
-      fname_element.GetDocument().GetFrame()->GetLocalFrameToken().value());
   field_data.unique_renderer_id =
       FieldRendererId(fname_element.UniqueRendererFormControlId());
   data.fields.push_back(field_data);
@@ -217,8 +214,6 @@ FormData CreateAutofillFormData(blink::WebLocalFrame* main_frame) {
   field_data.value = u"Smith";
   field_data.is_autofilled = true;
   if (!lname_element.IsNull()) {
-    field_data.host_frame = LocalFrameToken(
-        lname_element.GetDocument().GetFrame()->GetLocalFrameToken().value());
     field_data.unique_renderer_id =
         FieldRendererId(lname_element.UniqueRendererFormControlId());
   }
@@ -238,8 +233,8 @@ void SimulateFillForm(const FormData& form_data,
   ASSERT_FALSE(fname_element.IsNull());
   // This call is necessary to setup the autofill agent appropriate for the
   // user selection; simulates the menu actually popping up.
-  autofill_agent->FormControlElementClicked(fname_element.To<WebInputElement>(),
-                                            false);
+  autofill_agent->FormControlElementClicked(
+      fname_element.To<WebInputElement>());
 
   autofill_agent->FillForm(0, form_data);
 }
@@ -271,7 +266,6 @@ void SimulateFillFormWithNonFillableFields(
   ASSERT_FALSE(lname_element.IsNull());
 
   FormData data;
-  data.host_frame = LocalFrameToken(main_frame->GetLocalFrameToken().value());
   data.name = u"name";
   data.url = GURL("http://example.com/");
   data.action = GURL("http://example.com/blade.php");
@@ -281,8 +275,6 @@ void SimulateFillFormWithNonFillableFields(
   field_data.name = u"fname";
   field_data.value = u"John";
   field_data.is_autofilled = true;
-  field_data.host_frame = LocalFrameToken(
-      fname_element.GetDocument().GetFrame()->GetLocalFrameToken().value());
   field_data.unique_renderer_id =
       FieldRendererId(fname_element.UniqueRendererFormControlId());
   data.fields.push_back(field_data);
@@ -290,8 +282,6 @@ void SimulateFillFormWithNonFillableFields(
   field_data.name = u"lname";
   field_data.value = u"Smith";
   field_data.is_autofilled = true;
-  field_data.host_frame = LocalFrameToken(
-      lname_element.GetDocument().GetFrame()->GetLocalFrameToken().value());
   field_data.unique_renderer_id =
       FieldRendererId(lname_element.UniqueRendererFormControlId());
   data.fields.push_back(field_data);
@@ -300,16 +290,14 @@ void SimulateFillFormWithNonFillableFields(
   field_data.name = u"mname";
   field_data.value = u"James";
   field_data.is_autofilled = false;
-  field_data.host_frame = LocalFrameToken(
-      mname_element.GetDocument().GetFrame()->GetLocalFrameToken().value());
   field_data.unique_renderer_id =
       FieldRendererId(mname_element.UniqueRendererFormControlId());
   data.fields.push_back(field_data);
 
   // This call is necessary to setup the autofill agent appropriate for the
   // user selection; simulates the menu actually popping up.
-  autofill_agent->FormControlElementClicked(fname_element.To<WebInputElement>(),
-                                            false);
+  autofill_agent->FormControlElementClicked(
+      fname_element.To<WebInputElement>());
 
   autofill_agent->FillForm(0, data);
 }
@@ -328,7 +316,7 @@ class FormAutocompleteTest : public ChromeRenderViewTest {
     // We only use the fake driver for main frame
     // because our test cases only involve the main frame.
     blink::AssociatedInterfaceProvider* remote_interfaces =
-        view_->GetMainRenderFrame()->GetRemoteAssociatedInterfaces();
+        GetMainRenderFrame()->GetRemoteAssociatedInterfaces();
     remote_interfaces->OverrideBinderForTesting(
         mojom::AutofillDriver::Name_,
         base::BindRepeating(&FormAutocompleteTest::BindAutofillDriver,
@@ -884,8 +872,7 @@ TEST_F(FormAutocompleteTest, AcceptDataListSuggestion) {
     ASSERT_TRUE(input_element);
     FieldRendererId field_id(input_element->UniqueRendererFormControlId());
     // Select this element in |autofill_agent_|.
-    autofill_agent_->FormControlElementClicked(element.To<WebInputElement>(),
-                                               false);
+    autofill_agent_->FormControlElementClicked(element.To<WebInputElement>());
 
     autofill_agent_->AcceptDataListSuggestion(field_id, kSuggestion);
     EXPECT_EQ(c.expected, input_element->Value().Utf8()) << "Case id: " << c.id;

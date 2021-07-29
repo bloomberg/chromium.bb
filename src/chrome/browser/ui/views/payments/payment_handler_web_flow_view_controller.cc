@@ -122,8 +122,10 @@ class ReadOnlyOriginView : public views::View {
       const ui::ThemeProvider& theme_provider =
           ThemeService::GetThemeProviderForProfile(profile);
       security_icon->SetImage(gfx::CreateVectorIcon(
-          location_bar_model::GetSecurityVectorIcon(security_level), 16,
-          GetOmniboxSecurityChipColor(&theme_provider, security_level)));
+          location_bar_model::GetSecurityVectorIcon(
+              security_level,
+              /* use_updated_connection_security_indicators=*/false),
+          16, GetOmniboxSecurityChipColor(&theme_provider, security_level)));
       security_icon->SetID(static_cast<int>(DialogViewID::SECURITY_ICON_VIEW));
       origin_layout->AddView(std::move(security_icon));
     }
@@ -352,6 +354,14 @@ void PaymentHandlerWebFlowViewController::AddNewContents(
   }
 }
 
+bool PaymentHandlerWebFlowViewController::HandleKeyboardEvent(
+    content::WebContents* source,
+    const content::NativeWebKeyboardEvent& event) {
+  return content_view() && content_view()->GetFocusManager() &&
+         unhandled_keyboard_event_handler_.HandleKeyboardEvent(
+             event, content_view()->GetFocusManager());
+}
+
 void PaymentHandlerWebFlowViewController::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!is_active())
@@ -365,7 +375,11 @@ void PaymentHandlerWebFlowViewController::DidFinishNavigation(
   // TODO(crbug.com/1198274): Only main frame is checked because unsafe iframes
   // are blocked by the MixContentNavigationThrottle. But this design is
   // fragile.
-  if (navigation_handle->HasCommitted() && navigation_handle->IsInMainFrame() &&
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
+  if (navigation_handle->HasCommitted() &&
+      navigation_handle->IsInPrimaryMainFrame() &&
       !SslValidityChecker::IsValidPageInPaymentHandlerWindow(
           navigation_handle->GetWebContents())) {
     AbortPayment();

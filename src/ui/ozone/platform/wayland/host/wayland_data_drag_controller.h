@@ -17,8 +17,11 @@
 #include "ui/ozone/platform/wayland/host/wayland_data_source.h"
 #include "ui/ozone/platform/wayland/host/wayland_window_observer.h"
 
-struct wl_surface;
 class SkBitmap;
+
+namespace base {
+class TimeTicks;
+}
 
 namespace ui {
 
@@ -29,6 +32,7 @@ class WaylandDataOffer;
 class WaylandWindow;
 class WaylandWindowManager;
 class WaylandShmBuffer;
+class WaylandSurface;
 
 // WaylandDataDragController implements regular data exchange on top of the
 // Wayland Drag and Drop protocol.  The data can be dragged within the Chromium
@@ -73,9 +77,10 @@ class WaylandDataDragController : public WaylandDataDevice::DragDelegate,
       delete;
   ~WaylandDataDragController() override;
 
-  // Starts a data drag and drop session for |data|. Only one DND session can
-  // run at a given time.
-  void StartSession(const ui::OSExchangeData& data, int operation);
+  // Starts a data drag and drop session for |data|. Returns true if it is
+  // successfully started, false otherwise. Only one DND session can run at a
+  // given time.
+  bool StartSession(const ui::OSExchangeData& data, int operation);
 
   State state() const { return state_; }
 
@@ -163,7 +168,7 @@ class WaylandDataDragController : public WaylandDataDevice::DragDelegate,
   bool is_leave_pending_ = false;
 
   // Drag icon related variables.
-  wl::Object<wl_surface> icon_surface_;
+  std::unique_ptr<WaylandSurface> icon_surface_;
   std::unique_ptr<WaylandShmBuffer> shm_buffer_;
   const SkBitmap* icon_bitmap_ = nullptr;
 

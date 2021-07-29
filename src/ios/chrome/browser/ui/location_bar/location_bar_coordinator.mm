@@ -154,7 +154,7 @@
                      ApplicationCommands, LoadQueryCommands, OmniboxCommands>>(
           self.browser->GetCommandDispatcher());
   self.viewController.voiceSearchEnabled = ios::GetChromeBrowserProvider()
-                                               ->GetVoiceSearchProvider()
+                                               .GetVoiceSearchProvider()
                                                ->IsVoiceSearchEnabled();
 
   _editController = std::make_unique<WebOmniboxEditControllerImpl>(self);
@@ -183,7 +183,6 @@
   // Create button factory that wil be used by the ViewController to get
   // BadgeButtons for a BadgeType.
   BadgeButtonFactory* buttonFactory = [[BadgeButtonFactory alloc] init];
-  buttonFactory.incognito = isIncognito;
   self.badgeViewController =
       [[BadgeViewController alloc] initWithButtonFactory:buttonFactory];
   [self.viewController addChildViewController:self.badgeViewController];

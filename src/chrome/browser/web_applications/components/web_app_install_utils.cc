@@ -10,20 +10,18 @@
 
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/common/chrome_features.h"
 #include "components/services/app_service/public/cpp/share_target.h"
 #include "components/webapps/browser/banners/app_banner_manager.h"
 #include "components/webapps/browser/banners/app_banner_settings_helper.h"
-#include "components/webapps/browser/installable/installable_data.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -91,9 +89,7 @@ UpdateShortcutsMenuItemInfosFromManifest(
     shortcut_info.name = shortcut.name;
     shortcut_info.url = shortcut.url;
 
-    std::array<IconPurpose, 3> purposes = {
-        IconPurpose::ANY, IconPurpose::MASKABLE, IconPurpose::MONOCHROME};
-    for (IconPurpose purpose : purposes) {
+    for (IconPurpose purpose : kIconPurposes) {
       std::vector<WebApplicationShortcutsMenuItemInfo::Icon> shortcut_icons;
       for (const auto& icon : shortcut.icons) {
         DCHECK(!icon.purpose.empty());
@@ -217,6 +213,11 @@ void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
   else if (manifest.short_name)
     web_app_info->title = *manifest.short_name;
 
+  if (manifest.id.has_value()) {
+    web_app_info->manifest_id =
+        absl::optional<std::string>(base::UTF16ToUTF8(manifest.id.value()));
+  }
+
   // Set the url based on the manifest value, if any.
   if (manifest.start_url.is_valid())
     web_app_info->start_url = manifest.start_url;
@@ -282,6 +283,7 @@ void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
   if (!web_app_icons.empty())
     web_app_info->icon_infos = std::move(web_app_icons);
 
+  // TODO(crbug.com/1218210): Confirm incoming icons to write to web_app_info.
   web_app_info->file_handlers = manifest.file_handlers;
 
   web_app_info->share_target = ToWebAppShareTarget(manifest.share_target);
@@ -289,6 +291,11 @@ void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
   web_app_info->protocol_handlers = manifest.protocol_handlers;
 
   web_app_info->url_handlers = ToWebAppUrlHandlers(manifest.url_handlers);
+
+  if (base::FeatureList::IsEnabled(blink::features::kWebAppNoteTaking) &&
+      manifest.note_taking && manifest.note_taking->new_note_url.is_valid()) {
+    web_app_info->note_taking_new_note_url = manifest.note_taking->new_note_url;
+  }
 
   // If any shortcuts are specified in the manifest, they take precedence over
   // any we picked up from the web_app stuff.
@@ -303,6 +310,8 @@ void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
 
   if (manifest_url.is_valid())
     web_app_info->manifest_url = manifest_url;
+
+  web_app_info->is_storage_isolated = manifest.isolated_storage;
 }
 
 std::vector<GURL> GetValidIconUrlsToDownload(
@@ -316,10 +325,8 @@ std::vector<GURL> GetValidIconUrlsToDownload(
   if (base::FeatureList::IsEnabled(
           features::kDesktopPWAsAppIconShortcutsMenu)) {
     // Also add shortcut icon urls, so they can be downloaded.
-    std::array<IconPurpose, 3> purposes = {
-        IconPurpose::ANY, IconPurpose::MASKABLE, IconPurpose::MONOCHROME};
     for (const auto& shortcut : web_app_info.shortcuts_menu_item_infos) {
-      for (IconPurpose purpose : purposes) {
+      for (IconPurpose purpose : kIconPurposes) {
         for (const auto& icon :
              shortcut.GetShortcutIconInfosForPurpose(purpose)) {
           if (!icon.url.is_valid())
@@ -339,9 +346,7 @@ void PopulateShortcutItemIcons(WebApplicationInfo* web_app_info,
   for (auto& shortcut : web_app_info->shortcuts_menu_item_infos) {
     IconBitmaps shortcut_icon_bitmaps;
 
-    std::array<IconPurpose, 3> purposes = {
-        IconPurpose::ANY, IconPurpose::MASKABLE, IconPurpose::MONOCHROME};
-    for (IconPurpose purpose : purposes) {
+    for (IconPurpose purpose : kIconPurposes) {
       std::map<SquareSizePx, SkBitmap> bitmaps;
       for (const auto& icon :
            shortcut.GetShortcutIconInfosForPurpose(purpose)) {
@@ -495,6 +500,45 @@ webapps::WebappUninstallSource ConvertExternalInstallSourceToUninstallSource(
   }
 
   return uninstall_source;
+}
+
+// TODO(loyso): Call sites should specify Source explicitly as a part of
+// AppTraits parameter object.
+Source::Type InferSourceFromMetricsInstallSource(
+    webapps::WebappInstallSource install_source) {
+  switch (install_source) {
+    case webapps::WebappInstallSource::MENU_BROWSER_TAB:
+    case webapps::WebappInstallSource::MENU_CUSTOM_TAB:
+    case webapps::WebappInstallSource::AUTOMATIC_PROMPT_BROWSER_TAB:
+    case webapps::WebappInstallSource::AUTOMATIC_PROMPT_CUSTOM_TAB:
+    case webapps::WebappInstallSource::API_BROWSER_TAB:
+    case webapps::WebappInstallSource::API_CUSTOM_TAB:
+    case webapps::WebappInstallSource::DEVTOOLS:
+    case webapps::WebappInstallSource::MANAGEMENT_API:
+    case webapps::WebappInstallSource::AMBIENT_BADGE_BROWSER_TAB:
+    case webapps::WebappInstallSource::AMBIENT_BADGE_CUSTOM_TAB:
+    case webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON:
+    case webapps::WebappInstallSource::SYNC:
+    case webapps::WebappInstallSource::MENU_CREATE_SHORTCUT:
+      return Source::kSync;
+
+    case webapps::WebappInstallSource::INTERNAL_DEFAULT:
+    case webapps::WebappInstallSource::EXTERNAL_DEFAULT:
+      return Source::kDefault;
+
+    case webapps::WebappInstallSource::EXTERNAL_POLICY:
+      return Source::kPolicy;
+
+    case webapps::WebappInstallSource::SYSTEM_DEFAULT:
+      return Source::kSystem;
+
+    case webapps::WebappInstallSource::ARC:
+      return Source::kWebAppStore;
+
+    case webapps::WebappInstallSource::COUNT:
+      NOTREACHED();
+      return Source::kSync;
+  }
 }
 
 }  // namespace web_app

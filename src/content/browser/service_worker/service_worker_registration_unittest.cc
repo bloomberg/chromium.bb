@@ -20,7 +20,6 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "components/services/storage/public/cpp/storage_key.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/fake_embedded_worker_instance_client.h"
@@ -48,8 +47,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_registration_options.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -226,14 +227,15 @@ class ServiceWorkerRegistrationTest : public testing::Test {
 
 TEST_F(ServiceWorkerRegistrationTest, SetAndUnsetVersions) {
   const GURL kScope("http://www.example.not/");
+  const blink::StorageKey kKey(url::Origin::Create(kScope));
   const GURL kScript("http://www.example.not/service_worker.js");
   int64_t kRegistrationId = 1L;
 
   blink::mojom::ServiceWorkerRegistrationOptions options;
   options.scope = kScope;
   scoped_refptr<ServiceWorkerRegistration> registration =
-      base::MakeRefCounted<ServiceWorkerRegistration>(options, kRegistrationId,
-                                                      context()->AsWeakPtr());
+      base::MakeRefCounted<ServiceWorkerRegistration>(
+          options, kKey, kRegistrationId, context()->AsWeakPtr());
 
   const int64_t version_1_id = 1L;
   const int64_t version_2_id = 2L;
@@ -303,11 +305,12 @@ TEST_F(ServiceWorkerRegistrationTest, SetAndUnsetVersions) {
 
 TEST_F(ServiceWorkerRegistrationTest, FailedRegistrationNoCrash) {
   const GURL kScope("http://www.example.not/");
+  const blink::StorageKey kKey(url::Origin::Create(kScope));
   int64_t kRegistrationId = 1L;
   blink::mojom::ServiceWorkerRegistrationOptions options;
   options.scope = kScope;
   auto registration = base::MakeRefCounted<ServiceWorkerRegistration>(
-      options, kRegistrationId, context()->AsWeakPtr());
+      options, kKey, kRegistrationId, context()->AsWeakPtr());
   // Prepare a ServiceWorkerContainerHost.
   ServiceWorkerRemoteContainerEndpoint remote_endpoint;
   base::WeakPtr<ServiceWorkerContainerHost> container_host =
@@ -330,13 +333,14 @@ TEST_F(ServiceWorkerRegistrationTest, FailedRegistrationNoCrash) {
 
 TEST_F(ServiceWorkerRegistrationTest, NavigationPreload) {
   const GURL kScope("http://www.example.not/");
+  const blink::StorageKey kKey(url::Origin::Create(kScope));
   const GURL kScript("https://www.example.not/service_worker.js");
   // Setup.
 
   blink::mojom::ServiceWorkerRegistrationOptions options;
   options.scope = kScope;
   scoped_refptr<ServiceWorkerRegistration> registration =
-      CreateNewServiceWorkerRegistration(context()->registry(), options);
+      CreateNewServiceWorkerRegistration(context()->registry(), options, kKey);
   scoped_refptr<ServiceWorkerVersion> version_1 = CreateNewServiceWorkerVersion(
       context()->registry(), registration.get(), kScript,
       blink::mojom::ScriptType::kClassic);
@@ -378,12 +382,13 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest,
 
     const GURL kUrl("https://www.example.not/");
     const GURL kScope("https://www.example.not/");
+    const blink::StorageKey kKey(url::Origin::Create(kScope));
     const GURL kScript("https://www.example.not/service_worker.js");
 
     blink::mojom::ServiceWorkerRegistrationOptions options;
     options.scope = kScope;
-    registration_ =
-        CreateNewServiceWorkerRegistration(context()->registry(), options);
+    registration_ = CreateNewServiceWorkerRegistration(context()->registry(),
+                                                       options, kKey);
 
     // Create an active version.
     scoped_refptr<ServiceWorkerVersion> version_1 =
@@ -784,9 +789,9 @@ class ServiceWorkerRegistrationObjectHostTest
  protected:
   void SetUp() override {
     ServiceWorkerRegistrationTest::SetUp();
-    mojo::SetDefaultProcessErrorHandler(base::AdaptCallbackForRepeating(
-        base::BindOnce(&ServiceWorkerRegistrationObjectHostTest::OnMojoError,
-                       base::Unretained(this))));
+    mojo::SetDefaultProcessErrorHandler(base::BindRepeating(
+        &ServiceWorkerRegistrationObjectHostTest::OnMojoError,
+        base::Unretained(this)));
   }
 
   void TearDown() override {
@@ -855,7 +860,7 @@ class ServiceWorkerRegistrationObjectHostTest
 
   blink::ServiceWorkerStatusCode FindRegistrationInStorage(
       int64_t registration_id,
-      const storage::StorageKey& key) {
+      const blink::StorageKey& key) {
     absl::optional<blink::ServiceWorkerStatusCode> status;
     registry()->FindRegistrationForId(
         registration_id, key,
@@ -874,7 +879,9 @@ class ServiceWorkerRegistrationObjectHostTest
       const GURL& scope) {
     blink::mojom::ServiceWorkerRegistrationOptions options;
     options.scope = scope;
-    return CreateNewServiceWorkerRegistration(context()->registry(), options);
+    blink::StorageKey key(url::Origin::Create(scope));
+    return CreateNewServiceWorkerRegistration(context()->registry(), options,
+                                              key);
   }
 
   scoped_refptr<ServiceWorkerVersion> CreateVersion(
@@ -1082,7 +1089,7 @@ TEST_P(ServiceWorkerRegistrationObjectHostUpdateTest,
   info->receiver.reset();
 
   // Get registration and set |self_update_delay| to zero.
-  ServiceWorkerRegistration* registration =
+  scoped_refptr<ServiceWorkerRegistration> registration =
       context()->GetLiveRegistration(registration_id);
   ASSERT_TRUE(registration);
   registration->set_self_update_delay(base::TimeDelta());
@@ -1182,14 +1189,14 @@ TEST_F(ServiceWorkerRegistrationObjectHostTest, Unregister_Success) {
   EXPECT_EQ(
       blink::ServiceWorkerStatusCode::kOk,
       FindRegistrationInStorage(
-          registration_id, storage::StorageKey(url::Origin::Create(kScope))));
+          registration_id, blink::StorageKey(url::Origin::Create(kScope))));
   EXPECT_EQ(blink::mojom::ServiceWorkerErrorType::kNone,
             CallUnregister(registration_host.get()));
 
   EXPECT_EQ(
       blink::ServiceWorkerStatusCode::kErrorNotFound,
       FindRegistrationInStorage(
-          registration_id, storage::StorageKey(url::Origin::Create(kScope))));
+          registration_id, blink::StorageKey(url::Origin::Create(kScope))));
   EXPECT_EQ(blink::mojom::ServiceWorkerErrorType::kNotFound,
             CallUnregister(registration_host.get()));
 }
@@ -1252,20 +1259,20 @@ TEST_F(ServiceWorkerRegistrationObjectHostTest, SetVersionAttributes) {
       std::make_unique<MockServiceWorkerRegistrationObject>(
           std::move(info->receiver));
 
-  ServiceWorkerRegistration* registration =
+  scoped_refptr<ServiceWorkerRegistration> registration =
       context()->GetLiveRegistration(registration_id);
   ASSERT_NE(nullptr, registration);
   const int64_t version_1_id = 1L;
   const int64_t version_2_id = 2L;
   scoped_refptr<ServiceWorkerVersion> version_1 =
       base::MakeRefCounted<ServiceWorkerVersion>(
-          registration, kScriptUrl, blink::mojom::ScriptType::kClassic,
+          registration.get(), kScriptUrl, blink::mojom::ScriptType::kClassic,
           version_1_id,
           mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>(),
           context()->AsWeakPtr());
   scoped_refptr<ServiceWorkerVersion> version_2 =
       base::MakeRefCounted<ServiceWorkerVersion>(
-          registration, kScriptUrl, blink::mojom::ScriptType::kClassic,
+          registration.get(), kScriptUrl, blink::mojom::ScriptType::kClassic,
           version_2_id,
           mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>(),
           context()->AsWeakPtr());
@@ -1340,7 +1347,7 @@ TEST_F(ServiceWorkerRegistrationObjectHostTest, SetUpdateViaCache) {
       std::make_unique<MockServiceWorkerRegistrationObject>(
           std::move(info->receiver));
 
-  ServiceWorkerRegistration* registration =
+  scoped_refptr<ServiceWorkerRegistration> registration =
       context()->GetLiveRegistration(registration_id);
   ASSERT_EQ(blink::mojom::ServiceWorkerUpdateViaCache::kImports,
             registration->update_via_cache());
@@ -1391,7 +1398,7 @@ TEST_P(ServiceWorkerRegistrationObjectHostUpdateTest, UpdateFound) {
       std::make_unique<MockServiceWorkerRegistrationObject>(
           std::move(info->receiver));
 
-  ServiceWorkerRegistration* registration =
+  scoped_refptr<ServiceWorkerRegistration> registration =
       context()->GetLiveRegistration(registration_id);
   ASSERT_NE(nullptr, registration);
   EXPECT_EQ(0, mock_registration_object->update_found_called_count());

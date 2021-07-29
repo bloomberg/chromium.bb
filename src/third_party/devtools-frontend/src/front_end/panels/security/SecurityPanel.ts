@@ -9,8 +9,8 @@ import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Protocol from '../../generated/protocol.js';
+import * as NetworkForward from '../../panels/network/forward/forward.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as Network from '../network/network.js';
 
 import type {PageSecurityState, PageVisibleSecurityState} from './SecurityModel.js';
 import {Events, SecurityModel, SecurityStyleExplanation, SummaryMessages} from './SecurityModel.js';
@@ -108,15 +108,6 @@ const UIStrings = {
   *@description Main summary for where the site is non-secure HTTP.
   */
   thisPageIsInsecureUnencrypted: 'This page is insecure (unencrypted HTTP).',
-  /**
-  *@description Summary phrase for a security problem where the site is non-secure (HTTP) and user has entered data in a form field.
-  */
-  formFieldEditedOnANonsecurePage: 'Form field edited on a non-secure page',
-  /**
-  *@description Description of a security problem where the site is non-secure (HTTP) and user has entered data in a form field.
-  */
-  dataWasEnteredInAFieldOnA:
-      'Data was entered in a field on a non-secure page. A warning has been added to the URL bar.',
   /**
   *@description Main summary for where the site has a non-cryptographic secure origin.
   */
@@ -466,7 +457,8 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 
 let securityPanelInstance: SecurityPanel;
 
-export class SecurityPanel extends UI.Panel.PanelWithSidebar implements SDK.SDKModel.SDKModelObserver<SecurityModel> {
+export class SecurityPanel extends UI.Panel.PanelWithSidebar implements
+    SDK.TargetManager.SDKModelObserver<SecurityModel> {
   _mainView: SecurityMainView;
   _sidebarMainViewElement: SecurityPanelSidebarTreeElement;
   _sidebarTree: SecurityPanelSidebarTree;
@@ -497,7 +489,7 @@ export class SecurityPanel extends UI.Panel.PanelWithSidebar implements SDK.SDKM
 
     this._filterRequestCounts = new Map();
 
-    SDK.SDKModel.TargetManager.instance().observeModels(SecurityModel, this);
+    SDK.TargetManager.TargetManager.instance().observeModels(SecurityModel, this);
 
     this._visibleView = null;
     this._eventListeners = [];
@@ -694,13 +686,13 @@ export class SecurityPanel extends UI.Panel.PanelWithSidebar implements SDK.SDKM
       return;
     }
 
-    let filterKey: string = Network.NetworkLogView.MixedContentFilterValues.All;
+    let filterKey: string = NetworkForward.UIFilter.MixedContentFilterValues.All;
     if (request.wasBlocked()) {
-      filterKey = Network.NetworkLogView.MixedContentFilterValues.Blocked;
+      filterKey = NetworkForward.UIFilter.MixedContentFilterValues.Blocked;
     } else if (request.mixedContentType === Protocol.Security.MixedContentType.Blockable) {
-      filterKey = Network.NetworkLogView.MixedContentFilterValues.BlockOverridden;
+      filterKey = NetworkForward.UIFilter.MixedContentFilterValues.BlockOverridden;
     } else if (request.mixedContentType === Protocol.Security.MixedContentType.OptionallyBlockable) {
-      filterKey = Network.NetworkLogView.MixedContentFilterValues.Displayed;
+      filterKey = NetworkForward.UIFilter.MixedContentFilterValues.Displayed;
     }
 
     const currentCount = this._filterRequestCounts.get(filterKey);
@@ -753,7 +745,7 @@ export class SecurityPanel extends UI.Panel.PanelWithSidebar implements SDK.SDKM
     }
 
     this._securityModel = null;
-    Common.EventTarget.EventTarget.removeEventListeners(this._eventListeners);
+    Common.EventTarget.removeEventListeners(this._eventListeners);
   }
 
   _onMainFrameNavigated(event: Common.EventTarget.EventTargetEvent): void {
@@ -801,8 +793,8 @@ export class SecurityPanelSidebarTree extends UI.TreeOutline.TreeOutlineInShadow
   _elementsByOrigin: Map<string, SecurityPanelSidebarTreeElement>;
   constructor(mainViewElement: SecurityPanelSidebarTreeElement, showOriginInPanel: (arg0: Origin) => void) {
     super();
-    this.registerRequiredCSS('panels/security/sidebar.css', {enableLegacyPatching: true});
-    this.registerRequiredCSS('panels/security/lockIcon.css', {enableLegacyPatching: false});
+    this.registerRequiredCSS('panels/security/sidebar.css');
+    this.registerRequiredCSS('panels/security/lockIcon.css');
     this.appendChild(mainViewElement);
 
     this._showOriginInPanel = showOriginInPanel;
@@ -984,8 +976,8 @@ export class SecurityMainView extends UI.Widget.VBox {
   _securityState: Protocol.Security.SecurityState|null;
   constructor(panel: SecurityPanel) {
     super(true);
-    this.registerRequiredCSS('panels/security/mainView.css', {enableLegacyPatching: false});
-    this.registerRequiredCSS('panels/security/lockIcon.css', {enableLegacyPatching: false});
+    this.registerRequiredCSS('panels/security/mainView.css');
+    this.registerRequiredCSS('panels/security/lockIcon.css');
     this.setMinimumSize(200, 100);
 
     this.contentElement.classList.add('security-main-view');
@@ -1170,11 +1162,6 @@ export class SecurityMainView extends UI.Widget.VBox {
         securityState === Protocol.Security.SecurityState.InsecureBroken &&
         securityStateIssueIds.includes('scheme-is-not-cryptographic')) {
       summary = summary || i18nString(UIStrings.thisPageIsInsecureUnencrypted);
-      if (securityStateIssueIds.includes('insecure-input-events')) {
-        explanations.push(new SecurityStyleExplanation(
-            Protocol.Security.SecurityState.Insecure, undefined, i18nString(UIStrings.formFieldEditedOnANonsecurePage),
-            i18nString(UIStrings.dataWasEnteredInAFieldOnA)));
-      }
     }
 
     if (securityStateIssueIds.includes('scheme-is-not-cryptographic')) {
@@ -1406,11 +1393,12 @@ export class SecurityMainView extends UI.Widget.VBox {
           case Protocol.Security.MixedContentType.Blockable:
             this._addMixedContentExplanation(
                 this._securityExplanationsMain, explanation,
-                Network.NetworkLogView.MixedContentFilterValues.BlockOverridden);
+                NetworkForward.UIFilter.MixedContentFilterValues.BlockOverridden);
             break;
           case Protocol.Security.MixedContentType.OptionallyBlockable:
             this._addMixedContentExplanation(
-                this._securityExplanationsMain, explanation, Network.NetworkLogView.MixedContentFilterValues.Displayed);
+                this._securityExplanationsMain, explanation,
+                NetworkForward.UIFilter.MixedContentFilterValues.Displayed);
             break;
           default:
             this._addExplanation(this._securityExplanationsMain, explanation);
@@ -1419,7 +1407,7 @@ export class SecurityMainView extends UI.Widget.VBox {
       }
     }
 
-    if (this._panel.filterRequestCount(Network.NetworkLogView.MixedContentFilterValues.Blocked) > 0) {
+    if (this._panel.filterRequestCount(NetworkForward.UIFilter.MixedContentFilterValues.Blocked) > 0) {
       const explanation = {
         securityState: Protocol.Security.SecurityState.Info,
         summary: i18nString(UIStrings.blockedMixedContent),
@@ -1429,7 +1417,7 @@ export class SecurityMainView extends UI.Widget.VBox {
         title: '',
       } as Protocol.Security.SecurityStateExplanation;
       this._addMixedContentExplanation(
-          this._securityExplanationsMain, explanation, Network.NetworkLogView.MixedContentFilterValues.Blocked);
+          this._securityExplanationsMain, explanation, NetworkForward.UIFilter.MixedContentFilterValues.Blocked);
     }
   }
 
@@ -1465,8 +1453,8 @@ export class SecurityMainView extends UI.Widget.VBox {
 
   showNetworkFilter(filterKey: string, e: Event): void {
     e.consume();
-    Network.NetworkPanel.NetworkPanel.revealAndFilter(
-        [{filterType: Network.NetworkLogView.FilterType.MixedContent, filterValue: filterKey}]);
+    Common.Revealer.reveal(NetworkForward.UIFilter.UIRequestFilter.filters(
+        [{filterType: NetworkForward.UIFilter.FilterType.MixedContent, filterValue: filterKey}]));
   }
 }
 
@@ -1479,8 +1467,8 @@ export class SecurityOriginView extends UI.Widget.VBox {
     this.setMinimumSize(200, 100);
 
     this.element.classList.add('security-origin-view');
-    this.registerRequiredCSS('panels/security/originView.css', {enableLegacyPatching: true});
-    this.registerRequiredCSS('panels/security/lockIcon.css', {enableLegacyPatching: false});
+    this.registerRequiredCSS('panels/security/originView.css');
+    this.registerRequiredCSS('panels/security/lockIcon.css');
 
     const titleSection = this.element.createChild('div', 'title-section');
     const titleDiv = titleSection.createChild('div', 'title-section-header');
@@ -1497,10 +1485,10 @@ export class SecurityOriginView extends UI.Widget.VBox {
     const originNetworkButton = UI.UIUtils.createTextButton(i18nString(UIStrings.viewRequestsInNetworkPanel), event => {
       event.consume();
       const parsedURL = new Common.ParsedURL.ParsedURL(origin);
-      Network.NetworkPanel.NetworkPanel.revealAndFilter([
-        {filterType: Network.NetworkLogView.FilterType.Domain, filterValue: parsedURL.host},
-        {filterType: Network.NetworkLogView.FilterType.Scheme, filterValue: parsedURL.scheme},
-      ]);
+      Common.Revealer.reveal(NetworkForward.UIFilter.UIRequestFilter.filters([
+        {filterType: NetworkForward.UIFilter.FilterType.Domain, filterValue: parsedURL.host},
+        {filterType: NetworkForward.UIFilter.FilterType.Scheme, filterValue: parsedURL.scheme},
+      ]));
     });
     originNetworkDiv.appendChild(originNetworkButton);
     UI.ARIAUtils.markAsLink(originNetworkButton);

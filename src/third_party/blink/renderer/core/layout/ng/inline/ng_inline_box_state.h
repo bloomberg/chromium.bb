@@ -48,6 +48,10 @@ struct NGInlineBoxState {
   // InitializeFont().
   absl::optional<Font> scaled_font;
 
+  // SVG scaling factor for this box. We use a font of which size is
+  // css-specified-size * scaling_factor.
+  float scaling_factor;
+
   // The united metrics for the current box. This includes all objects in this
   // box, including descendants, and adjusted by placement properties such as
   // 'vertical-align'.
@@ -64,6 +68,9 @@ struct NGInlineBoxState {
   // The height of the text fragments.
   LayoutUnit text_height;
 
+  // SVG alignment-baseline presentation property resolved to a FontBaseline.
+  FontBaseline alignment_type = FontBaseline::kAlphabeticBaseline;
+
   // These values are to create a box fragment. Set only when needs_box_fragment
   // is set.
   bool has_start_edge = false;
@@ -77,10 +84,21 @@ struct NGInlineBoxState {
   bool include_used_fonts = false;
   bool has_box_placeholder = false;
   bool needs_box_fragment = false;
+  bool is_svg_text = false;
 
-  // Initialize |font| and |scaled_font|. This should be called after setting
-  // |style|.
-  void InitializeFont(bool is_svg_text, const LayoutObject& layout_object);
+  // If you add new data members, update the move constructor.
+
+  NGInlineBoxState() = default;
+  // Needs the move constructor for Vector<NGInlineBoxState>.
+  NGInlineBoxState(const NGInlineBoxState&& state);
+  NGInlineBoxState(const NGInlineBoxState&) = delete;
+  NGInlineBoxState& operator=(const NGInlineBoxState&) = delete;
+
+  // Reset |style|, |is_svg_text|, |font|, |scaled_font|, |scaling_factor|, and
+  // |alignment_type|.
+  void ResetStyle(const ComputedStyle& style_ref,
+                  bool is_svg,
+                  const LayoutObject& layout_object);
 
   // True if this box has a metrics, including pending ones. Pending metrics
   // will be activated in |EndBoxState()|.
@@ -91,15 +109,11 @@ struct NGInlineBoxState {
   // Compute text metrics for a box. All text in a box share the same
   // metrics.
   // The computed metrics is included into the line height of the current box.
-  void ComputeTextMetrics(const ComputedStyle&,
-                          const Font& fontref,
-                          FontBaseline baseline_type);
-  void EnsureTextMetrics(const ComputedStyle&,
-                         const Font& fontref,
-                         FontBaseline);
+  void ComputeTextMetrics(const ComputedStyle&, const Font& fontref);
+  void EnsureTextMetrics(const ComputedStyle&, const Font& fontref);
   void ResetTextMetrics();
 
-  void AccumulateUsedFonts(const ShapeResultView*, FontBaseline);
+  void AccumulateUsedFonts(const ShapeResultView*);
 
   // 'text-top' offset for 'vertical-align'.
   LayoutUnit TextTop(FontBaseline baseline_type) const;
@@ -173,17 +187,6 @@ class CORE_EXPORT NGInlineLayoutStateStack {
   // reordering.
   void UpdateAfterReorder(NGLogicalLineItems*);
 
-  // Update start/end of the first BoxData found at |index|.
-  //
-  // If inline fragmentation is found, a new BoxData is added.
-  //
-  // Returns the index to process next. It should be given to the next call to
-  // this function.
-  unsigned UpdateBoxDataFragmentRange(NGLogicalLineItems*, unsigned index);
-
-  // Update edges of inline fragmented boxes.
-  void UpdateFragmentedBoxDataEdges();
-
   // Compute inline positions of fragments and boxes.
   LayoutUnit ComputeInlinePositions(NGLogicalLineItems*, LayoutUnit position);
 
@@ -191,7 +194,7 @@ class CORE_EXPORT NGInlineLayoutStateStack {
 
   // Create box fragments. This function turns a flat list of children into
   // a box tree.
-  void CreateBoxFragments(NGLogicalLineItems*);
+  void CreateBoxFragments(const NGConstraintSpace&, NGLogicalLineItems*);
 
 #if DCHECK_IS_ON()
   void CheckSame(const NGInlineLayoutStateStack&) const;
@@ -223,6 +226,11 @@ class CORE_EXPORT NGInlineLayoutStateStack {
   PositionPending ApplyBaselineShift(NGInlineBoxState*,
                                      NGLogicalLineItems*,
                                      FontBaseline);
+
+  // Computes an offset that will align the |box| with its 'alignment-baseline'
+  // relative to the baseline of the line box. This takes into account both the
+  // 'dominant-baseline' and 'alignment-baseline' of |box| and its parent.
+  LayoutUnit ComputeAlignmentBaselineShift(const NGInlineBoxState* box);
 
   // Compute the metrics for when 'vertical-align' is 'top' and 'bottom' from
   // |pending_descendants|.
@@ -273,8 +281,23 @@ class CORE_EXPORT NGInlineLayoutStateStack {
 
     void UpdateFragmentEdges(Vector<BoxData, 4>& list);
 
-    scoped_refptr<const NGLayoutResult> CreateBoxFragment(NGLogicalLineItems*);
+    scoped_refptr<const NGLayoutResult> CreateBoxFragment(
+        const NGConstraintSpace&,
+        NGLogicalLineItems*);
   };
+
+  // Update start/end of the first BoxData found at |index|.
+  //
+  // If inline fragmentation is found, a new BoxData is added.
+  //
+  // Returns the index to process next. It should be given to the next call to
+  // this function.
+  unsigned UpdateBoxDataFragmentRange(NGLogicalLineItems*,
+                                      unsigned index,
+                                      Vector<BoxData>* fragmented_boxes);
+
+  // Update edges of inline fragmented boxes.
+  void UpdateFragmentedBoxDataEdges(Vector<BoxData>* fragmented_boxes);
 
   Vector<NGInlineBoxState, 4> stack_;
   Vector<BoxData, 4> box_data_list_;

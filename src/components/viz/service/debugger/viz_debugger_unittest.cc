@@ -58,6 +58,7 @@ struct TestFilter {
   std::string func;
   std::string file;
   bool active = true;
+  bool enabled = true;
 };
 
 static_assert(sizeof(VizDebuggerInternal) == sizeof(VizDebugger),
@@ -89,6 +90,7 @@ class VisualDebuggerTest : public testing::Test {
 
       full_filter.SetKey("selector", std::move(selector));
       full_filter.SetBoolean("active", each.active);
+      full_filter.SetBoolean("enabled", each.enabled);
       filters_list.Append(std::move(full_filter));
     }
     filters_json.SetKey("filters", std::move(filters_list));
@@ -124,6 +126,11 @@ class VisualDebuggerTest : public testing::Test {
     global_dict->FindKey("frame")->GetAsString(&str);
     base::StringToUint64(str.c_str(), &counter_);
     static const int kNoVal = -1;
+    int expected_version =
+        global_dict->FindKey("version")->GetIfInt().value_or(kNoVal);
+    // Check to update these unit tests if a backwards compatible change has
+    // been made.
+    EXPECT_EQ(1, expected_version);
 
     window_x_ = global_dict->FindKey("windowx")->GetIfInt().value_or(kNoVal);
     window_y_ = global_dict->FindKey("windowy")->GetIfInt().value_or(kNoVal);
@@ -380,6 +387,26 @@ TEST_F(VisualDebuggerTest, FilterDrawSubmission) {
   for (size_t i = 0; i < draw_calls_.size(); i++) {
     check_draw(draw_calls_[i], kTestRect, valid_indices[i], i);
   }
+}
+
+constexpr const char kTestFlagFunctionAnnoName[] = "testflagfunctionanno";
+
+DBG_FLAG_FBOOL(kTestFlagFunctionAnnoName, check_flag_enabled)
+
+static bool FlagFunctionTestEnable() {
+  return check_flag_enabled();
+}
+
+TEST_F(VisualDebuggerTest, TestDebugFlagAnnoAndFunction) {
+  GetInternal()->ForceEnabled();
+
+  // Set our test flag to be disabled.
+  SetFilter({TestFilter({kTestFlagFunctionAnnoName, "", "", true, false})});
+  EXPECT_FALSE(FlagFunctionTestEnable());
+  SetFilter({TestFilter({kTestFlagFunctionAnnoName, "", "", true, true})});
+  EXPECT_TRUE(FlagFunctionTestEnable());
+  SetFilter({TestFilter({kTestFlagFunctionAnnoName, "", "", true, false})});
+  EXPECT_FALSE(FlagFunctionTestEnable());
 }
 
 }  // namespace

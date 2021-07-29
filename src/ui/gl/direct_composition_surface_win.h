@@ -44,6 +44,7 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
     size_t max_pending_frames = 2;
     bool use_angle_texture_offset = false;
     bool force_root_surface_full_damage = false;
+    bool force_root_surface_full_damage_always = false;
   };
 
   DirectCompositionSurfaceWin(
@@ -163,7 +164,8 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
   // to remain in the layer tree. This surface's backbuffer doesn't have to be
   // scheduled with ScheduleDCLayer, as it's automatically placed in the layer
   // tree at z-order 0.
-  bool ScheduleDCLayer(const ui::DCRendererLayerParams& params) override;
+  bool ScheduleDCLayer(
+      std::unique_ptr<ui::DCRendererLayerParams> params) override;
   void SetFrameRate(float frame_rate) override;
 
   // Implements GpuSwitchingObserver.

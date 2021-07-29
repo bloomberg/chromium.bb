@@ -10,11 +10,12 @@
 #include <utility>
 
 #include "core/fxcrt/fx_extension.h"
+#include "core/fxcrt/stl_util.h"
 #include "fxjs/gc/container_trace.h"
 #include "fxjs/xfa/cfxjse_engine.h"
 #include "fxjs/xfa/cjx_object.h"
 #include "third_party/base/check_op.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/containers/contains.h"
 #include "xfa/fxfa/cxfa_ffapp.h"
 #include "xfa/fxfa/cxfa_ffbarcode.h"
 #include "xfa/fxfa/cxfa_ffcheckbutton.h"
@@ -86,7 +87,7 @@ int32_t CXFA_FFDocView::StartLayout() {
   m_pDoc->GetXFADoc()->DoProtoMerge();
   m_pDoc->GetXFADoc()->DoDataMerge();
 
-  int32_t iStatus = GetLayoutProcessor()->StartLayout(false);
+  int32_t iStatus = GetLayoutProcessor()->StartLayout();
   if (iStatus < 0)
     return iStatus;
 
@@ -154,9 +155,9 @@ void CXFA_FFDocView::StopLayout() {
 }
 
 void CXFA_FFDocView::ShowNullTestMsg() {
-  int32_t iCount = pdfium::CollectionSize<int32_t>(m_NullTestMsgArray);
+  int32_t iCount = fxcrt::CollectionSize<int32_t>(m_NullTestMsgArray);
   CXFA_FFApp* pApp = m_pDoc->GetApp();
-  IXFA_AppProvider* pAppProvider = pApp->GetAppProvider();
+  CXFA_FFApp::CallbackIface* pAppProvider = pApp->GetAppProvider();
   if (pAppProvider && iCount) {
     int32_t iRemain = iCount > 7 ? iCount - 7 : 0;
     iCount -= iRemain;
@@ -436,13 +437,12 @@ CXFA_FFWidget* CXFA_FFDocView::GetWidgetByName(const WideString& wsName,
     pRefNode = node->IsWidgetReady() ? node : nullptr;
   }
   WideString wsExpression = (!pRefNode ? L"$form." : L"") + wsName;
-
-  constexpr uint32_t kStyle = XFA_RESOLVENODE_Children |
-                              XFA_RESOLVENODE_Properties |
-                              XFA_RESOLVENODE_Siblings | XFA_RESOLVENODE_Parent;
+  constexpr XFA_ResolveNodeMask kFlags =
+      XFA_RESOLVENODE_Children | XFA_RESOLVENODE_Properties |
+      XFA_RESOLVENODE_Siblings | XFA_RESOLVENODE_Parent;
   Optional<CFXJSE_Engine::ResolveResult> maybeResult =
       pScriptContext->ResolveObjects(pRefNode, wsExpression.AsStringView(),
-                                     kStyle);
+                                     kFlags);
   if (!maybeResult.has_value())
     return nullptr;
 
@@ -454,10 +454,10 @@ CXFA_FFWidget* CXFA_FFDocView::GetWidgetByName(const WideString& wsName,
   return nullptr;
 }
 
-void CXFA_FFDocView::OnPageEvent(CXFA_ViewLayoutItem* pSender,
-                                 uint32_t dwEvent) {
+void CXFA_FFDocView::OnPageViewEvent(CXFA_ViewLayoutItem* pSender,
+                                     CXFA_FFDoc::PageViewEvent eEvent) {
   CXFA_FFPageView* pFFPageView = pSender ? pSender->GetPageView() : nullptr;
-  m_pDoc->PageViewEvent(pFFPageView, dwEvent);
+  m_pDoc->OnPageViewEvent(pFFPageView, eEvent);
 }
 
 void CXFA_FFDocView::InvalidateRect(CXFA_FFPageView* pPageView,
@@ -470,16 +470,16 @@ bool CXFA_FFDocView::RunLayout() {
   m_bInLayoutStatus = true;
 
   CXFA_LayoutProcessor* pProcessor = GetLayoutProcessor();
-  if (!pProcessor->IncrementLayout() && pProcessor->StartLayout(false) < 100) {
+  if (!pProcessor->IncrementLayout() && pProcessor->StartLayout() < 100) {
     pProcessor->DoLayout();
     UnlockUpdate();
     m_bInLayoutStatus = false;
-    m_pDoc->PageViewEvent(nullptr, XFA_PAGEVIEWEVENT_StopLayout);
+    m_pDoc->OnPageViewEvent(nullptr, CXFA_FFDoc::PageViewEvent::kStopLayout);
     return true;
   }
 
   m_bInLayoutStatus = false;
-  m_pDoc->PageViewEvent(nullptr, XFA_PAGEVIEWEVENT_StopLayout);
+  m_pDoc->OnPageViewEvent(nullptr, CXFA_FFDoc::PageViewEvent::kStopLayout);
   UnlockUpdate();
   return false;
 }
@@ -532,7 +532,7 @@ void CXFA_FFDocView::AddCalculateNodeNotify(CXFA_Node* pNodeChange) {
   if (!pGlobalData)
     return;
 
-  for (auto pResult : pGlobalData->m_Globals) {
+  for (auto& pResult : pGlobalData->m_Globals) {
     if (!pResult->HasRemovedChildren() && pResult->IsWidgetReady())
       AddCalculateNode(pResult);
   }
@@ -634,12 +634,12 @@ void CXFA_FFDocView::RunBindItems() {
     CFXJSE_Engine* pScriptContext =
         pWidgetNode->GetDocument()->GetScriptContext();
     WideString wsRef = item->GetRef();
-    constexpr uint32_t kStyle =
+    constexpr XFA_ResolveNodeMask kFlags =
         XFA_RESOLVENODE_Children | XFA_RESOLVENODE_Properties |
         XFA_RESOLVENODE_Siblings | XFA_RESOLVENODE_Parent | XFA_RESOLVENODE_ALL;
     Optional<CFXJSE_Engine::ResolveResult> maybeRS =
         pScriptContext->ResolveObjects(pWidgetNode, wsRef.AsStringView(),
-                                       kStyle);
+                                       kFlags);
     pWidgetNode->DeleteItem(-1, false, false);
     if (!maybeRS.has_value() ||
         maybeRS.value().type != CFXJSE_Engine::ResolveResult::Type::kNodes ||
@@ -655,7 +655,7 @@ void CXFA_FFDocView::RunBindItems() {
         wsValueRef.IsEmpty() || wsValueRef.EqualsASCII("$");
     WideString wsValue;
     WideString wsLabel;
-    uint32_t uValueHash = FX_HashCode_GetW(wsValueRef.AsStringView(), false);
+    uint32_t uValueHash = FX_HashCode_GetW(wsValueRef.AsStringView());
     for (auto& refObject : maybeRS.value().objects) {
       CXFA_Node* refNode = refObject->AsNode();
       if (!refNode)

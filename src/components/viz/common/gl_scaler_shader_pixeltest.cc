@@ -67,12 +67,11 @@ class GLScalerShaderPixelTest
     std::unique_ptr<gfx::ColorTransform> transform;
     if (is_converting_rgb_to_yuv()) {
       transform = gfx::ColorTransform::NewColorTransform(
-          DefaultRGBColorSpace(), DefaultYUVColorSpace(),
-          gfx::ColorTransform::Intent::INTENT_ABSOLUTE);
+          DefaultRGBColorSpace(), DefaultYUVColorSpace());
     }
     const GLenum swizzle[2] = {
-        is_swizzling_output() ? GL_BGRA_EXT : GL_RGBA,
-        is_swizzling_output() ? GL_BGRA_EXT : GL_RGBA,
+        static_cast<GLenum>(is_swizzling_output() ? GL_BGRA_EXT : GL_RGBA),
+        static_cast<GLenum>(is_swizzling_output() ? GL_BGRA_EXT : GL_RGBA),
     };
     return scaler_->GetShaderProgram(shader, GL_UNSIGNED_BYTE, transform.get(),
                                      swizzle);
@@ -145,8 +144,7 @@ class GLScalerShaderPixelTest
     }
     if (is_converting_rgb_to_yuv()) {
       const auto transform = gfx::ColorTransform::NewColorTransform(
-          DefaultYUVColorSpace(), DefaultRGBColorSpace(),
-          gfx::ColorTransform::Intent::INTENT_ABSOLUTE);
+          DefaultYUVColorSpace(), DefaultRGBColorSpace());
       const GLenum swizzle[2] = {GL_RGBA, GL_RGBA};
       scaler_
           ->GetShaderProgram(Shader::BILINEAR, GL_UNSIGNED_BYTE,

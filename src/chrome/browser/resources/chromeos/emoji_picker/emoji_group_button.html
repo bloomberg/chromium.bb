@@ -1,21 +1,21 @@
 <style>
   :host {
     display: flex;
-    flex-direction: column;
-    height: var(--emoji-group-button-size);
+    height: var(--emoji-size);
+    justify-content: center;
     scroll-snap-align: none;
-    width: var(--emoji-group-button-size);
+    width: var(--emoji-size);
   }
 
   #group-button {
-    --cr-icon-button-size: var(--emoji-group-button-size);
-    font-size: var(--emoji-group-button-size);
+    --cr-icon-button-size: 20px;
+    font-size: 20px;
     margin: 0;
     padding: 0;
   }
 
   #group-button.emoji-group-active {
-    --cr-icon-button-fill-color: var(--cr-checked-color);
+    --cr-icon-button-fill-color: var(--cros-icon-color-prominent);
   }
 
 </style>

@@ -98,6 +98,7 @@ message WebAppProto {
     STANDALONE = 3;
     FULLSCREEN = 4;
     WINDOW_CONTROLS_OVERLAY = 5;
+    TABBED = 6;
   }
 
   // Local data. May vary across devices. Not to be synced.
@@ -206,4 +207,17 @@ message WebAppProto {
   // |downloaded_icon_sizes_purpose_any|,
   // |downloaded_icon_sizes_purpose_maskable|.
   repeated int32 downloaded_icon_sizes_purpose_monochrome = 33;
+
+  optional bool window_controls_overlay_enabled = 34;
+
+  // If present, the URL to use to create a new note in the app.
+  optional string note_taking_new_note_url = 35;
+
+  // Whether the app should be loaded in a dedicated storage partition.
+  optional bool is_storage_isolated = 36;
+
+  // A list of approved launch protocols when launching the app with a protocol
+  // url. This list is checked to see if we can bypass the permission dialog
+  // when launching the web app.
+  repeated string approved_launch_protocols = 37;
 }

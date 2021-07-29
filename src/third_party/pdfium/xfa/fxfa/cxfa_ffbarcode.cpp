@@ -94,7 +94,7 @@ Optional<BC_CHAR_ENCODING> CharEncodingFromString(const WideString& value) {
     return CHAR_ENCODING_UNICODE;
   if (value.CompareNoCase(L"UTF-8"))
     return CHAR_ENCODING_UTF8;
-  return {};
+  return pdfium::nullopt;
 }
 
 Optional<BC_TEXT_LOC> TextLocFromAttribute(XFA_AttributeValue value) {
@@ -110,7 +110,7 @@ Optional<BC_TEXT_LOC> TextLocFromAttribute(XFA_AttributeValue value) {
     case XFA_AttributeValue::BelowEmbedded:
       return BC_TEXT_LOC_BELOWEMBED;
     default:
-      return {};
+      return pdfium::nullopt;
   }
 }
 
@@ -124,7 +124,7 @@ const BarCodeInfo* CXFA_FFBarcode::GetBarcodeTypeByName(
 
   auto* it = std::lower_bound(
       std::begin(g_BarCodeData), std::end(g_BarCodeData),
-      FX_HashCode_GetW(wsName.AsStringView(), true),
+      FX_HashCode_GetLoweredW(wsName.AsStringView()),
       [](const BarCodeInfo& arg, uint32_t hash) { return arg.uHash < hash; });
 
   if (it != std::end(g_BarCodeData) && wsName.EqualsASCII(it->pName))
@@ -158,7 +158,7 @@ bool CXFA_FFBarcode::LoadWidget() {
 
   {
     CFWL_Widget::ScopedUpdateLock update_lock(pFWLBarcode);
-    pFWLBarcode->SetText(m_pNode->GetValue(XFA_VALUEPICTURE_Display));
+    pFWLBarcode->SetText(m_pNode->GetValue(XFA_ValuePicture::kDisplay));
     UpdateWidgetProperty();
   }
 
@@ -195,57 +195,57 @@ void CXFA_FFBarcode::UpdateWidgetProperty() {
   pBarCodeWidget->SetType(info->eBCType);
 
   Optional<WideString> encoding_string = barcode_->GetCharEncoding();
-  if (encoding_string) {
+  if (encoding_string.has_value()) {
     Optional<BC_CHAR_ENCODING> encoding =
-        CharEncodingFromString(*encoding_string);
-    if (encoding)
-      pBarCodeWidget->SetCharEncoding(*encoding);
+        CharEncodingFromString(encoding_string.value());
+    if (encoding.has_value())
+      pBarCodeWidget->SetCharEncoding(encoding.value());
   }
 
   Optional<bool> calcChecksum = barcode_->GetChecksum();
-  if (calcChecksum)
-    pBarCodeWidget->SetCalChecksum(*calcChecksum);
+  if (calcChecksum.has_value())
+    pBarCodeWidget->SetCalChecksum(calcChecksum.value());
 
   Optional<int32_t> dataLen = barcode_->GetDataLength();
-  if (dataLen)
-    pBarCodeWidget->SetDataLength(*dataLen);
+  if (dataLen.has_value())
+    pBarCodeWidget->SetDataLength(dataLen.value());
 
   Optional<char> startChar = barcode_->GetStartChar();
-  if (startChar)
-    pBarCodeWidget->SetStartChar(*startChar);
+  if (startChar.has_value())
+    pBarCodeWidget->SetStartChar(startChar.value());
 
   Optional<char> endChar = barcode_->GetEndChar();
-  if (endChar)
-    pBarCodeWidget->SetEndChar(*endChar);
+  if (endChar.has_value())
+    pBarCodeWidget->SetEndChar(endChar.value());
 
   Optional<int32_t> ecLevel = barcode_->GetECLevel();
-  if (ecLevel)
-    pBarCodeWidget->SetErrorCorrectionLevel(*ecLevel);
+  if (ecLevel.has_value())
+    pBarCodeWidget->SetErrorCorrectionLevel(ecLevel.value());
 
   Optional<int32_t> width = barcode_->GetModuleWidth();
-  if (width)
-    pBarCodeWidget->SetModuleWidth(*width);
+  if (width.has_value())
+    pBarCodeWidget->SetModuleWidth(width.value());
 
   Optional<int32_t> height = barcode_->GetModuleHeight();
-  if (height)
-    pBarCodeWidget->SetModuleHeight(*height);
+  if (height.has_value())
+    pBarCodeWidget->SetModuleHeight(height.value());
 
   Optional<bool> printCheck = barcode_->GetPrintChecksum();
-  if (printCheck)
-    pBarCodeWidget->SetPrintChecksum(*printCheck);
+  if (printCheck.has_value())
+    pBarCodeWidget->SetPrintChecksum(printCheck.value());
 
   Optional<XFA_AttributeValue> text_attr = barcode_->GetTextLocation();
-  if (text_attr) {
-    Optional<BC_TEXT_LOC> textLoc = TextLocFromAttribute(*text_attr);
-    if (textLoc)
-      pBarCodeWidget->SetTextLocation(*textLoc);
+  if (text_attr.has_value()) {
+    Optional<BC_TEXT_LOC> textLoc = TextLocFromAttribute(text_attr.value());
+    if (textLoc.has_value())
+      pBarCodeWidget->SetTextLocation(textLoc.value());
   }
 
   // Truncated is currently not a supported flag.
 
   Optional<int8_t> ratio = barcode_->GetWideNarrowRatio();
-  if (ratio)
-    pBarCodeWidget->SetWideNarrowRatio(*ratio);
+  if (ratio.has_value())
+    pBarCodeWidget->SetWideNarrowRatio(ratio.value());
 
   if (info->eName == BarcodeType::code3Of9 ||
       info->eName == BarcodeType::ean8 || info->eName == BarcodeType::ean13 ||

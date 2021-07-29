@@ -74,13 +74,11 @@ export class ObjectPopoverHelper {
       } else {
         popoverContentElement = document.createElement('div');
         popoverContentElement.classList.add('object-popover-content');
-        UI.Utils.appendStyle(
-            popoverContentElement, 'ui/legacy/components/object_ui/objectPopover.css', {enableLegacyPatching: false});
+        UI.Utils.appendStyle(popoverContentElement, 'ui/legacy/components/object_ui/objectPopover.css');
         const titleElement = popoverContentElement.createChild('div', 'monospace object-popover-title');
         titleElement.createChild('span').textContent = description;
         linkifier = new Components.Linkifier.Linkifier();
-        const section = new ObjectPropertiesSection(
-            result, '', linkifier, undefined, undefined, undefined, true /* showOverflow */);
+        const section = new ObjectPropertiesSection(result, '', linkifier, true /* showOverflow */);
         section.element.classList.add('object-popover-tree');
         section.titleLessMode();
         popoverContentElement.appendChild(section.element);
@@ -94,10 +92,8 @@ export class ObjectPopoverHelper {
 
     popoverContentElement = document.createElement('span');
     popoverContentElement.dataset.stableNameForTest = 'object-popover-content';
-    UI.Utils.appendStyle(
-        popoverContentElement, 'ui/legacy/components/object_ui/objectValue.css', {enableLegacyPatching: false});
-    UI.Utils.appendStyle(
-        popoverContentElement, 'ui/legacy/components/object_ui/objectPopover.css', {enableLegacyPatching: false});
+    UI.Utils.appendStyle(popoverContentElement, 'ui/legacy/components/object_ui/objectValue.css');
+    UI.Utils.appendStyle(popoverContentElement, 'ui/legacy/components/object_ui/objectPopover.css');
     const valueElement = popoverContentElement.createChild('span', 'monospace object-value-' + result.type);
     valueElement.style.whiteSpace = 'pre';
 

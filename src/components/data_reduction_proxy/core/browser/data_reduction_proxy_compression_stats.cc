@@ -64,13 +64,14 @@ int64_t GetInt64PrefValue(const base::ListValue& list_value, size_t index) {
 // front, or appending "0"'s to the back.
 void MaintainContentLengthPrefsWindow(base::ListValue* list, size_t length) {
   // Remove data for old days from the front.
-  while (list->GetSize() > length)
-    list->Remove(0, nullptr);
+  base::Value::ListView list_view = list->GetList();
+  while (list_view.size() > length)
+    list->EraseListIter(list_view.begin());
   // Newly added lists are empty. Add entries to back to fill the window,
   // each initialized to zero.
-  while (list->GetSize() < length)
-    list->AppendString(base::NumberToString(0));
-  DCHECK_EQ(length, list->GetSize());
+  while (list_view.size() < length)
+    list->Append(base::NumberToString(0));
+  DCHECK_EQ(length, list_view.size());
 }
 
 // Increments an int64_t, stored as a string, in a ListPref at the specified
@@ -173,7 +174,7 @@ void RecordDictionaryToHistogram(const std::string& histogram_name,
                                  const base::DictionaryValue* dictionary) {
   base::HistogramBase* histogram = base::SparseHistogram::FactoryGet(
       histogram_name, base::HistogramBase::kUmaTargetedHistogramFlag);
-  for (const auto& entry : dictionary->DictItems()) {
+  for (auto entry : dictionary->DictItems()) {
     int key;
     int value = entry.second.GetInt();
     if (value > 0 && base::StringToInt(entry.first, &key)) {
@@ -240,7 +241,7 @@ class DataReductionProxyCompressionStats::DailyContentLengthUpdate {
     } else if (days_since_last_update < -1) {
       // Erase all entries if the system went backwards in time by more than
       // a day.
-      update_->Clear();
+      update_->ClearList();
 
       days_since_last_update = kNumDaysInHistory;
     }
@@ -367,7 +368,6 @@ void DataReductionProxyCompressionStats::RecordDataUseWithMimeType(
     int64_t data_used,
     int64_t original_size,
     bool data_saver_enabled,
-    DataReductionProxyRequestType request_type,
     const std::string& mime_type,
     bool is_user_traffic,
     data_use_measurement::DataUseUserData::DataUseContentType content_type,
@@ -382,7 +382,7 @@ void DataReductionProxyCompressionStats::RecordDataUseWithMimeType(
                     original_size);
 
   RecordRequestSizePrefs(data_used, original_size, data_saver_enabled,
-                         request_type, mime_type, base::Time::Now());
+                         mime_type, base::Time::Now());
   RecordWeeklyAggregateDataUse(
       base::Time::Now(), std::round(static_cast<double>(data_used) / 1024),
       is_user_traffic, content_type, service_hash_code);
@@ -395,8 +395,7 @@ void DataReductionProxyCompressionStats::InitInt64Pref(const char* pref) {
 
 void DataReductionProxyCompressionStats::InitListPref(const char* pref) {
   std::unique_ptr<base::ListValue> pref_value =
-      std::unique_ptr<base::ListValue>(
-          pref_service_->GetList(pref)->DeepCopy());
+      pref_service_->GetList(pref)->CreateDeepCopy();
   list_pref_map_[pref] = std::move(pref_value);
 }
 
@@ -465,8 +464,8 @@ void DataReductionProxyCompressionStats::ResetStatistics() {
       GetList(prefs::kDailyHttpOriginalContentLength);
   base::ListValue* received_update =
       GetList(prefs::kDailyHttpReceivedContentLength);
-  original_update->Clear();
-  received_update->Clear();
+  original_update->ClearList();
+  received_update->ClearList();
   for (size_t i = 0; i < kNumDaysInHistory; ++i) {
     original_update->AppendString(base::NumberToString(0));
     received_update->AppendString(base::NumberToString(0));
@@ -611,7 +610,7 @@ void DataReductionProxyCompressionStats::ClearDataSavingStatistics(
 
   for (auto iter = list_pref_map_.begin(); iter != list_pref_map_.end();
        ++iter) {
-    iter->second->Clear();
+    iter->second->ClearList();
   }
 
   RecordSavingsClearedMetric(reason);
@@ -635,7 +634,6 @@ void DataReductionProxyCompressionStats::RecordRequestSizePrefs(
     int64_t data_used,
     int64_t original_size,
     bool with_data_saver_enabled,
-    DataReductionProxyRequestType request_type,
     const std::string& mime_type,
     const base::Time& now) {
   // TODO(bengr): Remove this check once the underlying cause of

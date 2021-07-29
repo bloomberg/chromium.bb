@@ -35,8 +35,6 @@
 
 #include "base/format_macros.h"
 #include "third_party/blink/public/web/web_settings.h"
-#include "third_party/blink/renderer/bindings/core/v8/add_event_listener_options_or_boolean.h"
-#include "third_party/blink/renderer/bindings/core/v8/event_listener_options_or_boolean.h"
 #include "third_party/blink/renderer/bindings/core/v8/js_based_event_listener.h"
 #include "third_party/blink/renderer/bindings/core/v8/js_event_listener.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
@@ -56,6 +54,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/pointer_type_names.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_activity_logger.h"
@@ -88,15 +87,6 @@ Event::PassiveMode EventPassiveMode(
   if (event_listener.PassiveSpecified())
     return Event::PassiveMode::kPassive;
   return Event::PassiveMode::kPassiveDefault;
-}
-
-Settings* WindowSettings(LocalDOMWindow* executing_window) {
-  if (executing_window) {
-    if (LocalFrame* frame = executing_window->GetFrame()) {
-      return frame->GetSettings();
-    }
-  }
-  return nullptr;
 }
 
 bool IsTouchScrollBlockingEvent(const AtomicString& event_type) {
@@ -184,7 +174,8 @@ void CountFiringEventListeners(const Event& event,
   if (CheckTypeThenUseCount(event, event_type_names::kPointerdown,
                             WebFeature::kPointerDownFired, document)) {
     if (IsA<PointerEvent>(event) &&
-        static_cast<const PointerEvent&>(event).pointerType() == "touch") {
+        static_cast<const PointerEvent&>(event).pointerType() ==
+            pointer_type_names::kTouch) {
       UseCounter::Count(document, WebFeature::kPointerDownFiredForTouch);
     }
     return;
@@ -215,34 +206,6 @@ void CountFiringEventListeners(const Event& event,
     if (CheckTypeThenUseCount(event, counted_event.event_type,
                               counted_event.feature, document))
       return;
-  }
-}
-
-void RegisterWithScheduler(ExecutionContext* execution_context,
-                           const AtomicString& event_type) {
-  if (!execution_context || !execution_context->GetScheduler())
-    return;
-  // TODO(altimin): Ideally we would also support tracking unregistration of
-  // event listeners, but we don't do this for performance reasons.
-  absl::optional<SchedulingPolicy::Feature> feature_for_scheduler;
-  if (event_type == event_type_names::kPageshow) {
-    feature_for_scheduler = SchedulingPolicy::Feature::kPageShowEventListener;
-  } else if (event_type == event_type_names::kPagehide) {
-    feature_for_scheduler = SchedulingPolicy::Feature::kPageHideEventListener;
-  } else if (event_type == event_type_names::kBeforeunload) {
-    feature_for_scheduler =
-        SchedulingPolicy::Feature::kBeforeUnloadEventListener;
-  } else if (event_type == event_type_names::kUnload) {
-    feature_for_scheduler = SchedulingPolicy::Feature::kUnloadEventListener;
-  } else if (event_type == event_type_names::kFreeze) {
-    feature_for_scheduler = SchedulingPolicy::Feature::kFreezeEventListener;
-  } else if (event_type == event_type_names::kResume) {
-    feature_for_scheduler = SchedulingPolicy::Feature::kResumeEventListener;
-  }
-  if (feature_for_scheduler) {
-    execution_context->GetScheduler()->RegisterStickyFeature(
-        feature_for_scheduler.value(),
-        {SchedulingPolicy::DisableBackForwardCache()});
   }
 }
 
@@ -408,24 +371,8 @@ void EventTarget::SetDefaultAddEventListenerOptions(
     }
   }
 
-  if (Settings* settings = WindowSettings(ExecutingWindow())) {
-    switch (settings->GetPassiveListenerDefault()) {
-      case PassiveListenerDefault::kFalse:
-        if (!options->hasPassive())
-          options->setPassive(false);
-        break;
-      case PassiveListenerDefault::kTrue:
-        if (!options->hasPassive())
-          options->setPassive(true);
-        break;
-      case PassiveListenerDefault::kForceAllTrue:
-        options->setPassive(true);
-        break;
-    }
-  } else {
-    if (!options->hasPassive())
-      options->setPassive(false);
-  }
+  if (!options->hasPassive())
+    options->setPassive(false);
 
   if (!options->passive() && !options->PassiveSpecified()) {
     String message_text = String::Format(
@@ -447,7 +394,6 @@ bool EventTarget::addEventListener(const AtomicString& event_type,
   return addEventListener(event_type, event_listener);
 }
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 bool EventTarget::addEventListener(
     const AtomicString& event_type,
     V8EventListener* listener,
@@ -481,37 +427,6 @@ bool EventTarget::addEventListener(
   NOTREACHED();
   return false;
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-bool EventTarget::addEventListener(
-    const AtomicString& event_type,
-    V8EventListener* listener,
-    const AddEventListenerOptionsOrBoolean& options_union) {
-  EventListener* event_listener = JSEventListener::CreateOrNull(listener);
-
-  if (options_union.IsBoolean()) {
-    return addEventListener(event_type, event_listener,
-                            options_union.GetAsBoolean());
-  }
-
-  if (options_union.IsAddEventListenerOptions()) {
-    auto* resolved_options =
-        MakeGarbageCollected<AddEventListenerOptionsResolved>();
-    AddEventListenerOptions* options =
-        options_union.GetAsAddEventListenerOptions();
-    if (options->hasPassive())
-      resolved_options->setPassive(options->passive());
-    if (options->hasOnce())
-      resolved_options->setOnce(options->once());
-    if (options->hasCapture())
-      resolved_options->setCapture(options->capture());
-    if (options->hasSignal())
-      resolved_options->setSignal(options->signal());
-    return addEventListener(event_type, event_listener, resolved_options);
-  }
-
-  return addEventListener(event_type, event_listener);
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 bool EventTarget::addEventListener(const AtomicString& event_type,
                                    EventListener* listener,
@@ -615,8 +530,6 @@ void EventTarget::AddedEventListener(
     }
   }
 
-  RegisterWithScheduler(GetExecutionContext(), event_type);
-
   if (event_util::IsDOMMutationEventType(event_type)) {
     if (ExecutionContext* context = GetExecutionContext()) {
       String message_text = String::Format(
@@ -636,7 +549,6 @@ bool EventTarget::removeEventListener(const AtomicString& event_type,
   return removeEventListener(event_type, event_listener);
 }
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 bool EventTarget::removeEventListener(
     const AtomicString& event_type,
     V8EventListener* listener,
@@ -660,26 +572,6 @@ bool EventTarget::removeEventListener(
   NOTREACHED();
   return false;
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-bool EventTarget::removeEventListener(
-    const AtomicString& event_type,
-    V8EventListener* listener,
-    const EventListenerOptionsOrBoolean& options_union) {
-  EventListener* event_listener = JSEventListener::CreateOrNull(listener);
-
-  if (options_union.IsBoolean()) {
-    return removeEventListener(event_type, event_listener,
-                               options_union.GetAsBoolean());
-  }
-
-  if (options_union.IsEventListenerOptions()) {
-    EventListenerOptions* options = options_union.GetAsEventListenerOptions();
-    return removeEventListener(event_type, event_listener, options);
-  }
-
-  return removeEventListener(event_type, event_listener);
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 bool EventTarget::removeEventListener(const AtomicString& event_type,
                                       const EventListener* listener,
@@ -1084,6 +976,11 @@ void EventTarget::DispatchEnqueuedEvent(Event* event,
   }
   probe::AsyncTask async_task(context, event->async_task_id());
   DispatchEvent(*event);
+}
+
+void EventTargetWithInlineData::Trace(Visitor* visitor) const {
+  EventTargetData::Trace(visitor);
+  EventTarget::Trace(visitor);
 }
 
 STATIC_ASSERT_ENUM(WebSettings::PassiveEventListenerDefault::kFalse,

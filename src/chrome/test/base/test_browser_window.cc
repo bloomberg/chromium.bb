@@ -4,6 +4,7 @@
 
 #include "chrome/test/base/test_browser_window.h"
 
+#include "chrome/browser/sharing/sharing_dialog_data.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
@@ -238,12 +239,18 @@ TestBrowserWindow::ShowSendTabToSelfBubble(
   return nullptr;
 }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+views::Button* TestBrowserWindow::GetSharingHubIconButton() {
+  return nullptr;
+}
+#else
 sharing_hub::SharingHubBubbleView* TestBrowserWindow::ShowSharingHubBubble(
     content::WebContents* contents,
     sharing_hub::SharingHubBubbleController* controller,
     bool is_user_gesture) {
   return nullptr;
 }
+#endif
 
 bool TestBrowserWindow::IsDownloadShelfVisible() const {
   return false;

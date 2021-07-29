@@ -30,8 +30,8 @@
 #include "printing/buildflags/buildflags.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/chromeos/policy/dlp/dlp_content_manager.h"
-#include "chrome/browser/chromeos/policy/dlp/dlp_notification_helper.h"
+#include "chrome/browser/ash/policy/dlp/dlp_content_manager.h"
+#include "chrome/browser/ash/policy/dlp/dlp_notification_helper.h"
 #endif
 
 using content::BrowserThread;
@@ -95,6 +95,9 @@ bool PrintViewManager::PrintForSystemDialogNow(
   // Don't print / print preview crashed tabs.
   if (IsCrashed())
     return false;
+
+  // TODO(crbug.com/809738)  Register with `PrintBackendServiceManager` when
+  // system print is enabled out-of-process.
 
   SetPrintingRFH(print_preview_rfh_);
   GetPrintRenderFrame(print_preview_rfh_)->PrintForSystemDialog();

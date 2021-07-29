@@ -36,6 +36,10 @@ class SyncConsentScreenView {
   // Controls if the loading throbber is visible. This is used when
   // SyncScreenBehavior is unknown.
   virtual void SetThrobberVisible(bool visible) = 0;
+
+  // Set the minor mode flag, which controls whether we could use nudge
+  // techinuque on the UI.
+  virtual void SetIsMinorMode(bool value) = 0;
 };
 
 // The sole implementation of the SyncConsentScreenView, using WebUI.
@@ -60,6 +64,7 @@ class SyncConsentScreenHandler : public BaseScreenHandler,
   void Show() override;
   void Hide() override;
   void SetThrobberVisible(bool visible) override;
+  void SetIsMinorMode(bool value) override;
 
  private:
   // BaseScreenHandler:
@@ -67,9 +72,9 @@ class SyncConsentScreenHandler : public BaseScreenHandler,
   void RegisterMessages() override;
 
   // WebUI message handlers
-  void HandleContinueAndReview(const ::login::StringList& consent_description,
-                               const std::string& consent_confirmation);
-  void HandleContinueWithDefaults(
+  void HandleNonSplitSettingsContinue(
+      const bool opted_in,
+      const bool review_sync,
       const ::login::StringList& consent_description,
       const std::string& consent_confirmation);
 
@@ -88,6 +93,10 @@ class SyncConsentScreenHandler : public BaseScreenHandler,
   void RememberLocalizedValue(const std::string& name,
                               const int resource_id,
                               ::login::LocalizedValuesBuilder* builder);
+  void RememberLocalizedValueWithDeviceName(
+      const std::string& name,
+      const int resource_id,
+      ::login::LocalizedValuesBuilder* builder);
 
   // Resource IDs of the displayed strings.
   std::unordered_set<int> known_string_ids_;

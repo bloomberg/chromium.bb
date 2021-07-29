@@ -36,8 +36,7 @@ DesktopBrowserFrameAura::DesktopBrowserFrameAura(
 ///////////////////////////////////////////////////////////////////////////////
 // DesktopBrowserFrameAura, protected:
 
-DesktopBrowserFrameAura::~DesktopBrowserFrameAura() {
-}
+DesktopBrowserFrameAura::~DesktopBrowserFrameAura() {}
 
 ///////////////////////////////////////////////////////////////////////////////
 // DesktopBrowserFrameAura, views::DesktopNativeWidgetAura overrides:

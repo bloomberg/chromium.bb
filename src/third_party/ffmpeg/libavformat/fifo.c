@@ -469,7 +469,7 @@ static void *fifo_consumer_thread(void *data)
     return NULL;
 }
 
-static int fifo_mux_init(AVFormatContext *avf, ff_const59 AVOutputFormat *oformat,
+static int fifo_mux_init(AVFormatContext *avf, const AVOutputFormat *oformat,
                          const char *filename)
 {
     FifoContext *fifo = avf->priv_data;
@@ -508,7 +508,7 @@ static int fifo_mux_init(AVFormatContext *avf, ff_const59 AVOutputFormat *oforma
 static int fifo_init(AVFormatContext *avf)
 {
     FifoContext *fifo = avf->priv_data;
-    ff_const59 AVOutputFormat *oformat;
+    const AVOutputFormat *oformat;
     int ret = 0;
 
     if (fifo->recovery_wait_streamtime && !fifo->drop_pkts_on_overflow) {
@@ -697,7 +697,7 @@ static const AVClass fifo_muxer_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVOutputFormat ff_fifo_muxer = {
+const AVOutputFormat ff_fifo_muxer = {
     .name           = "fifo",
     .long_name      = NULL_IF_CONFIG_SMALL("FIFO queue pseudo-muxer"),
     .priv_data_size = sizeof(FifoContext),

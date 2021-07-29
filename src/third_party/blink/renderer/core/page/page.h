@@ -26,7 +26,6 @@
 #include <memory>
 
 #include "base/dcheck_is_on.h"
-#include "base/macros.h"
 #include "base/types/pass_key.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/text_autosizer_page_info.mojom-blink.h"
@@ -118,6 +117,8 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
        ChromeClient& chrome_client,
        scheduler::WebAgentGroupScheduler& agent_group_scheduler,
        bool is_ordinary);
+  Page(const Page&) = delete;
+  Page& operator=(const Page&) = delete;
   ~Page() override;
 
   void CloseSoon();
@@ -320,7 +321,6 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   bool RequestBeginMainFrameNotExpected(bool new_state) override;
   void OnSetPageFrozen(bool is_frozen) override;
   bool LocalMainFrameNetworkIsAlmostIdle() const override;
-  bool IsFocused() const override;
 
   void AddAutoplayFlags(int32_t flags);
   void ClearAutoplayFlags();
@@ -329,6 +329,11 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
 
   void SetInsidePortal(bool inside_portal);
   bool InsidePortal() const;
+
+  void SetIsPrerendering(bool is_prerendering) {
+    is_prerendering_ = is_prerendering;
+  }
+  bool IsPrerendering() const { return is_prerendering_; }
 
   void SetTextAutosizerPageInfo(
       const mojom::blink::TextAutosizerPageInfo& page_info) {
@@ -493,11 +498,17 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   // Accessed by frames to determine whether to expose the PortalHost object.
   bool inside_portal_ = false;
 
+  // Whether the page is being prerendered by the Prerender2
+  // feature. See content/browser/prerender/README.md.
+  //
+  // This is ordinarily initialized by WebViewImpl immediately after creating
+  // this Page. Once initialized, it can only transition from true to false on
+  // prerender activation; it does not go from false to true.
+  bool is_prerendering_ = false;
+
   mojom::blink::TextAutosizerPageInfo web_text_autosizer_page_info_;
 
   WebScopedVirtualTimePauser history_navigation_virtual_time_pauser_;
-
-  DISALLOW_COPY_AND_ASSIGN(Page);
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Page>;

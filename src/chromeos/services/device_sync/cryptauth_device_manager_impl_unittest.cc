@@ -341,7 +341,7 @@ void ExpectSyncedDevicesAndPrefAreEqual(
       std::vector<cryptauth::SoftwareFeature> supported_software_features;
       std::vector<cryptauth::SoftwareFeature> enabled_software_features;
 
-      for (const auto& it : software_features_from_prefs->DictItems()) {
+      for (const auto it : software_features_from_prefs->DictItems()) {
         ASSERT_TRUE(it.second.is_int());
 
         cryptauth::SoftwareFeature software_feature =
@@ -524,9 +524,8 @@ class DeviceSyncCryptAuthDeviceManagerImplTest
     device_dictionary->SetString("device_name", device_name_b64);
     device_dictionary->SetString("bluetooth_address", bluetooth_address_b64);
     device_dictionary->SetBoolean("unlockable", kStoredUnlockable);
-    device_dictionary->Set("beacon_seeds", std::make_unique<base::ListValue>());
-    device_dictionary->Set("software_features",
-                           std::make_unique<base::DictionaryValue>());
+    device_dictionary->SetKey("beacon_seeds", base::ListValue());
+    device_dictionary->SetKey("software_features", base::DictionaryValue());
 
     {
       ListPrefUpdate update(&pref_service_,
@@ -705,7 +704,7 @@ TEST_F(
     InitWithExistingPrefs_MigrateDeprecateBooleansFromPrefsToSoftwareFeature) {
   ListPrefUpdate update_clear(&pref_service_,
                               prefs::kCryptAuthDeviceSyncUnlockKeys);
-  update_clear.Get()->Clear();
+  update_clear.Get()->ClearList();
 
   // Simulate a deprecated device being persisted to prefs.
   auto device_dictionary = std::make_unique<base::DictionaryValue>();
@@ -716,8 +715,7 @@ TEST_F(
   device_dictionary->SetString("public_key", public_key_b64);
   device_dictionary->SetBoolean("unlock_key", true);
   device_dictionary->SetBoolean("mobile_hotspot_supported", true);
-  device_dictionary->Set("software_features",
-                         std::make_unique<base::DictionaryValue>());
+  device_dictionary->SetKey("software_features", base::DictionaryValue());
 
   ListPrefUpdate update(&pref_service_, prefs::kCryptAuthDeviceSyncUnlockKeys);
   update.Get()->Append(std::move(device_dictionary));

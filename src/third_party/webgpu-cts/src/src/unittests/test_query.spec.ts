@@ -1,14 +1,14 @@
 export const description = `
 Tests for TestQuery
 `;
+import { makeTestGroup } from '../common/framework/test_group.js';
 import {
   TestQueryMultiFile,
   TestQueryMultiTest,
   TestQueryMultiCase,
   TestQuerySingleCase,
   TestQuery,
-} from '../common/framework/query/query.js';
-import { makeTestGroup } from '../common/framework/test_group.js';
+} from '../common/internal/query/query.js';
 
 import { UnitTest } from './unit_test.js';
 

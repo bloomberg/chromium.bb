@@ -20,13 +20,10 @@
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_request_info.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
-#include "content/common/navigation_params.h"
-#include "content/common/navigation_params.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_ui_data.h"
-#include "content/public/browser/plugin_service.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -48,7 +45,13 @@
 #include "services/network/url_loader.h"
 #include "services/network/url_request_context_owner.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/navigation/navigation_params.h"
 #include "third_party/blink/public/mojom/loader/mixed_content.mojom.h"
+#include "third_party/blink/public/mojom/navigation/navigation_params.mojom.h"
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+#include "content/public/browser/plugin_service.h"
+#endif
 
 namespace content {
 
@@ -176,8 +179,8 @@ class NavigationURLLoaderImplTest : public testing::Test {
           blink::NavigationDownloadPolicy(),
       bool is_main_frame = true,
       bool upgrade_if_insecure = false) {
-    mojom::BeginNavigationParamsPtr begin_params =
-        mojom::BeginNavigationParams::New(
+    blink::mojom::BeginNavigationParamsPtr begin_params =
+        blink::mojom::BeginNavigationParams::New(
             absl::nullopt /* initiator_frame_token */, headers,
             net::LOAD_NORMAL, false /* skip_service_worker */,
             blink::mojom::RequestContextType::LOCATION,
@@ -194,7 +197,7 @@ class NavigationURLLoaderImplTest : public testing::Test {
             base::TimeTicks() /* renderer_before_unload_end */,
             absl::nullopt /* web_bundle_token */);
 
-    auto common_params = CreateCommonNavigationParams();
+    auto common_params = blink::CreateCommonNavigationParams();
     common_params->url = url;
     common_params->initiator_origin = url::Origin::Create(url);
     common_params->method = method;
@@ -251,6 +254,7 @@ class NavigationURLLoaderImplTest : public testing::Test {
         base::StringPrintf("%s: %s", net::HttpRequestHeaders::kOrigin,
                            redirect_url.GetOrigin().spec().c_str()),
         request_method, &delegate);
+    loader->Start();
     delegate.WaitForRequestRedirected();
     loader->FollowRedirect({}, {}, {}, blink::PreviewsTypes::PREVIEWS_OFF);
 
@@ -290,6 +294,7 @@ class NavigationURLLoaderImplTest : public testing::Test {
                            url.GetOrigin().spec().c_str()),
         "GET", &delegate, blink::NavigationDownloadPolicy(),
         true /*is_main_frame*/, upgrade_if_insecure);
+    loader->Start();
     delegate.WaitForRequestRedirected();
     loader->FollowRedirect({}, {}, {}, blink::PreviewsTypes::PREVIEWS_OFF);
     if (expect_request_fail) {
@@ -322,6 +327,7 @@ TEST_F(NavigationURLLoaderImplTest, IsolationInfoOfMainFrameNavigation) {
                          url.GetOrigin().spec().c_str()),
       "GET", &delegate, blink::NavigationDownloadPolicy(),
       true /*is_main_frame*/, false /*upgrade_if_insecure*/);
+  loader->Start();
   delegate.WaitForResponseStarted();
 
   ASSERT_TRUE(most_recent_resource_request_);
@@ -431,6 +437,7 @@ TEST_F(NavigationURLLoaderImplTest, RedirectModifiedHeaders) {
   TestNavigationURLLoaderDelegate delegate;
   std::unique_ptr<NavigationURLLoader> loader = CreateTestLoader(
       redirect_url, "Header1: Value1\r\nHeader2: Value2", "GET", &delegate);
+  loader->Start();
   delegate.WaitForRequestRedirected();
 
   ASSERT_TRUE(most_recent_resource_request_);

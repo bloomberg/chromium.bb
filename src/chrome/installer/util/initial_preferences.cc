@@ -8,13 +8,13 @@
 
 #include <memory>
 
+#include "base/cxx17_backports.h"
 #include "base/environment.h"
 #include "base/files/file_util.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -319,8 +319,9 @@ std::string InitialPreferences::GetVariationsSeedSignature() const {
 std::string InitialPreferences::ExtractPrefString(
     const std::string& name) const {
   std::string result;
-  std::unique_ptr<base::Value> pref_value;
-  if (initial_dictionary_->Remove(name, &pref_value)) {
+  absl::optional<base::Value> pref_value =
+      initial_dictionary_->ExtractKey(name);
+  if (pref_value.has_value()) {
     if (!pref_value->GetAsString(&result))
       NOTREACHED();
   }

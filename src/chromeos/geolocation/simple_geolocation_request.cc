@@ -26,8 +26,10 @@
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 // Location resolve timeout is usually 1 minute, so 2 minutes with 50 buckets
 // should be enough.
@@ -225,38 +227,48 @@ bool ParseServerResponse(const GURL& server_url,
   position->timestamp = base::Time::Now();
 
   if (error_object) {
-    if (!error_object->GetStringWithoutPathExpansion(
-            kMessageString, &(position->error_message))) {
+    std::string* error_message = error_object->FindStringKey(kMessageString);
+    if (!error_message) {
       position->error_message = "Server returned error without message.";
+    } else {
+      position->error_message = *error_message;
     }
 
     // Ignore result (code defaults to zero).
-    error_object->GetIntegerWithoutPathExpansion(kCodeString,
-                                                 &(position->error_code));
+    position->error_code =
+        error_object->FindIntKey(kCodeString).value_or(position->error_code);
   } else {
     position->error_message.erase();
   }
 
   if (location_object) {
-    if (!location_object->GetDoubleWithoutPathExpansion(
-            kLatString, &(position->latitude))) {
+    absl::optional<double> latitude =
+        location_object->FindDoubleKey(kLatString);
+    if (!latitude) {
       PrintGeolocationError(server_url, "Missing 'lat' attribute.", position);
       RecordUmaEvent(SIMPLE_GEOLOCATION_REQUEST_EVENT_RESPONSE_MALFORMED);
       return false;
     }
-    if (!location_object->GetDoubleWithoutPathExpansion(
-            kLngString, &(position->longitude))) {
+    position->latitude = latitude.value();
+
+    absl::optional<double> longitude =
+        location_object->FindDoubleKey(kLngString);
+    if (!longitude) {
       PrintGeolocationError(server_url, "Missing 'lon' attribute.", position);
       RecordUmaEvent(SIMPLE_GEOLOCATION_REQUEST_EVENT_RESPONSE_MALFORMED);
       return false;
     }
-    if (!response_object->GetDoubleWithoutPathExpansion(
-            kAccuracyString, &(position->accuracy))) {
+    position->longitude = longitude.value();
+
+    absl::optional<double> accuracy =
+        response_object->FindDoubleKey(kAccuracyString);
+    if (!accuracy) {
       PrintGeolocationError(
           server_url, "Missing 'accuracy' attribute.", position);
       RecordUmaEvent(SIMPLE_GEOLOCATION_REQUEST_EVENT_RESPONSE_MALFORMED);
       return false;
     }
+    position->accuracy = accuracy.value();
   }
 
   if (error_object) {

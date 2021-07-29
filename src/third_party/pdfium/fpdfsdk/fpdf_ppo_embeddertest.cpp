@@ -5,13 +5,18 @@
 #include <memory>
 #include <string>
 
+#include "core/fpdfapi/page/cpdf_form.h"
+#include "core/fpdfapi/page/cpdf_formobject.h"
+#include "fpdfsdk/cpdfsdk_helpers.h"
 #include "public/cpp/fpdf_scopers.h"
 #include "public/fpdf_edit.h"
 #include "public/fpdf_ppo.h"
 #include "public/fpdf_save.h"
 #include "public/fpdfview.h"
 #include "testing/embedder_test.h"
+#include "testing/embedder_test_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/base/cxx17_backports.h"
 
 namespace {
 
@@ -41,6 +46,25 @@ TEST_F(FPDFPPOEmbedderTest, ViewerPreferences) {
   EXPECT_TRUE(output_doc);
   EXPECT_TRUE(FPDF_CopyViewerPreferences(output_doc, document()));
   FPDF_CloseDocument(output_doc);
+}
+
+TEST_F(FPDFPPOEmbedderTest, ImportPagesByIndex) {
+  ASSERT_TRUE(OpenDocument("viewer_ref.pdf"));
+
+  FPDF_PAGE page = LoadPage(0);
+  EXPECT_TRUE(page);
+
+  ScopedFPDFDocument output_doc(FPDF_CreateNewDocument());
+  ASSERT_TRUE(output_doc);
+  EXPECT_TRUE(FPDF_CopyViewerPreferences(output_doc.get(), document()));
+
+  static constexpr int kPageIndices[] = {1};
+  EXPECT_TRUE(FPDF_ImportPagesByIndex(output_doc.get(), document(),
+                                      kPageIndices, pdfium::size(kPageIndices),
+                                      0));
+  EXPECT_EQ(1, FPDF_GetPageCount(output_doc.get()));
+
+  UnloadPage(page);
 }
 
 TEST_F(FPDFPPOEmbedderTest, ImportPages) {
@@ -123,6 +147,155 @@ TEST_F(FPDFPPOEmbedderTest, NupRenderImage) {
   }
 }
 
+TEST_F(FPDFPPOEmbedderTest, ImportPageToXObject) {
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+  static const char kChecksum[] = "d6ebc0a8afc22fe0137f54ce54e1a19c";
+#else
+  static const char kChecksum[] = "2d88d180af7109eb346439f7c855bb29";
+#endif
+
+  ASSERT_TRUE(OpenDocument("rectangles.pdf"));
+
+  {
+    ScopedFPDFDocument output_doc(FPDF_CreateNewDocument());
+    ASSERT_TRUE(output_doc);
+
+    FPDF_XOBJECT xobject =
+        FPDF_NewXObjectFromPage(output_doc.get(), document(), 0);
+    ASSERT_TRUE(xobject);
+
+    for (int i = 0; i < 2; ++i) {
+      ScopedFPDFPage page(FPDFPage_New(output_doc.get(), 0, 612, 792));
+      ASSERT_TRUE(page);
+
+      FPDF_PAGEOBJECT page_object = FPDF_NewFormObjectFromXObject(xobject);
+      ASSERT_TRUE(page_object);
+      EXPECT_EQ(FPDF_PAGEOBJ_FORM, FPDFPageObj_GetType(page_object));
+      FPDFPage_InsertObject(page.get(), page_object);
+      EXPECT_TRUE(FPDFPage_GenerateContent(page.get()));
+
+      // TODO(thestig): This should have `kChecksum`.
+      ScopedFPDFBitmap page_bitmap = RenderPage(page.get());
+      CompareBitmap(page_bitmap.get(), 612, 792,
+                    pdfium::kBlankPage612By792Checksum);
+    }
+
+    EXPECT_TRUE(FPDF_SaveAsCopy(output_doc.get(), this, 0));
+
+    FPDF_CloseXObject(xobject);
+  }
+
+  constexpr int kExpectedPageCount = 2;
+  ASSERT_TRUE(OpenSavedDocument());
+
+  FPDF_PAGE saved_pages[kExpectedPageCount];
+  FPDF_PAGEOBJECT xobjects[kExpectedPageCount];
+  for (int i = 0; i < kExpectedPageCount; ++i) {
+    saved_pages[i] = LoadSavedPage(i);
+    ASSERT_TRUE(saved_pages[i]);
+
+    EXPECT_EQ(1, FPDFPage_CountObjects(saved_pages[i]));
+    xobjects[i] = FPDFPage_GetObject(saved_pages[i], 0);
+    ASSERT_TRUE(xobjects[i]);
+    ASSERT_EQ(FPDF_PAGEOBJ_FORM, FPDFPageObj_GetType(xobjects[i]));
+    EXPECT_EQ(8, FPDFFormObj_CountObjects(xobjects[i]));
+
+    {
+      ScopedFPDFBitmap page_bitmap = RenderPage(saved_pages[i]);
+      CompareBitmap(page_bitmap.get(), 612, 792, kChecksum);
+    }
+  }
+
+  // Peek at object internals to make sure the two XObjects use the same stream.
+  EXPECT_NE(xobjects[0], xobjects[1]);
+  CPDF_PageObject* obj1 = CPDFPageObjectFromFPDFPageObject(xobjects[0]);
+  ASSERT_TRUE(obj1->AsForm());
+  ASSERT_TRUE(obj1->AsForm()->form());
+  ASSERT_TRUE(obj1->AsForm()->form()->GetStream());
+  CPDF_PageObject* obj2 = CPDFPageObjectFromFPDFPageObject(xobjects[1]);
+  ASSERT_TRUE(obj2->AsForm());
+  ASSERT_TRUE(obj2->AsForm()->form());
+  ASSERT_TRUE(obj2->AsForm()->form()->GetStream());
+  EXPECT_EQ(obj1->AsForm()->form()->GetStream(),
+            obj2->AsForm()->form()->GetStream());
+
+  for (FPDF_PAGE saved_page : saved_pages)
+    CloseSavedPage(saved_page);
+
+  CloseSavedDocument();
+}
+
+TEST_F(FPDFPPOEmbedderTest, ImportPageToXObjectWithSameDoc) {
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+  static const char kChecksum[] = "8e7d672f49f9ca98fb9157824cefc204";
+#else
+  static const char kChecksum[] = "4d5ca14827b7707f8283e639b33c121a";
+#endif
+
+  ASSERT_TRUE(OpenDocument("rectangles.pdf"));
+
+  FPDF_XOBJECT xobject = FPDF_NewXObjectFromPage(document(), document(), 0);
+  ASSERT_TRUE(xobject);
+
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+
+  {
+    ScopedFPDFBitmap bitmap = RenderLoadedPage(page);
+    CompareBitmap(bitmap.get(), 200, 300, pdfium::kRectanglesChecksum);
+  }
+
+  FPDF_PAGEOBJECT page_object = FPDF_NewFormObjectFromXObject(xobject);
+  ASSERT_TRUE(page_object);
+  ASSERT_EQ(FPDF_PAGEOBJ_FORM, FPDFPageObj_GetType(page_object));
+
+  static constexpr FS_MATRIX kMatrix = {0.5f, 0.0f, 0.0f, 0.5f, 0.0f, 0.0f};
+  EXPECT_TRUE(FPDFPageObj_SetMatrix(page_object, &kMatrix));
+
+  FPDFPage_InsertObject(page, page_object);
+  EXPECT_TRUE(FPDFPage_GenerateContent(page));
+
+  {
+    // TODO(thestig): This should have `kChecksum`.
+    ScopedFPDFBitmap bitmap = RenderLoadedPage(page);
+    CompareBitmap(bitmap.get(), 200, 300, pdfium::kRectanglesChecksum);
+  }
+
+  FPDF_CloseXObject(xobject);
+
+  EXPECT_TRUE(FPDF_SaveAsCopy(document(), this, 0));
+  VerifySavedDocument(200, 300, kChecksum);
+
+  UnloadPage(page);
+}
+
+TEST_F(FPDFPPOEmbedderTest, XObjectNullParams) {
+  ASSERT_TRUE(OpenDocument("rectangles.pdf"));
+  ASSERT_EQ(1, FPDF_GetPageCount(document()));
+
+  EXPECT_FALSE(FPDF_NewXObjectFromPage(nullptr, nullptr, -1));
+  EXPECT_FALSE(FPDF_NewXObjectFromPage(nullptr, nullptr, 0));
+  EXPECT_FALSE(FPDF_NewXObjectFromPage(nullptr, nullptr, 1));
+  EXPECT_FALSE(FPDF_NewXObjectFromPage(document(), nullptr, -1));
+  EXPECT_FALSE(FPDF_NewXObjectFromPage(document(), nullptr, 0));
+  EXPECT_FALSE(FPDF_NewXObjectFromPage(document(), nullptr, 1));
+  EXPECT_FALSE(FPDF_NewXObjectFromPage(nullptr, document(), -1));
+  EXPECT_FALSE(FPDF_NewXObjectFromPage(nullptr, document(), 0));
+  EXPECT_FALSE(FPDF_NewXObjectFromPage(nullptr, document(), 1));
+
+  {
+    ScopedFPDFDocument output_doc(FPDF_CreateNewDocument());
+    ASSERT_TRUE(output_doc);
+    EXPECT_FALSE(FPDF_NewXObjectFromPage(output_doc.get(), document(), -1));
+    EXPECT_FALSE(FPDF_NewXObjectFromPage(output_doc.get(), document(), 1));
+  }
+
+  // Should be a no-op.
+  FPDF_CloseXObject(nullptr);
+
+  EXPECT_FALSE(FPDF_NewFormObjectFromXObject(nullptr));
+}
+
 TEST_F(FPDFPPOEmbedderTest, BUG_925981) {
   ASSERT_TRUE(OpenDocument("bug_925981.pdf"));
   ScopedFPDFDocument output_doc_2up(
@@ -158,6 +331,79 @@ TEST_F(FPDFPPOEmbedderTest, BadCircularViewerPref) {
 
   EXPECT_TRUE(FPDF_SaveAsCopy(output_doc, &writer, 0));
   FPDF_CloseDocument(output_doc);
+}
+
+TEST_F(FPDFPPOEmbedderTest, BadIndices) {
+  ASSERT_TRUE(OpenDocument("hello_world.pdf"));
+
+  FPDF_PAGE page = LoadPage(0);
+  EXPECT_TRUE(page);
+
+  ScopedFPDFDocument output_doc(FPDF_CreateNewDocument());
+  EXPECT_TRUE(output_doc);
+
+  static constexpr int kBadIndices1[] = {-1};
+  EXPECT_FALSE(FPDF_ImportPagesByIndex(output_doc.get(), document(),
+                                       kBadIndices1, pdfium::size(kBadIndices1),
+                                       0));
+
+  static constexpr int kBadIndices2[] = {1};
+  EXPECT_FALSE(FPDF_ImportPagesByIndex(output_doc.get(), document(),
+                                       kBadIndices2, pdfium::size(kBadIndices2),
+                                       0));
+
+  static constexpr int kBadIndices3[] = {-1, 0, 1};
+  EXPECT_FALSE(FPDF_ImportPagesByIndex(output_doc.get(), document(),
+                                       kBadIndices3, pdfium::size(kBadIndices3),
+                                       0));
+
+  static constexpr int kBadIndices4[] = {42};
+  EXPECT_FALSE(FPDF_ImportPagesByIndex(output_doc.get(), document(),
+                                       kBadIndices4, pdfium::size(kBadIndices4),
+                                       0));
+
+  UnloadPage(page);
+}
+
+TEST_F(FPDFPPOEmbedderTest, GoodIndices) {
+  ASSERT_TRUE(OpenDocument("viewer_ref.pdf"));
+
+  FPDF_PAGE page = LoadPage(0);
+  EXPECT_TRUE(page);
+
+  ScopedFPDFDocument output_doc(FPDF_CreateNewDocument());
+  EXPECT_TRUE(output_doc);
+
+  static constexpr int kGoodIndices1[] = {0, 0, 0, 0};
+  EXPECT_TRUE(FPDF_ImportPagesByIndex(output_doc.get(), document(),
+                                      kGoodIndices1,
+                                      pdfium::size(kGoodIndices1), 0));
+  EXPECT_EQ(4, FPDF_GetPageCount(output_doc.get()));
+
+  static constexpr int kGoodIndices2[] = {0};
+  EXPECT_TRUE(FPDF_ImportPagesByIndex(output_doc.get(), document(),
+                                      kGoodIndices2,
+                                      pdfium::size(kGoodIndices2), 0));
+  EXPECT_EQ(5, FPDF_GetPageCount(output_doc.get()));
+
+  static constexpr int kGoodIndices3[] = {4};
+  EXPECT_TRUE(FPDF_ImportPagesByIndex(output_doc.get(), document(),
+                                      kGoodIndices3,
+                                      pdfium::size(kGoodIndices3), 0));
+  EXPECT_EQ(6, FPDF_GetPageCount(output_doc.get()));
+
+  static constexpr int kGoodIndices4[] = {1, 2, 3};
+  EXPECT_TRUE(FPDF_ImportPagesByIndex(output_doc.get(), document(),
+                                      kGoodIndices4,
+                                      pdfium::size(kGoodIndices4), 0));
+  EXPECT_EQ(9, FPDF_GetPageCount(output_doc.get()));
+
+  // Passing in a nullptr should import all the pages.
+  EXPECT_TRUE(
+      FPDF_ImportPagesByIndex(output_doc.get(), document(), nullptr, 0, 0));
+  EXPECT_EQ(14, FPDF_GetPageCount(output_doc.get()));
+
+  UnloadPage(page);
 }
 
 TEST_F(FPDFPPOEmbedderTest, BadRanges) {
@@ -213,7 +459,10 @@ TEST_F(FPDFPPOEmbedderTest, BUG_664284) {
 
   FPDF_DOCUMENT output_doc = FPDF_CreateNewDocument();
   EXPECT_TRUE(output_doc);
-  EXPECT_TRUE(FPDF_ImportPages(output_doc, document(), "1", 0));
+
+  static constexpr int kIndices[] = {0};
+  EXPECT_TRUE(FPDF_ImportPagesByIndex(output_doc, document(), kIndices,
+                                      pdfium::size(kIndices), 0));
   FPDF_CloseDocument(output_doc);
 
   UnloadPage(page);
@@ -248,7 +497,10 @@ TEST_F(FPDFPPOEmbedderTest, BUG_750568) {
 
   FPDF_DOCUMENT output_doc = FPDF_CreateNewDocument();
   ASSERT_TRUE(output_doc);
-  EXPECT_TRUE(FPDF_ImportPages(output_doc, document(), "1,2,3,4", 0));
+
+  static constexpr int kIndices[] = {0, 1, 2, 3};
+  EXPECT_TRUE(FPDF_ImportPagesByIndex(output_doc, document(), kIndices,
+                                      pdfium::size(kIndices), 0));
   ASSERT_EQ(4, FPDF_GetPageCount(output_doc));
   for (size_t i = 0; i < 4; ++i) {
     FPDF_PAGE page = FPDF_LoadPage(output_doc, i);
@@ -280,7 +532,10 @@ TEST_F(FPDFPPOEmbedderTest, ImportWithZeroLengthStream) {
 
   FPDF_DOCUMENT new_doc = FPDF_CreateNewDocument();
   EXPECT_TRUE(new_doc);
-  EXPECT_TRUE(FPDF_ImportPages(new_doc, document(), "1", 0));
+
+  static constexpr int kIndices[] = {0};
+  EXPECT_TRUE(FPDF_ImportPagesByIndex(new_doc, document(), kIndices,
+                                      pdfium::size(kIndices), 0));
 
   EXPECT_EQ(1, FPDF_GetPageCount(new_doc));
   FPDF_PAGE new_page = FPDF_LoadPage(new_doc, 0);

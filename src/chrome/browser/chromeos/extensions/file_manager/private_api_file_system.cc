@@ -9,14 +9,11 @@
 
 #include <algorithm>
 #include <cctype>
-#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
-#include "base/memory/ref_counted_memory.h"
-#include "base/memory/scoped_refptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/strcat.h"
@@ -29,20 +26,18 @@
 #include "chrome/browser/ash/arc/fileapi/arc_documents_provider_root_map.h"
 #include "chrome/browser/ash/arc/fileapi/arc_documents_provider_util.h"
 #include "chrome/browser/ash/drive/file_system_util.h"
+#include "chrome/browser/ash/file_manager/fileapi_util.h"
+#include "chrome/browser/ash/file_manager/path_util.h"
+#include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router_factory.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_stream_md5_digester.h"
-#include "chrome/browser/chromeos/extensions/file_manager/file_stream_string_converter.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
-#include "chrome/browser/chromeos/file_manager/fileapi_util.h"
-#include "chrome/browser/chromeos/file_manager/path_util.h"
-#include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ash/clipboard_util.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "chrome/common/extensions/api/file_manager_private_internal.h"
 #include "chromeos/disks/disk.h"
@@ -206,12 +201,29 @@ void OnCopyCompleted(
                      source_url, destination_url, error));
 }
 
+// Notifies the start of a copy to extensions via event router.
+void NotifyCopyStart(
+    void* profile_id,
+    storage::FileSystemOperationRunner::OperationID operation_id,
+    const FileSystemURL& source_url,
+    const FileSystemURL& destination_url,
+    int64_t space_needed) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  file_manager::EventRouter* event_router =
+      GetEventRouterByProfileId(profile_id);
+  if (event_router)
+    event_router->OnCopyStarted(operation_id, source_url.ToGURL(),
+                                destination_url.ToGURL(), space_needed);
+}
+
 // Starts the copy operation via FileSystemOperationRunner.
 storage::FileSystemOperationRunner::OperationID StartCopyOnIOThread(
     void* profile_id,
     scoped_refptr<storage::FileSystemContext> file_system_context,
     const FileSystemURL& source_url,
-    const FileSystemURL& destination_url) {
+    const FileSystemURL& destination_url,
+    int64_t space_needed) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Note: |operation_id| is owned by the callback for
@@ -231,6 +243,10 @@ storage::FileSystemOperationRunner::OperationID StartCopyOnIOThread(
                           base::Unretained(operation_id)),
       base::BindOnce(&OnCopyCompleted, profile_id, base::Owned(operation_id),
                      source_url, destination_url));
+  // Notify the start of copy to send total size.
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&NotifyCopyStart, profile_id, *operation_id,
+                                source_url, destination_url, space_needed));
   return *operation_id;
 }
 
@@ -267,14 +283,6 @@ void ComputeChecksumRespondOnUIThread(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   content::GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), std::move(hash)));
-}
-
-void CopyImageRespondOnUIThread(
-    base::OnceCallback<void(scoped_refptr<base::RefCountedString>)> callback,
-    scoped_refptr<base::RefCountedString> bytes) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  content::GetUIThreadTaskRunner({})->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), std::move(bytes)));
 }
 
 // Calls a response callback on the UI thread.
@@ -408,8 +416,8 @@ ExtensionFunction::ResponseAction FileManagerPrivateGrantAccessFunction::Run() {
           file_system_url.mount_type() != storage::kFileSystemTypeExternal) {
         continue;
       }
-      backend->GrantFileAccessToExtension(source_url().host(),
-                                          file_system_url.virtual_path());
+      backend->GrantFileAccessToOrigin(url::Origin::Create(source_url()),
+                                       file_system_url.virtual_path());
       content::ChildProcessSecurityPolicy::GetInstance()
           ->GrantCreateReadWriteFile(render_frame_host()->GetProcess()->GetID(),
                                      file_system_url.path());
@@ -524,7 +532,8 @@ void FileManagerPrivateInternalAddFileWatchFunction::
           &PostNotificationCallbackTaskToUIThread,
           base::BindRepeating(
               &file_manager::EventRouter::OnWatcherManagerNotification,
-              event_router, file_system_url, extension_id_or_file_app_id())));
+              event_router, file_system_url,
+              url::Origin::Create(source_url()))));
 }
 
 void FileManagerPrivateInternalAddFileWatchFunction::
@@ -537,7 +546,7 @@ void FileManagerPrivateInternalAddFileWatchFunction::
   // Obsolete. Fallback code if storage::WatcherManager is not implemented.
   event_router->AddFileWatch(
       file_system_url.path(), file_system_url.virtual_path(),
-      extension_id_or_file_app_id(),
+      url::Origin::Create(source_url()),
       base::BindOnce(&FileWatchFunctionBase::RespondWith, this));
 }
 
@@ -567,7 +576,7 @@ void FileManagerPrivateInternalRemoveFileWatchFunction::
 
   // Obsolete. Fallback code if storage::WatcherManager is not implemented.
   event_router->RemoveFileWatch(file_system_url.path(),
-                                extension_id_or_file_app_id());
+                                url::Origin::Create(source_url()));
   RespondWith(true);
 }
 
@@ -674,8 +683,8 @@ void FileManagerPrivateGetSizeStatsFunction::OnGetSizeStats(
     const uint64_t* remaining_size) {
   std::unique_ptr<base::DictionaryValue> sizes(new base::DictionaryValue());
 
-  sizes->SetDouble("totalSize", static_cast<double>(*total_size));
-  sizes->SetDouble("remainingSize", static_cast<double>(*remaining_size));
+  sizes->SetDoubleKey("totalSize", static_cast<double>(*total_size));
+  sizes->SetDoubleKey("remainingSize", static_cast<double>(*remaining_size));
 
   Respond(OneArgument(base::Value::FromUniquePtrValue(std::move(sizes))));
 }
@@ -914,7 +923,7 @@ void FileManagerPrivateInternalStartCopyFunction::RunAfterCheckDiskSpace(
   if (spaces_available.empty()) {
     // It might be a virtual path. In this case we just assume that it has
     // enough space.
-    RunAfterFreeDiskSpace(true);
+    RunAfterFreeDiskSpace(true, space_needed);
     return;
   }
   // If the target is not internal storage or Drive, succeed if sufficient space
@@ -924,27 +933,28 @@ void FileManagerPrivateInternalStartCopyFunction::RunAfterCheckDiskSpace(
       !(drive_integration_service &&
         drive_integration_service->GetMountPointPath().IsParent(
             destination_url_.path()))) {
-    RunAfterFreeDiskSpace(spaces_available[0] > space_needed);
+    RunAfterFreeDiskSpace(spaces_available[0] > space_needed, space_needed);
     return;
   }
 
   // If there isn't enough cloud space, fail.
   if (spaces_available.size() > 1 && spaces_available[1] < space_needed) {
-    RunAfterFreeDiskSpace(false);
+    RunAfterFreeDiskSpace(false, space_needed);
     return;
   }
 
   // If the destination directory is local hard drive or Google Drive we
   // must leave some additional space to make sure we don't break the system.
   if (spaces_available[0] - cryptohome::kMinFreeSpaceInBytes > space_needed) {
-    RunAfterFreeDiskSpace(true);
+    RunAfterFreeDiskSpace(true, space_needed);
     return;
   }
-  RunAfterFreeDiskSpace(false);
+  RunAfterFreeDiskSpace(false, space_needed);
 }
 
 void FileManagerPrivateInternalStartCopyFunction::RunAfterFreeDiskSpace(
-    bool available) {
+    bool available,
+    int64_t space_needed) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!available) {
@@ -958,7 +968,7 @@ void FileManagerPrivateInternalStartCopyFunction::RunAfterFreeDiskSpace(
   content::GetIOThreadTaskRunner({})->PostTaskAndReplyWithResult(
       FROM_HERE,
       base::BindOnce(&StartCopyOnIOThread, profile_, file_system_context,
-                     source_url_, destination_url_),
+                     source_url_, destination_url_, space_needed),
       base::BindOnce(
           &FileManagerPrivateInternalStartCopyFunction::RunAfterStartCopy,
           this));
@@ -969,79 +979,6 @@ void FileManagerPrivateInternalStartCopyFunction::RunAfterStartCopy(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   Respond(OneArgument(base::Value(operation_id)));
-}
-
-FileManagerPrivateInternalCopyImageToClipboardFunction::
-    FileManagerPrivateInternalCopyImageToClipboardFunction()
-    : converter_(std::make_unique<storage::FileStreamStringConverter>()) {}
-
-FileManagerPrivateInternalCopyImageToClipboardFunction::
-    ~FileManagerPrivateInternalCopyImageToClipboardFunction() = default;
-
-ExtensionFunction::ResponseAction
-FileManagerPrivateInternalCopyImageToClipboardFunction::Run() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  using extensions::api::file_manager_private_internal::CopyImageToClipboard::
-      Params;
-  const std::unique_ptr<Params> params(Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params);
-
-  if (params->url.empty()) {
-    return RespondNow(Error("Image file URL must be provided."));
-  }
-
-  scoped_refptr<storage::FileSystemContext> file_system_context =
-      file_manager::util::GetFileSystemContextForRenderFrameHost(
-          Profile::FromBrowserContext(browser_context()), render_frame_host());
-
-  FileSystemURL file_system_url(
-      file_system_context->CrackURL(GURL(params->url)));
-  if (!file_system_url.is_valid()) {
-    return RespondNow(Error("Image file URL was invalid"));
-  }
-
-  clipboard_sequence_ =
-      ui::ClipboardNonBacked::GetForCurrentThread()->GetSequenceNumber(
-          ui::ClipboardBuffer::kCopyPaste);
-  std::unique_ptr<storage::FileStreamReader> reader =
-      file_system_context->CreateFileStreamReader(
-          file_system_url, 0, storage::kMaximumLength, base::Time());
-
-  storage::FileStreamStringConverter::ResultCallback result_callback =
-      base::BindOnce(
-          &CopyImageRespondOnUIThread,
-          base::BindOnce(
-              &FileManagerPrivateInternalCopyImageToClipboardFunction::
-                  MoveBytesToClipboard,
-              this));
-
-  content::GetIOThreadTaskRunner({})->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &storage::FileStreamStringConverter::ConvertFileStreamToString,
-          base::Unretained(converter_.get()), std::move(reader),
-          std::move(result_callback)));
-
-  return RespondLater();
-}
-
-void FileManagerPrivateInternalCopyImageToClipboardFunction::
-    MoveBytesToClipboard(scoped_refptr<base::RefCountedString> bytes) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  clipboard_util::DecodeImageFileAndCopyToClipboard(
-      clipboard_sequence_, /*maintain_clipboard=*/true,
-      /*png_data=*/std::move(bytes),
-      base::BindOnce(
-          &FileManagerPrivateInternalCopyImageToClipboardFunction::RespondWith,
-          this));
-}
-
-void FileManagerPrivateInternalCopyImageToClipboardFunction::RespondWith(
-    bool is_on_clipboard) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  Respond(OneArgument(base::Value(is_on_clipboard)));
 }
 
 ExtensionFunction::ResponseAction FileManagerPrivateCancelCopyFunction::Run() {
@@ -1102,7 +1039,7 @@ FileManagerPrivateInternalResolveIsolatedEntriesFunction::Run() {
   file_manager::util::ConvertFileDefinitionListToEntryDefinitionList(
       file_manager::util::GetFileSystemContextForSourceURL(profile,
                                                            source_url()),
-      url::Origin::Create(source_url().GetOrigin()),
+      url::Origin::Create(source_url()),
       file_definition_list,  // Safe, since copied internally.
       base::BindOnce(
           &FileManagerPrivateInternalResolveIsolatedEntriesFunction::

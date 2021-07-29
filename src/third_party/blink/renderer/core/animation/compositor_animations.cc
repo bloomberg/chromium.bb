@@ -187,8 +187,10 @@ bool IsNoOpBGColorOrVariableAnimation(const PropertyHandle& property,
   return is_no_op_variable_anim || is_no_op_bgcolor_anim;
 }
 
-bool CompositedAnimationRequiresProperties(CSSPropertyID property) {
-  switch (property) {
+bool CompositedAnimationRequiresProperties(const PropertyHandle& property) {
+  if (!property.IsCSSProperty())
+    return false;
+  switch (property.GetCSSProperty().PropertyID()) {
     case CSSPropertyID::kOpacity:
     case CSSPropertyID::kBackdropFilter:
     case CSSPropertyID::kRotate:
@@ -200,7 +202,6 @@ bool CompositedAnimationRequiresProperties(CSSPropertyID property) {
     default:
       return false;
   }
-  return false;
 }
 
 }  // namespace
@@ -327,12 +328,19 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
           bool background_transfers_to_view = false;
           Animation* compositable_animation = nullptr;
           if (RuntimeEnabledFeatures::CompositeBGColorAnimationEnabled()) {
+            // Not having a layout object is a reason for not compositing marked
+            // in CompositorAnimations::CheckCanStartElementOnCompositor.
+            if (!layout_object)
+              continue;
             BackgroundColorPaintImageGenerator* generator =
                 target_element.GetDocument()
                     .GetFrame()
                     ->GetBackgroundColorPaintImageGenerator();
-            compositable_animation =
-                generator->GetAnimationIfCompositable(&target_element);
+            // The generator may be null in tests.
+            if (generator) {
+              compositable_animation =
+                  generator->GetAnimationIfCompositable(&target_element);
+            }
             // When this is true, we have a background-color animation in the
             // body element, while the view is responsible for painting the
             // body's background. In this case, we need to let the
@@ -348,7 +356,7 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
           // BackgroundColorPaintWorklet, as a result, we should not composite
           // the background color animation on the table rows or cols.
           if (!RuntimeEnabledFeatures::CompositeBGColorAnimationEnabled() ||
-              !layout_object || layout_object->IsLayoutTableCol() ||
+              layout_object->IsLayoutTableCol() ||
               layout_object->IsTableRow() || background_transfers_to_view ||
               !compositable_animation) {
             DefaultToUnsupportedProperty(unsupported_properties, property,
@@ -391,11 +399,9 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
           break;
         }
         default:
-          // We skip the rest of the loop in this case for two reasons:
-          //   i.  Getting a CompositorElementId below will DCHECK if we pass it
-          //       an unsupported property.
-          //   ii. GetCompositorKeyframeValue() will be false so we will
-          //       accidentally count this as kInvalidAnimationOrEffect as well.
+          // We skip the rest of the loop in this case because
+          // |GetCompositorKeyframeValue()| will be false so we will
+          // accidentally count this as kInvalidAnimationOrEffect as well.
           DefaultToUnsupportedProperty(unsupported_properties, property,
                                        &reasons);
           continue;
@@ -406,29 +412,12 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
       if (!keyframe->GetCompositorKeyframeValue()) {
         reasons |= kInvalidAnimationOrEffect;
       }
-
-      if (CompositedAnimationRequiresProperties(
-              property.GetCSSProperty().PropertyID())) {
-        if (!paint_artifact_compositor) {
-          // TODO(pdr): We should return |kTargetHasInvalidCompositingState|.
-          continue;
-        } else if (!target_element.GetLayoutObject() ||
-                   !target_element.GetLayoutObject()
-                        ->FirstFragment()
-                        .PaintProperties()) {
-          reasons |= kTargetHasInvalidCompositingState;
-        } else {
-          CompositorElementId target_element_id =
-              CompositorElementIdFromUniqueObjectId(
-                  layout_object->UniqueId(),
-                  CompositorElementNamespaceForProperty(
-                      property.GetCSSProperty().PropertyID()));
-          DCHECK(target_element_id);
-          if (!paint_artifact_compositor->HasComposited(target_element_id))
-            reasons |= kTargetHasInvalidCompositingState;
-        }
-      }
     }
+  }
+
+  if (CompositorPropertyAnimationsHaveNoEffect(target_element, effect,
+                                               paint_artifact_compositor)) {
+    reasons |= kCompositorPropertyAnimationsHaveNoEffect;
   }
 
   // TODO: Support multiple transform property animations on the compositor
@@ -450,6 +439,54 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
   }
 
   return reasons;
+}
+
+bool CompositorAnimations::CompositorPropertyAnimationsHaveNoEffect(
+    const Element& target_element,
+    const EffectModel& effect,
+    const PaintArtifactCompositor* paint_artifact_compositor) {
+  LayoutObject* layout_object = target_element.GetLayoutObject();
+  if (!layout_object || !layout_object->FirstFragment().PaintProperties())
+    return false;
+
+  if (!paint_artifact_compositor) {
+    // TODO(pdr): This should return true. This likely only affects tests.
+    return false;
+  }
+
+  bool any_compositor_properties_missing = false;
+  bool any_compositor_properties_present = false;
+
+  const auto& keyframe_effect = To<KeyframeEffectModelBase>(effect);
+  const auto& groups = keyframe_effect.GetPropertySpecificKeyframeGroups();
+  for (const PropertyHandle& property : groups.Keys()) {
+    if (!CompositedAnimationRequiresProperties(property))
+      continue;
+
+    CompositorElementId target_element_id =
+        CompositorElementIdFromUniqueObjectId(
+            layout_object->UniqueId(),
+            CompositorAnimations::CompositorElementNamespaceForProperty(
+                property.GetCSSProperty().PropertyID()));
+    DCHECK(target_element_id);
+    if (paint_artifact_compositor->HasComposited(target_element_id))
+      any_compositor_properties_present = true;
+    else
+      any_compositor_properties_missing = true;
+  }
+
+  // Because animations are a direct compositing reason for paint properties,
+  // the only case when we wouldn't have compositor paint properties if when
+  // they were optimized out due to not having an effect. An example of this is
+  // hidden animations that do not paint.
+  if (any_compositor_properties_missing) {
+    // Because animations create all properties (crbug.com/900241), we should
+    // either have all properties or be missing all properties.
+    DCHECK(!any_compositor_properties_present);
+    return true;
+  }
+
+  return false;
 }
 
 CompositorAnimations::FailureReasons
@@ -663,9 +700,20 @@ bool CompositorAnimations::ConvertTimingForCompositor(
   DCHECK(animation_playback_rate);
   double delay =
       animation_playback_rate > 0 ? timing.start_delay.InSecondsF() : 0;
-  out.scaled_time_offset =
-      -base::TimeDelta::FromSecondsD(delay / animation_playback_rate) +
-      time_offset;
+
+  base::TimeDelta scaled_delay =
+      base::TimeDelta::FromSecondsD(delay / animation_playback_rate);
+
+  // Arithmetic operations involving a value that is effectively +/-infinity
+  // result in a value that is +/-infinity or undefined. Check before computing
+  // the scaled time offset to guard against the following:
+  //     infinity - infinity or
+  //     -infinity + infinity
+  // The result of either of these edge cases is undefined.
+  if (scaled_delay.is_max() || scaled_delay.is_min())
+    return false;
+
+  out.scaled_time_offset = -scaled_delay + time_offset;
   // Delay is effectively +/- infinity.
   if (out.scaled_time_offset.is_max() || out.scaled_time_offset.is_min())
     return false;

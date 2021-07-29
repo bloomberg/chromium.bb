@@ -30,6 +30,7 @@
 #include "components/user_manager/remove_user_delegate.h"
 #include "components/user_manager/user_type.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace user_manager {
 namespace {
@@ -823,22 +824,22 @@ void UserManagerBase::EnsureUsersLoaded() {
 
   for (auto* user : users_) {
     auto& account_id = user->GetAccountId();
-    std::u16string display_name;
-    if (prefs_display_names->GetStringWithoutPathExpansion(
-            account_id.GetUserEmail(), &display_name)) {
-      user->set_display_name(display_name);
+    const std::string* display_name =
+        prefs_display_names->FindStringKey(account_id.GetUserEmail());
+    if (display_name) {
+      user->set_display_name(base::UTF8ToUTF16(*display_name));
     }
 
-    std::u16string given_name;
-    if (prefs_given_names->GetStringWithoutPathExpansion(
-            account_id.GetUserEmail(), &given_name)) {
-      user->set_given_name(given_name);
+    const std::string* given_name =
+        prefs_given_names->FindStringKey(account_id.GetUserEmail());
+    if (given_name) {
+      user->set_given_name(base::UTF8ToUTF16(*given_name));
     }
 
-    std::string display_email;
-    if (prefs_display_emails->GetStringWithoutPathExpansion(
-            account_id.GetUserEmail(), &display_email)) {
-      user->set_display_email(display_email);
+    const std::string* display_email =
+        prefs_display_emails->FindStringKey(account_id.GetUserEmail());
+    if (display_email) {
+      user->set_display_email(*display_email);
     }
   }
   user_loading_stage_ = STAGE_LOADED;
@@ -888,8 +889,8 @@ void UserManagerBase::GuestUserLoggedIn() {
 void UserManagerBase::AddUserRecord(User* user) {
   // Add the user to the front of the user list.
   ListPrefUpdate prefs_users_update(GetLocalState(), kRegularUsersPref);
-  prefs_users_update->Insert(
-      0, std::make_unique<base::Value>(user->GetAccountId().GetUserEmail()));
+  prefs_users_update->Insert(prefs_users_update->GetList().begin(),
+                             base::Value(user->GetAccountId().GetUserEmail()));
   users_.insert(users_.begin(), user);
 }
 
@@ -954,15 +955,15 @@ User::OAuthTokenStatus UserManagerBase::LoadUserOAuthStatus(
 
   const base::DictionaryValue* prefs_oauth_status =
       GetLocalState()->GetDictionary(kUserOAuthTokenStatus);
-  int oauth_token_status = User::OAUTH_TOKEN_STATUS_UNKNOWN;
-  if (prefs_oauth_status &&
-      prefs_oauth_status->GetIntegerWithoutPathExpansion(
-          account_id.GetUserEmail(), &oauth_token_status)) {
-    User::OAuthTokenStatus status =
-        static_cast<User::OAuthTokenStatus>(oauth_token_status);
-    return status;
-  }
-  return User::OAUTH_TOKEN_STATUS_UNKNOWN;
+  if (!prefs_oauth_status)
+    return User::OAUTH_TOKEN_STATUS_UNKNOWN;
+
+  absl::optional<int> oauth_token_status =
+      prefs_oauth_status->FindIntKey(account_id.GetUserEmail());
+  if (!oauth_token_status.has_value())
+    return User::OAUTH_TOKEN_STATUS_UNKNOWN;
+
+  return static_cast<User::OAuthTokenStatus>(oauth_token_status.value());
 }
 
 bool UserManagerBase::LoadForceOnlineSignin(const AccountId& account_id) const {
@@ -970,12 +971,11 @@ bool UserManagerBase::LoadForceOnlineSignin(const AccountId& account_id) const {
 
   const base::DictionaryValue* prefs_force_online =
       GetLocalState()->GetDictionary(kUserForceOnlineSignin);
-  bool force_online_signin = false;
   if (prefs_force_online) {
-    prefs_force_online->GetBooleanWithoutPathExpansion(
-        account_id.GetUserEmail(), &force_online_signin);
+    return prefs_force_online->FindBoolKey(account_id.GetUserEmail())
+        .value_or(false);
   }
-  return force_online_signin;
+  return false;
 }
 
 void UserManagerBase::RemoveNonCryptohomeData(const AccountId& account_id) {
@@ -1007,7 +1007,7 @@ User* UserManagerBase::RemoveRegularOrSupervisedUserFromList(
     const AccountId& account_id,
     bool notify) {
   ListPrefUpdate prefs_users_update(GetLocalState(), kRegularUsersPref);
-  prefs_users_update->Clear();
+  prefs_users_update->ClearList();
   User* user = nullptr;
   for (UserList::iterator it = users_.begin(); it != users_.end();) {
     if ((*it)->GetAccountId() == account_id) {

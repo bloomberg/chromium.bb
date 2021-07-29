@@ -67,7 +67,7 @@ bool CXFA_FFTextEdit::LoadWidget() {
   {
     CFWL_Widget::ScopedUpdateLock update_lock(pFWLEdit);
     UpdateWidgetProperty();
-    pFWLEdit->SetText(m_pNode->GetValue(XFA_VALUEPICTURE_Display));
+    pFWLEdit->SetText(m_pNode->GetValue(XFA_ValuePicture::kDisplay));
   }
 
   return CXFA_FFField::LoadWidget();
@@ -103,14 +103,14 @@ void CXFA_FFTextEdit::UpdateWidgetProperty() {
     iMaxChars = 0;
 
   Optional<int32_t> numCells = m_pNode->GetNumberOfCells();
-  if (!numCells) {
+  if (!numCells.has_value()) {
     pWidget->SetLimit(iMaxChars);
-  } else if (*numCells == 0) {
+  } else if (numCells == 0) {
     dwExtendedStyle |= FWL_STYLEEXT_EDT_CombText;
     pWidget->SetLimit(iMaxChars > 0 ? iMaxChars : 1);
   } else {
     dwExtendedStyle |= FWL_STYLEEXT_EDT_CombText;
-    pWidget->SetLimit(*numCells);
+    pWidget->SetLimit(numCells.value());
   }
 
   dwExtendedStyle |= GetAlignment();
@@ -197,7 +197,7 @@ bool CXFA_FFTextEdit::OnKillFocus(CXFA_FFWidget* pNewWidget) {
 
 bool CXFA_FFTextEdit::CommitData() {
   WideString wsText = ToEdit(GetNormalWidget())->GetText();
-  if (m_pNode->SetValue(XFA_VALUEPICTURE_Edit, wsText)) {
+  if (m_pNode->SetValue(XFA_ValuePicture::kEdit, wsText)) {
     GetDoc()->GetDocView()->UpdateUIDisplay(m_pNode.Get(), this);
     return true;
   }
@@ -209,7 +209,7 @@ void CXFA_FFTextEdit::ValidateNumberField(const WideString& wsText) {
   if (GetNode()->GetFFWidgetType() != XFA_FFWidgetType::kNumericEdit)
     return;
 
-  IXFA_AppProvider* pAppProvider = GetAppProvider();
+  CXFA_FFApp::CallbackIface* pAppProvider = GetAppProvider();
   if (!pAppProvider)
     return;
 
@@ -267,25 +267,25 @@ bool CXFA_FFTextEdit::UpdateFWLData() {
   if (!pEdit)
     return false;
 
-  XFA_VALUEPICTURE eType = XFA_VALUEPICTURE_Display;
+  XFA_ValuePicture eType = XFA_ValuePicture::kDisplay;
   if (IsFocused())
-    eType = XFA_VALUEPICTURE_Edit;
+    eType = XFA_ValuePicture::kEdit;
 
   bool bUpdate = false;
   if (m_pNode->GetFFWidgetType() == XFA_FFWidgetType::kTextEdit &&
-      !m_pNode->GetNumberOfCells()) {
+      !m_pNode->GetNumberOfCells().has_value()) {
     XFA_Element elementType;
     int32_t iMaxChars;
     std::tie(elementType, iMaxChars) = m_pNode->GetMaxChars();
     if (elementType == XFA_Element::ExData)
-      iMaxChars = eType == XFA_VALUEPICTURE_Edit ? iMaxChars : 0;
+      iMaxChars = eType == XFA_ValuePicture::kEdit ? iMaxChars : 0;
     if (pEdit->GetLimit() != iMaxChars) {
       pEdit->SetLimit(iMaxChars);
       bUpdate = true;
     }
   } else if (m_pNode->GetFFWidgetType() == XFA_FFWidgetType::kBarcode) {
     int32_t nDataLen = 0;
-    if (eType == XFA_VALUEPICTURE_Edit) {
+    if (eType == XFA_ValuePicture::kEdit) {
       nDataLen = static_cast<CXFA_Barcode*>(m_pNode->GetUIChildNode())
                      ->GetDataLength()
                      .value_or(0);
@@ -296,7 +296,7 @@ bool CXFA_FFTextEdit::UpdateFWLData() {
   }
   WideString wsText = m_pNode->GetValue(eType);
   WideString wsOldText = pEdit->GetText();
-  if (wsText != wsOldText || (eType == XFA_VALUEPICTURE_Edit && bUpdate)) {
+  if (wsText != wsOldText || (eType == XFA_ValuePicture::kEdit && bUpdate)) {
     pEdit->SetTextSkipNotify(wsText);
     bUpdate = true;
   }

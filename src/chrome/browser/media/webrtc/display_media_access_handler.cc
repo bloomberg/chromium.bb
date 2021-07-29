@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -34,7 +35,7 @@
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/chromeos/policy/dlp/dlp_content_manager.h"
+#include "chrome/browser/ash/policy/dlp/dlp_content_manager.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(OS_MAC)
@@ -253,12 +254,6 @@ void DisplayMediaAccessHandler::ProcessQueuedAccessRequest(
   picker_params.request_audio =
       pending_request.request.audio_type ==
       blink::mojom::MediaStreamType::DISPLAY_AUDIO_CAPTURE;
-  // getDisplayMedia's checkbox state defaults to unchecked, but for
-  // getCurrentBrowsingContextMedia, we default to checked.
-  picker_params.approve_audio_by_default =
-      (picker_params.request_audio &&
-       pending_request.request.video_type ==
-           blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE_THIS_TAB);
   pending_request.picker->Show(picker_params, std::move(source_lists),
                                std::move(done_callback));
 }

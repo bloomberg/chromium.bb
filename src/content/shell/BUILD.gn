@@ -29,6 +29,9 @@ if (is_android) {
   import("//v8/gni/v8.gni")
 }
 
+# TODO(spang): Investigate using shell_views with is_chromecast=true.
+shell_use_toolkit_views = toolkit_views && !is_chromecast
+
 declare_args() {
   content_shell_product_name = "Content Shell"
   content_shell_version = "999.77.34.5"
@@ -131,6 +134,8 @@ static_library("content_shell_lib") {
     "browser/shell_javascript_dialog.h",
     "browser/shell_javascript_dialog_manager.cc",
     "browser/shell_javascript_dialog_manager.h",
+    "browser/shell_paths.cc",
+    "browser/shell_paths.h",
     "browser/shell_permission_manager.cc",
     "browser/shell_permission_manager.h",
     "browser/shell_platform_data_aura.cc",
@@ -231,10 +236,15 @@ static_library("content_shell_lib") {
     "//cc/base",
     "//components/cdm/renderer",
     "//components/keyed_service/content",
+    "//components/metrics:net",
     "//components/network_session_configurator/common",
     "//components/performance_manager",
+    "//components/permissions",
+    "//components/prefs",
     "//components/services/storage/test_api",
     "//components/url_formatter",
+    "//components/variations",
+    "//components/variations/service",
     "//components/web_cache/renderer",
     "//content:content_resources",
     "//content:dev_ui_content_resources",
@@ -311,8 +321,12 @@ static_library("content_shell_lib") {
     ]
   }
 
-  # TODO(spang): Investigate using shell_views with is_chromecast=true.
-  if (toolkit_views && !is_chromecast) {
+  if (shell_use_toolkit_views) {
+    # All content_shell code should use this define instead of TOOLKIT_VIEWS,
+    # since any transitive dependency on //ui/views from another component will
+    # cause TOOLKIT_VIEWS to be defined, even when content_shell does not want
+    # to use it internally. See https://crbug.com/1218907.
+    defines += [ "SHELL_USE_TOOLKIT_VIEWS=1" ]
     deps += [ "//ui/views" ]
   }
 
@@ -324,7 +338,7 @@ static_library("content_shell_lib") {
       "//ui/wm",
     ]
 
-    if (toolkit_views && !is_chromecast) {
+    if (shell_use_toolkit_views) {
       sources += [
         "browser/shell_platform_delegate_views.cc",
         "browser/shell_web_contents_view_delegate_views.cc",
@@ -351,6 +365,13 @@ static_library("content_shell_lib") {
 
   if (is_chromeos_ash) {
     deps += [ "//chromeos/dbus" ]
+  }
+
+  if (is_chromeos_lacros) {
+    deps += [
+      "//chromeos/dbus/constants",
+      "//chromeos/lacros",
+    ]
   }
 
   if (is_linux || is_chromeos) {
@@ -436,7 +457,7 @@ repack("pak") {
     sources += [ "$root_gen_dir/content/browser/tracing/tracing_resources.pak" ]
   }
 
-  if (toolkit_views && !is_chromecast) {
+  if (shell_use_toolkit_views) {
     deps += [ "//ui/views/resources" ]
     sources +=
         [ "$root_gen_dir/ui/views/resources/views_resources_100_percent.pak" ]
@@ -478,10 +499,7 @@ if (is_android) {
     data_deps = [ ":content_shell_app" ]
 
     if (is_component_build) {
-      ldflags = [
-        "-rpath",
-        "@executable_path/../Frameworks",
-      ]
+      ldflags = [ "-Wl,-rpath,@executable_path/../Frameworks" ]
     }
   }
 } else {
@@ -675,10 +693,7 @@ if (is_mac) {
       # root output directory. The framework is at
       # Content Shell.app/Contents/Frameworks/Content Shell Framework.framework/Versions/C/Content Shell Framework
       # so use loader_path to go back to the root output directory.
-      ldflags += [
-        "-rpath",
-        "@loader_path/../../../../../..",
-      ]
+      ldflags += [ "-Wl,-rpath,@loader_path/../../../../../.." ]
     }
 
     info_plist_target = ":content_shell_framework_plist"
@@ -724,12 +739,10 @@ if (is_mac) {
           #     Content Shell Framework.framework/Versions/C/Helpers/
           #     Content Shell Helper.app/Contents/MacOS/
           # so set rpath up to the base.
-          "-rpath",
-          "@executable_path/../../../../../../../../../..",
+          "-Wl,-rpath,@executable_path/../../../../../../../../../..",
 
           # ... and up to Contents/Frameworks.
-          "-rpath",
-          "@executable_path/../../../../../../..",
+          "-Wl,-rpath,@executable_path/../../../../../../..",
         ]
 
         # In a component build, the framework is directly linked to the
@@ -818,13 +831,12 @@ group("content_shell_crash_test") {
   testonly = true
   data_deps = [
     ":content_shell",
+    "//testing:test_scripts_shared",
     "//third_party/mesa_headers",
   ]
   data = [
     "//content/shell/tools/breakpad_integration_test.py",
-    "//testing/scripts/common.py",
     "//testing/scripts/content_shell_crash_test.py",
-    "//testing/xvfb.py",
   ]
   if (is_mac && !use_system_xcode) {
     data += [

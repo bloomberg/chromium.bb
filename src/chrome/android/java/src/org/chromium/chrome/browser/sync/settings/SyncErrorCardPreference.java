@@ -13,18 +13,17 @@ import androidx.preference.Preference;
 import androidx.preference.PreferenceViewHolder;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.ProfileDataCache;
 import org.chromium.chrome.browser.signin.ui.PersonalizedSigninPromoView;
-import org.chromium.chrome.browser.sync.ProfileSyncService;
+import org.chromium.chrome.browser.sync.SyncService;
 import org.chromium.chrome.browser.sync.settings.SyncSettingsUtils.SyncError;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 
 public class SyncErrorCardPreference extends Preference
-        implements ProfileSyncService.SyncStateChangedListener, ProfileDataCache.Observer {
+        implements SyncService.SyncStateChangedListener, ProfileDataCache.Observer {
     /**
      * Listener for the buttons in the error card.
      */
@@ -64,7 +63,7 @@ public class SyncErrorCardPreference extends Preference
     public void onAttached() {
         super.onAttached();
         mProfileDataCache.addObserver(this);
-        ProfileSyncService syncService = ProfileSyncService.get();
+        SyncService syncService = SyncService.get();
         if (syncService != null) {
             syncService.addSyncStateChangedListener(this);
         }
@@ -75,7 +74,7 @@ public class SyncErrorCardPreference extends Preference
     public void onDetached() {
         super.onDetached();
         mProfileDataCache.removeObserver(this);
-        ProfileSyncService syncService = ProfileSyncService.get();
+        SyncService syncService = SyncService.get();
         if (syncService != null) {
             syncService.removeSyncStateChangedListener(this);
         }
@@ -95,11 +94,6 @@ public class SyncErrorCardPreference extends Preference
     }
 
     private void update() {
-        // If feature is not enabled keep the preference at the default hidden state.
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)) {
-            return;
-        }
-
         mSyncError = SyncSettingsUtils.getSyncError();
         boolean suppressSyncSetupIncompleteFromSigninPage =
                 (mSyncError == SyncError.SYNC_SETUP_INCOMPLETE)
@@ -132,6 +126,9 @@ public class SyncErrorCardPreference extends Preference
         } else {
             errorCardView.getStatusMessage().setVisibility(View.VISIBLE);
         }
+        errorCardView.getStatusMessage().setText(
+                SyncSettingsUtils.getSyncErrorCardTitle(getContext(), mSyncError));
+
         errorCardView.getDescription().setText(
                 SyncSettingsUtils.getSyncErrorHint(getContext(), mSyncError));
 
@@ -157,7 +154,7 @@ public class SyncErrorCardPreference extends Preference
     }
 
     /**
-     * {@link ProfileSyncServiceListener} implementation.
+     * {@link SyncService.SyncStateChangedListener} implementation.
      */
     @Override
     public void syncStateChanged() {
@@ -170,24 +167,5 @@ public class SyncErrorCardPreference extends Preference
     @Override
     public void onProfileDataUpdated(String accountEmail) {
         update();
-    }
-
-    private boolean isTrustedVaultError() {
-        switch (mSyncError) {
-            case SyncError.TRUSTED_VAULT_KEY_REQUIRED_FOR_EVERYTHING:
-            case SyncError.TRUSTED_VAULT_KEY_REQUIRED_FOR_PASSWORDS:
-                return true;
-            case SyncError.ANDROID_SYNC_DISABLED:
-            case SyncError.AUTH_ERROR:
-            case SyncError.CLIENT_OUT_OF_DATE:
-            case SyncError.OTHER_ERRORS:
-            case SyncError.PASSPHRASE_REQUIRED:
-            case SyncError.SYNC_SETUP_INCOMPLETE:
-            case SyncError.NO_ERROR:
-                return false;
-            default:
-                assert false : "Unknown sync error";
-                return false;
-        }
     }
 }

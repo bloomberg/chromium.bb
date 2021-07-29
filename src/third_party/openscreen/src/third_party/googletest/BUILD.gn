@@ -11,9 +11,7 @@ if (build_with_chromium) {
       "//build/config/compiler:default_include_dirs",
       "../../build:openscreen_include_dirs",
     ]
-    public_deps = [
-      "//third_party/googletest:gmock",
-    ]
+    public_deps = [ "//third_party/googletest:gmock" ]
   }
 
   source_set("gtest") {
@@ -22,9 +20,7 @@ if (build_with_chromium) {
       "//build/config/compiler:default_include_dirs",
       "../../build:openscreen_include_dirs",
     ]
-    public_deps = [
-      "//third_party/googletest:gtest",
-    ]
+    public_deps = [ "//third_party/googletest:gtest" ]
   }
 
   source_set("gtest_main") {
@@ -33,9 +29,7 @@ if (build_with_chromium) {
       "//build/config/compiler:default_include_dirs",
       "../../build:openscreen_include_dirs",
     ]
-    public_deps = [
-      "//third_party/googletest:gtest_main",
-    ]
+    public_deps = [ "//third_party/googletest:gtest_main" ]
   }
 } else {
   config("gmock_config") {
@@ -68,7 +62,7 @@ if (build_with_chromium) {
   source_set("gmock") {
     testonly = true
     sources = [
-      "src/googlemock/include/gmock.h",
+      "src/googlemock/include/gmock/gmock.h",
       "src/googlemock/src/gmock-all.cc",
     ]
 
@@ -77,9 +71,7 @@ if (build_with_chromium) {
       ":gtest_config",
     ]
 
-    public_deps = [
-      ":gtest",
-    ]
+    public_deps = [ ":gtest" ]
 
     include_dirs = [ "src/googlemock" ]
   }
@@ -87,7 +79,7 @@ if (build_with_chromium) {
   source_set("gtest") {
     testonly = true
     sources = [
-      "src/googletest/include/gtest.h",
+      "src/googletest/include/gtest/gtest.h",
       "src/googletest/src/gtest-all.cc",
     ]
 
@@ -98,11 +90,7 @@ if (build_with_chromium) {
 
   source_set("gtest_main") {
     testonly = true
-    sources = [
-      "src/googletest/src/gtest_main.cc",
-    ]
-    deps = [
-      ":gtest",
-    ]
+    sources = [ "src/googletest/src/gtest_main.cc" ]
+    deps = [ ":gtest" ]
   }
 }

@@ -11,9 +11,9 @@
 
 #include <memory>
 
+#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "ui/accessibility/accessibility_features.h"
@@ -74,18 +74,38 @@ class WindowsAccessibilityEnabler
     BrowserAccessibilityStateImpl::GetInstance()->OnAccessibilityApiUsage();
   }
 
-  void OnUIAutomationUsed() override {
+  void OnBasicUIAutomationUsed() override {
+    AddAXModeForUIA(ui::AXMode::kNativeAPIs);
+  }
+
+  void OnAdvancedUIAutomationUsed() override {
+    AddAXModeForUIA(ui::AXMode::kWebContents);
+  }
+
+  void OnProbableUIAutomationScreenReaderDetected() override {
+    // Same as kAXModeComplete but without kHTML as it is not needed for UIA.
+    AddAXModeForUIA(ui::kAXModeCompleteNoHTML);
+  }
+
+  void OnTextPatternRequested() override {
+    AddAXModeForUIA(ui::AXMode::kInlineTextBoxes);
+  }
+
+  void AddAXModeForUIA(ui::AXMode mode) {
     DCHECK(::switches::IsExperimentalAccessibilityPlatformUIAEnabled());
 
     // Firing a UIA event can cause UIA to call back into our APIs, don't
     // consider this to be usage.
     if (firing_uia_events_)
       return;
+
     // UI Automation insulates providers from knowing about the client(s) asking
-    // for information. When UI Automation is requested, assume the presence of
-    // a full-fledged accessibility technology and enable full support.
+    // for information. When IsSelectiveUIAEnablement is Enabled, we turn on
+    // various parts of accessibility depending on what APIs have been called.
+    if (!features::IsSelectiveUIAEnablementEnabled())
+      mode = ui::kAXModeComplete;
     BrowserAccessibilityStateImpl::GetInstance()->AddAccessibilityModeFlags(
-        ui::kAXModeComplete);
+        mode);
     BrowserAccessibilityStateImpl::GetInstance()->OnAccessibilityApiUsage();
   }
 

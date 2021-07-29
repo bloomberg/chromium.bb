@@ -1,1 +1,13 @@
-SKIP: TINT_UNIMPLEMENTED crbug.com/tint/726: module-scope private and workgroup variables not yet implemented
+#include <metal_stdlib>
+
+using namespace metal;
+struct S {
+  int i;
+};
+
+kernel void tint_symbol() {
+  thread S tint_symbol_1 = {};
+  int const i = tint_symbol_1.i;
+  return;
+}
+

@@ -24,6 +24,22 @@ enum class NetworkRequestType : int {
   kQueryNextPage = 10,
 };
 
+// Denotes how the stream content loading is used for.
+enum class LoadType {
+  // Loads the stream model into memory. If successful, this directly forces a
+  // model load in |FeedStream()| before completing the task.
+  kInitialLoad = 0,
+  // Loads additional content from the network when the model is already loaded.
+  kLoadMore = 1,
+  // Refreshes the stored stream data from the network, on the background. This
+  // will fail if the model is already loaded.
+  kBackgroundRefresh = 2,
+  // Refreshes the stored stream data from the network, per the user request.
+  // The stored stream data and the loaded model will not be affected if the
+  // network request fails.
+  kManualRefresh = 3,
+};
+
 // This must be kept in sync with FeedLoadStreamStatus in enums.xml.
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -64,8 +80,13 @@ enum class LoadStreamStatus {
   kDataInStoreIsForAnotherUser = 23,
   kAbortWithPendingClearAll = 24,
   kAlreadyHaveUnreadContent = 25,
-  kMaxValue = kAlreadyHaveUnreadContent,
+  kNotAWebFeedSubscriber = 26,
+  kMaxValue = kNotAWebFeedSubscriber,
 };
+
+// Were we able to load fresh Feed data. This should be 'true' unless some kind
+// of error occurred.
+bool IsLoadingSuccessfulAndFresh(LoadStreamStatus status);
 
 std::ostream& operator<<(std::ostream& out, LoadStreamStatus value);
 
@@ -100,6 +121,9 @@ enum class UploadActionsBatchStatus {
 std::ostream& operator<<(std::ostream& out, UploadActionsStatus value);
 std::ostream& operator<<(std::ostream& out, UploadActionsBatchStatus value);
 
+// This must be kept in sync with WebFeedRefreshStatus in enums.xml.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 // Status of updating recommended or subscribed web feeds.
 enum class WebFeedRefreshStatus {
   kNoStatus = 0,
@@ -107,6 +131,7 @@ enum class WebFeedRefreshStatus {
   kNetworkFailure = 2,
   kNetworkRequestThrottled = 3,
   kAbortFetchWebFeedPendingClearAll = 4,
+  kMaxValue = kAbortFetchWebFeedPendingClearAll,
 };
 std::ostream& operator<<(std::ostream& out, WebFeedRefreshStatus value);
 

@@ -671,6 +671,14 @@ const char *GLenumToString(GLenumGroup enumGroup, unsigned int value)
                     return "GL_CREATE_SPARSE_ALIASED_BIT_ANGLE";
                 case 0x8:
                     return "GL_CREATE_MUTABLE_FORMAT_BIT_ANGLE";
+                case 0xA:
+                    return "GL_LINES_ADJACENCY_OES";
+                case 0xB:
+                    return "GL_LINE_STRIP_ADJACENCY_OES";
+                case 0xC:
+                    return "GL_TRIANGLES_ADJACENCY_OES";
+                case 0xD:
+                    return "GL_TRIANGLE_STRIP_ADJACENCY_OES";
                 case 0x10:
                     return "GL_CREATE_CUBE_COMPATIBLE_BIT_ANGLE";
                 case 0x16:
@@ -1965,6 +1973,8 @@ const char *GLenumToString(GLenumGroup enumGroup, unsigned int value)
                     return "GL_POLYGON_OFFSET_FILL";
                 case 0x8074:
                     return "GL_VERTEX_ARRAY";
+                case 0x8DB9:
+                    return "GL_FRAMEBUFFER_SRGB_EXT";
                 default:
                     return UnknownGLenumToString(value);
             }

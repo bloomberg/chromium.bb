@@ -370,7 +370,12 @@ group("libopenjpeg2") {
 
 config("fx_libopenjpeg_warnings") {
   visibility = [ ":*" ]
-  if (is_win && !is_clang && target_cpu == "x86") {
+  if (is_clang) {
+    cflags = [
+      # Various files convert MAX_INT to double and similar without casting.
+      "-Wno-implicit-int-float-conversion",
+    ]
+  } else if (is_win && target_cpu == "x86") {
     cflags = [
       # Signed/unsigned comparisons.
       "/wd4018",
@@ -596,6 +601,8 @@ source_set("pdfium_base") {
     "base/check_op.h",
     "base/compiler_specific.h",
     "base/containers/adapters.h",
+    "base/containers/contains.h",
+    "base/cxx17_backports.h",
     "base/debug/alias.cc",
     "base/debug/alias.h",
     "base/immediate_crash.h",
@@ -607,6 +614,7 @@ source_set("pdfium_base") {
     "base/numerics/checked_math_impl.h",
     "base/numerics/clamped_math.h",
     "base/numerics/clamped_math_impl.h",
+    "base/numerics/ranges.h",
     "base/numerics/safe_conversions.h",
     "base/numerics/safe_conversions_arm_impl.h",
     "base/numerics/safe_conversions_impl.h",
@@ -616,7 +624,6 @@ source_set("pdfium_base") {
     "base/numerics/safe_math_shared_impl.h",
     "base/optional.h",
     "base/span.h",
-    "base/stl_util.h",
     "base/sys_byteorder.h",
     "base/template_util.h",
   ]

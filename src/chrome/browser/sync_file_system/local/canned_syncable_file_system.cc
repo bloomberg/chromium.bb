@@ -34,10 +34,12 @@
 #include "storage/browser/file_system/file_system_operation_context.h"
 #include "storage/browser/file_system/file_system_operation_runner.h"
 #include "storage/browser/quota/quota_manager.h"
+#include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/test/mock_blob_util.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "storage/browser/test/test_file_system_options.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "url/origin.h"
 
 using base::File;
@@ -244,7 +246,7 @@ void CannedSyncableFileSystem::SetUp(QuotaMode quota_mode) {
       base::MakeRefCounted<storage::MockSpecialStoragePolicy>();
 
   if (quota_mode == QUOTA_ENABLED) {
-    quota_manager_ = new QuotaManager(
+    quota_manager_ = base::MakeRefCounted<QuotaManager>(
         false /* is_incognito */, data_dir_.GetPath(), io_task_runner_.get(),
         /*quota_change_callback=*/base::DoNothing(), storage_policy.get(),
         storage::GetQuotaSettingsFunc());
@@ -259,10 +261,10 @@ void CannedSyncableFileSystem::SetUp(QuotaMode quota_mode) {
   std::vector<std::unique_ptr<storage::FileSystemBackend>> additional_backends;
   additional_backends.push_back(SyncFileSystemBackend::CreateForTesting());
 
-  file_system_context_ = new FileSystemContext(
-      io_task_runner_.get(), file_task_runner_.get(),
-      storage::ExternalMountPoints::CreateRefCounted().get(),
-      storage_policy.get(),
+  file_system_context_ = FileSystemContext::Create(
+      io_task_runner_, file_task_runner_,
+      storage::ExternalMountPoints::CreateRefCounted(),
+      std::move(storage_policy),
       quota_manager_.get() ? quota_manager_->proxy() : nullptr,
       std::move(additional_backends),
       std::vector<storage::URLRequestAutoMountHandler>(), data_dir_.GetPath(),
@@ -676,7 +678,7 @@ void CannedSyncableFileSystem::DoGetUsageAndQuota(
   EXPECT_TRUE(is_filesystem_opened_);
   DCHECK(quota_manager_.get());
   quota_manager_->GetUsageAndQuota(
-      url::Origin::Create(origin_), storage_type(),
+      blink::StorageKey(url::Origin::Create(origin_)), storage_type(),
       base::BindOnce(&DidGetUsageAndQuota, std::move(callback), usage, quota));
 }
 

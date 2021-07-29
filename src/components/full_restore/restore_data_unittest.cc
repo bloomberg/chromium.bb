@@ -14,6 +14,7 @@
 #include "components/full_restore/app_restore_data.h"
 #include "components/full_restore/window_info.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
+#include "extensions/common/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/rect.h"
@@ -28,6 +29,7 @@ constexpr char kAppId2[] = "bbb";
 constexpr int32_t kWindowId1 = 100;
 constexpr int32_t kWindowId2 = 200;
 constexpr int32_t kWindowId3 = 300;
+constexpr int32_t kWindowId4 = 400;
 
 constexpr int64_t kDisplayId1 = 22000000;
 constexpr int64_t kDisplayId2 = 11000000;
@@ -37,6 +39,10 @@ constexpr char kFilePath2[] = "path2";
 
 constexpr char kIntentActionView[] = "view";
 constexpr char kIntentActionSend[] = "send";
+
+constexpr bool kAppTypeBrower1 = false;
+constexpr bool kAppTypeBrower2 = true;
+constexpr bool kAppTypeBrower3 = false;
 
 constexpr char kMimeType[] = "text/plain";
 
@@ -55,10 +61,6 @@ constexpr bool kVisibleOnAllWorkspaces1 = false;
 constexpr bool kVisibleOnAllWorkspaces2 = false;
 constexpr bool kVisibleOnAllWorkspaces3 = true;
 
-constexpr gfx::Rect kRestoreBounds1(10, 20, 110, 120);
-constexpr gfx::Rect kRestoreBounds2(30, 40, 130, 140);
-constexpr gfx::Rect kRestoreBounds3(50, 60, 150, 160);
-
 constexpr gfx::Rect kCurrentBounds1(11, 21, 111, 121);
 constexpr gfx::Rect kCurrentBounds2(31, 41, 131, 141);
 constexpr gfx::Rect kCurrentBounds3(51, 61, 151, 161);
@@ -66,9 +68,16 @@ constexpr gfx::Rect kCurrentBounds3(51, 61, 151, 161);
 constexpr chromeos::WindowStateType kWindowStateType1 =
     chromeos::WindowStateType::kMaximized;
 constexpr chromeos::WindowStateType kWindowStateType2 =
-    chromeos::WindowStateType::kInactive;
+    chromeos::WindowStateType::kMinimized;
 constexpr chromeos::WindowStateType kWindowStateType3 =
     chromeos::WindowStateType::kFullscreen;
+
+constexpr ui::WindowShowState kPreMinimizedWindowStateType1 =
+    ui::SHOW_STATE_DEFAULT;
+constexpr ui::WindowShowState kPreMinimizedWindowStateType2 =
+    ui::SHOW_STATE_MAXIMIZED;
+constexpr ui::WindowShowState kPreMinimizedWindowStateType3 =
+    ui::SHOW_STATE_DEFAULT;
 
 constexpr gfx::Size kMaxSize1(600, 800);
 constexpr gfx::Size kMinSize1(100, 50);
@@ -79,6 +88,12 @@ constexpr uint32_t kPrimaryColor2(0xFF000000);
 
 constexpr uint32_t kStatusBarColor1(0xFF00FF00);
 constexpr uint32_t kStatusBarColor2(0xFF000000);
+
+constexpr char16_t kTitle1[] = u"test title1";
+constexpr char16_t kTitle2[] = u"test title2";
+
+constexpr gfx::Rect kBoundsInRoot1(11, 21, 111, 121);
+constexpr gfx::Rect kBoundsInRoot2(31, 41, 131, 141);
 
 }  // namespace
 
@@ -118,6 +133,7 @@ class RestoreDataTest : public testing::Test {
             WindowOpenDisposition::NEW_FOREGROUND_TAB, kDisplayId2,
             std::vector<base::FilePath>{base::FilePath(kFilePath2)},
             CreateIntent(kIntentActionView, kMimeType, kShareText2));
+    app_launch_info2->app_type_browser = kAppTypeBrower2;
 
     std::unique_ptr<AppLaunchInfo> app_launch_info3 =
         std::make_unique<AppLaunchInfo>(
@@ -136,29 +152,31 @@ class RestoreDataTest : public testing::Test {
     WindowInfo window_info1;
     window_info1.activation_index = kActivationIndex1;
     window_info1.desk_id = kDeskId1;
-    window_info1.restore_bounds = kRestoreBounds1;
     window_info1.current_bounds = kCurrentBounds1;
     window_info1.window_state_type = kWindowStateType1;
     window_info1.display_id = kDisplayId2;
     window_info1.arc_extra_info = WindowInfo::ArcExtraInfo();
     window_info1.arc_extra_info->maximum_size = kMaxSize1;
     window_info1.arc_extra_info->minimum_size = kMinSize1;
+    window_info1.arc_extra_info->title = kTitle1;
+    window_info1.arc_extra_info->bounds_in_root = kBoundsInRoot1;
 
     WindowInfo window_info2;
     window_info2.activation_index = kActivationIndex2;
     window_info2.desk_id = kDeskId2;
-    window_info2.restore_bounds = kRestoreBounds2;
     window_info2.current_bounds = kCurrentBounds2;
     window_info2.window_state_type = kWindowStateType2;
+    window_info2.pre_minimized_show_state_type = kPreMinimizedWindowStateType2;
     window_info2.display_id = kDisplayId1;
     window_info2.arc_extra_info = WindowInfo::ArcExtraInfo();
     window_info2.arc_extra_info->minimum_size = kMinSize2;
+    window_info2.arc_extra_info->title = kTitle2;
+    window_info2.arc_extra_info->bounds_in_root = kBoundsInRoot2;
 
     WindowInfo window_info3;
     window_info3.activation_index = kActivationIndex3;
     window_info3.desk_id = kDeskId3;
     window_info3.visible_on_all_workspaces = kVisibleOnAllWorkspaces3;
-    window_info3.restore_bounds = kRestoreBounds3;
     window_info3.current_bounds = kCurrentBounds3;
     window_info3.window_state_type = kWindowStateType3;
     window_info3.display_id = kDisplayId1;
@@ -181,14 +199,17 @@ class RestoreDataTest : public testing::Test {
                             int64_t display_id,
                             std::vector<base::FilePath> file_paths,
                             apps::mojom::IntentPtr intent,
+                            bool app_type_browser,
                             int32_t activation_index,
                             int32_t desk_id,
                             bool visible_on_all_workspaces,
-                            const gfx::Rect& restore_bounds,
                             const gfx::Rect& current_bounds,
                             chromeos::WindowStateType window_state_type,
+                            ui::WindowShowState pre_minimized_show_state_type,
                             absl::optional<gfx::Size> max_size,
                             absl::optional<gfx::Size> min_size,
+                            absl::optional<std::u16string> title,
+                            absl::optional<gfx::Rect> bounds_in_root,
                             uint32_t primary_color,
                             uint32_t status_bar_color) {
     EXPECT_TRUE(data->container.has_value());
@@ -210,6 +231,14 @@ class RestoreDataTest : public testing::Test {
     EXPECT_EQ(intent->mime_type, data->intent.value()->mime_type);
     EXPECT_EQ(intent->share_text, data->intent.value()->share_text);
 
+    if (!app_type_browser)
+      // This field should only be written if it is true.
+      EXPECT_FALSE(data->app_type_browser.has_value());
+    else {
+      EXPECT_TRUE(data->app_type_browser.has_value());
+      EXPECT_EQ(app_type_browser, data->app_type_browser.value());
+    }
+
     EXPECT_TRUE(data->activation_index.has_value());
     EXPECT_EQ(activation_index, data->activation_index.value());
 
@@ -225,14 +254,19 @@ class RestoreDataTest : public testing::Test {
                 data->visible_on_all_workspaces.value());
     }
 
-    EXPECT_TRUE(data->restore_bounds.has_value());
-    EXPECT_EQ(restore_bounds, data->restore_bounds.value());
-
     EXPECT_TRUE(data->current_bounds.has_value());
     EXPECT_EQ(current_bounds, data->current_bounds.value());
 
-    EXPECT_TRUE(data->window_state_type.has_value());
+    ASSERT_TRUE(data->window_state_type.has_value());
     EXPECT_EQ(window_state_type, data->window_state_type.value());
+
+    // This field should only be written if we are in minimized window state.
+    if (data->window_state_type.value() ==
+        chromeos::WindowStateType::kMinimized) {
+      EXPECT_TRUE(data->pre_minimized_show_state_type.has_value());
+      EXPECT_EQ(pre_minimized_show_state_type,
+                data->pre_minimized_show_state_type.value());
+    }
 
     if (max_size.has_value()) {
       EXPECT_TRUE(data->maximum_size.has_value());
@@ -246,6 +280,20 @@ class RestoreDataTest : public testing::Test {
       EXPECT_EQ(min_size.value(), data->minimum_size.value());
     } else {
       EXPECT_FALSE(data->minimum_size.has_value());
+    }
+
+    if (title.has_value()) {
+      EXPECT_TRUE(data->title.has_value());
+      EXPECT_EQ(title.value(), data->title.value());
+    } else {
+      EXPECT_FALSE(data->title.has_value());
+    }
+
+    if (bounds_in_root.has_value()) {
+      EXPECT_TRUE(data->bounds_in_root.has_value());
+      EXPECT_EQ(bounds_in_root.value(), data->bounds_in_root.value());
+    } else {
+      EXPECT_FALSE(data->bounds_in_root.has_value());
     }
 
     if (primary_color) {
@@ -282,8 +330,9 @@ class RestoreDataTest : public testing::Test {
         std::vector<base::FilePath>{base::FilePath(kFilePath1),
                                     base::FilePath(kFilePath2)},
         CreateIntent(kIntentActionSend, kMimeType, kShareText1),
-        kActivationIndex1, kDeskId1, kVisibleOnAllWorkspaces1, kRestoreBounds1,
-        kCurrentBounds1, kWindowStateType1, kMaxSize1, kMinSize1,
+        kAppTypeBrower1, kActivationIndex1, kDeskId1, kVisibleOnAllWorkspaces1,
+        kCurrentBounds1, kWindowStateType1, kPreMinimizedWindowStateType1,
+        kMaxSize1, kMinSize1, std::u16string(kTitle1), kBoundsInRoot1,
         kPrimaryColor1, kStatusBarColor1);
 
     const auto app_restore_data_it2 = launch_list_it1->second.find(kWindowId2);
@@ -294,8 +343,9 @@ class RestoreDataTest : public testing::Test {
         WindowOpenDisposition::NEW_FOREGROUND_TAB, kDisplayId1,
         std::vector<base::FilePath>{base::FilePath(kFilePath2)},
         CreateIntent(kIntentActionView, kMimeType, kShareText2),
-        kActivationIndex2, kDeskId2, kVisibleOnAllWorkspaces2, kRestoreBounds2,
-        kCurrentBounds2, kWindowStateType2, absl::nullopt, kMinSize2,
+        kAppTypeBrower2, kActivationIndex2, kDeskId2, kVisibleOnAllWorkspaces2,
+        kCurrentBounds2, kWindowStateType2, kPreMinimizedWindowStateType2,
+        absl::nullopt, kMinSize2, std::u16string(kTitle2), kBoundsInRoot2,
         kPrimaryColor2, kStatusBarColor2);
 
     // Verify for |kAppId2|.
@@ -311,8 +361,9 @@ class RestoreDataTest : public testing::Test {
         WindowOpenDisposition::NEW_POPUP, kDisplayId1,
         std::vector<base::FilePath>{base::FilePath(kFilePath1)},
         CreateIntent(kIntentActionView, kMimeType, kShareText1),
-        kActivationIndex3, kDeskId3, kVisibleOnAllWorkspaces3, kRestoreBounds3,
-        kCurrentBounds3, kWindowStateType3, absl::nullopt, absl::nullopt, 0, 0);
+        kAppTypeBrower3, kActivationIndex3, kDeskId3, kVisibleOnAllWorkspaces3,
+        kCurrentBounds3, kWindowStateType3, kPreMinimizedWindowStateType3,
+        absl::nullopt, absl::nullopt, absl::nullopt, absl::nullopt, 0, 0);
   }
 
   RestoreData& restore_data() { return restore_data_; }
@@ -340,6 +391,48 @@ TEST_F(RestoreDataTest, AddAppLaunchInfos) {
   ModifyWindowInfos();
   ModifyThemeColors();
   VerifyRestoreData(restore_data());
+}
+
+// Modify the window id from `kWindowId2` to `kWindowId4` for `kAppId1`. Verify
+// the restore data is correctly updated.
+TEST_F(RestoreDataTest, ModifyWindowId) {
+  AddAppLaunchInfos();
+  ModifyWindowInfos();
+  ModifyThemeColors();
+  VerifyRestoreData(restore_data());
+
+  restore_data().ModifyWindowId(kAppId1, kWindowId2, kWindowId4);
+
+  // Verify for |kAppId1|.
+  const auto launch_list_it1 =
+      app_id_to_launch_list(restore_data()).find(kAppId1);
+  EXPECT_TRUE(launch_list_it1 != app_id_to_launch_list(restore_data()).end());
+  EXPECT_EQ(2u, launch_list_it1->second.size());
+
+  // Verify the restore data for |kAppId1| and |kWindowId1| still exists.
+  EXPECT_TRUE(base::Contains(launch_list_it1->second, kWindowId1));
+
+  // Verify the restore data for |kAppId1| and |kWindowId2| doesn't exist.
+  EXPECT_TRUE(!base::Contains(launch_list_it1->second, kWindowId2));
+
+  // Verify the restore data for |kWindowId2| is migrated to |kWindowId4|.
+  const auto app_restore_data_it4 = launch_list_it1->second.find(kWindowId4);
+  EXPECT_TRUE(app_restore_data_it4 != launch_list_it1->second.end());
+  VerifyAppRestoreData(
+      app_restore_data_it4->second,
+      apps::mojom::LaunchContainer::kLaunchContainerTab,
+      WindowOpenDisposition::NEW_FOREGROUND_TAB, kDisplayId1,
+      std::vector<base::FilePath>{base::FilePath(kFilePath2)},
+      CreateIntent(kIntentActionView, kMimeType, kShareText2), kAppTypeBrower2,
+      kActivationIndex2, kDeskId2, kVisibleOnAllWorkspaces2, kCurrentBounds2,
+      kWindowStateType2, kPreMinimizedWindowStateType2, absl::nullopt,
+      kMinSize2, kTitle2, kBoundsInRoot2, kPrimaryColor2, kStatusBarColor2);
+
+  // Verify the restore data for |kAppId2| still exists.
+  const auto launch_list_it2 =
+      app_id_to_launch_list(restore_data()).find(kAppId2);
+  EXPECT_TRUE(launch_list_it2 != app_id_to_launch_list(restore_data()).end());
+  EXPECT_EQ(1u, launch_list_it2->second.size());
 }
 
 TEST_F(RestoreDataTest, RemoveAppRestoreData) {
@@ -415,7 +508,6 @@ TEST_F(RestoreDataTest, RemoveWindowInfo) {
   EXPECT_FALSE(window_info->activation_index.has_value());
   EXPECT_FALSE(window_info->desk_id.has_value());
   EXPECT_FALSE(window_info->visible_on_all_workspaces.has_value());
-  EXPECT_FALSE(window_info->restore_bounds.has_value());
   EXPECT_FALSE(window_info->current_bounds.has_value());
   EXPECT_FALSE(window_info->window_state_type.has_value());
   EXPECT_FALSE(window_info->arc_extra_info.has_value());
@@ -467,8 +559,54 @@ TEST_F(RestoreDataTest, ConvertNullData) {
   EXPECT_TRUE(app_id_to_launch_list(*restore_data).empty());
 }
 
+TEST_F(RestoreDataTest, GetAppLaunchInfo) {
+  // The app id and window id doesn't exist.
+  auto app_launch_info = restore_data().GetAppLaunchInfo(kAppId1, kWindowId1);
+  EXPECT_FALSE(app_launch_info);
+
+  // Add the app launch info.
+  AddAppLaunchInfos();
+  app_launch_info = restore_data().GetAppLaunchInfo(kAppId1, kWindowId1);
+
+  // Verify the app launch info.
+  EXPECT_TRUE(app_launch_info);
+
+  EXPECT_EQ(kAppId1, app_launch_info->app_id);
+
+  EXPECT_TRUE(app_launch_info->window_id.has_value());
+  EXPECT_EQ(kWindowId1, app_launch_info->window_id.value());
+
+  EXPECT_FALSE(app_launch_info->event_flag.has_value());
+
+  EXPECT_TRUE(app_launch_info->container.has_value());
+  EXPECT_EQ(
+      static_cast<int>(apps::mojom::LaunchContainer::kLaunchContainerWindow),
+      app_launch_info->container.value());
+
+  EXPECT_TRUE(app_launch_info->disposition.has_value());
+  EXPECT_EQ(static_cast<int>(WindowOpenDisposition::NEW_WINDOW),
+            app_launch_info->disposition.value());
+
+  EXPECT_FALSE(app_launch_info->arc_session_id.has_value());
+
+  EXPECT_TRUE(app_launch_info->display_id.has_value());
+  EXPECT_EQ(kDisplayId1, app_launch_info->display_id.value());
+
+  EXPECT_TRUE(app_launch_info->file_paths.has_value());
+  ASSERT_EQ(2u, app_launch_info->file_paths.value().size());
+  EXPECT_EQ(base::FilePath(kFilePath1), app_launch_info->file_paths.value()[0]);
+  EXPECT_EQ(base::FilePath(kFilePath2), app_launch_info->file_paths.value()[1]);
+
+  EXPECT_TRUE(app_launch_info->intent.has_value());
+  EXPECT_EQ(kIntentActionSend, app_launch_info->intent.value()->action);
+  EXPECT_EQ(kMimeType, app_launch_info->intent.value()->mime_type);
+  EXPECT_EQ(kShareText1, app_launch_info->intent.value()->share_text);
+
+  EXPECT_FALSE(app_launch_info->app_type_browser.has_value());
+}
+
 TEST_F(RestoreDataTest, GetWindowInfo) {
-  // The app id and window id doesn't exist;
+  // The app id and window id doesn't exist.
   auto window_info = restore_data().GetWindowInfo(kAppId1, kWindowId1);
   EXPECT_FALSE(window_info);
 
@@ -478,7 +616,6 @@ TEST_F(RestoreDataTest, GetWindowInfo) {
   EXPECT_TRUE(window_info);
   EXPECT_FALSE(window_info->activation_index.has_value());
   EXPECT_FALSE(window_info->desk_id.has_value());
-  EXPECT_FALSE(window_info->restore_bounds.has_value());
   EXPECT_FALSE(window_info->current_bounds.has_value());
   EXPECT_FALSE(window_info->window_state_type.has_value());
 
@@ -492,9 +629,6 @@ TEST_F(RestoreDataTest, GetWindowInfo) {
 
   EXPECT_TRUE(window_info->desk_id.has_value());
   EXPECT_EQ(kDeskId1, window_info->desk_id.value());
-
-  EXPECT_TRUE(window_info->restore_bounds.has_value());
-  EXPECT_EQ(kRestoreBounds1, window_info->restore_bounds.value());
 
   EXPECT_TRUE(window_info->current_bounds.has_value());
   EXPECT_EQ(kCurrentBounds1, window_info->current_bounds.value());
@@ -569,6 +703,32 @@ TEST_F(RestoreDataTest, FetchRestoreWindowId) {
   EXPECT_EQ(INT32_MIN, window_info->activation_index.value());
 
   EXPECT_EQ(0, restore_data().FetchRestoreWindowId(kAppId1));
+}
+
+TEST_F(RestoreDataTest, HasAppTypeBrowser) {
+  std::unique_ptr<AppLaunchInfo> app_launch_info1 =
+      std::make_unique<AppLaunchInfo>(extension_misc::kChromeAppId, kWindowId1);
+  restore_data().AddAppLaunchInfo(std::move(app_launch_info1));
+  EXPECT_FALSE(restore_data().HasAppTypeBrowser());
+
+  std::unique_ptr<AppLaunchInfo> app_launch_info2 =
+      std::make_unique<AppLaunchInfo>(extension_misc::kChromeAppId, kWindowId2);
+  app_launch_info2->app_type_browser = true;
+  restore_data().AddAppLaunchInfo(std::move(app_launch_info2));
+  EXPECT_TRUE(restore_data().HasAppTypeBrowser());
+}
+
+TEST_F(RestoreDataTest, HasBrowser) {
+  std::unique_ptr<AppLaunchInfo> app_launch_info1 =
+      std::make_unique<AppLaunchInfo>(extension_misc::kChromeAppId, kWindowId1);
+  app_launch_info1->app_type_browser = true;
+  restore_data().AddAppLaunchInfo(std::move(app_launch_info1));
+  EXPECT_FALSE(restore_data().HasBrowser());
+
+  std::unique_ptr<AppLaunchInfo> app_launch_info2 =
+      std::make_unique<AppLaunchInfo>(extension_misc::kChromeAppId, kWindowId2);
+  restore_data().AddAppLaunchInfo(std::move(app_launch_info2));
+  EXPECT_TRUE(restore_data().HasBrowser());
 }
 
 }  // namespace full_restore

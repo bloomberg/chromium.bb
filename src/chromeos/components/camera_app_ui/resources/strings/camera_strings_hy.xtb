@@ -6,6 +6,8 @@
 <translation id="1430915738399379752">Տպում</translation>
 <translation id="1467231725790366244"><ph name="CAMERA" /> սարքը միացված չէ։</translation>
 <translation id="1473110567575736769">Ժամաչափ 3 վայրկյան</translation>
+<translation id="1478594628797167447">Սկաներ</translation>
+<translation id="1545749641540134597">Սկանավորեք QR-կոդը</translation>
 <translation id="1620510694547887537">Տեսախցիկ</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">Տեսագրություն չկա</translation>
@@ -19,6 +21,8 @@
 <translation id="2050339315714019657">Ուղղաձիգ</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> տեսախցիկն ակտիվ է</translation>
 <translation id="2144806332417375165">Տեսանյութի հատուկ պարամետրեր</translation>
+<translation id="2175927920773552910">QR կոդ</translation>
+<translation id="2268107369530950373">Անցնել սկանավորման ռեժիմի</translation>
 <translation id="229579744168541441">Արտահանել սկավառակ</translation>
 <translation id="2320741269052147773">Տեղաշարժել ձախ</translation>
 <translation id="2501278716633472235">Վերադառնալ</translation>
@@ -38,6 +42,7 @@
 <translation id="3227137524299004712">Խոսափող</translation>
 <translation id="3240426699337459095">Հղումը պատճենվեց</translation>
 <translation id="3259149966178251584">Տեսախցիկի լուծաչափը</translation>
+<translation id="3448774564454087943">Տեսանյութը չի պահվել, քանի որ այն չափազանց կարճ էր</translation>
 <translation id="3517926952904427380">Չհաջողվեց ուղղաձիգ դիրքով լուսանկարել</translation>
 <translation id="3569311554794739032">Հեռացնե՞լ <ph name="FILE" /> ֆայլը:</translation>
 <translation id="3733597664308256288">Հասանելի են տեսախցիկի լրացուցիչ կարգավորումներ։ Դրանք օգտագործելու համար սեղմեք «Որոնում»+աջ սլաք։</translation>
@@ -56,11 +61,14 @@
 <translation id="4628948037717959914">Լուսանկար</translation>
 <translation id="4649291346448517080">Չհաջողվեց պահել ֆայլը</translation>
 <translation id="4890010094662541459">3 x 3</translation>
+<translation id="491895758387112773">Բազմահոսքային տեսագրում</translation>
 <translation id="5057360777601936059">Ձեր տեսախցիկն այս պահին հասանելի չէ:
         Ստուգեք՝ արդյոք տեսախցիկը ճիշտ է միացված:</translation>
 <translation id="5152121255775685072">Անցնել ցուցասրահ</translation>
+<translation id="5268823927180092501">Միացնել փաստաթղթի ռեժիմը բոլոր տեսախցիկներում</translation>
 <translation id="5422455049771430511">Ձեր լուսանկարներն ու տեսանյութերը կպահվեն նոր տեղում</translation>
 <translation id="5671277269877808209">Քառակուսի</translation>
+<translation id="5753488212459587150">Միացնել փորձագետի ռեժիմը</translation>
 <translation id="5775960006311140197">Փորձագետի ռեժիմ</translation>
 <translation id="5869546221129391014">Ցանց</translation>
 <translation id="5975083100439434680">Փոքրացնել</translation>

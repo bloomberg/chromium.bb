@@ -6,8 +6,11 @@
 
 #include <utility>
 
+#include "ash/app_list/app_list_bubble_presenter.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/app_list_presenter_impl.h"
+#include "ash/app_list/bubble/app_list_bubble_apps_page.h"
+#include "ash/app_list/bubble/app_list_bubble_view.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/shell.h"
 #include "base/run_loop.h"
@@ -31,6 +34,10 @@ AppListTestHelper::~AppListTestHelper() {
 
 void AppListTestHelper::WaitUntilIdle() {
   base::RunLoop().RunUntilIdle();
+}
+
+void AppListTestHelper::ShowAppList() {
+  app_list_controller_->ShowAppList();
 }
 
 void AppListTestHelper::ShowAndRunLoop(uint64_t display_id) {
@@ -68,7 +75,7 @@ void AppListTestHelper::ToggleAndRunLoop(uint64_t display_id,
 }
 
 void AppListTestHelper::CheckVisibility(bool visible) {
-  EXPECT_EQ(visible, app_list_controller_->IsVisible(absl::nullopt));
+  EXPECT_EQ(visible, app_list_controller_->IsVisible());
   EXPECT_EQ(visible, app_list_controller_->GetTargetVisibility(absl::nullopt));
 }
 
@@ -78,6 +85,38 @@ void AppListTestHelper::CheckState(AppListViewState state) {
 
 AppListView* AppListTestHelper::GetAppListView() {
   return app_list_controller_->presenter()->GetView();
+}
+
+SearchBoxView* AppListTestHelper::GetBubbleSearchBoxView() {
+  return app_list_controller_->bubble_presenter_for_test()
+      ->bubble_view_for_test()
+      ->search_box_view_;
+}
+
+AppListBubbleAppsPage* AppListTestHelper::GetBubbleAppsPage() {
+  return app_list_controller_->bubble_presenter_for_test()
+      ->bubble_view_for_test()
+      ->apps_page_;
+}
+
+RecentAppsView* AppListTestHelper::GetBubbleRecentAppsView() {
+  return GetBubbleAppsPage()->recent_apps_;
+}
+
+ScrollableAppsGridView* AppListTestHelper::GetScrollableAppsGridView() {
+  return GetBubbleAppsPage()->scrollable_apps_grid_view_;
+}
+
+AppListBubbleSearchPage* AppListTestHelper::GetBubbleSearchPage() {
+  return app_list_controller_->bubble_presenter_for_test()
+      ->bubble_view_for_test()
+      ->search_page_;
+}
+
+AppListBubbleAssistantPage* AppListTestHelper::GetBubbleAssistantPage() {
+  return app_list_controller_->bubble_presenter_for_test()
+      ->bubble_view_for_test()
+      ->assistant_page_;
 }
 
 }  // namespace ash

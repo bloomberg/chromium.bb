@@ -26,8 +26,9 @@
 class GrBackendSemaphore;
 class GrClip;
 class GrColorSpaceXform;
-class GrCoverageCountingPathRenderer;
 class GrDrawOp;
+class GrDstProxyView;
+class GrHardClip;
 class GrOp;
 class GrRenderTarget;
 class GrStyledShape;
@@ -59,8 +60,8 @@ class GrSurfaceDrawContext : public GrSurfaceFillContext {
 public:
     static std::unique_ptr<GrSurfaceDrawContext> Make(GrRecordingContext*,
                                                       GrColorType,
-                                                      sk_sp<SkColorSpace>,
                                                       sk_sp<GrSurfaceProxy>,
+                                                      sk_sp<SkColorSpace>,
                                                       GrSurfaceOrigin,
                                                       const SkSurfaceProps&,
                                                       bool flushTimeOpsTask = false);
@@ -122,10 +123,6 @@ public:
             GrRecordingContext*, GrColorType, sk_sp<SkColorSpace>, const GrBackendTexture&,
             int sampleCnt, GrSurfaceOrigin, const SkSurfaceProps&,
             sk_sp<GrRefCntedCallback> releaseHelper);
-
-    static std::unique_ptr<GrSurfaceDrawContext> MakeFromVulkanSecondaryCB(
-            GrRecordingContext*, const SkImageInfo&, const GrVkDrawableInfo&,
-            const SkSurfaceProps&);
 
     GrSurfaceDrawContext(GrRecordingContext*,
                          GrSurfaceProxyView readView,
@@ -598,7 +595,7 @@ public:
     SkGlyphRunListPainter* glyphRunPainter() { return &fGlyphPainter; }
 
     /*
-     * This unique ID will not change for a given RenderTargetContext. However, it is _NOT_
+     * This unique ID will not change for a given SurfaceDrawContext. However, it is _NOT_
      * guaranteed to match the uniqueID of the underlying GrRenderTarget - beware!
      */
     GrSurfaceProxy::UniqueID uniqueID() const { return this->asSurfaceProxy()->uniqueID(); }
@@ -629,10 +626,9 @@ public:
     const SkSurfaceProps& surfaceProps() const { return fSurfaceProps; }
     bool canUseDynamicMSAA() const { return fCanUseDynamicMSAA; }
     bool wrapsVkSecondaryCB() const { return this->asRenderTargetProxy()->wrapsVkSecondaryCB(); }
-    GrMipmapped mipmapped() const;
 
     bool alwaysAntialias() const {
-        return fSurfaceProps.flags() & kDMSAA_SkSurfacePropsPrivateFlag;
+        return fSurfaceProps.flags() & SkSurfaceProps::kDynamicMSAA_Flag;
     }
 
     GrAA chooseAA(const SkPaint& paint) {
@@ -643,7 +639,7 @@ public:
     // instantiated.
     GrRenderTarget* accessRenderTarget() { return this->asSurfaceProxy()->peekRenderTarget(); }
 
-    GrSurfaceDrawContext* asRenderTargetContext() override { return this; }
+    GrSurfaceDrawContext* asSurfaceDrawContext() override { return this; }
 
 #if GR_TEST_UTILS
     void testingOnly_SetPreserveOpsOnFullClear() { fPreserveOpsOnFullClear_TestingOnly = true; }
@@ -716,8 +712,11 @@ private:
     // value is false then a texture copy could not be made.
     //
     // The op should have already had setClippedBounds called on it.
-    bool SK_WARN_UNUSED_RESULT setupDstProxyView(const GrOp& op,
-                                                 GrXferProcessor::DstProxyView* result);
+    bool SK_WARN_UNUSED_RESULT setupDstProxyView(const SkRect& opBounds,
+                                                 bool opRequiresMSAA,
+                                                 GrDstProxyView* result);
+
+    GrOpsTask* replaceOpsTaskIfModifiesColor();
 
     SkGlyphRunListPainter* glyphPainter() { return &fGlyphPainter; }
 
@@ -725,8 +724,6 @@ private:
     const bool fCanUseDynamicMSAA;
 
     bool fNeedsStencil = false;
-
-    GrDstSampleType fDstSampleType = GrDstSampleType::kNone;
 
 #if GR_TEST_UTILS
     bool fPreserveOpsOnFullClear_TestingOnly = false;

@@ -1071,17 +1071,26 @@ This file contains the strings for ash.
       <message name="IDS_ASH_HOLDING_SPACE_SCREEN_CAPTURES_TITLE" desc="Title of the screen captures area in the holding space bubble.">
         Screen captures
       </message>
+      <message name="IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_CANCEL" desc="Title of the cancel option in the holding space item context menu.">
+        Cancel
+      </message>
       <message name="IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_COPY_IMAGE_TO_CLIPBOARD" desc="Title of the option to copy an image to the clipboard in the holding space item context menu.">
         Copy image
       </message>
       <message name="IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_HIDE_PREVIEWS" desc="Title of the option to hide previews in the holding space tray context menu.">
         Hide previews
       </message>
+      <message name="IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_PAUSE" desc="Title of the pause option in the holding space item context menu.">
+        Pause
+      </message>
       <message name="IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_PIN" desc="Title of the pin option in the holding space item context menu.">
         Pin
       </message>
       <message name="IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_REMOVE" desc="Title of the remove option in the holding space item context menu.">
         Remove
+      </message>
+      <message name="IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_RESUME" desc="Title of the resume option in the holding space item context menu.">
+        Resume
       </message>
       <message name="IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_SHOW_IN_FOLDER" desc="Title of the option to show item in its folder in the holding space item context menu.">
         Show in folder
@@ -1091,6 +1100,15 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_UNPIN" desc="Title of the unpin option in the holding space item context menu.">
         Unpin
+      </message>
+      <message name="IDS_ASH_HOLDING_SPACE_IN_PROGRESS_DOWNLOAD_PAUSED_WITH_SIZE_INFO" desc="Text displayed in a holding space download chip to indicate the underlying download is paused and has accompanying size info (see IDS_ASH_HOLDING_SPACE_IN_PROGRESS_DOWNLOAD_SIZE_INFO).">
+        Paused, <ph name="SIZE_INFO">$1<ex>10/100 MB</ex></ph>
+      </message>
+      <message name="IDS_ASH_HOLDING_SPACE_IN_PROGRESS_DOWNLOAD_SIZE_INFO" desc="Text displayed in a holding space download chip to indicate the number of bytes received and total bytes expected of the underlying download.">
+        <ph name="RECEIVED_BYTES">$1<ex>10</ex></ph>/<ph name="TOTAL_BYTES">$2<ex>100 MB</ex></ph>
+      </message>
+      <message name="IDS_ASH_HOLDING_SPACE_IN_PROGRESS_DOWNLOAD_OPEN_WHEN_COMPLETE" desc="Text displayed in a holding space download chip to indicate that the downloaded file will be opened when complete.">
+        Open when complete
       </message>
 
       <!-- Phone Hub tray-->
@@ -1267,12 +1285,6 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_PHONE_HUB_ENABLE_HOTSPOT_NO_RECEPTION_STATE_TOOLTIP" desc="Tooltip message that indicates to the user that the Enable Hotspot feature is disabled because their phone does not have mobile data.">
         Your phone must have mobile data to provide a hotspot
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_PROJECTOR_BUTTON_LABEL" desc="The label text for the button in the status tray to Projector.">
-        Presentation tools
-      </message>
-      <message name="IDS_ASH_PROJECTOR_KEY_IDEA_MARKED" desc="Message content on the toast that appears when a key idea is marked">
-        Marked as a key idea
       </message>
       <message name="IDS_ASH_STYLUS_BATTERY_LOW_LABEL" desc="The label next to the stylus battery indicator when the battery level is below 24%">
         Low
@@ -2155,10 +2167,10 @@ This file contains the strings for ash.
         No mobile networks set up
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NO_MOBILE_DEVICES_FOUND" desc="The message to display in the network list when no mobile devices which can provide a tether hotspot have been discovered nearby.">
-        No mobile devices found.
+        No mobile devices found
       </message>
       <message name="IDS_ASH_STATUS_TRAY_ENABLING_MOBILE_ENABLES_BLUETOOTH" desc="The message to display in the mobile section of the network list when Bluetooth is off. If Bluetooth is off and mobile data is turned on, Bluetooth will also be turned on for the user to support this feature.">
-        Enabling mobile data will enable Bluetooth.
+        Enabling mobile data will enable Bluetooth
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_MOBILE_DISABLED" desc="The message to display in the network list when mobile data is turned off.">
         Mobile data is turned off
@@ -2234,7 +2246,7 @@ This file contains the strings for ash.
         Stylus battery is low
       </message>
       <message name="IDS_ASH_LOW_STYLUS_BATTERY_NOTIFICATION_BODY" desc="The message of the notification which notifies user of the battery level of a stylus.">
-        Please replace the battery
+        Replace or recharge the battery
       </message>
       <message name="IDS_ASH_SIGN_OUT_WARNING_POPUP_TEXT" desc="The text of the popup when the user preses the exit shortcut in chrome-os.">
         Press Ctrl+Shift+Q twice to sign out.
@@ -2583,6 +2595,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_LOGIN_MULTI_PROFILES_OWNER_PRIMARY_ONLY_MSG" desc="Text that is shown on the bubble shown for owner user pod which is not allowed in multi-profiles session because it has to be primary user in the session.">
         This owner account has to be the first signed-in account in a multiple sign-in session.
       </message>
+      <message name="IDS_ASH_LOGIN_ONLINE_SIGN_IN_MESSAGE" desc="Message shown in the login screen when online sign-in is required.">
+        Sign in
+      </message>
       <message name="IDS_ASH_LOGIN_PUBLIC_ACCOUNT_MONITORING_INFO" desc="Text shown in the warning dialog after user clicks on the learn more link, notifying the user of potential security and privacy implications of using the device">
         The admin of this device has the ability to:
       </message>
@@ -2640,8 +2655,11 @@ This file contains the strings for ash.
       <message name="IDS_ASH_LOGIN_SECURITY_TOKEN_REQUEST_DIALOG_DESCRIPTION" desc="Message in the PIN dialog to unlock the device with a smart card, asking the user to enter their PIN.">
         To unlock the device, enter your PIN.
       </message>
-      <message name="IDS_ASH_LOGIN_SIGN_IN_REQUIRED_MESSAGE" desc="Message shown in the login screen when online sign-in is required.">
-        Sign in required
+      <message name="IDS_ASH_LOGIN_SIGN_IN_REQUIRED_DIALOG_TITLE" desc="Title of the disabled auth dialog on the secondary login screen when online sign-in is required.">
+        Online sign in required
+      </message>
+      <message name="IDS_ASH_LOGIN_SIGN_IN_REQUIRED_SECONDARY_LOGIN_MESSAGE" desc="Message shown in the secondary login screen when online sign-in is required.">
+        To use <ph name="USER_EMAIL_ADDRESS">$1<ex>john.doe@example.com</ex></ph> you need to sign out of all accounts first. To sign out, select Cancel to go back. Then select the time to open the status area and select Sign out. Then sign in to <ph name="USER_EMAIL_ADDRESS_2">$2<ex>john.doe@example.com</ex></ph> again.
       </message>
       <message name="IDS_ASH_LOCK_SCREEN_VERIFY_ACCOUNT_MESSAGE" desc="Message shown in the lock screen when online sign-in is required.">
         Verify account
@@ -2660,6 +2678,32 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_LOGIN_POD_TPM_LOCKED_ISSUE_DESCRIPTION" desc="Message shown as part of the TPM locked warning bubble when TPM is locked.">
         Your Chromebook needs to stay on and connected to power during this time. Make sure the charger or adapter cables are completely plugged in, both to your Chromebook and the power outlet. Do not turn off your Chromebook.
+      </message>
+
+      <!-- Fast Pair strings -->
+      <message name="IDS_FAST_PAIR_CONNECTION_ERROR_TITLE" desc="Notification title shown when a there is a Fast Pair connection error.">
+        Couldn't connect <ph name="NAME">$1<ex>Pixel Buds</ex></ph>
+      </message>
+      <message name="IDS_FAST_PAIR_CONNECTION_ERROR_MESSAGE" desc="Notification message shown when a there is a Fast Pair connection error.">
+        Open Bluetooth settings to pair the device manually
+      </message>
+      <message name="IDS_FAST_PAIR_SETTINGS_BUTTON" desc="Button title shown to direct users to settings when there is an error connecting with Fast Pair">
+        Settings
+      </message>
+      <message name="IDS_FAST_PAIR_CONNECT_BUTTON" desc="Message on button to tell users to connect bluetooth device with Fast Pair.">
+        Connect
+      </message>
+      <message name="IDS_FAST_PAIR_DISCOVERY_NOTIFICATION_TITLE" desc="Notification title shown when a there is a device discovered with Fast Pair.">
+        Connect <ph name="NAME">$1<ex>Pixel Buds</ex></ph>
+      </message>
+      <message name="IDS_FAST_PAIR_DISCOVERY_NOTIFICATION_MESSAGE" desc="Notification message shown when there is a device discovered with Fast Pair.">
+        Connect <ph name="NAME">$1<ex>Pixel Buds</ex></ph> to this Chromebook
+      </message>
+      <message name="IDS_FAST_PAIR_CANCEL_BUTTON" desc="Message on button to tell users to cancel bluetooth device connection with Fast Pair.">
+        Cancel
+      </message>
+      <message name="IDS_FAST_PAIR_PAIRING_NOTIFICATION_TITLE" desc="Notification title shown when a there is a device being paired with Fast Pair.">
+        Connecting <ph name="NAME">$1<ex>Pixel Buds</ex></ph>
       </message>
 
       <!-- In-session auth dialog strings -->
@@ -2837,6 +2881,10 @@ This file contains the strings for ash.
       <message name="IDS_ASH_MESSAGE_CENTER_NO_NOTIFIERS" desc="The message displayed in the message center when there are no notification sources.">
         Nothing to see just yet
       </message>
+      <message name="IDS_ASH_MESSAGE_CENTER_NOTIFICATION_SETTINGS_LABEL" desc="The message displayed in the quick settings menu to instruct users that notification management
+        has been migrated to the settings app.">
+        To manage notifications, go to Settings
+      </message>
       <if expr="is_chrome_branded">
         <message name="IDS_ASH_MESSAGE_CENTER_SYSTEM_APP_NAME" desc="The source of a system-generated notification, as displayed to the user.">
           Chrome OS
@@ -2875,7 +2923,7 @@ This file contains the strings for ash.
 
       <!-- Power off menu  -->
       <message name="IDS_ASH_POWER_BUTTON_MENU_POWER_OFF_BUTTON" desc="Text shown on power off button in power button menu.">
-        Power off
+        Shut down
       </message>
       <message name="IDS_ASH_POWER_BUTTON_MENU_LOCK_SCREEN_BUTTON" desc="Text shown on lock screen button in power button menu.">
         Lock
@@ -3123,6 +3171,9 @@ Here are some things you can try to get started.
       <message name="IDS_ASH_QUICK_ANSWERS_DOGFOOD_BUTTON_TOOLTIP_TEXT" desc="Tooltip text for the dogfood-button within Quick-Answers related views to help users file bugs easily.">
         File feedback
       </message>
+      <message name="IDS_ASH_QUICK_ANSWERS_SETTINGS_BUTTON_TOOLTIP_TEXT" desc="Tootip text for the settings-button in Quick-Answers related views.">
+        Settings
+      </message>
       <message name="IDS_ASH_QUICK_ANSWERS_DEFINITION_INTENT" desc="Display text of definition intent. This is used in the title of Quick Answers user consent dialog.">
         definition
       </message>
@@ -3159,6 +3210,18 @@ Here are some things you can try to get started.
       <message name="IDS_ASH_QUICK_ANSWERS_USER_NOTICE_VIEW_A11Y_INFO_DESC_TEMPLATE" desc="A11y description template for the Quick Answers user notice view.">
         <ph name="DESC_TEXT">$1<ex>With a right-click or a long press, Assistant shows info such as the definition, translation or unit conversion for your selection.</ex></ph> Use Left or Right arrow keys to manage this feature.
       </message>
+      <message name="IDS_ASH_QUICK_ANSWERS_USER_CONSENT_VIEW_TITLE_TEXT_WITH_INTENT" desc="Title text of the dialog that opens up to seek user-consent for the Quick Answers feature when supported intent is generated.">
+        Get the <ph name="intent">$1<ex>definition</ex></ph> for "<ph name="query">$2<ex>unfathomable</ex></ph>" and more
+      </message>
+      <message name="IDS_ASH_QUICK_ANSWERS_USER_CONSENT_VIEW_DESC_TEXT" desc="Description in the dialog that opens up to seek user-consent for the Quick Answers feature.">
+        Get definitions, translations, or unit conversions when you right-click or touch &amp; hold text.
+      </message>
+      <message name="IDS_ASH_QUICK_ANSWERS_USER_CONSENT_VIEW_NO_THANKS_BUTTON" desc="Display text on the no thanks button in the dialog that opens up to seek user-consent for the Quick Answers feature.">
+        No Thanks
+      </message>
+      <message name="IDS_ASH_QUICK_ANSWERS_USER_CONSENT_VIEW_ALLOW_BUTTON" desc="Display text on the allow button in the dialog that opens up to seek user-consent for the Quick Answers feature.">
+        Allow
+      </message>
       <message name="IDS_ASH_QUICK_ANSWERS_VIEW_LOADING" desc="Display text when the Quick Answers view is loading.">
         Loading...
       </message>
@@ -3185,6 +3248,12 @@ Here are some things you can try to get started.
       </message>
       <message name="IDS_ASH_QUICK_ANSWERS_VIEW_A11Y_RETRY_LABEL_NAME_TEMPLATE" desc="A11y retry label name template for the Quick Answers view.">
         <ph name="DESC_TEXT">$1<ex>Cannot connect to the internet. Click to try again.</ex></ph>: Retry
+      </message>
+      <message name="IDS_ASH_QUICK_ANSWERS_VIEW_REPORT_QUERY_IMPROVE_LABEL" desc="Description text of the report query button for the Quick Answers view.">
+        Help us improve this!
+      </message>
+      <message name="IDS_ASH_QUICK_ANSWERS_VIEW_REPORT_QUERY_REPORT_LABEL" desc="Description text of the report query button for the Quick Answers view.">
+        Report this query
       </message>
 
       <!-- Media Notification -->
@@ -3525,7 +3594,7 @@ Here are some things you can try to get started.
         Access your clipboard history by pressing <ph name="SHORTCUT_KEY_NAME">$1<ex>Launcher</ex></ph> + V to view your clipboard. Copy an item to get started.
       </message>
       <message name="IDS_ASH_MULTIPASTE_SCREENSHOT_NOTIFICATION_NUDGE" desc="The label used to show the keyboard shortcut for multipaste, to be seen aside the screenshot notification banner which notifies the user that the screenshot has been copied to clipboard.">
-        + V
+        <ph name="SHORTCUT_KEY_NAME">$1<ex>Launcher</ex></ph> + V
       </message>
 
       <message name="IDS_APP_LIST_BLOCKED_APP" desc="The spoken feedback text when a focused app is blocked.">
@@ -3619,6 +3688,13 @@ Here are some things you can try to get started.
 
       <!-- Strings for Projector-->
 
+      <message name="IDS_ASH_STATUS_TRAY_PROJECTOR_BUTTON_LABEL" desc="The label text for the button in the status tray to Projector.">
+        Presentation tools
+      </message>
+      <message name="IDS_ASH_PROJECTOR_KEY_IDEA_MARKED" desc="Message content on the toast that appears when a key idea is marked">
+        Marked as a key idea
+      </message>
+
       <message name="IDS_KEY_IDEA_BUTTON" desc="The name for the key idea button.">
         Add key idea
       </message>
@@ -3627,8 +3703,8 @@ Here are some things you can try to get started.
         Laser pointer
       </message>
 
-      <message name="IDS_MARKER_BUTTON" desc="The name for the marker button.">
-        Marker
+      <message name="IDS_MARKER_TOOLS_BUTTON" desc="The name for the button that enables or disables marker tools.">
+        Marker drawing tools
       </message>
 
       <message name="IDS_INK_PEN_BUTTON" desc="The name for the ink pen button.">
@@ -3683,8 +3759,8 @@ Here are some things you can try to get started.
         Stop closed captions
       </message>
 
-      <message name="IDS_BAR_LOCATION_BUTTON" desc="The name for the bar location button.">
-        Toggle bar location
+      <message name="IDS_TOOLBAR_LOCATION_BUTTON" desc="The name for the button that toggles the toolbar location.">
+        Toggle toolbar location
       </message>
 
       <message name="IDS_BLACK_COLOR_BUTTON" desc="The name for the black marker button.">
@@ -3703,6 +3779,38 @@ Here are some things you can try to get started.
         Unknown
       </message>
 
+      <!-- SODA Download strings -->
+      <message name="IDS_ASH_ACCESSIBILITY_DICTATION_SETTING_SUBTITLE_SODA_DOWNLOAD_COMPLETE" desc="Description explaining that the speech recognition library download has completed.">
+        Speech files downloaded
+      </message>
+      <message name="IDS_ASH_ACCESSIBILITY_DICTATION_SETTING_SUBTITLE_SODA_DOWNLOAD_PROGRESS" desc="Description explaining the progress for the speech recognition library download.">
+        Downloading speech recognition files... <ph name="PERCENT">$1<ex>17</ex></ph>%
+      </message>
+      <message name="IDS_ASH_ACCESSIBILITY_DICTATION_SETTING_SUBTITLE_SODA_DOWNLOAD_ERROR" desc="Description explaining that there was an error with the speech recognition library download.">
+        Can't download speech files. Try again later.
+      </message>
+
+      <!-- Strings for persistent desks bar-->
+      <message name="IDS_ASH_PERSISTENT_DESKS_BAR_CONTEXT_MENU_FEEDBACK" desc="Title of the menu item in the context menu to send feedback.">
+        Feedback
+      </message>
+      <message name="IDS_ASH_PERSISTENT_DESKS_BAR_CONTEXT_MENU_SHOW_DESKS_BAR" desc="Title of the menu item in the context menu to show the desks bar.">
+        Show deskbar
+      </message>
+      <message name="IDS_ASH_PERSISTENT_DESKS_BAR_CONTEXT_MENU_HIDE_DESKS_BAR" desc="Title of the menu item in the context menu to hide the desks bar.">
+        Hide deskbar
+      </message>
+
+      <!-- Debugd notification strings -->
+      <message name="IDS_ASH_DEBUG_PACKET_CAPTURE_STARTED" desc="The label used for the notification to indicate network packet capture operation has started on the device.">
+        Network packet capture started
+      </message>
+      <message name="IDS_ASH_DEBUG_PACKET_CAPTURE_DESCRIPTION" desc="The message shown on notification bubble about ongoing network packet capture operation and the description of how to stop by clicking the button.">
+        Click stop to stop ongoing packet capture operations.
+      </message>
+      <message name="IDS_ASH_DEBUG_STOP_PACKET_CAPTURE_BUTTON" desc="The label on notification button for user to stop the ongoing packet capture operation.">
+        Stop
+      </message>
     </messages>
   </release>
 </grit>

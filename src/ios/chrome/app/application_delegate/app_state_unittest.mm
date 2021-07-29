@@ -21,6 +21,7 @@
 #import "ios/chrome/app/application_delegate/startup_information.h"
 #import "ios/chrome/app/application_delegate/tab_switching.h"
 #import "ios/chrome/app/application_delegate/user_activity_handler.h"
+#import "ios/chrome/app/enterprise_app_agent.h"
 #import "ios/chrome/app/main_application_delegate.h"
 #import "ios/chrome/app/safe_mode_app_state_agent.h"
 #include "ios/chrome/app/safe_mode_app_state_agent.h"
@@ -64,10 +65,25 @@
 // Exposes private safe mode start/stop methods.
 @interface AppState (Private)
 
-- (void)startSafeMode;
-- (void)stopSafeMode;
 - (void)queueTransitionToFirstInitStage;
 - (void)completeUIInitialization;
+@end
+
+@interface TestAppState : AppState
+// Override |connectedScenes| with a lazily instantiated mutable array.
+@property(nonatomic, strong, readwrite)
+    NSMutableArray<SceneState*>* connectedScenes;
+@end
+
+@implementation TestAppState
+
+- (NSMutableArray<SceneState*>*)connectedScenes {
+  if (!_connectedScenes) {
+    _connectedScenes = [[NSMutableArray alloc] init];
+  }
+  return _connectedScenes;
+}
+
 @end
 
 @interface SafeModeAppAgent (Private) <SceneStateObserver, AppStateObserver>
@@ -92,10 +108,15 @@
       break;
     case InitStageSafeMode:
       break;
+    case InitStageEnterprise:
+      break;
     case InitStageBrowserObjectsForBackgroundHandlers:
       [appState queueTransitionToNextInitStage];
       break;
     case InitStageBrowserObjectsForUI:
+      [appState queueTransitionToNextInitStage];
+      break;
+    case InitStageNormalUI:
       [appState queueTransitionToNextInitStage];
       break;
     case InitStageFirstRun:
@@ -363,6 +384,13 @@ class AppStateTest : public BlockCleanupTest {
     return safe_mode_app_agent_;
   }
 
+  EnterpriseAppAgent* getEnterpriseAppAgent() {
+    if (!enterprise_app_agent_) {
+      enterprise_app_agent_ = [[EnterpriseAppAgent alloc] init];
+    }
+    return enterprise_app_agent_;
+  }
+
   AppState* getAppStateWithMock(bool with_safe_mode_agent) {
     if (!app_state_) {
       // The swizzle block needs the scene state before app_state is create, but
@@ -371,11 +399,11 @@ class AppStateTest : public BlockCleanupTest {
       main_scene_state_ = [FakeSceneState alloc];
       swizzleConnectedScenes(@[ main_scene_state_ ]);
 
-      app_state_ =
-          [[AppState alloc] initWithBrowserLauncher:browser_launcher_mock_
-                                 startupInformation:startup_information_mock_
-                                applicationDelegate:main_application_delegate_];
-      app_state_.mainSceneState = main_scene_state_;
+      app_state_ = [[TestAppState alloc]
+          initWithBrowserLauncher:browser_launcher_mock_
+               startupInformation:startup_information_mock_
+              applicationDelegate:main_application_delegate_];
+      [app_state_.connectedScenes addObject:main_scene_state_];
 
       main_scene_state_ = [main_scene_state_ initWithAppState:app_state_];
       main_scene_state_.window = getWindowMock();
@@ -389,6 +417,10 @@ class AppStateTest : public BlockCleanupTest {
         [getSafeModeAppAgent() appState:app_state_
                          sceneConnected:main_scene_state_];
       }
+
+      // Add the enterprise agent for the app to boot past the enterprise init
+      // stage.
+      [app_state_ addAgent:getEnterpriseAppAgent()];
 
       [app_state_ addObserver:app_state_observer_to_mock_main_controller_];
     }
@@ -407,17 +439,21 @@ class AppStateTest : public BlockCleanupTest {
       main_scene_state_ = [FakeSceneState alloc];
       swizzleConnectedScenes(@[ main_scene_state_ ]);
 
-      app_state_ =
-          [[AppState alloc] initWithBrowserLauncher:browser_launcher_mock_
-                                 startupInformation:startup_information_mock_
-                                applicationDelegate:main_application_delegate_];
-      app_state_.mainSceneState = main_scene_state_;
+      app_state_ = [[TestAppState alloc]
+          initWithBrowserLauncher:browser_launcher_mock_
+               startupInformation:startup_information_mock_
+              applicationDelegate:main_application_delegate_];
+      [app_state_.connectedScenes addObject:main_scene_state_];
 
       main_scene_state_ = [main_scene_state_ initWithAppState:app_state_];
       main_scene_state_.window = window;
       [window makeKeyAndVisible];
 
       [app_state_ addAgent:getSafeModeAppAgent()];
+
+      // Add the enterprise agent for the app to boot past the enterprise init
+      // stage.
+      [app_state_ addAgent:getEnterpriseAppAgent()];
 
       [app_state_ addObserver:app_state_observer_to_mock_main_controller_];
 
@@ -447,9 +483,10 @@ class AppStateTest : public BlockCleanupTest {
 
  private:
   web::WebTaskEnvironment task_environment_;
-  AppState* app_state_;
+  TestAppState* app_state_;
   FakeSceneState* main_scene_state_;
   SafeModeAppAgent* safe_mode_app_agent_;
+  EnterpriseAppAgent* enterprise_app_agent_;
   AppStateObserverToMockMainController*
       app_state_observer_to_mock_main_controller_;
   id browser_launcher_mock_;
@@ -547,10 +584,10 @@ TEST_F(AppStateTest, requiresHandlingAfterLaunchWithOptionsForegroundSafeMode) {
   BOOL result = [appState requiresHandlingAfterLaunchWithOptions:launchOptions
                                                  stateBackground:NO];
 
-    // Start the safe mode by transitioning the scene to foreground again after
-    // #requiresHandlingAfterLaunchWithOptions which starts the safe mode.
-    appState.mainSceneState.activationLevel =
-        SceneActivationLevelForegroundActive;
+  // Start the safe mode by transitioning the scene to foreground again after
+  // #requiresHandlingAfterLaunchWithOptions which starts the safe mode.
+  SceneState* sceneState = appState.connectedScenes.firstObject;
+  sceneState.activationLevel = SceneActivationLevelForegroundActive;
 
   EXPECT_TRUE(result);
   EXPECT_EQ(appState.initStage, InitStageSafeMode);
@@ -642,6 +679,7 @@ TEST_F(AppStateNoFixtureTest, willResignActive) {
   // Start init stages.
   [appState queueTransitionToFirstInitStage];
   [appState queueTransitionToNextInitStage];
+  [appState queueTransitionToNextInitStage];
 
   ASSERT_TRUE([startupInformation isColdStart]);
 
@@ -684,11 +722,6 @@ TEST_F(AppStateWithThreadTest, willTerminate) {
   [appState queueTransitionToFirstInitStage];
   [appState queueTransitionToNextInitStage];
 
-  // Create a scene state so that full shutdown will run.
-  if (!base::ios::IsSceneStartupSupported()) {
-    appState.mainSceneState = [[SceneState alloc] initWithAppState:appState];
-  }
-
   id application = [OCMockObject mockForClass:[UIApplication class]];
 
   // Action.
@@ -703,157 +736,8 @@ TEST_F(AppStateWithThreadTest, willTerminate) {
   }
   FakeAppDistributionProvider* provider =
       static_cast<FakeAppDistributionProvider*>(
-          ios::GetChromeBrowserProvider()->GetAppDistributionProvider());
+          ios::GetChromeBrowserProvider().GetAppDistributionProvider());
   EXPECT_TRUE(provider->cancel_called());
-}
-
-// Test that -resumeSessionWithTabOpener
-// restart metrics and launchs from StartupParameters if they exist.
-TEST_F(AppStateTest, resumeSessionWithStartupParameters) {
-  if (base::ios::IsSceneStartupSupported()) {
-    // TODO(crbug.com/1045579): Session restoration not available yet in MW.
-    return;
-  }
-  // Setup.
-
-  // BrowserLauncher.
-  StubBrowserInterfaceProvider* interfaceProvider = getInterfaceProvider();
-  [[[getBrowserLauncherMock() stub] andReturn:interfaceProvider]
-      interfaceProvider];
-
-  // StartupInformation.
-  id appStartupParameters =
-      [OCMockObject mockForClass:[AppStartupParameters class]];
-  [[[getConnectionInformationMock() stub] andReturn:appStartupParameters]
-      startupParameters];
-  [[[getStartupInformationMock() stub] andReturnValue:@NO] isColdStart];
-
-  // TabOpening.
-  id tabOpener = [OCMockObject mockForProtocol:@protocol(TabOpening)];
-  // TabSwitcher.
-  id tabSwitcher = [OCMockObject mockForProtocol:@protocol(TabSwitching)];
-
-  // BrowserViewInformation.
-  std::unique_ptr<Browser> browser =
-      std::make_unique<TestBrowser>(getBrowserState());
-  interfaceProvider.mainInterface.browser = browser.get();
-  interfaceProvider.mainInterface.browserState = getBrowserState();
-
-  // Swizzle Startup Parameters.
-  swizzleHandleStartupParameters(tabOpener, getBrowserState());
-
-  ScopedKeyWindow scopedKeyWindow;
-  AppState* appState = getAppStateWithOpenNTP(NO, scopedKeyWindow.Get());
-
-  // Action.
-  [appState resumeSessionWithTabOpener:tabOpener
-                           tabSwitcher:tabSwitcher
-                 connectionInformation:getConnectionInformationMock()];
-}
-
-// Test that -resumeSessionWithTabOpener
-// restart metrics and creates a new tab from tab switcher if shouldOpenNTP is
-// YES.
-TEST_F(AppStateTest, resumeSessionShouldOpenNTPTabSwitcher) {
-  if (base::ios::IsSceneStartupSupported()) {
-    // TODO(crbug.com/1045579): Session restoration not available yet in MW.
-    return;
-  }
-
-  // Setup.
-  // BrowserLauncher.
-  StubBrowserInterfaceProvider* interfaceProvider = getInterfaceProvider();
-  [[[getBrowserLauncherMock() stub] andReturn:interfaceProvider]
-      interfaceProvider];
-
-  // StartupInformation.
-  [[[getConnectionInformationMock() stub] andReturn:nil] startupParameters];
-  [[[getStartupInformationMock() stub] andReturnValue:@NO] isColdStart];
-
-  // BrowserViewInformation.
-  std::unique_ptr<Browser> browser =
-      std::make_unique<TestBrowser>(getBrowserState());
-  interfaceProvider.mainInterface.browser = browser.get();
-  interfaceProvider.mainInterface.browserState = getBrowserState();
-
-  // TabOpening.
-  id tabOpener = [OCMockObject mockForProtocol:@protocol(TabOpening)];
-  [[[tabOpener stub] andReturnValue:@YES]
-      shouldOpenNTPTabOnActivationOfBrowser:browser.get()];
-
-  // TabSwitcher.
-  id tabSwitcher = [OCMockObject mockForProtocol:@protocol(TabSwitching)];
-  [[[tabSwitcher stub] andReturnValue:@YES] openNewTabFromTabSwitcher];
-
-  ScopedKeyWindow scopedKeyWindow;
-  AppState* appState = getAppStateWithOpenNTP(YES, scopedKeyWindow.Get());
-
-  // Action.
-  [appState resumeSessionWithTabOpener:tabOpener
-                           tabSwitcher:tabSwitcher
-                 connectionInformation:getConnectionInformationMock()];
-
-  // Test.
-  EXPECT_EQ(NSUInteger(0), [scopedKeyWindow.Get() subviews].count);
-}
-
-// Test that -resumeSessionWithTabOpener,
-// restart metrics and creates a new tab if shouldOpenNTP is YES.
-TEST_F(AppStateTest, resumeSessionShouldOpenNTPNoTabSwitcher) {
-  if (base::ios::IsSceneStartupSupported()) {
-    // TODO(crbug.com/1045579): Session restoration not available yet in MW.
-    return;
-  }
-  // Setup.
-  // BrowserLauncher.
-  StubBrowserInterfaceProvider* interfaceProvider = getInterfaceProvider();
-  [[[getBrowserLauncherMock() stub] andReturn:interfaceProvider]
-      interfaceProvider];
-
-  // StartupInformation.
-  [[[getConnectionInformationMock() stub] andReturn:nil] startupParameters];
-  [[[getStartupInformationMock() stub] andReturnValue:@NO] isColdStart];
-
-  // BrowserViewInformation.
-  id applicationCommandEndpoint =
-      [OCMockObject mockForProtocol:@protocol(ApplicationCommands)];
-  [((id<ApplicationCommands>)[applicationCommandEndpoint expect])
-      openURLInNewTab:[OCMArg any]];
-
-  std::unique_ptr<Browser> browser =
-      std::make_unique<TestBrowser>(getBrowserState());
-  [browser->GetCommandDispatcher()
-      startDispatchingToTarget:applicationCommandEndpoint
-                   forProtocol:@protocol(ApplicationCommands)];
-  // To fully conform to ApplicationCommands, the dispatcher needs to dispatch
-  // for ApplicationSettingsCommands as well.
-  id applicationSettingsCommandEndpoint =
-      [OCMockObject mockForProtocol:@protocol(ApplicationSettingsCommands)];
-  [browser->GetCommandDispatcher()
-      startDispatchingToTarget:applicationSettingsCommandEndpoint
-                   forProtocol:@protocol(ApplicationSettingsCommands)];
-  interfaceProvider.mainInterface.browser = browser.get();
-  interfaceProvider.mainInterface.browserState = getBrowserState();
-
-  // TabOpening.
-  id tabOpener = [OCMockObject mockForProtocol:@protocol(TabOpening)];
-  [[[tabOpener stub] andReturnValue:@YES]
-      shouldOpenNTPTabOnActivationOfBrowser:browser.get()];
-
-  // TabSwitcher.
-  id tabSwitcher = [OCMockObject mockForProtocol:@protocol(TabSwitching)];
-  [[[tabSwitcher stub] andReturnValue:@NO] openNewTabFromTabSwitcher];
-
-  ScopedKeyWindow scopedKeyWindow;
-  AppState* appState = getAppStateWithOpenNTP(YES, scopedKeyWindow.Get());
-
-  // Action.
-  [appState resumeSessionWithTabOpener:tabOpener
-                           tabSwitcher:tabSwitcher
-                 connectionInformation:getConnectionInformationMock()];
-
-  // Test.
-  EXPECT_EQ(NSUInteger(0), [scopedKeyWindow.Get() subviews].count);
 }
 
 // Tests that -applicationWillEnterForeground resets components as needed.
@@ -912,7 +796,7 @@ TEST_F(AppStateTest, applicationWillEnterForeground) {
   EXPECT_OCMOCK_VERIFY(getStartupInformationMock());
   FakeUserFeedbackProvider* user_feedback_provider =
       static_cast<FakeUserFeedbackProvider*>(
-          ios::GetChromeBrowserProvider()->GetUserFeedbackProvider());
+          ios::GetChromeBrowserProvider().GetUserFeedbackProvider());
   EXPECT_TRUE(user_feedback_provider->synchronize_called());
 }
 
@@ -976,15 +860,15 @@ TEST_F(AppStateTest,
 
   // Starting safe mode will call makeKeyAndVisible on the window.
   [[window expect] makeKeyAndVisible];
-  appState.mainSceneState.window = window;
+  SceneState* sceneState = appState.connectedScenes.firstObject;
+  sceneState.window = window;
 
   // Actions.
   [appState applicationWillEnterForeground:application
                            metricsMediator:metricsMediator
                               memoryHelper:memoryHelper];
   // Transition the activation level to active to trigger the safe mode.
-  appState.mainSceneState.activationLevel =
-      SceneActivationLevelForegroundActive;
+  sceneState.activationLevel = SceneActivationLevelForegroundActive;
 
   // Tests.
   EXPECT_OCMOCK_VERIFY(window);

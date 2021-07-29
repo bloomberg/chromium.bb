@@ -12,6 +12,7 @@
 #include "cc/paint/skottie_wrapper.h"
 #include "skia/ext/legacy_display_globals.h"
 #include "third_party/skia/include/core/SkAnnotation.h"
+#include "third_party/skia/include/core/SkTextBlob.h"
 #include "third_party/skia/include/docs/SkPDFDocument.h"
 
 namespace cc {
@@ -125,7 +126,8 @@ void SkiaPaintCanvas::clipRRect(const SkRRect& rrect,
 
 void SkiaPaintCanvas::clipPath(const SkPath& path,
                                SkClipOp op,
-                               bool do_anti_alias) {
+                               bool do_anti_alias,
+                               UsePaintCache) {
   canvas_->clipPath(path, op, do_anti_alias);
 }
 
@@ -250,7 +252,9 @@ void SkiaPaintCanvas::drawRoundRect(const SkRect& rect,
   FlushAfterDrawIfNeeded();
 }
 
-void SkiaPaintCanvas::drawPath(const SkPath& path, const PaintFlags& flags) {
+void SkiaPaintCanvas::drawPath(const SkPath& path,
+                               const PaintFlags& flags,
+                               UsePaintCache) {
   ScopedRasterFlags raster_flags(&flags, image_provider_,
                                  canvas_->getTotalMatrix(), max_texture_size(),
                                  255u);

@@ -253,7 +253,8 @@ class TunnelTransport : public Transport {
         websocket_client_->BindNewHandshakeClientPipe(),
         /*url_loader_network_observer=*/mojo::NullRemote(),
         /*auth_handler=*/mojo::NullRemote(),
-        /*header_client=*/mojo::NullRemote());
+        /*header_client=*/mojo::NullRemote(),
+        /*throttling_profile_id=*/absl::nullopt);
     FIDO_LOG(DEBUG) << "Creating WebSocket to " << target_.spec();
   }
 
@@ -370,11 +371,18 @@ class TunnelTransport : public Transport {
         }
 
         // It should be the case that all post-handshake messages fall into
-        // a single padding bucket. It doesn't have to be the smallest one, but
-        // that's currently true. If altering this, consider whether
-        // kPostHandshakeMsgPaddingGranularity needs to be increased instead.
-        DCHECK_EQ(post_handshake_msg_bytes->size(),
-                  kPostHandshakeMsgPaddingGranularity);
+        // a single padding bucket. (It doesn't have to be the smallest one.)
+        //
+        // This check should be:
+        // DCHECK_EQ(post_handshake_msg_bytes->size(),
+        //          kPostHandshakeMsgPaddingGranularity);
+        //
+        // ... but we're waiting to roll out a protocol change that allows it.
+        // For now, check that the messages fit within the future padding
+        // granularity, which will also highlight this when that constant is
+        // rename to remove "Future".
+        DCHECK_LE(post_handshake_msg_bytes->size(),
+                  kFuturePostHandshakeMsgPaddingGranularity);
 
         if (!crypter_->Encrypt(&post_handshake_msg_bytes.value())) {
           FIDO_LOG(ERROR) << "failed to encrypt post-handshake message";

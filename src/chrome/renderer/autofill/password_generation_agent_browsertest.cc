@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -63,7 +62,7 @@ namespace {
 const FormFieldData* FindFieldById(const FormData& form, base::StringPiece id) {
   auto it = base::ranges::find(form.fields, base::UTF8ToUTF16(id),
                                &FormFieldData::id_attribute);
-  return it != form.fields.end() ? base::to_address(it) : nullptr;
+  return it != form.fields.end() ? &*it : nullptr;
 }
 
 }  // namespace
@@ -203,7 +202,7 @@ void PasswordGenerationAgentTest::RegisterMainFrameRemoteInterfaces() {
   // Because the test cases only involve the main frame in this test,
   // the fake password client is only used for the main frame.
   blink::AssociatedInterfaceProvider* remote_associated_interfaces =
-      view_->GetMainRenderFrame()->GetRemoteAssociatedInterfaces();
+      GetMainRenderFrame()->GetRemoteAssociatedInterfaces();
   remote_associated_interfaces->OverrideBinderForTesting(
       mojom::PasswordGenerationDriver::Name_,
       base::BindRepeating(
@@ -225,14 +224,14 @@ void PasswordGenerationAgentTest::SetUp() {
   password_generation_->RequestPasswordManagerClientForTesting();
   base::RunLoop().RunUntilIdle();  // Executes binding the interfaces.
   // Reject all requests to bind driver/client to anything but the test class:
-  view_->GetMainRenderFrame()
+  GetMainRenderFrame()
       ->GetRemoteAssociatedInterfaces()
       ->OverrideBinderForTesting(
           mojom::PasswordGenerationDriver::Name_,
           base::BindRepeating([](mojo::ScopedInterfaceEndpointHandle handle) {
             handle.reset();
           }));
-  view_->GetMainRenderFrame()
+  GetMainRenderFrame()
       ->GetRemoteAssociatedInterfaces()
       ->OverrideBinderForTesting(
           mojom::PasswordManagerDriver::Name_,

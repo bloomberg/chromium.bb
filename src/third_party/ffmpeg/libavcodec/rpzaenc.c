@@ -802,7 +802,7 @@ static int rpza_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
 
     flush_put_bits(&s->pb);
 
-    av_shrink_packet(pkt, put_bits_count(&s->pb) >> 3);
+    av_shrink_packet(pkt, put_bytes_output(&s->pb));
     buf = pkt->data;
 
     // write header opcode
@@ -842,7 +842,7 @@ static const AVClass rpza_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVCodec ff_rpza_encoder = {
+const AVCodec ff_rpza_encoder = {
     .name           = "rpza",
     .long_name      = NULL_IF_CONFIG_SMALL("QuickTime video (RPZA)"),
     .type           = AVMEDIA_TYPE_VIDEO,

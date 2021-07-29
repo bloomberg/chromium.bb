@@ -34,8 +34,8 @@
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
-#include "components/safe_browsing/core/features.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/download_item_utils.h"
@@ -342,6 +342,11 @@ TEST_F(DeepScanningRequestTest, GeneratesCorrectRequestFromPolicy) {
                   .request_data()
                   .url(),
               download_url_.spec());
+    EXPECT_EQ(download_protection_service_.GetFakeBinaryUploadService()
+                  ->last_request()
+                  .request_data()
+                  .content_type(),
+              "application/octet-stream");
   }
 
   {
@@ -439,7 +444,8 @@ class DeepScanningReportingTest : public DeepScanningRequestTest {
             base::BindRepeating(&BuildSafeBrowsingPrivateEventRouter));
     extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
         ->SetBrowserCloudPolicyClientForTesting(client_.get());
-    identity_test_environment_.MakePrimaryAccountAvailable(kUserName);
+    identity_test_environment_.MakePrimaryAccountAvailable(
+        kUserName, signin::ConsentLevel::kSync);
     extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
         ->SetIdentityManagerForTesting(
             identity_test_environment_.identity_manager());
@@ -994,13 +1000,18 @@ TEST_F(DeepScanningRequestTest, PopulatesRequest) {
                 ->last_request()
                 .request_data()
                 .filename(),
-            "download.exe");
+            download_path_.AsUTF8Unsafe());
   EXPECT_EQ(download_protection_service_.GetFakeBinaryUploadService()
                 ->last_request()
                 .request_data()
                 .digest(),
             // Hex-encoding of 'hash'
             "76E00EB33811F5778A5EE557512C30D9341D4FEB07646BCE3E4DB13F9428573C");
+  EXPECT_EQ(download_protection_service_.GetFakeBinaryUploadService()
+                ->last_request()
+                .request_data()
+                .content_type(),
+            "application/octet-stream");
 }
 
 }  // namespace safe_browsing

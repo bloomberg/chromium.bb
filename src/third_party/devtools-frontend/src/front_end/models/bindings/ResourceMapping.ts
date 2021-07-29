@@ -21,10 +21,10 @@ const styleSheetOffsetMap = new WeakMap<SDK.CSSStyleSheetHeader.CSSStyleSheetHea
 const scriptOffsetMap = new WeakMap<SDK.Script.Script, TextUtils.TextRange.TextRange>();
 const boundUISourceCodes = new WeakSet<Workspace.UISourceCode.UISourceCode>();
 
-export class ResourceMapping implements SDK.SDKModel.SDKModelObserver<SDK.ResourceTreeModel.ResourceTreeModel> {
+export class ResourceMapping implements SDK.TargetManager.SDKModelObserver<SDK.ResourceTreeModel.ResourceTreeModel> {
   _workspace: Workspace.Workspace.WorkspaceImpl;
   _modelToInfo: Map<SDK.ResourceTreeModel.ResourceTreeModel, ModelInfo>;
-  private constructor(targetManager: SDK.SDKModel.TargetManager, workspace: Workspace.Workspace.WorkspaceImpl) {
+  private constructor(targetManager: SDK.TargetManager.TargetManager, workspace: Workspace.Workspace.WorkspaceImpl) {
     this._workspace = workspace;
     this._modelToInfo = new Map();
     targetManager.observeModels(SDK.ResourceTreeModel.ResourceTreeModel, this);
@@ -32,7 +32,7 @@ export class ResourceMapping implements SDK.SDKModel.SDKModelObserver<SDK.Resour
 
   static instance(opts: {
     forceNew: boolean|null,
-    targetManager: SDK.SDKModel.TargetManager|null,
+    targetManager: SDK.TargetManager.TargetManager|null,
     workspace: Workspace.Workspace.WorkspaceImpl|null,
   } = {forceNew: null, targetManager: null, workspace: null}): ResourceMapping {
     const {forceNew, targetManager, workspace} = opts;
@@ -61,7 +61,7 @@ export class ResourceMapping implements SDK.SDKModel.SDKModelObserver<SDK.Resour
     }
   }
 
-  _infoForTarget(target: SDK.SDKModel.Target): ModelInfo|null {
+  _infoForTarget(target: SDK.Target.Target): ModelInfo|null {
     const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
     return resourceTreeModel ? this._modelToInfo.get(resourceTreeModel) || null : null;
   }
@@ -151,7 +151,7 @@ export class ResourceMapping implements SDK.SDKModel.SDKModelObserver<SDK.Resour
         uiLocation.uiSourceCode.url(), uiLocation.lineNumber, uiLocation.columnNumber);
   }
 
-  _resetForTest(target: SDK.SDKModel.Target): void {
+  _resetForTest(target: SDK.Target.Target): void {
     const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
     const info = resourceTreeModel ? this._modelToInfo.get(resourceTreeModel) : null;
     if (info) {
@@ -281,7 +281,7 @@ class ModelInfo {
   }
 
   dispose(): void {
-    Common.EventTarget.EventTarget.removeEventListeners(this._eventListeners);
+    Common.EventTarget.removeEventListeners(this._eventListeners);
     for (const binding of this._bindings.values()) {
       binding.dispose();
     }
@@ -316,7 +316,7 @@ class Binding implements TextUtils.ContentProvider.ContentProvider {
     }
     const cssModel = target.model(SDK.CSSModel.CSSModel);
     if (cssModel) {
-      for (const headerId of cssModel.styleSheetIdsForURL(this._uiSourceCode.url())) {
+      for (const headerId of cssModel.getStyleSheetIdsForURL(this._uiSourceCode.url())) {
         const header = cssModel.styleSheetHeaderForId(headerId);
         if (header) {
           stylesheets.push(header);

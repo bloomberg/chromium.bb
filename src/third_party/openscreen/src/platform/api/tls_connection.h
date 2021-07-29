@@ -26,7 +26,7 @@ class TlsConnection {
                         std::vector<uint8_t> block) = 0;
 
    protected:
-    virtual ~Client() = default;
+    virtual ~Client();
   };
 
   virtual ~TlsConnection();
@@ -39,9 +39,6 @@ class TlsConnection {
 
   // Sends a message. Returns true iff the message will be sent.
   [[nodiscard]] virtual bool Send(const void* data, size_t len) = 0;
-
-  // Get the local address.
-  virtual IPEndpoint GetLocalEndpoint() const = 0;
 
   // Get the connected remote address.
   virtual IPEndpoint GetRemoteEndpoint() const = 0;

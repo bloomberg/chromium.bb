@@ -62,7 +62,8 @@ void IntersectionObserverController::DeliverNotifications(
 
 bool IntersectionObserverController::ComputeIntersections(
     unsigned flags,
-    LocalFrameUkmAggregator& ukm_aggregator) {
+    LocalFrameUkmAggregator& ukm_aggregator,
+    absl::optional<base::TimeTicks>& monotonic_time) {
   needs_occlusion_tracking_ = false;
   if (GetExecutionContext()) {
     TRACE_EVENT0("blink,devtools.timeline",
@@ -70,21 +71,24 @@ bool IntersectionObserverController::ComputeIntersections(
                  "computeIntersections");
     HeapVector<Member<IntersectionObserver>> observers_to_process;
     CopyToVector(tracked_explicit_root_observers_, observers_to_process);
-    for (auto& observer : observers_to_process) {
-      if (observer->HasObservations()) {
-        SCOPED_UMA_AND_UKM_TIMER(ukm_aggregator, observer->GetUkmMetricId());
-        needs_occlusion_tracking_ |= observer->ComputeIntersections(flags);
-      } else {
-        tracked_explicit_root_observers_.erase(observer);
-      }
-    }
     HeapVector<Member<IntersectionObservation>> observations_to_process;
     CopyToVector(tracked_implicit_root_observations_, observations_to_process);
-    for (auto& observation : observations_to_process) {
-      SCOPED_UMA_AND_UKM_TIMER(ukm_aggregator,
-                               observation->Observer()->GetUkmMetricId());
-      observation->ComputeIntersection(flags);
-      needs_occlusion_tracking_ |= observation->Observer()->trackVisibility();
+    {
+      LocalFrameUkmAggregator::IterativeTimer ukm_timer(ukm_aggregator);
+      for (auto& observer : observers_to_process) {
+        if (observer->HasObservations()) {
+          ukm_timer.StartInterval(observer->GetUkmMetricId());
+          needs_occlusion_tracking_ |=
+              observer->ComputeIntersections(flags, monotonic_time);
+        } else {
+          tracked_explicit_root_observers_.erase(observer);
+        }
+      }
+      for (auto& observation : observations_to_process) {
+        ukm_timer.StartInterval(observation->Observer()->GetUkmMetricId());
+        observation->ComputeIntersection(flags, monotonic_time);
+        needs_occlusion_tracking_ |= observation->Observer()->trackVisibility();
+      }
     }
   }
   return needs_occlusion_tracking_;

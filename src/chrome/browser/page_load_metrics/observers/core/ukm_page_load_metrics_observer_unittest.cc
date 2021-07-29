@@ -680,10 +680,10 @@ TEST_F(UkmPageLoadMetricsObserverTest, LargestContentfulPaint_Trace) {
   EXPECT_EQ(1u, events.size());
   EXPECT_EQ("loading", events[0]->category);
   EXPECT_TRUE(events[0]->HasArg("data"));
-  std::unique_ptr<base::Value> arg;
+  base::Value arg;
   EXPECT_TRUE(events[0]->GetArgAsValue("data", &arg));
   base::DictionaryValue* arg_dict;
-  EXPECT_TRUE(arg->GetAsDictionary(&arg_dict));
+  EXPECT_TRUE(arg.GetAsDictionary(&arg_dict));
   int time;
   EXPECT_TRUE(arg_dict->GetInteger("durationInMilliseconds", &time));
   EXPECT_EQ(600, time);
@@ -1105,7 +1105,7 @@ TEST_F(UkmPageLoadMetricsObserverTest, MobileFriendliness) {
   }
 }
 
-TEST_F(UkmPageLoadMetricsObserverTest, FirstScrollDelay) {
+TEST_F(UkmPageLoadMetricsObserverTest, FirstScrollDelayAndTimestamp) {
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
@@ -1131,6 +1131,9 @@ TEST_F(UkmPageLoadMetricsObserverTest, FirstScrollDelay) {
                                                           GURL(kTestUrl1));
     tester()->test_ukm_recorder().ExpectEntryMetric(
         kv.second.get(), PageLoad::kInteractiveTiming_FirstScrollDelayName, 50);
+    tester()->test_ukm_recorder().ExpectEntryMetric(
+        kv.second.get(), PageLoad::kInteractiveTiming_FirstScrollTimestampName,
+        64);
   }
 }
 
@@ -1493,9 +1496,8 @@ TEST_F(UkmPageLoadMetricsObserverTest, CpuTimeMetrics) {
 TEST_F(UkmPageLoadMetricsObserverTest, LayoutInstability) {
   NavigateAndCommit(GURL(kTestUrl1));
   base::TimeTicks time_origin = base::TimeTicks::Now();
-  page_load_metrics::mojom::FrameRenderDataUpdate render_data(
-      1.0, 1.0, 0, 0, 0, 0, 0, 0, {},
-      {time_origin - base::TimeDelta::FromMilliseconds(3000)});
+  page_load_metrics::mojom::FrameRenderDataUpdate render_data(1.0, 1.0, 0, 0, 0,
+                                                              0, 0, 0, {});
   render_data.new_layout_shifts.emplace_back(
       page_load_metrics::mojom::LayoutShift::New(
           time_origin - base::TimeDelta::FromMilliseconds(4000), 0.5));
@@ -1508,8 +1510,8 @@ TEST_F(UkmPageLoadMetricsObserverTest, LayoutInstability) {
   // Simulate hiding the tab (the report should include shifts after hide).
   web_contents()->WasHidden();
 
-  page_load_metrics::mojom::FrameRenderDataUpdate render_data_2(
-      1.5, 0.0, 0, 0, 0, 0, 0, 0, {}, {});
+  page_load_metrics::mojom::FrameRenderDataUpdate render_data_2(1.5, 0.0, 0, 0,
+                                                                0, 0, 0, 0, {});
   render_data_2.new_layout_shifts.emplace_back(
       page_load_metrics::mojom::LayoutShift::New(
           time_origin - base::TimeDelta::FromMilliseconds(2500), 1.5));
@@ -1537,26 +1539,6 @@ TEST_F(UkmPageLoadMetricsObserverTest, LayoutInstability) {
         ukm_entry,
         PageLoad::
             kLayoutInstability_MaxCumulativeShiftScore_SessionWindow_Gap1000ms_Max5000msName,
-        250);
-    ukm_recorder.ExpectEntryMetric(
-        ukm_entry,
-        PageLoad::
-            kLayoutInstability_MaxCumulativeShiftScore_SessionWindow_Gap1000msName,
-        250);
-    ukm_recorder.ExpectEntryMetric(
-        ukm_entry,
-        PageLoad::
-            kLayoutInstability_MaxCumulativeShiftScore_SlidingWindow_Duration1000msName,
-        200);
-    ukm_recorder.ExpectEntryMetric(
-        ukm_entry,
-        PageLoad::
-            kLayoutInstability_MaxCumulativeShiftScore_SlidingWindow_Duration300msName,
-        150);
-    ukm_recorder.ExpectEntryMetric(
-        ukm_entry,
-        PageLoad::
-            kLayoutInstability_AverageCumulativeShiftScore_SessionWindow_Gap5000msName,
         250);
     ukm_recorder.ExpectEntryMetric(kv.second.get(),
                                    PageLoad::kNavigation_PageEndReason3Name,
@@ -1654,7 +1636,7 @@ TEST_F(UkmPageLoadMetricsObserverTest, LayoutInstabilitySubframeAggregation) {
 
   // Simulate layout instability in the main frame.
   page_load_metrics::mojom::FrameRenderDataUpdate render_data(1.0, 1.0, 0, 0, 0,
-                                                              0, 0, 0, {}, {});
+                                                              0, 0, 0, {});
   tester()->SimulateRenderDataUpdate(render_data);
 
   RenderFrameHost* subframe =
@@ -2192,7 +2174,7 @@ TEST_F(UkmPageLoadMetricsObserverTest, CLSNeverForegroundedNoReport) {
   NavigateAndCommit(GURL(kTestUrl1));
 
   page_load_metrics::mojom::FrameRenderDataUpdate render_data(1.0, 1.0, 0, 0, 0,
-                                                              0, 0, 0, {}, {});
+                                                              0, 0, 0, {});
   tester()->SimulateRenderDataUpdate(render_data);
 
   // Simulate closing the tab.
@@ -2227,7 +2209,7 @@ void CLSUkmPageLoadMetricsObserverTest::SimulateShiftDelta(
     float delta,
     content::RenderFrameHost* frame) {
   page_load_metrics::mojom::FrameRenderDataUpdate render_data(
-      delta, delta, 0, 0, 0, 0, 0, 0, {}, {});
+      delta, delta, 0, 0, 0, 0, 0, 0, {});
   tester()->SimulateRenderDataUpdate(render_data, frame);
 }
 
@@ -2303,32 +2285,69 @@ TEST_F(CLSUkmPageLoadMetricsObserverTest, BeforeInputOrScroll_Sub) {
   RunBeforeInputOrScrollCase(true);
 }
 
-TEST_F(UkmPageLoadMetricsObserverTest, BucketWithOffsetAndUnit) {
-  EXPECT_EQ(500, internal::BucketWithOffsetAndUnit(500, 500, 10));
+void TestViewportInitialScale(int expected, int input) {
+  blink::MobileFriendliness mf;
+  mf.viewport_initial_scale_x10 = input;
+  EXPECT_EQ(expected, page_load_metrics::GetBucketedViewportInitialScale(mf));
+}
 
-  // large num
-  EXPECT_EQ(500, internal::BucketWithOffsetAndUnit(501, 500, 10));
-  EXPECT_EQ(510, internal::BucketWithOffsetAndUnit(510, 500, 10));
-  EXPECT_EQ(520, internal::BucketWithOffsetAndUnit(525, 500, 10));
-  EXPECT_EQ(540, internal::BucketWithOffsetAndUnit(550, 500, 10));
-  EXPECT_EQ(820, internal::BucketWithOffsetAndUnit(1000, 500, 10));
-  EXPECT_EQ(1780, internal::BucketWithOffsetAndUnit(2000, 500, 10));
+TEST_F(UkmPageLoadMetricsObserverTest, BucketingViewportInitialScale) {
+  // Default value to be ignored.
+  TestViewportInitialScale(-1, -1);
 
-  // small num
-  EXPECT_EQ(500, internal::BucketWithOffsetAndUnit(499, 500, 10));
-  EXPECT_EQ(490, internal::BucketWithOffsetAndUnit(490, 500, 10));
-  EXPECT_EQ(480, internal::BucketWithOffsetAndUnit(475, 500, 10));
-  EXPECT_EQ(460, internal::BucketWithOffsetAndUnit(450, 500, 10));
-  EXPECT_EQ(180, internal::BucketWithOffsetAndUnit(100, 500, 10));
-  EXPECT_EQ(180, internal::BucketWithOffsetAndUnit(0, 500, 10));
+  // Typical case initail-scale=1.0.
+  TestViewportInitialScale(10, 10);
 
-  // different offset
-  EXPECT_EQ(1000, internal::BucketWithOffsetAndUnit(1000, 1000, 10));
-  EXPECT_EQ(1010, internal::BucketWithOffsetAndUnit(1010, 1000, 10));
-  EXPECT_EQ(1080, internal::BucketWithOffsetAndUnit(1100, 1000, 10));
+  // Bigger number cases.
+  TestViewportInitialScale(12, 12);
+  TestViewportInitialScale(14, 15);
+  TestViewportInitialScale(14, 15);
+  TestViewportInitialScale(14, 17);
+  TestViewportInitialScale(18, 18);
+  TestViewportInitialScale(18, 25);
+  TestViewportInitialScale(26, 26);
 
-  // different unit
-  EXPECT_EQ(1000, internal::BucketWithOffsetAndUnit(1000, 1000, 100));
-  EXPECT_EQ(1000, internal::BucketWithOffsetAndUnit(1010, 1000, 100));
-  EXPECT_EQ(1100, internal::BucketWithOffsetAndUnit(1100, 1000, 100));
+  // Smaller number cases.
+  TestViewportInitialScale(10, 9);
+  TestViewportInitialScale(8, 8);
+  TestViewportInitialScale(8, 7);
+  TestViewportInitialScale(6, 6);
+  TestViewportInitialScale(6, 3);
+  TestViewportInitialScale(2, 1);
+  TestViewportInitialScale(2, 0);
+}
+
+void TestViewportHardcodedWidth(int expected, int input) {
+  blink::MobileFriendliness mf;
+  mf.viewport_hardcoded_width = input;
+  EXPECT_EQ(expected, page_load_metrics::GetBucketedViewportHardcodedWidth(mf));
+}
+
+TEST_F(UkmPageLoadMetricsObserverTest, BucketingViewportHardcodedWidth) {
+  // Default value to be ignored.
+  TestViewportHardcodedWidth(-1, -1);
+
+  // Middle case.
+  TestViewportHardcodedWidth(500, 500);
+
+  // Bigger number cases.
+  TestViewportHardcodedWidth(500, 509);
+
+  TestViewportHardcodedWidth(510, 510);
+  TestViewportHardcodedWidth(510, 519);
+  TestViewportHardcodedWidth(520, 520);
+  TestViewportHardcodedWidth(520, 539);
+  TestViewportHardcodedWidth(540, 540);
+  TestViewportHardcodedWidth(540, 579);
+  TestViewportHardcodedWidth(580, 580);
+  TestViewportHardcodedWidth(580, 640);
+  TestViewportHardcodedWidth(820, 1000);
+  TestViewportHardcodedWidth(1780, 2000);
+
+  // Smaller number cases.
+  TestViewportHardcodedWidth(500, 491);
+  TestViewportHardcodedWidth(490, 490);
+  TestViewportHardcodedWidth(480, 480);
+  TestViewportHardcodedWidth(460, 421);
+  TestViewportHardcodedWidth(180, 180);
 }

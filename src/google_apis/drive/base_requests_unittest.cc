@@ -25,6 +25,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/fake_test_cert_verifier_params_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -55,7 +56,7 @@ class FakeUrlFetchRequest : public UrlFetchRequestBase {
       std::string response_body) override {
     std::move(callback_).Run(GetErrorCode());
   }
-  void RunCallbackOnPrematureFailure(DriveApiErrorCode code) override {
+  void RunCallbackOnPrematureFailure(ApiErrorCode code) override {
     std::move(callback_).Run(code);
   }
 
@@ -222,7 +223,7 @@ TEST_F(BaseRequestsTest, UrlFetchRequestBaseResponseCodeOverride) {
       " }\n"
       "}\n";
 
-  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
+  ApiErrorCode error = OTHER_ERROR;
   base::RunLoop run_loop;
   sender_->StartRequestWithAuthRetry(std::make_unique<FakeUrlFetchRequest>(
       sender_.get(),
@@ -239,7 +240,7 @@ TEST_F(MultipartUploadRequestBaseTest, Basic) {
   response_code_ = net::HTTP_OK;
   response_body_ = "{\"kind\": \"drive#file\", \"id\": \"file_id\"}";
   std::unique_ptr<google_apis::FileResource> file;
-  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
+  ApiErrorCode error = OTHER_ERROR;
   base::RunLoop run_loop;
   const base::FilePath source_path =
       google_apis::test_util::GetTestFilePath("drive/text.txt");

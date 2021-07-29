@@ -12,7 +12,6 @@
 
 #include "base/bind.h"
 #include "base/bits.h"
-#include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "media/base/video_frame.h"
@@ -34,7 +33,7 @@ static const int kDefaultFrameInternvalDenominator = 1000;
 
 __u32 RoundUpToMultipleOfPageSize(__u32 size) {
   CHECK(base::bits::IsPowerOfTwo(getpagesize()));
-  return base::bits::Align(size, getpagesize());
+  return base::bits::AlignUp(size, getpagesize());
 }
 
 struct FakeV4L2Buffer {
@@ -425,7 +424,7 @@ int FakeV4L2Impl::ioctl(int fd, int request, void* argp) {
     return EBADF;
   auto* opened_device = device_iter->second.get();
 
-  switch (request) {
+  switch (static_cast<uint32_t>(request)) {
     case VIDIOC_ENUM_FMT:
       return opened_device->enum_fmt(reinterpret_cast<v4l2_fmtdesc*>(argp));
     case VIDIOC_QUERYCAP:

@@ -7,11 +7,14 @@
 
 #include "components/sync/driver/trusted_vault_client.h"
 
+class ChromeAccountManagerService;
+
 // iOS version of TrustedVaultClient. This class uses the Chrome trusted vault
 // service to store the shared keys.
 class IOSTrustedVaultClient : public syncer::TrustedVaultClient {
  public:
-  IOSTrustedVaultClient();
+  explicit IOSTrustedVaultClient(
+      ChromeAccountManagerService* account_manager_service);
   ~IOSTrustedVaultClient() override;
 
   // TrustedVaultClient implementation.
@@ -24,9 +27,8 @@ class IOSTrustedVaultClient : public syncer::TrustedVaultClient {
   void StoreKeys(const std::string& gaia_id,
                  const std::vector<std::vector<uint8_t>>& keys,
                  int last_key_version) override;
-  void RemoveAllStoredKeys() override;
-  void MarkKeysAsStale(const CoreAccountInfo& account_info,
-                       base::OnceCallback<void(bool)> callback) override;
+  void MarkLocalKeysAsStale(const CoreAccountInfo& account_info,
+                            base::OnceCallback<void(bool)> callback) override;
   void GetIsRecoverabilityDegraded(
       const CoreAccountInfo& account_info,
       base::OnceCallback<void(bool)> callback) override;
@@ -38,6 +40,9 @@ class IOSTrustedVaultClient : public syncer::TrustedVaultClient {
   // Not copyable or movable
   IOSTrustedVaultClient(const IOSTrustedVaultClient&) = delete;
   IOSTrustedVaultClient& operator=(const IOSTrustedVaultClient&) = delete;
+
+ private:
+  ChromeAccountManagerService* account_manager_service_ = nullptr;
 };
 
 #endif  // IOS_CHROME_BROWSER_SYNC_IOS_TRUSTED_VAULT_CLIENT_H_

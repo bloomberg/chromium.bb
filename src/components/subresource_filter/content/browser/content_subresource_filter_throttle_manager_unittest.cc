@@ -41,6 +41,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
@@ -62,6 +63,12 @@ const char kTestURLWithActivation2[] =
 const char kTestURLWithDryRun[] = "https://www.page-with-dryrun.com/";
 const char kTestURLWithNoActivation[] =
     "https://www.page-without-activation.com/";
+
+const char kReadyToCommitResultsInCommitHistogram[] =
+    "SubresourceFilter.Experimental.ReadyToCommitResultsInCommit2";
+const char kReadyToCommitResultsInCommitRestrictedAdFrameNavigationHistogram[] =
+    "SubresourceFilter.Experimental.ReadyToCommitResultsInCommit2."
+    "RestrictedAdFrameNavigation";
 
 // Enum determining when the mock page state throttle notifies the throttle
 // manager of page level activation state.
@@ -188,11 +195,17 @@ class ContentSubresourceFilterThrottleManagerTest
 
     NavigateAndCommit(GURL("https://example.first"));
 
-    // Initialize the ruleset dealer.
+    // Initialize the ruleset dealer. Allowlisted URLs must also match a
+    // disallowed rule in order to work correctly.
     std::vector<proto::UrlRule> rules;
     rules.push_back(testing::CreateAllowlistRuleForDocument(
         "allowlist.com", proto::ACTIVATION_TYPE_DOCUMENT,
         {"page-with-activation.com"}));
+    rules.push_back(testing::CreateRuleForDocument(
+        "allowlist.com", proto::ACTIVATION_TYPE_DOCUMENT,
+        {"page-with-activation.com"}));
+
+    rules.push_back(testing::CreateAllowlistSuffixRule("not_disallowed.html"));
     rules.push_back(testing::CreateSuffixRule("disallowed.html"));
     ASSERT_NO_FATAL_FAILURE(test_ruleset_creator_.CreateRulesetWithRules(
         rules, &test_ruleset_pair_));
@@ -713,6 +726,12 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest, RulesetHandleRegeneration) {
 
 TEST_P(ContentSubresourceFilterThrottleManagerTest,
        SameSiteNavigation_RulesetGoesAway) {
+  // The test assumes the previous page gets deleted after navigation and
+  // ManagerHasRulesetHandle() will return false. Disable back/forward cache to
+  // ensure that it doesn't get preserved in the cache.
+  DisableBackForwardCacheForTesting(
+      RenderViewHostTestHarness::web_contents(),
+      content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
   // This test assumes that we're not in DryRun mode.
   base::test::ScopedFeatureList scoped_feature;
   scoped_feature.InitAndDisableFeature(kAdTagging);
@@ -787,7 +806,6 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
 
   CreateTestNavigation(same_site_inactive_url, main_rfh());
   SimulateFailedNavigation(navigation_simulator(), net::ERR_FAILED);
-  EXPECT_FALSE(ManagerHasRulesetHandle());
   ExpectActivationSignalForFrame(main_rfh(), false /* expect_activation */);
 
   CreateSubframeWithTestNavigation(
@@ -1289,6 +1307,101 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
 #if defined(OS_ANDROID)
   EXPECT_FALSE(presenting_ads_blocked_infobar());
 #endif
+}
+
+TEST_P(ContentSubresourceFilterThrottleManagerTest,
+       NavigationIsReadyToCommitThenFinishes_HistogramIssued) {
+  for (bool does_commit : {true, false}) {
+    base::HistogramTester tester;
+    NavigateAndCommitMainFrame(GURL(kTestURLWithDryRun));
+    ExpectActivationSignalForFrame(main_rfh(), true /* expect_activation */);
+
+    // Make sure main frames are excluded.
+    tester.ExpectTotalCount(kReadyToCommitResultsInCommitHistogram, 0);
+    tester.ExpectTotalCount(
+        kReadyToCommitResultsInCommitRestrictedAdFrameNavigationHistogram, 0);
+
+    CreateSubframeWithTestNavigation(GURL("https://www.example.com/test.html"),
+                                     main_rfh());
+
+    navigation_simulator()->ReadyToCommit();
+
+    if (does_commit) {
+      navigation_simulator()->Commit();
+    } else {
+      navigation_simulator()->AbortFromRenderer();
+    }
+
+    tester.ExpectUniqueSample(kReadyToCommitResultsInCommitHistogram,
+                              does_commit, 1);
+    tester.ExpectTotalCount(
+        kReadyToCommitResultsInCommitRestrictedAdFrameNavigationHistogram, 0);
+  }
+}
+
+TEST_P(
+    ContentSubresourceFilterThrottleManagerTest,
+    RestrictedAdFrameNavigationIsReadyToCommitThenFinishes_HistogramsIssued) {
+  for (bool does_commit : {true, false}) {
+    NavigateAndCommitMainFrame(GURL(kTestURLWithDryRun));
+    ExpectActivationSignalForFrame(main_rfh(), true /* expect_activation */);
+
+    // Ensure frame is tagged as an ad.
+    content::RenderFrameHost* subframe = CreateSubframeWithTestNavigation(
+        GURL("https://www.example.com/disallowed.html"), main_rfh());
+    navigation_simulator()->Commit();
+    subframe = navigation_simulator()->GetFinalRenderFrameHost();
+    EXPECT_TRUE(subframe);
+    EXPECT_TRUE(throttle_manager()->IsFrameTaggedAsAd(subframe));
+
+    // Navigate to an allowlisted URL to make it a 'restricted' navigation.
+    base::HistogramTester tester;
+    CreateTestNavigation(GURL("https://www.example.com/not_disallowed.html"),
+                         subframe);
+
+    navigation_simulator()->ReadyToCommit();
+
+    if (does_commit) {
+      navigation_simulator()->Commit();
+    } else {
+      navigation_simulator()->AbortFromRenderer();
+    }
+
+    tester.ExpectUniqueSample(kReadyToCommitResultsInCommitHistogram,
+                              does_commit, 1);
+    tester.ExpectUniqueSample(
+        kReadyToCommitResultsInCommitRestrictedAdFrameNavigationHistogram,
+        does_commit, 1);
+  }
+}
+
+TEST_P(ContentSubresourceFilterThrottleManagerTest,
+       ReadyToCommitNavigationThenRenderFrameDeletes_MetricsNotRecoded) {
+  NavigateAndCommitMainFrame(GURL(kTestURLWithDryRun));
+  ExpectActivationSignalForFrame(main_rfh(), true /* expect_activation */);
+
+  // Ensure frame is tagged as an ad.
+  content::RenderFrameHost* subframe = CreateSubframeWithTestNavigation(
+      GURL("https://www.example.com/disallowed.html"), main_rfh());
+  navigation_simulator()->Commit();
+  subframe = navigation_simulator()->GetFinalRenderFrameHost();
+  EXPECT_TRUE(subframe);
+  EXPECT_TRUE(throttle_manager()->IsFrameTaggedAsAd(subframe));
+
+  // Navigate to an allowlisted URL to make it a 'restricted' navigation.
+  base::HistogramTester tester;
+  CreateTestNavigation(GURL("https://www.example.com/not_disallowed.html"),
+                       subframe);
+
+  navigation_simulator()->ReadyToCommit();
+
+  static_cast<content::MockRenderProcessHost*>(
+      navigation_simulator()->GetFinalRenderFrameHost()->GetProcess())
+      ->SimulateCrash();
+
+  tester.ExpectTotalCount(kReadyToCommitResultsInCommitHistogram, 0);
+  tester.ExpectTotalCount(
+      kReadyToCommitResultsInCommitRestrictedAdFrameNavigationHistogram, 0);
 }
 
 // TODO(csharrison): Make sure the following conditions are exercised in tests:

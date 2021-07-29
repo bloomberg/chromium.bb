@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/rand_util.h"
-
+#include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -34,7 +34,9 @@
 #include "third_party/blink/renderer/core/inspector/v8_inspector_string.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
+#include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 
@@ -485,6 +487,8 @@ void ThreadDebugger::GetAccessibleNameCallback(
   v8::Local<v8::Value> value = info[0];
 
   Node* node = V8Node::ToImplWithTypeCheck(isolate, value);
+  if (node && !node->GetLayoutObject())
+    return;
   if (auto* element = DynamicTo<Element>(node)) {
     V8SetReturnValueString(info, element->computedName(), isolate);
   }
@@ -500,6 +504,8 @@ void ThreadDebugger::GetAccessibleRoleCallback(
   v8::Local<v8::Value> value = info[0];
 
   Node* node = V8Node::ToImplWithTypeCheck(isolate, value);
+  if (node && !node->GetLayoutObject())
+    return;
   if (auto* element = DynamicTo<Element>(node)) {
     V8SetReturnValueString(info, element->computedRole(), isolate);
   }

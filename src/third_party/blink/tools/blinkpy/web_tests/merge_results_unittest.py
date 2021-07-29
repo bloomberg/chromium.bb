@@ -10,12 +10,11 @@ import json
 import types
 import unittest
 
-import cStringIO as StringIO
-
-from collections import OrderedDict
-
 from blinkpy.common.system.filesystem_mock import FileSystemTestCase, MockFileSystem
 from blinkpy.web_tests import merge_results
+
+from collections import OrderedDict
+from six import StringIO
 
 
 class JSONMergerTests(unittest.TestCase):
@@ -625,7 +624,7 @@ class MergeFilesJSONPTests(FileSystemTestCase):
         self.assertEqual(expected_after, after)
 
     def assertDump(self, before, json_data, after):
-        fd = StringIO.StringIO()
+        fd = StringIO()
         merge_results.MergeFilesJSONP.dump_jsonp(fd, before, json_data, after)
         merged_str = fd.getvalue()
         self.assertTrue(self.check_before_after(merged_str, before, after))
@@ -644,7 +643,7 @@ class MergeFilesJSONPTests(FileSystemTestCase):
         return json_str
 
     def test_load(self):
-        fdcls = StringIO.StringIO
+        fdcls = StringIO
         self.assertLoad(fdcls('{"a": 1}'), '', {'a': 1}, '')
         self.assertLoad(fdcls('f({"a": 1});'), 'f(', {'a': 1}, ');')
         self.assertLoad(fdcls('var o = {"a": 1}'), 'var o = ', {'a': 1}, '')
@@ -804,6 +803,79 @@ f1({
             '/s/filea': '{"a": 1}',
             '/s/filef1a': 'f1({"a": 1})',
         }, ('/output/outff4', ['/s/filea', '/s/filef1a']))
+
+
+class JSONWptReportsMerger(unittest.TestCase):
+    def test_time_start(self):
+        merger = merge_results.JSONWptReportsMerger()
+        self.assertEqual({
+            'time_start': 2
+        },
+                         merger.merge([{
+                             'time_start': 3
+                         }, {
+                             'time_start': 2
+                         }]))
+        self.assertEqual({
+            'time_start': 2
+        },
+                         merger.merge([{
+                             'time_start': 2
+                         }, {
+                             'time_start': 3
+                         }]))
+        self.assertEqual({
+            'time_start': 12
+        }, merger.merge([{
+            'time_start': 12
+        }, {}]))
+
+    def test_time_end(self):
+        merger = merge_results.JSONWptReportsMerger()
+        self.assertEqual({
+            'time_end': 3
+        },
+                         merger.merge([{
+                             'time_end': 3
+                         }, {
+                             'time_end': 2
+                         }]))
+        self.assertEqual({
+            'time_end': 3
+        },
+                         merger.merge([{
+                             'time_end': 2
+                         }, {
+                             'time_end': 3
+                         }]))
+        self.assertEqual({
+            'time_end': 12
+        }, merger.merge([{
+            'time_end': 12
+        }, {}]))
+
+    def test_run_info(self):
+        merger = merge_results.JSONWptReportsMerger()
+        self.assertEqual({
+            'run_info': {"os": "linux"}
+        },
+                         merger.merge([{
+                             'run_info': {"os": "linux"}
+                         }, {
+                             'run_info': {"os": "win"}
+                         }]))
+
+    def test_results(self):
+        merger = merge_results.JSONWptReportsMerger()
+        self.assertEqual({
+            'results': [{"test": "/foo/foo.html"},
+                        {"test": "/bar/bar.html"}]
+        },
+                         merger.merge([{
+                             "results": [{"test": "/foo/foo.html"}]
+                         }, {
+                             "results": [{"test": "/bar/bar.html"}]
+                         }]))
 
 
 class JSONTestResultsMerger(unittest.TestCase):

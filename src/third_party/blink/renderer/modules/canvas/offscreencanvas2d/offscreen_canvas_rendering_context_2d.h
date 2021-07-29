@@ -56,16 +56,10 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
   // CanvasRenderingContext implementation
   ~OffscreenCanvasRenderingContext2D() override;
   ContextType GetContextType() const override { return kContext2D; }
-  bool IsRenderingContext2D() const override { return true; }
   bool IsComposited() const override { return false; }
   bool IsAccelerated() const override;
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   V8RenderingContext* AsV8RenderingContext() final;
   V8OffscreenRenderingContext* AsV8OffscreenRenderingContext() final;
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  void SetCanvasGetContextResult(RenderingContext&) final {}
-  void SetOffscreenCanvasGetContextResult(OffscreenRenderingContext&) final;
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   void SetIsInHiddenPage(bool) final { NOTREACHED(); }
   void SetIsBeingDisplayed(bool) final { NOTREACHED(); }
   void Stop() final { NOTREACHED(); }
@@ -76,6 +70,12 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
   void Reset() override;
   void RestoreCanvasMatrixClipStack(cc::PaintCanvas* c) const override {
     RestoreMatrixClipStack(c);
+  }
+  // CanvasRenderingContext - ActiveScriptWrappable
+  // This method will avoid this class to be garbage collected, as soon as
+  // HasPendingActivity returns true.
+  bool HasPendingActivity() const final {
+    return !dirty_rect_for_commit_.isEmpty();
   }
 
   String font() const;
@@ -119,8 +119,8 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
   cc::PaintCanvas* GetOrCreatePaintCanvas() final;
   cc::PaintCanvas* GetPaintCanvas() const final;
 
-  void DidDraw() final;
-  void DidDraw(const SkIRect& dirty_rect) final;
+  void DidDraw2D(const SkIRect& dirty_rect,
+                 CanvasPerformanceMonitor::DrawType) final;
 
   bool StateHasFilter() final;
   sk_sp<PaintFilter> StateGetFilter() final;
@@ -133,12 +133,15 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
     return CreationAttributes().desynchronized;
   }
   bool isContextLost() const override;
+  void LoseContext(LostContextMode) override;
 
   ImageBitmap* TransferToImageBitmap(ScriptState*) final;
 
   void Trace(Visitor*) const override;
 
   bool PushFrame() override;
+
+  CanvasRenderingContextHost* GetCanvasRenderingContextHost() override;
 
   IdentifiableToken IdentifiableTextToken() const override {
     return identifiability_study_helper_.GetToken();
@@ -167,6 +170,7 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
                    int x,
                    int y) override;
   void WillOverwriteCanvas() override;
+  void TryRestoreContextEvent(TimerBase*) override;
 
  private:
   void FinalizeFrame() final;

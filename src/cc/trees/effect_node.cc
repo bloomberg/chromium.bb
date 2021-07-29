@@ -56,6 +56,7 @@ bool EffectNode::operator==(const EffectNode& other) const {
          screen_space_opacity == other.screen_space_opacity &&
          backdrop_filter_quality == other.backdrop_filter_quality &&
          subtree_capture_id == other.subtree_capture_id &&
+         subtree_size == other.subtree_size &&
          cache_render_surface == other.cache_render_surface &&
          has_copy_request == other.has_copy_request &&
          filters == other.filters &&
@@ -183,14 +184,16 @@ void EffectNode::AsValueInto(base::trace_event::TracedValue* value) const {
   }
   value->SetString("blend_mode", SkBlendMode_Name(blend_mode));
   value->SetString("subtree_capture_id", subtree_capture_id.ToString());
+  value->SetString("subtree_size", subtree_size.ToString());
   value->SetBoolean("cache_render_surface", cache_render_surface);
   value->SetBoolean("has_copy_request", has_copy_request);
-  value->SetBoolean("double_sided", double_sided);
   value->SetBoolean("hidden_by_backface_visibility",
                     hidden_by_backface_visibility);
+  value->SetBoolean("double_sided", double_sided);
   value->SetBoolean("trilinear_filtering", trilinear_filtering);
   value->SetBoolean("is_drawn", is_drawn);
   value->SetBoolean("only_draws_visible_content", only_draws_visible_content);
+  value->SetBoolean("subtree_hidden", subtree_hidden);
   value->SetBoolean("has_potential_filter_animation",
                     has_potential_filter_animation);
   value->SetBoolean("has_potential_backdrop_filter_animation",
@@ -200,6 +203,7 @@ void EffectNode::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetBoolean("has_masking_child", has_masking_child);
   value->SetBoolean("effect_changed", effect_changed);
   value->SetBoolean("subtree_has_copy_request", subtree_has_copy_request);
+  value->SetBoolean("affected_by_backdrop_filter", affected_by_backdrop_filter);
   value->SetString("render_surface_reason",
                    RenderSurfaceReasonToString(render_surface_reason));
   value->SetInteger("transform_id", transform_id);
@@ -211,7 +215,6 @@ void EffectNode::AsValueInto(base::trace_event::TracedValue* value) const {
                     closest_ancestor_with_copy_request_id);
   value->SetInteger("closest_ancestor_being_captured_id",
                     closest_ancestor_being_captured_id);
-  value->SetBoolean("affected_by_backdrop_filter", affected_by_backdrop_filter);
 }
 
 }  // namespace cc

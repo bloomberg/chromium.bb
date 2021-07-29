@@ -420,11 +420,10 @@ BrowserAccessibilityAndroid::GetSoleInterestingNodeFromSubtree() const {
     return this;
 
   const BrowserAccessibilityAndroid* sole_interesting_node = nullptr;
-  for (PlatformChildIterator it = PlatformChildrenBegin();
-       it != PlatformChildrenEnd(); ++it) {
+  for (const auto& child : PlatformChildren()) {
     const BrowserAccessibilityAndroid* interesting_node =
-        static_cast<const BrowserAccessibilityAndroid*>(it.get())
-            ->GetSoleInterestingNodeFromSubtree();
+        static_cast<const BrowserAccessibilityAndroid&>(child)
+            .GetSoleInterestingNodeFromSubtree();
     if (interesting_node && sole_interesting_node) {
       // If there are two interesting nodes, return nullptr.
       return nullptr;
@@ -572,6 +571,10 @@ bool BrowserAccessibilityAndroid::IsLeafConsideringChildren() const {
   return true;
 }
 
+// Note: this is used to compute an object's name on Android, and is exposed as
+// the name field in Android dump tree tests.
+// TODO(accessibility) Should it be called GetName() so that engineers not
+// familiar with Android can find it more easily?
 std::u16string BrowserAccessibilityAndroid::GetInnerText() const {
   if (ui::IsIframe(GetRole()))
     return std::u16string();
@@ -601,6 +604,11 @@ std::u16string BrowserAccessibilityAndroid::GetInnerText() const {
   // For almost all focusable nodes we try to get text from contents, but for
   // the root node that's redundant and often way too verbose.
   if (ui::IsPlatformDocument(GetRole()))
+    return text;
+
+  // A role="separator" is a leaf, and cannot get name from contents, even if
+  // author appends text children.
+  if (GetRole() == ax::mojom::Role::kSplitter)
     return text;
 
   // Append image description strings to the text, if not running as WebView.
@@ -700,6 +708,21 @@ std::u16string BrowserAccessibilityAndroid::GetHint() const {
   return base::JoinString(strings, u" ");
 }
 
+std::u16string BrowserAccessibilityAndroid::GetDialogModalMessageText() const {
+  // For a dialog/modal, first check for a name, and then a description. If
+  // both are empty, fallback to a default "dialog opened." text.
+  if (HasStringAttribute(ax::mojom::StringAttribute::kName)) {
+    return GetString16Attribute(ax::mojom::StringAttribute::kName);
+  }
+
+  if (HasStringAttribute(ax::mojom::StringAttribute::kDescription)) {
+    return GetString16Attribute(ax::mojom::StringAttribute::kDescription);
+  }
+
+  content::ContentClient* content_client = content::GetContentClient();
+  return content_client->GetLocalizedString(IDS_AX_DIALOG_MODAL_OPENED);
+}
+
 std::u16string BrowserAccessibilityAndroid::GetStateDescription() const {
   std::vector<std::u16string> state_descs;
 
@@ -745,12 +768,11 @@ std::u16string BrowserAccessibilityAndroid::GetMultiselectableStateDescription()
   // Count the number of children and selected children.
   int child_count = 0;
   int selected_count = 0;
-  for (PlatformChildIterator it = PlatformChildrenBegin();
-       it != PlatformChildrenEnd(); ++it) {
+  for (const auto& child : PlatformChildren()) {
     child_count++;
-    BrowserAccessibilityAndroid* child =
-        static_cast<BrowserAccessibilityAndroid*>(it.get());
-    if (child->IsSelected())
+    const BrowserAccessibilityAndroid& android_child =
+        static_cast<const BrowserAccessibilityAndroid&>(child);
+    if (android_child.IsSelected())
       selected_count++;
   }
 
@@ -869,12 +891,11 @@ std::u16string BrowserAccessibilityAndroid::GetComboboxExpandedText() const {
   //
   // Find child input node:
   const BrowserAccessibilityAndroid* input_node = nullptr;
-  for (PlatformChildIterator it = PlatformChildrenBegin();
-       it != PlatformChildrenEnd(); ++it) {
-    const BrowserAccessibilityAndroid* child_node =
-        static_cast<BrowserAccessibilityAndroid*>(it.get());
-    if (child_node->IsTextField()) {
-      input_node = child_node;
+  for (const auto& child : PlatformChildren()) {
+    const BrowserAccessibilityAndroid& android_child =
+        static_cast<const BrowserAccessibilityAndroid&>(child);
+    if (android_child.IsTextField()) {
+      input_node = &android_child;
       break;
     }
   }
@@ -932,14 +953,13 @@ std::u16string BrowserAccessibilityAndroid::GetComboboxExpandedTextFallback()
 
   // Check for child nodes that are collections.
   int child_collection_count = 0;
-  BrowserAccessibilityAndroid* collection_node = nullptr;
-  for (PlatformChildIterator it = PlatformChildrenBegin();
-       it != PlatformChildrenEnd(); ++it) {
-    BrowserAccessibilityAndroid* child =
-        static_cast<BrowserAccessibilityAndroid*>(it.get());
-    if (child->IsCollection()) {
+  const BrowserAccessibilityAndroid* collection_node = nullptr;
+  for (const auto& child : PlatformChildren()) {
+    const auto& android_child =
+        static_cast<const BrowserAccessibilityAndroid&>(child);
+    if (android_child.IsCollection()) {
       child_collection_count++;
-      collection_node = child;
+      collection_node = &android_child;
     }
   }
 
@@ -1055,9 +1075,6 @@ std::u16string BrowserAccessibilityAndroid::GetRoleDescription() const {
     case ax::mojom::Role::kAlert:
       message_id = IDS_AX_ROLE_ALERT;
       break;
-    case ax::mojom::Role::kAnchor:
-      // No role description.
-      break;
     case ax::mojom::Role::kApplication:
       message_id = IDS_AX_ROLE_APPLICATION;
       break;
@@ -1131,10 +1148,9 @@ std::u16string BrowserAccessibilityAndroid::GetRoleDescription() const {
       message_id = IDS_AX_ROLE_DATE;
       break;
     case ax::mojom::Role::kDateTime: {
-      const ui::AXNodeData& data = GetData();
       std::string type;
-      if (data.GetStringAttribute(ax::mojom::StringAttribute::kInputType,
-                                  &type)) {
+      if (node()->GetStringAttribute(ax::mojom::StringAttribute::kInputType,
+                                     &type)) {
         // Returns a specific role to better aid users on the control type
         // they are interacting with. This differs from Android text input type
         // which has a more granular mapping that determines type of keyboard
@@ -1666,11 +1682,10 @@ int BrowserAccessibilityAndroid::GetItemCount() const {
 int BrowserAccessibilityAndroid::GetSelectedItemCount() const {
   // Count the number of selected children.
   int selected_count = 0;
-  for (PlatformChildIterator it = PlatformChildrenBegin();
-       it != PlatformChildrenEnd(); ++it) {
-    BrowserAccessibilityAndroid* child =
-        static_cast<BrowserAccessibilityAndroid*>(it.get());
-    if (child->IsSelected())
+  for (const auto& child : PlatformChildren()) {
+    const BrowserAccessibilityAndroid& android_child =
+        static_cast<const BrowserAccessibilityAndroid&>(child);
+    if (android_child.IsSelected())
       selected_count++;
   }
 
@@ -1918,7 +1933,7 @@ int BrowserAccessibilityAndroid::GetSelectionStart() const {
     return 0;
   }
 
-  AXPosition position = anchor_object->CreatePositionAt(
+  AXPosition position = anchor_object->CreateTextPositionAt(
       unignored_selection.anchor_offset, unignored_selection.anchor_affinity);
   while (position->GetAnchor() && position->GetAnchor() != node())
     position = position->CreateParentPosition();
@@ -1940,7 +1955,7 @@ int BrowserAccessibilityAndroid::GetSelectionEnd() const {
   if (!focus_object)
     return 0;
 
-  AXPosition position = focus_object->CreatePositionAt(
+  AXPosition position = focus_object->CreateTextPositionAt(
       unignored_selection.focus_offset, unignored_selection.focus_affinity);
   while (position->GetAnchor() && position->GetAnchor() != node())
     position = position->CreateParentPosition();
@@ -1950,7 +1965,7 @@ int BrowserAccessibilityAndroid::GetSelectionEnd() const {
 
 int BrowserAccessibilityAndroid::GetEditableTextLength() const {
   if (IsTextField())
-    return int{GetValueForControl().size()};
+    return static_cast<int>(GetValueForControl().size());
   return 0;
 }
 
@@ -1960,9 +1975,9 @@ int BrowserAccessibilityAndroid::AndroidInputType() const {
   if (html_tag != "input")
     return ANDROID_TEXT_INPUTTYPE_TYPE_NULL;
 
-  const ui::AXNodeData& data = GetData();
   std::string type;
-  if (!data.GetStringAttribute(ax::mojom::StringAttribute::kInputType, &type))
+  if (!node()->GetStringAttribute(ax::mojom::StringAttribute::kInputType,
+                                  &type))
     return ANDROID_TEXT_INPUTTYPE_TYPE_TEXT;
 
   if (type.empty() || type == "text" || type == "search")
@@ -2190,15 +2205,12 @@ void BrowserAccessibilityAndroid::GetSuggestions(
   while (node && node != this) {
     if (node->IsText()) {
       const std::vector<int32_t>& marker_types =
-          node->GetData().GetIntListAttribute(
-              ax::mojom::IntListAttribute::kMarkerTypes);
+          node->GetIntListAttribute(ax::mojom::IntListAttribute::kMarkerTypes);
       if (!marker_types.empty()) {
-        const std::vector<int>& marker_starts =
-            node->GetData().GetIntListAttribute(
-                ax::mojom::IntListAttribute::kMarkerStarts);
+        const std::vector<int>& marker_starts = node->GetIntListAttribute(
+            ax::mojom::IntListAttribute::kMarkerStarts);
         const std::vector<int>& marker_ends =
-            node->GetData().GetIntListAttribute(
-                ax::mojom::IntListAttribute::kMarkerEnds);
+            node->GetIntListAttribute(ax::mojom::IntListAttribute::kMarkerEnds);
 
         for (size_t i = 0; i < marker_types.size(); ++i) {
           // On Android, both spelling errors and alternatives from dictation
@@ -2361,14 +2373,26 @@ void BrowserAccessibilityAndroid::OnDataChanged() {
   auto* manager =
       static_cast<BrowserAccessibilityManagerAndroid*>(this->manager());
   manager->ClearNodeInfoCacheForGivenId(unique_id());
+
+  // For any nodes that are the children of a leaf, we also want to invalidate
+  // the cache for the ancestry chain up until the first non-leaf node.
+  if (IsChildOfLeaf()) {
+    BrowserAccessibilityAndroid* parent =
+        static_cast<BrowserAccessibilityAndroid*>(PlatformGetParent());
+
+    while (parent != nullptr && (parent->IsChildOfLeaf() || parent->IsLeaf())) {
+      manager->ClearNodeInfoCacheForGivenId(parent->unique_id());
+      parent = static_cast<BrowserAccessibilityAndroid*>(
+          parent->PlatformGetParent());
+    }
+  }
 }
 
 int BrowserAccessibilityAndroid::CountChildrenWithRole(
     ax::mojom::Role role) const {
   int count = 0;
-  for (PlatformChildIterator it = PlatformChildrenBegin();
-       it != PlatformChildrenEnd(); ++it) {
-    if (it->GetRole() == role)
+  for (const auto& child : PlatformChildren()) {
+    if (child.GetRole() == role)
       count++;
   }
   return count;

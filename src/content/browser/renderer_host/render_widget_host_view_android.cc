@@ -67,9 +67,11 @@
 #include "content/public/android/content_jni_headers/RenderWidgetHostViewImpl_jni.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/android/synchronous_compositor_client.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/common/content_client.h"
@@ -223,9 +225,11 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       text_suggestion_host_(nullptr),
       gesture_listener_manager_(nullptr),
       view_(ui::ViewAndroid::LayoutType::MATCH_PARENT),
-      gesture_provider_(ui::GetGestureProviderConfig(
-                            ui::GestureProviderConfigType::CURRENT_PLATFORM),
-                        this),
+      gesture_provider_(
+          ui::GetGestureProviderConfig(
+              ui::GestureProviderConfigType::CURRENT_PLATFORM,
+              content::GetUIThreadTaskRunner({BrowserTaskType::kUserInput})),
+          this),
       stylus_text_selector_(this),
       using_browser_compositor_(CompositorImpl::IsInitialized()),
       synchronous_compositor_client_(nullptr),
@@ -240,7 +244,8 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       page_scale_(1.f),
       min_page_scale_(1.f),
       max_page_scale_(1.f),
-      mouse_wheel_phase_handler_(this) {
+      mouse_wheel_phase_handler_(this),
+      is_surface_sync_throttling_(features::IsSurfaceSyncThrottling()) {
   // Set the layer which will hold the content layer for this view. The content
   // layer is managed by the DelegatedFrameHost.
   view_.SetLayer(cc::Layer::Create());
@@ -351,6 +356,8 @@ bool RenderWidgetHostViewAndroid::ShouldVirtualKeyboardOverlayContent() {
 bool RenderWidgetHostViewAndroid::SynchronizeVisualProperties(
     const cc::DeadlinePolicy& deadline_policy,
     const absl::optional<viz::LocalSurfaceId>& child_local_surface_id) {
+  if (!CanSynchronizeVisualProperties())
+    return false;
   if (child_local_surface_id) {
     local_surface_id_allocator_.UpdateFromChild(*child_local_surface_id);
   } else {
@@ -1080,6 +1087,12 @@ void RenderWidgetHostViewAndroid::UpdateTooltipUnderCursor(
   // Tooltips don't make sense on Android.
 }
 
+void RenderWidgetHostViewAndroid::UpdateTooltipFromKeyboard(
+    const std::u16string& tooltip_text,
+    const gfx::Rect& bounds) {
+  // Tooltips don't makes sense on Android.
+}
+
 void RenderWidgetHostViewAndroid::UpdateBackgroundColor() {
   DCHECK(RenderWidgetHostViewBase::GetBackgroundColor());
 
@@ -1142,6 +1155,23 @@ void RenderWidgetHostViewAndroid::OnInterstitialPageAttached() {
 
 void RenderWidgetHostViewAndroid::OnInterstitialPageGoingAway() {
   ResetSynchronousCompositor();
+}
+
+bool RenderWidgetHostViewAndroid::CanSynchronizeVisualProperties() {
+  // When a rotation begins, the new visual properties are not all notified to
+  // RenderWidgetHostViewAndroid at the same time. The process begins when
+  // OnSynchronizedDisplayPropertiesChanged is called, and ends with
+  // OnPhysicalBackingSizeChanged.
+  //
+  // During this time there can be upwards of three calls to
+  // SynchronizeVisualProperties. Sending each of these separately to the
+  // Renderer causes three full re-layouts of the page to occur.
+  //
+  // We should instead wait for the full set of new visual properties to be
+  // available, and deliver them to the Renderer in one single update.
+  if (in_rotation_ && is_surface_sync_throttling_)
+    return false;
+  return true;
 }
 
 std::unique_ptr<SyntheticGestureTarget>
@@ -1530,6 +1560,17 @@ void RenderWidgetHostViewAndroid::ShowInternal() {
                        : blink::mojom::RecordContentToVisibleTimeRequestPtr());
 
   if (delegated_frame_host_) {
+    // If a rotation occurred while this was not visible, we need to allocate a
+    // new viz::LocalSurfaceId and send the current visual properties to the
+    // Renderer. Otherwise there will be no content at all to display.
+    //
+    // The rotation process will complete after this first surface is displayed.
+    if (!local_surface_id_allocator_.HasValidLocalSurfaceId() &&
+        is_surface_sync_throttling_) {
+      base::AutoReset<bool> in_rotation(&in_rotation_, false);
+      SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
+                                  absl::nullopt);
+    }
     delegated_frame_host_->WasShown(
         local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
         GetCompositorViewportPixelSize(), host()->delegate()->IsFullscreen());
@@ -1929,12 +1970,13 @@ void RenderWidgetHostViewAndroid::SendGestureEvent(
 }
 
 bool RenderWidgetHostViewAndroid::ShowSelectionMenu(
+    RenderFrameHost* render_frame_host,
     const ContextMenuParams& params) {
   if (!selection_popup_controller_ || is_in_vr_)
     return false;
 
-  return selection_popup_controller_->ShowSelectionMenu(params,
-                                                        GetTouchHandleHeight());
+  return selection_popup_controller_->ShowSelectionMenu(
+      render_frame_host, params, GetTouchHandleHeight());
 }
 
 void RenderWidgetHostViewAndroid::MoveCaret(const gfx::Point& point) {
@@ -1970,7 +2012,8 @@ void RenderWidgetHostViewAndroid::SetIsInVR(bool is_in_vr) {
 
   gesture_provider_.UpdateConfig(ui::GetGestureProviderConfig(
       is_in_vr_ ? ui::GestureProviderConfigType::CURRENT_PLATFORM_VR
-                : ui::GestureProviderConfigType::CURRENT_PLATFORM));
+                : ui::GestureProviderConfigType::CURRENT_PLATFORM,
+      content::GetUIThreadTaskRunner({BrowserTaskType::kUserInput})));
 }
 
 bool RenderWidgetHostViewAndroid::IsInVR() const {
@@ -2458,7 +2501,7 @@ RenderWidgetHostViewAndroid::DidUpdateVisualProperties(
 }
 
 void RenderWidgetHostViewAndroid::GetScreenInfo(
-    blink::ScreenInfo* screen_info) {
+    display::ScreenInfo* screen_info) {
   bool use_window_wide_color_gamut =
       GetContentClient()->browser()->GetWideColorGamutHeuristic() ==
       ContentBrowserClient::WideColorGamutHeuristic::kUseWindow;

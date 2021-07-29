@@ -6,6 +6,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/run_loop.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "cc/layers/solid_color_layer.h"
@@ -61,7 +62,7 @@ TEST_F(WebFrameWidgetSimTest, AutoResizeAllocatedLocalSurfaceId) {
 
   // Enable auto-resize.
   VisualProperties visual_properties;
-  visual_properties.screen_infos = ScreenInfos(ScreenInfo());
+  visual_properties.screen_infos = display::ScreenInfos(display::ScreenInfo());
   visual_properties.auto_resize_enabled = true;
   visual_properties.min_size_for_auto_resize = gfx::Size(100, 100);
   visual_properties.max_size_for_auto_resize = gfx::Size(200, 200);
@@ -165,7 +166,7 @@ TEST_F(WebFrameWidgetImplRemoteFrameSimTest,
       LocalFrameRootWidget()->LayerTreeHostForTesting();
   EXPECT_FALSE(layer_tree_host->is_external_pinch_gesture_active_for_testing());
   VisualProperties visual_properties;
-  visual_properties.screen_infos = ScreenInfos(ScreenInfo());
+  visual_properties.screen_infos = display::ScreenInfos(display::ScreenInfo());
 
   // Sync visual properties on a child widget.
   visual_properties.is_pinch_gesture_active = true;
@@ -203,6 +204,8 @@ enum {
 class MockHandledEventCallback {
  public:
   MockHandledEventCallback() = default;
+  MockHandledEventCallback(const MockHandledEventCallback&) = delete;
+  MockHandledEventCallback& operator=(const MockHandledEventCallback&) = delete;
   MOCK_METHOD4_T(Run,
                  void(mojom::InputEventResultState,
                       const ui::LatencyInfo&,
@@ -222,8 +225,6 @@ class MockHandledEventCallback {
       absl::optional<cc::TouchAction> touch_action) {
     Run(ack_state, latency_info, overscroll.get(), touch_action);
   }
-
-  DISALLOW_COPY_AND_ASSIGN(MockHandledEventCallback);
 };
 
 class MockWebFrameWidgetImpl : public SimWebFrameWidget {
@@ -242,7 +243,8 @@ class MockWebFrameWidgetImpl : public SimWebFrameWidget {
                     const cc::OverscrollBehavior& overscroll_behavior,
                     bool event_processed));
 
-  MOCK_METHOD1(WillHandleGestureEvent, bool(const WebGestureEvent& event));
+  MOCK_METHOD2(WillHandleGestureEvent,
+               void(const WebGestureEvent& event, bool* suppress));
 
   // mojom::blink::WidgetHost overrides:
   using SimWebFrameWidget::SetCursor;
@@ -284,7 +286,8 @@ class WebFrameWidgetImplSimTest : public SimTest {
         WebCoalescedInputEvent(event.Clone(), {}, {}, ui::LatencyInfo()),
         std::move(callback));
   }
-  bool OverscrollGestureEvent(const blink::WebGestureEvent& event) {
+  void WillHandleGestureEvent(const blink::WebGestureEvent& event,
+                              bool* suppress) {
     if (event.GetType() == WebInputEvent::Type::kGestureScrollUpdate) {
       MockMainFrameWidget()->DidOverscroll(
           gfx::Vector2dF(event.data.scroll_update.delta_x,
@@ -294,9 +297,8 @@ class WebFrameWidgetImplSimTest : public SimTest {
           event.PositionInWidget(),
           gfx::Vector2dF(event.data.scroll_update.velocity_x,
                          event.data.scroll_update.velocity_y));
-      return true;
+      *suppress = true;
     }
-    return false;
   }
 
   const base::HistogramTester& histogram_tester() const {
@@ -335,9 +337,9 @@ TEST_F(WebFrameWidgetImplSimTest, CursorChange) {
 }
 
 TEST_F(WebFrameWidgetImplSimTest, EventOverscroll) {
-  ON_CALL(*MockMainFrameWidget(), WillHandleGestureEvent(_))
+  ON_CALL(*MockMainFrameWidget(), WillHandleGestureEvent(_, _))
       .WillByDefault(testing::Invoke(
-          this, &WebFrameWidgetImplSimTest::OverscrollGestureEvent));
+          this, &WebFrameWidgetImplSimTest::WillHandleGestureEvent));
   EXPECT_CALL(*MockMainFrameWidget(), HandleInputEvent(_))
       .WillRepeatedly(::testing::Return(WebInputEventResult::kNotHandled));
 
@@ -493,7 +495,7 @@ class NotifySwapTimesWebFrameWidgetTest : public SimTest {
     base::RunLoop swap_run_loop;
     base::RunLoop presentation_run_loop;
 
-    // Register callbacks for presentation time.
+    // Register callbacks for swap and presentation times.
     base::TimeTicks swap_time;
     MainFrame().FrameWidget()->NotifySwapAndPresentationTime(
         base::BindOnce(
@@ -519,9 +521,9 @@ class NotifySwapTimesWebFrameWidgetTest : public SimTest {
     // Present and wait for it to complete.
     viz::FrameTimingDetails timing_details;
     if (!swap_to_presentation.is_zero()) {
-      timing_details.presentation_feedback = gfx::PresentationFeedback(
-          /*presentation_time=*/swap_time + swap_to_presentation,
-          base::TimeDelta::FromMilliseconds(16), 0);
+      timing_details.presentation_feedback =
+          gfx::PresentationFeedback(swap_time + swap_to_presentation,
+                                    base::TimeDelta::FromMilliseconds(16), 0);
     }
     auto* last_frame_sink = GetWebFrameWidget().LastCreatedFrameSink();
     last_frame_sink->NotifyDidPresentCompositorFrame(1, timing_details);
@@ -572,6 +574,89 @@ TEST_F(NotifySwapTimesWebFrameWidgetTest,
       testing::IsEmpty());
 }
 
+// Verifies that the presentation callback is called after the first successful
+// presentation (skips failed presentations in between).
+TEST_F(NotifySwapTimesWebFrameWidgetTest, NotifyOnSuccessfulPresentation) {
+  base::HistogramTester histograms;
+
+  constexpr base::TimeDelta swap_to_failed =
+      base::TimeDelta::FromMicroseconds(2);
+  constexpr base::TimeDelta failed_to_successful =
+      base::TimeDelta::FromMicroseconds(3);
+
+  base::RunLoop swap_run_loop;
+  base::RunLoop presentation_run_loop;
+
+  base::TimeTicks failed_presentation_time;
+  base::TimeTicks successful_presentation_time;
+
+  // Register callbacks for swap and presentation times.
+  MainFrame().FrameWidget()->NotifySwapAndPresentationTime(
+      base::BindLambdaForTesting(
+          [&](blink::WebSwapResult result, base::TimeTicks timestamp) {
+            DCHECK(!timestamp.is_null());
+
+            // Now that the swap time is known, we can determine what timestamps
+            // should we use for the failed and the subsequent successful
+            // presentations.
+            DCHECK(failed_presentation_time.is_null());
+            failed_presentation_time = timestamp + swap_to_failed;
+            DCHECK(successful_presentation_time.is_null());
+            successful_presentation_time =
+                failed_presentation_time + failed_to_successful;
+
+            swap_run_loop.Quit();
+          }),
+      base::BindLambdaForTesting(
+          [&](blink::WebSwapResult result, base::TimeTicks timestamp) {
+            DCHECK(!timestamp.is_null());
+            DCHECK(!failed_presentation_time.is_null());
+            DCHECK(!successful_presentation_time.is_null());
+
+            // Verify that this callback is run in response to the successful
+            // presentation, not the failed one before that.
+            EXPECT_NE(timestamp, failed_presentation_time);
+            EXPECT_EQ(timestamp, successful_presentation_time);
+
+            presentation_run_loop.Quit();
+          }));
+
+  // Composite and wait for the swap to complete.
+  Compositor().BeginFrame(/*time_delta_in_seconds=*/0.016, /*raster=*/true);
+  swap_run_loop.Run();
+
+  // Respond with a failed presentation feedback.
+  DCHECK(!failed_presentation_time.is_null());
+  viz::FrameTimingDetails failed_timing_details;
+  failed_timing_details.presentation_feedback = gfx::PresentationFeedback(
+      failed_presentation_time, base::TimeDelta::FromMilliseconds(16),
+      gfx::PresentationFeedback::kFailure);
+  GetWebFrameWidget().LastCreatedFrameSink()->NotifyDidPresentCompositorFrame(
+      1, failed_timing_details);
+
+  // Respond with a successful presentation feedback.
+  DCHECK(!successful_presentation_time.is_null());
+  viz::FrameTimingDetails successful_timing_details;
+  successful_timing_details.presentation_feedback = gfx::PresentationFeedback(
+      successful_presentation_time, base::TimeDelta::FromMilliseconds(16), 0);
+  GetWebFrameWidget().LastCreatedFrameSink()->NotifyDidPresentCompositorFrame(
+      2, successful_timing_details);
+
+  // Wait for the presentation callback to be called. It should be called with
+  // the timestamp of the successful presentation.
+  presentation_run_loop.Run();
+
+  EXPECT_THAT(histograms.GetAllSamples(
+                  "PageLoad.Internal.Renderer.PresentationTime.Valid"),
+              testing::ElementsAre(base::Bucket(true, 1)));
+  const auto expected_sample = static_cast<base::HistogramBase::Sample>(
+      (swap_to_failed + failed_to_successful).InMilliseconds());
+  EXPECT_THAT(
+      histograms.GetAllSamples(
+          "PageLoad.Internal.Renderer.PresentationTime.DeltaFromSwapTime"),
+      testing::ElementsAre(base::Bucket(expected_sample, 1)));
+}
+
 // Tests that the value of VisualProperties::is_pinch_gesture_active is
 // not propagated to the LayerTreeHost when properties are synced for main
 // frame.
@@ -580,7 +665,7 @@ TEST_F(WebFrameWidgetSimTest, ActivePinchGestureUpdatesLayerTreeHost) {
       WebView().MainFrameViewWidget()->LayerTreeHostForTesting();
   EXPECT_FALSE(layer_tree_host->is_external_pinch_gesture_active_for_testing());
   VisualProperties visual_properties;
-  visual_properties.screen_infos = ScreenInfos(ScreenInfo());
+  visual_properties.screen_infos = display::ScreenInfos(display::ScreenInfo());
 
   // Sync visual properties on a mainframe RenderWidget.
   visual_properties.is_pinch_gesture_active = true;

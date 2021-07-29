@@ -121,6 +121,7 @@ class TestBrowserWindow : public BrowserWindow {
   void FocusAppMenu() override {}
   void FocusBookmarksToolbar() override {}
   void FocusInactivePopupForAccessibility() override {}
+  void FocusHelpBubble() override {}
   void RotatePaneFocus(bool forwards) override {}
   void ShowAppMenu() override {}
   content::KeyboardEventProcessingResult PreHandleKeyboardEvent(
@@ -154,10 +155,14 @@ class TestBrowserWindow : public BrowserWindow {
       content::WebContents* contents,
       send_tab_to_self::SendTabToSelfBubbleController* controller,
       bool is_user_gesture) override;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  views::Button* GetSharingHubIconButton() override;
+#else
   sharing_hub::SharingHubBubbleView* ShowSharingHubBubble(
       content::WebContents* contents,
       sharing_hub::SharingHubBubbleController* controller,
       bool is_user_gesture) override;
+#endif
   ShowTranslateBubbleResult ShowTranslateBubble(
       content::WebContents* contents,
       translate::TranslateStep step,
@@ -194,6 +199,8 @@ class TestBrowserWindow : public BrowserWindow {
       base::OnceClosure success_callback,
       base::OnceClosure failure_callback,
       const std::map<std::string, bool>& product_specific_data) override {}
+
+  void ShowIncognitoClearBrowsingDataDialog() override {}
 #endif
 
   ExclusiveAccessContext* GetExclusiveAccessContext() override;

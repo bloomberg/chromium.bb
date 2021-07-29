@@ -1686,26 +1686,7 @@ tcu::TestStatus featureBitInfluenceOnDeviceCreate (Context& context)
 	{
 		DEPENDENCY_DUAL_ITEM	(vulkan11Features,	multiviewFeatures,				multiviewGeometryShader,							multiview),
 		DEPENDENCY_DUAL_ITEM	(vulkan11Features,	multiviewFeatures,				multiviewTessellationShader,						multiview),
-		DEPENDENCY_SINGLE_ITEM	(vulkan12Features,									shaderInputAttachmentArrayDynamicIndexing,			descriptorIndexing),
-		DEPENDENCY_SINGLE_ITEM	(vulkan12Features,									shaderUniformTexelBufferArrayDynamicIndexing,		descriptorIndexing),
-		DEPENDENCY_SINGLE_ITEM	(vulkan12Features,									shaderStorageTexelBufferArrayDynamicIndexing,		descriptorIndexing),
-		DEPENDENCY_SINGLE_ITEM	(vulkan12Features,									shaderUniformBufferArrayNonUniformIndexing,			descriptorIndexing),
-		DEPENDENCY_SINGLE_ITEM	(vulkan12Features,									shaderSampledImageArrayNonUniformIndexing,			descriptorIndexing),
-		DEPENDENCY_SINGLE_ITEM	(vulkan12Features,									shaderStorageBufferArrayNonUniformIndexing,			descriptorIndexing),
-		DEPENDENCY_SINGLE_ITEM	(vulkan12Features,									shaderStorageImageArrayNonUniformIndexing,			descriptorIndexing),
-		DEPENDENCY_SINGLE_ITEM	(vulkan12Features,									shaderInputAttachmentArrayNonUniformIndexing,		descriptorIndexing),
-		DEPENDENCY_SINGLE_ITEM	(vulkan12Features,									shaderUniformTexelBufferArrayNonUniformIndexing,	descriptorIndexing),
-		DEPENDENCY_SINGLE_ITEM	(vulkan12Features,									shaderStorageTexelBufferArrayNonUniformIndexing,	descriptorIndexing),
-		DEPENDENCY_SINGLE_ITEM	(vulkan12Features,									descriptorBindingUniformBufferUpdateAfterBind,		descriptorIndexing),
-		DEPENDENCY_SINGLE_ITEM	(vulkan12Features,									descriptorBindingSampledImageUpdateAfterBind,		descriptorIndexing),
-		DEPENDENCY_SINGLE_ITEM	(vulkan12Features,									descriptorBindingStorageImageUpdateAfterBind,		descriptorIndexing),
-		DEPENDENCY_SINGLE_ITEM	(vulkan12Features,									descriptorBindingStorageBufferUpdateAfterBind,		descriptorIndexing),
-		DEPENDENCY_SINGLE_ITEM	(vulkan12Features,									descriptorBindingUniformTexelBufferUpdateAfterBind,	descriptorIndexing),
-		DEPENDENCY_SINGLE_ITEM	(vulkan12Features,									descriptorBindingStorageTexelBufferUpdateAfterBind,	descriptorIndexing),
-		DEPENDENCY_SINGLE_ITEM	(vulkan12Features,									descriptorBindingUpdateUnusedWhilePending,			descriptorIndexing),
-		DEPENDENCY_SINGLE_ITEM	(vulkan12Features,									descriptorBindingPartiallyBound,					descriptorIndexing),
-		DEPENDENCY_SINGLE_ITEM	(vulkan12Features,									descriptorBindingVariableDescriptorCount,			descriptorIndexing),
-		DEPENDENCY_SINGLE_ITEM	(vulkan12Features,									runtimeDescriptorArray,								descriptorIndexing),
+		DEPENDENCY_DUAL_ITEM	(vulkan11Features,	variablePointersFeatures,		variablePointers,									variablePointersStorageBuffer),
 		DEPENDENCY_DUAL_ITEM	(vulkan12Features,	bufferDeviceAddressFeatures,	bufferDeviceAddressCaptureReplay,					bufferDeviceAddress),
 		DEPENDENCY_DUAL_ITEM	(vulkan12Features,	bufferDeviceAddressFeatures,	bufferDeviceAddressMultiDevice,						bufferDeviceAddress),
 		DEPENDENCY_DUAL_ITEM	(vulkan12Features,	vulkanMemoryModelFeatures,		vulkanMemoryModelDeviceScope,						vulkanMemoryModel),
@@ -2207,8 +2188,8 @@ tcu::TestStatus enumerateDeviceExtensions (Context& context)
 			if (context.contextSupports(vk::ApiVersion(versionMajor, versionMinor, 0)))
 			{
 				checkDeviceExtensionDependencies(results,
-					DE_LENGTH_OF_ARRAY(instanceExtensionDependencies),
-					instanceExtensionDependencies,
+					DE_LENGTH_OF_ARRAY(deviceExtensionDependencies),
+					deviceExtensionDependencies,
 					versionMajor,
 					versionMinor,
 					instanceExtensionProperties,
@@ -2237,6 +2218,33 @@ tcu::TestStatus enumerateDeviceExtensions (Context& context)
 
 			checkDeviceExtensions(results, extensionNames);
 			CheckEnumerateDeviceExtensionPropertiesIncompleteResult(layer->layerName)(context, results, properties.size());
+		}
+	}
+
+	return tcu::TestStatus(results.getResult(), results.getMessage());
+}
+
+tcu::TestStatus extensionCoreVersions (Context& context)
+{
+	deUint32	major;
+	deUint32	minor;
+	const char*	extName;
+
+	auto&					log		= context.getTestContext().getLog();
+	tcu::ResultCollector	results	(log);
+
+	const auto instanceExtensionProperties	= enumerateInstanceExtensionProperties(context.getPlatformInterface(), DE_NULL);
+	const auto deviceExtensionProperties	= enumerateDeviceExtensionProperties(context.getInstanceInterface(), context.getPhysicalDevice(), DE_NULL);
+
+	for (const auto& majorMinorName : extensionRequiredCoreVersion)
+	{
+		std::tie(major, minor, extName) = majorMinorName;
+		const RequiredExtension reqExt (extName);
+
+		if ((isExtensionSupported(instanceExtensionProperties, reqExt) || isExtensionSupported(deviceExtensionProperties, reqExt)) &&
+		    !context.contextSupports(vk::ApiVersion(major, minor, 0u)))
+		{
+			results.fail("Required core version for " + std::string(extName) + " not met (" + de::toString(major) + "." + de::toString(minor) + ")");
 		}
 	}
 
@@ -4358,8 +4366,7 @@ tcu::TestStatus deviceProperties2 (Context& context)
 
 		log << TestLog::Message << performanceQueryProperties[0] << TestLog::EndMessage;
 
-		// TODO: this is a NOP. Should the second index be [1] ?
-		if (performanceQueryProperties[0].allowCommandBufferQueryCopies != performanceQueryProperties[0].allowCommandBufferQueryCopies)
+		if (performanceQueryProperties[0].allowCommandBufferQueryCopies != performanceQueryProperties[1].allowCommandBufferQueryCopies)
 		{
 			TCU_FAIL("Mismatch between VkPhysicalDevicePerformanceQueryPropertiesKHR");
 		}
@@ -4412,6 +4419,29 @@ tcu::TestStatus deviceProperties2 (Context& context)
 		    pciBusInfoProperties[0].pciFunction == DEUINT32_MAX)
 		{
 			TCU_FAIL("Invalid information in VkPhysicalDevicePCIBusInfoPropertiesEXT");
+		}
+	}
+
+	if (isExtensionSupported(properties, RequiredExtension("VK_KHR_portability_subset")))
+	{
+		VkPhysicalDevicePortabilitySubsetPropertiesKHR portabilitySubsetProperties[count];
+
+		for (int ndx = 0; ndx < count; ++ndx)
+		{
+			deMemset(&portabilitySubsetProperties[ndx], 0xFF * ndx, sizeof(VkPhysicalDevicePortabilitySubsetPropertiesKHR));
+			portabilitySubsetProperties[ndx].sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PORTABILITY_SUBSET_PROPERTIES_KHR;
+			portabilitySubsetProperties[ndx].pNext = DE_NULL;
+
+			extProperties.pNext = &portabilitySubsetProperties[ndx];
+
+			vki.getPhysicalDeviceProperties2(physicalDevice, &extProperties);
+		}
+
+		log << TestLog::Message << portabilitySubsetProperties[0] << TestLog::EndMessage;
+
+		if (portabilitySubsetProperties[0].minVertexInputBindingStrideAlignment != portabilitySubsetProperties[1].minVertexInputBindingStrideAlignment)
+		{
+			TCU_FAIL("Mismatch between VkPhysicalDevicePortabilitySubsetPropertiesKHR");
 		}
 	}
 
@@ -5643,6 +5673,14 @@ tcu::TestCaseGroup* createFeatureInfoTests (tcu::TestContext& testCtx)
 
 	infoTests->addChild(createTestGroup(testCtx, "format_properties",		"VkGetPhysicalDeviceFormatProperties() Tests",		createFormatTests));
 	infoTests->addChild(createTestGroup(testCtx, "image_format_properties",	"VkGetPhysicalDeviceImageFormatProperties() Tests",	createImageFormatTests,	imageFormatProperties));
+
+	{
+		de::MovePtr<tcu::TestCaseGroup> extCoreVersionGrp (new tcu::TestCaseGroup(testCtx, "extension_core_versions", "Tests checking extension required core versions"));
+
+		addFunctionCase(extCoreVersionGrp.get(), "extension_core_versions", "", extensionCoreVersions);
+
+		infoTests->addChild(extCoreVersionGrp.release());
+	}
 
 	{
 		de::MovePtr<tcu::TestCaseGroup> extendedPropertiesTests (new tcu::TestCaseGroup(testCtx, "get_physical_device_properties2", "VK_KHR_get_physical_device_properties2"));

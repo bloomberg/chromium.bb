@@ -57,8 +57,9 @@ class StyleFetchedImage final : public StyleImage,
   bool CanRender() const override;
   bool IsLoaded() const override;
   bool ErrorOccurred() const override;
-  FloatSize ImageSize(const Document&,
-                      float multiplier,
+  bool IsAccessAllowed(String&) const override;
+
+  FloatSize ImageSize(float multiplier,
                       const FloatSize& default_object_size,
                       RespectImageOrientationEnum) const override;
   bool HasIntrinsicSize() const override;

@@ -25,7 +25,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_math.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -58,6 +57,7 @@
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/mutator_host.h"
+#include "cc/trees/paint_holding_reason.h"
 #include "cc/trees/property_tree_builder.h"
 #include "cc/trees/proxy_main.h"
 #include "cc/trees/render_frame_metadata_observer.h"
@@ -67,6 +67,7 @@
 #include "cc/trees/transform_node.h"
 #include "cc/trees/tree_synchronizer.h"
 #include "cc/trees/ukm_manager.h"
+#include "components/viz/common/features.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/tracing/public/cpp/perfetto/flow_event_utils.h"
 #include "services/tracing/public/cpp/perfetto/macros.h"
@@ -604,16 +605,22 @@ void LayerTreeHost::OnDeferMainFrameUpdatesChanged(bool defer_status) {
   client_->OnDeferMainFrameUpdatesChanged(defer_status);
 }
 
-void LayerTreeHost::StartDeferringCommits(base::TimeDelta timeout) {
-  proxy_->StartDeferringCommits(timeout);
+bool LayerTreeHost::StartDeferringCommits(base::TimeDelta timeout,
+                                          PaintHoldingReason reason) {
+  return proxy_->StartDeferringCommits(timeout, reason);
 }
 
 void LayerTreeHost::StopDeferringCommits(PaintHoldingCommitTrigger trigger) {
   proxy_->StopDeferringCommits(trigger);
 }
 
-void LayerTreeHost::OnDeferCommitsChanged(bool defer_status) {
-  client_->OnDeferCommitsChanged(defer_status);
+bool LayerTreeHost::IsDeferringCommits() const {
+  return proxy_->IsDeferringCommits();
+}
+
+void LayerTreeHost::OnDeferCommitsChanged(bool defer_status,
+                                          PaintHoldingReason reason) {
+  client_->OnDeferCommitsChanged(defer_status, reason);
 }
 
 DISABLE_CFI_PERF
@@ -639,6 +646,11 @@ void LayerTreeHost::SetNeedsCommit() {
   proxy_->SetNeedsCommit();
   swap_promise_manager_.NotifySwapPromiseMonitorsOfSetNeedsCommit();
   events_metrics_manager_.SaveActiveEventMetrics();
+}
+
+void LayerTreeHost::SetTargetLocalSurfaceId(
+    const viz::LocalSurfaceId& target_local_surface_id) {
+  proxy_->SetTargetLocalSurfaceId(target_local_surface_id);
 }
 
 bool LayerTreeHost::RequestedMainFramePendingForTesting() const {
@@ -749,7 +761,7 @@ bool LayerTreeHost::UpdateLayers() {
 
 void LayerTreeHost::DidPresentCompositorFrame(
     uint32_t frame_token,
-    std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
+    std::vector<PresentationTimeCallbackBuffer::MainCallback> callbacks,
     const gfx::PresentationFeedback& feedback) {
   for (auto& callback : callbacks)
     std::move(callback).Run(feedback);
@@ -1122,7 +1134,7 @@ bool LayerTreeHost::IsThreaded() const {
 }
 
 void LayerTreeHost::RequestPresentationTimeForNextFrame(
-    PresentationTimeCallback callback) {
+    PresentationTimeCallbackBuffer::MainCallback callback) {
   pending_presentation_time_callbacks_.push_back(std::move(callback));
 }
 
@@ -1267,6 +1279,13 @@ void LayerTreeHost::SetViewportRectAndScale(
       device_scale_factor_ = device_scale_factor;
       device_scale_factor_changed = true;
     }
+  }
+
+  // If a new viz::LocalSurfaceId has been provided, and the viewport has
+  // changed, we need not begin new frames until it has activated.
+  if (previous_local_surface_id != local_surface_id_from_parent &&
+      device_viewport_rect_changed && features::IsSurfaceSyncThrottling()) {
+    SetTargetLocalSurfaceId(local_surface_id_from_parent);
   }
 
   if (device_viewport_rect_changed || painted_device_scale_factor_changed ||

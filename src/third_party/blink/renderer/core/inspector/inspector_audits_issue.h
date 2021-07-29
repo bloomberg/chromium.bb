@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "base/unguessable_token.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 
@@ -77,7 +78,8 @@ class CORE_EXPORT AuditsIssue {
                               RendererCorsIssueCode code,
                               WTF::String url,
                               WTF::String initiator_origin,
-                              WTF::String failedParameter);
+                              WTF::String failedParameter,
+                              absl::optional<base::UnguessableToken> issue_id);
   // Reports an Attribution Reporting API issue to DevTools.
   // |reporting_execution_context| is the current execution context in which the
   // issue happens and is reported in (the "target" in DevTools terms).
@@ -97,6 +99,13 @@ class CORE_EXPORT AuditsIssue {
   static void ReportNavigatorUserAgentAccess(
       ExecutionContext* execution_context,
       WTF::String url);
+
+  static void ReportCrossOriginWasmModuleSharingIssue(
+      ExecutionContext* execution_context,
+      const std::string& wasm_source_url,
+      WTF::String source_origin,
+      WTF::String target_origin,
+      bool is_warning);
 
  private:
   explicit AuditsIssue(std::unique_ptr<protocol::Audits::InspectorIssue> issue);

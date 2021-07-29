@@ -27,6 +27,7 @@ Variable::Variable(ProgramID program_id,
                    const Source& source,
                    const Symbol& sym,
                    StorageClass declared_storage_class,
+                   Access declared_access,
                    const ast::Type* type,
                    bool is_const,
                    Expression* constructor,
@@ -37,12 +38,11 @@ Variable::Variable(ProgramID program_id,
       is_const_(is_const),
       constructor_(constructor),
       decorations_(std::move(decorations)),
-      declared_storage_class_(declared_storage_class) {
-  TINT_ASSERT(symbol_.IsValid());
-  TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(symbol_, program_id);
-  // no type means we must have a constructor to infer it
-  TINT_ASSERT(type_ || constructor);
-  TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(constructor, program_id);
+      declared_storage_class_(declared_storage_class),
+      declared_access_(declared_access) {
+  TINT_ASSERT(AST, symbol_.IsValid());
+  TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(AST, symbol_, program_id);
+  TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(AST, constructor, program_id);
 }
 
 Variable::Variable(Variable&&) = default;
@@ -68,8 +68,9 @@ Variable* Variable::Clone(CloneContext* ctx) const {
   auto* ty = ctx->Clone(type());
   auto* ctor = ctx->Clone(constructor());
   auto decos = ctx->Clone(decorations());
-  return ctx->dst->create<Variable>(src, sym, declared_storage_class(), ty,
-                                    is_const_, ctor, decos);
+  return ctx->dst->create<Variable>(src, sym, declared_storage_class(),
+                                    declared_access(), ty, is_const_, ctor,
+                                    decos);
 }
 
 void Variable::info_to_str(const sem::Info& sem,
@@ -82,7 +83,12 @@ void Variable::info_to_str(const sem::Info& sem,
   out << (var_sem ? var_sem->StorageClass() : declared_storage_class())
       << std::endl;
   make_indent(out, indent);
-  out << type_->type_name() << std::endl;
+  out << declared_access_ << std::endl;
+  make_indent(out, indent);
+  if (type_) {
+    out << type_->type_name();
+  }
+  out << std::endl;
 }
 
 void Variable::constructor_to_str(const sem::Info& sem,

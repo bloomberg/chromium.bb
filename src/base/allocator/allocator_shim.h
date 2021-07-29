@@ -8,7 +8,7 @@
 #include <stddef.h>
 
 #include "base/allocator/buildflags.h"
-#include "base/allocator/partition_allocator/partition_alloc_features.h"
+#include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/base_export.h"
 #include "build/build_config.h"
 
@@ -154,6 +154,9 @@ BASE_EXPORT void ConfigurePartitionAlloc();
 #endif  // defined(OS_WIN)
 
 #if defined(OS_APPLE)
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+void InitializeDefaultAllocatorPartitionRoot();
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 // On macOS, the allocator shim needs to be turned on during runtime.
 BASE_EXPORT void InitializeAllocatorShim();
 #endif  // defined(OS_APPLE)
@@ -166,7 +169,7 @@ BASE_EXPORT void ReconfigurePartitionAllocLazyCommit();
 BASE_EXPORT void ConfigurePartitionRefCountSupport(bool enable_ref_count);
 #endif
 
-#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && PA_ALLOW_PCSCAN
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && defined(PA_ALLOW_PCSCAN)
 BASE_EXPORT void EnablePCScan(bool dcscan);
 #endif
 

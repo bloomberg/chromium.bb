@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+
 // <include src="../screens/login/gaia_password_changed.js">
 // <include src="../screens/login/management_transition.js">
 // <include src="../screens/login/active_directory_password_change.js">
 // <include src="../screens/login/encryption_migration.js">
 // <include src="../screens/login/update_required_card.js">
-// <include src="../screens/login/public_session_terms_of_service.js">
 // <include src="../screens/login/offline_login.js">
+// <include src="../screens/login/lacros_data_migration.js">

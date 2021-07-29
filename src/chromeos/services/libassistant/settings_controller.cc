@@ -13,6 +13,7 @@
 #include "chromeos/services/assistant/public/proto/assistant_device_settings_ui.pb.h"
 #include "chromeos/services/assistant/public/proto/settings_ui.pb.h"
 #include "chromeos/services/libassistant/callback_utils.h"
+#include "chromeos/services/libassistant/grpc/assistant_client.h"
 #include "libassistant/shared/internal_api/assistant_manager_internal.h"
 #include "libassistant/shared/public/assistant_manager.h"
 #include "third_party/icu/source/common/unicode/locid.h"
@@ -66,7 +67,7 @@ assistant_client::InternalOptions* WARN_UNUSED_RESULT CreateInternalOptions(
 // The device settings can not be updated earlier, as they require the
 // device-id that is only assigned by Libassistant when it starts.
 class SettingsController::DeviceSettingsUpdater
-    : public AssistantManagerObserver {
+    : public AssistantClientObserver {
  public:
   DeviceSettingsUpdater(SettingsController* parent,
                         assistant_client::AssistantManager* assistant_manager)
@@ -116,9 +117,9 @@ class SettingsController::DeviceSettingsUpdater
 // running or stopped.
 class GetSettingsResponseWaiter : public AbortableTask {
  public:
-  explicit GetSettingsResponseWaiter(
-      SettingsController::GetSettingsCallback callback)
-      : callback_(std::move(callback)) {}
+  GetSettingsResponseWaiter(SettingsController::GetSettingsCallback callback,
+                            bool include_header)
+      : callback_(std::move(callback)), include_header_(include_header) {}
 
   GetSettingsResponseWaiter(const GetSettingsResponseWaiter&) = delete;
   GetSettingsResponseWaiter& operator=(const GetSettingsResponseWaiter&) =
@@ -153,11 +154,16 @@ class GetSettingsResponseWaiter : public AbortableTask {
 
  private:
   void OnResponse(const assistant_client::VoicelessResponse& response) {
-    std::string result = assistant::UnwrapGetSettingsUiResponse(response);
+    std::string result =
+        assistant::UnwrapGetSettingsUiResponse(response, include_header_);
     std::move(callback_).Run(result);
   }
 
   SettingsController::GetSettingsCallback callback_;
+  // Whether to include header in response. If this is true, a serialized proto
+  // of GetSettingsUiResponse is passed to the callback; otherwise, a serialized
+  // proto of SettingsUi is passed to the callback.
+  bool include_header_;
   base::WeakPtrFactory<GetSettingsResponseWaiter> weak_factory_{this};
 };
 
@@ -246,9 +252,11 @@ void SettingsController::SetHotwordEnabled(bool value) {
 }
 
 void SettingsController::GetSettings(const std::string& selector,
+                                     bool include_header,
                                      GetSettingsCallback callback) {
-  auto* waiter = pending_response_waiters_.Add(
-      std::make_unique<GetSettingsResponseWaiter>(std::move(callback)));
+  auto* waiter =
+      pending_response_waiters_.Add(std::make_unique<GetSettingsResponseWaiter>(
+          std::move(callback), include_header));
   waiter->SendRequest(assistant_manager_internal_, selector);
 }
 
@@ -309,11 +317,10 @@ void SettingsController::UpdateDeviceSettings(
   }
 }
 
-void SettingsController::OnAssistantManagerCreated(
-    assistant_client::AssistantManager* assistant_manager,
-    assistant_client::AssistantManagerInternal* assistant_manager_internal) {
-  assistant_manager_ = assistant_manager;
-  assistant_manager_internal_ = assistant_manager_internal;
+void SettingsController::OnAssistantClientCreated(
+    AssistantClient* assistant_client) {
+  assistant_manager_ = assistant_client->assistant_manager();
+  assistant_manager_internal_ = assistant_client->assistant_manager_internal();
 
   // Note we do not enable the device settings updater here, as it requires
   // Libassistant to be started.
@@ -322,18 +329,16 @@ void SettingsController::OnAssistantManagerCreated(
   UpdateListeningEnabled(listening_enabled_);
 }
 
-void SettingsController::OnAssistantManagerStarted(
-    assistant_client::AssistantManager* assistant_manager,
-    assistant_client::AssistantManagerInternal* assistant_manager_internal) {
-  device_settings_updater_ =
-      std::make_unique<DeviceSettingsUpdater>(this, assistant_manager);
+void SettingsController::OnAssistantClientStarted(
+    AssistantClient* assistant_client) {
+  device_settings_updater_ = std::make_unique<DeviceSettingsUpdater>(
+      this, assistant_client->assistant_manager());
 
   UpdateDeviceSettings(locale_, hotword_enabled_);
 }
 
-void SettingsController::OnDestroyingAssistantManager(
-    assistant_client::AssistantManager* assistant_manager,
-    assistant_client::AssistantManagerInternal* assistant_manager_internal) {
+void SettingsController::OnDestroyingAssistantClient(
+    AssistantClient* assistant_client) {
   assistant_manager_ = nullptr;
   assistant_manager_internal_ = nullptr;
   device_settings_updater_ = nullptr;

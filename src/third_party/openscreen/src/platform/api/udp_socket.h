@@ -30,7 +30,6 @@ class UdpSocket {
   // Client for the UdpSocket class.
   class Client {
    public:
-    virtual ~Client() = default;
 
     // Method called when the UDP socket is bound. Default implementation
     // does nothing, as clients may not care about the socket bind state.
@@ -49,6 +48,9 @@ class UdpSocket {
 
     // Method called when a packet is read.
     virtual void OnRead(UdpSocket* socket, ErrorOr<UdpPacket> packet) = 0;
+
+   protected:
+    virtual ~Client();
   };
 
   // Constants used to specify how we want packets sent from this socket.

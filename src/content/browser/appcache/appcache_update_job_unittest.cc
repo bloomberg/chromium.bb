@@ -13,11 +13,11 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
+#include "base/cxx17_backports.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/scoped_feature_list.h"
@@ -30,7 +30,6 @@
 #include "content/browser/appcache/appcache_response_info.h"
 #include "content/browser/appcache/appcache_update_url_loader_request.h"
 #include "content/browser/appcache/mock_appcache_service.h"
-#include "content/browser/appcache/test_origin_trial_policy.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
@@ -51,8 +50,7 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/common/origin_trials/origin_trial_policy.h"
-#include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
+#include "third_party/blink/public/common/origin_trials/scoped_test_origin_trial_policy.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
@@ -73,7 +71,6 @@ const base::Time kTestOriginTrialTokenExpiry =
 }  // namespace
 
 namespace content {
-static TestOriginTrialPolicy g_origin_trial_policy;
 
 namespace appcache_update_job_unittest {
 
@@ -788,12 +785,9 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     ChildProcessSecurityPolicyImpl::GetInstance()->AddForTesting(
         process_id_, browser_context_.get());
-    blink::TrialTokenValidator::SetOriginTrialPolicyGetter(base::BindRepeating(
-        []() -> blink::OriginTrialPolicy* { return &g_origin_trial_policy; }));
   }
 
   void TearDown() override {
-    blink::TrialTokenValidator::ResetOriginTrialPolicyGetter();
     weak_partition_factory_.reset();
     browser_context_.reset();
 
@@ -5332,6 +5326,7 @@ class AppCacheUpdateJobTest : public testing::Test,
 
   base::test::ScopedFeatureList appcache_require_origin_trial_feature_;
   base::test::ScopedFeatureList appcache_disable_corruption_feature_;
+  blink::ScopedTestOriginTrialPolicy origin_trial_policy_;
 
   // Lazily create these to avoid data races in the FeatureList between
   // service workers (reading) and appcache tests (writing).

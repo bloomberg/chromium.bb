@@ -6,6 +6,8 @@
 <translation id="1430915738399379752">Tisk</translation>
 <translation id="1467231725790366244">Kamera <ph name="CAMERA" /> je odpojena.</translation>
 <translation id="1473110567575736769">3sekundový časovač</translation>
+<translation id="1478594628797167447">Skener</translation>
+<translation id="1545749641540134597">Naskenovat QR kód</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1627744224761163218">4 × 4</translation>
 <translation id="1664224225747386870">Nic nebylo zaznamenáno</translation>
@@ -19,6 +21,8 @@
 <translation id="2050339315714019657">Na výšku</translation>
 <translation id="2064538373111010176">Aktivní: <ph name="CAMERA" /></translation>
 <translation id="2144806332417375165">Vlastní parametry videa</translation>
+<translation id="2175927920773552910">QR kód</translation>
+<translation id="2268107369530950373">Přepnout na režim skeneru</translation>
 <translation id="229579744168541441">Exportovat na disk</translation>
 <translation id="2320741269052147773">Posunout doleva</translation>
 <translation id="2501278716633472235">Zpět</translation>
@@ -38,6 +42,7 @@
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3240426699337459095">Odkaz byl zkopírován</translation>
 <translation id="3259149966178251584">Rozlišení fotoaparátu</translation>
+<translation id="3448774564454087943">Video se neuložilo, protože je moc krátké</translation>
 <translation id="3517926952904427380">Portrétovou fotku nelze pořídit</translation>
 <translation id="3569311554794739032">Opravdu soubor <ph name="FILE" /> chcete odstranit?</translation>
 <translation id="3733597664308256288">Jsou k dispozici další ovládací prvky kamery. Přejdete na ně stisknutím tlačítka Hledat a šipky vpravo.</translation>
@@ -56,11 +61,14 @@
 <translation id="4628948037717959914">Fotka</translation>
 <translation id="4649291346448517080">Soubor se nepodařilo uložit</translation>
 <translation id="4890010094662541459">3 × 3</translation>
+<translation id="491895758387112773">Nahrávání videa z více streamů</translation>
 <translation id="5057360777601936059">Fotoaparát momentálně není dostupný.
         Zkontrolujte, zda je fotoaparát správně připojen.</translation>
 <translation id="5152121255775685072">Přejít do galerie</translation>
+<translation id="5268823927180092501">Aktivovat režim dokumentu na všech fotoaparátech</translation>
 <translation id="5422455049771430511">Vaše fotky a videa mají nový domov</translation>
 <translation id="5671277269877808209">Čtverec</translation>
+<translation id="5753488212459587150">Aktivovat režim pro experty</translation>
 <translation id="5775960006311140197">Režim pro experty</translation>
 <translation id="5869546221129391014">Mřížka</translation>
 <translation id="5975083100439434680">Oddálit</translation>

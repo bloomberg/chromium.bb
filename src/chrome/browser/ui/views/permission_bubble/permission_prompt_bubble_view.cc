@@ -30,6 +30,7 @@
 #include "extensions/common/constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/models/image_model.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_constants.h"
@@ -38,7 +39,6 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/button/md_text_button.h"
-#include "ui/views/controls/color_tracking_icon_view.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -130,6 +130,7 @@ PermissionPromptBubbleView::PermissionPromptBubbleView(
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           views::DISTANCE_RELATED_CONTROL_VERTICAL)));
 
+  set_close_on_deactivate(false);
   set_fixed_width(views::LayoutProvider::Get()->GetDistanceMetric(
       views::DISTANCE_BUBBLE_PREFERRED_WIDTH));
 
@@ -208,9 +209,9 @@ void PermissionPromptBubbleView::AddRequestLine(
 
   constexpr int kPermissionIconSize = 18;
   auto* icon = line_container->AddChildView(
-      std::make_unique<views::ColorTrackingIconView>(
+      std::make_unique<views::ImageView>(ui::ImageModel::FromVectorIcon(
           permissions::GetIconId(request->GetRequestType()),
-          kPermissionIconSize));
+          ui::NativeTheme::kColorId_DefaultIconColor, kPermissionIconSize)));
   icon->SetVerticalAlignment(views::ImageView::Alignment::kLeading);
 
   auto* label = line_container->AddChildView(
@@ -235,18 +236,13 @@ void PermissionPromptBubbleView::UpdateAnchorPosition() {
 void PermissionPromptBubbleView::SetPromptStyle(
     PermissionPromptStyle prompt_style) {
   prompt_style_ = prompt_style;
-  // If bubble hanging off the padlock icon, with no chip showing, it shouldn't
-  // close on deactivate and it should stick until user makes a decision.
-  // Otherwise, the chip is indicating the pending permission request and so the
-  // bubble can be opened and closed repeatedly.
+  // If bubble hanging off the padlock icon, with no chip showing, closing the
+  // dialog should dismiss the pending request because there's no way to bring
+  // the bubble back.
   if (prompt_style == PermissionPromptStyle::kBubbleOnly) {
-    set_close_on_deactivate(false);
     DialogDelegate::SetCloseCallback(
         base::BindOnce(&PermissionPromptBubbleView::ClosingPermission,
                        base::Unretained(this)));
-  } else {
-    set_close_on_deactivate(true);
-    DialogDelegate::SetCloseCallback(base::OnceClosure());
   }
 }
 

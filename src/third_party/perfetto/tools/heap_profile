@@ -33,8 +33,8 @@ import platform
 
 
 TRACE_TO_TEXT_SHAS = {
-    'linux': '7e3e10dfb324e31723efd63ac25037856e06eba0',
-    'mac': '21f0f42dd019b4f09addd404a114fbf2322ca8a4',
+    'linux': '150d8e65b8173c317642abfc44f3861832fbcd4e',
+    'mac': '818143f3283559a89c311e7e506d0099d1f6408c',
 }
 TRACE_TO_TEXT_PATH = tempfile.gettempdir()
 TRACE_TO_TEXT_BASE_URL = ('https://storage.googleapis.com/perfetto/')
@@ -163,6 +163,25 @@ def release_or_newer(release):
     ['adb', 'shell', 'getprop', 'ro.build.version.codename']
   ).decode('utf-8').strip()
   return codename == release
+
+ORDER = ['-n', '-p', '-i', '-o']
+
+def arg_order(action):
+  result = len(ORDER)
+  for opt in action.option_strings:
+    if opt in ORDER:
+      result = min(ORDER.index(opt), result)
+  return result, action.option_strings[0].strip('-')
+
+def print_options(parser):
+  for action in sorted(parser._actions, key=arg_order):
+    if action.help is argparse.SUPPRESS:
+      continue
+    opts = ', '.join('`' + x + '`' for x in action.option_strings)
+    metavar = '' if action.metavar is None else ' _'     + action.metavar + '_'
+    print('{}{}'.format(opts, metavar))
+    print(':    {}'.format(action.help))
+    print()
 
 def main(argv):
   parser = argparse.ArgumentParser()
@@ -294,8 +313,16 @@ def main(argv):
       help="Output directory.",
       metavar="DIRECTORY",
       default=None)
+  parser.add_argument(
+      "--print-options",
+      action="store_true",
+      help=argparse.SUPPRESS
+  )
 
   args = parser.parse_args()
+  if args.print_options:
+    print_options(parser)
+    return 0
   fail = False
   if args.block_client and args.no_block_client:
     print(

@@ -66,9 +66,11 @@ TEST(ProtoUtilTest, DefaultCapabilities) {
           feedwire::Capability::DOWNLOAD_LINK,
           feedwire::Capability::INFINITE_FEED,
           feedwire::Capability::DISMISS_COMMAND,
+          feedwire::Capability::MATERIAL_NEXT_BASELINE,
           feedwire::Capability::UI_THEME_V2,
           feedwire::Capability::UNDO_FOR_DISMISS_COMMAND,
-          feedwire::Capability::PREFETCH_METADATA));
+          feedwire::Capability::PREFETCH_METADATA,
+          feedwire::Capability::SHARE));
 }
 
 TEST(ProtoUtilTest, HeartsEnabled) {
@@ -83,20 +85,6 @@ TEST(ProtoUtilTest, HeartsEnabled) {
 
   ASSERT_THAT(request.client_capability(),
               testing::Contains(feedwire::Capability::HEART));
-}
-
-TEST(ProtoUtilTest, ShareEnabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({kFeedShare}, {});
-  feedwire::FeedRequest request =
-      CreateFeedQueryRefreshRequest(kForYouStream,
-                                    feedwire::FeedQuery::MANUAL_REFRESH,
-                                    /*request_metadata=*/{},
-                                    /*consistency_token=*/std::string())
-          .feed_request();
-
-  ASSERT_THAT(request.client_capability(),
-              testing::Contains(feedwire::Capability::SHARE));
 }
 
 TEST(ProtoUtilTest, DisableCapabilitiesWithFinch) {
@@ -123,7 +111,8 @@ TEST(ProtoUtilTest, DisableCapabilitiesWithFinch) {
           feedwire::Capability::LONG_PRESS_CARD_MENU,
           feedwire::Capability::OPEN_IN_TAB, feedwire::Capability::CARD_MENU,
           feedwire::Capability::DOWNLOAD_LINK,
-          feedwire::Capability::DISMISS_COMMAND,
+          feedwire::Capability::DISMISS_COMMAND, feedwire::Capability::SHARE,
+          feedwire::Capability::MATERIAL_NEXT_BASELINE,
           feedwire::Capability::UI_THEME_V2,
           feedwire::Capability::UNDO_FOR_DISMISS_COMMAND,
           feedwire::Capability::PREFETCH_METADATA));

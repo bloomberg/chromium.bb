@@ -11,7 +11,6 @@
 #include "content/browser/loader/navigation_url_loader.h"
 #include "content/browser/loader/single_request_url_loader_factory.h"
 #include "content/browser/navigation_subresource_loader_params.h"
-#include "content/common/navigation_params.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/ssl_status.h"
@@ -69,20 +68,6 @@ class CONTENT_EXPORT NavigationURLLoaderImpl
   // TODO(kinuko): Some method parameters can probably be just kept as
   // member variables rather than being passed around.
 
-  // Starts the loader by finalizing loader factories initialization and
-  // calling Restart().
-  // This is called only once (while Restart can be called multiple times).
-  // Sets |started_| true.
-  void Start(
-      scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
-      AppCacheNavigationHandle* appcache_handle,
-      scoped_refptr<PrefetchedSignedExchangeCache>
-          prefetched_signed_exchange_cache,
-      scoped_refptr<SignedExchangePrefetchMetricRecorder>
-          signed_exchange_prefetch_metric_recorder,
-      mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_for_webui,
-      std::string accept_langs,
-      bool needs_loader_factory_interceptor);
   void CreateInterceptors(AppCacheNavigationHandle* appcache_handle,
                           scoped_refptr<PrefetchedSignedExchangeCache>
                               prefetched_signed_exchange_cache,
@@ -161,6 +146,7 @@ class CONTENT_EXPORT NavigationURLLoaderImpl
                     base::OnceClosure continuation);
 
   // NavigationURLLoader implementation:
+  void Start() override;
   void FollowRedirect(
       const std::vector<std::string>& removed_headers,
       const net::HttpRequestHeaders& modified_headers,
@@ -196,6 +182,21 @@ class CONTENT_EXPORT NavigationURLLoaderImpl
       StoragePartitionImpl* partition);
 
  private:
+  // Starts the loader by finalizing loader factories initialization and
+  // calling Restart().
+  // This is called only once (while Restart can be called multiple times).
+  // Sets |started_| true.
+  void StartImpl(
+      scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
+      AppCacheNavigationHandle* appcache_handle,
+      scoped_refptr<PrefetchedSignedExchangeCache>
+          prefetched_signed_exchange_cache,
+      scoped_refptr<SignedExchangePrefetchMetricRecorder>
+          signed_exchange_prefetch_metric_recorder,
+      mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_for_webui,
+      std::string accept_langs,
+      bool needs_loader_factory_interceptor);
+
   void BindNonNetworkURLLoaderFactoryReceiver(
       const GURL& url,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> factory_receiver);
@@ -311,6 +312,10 @@ class CONTENT_EXPORT NavigationURLLoaderImpl
   base::TimeDelta io_to_ui_time_;
 
   std::unique_ptr<NavigationEarlyHintsManager> early_hints_manager_;
+
+  // Set on the constructor and runs in Start(). This is used for transferring
+  // parameters prepared in the constructor to Start().
+  base::OnceClosure start_closure_;
 
   base::WeakPtrFactory<NavigationURLLoaderImpl> weak_factory_{this};
 

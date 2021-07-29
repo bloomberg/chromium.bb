@@ -77,6 +77,24 @@ def write_blueprint_key_value(output, name, value, indent=1):
 
 
 def write_blueprint(output, target_type, values):
+    if target_type == 'license':
+        comment = """
+// Added automatically by a large-scale-change that took the approach of
+// 'apply every license found to every target'. While this makes sure we respect
+// every license restriction, it may not be entirely correct.
+//
+// e.g. GPL in an MIT project might only apply to the contrib/ directory.
+//
+// Please consider splitting the single license below into multiple licenses,
+// taking care not to lose any license_kind information, and overriding the
+// default license using the 'licenses: [...]' property on targets as needed.
+//
+// For unused files, consider creating a 'fileGroup' with "//visibility:private"
+// to attach the license to, and including a comment whether the files may be
+// used in the current project.
+// See: http://go/android-license-faq"""
+        output.append(comment)
+
     output.append('%s {' % target_type)
     for (key, value) in values.items():
         write_blueprint_key_value(output, key, value)
@@ -89,7 +107,7 @@ def gn_target_to_blueprint_target(target, target_info):
 
     # Split the gn target name (in the form of //gn_file_path:target_name) into gn_file_path and
     # target_name
-    target_regex = re.compile(r"^//([a-zA-Z0-9\-_/]*):([a-zA-Z0-9\-_.]+)$")
+    target_regex = re.compile(r"^//([a-zA-Z0-9\-\+_/]*):([a-zA-Z0-9\-\+_.]+)$")
     match = re.match(target_regex, target)
     assert match is not None
 
@@ -161,8 +179,17 @@ target_blockist = [
     '//third_party/vulkan-validation-layers/src:vulkan_clean_old_validation_layer_objects',
 ]
 
+third_party_target_allowlist = [
+    '//third_party/abseil-cpp',
+    '//third_party/vulkan-deps',
+    '//third_party/vulkan_memory_allocator',
+    '//third_party/zlib',
+]
+
 include_blocklist = [
+    '//buildtools/third_party/libc++/',
     '//out/Android/gen/third_party/vulkan-deps/glslang/src/include/',
+    '//third_party/android_ndk/sources/android/cpufeatures/',
 ]
 
 
@@ -176,7 +203,8 @@ def gn_deps_to_blueprint_deps(target_info, build_info):
         return static_libs, defaults
 
     for dep in target_info['deps']:
-        if dep not in target_blockist:
+        if dep not in target_blockist and (not dep.startswith('//third_party') or any(
+                dep.startswith(substring) for substring in third_party_target_allowlist)):
             dep_info = build_info[dep]
             blueprint_dep_name = gn_target_to_blueprint_target(dep, dep_info)
 
@@ -202,6 +230,13 @@ def gn_deps_to_blueprint_deps(target_info, build_info):
             # target depends on another's genrule, it wont find the outputs. Propogate generated
             # headers up the dependency stack.
             generated_headers += child_generated_headers
+        elif dep == '//third_party/android_ndk:cpu_features':
+            # chrome_zlib needs cpufeatures from the Android NDK. Rather than including the
+            # entire NDK is a dep in the ANGLE checkout, use the library that's already part
+            # of Android.
+            dep_info = build_info[dep]
+            blueprint_dep_name = gn_target_to_blueprint_target(dep, dep_info)
+            static_libs.append('cpufeatures')
 
     return static_libs, shared_libs, defaults, generated_headers, header_libs
 
@@ -256,6 +291,10 @@ def gn_cflags_to_blueprint_cflags(target_info):
     # Chrome and Android use different versions of Clang which support differnt warning options.
     # Ignore errors about unrecognized warning flags.
     result.append('-Wno-unknown-warning-option')
+
+    # Override AOSP build flags to match ANGLE's CQ testing and reduce binary size
+    result.append('-Oz')
+    result.append('-fno-unwind-tables')
 
     if 'defines' in target_info:
         for define in target_info['defines']:
@@ -503,7 +542,37 @@ def main():
     for target in targets_to_write:
         blueprint_targets.append(gn_target_to_blueprint(target, build_info))
 
+    # Add license build rules
+    blueprint_targets.append(('package', {
+        'default_applicable_licenses': ['external_angle_license'],
+    }))
+    blueprint_targets.append(('license', {
+        'name':
+            'external_angle_license',
+        'visibility': [':__subpackages__'],
+        'license_kinds': [
+            'SPDX-license-identifier-Apache-2.0',
+            'SPDX-license-identifier-BSD',
+            'SPDX-license-identifier-LGPL',
+            'SPDX-license-identifier-MIT',
+            'SPDX-license-identifier-Zlib',
+            'legacy_unencumbered',
+        ],
+        'license_text': [
+            'LICENSE', 'third_party/abseil-cpp/LICENSE', 'third_party/vulkan-deps/LICENSE',
+            'third_party/vulkan_memory_allocator/LICENSE.txt', 'third_party/zlib/LICENSE'
+        ],
+    }))
+
     # Add APKs with all of the root libraries
+    blueprint_targets.append((
+        'filegroup',
+        {
+            'name': 'ANGLE_srcs',
+            # Only add EmptyMainActivity.java since we just need to be able to reply to the intent
+            # android.app.action.ANGLE_FOR_ANDROID to indicate ANGLE is present on the device.
+            'srcs': ['src/android_system_settings/src/com/android/angle/EmptyMainActivity.java'],
+        }))
     blueprint_targets.append((
         'java_defaults',
         {
@@ -521,6 +590,7 @@ def main():
                 # Don't compress *.json files
                 '-0 .json',
             ],
+            'srcs': [':ANGLE_srcs'],
             'plugins': ['java_api_finder',],
             'privileged': True,
             'product_specific': True,
@@ -531,6 +601,7 @@ def main():
         'name': 'ANGLE',
         'defaults': ['ANGLE_java_defaults'],
         'manifest': 'android/AndroidManifest.xml',
+        'asset_dirs': ['src/android_system_settings/assets',],
     }))
 
     output = [

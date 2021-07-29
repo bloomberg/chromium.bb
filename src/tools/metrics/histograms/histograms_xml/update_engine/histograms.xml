@@ -298,7 +298,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UpdateEngine.Check.RollbackTargetVersion"
-    enum="UpdateEngineChromeOsVersionPrefix" expires_after="2021-08-09">
+    enum="UpdateEngineChromeOsVersionPrefix" expires_after="2022-06-01">
   <owner>mpolzer@google.com</owner>
   <owner>managed-platforms@google.com</owner>
   <summary>
@@ -318,7 +318,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UpdateEngine.Check.TargetVersion"
-    enum="UpdateEngineChromeOsVersionPrefix" expires_after="2021-09-19">
+    enum="UpdateEngineChromeOsVersionPrefix" expires_after="2022-06-01">
   <owner>mpolzer@google.com</owner>
   <owner>managed-platforms@google.com</owner>
   <summary>
@@ -403,7 +403,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UpdateEngine.EnterpriseRollback.Failure"
-    enum="UpdateEngineChromeOsVersionPrefix" expires_after="2021-06-01">
+    enum="UpdateEngineChromeOsVersionPrefix" expires_after="2022-06-01">
   <owner>mpolzer@google.com</owner>
   <owner>managed-platforms@google.com</owner>
   <summary>
@@ -421,7 +421,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="UpdateEngine.EnterpriseRollback.Success"
-    enum="UpdateEngineChromeOsVersionPrefix" expires_after="2021-06-01">
+    enum="UpdateEngineChromeOsVersionPrefix" expires_after="2022-06-01">
   <owner>mpolzer@google.com</owner>
   <owner>managed-platforms@google.com</owner>
   <summary>
@@ -759,6 +759,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
     This is reported every time the device is rebooted after an update has been
     applied.
+
+    This metric is specific to Chrome OS.
+  </summary>
+</histogram>
+
+<histogram name="UpdateEngine.UpdateInvalidated" units="BooleanSuccess"
+    expires_after="2022-06-29">
+  <owner>vyshu@chromium.org</owner>
+  <owner>chromeos-core-services@google.com</owner>
+  <summary>
+    This metric is reported every time the `invalidate_last_update` tag is sent
+    from Omaha. Reports whether the update was able to be fully invalidated.
 
     This metric is specific to Chrome OS.
   </summary>

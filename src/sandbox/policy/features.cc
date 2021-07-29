@@ -4,6 +4,7 @@
 
 #include "sandbox/policy/features.h"
 
+#include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 
@@ -24,10 +25,10 @@ const base::Feature kNetworkServiceSandbox{"NetworkServiceSandbox",
 const base::Feature kWinSboxDisableKtmComponent{
     "WinSboxDisableKtmComponent", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Emergency "off switch" for new Windows sandbox security mitigation,
+// Experiment for Windows sandbox security mitigation,
 // sandbox::MITIGATION_EXTENSION_POINT_DISABLE.
 const base::Feature kWinSboxDisableExtensionPoints{
-    "WinSboxDisableExtensionPoint", base::FEATURE_ENABLED_BY_DEFAULT};
+    "WinSboxDisableExtensionPoint", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables GPU AppContainer sandbox on Windows.
 const base::Feature kGpuAppContainer{"GpuAppContainer",
@@ -36,10 +37,6 @@ const base::Feature kGpuAppContainer{"GpuAppContainer",
 // Enables GPU Low Privilege AppContainer when combined with kGpuAppContainer.
 const base::Feature kGpuLPAC{"GpuLPAC", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Use LPAC for network sandbox instead of restricted token. Relies on
-// NetworkServiceSandbox being also enabled.
-const base::Feature kNetworkServiceSandboxLPAC{
-    "NetworkServiceSandboxLPAC", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN)
 
 #if !defined(OS_ANDROID)
@@ -60,6 +57,23 @@ const base::Feature kSpectreVariant2Mitigation{
 const base::Feature kForceSpectreVariant2Mitigation{
     "ForceSpectreVariant2Mitigation", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if defined(OS_WIN)
+bool IsNetworkServiceSandboxLPACEnabled() {
+  // Use LPAC for network sandbox instead of restricted token. Relies on
+  // NetworkServiceSandbox being also enabled.
+  const base::Feature kNetworkServiceSandboxLPAC{
+      "NetworkServiceSandboxLPAC", base::FEATURE_DISABLED_BY_DEFAULT};
+
+  // Since some APIs used for LPAC are unsupported below Windows 10, place a
+  // check here in a central place.
+  if (base::win::GetVersion() < base::win::Version::WIN10)
+    return false;
+
+  return base::FeatureList::IsEnabled(kNetworkServiceSandbox) &&
+         base::FeatureList::IsEnabled(kNetworkServiceSandboxLPAC);
+}
+#endif  // defined(OS_WIN)
 
 }  // namespace features
 }  // namespace policy

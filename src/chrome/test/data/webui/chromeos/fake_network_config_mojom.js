@@ -6,11 +6,11 @@
  * @fileoverview Fake implementation of CrosNetworkConfig for testing.
  */
 
- // clang-format off
+// clang-format off
  // #import {assert} from 'chrome://resources/js/assert.m.js';
  // #import {OncMojo} from 'chrome://resources/cr_components/chromeos/network/onc_mojo.m.js';
  // #import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
- // clang-format on
+// clang-format on
 
 // Default cellular pin, used when locking/unlocking cellular profiles.
 /* #export */ const DEFAULT_CELLULAR_PIN = '1111';
@@ -23,28 +23,33 @@
     this.resolverMap_ = new Map();
 
     /**
-     * @type {!Map<chromeos.networkConfig.mojom.NetworkType,
+     * @private {!Map<chromeos.networkConfig.mojom.NetworkType,
      *     !chromeos.networkConfig.mojom.DeviceStateProperties>}
      */
     this.deviceStates_ = new Map();
 
-    /** @type {!Array<!chromeos.networkConfig.mojom.NetworkStateProperties>} */
+    /**
+     * @private {!Array<!chromeos.networkConfig.mojom.NetworkStateProperties>}
+     */
     this.networkStates_ = [];
 
-    /** @type {!Map<string, !chromeos.networkConfig.mojom.ManagedProperties>} */
+    /**
+     * @private {!Map<string, !chromeos.networkConfig.mojom.ManagedProperties>}
+     */
     this.managedProperties_ = new Map();
 
-    /** @type {!chromeos.networkConfig.mojom.GlobalPolicy|undefined} */
+    /** @private {!chromeos.networkConfig.mojom.GlobalPolicy|undefined} */
     this.globalPolicy_ = undefined;
 
-    /** @type {!Array<!chromeos.networkConfig.mojom.NetworkCertificate>} */
+    /** @private {!Array<!chromeos.networkConfig.mojom.NetworkCertificate>} */
     this.serverCas_ = [];
 
-    /** @type {!Array<!chromeos.networkConfig.mojom.NetworkCertificate>} */
+    /** @private {!Array<!chromeos.networkConfig.mojom.NetworkCertificate>} */
     this.userCerts_ = [];
 
     /**
-     * @type {!Array<!chromeos.networkConfig.mojom.CrosNetworkConfigObserver>
+     * @private {!Array<
+     *     !chromeos.networkConfig.mojom.CrosNetworkConfigObserverRemote>}
      */
     this.observers_ = [];
 
@@ -57,15 +62,18 @@
     this.testPin = '';
 
     /**
-     * @type {chromeos.networkConfig.mojom.AlwaysOnVpnProperties}
+     * @private {chromeos.networkConfig.mojom.AlwaysOnVpnProperties}
      */
     this.alwaysOnVpnProperties_ = {
       mode: chromeos.networkConfig.mojom.AlwaysOnVpnMode.kOff,
       serviceGuid: '',
     };
 
-    /** @type {!Function} */
+    /** @type {Function} */
     this.beforeGetDeviceStateList = null;
+
+    /** @private {!Array<chromeos.networkConfig.mojom.VpnProvider>} */
+    this.vpnProviders_ = [];
 
     this.resetForTest();
   }
@@ -77,11 +85,14 @@
    */
   addDeviceState_(type) {
     assert(type !== undefined);
-    const deviceState = {
-      type: type,
-      deviceState: chromeos.networkConfig.mojom.DeviceStateType.kUninitialized,
-      inhibitReason: chromeos.networkConfig.mojom.InhibitReason.kNotInhibited
-    };
+    const deviceState =
+        /** @type {!chromeos.networkConfig.mojom.DeviceStateProperties} */ ({
+          type: type,
+          deviceState:
+              chromeos.networkConfig.mojom.DeviceStateType.kUninitialized,
+          inhibitReason:
+              chromeos.networkConfig.mojom.InhibitReason.kNotInhibited
+        });
     this.deviceStates_.set(type, deviceState);
     return deviceState;
   }
@@ -97,12 +108,13 @@
     this.addDeviceState_(mojom.NetworkType.kTether);
     this.addDeviceState_(mojom.NetworkType.kVPN);
 
-    this.globalPolicy_ = {
-      allow_only_policy_networks_to_autoconnect: false,
-      allow_only_policy_networks_to_connect: false,
-      allow_only_policy_networks_to_connect_if_available: false,
-      blocked_hex_ssids: [],
-    };
+    this.globalPolicy_ =
+        /** @type {!chromeos.networkConfig.mojom.GlobalPolicy} */ ({
+          allow_only_policy_networks_to_autoconnect: false,
+          allow_only_policy_networks_to_connect: false,
+          allow_only_policy_networks_to_connect_if_available: false,
+          blocked_hex_ssids: [],
+        });
 
     const eth0 =
         OncMojo.getDefaultNetworkState(mojom.NetworkType.kEthernet, 'eth0');
@@ -163,7 +175,7 @@
 
   /**
    * @param {!Array<!chromeos.networkConfig.mojom.NetworkStateProperties>}
-   *     network
+   *     networks
    */
   addNetworksForTest(networks) {
     this.networkStates_ = this.networkStates_.concat(networks);
@@ -181,7 +193,7 @@
   }
 
   /**
-   * @param {!chromeos.networkConfig.mojom.ManagedProperties>} network
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties} network
    */
   setManagedPropertiesForTest(network) {
     assert(network.guid);
@@ -207,7 +219,7 @@
     const network = this.networkStates_.find(state => {
       return state.guid === guid;
     });
-    assertTrue(!!network, 'Network not found: ' + guid);
+    assert(!!network, 'Network not found: ' + guid);
     network.connectionState = state;
 
     const managed = this.managedProperties_.get(guid);
@@ -265,7 +277,7 @@
   }
 
   /**
-   * @param {string} type
+   * @param {chromeos.networkConfig.mojom.NetworkType} type
    * @return {?chromeos.networkConfig.mojom.DeviceStateProperties}
    */
   getDeviceStateForTest(type) {
@@ -289,7 +301,6 @@
   }
 
   // networkConfig observers
-
   onActiveNetworksChanged() {
     const activeNetworks = this.networkStates_.filter(state => {
       // Calling onActiveNetworksChanged will trigger mojo checks on all
@@ -324,7 +335,7 @@
   // networkConfig methods
 
   /**
-   * @param {!chromeos.networkConfig.mojom.CrosNetworkConfigObserverProxy }
+   * @param {!chromeos.networkConfig.mojom.CrosNetworkConfigObserverRemote}
    *     observer
    */
   addObserver(observer) {
@@ -334,7 +345,7 @@
   /**
    * @param {string} guid
    * @return {!Promise<{result:
-   *     !chromeos.networkConfig.mojom.NetworkStateProperties>>}
+   *     !chromeos.networkConfig.mojom.NetworkStateProperties}>}
    */
   getNetworkState(guid) {
     return new Promise(resolve => {
@@ -522,7 +533,7 @@
 
   /**
    * @return {!Promise<{
-   *      result: {!chromeos.networkConfig.mojom.AlwaysOnVpnProperties}}>}
+   *      result: !chromeos.networkConfig.mojom.AlwaysOnVpnProperties}>}
    */
   getAlwaysOnVpn() {
     return new Promise(resolve => {

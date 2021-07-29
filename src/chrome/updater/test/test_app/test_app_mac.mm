@@ -23,7 +23,6 @@
 #include "chrome/updater/util.h"
 
 namespace updater {
-
 namespace {
 
 base::FilePath GetUpdaterAppName() {
@@ -67,11 +66,11 @@ int InstallUpdater() {
 
   base::CommandLine command(updater_executable_path);
   command.AppendSwitch(kInstallSwitch);
-  if (GetProcessScope() == UpdaterScope::kSystem) {
+  if (GetUpdaterScope() == UpdaterScope::kSystem) {
     command.AppendSwitch(kSystemSwitch);
     command = MakeElevated(command);
   }
-  command.AppendSwitchASCII("--vmodule", "*/updater/*=2");
+  command.AppendSwitchASCII(kLoggingModuleSwitch, "*/updater/*=2");
 
   std::string output;
   int exit_code = 0;

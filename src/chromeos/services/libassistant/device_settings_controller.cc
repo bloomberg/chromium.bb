@@ -11,8 +11,11 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/assistant/internal/internal_util.h"
-#include "chromeos/assistant/internal/proto/google3/assistant/api/client_op/device_args.pb.h"
+#include "chromeos/assistant/internal/proto/shared/proto/device_args.pb.h"
+#include "chromeos/assistant/internal/proto/shared/proto/v2/internal_options.pb.h"
+#include "chromeos/services/libassistant/grpc/assistant_client.h"
 #include "chromeos/services/libassistant/public/mojom/device_settings_delegate.mojom.h"
+#include "chromeos/services/libassistant/util.h"
 #include "libassistant/shared/internal_api/assistant_manager_internal.h"
 
 namespace client_op = ::assistant::api::client_op;
@@ -304,7 +307,7 @@ void DeviceSettingsController::OnModifyDeviceSetting(
 void DeviceSettingsController::OnGetDeviceSettings(
     int interaction_id,
     const ::assistant::api::client_op::GetDeviceSettingsArgs& args) {
-  if (!assistant_manager_internal_) {
+  if (!assistant_client_) {
     VLOG(1) << "Assistant: Dropping OnGetDeviceSettings call as Libassistant "
                "has not started yet";
     return;
@@ -313,24 +316,26 @@ void DeviceSettingsController::OnGetDeviceSettings(
   std::vector<assistant::DeviceSetting> result =
       GetSupportedDeviceSettings(args);
 
-  assistant_client::VoicelessOptions voiceless_options;
-  voiceless_options.is_user_initiated = true;
+  auto interaction_proto =
+      chromeos::libassistant::CreateGetDeviceSettingInteraction(interaction_id,
+                                                                result);
 
-  assistant_manager_internal_->SendVoicelessInteraction(
-      CreateGetDeviceSettingInteraction(interaction_id, result),
-      /*description=*/"get_settings_result", voiceless_options, [](auto) {});
+  ::assistant::api::VoicelessOptions options;
+  options.set_is_user_initiated(true);
+
+  assistant_client_->SendVoicelessInteraction(
+      interaction_proto, /*description=*/"get_settings_result", options,
+      base::DoNothing());
 }
 
-void DeviceSettingsController::OnAssistantManagerCreated(
-    assistant_client::AssistantManager* assistant_manager,
-    assistant_client::AssistantManagerInternal* assistant_manager_internal) {
-  assistant_manager_internal_ = assistant_manager_internal;
+void DeviceSettingsController::OnAssistantClientCreated(
+    AssistantClient* assistant_client) {
+  assistant_client_ = assistant_client;
 }
 
-void DeviceSettingsController::OnDestroyingAssistantManager(
-    assistant_client::AssistantManager* assistant_manager,
-    assistant_client::AssistantManagerInternal* assistant_manager_internal) {
-  assistant_manager_internal_ = nullptr;
+void DeviceSettingsController::OnDestroyingAssistantClient(
+    AssistantClient* assistant_client) {
+  assistant_client_ = nullptr;
 }
 
 std::vector<chromeos::assistant::DeviceSetting>

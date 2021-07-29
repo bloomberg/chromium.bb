@@ -33,12 +33,11 @@
 #include "src/gpu/GrFragmentProcessor.h"
 #include "src/gpu/GrPaint.h"
 #include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/GrReducedClip.h"
-#include "src/gpu/GrStencilClip.h"
 #include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/GrTextureProxy.h"
 #include "src/gpu/GrUserStencilSettings.h"
-#include "src/gpu/effects/generated/GrDeviceSpaceEffect.h"
+#include "src/gpu/effects/GrDisableColorXP.h"
+#include "src/gpu/effects/GrTextureEffect.h"
 #include "tools/ToolUtils.h"
 
 #include <utility>
@@ -129,8 +128,15 @@ DrawResult WindowRectanglesGM::onCoverClipStack(const SkClipStack& stack, SkCanv
 }
 
 DEF_GM( return new WindowRectanglesGM(); )
+}  // namespace skiagm
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#if SK_GPU_V1
+#include "src/gpu/GrReducedClip.h"
+#include "src/gpu/GrStencilClip.h"
+
+namespace skiagm {
 
 constexpr static int kNumWindows = 8;
 
@@ -169,8 +175,8 @@ private:
     SkIRect getConservativeBounds() const final {
         return SkIRect::MakeXYWH(fX, fY, fMask.width(), fMask.height());
     }
-    Effect apply(GrRecordingContext* ctx, GrSurfaceDrawContext*, GrAAType, bool,
-                     GrAppliedClip* out, SkRect* bounds) const override {
+    Effect apply(GrRecordingContext* ctx, GrSurfaceDrawContext*, GrDrawOp*, GrAAType,
+                 GrAppliedClip* out, SkRect* bounds) const override {
         GrSamplerState samplerState(GrSamplerState::WrapMode::kClampToBorder,
                                     GrSamplerState::Filter::kNearest);
         auto m = SkMatrix::Translate(-fX, -fY);
@@ -178,7 +184,7 @@ private:
         auto domain = bounds->makeOffset(-fX, -fY).makeInset(0.5, 0.5);
         auto fp = GrTextureEffect::MakeSubset(fMask, kPremul_SkAlphaType, m, samplerState, subset,
                                               domain, *ctx->priv().caps());
-        fp = GrDeviceSpaceEffect::Make(std::move(fp));
+        fp = GrFragmentProcessor::DeviceSpace(std::move(fp));
         out->addCoverageFP(std::move(fp));
         return Effect::kClipped;
     }
@@ -303,5 +309,7 @@ void WindowRectanglesMaskGM::stencilCheckerboard(GrSurfaceDrawContext* rtc, bool
 }
 
 DEF_GM( return new WindowRectanglesMaskGM(); )
-
 }  // namespace skiagm
+
+#endif // SK_GPU_V1
+

@@ -25,7 +25,6 @@ extern const char kChromeUIOfflineURL[];
 extern const char kChromeUIPolicyURL[];
 extern const char kChromeUIPopularSitesInternalsURL[];
 extern const char kChromeUISettingsURL[];
-extern const char kChromeUISuggestionsURL[];
 extern const char kChromeUITermsURL[];
 extern const char kChromeUIVersionURL[];
 
@@ -55,7 +54,6 @@ extern const char kChromeUIPolicyHost[];
 extern const char kChromeUIPopularSitesInternalsHost[];
 extern const char kChromeUIPrefsInternalsHost[];
 extern const char kChromeUISignInInternalsHost[];
-extern const char kChromeUISuggestionsHost[];
 extern const char kChromeUITermsHost[];
 extern const char kChromeUITranslateInternalsHost[];
 extern const char kChromeUIURLKeyedMetricsHost[];
@@ -90,6 +88,14 @@ extern const char kClearBrowsingDataLearnMoreURL[];
 // Google history URL for the footer in the Clear Browsing Data under Privacy
 // Options.
 extern const char kClearBrowsingDataMyActivityUrlInFooterURL[];
+
+// Google MyActivity URL for the footer in Clear Browsing Data in the
+// Privacy section post link update.
+extern const char kClearBrowsingDataDSEMyActivityUrlInFooterURL[];
+
+// Google search history URL for the footer in Clear Browsing Data in the
+// Privacy section post link update.
+extern const char kClearBrowsingDataDSESearchUrlInFooterURL[];
 
 // Google history URL for the dialog that informs the user that the history data
 // in the Clear Browsing Data under Privacy Options.

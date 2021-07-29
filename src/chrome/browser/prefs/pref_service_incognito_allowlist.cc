@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/common/pref_names.h"
@@ -21,7 +21,7 @@
 #endif  // !defined(OS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/constants/ash_pref_names.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace {
@@ -65,6 +65,7 @@ const char* const kPersistentPrefNames[] = {
     ash::prefs::kAccessibilitySwitchAccessAutoScanKeyboardSpeedMs,
     ash::prefs::kAccessibilitySwitchAccessPointScanSpeedDipsPerSecond,
     ash::prefs::kAccessibilityDictationEnabled,
+    ash::prefs::kAccessibilityDictationLocale,
     ash::prefs::kDockedMagnifierEnabled,
     ash::prefs::kDockedMagnifierScale,
     ash::prefs::kDockedMagnifierAcceleratorDialogHasBeenAccepted,

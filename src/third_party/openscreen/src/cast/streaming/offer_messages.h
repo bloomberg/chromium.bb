@@ -46,6 +46,9 @@ constexpr int kDefaultNumAudioChannels = 2;
 struct Stream {
   enum class Type : uint8_t { kAudioSource, kVideoSource };
 
+  static Error TryParse(const Json::Value& root,
+                        Stream::Type type,
+                        Stream* out);
   Json::Value ToJson() const;
   bool IsValid() const;
 
@@ -68,6 +71,7 @@ struct Stream {
 };
 
 struct AudioStream {
+  static Error TryParse(const Json::Value& root, AudioStream* out);
   Json::Value ToJson() const;
   bool IsValid() const;
 
@@ -78,6 +82,7 @@ struct AudioStream {
 
 
 struct VideoStream {
+  static Error TryParse(const Json::Value& root, VideoStream* out);
   Json::Value ToJson() const;
   bool IsValid() const;
 
@@ -92,10 +97,10 @@ struct VideoStream {
   std::string error_recovery_mode = {};
 };
 
-enum class CastMode : uint8_t { kMirroring, kRemoting };
-
 struct Offer {
+  // TODO(jophba): remove deprecated declaration in a separate patch.
   static ErrorOr<Offer> Parse(const Json::Value& root);
+  static Error TryParse(const Json::Value& root, Offer* out);
   Json::Value ToJson() const;
   bool IsValid() const;
 

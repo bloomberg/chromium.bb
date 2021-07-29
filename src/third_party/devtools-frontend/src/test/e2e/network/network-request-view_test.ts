@@ -4,7 +4,7 @@
 
 import {assert} from 'chai';
 
-import {click, step, waitFor} from '../../shared/helper.js';
+import {click, step, waitFor, waitForElementWithTextContent} from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
 import {CONSOLE_TAB_SELECTOR, focusConsolePrompt} from '../helpers/console-helpers.js';
 import {navigateToNetworkTab, selectRequestByName, waitForSomeRequestsToAppear} from '../helpers/network-helpers.js';
@@ -45,9 +45,26 @@ describe('The Network Request view', async () => {
        await step('ensure that the "Timing" tab is shown', async () => {
          const networkView = await waitFor('.network-item-view');
          const selectedTabHeader = await waitFor('[role=tab][aria-selected=true]', networkView);
-         const selectedTabText: string = await selectedTabHeader.evaluate(element => element.textContent);
+         const selectedTabText = await selectedTabHeader.evaluate(element => element.textContent || '');
 
          assert.strictEqual(selectedTabText, 'Timing');
        });
      });
+
+  it('show webbundle content on opreview tab', async () => {
+    await navigateToNetworkTab('resources-from-webbundle.html');
+
+    await waitForSomeRequestsToAppear(3);
+
+    await selectRequestByName('webbundle.wbn');
+
+    const networkView = await waitFor('.network-item-view');
+    const previewTabHeader = await waitFor('[aria-label=Preview][role="tab"]', networkView);
+    await click(previewTabHeader);
+    await waitFor('[aria-label=Preview][role=tab][aria-selected=true]', networkView);
+
+    await waitForElementWithTextContent('webbundle.wbn', networkView);
+    await waitForElementWithTextContent('urn:uuid:429fcc4e-0696-4bad-b099-ee9175f023ae', networkView);
+    await waitForElementWithTextContent('urn:uuid:020111b3-437a-4c5c-ae07-adb6bbffb720', networkView);
+  });
 });

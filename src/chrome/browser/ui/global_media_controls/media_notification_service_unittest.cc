@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/global_media_controls/media_notification_service.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/containers/contains.h"
 #include "base/strings/string_number_conversions.h"
@@ -44,6 +45,7 @@ using media_session::mojom::MediaSessionInfoPtr;
 using testing::_;
 using testing::AtLeast;
 using testing::Expectation;
+using testing::NiceMock;
 using testing::Return;
 
 namespace {
@@ -288,9 +290,7 @@ class MediaNotificationServiceTest : public ChromeRenderViewHostTestHarness {
 
     // Now, close the tab. The session may have been destroyed with
     // |SimulateFocusLost()| above.
-    auto item_itr = sessions().find(id.ToString());
-    if (item_itr != sessions().end())
-      item_itr->second.WebContentsDestroyed();
+    service_->media_session_notification_producer_->OnRequestIdReleased(id);
   }
 
   void SimulatePlaybackStateChanged(const base::UnguessableToken& id,
@@ -397,7 +397,7 @@ class MediaNotificationServiceTest : public ChromeRenderViewHostTestHarness {
   }
 
  private:
-  MockMediaNotificationServiceObserver observer_;
+  NiceMock<MockMediaNotificationServiceObserver> observer_;
   std::unique_ptr<MediaNotificationService> service_;
   base::HistogramTester histogram_tester_;
 };
@@ -413,7 +413,7 @@ class MediaNotificationServiceCastTest : public MediaNotificationServiceTest {
         media_router::kGlobalMediaControlsCastStartStop);
 
     presentation_manager_ =
-        std::make_unique<MockWebContentsPresentationManager>();
+        std::make_unique<NiceMock<MockWebContentsPresentationManager>>();
     media_router::WebContentsPresentationManager::SetTestInstance(
         presentation_manager_.get());
     MediaNotificationServiceTest::SetUp();
@@ -437,7 +437,7 @@ class MediaNotificationServiceCastTest : public MediaNotificationServiceTest {
   // Simulate a supplementalNotification for |web_contents()|.
   std::string SimulateSupplementalNotification() {
     auto presentation_request = content::PresentationRequest(
-        main_rfh()->GetGlobalFrameRoutingId(),
+        main_rfh()->GetGlobalId(),
         {GURL("http://example.com"), GURL("http://example2.com")},
         url::Origin::Create(GURL("http://google.com")));
 
@@ -535,6 +535,7 @@ TEST_F(MediaNotificationServiceTest, ShowControllableOnGainAndHideOnLoss) {
   EXPECT_TRUE(HasFrozenNotifications());
   testing::Mock::VerifyAndClearExpectations(&observer());
 
+  EXPECT_CALL(dialog_delegate, ShowMediaSession(id.ToString(), _));
   service()->ShowNotification(id.ToString());
 
   // Once the freeze timer fires, we should hide the media session.
@@ -700,7 +701,7 @@ TEST_F(MediaNotificationServiceTest, NewMediaSessionWhileDialogOpen) {
   EXPECT_TRUE(HasActiveNotifications());
 
   // Then, open a dialog.
-  MockMediaDialogDelegate dialog_delegate;
+  NiceMock<MockMediaDialogDelegate> dialog_delegate;
   EXPECT_CALL(dialog_delegate, ShowMediaSession(id.ToString(), _));
   SimulateDialogOpened(&dialog_delegate);
   ExpectHistogramCountRecorded(1, 1);
@@ -788,7 +789,7 @@ TEST_F(MediaNotificationServiceCastTest,
        HideNotification_NewCastSessionStarted) {
   // If a new cast session starts, hide the media dialog.
   base::UnguessableToken id = SimulatePlayingControllableMedia();
-  MockMediaDialogDelegate dialog_delegate;
+  NiceMock<MockMediaDialogDelegate> dialog_delegate;
   SimulateDialogOpened(&dialog_delegate);
   EXPECT_TRUE(HasOpenDialog());
 
@@ -819,7 +820,7 @@ TEST_F(MediaNotificationServiceCastTest, ShowCastSessions) {
 
 TEST_F(MediaNotificationServiceCastTest,
        ShowCastSessionsForPresentationRequest) {
-  MockMediaDialogDelegate dialog_delegate;
+  NiceMock<MockMediaDialogDelegate> dialog_delegate;
 
   std::unique_ptr<content::WebContents> web_contents_1(
       content::RenderViewHostTestHarness::CreateTestWebContents());
@@ -869,7 +870,7 @@ TEST_F(MediaNotificationServiceCastTest,
 
   // If the dialog is opened for a presentation request from |web_contents_1|,
   // only the media session with |id_1| should show up.
-  MockMediaDialogDelegate dialog_delegate;
+  NiceMock<MockMediaDialogDelegate> dialog_delegate;
   EXPECT_CALL(dialog_delegate, ShowMediaSession(id_1.ToString(), _));
   SimulateDialogOpenedForPresentationRequest(&dialog_delegate,
                                              web_contents_1.get());
@@ -885,7 +886,7 @@ TEST_F(MediaNotificationServiceCastTest,
 }
 
 TEST_F(MediaNotificationServiceCastTest, ShowSupplementalNotifications) {
-  MockMediaDialogDelegate dialog_delegate;
+  NiceMock<MockMediaDialogDelegate> dialog_delegate;
   // Do not show a supplemental notification if there is no start presentation
   // request context.
   EXPECT_FALSE(GetSupplementalNotification());
@@ -930,7 +931,7 @@ TEST_F(MediaNotificationServiceCastTest, ShowSupplementalNotifications) {
 }
 
 TEST_F(MediaNotificationServiceCastTest, HideSupplementalNotifications) {
-  MockMediaDialogDelegate dialog_delegate;
+  NiceMock<MockMediaDialogDelegate> dialog_delegate;
   auto supplemental_notification_id = SimulateSupplementalNotification();
   // If there is a media session, hide the supplemental notification.
   auto media_session_id =
@@ -1203,7 +1204,7 @@ TEST_F(MediaNotificationServiceTest,
   EXPECT_TRUE(HasActiveNotifications());
 
   // Then, open a dialog.
-  MockMediaDialogDelegate dialog_delegate;
+  NiceMock<MockMediaDialogDelegate> dialog_delegate;
   EXPECT_CALL(dialog_delegate, ShowMediaSession(id.ToString(), _));
   SimulateDialogOpened(&dialog_delegate);
 
@@ -1237,7 +1238,7 @@ TEST_F(MediaNotificationServiceTest,
   SimulatePlaybackStateChanged(id, false);
 
   // Then, open a dialog.
-  MockMediaDialogDelegate dialog_delegate;
+  NiceMock<MockMediaDialogDelegate> dialog_delegate;
   EXPECT_CALL(dialog_delegate, ShowMediaSession(id.ToString(), _));
   SimulateDialogOpened(&dialog_delegate);
 

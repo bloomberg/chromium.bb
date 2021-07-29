@@ -17,6 +17,7 @@
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -24,7 +25,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -180,6 +180,9 @@ NoStatePrefetchManager::AddPrerenderFromLinkRelPrerender(
     case blink::mojom::PrerenderTriggerType::kLinkRelNext:
       origin = ORIGIN_LINK_REL_NEXT;
       break;
+    case blink::mojom::PrerenderTriggerType::kSpeculationRule:
+      // SpeculationRule is not routed to NoStatePrefetchManager.
+      NOTREACHED();
   }
 
   SessionStorageNamespace* session_storage_namespace = nullptr;
@@ -374,8 +377,10 @@ std::unique_ptr<base::DictionaryValue> NoStatePrefetchManager::CopyAsValue()
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   auto dict_value = std::make_unique<base::DictionaryValue>();
-  dict_value->Set("history", prerender_history_->CopyEntriesAsValue());
-  dict_value->Set("active", GetActivePrerendersAsValue());
+  dict_value->SetKey("history", base::Value::FromUniquePtrValue(
+                                    prerender_history_->CopyEntriesAsValue()));
+  dict_value->SetKey(
+      "active", base::Value::FromUniquePtrValue(GetActivePrerendersAsValue()));
   dict_value->SetBoolean("enabled",
                          delegate_->IsNetworkPredictionPreferenceEnabled());
   dict_value->SetString("disabled_note",

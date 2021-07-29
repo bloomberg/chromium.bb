@@ -61,7 +61,8 @@ std::unique_ptr<protocol::Array<double>> BuildRectForLayout(const int x,
                                                             const int width,
                                                             const int height) {
   return std::make_unique<std::vector<double>, std::initializer_list<double>>(
-      {x, y, width, height});
+      {static_cast<double>(x), static_cast<double>(y),
+       static_cast<double>(width), static_cast<double>(height)});
 }
 
 Document* GetEmbeddedDocument(PaintLayer* layer) {
@@ -398,6 +399,7 @@ void InspectorDOMSnapshotAgent::VisitDocument(Document* document) {
                   .setParentIndex(std::make_unique<protocol::Array<int>>())
                   .setNodeType(std::make_unique<protocol::Array<int>>())
                   .setNodeName(std::make_unique<protocol::Array<int>>())
+                  .setShadowRootType(StringData())
                   .setNodeValue(std::make_unique<protocol::Array<int>>())
                   .setBackendNodeId(std::make_unique<protocol::Array<int>>())
                   .setAttributes(
@@ -500,6 +502,10 @@ void InspectorDOMSnapshotAgent::VisitNode(Node* node,
       static_cast<int>(node->getNodeType()));
   nodes->getNodeName(nullptr)->emplace_back(AddString(node->nodeName()));
   nodes->getNodeValue(nullptr)->emplace_back(AddString(node_value));
+  if (node->IsInShadowTree()) {
+    SetRare(nodes->getShadowRootType(nullptr), index,
+            InspectorDOMAgent::GetShadowRootType(node->ContainingShadowRoot()));
+  }
   nodes->getBackendNodeId(nullptr)->emplace_back(
       IdentifiersFactory::IntIdForNode(node));
   nodes->getAttributes(nullptr)->emplace_back(

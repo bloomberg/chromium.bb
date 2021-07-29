@@ -10,7 +10,7 @@ import { DefaultTestFileLoader } from "../out/common/framework/file_loader.js";
 import { Logger } from "../out/common/framework/logging/logger.js";
 import { parseQuery } from "../out/common/framework/query/parseQuery.js";
 import { compareQueries, Ordering } from '../out/common/framework/query/compare.js';
-import { assert, unreachable } from "../out/common/framework/util/util.js";
+import { assert, unreachable } from "../out/common/framework/util.js";
 import { parseExpectationsForTestQuery } from "../src/common/framework/query/query.js";
 
 function usage(rc) {

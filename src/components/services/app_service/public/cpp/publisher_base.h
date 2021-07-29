@@ -76,7 +76,7 @@ class PublisherBase : public apps::mojom::Publisher {
                  bool clear_site_data,
                  bool report_abuse) override;
   void PauseApp(const std::string& app_id) override;
-  void UnpauseApps(const std::string& app_id) override;
+  void UnpauseApp(const std::string& app_id) override;
   void StopApp(const std::string& app_id) override;
   void GetMenuModel(const std::string& app_id,
                     apps::mojom::MenuType menu_type,
@@ -94,6 +94,8 @@ class PublisherBase : public apps::mojom::Publisher {
       apps::mojom::ReplacedAppPreferencesPtr replaced_app_preferences) override;
   void SetResizeLocked(const std::string& app_id,
                        apps::mojom::OptionalBool locked) override;
+  void SetWindowMode(const std::string& app_id,
+                     apps::mojom::WindowMode window_mode) override;
 
   mojo::Receiver<apps::mojom::Publisher> receiver_{this};
 };

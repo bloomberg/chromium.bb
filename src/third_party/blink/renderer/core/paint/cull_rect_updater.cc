@@ -49,34 +49,37 @@ bool SetFragmentContentsCullRect(PaintLayer& layer,
 
 }  // anonymous namespace
 
-CullRectUpdater::CullRectUpdater(PaintLayer& root_layer)
-    : root_layer_(root_layer),
-      root_state_(root_layer.GetLayoutObject()
-                      .FirstFragment()
-                      .LocalBorderBoxProperties()
-                      .Unalias()) {
-  DCHECK(root_layer.IsRootLayer());
+void CullRectUpdater::Update() {
+  DCHECK(starting_layer_.IsRootLayer());
+  UpdateInternal(CullRect::Infinite());
+#if DCHECK_IS_ON()
+  if (VLOG_IS_ON(2)) {
+    VLOG(2) << "PaintLayer tree after cull rect update:";
+    showLayerTree(&starting_layer_);
+  }
+#endif
 }
 
 void CullRectUpdater::UpdateInternal(const CullRect& input_cull_rect) {
   DCHECK(RuntimeEnabledFeatures::CullRectUpdateEnabled());
-  DCHECK(root_layer_.IsRootLayer());
-  if (root_layer_.GetLayoutObject().GetFrameView()->ShouldThrottleRendering())
+  const auto& object = starting_layer_.GetLayoutObject();
+  if (object.GetFrameView()->ShouldThrottleRendering())
     return;
 
+  root_state_ =
+      object.View()->FirstFragment().LocalBorderBoxProperties().Unalias();
   bool should_use_infinite =
-      PaintLayerPainter(root_layer_).ShouldUseInfiniteCullRect();
-  auto& fragment =
-      root_layer_.GetLayoutObject().GetMutableForPainting().FirstFragment();
+      PaintLayerPainter(starting_layer_).ShouldUseInfiniteCullRect();
+  auto& fragment = object.GetMutableForPainting().FirstFragment();
   SetFragmentCullRect(
-      root_layer_, fragment,
+      starting_layer_, fragment,
       should_use_infinite ? CullRect::Infinite() : input_cull_rect);
   bool force_update_children = SetFragmentContentsCullRect(
-      root_layer_, fragment,
+      starting_layer_, fragment,
       should_use_infinite ? CullRect::Infinite()
                           : ComputeFragmentContentsCullRect(
-                                root_layer_, fragment, input_cull_rect));
-  UpdateForDescendants(root_layer_, force_update_children);
+                                starting_layer_, fragment, input_cull_rect));
+  UpdateForDescendants(starting_layer_, force_update_children);
 }
 
 void CullRectUpdater::UpdateRecursively(PaintLayer& layer,
@@ -171,15 +174,15 @@ bool CullRectUpdater::UpdateForSelf(PaintLayer& layer,
       parent_painting_layer.GetLayoutObject().FirstFragment();
   auto& first_fragment =
       layer.GetLayoutObject().GetMutableForPainting().FirstFragment();
-  // If both |this| and |root_layer| are fragmented and are inside the same
-  // pagination container, then try to match fragments from |root_layer| to
-  // |this|, so that any fragment clip for |root_layer|'s fragment matches
-  // |this|'s. Note we check both ShouldFragmentCompositedBounds() and next
-  // fragment here because the former may return false even if |this| is
-  // fragmented, e.g. for fixed-position objects in paged media, and the next
-  // fragment can be null even if the first fragment is actually in a fragmented
-  // context when the current layer appears in only one of the multiple
-  // fragments of the pagination container.
+  // If both |layer| and |parent_painting_layer| are fragmented and are inside
+  // the same pagination container, then try to match fragments from
+  // |parent_painting_layer| to |layer|, so that any fragment clip for
+  // |parent_painting_layer|'s fragment matches |layer|'s. Note we check both
+  // ShouldFragmentCompositedBounds() and next fragment here because the former
+  // may return false even if |layer| is fragmented, e.g. for fixed-position
+  // objects in paged media, and the next fragment can be null even if the first
+  // fragment is actually in a fragmented context when the current layer appears
+  // in only one of the multiple fragments of the pagination container.
   bool is_fragmented =
       layer.ShouldFragmentCompositedBounds() || first_fragment.NextFragment();
   bool should_match_fragments =
@@ -193,8 +196,7 @@ bool CullRectUpdater::UpdateForSelf(PaintLayer& layer,
     if (should_match_fragments) {
       for (parent_fragment = &first_parent_fragment; parent_fragment;
            parent_fragment = parent_fragment->NextFragment()) {
-        if (parent_fragment->LogicalTopInFlowThread() ==
-            fragment->LogicalTopInFlowThread())
+        if (parent_fragment->FragmentID() == fragment->FragmentID())
           break;
       }
     } else {
@@ -276,32 +278,29 @@ bool CullRectUpdater::ShouldProactivelyUpdate(const PaintLayer& layer) const {
   return layer.SelfOrDescendantNeedsRepaint();
 }
 
-OverriddenCullRectScope::OverriddenCullRectScope(LocalFrameView& frame_view,
+OverriddenCullRectScope::OverriddenCullRectScope(PaintLayer& starting_layer,
                                                  const CullRect& cull_rect)
-    : frame_view_(frame_view) {
+    : starting_layer_(starting_layer) {
   if (!RuntimeEnabledFeatures::CullRectUpdateEnabled())
     return;
 
-  PaintLayer* root_layer = frame_view_.GetLayoutView()->Layer();
-  DCHECK(root_layer);
-
-  if (frame_view.GetFrame().IsLocalRoot() &&
-      !root_layer->NeedsCullRectUpdate() &&
-      !root_layer->DescendantNeedsCullRectUpdate() &&
+  if (starting_layer.GetLayoutObject().GetFrame()->IsLocalRoot() &&
+      !starting_layer.NeedsCullRectUpdate() &&
+      !starting_layer.DescendantNeedsCullRectUpdate() &&
       cull_rect ==
-          root_layer->GetLayoutObject().FirstFragment().GetCullRect()) {
-    // The cull rects calculated during PrePaint are good.
+          starting_layer.GetLayoutObject().FirstFragment().GetCullRect()) {
+    // The current cull rects are good.
     return;
   }
 
   updated_ = true;
-  root_layer->SetNeedsCullRectUpdate();
-  CullRectUpdater(*root_layer).UpdateInternal(cull_rect);
+  starting_layer.SetNeedsCullRectUpdate();
+  CullRectUpdater(starting_layer).UpdateInternal(cull_rect);
 }
 
 OverriddenCullRectScope::~OverriddenCullRectScope() {
   if (RuntimeEnabledFeatures::CullRectUpdateEnabled() && updated_)
-    frame_view_.GetLayoutView()->Layer()->SetNeedsCullRectUpdate();
+    starting_layer_.SetNeedsCullRectUpdate();
 }
 
 }  // namespace blink

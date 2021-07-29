@@ -10,8 +10,10 @@
 // users' preferences, and FeatureList.
 
 #include <stdint.h>
+
 #include <deque>
 #include <string>
+#include <vector>
 
 #include "chromeos/dbus/dbus_method_call_status.h"
 
@@ -20,7 +22,6 @@ class Window;
 }  // namespace aura
 
 namespace base {
-class CommandLine;
 struct SystemMemoryInfoKB;
 }  // namespace base
 
@@ -122,10 +123,6 @@ bool ShouldArcAlwaysStartWithNoPlayStore();
 // Returns true if ARC OptIn ui needs to be shown for testing.
 bool ShouldShowOptInForTesting();
 
-// Enables to always start ARC without Play Store for testing, by appending the
-// command line flag.
-void SetArcAlwaysStartWithoutPlayStoreForTesting();
-
 // Returns true if ARC is installed and running ARC kiosk apps on the current
 // device is officially supported.
 // It doesn't follow that ARC is available for user sessions and
@@ -136,13 +133,6 @@ void SetArcAlwaysStartWithoutPlayStoreForTesting();
 // Also not that this function may return true when ARC is not running in
 // Kiosk mode, it checks only ARC Kiosk availability.
 bool IsArcKioskAvailable();
-
-// For testing ARC in browser tests, this function should be called in
-// SetUpCommandLine(), and its argument should be passed to this function.
-// Also, in unittests, this can be called in SetUp() with
-// base::CommandLine::ForCurrentProcess().
-// |command_line| must not be nullptr.
-void SetArcAvailableCommandLineForTesting(base::CommandLine* command_line);
 
 // Returns true if ARC should run under Kiosk mode for the current profile.
 // As it can return true only when user is already initialized, it implies
@@ -173,10 +163,13 @@ bool IsArcOptInVerificationDisabled();
 
 constexpr int kNoTaskId = -1;
 constexpr int kSystemWindowTaskId = 0;
-// Returns the task id given by the exo shell's application id, or |kNoTaskId|
-// if not an ARC window.
-int GetWindowTaskId(const aura::Window* window);
-int GetTaskIdFromWindowAppId(const std::string& app_id);
+// Returns the task id given by the exo shell's application id, or
+// absl::nullopt if not an ARC window.
+absl::optional<int> GetWindowTaskId(const aura::Window* window);
+absl::optional<int> GetTaskIdFromWindowAppId(const std::string& app_id);
+absl::optional<int> GetWindowSessionId(const aura::Window* window);
+absl::optional<int> GetSessionIdFromWindowAppId(const std::string& app_id);
+absl::optional<int> GetWindowTaskOrSessionId(const aura::Window* window);
 
 // Returns true if ARC app icons are forced to cache.
 bool IsArcForceCacheAppIcon();

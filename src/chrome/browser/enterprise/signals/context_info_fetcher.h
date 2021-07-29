@@ -37,6 +37,13 @@ struct ContextInfo {
   std::vector<std::string> on_security_event_providers;
   safe_browsing::EnterpriseRealTimeUrlCheckMode realtime_url_check_mode;
   std::string browser_version;
+  safe_browsing::SafeBrowsingState safe_browsing_protection_level;
+  bool site_isolation_enabled;
+  bool built_in_dns_client_enabled;
+  absl::optional<safe_browsing::PasswordProtectionTrigger>
+      password_protection_warning_trigger;
+  absl::optional<bool> chrome_cleanup_enabled;
+  bool chrome_remote_desktop_app_blocked;
 };
 
 // Interface used by the chrome.enterprise.reportingPrivate.getContextInfo()
@@ -79,6 +86,17 @@ class ContextInfoFetcher {
   safe_browsing::EnterpriseRealTimeUrlCheckMode GetRealtimeUrlCheckMode();
 
   std::vector<std::string> GetOnSecurityEventProviders();
+
+  safe_browsing::SafeBrowsingState GetSafeBrowsingProtectionLevel();
+
+  bool GetBuiltInDnsClientEnabled();
+
+  absl::optional<safe_browsing::PasswordProtectionTrigger>
+  GetPasswordProtectionWarningTrigger();
+
+  absl::optional<bool> GetChromeCleanupEnabled();
+
+  bool GetChromeRemoteDesktopAppBlocked();
 
   content::BrowserContext* browser_context_;
 

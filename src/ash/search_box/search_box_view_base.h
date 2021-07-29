@@ -15,7 +15,7 @@
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
-#include "ui/views/widget/widget_delegate.h"
+#include "ui/views/view.h"
 
 namespace gfx {
 class ImageSkia;
@@ -25,7 +25,6 @@ namespace views {
 class BoxLayout;
 class ImageView;
 class Textfield;
-class View;
 }  // namespace views
 
 namespace ash {
@@ -43,14 +42,11 @@ enum class ActivationSource {
   kMaxValue = kGestureTap,
 };
 
-// TODO(wutao): WidgetDelegateView owns itself and cannot be deleted from the
-// views hierarchy automatically. Make SearchBoxViewBase a subclass of View
-// instead of WidgetDelegateView.
 // SearchBoxViewBase consists of icons and a Textfield. The Textfiled is for
 // inputting queries and triggering callbacks. The icons include a search icon,
 // a close icon and a back icon for different functionalities. This class
 // provides common functions for the search box view across Chrome OS.
-class SearchBoxViewBase : public views::WidgetDelegateView,
+class SearchBoxViewBase : public views::View,
                           public views::TextfieldController {
  public:
   explicit SearchBoxViewBase(SearchBoxViewDelegate* delegate);
@@ -85,15 +81,13 @@ class SearchBoxViewBase : public views::WidgetDelegateView,
   // Overridden from views::View:
   gfx::Size CalculatePreferredSize() const override;
   const char* GetClassName() const override;
+  void OnKeyEvent(ui::KeyEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
 
   // Allows for search box to be notified of gestures occurring outside, without
   // deactivating the searchbox.
   void NotifyGestureEvent();
-
-  // Overridden from views::WidgetDelegate:
-  ax::mojom::Role GetAccessibleWindowRole() override;
 
   // Used only in the tests to get the current search icon.
   views::ImageView* get_search_icon_for_test() { return search_icon_; }
@@ -135,6 +129,7 @@ class SearchBoxViewBase : public views::WidgetDelegateView,
   bool HandleGestureEvent(views::Textfield* sender,
                           const ui::GestureEvent& gesture_event) override;
 
+  SearchBoxViewDelegate* delegate() { return delegate_; }
   views::BoxLayout* box_layout() { return box_layout_; }
 
   void SetSearchBoxBackgroundCornerRadius(int corner_radius);
@@ -178,7 +173,7 @@ class SearchBoxViewBase : public views::WidgetDelegateView,
 
   void OnEnabledChanged();
 
-  SearchBoxViewDelegate* delegate_;  // Not owned.
+  SearchBoxViewDelegate* const delegate_;
 
   // Owned by views hierarchy.
   views::View* content_container_;
@@ -194,7 +189,7 @@ class SearchBoxViewBase : public views::WidgetDelegateView,
 
   // Whether the search box is active.
   bool is_search_box_active_ = false;
-  // Whether to show close button if the search box is active.
+  // Whether to show close button if the search box is active and empty.
   bool show_close_button_when_active_ = false;
   // Whether to show assistant button.
   bool show_assistant_button_ = false;

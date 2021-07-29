@@ -30,6 +30,7 @@
 #define SK_LASTFRAGCOLOR_BUILTIN       10008
 #define SK_MAIN_COORDS_BUILTIN         10009
 #define SK_INPUT_COLOR_BUILTIN         10010
+#define SK_DEST_COLOR_BUILTIN          10011
 #define SK_FRAGCOORD_BUILTIN              15
 #define SK_CLOCKWISE_BUILTIN              17
 #define SK_VERTEXID_BUILTIN               42
@@ -43,6 +44,7 @@ class SkSLCompileBench;
 namespace SkSL {
 
 namespace dsl {
+    class DSLCore;
     class DSLWriter;
 }
 
@@ -68,9 +70,40 @@ struct LoadedModule {
  */
 class SK_API Compiler : public ErrorReporter {
 public:
-    static constexpr const char FRAGCOLOR_NAME[]  = "sk_FragColor";
+    static constexpr const char FRAGCOLOR_NAME[] = "sk_FragColor";
     static constexpr const char RTADJUST_NAME[]  = "sk_RTAdjust";
     static constexpr const char PERVERTEX_NAME[] = "sk_PerVertex";
+    static constexpr const char POISON_TAG[]     = "<POISON>";
+
+    /**
+     * Gets a float4 that adjusts the position from Skia device coords to normalized device coords,
+     * used to populate sk_RTAdjust.  Assuming the transformed position, pos, is a homogeneous
+     * float4, the vec, v, is applied as such:
+     * float4((pos.xy * v.xz) + sk_Position.ww * v.yw, 0, pos.w);
+     */
+    static std::array<float, 4> GetRTAdjustVector(SkISize rtDims, bool flipY) {
+        std::array<float, 4> result;
+        result[0] = 2.f/rtDims.width();
+        result[2] = 2.f/rtDims.height();
+        result[1] = -1.f;
+        result[3] = -1.f;
+        if (flipY) {
+            result[2] = -result[2];
+            result[3] = -result[3];
+        }
+        return result;
+    }
+
+    /**
+     * Uniform values  by the compiler to implement origin-neutral dFdy, sk_Clockwise, and
+     * sk_FragCoord.
+     */
+    static std::array<float, 2> GetRTFlipVector(int rtHeight, bool flipY) {
+        std::array<float, 2> result;
+        result[0] = flipY ? rtHeight : 0.f;
+        result[1] = flipY ?     -1.f : 1.f;
+        return result;
+    }
 
     struct OptimizationContext {
         // nodes we have already reported errors for and should not error on again
@@ -128,14 +161,6 @@ public:
 
     bool toMetal(Program& program, String* out);
 
-#if defined(SKSL_STANDALONE) || GR_TEST_UTILS
-    bool toCPP(Program& program, String name, OutputStream& out);
-
-    bool toDSLCPP(Program& program, String name, OutputStream& out);
-
-    bool toH(Program& program, String name, OutputStream& out);
-#endif
-
     void error(int offset, String msg) override;
 
     String errorText(bool showCount = true);
@@ -182,11 +207,11 @@ private:
     const ParsedModule& loadGPUModule();
     const ParsedModule& loadFragmentModule();
     const ParsedModule& loadVertexModule();
-    const ParsedModule& loadFPModule();
     const ParsedModule& loadGeometryModule();
     const ParsedModule& loadPublicModule();
     const ParsedModule& loadRuntimeColorFilterModule();
     const ParsedModule& loadRuntimeShaderModule();
+    const ParsedModule& loadRuntimeBlenderModule();
 
     /** Verifies that @if and @switch statements were actually optimized away. */
     void verifyStaticTests(const Program& program);
@@ -204,6 +229,9 @@ private:
     bool removeDeadGlobalVariables(Program& program, ProgramUsage* usage);
     bool removeDeadLocalVariables(Program& program, ProgramUsage* usage);
 
+    /** Eliminates unreachable statements from a Program. */
+    void removeUnreachableCode(Program& program, ProgramUsage* usage);
+
     Position position(int offset);
 
     std::shared_ptr<Context> fContext;
@@ -218,11 +246,11 @@ private:
     ParsedModule fVertexModule;              // [GPU] + Vertex stage decls
     ParsedModule fFragmentModule;            // [GPU] + Fragment stage decls
     ParsedModule fGeometryModule;            // [GPU] + Geometry stage decls
-    ParsedModule fFPModule;                  // [GPU] + FP features
 
     ParsedModule fPublicModule;              // [Root] + Public features
     ParsedModule fRuntimeColorFilterModule;  // [Public] + Runtime shader decls
     ParsedModule fRuntimeShaderModule;       // [Public] + Runtime color filter decls
+    ParsedModule fRuntimeBlenderModule;      // [Public] + Runtime blender decls
 
     // holds ModifiersPools belonging to the core includes for lifetime purposes
     ModifiersPool fCoreModifiers;
@@ -240,6 +268,7 @@ private:
 
     friend class AutoSource;
     friend class ::SkSLCompileBench;
+    friend class dsl::DSLCore;
     friend class dsl::DSLWriter;
 };
 

@@ -33,6 +33,7 @@
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions_policy/policy_disposition.mojom-blink.h"
+#include "third_party/blink/public/mojom/permissions_policy/policy_value.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -312,15 +313,15 @@ bool ExecutionContext::IsContextPaused() const {
   return lifecycle_state_ == mojom::blink::FrameLifecycleState::kPaused;
 }
 
-WebURLLoader::DeferType ExecutionContext::DeferType() const {
+LoaderFreezeMode ExecutionContext::GetLoaderFreezeMode() const {
   if (is_in_back_forward_cache_) {
     DCHECK_EQ(lifecycle_state_, mojom::blink::FrameLifecycleState::kFrozen);
-    return WebURLLoader::DeferType::kDeferredWithBackForwardCache;
+    return LoaderFreezeMode::kBufferIncoming;
   } else if (lifecycle_state_ == mojom::blink::FrameLifecycleState::kFrozen ||
              lifecycle_state_ == mojom::blink::FrameLifecycleState::kPaused) {
-    return WebURLLoader::DeferType::kDeferred;
+    return LoaderFreezeMode::kStrict;
   }
-  return WebURLLoader::DeferType::kNotDeferred;
+  return LoaderFreezeMode::kNone;
 }
 
 bool ExecutionContext::IsLoadDeferred() const {

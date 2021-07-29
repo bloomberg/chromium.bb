@@ -57,7 +57,7 @@ class MockAudioRendererSource : public blink::WebRtcAudioRendererSource {
   MOCK_METHOD4(RenderData,
                void(media::AudioBus* audio_bus,
                     int sample_rate,
-                    int audio_delay_milliseconds,
+                    base::TimeDelta audio_delay,
                     base::TimeDelta* current_time));
   MOCK_METHOD1(RemoveAudioRenderer, void(blink::WebRtcAudioRenderer* renderer));
   MOCK_METHOD0(AudioRendererThreadStopped, void());
@@ -142,13 +142,15 @@ class MAYBE_WebRtcAudioRendererTest : public testing::Test {
         web_view_(blink::WebView::Create(
             /*client=*/nullptr,
             /*is_hidden=*/false,
+            /*is_prerendering=*/false,
             /*is_inside_portal=*/false,
             /*compositing_enabled=*/false,
             /*widgets_never_composited=*/false,
             /*opener=*/nullptr,
             mojo::NullAssociatedReceiver(),
             *agent_group_scheduler_,
-            /*session_storage_namespace_id=*/base::EmptyString())),
+            /*session_storage_namespace_id=*/base::EmptyString(),
+            /*page_base_background_color=*/absl::nullopt)),
         web_local_frame_(
             blink::WebLocalFrame::CreateMainFrame(web_view_,
                                                   &web_local_frame_client_,

@@ -46,7 +46,6 @@ class FakeRenderWidgetHost : public blink::mojom::FrameWidgetHost,
   void AutoscrollStart(const gfx::PointF& position) override;
   void AutoscrollFling(const gfx::Vector2dF& position) override;
   void AutoscrollEnd() override;
-  void DidFirstVisuallyNonEmptyPaint() override;
   void StartDragging(blink::mojom::DragDataPtr drag_data,
                      blink::DragOperationsMask operations_allowed,
                      const SkBitmap& bitmap,
@@ -58,6 +57,9 @@ class FakeRenderWidgetHost : public blink::mojom::FrameWidgetHost,
   void UpdateTooltipUnderCursor(
       const std::u16string& tooltip_text,
       base::i18n::TextDirection text_direction_hint) override;
+  void UpdateTooltipFromKeyboard(const std::u16string& tooltip_text,
+                                 base::i18n::TextDirection text_direction_hint,
+                                 const gfx::Rect& bounds) override;
   void TextInputStateChanged(ui::mojom::TextInputStatePtr state) override;
   void SelectionBoundsChanged(const gfx::Rect& anchor_rect,
                               base::i18n::TextDirection anchor_dir,

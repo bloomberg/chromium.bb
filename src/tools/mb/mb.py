@@ -686,19 +686,11 @@ class MetaBuildWrapper(object):
     # We trap the command explicitly and rewrite the error output so that
     # the error message is actually correct for a Chromium check out.
     self.PrintCmd(cmd)
-    ret, out, err = self.Run(cmd, force_verbose=False)
+    ret, out, _ = self.Run(cmd, force_verbose=False)
     if ret:
       self.Print('  -> returned %d' % ret)
       if out:
         self.Print(out, end='')
-      if err:
-        # The swarming client will return an exit code of 2 (via
-        # argparse.ArgumentParser.error()) and print a message to indicate
-        # that auth failed, so we have to parse the message to check.
-        if (ret == 2 and 'Please login to' in err):
-          err = err.replace(' auth.py', ' tools/swarming_client/auth.py')
-          self.Print(err, end='', file=sys.stderr)
-
       return ret
 
     try:
@@ -1193,6 +1185,53 @@ class MetaBuildWrapper(object):
         if self.Exists(path):
           self.RemoveFile(path)
 
+  def _FilterOutUnneededSkylabDeps(self, deps):
+    """Filter out the runtime dependencies not used by Skylab.
+
+    Skylab is CrOS infra facilities for us to run hardware tests. These files
+    may appear in the test target's runtime_deps but unnecessary for our tests
+    to execute in a CrOS device.
+    """
+    file_ignore_list = [
+        re.compile(r'.*build/android.*'),
+        re.compile(r'.*build/chromeos.*'),
+        re.compile(r'.*build/cros_cache.*'),
+        # The following matches anything under //testing/ that isn't under
+        # //testing/buildbot/filters/.
+        re.compile(r'.*testing/(?!buildbot/filters).*'),
+        re.compile(r'.*third_party/chromite.*'),
+        # No test target should rely on files in [output_dir]/gen.
+        re.compile(r'^gen/.*'),
+    ]
+    return [f for f in deps if not any(r.match(f) for r in file_ignore_list)]
+
+  def _DedupDependencies(self, deps):
+    """Remove the deps already contained by other paths."""
+
+    def _add(root, path):
+      cur = path.popleft()
+      # Only continue the recursion if the path has child nodes
+      # AND the current node is not ended by other existing paths.
+      if path and root.get(cur) != {}:
+        return _add(root.setdefault(cur, {}), path)
+      # Cut this path, because child nodes are already included.
+      root[cur] = {}
+      return root
+
+    def _list(root, prefix, res):
+      for k, v in root.items():
+        if v == {}:
+          res.append('%s/%s' % (prefix, k))
+          continue
+        _list(v, '%s/%s' % (prefix, k), res)
+      return res
+
+    root = {}
+    for d in deps:
+      q = collections.deque(d.rstrip('/').split('/'))
+      _add(root, q)
+    return [p.lstrip('/') for p in _list(root, '', [])]
+
   def GenerateIsolates(self, vals, ninja_targets, isolate_map, build_dir):
     """
     Generates isolates for a list of ninja targets.
@@ -1225,6 +1264,9 @@ class MetaBuildWrapper(object):
 
       command, extra_files = self.GetSwarmingCommand(target, vals)
       runtime_deps = self.ReadFile(path_to_use).splitlines()
+      runtime_deps = self._DedupDependencies(runtime_deps)
+      if 'is_skylab=true' in vals['gn_args']:
+        runtime_deps = self._FilterOutUnneededSkylabDeps(runtime_deps)
 
       # For more info about RTS, please see
       # //docs/testing/regression-test-selection.md

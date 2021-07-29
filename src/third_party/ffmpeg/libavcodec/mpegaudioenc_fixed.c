@@ -21,7 +21,7 @@
 
 #include "mpegaudioenc_template.c"
 
-AVCodec ff_mp2fixed_encoder = {
+const AVCodec ff_mp2fixed_encoder = {
     .name                  = "mp2fixed",
     .long_name             = NULL_IF_CONFIG_SMALL("MP2 fixed point (MPEG audio layer 2)"),
     .type                  = AVMEDIA_TYPE_AUDIO,
@@ -38,4 +38,5 @@ AVCodec ff_mp2fixed_encoder = {
                                                  AV_CH_LAYOUT_STEREO,
                                                  0 },
     .defaults              = mp2_defaults,
+    .caps_internal         = FF_CODEC_CAP_INIT_THREADSAFE,
 };

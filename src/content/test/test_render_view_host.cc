@@ -234,6 +234,10 @@ absl::optional<DisplayFeature> TestRenderWidgetHostView::GetDisplayFeature() {
   return display_feature_;
 }
 
+ui::Compositor* TestRenderWidgetHostView::GetCompositor() {
+  return compositor_;
+}
+
 TestRenderViewHost::TestRenderViewHost(
     FrameTree* frame_tree,
     SiteInstance* instance,
@@ -310,7 +314,13 @@ bool TestRenderViewHost::CreateRenderView(
   } else {
     // Pretend that mojo connections of the RemoteFrame is transferred to
     // renderer process and bound in blink.
-    ignore_result(proxy_host->BindRemoteMainFrameReceiverForTesting());
+    mojo::AssociatedRemote<blink::mojom::RemoteMainFrame> remote_main_frame;
+    ignore_result(remote_main_frame.BindNewEndpointAndPassDedicatedReceiver());
+    proxy_host->BindRemoteMainFrameInterfaces(
+        remote_main_frame.Unbind(),
+        mojo::AssociatedRemote<blink::mojom::RemoteMainFrameHost>()
+            .BindNewEndpointAndPassDedicatedReceiver());
+
     proxy_host->SetRenderFrameProxyCreated(true);
   }
 
@@ -374,16 +384,6 @@ RenderViewHostImplTestHarness::~RenderViewHostImplTestHarness() {
 
 TestRenderViewHost* RenderViewHostImplTestHarness::test_rvh() {
   return contents()->GetRenderViewHost();
-}
-
-TestRenderViewHost* RenderViewHostImplTestHarness::pending_test_rvh() {
-  return contents()->GetSpeculativePrimaryMainFrame()
-             ? contents()->GetSpeculativePrimaryMainFrame()->GetRenderViewHost()
-             : nullptr;
-}
-
-TestRenderViewHost* RenderViewHostImplTestHarness::active_test_rvh() {
-  return static_cast<TestRenderViewHost*>(active_rvh());
 }
 
 TestRenderFrameHost* RenderViewHostImplTestHarness::main_test_rfh() {

@@ -16,14 +16,15 @@
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
+#include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
+
+namespace blink {
+class StorageKey;
+}  // namespace blink
 
 namespace storage {
 class QuotaManagerProxy;
 }  // namespace storage
-
-namespace url {
-class Origin;
-}  // namespace url
 
 namespace content {
 
@@ -115,7 +116,7 @@ class DatabaseTask : public DatabaseTaskHost {
   bool HasStorageError();
 
   // Quota.
-  void IsQuotaAvailable(const url::Origin& origin,
+  void IsQuotaAvailable(const blink::StorageKey& storage_key,
                         int64_t size,
                         IsQuotaAvailableCallback callback);
 
@@ -132,7 +133,7 @@ class DatabaseTask : public DatabaseTaskHost {
       const BackgroundFetchRegistrationId& registration_id,
       int64_t trace_id,
       base::OnceCallback<void(blink::mojom::CacheStorageError)> callback);
-  void DeleteCache(const url::Origin& origin,
+  void DeleteCache(const blink::StorageKey& storage_key,
                    const std::string& unique_id,
                    int64_t trace_id,
                    blink::mojom::CacheStorage::DeleteCallback callback);

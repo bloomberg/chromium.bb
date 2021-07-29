@@ -50,29 +50,47 @@ set(DAWN_DUMMY_FILE "${DAWN_SRC_DIR}/Dummy.cpp")
 # Default values for the backend-enabling options
 set(ENABLE_D3D12 OFF)
 set(ENABLE_METAL OFF)
-set(ENABLE_OPENGL OFF)
+set(ENABLE_OPENGLES OFF)
+set(ENABLE_DESKTOP_GL OFF)
 set(ENABLE_VULKAN OFF)
 set(USE_X11 OFF)
+set(BUILD_EXAMPLE OFF)
 if (WIN32)
     set(ENABLE_D3D12 ON)
-    set(ENABLE_VULKAN ON)
+    if (NOT WINDOWS_STORE)
+        # Enable Vulkan in win32 compilation only
+        # since UWP only supports d3d
+        set(ENABLE_VULKAN ON)
+    endif()
 elseif(APPLE)
     set(ENABLE_METAL ON)
 elseif(UNIX)
-    set(ENABLE_OPENGL ON)
+    set(ENABLE_OPENGLES ON)
+    set(ENABLE_DESKTOP_GL ON)
     set(ENABLE_VULKAN ON)
     set(USE_X11 ON)
+endif()
+
+# GLFW is not supported in UWP
+if((WIN32 AND NOT WINDOWS_STORE) OR UNIX)
+    set(DAWN_SUPPORTS_GLFW_FOR_WINDOWING ON)
+endif()
+
+# Current examples are depend on GLFW
+if (DAWN_SUPPORTS_GLFW_FOR_WINDOWING)
+    set(BUILD_EXAMPLE ON)
 endif()
 
 option(DAWN_ENABLE_D3D12 "Enable compilation of the D3D12 backend" ${ENABLE_D3D12})
 option(DAWN_ENABLE_METAL "Enable compilation of the Metal backend" ${ENABLE_METAL})
 option(DAWN_ENABLE_NULL "Enable compilation of the Null backend" ON)
-option(DAWN_ENABLE_OPENGL "Enable compilation of the OpenGL backend" ${ENABLE_OPENGL})
+option(DAWN_ENABLE_DESKTOP_GL "Enable compilation of the OpenGL backend" ${ENABLE_DESKTOP_GL})
+option(DAWN_ENABLE_OPENGLES "Enable compilation of the OpenGL ES backend" ${ENABLE_OPENGLES})
 option(DAWN_ENABLE_VULKAN "Enable compilation of the Vulkan backend" ${ENABLE_VULKAN})
 option(DAWN_ALWAYS_ASSERT "Enable assertions on all build types" OFF)
 option(DAWN_USE_X11 "Enable support for X11 surface" ${USE_X11})
 
-option(DAWN_BUILD_EXAMPLES "Enables building Dawn's exmaples" ON)
+option(DAWN_BUILD_EXAMPLES "Enables building Dawn's exmaples" ${BUILD_EXAMPLE})
 
 set(DAWN_THIRD_PARTY_DIR "${Dawn_SOURCE_DIR}/third_party" CACHE STRING "Directory in which to find third-party dependencies.")
 
@@ -83,6 +101,11 @@ set(DAWN_SPIRV_CROSS_DIR "${DAWN_THIRD_PARTY_DIR}/vulkan-deps/spirv-cross/src" C
 set(DAWN_SPIRV_HEADERS_DIR "${DAWN_THIRD_PARTY_DIR}/vulkan-deps/spirv-headers/src" CACHE STRING "Directory in which to find SPIRV-Headers")
 set(DAWN_SPIRV_TOOLS_DIR "${DAWN_THIRD_PARTY_DIR}/vulkan-deps/spirv-tools/src" CACHE STRING "Directory in which to find SPIRV-Tools")
 set(DAWN_TINT_DIR "${DAWN_THIRD_PARTY_DIR}/tint" CACHE STRING "Directory in which to find Tint")
+
+# Much of the backend code is shared among desktop OpenGL and OpenGL ES
+if (${DAWN_ENABLE_DESKTOP_GL} OR ${DAWN_ENABLE_OPENGLES})
+    set(DAWN_ENABLE_OPENGL ON)
+endif()
 
 ################################################################################
 # Dawn's public and internal "configs"
@@ -115,6 +138,12 @@ if (DAWN_ENABLE_METAL)
 endif()
 if (DAWN_ENABLE_NULL)
     target_compile_definitions(dawn_internal_config INTERFACE "DAWN_ENABLE_BACKEND_NULL")
+endif()
+if (DAWN_ENABLE_DESKTOP_GL)
+    target_compile_definitions(dawn_internal_config INTERFACE "DAWN_ENABLE_BACKEND_DESKTOP_GL")
+endif()
+if (DAWN_ENABLE_OPENGLES)
+    target_compile_definitions(dawn_internal_config INTERFACE "DAWN_ENABLE_BACKEND_OPENGLES")
 endif()
 if (DAWN_ENABLE_OPENGL)
     target_compile_definitions(dawn_internal_config INTERFACE "DAWN_ENABLE_BACKEND_OPENGL")

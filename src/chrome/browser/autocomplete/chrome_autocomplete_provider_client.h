@@ -37,7 +37,7 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
 
   // AutocompleteProviderClient:
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
-  PrefService* GetPrefs() override;
+  PrefService* GetPrefs() const override;
   PrefService* GetLocalState() override;
   const AutocompleteSchemeClassifier& GetSchemeClassifier() const override;
   AutocompleteClassifier* GetAutocompleteClassifier() override;
@@ -72,6 +72,7 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
   signin::IdentityManager* GetIdentityManager() const override;
   bool IsOffTheRecord() const override;
   bool SearchSuggestEnabled() const override;
+  bool AllowDeletingBrowserHistory() const override;
   bool IsPersonalizedUrlDataCollectionActive() const override;
   bool IsAuthenticated() const override;
   bool IsSyncActive() const override;

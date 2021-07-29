@@ -4,11 +4,13 @@
 
 #include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_button.h"
+#include "third_party/blink/renderer/core/layout/layout_counter.h"
 #include "third_party/blink/renderer/core/layout/layout_deprecated_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/layout_fieldset.h"
 #include "third_party/blink/renderer/core/layout/layout_file_upload_control.h"
@@ -34,6 +36,7 @@
 #include "third_party/blink/renderer/core/layout/ng/flex/layout_ng_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/ng/grid/layout_ng_grid.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_br.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_counter.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_word_break.h"
@@ -249,6 +252,22 @@ LayoutObject* LayoutObjectFactory::CreateButton(Node& node,
   return CreateObject<LayoutBlock, LayoutNGButton, LayoutButton>(node, legacy);
 }
 
+LayoutObject* LayoutObjectFactory::CreateCounter(
+    PseudoElement& pseduo,
+    const CounterContentData& counter,
+    LegacyLayout legacy) {
+  bool force_legacy = false;
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    force_legacy = legacy == LegacyLayout::kForce;
+    if (!force_legacy)
+      return new LayoutNGCounter(pseduo, counter);
+  }
+  auto* const new_object = new LayoutCounter(pseduo, counter);
+  if (force_legacy)
+    new_object->SetForceLegacyLayout();
+  return new_object;
+}
+
 LayoutBlock* LayoutObjectFactory::CreateFieldset(Node& node,
                                                  const ComputedStyle& style,
                                                  LegacyLayout legacy) {
@@ -314,7 +333,16 @@ LayoutText* LayoutObjectFactory::CreateTextCombine(
     Node* node,
     scoped_refptr<StringImpl> str,
     LegacyLayout legacy) {
-  return new LayoutTextCombine(node, str);
+  bool force_legacy = false;
+  if (RuntimeEnabledFeatures::LayoutNGTextCombineEnabled()) {
+    force_legacy = legacy == LegacyLayout::kForce;
+    if (!force_legacy)
+      return new LayoutNGText(node, str);
+  }
+  LayoutText* const layout_text = new LayoutTextCombine(node, str);
+  if (force_legacy)
+    layout_text->SetForceLegacyLayout();
+  return layout_text;
 }
 
 LayoutTextFragment* LayoutObjectFactory::CreateTextFragment(

@@ -106,11 +106,11 @@ void SyncFileSystemInternalsHandler::OnLogRecorded(
   dict.SetString("task_description", task_log.task_description);
   dict.SetString("result_description", task_log.result_description);
 
-  std::unique_ptr<base::ListValue> details(new base::ListValue);
+  base::ListValue details;
   for (const std::string& detail : task_log.details) {
-    details->Append(detail);
+    details.Append(detail);
   }
-  dict.Set("details", std::move(details));
+  dict.SetKey("details", std::move(details));
   FireWebUIListener("task-log-recorded", dict);
 }
 
@@ -164,7 +164,7 @@ void SyncFileSystemInternalsHandler::HandleGetLog(const base::ListValue* args) {
     list.Append(std::move(dict));
     last_log_id_sent = log_entry->id;
   }
-  if (list.empty())
+  if (list.GetList().empty())
     return;
 
   ResolveJavascriptCallback(args->GetList()[0] /* callback_id */, list);

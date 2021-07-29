@@ -58,6 +58,7 @@
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/sek.</translation>
 <translation id="2353636109065292463">Tjekker din internetforbindelse</translation>
 <translation id="2388990488038464401">Vil du ringe til dette nummer fra din telefon?</translation>
+<translation id="2435457462613246316">Vis adgangskode</translation>
 <translation id="24452542372838207">Udvid notifikation</translation>
 <translation id="2445449901874883781">Brug høj tæthed</translation>
 <translation id="2482878487686419369">Notifikationer</translation>
@@ -79,6 +80,7 @@
 <translation id="2824719307700604149">{YEARS,plural, =1{For 1 år siden}one{For # år siden}other{For # år siden}}</translation>
 <translation id="2878511608894704031">Slet alt</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{om 1 dag}one{om # dag}other{om # dage}}</translation>
+<translation id="2922712708897119705">Kolonnen <ph name="COLUMN_NAME" /> sorteres i faldende rækkefølge.</translation>
 <translation id="2931838996092594335">klik</translation>
 <translation id="2981684127883932071">Viser forslag</translation>
 <translation id="3036649622769666520">Åbn filer</translation>
@@ -114,6 +116,7 @@
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3909791450649380159">Kli&amp;p</translation>
 <translation id="3990502903496589789">Højre kant</translation>
+<translation id="3994749195054421561">Kolonnen <ph name="COLUMN_NAME" /> sorteres i stigende rækkefølge.</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 ulæst notifikation}one{# ulæst notifikation}other{# ulæste notifikationer}}</translation>
 <translation id="4202807286478387388">hop</translation>
 <translation id="4250229828105606438">Screenshot</translation>
@@ -123,6 +126,7 @@
 <translation id="4306392492252714209">Fjern fra udklipsholder.</translation>
 <translation id="4316910396681052118">ALLE APPS</translation>
 <translation id="4491109536499578614">Billede</translation>
+<translation id="4565377596337484307">Skjul adgangskode</translation>
 <translation id="4588090240171750605">Scroll til højre</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, antal stjerner <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, anbefalet app</translation>
@@ -165,6 +169,7 @@
 <translation id="6012623610530968780">Side <ph name="SELECTED_PAGE" /> ud af <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Ryd teksten i søgefeltet</translation>
 <translation id="6040143037577758943">Luk</translation>
+<translation id="6117103120090651229">Midterknap</translation>
 <translation id="6119846243427417423">aktivér</translation>
 <translation id="6129953537138746214">Mellemrum</translation>
 <translation id="6134259848159370930">Søg på din enhed, i dine apps, i indstillingerne og på nettet.</translation>
@@ -173,6 +178,7 @@
 <translation id="6156262341071374681">Vis alle apps</translation>
 <translation id="6165508094623778733">Flere oplysninger</translation>
 <translation id="6166852626429024716">Søg på din enhed, i dine apps, i indstillingerne, på nettet...</translation>
+<translation id="6237461503717005873"><ph name="ROW_NAME" /> er valgt.</translation>
 <translation id="6264365405983206840">Vælg &amp;alle</translation>
 <translation id="6351032674660237738">APPFORSLAG</translation>
 <translation id="6364916375976753737">Scroll Left</translation>
@@ -213,6 +219,7 @@
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minut tilbage}one{# minutter tilbage}other{# minutter tilbage}}</translation>
 <translation id="7430878839542012341">Vil du slette denne søgning fra historikken?</translation>
+<translation id="7437971918971306061">Kolonnen <ph name="COLUMN_NAME" /> er ikke sorteret.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emoji</translation>
 <translation id="7620655452534002301">Fjernet.</translation>

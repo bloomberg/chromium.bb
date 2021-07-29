@@ -5,7 +5,6 @@
 <translation id="1044891598689252897">Sajtet do të punojnë normalisht</translation>
 <translation id="1100504063505580045">Ikona aktuale</translation>
 <translation id="1124090076051167250">Kjo do të pastrojë <ph name="DATASIZE" /> të dhëna dhe kuki të ruajtura nga sajtet ose nga aplikacionet në ekranin bazë.</translation>
-<translation id="1124772482545689468">Përdoruesi</translation>
 <translation id="1178581264944972037">Pauzë</translation>
 <translation id="1181037720776840403">Hiq</translation>
 <translation id="1195941046451948919">E konfirmon që dëshiron t'i rivendosësh të gjitha lejet për këtë faqe interneti?</translation>
@@ -58,6 +57,7 @@
 <translation id="2404630663942400771">{PERMISSIONS_SUMMARY_ALLOWED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> dhe <ph name="NUM_MORE" /> tjetër e lejuar}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> dhe <ph name="NUM_MORE" /> të tjera të lejuara}}</translation>
 <translation id="2434158240863470628">Shkarkimi përfundoi <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2482878487686419369">Njoftimet</translation>
+<translation id="2485422356828889247">Çinstalo</translation>
 <translation id="2490684707762498678">Menaxhuar nga <ph name="APP_NAME" /></translation>
 <translation id="2498359688066513246">Ndihmë dhe komente</translation>
 <translation id="2501278716633472235">Kthehu prapa</translation>
@@ -77,6 +77,7 @@
 <translation id="2903493209154104877">Adresat</translation>
 <translation id="2910701580606108292">Pyet përpara se sajtet të lejohen të luajnë përmbajtje të mbrojtura</translation>
 <translation id="2913331724188855103">Lejo faqet të ruajnë dhe lexojnë të dhënat e kukive (rekomandohet)</translation>
+<translation id="2932883381142163287">Raporto abuzim</translation>
 <translation id="2968755619301702150">Shikuesi i certifikatave</translation>
 <translation id="300526633675317032">Kjo do të pastrojë të gjitha <ph name="SIZE_IN_KB" /> të hapësirës ruajtëse të sajtit të uebit.</translation>
 <translation id="3008272652534848354">Rivendos autorizimet</translation>
@@ -89,11 +90,9 @@
 <translation id="3227137524299004712">Mikrofoni</translation>
 <translation id="3277252321222022663">Lejoju faqeve të të hapin sensorët (rekomandohet)</translation>
 <translation id="3295602654194328831">Fshih informacionin</translation>
-<translation id="3317660236277031814">Një aplikacion interneti që ke instaluar ka ndryshuar ikonën.</translation>
 <translation id="3328801116991980348">Informacionet rreth sajtit</translation>
 <translation id="3333961966071413176">Të gjitha kontaktet</translation>
 <translation id="3386292677130313581">Pyet përpara se sajtet të lejohen të dinë vendndodhjen tënde (rekomandohet)</translation>
-<translation id="345699454248713913">Një aplikacion interneti që ke instaluar ka ndryshuar emrin.</translation>
 <translation id="3538390592868664640">Blloko krijimin nga sajtet të një harte 3D të ambientit tënd rrethues ose gjurmimin prej tyre të pozicionit të kamerës</translation>
 <translation id="3551268116566418498">Të dilet nga modaliteti "i fshehtë"?</translation>
 <translation id="3586500876634962664">Përdorimi i kamerës/mikrofonit</translation>
@@ -101,6 +100,7 @@
 <translation id="3594780231884063836">Çaktivizo zërin e videos</translation>
 <translation id="3596414637720633074">Blloko kukit e palëve të treta në modalitetin "I fshehtë"</translation>
 <translation id="3600792891314830896">Hiq zërin për sajtet që luajnë tinguj</translation>
+<translation id="365089839707261811">Shqyrto përditësimet e emrave</translation>
 <translation id="3744111561329211289">Sinkronizimi në sfond</translation>
 <translation id="3763247130972274048">Trokit dy herë videon majtas ose djathtas për të kapërcyer 10 sek.</translation>
 <translation id="381841723434055211">Numrat e telefonit</translation>
@@ -118,11 +118,11 @@
 <translation id="4200726100658658164">Hap "Cilësimet e vendndodhjes"</translation>
 <translation id="4226663524361240545">Njoftimet mund të bëjnë që pajisja të dridhet</translation>
 <translation id="4259722352634471385">Lundrimi është bllokuar: <ph name="URL" /></translation>
-<translation id="4277239631747669329">Një aplikacion interneti që ke instaluar ka ndryshuar emrin dhe ikonën.</translation>
 <translation id="4278390842282768270">Të lejuara</translation>
 <translation id="429312253194641664">Një sajt po luan media</translation>
 <translation id="42981349822642051">Zgjero</translation>
 <translation id="4336434711095810371">Pastro të gjitha të dhënat</translation>
+<translation id="4339203724549370495">Çinstalo aplikacionin</translation>
 <translation id="4402755511846832236">Blloko sajtet që të mos e dinë kur ti e përdor këtë pajisje në mënyrë aktive</translation>
 <translation id="4434045419905280838">Dritaret kërcyese dhe ridrejtimet</translation>
 <translation id="445467742685312942">Lejo sajtet të luajnë përmbajtje të mbrojtura</translation>
@@ -134,13 +134,14 @@
 <translation id="4645575059429386691">Menaxhohet nga prindi yt</translation>
 <translation id="4670064810192446073">Realiteti virtual</translation>
 <translation id="4708011789095599544">E konfirmon se dëshiron t'i fshish kukit dhe të dhënat e tjera të sajtit për këtë faqe interneti?</translation>
-<translation id="473775607612524610">Përditësoje</translation>
 <translation id="4751476147751820511">Sensorët e lëvizjes ose të dritës</translation>
+<translation id="4800839971935185386">Shqyrto përditësimet e emrit dhe të ikonës</translation>
 <translation id="4836046166855586901">Pyet kur një sajt kërkon të dijë kur ti e përdor këtë pajisje në mënyrë aktive</translation>
 <translation id="4883854917563148705">Cilësimet e menaxhuara nuk mund të rivendosen</translation>
 <translation id="4887024562049524730">Pyet përpara se sajtet të lejohen të përdorin pajisjen e realitetit virtual dhe të dhënat e tua (rekomandohet)</translation>
 <translation id="4962975101802056554">Anulo të gjitha lejet për pajisjen</translation>
 <translation id="497421865427891073">Vazhdo përpara</translation>
+<translation id="4976702386844183910">Vizituar së fundi më <ph name="DATE" /></translation>
 <translation id="4994033804516042629">Nuk u gjet asnjë kontakt</translation>
 <translation id="4996978546172906250">Ndaje nëpërmjet</translation>
 <translation id="5039804452771397117">Lejo</translation>
@@ -151,6 +152,7 @@
 <translation id="5123685120097942451">Skeda "e fshehtë"</translation>
 <translation id="5186036860380548585">Opsionet ofrohen pranë kreut të ekranit</translation>
 <translation id="5197729504361054390">Kontaktet që zgjedh do të ndahen me <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
+<translation id="5216942107514965959">Vizituar për herë të fundit sot</translation>
 <translation id="528192093759286357">Zvarrit nga lart dhe prek butonin e kthimit për të dalë nga ekrani i plotë.</translation>
 <translation id="5300589172476337783">Shfaq</translation>
 <translation id="5301954838959518834">Në rregull, kuptova.</translation>
@@ -159,7 +161,6 @@
 <translation id="5335288049665977812">Lejoji sajtet të ekzekutojnë JavaScript (rekomandohet)</translation>
 <translation id="534295439873310000">Pajisjet me NFC</translation>
 <translation id="5354152178998424783">Kjo do të pastrojë <ph name="DATASIZE" /> të dhëna dhe kuki të ruajtura nga sajtet.</translation>
-<translation id="536508626067510330">Të përditësohet ikona në ekranin tënd bazë?</translation>
 <translation id="5391532827096253100">Lidhja jote me këtë faqe nuk është e sigurt. Informacioni i faqes</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 tjetër)}other{(+ # të tjerë)}}</translation>
 <translation id="5403592356182871684">Emrat</translation>
@@ -182,7 +183,7 @@
 <translation id="5804241973901381774">Lejet</translation>
 <translation id="5860033963881614850">Çaktivizuar</translation>
 <translation id="5876056640971328065">Vendose videon në pauzë</translation>
-<translation id="5904826301761575486">Të përditësohet emri dhe ikona në ekranin tënd bazë?</translation>
+<translation id="5887687176710214216">Vizituar së fundi dje</translation>
 <translation id="5916664084637901428">Aktiv</translation>
 <translation id="5922853908706496913">Po ndan ekranin tënd</translation>
 <translation id="5939518447894949180">Rivendos</translation>
@@ -199,7 +200,7 @@
 <translation id="6196640612572343990">Blloko kukit e palëve të treta</translation>
 <translation id="6206551242102657620">Lidhja është e sigurt. Informacioni i faqes</translation>
 <translation id="6216432067784365534">Opsionet për <ph name="NAME_OF_LIST_ITEM" /></translation>
-<translation id="6260852843601447737">Mbyll dhe raporto abuzimin</translation>
+<translation id="6231752747840485235">Të çinstalohet "<ph name="APP_NAME" />"?</translation>
 <translation id="6262279340360821358"><ph name="PERMISSION_1" /> dhe <ph name="PERMISSION_2" /> të bllokuara</translation>
 <translation id="6270391203985052864">Sajtet mund të kërkojnë të dërgojnë njoftime</translation>
 <translation id="6295158916970320988">Të gjitha sajtet</translation>
@@ -212,6 +213,7 @@
 <translation id="6527303717912515753">Ndaj</translation>
 <translation id="6545864417968258051">Skanimi për Bluetooth</translation>
 <translation id="6552800053856095716">{PERMISSIONS_SUMMARY_BLOCKED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> dhe <ph name="NUM_MORE" /> tjetër e bllokuar}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> dhe <ph name="NUM_MORE" /> të tjera të bllokuara}}</translation>
+<translation id="6554732001434021288">Vizituar së fundi <ph name="NUM_DAYS" /> ditë më parë</translation>
 <translation id="6561560012278703671">Përdor mesazhe më të qeta (bllokon kërkesat e njoftimeve që mos të të ndërpresin)</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Përmbajtje e mbrojtur</translation>
@@ -253,6 +255,7 @@
 <translation id="7589445247086920869">Blloko për motorin aktual të kërkimit</translation>
 <translation id="7649070708921625228">Ndihma</translation>
 <translation id="7658239707568436148">Anulo</translation>
+<translation id="7734541938181328224">Shqyrto përditësimet e ikonave</translation>
 <translation id="7781829728241885113">Dje</translation>
 <translation id="7791543448312431591">Shtoje</translation>
 <translation id="780301667611848630">Jo, faleminderit</translation>
@@ -294,9 +297,9 @@
 <translation id="8487700953926739672">Mundësohet jashtë linje</translation>
 <translation id="851751545965956758">Blloko lidhjen e sajteve me pajisjet</translation>
 <translation id="8525306231823319788">Ekrani i plotë</translation>
+<translation id="857074314439694500">Nëse ky aplikacion interneti po përpiqet të të mashtrojë për të menduar se është aplikacion tjetër, çinstaloje.</translation>
 <translation id="857943718398505171">Lejuar (rekomandohet)</translation>
 <translation id="8609465669617005112">Lëviz lart</translation>
-<translation id="861748745608658996">Të përditësohet emri në ekranin tënd bazë?</translation>
 <translation id="8676374126336081632">Pastro hyrjen</translation>
 <translation id="868929229000858085">Kërko te kontaktet e tua</translation>
 <translation id="8702612070107455751">Çdo e dhënë jashtë linje do të fshihet.</translation>

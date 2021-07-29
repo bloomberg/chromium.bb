@@ -10,88 +10,81 @@
 
 #include "src/core/SkIPoint16.h"
 #include "src/gpu/ops/GrDrawOp.h"
+#include "src/gpu/tessellate/GrAtlasInstancedHelper.h"
 
+// Fills a rectangle of pixels with a clip against coverage values from an atlas.
 class GrDrawAtlasPathOp : public GrDrawOp {
 public:
     DEFINE_OP_CLASS_ID
 
-    GrDrawAtlasPathOp(int numRenderTargetSamples, sk_sp<GrTextureProxy> atlasProxy,
-                      const SkIRect& devIBounds, const SkIPoint16& locationInAtlas,
-                      bool transposedInAtlas, const SkMatrix& viewMatrix, GrPaint&& paint)
+    GrDrawAtlasPathOp(SkArenaAlloc* arena, const SkIRect& fillBounds, const SkMatrix& localToDevice,
+                      GrPaint&& paint, SkIPoint16 locationInAtlas, const SkIRect& pathDevIBounds,
+                      bool transposedInAtlas, GrSurfaceProxyView atlasView, bool isInverseFill)
             : GrDrawOp(ClassID())
-            , fEnableHWAA(numRenderTargetSamples > 1)
-            , fAtlasProxy(std::move(atlasProxy))
-            , fInstanceList(devIBounds, locationInAtlas, transposedInAtlas, paint.getColor4f(),
-                            viewMatrix)
+            , fHeadInstance(arena->make<Instance>(fillBounds, localToDevice, paint.getColor4f(),
+                                                  locationInAtlas, pathDevIBounds,
+                                                  transposedInAtlas))
+            , fTailInstance(&fHeadInstance->fNext)
+            , fAtlasHelper(std::move(atlasView),
+                           isInverseFill ? GrAtlasInstancedHelper::ShaderFlags::kCheckBounds |
+                                           GrAtlasInstancedHelper::ShaderFlags::kInvertCoverage
+                                         : GrAtlasInstancedHelper::ShaderFlags::kNone)
             , fProcessors(std::move(paint)) {
-        this->setBounds(SkRect::Make(devIBounds), HasAABloat::kYes, IsHairline::kNo);
+        this->setBounds(SkRect::Make(fillBounds), HasAABloat::kYes, IsHairline::kNo);
     }
 
     const char* name() const override { return "GrDrawAtlasPathOp"; }
-    FixedFunctionFlags fixedFunctionFlags() const override {
-        return (fEnableHWAA) ? FixedFunctionFlags::kUsesHWAA : FixedFunctionFlags::kNone;
-    }
-    void visitProxies(const VisitProxyFunc& fn) const override {
-        fn(fAtlasProxy.get(), GrMipmapped::kNo);
-        fProcessors.visitProxies(fn);
+    FixedFunctionFlags fixedFunctionFlags() const override { return FixedFunctionFlags::kNone; }
+    void visitProxies(const GrVisitProxyFunc& func) const override {
+        func(fAtlasHelper.proxy(), GrMipmapped::kNo);
+        fProcessors.visitProxies(func);
     }
     GrProcessorSet::Analysis finalize(const GrCaps&, const GrAppliedClip*, GrClampType) override;
     CombineResult onCombineIfPossible(GrOp*, SkArenaAlloc*, const GrCaps&) override;
+
+    void onPrePrepare(GrRecordingContext*, const GrSurfaceProxyView& writeView, GrAppliedClip*,
+                      const GrDstProxyView&, GrXferBarrierFlags, GrLoadOp colorLoadOp) override;
     void onPrepare(GrOpFlushState*) override;
     void onExecute(GrOpFlushState*, const SkRect& chainBounds) override;
 
 private:
-    void onPrePrepare(GrRecordingContext*,
-                      const GrSurfaceProxyView& writeView,
-                      GrAppliedClip*,
-                      const GrXferProcessor::DstProxyView&,
-                      GrXferBarrierFlags renderPassXferBarriers,
-                      GrLoadOp colorLoadOp) override;
+    void prepareProgram(const GrCaps&, SkArenaAlloc*, const GrSurfaceProxyView& writeView,
+                        bool usesMSAASurface, GrAppliedClip&&, const GrDstProxyView&,
+                        GrXferBarrierFlags, GrLoadOp colorLoadOp);
 
     struct Instance {
-        constexpr static size_t Stride(bool usesLocalCoords) {
-            size_t stride = sizeof(Instance);
-            if (!usesLocalCoords) {
-                stride -= sizeof(Instance::fViewMatrixIfUsingLocalCoords);
-            }
-            return stride;
-        }
-        Instance(const SkIRect& devIBounds, const SkIPoint16& locationInAtlas,
-                 bool transposedInAtlas, const SkPMColor4f& color, const SkMatrix& m)
-                : fDevXYWH{devIBounds.left(), devIBounds.top(), devIBounds.width(),
-                           // We use negative height to indicate that the path is transposed.
-                           (transposedInAtlas) ? -devIBounds.height() : devIBounds.height()}
-                , fAtlasXY{locationInAtlas.x(), locationInAtlas.y()}
+        Instance(const SkIRect& fillIBounds, const SkMatrix& m,
+                 const SkPMColor4f& color, SkIPoint16 locationInAtlas,
+                 const SkIRect& pathDevIBounds, bool transposedInAtlas)
+                : fFillBounds(fillIBounds)
+                , fLocalToDeviceIfUsingLocalCoords{m.getScaleX(), m.getSkewY(),
+                                                   m.getSkewX(), m.getScaleY(),
+                                                   m.getTranslateX(), m.getTranslateY()}
                 , fColor(color)
-                , fViewMatrixIfUsingLocalCoords{m.getScaleX(), m.getSkewY(),
-                                                m.getSkewX(), m.getScaleY(),
-                                                m.getTranslateX(), m.getTranslateY()} {
+                , fAtlasInstance(locationInAtlas, pathDevIBounds, transposedInAtlas) {
         }
-        std::array<int, 4> fDevXYWH;
-        std::array<int, 2> fAtlasXY;
+        SkIRect fFillBounds;
+        std::array<float, 6> fLocalToDeviceIfUsingLocalCoords;
         SkPMColor4f fColor;
-        float fViewMatrixIfUsingLocalCoords[6];
+        GrAtlasInstancedHelper::Instance fAtlasInstance;
+        Instance* fNext = nullptr;
     };
 
-    struct InstanceList {
-        InstanceList(const SkIRect& devIBounds, const SkIPoint16& locationInAtlas,
-                     bool transposedInAtlas, const SkPMColor4f& color, const SkMatrix& viewMatrix)
-                : fInstance(devIBounds, locationInAtlas, transposedInAtlas, color, viewMatrix) {
-        }
-        InstanceList* fNext = nullptr;
-        Instance fInstance;
-    };
+    Instance* fHeadInstance;
+    Instance** fTailInstance;
 
-    const bool fEnableHWAA;
-    const sk_sp<GrTextureProxy> fAtlasProxy;
+    GrAtlasInstancedHelper fAtlasHelper;
     bool fUsesLocalCoords = false;
 
-    InstanceList fInstanceList;
-    InstanceList** fInstanceTail = &fInstanceList.fNext;
     int fInstanceCount = 1;
+
+    GrProgramInfo* fProgram = nullptr;
 
     sk_sp<const GrBuffer> fInstanceBuffer;
     int fBaseInstance;
+
+    // Only used if sk_VertexID is not supported.
+    sk_sp<const GrGpuBuffer> fVertexBufferIfNoIDSupport;
 
     GrProcessorSet fProcessors;
 };

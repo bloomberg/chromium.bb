@@ -202,6 +202,7 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kPrefixedStorageInfoThirdPartyContext,
           WebFeature::
               kCrossBrowsingContextGroupMainFrameNulledNonEmptyNameAccessed,
+          WebFeature::kControlledWorkerWillBeUncontrolled,
           WebFeature::kUsbDeviceOpen,
           WebFeature::kWebBluetoothRemoteServerConnect,
           WebFeature::kSerialRequestPort,
@@ -209,6 +210,8 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kHidRequestDevice,
           WebFeature::kHidDeviceOpen,
           WebFeature::kCrossOriginWasmModuleSharing,
+          WebFeature::kControlledNonBlobURLWorkerWillBeUncontrolled,
+          WebFeature::kSameSiteCookieInclusionChangedByCrossSiteRedirect,
       }));
   return *opt_in_features;
 }

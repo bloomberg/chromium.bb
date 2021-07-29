@@ -30,6 +30,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/ash/login/helper.h"
 #include "chrome/browser/ash/login/signin_partition_manager.h"
 #include "chrome/browser/ash/login/test/device_state_mixin.h"
@@ -46,17 +47,16 @@
 #include "chrome/browser/ash/login/test/webview_content_extractor.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
+#include "chrome/browser/ash/policy/core/device_policy_builder.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/ash/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_policy_builder.h"
-#include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/scoped_test_system_nss_key_slot_mixin.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/login/login_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
@@ -81,9 +81,10 @@
 #include "components/policy/policy_constants.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/driver/sync_service_impl.h"
 #include "components/sync/driver/trusted_vault_client.h"
+#include "components/sync/trusted_vault/securebox.h"
 #include "components/sync/trusted_vault/standalone_trusted_vault_client.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -112,7 +113,9 @@
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/boringssl/src/include/openssl/pool.h"
 
 namespace em = enterprise_management;
@@ -135,6 +138,10 @@ constexpr test::UIPath kSecondaryButton = {"gaia-signin", "signin-frame-dialog",
 constexpr test::UIPath kBackButton = {"gaia-signin", "signin-frame-dialog",
                                       "signin-back-button"};
 constexpr char kSigninWebview[] = "$('gaia-signin').getSigninFrame_()";
+
+// UMA names for better test reading.
+const char kLoginRequests[] = "OOBE.GaiaScreen.LoginRequests";
+const char kSuccessLoginRequests[] = "OOBE.GaiaScreen.SuccessLoginRequests";
 
 void InjectCookieDoneCallback(base::OnceClosure done_closure,
                               net::CookieAccessResult result) {
@@ -344,7 +351,12 @@ class WebviewLoginTest : public OobeBaseTest {
 
   void DisableImplicitServices() {
     SigninFrameJS().ExecuteAsync(
-        "gaia.chromeOSLogin.sendImplicitServices = false");
+        "gaia.chromeOSLogin.shouldSendImplicitServices = false");
+  }
+
+  void DisableCloseViewMessage() {
+    SigninFrameJS().ExecuteAsync(
+        "gaia.chromeOSLogin.shouldSendCloseView = false");
   }
 
   void WaitForServicesSet() {
@@ -428,6 +440,8 @@ class WebviewCloseViewLoginTest
 IN_PROC_BROWSER_TEST_P(WebviewCloseViewLoginTest, NativeTest) {
   WaitForGaiaPageLoadAndPropertyUpdate();
   ExpectIdentifierPage();
+  // Test will send `closerView` manually (if the feature is enabled).
+  DisableCloseViewMessage();
   SigninFrameJS().TypeIntoPath(FakeGaiaMixin::kFakeUserEmail,
                                FakeGaiaMixin::kEmailPath);
   test::OobeJS().ClickOnPath(kPrimaryButton);
@@ -495,6 +509,8 @@ IN_PROC_BROWSER_TEST_P(WebviewCloseViewLoginTest, Basic) {
   WaitForGaiaPageLoadAndPropertyUpdate();
 
   ExpectIdentifierPage();
+  // Test will send `closerView` manually (if the feature is enabled).
+  DisableCloseViewMessage();
 
   SigninFrameJS().TypeIntoPath(FakeGaiaMixin::kFakeUserEmail,
                                FakeGaiaMixin::kEmailPath);
@@ -528,6 +544,10 @@ IN_PROC_BROWSER_TEST_P(WebviewCloseViewLoginTest, Basic) {
 
   histogram_tester_.ExpectUniqueSample("ChromeOS.SAML.APILogin", 0, 1);
   histogram_tester_.ExpectTotalCount("OOBE.GaiaLoginTime", 1);
+  histogram_tester_.ExpectUniqueSample(kLoginRequests,
+                                       GaiaView::GaiaLoginVariant::kOobe, 1);
+  histogram_tester_.ExpectUniqueSample(kSuccessLoginRequests,
+                                       GaiaView::GaiaLoginVariant::kOobe, 1);
 }
 
 IN_PROC_BROWSER_TEST_P(WebviewCloseViewLoginTest, BackButton) {
@@ -535,6 +555,8 @@ IN_PROC_BROWSER_TEST_P(WebviewCloseViewLoginTest, BackButton) {
 
   // Start with identifer page.
   ExpectIdentifierPage();
+  // Test will send `closerView` manually (if the feature is enabled).
+  DisableCloseViewMessage();
 
   // Move to password page.
   auto back_button_waiter = CreateGaiaPageEventWaiter("backButton");
@@ -575,7 +597,7 @@ class WebviewLoginTestWithSyncTrustedVaultEnabled : public WebviewLoginTest {
   WebviewLoginTestWithSyncTrustedVaultEnabled() {
     scoped_feature_list_.Reset();
     scoped_feature_list_.InitAndEnableFeature(
-        ::switches::kSyncSupportTrustedVaultPassphraseRecovery);
+        ::switches::kSyncTrustedVaultPassphraseRecovery);
   }
 };
 
@@ -587,9 +609,9 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTestWithSyncTrustedVaultEnabled,
   // but used as test expectation later down.
   fake_gaia_keys.encryption_key.resize(16, 123);
   fake_gaia_keys.encryption_key_version = 91;
-  fake_gaia_keys.trusted_public_keys.emplace_back();
-  // Create an arbitrary public key, the precisely value is not relevant.
-  fake_gaia_keys.trusted_public_keys.back().resize(16, 124);
+  // Create a random-but-valid public key, the precisely value is not relevant.
+  fake_gaia_keys.trusted_public_keys.push_back(
+      syncer::SecureBoxKeyPair::GenerateRandom()->public_key().ExportToBytes());
   fake_gaia_.fake_gaia()->SetSyncTrustedVaultKeys(FakeGaiaMixin::kFakeUserEmail,
                                                   fake_gaia_keys);
 
@@ -613,9 +635,8 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTestWithSyncTrustedVaultEnabled,
   Browser* browser = ui_test_utils::WaitForBrowserToOpen();
   test::WaitForPrimaryUserSessionStart();
 
-  syncer::ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetAsProfileSyncServiceForProfile(
-          browser->profile());
+  syncer::SyncServiceImpl* sync_service =
+      SyncServiceFactory::GetAsSyncServiceImplForProfile(browser->profile());
   syncer::TrustedVaultClient* trusted_vault_client =
       sync_service->GetSyncClientForTest()->GetTrustedVaultClient();
 
@@ -1090,7 +1111,7 @@ class WebviewClientCertsLoginTestBase : public WebviewLoginTest {
  private:
   // Builds a device ONC dictionary defining a single untrusted authority
   // certificate.
-  base::DictionaryValue BuildDeviceOncDictForUntrustedAuthority(
+  static base::DictionaryValue BuildDeviceOncDictForUntrustedAuthority(
       const std::string& x509_authority_cert) {
     base::DictionaryValue onc_certificate;
     onc_certificate.SetKey(onc::certificate::kGUID, base::Value(kTestGuid));
@@ -1137,182 +1158,6 @@ class WebviewClientCertsLoginTest : public WebviewClientCertsLoginTestBase {
   DISALLOW_COPY_AND_ASSIGN(WebviewClientCertsLoginTest);
 };
 
-// Test that client certificate authentication using certificates from the
-// system slot is enabled in the sign-in frame. The server does not request
-// certificates signed by a specific authority.
-IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
-                       SigninFrameNoAuthorityGiven) {
-  ASSERT_NO_FATAL_FAILURE(
-      SetUpClientCertsInSystemSlot({kClientCert1Name, kClientCert2Name}));
-  net::SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.request_client_certificate = true;
-  ASSERT_NO_FATAL_FAILURE(StartHttpsServer(ssl_options));
-
-  const std::vector<std::string> autoselect_patterns = {
-      R"({"pattern": "*", "filter": {"ISSUER": {"CN": "B CA"}}})"};
-  SetAutoSelectCertificatePatterns(autoselect_patterns);
-
-  WaitForGaiaPageLoadAndPropertyUpdate();
-
-  const std::string https_reply_content =
-      RequestClientCertTestPageInFrame(kSigninWebview);
-  EXPECT_EQ("got client cert with fingerprint: " +
-                GetCertSha1Fingerprint(kClientCert1Name),
-            https_reply_content);
-}
-
-// Test that client certificate autoselect selects the right certificate even
-// with multiple filters for the same pattern.
-IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
-                       SigninFrameCertMultipleFiltersAutoSelected) {
-  ASSERT_NO_FATAL_FAILURE(
-      SetUpClientCertsInSystemSlot({kClientCert1Name, kClientCert2Name}));
-  net::SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.request_client_certificate = true;
-  ASSERT_NO_FATAL_FAILURE(StartHttpsServer(ssl_options));
-
-  const std::vector<std::string> autoselect_patterns = {
-      R"({"pattern": "*", "filter": {"ISSUER": {"CN": "B CA"}}})",
-      R"({"pattern": "*", "filter": {"ISSUER": {"CN": "foo baz bar"}}})"};
-  SetAutoSelectCertificatePatterns(autoselect_patterns);
-
-  WaitForGaiaPageLoadAndPropertyUpdate();
-
-  const std::string https_reply_content =
-      RequestClientCertTestPageInFrame(kSigninWebview);
-  EXPECT_EQ("got client cert with fingerprint: " +
-                GetCertSha1Fingerprint(kClientCert1Name),
-            https_reply_content);
-}
-
-// Test that if no client certificate is auto-selected using policy on the
-// sign-in frame, the client does not send up any client certificate.
-IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
-                       SigninFrameCertNotAutoSelected) {
-  ASSERT_NO_FATAL_FAILURE(SetUpClientCertsInSystemSlot({kClientCert1Name}));
-  net::SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.request_client_certificate = true;
-  ASSERT_NO_FATAL_FAILURE(StartHttpsServer(ssl_options));
-
-  WaitForGaiaPageLoadAndPropertyUpdate();
-
-  const std::string https_reply_content =
-      RequestClientCertTestPageInFrame(kSigninWebview);
-
-  EXPECT_EQ("got no client cert", https_reply_content);
-}
-
-// Test that client certificate authentication using certificates from the
-// system slot is enabled in the sign-in frame. The server requests
-// a certificate signed by a specific authority.
-IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest, SigninFrameAuthorityGiven) {
-  ASSERT_NO_FATAL_FAILURE(
-      SetUpClientCertsInSystemSlot({kClientCert1Name, kClientCert2Name}));
-  net::SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.request_client_certificate = true;
-  base::FilePath ca_path =
-      net::GetTestCertsDirectory().Append(FILE_PATH_LITERAL("client_1_ca.pem"));
-  ssl_options.client_authorities.push_back(ca_path);
-  ASSERT_NO_FATAL_FAILURE(StartHttpsServer(ssl_options));
-
-  const std::vector<std::string> autoselect_patterns = {
-      R"({"pattern": "*", "filter": {"ISSUER": {"CN": "B CA"}}})"};
-  SetAutoSelectCertificatePatterns(autoselect_patterns);
-
-  WaitForGaiaPageLoadAndPropertyUpdate();
-
-  const std::string https_reply_content =
-      RequestClientCertTestPageInFrame(kSigninWebview);
-  EXPECT_EQ("got client cert with fingerprint: " +
-                GetCertSha1Fingerprint(kClientCert1Name),
-            https_reply_content);
-}
-
-// Test that client certificate authentication using certificates from the
-// system slot is enabled in the sign-in frame. The server requests
-// a certificate signed by a specific authority. The client doesn't have a
-// matching certificate.
-IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
-                       SigninFrameAuthorityGivenNoMatchingCert) {
-  ASSERT_NO_FATAL_FAILURE(SetUpClientCertsInSystemSlot({kClientCert1Name}));
-  net::SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.request_client_certificate = true;
-  base::FilePath ca_path =
-      net::GetTestCertsDirectory().Append(FILE_PATH_LITERAL("client_2_ca.pem"));
-  ssl_options.client_authorities.push_back(ca_path);
-  ASSERT_NO_FATAL_FAILURE(StartHttpsServer(ssl_options));
-
-  const std::vector<std::string> autoselect_patterns = {
-      R"({"pattern": "*", "filter": {"ISSUER": {"CN": "B CA"}}})"};
-  SetAutoSelectCertificatePatterns(autoselect_patterns);
-
-  WaitForGaiaPageLoadAndPropertyUpdate();
-
-  const std::string https_reply_content =
-      RequestClientCertTestPageInFrame(kSigninWebview);
-  EXPECT_EQ("got no client cert", https_reply_content);
-}
-
-// Test that client certificate will not be discovered if the server requests
-// certificates signed by a root authority, the installed certificate has been
-// issued by an intermediate authority, and the intermediate authority is not
-// known on the device (it has not been made available through device ONC
-// policy).
-IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
-                       SigninFrameIntermediateAuthorityUnknown) {
-  ASSERT_NO_FATAL_FAILURE(
-      SetUpClientCertsInSystemSlot({kClientCert1Name, kClientCert2Name}));
-  net::SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.request_client_certificate = true;
-  base::FilePath ca_path = net::GetTestCertsDirectory().Append(
-      FILE_PATH_LITERAL("client_root_ca.pem"));
-  ssl_options.client_authorities.push_back(ca_path);
-  ASSERT_NO_FATAL_FAILURE(StartHttpsServer(ssl_options));
-
-  const std::vector<std::string> autoselect_patterns = {
-      R"({"pattern": "*", "filter": {"ISSUER": {"CN": "B CA"}}})"};
-  SetAutoSelectCertificatePatterns(autoselect_patterns);
-
-  WaitForGaiaPageLoadAndPropertyUpdate();
-
-  const std::string https_reply_content =
-      RequestClientCertTestPageInFrame(kSigninWebview);
-  EXPECT_EQ("got no client cert", https_reply_content);
-}
-
-// Test that client certificate will be discovered if the server requests
-// certificates signed by a root authority, the installed certificate has been
-// issued by an intermediate authority, and the intermediate authority is
-// known on the device (it has been made available through device ONC policy).
-IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
-                       SigninFrameIntermediateAuthorityKnown) {
-  ASSERT_NO_FATAL_FAILURE(
-      SetUpClientCertsInSystemSlot({kClientCert1Name, kClientCert2Name}));
-  net::SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.request_client_certificate = true;
-  base::FilePath ca_path = net::GetTestCertsDirectory().Append(
-      FILE_PATH_LITERAL("client_root_ca.pem"));
-  ssl_options.client_authorities.push_back(ca_path);
-  ASSERT_NO_FATAL_FAILURE(StartHttpsServer(ssl_options));
-
-  const std::vector<std::string> autoselect_patterns = {
-      R"({"pattern": "*", "filter": {"ISSUER": {"CN": "B CA"}}})"};
-  SetAutoSelectCertificatePatterns(autoselect_patterns);
-
-  base::FilePath intermediate_ca_path =
-      net::GetTestCertsDirectory().Append(FILE_PATH_LITERAL("client_1_ca.pem"));
-  ASSERT_NO_FATAL_FAILURE(
-      SetIntermediateAuthorityInDeviceOncPolicy(intermediate_ca_path));
-
-  WaitForGaiaPageLoadAndPropertyUpdate();
-
-  const std::string https_reply_content =
-      RequestClientCertTestPageInFrame(kSigninWebview);
-  EXPECT_EQ("got client cert with fingerprint: " +
-                GetCertSha1Fingerprint(kClientCert1Name),
-            https_reply_content);
-}
-
 // Tests that client certificate authentication is not enabled in a webview on
 // the sign-in screen which is not the sign-in frame. In this case, the EULA
 // webview is used.
@@ -1336,6 +1181,181 @@ IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
       RequestClientCertTestPageInFrame("$('cros-eula-frame')");
   EXPECT_EQ("got no client cert", https_reply_content);
 }
+
+namespace {
+
+// Parameter type for the `SigninFrameWebviewClientCertsLoginTest` parameterized
+// test fixture.
+struct SigninCertParam {
+  // Arrange the test to install these client certificates (specified by name,
+  // e.g., "client1") into the system slot - see
+  // `SetUpClientCertsInSystemSlot()`.
+  std::vector<std::string> arrange_client_certs;
+  // If non-null, arrange the test to configure this intermediate CA (specified
+  // by name, e.g., "client_1_ca") as known to the client via device policy -
+  // see `SetIntermediateAuthorityInDeviceOncPolicy()`.
+  absl::optional<std::string> arrange_intermediate_cert;
+  // Arrange the test to configure these certificate auto-selection patterns in
+  // device policy - see `SetAutoSelectCertificatePatterns()`.
+  std::vector<std::string> arrange_autoselect_patterns;
+  // Make the web server include the specified CA certificates in its client
+  // certificate request.
+  std::vector<std::string> act_ca_certs;
+  // Assert that the selected certificate is the one specified here. When null,
+  // asserts that no certificate is selected.
+  absl::optional<std::string> assert_cert;
+};
+
+}  // namespace
+
+// Parameterized test fixture for simple testing of the client certificate
+// selection behavior in the sign-in frame.
+class SigninFrameWebviewClientCertsLoginTest
+    : public WebviewClientCertsLoginTest,
+      public ::testing::WithParamInterface<SigninCertParam> {};
+
+IN_PROC_BROWSER_TEST_P(SigninFrameWebviewClientCertsLoginTest, Test) {
+  // Arrange the system slot.
+  ASSERT_NO_FATAL_FAILURE(
+      SetUpClientCertsInSystemSlot(GetParam().arrange_client_certs));
+  // Arrange the device policy.
+  if (GetParam().arrange_intermediate_cert) {
+    const std::string intermediate_cert_name = base::StringPrintf(
+        "%s.pem", GetParam().arrange_intermediate_cert->c_str());
+    const base::FilePath intermediate_cert_path =
+        net::GetTestCertsDirectory().AppendASCII(intermediate_cert_name);
+    ASSERT_NO_FATAL_FAILURE(
+        SetIntermediateAuthorityInDeviceOncPolicy(intermediate_cert_path));
+  }
+  SetAutoSelectCertificatePatterns(GetParam().arrange_autoselect_patterns);
+
+  // Prepare the test server for the "act" part of the test.
+  net::SpawnedTestServer::SSLOptions ssl_options;
+  ssl_options.request_client_certificate = true;
+  for (const std::string& ca_cert : GetParam().act_ca_certs) {
+    const std::string ca_cert_file_name =
+        base::StringPrintf("%s.pem", ca_cert.c_str());
+    const base::FilePath ca_cert_file_path =
+        net::GetTestCertsDirectory().AppendASCII(ca_cert_file_name);
+    ssl_options.client_authorities.push_back(ca_cert_file_path);
+  }
+  ASSERT_NO_FATAL_FAILURE(StartHttpsServer(ssl_options));
+
+  WaitForGaiaPageLoadAndPropertyUpdate();
+
+  // Act: navigate to the page hosted by the test server.
+  const std::string https_reply_content =
+      RequestClientCertTestPageInFrame(kSigninWebview);
+
+  // Assert the expectation on the client certificate that got selected.
+  if (GetParam().assert_cert) {
+    EXPECT_EQ("got client cert with fingerprint: " +
+                  GetCertSha1Fingerprint(*GetParam().assert_cert),
+              https_reply_content);
+  } else {
+    EXPECT_EQ("got no client cert", https_reply_content);
+  }
+}
+
+// Test that client certificate authentication using certificates from the
+// system slot is enabled in the sign-in frame. The server does not request
+// certificates signed by a specific authority.
+INSTANTIATE_TEST_SUITE_P(
+    SuccessSimple,
+    SigninFrameWebviewClientCertsLoginTest,
+    testing::Values(SigninCertParam{
+        /*arrange_client_certs=*/{kClientCert1Name, kClientCert2Name},
+        /*arrange_intermediate_cert=*/absl::nullopt,
+        /*arrange_autoselect_patterns=*/
+        {R"({"pattern": "*", "filter": {"ISSUER": {"CN": "B CA"}}})"},
+        /*act_ca_certs=*/{},
+        /*assert_cert=*/kClientCert1Name}));
+
+// Test that client certificate autoselect selects the right certificate even
+// with multiple filters for the same pattern.
+INSTANTIATE_TEST_SUITE_P(
+    SuccessMultipleFilters,
+    SigninFrameWebviewClientCertsLoginTest,
+    testing::Values(SigninCertParam{
+        /*arrange_client_certs=*/{kClientCert1Name, kClientCert2Name},
+        /*arrange_intermediate_cert=*/absl::nullopt,
+        /*arrange_autoselect_patterns=*/
+        {R"({"pattern": "*", "filter": {"ISSUER": {"CN": "B CA"}}})",
+         R"({"pattern": "*", "filter": {"ISSUER": {"CN": "foo bar"}}})"},
+        /*act_ca_certs=*/{},
+        /*assert_cert=*/kClientCert1Name}));
+
+// Test that client certificate authentication using certificates from the
+// system slot is enabled in the sign-in frame. The server requests a
+// certificate signed by a specific authority.
+INSTANTIATE_TEST_SUITE_P(
+    SuccessViaCa,
+    SigninFrameWebviewClientCertsLoginTest,
+    testing::Values(SigninCertParam{
+        /*arrange_client_certs=*/{kClientCert1Name, kClientCert2Name},
+        /*arrange_intermediate_cert=*/absl::nullopt,
+        /*arrange_autoselect_patterns=*/
+        {R"({"pattern": "*", "filter": {"ISSUER": {"CN": "B CA"}}})"},
+        /*act_ca_certs=*/{"client_1_ca"},
+        /*assert_cert=*/kClientCert1Name}));
+
+// Test that client certificate will be discovered if the server requests
+// certificates signed by a root authority, the installed certificate has been
+// issued by an intermediate authority, and the intermediate authority is
+// known on the device (it has been made available through device ONC policy).
+INSTANTIATE_TEST_SUITE_P(
+    SuccessViaCaAndIntermediate,
+    SigninFrameWebviewClientCertsLoginTest,
+    testing::Values(SigninCertParam{
+        /*arrange_client_certs=*/{kClientCert1Name, kClientCert2Name},
+        /*arrange_intermediate_cert=*/"client_1_ca",
+        /*arrange_autoselect_patterns=*/
+        {R"({"pattern": "*", "filter": {"ISSUER": {"CN": "B CA"}}})"},
+        /*act_ca_certs=*/{"client_root_ca"},
+        /*assert_cert=*/kClientCert1Name}));
+
+// Test that if no client certificate is auto-selected using policy on the
+// sign-in frame, the client does not send up any client certificate.
+INSTANTIATE_TEST_SUITE_P(ErrorNoAutoSelect,
+                         SigninFrameWebviewClientCertsLoginTest,
+                         testing::Values(SigninCertParam{
+                             /*arrange_client_certs=*/{kClientCert1Name},
+                             /*arrange_intermediate_cert=*/absl::nullopt,
+                             /*arrange_autoselect_patterns=*/
+                             {},
+                             /*act_ca_certs=*/{"client_1_ca"},
+                             /*assert_cert=*/absl::nullopt}));
+
+// Test that client certificate authentication using certificates from the
+// system slot is enabled in the sign-in frame. The server requests
+// a certificate signed by a specific authority. The client doesn't have a
+// matching certificate.
+INSTANTIATE_TEST_SUITE_P(
+    ErrorWrongCa,
+    SigninFrameWebviewClientCertsLoginTest,
+    testing::Values(SigninCertParam{
+        /*arrange_client_certs=*/{kClientCert1Name},
+        /*arrange_intermediate_cert=*/absl::nullopt,
+        /*arrange_autoselect_patterns=*/
+        {R"({"pattern": "*", "filter": {"ISSUER": {"CN": "B CA"}}})"},
+        /*act_ca_certs=*/{"client_2_ca"},
+        /*assert_cert=*/absl::nullopt}));
+
+// Test that client certificate will not be discovered if the server requests
+// certificates signed by a root authority, the installed certificate has been
+// issued by an intermediate authority, and the intermediate authority is not
+// known on the device (it has not been made available through device ONC
+// policy).
+INSTANTIATE_TEST_SUITE_P(
+    ErrorNoIntermediateCa,
+    SigninFrameWebviewClientCertsLoginTest,
+    testing::Values(SigninCertParam{
+        /*arrange_client_certs=*/{kClientCert1Name, kClientCert2Name},
+        /*arrange_intermediate_cert=*/absl::nullopt,
+        /*arrange_autoselect_patterns=*/
+        {R"({"pattern": "*", "filter": {"ISSUER": {"CN": "B CA"}}})"},
+        /*act_ca_certs=*/{"client_root_ca"},
+        /*assert_cert=*/absl::nullopt}));
 
 // Tests the scenario where the system token is not initialized initially (due
 // to the TPM not being ready).
@@ -1720,6 +1740,8 @@ IN_PROC_BROWSER_TEST_P(WebviewCloseViewLoginTest, UserInfoNeverSent) {
   WaitForGaiaPageLoadAndPropertyUpdate();
   ExpectIdentifierPage();
   DisableImplicitServices();
+  // Test will send `closerView` manually (if the feature is enabled).
+  DisableCloseViewMessage();
   SigninFrameJS().TypeIntoPath(FakeGaiaMixin::kFakeUserEmail,
                                FakeGaiaMixin::kEmailPath);
   test::OobeJS().ClickOnPath(kPrimaryButton);
@@ -1763,6 +1785,40 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, PasswordMetrics) {
   test::WaitForPrimaryUserSessionStart();
   histogram_tester_.ExpectBucketCount("ChromeOS.Gaia.PasswordFlow", 0, 2);
   histogram_tester_.ExpectBucketCount("ChromeOS.Gaia.PasswordFlow", 1, 1);
+}
+
+class WebviewLoginEnrolledTest : public WebviewLoginTest {
+ public:
+  WebviewLoginEnrolledTest() = default;
+  ~WebviewLoginEnrolledTest() override = default;
+
+ private:
+  DeviceStateMixin device_state_{
+      &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
+};
+
+// Verifies `OOBE.GaiaScreen.LoginRequests` and
+// `OOBE.GaiaScreen.SuccessLoginRequests` are correctly recorded.
+IN_PROC_BROWSER_TEST_F(WebviewLoginEnrolledTest, GaiaLoginVariantMetrics) {
+  WaitForGaiaPageLoadAndPropertyUpdate();
+  ExpectIdentifierPage();
+
+  SigninFrameJS().TypeIntoPath(FakeGaiaMixin::kFakeUserEmail,
+                               FakeGaiaMixin::kEmailPath);
+  test::OobeJS().ClickOnPath(kPrimaryButton);
+
+  // This should generate first "Started" event.
+  SigninFrameJS().TypeIntoPath(FakeGaiaMixin::kFakeUserPassword,
+                               FakeGaiaMixin::kPasswordPath);
+  // This should generate second "Started" event. And also eventually
+  // "Completed" event.
+  test::OobeJS().ClickOnPath(kPrimaryButton);
+
+  test::WaitForPrimaryUserSessionStart();
+  histogram_tester_.ExpectUniqueSample(kLoginRequests,
+                                       GaiaView::GaiaLoginVariant::kAddUser, 1);
+  histogram_tester_.ExpectUniqueSample(kSuccessLoginRequests,
+                                       GaiaView::GaiaLoginVariant::kAddUser, 1);
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

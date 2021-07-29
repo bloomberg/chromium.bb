@@ -34,6 +34,10 @@ def RunSteps(api):
       start=1,
       limit=1,
   )
+  related_changes = api.gerrit.get_related_changes(host,
+                                                   change='58478',
+                                                   revision='2')
+  assert len(related_changes["changes"]) == 1
 
   # Query which returns no changes is still successful query.
   empty_list = api.gerrit.get_changes(
@@ -69,5 +73,7 @@ def GenTests(api):
                     api.gerrit.make_gerrit_get_branch_response_data()) +
       api.step_data('gerrit move changes',
                     api.gerrit.get_move_change_response_data(branch='main')) +
+      api.step_data('gerrit relatedchanges',
+                    api.gerrit.get_related_changes_response_data()) +
       api.step_data('gerrit changes empty query',
                     api.gerrit.get_empty_changes_response_data()))

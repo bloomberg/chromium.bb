@@ -19,11 +19,15 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/extension_status_utils.h"
+#include "chrome/browser/web_applications/extensions/web_app_extension_shortcut.h"
 #include "chrome/browser/web_applications/preinstalled_web_app_manager.h"
 #include "chrome/browser/web_applications/preinstalled_web_app_utils.h"
 #include "chrome/browser/web_applications/test/test_os_integration_manager.h"
 #include "chrome/browser/web_applications/test/test_web_app_provider.h"
+#include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_installation_utils.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -234,9 +238,20 @@ class PreinstalledAppsMigrationBrowserTest
   // Returns true if the web app is currently installed in this profile (even if
   // it was installed from a previous run).
   bool IsWebAppCurrentlyInstalled() {
-    const web_app::AppId app_id = web_app::GenerateAppIdFromURL(GetAppUrl());
+    const web_app::AppId app_id =
+        web_app::GenerateAppId(/*manifest_id=*/absl::nullopt, GetAppUrl());
     return web_app::WebAppProvider::Get(profile())->registrar().IsInstalled(
         app_id);
+  }
+
+  bool CanWebAppAlwaysUpdateIdentity() {
+    const web_app::AppId app_id =
+        web_app::GenerateAppId(/*manifest_id=*/absl::nullopt, GetAppUrl());
+    const web_app::WebApp* web_app = web_app::WebAppProvider::Get(profile())
+                                         ->registrar()
+                                         .AsWebAppRegistrar()
+                                         ->GetAppById(app_id);
+    return CanWebAppUpdateIdentity(web_app);
   }
 
   ExtensionRegistry* registry() { return ExtensionRegistry::Get(profile()); }
@@ -326,23 +341,28 @@ IN_PROC_BROWSER_TEST_F(PreinstalledAppsMigrationBrowserTest,
   // Next, the feature is enabled. The web app should be installed, and the
   // extension app uninstalled.
   TestExtensionRegistryObserver observer(registry(), kDefaultInstalledId);
+  base::RunLoop extension_shortcuts_deleted_loop;
+  web_app::WaitForExtensionShortcutsDeleted(
+      kDefaultInstalledId, extension_shortcuts_deleted_loop.QuitClosure());
   WaitForSystemReady();
   EXPECT_TRUE(WasMigratedToWebApp());
   EXPECT_TRUE(WasWebAppInstalledInThisRun());
   EXPECT_TRUE(IsWebAppCurrentlyInstalled());
 
+  // Subtle: The uninstallation happens extra-asynchronously (even after it's
+  // reported as happening through the PreinstalledWebAppManager).
+  ASSERT_TRUE(observer.WaitForExtensionUninstalled());
+  EXPECT_FALSE(registry()->enabled_extensions().GetByID(kDefaultInstalledId));
+
   // Verify that the migration preserves shortcut states of the uninstalled
-  // extension app.
+  // extension app. The shortcuts for the new app are not created until after
+  // the old shortcuts have been deleted, so wait for that first.
+  extension_shortcuts_deleted_loop.Run();
   EXPECT_EQ(1u, os_integration_manager_->num_create_shortcuts_calls());
   EXPECT_TRUE(os_integration_manager_->did_add_to_desktop());
   auto options = os_integration_manager_->get_last_install_options();
   EXPECT_TRUE(options->os_hooks[web_app::OsHookType::kRunOnOsLogin]);
   EXPECT_FALSE(options->add_to_quick_launch_bar);
-
-  // Subtle: The uninstallation happens extra-asynchronously (even after it's
-  // reported as happening through the PreinstalledWebAppManager).
-  ASSERT_TRUE(observer.WaitForExtensionUninstalled());
-  EXPECT_FALSE(registry()->enabled_extensions().GetByID(kDefaultInstalledId));
 }
 
 IN_PROC_BROWSER_TEST_F(PreinstalledAppsMigrationBrowserTest,
@@ -361,23 +381,28 @@ IN_PROC_BROWSER_TEST_F(PreinstalledAppsMigrationBrowserTest,
   // Finally, re-enable the feature (simulating us fixing the glitch).
   // The extension app should be re-uninstalled.
   TestExtensionRegistryObserver observer(registry(), kDefaultInstalledId);
+  base::RunLoop extension_shortcuts_deleted_loop;
+  web_app::WaitForExtensionShortcutsDeleted(
+      kDefaultInstalledId, extension_shortcuts_deleted_loop.QuitClosure());
   WaitForSystemReady();
   EXPECT_TRUE(WasMigratedToWebApp());
   EXPECT_TRUE(WasWebAppInstalledInThisRun());
   EXPECT_TRUE(IsWebAppCurrentlyInstalled());
 
+  // Subtle: The uninstallation happens extra-asynchronously (even after it's
+  // reported as happening through the PreinstalledWebAppManager).
+  ASSERT_TRUE(observer.WaitForExtensionUninstalled());
+  EXPECT_FALSE(registry()->enabled_extensions().GetByID(kDefaultInstalledId));
+
   // Verify that the migration preserves shortcut states of the uninstalled
-  // extension app.
+  // extension app. The shortcuts for the new app are not created until after
+  // the old shortcuts have been deleted, so wait for that first.
+  extension_shortcuts_deleted_loop.Run();
   EXPECT_EQ(1u, os_integration_manager_->num_create_shortcuts_calls());
   EXPECT_TRUE(os_integration_manager_->did_add_to_desktop());
   auto options = os_integration_manager_->get_last_install_options();
   EXPECT_TRUE(options->os_hooks[web_app::OsHookType::kRunOnOsLogin]);
   EXPECT_FALSE(options->add_to_quick_launch_bar);
-
-  // Subtle: The uninstallation happens extra-asynchronously (even after it's
-  // reported as happening through the PreinstalledWebAppManager).
-  ASSERT_TRUE(observer.WaitForExtensionUninstalled());
-  EXPECT_FALSE(registry()->enabled_extensions().GetByID(kDefaultInstalledId));
 }
 
 IN_PROC_BROWSER_TEST_F(PreinstalledAppsMigrationBrowserTest,
@@ -472,5 +497,15 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(registry()->enabled_extensions().GetByID(kDefaultInstalledId));
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+
+IN_PROC_BROWSER_TEST_F(PreinstalledAppsMigrationBrowserTest,
+                       TestDefaultAppsCanUpdateIdentity) {
+  TestExtensionRegistryObserver observer(registry(), kDefaultInstalledId);
+  WaitForSystemReady();
+  EXPECT_TRUE(WasMigratedToWebApp());
+  EXPECT_TRUE(WasWebAppInstalledInThisRun());
+  EXPECT_TRUE(IsWebAppCurrentlyInstalled());
+  EXPECT_TRUE(CanWebAppAlwaysUpdateIdentity());
+}
 
 }  // namespace extensions

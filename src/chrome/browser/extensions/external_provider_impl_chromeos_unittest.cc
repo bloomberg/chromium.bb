@@ -228,7 +228,8 @@ TEST_F(ExternalProviderImplChromeOSTest, DISABLED_PolicyDisabled) {
   auto identity_test_env_profile_adaptor =
       std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile());
   identity_test_env_profile_adaptor->identity_test_env()
-      ->MakePrimaryAccountAvailable("test_user@gmail.com");
+      ->MakePrimaryAccountAvailable("test_user@gmail.com",
+                                    signin::ConsentLevel::kSync);
 
   // App sync will wait for priority sync to complete.
   service_->CheckForExternalUpdates();
@@ -255,7 +256,7 @@ TEST_F(ExternalProviderImplChromeOSTest, DISABLED_PriorityCompleted) {
   auto identity_test_env_profile_adaptor =
       std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile());
   identity_test_env_profile_adaptor->identity_test_env()->SetPrimaryAccount(
-      "test_user@gmail.com");
+      "test_user@gmail.com", signin::ConsentLevel::kSync);
 
   // OOBE screen completed with OS sync enabled.
   PrefService* prefs = profile()->GetPrefs();

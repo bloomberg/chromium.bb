@@ -7,7 +7,7 @@
 // NOTE: The format of types has changed. 'FooType' is now
 //   'chrome.accessibilityPrivate.FooType'.
 // Please run the closure compiler before committing changes.
-// See https://chromium.googlesource.com/chromium/src/+/master/docs/closure_compilation.md
+// See https://chromium.googlesource.com/chromium/src/+/main/docs/closure_compilation.md
 
 /** @fileoverview Externs generated from namespace: accessibilityPrivate */
 
@@ -251,6 +251,7 @@ chrome.accessibilityPrivate.AcceleratorAction = {
  */
 chrome.accessibilityPrivate.AccessibilityFeature = {
   SELECT_TO_SPEAK_NAVIGATION_CONTROL: 'selectToSpeakNavigationControl',
+  ENHANCED_NETWORK_VOICES: 'enhancedNetworkVoices',
 };
 
 /**
@@ -468,6 +469,17 @@ chrome.accessibilityPrivate.updateSelectToSpeakPanel = function(show, anchor, is
 chrome.accessibilityPrivate.showConfirmationDialog = function(title, description, callback) {};
 
 /**
+ * Gets the DOM key string for the given key code, taking into account the
+ * current input method locale, and assuming the key code is for U.S. input. For
+ * example, the key code for '/' would return the string '!' if the current
+ * input method is French.
+ * @param {number} keyCode
+ * @param {function(string): void} callback Called with the resulting Dom key
+ *     string.
+ */
+chrome.accessibilityPrivate.getLocalizedDomKeyStringForKeyCode = function(keyCode, callback) {};
+
+/**
  * Fired whenever ChromeVox should output introduction.
  * @type {!ChromeEvent}
  */
@@ -561,3 +573,11 @@ chrome.accessibilityPrivate.onCustomSpokenFeedbackToggled;
  * @type {!ChromeEvent}
  */
 chrome.accessibilityPrivate.onShowChromeVoxTutorial;
+
+/**
+ * Fired when Dictation is activated or deactivated using a keyboard shortcut,
+ * the button in the tray, or after a call from
+ * accessibilityPrivate.toggleDictation
+ * @type {!ChromeEvent}
+ */
+chrome.accessibilityPrivate.onToggleDictation;

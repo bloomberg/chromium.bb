@@ -560,10 +560,10 @@ export class DebuggerPlugin extends Plugin {
   }
 
   _getPopoverRequest(event: MouseEvent): UI.PopoverHelper.PopoverRequest|null {
-    if (UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlOrMeta(event)) {
+    if (UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(event)) {
       return null;
     }
-    const target = UI.Context.Context.instance().flavor(SDK.SDKModel.Target);
+    const target = UI.Context.Context.instance().flavor(SDK.Target.Target);
     const debuggerModel = target ? target.model(SDK.DebuggerModel.DebuggerModel) : null;
     if (!debuggerModel || !debuggerModel.isPaused()) {
       return null;
@@ -603,6 +603,32 @@ export class DebuggerPlugin extends Plugin {
       editorLineNumber = textPosition.startLine;
       startHighlight = token.startColumn;
       endHighlight = token.endColumn - 1;
+
+      // For $label identifiers we can't show a meaningful preview (https://crbug.com/1155548),
+      // so we suppress them for now. Label identifiers can only appear as operands to control
+      // instructions[1], so we just check the first token on the line and filter them out.
+      //
+      // [1]: https://webassembly.github.io/spec/core/text/instructions.html#control-instructions
+      for (let firstColumn = 0; firstColumn < startHighlight; ++firstColumn) {
+        const firstToken = this._textEditor.tokenAtTextPosition(editorLineNumber, firstColumn);
+        if (firstToken && firstToken.type === 'keyword') {
+          const line = this._textEditor.line(editorLineNumber);
+          switch (line.substring(firstToken.startColumn, firstToken.endColumn)) {
+            case 'block':
+            case 'loop':
+            case 'if':
+            case 'else':
+            case 'end':
+            case 'br':
+            case 'br_if':
+            case 'br_table':
+              return null;
+            default:
+              break;
+          }
+          break;
+        }
+      }
     } else {
       let token = this._textEditor.tokenAtTextPosition(textPosition.startLine, textPosition.startColumn);
       if (!token) {
@@ -756,7 +782,7 @@ export class DebuggerPlugin extends Plugin {
   }
 
   _onWheel(event: WheelEvent): void {
-    if (this._executionLocation && UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlOrMeta(event)) {
+    if (this._executionLocation && UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(event)) {
       event.preventDefault();
     }
   }
@@ -774,7 +800,7 @@ export class DebuggerPlugin extends Plugin {
       return;
     }
 
-    if (UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlOrMeta(event) && this._executionLocation) {
+    if (UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(event) && this._executionLocation) {
       this._controlDown = true;
       if (event.key === (Host.Platform.isMac() ? 'Meta' : 'Control')) {
         this._controlTimeout = window.setTimeout(() => {
@@ -788,7 +814,7 @@ export class DebuggerPlugin extends Plugin {
 
   _onMouseMove(event: MouseEvent): void {
     if (this._executionLocation && this._controlDown &&
-        UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlOrMeta(event)) {
+        UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(event)) {
       if (!this._continueToLocationDecorations) {
         this._showContinueToLocations();
       }
@@ -816,7 +842,7 @@ export class DebuggerPlugin extends Plugin {
   }
 
   _onMouseDown(event: MouseEvent): void {
-    if (!this._executionLocation || !UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlOrMeta(event)) {
+    if (!this._executionLocation || !UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(event)) {
       return;
     }
     if (!this._continueToLocationDecorations) {
@@ -1686,7 +1712,7 @@ export class DebuggerPlugin extends Plugin {
   }
 
   _updateScriptFiles(): void {
-    for (const debuggerModel of SDK.SDKModel.TargetManager.instance().models(SDK.DebuggerModel.DebuggerModel)) {
+    for (const debuggerModel of SDK.TargetManager.TargetManager.instance().models(SDK.DebuggerModel.DebuggerModel)) {
       const scriptFile = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().scriptFile(
           this._uiSourceCode, debuggerModel);
       if (scriptFile) {
@@ -1734,9 +1760,9 @@ export class DebuggerPlugin extends Plugin {
       return;
     }
     this._sourceMapInfobar.createDetailsRowMessage(i18nString(UIStrings.associatedFilesShouldBeAdded));
-    this._sourceMapInfobar.createDetailsRowMessage(i18nString(
-        UIStrings.associatedFilesAreAvailable,
-        {PH1: UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutTitleForAction('quickOpen.show')}));
+    this._sourceMapInfobar.createDetailsRowMessage(i18nString(UIStrings.associatedFilesAreAvailable, {
+      PH1: String(UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutTitleForAction('quickOpen.show')),
+    }));
     this._sourceMapInfobar.setCloseCallback(() => {
       this._sourceMapInfobar = null;
     });
@@ -1784,6 +1810,7 @@ export class DebuggerPlugin extends Plugin {
     const element = this._prettyPrintInfobar.createDetailsRowMessage();
     element.appendChild(
         i18n.i18n.getFormatLocalizedString(str_, UIStrings.prettyprintingWillFormatThisFile, {PH1: toolbar.element}));
+    UI.ARIAUtils.markAsAlert(element);
     this._textEditor.attachInfobar(this._prettyPrintInfobar);
   }
 

@@ -16,6 +16,9 @@ js_library("iframe_api") {
   ]
 }
 
+js_library("styles") {
+}
+
 js_library("utils") {
 }
 
@@ -34,7 +37,9 @@ preprocess_if_expr("preprocess") {
   out_manifest = "$target_gen_dir/manifest.json"
   in_files = [
     "common/constants.js",
+    "common/base.css",
     "common/iframe_api.js",
+    "common/styles.js",
     "common/utils.js",
   ]
 }

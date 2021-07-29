@@ -6,9 +6,7 @@
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_INSTALLED_SCRIPT_READER_H_
 
 #include <memory>
-#include <string>
 
-#include "base/containers/flat_map.h"
 #include "components/services/storage/public/mojom/service_worker_storage_control.mojom.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/base/big_buffer.h"

@@ -342,10 +342,7 @@ void OriginTrialContext::InitializePendingFeatures() {
   // ready for script in that case, so bail out.
   if (!window || !window->document())
     return;
-  LocalFrame* frame = window->GetFrame();
-  if (!frame)
-    return;
-  ScriptState* script_state = ToScriptStateForMainWorld(frame);
+  ScriptState* script_state = ToScriptStateForMainWorld(window->GetFrame());
   if (!script_state)
     return;
   if (!script_state->ContextIsValid())
@@ -369,11 +366,7 @@ bool OriginTrialContext::InstallFeature(OriginTrialFeature enabled_feature,
                                         ScriptState* script_state) {
   if (installed_features_.Contains(enabled_feature))
     return false;
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_INTERFACE)
   InstallPropertiesPerFeature(script_state, enabled_feature);
-#else
-  InstallPendingOriginTrialFeature(enabled_feature, script_state);
-#endif
   installed_features_.insert(enabled_feature);
   return true;
 }
@@ -424,42 +417,42 @@ void OriginTrialContext::AddForceEnabledTrials(
 bool OriginTrialContext::CanEnableTrialFromName(const StringView& trial_name) {
   if (trial_name == "HandwritingRecognition") {
     return base::FeatureList::IsEnabled(
-               features::kHandwritingRecognitionWebPlatformApi) &&
-           base::FeatureList::IsEnabled(
                features::kHandwritingRecognitionWebPlatformApiFinch);
   }
-  if (trial_name == "Portals" &&
-      !base::FeatureList::IsEnabled(features::kPortals)) {
+  if (trial_name == "Portals")
+    return base::FeatureList::IsEnabled(features::kPortals);
+
+  if (trial_name == "FencedFrames")
+    return base::FeatureList::IsEnabled(features::kFencedFrames);
+
+  if (trial_name == "AppCache")
+    return base::FeatureList::IsEnabled(features::kAppCache);
+
+  if (trial_name == "ComputePressure")
+    return base::FeatureList::IsEnabled(features::kComputePressure);
+
+  if (trial_name == "FledgeInterestGroupAPI")
+    return base::FeatureList::IsEnabled(features::kFledgeInterestGroups);
+
+  if (trial_name == "TrustTokens")
+    return base::FeatureList::IsEnabled(network::features::kTrustTokens);
+
+  if (trial_name == "InterestCohortAPI") {
+    return base::FeatureList::IsEnabled(
+        features::kInterestCohortAPIOriginTrial);
+  }
+  if (trial_name == "SpeculationRulesPrefetch") {
+    return base::FeatureList::IsEnabled(
+        features::kSpeculationRulesPrefetchProxy);
+  }
+  if (trial_name == "ConversionMeasurement" &&
+      !base::FeatureList::IsEnabled(features::kConversionMeasurement)) {
     return false;
   }
-  if (trial_name == "FencedFrames" &&
-      !base::FeatureList::IsEnabled(features::kFencedFrames)) {
-    return false;
-  }
-  if (trial_name == "AppCache" &&
-      !base::FeatureList::IsEnabled(features::kAppCache)) {
-    return false;
-  }
-  if (trial_name == "ComputePressure" &&
-      !base::FeatureList::IsEnabled(features::kComputePressure)) {
-    return false;
-  }
-  if (trial_name == "FledgeInterestGroupAPI" &&
-      !base::FeatureList::IsEnabled(features::kFledgeInterestGroups)) {
-    return false;
-  }
-  if (trial_name == "TrustTokens" &&
-      !base::FeatureList::IsEnabled(network::features::kTrustTokens)) {
-    return false;
-  }
-  if (trial_name == "InterestCohortAPI" &&
-      !base::FeatureList::IsEnabled(features::kInterestCohortAPIOriginTrial)) {
-    return false;
-  }
-  if (trial_name == "SpeculationRulesPrefetch" &&
-      !base::FeatureList::IsEnabled(features::kSpeculationRulesPrefetchProxy)) {
-    return false;
-  }
+
+  if (trial_name == "Prerender2")
+    return base::FeatureList::IsEnabled(features::kPrerender2);
+
   return true;
 }
 

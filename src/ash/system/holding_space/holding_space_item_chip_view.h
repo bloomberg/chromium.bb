@@ -9,15 +9,17 @@
 #include "ash/public/cpp/holding_space/holding_space_image.h"
 #include "ash/system/holding_space/holding_space_item_view.h"
 #include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/views/metadata/view_factory.h"
 
 namespace views {
+class ImageButton;
 class Label;
 }  // namespace views
 
 namespace ash {
 
 class HoldingSpaceItem;
-class HoldingSpaceItemViewDelegate;
+class HoldingSpaceViewDelegate;
 class RoundedImageView;
 
 // A button with an image derived from a file's thumbnail and file's name as the
@@ -26,7 +28,7 @@ class ASH_EXPORT HoldingSpaceItemChipView : public HoldingSpaceItemView {
  public:
   METADATA_HEADER(HoldingSpaceItemChipView);
 
-  HoldingSpaceItemChipView(HoldingSpaceItemViewDelegate* delegate,
+  HoldingSpaceItemChipView(HoldingSpaceViewDelegate* delegate,
                            const HoldingSpaceItem* item);
   HoldingSpaceItemChipView(const HoldingSpaceItemChipView&) = delete;
   HoldingSpaceItemChipView& operator=(const HoldingSpaceItemChipView&) = delete;
@@ -36,24 +38,43 @@ class ASH_EXPORT HoldingSpaceItemChipView : public HoldingSpaceItemView {
   // HoldingSpaceItemView:
   views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
   void OnHoldingSpaceItemUpdated(const HoldingSpaceItem* item) override;
-  void OnPinVisibilityChanged(bool pin_visible) override;
+  void OnPrimaryActionVisibilityChanged(bool visible) override;
   void OnSelectionUiChanged() override;
+  void OnMouseEvent(ui::MouseEvent* event) override;
   void OnThemeChanged() override;
 
-  // Invoked during `label_`'s paint sequence to paint its optional mask. Note
-  // that `label_` is only masked when `pin_` is visible to avoid overlapping.
-  void OnPaintLabelMask(gfx::Canvas* canvas);
+  // Invoked during `label`'s paint sequence to paint its optional mask. Note
+  // that `label` is only masked when the `primary_action_container()` is
+  // visible to avoid overlapping.
+  void OnPaintLabelMask(views::Label* label, gfx::Canvas* canvas);
+
+  // Invoked when the secondary action is pressed. This will be one of either
+  // `secondary_action_pause_` or `secondary_action_resume_`.
+  void OnSecondaryActionPressed();
 
   void UpdateImage();
-  void UpdateLabel();
+  void UpdateImageTransform();
+  void UpdateLabels();
+  void UpdateSecondaryAction();
 
   // Owned by view hierarchy.
   RoundedImageView* image_ = nullptr;
-  views::Label* label_ = nullptr;
+  views::Label* primary_label_ = nullptr;
+  views::Label* secondary_label_ = nullptr;
+  views::View* secondary_action_container_ = nullptr;
+  views::ImageButton* secondary_action_pause_ = nullptr;
+  views::ImageButton* secondary_action_resume_ = nullptr;
 
   base::CallbackListSubscription image_subscription_;
 };
 
+BEGIN_VIEW_BUILDER(/* no export */,
+                   HoldingSpaceItemChipView,
+                   HoldingSpaceItemView)
+END_VIEW_BUILDER
+
 }  // namespace ash
+
+DEFINE_VIEW_BUILDER(/* no export */, ash::HoldingSpaceItemChipView)
 
 #endif  // ASH_SYSTEM_HOLDING_SPACE_HOLDING_SPACE_ITEM_CHIP_VIEW_H_

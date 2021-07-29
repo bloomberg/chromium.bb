@@ -33,9 +33,9 @@ extern const char kManagedDefaultWebUsbGuardSetting[];
 extern const char kManagedDefaultFileHandlingGuardSetting[];
 extern const char kManagedDefaultFileSystemReadGuardSetting[];
 extern const char kManagedDefaultFileSystemWriteGuardSetting[];
-extern const char kManagedDefaultLegacyCookieAccessSetting[];
 extern const char kManagedDefaultSerialGuardSetting[];
 extern const char kManagedDefaultInsecurePrivateNetworkSetting[];
+extern const char kManagedDefaultJavaScriptJitSetting[];
 
 extern const char kManagedCookiesAllowedForUrls[];
 extern const char kManagedCookiesBlockedForUrls[];
@@ -66,6 +66,8 @@ extern const char kManagedLegacyCookieAccessAllowedForDomains[];
 extern const char kManagedSerialAskForUrls[];
 extern const char kManagedSerialBlockedForUrls[];
 extern const char kManagedInsecurePrivateNetworkAllowedForUrls[];
+extern const char kManagedJavaScriptJitAllowedForSites[];
+extern const char kManagedJavaScriptJitBlockedForSites[];
 
 extern const char kEnableQuietNotificationPermissionUi[];
 extern const char kQuietNotificationPermissionUiEnablingMethod[];

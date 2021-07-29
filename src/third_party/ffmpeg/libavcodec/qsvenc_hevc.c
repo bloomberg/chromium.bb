@@ -267,13 +267,10 @@ static const AVCodecDefault qsv_enc_defaults[] = {
     { "qmax",      "-1"    },
     { "trellis",   "-1"    },
     { "flags",     "+cgop" },
-#if FF_API_PRIVATE_OPT
-    { "b_strategy", "-1"   },
-#endif
     { NULL },
 };
 
-AVCodec ff_hevc_qsv_encoder = {
+const AVCodec ff_hevc_qsv_encoder = {
     .name           = "hevc_qsv",
     .long_name      = NULL_IF_CONFIG_SMALL("HEVC (Intel Quick Sync Video acceleration)"),
     .priv_data_size = sizeof(QSVHEVCEncContext),

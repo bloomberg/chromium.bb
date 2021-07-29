@@ -61,8 +61,10 @@ mojom::ResultCode TestPrintBackend::EnumeratePrinters(
   return mojom::ResultCode::kSuccess;
 }
 
-std::string TestPrintBackend::GetDefaultPrinterName() {
-  return default_printer_name_;
+mojom::ResultCode TestPrintBackend::GetDefaultPrinterName(
+    std::string& default_printer) {
+  default_printer = default_printer_name_;
+  return mojom::ResultCode::kSuccess;
 }
 
 mojom::ResultCode TestPrintBackend::GetPrinterBasicInfo(
@@ -148,6 +150,14 @@ void TestPrintBackend::AddValidPrinter(
     std::unique_ptr<PrinterSemanticCapsAndDefaults> caps,
     std::unique_ptr<PrinterBasicInfo> info) {
   AddPrinter(printer_name, std::move(caps), std::move(info),
+             /*blocked_by_permissions=*/false);
+}
+
+void TestPrintBackend::AddInvalidDataPrinter(const std::string& printer_name) {
+  // The blank fields in default `PrinterBasicInfo` cause Mojom data validation
+  // errors.
+  AddPrinter(printer_name, std::make_unique<PrinterSemanticCapsAndDefaults>(),
+             std::make_unique<PrinterBasicInfo>(),
              /*blocked_by_permissions=*/false);
 }
 

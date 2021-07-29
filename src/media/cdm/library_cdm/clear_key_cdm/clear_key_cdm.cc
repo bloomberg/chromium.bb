@@ -11,11 +11,11 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -888,7 +888,8 @@ void ClearKeyCdm::OnSessionKeysChange(const std::string& session_id,
                                        keys_vector.data(), keys_vector.size());
 }
 
-void ClearKeyCdm::OnSessionClosed(const std::string& session_id) {
+void ClearKeyCdm::OnSessionClosed(const std::string& session_id,
+                                  CdmSessionClosedReason /*reason*/) {
   cdm_host_proxy_->OnSessionClosed(session_id.data(), session_id.length());
 }
 

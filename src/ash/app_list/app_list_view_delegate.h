@@ -37,7 +37,8 @@ class SearchModel;
 
 class ASH_PUBLIC_EXPORT AppListViewDelegate {
  public:
-  virtual ~AppListViewDelegate() {}
+  virtual ~AppListViewDelegate() = default;
+
   // Gets the model associated with the view delegate. The model may be owned
   // by the delegate, or owned elsewhere (e.g. a profile keyed service).
   virtual AppListModel* GetModel() = 0;
@@ -100,9 +101,6 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
 
   // Invoked when the app list is closing.
   virtual void ViewClosing() = 0;
-
-  // Invoked when the app list is closed.
-  virtual void ViewClosed() = 0;
 
   // Gets the wallpaper prominent colors.
   virtual const std::vector<SkColor>& GetWallpaperProminentColors() = 0;

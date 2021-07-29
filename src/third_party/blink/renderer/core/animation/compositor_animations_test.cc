@@ -52,6 +52,7 @@
 #include "third_party/blink/renderer/core/css/css_syntax_definition.h"
 #include "third_party/blink/renderer/core/css/css_test_helpers.h"
 #include "third_party/blink/renderer/core/css/mock_css_paint_image_generator.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
@@ -754,6 +755,11 @@ TEST_P(AnimationCompositorAnimationsTest,
   EXPECT_TRUE(
       ConvertTimingForCompositor(timing_, compositor_timing_, play_reverse));
   EXPECT_DOUBLE_EQ(0.0, compositor_timing_.scaled_time_offset.InSecondsF());
+
+  // Stress test with an effectively infinite start delay.
+  timing_.start_delay = AnimationTimeDelta::FromSecondsD(1e19);
+  EXPECT_FALSE(
+      ConvertTimingForCompositor(timing_, compositor_timing_, play_forward));
 }
 
 TEST_P(AnimationCompositorAnimationsTest,
@@ -2339,9 +2345,14 @@ TEST_P(AnimationCompositorAnimationsTest, Fragmented) {
         0% { transform: translateX(10px); }
         100% { transform: translateX(20px); }
       }
+      #target {
+        width: 10px;
+        height: 150px;
+        background: green;
+      }
     </style>
     <div style="columns: 2; height: 100px">
-      <div id="target" style="height: 150px; animation: move 1s infinite">
+      <div id="target" style="animation: move 1s infinite">
       </div>
     </div>
   )HTML");

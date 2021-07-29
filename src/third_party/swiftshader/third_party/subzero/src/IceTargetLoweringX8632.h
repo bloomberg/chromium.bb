@@ -48,20 +48,14 @@ public:
 protected:
   void _add_sp(Operand *Adjustment);
   void _mov_sp(Operand *NewValue);
-  Traits::X86OperandMem *_sandbox_mem_reference(X86OperandMem *Mem);
   void _sub_sp(Operand *Adjustment);
   void _link_bp();
   void _unlink_bp();
   void _push_reg(RegNumT RegNum);
   void _pop_reg(RegNumT RegNum);
 
-  void initRebasePtr();
-  void initSandbox();
-  bool legalizeOptAddrForSandbox(OptAddr *Addr);
-  void emitSandboxedReturn();
   void emitStackProbe(size_t StackSizeBytes);
   void lowerIndirectJump(Variable *JumpTarget);
-  void emitGetIP(CfgNode *Node);
   Inst *emitCallToTarget(Operand *CallTarget, Variable *ReturnReg,
                          size_t NumVariadicFpArgs = 0) override;
   Variable *moveReturnValueToRegister(Operand *Value, Type ReturnType) override;
@@ -71,14 +65,30 @@ private:
   friend class X8632::TargetX86Base<X8632::Traits>;
 
   explicit TargetX8632(Cfg *Func) : TargetX86Base(Func) {}
-
-  Operand *createNaClReadTPSrcOperand() {
-    Constant *Zero = Ctx->getConstantZero(IceType_i32);
-    return Traits::X86OperandMem::create(Func, IceType_i32, nullptr, Zero,
-                                         nullptr, 0,
-                                         Traits::X86OperandMem::SegReg_GS);
-  }
 };
+
+// The -Wundefined-var-template warning requires to forward-declare static
+// members of template class specializations. Note that "An explicit
+// specialization of a static data member of a template is a definition if the
+// declaration includes an initializer; otherwise, it is a declaration."
+// Visual Studio has a bug which treats these declarations as definitions,
+// leading to multiple definition errors. Since we only enable
+// -Wundefined-var-template for Clang, omit these declarations on other
+// compilers.
+#if defined(__clang__)
+template <>
+std::array<SmallBitVector, RCX86_NUM>
+    TargetX86Base<X8632::Traits>::TypeToRegisterSet;
+
+template <>
+std::array<SmallBitVector, RCX86_NUM>
+    TargetX86Base<X8632::Traits>::TypeToRegisterSetUnfiltered;
+
+template <>
+std::array<SmallBitVector,
+           TargetX86Base<X8632::Traits>::Traits::RegisterSet::Reg_NUM>
+    TargetX86Base<X8632::Traits>::RegisterAliases;
+#endif // defined(__clang__)
 
 } // end of namespace X8632
 } // end of namespace Ice

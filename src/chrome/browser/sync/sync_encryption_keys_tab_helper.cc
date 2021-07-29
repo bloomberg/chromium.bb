@@ -12,7 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/common/sync_encryption_keys_extension.mojom.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
@@ -34,8 +34,8 @@ const url::Origin& GetAllowedOrigin() {
 }
 
 bool ShouldExposeMojoApi(content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() ||
-      !navigation_handle->HasCommitted() || navigation_handle->IsErrorPage()) {
+  DCHECK(navigation_handle->IsInPrimaryMainFrame());
+  if (!navigation_handle->HasCommitted() || navigation_handle->IsErrorPage()) {
     return false;
   }
   // Restrict to allowed origin only.
@@ -49,7 +49,10 @@ class SyncEncryptionKeysTabHelper::EncryptionKeyApi
  public:
   EncryptionKeyApi(content::WebContents* web_contents,
                    syncer::SyncService* sync_service)
-      : sync_service_(sync_service), receivers_(web_contents, this) {
+      : sync_service_(sync_service),
+        receivers_(web_contents,
+                   this,
+                   content::WebContentsFrameReceiverSetPassKey()) {
     DCHECK(web_contents);
     DCHECK(sync_service);
   }
@@ -60,9 +63,7 @@ class SyncEncryptionKeysTabHelper::EncryptionKeyApi
       const std::vector<std::vector<uint8_t>>& encryption_keys,
       int last_key_version,
       SetEncryptionKeysCallback callback) override {
-    // This could instead be a CHECK because it's guaranteed by the logic in
-    // DidFinishNavigation(), but let's avoid browser crashes at all cost and
-    // simply ignore the call.
+    // Extra safeguard, e.g. to guard against subframes.
     if (receivers_.GetCurrentTargetFrame()->GetLastCommittedOrigin() !=
         GetAllowedOrigin()) {
       return;
@@ -79,13 +80,11 @@ class SyncEncryptionKeysTabHelper::EncryptionKeyApi
       int method_type_hint,
       AddTrustedRecoveryMethodCallback callback) override {
     if (!base::FeatureList::IsEnabled(
-            switches::kSyncSupportTrustedVaultPassphraseRecovery)) {
+            switches::kSyncTrustedVaultPassphraseRecovery)) {
       return;
     }
 
-    // This could instead be a CHECK because it's guaranteed by the logic in
-    // DidFinishNavigation(), but let's avoid browser crashes at all cost and
-    // simply ignore the call.
+    // Extra safeguard, e.g. to guard against subframes.
     if (receivers_.GetCurrentTargetFrame()->GetLastCommittedOrigin() !=
         GetAllowedOrigin()) {
       return;
@@ -118,7 +117,7 @@ void SyncEncryptionKeysTabHelper::CreateForWebContents(
     return;
   }
 
-  syncer::SyncService* sync_service = ProfileSyncServiceFactory::GetForProfile(
+  syncer::SyncService* sync_service = SyncServiceFactory::GetForProfile(
       Profile::FromBrowserContext(web_contents->GetBrowserContext()));
   if (!sync_service) {
     return;
@@ -141,7 +140,11 @@ SyncEncryptionKeysTabHelper::~SyncEncryptionKeysTabHelper() = default;
 
 void SyncEncryptionKeysTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (navigation_handle->IsSameDocument()) {
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
+  if (!navigation_handle->IsInPrimaryMainFrame() ||
+      navigation_handle->IsSameDocument()) {
     return;
   }
 

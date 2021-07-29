@@ -21,6 +21,21 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histograms>
 
+<histogram name="BrowserDialogs.ExternalProtocol.HandleState"
+    enum="HandleStateType" expires_after="2022-01-31">
+  <owner>engedy@chromium.org</owner>
+  <owner>ravjit@chromium.org</owner>
+  <owner>dominickn@chromium.org</owner>
+  <owner>meacer@chromium.org</owner>
+  <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
+  <summary>
+    Whether or not the user checked the option in the external protocol dialog
+    to remember their choice of opening or not opening the specified app.
+    Recorded each time the user interacts with the External Protocol Dialog,
+    when making a decision.
+  </summary>
+</histogram>
+
 <histogram name="Permissions.Action" enum="PermissionAction"
     expires_after="never">
 <!-- expires-never: Primary metrics for monitoring capability usage and trends. -->
@@ -34,7 +49,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.Action.WithDisposition" enum="PermissionAction"
-    expires_after="2021-10-10">
+    expires_after="2021-12-12">
   <owner>andypaicu@chromium.org</owner>
   <owner>engedy@chromium.org</owner>
   <owner>hkamila@chromium.org</owner>
@@ -136,7 +151,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.Chip.TimeToDecision.{RequestAction}" units="ms"
-    expires_after="2021-08-22">
+    expires_after="2022-08-22">
   <owner>bsep@chromium.org</owner>
   <owner>engedy@chromium.org</owner>
   <owner>olesiamarukhno@google.com</owner>
@@ -155,7 +170,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.Chip.TimeToInteraction" units="ms"
-    expires_after="2021-10-25">
+    expires_after="2022-01-02">
   <owner>bsep@chromium.org</owner>
   <owner>engedy@chromium.org</owner>
   <owner>olesiamarukhno@google.com</owner>
@@ -184,7 +199,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.CrowdDeny.PreloadData.DelayedPushNotification"
-    units="ms" expires_after="2021-10-31">
+    units="ms" expires_after="2022-01-02">
   <owner>elklm@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -212,7 +227,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.CrowdDeny.PreloadData.NotificationUxQuality"
-    enum="CrowdDenyNotificationUxQuality" expires_after="2021-10-10">
+    enum="CrowdDenyNotificationUxQuality" expires_after="2021-12-12">
   <owner>andypaicu@chromium.org</owner>
   <owner>engedy@chromium.org</owner>
   <owner>hkamila@chromium.org</owner>
@@ -223,7 +238,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.CrowdDeny.PreloadData.VersionAtAbuseCheckTime"
-    units="date" expires_after="2021-10-10">
+    units="date" expires_after="2021-12-12">
   <owner>elklm@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -245,7 +260,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.CrowdDeny.SafeBrowsing.RequestDuration" units="ms"
-    expires_after="2021-10-10">
+    expires_after="2021-12-12">
   <owner>andypaicu@chromium.org</owner>
   <owner>engedy@chromium.org</owner>
   <owner>hkamila@chromium.org</owner>
@@ -269,7 +284,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.Engagement.Accepted" units="%"
-    expires_after="2021-10-25">
+    expires_after="2021-12-26">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -279,7 +294,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.Engagement.AcceptedOnce" units="%"
-    expires_after="2021-10-31">
+    expires_after="2022-01-02">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -320,7 +335,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.MissingOSLevelPermission.Action"
-    enum="PermissionAction" expires_after="2021-10-25">
+    enum="PermissionAction" expires_after="2022-01-02">
   <owner>andypaicu@chromium.org</owner>
   <owner>engedy@chromium.org</owner>
   <owner>hkamila@chromium.org</owner>
@@ -358,7 +373,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.Prompt.Accepted" enum="PermissionRequestType"
-    expires_after="2021-10-25">
+    expires_after="2021-12-26">
   <owner>dominickn@chromium.org</owner>
   <owner>kcarattini@chromium.org</owner>
   <summary>
@@ -432,7 +447,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.Prompt.Denied" enum="PermissionRequestType"
-    expires_after="2021-10-25">
+    expires_after="2021-12-26">
   <owner>dominickn@chromium.org</owner>
   <owner>kcarattini@chromium.org</owner>
   <summary>
@@ -556,7 +571,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.Prompt.TimeToDecision.{RequestAction}" units="ms"
-    expires_after="2021-08-22">
+    expires_after="2022-08-22">
   <owner>bsep@chromium.org</owner>
   <owner>engedy@chromium.org</owner>
   <owner>olesiamarukhno@google.com</owner>
@@ -572,6 +587,19 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     <variant name="Denied"/>
     <variant name="Dismissed"/>
   </token>
+</histogram>
+
+<histogram name="Permissions.QuietChip.TimeToInteraction" units="ms"
+    expires_after="2021-10-25">
+  <owner>elklm@chromium.org</owner>
+  <owner>engedy@chromium.org</owner>
+  <summary>
+    Records how long it takes for the user to click on the quiet chip after it
+    was shown. Chip framework is only available on Desktop. Recorded only if the
+    user clicks on the quiet chip. We can learn what % of prompts get ignored by
+    comparing this metric and
+    `PermissionPromptDisposition.LocationBarLeftQuietChip`.
+  </summary>
 </histogram>
 
 <histogram
@@ -599,7 +627,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.QuietNotificationPrompts.IsEnabledInPrefs"
-    enum="BooleanEnabled" expires_after="2021-10-10">
+    enum="BooleanEnabled" expires_after="2021-12-12">
   <owner>andypaicu@chromium.org</owner>
   <owner>engedy@chromium.org</owner>
   <owner>hkamila@chromium.org</owner>

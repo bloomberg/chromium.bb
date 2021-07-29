@@ -17,6 +17,7 @@
 #include "ios/testing/earl_grey/disabled_test_macros.h"
 #import "ios/testing/earl_grey/disabled_test_macros.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
+#include "ios/web/common/features.h"
 #include "ios/web/public/test/element_selector.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -352,8 +353,7 @@ UIViewController* TopPresentedViewControllerFrom(
 
 UIViewController* TopPresentedViewController() {
   UIViewController* rootViewController =
-      [[GREY_REMOTE_CLASS_IN_APP(UIApplication) sharedApplication] keyWindow]
-          .rootViewController;
+      chrome_test_util::GetAnyKeyWindow().rootViewController;
   return TopPresentedViewControllerFrom(rootViewController);
 }
 
@@ -509,7 +509,9 @@ UIViewController* TopPresentedViewController() {
                         true /* menu should appear */)];
   [[EarlGrey selectElementWithMatcher:
                  chrome_test_util::StaticTextWithAccessibilityLabelId(
-                     IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB)]
+                     web::features::UseWebViewNativeContextMenuSystem()
+                         ? IDS_IOS_OPEN_IN_INCOGNITO_ACTION_TITLE
+                         : IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB)]
       performAction:grey_tap()];
 
   // Check the buttons status.
@@ -561,7 +563,8 @@ UIViewController* TopPresentedViewController() {
 
 // Test that the bottom toolbar is still visible after closing the last
 // incognito tab using long press. See https://crbug.com/849937.
-- (void)testBottomToolbarHeightAfterClosingTab {
+// TODO(crbug.com/1229034): Fix flakiness
+- (void)DISABLED_testBottomToolbarHeightAfterClosingTab {
   if (![ChromeEarlGrey isSplitToolbarMode])
     EARL_GREY_TEST_SKIPPED(@"This test needs a bottom toolbar.");
   // Close all tabs.

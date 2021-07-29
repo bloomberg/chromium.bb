@@ -536,6 +536,9 @@ need to be translated for each locale.-->
       <message name="IDS_APP_ACCNAME_BACK" desc="The accessible name for the back button on the window frame.">
         Back button
       </message>
+      <message name="IDS_APP_ACCNAME_CENTER" desc="The accessible name for the center button on the window frame.">
+        Center button
+      </message>
       <message name="IDS_APP_ACCNAME_CLOSE" desc="The accessible name for the Close button.">
         Close
       </message>
@@ -588,6 +591,17 @@ need to be translated for each locale.-->
       </message>
       <message name="IDS_APP_SCROLLBAR_CXMENU_SCROLLDOWN" desc="The label for the 'Scroll Down' item">
         Scroll Down
+      </message>
+
+      <!-- TableView accessible strings -->
+      <message name="IDS_APP_TABLE_COLUMN_NOT_SORTED_ACCNAME" desc="The text to be announced when specified column becomes unsorted.">
+        Column <ph name="COLUMN_NAME">$1<ex>Column Name</ex></ph> unsorted.
+      </message>
+      <message name="IDS_APP_TABLE_COLUMN_SORTED_ASC_ACCNAME" desc="The text to be announced when specified column is sorted in ascending order.">
+        Column <ph name="COLUMN_NAME">$1<ex>Column Name</ex></ph> sorted in ascending order.
+      </message>
+      <message name="IDS_APP_TABLE_COLUMN_SORTED_DESC_ACCNAME" desc="The text to be announced when specified column is sorted in descending order.">
+        Column <ph name="COLUMN_NAME">$1<ex>Column Name</ex></ph> sorted in descending order.
       </message>
 
       <!-- Textfield context menu item labels. -->
@@ -1206,6 +1220,19 @@ need to be translated for each locale.-->
           Checking your internet connection
         </message>
       </if>
+
+      <!-- Settings string -->
+      <message name="IDS_SETTINGS_PASSWORD_SHOW" desc="A tool tip on a button that reveals the saved password.">
+       Show password
+      </message>
+      <message name="IDS_SETTINGS_PASSWORD_HIDE" desc="A tool tip on a button that hides the saved password that is being shown.">
+       Hide password
+      </message>
+
+      <!-- Table View -->
+      <message name="IDS_TABLE_VIEW_AX_ANNOUNCE_ROW_SELECTED" desc="Screenreader announcement that a row is selected">
+        <ph name="ROW_NAME">$1<ex>A row in the table</ex></ph> is selected.
+      </message>
     </messages>
   </release>
 </grit>

@@ -11,8 +11,6 @@ import android.os.Handler;
 
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.Callback;
-import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
@@ -36,6 +34,7 @@ import org.chromium.chrome.browser.theme.ThemeUtils;
 import org.chromium.chrome.browser.theme.TopUiThemeColorProvider;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
 import org.chromium.components.embedder_support.util.UrlConstants;
+import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.resources.ResourceManager;
 import org.chromium.url.GURL;
@@ -99,7 +98,6 @@ public class StaticLayout extends Layout {
     private final Supplier<TopUiThemeColorProvider> mTopUiThemeColorProvider;
 
     private boolean mIsActive;
-    private boolean mIsInitialized;
 
     private static Integer sToolbarTextBoxBackgroundColorForTesting;
     private static Float sToolbarTextBoxAlphaForTesting;
@@ -115,17 +113,32 @@ public class StaticLayout extends Layout {
      * @param requestSupplier Frame request supplier for Compositor MCP.
      * @param tabModelSelector {@link TabModelSelector} instance.
      * @param tabContentManager {@link TabContentsManager} instance.
-     * @param browserControlsStateProviderSupplier Supplier of {@link BrowserControlsStateProvider}.
+     * @param browserControlsStateProvider A {@link BrowserControlsStateProvider}.
      * @param topUiThemeColorProvider {@link ThemeColorProvider} for top UI.
      */
     public StaticLayout(Context context, LayoutUpdateHost updateHost, LayoutRenderHost renderHost,
             LayoutManagerHost viewHost,
             CompositorModelChangeProcessor.FrameRequestSupplier requestSupplier,
             TabModelSelector tabModelSelector, TabContentManager tabContentManager,
-            ObservableSupplier<BrowserControlsStateProvider> browserControlsStateProviderSupplier,
+            BrowserControlsStateProvider browserControlsStateProvider,
             Supplier<TopUiThemeColorProvider> topUiThemeColorProvider) {
+        this(context, updateHost, renderHost, viewHost, requestSupplier, tabModelSelector,
+                tabContentManager, browserControlsStateProvider, topUiThemeColorProvider, null);
+    }
+
+    /** Protected constructor for testing, allows specifying a custom SceneLayer. */
+    @VisibleForTesting
+    StaticLayout(Context context, LayoutUpdateHost updateHost, LayoutRenderHost renderHost,
+            LayoutManagerHost viewHost,
+            CompositorModelChangeProcessor.FrameRequestSupplier requestSupplier,
+            TabModelSelector tabModelSelector, TabContentManager tabContentManager,
+            BrowserControlsStateProvider browserControlsStateProvider,
+            Supplier<TopUiThemeColorProvider> topUiThemeColorProvider,
+            StaticTabSceneLayer testSceneLayer) {
         super(context, updateHost, renderHost);
         mContext = context;
+        // Only handle tab lifecycle on tablets.
+        mHandlesTabLifecycles = DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext);
         mViewHost = viewHost;
         mRequestSupplier = requestSupplier;
         assert tabContentManager != null;
@@ -133,16 +146,6 @@ public class StaticLayout extends Layout {
 
         assert tabModelSelector != null;
         setTabModelSelector(tabModelSelector);
-
-        browserControlsStateProviderSupplier.addObserver(
-                new Callback<BrowserControlsStateProvider>() {
-                    @Override
-                    public void onResult(
-                            BrowserControlsStateProvider browserControlsStateProvider) {
-                        setBrowserControlsStateProvider(browserControlsStateProvider);
-                        browserControlsStateProviderSupplier.removeObserver(this);
-                    }
-                });
 
         mModel = new PropertyModel.Builder(LayoutTab.ALL_KEYS)
                          .with(LayoutTab.TAB_ID, Tab.INVALID_TAB_ID)
@@ -166,6 +169,34 @@ public class StaticLayout extends Layout {
         Resources res = context.getResources();
         float dpToPx = res.getDisplayMetrics().density;
         mPxToDp = 1.0f / dpToPx;
+
+        mBrowserControlsStateProvider = browserControlsStateProvider;
+        mModel.set(LayoutTab.CONTENT_OFFSET, mBrowserControlsStateProvider.getContentOffset());
+        mBrowserControlsStateProviderObserver = new BrowserControlsStateProvider.Observer() {
+            @Override
+            public void onControlsOffsetChanged(int topOffset, int topControlsMinHeightOffset,
+                    int bottomOffset, int bottomControlsMinHeightOffset, boolean needsAnimate) {
+                mModel.set(
+                        LayoutTab.CONTENT_OFFSET, mBrowserControlsStateProvider.getContentOffset());
+            }
+
+            @Override
+            public void onAndroidVisibilityChanged(int visibility) {
+                // TODO(crbug/1223069): Remove this workaround for default method desugaring in D8
+                // causing AbstractMethodErrors in some cases once fixed upstream.
+            }
+        };
+        mBrowserControlsStateProvider.addObserver(mBrowserControlsStateProviderObserver);
+
+        if (testSceneLayer != null) {
+            mSceneLayer = testSceneLayer;
+        } else {
+            mSceneLayer = new StaticTabSceneLayer();
+        }
+        mSceneLayer.setTabContentManager(mTabContentManager);
+
+        mMcp = CompositorModelChangeProcessor.create(
+                mModel, mSceneLayer, StaticTabSceneLayer::bind, mRequestSupplier);
     }
 
     private void setTabModelSelector(TabModelSelector tabModelSelector) {
@@ -210,47 +241,6 @@ public class StaticLayout extends Layout {
                 updateStaticTab(tab);
             }
         };
-    }
-
-    private void setBrowserControlsStateProvider(
-            BrowserControlsStateProvider browserControlsStateProvider) {
-        assert browserControlsStateProvider != null;
-        assert mBrowserControlsStateProvider
-                == null : "The ChromeFullscreenManager should set at most once";
-
-        mModel.set(LayoutTab.CONTENT_OFFSET, browserControlsStateProvider.getContentOffset());
-        mBrowserControlsStateProvider = browserControlsStateProvider;
-        mBrowserControlsStateProviderObserver = new BrowserControlsStateProvider.Observer() {
-            @Override
-            public void onControlsOffsetChanged(int topOffset, int topControlsMinHeightOffset,
-                    int bottomOffset, int bottomControlsMinHeightOffset, boolean needsAnimate) {
-                mModel.set(
-                        LayoutTab.CONTENT_OFFSET, browserControlsStateProvider.getContentOffset());
-            }
-        };
-        mBrowserControlsStateProvider.addObserver(mBrowserControlsStateProviderObserver);
-    }
-
-    /**
-     * @param handlesTabLifecycles Whether or not this {@link Layout} should handle tab closing and
-     *                             creating events.
-     */
-    public void setLayoutHandlesTabLifecycles(boolean handlesTabLifecycles) {
-        mHandlesTabLifecycles = handlesTabLifecycles;
-    }
-
-    @Override
-    public void onFinishNativeInitialization() {
-        assert !mIsInitialized : "StaticLayoutMediator should initialize at most once";
-
-        mIsInitialized = true;
-        if (mSceneLayer == null) {
-            mSceneLayer = new StaticTabSceneLayer();
-            mSceneLayer.setTabContentManager(mTabContentManager);
-        }
-
-        mMcp = CompositorModelChangeProcessor.create(
-                mModel, mSceneLayer, StaticTabSceneLayer::bind, mRequestSupplier);
     }
 
     @Override
@@ -396,7 +386,7 @@ public class StaticLayout extends Layout {
     // Whether the tab is ready to display or it should be faded in as it loads.
     private boolean shouldStall(Tab tab) {
         return (tab.isFrozen() || tab.needsReload())
-                && !NativePage.isNativePageUrl(tab.getUrlString(), tab.isIncognito());
+                && !NativePage.isNativePageUrl(tab.getUrl(), tab.isIncognito());
     }
 
     @Override
@@ -486,11 +476,6 @@ public class StaticLayout extends Layout {
     @VisibleForTesting
     PropertyModel getModelForTesting() {
         return mModel;
-    }
-
-    @VisibleForTesting
-    void setSceneLayerForTesting(StaticTabSceneLayer sceneLayer) {
-        mSceneLayer = sceneLayer;
     }
 
     @VisibleForTesting

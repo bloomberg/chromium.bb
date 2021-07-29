@@ -16,6 +16,10 @@
       h2 {
         padding-inline-start: var(--cr-section-padding);
       }
+
+      .dependent {
+        padding-inline-start: var(--cr-section-indent-padding);
+      }
     </style>
 
     <div route-path="default">
@@ -45,12 +49,48 @@
                 </select>
               </template>
               <template is="dom-if" if="[[isLink_(option.uiType)]]">
-                <cr-icon-button class="icon-external"
-                    on-click="onExternalLinkClick_"
-                    aria-labelledby="option-label">
+                <cr-icon-button iron-icon="cr:arrow-right"
+                    on-click="navigateToOtherPageInSettings_"
+                    aria-labelledby="option-label" role="link">
                 </cr-icon-button>
               </template>
             </div>
+            <!--TODO(b/189280771): Reduce this duplication.-->
+            <template is="dom-repeat" items="[[option.dependentOptions]]"
+                as="dependant" id="dependent-settings">
+              <div class="list-item" actionable>
+                <div class="dependent start"
+                  id="option-label" aria-hidden="true">
+                  [[dependant.label]]
+                </div>
+                <template is="dom-if"
+                    if="[[isToggleButton_(dependant.uiType)]]">
+                  <cr-toggle checked="{{dependant.value}}"
+                      on-click="onToggleButtonOrDropdownChange_"
+                      aria-labelledby="option-label"
+                      disabled="[[dependentOptionsDisabled_(option.value)]]">
+                  </cr-toggle>
+                </template>
+                <template is="dom-if" if="[[isDropdown_(dependant.uiType)]]">
+                  <select class="md-select" value="{{dependant.value::change}}"
+                      on-change="onToggleButtonOrDropdownChange_"
+                      aria-labelledby="dependant-label">
+                    <template is="dom-repeat" items="[[dependant.menuItems]]">
+                      <option selected="[[item.selected]]"
+                        value="[[item.value]]">
+                        [[item.label]]
+                      </option>
+                    </template>
+                  </select>
+                </template>
+                <template is="dom-if" if="[[isLink_(dependant.uiType)]]">
+                  <cr-icon-button class="icon-external"
+                      on-click="onExternalLinkClick_"
+                      aria-labelledby="option-label">
+                  </cr-icon-button>
+                </template>
+              </div>
+            </template>
           </template>
         </div>
       </template>

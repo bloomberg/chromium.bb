@@ -5,6 +5,7 @@
 import * as LitHtml from '../../lit-html/lit-html.js';
 import * as ComponentHelpers from '../helpers/helpers.js';
 import * as IconButton from '../icon_button/icon_button.js';
+import linearMemoryValueInterpreterStyles from './linearMemoryValueInterpreter.css.js';
 
 import {ValueInterpreterDisplay} from './ValueInterpreterDisplay.js';
 import {ValueInterpreterSettings} from './ValueInterpreterSettings.js';
@@ -60,7 +61,7 @@ export interface LinearMemoryValueInterpreterData {
 }
 
 export class LinearMemoryValueInterpreter extends HTMLElement {
-  static litTagName = LitHtml.literal`devtools-linear-memory-inspector-interpreter`;
+  static readonly litTagName = LitHtml.literal`devtools-linear-memory-inspector-interpreter`;
 
   private readonly shadow = this.attachShadow({mode: 'open'});
   private endianness = Endianness.Little;
@@ -73,8 +74,12 @@ export class LinearMemoryValueInterpreter extends HTMLElement {
   constructor() {
     super();
     this.shadow.adoptedStyleSheets = [
-      ...getStyleSheets('ui/legacy/inspectorCommon.css', {enableLegacyPatching: false}),
+      ...getStyleSheets('ui/legacy/inspectorCommon.css'),
     ];
+  }
+
+  connectedCallback(): void {
+    this.shadow.adoptedStyleSheets = [linearMemoryValueInterpreterStyles];
   }
 
   set data(data: LinearMemoryValueInterpreterData) {
@@ -90,61 +95,6 @@ export class LinearMemoryValueInterpreter extends HTMLElement {
     // Disabled until https://crbug.com/1079231 is fixed.
     // clang-format off
     render(html`
-      <style>
-        :host {
-          flex: auto;
-          display: flex;
-        }
-
-        .value-interpreter {
-          --text-highlight-color: #80868b;
-
-          border: var(--legacy-divider-border);
-          background-color: var(--color-background-elevation-1);
-          overflow: hidden;
-          width: 400px;
-        }
-
-        .settings-toolbar {
-          min-height: 26px;
-          display: flex;
-          flex-wrap: nowrap;
-          justify-content: space-between;
-          padding-left: 12px;
-          padding-right: 12px;
-          align-items: center;
-        }
-
-        .settings-toolbar-button {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          width: 20px;
-          height: 20px;
-          border: none;
-          background-color: transparent;
-          cursor: pointer;
-        }
-
-        .settings-toolbar-button devtools-icon {
-          height: 14px;
-          width: 14px;
-          min-height: 14px;
-          min-width: 14px;
-        }
-
-        .settings-toolbar-button.active devtools-icon {
-          --icon-color: var(--color-primary);
-        }
-
-        .divider {
-          display: block;
-          height: 1px;
-          margin-bottom: 12px;
-          background-color: var(--color-details-hairline, #d0d0d0); /* stylelint-disable-line plugin/use_theme_colors */
-          /* See: crbug.com/1152736 for color variable migration. */
-        }
-      </style>
       <div class="value-interpreter">
         <div class="settings-toolbar">
           ${this.renderEndiannessSetting()}
@@ -170,7 +120,7 @@ export class LinearMemoryValueInterpreter extends HTMLElement {
                   endianness: this.endianness,
                   valueTypeModes: this.valueTypeModeConfig,
                   memoryLength: this.memoryLength,
-                } as ValueDisplayData}
+                } as ValueDisplayData}>
               </${ValueInterpreterDisplay.litTagName}>`}
         </div>
       </div>

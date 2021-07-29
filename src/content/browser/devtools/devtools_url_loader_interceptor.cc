@@ -37,6 +37,7 @@
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/header_util.h"
 #include "services/network/public/cpp/resource_request_body.h"
+#include "services/network/public/mojom/early_hints.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
 
@@ -646,11 +647,14 @@ void DevToolsURLLoaderInterceptor::ContinueInterceptedRequest(
 }
 
 bool DevToolsURLLoaderInterceptor::CreateProxyForInterception(
-    RenderProcessHost* rph,
+    int process_id,
+    StoragePartition* storage_partition,
     const base::UnguessableToken& frame_token,
     bool is_navigation,
     bool is_download,
     network::mojom::URLLoaderFactoryOverride* intercepting_factory) {
+  DCHECK(storage_partition);
+
   if (patterns_.empty())
     return false;
 
@@ -667,11 +671,19 @@ bool DevToolsURLLoaderInterceptor::CreateProxyForInterception(
   auto overridden_factory_receiver =
       target_remote.InitWithNewPipeAndPassReceiver();
   mojo::PendingRemote<network::mojom::CookieManager> cookie_manager;
-  int process_id = is_navigation ? 0 : rph->GetID();
-  rph->GetStoragePartition()->GetNetworkContext()->GetCookieManager(
+
+  // TODO(ahemery): Using 0 as the process id for navigations can lead to
+  // collisions between multiple navigations/service workers main script fetch.
+  // It should be replaced by the more robust
+  // GlobalRequestID::MakeBrowserInitiated().
+  int process_id_override = process_id;
+  if (is_navigation)
+    process_id_override = 0;
+
+  storage_partition->GetNetworkContext()->GetCookieManager(
       cookie_manager.InitWithNewPipeAndPassReceiver());
   new DevToolsURLLoaderFactoryProxy(
-      frame_token, process_id, is_download,
+      frame_token, process_id_override, is_download,
       std::move(intercepting_factory->overridden_factory_receiver),
       std::move(target_remote), std::move(cookie_manager),
       weak_factory_.GetWeakPtr());
@@ -1125,12 +1137,15 @@ void InterceptionJob::ProcessSetCookies(const net::HttpResponseHeaders& headers,
               create_loader_params_->request.site_for_cookies.scheme(),
               create_loader_params_->request.url.SchemeIsCryptographic());
   DCHECK_EQ(create_loader_params_->request.url, url_chain_.back());
+  bool is_main_frame_navigation =
+      create_loader_params_->request.trusted_params.has_value() &&
+      create_loader_params_->request.trusted_params->isolation_info
+              .request_type() == net::IsolationInfo::RequestType::kMainFrame;
   options.set_same_site_cookie_context(
       net::cookie_util::ComputeSameSiteContextForResponse(
           url_chain_, create_loader_params_->request.site_for_cookies,
           create_loader_params_->request.request_initiator,
-          create_loader_params_->request.is_main_frame,
-          should_treat_as_first_party));
+          is_main_frame_navigation, should_treat_as_first_party));
 
   // |this| might be deleted here if |cookies| is empty!
   auto on_cookie_set = base::BindRepeating(
@@ -1275,10 +1290,14 @@ void InterceptionJob::FetchCookies(
           ->ShouldIgnoreSameSiteCookieRestrictionsWhenTopLevel(
               request.site_for_cookies.scheme(),
               request.url.SchemeIsCryptographic());
+  bool is_main_frame_navigation =
+      request.trusted_params.has_value() &&
+      request.trusted_params->isolation_info.request_type() ==
+          net::IsolationInfo::RequestType::kMainFrame;
   options.set_same_site_cookie_context(
       net::cookie_util::ComputeSameSiteContextForRequest(
           request.method, url_chain_, request.site_for_cookies,
-          request.request_initiator, request.is_main_frame,
+          request.request_initiator, is_main_frame_navigation,
           should_treat_as_first_party));
 
   cookie_manager_->GetCookieList(request.url, options, std::move(callback));

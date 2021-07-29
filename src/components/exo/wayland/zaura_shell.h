@@ -9,6 +9,7 @@
 
 #include "components/exo/surface.h"
 #include "components/exo/surface_observer.h"
+#include "ui/gfx/geometry/size_f.h"
 #include "ui/wm/public/activation_change_observer.h"
 
 struct wl_client;
@@ -17,7 +18,7 @@ struct wl_resource;
 namespace exo {
 namespace wayland {
 
-constexpr uint32_t kZAuraShellVersion = 19;
+constexpr uint32_t kZAuraShellVersion = 21;
 
 // Adds bindings to the Aura Shell. Normally this implies Ash on ChromeOS
 // builds. On non-ChromeOS builds the protocol provides access to Aura windowing
@@ -51,6 +52,9 @@ class AuraSurface : public SurfaceObserver,
   void SetWindowSessionId(int32_t window_session_id);
   void SetCanGoBack();
   void UnsetCanGoBack();
+  void SetPip();
+  void UnsetPip();
+  void SetAspectRatio(const gfx::SizeF& aspect_ratio);
 
   // Overridden from SurfaceObserver:
   void OnSurfaceDestroying(Surface* surface) override;
@@ -67,12 +71,14 @@ class AuraSurface : public SurfaceObserver,
 
  protected:
   virtual void SendOcclusionFraction(float occlusion_fraction);
+  virtual void SendOcclusionState(
+      const aura::Window::OcclusionState occlusion_state);
 
  private:
   Surface* surface_;
   wl_resource* const resource_;
 
-  void ComputeAndSendOcclusionFraction(
+  void ComputeAndSendOcclusion(
       const aura::Window::OcclusionState occlusion_state,
       const SkRegion& occluded_region);
 

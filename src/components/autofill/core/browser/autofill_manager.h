@@ -83,23 +83,27 @@ class AutofillManager
   const AutofillClient* client() const { return client_; }
 
   // Invoked when the value of textfield is changed.
+  // |bounding_box| are viewport coordinates.
   void OnTextFieldDidChange(const FormData& form,
                             const FormFieldData& field,
                             const gfx::RectF& bounding_box,
                             const base::TimeTicks timestamp);
 
   // Invoked when the textfield is scrolled.
+  // |bounding_box| are viewport coordinates.
   void OnTextFieldDidScroll(const FormData& form,
                             const FormFieldData& field,
                             const gfx::RectF& bounding_box);
 
   // Invoked when the value of select is changed.
+  // |bounding_box| are viewport coordinates.
   void OnSelectControlDidChange(const FormData& form,
                                 const FormFieldData& field,
                                 const gfx::RectF& bounding_box);
 
   // Invoked when the |form| needs to be autofilled, the |bounding_box| is
   // a window relative value of |field|.
+  // |bounding_box| are viewport coordinates.
   void OnQueryFormFieldAutofill(int query_id,
                                 const FormData& form,
                                 const FormFieldData& field,
@@ -107,6 +111,7 @@ class AutofillManager
                                 bool autoselect_first_suggestion);
 
   // Invoked when |form|'s |field| has focus.
+  // |bounding_box| are viewport coordinates.
   void OnFocusOnFormField(const FormData& form,
                           const FormFieldData& field,
                           const gfx::RectF& bounding_box);
@@ -160,11 +165,6 @@ class AutofillManager
   // use language-specific patterns.
   void OnLanguageDetermined(
       const translate::LanguageDetectionDetails& details) override;
-
-  // Send the form |data| to renderer for the specified |action|.
-  void SendFormDataToRenderer(int query_id,
-                              AutofillDriver::RendererFormDataAction action,
-                              const FormData& data);
 
   // Fills |form_structure| and |autofill_field| with the cached elements
   // corresponding to |form| and |field|.  This might have the side-effect of

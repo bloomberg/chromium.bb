@@ -264,6 +264,8 @@ MediaSessionAndroid* MediaSessionImpl::GetMediaSessionAndroid() {
 #endif
 
 void MediaSessionImpl::WebContentsDestroyed() {
+  delegate_->ReleaseRequestId();
+
   // This should only work for tests. In production, all the players should have
   // already been removed before WebContents is destroyed.
 
@@ -279,7 +281,7 @@ void MediaSessionImpl::WebContentsDestroyed() {
 }
 
 void MediaSessionImpl::RenderFrameDeleted(RenderFrameHost* rfh) {
-  const auto rfh_id = rfh->GetGlobalFrameRoutingId();
+  const auto rfh_id = rfh->GetGlobalId();
   if (services_.count(rfh_id))
     OnServiceDestroyed(services_[rfh_id]);
 }
@@ -294,14 +296,13 @@ void MediaSessionImpl::DidFinishNavigation(
   image_cache_.clear();
 
   auto new_origin = url::Origin::Create(navigation_handle->GetURL());
-  if (navigation_handle->IsInMainFrame() &&
+  if (navigation_handle->IsInPrimaryMainFrame() &&
       !new_origin.IsSameOriginWith(origin_)) {
     audio_device_id_for_origin_.reset();
     origin_ = new_origin;
   }
 
-  const auto rfh_id =
-      navigation_handle->GetRenderFrameHost()->GetGlobalFrameRoutingId();
+  const auto rfh_id = navigation_handle->GetRenderFrameHost()->GetGlobalId();
   if (services_.count(rfh_id))
     services_[rfh_id]->DidFinishNavigation();
 
@@ -543,6 +544,12 @@ void MediaSessionImpl::RebuildAndNotifyMediaPositionChanged() {
     return;
 
   position_ = position;
+
+  if (auto* pip_window_controller_ =
+          PictureInPictureWindowControllerImpl::FromWebContents(
+              web_contents())) {
+    pip_window_controller_->MediaSessionPositionChanged(position_);
+  }
 
   for (auto& observer : observers_)
     observer->MediaSessionPositionChanged(position_);
@@ -1416,7 +1423,7 @@ void MediaSessionImpl::DidReceiveAction(
 }
 
 bool MediaSessionImpl::IsServiceActiveForRenderFrameHost(RenderFrameHost* rfh) {
-  return services_.find(rfh->GetGlobalFrameRoutingId()) != services_.end();
+  return services_.find(rfh->GetGlobalId()) != services_.end();
 }
 
 void MediaSessionImpl::UpdateRoutedService() {
@@ -1471,8 +1478,7 @@ MediaSessionServiceImpl* MediaSessionImpl::ComputeServiceForRouting() {
     min_depth = depth;
   }
 
-  return best_frame ? services_[best_frame->GetGlobalFrameRoutingId()]
-                    : nullptr;
+  return best_frame ? services_[best_frame->GetGlobalId()] : nullptr;
 }
 
 void MediaSessionImpl::OnPictureInPictureAvailabilityChanged() {

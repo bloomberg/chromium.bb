@@ -107,9 +107,9 @@ class ChromeShelfController
   // Returns true if the item identified by |id| is pinned.
   bool IsPinned(const ash::ShelfID& id);
 
-  // Set the shelf item status for the V1 application with the given |app_id|.
+  // Set the shelf item status for the application with the given |app_id|.
   // Adds or removes an item as needed to respect the running and pinned state.
-  void SetV1AppStatus(const std::string& app_id, ash::ShelfItemStatus status);
+  void SetAppStatus(const std::string& app_id, ash::ShelfItemStatus status);
 
   // Closes the specified item.
   void Close(const ash::ShelfID& id);
@@ -246,6 +246,8 @@ class ChromeShelfController
   void SetProfileForTest(Profile* profile);
 
   // Helpers that call through to corresponding ShelfModel functions.
+  bool AllowedToSetAppPinState(const std::string& app_id,
+                               bool target_pin) const;
   void PinAppWithID(const std::string& app_id);
   bool IsAppPinned(const std::string& app_id);
   void UnpinAppWithID(const std::string& app_id);

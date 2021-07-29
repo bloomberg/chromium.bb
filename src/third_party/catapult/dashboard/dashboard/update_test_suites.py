@@ -139,48 +139,30 @@ def _CreateTestSuiteDict():
     Where 'mas', 'dep', and 'des' are abbreviations for 'masters',
     'deprecated', and 'description', respectively.
   """
-  suites = _FetchSuites()
-  result = collections.defaultdict(lambda: {'suites': []})
+  result = collections.defaultdict(lambda: {'mas': {}, 'dep': True})
 
-  for s in suites:
-    result[s.test_name]['suites'].append(s)
+  for s in _FetchSuites():
+    v = result[s.test_name]
 
-  # Don't need suites anymore since they've been binned by test_name in result,
-  # so we can drop the reference and they'll be freed in the loop.
-  suites = None
+    if 'des' not in v and s.description:
+      v['des'] = s.description
 
-  # Should have a dict of {suite: [all suites]}
-  # Now generate masters
-  for k, v in result.items():
-    current_suites = v['suites']
-    v['mas'] = {}
+    # Only depreccate when all tests are deprecated
+    v['dep'] &= s.deprecated
 
-    if current_suites:
-      if current_suites[0].description:
-        v['des'] = current_suites[0].description
+    if s.master_name not in v['mas']:
+      v['mas'][s.master_name] = {}
+    if s.bot_name not in v['mas'][s.master_name]:
+      v['mas'][s.master_name][s.bot_name] = s.deprecated
 
-    if all(s.deprecated for s in current_suites):
-      v['dep'] = True
-
-    for s in current_suites:
-      master_name = s.master_name
-      bot_name = s.bot_name
-      if not master_name in v['mas']:
-        v['mas'][master_name] = {}
-      if not bot_name in v['mas'][master_name]:
-        v['mas'][master_name][bot_name] = s.deprecated
-
-    # We don't need these suites anymore so free them.
-    del result[k]['suites']
-
-  return dict(result)
+  result.default_factory = None
+  return result
 
 
 def _FetchSuites():
   """Fetches Tests with deprecated and description projections."""
   suite_query = graph_data.TestMetadata.query(
       graph_data.TestMetadata.parent_test == None)
-  suites = []
   cursor = None
   more = True
   try:
@@ -191,10 +173,11 @@ def _FetchSuites():
           projection=['deprecated', 'description'],
           use_cache=False,
           use_memcache=False)
-      suites.extend(some_suites)
+      for s in some_suites:
+        yield s
   except datastore_errors.Timeout:
-    logging.error('Timeout after fetching %d test suites.', len(suites))
-  return suites
+    logging.error('Timeout fetching test suites.')
+  return
 
 
 def _GetTestSubPath(key):

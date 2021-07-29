@@ -12,8 +12,8 @@ async function encode_decode_test(codec, acc, avc_format) {
 
   let decoder = new VideoDecoder({
     output(frame) {
-      assert_equals(frame.visibleRegion.width, w, "visibleRegion.width");
-      assert_equals(frame.visibleRegion.height, h, "visibleRegion.height");
+      assert_equals(frame.visibleRect.width, w, "visibleRect.width");
+      assert_equals(frame.visibleRect.height, h, "visibleRect.height");
       assert_equals(frame.timestamp, next_ts++, "timestamp");
       frames_decoded++;
       frame.close();
@@ -44,7 +44,8 @@ async function encode_decode_test(codec, acc, avc_format) {
     hardwareAcceleration: acc,
     width: w,
     height: h,
-    bitrate: 5000000,
+    bitrate: 1000000,
+    bitrateMode: "constant"
   };
 
   if (avc_format != null) {
@@ -59,11 +60,6 @@ async function encode_decode_test(codec, acc, avc_format) {
     let keyframe = (i % 5 == 0);
     encoder.encode(frame, { keyFrame: keyframe });
     frame.close();
-
-    // Wait to prevent queueing all frames before encoder.configure() completes.
-    // Queuing them all at once should still work, but would not be as
-    // repesentative of a real world scenario.
-    await delay(1);
   }
   await encoder.flush();
   await decoder.flush();
@@ -121,7 +117,6 @@ async function encode_test(codec, acc) {
     let keyframe = (i % 5 == 0);
     encoder.encode(frame, { keyFrame: keyframe });
     frame.close();
-    await delay(1);
   }
   await encoder.flush();
   encoder.close();
@@ -151,10 +146,3 @@ promise_test(
 promise_test(
   encode_decode_test.bind(null, "avc1.42001E", "allow", "avc"),
   "encoding and decoding avc1.42001E (avc)");
-
-/* Uncomment this for manual testing, before we have GPU tests for that */
-// promise_test(encode_test.bind(null, "avc1.42001E", "require", "avc"),
-//  "encoding avc1.42001E");
-
-// promise_test(encode_decode_test.bind(null, "avc1.42001E", "require", "avc"),
-//  "encoding and decoding avc1.42001E req");

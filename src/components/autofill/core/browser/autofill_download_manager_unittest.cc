@@ -41,6 +41,7 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/signatures.h"
 #include "components/prefs/pref_service.h"
+#include "components/variations/scoped_variations_ids_provider.h"
 #include "components/variations/variations_ids_provider.h"
 #include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -48,6 +49,7 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "services/network/public/cpp/data_element.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
@@ -248,6 +250,8 @@ class AutofillDownloadManagerTest : public AutofillDownloadManager::Observer,
 
   ScopedActiveAutofillExperiments scoped_active_autofill_experiments;
   base::test::TaskEnvironment task_environment_;
+  variations::ScopedVariationsIdsProvider scoped_variations_ids_provider_{
+      variations::VariationsIdsProvider::Mode::kUseSignedInState};
   std::list<ResponseData> responses_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   network::TestURLLoaderFactory test_url_loader_factory_;
@@ -610,7 +614,7 @@ TEST_F(AutofillDownloadManagerTest, QueryAPITestWhenTooLongUrl) {
   }
 
   AutofillDownloadManagerWithCustomPayloadSize download_manager(
-      &driver_, this, "dummykey", kMaxAPIQueryGetSize + 1);
+      &driver_, this, "dummykey", kMaxQueryGetSize + 1);
 
   // Start the query request and look if it is successful. No response was
   // received yet.
@@ -1531,6 +1535,8 @@ class AutofillServerCommunicationTest
   base::test::ScopedCommandLine scoped_command_line_;
   base::test::ScopedFeatureList scoped_feature_list_1_;
   base::test::ScopedFeatureList scoped_feature_list_2_;
+  variations::ScopedVariationsIdsProvider scoped_variations_ids_provider_{
+      variations::VariationsIdsProvider::Mode::kUseSignedInState};
   EmbeddedTestServer server_;
   int cache_expiration_in_milliseconds_ = 100000;
   std::unique_ptr<base::RunLoop> run_loop_;

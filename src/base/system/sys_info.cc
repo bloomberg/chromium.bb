@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/location.h"
-#include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/system/sys_info_internal.h"
 #include "base/task/post_task.h"
@@ -76,14 +75,12 @@ bool DetectLowEndDevice() {
 
 // static
 bool SysInfo::IsLowEndDeviceImpl() {
-  static base::NoDestructor<
-      internal::LazySysInfoValue<bool, DetectLowEndDevice>>
-      instance;
-  return instance->value();
+  static internal::LazySysInfoValue<bool, DetectLowEndDevice> instance;
+  return instance.value();
 }
 #endif
 
-#if !defined(OS_APPLE) && !defined(OS_ANDROID) && \
+#if !defined(OS_APPLE) && !defined(OS_ANDROID) && !defined(OS_WIN) && \
     !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
 std::string SysInfo::HardwareModelName() {
   return std::string();

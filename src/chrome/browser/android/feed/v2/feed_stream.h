@@ -8,6 +8,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
+#include "chrome/browser/android/feed/v2/feed_reliability_logging_bridge.h"
 #include "components/feed/core/v2/public/feed_api.h"
 #include "components/feed/core/v2/public/feed_stream_surface.h"
 
@@ -23,7 +24,8 @@ namespace android {
 class FeedStream : public ::feed::FeedStreamSurface {
  public:
   explicit FeedStream(const base::android::JavaRef<jobject>& j_this,
-                      jboolean is_for_you_stream);
+                      jboolean is_for_you_stream,
+                      FeedReliabilityLoggingBridge* reliability_logging_bridge);
   FeedStream(const FeedStream&) = delete;
   FeedStream& operator=(const FeedStream&) = delete;
 
@@ -35,20 +37,22 @@ class FeedStream : public ::feed::FeedStreamSurface {
                              base::StringPiece data) override;
   void RemoveDataStoreEntry(base::StringPiece key) override;
 
+  ReliabilityLoggingBridge& GetReliabilityLoggingBridge() override;
+
   void OnStreamUpdated(const feedui::StreamUpdate& stream_update);
 
   void LoadMore(JNIEnv* env,
                 const base::android::JavaParamRef<jobject>& obj,
                 const base::android::JavaParamRef<jobject>& callback_obj);
 
+  void ManualRefresh(JNIEnv* env,
+                     const base::android::JavaParamRef<jobject>& obj,
+                     const base::android::JavaParamRef<jobject>& callback_obj);
+
   void ProcessThereAndBackAgain(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jbyteArray>& data);
-
-  void ProcessViewAction(JNIEnv* env,
-                         const base::android::JavaParamRef<jobject>& obj,
-                         const base::android::JavaParamRef<jbyteArray>& data);
 
   int ExecuteEphemeralChange(
       JNIEnv* env,
@@ -71,11 +75,6 @@ class FeedStream : public ::feed::FeedStreamSurface {
 
   // Is activity logging enabled (ephemeral).
   bool IsActivityLoggingEnabled(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
-
-  // Get the signed-out session id, if any (ephemeral).
-  base::android::ScopedJavaLocalRef<jstring> GetSessionId(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 
@@ -111,11 +110,17 @@ class FeedStream : public ::feed::FeedStreamSurface {
   void ReportOtherUserAction(JNIEnv* env,
                              const base::android::JavaParamRef<jobject>& obj,
                              int action_type);
+  int GetSurfaceId(JNIEnv* env,
+                   const base::android::JavaParamRef<jobject>& obj);
+
+  jlong GetLastFetchTimeMs(JNIEnv* env,
+                           const base::android::JavaParamRef<jobject>& obj);
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
   FeedApi* feed_stream_api_;
   bool attached_ = false;
+  FeedReliabilityLoggingBridge* reliability_logging_bridge_ = nullptr;
 };
 
 }  // namespace android

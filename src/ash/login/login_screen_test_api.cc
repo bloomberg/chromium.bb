@@ -16,7 +16,7 @@
 #include "ash/login/ui/login_expanded_public_account_view.h"
 #include "ash/login/ui/login_password_view.h"
 #include "ash/login/ui/login_pin_view.h"
-#include "ash/login/ui/login_user_menu_view.h"
+#include "ash/login/ui/login_remove_account_dialog.h"
 #include "ash/login/ui/login_user_view.h"
 #include "ash/login/ui/pin_request_view.h"
 #include "ash/login/ui/pin_request_widget.h"
@@ -234,6 +234,11 @@ bool LoginScreenTestApi::IsEnterpriseEnrollmentButtonShown() {
 }
 
 // static
+bool LoginScreenTestApi::IsOsInstallButtonShown() {
+  return IsLoginShelfViewButtonShown(LoginShelfView::kOsInstall);
+}
+
+// static
 bool LoginScreenTestApi::IsUserAddingScreenIndicatorShown() {
   LockScreen::TestApi lock_screen_test(LockScreen::Get());
   LockContentsView::TestApi lock_contents_test(
@@ -322,7 +327,7 @@ bool LoginScreenTestApi::IsManagedIconShown(const AccountId& account_id) {
 }
 
 // static
-bool LoginScreenTestApi::IsManagedMessageInMenuShown(
+bool LoginScreenTestApi::IsManagedMessageInDialogShown(
     const AccountId& account_id) {
   LoginBigUserView* big_user_view = GetBigUserView(account_id);
   if (!big_user_view) {
@@ -330,8 +335,9 @@ bool LoginScreenTestApi::IsManagedMessageInMenuShown(
     return false;
   }
   LoginUserView::TestApi user_test(big_user_view->GetUserView());
-  LoginUserMenuView::TestApi user_menu_test(user_test.menu());
-  auto* managed_user_data = user_menu_test.managed_user_data();
+  LoginRemoveAccountDialog::TestApi user_dialog_test(
+      user_test.remove_account_dialog());
+  auto* managed_user_data = user_dialog_test.managed_user_data();
   return managed_user_data && managed_user_data->GetVisible();
 }
 
@@ -464,6 +470,11 @@ bool LoginScreenTestApi::ClickGuestButton() {
 // static
 bool LoginScreenTestApi::ClickEnterpriseEnrollmentButton() {
   return SimulateButtonPressedForTesting(LoginShelfView::kEnterpriseEnrollment);
+}
+
+// static
+bool LoginScreenTestApi::ClickOsInstallButton() {
+  return SimulateButtonPressedForTesting(LoginShelfView::kOsInstall);
 }
 
 // static
@@ -713,8 +724,8 @@ std::u16string LoginScreenTestApi::GetManagementDisclosureText(
     return std::u16string();
   }
   LoginUserView::TestApi user_test(big_user_view->GetUserView());
-  LoginUserMenuView::TestApi user_menu_test(user_test.menu());
-  return user_menu_test.management_disclosure_label()->GetText();
+  LoginRemoveAccountDialog::TestApi dialog(user_test.remove_account_dialog());
+  return dialog.management_disclosure_label()->GetText();
 }
 
 // static

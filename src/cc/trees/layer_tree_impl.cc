@@ -805,15 +805,15 @@ void LayerTreeImpl::SetBackdropFilterMutated(
 }
 
 void LayerTreeImpl::AddPresentationCallbacks(
-    std::vector<LayerTreeHost::PresentationTimeCallback> callbacks) {
+    std::vector<PresentationTimeCallbackBuffer::MainCallback> callbacks) {
   std::copy(std::make_move_iterator(callbacks.begin()),
             std::make_move_iterator(callbacks.end()),
             std::back_inserter(presentation_callbacks_));
 }
 
-std::vector<LayerTreeHost::PresentationTimeCallback>
+std::vector<PresentationTimeCallbackBuffer::MainCallback>
 LayerTreeImpl::TakePresentationCallbacks() {
-  std::vector<LayerTreeHost::PresentationTimeCallback> callbacks;
+  std::vector<PresentationTimeCallbackBuffer::MainCallback> callbacks;
   callbacks.swap(presentation_callbacks_);
   return callbacks;
 }
@@ -1290,6 +1290,10 @@ void LayerTreeImpl::SetViewportPropertyIds(const ViewportPropertyIds& ids) {
 const TransformNode* LayerTreeImpl::OverscrollElasticityTransformNode() const {
   return property_trees()->transform_tree.Node(
       viewport_property_ids_.overscroll_elasticity_transform);
+}
+
+ElementId LayerTreeImpl::OverscrollElasticityEffectElementId() const {
+  return viewport_property_ids_.overscroll_elasticity_effect;
 }
 
 const TransformNode* LayerTreeImpl::PageScaleTransformNode() const {

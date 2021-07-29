@@ -1,0 +1,26 @@
+# Copyright 2021 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+import("//build/config/ui.gni")
+
+assert(is_chromeos || is_linux || is_mac || is_win,
+       "Image Editor is for desktop plaforms only")
+
+static_library("image_editor") {
+  sources = [
+    "screenshot_flow.cc",
+    "screenshot_flow.h",
+  ]
+
+  deps = [
+    "//base",
+    "//content/public/browser",
+    "//ui/snapshot",
+    "//ui/views",
+  ]
+  if (use_aura) {
+    deps += [ "//ui/wm" ]
+  }
+
+  public_deps = [ "//base" ]
+}

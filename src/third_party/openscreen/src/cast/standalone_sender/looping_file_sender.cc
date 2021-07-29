@@ -4,20 +4,22 @@
 
 #include "cast/standalone_sender/looping_file_sender.h"
 
+#include <utility>
+
 #include "util/trace_logging.h"
 
 namespace openscreen {
 namespace cast {
 
 LoopingFileSender::LoopingFileSender(Environment* environment,
-                                     const char* path,
+                                     ConnectionSettings settings,
                                      const SenderSession* session,
                                      SenderSession::ConfiguredSenders senders,
-                                     int max_bitrate)
+                                     ShutdownCallback shutdown_callback)
     : env_(environment),
-      path_(path),
+      settings_(std::move(settings)),
       session_(session),
-      max_bitrate_(max_bitrate),
+      shutdown_callback_(std::move(shutdown_callback)),
       audio_encoder_(senders.audio_sender->config().channels,
                      StreamingOpusEncoder::kDefaultCastAudioFramesPerSecond,
                      senders.audio_sender),
@@ -32,8 +34,8 @@ LoopingFileSender::LoopingFileSender(Environment* environment,
   OSP_CHECK(senders.audio_config.codec == AudioCodec::kOpus);
   OSP_CHECK(senders.video_config.codec == VideoCodec::kVp8);
   OSP_LOG_INFO << "Max allowed media bitrate (audio + video) will be "
-               << max_bitrate_;
-  bandwidth_being_utilized_ = max_bitrate_ / 2;
+               << settings_.max_bitrate;
+  bandwidth_being_utilized_ = settings_.max_bitrate / 2;
   UpdateEncoderBitrates();
 
   next_task_.Schedule([this] { SendFileAgain(); }, Alarm::kImmediately);
@@ -72,7 +74,7 @@ void LoopingFileSender::ControlForNetworkCongestion() {
 
     // Repsect the user's maximum bitrate setting.
     bandwidth_being_utilized_ =
-        std::min(bandwidth_being_utilized_, max_bitrate_);
+        std::min(bandwidth_being_utilized_, settings_.max_bitrate);
 
     UpdateEncoderBitrates();
   } else {
@@ -84,16 +86,18 @@ void LoopingFileSender::ControlForNetworkCongestion() {
 }
 
 void LoopingFileSender::SendFileAgain() {
-  OSP_LOG_INFO << "Sending " << path_ << " (starts in one second)...";
+  OSP_LOG_INFO << "Sending " << settings_.path_to_file
+               << " (starts in one second)...";
   TRACE_DEFAULT_SCOPED(TraceCategory::kStandaloneSender);
 
   OSP_DCHECK_EQ(num_capturers_running_, 0);
   num_capturers_running_ = 2;
   capture_start_time_ = latest_frame_time_ = env_->now() + seconds(1);
-  audio_capturer_.emplace(env_, path_, audio_encoder_.num_channels(),
-                          audio_encoder_.sample_rate(), capture_start_time_,
-                          this);
-  video_capturer_.emplace(env_, path_, capture_start_time_, this);
+  audio_capturer_.emplace(
+      env_, settings_.path_to_file.c_str(), audio_encoder_.num_channels(),
+      audio_encoder_.sample_rate(), capture_start_time_, this);
+  video_capturer_.emplace(env_, settings_.path_to_file.c_str(),
+                          capture_start_time_, this);
 
   next_task_.ScheduleFromNow([this] { ControlForNetworkCongestion(); },
                              kCongestionCheckInterval);
@@ -156,7 +160,14 @@ void LoopingFileSender::OnEndOfFile(SimulatedCapturer* capturer) {
   --num_capturers_running_;
   if (num_capturers_running_ == 0) {
     console_update_task_.Cancel();
-    next_task_.Schedule([this] { SendFileAgain(); }, Alarm::kImmediately);
+
+    if (settings_.should_loop_video) {
+      OSP_DLOG_INFO << "Starting the media stream over again.";
+      next_task_.Schedule([this] { SendFileAgain(); }, Alarm::kImmediately);
+    } else {
+      OSP_DLOG_INFO << "Video complete. Exiting...";
+      shutdown_callback_();
+    }
   }
 }
 

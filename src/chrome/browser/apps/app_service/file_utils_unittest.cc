@@ -13,7 +13,7 @@
 
 #include "base/files/file_path.h"
 #include "base/strings/strcat.h"
-#include "chrome/browser/chromeos/file_manager/app_id.h"
+#include "chrome/browser/ash/file_manager/app_id.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -22,6 +22,7 @@
 #include "storage/browser/file_system/external_mount_points.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "storage/common/file_system/file_system_util.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 #include "url/url_constants.h"
@@ -68,8 +69,8 @@ class FileUtilsTest : public ::testing::Test {
   // system type.
   storage::FileSystemURL ToTestFileSystemURL(const std::string& path) {
     return storage::FileSystemURL::CreateForTest(
-        GetFileManagerOrigin(), storage::FileSystemType::kFileSystemTypeTest,
-        base::FilePath(path));
+        blink::StorageKey(GetFileManagerOrigin()),
+        storage::FileSystemType::kFileSystemTypeTest, base::FilePath(path));
   }
 
   // For a given |root| converts the given virtual |path| to a GURL.

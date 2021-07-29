@@ -12,11 +12,11 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
@@ -33,6 +33,7 @@
 #include "storage/browser/file_system/file_system_url.h"
 #include "storage/browser/file_system/isolated_context.h"
 #include "storage/browser/file_system/native_file_util.h"
+#include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "storage/browser/test/test_file_system_options.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -134,11 +135,12 @@ class NativeMediaFileUtilTest : public testing::Test {
     additional_providers.push_back(std::make_unique<MediaFileSystemBackend>(
         data_dir_.GetPath(), base::NullCallback()));
 
-    file_system_context_ = base::MakeRefCounted<storage::FileSystemContext>(
-        content::GetIOThreadTaskRunner({}).get(),
-        base::SequencedTaskRunnerHandle::Get().get(),
-        storage::ExternalMountPoints::CreateRefCounted().get(),
-        storage_policy.get(), nullptr, std::move(additional_providers),
+    file_system_context_ = storage::FileSystemContext::Create(
+        content::GetIOThreadTaskRunner({}),
+        base::SequencedTaskRunnerHandle::Get(),
+        storage::ExternalMountPoints::CreateRefCounted(),
+        std::move(storage_policy),
+        /* quota_manager_proxy=*/nullptr, std::move(additional_providers),
         std::vector<storage::URLRequestAutoMountHandler>(), data_dir_.GetPath(),
         storage::CreateAllowFileAccessOptions());
 

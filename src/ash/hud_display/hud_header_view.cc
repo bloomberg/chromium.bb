@@ -9,6 +9,7 @@
 #include "ash/hud_display/hud_properties.h"
 #include "ash/hud_display/solid_source_background.h"
 #include "ash/hud_display/tab_strip.h"
+#include "base/bind.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/canvas.h"
@@ -43,7 +44,7 @@ class BottomLeftOuterBackground : public views::Background {
   // views::Background
   void Paint(gfx::Canvas* canvas, views::View* view) const override {
     const SkScalar circle_size = inner_radius_ * 2;
-    const int bottom_edge = view->height();
+    const SkScalar bottom_edge = view->height();
 
     SkPath path;
     path.moveTo(0, bottom_edge);

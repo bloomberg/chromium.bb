@@ -17,6 +17,7 @@
 #include "ash/system/network/tray_network_state_model.h"
 #include "ash/system/tray/system_menu_button.h"
 #include "ash/system/tray/tri_view.h"
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -295,32 +296,34 @@ void NetworkStateListDetailedView::HandleViewClicked(views::View* view) {
 
 void NetworkStateListDetailedView::HandleViewClickedImpl(
     NetworkStatePropertiesPtr network) {
-  // If the network is locked and is cellular show SIM unlock dialog in OS
-  // Settings.
-  if (network->type == NetworkType::kCellular &&
-      base::FeatureList::IsEnabled(
-          chromeos::features::kUpdatedCellularActivationUi) &&
-      network->type_state->get_cellular()->sim_locked) {
-    if (!Shell::Get()->session_controller()->ShouldEnableSettings()) {
+  if (network) {
+    // If the network is locked and is cellular show SIM unlock dialog in OS
+    // Settings.
+    if (network->type == NetworkType::kCellular &&
+        base::FeatureList::IsEnabled(
+            chromeos::features::kUpdatedCellularActivationUi) &&
+        network->type_state->get_cellular()->sim_locked) {
+      if (!Shell::Get()->session_controller()->ShouldEnableSettings()) {
+        return;
+      }
+      Shell::Get()->system_tray_model()->client()->ShowSettingsSimUnlock();
       return;
     }
-    Shell::Get()->system_tray_model()->client()->ShowSettingsSimUnlock();
-    return;
-  }
 
-  if (network && CanNetworkConnect(
-                     network->connection_state, network->type,
-                     network->type == NetworkType::kCellular
-                         ? network->type_state->get_cellular()->activation_state
-                         : ActivationStateType::kUnknown,
-                     network->connectable)) {
-    Shell::Get()->metrics()->RecordUserMetricsAction(
-        list_type_ == LIST_TYPE_VPN
-            ? UMA_STATUS_AREA_CONNECT_TO_VPN
-            : UMA_STATUS_AREA_CONNECT_TO_CONFIGURED_NETWORK);
-    LogUserNetworkEvent(*network.get());
-    chromeos::NetworkConnect::Get()->ConnectToNetworkId(network->guid);
-    return;
+    if (CanNetworkConnect(
+            network->connection_state, network->type,
+            network->type == NetworkType::kCellular
+                ? network->type_state->get_cellular()->activation_state
+                : ActivationStateType::kUnknown,
+            network->connectable)) {
+      Shell::Get()->metrics()->RecordUserMetricsAction(
+          list_type_ == LIST_TYPE_VPN
+              ? UMA_STATUS_AREA_CONNECT_TO_VPN
+              : UMA_STATUS_AREA_CONNECT_TO_CONFIGURED_NETWORK);
+      LogUserNetworkEvent(*network.get());
+      chromeos::NetworkConnect::Get()->ConnectToNetworkId(network->guid);
+      return;
+    }
   }
   // If the network is no longer available or not connectable or configurable,
   // show the Settings UI.
@@ -358,16 +361,19 @@ void NetworkStateListDetailedView::ShowSettings() {
       list_type_ == LIST_TYPE_VPN ? UMA_STATUS_AREA_VPN_SETTINGS_OPENED
                                   : UMA_STATUS_AREA_NETWORK_SETTINGS_OPENED);
 
+  const std::string guid = model_->default_network()
+                               ? model_->default_network()->guid
+                               : std::string();
+
+  // Showing network settings window may close the bubble (and destroy this
+  // view). Explicitly request bubble closure here, before showing network
+  // settings.
+  CloseBubble();  // Deletes |this|.
+
   SystemTrayClient* system_tray_client =
       Shell::Get()->system_tray_model()->client();
-
-  if (system_tray_client) {
-    system_tray_client->ShowNetworkSettings(
-        model_->default_network() ? model_->default_network()->guid
-                                  : std::string());
-  }
-
-  CloseBubble();  // Deletes |this|.
+  if (system_tray_client)
+    system_tray_client->ShowNetworkSettings(guid);
 }
 
 void NetworkStateListDetailedView::UpdateHeaderButtons() {

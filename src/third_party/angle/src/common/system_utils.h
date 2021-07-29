@@ -19,7 +19,7 @@ namespace angle
 std::string GetExecutableName();
 std::string GetExecutablePath();
 std::string GetExecutableDirectory();
-std::string GetHelperExecutableDir();
+std::string GetModuleDirectory();
 const char *GetSharedLibraryExtension();
 const char *GetExecutableExtension();
 char GetPathSeparator();
@@ -27,6 +27,7 @@ Optional<std::string> GetCWD();
 bool SetCWD(const char *dirName);
 bool SetEnvironmentVar(const char *variableName, const char *value);
 bool UnsetEnvironmentVar(const char *variableName);
+bool GetBoolEnvironmentVar(const char *variableName);
 std::string GetEnvironmentVar(const char *variableName);
 std::string GetEnvironmentVarOrUnCachedAndroidProperty(const char *variableName,
                                                        const char *propertyName);
@@ -34,6 +35,9 @@ std::string GetEnvironmentVarOrAndroidProperty(const char *variableName, const c
 const char *GetPathSeparatorForEnvironmentVar();
 bool PrependPathToEnvironmentVar(const char *variableName, const char *path);
 bool IsDirectory(const char *filename);
+bool IsFullPath(std::string dirName);
+std::string GetRootDirectory();
+std::string ConcatenatePath(std::string first, std::string second);
 
 // Get absolute time in seconds.  Use this function to get an absolute time with an unknown origin.
 double GetCurrentTime();
@@ -67,12 +71,16 @@ class Library : angle::NonCopyable
 // (e.g. opengl32.dll)
 enum class SearchType
 {
+    // Try to find the library in the application directory
     ApplicationDir,
-    SystemDir
+    // Load the library from the system directories
+    SystemDir,
+    // Get a reference to an already loaded shared library.
+    AlreadyLoaded,
 };
 
 Library *OpenSharedLibrary(const char *libraryName, SearchType searchType);
-Library *OpenSharedLibraryWithExtension(const char *libraryName);
+Library *OpenSharedLibraryWithExtension(const char *libraryName, SearchType searchType);
 
 // Returns true if the process is currently being debugged.
 bool IsDebuggerAttached();

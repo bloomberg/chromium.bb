@@ -32,7 +32,7 @@ GURL SpecToGURL(const std::string& url_string) {
 
 }  // namespace
 
-PrefetchImagesTask::PrefetchImagesTask(FeedStream* stream) : stream_(stream) {
+PrefetchImagesTask::PrefetchImagesTask(FeedStream* stream) : stream_(*stream) {
   max_images_per_refresh_ =
       GetFeedConfig().max_prefetch_image_requests_per_refresh;
 }
@@ -40,19 +40,19 @@ PrefetchImagesTask::PrefetchImagesTask(FeedStream* stream) : stream_(stream) {
 PrefetchImagesTask::~PrefetchImagesTask() = default;
 
 void PrefetchImagesTask::Run() {
-  if (stream_->ClearAllInProgress()) {
+  if (stream_.ClearAllInProgress()) {
     // Abort if ClearAll is in progress.
     TaskComplete();
     return;
   }
-  if (stream_->GetModel(kForYouStream)) {
-    PrefetchImagesFromModel(*stream_->GetModel(kForYouStream));
+  if (stream_.GetModel(kForYouStream)) {
+    PrefetchImagesFromModel(*stream_.GetModel(kForYouStream));
     return;
   }
 
   load_from_store_task_ = std::make_unique<LoadStreamFromStoreTask>(
-      LoadStreamFromStoreTask::LoadType::kFullLoad, stream_, kForYouStream,
-      stream_->GetStore(),
+      LoadStreamFromStoreTask::LoadType::kFullLoad, &stream_, kForYouStream,
+      &stream_.GetStore(),
       /*missed_last_refresh=*/false,
       base::BindOnce(&PrefetchImagesTask::LoadStreamComplete,
                      base::Unretained(this)));
@@ -71,7 +71,8 @@ void PrefetchImagesTask::LoadStreamComplete(
   // LoadStreamTask flow has various considerations for metrics and signalling
   // surfaces to update. For this reason, we're not going to retain the loaded
   // model for use outside of this task.
-  StreamModel model;
+  StreamModel::Context model_context;
+  StreamModel model(&model_context);
   model.Update(std::move(result.update_request));
   PrefetchImagesFromModel(model);
 }
@@ -102,7 +103,7 @@ void PrefetchImagesTask::MaybePrefetchImage(const GURL& gurl) {
       previously_fetched_.size() >= max_images_per_refresh_)
     return;
   previously_fetched_.insert(gurl.spec());
-  stream_->PrefetchImage(gurl);
+  stream_.PrefetchImage(gurl);
 }
 
 }  // namespace feed

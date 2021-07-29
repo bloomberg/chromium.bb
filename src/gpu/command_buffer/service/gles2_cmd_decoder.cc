@@ -22,9 +22,11 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/queue.h"
 #include "base/containers/span.h"
+#include "base/cxx17_backports.h"
 #include "base/debug/alias.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/hash/legacy_hash.h"
@@ -32,7 +34,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
 #include "base/numerics/safe_math.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
@@ -4364,6 +4365,9 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
   caps.num_surface_buffers = surface_->GetBufferCount();
   caps.mesa_framebuffer_flip_y =
       feature_info_->feature_flags().mesa_framebuffer_flip_y;
+  caps.disable_legacy_mailbox =
+      group_->shared_image_manager() &&
+      group_->shared_image_manager()->display_context_on_another_thread();
 
   caps.gpu_memory_buffer_formats =
       feature_info_->feature_flags().gpu_memory_buffer_formats;
@@ -15163,7 +15167,7 @@ error::Error GLES2DecoderImpl::HandleTexImage2D(uint32_t immediate_data_size,
   texture_state_.tex_image_failed = true;
   GLenum target = static_cast<GLenum>(c.target);
   GLint level = static_cast<GLint>(c.level);
-  GLint internal_format = static_cast<GLint>(c.internalformat);
+  GLenum internal_format = static_cast<GLenum>(c.internalformat);
   GLsizei width = static_cast<GLsizei>(c.width);
   GLsizei height = static_cast<GLsizei>(c.height);
   GLint border = static_cast<GLint>(c.border);
@@ -15270,7 +15274,7 @@ error::Error GLES2DecoderImpl::HandleTexImage3D(uint32_t immediate_data_size,
   texture_state_.tex_image_failed = true;
   GLenum target = static_cast<GLenum>(c.target);
   GLint level = static_cast<GLint>(c.level);
-  GLint internal_format = static_cast<GLint>(c.internalformat);
+  GLenum internal_format = static_cast<GLenum>(c.internalformat);
   GLsizei width = static_cast<GLsizei>(c.width);
   GLsizei height = static_cast<GLsizei>(c.height);
   GLsizei depth = static_cast<GLsizei>(c.depth);
@@ -15625,13 +15629,39 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
     // ExtractTypeFromStorageFormat will always return UNSIGNED_BYTE for
     // unsized formats.
     DCHECK(type == GL_UNSIGNED_BYTE);
+    // Changing the internal format here is probably not completely
+    // correct. This is the "effective" internal format, and the spec
+    // says "effective internal format is used by the GL for purposes
+    // such as texture completeness or type checks for CopyTex*
+    // commands". But we don't have a separate concept of "effective"
+    // vs. "actual" internal format, so this will have to do for now. See
+    // Table 3.12 and associated explanatory text in the OpenGL ES 3.0.6
+    // spec for more information.
+    //
+    // Unfortunately, changing the internal format here conflicts with a
+    // macos workaround flag, so don't do it if the workaround applies.
+    bool attempt_sized_upgrade =
+        (!workarounds().use_intermediary_for_copy_texture_image ||
+         target == GL_TEXTURE_2D) &&
+        (read_format == GL_RGB || read_format == GL_RGB8 ||
+         read_format == GL_RGBA || read_format == GL_RGBA8);
     switch (internal_format) {
       case GL_RGB:
+        if (attempt_sized_upgrade) {
+          internal_format = GL_RGB8;
+        }
+        break;
       case GL_RGBA:
+        if (attempt_sized_upgrade) {
+          internal_format = GL_RGBA8;
+        }
+        break;
       case GL_LUMINANCE_ALPHA:
       case GL_LUMINANCE:
       case GL_ALPHA:
       case GL_BGRA_EXT:
+        // There are no GL constants for sized versions of these internal
+        // formats. We'll just go ahead with the unsized ones.
         break;
       default:
         // Other unsized internal_formats are invalid in ES3.
@@ -17020,10 +17050,6 @@ void GLES2DecoderImpl::FinishAsyncSwapBuffers(
     uint64_t swap_id,
     gfx::SwapCompletionResult result) {
   TRACE_EVENT_ASYNC_END0("gpu", "AsyncSwapBuffers", swap_id);
-  // Handling of the out-fence should have already happened before reaching
-  // this function, so we don't expect to get a valid fence here.
-  DCHECK(result.release_fence.is_null());
-
   FinishSwapBuffers(result.swap_result);
 }
 
@@ -19797,7 +19823,8 @@ void GLES2DecoderImpl::DoScheduleDCLayerCHROMIUM(GLuint texture_0,
     return;
   }
 
-  ui::DCRendererLayerParams params;
+  std::unique_ptr<ui::DCRendererLayerParams> params =
+      std::make_unique<ui::DCRendererLayerParams>();
   GLuint texture_ids[] = {texture_0, texture_1};
   size_t i = 0;
   for (GLuint texture_id : texture_ids) {
@@ -19816,22 +19843,22 @@ void GLES2DecoderImpl::DoScheduleDCLayerCHROMIUM(GLuint texture_0,
                          "unsupported texture format");
       return;
     }
-    params.images[i++] = scoped_refptr<gl::GLImage>(image);
+    params->images[i++] = scoped_refptr<gl::GLImage>(image);
   }
-  params.z_order = z_order;
-  params.content_rect =
+  params->z_order = z_order;
+  params->content_rect =
       gfx::Rect(content_x, content_y, content_width, content_height);
-  params.quad_rect = gfx::Rect(quad_x, quad_y, quad_width, quad_height);
-  params.transform =
+  params->quad_rect = gfx::Rect(quad_x, quad_y, quad_width, quad_height);
+  params->transform =
       gfx::Transform(transform_c1r1, transform_c2r1, transform_c1r2,
                      transform_c2r2, transform_tx, transform_ty);
   if (is_clipped) {
-    params.clip_rect = gfx::Rect(clip_x, clip_y, clip_width, clip_height);
+    params->clip_rect = gfx::Rect(clip_x, clip_y, clip_width, clip_height);
   }
-  params.protected_video_type =
+  params->protected_video_type =
       static_cast<gfx::ProtectedVideoType>(protected_video_type);
 
-  if (!surface_->ScheduleDCLayer(params)) {
+  if (!surface_->ScheduleDCLayer(std::move(params))) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glScheduleDCLayerCHROMIUM",
                        "failed to schedule DCLayer");
   }

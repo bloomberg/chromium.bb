@@ -35,6 +35,9 @@ const base::Feature kEnableOverlayPrioritization {
 #endif
 };
 
+const base::Feature kDelegatedCompositing{"DelegatedCompositing",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kSimpleFrameRateThrottling{
     "SimpleFrameRateThrottling", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -42,9 +45,7 @@ const base::Feature kSimpleFrameRateThrottling{
 const base::Feature kUseSkiaRenderer {
   "UseSkiaRenderer",
 #if defined(OS_WIN) || defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_LACROS) || \
-    defined(OS_LINUX)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#elif defined(OS_MAC)
+    defined(OS_LINUX) || defined(OS_FUCHSIA) || defined(OS_MAC)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -55,6 +56,12 @@ const base::Feature kUseSkiaRenderer {
 // be enabled.
 const base::Feature kDisableDeJelly{"DisableDeJelly",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// On platform and configuration where viz controls the allocation of frame
+// buffers (ie SkiaOutputDeviceBufferQueue is used), allocate and release frame
+// buffers on demand.
+const base::Feature kDynamicBufferQueueAllocation{
+    "DynamicBufferQueueAllocation", base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if defined(OS_ANDROID)
 // When wide color gamut content from the web is encountered, promote our
@@ -84,13 +91,7 @@ const base::Feature kUsePreferredIntervalForVideo{
 // Whether we should use the real buffers corresponding to overlay candidates in
 // order to do a pageflip test rather than allocating test buffers.
 const base::Feature kUseRealBuffersForPageFlipTest{
-  "UseRealBuffersForPageFlipTest",
-#if BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
+    "UseRealBuffersForPageFlipTest", base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if defined(OS_FUCHSIA)
 // Enables SkiaOutputDeviceBufferQueue instead of Vulkan swapchain on Fuchsia.
@@ -132,6 +133,12 @@ const base::Feature kUseSurfaceLayerForVideoDefault{
     "UseSurfaceLayerForVideoDefault", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
+// Used by CC to throttle frame production of older surfaces. Used by the
+// Browser to batch SurfaceSync calls sent to the Renderer for properties can
+// change in close proximity to each other.
+const base::Feature kSurfaceSyncThrottling{"SurfaceSyncThrottling",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsAdpfEnabled() {
   // TODO(crbug.com/1157620): Limit this to correct android version.
   return base::FeatureList::IsEnabled(kAdpf);
@@ -139,6 +146,10 @@ bool IsAdpfEnabled() {
 
 bool IsOverlayPrioritizationEnabled() {
   return base::FeatureList::IsEnabled(kEnableOverlayPrioritization);
+}
+
+bool IsDelegatedCompositingEnabled() {
+  return base::FeatureList::IsEnabled(kDelegatedCompositing);
 }
 
 // If a synchronous IPC should used when destroying windows. This exists to test
@@ -251,5 +262,9 @@ bool UseSurfaceLayerForVideo() {
   return base::FeatureList::IsEnabled(kUseSurfaceLayerForVideoDefault);
 }
 #endif
+
+bool IsSurfaceSyncThrottling() {
+  return base::FeatureList::IsEnabled(kSurfaceSyncThrottling);
+}
 
 }  // namespace features

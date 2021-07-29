@@ -193,6 +193,12 @@ class ArcDataSnapshotdManager final
     void Parse();
     // Syncs stored snapshot info to local state.
     void Sync();
+
+    // Syncs stored snapshot info to local state.
+    // |callback| is executed once all changes to the local state have been
+    // committed.
+    void Sync(base::OnceClosure callback);
+
     // Clears snapshot related info in arc.snapshot preference either last
     // if |last| is true or previous otherwise.
     void ClearSnapshot(bool last);
@@ -292,6 +298,9 @@ class ArcDataSnapshotdManager final
 
   State state() const { return state_; }
 
+  base::OnceClosure& get_reset_autologin_callback_for_testing() {
+    return reset_autologin_callback_;
+  }
   void set_reset_autologin_callback(base::OnceClosure callback) {
     reset_autologin_callback_ = std::move(callback);
   }

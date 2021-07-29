@@ -34,8 +34,8 @@
 
 #include <memory>
 
+#include "base/cxx17_backports.h"
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
 #include "third_party/blink/renderer/platform/language.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
@@ -137,9 +137,7 @@ const Vector<String>& LocaleMac::WeekDayShortLabels() {
   if (!week_day_short_labels_.IsEmpty())
     return week_day_short_labels_;
   week_day_short_labels_.ReserveCapacity(7);
-  NSArray* array = features::IsFormControlsRefreshEnabled()
-                       ? [ShortDateFormatter() veryShortWeekdaySymbols]
-                       : [ShortDateFormatter() shortWeekdaySymbols];
+  NSArray* array = [ShortDateFormatter() veryShortWeekdaySymbols];
   if ([array count] == 7) {
     for (unsigned i = 0; i < 7; ++i)
       week_day_short_labels_.push_back(String(array[i]));

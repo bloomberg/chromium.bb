@@ -294,14 +294,13 @@ export class TimelineFlameChartNetworkDataProvider implements PerfUI.FlameChart.
     const element = document.createElement('div');
     const root = UI.Utils.createShadowRootWithCoreStyles(element, {
       cssFile: 'panels/timeline/timelineFlamechartPopover.css',
-      enableLegacyPatching: true,
       delegatesFocus: undefined,
     });
     const contents = root.createChild('div', 'timeline-flamechart-popover');
     const startTime = request.getStartTime();
     const duration = request.endTime - startTime;
     if (startTime && isFinite(duration)) {
-      contents.createChild('span', 'timeline-info-network-time').textContent = Number.millisToString(duration, true);
+      contents.createChild('span', 'timeline-info-network-time').textContent = i18n.i18n.millisToString(duration, true);
     }
     if (typeof request.priority === 'string') {
       const div = (contents.createChild('span') as HTMLElement);
@@ -387,7 +386,7 @@ export class TimelineFlameChartNetworkDataProvider implements PerfUI.FlameChart.
   }
 
   formatValue(value: number, precision?: number): string {
-    return Number.preciseMillisToString(value, precision);
+    return i18n.i18n.preciseMillisToString(value, precision);
   }
 
   canJumpToEntry(_entryIndex: number): boolean {

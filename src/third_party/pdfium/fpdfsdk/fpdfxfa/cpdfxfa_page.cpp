@@ -24,9 +24,47 @@
 
 namespace {
 
-constexpr uint32_t kIteratorFilter = XFA_WidgetStatus_Visible |
-                                     XFA_WidgetStatus_Viewable |
-                                     XFA_WidgetStatus_Focused;
+constexpr XFA_WidgetStatusMask kIteratorFilter = XFA_WidgetStatus_Visible |
+                                                 XFA_WidgetStatus_Viewable |
+                                                 XFA_WidgetStatus_Focused;
+
+CXFA_FFWidget::IteratorIface* GCedWidgetIteratorForPage(
+    CXFA_FFPageView* pFFPageView,
+    CPDFSDK_PageView* pPageView) {
+  if (!pFFPageView)
+    return nullptr;
+
+  ObservedPtr<CPDFSDK_PageView> pWatchedPageView(pPageView);
+  CXFA_FFWidget::IteratorIface* pIterator =
+      pFFPageView->CreateGCedTraverseWidgetIterator(kIteratorFilter);
+
+  // Check |pPageView| again because JS may have destroyed it.
+  return pWatchedPageView ? pIterator : nullptr;
+}
+
+CXFA_FFWidget::IteratorIface* GCedWidgetIteratorForAnnot(
+    CXFA_FFPageView* pFFPageView,
+    CPDFSDK_Annot* pSDKAnnot) {
+  if (!pFFPageView)
+    return nullptr;
+
+  CPDFXFA_Widget* pXFAWidget = ToXFAWidget(pSDKAnnot);
+  if (!pXFAWidget)
+    return nullptr;
+
+  ObservedPtr<CPDFSDK_Annot> pObservedAnnot(pSDKAnnot);
+  CXFA_FFWidget::IteratorIface* pWidgetIterator =
+      pFFPageView->CreateGCedTraverseWidgetIterator(kIteratorFilter);
+
+  // Check |pSDKAnnot| again because JS may have destroyed it.
+  if (!pObservedAnnot)
+    return nullptr;
+
+  if (pWidgetIterator->GetCurrentWidget() != pXFAWidget->GetXFAFFWidget())
+    pWidgetIterator->SetCurrentWidget(pXFAWidget->GetXFAFFWidget());
+
+  return pWidgetIterator;
+}
 
 }  // namespace
 
@@ -140,11 +178,10 @@ Optional<CFX_PointF> CPDFXFA_Page::DeviceToPage(
     const CFX_PointF& device_point) const {
   CXFA_FFPageView* pPageView = GetXFAPageView();
   if (!m_pPDFPage && !pPageView)
-    return {};
+    return pdfium::nullopt;
 
-  CFX_PointF pos =
-      GetDisplayMatrix(rect, rotate).GetInverse().Transform(device_point);
-  return pos;
+  CFX_Matrix page2device = GetDisplayMatrix(rect, rotate);
+  return page2device.GetInverse().Transform(device_point);
 }
 
 Optional<CFX_PointF> CPDFXFA_Page::PageToDevice(
@@ -153,7 +190,7 @@ Optional<CFX_PointF> CPDFXFA_Page::PageToDevice(
     const CFX_PointF& page_point) const {
   CXFA_FFPageView* pPageView = GetXFAPageView();
   if (!m_pPDFPage && !pPageView)
-    return {};
+    return pdfium::nullopt;
 
   CFX_Matrix page2device = GetDisplayMatrix(rect, rotate);
   return page2device.Transform(page_point);
@@ -182,50 +219,44 @@ CFX_Matrix CPDFXFA_Page::GetDisplayMatrix(const FX_RECT& rect,
   return CFX_Matrix();
 }
 
-CPDFSDK_Annot* CPDFXFA_Page::GetNextXFAAnnot(CPDFSDK_Annot* pSDKAnnot,
-                                             bool bNext) {
-  CPDFXFA_Widget* pXFAWidget = ToXFAWidget(pSDKAnnot);
-  if (!pXFAWidget)
+CPDFSDK_Annot* CPDFXFA_Page::GetNextXFAAnnot(CPDFSDK_Annot* pSDKAnnot) const {
+  CXFA_FFWidget::IteratorIface* pWidgetIterator =
+      GCedWidgetIteratorForAnnot(GetXFAPageView(), pSDKAnnot);
+  if (!pWidgetIterator)
     return nullptr;
 
-  CXFA_FFPageView* xfa_page_view = GetXFAPageView();
-  if (!xfa_page_view)
-    return nullptr;
-
-  ObservedPtr<CPDFSDK_Annot> pObservedAnnot(pSDKAnnot);
-  CPDFSDK_PageView* pPageView = pSDKAnnot->GetPageView();
-  IXFA_WidgetIterator* pWidgetIterator =
-      xfa_page_view->CreateGCedTraverseWidgetIterator(kIteratorFilter);
-
-  // Check |pSDKAnnot| again because JS may have destroyed it
-  if (!pObservedAnnot)
-    return nullptr;
-
-  if (pWidgetIterator->GetCurrentWidget() != pXFAWidget->GetXFAFFWidget())
-    pWidgetIterator->SetCurrentWidget(pXFAWidget->GetXFAFFWidget());
-
-  CXFA_FFWidget* hNextFocus =
-      bNext ? pWidgetIterator->MoveToNext() : pWidgetIterator->MoveToPrevious();
-  if (!hNextFocus)
-    return nullptr;
-
-  return pPageView->GetAnnotByXFAWidget(hNextFocus);
+  return pSDKAnnot->GetPageView()->GetAnnotByXFAWidget(
+      pWidgetIterator->MoveToNext());
 }
 
-CPDFSDK_Annot* CPDFXFA_Page::GetFirstOrLastXFAAnnot(CPDFSDK_PageView* page_view,
-                                                    bool last) const {
-  CXFA_FFPageView* xfa_page_view = GetXFAPageView();
-  if (!xfa_page_view)
+CPDFSDK_Annot* CPDFXFA_Page::GetPrevXFAAnnot(CPDFSDK_Annot* pSDKAnnot) const {
+  CXFA_FFWidget::IteratorIface* pWidgetIterator =
+      GCedWidgetIteratorForAnnot(GetXFAPageView(), pSDKAnnot);
+  if (!pWidgetIterator)
     return nullptr;
 
-  ObservedPtr<CPDFSDK_PageView> watched_page_view(page_view);
-  IXFA_WidgetIterator* it =
-      xfa_page_view->CreateGCedTraverseWidgetIterator(kIteratorFilter);
-  if (!watched_page_view)
+  return pSDKAnnot->GetPageView()->GetAnnotByXFAWidget(
+      pWidgetIterator->MoveToPrevious());
+}
+
+CPDFSDK_Annot* CPDFXFA_Page::GetFirstXFAAnnot(
+    CPDFSDK_PageView* page_view) const {
+  CXFA_FFWidget::IteratorIface* pWidgetIterator =
+      GCedWidgetIteratorForPage(GetXFAPageView(), page_view);
+  if (!pWidgetIterator)
     return nullptr;
 
-  CXFA_FFWidget* pWidget = last ? it->MoveToLast() : it->MoveToFirst();
-  return watched_page_view->GetAnnotByXFAWidget(pWidget);
+  return page_view->GetAnnotByXFAWidget(pWidgetIterator->MoveToFirst());
+}
+
+CPDFSDK_Annot* CPDFXFA_Page::GetLastXFAAnnot(
+    CPDFSDK_PageView* page_view) const {
+  CXFA_FFWidget::IteratorIface* pWidgetIterator =
+      GCedWidgetIteratorForPage(GetXFAPageView(), page_view);
+  if (!pWidgetIterator)
+    return nullptr;
+
+  return page_view->GetAnnotByXFAWidget(pWidgetIterator->MoveToLast());
 }
 
 int CPDFXFA_Page::HasFormFieldAtPoint(const CFX_PointF& point) const {
@@ -241,7 +272,7 @@ int CPDFXFA_Page::HasFormFieldAtPoint(const CFX_PointF& point) const {
   if (!pWidgetHandler)
     return -1;
 
-  IXFA_WidgetIterator* pWidgetIterator =
+  CXFA_FFWidget::IteratorIface* pWidgetIterator =
       pPageView->CreateGCedFormWidgetIterator(XFA_WidgetStatus_Viewable);
 
   CXFA_FFWidget* pXFAAnnot;
@@ -267,8 +298,9 @@ void CPDFXFA_Page::DrawFocusAnnot(CFX_RenderDevice* pDevice,
   gs.SetClipRect(rectClip);
 
   CXFA_FFPageView* xfaView = GetXFAPageView();
-  IXFA_WidgetIterator* pWidgetIterator = xfaView->CreateGCedFormWidgetIterator(
-      XFA_WidgetStatus_Visible | XFA_WidgetStatus_Viewable);
+  CXFA_FFWidget::IteratorIface* pWidgetIterator =
+      xfaView->CreateGCedFormWidgetIterator(XFA_WidgetStatus_Visible |
+                                            XFA_WidgetStatus_Viewable);
 
   while (1) {
     CXFA_FFWidget* pWidget = pWidgetIterator->MoveToNext();

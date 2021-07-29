@@ -40,9 +40,12 @@ import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Protocol from '../../generated/protocol.js';
 import * as Bindings from '../../models/bindings/bindings.js';
+import type * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as Logs from '../../models/logs/logs.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Workspace from '../../models/workspace/workspace.js';
+import * as IssueCounter from '../../ui/components/issue_counter/issue_counter.js';
+import * as RequestLinkIcon from '../../ui/components/request_link_icon/request_link_icon.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 import * as TextEditor from '../../ui/legacy/components/text_editor/text_editor.js';
@@ -219,12 +222,18 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
   _lastInSimilarGroup: boolean;
   _groupKey: string;
   _repeatCountElement: UI.UIUtils.DevToolsSmallBubble|null;
+  private requestResolver: Logs.RequestResolver.RequestResolver;
+  private issueResolver: IssuesManager.IssueResolver.IssueResolver;
+
 
   constructor(
-      consoleMessage: SDK.ConsoleModel.ConsoleMessage, linkifier: Components.Linkifier.Linkifier, nestingLevel: number,
-      onResize: (arg0: Common.EventTarget.EventTargetEvent) => void) {
+      consoleMessage: SDK.ConsoleModel.ConsoleMessage, linkifier: Components.Linkifier.Linkifier,
+      requestResolver: Logs.RequestResolver.RequestResolver, issueResolver: IssuesManager.IssueResolver.IssueResolver,
+      nestingLevel: number, onResize: (arg0: Common.EventTarget.EventTargetEvent) => void) {
     this._message = consoleMessage;
     this._linkifier = linkifier;
+    this.requestResolver = requestResolver;
+    this.issueResolver = issueResolver;
     this._repeatCount = 1;
     this._closeGroupDecorationCount = 0;
     this._nestingLevel = nestingLevel;
@@ -306,7 +315,7 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
           }
           UI.Tooltip.Tooltip.install(
               messageElement, i18nString(UIStrings.clearAllMessagesWithS, {
-                PH1: UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutTitleForAction('console.clear'),
+                PH1: String(UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutTitleForAction('console.clear')),
               }));
           break;
         case Protocol.Runtime.ConsoleAPICalledEventType.Dir: {
@@ -355,7 +364,7 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
     }
     messageElement.classList.add('console-message-text');
 
-    const formattedMessage = (document.createElement('span') as HTMLElement);
+    const formattedMessage = document.createElement('span');
     formattedMessage.classList.add('source-code');
     this._anchorElement = this._buildMessageAnchor();
     if (this._anchorElement) {
@@ -370,7 +379,7 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
     if (!request) {
       return null;
     }
-    const messageElement = (document.createElement('span') as HTMLElement);
+    const messageElement = document.createElement('span');
     if (this._message.level === Protocol.Log.LogEntryLevel.Error) {
       UI.UIUtils.createTextChild(messageElement, request.requestMethod + ' ');
       const linkElement = Components.Linkifier.Linkifier.linkifyRevealable(request, request.url(), request.url());
@@ -404,6 +413,29 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
     return messageElement;
   }
 
+  private createAffectedResourceLinks(): HTMLElement[] {
+    const elements = [];
+    const requestId = this._message.getAffectedResources()?.requestId;
+    if (requestId) {
+      const icon = new RequestLinkIcon.RequestLinkIcon.RequestLinkIcon();
+      icon.classList.add('resource-links');
+      icon.data = {
+        affectedRequest: {requestId},
+        requestResolver: this.requestResolver,
+        displayURL: false,
+      };
+      elements.push(icon);
+    }
+    const issueId = this._message.getAffectedResources()?.issueId;
+    if (issueId) {
+      const icon = new IssueCounter.IssueLinkIcon.IssueLinkIcon();
+      icon.classList.add('resource-links');
+      icon.data = {issueId, issueResolver: this.issueResolver};
+      elements.push(icon);
+    }
+    return elements;
+  }
+
   _buildMessageAnchor(): HTMLElement|null {
     const linkify = (message: SDK.ConsoleModel.ConsoleMessage): HTMLElement|null => {
       if (message.scriptId) {
@@ -425,9 +457,15 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
         element: anchorElement,
         forceSelect: (): void => anchorElement.focus(),
       });
-      const anchorWrapperElement = (document.createElement('span') as HTMLElement);
+      const anchorWrapperElement = document.createElement('span');
       anchorWrapperElement.classList.add('console-message-anchor');
       anchorWrapperElement.appendChild(anchorElement);
+
+      for (const element of this.createAffectedResourceLinks()) {
+        UI.UIUtils.createTextChild(anchorWrapperElement, ' ');
+        anchorWrapperElement.append(element);
+      }
+
       UI.UIUtils.createTextChild(anchorWrapperElement, ' ');
       return anchorWrapperElement;
     }
@@ -435,7 +473,7 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
   }
 
   _buildMessageWithStackTrace(runtimeModel: SDK.RuntimeModel.RuntimeModel): HTMLElement {
-    const toggleElement = (document.createElement('div') as HTMLElement);
+    const toggleElement = document.createElement('div');
     toggleElement.classList.add('console-message-stack-trace-toggle');
     const contentElement = toggleElement.createChild('div', 'console-message-stack-trace-wrapper');
     UI.ARIAUtils.markAsTree(contentElement);
@@ -514,7 +552,7 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
   _format(rawParameters: (string|SDK.RemoteObject.RemoteObject|Protocol.Runtime.RemoteObject|undefined)[]):
       HTMLElement {
     // This node is used like a Builder. Values are continually appended onto it.
-    const formattedResult = (document.createElement('span') as HTMLElement);
+    const formattedResult = document.createElement('span');
     if (this._messagePrefix) {
       formattedResult.createChild('span').textContent = this._messagePrefix;
     }
@@ -620,7 +658,7 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
   }
 
   _formatParameterAsValue(obj: SDK.RemoteObject.RemoteObject): HTMLElement {
-    const result = (document.createElement('span') as HTMLElement);
+    const result = document.createElement('span');
     const description = obj.description || '';
     if (description.length > getMaxTokenizableStringLength()) {
       const propertyValue = new ObjectUI.ObjectPropertiesSection.ExpandableTextPropertyValue(
@@ -629,14 +667,12 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
     } else {
       UI.UIUtils.createTextChild(result, description);
     }
-    if (obj.objectId) {
-      result.addEventListener('contextmenu', this._contextMenuEventFired.bind(this, obj), false);
-    }
+    result.addEventListener('contextmenu', this._contextMenuEventFired.bind(this, obj), false);
     return result;
   }
 
   _formatParameterAsTrustedType(obj: SDK.RemoteObject.RemoteObject): HTMLElement {
-    const result = (document.createElement('span') as HTMLElement);
+    const result = document.createElement('span');
     const trustedContentSpan = document.createElement('span');
     trustedContentSpan.appendChild(this._formatParameterAsString(obj));
     trustedContentSpan.classList.add('object-value-string');
@@ -646,7 +682,7 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
   }
 
   _formatParameterAsObject(obj: SDK.RemoteObject.RemoteObject, includePreview?: boolean): HTMLElement {
-    const titleElement = (document.createElement('span') as HTMLElement);
+    const titleElement = document.createElement('span');
     titleElement.classList.add('console-object');
     if (includePreview && obj.preview) {
       titleElement.classList.add('console-object-preview');
@@ -684,7 +720,7 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
   }
 
   _formatParameterAsFunction(func: SDK.RemoteObject.RemoteObject, includePreview?: boolean): HTMLElement {
-    const result = (document.createElement('span') as HTMLElement);
+    const result = document.createElement('span');
     SDK.RemoteObject.RemoteFunction.objectAsFunction(func).targetFunction().then(formatTargetFunction.bind(this));
     return result;
 
@@ -756,17 +792,16 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
   }
 
   _formatParameterAsString(output: SDK.RemoteObject.RemoteObject): HTMLElement {
-    // Properly escape double quotes here, so users don't get surprised
-    // when they copy strings from the console (https://crbug.com/1178530).
     const description = output.description ?? '';
-    const text = JSON.stringify(description);
-    const result = (document.createElement('span') as HTMLElement);
+    const text = Platform.StringUtilities.formatAsJSLiteral(description);
+    const result = document.createElement('span');
+    result.addEventListener('contextmenu', this._contextMenuEventFired.bind(this, output), false);
     result.appendChild(this._linkifyStringAsFragment(text));
     return result;
   }
 
   _formatParameterAsError(output: SDK.RemoteObject.RemoteObject): HTMLElement {
-    const result = (document.createElement('span') as HTMLElement);
+    const result = document.createElement('span');
     const errorSpan = this._tryFormatAsError(output.description || '');
     result.appendChild(errorSpan ? errorSpan : this._linkifyStringAsFragment(output.description || ''));
     return result;
@@ -951,7 +986,7 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
         const lineFragment = this._linkifyStringAsFragment(line);
-        const wrapper = (document.createElement('span') as HTMLElement);
+        const wrapper = document.createElement('span');
         wrapper.style.setProperty('contain', 'paint');
         wrapper.style.setProperty('display', 'inline-block');
         wrapper.style.setProperty('max-width', '100%');
@@ -1022,7 +1057,7 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
 
     if (Common.Settings.Settings.instance().moduleSetting('consoleTimestampsEnabled').get()) {
       if (!this._timestampElement) {
-        this._timestampElement = (document.createElement('span') as HTMLElement);
+        this._timestampElement = document.createElement('span');
         this._timestampElement.classList.add('console-timestamp');
       }
       this._timestampElement.textContent = UI.UIUtils.formatTimestamp(this._message.timestamp, false) + ' ';
@@ -1045,7 +1080,7 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
       this._similarGroupMarker.remove();
       this._similarGroupMarker = null;
     } else if (this._element && !this._similarGroupMarker && inSimilarGroup) {
-      this._similarGroupMarker = (document.createElement('div') as HTMLElement);
+      this._similarGroupMarker = document.createElement('div');
       this._similarGroupMarker.classList.add('nesting-level-marker');
       this._element.insertBefore(this._similarGroupMarker, this._element.firstChild);
       this._similarGroupMarker.classList.toggle('group-closed', this._lastInSimilarGroup);
@@ -1188,7 +1223,7 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
       return this._contentElement;
     }
 
-    const contentElement = (document.createElement('div') as HTMLElement);
+    const contentElement = document.createElement('div');
     contentElement.classList.add('console-message');
     if (this._messageLevelIcon) {
       contentElement.appendChild(this._messageLevelIcon);
@@ -1218,7 +1253,7 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
     if (this._element) {
       return this._element;
     }
-    this._element = (document.createElement('div') as HTMLElement);
+    this._element = document.createElement('div');
     this._element.tabIndex = -1;
     this._element.addEventListener('keydown', (this._onKeyDown.bind(this) as EventListener));
     this.updateMessageElement();
@@ -1442,7 +1477,7 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
       if (scripts.length) {
         const location =
             new SDK.DebuggerModel.Location(debuggerModel, scripts[0].scriptId, lineNumber || 0, columnNumber);
-        return debuggerWorkspaceBinding.pluginManager.getFunctionInfo(scripts[0], location);
+        return await debuggerWorkspaceBinding.pluginManager.getFunctionInfo(scripts[0], location) ?? {frames: []};
       }
     }
 
@@ -1626,6 +1661,11 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
       if (debuggerModel.scriptsForSourceURL(url).length) {
         return url;
       }
+      // nodejs stack traces contain (absolute) file paths, but v8 reports them as file: urls.
+      const fileUrl = new URL(url, 'file://');
+      if (debuggerModel.scriptsForSourceURL(fileUrl.href).length) {
+        return fileUrl.href;
+      }
       return null;
     }
   }
@@ -1755,10 +1795,11 @@ export class ConsoleGroupViewMessage extends ConsoleViewMessage {
   _onToggle: () => void;
 
   constructor(
-      consoleMessage: SDK.ConsoleModel.ConsoleMessage, linkifier: Components.Linkifier.Linkifier, nestingLevel: number,
-      onToggle: () => void, onResize: (arg0: Common.EventTarget.EventTargetEvent) => void) {
+      consoleMessage: SDK.ConsoleModel.ConsoleMessage, linkifier: Components.Linkifier.Linkifier,
+      requestResolver: Logs.RequestResolver.RequestResolver, issueResolver: IssuesManager.IssueResolver.IssueResolver,
+      nestingLevel: number, onToggle: () => void, onResize: (arg0: Common.EventTarget.EventTargetEvent) => void) {
     console.assert(consoleMessage.isGroupStartMessage());
-    super(consoleMessage, linkifier, nestingLevel, onResize);
+    super(consoleMessage, linkifier, requestResolver, issueResolver, nestingLevel, onResize);
     this._collapsed = consoleMessage.type === Protocol.Runtime.ConsoleAPICalledEventType.StartGroupCollapsed;
     this._expandGroupIcon = null;
     this._onToggle = onToggle;
@@ -1817,9 +1858,10 @@ export class ConsoleCommand extends ConsoleViewMessage {
   _formattedCommand: HTMLElement|null;
 
   constructor(
-      consoleMessage: SDK.ConsoleModel.ConsoleMessage, linkifier: Components.Linkifier.Linkifier, nestingLevel: number,
-      onResize: (arg0: Common.EventTarget.EventTargetEvent) => void) {
-    super(consoleMessage, linkifier, nestingLevel, onResize);
+      consoleMessage: SDK.ConsoleModel.ConsoleMessage, linkifier: Components.Linkifier.Linkifier,
+      requestResolver: Logs.RequestResolver.RequestResolver, issueResolver: IssuesManager.IssueResolver.IssueResolver,
+      nestingLevel: number, onResize: (arg0: Common.EventTarget.EventTargetEvent) => void) {
+    super(consoleMessage, linkifier, requestResolver, issueResolver, nestingLevel, onResize);
     this._formattedCommand = null;
   }
 
@@ -1828,14 +1870,14 @@ export class ConsoleCommand extends ConsoleViewMessage {
     if (contentElement) {
       return contentElement;
     }
-    const newContentElement = (document.createElement('div') as HTMLElement);
+    const newContentElement = document.createElement('div');
     this.setContentElement(newContentElement);
     newContentElement.classList.add('console-user-command');
     const icon = UI.Icon.Icon.create('smallicon-user-command', 'command-result-icon');
     newContentElement.appendChild(icon);
 
     elementToMessage.set(newContentElement, this);
-    this._formattedCommand = (document.createElement('span') as HTMLElement);
+    this._formattedCommand = document.createElement('span');
     this._formattedCommand.classList.add('source-code');
     this._formattedCommand.textContent = Platform.StringUtilities.replaceControlCharacters(this.text);
     newContentElement.appendChild(this._formattedCommand);
@@ -1874,9 +1916,10 @@ export class ConsoleTableMessageView extends ConsoleViewMessage {
   _dataGrid: DataGrid.SortableDataGrid.SortableDataGrid<unknown>|null;
 
   constructor(
-      consoleMessage: SDK.ConsoleModel.ConsoleMessage, linkifier: Components.Linkifier.Linkifier, nestingLevel: number,
-      onResize: (arg0: Common.EventTarget.EventTargetEvent) => void) {
-    super(consoleMessage, linkifier, nestingLevel, onResize);
+      consoleMessage: SDK.ConsoleModel.ConsoleMessage, linkifier: Components.Linkifier.Linkifier,
+      requestResolver: Logs.RequestResolver.RequestResolver, issueResolver: IssuesManager.IssueResolver.IssueResolver,
+      nestingLevel: number, onResize: (arg0: Common.EventTarget.EventTargetEvent) => void) {
+    super(consoleMessage, linkifier, requestResolver, issueResolver, nestingLevel, onResize);
     console.assert(consoleMessage.type === Protocol.Runtime.ConsoleAPICalledEventType.Table);
     this._dataGrid = null;
   }
@@ -1903,7 +1946,7 @@ export class ConsoleTableMessageView extends ConsoleViewMessage {
       return contentElement;
     }
 
-    const newContentElement = (document.createElement('div') as HTMLElement);
+    const newContentElement = document.createElement('div');
     newContentElement.classList.add('console-message');
     if (this._messageLevelIcon) {
       newContentElement.appendChild(this._messageLevelIcon);
@@ -1916,7 +1959,7 @@ export class ConsoleTableMessageView extends ConsoleViewMessage {
   }
 
   _buildTableMessage(): HTMLElement {
-    const formattedMessage = (document.createElement('span') as HTMLElement);
+    const formattedMessage = document.createElement('span');
     formattedMessage.classList.add('source-code');
     this._anchorElement = this._buildMessageAnchor();
     if (this._anchorElement) {

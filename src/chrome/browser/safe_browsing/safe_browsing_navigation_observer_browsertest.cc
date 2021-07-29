@@ -9,11 +9,11 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
-#include "chrome/browser/safe_browsing/safe_browsing_navigation_observer.h"
-#include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
+#include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager_factory.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -22,7 +22,9 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/download/public/common/download_item.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing/core/features.h"
+#include "components/safe_browsing/content/browser/safe_browsing_navigation_observer.h"
+#include "components/safe_browsing/content/browser/safe_browsing_navigation_observer_manager.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item_utils.h"
@@ -174,19 +176,28 @@ class TestNavigationObserverManager
     : public SafeBrowsingNavigationObserverManager,
       public TabStripModelObserver {
  public:
-  explicit TestNavigationObserverManager(Browser* browser) {
+  explicit TestNavigationObserverManager(Browser* browser)
+      : SafeBrowsingNavigationObserverManager(browser->profile()->GetPrefs()) {
     browser->tab_strip_model()->AddObserver(this);
   }
 
   void ObserveContents(content::WebContents* contents) {
     ASSERT_TRUE(contents);
-    observer_list_.push_back(
-        std::make_unique<SafeBrowsingNavigationObserver>(contents, this));
+    Profile* profile =
+        Profile::FromBrowserContext(contents->GetBrowserContext());
+    auto observer = std::make_unique<SafeBrowsingNavigationObserver>(
+        contents, HostContentSettingsMapFactory::GetForProfile(profile),
+        safe_browsing::SafeBrowsingNavigationObserverManagerFactory::
+            GetForBrowserContext(profile));
+    observer->SetObserverManagerForTesting(this);
+    observer_list_.push_back(std::move(observer));
     inner_contents_creation_observers_.push_back(
         std::make_unique<InnerContentsCreationObserver>(
             contents,
             base::BindRepeating(&TestNavigationObserverManager::ObserveContents,
-                                this)));
+                                // Unretained is safe because this object owns
+                                // inner_contents_creation_observers_
+                                base::Unretained(this))));
   }
 
   // TabStripModelObserver:
@@ -203,7 +214,6 @@ class TestNavigationObserverManager
     }
   }
 
- protected:
   ~TestNavigationObserverManager() override = default;
 
  private:
@@ -227,7 +237,7 @@ class SBNavigationObserverBrowserTest : public InProcessBrowserTest {
     ASSERT_TRUE(embedded_test_server()->Start());
     host_resolver()->AddRule("*", "127.0.0.1");
     observer_manager_ =
-        base::MakeRefCounted<TestNavigationObserverManager>(browser());
+        std::make_unique<TestNavigationObserverManager>(browser());
     observer_manager_->ObserveContents(
         browser()->tab_strip_model()->GetActiveWebContents());
     ASSERT_TRUE(InitialSetup());
@@ -247,6 +257,7 @@ class SBNavigationObserverBrowserTest : public InProcessBrowserTest {
   }
 
   void TearDownOnMainThread() override {
+    observer_manager_.reset();
     // Cancel unfinished download if any.
     CancelDownloads();
   }
@@ -523,12 +534,13 @@ class SBNavigationObserverBrowserTest : public InProcessBrowserTest {
                                      extended_reporting_enabled);
     browser()->profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled,
                                                  extended_reporting_enabled);
+    auto* maybe_otr_profile = is_incognito
+                                  ? browser()->profile()->GetPrimaryOTRProfile(
+                                        /*create_if_needed=*/true)
+                                  : browser()->profile();
     return SafeBrowsingNavigationObserverManager::
-        CountOfRecentNavigationsToAppend(
-            is_incognito ? *browser()->profile()->GetPrimaryOTRProfile(
-                               /*create_if_needed=*/true)
-                         : *browser()->profile(),
-            result);
+        CountOfRecentNavigationsToAppend(maybe_otr_profile,
+                                         maybe_otr_profile->GetPrefs(), result);
   }
 
   void AppendRecentNavigations(int recent_navigation_count,
@@ -549,7 +561,7 @@ class SBNavigationObserverBrowserTest : public InProcessBrowserTest {
   }
 
  protected:
-  scoped_refptr<TestNavigationObserverManager> observer_manager_;
+  std::unique_ptr<TestNavigationObserverManager> observer_manager_;
 };
 
 // Type download URL into address bar and start download on the same page.
@@ -639,6 +651,7 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest, DirectDownload) {
       std::vector<GURL>(),            // server redirects
       ReferrerChainEntry::RENDERER_INITIATED_WITH_USER_GESTURE,
       referrer_chain.Get(0));
+  EXPECT_FALSE(referrer_chain.Get(0).is_url_removed_by_policy());
   VerifyReferrerChainEntry(initial_url,                       // url
                            GURL(),                            // main_frame_url
                            ReferrerChainEntry::LANDING_PAGE,  // type
@@ -649,6 +662,7 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest, DirectDownload) {
                            std::vector<GURL>(),  // server redirects
                            ReferrerChainEntry::BROWSER_INITIATED,
                            referrer_chain.Get(1));
+  EXPECT_FALSE(referrer_chain.Get(1).is_url_removed_by_policy());
 }
 
 // Click on a link with rel="noreferrer" attribute, and start download on the
@@ -2861,6 +2875,167 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
   navigation_manager.ResumeNavigation();
   navigation_manager.WaitForNavigationFinished();
   ASSERT_EQ(0U, nav_list->PendingNavigationEventsSize());
+}
+
+// Verify URLs that match the Safe Browsing allowlist domains (a.k.a
+// prefs::kSafeBrowsingAllowlistDomains) are removed from the referrer chain.
+IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
+                       AllowlistDomainsRemoved_ReferrerChain) {
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(kSingleFrameTestURL));
+  GURL initial_url = embedded_test_server()->GetURL(kSingleFrameTestURL);
+  ClickTestLink("sub_frame_download_attribution", 1, initial_url);
+  GURL multi_frame_test_url =
+      embedded_test_server()->GetURL(kMultiFrameTestURL);
+  GURL iframe_url = embedded_test_server()->GetURL(kIframeDirectDownloadURL);
+  ClickTestLink("iframe_direct_download", 1, iframe_url, 0);
+  GURL iframe_retargeting_url =
+      embedded_test_server()->GetURL(kIframeRetargetingURL);
+  GURL download_url = embedded_test_server()->GetURL(kDownloadItemURL);
+  std::string test_server_ip(embedded_test_server()->host_port_pair().host());
+
+  // Add URLs to the Safe Browsing allowlist.
+  base::ListValue allowlist;
+  allowlist.AppendString(initial_url.host());
+  allowlist.AppendString(multi_frame_test_url.host());
+  allowlist.AppendString(iframe_url.host());
+  allowlist.AppendString(iframe_retargeting_url.host());
+  allowlist.AppendString(download_url.host());
+  browser()->profile()->GetPrefs()->Set(prefs::kSafeBrowsingAllowlistDomains,
+                                        allowlist);
+
+  ReferrerChain referrer_chain;
+  IdentifyReferrerChainForDownload(GetDownload(), &referrer_chain);
+  ASSERT_EQ(4, referrer_chain.size());
+  // All URL fields should be empty because they all match the allowlist.
+  VerifyReferrerChainEntry(
+      GURL(),                         // url
+      GURL(),                         // main_frame_url
+      ReferrerChainEntry::EVENT_URL,  // type
+      test_server_ip,                 // ip_address
+      GURL(),                         // referrer_url
+      GURL(),                         // referrer_main_frame_url
+      false,                          // is_retargeting
+      std::vector<GURL>(),            // server redirects
+      ReferrerChainEntry::RENDERER_INITIATED_WITH_USER_GESTURE,
+      referrer_chain.Get(0));
+  EXPECT_TRUE(referrer_chain.Get(0).is_url_removed_by_policy());
+  VerifyReferrerChainEntry(
+      GURL(),                            // url
+      GURL(),                            // main_frame_url
+      ReferrerChainEntry::LANDING_PAGE,  // type
+      test_server_ip,                    // ip_address
+      GURL(),                            // referrer_url
+      GURL(),                            // referrer_main_frame_url
+      false,                             // is_retargeting
+      std::vector<GURL>(),               // server redirects
+      ReferrerChainEntry::RENDERER_INITIATED_WITHOUT_USER_GESTURE,
+      referrer_chain.Get(1));
+  EXPECT_TRUE(referrer_chain.Get(1).is_url_removed_by_policy());
+  VerifyReferrerChainEntry(
+      GURL(),                               // url
+      GURL(),                               // main_frame_url
+      ReferrerChainEntry::CLIENT_REDIRECT,  // type
+      test_server_ip,                       // ip_address
+      GURL(),                               // referrer_url
+      GURL(),                               // referrer_main_frame_url
+      false,                                // is_retargeting
+      std::vector<GURL>(),                  // server redirects
+      ReferrerChainEntry::RENDERER_INITIATED_WITH_USER_GESTURE,
+      referrer_chain.Get(2));
+  EXPECT_TRUE(referrer_chain.Get(2).is_url_removed_by_policy());
+  VerifyReferrerChainEntry(GURL(),  // url
+                           GURL(),  // main_frame_url
+                           ReferrerChainEntry::LANDING_REFERRER,  // type
+                           test_server_ip,                        // ip_address
+                           GURL(),               // referrer_url
+                           GURL(),               // referrer_main_frame_url
+                           false,                // is_retargeting
+                           std::vector<GURL>(),  // server redirects
+                           ReferrerChainEntry::BROWSER_INITIATED,
+                           referrer_chain.Get(3));
+  EXPECT_TRUE(referrer_chain.Get(3).is_url_removed_by_policy());
+}
+
+IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
+                       AllowlistDomainsRemoved_ServerRedirect) {
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(kSingleFrameTestURL));
+  GURL initial_url = embedded_test_server()->GetURL(kSingleFrameTestURL);
+  GURL download_url = embedded_test_server()->GetURL(kDownloadItemURL);
+  GURL request_url =
+      embedded_test_server()->GetURL("/server-redirect?" + download_url.spec());
+  ui_test_utils::NavigateToURL(browser(), request_url);
+  std::string test_server_ip(embedded_test_server()->host_port_pair().host());
+
+  // Add URLs to the Safe Browsing allowlist.
+  base::ListValue allowlist;
+  allowlist.AppendString(initial_url.host());
+  allowlist.AppendString(download_url.host());
+  allowlist.AppendString(request_url.host());
+  browser()->profile()->GetPrefs()->Set(prefs::kSafeBrowsingAllowlistDomains,
+                                        allowlist);
+
+  ReferrerChain referrer_chain;
+  IdentifyReferrerChainForDownload(GetDownload(), &referrer_chain);
+  ASSERT_EQ(1, referrer_chain.size());
+  EXPECT_TRUE(referrer_chain.Get(0).is_url_removed_by_policy());
+  // All URL fields should be empty because they all match the allowlist.
+  VerifyReferrerChainEntry(GURL(),                         // url
+                           GURL(),                         // main_frame_url
+                           ReferrerChainEntry::EVENT_URL,  // type
+                           test_server_ip,                 // ip_address
+                           GURL(),                         // referrer_url
+                           GURL(),            // referrer_main_frame_url
+                           false,             // is_retargeting
+                           {GURL(), GURL()},  // server redirects
+                           ReferrerChainEntry::BROWSER_INITIATED,
+                           referrer_chain.Get(0));
+}
+
+IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
+                       AllowlistDomainsRemoved_RecentNavigation) {
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(kSingleFrameTestURL));
+  GURL initial_url = embedded_test_server()->GetURL(kSingleFrameTestURL);
+  ClickTestLink("direct_download", 1, initial_url);
+  GURL download_url = embedded_test_server()->GetURL(kDownloadItemURL);
+  std::string test_server_ip(embedded_test_server()->host_port_pair().host());
+
+  // Add URLs to the Safe Browsing allowlist.
+  base::ListValue allowlist;
+  allowlist.AppendString(initial_url.host());
+  allowlist.AppendString(download_url.host());
+  browser()->profile()->GetPrefs()->Set(prefs::kSafeBrowsingAllowlistDomains,
+                                        allowlist);
+
+  ReferrerChain referrer_chain;
+  AppendRecentNavigations(/*recent_navigation_count=*/2, &referrer_chain);
+  EXPECT_EQ(2, referrer_chain.size());
+  // All URL fields should be empty because they all match the allowlist.
+  VerifyReferrerChainEntry(
+      GURL(),                                 // url
+      GURL(),                                 // main_frame_url
+      ReferrerChainEntry::RECENT_NAVIGATION,  // type
+      test_server_ip,                         // ip_address
+      GURL(),                                 // referrer_url
+      GURL(),                                 // referrer_main_frame_url
+      false,                                  // is_retargeting
+      std::vector<GURL>(),                    // server redirects
+      ReferrerChainEntry::RENDERER_INITIATED_WITH_USER_GESTURE,
+      referrer_chain.Get(0));
+  EXPECT_TRUE(referrer_chain.Get(0).is_url_removed_by_policy());
+  VerifyReferrerChainEntry(GURL(),  // url
+                           GURL(),  // main_frame_url
+                           ReferrerChainEntry::RECENT_NAVIGATION,  // type
+                           test_server_ip,                         // ip_address
+                           GURL(),               // referrer_url
+                           GURL(),               // referrer_main_frame_url
+                           false,                // is_retargeting
+                           std::vector<GURL>(),  // server redirects
+                           ReferrerChainEntry::BROWSER_INITIATED,
+                           referrer_chain.Get(1));
+  EXPECT_TRUE(referrer_chain.Get(1).is_url_removed_by_policy());
 }
 
 class SBNavigationObserverPortalBrowserTest

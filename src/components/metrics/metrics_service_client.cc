@@ -64,8 +64,7 @@ ukm::UkmService* MetricsServiceClient::GetUkmService() {
   return nullptr;
 }
 
-bool MetricsServiceClient::ShouldUploadMetricsForUserId(
-    const uint64_t user_id) {
+bool MetricsServiceClient::ShouldUploadMetricsForUserId(uint64_t user_id) {
   return true;
 }
 
@@ -128,7 +127,7 @@ bool MetricsServiceClient::AreNotificationListenersEnabledOnAllProfiles() {
   return false;
 }
 
-std::string MetricsServiceClient::GetAppPackageName() {
+std::string MetricsServiceClient::GetAppPackageNameIfLoggable() {
   return std::string();
 }
 

@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {DownloadItem, PageCallbackRouter, PageRemote} from 'chrome://download-shelf.top-chrome/download_shelf.mojom-webui.js';
-import {DownloadShelfApiProxy, DownloadShelfApiProxyImpl} from 'chrome://download-shelf.top-chrome/download_shelf_api_proxy.js';
+import {DownloadItem, PageCallbackRouter, PageRemote} from 'chrome://download-shelf.top-chrome/download_shelf.js';
 import {TestBrowserProxy} from '../test_browser_proxy.m.js';
 
-/** @implements {DownloadShelfApiProxy} */
 export class TestDownloadShelfApiProxy extends TestBrowserProxy {
   constructor() {
     super([
       'doClose',
+      'doShowAll',
+      'discardDownload',
+      'keepDownload',
       'getDownloads',
       'getFileIcon',
+      'openDownload',
       'showContextMenu',
     ]);
 
@@ -33,6 +35,21 @@ export class TestDownloadShelfApiProxy extends TestBrowserProxy {
   }
 
   /** @override */
+  doShowAll() {
+    this.methodCalled('doShowAll');
+  }
+
+  /** @override */
+  discardDownload(downloadId) {
+    this.methodCalled('discardDownload', [downloadId]);
+  }
+
+  /** @override */
+  keepDownload(downloadId) {
+    this.methodCalled('keepDownload', [downloadId]);
+  }
+
+  /** @override */
   getDownloads() {
     this.methodCalled('getDownloads');
     return Promise.resolve({downloadItems: this.downloadItems_});
@@ -47,6 +64,11 @@ export class TestDownloadShelfApiProxy extends TestBrowserProxy {
   /** @override */
   showContextMenu(downloadId, clientX, clientY) {
     this.methodCalled('showContextMenu', [downloadId, clientX, clientY]);
+  }
+
+  /** @override */
+  openDownload(downloadId) {
+    this.methodCalled('openDownload', [downloadId]);
   }
 
   /** @override */

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/win/conflicts/third_party_conflicts_manager.h"
 
+#include <windows.h>
+
 #include <string>
 #include <utility>
 
@@ -37,6 +39,8 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+
+#include <windows.h>
 
 namespace {
 

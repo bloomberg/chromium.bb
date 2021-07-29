@@ -11,6 +11,17 @@
 # indicate that you have read the license and understand and accept it
 # fully.
 
+#
+# Say
+#
+#   meson configure
+#
+# to see all configuration options and their default values.  For example,
+# to build only a shared version of FreeType, override the default value
+# with
+#
+#   meson setup -Ddefault_library=shared
+#
 
 project('freetype2', 'c',
   meson_version: '>= 0.55.0',
@@ -19,13 +30,10 @@ project('freetype2', 'c',
                        'include/freetype/freetype.h').stdout().strip(),
 )
 
-#
-# Rules to compile the FreeType 2 library itself
-#
 
-
-# Apparently meson doesn't provide a read_file() function, so instead
-# running an external command is required.
+# Only meson >= 0.57 can read a file and assign its contents to a
+# variable; we thus use an external command to have this functionality
+# with older versions, too.
 
 python = import('python')
 python_exe = python.find_installation(required: true)
@@ -101,7 +109,7 @@ endforeach
 
 
 # FreeType 2 base extensions.
-# Normally configured through `modules.cfg`.
+# To be configured in `modules.cfg`.
 
 base_extensions = run_command(python_exe,
   files('builds/meson/parse_modules_cfg.py'),
@@ -124,6 +132,7 @@ ft2_public_headers = files([
   'include/freetype/ftbzip2.h',
   'include/freetype/ftcache.h',
   'include/freetype/ftchapters.h',
+  'include/freetype/ftcid.h',
   'include/freetype/ftcolor.h',
   'include/freetype/ftdriver.h',
   'include/freetype/fterrdef.h',
@@ -184,14 +193,16 @@ has_sys_mman_h = cc.has_header('sys/mman.h')
 
 mmap_option = get_option('mmap')
 
+use_unix_ftsystem_c = false
 if mmap_option.disabled()
   ft2_sources += files(['src/base/ftsystem.c',])
 elif host_machine.system() == 'windows'
   ft2_sources += files(['builds/windows/ftsystem.c',])
 else
   if has_unistd_h and has_fcntl_h and has_sys_mman_h
-    # This version of ftsystem.c uses mmap() to read input font files.
+    # This version of `ftsystem.c` uses `mmap` to read input font files.
     ft2_sources += files(['builds/unix/ftsystem.c',])
+    use_unix_ftsystem_c = true
   elif mmap_option.enabled()
     error('mmap was enabled via options but is not available,'
           + ' required headers were not found!')
@@ -205,7 +216,7 @@ endif
 #
 # NOTE: Some specialized versions exist for other platforms not supported by
 # Meson.  Most implementation differences are extremely minor, i.e., in the
-# implementation of FT_Message() and FT_Panic(), and getting the `FT2_DEBUG`
+# implementation of `FT_Message` and `FT_Panic`, and getting the `FT2_DEBUG`
 # value from the environment, when this is supported.  A smaller refactor
 # might make these platform-specific files much smaller, and could be moved
 # into `ftsystem.c` as well.
@@ -302,7 +313,7 @@ if host_machine.system() == 'windows'
 endif
 
 
-# Generate `ftconfig.h`
+# Generate `ftconfig.h`.
 
 ftconfig_command = process_header_command
 if has_unistd_h
@@ -312,7 +323,7 @@ if has_fcntl_h
   ftconfig_command += '--enable=HAVE_FCNTL_H'
 endif
 
-if host_machine.system() in ['linux', 'darwin', 'cygwin']
+if use_unix_ftsystem_c
   ftconfig_h_in = files('builds/unix/ftconfig.h.in')
   ftconfig_h = custom_target('ftconfig.h',
     input: ftconfig_h_in,
@@ -337,7 +348,7 @@ ft2_lib = library('freetype',
 )
 
 
-# To be used by other projects including this one through subproject().
+# To be used by other projects including this one through `subproject`.
 freetype_dep = declare_dependency(
   include_directories: ft2_includes,
   link_with: ft2_lib,
@@ -368,6 +379,9 @@ pkgconfig.generate(ft2_lib,
   version: ft2_pkgconfig_version,
 )
 
+if get_option('tests').enabled()
+  subdir('tests')
+endif
 
 # NOTE: Unlike the old `make refdoc` command, this generates the
 # documentation under `$BUILD/docs/` since Meson doesn't support modifying

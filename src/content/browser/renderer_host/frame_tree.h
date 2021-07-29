@@ -34,6 +34,7 @@ struct FramePolicy;
 namespace content {
 
 class BrowserContext;
+class PageDelegate;
 class RenderFrameHostDelegate;
 class RenderViewHostDelegate;
 class RenderViewHostImpl;
@@ -73,6 +74,7 @@ class CONTENT_EXPORT FrameTree {
     FrameTreeNode* operator*() { return current_node_; }
 
    private:
+    friend class FrameTreeTest;
     friend class NodeRange;
 
     NodeIterator(const std::vector<FrameTreeNode*>& starting_nodes,
@@ -84,7 +86,7 @@ class CONTENT_EXPORT FrameTree {
     FrameTreeNode* current_node_;
     const FrameTreeNode* const root_of_subtree_to_skip_;
     const bool should_descend_into_inner_trees_;
-    base::queue<FrameTreeNode*> queue_;
+    base::circular_deque<FrameTreeNode*> queue_;
   };
 
   class CONTENT_EXPORT NodeRange {
@@ -128,6 +130,9 @@ class CONTENT_EXPORT FrameTree {
 
     // Returns true when the active RenderWidgetHostView should be hidden.
     virtual bool IsHidden() = 0;
+
+    // Called when current Page of this frame tree changes to `page`.
+    virtual void NotifyPageChanged(PageImpl& page) = 0;
   };
 
   // Type of FrameTree instance.
@@ -151,6 +156,7 @@ class CONTENT_EXPORT FrameTree {
             RenderViewHostDelegate* render_view_delegate,
             RenderWidgetHostDelegate* render_widget_delegate,
             RenderFrameHostManager::Delegate* manager_delegate,
+            PageDelegate* page_delegate,
             Type type);
   ~FrameTree();
 
@@ -172,10 +178,9 @@ class CONTENT_EXPORT FrameTree {
 
   Delegate* delegate() { return delegate_; }
 
-  // Delegates for RenderFrameHosts, RenderViewHosts, RenderWidgetHosts and
-  // RenderFrameHostManagers. These can be kept centrally on the FrameTree
-  // because they are expected to be the same for all frames on a given
-  // FrameTree.
+  // Delegates for various objects.  These can be kept centrally on the
+  // FrameTree because they are expected to be the same for all frames on a
+  // given FrameTree.
   RenderFrameHostDelegate* render_frame_delegate() {
     return render_frame_delegate_;
   }
@@ -188,8 +193,9 @@ class CONTENT_EXPORT FrameTree {
   RenderFrameHostManager::Delegate* manager_delegate() {
     return manager_delegate_;
   }
+  PageDelegate* page_delegate() { return page_delegate_; }
 
-  using RenderViewHostMapId = util::IdType32<class RenderViewHostMap>;
+  using RenderViewHostMapId = base::IdType32<class RenderViewHostMap>;
   using RenderViewHostMap = std::unordered_map<RenderViewHostMapId,
                                                RenderViewHostImpl*,
                                                RenderViewHostMapId::Hasher>;
@@ -390,6 +396,12 @@ class CONTENT_EXPORT FrameTree {
   // Must be called before FrameTree is destroyed.
   void Shutdown();
 
+  // Returns true if this is a fenced frame tree.
+  // TODO(crbug.com/1123606): Integrate this with the MPArch based fenced frame
+  // code once that lands.
+  bool IsFencedFrameTree() const { return is_fenced_frame_tree_; }
+  void SetFencedFrameTreeForTesting() { is_fenced_frame_tree_ = true; }
+
  private:
   friend class FrameTreeTest;
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest, RemoveFocusedFrame);
@@ -407,6 +419,7 @@ class CONTENT_EXPORT FrameTree {
   RenderViewHostDelegate* render_view_delegate_;
   RenderWidgetHostDelegate* render_widget_delegate_;
   RenderFrameHostManager::Delegate* manager_delegate_;
+  PageDelegate* page_delegate_;
 
   // The Navigator object responsible for managing navigations on this frame
   // tree. Each FrameTreeNode will default to using it for navigation tasks in
@@ -437,6 +450,10 @@ class CONTENT_EXPORT FrameTree {
 
   // Indicates type of frame tree.
   const Type type_;
+
+  // TODO(crbug.com/1123606): Integrate this with the MPArch based fenced frame
+  // code once that lands. Possibly this will then be part of |type_|.
+  bool is_fenced_frame_tree_ = false;
 
 #if DCHECK_IS_ON()
   // Whether Shutdown() was called.

@@ -22,11 +22,12 @@
 #include "core/fxge/cfx_fillrenderoptions.h"
 #include "core/fxge/cfx_gemodule.h"
 #include "core/fxge/cfx_graphstatedata.h"
-#include "core/fxge/cfx_pathdata.h"
+#include "core/fxge/cfx_path.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
 #include "core/fxge/win32/cwin32_platform.h"
+#include "third_party/base/cxx17_backports.h"
+#include "third_party/base/numerics/safe_conversions.h"
 #include "third_party/base/span.h"
-#include "third_party/base/stl_util.h"
 
 // Has to come before gdiplus.h
 namespace Gdiplus {
@@ -464,7 +465,7 @@ Optional<std::pair<size_t, size_t>> IsSmallTriangle(
     if (distance_square < 2.25f)
       return std::make_pair(i, pair1);
   }
-  return {};
+  return pdfium::nullopt;
 }
 
 class GpStream final : public IStream {
@@ -669,13 +670,13 @@ bool CGdiplusExt::StretchDIBits(HDC hDC,
 }
 
 bool CGdiplusExt::DrawPath(HDC hDC,
-                           const CFX_PathData* pPathData,
+                           const CFX_Path* pPath,
                            const CFX_Matrix* pObject2Device,
                            const CFX_GraphStateData* pGraphState,
                            uint32_t fill_argb,
                            uint32_t stroke_argb,
                            const CFX_FillRenderOptions& fill_options) {
-  pdfium::span<const FX_PATHPOINT> points = pPathData->GetPoints();
+  pdfium::span<const CFX_Path::Point> points = pPath->GetPoints();
   if (points.empty())
     return true;
 
@@ -715,17 +716,17 @@ bool CGdiplusExt::DrawPath(HDC hDC,
     if (pos.y < -50000.0f)
       gp_points[i].Y = -50000.0f;
 
-    FXPT_TYPE point_type = points[i].m_Type;
-    if (point_type == FXPT_TYPE::MoveTo) {
+    CFX_Path::Point::Type point_type = points[i].m_Type;
+    if (point_type == CFX_Path::Point::Type::kMove) {
       gp_types[i] = Gdiplus::PathPointTypeStart;
       nSubPathes++;
       bSubClose = false;
       startpoint = i;
-    } else if (point_type == FXPT_TYPE::LineTo) {
+    } else if (point_type == CFX_Path::Point::Type::kLine) {
       gp_types[i] = Gdiplus::PathPointTypeLine;
-      if (points[i - 1].IsTypeAndOpen(FXPT_TYPE::MoveTo) &&
+      if (points[i - 1].IsTypeAndOpen(CFX_Path::Point::Type::kMove) &&
           (i == points.size() - 1 ||
-           points[i + 1].IsTypeAndOpen(FXPT_TYPE::MoveTo)) &&
+           points[i + 1].IsTypeAndOpen(CFX_Path::Point::Type::kMove)) &&
           gp_points[i].Y == gp_points[i - 1].Y &&
           gp_points[i].X == gp_points[i - 1].X) {
         gp_points[i].X += 0.01f;
@@ -735,7 +736,7 @@ bool CGdiplusExt::DrawPath(HDC hDC,
           gp_points[i].Y != gp_points[i - 1].Y) {
         bSmooth = true;
       }
-    } else if (point_type == FXPT_TYPE::BezierTo) {
+    } else if (point_type == CFX_Path::Point::Type::kBezier) {
       gp_types[i] = Gdiplus::PathPointTypeBezier;
       bSmooth = true;
     }

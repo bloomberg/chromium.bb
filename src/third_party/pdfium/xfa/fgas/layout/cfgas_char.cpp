@@ -9,8 +9,9 @@
 #include <algorithm>
 
 #include "core/fxcrt/fx_extension.h"
+#include "core/fxcrt/stl_util.h"
 #include "third_party/base/check.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/cxx17_backports.h"
 
 namespace {
 
@@ -268,7 +269,7 @@ FX_BIDINEUTRALACTION GetNeutralAction(FX_BIDINEUTRALSTATE eState,
 void ReverseString(std::vector<CFGAS_Char>* chars,
                    size_t iStart,
                    size_t iCount) {
-  DCHECK(pdfium::IndexInBounds(*chars, iStart));
+  DCHECK(fxcrt::IndexInBounds(*chars, iStart));
   DCHECK(iStart + iCount <= chars->size());
 
   std::reverse(chars->begin() + iStart, chars->begin() + iStart + iCount);
@@ -301,15 +302,15 @@ void SetDeferredRunLevel(std::vector<CFGAS_Char>* chars,
 void Classify(std::vector<CFGAS_Char>* chars, size_t iCount) {
   for (size_t i = 0; i < iCount; ++i) {
     CFGAS_Char& cur = (*chars)[i];
-    cur.m_iBidiClass = FX_GetBidiClass(cur.char_code());
+    cur.m_iBidiClass = pdfium::unicode::GetBidiClass(cur.char_code());
   }
 }
 
 void ClassifyWithTransform(std::vector<CFGAS_Char>* chars, size_t iCount) {
   for (size_t i = 0; i < iCount; ++i) {
     CFGAS_Char& cur = (*chars)[i];
-    cur.m_iBidiClass =
-        kNTypes[static_cast<size_t>(FX_GetBidiClass(cur.char_code()))];
+    cur.m_iBidiClass = kNTypes[static_cast<size_t>(
+        pdfium::unicode::GetBidiClass(cur.char_code()))];
   }
 }
 
@@ -564,5 +565,5 @@ CFGAS_Char::CFGAS_Char(const CFGAS_Char& other) = default;
 CFGAS_Char::~CFGAS_Char() = default;
 
 FX_CHARTYPE CFGAS_Char::GetCharType() const {
-  return FX_GetCharType(m_wCharCode);
+  return pdfium::unicode::GetCharType(m_wCharCode);
 }

@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <memory>
 #include <utility>
+#include "base/containers/contains.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
@@ -16,11 +17,13 @@
 #include "build/chromecast_buildflags.h"
 #include "build/chromeos_buildflags.h"
 #include "skia/ext/skia_utils_base.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/clipboard_monitor.h"
 #include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
 #include "ui/base/data_transfer_policy/data_transfer_policy_controller.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/gfx/codec/png_codec.h"
 
 namespace ui {
 
@@ -30,7 +33,7 @@ bool IsReadAllowed(const DataTransferEndpoint* src,
   auto* policy_controller = DataTransferPolicyController::Get();
   if (!policy_controller)
     return true;
-  return policy_controller->IsClipboardReadAllowed(src, dst);
+  return policy_controller->IsClipboardReadAllowed(src, dst, absl::nullopt);
 }
 }  // namespace
 
@@ -77,6 +80,12 @@ bool TestClipboard::IsFormatAvailable(
   const DataStore& store = GetStore(buffer);
   if (format == ClipboardFormatType::GetFilenamesType())
     return !store.filenames.empty();
+  // Chrome can retrieve an image from the clipboard as either a bitmap or PNG.
+  if (format == ClipboardFormatType::GetPngType() ||
+      format == ClipboardFormatType::GetBitmapType()) {
+    return base::Contains(store.data, ClipboardFormatType::GetPngType()) ||
+           base::Contains(store.data, ClipboardFormatType::GetBitmapType());
+  }
   return base::Contains(store.data, format);
 }
 
@@ -113,7 +122,8 @@ void TestClipboard::ReadAvailableTypes(
 
   if (IsFormatAvailable(ClipboardFormatType::GetRtfType(), buffer, data_dst))
     types->push_back(base::UTF8ToUTF16(kMimeTypeRTF));
-  if (IsFormatAvailable(ClipboardFormatType::GetBitmapType(), buffer, data_dst))
+  if (IsFormatAvailable(ClipboardFormatType::GetPngType(), buffer, data_dst) ||
+      IsFormatAvailable(ClipboardFormatType::GetBitmapType(), buffer, data_dst))
     types->push_back(base::UTF8ToUTF16(kMimeTypePNG));
   if (IsFormatAvailable(ClipboardFormatType::GetFilenamesType(), buffer,
                         data_dst))
@@ -131,8 +141,12 @@ TestClipboard::ReadAvailablePlatformSpecificFormatNames(
   const auto& data = store.data;
   std::vector<std::u16string> types;
   types.reserve(data.size());
-  for (const auto& it : data)
-    types.push_back(base::UTF8ToUTF16(it.first.GetName()));
+  for (const auto& it : data) {
+    std::string format_type = it.first.GetName();
+    if (format_type.empty())
+      format_type = it.first.GetCustomPlatformName();
+    types.push_back(base::UTF8ToUTF16(format_type));
+  }
 
   // Some platforms add additional raw types to represent text, or offer them
   // as available formats by automatically converting between them.
@@ -233,8 +247,12 @@ void TestClipboard::ReadRTF(ClipboardBuffer buffer,
 void TestClipboard::ReadPng(ClipboardBuffer buffer,
                             const DataTransferEndpoint* data_dst,
                             ReadPngCallback callback) const {
-  // TODO(crbug.com/1201018): Implement this.
-  NOTIMPLEMENTED();
+  const DataStore& store = GetStore(buffer);
+  if (!IsReadAllowed(store.data_src.get(), data_dst)) {
+    std::move(callback).Run(std::vector<uint8_t>());
+    return;
+  }
+  std::move(callback).Run(store.png);
 }
 
 void TestClipboard::ReadImage(ClipboardBuffer buffer,
@@ -245,7 +263,9 @@ void TestClipboard::ReadImage(ClipboardBuffer buffer,
     std::move(callback).Run(SkBitmap());
     return;
   }
-  std::move(callback).Run(store.image);
+  SkBitmap bitmap;
+  gfx::PNGCodec::Decode(store.png.data(), store.png.size(), &bitmap);
+  std::move(callback).Run(bitmap);
 }
 
 // TODO(crbug.com/1103215): |data_dst| should be supported.
@@ -308,25 +328,16 @@ bool TestClipboard::IsSelectionBufferAvailable() const {
 }
 #endif  // defined(USE_OZONE)
 
-void TestClipboard::WritePortableRepresentations(
+void TestClipboard::WritePortableAndPlatformRepresentations(
     ClipboardBuffer buffer,
     const ObjectMap& objects,
-    std::unique_ptr<DataTransferEndpoint> data_src) {
-  Clear(buffer);
-  default_store_buffer_ = buffer;
-  for (const auto& kv : objects)
-    DispatchPortableRepresentation(kv.first, kv.second);
-  default_store_buffer_ = ClipboardBuffer::kCopyPaste;
-  GetStore(buffer).SetDataSource(std::move(data_src));
-}
-
-void TestClipboard::WritePlatformRepresentations(
-    ClipboardBuffer buffer,
     std::vector<Clipboard::PlatformRepresentation> platform_representations,
     std::unique_ptr<DataTransferEndpoint> data_src) {
   Clear(buffer);
   default_store_buffer_ = buffer;
   DispatchPlatformRepresentations(std::move(platform_representations));
+  for (const auto& kv : objects)
+    DispatchPortableRepresentation(kv.first, kv.second);
   default_store_buffer_ = ClipboardBuffer::kCopyPaste;
   GetStore(buffer).SetDataSource(std::move(data_src));
 }
@@ -394,7 +405,7 @@ void TestClipboard::WriteBitmap(const SkBitmap& bitmap) {
 
   // Create a dummy entry.
   GetDefaultStore().data[ClipboardFormatType::GetBitmapType()];
-  GetDefaultStore().image = bitmap;
+  gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &GetDefaultStore().png);
   ClipboardMonitor::GetInstance()->NotifyClipboardDataChanged();
 }
 
@@ -411,7 +422,7 @@ TestClipboard::DataStore::DataStore(const DataStore& other) {
   data = other.data;
   url_title = other.url_title;
   html_src_url = other.html_src_url;
-  image = other.image;
+  png = other.png;
   data_src = other.data_src ? std::make_unique<DataTransferEndpoint>(
                                   DataTransferEndpoint(*(other.data_src)))
                             : nullptr;
@@ -423,7 +434,7 @@ TestClipboard::DataStore& TestClipboard::DataStore::operator=(
   data = other.data;
   url_title = other.url_title;
   html_src_url = other.html_src_url;
-  image = other.image;
+  png = other.png;
   data_src = other.data_src ? std::make_unique<DataTransferEndpoint>(
                                   DataTransferEndpoint(*(other.data_src)))
                             : nullptr;
@@ -436,7 +447,7 @@ void TestClipboard::DataStore::Clear() {
   data.clear();
   url_title.clear();
   html_src_url.clear();
-  image = SkBitmap();
+  png.clear();
   data_src.reset();
 }
 

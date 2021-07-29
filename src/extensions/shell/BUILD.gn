@@ -225,6 +225,10 @@ source_set("app_shell_lib") {
     ]
   }
 
+  if (is_chromeos_ash || is_chromeos_lacros) {
+    deps += [ "//chromeos/dbus/constants" ]
+  }
+
   if (is_chromeos_ash) {
     sources += [
       "browser/shell_screen.cc",
@@ -245,6 +249,9 @@ source_set("app_shell_lib") {
     ]
   }
 
+  if (is_chromeos_lacros) {
+    deps += [ "//chromeos/lacros" ]
+  }
   if (enable_nacl) {
     sources += [
       "browser/shell_nacl_browser_delegate.cc",
@@ -327,6 +334,7 @@ test("app_shell_unittests") {
     "//extensions/common/api",
     "//extensions/shell/browser/system_logs",
     "//testing/gtest",
+    "//ui/display:test_support",
     "//ui/gl:test_support",
     "//ui/platform_window",
   ]

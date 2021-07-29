@@ -159,7 +159,7 @@ static void init_blocks(FlashSV2Context * s, Block * blocks,
             b->enc   = encbuf;
             b->data  = databuf;
             encbuf  += b->width * b->height * 3;
-            databuf += !databuf ? 0 : b->width * b->height * 6;
+            databuf  = databuf ? databuf + b->width * b->height * 6 : NULL;
         }
     }
 }
@@ -897,7 +897,7 @@ static av_cold int flashsv2_encode_end(AVCodecContext * avctx)
     return 0;
 }
 
-AVCodec ff_flashsv2_encoder = {
+const AVCodec ff_flashsv2_encoder = {
     .name           = "flashsv2",
     .long_name      = NULL_IF_CONFIG_SMALL("Flash Screen Video Version 2"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -907,5 +907,5 @@ AVCodec ff_flashsv2_encoder = {
     .encode2        = flashsv2_encode_frame,
     .close          = flashsv2_encode_end,
     .pix_fmts       = (const enum AVPixelFormat[]){ AV_PIX_FMT_BGR24, AV_PIX_FMT_NONE },
-    .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
 };

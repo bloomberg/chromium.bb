@@ -32,14 +32,14 @@
 #include "chrome/browser/ui/tab_helpers.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
-#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
-#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "components/favicon/core/favicon_service.h"
@@ -144,8 +144,9 @@ class ManagementSetEnabledFunctionInstallPromptDelegate
   ~ManagementSetEnabledFunctionInstallPromptDelegate() override {}
 
  private:
-  void OnInstallPromptDone(ExtensionInstallPrompt::Result result) {
-    std::move(callback_).Run(result ==
+  void OnInstallPromptDone(
+      ExtensionInstallPrompt::DoneCallbackPayload payload) {
+    std::move(callback_).Run(payload.result ==
                              ExtensionInstallPrompt::Result::ACCEPTED);
   }
 
@@ -247,8 +248,8 @@ class ChromeAppForLinkDelegate : public extensions::AppForLinkDelegate {
           image_result.image.AsBitmap();
     }
 
-    auto* provider = web_app::WebAppProviderBase::GetProviderBase(
-        Profile::FromBrowserContext(context));
+    auto* provider =
+        web_app::WebAppProvider::Get(Profile::FromBrowserContext(context));
     DCHECK(provider);
 
     provider->install_manager().InstallWebAppFromInfo(
@@ -261,10 +262,10 @@ class ChromeAppForLinkDelegate : public extensions::AppForLinkDelegate {
   extensions::api::management::ExtensionInfo CreateExtensionInfoFromWebApp(
       const std::string& app_id,
       content::BrowserContext* context) override {
-    auto* provider = web_app::WebAppProviderBase::GetProviderBase(
-        Profile::FromBrowserContext(context));
+    auto* provider =
+        web_app::WebAppProvider::Get(Profile::FromBrowserContext(context));
     DCHECK(provider);
-    const web_app::AppRegistrar& registrar = provider->registrar();
+    const web_app::WebAppRegistrar& registrar = provider->registrar();
 
     extensions::api::management::ExtensionInfo info;
     info.id = app_id;
@@ -304,8 +305,9 @@ class ChromeAppForLinkDelegate : public extensions::AppForLinkDelegate {
         info.launch_type =
             extensions::api::management::LAUNCH_TYPE_OPEN_FULL_SCREEN;
         break;
-      // This mode is not supported by the extension app backend.
+      // These modes are not supported by the extension app backend.
       case web_app::DisplayMode::kWindowControlsOverlay:
+      case web_app::DisplayMode::kTabbed:
       case web_app::DisplayMode::kUndefined:
         info.launch_type = extensions::api::management::LAUNCH_TYPE_NONE;
         break;
@@ -326,7 +328,7 @@ void LaunchWebApp(const web_app::AppId& app_id, Profile* profile) {
   // preference, the default launch value will be returned.
   // TODO(crbug.com/1003602): Make AppLaunchParams launch container Optional or
   // add a "default" launch container enum value.
-  auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile);
+  auto* provider = web_app::WebAppProvider::Get(profile);
   DCHECK(provider);
   blink::mojom::DisplayMode display_mode =
       provider->registrar().GetAppUserDisplayMode(app_id);
@@ -529,13 +531,15 @@ void ChromeManagementAPIDelegate::InstallOrLaunchReplacementWebApp(
     const GURL& web_app_url,
     InstallOrLaunchWebAppCallback callback) const {
   Profile* profile = Profile::FromBrowserContext(context);
-  auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile);
+  auto* provider = web_app::WebAppProvider::Get(profile);
   DCHECK(provider);
 
   // Launch the app if web_app_url happens to match start_url. If not, the app
   // could still be installed with different start_url.
   if (provider->registrar().IsLocallyInstalled(web_app_url)) {
-    LaunchWebApp(web_app::GenerateAppIdFromURL(web_app_url), profile);
+    LaunchWebApp(
+        web_app::GenerateAppId(/*manifest_id=*/absl::nullopt, web_app_url),
+        profile);
     std::move(callback).Run(InstallOrLaunchWebAppResult::kSuccess);
     return;
   }

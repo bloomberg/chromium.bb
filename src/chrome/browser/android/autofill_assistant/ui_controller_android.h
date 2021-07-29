@@ -112,7 +112,6 @@ class UiControllerAndroid : public ControllerObserver {
       const ShowProgressBarProto::StepProgressBarConfiguration& configuration)
       override;
   void OnTouchableAreaChanged(
-      const RectF& visual_viewport,
       const std::vector<RectF>& touchable_areas,
       const std::vector<RectF>& restricted_areas) override;
   void OnViewportModeChanged(ViewportMode mode) override;
@@ -162,10 +161,6 @@ class UiControllerAndroid : public ControllerObserver {
   void OnDateTimeRangeEndTimeSlotCleared();
   void OnKeyValueChanged(const std::string& key, const ValueProto& value);
   void OnInputTextFocusChanged(bool is_text_focused);
-  bool IsContactComplete(autofill::AutofillProfile* contact);
-  bool IsShippingAddressComplete(autofill::AutofillProfile* address);
-  bool IsPaymentInstrumentComplete(autofill::CreditCard* card,
-                                   autofill::AutofillProfile* address);
 
   // Called by AssistantFormDelegate:
   void OnCounterChanged(int input_index, int counter_index, int value);

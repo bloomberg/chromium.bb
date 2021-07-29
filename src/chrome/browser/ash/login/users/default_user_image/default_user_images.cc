@@ -5,9 +5,9 @@
 #include "chrome/browser/ash/login/users/default_user_image/default_user_images.h"
 
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -129,13 +129,20 @@ const int kFirstDefaultImageIndex = 34;
 // list that is used to present default images.
 const int kLastRandomDefaultImageIndex = 47;
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 // The order and the values of these constants are important for histograms
 // of different Chrome OS versions to be merged smoothly.
-const int kHistogramImageExternal = 19;
-const int kHistogramImageFromProfile = 20;
-const int kHistogramSpecialImagesCount = 2;
+const int kHistogramImageFromCamera = 0;
+const int kHistogramImageExternal = 1;
+const int kHistogramImageFromProfile = 2;
+// The special images max count is used to reserve a histogram range (0-9) for
+// special images. Default images will have their histogram value starting
+// at 10. Check ChromeOSUserImageId in tools/metrics/histograms/enums.xml to see
+// how these values are mapped.
+const int kHistogramSpecialImagesMaxCount = 10;
 const int kHistogramImagesCount =
-    kDefaultImagesCount + kHistogramSpecialImagesCount;
+    kDefaultImagesCount + kHistogramSpecialImagesMaxCount;
 
 namespace {
 

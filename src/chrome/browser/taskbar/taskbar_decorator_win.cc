@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
@@ -67,9 +68,9 @@ void SetOverlayIcon(HWND hwnd,
 
     // Maintain aspect ratio on resize, but prefer more square.
     // (We used to round down here, but rounding up produces nicer results.)
-    const int resized_height =
-        std::ceilf(kOverlayIconSize * (float{bitmap.get()->height()} /
-                                       float{bitmap.get()->width()}));
+    const int resized_height = base::ClampCeil(
+        kOverlayIconSize *
+        (static_cast<float>(bitmap.get()->height()) / bitmap.get()->width()));
 
     DCHECK_GE(kOverlayIconSize, resized_height);
     // Since the target size is so small, we use our best resizer.
@@ -190,7 +191,7 @@ void DrawTaskbarDecoration(gfx::NativeWindow window, const gfx::Image* image) {
 }
 
 void UpdateTaskbarDecoration(Profile* profile, gfx::NativeWindow window) {
-  if (profile->IsGuestSession() || profile->IsEphemeralGuestProfile() ||
+  if (profile->IsGuestSession() ||
       // Browser process and profile manager may be null in tests.
       (g_browser_process && g_browser_process->profile_manager() &&
        g_browser_process->profile_manager()

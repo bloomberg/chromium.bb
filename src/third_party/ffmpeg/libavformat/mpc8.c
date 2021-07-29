@@ -127,7 +127,11 @@ static void mpc8_get_chunk_header(AVIOContext *pb, int *tag, int64_t *size)
     pos = avio_tell(pb);
     *tag = avio_rl16(pb);
     *size = ffio_read_varlen(pb);
-    *size -= avio_tell(pb) - pos;
+    pos -= avio_tell(pb);
+    if (av_sat_add64(*size, pos) != (uint64_t)*size + pos) {
+        *size = -1;
+    } else
+        *size += pos;
 }
 
 static void mpc8_parse_seektable(AVFormatContext *s, int64_t off)
@@ -321,7 +325,7 @@ static int mpc8_read_seek(AVFormatContext *s, int stream_index, int64_t timestam
 }
 
 
-AVInputFormat ff_mpc8_demuxer = {
+const AVInputFormat ff_mpc8_demuxer = {
     .name           = "mpc8",
     .long_name      = NULL_IF_CONFIG_SMALL("Musepack SV8"),
     .priv_data_size = sizeof(MPCContext),

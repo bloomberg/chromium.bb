@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_window.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/widget/frame_widget.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -168,6 +169,7 @@ void PictureInPictureControllerImpl::EnterPictureInPicture(
     Fullscreen::ExitFullscreen(*GetSupplementable());
 
   video_element->GetWebMediaPlayer()->OnRequestPictureInPicture();
+  DCHECK(video_element->GetWebMediaPlayer()->GetSurfaceId().has_value());
 
   session_observer_receiver_.reset();
 
@@ -186,7 +188,7 @@ void PictureInPictureControllerImpl::EnterPictureInPicture(
   picture_in_picture_service_->StartSession(
       video_element->GetWebMediaPlayer()->GetDelegateId(),
       std::move(media_player_remote),
-      video_element->GetWebMediaPlayer()->GetSurfaceId(),
+      video_element->GetWebMediaPlayer()->GetSurfaceId().value(),
       video_element->GetWebMediaPlayer()->NaturalSize(),
       ShouldShowPlayPauseButton(*video_element), std::move(session_observer),
       WTF::Bind(&PictureInPictureControllerImpl::OnEnteredPictureInPicture,
@@ -339,7 +341,8 @@ bool PictureInPictureControllerImpl::IsEnterAutoPictureInPictureAllowed()
         GetSupplementable()->GetFrame()->GetWidgetForLocalRoot()->DisplayMode();
     is_in_pwa_window = display_mode != mojom::blink::DisplayMode::kBrowser;
   }
-  if (!(GetSupplementable()->Url().ProtocolIs("chrome-extension") ||
+  if (!(SchemeRegistry::IsExtensionScheme(
+            GetSupplementable()->Url().Protocol()) ||
         Fullscreen::FullscreenElementFrom(*GetSupplementable()) ||
         (is_in_pwa_window && GetSupplementable()->IsInWebAppScope()))) {
     return false;
@@ -396,6 +399,9 @@ void PictureInPictureControllerImpl::PageVisibilityChanged() {
 void PictureInPictureControllerImpl::OnPictureInPictureStateChange() {
   DCHECK(picture_in_picture_element_);
   DCHECK(picture_in_picture_element_->GetWebMediaPlayer());
+  DCHECK(picture_in_picture_element_->GetWebMediaPlayer()
+             ->GetSurfaceId()
+             .has_value());
 
   // The lifetime of the MediaPlayer mojo endpoint in the renderer is tied to
   // WebMediaPlayer, which is recreated by |picture_in_picture_element_| on
@@ -409,7 +415,7 @@ void PictureInPictureControllerImpl::OnPictureInPictureStateChange() {
   picture_in_picture_session_->Update(
       picture_in_picture_element_->GetWebMediaPlayer()->GetDelegateId(),
       std::move(media_player_remote),
-      picture_in_picture_element_->GetWebMediaPlayer()->GetSurfaceId(),
+      picture_in_picture_element_->GetWebMediaPlayer()->GetSurfaceId().value(),
       picture_in_picture_element_->GetWebMediaPlayer()->NaturalSize(),
       ShouldShowPlayPauseButton(*picture_in_picture_element_));
 }

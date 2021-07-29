@@ -9,19 +9,20 @@
 
 #include "base/barrier_closure.h"
 #include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/bind.h"
 #include "chrome/browser/web_applications/components/os_integration_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/components/web_app_provider_base.h"
+#include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/test/test_web_app_database_factory.h"
 #include "chrome/browser/web_applications/test/test_web_app_registry_controller.h"
 #include "chrome/browser/web_applications/test/web_app_install_observer.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "components/sync/model/data_batch.h"
 #include "components/sync/model/entity_change.h"
@@ -51,7 +52,8 @@ bool IsSyncDataEqualIfApplied(const WebApp& expected_app,
     return false;
 
   const GURL sync_start_url(entity_data.specifics.web_app().start_url());
-  if (expected_app.app_id() != GenerateAppIdFromURL(sync_start_url))
+  if (expected_app.app_id() !=
+      GenerateAppId(/*manifest_id=*/absl::nullopt, sync_start_url))
     return false;
 
   // ApplySyncDataToApp enforces kSync source on |app_to_apply_sync_data|.
@@ -90,7 +92,7 @@ bool RegistryContainsSyncDataBatchChanges(
 
 std::unique_ptr<WebApp> CreateWebApp(const std::string& url) {
   const GURL start_url(url);
-  const AppId app_id = GenerateAppIdFromURL(start_url);
+  const AppId app_id = GenerateAppId(/*manifest_id=*/absl::nullopt, start_url);
 
   auto web_app = std::make_unique<WebApp>(app_id);
   web_app->SetStartUrl(start_url);
@@ -101,7 +103,7 @@ std::unique_ptr<WebApp> CreateWebApp(const std::string& url) {
 
 std::unique_ptr<WebApp> CreateWebAppWithSyncOnlyFields(const std::string& url) {
   const GURL start_url(url);
-  const AppId app_id = GenerateAppIdFromURL(start_url);
+  const AppId app_id = GenerateAppId(/*manifest_id=*/absl::nullopt, start_url);
 
   auto web_app = std::make_unique<WebApp>(app_id);
   web_app->AddSource(Source::kSync);
@@ -435,7 +437,7 @@ TEST_F(WebAppSyncBridgeTest, MergeSyncData_LocalSetLessThanServerSet) {
   for (std::unique_ptr<WebApp>& expected_app_to_install :
        expected_apps_to_install) {
     expected_app_to_install->SetIsLocallyInstalled(
-        AreAppsLocallyInstalledByDefault());
+        AreAppsLocallyInstalledBySync());
     expected_app_to_install->SetIsInSyncInstall(true);
   }
 
@@ -527,7 +529,7 @@ TEST_F(WebAppSyncBridgeTest, ApplySyncChanges_AddUpdateDelete) {
 
   for (std::unique_ptr<WebApp>& app_to_add :
        CreateAppsList("https://example.org/", 10)) {
-    app_to_add->SetIsLocallyInstalled(AreAppsLocallyInstalledByDefault());
+    app_to_add->SetIsLocallyInstalled(AreAppsLocallyInstalledBySync());
     app_to_add->SetIsInSyncInstall(true);
 
     ConvertAppToEntityChange(*app_to_add, syncer::EntityChange::ACTION_ADD,
@@ -1053,7 +1055,7 @@ TEST_F(WebAppSyncBridgeTest,
 TEST_F(WebAppSyncBridgeTest, InstallAppsInSyncInstall) {
   AppsList apps_in_sync_install = CreateAppsList("https://example.com/", 10);
   for (std::unique_ptr<WebApp>& app : apps_in_sync_install) {
-    app->SetIsLocallyInstalled(AreAppsLocallyInstalledByDefault());
+    app->SetIsLocallyInstalled(AreAppsLocallyInstalledBySync());
     app->SetIsInSyncInstall(true);
   }
 

@@ -48,6 +48,12 @@ class CreditCardFormEventLogger : public FormEventLoggerBase {
 
   void set_suggestions(std::vector<Suggestion> suggestions);
 
+  void OnDidShowSuggestions(const FormStructure& form,
+                            const AutofillField& field,
+                            const base::TimeTicks& form_parsed_timestamp,
+                            AutofillSyncSigninState sync_state,
+                            bool off_the_record) override;
+
   void OnDidSelectCardSuggestion(const CreditCard& credit_card,
                                  const FormStructure& form,
                                  AutofillSyncSigninState sync_state);
@@ -65,6 +71,14 @@ class CreditCardFormEventLogger : public FormEventLoggerBase {
   // Logging when an authentication prompt is completed.
   void LogCardUnmaskAuthenticationPromptCompleted(UnmaskAuthFlowType flow);
 
+  // Allows mocking that a virtual card was selected, for unit tests that don't
+  // run the actual Autofill suggestions dropdown UI.
+  void set_latest_selected_card_was_virtual_card_for_testing(
+      bool latest_selected_card_was_virtual_card) {
+    latest_selected_card_was_virtual_card_ =
+        latest_selected_card_was_virtual_card;
+  }
+
  protected:
   // FormEventLoggerBase pure-virtual overrides.
   void RecordPollSuggestions() override;
@@ -75,7 +89,7 @@ class CreditCardFormEventLogger : public FormEventLoggerBase {
   void LogWillSubmitForm(const FormStructure& form) override;
   void LogFormSubmitted(const FormStructure& form) override;
   void LogUkmInteractedWithForm(FormSignature form_signature) override;
-  void OnSuggestionsShownOnce() override;
+  void OnSuggestionsShownOnce(const FormStructure& form) override;
   void OnSuggestionsShownSubmittedOnce(const FormStructure& form) override;
   void OnLog(const std::string& name,
              FormEvent event,
@@ -89,11 +103,18 @@ class CreditCardFormEventLogger : public FormEventLoggerBase {
   void RecordCardUnmaskFlowEvent(UnmaskAuthFlowType flow,
                                  UnmaskAuthFlowEvent event);
   bool DoesCardHaveOffer(const CreditCard& credit_card);
+  // Returns whether the shown suggestions included a virtual credit card.
+  bool DoSuggestionsIncludeVirtualCard();
 
   bool is_context_secure_ = false;
   UnmaskAuthFlowType current_authentication_flow_;
   bool has_logged_masked_server_card_suggestion_selected_ = false;
+  bool has_logged_virtual_card_suggestion_selected_ = false;
   bool logged_suggestion_filled_was_masked_server_card_ = false;
+  bool logged_suggestion_filled_was_virtual_card_ = false;
+  // If true, the most recent card to be selected as an Autofill suggestion was
+  // a virtual card. False for all other card types.
+  bool latest_selected_card_was_virtual_card_ = false;
   std::vector<Suggestion> suggestions_;
   bool has_eligible_offer_ = false;
   bool card_selected_has_offer_ = false;

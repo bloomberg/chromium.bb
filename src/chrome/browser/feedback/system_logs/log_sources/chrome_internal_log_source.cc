@@ -27,7 +27,7 @@
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/common/channel_info.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_internals_util.h"
@@ -137,8 +137,6 @@ std::string GetPrimaryAccountTypeString() {
       return "guest";
     case user_manager::USER_TYPE_PUBLIC_ACCOUNT:
       return "public_account";
-    case user_manager::USER_TYPE_SUPERVISED_DEPRECATED:
-      return "supervised";
     case user_manager::USER_TYPE_KIOSK_APP:
       return "kiosk_app";
     case user_manager::USER_TYPE_CHILD:
@@ -390,14 +388,14 @@ void ChromeInternalLogSource::Fetch(SysLogsSourceCallback callback) {
 void ChromeInternalLogSource::PopulateSyncLogs(SystemLogsResponse* response) {
   // We are only interested in sync logs for the primary user profile.
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
-  if (!profile || !ProfileSyncServiceFactory::HasSyncService(profile))
+  if (!profile || !SyncServiceFactory::HasSyncService(profile))
     return;
 
   // Add sync logs to |response|.
   std::unique_ptr<base::DictionaryValue> sync_logs =
       syncer::sync_ui_util::ConstructAboutInformation(
           syncer::sync_ui_util::IncludeSensitiveData(false),
-          ProfileSyncServiceFactory::GetForProfile(profile),
+          SyncServiceFactory::GetForProfile(profile),
           chrome::GetChannelName(chrome::WithExtendedStable(true)));
   std::string serialized_sync_logs;
   JSONStringValueSerializer(&serialized_sync_logs).Serialize(*sync_logs);

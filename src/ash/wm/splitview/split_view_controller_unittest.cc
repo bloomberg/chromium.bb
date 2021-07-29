@@ -10,12 +10,11 @@
 #include <utility>
 #include <vector>
 
-#include "ash/accessibility/magnifier/docked_magnifier_controller_impl.h"
+#include "ash/accessibility/magnifier/docked_magnifier_controller.h"
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/constants/app_types.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
-#include "ash/public/cpp/app_types.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/fps_counter.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/shelf_config.h"
@@ -2854,8 +2853,8 @@ TEST_F(SplitViewControllerTest, WMSnapEvent) {
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 
   // Test the functionalities in tablet mode.
-  // Sending WM_EVENT_SNAP_RIGHT to |window1| will snap to left.
-  WMEvent wm_left_snap_event(WM_EVENT_SNAP_LEFT);
+  // Sending WM_EVENT_SNAP_SECONDARY to |window1| will snap to left.
+  WMEvent wm_left_snap_event(WM_EVENT_SNAP_PRIMARY);
   WindowState::Get(window1.get())->OnWMEvent(&wm_left_snap_event);
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_EQ(split_view_controller()->left_window(), window1.get());
@@ -2865,8 +2864,8 @@ TEST_F(SplitViewControllerTest, WMSnapEvent) {
   OverviewSession* overview_session = overview_controller->overview_session();
   EXPECT_TRUE(overview_session->IsWindowInOverview(window2.get()));
 
-  // Sending WM_EVENT_SNAP_RIGHT to |window1| will snap to right.
-  WMEvent wm_right_snap_event(WM_EVENT_SNAP_RIGHT);
+  // Sending WM_EVENT_SNAP_SECONDARY to |window1| will snap to right.
+  WMEvent wm_right_snap_event(WM_EVENT_SNAP_SECONDARY);
   WindowState::Get(window1.get())->OnWMEvent(&wm_right_snap_event);
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_EQ(split_view_controller()->right_window(), window1.get());
@@ -2874,7 +2873,7 @@ TEST_F(SplitViewControllerTest, WMSnapEvent) {
   EXPECT_TRUE(overview_controller->InOverviewSession());
   EXPECT_TRUE(overview_session->IsWindowInOverview(window2.get()));
 
-  // Sending WM_EVENT_SNAP_RIGHT to |window2| will replace |window1|.
+  // Sending WM_EVENT_SNAP_SECONDARY to |window2| will replace |window1|.
   WindowState::Get(window2.get())->OnWMEvent(&wm_right_snap_event);
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_EQ(split_view_controller()->right_window(), window2.get());
@@ -2882,14 +2881,14 @@ TEST_F(SplitViewControllerTest, WMSnapEvent) {
   EXPECT_TRUE(overview_controller->InOverviewSession());
   EXPECT_TRUE(overview_session->IsWindowInOverview(window1.get()));
 
-  // Sending WM_EVENT_SNAP_LEFT to |window1| to snap |window1|.
+  // Sending WM_EVENT_SNAP_PRIMARY to |window1| to snap |window1|.
   WindowState::Get(window1.get())->OnWMEvent(&wm_left_snap_event);
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_EQ(split_view_controller()->left_window(), window1.get());
   EXPECT_EQ(split_view_controller()->right_window(), window2.get());
   EXPECT_FALSE(overview_controller->InOverviewSession());
 
-  // Sending WM_EVENT_SNAP_RIGHT to |window1| will replace |window2| and put
+  // Sending WM_EVENT_SNAP_SECONDARY to |window1| will replace |window2| and put
   // |window2| in overview.
   WindowState::Get(window1.get())->OnWMEvent(&wm_right_snap_event);
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
@@ -2903,23 +2902,23 @@ TEST_F(SplitViewControllerTest, WMSnapEvent) {
 
   // Test the functionalities in clamshell mode.
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
-  // Sending WM_EVENT_SNAP_LEFT to |window1| will snap to left but won't put
+  // Sending WM_EVENT_SNAP_PRIMARY to |window1| will snap to left but won't put
   // |window1| in splitview.
   WindowState::Get(window1.get())->OnWMEvent(&wm_left_snap_event);
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_FALSE(overview_controller->InOverviewSession());
 
   ToggleOverview();
-  // Sending WM_EVENT_SNAP_LEFT to |window1| to snap to left while overview is
-  // active will put |window1| in splitview and |window2| in overview.
+  // Sending WM_EVENT_SNAP_PRIMARY to |window1| to snap to left while overview
+  // is active will put |window1| in splitview and |window2| in overview.
   WindowState::Get(window1.get())->OnWMEvent(&wm_left_snap_event);
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(overview_controller->InOverviewSession());
   overview_session = overview_controller->overview_session();
   EXPECT_TRUE(overview_session->IsWindowInOverview(window2.get()));
 
-  // Sending WM_EVENT_SNAP_RIGHT to |window1| to snap to right while overview
-  // is active will put |window1| to snap to the right in splitview and
+  // Sending WM_EVENT_SNAP_SECONDARY to |window1| to snap to right while
+  // overview is active will put |window1| to snap to the right in splitview and
   // |window2| remains in overview.
   WindowState::Get(window1.get())->OnWMEvent(&wm_right_snap_event);
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
@@ -4286,7 +4285,7 @@ TEST_F(SplitViewTabDraggingTest, SourceWindowBackgroundTest) {
   EXPECT_TRUE(window4->IsVisible());
 
   // Home launcher should be shown because none of these windows are activated.
-  EXPECT_TRUE(Shell::Get()->app_list_controller()->IsVisible(absl::nullopt));
+  EXPECT_TRUE(Shell::Get()->app_list_controller()->IsVisible());
 
   // 1) Start dragging |window1|. |window2| is the source window.
   std::unique_ptr<WindowResizer> resizer =
@@ -4301,7 +4300,7 @@ TEST_F(SplitViewTabDraggingTest, SourceWindowBackgroundTest) {
   EXPECT_FALSE(window4->IsVisible());
 
   // Test that home launcher is not shown because a window is active.
-  EXPECT_FALSE(Shell::Get()->app_list_controller()->IsVisible(absl::nullopt));
+  EXPECT_FALSE(Shell::Get()->app_list_controller()->IsVisible());
 
   // Test that during dragging, we could not show a hidden window.
   window3->Show();
@@ -4315,7 +4314,7 @@ TEST_F(SplitViewTabDraggingTest, SourceWindowBackgroundTest) {
   EXPECT_TRUE(window4->IsVisible());
 
   // Test that home launcher is still not shown, because a window is active.
-  EXPECT_FALSE(Shell::Get()->app_list_controller()->IsVisible(absl::nullopt));
+  EXPECT_FALSE(Shell::Get()->app_list_controller()->IsVisible());
 }
 
 // Tests that the dragged window should be the active and top window if overview
@@ -4750,7 +4749,7 @@ TEST_F(SplitViewTabDraggingTest,
   // Switch to clamshell mode and check that |snapped_window| keeps its snapped
   // window state.
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
-  EXPECT_EQ(chromeos::WindowStateType::kLeftSnapped,
+  EXPECT_EQ(chromeos::WindowStateType::kPrimarySnapped,
             WindowState::Get(snapped_window.get())->GetStateType());
 }
 

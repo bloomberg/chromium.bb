@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.SystemClock;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import com.google.android.gms.fido.Fido;
@@ -31,7 +32,11 @@ import org.chromium.blink.mojom.AuthenticatorStatus;
 import org.chromium.blink.mojom.PublicKeyCredentialRequestOptions;
 import org.chromium.components.externalauth.ExternalAuthUtils;
 import org.chromium.components.externalauth.UserRecoverableErrorHandler;
+import org.chromium.components.payments.PaymentFeatureList;
+import org.chromium.content_public.browser.ClientDataJson;
+import org.chromium.content_public.browser.ClientDataRequestType;
 import org.chromium.content_public.browser.RenderFrameHost;
+import org.chromium.content_public.browser.RenderFrameHost.WebAuthSecurityChecksResults;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsStatics;
 import org.chromium.net.GURLUtils;
@@ -40,6 +45,7 @@ import org.chromium.url.Origin;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 /**
@@ -57,6 +63,10 @@ public class Fido2CredentialRequest implements WindowAndroid.IntentCallback {
     private @RequestStatus int mRequestStatus;
     private boolean mAppIdExtensionUsed;
     private long mStartTimeMs;
+
+    // Not null when the GMSCore-created ClientDataJson needs to be overridden.
+    @Nullable
+    private String mClientDataJson;
 
     @IntDef({
             REGISTER_REQUEST,
@@ -103,7 +113,7 @@ public class Fido2CredentialRequest implements WindowAndroid.IntentCallback {
         }
 
         int securityCheck = frameHost.performMakeCredentialWebAuthSecurityChecks(
-                options.relyingParty.id, origin);
+                options.relyingParty.id, origin, options.isPaymentCredentialCreation);
         if (securityCheck != AuthenticatorStatus.SUCCESS) {
             returnErrorAndResetCallback(securityCheck);
             return;
@@ -129,7 +139,7 @@ public class Fido2CredentialRequest implements WindowAndroid.IntentCallback {
     }
 
     public void handleGetAssertionRequest(PublicKeyCredentialRequestOptions options,
-            RenderFrameHost frameHost, Origin origin, GetAssertionResponseCallback callback,
+            RenderFrameHost frameHost, Origin callerOrigin, GetAssertionResponseCallback callback,
             FidoErrorResponseCallback errorCallback) {
         assert mGetAssertionCallback == null && mErrorCallback == null;
         mGetAssertionCallback = callback;
@@ -146,10 +156,11 @@ public class Fido2CredentialRequest implements WindowAndroid.IntentCallback {
             return;
         }
 
-        int securityCheck =
-                frameHost.performGetAssertionWebAuthSecurityChecks(options.relyingPartyId, origin);
-        if (securityCheck != AuthenticatorStatus.SUCCESS) {
-            returnErrorAndResetCallback(securityCheck);
+        WebAuthSecurityChecksResults webAuthSecurityChecksResults =
+                frameHost.performGetAssertionWebAuthSecurityChecks(
+                        options.relyingPartyId, callerOrigin);
+        if (webAuthSecurityChecksResults.securityCheckResult != AuthenticatorStatus.SUCCESS) {
+            returnErrorAndResetCallback(webAuthSecurityChecksResults.securityCheckResult);
             return;
         }
 
@@ -161,13 +172,44 @@ public class Fido2CredentialRequest implements WindowAndroid.IntentCallback {
                 .PublicKeyCredentialRequestOptions getAssertionOptions;
         getAssertionOptions = Fido2Helper.toGetAssertionOptions(options);
 
-        BrowserPublicKeyCredentialRequestOptions browserRequestOptions =
+        String callerOriginString = convertOriginToString(callerOrigin);
+        BrowserPublicKeyCredentialRequestOptions.Builder browserRequestOptionsBuilder =
                 new BrowserPublicKeyCredentialRequestOptions.Builder()
                         .setPublicKeyCredentialRequestOptions(getAssertionOptions)
-                        .setOrigin(Uri.parse(convertOriginToString(origin)))
-                        .build();
+                        .setOrigin(Uri.parse(callerOriginString));
 
-        Task<PendingIntent> result = mFido2ApiClient.getSignPendingIntent(browserRequestOptions);
+        if (options.payment != null
+                && PaymentFeatureList.isEnabled(PaymentFeatureList.SECURE_PAYMENT_CONFIRMATION)
+                && PaymentFeatureList.isEnabled(
+                        PaymentFeatureList.SECURE_PAYMENT_CONFIRMATION_API_V2)) {
+            assert options.challenge != null;
+            mClientDataJson = ClientDataJson.buildClientDataJson(ClientDataRequestType.PAYMENT_GET,
+                    callerOriginString, options.challenge,
+                    webAuthSecurityChecksResults.isCrossOrigin, options.payment,
+                    options.relyingPartyId,
+                    mWebContents.getLastCommittedUrl().getOrigin().getSpec());
+            if (mClientDataJson == null) {
+                returnErrorAndResetCallback(AuthenticatorStatus.NOT_ALLOWED_ERROR);
+                return;
+            }
+            MessageDigest messageDigest;
+            try {
+                messageDigest = MessageDigest.getInstance("SHA-256");
+            } catch (NoSuchAlgorithmException e) {
+                returnErrorAndResetCallback(AuthenticatorStatus.NOT_ALLOWED_ERROR);
+                return;
+            }
+            messageDigest.update(mClientDataJson.getBytes());
+            byte[] clientDataHash = messageDigest.digest();
+            if (clientDataHash == null) {
+                returnErrorAndResetCallback(AuthenticatorStatus.NOT_ALLOWED_ERROR);
+                return;
+            }
+            browserRequestOptionsBuilder.setClientDataHash(clientDataHash);
+        }
+
+        Task<PendingIntent> result =
+                mFido2ApiClient.getSignPendingIntent(browserRequestOptionsBuilder.build());
         result.addOnSuccessListener(this::onGotPendingIntent);
     }
 
@@ -290,7 +332,9 @@ public class Fido2CredentialRequest implements WindowAndroid.IntentCallback {
             }
         } else if (response instanceof AuthenticatorAssertionResponse) {
             mGetAssertionCallback.onSignResponse(AuthenticatorStatus.SUCCESS,
-                    Fido2Helper.toGetAssertionResponse(publicKeyCredential, mAppIdExtensionUsed));
+                    Fido2Helper.toGetAssertionResponse(
+                            publicKeyCredential, mAppIdExtensionUsed, mClientDataJson));
+            mClientDataJson = null;
             mGetAssertionCallback = null;
         }
     }

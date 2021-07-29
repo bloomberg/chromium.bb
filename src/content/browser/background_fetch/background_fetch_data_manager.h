@@ -17,6 +17,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "content/browser/background_fetch/background_fetch.pb.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
@@ -25,8 +26,8 @@
 #include "content/browser/background_fetch/storage/get_initialization_data_task.h"
 #include "content/common/content_export.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
-#include "url/origin.h"
 
 namespace storage {
 class BlobDataHandle;
@@ -38,10 +39,9 @@ namespace content {
 class BackgroundFetchDataManagerObserver;
 class BackgroundFetchRequestInfo;
 class BackgroundFetchRequestMatchParams;
-class BrowserContext;
 class ChromeBlobStorageContext;
 class ServiceWorkerContextWrapper;
-class StoragePartition;
+class StoragePartitionImpl;
 
 // The BackgroundFetchDataManager is a wrapper around persistent storage (the
 // Service Worker database), exposing APIs for the read and write queries needed
@@ -84,8 +84,7 @@ class CONTENT_EXPORT BackgroundFetchDataManager
                               scoped_refptr<BackgroundFetchRequestInfo>)>;
 
   BackgroundFetchDataManager(
-      BrowserContext* browser_context,
-      StoragePartition* storage_partition,
+      base::WeakPtr<StoragePartitionImpl> storage_partition,
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy);
 
@@ -116,7 +115,7 @@ class CONTENT_EXPORT BackgroundFetchDataManager
 
   // Get the BackgroundFetchRegistration.
   void GetRegistration(int64_t service_worker_registration_id,
-                       const url::Origin& origin,
+                       const blink::StorageKey& storage_key,
                        const std::string& developer_id,
                        GetRegistrationCallback callback);
 
@@ -176,7 +175,7 @@ class CONTENT_EXPORT BackgroundFetchDataManager
   // Worker.
   void GetDeveloperIdsForServiceWorker(
       int64_t service_worker_registration_id,
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       blink::mojom::BackgroundFetchService::GetDeveloperIdsCallback callback);
 
   const base::ObserverList<BackgroundFetchDataManagerObserver>::Unchecked&
@@ -215,18 +214,18 @@ class CONTENT_EXPORT BackgroundFetchDataManager
 
   void Cleanup();
 
-  // Get a CacheStorage remote for the given |origin| and |unique_id|.  This
+  // Get a CacheStorage remote for the given |storage_key| and |unique_id|. This
   // will either be a reference to an existing remote or will cause the
   // CacheStorage to be opened.  The BackgroundFetchDataManager owns this
   // remote for the lifetime of the connection.
   mojo::Remote<blink::mojom::CacheStorage>& GetOrOpenCacheStorage(
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       const std::string& unique_id);
-  void OpenCache(const url::Origin& origin,
+  void OpenCache(const blink::StorageKey& storage_key,
                  const std::string& unique_id,
                  int64_t trace_id,
                  blink::mojom::CacheStorage::OpenCallback callback);
-  void DeleteCache(const url::Origin& origin,
+  void DeleteCache(const blink::StorageKey& storage_key,
                    const std::string& unique_id,
                    int64_t trace_id,
                    blink::mojom::CacheStorage::DeleteCallback callback);
@@ -234,7 +233,7 @@ class CONTENT_EXPORT BackgroundFetchDataManager
                       blink::mojom::CacheStorage::DeleteCallback callback,
                       blink::mojom::CacheStorageError result);
 
-  void HasCache(const url::Origin& origin,
+  void HasCache(const blink::StorageKey& storage_key,
                 const std::string& unique_id,
                 int64_t trace_id,
                 blink::mojom::CacheStorage::HasCallback callback);
@@ -244,9 +243,7 @@ class CONTENT_EXPORT BackgroundFetchDataManager
 
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
 
-  // BackgroundFetchDataManager is owned by BackgroundFetchContext which
-  // itself is owned by the StoragePartitionImpl.
-  StoragePartition* storage_partition_;
+  base::WeakPtr<StoragePartitionImpl> storage_partition_;
 
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
 
@@ -272,6 +269,7 @@ class CONTENT_EXPORT BackgroundFetchDataManager
   // TODO(crbug.com/711354): Possibly update key when CORS support is added.
   std::map<std::string, mojo::Remote<blink::mojom::CacheStorage>>
       cache_storage_remote_map_;
+  mojo::Remote<blink::mojom::CacheStorage> null_remote_;
 
   base::WeakPtrFactory<BackgroundFetchDataManager> weak_ptr_factory_{this};
 

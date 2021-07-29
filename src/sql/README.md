@@ -1,5 +1,6 @@
 # SQLite abstraction layer
 
+[TOC]
 
 ## SQLite for system designers
 
@@ -110,6 +111,17 @@ implementation in SQLite. To make this optimization easier to use, any column
 that is a primary key and has an `INTEGER` type is considered an alias for
 rowid.
 
+Each SQLite index
+[is stored in a B-tree](https://sqlite.org/fileformat2.html#representation_of_sql_indices).
+Each index entry is stored as a B-tree node whose key is made up of the record's
+index key column values, followed by the record's primary key column values.
+
+`WITHOUT ROWID` table indexes can include primary key columns without additional
+storage costs. This is because indexes for `WITHOUT ROWID` tables enjoy
+[a space optimization](https://sqlite.org/fileformat2.html#representation_of_sql_indices)
+where columns in both the primary key and the index key are not stored twice in
+B-tree nodes.
+
 
 ### Query processing
 
@@ -132,6 +144,32 @@ TODO: Present a simplified model that's sufficient for most database design.
 ## General advice
 
 The following pieces of advice usually come up in code reviews.
+
+
+### Quickly iterating on SQL statements
+
+[The SQLite shell](https://sqlite.org/cli.html) offers quick feedback for
+converging on valid SQL statement syntax, and avoiding SQLite features that are
+disabled in Chrome. In addition, the
+[`EXPLAIN`](https://www.sqlite.org/lang_explain.html) and
+[`EXPLAIN QUERY PLAN`](https://www.sqlite.org/eqp.html) statements show the
+results of SQLite's query planner and optimizer, which are very helpful for
+reasoning about the performance of complex queries. The SQLite shell directive
+`.eqp on` automatically issues `EXPLAIN QUERY PLAN` for all future commands.
+
+
+The following commands set up SQLite shells using Chrome's build of SQLite.
+
+```sh
+autoninja -C out/Default sqlite_shell sqlite_dev_shell
+```
+
+* `sqlite_shell` runs the SQLite build that we ship in Chrome. It offers the
+  ground truth on whether a SQL statement can be used in Chrome code or not.
+* `sqlite_dev_shell` enables the `EXPLAIN` and `EXPLAIN QUERY PLAN` statements,
+  as well as a few features used by [Perfetto](https://perfetto.dev/)'s analysis
+  tools.
+
 
 ### SQL style
 
@@ -182,8 +220,8 @@ Format statements like so.
      // clang-format on
 ```
 
-* SQLite keywords should use ALL CAPS. This makes SQL query literals easier to
-  distinguish and search for.
+* [SQLite keywords](https://sqlite.org/lang_keywords.html) should use ALL CAPS.
+  This makes SQL query literals easier to distinguish and search for.
 
 * Identifiers, such as table and row names, should use snake_case.
 
@@ -238,6 +276,11 @@ Format statements like so.
 
 ### Schema style
 
+Identifiers (table / index / column names and aliases) must not be
+[current SQLite keywords](https://sqlite.org/lang_keywords.html). Identifiers
+may not start with the `sqlite_` prefix, to avoid conflicting with the name of a
+[SQLite internal schema object](https://www.sqlite.org/fileformat2.html#storage_of_the_sql_database_schema).
+
 Column types should only be one of the the SQLite storage types (`INTEGER`,
 `REAL`, `TEXT`, `BLOB`), so readers can avoid reasoning about SQLite's type
 affinity.
@@ -251,12 +294,21 @@ using `sql::Statement::ColumnTime()`.
 Column types should not include information ignored by SQLite, such as numeric
 precision or scale specifiers, or string length specifiers.
 
-Columns should have the `NOT NULL` constraint whenever possible. This saves
-maintainers from having to reason about the less intuitive cases of
-[`NULL` handling](https://sqlite.org/nulls.html).
+Columns should have
+[`NOT NULL` constraints](https://sqlite.org/lang_createtable.html#not_null_constraints)
+whenever possible. This saves maintainers from having to reason about the less
+intuitive cases of [`NULL` handling](https://sqlite.org/nulls.html).
 
-Columns should avoid `DEFAULT` values. This moves the burden of checking that
-`INSERT` statements aren't missing any columns from the code reviewer to SQLite.
+`NOT NULL` constraints must be explicitly stated in column definitions that
+include `PRIMARY KEY` specifiers. For historical reasons, SQLite
+[allows NULL primary keys](https://sqlite.org/lang_createtable.html#the_primary_key)
+in most cases.  When a table's primary key is composed of multiple columns,
+each column's definition should have a `NOT NULL` constraint.
+
+Columns should avoid `DEFAULT` values. Columns that have `NOT NULL` constraints
+and lack a `DEFAULT` value are easier to review and maintain, as SQLite takes
+over the burden of checking that `INSERT` statements aren't missing these
+columns.
 
 Surrogate primary keys should use the column type `INTEGER PRIMARY KEY`, to take
 advantage of SQLite's rowid optimizations.
@@ -266,7 +318,10 @@ primary key reuse would be unacceptable.
 
 ### Discouraged features
 
-#### PRAGMA statements
+SQLite exposes a vast array of functionality via SQL statements. The following
+features are not a good match for SQL statements used by Chrome feature code.
+
+#### PRAGMA statements {#no-pragmas}
 
 [`PRAGMA` statements](https://www.sqlite.org/pragma.html) should never be used
 directly. Chrome's SQLite abstraction layer should be modified to support the
@@ -277,7 +332,7 @@ Direct `PRAGMA` use limits our ability to customize and secure our SQLite build.
 Furthermore, some `PRAGMA` statements invalidate previously compiled queries,
 reducing the efficiency of Chrome's compiled query cache.
 
-#### Virtual tables
+#### Virtual tables {#no-virtual-tables}
 
 [`CREATE VIRTUAL TABLE` statements](https://www.sqlite.org/vtab.html) should not
 be used. The desired functionality should be implemented in C++, and access
@@ -302,7 +357,7 @@ After
 to disable SQLite's virtual table support using
 [SQLITE_OMIT_VIRTUALTABLE](https://sqlite.org/compile.html#omit_virtualtable).
 
-#### Foreign key constraints
+#### Foreign key constraints {#no-foreign-keys}
 
 [SQL foreign key constraints](https://sqlite.org/foreignkeys.html) should not be
 used. All data validation should be performed using explicit `SELECT` statements
@@ -320,7 +375,7 @@ After
 to disable SQLite's foreign key support using
 [SQLITE_OMIT_FOREIGN_KEY](https://sqlite.org/compile.html#omit_foreign_key).
 
-#### CHECK constraints
+#### CHECK constraints {#no-checks}
 
 [SQL CHECK constraints](https://sqlite.org/lang_createtable.html#check_constraints)
 should not be used, for the same reasons as foreign key constraints. The
@@ -331,18 +386,22 @@ After
 to disable SQLite's CHECK constraint support using
 [SQLITE_OMIT_CHECK](https://sqlite.org/compile.html#omit_check).
 
-#### Triggers
+#### Triggers {#no-triggers}
 
 [SQL triggers](https://sqlite.org/lang_createtrigger.html) should not be used.
 
 Triggers significantly increase the difficulty of reviewing and maintaining
 Chrome features that use them.
 
+Triggers are not executed on SQLite databases opened with Chrome's
+`sql::Database` infrastructure. This is intended to steer feature developers
+away from the discouraged feature.
+
 After [WebSQL](https://www.w3.org/TR/webdatabase/) is removed from Chrome, we
 plan to disable SQLite's trigger support using
 [SQLITE_OMIT_TRIGGER](https://sqlite.org/compile.html#omit_trigger).
 
-#### Common Table Expressions
+#### Common Table Expressions {#no-ctes}
 
 [SQL Common Table Expressions (CTEs)](https://sqlite.org/lang_with.html) should
 not be used. Chrome's SQL schemas and queries should be simple enough that
@@ -355,7 +414,7 @@ should be implemented in C++.
 Common Table Expressions do not open up any query optimizations that would not
 be available otherwise, and make it more difficult to review / analyze queries.
 
-#### Views
+#### Views {#no-views}
 
 SQL views, managed by the
 [`CREATE VIEW` statement](https://www.sqlite.org/lang_createview.html) and the
@@ -372,7 +431,7 @@ After
 to disable SQLite's VIEW support using
 [SQLITE_OMIT_VIEW](https://www.sqlite.org/compile.html#omit_view).
 
-#### Compound SELECT statements
+#### Compound SELECT statements {#no-compound-queries}
 
 [Compound SELECT statements](https://www.sqlite.org/lang_select.html#compound_select_statements)
 should not be used. Such statements should be broken down into
@@ -382,14 +441,42 @@ implemented in C++.
 
 A single compound SELECT statement is more difficult to review and properly
 unit-test than the equivalent collection of simple SELECT statements.
-Furthermore, the compound SELECT statement operators can be implemented more efficiently in C++ than in SQLite's bytecode interpreter (VDBE).
+Furthermore, the compound SELECT statement operators can be implemented more
+efficiently in C++ than in SQLite's bytecode interpreter (VDBE).
 
 After
 [WebSQL](https://www.w3.org/TR/webdatabase/) is removed from Chrome, we plan
 to disable SQLite's compound SELECT support using
 [SQLITE_OMIT_COMPOUND_SELECT](https://www.sqlite.org/compile.html#omit_compound_select).
 
-#### ATTACH DATABASE statements
+#### Built-in functions {#no-builtin-functions}
+
+SQLite's [built-in functions](https://sqlite.org/lang_corefunc.html) should be
+only be used in SQL statements where they unlock significant performance
+improvements. Chrome features should store data in a format that leaves the most
+room for query optimizations, and perform any necessary transformations after
+reading / before writing the data.
+
+* [Aggregation functions](https://sqlite.org/lang_aggfunc.html) are best
+  replaced with C++ code that iterates over rows and computes the desired
+  results.
+* [Date and time functions](https://sqlite.org/lang_datefunc.html) are best
+  replaced by `base::Time` functionality.
+* String-processing functions, such as
+  [`printf()`](https://sqlite.org/printf.html) and `trim()` are best replaced
+  by C++ code that uses the helpers in `//base/strings/`.
+* Wrappers for [SQLite's C API](https://sqlite.org/c3ref/funclist.html), such as
+  `changes()`, `last_insert_rowid()`, and `total_changes()`, are best replaced
+  by functionality in `sql::Database` and `sql::Statement`.
+* SQLite-specific functions, such as  `sqlite_source_id()` and
+  `sqlite_version()` should not be necessary in Chrome code, and may suggest a
+  problem in the feature's design.
+
+[Math functions](https://sqlite.org/lang_mathfunc.html) and
+[Window functions](https://sqlite.org/windowfunctions.html#biwinfunc) are
+disabled in Chrome's SQLite build.
+
+#### ATTACH DATABASE statements {#no-attach}
 
 [`ATTACH DATABASE` statements](https://www.sqlite.org/lang_attach.html) should
 not be used. Each Chrome feature should store its data in a single database.

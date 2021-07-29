@@ -35,6 +35,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/filter/source_stream.h"
+#include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/log/net_log_util.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
@@ -254,7 +255,7 @@ bool URLDataManagerBackend::IsValidNetworkErrorCode(int error_code) {
   base::Value error_codes = net::GetNetConstants();
   const base::DictionaryValue* net_error_codes_dict = nullptr;
 
-  for (const auto& item : error_codes.DictItems()) {
+  for (auto item : error_codes.DictItems()) {
     if (item.first == kNetworkErrorKey) {
       item.second.GetAsDictionary(&net_error_codes_dict);
       break;

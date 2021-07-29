@@ -8,10 +8,11 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
+#include "base/cxx17_backports.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
@@ -267,7 +268,7 @@ class PrinterProviderApiTest : public ExtensionApiTest,
       const std::vector<std::unique_ptr<base::Value>>& expected_printers) {
     ASSERT_EQ(expected_printers.size(), printers.GetSize());
     for (const auto& printer_value : expected_printers) {
-      EXPECT_TRUE(printers.Find(*printer_value) != printers.GetList().end())
+      EXPECT_TRUE(base::Contains(printers.GetList(), *printer_value))
           << "Unable to find " << *printer_value << " in " << printers;
     }
   }
@@ -718,7 +719,7 @@ IN_PROC_BROWSER_TEST_P(PrinterProviderApiTest, GetPrintersInvalidPrinterValue) {
 
   run_loop.Run();
 
-  EXPECT_TRUE(printers.empty());
+  EXPECT_TRUE(printers.GetList().empty());
 }
 
 // These tests are separate out from the main test class because the USB api

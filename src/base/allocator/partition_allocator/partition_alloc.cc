@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "base/allocator/buildflags.h"
 #include "base/allocator/partition_allocator/address_pool_manager.h"
 #include "base/allocator/partition_allocator/memory_reclaimer.h"
 #include "base/allocator/partition_allocator/page_allocator_internal.h"
@@ -20,7 +21,6 @@
 #include "base/allocator/partition_allocator/partition_root.h"
 #include "base/allocator/partition_allocator/partition_stats.h"
 #include "base/allocator/partition_allocator/starscan/pcscan.h"
-#include "base/partition_alloc_buildflags.h"
 
 namespace base {
 
@@ -57,7 +57,7 @@ void PartitionAllocGlobalInit(OomFunction on_out_of_memory) {
 
   // Check that some of our zanier calculations worked out as expected.
   static_assert(kSmallestBucket == kAlignment, "generic smallest bucket");
-  static_assert(kMaxBucketed == 983040, "generic max bucketed");
+  static_assert(kMaxBucketed == 917504, "generic max bucketed");
   STATIC_ASSERT_OR_PA_CHECK(
       MaxSystemPagesPerSlotSpan() < (1 << 8),
       "System pages per slot span must be less than 128.");

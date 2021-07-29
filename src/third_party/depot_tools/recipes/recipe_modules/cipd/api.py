@@ -282,7 +282,7 @@ class CIPDApi(recipe_api.RecipeApi):
     )
 
   def _create(self, pkg_name, pkg_def_file_or_placeholder,
-              refs=None, tags=None):
+              refs=None, tags=None, verification_timeout=None):
     refs = refs or []
     tags = tags or {}
     check_list_type('refs', refs, str)
@@ -295,6 +295,8 @@ class CIPDApi(recipe_api.RecipeApi):
     ]
     if self._cipd_credentials:
       cmd.extend(['-service-account-json', self._cipd_credentials])
+    if verification_timeout:
+      cmd.extend(['-verification-timeout', verification_timeout])
     for ref in refs:
       cmd.extend(['-ref', ref])
     for tag, value in sorted(tags.items()):
@@ -309,7 +311,8 @@ class CIPDApi(recipe_api.RecipeApi):
         'https://chrome-infra-packages.appspot.com/p/%(package)s/+/%(instance_id)s' % ret_data)
     return ret_data
 
-  def create_from_yaml(self, pkg_def, refs=None, tags=None):
+  def create_from_yaml(self, pkg_def, refs=None, tags=None,
+                       verification_timeout=None):
     """Builds and uploads a package based on on-disk YAML package definition
     file.
 
@@ -320,6 +323,10 @@ class CIPDApi(recipe_api.RecipeApi):
       refs (list(str)) - A list of ref names to set for the package instance.
       tags (dict(str, str)) - A map of tag name -> value to set for the package
                               instance.
+      verification_timeout (str) - Duration string that controls the time to
+                                   wait for backend-side package hash
+                                   verification. Valid time units are "ns",
+                                   "us", "ms", "s", "m", "h".
 
     Returns the JSON 'result' section, e.g.: {
       "package": "infra/tools/cipd/android-amd64",
@@ -327,7 +334,8 @@ class CIPDApi(recipe_api.RecipeApi):
     }
     """
     check_type('pkg_def', pkg_def, Path)
-    return self._create(self.m.path.basename(pkg_def), pkg_def, refs, tags)
+    return self._create(self.m.path.basename(pkg_def), pkg_def, refs, tags,
+                        verification_timeout)
 
   def create_from_pkg(self, pkg_def, refs=None, tags=None):
     """Builds and uploads a package based on a PackageDefinition object.

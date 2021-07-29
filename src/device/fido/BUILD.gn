@@ -77,6 +77,8 @@ component("fido") {
       "aoa/android_accessory_device.h",
       "aoa/android_accessory_discovery.cc",
       "aoa/android_accessory_discovery.h",
+      "appid_exclude_probe_task.cc",
+      "appid_exclude_probe_task.h",
       "attestation_object.cc",
       "attestation_object.h",
       "attestation_statement.cc",
@@ -282,6 +284,7 @@ static_library("cablev2_registration") {
     "//components/device_event_log",
     "//components/gcm_driver",
     "//components/gcm_driver/instance_id",
+    "//third_party/boringssl",
   ]
 }
 

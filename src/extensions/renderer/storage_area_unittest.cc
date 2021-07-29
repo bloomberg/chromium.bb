@@ -4,9 +4,11 @@
 
 #include "extensions/renderer/storage_area.h"
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "base/strings/stringprintf.h"
+#include "components/version_info/channel.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/features/feature_channel.h"
 #include "extensions/renderer/bindings/api_binding_test_util.h"
 #include "extensions/renderer/bindings/api_binding_util.h"
 #include "extensions/renderer/bindings/api_invocation_errors.h"
@@ -17,6 +19,21 @@
 namespace extensions {
 
 using StorageAreaTest = NativeExtensionBindingsSystemUnittest;
+
+// A specialization of StorageAreaTest that pretends it's running
+// on version_info::Channel::UNKNOWN.
+class StorageAreaTrunkTest : public StorageAreaTest {
+ public:
+  StorageAreaTrunkTest() = default;
+  ~StorageAreaTrunkTest() override = default;
+  StorageAreaTrunkTest(const StorageAreaTrunkTest& other) = delete;
+  StorageAreaTrunkTest& operator=(const StorageAreaTrunkTest& other) = delete;
+
+ private:
+  // TODO(crbug.com/1185226): Remove unknown channel when chrome.storage.session
+  // is released in stable.
+  ScopedCurrentChannel current_channel_{version_info::Channel::UNKNOWN};
+};
 
 // Test that trying to use StorageArea.get without a StorageArea `this` fails
 // (with a helpful error message).
@@ -113,9 +130,12 @@ TEST_F(StorageAreaTest, InvalidInvocationError) {
               "No matching signature."));
 }
 
-TEST_F(StorageAreaTest, HasOnChanged) {
+TEST_F(StorageAreaTrunkTest, HasOnChanged) {
   scoped_refptr<const Extension> extension =
-      ExtensionBuilder("foo").AddPermission("storage").Build();
+      ExtensionBuilder("foo")
+          .SetManifestKey("manifest_version", 3)
+          .AddPermission("storage")
+          .Build();
   RegisterExtension(extension);
 
   v8::HandleScope handle_scope(isolate());
@@ -127,8 +147,8 @@ TEST_F(StorageAreaTest, HasOnChanged) {
 
   bindings_system()->UpdateBindingsForContext(script_context);
 
-  const char* kStorages[] = {"sync", "local", "managed"};
-  for (size_t i = 0; i < base::size(kStorages); ++i) {
+  const char* kStorages[] = {"sync", "local", "managed", "session"};
+  for (auto* kStorage : kStorages) {
     const std::string kRegisterListener = base::StringPrintf(
         R"((function() {
              chrome.storage.%s.onChanged.addListener(
@@ -136,13 +156,13 @@ TEST_F(StorageAreaTest, HasOnChanged) {
                   this.change = change;
               });
         }))",
-        kStorages[i]);
+        kStorage);
     v8::Local<v8::Function> add_listener =
         FunctionFromString(context, kRegisterListener);
     RunFunctionOnGlobal(add_listener, context, 0, nullptr);
 
     bindings_system()->DispatchEventInContext(
-        base::StringPrintf("storage.%s.onChanged", kStorages[i]).c_str(),
+        base::StringPrintf("storage.%s.onChanged", kStorage).c_str(),
         ListValueFromString("['foo']").get(), nullptr, script_context);
 
     EXPECT_EQ("\"foo\"", GetStringPropertyFromObject(context->Global(), context,

@@ -8,7 +8,6 @@
 #include "ash/app_list/app_list_presenter_impl.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/drag_drop/drag_image_view.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/scrollable_shelf_constants.h"
@@ -60,10 +59,10 @@ class PageFlipWaiter : public ScrollableShelfView::TestObserver {
 class InkDropAnimationWaiter : public views::InkDropObserver {
  public:
   explicit InkDropAnimationWaiter(views::Button* button) : button_(button) {
-    button->ink_drop()->GetInkDrop()->AddObserver(this);
+    views::InkDrop::Get(button)->GetInkDrop()->AddObserver(this);
   }
   ~InkDropAnimationWaiter() override {
-    button_->ink_drop()->GetInkDrop()->RemoveObserver(this);
+    views::InkDrop::Get(button_)->GetInkDrop()->RemoveObserver(this);
   }
 
   void Wait() {
@@ -645,7 +644,7 @@ TEST_P(ScrollableShelfViewRTLTest, CorrectUIAfterSwitchingToTablet) {
       scrollable_shelf_view_->left_arrow()->GetBoundsInScreen();
 
   // Activate a shelf icon's ink drop. Verify that no crash happens.
-  auto* ink_drop = test_api_->GetButton(0)->ink_drop()->GetInkDrop();
+  auto* ink_drop = views::InkDrop::Get(test_api_->GetButton(0))->GetInkDrop();
   ink_drop->SnapToActivated();
   EXPECT_EQ(views::InkDropState::ACTIVATED, ink_drop->GetTargetInkDropState());
 
@@ -710,7 +709,7 @@ TEST_P(ScrollableShelfViewRTLTest, VerifyActivateIconRippleOnVerySmallDisplay) {
   UpdateDisplay("60x601");
 
   // Activate a shelf icon's ink drop. Verify that no crash happens.
-  auto* ink_drop = test_api_->GetButton(0)->ink_drop()->GetInkDrop();
+  auto* ink_drop = views::InkDrop::Get(test_api_->GetButton(0))->GetInkDrop();
   ink_drop->SnapToActivated();
   EXPECT_EQ(views::InkDropState::ACTIVATED, ink_drop->GetTargetInkDropState());
 }
@@ -782,7 +781,7 @@ TEST_P(ScrollableShelfViewRTLTest,
     waiter.Wait();
   }
   ASSERT_EQ(views::InkDropState::ACTIVATED,
-            icon->ink_drop()->GetInkDrop()->GetTargetInkDropState());
+            views::InkDrop::Get(icon)->GetInkDrop()->GetTargetInkDropState());
 
   // Verify that in clamshell when the ripple ring is activated, the rounded
   // corners should not be applied.
@@ -800,7 +799,7 @@ TEST_P(ScrollableShelfViewRTLTest,
     waiter.Wait();
   }
   EXPECT_EQ(views::InkDropState::HIDDEN,
-            icon->ink_drop()->GetInkDrop()->GetTargetInkDropState());
+            views::InkDrop::Get(icon)->GetInkDrop()->GetTargetInkDropState());
 
   // Verify that the rounded corners should not be applied when the ripple ring
   // is hidden.
@@ -837,7 +836,7 @@ TEST_F(ScrollableShelfViewTest,
     waiter.Wait();
   }
   EXPECT_EQ(views::InkDropState::ACTIVATED,
-            icon->ink_drop()->GetInkDrop()->GetTargetInkDropState());
+            views::InkDrop::Get(icon)->GetInkDrop()->GetTargetInkDropState());
 
   // Emulate to remove a shelf icon from context menu.
   shelf_model->RemoveItemAt(index);
@@ -1459,7 +1458,7 @@ TEST_F(ScrollableShelfViewWithAppScalingTest,
   // Pin an app icon then enter the overview mode. Verify that app scaling is
   // turned on.
   const ShelfID shelf_id = AddAppShortcut();
-  Shell::Get()->overview_controller()->StartOverview();
+  EnterOverview();
   WaitForOverviewAnimation(/*enter=*/true);
   EXPECT_EQ(HotseatDensity::kSemiDense,
             hotseat_widget->target_hotseat_density());
@@ -1471,7 +1470,7 @@ TEST_F(ScrollableShelfViewWithAppScalingTest,
   EXPECT_EQ(HotseatDensity::kNormal, hotseat_widget->target_hotseat_density());
 
   // Exit overview mode. Verify the hotseat density.
-  Shell::Get()->overview_controller()->EndOverview();
+  ExitOverview();
   WaitForOverviewAnimation(/*enter=*/false);
   EXPECT_EQ(HotseatDensity::kNormal, hotseat_widget->target_hotseat_density());
 }

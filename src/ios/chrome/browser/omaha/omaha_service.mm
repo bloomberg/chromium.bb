@@ -44,6 +44,7 @@
 #include "net/base/backoff_entry.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "third_party/libxml/chromium/xml_writer.h"
@@ -57,9 +58,9 @@ namespace {
 // Number of hours to wait between successful requests.
 const int kHoursBetweenRequests = 5;
 // Minimal time to wait between retry requests.
-const CFTimeInterval kPostRetryBaseSeconds = 3600;
+const int kPostRetryBaseSeconds = 3600;
 // Maximal time to wait between retry requests.
-const CFTimeInterval kPostRetryMaxSeconds = 6 * kPostRetryBaseSeconds;
+const int64_t kPostRetryMaxSeconds = 6 * kPostRetryBaseSeconds;
 
 // Default last sent application version when none has been sent yet.
 const char kDefaultLastSentVersion[] = "0.0.0.0";
@@ -399,7 +400,7 @@ void OmahaService::StartInternal() {
   started_ = true;
 
   // Start the provider at the same time as the rest of the service.
-  ios::GetChromeBrowserProvider()->GetOmahaServiceProvider()->Start();
+  ios::GetChromeBrowserProvider().GetOmahaServiceProvider()->Start();
 
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   next_tries_time_ = base::Time::FromCFAbsoluteTime(
@@ -409,16 +410,25 @@ void OmahaService::StartInternal() {
   number_of_tries_ = [defaults integerForKey:kNumberTriesKey];
   last_sent_time_ =
       base::Time::FromCFAbsoluteTime([defaults doubleForKey:kLastSentTimeKey]);
-  last_server_date_ = [defaults integerForKey:kLastServerDateKey];
-  if (last_server_date_ == 0) {
-    last_server_date_ = -2;  // -2 indicates "unknown" to the Omaha Server.
-  }
   NSString* lastSentVersion = [defaults stringForKey:kLastSentVersionKey];
   if (lastSentVersion) {
     last_sent_version_ =
         base::Version(base::SysNSStringToUTF8(lastSentVersion));
   } else {
     last_sent_version_ = base::Version(kDefaultLastSentVersion);
+  }
+  last_server_date_ = [defaults integerForKey:kLastServerDateKey];
+  if (last_server_date_ == 0) {
+    if (lastSentVersion) {
+      // If there is a record of the last sent version but no record of the
+      // last server date, this client has upgraded from a version of Chrome
+      // that did not support saving the last server date. Send -2 ("unknown").
+      last_server_date_ = -2;
+    } else {
+      // If there is neither a last server date nor last sent version, this is
+      // a fresh install. Send -1 ("first active").
+      last_server_date_ = -1;
+    }
   }
 
   application_install_date_ =
@@ -464,7 +474,7 @@ void OmahaService::StopInternal() {
     return;
   }
 
-  ios::GetChromeBrowserProvider()->GetOmahaServiceProvider()->Stop();
+  ios::GetChromeBrowserProvider().GetOmahaServiceProvider()->Stop();
 }
 
 // static
@@ -514,7 +524,7 @@ std::string OmahaService::GetPingContent(const std::string& requestId,
                                          const base::Time& installationTime,
                                          PingContent pingContent) {
   OmahaServiceProvider* provider =
-      ios::GetChromeBrowserProvider()->GetOmahaServiceProvider();
+      ios::GetChromeBrowserProvider().GetOmahaServiceProvider();
 
   XmlWrapper xml_wrapper;
   xml_wrapper.StartElement("request");
@@ -551,6 +561,7 @@ std::string OmahaService::GetPingContent(const std::string& requestId,
     xml_wrapper.WriteAttribute("version", versionName.c_str());
     xml_wrapper.WriteAttribute("nextversion", "");
   }
+  xml_wrapper.WriteAttribute("ap", channelName.c_str());
   xml_wrapper.WriteAttribute("lang", locale_lang_.c_str());
   xml_wrapper.WriteAttribute("brand", provider->GetBrandCode().c_str());
   xml_wrapper.WriteAttribute("client", "");
@@ -583,17 +594,17 @@ std::string OmahaService::GetPingContent(const std::string& requestId,
   } else {
     // Set up <updatecheck/>
     xml_wrapper.StartElement("updatecheck");
-    xml_wrapper.WriteAttribute("tag", channelName.c_str());
-    xml_wrapper.EndElement();
-
-    // Set up <ping active=1/>
-    std::string last_server_date = base::StringPrintf("%d", last_server_date_);
-    xml_wrapper.StartElement("ping");
-    xml_wrapper.WriteAttribute("active", "1");
-    xml_wrapper.WriteAttribute("ad", last_server_date.c_str());
-    xml_wrapper.WriteAttribute("rd", last_server_date.c_str());
     xml_wrapper.EndElement();
   }
+
+  // Set up <ping ... />
+  const std::string last_server_date =
+      base::StringPrintf("%d", last_server_date_);
+  xml_wrapper.StartElement("ping");
+  xml_wrapper.WriteAttribute("active", "1");
+  xml_wrapper.WriteAttribute("ad", last_server_date.c_str());
+  xml_wrapper.WriteAttribute("rd", last_server_date.c_str());
+  xml_wrapper.EndElement();
 
   // End app.
   xml_wrapper.EndElement();
@@ -630,7 +641,7 @@ void OmahaService::SendPing() {
   DCHECK(!url_loader_);
 
   GURL url(ios::GetChromeBrowserProvider()
-               ->GetOmahaServiceProvider()
+               .GetOmahaServiceProvider()
                ->GetUpdateServerURL());
   if (!url.is_valid()) {
     return;
@@ -722,7 +733,7 @@ void OmahaService::OnURLLoadComplete(
                                length:response_body->length()];
   NSXMLParser* parser = [[NSXMLParser alloc] initWithData:xml];
   const std::string application_id = ios::GetChromeBrowserProvider()
-                                         ->GetOmahaServiceProvider()
+                                         .GetOmahaServiceProvider()
                                          ->GetApplicationID();
   ResponseParser* delegate = [[ResponseParser alloc]
       initWithAppId:base::SysUTF8ToNSString(application_id)];

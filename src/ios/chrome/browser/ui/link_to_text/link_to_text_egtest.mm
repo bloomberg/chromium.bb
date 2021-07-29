@@ -204,12 +204,6 @@ std::unique_ptr<net::test_server::HttpResponse> LoadHtml(
 
 // Tests that a link can be generated for a simple text selection.
 - (void)testGenerateLinkForSimpleText {
-  if (!base::ios::IsRunningOnIOS13OrLater()) {
-    // Skip test on iOS 12 as the Activity View on that version is not
-    // accessible by Earl Grey.
-    EARL_GREY_TEST_SKIPPED(@"Test skipped on iOS 12.");
-  }
-
   // TODO(crbug.com/1149603): Re-enable this test on iPad once presenting
   // popovers work.
   if ([ChromeEarlGrey isIPadIdiom]) {
@@ -229,13 +223,20 @@ std::unique_ptr<net::test_server::HttpResponse> LoadHtml(
                               selectorWithElementID:kSimpleTextElementId],
                           true)];
 
-    // Edit menu should be there.
-    id<GREYMatcher> linkToTextButton =
-        chrome_test_util::SystemSelectionCalloutLinkToTextButton();
-    [ChromeEarlGrey
-        waitForSufficientlyVisibleElementWithMatcher:linkToTextButton];
+    // Wait for the menu to open. The "Copy" menu item will always be present,
+    // but other items may be hidden behind the overflow button.
+    [ChromeEarlGrey waitForSufficientlyVisibleElementWithMatcher:
+                        chrome_test_util::SystemSelectionCalloutCopyButton()];
 
-    [[EarlGrey selectElementWithMatcher:linkToTextButton]
+    // The link to text button may be in the overflow, so use a search action to
+    // find it, if necessary.
+    id<GREYMatcher> linkToTextMatcher =
+        grey_allOf(chrome_test_util::SystemSelectionCalloutLinkToTextButton(),
+                   grey_sufficientlyVisible(), nil);
+    [[[EarlGrey selectElementWithMatcher:linkToTextMatcher]
+           usingSearchAction:grey_tap()
+        onElementWithMatcher:chrome_test_util::
+                                 SystemSelectionCalloutOverflowButton()]
         performAction:grey_tap()];
 
     // Make sure the Edit menu is gone.
@@ -273,11 +274,6 @@ std::unique_ptr<net::test_server::HttpResponse> LoadHtml(
 }
 
 - (void)testBadSelectionDisablesGenerateLink {
-  if (!base::ios::IsRunningOnIOS13OrLater()) {
-    // The TextInput implementation is incomplete on iOS 13, so this condition
-    // isn't enforced on older versions.
-    EARL_GREY_TEST_SKIPPED(@"Test skipped on iOS 13.");
-  }
   if (@available(iOS 14, *)) {
     [ChromeEarlGrey loadURL:self.testServer->GetURL(kNoTextTestURL)];
     [ChromeEarlGrey waitForWebStateContainingText:kNoTextTestPageTextSample];

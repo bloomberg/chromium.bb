@@ -25,6 +25,7 @@
 #include "ui/base/layout.h"
 #include "ui/display/display_list.h"
 #include "ui/display/display_switches.h"
+#include "ui/display/test/scoped_screen_override.h"
 #include "ui/display/test/test_screen.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image.h"
@@ -45,16 +46,17 @@ class ScopedSetDeviceScaleFactor {
         switches::kForceDeviceScaleFactor, base::StringPrintf("%3.2f", scale));
     // This has to be inited after fiddling with the command line.
     test_screen_ = std::make_unique<display::test::TestScreen>();
-    display::Screen::SetScreenInstance(test_screen_.get());
+    screen_override_ = std::make_unique<display::test::ScopedScreenOverride>(
+        test_screen_.get());
   }
 
   ~ScopedSetDeviceScaleFactor() {
     display::Display::ResetForceDeviceScaleFactorForTesting();
-    display::Screen::SetScreenInstance(nullptr);
   }
 
  private:
   std::unique_ptr<display::test::TestScreen> test_screen_;
+  std::unique_ptr<display::test::ScopedScreenOverride> screen_override_;
   base::test::ScopedCommandLine command_line_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedSetDeviceScaleFactor);
@@ -67,7 +69,7 @@ class ExtensionIconManagerTest : public testing::Test,
  public:
   ExtensionIconManagerTest() : unwaited_image_loads_(0), waiting_(false) {}
 
-  ~ExtensionIconManagerTest() override {}
+  ~ExtensionIconManagerTest() override = default;
 
   void OnImageLoaded(const std::string& extension_id) override {
     unwaited_image_loads_++;
@@ -215,14 +217,11 @@ TEST_F(ExtensionIconManagerTest, ScaleFactors) {
   ASSERT_TRUE(extension);
 
   constexpr int kMaxIconSizeInManifest = 32;
-  std::vector<std::vector<ui::ScaleFactor>> supported_scales = {
+  std::vector<std::vector<ui::ResourceScaleFactor>> supported_scales = {
       // Base case.
       {ui::SCALE_FACTOR_100P},
       // Two scale factors.
       {ui::SCALE_FACTOR_100P, ui::SCALE_FACTOR_200P},
-      // A scale factor that is in between two of the provided icon sizes
-      // (should use the larger one and scale down).
-      {ui::SCALE_FACTOR_125P},
       // One scale factor for which we have an icon, one scale factor for which
       // we don't.
       {ui::SCALE_FACTOR_100P, ui::SCALE_FACTOR_300P},
@@ -236,8 +235,9 @@ TEST_F(ExtensionIconManagerTest, ScaleFactors) {
     // the logic in this test work, we need to set the scale factor to one of
     // the "supported" scales.
     ScopedSetDeviceScaleFactor scoped_dsf(
-        ui::GetScaleForScaleFactor(supported_scales[i][0]));
-    ui::test::ScopedSetSupportedScaleFactors scoped(supported_scales[i]);
+        ui::GetScaleForResourceScaleFactor(supported_scales[i][0]));
+    ui::test::ScopedSetSupportedResourceScaleFactors scoped(
+        supported_scales[i]);
     ExtensionIconManager icon_manager;
     icon_manager.set_observer(this);
 
@@ -249,7 +249,8 @@ TEST_F(ExtensionIconManagerTest, ScaleFactors) {
     // icon.
     bool should_fall_back_to_default = true;
     for (auto supported_scale : supported_scales[i]) {
-      if (gfx::kFaviconSize * ui::GetScaleForScaleFactor(supported_scale) <=
+      if (gfx::kFaviconSize *
+              ui::GetScaleForResourceScaleFactor(supported_scale) <=
           kMaxIconSizeInManifest) {
         should_fall_back_to_default = false;
         break;
@@ -264,8 +265,9 @@ TEST_F(ExtensionIconManagerTest, ScaleFactors) {
 
     for (int scale_factor_iter = ui::SCALE_FACTOR_NONE + 1;
          scale_factor_iter < ui::NUM_SCALE_FACTORS; ++scale_factor_iter) {
-      auto scale_factor = static_cast<ui::ScaleFactor>(scale_factor_iter);
-      float scale = ui::GetScaleForScaleFactor(scale_factor);
+      auto scale_factor =
+          static_cast<ui::ResourceScaleFactor>(scale_factor_iter);
+      float scale = ui::GetScaleForResourceScaleFactor(scale_factor);
       SCOPED_TRACE(testing::Message() << "Scale: " << scale);
 
       const bool has_representation = image_skia.HasRepresentation(scale);
@@ -280,7 +282,6 @@ TEST_F(ExtensionIconManagerTest, ScaleFactors) {
 
   // Now check that the scale factors for active displays are respected, even
   // when it's not a supported scale.
-  EXPECT_FALSE(ui::IsSupportedScale(ui::SCALE_FACTOR_150P));
   ScopedSetDeviceScaleFactor scoped_dsf(1.5f);
   ExtensionIconManager icon_manager;
   icon_manager.set_observer(this);

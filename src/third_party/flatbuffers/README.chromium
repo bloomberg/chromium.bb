@@ -1,8 +1,8 @@
 Name: FlatBuffers
 Short Name: flatbuffers
 URL: https://github.com/google/flatbuffers
-Version: 6df40a2471737b27271bdd9b900ab5f3aec746c7
-Date: 2020-10-21
+Version: c0ba2870c909fb57f97efd7083b5d33d2311d7f9
+Date: 2021-07-06
 License: Apache 2.0
 License File: LICENSE
 Security Critical: yes

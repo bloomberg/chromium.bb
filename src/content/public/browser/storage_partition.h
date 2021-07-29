@@ -8,10 +8,10 @@
 #include <stdint.h>
 
 #include <set>
-#include <string>
 
 #include "base/callback_forward.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/services/storage/public/mojom/cache_storage_control.mojom-forward.h"
 #include "components/services/storage/public/mojom/indexed_db_control.mojom-forward.h"
 #include "components/services/storage/public/mojom/local_storage_control.mojom-forward.h"
@@ -40,6 +40,7 @@ namespace network {
 namespace mojom {
 class CookieManager;
 class NetworkContext;
+class URLLoaderNetworkServiceObserver;
 }
 }  // namespace network
 
@@ -51,6 +52,10 @@ struct QuotaSettings;
 
 namespace storage {
 class DatabaseTracker;
+}
+
+namespace url {
+class Origin;
 }
 
 namespace content {

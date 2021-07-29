@@ -5,6 +5,7 @@
 #include "ui/platform_window/x11/x11_window.h"
 
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -61,7 +62,8 @@ class TestPlatformWindowDelegate : public PlatformWindowDelegate {
   void DispatchEvent(Event* event) override {}
   void OnCloseRequest() override {}
   void OnClosed() override {}
-  void OnWindowStateChanged(PlatformWindowState new_state) override {
+  void OnWindowStateChanged(PlatformWindowState old_state,
+                            PlatformWindowState new_state) override {
     state_ = new_state;
   }
   void OnLostCapture() override {}
@@ -307,15 +309,13 @@ TEST_F(X11WindowTest, DISABLED_Shape) {
 
     // xvfb does not support Xrandr so we cannot check the maximized window's
     // bounds.
-    gfx::Rect maximized_bounds;
-    GetOuterWindowBounds(x11_window, &maximized_bounds);
+    auto geometry = connection->GetGeometry(x11_window).Sync();
+    auto maximized_width = geometry ? geometry->width : 0;
 
     shape_rects = GetShapeRects(x11_window);
     ASSERT_FALSE(shape_rects.empty());
-    EXPECT_TRUE(
-        ShapeRectContainsPoint(shape_rects, maximized_bounds.width() - 1, 5));
-    EXPECT_TRUE(
-        ShapeRectContainsPoint(shape_rects, maximized_bounds.width() - 1, 15));
+    EXPECT_TRUE(ShapeRectContainsPoint(shape_rects, maximized_width - 1, 5));
+    EXPECT_TRUE(ShapeRectContainsPoint(shape_rects, maximized_width - 1, 15));
   }
 
   // 2) Test setting the window shape via PlatformWindow::SetShape().

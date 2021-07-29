@@ -4,42 +4,14 @@
 
 #include "content/browser/conversions/conversion_storage_delegate_impl.h"
 
-#include <algorithm>
+#include "base/rand_util.h"
+#include "content/browser/conversions/conversion_policy.h"
 
 namespace content {
 
 ConversionStorageDelegateImpl::ConversionStorageDelegateImpl(bool debug_mode)
     : debug_mode_(debug_mode) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
-}
-
-const StorableImpression&
-ConversionStorageDelegateImpl::GetImpressionToAttribute(
-    const std::vector<StorableImpression>& impressions) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!impressions.empty());
-
-  // Chooses the impression with the largest priority value. In the case of
-  // ties, impression_time is used to tie break.
-  //
-  // Note that impressions which do not get a priority get defaulted to 0,
-  // meaning they can be attributed over impressions which set a negative
-  // priority.
-  return *std::max_element(
-      impressions.begin(), impressions.end(),
-      [](const StorableImpression& a, const StorableImpression& b) {
-        if (a.priority() < b.priority())
-          return true;
-        if (a.priority() > b.priority())
-          return false;
-        return a.impression_time() < b.impression_time();
-      });
-}
-
-void ConversionStorageDelegateImpl::ProcessNewConversionReport(
-    ConversionReport& report) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  report.report_time = GetReportTimeForConversion(report);
 }
 
 int ConversionStorageDelegateImpl::GetMaxConversionsPerImpression(
@@ -54,15 +26,25 @@ int ConversionStorageDelegateImpl::GetMaxConversionsPerImpression(
 }
 
 int ConversionStorageDelegateImpl::GetMaxImpressionsPerOrigin() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return 1024;
 }
 
 int ConversionStorageDelegateImpl::GetMaxConversionsPerOrigin() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return 1024;
+}
+
+int ConversionStorageDelegateImpl::GetMaxAttributionDestinationsPerEventSource()
+    const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // TODO(apaseltiner): Finalize a value for this.
+  return INT_MAX;
 }
 
 ConversionStorage::Delegate::RateLimitConfig
 ConversionStorageDelegateImpl::GetRateLimits() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // TODO(csharrison): Finalize max_attributions_per_window value.
   return {
       .time_window = base::TimeDelta::FromDays(30),
@@ -70,7 +52,37 @@ ConversionStorageDelegateImpl::GetRateLimits() const {
   };
 }
 
-base::Time ConversionStorageDelegateImpl::GetReportTimeForConversion(
+StorableImpression::AttributionLogic
+ConversionStorageDelegateImpl::SelectAttributionLogic(
+    const StorableImpression& impression) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (debug_mode_)
+    return StorableImpression::AttributionLogic::kTruthfully;
+
+  switch (impression.source_type()) {
+    case StorableImpression::SourceType::kNavigation:
+      return StorableImpression::AttributionLogic::kTruthfully;
+    case StorableImpression::SourceType::kEvent: {
+      // TODO(apaseltiner): Finalize a value for this so that noise is actually
+      // triggered.
+      const double kNoise = 0;
+      if (base::RandDouble() < (1 - kNoise))
+        return StorableImpression::AttributionLogic::kTruthfully;
+      if (base::RandInt(0, 1) == 0)
+        return StorableImpression::AttributionLogic::kNever;
+      return StorableImpression::AttributionLogic::kFalsely;
+    }
+  }
+}
+
+uint64_t ConversionStorageDelegateImpl::GetFakeEventSourceTriggerData() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return ConversionPolicy::NoiseProvider::GetNoisedEventSourceTriggerDataImpl(
+      base::RandUint64());
+}
+
+base::Time ConversionStorageDelegateImpl::GetReportTime(
     const ConversionReport& report) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   //  |report.report_time| is roughly ~now, for newly created conversion

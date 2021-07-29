@@ -391,6 +391,9 @@ class ResizeRealtimeTest
                                   libaom_test::Encoder *encoder) {
     if (video->frame() == 0) {
       encoder->Control(AV1E_SET_AQ_MODE, 3);
+      encoder->Control(AV1E_SET_ALLOW_WARPED_MOTION, 0);
+      encoder->Control(AV1E_SET_ENABLE_GLOBAL_MOTION, 0);
+      encoder->Control(AV1E_SET_ENABLE_OBMC, 0);
       encoder->Control(AOME_SET_CPUUSED, set_cpu_used_);
       encoder->Control(AV1E_SET_FRAME_PARALLEL_DECODING, 1);
     }

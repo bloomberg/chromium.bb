@@ -116,7 +116,7 @@ TEST_F(ManifestParserTest, ValidNoContentParses) {
 
 TEST_F(ManifestParserTest, MultipleErrorsReporting) {
   auto& manifest = ParseManifest(
-      "{ \"name\": 42, \"short_name\": 4,"
+      "{ \"name\": 42, \"short_name\": 4, \"id\": 12,"
       "\"orientation\": {}, \"display\": \"foo\","
       "\"start_url\": null, \"icons\": {}, \"theme_color\": 42,"
       "\"background_color\": 42, \"shortcuts\": {} }");
@@ -259,6 +259,37 @@ TEST_F(ManifestParserTest, ShortNameParseRules) {
   }
 }
 
+TEST_F(ManifestParserTest, IdParseRules) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(blink::features::kWebAppEnableManifestId);
+  // Empty manifest.
+  {
+    auto& manifest = ParseManifest("{ }");
+    ASSERT_EQ(0u, GetErrorCount());
+    EXPECT_EQ(String(), manifest->id);
+  }
+  // Does not contain id field.
+  {
+    auto& manifest = ParseManifest("{\"start_url\": \"/start?query=a\" }");
+    ASSERT_EQ(0u, GetErrorCount());
+    EXPECT_EQ("start?query=a", manifest->id);
+  }
+  // Empty string.
+  {
+    auto& manifest =
+        ParseManifest("{ \"start_url\": \"/start?query=a\", \"id\": \"\" }");
+    ASSERT_EQ(0u, GetErrorCount());
+    EXPECT_EQ("", manifest->id);
+  }
+  // Smoke test.
+  {
+    auto& manifest =
+        ParseManifest("{ \"start_url\": \"/start?query=a\", \"id\": \"foo\" }");
+    ASSERT_EQ(0u, GetErrorCount());
+    EXPECT_EQ("foo", manifest->id);
+  }
+}
+
 TEST_F(ManifestParserTest, StartURLParseRules) {
   // Smoke test.
   {
@@ -279,6 +310,7 @@ TEST_F(ManifestParserTest, StartURLParseRules) {
   {
     auto& manifest = ParseManifest("{ \"start_url\": {} }");
     ASSERT_TRUE(manifest->start_url.IsEmpty());
+    ASSERT_EQ(String(), manifest->id);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'start_url' ignored, type string expected.",
               errors()[0]);
@@ -593,6 +625,7 @@ TEST_F(ManifestParserTest, DisplayParseRules) {
 
   // Parsing fails for 'window-controls-overlay' when WCO flag is disabled.
   {
+    ScopedWebAppWindowControlsOverlayForTest window_controls_overlay(false);
     auto& manifest =
         ParseManifest("{ \"display\": \"window-controls-overlay\" }");
     EXPECT_EQ(manifest->display, blink::mojom::DisplayMode::kUndefined);
@@ -605,6 +638,24 @@ TEST_F(ManifestParserTest, DisplayParseRules) {
     ScopedWebAppWindowControlsOverlayForTest window_controls_overlay(true);
     auto& manifest =
         ParseManifest("{ \"display\": \"window-controls-overlay\" }");
+    EXPECT_EQ(manifest->display, blink::mojom::DisplayMode::kUndefined);
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("inapplicable 'display' value ignored.", errors()[0]);
+  }
+
+  // Parsing fails for 'tabbed' when flag is disabled.
+  {
+    ScopedWebAppTabStripForTest tabbed(false);
+    auto& manifest = ParseManifest("{ \"display\": \"tabbed\" }");
+    EXPECT_EQ(manifest->display, blink::mojom::DisplayMode::kUndefined);
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("inapplicable 'display' value ignored.", errors()[0]);
+  }
+
+  // Parsing fails for 'tabbed' when flag is enabled.
+  {
+    ScopedWebAppTabStripForTest tabbed(true);
+    auto& manifest = ParseManifest("{ \"display\": \"tabbed\" }");
     EXPECT_EQ(manifest->display, blink::mojom::DisplayMode::kUndefined);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("inapplicable 'display' value ignored.", errors()[0]);
@@ -740,6 +791,7 @@ TEST_F(ManifestParserTest, DisplayOverrideParseRules) {
 
   // Reject 'window-controls-overlay' when WCO flag is disabled.
   {
+    ScopedWebAppWindowControlsOverlayForTest window_controls_overlay(false);
     auto& manifest = ParseManifest(
         "{ \"display_override\": [ \"window-controls-overlay\" ] }");
     EXPECT_TRUE(manifest->display_override.IsEmpty());
@@ -754,6 +806,25 @@ TEST_F(ManifestParserTest, DisplayOverrideParseRules) {
     EXPECT_FALSE(manifest->display_override.IsEmpty());
     EXPECT_EQ(manifest->display_override[0],
               blink::mojom::DisplayMode::kWindowControlsOverlay);
+    EXPECT_FALSE(IsManifestEmpty(manifest));
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Ignore 'tabbed' when flag is disabled.
+  {
+    ScopedWebAppTabStripForTest tabbed(false);
+    auto& manifest = ParseManifest("{ \"display_override\": [ \"tabbed\" ] }");
+    EXPECT_TRUE(manifest->display_override.IsEmpty());
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Accept 'tabbed' when flag is enabled.
+  {
+    ScopedWebAppTabStripForTest tabbed(true);
+    auto& manifest = ParseManifest("{ \"display_override\": [ \"tabbed\" ] }");
+    EXPECT_FALSE(manifest->display_override.IsEmpty());
+    EXPECT_EQ(manifest->display_override[0],
+              blink::mojom::DisplayMode::kTabbed);
     EXPECT_FALSE(IsManifestEmpty(manifest));
     EXPECT_EQ(0u, GetErrorCount());
   }
@@ -1779,9 +1850,27 @@ TEST_F(ManifestParserTest, ShortcutIconsParseRules) {
     EXPECT_EQ(icons[0]->src.GetString(), "http://foo.com/foo.jpg");
     EXPECT_EQ(0u, GetErrorCount());
   }
+
+  // Smoke test: if >1 icon with valid src, it will be present in
+  // shortcut->icons.
+  {
+    auto& manifest = ParseManifest(
+        "{ \"shortcuts\": [ {\"name\": \"IconParseTest\", \"url\": \"foo\", "
+        "\"icons\": [ {\"src\": \"foo.jpg\"}, {\"src\": \"bar.jpg\"} ] } ] }");
+    EXPECT_FALSE(IsManifestEmpty(manifest));
+    EXPECT_FALSE(manifest->shortcuts.IsEmpty());
+    EXPECT_FALSE(manifest->shortcuts[0]->icons.IsEmpty());
+    auto& icons = manifest->shortcuts[0]->icons;
+    EXPECT_EQ(icons.size(), 2u);
+    EXPECT_EQ(icons[0]->src.GetString(), "http://foo.com/foo.jpg");
+    EXPECT_EQ(icons[1]->src.GetString(), "http://foo.com/bar.jpg");
+    EXPECT_EQ(0u, GetErrorCount());
+  }
 }
 
 TEST_F(ManifestParserTest, FileHandlerParseRules) {
+  base::test::ScopedFeatureList feature_list(
+      blink::features::kFileHandlingIcons);
   // Does not contain file_handlers field.
   {
     auto& manifest = ParseManifest("{ }");
@@ -1805,7 +1894,7 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
     EXPECT_EQ(0u, manifest->file_handlers.size());
   }
 
-  // Entries must be objects
+  // Entries must be objects.
   {
     auto& manifest = ParseManifest(
         "{"
@@ -1825,6 +1914,7 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
         "  \"file_handlers\": ["
         "    {"
         "      \"name\": \"name\","
+        "      \"icons\": [{ \"src\": \"foo.jpg\" }],"
         "      \"accept\": {"
         "        \"image/png\": ["
         "          \".png\""
@@ -1846,6 +1936,7 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
         "  \"file_handlers\": ["
         "    {"
         "      \"name\": \"name\","
+        "      \"icons\": [{ \"src\": \"foo.jpg\" }],"
         "      \"action\": \"https://example.com/files\","
         "      \"accept\": {"
         "        \"image/png\": ["
@@ -1873,6 +1964,7 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
         "  \"file_handlers\": ["
         "    {"
         "      \"name\": \"name\","
+        "      \"icons\": [{ \"src\": \"foo.jpg\" }],"
         "      \"action\": \"/files\","
         "      \"accept\": {"
         "        \"image/png\": ["
@@ -1897,6 +1989,27 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
         "{"
         "  \"file_handlers\": ["
         "    {"
+        "      \"icons\": [{ \"src\": \"foo.jpg\" }],"
+        "      \"action\": \"/files\","
+        "      \"accept\": {"
+        "        \"image/png\": ["
+        "          \".png\""
+        "        ]"
+        "      }"
+        "    }"
+        "  ]"
+        "}");
+    ASSERT_EQ(0u, GetErrorCount());
+    EXPECT_EQ(1u, manifest->file_handlers.size());
+  }
+
+  // Entry without an icon is valid.
+  {
+    auto& manifest = ParseManifest(
+        "{"
+        "  \"file_handlers\": ["
+        "    {"
+        "      \"name\": \"name\","
         "      \"action\": \"/files\","
         "      \"accept\": {"
         "        \"image/png\": ["
@@ -1917,6 +2030,7 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
         "  \"file_handlers\": ["
         "    {"
         "      \"name\": \"name\","
+        "      \"icons\": [{ \"src\": \"foo.jpg\" }],"
         "      \"action\": \"/files\""
         "    }"
         "  ]"
@@ -1934,6 +2048,7 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
         "  \"file_handlers\": ["
         "    {"
         "      \"name\": \"name\","
+        "      \"icons\": [{ \"src\": \"foo.jpg\" }],"
         "      \"action\": \"/files\","
         "      \"accept\": \"image/png\""
         "    }"
@@ -1952,6 +2067,7 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
         "  \"file_handlers\": ["
         "    {"
         "      \"name\": \"name\","
+        "      \"icons\": [{ \"src\": \"foo.jpg\" }],"
         "      \"action\": \"/files\","
         "      \"accept\": {"
         "        \"image/png\": {}"
@@ -1976,6 +2092,7 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
         "  \"file_handlers\": ["
         "    {"
         "      \"name\": \"name\","
+        "      \"icons\": [{ \"src\": \"foo.jpg\" }],"
         "      \"action\": \"/files\","
         "      \"accept\": {"
         "        \"image/png\": ["
@@ -1998,6 +2115,7 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
         "  \"file_handlers\": ["
         "    {"
         "      \"name\": \"name\","
+        "      \"icons\": [{ \"src\": \"foo.jpg\" }],"
         "      \"action\": \"/files\","
         "      \"accept\": {"
         "        \"image/png\": []"
@@ -2011,6 +2129,8 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
     ASSERT_EQ(1u, file_handlers.size());
 
     EXPECT_EQ("name", file_handlers[0]->name);
+    EXPECT_EQ("http://foo.com/foo.jpg",
+              file_handlers[0]->icons[0]->src.GetString());
     EXPECT_EQ(KURL("http://foo.com/files"), file_handlers[0]->action);
     ASSERT_TRUE(file_handlers[0]->accept.Contains("image/png"));
     EXPECT_EQ(0u, file_handlers[0]->accept.find("image/png")->value.size());
@@ -2023,6 +2143,7 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
         "  \"file_handlers\": ["
         "    {"
         "      \"name\": \"name\","
+        "      \"icons\": [{ \"src\": \"foo.jpg\" }],"
         "      \"action\": \"/files\","
         "      \"accept\": {"
         "        \"image/png\": ["
@@ -2041,6 +2162,8 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
     ASSERT_EQ(1u, file_handlers.size());
 
     EXPECT_EQ("name", file_handlers[0]->name);
+    EXPECT_EQ("http://foo.com/foo.jpg",
+              file_handlers[0]->icons[0]->src.GetString());
     EXPECT_EQ(KURL("http://foo.com/files"), file_handlers[0]->action);
     ASSERT_TRUE(file_handlers[0]->accept.Contains("image/png"));
     EXPECT_EQ(0u, file_handlers[0]->accept.find("image/png")->value.size());
@@ -2053,6 +2176,7 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
         "  \"file_handlers\": ["
         "    {"
         "      \"name\": \"name\","
+        "      \"icons\": [{ \"src\": \"foo.jpg\" }],"
         "      \"action\": \"/files\","
         "      \"accept\": {"
         "        \"image/png\": \".png\""
@@ -2066,6 +2190,8 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
     ASSERT_EQ(1u, file_handlers.size());
 
     EXPECT_EQ("name", file_handlers[0]->name);
+    EXPECT_EQ("http://foo.com/foo.jpg",
+              file_handlers[0]->icons[0]->src.GetString());
     EXPECT_EQ(KURL("http://foo.com/files"), file_handlers[0]->action);
     ASSERT_TRUE(file_handlers[0]->accept.Contains("image/png"));
     ASSERT_EQ(1u, file_handlers[0]->accept.find("image/png")->value.size());
@@ -2079,6 +2205,7 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
         "  \"file_handlers\": ["
         "    {"
         "      \"name\": \"name\","
+        "      \"icons\": [{ \"src\": \"foo.jpg\" }],"
         "      \"action\": \"/files\","
         "      \"accept\": {"
         "        \"image/jpg\": ["
@@ -2095,6 +2222,8 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
     ASSERT_EQ(1u, file_handlers.size());
 
     EXPECT_EQ("name", file_handlers[0]->name);
+    EXPECT_EQ("http://foo.com/foo.jpg",
+              file_handlers[0]->icons[0]->src.GetString());
     EXPECT_EQ(KURL("http://foo.com/files"), file_handlers[0]->action);
     ASSERT_TRUE(file_handlers[0]->accept.Contains("image/jpg"));
     ASSERT_EQ(2u, file_handlers[0]->accept.find("image/jpg")->value.size());
@@ -2109,6 +2238,7 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
         "  \"file_handlers\": ["
         "    {"
         "      \"name\": \"Image\","
+        "      \"icons\": [{ \"src\": \"foo.jpg\" }],"
         "      \"action\": \"/files\","
         "      \"accept\": {"
         "        \"image/png\": \".png\","
@@ -2126,6 +2256,8 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
     ASSERT_EQ(1u, file_handlers.size());
 
     EXPECT_EQ("Image", file_handlers[0]->name);
+    EXPECT_EQ("http://foo.com/foo.jpg",
+              file_handlers[0]->icons[0]->src.GetString());
     EXPECT_EQ(KURL("http://foo.com/files"), file_handlers[0]->action);
 
     ASSERT_TRUE(file_handlers[0]->accept.Contains("image/jpg"));
@@ -2145,6 +2277,7 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
         "  \"file_handlers\": ["
         "    {"
         "      \"name\": \"Graph\","
+        "      \"icons\": [{ \"src\": \"graph.jpg\" }],"
         "      \"action\": \"/graph\","
         "      \"accept\": {"
         "        \"text/svg+xml\": ["
@@ -2155,6 +2288,7 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
         "    },"
         "    {"
         "      \"name\": \"Raw\","
+        "      \"icons\": [{ \"src\": \"raw.jpg\" }],"
         "      \"action\": \"/raw\","
         "      \"accept\": {"
         "        \"text/csv\": \".csv\""
@@ -2168,6 +2302,8 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
     ASSERT_EQ(2u, file_handlers.size());
 
     EXPECT_EQ("Graph", file_handlers[0]->name);
+    EXPECT_EQ("http://foo.com/graph.jpg",
+              file_handlers[0]->icons[0]->src.GetString());
     EXPECT_EQ(KURL("http://foo.com/graph"), file_handlers[0]->action);
     ASSERT_TRUE(file_handlers[0]->accept.Contains("text/svg+xml"));
     ASSERT_EQ(2u, file_handlers[0]->accept.find("text/svg+xml")->value.size());
@@ -2176,10 +2312,148 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
               file_handlers[0]->accept.find("text/svg+xml")->value[1]);
 
     EXPECT_EQ("Raw", file_handlers[1]->name);
+    EXPECT_EQ("http://foo.com/raw.jpg",
+              file_handlers[1]->icons[0]->src.GetString());
     EXPECT_EQ(KURL("http://foo.com/raw"), file_handlers[1]->action);
     ASSERT_TRUE(file_handlers[1]->accept.Contains("text/csv"));
     ASSERT_EQ(1u, file_handlers[1]->accept.find("text/csv")->value.size());
     EXPECT_EQ(".csv", file_handlers[1]->accept.find("text/csv")->value[0]);
+  }
+}
+
+TEST_F(ManifestParserTest, FileHandlerIconsParseRules) {
+  // Smoke test: if no icons, file_handler->icon has no value.
+  {
+    auto& manifest = ParseManifest(
+        "{"
+        "  \"file_handlers\": ["
+        "    {"
+        "      \"icons\": [],"
+        "      \"action\": \"/files\","
+        "      \"accept\": {"
+        "        \"image/png\": \".png\""
+        "      }"
+        "    }"
+        "  ]"
+        "}");
+    EXPECT_FALSE(IsManifestEmpty(manifest));
+    EXPECT_FALSE(manifest->file_handlers.IsEmpty());
+    EXPECT_TRUE(manifest->file_handlers[0]->icons.IsEmpty());
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Smoke test: if empty icon, file_handler->icons has no value.
+  {
+    auto& manifest = ParseManifest(
+        "{"
+        "  \"file_handlers\": ["
+        "    {"
+        "      \"icons\": [{}],"
+        "      \"action\": \"/files\","
+        "      \"accept\": {"
+        "        \"image/png\": \".png\""
+        "      }"
+        "    }"
+        "  ]"
+        "}");
+    EXPECT_FALSE(IsManifestEmpty(manifest));
+    EXPECT_FALSE(manifest->file_handlers.IsEmpty());
+    EXPECT_TRUE(manifest->file_handlers[0]->icons.IsEmpty());
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Smoke test: icon with invalid src, file_handler->icons has no value.
+  {
+    auto& manifest = ParseManifest(
+        "{"
+        "  \"file_handlers\": ["
+        "    {"
+        "      \"icons\": [{ \"icons\": [] }],"
+        "      \"action\": \"/files\","
+        "      \"accept\": {"
+        "        \"image/png\": \".png\""
+        "      }"
+        "    }"
+        "  ]"
+        "}");
+    EXPECT_FALSE(IsManifestEmpty(manifest));
+    EXPECT_FALSE(manifest->file_handlers.IsEmpty());
+    EXPECT_TRUE(manifest->file_handlers[0]->icons.IsEmpty());
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Smoke test: if icon with empty src, it will be present in
+  // file_handler->icons.
+  {
+    auto& manifest = ParseManifest(
+        "{"
+        "  \"file_handlers\": ["
+        "    {"
+        "      \"icons\": [{ \"src\": \"\" }],"
+        "      \"action\": \"/files\","
+        "      \"accept\": {"
+        "        \"image/png\": \".png\""
+        "      }"
+        "    }"
+        "  ]"
+        "}");
+    EXPECT_FALSE(IsManifestEmpty(manifest));
+    EXPECT_FALSE(manifest->file_handlers.IsEmpty());
+    EXPECT_FALSE(manifest->file_handlers[0]->icons.IsEmpty());
+
+    auto& icons = manifest->file_handlers[0]->icons;
+    EXPECT_EQ(icons.size(), 1u);
+    EXPECT_EQ(icons[0]->src.GetString(), "http://foo.com/manifest.json");
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Smoke test: if one icon with valid src, it will be present in
+  // file_handler->icons.
+  {
+    auto& manifest = ParseManifest(
+        "{"
+        "  \"file_handlers\": ["
+        "    {"
+        "      \"icons\": [{ \"src\": \"foo.jpg\" }],"
+        "      \"action\": \"/files\","
+        "      \"accept\": {"
+        "        \"image/png\": \".png\""
+        "      }"
+        "    }"
+        "  ]"
+        "}");
+    EXPECT_FALSE(IsManifestEmpty(manifest));
+    EXPECT_FALSE(manifest->file_handlers.IsEmpty());
+    EXPECT_FALSE(manifest->file_handlers[0]->icons.IsEmpty());
+    auto& icons = manifest->file_handlers[0]->icons;
+    EXPECT_EQ(icons.size(), 1u);
+    EXPECT_EQ(icons[0]->src.GetString(), "http://foo.com/foo.jpg");
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Smoke test: if >1 icon with valid src, it will be present in
+  // file_handler->icons.
+  {
+    auto& manifest = ParseManifest(
+        "{"
+        "  \"file_handlers\": ["
+        "    {"
+        "      \"icons\": [{ \"src\": \"foo.jpg\" }, { \"src\": \"bar.jpg\" }],"
+        "      \"action\": \"/files\","
+        "      \"accept\": {"
+        "        \"image/png\": \".png\""
+        "      }"
+        "    }"
+        "  ]"
+        "}");
+    EXPECT_FALSE(IsManifestEmpty(manifest));
+    EXPECT_FALSE(manifest->file_handlers.IsEmpty());
+    EXPECT_FALSE(manifest->file_handlers[0]->icons.IsEmpty());
+    auto& icons = manifest->file_handlers[0]->icons;
+    EXPECT_EQ(icons.size(), 2u);
+    EXPECT_EQ(icons[0]->src.GetString(), "http://foo.com/foo.jpg");
+    EXPECT_EQ(icons[1]->src.GetString(), "http://foo.com/bar.jpg");
+    EXPECT_EQ(0u, GetErrorCount());
   }
 }
 
@@ -4365,119 +4639,154 @@ TEST_F(ManifestParserTest, GCMSenderIDParseRules) {
   }
 }
 
-TEST_F(ManifestParserTest, CaptureLinksParseRules) {
+TEST_F(ManifestParserTest, StorageIsolationDisabled) {
   // Feature not enabled, should not be parsed.
   {
-    auto& manifest = ParseManifest(R"({ "capture_links": "none" })");
-    EXPECT_EQ(manifest->capture_links, mojom::blink::CaptureLinks::kUndefined);
+    auto& manifest = ParseManifest(R"({ "isolated_storage": true })");
+    EXPECT_EQ(manifest->isolated_storage, false);
     EXPECT_EQ(0u, GetErrorCount());
   }
 }
 
-class ManifestCaptureLinksParserTest : public ManifestParserTest {
- public:
-  ManifestCaptureLinksParserTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kWebAppEnableLinkCapturing);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-TEST_F(ManifestCaptureLinksParserTest, CaptureLinksParseRules) {
-  // Smoke test.
+TEST_F(ManifestParserTest, StorageIsolationEnabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      blink::features::kWebAppEnableIsolatedStorage);
   {
-    auto& manifest = ParseManifest(R"({ "capture_links": "none" })");
-    EXPECT_EQ(manifest->capture_links, mojom::blink::CaptureLinks::kNone);
+    auto& manifest = ParseManifest(R"({ "isolated_storage": true })");
+    EXPECT_EQ(manifest->isolated_storage, true);
     EXPECT_EQ(0u, GetErrorCount());
   }
-  {
-    auto& manifest = ParseManifest(R"({ "capture_links": ["new-client"] })");
-    EXPECT_EQ(manifest->capture_links, mojom::blink::CaptureLinks::kNewClient);
-    EXPECT_EQ(0u, GetErrorCount());
-  }
+}
 
-  // Empty array is fine.
-  {
-    auto& manifest = ParseManifest(R"({ "capture_links": [] })");
-    EXPECT_EQ(manifest->capture_links, mojom::blink::CaptureLinks::kUndefined);
-    EXPECT_EQ(0u, GetErrorCount());
-  }
-
-  // Unknown single string.
-  {
-    auto& manifest = ParseManifest(R"({ "capture_links": "unknown" })");
-    EXPECT_EQ(manifest->capture_links, mojom::blink::CaptureLinks::kUndefined);
-    EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("capture_links value 'unknown' ignored, unknown value.",
-              errors()[0]);
-  }
-
-  // First known value in array is used.
+TEST_F(ManifestParserTest, StorageIsolationBadScope) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      blink::features::kWebAppEnableIsolatedStorage);
   {
     auto& manifest = ParseManifest(
-        R"({ "capture_links": ["none", "existing-client-navigate"] })");
-    EXPECT_EQ(manifest->capture_links, mojom::blink::CaptureLinks::kNone);
+        "{ \"isolated_storage\": true,"
+        "\"scope\": \"/invalid\","
+        "\"start_url\": \"/invalid/index.html\" }");
+    EXPECT_EQ(manifest->isolated_storage, false);
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("Isolated storage is only supported with a scope of \"/\".",
+              errors()[0]);
+  }
+}
+
+TEST_F(ManifestParserTest, CaptureLinksParseRules) {
+  {
+    ScopedWebAppLinkCapturingForTest feature(false);
+
+    // Feature not enabled, should not be parsed.
+    auto& manifest = ParseManifest(R"({ "capture_links": "none" })");
+    EXPECT_EQ(manifest->capture_links, mojom::blink::CaptureLinks::kUndefined);
     EXPECT_EQ(0u, GetErrorCount());
   }
-  {
-    auto& manifest = ParseManifest(R"({
-      "capture_links": [
-        "unknown",
-        "existing-client-navigate",
-        "also-unknown",
-        "none"
-      ]
-    })");
-    EXPECT_EQ(manifest->capture_links,
-              mojom::blink::CaptureLinks::kExistingClientNavigate);
-    EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("capture_links value 'unknown' ignored, unknown value.",
-              errors()[0]);
-  }
-  {
-    auto& manifest = ParseManifest(R"({
-      "capture_links": [
-        1234,
-        "new-client",
-        null,
-        "none"
-      ]
-    })");
-    EXPECT_EQ(manifest->capture_links, mojom::blink::CaptureLinks::kNewClient);
-    EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("capture_links value '1234' ignored, string expected.",
-              errors()[0]);
-  }
 
-  // Don't parse if the property isn't a string or array of strings.
   {
-    auto& manifest = ParseManifest(R"({ "capture_links": null })");
-    EXPECT_EQ(manifest->capture_links, mojom::blink::CaptureLinks::kUndefined);
-    EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ(
-        "property 'capture_links' ignored, type string or array of strings "
-        "expected.",
-        errors()[0]);
-  }
-  {
-    auto& manifest = ParseManifest(R"({ "capture_links": 1234 })");
-    EXPECT_EQ(manifest->capture_links, mojom::blink::CaptureLinks::kUndefined);
-    EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ(
-        "property 'capture_links' ignored, type string or array of strings "
-        "expected.",
-        errors()[0]);
-  }
-  {
-    auto& manifest = ParseManifest(R"({ "capture_links": [12, 34] })");
-    EXPECT_EQ(manifest->capture_links, mojom::blink::CaptureLinks::kUndefined);
-    EXPECT_EQ(2u, GetErrorCount());
-    EXPECT_EQ("capture_links value '12' ignored, string expected.",
-              errors()[0]);
-    EXPECT_EQ("capture_links value '34' ignored, string expected.",
-              errors()[1]);
+    ScopedWebAppLinkCapturingForTest feature(true);
+    // Smoke test.
+    {
+      auto& manifest = ParseManifest(R"({ "capture_links": "none" })");
+      EXPECT_EQ(manifest->capture_links, mojom::blink::CaptureLinks::kNone);
+      EXPECT_EQ(0u, GetErrorCount());
+    }
+    {
+      auto& manifest = ParseManifest(R"({ "capture_links": ["new-client"] })");
+      EXPECT_EQ(manifest->capture_links,
+                mojom::blink::CaptureLinks::kNewClient);
+      EXPECT_EQ(0u, GetErrorCount());
+    }
+
+    // Empty array is fine.
+    {
+      auto& manifest = ParseManifest(R"({ "capture_links": [] })");
+      EXPECT_EQ(manifest->capture_links,
+                mojom::blink::CaptureLinks::kUndefined);
+      EXPECT_EQ(0u, GetErrorCount());
+    }
+
+    // Unknown single string.
+    {
+      auto& manifest = ParseManifest(R"({ "capture_links": "unknown" })");
+      EXPECT_EQ(manifest->capture_links,
+                mojom::blink::CaptureLinks::kUndefined);
+      EXPECT_EQ(1u, GetErrorCount());
+      EXPECT_EQ("capture_links value 'unknown' ignored, unknown value.",
+                errors()[0]);
+    }
+
+    // First known value in array is used.
+    {
+      auto& manifest = ParseManifest(
+          R"({ "capture_links": ["none", "existing-client-navigate"] })");
+      EXPECT_EQ(manifest->capture_links, mojom::blink::CaptureLinks::kNone);
+      EXPECT_EQ(0u, GetErrorCount());
+    }
+    {
+      auto& manifest = ParseManifest(R"({
+        "capture_links": [
+          "unknown",
+          "existing-client-navigate",
+          "also-unknown",
+          "none"
+        ]
+      })");
+      EXPECT_EQ(manifest->capture_links,
+                mojom::blink::CaptureLinks::kExistingClientNavigate);
+      EXPECT_EQ(1u, GetErrorCount());
+      EXPECT_EQ("capture_links value 'unknown' ignored, unknown value.",
+                errors()[0]);
+    }
+    {
+      auto& manifest = ParseManifest(R"({
+        "capture_links": [
+          1234,
+          "new-client",
+          null,
+          "none"
+        ]
+      })");
+      EXPECT_EQ(manifest->capture_links,
+                mojom::blink::CaptureLinks::kNewClient);
+      EXPECT_EQ(1u, GetErrorCount());
+      EXPECT_EQ("capture_links value '1234' ignored, string expected.",
+                errors()[0]);
+    }
+
+    // Don't parse if the property isn't a string or array of strings.
+    {
+      auto& manifest = ParseManifest(R"({ "capture_links": null })");
+      EXPECT_EQ(manifest->capture_links,
+                mojom::blink::CaptureLinks::kUndefined);
+      EXPECT_EQ(1u, GetErrorCount());
+      EXPECT_EQ(
+          "property 'capture_links' ignored, type string or array of strings "
+          "expected.",
+          errors()[0]);
+    }
+    {
+      auto& manifest = ParseManifest(R"({ "capture_links": 1234 })");
+      EXPECT_EQ(manifest->capture_links,
+                mojom::blink::CaptureLinks::kUndefined);
+      EXPECT_EQ(1u, GetErrorCount());
+      EXPECT_EQ(
+          "property 'capture_links' ignored, type string or array of strings "
+          "expected.",
+          errors()[0]);
+    }
+    {
+      auto& manifest = ParseManifest(R"({ "capture_links": [12, 34] })");
+      EXPECT_EQ(manifest->capture_links,
+                mojom::blink::CaptureLinks::kUndefined);
+      EXPECT_EQ(2u, GetErrorCount());
+      EXPECT_EQ("capture_links value '12' ignored, string expected.",
+                errors()[0]);
+      EXPECT_EQ("capture_links value '34' ignored, string expected.",
+                errors()[1]);
+    }
   }
 }
 

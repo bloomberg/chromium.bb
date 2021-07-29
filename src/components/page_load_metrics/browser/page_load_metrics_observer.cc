@@ -6,9 +6,35 @@
 
 #include <utility>
 
+namespace {
+
+int BucketWithOffsetAndUnit(int num, int offset, int unit) {
+  // Bucketing raw number with `offset` centered.
+  const int grid = (num - offset) / unit;
+  const int bucketed =
+      grid == 0 ? 0
+                : grid > 0 ? std::pow(2, static_cast<int>(std::log2(grid)))
+                           : -std::pow(2, static_cast<int>(std::log2(-grid)));
+  return bucketed * unit + offset;
+}
+
+}  // namespace
+
 namespace page_load_metrics {
 
-MemoryUpdate::MemoryUpdate(content::GlobalFrameRoutingId id, int64_t delta)
+int GetBucketedViewportInitialScale(const blink::MobileFriendliness& mf) {
+  return mf.viewport_initial_scale_x10 <= -1
+             ? -1
+             : BucketWithOffsetAndUnit(mf.viewport_initial_scale_x10, 10, 2);
+}
+
+int GetBucketedViewportHardcodedWidth(const blink::MobileFriendliness& mf) {
+  return mf.viewport_hardcoded_width <= -1
+             ? -1
+             : BucketWithOffsetAndUnit(mf.viewport_hardcoded_width, 500, 10);
+}
+
+MemoryUpdate::MemoryUpdate(content::GlobalRenderFrameHostId id, int64_t delta)
     : routing_id(id), delta_bytes(delta) {}
 
 ExtraRequestCompleteInfo::ExtraRequestCompleteInfo(
@@ -18,8 +44,6 @@ ExtraRequestCompleteInfo::ExtraRequestCompleteInfo(
     bool was_cached,
     int64_t raw_body_bytes,
     int64_t original_network_content_length,
-    std::unique_ptr<data_reduction_proxy::DataReductionProxyData>
-        data_reduction_proxy_data,
     network::mojom::RequestDestination request_destination,
     int net_error,
     std::unique_ptr<net::LoadTimingInfo> load_timing_info)
@@ -29,7 +53,6 @@ ExtraRequestCompleteInfo::ExtraRequestCompleteInfo(
       was_cached(was_cached),
       raw_body_bytes(raw_body_bytes),
       original_network_content_length(original_network_content_length),
-      data_reduction_proxy_data(std::move(data_reduction_proxy_data)),
       request_destination(request_destination),
       net_error(net_error),
       load_timing_info(std::move(load_timing_info)) {}
@@ -42,10 +65,6 @@ ExtraRequestCompleteInfo::ExtraRequestCompleteInfo(
       was_cached(other.was_cached),
       raw_body_bytes(other.raw_body_bytes),
       original_network_content_length(other.original_network_content_length),
-      data_reduction_proxy_data(
-          other.data_reduction_proxy_data == nullptr
-              ? nullptr
-              : other.data_reduction_proxy_data->DeepCopy()),
       request_destination(other.request_destination),
       net_error(other.net_error),
       load_timing_info(other.load_timing_info == nullptr
@@ -66,6 +85,13 @@ PageLoadMetricsObserver::ObservePolicy PageLoadMetricsObserver::OnStart(
     const GURL& currently_committed_url,
     bool started_in_foreground) {
   return CONTINUE_OBSERVING;
+}
+
+PageLoadMetricsObserver::ObservePolicy
+PageLoadMetricsObserver::OnPrerenderStart(
+    content::NavigationHandle* navigation_handle,
+    const GURL& currently_committed_url) {
+  return STOP_OBSERVING;
 }
 
 PageLoadMetricsObserver::ObservePolicy PageLoadMetricsObserver::OnRedirect(

@@ -10,65 +10,80 @@
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/memory/ref_counted.h"
 #include "base/task/post_task.h"
 #include "chrome/services/file_util/public/mojom/file_util_service.mojom.h"
 #include "chrome/services/file_util/public/mojom/zip_file_creator.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 // ZipFileCreator creates a ZIP file from a specified list of files and
 // directories under a common parent directory. This is done in a sandboxed
 // utility process to protect the browser process from handling arbitrary
 // input data from untrusted sources.
-// Note that this class deletes itself after calling the ResultCallback
-// specified in the constructor (and should be heap allocated).
-class ZipFileCreator {
+class ZipFileCreator : public base::RefCountedThreadSafe<ZipFileCreator>,
+                       private chrome::mojom::ZipListener {
  public:
+  // Callback reporting the success or failure of the ZIP creation.
   using ResultCallback = base::OnceCallback<void(bool)>;
 
   // Creates a zip file from the specified list of files and directories.
-  ZipFileCreator(ResultCallback callback,
-                 const base::FilePath& src_dir,
-                 const std::vector<base::FilePath>& src_relative_paths,
-                 const base::FilePath& dest_file);
+  ZipFileCreator(ResultCallback result_callback,
+                 base::FilePath src_dir,
+                 std::vector<base::FilePath> src_relative_paths,
+                 base::FilePath dest_file);
 
-  // Starts creating the zip file.
-  //
-  // The result will be passed to |callback|. After the task is finished
-  // and |callback| is run, ZipFileCreator instance is deleted.
+  // Starts creating the ZIP file.
   void Start(mojo::PendingRemote<chrome::mojom::FileUtilService> service);
 
+  // Stops creating the ZIP file.
+  void Stop();
+
  private:
-  ~ZipFileCreator();
+  friend class base::RefCountedThreadSafe<ZipFileCreator>;
+
+  ~ZipFileCreator() override;
 
   // Called after the dest_file |file| is opened on the blocking pool to
-  // create the zip file in it using a sandboxed utility process.
+  // create the ZIP file in it using a sandboxed utility process.
   void CreateZipFile(
       mojo::PendingRemote<chrome::mojom::FileUtilService> service,
       base::File file);
 
-  // Notifies by calling |callback| specified in the constructor the end of the
-  // ZIP operation. Deletes this.
+  // Binds the Directory receiver to its implementation.
+  void BindDirectory(
+      mojo::PendingReceiver<filesystem::mojom::Directory> receiver) const;
+
+  // Notifies by calling |result_callback| specified in the constructor the end
+  // of the ZIP operation.
   void ReportDone(bool success);
 
-  // The callback.
-  ResultCallback callback_;
+  // ZIP progress report.
+  void OnProgress(uint64_t bytes,
+                  uint32_t files,
+                  uint32_t directories) override;
+
+  // The final result callback.
+  ResultCallback result_callback_;
 
   // The source directory for input files.
-  base::FilePath src_dir_;
+  const base::FilePath src_dir_;
 
   // The list of source files paths to be included in the zip file.
   // Entries are relative paths under directory |src_dir_|.
-  std::vector<base::FilePath> src_relative_paths_;
+  const std::vector<base::FilePath> src_relative_paths_;
 
-  scoped_refptr<base::SequencedTaskRunner> directory_task_runner_;
-
-  // The output zip file.
-  base::FilePath dest_file_;
+  // The output ZIP file path.
+  const base::FilePath dest_file_;
 
   // Remote interfaces to the file util service. Only used from the UI thread.
   mojo::Remote<chrome::mojom::FileUtilService> service_;
   mojo::Remote<chrome::mojom::ZipFileCreator> remote_zip_file_creator_;
+
+  // Listener receiver.
+  mojo::Receiver<chrome::mojom::ZipListener> listener_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ZipFileCreator);
 };

@@ -87,9 +87,9 @@ class QueryInternalShaderTests : public DawnTest {};
 //   ns for testing).
 TEST_P(QueryInternalShaderTests, TimestampComputeShader) {
     // TODO(crbug.com/dawn/741): Test output is wrong with D3D12 + WARP.
-    DAWN_SKIP_TEST_IF(IsD3D12() && IsWARP());
+    DAWN_SUPPRESS_TEST_IF(IsD3D12() && IsWARP());
 
-    DAWN_SKIP_TEST_IF(UsesWire());
+    DAWN_TEST_UNSUPPORTED_IF(UsesWire());
 
     constexpr uint32_t kTimestampCount = 10u;
     // A gpu frequency on Intel D3D12 (ticks/second)
@@ -122,7 +122,7 @@ TEST_P(QueryInternalShaderTests, TimestampComputeShader) {
     wgpu::BufferDescriptor timestampsDesc;
     timestampsDesc.size = kTimestampCount * sizeof(uint64_t);
     timestampsDesc.usage =
-        wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopySrc | wgpu::BufferUsage::CopyDst;
+        wgpu::BufferUsage::QueryResolve | wgpu::BufferUsage::CopySrc | wgpu::BufferUsage::CopyDst;
     wgpu::Buffer timestampsBuffer = device.CreateBuffer(&timestampsDesc);
 
     auto PrepareExpectedResults = [&](uint32_t first, uint32_t count,

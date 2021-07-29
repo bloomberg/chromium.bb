@@ -10,6 +10,7 @@
 <translation id="1125124144982679672">Chrome はどなたが使用しますか？</translation>
 <translation id="1142745911746664600">Chrome を更新できません</translation>
 <translation id="1154147086299354128">Chrome で開く(&amp;O)</translation>
+<translation id="1182414570724401860">このファイルのダウンロードや表示は推奨されません</translation>
 <translation id="1278833599417554002">再起動して Chrome を更新(&amp;C)</translation>
 <translation id="1293325835983155583"><ph name="MANAGER" /> では、このデバイスを使用する前に下記の利用規約を確認しこれに同意していただく必要があります。これらの規約は Google Chrome OS 利用規約を拡張、変更、制限するものではありません。</translation>
 <translation id="1302523850133262269">Chrome は最新のシステム アップデートをインストールしています。しばらくお待ちください。</translation>
@@ -34,7 +35,7 @@
 <translation id="174539241580958092">ログイン時にエラーが発生したため、Google Chrome はデータを同期できませんでした。</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1786003790898721085"><ph name="TARGET_DEVICE_NAME" /> で Chrome にログインしていることを確認してから、もう一度送信してください。</translation>
-<translation id="1807517590912578995">個別の Chrome プロファイルを使用しますか？</translation>
+<translation id="1810203443153428607">Chrome OS をインストールすると、デバイスのデータはすべて上書きされます。</translation>
 <translation id="1812689907177901597">この設定を無効にすると、Chrome にログインすることなく Gmail などの Google サイトにログインできます</translation>
 <translation id="1860536484129686729">このサイトを利用するには、Chrome でカメラの使用を許可する必要があります</translation>
 <translation id="1873233029667955273">Google Chrome はデフォルトのブラウザとして設定されていません</translation>
@@ -55,6 +56,16 @@
 <translation id="2348335408836342058">このサイトを利用するには、Chrome でカメラとマイクの使用を許可する必要があります</translation>
 <translation id="234869673307233423">Chrome でパスワードを確認できません。しばらくしてからもう一度お試しください。</translation>
 <translation id="235650106824528204">このプロファイルの使用中に生成された Chrome データ（ブックマーク、履歴、パスワード、他の設定など）は、仕事用プロファイルの管理者によって削除される場合があります。<ph name="LEARN_MORE" /></translation>
+<translation id="2409866122341731384">ハードドライブのデータを消去して Chrome OS をインストール</translation>
+<translation id="2417565246123344595"><ph name="BEGIN_PARAGRAPH1" />Chrome OS をインストールする準備ができました。インストールを開始すると、次の処理が行われます。
+          <ph name="BEGIN_LIST" />
+          <ph name="LIST_ITEM" />ファイル、データ、現在のオペレーティング システムが消去されます。
+          <ph name="LIST_ITEM" />Chrome OS がインストールされます。
+          <ph name="LIST_ITEM" />インストールが完了するとデバイスがシャットダウンされます。
+          <ph name="END_LIST" />
+          <ph name="END_PARAGRAPH1" />
+          <ph name="BEGIN_PARAGRAPH2" />重要: インストールすると、ハードドライブのデータはすべて消去されます。大切なデータがすべてバックアップされていることをご確認ください。<ph name="END_PARAGRAPH2" />
+          <ph name="BEGIN_PARAGRAPH3" />インストールを開始した後にキャンセルすることはできません。<ph name="END_PARAGRAPH3" /></translation>
 <translation id="2429317896000329049">お使いのドメインでは同期を利用できないため、Google Chrome はデータを同期できませんでした。</translation>
 <translation id="2467438592969358367">Google Chrome からパスワードをエクスポートするための許可を求められています。許可するには Windows のパスワードを入力してください。</translation>
 <translation id="2485422356828889247">アンインストール</translation>
@@ -62,7 +73,6 @@
 <translation id="2574930892358684005"><ph name="EXISTING_USER" /> さんはこの Chrome プロファイルにすでにログインしています。ブラウジング環境を分ける場合は、Chrome で自分用のプロファイルを作成できます。</translation>
 <translation id="2580411288591421699">実行中の Google Chrome と同じバージョンをインストールすることはできません。Google Chrome を閉じてからもう一度お試しください。</translation>
 <translation id="2586406160782125153">このデバイスから閲覧データを削除します。後でデータを取得するには、<ph name="USER_EMAIL" /> として Chrome にログインしてください。</translation>
-<translation id="2588634262982826227">Chrome OS は再起動後に毎回確認することなくアプリとページを復元できます。</translation>
 <translation id="2622559029861875898">Chrome がアップデートを確認できません。インターネット接続を確認してみてください。</translation>
 <translation id="2644798301485385923">Chrome OS システム</translation>
 <translation id="2652691236519827073">新しい Chrome タブでリンクを開く(&amp;T)</translation>
@@ -126,6 +136,7 @@
 <translation id="4251615635259297716">Chrome データをこのアカウントにリンクしますか？</translation>
 <translation id="4281844954008187215">利用規約</translation>
 <translation id="4293420128516039005">ログインすると、同期してカスタマイズした Chrome をどのデバイスでも使用できます</translation>
+<translation id="429583012151745428">インストール中です。デバイスの電源をオフにしないでください。インストールは 20 分以内に完了します。インストール後、マシンは自動的にシャットダウンされます。</translation>
 <translation id="4325083532956419387">Chrome OS のバージョン</translation>
 <translation id="4328355335528187361">Google Chrome Dev（mDNS-In）</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -166,6 +177,10 @@
 <translation id="5394833366792865639">Chrome タブの共有</translation>
 <translation id="5430073640787465221">ユーザー設定ファイルが壊れているか無効です。設定を復元できません。</translation>
 <translation id="5434383153637353914">このページでは、ログインする Google アカウントを管理できます。アカウントは Chrome ブラウザや Play ストアのアプリのほか、Gmail、ドライブ、YouTube などのサービスで使用できます。<ph name="LINK_BEGIN" />詳細<ph name="LINK_END" /></translation>
+<translation id="5449497480926255862"><ph name="BEGIN_PARAGRAPH1" />インストールを開始する前に、最新のデータがバックアップされていることをご確認ください。Chrome OS をインストールすると、ハードドライブのデータはすべて上書きされます。<ph name="END_PARAGRAPH1" />
+          <ph name="BEGIN_PARAGRAPH2" />Google はデータの消失について一切の責任を負わず、未認定のモデルで Chrome OS が動作することも保証しませんのであらかじめご了承ください。認定モデルについて詳しくは、[TBD] をご覧ください。<ph name="END_PARAGRAPH2" />
+          <ph name="BEGIN_PARAGRAPH3" />Chrome OS のインストールとデータの消去について: [TBD URL]<ph name="END_PARAGRAPH3" />
+          <ph name="BEGIN_PARAGRAPH4" />インストールの準備ができたら、[Chrome OS をインストール] をクリックすると、いくつかの簡単なステップに沿って、インストールを行っていただけます。パソコンに実際に変更を加える前に、インストールを確認するメッセージがもう一度表示されます。<ph name="END_PARAGRAPH4" /></translation>
 <translation id="5486618155264784386">Chrome OS をインストール</translation>
 <translation id="556024056938947818">Google Chrome はパスワードを表示しようとしています。</translation>
 <translation id="5566025111015594046">Google Chrome（mDNS インバウンド）</translation>
@@ -201,11 +216,11 @@
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome Dev</translation>
 <translation id="6566149418543181476">Google Chrome を更新しています（<ph name="PROGRESS_PERCENT" />）</translation>
 <translation id="6568793831116033768">Chrome OS システム</translation>
+<translation id="664235759707825982">Chrome OS をインストールできます</translation>
 <translation id="6676384891291319759">インターネットにアクセス</translation>
 <translation id="6679975945624592337">Google Chrome をバックグラウンドで実行する</translation>
 <translation id="6739177684496155661">新しい Chrome プロファイルで続行しますか？</translation>
 <translation id="6750954913813541382">スペルミスを修正するために、ブラウザに入力したテキストが Chrome から Google に送信されます</translation>
-<translation id="6755885556185485672">Chrome OS は正しく終了しませんでした。</translation>
 <translation id="677276454032249905">今すぐ Chrome を終了しますか？</translation>
 <translation id="683440813066116847">mDNS トラフィックを許可する Google Chrome Canary のインバウンド ルールです。</translation>
 <translation id="6885412569789873916">Chrome ベータ版アプリ</translation>
@@ -220,9 +235,9 @@
 <translation id="7155997830309522122">その場合は、Chrome に保存したパスワードを編集して、新しいパスワードと一致するようにしてください。</translation>
 <translation id="7161904924553537242">Google Chrome へようこそ</translation>
 <translation id="7242029209006116544">現在、管理対象アカウントでログインしており、あなたの Google Chrome プロファイルを管理者が制御できる状態になっています。あなたの Chrome データ（アプリ、ブックマーク、履歴、パスワードなどの設定）は永続的に <ph name="USER_NAME" /> に関連付けられます。このデータは Google アカウントのダッシュボードを介して削除できますが、このデータを別のアカウントに関連付けることはできなくなります。新しいプロファイルを作成して、既存の Chrome データを別に保管することができます。<ph name="LEARN_MORE" /></translation>
+<translation id="7275165473619697274">Chrome OS をインストールしています</translation>
 <translation id="7295052994004373688">この言語が Google Chrome UI の表示に使用されます</translation>
 <translation id="7296210096911315575">使用と安全に関する重要事項</translation>
-<translation id="7303916856901595720">新しい Chrome プロファイルにアカウントを移動しますか？</translation>
 <translation id="7308322188646931570">ファイルをダウンロードするには、Chrome でストレージへのアクセスを許可する必要があります</translation>
 <translation id="7339898014177206373">新しいウィンドウ</translation>
 <translation id="7398801000654795464">Chrome に <ph name="USER_EMAIL_ADDRESS" /> としてログインしていました。再度ログインするには同じアカウントを使用してください。</translation>
@@ -249,7 +264,6 @@
 <translation id="7890208801193284374">パソコンを共有している場合、友だちや家族はそれぞれ Chrome を自分専用のブラウザとして自分用の設定をして使うことができます。</translation>
 <translation id="7896673875602241923">前回このパソコンで別のユーザー（<ph name="ACCOUNT_EMAIL_LAST" />）が Chrome にログインしました。情報を個別に保持するには、新しい Chrome ユーザーを作成してください。</translation>
 <translation id="7930071585467473040">Google Chrome がパスワードをコピーしようとしています。</translation>
-<translation id="7951988079884443914">このファイルのダウンロードや表示は推奨されません。</translation>
 <translation id="7962410387636238736">Windows XP と Windows Vista はサポートされなくなったため、このパソコンでは今後 Google Chrome のアップデートは受信されません</translation>
 <translation id="79947657522496226">Chrome OS も <ph name="BEGIN_LINK_LINUX_OSS" />Linux 開発環境<ph name="END_LINK_LINUX_OSS" />も追加の<ph name="BEGIN_LINK_CROS_OSS" />オープンソース ソフトウェア<ph name="END_LINK_CROS_OSS" />によって実現しました。</translation>
 <translation id="8008534537613507642">Chrome を再インストール</translation>

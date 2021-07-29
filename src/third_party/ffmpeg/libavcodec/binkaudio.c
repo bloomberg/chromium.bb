@@ -70,7 +70,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
     BinkAudioContext *s = avctx->priv_data;
     int sample_rate = avctx->sample_rate;
     int sample_rate_half;
-    int i;
+    int i, ret;
     int frame_len_bits;
 
     /* determine frame length */
@@ -132,11 +132,13 @@ static av_cold int decode_init(AVCodecContext *avctx)
     s->first = 1;
 
     if (CONFIG_BINKAUDIO_RDFT_DECODER && avctx->codec->id == AV_CODEC_ID_BINKAUDIO_RDFT)
-        ff_rdft_init(&s->trans.rdft, frame_len_bits, DFT_C2R);
+        ret = ff_rdft_init(&s->trans.rdft, frame_len_bits, DFT_C2R);
     else if (CONFIG_BINKAUDIO_DCT_DECODER)
-        ff_dct_init(&s->trans.dct, frame_len_bits, DCT_III);
+        ret = ff_dct_init(&s->trans.dct, frame_len_bits, DCT_III);
     else
         av_assert0(0);
+    if (ret < 0)
+        return ret;
 
     s->pkt = av_packet_alloc();
     if (!s->pkt)
@@ -335,7 +337,7 @@ fail:
     return ret;
 }
 
-AVCodec ff_binkaudio_rdft_decoder = {
+const AVCodec ff_binkaudio_rdft_decoder = {
     .name           = "binkaudio_rdft",
     .long_name      = NULL_IF_CONFIG_SMALL("Bink Audio (RDFT)"),
     .type           = AVMEDIA_TYPE_AUDIO,
@@ -345,9 +347,10 @@ AVCodec ff_binkaudio_rdft_decoder = {
     .close          = decode_end,
     .receive_frame  = binkaudio_receive_frame,
     .capabilities   = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_DR1,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
 };
 
-AVCodec ff_binkaudio_dct_decoder = {
+const AVCodec ff_binkaudio_dct_decoder = {
     .name           = "binkaudio_dct",
     .long_name      = NULL_IF_CONFIG_SMALL("Bink Audio (DCT)"),
     .type           = AVMEDIA_TYPE_AUDIO,
@@ -357,4 +360,5 @@ AVCodec ff_binkaudio_dct_decoder = {
     .close          = decode_end,
     .receive_frame  = binkaudio_receive_frame,
     .capabilities   = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_DR1,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
 };

@@ -98,6 +98,7 @@ class CONTENT_EXPORT AgentSchedulingGroupHost
       const absl::optional<blink::FrameToken>& opener_frame_token,
       int32_t view_routing_id,
       int32_t parent_routing_id,
+      blink::mojom::TreeScopeType tree_scope_type,
       blink::mojom::FrameReplicationStatePtr replicated_state,
       const base::UnguessableToken& devtools_frame_token,
       mojom::RemoteMainFrameInterfacesPtr remote_main_frame_interfaces);
@@ -188,6 +189,11 @@ class CONTENT_EXPORT AgentSchedulingGroupHost
   // BrowserInterfaceBroker implementation through which this
   // AgentSchedulingGroupHost exposes ASG-scoped Mojo services to the
   // currently active document.
+  //
+  // The interfaces that can be requested from this broker are defined in the
+  // content/browser/browser_interface_binders.cc file, in the functions which
+  // take a `AgentSchedulingGroupHost*` parameter.
+  //
   // TODO(crbug.com/1132752): Enable capability control for Prerender2 by
   // initializing BrowserInterfaceBrokerImpl with a non-null
   // MojoBinderPolicyApplier pointer.

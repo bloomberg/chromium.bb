@@ -13,12 +13,12 @@ import static org.hamcrest.core.AllOf.allOf;
 
 import static org.chromium.autofill.mojom.FocusedFieldType.FILLABLE_NON_SEARCH_FIELD;
 import static org.chromium.chrome.browser.keyboard_accessory.tab_layout_component.KeyboardAccessoryTabTestHelper.isKeyboardAccessoryTabLayout;
-import static org.chromium.chrome.test.util.ViewUtils.VIEW_GONE;
-import static org.chromium.chrome.test.util.ViewUtils.VIEW_INVISIBLE;
-import static org.chromium.chrome.test.util.ViewUtils.VIEW_NULL;
-import static org.chromium.chrome.test.util.ViewUtils.onViewWaiting;
-import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 import static org.chromium.ui.base.LocalizationUtils.setRtlForTesting;
+import static org.chromium.ui.test.util.ViewUtils.VIEW_GONE;
+import static org.chromium.ui.test.util.ViewUtils.VIEW_INVISIBLE;
+import static org.chromium.ui.test.util.ViewUtils.VIEW_NULL;
+import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
+import static org.chromium.ui.test.util.ViewUtils.waitForView;
 
 import android.app.Activity;
 import android.support.test.InstrumentationRegistry;
@@ -81,8 +81,6 @@ public class ManualFillingTestHelper {
     private final ChromeTabbedActivityTestRule mActivityTestRule;
     private final AtomicReference<WebContents> mWebContentsRef = new AtomicReference<>();
     private TestInputMethodManagerWrapper mInputMethodManagerWrapper;
-    private PropertyProvider<AccessorySheetData> mSheetSuggestionsProvider =
-            new PropertyProvider<>();
 
     private EmbeddedTestServer mEmbeddedTestServer;
 
@@ -132,8 +130,6 @@ public class ManualFillingTestHelper {
             final ImeAdapter imeAdapter = ImeAdapter.fromWebContents(mWebContentsRef.get());
             mInputMethodManagerWrapper = TestInputMethodManagerWrapper.create(imeAdapter);
             imeAdapter.setInputMethodManagerWrapper(mInputMethodManagerWrapper);
-            getManualFillingCoordinator().registerSheetDataProvider(
-                    mWebContentsRef.get(), AccessoryTabType.PASSWORDS, mSheetSuggestionsProvider);
         });
     }
 
@@ -514,5 +510,11 @@ public class ManualFillingTestHelper {
             ManualFillingComponentBridge.signalAutoGenerationStatus(
                     mActivityTestRule.getWebContents(), available);
         });
+    }
+
+    public void registerSheetDataProvider(@AccessoryTabType int tabType) {
+        PropertyProvider<AccessorySheetData> sheetDataProvider = new PropertyProvider<>();
+        getManualFillingCoordinator().registerSheetDataProvider(
+                mWebContentsRef.get(), tabType, sheetDataProvider);
     }
 }

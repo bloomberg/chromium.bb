@@ -25,6 +25,7 @@
 #include "chromeos/login/auth/cryptohome_key_constants.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/prefs/pref_service.h"
+#include "components/user_manager/user_manager.h"
 
 namespace ash {
 namespace {
@@ -96,7 +97,6 @@ bool PinSetupScreen::ShouldSkipBecauseOfPolicy() {
     return false;
   PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
   if (chrome_user_manager_util::IsPublicSessionOrEphemeralLogin() ||
-      !quick_unlock::IsPinEnabled(prefs) ||
       quick_unlock::IsPinDisabledByPolicy(prefs)) {
     return true;
   }
@@ -119,10 +119,8 @@ PinSetupScreen::PinSetupScreen(PinSetupScreenView* view,
   DCHECK(view_);
   view_->Bind(this);
 
-  if (features::IsPinSetupForFamilyLinkEnabled()) {
-    quick_unlock::PinBackend::GetInstance()->HasLoginSupport(base::BindOnce(
-        &PinSetupScreen::OnHasLoginSupport, weak_ptr_factory_.GetWeakPtr()));
-  }
+  quick_unlock::PinBackend::GetInstance()->HasLoginSupport(base::BindOnce(
+      &PinSetupScreen::OnHasLoginSupport, weak_ptr_factory_.GetWeakPtr()));
 }
 
 PinSetupScreen::~PinSetupScreen() {
@@ -148,9 +146,8 @@ bool PinSetupScreen::MaybeSkip(WizardContext* context) {
 
   // Show setup for Family Link users on tablet and clamshell if the device
   // supports PIN for login.
-  bool show_for_family_link_user = features::IsPinSetupForFamilyLinkEnabled() &&
-                                   active_user_profile->IsChild() &&
-                                   has_login_support_.value_or(false);
+  bool show_for_family_link_user =
+      active_user_profile->IsChild() && has_login_support_.value_or(false);
   if (show_for_family_link_user)
     return false;
 
@@ -195,9 +192,11 @@ void PinSetupScreen::ShowImpl() {
 
   const std::string token =
       quick_unlock_storage->CreateAuthToken(*user_context);
+  bool is_child_account =
+      user_manager::UserManager::Get()->IsLoggedInAsChildUser();
 
   if (view_)
-    view_->Show(token);
+    view_->Show(token, is_child_account);
 
   chromeos::quick_unlock::PinBackend::GetInstance()->HasLoginSupport(
       base::BindOnce(&PinSetupScreen::OnHasLoginSupport,

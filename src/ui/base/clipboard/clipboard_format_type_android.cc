@@ -38,6 +38,17 @@ bool ClipboardFormatType::operator==(const ClipboardFormatType& other) const {
   return data_ == other.data_;
 }
 
+// TODO(crbug.com/106449): Support custom formats.
+ClipboardFormatType ClipboardFormatType::GetCustomPlatformType(
+    const std::string& format_string) {
+  return ClipboardFormatType::Deserialize(format_string);
+}
+
+// TODO(crbug.com/106449): Support custom formats.
+std::string ClipboardFormatType::GetCustomPlatformName() const {
+  return Serialize();
+}
+
 // Various predefined ClipboardFormatTypes.
 
 // static
@@ -97,7 +108,8 @@ const ClipboardFormatType& ClipboardFormatType::GetPngType() {
 
 // static
 const ClipboardFormatType& ClipboardFormatType::GetBitmapType() {
-  return ClipboardFormatType::GetPngType();
+  static base::NoDestructor<ClipboardFormatType> type(kMimeTypeImageURI);
+  return *type;
 }
 
 // static

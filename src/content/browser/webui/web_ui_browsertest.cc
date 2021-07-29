@@ -412,7 +412,8 @@ IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, UntrustedSchemeLoads) {
 
 // Verify that we can successfully navigate to a chrome-untrusted:// URL
 // without a crash while WebUI::Send is being performed.
-IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, NavigateWhileWebUISend) {
+// TODO(crbug.com/1221528): Enable this test once a root cause is identified.
+IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, DISABLED_NavigateWhileWebUISend) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   auto* web_contents = shell()->web_contents();

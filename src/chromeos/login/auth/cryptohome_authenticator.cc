@@ -26,9 +26,9 @@
 #include "chromeos/login/auth/cryptohome_key_constants.h"
 #include "chromeos/login/auth/cryptohome_parameter_utils.h"
 #include "chromeos/login/auth/key.h"
-#include "chromeos/login/auth/login_event_recorder.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/login/login_state/login_state.h"
+#include "chromeos/metrics/login_event_recorder.h"
 #include "components/account_id/account_id.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/user_manager/known_user.h"
@@ -93,7 +93,7 @@ const char* AuthStateToString(CryptohomeAuthenticator::AuthState state) {
     case CryptohomeAuthenticator::CREATE_NEW:
       return "CREATE_NEW";
     case CryptohomeAuthenticator::RECOVER_MOUNT:
-      return "RECOVER_MONUT";
+      return "RECOVER_MOUNT";
     case CryptohomeAuthenticator::POSSIBLE_PW_CHANGE:
       return "POSSIBLE_PW_CHANGE";
     case CryptohomeAuthenticator::NEED_NEW_PW:
@@ -171,7 +171,7 @@ void RecordKeyErrorAndResolve(const base::WeakPtr<AuthAttemptState>& attempt,
   resolver->Resolve();
 }
 
-// Callback invoked when cryptohome's GetSantiziedUsername() method has
+// Callback invoked when cryptohome's GetSanitizedUsername() method has
 // finished.
 void OnGetSanitizedUsername(
     base::OnceCallback<void(bool, const std::string&)> callback,
@@ -182,12 +182,12 @@ void OnGetSanitizedUsername(
   std::move(callback).Run(!res.empty(), res);
 }
 
-// Callback invoked when a crypotyhome *Ex method, which only returns a
+// Callback invoked when a cryptohome *Ex method, which only returns a
 // base::Reply, finishes.
 template <typename ReplyType>
 void OnReplyMethod(const base::WeakPtr<AuthAttemptState>& attempt,
                    scoped_refptr<CryptohomeAuthenticator> resolver,
-                   const std::string& time_marker,
+                   const char* time_marker,
                    absl::optional<ReplyType> reply) {
   chromeos::LoginEventRecorder::Get()->AddLoginTimeMarker(time_marker, false);
   attempt->RecordCryptohomeStatus(user_data_auth::ReplyToMountError(reply));
@@ -232,7 +232,7 @@ void DoMount(const base::WeakPtr<AuthAttemptState>& attempt,
   CHECK_NE(Key::KEY_TYPE_PASSWORD_PLAIN, key->GetKeyType());
 
   // Set state that username_hash is requested here so that test implementation
-  // that returns directly would not generate 2 OnLoginSucces() calls.
+  // that returns directly would not generate 2 OnLoginSuccess() calls.
   attempt->UsernameHashRequested();
 
   const cryptohome::AuthorizationRequest auth =
@@ -680,26 +680,16 @@ void CryptohomeAuthenticator::LoginAsPublicSession(
 }
 
 void CryptohomeAuthenticator::LoginAsKioskAccount(
-    const AccountId& app_account_id,
-    bool use_guest_mount) {
+    const AccountId& app_account_id) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-
-  const AccountId& account_id =
-      use_guest_mount ? user_manager::GuestAccountId() : app_account_id;
   current_state_ = std::make_unique<AuthAttemptState>(
-      UserContext(user_manager::USER_TYPE_KIOSK_APP, account_id),
+      UserContext(user_manager::USER_TYPE_KIOSK_APP, app_account_id),
       false /* unlock */);
 
   remove_user_data_on_failure_ = true;
-  if (!use_guest_mount) {
-    MountPublic(current_state_->AsWeakPtr(),
-                scoped_refptr<CryptohomeAuthenticator>(this),
-                false);  // force_dircrypto_if_available
-  } else {
-    ephemeral_mount_attempted_ = true;
-    MountGuestAndGetHash(current_state_->AsWeakPtr(),
-                         scoped_refptr<CryptohomeAuthenticator>(this));
-  }
+  MountPublic(current_state_->AsWeakPtr(),
+              scoped_refptr<CryptohomeAuthenticator>(this),
+              false);  // force_dircrypto_if_available
 }
 
 void CryptohomeAuthenticator::LoginAsArcKioskAccount(
@@ -833,7 +823,7 @@ bool CryptohomeAuthenticator::VerifyOwner() {
   }
 
   safe_mode_delegate_->CheckSafeModeOwnership(
-      current_state_->user_context,
+      current_state_->user_context.GetUserIDHash(),
       base::BindOnce(&CryptohomeAuthenticator::OnOwnershipChecked, this));
   return false;
 }

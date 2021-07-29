@@ -19,6 +19,7 @@ struct SameSizeAsPaintChunk {
   PropertyTreeState properties;
   IntRect bounds;
   IntRect drawable_bounds;
+  IntRect rect_known_to_be_opaque;
   void* hit_test_data;
   void* layer_selection;
   bool b[2];
@@ -34,10 +35,12 @@ bool PaintChunk::EqualsForUnderInvalidationChecking(
          raster_effect_outset == other.raster_effect_outset &&
          ((!hit_test_data && !other.hit_test_data) ||
           (hit_test_data && other.hit_test_data &&
-           *hit_test_data == *other.hit_test_data));
-  // known_to_be_opaque is not checked ]because it's updated when we create the
-  // next chunk or release chunks. We ensure its correctness with unit tests and
-  // under-invalidation checking of display items.
+           *hit_test_data == *other.hit_test_data)) &&
+         effectively_invisible == other.effectively_invisible;
+  // Derived fields like rect_known_to_be_opaque are not checked because they
+  // are updated when we create the next chunk or release chunks. We ensure
+  // their correctness with unit tests and under-invalidation checking of
+  // display items.
 }
 
 size_t PaintChunk::MemoryUsageInBytes() const {
@@ -55,10 +58,10 @@ String PaintChunk::ToString() const {
   StringBuilder sb;
   sb.AppendFormat(
       "PaintChunk(begin=%u, end=%u, id=%s cacheable=%d props=(%s) bounds=%s "
-      "known_to_be_opaque=%d",
+      "rect_known_to_be_opaque=%s effectively_invisible=%d",
       begin_index, end_index, id.ToString().Utf8().c_str(), is_cacheable,
       properties.ToString().Utf8().c_str(), bounds.ToString().Utf8().c_str(),
-      known_to_be_opaque);
+      rect_known_to_be_opaque.ToString().Utf8().c_str(), effectively_invisible);
   if (hit_test_data) {
     sb.Append(", hit_test_data=");
     sb.Append(hit_test_data->ToString());

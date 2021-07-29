@@ -21,13 +21,13 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -156,12 +156,11 @@ google_breakpad::CustomClientInfo* GetCustomInfo(
     }
   }
 
-  static base::NoDestructor<google_breakpad::CustomClientInfo>
-      custom_client_info;
-  custom_client_info->entries = &custom_entries->front();
-  custom_client_info->count = custom_entries->size();
+  static google_breakpad::CustomClientInfo custom_client_info;
+  custom_client_info.entries = &custom_entries->front();
+  custom_client_info.count = custom_entries->size();
 
-  return custom_client_info.get();
+  return &custom_client_info;
 }
 
 }  // namespace

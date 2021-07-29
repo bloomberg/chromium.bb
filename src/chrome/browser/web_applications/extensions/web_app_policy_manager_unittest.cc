@@ -10,20 +10,24 @@
 
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/browser_prefs.h"
-#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/external_install_options.h"
 #include "chrome/browser/web_applications/components/externally_managed_app_manager.h"
 #include "chrome/browser/web_applications/components/policy/web_app_policy_constants.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager_observer.h"
 #include "chrome/browser/web_applications/test/test_app_registry_controller.h"
 #include "chrome/browser/web_applications/test/test_externally_managed_app_manager.h"
 #include "chrome/browser/web_applications/test/test_os_integration_manager.h"
 #include "chrome/browser/web_applications/test/test_web_app_provider.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
@@ -36,7 +40,7 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/chromeos/policy/system_features_disable_list_policy_handler.h"
+#include "chrome/browser/ash/policy/handlers/system_features_disable_list_policy_handler.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -218,6 +222,25 @@ ExternalInstallOptions GetFallbackAppNameInstallOptions() {
   return options;
 }
 
+std::unique_ptr<WebApp> CreateWebApp(const GURL& start_url,
+                                     Source::Type source_type) {
+  const AppId app_id = GenerateAppId(/*manifest_id=*/absl::nullopt, start_url);
+
+  auto web_app = std::make_unique<WebApp>(app_id);
+  web_app->SetStartUrl(start_url);
+  web_app->SetName("App Name");
+  web_app->AddSource(source_type);
+  web_app->SetDisplayMode(DisplayMode::kStandalone);
+  web_app->SetUserDisplayMode(DisplayMode::kStandalone);
+  return web_app;
+}
+
+Source::Type ConvertExternalInstallSourceToSourceType(
+    ExternalInstallSource external_install_source) {
+  return InferSourceFromMetricsInstallSource(
+      ConvertExternalInstallSourceToInstallSource(external_install_source));
+}
+
 }  // namespace
 
 class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness {
@@ -233,12 +256,16 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness {
 
     auto* provider = TestWebAppProvider::Get(profile());
 
-    auto test_app_registrar = std::make_unique<TestAppRegistrar>();
+    auto test_app_registrar =
+        std::make_unique<WebAppRegistrarMutable>(profile());
     test_app_registrar_ = test_app_registrar.get();
     provider->SetRegistrar(std::move(test_app_registrar));
 
+    externally_installed_app_prefs_ =
+        std::make_unique<ExternallyInstalledWebAppPrefs>(profile()->GetPrefs());
+
     auto test_externally_managed_app_manager =
-        std::make_unique<TestExternallyManagedAppManager>(test_app_registrar_);
+        std::make_unique<TestExternallyManagedAppManager>(profile());
     test_externally_managed_app_manager_ =
         test_externally_managed_app_manager.get();
     provider->SetExternallyManagedAppManager(
@@ -258,13 +285,49 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness {
     web_app_policy_manager_ = web_app_policy_manager.get();
     provider->SetWebAppPolicyManager(std::move(web_app_policy_manager));
 
+    externally_managed_app_manager()->SetHandleInstallRequestCallback(
+        base::BindLambdaForTesting(
+            [this](const ExternalInstallOptions& install_options)
+                -> ExternallyManagedAppManager::InstallResult {
+              const GURL& install_url = install_options.install_url;
+              if (!app_registrar()->GetAppById(GenerateAppId(
+                      /*manifest_id=*/absl::nullopt, install_url))) {
+                const auto install_source = install_options.install_source;
+                std::unique_ptr<WebApp> web_app = CreateWebApp(
+                    install_url,
+                    ConvertExternalInstallSourceToSourceType(install_source));
+                RegisterApp(std::move(web_app));
+
+                externally_installed_app_prefs().Insert(
+                    install_url,
+                    GenerateAppId(/*manifest_id=*/absl::nullopt, install_url),
+                    install_source);
+              }
+              return {.code = install_result_code_};
+            }));
+    externally_managed_app_manager()->SetHandleUninstallRequestCallback(
+        base::BindLambdaForTesting(
+            [this](const GURL& app_url,
+                   ExternalInstallSource install_source) -> bool {
+              absl::optional<AppId> app_id =
+                  app_registrar()->LookupExternalAppId(app_url);
+              if (app_id) {
+                UnregisterApp(*app_id);
+              }
+              return true;
+            }));
+
     provider->Start();
   }
 
   void SimulatePreviouslyInstalledApp(GURL url,
                                       ExternalInstallSource install_source) {
-    externally_managed_app_manager()->SimulatePreviouslyInstalledApp(
-        url, install_source);
+    auto web_app = CreateWebApp(
+        url, ConvertExternalInstallSourceToSourceType(install_source));
+    RegisterApp(std::move(web_app));
+
+    externally_installed_app_prefs().Insert(
+        url, GenerateAppId(/*manifest_id=*/absl::nullopt, url), install_source);
   }
 
   void AwaitPolicyManagerAppsSynchronized() {
@@ -286,8 +349,14 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness {
     return test_externally_managed_app_manager_;
   }
 
+  WebAppRegistrar* app_registrar() { return test_app_registrar_; }
+
   WebAppPolicyManager* policy_manager() { return web_app_policy_manager_; }
   ScopedTestingLocalState testing_local_state_;
+
+  ExternallyInstalledWebAppPrefs& externally_installed_app_prefs() {
+    return *externally_installed_app_prefs_;
+  }
 
   void SetWebAppSettingsDictPref(const base::StringPiece pref) {
     base::JSONReader::ValueWithError result =
@@ -308,8 +377,31 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness {
               expected_default.run_on_os_login_policy);
   }
 
+  void RegisterApp(std::unique_ptr<web_app::WebApp> web_app) {
+    web_app::AppId app_id = web_app->app_id();
+    DCHECK(!test_app_registrar_->GetAppById(app_id));
+    test_app_registrar_->registry().emplace(std::move(app_id),
+                                            std::move(web_app));
+  }
+
+  void UnregisterApp(const AppId& app_id) {
+    auto it = test_app_registrar_->registry().find(app_id);
+    DCHECK(it != test_app_registrar_->registry().end());
+
+    test_app_registrar_->registry().erase(it);
+  }
+
+  void SetInstallResultCode(InstallResultCode result_code) {
+    install_result_code_ = result_code;
+  }
+
  private:
-  TestAppRegistrar* test_app_registrar_ = nullptr;
+  InstallResultCode install_result_code_ =
+      InstallResultCode::kSuccessNewInstall;
+
+  WebAppRegistrarMutable* test_app_registrar_ = nullptr;
+  std::unique_ptr<ExternallyInstalledWebAppPrefs>
+      externally_installed_app_prefs_;
   TestExternallyManagedAppManager* test_externally_managed_app_manager_ =
       nullptr;
   WebAppPolicyManager* web_app_policy_manager_ = nullptr;
@@ -734,9 +826,8 @@ TEST_F(WebAppPolicyManagerTest, SayRefreshTwoTimesQuickly) {
 
   // There should be exactly 1 app remaining.
   std::map<AppId, GURL> apps =
-      WebAppProviderBase::GetProviderBase(profile())
-          ->registrar()
-          .GetExternallyInstalledApps(ExternalInstallSource::kExternalPolicy);
+      WebAppProvider::Get(profile())->registrar().GetExternallyInstalledApps(
+          ExternalInstallSource::kExternalPolicy);
   EXPECT_EQ(1u, apps.size());
   for (auto& it : apps)
     EXPECT_EQ(it.second, GURL(kTabbedUrl));
@@ -765,7 +856,7 @@ TEST_F(WebAppPolicyManagerTest, InstallResultHistogram) {
     base::Value list(base::Value::Type::LIST);
     list.Append(GetTabbedItem());
     list.Append(GetNoContainerItem());
-    externally_managed_app_manager()->SetInstallResultCode(
+    SetInstallResultCode(
         InstallResultCode::kCancelledOnWebAppProviderShuttingDown);
 
     profile()->GetPrefs()->Set(prefs::kWebAppInstallForceList, std::move(list));

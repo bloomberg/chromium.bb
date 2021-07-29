@@ -33,8 +33,10 @@
 #include <atomic>
 
 #include "base/allocator/buildflags.h"
+#include "base/allocator/partition_allocator/address_pool_manager_types.h"
 #include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/allocator/partition_allocator/page_allocator_constants.h"
+#include "base/allocator/partition_allocator/partition_address_space.h"
 #include "base/allocator/partition_allocator/partition_alloc-inl.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_config.h"
@@ -42,16 +44,16 @@
 #include "base/allocator/partition_allocator/partition_alloc_features.h"
 #include "base/allocator/partition_allocator/partition_alloc_forward.h"
 #include "base/allocator/partition_allocator/partition_alloc_hooks.h"
+#include "base/allocator/partition_allocator/partition_bucket_lookup.h"
 #include "base/allocator/partition_allocator/partition_direct_map_extent.h"
 #include "base/allocator/partition_allocator/partition_lock.h"
 #include "base/allocator/partition_allocator/partition_oom.h"
 #include "base/allocator/partition_allocator/partition_page.h"
 #include "base/allocator/partition_allocator/partition_ref_count.h"
+#include "base/allocator/partition_allocator/reservation_offset_table.h"
 #include "base/allocator/partition_allocator/starscan/pcscan.h"
 #include "base/allocator/partition_allocator/thread_cache.h"
-#include "base/bits.h"
 #include "base/compiler_specific.h"
-#include "base/partition_alloc_buildflags.h"
 #include "build/build_config.h"
 
 // We use this to make MEMORY_TOOL_REPLACES_ALLOCATOR behave the same for max
@@ -192,14 +194,14 @@ struct BASE_EXPORT PartitionRoot {
   static constexpr bool never_used_lazy_commit = true;
 #endif
 
-#if !PA_EXTRAS_REQUIRED
+#if !defined(PA_EXTRAS_REQUIRED)
   // Teach the compiler that code can be optimized in builds that use no extras.
   static constexpr uint32_t extras_size = 0;
   static constexpr uint32_t extras_offset = 0;
 #else
   uint32_t extras_size;
   uint32_t extras_offset;
-#endif
+#endif  // !defined(PA_EXTRAS_REQUIRED)
 
   // Not used on the fastest path (thread cache allocations), but on the fast
   // path of the central allocator.
@@ -368,15 +370,14 @@ struct BASE_EXPORT PartitionRoot {
     return total_size_of_committed_pages.load(std::memory_order_relaxed);
   }
 
-  bool UseBRPPool() const {
+  internal::pool_handle ChooseGigaCagePool(bool is_direct_map) const {
 #if BUILDFLAG(USE_BACKUP_REF_PTR)
-    return allow_ref_count;
+    return allow_ref_count ? internal::GetBRPPool() : internal::GetNonBRPPool();
 #else
-    // This is counterintuitive, but when BRP isn't used, make all normal bucket
-    // allocations fall into the same pool, and BRP pool is a good place for
-    // that. PCScan requires this.
-    return true;
-#endif
+    // When BRP isn't used, all normal bucket allocations belong to the BRP pool
+    // and direct map allocations belong to non-BRP pool. PCScan requires this.
+    return is_direct_map ? internal::GetNonBRPPool() : internal::GetBRPPool();
+#endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
   }
 
   ALWAYS_INLINE bool IsQuarantineAllowed() const {
@@ -400,12 +401,12 @@ struct BASE_EXPORT PartitionRoot {
     // - The first few system pages are the partition page in which the super
     // page metadata is stored.
     // - We add a trailing guard page (one system page will suffice).
-#if !defined(PA_HAS_64_BITS_POINTERS) && BUILDFLAG(ENABLE_BRP_DIRECTMAP_SUPPORT)
+#if !defined(PA_HAS_64_BITS_POINTERS) && BUILDFLAG(USE_BACKUP_REF_PTR)
     // On 32-bit systems, we need PartitionPageSize() guard pages at both the
     // beginning and the end of each direct-map allocated memory. This is needed
     // for the BRP pool bitmap which excludes guard pages and operates at
-    // PartitionPageSize() granularity. This is the same as normal buckets
-    // allocations.
+    // PartitionPageSize() granularity. This is to match the behavior of normal
+    // buckets allocations.
     return PartitionPageSize() + PartitionPageSize();
 #else
     return PartitionPageSize() + SystemPageSize();
@@ -421,13 +422,15 @@ struct BASE_EXPORT PartitionRoot {
     return bits::AlignUp(raw_size, SystemPageSize());
   }
 
-  static ALWAYS_INLINE size_t GetDirectMapReservedSize(size_t raw_size) {
+  static ALWAYS_INLINE size_t
+  GetDirectMapReservationSize(size_t padded_raw_size) {
     // Caller must check that the size is not above the MaxDirectMapped()
     // limit before calling. This also guards against integer overflow in the
     // calculation here.
-    PA_DCHECK(raw_size <= MaxDirectMapped());
-    return bits::AlignUp(raw_size + GetDirectMapMetadataAndGuardPagesSize(),
-                         DirectMapAllocationGranularity());
+    PA_DCHECK(padded_raw_size <= MaxDirectMapped());
+    return bits::AlignUp(
+        padded_raw_size + GetDirectMapMetadataAndGuardPagesSize(),
+        DirectMapAllocationGranularity());
   }
 
 // PartitionRefCount contains a cookie if slow checks are enabled or
@@ -588,8 +591,10 @@ struct BASE_EXPORT PartitionRoot {
                                       bool* is_already_zeroed)
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
-  bool TryReallocInPlace(void* ptr, SlotSpan* slot_span, size_t new_size);
-  bool ReallocDirectMappedInPlace(
+  bool TryReallocInPlaceForNormalBuckets(void* ptr,
+                                         SlotSpan* slot_span,
+                                         size_t new_size);
+  bool TryReallocInPlaceForDirectMap(
       internal::SlotSpanMetadata<thread_safe>* slot_span,
       size_t requested_size) EXCLUSIVE_LOCKS_REQUIRED(lock_);
   void DecommitEmptySlotSpans() EXCLUSIVE_LOCKS_REQUIRED(lock_);
@@ -600,187 +605,16 @@ struct BASE_EXPORT PartitionRoot {
   friend class internal::ThreadCache;
 };
 
-namespace {
-
-// Precalculate some shift and mask constants used in the hot path.
-// Example: malloc(41) == 101001 binary.
-// Order is 6 (1 << 6-1) == 32 is highest bit set.
-// order_index is the next three MSB == 010 == 2.
-// sub_order_index_mask is a mask for the remaining bits == 11 (masking to 01
-// for the sub_order_index).
-constexpr uint8_t OrderIndexShift(uint8_t order) {
-  if (order < kNumBucketsPerOrderBits + 1)
-    return 0;
-
-  return order - (kNumBucketsPerOrderBits + 1);
-}
-
-constexpr size_t OrderSubIndexMask(uint8_t order) {
-  if (order == kBitsPerSizeT)
-    return static_cast<size_t>(-1) >> (kNumBucketsPerOrderBits + 1);
-
-  return ((static_cast<size_t>(1) << order) - 1) >>
-         (kNumBucketsPerOrderBits + 1);
-}
-
-#if defined(PA_HAS_64_BITS_POINTERS)
-#define BITS_PER_SIZE_T 64
-static_assert(kBitsPerSizeT == 64, "");
-#else
-#define BITS_PER_SIZE_T 32
-static_assert(kBitsPerSizeT == 32, "");
-#endif  // defined(PA_HAS_64_BITS_POINTERS)
-
-constexpr uint8_t kOrderIndexShift[BITS_PER_SIZE_T + 1] = {
-    OrderIndexShift(0),  OrderIndexShift(1),  OrderIndexShift(2),
-    OrderIndexShift(3),  OrderIndexShift(4),  OrderIndexShift(5),
-    OrderIndexShift(6),  OrderIndexShift(7),  OrderIndexShift(8),
-    OrderIndexShift(9),  OrderIndexShift(10), OrderIndexShift(11),
-    OrderIndexShift(12), OrderIndexShift(13), OrderIndexShift(14),
-    OrderIndexShift(15), OrderIndexShift(16), OrderIndexShift(17),
-    OrderIndexShift(18), OrderIndexShift(19), OrderIndexShift(20),
-    OrderIndexShift(21), OrderIndexShift(22), OrderIndexShift(23),
-    OrderIndexShift(24), OrderIndexShift(25), OrderIndexShift(26),
-    OrderIndexShift(27), OrderIndexShift(28), OrderIndexShift(29),
-    OrderIndexShift(30), OrderIndexShift(31), OrderIndexShift(32),
-#if BITS_PER_SIZE_T == 64
-    OrderIndexShift(33), OrderIndexShift(34), OrderIndexShift(35),
-    OrderIndexShift(36), OrderIndexShift(37), OrderIndexShift(38),
-    OrderIndexShift(39), OrderIndexShift(40), OrderIndexShift(41),
-    OrderIndexShift(42), OrderIndexShift(43), OrderIndexShift(44),
-    OrderIndexShift(45), OrderIndexShift(46), OrderIndexShift(47),
-    OrderIndexShift(48), OrderIndexShift(49), OrderIndexShift(50),
-    OrderIndexShift(51), OrderIndexShift(52), OrderIndexShift(53),
-    OrderIndexShift(54), OrderIndexShift(55), OrderIndexShift(56),
-    OrderIndexShift(57), OrderIndexShift(58), OrderIndexShift(59),
-    OrderIndexShift(60), OrderIndexShift(61), OrderIndexShift(62),
-    OrderIndexShift(63), OrderIndexShift(64)
-#endif
-};
-
-constexpr size_t kOrderSubIndexMask[BITS_PER_SIZE_T + 1] = {
-    OrderSubIndexMask(0),  OrderSubIndexMask(1),  OrderSubIndexMask(2),
-    OrderSubIndexMask(3),  OrderSubIndexMask(4),  OrderSubIndexMask(5),
-    OrderSubIndexMask(6),  OrderSubIndexMask(7),  OrderSubIndexMask(8),
-    OrderSubIndexMask(9),  OrderSubIndexMask(10), OrderSubIndexMask(11),
-    OrderSubIndexMask(12), OrderSubIndexMask(13), OrderSubIndexMask(14),
-    OrderSubIndexMask(15), OrderSubIndexMask(16), OrderSubIndexMask(17),
-    OrderSubIndexMask(18), OrderSubIndexMask(19), OrderSubIndexMask(20),
-    OrderSubIndexMask(21), OrderSubIndexMask(22), OrderSubIndexMask(23),
-    OrderSubIndexMask(24), OrderSubIndexMask(25), OrderSubIndexMask(26),
-    OrderSubIndexMask(27), OrderSubIndexMask(28), OrderSubIndexMask(29),
-    OrderSubIndexMask(30), OrderSubIndexMask(31), OrderSubIndexMask(32),
-#if BITS_PER_SIZE_T == 64
-    OrderSubIndexMask(33), OrderSubIndexMask(34), OrderSubIndexMask(35),
-    OrderSubIndexMask(36), OrderSubIndexMask(37), OrderSubIndexMask(38),
-    OrderSubIndexMask(39), OrderSubIndexMask(40), OrderSubIndexMask(41),
-    OrderSubIndexMask(42), OrderSubIndexMask(43), OrderSubIndexMask(44),
-    OrderSubIndexMask(45), OrderSubIndexMask(46), OrderSubIndexMask(47),
-    OrderSubIndexMask(48), OrderSubIndexMask(49), OrderSubIndexMask(50),
-    OrderSubIndexMask(51), OrderSubIndexMask(52), OrderSubIndexMask(53),
-    OrderSubIndexMask(54), OrderSubIndexMask(55), OrderSubIndexMask(56),
-    OrderSubIndexMask(57), OrderSubIndexMask(58), OrderSubIndexMask(59),
-    OrderSubIndexMask(60), OrderSubIndexMask(61), OrderSubIndexMask(62),
-    OrderSubIndexMask(63), OrderSubIndexMask(64)
-#endif
-};
-
-}  // namespace
-
 namespace internal {
-
-// The class used to generate the bucket lookup table at compile-time.
-class BucketIndexLookup final {
- public:
-  ALWAYS_INLINE constexpr static size_t GetIndex(size_t size);
-
- private:
-  constexpr BucketIndexLookup() {
-    constexpr uint16_t sentinel_bucket_index = kNumBuckets;
-
-    InitBucketSizes();
-
-    uint16_t* bucket_index_ptr = &bucket_index_lookup_[0];
-    uint16_t bucket_index = 0;
-
-    for (uint8_t order = 0; order <= kBitsPerSizeT; ++order) {
-      for (uint16_t j = 0; j < kNumBucketsPerOrder; ++j) {
-        if (order < kMinBucketedOrder) {
-          // Use the bucket of the finest granularity for malloc(0) etc.
-          *bucket_index_ptr++ = 0;
-        } else if (order > kMaxBucketedOrder) {
-          *bucket_index_ptr++ = sentinel_bucket_index;
-        } else {
-          uint16_t valid_bucket_index = bucket_index;
-          while (bucket_sizes_[valid_bucket_index] % kSmallestBucket)
-            valid_bucket_index++;
-          *bucket_index_ptr++ = valid_bucket_index;
-          bucket_index++;
-        }
-      }
-    }
-    PA_DCHECK(bucket_index == kNumBuckets);
-    PA_DCHECK(bucket_index_ptr == bucket_index_lookup_ + ((kBitsPerSizeT + 1) *
-                                                          kNumBucketsPerOrder));
-    // And there's one last bucket lookup that will be hit for e.g. malloc(-1),
-    // which tries to overflow to a non-existent order.
-    *bucket_index_ptr = sentinel_bucket_index;
-  }
-
-  constexpr void InitBucketSizes() {
-    size_t current_size = kSmallestBucket;
-    size_t current_increment = kSmallestBucket >> kNumBucketsPerOrderBits;
-    size_t* bucket_size = &bucket_sizes_[0];
-    for (size_t i = 0; i < kNumBucketedOrders; ++i) {
-      for (size_t j = 0; j < kNumBucketsPerOrder; ++j) {
-        *bucket_size = current_size;
-        // Disable pseudo buckets so that touching them faults.
-        current_size += current_increment;
-        ++bucket_size;
-      }
-      current_increment <<= 1;
-    }
-  }
-
-  size_t bucket_sizes_[kNumBuckets]{};
-  // The bucket lookup table lets us map a size_t to a bucket quickly.
-  // The trailing +1 caters for the overflow case for very large allocation
-  // sizes.  It is one flat array instead of a 2D array because in the 2D
-  // world, we'd need to index array[blah][max+1] which risks undefined
-  // behavior.
-  uint16_t
-      bucket_index_lookup_[((kBitsPerSizeT + 1) * kNumBucketsPerOrder) + 1]{};
-};
-
-// static
-ALWAYS_INLINE constexpr size_t BucketIndexLookup::GetIndex(size_t size) {
-  // This forces the bucket table to be constant-initialized and immediately
-  // materialized in the binary.
-  constexpr BucketIndexLookup lookup{};
-  const uint8_t order = kBitsPerSizeT - bits::CountLeadingZeroBitsSizeT(size);
-  // The order index is simply the next few bits after the most significant
-  // bit.
-  const size_t order_index =
-      (size >> kOrderIndexShift[order]) & (kNumBucketsPerOrder - 1);
-  // And if the remaining bits are non-zero we must bump the bucket up.
-  const size_t sub_order_index = size & kOrderSubIndexMask[order];
-  const uint16_t index =
-      lookup.bucket_index_lookup_[(order << kNumBucketsPerOrderBits) +
-                                  order_index + !!sub_order_index];
-  PA_DCHECK(index <= kNumBuckets);  // Last one is the sentinel bucket.
-  return index;
-}
 
 // Gets the SlotSpanMetadata object of the slot span that contains |ptr|. It's
 // used with intention to do obtain the slot size.
 //
-// CAUTION! Use only for normal buckets. Using on direct-mapped allocations may
-// lead to undefined behavior.
+// CAUTION! For direct-mapped allocation, |ptr| has to be within the first
+// partition page.
 template <bool thread_safe>
 ALWAYS_INLINE internal::SlotSpanMetadata<thread_safe>*
 PartitionAllocGetSlotSpanForSizeQuery(void* ptr) {
-  // TODO(bartekn): Add a "is in normal buckets" DCHECK.
-
   // No need to lock here. Only |ptr| being freed by another thread could
   // cause trouble, and the caller is responsible for that not happening.
   auto* slot_span =
@@ -790,19 +624,35 @@ PartitionAllocGetSlotSpanForSizeQuery(void* ptr) {
   return slot_span;
 }
 
-#if BUILDFLAG(USE_BACKUP_REF_PTR)
-
-#if BUILDFLAG(ENABLE_BRP_DIRECTMAP_SUPPORT)
 ALWAYS_INLINE void* PartitionAllocGetDirectMapSlotStart(void* ptr) {
-  auto* offset_ptr = ReservationOffsetPointer(reinterpret_cast<uintptr_t>(ptr));
-  if (LIKELY(*offset_ptr == NotInDirectMapOffsetTag()))
+  uintptr_t reservation_start = GetDirectMapReservationStart(ptr);
+  if (!reservation_start)
     return nullptr;
-  // TODO(tasak): optimize this function. i.e. GetReservationStart calls
-  // ReservationOffsetPointer again.
-  return reinterpret_cast<void*>(GetReservationStart(ptr) +
-                                 PartitionPageSize());
+
+  // The direct map allocation may not start exactly from the first page, as
+  // there may be padding for alignment. The first page metadata holds an offset
+  // to where direct map metadata, and thus direct map start, are located.
+  auto* first_page = PartitionPage<ThreadSafe>::FromPtr(
+      reinterpret_cast<void*>(reservation_start + PartitionPageSize()));
+  auto* page = first_page + first_page->slot_span_metadata_offset;
+  PA_DCHECK(page->is_valid);
+  PA_DCHECK(!page->slot_span_metadata_offset);
+  auto* ret = SlotSpanMetadata<ThreadSafe>::ToSlotSpanStartPtr(
+      &page->slot_span_metadata);
+#if DCHECK_IS_ON()
+  auto* metadata =
+      reinterpret_cast<PartitionDirectMapMetadata<ThreadSafe>*>(page);
+  size_t padding_for_alignment =
+      metadata->direct_map_extent.padding_for_alignment;
+  PA_DCHECK(padding_for_alignment == (page - first_page) * PartitionPageSize());
+  PA_DCHECK(ret ==
+            reinterpret_cast<void*>(reservation_start + PartitionPageSize() +
+                                    padding_for_alignment));
+#endif  // DCHECK_IS_ON()
+  return ret;
 }
-#endif
+
+#if BUILDFLAG(USE_BACKUP_REF_PTR)
 
 // Gets the pointer to the beginning of the allocated slot.
 //
@@ -824,13 +674,12 @@ ALWAYS_INLINE void* PartitionAllocGetSlotStart(void* ptr) {
   // kPartitionPastAllocationAdjustment takes care of that detail.
   ptr = reinterpret_cast<char*>(ptr) - kPartitionPastAllocationAdjustment;
 
-  internal::DCheckIfManagedByPartitionAllocBRPPool(ptr);
+  PA_DCHECK(IsManagedByNormalBucketsOrDirectMap(ptr));
+  DCheckIfManagedByPartitionAllocBRPPool(ptr);
 
-#if BUILDFLAG(ENABLE_BRP_DIRECTMAP_SUPPORT)
   void* directmap_slot_start = PartitionAllocGetDirectMapSlotStart(ptr);
   if (UNLIKELY(directmap_slot_start))
     return directmap_slot_start;
-#endif
   auto* slot_span =
       internal::PartitionAllocGetSlotSpanForSizeQuery<internal::ThreadSafe>(
           ptr);
@@ -868,7 +717,6 @@ ALWAYS_INLINE bool PartitionAllocIsValidPtrDelta(void* ptr, ptrdiff_t delta) {
 
   internal::DCheckIfManagedByPartitionAllocBRPPool(adjusted_ptr);
 
-#if BUILDFLAG(ENABLE_BRP_DIRECTMAP_SUPPORT)
   void* directmap_old_slot_start =
       PartitionAllocGetDirectMapSlotStart(adjusted_ptr);
   if (UNLIKELY(directmap_old_slot_start)) {
@@ -876,7 +724,6 @@ ALWAYS_INLINE bool PartitionAllocIsValidPtrDelta(void* ptr, ptrdiff_t delta) {
         reinterpret_cast<char*>(ptr) + delta);
     return directmap_old_slot_start == new_slot_start;
   }
-#endif
   auto* slot_span =
       internal::PartitionAllocGetSlotSpanForSizeQuery<internal::ThreadSafe>(
           adjusted_ptr);
@@ -940,8 +787,8 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFromBucket(
     size_t slot_span_alignment,
     size_t* usable_size,
     bool* is_already_zeroed) {
-  PA_DCHECK(slot_span_alignment &&
-            !(slot_span_alignment & PartitionPageOffsetMask()));
+  PA_DCHECK((slot_span_alignment >= PartitionPageSize()) &&
+            bits::IsPowerOfTwo(slot_span_alignment));
   SlotSpan* slot_span = bucket->active_slot_spans_head;
   // Check that this slot span is neither full nor freed.
   PA_DCHECK(slot_span);
@@ -968,7 +815,7 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFromBucket(
     PA_DCHECK(!slot_span->CanStoreRawSize());
     PA_DCHECK(!slot_span->bucket->is_direct_mapped());
     internal::PartitionFreelistEntry* new_head =
-        slot_span->freelist_head->GetNext();
+        slot_span->freelist_head->GetNext(bucket->slot_size);
     slot_span->SetFreelistHead(new_head);
     slot_span->num_allocated_slots++;
 
@@ -976,14 +823,12 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFromBucket(
   } else {
     slot_start = bucket->SlowPathAlloc(this, flags, raw_size,
                                        slot_span_alignment, is_already_zeroed);
-    // TODO(palmer): See if we can afford to make this a CHECK.
-    PA_DCHECK(!slot_start ||
-              IsValidSlotSpan(SlotSpan::FromSlotStartPtr(slot_start)));
-
     if (UNLIKELY(!slot_start))
       return nullptr;
 
     slot_span = SlotSpan::FromSlotStartPtr(slot_start);
+    // TODO(palmer): See if we can afford to make this a CHECK.
+    PA_DCHECK(IsValidSlotSpan(slot_span));
     // For direct mapped allocations, |bucket| is the sentinel.
     PA_DCHECK((slot_span->bucket == bucket) ||
               (slot_span->bucket->is_direct_mapped() &&
@@ -1098,7 +943,7 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::FreeNoHooksImmediate(
   // Note: ref-count and cookies can be 0-sized.
   //
   // For more context, see the other "Layout inside the slot" comment below.
-#if EXPENSIVE_DCHECKS_ARE_ON() || PA_ZERO_RANDOMLY_ON_FREE
+#if EXPENSIVE_DCHECKS_ARE_ON() || defined(PA_ZERO_RANDOMLY_ON_FREE)
   const size_t utilized_slot_size = slot_span->GetUtilizedSlotSize();
 #endif
 #if BUILDFLAG(USE_BACKUP_REF_PTR) || DCHECK_IS_ON()
@@ -1118,21 +963,15 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::FreeNoHooksImmediate(
 
 #if BUILDFLAG(USE_BACKUP_REF_PTR)
   if (allow_ref_count) {
-#if !BUILDFLAG(ENABLE_BRP_DIRECTMAP_SUPPORT)
-    if (LIKELY(!IsDirectMappedBucket(slot_span->bucket))) {
-#endif  // !BUILDFLAG(ENABLE_BRP_DIRECTMAP_SUPPORT)
-      auto* ref_count = internal::PartitionRefCountPointer(slot_start);
-      // If there are no more references to the allocation, it can be freed
-      // immediately. Otherwise, defer the operation and zap the memory to turn
-      // potential use-after-free issues into unexploitable crashes.
-      if (UNLIKELY(!ref_count->IsAliveWithNoKnownRefs()))
-        internal::SecureMemset(ptr, kQuarantinedByte, usable_size);
+    auto* ref_count = internal::PartitionRefCountPointer(slot_start);
+    // If there are no more references to the allocation, it can be freed
+    // immediately. Otherwise, defer the operation and zap the memory to turn
+    // potential use-after-free issues into unexploitable crashes.
+    if (UNLIKELY(!ref_count->IsAliveWithNoKnownRefs()))
+      internal::SecureMemset(ptr, kQuarantinedByte, usable_size);
 
-      if (UNLIKELY(!(ref_count->ReleaseFromAllocator())))
-        return;
-#if !BUILDFLAG(ENABLE_BRP_DIRECTMAP_SUPPORT)
-    }
-#endif  // !BUILDFLAG(ENABLE_BRP_DIRECTMAP_SUPPORT)
+    if (UNLIKELY(!(ref_count->ReleaseFromAllocator())))
+      return;
   }
 #endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
 
@@ -1144,7 +983,7 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::FreeNoHooksImmediate(
              - sizeof(internal::PartitionRefCount)
 #endif
   );
-#elif PA_ZERO_RANDOMLY_ON_FREE
+#elif defined(PA_ZERO_RANDOMLY_ON_FREE)
   // `memset` only once in a while: we're trading off safety for time
   // efficiency.
   if (UNLIKELY(internal::RandomPeriod()) &&
@@ -1156,7 +995,7 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::FreeNoHooksImmediate(
 #endif
     );
   }
-#endif
+#endif  // defined(PA_ZERO_RANDOMLY_ON_FREE)
 
   RawFreeWithThreadCache(slot_start, slot_span);
 }
@@ -1170,6 +1009,38 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::RawFree(void* slot_start) {
 template <bool thread_safe>
 ALWAYS_INLINE void PartitionRoot<thread_safe>::RawFree(void* slot_start,
                                                        SlotSpan* slot_span) {
+  // At this point we are about to acquire the lock, so we try to minimize the
+  // risk of blocking inside the locked section.
+  //
+  // For allocations that are not direct-mapped, there will always be a store at
+  // the beginning of |*slot_start|, to link the freelist. This is why there is
+  // a prefetch of it at the beginning of the free() path.
+  //
+  // However, the memory which is being freed can be very cold (for instance
+  // during browser shutdown, when various caches are finally completely freed),
+  // and so moved to either compressed memory or swap. This means that touching
+  // it here can cause a major page fault. This is in turn will cause
+  // descheduling of the thread *while locked*. Since we don't have priority
+  // inheritance locks on most platforms, avoiding long locked periods relies on
+  // the OS having proper priority boosting. There is evidence
+  // (crbug.com/1228523) that this is not always the case on Windows, and a very
+  // low priority background thread can block the main one for a long time,
+  // leading to hangs.
+  //
+  // To mitigate that, make sure that we fault *before* locking. Note that this
+  // is useless for direct-mapped allocations (which are very rare anyway), and
+  // that this path is *not* taken for thread cache bucket purge (since it calls
+  // RawFreeLocked()). This is intentional, as the thread cache is purged often,
+  // and the memory has a consequence the memory has already been touched
+  // recently (to link the thread cache freelist).
+  *reinterpret_cast<volatile uintptr_t*>(slot_start) = 0;
+  // Note: even though we write to slot_start + sizeof(void*) as well, due to
+  // alignment constraints, the two locations are always going to be in the same
+  // OS page. No need to write to the second one as well.
+  //
+  // Do not move the store above inside the locked section.
+  __asm__ __volatile__("" : : "r"(slot_start) : "memory");
+
   internal::DeferredUnmap deferred_unmap;
   {
     ScopedGuard guard{lock_};
@@ -1206,7 +1077,8 @@ template <bool thread_safe>
 ALWAYS_INLINE void PartitionRoot<thread_safe>::RawFreeLocked(void* slot_start) {
   SlotSpan* slot_span = SlotSpan::FromSlotStartPtr(slot_start);
   auto deferred_unmap = slot_span->Free(slot_start);
-  PA_DCHECK(!deferred_unmap.ptr);  // Only used with bucketed allocations.
+  // Only used with bucketed allocations.
+  PA_DCHECK(!deferred_unmap.reservation_start);
   deferred_unmap.Run();
 }
 
@@ -1236,12 +1108,10 @@ PartitionRoot<thread_safe>::FromSuperPage(char* super_page) {
   return root;
 }
 
-// CAUTION! Use only for normal buckets. Using on direct-mapped allocations may
-// lead to undefined behavior.
 template <bool thread_safe>
 ALWAYS_INLINE PartitionRoot<thread_safe>*
 PartitionRoot<thread_safe>::FromPointerInNormalBuckets(char* ptr) {
-  // TODO(bartekn): Add a "is in normal buckets" DCHECK.
+  PA_DCHECK(internal::IsManagedByNormalBuckets(ptr));
   char* super_page = reinterpret_cast<char*>(reinterpret_cast<uintptr_t>(ptr) &
                                              kSuperPageBaseMask);
   return FromSuperPage(super_page);
@@ -1298,6 +1168,9 @@ ALWAYS_INLINE bool PartitionRoot<thread_safe>::TryRecommitSystemPagesForData(
 // PartitionAlloc's internal data. Used as malloc_usable_size.
 template <bool thread_safe>
 ALWAYS_INLINE size_t PartitionRoot<thread_safe>::GetUsableSize(void* ptr) {
+  // malloc_usable_size() is expected to handle NULL gracefully and return 0.
+  if (!ptr)
+    return 0;
   auto* slot_span = SlotSpan::FromSlotInnerPtr(ptr);
   auto* root = FromSlotSpan(slot_span);
   return slot_span->GetUsableSize(root);
@@ -1307,6 +1180,7 @@ ALWAYS_INLINE size_t PartitionRoot<thread_safe>::GetUsableSize(void* ptr) {
 // doesn't mean this capacity is readily available. It merely means that if
 // a new allocation (or realloc) happened with that returned value, it'd use
 // the same amount of underlying memory.
+//
 // CAUTION! For direct-mapped allocation, |ptr| has to be within the first
 // partition page.
 template <bool thread_safe>
@@ -1341,8 +1215,8 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFlagsInternal(
     size_t requested_size,
     size_t slot_span_alignment,
     const char* type_name) {
-  PA_DCHECK(slot_span_alignment &&
-            !(slot_span_alignment & PartitionPageOffsetMask()));
+  PA_DCHECK((slot_span_alignment >= PartitionPageSize()) &&
+            bits::IsPowerOfTwo(slot_span_alignment));
 
   PA_DCHECK(flags < PartitionAllocLastFlag << 1);
   PA_DCHECK((flags & PartitionAllocNoHooks) == 0);  // Internal only.
@@ -1383,8 +1257,8 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFlagsNoHooks(
     int flags,
     size_t requested_size,
     size_t slot_span_alignment) {
-  PA_DCHECK(slot_span_alignment &&
-            !(slot_span_alignment & PartitionPageOffsetMask()));
+  PA_DCHECK((slot_span_alignment >= PartitionPageSize()) &&
+            bits::IsPowerOfTwo(slot_span_alignment));
 
   // The thread cache is added "in the middle" of the main allocator, that is:
   // - After all the cookie/ref-count management
@@ -1545,13 +1419,8 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFlagsNoHooks(
   }
 
 #if BUILDFLAG(USE_BACKUP_REF_PTR)
-  bool should_init_ref_count = allow_ref_count
-#if !BUILDFLAG(ENABLE_BRP_DIRECTMAP_SUPPORT)
-                               && !(raw_size > kMaxBucketed)
-#endif
-      ;
-  // LIKELY: Direct mapped allocations are large and rare.
-  if (LIKELY(should_init_ref_count)) {
+  // LIKELY: |allow_ref_count| is false only for the aligned partition.
+  if (LIKELY(allow_ref_count)) {
     new (internal::PartitionRefCountPointer(slot_start))
         internal::PartitionRefCount();
   }
@@ -1608,8 +1477,6 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AlignedAllocFlags(
   // Catch unsupported alignment requests early.
   PA_CHECK(alignment <= kMaxSupportedAlignment);
   size_t raw_size = AdjustSizeForExtrasAdd(requested_size);
-  // TODO(bartekn): Support direct map. Until then, catch unsupported requests.
-  PA_CHECK(alignment <= PartitionPageSize() || raw_size <= kMaxBucketed);
 
   size_t adjusted_size = requested_size;
   if (alignment <= PartitionPageSize()) {

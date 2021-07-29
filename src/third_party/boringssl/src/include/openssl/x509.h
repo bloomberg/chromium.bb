@@ -111,7 +111,6 @@ extern "C" {
 #define X509v3_KU_UNDEF 0xffff
 
 DEFINE_STACK_OF(X509_ALGOR)
-DECLARE_ASN1_SET_OF(X509_ALGOR)
 
 typedef STACK_OF(X509_ALGOR) X509_ALGORS;
 
@@ -123,7 +122,6 @@ struct X509_name_entry_st {
 } /* X509_NAME_ENTRY */;
 
 DEFINE_STACK_OF(X509_NAME_ENTRY)
-DECLARE_ASN1_SET_OF(X509_NAME_ENTRY)
 
 // we always keep X509_NAMEs in 2 forms.
 struct X509_name_st {
@@ -146,27 +144,8 @@ struct X509_extension_st {
 typedef STACK_OF(X509_EXTENSION) X509_EXTENSIONS;
 
 DEFINE_STACK_OF(X509_EXTENSION)
-DECLARE_ASN1_SET_OF(X509_EXTENSION)
 
 DEFINE_STACK_OF(X509_ATTRIBUTE)
-DECLARE_ASN1_SET_OF(X509_ATTRIBUTE)
-
-
-struct X509_req_info_st {
-  ASN1_ENCODING enc;
-  ASN1_INTEGER *version;
-  X509_NAME *subject;
-  X509_PUBKEY *pubkey;
-  //  d=2 hl=2 l=  0 cons: cont: 00
-  STACK_OF(X509_ATTRIBUTE) *attributes;  // [ 0 ]
-} /* X509_REQ_INFO */;
-
-struct X509_req_st {
-  X509_REQ_INFO *req_info;
-  X509_ALGOR *sig_alg;
-  ASN1_BIT_STRING *signature;
-  CRYPTO_refcount_t references;
-} /* X509_REQ */;
 
 struct x509_cinf_st {
   ASN1_INTEGER *version;  // [ 0 ] default of v1
@@ -216,7 +195,6 @@ struct x509_st {
 } /* X509 */;
 
 DEFINE_STACK_OF(X509)
-DECLARE_ASN1_SET_OF(X509)
 
 // This is used for a table of trust checking functions
 
@@ -338,7 +316,6 @@ struct x509_revoked_st {
 };
 
 DEFINE_STACK_OF(X509_REVOKED)
-DECLARE_ASN1_SET_OF(X509_REVOKED)
 
 struct X509_crl_info_st {
   ASN1_INTEGER *version;
@@ -376,7 +353,6 @@ struct X509_crl_st {
 } /* X509_CRL */;
 
 DEFINE_STACK_OF(X509_CRL)
-DECLARE_ASN1_SET_OF(X509_CRL)
 
 struct private_key_st {
   int version;
@@ -950,7 +926,6 @@ OPENSSL_EXPORT int X509_PUBKEY_set(X509_PUBKEY **x, EVP_PKEY *pkey);
 OPENSSL_EXPORT EVP_PKEY *X509_PUBKEY_get(X509_PUBKEY *key);
 
 DECLARE_ASN1_FUNCTIONS(X509_SIG)
-DECLARE_ASN1_FUNCTIONS(X509_REQ_INFO)
 DECLARE_ASN1_FUNCTIONS(X509_REQ)
 
 DECLARE_ASN1_FUNCTIONS(X509_ATTRIBUTE)
@@ -1092,9 +1067,10 @@ OPENSSL_EXPORT int ASN1_item_digest(const ASN1_ITEM *it, const EVP_MD *type,
                                     void *data, unsigned char *md,
                                     unsigned int *len);
 
-OPENSSL_EXPORT int ASN1_item_verify(const ASN1_ITEM *it, X509_ALGOR *algor1,
-                                    ASN1_BIT_STRING *signature, void *data,
-                                    EVP_PKEY *pkey);
+OPENSSL_EXPORT int ASN1_item_verify(const ASN1_ITEM *it,
+                                    const X509_ALGOR *algor1,
+                                    const ASN1_BIT_STRING *signature,
+                                    void *data, EVP_PKEY *pkey);
 
 OPENSSL_EXPORT int ASN1_item_sign(const ASN1_ITEM *it, X509_ALGOR *algor1,
                                   X509_ALGOR *algor2,

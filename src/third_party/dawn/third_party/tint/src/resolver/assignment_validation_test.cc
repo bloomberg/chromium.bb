@@ -15,6 +15,7 @@
 #include "src/resolver/resolver.h"
 
 #include "gmock/gmock.h"
+#include "src/ast/struct_block_decoration.h"
 #include "src/resolver/resolver_test_helper.h"
 #include "src/sem/storage_texture_type.h"
 
@@ -23,6 +24,27 @@ namespace resolver {
 namespace {
 
 using ResolverAssignmentValidationTest = ResolverTest;
+
+TEST_F(ResolverAssignmentValidationTest, ReadOnlyBuffer) {
+  // [[block]] struct S { m : i32 };
+  // [[group(0), binding(0)]]
+  // var<storage,read> a : S;
+  auto* s = Structure("S", {Member("m", ty.i32())},
+                      {create<ast::StructBlockDecoration>()});
+  Global(Source{{12, 34}}, "a", ty.Of(s), ast::StorageClass::kStorage,
+         ast::Access::kRead,
+         ast::DecorationList{
+             create<ast::BindingDecoration>(0),
+             create<ast::GroupDecoration>(0),
+         });
+
+  WrapInFunction(Assign(Source{{56, 78}}, MemberAccessor("a", "m"), 1));
+
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(),
+            "56:78 error: cannot store into a read-only type 'ref<storage, "
+            "i32, read>'");
+}
 
 TEST_F(ResolverAssignmentValidationTest, AssignIncompatibleTypes) {
   // {
@@ -111,9 +133,8 @@ TEST_F(ResolverAssignmentValidationTest,
   // alias myint = i32;
   // var a : myint = 2;
   // a = 2
-  auto* myint = ty.alias("myint", ty.i32());
-  AST().AddConstructedType(myint);
-  auto* var = Var("a", myint, ast::StorageClass::kNone, Expr(2));
+  auto* myint = Alias("myint", ty.i32());
+  auto* var = Var("a", ty.Of(myint), ast::StorageClass::kNone, Expr(2));
   WrapInFunction(var, Assign(Source{{12, 34}}, "a", 2));
 
   EXPECT_TRUE(r()->Resolve()) << r()->error();
@@ -136,8 +157,8 @@ TEST_F(ResolverAssignmentValidationTest, AssignThroughPointer_Pass) {
   // let b : ptr<function,i32> = &a;
   // *b = 2;
   const auto func = ast::StorageClass::kFunction;
-  auto* var_a = Var("a", ty.i32(), func, Expr(2), {});
-  auto* var_b = Const("b", ty.pointer<int>(func), AddressOf(Expr("a")), {});
+  auto* var_a = Var("a", ty.i32(), func, Expr(2));
+  auto* var_b = Const("b", ty.pointer<int>(func), AddressOf(Expr("a")));
   WrapInFunction(var_a, var_b, Assign(Source{{12, 34}}, Deref("b"), 2));
 
   EXPECT_TRUE(r()->Resolve()) << r()->error();
@@ -152,37 +173,38 @@ TEST_F(ResolverAssignmentValidationTest, AssignToConstant_Fail) {
   WrapInFunction(var, Assign(Expr(Source{{12, 34}}, "a"), 2));
 
   EXPECT_FALSE(r()->Resolve());
-  EXPECT_EQ(r()->error(), "12:34 error: cannot assign to value of type 'i32'");
+  EXPECT_EQ(r()->error(),
+            "12:34 error: cannot assign to const\nnote: 'a' is declared here:");
 }
 
 TEST_F(ResolverAssignmentValidationTest, AssignNonStorable_Fail) {
-  // var a : [[access(read)]] texture_storage_1d<rgba8unorm>;
-  // var b : [[access(read)]] texture_storage_1d<rgba8unorm>;
+  // var a : texture_storage_1d<rgba8unorm, read>;
+  // var b : texture_storage_1d<rgba8unorm, read>;
   // a = b;
 
   auto make_type = [&] {
-    auto* tex_type = ty.storage_texture(ast::TextureDimension::k1d,
-                                        ast::ImageFormat::kRgba8Unorm);
-    return ty.access(ast::AccessControl::kReadOnly, tex_type);
+    return ty.storage_texture(ast::TextureDimension::k1d,
+                              ast::ImageFormat::kRgba8Unorm,
+                              ast::Access::kRead);
   };
 
-  Global("a", make_type(), ast::StorageClass::kNone, nullptr,
-         {
+  Global("a", make_type(), ast::StorageClass::kNone,
+         ast::DecorationList{
              create<ast::BindingDecoration>(0),
              create<ast::GroupDecoration>(0),
          });
-  Global("b", make_type(), ast::StorageClass::kNone, nullptr,
-         {
+  Global("b", make_type(), ast::StorageClass::kNone,
+         ast::DecorationList{
              create<ast::BindingDecoration>(1),
              create<ast::GroupDecoration>(0),
          });
 
-  WrapInFunction(Assign("a", Expr(Source{{12, 34}}, "b")));
+  WrapInFunction(Assign(Source{{56, 78}}, "a", "b"));
 
   EXPECT_FALSE(r()->Resolve());
-  EXPECT_EQ(
-      r()->error(),
-      R"(12:34 error: '[[access(read)]] texture_storage_1d<rgba8unorm>' is not storable)");
+  EXPECT_EQ(r()->error(),
+            "56:78 error: cannot store into a read-only type "
+            "'texture_storage_1d<rgba8unorm, read>'");
 }
 
 }  // namespace

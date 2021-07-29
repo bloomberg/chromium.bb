@@ -32,6 +32,7 @@
 #include "ash/test_screenshot_delegate.h"
 #include "ash/test_shell_delegate.h"
 #include "ash/utility/screenshot_controller.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_positioner.h"
 #include "ash/wm/work_area_insets.h"
@@ -203,6 +204,13 @@ std::unique_ptr<views::Widget> AshTestBase::CreateTestWidget(
       .SetBounds(bounds)
       .SetParent(Shell::GetPrimaryRootWindow()->GetChildById(container_id))
       .SetShow(show)
+      .BuildOwnsNativeWidget();
+}
+
+// static
+std::unique_ptr<views::Widget> AshTestBase::CreateFramelessTestWidget() {
+  return TestWidgetBuilder()
+      .SetWidgetType(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS)
       .BuildOwnsNativeWidget();
 }
 
@@ -464,6 +472,16 @@ void AshTestBase::SimulateMouseClickAt(
   DCHECK(target_view);
   event_generator->MoveMouseTo(target_view->GetBoundsInScreen().CenterPoint());
   event_generator->ClickLeftButton();
+}
+
+bool AshTestBase::EnterOverview(OverviewEnterExitType type) {
+  return Shell::Get()->overview_controller()->StartOverview(
+      OverviewStartAction::kTests, type);
+}
+
+bool AshTestBase::ExitOverview(OverviewEnterExitType type) {
+  return Shell::Get()->overview_controller()->EndOverview(
+      OverviewEndAction::kTests, type);
 }
 
 void AshTestBase::SwapPrimaryDisplay() {

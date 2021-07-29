@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_OS_INSTALL_SCREEN_HANDLER_H_
 
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
+#include "chromeos/dbus/os_install/os_install_client.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace login {
 class LocalizedValuesBuilder;
@@ -32,10 +34,15 @@ class OsInstallScreenView {
 
   // Unbinds the screen from the view.
   virtual void Unbind() = 0;
+
+  virtual void ShowStep(const char* step) = 0;
+  virtual void ShowConfirmStep() = 0;
+  virtual void StartInstall() = 0;
 };
 
 class OsInstallScreenHandler : public BaseScreenHandler,
-                               public OsInstallScreenView {
+                               public OsInstallScreenView,
+                               public OsInstallClient::Observer {
  public:
   using TView = OsInstallScreenView;
 
@@ -49,16 +56,33 @@ class OsInstallScreenHandler : public BaseScreenHandler,
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
   void Initialize() override;
-  void RegisterMessages() override;
 
   // OsInstallScreenView:
   void Show() override;
   void Bind(OsInstallScreen* screen) override;
   void Unbind() override;
+  void ShowStep(const char* step) override;
+  void ShowConfirmStep() override;
+  void StartInstall() override;
+
+  // OsInstallClient::Observer:
+  void StatusChanged(OsInstallClient::Status status,
+                     const std::string& service_log) override;
+
+  void OsInstallStarted(absl::optional<OsInstallClient::Status> status);
 
   OsInstallScreen* screen_ = nullptr;
+
+  base::WeakPtrFactory<OsInstallScreenHandler> weak_factory_{this};
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace ash {
+using ::chromeos::OsInstallScreenHandler;
+using ::chromeos::OsInstallScreenView;
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_OS_INSTALL_SCREEN_HANDLER_H_

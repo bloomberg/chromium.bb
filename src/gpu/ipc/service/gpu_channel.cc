@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "gpu/ipc/service/gpu_channel.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/memory/ptr_util.h"
 
 #include <utility>
@@ -25,7 +26,6 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/process/process.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
@@ -34,6 +34,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
+#include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/image_factory.h"
@@ -44,7 +45,6 @@
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/ipc/common/command_buffer_id.h"
 #include "gpu/ipc/common/gpu_channel.mojom.h"
-#include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/service/gles2_command_buffer_stub.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
@@ -53,7 +53,6 @@
 #include "gpu/ipc/service/raster_command_buffer_stub.h"
 #include "gpu/ipc/service/webgpu_command_buffer_stub.h"
 #include "ipc/ipc_channel.h"
-#include "ipc/message_filter.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image_shared_memory.h"
@@ -64,30 +63,35 @@
 #include "gpu/ipc/service/stream_texture_android.h"
 #endif  // defined(OS_ANDROID)
 
+#if defined(OS_WIN)
+#include "gpu/ipc/service/dcomp_texture_win.h"
+#endif
+
 namespace gpu {
-
-struct GpuChannelMessage {
-  IPC::Message message;
-  uint32_t order_number;
-  base::TimeTicks time_received;
-
-  GpuChannelMessage(const IPC::Message& msg,
-                    uint32_t order_num,
-                    base::TimeTicks ts)
-      : message(msg), order_number(order_num), time_received(ts) {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(GpuChannelMessage);
-};
 
 namespace {
 
-bool TryCreateStreamTexture(base::WeakPtr<GpuChannel> channel,
-                            int32_t stream_id) {
+#if defined(OS_ANDROID)
+bool TryCreateStreamTexture(
+    base::WeakPtr<GpuChannel> channel,
+    int32_t stream_id,
+    mojo::PendingAssociatedReceiver<mojom::StreamTexture> receiver) {
   if (!channel)
     return false;
-  return channel->CreateStreamTexture(stream_id);
+  return channel->CreateStreamTexture(stream_id, std::move(receiver));
 }
+#endif  // defined(OS_ANDROID)
+
+#if defined(OS_WIN)
+bool TryCreateDCOMPTexture(
+    base::WeakPtr<GpuChannel> channel,
+    int32_t route_id,
+    mojo::PendingAssociatedReceiver<mojom::DCOMPTexture> receiver) {
+  if (!channel)
+    return false;
+  return channel->CreateDCOMPTexture(route_id, std::move(receiver));
+}
+#endif  // defined(OS_WIN)
 
 }  // namespace
 
@@ -97,14 +101,17 @@ bool TryCreateStreamTexture(base::WeakPtr<GpuChannel> channel,
 // - posts control and out of order messages to the main thread
 // - forwards other messages to the scheduler
 class GPU_IPC_SERVICE_EXPORT GpuChannelMessageFilter
-    : public IPC::MessageFilter,
+    : public base::RefCountedThreadSafe<GpuChannelMessageFilter>,
       public mojom::GpuChannel {
  public:
   GpuChannelMessageFilter(
       gpu::GpuChannel* gpu_channel,
+      const base::UnguessableToken& channel_token,
       Scheduler* scheduler,
       ImageDecodeAcceleratorWorker* image_decode_accelerator_worker,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner);
+  GpuChannelMessageFilter(const GpuChannelMessageFilter&) = delete;
+  GpuChannelMessageFilter& operator=(const GpuChannelMessageFilter&) = delete;
 
   // Methods called on main thread.
   void Destroy();
@@ -114,16 +121,6 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelMessageFilter
   void RemoveRoute(int32_t route_id);
 
   // Methods called on IO thread.
-  // IPC::MessageFilter implementation.
-  void OnFilterAdded(IPC::Channel* channel) override;
-  void OnFilterRemoved() override;
-  void OnChannelConnected(int32_t peer_pid) override;
-  void OnChannelError() override;
-  void OnChannelClosing() override;
-  bool OnMessageReceived(const IPC::Message& message) override;
-
-  void AddChannelFilter(scoped_refptr<IPC::MessageFilter> filter);
-  void RemoveChannelFilter(scoped_refptr<IPC::MessageFilter> filter);
 
   void BindGpuChannel(
       mojo::PendingAssociatedReceiver<mojom::GpuChannel> receiver) {
@@ -135,28 +132,41 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelMessageFilter
   }
 
  private:
+  friend class base::RefCountedThreadSafe<GpuChannelMessageFilter>;
   ~GpuChannelMessageFilter() override;
 
   SequenceId GetSequenceId(int32_t route_id) const;
 
-  bool MessageErrorHandler(const IPC::Message& message, const char* error_msg);
-
   // mojom::GpuChannel:
   void CrashForTesting() override;
   void TerminateForTesting() override;
+  void GetChannelToken(GetChannelTokenCallback callback) override;
   void Flush(FlushCallback callback) override;
-  void CreateCommandBuffer(mojom::CreateCommandBufferParamsPtr config,
-                           int32_t routing_id,
-                           base::UnsafeSharedMemoryRegion shared_state,
-                           CreateCommandBufferCallback callback) override;
+  void CreateCommandBuffer(
+      mojom::CreateCommandBufferParamsPtr config,
+      int32_t routing_id,
+      base::UnsafeSharedMemoryRegion shared_state,
+      mojo::PendingAssociatedReceiver<mojom::CommandBuffer> receiver,
+      mojo::PendingAssociatedRemote<mojom::CommandBufferClient> client,
+      CreateCommandBufferCallback callback) override;
   void DestroyCommandBuffer(int32_t routing_id,
                             DestroyCommandBufferCallback callback) override;
   void ScheduleImageDecode(mojom::ScheduleImageDecodeParamsPtr params,
                            uint64_t decode_release_count) override;
   void FlushDeferredRequests(
       std::vector<mojom::DeferredRequestPtr> requests) override;
-  void CreateStreamTexture(int32_t stream_id,
-                           CreateStreamTextureCallback callback) override;
+#if defined(OS_ANDROID)
+  void CreateStreamTexture(
+      int32_t stream_id,
+      mojo::PendingAssociatedReceiver<mojom::StreamTexture> receiver,
+      CreateStreamTextureCallback callback) override;
+#endif  // defined(OS_ANDROID)
+#if defined(OS_WIN)
+  void CreateDCOMPTexture(
+      int32_t route_id,
+      mojo::PendingAssociatedReceiver<mojom::DCOMPTexture> receiver,
+      CreateDCOMPTextureCallback callback) override;
+#endif  // defined(OS_WIN)
   void WaitForTokenInRange(int32_t routing_id,
                            int32_t start,
                            int32_t end,
@@ -167,10 +177,37 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelMessageFilter
       int32_t start,
       int32_t end,
       WaitForGetOffsetInRangeCallback callback) override;
+#if defined(OS_FUCHSIA)
+  void RegisterSysmemBufferCollection(const base::UnguessableToken& id,
+                                      mojo::PlatformHandle token,
+                                      gfx::BufferFormat format,
+                                      gfx::BufferUsage usage,
+                                      bool register_with_image_pipe) override {
+    base::AutoLock lock(gpu_channel_lock_);
+    if (!gpu_channel_)
+      return;
 
-  IPC::Channel* ipc_channel_ = nullptr;
-  base::ProcessId peer_pid_ = base::kNullProcessId;
-  std::vector<scoped_refptr<IPC::MessageFilter>> channel_filters_;
+    scheduler_->ScheduleTask(Scheduler::Task(
+        gpu_channel_->shared_image_stub()->sequence(),
+        base::BindOnce(&gpu::GpuChannel::RegisterSysmemBufferCollection,
+                       gpu_channel_->AsWeakPtr(), id, std::move(token), format,
+                       usage, register_with_image_pipe),
+        std::vector<SyncToken>()));
+  }
+
+  void ReleaseSysmemBufferCollection(
+      const base::UnguessableToken& id) override {
+    base::AutoLock lock(gpu_channel_lock_);
+    if (!gpu_channel_)
+      return;
+
+    scheduler_->ScheduleTask(Scheduler::Task(
+        gpu_channel_->shared_image_stub()->sequence(),
+        base::BindOnce(&gpu::GpuChannel::ReleaseSysmemBufferCollection,
+                       gpu_channel_->AsWeakPtr(), id),
+        std::vector<SyncToken>()));
+  }
+#endif  // defined(OS_FUCHSIA)
 
   // Map of route id to scheduler sequence id.
   base::flat_map<int32_t, SequenceId> route_sequences_;
@@ -181,6 +218,11 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelMessageFilter
   // before dereferencing.
   gpu::GpuChannel* gpu_channel_ GUARDED_BY(gpu_channel_lock_) = nullptr;
 
+  // A token which can be retrieved by GetChannelToken to uniquely identify this
+  // channel. Assigned at construction time by the GpuChannelManager, where the
+  // token-to-GpuChannel mapping lives.
+  const base::UnguessableToken channel_token_;
+
   Scheduler* scheduler_;
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
@@ -190,16 +232,16 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelMessageFilter
   bool allow_process_kill_for_testing_ = false;
 
   mojo::AssociatedReceiver<mojom::GpuChannel> receiver_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(GpuChannelMessageFilter);
 };
 
 GpuChannelMessageFilter::GpuChannelMessageFilter(
     gpu::GpuChannel* gpu_channel,
+    const base::UnguessableToken& channel_token,
     Scheduler* scheduler,
     ImageDecodeAcceleratorWorker* image_decode_accelerator_worker,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner)
     : gpu_channel_(gpu_channel),
+      channel_token_(channel_token),
       scheduler_(scheduler),
       main_task_runner_(std::move(main_task_runner)),
       image_decode_accelerator_stub_(
@@ -220,6 +262,9 @@ GpuChannelMessageFilter::~GpuChannelMessageFilter() {
 
 void GpuChannelMessageFilter::Destroy() {
   base::AutoLock auto_lock(gpu_channel_lock_);
+  if (!gpu_channel_)
+    return;
+
   image_decode_accelerator_stub_->Shutdown();
   gpu_channel_ = nullptr;
 }
@@ -229,6 +274,7 @@ void GpuChannelMessageFilter::AddRoute(int32_t route_id,
   base::AutoLock auto_lock(gpu_channel_lock_);
   DCHECK(gpu_channel_);
   DCHECK(scheduler_);
+  DCHECK(!route_sequences_.count(route_id));
   route_sequences_[route_id] = sequence_id;
 }
 
@@ -236,93 +282,8 @@ void GpuChannelMessageFilter::RemoveRoute(int32_t route_id) {
   base::AutoLock auto_lock(gpu_channel_lock_);
   DCHECK(gpu_channel_);
   DCHECK(scheduler_);
+  DCHECK(route_sequences_.count(route_id));
   route_sequences_.erase(route_id);
-}
-
-void GpuChannelMessageFilter::OnFilterAdded(IPC::Channel* channel) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
-  DCHECK(!ipc_channel_);
-  ipc_channel_ = channel;
-  for (scoped_refptr<IPC::MessageFilter>& filter : channel_filters_)
-    filter->OnFilterAdded(ipc_channel_);
-}
-
-void GpuChannelMessageFilter::OnFilterRemoved() {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
-  for (scoped_refptr<IPC::MessageFilter>& filter : channel_filters_)
-    filter->OnFilterRemoved();
-  ipc_channel_ = nullptr;
-  peer_pid_ = base::kNullProcessId;
-}
-
-void GpuChannelMessageFilter::OnChannelConnected(int32_t peer_pid) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
-  DCHECK(peer_pid_ == base::kNullProcessId);
-  peer_pid_ = peer_pid;
-  for (scoped_refptr<IPC::MessageFilter>& filter : channel_filters_)
-    filter->OnChannelConnected(peer_pid);
-}
-
-void GpuChannelMessageFilter::OnChannelError() {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
-  for (scoped_refptr<IPC::MessageFilter>& filter : channel_filters_)
-    filter->OnChannelError();
-}
-
-void GpuChannelMessageFilter::OnChannelClosing() {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
-  for (scoped_refptr<IPC::MessageFilter>& filter : channel_filters_)
-    filter->OnChannelClosing();
-}
-
-void GpuChannelMessageFilter::AddChannelFilter(
-    scoped_refptr<IPC::MessageFilter> filter) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
-  channel_filters_.push_back(filter);
-  if (ipc_channel_)
-    filter->OnFilterAdded(ipc_channel_);
-  if (peer_pid_ != base::kNullProcessId)
-    filter->OnChannelConnected(peer_pid_);
-}
-
-void GpuChannelMessageFilter::RemoveChannelFilter(
-    scoped_refptr<IPC::MessageFilter> filter) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
-  if (ipc_channel_)
-    filter->OnFilterRemoved();
-  base::Erase(channel_filters_, filter);
-}
-
-bool GpuChannelMessageFilter::OnMessageReceived(const IPC::Message& message) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
-  DCHECK(ipc_channel_);
-
-  if (message.should_unblock() || message.is_reply())
-    return MessageErrorHandler(message, "Unexpected message type");
-
-  for (scoped_refptr<IPC::MessageFilter>& filter : channel_filters_) {
-    if (filter->OnMessageReceived(message))
-      return true;
-  }
-
-  base::AutoLock auto_lock(gpu_channel_lock_);
-  if (!gpu_channel_)
-    return MessageErrorHandler(message, "Channel destroyed");
-
-  if (message.routing_id() == MSG_ROUTING_CONTROL)
-    return MessageErrorHandler(message, "Invalid control message");
-
-  // Messages which do not have sync token dependencies.
-  SequenceId sequence_id = GetSequenceId(message.routing_id());
-  if (sequence_id.is_null())
-    return MessageErrorHandler(message, "Invalid route id");
-
-  scheduler_->ScheduleTask(
-      Scheduler::Task(sequence_id,
-                      base::BindOnce(&gpu::GpuChannel::HandleMessage,
-                                     gpu_channel_->AsWeakPtr(), message),
-                      std::vector<SyncToken>()));
-  return true;
 }
 
 SequenceId GpuChannelMessageFilter::GetSequenceId(int32_t route_id) const {
@@ -350,6 +311,12 @@ void GpuChannelMessageFilter::FlushDeferredRequests(
         break;
 #endif  // defined(OS_ANDROID)
 
+#if defined(OS_WIN)
+      case mojom::DeferredRequestParams::Tag::kDestroyDcompTexture:
+        routing_id = request->params->get_destroy_dcomp_texture();
+        break;
+#endif  // defined(OS_WIN)
+
       case mojom::DeferredRequestParams::Tag::kCommandBufferRequest:
         routing_id = request->params->get_command_buffer_request()->routing_id;
         break;
@@ -374,17 +341,6 @@ void GpuChannelMessageFilter::FlushDeferredRequests(
   scheduler_->ScheduleTasks(std::move(tasks));
 }
 
-bool GpuChannelMessageFilter::MessageErrorHandler(const IPC::Message& message,
-                                                  const char* error_msg) {
-  DLOG(ERROR) << error_msg;
-  if (message.is_sync()) {
-    IPC::Message* reply = IPC::SyncMessage::GenerateReply(&message);
-    reply->set_reply_error();
-    ipc_channel_->Send(reply);
-  }
-  return true;
-}
-
 void GpuChannelMessageFilter::CrashForTesting() {
   if (allow_process_kill_for_testing_) {
     gl::Crash();
@@ -397,10 +353,14 @@ void GpuChannelMessageFilter::CrashForTesting() {
 void GpuChannelMessageFilter::TerminateForTesting() {
   if (allow_process_kill_for_testing_) {
     base::Process::TerminateCurrentProcessImmediately(0);
-    return;
   }
 
   receiver_.ReportBadMessage("TerminateForTesting is a test-only API");
+}
+
+void GpuChannelMessageFilter::GetChannelToken(
+    GetChannelTokenCallback callback) {
+  std::move(callback).Run(channel_token_);
 }
 
 void GpuChannelMessageFilter::Flush(FlushCallback callback) {
@@ -411,6 +371,8 @@ void GpuChannelMessageFilter::CreateCommandBuffer(
     mojom::CreateCommandBufferParamsPtr params,
     int32_t routing_id,
     base::UnsafeSharedMemoryRegion shared_state,
+    mojo::PendingAssociatedReceiver<mojom::CommandBuffer> receiver,
+    mojo::PendingAssociatedRemote<mojom::CommandBufferClient> client,
     CreateCommandBufferCallback callback) {
   base::AutoLock auto_lock(gpu_channel_lock_);
   if (!gpu_channel_) {
@@ -422,7 +384,8 @@ void GpuChannelMessageFilter::CreateCommandBuffer(
       FROM_HERE,
       base::BindOnce(&gpu::GpuChannel::CreateCommandBuffer,
                      gpu_channel_->AsWeakPtr(), std::move(params), routing_id,
-                     std::move(shared_state),
+                     std::move(shared_state), std::move(receiver),
+                     std::move(client),
                      base::BindPostTask(base::ThreadTaskRunnerHandle::Get(),
                                         std::move(callback))));
 }
@@ -450,8 +413,10 @@ void GpuChannelMessageFilter::ScheduleImageDecode(
                                                       decode_release_count);
 }
 
+#if defined(OS_ANDROID)
 void GpuChannelMessageFilter::CreateStreamTexture(
     int32_t stream_id,
+    mojo::PendingAssociatedReceiver<mojom::StreamTexture> receiver,
     CreateStreamTextureCallback callback) {
   base::AutoLock auto_lock(gpu_channel_lock_);
   if (!gpu_channel_) {
@@ -461,9 +426,28 @@ void GpuChannelMessageFilter::CreateStreamTexture(
   main_task_runner_->PostTaskAndReplyWithResult(
       FROM_HERE,
       base::BindOnce(&TryCreateStreamTexture, gpu_channel_->AsWeakPtr(),
-                     stream_id),
+                     stream_id, std::move(receiver)),
       std::move(callback));
 }
+#endif  // defined(OS_ANDROID)
+
+#if defined(OS_WIN)
+void GpuChannelMessageFilter::CreateDCOMPTexture(
+    int32_t route_id,
+    mojo::PendingAssociatedReceiver<mojom::DCOMPTexture> receiver,
+    CreateDCOMPTextureCallback callback) {
+  base::AutoLock auto_lock(gpu_channel_lock_);
+  if (!gpu_channel_) {
+    receiver_.reset();
+    return;
+  }
+  main_task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
+      base::BindOnce(&TryCreateDCOMPTexture, gpu_channel_->AsWeakPtr(),
+                     route_id, std::move(receiver)),
+      std::move(callback));
+}
+#endif  // defined(OS_WIN)
 
 void GpuChannelMessageFilter::WaitForTokenInRange(
     int32_t routing_id,
@@ -505,6 +489,7 @@ void GpuChannelMessageFilter::WaitForGetOffsetInRange(
 
 GpuChannel::GpuChannel(
     GpuChannelManager* gpu_channel_manager,
+    const base::UnguessableToken& channel_token,
     Scheduler* scheduler,
     SyncPointManager* sync_point_manager,
     scoped_refptr<gl::GLShareGroup> share_group,
@@ -523,11 +508,15 @@ GpuChannel::GpuChannel(
       io_task_runner_(io_task_runner),
       share_group_(share_group),
       image_manager_(new gles2::ImageManager()),
-      is_gpu_host_(is_gpu_host) {
+      is_gpu_host_(is_gpu_host),
+      filter_(base::MakeRefCounted<GpuChannelMessageFilter>(
+          this,
+          channel_token,
+          scheduler,
+          image_decode_accelerator_worker,
+          std::move(task_runner))) {
   DCHECK(gpu_channel_manager_);
   DCHECK(client_id_);
-  filter_ = new GpuChannelMessageFilter(
-      this, scheduler, image_decode_accelerator_worker, task_runner);
 }
 
 GpuChannel::~GpuChannel() {
@@ -542,6 +531,14 @@ GpuChannel::~GpuChannel() {
   stream_textures_.clear();
 #endif  // OS_ANDROID
 
+#if defined(OS_WIN)
+  // Release any references to this channel held by DCOMPTexture.
+  for (auto& dcomp_texture : dcomp_textures_) {
+    dcomp_texture.second->ReleaseChannel();
+  }
+  dcomp_textures_.clear();
+#endif  // defined(OS_WIN)
+
   // Destroy filter first to stop posting tasks to scheduler.
   filter_->Destroy();
 
@@ -551,6 +548,7 @@ GpuChannel::~GpuChannel() {
 
 std::unique_ptr<GpuChannel> GpuChannel::Create(
     GpuChannelManager* gpu_channel_manager,
+    const base::UnguessableToken& channel_token,
     Scheduler* scheduler,
     SyncPointManager* sync_point_manager,
     scoped_refptr<gl::GLShareGroup> share_group,
@@ -560,11 +558,11 @@ std::unique_ptr<GpuChannel> GpuChannel::Create(
     uint64_t client_tracing_id,
     bool is_gpu_host,
     ImageDecodeAcceleratorWorker* image_decode_accelerator_worker) {
-  auto gpu_channel = base::WrapUnique(
-      new GpuChannel(gpu_channel_manager, scheduler, sync_point_manager,
-                     std::move(share_group), std::move(task_runner),
-                     std::move(io_task_runner), client_id, client_tracing_id,
-                     is_gpu_host, image_decode_accelerator_worker));
+  auto gpu_channel = base::WrapUnique(new GpuChannel(
+      gpu_channel_manager, channel_token, scheduler, sync_point_manager,
+      std::move(share_group), std::move(task_runner), std::move(io_task_runner),
+      client_id, client_tracing_id, is_gpu_host,
+      image_decode_accelerator_worker));
 
   if (!gpu_channel->CreateSharedImageStub()) {
     LOG(ERROR) << "GpuChannel: Failed to create SharedImageStub";
@@ -577,7 +575,6 @@ void GpuChannel::Init(IPC::ChannelHandle channel_handle,
                       base::WaitableEvent* shutdown_event) {
   sync_channel_ = IPC::SyncChannel::Create(this, io_task_runner_.get(),
                                            task_runner_.get(), shutdown_event);
-  sync_channel_->AddFilter(filter_.get());
   sync_channel_->AddAssociatedInterfaceForIOThread(
       base::BindRepeating(&GpuChannelMessageFilter::BindGpuChannel, filter_));
   sync_channel_->Init(channel_handle, IPC::Channel::MODE_SERVER,
@@ -585,29 +582,8 @@ void GpuChannel::Init(IPC::ChannelHandle channel_handle,
   channel_ = sync_channel_.get();
 }
 
-void GpuChannel::InitForTesting(IPC::Channel* channel) {
-  channel_ = channel;
-  // |channel| is an IPC::TestSink in tests, so don't add the filter to it
-  // because it will forward sent messages back to the filter.
-  // Call OnFilterAdded() to prevent DCHECK failures.
-  filter_->OnFilterAdded(channel);
-}
-
-void GpuChannel::SetUnhandledMessageListener(IPC::Listener* listener) {
-  unhandled_message_listener_ = listener;
-}
-
 base::WeakPtr<GpuChannel> GpuChannel::AsWeakPtr() {
   return weak_factory_.GetWeakPtr();
-}
-
-base::ProcessId GpuChannel::GetClientPID() const {
-  DCHECK(IsConnected());
-  return peer_pid_;
-}
-
-bool GpuChannel::IsConnected() const {
-  return peer_pid_ != base::kNullProcessId;
 }
 
 bool GpuChannel::OnMessageReceived(const IPC::Message& msg) {
@@ -616,28 +592,8 @@ bool GpuChannel::OnMessageReceived(const IPC::Message& msg) {
   return false;
 }
 
-void GpuChannel::OnChannelConnected(int32_t peer_pid) {
-  peer_pid_ = peer_pid;
-}
-
 void GpuChannel::OnChannelError() {
   gpu_channel_manager_->RemoveChannel(client_id_);
-}
-
-bool GpuChannel::Send(IPC::Message* message) {
-  // The GPU process must never send a synchronous IPC message to the renderer
-  // process. This could result in deadlock.
-  DCHECK(!message->is_sync());
-
-  DVLOG(1) << "sending message @" << message << " on channel @" << this
-           << " with type " << message->type();
-
-  if (!channel_) {
-    delete message;
-    return false;
-  }
-
-  return channel_->Send(message);
 }
 
 void GpuChannel::OnCommandBufferScheduled(CommandBufferStub* stub) {
@@ -672,18 +628,15 @@ void GpuChannel::MarkAllContextsLost() {
     kv.second->MarkContextLost();
 }
 
-bool GpuChannel::AddRoute(int32_t route_id,
-                          SequenceId sequence_id,
-                          IPC::Listener* listener) {
+bool GpuChannel::AddRoute(int32_t route_id, SequenceId sequence_id) {
   if (scheduler_)
     filter_->AddRoute(route_id, sequence_id);
-  return router_.AddRoute(route_id, listener);
+  return true;
 }
 
 void GpuChannel::RemoveRoute(int32_t route_id) {
   if (scheduler_)
     filter_->RemoveRoute(route_id);
-  router_.RemoveRoute(route_id);
 }
 
 void GpuChannel::ExecuteDeferredRequest(
@@ -695,12 +648,18 @@ void GpuChannel::ExecuteDeferredRequest(
       break;
 #endif  // defined(OS_ANDROID)
 
+#if defined(OS_WIN)
+    case mojom::DeferredRequestParams::Tag::kDestroyDcompTexture:
+      DestroyDCOMPTexture(params->get_destroy_dcomp_texture());
+      break;
+#endif  // defined(OS_WIN)
+
     case mojom::DeferredRequestParams::Tag::kCommandBufferRequest: {
       mojom::DeferredCommandBufferRequest& request =
           *params->get_command_buffer_request();
       CommandBufferStub* stub = LookupCommandBuffer(request.routing_id);
       if (!stub || !stub->IsScheduled()) {
-        DLOG(ERROR) << "Invalid routing ID in deferred request";
+        DVLOG(1) << "Invalid routing ID in deferred request";
         return;
       }
 
@@ -755,11 +714,6 @@ void GpuChannel::WaitForGetOffsetInRange(
                                 std::move(callback));
 }
 
-void GpuChannel::HandleMessageForTesting(const IPC::Message& msg) {
-  // Message filter gets message first on IO thread.
-  filter_->OnMessageReceived(msg);
-}
-
 mojom::GpuChannel& GpuChannel::GetGpuChannelForTesting() {
   return *filter_;
 }
@@ -779,25 +733,7 @@ bool GpuChannel::CreateSharedImageStub() {
     return false;
 
   filter_->AddRoute(shared_image_route_id, shared_image_stub_->sequence());
-  router_.AddRoute(shared_image_route_id, shared_image_stub_.get());
   return true;
-}
-
-void GpuChannel::HandleMessage(const IPC::Message& msg) {
-  int32_t routing_id = msg.routing_id();
-  CommandBufferStub* stub = LookupCommandBuffer(routing_id);
-
-  DCHECK(!stub || stub->IsScheduled());
-
-  DVLOG(1) << "received message @" << &msg << " on channel @" << this
-           << " with type " << msg.type();
-
-  bool handled = false;
-  if (routing_id != MSG_ROUTING_CONTROL)
-    handled = router_.RouteMessage(msg);
-
-  if (!handled && unhandled_message_listener_)
-    handled = unhandled_message_listener_->OnMessageReceived(msg);
 }
 
 #if defined(OS_ANDROID)
@@ -820,6 +756,18 @@ void GpuChannel::DestroyStreamTexture(int32_t stream_id) {
   stream_textures_.erase(stream_id);
 }
 #endif
+
+#if defined(OS_WIN)
+void GpuChannel::DestroyDCOMPTexture(int32_t route_id) {
+  auto found = dcomp_textures_.find(route_id);
+  if (found == dcomp_textures_.end()) {
+    LOG(ERROR) << "Trying to destroy a non-existent dcomp texture.";
+    return;
+  }
+  found->second->ReleaseChannel();
+  dcomp_textures_.erase(route_id);
+}
+#endif  // defined(OS_WIN)
 
 // Helper to ensure CreateCommandBuffer below always invokes its response
 // callback.
@@ -847,6 +795,8 @@ void GpuChannel::CreateCommandBuffer(
     mojom::CreateCommandBufferParamsPtr init_params,
     int32_t route_id,
     base::UnsafeSharedMemoryRegion shared_state_shm,
+    mojo::PendingAssociatedReceiver<mojom::CommandBuffer> receiver,
+    mojo::PendingAssociatedRemote<mojom::CommandBufferClient> client,
     mojom::GpuChannel::CreateCommandBufferCallback callback) {
   ScopedCreateCommandBufferResponder responder(std::move(callback));
   TRACE_EVENT2("gpu", "GpuChannel::CreateCommandBuffer", "route_id", route_id,
@@ -903,7 +853,8 @@ void GpuChannel::CreateCommandBuffer(
 
   SequenceId sequence_id = stream_sequences_[stream_id];
   if (sequence_id.is_null()) {
-    sequence_id = scheduler_->CreateSequence(init_params->stream_priority);
+    sequence_id =
+        scheduler_->CreateSequence(init_params->stream_priority, task_runner_);
     stream_sequences_[stream_id] = sequence_id;
   }
 
@@ -929,6 +880,8 @@ void GpuChannel::CreateCommandBuffer(
         route_id);
   }
 
+  stub->BindEndpoints(std::move(receiver), std::move(client), io_task_runner_);
+
   auto stub_result =
       stub->Initialize(share_group, *init_params, std::move(shared_state_shm));
   if (stub_result != gpu::ContextResult::kSuccess) {
@@ -938,7 +891,7 @@ void GpuChannel::CreateCommandBuffer(
     return;
   }
 
-  if (!AddRoute(route_id, sequence_id, stub.get())) {
+  if (!AddRoute(route_id, sequence_id)) {
     LOG(ERROR) << "ContextResult::kFatalFailure: failed to add route";
     return;
   }
@@ -968,8 +921,10 @@ void GpuChannel::DestroyCommandBuffer(int32_t route_id) {
   RemoveRoute(route_id);
 }
 
-bool GpuChannel::CreateStreamTexture(int32_t stream_id) {
 #if defined(OS_ANDROID)
+bool GpuChannel::CreateStreamTexture(
+    int32_t stream_id,
+    mojo::PendingAssociatedReceiver<mojom::StreamTexture> receiver) {
   auto found = stream_textures_.find(stream_id);
   if (found != stream_textures_.end()) {
     LOG(ERROR)
@@ -977,32 +932,55 @@ bool GpuChannel::CreateStreamTexture(int32_t stream_id) {
     return false;
   }
   scoped_refptr<StreamTexture> stream_texture =
-      StreamTexture::Create(this, stream_id);
+      StreamTexture::Create(this, stream_id, std::move(receiver));
   if (!stream_texture) {
     return false;
   }
   stream_textures_.emplace(stream_id, std::move(stream_texture));
   return true;
-#else
-  return false;
-#endif
 }
+#endif
+
+#if defined(OS_WIN)
+bool GpuChannel::CreateDCOMPTexture(
+    int32_t route_id,
+    mojo::PendingAssociatedReceiver<mojom::DCOMPTexture> receiver) {
+  auto found = dcomp_textures_.find(route_id);
+  if (found != dcomp_textures_.end()) {
+    LOG(ERROR) << "Trying to create a DCOMPTexture with an existing route_id.";
+    return false;
+  }
+  scoped_refptr<DCOMPTexture> dcomp_texture =
+      DCOMPTexture::Create(this, route_id, std::move(receiver));
+  if (!dcomp_texture) {
+    return false;
+  }
+  dcomp_textures_.emplace(route_id, std::move(dcomp_texture));
+  return true;
+}
+#endif  // defined(OS_WIN)
+
+#if defined(OS_FUCHSIA)
+void GpuChannel::RegisterSysmemBufferCollection(
+    const base::UnguessableToken& id,
+    mojo::PlatformHandle token,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage,
+    bool register_with_image_pipe) {
+  shared_image_stub_->RegisterSysmemBufferCollection(
+      id, zx::channel(token.TakeHandle()), format, usage,
+      register_with_image_pipe);
+}
+
+void GpuChannel::ReleaseSysmemBufferCollection(
+    const base::UnguessableToken& id) {
+  shared_image_stub_->ReleaseSysmemBufferCollection(id);
+}
+#endif  // defined(OS_FUCHSIA)
 
 void GpuChannel::CacheShader(const std::string& key,
                              const std::string& shader) {
   gpu_channel_manager_->delegate()->StoreShaderToDisk(client_id_, key, shader);
-}
-
-void GpuChannel::AddFilter(IPC::MessageFilter* filter) {
-  io_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&GpuChannelMessageFilter::AddChannelFilter,
-                                filter_, base::RetainedRef(filter)));
-}
-
-void GpuChannel::RemoveFilter(IPC::MessageFilter* filter) {
-  io_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&GpuChannelMessageFilter::RemoveChannelFilter,
-                                filter_, base::RetainedRef(filter)));
 }
 
 uint64_t GpuChannel::GetMemoryUsage() const {

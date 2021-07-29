@@ -7,7 +7,6 @@ TODO:
     - x ={render pass, compute pass} encoder
 `;
 
-import { params, poptions } from '../../../../../common/framework/params_builder.js';
 import { makeTestGroup } from '../../../../../common/framework/test_group.js';
 import { kQueryTypes } from '../../../../capability_info.js';
 import { ValidationTest } from '../../validation_test.js';
@@ -24,7 +23,7 @@ Tests that set occlusion query set with all types in render pass descriptor:
 - {undefined} for occlusion query set in render pass descriptor
   `
   )
-  .subcases(() => poptions('type', [undefined, ...kQueryTypes]))
+  .paramsSubcasesOnly(u => u.combine('type', [undefined, ...kQueryTypes]))
   .fn(async t => {
     const type = t.params.type;
 
@@ -49,7 +48,7 @@ g.test('occlusion_query,invalid_query_set')
 Tests that begin occlusion query with a invalid query set that failed during creation.
   `
   )
-  .subcases(() => poptions('querySetState', ['valid', 'invalid'] as const))
+  .paramsSubcasesOnly(u => u.combine('querySetState', ['valid', 'invalid'] as const))
   .fn(t => {
     const querySet = t.createQuerySetWithState(t.params.querySetState);
 
@@ -69,7 +68,7 @@ Tests that begin occlusion query with query index:
 - queryIndex {in, out of} range for GPUQuerySet
   `
   )
-  .subcases(() => poptions('queryIndex', [0, 2]))
+  .paramsSubcasesOnly(u => u.combine('queryIndex', [0, 2]))
   .fn(t => {
     const querySet = createQuerySetWithType(t, 'occlusion', 2);
 
@@ -91,12 +90,13 @@ Tests that write timestamp to all types of query set on all possible encoders:
 - x= {non-pass, compute, render} encoder
   `
   )
-  .cases(
-    params()
-      .combine(poptions('encoderType', ['non-pass', 'compute pass', 'render pass'] as const))
-      .combine(poptions('type', kQueryTypes))
+  .params(u =>
+    u
+      .combine('encoderType', ['non-pass', 'compute pass', 'render pass'] as const)
+      .combine('type', kQueryTypes)
+      .beginSubcases()
+      .expand('queryIndex', p => (p.type === 'timestamp' ? [0, 2] : [0]))
   )
-  .subcases(({ type }) => poptions('queryIndex', type === 'timestamp' ? [0, 2] : [0]))
   .fn(async t => {
     const { encoderType, type, queryIndex } = t.params;
 
@@ -120,7 +120,9 @@ Tests that write timestamp to a invalid query set that failed during creation:
 - x= {non-pass, compute, render} enconder
   `
   )
-  .subcases(() => poptions('encoderType', ['non-pass', 'compute pass', 'render pass'] as const))
+  .paramsSubcasesOnly(u =>
+    u.combine('encoderType', ['non-pass', 'compute pass', 'render pass'] as const)
+  )
   .fn(async t => {
     const querySet = t.createQuerySetWithState('invalid');
 

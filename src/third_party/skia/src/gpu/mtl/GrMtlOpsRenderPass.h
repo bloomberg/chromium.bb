@@ -17,6 +17,7 @@
 typedef uint32_t GrColor;
 class GrMtlBuffer;
 class GrMtlPipelineState;
+class GrMtlRenderCommandEncoder;
 class GrMtlRenderTarget;
 
 class GrMtlOpsRenderPass : public GrOpsRenderPass {
@@ -27,7 +28,7 @@ public:
 
     ~GrMtlOpsRenderPass() override;
 
-    void initRenderState(id<MTLRenderCommandEncoder>);
+    void initRenderState(GrMtlRenderCommandEncoder*);
 
     void inlineUpload(GrOpFlushState* state, GrDeferredTextureUploadFn& upload) override;
     void submit();
@@ -61,21 +62,23 @@ private:
     void setupRenderPass(const GrOpsRenderPass::LoadAndStoreInfo& colorInfo,
                          const GrOpsRenderPass::StencilLoadAndStoreInfo& stencilInfo);
 
-    void setVertexBuffer(id<MTLRenderCommandEncoder>, const GrBuffer*, size_t offset,
+    void setVertexBuffer(GrMtlRenderCommandEncoder*, const GrBuffer*, size_t offset,
                          size_t inputBufferIndex);
-    void resetBufferBindings();
     void precreateCmdEncoder();
 
     GrMtlGpu*                   fGpu;
 
-    id<MTLRenderCommandEncoder> fActiveRenderCmdEncoder;
+    GrMtlRenderCommandEncoder*  fActiveRenderCmdEncoder;
     GrMtlPipelineState*         fActivePipelineState = nullptr;
     MTLPrimitiveType            fActivePrimitiveType;
     MTLRenderPassDescriptor*    fRenderPassDesc;
     SkRect                      fBounds;
     size_t                      fCurrentVertexStride;
+#ifdef SK_ENABLE_MTL_DEBUG_INFO
+    bool                        fDebugGroupActive = false;
+#endif
 
-    static constexpr size_t kNumBindings = GrMtlUniformHandler::kLastUniformBinding + 3;
+    static constexpr size_t kNumBindings = GrMtlUniformHandler::kUniformBindingCount + 2;
     struct {
         id<MTLBuffer> fBuffer;
         size_t fOffset;

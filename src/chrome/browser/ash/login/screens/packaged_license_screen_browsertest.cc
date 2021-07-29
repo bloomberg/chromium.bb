@@ -11,9 +11,9 @@
 #include "chrome/browser/ash/login/test/oobe_base_test.h"
 #include "chrome/browser/ash/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
+#include "chrome/browser/ash/policy/enrollment/enrollment_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/policy/enrollment_config.h"
-#include "chrome/browser/chromeos/policy/server_backed_device_state.h"
+#include "chrome/browser/chromeos/policy/server_backed_state/server_backed_device_state.h"
 #include "chrome/browser/ui/webui/chromeos/login/packaged_license_screen_handler.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -43,10 +43,10 @@ class PackagedLicenseScreenTest : public OobeBaseTest {
   void SetUpLicense(bool value) {
     DictionaryPrefUpdate dict(local_state(), prefs::kServerBackedDeviceState);
     if (value) {
-      dict.Get()->Set(policy::kDeviceStatePackagedLicense,
-                      std::make_unique<base::Value>(true));
+      dict.Get()->SetKey(policy::kDeviceStatePackagedLicense,
+                         base::Value(true));
     } else {
-      dict.Get()->Remove(policy::kDeviceStatePackagedLicense, nullptr);
+      dict.Get()->RemoveKey(policy::kDeviceStatePackagedLicense);
     }
   }
 

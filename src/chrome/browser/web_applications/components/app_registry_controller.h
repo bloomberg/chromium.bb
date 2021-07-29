@@ -22,7 +22,7 @@ class WebAppSyncBridge;
 
 // A unified sync and storage controller.
 //
-// While AppRegistrar is a read-only model, AppRegistryController is a
+// While WebAppRegistrar is a read-only model, AppRegistryController is a
 // controller for that model. AppRegistryController is responsible for:
 // - Registry initialization (reading model from a persistent storage like
 // LevelDb or prefs).
@@ -50,9 +50,9 @@ class AppRegistryController {
 
   // TODO(crbug.com/897314): Finish experiment by legitimising it as a
   // DisplayMode or removing entirely.
-  void SetExperimentalTabbedWindowMode(const AppId& app_id,
-                                       bool enabled,
-                                       bool is_user_action);
+  virtual void SetExperimentalTabbedWindowMode(const AppId& app_id,
+                                               bool enabled,
+                                               bool is_user_action) = 0;
 
   virtual void SetAppIsLocallyInstalled(const AppId& app_id,
                                         bool is_locally_installed) = 0;
@@ -68,6 +68,9 @@ class AppRegistryController {
 
   virtual void SetAppRunOnOsLoginMode(const AppId& app_id,
                                       RunOnOsLoginMode mode) = 0;
+
+  virtual void SetAppWindowControlsOverlayEnabled(const AppId& app_id,
+                                                  bool enabled) = 0;
 
   // Safe downcast:
   virtual WebAppSyncBridge* AsWebAppSyncBridge() = 0;

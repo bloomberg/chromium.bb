@@ -61,6 +61,15 @@ const base::FeatureParam<int>
 
 // TODO(crbug.com/1135188): Remove this feature flag after the explicit save
 // prompts for address profiles is complete.
+// When enabled, address data will be verified and autocorrected in the
+// save/update prompt before saving an address profile. Relevant only if the
+// AutofillAddressProfileSavePrompt feature is enabled.
+const base::Feature kAutofillAddressProfileSavePromptAddressVerificationSupport{
+    "AutofillAddressProfileSavePromptAddressVerificationSupport",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// TODO(crbug.com/1135188): Remove this feature flag after the explicit save
+// prompts for address profiles is complete.
 // When enabled, address profile save problem will contain a dropdown for
 // assigning a nickname to the address profile. Relevant only if the
 // AutofillAddressProfileSavePrompt feature is enabled.
@@ -222,7 +231,7 @@ const base::Feature kAutofillExtractAllDatalists{
 // field types that we don't fill (search term, price, ...) count towards that
 // counter, effectively reducing the threshold for some forms.
 const base::Feature kAutofillFixFillableFieldTypes{
-    "AutofillFixFillableFieldTypes", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AutofillFixFillableFieldTypes", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // The autocomplete attribute may prevent Autofill import, crbug/1213301. This
 // feature addresses the issue. For now, the fix only concerns fields with the
@@ -379,6 +388,13 @@ const base::Feature kAutofillUseImprovedLabelDisambiguation{
 // implementation for section splitting or not. See https://crbug.com/1076175.
 const base::Feature kAutofillUseNewSectioningMethod{
     "AutofillUseNewSectioningMethod", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether to use only rendererID for removing duplicated old forms
+// from the extracted forms when modified.
+// TODO(crbug.com/1215333): Remove the feature when the experiment is completed.
+const base::Feature kAutofillUseOnlyFormRendererIDForOldDuplicateFormRemoval{
+    "AutofillUseOnlyFormRendererIDForOldDuplicateFormRemoval",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls an ablation study in which autofill for addresses and payment data
 // can be suppressed.

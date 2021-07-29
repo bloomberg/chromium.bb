@@ -11,8 +11,8 @@
 #include "base/containers/contains.h"
 #include "base/guid.h"
 #include "base/strings/stringprintf.h"
-#include "components/services/storage/public/cpp/storage_key.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -27,6 +27,8 @@
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/service_worker/service_worker_scope_match.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_registration_options.mojom.h"
 
 namespace content {
 
@@ -133,8 +135,8 @@ ServiceWorkerContainerHost::ServiceWorkerContainerHost(
 ServiceWorkerContainerHost::~ServiceWorkerContainerHost() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (IsContainerForClient()) {
-    auto* rfh = RenderFrameHostImpl::FromID(process_id(), frame_id());
+  if (IsContainerForWindowClient()) {
+    auto* rfh = RenderFrameHostImpl::FromID(GetRenderFrameHostId());
     if (rfh)
       rfh->RemoveServiceWorkerContainerHost(client_uuid());
   }
@@ -208,16 +210,28 @@ void ServiceWorkerContainerHost::Register(
       std::move(callback), blink::mojom::ServiceWorkerErrorType::kUnknown,
       std::string(), nullptr);
 
-  // TODO(crbug.com/1199077): Update this when ServiceWorkerContainerHost
-  // implements StorageKey.
-  storage::StorageKey key(url::Origin::Create(options->scope));
+  // We pass the requesting frame host id, so that we can use this context for
+  // things like printing console error if the service worker does not have a
+  // process yet. This must be after commit so it should be populated, while
+  // it's possible the RenderFrameHost has already been destroyed due to IPC
+  // ordering.
+  DCHECK_NE(process_id_, ChildProcessHost::kInvalidUniqueID);
+  DCHECK_NE(frame_routing_id_, MSG_ROUTING_NONE);
+  GlobalRenderFrameHostId global_frame_id = GetRenderFrameHostId();
+
+  // Registrations could come from different origins when "disable-web-security"
+  // is active, we need to make sure we get the correct key.
+  const blink::StorageKey& key =
+      GetCorrectStorageKeyForWebSecurityState(options->scope);
+
   context_->RegisterServiceWorker(
       script_url, key, *options,
       std::move(outside_fetch_client_settings_object),
       base::BindOnce(&ServiceWorkerContainerHost::RegistrationComplete,
                      weak_factory_.GetWeakPtr(), GURL(script_url),
                      GURL(options->scope), std::move(wrapped_callback),
-                     trace_id, mojo::GetBadMessageCallback()));
+                     trace_id, mojo::GetBadMessageCallback()),
+      global_frame_id);
 }
 
 void ServiceWorkerContainerHost::GetRegistration(
@@ -246,8 +260,14 @@ void ServiceWorkerContainerHost::GetRegistration(
   TRACE_EVENT_ASYNC_BEGIN1("ServiceWorker",
                            "ServiceWorkerContainerHost::GetRegistration",
                            trace_id, "Client URL", client_url.spec());
+
+  // The client_url may be cross-origin if "disable-web-security" is active,
+  // make sure we get the correct key.
+  const blink::StorageKey& key =
+      GetCorrectStorageKeyForWebSecurityState(client_url);
+
   context_->registry()->FindRegistrationForClientUrl(
-      client_url, storage::StorageKey(url::Origin::Create(client_url)),
+      client_url, key,
       base::BindOnce(&ServiceWorkerContainerHost::GetRegistrationComplete,
                      weak_factory_.GetWeakPtr(), std::move(callback),
                      trace_id));
@@ -279,10 +299,9 @@ void ServiceWorkerContainerHost::GetRegistrations(
                            "ServiceWorkerContainerHost::GetRegistrations",
                            trace_id);
   context_->registry()->GetRegistrationsForStorageKey(
-      storage::StorageKey(url::Origin::Create(url_)),
-      base::BindOnce(&ServiceWorkerContainerHost::GetRegistrationsComplete,
-                     weak_factory_.GetWeakPtr(), std::move(callback),
-                     trace_id));
+      key_, base::BindOnce(
+                &ServiceWorkerContainerHost::GetRegistrationsComplete,
+                weak_factory_.GetWeakPtr(), std::move(callback), trace_id));
 }
 
 void ServiceWorkerContainerHost::GetRegistrationForReady(
@@ -590,6 +609,15 @@ void ServiceWorkerContainerHost::SendSetControllerServiceWorker(
 
 void ServiceWorkerContainerHost::NotifyControllerLost() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (IsBackForwardCacheEnabled() && IsInBackForwardCache()) {
+    // The controller was unregistered, which usually does not happen while it
+    // has controllees. Since the document is in the back/forward cache, it does
+    // not count as a controllee. However, this means if it were to be restored,
+    // the page would be in an unexpected state, so evict the bfcache entry.
+    EvictFromBackForwardCache(BackForwardCacheMetrics::NotRestoredReason::
+                                  kServiceWorkerUnregistration);
+  }
+
   SetControllerRegistration(nullptr, true /* notify_controllerchange */);
 }
 
@@ -749,8 +777,7 @@ ServiceWorkerClientInfo ServiceWorkerContainerHost::GetServiceWorkerClientInfo()
 }
 
 void ServiceWorkerContainerHost::OnBeginNavigationCommit(
-    int container_process_id,
-    int container_frame_id,
+    const GlobalRenderFrameHostId& rfh_id,
     const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
     mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
         coep_reporter,
@@ -759,14 +786,14 @@ void ServiceWorkerContainerHost::OnBeginNavigationCommit(
   DCHECK(IsContainerForWindowClient());
 
   DCHECK_EQ(ChildProcessHost::kInvalidUniqueID, process_id_);
-  DCHECK_NE(ChildProcessHost::kInvalidUniqueID, container_process_id);
-  process_id_ = container_process_id;
+  DCHECK_NE(ChildProcessHost::kInvalidUniqueID, rfh_id.child_id);
+  process_id_ = rfh_id.child_id;
   if (controller_)
     controller_->UpdateForegroundPriority();
 
-  DCHECK_EQ(MSG_ROUTING_NONE, frame_id_);
-  DCHECK_NE(MSG_ROUTING_NONE, container_frame_id);
-  frame_id_ = container_frame_id;
+  DCHECK_EQ(MSG_ROUTING_NONE, frame_routing_id_);
+  DCHECK_NE(MSG_ROUTING_NONE, rfh_id.frame_routing_id);
+  frame_routing_id_ = rfh_id.frame_routing_id;
 
   DCHECK(!cross_origin_embedder_policy_.has_value());
   cross_origin_embedder_policy_ = cross_origin_embedder_policy;
@@ -785,7 +812,7 @@ void ServiceWorkerContainerHost::OnBeginNavigationCommit(
                                      std::move(coep_reporter_to_be_passed));
   }
 
-  auto* rfh = RenderFrameHostImpl::FromID(container_process_id, frame_id());
+  auto* rfh = RenderFrameHostImpl::FromID(rfh_id);
   // |rfh| may be null in tests (but it should not happen in production).
   if (rfh)
     rfh->AddServiceWorkerContainerHost(client_uuid(), GetWeakPtr());
@@ -804,8 +831,8 @@ void ServiceWorkerContainerHost::OnEndNavigationCommit() {
   navigation_commit_ended_ = true;
 
   if (controller_) {
-    controller_->OnControlleeNavigationCommitted(client_uuid_, process_id_,
-                                                 frame_id_);
+    controller_->OnControlleeNavigationCommitted(client_uuid_,
+                                                 GetRenderFrameHostId());
   }
 }
 
@@ -844,6 +871,9 @@ void ServiceWorkerContainerHost::UpdateUrls(
   url_ = url;
   site_for_cookies_ = site_for_cookies;
   top_frame_origin_ = top_frame_origin;
+  key_ = IsContainerForClient()
+             ? blink::StorageKey(url::Origin::Create(GetOrigin()))
+             : blink::StorageKey(url::Origin::Create(url));
 
   // The remaining parts of this function don't make sense for service worker
   // execution contexts. Return early.
@@ -947,18 +977,6 @@ ServiceWorkerContainerHost::GetRemoteControllerServiceWorker() {
 
 namespace {
 
-void ReportServiceWorkerAccess(int process_id,
-                               int frame_id,
-                               const GURL& scope,
-                               AllowServiceWorkerResult allowed) {
-  RenderFrameHost* rfh = RenderFrameHost::FromID(process_id, frame_id);
-  if (!rfh)
-    return;
-  WebContentsImpl* web_contents =
-      static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(rfh));
-  web_contents->OnServiceWorkerAccessed(rfh, scope, allowed);
-}
-
 }  // namespace
 
 bool ServiceWorkerContainerHost::AllowServiceWorker(const GURL& scope,
@@ -969,7 +987,13 @@ bool ServiceWorkerContainerHost::AllowServiceWorker(const GURL& scope,
       GetContentClient()->browser()->AllowServiceWorker(
           scope, site_for_cookies().RepresentativeUrl(), top_frame_origin(),
           script_url, context_->wrapper()->browser_context());
-  ReportServiceWorkerAccess(process_id(), frame_id(), scope, allowed);
+  if (IsContainerForWindowClient()) {
+    auto* rfh = RenderFrameHostImpl::FromID(GetRenderFrameHostId());
+    auto* web_contents =
+        static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(rfh));
+    if (web_contents)
+      web_contents->OnServiceWorkerAccessed(rfh, scope, allowed);
+  }
   return allowed;
 }
 
@@ -1025,6 +1049,13 @@ bool ServiceWorkerContainerHost::is_execution_ready() const {
   DCHECK(IsContainerForClient());
 
   return client_phase_ == ClientPhase::kExecutionReady;
+}
+
+GlobalRenderFrameHostId ServiceWorkerContainerHost::GetRenderFrameHostId()
+    const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(IsContainerForWindowClient());
+  return GlobalRenderFrameHostId(process_id_, frame_routing_id_);
 }
 
 const std::string& ServiceWorkerContainerHost::client_uuid() const {
@@ -1096,7 +1127,7 @@ void ServiceWorkerContainerHost::EvictFromBackForwardCache(
   DCHECK(IsContainerForWindowClient());
   is_in_back_forward_cache_ = false;
 
-  auto* rfh = RenderFrameHostImpl::FromID(process_id(), frame_id());
+  auto* rfh = RenderFrameHostImpl::FromID(GetRenderFrameHostId());
   // |rfh| could be evicted before this function is called.
   if (rfh && rfh->IsInBackForwardCache())
     rfh->EvictFromBackForwardCacheWithReason(reason);
@@ -1380,7 +1411,7 @@ void ServiceWorkerContainerHost::RegistrationComplete(
     return;
   }
 
-  ServiceWorkerRegistration* registration =
+  scoped_refptr<ServiceWorkerRegistration> registration =
       context_->GetLiveRegistration(registration_id);
   // ServiceWorkerRegisterJob calls its completion callback, which results in
   // this function being called, while the registration is live.
@@ -1590,6 +1621,19 @@ bool ServiceWorkerContainerHost::CanServeContainerHostMethods(
   }
 
   return true;
+}
+
+blink::StorageKey
+ServiceWorkerContainerHost::GetCorrectStorageKeyForWebSecurityState(
+    const GURL& url) const {
+  if (ServiceWorkerUtils::IsWebSecurityDisabled()) {
+    url::Origin other_origin = url::Origin::Create(url);
+
+    if (key_.origin() != other_origin)
+      return blink::StorageKey(other_origin);
+  }
+
+  return key_;
 }
 
 const GURL ServiceWorkerContainerHost::GetOrigin() const {

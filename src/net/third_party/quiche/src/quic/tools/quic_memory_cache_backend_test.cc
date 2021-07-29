@@ -4,12 +4,13 @@
 
 #include "quic/tools/quic_memory_cache_backend.h"
 
+#include <vector>
+
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
-#include "quic/platform/api/quic_file_utils.h"
-#include "quic/platform/api/quic_map_util.h"
 #include "quic/platform/api/quic_test.h"
 #include "quic/tools/quic_backend_response.h"
+#include "common/platform/api/quiche_file_utils.h"
 
 namespace quic {
 namespace test {
@@ -21,8 +22,7 @@ using ServerPushInfo = QuicBackendResponse::ServerPushInfo;
 
 class QuicMemoryCacheBackendTest : public QuicTest {
  protected:
-  void CreateRequest(std::string host,
-                     std::string path,
+  void CreateRequest(std::string host, std::string path,
                      spdy::Http2HeaderBlock* headers) {
     (*headers)[":method"] = "GET";
     (*headers)[":path"] = path;
@@ -49,7 +49,7 @@ TEST_F(QuicMemoryCacheBackendTest, AddSimpleResponseGetResponse) {
   CreateRequest("www.google.com", "/", &request_headers);
   const Response* response = cache_.GetResponse("www.google.com", "/");
   ASSERT_TRUE(response);
-  ASSERT_TRUE(QuicContainsKey(response->headers(), ":status"));
+  ASSERT_TRUE(response->headers().contains(":status"));
   EXPECT_EQ("200", response->headers().find(":status")->second);
   EXPECT_EQ(response_body.size(), response->body().length());
 }
@@ -82,10 +82,10 @@ TEST_F(QuicMemoryCacheBackendTest, ReadsCacheDir) {
   const Response* response =
       cache_.GetResponse("test.example.com", "/index.html");
   ASSERT_TRUE(response);
-  ASSERT_TRUE(QuicContainsKey(response->headers(), ":status"));
+  ASSERT_TRUE(response->headers().contains(":status"));
   EXPECT_EQ("200", response->headers().find(":status")->second);
   // Connection headers are not valid in HTTP/2.
-  EXPECT_FALSE(QuicContainsKey(response->headers(), "connection"));
+  EXPECT_FALSE(response->headers().contains("connection"));
   EXPECT_LT(0U, response->body().length());
 }
 
@@ -108,10 +108,10 @@ TEST_F(QuicMemoryCacheBackendTest, UsesOriginalUrl) {
   const Response* response =
       cache_.GetResponse("test.example.com", "/site_map.html");
   ASSERT_TRUE(response);
-  ASSERT_TRUE(QuicContainsKey(response->headers(), ":status"));
+  ASSERT_TRUE(response->headers().contains(":status"));
   EXPECT_EQ("200", response->headers().find(":status")->second);
   // Connection headers are not valid in HTTP/2.
-  EXPECT_FALSE(QuicContainsKey(response->headers(), "connection"));
+  EXPECT_FALSE(response->headers().contains("connection"));
   EXPECT_LT(0U, response->body().length());
 }
 
@@ -121,7 +121,9 @@ TEST_F(QuicMemoryCacheBackendTest, UsesOriginalUrlOnly) {
   // X-Original-Url header's value will be used.
   std::string dir;
   std::string path = "map.html";
-  for (const std::string& file : ReadFileContents(CacheDirectory())) {
+  std::vector<std::string> files;
+  ASSERT_TRUE(quiche::EnumerateDirectoryRecursively(CacheDirectory(), files));
+  for (const std::string& file : files) {
     if (absl::EndsWithIgnoreCase(file, "map.html")) {
       dir = file;
       dir.erase(dir.length() - path.length() - 1);
@@ -134,10 +136,10 @@ TEST_F(QuicMemoryCacheBackendTest, UsesOriginalUrlOnly) {
   const Response* response =
       cache_.GetResponse("test.example.com", "/site_map.html");
   ASSERT_TRUE(response);
-  ASSERT_TRUE(QuicContainsKey(response->headers(), ":status"));
+  ASSERT_TRUE(response->headers().contains(":status"));
   EXPECT_EQ("200", response->headers().find(":status")->second);
   // Connection headers are not valid in HTTP/2.
-  EXPECT_FALSE(QuicContainsKey(response->headers(), "connection"));
+  EXPECT_FALSE(response->headers().contains("connection"));
   EXPECT_LT(0U, response->body().length());
 }
 
@@ -157,20 +159,20 @@ TEST_F(QuicMemoryCacheBackendTest, DefaultResponse) {
   // Now we should get the default response for the original request.
   response = cache_.GetResponse("www.google.com", "/");
   ASSERT_TRUE(response);
-  ASSERT_TRUE(QuicContainsKey(response->headers(), ":status"));
+  ASSERT_TRUE(response->headers().contains(":status"));
   EXPECT_EQ("200", response->headers().find(":status")->second);
 
   // Now add a set response for / and make sure it is returned
   cache_.AddSimpleResponse("www.google.com", "/", 302, "");
   response = cache_.GetResponse("www.google.com", "/");
   ASSERT_TRUE(response);
-  ASSERT_TRUE(QuicContainsKey(response->headers(), ":status"));
+  ASSERT_TRUE(response->headers().contains(":status"));
   EXPECT_EQ("302", response->headers().find(":status")->second);
 
   // We should get the default response for other requests.
   response = cache_.GetResponse("www.google.com", "/asd");
   ASSERT_TRUE(response);
-  ASSERT_TRUE(QuicContainsKey(response->headers(), ":status"));
+  ASSERT_TRUE(response->headers().contains(":status"));
   EXPECT_EQ("200", response->headers().find(":status")->second);
 }
 
@@ -243,7 +245,7 @@ TEST_F(QuicMemoryCacheBackendTest, GetServerPushResourcesAndPushResponses) {
     std::string path = url.path();
     const Response* response = cache_.GetResponse(host, path);
     ASSERT_TRUE(response);
-    ASSERT_TRUE(QuicContainsKey(response->headers(), ":status"));
+    ASSERT_TRUE(response->headers().contains(":status"));
     EXPECT_EQ(push_response_status[i++],
               response->headers().find(":status")->second);
     EXPECT_EQ(push_resource.body, response->body());

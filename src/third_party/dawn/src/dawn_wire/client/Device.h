@@ -36,20 +36,23 @@ namespace dawn_wire { namespace client {
         ~Device();
 
         void SetUncapturedErrorCallback(WGPUErrorCallback errorCallback, void* errorUserdata);
+        void SetLoggingCallback(WGPULoggingCallback errorCallback, void* errorUserdata);
         void SetDeviceLostCallback(WGPUDeviceLostCallback errorCallback, void* errorUserdata);
         void InjectError(WGPUErrorType type, const char* message);
         void PushErrorScope(WGPUErrorFilter filter);
         bool PopErrorScope(WGPUErrorCallback callback, void* userdata);
         WGPUBuffer CreateBuffer(const WGPUBufferDescriptor* descriptor);
         WGPUBuffer CreateErrorBuffer();
+        WGPUComputePipeline CreateComputePipeline(WGPUComputePipelineDescriptor const* descriptor);
         void CreateComputePipelineAsync(WGPUComputePipelineDescriptor const* descriptor,
                                         WGPUCreateComputePipelineAsyncCallback callback,
                                         void* userdata);
-        void CreateRenderPipelineAsync(WGPURenderPipelineDescriptor2 const* descriptor,
+        void CreateRenderPipelineAsync(WGPURenderPipelineDescriptor const* descriptor,
                                        WGPUCreateRenderPipelineAsyncCallback callback,
                                        void* userdata);
 
         void HandleError(WGPUErrorType errorType, const char* message);
+        void HandleLogging(WGPULoggingType loggingType, const char* message);
         void HandleDeviceLost(const char* message);
         bool OnPopErrorScopeCallback(uint64_t requestSerial,
                                      WGPUErrorType type,
@@ -89,9 +92,11 @@ namespace dawn_wire { namespace client {
 
         WGPUErrorCallback mErrorCallback = nullptr;
         WGPUDeviceLostCallback mDeviceLostCallback = nullptr;
+        WGPULoggingCallback mLoggingCallback = nullptr;
         bool mDidRunLostCallback = false;
         void* mErrorUserdata = nullptr;
         void* mDeviceLostUserdata = nullptr;
+        void* mLoggingUserdata = nullptr;
 
         Queue* mQueue = nullptr;
 

@@ -6,11 +6,12 @@
 #define CHROME_BROWSER_SAFE_BROWSING_TEST_SAFE_BROWSING_SERVICE_H_
 
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "components/safe_browsing/content/browser/safe_browsing_blocking_page_factory.h"
 
 #include "chrome/browser/safe_browsing/services_delegate.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "components/safe_browsing/buildflags.h"
-#include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
+#include "components/safe_browsing/core/browser/db/v4_protocol_manager_util.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 
@@ -147,6 +148,8 @@ class TestSafeBrowsingUIManager : public SafeBrowsingUIManager {
   TestSafeBrowsingUIManager();
   explicit TestSafeBrowsingUIManager(
       const scoped_refptr<SafeBrowsingService>& service);
+  explicit TestSafeBrowsingUIManager(
+      std::unique_ptr<SafeBrowsingBlockingPageFactory> blocking_page_factory);
   void SendSerializedThreatDetails(content::BrowserContext* browser_context,
                                    const std::string& serialized) override;
   void SetSafeBrowsingService(SafeBrowsingService* sb_service);

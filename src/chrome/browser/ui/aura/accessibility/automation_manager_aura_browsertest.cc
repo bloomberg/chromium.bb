@@ -70,7 +70,7 @@ ui::AXTreeID GetAXTreeIDFromRenderFrameHost(content::RenderFrameHost* rfh) {
 
 // A class that installs itself as the sink to handle automation event bundles
 // from AutomationManagerAura, then waits until an automation event indicates
-// that a given node ID is focused.
+// that a given node ID is focused or an AX event is sent.
 class AutomationEventWaiter
     : public extensions::AutomationEventRouterInterface {
  public:
@@ -293,6 +293,7 @@ IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest, MAYBE_ScrollView) {
   auto* cache_ptr = cache.get();
   AutomationManagerAura* manager = AutomationManagerAura::GetInstance();
   manager->set_ax_aura_obj_cache_for_testing(std::move(cache));
+  AutomationEventWaiter waiter;
   manager->Enable();
   auto* tree = manager->tree_.get();
 
@@ -346,17 +347,25 @@ IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest, MAYBE_ScrollView) {
               node_data.GetIntAttribute(ax::mojom::IntAttribute::kScrollYMax),
               kAllowedError);
 
-  // Scroll right and check the X position.
+  // Scroll right and check a scroll event occurred and the X position.
   ui::AXActionData action_data;
   action_data.action = ax::mojom::Action::kScrollRight;
   scroll_view_wrapper->HandleAccessibleAction(action_data);
+  auto event_from_views =
+      waiter.WaitForEvent(ax::mojom::Event::kScrollPositionChanged);
+  ASSERT_NE(nullptr, event_from_views.get());
+  EXPECT_EQ(ax::mojom::EventFrom::kNone, event_from_views->event_from);
   tree->SerializeNode(scroll_view_wrapper, &node_data);
   EXPECT_NEAR(200, node_data.GetIntAttribute(ax::mojom::IntAttribute::kScrollX),
               kAllowedError);
 
-  // Scroll down and check the Y position.
+  // Scroll down and check a scroll event occurred and the Y position.
   action_data.action = ax::mojom::Action::kScrollDown;
   scroll_view_wrapper->HandleAccessibleAction(action_data);
+  event_from_views =
+      waiter.WaitForEvent(ax::mojom::Event::kScrollPositionChanged);
+  ASSERT_NE(nullptr, event_from_views.get());
+  EXPECT_EQ(ax::mojom::EventFrom::kNone, event_from_views->event_from);
   tree->SerializeNode(scroll_view_wrapper, &node_data);
   EXPECT_NEAR(200, node_data.GetIntAttribute(ax::mojom::IntAttribute::kScrollY),
               kAllowedError);
@@ -365,6 +374,10 @@ IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest, MAYBE_ScrollView) {
   action_data.action = ax::mojom::Action::kSetScrollOffset;
   action_data.target_point.SetPoint(50, 315);
   scroll_view_wrapper->HandleAccessibleAction(action_data);
+  event_from_views =
+      waiter.WaitForEvent(ax::mojom::Event::kScrollPositionChanged);
+  ASSERT_NE(nullptr, event_from_views.get());
+  EXPECT_EQ(ax::mojom::EventFrom::kNone, event_from_views->event_from);
   tree->SerializeNode(scroll_view_wrapper, &node_data);
   EXPECT_EQ(50, node_data.GetIntAttribute(ax::mojom::IntAttribute::kScrollX));
   EXPECT_EQ(315, node_data.GetIntAttribute(ax::mojom::IntAttribute::kScrollY));
@@ -418,18 +431,14 @@ IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest, TableView) {
   columns.push_back(TestTableColumn(2, "Origin"));
   columns.push_back(TestTableColumn(3, "Price"));
   auto model = std::make_unique<TestTableModel>(4);  // Create 4 rows.
-  auto table = std::make_unique<views::TableView>(
-      model.get(), columns, views::TEXT_ONLY, /* single_selection = */ true);
-  // Note: normally views are owned by their parent view, but we get a
-  // possible crash if the table outlives the table model (which is scoped
-  // to this function). So we make the table owned by client, and that
-  // ensures that both the table and model are destroyed when they go out
-  // of scope.
-  table->set_owned_by_client();
 
   // Add the TableView to our Widget's root view and give it bounds.
-  views::View* root_view = widget->GetRootView();
-  root_view->AddChildView(table.get());
+  // WARNING: This holds a raw pointer to `model`. To ensure the table doesn't
+  // outlive its model, it must be manually deleted at the bottom of this
+  // function.
+  views::TableView* const table = widget->GetRootView()->AddChildView(
+      std::make_unique<views::TableView>(model.get(), columns, views::TEXT_ONLY,
+                                         /* single_selection = */ true));
   table->SetBounds(0, 0, 200, 200);
 
   // Show the widget.
@@ -485,6 +494,9 @@ IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest, TableView) {
     EXPECT_GT(cell_bounds.height(), 0);
     EXPECT_LT(cell_bounds.height(), window_bounds.height() / 2);
   }
+  // Remove and destroy the TableView, it refers to `model` which is about to go
+  // out of scope.
+  widget->GetRootView()->RemoveChildViewT(table);
 }
 
 IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest, EventFromAction) {

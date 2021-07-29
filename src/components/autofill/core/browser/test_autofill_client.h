@@ -32,7 +32,7 @@
 #include "services/metrics/public/cpp/delegating_ukm_recorder.h"
 
 #if !defined(OS_IOS)
-#include "components/autofill/core/browser/payments/internal_authenticator.h"
+#include "components/webauthn/core/browser/internal_authenticator.h"
 #endif
 
 namespace autofill {
@@ -141,6 +141,7 @@ class TestAutofillClient : public AutofillClient {
   void UpdatePopup(const std::vector<Suggestion>& suggestions,
                    PopupType popup_type) override;
   void HideAutofillPopup(PopupHidingReason reason) override;
+  void ShowVirtualCardErrorDialog(bool is_permanent_error) override;
   bool IsAutocompleteEnabled() override;
   void PropagateAutofillPredictions(
       content::RenderFrameHost* rfh,
@@ -221,11 +222,16 @@ class TestAutofillClient : public AutofillClient {
     return offer_to_save_credit_card_bubble_was_shown_.value();
   }
 
+  bool virtual_card_error_dialog_shown() {
+    return virtual_card_error_dialog_shown_;
+  }
+
   SaveCreditCardOptions get_save_credit_card_options() {
     return save_credit_card_options_.value();
   }
 
-  MockAutocompleteHistoryManager* GetMockAutocompleteHistoryManager() {
+  ::testing::NiceMock<MockAutocompleteHistoryManager>*
+  GetMockAutocompleteHistoryManager() {
     return &mock_autocomplete_history_manager_;
   }
 
@@ -253,7 +259,8 @@ class TestAutofillClient : public AutofillClient {
   syncer::SyncService* test_sync_service_ = nullptr;
   TestAddressNormalizer test_address_normalizer_;
   TestPersonalDataManager test_personal_data_manager_;
-  MockAutocompleteHistoryManager mock_autocomplete_history_manager_;
+  ::testing::NiceMock<MockAutocompleteHistoryManager>
+      mock_autocomplete_history_manager_;
   std::unique_ptr<AutofillOfferManager> autofill_offer_manager_;
 
   // NULL by default.
@@ -270,6 +277,8 @@ class TestAutofillClient : public AutofillClient {
   bool should_save_autofill_profiles_ = true;
 
   bool confirm_save_credit_card_locally_called_ = false;
+
+  bool virtual_card_error_dialog_shown_ = false;
 
   // Populated if save was offered. True if bubble was shown, false otherwise.
   absl::optional<bool> offer_to_save_credit_card_bubble_was_shown_;

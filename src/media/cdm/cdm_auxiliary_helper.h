@@ -13,10 +13,11 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/unguessable_token.h"
+#include "build/build_config.h"
 #include "media/base/media_export.h"
 #include "media/cdm/cdm_allocator.h"
+#include "media/cdm/cdm_document_service.h"
 #include "media/cdm/output_protection.h"
-#include "media/cdm/platform_verification.h"
 #include "media/media_buildflags.h"
 #include "url/origin.h"
 
@@ -28,12 +29,12 @@ class FileIOClient;
 namespace media {
 
 // Provides a wrapper on the auxiliary functions (CdmAllocator, CdmFileIO,
-// OutputProtection, PlatformVerification) needed by the library CDM. The
+// OutputProtection, CdmDocumentService) needed by the library CDM. The
 // default implementation does nothing -- it simply returns nullptr, false, 0,
 // etc. as required to meet the interface.
 class MEDIA_EXPORT CdmAuxiliaryHelper : public CdmAllocator,
                                         public OutputProtection,
-                                        public PlatformVerification {
+                                        public CdmDocumentService {
  public:
   CdmAuxiliaryHelper();
   ~CdmAuxiliaryHelper() override;
@@ -52,12 +53,6 @@ class MEDIA_EXPORT CdmAuxiliaryHelper : public CdmAllocator,
   // if the origin is unavailable or if error happened.
   virtual url::Origin GetCdmOrigin();
 
-  // Gets the origin ID of the frame associated with the CDM. The origin ID does
-  // not reveal the origin directly and is resettable by the user by clearing
-  // browsing data. The origin ID can be empty if an error happened and should
-  // be handled by the caller.
-  virtual base::UnguessableToken GetCdmOriginId();
-
   // CdmAllocator implementation.
   cdm::Buffer* CreateCdmBuffer(size_t capacity) override;
   std::unique_ptr<VideoFrameImpl> CreateCdmVideoFrame() override;
@@ -67,11 +62,15 @@ class MEDIA_EXPORT CdmAuxiliaryHelper : public CdmAllocator,
   void EnableProtection(uint32_t desired_protection_mask,
                         EnableProtectionCB callback) override;
 
-  // PlatformVerification implementation.
+  // CdmDocumentService implementation.
   void ChallengePlatform(const std::string& service_id,
                          const std::string& challenge,
                          ChallengePlatformCB callback) override;
   void GetStorageId(uint32_t version, StorageIdCB callback) override;
+
+#if defined(OS_WIN)
+  void GetCdmOriginId(GetCdmOriginIdCB callback) override;
+#endif  // defined(OS_WIN)
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CdmAuxiliaryHelper);

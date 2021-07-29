@@ -8,9 +8,10 @@
 #include "ash/public/cpp/holding_space/holding_space_controller.h"
 #include "ash/public/cpp/holding_space/holding_space_model.h"
 #include "ash/system/holding_space/holding_space_item_view.h"
-#include "ash/system/holding_space/holding_space_item_view_delegate.h"
 #include "ash/system/holding_space/holding_space_util.h"
+#include "ash/system/holding_space/holding_space_view_delegate.h"
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "ui/compositor/callback_layer_animation_observer.h"
@@ -120,7 +121,7 @@ class HoldingSpaceScrollView : public views::ScrollView,
 // HoldingSpaceItemViewsSection ------------------------------------------------
 
 HoldingSpaceItemViewsSection::HoldingSpaceItemViewsSection(
-    HoldingSpaceItemViewDelegate* delegate,
+    HoldingSpaceViewDelegate* delegate,
     std::set<HoldingSpaceItem::Type> supported_types,
     const absl::optional<size_t>& max_count)
     : delegate_(delegate),
@@ -469,7 +470,7 @@ void HoldingSpaceItemViewsSection::OnAnimateOutCompleted(
   // All holding space item views are going to be removed after which views will
   // be re-added for those items which still exist. A `ScopedSelectionRestore`
   // will serve to persist the current selection during this modification.
-  HoldingSpaceItemViewDelegate::ScopedSelectionRestore scoped_selection_restore(
+  HoldingSpaceViewDelegate::ScopedSelectionRestore scoped_selection_restore(
       delegate_);
 
   // Disable propagation of `PreferredSizeChanged()` while performing batch

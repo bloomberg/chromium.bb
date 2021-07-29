@@ -9,7 +9,7 @@
 #include "cast/common/channel/testing/fake_cast_socket.h"
 #include "cast/common/channel/testing/mock_socket_error_handler.h"
 #include "cast/common/channel/virtual_connection_router.h"
-#include "cast/common/public/service_info.h"
+#include "cast/common/public/receiver_info.h"
 #include "cast/sender/testing/test_helpers.h"
 #include "gtest/gtest.h"
 #include "platform/test/fake_clock.h"
@@ -32,7 +32,7 @@ class CastAppDiscoveryServiceImplTest : public ::testing::Test {
 
     receiver_.v4_address = fake_cast_socket_pair_.remote_endpoint.address;
     receiver_.port = fake_cast_socket_pair_.remote_endpoint.port;
-    receiver_.unique_id = "deviceId1";
+    receiver_.unique_id = "receiverId1";
     receiver_.friendly_name = "Some Name";
   }
 
@@ -42,23 +42,23 @@ class CastAppDiscoveryServiceImplTest : public ::testing::Test {
     return fake_cast_socket_pair_.mock_peer_client;
   }
 
-  void AddOrUpdateReceiver(const ServiceInfo& receiver, int32_t socket_id) {
+  void AddOrUpdateReceiver(const ReceiverInfo& receiver, int32_t socket_id) {
     platform_client_.AddOrUpdateReceiver(receiver, socket_id);
     app_discovery_service_.AddOrUpdateReceiver(receiver);
   }
 
   CastAppDiscoveryService::Subscription StartObservingAvailability(
       const CastMediaSource& source,
-      std::vector<ServiceInfo>* save_receivers) {
+      std::vector<ReceiverInfo>* save_receivers) {
     return app_discovery_service_.StartObservingAvailability(
         source, [save_receivers](const CastMediaSource& source,
-                                 const std::vector<ServiceInfo>& receivers) {
+                                 const std::vector<ReceiverInfo>& receivers) {
           *save_receivers = receivers;
         });
   }
 
   CastAppDiscoveryService::Subscription StartSourceA1Query(
-      std::vector<ServiceInfo>* receivers,
+      std::vector<ReceiverInfo>* receivers,
       int* request_id,
       std::string* sender_id) {
     auto subscription = StartObservingAvailability(source_a_1_, receivers);
@@ -91,18 +91,18 @@ class CastAppDiscoveryServiceImplTest : public ::testing::Test {
   CastMediaSource source_a_2_{"cast:AAA?clientId=2", {"AAA"}};
   CastMediaSource source_b_1_{"cast:BBB?clientId=1", {"BBB"}};
 
-  ServiceInfo receiver_;
+  ReceiverInfo receiver_;
 };
 
 TEST_F(CastAppDiscoveryServiceImplTest, StartObservingAvailability) {
-  std::vector<ServiceInfo> receivers1;
+  std::vector<ReceiverInfo> receivers1;
   int request_id;
   std::string sender_id;
   auto subscription1 = StartSourceA1Query(&receivers1, &request_id, &sender_id);
 
   // Same app ID should not trigger another request.
   EXPECT_CALL(peer_client(), OnMessage(_, _)).Times(0);
-  std::vector<ServiceInfo> receivers2;
+  std::vector<ReceiverInfo> receivers2;
   auto subscription2 = StartObservingAvailability(source_a_2_, &receivers2);
 
   CastMessage availability_response =
@@ -110,8 +110,8 @@ TEST_F(CastAppDiscoveryServiceImplTest, StartObservingAvailability) {
   EXPECT_TRUE(peer_socket().Send(availability_response).ok());
   ASSERT_EQ(receivers1.size(), 1u);
   ASSERT_EQ(receivers2.size(), 1u);
-  EXPECT_EQ(receivers1[0].unique_id, "deviceId1");
-  EXPECT_EQ(receivers2[0].unique_id, "deviceId1");
+  EXPECT_EQ(receivers1[0].unique_id, "receiverId1");
+  EXPECT_EQ(receivers2[0].unique_id, "receiverId1");
 
   // No more updates for |source_a_1_| (i.e. |receivers1|).
   subscription1.Reset();
@@ -119,11 +119,11 @@ TEST_F(CastAppDiscoveryServiceImplTest, StartObservingAvailability) {
   app_discovery_service_.RemoveReceiver(receiver_);
   ASSERT_EQ(receivers1.size(), 1u);
   EXPECT_EQ(receivers2.size(), 0u);
-  EXPECT_EQ(receivers1[0].unique_id, "deviceId1");
+  EXPECT_EQ(receivers1[0].unique_id, "receiverId1");
 }
 
 TEST_F(CastAppDiscoveryServiceImplTest, ReAddAvailQueryUsesCachedValue) {
-  std::vector<ServiceInfo> receivers1;
+  std::vector<ReceiverInfo> receivers1;
   int request_id;
   std::string sender_id;
   auto subscription1 = StartSourceA1Query(&receivers1, &request_id, &sender_id);
@@ -132,7 +132,7 @@ TEST_F(CastAppDiscoveryServiceImplTest, ReAddAvailQueryUsesCachedValue) {
       CreateAppAvailableResponseChecked(request_id, sender_id, "AAA");
   EXPECT_TRUE(peer_socket().Send(availability_response).ok());
   ASSERT_EQ(receivers1.size(), 1u);
-  EXPECT_EQ(receivers1[0].unique_id, "deviceId1");
+  EXPECT_EQ(receivers1[0].unique_id, "receiverId1");
 
   subscription1.Reset();
   receivers1.clear();
@@ -141,11 +141,11 @@ TEST_F(CastAppDiscoveryServiceImplTest, ReAddAvailQueryUsesCachedValue) {
   EXPECT_CALL(peer_client(), OnMessage(_, _)).Times(0);
   subscription1 = StartObservingAvailability(source_a_1_, &receivers1);
   ASSERT_EQ(receivers1.size(), 1u);
-  EXPECT_EQ(receivers1[0].unique_id, "deviceId1");
+  EXPECT_EQ(receivers1[0].unique_id, "receiverId1");
 }
 
 TEST_F(CastAppDiscoveryServiceImplTest, AvailQueryUpdatedOnReceiverUpdate) {
-  std::vector<ServiceInfo> receivers1;
+  std::vector<ReceiverInfo> receivers1;
   int request_id;
   std::string sender_id;
   auto subscription1 = StartSourceA1Query(&receivers1, &request_id, &sender_id);
@@ -155,7 +155,7 @@ TEST_F(CastAppDiscoveryServiceImplTest, AvailQueryUpdatedOnReceiverUpdate) {
       CreateAppAvailableResponseChecked(request_id, sender_id, "AAA");
   EXPECT_TRUE(peer_socket().Send(availability_response).ok());
   ASSERT_EQ(receivers1.size(), 1u);
-  EXPECT_EQ(receivers1[0].unique_id, "deviceId1");
+  EXPECT_EQ(receivers1[0].unique_id, "receiverId1");
 
   // Updating |receiver_| causes |source_a_1_| query to be updated, but it's too
   // soon for a new message to be sent.
@@ -169,9 +169,9 @@ TEST_F(CastAppDiscoveryServiceImplTest, AvailQueryUpdatedOnReceiverUpdate) {
 }
 
 TEST_F(CastAppDiscoveryServiceImplTest, Refresh) {
-  std::vector<ServiceInfo> receivers1;
+  std::vector<ReceiverInfo> receivers1;
   auto subscription1 = StartObservingAvailability(source_a_1_, &receivers1);
-  std::vector<ServiceInfo> receivers2;
+  std::vector<ReceiverInfo> receivers2;
   auto subscription2 = StartObservingAvailability(source_b_1_, &receivers2);
 
   // Adding a receiver after app registered causes two separate app availability
@@ -207,7 +207,7 @@ TEST_F(CastAppDiscoveryServiceImplTest, Refresh) {
   EXPECT_TRUE(peer_socket().Send(availability_response).ok());
   ASSERT_EQ(receivers1.size(), 1u);
   ASSERT_EQ(receivers2.size(), 0u);
-  EXPECT_EQ(receivers1[0].unique_id, "deviceId1");
+  EXPECT_EQ(receivers1[0].unique_id, "receiverId1");
 
   // Not enough time has passed for a refresh.
   clock_.Advance(std::chrono::seconds(30));
@@ -236,7 +236,7 @@ TEST_F(CastAppDiscoveryServiceImplTest,
       .WillOnce([&request_idA, &sender_id](CastSocket*, CastMessage message) {
         VerifyAppAvailabilityRequest(message, "AAA", &request_idA, &sender_id);
       });
-  std::vector<ServiceInfo> receivers1;
+  std::vector<ReceiverInfo> receivers1;
   auto subscription1 = StartObservingAvailability(source_a_1_, &receivers1);
 
   int request_idB = -1;
@@ -244,7 +244,7 @@ TEST_F(CastAppDiscoveryServiceImplTest,
       .WillOnce([&request_idB, &sender_id](CastSocket*, CastMessage message) {
         VerifyAppAvailabilityRequest(message, "BBB", &request_idB, &sender_id);
       });
-  std::vector<ServiceInfo> receivers2;
+  std::vector<ReceiverInfo> receivers2;
   auto subscription2 = StartObservingAvailability(source_b_1_, &receivers2);
 
   // Add a new receiver with a corresponding socket.
@@ -252,8 +252,8 @@ TEST_F(CastAppDiscoveryServiceImplTest,
                                    {{192, 168, 1, 19}, 2345});
   CastSocket* socket2 = fake_sockets2.socket.get();
   router_.TakeSocket(&mock_error_handler_, std::move(fake_sockets2.socket));
-  ServiceInfo receiver2;
-  receiver2.unique_id = "deviceId2";
+  ReceiverInfo receiver2;
+  receiver2.unique_id = "receiverId2";
   receiver2.v4_address = fake_sockets2.remote_endpoint.address;
   receiver2.port = fake_sockets2.remote_endpoint.port;
 
@@ -283,7 +283,7 @@ TEST_F(CastAppDiscoveryServiceImplTest,
 }
 
 TEST_F(CastAppDiscoveryServiceImplTest, StartObservingAvailabilityCachedValue) {
-  std::vector<ServiceInfo> receivers1;
+  std::vector<ReceiverInfo> receivers1;
   int request_id;
   std::string sender_id;
   auto subscription1 = StartSourceA1Query(&receivers1, &request_id, &sender_id);
@@ -292,19 +292,19 @@ TEST_F(CastAppDiscoveryServiceImplTest, StartObservingAvailabilityCachedValue) {
       CreateAppAvailableResponseChecked(request_id, sender_id, "AAA");
   EXPECT_TRUE(peer_socket().Send(availability_response).ok());
   ASSERT_EQ(receivers1.size(), 1u);
-  EXPECT_EQ(receivers1[0].unique_id, "deviceId1");
+  EXPECT_EQ(receivers1[0].unique_id, "receiverId1");
 
   // Same app ID should not trigger another request, but it should return
   // cached value.
   EXPECT_CALL(peer_client(), OnMessage(_, _)).Times(0);
-  std::vector<ServiceInfo> receivers2;
+  std::vector<ReceiverInfo> receivers2;
   auto subscription2 = StartObservingAvailability(source_a_2_, &receivers2);
   ASSERT_EQ(receivers2.size(), 1u);
-  EXPECT_EQ(receivers2[0].unique_id, "deviceId1");
+  EXPECT_EQ(receivers2[0].unique_id, "receiverId1");
 }
 
 TEST_F(CastAppDiscoveryServiceImplTest, AvailabilityUnknownOrUnavailable) {
-  std::vector<ServiceInfo> receivers1;
+  std::vector<ReceiverInfo> receivers1;
   int request_id;
   std::string sender_id;
   auto subscription1 = StartSourceA1Query(&receivers1, &request_id, &sender_id);

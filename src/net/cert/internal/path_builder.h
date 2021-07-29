@@ -6,10 +6,10 @@
 #define NET_CERT_INTERNAL_PATH_BUILDER_H_
 
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/supports_user_data.h"
+#include "base/time/time.h"
 #include "net/base/net_export.h"
 #include "net/cert/internal/cert_errors.h"
 #include "net/cert/internal/parsed_certificate.h"

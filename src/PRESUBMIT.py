@@ -69,7 +69,7 @@ _TEST_CODE_EXCLUDED_PATHS = (
     r'.+_(api|browser|eg|int|perf|pixel|unit|ui)?test(s)?(_[a-z]+)?%s' %
         _IMPLEMENTATION_EXTENSIONS,
     r'.+_(fuzz|fuzzer)(_[a-z]+)?%s' % _IMPLEMENTATION_EXTENSIONS,
-    r'.+profile_sync_service_harness%s' % _IMPLEMENTATION_EXTENSIONS,
+    r'.+sync_service_impl_harness%s' % _IMPLEMENTATION_EXTENSIONS,
     r'.*[\\/](test|tool(s)?)[\\/].*',
     # content_shell is used for running content_browsertests.
     r'content[\\/]shell[\\/].*',
@@ -948,16 +948,6 @@ _BANNED_CPP_FUNCTIONS = (
       ),
     ),
     (
-      r'/\bScopedObserver',
-      (
-          'ScopedObserver is deprecated.',
-          'Please use base::ScopedObservation for observing a single source,',
-          'or base::ScopedMultiSourceObservation for observing multple sources',
-      ),
-      True,
-      (),
-    ),
-    (
       'RoInitialize',
       (
         'Improper use of [base::win]::RoInitialize() has been implicated in a ',
@@ -1142,8 +1132,8 @@ _GENERIC_PYDEPS_FILES = [
     'build/android/gyp/prepare_resources.pydeps',
     'build/android/gyp/process_native_prebuilt.pydeps',
     'build/android/gyp/proguard.pydeps',
-    'build/android/gyp/resources_shrinker/shrinker.pydeps',
     'build/android/gyp/turbine.pydeps',
+    'build/android/gyp/unused_resources.pydeps',
     'build/android/gyp/validate_static_library_dex_references.pydeps',
     'build/android/gyp/write_build_config.pydeps',
     'build/android/gyp/write_native_libraries_java.pydeps',
@@ -1863,7 +1853,7 @@ def CheckFilePermissions(input_api, output_api):
     except input_api.subprocess.CalledProcessError as error:
       return [output_api.PresubmitError(
           'checkperms.py failed:',
-          long_text=error.output)]
+          long_text=error.output.decode('utf-8', 'ignore'))]
 
 
 def CheckNoAuraWindowPropertyHInHeaders(input_api, output_api):
@@ -4030,7 +4020,7 @@ def CheckFuzzTargetsOnUpload(input_api, output_api):
       'LLVMFuzzerInitialize should not be used, unless your fuzz target needs '
       'to access command line arguments passed to the fuzzer. Instead, prefer '
       'static initialization and shared resources as documented in '
-      'https://chromium.googlesource.com/chromium/src/+/master/testing/'
+      'https://chromium.googlesource.com/chromium/src/+/main/testing/'
       'libfuzzer/efficient_fuzzing.md#simplifying-initialization_cleanup.\n' % (
           ', '.join(EXPORTED_SYMBOLS), REQUIRED_HEADER)
     )
@@ -4241,12 +4231,13 @@ def CheckBuildConfigMacrosWithoutInclude(input_api, output_api):
       r'^#include\s+"build/build_config.h"', input_api.re.MULTILINE)
   extension_re = input_api.re.compile(r'\.[a-z]+$')
   errors = []
-  for f in input_api.AffectedFiles():
+  for f in input_api.AffectedFiles(include_deletes=False):
     if not f.LocalPath().endswith(('.h', '.c', '.cc', '.cpp', '.m', '.mm')):
       continue
     found_line_number = None
     found_macro = None
-    for line_num, line in f.ChangedContents():
+    all_lines = input_api.ReadFile(f, 'r').splitlines()
+    for line_num, line in enumerate(all_lines):
       match = macro_re.search(line)
       if match:
         found_line_number = line_num
@@ -4255,12 +4246,12 @@ def CheckBuildConfigMacrosWithoutInclude(input_api, output_api):
     if not found_line_number:
       continue
 
-    found_include = False
-    for line in f.NewContents():
+    found_include_line = -1
+    for line_num, line in enumerate(all_lines):
       if include_re.search(line):
-        found_include = True
+        found_include_line = line_num
         break
-    if found_include:
+    if found_include_line >= 0 and found_include_line < found_line_number:
       continue
 
     if not f.LocalPath().endswith('.h'):
@@ -4271,7 +4262,7 @@ def CheckBuildConfigMacrosWithoutInclude(input_api, output_api):
           continue
       except IOError:
         pass
-    errors.append('%s:%d %s macro is used without including build/'
+    errors.append('%s:%d %s macro is used without first including build/'
                   'build_config.h.'
                   % (f.LocalPath(), found_line_number, found_macro))
   if errors:
@@ -4588,7 +4579,8 @@ def CheckForWindowsLineEndings(input_api, output_api):
 
   file_inclusion_pattern = (
     known_text_files,
-    r'.+%s' % _IMPLEMENTATION_EXTENSIONS
+    r'.+%s' % _IMPLEMENTATION_EXTENSIONS,
+    r'.+%s' % _HEADER_EXTENSIONS
   )
 
   problems = []
@@ -4596,7 +4588,7 @@ def CheckForWindowsLineEndings(input_api, output_api):
       f, files_to_check=file_inclusion_pattern, files_to_skip=None)
   for f in input_api.AffectedSourceFiles(source_file_filter):
     include_file = False
-    for _, line in f.ChangedContents():
+    for line in input_api.ReadFile(f, 'r').splitlines(True):
       if line.endswith('\r\n'):
         include_file = True
     if include_file:

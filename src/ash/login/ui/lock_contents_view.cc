@@ -11,6 +11,7 @@
 
 #include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_switches.h"
 #include "ash/detachable_base/detachable_base_pairing_status.h"
 #include "ash/focus_cycler.h"
 #include "ash/ime/ime_controller_impl.h"
@@ -30,7 +31,6 @@
 #include "ash/login/ui/system_label_button.h"
 #include "ash/login/ui/views_utils.h"
 #include "ash/media/media_controller_impl.h"
-#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/child_accounts/parent_access_controller.h"
 #include "ash/public/cpp/login_accelerators.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -588,7 +588,6 @@ LockContentsView::LockContentsView(
         std::make_unique<AutoLoginUserActivityHandler>();
 
   data_dispatcher_->AddObserver(this);
-  display_observation_.Observe(display::Screen::GetScreen());
   Shell::Get()->system_tray_notifier()->AddSystemTrayObserver(this);
   keyboard::KeyboardUIController::Get()->AddObserver(this);
 
@@ -899,6 +898,8 @@ void LockContentsView::OnUsersChanged(const std::vector<LoginUserInfo>& users) {
   // Removing child views can change focus, which may result in LockContentsView
   // getting focused. Make sure to clear internal references before that happens
   // so there is not stale-pointer usage. See crbug.com/884402.
+  // TODO(crbug.com/1222096): We should figure out a better way of handling
+  // user info changes such as avatar changes. They should not cause view re-layouting.
   main_view_->RemoveAllChildViews(true /*delete_children*/);
 
   // Build user state list. Preserve previous state if the user already exists.
@@ -1157,13 +1158,14 @@ void LockContentsView::OnForceOnlineSignInForUser(const AccountId& user) {
     LayoutAuth(big_user, nullptr /*opt_to_hide*/, true /*animate*/);
 }
 
-void LockContentsView::OnShowEasyUnlockIcon(const AccountId& user,
-                                            const EasyUnlockIconOptions& icon) {
+void LockContentsView::OnShowEasyUnlockIcon(
+    const AccountId& user,
+    const EasyUnlockIconInfo& icon_info) {
   UserState* state = FindStateForUser(user);
   if (!state)
     return;
 
-  state->easy_unlock_state = icon;
+  state->easy_unlock_icon_info = icon_info;
   UpdateEasyUnlockIconForUser(user);
 
   // Show tooltip only if the user is actively showing auth.
@@ -1175,9 +1177,9 @@ void LockContentsView::OnShowEasyUnlockIcon(const AccountId& user,
   if (tooltip_bubble_->GetVisible())
     tooltip_bubble_->Hide();
 
-  if (icon.autoshow_tooltip) {
+  if (icon_info.autoshow_tooltip) {
     tooltip_bubble_->SetAnchorView(big_user->auth_user()->GetActiveInputView());
-    tooltip_bubble_->set_text(icon.tooltip);
+    tooltip_bubble_->set_text(icon_info.tooltip);
     tooltip_bubble_->Show();
     tooltip_bubble_->SetVisible(true);
   }
@@ -1479,6 +1481,62 @@ void LockContentsView::ToggleManagementForUserForDebug(const AccountId& user) {
                              false /*animate*/);
     return;
   }
+}
+
+void LockContentsView::SetMultiprofilePolicyForUserForDebug(
+    const AccountId& user,
+    const MultiProfileUserBehavior& multiprofile_policy) {
+  auto replace = [multiprofile_policy](const LoginUserInfo& user_info) {
+    auto changed = user_info;
+    changed.multiprofile_policy = multiprofile_policy;
+    changed.is_multiprofile_allowed =
+        multiprofile_policy == MultiProfileUserBehavior::UNRESTRICTED;
+    return changed;
+  };
+
+  LoginBigUserView* big = TryToFindBigUser(user, false /*require_auth_active*/);
+  if (big) {
+    big->UpdateForUser(replace(big->GetCurrentUser()));
+  }
+
+  LoginUserView* user_view =
+      users_list_ ? users_list_->GetUserView(user) : nullptr;
+  if (user_view) {
+    user_view->UpdateForUser(replace(user_view->current_user()),
+                             false /*animate*/);
+  }
+
+  LayoutAuth(CurrentBigUserView(), nullptr /*opt_to_hide*/, true /*animate*/);
+}
+
+void LockContentsView::ToggleForceOnlineSignInForUserForDebug(
+    const AccountId& user) {
+  LockContentsView::UserState* state = FindStateForUser(user);
+  if (!state) {
+    LOG(ERROR) << "Unable to find user forcing online sign in";
+    return;
+  }
+  state->force_online_sign_in = !state->force_online_sign_in;
+
+  LoginBigUserView* big_user =
+      TryToFindBigUser(user, true /*require_auth_active*/);
+  if (big_user && big_user->auth_user())
+    LayoutAuth(big_user, nullptr /*opt_to_hide*/, true /*animate*/);
+}
+
+void LockContentsView::UndoForceOnlineSignInForUserForDebug(
+    const AccountId& user) {
+  LockContentsView::UserState* state = FindStateForUser(user);
+  if (!state) {
+    LOG(ERROR) << "Unable to find user forcing online sign in";
+    return;
+  }
+  state->force_online_sign_in = false;
+
+  LoginBigUserView* big_user =
+      TryToFindBigUser(user, true /*require_auth_active*/);
+  if (big_user && big_user->auth_user())
+    LayoutAuth(big_user, nullptr /*opt_to_hide*/, true /*animate*/);
 }
 
 void LockContentsView::FocusNextWidget(bool reverse) {
@@ -2018,21 +2076,21 @@ void LockContentsView::UpdateEasyUnlockIconForUser(const AccountId& user) {
   UserState* state = FindStateForUser(user);
   DCHECK(state);
 
-  // Hide easy unlock icon if there is no data is available.
-  if (!state->easy_unlock_state) {
-    big_view->auth_user()->SetEasyUnlockIcon(EasyUnlockIconId::NONE,
+  // Hide easy unlock icon if there is no data available.
+  if (!state->easy_unlock_icon_info) {
+    big_view->auth_user()->SetEasyUnlockIcon(EasyUnlockIconState::NONE,
                                              std::u16string());
     return;
   }
 
   // TODO(jdufault): Make easy unlock backend always send aria_label, right now
   // it is only sent if there is no tooltip.
-  std::u16string accessibility_label = state->easy_unlock_state->aria_label;
+  std::u16string accessibility_label = state->easy_unlock_icon_info->aria_label;
   if (accessibility_label.empty())
-    accessibility_label = state->easy_unlock_state->tooltip;
+    accessibility_label = state->easy_unlock_icon_info->tooltip;
 
-  big_view->auth_user()->SetEasyUnlockIcon(state->easy_unlock_state->icon,
-                                           accessibility_label);
+  big_view->auth_user()->SetEasyUnlockIcon(
+      state->easy_unlock_icon_info->icon_state, accessibility_label);
 }
 
 LoginBigUserView* LockContentsView::CurrentBigUserView() {
@@ -2074,7 +2132,7 @@ void LockContentsView::ShowAuthErrorMessage() {
   int bold_length = 0;
   // Display a hint to switch keyboards if there are other active input
   // methods in clamshell mode.
-  if (ime_controller->available_imes().size() > 1 && !IsTabletMode()) {
+  if (ime_controller->GetVisibleImes().size() > 1 && !IsTabletMode()) {
     error_text += u" ";
     bold_start = error_text.length();
     std::u16string shortcut =
@@ -2096,8 +2154,7 @@ void LockContentsView::ShowAuthErrorMessage() {
   auto learn_more_button = std::make_unique<SystemLabelButton>(
       base::BindRepeating(&LockContentsView::LearnMoreButtonPressed,
                           base::Unretained(this)),
-      l10n_util::GetStringUTF16(IDS_ASH_LEARN_MORE),
-      SystemLabelButton::DisplayType::DEFAULT, /*multiline*/ true);
+      l10n_util::GetStringUTF16(IDS_ASH_LEARN_MORE), /*multiline=*/true);
 
   auto container = std::make_unique<NonAccessibleView>(kAuthErrorContainerName);
   auto* container_layout =
@@ -2124,11 +2181,11 @@ void LockContentsView::OnEasyUnlockIconHovered() {
   UserState* state =
       FindStateForUser(big_view->GetCurrentUser().basic_user_info.account_id);
   DCHECK(state);
-  DCHECK(state->easy_unlock_state);
+  DCHECK(state->easy_unlock_icon_info);
 
-  if (!state->easy_unlock_state->tooltip.empty()) {
+  if (!state->easy_unlock_icon_info->tooltip.empty()) {
     tooltip_bubble_->SetAnchorView(big_view->auth_user()->GetActiveInputView());
-    tooltip_bubble_->set_text(state->easy_unlock_state->tooltip);
+    tooltip_bubble_->set_text(state->easy_unlock_icon_info->tooltip);
     tooltip_bubble_->Show();
   }
 }
@@ -2137,9 +2194,9 @@ void LockContentsView::OnEasyUnlockIconTapped() {
   UserState* state = FindStateForUser(
       CurrentBigUserView()->GetCurrentUser().basic_user_info.account_id);
   DCHECK(state);
-  DCHECK(state->easy_unlock_state);
+  DCHECK(state->easy_unlock_icon_info);
 
-  if (state->easy_unlock_state->hardlock_on_click) {
+  if (state->easy_unlock_icon_info->hardlock_on_click) {
     AccountId user =
         CurrentBigUserView()->GetCurrentUser().basic_user_info.account_id;
     Shell::Get()->login_screen_controller()->HardlockPod(user);

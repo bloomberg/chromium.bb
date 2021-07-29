@@ -11,20 +11,14 @@
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
-#include "build/build_config.h"
-#include "chrome/browser/profiles/profile.h"
-#include "content/public/browser/browser_context.h"
-#include "content/public/common/content_features.h"
-#include "crypto/random.h"
-#include "extensions/buildflags/buildflags.h"
-#include "ui/base/buildflags.h"
-
-#if defined(OS_ANDROID) || BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_prefs/user_prefs.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/common/content_features.h"
+#include "crypto/random.h"
 #include "media/base/media_switches.h"
-#endif  // defined(OS_ANDROID) || BUILDFLAG(ENABLE_EXTENSIONS)
+#include "ui/base/buildflags.h"
 
 #if !defined(OS_ANDROID)
 #include "components/prefs/pref_registry_simple.h"
@@ -52,15 +46,24 @@ const base::Feature kCastFeedbackDialog{"CastFeedbackDialog",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // !defined(OS_ANDROID)
 
-#if defined(OS_ANDROID) || BUILDFLAG(ENABLE_EXTENSIONS)
 namespace {
 const PrefService::Preference* GetMediaRouterPref(
     content::BrowserContext* context) {
   return user_prefs::UserPrefs::Get(context)->FindPreference(
       ::prefs::kEnableMediaRouter);
 }
+
+base::flat_map<content::BrowserContext*, bool>& GetStoredPrefValues() {
+  static base::NoDestructor<base::flat_map<content::BrowserContext*, bool>>
+      stored_pref_values;
+
+  return *stored_pref_values;
+}
 }  // namespace
-#endif  // defined(OS_ANDROID) || BUILDFLAG(ENABLE_EXTENSIONS)
+
+void ClearMediaRouterStoredPrefsForTesting() {
+  GetStoredPrefValues().clear();
+}
 
 bool MediaRouterEnabled(content::BrowserContext* context) {
 #if !defined(OS_ANDROID)
@@ -68,15 +71,13 @@ bool MediaRouterEnabled(content::BrowserContext* context) {
     return false;
 #endif  // !defined(OS_ANDROID)
 
-#if defined(OS_ANDROID) || BUILDFLAG(ENABLE_EXTENSIONS)
-  static base::NoDestructor<base::flat_map<content::BrowserContext*, bool>>
-      stored_pref_values;
-
   // If the Media Router was already enabled or disabled for |context|, then it
   // must remain so.  The Media Router does not support dynamic
   // enabling/disabling.
-  auto const it = stored_pref_values->find(context);
-  if (it != stored_pref_values->end())
+  base::flat_map<content::BrowserContext*, bool>& pref_values =
+      GetStoredPrefValues();
+  auto const it = pref_values.find(context);
+  if (it != pref_values.end())
     return it->second;
 
   // Check the enterprise policy.
@@ -84,16 +85,10 @@ bool MediaRouterEnabled(content::BrowserContext* context) {
   if (pref->IsManaged() && !pref->IsDefaultValue()) {
     CHECK(pref->GetValue()->is_bool());
     bool allowed = pref->GetValue()->GetBool();
-    stored_pref_values->insert(std::make_pair(context, allowed));
+    pref_values.insert(std::make_pair(context, allowed));
     return allowed;
   }
-
-  // The component extension cannot be loaded in guest sessions.
-  // TODO(crbug.com/756243): Figure out why.
-  return !Profile::FromBrowserContext(context)->IsGuestSession();
-#else   // !(defined(OS_ANDROID) || BUILDFLAG(ENABLE_EXTENSIONS))
-  return false;
-#endif  // defined(OS_ANDROID) || BUILDFLAG(ENABLE_EXTENSIONS)
+  return true;
 }
 
 #if !defined(OS_ANDROID)

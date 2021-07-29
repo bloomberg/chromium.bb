@@ -6,38 +6,43 @@ package org.chromium.chrome.browser.feed;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Rect;
+import android.view.View;
 
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feed.v2.FeedProcessScopeDependencyProvider;
-import org.chromium.chrome.browser.feed.v2.FeedStream;
-import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.xsurface.SurfaceScopeDependencyProvider;
-import org.chromium.chrome.browser.xsurface.SurfaceScopeDependencyProvider.VideoInitializationError;
-import org.chromium.chrome.browser.xsurface.SurfaceScopeDependencyProvider.VideoPlayError;
-import org.chromium.chrome.browser.xsurface.SurfaceScopeDependencyProvider.VideoPlayEvent;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 
 /**
- * Provides activity and darkmode context for a single surface.
+ * Provides activity, darkmode and logging context for a single surface.
  */
-public class FeedSurfaceScopeDependencyProvider implements SurfaceScopeDependencyProvider {
+@JNINamespace("feed::android")
+class FeedSurfaceScopeDependencyProvider implements SurfaceScopeDependencyProvider {
     private static final String TAG = "Feed";
     private final Activity mActivity;
     private final Context mActivityContext;
     private final boolean mDarkMode;
-    private final FeedStream mFeedStream;
+    private final LoggingEnabledDelegate mLoggingEnabledDelegate;
 
-    public FeedSurfaceScopeDependencyProvider(
-            Activity activity, Context activityContext, boolean darkMode, FeedStream feedStream) {
+    public interface LoggingEnabledDelegate {
+        boolean isLoggingEnabledForCurrentStream();
+    }
+
+    public FeedSurfaceScopeDependencyProvider(Activity activity, Context activityContext,
+            boolean darkMode, LoggingEnabledDelegate loggingEnabledDelegate) {
         mActivityContext = FeedProcessScopeDependencyProvider.createFeedContext(activityContext);
         mDarkMode = darkMode;
-        mFeedStream = feedStream;
         mActivity = activity;
+        mLoggingEnabledDelegate = loggingEnabledDelegate;
     }
 
     @Override
@@ -102,17 +107,19 @@ public class FeedSurfaceScopeDependencyProvider implements SurfaceScopeDependenc
     @Override
     public int[] getExperimentIds() {
         assert ThreadUtils.runningOnUiThread();
-        return mFeedStream.getExperimentIds();
+        return FeedSurfaceScopeDependencyProviderJni.get().getExperimentIds();
     }
 
     @Override
     public boolean isActivityLoggingEnabled() {
-        return mFeedStream.isActivityLoggingEnabled();
+        assert ThreadUtils.runningOnUiThread();
+        return mLoggingEnabledDelegate.isLoggingEnabledForCurrentStream();
     }
 
     @Override
     public String getSignedOutSessionId() {
-        return mFeedStream.getSignedOutSessionId();
+        ThreadUtils.runningOnUiThread();
+        return FeedSurfaceScopeDependencyProviderJni.get().getSessionId();
     }
 
     /**
@@ -121,14 +128,20 @@ public class FeedSurfaceScopeDependencyProvider implements SurfaceScopeDependenc
      */
     @Override
     public void processViewAction(byte[] data) {
-        mFeedStream.processViewAction(data);
+        FeedSurfaceScopeDependencyProviderJni.get().processViewAction(data);
+    }
+
+    @Override
+    public void reportOnUploadVisibilityLog(boolean success) {
+        RecordHistogram.recordBooleanHistogram(
+                "ContentSuggestions.Feed.UploadVisibilityLog", success);
     }
 
     @Override
     public void reportVideoPlayEvent(boolean isMutedAutoplay, @VideoPlayEvent int event) {
         Log.i(TAG, "Feed video event %d", event);
         RecordHistogram.recordEnumeratedHistogram(
-                getVideoHistogramName(isMutedAutoplay, "sPlayEvent"), event,
+                getVideoHistogramName(isMutedAutoplay, "PlayEvent"), event,
                 VideoPlayEvent.NUM_ENTRIES);
     }
 
@@ -149,10 +162,28 @@ public class FeedSurfaceScopeDependencyProvider implements SurfaceScopeDependenc
                 VideoPlayError.NUM_ENTRIES);
     }
 
+    @Override
+    public Rect getToolbarGlobalVisibleRect() {
+        Rect bounds = new Rect();
+        View toolbarView = mActivity.findViewById(R.id.toolbar);
+        if (toolbarView == null) {
+            return bounds;
+        }
+        toolbarView.getGlobalVisibleRect(bounds);
+        return bounds;
+    }
+
     private static String getVideoHistogramName(boolean isMutedAutoplay, String partName) {
         String name = "ContentSuggestions.Feed.";
         name += (isMutedAutoplay ? "AutoplayMutedVideo." : "NormalUnmutedVideo.");
         name += partName;
         return name;
+    }
+
+    @NativeMethods
+    interface Natives {
+        int[] getExperimentIds();
+        String getSessionId();
+        void processViewAction(byte[] data);
     }
 }

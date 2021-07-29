@@ -5,7 +5,6 @@
 #include "services/network/public/cpp/ip_address_space_util.h"
 
 #include <utility>
-#include <vector>
 
 #include "base/command_line.h"
 #include "base/no_destructor.h"
@@ -15,8 +14,10 @@
 #include "base/strings/string_split.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
+#include "services/network/public/cpp/content_security_policy/content_security_policy.h"
 #include "services/network/public/cpp/network_switches.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "services/network/public/mojom/parsed_headers.mojom.h"
+#include "url/gurl.h"
 
 namespace network {
 namespace {
@@ -283,6 +284,72 @@ bool IsLessPublicAddressSpace(IPAddressSpace lhs, IPAddressSpace rhs) {
   // works just fine. The comment on IPAddressSpace's definition notes that the
   // enum values' ordering matters.
   return CollapseUnknown(lhs) < CollapseUnknown(rhs);
+}
+
+namespace {
+
+// Helper for CalculateClientAddressSpace() with the same arguments.
+//
+// If the response was fetched via service workers, returns the last URL in the
+// list. Otherwise returns `request_url`.
+//
+// See: https://fetch.spec.whatwg.org/#concept-response-url-list
+const GURL& ResponseUrl(
+    const GURL& request_url,
+    absl::optional<CalculateClientAddressSpaceParams> params) {
+  if (params.has_value() && !params->url_list_via_service_worker.empty()) {
+    return params.value().url_list_via_service_worker.back();
+  }
+  return request_url;
+}
+
+}  // namespace
+
+CalculateClientAddressSpaceParams::CalculateClientAddressSpaceParams(
+    const std::vector<GURL>& url_list_via_service_worker,
+    const mojom::ParsedHeadersPtr& parsed_headers,
+    const net::IPEndPoint& remote_endpoint)
+    : url_list_via_service_worker(url_list_via_service_worker),
+      parsed_headers(parsed_headers),
+      remote_endpoint(remote_endpoint) {}
+
+CalculateClientAddressSpaceParams::~CalculateClientAddressSpaceParams() =
+    default;
+
+mojom::IPAddressSpace CalculateClientAddressSpace(
+    const GURL& url,
+    absl::optional<CalculateClientAddressSpaceParams> params) {
+  if (ResponseUrl(url, params).SchemeIsFile()) {
+    // See: https://wicg.github.io/cors-rfc1918/#file-url.
+    return mojom::IPAddressSpace::kLocal;
+  }
+
+  if (!params.has_value()) {
+    return mojom::IPAddressSpace::kUnknown;
+  }
+
+  // First, check whether the response forces itself into a public address space
+  // as per https://wicg.github.io/cors-rfc1918/#csp.
+  DCHECK(params->parsed_headers) << "CalculateIPAddressSpace() called for URL "
+                                 << url << " with null parsed_headers.";
+  if (ShouldTreatAsPublicAddress(
+          params->parsed_headers->content_security_policy)) {
+    return mojom::IPAddressSpace::kPublic;
+  }
+
+  // Otherwise, calculate the address space via the provided IP address.
+  return IPEndPointToIPAddressSpace(params->remote_endpoint);
+}
+
+mojom::IPAddressSpace CalculateResourceAddressSpace(
+    const GURL& url,
+    const net::IPEndPoint& endpoint) {
+  if (url.SchemeIsFile()) {
+    // See: https://wicg.github.io/cors-rfc1918/#file-url.
+    return mojom::IPAddressSpace::kLocal;
+  }
+
+  return IPEndPointToIPAddressSpace(endpoint);
 }
 
 }  // namespace network

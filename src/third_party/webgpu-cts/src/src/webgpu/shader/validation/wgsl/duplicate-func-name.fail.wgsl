@@ -8,7 +8,7 @@ fn my_func() {
   return;
 }
 
-[[stage(vertex)]]
+[[stage(fragment)]]
 fn main() {
   return;
 }

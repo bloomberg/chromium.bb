@@ -56,7 +56,8 @@ class HelperFileOutputGeneratorOptions(GeneratorOptions):
                  alignFuncParam = 0,
                  library_name = '',
                  expandEnumerants = True,
-                 helper_file_type = ''):
+                 helper_file_type = '',
+                 valid_usage_path = ''):
         GeneratorOptions.__init__(self,
                 conventions = conventions,
                 filename = filename,
@@ -82,6 +83,7 @@ class HelperFileOutputGeneratorOptions(GeneratorOptions):
         self.alignFuncParam   = alignFuncParam
         self.library_name     = library_name
         self.helper_file_type = helper_file_type
+        self.valid_usage_path = valid_usage_path
 #
 # HelperFileOutputGenerator - subclass of OutputGenerator. Outputs Vulkan helper files
 class HelperFileOutputGenerator(OutputGenerator):
@@ -1477,7 +1479,13 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
                     '        pTessellationState = new safe_VkPipelineTessellationStateCreateInfo(in_struct->pTessellationState);\n'
                     '    else\n'
                     '        pTessellationState = NULL; // original pTessellationState pointer ignored\n'
-                    '    bool has_rasterization = in_struct->pRasterizationState ? !in_struct->pRasterizationState->rasterizerDiscardEnable : false;\n'
+                    '    bool is_dynamic_has_rasterization = false;\n'
+                    '    if (in_struct->pDynamicState && in_struct->pDynamicState->pDynamicStates) {\n'
+                    '        for (uint32_t i = 0; i < in_struct->pDynamicState->dynamicStateCount && !is_dynamic_has_rasterization; ++i)\n'
+                    '            if (in_struct->pDynamicState->pDynamicStates[i] == VK_DYNAMIC_STATE_RASTERIZER_DISCARD_ENABLE_EXT)\n'
+                    '                is_dynamic_has_rasterization = true;\n'
+                    '    }\n'
+                    '    bool has_rasterization = in_struct->pRasterizationState ? (is_dynamic_has_rasterization || !in_struct->pRasterizationState->rasterizerDiscardEnable) : false;\n'
                     '    if (in_struct->pViewportState && has_rasterization) {\n'
                     '        bool is_dynamic_viewports = false;\n'
                     '        bool is_dynamic_scissors = false;\n'
@@ -1528,6 +1536,14 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
                     '    }\n'
                     '    else\n'
                     '        pScissors = NULL;\n',
+                # VkFrameBufferCreateInfo is special case because its pAttachments pointer may be non-null but ignored
+                'VkFramebufferCreateInfo' :
+                    '    if (attachmentCount && in_struct->pAttachments && !(flags & VK_FRAMEBUFFER_CREATE_IMAGELESS_BIT)) {\n'
+                    '        pAttachments = new VkImageView[attachmentCount];\n'
+                    '        for (uint32_t i = 0; i < attachmentCount; ++i) {\n'
+                    '            pAttachments[i] = in_struct->pAttachments[i];\n'
+                    '        }\n'
+                    '    }\n',
                 # VkDescriptorSetLayoutBinding is special case because its pImmutableSamplers pointer may be non-null but ignored
                 'VkDescriptorSetLayoutBinding' :
                     '    const bool sampler_type = in_struct->descriptorType == VK_DESCRIPTOR_TYPE_SAMPLER || in_struct->descriptorType == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;\n'
@@ -1580,7 +1596,13 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
                     '        pTessellationState = new safe_VkPipelineTessellationStateCreateInfo(*copy_src.pTessellationState);\n'
                     '    else\n'
                     '        pTessellationState = NULL; // original pTessellationState pointer ignored\n'
-                    '    bool has_rasterization = copy_src.pRasterizationState ? !copy_src.pRasterizationState->rasterizerDiscardEnable : false;\n'
+                    '    bool is_dynamic_has_rasterization = false;\n'
+                    '    if (copy_src.pDynamicState && copy_src.pDynamicState->pDynamicStates) {\n'
+                    '        for (uint32_t i = 0; i < copy_src.pDynamicState->dynamicStateCount && !is_dynamic_has_rasterization; ++i)\n'
+                    '            if (copy_src.pDynamicState->pDynamicStates[i] == VK_DYNAMIC_STATE_RASTERIZER_DISCARD_ENABLE_EXT)\n'
+                    '                is_dynamic_has_rasterization = true;\n'
+                    '    }\n'
+                    '    bool has_rasterization = copy_src.pRasterizationState ? (is_dynamic_has_rasterization || !copy_src.pRasterizationState->rasterizerDiscardEnable) : false;\n'
                     '    if (copy_src.pViewportState && has_rasterization) {\n'
                     '        pViewportState = new safe_VkPipelineViewportStateCreateInfo(*copy_src.pViewportState);\n'
                     '    } else\n'
@@ -1620,6 +1642,14 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
                     '    }\n'
                     '    else\n'
                     '        pScissors = NULL;\n',
+                'VkFramebufferCreateInfo' :
+                    '    pNext = SafePnextCopy(copy_src.pNext);\n'
+                    '    if (attachmentCount && copy_src.pAttachments && !(flags & VK_FRAMEBUFFER_CREATE_IMAGELESS_BIT)) {\n'
+                    '        pAttachments = new VkImageView[attachmentCount];\n'
+                    '        for (uint32_t i = 0; i < attachmentCount; ++i) {\n'
+                    '            pAttachments[i] = copy_src.pAttachments[i];\n'
+                    '        }\n'
+                    '    }\n',
                 'VkAccelerationStructureBuildGeometryInfoKHR':
                     '    if (geometryCount) {\n'
                     '        if ( copy_src.ppGeometries) {\n'

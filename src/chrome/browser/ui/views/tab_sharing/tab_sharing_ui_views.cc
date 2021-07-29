@@ -7,10 +7,10 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -22,12 +22,16 @@
 #include "components/infobars/content/content_infobar_manager.h"
 #include "components/infobars/core/infobar.h"
 #include "components/url_formatter/elide_url.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/constants.h"
 #include "net/base/url_util.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/views/border.h"
 
 #if defined(OS_WIN)
 #include "ui/views/widget/native_widget_aura.h"
@@ -35,12 +39,16 @@
 
 namespace {
 
+using content::GlobalRenderFrameHostId;
+using content::RenderFrameHost;
+using content::WebContents;
+
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 const int kContentsBorderThickness = 5;
 const float kContentsBorderOpacity = 0.50;
 const SkColor kContentsBorderColor = gfx::kGoogleBlue500;
 
-void InitContentsBorderWidget(content::WebContents* contents) {
+void InitContentsBorderWidget(WebContents* contents) {
   Browser* browser = chrome::FindBrowserWithWebContents(contents);
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   if (browser_view->contents_border_widget())
@@ -76,7 +84,7 @@ void InitContentsBorderWidget(content::WebContents* contents) {
 }
 #endif
 
-void SetContentsBorderVisible(content::WebContents* contents, bool visible) {
+void SetContentsBorderVisible(WebContents* contents, bool visible) {
   // TODO(https://crbug.com/1030925) fix contents border on ChromeOS.
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
   if (!contents)
@@ -100,8 +108,8 @@ void SetContentsBorderVisible(content::WebContents* contents, bool visible) {
 #endif
 }
 
-std::u16string GetTabName(content::WebContents* tab) {
-  GURL url = tab->GetLastCommittedURL();
+std::u16string GetTabName(WebContents* tab) {
+  const GURL& url = tab->GetLastCommittedURL();
   const std::u16string tab_name =
       network::IsUrlPotentiallyTrustworthy(url)
           ? base::UTF8ToUTF16(net::GetHostAndOptionalPort(url))
@@ -109,22 +117,63 @@ std::u16string GetTabName(content::WebContents* tab) {
   return tab_name.empty() ? tab->GetTitle() : tab_name;
 }
 
+GlobalRenderFrameHostId GetGlobalId(WebContents* web_contents) {
+  auto* const main_frame = web_contents->GetMainFrame();
+  return main_frame ? main_frame->GetGlobalId() : GlobalRenderFrameHostId();
+}
+
+uint32_t GetHash(const ui::ImageModel& image) {
+  if (image.IsEmpty()) {
+    return 0;
+  }
+
+  const SkBitmap* const bitmap = image.GetImage().ToSkBitmap();
+  if (!bitmap) {
+    return 0;
+  }
+
+  return base::FastHash(base::make_span(
+      static_cast<uint8_t*>(bitmap->getPixels()), bitmap->computeByteSize()));
+}
+
+bool CanFocusCapturer(GlobalRenderFrameHostId capturer_id) {
+  // Note that both FromID() and FromRenderFrameHost() are robust to null input.
+  WebContents* const capturer =
+      WebContents::FromRenderFrameHost(RenderFrameHost::FromID(capturer_id));
+  if (!capturer) {
+    return false;
+  }
+
+  return !capturer->GetLastCommittedURL().SchemeIs(
+      extensions::kExtensionScheme);
+}
+
 }  // namespace
 
 // static
 std::unique_ptr<TabSharingUI> TabSharingUI::Create(
+    GlobalRenderFrameHostId capturer,
     const content::DesktopMediaID& media_id,
-    std::u16string app_name) {
-  return base::WrapUnique(new TabSharingUIViews(media_id, app_name));
+    std::u16string app_name,
+    bool favicons_used_for_switch_to_tab_button) {
+  return base::WrapUnique(new TabSharingUIViews(
+      capturer, media_id, app_name, favicons_used_for_switch_to_tab_button));
 }
 
-TabSharingUIViews::TabSharingUIViews(const content::DesktopMediaID& media_id,
-                                     std::u16string app_name)
-    : shared_tab_media_id_(media_id), app_name_(std::move(app_name)) {
-  shared_tab_ = content::WebContents::FromRenderFrameHost(
-      content::RenderFrameHost::FromID(
-          media_id.web_contents_id.render_process_id,
-          media_id.web_contents_id.main_render_frame_id));
+TabSharingUIViews::TabSharingUIViews(
+    GlobalRenderFrameHostId capturer,
+    const content::DesktopMediaID& media_id,
+    std::u16string app_name,
+    bool favicons_used_for_switch_to_tab_button)
+    : capturer_(capturer),
+      can_focus_capturer_(CanFocusCapturer(capturer)),
+      shared_tab_media_id_(media_id),
+      app_name_(std::move(app_name)),
+      favicons_used_for_switch_to_tab_button_(
+          favicons_used_for_switch_to_tab_button) {
+  shared_tab_ = WebContents::FromRenderFrameHost(
+      RenderFrameHost::FromID(media_id.web_contents_id.render_process_id,
+                              media_id.web_contents_id.main_render_frame_id));
   Observe(shared_tab_);
   shared_tab_name_ = GetTabName(shared_tab_);
   profile_ = ProfileManager::GetLastUsedProfileAllowedByPolicy();
@@ -144,11 +193,15 @@ TabSharingUIViews::~TabSharingUIViews() {
 gfx::NativeViewId TabSharingUIViews::OnStarted(
     base::OnceClosure stop_callback,
     content::MediaStreamUI::SourceCallback source_callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   source_callback_ = std::move(source_callback);
   stop_callback_ = std::move(stop_callback);
   CreateInfobarsForAllTabs();
   SetContentsBorderVisible(shared_tab_, true);
   CreateTabCaptureIndicator();
+  if (favicons_used_for_switch_to_tab_button_) {
+    FaviconPeriodicUpdate(++share_session_seq_num_);
+  }
   return 0;
 }
 
@@ -158,14 +211,14 @@ void TabSharingUIViews::StartSharing(infobars::InfoBar* infobar) {
 
   SetContentsBorderVisible(shared_tab_, false);
 
-  content::WebContents* shared_tab =
+  WebContents* shared_tab =
       infobars::ContentInfoBarManager::WebContentsFromInfoBar(infobar);
   DCHECK(shared_tab);
   DCHECK_EQ(infobars_[shared_tab], infobar);
   shared_tab_ = shared_tab;
   shared_tab_name_ = GetTabName(shared_tab_);
 
-  content::RenderFrameHost* main_frame = shared_tab->GetMainFrame();
+  RenderFrameHost* main_frame = shared_tab->GetMainFrame();
   DCHECK(main_frame);
   RemoveInfobarsForAllTabs();
   source_callback_.Run(content::DesktopMediaID(
@@ -176,12 +229,14 @@ void TabSharingUIViews::StartSharing(infobars::InfoBar* infobar) {
 }
 
 void TabSharingUIViews::StopSharing() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!stop_callback_.is_null())
     std::move(stop_callback_).Run();
   RemoveInfobarsForAllTabs();
   SetContentsBorderVisible(shared_tab_, false);
   tab_capture_indicator_ui_.reset();
   shared_tab_ = nullptr;
+  ++share_session_seq_num_;  // Invalidates previously scheduled tasks.
 }
 
 void TabSharingUIViews::OnBrowserAdded(Browser* browser) {
@@ -216,7 +271,7 @@ void TabSharingUIViews::OnTabStripModelChanged(
   }
 }
 
-void TabSharingUIViews::TabChangedAt(content::WebContents* contents,
+void TabSharingUIViews::TabChangedAt(WebContents* contents,
                                      int index,
                                      TabChangeType change_type) {
   // Sad tab cannot be shared so don't create an infobar for it.
@@ -245,16 +300,16 @@ void TabSharingUIViews::OnInfoBarRemoved(infobars::InfoBar* infobar,
 }
 
 void TabSharingUIViews::DidFinishNavigation(content::NavigationHandle* handle) {
-  // Only interested in committed navigations on the shared tab that result in
-  // changing the shared tab's name.
-  if (!handle->IsInMainFrame() || !handle->HasCommitted() ||
-      handle->IsSameDocument() || handle->GetWebContents() != shared_tab_ ||
-      GetTabName(shared_tab_) == shared_tab_name_) {
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
+  if (!handle->IsInPrimaryMainFrame() || !handle->HasCommitted() ||
+      handle->IsSameDocument() || handle->GetWebContents() != shared_tab_) {
     return;
   }
   shared_tab_name_ = GetTabName(shared_tab_);
   for (const auto& infobars_entry : infobars_) {
-    // Recreate infobars to reflect the new shared tab name.
+    // Recreate infobars to reflect the new shared tab's hostname.
     if (infobars_entry.first != shared_tab_)
       CreateInfobarForWebContents(infobars_entry.first);
   }
@@ -277,8 +332,9 @@ void TabSharingUIViews::CreateInfobarsForAllTabs() {
   browser_list->AddObserver(this);
 }
 
-void TabSharingUIViews::CreateInfobarForWebContents(
-    content::WebContents* contents) {
+void TabSharingUIViews::CreateInfobarForWebContents(WebContents* contents) {
+  DCHECK(contents);
+
   auto infobars_entry = infobars_.find(contents);
   // Recreate the infobar if it already exists.
   if (infobars_entry != infobars_.end()) {
@@ -288,10 +344,34 @@ void TabSharingUIViews::CreateInfobarForWebContents(
   auto* infobar_manager =
       infobars::ContentInfoBarManager::FromWebContents(contents);
   infobar_manager->AddObserver(this);
+
+  const bool is_capturing_tab = (GetGlobalId(contents) == capturer_);
+  const bool is_captured_tab = (contents == shared_tab_);
+
+  // Never show the [share this tab instead] button on either the capturing
+  // tab or the captured tab.
+  const bool can_share_instead =
+      !source_callback_.is_null() && !is_capturing_tab && !is_captured_tab;
+
+  absl::optional<TabSharingInfoBarDelegate::FocusTarget> focus_target;
+  if (can_focus_capturer_) {
+    // Self-capture -> no switch-to button.
+    // Capturer -> switch-to-captured.
+    // Captured -> switch-to-capturer.
+    // Otherwise -> no switch-to button.
+    if (is_capturing_tab && !is_captured_tab) {
+      focus_target = {GetGlobalId(shared_tab_), TabFavicon(shared_tab_)};
+      captured_favicon_hash_ = GetHash(focus_target->icon);
+    } else if (!is_capturing_tab && is_captured_tab) {
+      focus_target = {capturer_, TabFavicon(capturer_)};
+      capturer_favicon_hash_ = GetHash(focus_target->icon);
+    }
+  }
+
   infobars_[contents] = TabSharingInfoBarDelegate::Create(
       infobar_manager, shared_tab_name_, app_name_,
-      shared_tab_ == contents /*shared_tab*/,
-      !source_callback_.is_null() /*can_share*/, this);
+      shared_tab_ == contents /*shared_tab*/, can_share_instead, focus_target,
+      this, favicons_used_for_switch_to_tab_button_);
 }
 
 void TabSharingUIViews::RemoveInfobarsForAllTabs() {
@@ -320,4 +400,84 @@ void TabSharingUIViews::CreateTabCaptureIndicator() {
       base::OnceClosure(), content::MediaStreamUI::SourceCallback(),
       /*label=*/std::string(), /*screen_capture_ids=*/{},
       content::MediaStreamUI::StateChangeCallback());
+}
+
+void TabSharingUIViews::FaviconPeriodicUpdate(size_t share_session_seq_num) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(favicons_used_for_switch_to_tab_button_);
+
+  if (share_session_seq_num != share_session_seq_num_) {
+    return;
+  }
+
+  RefreshFavicons();
+
+  content::GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&TabSharingUIViews::FaviconPeriodicUpdate,
+                     weak_factory_.GetWeakPtr(), share_session_seq_num),
+      base::TimeDelta::FromMilliseconds(500));
+}
+
+void TabSharingUIViews::RefreshFavicons() {
+  if (!shared_tab_) {
+    return;
+  }
+
+  WebContents* const capturer =
+      WebContents::FromRenderFrameHost(RenderFrameHost::FromID(capturer_));
+  if (!capturer) {
+    return;
+  }
+
+  // If the capturer's favicon has changed, update the captured tab's button.
+  MaybeUpdateFavicon(capturer, &capturer_favicon_hash_, shared_tab_);
+
+  // If the captured tab's favicon has changed, update the capturer's button.
+  MaybeUpdateFavicon(shared_tab_, &captured_favicon_hash_, capturer);
+}
+
+void TabSharingUIViews::MaybeUpdateFavicon(
+    WebContents* focus_target,
+    absl::optional<uint32_t>* current_hash,
+    WebContents* infobar_owner) {
+  const ui::ImageModel favicon = TabFavicon(focus_target);
+  const uint32_t hash = GetHash(favicon);
+  if (*current_hash != hash) {
+    *current_hash = hash;
+    // TODO(crbug.com/1224363): Update favicons without recreating infobars.
+    // To do so cleanly requires that |infobars_| map to |ConfirmInfoBar|.
+    CreateInfobarForWebContents(infobar_owner);
+  }
+}
+
+ui::ImageModel TabSharingUIViews::TabFavicon(WebContents* web_contents) const {
+  if (!favicons_used_for_switch_to_tab_button_) {
+    return ui::ImageModel();
+  }
+
+  if (!web_contents) {
+    return ui::ImageModel::FromImage(favicon::GetDefaultFavicon());
+  }
+
+  auto it = favicon_overrides_for_testing_.find(web_contents);
+  if (it != favicon_overrides_for_testing_.end()) {
+    return it->second;
+  }
+
+  const gfx::Image favicon = favicon::TabFaviconFromWebContents(web_contents);
+  return ui::ImageModel::FromImage(
+      favicon.IsEmpty() ? favicon::GetDefaultFavicon() : favicon);
+}
+
+ui::ImageModel TabSharingUIViews::TabFavicon(
+    GlobalRenderFrameHostId rfh_id) const {
+  return TabFavicon(content::WebContents::FromRenderFrameHost(
+      content::RenderFrameHost::FromID(rfh_id)));
+}
+
+void TabSharingUIViews::SetTabFaviconForTesting(
+    content::WebContents* web_contents,
+    const ui::ImageModel& favicon) {
+  favicon_overrides_for_testing_[web_contents] = favicon;
 }

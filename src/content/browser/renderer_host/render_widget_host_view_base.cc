@@ -28,6 +28,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/common/content_switches_internal.h"
+#include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom.h"
 #include "third_party/blink/public/mojom/page/record_content_to_visible_time_request.mojom.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_types.h"
@@ -611,12 +612,12 @@ base::WeakPtr<RenderWidgetHostViewBase> RenderWidgetHostViewBase::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-void RenderWidgetHostViewBase::GetScreenInfo(blink::ScreenInfo* screen_info) {
+void RenderWidgetHostViewBase::GetScreenInfo(display::ScreenInfo* screen_info) {
   DisplayUtil::GetNativeViewScreenInfo(screen_info, GetNativeView());
 }
 
 float RenderWidgetHostViewBase::GetDeviceScaleFactor() {
-  blink::ScreenInfo screen_info;
+  display::ScreenInfo screen_info;
   GetScreenInfo(&screen_info);
   return screen_info.device_scale_factor;
 }
@@ -986,6 +987,14 @@ bool RenderWidgetHostViewBase::TransformPointToLocalCoordSpace(
       router->FindViewFromFrameSinkId(original_frame_sink_id),
       router->FindViewFromFrameSinkId(target_frame_sink_id), point,
       transformed_point);
+}
+
+ui::Compositor* RenderWidgetHostViewBase::GetCompositor() {
+  return nullptr;
+}
+
+bool RenderWidgetHostViewBase::ShouldVirtualKeyboardOverlayContent() {
+  return false;
 }
 
 }  // namespace content

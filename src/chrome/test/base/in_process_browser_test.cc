@@ -63,11 +63,10 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/captive_portal/core/buildflags.h"
 #include "components/embedder_support/switches.h"
+#include "components/feature_engagement/public/feature_list.h"
 #include "components/google/core/common/google_util.h"
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "content/public/browser/devtools_agent_host.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -102,7 +101,7 @@
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/shell.h"
 #include "base/system/sys_info.h"
-#include "chrome/browser/chromeos/full_restore/full_restore_service.h"
+#include "chrome/browser/chromeos/full_restore/full_restore_app_launch_handler.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/services/device_sync/device_sync_impl.h"
@@ -255,9 +254,24 @@ void InProcessBrowserTest::Initialize() {
   bundle_swizzler_ = std::make_unique<ScopedBundleSwizzlerMac>();
 #endif
 
+  std::vector<base::Feature> disabled_features;
+
   // Preconnecting can cause non-deterministic test behavior especially with
   // various test fixtures that mock servers.
-  scoped_feature_list_.InitAndDisableFeature(features::kPreconnectToSearch);
+  disabled_features.push_back(features::kPreconnectToSearch);
+
+  // In-product help can conflict with tests' expected window activation and
+  // focus. Individual tests can re-enable IPH.
+  for (const base::Feature* feature : feature_engagement::GetAllFeatures()) {
+    disabled_features.push_back(*feature);
+  }
+
+  scoped_feature_list_.InitWithFeatures({}, disabled_features);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  launch_browser_for_testing_ =
+      std::make_unique<chromeos::full_restore::ScopedLaunchBrowserForTesting>();
+#endif
 }
 
 InProcessBrowserTest::~InProcessBrowserTest() = default;
@@ -409,6 +423,7 @@ void InProcessBrowserTest::TearDown() {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   chromeos::device_sync::DeviceSyncImpl::Factory::SetCustomFactory(nullptr);
+  launch_browser_for_testing_ = nullptr;
 #endif
 }
 
@@ -573,13 +588,8 @@ Browser* InProcessBrowserTest::CreateGuestBrowser() {
       guest_path, base::BindRepeating(&UnblockOnProfileCreation, &run_loop));
   run_loop.Run();
 
-  Profile* profile = profile_manager->GetProfileByPath(guest_path);
-  if (!profile->IsEphemeralGuestProfile())
-    profile = profile->GetPrimaryOTRProfile(/*create_if_needed=*/true);
-
-  const bool is_ephemeral = Profile::IsEphemeralGuestProfileEnabled();
-  EXPECT_EQ(is_ephemeral, profile->IsEphemeralGuestProfile());
-  EXPECT_NE(is_ephemeral, profile->IsGuestSession());
+  Profile* profile = profile_manager->GetProfileByPath(guest_path)
+                         ->GetPrimaryOTRProfile(/*create_if_needed=*/true);
 
   // Create browser and add tab.
   Browser* browser = Browser::Create(Browser::CreateParams(profile, true));
@@ -589,11 +599,9 @@ Browser* InProcessBrowserTest::CreateGuestBrowser() {
 #endif  // !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 
 void InProcessBrowserTest::AddBlankTabAndShow(Browser* browser) {
-  content::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP,
-      content::NotificationService::AllSources());
-  chrome::AddSelectedTabWithURL(browser, GURL(url::kAboutBlankURL),
-                                ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
+  content::WebContents* blank_tab = chrome::AddSelectedTabWithURL(
+      browser, GURL(url::kAboutBlankURL), ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
+  content::TestNavigationObserver observer(blank_tab);
   observer.Wait();
 
   browser->window()->Show();
@@ -628,17 +636,6 @@ base::FilePath InProcessBrowserTest::GetChromeTestDataDir() const {
 
 void InProcessBrowserTest::PreRunTestOnMainThread() {
   AfterStartupTaskUtils::SetBrowserStartupIsCompleteForTesting();
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  // ChromeOS does not create a browser by default when the full restore feature
-  // is enabled. Nearly all existing tests assume a browser is created. This
-  // call triggers creating a browser.
-  auto* full_restore_service =
-      chromeos::full_restore::FullRestoreService::GetForProfile(
-          ProfileManager::GetPrimaryUserProfile());
-  if (!skip_initial_restore_ && full_restore_service)
-    full_restore_service->RestoreForTesting();
-#endif
 
   // Take the ChromeBrowserMainParts' RunLoop to run ourself, when we
   // want to wait for the browser to exit.

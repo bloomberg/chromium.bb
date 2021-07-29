@@ -33,7 +33,22 @@ namespace dawn_wire { namespace client {
             default:
                 return false;
         }
+        if (device == nullptr) {
+            // The device might have been deleted or recreated so this isn't an error.
+            return true;
+        }
         device->HandleError(errorType, message);
+        return true;
+    }
+
+    bool Client::DoDeviceLoggingCallback(Device* device,
+                                         WGPULoggingType loggingType,
+                                         const char* message) {
+        if (device == nullptr) {
+            // The device might have been deleted or recreated so this isn't an error.
+            return true;
+        }
+        device->HandleLogging(loggingType, message);
         return true;
     }
 
@@ -58,36 +73,16 @@ namespace dawn_wire { namespace client {
     }
 
     bool Client::DoBufferMapAsyncCallback(Buffer* buffer,
-                                          uint32_t requestSerial,
+                                          uint64_t requestSerial,
                                           uint32_t status,
-                                          uint64_t readInitialDataInfoLength,
-                                          const uint8_t* readInitialDataInfo) {
+                                          uint64_t readDataUpdateInfoLength,
+                                          const uint8_t* readDataUpdateInfo) {
         // The buffer might have been deleted or recreated so this isn't an error.
         if (buffer == nullptr) {
             return true;
         }
-        return buffer->OnMapAsyncCallback(requestSerial, status, readInitialDataInfoLength,
-                                          readInitialDataInfo);
-    }
-
-    bool Client::DoFenceUpdateCompletedValue(Fence* fence, uint64_t value) {
-        // The fence might have been deleted or recreated so this isn't an error.
-        if (fence == nullptr) {
-            return true;
-        }
-
-        fence->OnUpdateCompletedValueCallback(value);
-        return true;
-    }
-
-    bool Client::DoFenceOnCompletionCallback(Fence* fence,
-                                             uint64_t requestSerial,
-                                             WGPUFenceCompletionStatus status) {
-        // The fence might have been deleted or recreated so this isn't an error.
-        if (fence == nullptr) {
-            return true;
-        }
-        return fence->OnCompletionCallback(requestSerial, status);
+        return buffer->OnMapAsyncCallback(requestSerial, status, readDataUpdateInfoLength,
+                                          readDataUpdateInfo);
     }
 
     bool Client::DoQueueWorkDoneCallback(Queue* queue,

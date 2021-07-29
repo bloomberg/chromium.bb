@@ -27,8 +27,8 @@ ImageFetchId StubFeedApi::FetchImage(
     base::OnceCallback<void(NetworkResponse)> callback) {
   return {};
 }
-PersistentKeyValueStore* StubFeedApi::GetPersistentKeyValueStore() {
-  return {};
+PersistentKeyValueStore& StubFeedApi::GetPersistentKeyValueStore() {
+  return persistent_key_value_store_;
 }
 EphemeralChangeId StubFeedApi::CreateEphemeralChange(
     const StreamType& stream_type,
@@ -56,6 +56,10 @@ DebugStreamData StubFeedApi::GetDebugStreamData() {
 }
 std::string StubFeedApi::DumpStateForDebugging() {
   return {};
+}
+
+base::Time StubFeedApi::GetLastFetchTime(const StreamType& stream_type) {
+  return base::Time();
 }
 
 }  // namespace feed

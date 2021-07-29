@@ -58,8 +58,11 @@ assistant::SettingsUiUpdate GetEmailOptInUpdate(bool opted_in);
 
 using SettingZippyList = google::protobuf::RepeatedPtrField<
     assistant::ClassicActivityControlUiTexts::SettingZippy>;
+using ActivityControlUi =
+    assistant::ConsentFlowUi::ConsentUi::ActivityControlUi;
 // Helper method to create zippy data.
-base::Value CreateZippyData(const SettingZippyList& zippy_list);
+base::Value CreateZippyData(const ActivityControlUi& activity_control_ui,
+                            bool is_minor_mode);
 
 // Helper method to create disclosure data.
 base::Value CreateDisclosureData(const SettingZippyList& disclosure_list);
@@ -71,7 +74,8 @@ base::Value CreateGetMoreData(bool email_optin_needed,
 
 // Get string constants for settings ui.
 base::Value GetSettingsUiStrings(const assistant::SettingsUi& settings_ui,
-                                 bool activity_control_needed);
+                                 bool activity_control_needed,
+                                 bool equal_weight_buttons);
 
 void RecordActivityControlConsent(Profile* profile,
                                   std::string ui_audit_key,

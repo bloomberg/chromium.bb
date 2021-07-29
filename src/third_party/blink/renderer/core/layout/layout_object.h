@@ -506,6 +506,13 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     }
   }
 
+  // This function checks if the fragment tree is consistent with the
+  // |LayoutObject| tree. This consistency is critical, as sometimes we traverse
+  // the fragment tree, sometimes the |LayoutObject| tree, or mix the
+  // traversals. Also we rely on the consistency to avoid using fragments whose
+  // |LayoutObject| were destroyed.
+  void AssertFragmentTree(bool display_locked = false) const;
+
   void AssertClearedPaintInvalidationFlags() const;
 
   void AssertSubtreeClearedPaintInvalidationFlags() const {
@@ -581,10 +588,15 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return fragment_.UniqueId();
   }
 
+  inline bool IsEligibleForPaintOrLayoutContainment() const {
+    NOT_DESTROYED();
+    return (!IsInline() || IsAtomicInlineLevel()) && !IsRubyText() &&
+           (!IsTablePart() || IsLayoutBlockFlow());
+  }
+
   inline bool ShouldApplyPaintContainment(const ComputedStyle& style) const {
     NOT_DESTROYED();
-    return style.ContainsPaint() && (!IsInline() || IsAtomicInlineLevel()) &&
-           !IsRubyText() && (!IsTablePart() || IsLayoutBlockFlow());
+    return style.ContainsPaint() && IsEligibleForPaintOrLayoutContainment();
   }
 
   inline bool ShouldApplyPaintContainment() const {
@@ -594,8 +606,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   inline bool ShouldApplyLayoutContainment(const ComputedStyle& style) const {
     NOT_DESTROYED();
-    return style.ContainsLayout() && (!IsInline() || IsAtomicInlineLevel()) &&
-           !IsRubyText() && (!IsTablePart() || IsLayoutBlockFlow());
+    return style.ContainsLayout() && IsEligibleForPaintOrLayoutContainment();
   }
 
   inline bool ShouldApplyLayoutContainment() const {
@@ -614,13 +625,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
   inline bool ShouldApplyInlineSizeContainment() const {
     NOT_DESTROYED();
-    return (StyleRef().ContainsInlineSize() || StyleRef().ContainsSize()) &&
-           IsEligibleForSizeContainment();
+    return StyleRef().ContainsInlineSize() && IsEligibleForSizeContainment();
   }
   inline bool ShouldApplyBlockSizeContainment() const {
     NOT_DESTROYED();
-    return (StyleRef().ContainsBlockSize() || StyleRef().ContainsSize()) &&
-           IsEligibleForSizeContainment();
+    return StyleRef().ContainsBlockSize() && IsEligibleForSizeContainment();
   }
   inline bool ShouldApplyStyleContainment() const {
     NOT_DESTROYED();
@@ -628,18 +637,24 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
   inline bool ShouldApplyContentContainment() const {
     NOT_DESTROYED();
-    return ShouldApplyPaintContainment() && ShouldApplyLayoutContainment();
+    return ShouldApplyStyleContainment() && ShouldApplyPaintContainment() &&
+           ShouldApplyLayoutContainment();
   }
   inline bool ShouldApplyStrictContainment() const {
     NOT_DESTROYED();
-    return ShouldApplyPaintContainment() && ShouldApplyLayoutContainment() &&
-           ShouldApplySizeContainment();
+    return ShouldApplyStyleContainment() && ShouldApplyPaintContainment() &&
+           ShouldApplyLayoutContainment() && ShouldApplySizeContainment();
   }
+  inline bool ShouldApplyAnyContainment() const {
+    NOT_DESTROYED();
+    return ShouldApplyPaintContainment() || ShouldApplyLayoutContainment() ||
+           ShouldApplyStyleContainment() || ShouldApplyBlockSizeContainment() ||
+           ShouldApplyInlineSizeContainment();
+  }
+
   inline bool IsContainerForContainerQueries() const {
     NOT_DESTROYED();
-    return ShouldApplyLayoutContainment() && ShouldApplyStyleContainment() &&
-           (ShouldApplyInlineSizeContainment() ||
-            ShouldApplyBlockSizeContainment());
+    return StyleRef().IsContainerForContainerQueries();
   }
 
   inline bool IsStackingContext() const {
@@ -848,6 +863,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool IsLayoutNGText() const {
     NOT_DESTROYED();
     return IsOfType(kLayoutObjectNGText);
+  }
+  bool IsLayoutNGTextCombine() const {
+    NOT_DESTROYED();
+    return IsOfType(kLayoutObjectNGTextCombine);
   }
   bool IsLayoutTableCol() const {
     NOT_DESTROYED();
@@ -1335,6 +1354,14 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
            StyleRef().StyleType() == kPseudoIdNone && IsLayoutBlock() &&
            !IsLayoutFlowThread() && !IsLayoutMultiColumnSet();
   }
+  // This is similar to the negation of IsAnonymous, with a single difference.
+  // When a block is inside an inline, there is an anonymous block that is a
+  // continuation of the inline, wrapping the block that is inside it, as
+  // https://www.w3.org/TR/CSS21/visuren.html#anonymous-block-level describes.
+  // That anonymous block also returns true here.  This allows us to track
+  // when layout object parent-child relationships correspond to DOM
+  // parent-child relationships.
+  bool IsForElement() const;
   // If node has been split into continuations, it returns the first layout
   // object generated for the node.
   const LayoutObject* ContinuationRoot() const {
@@ -1998,11 +2025,19 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // object, when it comes to painting, hit-testing and other layout read
   // operations. If false is returned, we need to traverse the layout object
   // tree instead.
-  //
-  // It is not allowed to call this method on a non-LayoutBox object, unless its
-  // containing block is an NG object (e.g. not allowed to call it on a
-  // LayoutInline that's contained by a legacy LayoutBlockFlow).
-  inline bool CanTraversePhysicalFragments() const;
+  bool CanTraversePhysicalFragments() const {
+    NOT_DESTROYED();
+
+    if (!bitfields_.MightTraversePhysicalFragments())
+      return false;
+
+    // Non-LayoutBox objects (such as LayoutInline) don't necessarily create NG
+    // LayoutObjects. We'll allow traversing their fragments if they are laid
+    // out by an NG container.
+    if (!IsBox())
+      return IsInLayoutNGInlineFormattingContext();
+    return true;
+  }
 
   // Return true if |this| produces one or more inline fragments, including
   // whitespace-only text fragments.
@@ -2265,9 +2300,13 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       LayoutObject* container,
       AncestorSkipInfo* = nullptr);
 
-  // Returns the nearest anceestor in the layout tree that is not anonymous,
+  // Returns the nearest ancestor in the layout tree that is not anonymous,
   // or null if there is none.
   LayoutObject* NonAnonymousAncestor() const;
+
+  // Returns the nearest ancestor in the layout tree that IsForElement(),
+  // or null if there is none.
+  LayoutObject* NearestAncestorForElement() const;
 
   const LayoutBlock* InclusiveContainingBlock() const;
 
@@ -3261,9 +3300,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     bitfields_.SetScrollAnchorDisablingStyleChanged(changed);
   }
 
-  bool CompositedScrollsWithRespectTo(
-      const LayoutBoxModelObject& paint_invalidation_container) const;
-
   BackgroundPaintLocation GetBackgroundPaintLocation() const {
     NOT_DESTROYED();
     return bitfields_.GetBackgroundPaintLocation();
@@ -3452,6 +3488,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     kLayoutObjectNGOutsideListMarker,
     kLayoutObjectNGProgress,
     kLayoutObjectNGText,
+    kLayoutObjectNGTextCombine,
     kLayoutObjectNGTextControlMultiLine,
     kLayoutObjectNGTextControlSingleLine,
     kLayoutObjectOutsideListMarker,
@@ -3619,6 +3656,15 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     DCHECK_EQ(GetDocument().Lifecycle().GetState(),
               DocumentLifecycle::kInPrePaint);
     bitfields_.SetBackgroundIsKnownToBeObscured(b);
+  }
+
+  bool IsAnonymousNGMulticolInlineWrapper() const {
+    NOT_DESTROYED();
+    return bitfields_.IsAnonymousNGMulticolInlineWrapper();
+  }
+  void SetIsAnonymousNGMulticolInlineWrapper() {
+    NOT_DESTROYED();
+    bitfields_.SetIsAnonymousNGMulticolInlineWrapper(true);
   }
 
   // Returns ContainerForAbsolutePosition() if it's a LayoutBlock, or the
@@ -3847,6 +3893,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           should_skip_next_layout_shift_tracking_(true),
           should_assume_paint_offset_translation_for_layout_shift_tracking_(
               false),
+          might_traverse_physical_fragments_(false),
+          is_anonymous_ng_multicol_inline_wrapper_(false),
           positioned_state_(kIsStaticallyPositioned),
           selection_state_(static_cast<unsigned>(SelectionState::kNone)),
           subtree_paint_property_update_reasons_(
@@ -4176,6 +4224,16 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
         should_assume_paint_offset_translation_for_layout_shift_tracking_,
         ShouldAssumePaintOffsetTranslationForLayoutShiftTracking);
 
+    // True if there's a possibility that we can walk NG fragment children of
+    // this object. False if we definitely need to walk the LayoutObject tree.
+    ADD_BOOLEAN_BITFIELD(might_traverse_physical_fragments_,
+                         MightTraversePhysicalFragments);
+
+    // True if this is an anonymous inline wrapper created for NG, and the
+    // wrapper is a direct child of a multicol.
+    ADD_BOOLEAN_BITFIELD(is_anonymous_ng_multicol_inline_wrapper_,
+                         IsAnonymousNGMulticolInlineWrapper);
+
    private:
     // This is the cached 'position' value of this object
     // (see ComputedStyle::position).
@@ -4358,32 +4416,6 @@ inline bool LayoutObject::IsMarkerContent() const {
 
 inline bool LayoutObject::IsBeforeOrAfterContent() const {
   return IsBeforeContent() || IsAfterContent();
-}
-
-inline bool LayoutObject::CanTraversePhysicalFragments() const {
-  if (LIKELY(!RuntimeEnabledFeatures::LayoutNGFragmentTraversalEnabled()))
-    return false;
-  // Non-NG objects should be painted by legacy.
-  if (!IsLayoutNGObject()) {
-    if (IsBox())
-      return false;
-    // Non-LayoutBox objects (such as LayoutInline) don't necessarily create NG
-    // LayoutObjects. If they are laid out by an NG container, though, we may be
-    // allowed to traverse their fragments. Otherwise, bail now.
-    if (!IsInLayoutNGInlineFormattingContext())
-      return false;
-  }
-  // The NG paint system currently doesn't support replaced content.
-  if (IsLayoutReplaced())
-    return false;
-  // The NG paint system currently doesn't support table-cells.
-  if (IsTableCellLegacy())
-    return false;
-  // Text controls have some logic in the layout objects that will be missed if
-  // we traverse the fragment tree when hit-testing.
-  if (IsTextControlIncludingNG())
-    return false;
-  return true;
 }
 
 // setNeedsLayout() won't cause full paint invalidations as

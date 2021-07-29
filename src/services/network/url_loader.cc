@@ -72,6 +72,7 @@
 #include "services/network/public/mojom/cookie_access_observer.mojom-forward.h"
 #include "services/network/public/mojom/cookie_access_observer.mojom.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
+#include "services/network/public/mojom/early_hints.mojom.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/origin_policy_manager.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -159,6 +160,7 @@ void PopulateResourceResponse(net::URLRequest* request,
   response->has_range_requested = request->extra_request_headers().HasHeader(
       net::HttpRequestHeaders::kRange);
   response->dns_aliases = request->response_info().dns_aliases;
+  response->request_include_credentials = request->allow_credentials();
 }
 
 // A subclass of net::UploadBytesElementReader which owns
@@ -1141,7 +1143,6 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
 
   DCHECK(!deferred_redirect_url_);
   deferred_redirect_url_ = std::make_unique<GURL>(redirect_info.new_url);
-  SetRequestCredentials(redirect_info.new_url);
 
   // Send the redirect response to the client, allowing them to inspect it and
   // optionally follow the redirect.
@@ -1170,7 +1171,6 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
           CrossOriginResourcePolicy::IsBlocked(
               url_request_->url(), url_request_->original_url(),
               url_request_->initiator(), *response, request_mode_,
-              factory_params_->request_initiator_origin_lock,
               request_destination_, cross_origin_embedder_policy,
               coep_reporter_)) {
     CompleteBlockedResponse(net::ERR_BLOCKED_BY_RESPONSE, false,
@@ -1190,6 +1190,8 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
     DeleteSelf();
     return;
   }
+
+  SetRequestCredentials(redirect_info.new_url);
 
   // We may need to clear out old Sec- prefixed request headers. We'll attempt
   // to do this before we re-add any.
@@ -1353,7 +1355,8 @@ void URLLoader::ContinueOnResponseStarted() {
   options.struct_size = sizeof(MojoCreateDataPipeOptions);
   options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
   options.element_num_bytes = 1;
-  options.capacity_num_bytes = kDataPipeDefaultAllocationSize;
+  options.capacity_num_bytes =
+      network::features::GetDataPipeDefaultAllocationSize();
   MojoResult result =
       mojo::CreateDataPipe(&options, response_body_stream_, consumer_handle_);
   if (result != MOJO_RESULT_OK) {
@@ -1392,7 +1395,6 @@ void URLLoader::ContinueOnResponseStarted() {
           CrossOriginResourcePolicy::IsBlocked(
               url_request_->url(), url_request_->original_url(),
               url_request_->initiator(), *response_, request_mode_,
-              factory_params_->request_initiator_origin_lock,
               request_destination_, cross_origin_embedder_policy,
               coep_reporter_)) {
     CompleteBlockedResponse(net::ERR_BLOCKED_BY_RESPONSE, false,
@@ -1416,7 +1418,7 @@ void URLLoader::ContinueOnResponseStarted() {
     corb_analyzer_ =
         std::make_unique<CrossOriginReadBlocking::ResponseAnalyzer>(
             url_request_->url(), url_request_->initiator(), *response_,
-            factory_params_->request_initiator_origin_lock, request_mode_);
+            request_mode_);
     is_more_corb_sniffing_needed_ = corb_analyzer_->needs_sniffing();
     if (corb_analyzer_->ShouldBlock()) {
       DCHECK(!is_more_corb_sniffing_needed_);
@@ -1914,8 +1916,21 @@ void URLLoader::NotifyEarlyResponse(
   DCHECK(headers);
   DCHECK_EQ(headers->response_code(), 103);
 
-  url_loader_client_->OnReceiveEarlyHints(mojom::EarlyHints::New(
-      PopulateParsedHeaders(headers.get(), url_request_->url())));
+  // Calculate IP address space.
+  mojom::ParsedHeadersPtr parsed_headers =
+      PopulateParsedHeaders(headers.get(), url_request_->url());
+  std::vector<GURL> url_list_via_service_worker;
+  net::IPEndPoint transaction_endpoint;
+  bool has_endpoint =
+      url_request_->GetTransactionRemoteEndpoint(&transaction_endpoint);
+  DCHECK(has_endpoint);
+  CalculateClientAddressSpaceParams params(
+      url_list_via_service_worker, parsed_headers, transaction_endpoint);
+  mojom::IPAddressSpace ip_address_space =
+      CalculateClientAddressSpace(url_request_->url(), params);
+
+  url_loader_client_->OnReceiveEarlyHints(
+      mojom::EarlyHints::New(std::move(parsed_headers), ip_address_space));
 }
 
 void URLLoader::SetRawRequestHeadersAndNotify(
@@ -2354,6 +2369,20 @@ void URLLoader::SetRequestCredentials(const GURL& url) {
     url_request_->set_allow_credentials(allow_credentials);
 
   url_request_->set_send_client_certs(allow_client_certificates);
+
+  // Contrary to Firefox or blink's cache, the HTTP cache doesn't distinguish
+  // requests including user's credentials from the anonymous ones yet. See
+  // https://docs.google.com/document/d/1lvbiy4n-GM5I56Ncw304sgvY5Td32R6KHitjRXvkZ6U
+  // As a workaround until a solution is implemented, the cached responses
+  // aren't used for those requests.
+  if (!coep_allow_credentials) {
+    DCHECK(base::FeatureList::IsEnabled(
+               features::kCrossOriginEmbedderPolicyCredentialless) ||
+           base::FeatureList::IsEnabled(
+               features::kCrossOriginEmbedderPolicyCredentiallessOriginTrial));
+    url_request_->SetLoadFlags(url_request_->load_flags() |
+                               net::LOAD_BYPASS_CACHE);
+  }
 }
 
 // https://github.com/mikewest/credentiallessness
@@ -2377,12 +2406,13 @@ bool URLLoader::CoepAllowCredentials(const GURL& url) {
   if (coep_policy != mojom::CrossOriginEmbedderPolicyValue::kCredentialless)
     return true;
   DCHECK(base::FeatureList::IsEnabled(
-      features::kCrossOriginEmbedderPolicyCredentialless));
+             features::kCrossOriginEmbedderPolicyCredentialless) ||
+         base::FeatureList::IsEnabled(
+             features::kCrossOriginEmbedderPolicyCredentiallessOriginTrial));
 
   url::Origin request_origin = url::Origin::Create(url);
   url::Origin request_initiator =
-      GetTrustworthyInitiator(url_request_->initiator(),
-                              factory_params_->request_initiator_origin_lock);
+      url_request_->initiator().value_or(url::Origin());
   if (request_origin.IsSameOriginWith(request_initiator))
     return true;
 

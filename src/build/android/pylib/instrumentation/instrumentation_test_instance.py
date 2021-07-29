@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from __future__ import absolute_import
+
 import copy
 import logging
 import os
@@ -408,7 +408,7 @@ def SaveTestsToPickle(pickle_path, tests):
     'VERSION': _PICKLE_FORMAT_VERSION,
     'TEST_METHODS': tests,
   }
-  with open(pickle_path, 'w') as pickle_file:
+  with open(pickle_path, 'wb') as pickle_file:
     pickle.dump(pickle_data, pickle_file)
 
 
@@ -528,7 +528,6 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     self._initializeTestControlAttributes(args)
 
     self._coverage_directory = None
-    self._jacoco_coverage_type = None
     self._initializeTestCoverageAttributes(args)
 
     self._store_tombstones = False
@@ -551,6 +550,9 @@ class InstrumentationTestInstance(test_instance.TestInstance):
 
     self._skia_gold_properties = None
     self._initializeSkiaGoldAttributes(args)
+
+    self._test_launcher_batch_limit = None
+    self._initializeTestLauncherAttributes(args)
 
     self._wpr_enable_record = args.wpr_enable_record
 
@@ -724,12 +726,6 @@ class InstrumentationTestInstance(test_instance.TestInstance):
 
   def _initializeTestCoverageAttributes(self, args):
     self._coverage_directory = args.coverage_dir
-    if ("Batch", "UnitTests") in self._annotations and (
-        "Batch", "UnitTests") not in self._excluded_annotations:
-      self._jacoco_coverage_type = "unit_tests_only"
-    elif ("Batch", "UnitTests") not in self._annotations and (
-        "Batch", "UnitTests") in self._excluded_annotations:
-      self._jacoco_coverage_type = "unit_tests_excluded"
 
   def _initializeLogAttributes(self, args):
     self._enable_java_deobfuscation = args.enable_java_deobfuscation
@@ -766,6 +762,10 @@ class InstrumentationTestInstance(test_instance.TestInstance):
 
   def _initializeSkiaGoldAttributes(self, args):
     self._skia_gold_properties = gold_utils.AndroidSkiaGoldProperties(args)
+
+  def _initializeTestLauncherAttributes(self, args):
+    if hasattr(args, 'test_launcher_batch_limit'):
+      self._test_launcher_batch_limit = args.test_launcher_batch_limit
 
   @property
   def additional_apks(self):
@@ -806,10 +806,6 @@ class InstrumentationTestInstance(test_instance.TestInstance):
   @property
   def flags(self):
     return self._flags
-
-  @property
-  def jacoco_coverage_type(self):
-    return self._jacoco_coverage_type
 
   @property
   def junit3_runner_class(self):
@@ -868,8 +864,16 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     return self._test_apk_incremental_install_json
 
   @property
+  def test_filter(self):
+    return self._test_filter
+
+  @property
   def test_jar(self):
     return self._test_jar
+
+  @property
+  def test_launcher_batch_limit(self):
+    return self._test_launcher_batch_limit
 
   @property
   def test_support_apk(self):

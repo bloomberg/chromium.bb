@@ -19,7 +19,7 @@ const {
  * TODO(b/185734620): This should be type {ReceivedFileList} but closure fails
  * to resolve it properly. See b/185734620 for details.
  */
-let lastReceivedFileList = null;
+let lastLoadedFileList = null;
 
 /**
  * Test cases registered by GUEST_TEST.
@@ -28,12 +28,59 @@ let lastReceivedFileList = null;
 const guestTestCases = new Map();
 
 /**
+ * Returns the last file list passed to the guest context over the message pipe.
+ * A file list can be "received" whether or not the app is loaded. If the app is
+ * loaded, `loadFiles` can `await` the load, and forward that promise over the
+ * message pipe back to the launchConsumer, which unit tests can `await`. But if
+ * the app is not loaded (and the test cares) it must await on the effect of the
+ * load as well. This is because `loadFiles` returns immediately after setting
+ * the received file list on `window.customLaunchData.files`. Support either.
+ * This only affects tests: `launchConsumer` cannot be awaited in the real app.
+ */
+function assertLastReceivedFileList() {
+  if (lastLoadedFileList) {
+    return lastLoadedFileList;
+  }
+  if (window.customLaunchData.files.length === 0) {
+    throw new Error('No file list received.');
+  }
+  console.log('Note: app not loaded. Returning customLaunchData.files.');
+  return window.customLaunchData.files;
+}
+
+/**
  * @return {!mediaApp.AbstractFile}
  */
 function currentFile() {
-  const fileList = assertCast(lastReceivedFileList);
+  const fileList = assertLastReceivedFileList();
   return assertCast(fileList.item(fileList.currentFileIndex));
 }
+
+/**
+ * Handlers for simple tests run in the guest that return a string result.
+ * @type{!Object<string, function(!TestMessageQueryData): Promise<string>>}
+ */
+const SIMPLE_TEST_QUERIES = {
+  requestSaveFile: async (data) => {
+    // Call requestSaveFile on the delegate.
+    const existingFile = assertLastReceivedFileList().item(0);
+    if (!existingFile) {
+      return 'requestSaveFile failed, no file loaded';
+    }
+    const pickedFile = await DELEGATE.requestSaveFile(
+        existingFile.name, existingFile.mimeType,
+        data.simpleArgs ? data.simpleArgs.accept : []);
+    return assertCast(pickedFile.token).toString();
+  },
+  getExportFile: async (data) => {
+    const existingFile = assertLastReceivedFileList().item(0);
+    if (!existingFile) {
+      return 'getExportFile failed, no file loaded';
+    }
+    const pickedFile = await existingFile.getExportFile(data.simpleArgs.accept);
+    return pickedFile.token.toString();
+  }
+};
 
 /**
  * Acts on received TestMessageQueryData.
@@ -57,13 +104,15 @@ async function runTestQuery(data) {
         result = typeError.message;
       }
     }
+  } else if (data.simple !== undefined && data.simple in SIMPLE_TEST_QUERIES) {
+    result = await SIMPLE_TEST_QUERIES[data.simple](data);
   } else if (data.navigate !== undefined) {
     // Simulate a user navigating to the next/prev file.
     if (data.navigate.direction === 'next') {
-      await assertCast(lastReceivedFileList).loadNext(data.navigate.token);
+      await assertLastReceivedFileList().loadNext(data.navigate.token);
       result = 'loadNext called';
     } else if (data.navigate.direction === 'prev') {
-      await assertCast(lastReceivedFileList).loadPrev(data.navigate.token);
+      await assertLastReceivedFileList().loadPrev(data.navigate.token);
       result = 'loadPrev called';
     } else {
       result = 'nothing called';
@@ -111,27 +160,17 @@ async function runTestQuery(data) {
     } catch (/** @type{!Error} */ error) {
       result = `renameOriginalFile failed Error: ${error}`;
     }
-  } else if (data.requestSaveFile) {
-    // Call requestSaveFile on the delegate.
-    const existingFile = assertCast(lastReceivedFileList).item(0);
-    if (!existingFile) {
-      result = 'requestSaveFile failed, no file loaded';
-    } else {
-      const pickedFile = await DELEGATE.requestSaveFile(
-          existingFile.name, existingFile.mimeType);
-      result = assertCast(pickedFile.token).toString();
-    }
   } else if (data.saveAs) {
     // Call save as on the first item in the last received file list, simulating
     // a user clicking save as in the file.
-    const existingFile = assertCast(lastReceivedFileList).item(0);
+    const existingFile = assertLastReceivedFileList().item(0);
     if (!existingFile) {
       result = 'saveAs failed, no file loaded';
     } else {
       const file = currentFile();
       try {
         const token = (await DELEGATE.requestSaveFile(
-                           existingFile.name, existingFile.mimeType))
+                           existingFile.name, existingFile.mimeType, []))
                           .token;
         const testBlob = new Blob([data.saveAs]);
         await assertCast(file.saveAs).call(file, testBlob, assertCast(token));
@@ -143,11 +182,10 @@ async function runTestQuery(data) {
       }
     }
   } else if (data.getFileErrors) {
-    result =
-        assertCast(lastReceivedFileList).files.map(file => file.error).join();
+    result = assertLastReceivedFileList().files.map(file => file.error).join();
   } else if (data.openFile) {
     // Call open file on file list, simulating a user trying to open a new file.
-    await assertCast(lastReceivedFileList).openFile();
+    await assertLastReceivedFileList().openFile();
   } else if (data.getLastFileName) {
     result = currentFile().name;
   } else if (data.suppressCrashReports) {
@@ -252,7 +290,7 @@ function installTestHandlers() {
       };
     }
     return /** @type {!LastLoadedFilesResponse} */ (
-        {fileList: assertCast(lastReceivedFileList).files.map(snapshot)});
+        {fileList: assertLastReceivedFileList().files.map(snapshot)});
   });
 
   // Log errors, rather than send them to console.error. This allows the error
@@ -268,7 +306,7 @@ function installTestHandlers() {
    * @return {!Promise<undefined>}
    */
   async function watchLoadFiles(fileList) {
-    lastReceivedFileList = fileList;
+    lastLoadedFileList = fileList;
     return realLoadFiles(fileList);
   }
   setLoadFiles(watchLoadFiles);

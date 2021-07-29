@@ -7,7 +7,7 @@ import type * as puppeteer from 'puppeteer';
 
 import {$$, click, getBrowserAndPages, goToResource, timeout, waitFor} from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
-import {getComputedStylesForDomNode, getDisplayedCSSPropertyNames, getDisplayedStyleRules, getStyleRule, getStyleSectionSubtitles, waitForContentOfSelectedElementsNode, waitForElementsStyleSection, waitForPropertyToHighlight, waitForStyleRule} from '../helpers/elements-helpers.js';
+import {editQueryRuleText, getComputedStylesForDomNode, getDisplayedCSSPropertyNames, getDisplayedStyleRules, getStyleRule, getStyleSectionSubtitles, waitForContentOfSelectedElementsNode, waitForElementsStyleSection, waitForPropertyToHighlight, waitForStyleRule} from '../helpers/elements-helpers.js';
 
 const PROPERTIES_TO_DELETE_SELECTOR = '#properties-to-delete';
 const PROPERTIES_TO_INSPECT_SELECTOR = '#properties-to-inspect';
@@ -184,7 +184,14 @@ describe('The Styles pane', async () => {
     const subtitles = await getStyleSectionSubtitles();
     assert.deepEqual(
         subtitles,
-        ['', 'constructed stylesheet', 'stylesheets…ces.html:10', 'stylesheets…rces.html:7', 'user agent stylesheet'],
+        [
+          '',
+          'css-module.css:1',
+          'constructed stylesheet',
+          'stylesheets…ces.html:10',
+          'stylesheets…rces.html:7',
+          'user agent stylesheet',
+        ],
         'incorrectly displayed style sources');
 
     const divRules = await getDisplayedStyleRules();
@@ -192,6 +199,7 @@ describe('The Styles pane', async () => {
         divRules,
         [
           {selectorText: 'element.style', propertyNames: []},
+          {selectorText: '#properties-to-inspect', propertyNames: ['height']},
           {selectorText: '#properties-to-inspect', propertyNames: ['color']},
           {selectorText: '#properties-to-inspect', propertyNames: ['text-align']},
           {selectorText: '#properties-to-inspect', propertyNames: ['width']},
@@ -262,5 +270,68 @@ describe('The Styles pane', async () => {
       await getComputedStylesForDomNode(RULE1_SELECTOR, 'background-color'),
     ];
     assert.deepEqual(computedStyles, ['rgb(255, 0, 0)', 'rgb(255, 0, 0)'], 'Styles are not correct after the update');
+  });
+
+  // Consistently timing out on Mac
+  it.skipOnPlatforms(['mac'], '[crbug.com/1218736] can display and edit container queries', async () => {
+    const {frontend} = getBrowserAndPages();
+    await goToResourceAndWaitForStyleSection('elements/css-container-queries.html');
+
+    // Select the child that has container queries.
+    await frontend.keyboard.press('ArrowDown');
+    await waitForContentOfSelectedElementsNode('<div class=\u200B"rule1 rule2">\u200B</div>\u200B');
+
+    // Verify that initial CSS properties correspond to the ones in the test file.
+    const rule1PropertiesSection = await getStyleRule(RULE1_SELECTOR);
+    const rule2PropertiesSection = await getStyleRule(RULE2_SELECTOR);
+    {
+      const displayedNames = await getDisplayedCSSPropertyNames(rule1PropertiesSection);
+      assert.deepEqual(
+          displayedNames,
+          [
+            'width',
+          ],
+          'incorrectly displayed style after initialization');
+    }
+    {
+      const displayedNames = await getDisplayedCSSPropertyNames(rule2PropertiesSection);
+      assert.deepEqual(
+          displayedNames,
+          [
+            'height',
+          ],
+          'incorrectly displayed style after initialization');
+    }
+
+    await editQueryRuleText(rule1PropertiesSection, '(min-width: 300px)');
+    await editQueryRuleText(rule2PropertiesSection, '(max-width: 300px)');
+
+    // Verify that computed styles correspond to the changes made.
+    const computedStyles = [
+      await getComputedStylesForDomNode(RULE1_SELECTOR, 'width'),
+      await getComputedStylesForDomNode(RULE2_SELECTOR, 'height'),
+    ];
+    assert.deepEqual(computedStyles, ['0px', '10px'], 'Styles are not correct after the update');
+  });
+
+  it('can display container link', async () => {
+    const {frontend} = getBrowserAndPages();
+    await goToResourceAndWaitForStyleSection('elements/css-container-queries.html');
+
+    // Select the child that has container queries.
+    await frontend.keyboard.press('ArrowDown');
+    await waitForContentOfSelectedElementsNode('<div class=\u200B"rule1 rule2">\u200B</div>\u200B');
+
+    const rule1PropertiesSection = await getStyleRule(RULE1_SELECTOR);
+    const containerLink = await waitFor('.container-link', rule1PropertiesSection);
+    const nodeLabelName = await waitFor('.node-label-name', containerLink);
+    const nodeLabelNameContent = await nodeLabelName.evaluate(node => node.textContent as string);
+    assert.strictEqual(nodeLabelNameContent, 'body', 'container link name does not match');
+    containerLink.hover();
+    const queriedSizeDetails = await waitFor('.queried-size-details');
+    const queriedSizeDetailsContent =
+        await queriedSizeDetails.evaluate(node => (node as HTMLElement).innerText as string);
+    assert.strictEqual(
+        queriedSizeDetailsContent, '(size) width: 200px height: 0px', 'container queried details does not match');
   });
 });

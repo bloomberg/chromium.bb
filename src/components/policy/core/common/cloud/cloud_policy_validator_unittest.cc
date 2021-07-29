@@ -20,12 +20,20 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
-#include "components/policy/core/common/cloud/policy_builder.h"
+#include "components/policy/core/common/cloud/test/policy_builder.h"
 #include "components/policy/core/common/policy_switches.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "crypto/rsa_private_key.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "base/command_line.h"
+#include "base/system/sys_info.h"
+#include "base/test/scoped_chromeos_version_info.h"
+#include "base/time/time.h"
+#include "testing/gtest/include/gtest/gtest-death-test.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace em = enterprise_management;
 
@@ -106,8 +114,8 @@ class CloudPolicyValidatorTest : public testing::Test {
         std::move(policy_response), base::ThreadTaskRunnerHandle::Get());
     validator->ValidateTimestamp(timestamp_, timestamp_option_);
     if (validate_by_gaia_id_) {
-      validator->ValidateUsernameAndGaiaId(/*username=*/std::string(),
-                                           PolicyBuilder::kFakeGaiaId);
+      validator->ValidateUsernameAndGaiaId(
+          /*expected_user=*/std::string(), PolicyBuilder::kFakeGaiaId);
     } else {
       validator->ValidateUsername(PolicyBuilder::kFakeUsername);
     }
@@ -176,6 +184,45 @@ class CloudPolicyValidatorTest : public testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(CloudPolicyValidatorTest);
 };
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+TEST_F(CloudPolicyValidatorTest,
+       SuccessfulValidationWithDisableKeyVerificationOnTestImage) {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->AppendSwitch(switches::kDisablePolicyKeyVerification);
+  const char kLsbRelease[] =
+      "CHROMEOS_RELEASE_NAME=Chrome OS\n"
+      "CHROMEOS_RELEASE_VERSION=1.2.3.4\n"
+      "CHROMEOS_RELEASE_TRACK=testimage-channel\n";
+  base::test::ScopedChromeOSVersionInfo version(kLsbRelease, base::Time());
+  EXPECT_TRUE(base::SysInfo::IsRunningOnChromeOS());
+
+  // Should not crash when creating a CloudPolicyValidator. Runs validation
+  // successfully.
+  Validate(Invoke(this, &CloudPolicyValidatorTest::CheckSuccessfulValidation));
+}
+
+TEST_F(CloudPolicyValidatorTest,
+       CrashIfDisableKeyVerificationWithoutTestImage) {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->AppendSwitch(switches::kDisablePolicyKeyVerification);
+  const char kLsbRelease[] =
+      "CHROMEOS_RELEASE_NAME=Chrome OS\n"
+      "CHROMEOS_RELEASE_VERSION=1.2.3.4\n"
+      "CHROMEOS_RELEASE_TRACK=stable-channel\n";
+  base::test::ScopedChromeOSVersionInfo version(kLsbRelease, base::Time());
+  EXPECT_TRUE(base::SysInfo::IsRunningOnChromeOS());
+
+  // Should crash when creating a CloudPolicyValidator.
+  EXPECT_DEATH_IF_SUPPORTED(
+      {
+        policy_.Build();
+        std::unique_ptr<UserCloudPolicyValidator> validator =
+            CreateValidator(policy_.GetCopy());
+      },
+      "");
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 TEST_F(CloudPolicyValidatorTest, SuccessfulValidation) {
   Validate(Invoke(this, &CloudPolicyValidatorTest::CheckSuccessfulValidation));

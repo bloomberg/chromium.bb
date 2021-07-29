@@ -12,6 +12,7 @@
 #include <ostream>
 #include <vector>
 
+#include "absl/container/inlined_vector.h"
 #include "quic/core/quic_connection_id.h"
 #include "quic/core/quic_error_codes.h"
 #include "quic/core/quic_packet_number.h"
@@ -25,7 +26,13 @@ namespace quic {
 using QuicPacketLength = uint16_t;
 using QuicControlFrameId = uint32_t;
 using QuicMessageId = uint32_t;
-using QuicDatagramFlowId = uint64_t;
+
+// TODO(b/181256914) replace QuicDatagramStreamId with QuicStreamId once we
+// remove support for draft-ietf-masque-h3-datagram-00 in favor of later drafts.
+using QuicDatagramStreamId = uint64_t;
+using QuicDatagramContextId = uint64_t;
+// Note that for draft-ietf-masque-h3-datagram-00, we represent the flow ID as a
+// QuicDatagramStreamId.
 
 // IMPORTANT: IETF QUIC defines stream IDs and stream counts as being unsigned
 // 62-bit numbers. However, we have decided to only support up to 2^32-1 streams
@@ -580,7 +587,7 @@ struct QUIC_EXPORT_PRIVATE AckedPacket {
 };
 
 // A vector of acked packets.
-using AckedPacketVector = QuicInlinedVector<AckedPacket, 2>;
+using AckedPacketVector = absl::InlinedVector<AckedPacket, 2>;
 
 // Information about a newly lost packet.
 struct QUIC_EXPORT_PRIVATE LostPacket {
@@ -597,7 +604,7 @@ struct QUIC_EXPORT_PRIVATE LostPacket {
 };
 
 // A vector of lost packets.
-using LostPacketVector = QuicInlinedVector<LostPacket, 2>;
+using LostPacketVector = absl::InlinedVector<LostPacket, 2>;
 
 // Please note, this value cannot used directly for packet serialization.
 enum QuicLongHeaderType : uint8_t {
@@ -825,6 +832,13 @@ QUIC_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& os,
                                              const KeyUpdateReason reason);
 
 QUIC_EXPORT_PRIVATE std::string KeyUpdateReasonString(KeyUpdateReason reason);
+
+// QuicSSLConfig contains configurations to be applied on a SSL object, which
+// overrides the configurations in SSL_CTX.
+struct QUIC_NO_EXPORT QuicSSLConfig {
+  // Whether TLS early data should be enabled. If not set, default to enabled.
+  absl::optional<bool> early_data_enabled;
+};
 
 }  // namespace quic
 

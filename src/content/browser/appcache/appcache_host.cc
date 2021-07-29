@@ -27,6 +27,7 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
@@ -73,8 +74,9 @@ bool CanAccessDocumentURL(ChildProcessSecurityPolicyImpl::Handle* handle,
 }
 
 base::debug::CrashKeyString* GetDocumentUrlCrashKey() {
-  static auto* appcache_document_url_key = base::debug::AllocateCrashKeyString(
-      "appcache_document_url", base::debug::CrashKeySize::Size256);
+  static auto* const appcache_document_url_key =
+      base::debug::AllocateCrashKeyString("appcache_document_url",
+                                          base::debug::CrashKeySize::Size256);
   return appcache_document_url_key;
 }
 
@@ -121,7 +123,8 @@ AppCacheHost::~AppCacheHost() {
     group_being_updated_->RemoveUpdateObserver(this);
   storage()->CancelDelegateCallbacks(this);
   if (service()->quota_manager_proxy() && !origin_in_use_.opaque())
-    service()->quota_manager_proxy()->NotifyOriginNoLongerInUse(origin_in_use_);
+    service()->quota_manager_proxy()->NotifyStorageKeyNoLongerInUse(
+        blink::StorageKey(origin_in_use_));
 
   // Run pending callbacks in case we get destroyed with pending callbacks while
   // the mojo connection is still open.
@@ -190,7 +193,8 @@ void AppCacheHost::SelectCache(const GURL& document_url,
 
   origin_in_use_ = url::Origin::Create(document_url);
   if (service()->quota_manager_proxy() && !origin_in_use_.opaque())
-    service()->quota_manager_proxy()->NotifyOriginInUse(origin_in_use_);
+    service()->quota_manager_proxy()->NotifyStorageKeyInUse(
+        blink::StorageKey(origin_in_use_));
 
   if (main_resource_blocked_)
     OnContentBlocked(blocked_manifest_url_);

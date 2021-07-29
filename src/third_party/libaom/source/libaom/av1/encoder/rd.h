@@ -191,7 +191,7 @@ struct TileDataEnc;
 struct AV1_COMP;
 struct macroblock;
 
-int av1_compute_rd_mult_based_on_qindex(aom_bit_depth_t bit_depth, int qindex);
+int av1_compute_rd_mult_based_on_qindex(const struct AV1_COMP *cpi, int qindex);
 
 int av1_compute_rd_mult(const struct AV1_COMP *cpi, int qindex);
 
@@ -346,7 +346,7 @@ void av1_fill_dv_costs(const nmv_context *ndvc, IntraBCMVCosts *dv_costs);
 
 int av1_get_adaptive_rdmult(const struct AV1_COMP *cpi, double beta);
 
-int av1_get_deltaq_offset(const struct AV1_COMP *cpi, int qindex, double beta);
+int av1_get_deltaq_offset(aom_bit_depth_t bit_depth, int qindex, double beta);
 
 #ifdef __cplusplus
 }  // extern "C"

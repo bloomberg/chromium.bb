@@ -39,6 +39,17 @@ ALIASING_EXCEPTIONS = [
     'renderbufferStorageMultisampleEXT',
 ]
 
+# These are the entry points which potentially are used first by an application
+# and require that the back ends are initialized before the front end is called.
+INIT_DICT = {
+    "clGetPlatformIDs": "false",
+    "clGetPlatformInfo": "false",
+    "clGetDeviceIDs": "false",
+    "clCreateContext": "false",
+    "clCreateContextFromType": "false",
+    "clIcdGetPlatformIDsKHR": "true",
+}
+
 # Strip these suffixes from Context entry point names. NV is excluded (for now).
 STRIP_SUFFIXES = ["ANDROID", "ANGLE", "EXT", "KHR", "OES", "CHROMIUM", "OVR"]
 
@@ -245,7 +256,6 @@ TEMPLATE_EGL_ENTRY_POINT_WITH_RETURN = """\
 TEMPLATE_CL_ENTRY_POINT_NO_RETURN = """\
 void CL_API_CALL cl{name}({params})
 {{
-    ANGLE_SCOPED_GLOBAL_LOCK();
     CL_EVENT({name}, "{format_params}"{comma_if_needed}{pass_params});
 
     {packed_gl_enum_conversions}
@@ -258,8 +268,7 @@ void CL_API_CALL cl{name}({params})
 
 TEMPLATE_CL_ENTRY_POINT_WITH_RETURN_ERROR = """\
 cl_int CL_API_CALL cl{name}({params})
-{{
-    ANGLE_SCOPED_GLOBAL_LOCK();
+{{{initialization}
     CL_EVENT({name}, "{format_params}"{comma_if_needed}{pass_params});
 
     {packed_gl_enum_conversions}
@@ -270,10 +279,30 @@ cl_int CL_API_CALL cl{name}({params})
 }}
 """
 
+TEMPLATE_CL_ENTRY_POINT_WITH_ERRCODE_RET = """\
+{return_type} CL_API_CALL cl{name}({params})
+{{{initialization}
+    CL_EVENT({name}, "{format_params}"{comma_if_needed}{pass_params});
+
+    {packed_gl_enum_conversions}
+
+    ANGLE_CL_VALIDATE_ERRCODE_RET({name}{comma_if_needed}{internal_params});
+
+    cl_int errorCode = CL_SUCCESS;
+    {return_type} object = {name}({internal_params}, errorCode);
+
+    ASSERT((errorCode == CL_SUCCESS) == (object != nullptr));
+    if (errcode_ret != nullptr)
+    {{
+        *errcode_ret = errorCode;
+    }}
+    return object;
+}}
+"""
+
 TEMPLATE_CL_ENTRY_POINT_WITH_RETURN_POINTER = """\
 {return_type} CL_API_CALL cl{name}({params})
-{{
-    ANGLE_SCOPED_GLOBAL_LOCK();
+{{{initialization}
     CL_EVENT({name}, "{format_params}"{comma_if_needed}{pass_params});
 
     {packed_gl_enum_conversions}
@@ -606,7 +635,7 @@ using namespace gl;
 namespace angle
 {{
 
-void FrameCapture::ReplayCall(gl::Context *context,
+void FrameCaptureShared::ReplayCall(gl::Context *context,
                               ReplayContext *replayContext,
                               const CallCapture &call)
 {{
@@ -963,7 +992,6 @@ LIBCL_SOURCE_INCLUDES = """\
 #include "libANGLE/validationCL_autogen.h"
 #include "libGLESv2/cl_stubs_autogen.h"
 #include "libGLESv2/entry_points_cl_utils.h"
-#include "libGLESv2/global_state.h"
 """
 
 TEMPLATE_EVENT_COMMENT = """\
@@ -1200,24 +1228,20 @@ CL_PACKED_TYPES = {
     "cl_kernel_exec_info": "KernelExecInfo",
     "cl_event_info": "EventInfo",
     "cl_profiling_info": "ProfilingInfo",
-    # Objects
-    "cl_platform_id": "Platform *",
-    "cl_platform_id*": "Platform **",
-    "cl_device_id": "Device *",
-    "cl_device_id*": "Device **",
-    "const cl_device_id*": "Device *const *",
-    "cl_context": "Context *",
-    "cl_command_queue": "CommandQueue *",
-    "cl_mem": "Memory *",
-    "const cl_mem*": "Memory *const *",
-    "cl_program": "Program *",
-    "const cl_program*": "Program *const *",
-    "cl_kernel": "Kernel *",
-    "cl_kernel*": "Kernel **",
-    "cl_event": "Event *",
-    "cl_event*": "Event **",
-    "const cl_event*": "Event *const *",
-    "cl_sampler": "Sampler *",
+    # Bit fields
+    "cl_device_type": "DeviceType",
+    "cl_device_fp_config": "DeviceFpConfig",
+    "cl_device_exec_capabilities": "DeviceExecCapabilities",
+    "cl_device_svm_capabilities": "DeviceSvmCapabilities",
+    "cl_command_queue_properties": "CommandQueueProperties",
+    "cl_device_affinity_domain": "DeviceAffinityDomain",
+    "cl_mem_flags": "MemFlags",
+    "cl_svm_mem_flags": "SVM_MemFlags",
+    "cl_mem_migration_flags": "MemMigrationFlags",
+    "cl_map_flags": "MapFlags",
+    "cl_kernel_arg_type_qualifier": "KernelArgTypeQualifier",
+    "cl_device_atomic_capabilities": "DeviceAtomicCapabilities",
+    "cl_device_device_enqueue_capabilities": "DeviceEnqueueCapabilities",
 }
 
 EGL_PACKED_TYPES = {
@@ -1402,13 +1426,6 @@ def param_format_string(param):
         return just_the_name(param) + " = " + FORMAT_DICT[type_only]
 
 
-def default_return_value(cmd_name, return_type):
-    if return_type == "void":
-        return ""
-    return "GetDefaultReturnValue<EntryPoint::%s, %s>()" % (strip_api_prefix(cmd_name),
-                                                            return_type)
-
-
 def is_context_lost_acceptable_cmd(cmd_name):
     lost_context_acceptable_cmds = [
         "glGetError",
@@ -1490,7 +1507,7 @@ def get_packed_enums(api, cmd_packed_gl_enums, cmd_name, packed_param_types, par
     return result
 
 
-def get_def_template(api, return_type):
+def get_def_template(api, return_type, has_errcode_ret):
     if return_type == "void":
         if api == apis.EGL:
             return TEMPLATE_EGL_ENTRY_POINT_NO_RETURN
@@ -1504,7 +1521,10 @@ def get_def_template(api, return_type):
         if api == apis.EGL:
             return TEMPLATE_EGL_ENTRY_POINT_WITH_RETURN
         elif api == apis.CL:
-            return TEMPLATE_CL_ENTRY_POINT_WITH_RETURN_POINTER
+            if has_errcode_ret:
+                return TEMPLATE_CL_ENTRY_POINT_WITH_ERRCODE_RET
+            else:
+                return TEMPLATE_CL_ENTRY_POINT_WITH_RETURN_POINTER
         else:
             return TEMPLATE_GLES_ENTRY_POINT_WITH_RETURN
 
@@ -1513,6 +1533,11 @@ def format_entry_point_def(api, command_node, cmd_name, proto, params, is_explic
                            cmd_packed_enums, packed_param_types, ep_to_object):
     packed_enums = get_packed_enums(api, cmd_packed_enums, cmd_name, packed_param_types, params)
     internal_params = [just_the_name_packed(param, packed_enums) for param in params]
+    if internal_params and internal_params[-1] == "errcode_ret":
+        internal_params.pop()
+        has_errcode_ret = True
+    else:
+        has_errcode_ret = False
     packed_gl_enum_conversions = []
     for param in params:
         name = just_the_name(param)
@@ -1527,7 +1552,7 @@ def format_entry_point_def(api, command_node, cmd_name, proto, params, is_explic
     pass_params = [param_print_argument(command_node, param) for param in params]
     format_params = [param_format_string(param) for param in params]
     return_type = proto[:-len(cmd_name)].strip()
-    default_return = default_return_value(cmd_name, return_type)
+    initialization = "InitBackEnds(%s);\n" % INIT_DICT[cmd_name] if cmd_name in INIT_DICT else ""
     event_comment = TEMPLATE_EVENT_COMMENT if cmd_name in NO_EVENT_MARKER_EXCEPTIONS_LIST else ""
     name_lower_no_suffix = strip_suffix(api, cmd_name[2:3].lower() + cmd_name[3:])
 
@@ -1542,6 +1567,8 @@ def format_entry_point_def(api, command_node, cmd_name, proto, params, is_explic
             ", ".join(params),
         "internal_params":
             ", ".join(internal_params),
+        "initialization":
+            initialization,
         "packed_gl_enum_conversions":
             "".join(packed_gl_enum_conversions),
         "pass_params":
@@ -1572,7 +1599,7 @@ def format_entry_point_def(api, command_node, cmd_name, proto, params, is_explic
             get_egl_entry_point_labeled_object(ep_to_object, cmd_name, params, packed_enums)
     }
 
-    template = get_def_template(api, return_type)
+    template = get_def_template(api, return_type, has_errcode_ret)
     return template.format(**format_params)
 
 
@@ -1681,10 +1708,11 @@ def get_internal_params(api, cmd_name, params, cmd_packed_gl_enums, packed_param
 def get_validation_params(api, cmd_name, params, cmd_packed_gl_enums, packed_param_types):
     packed_gl_enums = get_packed_enums(api, cmd_packed_gl_enums, cmd_name, packed_param_types,
                                        params)
+    last = -1 if params and just_the_name(params[-1]) == "errcode_ret" else None
     return ", ".join([
         make_param(
-            const_pointer_type(param, packed_gl_enums), just_the_name_packed(
-                param, packed_gl_enums)) for param in params
+            const_pointer_type(param, packed_gl_enums),
+            just_the_name_packed(param, packed_gl_enums)) for param in params[:last]
     ])
 
 
@@ -1723,7 +1751,7 @@ def format_entry_point_export(cmd_name, proto, params, is_explicit_context, temp
 
 def format_validation_proto(api, cmd_name, proto, params, cmd_packed_gl_enums, packed_param_types):
     if api == apis.CL:
-        return_type = "cl_int" if proto[:-len(cmd_name)].strip() == "cl_int" else "bool"
+        return_type = "cl_int"
     else:
         return_type = "bool"
     if api in [apis.GL, apis.GLES]:
@@ -2491,9 +2519,9 @@ def write_stubs_header(api, annotation, title, data_source, out_file, all_comman
         proto_text = "".join(proto.itertext())
         params = [] if api == apis.CL else ["Thread *thread"]
         params += ["".join(param.itertext()) for param in command.findall('param')]
+        if params and just_the_name(params[-1]) == "errcode_ret":
+            params[-1] = "cl_int &errorCode"
         return_type = proto_text[:-len(cmd_name)].strip()
-        if api == apis.CL and return_type in packed_param_types:
-            return_type = packed_param_types[return_type]
 
         internal_params = get_internal_params(api, cmd_name, params, cmd_packed_egl_enums,
                                               packed_param_types)

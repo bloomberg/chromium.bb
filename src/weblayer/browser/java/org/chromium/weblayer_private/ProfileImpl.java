@@ -78,7 +78,7 @@ public final class ProfileImpl
         // Normal profiles have restrictions on the name.
         if (!isIncognito && !name.matches("^\\w+$")) {
             throw new IllegalArgumentException(
-                    "Non-incongito profiles names can only contain words: " + name);
+                    "Non-incognito profiles names can only contain words: " + name);
         }
         mIsIncognito = isIncognito;
         mName = name;
@@ -431,6 +431,13 @@ public final class ProfileImpl
             IObjectWrapper onTokenFetchedWrapper) throws RemoteException {
         mAccessTokenFetcherProxy.fetchAccessToken(ObjectWrapper.unwrap(scopesWrapper, Set.class),
                 ObjectWrapper.unwrap(onTokenFetchedWrapper, ValueCallback.class));
+    }
+
+    public void fireOnAccessTokenIdentifiedAsInvalidForTesting(
+            IObjectWrapper scopesWrapper, IObjectWrapper tokenWrapper) throws RemoteException {
+        mAccessTokenFetcherProxy.onAccessTokenIdentifiedAsInvalid(
+                ObjectWrapper.unwrap(scopesWrapper, Set.class),
+                ObjectWrapper.unwrap(tokenWrapper, String.class));
     }
 
     @NativeMethods

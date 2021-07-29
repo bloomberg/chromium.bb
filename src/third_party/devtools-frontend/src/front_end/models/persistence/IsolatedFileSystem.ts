@@ -319,7 +319,7 @@ export class IsolatedFileSystem extends PlatformFileSystem {
     }
     await readPromise;
     if (reader.error) {
-      const error = i18nString(UIStrings.cantReadFileSS, {PH1: path, PH2: reader.error});
+      const error = i18nString(UIStrings.cantReadFileSS, {PH1: path, PH2: reader.error.toString()});
       console.error(error);
       return {content: null, isEncoded: false, error};
     }
@@ -514,7 +514,7 @@ export class IsolatedFileSystem extends PlatformFileSystem {
 
       function innerCallback(files: string[]): void {
         resolve(files.map(path => Common.ParsedURL.ParsedURL.platformPathToURL(path)));
-        progress.worked(1);
+        progress.incrementWorked(1);
       }
     });
   }

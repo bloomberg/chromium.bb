@@ -10,6 +10,7 @@
 
 #include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/allocator/partition_allocator/partition_alloc_forward.h"
+#include "base/allocator/partition_allocator/partition_bucket_lookup.h"
 #include "base/allocator/partition_allocator/partition_freelist_entry.h"
 #include "base/allocator/partition_allocator/partition_lock.h"
 #include "base/allocator/partition_allocator/partition_stats.h"
@@ -19,6 +20,11 @@
 #include "base/dcheck_is_on.h"
 #include "base/gtest_prod_util.h"
 #include "base/no_destructor.h"
+#include "build/build_config.h"
+
+#if defined(ARCH_CPU_X86_64) && defined(PA_HAS_64_BITS_POINTERS)
+#include <algorithm>
+#endif
 
 namespace base {
 
@@ -27,6 +33,33 @@ namespace internal {
 class ThreadCache;
 
 extern BASE_EXPORT PartitionTlsKey g_thread_cache_key;
+// On Windows, |thread_local| variables cannot be marked "dllexport", see
+// compiler error C2492 at
+// https://docs.microsoft.com/en-us/cpp/error-messages/compiler-errors-1/compiler-error-c2492?view=msvc-160.
+// Don't use it there.
+//
+// On Android, we have to go through emutls, since this is always a shared
+// library, so don't bother.
+//
+// On macOS and iOS with PartitionAlloc-Everywhere enabled, thread_local
+// allocates memory and it causes an infinite loop of ThreadCache::Get() ->
+// malloc_zone_malloc -> ShimMalloc -> ThreadCache::Get() -> ...
+// Exact stack trace is:
+//   libsystem_malloc.dylib`_malloc_zone_malloc
+//   libdyld.dylib`tlv_allocate_and_initialize_for_key
+//   libdyld.dylib`tlv_get_addr
+//   libbase.dylib`thread-local wrapper routine for
+//       base::internal::g_thread_cache
+//   libbase.dylib`base::internal::ThreadCache::Get()
+// where tlv_allocate_and_initialize_for_key performs memory allocation.
+#if !(defined(OS_WIN) && defined(COMPONENT_BUILD)) && !defined(OS_ANDROID) && \
+    !(defined(OS_APPLE) && BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC))
+#define PA_THREAD_CACHE_FAST_TLS
+#endif
+
+#if defined(PA_THREAD_CACHE_FAST_TLS)
+extern BASE_EXPORT thread_local ThreadCache* g_thread_cache;
+#endif
 
 // Global registry of all ThreadCache instances.
 //
@@ -103,15 +136,6 @@ constexpr ThreadCacheRegistry::ThreadCacheRegistry() = default;
 #define GET_COUNTER(counter) 0
 #endif  // defined(PA_THREAD_CACHE_ENABLE_STATISTICS)
 
-ALWAYS_INLINE static constexpr int ConstexprLog2(size_t n) {
-  return n < 1 ? -1 : (n < 2 ? 0 : (1 + ConstexprLog2(n >> 1)));
-}
-
-ALWAYS_INLINE static constexpr uint16_t BucketIndexForSize(size_t size) {
-  return ((ConstexprLog2(size) - kMinBucketedOrder + 1)
-          << kNumBucketsPerOrderBits);
-}
-
 #if DCHECK_IS_ON()
 class ReentrancyGuard {
  public:
@@ -159,7 +183,11 @@ class BASE_EXPORT ThreadCache {
   static void EnsureThreadSpecificDataInitialized();
 
   static ThreadCache* Get() {
+#if defined(PA_THREAD_CACHE_FAST_TLS)
+    return g_thread_cache;
+#else
     return reinterpret_cast<ThreadCache*>(PartitionTlsGet(g_thread_cache_key));
+#endif
   }
 
   static bool IsValid(ThreadCache* tcache) {
@@ -266,12 +294,18 @@ class BASE_EXPORT ThreadCache {
   ALWAYS_INLINE void PutInBucket(Bucket& bucket, void* slot_start);
   void ResetForTesting();
   // Releases the entire freelist starting at |head| to the root.
-  void FreeAfter(PartitionFreelistEntry* head);
+  void FreeAfter(PartitionFreelistEntry* head, size_t slot_size);
   static void SetGlobalLimits(PartitionRoot<ThreadSafe>* root,
                               float multiplier);
 
+#if defined(OS_NACL)
+  // The thread cache is never used with NaCl, but its compiler doesn't
+  // understand enough constexpr to handle the code below.
+  static constexpr uint16_t kBucketCount = 1;
+#else
   static constexpr uint16_t kBucketCount =
-      BucketIndexForSize(kLargeSizeThreshold) + 1;
+      internal::BucketIndexLookup::GetIndex(kLargeSizeThreshold) + 1;
+#endif
   static_assert(
       kBucketCount < kNumBuckets,
       "Cannot have more cached buckets than what the allocator supports");
@@ -312,21 +346,27 @@ class BASE_EXPORT ThreadCache {
   ThreadCache* prev_ GUARDED_BY(ThreadCacheRegistry::GetLock());
 
   friend class ThreadCacheRegistry;
-  friend class ThreadCacheTest;
-  FRIEND_TEST_ALL_PREFIXES(ThreadCacheTest, Simple);
-  FRIEND_TEST_ALL_PREFIXES(ThreadCacheTest, MultipleObjectsCachedPerBucket);
-  FRIEND_TEST_ALL_PREFIXES(ThreadCacheTest, LargeAllocationsAreNotCached);
-  FRIEND_TEST_ALL_PREFIXES(ThreadCacheTest, MultipleThreadCaches);
-  FRIEND_TEST_ALL_PREFIXES(ThreadCacheTest, RecordStats);
-  FRIEND_TEST_ALL_PREFIXES(ThreadCacheTest, ThreadCacheRegistry);
-  FRIEND_TEST_ALL_PREFIXES(ThreadCacheTest, MultipleThreadCachesAccounting);
-  FRIEND_TEST_ALL_PREFIXES(ThreadCacheTest, DynamicCountPerBucket);
-  FRIEND_TEST_ALL_PREFIXES(ThreadCacheTest, DynamicCountPerBucketClamping);
-  FRIEND_TEST_ALL_PREFIXES(ThreadCacheTest,
+  friend class PartitionAllocThreadCacheTest;
+  FRIEND_TEST_ALL_PREFIXES(PartitionAllocThreadCacheTest, Simple);
+  FRIEND_TEST_ALL_PREFIXES(PartitionAllocThreadCacheTest,
+                           MultipleObjectsCachedPerBucket);
+  FRIEND_TEST_ALL_PREFIXES(PartitionAllocThreadCacheTest,
+                           LargeAllocationsAreNotCached);
+  FRIEND_TEST_ALL_PREFIXES(PartitionAllocThreadCacheTest, MultipleThreadCaches);
+  FRIEND_TEST_ALL_PREFIXES(PartitionAllocThreadCacheTest, RecordStats);
+  FRIEND_TEST_ALL_PREFIXES(PartitionAllocThreadCacheTest, ThreadCacheRegistry);
+  FRIEND_TEST_ALL_PREFIXES(PartitionAllocThreadCacheTest,
+                           MultipleThreadCachesAccounting);
+  FRIEND_TEST_ALL_PREFIXES(PartitionAllocThreadCacheTest,
+                           DynamicCountPerBucket);
+  FRIEND_TEST_ALL_PREFIXES(PartitionAllocThreadCacheTest,
+                           DynamicCountPerBucketClamping);
+  FRIEND_TEST_ALL_PREFIXES(PartitionAllocThreadCacheTest,
                            DynamicCountPerBucketMultipleThreads);
-  FRIEND_TEST_ALL_PREFIXES(ThreadCacheTest, DynamicSizeThreshold);
-  FRIEND_TEST_ALL_PREFIXES(ThreadCacheTest, DynamicSizeThresholdPurge);
-  FRIEND_TEST_ALL_PREFIXES(ThreadCacheTest, ClearFromTail);
+  FRIEND_TEST_ALL_PREFIXES(PartitionAllocThreadCacheTest, DynamicSizeThreshold);
+  FRIEND_TEST_ALL_PREFIXES(PartitionAllocThreadCacheTest,
+                           DynamicSizeThresholdPurge);
+  FRIEND_TEST_ALL_PREFIXES(PartitionAllocThreadCacheTest, ClearFromTail);
 };
 
 ALWAYS_INLINE bool ThreadCache::MaybePutInCache(void* slot_start,
@@ -396,7 +436,11 @@ ALWAYS_INLINE void* ThreadCache::GetFromCache(size_t bucket_index,
 
   PA_DCHECK(bucket.count != 0);
   auto* result = bucket.freelist_head;
-  auto* next = result->GetNext();
+  // Passes the bucket size to |GetNext()|, so that in case of freelist
+  // corruption, we know the bucket size that lead to the crash, helping to
+  // narrow down the search for culprit. |bucket| was touched just now, so this
+  // does not introduce another cache miss.
+  auto* next = result->GetNext(bucket.slot_size);
   PA_DCHECK(result != next);
   bucket.count--;
   PA_DCHECK(bucket.count != 0 || !next);
@@ -409,6 +453,50 @@ ALWAYS_INLINE void* ThreadCache::GetFromCache(size_t bucket_index,
 }
 
 ALWAYS_INLINE void ThreadCache::PutInBucket(Bucket& bucket, void* slot_start) {
+#if defined(ARCH_CPU_X86_64) && defined(PA_HAS_64_BITS_POINTERS)
+  // We see freelist corruption crashes happening in the wild.  These are likely
+  // due to out-of-bounds accesses in the previous slot, or to a Use-After-Free
+  // somewhere in the code.
+  //
+  // The issue is that we detect the UaF far away from the place where it
+  // happens. As a consequence, we should try to make incorrect code crash as
+  // early as possible. Poisoning memory at free() time works for UaF, but it
+  // was seen in the past to incur a high performance cost.
+  //
+  // Here, only poison the current cacheline, which we are touching anyway.
+  // TODO(lizeb): Make sure this does not hurt performance.
+
+  // Everything below requires this aligment.
+  static_assert(kAlignment == 16, "");
+
+#if HAS_BUILTIN(__builtin_assume_aligned)
+  uintptr_t address = reinterpret_cast<uintptr_t>(
+      __builtin_assume_aligned(slot_start, kAlignment));
+#else
+  uintptr_t address = reinterpret_cast<uintptr_t>(slot_start);
+#endif
+
+  // We assume that the cacheline size is 64 byte, which is true on all x86_64
+  // CPUs as of 2021.
+  //
+  // The pointer is always 16 bytes aligned, so its start address is always == 0
+  // % 16. Its distance to the next cacheline is 64 - ((address & 63) / 16) *
+  // 16.
+  int distance_to_next_cacheline_in_16_bytes = 4 - (address >> 4) & 3;
+  int slot_size_remaining_in_16_bytes =
+      std::min(bucket.slot_size / 16, distance_to_next_cacheline_in_16_bytes);
+
+  static const uint32_t poison_16_bytes[4] = {0xdeadbeef, 0xdeadbeef,
+                                              0xdeadbeef, 0xdeadbeef};
+  uint32_t* address_aligned = reinterpret_cast<uint32_t*>(address);
+
+  for (int i = 0; i < slot_size_remaining_in_16_bytes; i++) {
+    // Clang will expand the memcpy to a 16-byte write (movups on x86).
+    memcpy(address_aligned, poison_16_bytes, sizeof(poison_16_bytes));
+    address_aligned += 4;
+  }
+#endif  // defined(ARCH_CPU_X86_64) && defined(PA_HAS_64_BITS_POINTERS)
+
   auto* entry = PartitionFreelistEntry::InitForThreadCache(
       slot_start, bucket.freelist_head);
   bucket.freelist_head = entry;

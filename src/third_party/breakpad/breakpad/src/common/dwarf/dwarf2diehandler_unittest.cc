@@ -53,12 +53,12 @@ using ::testing::Return;
 using ::testing::Sequence;
 using ::testing::StrEq;
 
-using dwarf2reader::DIEDispatcher;
-using dwarf2reader::DIEHandler;
-using dwarf2reader::DwarfAttribute;
-using dwarf2reader::DwarfForm;
-using dwarf2reader::DwarfTag;
-using dwarf2reader::RootDIEHandler;
+using google_breakpad::DIEDispatcher;
+using google_breakpad::DIEHandler;
+using google_breakpad::DwarfAttribute;
+using google_breakpad::DwarfForm;
+using google_breakpad::DwarfTag;
+using google_breakpad::RootDIEHandler;
 
 class MockDIEHandler: public DIEHandler {
  public:

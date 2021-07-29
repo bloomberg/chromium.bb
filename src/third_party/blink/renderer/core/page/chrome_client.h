@@ -31,6 +31,7 @@
 #include "cc/input/overscroll_behavior.h"
 #include "cc/paint/paint_image.h"
 #include "cc/trees/paint_holding_commit_trigger.h"
+#include "cc/trees/paint_holding_reason.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
@@ -66,6 +67,11 @@ struct ElementId;
 class Layer;
 struct OverscrollBehavior;
 }
+
+namespace display {
+struct ScreenInfo;
+struct ScreenInfos;
+}  // namespace display
 
 namespace ui {
 class Cursor;
@@ -105,8 +111,6 @@ enum class FullscreenRequestType;
 struct DateTimeChooserParameters;
 struct FrameLoadRequest;
 struct ViewportDescription;
-struct ScreenInfo;
-struct ScreenInfos;
 struct WebWindowFeatures;
 
 namespace mojom {
@@ -118,9 +122,9 @@ class TextAutosizerPageInfo;
 using CompositorElementId = cc::ElementId;
 
 class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
-  DISALLOW_COPY_AND_ASSIGN(ChromeClient);
-
  public:
+  ChromeClient(const ChromeClient&) = delete;
+  ChromeClient& operator=(const ChromeClient&) = delete;
   virtual ~ChromeClient() = default;
 
   virtual WebViewImpl* GetWebView() const = 0;
@@ -195,8 +199,12 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   // reference to make it clear that callers may only call this while a local
   // main frame is present and the state does not persist between instances of
   // local main frames.
-  virtual void StartDeferringCommits(LocalFrame& main_frame,
-                                     base::TimeDelta timeout) = 0;
+  //
+  // Returns false if commits were already deferred, indicating that the call
+  // was a no-op.
+  virtual bool StartDeferringCommits(LocalFrame& main_frame,
+                                     base::TimeDelta timeout,
+                                     cc::PaintHoldingReason reason) = 0;
   virtual void StopDeferringCommits(LocalFrame& main_frame,
                                     cc::PaintHoldingCommitTrigger) = 0;
 
@@ -293,8 +301,9 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
                             String& result);
   virtual bool TabsToLinks() = 0;
 
-  virtual const ScreenInfo& GetScreenInfo(LocalFrame& frame) const = 0;
-  virtual const ScreenInfos& GetScreenInfos(LocalFrame& frame) const = 0;
+  virtual const display::ScreenInfo& GetScreenInfo(LocalFrame& frame) const = 0;
+  virtual const display::ScreenInfos& GetScreenInfos(
+      LocalFrame& frame) const = 0;
 
   virtual void SetCursor(const ui::Cursor&, LocalFrame* local_root) = 0;
   virtual void SetCursorOverridden(bool) = 0;

@@ -26,7 +26,6 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observation.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -181,7 +180,7 @@ class ASH_EXPORT LockContentsView
                                           bool enabled) override;
   void OnForceOnlineSignInForUser(const AccountId& user) override;
   void OnShowEasyUnlockIcon(const AccountId& user,
-                            const EasyUnlockIconOptions& icon) override;
+                            const EasyUnlockIconInfo& icon_info) override;
   void OnWarningMessageUpdated(const std::u16string& message) override;
   void OnSystemInfoChanged(bool show,
                            bool enforced,
@@ -229,6 +228,17 @@ class ASH_EXPORT LockContentsView
   // a note in the menu user view.
   void ToggleManagementForUserForDebug(const AccountId& user);
 
+  // Called for debugging to make |user| having a multiprofile policy.
+  void SetMultiprofilePolicyForUserForDebug(
+      const AccountId& user,
+      const MultiProfileUserBehavior& multiprofile_policy);
+
+  // Called for debugging to toggle forced online sign-in form |user|.
+  void ToggleForceOnlineSignInForUserForDebug(const AccountId& user);
+
+  // Called for debugging to remove forced online sign-in form |user|.
+  void UndoForceOnlineSignInForUserForDebug(const AccountId& user);
+
   // Called by LockScreenMediaControlsView.
   void CreateMediaControlsLayout();
   void HideMediaControlsLayout();
@@ -248,7 +258,7 @@ class ASH_EXPORT LockContentsView
     bool disable_auth = false;
     bool show_pin_pad_for_password = false;
     size_t autosubmit_pin_length = 0;
-    absl::optional<EasyUnlockIconOptions> easy_unlock_state = absl::nullopt;
+    absl::optional<EasyUnlockIconInfo> easy_unlock_icon_info = absl::nullopt;
     FingerprintState fingerprint_state;
     // When present, indicates that the TPM is locked.
     absl::optional<base::TimeDelta> time_until_tpm_unlock = absl::nullopt;
@@ -454,8 +464,7 @@ class ASH_EXPORT LockContentsView
   // all actions are executed.
   std::vector<DisplayLayoutAction> layout_actions_;
 
-  base::ScopedObservation<display::Screen, display::DisplayObserver>
-      display_observation_{this};
+  display::ScopedDisplayObserver display_observer_{this};
 
   // All error bubbles and the tooltip view are child views of LockContentsView,
   // and will be torn down when LockContentsView is torn down.

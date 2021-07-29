@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_SMS_FETCHER_H_
 
 #include <string>
+#include <vector>
 
 #include "base/observer_list_types.h"
 #include "content/common/content_export.h"
@@ -30,7 +31,11 @@ enum class SmsFetchFailureType {
 
   // The underlying API is not available
   kBackendNotAvailable = 6,
-  kMaxValue = kBackendNotAvailable,
+
+  // Failure type when using WebOTP on desktop
+  kCrossDeviceFailure = 7,
+
+  kMaxValue = kCrossDeviceFailure,
 };
 
 // TODO(yigu): Do not use anonymous namespace in header.

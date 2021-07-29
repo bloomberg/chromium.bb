@@ -44,9 +44,9 @@
 #include "src/core/ext/filters/client_channel/resolver/fake/fake_resolver.h"
 #include "src/core/ext/filters/client_channel/server_address.h"
 #include "src/core/ext/filters/client_channel/service_config.h"
+#include "src/core/lib/address_utils/parse_address.h"
 #include "src/core/lib/gpr/env.h"
 #include "src/core/lib/gprpp/ref_counted_ptr.h"
-#include "src/core/lib/iomgr/parse_address.h"
 #include "src/core/lib/iomgr/sockaddr.h"
 #include "src/core/lib/security/credentials/fake/fake_credentials.h"
 #include "src/core/lib/transport/authority_override.h"
@@ -564,7 +564,7 @@ class GrpclbEnd2endTest : public ::testing::Test {
     grpc_core::Resolver::Result result;
     result.addresses =
         CreateLbAddressesFromAddressDataList(backend_address_data);
-    grpc_error* error = GRPC_ERROR_NONE;
+    grpc_error_handle error = GRPC_ERROR_NONE;
     result.service_config =
         grpc_core::ServiceConfig::Create(nullptr, service_config_json, &error);
     GPR_ASSERT(error == GRPC_ERROR_NONE);
@@ -604,8 +604,8 @@ class GrpclbEnd2endTest : public ::testing::Test {
     response_generator_->SetReresolutionResponse(std::move(result));
   }
 
-  const std::vector<int> GetBackendPorts(size_t start_index = 0,
-                                         size_t stop_index = 0) const {
+  std::vector<int> GetBackendPorts(size_t start_index = 0,
+                                   size_t stop_index = 0) const {
     if (stop_index == 0) stop_index = backends_.size();
     std::vector<int> backend_ports;
     for (size_t i = start_index; i < stop_index; ++i) {

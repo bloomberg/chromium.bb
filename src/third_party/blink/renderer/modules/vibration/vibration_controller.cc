@@ -19,10 +19,11 @@
 
 #include "third_party/blink/renderer/modules/vibration/vibration_controller.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_or_unsigned_long_sequence.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_unsignedlong_unsignedlongsequence.h"
 #include "third_party/blink/renderer/core/frame/intervention.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -103,15 +104,21 @@ void CollectHistogramMetrics(LocalDOMWindow* window) {
 // static
 VibrationController::VibrationPattern
 VibrationController::SanitizeVibrationPattern(
-    const UnsignedLongOrUnsignedLongSequence& input) {
-  VibrationPattern pattern;
-
-  if (input.IsUnsignedLong())
-    pattern.push_back(input.GetAsUnsignedLong());
-  else if (input.IsUnsignedLongSequence())
-    pattern = input.GetAsUnsignedLongSequence();
-
-  return sanitizeVibrationPatternInternal(pattern);
+    const V8UnionUnsignedLongOrUnsignedLongSequence* input) {
+  switch (input->GetContentType()) {
+    case V8UnionUnsignedLongOrUnsignedLongSequence::ContentType::
+        kUnsignedLong: {
+      VibrationPattern pattern;
+      pattern.push_back(input->GetAsUnsignedLong());
+      return sanitizeVibrationPatternInternal(pattern);
+    }
+    case V8UnionUnsignedLongOrUnsignedLongSequence::ContentType::
+        kUnsignedLongSequence:
+      return sanitizeVibrationPatternInternal(
+          input->GetAsUnsignedLongSequence());
+  }
+  NOTREACHED();
+  return {};
 }
 
 // static

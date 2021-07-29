@@ -6,9 +6,9 @@
 
 #include <memory>
 
+#include "ash/constants/ash_constants.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/accessibility_controller.h"
-#include "ash/public/cpp/ash_constants.h"
-#include "ash/public/cpp/ash_pref_names.h"
 #include "base/bind.h"
 #include "base/no_destructor.h"
 #include "base/values.h"
@@ -92,16 +92,16 @@ void SwitchAccessHandler::RegisterMessages() {
           &SwitchAccessHandler::HandleRefreshAssignmentsFromPrefs,
           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "notifySwitchAccessActionAssignmentDialogAttached",
+      "notifySwitchAccessActionAssignmentPaneActive",
       base::BindRepeating(
           &SwitchAccessHandler::
-              HandleNotifySwitchAccessActionAssignmentDialogAttached,
+              HandleNotifySwitchAccessActionAssignmentPaneActive,
           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "notifySwitchAccessActionAssignmentDialogDetached",
+      "notifySwitchAccessActionAssignmentPaneInactive",
       base::BindRepeating(
           &SwitchAccessHandler::
-              HandleNotifySwitchAccessActionAssignmentDialogDetached,
+              HandleNotifySwitchAccessActionAssignmentPaneInactive,
           base::Unretained(this)));
 }
 
@@ -160,18 +160,16 @@ void SwitchAccessHandler::HandleRefreshAssignmentsFromPrefs(
   OnSwitchAccessAssignmentsUpdated();
 }
 
-void SwitchAccessHandler::
-    HandleNotifySwitchAccessActionAssignmentDialogAttached(
-        const base::ListValue* args) {
+void SwitchAccessHandler::HandleNotifySwitchAccessActionAssignmentPaneActive(
+    const base::ListValue* args) {
   AllowJavascript();
   OnSwitchAccessAssignmentsUpdated();
   web_ui()->GetWebContents()->GetNativeView()->AddPreTargetHandler(this);
   ash::AccessibilityController::Get()->SuspendSwitchAccessKeyHandling(true);
 }
 
-void SwitchAccessHandler::
-    HandleNotifySwitchAccessActionAssignmentDialogDetached(
-        const base::ListValue* args) {
+void SwitchAccessHandler::HandleNotifySwitchAccessActionAssignmentPaneInactive(
+    const base::ListValue* args) {
   web_ui()->GetWebContents()->GetNativeView()->RemovePreTargetHandler(this);
   ash::AccessibilityController::Get()->SuspendSwitchAccessKeyHandling(false);
 }
@@ -189,7 +187,7 @@ void SwitchAccessHandler::OnSwitchAccessAssignmentsUpdated() {
   for (const AssignmentInfo& info : *kAssignmentInfo) {
     auto* keycodes = prefs_->GetDictionary(info.pref_name);
     base::ListValue keys;
-    for (const auto& item : keycodes->DictItems()) {
+    for (const auto item : keycodes->DictItems()) {
       int key_code;
       if (!base::StringToInt(item.first, &key_code)) {
         NOTREACHED();

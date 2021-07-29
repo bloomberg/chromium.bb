@@ -10,6 +10,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace discardable_memory {
@@ -464,6 +465,9 @@ TEST_F(ClientDiscardableSharedMemoryManagerTest,
 }
 
 TEST_F(ClientDiscardableSharedMemoryManagerTest, MarkDirtyFreelistPages) {
+  base::test::ScopedFeatureList fl;
+  fl.InitAndDisableFeature(
+      discardable_memory::kReleaseDiscardableFreeListPages);
   auto client =
       base::MakeRefCounted<TestClientDiscardableSharedMemoryManager>();
 
@@ -497,7 +501,8 @@ TEST_F(ClientDiscardableSharedMemoryManagerTest, MarkDirtyFreelistPages) {
 
   mem3 = nullptr;
 
-  ASSERT_EQ(1283u, client->GetDirtyFreedMemoryPageCount());
+  ASSERT_EQ(3u + 5 * 1024 * 1024 / base::GetPageSize(),
+            client->GetDirtyFreedMemoryPageCount());
 
   client->ReleaseFreeMemory();
 

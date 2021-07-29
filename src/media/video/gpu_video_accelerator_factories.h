@@ -95,18 +95,18 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
   // TODO(sandersd): Switch to bool if/when all clients check
   // IsDecoderSupportKnown().
   virtual Supported IsDecoderConfigSupported(
-      VideoDecoderImplementation implementation,
       const VideoDecoderConfig& config) = 0;
 
-  // Helper function that merges IsDecoderConfigSupported() results across all
-  // VideoDecoderImplementations. Returns kTrue if any of the implementations
-  // support the config.
-  //
+  // Returns VideoDecoderType::kUnknown in cases where IsDecoderSupportKnown()
+  // is false. Otherwise, it returns the type of decoder that provided the
+  // configs for the config support check.
+  virtual VideoDecoderType GetDecoderType() = 0;
+
   // Callers must verify IsDecoderSupportKnown() prior to using this, or they
   // will immediately receive a kUnknown.
   //
   // May be called on any thread.
-  Supported IsDecoderConfigSupported(const VideoDecoderConfig& config);
+  Supported IsDecoderConfigSupportedOrUnknown(const VideoDecoderConfig& config);
 
   // Returns true if IsDecoderConfigSupported() is ready to answer queries.
   // Once decoder support is known, it remains known for the lifetime of |this|.
@@ -126,7 +126,6 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
 
   virtual std::unique_ptr<media::VideoDecoder> CreateVideoDecoder(
       MediaLog* media_log,
-      VideoDecoderImplementation implementation,
       RequestOverlayInfoCB request_overlay_info_cb) = 0;
 
   // Returns the supported codec profiles of video encode accelerator.

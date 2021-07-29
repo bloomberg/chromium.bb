@@ -8,9 +8,20 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/scoped_refptr.h"
 #include "chromeos/crosapi/mojom/local_printer.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+
+class Profile;
+
+namespace chromeos {
+class CupsPrinterStatus;
+class PpdProvider;
+class Printer;
+class PrinterConfigurer;
+struct PrintServersConfig;
+}  // namespace chromeos
 
 namespace crosapi {
 
@@ -22,6 +33,21 @@ class LocalPrinterAsh : public mojom::LocalPrinter {
   LocalPrinterAsh(const LocalPrinterAsh&) = delete;
   LocalPrinterAsh& operator=(const LocalPrinterAsh&) = delete;
   ~LocalPrinterAsh() override;
+
+  // The mojom PrintServersConfig object contains all information in the
+  // PrintServersConfig object.
+  static mojom::PrintServersConfigPtr ConfigToMojom(
+      const chromeos::PrintServersConfig& config);
+
+  // The mojom LocalDestinationInfo object is a subset of the chromeos Printer
+  // object.
+  static mojom::LocalDestinationInfoPtr PrinterToMojom(
+      const chromeos::Printer& printer);
+
+  // The mojom PrinterStatus object contains all information in the
+  // CupsPrinterStatus object.
+  static mojom::PrinterStatusPtr StatusToMojom(
+      const chromeos::CupsPrinterStatus& status);
 
   void BindReceiver(mojo::PendingReceiver<mojom::LocalPrinter> receiver);
 
@@ -40,11 +66,21 @@ class LocalPrinterAsh : public mojom::LocalPrinter {
   void GetPrintServersConfig(GetPrintServersConfigCallback callback) override;
   void ChoosePrintServers(const std::vector<std::string>& print_server_ids,
                           ChoosePrintServersCallback callback) override;
-  void AddObserver(mojo::PendingRemote<mojom::PrintServerObserver> remote,
-                   AddObserverCallback callback) override;
+  void AddPrintServerObserver(
+      mojo::PendingRemote<mojom::PrintServerObserver> remote,
+      AddPrintServerObserverCallback callback) override;
   void GetPolicies(GetPoliciesCallback callback) override;
+  void GetUsernamePerPolicy(GetUsernamePerPolicyCallback callback) override;
+  void GetPrinterTypeDenyList(GetPrinterTypeDenyListCallback callback) override;
 
  private:
+  // Exposed so that unit tests can override them.
+  virtual Profile* GetActiveUserProfile();
+  virtual scoped_refptr<chromeos::PpdProvider> CreatePpdProvider(
+      Profile* profile);
+  virtual std::unique_ptr<chromeos::PrinterConfigurer> CreatePrinterConfigurer(
+      Profile* profile);
+
   // This class supports any number of connections. This allows the client to
   // have multiple, potentially thread-affine, remotes.
   mojo::ReceiverSet<mojom::LocalPrinter> receivers_;

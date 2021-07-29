@@ -11,7 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "chrome/grit/generated_resources.h"
@@ -20,7 +20,7 @@
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_manager_features_util.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
-#include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/password_store_interface.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -65,11 +65,14 @@ password_manager::metrics_util::UIDisplayDisposition ComputeDisplayDisposition(
 
 void CleanStatisticsForSite(Profile* profile, const url::Origin& origin) {
   DCHECK(profile);
-  password_manager::PasswordStore* password_store =
+  password_manager::PasswordStoreInterface* password_store =
       PasswordStoreFactory::GetForProfile(profile,
                                           ServiceAccessType::IMPLICIT_ACCESS)
           .get();
-  password_store->RemoveSiteStats(origin.GetURL());
+  password_manager::SmartBubbleStatsStore* stats_store =
+      password_store->GetSmartBubbleStatsStore();
+  if (stats_store)
+    stats_store->RemoveSiteStats(origin.GetURL());
 }
 
 std::vector<password_manager::PasswordForm> DeepCopyForms(
@@ -284,12 +287,10 @@ SaveUpdateWithAccountStoreBubbleController::GetPrimaryAccountAvatar(
       IdentityManagerFactory::GetForProfile(profile);
   if (!identity_manager)
     return ui::ImageModel();
-  absl::optional<AccountInfo> primary_account_info =
-      identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
-          identity_manager->GetPrimaryAccountInfo(
-              signin::ConsentLevel::kSignin));
-  DCHECK(primary_account_info.has_value());
-  gfx::Image account_icon = primary_account_info->account_image;
+  AccountInfo primary_account_info = identity_manager->FindExtendedAccountInfo(
+      identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin));
+  DCHECK(!primary_account_info.IsEmpty());
+  gfx::Image account_icon = primary_account_info.account_image;
   if (account_icon.IsEmpty()) {
     account_icon = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
         profiles::GetPlaceholderAvatarIconResourceID());
@@ -330,11 +331,14 @@ void SaveUpdateWithAccountStoreBubbleController::ReportInteractions() {
                 interaction_stats_.dismissal_count)>::max())
           interaction_stats_.dismissal_count++;
         interaction_stats_.update_time = clock_->Now();
-        password_manager::PasswordStore* password_store =
+        password_manager::PasswordStoreInterface* password_store =
             PasswordStoreFactory::GetForProfile(
                 profile, ServiceAccessType::IMPLICIT_ACCESS)
                 .get();
-        password_store->AddSiteStats(interaction_stats_);
+        password_manager::SmartBubbleStatsStore* stats_store =
+            password_store->GetSmartBubbleStatsStore();
+        if (stats_store)
+          stats_store->AddSiteStats(interaction_stats_);
       }
     }
   }
@@ -349,8 +353,7 @@ void SaveUpdateWithAccountStoreBubbleController::ReportInteractions() {
     if (profile) {
       user_state = password_manager::features_util::
           ComputePasswordAccountStorageUserState(
-              profile->GetPrefs(),
-              ProfileSyncServiceFactory::GetForProfile(profile));
+              profile->GetPrefs(), SyncServiceFactory::GetForProfile(profile));
     }
     metrics_util::LogSaveUIDismissalReason(dismissal_reason_, user_state);
   }

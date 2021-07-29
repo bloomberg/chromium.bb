@@ -34,7 +34,6 @@ import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
 import * as i18n from '../i18n/i18n.js';
 import * as Platform from '../platform/platform.js';
-import type * as ProtocolClient from '../protocol_client/protocol_client.js'; // eslint-disable-line no-unused-vars
 import * as Root from '../root/root.js';
 import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
 import * as Protocol from '../../generated/protocol.js';
@@ -45,8 +44,9 @@ import {Events as ResourceTreeModelEvents, ResourceTreeModel} from './ResourceTr
 import type {EvaluationOptions, EvaluationResult, ExecutionContext} from './RuntimeModel.js';
 import {RuntimeModel} from './RuntimeModel.js';  // eslint-disable-line no-unused-vars
 import {Script} from './Script.js';
-import type {Target} from './SDKModel.js';
-import {Capability, SDKModel, Type} from './SDKModel.js';  // eslint-disable-line no-unused-vars
+import type {Target} from './Target.js';
+import {Capability, Type} from './Target.js';
+import {SDKModel} from './SDKModel.js';  // eslint-disable-line no-unused-vars
 import {SourceMapManager} from './SourceMapManager.js';
 
 const UIStrings = {
@@ -137,7 +137,6 @@ export class DebuggerModel extends SDKModel {
                                    }>>)|null;
   _expandCallFramesCallback: ((arg0: Array<CallFrame>) => Promise<Array<CallFrame>>)|null;
   _evaluateOnCallFrameCallback: ((arg0: CallFrame, arg1: EvaluationOptions) => Promise<EvaluationResult|null>)|null;
-  _ignoreDebuggerPausedEvents: boolean;
   _breakpointResolvedEventTarget: Common.ObjectWrapper.ObjectWrapper;
   _autoStepOver: boolean;
   _isPausing: boolean;
@@ -165,8 +164,6 @@ export class DebuggerModel extends SDKModel {
     this._computeAutoStepRangesCallback = null;
     this._expandCallFramesCallback = null;
     this._evaluateOnCallFrameCallback = null;
-
-    this._ignoreDebuggerPausedEvents = false;
 
     this._breakpointResolvedEventTarget = new Common.ObjectWrapper.ObjectWrapper();
 
@@ -218,10 +215,6 @@ export class DebuggerModel extends SDKModel {
 
   debuggerEnabled(): boolean {
     return Boolean(this._debuggerEnabled);
-  }
-
-  ignoreDebuggerPausedEvents(ignore: boolean): void {
-    this._ignoreDebuggerPausedEvents = ignore;
   }
 
   async _enableDebugger(): Promise<void> {
@@ -309,6 +302,7 @@ export class DebuggerModel extends SDKModel {
     if (typeof this._debuggerId === 'string') {
       _debuggerIdToModel.delete(this._debuggerId);
     }
+    this._debuggerId = null;
   }
 
   _skipAllPauses(skip: boolean): void {
@@ -566,9 +560,7 @@ export class DebuggerModel extends SDKModel {
 
   setScriptSource(
       scriptId: string, newSource: string,
-      callback:
-          (arg0: ProtocolClient.InspectorBackend.ProtocolError|null,
-           arg1?: Protocol.Runtime.ExceptionDetails|undefined) => void): void {
+      callback: (error: string|null, arg1?: Protocol.Runtime.ExceptionDetails|undefined) => void): void {
     const script = this._scripts.get(scriptId);
     if (script) {
       script.editSource(newSource, this._didEditScriptSource.bind(this, scriptId, newSource, callback));
@@ -577,12 +569,10 @@ export class DebuggerModel extends SDKModel {
 
   _didEditScriptSource(
       scriptId: string, newSource: string,
-      callback:
-          (arg0: ProtocolClient.InspectorBackend.ProtocolError|null,
-           arg1?: Protocol.Runtime.ExceptionDetails|undefined) => void,
-      error: string|null, exceptionDetails?: Protocol.Runtime.ExceptionDetails,
-      callFrames?: Protocol.Debugger.CallFrame[], asyncStackTrace?: Protocol.Runtime.StackTrace,
-      asyncStackTraceId?: Protocol.Runtime.StackTraceId, needsStepIn?: boolean): void {
+      callback: (error: string|null, arg1?: Protocol.Runtime.ExceptionDetails|undefined) => void, error: string|null,
+      exceptionDetails?: Protocol.Runtime.ExceptionDetails, callFrames?: Protocol.Debugger.CallFrame[],
+      asyncStackTrace?: Protocol.Runtime.StackTrace, asyncStackTraceId?: Protocol.Runtime.StackTraceId,
+      needsStepIn?: boolean): void {
     callback(error, exceptionDetails);
     if (needsStepIn) {
       this.stepInto();
@@ -645,10 +635,6 @@ export class DebuggerModel extends SDKModel {
       breakpointIds: string[], asyncStackTrace?: Protocol.Runtime.StackTrace,
       asyncStackTraceId?: Protocol.Runtime.StackTraceId,
       asyncCallStackTraceId?: Protocol.Runtime.StackTraceId): Promise<void> {
-    if (this._ignoreDebuggerPausedEvents) {
-      return;
-    }
-
     if (asyncCallStackTraceId) {
       // Note: this is only to support old backends. Newer ones do not send asyncCallStackTraceId.
       _scheduledPauseOnAsyncCall = asyncCallStackTraceId;
@@ -1232,6 +1218,7 @@ export class CallFrame {
   _functionName: string;
   _functionLocation: Location|undefined;
   _returnValue: RemoteObject|null;
+  readonly warnings: string[] = [];
 
   constructor(
       debuggerModel: DebuggerModel, script: Script, payload: Protocol.Debugger.CallFrame, inlineFrameIndex?: number,
@@ -1270,8 +1257,12 @@ export class CallFrame {
     return result;
   }
 
-  createVirtualCallFrame(inlineFrameIndex?: number, functionName?: string): CallFrame {
-    return new CallFrame(this.debuggerModel, this._script, this._payload, inlineFrameIndex, functionName);
+  createVirtualCallFrame(inlineFrameIndex: number, name: string): CallFrame {
+    return new CallFrame(this.debuggerModel, this._script, this._payload, inlineFrameIndex, name);
+  }
+
+  addWarning(warning: string): void {
+    this.warnings.push(warning);
   }
 
   get script(): Script {

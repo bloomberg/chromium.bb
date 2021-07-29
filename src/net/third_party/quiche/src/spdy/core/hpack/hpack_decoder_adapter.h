@@ -67,6 +67,12 @@ class QUICHE_EXPORT_PRIVATE HpackDecoderAdapter {
   // a SpdyHeadersHandlerInterface.
   const SpdyHeaderBlock& decoded_block() const;
 
+  // Returns the current dynamic table size, including the 32 bytes per entry
+  // overhead mentioned in RFC 7541 section 4.1.
+  size_t GetDynamicTableSize() const {
+    return hpack_decoder_.GetDynamicTableSize();
+  }
+
   // Set how much encoded data this decoder is willing to buffer.
   // TODO(jamessynge): Resolve definition of this value, as it is currently
   // too tied to a single implementation. We probably want to limit one or more
@@ -78,8 +84,6 @@ class QUICHE_EXPORT_PRIVATE HpackDecoderAdapter {
   // Specifies the maximum size of an on-the-wire header block that will be
   // accepted.
   void set_max_header_block_bytes(size_t max_header_block_bytes);
-
-  size_t EstimateMemoryUsage() const;
 
   // Error code if an error has occurred, Error::kOk otherwise.
   http2::HpackDecodingError error() const { return error_; }

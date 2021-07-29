@@ -34,6 +34,7 @@
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
+#include "content/browser/renderer_host/navigation_entry_restore_context_impl.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_frame_proxy_host.h"
@@ -3006,7 +3007,10 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
               shell()->web_contents()->GetBrowserContext(),
               nullptr /* blob_url_loader_factory */));
   prev_entry = shell()->web_contents()->GetController().GetEntryAtIndex(0);
-  cloned_entry->SetPageState(prev_entry->GetPageState());
+
+  std::unique_ptr<NavigationEntryRestoreContextImpl> context =
+      std::make_unique<NavigationEntryRestoreContextImpl>();
+  cloned_entry->SetPageState(prev_entry->GetPageState(), context.get());
   const std::vector<base::FilePath>& cloned_files =
       cloned_entry->GetPageState().GetReferencedFiles();
   ASSERT_EQ(1U, cloned_files.size());
@@ -3779,12 +3783,27 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   web_contents->SetWebPreferences(prefs);
 
   GURL file_url = GetTestUrl("", "title1.html");
+  ASSERT_TRUE(file_url.SchemeIsFile());
   ASSERT_TRUE(NavigateToURL(shell(), file_url));
   EXPECT_EQ(1, web_contents->GetController().GetEntryCount());
-  EXPECT_TRUE(ExecuteScript(
-      root, "window.history.pushState({}, '', 'https://chromium.org');"));
+  EXPECT_TRUE(
+      ExecJs(root, "history.pushState({}, '', 'https://chromium.org');"));
+  ASSERT_TRUE(web_contents->GetMainFrame()->IsRenderFrameLive());
   EXPECT_EQ(2, web_contents->GetController().GetEntryCount());
-  EXPECT_TRUE(web_contents->GetMainFrame()->IsRenderFrameLive());
+
+  // At this point, we should still consider the current origin to be file://,
+  // so that subsequent web or file URLs would still be legal for same-document
+  // navigations.  See https://crbug.com/553418.
+  const url::Origin file_origin = url::Origin::Create(file_url);
+  EXPECT_TRUE(file_origin.IsSameOriginWith(
+      web_contents->GetMainFrame()->GetLastCommittedOrigin()));
+  EXPECT_TRUE(ExecJs(root, "history.pushState({}, '', 'https://foo.com');"));
+  ASSERT_TRUE(web_contents->GetMainFrame()->IsRenderFrameLive());
+  EXPECT_EQ(3, web_contents->GetController().GetEntryCount());
+  EXPECT_TRUE(
+      ExecJs(root, JsReplace("history.pushState({}, '', $1);", file_url)));
+  ASSERT_TRUE(web_contents->GetMainFrame()->IsRenderFrameLive());
+  EXPECT_EQ(4, web_contents->GetController().GetEntryCount());
 }
 
 // Ensure that navigating back from a sad tab to an existing process works
@@ -3885,7 +3904,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest, LastCommittedOrigin) {
   GURL url_b_with_frame(embedded_test_server()->GetURL(
       "b.com", "/navigation_controller/page_with_iframe.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url_b_with_frame));
-  if (CanSameSiteMainFrameNavigationsChangeRenderFrameHosts()) {
+  if (IsProactivelySwapBrowsingInstanceOnSameSiteNavigationEnabled()) {
     // If same-site ProactivelySwapBrowsingInstance or main-frame RenderDocument
     // is enabled, the navigation will result in a new RFH.
     EXPECT_NE(rfh_b, web_contents->GetMainFrame());
@@ -4059,7 +4078,14 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   EXPECT_EQ(GURL(url::kAboutBlankURL),
             root->child_at(0)->child_at(0)->current_url());
 
+  // The frame is no longer on the initial empty document, but we don't consider
+  // it as having committed a real load.  The FrameTreeVisualizer test should be
+  // enough to ensure that the childmost frame is not loaded.
   EXPECT_FALSE(root->child_at(0)->child_at(0)->has_committed_real_load());
+  EXPECT_FALSE(
+      root->child_at(0)
+          ->child_at(0)
+          ->is_on_initial_empty_document_or_subsequent_empty_documents());
 }
 
 // Ensure that navigating a subframe to the same URL as its parent twice in a
@@ -4356,9 +4382,14 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
       shell()->web_contents()->GetSiteInstance());
 
   // Navigate to about:blank from address bar.  This stays in the foo.com
-  // SiteInstance.
+  // SiteInstance, unless we do a proactive BrowsingInstance swap due to
+  // back/forward cache.
   EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
-  EXPECT_EQ(site_instance, shell()->web_contents()->GetSiteInstance());
+  if (IsSameSiteBackForwardCacheEnabled()) {
+    site_instance = shell()->web_contents()->GetSiteInstance();
+  } else {
+    EXPECT_EQ(site_instance, shell()->web_contents()->GetSiteInstance());
+  }
 
   // Perform a browser-initiated navigation to foo.com.  This should also stay
   // in the original foo.com SiteInstance and BrowsingInstance.
@@ -6531,7 +6562,6 @@ class ProactivelySwapBrowsingInstancesSameSiteCoopTest
         {
             network::features::kCrossOriginOpenerPolicy,
             network::features::kCrossOriginOpenerPolicyReporting,
-            network::features::kCrossOriginIsolated,
         },
         {});
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -7646,7 +7676,7 @@ class RenderFrameHostManagerUnloadBrowserTest
  public:
   RenderFrameHostManagerUnloadBrowserTest() = default;
 
-  // Starts monitoring requests made to the embedded_http_server() looking for
+  // Starts monitoring requests made to the embedded_test_server() looking for
   // one made to |url|.  To be used together with WaitForMonitoredRequest().
   void StartMonitoringRequestsFor(const GURL& url) {
     base::AutoLock lock(lock_);
@@ -8483,10 +8513,14 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   EXPECT_NE(process1, process2);
   EXPECT_EQ(GURL("http://foo.com"),
             web_contents->GetMainFrame()->GetSiteInstance()->GetSiteURL());
-  EXPECT_EQ(ProcessLock(SiteInfo(GURL("http://foo.com"), GURL("http://foo.com"),
-                                 false /* is_origin_keyed */,
-                                 WebExposedIsolationInfo::CreateNonIsolated())),
-            policy->GetProcessLock(process2->GetID()));
+  EXPECT_EQ(
+      ProcessLock(SiteInfo(
+          GURL("http://foo.com"), GURL("http://foo.com"),
+          false /* is_origin_keyed */,
+          WebExposedIsolationInfo::CreateNonIsolated(), false /* is_guest */,
+          false /* does_site_request_dedicated_process_for_coop */,
+          false /* is_jit_disabled */)),
+      policy->GetProcessLock(process2->GetID()));
 
   // Ensure also that the foo.com process didn't change midway through the
   // navigation.

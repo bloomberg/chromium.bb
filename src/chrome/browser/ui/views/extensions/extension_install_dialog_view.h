@@ -62,7 +62,12 @@ class ExtensionInstallDialogView
   ExtensionInstallPromptShowParams* GetShowParamsForTesting();
   void ClickLinkForTesting();
 
+  bool IsJustificationFieldVisibleForTesting();
+
  private:
+  // Forward-declaration.
+  class ExtensionJustificationView;
+
   void CloseDialog();
 
   // extensions::ExtensionRegistryObserver:
@@ -110,6 +115,10 @@ class ExtensionInstallDialogView
 
   // Checkbox used to indicate if permissions should be withheld on install.
   views::Checkbox* withhold_permissions_checkbox_;
+
+  // The justification text field view where users enter their justification for
+  // requesting an extension.
+  ExtensionJustificationView* justification_view_ = nullptr;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_INSTALL_DIALOG_VIEW_H_

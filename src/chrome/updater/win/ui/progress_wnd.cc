@@ -7,10 +7,10 @@
 #include <algorithm>
 
 #include "base/check_op.h"
+#include "base/cxx17_backports.h"
 #include "base/i18n/message_formatter.h"
 #include "base/notreached.h"
 #include "base/process/launch.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -19,7 +19,7 @@
 #include "chrome/updater/win/ui/constants.h"
 #include "chrome/updater/win/ui/ui_ctls.h"
 #include "chrome/updater/win/ui/util.h"
-#include "chrome/updater/win/util.h"
+#include "chrome/updater/win/win_util.h"
 
 namespace updater {
 namespace ui {
@@ -258,7 +258,6 @@ LRESULT ProgressWnd::OnClickedButton(WORD notify_code,
         case States::STATE_COMPLETE_ERROR:
           return CompleteWnd::OnClickedButton(notify_code, id, wnd_ctl,
                                               handled);
-          break;
         default:
           NOTREACHED();
       }

@@ -34,6 +34,8 @@ OmniboxPedal::TokenSequence::TokenSequence(std::vector<int> token_ids) {
 
 OmniboxPedal::TokenSequence::TokenSequence(OmniboxPedal::TokenSequence&&) =
     default;
+OmniboxPedal::TokenSequence& OmniboxPedal::TokenSequence::operator=(
+    OmniboxPedal::TokenSequence&&) = default;
 OmniboxPedal::TokenSequence::~TokenSequence() = default;
 
 bool OmniboxPedal::TokenSequence::IsFullyConsumed() {
@@ -72,7 +74,8 @@ bool OmniboxPedal::TokenSequence::Erase(
     return false;
   }
   bool changed = false;
-  ptrdiff_t index = ptrdiff_t{Size()} - ptrdiff_t{erase_sequence.Size()};
+  ptrdiff_t index = static_cast<ptrdiff_t>(Size()) -
+                    static_cast<ptrdiff_t>(erase_sequence.Size());
   while (index >= 0) {
     if (MatchesAt(erase_sequence, index, 0)) {
       // Erase sequence matched by actual removal from container.
@@ -83,7 +86,8 @@ bool OmniboxPedal::TokenSequence::Erase(
       }
       changed = true;
       index = std::min(index - 1,
-                       ptrdiff_t{Size()} - ptrdiff_t{erase_sequence.Size()});
+                       static_cast<ptrdiff_t>(Size()) -
+                           static_cast<ptrdiff_t>(erase_sequence.Size()));
     } else {
       --index;
     }
@@ -187,16 +191,42 @@ bool OmniboxPedal::SynonymGroup::EraseMatchesIn(
 
 void OmniboxPedal::SynonymGroup::AddSynonym(
     OmniboxPedal::TokenSequence synonym) {
+  // TODO(orinj): Only sort once after all synonyms are loaded.
+  //  When runtime data was preprocessed by pedal_processor,
+  //  it avoided the need to sort at runtime in Chromium, but with
+  //  the TC-based l10n technique, data loading needs to be robust
+  //  enough to handle various forms and orders in translation data.
+  if (OmniboxFieldTrial::IsPedalsTranslationConsoleEnabled()) {
+    synonyms_.push_back(std::move(synonym));
+    std::sort(synonyms_.begin(), synonyms_.end(),
+              [](const TokenSequence& a, const TokenSequence& b) {
+                return a.Size() > b.Size();
+              });
+  } else {
 #if DCHECK_IS_ON()
-  if (synonyms_.size() > size_t{0}) {
-    DCHECK_GE(synonyms_.back().Size(), synonym.Size());
-  }
+    if (synonyms_.size() > size_t{0}) {
+      DCHECK_GE(synonyms_.back().Size(), synonym.Size());
+    }
 #endif
-  synonyms_.push_back(std::move(synonym));
+    synonyms_.push_back(std::move(synonym));
+  }
 }
 
 size_t OmniboxPedal::SynonymGroup::EstimateMemoryUsage() const {
   return base::trace_event::EstimateMemoryUsage(synonyms_);
+}
+
+void OmniboxPedal::SynonymGroup::EraseIgnoreGroup(
+    const SynonymGroup& ignore_group) {
+  for (auto& synonym : synonyms_) {
+    ignore_group.EraseMatchesIn(synonym, true);
+    synonym.ResetLinks();
+  }
+}
+
+bool OmniboxPedal::SynonymGroup::IsValid() const {
+  return std::all_of(synonyms_.begin(), synonyms_.end(),
+                     [](const auto& synonym) { return synonym.Size() > 0; });
 }
 
 // =============================================================================
@@ -242,6 +272,11 @@ void OmniboxPedal::AddSynonymGroup(SynonymGroup&& group) {
   synonym_groups_.push_back(std::move(group));
 }
 
+std::vector<OmniboxPedal::SynonymGroupSpec> OmniboxPedal::SpecifySynonymGroups()
+    const {
+  return {};
+}
+
 void OmniboxPedal::RecordActionShown() const {
   base::UmaHistogramEnumeration("Omnibox.PedalShown", id(),
                                 OmniboxPedalId::TOTAL_COUNT);
@@ -257,6 +292,10 @@ size_t OmniboxPedal::EstimateMemoryUsage() const {
   total += OmniboxAction::EstimateMemoryUsage();
   total += base::trace_event::EstimateMemoryUsage(synonym_groups_);
   return total;
+}
+
+int32_t OmniboxPedal::GetID() const {
+  return static_cast<int32_t>(id());
 }
 
 bool OmniboxPedal::IsConceptMatch(TokenSequence& match_sequence) const {

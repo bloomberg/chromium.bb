@@ -1,4 +1,4 @@
-import { assert, unreachable } from '../../../common/framework/util/util.js';
+import { assert, unreachable } from '../../../common/util/util.js';
 import { BindableResource, kMaxQueryCount } from '../../capability_info.js';
 import { GPUTest } from '../../gpu_test.js';
 
@@ -20,7 +20,14 @@ export interface CommandBufferMaker<T extends EncoderType> {
   finish(): GPUCommandBuffer;
 }
 
+/**
+ * Base fixture for WebGPU validation tests.
+ */
 export class ValidationTest extends GPUTest {
+  /**
+   * Create a GPUTexture in the specified state.
+   * A `descriptor` may optionally be passed, which is used when `state` is not `'invalid'`.
+   */
   createTextureWithState(
     state: 'valid' | 'invalid' | 'destroyed',
     descriptor?: Readonly<GPUTextureDescriptor>
@@ -49,6 +56,10 @@ export class ValidationTest extends GPUTest {
     }
   }
 
+  /**
+   * Create a GPUTexture in the specified state. A `descriptor` may optionally be passed;
+   * if `state` is `'invalid'`, it will be modified to add an invalid combination of usages.
+   */
   createBufferWithState(
     state: 'valid' | 'invalid' | 'destroyed',
     descriptor?: Readonly<GPUBufferDescriptor>
@@ -81,6 +92,10 @@ export class ValidationTest extends GPUTest {
     }
   }
 
+  /**
+   * Create a GPUQuerySet in the specified state.
+   * A `descriptor` may optionally be passed, which is used when `state` is not `'invalid'`.
+   */
   createQuerySetWithState(
     state: 'valid' | 'invalid' | 'destroyed',
     descriptor?: Readonly<GPUQuerySetDescriptor>
@@ -111,18 +126,22 @@ export class ValidationTest extends GPUTest {
     }
   }
 
+  /** Create an arbitrarily-sized GPUBuffer with the STORAGE usage. */
   getStorageBuffer(): GPUBuffer {
     return this.device.createBuffer({ size: 1024, usage: GPUBufferUsage.STORAGE });
   }
 
+  /** Create an arbitrarily-sized GPUBuffer with the UNIFORM usage. */
   getUniformBuffer(): GPUBuffer {
     return this.device.createBuffer({ size: 1024, usage: GPUBufferUsage.UNIFORM });
   }
 
+  /** Return an invalid GPUBuffer. */
   getErrorBuffer(): GPUBuffer {
     return this.createBufferWithState('invalid');
   }
 
+  /** Return an invalid GPUSampler. */
   getErrorSampler(): GPUSampler {
     this.device.pushErrorScope('validation');
     const sampler = this.device.createSampler({ lodMinClamp: -1 });
@@ -130,6 +149,9 @@ export class ValidationTest extends GPUTest {
     return sampler;
   }
 
+  /**
+   * Return an arbitrarily-configured GPUTexture with the `SAMPLED` usage and specified sampleCount.
+   */
   getSampledTexture(sampleCount: number = 1): GPUTexture {
     return this.device.createTexture({
       size: { width: 16, height: 16, depthOrArrayLayers: 1 },
@@ -139,6 +161,7 @@ export class ValidationTest extends GPUTest {
     });
   }
 
+  /** Return an arbitrarily-configured GPUTexture with the `STORAGE` usage. */
   getStorageTexture(): GPUTexture {
     return this.device.createTexture({
       size: { width: 16, height: 16, depthOrArrayLayers: 1 },
@@ -147,6 +170,7 @@ export class ValidationTest extends GPUTest {
     });
   }
 
+  /** Return an arbitrarily-configured GPUTexture with the `RENDER_ATTACHMENT` usage. */
   getRenderTexture(): GPUTexture {
     return this.device.createTexture({
       size: { width: 16, height: 16, depthOrArrayLayers: 1 },
@@ -155,6 +179,7 @@ export class ValidationTest extends GPUTest {
     });
   }
 
+  /** Return an invalid GPUTexture. */
   getErrorTexture(): GPUTexture {
     this.device.pushErrorScope('validation');
     const texture = this.device.createTexture({
@@ -166,6 +191,7 @@ export class ValidationTest extends GPUTest {
     return texture;
   }
 
+  /** Return an invalid GPUTextureView (created from an invalid GPUTexture). */
   getErrorTextureView(): GPUTextureView {
     this.device.pushErrorScope('validation');
     const view = this.getErrorTexture().createView();
@@ -173,6 +199,10 @@ export class ValidationTest extends GPUTest {
     return view;
   }
 
+  /**
+   * Return an arbitrary object of the specified {@link BindableResource} type
+   * (e.g. `'errorBuf'`, `'nonFiltSamp'`, `sampledTexMS`, etc.)
+   */
   getBindingResource(bindingType: BindableResource): GPUBindingResource {
     switch (bindingType) {
       case 'errorBuf':
@@ -200,11 +230,19 @@ export class ValidationTest extends GPUTest {
     }
   }
 
+  /** Create a GPURenderPipeline in the specified state. */
+  createRenderPipelineWithState(state: 'valid' | 'invalid'): GPURenderPipeline {
+    return state === 'valid' ? this.createNoOpRenderPipeline() : this.createErrorRenderPipeline();
+  }
+
+  /** Return a GPURenderPipeline with default options and no-op vertex and fragment shaders. */
   createNoOpRenderPipeline(): GPURenderPipeline {
     return this.device.createRenderPipeline({
       vertex: {
         module: this.device.createShaderModule({
-          code: '[[stage(vertex)]] fn main() {}',
+          code: `[[stage(vertex)]] fn main() -> [[builtin(position)]] vec4<f32> {
+  return vec4<f32>();
+}`,
         }),
         entryPoint: 'main',
       },
@@ -219,17 +257,34 @@ export class ValidationTest extends GPUTest {
     });
   }
 
+  /** Return an invalid GPURenderPipeline. */
+  createErrorRenderPipeline(): GPURenderPipeline {
+    this.device.pushErrorScope('validation');
+    const pipeline = this.device.createRenderPipeline({
+      vertex: {
+        module: this.device.createShaderModule({
+          code: '',
+        }),
+        entryPoint: '',
+      },
+    });
+    this.device.popErrorScope();
+    return pipeline;
+  }
+
+  /** Return a GPUComputePipeline with a no-op shader. */
   createNoOpComputePipeline(): GPUComputePipeline {
     return this.device.createComputePipeline({
       compute: {
         module: this.device.createShaderModule({
-          code: '[[stage(compute)]] fn main() {}',
+          code: '[[stage(compute), workgroup_size(1)]] fn main() {}',
         }),
         entryPoint: 'main',
       },
     });
   }
 
+  /** Return an invalid GPUComputePipeline. */
   createErrorComputePipeline(): GPUComputePipeline {
     this.device.pushErrorScope('validation');
     const pipeline = this.device.createComputePipeline({
@@ -244,11 +299,40 @@ export class ValidationTest extends GPUTest {
     return pipeline;
   }
 
+  /**
+   * Returns a GPUCommandEncoder, GPUComputePassEncoder, GPURenderPassEncoder, or
+   * GPURenderBundleEncoder, and a `finish` method returning a GPUCommandBuffer.
+   * Allows testing methods which have the same signature across multiple encoder interfaces.
+   *
+   * TODO(https://github.com/gpuweb/cts/pull/489#issuecomment-812283347):
+   * Make this have stricter validation to ensure errors are generated in the right API call.
+   *
+   * @example
+   * ```
+   * g.test('popDebugGroup')
+   *   .params(u => u.combine('encoderType', kEncoderTypes))
+   *   .fn(t => {
+   *     const { encoder, finish } = t.createEncoder(t.params.encoderType);
+   *     encoder.popDebugGroup();
+   *   });
+   *
+   * g.test('writeTimestamp')
+   *   .params(u => u.combine('encoderType', ['non-pass', 'compute pass', 'render pass'] as const)
+   *   .fn(t => {
+   *     const { encoder, finish } = t.createEncoder(t.params.encoderType);
+   *     // Encoder type is inferred, so `writeTimestamp` can be used even though it doesn't exist
+   *     // on GPURenderBundleEncoder.
+   *     encoder.writeTimestamp(args);
+   *   });
+   * ```
+   */
   createEncoder<T extends EncoderType>(encoderType: T): CommandBufferMaker<T> {
     const colorFormat = 'rgba8unorm';
     switch (encoderType) {
       case 'non-pass': {
         const encoder = this.device.createCommandEncoder();
+        // TypeScript introduces an intersection type here where it seems like there shouldn't be
+        // one. Maybe there is a soundness issue here, but I don't think there is one in practice.
         return {
           encoder,
           finish: () => {
@@ -317,21 +401,22 @@ export class ValidationTest extends GPUTest {
    *
    * Tests should always do just one WebGPU call in the callback, to make sure that's what's tested.
    */
-  // Note: A return value is not allowed for the callback function. This is to avoid confusion
-  // about what the actual behavior would be. We could either:
-  //   - Make expectValidationError async, and have it await on fn(). This causes an async split
-  //     between pushErrorScope and popErrorScope, so if the caller doesn't `await` on
-  //     expectValidationError (either accidentally or because it doesn't care to do so), then
-  //     other test code will be (nondeterministically) caught by the error scope.
-  //   - Make expectValidationError NOT await fn(), but just execute its first block (until the
-  //     first await) and return the return value (a Promise). This would be confusing because it
-  //     would look like the error scope includes the whole async function, but doesn't.
   expectValidationError(fn: () => void, shouldError: boolean = true): void {
     // If no error is expected, we let the scope surrounding the test catch it.
     if (shouldError) {
       this.device.pushErrorScope('validation');
     }
 
+    // Note: A return value is not allowed for the callback function. This is to avoid confusion
+    // about what the actual behavior would be; either of the following could be reasonable:
+    //   - Make expectValidationError async, and have it await on fn(). This causes an async split
+    //     between pushErrorScope and popErrorScope, so if the caller doesn't `await` on
+    //     expectValidationError (either accidentally or because it doesn't care to do so), then
+    //     other test code will be (nondeterministically) caught by the error scope.
+    //   - Make expectValidationError NOT await fn(), but just execute its first block (until the
+    //     first await) and return the return value (a Promise). This would be confusing because it
+    //     would look like the error scope includes the whole async function, but doesn't.
+    // If we do decide we need to return a value, we should use the latter semantic.
     const returnValue = fn() as unknown;
     assert(
       returnValue === undefined,

@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 #include "third_party/blink/renderer/modules/accessibility/inspector_type_builder_helper.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
+#include "ui/accessibility/ax_mode.h"
 
 namespace blink {
 
@@ -547,7 +548,7 @@ Response InspectorAccessibilityAgent::getPartialAXTree(
   LocalFrame* local_frame = document.GetFrame();
   if (!local_frame)
     return Response::ServerError("Frame is detached.");
-  AXContext ax_context(document);
+  AXContext ax_context(document, ui::kAXModeComplete);
   auto& cache = To<AXObjectCacheImpl>(ax_context.GetAXObjectCache());
 
   AXObject* inspected_ax_object = cache.GetOrCreate(dom_node);
@@ -757,7 +758,7 @@ InspectorAccessibilityAgent::WalkAXNodesToDepth(Document* document,
   std::unique_ptr<protocol::Array<AXNode>> nodes =
       std::make_unique<protocol::Array<protocol::Accessibility::AXNode>>();
 
-  AXContext ax_context(*document);
+  AXContext ax_context(*document, ui::kAXModeComplete);
   auto& cache = To<AXObjectCacheImpl>(ax_context.GetAXObjectCache());
 
   Deque<std::pair<AXID, int>> id_depths;
@@ -956,39 +957,50 @@ Response InspectorAccessibilityAgent::queryAXTree(
                                              object_id, root_dom_node);
   if (!response.IsSuccess())
     return response;
+
+  // Shadow roots are missing from a11y tree.
+  // We start searching the host element instead as a11y tree does not
+  // care about shadow roots.
+  if (root_dom_node->IsShadowRoot()) {
+    root_dom_node = root_dom_node->OwnerShadowHost();
+  }
+  if (!root_dom_node)
+    return Response::InvalidParams("Root DOM node could not be found");
   Document& document = root_dom_node->GetDocument();
 
   document.UpdateStyleAndLayout(DocumentUpdateReason::kInspector);
   DocumentLifecycle::DisallowTransitionScope disallow_transition(
       document.Lifecycle());
-  AXContext ax_context(document);
+  AXContext ax_context(document, ui::kAXModeComplete);
 
   *nodes = std::make_unique<protocol::Array<protocol::Accessibility::AXNode>>();
   auto& cache = To<AXObjectCacheImpl>(ax_context.GetAXObjectCache());
   AXObject* root_ax_node = cache.GetOrCreate(root_dom_node);
 
-  auto sought_role = ax::mojom::blink::Role::kUnknown;
-  if (role.isJust())
-    sought_role = AXObject::AriaRoleStringToRoleEnum(role.fromJust());
   const String sought_name = accessible_name.fromMaybe("");
 
   HeapVector<Member<AXObject>> reachable;
-  reachable.push_back(root_ax_node);
+  if (root_ax_node)
+    reachable.push_back(root_ax_node);
 
   while (!reachable.IsEmpty()) {
     AXObject* ax_object = reachable.back();
     reachable.pop_back();
-    const AXObject::AXObjectVector& children = ax_object->UnignoredChildren();
+    const AXObject::AXObjectVector& children =
+        ax_object->ChildrenIncludingIgnored();
     reachable.AppendRange(children.rbegin(), children.rend());
 
     // if querying by name: skip if name of current object does not match.
     if (accessible_name.isJust() && sought_name != ax_object->ComputedName())
       continue;
-    // if querying by role: skip if role of current object does not match.
-    if (role.isJust() && sought_role != ax_object->RoleValue())
-      continue;
-    // both name and role are OK, so we can add current object to the result.
 
+    // if querying by role: skip if role of current object does not match.
+    if (role.isJust() &&
+        role.fromJust() != AXObject::RoleName(ax_object->RoleValue())) {
+      continue;
+    }
+
+    // both name and role are OK, so we can add current object to the result.
     if (ax_object->AccessibilityIsIgnored()) {
       Node* dom_node = ax_object->GetNode();
       std::unique_ptr<AXNode> protocol_node =
@@ -1051,7 +1063,7 @@ void InspectorAccessibilityAgent::ProvideTo(LocalFrame* frame) {
 void InspectorAccessibilityAgent::CreateAXContext() {
   Document* document = inspected_frames_->Root()->GetDocument();
   if (document)
-    context_ = std::make_unique<AXContext>(*document);
+    context_ = std::make_unique<AXContext>(*document, ui::kAXModeComplete);
 }
 
 void InspectorAccessibilityAgent::Trace(Visitor* visitor) const {

@@ -15,7 +15,7 @@
 #include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "build/build_config.h"
 
-#if defined(OS_APPLE)
+#if defined(OS_APPLE) && defined(ARCH_CPU_64_BITS)
 #include <mach/vm_page_size.h>
 #endif
 
@@ -38,22 +38,22 @@ namespace base {
 // up against the end of a system page.
 
 #if defined(_MIPS_ARCH_LOONGSON)
-PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR ALWAYS_INLINE int
+PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR ALWAYS_INLINE size_t
 PartitionPageShift() {
   return 16;  // 64 KiB
 }
 #elif defined(ARCH_CPU_PPC64)
-PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR ALWAYS_INLINE int
+PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR ALWAYS_INLINE size_t
 PartitionPageShift() {
   return 18;  // 256 KiB
 }
-#elif defined(OS_APPLE)
-PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR ALWAYS_INLINE int
+#elif defined(OS_APPLE) && defined(ARCH_CPU_64_BITS)
+PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR ALWAYS_INLINE size_t
 PartitionPageShift() {
   return vm_page_shift + 2;
 }
 #else
-PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR ALWAYS_INLINE int
+PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR ALWAYS_INLINE size_t
 PartitionPageShift() {
   return 14;  // 16 KiB
 }
@@ -71,7 +71,7 @@ PartitionPageBaseMask() {
   return ~PartitionPageOffsetMask();
 }
 // TODO: Should this be 1 if defined(_MIPS_ARCH_LOONGSON)?
-static const size_t kMaxPartitionPagesPerSlotSpan = 4;
+constexpr size_t kMaxPartitionPagesPerSlotSpan = 4;
 
 // To avoid fragmentation via never-used freelist entries, we hand out partition
 // freelist sections gradually, in units of the dominant system page size. What
@@ -176,14 +176,26 @@ MaxSystemPagesPerSlotSpan() {
 //
 // See |PartitionDirectMapMetadata| for details.
 
-static const size_t kSuperPageShift = 21;  // 2 MiB
-static const size_t kSuperPageSize = 1 << kSuperPageShift;
-static const size_t kSuperPageAlignment = kSuperPageSize;
-static const size_t kSuperPageOffsetMask = kSuperPageAlignment - 1;
-static const size_t kSuperPageBaseMask = ~kSuperPageOffsetMask;
+constexpr size_t kGiB = 1024 * 1024 * 1024ull;
+constexpr size_t kSuperPageShift = 21;  // 2 MiB
+constexpr size_t kSuperPageSize = 1 << kSuperPageShift;
+constexpr size_t kSuperPageAlignment = kSuperPageSize;
+constexpr size_t kSuperPageOffsetMask = kSuperPageAlignment - 1;
+constexpr size_t kSuperPageBaseMask = ~kSuperPageOffsetMask;
+#if defined(PA_HAS_64_BITS_POINTERS)
+constexpr size_t kPoolMaxSize = 8 * kGiB;
+#else
+constexpr size_t kPoolMaxSize = 4 * kGiB;
+#endif
+constexpr size_t kMaxSuperPages = kPoolMaxSize / kSuperPageSize;
+
 PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR ALWAYS_INLINE size_t
 NumPartitionPagesPerSuperPage() {
   return kSuperPageSize / PartitionPageSize();
+}
+
+constexpr ALWAYS_INLINE size_t MaxSuperPages() {
+  return kMaxSuperPages;
 }
 
 #if defined(PA_HAS_64_BITS_POINTERS)
@@ -192,7 +204,11 @@ NumPartitionPagesPerSuperPage() {
 constexpr ALWAYS_INLINE size_t DirectMapAllocationGranularity() {
   return kSuperPageSize;
 }
-#else
+
+constexpr ALWAYS_INLINE size_t DirectMapAllocationGranularityShift() {
+  return kSuperPageShift;
+}
+#else   // defined(PA_HAS_64_BITS_POINTERS)
 // In 32-bit mode, address space is space is a scarce resource. Use the system
 // allocation granularity, which is the lowest possible address space allocation
 // unit. However, don't go below partition page size, so that GigaCage bitmaps
@@ -200,6 +216,11 @@ constexpr ALWAYS_INLINE size_t DirectMapAllocationGranularity() {
 PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR ALWAYS_INLINE size_t
 DirectMapAllocationGranularity() {
   return std::max(PageAllocationGranularity(), PartitionPageSize());
+}
+
+PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR ALWAYS_INLINE size_t
+DirectMapAllocationGranularityShift() {
+  return std::max(PageAllocationGranularityShift(), PartitionPageShift());
 }
 #endif  // defined(PA_HAS_64_BITS_POINTERS)
 
@@ -220,10 +241,10 @@ DirectMapAllocationGranularityOffsetMask() {
 // __STDCPP_DEFAULT_NEW_ALIGNMENT__ is C++17. As such, it is not defined on all
 // platforms, as Chrome's requirement is C++14 as of 2020.
 #if defined(__STDCPP_DEFAULT_NEW_ALIGNMENT__)
-static constexpr size_t kAlignment =
+constexpr size_t kAlignment =
     std::max(alignof(max_align_t), __STDCPP_DEFAULT_NEW_ALIGNMENT__);
 #else
-static constexpr size_t kAlignment = alignof(max_align_t);
+constexpr size_t kAlignment = alignof(max_align_t);
 #endif
 static_assert(kAlignment <= 16,
               "PartitionAlloc doesn't support a fundamental alignment larger "
@@ -244,25 +265,25 @@ static_assert(kAlignment <= 16,
 //
 // In practice, this means 8 bytes alignment on 32 bit architectures, and 16
 // bytes on 64 bit ones.
-static const size_t kMinBucketedOrder =
+//
+// Keep in sync with //tools/memory/partition_allocator/objects_per_size_py.
+constexpr size_t kMinBucketedOrder =
     kAlignment == 16 ? 5 : 4;  // 2^(order - 1), that is 16 or 8.
 // The largest bucketed order is 1 << (20 - 1), storing [512 KiB, 1 MiB):
-static const size_t kMaxBucketedOrder = 20;
-static const size_t kNumBucketedOrders =
+constexpr size_t kMaxBucketedOrder = 20;
+constexpr size_t kNumBucketedOrders =
     (kMaxBucketedOrder - kMinBucketedOrder) + 1;
-// Eight buckets per order (for the higher orders), e.g. order 8 is 128, 144,
-// 160, ..., 240:
-static const size_t kNumBucketsPerOrderBits = 3;
-static const size_t kNumBucketsPerOrder = 1 << kNumBucketsPerOrderBits;
-static const size_t kNumBuckets = kNumBucketedOrders * kNumBucketsPerOrder;
-static const size_t kSmallestBucket = 1 << (kMinBucketedOrder - 1);
-static const size_t kMaxBucketSpacing =
+// 4 buckets per order (for the higher orders).
+constexpr size_t kNumBucketsPerOrderBits = 2;
+constexpr size_t kNumBucketsPerOrder = 1 << kNumBucketsPerOrderBits;
+constexpr size_t kNumBuckets = kNumBucketedOrders * kNumBucketsPerOrder;
+constexpr size_t kSmallestBucket = 1 << (kMinBucketedOrder - 1);
+constexpr size_t kMaxBucketSpacing =
     1 << ((kMaxBucketedOrder - 1) - kNumBucketsPerOrderBits);
-static const size_t kMaxBucketed =
-    (1 << (kMaxBucketedOrder - 1)) +
-    ((kNumBucketsPerOrder - 1) * kMaxBucketSpacing);
+constexpr size_t kMaxBucketed = (1 << (kMaxBucketedOrder - 1)) +
+                                ((kNumBucketsPerOrder - 1) * kMaxBucketSpacing);
 // Limit when downsizing a direct mapping using `realloc`:
-static const size_t kMinDirectMappedDownsize = kMaxBucketed + 1;
+constexpr size_t kMinDirectMappedDownsize = kMaxBucketed + 1;
 // Intentionally set to less than 2GiB to make sure that a 2GiB allocation
 // fails. This is a security choice in Chrome, to help making size_t vs int bugs
 // harder to exploit.
@@ -272,32 +293,37 @@ static const size_t kMinDirectMappedDownsize = kMaxBucketed + 1;
 PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR ALWAYS_INLINE size_t
 MaxDirectMapped() {
   // Subtract kSuperPageSize to accommodate for granularity inside
-  // PartitionRoot::GetDirectMapReservedSize.
+  // PartitionRoot::GetDirectMapReservationSize.
   return (1UL << 31) - kSuperPageSize;
 }
 
 // Max alignment supported by AlignedAllocFlags().
 // kSuperPageSize alignment can't be easily supported, because each super page
 // starts with guard pages & metadata.
-static const size_t kMaxSupportedAlignment = kSuperPageSize / 2;
+constexpr size_t kMaxSupportedAlignment = kSuperPageSize / 2;
 
-static const size_t kBitsPerSizeT = sizeof(void*) * CHAR_BIT;
+constexpr size_t kBitsPerSizeT = sizeof(void*) * CHAR_BIT;
 
 // Constant for the memory reclaim logic.
-static const size_t kMaxFreeableSpans = 16;
+constexpr size_t kMaxFreeableSpans = 16;
 
 // If the total size in bytes of allocated but not committed pages exceeds this
 // value (probably it is a "out of virtual address space" crash), a special
 // crash stack trace is generated at
 // `PartitionOutOfMemoryWithLotsOfUncommitedPages`. This is to distinguish "out
 // of virtual address space" from "out of physical memory" in crash reports.
-static const size_t kReasonableSizeOfUnusedPages = 1024 * 1024 * 1024;  // 1 GiB
+constexpr size_t kReasonableSizeOfUnusedPages = 1024 * 1024 * 1024;  // 1 GiB
 
 // These byte values match tcmalloc.
-static const unsigned char kUninitializedByte = 0xAB;
-static const unsigned char kFreedByte = 0xCD;
+constexpr unsigned char kUninitializedByte = 0xAB;
+constexpr unsigned char kFreedByte = 0xCD;
 
-static const unsigned char kQuarantinedByte = 0xEF;
+constexpr unsigned char kQuarantinedByte = 0xEF;
+
+// 1 is smaller than anything we can use, as it is not properly aligned. Not
+// using a large size, since PartitionBucket::slot_size is a uint32_t, and
+// static_cast<uint32_t>(-1) is too close to a "real" size.
+constexpr size_t kInvalidBucketSize = 1;
 
 // Flags for `PartitionAllocFlags`.
 enum PartitionAllocFlags {

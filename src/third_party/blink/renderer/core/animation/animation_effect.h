@@ -104,6 +104,13 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
   }
 
   const Timing& SpecifiedTiming() const { return timing_; }
+
+  const Timing::NormalizedTiming& NormalizedTiming() const {
+    EnsureNormalizedTiming();
+    return normalized_.value();
+  }
+  void InvalidateNormalizedTiming() { normalized_.reset(); }
+
   void UpdateSpecifiedTiming(const Timing&);
   void SetIgnoreCssTimingProperties();
 
@@ -120,7 +127,10 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
   }
 
   // Attach/Detach the AnimationEffect from its owning animation.
-  virtual void Attach(AnimationEffectOwner* owner) { owner_ = owner; }
+  virtual void Attach(AnimationEffectOwner* owner) {
+    owner_ = owner;
+    InvalidateNormalizedTiming();
+  }
   virtual void Detach() {
     DCHECK(owner_);
     owner_ = nullptr;
@@ -169,11 +179,13 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
   Member<EventDelegate> event_delegate_;
 
   mutable Timing::CalculatedTiming calculated_;
+  mutable absl::optional<Timing::NormalizedTiming> normalized_;
   mutable bool needs_update_;
   mutable absl::optional<AnimationTimeDelta> last_update_time_;
   mutable absl::optional<Timing::Phase> last_update_phase_;
   AnimationTimeDelta cancel_time_;
   const Timing::CalculatedTiming& EnsureCalculated() const;
+  void EnsureNormalizedTiming() const;
 };
 
 }  // namespace blink

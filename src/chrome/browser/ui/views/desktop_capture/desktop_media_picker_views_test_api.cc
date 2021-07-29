@@ -38,6 +38,11 @@ void DesktopMediaPickerViewsTestApi::FocusSourceAtIndex(size_t index,
   }
 }
 
+bool DesktopMediaPickerViewsTestApi::AudioSupported(
+    DesktopMediaList::Type type) const {
+  return DesktopMediaPickerDialogView::AudioSupported(type);
+}
+
 void DesktopMediaPickerViewsTestApi::FocusAudioCheckbox() {
   picker_->dialog_->audio_share_checkbox_->RequestFocus();
 }
@@ -88,13 +93,15 @@ void DesktopMediaPickerViewsTestApi::DoubleTapSourceAtIndex(size_t index) {
 
 void DesktopMediaPickerViewsTestApi::SelectTabForSourceType(
     DesktopMediaList::Type source_type) {
-  const auto& source_types = picker_->dialog_->source_types_;
-  const auto i =
-      std::find(source_types.cbegin(), source_types.cend(), source_type);
-  DCHECK(i != source_types.cend());
+  const auto& categories = picker_->dialog_->categories_;
+  const auto i = std::find_if(categories.cbegin(), categories.cend(),
+                              [source_type](const auto& category) {
+                                return category.type == source_type;
+                              });
+  DCHECK(i != categories.cend());
   if (picker_->dialog_->tabbed_pane_) {
     picker_->dialog_->tabbed_pane_->SelectTabAt(
-        std::distance(source_types.cbegin(), i));
+        std::distance(categories.cbegin(), i));
   }
 }
 
@@ -111,7 +118,7 @@ bool DesktopMediaPickerViewsTestApi::HasSourceAtIndex(size_t index) const {
   const views::TableView* table = GetTableView();
   if (table)
     return base::checked_cast<size_t>(table->GetRowCount()) > index;
-  return bool{GetSourceAtIndex(index)};
+  return !!GetSourceAtIndex(index);
 }
 
 views::View* DesktopMediaPickerViewsTestApi::GetSelectedListView() {

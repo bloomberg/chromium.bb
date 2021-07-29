@@ -7,12 +7,15 @@ package org.chromium.chrome.browser.compositor.bottombar.contextualsearch;
 import android.graphics.Rect;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.Px;
 
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
 import org.chromium.chrome.browser.contextualsearch.ResolvedSearchTerm.CardTag;
 import org.chromium.content_public.browser.WebContents;
+
+import java.util.List;
 
 /**
  * An interface that encapsulates all the methods that {@link ContextualSearchManager} needs to
@@ -30,7 +33,15 @@ public interface ContextualSearchPanelInterface {
     void setSearchTerm(String searchTerm);
     void setDidSearchInvolvePromo();
     void onSearchTermResolved(String searchTerm, String thumbnailUrl, String quickActionUri,
-            int quickActionCategory, @CardTag int cardTagEnum, @Nullable String[] relatedSearches);
+            int quickActionCategory, @CardTag int cardTagEnum,
+            @Nullable List<String> inBarRelatedSearches, boolean showDefaultSearchInBar,
+            @Nullable List<String> inContentRelatedSearches, boolean showDefaultSearchInContent);
+    void onSearchTermResolved(String searchTerm, String thumbnailUrl, String quickActionUri,
+            int quickActionCategory, @CardTag int cardTagEnum,
+            @Nullable List<String> inBarRelatedSearches, boolean showDefaultSearchInBar,
+            @Px int defaultQueryInBarTextMaxWidthPx,
+            @Nullable List<String> inContentRelatedSearches, boolean showDefaultSearchInContent,
+            @Px int defaultQueryInContentTextMaxWidthPx);
     void setCaption(String caption);
     void ensureCaption();
     void onContextualSearchPrefChanged(boolean isEnabled);

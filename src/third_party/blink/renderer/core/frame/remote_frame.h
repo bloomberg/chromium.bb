@@ -85,6 +85,7 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   void DidFocus() override;
   void AddResourceTimingFromChild(
       mojom::blink::ResourceTimingInfoPtr timing) override;
+  bool IsAdSubframe() const override;
 
   // ChildFrameCompositor:
   const scoped_refptr<cc::Layer>& GetCcLayer() override;
@@ -126,7 +127,7 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   void SetViewportIntersection(const mojom::blink::ViewportIntersectionState&);
 
   // Called when the local root's screen info changes.
-  void DidChangeScreenInfo(const ScreenInfo& screen_info);
+  void DidChangeScreenInfo(const display::ScreenInfo& screen_info);
   // Called when the main frame's zoom level is changed and should be propagated
   // to the remote's associated view.
   void ZoomLevelChanged(double zoom_level);
@@ -156,8 +157,7 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   void SetReplicatedOrigin(
       const scoped_refptr<const SecurityOrigin>& origin,
       bool is_potentially_trustworthy_unique_origin) override;
-  void SetReplicatedAdFrameType(
-      mojom::blink::AdFrameType ad_frame_type) override;
+  void SetReplicatedIsAdSubframe(bool is_ad_subframe) override;
   void SetReplicatedName(const String& name,
                          const String& unique_name) override;
   void DispatchLoadEventForFrameOwner() override;
@@ -230,6 +230,12 @@ class CORE_EXPORT RemoteFrame final : public Frame,
 
   viz::FrameSinkId GetFrameSinkId();
 
+  void SetCcLayerForTesting(scoped_refptr<cc::Layer>, bool is_surface_layer);
+
+  // Whether a navigation should replace the current history entry or not.
+  bool NavigationShouldReplaceCurrentHistoryEntry(
+      WebFrameLoadType frame_load_type) const;
+
  private:
   // Frame protected overrides:
   bool DetachImpl(FrameDetachType) override;
@@ -279,6 +285,9 @@ class CORE_EXPORT RemoteFrame final : public Frame,
 
   // Will be nullptr when this RemoteFrame's parent is not a LocalFrame.
   std::unique_ptr<ChildFrameCompositingHelper> compositing_helper_;
+
+  // Whether the frame is considered to be an ad subframe by Ad Tagging.
+  bool is_ad_subframe_;
 
   mojo::AssociatedRemote<mojom::blink::RemoteFrameHost>
       remote_frame_host_remote_;

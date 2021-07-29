@@ -1,0 +1,286 @@
+// Copyright 2021 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "android_webview/browser/component_updater/loader_policies/aw_apps_package_names_allowlist_component_loader_policy.h"
+
+#include <fcntl.h>
+#include <stdio.h>
+#include <unistd.h>
+
+#include <utility>
+
+#include "android_webview/common/metrics/app_package_name_logging_rule.h"
+#include "base/containers/flat_map.h"
+#include "base/cxx17_backports.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/files/scoped_file.h"
+#include "base/run_loop.h"
+#include "base/sequence_checker.h"
+#include "base/test/bind.h"
+#include "base/test/task_environment.h"
+#include "base/time/time.h"
+#include "base/values.h"
+#include "base/version.h"
+#include "components/component_updater/android/component_loader_policy.h"
+#include "components/optimization_guide/core/bloom_filter.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+namespace android_webview {
+
+namespace {
+
+constexpr int kNumHash = 11;
+constexpr int kNumBitsPerEntry = 16;
+constexpr char kTestAllowlistVersion[] = "123.456.789.10";
+const std::string kTestAllowlist[] = {"com.example.test", "my.fake.app",
+                                      "yet.another.app"};
+double MillisFromUnixEpoch(const base::Time& time) {
+  return (time - base::Time::UnixEpoch()).InMillisecondsF();
+}
+
+std::unique_ptr<base::Value> BuildTestManifest() {
+  auto manifest = std::make_unique<base::Value>(base::Value::Type::DICTIONARY);
+  manifest->SetKey(kBloomFilterNumHashKey, base::Value(kNumHash));
+  manifest->SetKey(kBloomFilterNumBitsKey, base::Value(3 * kNumBitsPerEntry));
+  manifest->SetKey(kExpiryDateKey,
+                   base::Value(MillisFromUnixEpoch(
+                       base::Time::Now() + base::TimeDelta::FromDays(1))));
+
+  return manifest;
+}
+
+}  // namespace
+
+class AwAppsPackageNamesAllowlistComponentLoaderPolicyTest
+    : public ::testing::Test {
+ public:
+  void SetUp() override {
+    ASSERT_TRUE(base::CreateTemporaryFile(&allowlist_path_));
+  }
+
+  void TearDown() override {
+    base::DeleteFile(allowlist_path_);
+  }
+
+  void WriteAllowListToFile(const std::vector<uint8_t>& data) {
+    ASSERT_TRUE(base::WriteFile(allowlist_path_, data));
+  }
+
+  void WritePackageNamesAllowListToFile() {
+    auto filter = std::make_unique<optimization_guide::BloomFilter>(
+        kNumHash, kNumBitsPerEntry * base::size(kTestAllowlist));
+    for (const auto& package : kTestAllowlist) {
+      filter->Add(package);
+    }
+    WriteAllowListToFile(filter->bytes());
+  }
+
+  base::ScopedFD OpenAndGetAllowlistFd() {
+    int allowlist_fd = open(allowlist_path_.value().c_str(), O_RDONLY);
+    CHECK(allowlist_fd) << "Failed to open FD for " << allowlist_path_;
+    return base::ScopedFD(allowlist_fd);
+  }
+
+  void LookupConfirmationCallback(
+      absl::optional<AppPackageNameLoggingRule> record) {
+    EXPECT_TRUE(checker_.CalledOnValidSequence());
+    allowlist_lookup_result_ = record;
+    lookup_run_loop_.Quit();
+  }
+
+ protected:
+  base::test::TaskEnvironment env_;
+  // Has to be init after TaskEnvironment.
+  base::SequenceCheckerImpl checker_;
+  base::RunLoop lookup_run_loop_;
+
+  absl::optional<AppPackageNameLoggingRule> allowlist_lookup_result_;
+
+ private:
+  base::FilePath allowlist_path_;
+};
+
+TEST_F(AwAppsPackageNamesAllowlistComponentLoaderPolicyTest,
+       TestExistingPackageName) {
+  WritePackageNamesAllowListToFile();
+  base::flat_map<std::string, base::ScopedFD> fd_map;
+  fd_map[kAllowlistBloomFilterFileName] = OpenAndGetAllowlistFd();
+  std::unique_ptr<base::Value> manifest = BuildTestManifest();
+  base::Time one_day_from_now =
+      base::Time::Now() + base::TimeDelta::FromDays(1);
+  manifest->SetDoubleKey(kExpiryDateKey, MillisFromUnixEpoch(one_day_from_now));
+  base::Version new_version(kTestAllowlistVersion);
+
+  auto policy =
+      std::make_unique<AwAppsPackageNamesAllowlistComponentLoaderPolicy>(
+          kTestAllowlist[1],
+          AppPackageNameLoggingRule(base::Version("123.456.789.0"),
+                                    base::Time::Min()),
+          base::BindOnce(&AwAppsPackageNamesAllowlistComponentLoaderPolicyTest::
+                             LookupConfirmationCallback,
+                         base::Unretained(this)));
+
+  policy->ComponentLoaded(new_version, fd_map,
+                          base::DictionaryValue::From(std::move(manifest)));
+
+  lookup_run_loop_.Run();
+  ASSERT_TRUE(allowlist_lookup_result_.has_value());
+  EXPECT_TRUE(allowlist_lookup_result_.value().IsAppPackageNameAllowed());
+  EXPECT_EQ(allowlist_lookup_result_.value().GetVersion(), new_version);
+  EXPECT_EQ(allowlist_lookup_result_.value().GetExpiryDate(), one_day_from_now);
+}
+
+TEST_F(AwAppsPackageNamesAllowlistComponentLoaderPolicyTest,
+       TestSameVersionAsCache) {
+  base::flat_map<std::string, base::ScopedFD> fd_map;
+  std::unique_ptr<base::Value> manifest = BuildTestManifest();
+  base::Time one_day_from_now =
+      base::Time::Now() + base::TimeDelta::FromDays(1);
+  base::Version version(kTestAllowlistVersion);
+
+  AppPackageNameLoggingRule expected_record(version, one_day_from_now);
+  auto policy =
+      std::make_unique<AwAppsPackageNamesAllowlistComponentLoaderPolicy>(
+          "test.some.app", expected_record,
+          base::BindOnce(&AwAppsPackageNamesAllowlistComponentLoaderPolicyTest::
+                             LookupConfirmationCallback,
+                         base::Unretained(this)));
+
+  policy->ComponentLoaded(version, fd_map,
+                          base::DictionaryValue::From(std::move(manifest)));
+
+  lookup_run_loop_.Run();
+  ASSERT_TRUE(allowlist_lookup_result_.has_value());
+  EXPECT_TRUE(allowlist_lookup_result_.value().IsAppPackageNameAllowed());
+  EXPECT_TRUE(expected_record.IsSameAs(allowlist_lookup_result_.value()));
+}
+
+TEST_F(AwAppsPackageNamesAllowlistComponentLoaderPolicyTest,
+       TestNonExistingPackageName) {
+  WritePackageNamesAllowListToFile();
+  base::flat_map<std::string, base::ScopedFD> fd_map;
+  fd_map[kAllowlistBloomFilterFileName] = OpenAndGetAllowlistFd();
+  base::Version new_version(kTestAllowlistVersion);
+
+  auto policy =
+      std::make_unique<AwAppsPackageNamesAllowlistComponentLoaderPolicy>(
+          "non.existent.app", absl::optional<AppPackageNameLoggingRule>(),
+          base::BindOnce(&AwAppsPackageNamesAllowlistComponentLoaderPolicyTest::
+                             LookupConfirmationCallback,
+                         base::Unretained(this)));
+
+  policy->ComponentLoaded(new_version, fd_map,
+                          base::DictionaryValue::From(BuildTestManifest()));
+
+  lookup_run_loop_.Run();
+  ASSERT_TRUE(allowlist_lookup_result_.has_value());
+  EXPECT_EQ(allowlist_lookup_result_.value().GetVersion(), new_version);
+  EXPECT_FALSE(allowlist_lookup_result_.value().IsAppPackageNameAllowed());
+}
+
+TEST_F(AwAppsPackageNamesAllowlistComponentLoaderPolicyTest,
+       TestAllowlistFileNotInMap) {
+  base::flat_map<std::string, base::ScopedFD> fd_map;
+  fd_map["another_file"] = OpenAndGetAllowlistFd();
+
+  auto policy =
+      std::make_unique<AwAppsPackageNamesAllowlistComponentLoaderPolicy>(
+          kTestAllowlist[1], absl::optional<AppPackageNameLoggingRule>(),
+          base::BindOnce(&AwAppsPackageNamesAllowlistComponentLoaderPolicyTest::
+                             LookupConfirmationCallback,
+                         base::Unretained(this)));
+
+  policy->ComponentLoaded(base::Version(kTestAllowlistVersion), fd_map,
+                          base::DictionaryValue::From(BuildTestManifest()));
+
+  lookup_run_loop_.Run();
+  EXPECT_FALSE(allowlist_lookup_result_.has_value());
+}
+
+TEST_F(AwAppsPackageNamesAllowlistComponentLoaderPolicyTest,
+       TestMissingBloomFilterParams) {
+  WritePackageNamesAllowListToFile();
+  base::flat_map<std::string, base::ScopedFD> fd_map;
+  fd_map[kAllowlistBloomFilterFileName] = OpenAndGetAllowlistFd();
+
+  auto policy =
+      std::make_unique<AwAppsPackageNamesAllowlistComponentLoaderPolicy>(
+          kTestAllowlist[1], absl::optional<AppPackageNameLoggingRule>(),
+          base::BindOnce(&AwAppsPackageNamesAllowlistComponentLoaderPolicyTest::
+                             LookupConfirmationCallback,
+                         base::Unretained(this)));
+
+  policy->ComponentLoaded(base::Version(kTestAllowlistVersion), fd_map,
+                          std::make_unique<base::DictionaryValue>());
+
+  lookup_run_loop_.Run();
+  EXPECT_FALSE(allowlist_lookup_result_.has_value());
+}
+
+TEST_F(AwAppsPackageNamesAllowlistComponentLoaderPolicyTest,
+       TestTooShortBloomFilter) {
+  WriteAllowListToFile(std::vector<uint8_t>(2, 0xff));
+  base::flat_map<std::string, base::ScopedFD> fd_map;
+  fd_map[kAllowlistBloomFilterFileName] = OpenAndGetAllowlistFd();
+
+  auto policy =
+      std::make_unique<AwAppsPackageNamesAllowlistComponentLoaderPolicy>(
+          kTestAllowlist[1], absl::optional<AppPackageNameLoggingRule>(),
+          base::BindOnce(&AwAppsPackageNamesAllowlistComponentLoaderPolicyTest::
+                             LookupConfirmationCallback,
+                         base::Unretained(this)));
+
+  policy->ComponentLoaded(base::Version(kTestAllowlistVersion), fd_map,
+                          base::DictionaryValue::From(BuildTestManifest()));
+
+  lookup_run_loop_.Run();
+  EXPECT_FALSE(allowlist_lookup_result_.has_value());
+}
+
+TEST_F(AwAppsPackageNamesAllowlistComponentLoaderPolicyTest,
+       TestTooLongBloomFilter) {
+  WriteAllowListToFile(std::vector<uint8_t>(2000, 0xff));
+  base::flat_map<std::string, base::ScopedFD> fd_map;
+  fd_map[kAllowlistBloomFilterFileName] = OpenAndGetAllowlistFd();
+
+  auto policy =
+      std::make_unique<AwAppsPackageNamesAllowlistComponentLoaderPolicy>(
+          kTestAllowlist[1], absl::optional<AppPackageNameLoggingRule>(),
+          base::BindOnce(&AwAppsPackageNamesAllowlistComponentLoaderPolicyTest::
+                             LookupConfirmationCallback,
+                         base::Unretained(this)));
+
+  policy->ComponentLoaded(base::Version(kTestAllowlistVersion), fd_map,
+                          base::DictionaryValue::From(BuildTestManifest()));
+
+  lookup_run_loop_.Run();
+  EXPECT_FALSE(allowlist_lookup_result_.has_value());
+}
+
+TEST_F(AwAppsPackageNamesAllowlistComponentLoaderPolicyTest,
+       TestExpiredAllowlist) {
+  WritePackageNamesAllowListToFile();
+  base::flat_map<std::string, base::ScopedFD> fd_map;
+  fd_map[kAllowlistBloomFilterFileName] = OpenAndGetAllowlistFd();
+  std::unique_ptr<base::Value> manifest = BuildTestManifest();
+  manifest->SetKey(kExpiryDateKey,
+                   base::Value(MillisFromUnixEpoch(
+                       base::Time::Now() - base::TimeDelta::FromDays(1))));
+
+  auto policy =
+      std::make_unique<AwAppsPackageNamesAllowlistComponentLoaderPolicy>(
+          kTestAllowlist[1], absl::optional<AppPackageNameLoggingRule>(),
+          base::BindOnce(&AwAppsPackageNamesAllowlistComponentLoaderPolicyTest::
+                             LookupConfirmationCallback,
+                         base::Unretained(this)));
+
+  policy->ComponentLoaded(base::Version(kTestAllowlistVersion), fd_map,
+                          base::DictionaryValue::From(std::move(manifest)));
+
+  lookup_run_loop_.Run();
+  EXPECT_FALSE(allowlist_lookup_result_.has_value());
+}
+
+}  // namespace android_webview

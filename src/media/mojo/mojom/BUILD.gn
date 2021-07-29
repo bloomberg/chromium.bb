@@ -19,6 +19,7 @@ mojom("mojom") {
     "audio_parameters.mojom",
     "audio_stream_factory.mojom",
     "capture_handle.mojom",
+    "cdm_document_service.mojom",
     "cdm_service.mojom",
     "cdm_storage.mojom",
     "content_decryption_module.mojom",
@@ -26,6 +27,7 @@ mojom("mojom") {
     "demuxer_stream.mojom",
     "display_media_information.mojom",
     "frame_interface_factory.mojom",
+    "gpu_accelerated_video_decoder.mojom",
     "interface_factory.mojom",
     "key_system_support.mojom",
     "media_log.mojom",
@@ -34,7 +36,6 @@ mojom("mojom") {
     "media_service.mojom",
     "media_types.mojom",
     "output_protection.mojom",
-    "platform_verification.mojom",
     "playback_events_recorder.mojom",
     "provision_fetcher.mojom",
     "renderer.mojom",
@@ -161,6 +162,21 @@ mojom("mojom") {
     {
       types = [
         {
+          mojom = "media.mojom.BitstreamBuffer"
+          cpp = "::media::BitstreamBuffer"
+          move_only = true
+        },
+        {
+          mojom = "media.mojom.VideoDecodeAcceleratorConfig"
+          cpp = "::media::VideoDecodeAccelerator::Config"
+        },
+      ]
+      traits_headers = [ "//media/gpu/ipc/common/media_param_traits.h" ]
+      traits_public_deps = [ "//media/gpu/ipc/common" ]
+    },
+    {
+      types = [
+        {
           mojom = "media.mojom.CdmKeyInformation"
           cpp = "::std::unique_ptr<::media::CdmKeyInformation>"
           move_only = true
@@ -271,12 +287,12 @@ mojom("mojom") {
           cpp = "::media::PipelineStatistics"
         },
         {
-          mojom = "media.mojom.AudioDecoderInfo"
-          cpp = "::media::AudioDecoderInfo"
+          mojom = "media.mojom.AudioPipelineInfo"
+          cpp = "::media::AudioPipelineInfo"
         },
         {
-          mojom = "media.mojom.VideoDecoderInfo"
-          cpp = "::media::VideoDecoderInfo"
+          mojom = "media.mojom.VideoPipelineInfo"
+          cpp = "::media::VideoPipelineInfo"
         },
         {
           mojom = "media.mojom.AudioDecoderType"
@@ -335,10 +351,6 @@ mojom("mojom") {
           cpp = "::media::SupportedVideoDecoderConfig"
         },
         {
-          mojom = "media.mojom.VideoDecoderImplementation"
-          cpp = "::media::VideoDecoderImplementation"
-        },
-        {
           mojom = "media.mojom.VideoDecoderType"
           cpp = "::media::VideoDecoderType"
         },
@@ -392,8 +404,16 @@ mojom("mojom") {
           cpp = "::media::VideoEncodeAccelerator::Config"
         },
         {
+          mojom = "media.mojom.InterLayerPredMode"
+          cpp = "::media::VideoEncodeAccelerator::Config::InterLayerPredMode"
+        },
+        {
           mojom = "media.mojom.SpatialLayer"
           cpp = "::media::VideoEncodeAccelerator::Config::SpatialLayer"
+        },
+        {
+          mojom = "media.mojom.Bitrate"
+          cpp = "::media::Bitrate"
         },
         {
           mojom = "media.mojom.VideoEncodeAcceleratorSupportedProfile"
@@ -548,7 +568,55 @@ mojom("mojom") {
       traits_sources = [ "cdm_capability_mojom_traits.cc" ]
       traits_public_deps = [ "//media" ]
     },
+    {
+      types = [
+        {
+          mojom = "media.mojom.CdmSessionClosedReason"
+          cpp = "::media::CdmSessionClosedReason"
+        },
+      ]
+      traits_headers = [ "media_types_enum_mojom_traits.h" ]
+    },
+    {
+      types = [
+        {
+          mojom = "media.mojom.RendererType"
+          cpp = "::media::RendererType"
+        },
+      ]
+      traits_headers = [ "media_types_enum_mojom_traits.h" ]
+    },
   ]
+
+  if (!is_android) {
+    cpp_typemaps += [
+      {
+        types = [
+          {
+            mojom = "media.mojom.HypothesisParts"
+            cpp = "::media::HypothesisParts"
+          },
+          {
+            mojom = "media.mojom.TimingInformation"
+            cpp = "::media::TimingInformation"
+          },
+          {
+            mojom = "media.mojom.SpeechRecognitionResult"
+            cpp = "::media::SpeechRecognitionResult"
+          },
+        ]
+        traits_headers = [
+          "speech_recognition_result_mojom_traits.h",
+          "speech_recognition_result.h",
+        ]
+        traits_sources = [
+          "speech_recognition_result.cc",
+          "speech_recognition_result_mojom_traits.cc",
+        ]
+        traits_public_deps = [ "//base" ]
+      },
+    ]
+  }
 
   cpp_typemaps += shared_typemaps
   blink_cpp_typemaps = shared_typemaps
@@ -604,6 +672,10 @@ source_set("unit_tests") {
     "video_frame_metadata_mojom_traits_unittest.cc",
     "video_frame_mojom_traits_unittest.cc",
   ]
+
+  if (!is_android) {
+    sources += [ "speech_recognition_result_mojom_traits_unittest.cc" ]
+  }
 
   deps = [
     "//base",

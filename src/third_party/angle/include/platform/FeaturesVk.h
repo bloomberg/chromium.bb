@@ -161,10 +161,16 @@ struct FeaturesVk : FeatureSetBase
         "VkDevice supports the EGL_ANDROID_native_fence_sync extension", &members,
         "http://anglebug.com/2517"};
 
-    // Whether the VkDevice can support imageCubeArray feature properly.
+    // Whether the VkDevice can support the imageCubeArray feature properly.
     Feature supportsImageCubeArray = {"supportsImageCubeArray", FeatureCategory::VulkanFeatures,
                                       "VkDevice supports the imageCubeArray feature properly",
                                       &members, "http://anglebug.com/3584"};
+
+    // Whether the VkDevice supports the pipelineStatisticsQuery feature.
+    Feature supportsPipelineStatisticsQuery = {
+        "supportsPipelineStatisticsQuery", FeatureCategory::VulkanFeatures,
+        "VkDevice supports the pipelineStatisticsQuery feature", &members,
+        "http://anglebug.com/5430"};
 
     // Whether the VkDevice supports the VK_EXT_shader_stencil_export extension, which is used to
     // perform multisampled resolve of stencil buffer.  A multi-step workaround is used instead if
@@ -199,6 +205,13 @@ struct FeaturesVk : FeatureSetBase
                                       "VkDevice supports the VK_EXT_index_type_uint8 extension",
                                       &members, "http://anglebug.com/4405"};
 
+    // Whether the VkDevice supports the VK_EXT_custom_border_color extension
+    // http://anglebug.com/3577
+    Feature supportsCustomBorderColorEXT = {
+        "supports_custom_border_color", FeatureCategory::VulkanFeatures,
+        "VkDevice supports the VK_EXT_custom_border_color extension", &members,
+        "http://anglebug.com/3577"};
+
     // Whether the VkDevice supports the VK_KHR_depth_stencil_resolve extension with the
     // independentResolveNone feature.
     // http://anglebug.com/4836
@@ -214,6 +227,11 @@ struct FeaturesVk : FeatureSetBase
         "supportsMultisampledRenderToSingleSampled", FeatureCategory::VulkanFeatures,
         "VkDevice supports the VK_EXT_multisampled_render_to_single_sampled extension", &members,
         "http://anglebug.com/4836"};
+
+    // Whether the VkDevice supports the VK_KHR_multiview extension.  http://anglebug.com/6048
+    Feature supportsMultiview = {"supportsMultiview", FeatureCategory::VulkanFeatures,
+                                 "VkDevice supports the VK_KHR_multiview extension", &members,
+                                 "http://anglebug.com/6048"};
 
     // VK_PRESENT_MODE_FIFO_KHR causes random timeouts on Linux Intel. http://anglebug.com/3153
     Feature disableFifoPresentMode = {"disableFifoPresentMode", FeatureCategory::VulkanWorkarounds,
@@ -482,6 +500,18 @@ struct FeaturesVk : FeatureSetBase
                                       "Emulate 270-degree prerotation.", &members,
                                       "http://anglebug.com/4901"};
 
+    // Whether SPIR-V should be generated directly instead of through glslang.  Transitory feature
+    // until the work is complete.
+    Feature directSPIRVGeneration = {"directSPIRVGeneration", FeatureCategory::VulkanFeatures,
+                                     "Direct translation to SPIR-V.", &members,
+                                     "http://anglebug.com/4889"};
+
+    // Whether SPIR-V should be generated with workarounds for buggy drivers.
+    Feature directSPIRVGenerationWorkarounds = {
+        "directSPIRVGenerationWorkarounds", FeatureCategory::VulkanWorkarounds,
+        "Work around driver bugs when translating to SPIR-V.", &members,
+        "http://anglebug.com/6110"};
+
     // Whether we should use driver uniforms over specialization constants for some shader
     // modifications like yflip and rotation.
     Feature forceDriverUniformOverSpecConst = {
@@ -521,6 +551,13 @@ struct FeaturesVk : FeatureSetBase
         "preferSubmitAtFBOBoundary", FeatureCategory::VulkanWorkarounds,
         "Submit commands to driver at each FBO boundary for performance improvements.", &members,
         "https://issuetracker.google.com/187425444"};
+
+    // Workaround for gap in Vulkan spec related to querying descriptor count for immutable samplers
+    // tied to an external format.
+    Feature useMultipleDescriptorsForExternalFormats = {
+        "useMultipleDescriptorsForExternalFormats", FeatureCategory::VulkanWorkarounds,
+        "Return a default descriptor count for external formats.", &members,
+        "http://anglebug.com/6141"};
 };
 
 inline FeaturesVk::FeaturesVk()  = default;

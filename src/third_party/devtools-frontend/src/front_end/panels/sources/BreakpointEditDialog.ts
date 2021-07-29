@@ -35,9 +35,11 @@ const UIStrings = {
   */
   pauseOnlyWhenTheConditionIsTrue: 'Pause only when the condition is true',
   /**
-  *@description Text in Breakpoint Edit Dialog of the Sources panel
+  *@description Text in Breakpoint Edit Dialog of the Sources panel. Provides the user with
+  *an example on how to use Logpoints. 'Log' is a verb and 'message' is a noun.
+  *See: https://developer.chrome.com/blog/new-in-devtools-73/#logpoints
   */
-  logMessageEgXIsX: 'Log message, e.g. \'x is\', x',
+  logMessageEgXIsX: 'Log message, e.g. `\'x is\', x`',
   /**
   *@description Type selector element title in Breakpoint Edit Dialog of the Sources panel
   */
@@ -60,7 +62,7 @@ export class BreakpointEditDialog extends UI.Widget.Widget {
                                                                                          condition: string,
                                                                                        }) => Promise<void>) {
     super(true);
-    this.registerRequiredCSS('panels/sources/breakpointEditDialog.css', {enableLegacyPatching: true});
+    this.registerRequiredCSS('panels/sources/breakpointEditDialog.css');
     this._onFinish = onFinish;
     this._finished = false;
     this._editor = null;
@@ -114,7 +116,8 @@ export class BreakpointEditDialog extends UI.Widget.Widget {
     this._editor.setSelection(this._editor.fullRange());
     this._editor.widget().element.addEventListener('keydown', this._onKeyDown.bind(this), true);
     this.element.addEventListener('blur', event => {
-      if (event.relatedTarget && !(event.relatedTarget as Node).isSelfOrDescendant(this.element)) {
+      if (!event.relatedTarget ||
+          (event.relatedTarget && !(event.relatedTarget as Node).isSelfOrDescendant(this.element))) {
         this._finishEditing(true);
       }
     }, true);

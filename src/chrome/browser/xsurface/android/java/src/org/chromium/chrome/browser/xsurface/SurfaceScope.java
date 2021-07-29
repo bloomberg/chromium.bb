@@ -25,4 +25,13 @@ public interface SurfaceScope {
 
     default void replaceDataStoreEntry(String key, byte[] data) {}
     default void removeDataStoreEntry(String key) {}
+
+    /**
+     * Return the FeedLaunchReliabilityLogger associated with the surface, creating it if it
+     * doesn't exist.
+     * @return The surface's FeedLaunchReliabilityLogger instance.
+     */
+    default FeedLaunchReliabilityLogger getFeedLaunchReliabilityLogger() {
+        return new FeedLaunchReliabilityLogger() {};
+    }
 }

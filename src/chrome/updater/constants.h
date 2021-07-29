@@ -13,6 +13,9 @@ namespace updater {
 // The updater specific app ID.
 extern const char kUpdaterAppId[];
 
+// The app ID used to qualify the updater.
+extern const char kQualificationAppId[];
+
 // "0.0.0.0". Historically, a null version has been used to indicate a
 // new install.
 extern const char kNullVersion[];
@@ -224,6 +227,10 @@ constexpr int kErrorFailedToMoveDownloadedFile = 5;
 
 constexpr double kInitialDelay = 60;
 constexpr int kServerKeepAliveSeconds = 10;
+
+// The maximum number of server starts before the updater uninstalls itself
+// while waiting for the first app registration.
+constexpr int kMaxServerStartsBeforeFirstReg = 24;
 
 }  // namespace updater
 

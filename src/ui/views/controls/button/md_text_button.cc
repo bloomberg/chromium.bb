@@ -18,12 +18,14 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_painted_layer_delegates.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/focus_ring.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/painter.h"
 #include "ui/views/style/platform_style.h"
@@ -35,10 +37,10 @@ MdTextButton::MdTextButton(PressedCallback callback,
                            const std::u16string& text,
                            int button_context)
     : LabelButton(std::move(callback), text, button_context) {
-  ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
+  InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
   SetHasInkDropActionOnClick(true);
   SetShowInkDropWhenHotTracked(true);
-  ink_drop()->SetBaseColorCallback(base::BindRepeating(
+  InkDrop::Get(this)->SetBaseColorCallback(base::BindRepeating(
       [](MdTextButton* host) {
         return color_utils::DeriveDefaultIconColor(
             host->label()->GetEnabledColor());
@@ -96,8 +98,10 @@ void MdTextButton::SetCornerRadius(float radius) {
   if (corner_radius_ == radius)
     return;
   corner_radius_ = radius;
-  ink_drop()->SetSmallCornerRadius(corner_radius_);
-  ink_drop()->SetLargeCornerRadius(corner_radius_);
+  InkDrop::Get(this)->SetSmallCornerRadius(corner_radius_);
+  InkDrop::Get(this)->SetLargeCornerRadius(corner_radius_);
+  views::InstallRoundRectHighlightPathGenerator(this, gfx::Insets(),
+                                                corner_radius_);
   OnPropertyChanged(&corner_radius_, kPropertyEffectsPaint);
 }
 

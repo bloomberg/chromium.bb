@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/check_op.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/time/default_tick_clock.h"
@@ -27,7 +28,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "ui/base/page_transition_types.h"
 
 // This macro invokes the specified method on each observer, passing the
 // variable length arguments as the method's arguments, and removes the observer
@@ -70,6 +70,7 @@ const char kPageLoadCompletedAfterAppBackground[] =
 const char kPageLoadStartedInForeground[] =
     "PageLoad.Internal.NavigationStartedInForeground";
 const char kPageLoadPrerender[] = "PageLoad.Internal.Prerender";
+const char kPageLoadPrerender2Event[] = "PageLoad.Internal.Prerender2.Event";
 
 }  // namespace internal
 
@@ -236,7 +237,6 @@ PageLoadTracker::PageLoadTracker(
       page_end_user_initiated_info_(UserInitiatedInfo::NotUserInitiated()),
       started_in_foreground_(in_foreground),
       last_dispatched_merged_page_timing_(CreatePageLoadTiming()),
-      page_transition_(navigation_handle->GetPageTransition()),
       user_initiated_info_(user_initiated_info),
       aborted_chain_size_(aborted_chain_size),
       aborted_chain_size_same_url_(aborted_chain_size_same_url),
@@ -249,8 +249,17 @@ PageLoadTracker::PageLoadTracker(
           is_first_navigation_in_web_contents) {
   DCHECK(!navigation_handle->HasCommitted());
   embedder_interface_->RegisterObservers(this);
-  INVOKE_AND_PRUNE_OBSERVERS(observers_, OnStart, navigation_handle,
-                             currently_committed_url, started_in_foreground_);
+  if (navigation_handle->IsInPrerenderedMainFrame()) {
+    DCHECK(!started_in_foreground_);
+    INVOKE_AND_PRUNE_OBSERVERS(observers_, OnPrerenderStart, navigation_handle,
+                               currently_committed_url);
+    base::UmaHistogramEnumeration(
+        internal::kPageLoadPrerender2Event,
+        internal::PageLoadPrerenderEvent::kNavigationInPrerenderedMainFrame);
+  } else {
+    INVOKE_AND_PRUNE_OBSERVERS(observers_, OnStart, navigation_handle,
+                               currently_committed_url, started_in_foreground_);
+  }
 
   UMA_HISTOGRAM_BOOLEAN(internal::kPageLoadStartedInForeground,
                         started_in_foreground_);
@@ -428,7 +437,6 @@ void PageLoadTracker::Commit(content::NavigationHandle* navigation_handle) {
   did_commit_ = true;
   url_ = navigation_handle->GetURL();
   // Some transitions (like CLIENT_REDIRECT) are only known at commit time.
-  page_transition_ = navigation_handle->GetPageTransition();
   user_initiated_info_.user_gesture = navigation_handle->HasUserGesture();
 
   if (navigation_handle->IsInMainFrame()) {
@@ -444,6 +452,21 @@ void PageLoadTracker::Commit(content::NavigationHandle* navigation_handle) {
   INVOKE_AND_PRUNE_OBSERVERS(observers_, OnCommit, navigation_handle,
                              source_id_);
   LogAbortChainHistograms(navigation_handle);
+}
+
+void PageLoadTracker::DidActivatePrerenderedPage(
+    content::NavigationHandle* navigation_handle) {
+  if (GetWebContents()->GetVisibility() == content::Visibility::VISIBLE) {
+    was_prerendered_then_activated_in_foreground_ = true;
+    PageShown();
+  }
+
+  for (const auto& observer : observers_)
+    observer->DidActivatePrerenderedPage(navigation_handle);
+
+  base::UmaHistogramEnumeration(
+      internal::kPageLoadPrerender2Event,
+      internal::PageLoadPrerenderEvent::kPrerenderActivationNavigation);
 }
 
 void PageLoadTracker::DidCommitSameDocumentNavigation(
@@ -787,6 +810,13 @@ void PageLoadTracker::OnSubframeMetadataChanged(
   }
 }
 
+void PageLoadTracker::OnSubFrameMobileFriendlinessChanged(
+    const blink::MobileFriendliness& mobile_friendliness) {
+  for (const auto& observer : observers_) {
+    observer->OnMobileFriendlinessUpdate(mobile_friendliness);
+  }
+}
+
 void PageLoadTracker::BroadcastEventToObservers(PageLoadMetricsEvent event) {
   for (const auto& observer : observers_) {
     observer->OnEventOccurred(event);
@@ -871,6 +901,10 @@ PageLoadTracker::GetBackForwardCacheRestore(size_t index) const {
 
 bool PageLoadTracker::StartedInForeground() const {
   return started_in_foreground_;
+}
+
+bool PageLoadTracker::WasPrerenderedThenActivatedInForeground() const {
+  return was_prerendered_then_activated_in_foreground_;
 }
 
 const UserInitiatedInfo& PageLoadTracker::GetUserInitiatedInfo() const {

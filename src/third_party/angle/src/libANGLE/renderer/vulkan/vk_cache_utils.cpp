@@ -31,10 +31,6 @@ namespace vk
 
 namespace
 {
-bool IsScissorStateDynamic(const PackedScissor &scissor)
-{
-    return scissor.x == kDynamicScissorSentinel;
-}
 
 uint8_t PackGLBlendOp(GLenum blendOp)
 {
@@ -617,12 +613,14 @@ void ToSubpassDescription2(const VkSubpassDescription &desc,
                            const gl::DrawBuffersVector<VkAttachmentReference2KHR> &colorRefs,
                            const gl::DrawBuffersVector<VkAttachmentReference2KHR> &resolveRefs,
                            const VkAttachmentReference2KHR &depthStencilRef,
+                           uint32_t viewMask,
                            VkSubpassDescription2KHR *desc2Out)
 {
     *desc2Out                         = {};
     desc2Out->sType                   = VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2_KHR;
     desc2Out->flags                   = desc.flags;
     desc2Out->pipelineBindPoint       = desc.pipelineBindPoint;
+    desc2Out->viewMask                = viewMask;
     desc2Out->inputAttachmentCount    = static_cast<uint32_t>(inputRefs.size());
     desc2Out->pInputAttachments       = !inputRefs.empty() ? inputRefs.data() : nullptr;
     desc2Out->colorAttachmentCount    = static_cast<uint32_t>(colorRefs.size());
@@ -649,6 +647,7 @@ void ToSubpassDependency2(const VkSubpassDependency &dep, VkSubpassDependency2KH
 angle::Result CreateRenderPass2(Context *context,
                                 const VkRenderPassCreateInfo &createInfo,
                                 const VkSubpassDescriptionDepthStencilResolve &depthStencilResolve,
+                                const VkRenderPassMultiviewCreateInfo &multiviewInfo,
                                 bool unresolveDepth,
                                 bool unresolveStencil,
                                 bool isRenderToTexture,
@@ -734,7 +733,7 @@ angle::Result CreateRenderPass2(Context *context,
 
         // Convert subpass itself.
         ToSubpassDescription2(desc, inputRefs, colorRefs, resolveRefs, depthStencilRef,
-                              &subpassDescriptions[subpass]);
+                              multiviewInfo.pViewMasks[subpass], &subpassDescriptions[subpass]);
     }
 
     VkMultisampledRenderToSingleSampledInfoEXT renderToTextureInfo = {};
@@ -778,6 +777,8 @@ angle::Result CreateRenderPass2(Context *context,
     createInfo2.pSubpasses                 = subpassDescriptions.data();
     createInfo2.dependencyCount            = static_cast<uint32_t>(subpassDependencies.size());
     createInfo2.pDependencies = !subpassDependencies.empty() ? subpassDependencies.data() : nullptr;
+    createInfo2.correlatedViewMaskCount = multiviewInfo.correlationMaskCount;
+    createInfo2.pCorrelatedViewMasks    = multiviewInfo.pCorrelationMasks;
 
     // Initialize the render pass.
     ANGLE_VK_TRY(context, renderPass->init2(context->getDevice(), createInfo2));
@@ -1201,12 +1202,33 @@ angle::Result InitializeRenderPassFromDesc(ContextVk *contextVk,
         createInfo.pDependencies   = subpassDependencies.data();
     }
 
+    SubpassVector<uint32_t> viewMasks(subpassDesc.size(),
+                                      angle::BitMask<uint32_t>(desc.viewCount()));
+    VkRenderPassMultiviewCreateInfo multiviewInfo = {};
+    multiviewInfo.sType        = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO;
+    multiviewInfo.subpassCount = createInfo.subpassCount;
+    multiviewInfo.pViewMasks   = viewMasks.data();
+
+    if (desc.viewCount() > 0)
+    {
+        // For VR, the views are correlated, so this would be an optimization.  However, an
+        // application can also use multiview for example to render to all 6 faces of a cubemap, in
+        // which case the views are actually not so correlated.  In the absence of any hints from
+        // the application (TODO: verify that extension has no hints), we have to decide on one or
+        // the other.  Since VR is more expensive, the views are marked as correlated to optimize
+        // that use case.
+        multiviewInfo.correlationMaskCount = 1;
+        multiviewInfo.pCorrelationMasks    = viewMasks.data();
+
+        createInfo.pNext = &multiviewInfo;
+    }
+
     // If depth/stencil resolve is used, we need to create the render pass with
     // vkCreateRenderPass2KHR.  Same when using the VK_EXT_multisampled_render_to_single_sampled
     // extension.
     if (depthStencilResolve.pDepthStencilResolveAttachment != nullptr || desc.isRenderToTexture())
     {
-        ANGLE_TRY(CreateRenderPass2(contextVk, createInfo, depthStencilResolve,
+        ANGLE_TRY(CreateRenderPass2(contextVk, createInfo, depthStencilResolve, multiviewInfo,
                                     desc.hasDepthUnresolveAttachment(),
                                     desc.hasStencilUnresolveAttachment(), desc.isRenderToTexture(),
                                     renderToTextureSamples, &renderPassHelper->getRenderPass()));
@@ -1372,28 +1394,6 @@ RenderPassDesc::RenderPassDesc(const RenderPassDesc &other)
     memcpy(this, &other, sizeof(RenderPassDesc));
 }
 
-void RenderPassDesc::setSamples(GLint samples)
-{
-    SetBitField(mLogSamples, PackSampleCount(samples));
-}
-
-void RenderPassDesc::setFramebufferFetchMode(bool hasFramebufferFetch)
-{
-    SetBitField(mHasFramebufferFetch, hasFramebufferFetch);
-}
-
-void RenderPassDesc::updateRenderToTexture(bool isRenderToTexture)
-{
-    if (isRenderToTexture)
-    {
-        mAttachmentFormats.back() |= kIsRenderToTexture;
-    }
-    else
-    {
-        mAttachmentFormats.back() &= ~kIsRenderToTexture;
-    }
-}
-
 void RenderPassDesc::packColorAttachment(size_t colorIndexGL, angle::FormatID formatID)
 {
     ASSERT(colorIndexGL < mAttachmentFormats.size());
@@ -1408,9 +1408,7 @@ void RenderPassDesc::packColorAttachment(size_t colorIndexGL, angle::FormatID fo
     SetBitField(packedFormat, formatID);
 
     // Set color attachment range such that it covers the range from index 0 through last active
-    // index.  Additionally, a few bits at the end of the array are used for other purposes, so we
-    // need the last format to use only a few bits.  These are the reasons why we need depth/stencil
-    // to be packed last.
+    // index.  This is the reasons why we need depth/stencil to be packed last.
     SetBitField(mColorAttachmentRange, std::max<size_t>(mColorAttachmentRange, colorIndexGL + 1));
 }
 
@@ -1429,11 +1427,7 @@ void RenderPassDesc::packColorAttachmentGap(size_t colorIndexGL)
 
 void RenderPassDesc::packDepthStencilAttachment(angle::FormatID formatID)
 {
-    // Though written as Count, there is only ever a single depth/stencil attachment.
     ASSERT(!hasDepthStencilAttachment());
-
-    // 3 bits are used to store the depth/stencil attachment format.
-    ASSERT(static_cast<uint8_t>(formatID) <= kDepthStencilFormatStorageMask);
 
     size_t index = depthStencilAttachmentIndex();
     ASSERT(index < mAttachmentFormats.size());
@@ -1446,7 +1440,7 @@ void RenderPassDesc::packColorResolveAttachment(size_t colorIndexGL)
 {
     ASSERT(isColorAttachmentEnabled(colorIndexGL));
     ASSERT(!mColorResolveAttachmentMask.test(colorIndexGL));
-    ASSERT(mLogSamples > 0);
+    ASSERT(mSamples > 1);
     mColorResolveAttachmentMask.set(colorIndexGL);
 }
 
@@ -1471,33 +1465,21 @@ void RenderPassDesc::packDepthStencilResolveAttachment()
     ASSERT(hasDepthStencilAttachment());
     ASSERT(!hasDepthStencilResolveAttachment());
 
-    static_assert((kDepthStencilFormatStorageMask & kResolveDepthStencilFlag) == 0,
-                  "Collision in depth/stencil format and flag bits");
-
-    mAttachmentFormats.back() |= kResolveDepthStencilFlag;
+    mResolveDepthStencil = true;
 }
 
 void RenderPassDesc::packDepthStencilUnresolveAttachment(bool unresolveDepth, bool unresolveStencil)
 {
     ASSERT(hasDepthStencilAttachment());
 
-    static_assert(
-        (kDepthStencilFormatStorageMask & (kUnresolveDepthFlag | kUnresolveStencilFlag)) == 0,
-        "Collision in depth/stencil format and flag bits");
-
-    if (unresolveDepth)
-    {
-        mAttachmentFormats.back() |= kUnresolveDepthFlag;
-    }
-    if (unresolveStencil)
-    {
-        mAttachmentFormats.back() |= kUnresolveStencilFlag;
-    }
+    mUnresolveDepth   = unresolveDepth;
+    mUnresolveStencil = unresolveStencil;
 }
 
 void RenderPassDesc::removeDepthStencilUnresolveAttachment()
 {
-    mAttachmentFormats.back() &= ~(kUnresolveDepthFlag | kUnresolveStencilFlag);
+    mUnresolveDepth   = false;
+    mUnresolveStencil = false;
 }
 
 RenderPassDesc &RenderPassDesc::operator=(const RenderPassDesc &other)
@@ -1508,14 +1490,7 @@ RenderPassDesc &RenderPassDesc::operator=(const RenderPassDesc &other)
 
 void RenderPassDesc::setWriteControlMode(gl::SrgbWriteControlMode mode)
 {
-    if (mode == gl::SrgbWriteControlMode::Default)
-    {
-        mAttachmentFormats.back() &= ~kSrgbWriteControlFlag;
-    }
-    else
-    {
-        mAttachmentFormats.back() |= kSrgbWriteControlFlag;
-    }
+    SetBitField(mSrgbWriteControl, mode);
 }
 
 size_t RenderPassDesc::hash() const
@@ -1696,19 +1671,6 @@ void GraphicsPipelineDesc::initDefaults(const ContextVk *contextVk)
     SetBitField(inputAndBlend.primitive.patchVertices, 3);
     inputAndBlend.primitive.restartEnable = 0;
 
-    // Viewport and scissor will be set to valid values when framebuffer being binded
-    mViewport.x        = 0.0f;
-    mViewport.y        = 0.0f;
-    mViewport.width    = 0.0f;
-    mViewport.height   = 0.0f;
-    mViewport.minDepth = 0.0f;
-    mViewport.maxDepth = 1.0f;
-
-    mScissor.x      = 0;
-    mScissor.y      = 0;
-    mScissor.width  = 0;
-    mScissor.height = 0;
-
     mDrawableSize.width  = 1;
     mDrawableSize.height = 1;
 }
@@ -1843,12 +1805,45 @@ angle::Result GraphicsPipelineDesc::initializePipeline(
         gl::ComponentType programAttribType =
             gl::GetComponentTypeMask(programAttribsTypeMask, attribIndex);
 
+        // This forces stride to 0 when glVertexAttribute specifies a different type from the
+        // program's attribute type except when the type mismatch is a mismatched integer sign.
         if (attribType != programAttribType)
         {
-            // Override the format with a compatible one.
-            vkFormat = kMismatchedComponentTypeMap[programAttribType];
+            if (attribType == gl::ComponentType::Float ||
+                programAttribType == gl::ComponentType::Float)
+            {
+                // When dealing with float to int or unsigned int or vice versa, just override the
+                // format with a compatible one.
+                vkFormat = kMismatchedComponentTypeMap[programAttribType];
+            }
+            else
+            {
+                // When converting from an unsigned to a signed format or vice versa, attempt to
+                // match the bit width.
+                angle::FormatID convertedFormatID = gl::ConvertFormatSignedness(angleFormat);
+                const Format &convertedFormat =
+                    contextVk->getRenderer()->getFormat(convertedFormatID);
+                ASSERT(angleFormat.channelCount == convertedFormat.intendedFormat().channelCount);
+                ASSERT(angleFormat.redBits == convertedFormat.intendedFormat().redBits);
+                ASSERT(angleFormat.greenBits == convertedFormat.intendedFormat().greenBits);
+                ASSERT(angleFormat.blueBits == convertedFormat.intendedFormat().blueBits);
+                ASSERT(angleFormat.alphaBits == convertedFormat.intendedFormat().alphaBits);
 
-            bindingDesc.stride = 0;  // Prevent out-of-bounds accesses.
+                vkFormat = convertedFormat.actualBufferVkFormat(packedAttrib.compressed);
+            }
+
+            GLenum programAttributeType =
+                contextVk->getState().getProgramExecutable()->getProgramInputs()[attribIndex].type;
+            GLuint attribSize = gl::GetVertexFormatFromID(formatID).components;
+            GLuint shaderVarSize =
+                static_cast<GLuint>(gl::VariableColumnCount(programAttributeType));
+
+            ASSERT(contextVk->getNativeExtensions().relaxedVertexAttributeTypeANGLE);
+            if (programAttribType == gl::ComponentType::Float ||
+                attribType == gl::ComponentType::Float || attribSize != shaderVarSize)
+            {
+                bindingDesc.stride = 0;  // Prevent out-of-bounds accesses.
+            }
         }
 
         // The binding index could become more dynamic in ES 3.1.
@@ -1888,38 +1883,12 @@ angle::Result GraphicsPipelineDesc::initializePipeline(
         static_cast<VkBool32>(mInputAssemblyAndColorBlendStateInfo.primitive.restartEnable);
 
     // Set initial viewport and scissor state.
-
-    // 0-sized viewports are invalid in Vulkan.  We always use a scissor that at least matches the
-    // requested viewport, so it's safe to adjust the viewport size here.
-    VkViewport viewport = mViewport;
-    if (viewport.width == 0)
-    {
-        viewport.width = 1;
-    }
-    if (viewport.height == 0)
-    {
-        viewport.height = 1;
-    }
-
     viewportState.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
     viewportState.flags         = 0;
     viewportState.viewportCount = 1;
-    viewportState.pViewports    = &viewport;
-
-    viewportState.scissorCount = 1;
-    VkRect2D scissor;
-    if (IsScissorStateDynamic(mScissor))
-    {
-        viewportState.pScissors = nullptr;
-    }
-    else
-    {
-        viewportState.pScissors = &scissor;
-        scissor.offset.x        = mScissor.x;
-        scissor.offset.y        = mScissor.y;
-        scissor.extent.width    = mScissor.width;
-        scissor.extent.height   = mScissor.height;
-    }
+    viewportState.pViewports    = nullptr;
+    viewportState.scissorCount  = 1;
+    viewportState.pScissors     = nullptr;
 
     const PackedRasterizationAndMultisampleStateInfo &rasterAndMS =
         mRasterizationAndMultisampleStateInfo;
@@ -1991,7 +1960,8 @@ angle::Result GraphicsPipelineDesc::initializePipeline(
     if (contextVk->getFeatures().supportsTransformFeedbackExtension.enabled)
     {
         rasterStreamState.rasterizationStream = 0;
-        rasterState.pNext                     = &rasterLineState;
+        *pNextPtr                             = &rasterStreamState;
+        pNextPtr                              = &rasterStreamState.pNext;
     }
 
     // Multisample state.
@@ -2081,11 +2051,9 @@ angle::Result GraphicsPipelineDesc::initializePipeline(
     }
 
     // Dynamic state
-    angle::FixedVector<VkDynamicState, 1> dynamicStateList;
-    if (IsScissorStateDynamic(mScissor))
-    {
-        dynamicStateList.push_back(VK_DYNAMIC_STATE_SCISSOR);
-    }
+    angle::FixedVector<VkDynamicState, 2> dynamicStateList;
+    dynamicStateList.push_back(VK_DYNAMIC_STATE_VIEWPORT);
+    dynamicStateList.push_back(VK_DYNAMIC_STATE_SCISSOR);
 
     VkPipelineDynamicStateCreateInfo dynamicState = {};
     dynamicState.sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
@@ -2587,67 +2555,6 @@ void GraphicsPipelineDesc::setRenderPassDesc(const RenderPassDesc &renderPassDes
     mRenderPassDesc = renderPassDesc;
 }
 
-void GraphicsPipelineDesc::setViewport(const VkViewport &viewport)
-{
-    mViewport = viewport;
-}
-
-void GraphicsPipelineDesc::updateViewport(GraphicsPipelineTransitionBits *transition,
-                                          const VkViewport &viewport)
-{
-    mViewport = viewport;
-    transition->set(ANGLE_GET_TRANSITION_BIT(mViewport, x));
-    transition->set(ANGLE_GET_TRANSITION_BIT(mViewport, y));
-    transition->set(ANGLE_GET_TRANSITION_BIT(mViewport, width));
-    transition->set(ANGLE_GET_TRANSITION_BIT(mViewport, height));
-    transition->set(ANGLE_GET_TRANSITION_BIT(mViewport, minDepth));
-    transition->set(ANGLE_GET_TRANSITION_BIT(mViewport, maxDepth));
-}
-
-void GraphicsPipelineDesc::updateDepthRange(GraphicsPipelineTransitionBits *transition,
-                                            float nearPlane,
-                                            float farPlane)
-{
-    // GLES2.0 Section 2.12.1: Each of n and f are clamped to lie within [0, 1], as are all
-    // arguments of type clampf.
-    ASSERT(nearPlane >= 0.0f && nearPlane <= 1.0f);
-    ASSERT(farPlane >= 0.0f && farPlane <= 1.0f);
-    mViewport.minDepth = nearPlane;
-    mViewport.maxDepth = farPlane;
-    transition->set(ANGLE_GET_TRANSITION_BIT(mViewport, minDepth));
-    transition->set(ANGLE_GET_TRANSITION_BIT(mViewport, maxDepth));
-}
-
-void GraphicsPipelineDesc::setDynamicScissor()
-{
-    mScissor.x      = kDynamicScissorSentinel;
-    mScissor.y      = 0;
-    mScissor.width  = 0;
-    mScissor.height = 0;
-}
-
-void GraphicsPipelineDesc::setScissor(const VkRect2D &scissor)
-{
-    ASSERT(scissor.offset.x < kDynamicScissorSentinel &&
-           scissor.offset.y < kDynamicScissorSentinel &&
-           scissor.extent.width < kDynamicScissorSentinel &&
-           scissor.extent.height < kDynamicScissorSentinel);
-    SetBitField(mScissor.x, scissor.offset.x);
-    SetBitField(mScissor.y, scissor.offset.y);
-    SetBitField(mScissor.width, scissor.extent.width);
-    SetBitField(mScissor.height, scissor.extent.height);
-}
-
-void GraphicsPipelineDesc::updateScissor(GraphicsPipelineTransitionBits *transition,
-                                         const VkRect2D &scissor)
-{
-    setScissor(scissor);
-    transition->set(ANGLE_GET_TRANSITION_BIT(mScissor, x));
-    transition->set(ANGLE_GET_TRANSITION_BIT(mScissor, y));
-    transition->set(ANGLE_GET_TRANSITION_BIT(mScissor, width));
-    transition->set(ANGLE_GET_TRANSITION_BIT(mScissor, height));
-}
-
 void GraphicsPipelineDesc::updateDrawableSize(GraphicsPipelineTransitionBits *transition,
                                               uint32_t width,
                                               uint32_t height)
@@ -3006,13 +2913,19 @@ UniformsAndXfbDescriptorDesc &UniformsAndXfbDescriptorDesc::operator=(
 
 size_t UniformsAndXfbDescriptorDesc::hash() const
 {
-    return angle::ComputeGenericHash(&mBufferSerials, sizeof(BufferSerial) * mBufferCount);
+    ASSERT(mBufferCount > 0);
+
+    return angle::ComputeGenericHash(&mBufferSerials, sizeof(mBufferSerials[0]) * mBufferCount) ^
+           angle::ComputeGenericHash(
+               &mXfbBufferOffsets,
+               sizeof(mXfbBufferOffsets[0]) * (mBufferCount - kDefaultUniformBufferCount));
 }
 
 void UniformsAndXfbDescriptorDesc::reset()
 {
     mBufferCount = 0;
-    memset(&mBufferSerials, 0, sizeof(BufferSerial) * kMaxBufferCount);
+    memset(&mBufferSerials, 0, sizeof(mBufferSerials));
+    memset(&mXfbBufferOffsets, 0, sizeof(mXfbBufferOffsets));
 }
 
 bool UniformsAndXfbDescriptorDesc::operator==(const UniformsAndXfbDescriptorDesc &other) const
@@ -3022,7 +2935,12 @@ bool UniformsAndXfbDescriptorDesc::operator==(const UniformsAndXfbDescriptorDesc
         return false;
     }
 
-    return memcmp(&mBufferSerials, &other.mBufferSerials, sizeof(BufferSerial) * mBufferCount) == 0;
+    ASSERT(mBufferCount > 0);
+
+    return memcmp(&mBufferSerials, &other.mBufferSerials,
+                  sizeof(mBufferSerials[0]) * mBufferCount) == 0 &&
+           memcmp(&mXfbBufferOffsets, &other.mXfbBufferOffsets,
+                  sizeof(mXfbBufferOffsets[0]) * (mBufferCount - kDefaultUniformBufferCount)) == 0;
 }
 
 // ShaderBuffersDescriptorDesc implementation.
@@ -3052,12 +2970,6 @@ void ShaderBuffersDescriptorDesc::reset()
 bool ShaderBuffersDescriptorDesc::operator==(const ShaderBuffersDescriptorDesc &other) const
 {
     return mPayload == other.mPayload;
-}
-
-void ShaderBuffersDescriptorDesc::append64BitValue(uint64_t value)
-{
-    mPayload.push_back(static_cast<uint32_t>(value & (angle::Bit<uint64_t>(32u) - 1u)));
-    mPayload.push_back(value >> 32);
 }
 
 // FramebufferDesc implementation.
@@ -3186,40 +3098,47 @@ SamplerDesc::SamplerDesc(const SamplerDesc &other) = default;
 
 SamplerDesc &SamplerDesc::operator=(const SamplerDesc &rhs) = default;
 
-SamplerDesc::SamplerDesc(const angle::FeaturesVk &featuresVk,
+SamplerDesc::SamplerDesc(ContextVk *contextVk,
                          const gl::SamplerState &samplerState,
                          bool stencilMode,
-                         uint64_t externalFormat)
+                         uint64_t externalFormat,
+                         angle::FormatID formatID)
 {
-    update(featuresVk, samplerState, stencilMode, externalFormat);
+    update(contextVk, samplerState, stencilMode, externalFormat, formatID);
 }
 
 void SamplerDesc::reset()
 {
-    mMipLodBias     = 0.0f;
-    mMaxAnisotropy  = 0.0f;
-    mMinLod         = 0.0f;
-    mMaxLod         = 0.0f;
-    mExternalFormat = 0;
-    mMagFilter      = 0;
-    mMinFilter      = 0;
-    mMipmapMode     = 0;
-    mAddressModeU   = 0;
-    mAddressModeV   = 0;
-    mAddressModeW   = 0;
-    mCompareEnabled = 0;
-    mCompareOp      = 0;
-    mReserved[0]    = 0;
-    mReserved[1]    = 0;
-    mReserved[2]    = 0;
+    mMipLodBias        = 0.0f;
+    mMaxAnisotropy     = 0.0f;
+    mMinLod            = 0.0f;
+    mMaxLod            = 0.0f;
+    mExternalFormat    = 0;
+    mMagFilter         = 0;
+    mMinFilter         = 0;
+    mMipmapMode        = 0;
+    mAddressModeU      = 0;
+    mAddressModeV      = 0;
+    mAddressModeW      = 0;
+    mCompareEnabled    = 0;
+    mCompareOp         = 0;
+    mPadding           = 0;
+    mBorderColorType   = 0;
+    mBorderColor.red   = 0.0f;
+    mBorderColor.green = 0.0f;
+    mBorderColor.blue  = 0.0f;
+    mBorderColor.alpha = 0.0f;
+    mReserved          = 0;
 }
 
-void SamplerDesc::update(const angle::FeaturesVk &featuresVk,
+void SamplerDesc::update(ContextVk *contextVk,
                          const gl::SamplerState &samplerState,
                          bool stencilMode,
-                         uint64_t externalFormat)
+                         uint64_t externalFormat,
+                         angle::FormatID formatID)
 {
-    mMipLodBias = 0.0f;
+    const angle::FeaturesVk &featuresVk = contextVk->getFeatures();
+    mMipLodBias                         = 0.0f;
     for (size_t lodOffsetFeatureIdx = 0;
          lodOffsetFeatureIdx < featuresVk.forceTextureLODOffset.size(); lodOffsetFeatureIdx++)
     {
@@ -3279,9 +3198,20 @@ void SamplerDesc::update(const angle::FeaturesVk &featuresVk,
         mMaxLod = 0.25f;
     }
 
-    mReserved[0] = 0;
-    mReserved[1] = 0;
-    mReserved[2] = 0;
+    mPadding = 0;
+
+    mBorderColorType =
+        (samplerState.getBorderColor().type == angle::ColorGeneric::Type::Float) ? 0 : 1;
+
+    mBorderColor               = samplerState.getBorderColor().colorF;
+    const vk::Format &vkFormat = contextVk->getRenderer()->getFormat(formatID);
+    if (vkFormat.intendedFormatID != angle::FormatID::NONE)
+    {
+        LoadTextureBorderFunctionInfo loadFunction = vkFormat.textureBorderLoadFunctions();
+        loadFunction.loadFunction(mBorderColor);
+    }
+
+    mReserved = 0;
 }
 
 angle::Result SamplerDesc::init(ContextVk *contextVk, Sampler *sampler) const
@@ -3352,6 +3282,30 @@ angle::Result SamplerDesc::init(ContextVk *contextVk, Sampler *sampler) const
         createInfo.minFilter = VK_FILTER_NEAREST;
     }
 
+    VkSamplerCustomBorderColorCreateInfoEXT customBorderColorInfo = {};
+    if (createInfo.addressModeU == VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER ||
+        createInfo.addressModeV == VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER ||
+        createInfo.addressModeW == VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER)
+    {
+        ASSERT((contextVk->getRenderer()->getFeatures().supportsCustomBorderColorEXT.enabled));
+        customBorderColorInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CUSTOM_BORDER_COLOR_CREATE_INFO_EXT;
+
+        customBorderColorInfo.customBorderColor.float32[0] = mBorderColor.red;
+        customBorderColorInfo.customBorderColor.float32[1] = mBorderColor.green;
+        customBorderColorInfo.customBorderColor.float32[2] = mBorderColor.blue;
+        customBorderColorInfo.customBorderColor.float32[3] = mBorderColor.alpha;
+
+        if (mBorderColorType == static_cast<uint32_t>(angle::ColorGeneric::Type::Float))
+        {
+            createInfo.borderColor = VK_BORDER_COLOR_FLOAT_CUSTOM_EXT;
+        }
+        else
+        {
+            createInfo.borderColor = VK_BORDER_COLOR_INT_CUSTOM_EXT;
+        }
+
+        vk::AddToPNextChain(&createInfo, &customBorderColorInfo);
+    }
     ANGLE_VK_TRY(contextVk, sampler->init(contextVk->getDevice(), createInfo));
 
     return angle::Result::Continue;

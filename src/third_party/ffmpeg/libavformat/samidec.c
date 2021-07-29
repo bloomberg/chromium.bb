@@ -89,6 +89,7 @@ static int sami_read_header(AVFormatContext *s)
             sub = ff_subtitles_queue_insert(&sami->q, buf.str, buf.len, !is_sync);
             if (!sub) {
                 res = AVERROR(ENOMEM);
+                av_bprint_finalize(&hdr_buf, NULL);
                 goto end;
             }
             if (is_sync) {
@@ -97,6 +98,7 @@ static int sami_read_header(AVFormatContext *s)
                 sub->pts      = p ? strtol(p, NULL, 10) : 0;
                 if (sub->pts <= INT64_MIN/2 || sub->pts >= INT64_MAX/2) {
                     res = AVERROR_PATCHWELCOME;
+                    av_bprint_finalize(&hdr_buf, NULL);
                     goto end;
                 }
 
@@ -140,7 +142,7 @@ static int sami_read_close(AVFormatContext *s)
     return 0;
 }
 
-AVInputFormat ff_sami_demuxer = {
+const AVInputFormat ff_sami_demuxer = {
     .name           = "sami",
     .long_name      = NULL_IF_CONFIG_SMALL("SAMI subtitle format"),
     .priv_data_size = sizeof(SAMIContext),

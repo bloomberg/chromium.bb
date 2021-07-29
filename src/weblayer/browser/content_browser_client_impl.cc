@@ -125,8 +125,8 @@
 #include "components/embedder_support/android/metrics/android_metrics_service_client.h"
 #include "components/media_router/browser/presentation/presentation_service_delegate_impl.h"  // nogncheck
 #include "components/navigation_interception/intercept_navigation_delegate.h"
-#include "components/safe_browsing/core/realtime/policy_engine.h"  // nogncheck
-#include "components/safe_browsing/core/realtime/url_lookup_service.h"  // nogncheck
+#include "components/safe_browsing/core/browser/realtime/policy_engine.h"  // nogncheck
+#include "components/safe_browsing/core/browser/realtime/url_lookup_service.h"  // nogncheck
 #include "components/spellcheck/browser/spell_check_host_impl.h"  // nogncheck
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -160,6 +160,10 @@
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
 #include "weblayer/browser/captive_portal_service_factory.h"
 #endif
+
+#if BUILDFLAG(ENABLE_ARCORE)
+#include "weblayer/browser/xr/xr_integration_client_impl.h"
+#endif  // BUILDFLAG(ENABLE_ARCORE)
 
 namespace switches {
 // Specifies a list of hosts for whom we bypass proxy settings and use direct
@@ -344,7 +348,7 @@ bool ContentBrowserClientImpl::AllowSharedWorker(
     const GURL& site_for_cookies,
     const absl::optional<url::Origin>& top_frame_origin,
     const std::string& name,
-    const storage::StorageKey& storage_key,
+    const blink::StorageKey& storage_key,
     content::BrowserContext* context,
     int render_process_id,
     int render_frame_id) {
@@ -357,7 +361,7 @@ bool ContentBrowserClientImpl::AllowSharedWorker(
 void ContentBrowserClientImpl::AllowWorkerFileSystem(
     const GURL& url,
     content::BrowserContext* browser_context,
-    const std::vector<content::GlobalFrameRoutingId>& render_frames,
+    const std::vector<content::GlobalRenderFrameHostId>& render_frames,
     base::OnceCallback<void(bool)> callback) {
   std::move(callback).Run(embedder_support::AllowWorkerFileSystem(
       url, render_frames,
@@ -367,7 +371,7 @@ void ContentBrowserClientImpl::AllowWorkerFileSystem(
 bool ContentBrowserClientImpl::AllowWorkerIndexedDB(
     const GURL& url,
     content::BrowserContext* browser_context,
-    const std::vector<content::GlobalFrameRoutingId>& render_frames) {
+    const std::vector<content::GlobalRenderFrameHostId>& render_frames) {
   return embedder_support::AllowWorkerIndexedDB(
       url, render_frames,
       CookieSettingsFactory::GetForBrowserContext(browser_context).get());
@@ -376,7 +380,7 @@ bool ContentBrowserClientImpl::AllowWorkerIndexedDB(
 bool ContentBrowserClientImpl::AllowWorkerCacheStorage(
     const GURL& url,
     content::BrowserContext* browser_context,
-    const std::vector<content::GlobalFrameRoutingId>& render_frames) {
+    const std::vector<content::GlobalRenderFrameHostId>& render_frames) {
   return embedder_support::AllowWorkerCacheStorage(
       url, render_frames,
       CookieSettingsFactory::GetForBrowserContext(browser_context).get());
@@ -385,7 +389,7 @@ bool ContentBrowserClientImpl::AllowWorkerCacheStorage(
 bool ContentBrowserClientImpl::AllowWorkerWebLocks(
     const GURL& url,
     content::BrowserContext* browser_context,
-    const std::vector<content::GlobalFrameRoutingId>& render_frames) {
+    const std::vector<content::GlobalRenderFrameHostId>& render_frames) {
   return embedder_support::AllowWorkerWebLocks(
       url, CookieSettingsFactory::GetForBrowserContext(browser_context).get());
 }
@@ -714,7 +718,7 @@ bool ContentBrowserClientImpl::CanCreateWindow(
   }
 
   GURL popup_url(target_url);
-  web_contents->GetMainFrame()->GetProcess()->FilterURL(false, &popup_url);
+  opener->GetProcess()->FilterURL(false, &popup_url);
   // Use ui::PAGE_TRANSITION_LINK to match the similar logic in //chrome.
   content::OpenURLParams params(popup_url, referrer, disposition,
                                 ui::PAGE_TRANSITION_LINK,
@@ -850,9 +854,12 @@ ContentBrowserClientImpl::CreateThrottlesForNavigation(
               handle));
     }
 
-    throttles.push_back(
-        navigation_interception::InterceptNavigationDelegate::CreateThrottleFor(
-            handle, navigation_interception::SynchronyMode::kAsync));
+    std::unique_ptr<content::NavigationThrottle> intercept_navigation_throttle =
+        navigation_interception::InterceptNavigationDelegate::
+            MaybeCreateThrottleFor(
+                handle, navigation_interception::SynchronyMode::kAsync);
+    if (intercept_navigation_throttle)
+      throttles.push_back(std::move(intercept_navigation_throttle));
   }
 #endif
   return throttles;
@@ -891,6 +898,16 @@ bool ContentBrowserClientImpl::BindAssociatedReceiverFromFrame(
     content_capture::OnscreenContentProvider::BindContentCaptureReceiver(
         mojo::PendingAssociatedReceiver<
             content_capture::mojom::ContentCaptureReceiver>(std::move(*handle)),
+        render_frame_host);
+    return true;
+  }
+
+  if (interface_name ==
+      subresource_filter::mojom::SubresourceFilterHost::Name_) {
+    subresource_filter::ContentSubresourceFilterThrottleManager::BindReceiver(
+        mojo::PendingAssociatedReceiver<
+            subresource_filter::mojom::SubresourceFilterHost>(
+            std::move(*handle)),
         render_frame_host);
     return true;
   }
@@ -1129,12 +1146,32 @@ ContentBrowserClientImpl::CreateTtsEnvironmentAndroid() {
   return std::make_unique<TtsEnvironmentAndroidImpl>();
 }
 
+bool ContentBrowserClientImpl::
+    ShouldObserveContainerViewLocationForDialogOverlays() {
+  // Observe location changes of the container view as WebLayer might be
+  // embedded in a scrollable container and we need to update the position of
+  // any DialogOverlays.
+  return true;
+}
+
 #endif  // OS_ANDROID
 
 content::SpeechRecognitionManagerDelegate*
 ContentBrowserClientImpl::CreateSpeechRecognitionManagerDelegate() {
   return new WebLayerSpeechRecognitionManagerDelegate();
 }
+
+#if BUILDFLAG(ENABLE_ARCORE)
+content::XrIntegrationClient*
+ContentBrowserClientImpl::GetXrIntegrationClient() {
+  if (!XrIntegrationClientImpl::IsEnabled())
+    return nullptr;
+
+  if (!xr_integration_client_)
+    xr_integration_client_ = std::make_unique<XrIntegrationClientImpl>();
+  return xr_integration_client_.get();
+}
+#endif  // BUILDFLAG(ENABLE_ARCORE)
 
 ukm::UkmService* ContentBrowserClientImpl::GetUkmService() {
 #if defined(OS_ANDROID)

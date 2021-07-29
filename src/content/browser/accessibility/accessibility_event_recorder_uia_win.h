@@ -9,13 +9,12 @@
 #include <stdint.h>
 #include <uiautomation.h>
 #include <wrl/client.h>
-#include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/atomicops.h"
 #include "base/run_loop.h"
-#include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "base/win/atl.h"
@@ -32,7 +31,7 @@ class AccessibilityEventRecorderUia : public AccessibilityEventRecorder {
   ~AccessibilityEventRecorderUia() override;
 
   // Called to ensure the event recorder has finished recording async events.
-  void FlushAsyncEvents() override;
+  void WaitForDoneRecording() override;
 
  private:
   // Used to prevent creation of multiple instances simultaneously
@@ -67,12 +66,8 @@ class AccessibilityEventRecorderUia : public AccessibilityEventRecorder {
     base::OnceClosure initialization_complete_;
     base::OnceClosure shutdown_complete_;
     base::WaitableEvent shutdown_signal_;
-    bool shutdown_sentinel_received_ = false;
 
-    // Thread-specific wrapper for OnEvent to handle necessary locking
     void OnEvent(const std::string& event);
-    base::Lock on_event_lock_;
-    std::map<base::PlatformThreadId, std::vector<std::string>> event_logs_;
 
     // An implementation of various UIA interfaces that forward event
     // notifications to the owning event recorder.
@@ -119,9 +114,14 @@ class AccessibilityEventRecorderUia : public AccessibilityEventRecorder {
       AccessibilityEventRecorderUia::Thread* owner_ = nullptr;
 
      private:
+      std::pair<uintptr_t, uintptr_t> allowed_module_address_range_;
+      bool IsCallerFromAllowedModule(void* return_address);
+
       std::string GetSenderInfo(IUIAutomationElement* sender);
 
       Microsoft::WRL::ComPtr<IUIAutomationElement> root_;
+
+      std::vector<int32_t> last_focused_runtime_id_;
 
       DISALLOW_COPY_AND_ASSIGN(EventHandler);
     };

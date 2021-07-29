@@ -72,6 +72,7 @@ BitmapImage::BitmapImage(ImageObserver* observer, bool is_multipart)
           mojom::blink::ImageAnimationPolicy::kImageAnimationPolicyAllowed),
       all_data_received_(false),
       have_size_(false),
+      preferred_size_is_transposed_(false),
       size_available_(false),
       have_frame_count_(false),
       repetition_count_status_(kUnknown),
@@ -91,6 +92,15 @@ void BitmapImage::DestroyDecodedData() {
 
 scoped_refptr<SharedBuffer> BitmapImage::Data() {
   return decoder_ ? decoder_->Data() : nullptr;
+}
+
+bool BitmapImage::HasData() const {
+  return decoder_ ? decoder_->HasData() : false;
+}
+
+size_t BitmapImage::DataSize() const {
+  DCHECK(decoder_);
+  return decoder_->DataSize();
 }
 
 void BitmapImage::NotifyMemoryChanged() {
@@ -130,46 +140,28 @@ PaintImage BitmapImage::CreatePaintImage() {
 }
 
 void BitmapImage::UpdateSize() const {
-  if (!size_available_ || have_size_ || !decoder_)
+  if (have_size_ || !size_available_ || !decoder_)
     return;
-
   size_ = decoder_->FrameSizeAtIndex(0);
   density_corrected_size_ = decoder_->DensityCorrectedSizeAtIndex(0);
-  if (decoder_->OrientationAtIndex(0).UsesWidthAsHeight()) {
-    size_respecting_orientation_ = size_.TransposedSize();
-    density_corrected_size_respecting_orientation_ =
-        density_corrected_size_.TransposedSize();
-  } else {
-    size_respecting_orientation_ = size_;
-    density_corrected_size_respecting_orientation_ = density_corrected_size_;
-  }
+  preferred_size_is_transposed_ =
+      decoder_->OrientationAtIndex(0).UsesWidthAsHeight();
   have_size_ = true;
 }
 
-IntSize BitmapImage::Size() const {
+IntSize BitmapImage::SizeWithConfig(SizeConfig config) const {
   UpdateSize();
-  return size_;
-}
-
-IntSize BitmapImage::DensityCorrectedSize() const {
-  return density_corrected_size_.IsEmpty() ? Size() : density_corrected_size_;
+  IntSize size = size_;
+  if (config.apply_density && !density_corrected_size_.IsEmpty())
+    size = density_corrected_size_;
+  if (config.apply_orientation && preferred_size_is_transposed_)
+    return size.TransposedSize();
+  return size;
 }
 
 void BitmapImage::RecordDecodedImageType(UseCounter* use_counter) {
   BitmapImageMetrics::CountDecodedImageType(decoder_->FilenameExtension(),
                                             use_counter);
-}
-
-IntSize BitmapImage::PreferredDisplaySize() const {
-  UpdateSize();
-  if (!density_corrected_size_respecting_orientation_.IsEmpty())
-    return density_corrected_size_respecting_orientation_;
-  return size_respecting_orientation_;
-}
-
-bool BitmapImage::HasDefaultOrientation() const {
-  ImageOrientation orientation = CurrentFrameOrientation();
-  return orientation == ImageOrientationEnum::kDefault;
 }
 
 bool BitmapImage::GetHotSpot(IntPoint& hot_spot) const {
@@ -415,12 +407,6 @@ bool BitmapImage::CurrentFrameIsLazyDecoded() {
 ImageOrientation BitmapImage::CurrentFrameOrientation() const {
   return decoder_ ? decoder_->OrientationAtIndex(PaintImage::kDefaultFrameIndex)
                   : ImageOrientationEnum::kDefault;
-}
-
-IntSize BitmapImage::CurrentFrameDensityCorrectedSize() const {
-  return decoder_ ? decoder_->DensityCorrectedSizeAtIndex(
-                        PaintImage::kDefaultFrameIndex)
-                  : IntSize();
 }
 
 int BitmapImage::RepetitionCount() {

@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"
@@ -16,6 +15,7 @@
 #include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -38,18 +38,12 @@ constexpr unsigned int kNumTestIcons = 30;
 
 }  // namespace
 
-class WebAppInstallUtilsWithShortcutsMenu : public testing::Test {
- public:
-  WebAppInstallUtilsWithShortcutsMenu() {
-    scoped_feature_list.InitAndEnableFeature(
-        features::kDesktopPWAsAppIconShortcutsMenu);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list;
-};
-
 TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      {blink::features::kWebAppNoteTaking, blink::features::kFileHandlingIcons},
+      {});
+
   WebApplicationInfo web_app_info;
   web_app_info.title = kAlternativeAppTitle;
   web_app_info.start_url = GURL("http://www.notchromium.org");
@@ -64,11 +58,18 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest) {
   manifest.scope = kAppUrl.GetWithoutFilename();
   manifest.short_name = kAppShortName;
 
+  const GURL kFileHandlingIcon("fav1.png");
   {
     blink::Manifest::FileHandler handler;
     handler.action = GURL("http://example.com/open-files");
     handler.accept[u"image/png"].push_back(u".png");
     handler.name = u"Images";
+    {
+      blink::Manifest::ImageResource icon;
+      icon.src = kFileHandlingIcon;
+      icon.purpose = {Purpose::ANY, Purpose::MONOCHROME};
+      handler.icons.push_back(icon);
+    }
     manifest.file_handlers.push_back(handler);
   }
 
@@ -87,6 +88,12 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest) {
     manifest.url_handlers.push_back(url_handler);
   }
 
+  {
+    // Ensure an empty NoteTaking struct is ignored.
+    blink::Manifest::NoteTaking note_taking;
+    manifest.note_taking = note_taking;
+  }
+
   const GURL kAppManifestUrl("http://www.chromium.org/manifest.json");
   UpdateWebAppInfoFromManifest(manifest, kAppManifestUrl, &web_app_info);
   EXPECT_EQ(kAppShortName, web_app_info.title);
@@ -95,6 +102,7 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest) {
   EXPECT_EQ(DisplayMode::kBrowser, web_app_info.display_mode);
   EXPECT_TRUE(web_app_info.display_override.empty());
   EXPECT_EQ(kAppManifestUrl, web_app_info.manifest_url);
+  EXPECT_TRUE(web_app_info.note_taking_new_note_url.is_empty());
 
   // The icon info from |web_app_info| should be left as is, since the manifest
   // doesn't have any icon information.
@@ -125,6 +133,13 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest) {
   manifest.display_override.push_back(DisplayMode::kMinimalUi);
   manifest.display_override.push_back(DisplayMode::kStandalone);
 
+  {
+    // Update with a valid new_note_url.
+    blink::Manifest::NoteTaking note_taking;
+    note_taking.new_note_url = GURL("http://example.com/new-note-url");
+    manifest.note_taking = note_taking;
+  }
+
   UpdateWebAppInfoFromManifest(manifest, kAppManifestUrl, &web_app_info);
   EXPECT_EQ(kAppTitle, web_app_info.title);
   EXPECT_EQ(DisplayMode::kMinimalUi, web_app_info.display_mode);
@@ -140,15 +155,20 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest) {
   EXPECT_EQ(kAppIcon3, web_app_info.icon_infos[3].url);
   EXPECT_EQ(kAppIcon3, web_app_info.icon_infos[4].url);
 
-  // Check file handlers were updated
+  // Check file handlers were updated.
   EXPECT_EQ(1u, web_app_info.file_handlers.size());
   auto file_handler = web_app_info.file_handlers;
   EXPECT_EQ(manifest.file_handlers[0].action, file_handler[0].action);
   ASSERT_EQ(file_handler[0].accept.count(u"image/png"), 1u);
   EXPECT_EQ(file_handler[0].accept[u"image/png"][0], u".png");
   EXPECT_EQ(file_handler[0].name, u"Images");
+  EXPECT_EQ(file_handler[0].icons.size(), 1u);
+  // TODO(https://crbug.com/1218210): Consider having WebApplicationInfo's
+  // file handlers use WebApplicationIconInfo, like used for other icons in
+  // this layer, rather than ImageResource.
+  EXPECT_EQ(file_handler[0].icons[0].src, kFileHandlingIcon);
 
-  // Check protocol handlers were updated
+  // Check protocol handlers were updated.
   EXPECT_EQ(1u, web_app_info.protocol_handlers.size());
   auto protocol_handler = web_app_info.protocol_handlers[0];
   EXPECT_EQ(protocol_handler.protocol, u"mailto");
@@ -159,6 +179,8 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest) {
   EXPECT_EQ(url_handler.origin,
             url::Origin::Create(GURL("https://url_handlers_origin.com/")));
   EXPECT_FALSE(url_handler.has_origin_wildcard);
+  EXPECT_EQ(GURL("http://example.com/new-note-url"),
+            web_app_info.note_taking_new_note_url);
 }
 
 TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest_EmptyName) {
@@ -295,8 +317,12 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest_ShareTarget) {
 }
 
 // Tests that WebAppInfo is correctly updated when Manifest contains Shortcuts.
-TEST_F(WebAppInstallUtilsWithShortcutsMenu,
-       UpdateWebAppInfoFromManifestWithShortcuts) {
+TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifestWithShortcuts) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures({features::kDesktopPWAsAppIconShortcutsMenu,
+                                 blink::features::kFileHandlingIcons},
+                                {});
+
   WebApplicationInfo web_app_info;
   web_app_info.title = kAlternativeAppTitle;
   web_app_info.start_url = GURL("http://www.notchromium.org");
@@ -306,7 +332,7 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
   web_app_info.icon_infos.push_back(info);
 
   const GURL kShortcutItemUrl("http://www.chromium.org/shortcuts/action");
-  for (int i = 0; i < 3; ++i) {
+  for (int i = 0; i < 4; ++i) {
     WebApplicationShortcutsMenuItemInfo shortcuts_menu_item_info;
     WebApplicationShortcutsMenuItemInfo::Icon icon;
     shortcuts_menu_item_info.name =
@@ -316,10 +342,7 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
     icon.url = GURL("http://www.chromium.org/shortcuts/icon1.png");
     icon.square_size_px = kIconSize;
 
-    ASSERT_LE(static_cast<int>(IconPurpose::kMinValue), i);
-    ASSERT_LE(i, static_cast<int>(IconPurpose::kMaxValue));
-    auto purpose = static_cast<IconPurpose>(i);
-
+    IconPurpose purpose = kIconPurposes[i % kIconPurposes.size()];
     shortcuts_menu_item_info.SetShortcutIconInfosForPurpose(purpose,
                                                             {std::move(icon)});
     web_app_info.shortcuts_menu_item_infos.push_back(
@@ -332,11 +355,18 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
   manifest.scope = kAppUrl.GetWithoutFilename();
   manifest.short_name = kAppShortName;
 
+  const GURL kFileHandlingIcon("fav1.png");
   {
     blink::Manifest::FileHandler handler;
     handler.action = GURL("http://example.com/open-files");
     handler.accept[u"image/png"].push_back(u".png");
     handler.name = u"Images";
+    {
+      blink::Manifest::ImageResource icon;
+      icon.src = kFileHandlingIcon;
+      icon.purpose = {Purpose::ANY, Purpose::MONOCHROME};
+      handler.icons.push_back(icon);
+    }
     manifest.file_handlers.push_back(handler);
   }
 
@@ -354,6 +384,7 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
     url_handler.has_origin_wildcard = true;
     manifest.url_handlers.push_back(url_handler);
   }
+  WebApplicationInfo web_app_info_original{web_app_info};
 
   const GURL kAppManifestUrl("http://www.chromium.org/manifest.json");
   UpdateWebAppInfoFromManifest(manifest, kAppManifestUrl, &web_app_info);
@@ -369,16 +400,9 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
 
   // The shortcuts_menu_item_infos from |web_app_info| should be left as is,
   // since the manifest doesn't have any shortcut information.
-  EXPECT_EQ(3u, web_app_info.shortcuts_menu_item_infos.size());
-  EXPECT_EQ(1u, web_app_info.shortcuts_menu_item_infos[0]
-                    .GetShortcutIconInfosForPurpose(IconPurpose::ANY)
-                    .size());
-  EXPECT_EQ(1u, web_app_info.shortcuts_menu_item_infos[1]
-                    .GetShortcutIconInfosForPurpose(IconPurpose::MONOCHROME)
-                    .size());
-  EXPECT_EQ(1u, web_app_info.shortcuts_menu_item_infos[2]
-                    .GetShortcutIconInfosForPurpose(IconPurpose::MASKABLE)
-                    .size());
+  EXPECT_EQ(4u, web_app_info.shortcuts_menu_item_infos.size());
+  EXPECT_EQ(web_app_info_original.shortcuts_menu_item_infos,
+            web_app_info.shortcuts_menu_item_infos);
 
   // Test that |manifest.name| takes priority over |manifest.short_name|, and
   // that icons provided by the manifest replace icons in |web_app_info|.
@@ -428,6 +452,8 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
   UpdateWebAppInfoFromManifest(manifest, kAppManifestUrl, &web_app_info);
   EXPECT_EQ(kAppTitle, web_app_info.title);
   EXPECT_EQ(DisplayMode::kMinimalUi, web_app_info.display_mode);
+  // Sanity check that original copy was not changed.
+  EXPECT_EQ(4u, web_app_info_original.shortcuts_menu_item_infos.size());
 
   // We currently duplicate the app icons with multiple Purposes.
   EXPECT_EQ(5u, web_app_info.icon_infos.size());
@@ -460,21 +486,26 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
           IconPurpose::MONOCHROME)[0];
   EXPECT_EQ(kIconUrl3, web_app_shortcut_icon.url);
 
-  // Check file handlers were updated
+  // Check file handlers were updated.
   EXPECT_EQ(1u, web_app_info.file_handlers.size());
   auto file_handler = web_app_info.file_handlers;
   EXPECT_EQ(manifest.file_handlers[0].action, file_handler[0].action);
   ASSERT_EQ(file_handler[0].accept.count(u"image/png"), 1u);
   EXPECT_EQ(file_handler[0].accept[u"image/png"][0], u".png");
   EXPECT_EQ(file_handler[0].name, u"Images");
+  EXPECT_EQ(file_handler[0].icons.size(), 1u);
+  // TODO(https://crbug.com/1218210): Consider having WebApplicationInfo's
+  // file handlers use WebApplicationIconInfo, like used for other icons in
+  // this layer, rather than ImageResource.
+  EXPECT_EQ(file_handler[0].icons[0].src, kFileHandlingIcon);
 
-  // Check protocol handlers were updated
+  // Check protocol handlers were updated.
   EXPECT_EQ(1u, web_app_info.protocol_handlers.size());
   auto protocol_handler = web_app_info.protocol_handlers[0];
   EXPECT_EQ(protocol_handler.protocol, u"mailto");
   EXPECT_EQ(protocol_handler.url, GURL("http://example.com/handle=%s"));
 
-  // Check URL handlers were updated
+  // Check URL handlers were updated.
   EXPECT_EQ(1u, web_app_info.url_handlers.size());
   auto url_handler = web_app_info.url_handlers[0];
   EXPECT_EQ(url_handler.origin,
@@ -500,8 +531,10 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifestTooManyIcons) {
 }
 
 // Tests that we limit the number of shortcut icons declared by a site.
-TEST_F(WebAppInstallUtilsWithShortcutsMenu,
-       UpdateWebAppInfoFromManifestTooManyShortcutIcons) {
+TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifestTooManyShortcutIcons) {
+  base::test::ScopedFeatureList feature_list(
+      features::kDesktopPWAsAppIconShortcutsMenu);
+
   blink::Manifest manifest;
   for (unsigned int i = 0; i < kNumTestIcons; ++i) {
     blink::Manifest::ShortcutItem shortcut_item;
@@ -554,8 +587,10 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifestIconsTooLarge) {
 }
 
 // Tests that we limit the size of shortcut icons declared by a site.
-TEST_F(WebAppInstallUtilsWithShortcutsMenu,
-       UpdateWebAppInfoFromManifestShortcutIconsTooLarge) {
+TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifestShortcutIconsTooLarge) {
+  base::test::ScopedFeatureList feature_list(
+      features::kDesktopPWAsAppIconShortcutsMenu);
+
   blink::Manifest manifest;
   for (int i = 1; i <= 20; ++i) {
     blink::Manifest::ShortcutItem shortcut_item;
@@ -660,7 +695,12 @@ TEST(WebAppInstallUtils, PopulateShortcutItemIconsNoShortcutIcons) {
 // Tests that when FilterAndResizeIconsGenerateMissing is called with no
 // app icon or shortcut icon data in web_app_info, web_app_info.icon_bitmaps_any
 // is correctly populated.
-TEST(WebAppInstallUtils, FilterAndResizeIconsGenerateMissingNoWebAppIconData) {
+TEST(WebAppInstallUtils,
+     FilterAndResizeIconsGenerateMissingNoWebAppIconData_WithoutShortcuts) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      features::kDesktopPWAsAppIconShortcutsMenu);
+
   WebApplicationInfo web_app_info;
   web_app_info.title = u"App Name";
 
@@ -670,6 +710,9 @@ TEST(WebAppInstallUtils, FilterAndResizeIconsGenerateMissingNoWebAppIconData) {
   FilterAndResizeIconsGenerateMissing(&web_app_info, &icons_map);
 
   EXPECT_EQ(SizesToGenerate().size(), web_app_info.icon_bitmaps.any.size());
+  for (const auto& icon_bitmap : web_app_info.icon_bitmaps.any) {
+    EXPECT_EQ(SK_ColorWHITE, icon_bitmap.second.getColor(0, 0));
+  }
 }
 
 // Tests that when FilterAndResizeIconsGenerateMissing is called with maskable
@@ -748,8 +791,11 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest_InvalidManifestUrl) {
 // Tests that when FilterAndResizeIconsGenerateMissing is called with no
 // app icon or shortcut icon data in web_app_info, and kDesktopPWAShortcutsMenu
 // feature enabled, web_app_info.icon_bitmaps_any is correctly populated.
-TEST_F(WebAppInstallUtilsWithShortcutsMenu,
-       FilterAndResizeIconsGenerateMissingNoWebAppIconData) {
+TEST(WebAppInstallUtils,
+     FilterAndResizeIconsGenerateMissingNoWebAppIconData_WithShortcuts) {
+  base::test::ScopedFeatureList feature_list(
+      features::kDesktopPWAsAppIconShortcutsMenu);
+
   WebApplicationInfo web_app_info;
   web_app_info.title = u"App Name";
 
@@ -768,8 +814,10 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
 // Tests that when FilterAndResizeIconsGenerateMissing is called with both
 // app icon and shortcut icon bitmaps in icons_map,
 // web_app_info.icon_bitmaps_any is correctly populated.
-TEST_F(WebAppInstallUtilsWithShortcutsMenu,
-       FilterAndResizeIconsGenerateMissingWithShortcutIcons) {
+TEST(WebAppInstallUtils, FilterAndResizeIconsGenerateMissingWithShortcutIcons) {
+  base::test::ScopedFeatureList feature_list(
+      features::kDesktopPWAsAppIconShortcutsMenu);
+
   // Construct |icons_map| to pass to FilterAndResizeIconsGenerateMissing().
   IconsMap icons_map;
   const GURL kIconUrl1("http://www.chromium.org/shortcuts/icon1.png");

@@ -21,6 +21,7 @@
 
 #include "avcodec.h"
 #include "ass.h"
+#include "internal.h"
 #include "libavutil/opt.h"
 
 #define SCREEN_ROWS 15
@@ -940,7 +941,7 @@ static const AVClass ccaption_dec_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVCodec ff_ccaption_decoder = {
+const AVCodec ff_ccaption_decoder = {
     .name           = "cc_dec",
     .long_name      = NULL_IF_CONFIG_SMALL("Closed Caption (EIA-608 / CEA-708)"),
     .type           = AVMEDIA_TYPE_SUBTITLE,
@@ -952,4 +953,5 @@ AVCodec ff_ccaption_decoder = {
     .decode         = decode,
     .priv_class     = &ccaption_dec_class,
     .capabilities   = AV_CODEC_CAP_DELAY,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

@@ -64,6 +64,7 @@
 /third_party/qemu-mac-x64
 /third_party/r8/lib
 /third_party/rapidjson/src
+/third_party/requests/src
 /third_party/six
 /third_party/SwiftShader
 /third_party/turbine/*.jar
@@ -85,10 +86,12 @@
 /tools/mb
 /tools/md_browser
 /tools/memory
+/tools/perf
 /tools/protoc_wrapper
 /tools/python
 /tools/skia_goldctl
 /tools/swarming_client
+angle.iml
 angle_debug.txt
 build
 buildtools/

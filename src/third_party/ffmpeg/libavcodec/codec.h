@@ -43,9 +43,11 @@
  */
 #define AV_CODEC_CAP_DRAW_HORIZ_BAND     (1 <<  0)
 /**
- * Codec uses get_buffer() for allocating buffers and supports custom allocators.
- * If not set, it might not use get_buffer() at all or use operations that
- * assume the buffer was allocated by avcodec_default_get_buffer.
+ * Codec uses get_buffer() or get_encode_buffer() for allocating buffers and
+ * supports custom allocators.
+ * If not set, it might not use get_buffer() or get_encode_buffer() at all, or
+ * use operations that assume the buffer was allocated by
+ * avcodec_default_get_buffer2 or avcodec_default_get_encode_buffer.
  */
 #define AV_CODEC_CAP_DR1                 (1 <<  1)
 #define AV_CODEC_CAP_TRUNCATED           (1 <<  3)
@@ -113,9 +115,14 @@
  */
 #define AV_CODEC_CAP_PARAM_CHANGE        (1 << 14)
 /**
- * Codec supports avctx->thread_count == 0 (auto).
+ * Codec supports multithreading through a method other than slice- or
+ * frame-level multithreading. Typically this marks wrappers around
+ * multithreading-capable external libraries.
  */
-#define AV_CODEC_CAP_AUTO_THREADS        (1 << 15)
+#define AV_CODEC_CAP_OTHER_THREADS       (1 << 15)
+#if FF_API_AUTO_THREADS
+#define AV_CODEC_CAP_AUTO_THREADS        AV_CODEC_CAP_OTHER_THREADS
+#endif
 /**
  * Audio encoder supports receiving a different number of samples in each call.
  */
@@ -236,9 +243,6 @@ typedef struct AVCodec {
      *****************************************************************
      */
     int priv_data_size;
-#if FF_API_NEXT
-    struct AVCodec *next;
-#endif
     /**
      * @name Frame-level threading support functions
      * @{
@@ -251,6 +255,11 @@ typedef struct AVCodec {
      * dst and src will (rarely) point to the same context, in which case memcpy should be skipped.
      */
     int (*update_thread_context)(struct AVCodecContext *dst, const struct AVCodecContext *src);
+
+    /**
+     * Copy variables back to the user-facing context
+     */
+    int (*update_thread_context_for_user)(struct AVCodecContext *dst, const struct AVCodecContext *src);
     /** @} */
 
     /**
@@ -358,7 +367,7 @@ const AVCodec *av_codec_iterate(void **opaque);
  * @param id AVCodecID of the requested decoder
  * @return A decoder if one was found, NULL otherwise.
  */
-AVCodec *avcodec_find_decoder(enum AVCodecID id);
+const AVCodec *avcodec_find_decoder(enum AVCodecID id);
 
 /**
  * Find a registered decoder with the specified name.
@@ -366,7 +375,7 @@ AVCodec *avcodec_find_decoder(enum AVCodecID id);
  * @param name name of the requested decoder
  * @return A decoder if one was found, NULL otherwise.
  */
-AVCodec *avcodec_find_decoder_by_name(const char *name);
+const AVCodec *avcodec_find_decoder_by_name(const char *name);
 
 /**
  * Find a registered encoder with a matching codec ID.
@@ -374,7 +383,7 @@ AVCodec *avcodec_find_decoder_by_name(const char *name);
  * @param id AVCodecID of the requested encoder
  * @return An encoder if one was found, NULL otherwise.
  */
-AVCodec *avcodec_find_encoder(enum AVCodecID id);
+const AVCodec *avcodec_find_encoder(enum AVCodecID id);
 
 /**
  * Find a registered encoder with the specified name.
@@ -382,7 +391,7 @@ AVCodec *avcodec_find_encoder(enum AVCodecID id);
  * @param name name of the requested encoder
  * @return An encoder if one was found, NULL otherwise.
  */
-AVCodec *avcodec_find_encoder_by_name(const char *name);
+const AVCodec *avcodec_find_encoder_by_name(const char *name);
 /**
  * @return a non-zero number if codec is an encoder, zero otherwise
  */

@@ -18,6 +18,7 @@
 #include <utility>
 
 #include "src/ast/call_statement.h"
+#include "src/ast/disable_validation_decoration.h"
 #include "src/ast/return_statement.h"
 #include "src/ast/stage_decoration.h"
 #include "src/program_builder.h"
@@ -27,9 +28,14 @@
 #include "src/sem/struct.h"
 #include "src/sem/variable.h"
 #include "src/transform/external_texture_transform.h"
+#include "src/transform/fold_constants.h"
+#include "src/transform/for_loop_to_loop.h"
+#include "src/transform/inline_pointer_lets.h"
 #include "src/transform/manager.h"
-#include "src/transform/var_for_dynamic_index.h"
+#include "src/transform/simplify.h"
+#include "src/transform/zero_init_workgroup_memory.h"
 
+TINT_INSTANTIATE_TYPEINFO(tint::transform::Spirv);
 TINT_INSTANTIATE_TYPEINFO(tint::transform::Spirv::Config);
 
 namespace tint {
@@ -40,9 +46,17 @@ Spirv::~Spirv() = default;
 
 Output Spirv::Run(const Program* in, const DataMap& data) {
   Manager manager;
+  manager.Add<ZeroInitWorkgroupMemory>();
+  manager.Add<InlinePointerLets>();  // Required for arrayLength()
+  manager.Add<Simplify>();           // Required for arrayLength()
+  manager.Add<FoldConstants>();
   manager.Add<ExternalTextureTransform>();
-  manager.Add<VarForDynamicIndex>();
+  manager.Add<ForLoopToLoop>();  // Must come after ZeroInitWorkgroupMemory
   auto transformedInput = manager.Run(in, data);
+
+  if (transformedInput.program.Diagnostics().contains_errors()) {
+    return transformedInput;
+  }
 
   auto* cfg = data.Get<Config>();
 
@@ -63,6 +77,7 @@ Output Spirv::Run(const Program* in, const DataMap& data) {
   }
   ctx2.Clone();
 
+  out2.SetTransformApplied(this);
   return Output{Program(std::move(out2))};
 }
 
@@ -127,15 +142,16 @@ void Spirv::HandleEntryPointIOTypes(CloneContext& ctx) const {
   // ```
 
   // Strip entry point IO decorations from struct declarations.
-  for (auto* ty : ctx.src->AST().ConstructedTypes()) {
+  for (auto* ty : ctx.src->AST().TypeDecls()) {
     if (auto* struct_ty = ty->As<ast::Struct>()) {
       // Build new list of struct members without entry point IO decorations.
       ast::StructMemberList new_struct_members;
       for (auto* member : struct_ty->members()) {
         ast::DecorationList new_decorations = RemoveDecorations(
             &ctx, member->decorations(), [](const ast::Decoration* deco) {
-              return deco
-                  ->IsAnyOf<ast::BuiltinDecoration, ast::LocationDecoration>();
+              return deco->IsAnyOf<
+                  ast::BuiltinDecoration, ast::InterpolateDecoration,
+                  ast::InvariantDecoration, ast::LocationDecoration>();
             });
         new_struct_members.push_back(
             ctx.dst->Member(ctx.Clone(member->symbol()),
@@ -230,9 +246,7 @@ void Spirv::HandleSampleMaskBuiltins(CloneContext& ctx) const {
   for (auto* var : ctx.src->AST().GlobalVariables()) {
     for (auto* deco : var->decorations()) {
       if (auto* builtin = deco->As<ast::BuiltinDecoration>()) {
-        if (builtin->value() != ast::Builtin::kSampleMask &&
-            builtin->value() != ast::Builtin::kSampleMaskIn &&
-            builtin->value() != ast::Builtin::kSampleMaskOut) {
+        if (builtin->value() != ast::Builtin::kSampleMask) {
           continue;
         }
 
@@ -266,8 +280,12 @@ void Spirv::EmitVertexPointSize(CloneContext& ctx) const {
 
   // Create a module-scope pointsize builtin output variable.
   Symbol pointsize = ctx.dst->Symbols().New("tint_pointsize");
-  ctx.dst->Global(pointsize, ctx.dst->ty.f32(), ast::StorageClass::kOutput,
-                  nullptr, {ctx.dst->Builtin(ast::Builtin::kPointSize)});
+  ctx.dst->Global(
+      pointsize, ctx.dst->ty.f32(), ast::StorageClass::kOutput,
+      ast::DecorationList{
+          ctx.dst->Builtin(ast::Builtin::kPointSize),
+          ctx.dst->ASTNodes().Create<ast::DisableValidationDecoration>(
+              ctx.dst->ID(), ast::DisabledValidation::kIgnoreStorageClass)});
 
   // Assign 1.0 to the global at the start of all vertex shader entry points.
   ctx.ReplaceAll([&ctx, pointsize](ast::Function* func) -> ast::Function* {
@@ -288,7 +306,8 @@ void Spirv::AddEmptyEntryPoint(CloneContext& ctx) const {
     }
   }
   ctx.dst->Func(ctx.dst->Sym("unused_entry_point"), {}, ctx.dst->ty.void_(), {},
-                {ctx.dst->Stage(ast::PipelineStage::kCompute)});
+                {ctx.dst->Stage(ast::PipelineStage::kCompute),
+                 ctx.dst->WorkgroupSize(1)});
 }
 
 Symbol Spirv::HoistToInputVariables(
@@ -301,9 +320,21 @@ Symbol Spirv::HoistToInputVariables(
     // Base case: create a global variable and return.
     ast::DecorationList new_decorations =
         RemoveDecorations(&ctx, decorations, [](const ast::Decoration* deco) {
-          return !deco->IsAnyOf<ast::BuiltinDecoration,
-                                ast::LocationDecoration>();
+          return !deco->IsAnyOf<
+              ast::BuiltinDecoration, ast::InterpolateDecoration,
+              ast::InvariantDecoration, ast::LocationDecoration>();
         });
+    new_decorations.push_back(
+        ctx.dst->ASTNodes().Create<ast::DisableValidationDecoration>(
+            ctx.dst->ID(), ast::DisabledValidation::kIgnoreStorageClass));
+    if (ty->is_integer_scalar_or_vector() &&
+        ast::HasDecoration<ast::LocationDecoration>(new_decorations) &&
+        func->pipeline_stage() == ast::PipelineStage::kFragment) {
+      // Vulkan requires that integer user-defined fragment inputs are
+      // always decorated with `Flat`.
+      new_decorations.push_back(ctx.dst->Interpolate(
+          ast::InterpolationType::kFlat, ast::InterpolationSampling::kNone));
+    }
     auto global_var_symbol = ctx.dst->Sym();
     auto* global_var =
         ctx.dst->Var(global_var_symbol, ctx.Clone(declared_ty),
@@ -355,9 +386,21 @@ void Spirv::HoistToOutputVariables(CloneContext& ctx,
     // Create a global variable.
     ast::DecorationList new_decorations =
         RemoveDecorations(&ctx, decorations, [](const ast::Decoration* deco) {
-          return !deco->IsAnyOf<ast::BuiltinDecoration,
-                                ast::LocationDecoration>();
+          return !deco->IsAnyOf<
+              ast::BuiltinDecoration, ast::InterpolateDecoration,
+              ast::InvariantDecoration, ast::LocationDecoration>();
         });
+    new_decorations.push_back(
+        ctx.dst->ASTNodes().Create<ast::DisableValidationDecoration>(
+            ctx.dst->ID(), ast::DisabledValidation::kIgnoreStorageClass));
+    if (ty->is_integer_scalar_or_vector() &&
+        ast::HasDecoration<ast::LocationDecoration>(new_decorations) &&
+        func->pipeline_stage() == ast::PipelineStage::kVertex) {
+      // Vulkan requires that integer user-defined vertex outputs are
+      // always decorated with `Flat`.
+      new_decorations.push_back(ctx.dst->Interpolate(
+          ast::InterpolationType::kFlat, ast::InterpolationSampling::kNone));
+    }
     auto global_var_symbol = ctx.dst->Sym();
     auto* global_var =
         ctx.dst->Var(global_var_symbol, ctx.Clone(declared_ty),

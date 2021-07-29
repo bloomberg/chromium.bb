@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/version_info/version_info.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#include "ios/chrome/browser/web/features.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -39,6 +40,12 @@ const char kGoPositiveDeltaLink[] = "go-positive-delta";
 const char kPage1Link[] = "page-1";
 const char kPage2Link[] = "page-2";
 const char kPage3Link[] = "page-3";
+
+id<GREYMatcher> ContextMenuMatcherForText(NSString* text) {
+  return grey_allOf(
+      grey_ancestor(grey_kindOfClassName(@"PopupMenuNavigationCell")),
+      grey_text(text), nil);
+}
 
 // Response provider which can be paused. When it is paused it buffers all
 // requests and does not respond to them until |set_paused(false)| is called.
@@ -110,6 +117,17 @@ class PausableResponseProvider : public HtmlResponseProvider {
 
 @implementation VisibleURLTestCase
 
+- (AppLaunchConfiguration)appConfigurationForTestCase {
+  AppLaunchConfiguration config;
+  // TOOD(crbug.com/1221250): Re-enable this test when iOS 15 native session
+  // restore is fixed. Many of the assumptions made in VisibuleURLTestCase may
+  // not be correct with native session restore.
+  if (@available(iOS 15, *)) {
+    config.features_disabled.push_back(web::kRestoreSessionFromCache);
+  }
+  return config;
+}
+
 - (void)setUp {
   [super setUp];
 
@@ -117,24 +135,11 @@ class PausableResponseProvider : public HtmlResponseProvider {
   _testURL2 = web::test::HttpServer::MakeUrl("http://url2.test/");
   _testURL3 = web::test::HttpServer::MakeUrl("http://url3.test/");
 
-  // Every page has links for window.history navigations (back, forward, go).
-  const std::string pageContent = base::StringPrintf(
-      "<a onclick='window.history.back()' id='%s'>Go Back</a>"
-      "<a onclick='window.history.forward()' id='%s'>Go Forward</a>"
-      "<a onclick='window.history.go(-1)' id='%s'>Go Delta -1</a>"
-      "<a onclick='window.history.go(1)' id='%s'>Go Delta +1</a>"
-      "<a href='%s' id='%s'>Page 1</a>"
-      "<a href='%s' id='%s'>Page 2</a>"
-      "<a href='%s' id='%s'>Page 3</a>",
-      kGoBackLink, kGoForwardLink, kGoNegativeDeltaLink, kGoPositiveDeltaLink,
-      _testURL1.spec().c_str(), kPage1Link, _testURL2.spec().c_str(),
-      kPage2Link, _testURL3.spec().c_str(), kPage3Link);
-
   // Create map of canned responses and set up the test HTML server.
   std::map<GURL, std::string> responses;
-  responses[_testURL1] = std::string(kTestPage1) + pageContent;
-  responses[_testURL2] = std::string(kTestPage2) + pageContent;
-  responses[_testURL3] = std::string(kTestPage3) + pageContent;
+  responses[_testURL1] = [self pageContentForTitle:kTestPage1];
+  responses[_testURL2] = [self pageContentForTitle:kTestPage2];
+  responses[_testURL3] = [self pageContentForTitle:kTestPage3];
 
   std::unique_ptr<PausableResponseProvider> unique_provider =
       std::make_unique<PausableResponseProvider>(responses);
@@ -145,13 +150,31 @@ class PausableResponseProvider : public HtmlResponseProvider {
   [ChromeEarlGrey loadURL:_testURL2];
 }
 
+- (std::string)pageContentForTitle:(const char*)title {
+  // Every page has links for window.history navigations (back, forward, go).
+  return base::StringPrintf(
+      "<head><title>%s</title></head>"
+      "<body>%s<br/>"
+      "<a onclick='window.history.back()' id='%s'>Go Back</a><br/>"
+      "<a onclick='window.history.forward()' id='%s'>Go Forward</a><br/>"
+      "<a onclick='window.history.go(-1)' id='%s'>Go Delta -1</a><br/>"
+      "<a onclick='window.history.go(1)' id='%s'>Go Delta +1</a><br/>"
+      "<a href='%s' id='%s'>Page 1</a><br/>"
+      "<a href='%s' id='%s'>Page 2</a><br/>"
+      "<a href='%s' id='%s'>Page 3</a><br/>"
+      "</body>",
+      title, title, kGoBackLink, kGoForwardLink, kGoNegativeDeltaLink,
+      kGoPositiveDeltaLink, _testURL1.spec().c_str(), kPage1Link,
+      _testURL2.spec().c_str(), kPage2Link, _testURL3.spec().c_str(),
+      kPage3Link);
+}
+
 #pragma mark -
 #pragma mark Tests
 
-// Tests that visible URL is always the same as last committed URL during
+// Tests that visible URL is always the pending URL during
 // pending back and forward navigations.
-// TODO(crbug.com/874634): re-enable this test.
-- (void)DISABLED_testBackForwardNavigation {
+- (void)testBackForwardNavigation {
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
   [ChromeEarlGrey purgeCachedWebViewPages];
@@ -162,13 +185,12 @@ class PausableResponseProvider : public HtmlResponseProvider {
     ScopedSynchronizationDisabler disabler;
     [self setServerPaused:YES];
 
-    // Tap the back button in the toolbar and verify that URL2 (committed URL)
-    // is displayed even though URL1 is a pending URL.
+    // Tap the back button in the toolbar and verify that URL1 is displayed.
     [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
         performAction:grey_tap()];
     GREYAssert([self waitForServerToReceiveRequestWithURL:_testURL1],
                @"Last request URL: %@", self.lastRequestURLSpec);
-    [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL2.GetContent())]
+    [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL1.GetContent())]
         assertWithMatcher:grey_notNil()];
 
     // Make server respond so URL1 becomes committed.
@@ -188,13 +210,12 @@ class PausableResponseProvider : public HtmlResponseProvider {
     ScopedSynchronizationDisabler disabler;
     [self setServerPaused:YES];
 
-    // Tap the forward button in the toolbar and verify that URL1 (committed
-    // URL) is displayed even though URL2 is a pending URL.
+    // Tap the back button in the toolbar and verify that URL1 is displayed.
     [[EarlGrey selectElementWithMatcher:chrome_test_util::ForwardButton()]
         performAction:grey_tap()];
     GREYAssert([self waitForServerToReceiveRequestWithURL:_testURL2],
                @"Last request URL: %@", self.lastRequestURLSpec);
-    [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL1.GetContent())]
+    [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL2.GetContent())]
         assertWithMatcher:grey_notNil()];
 
     // Make server respond so URL2 becomes committed.
@@ -205,10 +226,9 @@ class PausableResponseProvider : public HtmlResponseProvider {
       assertWithMatcher:grey_notNil()];
 }
 
-// Tests that visible URL is always the same as last committed URL during
-// pending navigations initialted from back history popover.
-// TODO(crbug.com/874634): re-enable this test.
-- (void)DISABLED_testHistoryNavigation {
+// Tests that visible URL is always the pending URL during
+// navigations initiated from back history popover.
+- (void)testHistoryNavigation {
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
   [ChromeEarlGrey purgeCachedWebViewPages];
@@ -221,12 +241,11 @@ class PausableResponseProvider : public HtmlResponseProvider {
     [self setServerPaused:YES];
   }
 
-  // Go back in history and verify that URL2 (committed URL) is displayed even
-  // though URL1 is a pending URL.
+  // Go back in history and verify that URL1 is displayed.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
       performAction:grey_longPress()];
-  NSString* URL1Title = [ChromeEarlGrey displayTitleForURL:_testURL1];
-  [[EarlGrey selectElementWithMatcher:grey_text(URL1Title)]
+  NSString* URL1Title = base::SysUTF8ToNSString(kTestPage1);
+  [[EarlGrey selectElementWithMatcher:ContextMenuMatcherForText(URL1Title)]
       performAction:grey_tap()];
 
   {
@@ -235,7 +254,7 @@ class PausableResponseProvider : public HtmlResponseProvider {
     ScopedSynchronizationDisabler disabler;
     GREYAssert([self waitForServerToReceiveRequestWithURL:_testURL1],
                @"Last request URL: %@", self.lastRequestURLSpec);
-    [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL2.GetContent())]
+    [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL1.GetContent())]
         assertWithMatcher:grey_notNil()];
 
     // Make server respond so URL1 becomes committed.
@@ -246,10 +265,15 @@ class PausableResponseProvider : public HtmlResponseProvider {
       assertWithMatcher:grey_notNil()];
 }
 
-// Tests that stopping a pending Back navigation and reloading reloads committed
-// URL, not pending URL.
-// TODO(crbug.com/874634): re-enable this test.
-- (void)DISABLED_testStoppingPendingBackNavigationAndReload {
+// Tests that stopping a pending Back navigation and reloading reloads the
+// pending URL.
+- (void)testStoppingPendingBackNavigationAndReload {
+  // With iPhone, Stop and Reload are in the tool menu. There's no easy way to
+  // track some animations (opening a popop) and not others (load progress bar)
+  // which makes this test fail.
+  if (![ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_SKIPPED(@"Skipped for iPhone (sync issues)");
+  }
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
   [ChromeEarlGrey purgeCachedWebViewPages];
@@ -264,12 +288,7 @@ class PausableResponseProvider : public HtmlResponseProvider {
         performAction:grey_tap()];
     GREYAssert([self waitForServerToReceiveRequestWithURL:_testURL1],
                @"Last request URL: %@", self.lastRequestURLSpec);
-    // On iPhone Stop/Reload button is a part of tools menu, so open it.
-    if (![ChromeEarlGrey isIPadIdiom]) {
-      // Enable EG synchronization to make test wait for popover animations.
-      disabler.reset();
-      [ChromeEarlGreyUI openToolsMenu];
-    }
+
     [[EarlGrey selectElementWithMatcher:chrome_test_util::StopButton()]
         performAction:grey_tap()];
     [ChromeEarlGreyUI reload];
@@ -277,16 +296,15 @@ class PausableResponseProvider : public HtmlResponseProvider {
     // Makes server respond.
     [self setServerPaused:NO];
   }
-  // Verifies that page2 was reloaded, not page1.
-  [ChromeEarlGrey waitForWebStateContainingText:kTestPage2];
-  [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL2.GetContent())]
+  // Verifies that page1 was reloaded, not page2.
+  [ChromeEarlGrey waitForWebStateContainingText:kTestPage1];
+  [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL1.GetContent())]
       assertWithMatcher:grey_notNil()];
 }
 
-// Tests that visible URL is always the same as last committed URL during
+// Tests that visible URL is always the same as last pending URL during
 // back forward navigations initiated with JS.
-// TODO(crbug.com/874634): re-enable this test.
-- (void)DISABLED_testJSBackForwardNavigation {
+- (void)testJSBackForwardNavigation {
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
   [ChromeEarlGrey purgeCachedWebViewPages];
@@ -297,13 +315,13 @@ class PausableResponseProvider : public HtmlResponseProvider {
     ScopedSynchronizationDisabler disabler;
     [self setServerPaused:YES];
 
-    // Tap the back button on the page and verify that URL2 (committed URL) is
-    // displayed even though URL1 is a pending URL.
+    // Tap the back button on the page and verify that URL1 (pending URL) is
+    // displayed.
     [ChromeEarlGrey
         tapWebStateElementWithID:base::SysUTF8ToNSString(kGoBackLink)];
     GREYAssert([self waitForServerToReceiveRequestWithURL:_testURL1],
                @"Last request URL: %@", self.lastRequestURLSpec);
-    [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL2.GetContent())]
+    [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL1.GetContent())]
         assertWithMatcher:grey_notNil()];
 
     // Make server respond so URL1 becomes committed.
@@ -323,13 +341,13 @@ class PausableResponseProvider : public HtmlResponseProvider {
     ScopedSynchronizationDisabler disabler;
     [self setServerPaused:YES];
 
-    // Tap the forward button on the page and verify that URL1 (committed URL)
-    // is displayed even though URL2 is a pending URL.
+    // Tap the forward button on the page and verify that URL2 (pending URL)
+    // is displayed.
     [ChromeEarlGrey
         tapWebStateElementWithID:base::SysUTF8ToNSString(kGoForwardLink)];
     GREYAssert([self waitForServerToReceiveRequestWithURL:_testURL2],
                @"Last request URL: %@", self.lastRequestURLSpec);
-    [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL1.GetContent())]
+    [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL2.GetContent())]
         assertWithMatcher:grey_notNil()];
 
     // Make server respond so URL2 becomes committed.
@@ -340,10 +358,9 @@ class PausableResponseProvider : public HtmlResponseProvider {
       assertWithMatcher:grey_notNil()];
 }
 
-// Tests that visible URL is always the same as last committed URL during go
+// Tests that visible URL is always the same as last pending URL during go
 // navigations initiated with JS.
-// TODO(crbug.com/874634): re-enable this test.
-- (void)DISABLED_testJSGoNavigation {
+- (void)testJSGoNavigation {
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
   [ChromeEarlGrey purgeCachedWebViewPages];
@@ -354,13 +371,13 @@ class PausableResponseProvider : public HtmlResponseProvider {
     ScopedSynchronizationDisabler disabler;
     [self setServerPaused:YES];
 
-    // Tap the go negative delta button on the page and verify that URL2
-    // (committed URL) is displayed even though URL1 is a pending URL.
+    // Tap the go negative delta button on the page and verify that URL1
+    // (pending URL) is displayed.
     [ChromeEarlGrey
         tapWebStateElementWithID:base::SysUTF8ToNSString(kGoNegativeDeltaLink)];
     GREYAssert([self waitForServerToReceiveRequestWithURL:_testURL1],
                @"Last request URL: %@", self.lastRequestURLSpec);
-    [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL2.GetContent())]
+    [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL1.GetContent())]
         assertWithMatcher:grey_notNil()];
 
     // Make server respond so URL1 becomes committed.
@@ -380,13 +397,13 @@ class PausableResponseProvider : public HtmlResponseProvider {
     ScopedSynchronizationDisabler disabler;
     [self setServerPaused:YES];
 
-    // Tap go positive delta button on the page and verify that URL1 (committed
-    // URL) is displayed even though URL2 is a pending URL.
+    // Tap go positive delta button on the page and verify that URL2 (pending
+    // URL) is displayed.
     [ChromeEarlGrey
         tapWebStateElementWithID:base::SysUTF8ToNSString(kGoPositiveDeltaLink)];
     GREYAssert([self waitForServerToReceiveRequestWithURL:_testURL2],
                @"Last request URL: %@", self.lastRequestURLSpec);
-    [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL1.GetContent())]
+    [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL2.GetContent())]
         assertWithMatcher:grey_notNil()];
 
     // Make server respond so URL2 becomes committed.
@@ -394,166 +411,12 @@ class PausableResponseProvider : public HtmlResponseProvider {
   }
   [ChromeEarlGrey waitForWebStateContainingText:kTestPage2];
   [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL2.GetContent())]
-      assertWithMatcher:grey_notNil()];
-}
-
-// Tests that visible URL is always the same as last committed URL during go
-// back navigation started with pending reload in progress.
-// TODO(crbug.com/874634): re-enable this test.
-- (void)DISABLED_testBackNavigationWithPendingReload {
-  // Purge web view caches and pause the server to make sure that tests can
-  // verify omnibox state before server starts responding.
-  [ChromeEarlGrey purgeCachedWebViewPages];
-  [ChromeEarlGrey waitForWebStateContainingText:kTestPage2];
-  {
-    std::unique_ptr<ScopedSynchronizationDisabler> disabler =
-        std::make_unique<ScopedSynchronizationDisabler>();
-
-    [self setServerPaused:YES];
-
-    // Start reloading the page.
-    if (![ChromeEarlGrey isIPadIdiom]) {
-      // Enable EG synchronization to make test wait for popover animations.
-      disabler.reset();
-      [ChromeEarlGreyUI openToolsMenu];
-    }
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::ReloadButton()]
-        performAction:grey_tap()];
-
-    // Do not wait until reload is finished, tap the back button in the toolbar
-    // and verify that URL2 (committed URL) is displayed even though URL1 is a
-    // pending URL.
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
-        performAction:grey_tap()];
-    // TODO(crbug.com/724560): Re-evaluate if necessary to check receiving URL1
-    // request here.
-    [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL2.GetContent())]
-        assertWithMatcher:grey_notNil()];
-
-    // Make server respond so URL1 becomes committed.
-    [self setServerPaused:NO];
-  }
-  [ChromeEarlGrey waitForWebStateContainingText:kTestPage1];
-  [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL1.GetContent())]
-      assertWithMatcher:grey_notNil()];
-}
-
-// Tests that visible URL is always the same as last committed URL during go
-// back navigation initiated with pending renderer-initiated navigation in
-// progress.
-// TODO(crbug.com/874634): re-enable this test.
-- (void)DISABLED_testBackNavigationWithPendingRendererInitiatedNavigation {
-  // Purge web view caches and pause the server to make sure that tests can
-  // verify omnibox state before server starts responding.
-  [ChromeEarlGrey purgeCachedWebViewPages];
-  [ChromeEarlGrey waitForWebStateContainingText:kTestPage2];
-  {
-    // Pauses response server and disables EG synchronization.
-    // Pending navigation will not complete until server is unpaused.
-    ScopedSynchronizationDisabler disabler;
-    [self setServerPaused:YES];
-
-    // Start renderer initiated navigation.
-    [ChromeEarlGrey
-        tapWebStateElementWithID:base::SysUTF8ToNSString(kPage3Link)];
-
-    // Do not wait until renderer-initiated navigation is finished, tap the back
-    // button in the toolbar and verify that URL2 (committed URL) is displayed
-    // even though URL1 is a pending URL.
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
-        performAction:grey_tap()];
-    // TODO(crbug.com/724560): Re-evaluate if necessary to check receiving URL1
-    // request here.
-    [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL2.GetContent())]
-        assertWithMatcher:grey_notNil()];
-
-    // Make server respond so URL1 becomes committed.
-    [self setServerPaused:NO];
-  }
-  [ChromeEarlGrey waitForWebStateContainingText:kTestPage1];
-  [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL1.GetContent())]
-      assertWithMatcher:grey_notNil()];
-}
-
-// Tests that visible URL is always the same as last committed URL during
-// renderer-initiated navigation started with pending back navigation in
-// progress.
-// TODO(crbug.com/874634): re-enable this test.
-- (void)DISABLED_testRendererInitiatedNavigationWithPendingBackNavigation {
-  // Purge web view caches and pause the server to make sure that tests can
-  // verify omnibox state before server starts responding.
-  [ChromeEarlGrey purgeCachedWebViewPages];
-  [ChromeEarlGrey waitForWebStateContainingText:kTestPage2];
-  {
-    // Pauses response server and disables EG synchronization.
-    // Pending navigation will not complete until server is unpaused.
-    ScopedSynchronizationDisabler disabler;
-    [self setServerPaused:YES];
-
-    // Tap the back button in the toolbar and verify that URL2 (committed URL)
-    // is displayed even though URL1 is a pending URL.
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
-        performAction:grey_tap()];
-    GREYAssert([self waitForServerToReceiveRequestWithURL:_testURL1],
-               @"Last request URL: %@", self.lastRequestURLSpec);
-    [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL2.GetContent())]
-        assertWithMatcher:grey_notNil()];
-
-    // Interrupt back navigation with renderer initiated navigation.
-    [ChromeEarlGrey
-        tapWebStateElementWithID:base::SysUTF8ToNSString(kPage3Link)];
-    [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL2.GetContent())]
-        assertWithMatcher:grey_notNil()];
-
-    // Make server respond so URL1 becomes committed.
-    [self setServerPaused:NO];
-  }
-  [ChromeEarlGrey waitForWebStateContainingText:kTestPage3];
-  [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL3.GetContent())]
-      assertWithMatcher:grey_notNil()];
-}
-
-// Tests that visible URL is always the same as last committed URL if user
-// issues 2 go back commands.
-// TODO(crbug.com/874634): re-enable this test.
-- (void)DISABLED_testDoubleBackNavigation {
-  // Create 3rd entry in the history, to be able to go back twice.
-  [ChromeEarlGrey loadURL:_testURL3];
-
-  // Purge web view caches and pause the server to make sure that tests can
-  // verify omnibox state before server starts responding.
-  [ChromeEarlGrey purgeCachedWebViewPages];
-  [ChromeEarlGrey waitForWebStateContainingText:kTestPage3];
-  {
-    // Pauses response server and disables EG synchronization.
-    // Pending navigation will not complete until server is unpaused.
-    ScopedSynchronizationDisabler disabler;
-    [self setServerPaused:YES];
-
-    // Tap the back button twice in the toolbar and verify that URL3 (committed
-    // URL) is displayed even though URL1 is a pending URL.
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
-        performAction:grey_tap()];
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
-        performAction:grey_tap()];
-    // Server will receive only one request either for |_testURL2| or for
-    // |_testURL1| depending on load timing and then will pause. So there is no
-    // need to wait for particular request.
-    [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL3.GetContent())]
-        assertWithMatcher:grey_notNil()];
-
-    // Make server respond so URL1 becomes committed.
-    [self setServerPaused:NO];
-  }
-  [ChromeEarlGrey waitForWebStateContainingText:kTestPage1];
-  [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL1.GetContent())]
       assertWithMatcher:grey_notNil()];
 }
 
 // Tests that visible URL is always the same as last committed URL if user
 // issues 2 go forward commands to WebUI page (crbug.com/711465).
-// TODO(crbug.com/874634): re-enable this test.
-- (void)DISABLED_testDoubleForwardNavigationToWebUIPage {
+- (void)testDoubleForwardNavigationToWebUIPage {
   // Create 3rd entry in the history, to be able to go back twice.
   GURL URL(kChromeUIVersionURL);
   [ChromeEarlGrey loadURL:GURL(kChromeUIVersionURL)];
@@ -579,10 +442,9 @@ class PausableResponseProvider : public HtmlResponseProvider {
       assertWithMatcher:grey_notNil()];
 }
 
-// Tests that visible URL is always the same as last committed URL if page calls
+// Tests that visible URL is always the same as last pending URL if page calls
 // window.history.back() twice.
-// TODO(crbug.com/874634): re-enable this test.
-- (void)DISABLED_testDoubleBackJSNavigation {
+- (void)testDoubleBackJSNavigation {
   // Create 3rd entry in the history, to be able to go back twice.
   [ChromeEarlGrey loadURL:_testURL3];
 
@@ -596,8 +458,8 @@ class PausableResponseProvider : public HtmlResponseProvider {
     ScopedSynchronizationDisabler disabler;
     [self setServerPaused:YES];
 
-    // Tap the back button twice on the page and verify that URL3 (committed
-    // URL) is displayed even though URL1 is a pending URL.
+    // Tap the back button twice on the page and verify that URL1 (pending
+    // URL) is displayed.
     [ChromeEarlGrey
         tapWebStateElementWithID:base::SysUTF8ToNSString(kGoBackLink)];
     [ChromeEarlGrey
@@ -605,7 +467,7 @@ class PausableResponseProvider : public HtmlResponseProvider {
     // Server will receive only one request either for |_testURL2| or for
     // |_testURL1| depending on load timing and then will pause. So there is no
     // need to wait for particular request.
-    [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL3.GetContent())]
+    [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL2.GetContent())]
         assertWithMatcher:grey_notNil()];
 
     // Make server respond so URL1 becomes committed.

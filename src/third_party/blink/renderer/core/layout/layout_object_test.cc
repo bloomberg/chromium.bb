@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/html_style_element.h"
+#include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
@@ -38,6 +39,17 @@ class LayoutObjectTest : public RenderingTest {
  protected:
   template <bool should_have_wrapper>
   void ExpectAnonymousInlineWrapperFor(Node*);
+};
+
+class LayoutObjectTestWithCompositing : public LayoutObjectTest {
+ public:
+  LayoutObjectTestWithCompositing() = default;
+
+ protected:
+  void SetUp() override {
+    EnableCompositing();
+    LayoutObjectTest::SetUp();
+  }
 };
 
 template <bool should_have_wrapper>
@@ -234,9 +246,8 @@ TEST_F(LayoutObjectTest, UseCountContainWithoutContentVisibility) {
   target->classList().Add("strict");
   UpdateAllLifecyclePhasesForTest();
 
-  // Strict should register, but without style containment the "all" bucket is
-  // not counted.
-  EXPECT_FALSE(GetDocument().IsUseCounted(
+  // Strict should register, and all is counted.
+  EXPECT_TRUE(GetDocument().IsUseCounted(
       WebFeature::kCSSContainAllWithoutContentVisibility));
   EXPECT_TRUE(GetDocument().IsUseCounted(
       WebFeature::kCSSContainStrictWithoutContentVisibility));
@@ -253,6 +264,7 @@ TEST_F(LayoutObjectTest, UseCountContainWithoutContentVisibility) {
 }
 
 TEST_F(LayoutObjectTest, UseCountContainingBlockFixedPosUnderFlattened3D) {
+  ScopedTransformInteropForTest disabled(false);
   SetBodyInnerHTML(R"HTML(
     <div style='transform-style: preserve-3d; opacity: 0.9'>
       <div id=target style='position:fixed'></div>
@@ -261,6 +273,22 @@ TEST_F(LayoutObjectTest, UseCountContainingBlockFixedPosUnderFlattened3D) {
 
   LayoutObject* target = GetLayoutObjectByElementId("target");
   EXPECT_EQ(target->View(), target->Container());
+
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      WebFeature::kTransformStyleContainingBlockComputedUsedMismatch));
+}
+
+TEST_F(LayoutObjectTest,
+       UseCountContainingBlockFixedPosUnderFlattened3DTransformInterop) {
+  ScopedTransformInteropForTest enabled(true);
+  SetBodyInnerHTML(R"HTML(
+    <div style='transform-style: preserve-3d; opacity: 0.9'>
+      <div id=target style='position:fixed'></div>
+    </div>
+  )HTML");
+
+  LayoutObject* target = GetLayoutObjectByElementId("target");
+  EXPECT_EQ(target->View(), target->GetDocument().GetLayoutView());
 
   EXPECT_TRUE(GetDocument().IsUseCounted(
       WebFeature::kTransformStyleContainingBlockComputedUsedMismatch));
@@ -1587,6 +1615,85 @@ TEST_F(LayoutObjectTest,
 
   EXPECT_EQ(PhysicalRect(0, 1800, 100, 100),
             target->LocalToAncestorRect(rect, nullptr, 0));
+}
+
+static const char* const kTransformsWith3D[] = {"transform: rotateX(20deg)",
+                                                "transform: translateZ(30px)"};
+static const char kTransformWithout3D[] =
+    "transform: matrix(2, 2, 0, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 0, 2)";
+static const char kPreserve3D[] = "transform-style: preserve-3d";
+
+TEST_F(LayoutObjectTestWithCompositing,
+       UseCountDifferentPerspectiveCBOrParent) {
+  // Start with a case that has no containing block / parent difference.
+  SetBodyInnerHTML(R"HTML(
+    <div style='perspective: 200px'>
+      <div id=target></div>
+    </div>
+  )HTML");
+
+  auto* target = GetDocument().getElementById("target");
+
+  target->setAttribute(html_names::kStyleAttr, kTransformsWith3D[0]);
+  UpdateAllLifecyclePhasesForTest();
+  target->scrollIntoView();
+  EXPECT_FALSE(
+      GetDocument().IsUseCounted(WebFeature::kDifferentPerspectiveCBOrParent));
+
+  target->setAttribute(html_names::kStyleAttr, kPreserve3D);
+  UpdateAllLifecyclePhasesForTest();
+  target->scrollIntoView();
+  EXPECT_FALSE(
+      GetDocument().IsUseCounted(WebFeature::kDifferentPerspectiveCBOrParent));
+
+  target = nullptr;
+
+  // Switch to a case that has a difference between containing block and parent.
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .abs { position: absolute; top: 0; left: 0; }
+    </style>
+    <div style='perspective: 200px; position: relative'>
+      <div>
+        <div class=abs id=target></div>
+      </div>
+    </div>
+  )HTML");
+
+  target = GetDocument().getElementById("target");
+
+  target->setAttribute(html_names::kStyleAttr, kTransformWithout3D);
+  UpdateAllLifecyclePhasesForTest();
+  target->scrollIntoView();
+  EXPECT_FALSE(
+      GetDocument().IsUseCounted(WebFeature::kDifferentPerspectiveCBOrParent));
+
+  target->setAttribute(html_names::kStyleAttr, kTransformsWith3D[0]);
+  UpdateAllLifecyclePhasesForTest();
+  target->scrollIntoView();
+  EXPECT_TRUE(
+      GetDocument().IsUseCounted(WebFeature::kDifferentPerspectiveCBOrParent));
+  GetDocument().ClearUseCounterForTesting(
+      WebFeature::kDifferentPerspectiveCBOrParent);
+
+  EXPECT_FALSE(
+      GetDocument().IsUseCounted(WebFeature::kDifferentPerspectiveCBOrParent));
+
+  target->setAttribute(html_names::kStyleAttr, kTransformsWith3D[1]);
+  UpdateAllLifecyclePhasesForTest();
+  target->scrollIntoView();
+  EXPECT_TRUE(
+      GetDocument().IsUseCounted(WebFeature::kDifferentPerspectiveCBOrParent));
+  GetDocument().ClearUseCounterForTesting(
+      WebFeature::kDifferentPerspectiveCBOrParent);
+
+  target->setAttribute(html_names::kStyleAttr, kPreserve3D);
+  UpdateAllLifecyclePhasesForTest();
+  target->scrollIntoView();
+  EXPECT_TRUE(
+      GetDocument().IsUseCounted(WebFeature::kDifferentPerspectiveCBOrParent));
+  GetDocument().ClearUseCounterForTesting(
+      WebFeature::kDifferentPerspectiveCBOrParent);
 }
 
 }  // namespace blink

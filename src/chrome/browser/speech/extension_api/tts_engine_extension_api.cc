@@ -76,22 +76,24 @@ void WarnIfMissingPauseOrResumeListener(Profile* profile,
 
 std::unique_ptr<std::vector<extensions::TtsVoice>>
 ValidateAndConvertToTtsVoiceVector(const extensions::Extension* extension,
-                                   const base::ListValue& voices_data,
+                                   base::Value::ConstListView voices_data,
                                    bool return_after_first_error,
                                    const char** error) {
   auto tts_voices = std::make_unique<std::vector<extensions::TtsVoice>>();
-  for (size_t i = 0; i < voices_data.GetSize(); i++) {
+  for (size_t i = 0; i < voices_data.size(); i++) {
     extensions::TtsVoice voice;
     const base::DictionaryValue* voice_data = nullptr;
-    voices_data.GetDictionary(i, &voice_data);
+    voices_data[i].GetAsDictionary(&voice_data);
 
     // Note partial validation of these attributes occurs based on tts engine's
     // json schema (e.g. for data type matching). The missing checks follow
     // similar checks in manifest parsing.
-    if (voice_data->FindKey(constants::kVoiceNameKey))
-      voice_data->GetString(constants::kVoiceNameKey, &voice.voice_name);
-    if (voice_data->FindKey(constants::kLangKey)) {
-      voice_data->GetString(constants::kLangKey, &voice.lang);
+    if (const std::string* voice_name =
+            voice_data->FindStringKey(constants::kVoiceNameKey)) {
+      voice.voice_name = *voice_name;
+    }
+    if (const base::Value* lang = voice_data->FindKey(constants::kLangKey)) {
+      voice.lang = lang->is_string() ? lang->GetString() : std::string();
       if (!l10n_util::IsValidLocaleSyntax(voice.lang)) {
         *error = constants::kErrorInvalidLang;
         if (return_after_first_error) {
@@ -101,14 +103,18 @@ ValidateAndConvertToTtsVoiceVector(const extensions::Extension* extension,
         continue;
       }
     }
-    if (voice_data->FindKey(constants::kRemoteKey))
-      voice_data->GetBoolean(constants::kRemoteKey, &voice.remote);
-    if (voice_data->FindKey(constants::kExtensionIdKey)) {
+    if (absl::optional<bool> remote =
+            voice_data->FindBoolKey(constants::kRemoteKey)) {
+      voice.remote = remote.value();
+    }
+    if (const base::Value* extension_id_val =
+            voice_data->FindKey(constants::kExtensionIdKey)) {
       // Allow this for clients who might have used |chrome.tts.getVoices| to
       // update existing voices. However, trying to update the voice of another
       // extension should trigger an error.
       std::string extension_id;
-      voice_data->GetString(constants::kExtensionIdKey, &extension_id);
+      if (extension_id_val->is_string())
+        extension_id = extension_id_val->GetString();
       if (extension->id() != extension_id) {
         *error = constants::kErrorExtensionIdMismatch;
         if (return_after_first_error) {
@@ -118,14 +124,16 @@ ValidateAndConvertToTtsVoiceVector(const extensions::Extension* extension,
         continue;
       }
     }
-    const base::ListValue* event_types = nullptr;
-    if (voice_data->FindKey(constants::kEventTypesKey))
-      voice_data->GetList(constants::kEventTypesKey, &event_types);
+    const base::Value* event_types =
+        voice_data->FindListKey(constants::kEventTypesKey);
 
     if (event_types) {
-      for (size_t j = 0; j < event_types->GetSize(); j++) {
+      const base::Value::ConstListView event_types_list =
+          event_types->GetList();
+      for (size_t j = 0; j < event_types_list.size(); j++) {
         std::string event_type;
-        event_types->GetString(j, &event_type);
+        if (event_types_list[j].is_string())
+          event_type = event_types_list[j].GetString();
         voice.event_types.insert(event_type);
       }
     }
@@ -148,7 +156,7 @@ std::unique_ptr<std::vector<extensions::TtsVoice>> GetVoicesInternal(
                                       &voices_data)) {
     const char* error = nullptr;
     return ValidateAndConvertToTtsVoiceVector(
-        extension, *voices_data,
+        extension, voices_data->GetList(),
         /* return_after_first_error = */ false, &error);
   }
 
@@ -159,6 +167,15 @@ std::unique_ptr<std::vector<extensions::TtsVoice>> GetVoicesInternal(
         *manifest_voices);
   return std::make_unique<std::vector<extensions::TtsVoice>>();
 }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+
+bool CanUseEnhancedNetworkVoices(const GURL& source_url) {
+  // Currently only Select-to-speak can use Enhanced Network voices.
+  return source_url.host() == extension_misc::kSelectToSpeakExtensionId;
+}
+
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace
 
@@ -175,6 +192,7 @@ TtsExtensionEngine::~TtsExtensionEngine() = default;
 
 void TtsExtensionEngine::GetVoices(
     content::BrowserContext* browser_context,
+    const GURL& source_url,
     std::vector<content::VoiceData>* out_voices) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
   EventRouter* event_router = EventRouter::Get(profile);
@@ -203,6 +221,13 @@ void TtsExtensionEngine::GetVoices(
     auto tts_voices = GetVoicesInternal(profile, extension);
     if (!tts_voices)
       continue;
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    // Only authorized sources can use Enhanced Network voices.
+    if (extension->id() == extension_misc::kEnhancedNetworkTtsExtensionId &&
+        !CanUseEnhancedNetworkVoices(source_url))
+      continue;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     for (size_t i = 0; i < tts_voices->size(); ++i) {
       const extensions::TtsVoice& voice = tts_voices->at(i);
@@ -252,7 +277,7 @@ void TtsExtensionEngine::Speak(content::TtsUtterance* utterance,
 
   auto event = std::make_unique<extensions::Event>(
       extensions::events::TTS_ENGINE_ON_SPEAK, tts_engine_events::kOnSpeak,
-      args->TakeList(), profile);
+      std::move(*args).TakeList(), profile);
   event_router->DispatchEventToExtension(engine_id, std::move(event));
 }
 
@@ -334,16 +359,16 @@ std::unique_ptr<base::ListValue> TtsExtensionEngine::BuildSpeakArgs(
   // the options. TODO(dmazzoni): these shouldn't be redundant.
   // http://crbug.com/463264
   if (!options->FindKey(constants::kRateKey)) {
-    options->SetDouble(constants::kRateKey,
-                       utterance->GetContinuousParameters().rate);
+    options->SetDoubleKey(constants::kRateKey,
+                          utterance->GetContinuousParameters().rate);
   }
   if (!options->FindKey(constants::kPitchKey)) {
-    options->SetDouble(constants::kPitchKey,
-                       utterance->GetContinuousParameters().pitch);
+    options->SetDoubleKey(constants::kPitchKey,
+                          utterance->GetContinuousParameters().pitch);
   }
   if (!options->FindKey(constants::kVolumeKey)) {
-    options->SetDouble(constants::kVolumeKey,
-                       utterance->GetContinuousParameters().volume);
+    options->SetDoubleKey(constants::kVolumeKey,
+                          utterance->GetContinuousParameters().volume);
   }
 
   // Add the voice name and language to the options if they're not
@@ -361,13 +386,14 @@ std::unique_ptr<base::ListValue> TtsExtensionEngine::BuildSpeakArgs(
 
 ExtensionFunction::ResponseAction
 ExtensionTtsEngineUpdateVoicesFunction::Run() {
-  base::ListValue* voices_data = nullptr;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetList(0, &voices_data));
+  base::Value::ConstListView args_list = args_->GetList();
+  EXTENSION_FUNCTION_VALIDATE(!args_list.empty() && args_list[0].is_list());
+  const base::Value& voices_data = args_list[0];
 
   // Validate the voices and return an error if there's a problem.
   const char* error = nullptr;
   auto tts_voices = ValidateAndConvertToTtsVoiceVector(
-      extension(), *voices_data,
+      extension(), voices_data.GetList(),
       /* return_after_first_error = */ true, &error);
   if (error)
     return RespondNow(Error(error));
@@ -376,7 +402,7 @@ ExtensionTtsEngineUpdateVoicesFunction::Run() {
   auto* extension_prefs = extensions::ExtensionPrefs::Get(browser_context());
   extension_prefs->UpdateExtensionPref(
       extension()->id(), kPrefTtsVoices,
-      std::make_unique<base::Value>(voices_data->Clone()));
+      base::Value::ToUniquePtrValue(voices_data.Clone()));
 
   // Notify that voices have changed.
   content::TtsController::GetInstance()->VoicesChanged();

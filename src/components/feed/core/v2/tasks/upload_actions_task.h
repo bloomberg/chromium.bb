@@ -16,6 +16,7 @@
 #include "components/feed/core/v2/enums.h"
 #include "components/feed/core/v2/feed_network.h"
 #include "components/feed/core/v2/feed_store.h"
+#include "components/feed/core/v2/launch_reliability_logger.h"
 #include "components/feed/core/v2/types.h"
 #include "components/offline_pages/task/task.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -65,10 +66,12 @@ class UploadActionsTask : public offline_pages::Task {
   // should already be in the store before running the task.
   UploadActionsTask(std::vector<feedstore::StoredAction> pending_actions,
                     FeedStream* stream,
+                    LaunchReliabilityLogger* launch_reliability_logger,
                     base::OnceCallback<void(Result)> callback);
   // Same as above, but reads pending actions and consistency token from the
   // store and uploads those.
   UploadActionsTask(FeedStream* stream,
+                    LaunchReliabilityLogger* launch_reliability_logger,
                     base::OnceCallback<void(Result)> callback);
 
   ~UploadActionsTask() override;
@@ -96,7 +99,7 @@ class UploadActionsTask : public offline_pages::Task {
   void BatchComplete(UploadActionsBatchStatus status);
   void Done(UploadActionsStatus status);
 
-  FeedStream* stream_;
+  FeedStream& stream_;
   bool upload_now_ = false;
   bool read_pending_actions_ = false;
   // Pending action to be stored.
@@ -118,6 +121,9 @@ class UploadActionsTask : public offline_pages::Task {
   absl::optional<NetworkResponseInfo> last_network_response_info_;
 
   std::string gaia_;
+
+  LaunchReliabilityLogger* launch_reliability_logger_ = nullptr;
+  NetworkRequestId last_network_request_id_;
 
   base::WeakPtrFactory<UploadActionsTask> weak_ptr_factory_{this};
 };

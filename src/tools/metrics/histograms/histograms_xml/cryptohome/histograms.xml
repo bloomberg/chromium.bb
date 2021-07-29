@@ -22,7 +22,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histograms>
 
 <histogram name="Cryptohome.AsyncDBusRequest" units="ms"
-    expires_after="2021-10-31">
+    expires_after="2022-01-02">
   <owner>zuan@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>
@@ -63,7 +63,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Cryptohome.DeprecatedApiCalled"
-    enum="CryptohomeDeprecatedApiCalled" expires_after="2021-10-10">
+    enum="CryptohomeDeprecatedApiCalled" expires_after="2021-12-12">
   <owner>apronin@chromium.org</owner>
   <owner>louiscollard@chromium.org</owner>
   <owner>zuan@chromium.org</owner>
@@ -194,7 +194,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Cryptohome.DiskCleanupProgress"
-    enum="CryptohomeDiskCleanupProgress" expires_after="2021-10-25">
+    enum="CryptohomeDiskCleanupProgress" expires_after="2021-12-26">
   <owner>slangley@chromium.org</owner>
   <owner>weifangsun@chromium.org</owner>
   <summary>
@@ -206,7 +206,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Cryptohome.DiskCleanupResult"
-    enum="CryptohomeDiskCleanupResult" expires_after="2021-09-19">
+    enum="CryptohomeDiskCleanupResult" expires_after="2021-11-21">
   <owner>vsavu@google.com</owner>
   <owner>weifangsun@chromium.org</owner>
   <summary>Records the result of triggering disk cleanup.</summary>
@@ -258,7 +258,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Cryptohome.GCache.FreedDiskSpaceInMb" units="MB"
-    expires_after="2021-11-07">
+    expires_after="2022-01-09">
   <owner>slangley@chromium.org</owner>
   <owner>weifangsun@chromium.org</owner>
   <summary>
@@ -269,7 +269,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Cryptohome.HomedirEncryptionType" enum="HomedirEncryptionType"
-    expires_after="2021-10-17">
+    expires_after="2021-12-19">
   <owner>dspaid@chromium.org</owner>
   <summary>
     The encryption type used for a user's cryptohome directory. This is logged
@@ -288,7 +288,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Cryptohome.LECredential"
-    enum="CryptohomeLECredError" expires_after="2021-11-07">
+    enum="CryptohomeLECredError" expires_after="2022-01-09">
 <!-- Name completed by histogram_suffixes name="LECredentialOps" -->
 
   <owner>pmalani@chromium.org</owner>
@@ -375,7 +375,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Cryptohome.OOPMountCleanupResult"
-    enum="CryptohomeOOPMountCleanupResult" expires_after="2021-10-10">
+    enum="CryptohomeOOPMountCleanupResult" expires_after="2021-12-12">
   <owner>betuls@chromium.org</owner>
   <owner>jorgelo@chromium.org</owner>
   <summary>
@@ -385,7 +385,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Cryptohome.OOPMountOperationResult"
-    enum="CryptohomeOOPMountOperationResult" expires_after="2021-10-10">
+    enum="CryptohomeOOPMountOperationResult" expires_after="2021-12-12">
   <owner>betuls@chromium.org</owner>
   <owner>jorgelo@chromium.org</owner>
   <summary>
@@ -427,7 +427,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Cryptohome.TimeBetweenFreeDiskSpace" units="s"
-    expires_after="M93">
+    expires_after="2022-01-01">
   <owner>vsavu@google.com</owner>
   <owner>slangley@chromium.org</owner>
   <owner>weifangsun@chromium.org</owner>
@@ -439,7 +439,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Cryptohome.TimeSessionUnlock" units="ms"
-    expires_after="2021-10-10">
+    expires_after="2021-12-12">
   <owner>kerrnel@chromium.org</owner>
   <owner>mnissler@chromium.org</owner>
   <summary>
@@ -482,7 +482,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Cryptohome.TimeToMountEx" units="ms"
-    expires_after="2021-10-10">
+    expires_after="2021-12-12">
   <owner>jorgelo@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>
@@ -502,7 +502,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Cryptohome.TimeToMountGuestEx" units="ms"
-    expires_after="2021-10-10">
+    expires_after="2021-12-12">
   <owner>jorgelo@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>
@@ -512,7 +512,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Cryptohome.TimeToPerformEphemeralMount" units="ms"
-    expires_after="2021-10-10">
+    expires_after="2021-12-12">
   <owner>jorgelo@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>
@@ -523,7 +523,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Cryptohome.TimeToPerformMount" units="ms"
-    expires_after="2021-10-01">
+    expires_after="2021-12-05">
   <owner>betuls@chromium.org</owner>
   <owner>jorgelo@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
@@ -535,7 +535,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Cryptohome.TimeToPerformOOPMountCleanup" units="ms"
-    expires_after="2021-10-31">
+    expires_after="2022-01-02">
   <owner>jorgelo@chromium.org</owner>
   <owner>betuls@chromium.org</owner>
   <summary>
@@ -546,7 +546,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Cryptohome.TimeToPerformOOPMountOperation" units="ms"
-    expires_after="2021-10-10">
+    expires_after="2021-12-12">
   <owner>jorgelo@chromium.org</owner>
   <owner>betuls@chromium.org</owner>
   <summary>
@@ -566,7 +566,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Cryptohome.TpmResults" enum="CryptohomeTpmResults"
-    expires_after="2021-10-17">
+    expires_after="2021-12-19">
   <owner>afakhry@chromium.org</owner>
   <summary>
     The errors resulting from interacting with the Trusted Platform Module (TPM)
@@ -574,17 +574,43 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="Cryptohome.WrappingKeyDerivation.Mount"
-    enum="WrappingKeyDerivation" expires_after="2022-03-01">
+<histogram name="Cryptohome.UserSubdirHasCorrectGroup" enum="BooleanCorrect"
+    expires_after="2022-02-01">
+  <owner>austinct@chromium.org</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <summary>
+    Records whether the user's profile directory (/home/chronos/u-{hash}) is
+    owned by group chronos-access. This is recorded once per log-in.
+  </summary>
+</histogram>
+
+<histogram name="Cryptohome.WrappingKeyDerivation.Create"
+    enum="WrappingKeyDerivation" expires_after="2022-05-01">
   <owner>tnagel@chromium.org</owner>
   <owner>zauri@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <owner>cros-privacy-core@google.com</owner>
   <summary>
     Derivation types of the Cryptohome's wrapping key. Reporting happens when
-    the Cryptohome is being mounted, which happens during a user creation, user
-    login, password change, migration from scrypt to TPM/GSC (in case the
-    security chip becomes available later).
+    the Cryptohome is being created or when the new keys are added to the
+    existing Cryptohome. Concretely during a user creation, password change,
+    registration of a new authentication method (e.g. PIN), migration from
+    scrypt to TPM/GSC (in case the security chip becomes available later).
+  </summary>
+</histogram>
+
+<histogram name="Cryptohome.WrappingKeyDerivation.Mount"
+    enum="WrappingKeyDerivation" expires_after="2022-05-01">
+  <owner>tnagel@chromium.org</owner>
+  <owner>zauri@chromium.org</owner>
+  <owner>cros-hwsec+uma@chromium.org</owner>
+  <owner>cros-privacy-core@google.com</owner>
+  <summary>
+    Derivation types of the Cryptohome's wrapping key. Reporting happens mostly
+    when the Cryptohome is being mounted. Concretely the reporting happens
+    during a user creation, registration/removal of an authentication methods
+    (e.g. PIN), user login, password change, migration from scrypt to TPM/GSC
+    (in case the security chip becomes available later).
   </summary>
 </histogram>
 

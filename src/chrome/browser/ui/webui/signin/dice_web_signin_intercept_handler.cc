@@ -15,7 +15,6 @@
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/ui/signin/profile_colors_util.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -126,16 +125,13 @@ void DiceWebSigninInterceptHandler::HandlePageLoaded(
   Profile* profile = Profile::FromWebUI(web_ui());
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
-  absl::optional<AccountInfo> updated_info =
-      identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
-          intercepted_account());
-  if (updated_info)
-    bubble_parameters_.intercepted_account = updated_info.value();
-  updated_info =
-      identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
-          primary_account());
-  if (updated_info)
-    bubble_parameters_.primary_account = updated_info.value();
+  AccountInfo updated_info =
+      identity_manager->FindExtendedAccountInfo(intercepted_account());
+  if (!updated_info.IsEmpty())
+    bubble_parameters_.intercepted_account = updated_info;
+  updated_info = identity_manager->FindExtendedAccountInfo(primary_account());
+  if (!updated_info.IsEmpty())
+    bubble_parameters_.primary_account = updated_info;
 
   // If there is no extended info for the primary account, populate with
   // reasonable defaults.
@@ -231,33 +227,8 @@ std::string DiceWebSigninInterceptHandler::GetBodyTitle() {
     return l10n_util::GetStringUTF8(
         IDS_SIGNIN_DICE_WEB_INTERCEPT_SWITCH_BUBBLE_TITLE);
   }
-
-  // For profile creations, the title is controlled by an experiment. Expected
-  // values for the parameter are 1, 2 or 3.
-  // The version 3 is specific to the "consumer" bubble and is not supported by
-  // the enterprise bubble (which defaults to version 1 in that case).
-  int string_version = base::GetFieldTrialParamByFeatureAsInt(
-      kDiceWebSigninInterceptionFeature, "title_version",
-      /*default_value=*/1);
-
-  int string_id = IDS_SIGNIN_DICE_WEB_INTERCEPT_CREATE_BUBBLE_TITLE_V1;
-  switch (string_version) {
-    case 2:
-      string_id = IDS_SIGNIN_DICE_WEB_INTERCEPT_CREATE_BUBBLE_TITLE_V2;
-      break;
-    case 3:
-      // Only use version 3 for consumer bubble.
-      if (bubble_parameters_.interception_type ==
-          DiceWebSigninInterceptor::SigninInterceptionType::kMultiUser) {
-        string_id = IDS_SIGNIN_DICE_WEB_INTERCEPT_CREATE_BUBBLE_TITLE_V3;
-      }
-      break;
-    default:
-      // For default or invalid parameters, there is nothing to do.
-      break;
-  }
-
-  return l10n_util::GetStringUTF8(string_id);
+  return l10n_util::GetStringUTF8(
+      IDS_SIGNIN_DICE_WEB_INTERCEPT_CREATE_BUBBLE_TITLE);
 }
 
 std::string DiceWebSigninInterceptHandler::GetBodyText() {

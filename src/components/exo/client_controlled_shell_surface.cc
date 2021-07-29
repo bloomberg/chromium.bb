@@ -7,11 +7,13 @@
 #include <map>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "ash/frame/header_view.h"
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/frame/wide_frame_view.h"
-#include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/rounded_corner_decorator.h"
+#include "ash/public/cpp/arc_resize_lock_type.h"
+#include "ash/public/cpp/ash_constants.h"
+#include "ash/public/cpp/rounded_corner_utils.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_backdrop.h"
 #include "ash/public/cpp/window_properties.h"
@@ -52,7 +54,9 @@
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/class_property.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_lock.h"
+#include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/display/tablet_state.h"
@@ -343,8 +347,6 @@ ClientControlledShellSurface::~ClientControlledShellSurface() {
   if (client_controlled_state_)
     client_controlled_state_->ResetDelegate();
   wide_frame_.reset();
-  if (current_pin_ != chromeos::WindowPinType::kNone)
-    SetPinned(chromeos::WindowPinType::kNone);
 }
 
 void ClientControlledShellSurface::SetBounds(int64_t display_id,
@@ -410,21 +412,6 @@ void ClientControlledShellSurface::SetFullscreen(bool fullscreen) {
                "fullscreen", fullscreen);
   pending_window_state_ = fullscreen ? chromeos::WindowStateType::kFullscreen
                                      : chromeos::WindowStateType::kNormal;
-}
-
-void ClientControlledShellSurface::SetSnappedToLeft() {
-  TRACE_EVENT0("exo", "ClientControlledShellSurface::SetSnappedToLeft");
-  pending_window_state_ = chromeos::WindowStateType::kLeftSnapped;
-}
-
-void ClientControlledShellSurface::SetSnappedToRight() {
-  TRACE_EVENT0("exo", "ClientControlledShellSurface::SetSnappedToRight");
-  pending_window_state_ = chromeos::WindowStateType::kRightSnapped;
-}
-
-void ClientControlledShellSurface::SetPip() {
-  TRACE_EVENT0("exo", "ClientControlledShellSurface::SetPip");
-  pending_window_state_ = chromeos::WindowStateType::kPip;
 }
 
 void ClientControlledShellSurface::SetPinned(chromeos::WindowPinType type) {
@@ -502,6 +489,7 @@ void ClientControlledShellSurface::CommitPendingScale() {
   transform.Scale(1.0 / pending_scale_, 1.0 / pending_scale_);
   host_window()->SetTransform(transform);
   scale_ = pending_scale_;
+  UpdateCornerRadius();
 }
 
 void ClientControlledShellSurface::SetTopInset(int height) {
@@ -741,8 +729,18 @@ void ClientControlledShellSurface::SetResizeLock(bool resize_lock) {
 
 void ClientControlledShellSurface::UpdateCanResize() {
   TRACE_EVENT0("exo", "ClientControlledShellSurface::updateCanResize");
-  widget_->GetNativeWindow()->SetProperty(ash::kArcResizeLockKey,
-                                          pending_resize_lock_);
+  ash::ArcResizeLockType resizeLockType = ash::ArcResizeLockType::RESIZABLE;
+  if (pending_resize_lock_) {
+    // CalculateCanResize() returns the "raw" resizability of the window,
+    // in which the influence of the resize lock state is excluded.
+    if (CalculateCanResize()) {
+      resizeLockType = ash::ArcResizeLockType::RESIZE_LIMITED;
+    } else {
+      resizeLockType = ash::ArcResizeLockType::FULLY_LOCKED;
+    }
+  }
+  widget_->GetNativeWindow()->SetProperty(ash::kArcResizeLockTypeKey,
+                                          resizeLockType);
   // If resize lock is enabled, the window is explicitly marded as unresizable.
   // Otherwise, the decision is deferred to the parent class.
   if (ash::features::IsArcResizeLockEnabled() && pending_resize_lock_) {
@@ -779,6 +777,26 @@ void ClientControlledShellSurface::OnSetFrameColors(SkColor active_color,
     window->SetProperty(chromeos::kFrameActiveColorKey, active_color);
     window->SetProperty(chromeos::kFrameInactiveColorKey, inactive_color);
   }
+}
+
+void ClientControlledShellSurface::SetSnappedToLeft() {
+  TRACE_EVENT0("exo", "ClientControlledShellSurface::SetSnappedToLeft");
+  pending_window_state_ = chromeos::WindowStateType::kPrimarySnapped;
+}
+
+void ClientControlledShellSurface::SetSnappedToRight() {
+  TRACE_EVENT0("exo", "ClientControlledShellSurface::SetSnappedToRight");
+  pending_window_state_ = chromeos::WindowStateType::kSecondarySnapped;
+}
+
+void ClientControlledShellSurface::SetPip() {
+  TRACE_EVENT0("exo", "ClientControlledShellSurface::SetPip");
+  pending_window_state_ = chromeos::WindowStateType::kPip;
+}
+
+void ClientControlledShellSurface::UnsetPip() {
+  TRACE_EVENT0("exo", "ClientControlledShellSurface::UnsetPip");
+  SetRestored();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1171,16 +1189,6 @@ bool ClientControlledShellSurface::OnPreWidgetCommit() {
       break;
   }
 
-  if (pending_window_state_ == chromeos::WindowStateType::kPip) {
-    if (ash::features::IsPipRoundedCornersEnabled()) {
-      decorator_ = std::make_unique<ash::RoundedCornerDecorator>(
-          window_state->window(), host_window(), host_window()->layer(),
-          ash::kPipRoundedCornerRadius);
-    }
-  } else {
-    decorator_.reset();  // Remove rounded corners.
-  }
-
   bool wasPip = window_state->IsPip();
 
   // As the bounds of the widget is updated later, ensure that no bounds change
@@ -1190,6 +1198,7 @@ bool ClientControlledShellSurface::OnPreWidgetCommit() {
                                                pending_window_state_)) {
     client_controlled_state_->set_next_bounds_change_animation_type(
         animation_type);
+    UpdateCornerRadius();
   }
 
   if (wasPip && !window_state->IsMinimized()) {
@@ -1447,8 +1456,8 @@ ClientControlledShellSurface::GetClientBoundsForWindowBoundsAndWindowState(
   // the window bounds instead for maximixed state.
   // Snapped window states in tablet mode do not include the caption height.
   const bool is_snapped =
-      window_state == chromeos::WindowStateType::kLeftSnapped ||
-      window_state == chromeos::WindowStateType::kRightSnapped;
+      window_state == chromeos::WindowStateType::kPrimarySnapped ||
+      window_state == chromeos::WindowStateType::kSecondarySnapped;
   const bool is_maximized =
       window_state == chromeos::WindowStateType::kMaximized;
   const display::TabletState tablet_state =

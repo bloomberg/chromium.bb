@@ -24,7 +24,12 @@ class FrameQueueUnderlyingSource
   using TransferFramesCB = CrossThreadFunction<void(NativeFrameType)>;
 
   // Initializes a new FrameQueueUnderlyingSource with a new internal circular
-  // queue that can hold up to |queue_size| elements.
+  // queue that can hold up to |queue_size| elements. If a nonempty |device_id|
+  // is given, it will be used as a key to monitor open frames.
+  FrameQueueUnderlyingSource(ScriptState*,
+                             wtf_size_t queue_size,
+                             std::string device_id,
+                             wtf_size_t frame_pool_size);
   FrameQueueUnderlyingSource(ScriptState*, wtf_size_t queue_size);
   ~FrameQueueUnderlyingSource() override = default;
 
@@ -49,10 +54,7 @@ class FrameQueueUnderlyingSource
   // Must be called on |realm_task_runner_|.
   void Close();
 
-  bool IsClosed() {
-    DCHECK(realm_task_runner_->RunsTasksInCurrentSequence());
-    return is_closed_;
-  }
+  bool IsClosed() { return is_closed_; }
 
   // Start or stop the delivery of frames via QueueFrame().
   // Must be called on |realm_task_runner_|.
@@ -62,7 +64,7 @@ class FrameQueueUnderlyingSource
   // Delivers a new frame to this source.
   void QueueFrame(NativeFrameType);
 
-  bool IsPendingPullForTesting() const;
+  int NumPendingPullsForTesting() const;
   double DesiredSizeForTesting() const;
 
   void Trace(Visitor*) const override;
@@ -84,6 +86,9 @@ class FrameQueueUnderlyingSource
   void TransferSource(
       FrameQueueUnderlyingSource<NativeFrameType>* transferred_source);
 
+ protected:
+  bool MustUseMonitor() const;
+
  private:
   // Must be called on |realm_task_runner_|.
   void CloseController();
@@ -92,12 +97,22 @@ class FrameQueueUnderlyingSource
   // into the the stream's controller. Must be called on |realm_task_runner|.
   void MaybeSendFrameFromQueueToStream();
 
+  Mutex& GetMonitorMutex();
+
+  void MaybeMonitorPopFrameId(int frame_id);
+  void MonitorPopFrameLocked(const NativeFrameType& media_frame);
+  void MonitorPushFrameLocked(const NativeFrameType& media_frame);
+
+  enum class NewFrameAction { kPush, kReplace, kDrop };
+  NewFrameAction AnalyzeNewFrameLocked(
+      const NativeFrameType& media_frame,
+      const absl::optional<NativeFrameType>& old_frame);
+
   // Creates a JS frame (VideoFrame or AudioData) backed by |media_frame|.
   // Must be called on |realm_task_runner_|.
   ScriptWrappable* MakeBlinkFrame(NativeFrameType media_frame);
 
   bool is_closed_ = false;
-  bool is_pending_close_ = false;
 
   // Main task runner for the window or worker context this source runs on.
   const scoped_refptr<base::SequencedTaskRunner> realm_task_runner_;
@@ -115,7 +130,14 @@ class FrameQueueUnderlyingSource
   // transferred stream.
   CrossThreadPersistent<FrameQueueUnderlyingSource<NativeFrameType>>
       transferred_source_ GUARDED_BY(mutex_);
-  bool is_pending_pull_ GUARDED_BY(mutex_) = false;
+  int num_pending_pulls_ GUARDED_BY(mutex_) = 0;
+  // When nonempty, |device_id_| is used to monitor all frames queued by this
+  // source or exposed to JS via the stream connected to this source.
+  // Frame monitoring applies only to video. Audio is never monitored.
+  const std::string device_id_;
+  // Maximum number of distinct frames allowed to be used by this source.
+  // This limit applies only when |device_id_| is nonempty.
+  const wtf_size_t frame_pool_size_ = 0;
 };
 
 template <>
@@ -125,6 +147,10 @@ ScriptWrappable* FrameQueueUnderlyingSource<scoped_refptr<media::VideoFrame>>::
 template <>
 ScriptWrappable* FrameQueueUnderlyingSource<scoped_refptr<media::AudioBuffer>>::
     MakeBlinkFrame(scoped_refptr<media::AudioBuffer>);
+
+template <>
+bool FrameQueueUnderlyingSource<
+    scoped_refptr<media::AudioBuffer>>::MustUseMonitor() const;
 
 extern template class MODULES_EXTERN_TEMPLATE_EXPORT
     FrameQueueUnderlyingSource<scoped_refptr<media::VideoFrame>>;

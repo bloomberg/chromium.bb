@@ -48,6 +48,7 @@
 
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/containers/adapters.h"
+#include "build/build_config.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
@@ -85,6 +86,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/paint/rounded_border_geometry.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/reference_clip_path_operation.h"
 #include "third_party/blink/renderer/core/style/shape_clip_path_operation.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
@@ -969,10 +971,8 @@ PaintLayer* PaintLayer::ContainingLayer(const PaintLayer* ancestor,
   // inline parent to find the actual containing layer through the containing
   // block chain.
   // Column span need to find the containing layer through its containing block.
-  // A rendered legend needs to find the containing layer through its containing
-  // block to skip anonymous fieldset content box.
   if ((!Parent() || Parent()->GetLayoutObject().IsLayoutBlock()) &&
-      !layout_object.IsColumnSpanAll() && !layout_object.IsRenderedLegend())
+      !layout_object.IsColumnSpanAll())
     return Parent();
 
   return SlowContainingLayer(ancestor, skipped_ancestor, &layout_object);
@@ -1132,6 +1132,21 @@ PaintLayer* PaintLayer::EnclosingDirectlyCompositableLayer(
       return curr;
   }
 
+  return nullptr;
+}
+
+const PaintLayer* PaintLayer::EnclosingCompositedScrollingLayerUnderPagination(
+    IncludeSelfOrNot include_self_or_not) const {
+  DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+  const auto* start_layer =
+      include_self_or_not == kIncludeSelf ? this : CompositingContainer();
+  for (const auto* curr = start_layer; curr && curr->EnclosingPaginationLayer();
+       curr = curr->CompositingContainer()) {
+    if (const auto* scrollable_area = curr->GetScrollableArea()) {
+      if (scrollable_area->NeedsCompositedScrolling())
+        return curr;
+    }
+  }
   return nullptr;
 }
 
@@ -1675,10 +1690,12 @@ bool PaintLayer::RequiresScrollableArea() const {
   // PaintLayerScrollableArea.
   if (GetLayoutBox()->CanResize())
     return true;
-  // With custom scrollbars, we need a PaintLayerScrollableArea
-  // so we can calculate the size of scrollbar gutters.
-  if (GetLayoutObject().StyleRef().IsScrollbarGutterForce() &&
-      GetLayoutObject().StyleRef().HasPseudoElementStyle(kPseudoIdScrollbar)) {
+  // With custom scrollbars unfortunately we may need a PaintLayerScrollableArea
+  // to be able to calculate the size of scrollbar gutters.
+  const ComputedStyle& style = GetLayoutObject().StyleRef();
+  if (style.IsScrollbarGutterStable() &&
+      style.OverflowBlockDirection() == EOverflow::kHidden &&
+      style.HasPseudoElementStyle(kPseudoIdScrollbar)) {
     return true;
   }
   return false;
@@ -1711,26 +1728,18 @@ bool PaintLayer::HasOverflowControls() const {
                               GetLayoutObject().StyleRef().HasResize());
 }
 
-void PaintLayer::AppendSingleFragmentIgnoringPagination(
+void PaintLayer::AppendSingleFragmentIgnoringPaginationForHitTesting(
     PaintLayerFragments& fragments,
-    const PaintLayer* root_layer,
-    const CullRect* cull_rect,
-    OverlayScrollbarClipBehavior overlay_scrollbar_clip_behavior,
-    ShouldRespectOverflowClipType respect_overflow_clip,
-    const PhysicalOffset* offset_from_root,
-    const PhysicalOffset& sub_pixel_accumulation) const {
+    ShouldRespectOverflowClipType respect_overflow_clip) const {
   PaintLayerFragment fragment;
-  ClipRectsContext clip_rects_context(
-      root_layer, &root_layer->GetLayoutObject().FirstFragment(),
-      overlay_scrollbar_clip_behavior, respect_overflow_clip,
-      sub_pixel_accumulation);
-  Clipper(GeometryMapperOption::kUseGeometryMapper)
-      .CalculateRects(clip_rects_context, &GetLayoutObject().FirstFragment(),
-                      cull_rect, fragment.layer_bounds,
-                      fragment.background_rect, fragment.foreground_rect,
-                      offset_from_root);
-  fragment.root_fragment_data = &root_layer->GetLayoutObject().FirstFragment();
   fragment.fragment_data = &GetLayoutObject().FirstFragment();
+  ClipRectsContext clip_rects_context(this, fragment.fragment_data,
+                                      kExcludeOverlayScrollbarSizeForHitTesting,
+                                      respect_overflow_clip);
+  Clipper(GeometryMapperOption::kUseGeometryMapper)
+      .CalculateRects(clip_rects_context, fragment.fragment_data, nullptr,
+                      fragment.layer_bounds, fragment.background_rect,
+                      fragment.foreground_rect);
   if (GetLayoutObject().CanTraversePhysicalFragments()) {
     // Make sure that we actually traverse the fragment tree, by providing a
     // physical fragment. Otherwise we'd fall back to LayoutObject traversal.
@@ -1745,8 +1754,12 @@ bool PaintLayer::ShouldFragmentCompositedBounds(
     const PaintLayer* compositing_layer) const {
   if (!EnclosingPaginationLayer())
     return false;
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return true;
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    // We should not fragment composited scrolling layers and descendants, which
+    // is not only to render the scroller correctly, but also to prevent
+    // multiple cc::Layers with the same scrolling element id.
+    return !EnclosingCompositedScrollingLayerUnderPagination(kIncludeSelf);
+  }
   if (Transform() &&
       !PaintsWithDirectReasonIntoOwnBacking(kGlobalPaintNormalPhase))
     return true;
@@ -1763,7 +1776,7 @@ bool PaintLayer::ShouldFragmentCompositedBounds(
 void PaintLayer::CollectFragments(
     PaintLayerFragments& fragments,
     const PaintLayer* root_layer,
-    const CullRect* cull_rect,
+    const CullRect* painting_cull_rect,
     OverlayScrollbarClipBehavior overlay_scrollbar_clip_behavior,
     ShouldRespectOverflowClipType respect_overflow_clip,
     const PhysicalOffset* offset_from_root,
@@ -1794,58 +1807,63 @@ void PaintLayer::CollectFragments(
   wtf_size_t physical_fragment_idx = 0u;
   for (auto* fragment_data = &first_fragment_data; fragment_data;
        fragment_data = fragment_data->NextFragment(), physical_fragment_idx++) {
-    const FragmentData* root_fragment_data;
-    if (root_layer == this) {
-      root_fragment_data = fragment_data;
-    } else if (should_match_fragments) {
-      for (root_fragment_data = &first_root_fragment_data; root_fragment_data;
-           root_fragment_data = root_fragment_data->NextFragment()) {
-        if (root_fragment_data->LogicalTopInFlowThread() ==
-            fragment_data->LogicalTopInFlowThread())
-          break;
+    // If CullRectUpdateEnabled, skip fragment geometry logic if we are
+    // collecting fragments for painting.
+    if (!RuntimeEnabledFeatures::CullRectUpdateEnabled() ||
+        !painting_cull_rect) {
+      const FragmentData* root_fragment_data;
+      if (root_layer == this) {
+        root_fragment_data = fragment_data;
+      } else if (should_match_fragments) {
+        for (root_fragment_data = &first_root_fragment_data; root_fragment_data;
+             root_fragment_data = root_fragment_data->NextFragment()) {
+          if (root_fragment_data->FragmentID() == fragment_data->FragmentID())
+            break;
+        }
+      } else {
+        root_fragment_data = &first_root_fragment_data;
       }
-    } else {
-      root_fragment_data = &first_root_fragment_data;
+
+      bool cant_find_fragment = !root_fragment_data;
+      if (cant_find_fragment) {
+        DCHECK(should_match_fragments);
+        // Fall back to the first fragment, in order to have
+        // PaintLayerClipper at least compute |fragment.layer_bounds|.
+        root_fragment_data = &first_root_fragment_data;
+      }
+
+      ClipRectsContext clip_rects_context(
+          root_layer, root_fragment_data, overlay_scrollbar_clip_behavior,
+          respect_overflow_clip, sub_pixel_accumulation);
+
+      absl::optional<CullRect> fragment_cull_rect;
+      if (painting_cull_rect) {
+        // |cull_rect| is in the coordinate space of |root_layer| (i.e. the
+        // space of |root_layer|'s first fragment). Map the rect to the space of
+        // the current root fragment.
+        auto rect = painting_cull_rect->Rect();
+        first_root_fragment_data.MapRectToFragment(*root_fragment_data, rect);
+        fragment_cull_rect.emplace(rect);
+      }
+
+      Clipper(GeometryMapperOption::kUseGeometryMapper)
+          .CalculateRects(
+              clip_rects_context, fragment_data,
+              fragment_cull_rect ? &*fragment_cull_rect : nullptr,
+              fragment.layer_bounds, fragment.background_rect,
+              fragment.foreground_rect,
+              offset_from_root_can_be_used ? offset_from_root : nullptr);
+
+      if (cant_find_fragment) {
+        // If we couldn't find a matching fragment when |should_match_fragments|
+        // was true, then fall back to no clip.
+        fragment.background_rect.Reset();
+        fragment.foreground_rect.Reset();
+      }
+
+      fragment.root_fragment_data = root_fragment_data;
     }
 
-    bool cant_find_fragment = !root_fragment_data;
-    if (cant_find_fragment) {
-      DCHECK(should_match_fragments);
-      // Fall back to the first fragment, in order to have
-      // PaintLayerClipper at least compute |fragment.layer_bounds|.
-      root_fragment_data = &first_root_fragment_data;
-    }
-
-    ClipRectsContext clip_rects_context(
-        root_layer, root_fragment_data, overlay_scrollbar_clip_behavior,
-        respect_overflow_clip, sub_pixel_accumulation);
-
-    absl::optional<CullRect> fragment_cull_rect;
-    if (cull_rect) {
-      // |cull_rect| is in the coordinate space of |root_layer| (i.e. the
-      // space of |root_layer|'s first fragment). Map the rect to the space of
-      // the current root fragment.
-      auto rect = cull_rect->Rect();
-      first_root_fragment_data.MapRectToFragment(*root_fragment_data, rect);
-      fragment_cull_rect.emplace(rect);
-    }
-
-    Clipper(GeometryMapperOption::kUseGeometryMapper)
-        .CalculateRects(
-            clip_rects_context, fragment_data,
-            fragment_cull_rect ? &*fragment_cull_rect : nullptr,
-            fragment.layer_bounds, fragment.background_rect,
-            fragment.foreground_rect,
-            offset_from_root_can_be_used ? offset_from_root : nullptr);
-
-    if (cant_find_fragment) {
-      // If we couldn't find a matching fragment when |should_match_fragments|
-      // was true, then fall back to no clip.
-      fragment.background_rect.Reset();
-      fragment.foreground_rect.Reset();
-    }
-
-    fragment.root_fragment_data = root_fragment_data;
     fragment.fragment_data = fragment_data;
 
     if (GetLayoutObject().CanTraversePhysicalFragments()) {
@@ -1973,6 +1991,16 @@ HitTestingTransformState PaintLayer::CreateLocalTransformState(
           : HitTestingTransformState(recursion_data.location.TransformedPoint(),
                                      recursion_data.location.TransformedRect(),
                                      FloatQuad(FloatRect(recursion_data.rect)));
+
+  if (container_transform_state &&
+      RuntimeEnabledFeatures::TransformInteropEnabled() &&
+      (!container_layer || &container_layer->GetLayoutObject() !=
+                               GetLayoutObject().NearestAncestorForElement())) {
+    // Our parent *layer* is preserve-3d, but that preserve-3d doesn't
+    // apply to this layer because our element is not a child of our
+    // parent layer's element.
+    transform_state.Flatten();
+  }
 
   PhysicalOffset offset;
   if (container_transform_state)
@@ -2203,11 +2231,9 @@ PaintLayer* PaintLayer::HitTestLayer(PaintLayer* root_layer,
   if (recursion_data.intersects_location) {
     layer_fragments.emplace();
     if (applied_transform) {
-      DCHECK(root_layer == this);
-      PhysicalOffset ignored;
-      AppendSingleFragmentIgnoringPagination(
-          *layer_fragments, root_layer, nullptr,
-          kExcludeOverlayScrollbarSizeForHitTesting, clip_behavior, &ignored);
+      DCHECK_EQ(root_layer, this);
+      AppendSingleFragmentIgnoringPaginationForHitTesting(*layer_fragments,
+                                                          clip_behavior);
     } else {
       CollectFragments(*layer_fragments, root_layer, nullptr,
                        kExcludeOverlayScrollbarSizeForHitTesting,
@@ -3131,8 +3157,8 @@ bool PaintLayer::SupportsSubsequenceCaching() const {
   if (EnclosingPaginationLayer())
     return false;
 
-  // SVG paints atomically.
-  if (GetLayoutObject().IsSVGRoot())
+  // SVG root and SVG foreign object paint atomically.
+  if (GetLayoutObject().IsSVGRoot() || GetLayoutObject().IsSVGForeignObject())
     return true;
 
   // Don't create subsequence for the document element because the subsequence
@@ -3141,8 +3167,8 @@ bool PaintLayer::SupportsSubsequenceCaching() const {
   if (GetLayoutObject().IsDocumentElement())
     return false;
 
-  // Create subsequence for only stacking contexts whose painting are atomic.
-  return GetLayoutObject().IsStackingContext();
+  // Create subsequence for only stacked objects whose paintings are atomic.
+  return GetLayoutObject().IsStacked();
 }
 
 ScrollingCoordinator* PaintLayer::GetScrollingCoordinator() {
@@ -3157,6 +3183,7 @@ bool PaintLayer::CompositesWithTransform() const {
 bool PaintLayer::BackgroundIsKnownToBeOpaqueInRect(
     const PhysicalRect& local_rect,
     bool should_check_children) const {
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   // We can't use hasVisibleContent(), because that will be true if our
   // layoutObject is hidden, but some child is visible and that child doesn't
   // cover the entire rect.
@@ -3201,6 +3228,7 @@ bool PaintLayer::BackgroundIsKnownToBeOpaqueInRect(
 
 bool PaintLayer::ChildBackgroundIsKnownToBeOpaqueInRect(
     const PhysicalRect& local_rect) const {
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   PaintLayerPaintOrderReverseIterator reverse_iterator(*this, kAllChildren);
   while (PaintLayer* child_layer = reverse_iterator.Next()) {
     // Stop at composited paint boundaries and non-self-painting layers.
@@ -3228,8 +3256,7 @@ bool PaintLayer::ShouldBeSelfPaintingLayer() const {
   return GetLayoutObject().LayerTypeRequired() == kNormalPaintLayer ||
          (scrollable_area_ && scrollable_area_->HasOverlayOverflowControls()) ||
          ScrollsOverflow() ||
-         (RuntimeEnabledFeatures::CompositeSVGEnabled() &&
-          GetLayoutObject().IsSVGRoot() &&
+         (GetLayoutObject().IsSVGRoot() &&
           To<LayoutSVGRoot>(GetLayoutObject())
               .HasDescendantCompositingReasons());
 }
@@ -3483,40 +3510,39 @@ void PaintLayer::StyleDidChange(StyleDifference diff,
   UpdateBackdropFilters(old_style, new_style);
   UpdateClipPath(old_style, new_style);
 
-  if (!SelfNeedsRepaint()) {
-    if (diff.ZIndexChanged()) {
-      // We don't need to invalidate paint of objects when paint order
-      // changes. However, we do need to repaint the containing stacking
-      // context, in order to generate new paint chunks in the correct order.
-      // Raster invalidation will be issued if needed during paint.
-      SetNeedsRepaint();
-    } else if (old_style) {
-      bool new_painted_output_invisible =
-          PaintLayerPainter::PaintedOutputInvisible(new_style);
-      if (PaintLayerPainter::PaintedOutputInvisible(*old_style) !=
-          new_painted_output_invisible) {
-        if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-          // Though CompositeAfterPaint ignores PaintedOutputInvisible during
-          // paint, we still force repaint to ensure FCP/LCP will be reported.
-          // See crbug.com/1184903. Only SetNeedsRepaint() won't work because
-          // we won't repaint the display items which are already in the old
-          // painted result. TODO(crbug.com/1104218): Optimize this.
-          if (!new_painted_output_invisible)
-            GetLayoutObject().SetSubtreeShouldDoFullPaintInvalidation();
-        } else {
-          // Change of PaintedOutputInvisible() will affect existence of paint
-          // chunks, so needs repaint.
-          SetNeedsRepaint();
-        }
+  if (diff.ZIndexChanged()) {
+    // We don't need to invalidate paint of objects when paint order
+    // changes. However, we do need to repaint the containing stacking
+    // context, in order to generate new paint chunks in the correct order.
+    // Raster invalidation will be issued if needed during paint.
+    if (auto* stacking_context = AncestorStackingContext())
+      stacking_context->SetNeedsRepaint();
+  }
+
+  if (old_style) {
+    bool new_painted_output_invisible =
+        PaintLayerPainter::PaintedOutputInvisible(new_style);
+    if (PaintLayerPainter::PaintedOutputInvisible(*old_style) !=
+        new_painted_output_invisible) {
+      if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+        // Force repaint of the subtree for two purposes:
+        // 1. To ensure FCP/LCP will be reported. See crbug.com/1184903.
+        // 2. To update effectively_invisible flags of PaintChunks.
+        // TODO(crbug.com/1104218): Optimize this.
+        GetLayoutObject().SetSubtreeShouldDoFullPaintInvalidation();
+      } else {
+        // Change of PaintedOutputInvisible() will affect existence of paint
+        // chunks, so needs repaint.
+        SetNeedsRepaint();
       }
     }
   }
 }
 
-LayoutSize PaintLayer::PixelSnappedScrolledContentOffset() const {
+IntPoint PaintLayer::PixelSnappedScrolledContentOffset() const {
   if (GetLayoutObject().IsScrollContainer())
     return GetLayoutBox()->PixelSnappedScrolledContentOffset();
-  return LayoutSize();
+  return IntPoint();
 }
 
 PaintLayerClipper PaintLayer::Clipper(

@@ -70,6 +70,11 @@ public:
         return fMustForceNegatedAtanParamToFloat;
     }
 
+    bool fMustForceNegatedLdexpParamToMultiply = false;
+    bool mustForceNegatedLdexpParamToMultiply() const {
+        return fMustForceNegatedLdexpParamToMultiply;
+    }
+
     bool fGeometryShaderSupport = true;
     bool geometryShaderSupport() const {
         return fGeometryShaderSupport;
@@ -282,6 +287,10 @@ public:
         return fRewriteMatrixVectorMultiply;
     }
 
+    bool fRewriteMatrixComparisons = false;
+    bool rewriteMatrixComparisons() const {
+        return fRewriteMatrixComparisons;
+    }
 };
 
 using ShaderCapsClass = StandaloneShaderCaps;
@@ -352,20 +361,6 @@ public:
         return result;
     }
 
-    static ShaderCapsPointer FragCoordsNew() {
-        ShaderCapsPointer result = MakeShaderCaps();
-        result->fVersionDeclString = "#version 400";
-        result->fFragCoordConventionsExtensionString = "GL_ARB_fragment_coord_conventions";
-        return result;
-    }
-    static ShaderCapsPointer FragCoordsOld() {
-        ShaderCapsPointer result = MakeShaderCaps();
-        result->fVersionDeclString = "#version 110";
-        result->fGLSLGeneration = GrGLSLGeneration::k110_GrGLSLGeneration;
-        result->fFragCoordConventionsExtensionString = "GL_ARB_fragment_coord_conventions";
-        return result;
-    }
-
     static ShaderCapsPointer GeometryShaderExtensionString() {
         ShaderCapsPointer result = MakeShaderCaps();
         result->fVersionDeclString = "#version 310es";
@@ -407,6 +402,13 @@ public:
         return result;
     }
 
+    static ShaderCapsPointer MustForceNegatedLdexpParamToMultiply() {
+        ShaderCapsPointer result = MakeShaderCaps();
+        result->fVersionDeclString = "#version 400";
+        result->fMustForceNegatedLdexpParamToMultiply = true;
+        return result;
+    }
+
     static ShaderCapsPointer MustGuardDivisionEvenAfterExplicitZeroCheck() {
         ShaderCapsPointer result = MakeShaderCaps();
         result->fMustGuardDivisionEvenAfterExplicitZeroCheck = true;
@@ -432,6 +434,13 @@ public:
         ShaderCapsPointer result = MakeShaderCaps();
         result->fVersionDeclString = "#version 400";
         result->fRewriteDoWhileLoops = true;
+        return result;
+    }
+
+    static ShaderCapsPointer RewriteMatrixComparisons() {
+        ShaderCapsPointer result = MakeShaderCaps();
+        result->fRewriteMatrixComparisons = true;
+        result->fUsesPrecisionModifiers = true;
         return result;
     }
 

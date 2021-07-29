@@ -20,6 +20,7 @@
 #include "xfa/fwl/cfwl_messagemouse.h"
 #include "xfa/fwl/cfwl_widget.h"
 #include "xfa/fxfa/cxfa_eventparam.h"
+#include "xfa/fxfa/cxfa_ffapp.h"
 #include "xfa/fxfa/fxfa.h"
 #include "xfa/fxfa/layout/cxfa_contentlayoutitem.h"
 
@@ -33,6 +34,7 @@ class CXFA_FFField;
 class CXFA_FFPageView;
 class CXFA_FFWidgetHandler;
 class CXFA_Margin;
+class IFX_SeekableReadStream;
 enum class FWL_WidgetHit;
 
 inline float XFA_UnitPx2Pt(float fPx, float fDpi) {
@@ -65,6 +67,18 @@ class CXFA_FFWidget : public cppgc::GarbageCollected<CXFA_FFWidget>,
  public:
   enum FocusOption { kDoNotDrawFocus = 0, kDrawFocus };
   enum HighlightOption { kNoHighlight = 0, kHighlight };
+
+  class IteratorIface {
+   public:
+    virtual ~IteratorIface() = default;
+
+    virtual CXFA_FFWidget* MoveToFirst() = 0;
+    virtual CXFA_FFWidget* MoveToLast() = 0;
+    virtual CXFA_FFWidget* MoveToNext() = 0;
+    virtual CXFA_FFWidget* MoveToPrevious() = 0;
+    virtual CXFA_FFWidget* GetCurrentWidget() = 0;
+    virtual bool SetCurrentWidget(CXFA_FFWidget* hWidget) = 0;
+  };
 
   static CXFA_FFWidget* FromLayoutItem(CXFA_LayoutItem* pLayoutItem);
 
@@ -152,11 +166,12 @@ class CXFA_FFWidget : public cppgc::GarbageCollected<CXFA_FFWidget>,
   CXFA_FFWidget* GetNextFFWidget() const;
   const CFX_RectF& GetWidgetRect() const;
   const CFX_RectF& RecacheWidgetRect() const;
-  void ModifyStatus(uint32_t dwAdded, uint32_t dwRemoved);
+  void ModifyStatus(XFA_WidgetStatusMask dwAdded,
+                    XFA_WidgetStatusMask dwRemoved);
 
   CXFA_FFDoc* GetDoc();
   CXFA_FFApp* GetApp();
-  IXFA_AppProvider* GetAppProvider();
+  CXFA_FFApp::CallbackIface* GetAppProvider();
   CFWL_App* GetFWLApp() const;
   void InvalidateRect();
   bool IsFocused() const {

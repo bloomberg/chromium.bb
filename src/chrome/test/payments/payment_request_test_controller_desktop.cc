@@ -10,8 +10,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/payments/chrome_payment_request_delegate.h"
 #include "chrome/browser/payments/payment_request_factory.h"
-#include "components/autofill/content/browser/webauthn/internal_authenticator_impl.h"
-#include "components/autofill/core/browser/payments/internal_authenticator.h"
 #include "components/payments/content/android_app_communication.h"
 #include "components/payments/content/payment_request.h"
 #include "components/payments/content/payment_request_web_contents_manager.h"
@@ -19,6 +17,8 @@
 #include "components/payments/core/payment_prefs.h"
 #include "components/payments/core/payment_request_delegate.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "components/webauthn/content/browser/internal_authenticator_impl.h"
+#include "components/webauthn/core/browser/internal_authenticator.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -60,7 +60,7 @@ class ChromePaymentRequestTestDelegate : public ChromePaymentRequestDelegate {
                                    bool has_authenticator,
                                    PaymentUIObserver* ui_observer_for_test)
       : ChromePaymentRequestDelegate(render_frame_host),
-        frame_routing_id_(content::GlobalFrameRoutingId(
+        frame_routing_id_(content::GlobalRenderFrameHostId(
             render_frame_host->GetProcess()->GetID(),
             render_frame_host->GetRoutingID())),
         is_off_the_record_(is_off_the_record),
@@ -89,7 +89,7 @@ class ChromePaymentRequestTestDelegate : public ChromePaymentRequestDelegate {
   }
 
  private:
-  content::GlobalFrameRoutingId frame_routing_id_;
+  content::GlobalRenderFrameHostId frame_routing_id_;
   const bool is_off_the_record_;
   const bool valid_ssl_;
   PrefService* const prefs_;
@@ -137,6 +137,7 @@ class PaymentRequestTestController::ObserverConverter
 
     controller_->OnAppListReady();
   }
+  void OnErrorDisplayed() override { controller_->OnErrorDisplayed(); }
   void OnNotSupportedError() override { controller_->OnNotSupportedError(); }
   void OnConnectionTerminated() override {
     controller_->OnConnectionTerminated();
@@ -176,6 +177,10 @@ bool PaymentRequestTestController::ConfirmPayment() {
 }
 
 bool PaymentRequestTestController::ClickPaymentHandlerCloseButton() {
+  return CloseDialog();
+}
+
+bool PaymentRequestTestController::CloseDialog() {
   if (!delegate_)
     return false;
 
@@ -261,7 +266,7 @@ void PaymentRequestTestController::UpdateDelegateFactory() {
          mojo::PendingReceiver<payments::mojom::PaymentRequest> receiver,
          content::RenderFrameHost* render_frame_host) {
         DCHECK(render_frame_host);
-        DCHECK(render_frame_host->IsCurrent());
+        DCHECK(render_frame_host->IsActive());
         auto delegate = std::make_unique<ChromePaymentRequestTestDelegate>(
             render_frame_host, is_off_the_record, valid_ssl, prefs,
             twa_package_name, has_authenticator, observer_for_test);
@@ -306,6 +311,11 @@ void PaymentRequestTestController::OnHasEnrolledInstrumentReturned() {
 void PaymentRequestTestController::OnAppListReady() {
   if (observer_)
     observer_->OnAppListReady();
+}
+
+void PaymentRequestTestController::OnErrorDisplayed() {
+  if (observer_)
+    observer_->OnErrorDisplayed();
 }
 
 void PaymentRequestTestController::OnCompleteCalled() {

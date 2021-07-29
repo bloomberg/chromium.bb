@@ -15,12 +15,12 @@
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
@@ -747,8 +747,10 @@ void MediaDrmBridge::OnSessionClosed(
   DVLOG(2) << __func__;
   std::string session_id;
   JavaByteArrayToString(env, j_session_id, &session_id);
+  // TODO(crbug.com/1208618): Support other closed reasons.
   task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(session_closed_cb_, std::move(session_id)));
+      FROM_HERE, base::BindOnce(session_closed_cb_, std::move(session_id),
+                                CdmSessionClosedReason::kClose));
 }
 
 void MediaDrmBridge::OnSessionKeysChange(

@@ -56,7 +56,7 @@ class AlertGroupWorkflowTest(testing_common.TestCase):
     self._service_account = lambda: _SERVICE_ACCOUNT_EMAIL
 
   @staticmethod
-  def _AddAnomaly(**kwargs):
+  def _AddAnomaly(is_summary=False, **kwargs):
     default = {
         'test': 'master/bot/test_suite/measurement/test_case',
         'start_revision': 1,
@@ -80,7 +80,13 @@ class AlertGroupWorkflowTest(testing_common.TestCase):
       return {tests[0]: GenerateTestDict(tests[1:])}
 
     testing_common.AddTests([tests[0]], [tests[1]], GenerateTestDict(tests[2:]))
-    default['test'] = utils.TestKey(default['test'])
+    test_key = utils.TestKey(default['test'])
+    if not is_summary:
+      t = test_key.get()
+      t.unescaped_story_name = 'story'
+      t.put()
+
+    default['test'] = test_key
 
     return anomaly.Anomaly(**default).put()
 
@@ -135,6 +141,13 @@ class AlertGroupWorkflowTest(testing_common.TestCase):
       group.status = status
     return group.put()
 
+  @staticmethod
+  # Perform same update on the same group twice because operation will only
+  # be triggered when monorail not being updated
+  def _UpdateTwice(workflow, update):
+    workflow.Process(update=update)
+    workflow.Process(update=update)
+
   def testAddAnomalies_GroupUntriaged(self):
     anomalies = [self._AddAnomaly(), self._AddAnomaly()]
     added = [self._AddAnomaly(), self._AddAnomaly()]
@@ -147,7 +160,8 @@ class AlertGroupWorkflowTest(testing_common.TestCase):
         sheriff_config=self._sheriff_config,
         issue_tracker=self._issue_tracker,
     )
-    w.Process(
+    self._UpdateTwice(
+        workflow=w,
         update=alert_group_workflow.AlertGroupWorkflow.GroupUpdate(
             now=datetime.datetime.utcnow(),
             anomalies=ndb.get_multi(anomalies + added),
@@ -180,7 +194,8 @@ class AlertGroupWorkflowTest(testing_common.TestCase):
         sheriff_config=self._sheriff_config,
         issue_tracker=self._issue_tracker,
     )
-    w.Process(
+    self._UpdateTwice(
+        workflow=w,
         update=alert_group_workflow.AlertGroupWorkflow.GroupUpdate(
             now=datetime.datetime.utcnow(),
             anomalies=ndb.get_multi(anomalies + added),
@@ -232,7 +247,8 @@ class AlertGroupWorkflowTest(testing_common.TestCase):
         issue_tracker=self._issue_tracker,
         service_account=self._service_account,
     )
-    w.Process(
+    self._UpdateTwice(
+        workflow=w,
         update=alert_group_workflow.AlertGroupWorkflow.GroupUpdate(
             now=datetime.datetime.utcnow(),
             anomalies=ndb.get_multi(anomalies + added),
@@ -333,7 +349,8 @@ class AlertGroupWorkflowTest(testing_common.TestCase):
         issue_tracker=self._issue_tracker,
         service_account=self._service_account,
     )
-    w.Process(
+    self._UpdateTwice(
+        workflow=w,
         update=alert_group_workflow.AlertGroupWorkflow.GroupUpdate(
             now=datetime.datetime.utcnow(),
             anomalies=ndb.get_multi(anomalies),
@@ -381,7 +398,8 @@ class AlertGroupWorkflowTest(testing_common.TestCase):
         issue_tracker=self._issue_tracker,
         service_account=self._service_account,
     )
-    w.Process(
+    self._UpdateTwice(
+        workflow=w,
         update=alert_group_workflow.AlertGroupWorkflow.GroupUpdate(
             now=datetime.datetime.utcnow(),
             anomalies=ndb.get_multi(anomalies + added),
@@ -431,7 +449,8 @@ class AlertGroupWorkflowTest(testing_common.TestCase):
         issue_tracker=self._issue_tracker,
         service_account=self._service_account,
     )
-    w.Process(
+    self._UpdateTwice(
+        workflow=w,
         update=alert_group_workflow.AlertGroupWorkflow.GroupUpdate(
             now=datetime.datetime.utcnow(),
             anomalies=ndb.get_multi(anomalies),
@@ -467,7 +486,8 @@ class AlertGroupWorkflowTest(testing_common.TestCase):
         issue_tracker=self._issue_tracker,
         service_account=self._service_account,
     )
-    w.Process(
+    self._UpdateTwice(
+        workflow=w,
         update=alert_group_workflow.AlertGroupWorkflow.GroupUpdate(
             now=datetime.datetime.utcnow(),
             anomalies=ndb.get_multi(anomalies + added),
@@ -504,7 +524,8 @@ class AlertGroupWorkflowTest(testing_common.TestCase):
         sheriff_config=self._sheriff_config,
         issue_tracker=self._issue_tracker,
     )
-    w.Process(
+    self._UpdateTwice(
+        workflow=w,
         update=alert_group_workflow.AlertGroupWorkflow.GroupUpdate(
             now=datetime.datetime.utcnow(),
             anomalies=ndb.get_multi(anomalies),
@@ -536,7 +557,8 @@ class AlertGroupWorkflowTest(testing_common.TestCase):
         sheriff_config=self._sheriff_config,
         issue_tracker=self._issue_tracker,
     )
-    w.Process(
+    self._UpdateTwice(
+        workflow=w,
         update=alert_group_workflow.AlertGroupWorkflow.GroupUpdate(
             now=datetime.datetime.utcnow(),
             anomalies=ndb.get_multi(anomalies),
@@ -565,7 +587,8 @@ class AlertGroupWorkflowTest(testing_common.TestCase):
         sheriff_config=self._sheriff_config,
         issue_tracker=self._issue_tracker,
     )
-    w.Process(
+    self._UpdateTwice(
+        workflow=w,
         update=alert_group_workflow.AlertGroupWorkflow.GroupUpdate(
             now=datetime.datetime.utcnow(),
             anomalies=ndb.get_multi(anomalies),
@@ -595,7 +618,8 @@ class AlertGroupWorkflowTest(testing_common.TestCase):
             triage_delay=datetime.timedelta(hours=0),
         ),
     )
-    w.Process(
+    self._UpdateTwice(
+        workflow=w,
         update=alert_group_workflow.AlertGroupWorkflow.GroupUpdate(
             now=datetime.datetime.utcnow(),
             anomalies=ndb.get_multi(anomalies),
@@ -629,7 +653,8 @@ class AlertGroupWorkflowTest(testing_common.TestCase):
             triage_delay=datetime.timedelta(hours=0),
         ),
     )
-    w.Process(
+    self._UpdateTwice(
+        workflow=w,
         update=alert_group_workflow.AlertGroupWorkflow.GroupUpdate(
             now=datetime.datetime.utcnow(),
             anomalies=ndb.get_multi(anomalies),
@@ -670,7 +695,8 @@ class AlertGroupWorkflowTest(testing_common.TestCase):
             active_window=datetime.timedelta(days=7),
             triage_delay=datetime.timedelta(hours=0),
         ))
-    w.Process(
+    self._UpdateTwice(
+        workflow=w,
         update=alert_group_workflow.AlertGroupWorkflow.GroupUpdate(
             now=datetime.datetime.utcnow(),
             anomalies=ndb.get_multi(anomalies),
@@ -702,7 +728,8 @@ class AlertGroupWorkflowTest(testing_common.TestCase):
             triage_delay=datetime.timedelta(hours=0),
         ),
     )
-    w.Process(
+    self._UpdateTwice(
+        workflow=w,
         update=alert_group_workflow.AlertGroupWorkflow.GroupUpdate(
             now=datetime.datetime.utcnow(),
             anomalies=ndb.get_multi(anomalies),
@@ -734,7 +761,8 @@ class AlertGroupWorkflowTest(testing_common.TestCase):
             triage_delay=datetime.timedelta(hours=0),
         ),
     )
-    w.Process(
+    self._UpdateTwice(
+        workflow=w,
         update=alert_group_workflow.AlertGroupWorkflow.GroupUpdate(
             now=datetime.datetime.utcnow(),
             anomalies=ndb.get_multi(anomalies),
@@ -759,7 +787,8 @@ class AlertGroupWorkflowTest(testing_common.TestCase):
         sheriff_config=self._sheriff_config,
         issue_tracker=self._issue_tracker,
     )
-    w.Process(
+    self._UpdateTwice(
+        workflow=w,
         update=alert_group_workflow.AlertGroupWorkflow.GroupUpdate(
             now=datetime.datetime.utcnow(),
             anomalies=ndb.get_multi(anomalies),
@@ -787,7 +816,8 @@ class AlertGroupWorkflowTest(testing_common.TestCase):
             triage_delay=datetime.timedelta(hours=0),
         ),
     )
-    w.Process(
+    self._UpdateTwice(
+        workflow=w,
         update=alert_group_workflow.AlertGroupWorkflow.GroupUpdate(
             now=datetime.datetime.utcnow() + datetime.timedelta(seconds=1),
             anomalies=ndb.get_multi(anomalies),
@@ -820,7 +850,8 @@ class AlertGroupWorkflowTest(testing_common.TestCase):
             triage_delay=datetime.timedelta(hours=0),
         ),
     )
-    w.Process(
+    self._UpdateTwice(
+        workflow=w,
         update=alert_group_workflow.AlertGroupWorkflow.GroupUpdate(
             now=datetime.datetime.utcnow(),
             anomalies=ndb.get_multi(anomalies),
@@ -856,7 +887,8 @@ class AlertGroupWorkflowTest(testing_common.TestCase):
         pinpoint=self._pinpoint,
         crrev=self._crrev,
     )
-    w.Process(
+    self._UpdateTwice(
+        workflow=w,
         update=alert_group_workflow.AlertGroupWorkflow.GroupUpdate(
             now=datetime.datetime.utcnow(),
             anomalies=ndb.get_multi(anomalies),
@@ -864,6 +896,60 @@ class AlertGroupWorkflowTest(testing_common.TestCase):
         ))
     tags = json.loads(self._pinpoint.new_job_request['tags'])
     self.assertEqual(anomalies[1].urlsafe(), tags['alert'])
+
+    # Tags must be a dict of key/value string pairs.
+    for k, v in tags.items():
+      self.assertIsInstance(k, basestring)
+      self.assertIsInstance(v, basestring)
+
+    self.assertEqual(['123456'], group.get().bisection_ids)
+    self.assertEqual(['Chromeperf-Auto-Bisected'],
+                     self._issue_tracker.add_comment_kwargs['labels'])
+
+  def testBisect_GroupTriaged_WithSummary(self):
+    anomalies = [
+        self._AddAnomaly(
+            test='master/bot1/test_suite/measurement/test_case1',
+            median_before_anomaly=0.2,
+        ),
+        self._AddAnomaly(
+            test='master/bot1/test_suite/measurement/test_case2',
+            median_before_anomaly=0.1,
+            is_summary=True,
+        ),
+    ]
+    group = self._AddAlertGroup(
+        anomalies[0],
+        issue=self._issue_tracker.issue,
+        status=alert_group.AlertGroup.Status.triaged,
+    )
+    self._issue_tracker.issue.update({
+        'state': 'open',
+    })
+    self._sheriff_config.patterns = {
+        '*': [
+            subscription.Subscription(
+                name='sheriff',
+                auto_triage_enable=True,
+                auto_bisect_enable=True)
+        ],
+    }
+    w = alert_group_workflow.AlertGroupWorkflow(
+        group.get(),
+        sheriff_config=self._sheriff_config,
+        issue_tracker=self._issue_tracker,
+        pinpoint=self._pinpoint,
+        crrev=self._crrev,
+    )
+    self._UpdateTwice(
+        workflow=w,
+        update=alert_group_workflow.AlertGroupWorkflow.GroupUpdate(
+            now=datetime.datetime.utcnow(),
+            anomalies=ndb.get_multi(anomalies),
+            issue=self._issue_tracker.issue,
+        ))
+    tags = json.loads(self._pinpoint.new_job_request['tags'])
+    self.assertEqual(anomalies[0].urlsafe(), tags['alert'])
 
     # Tags must be a dict of key/value string pairs.
     for k, v in tags.items():
@@ -910,7 +996,8 @@ class AlertGroupWorkflowTest(testing_common.TestCase):
         pinpoint=self._pinpoint,
         crrev=self._crrev,
     )
-    w.Process(
+    self._UpdateTwice(
+        workflow=w,
         update=alert_group_workflow.AlertGroupWorkflow.GroupUpdate(
             now=datetime.datetime.utcnow(),
             anomalies=ndb.get_multi(anomalies),
@@ -960,7 +1047,8 @@ class AlertGroupWorkflowTest(testing_common.TestCase):
         pinpoint=self._pinpoint,
         crrev=self._crrev,
     )
-    w.Process(
+    self._UpdateTwice(
+        workflow=w,
         update=alert_group_workflow.AlertGroupWorkflow.GroupUpdate(
             now=datetime.datetime.utcnow(),
             anomalies=ndb.get_multi(anomalies),
@@ -1007,7 +1095,8 @@ class AlertGroupWorkflowTest(testing_common.TestCase):
         pinpoint=self._pinpoint,
         crrev=self._crrev,
     )
-    w.Process(
+    self._UpdateTwice(
+        workflow=w,
         update=alert_group_workflow.AlertGroupWorkflow.GroupUpdate(
             now=datetime.datetime.utcnow(),
             anomalies=ndb.get_multi(anomalies),
@@ -1040,7 +1129,8 @@ class AlertGroupWorkflowTest(testing_common.TestCase):
         pinpoint=self._pinpoint,
         crrev=self._crrev,
     )
-    w.Process(
+    self._UpdateTwice(
+        workflow=w,
         update=alert_group_workflow.AlertGroupWorkflow.GroupUpdate(
             now=datetime.datetime.utcnow(),
             anomalies=ndb.get_multi(anomalies),
@@ -1079,7 +1169,8 @@ class AlertGroupWorkflowTest(testing_common.TestCase):
         pinpoint=self._pinpoint,
         crrev=self._crrev,
     )
-    w.Process(
+    self._UpdateTwice(
+        workflow=w,
         update=alert_group_workflow.AlertGroupWorkflow.GroupUpdate(
             now=datetime.datetime.utcnow(),
             anomalies=ndb.get_multi(anomalies),
@@ -1128,7 +1219,8 @@ class AlertGroupWorkflowTest(testing_common.TestCase):
         pinpoint=self._pinpoint,
         crrev=self._crrev,
     )
-    w.Process(
+    self._UpdateTwice(
+        workflow=w,
         update=alert_group_workflow.AlertGroupWorkflow.GroupUpdate(
             now=datetime.datetime.utcnow(),
             anomalies=ndb.get_multi(anomalies),
@@ -1176,7 +1268,8 @@ class AlertGroupWorkflowTest(testing_common.TestCase):
         pinpoint=self._pinpoint,
         crrev=self._crrev,
     )
-    w.Process(
+    self._UpdateTwice(
+        workflow=w,
         update=alert_group_workflow.AlertGroupWorkflow.GroupUpdate(
             now=datetime.datetime.utcnow(),
             anomalies=ndb.get_multi(anomalies),
@@ -1225,7 +1318,8 @@ class AlertGroupWorkflowTest(testing_common.TestCase):
         pinpoint=self._pinpoint,
         crrev=self._crrev,
     )
-    w.Process(
+    self._UpdateTwice(
+        workflow=w,
         update=alert_group_workflow.AlertGroupWorkflow.GroupUpdate(
             now=datetime.datetime.utcnow(),
             anomalies=ndb.get_multi(anomalies),
@@ -1274,7 +1368,8 @@ class AlertGroupWorkflowTest(testing_common.TestCase):
         pinpoint=self._pinpoint,
         crrev=self._crrev,
     )
-    w.Process(
+    self._UpdateTwice(
+        workflow=w,
         update=alert_group_workflow.AlertGroupWorkflow.GroupUpdate(
             now=datetime.datetime.utcnow(),
             anomalies=ndb.get_multi(anomalies),
@@ -1325,7 +1420,8 @@ class AlertGroupWorkflowTest(testing_common.TestCase):
         pinpoint=self._pinpoint,
         crrev=self._crrev,
     )
-    w.Process(
+    self._UpdateTwice(
+        workflow=w,
         update=alert_group_workflow.AlertGroupWorkflow.GroupUpdate(
             now=datetime.datetime.utcnow(),
             anomalies=ndb.get_multi(anomalies),
@@ -1373,7 +1469,8 @@ class AlertGroupWorkflowTest(testing_common.TestCase):
         pinpoint=self._pinpoint,
         crrev=self._crrev,
     )
-    w.Process(
+    self._UpdateTwice(
+        workflow=w,
         update=alert_group_workflow.AlertGroupWorkflow.GroupUpdate(
             now=datetime.datetime.utcnow(),
             anomalies=ndb.get_multi(anomalies),
@@ -1410,7 +1507,8 @@ class AlertGroupWorkflowTest(testing_common.TestCase):
         pinpoint=self._pinpoint,
         crrev=self._crrev,
     )
-    w.Process(
+    self._UpdateTwice(
+        workflow=w,
         update=alert_group_workflow.AlertGroupWorkflow.GroupUpdate(
             now=datetime.datetime.utcnow(),
             anomalies=ndb.get_multi(anomalies),
@@ -1447,7 +1545,8 @@ class AlertGroupWorkflowTest(testing_common.TestCase):
         pinpoint=self._pinpoint,
         crrev=self._crrev,
     )
-    w.Process(
+    self._UpdateTwice(
+        workflow=w,
         update=alert_group_workflow.AlertGroupWorkflow.GroupUpdate(
             now=datetime.datetime.utcnow(),
             anomalies=ndb.get_multi(anomalies),
@@ -1511,7 +1610,8 @@ class AlertGroupWorkflowTest(testing_common.TestCase):
         pinpoint=self._pinpoint,
         crrev=self._crrev,
         gitiles=self._gitiles)
-    w.Process(
+    self._UpdateTwice(
+        workflow=w,
         update=alert_group_workflow.AlertGroupWorkflow.GroupUpdate(
             now=datetime.datetime.utcnow(),
             anomalies=ndb.get_multi(anomalies),
@@ -1555,7 +1655,8 @@ class AlertGroupWorkflowTest(testing_common.TestCase):
     )
     self.assertIn('Chromeperf-Auto-BisectOptOut',
                   self._issue_tracker.issue.get('labels'))
-    w.Process(
+    self._UpdateTwice(
+        workflow=w,
         update=alert_group_workflow.AlertGroupWorkflow.GroupUpdate(
             now=datetime.datetime.utcnow(),
             anomalies=ndb.get_multi(anomalies),

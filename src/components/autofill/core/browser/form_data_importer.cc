@@ -418,6 +418,11 @@ bool FormDataImporter::IsValidLearnableProfile(
            is_zip_invalid);
 }
 
+void FormDataImporter::CacheFetchedVirtualCard(
+    const std::u16string& last_four) {
+  fetched_virtual_cards_.insert(last_four);
+}
+
 bool FormDataImporter::ImportFormData(
     const FormStructure& submitted_form,
     bool profile_autofill_enabled,
@@ -791,6 +796,10 @@ bool FormDataImporter::ImportCreditCard(
     return false;
   }
 
+  // If the imported card is a known virtual card, abort saving.
+  if (fetched_virtual_cards_.contains(candidate_credit_card.LastFourDigits()))
+    return false;
+
   // Can import one valid card per form. Start by treating it as NEW_CARD, but
   // overwrite this type if we discover it is already a local or server card.
   imported_credit_card_record_type_ = ImportedCreditCardRecordType::NEW_CARD;
@@ -919,12 +928,9 @@ CreditCard FormDataImporter::ExtractCreditCardFromForm(
     // month. Attempt to save with the option value. First find the index of the
     // option text in the select options and try the corresponding value.
     if (!saved && server_field_type == CREDIT_CARD_EXP_MONTH) {
-      size_t items_count =
-          std::min(field->option_contents.size(), field->option_values.size());
-      for (size_t i = 0; i < items_count; ++i) {
-        if (value == field->option_contents[i]) {
-          candidate_credit_card.SetInfo(field_type, field->option_values[i],
-                                        app_locale_);
+      for (const SelectOption& option : field->options) {
+        if (value == option.content) {
+          candidate_credit_card.SetInfo(field_type, option.value, app_locale_);
           break;
         }
       }

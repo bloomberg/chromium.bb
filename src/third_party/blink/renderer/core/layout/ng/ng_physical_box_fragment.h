@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_PHYSICAL_BOX_FRAGMENT_H_
 
 #include "base/dcheck_is_on.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/geometry/box_sides.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
@@ -57,8 +58,6 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
                         const PhysicalRect& layout_overflow,
                         bool recalculate_layout_overflow);
 
-  scoped_refptr<const NGLayoutResult> CloneAsHiddenForPaint() const;
-
   ~NGPhysicalBoxFragment() {
     ink_overflow_.Reset(InkOverflowType());
     if (const_has_fragment_items_)
@@ -72,6 +71,20 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
       }
     }
   }
+
+#if DCHECK_IS_ON()
+  class AllowPostLayoutScope {
+    STACK_ALLOCATED();
+
+   public:
+    AllowPostLayoutScope();
+    ~AllowPostLayoutScope();
+    static bool IsAllowed() { return allow_count_; }
+
+   private:
+    static unsigned allow_count_;
+  };
+#endif
 
   const NGPhysicalBoxFragment* PostLayout() const;
 
@@ -163,6 +176,8 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
       return {{}, Size()};
     return *ComputeLayoutOverflowAddress();
   }
+
+  bool HasLayoutOverflow() const { return has_layout_overflow_; }
 
   const NGPhysicalBoxStrut Borders() const {
     if (!has_borders_)
@@ -286,7 +301,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
       const PhysicalOffset& location,
       const NGBlockBreakToken* incoming_break_token,
       OverlayScrollbarClipBehavior = kIgnoreOverlayScrollbarSize) const;
-  LayoutSize PixelSnappedScrolledContentOffset() const;
+  IntPoint PixelSnappedScrolledContentOffset() const;
   PhysicalSize ScrollSize() const;
 
   NGInkOverflow::Type InkOverflowType() const {
@@ -368,6 +383,10 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
     return has_descendants_for_table_part_;
   }
 
+  bool IsFragmentationContextRoot() const {
+    return is_fragmentation_context_root_;
+  }
+
   // Returns true if we have a descendant within this formatting context, which
   // is potentially above our block-start edge.
   bool MayHaveDescendantAboveBlockStart() const {
@@ -426,6 +445,8 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
 
 #if DCHECK_IS_ON()
   void InvalidateInkOverflow();
+  void AssertFragmentTreeSelf() const;
+  void AssertFragmentTreeChildren(bool allow_destroyed = false) const;
 #endif
 
  private:
@@ -547,6 +568,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
   const unsigned const_has_rare_data_ : 1;
   unsigned is_first_for_node_ : 1;
   unsigned has_descendants_for_table_part_ : 1;
+  unsigned is_fragmentation_context_root_ : 1;
 
   const wtf_size_t const_num_children_;
 

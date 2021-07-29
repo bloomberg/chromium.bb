@@ -32,6 +32,7 @@ NSMutableSet* invokedCompletionUUID = nil;
 + (void)resetAuthentication {
   chrome_test_util::ResetSigninPromoPreferences();
   chrome_test_util::ResetMockAuthentication();
+  chrome_test_util::ResetUserApprovedAccountListManager();
 }
 
 + (void)removeInfoBarsAndPresentedStateWithCompletionUUID:
@@ -48,6 +49,32 @@ NSMutableSet* invokedCompletionUUID = nil;
     return NO;
   [invokedCompletionUUID removeObject:completionUUID];
   return YES;
+}
+
++ (void)disableKeyboardTutorials {
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    // Set the preferences values directly on simulator for the keyboard
+    // modifiers. For persisting these values, CFPreferencesSynchronize must be
+    // called after.
+    CFStringRef app = CFSTR("com.apple.keyboard.preferences.plist");
+    if (@available(iOS 15, *)) {
+      CFPreferencesSetValue(CFSTR("DidShowContinuousPathIntroduction"),
+                            kCFBooleanTrue, app, kCFPreferencesAnyUser,
+                            kCFPreferencesAnyHost);
+      CFPreferencesSetValue(CFSTR("KeyboardDidShowProductivityTutorial"),
+                            kCFBooleanTrue, app, kCFPreferencesAnyUser,
+                            kCFPreferencesAnyHost);
+      CFPreferencesSetValue(CFSTR("DidShowGestureKeyboardIntroduction"),
+                            kCFBooleanTrue, app, kCFPreferencesAnyUser,
+                            kCFPreferencesAnyHost);
+      CFPreferencesSetValue(
+          CFSTR("UIKeyboardDidShowInternationalInfoIntroduction"),
+          kCFBooleanTrue, app, kCFPreferencesAnyUser, kCFPreferencesAnyHost);
+      CFPreferencesSynchronize(kCFPreferencesAnyApplication,
+                               kCFPreferencesAnyUser, kCFPreferencesAnyHost);
+    }
+  });
 }
 
 #pragma mark - Private

@@ -13,7 +13,7 @@ import {
 } from './device/constraints_preferrer.js';
 import {DeviceInfoUpdater} from './device/device_info_updater.js';
 import * as dom from './dom.js';
-import * as error from './error.js';
+import {reportError} from './error.js';
 import * as focusRing from './focus_ring.js';
 import {GalleryButton} from './gallerybutton.js';
 import {Intent} from './intent.js';
@@ -29,16 +29,11 @@ import {preloadImagesList} from './preload_images.js';
 import * as state from './state.js';
 import * as tooltip from './tooltip.js';
 import {ErrorLevel, ErrorType, Mode, PerfEvent, ViewName} from './type.js';
+import {addUnloadCallback} from './unload.js';
 import * as util from './util.js';
 import {Camera} from './views/camera.js';
 import {CameraIntent} from './views/camera_intent.js';
 import {Dialog} from './views/dialog.js';
-import {PTZPanel} from './views/ptz_panel.js';
-import {
-  BaseSettings,
-  PrimarySettings,
-  ResolutionSettings,
-} from './views/settings.js';
 import {View} from './views/view.js';
 import {Warning, WarningType} from './views/warning.js';
 import {WaitableEvent} from './waitable_event.js';
@@ -129,26 +124,15 @@ export class App {
       }
     }, {passive: false, capture: true});
 
-    document.title = loadTimeData.getI18nMessage('name');
     util.setupI18nElements(document.body);
     this.setupToggles_();
     this.setupEffect_();
     focusRing.initialize();
 
-    const resolutionSettings = new ResolutionSettings(
-        this.infoUpdater_, this.photoPreferrer_, this.videoPreferrer_);
 
     // Set up views navigation by their DOM z-order.
     nav.setup([
       this.cameraView_,
-      new PrimarySettings(),
-      new PTZPanel(),
-      new BaseSettings(ViewName.GRID_SETTINGS),
-      new BaseSettings(ViewName.TIMER_SETTINGS),
-      resolutionSettings,
-      resolutionSettings.photoResolutionSettings,
-      resolutionSettings.videoResolutionSettings,
-      new BaseSettings(ViewName.EXPERT_SETTINGS),
       new Warning(),
       new Dialog(ViewName.MESSAGE_DIALOG),
       new View(ViewName.SPLASH),
@@ -162,8 +146,6 @@ export class App {
    * @private
    */
   setupToggles_() {
-    const expert = localStorage.getBool('expert');
-    state.set(state.State.EXPERT, expert);
     dom.getAll('input', HTMLInputElement).forEach((element) => {
       element.addEventListener('keypress', (event) => {
         const e = assertInstanceof(event, KeyboardEvent);
@@ -195,6 +177,15 @@ export class App {
           }
         }
       });
+      if (element.dataset['state'] !== undefined) {
+        const s = state.assertState(element.dataset['state']);
+        state.addObserver(s, (value) => {
+          if (value !== element.checked) {
+            util.toggleChecked(element, value);
+          }
+        });
+        state.set(s, element.checked);
+      }
       if (element.dataset['key'] !== undefined) {
         // Restore the previously saved state on startup.
         const value =
@@ -257,7 +248,7 @@ export class App {
         this.galleryButton_.initialize(cameraDir);
       }
     } catch (error) {
-      console.error(error);
+      reportError(ErrorType.FILE_SYSTEM_FAILURE, ErrorLevel.ERROR, error);
       nav.open(ViewName.WARNING, WarningType.FILESYSTEM_FAILURE);
     }
 
@@ -326,7 +317,7 @@ export class App {
           preloadImagesList.map((name) => loadImage(`/images/${name}`)));
       const failure = results.find(({status}) => status === 'rejected');
       if (failure !== undefined) {
-        error.reportError(
+        reportError(
             ErrorType.PRELOAD_IMAGE_FAILURE, ErrorLevel.ERROR,
             assertInstanceof(failure.reason, Error));
       }
@@ -386,7 +377,7 @@ let instance = null;
 
   state.set(state.State.INTENT, intent !== null);
 
-  window.addEventListener('unload', () => {
+  addUnloadCallback(() => {
     // For SWA, we don't cancel the unhandled intent here since there is no
     // guarantee that asynchronous calls in unload listener can be executed
     // properly. Therefore, we moved the logic for canceling unhandled intent to

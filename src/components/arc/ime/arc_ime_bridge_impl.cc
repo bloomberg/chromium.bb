@@ -88,13 +88,14 @@ void ArcImeBridgeImpl::SendSelectionRange(const gfx::Range& selection_range) {
   ime_instance->SetSelectionText(selection_range);
 }
 
-void ArcImeBridgeImpl::SendInsertText(const std::u16string& text) {
+void ArcImeBridgeImpl::SendInsertText(const std::u16string& text,
+                                      int new_cursor_position) {
   auto* ime_instance =
       ARC_GET_INSTANCE_FOR_METHOD(bridge_service_->ime(), InsertText);
   if (!ime_instance)
     return;
 
-  ime_instance->InsertText(base::UTF16ToUTF8(text));
+  ime_instance->InsertText(base::UTF16ToUTF8(text), new_cursor_position);
 }
 
 void ArcImeBridgeImpl::SendExtendSelectionAndDelete(
@@ -166,7 +167,8 @@ void ArcImeBridgeImpl::RequestHideImeDeprecated() {
 
 void ArcImeBridgeImpl::ShouldEnableKeyEventForwarding(
     ShouldEnableKeyEventForwardingCallback callback) {
-  std::move(callback).Run(delegate_->ShouldEnableKeyEventForwarding());
+  // TODO(b/190487153): Clean up this once the caller is removed.
+  std::move(callback).Run(true);
 }
 
 void ArcImeBridgeImpl::SendKeyEvent(std::unique_ptr<ui::KeyEvent> key_event,

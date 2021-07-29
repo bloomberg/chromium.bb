@@ -12,6 +12,7 @@ use_relative_paths = True
 vars = {
   'boringssl_git': 'https://boringssl.googlesource.com',
   'chromium_git': 'https://chromium.googlesource.com',
+  'quiche_git': 'https://quiche.googlesource.com',
 
   # NOTE: we should only reference GitHub directly for dependencies toggled
   # with the "not build_with_chromium" condition.
@@ -29,6 +30,10 @@ vars = {
   # TODO(issuetracker.google.com/155195126): Change this to False and update
   # buildbot to call tools/download-clang-update-script.py instead.
   'checkout_clang_coverage_tools': True,
+
+  # GN CIPD package version.
+  'gn_version': 'git_revision:39a87c0b36310bdf06b692c098f199a0d97fc810',
+  'clang_format_revision':    '99803d74e35962f63a775f29477882afd4d57d94',
 }
 
 deps = {
@@ -36,26 +41,49 @@ deps = {
   # of the commits to the buildtools directory in the Chromium repository. This
   # should be regularly updated with the tip of the MIRRORED master branch,
   # found here:
-  # TODO(issuetracker.google.com/172242670): update to "main" when buildtools
-  # has a main branch stood up.
-  # https://chromium.googlesource.com/chromium/src/buildtools/+/refs/heads/master.
+  # https://chromium.googlesource.com/chromium/src/buildtools/+/refs/heads/main.
   'buildtools': {
-    'url': Var('chromium_git')+ '/chromium/src/buildtools' +
-      '@' + '6302c1175607a436e18947a5abe9df2209e845fc',
+    'url': Var('chromium_git') + '/chromium/src/buildtools' +
+      '@' + 'fba2905150c974240f14aa5334c3e5c93f873032',
     'condition': 'not build_with_chromium',
   },
-
+  'buildtools/clang_format/script': {
+    'url': Var('chromium_git') +
+      '/external/github.com/llvm/llvm-project/clang/tools/clang-format.git' +
+      '@' + Var('clang_format_revision'),
+    'condition': 'not build_with_chromium',
+  },
+  'buildtools/linux64': {
+    'packages': [
+      {
+        'package': 'gn/gn/linux-amd64',
+        'version': Var('gn_version'),
+      }
+    ],
+    'dep_type': 'cipd',
+    'condition': 'host_os == "linux" and not build_with_chromium',
+  },
+  'buildtools/mac': {
+    'packages': [
+      {
+        'package': 'gn/gn/mac-${{arch}}',
+        'version': Var('gn_version'),
+      }
+    ],
+    'dep_type': 'cipd',
+    'condition': 'host_os == "mac" and not build_with_chromium',
+  },
   'third_party/protobuf/src': {
     'url': Var('chromium_git') +
       '/external/github.com/protocolbuffers/protobuf.git' +
-      '@' + '2514f0bd7da7e2af1bed4c5d1b84f031c4d12c10', # version 3.14
+      '@' + '909a0f36a10075c4b4bc70fdee2c7e32dd612a72', # version 3.17.3
     'condition': 'not build_with_chromium',
   },
 
   'third_party/libprotobuf-mutator/src': {
     'url': Var('chromium_git') +
       '/external/github.com/google/libprotobuf-mutator.git' +
-      '@' + 'e5869dd9690c3f4dfb842fb90bd07a5a9ee32172',
+      '@' + '8942a9ba43d8bb196230c321d46d6a137957a719',
     'condition': 'not build_with_chromium',
   },
 
@@ -100,7 +128,14 @@ deps = {
 
   'third_party/chromium_quic/src': {
     'url': Var('chromium_git') + '/openscreen/quic.git' +
-      '@' + '444faf6e3ae0dcade48438144f7e8ea2f8b3436d',
+      '@' + '79eec3fc28f5c4e1d06c6146825e31def6e3b793',
+    'condition': 'not build_with_chromium',
+  },
+
+  # To roll forward, use quiche_revision from chromium/src/DEPS.
+  'third_party/quiche/src': {
+    'url': Var('quiche_git') + '/quiche.git' +
+      '@' + '51f584db29001036c20db3f72f09b00b875ae625',
     'condition': 'not build_with_chromium',
   },
 

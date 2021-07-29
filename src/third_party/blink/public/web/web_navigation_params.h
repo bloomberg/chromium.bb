@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "services/network/public/mojom/link_header.mojom-shared.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-shared.h"
 #include "services/network/public/mojom/web_client_hints_types.mojom-shared.h"
@@ -343,8 +344,6 @@ struct BLINK_EXPORT WebNavigationParams {
   bool has_text_fragment_token = false;
   // Whether this navigation was browser initiated.
   bool is_browser_initiated = false;
-  // Whether this navigation was for prerendering.
-  bool is_prerendering = false;
   // Whether the document should be able to access local file:// resources.
   bool grant_load_local_resources = false;
   // The previews state which should be used for this navigation.
@@ -428,6 +427,9 @@ struct BLINK_EXPORT WebNavigationParams {
   // appHistory.
   WebVector<WebHistoryItem> app_history_back_entries;
   WebVector<WebHistoryItem> app_history_forward_entries;
+
+  // List of URLs which are preloaded by HTTP Early Hints.
+  WebVector<WebURL> early_hints_preloaded_resources;
 };
 
 }  // namespace blink

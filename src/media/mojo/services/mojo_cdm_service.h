@@ -25,6 +25,7 @@
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace media {
 
@@ -97,7 +98,8 @@ class MEDIA_MOJO_EXPORT MojoCdmService final
                            CdmKeysInfo keys_info);
   void OnSessionExpirationUpdate(const std::string& session_id,
                                  base::Time new_expiry_time);
-  void OnSessionClosed(const std::string& session_id);
+  void OnSessionClosed(const std::string& session_id,
+                       CdmSessionClosedReason reason);
 
   // Callback for when |decryptor_| loses connectivity.
   void OnDecryptorConnectionError();

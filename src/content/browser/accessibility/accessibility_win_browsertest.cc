@@ -20,6 +20,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_safearray.h"
 #include "base/win/scoped_variant.h"
@@ -49,6 +50,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
 #include "third_party/isimpledom/ISimpleDOMNode.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_event_generator.h"
 #include "ui/accessibility/platform/ax_fragment_root_win.h"
@@ -1769,7 +1771,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   Microsoft::WRL::ComPtr<IAccessibleText> input_text;
   SetUpScrollableInputField(&input_text);
 
-  int contents_string_length = int{InputContentsString().size()};
+  int contents_string_length = static_cast<int>(InputContentsString().size());
   constexpr LONG visible_characters_start = 21;
   LONG n_characters;
   ASSERT_HRESULT_SUCCEEDED(input_text->get_nCharacters(&n_characters));
@@ -1964,7 +1966,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   Microsoft::WRL::ComPtr<IAccessibleText> input_text;
   SetUpScrollableInputTypeSearchField(&input_text);
 
-  int contents_string_length = int{InputContentsString().size()};
+  int contents_string_length = static_cast<int>(InputContentsString().size());
   constexpr LONG visible_characters_start = 21;
   LONG n_characters;
   ASSERT_HRESULT_SUCCEEDED(input_text->get_nCharacters(&n_characters));
@@ -2599,7 +2601,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestSetSelection) {
   AccessibilityNotificationWaiter waiter(
       shell()->web_contents(), ui::kAXModeComplete,
       ax::mojom::Event::kTextSelectionChanged);
-  int contents_string_length = int{InputContentsString().size()};
+  int contents_string_length = static_cast<int>(InputContentsString().size());
   start_offset = 0;
   end_offset = contents_string_length;
   EXPECT_HRESULT_FAILED(input_text->setSelection(1, start_offset, end_offset));
@@ -2635,7 +2637,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestSetSelectionRanges) {
   LONG n_ranges = 1;
   IA2Range* ranges =
       reinterpret_cast<IA2Range*>(CoTaskMemAlloc(sizeof(IA2Range)));
-  int contents_string_length = int{InputContentsString().size()};
+  int contents_string_length = static_cast<int>(InputContentsString().size());
   ranges[0].anchor = ax_input.Get();
   ranges[0].anchorOffset = -1;
   ranges[0].active = ax_input.Get();
@@ -2840,7 +2842,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestMultiLineSetSelection) {
   // There is no selection, just a caret.
   EXPECT_EQ(E_INVALIDARG, hr);
 
-  int contents_string_length = int{InputContentsString().size()};
+  int contents_string_length = static_cast<int>(InputContentsString().size());
   AccessibilityNotificationWaiter waiter(
       shell()->web_contents(), ui::kAXModeComplete,
       ax::mojom::Event::kTextSelectionChanged);
@@ -2877,7 +2879,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   Microsoft::WRL::ComPtr<IAccessible2_4> ax_textarea;
   ASSERT_HRESULT_SUCCEEDED(textarea_text.As(&ax_textarea));
 
-  int contents_string_length = int{InputContentsString().size()};
+  int contents_string_length = static_cast<int>(InputContentsString().size());
   LONG n_ranges = 1;
   IA2Range* ranges =
       reinterpret_cast<IA2Range*>(CoTaskMemAlloc(sizeof(IA2Range)));
@@ -3623,7 +3625,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   Microsoft::WRL::ComPtr<IAccessibleText> input_text;
   SetUpInputField(&input_text);
 
-  int contents_string_length = int{InputContentsString().size()};
+  int contents_string_length = static_cast<int>(InputContentsString().size());
   for (LONG offset = 0; offset < contents_string_length; ++offset) {
     std::wstring expected_text(1, InputContentsString()[offset]);
     LONG expected_start_offset = offset;
@@ -3710,7 +3712,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   for (const std::wstring& expected_character : expected_text) {
     LONG expected_start_offset = offset;
     LONG expected_end_offset =
-        expected_start_offset + LONG{expected_character.length()};
+        expected_start_offset + static_cast<LONG>(expected_character.length());
     for (size_t code_unit_offset = 0;
          code_unit_offset < expected_character.length(); ++code_unit_offset) {
       CheckTextAtOffset(input_text, offset, IA2_TEXT_BOUNDARY_CHAR,
@@ -3839,7 +3841,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   CheckTextAtOffset(input_text, 39, IA2_TEXT_BOUNDARY_WORD, 38, 40, L", ");
 
   // Trailing final punctuation should not be part of the last word.
-  int contents_string_length = int{InputContentsString().size()};
+  int contents_string_length = static_cast<int>(InputContentsString().size());
   CheckTextAtOffset(input_text, 40, IA2_TEXT_BOUNDARY_WORD, 40, 44, L"like");
   CheckTextAtOffset(input_text, 41, IA2_TEXT_BOUNDARY_WORD, 40, 44, L"like");
   CheckTextAtOffset(input_text, 44, IA2_TEXT_BOUNDARY_WORD, 44,
@@ -3904,7 +3906,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   CheckTextAtOffset(textarea_text, 39, IA2_TEXT_BOUNDARY_WORD, 38, 40, L", ");
 
   // Trailing final punctuation should not be part of the last word.
-  int contents_string_length = int{InputContentsString().size()};
+  int contents_string_length = static_cast<int>(InputContentsString().size());
   CheckTextAtOffset(textarea_text, 40, IA2_TEXT_BOUNDARY_WORD, 40, 44, L"like");
   CheckTextAtOffset(textarea_text, 41, IA2_TEXT_BOUNDARY_WORD, 40, 44, L"like");
   CheckTextAtOffset(textarea_text, 44, IA2_TEXT_BOUNDARY_WORD, 44,
@@ -3982,7 +3984,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   SetUpInputField(&input_text);
 
   // Single line text fields should return the whole text.
-  int contents_string_length = int{InputContentsString().size()};
+  int contents_string_length = static_cast<int>(InputContentsString().size());
   CheckTextAtOffset(input_text, 0, IA2_TEXT_BOUNDARY_LINE, 0,
                     contents_string_length,
                     base::SysUTF8ToWide(InputContentsString()));
@@ -4009,7 +4011,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                     L"WebKit \n");
 
   // Last line does not have a trailing newline.
-  int contents_string_length = int{InputContentsString().size()};
+  int contents_string_length = static_cast<int>(InputContentsString().size());
   CheckTextAtOffset(textarea_text, 32, IA2_TEXT_BOUNDARY_LINE, 32,
                     contents_string_length, L"\"KHTML, like\".");
 
@@ -4047,7 +4049,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   // Blink represents the blank line with a newline character, so in total there
   // should be two more newlines. The second newline is not part of the HTML
   // value attribute however.
-  int contents_string_length = int{InputContentsString().size()} + 1;
+  int contents_string_length =
+      static_cast<int>(InputContentsString().size()) + 1;
   CheckTextAtOffset(textarea_text, 32, IA2_TEXT_BOUNDARY_LINE, 32,
                     contents_string_length, L"\"KHTML, like\".\n");
   CheckTextAtOffset(textarea_text, 46, IA2_TEXT_BOUNDARY_LINE, 32,
@@ -4579,7 +4582,17 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   win_event_waiter.Wait();
 }
 
-IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestIScrollProvider) {
+class AccessibilityWinUIABrowserTest : public AccessibilityWinBrowserTest {
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    AccessibilityWinBrowserTest::SetUpCommandLine(command_line);
+
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        ::switches::kEnableExperimentalUIAutomation);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinUIABrowserTest, TestIScrollProvider) {
   LoadInitialAccessibilityTreeFromHtml(
       R"HTML(
       <!DOCTYPE html>
@@ -4709,7 +4722,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestIScrollProvider) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
+IN_PROC_BROWSER_TEST_F(AccessibilityWinUIABrowserTest,
                        TestIsContentElementPropertyId) {
   LoadInitialAccessibilityTreeFromHtml(
       R"HTML(<!DOCTYPE html>
@@ -4746,16 +4759,6 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_EQ(VT_BOOL, result.type());
   EXPECT_EQ(VARIANT_FALSE, result.ptr()->boolVal);
 }
-
-class AccessibilityWinUIABrowserTest : public AccessibilityWinBrowserTest {
- protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    AccessibilityWinBrowserTest::SetUpCommandLine(command_line);
-
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        ::switches::kEnableExperimentalUIAutomation);
-  }
-};
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinUIABrowserTest,
                        TestIFrameRootNodeChange) {
@@ -5166,7 +5169,19 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinUIABrowserTest,
   destroyed_watcher.Wait();
 }
 
-IN_PROC_BROWSER_TEST_F(AccessibilityWinUIABrowserTest,
+class AccessibilityWinUIASelectivelyEnabledBrowserTest
+    : public AccessibilityWinUIABrowserTest {
+ protected:
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kSelectiveUIAEnablement);
+
+    AccessibilityWinUIABrowserTest::SetUp();
+  }
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinUIASelectivelyEnabledBrowserTest,
                        RequestingTopLevelElementEnablesWebAccessibility) {
   EXPECT_TRUE(NavigateToURL(shell(), GURL("about:blank")));
 
@@ -5187,10 +5202,44 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinUIABrowserTest,
   uia->ElementFromHandle(hwnd, &root);
   ASSERT_NE(nullptr, root.Get());
 
+  // Native API support should now be enabled.
+  ui::AXMode expected_mode = ui::AXMode::kNativeAPIs;
+  EXPECT_EQ(expected_mode, content::BrowserAccessibilityStateImpl::GetInstance()
+                               ->GetAccessibilityMode());
+
+  // Now get the fragment root's first (only) child.
+  Microsoft::WRL::ComPtr<IUIAutomationTreeWalker> tree_walker;
+  uia->get_RawViewWalker(&tree_walker);
+  Microsoft::WRL::ComPtr<IUIAutomationElement> first_child;
+  tree_walker->GetFirstChildElement(root.Get(), &first_child);
+  ASSERT_NE(nullptr, first_child.Get());
+
+  base::win::ScopedBstr name;
+  ASSERT_HRESULT_SUCCEEDED(first_child->get_CurrentName(name.Receive()));
+
   // Web content accessibility support should now be enabled.
-  EXPECT_EQ(ui::kAXModeComplete,
-            content::BrowserAccessibilityStateImpl::GetInstance()
-                ->GetAccessibilityMode());
+  expected_mode |= ui::AXMode::kWebContents;
+  EXPECT_EQ(expected_mode, content::BrowserAccessibilityStateImpl::GetInstance()
+                               ->GetAccessibilityMode());
+
+  Microsoft::WRL::ComPtr<IUnknown> text_pattern_unknown;
+  ASSERT_HRESULT_SUCCEEDED(
+      first_child->GetCurrentPattern(UIA_TextPatternId, &text_pattern_unknown));
+  EXPECT_EQ(nullptr, text_pattern_unknown.Get());
+
+  // Now check that inline text box support is enabled as well.
+  expected_mode |= ui::AXMode::kInlineTextBoxes;
+  EXPECT_EQ(expected_mode, content::BrowserAccessibilityStateImpl::GetInstance()
+                               ->GetAccessibilityMode());
+
+  base::win::ScopedVariant variant;
+  ASSERT_HRESULT_SUCCEEDED(first_child->GetCurrentPropertyValue(
+      UIA_LabeledByPropertyId, variant.Receive()));
+
+  // Now check that we have complete accessibility support enabled.
+  expected_mode |= ui::AXMode::kScreenReader;
+  EXPECT_EQ(expected_mode, content::BrowserAccessibilityStateImpl::GetInstance()
+                               ->GetAccessibilityMode());
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinUIABrowserTest,

@@ -15,7 +15,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
-#include "base/stl_util.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
@@ -61,9 +60,9 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/components/account_manager/account_manager.h"
 #include "ash/components/account_manager/account_manager_factory.h"
 #include "components/account_manager_core/account.h"
+#include "components/account_manager_core/chromeos/account_manager.h"
 #include "components/signin/internal/identity_manager/test_profile_oauth2_token_service_delegate_chromeos.h"
 #endif
 
@@ -347,7 +346,7 @@ class IdentityManagerTest : public testing::Test {
                                         temp_profile_dir_.GetPath());
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    ash::AccountManager::RegisterPrefs(pref_service_.registry());
+    account_manager::AccountManager::RegisterPrefs(pref_service_.registry());
     auto* ash_account_manager = GetAccountManagerFactory()->GetAccountManager(
         temp_profile_dir_.GetPath().value());
     ash_account_manager->InitializeInEphemeralMode(
@@ -1796,9 +1795,10 @@ TEST_F(IdentityManagerTest,
 
 TEST_F(IdentityManagerTest, CallbackSentOnUpdateToSignOutAccountsInCookie) {
   struct SignedOutStatus {
-    int account_1;
-    int account_2;
-  } signed_out_status_set[] = {{0, 0}, {1, 0}, {0, 1}, {1, 1}};
+    bool account_1;
+    bool account_2;
+  } signed_out_status_set[] = {
+      {false, false}, {true, false}, {false, true}, {true, true}};
 
   for (const auto& signed_out_status : signed_out_status_set) {
     base::RunLoop run_loop;
@@ -1815,8 +1815,8 @@ TEST_F(IdentityManagerTest, CallbackSentOnUpdateToSignOutAccountsInCookie) {
     identity_manager()->GetGaiaCookieManagerService()->TriggerListAccounts();
     run_loop.Run();
 
-    unsigned int accounts_signed_out =
-        signed_out_status.account_1 + signed_out_status.account_2;
+    size_t accounts_signed_out = size_t{signed_out_status.account_1} +
+                                 size_t{signed_out_status.account_2};
     const AccountsInCookieJarInfo& accounts_in_cookie_jar_info =
         identity_manager_observer()
             ->AccountsInfoFromAccountsInCookieUpdatedCallback();
@@ -2156,105 +2156,171 @@ TEST_F(IdentityManagerTest,
             identity_manager_observer()->BatchChangeRecords().at(0).at(0));
 }
 
+// Check that FindExtendedAccountInfo returns a valid account info iff the
+// account is known, and all the extended information is available.
+TEST_F(IdentityManagerTest, FindExtendedAccountInfo) {
+  CoreAccountInfo account_info;
+  account_info.email = kTestEmail2;
+  account_info.gaia = kTestGaiaId2;
+  account_info.account_id = identity_manager()->PickAccountIdForAccount(
+      account_info.gaia, account_info.email);
+
+  // FindExtendedAccountInfo() returns empty if the account_info is invalid.
+  EXPECT_TRUE(
+      identity_manager()->FindExtendedAccountInfo(CoreAccountInfo{}).IsEmpty());
+
+  // FindExtendedAccountInfo() returns empty if the account_info is unknown.
+  EXPECT_TRUE(
+      identity_manager()->FindExtendedAccountInfo(account_info).IsEmpty());
+
+  // Insert the core account information in the AccountTrackerService.
+  const CoreAccountId account_id =
+      account_tracker()->SeedAccountInfo(account_info.gaia, account_info.email);
+  ASSERT_EQ(account_info.account_id, account_id);
+
+  // The refresh token is not available.
+  EXPECT_TRUE(
+      identity_manager()->FindExtendedAccountInfo(account_info).IsEmpty());
+
+  // FindExtendedAccountInfo() returns extended account information if the
+  // account is known and the token is available.
+  SetRefreshTokenForAccount(identity_manager(), account_info.account_id,
+                            "token");
+  const AccountInfo extended_account_info =
+      identity_manager()->FindExtendedAccountInfo(account_info);
+  EXPECT_TRUE(!extended_account_info.IsEmpty());
+  EXPECT_EQ(account_info.gaia, extended_account_info.gaia);
+  EXPECT_EQ(account_info.email, extended_account_info.email);
+  EXPECT_EQ(account_info.account_id, extended_account_info.account_id);
+}
+
 // Checks that FindExtendedAccountInfoByAccountId() returns information about
-// the account if the account is found or nullopt if there are no accounts with
-// requested |account_id|.
+// the account if the account is found, or an empty account info.
 TEST_F(IdentityManagerTest, FindExtendedAccountInfoByAccountId) {
-  auto account_id =
-      identity_manager()->PickAccountIdForAccount(kTestGaiaId, kTestEmail);
+  CoreAccountInfo account_info;
+  account_info.email = kTestEmail2;
+  account_info.gaia = kTestGaiaId2;
+  account_info.account_id = identity_manager()->PickAccountIdForAccount(
+      account_info.gaia, account_info.email);
 
-  absl::optional<AccountInfo> maybe_account_info;
+  // Account is unknown.
+  AccountInfo maybe_account_info =
+      identity_manager()->FindExtendedAccountInfoByAccountId(
+          account_info.account_id);
+  EXPECT_TRUE(maybe_account_info.IsEmpty());
+
+  // Refresh token is not available.
+  const CoreAccountId account_id =
+      account_tracker()->SeedAccountInfo(account_info.gaia, account_info.email);
   maybe_account_info = identity_manager()->FindExtendedAccountInfoByAccountId(
-      CoreAccountId("dummy_value"));
-  EXPECT_FALSE(maybe_account_info.has_value());
+      account_info.account_id);
+  EXPECT_TRUE(maybe_account_info.IsEmpty());
 
-  maybe_account_info =
-      identity_manager()->FindExtendedAccountInfoByAccountId(account_id);
-  EXPECT_TRUE(maybe_account_info.has_value());
-  EXPECT_EQ(account_id, maybe_account_info.value().account_id);
-  EXPECT_EQ(kTestEmail, maybe_account_info.value().email);
-  EXPECT_EQ(kTestGaiaId, maybe_account_info.value().gaia);
+  // Account with refresh token.
+  SetRefreshTokenForAccount(identity_manager(), account_info.account_id,
+                            "token");
+  maybe_account_info = identity_manager()->FindExtendedAccountInfoByAccountId(
+      account_info.account_id);
+  EXPECT_FALSE(maybe_account_info.IsEmpty());
+  EXPECT_EQ(account_info.account_id, maybe_account_info.account_id);
+  EXPECT_EQ(account_info.email, maybe_account_info.email);
+  EXPECT_EQ(account_info.gaia, maybe_account_info.gaia);
 }
 
-// Checks that FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId()
-// returns information about the account if the account is found or nullopt if
-// there are no accounts with requested |account_id|.
-TEST_F(IdentityManagerTest,
-       FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId) {
-  // Add an account (note: cannot use kTestEmail as it is already inserted
-  // by the fixture common code, so use a different address).
-  const AccountInfo foo_account_info =
-      MakeAccountAvailable(identity_manager(), "foo@bar.com");
+// Checks that FindExtendedAccountInfoByEmailAddress() returns information about
+// the account if the account is found, or an empty account info.
+TEST_F(IdentityManagerTest, FindExtendedAccountInfoByEmailAddress) {
+  CoreAccountInfo account_info;
+  account_info.email = kTestEmail2;
+  account_info.gaia = kTestGaiaId2;
+  account_info.account_id = identity_manager()->PickAccountIdForAccount(
+      account_info.gaia, account_info.email);
 
-  absl::optional<AccountInfo> maybe_account_info;
-  maybe_account_info =
-      identity_manager()
-          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
-              CoreAccountId("dummy_value"));
-  EXPECT_FALSE(maybe_account_info.has_value());
+  // Account is unknown.
+  AccountInfo maybe_account_info =
+      identity_manager()->FindExtendedAccountInfoByEmailAddress(
+          account_info.email);
+  EXPECT_TRUE(maybe_account_info.IsEmpty());
 
+  // Refresh token is not available.
+  const CoreAccountId account_id =
+      account_tracker()->SeedAccountInfo(account_info.gaia, account_info.email);
   maybe_account_info =
-      identity_manager()
-          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
-              foo_account_info.account_id);
-  EXPECT_TRUE(maybe_account_info.has_value());
-  EXPECT_EQ(foo_account_info.account_id, maybe_account_info.value().account_id);
-  EXPECT_EQ(foo_account_info.email, maybe_account_info.value().email);
-  EXPECT_EQ(foo_account_info.gaia, maybe_account_info.value().gaia);
+      identity_manager()->FindExtendedAccountInfoByEmailAddress(
+          account_info.email);
+  EXPECT_TRUE(maybe_account_info.IsEmpty());
+
+  // Account with refresh token.
+  SetRefreshTokenForAccount(identity_manager(), account_info.account_id,
+                            "token");
+  maybe_account_info =
+      identity_manager()->FindExtendedAccountInfoByEmailAddress(
+          account_info.email);
+  EXPECT_FALSE(maybe_account_info.IsEmpty());
+  EXPECT_EQ(account_info.account_id, maybe_account_info.account_id);
+  EXPECT_EQ(account_info.email, maybe_account_info.email);
+  EXPECT_EQ(account_info.gaia, maybe_account_info.gaia);
 }
 
-// Checks that FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress()
-// returns information about the account if the account is found or nullopt if
-// there are no accounts with requested |email_address|.
-TEST_F(IdentityManagerTest,
-       FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress) {
-  // Add an account (note: cannot use kTestEmail as it is already inserted
-  // by the fixture common code, so use a different address).
-  const AccountInfo foo_account_info =
-      MakeAccountAvailable(identity_manager(), "foo@bar.com");
+// Checks that FindExtendedAccountInfoByGaiaId() returns information about the
+// account if the account is found, or an empty account info.
+TEST_F(IdentityManagerTest, FindExtendedAccountInfoByGaiaId) {
+  CoreAccountInfo account_info;
+  account_info.email = kTestEmail2;
+  account_info.gaia = kTestGaiaId2;
+  account_info.account_id = identity_manager()->PickAccountIdForAccount(
+      account_info.gaia, account_info.email);
 
-  absl::optional<AccountInfo> maybe_account_info;
-  maybe_account_info =
-      identity_manager()
-          ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
-              "dummy_value");
-  EXPECT_FALSE(maybe_account_info.has_value());
+  // Account is unknown.
+  AccountInfo maybe_account_info =
+      identity_manager()->FindExtendedAccountInfoByGaiaId(account_info.gaia);
+  EXPECT_TRUE(maybe_account_info.IsEmpty());
 
+  // Refresh token is not available.
+  const CoreAccountId account_id =
+      account_tracker()->SeedAccountInfo(account_info.gaia, account_info.email);
   maybe_account_info =
-      identity_manager()
-          ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
-              foo_account_info.email);
-  EXPECT_TRUE(maybe_account_info.has_value());
-  EXPECT_EQ(foo_account_info.account_id, maybe_account_info.value().account_id);
-  EXPECT_EQ(foo_account_info.email, maybe_account_info.value().email);
-  EXPECT_EQ(foo_account_info.gaia, maybe_account_info.value().gaia);
+      identity_manager()->FindExtendedAccountInfoByGaiaId(account_info.gaia);
+  EXPECT_TRUE(maybe_account_info.IsEmpty());
+
+  // Account with refresh token.
+  SetRefreshTokenForAccount(identity_manager(), account_info.account_id,
+                            "token");
+  maybe_account_info =
+      identity_manager()->FindExtendedAccountInfoByGaiaId(account_info.gaia);
+  EXPECT_FALSE(maybe_account_info.IsEmpty());
+  EXPECT_EQ(account_info.account_id, maybe_account_info.account_id);
+  EXPECT_EQ(account_info.email, maybe_account_info.email);
+  EXPECT_EQ(account_info.gaia, maybe_account_info.gaia);
 }
 
-// Checks that FindExtendedAccountInfoForAccountWithRefreshTokenByGaiaId()
-// returns information about the account if the account is found or nullopt if
-// there are no accounts with requested |gaia_id|.
-TEST_F(IdentityManagerTest,
-       FindExtendedAccountInfoForAccountWithRefreshTokenByGaiaId) {
-  // Add an account (note: cannot use kTestEmail as it is already inserted
-  // by the fixture common code, so use a different address).
-  const AccountInfo foo_account_info =
-      MakeAccountAvailable(identity_manager(), "foo@bar.com");
+TEST_F(IdentityManagerTest, FindExtendedPrimaryAccountInfo) {
+  // AccountInfo found for primary account, even without token.
+  RemoveRefreshTokenForPrimaryAccount(identity_manager());
+  ASSERT_TRUE(identity_manager()->HasPrimaryAccount(ConsentLevel::kSignin));
+  ASSERT_FALSE(identity_manager()->HasPrimaryAccountWithRefreshToken(
+      ConsentLevel::kSignin));
+  AccountInfo extended_info =
+      identity_manager()->FindExtendedPrimaryAccountInfo(ConsentLevel::kSignin);
+  CoreAccountInfo core_info =
+      identity_manager()->GetPrimaryAccountInfo(ConsentLevel::kSignin);
+  EXPECT_FALSE(extended_info.IsEmpty());
+  EXPECT_EQ(core_info.account_id, extended_info.account_id);
+  EXPECT_EQ(core_info.email, extended_info.email);
+  EXPECT_EQ(core_info.gaia, extended_info.gaia);
 
-  absl::optional<AccountInfo> maybe_account_info;
-  maybe_account_info =
-      identity_manager()
-          ->FindExtendedAccountInfoForAccountWithRefreshTokenByGaiaId(
-              "dummy_value");
-  EXPECT_FALSE(maybe_account_info.has_value());
-
-  maybe_account_info =
-      identity_manager()
-          ->FindExtendedAccountInfoForAccountWithRefreshTokenByGaiaId(
-              foo_account_info.gaia);
-  EXPECT_TRUE(maybe_account_info.has_value());
-  EXPECT_EQ(foo_account_info.account_id, maybe_account_info.value().account_id);
-  EXPECT_EQ(foo_account_info.email, maybe_account_info.value().email);
-  EXPECT_EQ(foo_account_info.gaia, maybe_account_info.value().gaia);
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+  // It's not possible to sign out on Ash.
+  ClearPrimaryAccount(identity_manager());
+  SetRefreshTokenForAccount(identity_manager(), core_info.account_id, "token");
+  // No info found if there is no primary account.
+  ASSERT_FALSE(identity_manager()->HasPrimaryAccount(ConsentLevel::kSignin));
+  ASSERT_TRUE(
+      identity_manager()->HasAccountWithRefreshToken(core_info.account_id));
+  EXPECT_TRUE(identity_manager()
+                  ->FindExtendedPrimaryAccountInfo(ConsentLevel::kSignin)
+                  .IsEmpty());
+#endif
 }
 
 // Checks that AreRefreshTokensLoaded() returns true after LoadCredentials.
@@ -2285,10 +2351,30 @@ TEST_F(IdentityManagerTest, SetPrimaryAccount) {
                           PrimaryAccountManagerSetup::kNoAuthenticatedAccount);
 
   // We should have a Primary Account set up automatically.
-  ASSERT_TRUE(identity_manager()->HasPrimaryAccount(ConsentLevel::kSignin));
+  ASSERT_TRUE(identity_manager()->HasPrimaryAccount(ConsentLevel::kSync));
   EXPECT_EQ(
       kTestGaiaId,
-      identity_manager()->GetPrimaryAccountInfo(ConsentLevel::kSignin).gaia);
+      identity_manager()->GetPrimaryAccountInfo(ConsentLevel::kSync).gaia);
+}
+
+// TODO(https://crbug.com/1223364): Remove this when all the users are migrated.
+TEST_F(IdentityManagerTest, SetPrimaryAccountClearsExistingPrimaryAccount) {
+  signin_client()->SetInitialPrimaryAccountForTests(account_manager::Account{
+      account_manager::AccountKey{kTestGaiaId2,
+                                  account_manager::AccountType::kGaia},
+      kTestEmail2});
+
+  // RecreateIdentityManager will create PrimaryAccountManager with the primary
+  // account set to kTestGaiaId. After that, IdentityManager ctor should clear
+  // this existing primary account and set the new one to the initial value
+  // provided by the SigninClient.
+  RecreateIdentityManager(AccountConsistencyMethod::kDisabled,
+                          PrimaryAccountManagerSetup::kWithAuthenticatedAccout);
+
+  ASSERT_TRUE(identity_manager()->HasPrimaryAccount(ConsentLevel::kSync));
+  EXPECT_EQ(
+      kTestGaiaId2,
+      identity_manager()->GetPrimaryAccountInfo(ConsentLevel::kSync).gaia);
 }
 #endif
 
@@ -2350,58 +2436,6 @@ TEST_F(IdentityManagerTest, TestPickAccountIdForAccount) {
   } else {
     EXPECT_TRUE(gaia::AreEmailsSame(kTestEmail, account_id.ToString()));
   }
-}
-
-// Check that FindExtendedAccountInfoForAccountWithRefreshToken returns a valid
-// account info iff the account is known, has refresh token and all the extended
-// information is available.
-TEST_F(IdentityManagerTest, FindExtendedAccountInfoForAccountWithRefreshToken) {
-  CoreAccountInfo account_info;
-  account_info.email = kTestEmail;
-  account_info.gaia = kTestGaiaId;
-  account_info.account_id =
-      identity_manager()->PickAccountIdForAccount(kTestGaiaId, kTestEmail);
-
-  // FindExtendedAccountInfoForAccountWithRefreshToken() returns empty optional
-  // if the account_info is invalid.
-  EXPECT_FALSE(
-      identity_manager()
-          ->FindExtendedAccountInfoForAccountWithRefreshToken(CoreAccountInfo{})
-          .has_value());
-
-  // FindExtendedAccountInfoForAccountWithRefreshToken() returns empty optional
-  // if the account_info is unknown.
-  EXPECT_FALSE(
-      identity_manager()
-          ->FindExtendedAccountInfoForAccountWithRefreshToken(account_info)
-          .has_value());
-
-  // Insert the core account information in the AccountTrackerService.
-  const CoreAccountId account_id =
-      account_tracker()->SeedAccountInfo(kTestGaiaId, kTestEmail);
-  ASSERT_EQ(account_info.account_id, account_id);
-
-  // FindExtendedAccountInfoForAccountWithRefreshToken() returns empty optional
-  // if the account has no refresh token.
-  EXPECT_FALSE(
-      identity_manager()
-          ->FindExtendedAccountInfoForAccountWithRefreshToken(account_info)
-          .has_value());
-
-  // Insert refresh token for account.
-  SetRefreshTokenForAccount(identity_manager(), account_info.account_id,
-                            "refresh-token");
-
-  // FindExtendedAccountInfoForAccountWithRefreshToken() returns extended
-  // account information if the account is known and has valid refresh token.
-  const absl::optional<AccountInfo> extended_account_info =
-      identity_manager()->FindExtendedAccountInfoForAccountWithRefreshToken(
-          account_info);
-
-  ASSERT_TRUE(extended_account_info.has_value());
-  EXPECT_EQ(account_info.gaia, extended_account_info.value().gaia);
-  EXPECT_EQ(account_info.email, extended_account_info.value().email);
-  EXPECT_EQ(account_info.account_id, extended_account_info.value().account_id);
 }
 
 #if defined(OS_ANDROID)

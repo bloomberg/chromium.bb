@@ -19,6 +19,8 @@
 #include "chrome/browser/ash/login/security_token_pin_dialog_host_ash_impl.h"
 #include "chrome/browser/ash/login/ui/login_display_host_common.h"
 #include "chrome/browser/ash/login/ui/oobe_ui_dialog_delegate.h"
+// TODO(https://crbug.com/1164001): use forward declaration.
+#include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ui/ash/login_screen_client_impl.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
@@ -92,6 +94,7 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   void VerifyOwnerForKiosk(base::OnceClosure on_success) override;
   void ShowPasswordChangedDialog(const AccountId& account_id,
                                  bool show_password_error) override;
+  void StartBrowserDataMigration() override;
   void AddObserver(LoginDisplayHost::Observer* observer) override;
   void RemoveObserver(LoginDisplayHost::Observer* observer) override;
 

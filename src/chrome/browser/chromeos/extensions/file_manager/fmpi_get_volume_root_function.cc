@@ -4,13 +4,13 @@
 
 #include "chrome/browser/chromeos/extensions/file_manager/fmpi_get_volume_root_function.h"
 
+#include "ash/webui/file_manager/url_constants.h"
 #include "base/files/file.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/chromeos/file_manager/fileapi_util.h"
-#include "chrome/browser/chromeos/file_manager/volume_manager.h"
+#include "chrome/browser/ash/file_manager/fileapi_util.h"
+#include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/common/extensions/api/file_manager_private_internal.h"
-#include "chromeos/components/file_manager/url_constants.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/storage_partition.h"
 
@@ -62,13 +62,12 @@ FileManagerPrivateInternalGetVolumeRootFunction::Run() {
   }
 
   // Grant the caller right rights to crack URLs based on the virtual path.
-  const GURL origin = source_url().GetOrigin();
-  const std::string origin_id = origin.host();
-  backend->GrantFileAccessToExtension(origin_id, fd.virtual_path);
+  const url::Origin origin = url::Origin::Create(source_url());
+  backend->GrantFileAccessToOrigin(origin, fd.virtual_path);
 
   // Convert volume's mount path to an EntryDefinition.
   file_manager::util::ConvertFileDefinitionToEntryDefinition(
-      file_system_context, url::Origin::Create(origin), fd,
+      file_system_context, origin, fd,
       base::BindOnce(
           &FileManagerPrivateInternalGetVolumeRootFunction::OnRequestDone,
           this));

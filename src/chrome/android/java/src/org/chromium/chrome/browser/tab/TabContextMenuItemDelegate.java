@@ -40,6 +40,7 @@ import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.Clipboard;
@@ -56,20 +57,19 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
     private EmptyTabObserver mDataReductionProxyContextMenuTabObserver;
     private final Supplier<EphemeralTabCoordinator> mEphemeralTabCoordinatorSupplier;
     private final Runnable mContextMenuCopyLinkObserver;
-    private final Supplier<SnackbarManager> mSnackbarManagerSupplier;
+    private final Supplier<SnackbarManager> mSnackbarManager;
 
     /**
      * Builds a {@link TabContextMenuItemDelegate} instance.
      */
     public TabContextMenuItemDelegate(Tab tab, TabModelSelector tabModelSelector,
             Supplier<EphemeralTabCoordinator> ephemeralTabCoordinatorSupplier,
-            Runnable contextMenuCopyLinkObserver,
-            Supplier<SnackbarManager> snackbarManagerSupplier) {
+            Runnable contextMenuCopyLinkObserver, Supplier<SnackbarManager> snackbarManager) {
         mTab = (TabImpl) tab;
         mTabModelSelector = tabModelSelector;
         mEphemeralTabCoordinatorSupplier = ephemeralTabCoordinatorSupplier;
         mContextMenuCopyLinkObserver = contextMenuCopyLinkObserver;
-        mSnackbarManagerSupplier = snackbarManagerSupplier;
+        mSnackbarManager = snackbarManager;
 
         mDataReductionProxyContextMenuTabObserver = new EmptyTabObserver() {
             @Override
@@ -287,7 +287,7 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
         bookmarkModel.finishLoadingBookmarkModel(() -> {
             // Add to reading list.
             BookmarkUtils.addToReadingList(
-                    url, title, mSnackbarManagerSupplier.get(), bookmarkModel, mTab.getContext());
+                    url, title, mSnackbarManager.get(), bookmarkModel, mTab.getContext());
             TrackerFactory.getTrackerForProfile(Profile.getLastUsedRegularProfile())
                     .notifyEvent(EventConstants.READ_LATER_CONTEXT_MENU_TAPPED);
             bookmarkModel.destroy();
@@ -329,15 +329,6 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
         }
     }
 
-    /**
-     * Returns whether the 'open in chrome' menu item should be shown. This is only called when the
-     * context menu is shown in cct.
-     */
-    @Override
-    public boolean supportsOpenInChromeFromCct() {
-        return true;
-    }
-
     @Override
     public void onOpenInNewChromeTabFromCCT(GURL linkUrl, boolean isIncognito) {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(linkUrl.getSpec()));
@@ -347,7 +338,7 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
             intent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, true);
             intent.putExtra(Browser.EXTRA_APPLICATION_ID,
                     ContextUtils.getApplicationContext().getPackageName());
-            IntentHandler.addTrustedIntentExtras(intent);
+            IntentUtils.addTrustedIntentExtras(intent);
             IntentHandler.setTabLaunchType(intent, TabLaunchType.FROM_EXTERNAL_APP);
         }
         IntentUtils.safeStartActivity(mTab.getContext(), intent);
@@ -366,9 +357,10 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
     }
 
     @Override
-    public void removeHighlighting() {
-        TextFragmentReceiver producer =
-                mTab.getWebContents().getMainFrame().getInterfaceToRendererFrame(
+    public void removeHighlighting(RenderFrameHost renderFrameHost) {
+        TextFragmentReceiver producer = renderFrameHost != null
+                ? renderFrameHost.getInterfaceToRendererFrame(TextFragmentReceiver.MANAGER)
+                : mTab.getWebContents().getMainFrame().getInterfaceToRendererFrame(
                         TextFragmentReceiver.MANAGER);
         producer.removeFragments();
     }

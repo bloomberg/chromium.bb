@@ -5,12 +5,10 @@
 #ifndef CONTENT_PUBLIC_COMMON_URL_CONSTANTS_H_
 #define CONTENT_PUBLIC_COMMON_URL_CONSTANTS_H_
 
-#include "base/check_op.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/common/content_export.h"
 #include "url/url_constants.h"
-
-#include "build/chromeos_buildflags.h"
 
 // Contains constants for known URLs and portions thereof.
 
@@ -27,6 +25,9 @@ CONTENT_EXPORT extern const char kGuestScheme[];
 CONTENT_EXPORT extern const char kViewSourceScheme[];
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 CONTENT_EXPORT extern const char kExternalFileScheme[];
+#endif
+#if defined(OS_ANDROID)
+CONTENT_EXPORT extern const char kAndroidAppScheme[];
 #endif
 
 // The `googlechrome:` scheme is registered on several platforms, and is

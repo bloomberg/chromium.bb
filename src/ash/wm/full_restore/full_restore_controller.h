@@ -6,7 +6,6 @@
 #define ASH_WM_FULL_RESTORE_FULL_RESTORE_CONTROLLER_H_
 
 #include "ash/ash_export.h"
-#include "ash/public/cpp/session/session_observer.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/cancelable_callback.h"
@@ -14,11 +13,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_multi_source_observation.h"
 #include "base/scoped_observation.h"
+#include "components/account_id/account_id.h"
 #include "components/full_restore/full_restore_info.h"
 #include "components/full_restore/window_info.h"
 #include "ui/aura/window_observer.h"
-
-class PrefService;
 
 namespace aura {
 class Window;
@@ -33,14 +31,10 @@ namespace ash {
 class WindowState;
 
 class ASH_EXPORT FullRestoreController
-    : public SessionObserver,
-      public TabletModeObserver,
+    : public TabletModeObserver,
       public full_restore::FullRestoreInfo::Observer,
       public aura::WindowObserver {
  public:
-  using ReadWindowCallback =
-      base::RepeatingCallback<std::unique_ptr<full_restore::WindowInfo>(
-          aura::Window*)>;
   using SaveWindowCallback =
       base::RepeatingCallback<void(const full_restore::WindowInfo&)>;
 
@@ -53,6 +47,11 @@ class ASH_EXPORT FullRestoreController
   // Shell.
   static FullRestoreController* Get();
 
+  // Returns whether a Full Restore'd window can be activated. Only ghost
+  // windows, windows without the `full_restore::kLaunchedFromFullRestoreKey`,
+  // and topmost Full Restore'd windows return true.
+  static bool CanActivateFullRestoredWindow(const aura::Window* window);
+
   // When windows are restored, they're restored inactive so during tablet mode
   // a window may be restored above the app list while the app list is still
   // active. To prevent this situation, the app list is deactivated and this
@@ -62,17 +61,26 @@ class ASH_EXPORT FullRestoreController
   // active desk container is a restored window.
   static bool CanActivateAppList(const aura::Window* window);
 
+  // Given a set of windows, ordered from LRU to MRU, returns where `window`
+  // should be inserted. The insertion point is determined by iterating from LRU
+  // to MRU, returning the an iter to the first window that has no activation
+  // index or a lower activation index.
+  static std::vector<aura::Window*>::const_iterator GetWindowToInsertBefore(
+      aura::Window* window,
+      const std::vector<aura::Window*>& windows);
+
   // Calls SaveWindowImpl for |window_state|. The activation index will be
   // calculated in SaveWindowImpl.
   void SaveWindow(WindowState* window_state);
+
+  // Gets all windows on all desk in the MRU window tracker and saves them to
+  // file.
+  void SaveAllWindows();
 
   // Called from MruWindowTracker when |gained_active| gets activation. This is
   // not done as an observer to ensure changes to the MRU list get handled first
   // before this is called.
   void OnWindowActivated(aura::Window* gained_active);
-
-  // SessionObserver:
-  void OnActiveUserPrefServiceChanged(PrefService* pref_service) override;
 
   // TabletModeObserver:
   void OnTabletModeStarted() override;
@@ -80,11 +88,16 @@ class ASH_EXPORT FullRestoreController
   void OnTabletControllerDestroyed() override;
 
   // full_restore::FullRestoreInfo::Observer:
+  void OnRestorePrefChanged(const AccountId& account_id,
+                            bool could_restore) override;
+  void OnAppLaunched(aura::Window* window) override;
   void OnWidgetInitialized(views::Widget* widget) override;
   void OnARCTaskReadyForUnparentedWindow(aura::Window* window) override;
 
   // aura::WindowObserver:
-  void OnWindowStackingChanged(aura::Window* window) override;
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override;
   void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
   void OnWindowDestroying(aura::Window* window) override;
 
@@ -97,10 +110,6 @@ class ASH_EXPORT FullRestoreController
   // observes `window` as we need to do further updates when the window is
   // shown.
   void UpdateAndObserveWindow(aura::Window* window);
-
-  // Gets all windows on all desk in the MRU window tracker and saves them to
-  // file.
-  void SaveAllWindows();
 
   // Calls full_restore::FullRestoreSaveHandler to save to file. The handler has
   // timer to prevent too many writes, but we should limit calls regardless if
@@ -116,15 +125,14 @@ class ASH_EXPORT FullRestoreController
   // `full_restore::kLaunchedFromFullRestoreKey`.
   void RestoreStateTypeAndClearLaunchedKey(aura::Window* window);
 
-  // Cancels and removes the Full Restore property clear callback for `window`
-  // from `restore_property_clear_callbacks_`. Also sets the `window`'s
-  // `full_restore::kLaunchedFromFullRestoreKey` to false if `is_destroying` is
-  // true.
-  void ClearLaunchedKey(aura::Window* window, bool is_destroying);
+  // Calls `CancelAndRemoveRestorePropertyClearCallback()`. Also sets the
+  // `window`'s `full_restore::kLaunchedFromFullRestoreKey` to false if the
+  // window is not destroying.
+  void ClearLaunchedKey(aura::Window* window);
 
-  // Sets a callback for testing that will be read from in
-  // `OnWidgetInitialized()`.
-  void SetReadWindowCallbackForTesting(ReadWindowCallback callback);
+  // Cancels and removes the Full Restore property clear callback for `window`
+  // from `restore_property_clear_callbacks_`.
+  void CancelAndRemoveRestorePropertyClearCallback(aura::Window* window);
 
   // Sets a callback for testing that will be fired immediately when
   // SaveWindowImpl is about to notify the full restore component we want to
@@ -133,9 +141,6 @@ class ASH_EXPORT FullRestoreController
 
   // True whenever we are attempting to restore snap state.
   bool is_restoring_snap_state_ = false;
-
-  // True whenever we are stacking windows to match saved activation order.
-  bool is_stacking_ = false;
 
   // The set of windows that have had their widgets initialized and will be
   // shown later.
@@ -147,8 +152,6 @@ class ASH_EXPORT FullRestoreController
   // track of these posted tasks so we can cancel them upon window deletion.
   std::map<aura::Window*, base::CancelableOnceClosure>
       restore_property_clear_callbacks_;
-
-  ScopedSessionObserver scoped_session_observer_{this};
 
   base::ScopedObservation<TabletModeController, TabletModeObserver>
       tablet_mode_observation_{this};

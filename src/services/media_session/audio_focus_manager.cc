@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/containers/adapters.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_observer.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -82,6 +83,10 @@ class AudioFocusManager::SourceObserverHolder {
 
   void OnFocusLost(mojom::AudioFocusRequestStatePtr session) {
     observer_->OnFocusLost(std::move(session));
+  }
+
+  void OnRequestIdReleased(const base::UnguessableToken& request_id) {
+    observer_->OnRequestIdReleased(request_id);
   }
 
  private:
@@ -262,6 +267,18 @@ void AudioFocusManager::GetSourceFocusRequests(
   }
 
   std::move(callback).Run(std::move(requests));
+}
+
+void AudioFocusManager::RequestIdReleased(
+    const base::UnguessableToken& request_id) {
+  for (const auto& observer : observers_)
+    observer->OnRequestIdReleased(request_id);
+
+  const base::UnguessableToken& source_id = GetBindingIdentity();
+  for (auto& holder : source_observers_) {
+    if (holder->identity() == source_id)
+      holder->OnRequestIdReleased(request_id);
+  }
 }
 
 void AudioFocusManager::CreateActiveMediaController(

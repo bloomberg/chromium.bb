@@ -30,13 +30,14 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.view.View;
 
-import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.jank_tracker.JankScenario;
+import org.chromium.base.jank_tracker.JankTracker;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.OneshotSupplier;
@@ -63,20 +64,11 @@ import org.chromium.components.prefs.PrefService;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.util.ColorUtils;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 
 /** The mediator implements the logic to interact with the surfaces and caller. */
 class StartSurfaceMediator
         implements StartSurface.Controller, TabSwitcher.OverviewModeObserver, View.OnClickListener {
-    @IntDef({SurfaceMode.NO_START_SURFACE, SurfaceMode.SINGLE_PANE})
-    @Retention(RetentionPolicy.SOURCE)
-    @interface SurfaceMode {
-        int NO_START_SURFACE = 0;
-        int SINGLE_PANE = 1;
-    }
-
     /** Interface to initialize a secondary tasks surface for more tabs. */
     interface SecondaryTasksSurfaceInitializer {
         /**
@@ -104,8 +96,7 @@ class StartSurfaceMediator
     private final PropertyModel mPropertyModel;
     @Nullable
     private final SecondaryTasksSurfaceInitializer mSecondaryTasksSurfaceInitializer;
-    @SurfaceMode
-    private final int mSurfaceMode;
+    private final boolean mIsStartSurfaceEnabled;
     private final ObserverList<StartSurface.StateObserver> mStateObservers = new ObserverList<>();
 
     // Boolean histogram used to record whether cached
@@ -161,31 +152,34 @@ class StartSurfaceMediator
     @Nullable
     private Boolean mFeedVisibilityInSharedPreferenceOnStartUp;
     private boolean mHadWarmStart;
+    private final JankTracker mJankTracker;
     private boolean mHideMVForNewSurface;
     private boolean mHideTabCarouselForNewSurface;
 
     StartSurfaceMediator(TabSwitcher.Controller controller, TabModelSelector tabModelSelector,
             @Nullable PropertyModel propertyModel,
             @Nullable SecondaryTasksSurfaceInitializer secondaryTasksSurfaceInitializer,
-            @SurfaceMode int surfaceMode, Context context,
+            boolean isStartSurfaceEnabled, Context context,
             BrowserControlsStateProvider browserControlsStateProvider,
             ActivityStateChecker activityStateChecker, boolean excludeMVTiles,
-            OneshotSupplier<StartSurface> startSurfaceSupplier, boolean hadWarmStart) {
+            OneshotSupplier<StartSurface> startSurfaceSupplier, boolean hadWarmStart,
+            JankTracker jankTracker) {
         mController = controller;
         mTabModelSelector = tabModelSelector;
         mPropertyModel = propertyModel;
         mSecondaryTasksSurfaceInitializer = secondaryTasksSurfaceInitializer;
-        mSurfaceMode = surfaceMode;
+        mIsStartSurfaceEnabled = isStartSurfaceEnabled;
         mContext = context;
         mBrowserControlsStateProvider = browserControlsStateProvider;
         mActivityStateChecker = activityStateChecker;
         mExcludeMVTiles = excludeMVTiles;
         mStartSurfaceSupplier = startSurfaceSupplier;
         mHadWarmStart = hadWarmStart;
+        mJankTracker = jankTracker;
         mLaunchOrigin = NewTabPageLaunchOrigin.UNKNOWN;
 
         if (mPropertyModel != null) {
-            assert mSurfaceMode == SurfaceMode.SINGLE_PANE;
+            assert mIsStartSurfaceEnabled;
 
             mIsIncognito = mTabModelSelector.isIncognitoSelected();
 
@@ -267,6 +261,12 @@ class StartSurfaceMediator
                     if (mStartSurfaceState == StartSurfaceState.SHOWN_HOMEPAGE) {
                         mPropertyModel.set(BOTTOM_BAR_HEIGHT, bottomControlsHeight);
                     }
+                }
+
+                @Override
+                public void onAndroidVisibilityChanged(int visibility) {
+                    // TODO(crbug/1223069): Remove this workaround for default method desugaring in
+                    // D8 causing AbstractMethodErrors in some cases once fixed upstream.
                 }
             };
 
@@ -418,6 +418,23 @@ class StartSurfaceMediator
         }
         notifyStateChange();
 
+        // Start/Stop tracking jank for Homepage and Tab switcher. It is okay if finish or start are
+        // called multiple times consecutively.
+        switch (mStartSurfaceState) {
+            case StartSurfaceState.NOT_SHOWN:
+                mJankTracker.finishTrackingScenario(JankScenario.START_SURFACE_HOMEPAGE);
+                mJankTracker.finishTrackingScenario(JankScenario.START_SURFACE_TAB_SWITCHER);
+                break;
+            case StartSurfaceState.SHOWN_HOMEPAGE:
+                mJankTracker.startTrackingScenario(JankScenario.START_SURFACE_HOMEPAGE);
+                mJankTracker.finishTrackingScenario(JankScenario.START_SURFACE_TAB_SWITCHER);
+                break;
+            case StartSurfaceState.SHOWN_TABSWITCHER:
+                mJankTracker.finishTrackingScenario(JankScenario.START_SURFACE_HOMEPAGE);
+                mJankTracker.startTrackingScenario(JankScenario.START_SURFACE_TAB_SWITCHER);
+                break;
+        }
+
         setLaunchOrigin(launchOrigin);
         // Metrics collection
         if (mStartSurfaceState == StartSurfaceState.SHOWN_HOMEPAGE) {
@@ -433,7 +450,9 @@ class StartSurfaceMediator
     }
 
     private void setLaunchOrigin(@NewTabPageLaunchOrigin int launchOrigin) {
-        if (mLaunchOrigin == launchOrigin) return;
+        if (launchOrigin == NewTabPageLaunchOrigin.WEB_FEED) {
+            StartSurfaceUserData.getInstance().saveFeedInstanceState(null);
+        }
         mLaunchOrigin = launchOrigin;
         // If the FeedSurfaceCoordinator is already initialized, set the TabId.
         if (mPropertyModel == null) return;
@@ -501,6 +520,11 @@ class StartSurfaceMediator
     @StartSurfaceState
     public int getStartSurfaceState() {
         return mStartSurfaceState;
+    }
+
+    @Override
+    public int getPreviousStartSurfaceState() {
+        return mPreviousStartSurfaceState;
     }
 
     @Override
@@ -709,9 +733,14 @@ class StartSurfaceMediator
                     StartSurfaceConfiguration.getFeedArticlesVisibility();
         }
 
-        return mSurfaceMode == SurfaceMode.SINGLE_PANE
+        return mIsStartSurfaceEnabled
                 && CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START)
                 && StartSurfaceConfiguration.getFeedArticlesVisibility() && !mHadWarmStart;
+    }
+
+    public void setSecondaryTasksSurfaceController(
+            TabSwitcher.Controller secondaryTasksSurfaceController) {
+        mSecondaryTasksSurfaceController = secondaryTasksSurfaceController;
     }
 
     /** This interface builds the feed surface coordinator when showing if needed. */
@@ -744,7 +773,7 @@ class StartSurfaceMediator
     }
 
     private void setSecondaryTasksSurfaceVisibility(boolean isVisible) {
-        assert mSurfaceMode == SurfaceMode.SINGLE_PANE;
+        assert mIsStartSurfaceEnabled;
 
         if (isVisible) {
             if (mSecondaryTasksSurfacePropertyModel == null) {
@@ -756,11 +785,11 @@ class StartSurfaceMediator
                 mSecondaryTasksSurfacePropertyModel.set(IS_INCOGNITO, mIsIncognito);
             }
             if (mSecondaryTasksSurfaceController != null) {
-                mSecondaryTasksSurfaceController.showOverview(false);
+                mSecondaryTasksSurfaceController.showOverview(/* animate = */ true);
             }
         } else {
             if (mSecondaryTasksSurfaceController != null) {
-                mSecondaryTasksSurfaceController.hideOverview(false);
+                mSecondaryTasksSurfaceController.hideOverview(/* animate = */ false);
             }
         }
         mPropertyModel.set(IS_SECONDARY_SURFACE_VISIBLE, isVisible);
@@ -852,7 +881,7 @@ class StartSurfaceMediator
     // computeStartSurfaceState.
     @StartSurfaceState
     private int computeOverviewStateShown() {
-        if (mSurfaceMode == SurfaceMode.SINGLE_PANE) {
+        if (mIsStartSurfaceEnabled) {
             if (mStartSurfaceState == StartSurfaceState.SHOWING_PREVIOUS) {
                 assert mPreviousStartSurfaceState == StartSurfaceState.SHOWN_HOMEPAGE
                         || mPreviousStartSurfaceState == StartSurfaceState.SHOWN_TABSWITCHER

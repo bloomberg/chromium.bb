@@ -5,6 +5,7 @@
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as Coordinator from '../render_coordinator/render_coordinator.js';
+import iconStyles from './icon.css.js';
 
 export interface IconWithPath {
   iconPath: string;
@@ -26,7 +27,7 @@ const isString = (value: string|undefined): value is string => value !== undefin
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 
 export class Icon extends HTMLElement {
-  static litTagName = LitHtml.literal`devtools-icon`;
+  static readonly litTagName = LitHtml.literal`devtools-icon`;
 
   private readonly shadow = this.attachShadow({mode: 'open'});
 
@@ -35,6 +36,10 @@ export class Icon extends HTMLElement {
   private width: Readonly<string> = '100%';
   private height: Readonly<string> = '100%';
   private iconName?: Readonly<string>;
+
+  connectedCallback(): void {
+    this.shadow.adoptedStyleSheets = [iconStyles];
+  }
 
   set data(data: IconData) {
     const {width, height} = data;
@@ -100,12 +105,6 @@ export class Icon extends HTMLElement {
     coordinator.write(() => {
       // clang-format off
       LitHtml.render(LitHtml.html`
-        <style>
-          :host {
-            display: inline-block;
-            white-space: nowrap;
-          }
-        </style>
         <div class="icon-basic" style=${LitHtml.Directives.styleMap(this.getStyles())}></div>
       `, this.shadow);
       // clang-format on

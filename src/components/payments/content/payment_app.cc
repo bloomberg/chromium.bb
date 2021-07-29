@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/callback.h"
+#include "base/containers/contains.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/payments/content/autofill_payment_app.h"
 #include "components/payments/core/features.h"
@@ -101,6 +102,11 @@ void PaymentApp::AbortPaymentApp(
 
 bool PaymentApp::IsPreferred() const {
   return false;
+}
+
+mojom::PaymentResponsePtr PaymentApp::SetAppSpecificResponseFields(
+    mojom::PaymentResponsePtr response) const {
+  return response;
 }
 
 // static

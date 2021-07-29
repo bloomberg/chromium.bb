@@ -101,7 +101,7 @@ g.test('a_render_pass_with_only_one_depth_attachment_is_ok').fn(t => {
 });
 
 g.test('OOB_color_attachment_indices_are_handled')
-  .params([
+  .paramsSimple([
     { colorAttachmentsCount: 4, _success: true }, // Control case
     { colorAttachmentsCount: 5, _success: false }, // Out of bounds
   ])
@@ -193,7 +193,7 @@ g.test('attachments_must_match_whether_they_are_used_for_color_or_depth_stencil'
 });
 
 g.test('check_layer_count_for_color_or_depth_stencil')
-  .params([
+  .paramsSimple([
     { arrayLayerCount: 5, baseArrayLayer: 0, _success: false }, // using 2D array texture view with arrayLayerCount > 1 is not allowed
     { arrayLayerCount: 1, baseArrayLayer: 0, _success: true }, // using 2D array texture view that covers the first layer of the texture is OK
     { arrayLayerCount: 1, baseArrayLayer: 9, _success: true }, // using 2D array texture view that covers the last layer is OK for depth stencil
@@ -262,7 +262,7 @@ g.test('check_layer_count_for_color_or_depth_stencil')
   });
 
 g.test('check_mip_level_count_for_color_or_depth_stencil')
-  .params([
+  .paramsSimple([
     { mipLevelCount: 2, baseMipLevel: 0, _success: false }, // using 2D texture view with mipLevelCount > 1 is not allowed
     { mipLevelCount: 1, baseMipLevel: 0, _success: true }, // using 2D texture view that covers the first level of the texture is OK
     { mipLevelCount: 1, baseMipLevel: 3, _success: true }, // using 2D texture view that covers the last level of the texture is OK
@@ -394,7 +394,7 @@ g.test('it_is_invalid_to_use_a_resolve_target_with_array_layer_count_greater_tha
     const resolveTargetTexture = t.createTexture({ arrayLayerCount: 2 });
 
     const colorAttachment = t.getColorAttachment(multisampledColorTexture);
-    colorAttachment.resolveTarget = resolveTargetTexture.createView();
+    colorAttachment.resolveTarget = resolveTargetTexture.createView({ dimension: '2d-array' });
 
     const descriptor: GPURenderPassDescriptor = {
       colorAttachments: [colorAttachment],

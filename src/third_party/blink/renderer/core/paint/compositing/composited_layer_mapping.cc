@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
@@ -690,8 +691,7 @@ void CompositedLayerMapping::ComputeGraphicsLayerParentLocation(
   if (compositing_container &&
       compositing_container->NeedsCompositedScrolling()) {
     auto& layout_box = To<LayoutBox>(compositing_container->GetLayoutObject());
-    IntSize scroll_offset =
-        FlooredIntSize(layout_box.PixelSnappedScrolledContentOffset());
+    IntPoint scroll_offset = layout_box.PixelSnappedScrolledContentOffset();
     IntPoint scroll_origin =
         compositing_container->GetScrollableArea()->ScrollOrigin();
     scroll_origin.Move(-layout_box.OriginAdjustmentForScrollbars());

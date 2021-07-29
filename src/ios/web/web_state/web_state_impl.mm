@@ -204,7 +204,7 @@ void WebStateImpl::OnRenderProcessGone() {
 }
 
 void WebStateImpl::OnScriptCommandReceived(const std::string& command,
-                                           const base::DictionaryValue& value,
+                                           const base::Value& value,
                                            const GURL& page_url,
                                            bool user_is_interacting,
                                            web::WebFrame* sender_frame) {
@@ -939,7 +939,18 @@ void WebStateImpl::RestoreSessionStorage(CRWSessionStorage* session_storage) {
 }
 
 bool WebStateImpl::SetSessionStateData(NSData* data) {
-  return [web_controller_ setSessionStateData:data];
+  bool state_set = [web_controller_ setSessionStateData:data];
+  if (!state_set)
+    return false;
+  for (int i = 0; i < navigation_manager_->GetItemCount(); i++) {
+    web::NavigationItem* item = navigation_manager_->GetItemAtIndex(i);
+    if (base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) &&
+        [CRWErrorPageHelper isErrorPageFileURL:item->GetURL()]) {
+      item->SetVirtualURL([CRWErrorPageHelper
+          failedNavigationURLFromErrorPageFileURL:item->GetURL()]);
+    }
+  }
+  return true;
 }
 
 NSData* WebStateImpl::SessionStateData() {

@@ -10,6 +10,7 @@
 #include "content/common/content_export.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/early_hints.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace blink {
@@ -73,6 +74,8 @@ class CONTENT_EXPORT NavigationEarlyHintsManager {
   // responses for main frame navigation.
   bool WasPreloadLinkHeaderReceived() const;
 
+  std::vector<GURL> TakePreloadedResourceURLs();
+
   // True when there are at least one inflight preloads.
   bool HasInflightPreloads() const;
 
@@ -110,6 +113,8 @@ class CONTENT_EXPORT NavigationEarlyHintsManager {
   base::flat_map<GURL, std::unique_ptr<InflightPreload>> inflight_preloads_;
 
   PreloadedResources preloaded_resources_;
+
+  std::vector<GURL> preloaded_urls_;
 
   bool was_preload_link_header_received_ = false;
 

@@ -33,7 +33,7 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-namespace ash {
+namespace account_manager {
 class AccountManager;
 }
 #endif
@@ -53,6 +53,7 @@ class PrefRegistrySimple;
 class AccountFetcherService;
 class AccountTrackerService;
 class GaiaCookieManagerService;
+class NewTabPageUI;
 
 namespace signin {
 
@@ -251,41 +252,20 @@ class IdentityManager : public KeyedService,
   GoogleServiceAuthError GetErrorStateOfRefreshTokenForAccount(
       const CoreAccountId& account_id) const;
 
-  // Returns extended information for account identified by |account_id|.
-  // The information will be returned if the information is available regardless
-  // of whether the refresh token is available for the account.
-  absl::optional<AccountInfo> FindExtendedAccountInfoByAccountId(
-      const CoreAccountId& account_id) const;
-
-  // Returns extended information for account identified by |account_info|.
-  // The information will be returned if the information is available and
-  // refresh token is available for account.
-  absl::optional<AccountInfo> FindExtendedAccountInfoForAccountWithRefreshToken(
+  // Returns extended information for account identified by |account_info|, or
+  // an empty AccountInfo if the account is not found.
+  // Note: these functions return an empty AccountInfo if no refresh token is
+  // available for the account (in particular before tokens are loaded).
+  AccountInfo FindExtendedAccountInfo(
       const CoreAccountInfo& account_info) const;
-
-  // Looks up and returns information for account with given |account_id|. If
-  // the account cannot be found, return an empty optional. This is equivalent
-  // to searching on the vector returned by GetAccountsWithRefreshTokens() but
-  // without allocating memory for the vector.
-  absl::optional<AccountInfo>
-  FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+  // The same as `FindExtendedAccountInfo()` but finds an account by account ID.
+  AccountInfo FindExtendedAccountInfoByAccountId(
       const CoreAccountId& account_id) const;
-
-  // Looks up and returns information for account with given |email_address|. If
-  // the account cannot be found, return an empty optional. This is equivalent
-  // to searching on the vector returned by GetAccountsWithRefreshTokens() but
-  // without allocating memory for the vector.
-  absl::optional<AccountInfo>
-  FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
+  // The same as `FindExtendedAccountInfo()` but finds an account by email.
+  AccountInfo FindExtendedAccountInfoByEmailAddress(
       const std::string& email_address) const;
-
-  // Looks up and returns information for account with given |gaia_id|. If the
-  // account cannot be found, return an empty optional. This is equivalent to
-  // searching on the vector returned by GetAccountsWithRefreshTokens() but
-  // without allocating memory for the vector.
-  absl::optional<AccountInfo>
-  FindExtendedAccountInfoForAccountWithRefreshTokenByGaiaId(
-      const std::string& gaia_id) const;
+  // The same as `FindExtendedAccountInfo()` but finds an account by gaia ID.
+  AccountInfo FindExtendedAccountInfoByGaiaId(const std::string& gaia_id) const;
 
   // Creates an UbertokenFetcher given the passed-in information, allowing
   // to specify a custom |url_loader_factory| as well.
@@ -385,13 +365,11 @@ class IdentityManager : public KeyedService,
     std::unique_ptr<DeviceAccountsSynchronizer> device_accounts_synchronizer;
     std::unique_ptr<DiagnosticsProvider> diagnostics_provider;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    ash::AccountManager* ash_account_manager = nullptr;
+    account_manager::AccountManager* ash_account_manager = nullptr;
 #endif
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
     SigninClient* signin_client = nullptr;
 #endif
-
-    bool allow_access_token_fetch = true;
 
     InitParameters();
     InitParameters(InitParameters&&);
@@ -475,7 +453,7 @@ class IdentityManager : public KeyedService,
       JNIEnv* env) const;
 
   base::android::ScopedJavaLocalRef<jobject>
-  FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
+  FindExtendedAccountInfoByEmailAddress(
       JNIEnv* env,
       const base::android::JavaParamRef<jstring>& j_email) const;
 
@@ -537,6 +515,8 @@ class IdentityManager : public KeyedService,
       const GoogleServiceAuthError& auth_error);
 
   friend void DisableAccessTokenFetchRetries(IdentityManager* identity_manager);
+  friend void EnableAccountCapabilitiesFetches(
+      IdentityManager* identity_manager);
 
   friend void CancelAllOngoingGaiaCookieOperations(
       IdentityManager* identity_manager);
@@ -609,6 +589,19 @@ class IdentityManager : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest, OnNetworkInitialized);
   FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest,
                            ForceRefreshOfExtendedAccountInfo);
+  FRIEND_TEST_ALL_PREFIXES(IdentityManagerTest, FindExtendedPrimaryAccountInfo);
+
+  // Only caller to FindExtendedPrimaryAccountInfo().
+  // TODO(https://crbug.com/1213351): Delete once the private call has been
+  // removed.
+  friend class ::NewTabPageUI;
+
+  // Returns the extended account info for the primary account. This function
+  // does not require tokens to be loaded.
+  // Do not add more external callers, as account info is generally not
+  // available until tokens are loaded.
+  // TODO(https://crbug.com/1213351): Remove existing external callers.
+  AccountInfo FindExtendedPrimaryAccountInfo(ConsentLevel consent_level);
 
   // Private getters used for testing only (i.e. see identity_test_utils.h).
   PrimaryAccountManager* GetPrimaryAccountManager() const;
@@ -617,7 +610,7 @@ class IdentityManager : public KeyedService,
   AccountFetcherService* GetAccountFetcherService() const;
   GaiaCookieManagerService* GetGaiaCookieManagerService() const;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  ash::AccountManager* GetAshAccountManager() const;
+  account_manager::AccountManager* GetAshAccountManager() const;
 #endif
 
   // Populates and returns an AccountInfo object corresponding to |account_id|,
@@ -707,10 +700,9 @@ class IdentityManager : public KeyedService,
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  ash::AccountManager* ash_account_manager_ = nullptr;
+  account_manager::AccountManager* ash_account_manager_ = nullptr;
 #endif
 
-  const bool allow_access_token_fetch_;
   DISALLOW_COPY_AND_ASSIGN(IdentityManager);
 };
 

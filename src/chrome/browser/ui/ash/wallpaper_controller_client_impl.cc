@@ -8,7 +8,9 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
+#include "ash/public/cpp/wallpaper/online_wallpaper_params.h"
 #include "base/bind.h"
+#include "base/files/file_util.h"
 #include "base/hash/sha1.h"
 #include "base/json/json_reader.h"
 #include "base/memory/scoped_refptr.h"
@@ -21,11 +23,14 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
+#include "chrome/browser/ash/backdrop_wallpaper_handlers/backdrop_wallpaper.pb.h"
 #include "chrome/browser/ash/customization/customization_wallpaper_util.h"
+#include "chrome/browser/ash/drive/drive_integration_service.h"
+#include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
+#include "chrome/browser/ash/policy/core/device_local_account.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/extensions/wallpaper_private_api.h"
-#include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_types.h"
@@ -48,6 +53,7 @@
 #include "ui/display/screen.h"
 #include "url/gurl.h"
 
+using backdrop_wallpaper_handlers::SurpriseMeImageFetcher;
 using extension_misc::kWallpaperManagerId;
 
 namespace {
@@ -56,6 +62,9 @@ namespace {
 const char kWallpaperFilesId[] = "wallpaper-files-id";
 constexpr char kChromeAppDailyRefreshInfoPref[] = "daily-refresh-info-key";
 constexpr char kChromeAppCollectionId[] = "collectionId";
+constexpr char kDriveFsWallpaperDirName[] = "Chromebook Wallpaper";
+// Encoded in |WallpaperControllerImpl.ResizeAndEncodeImage|.
+constexpr char kDriveFsWallpaperFileName[] = "wallpaper.jpg";
 
 WallpaperControllerClientImpl* g_wallpaper_controller_client_instance = nullptr;
 
@@ -166,6 +175,19 @@ std::string GetDailyRefreshCollectionId(ValueStore* value_store) {
   return *collection_id;
 }
 
+base::FilePath GetDriveFsWallpaperDir(Profile* profile) {
+  CHECK(profile);
+
+  drive::DriveIntegrationService* drive_integration_service =
+      drive::util::GetIntegrationServiceByProfile(profile);
+  if (!drive_integration_service) {
+    return base::FilePath();
+  }
+  return drive_integration_service->GetMountPointPath()
+      .Append(drive::util::kDriveMyDriveRootDirName)
+      .Append(kDriveFsWallpaperDirName);
+}
+
 }  // namespace
 
 WallpaperControllerClientImpl::WallpaperControllerClientImpl() {
@@ -225,7 +247,7 @@ void WallpaperControllerClientImpl::SetInitialWallpaper() {
   }
 
   // Do not set wallpaper in tests.
-  if (chromeos::WizardController::IsZeroDelayEnabled())
+  if (ash::WizardController::IsZeroDelayEnabled())
     return;
 
   // Show the wallpaper of the active user during an user session.
@@ -252,18 +274,6 @@ void WallpaperControllerClientImpl::SetInitialWallpaper() {
 // static
 WallpaperControllerClientImpl* WallpaperControllerClientImpl::Get() {
   return g_wallpaper_controller_client_instance;
-}
-
-// static
-std::string WallpaperControllerClientImpl::GetBackdropWallpaperSuffix() {
-  // TODO(b/186807814) handle different display resolutions better.
-  // FIFE url is used for Backdrop wallpapers and the desired image size should
-  // be specified. Currently we are using two times the display size. This is
-  // determined by trial and error and is subject to change.
-  gfx::Size display_size =
-      display::Screen::GetScreen()->GetPrimaryDisplay().size();
-  return "=w" + base::NumberToString(
-                    2 * std::max(display_size.width(), display_size.height()));
 }
 
 std::string WallpaperControllerClientImpl::GetFilesId(
@@ -296,41 +306,31 @@ void WallpaperControllerClientImpl::SetCustomWallpaper(
 }
 
 void WallpaperControllerClientImpl::SetOnlineWallpaper(
-    const AccountId& account_id,
-    const GURL& url,
-    ash::WallpaperLayout layout,
-    bool preview_mode,
+    const ash::OnlineWallpaperParams& params,
     ash::WallpaperController::SetOnlineWallpaperCallback callback) {
-  if (!IsKnownUser(account_id))
+  if (!IsKnownUser(params.account_id))
     return;
 
-  wallpaper_controller_->SetOnlineWallpaper(account_id, url, layout,
-                                            preview_mode, std::move(callback));
+  wallpaper_controller_->SetOnlineWallpaper(params, std::move(callback));
 }
 
 void WallpaperControllerClientImpl::SetOnlineWallpaperIfExists(
-    const AccountId& account_id,
-    const std::string& url,
-    ash::WallpaperLayout layout,
-    bool preview_mode,
+    const ash::OnlineWallpaperParams& params,
     ash::WallpaperController::SetOnlineWallpaperCallback callback) {
-  if (!IsKnownUser(account_id))
+  if (!IsKnownUser(params.account_id))
     return;
-  wallpaper_controller_->SetOnlineWallpaperIfExists(
-      account_id, url, layout, preview_mode, std::move(callback));
+  wallpaper_controller_->SetOnlineWallpaperIfExists(params,
+                                                    std::move(callback));
 }
 
 void WallpaperControllerClientImpl::SetOnlineWallpaperFromData(
-    const AccountId& account_id,
+    const ash::OnlineWallpaperParams& params,
     const std::string& image_data,
-    const std::string& url,
-    ash::WallpaperLayout layout,
-    bool preview_mode,
     ash::WallpaperController::SetOnlineWallpaperCallback callback) {
-  if (!IsKnownUser(account_id))
+  if (!IsKnownUser(params.account_id))
     return;
-  wallpaper_controller_->SetOnlineWallpaperFromData(
-      account_id, image_data, url, layout, preview_mode, std::move(callback));
+  wallpaper_controller_->SetOnlineWallpaperFromData(params, image_data,
+                                                    std::move(callback));
 }
 
 void WallpaperControllerClientImpl::SetCustomizedDefaultWallpaperPaths(
@@ -503,6 +503,25 @@ bool WallpaperControllerClientImpl::ShouldShowWallpaperSetting() {
   return wallpaper_controller_->ShouldShowWallpaperSetting();
 }
 
+void WallpaperControllerClientImpl::SaveWallpaperToDriveFs(
+    const AccountId& account_id,
+    const base::FilePath& origin) {
+  Profile* profile =
+      chromeos::ProfileHelper::Get()->GetProfileByAccountId(account_id);
+  base::FilePath destination_directory = GetDriveFsWallpaperDir(profile);
+  if (destination_directory.empty())
+    return;
+
+  if (!base::DirectoryExists(destination_directory) &&
+      !base::CreateDirectory(destination_directory)) {
+    return;
+  }
+
+  base::FilePath destination =
+      destination_directory.Append(kDriveFsWallpaperFileName);
+  base::CopyFile(origin, destination);
+}
+
 void WallpaperControllerClientImpl::MigrateCollectionIdFromValueStoreForTesting(
     ValueStore* value_store) {
   SetDailyRefreshCollectionId(GetDailyRefreshCollectionId(value_store));
@@ -632,6 +651,16 @@ void WallpaperControllerClientImpl::MigrateCollectionIdFromChromeApp() {
           storage_weak_factory_.GetWeakPtr(), task_runner));
 }
 
+void WallpaperControllerClientImpl::FetchDailyRefreshWallpaper(
+    const std::string& collection_id,
+    DailyWallpaperUrlFetchedCallback callback) {
+  surprise_me_image_fetcher_ = std::make_unique<SurpriseMeImageFetcher>(
+      collection_id, /*resume_token=*/std::string());
+  surprise_me_image_fetcher_->Start(
+      base::BindOnce(&WallpaperControllerClientImpl::OnDailyImageInfoFetched,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
 bool WallpaperControllerClientImpl::ShouldShowUserNamesOnLogin() const {
   bool show_user_names = true;
   ash::CrosSettings::Get()->GetBoolean(
@@ -661,4 +690,17 @@ void WallpaperControllerClientImpl::OnGetWallpaperChromeAppValueStore(
 void WallpaperControllerClientImpl::SetDailyRefreshCollectionId(
     const std::string& collection_id) {
   wallpaper_controller_->SetDailyRefreshCollectionId(collection_id);
+}
+
+void WallpaperControllerClientImpl::OnDailyImageInfoFetched(
+    DailyWallpaperUrlFetchedCallback callback,
+    bool success,
+    const backdrop::Image& image,
+    const std::string& next_resume_token) {
+  if (success) {
+    std::move(callback).Run(image.image_url());
+  } else {
+    std::move(callback).Run(std::string());
+  }
+  surprise_me_image_fetcher_.reset();
 }

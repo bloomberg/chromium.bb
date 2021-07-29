@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/scoped_feature_list.h"
+#include "chrome/browser/ash/app_mode/arc/arc_kiosk_app_manager.h"
+#include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_manager.h"
+#include "chrome/browser/ash/settings/device_settings_test_helper.h"
 #include "chrome/browser/chromeos/policy/remote_commands/device_command_start_crd_session_job.h"
 
 #include <map>
@@ -17,10 +22,19 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/policy/remote_commands/future_value.h"
+#include "chrome/browser/device_identity/device_oauth2_token_service.h"
+#include "chrome/browser/device_identity/device_oauth2_token_service_factory.h"
+#include "chrome/browser/prefs/browser_prefs.h"
+#include "chromeos/cryptohome/system_salt_getter.h"
+#include "components/policy/core/common/features.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_task_environment.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/user_activity/user_activity_detector.h"
 
 namespace policy {
 
@@ -37,10 +51,29 @@ constexpr RemoteCommandJob::UniqueIDType kUniqueID = 123456789;
 
 constexpr char kTestOAuthToken[] = "test-oauth-token";
 constexpr char kTestAccessCode[] = "111122223333";
-constexpr char kTestNoOAuthTokenReason[] = "oops-no-oauth-token";
+constexpr char kTestNoOAuthTokenReason[] = "Not authorized.";
+constexpr char kTestAccountEmail[] = "test.account.email@example.com";
 
 constexpr char kIdlenessCutoffFieldName[] = "idlenessCutoffSec";
 constexpr char kTerminateUponInputFieldName[] = "terminateUponInput";
+
+// Macro expecting success. We are using a macro because a function would
+// report any error against the line in the function, and not against the
+// place where EXPECT_SUCCESS is called.
+#define EXPECT_SUCCESS(result_)                                       \
+  ({                                                                  \
+    EXPECT_EQ(result.status, RemoteCommandJob::Status::SUCCEEDED);    \
+    EXPECT_EQ(result.payload, CreateSuccessPayload(kTestAccessCode)); \
+  })
+
+// Macro expecting error. We are using a macro because a function would
+// report any error against the line in the function, and not against the
+// place where EXPECT_ERROR is called.
+#define EXPECT_ERROR(result_, error_code, ...)                                \
+  ({                                                                          \
+    EXPECT_EQ(result.status, RemoteCommandJob::Status::FAILED);               \
+    EXPECT_EQ(result.payload, CreateErrorPayload(error_code, ##__VA_ARGS__)); \
+  })
 
 em::RemoteCommand GenerateCommandProto(RemoteCommandJob::UniqueIDType unique_id,
                                        base::TimeDelta age_of_command,
@@ -65,56 +98,36 @@ em::RemoteCommand GenerateCommandProto(RemoteCommandJob::UniqueIDType unique_id,
 
 class StubCRDHostDelegate : public DeviceCommandStartCRDSessionJob::Delegate {
  public:
-  StubCRDHostDelegate(bool has_active_session,
-                      bool are_services_ready,
-                      bool is_running_kiosk,
-                      base::TimeDelta idleness_period,
-                      bool oauth_token_success,
-                      bool access_code_success);
-  ~StubCRDHostDelegate() override;
+  StubCRDHostDelegate() = default;
+  ~StubCRDHostDelegate() override = default;
 
+  void SetHasActiveSession(bool value) { has_active_session_ = value; }
+  void MakeAccessCodeFetchFail() { access_code_success_ = false; }
+
+  // Returns if TerminateSession() was called to terminate the active session.
+  bool IsActiveSessionTerminated() const { return terminate_session_called_; }
+
+  // Returns the |SessionParameters| sent to the last StartCRDHostAndGetCode()
+  // call.
+  SessionParameters session_parameters() {
+    EXPECT_TRUE(received_session_parameters_.has_value());
+    return received_session_parameters_.value_or(SessionParameters{});
+  }
+
+  // DeviceCommandStartCRDSessionJob::Delegate implementation:
   bool HasActiveSession() const override;
   void TerminateSession(base::OnceClosure callback) override;
-
-  bool AreServicesReady() const override;
-  bool IsRunningKiosk() const override;
-  base::TimeDelta GetIdlenessPeriod() const override;
-
-  void FetchOAuthToken(
-      DeviceCommandStartCRDSessionJob::OAuthTokenCallback success_callback,
-      DeviceCommandStartCRDSessionJob::ErrorCallback error_callback) override;
-
   void StartCRDHostAndGetCode(
-      const std::string& oauth_token,
-      bool terminate_upon_input,
+      const SessionParameters& parameters,
       DeviceCommandStartCRDSessionJob::AccessCodeCallback success_callback,
       DeviceCommandStartCRDSessionJob::ErrorCallback error_callback) override;
 
  private:
-  bool has_active_session_;
-  bool are_services_ready_;
-  bool is_running_kiosk_;
-  base::TimeDelta idleness_period_;
-  bool oauth_token_success_;
-  bool access_code_success_;
-
-  DISALLOW_COPY_AND_ASSIGN(StubCRDHostDelegate);
+  bool has_active_session_ = false;
+  bool access_code_success_ = true;
+  bool terminate_session_called_ = false;
+  absl::optional<SessionParameters> received_session_parameters_;
 };
-
-StubCRDHostDelegate::StubCRDHostDelegate(bool has_active_session,
-                                         bool are_services_ready,
-                                         bool is_running_kiosk,
-                                         base::TimeDelta idleness_period,
-                                         bool oauth_token_success,
-                                         bool access_code_success)
-    : has_active_session_(has_active_session),
-      are_services_ready_(are_services_ready),
-      is_running_kiosk_(is_running_kiosk),
-      idleness_period_(idleness_period),
-      oauth_token_success_(oauth_token_success),
-      access_code_success_(access_code_success) {}
-
-StubCRDHostDelegate::~StubCRDHostDelegate() {}
 
 bool StubCRDHostDelegate::HasActiveSession() const {
   return has_active_session_;
@@ -122,38 +135,16 @@ bool StubCRDHostDelegate::HasActiveSession() const {
 
 void StubCRDHostDelegate::TerminateSession(base::OnceClosure callback) {
   has_active_session_ = false;
+  terminate_session_called_ = true;
   std::move(callback).Run();
 }
 
-bool StubCRDHostDelegate::AreServicesReady() const {
-  return are_services_ready_;
-}
-
-bool StubCRDHostDelegate::IsRunningKiosk() const {
-  return is_running_kiosk_;
-}
-
-base::TimeDelta StubCRDHostDelegate::GetIdlenessPeriod() const {
-  return idleness_period_;
-}
-
-void StubCRDHostDelegate::FetchOAuthToken(
-    DeviceCommandStartCRDSessionJob::OAuthTokenCallback success_callback,
-    DeviceCommandStartCRDSessionJob::ErrorCallback error_callback) {
-  if (oauth_token_success_) {
-    std::move(success_callback).Run(kTestOAuthToken);
-  } else {
-    std::move(error_callback)
-        .Run(DeviceCommandStartCRDSessionJob::FAILURE_NO_OAUTH_TOKEN,
-             kTestNoOAuthTokenReason);
-  }
-}
-
 void StubCRDHostDelegate::StartCRDHostAndGetCode(
-    const std::string& oauth_token,
-    bool terminate_upon_input,
+    const SessionParameters& parameters,
     DeviceCommandStartCRDSessionJob::AccessCodeCallback success_callback,
     DeviceCommandStartCRDSessionJob::ErrorCallback error_callback) {
+  received_session_parameters_ = parameters;
+
   if (access_code_success_) {
     std::move(success_callback).Run(kTestAccessCode);
   } else {
@@ -163,25 +154,50 @@ void StubCRDHostDelegate::StartCRDHostAndGetCode(
   }
 }
 
+struct Result {
+  RemoteCommandJob::Status status;
+  std::string payload;
+};
+
 }  // namespace
 
-class DeviceCommandStartCRDSessionJobTest : public testing::Test {
+class DeviceCommandStartCRDSessionJobTest : public ash::DeviceSettingsTestBase {
  public:
-  void VerifyResults(RemoteCommandJob* job,
-                     RemoteCommandJob::Status expected_status,
-                     std::string expected_payload);
+  DeviceCommandStartCRDSessionJobTest()
+      : ash::DeviceSettingsTestBase(
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
- protected:
-  DeviceCommandStartCRDSessionJobTest();
+  // ash::DeviceSettingsTestBase implementation:
+  void SetUp() override {
+    DeviceSettingsTestBase::SetUp();
+    test_start_time_ = base::TimeTicks::Now();
 
-  // testing::Test:
-  void SetUp() override;
+    user_activity_detector_ = std::make_unique<ui::UserActivityDetector>();
 
-  void InitializeJob(RemoteCommandJob* job,
-                     RemoteCommandJob::UniqueIDType unique_id,
-                     base::TimeTicks issued_time,
-                     base::TimeDelta idleness_cutoff,
-                     bool terminate_upon_input);
+    arc_kiosk_app_manager_ = std::make_unique<ash::ArcKioskAppManager>();
+    web_kiosk_app_manager_ = std::make_unique<ash::WebKioskAppManager>();
+
+    // SystemSaltGetter is used by the token service.
+    chromeos::SystemSaltGetter::Initialize();
+    DeviceOAuth2TokenServiceFactory::Initialize(
+        test_url_loader_factory_.GetSafeWeakWrapper(), &local_state_);
+    RegisterLocalState(local_state_.registry());
+  }
+
+  void TearDown() override {
+    DeviceOAuth2TokenServiceFactory::Shutdown();
+    chromeos::SystemSaltGetter::Shutdown();
+
+    web_kiosk_app_manager_.reset();
+    arc_kiosk_app_manager_.reset();
+
+    DeviceSettingsTestBase::TearDown();
+  }
+
+  Result RunJobAndWaitForResult() {
+    InitializeAndRunJob();
+    return future_result_.GetWithTimeout();
+  }
 
   std::string CreateSuccessPayload(const std::string& access_code);
   std::string CreateErrorPayload(
@@ -189,36 +205,144 @@ class DeviceCommandStartCRDSessionJobTest : public testing::Test {
       const std::string& error_message);
   std::string CreateNotIdlePayload(base::TimeDelta idleness);
 
-  base::TimeTicks test_start_time_;
+  void LogInAsManagedGuestSessionUser() {
+    const AccountId account_id(AccountId::FromUserEmail(kTestAccountEmail));
 
-  content::BrowserTaskEnvironment task_environment_;
-  base::RunLoop run_loop_;
+    user_manager().AddPublicAccountUser(account_id);
+    user_manager().LoginUser(account_id);
+  }
+
+  void LogInAsRegularUser() {
+    const AccountId account_id(AccountId::FromUserEmail(kTestAccountEmail));
+
+    user_manager().AddUser(account_id);
+    user_manager().LoginUser(account_id);
+  }
+
+  void LogInAsAffiliatedUser() {
+    const AccountId account_id(AccountId::FromUserEmail(kTestAccountEmail));
+
+    user_manager().AddUserWithAffiliation(account_id, /*is_affiliated=*/true);
+    user_manager().LoginUser(account_id);
+  }
+
+  void LogInAsGuestUser() {
+    const user_manager::User* user = user_manager().AddGuestUser();
+    user_manager().LoginUser(user->GetAccountId());
+  }
+
+  void LogInAsKioskAppUser() {
+    const AccountId account_id(AccountId::FromUserEmail(kTestAccountEmail));
+
+    user_manager().AddKioskAppUser(account_id);
+    user_manager().LoginUser(account_id);
+  }
+
+  void LogInAsArcKioskAppUser() {
+    const AccountId account_id(AccountId::FromUserEmail(kTestAccountEmail));
+
+    user_manager().AddArcKioskAppUser(account_id);
+    user_manager().LoginUser(account_id);
+  }
+
+  void LogInAsWebKioskAppUser() {
+    const AccountId account_id(AccountId::FromUserEmail(kTestAccountEmail));
+
+    user_manager().AddWebKioskAppUser(account_id);
+    user_manager().LoginUser(account_id);
+  }
+
+  void LogInAsAutoLaunchedKioskAppUser() {
+    LogInAsKioskAppUser();
+    ash::KioskAppManager::Get()
+        ->set_current_app_was_auto_launched_with_zero_delay_for_testing(true);
+  }
+
+  void SetDeviceIdleTime(base::TimeDelta idle_time) {
+    user_activity_detector_->set_last_activity_time_for_test(
+        base::TimeTicks::Now() - idle_time);
+  }
+
+  void SetIdlenessCutoff(base::TimeDelta value) { idleness_cutoff_ = value; }
+
+  void SetOAuthToken(std::string value) { oauth_token_ = value; }
+
+  void SetTerminateUponInput(bool value) { terminate_upon_input_ = value; }
+
+  void SetRobotAccountUserName(const std::string& user_name) {
+    DeviceOAuth2TokenService* token_service =
+        DeviceOAuth2TokenServiceFactory::Get();
+    token_service->set_robot_account_id_for_testing(CoreAccountId(user_name));
+  }
+
+  void ClearOAuthToken() { oauth_token_ = absl::nullopt; }
+
+  void DeleteUserActivityDetector() { user_activity_detector_ = nullptr; }
+  void DeleteUserManager() { user_manager_enabler_ = nullptr; }
+
+  StubCRDHostDelegate& crd_host_delegate() { return crd_host_delegate_; }
+  DeviceCommandStartCRDSessionJob& job() { return job_; }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(DeviceCommandStartCRDSessionJobTest);
+  ash::FakeChromeUserManager& user_manager() { return *user_manager_; }
+
+  void InitializeJob() {
+    bool success =
+        job().Init(base::TimeTicks::Now(),
+                   GenerateCommandProto(
+                       kUniqueID, base::TimeTicks::Now() - test_start_time_,
+                       idleness_cutoff_, terminate_upon_input_),
+                   nullptr);
+
+    if (oauth_token_)
+      job().SetOAuthTokenForTest(oauth_token_.value());
+
+    EXPECT_TRUE(success);
+    EXPECT_EQ(kUniqueID, job().unique_id());
+    EXPECT_EQ(RemoteCommandJob::NOT_STARTED, job().status());
+  }
+
+  // Initialize and run the remote command job.
+  // The result will be stored in |future_result_|.
+  void InitializeAndRunJob() {
+    InitializeJob();
+    bool launched = job().Run(
+        base::Time::Now(), base::TimeTicks::Now(),
+        base::BindOnce(&DeviceCommandStartCRDSessionJobTest::OnJobFinished,
+                       base::Unretained(this)));
+    EXPECT_TRUE(launched);
+  }
+
+  // Callback invoked when the remote command job finished.
+  void OnJobFinished() {
+    std::string payload =
+        job().GetResultPayload() ? *job().GetResultPayload() : "<nullptr>";
+
+    future_result_.SetValue(Result{job().status(), payload});
+  }
+
+  std::unique_ptr<ash::ArcKioskAppManager> arc_kiosk_app_manager_;
+  std::unique_ptr<ash::WebKioskAppManager> web_kiosk_app_manager_;
+
+  absl::optional<std::string> oauth_token_;
+  base::TimeDelta idleness_cutoff_ = base::TimeDelta::FromSeconds(30);
+  bool terminate_upon_input_ = false;
+
+  // Automatically installed as a singleton upon creation.
+  std::unique_ptr<ui::UserActivityDetector> user_activity_detector_;
+
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  TestingPrefServiceSimple local_state_;
+
+  StubCRDHostDelegate crd_host_delegate_;
+  DeviceCommandStartCRDSessionJob job_{&crd_host_delegate_};
+
+  // Future value that will be populated with the result once the remote command
+  // job is completed.
+  FutureValue<Result> future_result_;
+
+  base::TimeTicks test_start_time_;
 };
-
-DeviceCommandStartCRDSessionJobTest::DeviceCommandStartCRDSessionJobTest() {}
-
-void DeviceCommandStartCRDSessionJobTest::SetUp() {
-  test_start_time_ = base::TimeTicks::Now();
-}
-
-void DeviceCommandStartCRDSessionJobTest::InitializeJob(
-    RemoteCommandJob* job,
-    RemoteCommandJob::UniqueIDType unique_id,
-    base::TimeTicks issued_time,
-    base::TimeDelta idleness_cutoff,
-    bool terminate_upon_input) {
-  EXPECT_TRUE(job->Init(
-      base::TimeTicks::Now(),
-      GenerateCommandProto(unique_id, base::TimeTicks::Now() - issued_time,
-                           idleness_cutoff, terminate_upon_input),
-      nullptr));
-
-  EXPECT_EQ(unique_id, job->unique_id());
-  EXPECT_EQ(RemoteCommandJob::NOT_STARTED, job->status());
-}
 
 std::string DeviceCommandStartCRDSessionJobTest::CreateSuccessPayload(
     const std::string& access_code) {
@@ -233,7 +357,7 @@ std::string DeviceCommandStartCRDSessionJobTest::CreateSuccessPayload(
 
 std::string DeviceCommandStartCRDSessionJobTest::CreateErrorPayload(
     DeviceCommandStartCRDSessionJob::ResultCode result_code,
-    const std::string& error_message) {
+    const std::string& error_message = "") {
   std::string payload;
   base::Value root(base::Value::Type::DICTIONARY);
   root.SetKey(kResultCodeFieldName, base::Value(result_code));
@@ -255,180 +379,401 @@ std::string DeviceCommandStartCRDSessionJobTest::CreateNotIdlePayload(
   return payload;
 }
 
-void DeviceCommandStartCRDSessionJobTest::VerifyResults(
-    RemoteCommandJob* job,
-    RemoteCommandJob::Status expected_status,
-    std::string expected_payload) {
-  EXPECT_EQ(expected_status, job->status());
-  std::unique_ptr<std::string> payload = job->GetResultPayload();
-  EXPECT_TRUE(payload);
-  EXPECT_EQ(expected_payload, *payload);
-  run_loop_.Quit();
+TEST_F(DeviceCommandStartCRDSessionJobTest,
+       ShouldSucceedIfAccessTokenCanBeFetched) {
+  LogInAsAutoLaunchedKioskAppUser();
+  SetOAuthToken(kTestOAuthToken);
+
+  Result result = RunJobAndWaitForResult();
+
+  EXPECT_SUCCESS(result);
 }
 
-TEST_F(DeviceCommandStartCRDSessionJobTest, Success) {
-  StubCRDHostDelegate delegate(
-      false /* has_active_session */, true /* are_services_ready */,
-      true /* is_running_kiosk */,
-      base::TimeDelta::FromHours(1) /* idleness_period */,
-      true /* oauth_token_success */, true /* access_code_success */);
+TEST_F(DeviceCommandStartCRDSessionJobTest,
+       ShouldTerminateActiveSessionAndThenSucceed) {
+  LogInAsAutoLaunchedKioskAppUser();
+  SetOAuthToken(kTestOAuthToken);
 
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandStartCRDSessionJob>(&delegate);
-  InitializeJob(job.get(), kUniqueID, test_start_time_,
-                base::TimeDelta::FromSeconds(30),
-                false /* terminate_upon_input */);
-  bool success = job->Run(
-      base::Time::Now(), base::TimeTicks::Now(),
-      base::BindOnce(&DeviceCommandStartCRDSessionJobTest::VerifyResults,
-                     base::Unretained(this), base::Unretained(job.get()),
-                     RemoteCommandJob::SUCCEEDED,
-                     CreateSuccessPayload(kTestAccessCode)));
-  EXPECT_TRUE(success);
-  run_loop_.Run();
+  crd_host_delegate().SetHasActiveSession(true);
+
+  Result result = RunJobAndWaitForResult();
+
+  EXPECT_SUCCESS(result);
+  EXPECT_TRUE(crd_host_delegate().IsActiveSessionTerminated());
 }
 
-TEST_F(DeviceCommandStartCRDSessionJobTest, SuccessOldSessionWasRunning) {
-  StubCRDHostDelegate delegate(
-      true /* has_active_session */, true /* are_services_ready */,
-      true /* is_running_kiosk */,
-      base::TimeDelta::FromHours(1) /* idleness_period */,
-      true /* oauth_token_success */, true /* access_code_success */);
+TEST_F(DeviceCommandStartCRDSessionJobTest,
+       ShouldFailIfOAuthTokenServiceIsNotRunning) {
+  DeviceOAuth2TokenServiceFactory::Shutdown();
 
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandStartCRDSessionJob>(&delegate);
-  InitializeJob(job.get(), kUniqueID, test_start_time_,
-                base::TimeDelta::FromSeconds(30),
-                false /* terminate_upon_input */);
-  bool success = job->Run(
-      base::Time::Now(), base::TimeTicks::Now(),
-      base::BindOnce(&DeviceCommandStartCRDSessionJobTest::VerifyResults,
-                     base::Unretained(this), base::Unretained(job.get()),
-                     RemoteCommandJob::SUCCEEDED,
-                     CreateSuccessPayload(kTestAccessCode)));
-  EXPECT_TRUE(success);
-  run_loop_.Run();
+  crd_host_delegate().SetHasActiveSession(true);
+
+  Result result = RunJobAndWaitForResult();
+
+  EXPECT_ERROR(result,
+               DeviceCommandStartCRDSessionJob::FAILURE_SERVICES_NOT_READY);
 }
 
-TEST_F(DeviceCommandStartCRDSessionJobTest, FailureServicesAreNotReady) {
-  StubCRDHostDelegate delegate(
-      false /* has_active_session */, false /* are_services_ready */,
-      true /* is_running_kiosk */,
-      base::TimeDelta::FromHours(1) /* idleness_period */,
-      true /* oauth_token_success */, true /* access_code_success */);
+TEST_F(DeviceCommandStartCRDSessionJobTest,
+       ShouldFailIfUserActivityDetectorIsNotRunning) {
+  DeleteUserActivityDetector();
 
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandStartCRDSessionJob>(&delegate);
-  InitializeJob(job.get(), kUniqueID, test_start_time_,
-                base::TimeDelta::FromSeconds(30),
-                false /* terminate_upon_input */);
-  bool success = job->Run(
-      base::Time::Now(), base::TimeTicks::Now(),
-      base::BindOnce(
-          &DeviceCommandStartCRDSessionJobTest::VerifyResults,
-          base::Unretained(this), base::Unretained(job.get()),
-          RemoteCommandJob::FAILED,
-          CreateErrorPayload(
-              DeviceCommandStartCRDSessionJob::FAILURE_SERVICES_NOT_READY,
-              std::string())));
-  EXPECT_TRUE(success);
-  run_loop_.Run();
+  Result result = RunJobAndWaitForResult();
+
+  EXPECT_ERROR(result,
+               DeviceCommandStartCRDSessionJob::FAILURE_SERVICES_NOT_READY);
 }
 
-TEST_F(DeviceCommandStartCRDSessionJobTest, FailureNotAKiosk) {
-  StubCRDHostDelegate delegate(
-      false /* has_active_session */, true /* are_services_ready */,
-      false /* is_running_kiosk */,
-      base::TimeDelta::FromHours(1) /* idleness_period */,
-      true /* oauth_token_success */, true /* access_code_success */);
+TEST_F(DeviceCommandStartCRDSessionJobTest,
+       ShouldFailIfUserManagerIsNotRunning) {
+  DeleteUserManager();
 
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandStartCRDSessionJob>(&delegate);
-  InitializeJob(job.get(), kUniqueID, test_start_time_,
-                base::TimeDelta::FromSeconds(30),
-                false /* terminate_upon_input */);
-  bool success = job->Run(
-      base::Time::Now(), base::TimeTicks::Now(),
-      base::BindOnce(&DeviceCommandStartCRDSessionJobTest::VerifyResults,
-                     base::Unretained(this), base::Unretained(job.get()),
-                     RemoteCommandJob::FAILED,
-                     CreateErrorPayload(
-                         DeviceCommandStartCRDSessionJob::FAILURE_NOT_A_KIOSK,
-                         std::string())));
-  EXPECT_TRUE(success);
-  run_loop_.Run();
+  Result result = RunJobAndWaitForResult();
+
+  EXPECT_ERROR(result,
+               DeviceCommandStartCRDSessionJob::FAILURE_SERVICES_NOT_READY);
 }
 
-TEST_F(DeviceCommandStartCRDSessionJobTest, FailureNotIdle) {
-  StubCRDHostDelegate delegate(
-      false /* has_active_session */, true /* are_services_ready */,
-      true /* is_running_kiosk */,
-      base::TimeDelta::FromSeconds(1) /* idleness_period */,
-      true /* oauth_token_success */, true /* access_code_success */);
+TEST_F(DeviceCommandStartCRDSessionJobTest, ShouldFailForManagedGuestUser) {
+  LogInAsManagedGuestSessionUser();
 
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandStartCRDSessionJob>(&delegate);
-  InitializeJob(job.get(), kUniqueID, test_start_time_,
-                base::TimeDelta::FromSeconds(30),
-                false /* terminate_upon_input */);
-  bool success = job->Run(
-      base::Time::Now(), base::TimeTicks::Now(),
-      base::BindOnce(&DeviceCommandStartCRDSessionJobTest::VerifyResults,
-                     base::Unretained(this), base::Unretained(job.get()),
-                     RemoteCommandJob::FAILED,
-                     CreateNotIdlePayload(base::TimeDelta::FromSeconds(1))));
-  EXPECT_TRUE(success);
-  run_loop_.Run();
+  Result result = RunJobAndWaitForResult();
+
+  EXPECT_ERROR(result,
+               DeviceCommandStartCRDSessionJob::FAILURE_UNSUPPORTED_USER_TYPE);
 }
 
-TEST_F(DeviceCommandStartCRDSessionJobTest, TestNoOauthToken) {
-  StubCRDHostDelegate delegate(
-      false /* has_active_session */, true /* are_services_ready */,
-      true /* is_running_kiosk */,
-      base::TimeDelta::FromHours(1) /* idleness_period */,
-      false /* oauth_token_success */, true /* access_code_success */);
+TEST_F(DeviceCommandStartCRDSessionJobTest, ShouldFailForGuestUser) {
+  LogInAsGuestUser();
 
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandStartCRDSessionJob>(&delegate);
-  InitializeJob(job.get(), kUniqueID, test_start_time_,
-                base::TimeDelta::FromSeconds(30),
-                false /* terminate_upon_input */);
-  bool success =
-      job->Run(base::Time::Now(), base::TimeTicks::Now(),
-               base::BindOnce(
-                   &DeviceCommandStartCRDSessionJobTest::VerifyResults,
-                   base::Unretained(this), base::Unretained(job.get()),
-                   RemoteCommandJob::FAILED,
-                   CreateErrorPayload(
-                       DeviceCommandStartCRDSessionJob::FAILURE_NO_OAUTH_TOKEN,
-                       kTestNoOAuthTokenReason)));
-  EXPECT_TRUE(success);
-  run_loop_.Run();
+  Result result = RunJobAndWaitForResult();
+
+  EXPECT_ERROR(result,
+               DeviceCommandStartCRDSessionJob::FAILURE_UNSUPPORTED_USER_TYPE);
 }
 
-TEST_F(DeviceCommandStartCRDSessionJobTest, TestErrorRunningCRDHost) {
-  StubCRDHostDelegate delegate(
-      false /* has_active_session */, true /* are_services_ready */,
-      true /* is_running_kiosk */,
-      base::TimeDelta::FromHours(1) /* idleness_period */,
-      true /* oauth_token_success */, false /* access_code_success */);
+TEST_F(DeviceCommandStartCRDSessionJobTest, ShouldFailForAffiliatedUser) {
+  LogInAsAffiliatedUser();
 
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandStartCRDSessionJob>(&delegate);
-  InitializeJob(job.get(), kUniqueID, test_start_time_,
-                base::TimeDelta::FromSeconds(30),
-                false /* terminate_upon_input */);
-  bool success =
-      job->Run(base::Time::Now(), base::TimeTicks::Now(),
-               base::BindOnce(
-                   &DeviceCommandStartCRDSessionJobTest::VerifyResults,
-                   base::Unretained(this), base::Unretained(job.get()),
-                   RemoteCommandJob::FAILED,
-                   CreateErrorPayload(
-                       DeviceCommandStartCRDSessionJob::FAILURE_CRD_HOST_ERROR,
-                       std::string())));
-  EXPECT_TRUE(success);
-  run_loop_.Run();
+  Result result = RunJobAndWaitForResult();
+
+  EXPECT_ERROR(result,
+               DeviceCommandStartCRDSessionJob::FAILURE_UNSUPPORTED_USER_TYPE);
+}
+
+TEST_F(DeviceCommandStartCRDSessionJobTest, ShouldFailForRegularUser) {
+  LogInAsRegularUser();
+
+  Result result = RunJobAndWaitForResult();
+
+  EXPECT_ERROR(result,
+               DeviceCommandStartCRDSessionJob::FAILURE_UNSUPPORTED_USER_TYPE);
+}
+
+TEST_F(DeviceCommandStartCRDSessionJobTest,
+       ShouldFailForKioskUserWithoutAutoLaunch) {
+  LogInAsKioskAppUser();
+
+  ash::KioskAppManager::Get()
+      ->set_current_app_was_auto_launched_with_zero_delay_for_testing(false);
+
+  Result result = RunJobAndWaitForResult();
+
+  EXPECT_ERROR(result,
+               DeviceCommandStartCRDSessionJob::FAILURE_UNSUPPORTED_USER_TYPE);
+}
+
+TEST_F(DeviceCommandStartCRDSessionJobTest,
+       ShouldSucceedForKioskUserWithZeroDelayAutoLaunch) {
+  SetOAuthToken(kTestOAuthToken);
+
+  LogInAsKioskAppUser();
+  ash::KioskAppManager::Get()
+      ->set_current_app_was_auto_launched_with_zero_delay_for_testing(true);
+
+  Result result = RunJobAndWaitForResult();
+
+  EXPECT_SUCCESS(result);
+}
+
+TEST_F(DeviceCommandStartCRDSessionJobTest,
+       ShouldFailForArcKioskUserWithoutAutoLaunch) {
+  SetOAuthToken(kTestOAuthToken);
+
+  LogInAsArcKioskAppUser();
+  ash::ArcKioskAppManager::Get()
+      ->set_current_app_was_auto_launched_with_zero_delay_for_testing(false);
+
+  Result result = RunJobAndWaitForResult();
+
+  EXPECT_ERROR(result,
+               DeviceCommandStartCRDSessionJob::FAILURE_UNSUPPORTED_USER_TYPE);
+}
+
+TEST_F(DeviceCommandStartCRDSessionJobTest,
+       ShouldSucceedForArcKioskUserWithZeroDelayAutoLaunch) {
+  SetOAuthToken(kTestOAuthToken);
+
+  LogInAsArcKioskAppUser();
+  ash::ArcKioskAppManager::Get()
+      ->set_current_app_was_auto_launched_with_zero_delay_for_testing(true);
+
+  Result result = RunJobAndWaitForResult();
+
+  EXPECT_SUCCESS(result);
+}
+
+TEST_F(DeviceCommandStartCRDSessionJobTest,
+       ShouldFailForWebKioskUserWithoutAutoLaunch) {
+  SetOAuthToken(kTestOAuthToken);
+
+  LogInAsWebKioskAppUser();
+  ash::WebKioskAppManager::Get()
+      ->set_current_app_was_auto_launched_with_zero_delay_for_testing(false);
+
+  Result result = RunJobAndWaitForResult();
+
+  EXPECT_ERROR(result,
+               DeviceCommandStartCRDSessionJob::FAILURE_UNSUPPORTED_USER_TYPE);
+}
+
+TEST_F(DeviceCommandStartCRDSessionJobTest,
+       ShouldSucceedForWebKioskUserWithZeroDelayAutoLaunch) {
+  SetOAuthToken(kTestOAuthToken);
+
+  LogInAsWebKioskAppUser();
+  ash::WebKioskAppManager::Get()
+      ->set_current_app_was_auto_launched_with_zero_delay_for_testing(true);
+
+  Result result = RunJobAndWaitForResult();
+
+  EXPECT_SUCCESS(result);
+}
+
+TEST_F(DeviceCommandStartCRDSessionJobTest,
+       ShouldFailIfDeviceIdleTimeIsLessThanIdlenessCutoffValue) {
+  LogInAsAutoLaunchedKioskAppUser();
+  SetOAuthToken(kTestOAuthToken);
+
+  const auto idleness_cutoff = base::TimeDelta::FromSeconds(10);
+  const auto device_idle_time = base::TimeDelta::FromSeconds(9);
+
+  SetDeviceIdleTime(device_idle_time);
+  SetIdlenessCutoff(idleness_cutoff);
+
+  Result result = RunJobAndWaitForResult();
+
+  EXPECT_EQ(result.status, RemoteCommandJob::Status::FAILED);
+  EXPECT_EQ(result.payload, CreateNotIdlePayload(device_idle_time));
+}
+
+TEST_F(DeviceCommandStartCRDSessionJobTest,
+       ShouldSucceedIfDeviceIdleTimeIsMoreThanIdlenessCutoffValue) {
+  LogInAsAutoLaunchedKioskAppUser();
+  SetOAuthToken(kTestOAuthToken);
+
+  const auto idleness_cutoff = base::TimeDelta::FromSeconds(10);
+  const auto device_idle_time = base::TimeDelta::FromSeconds(11);
+
+  SetDeviceIdleTime(device_idle_time);
+  SetIdlenessCutoff(idleness_cutoff);
+
+  Result result = RunJobAndWaitForResult();
+
+  EXPECT_SUCCESS(result);
+}
+
+TEST_F(DeviceCommandStartCRDSessionJobTest,
+       ShouldFailIfWeCantFetchTheOAuthToken) {
+  LogInAsAutoLaunchedKioskAppUser();
+  ClearOAuthToken();
+
+  Result result = RunJobAndWaitForResult();
+
+  EXPECT_ERROR(result, DeviceCommandStartCRDSessionJob::FAILURE_NO_OAUTH_TOKEN,
+               kTestNoOAuthTokenReason);
+}
+
+TEST_F(DeviceCommandStartCRDSessionJobTest, ShouldFailIfCRDHostReportsAnError) {
+  LogInAsAutoLaunchedKioskAppUser();
+  SetOAuthToken(kTestOAuthToken);
+
+  crd_host_delegate().MakeAccessCodeFetchFail();
+
+  Result result = RunJobAndWaitForResult();
+
+  EXPECT_ERROR(result, DeviceCommandStartCRDSessionJob::FAILURE_CRD_HOST_ERROR);
+}
+
+TEST_F(DeviceCommandStartCRDSessionJobTest, ShouldPassOAuthTokenToDelegate) {
+  LogInAsAutoLaunchedKioskAppUser();
+  SetOAuthToken("the-oauth-token");
+
+  Result result = RunJobAndWaitForResult();
+  EXPECT_SUCCESS(result);
+
+  EXPECT_EQ("the-oauth-token",
+            crd_host_delegate().session_parameters().oauth_token);
+}
+
+TEST_F(DeviceCommandStartCRDSessionJobTest,
+       ShouldPassRobotAccountNameToDelegate) {
+  LogInAsAutoLaunchedKioskAppUser();
+  SetOAuthToken(kTestOAuthToken);
+
+  SetRobotAccountUserName("robot-account");
+
+  Result result = RunJobAndWaitForResult();
+  EXPECT_SUCCESS(result);
+
+  EXPECT_EQ("robot-account",
+            crd_host_delegate().session_parameters().user_name);
+}
+
+TEST_F(DeviceCommandStartCRDSessionJobTest,
+       ShouldPassTerminateUponInputTrueToDelegate) {
+  LogInAsAutoLaunchedKioskAppUser();
+  SetOAuthToken(kTestOAuthToken);
+
+  SetTerminateUponInput(true);
+
+  Result result = RunJobAndWaitForResult();
+  EXPECT_SUCCESS(result);
+
+  EXPECT_EQ(true,
+            crd_host_delegate().session_parameters().terminate_upon_input);
+}
+
+TEST_F(DeviceCommandStartCRDSessionJobTest,
+       ShouldPassTerminateUponInputFalseToDelegate) {
+  LogInAsAutoLaunchedKioskAppUser();
+  SetOAuthToken(kTestOAuthToken);
+
+  SetTerminateUponInput(false);
+
+  Result result = RunJobAndWaitForResult();
+  EXPECT_SUCCESS(result);
+
+  EXPECT_EQ(false,
+            crd_host_delegate().session_parameters().terminate_upon_input);
+}
+
+TEST_F(DeviceCommandStartCRDSessionJobTest,
+       ShouldPassShowConfirmationDialogFalseToDelegateForKioskUsers) {
+  LogInAsAutoLaunchedKioskAppUser();
+  SetOAuthToken(kTestOAuthToken);
+
+  Result result = RunJobAndWaitForResult();
+  EXPECT_SUCCESS(result);
+
+  EXPECT_EQ(false,
+            crd_host_delegate().session_parameters().show_confirmation_dialog);
+}
+
+// This test fixture enables the |kCRDForManagedUserSessions| feature flag,
+// and tests the additional functionality enabled by the flag.
+class DeviceCommandStartCRDSessionJobWithCRDForUserSessionsFeatureTest
+    : public DeviceCommandStartCRDSessionJobTest {
+ public:
+  DeviceCommandStartCRDSessionJobWithCRDForUserSessionsFeatureTest() = default;
+  DeviceCommandStartCRDSessionJobWithCRDForUserSessionsFeatureTest(
+      const DeviceCommandStartCRDSessionJobWithCRDForUserSessionsFeatureTest&) =
+      delete;
+  DeviceCommandStartCRDSessionJobWithCRDForUserSessionsFeatureTest& operator=(
+      const DeviceCommandStartCRDSessionJobWithCRDForUserSessionsFeatureTest&) =
+      delete;
+  ~DeviceCommandStartCRDSessionJobWithCRDForUserSessionsFeatureTest() override =
+      default;
+
+ private:
+  base::test::ScopedFeatureList enable_crd_for_user_sessions_{
+      features::kCRDForManagedUserSessions};
+};
+
+TEST_F(DeviceCommandStartCRDSessionJobWithCRDForUserSessionsFeatureTest,
+       ShouldSucceedForKioskUserWithZeroDelayAutoLaunch) {
+  SetOAuthToken(kTestOAuthToken);
+
+  LogInAsKioskAppUser();
+  ash::KioskAppManager::Get()
+      ->set_current_app_was_auto_launched_with_zero_delay_for_testing(true);
+
+  Result result = RunJobAndWaitForResult();
+
+  EXPECT_SUCCESS(result);
+}
+
+TEST_F(DeviceCommandStartCRDSessionJobWithCRDForUserSessionsFeatureTest,
+       ShouldFailForRegularUsers) {
+  LogInAsRegularUser();
+
+  Result result = RunJobAndWaitForResult();
+
+  EXPECT_ERROR(result,
+               DeviceCommandStartCRDSessionJob::FAILURE_UNSUPPORTED_USER_TYPE);
+}
+
+TEST_F(DeviceCommandStartCRDSessionJobWithCRDForUserSessionsFeatureTest,
+       ShouldFailForGuestUsers) {
+  // Note that guest user != managed guest user
+  LogInAsGuestUser();
+
+  Result result = RunJobAndWaitForResult();
+
+  EXPECT_ERROR(result,
+               DeviceCommandStartCRDSessionJob::FAILURE_UNSUPPORTED_USER_TYPE);
+}
+
+TEST_F(DeviceCommandStartCRDSessionJobWithCRDForUserSessionsFeatureTest,
+       ShouldFailIfNoUserIsLoggedIn) {
+  Result result = RunJobAndWaitForResult();
+
+  EXPECT_ERROR(result,
+               DeviceCommandStartCRDSessionJob::FAILURE_UNSUPPORTED_USER_TYPE);
+}
+
+TEST_F(DeviceCommandStartCRDSessionJobWithCRDForUserSessionsFeatureTest,
+       ShouldSucceedForManagedGuestUser) {
+  SetOAuthToken(kTestOAuthToken);
+
+  LogInAsManagedGuestSessionUser();
+  Result result = RunJobAndWaitForResult();
+
+  EXPECT_SUCCESS(result);
+}
+
+TEST_F(DeviceCommandStartCRDSessionJobWithCRDForUserSessionsFeatureTest,
+       ShouldSucceedForAffiliatedUser) {
+  SetOAuthToken(kTestOAuthToken);
+
+  LogInAsAffiliatedUser();
+  Result result = RunJobAndWaitForResult();
+
+  EXPECT_SUCCESS(result);
+}
+
+TEST_F(DeviceCommandStartCRDSessionJobWithCRDForUserSessionsFeatureTest,
+       ShouldPassShowConfirmationDialogTrueToDelegateForManagedGuestUser) {
+  LogInAsManagedGuestSessionUser();
+  SetOAuthToken(kTestOAuthToken);
+
+  Result result = RunJobAndWaitForResult();
+  EXPECT_SUCCESS(result);
+
+  EXPECT_EQ(true,
+            crd_host_delegate().session_parameters().show_confirmation_dialog);
+}
+
+TEST_F(DeviceCommandStartCRDSessionJobWithCRDForUserSessionsFeatureTest,
+       ShouldPassShowConfirmationDialogTrueToDelegateForAffiliatedUser) {
+  LogInAsAffiliatedUser();
+  SetOAuthToken(kTestOAuthToken);
+
+  Result result = RunJobAndWaitForResult();
+  EXPECT_SUCCESS(result);
+
+  EXPECT_EQ(true,
+            crd_host_delegate().session_parameters().show_confirmation_dialog);
 }
 
 }  // namespace policy

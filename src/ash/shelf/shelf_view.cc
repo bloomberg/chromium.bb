@@ -9,12 +9,11 @@
 #include <utility>
 
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/constants/ash_features.h"
 #include "ash/drag_drop/drag_image_view.h"
 #include "ash/keyboard/keyboard_util.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/metrics/user_metrics_recorder.h"
-#include "ash/public/cpp/ash_constants.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_types.h"
@@ -799,7 +798,7 @@ void ShelfView::ShowContextMenuForViewImpl(views::View* source,
   const ShelfItem* item = ShelfItemForView(source);
   if (!item_awaiting_response_.IsNull()) {
     if (item && item->id != item_awaiting_response_) {
-      static_cast<views::Button*>(source)->ink_drop()->AnimateToState(
+      views::InkDrop::Get(source)->AnimateToState(
           views::InkDropState::DEACTIVATED, nullptr);
     }
     return;
@@ -1869,6 +1868,10 @@ void ShelfView::AnnounceShelfAlignment() {
                                                /*send_native_event=*/true);
 }
 
+bool ShelfView::IsAnimating() const {
+  return bounds_animator_->IsAnimating();
+}
+
 void ShelfView::AnnounceShelfAutohideBehavior() {
   std::u16string announcement;
   switch (shelf_->auto_hide_behavior()) {
@@ -2317,10 +2320,8 @@ void ShelfView::ShowMenu(std::unique_ptr<ui::SimpleMenuModel> menu_model,
   if ((source_type == ui::MenuSourceType::MENU_SOURCE_MOUSE ||
        source_type == ui::MenuSourceType::MENU_SOURCE_KEYBOARD) &&
       item) {
-    static_cast<ShelfAppButton*>(source)
-        ->ink_drop()
-        ->GetInkDrop()
-        ->AnimateToState(views::InkDropState::ACTIVATED);
+    views::InkDrop::Get(source)->GetInkDrop()->AnimateToState(
+        views::InkDropState::ACTIVATED);
   }
 
   // Only selected shelf items with context menu opened can be dragged.
@@ -2337,8 +2338,9 @@ void ShelfView::ShowMenu(std::unique_ptr<ui::SimpleMenuModel> menu_model,
       /*for_application_menu_items*/ !context_menu);
   shelf_menu_model_adapter_->Run(
       GetMenuAnchorRect(*source, click_point, context_menu),
-      shelf_->IsHorizontalAlignment() ? views::MenuAnchorPosition::kBubbleAbove
-                                      : views::MenuAnchorPosition::kBubbleLeft,
+      shelf_->IsHorizontalAlignment()
+          ? views::MenuAnchorPosition::kBubbleTopRight
+          : views::MenuAnchorPosition::kBubbleLeft,
       run_types);
 
   if (!context_menu_shown_callback_.is_null())
@@ -2440,7 +2442,7 @@ void ShelfView::SetDragImageBlur(const gfx::Size& size, int blur_radius) {
   DragImageView* drag_image = GetDragImage();
   drag_image->SetPaintToLayer();
   drag_image->layer()->SetFillsBoundsOpaquely(false);
-  const uint32_t radius = std::round(size.width() / 2.f);
+  const float radius = size.width() / 2.0f;
   drag_image->layer()->SetRoundedCornerRadius({radius, radius, radius, radius});
   drag_image->layer()->SetBackgroundBlur(blur_radius);
 }

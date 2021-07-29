@@ -28,8 +28,8 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_icon_manager.h"
-#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "components/favicon/core/favicon_service.h"
@@ -307,10 +307,10 @@ absl::optional<IconPurpose> GetIconPurpose(
     int size_hint_in_dip) {
   // Get the max supported pixel size.
   int max_icon_size_in_px = 0;
-  for (auto scale_factor : ui::GetSupportedScaleFactors()) {
-    const gfx::Size icon_size_in_px =
-        gfx::ScaleToFlooredSize(gfx::Size(size_hint_in_dip, size_hint_in_dip),
-                                ui::GetScaleForScaleFactor(scale_factor));
+  for (auto scale_factor : ui::GetSupportedResourceScaleFactors()) {
+    const gfx::Size icon_size_in_px = gfx::ScaleToFlooredSize(
+        gfx::Size(size_hint_in_dip, size_hint_in_dip),
+        ui::GetScaleForResourceScaleFactor(scale_factor));
     DCHECK_EQ(icon_size_in_px.width(), icon_size_in_px.height());
     if (max_icon_size_in_px < icon_size_in_px.width()) {
       max_icon_size_in_px = icon_size_in_px.width();
@@ -698,12 +698,12 @@ void IconLoadingPipeline::LoadWebAppIcon(
       // uncompressed image to apply the icon effects, and then re-encode the
       // image if the compressed icon is requested.
       std::vector<int> icon_pixel_sizes;
-      for (auto scale_factor : ui::GetSupportedScaleFactors()) {
+      for (auto scale_factor : ui::GetSupportedResourceScaleFactors()) {
         auto size_and_purpose = icon_manager.FindIconMatchBigger(
             web_app_id, {*icon_purpose_to_read},
             gfx::ScaleToFlooredSize(
                 gfx::Size(size_hint_in_dip_, size_hint_in_dip_),
-                ui::GetScaleForScaleFactor(scale_factor))
+                ui::GetScaleForResourceScaleFactor(scale_factor))
                 .width());
         DCHECK(size_and_purpose.has_value());
         if (!base::Contains(icon_pixel_sizes, size_and_purpose->size_px)) {
@@ -990,6 +990,7 @@ void IconLoadingPipeline::OnArcActivityIconLoaded(
   DCHECK(arc_activity_icon);
   ++count_;
   *arc_activity_icon = icon;
+  arc_activity_icon->MakeThreadSafe();
 
   if (count_ == arc_activity_icons_.size() &&
       !arc_activity_icons_callback_.is_null()) {
@@ -1074,8 +1075,8 @@ void IconLoadingPipeline::OnReadWebAppIcon(
 
   gfx::ImageSkia image_skia;
   auto it = icon_bitmaps.begin();
-  for (auto scale_factor : ui::GetSupportedScaleFactors()) {
-    float icon_scale = ui::GetScaleForScaleFactor(scale_factor);
+  for (auto scale_factor : ui::GetSupportedResourceScaleFactors()) {
+    float icon_scale = ui::GetScaleForResourceScaleFactor(scale_factor);
     int icon_size_in_px =
         gfx::ScaleToFlooredSize(gfx::Size(size_hint_in_dip_, size_hint_in_dip_),
                                 icon_scale)
@@ -1102,7 +1103,7 @@ void IconLoadingPipeline::OnReadWebAppIcon(
     image_skia.AddRepresentation(gfx::ImageSkiaRep(bitmap, icon_scale));
   }
   DCHECK_EQ(image_skia.image_reps().size(),
-            ui::GetSupportedScaleFactors().size());
+            ui::GetSupportedResourceScaleFactors().size());
   MaybeApplyEffectsAndComplete(image_skia);
 }
 
@@ -1334,6 +1335,25 @@ gfx::ImageSkia ConvertSquareBitmapsToImageSkia(
     const std::map<SquareSizePx, SkBitmap>& icon_bitmaps,
     IconEffects icon_effects,
     int size_hint_in_dip) {
+  auto image_skia =
+      ConvertIconBitmapsToImageSkia(icon_bitmaps, size_hint_in_dip);
+
+  if (image_skia.isNull()) {
+    return gfx::ImageSkia{};
+  }
+
+  if ((icon_effects & IconEffects::kCrOsStandardMask) &&
+      (icon_effects & IconEffects::kCrOsStandardBackground)) {
+    image_skia = apps::ApplyBackgroundAndMask(image_skia);
+  }
+  return image_skia;
+}
+
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+gfx::ImageSkia ConvertIconBitmapsToImageSkia(
+    const std::map<SquareSizePx, SkBitmap>& icon_bitmaps,
+    int size_hint_in_dip) {
   if (icon_bitmaps.empty()) {
     return gfx::ImageSkia{};
   }
@@ -1341,8 +1361,9 @@ gfx::ImageSkia ConvertSquareBitmapsToImageSkia(
   gfx::ImageSkia image_skia;
   auto it = icon_bitmaps.begin();
 
-  for (ui::ScaleFactor scale_factor : ui::GetSupportedScaleFactors()) {
-    float icon_scale = ui::GetScaleForScaleFactor(scale_factor);
+  for (ui::ResourceScaleFactor scale_factor :
+       ui::GetSupportedResourceScaleFactors()) {
+    float icon_scale = ui::GetScaleForResourceScaleFactor(scale_factor);
 
     SquareSizePx icon_size_in_px =
         gfx::ScaleToFlooredSize(gfx::Size(size_hint_in_dip, size_hint_in_dip),
@@ -1376,14 +1397,9 @@ gfx::ImageSkia ConvertSquareBitmapsToImageSkia(
   }
 
   image_skia.EnsureRepsForSupportedScales();
-  if ((icon_effects & IconEffects::kCrOsStandardMask) &&
-      (icon_effects & IconEffects::kCrOsStandardBackground)) {
-    image_skia = apps::ApplyBackgroundAndMask(image_skia);
-  }
+
   return image_skia;
 }
-
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 void ApplyIconEffects(IconEffects icon_effects,
                       int size_hint_in_dip,

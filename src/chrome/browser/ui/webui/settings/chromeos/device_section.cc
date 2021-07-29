@@ -7,7 +7,6 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/ash_interfaces.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/night_light_controller.h"
 #include "ash/public/cpp/stylus_utils.h"
 #include "base/command_line.h"
@@ -592,9 +591,6 @@ void AddDeviceDisplayStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_DISPLAY_NIGHT_LIGHT_SCHEDULE_NEVER},
       {"displayNightLightScheduleSunsetToSunRise",
        IDS_SETTINGS_DISPLAY_NIGHT_LIGHT_SCHEDULE_SUNSET_TO_SUNRISE},
-      {"displayNightLightStartTime",
-       IDS_SETTINGS_DISPLAY_NIGHT_LIGHT_START_TIME},
-      {"displayNightLightStopTime", IDS_SETTINGS_DISPLAY_NIGHT_LIGHT_STOP_TIME},
       {"displayNightLightText", IDS_SETTINGS_DISPLAY_NIGHT_LIGHT_TEXT},
       {"displayNightLightTemperatureLabel",
        IDS_SETTINGS_DISPLAY_NIGHT_LIGHT_TEMPERATURE_LABEL},

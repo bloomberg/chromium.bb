@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
@@ -21,12 +22,15 @@
 #include "base/strings/strcat.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/scoped_blocking_call.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/common/mac/launchd.h"
 #include "chrome/updater/constants.h"
 #include "chrome/updater/crash_client.h"
 #include "chrome/updater/crash_reporter.h"
+#include "chrome/updater/launchd_util.h"
 #import "chrome/updater/mac/mac_util.h"
 #import "chrome/updater/mac/xpc_service_names.h"
 #include "chrome/updater/updater_branding.h"
@@ -302,7 +306,7 @@ bool DeleteFolder(const absl::optional<base::FilePath>& installed_path) {
   if (!installed_path)
     return false;
   if (!base::DeletePathRecursively(*installed_path)) {
-    LOG(ERROR) << "Deleting " << installed_path << " failed";
+    PLOG(ERROR) << "Deleting " << installed_path << " failed";
     return false;
   }
   return true;
@@ -316,13 +320,34 @@ bool DeleteCandidateInstallFolder(UpdaterScope scope) {
   return DeleteFolder(GetVersionedUpdaterFolderPath(scope));
 }
 
-bool DeleteDataFolder() {
-  return DeleteFolder(GetBaseDirectory());
+bool DeleteDataFolder(UpdaterScope scope) {
+  return DeleteFolder(GetBaseDirectory(scope));
 }
 
-}  // namespace
+void CleanAfterInstallFailure(UpdaterScope scope) {
+  // If install fails at any point, attempt to clean the install.
+  DeleteCandidateInstallFolder(scope);
+  RemoveUpdateWakeJobFromLaunchd(scope);
+  RemoveUpdateServiceInternalJobFromLaunchd(scope);
+}
 
-int Setup(UpdaterScope scope) {
+bool RemoveQuarantineAttributes(const base::FilePath& updater_bundle_path,
+                                const base::FilePath& updater_executable_path) {
+  if (!base::mac::RemoveQuarantineAttribute(updater_bundle_path)) {
+    VPLOG(1) << "Could not remove com.apple.quarantine for the bundle.";
+    return false;
+  }
+
+  if (!base::mac::RemoveQuarantineAttribute(updater_executable_path)) {
+    VPLOG(1) << "Could not remove com.apple.quarantine for the "
+                "executable.";
+    return false;
+  }
+
+  return true;
+}
+
+int DoSetup(UpdaterScope scope) {
   const absl::optional<base::FilePath> dest_path =
       GetVersionedUpdaterFolderPath(scope);
 
@@ -334,6 +359,14 @@ int Setup(UpdaterScope scope) {
   const base::FilePath updater_executable_path =
       dest_path->Append(GetUpdaterAppName())
           .Append(GetUpdaterAppExecutablePath());
+
+  // Quarantine attribute needs to be removed here as the copied bundle might be
+  // given com.apple.quarantine attribute, and the server is attempted to be
+  // launched below, Gatekeeper could prompt the user.
+  if (!RemoveQuarantineAttributes(*dest_path, updater_executable_path)) {
+    VLOG(1) << "Couldn't remove quarantine bits for updater. This will likely "
+               "cause Gatekeeper to show a prompt to the user.";
+  }
 
   if (!CreateWakeLaunchdJobPlist(scope, updater_executable_path))
     return setup_exit_codes::kFailedToCreateWakeLaunchdJobPlist;
@@ -352,6 +385,15 @@ int Setup(UpdaterScope scope) {
   return setup_exit_codes::kSuccess;
 }
 
+}  // namespace
+
+int Setup(UpdaterScope scope) {
+  int error = DoSetup(scope);
+  if (error)
+    CleanAfterInstallFailure(scope);
+  return error;
+}
+
 int PromoteCandidate(UpdaterScope scope) {
   const absl::optional<base::FilePath> dest_path =
       GetVersionedUpdaterFolderPath(scope);
@@ -366,6 +408,9 @@ int PromoteCandidate(UpdaterScope scope) {
 
   if (!StartLaunchdServiceJob(scope))
     return setup_exit_codes::kFailedToStartLaunchdActiveServiceJob;
+
+  // Wait for launchd to finish the load operation for the update service.
+  base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(2));
 
   return setup_exit_codes::kSuccess;
 }
@@ -409,8 +454,9 @@ void UninstallOtherVersions(UpdaterScope scope) {
       command_line.AppendSwitch(kUninstallSelfSwitch);
       if (scope == UpdaterScope::kSystem)
         command_line.AppendSwitch(kSystemSwitch);
-      command_line.AppendSwitch("--enable-logging");
-      command_line.AppendSwitchASCII("--vmodule", "*/chrome/updater/*=2");
+      command_line.AppendSwitch(kEnableLoggingSwitch);
+      command_line.AppendSwitchASCII(kLoggingModuleSwitch,
+                                     "*/chrome/updater/*=2");
 
       int exit_code = -1;
       std::string output;
@@ -434,11 +480,13 @@ int Uninstall(UpdaterScope scope) {
 
   UninstallOtherVersions(scope);
 
-  if (!DeleteDataFolder())
-    return setup_exit_codes::kFailedToDeleteDataFolder;
-
   if (!DeleteInstallFolder(scope))
     return setup_exit_codes::kFailedToDeleteFolder;
+
+  // Deleting the data folder is best-effort. Current running processes such as
+  // the crash handler process may still write to the updater log file, thus
+  // it is not always possible to delete the data folder.
+  DeleteDataFolder(scope);
 
   return setup_exit_codes::kSuccess;
 }

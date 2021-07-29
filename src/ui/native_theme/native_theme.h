@@ -271,6 +271,7 @@ class NATIVE_THEME_EXPORT NativeTheme {
     bool is_overlay;
     ScrollbarOverlayColorTheme scrollbar_theme;
     ScrollbarOrientation orientation;  // Used on Mac for drawing gradients.
+    float scale_from_dip;
   };
 #endif
 
@@ -449,10 +450,6 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // colors, you probably shouldn't. Instead, use GetSystemColor().
   virtual bool ShouldUseDarkColors() const;
 
-  // Returns the name that uniquely identifies the current NativeTheme. Default
-  // implementation returns an empty string.
-  virtual std::string GetNativeThemeName() const;
-
   // Returns the OS-level user preferred color scheme. See the comment for
   // CalculatePreferredColorScheme() for details on how preferred color scheme
   // is calculated.
@@ -501,14 +498,17 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // Assign the focus-ring-appropriate alpha value to the provided base_color.
   virtual SkColor FocusRingColorForBaseColor(SkColor base_color) const;
 
+  virtual float AdjustBorderRadiusByZoom(Part part,
+                                         float border_width,
+                                         float zoom_level) const;
+
  protected:
   explicit NativeTheme(bool should_only_use_dark_colors);
   virtual ~NativeTheme();
 
   // Gets the color from the color provider if using a color provider is enable.
   absl::optional<SkColor> GetColorProviderColor(ColorId color_id,
-                                                ColorScheme color_scheme,
-                                                std::string theme_name) const;
+                                                ColorScheme color_scheme) const;
 
   // Whether high contrast is forced via command-line flag.
   bool IsForcedHighContrast() const;

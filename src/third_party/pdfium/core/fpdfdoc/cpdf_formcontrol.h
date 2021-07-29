@@ -7,8 +7,7 @@
 #ifndef CORE_FPDFDOC_CPDF_FORMCONTROL_H_
 #define CORE_FPDFDOC_CPDF_FORMCONTROL_H_
 
-#include <utility>
-
+#include "constants/appearance.h"
 #include "core/fpdfdoc/cpdf_aaction.h"
 #include "core/fpdfdoc/cpdf_action.h"
 #include "core/fpdfdoc/cpdf_annot.h"
@@ -30,13 +29,11 @@ class CPDF_Dictionary;
 class CPDF_Font;
 class CPDF_FormField;
 class CPDF_InteractiveForm;
-class CPDF_OCContext;
-class CPDF_RenderOptions;
 class CPDF_Stream;
 
 class CPDF_FormControl {
  public:
-  enum HighlightingMode { None = 0, Invert, Outline, Push, Toggle };
+  enum HighlightingMode { kNone = 0, kInvert, kOutline, kPush, kToggle };
 
   CPDF_FormControl(CPDF_FormField* pField, CPDF_Dictionary* pWidgetDict);
   ~CPDF_FormControl();
@@ -56,33 +53,30 @@ class CPDF_FormControl {
   bool HasMKEntry(const ByteString& csEntry) const;
   int GetRotation() const;
 
-  std::pair<CFX_Color::Type, FX_ARGB> GetBorderColorARGB() {
-    return GetColorARGB("BC");
+  CFX_Color::TypeAndARGB GetColorARGB(const ByteString& csEntry);
+  float GetOriginalColorComponent(int index, const ByteString& csEntry);
+
+  CFX_Color GetOriginalBorderColor() {
+    return GetOriginalColor(pdfium::appearance::kBC);
   }
 
-  float GetOriginalBorderColorComponent(int index) {
-    return GetOriginalColorComponent(index, "BC");
+  CFX_Color GetOriginalBackgroundColor() {
+    return GetOriginalColor(pdfium::appearance::kBG);
   }
 
-  CFX_Color GetOriginalBorderColor() { return GetOriginalColor("BC"); }
-
-  std::pair<CFX_Color::Type, FX_ARGB> GetBackgroundColor() {
-    return GetColorARGB("BG");
+  WideString GetNormalCaption() const {
+    return GetCaption(pdfium::appearance::kCA);
+  }
+  WideString GetRolloverCaption() const {
+    return GetCaption(pdfium::appearance::kRC);
+  }
+  WideString GetDownCaption() const {
+    return GetCaption(pdfium::appearance::kAC);
   }
 
-  float GetOriginalBackgroundColorComponent(int index) {
-    return GetOriginalColorComponent(index, "BG");
-  }
-
-  CFX_Color GetOriginalBackgroundColor() { return GetOriginalColor("BG"); }
-
-  WideString GetNormalCaption() const { return GetCaption("CA"); }
-  WideString GetRolloverCaption() const { return GetCaption("RC"); }
-  WideString GetDownCaption() const { return GetCaption("AC"); }
-
-  CPDF_Stream* GetNormalIcon() { return GetIcon("I"); }
-  CPDF_Stream* GetRolloverIcon() { return GetIcon("RI"); }
-  CPDF_Stream* GetDownIcon() { return GetIcon("IX"); }
+  CPDF_Stream* GetNormalIcon() { return GetIcon(pdfium::appearance::kI); }
+  CPDF_Stream* GetRolloverIcon() { return GetIcon(pdfium::appearance::kRI); }
+  CPDF_Stream* GetDownIcon() { return GetIcon(pdfium::appearance::kIX); }
   CPDF_IconFit GetIconFit() const;
 
   int GetTextPosition() const;
@@ -96,8 +90,6 @@ class CPDF_FormControl {
 
  private:
   RetainPtr<CPDF_Font> GetDefaultControlFont() const;
-  std::pair<CFX_Color::Type, FX_ARGB> GetColorARGB(const ByteString& csEntry);
-  float GetOriginalColorComponent(int index, const ByteString& csEntry);
   CFX_Color GetOriginalColor(const ByteString& csEntry);
 
   WideString GetCaption(const ByteString& csEntry) const;

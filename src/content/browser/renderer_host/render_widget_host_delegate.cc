@@ -91,6 +91,10 @@ blink::mojom::DisplayMode RenderWidgetHostDelegate::GetDisplayMode() const {
   return blink::mojom::DisplayMode::kBrowser;
 }
 
+gfx::Rect RenderWidgetHostDelegate::GetWindowsControlsOverlayRect() const {
+  return gfx::Rect();
+}
+
 bool RenderWidgetHostDelegate::HasMouseLock(
     RenderWidgetHostImpl* render_widget_host) {
   return false;
@@ -131,11 +135,6 @@ WebContents* RenderWidgetHostDelegate::GetAsWebContents() {
 
 bool RenderWidgetHostDelegate::IsShowingContextMenuOnPage() const {
   return false;
-}
-
-RenderFrameHostImpl*
-RenderWidgetHostDelegate::GetFocusedFrameFromFocusedDelegate() {
-  return nullptr;
 }
 
 bool RenderWidgetHostDelegate::IsPortal() {

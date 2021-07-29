@@ -15,8 +15,8 @@
 #include "base/test/scoped_running_on_chromeos.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/ash/arc/test/test_arc_session_manager.h"
-#include "chrome/browser/chromeos/file_manager/fake_disk_mount_manager.h"
-#include "chrome/browser/chromeos/file_manager/path_util.h"
+#include "chrome/browser/ash/file_manager/fake_disk_mount_manager.h"
+#include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ui/webui/settings/chromeos/calculator/size_calculator_test_api.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_storage_handler.h"
 #include "chrome/common/chrome_paths.h"
@@ -149,12 +149,11 @@ class StorageHandlerTest : public testing::Test {
     for (auto it = web_ui_.call_data().rbegin();
          it != web_ui_.call_data().rend(); ++it) {
       const content::TestWebUI::CallData* data = it->get();
-      std::string name;
-      if (data->function_name() != "cr.webUIListenerCallback" ||
-          !data->arg1()->GetAsString(&name)) {
+      const std::string* name = data->arg1()->GetIfString();
+      if (data->function_name() != "cr.webUIListenerCallback" || !name) {
         continue;
       }
-      if (name == event_name)
+      if (*name == event_name)
         return data->arg2();
     }
     return nullptr;

@@ -45,6 +45,8 @@ class SigninUI {
   virtual void StartUserOnboarding() = 0;
   // Show UI for management transition flow.
   virtual void StartManagementTransition() = 0;
+  // Show additional terms of service on login.
+  virtual void ShowTosForExistingUser() = 0;
 
   virtual void StartEncryptionMigration(
       const UserContext& user_context,
@@ -61,8 +63,10 @@ class SigninUI {
                                          bool password_incorrect) = 0;
 
   virtual void ShowSigninError(SigninError error,
-                               const std::string& details,
-                               int login_attempts) = 0;
+                               const std::string& details) = 0;
+
+  // Show the browser data migration UI and start the migration.
+  virtual void StartBrowserDataMigration() = 0;
 };
 
 }  // namespace chromeos
@@ -71,6 +75,7 @@ class SigninUI {
 // source migration is finished.
 namespace ash {
 using ::chromeos::SigninError;
+using ::chromeos::SigninUI;
 }
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_UI_SIGNIN_UI_H_

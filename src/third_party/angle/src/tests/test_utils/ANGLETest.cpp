@@ -14,6 +14,7 @@
 
 #include "common/platform.h"
 #include "gpu_info_util/SystemInfo.h"
+#include "test_utils/runner/TestSuite.h"
 #include "util/EGLWindow.h"
 #include "util/OSWindow.h"
 #include "util/random_utils.h"
@@ -183,6 +184,35 @@ bool ShouldAlwaysForceNewDisplay()
     SystemInfo *systemInfo = GetTestSystemInfo();
     return (!systemInfo || !IsWindows() || systemInfo->hasAMDGPU());
 }
+
+GPUTestConfig::API GetTestConfigAPIFromRenderer(EGLenum renderer, EGLenum deviceType)
+{
+    switch (renderer)
+    {
+        case EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE:
+            return GPUTestConfig::kAPID3D11;
+        case EGL_PLATFORM_ANGLE_TYPE_D3D9_ANGLE:
+            return GPUTestConfig::kAPID3D9;
+        case EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE:
+            return GPUTestConfig::kAPIGLDesktop;
+        case EGL_PLATFORM_ANGLE_TYPE_OPENGLES_ANGLE:
+            return GPUTestConfig::kAPIGLES;
+        case EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE:
+            if (deviceType == EGL_PLATFORM_ANGLE_DEVICE_TYPE_SWIFTSHADER_ANGLE)
+            {
+                return GPUTestConfig::kAPISwiftShader;
+            }
+            else
+            {
+                return GPUTestConfig::kAPIVulkan;
+            }
+        case EGL_PLATFORM_ANGLE_TYPE_METAL_ANGLE:
+            return GPUTestConfig::kAPIMetal;
+        default:
+            std::cerr << "Unknown Renderer enum: 0x%X\n" << renderer;
+            return GPUTestConfig::kAPIUnknown;
+    }
+}
 }  // anonymous namespace
 
 GLColorRGB::GLColorRGB(const Vector3 &floatColor)
@@ -199,6 +229,13 @@ GLColor::GLColor(const Vector4 &floatColor)
 GLColor::GLColor(GLuint colorValue) : R(0), G(0), B(0), A(0)
 {
     memcpy(&R, &colorValue, sizeof(GLuint));
+}
+
+GLuint GLColor::asUint() const
+{
+    GLuint uint = 0;
+    memcpy(&uint, &R, sizeof(GLuint));
+    return uint;
 }
 
 testing::AssertionResult GLColor::ExpectNear(const GLColor &expected, const GLColor &err) const
@@ -317,6 +354,7 @@ constexpr char kReuseDisplays[]                  = "--reuse-displays";
 constexpr char kEnableANGLEPerTestCaptureLabel[] = "--angle-per-test-capture-label";
 constexpr char kBatchId[]                        = "--batch-id=";
 constexpr char kDelayTestStart[]                 = "--delay-test-start=";
+constexpr char kRenderDoc[]                      = "--renderdoc";
 
 void SetupEnvironmentVarsForCaptureReplay()
 {
@@ -340,6 +378,8 @@ void SetTestStartDelay(const char *testStartDelay)
 {
     gTestStartDelaySeconds = std::stoi(testStartDelay);
 }
+
+bool gEnableRenderDocCapture = false;
 
 // static
 std::array<Vector3, 6> ANGLETestBase::GetQuadVertices()
@@ -386,6 +426,11 @@ ANGLETestBase::ANGLETestBase(const PlatformParameters &params)
 #else
         withMethods.eglParameters.debugLayersEnabled = false;
 #endif
+    }
+
+    if (gEnableRenderDocCapture)
+    {
+        mRenderDoc.attach();
     }
 
     auto iter = gFixtures.find(withMethods);
@@ -518,15 +563,35 @@ void ANGLETestBase::ANGLETestSetUp()
     gPlatformContext.warningsAsErrors = false;
     gPlatformContext.currentTest      = this;
 
+    const testing::TestInfo *testInfo = testing::UnitTest::GetInstance()->current_test_info();
+
+    // Check the skip list.
+
+    angle::GPUTestConfig::API api = GetTestConfigAPIFromRenderer(mCurrentParams->getRenderer(),
+                                                                 mCurrentParams->getDeviceType());
+    GPUTestConfig testConfig      = GPUTestConfig(api, 0);
+
+    std::stringstream fullTestNameStr;
+    fullTestNameStr << testInfo->test_case_name() << "." << testInfo->name();
+    std::string fullTestName = fullTestNameStr.str();
+
+    TestSuite *testSuite    = TestSuite::GetInstance();
+    int32_t testExpectation = testSuite->getTestExpectationWithConfig(testConfig, fullTestName);
+
+    if (testExpectation == GPUTestExpectationsParser::kGpuTestSkip)
+    {
+        GTEST_SKIP() << "Test skipped on this config";
+    }
+
     if (IsWindows())
     {
-        const auto &info = testing::UnitTest::GetInstance()->current_test_info();
-        WriteDebugMessage("Entering %s.%s\n", info->test_case_name(), info->name());
+        WriteDebugMessage("Entering %s\n", fullTestName.c_str());
     }
 
     if (mCurrentParams->noFixture)
     {
         LoadEntryPointsWithUtilLoader(mCurrentParams->driver);
+        mIsSetUp = true;
         return;
     }
 
@@ -543,6 +608,7 @@ void ANGLETestBase::ANGLETestSetUp()
 
     if (!mFixture->osWindow->valid())
     {
+        mIsSetUp = true;
         return;
     }
 
@@ -623,6 +689,10 @@ void ANGLETestBase::ANGLETestSetUp()
     // taking OpenGL traces can guess the size of the default framebuffer and show it
     // in their UIs
     glViewport(0, 0, mWidth, mHeight);
+
+    mIsSetUp = true;
+
+    mRenderDoc.startFrame();
 }
 
 void ANGLETestBase::ANGLETestTearDown()
@@ -638,11 +708,14 @@ void ANGLETestBase::ANGLETestTearDown()
 
     if (mCurrentParams->noFixture || !mFixture->osWindow->valid())
     {
+        mRenderDoc.endFrame();
         return;
     }
 
     swapBuffers();
     mFixture->osWindow->messageLoop();
+
+    mRenderDoc.endFrame();
 
     if (mFixture->eglWindow)
     {
@@ -918,6 +991,8 @@ void ANGLETestBase::drawIndexedQuad(GLuint program,
                                     GLfloat positionAttribZ,
                                     GLfloat positionAttribXYScale)
 {
+    ASSERT(!mFixture->configParams.webGLCompatibility.valid() ||
+           !mFixture->configParams.webGLCompatibility.value());
     drawIndexedQuad(program, positionAttribName, positionAttribZ, positionAttribXYScale, false);
 }
 
@@ -1414,8 +1489,8 @@ Library *ANGLETestEnvironment::GetSystemEGLLibrary()
 #if defined(ANGLE_USE_UTIL_LOADER)
     if (!gSystemEGLLibrary)
     {
-        gSystemEGLLibrary.reset(
-            OpenSharedLibraryWithExtension(GetNativeEGLLibraryNameWithExtension()));
+        gSystemEGLLibrary.reset(OpenSharedLibraryWithExtension(
+            GetNativeEGLLibraryNameWithExtension(), SearchType::SystemDir));
     }
 #endif  // defined(ANGLE_USE_UTIL_LOADER)
     return gSystemEGLLibrary.get();
@@ -1460,6 +1535,10 @@ void ANGLEProcessTestArgs(int *argc, char *argv[])
         else if (strncmp(argv[argIndex], kDelayTestStart, strlen(kDelayTestStart)) == 0)
         {
             SetTestStartDelay(argv[argIndex] + strlen(kDelayTestStart));
+        }
+        else if (strncmp(argv[argIndex], kRenderDoc, strlen(kRenderDoc)) == 0)
+        {
+            gEnableRenderDocCapture = true;
         }
     }
 }

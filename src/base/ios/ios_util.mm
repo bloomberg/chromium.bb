@@ -9,8 +9,8 @@
 
 #include <stddef.h>
 
+#include "base/cxx17_backports.h"
 #include "base/mac/foundation_util.h"
-#include "base/stl_util.h"
 #include "base/system/sys_info.h"
 
 namespace {
@@ -64,6 +64,11 @@ bool IsRunningOnIOS13OrLater() {
 
 bool IsRunningOnIOS14OrLater() {
   static const bool is_running_on_or_later = IsRunningOnOrLater(14, 0, 0);
+  return is_running_on_or_later;
+}
+
+bool IsRunningOnIOS15OrLater() {
+  static const bool is_running_on_or_later = IsRunningOnOrLater(15, 0, 0);
   return is_running_on_or_later;
 }
 

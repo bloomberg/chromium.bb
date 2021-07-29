@@ -51,6 +51,7 @@ import {FontEditorSectionManager} from './ColorSwatchPopoverIcon.js';
 import * as ElementsComponents from './components/components.js';
 import {ComputedStyleModel} from './ComputedStyleModel.js';
 import {linkifyDeferredNodeReference} from './DOMLinkifier.js';
+import {ElementsPanel} from './ElementsPanel.js';
 import {ElementsSidebarPane} from './ElementsSidebarPane.js';
 import {ImagePreviewPopover} from './ImagePreviewPopover.js';
 import {StyleEditorWidget} from './StyleEditorWidget.js';
@@ -228,7 +229,7 @@ export class StylesSidebarPane extends ElementsSidebarPane {
   private constructor() {
     super(true /* delegatesFocus */);
     this.setMinimumSize(96, 26);
-    this.registerRequiredCSS('panels/elements/stylesSidebarPane.css', {enableLegacyPatching: false});
+    this.registerRequiredCSS('panels/elements/stylesSidebarPane.css');
 
     Common.Settings.Settings.instance().moduleSetting('colorFormat').addChangeListener(this.update.bind(this));
     Common.Settings.Settings.instance().moduleSetting('textEditorIndent').addChangeListener(this.update.bind(this));
@@ -245,7 +246,7 @@ export class StylesSidebarPane extends ElementsSidebarPane {
     this._noMatchesElement.textContent = i18nString(UIStrings.noMatchingSelectorOrStyle);
 
     this._sectionsContainer = this.contentElement.createChild('div');
-    UI.ARIAUtils.markAsTree(this._sectionsContainer);
+    UI.ARIAUtils.markAsList(this._sectionsContainer);
     this._sectionsContainer.addEventListener('keydown', this._sectionsContainerKeyDown.bind(this), false);
     this._sectionsContainer.addEventListener('focusin', this._sectionsContainerFocusChanged.bind(this), false);
     this._sectionsContainer.addEventListener('focusout', this._sectionsContainerFocusChanged.bind(this), false);
@@ -1175,12 +1176,14 @@ export class StylePropertiesSection {
   _selectedSinceMouseDown: boolean;
   _elementToSelectorIndex: WeakMap<Element, number>;
   navigable: boolean|null|undefined;
-  _mediaListElement: HTMLElement;
   _selectorRefElement: HTMLElement;
   _selectorContainer: HTMLDivElement;
   _fontPopoverIcon: FontEditorSectionManager|null;
   _hoverableSelectorsMode: boolean;
   _isHidden: boolean;
+
+  private queryListElement: HTMLElement;
+
   constructor(
       parentPane: StylesSidebarPane, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles,
       style: SDK.CSSStyleDeclaration.CSSStyleDeclaration) {
@@ -1200,7 +1203,7 @@ export class StylePropertiesSection {
     this.element.classList.add('monospace');
     UI.ARIAUtils.setAccessibleName(this.element, `${this._headerText()}, css selector`);
     this.element.tabIndex = -1;
-    UI.ARIAUtils.markAsTreeitem(this.element);
+    UI.ARIAUtils.markAsListitem(this.element);
     this.element.addEventListener('keydown', this._onKeyDown.bind(this), false);
     parentPane.sectionByElement.set(this.element, this);
     this._innerElement = this.element.createChild('div');
@@ -1210,8 +1213,7 @@ export class StylePropertiesSection {
 
     this.propertiesTreeOutline = new UI.TreeOutline.TreeOutlineInShadow();
     this.propertiesTreeOutline.setFocusable(false);
-    this.propertiesTreeOutline.registerRequiredCSS(
-        'panels/elements/stylesSectionTree.css', {enableLegacyPatching: false});
+    this.propertiesTreeOutline.registerRequiredCSS('panels/elements/stylesSectionTree.css');
     this.propertiesTreeOutline.element.classList.add('style-properties', 'matched-styles', 'monospace');
     // @ts-ignore TODO: fix ad hoc section property in a separate CL to be safe
     this.propertiesTreeOutline.section = this;
@@ -1296,9 +1298,9 @@ export class StylePropertiesSection {
       }
     }
 
-    this._mediaListElement = this._titleElement.createChild('div', 'media-list media-matches');
+    this.queryListElement = this._titleElement.createChild('div', 'query-list query-matches');
     this._selectorRefElement = this._titleElement.createChild('div', 'styles-section-subtitle');
-    this._updateMediaList();
+    this.updateQueryList();
     this._updateRuleOrigin();
     this._titleElement.appendChild(selectorContainer);
     this._selectorContainer = selectorContainer;
@@ -1378,11 +1380,11 @@ export class StylePropertiesSection {
     }
 
     if (header?.isMutable && !header.isViaInspector()) {
-      const location = !header.isConstructed ? linkifyRuleLocation() : null;
+      const location = header.isConstructedByNew() ? null : linkifyRuleLocation();
       if (location) {
         return location;
       }
-      const label = header.isConstructed ? i18nString(UIStrings.constructedStylesheet) : STYLE_TAG;
+      const label = header.isConstructedByNew() ? i18nString(UIStrings.constructedStylesheet) : STYLE_TAG;
       const node = linkifyNode(label);
       if (node) {
         return node;
@@ -1548,7 +1550,7 @@ export class StylePropertiesSection {
   }
 
   _onMouseMove(event: MouseEvent): void {
-    const hasCtrlOrMeta = UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlOrMeta((event as MouseEvent));
+    const hasCtrlOrMeta = UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(event);
     this._setSectionHovered(hasCtrlOrMeta);
 
     const treeElement = this.propertiesTreeOutline.treeElementFromEvent(event);
@@ -1718,7 +1720,7 @@ export class StylePropertiesSection {
       this._style.rebase(edit);
     }
 
-    this._updateMediaList();
+    this.updateQueryList();
     this._updateRuleOrigin();
   }
 
@@ -1730,41 +1732,96 @@ export class StylePropertiesSection {
       if (isMedia) {
         continue;
       }
-      const mediaDataElement = this._mediaListElement.createChild('div', 'media');
-      const mediaContainerElement = mediaDataElement.createChild('span');
-      const mediaTextElement = mediaContainerElement.createChild('span', 'media-text');
+
+      let queryPrefix = '';
+      let queryText = '';
+      let onQueryTextClick;
       switch (media.source) {
         case SDK.CSSMedia.Source.LINKED_SHEET:
         case SDK.CSSMedia.Source.INLINE_SHEET: {
-          mediaTextElement.textContent = `media="${media.text}"`;
+          queryText = `media="${media.text}"`;
           break;
         }
         case SDK.CSSMedia.Source.MEDIA_RULE: {
-          const decoration = mediaContainerElement.createChild('span');
-          mediaContainerElement.insertBefore(decoration, mediaTextElement);
-          decoration.textContent = '@media ';
-          // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-          // @ts-expect-error
-          mediaTextElement.textContent = media.text;
+          queryPrefix = '@media';
+          queryText = media.text;
           if (media.styleSheetId) {
-            mediaDataElement.classList.add('editable-media');
-            mediaTextElement.addEventListener(
-                'click', this._handleMediaRuleClick.bind(this, media, mediaTextElement), false);
+            onQueryTextClick = this.handleQueryRuleClick.bind(this, media);
           }
           break;
         }
         case SDK.CSSMedia.Source.IMPORT_RULE: {
-          mediaTextElement.textContent = `@import ${media.text}`;
+          queryText = `@import ${media.text}`;
           break;
         }
       }
+
+      const mediaQueryElement = new ElementsComponents.CSSQuery.CSSQuery();
+      mediaQueryElement.data = {
+        queryPrefix,
+        queryText,
+        onQueryTextClick,
+      };
+      this.queryListElement.append(mediaQueryElement);
     }
   }
 
-  _updateMediaList(): void {
-    this._mediaListElement.removeChildren();
+  protected createContainerQueryList(containerQueries: SDK.CSSContainerQuery.CSSContainerQuery[]): void {
+    for (let i = containerQueries.length - 1; i >= 0; --i) {
+      const containerQuery = containerQueries[i];
+      if (!containerQuery.text) {
+        continue;
+      }
+
+      let onQueryTextClick;
+      if (containerQuery.styleSheetId) {
+        onQueryTextClick = this.handleQueryRuleClick.bind(this, containerQuery);
+      }
+
+      const containerQueryElement = new ElementsComponents.CSSQuery.CSSQuery();
+      containerQueryElement.data = {
+        queryPrefix: '@container',
+        queryName: containerQuery.name,
+        queryText: containerQuery.text,
+        onQueryTextClick,
+      };
+      this.queryListElement.append(containerQueryElement);
+
+      this.addContainerForContainerQuery(containerQuery);
+    }
+  }
+
+  private async addContainerForContainerQuery(containerQuery: SDK.CSSContainerQuery.CSSContainerQuery): Promise<void> {
+    const container = await containerQuery.getContainerForNode(this._matchedStyles.node().id);
+    if (!container) {
+      return;
+    }
+
+    const containerElement = new ElementsComponents.QueryContainer.QueryContainer();
+    containerElement.data = {
+      container: ElementsComponents.Helper.legacyNodeToElementsComponentsNode(container.containerNode),
+      queryName: containerQuery.name,
+      onContainerLinkClick: (): void => {
+        ElementsPanel.instance().revealAndSelectNode(container.containerNode, true, true);
+        container.containerNode.scrollIntoView();
+      },
+    };
+
+    containerElement.addEventListener('queriedsizerequested', async () => {
+      const details = await container.getContainerSizeDetails();
+      if (details) {
+        containerElement.updateContainerQueriedSizeDetails(details);
+      }
+    });
+
+    this.queryListElement.prepend(containerElement);
+  }
+
+  private updateQueryList(): void {
+    this.queryListElement.removeChildren();
     if (this._style.parentRule && this._style.parentRule instanceof SDK.CSSRule.CSSStyleRule) {
       this._createMediaList(this._style.parentRule.media);
+      this.createContainerQueryList(this._style.parentRule.containerQueries);
     }
   }
 
@@ -1915,10 +1972,10 @@ export class StylePropertiesSection {
       return;
     }
 
-    this._mediaListElement.classList.toggle('media-matches', this._matchedStyles.mediaMatches(this._style));
+    this.queryListElement.classList.toggle('query-matches', this._matchedStyles.mediaMatches(this._style));
 
     const selectorTexts = rule.selectors.map(selector => selector.text);
-    const matchingSelectorIndexes = this._matchedStyles.matchingSelectors(rule);
+    const matchingSelectorIndexes = this._matchedStyles.getMatchingSelectors(rule);
     const matchingSelectors = (new Array(selectorTexts.length).fill(false) as boolean[]);
     for (const matchingIndex of matchingSelectorIndexes) {
       matchingSelectors[matchingIndex] = true;
@@ -2023,7 +2080,7 @@ export class StylePropertiesSection {
     const target = (event.target as Element);
 
     if (target.classList.contains('header') || this.element.classList.contains('read-only') ||
-        target.enclosingNodeOrSelfWithClass('media')) {
+        target.enclosingNodeOrSelfWithClass('query')) {
       event.consume();
       return;
     }
@@ -2037,13 +2094,15 @@ export class StylePropertiesSection {
     event.consume(true);
   }
 
-  _handleMediaRuleClick(media: SDK.CSSMedia.CSSMedia, element: Element, event: Event): void {
+  private handleQueryRuleClick(query: SDK.CSSMedia.CSSMedia|SDK.CSSContainerQuery.CSSContainerQuery, event: Event):
+      void {
+    const element = event.currentTarget as Element;
     if (UI.UIUtils.isBeingEdited(element)) {
       return;
     }
 
-    if (UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlOrMeta((event as MouseEvent)) && this.navigable) {
-      const location = media.rawLocation();
+    if (UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(event as MouseEvent) && this.navigable) {
+      const location = query.rawLocation();
       if (!location) {
         event.consume(true);
         return;
@@ -2061,7 +2120,7 @@ export class StylePropertiesSection {
     }
 
     const config = new UI.InplaceEditor.Config(
-        this._editingMediaCommitted.bind(this, media), this._editingMediaCancelled.bind(this, element), undefined,
+        this._editingMediaCommitted.bind(this, query), this._editingMediaCancelled.bind(this, element), undefined,
         this._editingMediaBlurHandler.bind(this));
     UI.InplaceEditor.InplaceEditor.startEditing(element, config);
 
@@ -2070,16 +2129,16 @@ export class StylePropertiesSection {
       selection.selectAllChildren(element);
     }
     this._parentPane.setEditingStyle(true);
-    const parentMediaElement = element.enclosingNodeOrSelfWithClass('media');
-    parentMediaElement.classList.add('editing-media');
+    const parentMediaElement = element.enclosingNodeOrSelfWithClass('query');
+    parentMediaElement.classList.add('editing-query');
 
     event.consume(true);
   }
 
   _editingMediaFinished(element: Element): void {
     this._parentPane.setEditingStyle(false);
-    const parentMediaElement = element.enclosingNodeOrSelfWithClass('media');
-    parentMediaElement.classList.remove('editing-media');
+    const parentMediaElement = element.enclosingNodeOrSelfWithClass('query');
+    parentMediaElement.classList.remove('editing-query');
   }
 
   _editingMediaCancelled(element: Element): void {
@@ -2098,8 +2157,8 @@ export class StylePropertiesSection {
   }
 
   _editingMediaCommitted(
-      media: SDK.CSSMedia.CSSMedia, element: Element, newContent: string, _oldContent: string,
-      _context: Context|undefined, _moveDirection: string): void {
+      query: SDK.CSSMedia.CSSMedia|SDK.CSSContainerQuery.CSSContainerQuery, element: Element, newContent: string,
+      _oldContent: string, _context: Context|undefined, _moveDirection: string): void {
     this._parentPane.setEditingStyle(false);
     this._editingMediaFinished(element);
 
@@ -2119,8 +2178,10 @@ export class StylePropertiesSection {
     // This gets deleted in finishOperation(), which is called both on success and failure.
     this._parentPane.setUserOperation(true);
     const cssModel = this._parentPane.cssModel();
-    if (cssModel && media.styleSheetId) {
-      cssModel.setMediaText(media.styleSheetId, (media.range as TextUtils.TextRange.TextRange), newContent)
+    if (cssModel && query.styleSheetId) {
+      const setQueryText =
+          query instanceof SDK.CSSMedia.CSSMedia ? cssModel.setMediaText : cssModel.setContainerQueryText;
+      setQueryText.call(cssModel, query.styleSheetId, (query.range as TextUtils.TextRange.TextRange), newContent)
           .then(userCallback.bind(this));
     }
   }
@@ -2133,7 +2194,7 @@ export class StylePropertiesSection {
     if (!target) {
       return;
     }
-    if (UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlOrMeta((event as MouseEvent)) && this.navigable &&
+    if (UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey((event as MouseEvent)) && this.navigable &&
         target.classList.contains('simple-selector')) {
       const selectorIndex = this._elementToSelectorIndex.get(target);
       if (selectorIndex) {
@@ -2307,7 +2368,7 @@ export class StylePropertiesSection {
     }
 
     function updateSourceRanges(this: StylePropertiesSection, rule: SDK.CSSRule.CSSStyleRule): void {
-      const doesAffectSelectedNode = this._matchedStyles.matchingSelectors(rule).length > 0;
+      const doesAffectSelectedNode = this._matchedStyles.getMatchingSelectors(rule).length > 0;
       this.propertiesTreeOutline.element.classList.toggle('no-affect', !doesAffectSelectedNode);
       this._matchedStyles.resetActiveProperties();
       this._parentPane._refreshUpdate(this);
@@ -2384,6 +2445,7 @@ export class BlankStylePropertiesSection extends StylePropertiesSection {
     if (insertAfterStyle && insertAfterStyle.parentRule &&
         insertAfterStyle.parentRule instanceof SDK.CSSRule.CSSStyleRule) {
       this._createMediaList(insertAfterStyle.parentRule.media);
+      this.createContainerQueryList(insertAfterStyle.parentRule.containerQueries);
     }
     this.element.classList.add('blank-section');
   }
@@ -2423,7 +2485,7 @@ export class BlankStylePropertiesSection extends StylePropertiesSection {
     }
 
     function onAddedToCascade(this: BlankStylePropertiesSection, newRule: SDK.CSSRule.CSSStyleRule): void {
-      const doesSelectorAffectSelectedNode = this._matchedStyles.matchingSelectors(newRule).length > 0;
+      const doesSelectorAffectSelectedNode = this._matchedStyles.getMatchingSelectors(newRule).length > 0;
       this._makeNormal(newRule);
 
       if (!doesSelectorAffectSelectedNode) {
@@ -2555,7 +2617,7 @@ export class CSSPropertyPrompt extends UI.TextPrompt.TextPrompt {
         this._cssCompletions = this._cssCompletions.filter(property => !cssMetadata.isSVGProperty(property));
       }
     } else {
-      this._cssCompletions = cssMetadata.propertyValues(treeElement.property.name);
+      this._cssCompletions = cssMetadata.getPropertyValues(treeElement.property.name);
       if (node && cssMetadata.isFontFamilyProperty(treeElement.property.name)) {
         const fontFamilies = node.domModel().cssModel().fontFaces().map(font => quoteFamilyName(font.getFontFamily()));
         this._cssCompletions.unshift(...fontFamilies);

@@ -29,9 +29,9 @@
 #include "components/policy/core/browser/url_util.h"
 #include "components/policy/core/common/cloud/dm_token.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/core/common/features.h"
+#include "components/safe_browsing/core/common/proto/csd.pb.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
-#include "components/safe_browsing/core/features.h"
-#include "components/safe_browsing/core/proto/csd.pb.h"
 #include "components/url_matcher/url_matcher.h"
 #include "content/public/browser/download_item_utils.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -215,10 +215,11 @@ void DeepScanningRequest::Start() {
   IncrementCrashKey(ScanningCrashKey::TOTAL_FILE_DOWNLOADS);
   auto request = std::make_unique<FileAnalysisRequest>(
       analysis_settings_, item_->GetFullPath(),
-      item_->GetTargetFilePath().BaseName(),
+      item_->GetTargetFilePath().BaseName(), item_->GetMimeType(),
+      /* delay_opening_file */ false,
       base::BindOnce(&DeepScanningRequest::OnScanComplete,
                      weak_ptr_factory_.GetWeakPtr()));
-  request->set_filename(item_->GetTargetFilePath().BaseName().AsUTF8Unsafe());
+  request->set_filename(item_->GetTargetFilePath().AsUTF8Unsafe());
 
   std::string raw_digest_sha256 = item_->GetHash();
   request->set_digest(
@@ -250,6 +251,9 @@ void DeepScanningRequest::PrepareRequest(
 
   if (item_->GetTabUrl().is_valid())
     request->set_tab_url(item_->GetTabUrl());
+
+  if (!item_->GetMimeType().empty())
+    request->set_content_type(item_->GetMimeType());
 
   for (const std::string& tag : analysis_settings_.tags)
     request->add_tag(tag);

@@ -9,6 +9,7 @@
 #include <sys/types.h>
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -17,10 +18,12 @@
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/observer_list_types.h"
 #include "base/task_runner.h"
 #include "base/trace_event/tracing_agent.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
+#include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace cryptohome {
@@ -41,6 +44,20 @@ class COMPONENT_EXPORT(DEBUG_DAEMON) DebugDaemonClient
       public base::trace_event::TracingAgent {
  public:
   ~DebugDaemonClient() override;
+
+  // Observes the signals that are received from D-Bus.
+  class Observer : public base::CheckedObserver {
+   public:
+    // Called when a PacketCaptureStart signal is received through D-Bus.
+    virtual void OnPacketCaptureStarted() {}
+
+    // Called when a PacketCaptureStop signal is received through D-Bus.
+    virtual void OnPacketCaptureStopped() {}
+  };
+
+  // Adds and removes the observer.
+  virtual void AddObserver(Observer* observer) = 0;
+  virtual void RemoveObserver(Observer* observer) = 0;
 
   // Requests to store debug logs into |file_descriptor| and calls |callback|
   // when completed. Debug logs will be stored in the .tgz if
@@ -294,6 +311,15 @@ class COMPONENT_EXPORT(DEBUG_DAEMON) DebugDaemonClient
   virtual void SetSwapParameter(const std::string& parameter,
                                 int32_t value,
                                 DBusMethodCallback<std::string> callback) = 0;
+
+  // Stops the packet capture process identified with |handle|. |handle| is a
+  // unique process identifier that is returned from debugd's PacketCaptureStart
+  // D-Bus method when the packet capture process is started. Stops all on-going
+  // packet capture operations if the |handle| is empty.
+  virtual void StopPacketCapture(const std::string& handle) = 0;
+
+  virtual void PacketCaptureStartSignalReceived(dbus::Signal* signal) = 0;
+  virtual void PacketCaptureStopSignalReceived(dbus::Signal* signal) = 0;
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().

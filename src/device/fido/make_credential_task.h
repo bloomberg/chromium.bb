@@ -40,12 +40,19 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialTask : public FidoTask {
 
   MakeCredentialTask(FidoDevice* device,
                      CtapMakeCredentialRequest request,
+                     MakeCredentialOptions options,
                      MakeCredentialTaskCallback callback);
   ~MakeCredentialTask() override;
 
   // GetTouchRequest returns a request that will cause a device to flash and
   // wait for a touch.
   static CtapMakeCredentialRequest GetTouchRequest(const FidoDevice* device);
+
+  // WillUseCTAP2 returns true iff |MakeCredentialTask| will use the CTAP2
+  // protocol to satisfy the given |request|.
+  static bool WillUseCTAP2(const FidoDevice* device,
+                           const CtapMakeCredentialRequest& request,
+                           const MakeCredentialOptions& options);
 
   // FidoTask:
   void Cancel() override;
@@ -69,6 +76,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialTask : public FidoTask {
       absl::optional<AuthenticatorMakeCredentialResponse> response);
 
   CtapMakeCredentialRequest request_;
+  MakeCredentialOptions options_;
   std::vector<std::vector<PublicKeyCredentialDescriptor>> exclude_list_batches_;
   size_t current_exclude_list_batch_ = 0;
 
@@ -76,10 +84,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialTask : public FidoTask {
   std::unique_ptr<SignOperation> silent_sign_operation_;
   MakeCredentialTaskCallback callback_;
 
-  // probing_alternative_rp_id_ is true if |app_id| is set in |request_| and
-  // thus the exclude list is being probed a second time with the alternative RP
-  // ID.
-  bool probing_alternative_rp_id_ = false;
   bool canceled_ = false;
 
   base::WeakPtrFactory<MakeCredentialTask> weak_factory_{this};

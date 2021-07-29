@@ -1,0 +1,25 @@
+#include <metal_stdlib>
+
+using namespace metal;
+
+template <typename A, typename T>
+vec<T, 2> atomicCompareExchangeWeak_1(threadgroup A* atomic, T compare, T value) {
+  T prev_value = compare;
+  bool matched = atomic_compare_exchange_weak_explicit(atomic, &prev_value, value, memory_order_relaxed, memory_order_relaxed);
+  return {prev_value, matched};
+}
+
+void atomicCompareExchangeWeak_89ea3b(threadgroup atomic_int* const tint_symbol_1) {
+  int2 res = atomicCompareExchangeWeak_1(&(*(tint_symbol_1)), 1, 1);
+}
+
+kernel void compute_main(uint local_invocation_index [[thread_index_in_threadgroup]]) {
+  threadgroup atomic_int tint_symbol_2;
+  if ((local_invocation_index == 0u)) {
+    atomic_store_explicit(&(tint_symbol_2), int(), memory_order_relaxed);
+  }
+  threadgroup_barrier(mem_flags::mem_threadgroup);
+  atomicCompareExchangeWeak_89ea3b(&(tint_symbol_2));
+  return;
+}
+

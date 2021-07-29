@@ -42,13 +42,13 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }  // namespace user_prefs
 
-namespace chromeos {
+namespace ash {
 namespace file_system_provider {
 
-// TODO(https://crbug.com/1164001): forward declare MountOptions,
-// ProvidedFileSystemInfo when moved ash
+class ProvidedFileSystemInfo;
 class ProvidedFileSystemInterface;
 class RegistryInterface;
+struct MountOptions;
 
 // Registers preferences to remember registered file systems between reboots.
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -213,13 +213,13 @@ class Service : public KeyedService,
 };
 
 }  // namespace file_system_provider
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove when moved to ash.
-namespace ash {
-namespace file_system_provider {
-using ::chromeos::file_system_provider::Service;
-}  // namespace file_system_provider
 }  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove when ChromeOS code migration is done.
+namespace chromeos {
+namespace file_system_provider {
+using ::ash::file_system_provider::Service;
+}  // namespace file_system_provider
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_ASH_FILE_SYSTEM_PROVIDER_SERVICE_H_

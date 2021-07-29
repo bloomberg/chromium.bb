@@ -4,6 +4,7 @@
 <translation id="1096883626080133124">Get more done with a simple, secure and faster-than-ever Google Chrome</translation>
 <translation id="1282031177488366470">Help improve Chrome's features and performance</translation>
 <translation id="1314663809820920746">You can still see all your bookmarks, history, passwords and other settings on this device. If you make changes, they won't sync to your Google Account.</translation>
+<translation id="139135165841384604">Get more done with Chrome</translation>
 <translation id="1479202195792305274">Chrome can check your passwords when you sign in with your Google Account.</translation>
 <translation id="1493827051843127077">Set Chrome as default to sync your tabs, passwords and payment info on all your devices</translation>
 <translation id="1504372625950710826">Chrome couldn't check for updates. Try checking your Internet connection.</translation>
@@ -14,6 +15,7 @@
 <translation id="2009224836393115614">Chrome couldn't check your passwords. Try checking your Internet connection.</translation>
 <translation id="2147651015520127414">Chrome verified that <ph name="ISSUER" /> issued this website's certificate.</translation>
 <translation id="2199719347983604670">Data from Chrome sync</translation>
+<translation id="2313070403598893276">Google Chrome is simple, secure and faster than ever</translation>
 <translation id="2342919707875585281">Chrome shares your location with sites that you allow.</translation>
 <translation id="2347208864470321755">When this feature is turned on, Chrome will offer to translate pages written in other languages using Google Translate. <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
 <translation id="2415682770504543561">Make Chrome your default</translation>
@@ -32,9 +34,9 @@
 <translation id="3196546062792660320">Chrome saves you time by bringing your accounts to the web. You can add or remove accounts in Settings.</translation>
 <translation id="3282568296779691940">Sign in to Chrome</translation>
 <translation id="3345341804167540816">Use Chrome Everywhere</translation>
-<translation id="3455456143708465450">To get the most out of Chrome, sign in with your Google Account</translation>
 <translation id="3522659714780527202">To see your tabs from wherever you use Chrome, turn on sync</translation>
 <translation id="3533694711092285624">No saved passwords. Chrome can check your passwords when you save them.</translation>
+<translation id="3634910711516114487">To get the most out of Chrome, sign in to Chrome with your Google Account</translation>
 <translation id="3706101708757577809">You can now use Chrome any time that you tap links in messages, documents and other apps.</translation>
 <translation id="3720541637541300822">Lock incognito tabs when you close Chrome</translation>
 <translation id="384394811301901750">Google Chrome can't use your camera at the moment.</translation>
@@ -64,7 +66,7 @@
 <translation id="6063091872902370735">Allow Chrome Sign-in</translation>
 <translation id="6181930887571472871">Switch to Chrome</translation>
 <translation id="6238746320622508509">Let Chrome lock your incognito tabs.</translation>
-<translation id="6573431926118603307">Tabs that you've opened in Chrome on your other devices will appear here.</translation>
+<translation id="6427126399757991875">Your organisation is setting up Chrome…</translation>
 <translation id="6600954340915313787">Copied to Chrome</translation>
 <translation id="6634107063912726160">When you sign out, Chrome won't sync any new data to your Google Account. Data previously synced stays in the account.</translation>
 <translation id="6648150602980899529">You are signing in with an account managed by <ph name="DOMAIN" /> and giving its administrator control over your Chrome data. Your data will become permanently tied to this account. Signing out of Chrome will delete your data from this device, but it will remain stored in your Google Account.</translation>
@@ -78,7 +80,6 @@
 <translation id="7172660552945675509">Tip: <ph name="BEGIN_LINK" />Move Chrome to your dock<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">Chrome uses Face ID to ensure authorised access to your passwords.</translation>
 <translation id="7261678641327190792">Chrome can't check your passwords</translation>
-<translation id="7265369419224458312">Access the tabs that you have open on your computer, right here. Just open Chrome on your computer, go to the menu, and select “Sign in to Chrome…”</translation>
 <translation id="7272930098487145294">To save images, tap on settings to let Chrome add to your photos</translation>
 <translation id="7275945473750112644">Your account is managed by <ph name="HOSTED_DOMAIN" />, so your Chrome data will be cleared from this device</translation>
 <translation id="7400722733683201933">About Google Chrome</translation>

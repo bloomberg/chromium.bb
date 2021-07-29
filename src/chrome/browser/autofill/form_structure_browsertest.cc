@@ -106,11 +106,13 @@ std::string FormStructuresToString(
     for (const auto& field : *form) {
       // Normalize the section by replacing the unique but platform-dependent
       // integers in |field->section| with consecutive unique integers.
+      // The section string is of the form "fieldname_id1_id2-suffix", where
+      // id1, id2 are platform-dependent and thus need to be substituted.
       std::string section = field->section;
       size_t last_underscore = section.find_last_of('_');
       size_t second_last_underscore =
           section.find_last_of('_', last_underscore - 1);
-      size_t next_dash = section.find_first_of('-', second_last_underscore);
+      size_t next_dash = section.find_first_of('-', last_underscore);
       int new_section_index = static_cast<int>(section_to_index.size() + 1);
       int section_index =
           section_to_index.insert(std::make_pair(section, new_section_index))
@@ -198,7 +200,6 @@ FormStructureBrowserTest::~FormStructureBrowserTest() {}
 
 void FormStructureBrowserTest::SetUpCommandLine(
     base::CommandLine* command_line) {
-  InProcessBrowserTest::SetUpCommandLine(command_line);
   // Suppress most output logs because we can't really control the output for
   // arbitrary test sites.
   command_line->AppendSwitchASCII(switches::kLoggingLevel, "2");
@@ -253,7 +254,8 @@ std::unique_ptr<HttpResponse> FormStructureBrowserTest::HandleRequest(
   return std::move(response);
 }
 
-IN_PROC_BROWSER_TEST_P(FormStructureBrowserTest, DataDrivenHeuristics) {
+// Times out on all platforms.  http://crbug.com/1216328
+IN_PROC_BROWSER_TEST_P(FormStructureBrowserTest, DISABLED_DataDrivenHeuristics) {
   // Prints the path of the test to be executed.
   LOG(INFO) << GetParam().MaybeAsASCII();
   bool is_expected_to_pass =

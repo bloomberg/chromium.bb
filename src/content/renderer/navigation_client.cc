@@ -3,9 +3,13 @@
 // found in the LICENSE file.
 
 #include "content/renderer/navigation_client.h"
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "content/renderer/render_frame_impl.h"
+#include "third_party/blink/public/mojom/navigation/navigation_params.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_container.mojom.h"
 #include "third_party/blink/public/platform/task_type.h"
 
 namespace content {
@@ -16,8 +20,8 @@ NavigationClient::NavigationClient(RenderFrameImpl* render_frame)
 NavigationClient::~NavigationClient() {}
 
 void NavigationClient::CommitNavigation(
-    mojom::CommonNavigationParamsPtr common_params,
-    mojom::CommitNavigationParamsPtr commit_params,
+    blink::mojom::CommonNavigationParamsPtr common_params,
+    blink::mojom::CommitNavigationParamsPtr commit_params,
     network::mojom::URLResponseHeadPtr response_head,
     mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
@@ -30,6 +34,7 @@ void NavigationClient::CommitNavigation(
         prefetch_loader_factory,
     const base::UnguessableToken& devtools_navigation_token,
     blink::mojom::PolicyContainerPtr policy_container,
+    mojo::PendingRemote<blink::mojom::CodeCacheHost> code_cache_host,
     CommitNavigationCallback callback) {
   // TODO(ahemery): The reset should be done when the navigation did commit
   // (meaning at a later stage). This is not currently possible because of
@@ -43,12 +48,13 @@ void NavigationClient::CommitNavigation(
       std::move(subresource_overrides),
       std::move(controller_service_worker_info), std::move(container_info),
       std::move(prefetch_loader_factory), devtools_navigation_token,
-      std::move(policy_container), std::move(callback));
+      std::move(policy_container), std::move(code_cache_host),
+      std::move(callback));
 }
 
 void NavigationClient::CommitFailedNavigation(
-    mojom::CommonNavigationParamsPtr common_params,
-    mojom::CommitNavigationParamsPtr commit_params,
+    blink::mojom::CommonNavigationParamsPtr common_params,
+    blink::mojom::CommitNavigationParamsPtr commit_params,
     bool has_stale_copy_in_cache,
     int error_code,
     int extended_error_code,

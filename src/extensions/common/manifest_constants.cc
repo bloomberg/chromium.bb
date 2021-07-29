@@ -32,7 +32,7 @@ const char kBackgroundServiceWorkerType[] = "background.type";
 const char kBluetooth[] = "bluetooth";
 const char kBookmarkUI[] = "bookmarks_ui";
 const char kBrowserAction[] = "browser_action";
-const char kChromeURLOverrides[] = "chrome_url_overrides";
+const char kChromeOSSystemExtension[] = "chromeos_system_extension";
 const char kCommands[] = "commands";
 const char kContentCapabilities[] = "content_capabilities";
 const char kContentSecurityPolicy[] = "content_security_policy";
@@ -100,10 +100,6 @@ const char kNaClModules[] = "nacl_modules";
 const char kNaClModulesMIMEType[] = "mime_type";
 const char kNaClModulesPath[] = "path";
 const char kNativelyConnectable[] = "natively_connectable";
-const char kOAuth2[] = "oauth2";
-const char kOAuth2AutoApprove[] = "oauth2.auto_approve";
-const char kOAuth2ClientId[] = "oauth2.client_id";
-const char kOAuth2Scopes[] = "oauth2.scopes";
 const char kOfflineEnabled[] = "offline_enabled";
 const char kOmniboxKeyword[] = "omnibox.keyword";
 const char kOptionalPermissions[] = "optional_permissions";
@@ -139,6 +135,8 @@ const char kThemeDisplayProperties[] = "properties";
 const char kThemeImages[] = "images";
 const char kThemeTints[] = "tints";
 const char kTtsEngine[] = "tts_engine";
+const char kTtsEngineSampleRate[] = "sample_rate";
+const char kTtsEngineBufferSize[] = "buffer_size";
 const char kTtsVoices[] = "voices";
 const char kTtsVoicesEventTypeEnd[] = "end";
 const char kTtsVoicesEventTypeError[] = "error";
@@ -519,12 +517,8 @@ const char kInvalidNaClModulesPath[] =
     "Invalid value for 'nacl_modules[*].path'.";
 const char kInvalidNaClModulesMIMEType[] =
     "Invalid value for 'nacl_modules[*].mime_type'.";
-const char kInvalidOAuth2AutoApprove[] =
-    "Invalid value for 'oauth2.auto_approve'. Value must be true or false.";
 const char kInvalidOAuth2ClientId[] =
     "Invalid value for 'oauth2.client_id'.";
-const char kInvalidOAuth2Scopes[] =
-    "Invalid value for 'oauth2.scopes'.";
 const char kInvalidOfflineEnabled[] =
     "Invalid value for 'offline_enabled'.";
 const char kEmptyOmniboxKeyword[] =
@@ -584,6 +578,19 @@ const char kInvalidThemeTints[] =
     "Invalid value for theme images - tints must be decimal numbers.";
 const char kInvalidTts[] =
     "Invalid value for 'tts_engine'.";
+const char kInvalidTtsSampleRateFormat[] =
+    "Invalid format for tts_engine.sample_rate: expected integer.";
+const char kInvalidTtsSampleRateRange[] =
+    "Invalid tts_engine.sample_rate: out of range. Expected sample_rate >= %d "
+    "and sample_rate <= %d.";
+const char kInvalidTtsBufferSizeFormat[] =
+    "Invalid format for tts_engine.buffer_size: expected integer.";
+const char kInvalidTtsBufferSizeRange[] =
+    "Invalid tts_engine.buffer_size: out of range. Expected buffer_size >= %d "
+    "and buffer_size <= %d.";
+const char kInvalidTtsRequiresSampleRateAndBufferSize[] =
+    "Invalid tts_engine: requires both sample_rate and buffer_size if either "
+    "is specified.";
 const char kInvalidTtsVoices[] =
     "Invalid value for 'tts_engine.voices'.";
 const char kInvalidTtsVoicesEventTypes[] =

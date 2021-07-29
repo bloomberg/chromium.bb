@@ -17,10 +17,12 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
@@ -36,8 +38,13 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "ui/base/models/menu_model.h"
+#include "ui/display/screen.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/public/cpp/app_menu_constants.h"
+#include "ash/public/cpp/shelf_item_delegate.h"
+#include "ash/public/cpp/shelf_model.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/login/login_manager_test.h"
@@ -56,6 +63,9 @@ class SystemWebAppLinkCaptureBrowserTest
  public:
   SystemWebAppLinkCaptureBrowserTest()
       : SystemWebAppManagerBrowserTest(/*install_mock*/ false) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    WebAppProvider::EnableSystemWebAppsInLacrosForTesting();
+#endif
     maybe_installation_ =
         TestSystemWebAppInstallation::SetUpAppThatCapturesNavigation();
   }
@@ -504,12 +514,14 @@ class SystemWebAppManagerMultiDesktopLaunchBrowserTest
 
   void WaitForSystemWebAppInstall(Profile* profile) {
     base::RunLoop run_loop;
-    web_app::WebAppProvider::Get(profile)
+
+    web_app::WebAppProvider::GetForSystemWebApps(profile)
         ->system_web_app_manager()
         .on_apps_synchronized()
         .Post(FROM_HERE, base::BindLambdaForTesting([&]() {
-                // Wait one execution loop for on_apps_synchronized() to be
-                // called on all listeners.
+                // Wait one execution loop for
+                // on_apps_synchronized() to be called on all
+                // listeners.
                 base::ThreadTaskRunnerHandle::Get()->PostTask(
                     FROM_HERE, run_loop.QuitClosure());
               }));
@@ -518,8 +530,8 @@ class SystemWebAppManagerMultiDesktopLaunchBrowserTest
 
   AppId GetAppId(Profile* profile) {
     SystemWebAppManager& manager =
-        web_app::WebAppProvider::Get(profile)->system_web_app_manager();
-
+        web_app::WebAppProvider::GetForSystemWebApps(profile)
+            ->system_web_app_manager();
     absl::optional<AppId> app_id =
         manager.GetAppIdForSystemApp(installation_->GetType());
     CHECK(app_id.has_value());
@@ -569,19 +581,21 @@ IN_PROC_BROWSER_TEST_F(SystemWebAppManagerMultiDesktopLaunchBrowserTest,
   // Login two users.
   LoginUser(account_id1_);
   base::RunLoop().RunUntilIdle();
-  chromeos::UserAddingScreen::Get()->Start();
-  AddUser(account_id2_);
-  base::RunLoop().RunUntilIdle();
 
   // Wait for System Apps to be installed on both user profiles.
   auto* user_manager = user_manager::UserManager::Get();
   Profile* profile1 = chromeos::ProfileHelper::Get()->GetProfileByUser(
       user_manager->FindUser(account_id1_));
+  WaitForSystemWebAppInstall(profile1);
+
+  installation_ =
+      TestSystemWebAppInstallation::SetUpAppThatCapturesNavigation();
+  chromeos::UserAddingScreen::Get()->Start();
+  AddUser(account_id2_);
+  base::RunLoop().RunUntilIdle();
   Profile* profile2 = chromeos::ProfileHelper::Get()->GetProfileByUser(
       user_manager->FindUser(account_id2_));
-  WaitForSystemWebAppInstall(profile1);
   WaitForSystemWebAppInstall(profile2);
-
   // Set user 1 to be active.
   user_manager->SwitchActiveUser(account_id1_);
   EXPECT_TRUE(multi_user_util::IsProfileFromActiveUser(profile1));
@@ -621,17 +635,20 @@ IN_PROC_BROWSER_TEST_F(SystemWebAppManagerMultiDesktopLaunchBrowserTest,
   // Login two users.
   LoginUser(account_id1_);
   base::RunLoop().RunUntilIdle();
-  chromeos::UserAddingScreen::Get()->Start();
-  AddUser(account_id2_);
-  base::RunLoop().RunUntilIdle();
 
   // Wait for System Apps to be installed on both user profiles.
   auto* user_manager = user_manager::UserManager::Get();
   Profile* profile1 = chromeos::ProfileHelper::Get()->GetProfileByUser(
       user_manager->FindUser(account_id1_));
+  WaitForSystemWebAppInstall(profile1);
+
+  installation_ =
+      TestSystemWebAppInstallation::SetUpAppThatCapturesNavigation();
+  chromeos::UserAddingScreen::Get()->Start();
+  AddUser(account_id2_);
+  base::RunLoop().RunUntilIdle();
   Profile* profile2 = chromeos::ProfileHelper::Get()->GetProfileByUser(
       user_manager->FindUser(account_id2_));
-  WaitForSystemWebAppInstall(profile1);
   WaitForSystemWebAppInstall(profile2);
 
   g_browser_process->profile_manager()->ScheduleProfileForDeletion(
@@ -855,6 +872,81 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerShouldNotCloseFromScriptsTest,
   EXPECT_EQ(2U, chrome::GetTotalBrowserCount());
 }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+class SystemWebAppNewWindowMenuItemTest
+    : public SystemWebAppManagerBrowserTest {
+ public:
+  SystemWebAppNewWindowMenuItemTest()
+      : SystemWebAppManagerBrowserTest(/*install_mock=*/false) {
+    maybe_installation_ =
+        TestSystemWebAppInstallation::SetUpAppWithNewWindowMenuItem();
+  }
+  ~SystemWebAppNewWindowMenuItemTest() override = default;
+
+  ash::ShelfItemDelegate* GetAppShelfItemDelegate() {
+    return ash::ShelfModel::Get()->GetShelfItemDelegate(
+        ash::ShelfID(maybe_installation_->GetAppId()));
+  }
+
+  std::unique_ptr<ui::MenuModel> GetContextMenu(
+      ash::ShelfItemDelegate* item_delegate,
+      int64_t display_id) {
+    base::RunLoop run_loop;
+    std::unique_ptr<ui::MenuModel> menu;
+    item_delegate->GetContextMenu(
+        display_id, base::BindLambdaForTesting(
+                        [&](std::unique_ptr<ui::SimpleMenuModel> created_menu) {
+                          menu = std::move(created_menu);
+                          run_loop.Quit();
+                        }));
+    run_loop.Run();
+    return menu;
+  }
+
+  int64_t GetDisplayId() {
+    return display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  }
+};
+
+IN_PROC_BROWSER_TEST_P(SystemWebAppNewWindowMenuItemTest, OpensNewWindow) {
+  WaitForTestSystemAppInstall();
+
+  // Launch the app so it shows up in shelf.
+  LaunchApp(maybe_installation_->GetType());
+
+  // Verify the menu item shows up.
+  auto* shelf_item_delegate = GetAppShelfItemDelegate();
+  ASSERT_TRUE(shelf_item_delegate);
+
+  // Check the context menu option shows up.
+  auto display_id = GetDisplayId();
+  std::unique_ptr<ui::MenuModel> menu =
+      GetContextMenu(shelf_item_delegate, display_id);
+  ASSERT_TRUE(menu);
+  ui::MenuModel* model = menu.get();
+  int command_index;
+  ui::MenuModel::GetModelAndIndexForCommandId(ash::MENU_OPEN_NEW, &model,
+                                              &command_index);
+  EXPECT_TRUE(menu->IsEnabledAt(command_index));
+
+  // Try to launch the app into a new window.
+  content::TestNavigationObserver observer(maybe_installation_->GetAppUrl());
+  observer.StartWatchingNewWebContents();
+  menu->ActivatedAt(command_index);
+  observer.Wait();
+
+  // After launch, we should have two SWA windows.
+  auto* browser_list = BrowserList::GetInstance();
+  size_t system_app_browser_count = std::count_if(
+      browser_list->begin(), browser_list->end(), [&](Browser* browser) {
+        return web_app::IsBrowserForSystemWebApp(
+            browser, maybe_installation_->GetType());
+      });
+
+  EXPECT_EQ(system_app_browser_count, 2U);
+}
+#endif
+
 INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
     SystemWebAppLinkCaptureBrowserTest);
 
@@ -879,4 +971,9 @@ INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
 
 INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
     SystemWebAppManagerShouldNotCloseFromScriptsTest);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
+    SystemWebAppNewWindowMenuItemTest);
+#endif
 }  // namespace web_app

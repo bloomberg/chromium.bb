@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/dcheck_is_on.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/sequence_checker.h"
@@ -14,7 +15,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "build/build_config.h"  // TODO(crbug.com/866218): Remove this include.
 #include "third_party/sqlite/sqlite3.h"
 
 namespace sql {
@@ -31,9 +31,7 @@ Statement::Statement(scoped_refptr<Database::StatementRef> ref)
     : ref_(std::move(ref)) {}
 
 Statement::~Statement() {
-#if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#endif  // !defined(OS_ANDROID)
 
   // Free the resources associated with this statement. We assume there's only
   // one statement active for a given sqlite3_stmt at any time, so this won't
@@ -42,27 +40,21 @@ Statement::~Statement() {
 }
 
 void Statement::Assign(scoped_refptr<Database::StatementRef> ref) {
-#if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#endif  // !defined(OS_ANDROID)
 
   Reset(true);
   ref_ = std::move(ref);
 }
 
 void Statement::Clear() {
-#if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#endif  // !defined(OS_ANDROID)
 
   Assign(base::MakeRefCounted<Database::StatementRef>(nullptr, nullptr, false));
   succeeded_ = false;
 }
 
 bool Statement::CheckValid() const {
-#if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#endif  // !defined(OS_ANDROID)
 
   // Allow operations to fail silently if a statement was invalidated
   // because the database was closed by an error handler.
@@ -72,9 +64,7 @@ bool Statement::CheckValid() const {
 }
 
 int Statement::StepInternal() {
-#if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#endif  // OS_ANDROID
 
   if (!CheckValid())
     return SQLITE_ERROR;
@@ -82,32 +72,33 @@ int Statement::StepInternal() {
   absl::optional<base::ScopedBlockingCall> scoped_blocking_call;
   ref_->InitScopedBlockingCall(FROM_HERE, &scoped_blocking_call);
 
-  stepped_ = true;
   int ret = sqlite3_step(ref_->stmt());
   return CheckError(ret);
 }
 
 bool Statement::Run() {
-#if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#endif  // OS_ANDROID
 
-  DCHECK(!stepped_);
+#if DCHECK_IS_ON()
+  DCHECK(!run_called_) << "Run() must be called exactly once";
+  run_called_ = true;
+  DCHECK(!step_called_) << "Run() must not be mixed with Step()";
+#endif  // DCHECK_IS_ON()
   return StepInternal() == SQLITE_DONE;
 }
 
 bool Statement::Step() {
-#if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#endif  // OS_ANDROID
 
+#if DCHECK_IS_ON()
+  DCHECK(!run_called_) << "Run() must not be mixed with Step()";
+  step_called_ = true;
+#endif  // DCHECK_IS_ON()
   return StepInternal() == SQLITE_ROW;
 }
 
 void Statement::Reset(bool clear_bound_vars) {
-#if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#endif  // OS_ANDROID
 
   absl::optional<base::ScopedBlockingCall> scoped_blocking_call;
   ref_->InitScopedBlockingCall(FROM_HERE, &scoped_blocking_call);
@@ -128,116 +119,230 @@ void Statement::Reset(bool clear_bound_vars) {
     ref_->database()->ReleaseCacheMemoryIfNeeded(false);
 
   succeeded_ = false;
-  stepped_ = false;
+#if DCHECK_IS_ON()
+  run_called_ = false;
+  step_called_ = false;
+#endif  // DCHECK_IS_ON()
 }
 
 bool Statement::Succeeded() const {
-#if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#endif  // OS_ANDROID
 
   return is_valid() && succeeded_;
 }
 
-bool Statement::BindNull(int col) {
-#if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
+void Statement::BindNull(int param_index) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#endif  // OS_ANDROID
-  DCHECK(!stepped_);
 
-  return is_valid() && CheckOk(sqlite3_bind_null(ref_->stmt(), col + 1));
+#if DCHECK_IS_ON()
+  DCHECK(!run_called_) << __func__ << " must not be called after Run()";
+  DCHECK(!step_called_) << __func__ << " must not be called after Step()";
+#endif  // DCHECK_IS_ON()
+
+  if (!is_valid())
+    return;
+
+  DCHECK_GE(param_index, 0);
+  DCHECK_LT(param_index, sqlite3_bind_parameter_count(ref_->stmt()))
+      << "Invalid parameter index";
+  int sqlite_error_code = sqlite3_bind_null(ref_->stmt(), param_index + 1);
+  DCHECK_EQ(sqlite_error_code, SQLITE_OK);
 }
 
-bool Statement::BindBool(int col, bool val) {
-#if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
+void Statement::BindBool(int param_index, bool val) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#endif  // OS_ANDROID
 
-  return BindInt(col, val ? 1 : 0);
+  return BindInt64(param_index, val ? 1 : 0);
 }
 
-bool Statement::BindInt(int col, int val) {
-#if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
+void Statement::BindInt(int param_index, int val) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#endif  // OS_ANDROID
-  DCHECK(!stepped_);
 
-  return is_valid() && CheckOk(sqlite3_bind_int(ref_->stmt(), col + 1, val));
+#if DCHECK_IS_ON()
+  DCHECK(!run_called_) << __func__ << " must not be called after Run()";
+  DCHECK(!step_called_) << __func__ << " must not be called after Step()";
+#endif  // DCHECK_IS_ON()
+
+  if (!is_valid())
+    return;
+
+  DCHECK_GE(param_index, 0);
+  DCHECK_LT(param_index, sqlite3_bind_parameter_count(ref_->stmt()))
+      << "Invalid parameter index";
+  int sqlite_error_code = sqlite3_bind_int(ref_->stmt(), param_index + 1, val);
+  DCHECK_EQ(sqlite_error_code, SQLITE_OK);
 }
 
-bool Statement::BindInt64(int col, int64_t val) {
-#if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
+void Statement::BindInt64(int param_index, int64_t val) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#endif  // OS_ANDROID
-  DCHECK(!stepped_);
 
-  return is_valid() && CheckOk(sqlite3_bind_int64(ref_->stmt(), col + 1, val));
+#if DCHECK_IS_ON()
+  DCHECK(!run_called_) << __func__ << " must not be called after Run()";
+  DCHECK(!step_called_) << __func__ << " must not be called after Step()";
+#endif  // DCHECK_IS_ON()
+
+  if (!is_valid())
+    return;
+
+  DCHECK_GE(param_index, 0);
+  DCHECK_LT(param_index, sqlite3_bind_parameter_count(ref_->stmt()))
+      << "Invalid parameter index";
+  int sqlite_error_code =
+      sqlite3_bind_int64(ref_->stmt(), param_index + 1, val);
+  DCHECK_EQ(sqlite_error_code, SQLITE_OK);
 }
 
-bool Statement::BindDouble(int col, double val) {
-#if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
+void Statement::BindDouble(int param_index, double val) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#endif  // OS_ANDROID
-  DCHECK(!stepped_);
 
-  return is_valid() && CheckOk(sqlite3_bind_double(ref_->stmt(), col + 1, val));
+#if DCHECK_IS_ON()
+  DCHECK(!run_called_) << __func__ << " must not be called after Run()";
+  DCHECK(!step_called_) << __func__ << " must not be called after Step()";
+#endif  // DCHECK_IS_ON()
+
+  if (!is_valid())
+    return;
+
+  DCHECK_GE(param_index, 0);
+  DCHECK_LT(param_index, sqlite3_bind_parameter_count(ref_->stmt()))
+      << "Invalid parameter index";
+  int sqlite_error_code =
+      sqlite3_bind_double(ref_->stmt(), param_index + 1, val);
+  DCHECK_EQ(sqlite_error_code, SQLITE_OK);
 }
 
-bool Statement::BindTime(int col, base::Time val) {
-#if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
+void Statement::BindTime(int param_index, base::Time val) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#endif  // OS_ANDROID
-  DCHECK(!stepped_);
 
+#if DCHECK_IS_ON()
+  DCHECK(!run_called_) << __func__ << " must not be called after Run()";
+  DCHECK(!step_called_) << __func__ << " must not be called after Step()";
+#endif  // DCHECK_IS_ON()
+
+  if (!is_valid())
+    return;
+
+  DCHECK_GE(param_index, 0);
+  DCHECK_LT(param_index, sqlite3_bind_parameter_count(ref_->stmt()))
+      << "Invalid parameter index";
   int64_t int_value = val.ToDeltaSinceWindowsEpoch().InMicroseconds();
-  return is_valid() &&
-         CheckOk(sqlite3_bind_int64(ref_->stmt(), col + 1, int_value));
+  int sqlite_error_code =
+      sqlite3_bind_int64(ref_->stmt(), param_index + 1, int_value);
+  DCHECK_EQ(sqlite_error_code, SQLITE_OK);
 }
 
-bool Statement::BindCString(int col, const char* val) {
-#if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
+void Statement::BindCString(int param_index, const char* val) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#endif  // OS_ANDROID
-  DCHECK(!stepped_);
 
-  return is_valid() && CheckOk(sqlite3_bind_text(ref_->stmt(), col + 1, val, -1,
-                                                 SQLITE_TRANSIENT));
+#if DCHECK_IS_ON()
+  DCHECK(!run_called_) << __func__ << " must not be called after Run()";
+  DCHECK(!step_called_) << __func__ << " must not be called after Step()";
+#endif  // DCHECK_IS_ON()
+
+  DCHECK(val);
+  if (!is_valid())
+    return;
+
+  DCHECK_GE(param_index, 0);
+  DCHECK_LT(param_index, sqlite3_bind_parameter_count(ref_->stmt()))
+      << "Invalid parameter index";
+
+  // If the string length is more than SQLITE_MAX_LENGTH (or the per-database
+  // SQLITE_LIMIT_LENGTH limit), sqlite3_bind_text() fails with SQLITE_TOOBIG.
+  //
+  // We're not currently handling this error. SQLITE_MAX_LENGTH is set to the
+  // default (1 billion bytes) in Chrome's SQLite build, so this is an unlilely
+  // issue.
+
+  int sqlite_error_code = sqlite3_bind_text(ref_->stmt(), param_index + 1, val,
+                                            -1, SQLITE_TRANSIENT);
+  DCHECK_EQ(sqlite_error_code, SQLITE_OK);
 }
 
-bool Statement::BindString(int col, const std::string& val) {
-#if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
+void Statement::BindString(int param_index, base::StringPiece value) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#endif  // OS_ANDROID
-  DCHECK(!stepped_);
 
-  return is_valid() &&
-         CheckOk(sqlite3_bind_text(ref_->stmt(), col + 1, val.data(),
-                                   base::checked_cast<int>(val.size()),
-                                   SQLITE_TRANSIENT));
+#if DCHECK_IS_ON()
+  DCHECK(!run_called_) << __func__ << " must not be called after Run()";
+  DCHECK(!step_called_) << __func__ << " must not be called after Step()";
+#endif  // DCHECK_IS_ON()
+
+  if (!is_valid())
+    return;
+
+  DCHECK_GE(param_index, 0);
+  DCHECK_LT(param_index, sqlite3_bind_parameter_count(ref_->stmt()))
+      << "Invalid parameter index";
+
+  // base::StringPiece::data() may return null for empty pieces. In particular,
+  // this may happen when the StringPiece is created from the default
+  // constructor.
+  //
+  // However, sqlite3_bind_text() always interprets a nullptr data argument as a
+  // NULL value, instead of an empty BLOB value.
+  static constexpr char kEmptyPlaceholder[] = {0x00};
+  const char* data = (value.size() > 0) ? value.data() : kEmptyPlaceholder;
+
+  // If the string length is more than SQLITE_MAX_LENGTH (or the per-database
+  // SQLITE_LIMIT_LENGTH limit), sqlite3_bind_text() fails with SQLITE_TOOBIG.
+  //
+  // We're not currently handling this error. SQLITE_MAX_LENGTH is set to the
+  // default (1 billion bytes) in Chrome's SQLite build, so this is an unlilely
+  // issue.
+
+  int sqlite_error_code = sqlite3_bind_text(ref_->stmt(), param_index + 1, data,
+                                            value.size(), SQLITE_TRANSIENT);
+  DCHECK_EQ(sqlite_error_code, SQLITE_OK);
 }
 
-bool Statement::BindString16(int col, base::StringPiece16 value) {
-#if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
+void Statement::BindString16(int param_index, base::StringPiece16 value) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#endif  // OS_ANDROID
 
-  return BindString(col, base::UTF16ToUTF8(value));
+  return BindString(param_index, base::UTF16ToUTF8(value));
 }
 
-bool Statement::BindBlob(int col, const void* val, int val_len) {
-#if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
+void Statement::BindBlob(int param_index, base::span<const uint8_t> value) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#endif  // OS_ANDROID
-  DCHECK(!stepped_);
 
-  return is_valid() && CheckOk(sqlite3_bind_blob(ref_->stmt(), col + 1, val,
-                                                 val_len, SQLITE_TRANSIENT));
+#if DCHECK_IS_ON()
+  DCHECK(!run_called_) << __func__ << " must not be called after Run()";
+  DCHECK(!step_called_) << __func__ << " must not be called after Step()";
+#endif  // DCHECK_IS_ON()
+
+  if (!is_valid())
+    return;
+
+  DCHECK_GE(param_index, 0);
+  DCHECK_LT(param_index, sqlite3_bind_parameter_count(ref_->stmt()))
+      << "Invalid parameter index";
+
+  // span::data() may return null for empty spans. In particular, this may
+  // happen when the span is created out of a std::vector, because
+  // std::vector::data() may (or may not) return null for empty vectors.
+  //
+  // However, sqlite3_bind_blob() always interprets a nullptr data argument as a
+  // NULL value, instead of an empty BLOB value.
+  //
+  // While the difference between NULL and an empty BLOB may not matter in some
+  // cases, it may also cause subtle bugs in other cases. So, we cannot pass
+  // span.data() directly to sqlite3_bind_blob().
+  static constexpr uint8_t kEmptyPlaceholder[] = {0x00};
+  const uint8_t* data = (value.size() > 0) ? value.data() : kEmptyPlaceholder;
+
+  // If the string length is more than SQLITE_MAX_LENGTH (or the per-database
+  // SQLITE_LIMIT_LENGTH limit), sqlite3_bind_text() fails with SQLITE_TOOBIG.
+  //
+  // We're not currently handling this error. SQLITE_MAX_LENGTH is set to the
+  // default (1 billion bytes) in Chrome's SQLite build, so this is an unlilely
+  // issue.
+
+  int sqlite_error_code = sqlite3_bind_blob(ref_->stmt(), param_index + 1, data,
+                                            value.size(), SQLITE_TRANSIENT);
+  DCHECK_EQ(sqlite_error_code, SQLITE_OK);
 }
 
 int Statement::ColumnCount() const {
-#if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#endif  // OS_ANDROID
 
   if (!is_valid())
     return 0;
@@ -256,204 +361,236 @@ static_assert(static_cast<int>(ColumnType::kBlob) == SQLITE_BLOB,
 static_assert(static_cast<int>(ColumnType::kNull) == SQLITE_NULL,
               "NULL mismatch");
 
-ColumnType Statement::GetColumnType(int col) const {
-#if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
+ColumnType Statement::GetColumnType(int col) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#endif  // OS_ANDROID
+
+#if DCHECK_IS_ON()
+  DCHECK(!run_called_) << __func__ << " can be used after Step(), not Run()";
+  DCHECK(step_called_) << __func__ << " can only be used after Step()";
+#endif  // DCHECK_IS_ON()
 
   return static_cast<enum ColumnType>(sqlite3_column_type(ref_->stmt(), col));
 }
 
-bool Statement::ColumnBool(int col) const {
-#if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
+bool Statement::ColumnBool(int column_index) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#endif  // OS_ANDROID
-
-  return static_cast<bool>(ColumnInt(col));
+  return static_cast<bool>(ColumnInt64(column_index));
 }
 
-int Statement::ColumnInt(int col) const {
-#if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
+int Statement::ColumnInt(int column_index) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#endif  // OS_ANDROID
+
+#if DCHECK_IS_ON()
+  DCHECK(!run_called_) << __func__ << " can be used after Step(), not Run()";
+  DCHECK(step_called_) << __func__ << " can only be used after Step()";
+#endif  // DCHECK_IS_ON()
 
   if (!CheckValid())
     return 0;
-  return sqlite3_column_int(ref_->stmt(), col);
+  DCHECK_GE(column_index, 0);
+  DCHECK_LT(column_index, sqlite3_data_count(ref_->stmt()))
+      << "Invalid column index";
+
+  return sqlite3_column_int(ref_->stmt(), column_index);
 }
 
-int64_t Statement::ColumnInt64(int col) const {
-#if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
+int64_t Statement::ColumnInt64(int column_index) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#endif  // OS_ANDROID
+
+#if DCHECK_IS_ON()
+  DCHECK(!run_called_) << __func__ << " can be used after Step(), not Run()";
+  DCHECK(step_called_) << __func__ << " can only be used after Step()";
+#endif  // DCHECK_IS_ON()
 
   if (!CheckValid())
     return 0;
-  return sqlite3_column_int64(ref_->stmt(), col);
+  DCHECK_GE(column_index, 0);
+  DCHECK_LT(column_index, sqlite3_data_count(ref_->stmt()))
+      << "Invalid column index";
+
+  return sqlite3_column_int64(ref_->stmt(), column_index);
 }
 
-double Statement::ColumnDouble(int col) const {
-#if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
+double Statement::ColumnDouble(int column_index) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#endif  // OS_ANDROID
+
+#if DCHECK_IS_ON()
+  DCHECK(!run_called_) << __func__ << " can be used after Step(), not Run()";
+  DCHECK(step_called_) << __func__ << " can only be used after Step()";
+#endif  // DCHECK_IS_ON()
 
   if (!CheckValid())
     return 0;
-  return sqlite3_column_double(ref_->stmt(), col);
+  DCHECK_GE(column_index, 0);
+  DCHECK_LT(column_index, sqlite3_data_count(ref_->stmt()))
+      << "Invalid column index";
+
+  return sqlite3_column_double(ref_->stmt(), column_index);
 }
 
-base::Time Statement::ColumnTime(int col) const {
-#if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
+base::Time Statement::ColumnTime(int column_index) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#endif  // OS_ANDROID
+
+#if DCHECK_IS_ON()
+  DCHECK(!run_called_) << __func__ << " can be used after Step(), not Run()";
+  DCHECK(step_called_) << __func__ << " can only be used after Step()";
+#endif  // DCHECK_IS_ON()
 
   if (!CheckValid())
     return base::Time();
+  DCHECK_GE(column_index, 0);
+  DCHECK_LT(column_index, sqlite3_data_count(ref_->stmt()))
+      << "Invalid column index";
 
-  int64_t int_value = sqlite3_column_int64(ref_->stmt(), col);
+  int64_t int_value = sqlite3_column_int64(ref_->stmt(), column_index);
   return base::Time::FromDeltaSinceWindowsEpoch(
       base::TimeDelta::FromMicroseconds(int_value));
 }
 
-std::string Statement::ColumnString(int col) const {
-#if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
+std::string Statement::ColumnString(int column_index) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#endif  // OS_ANDROID
+
+#if DCHECK_IS_ON()
+  DCHECK(!run_called_) << __func__ << " can be used after Step(), not Run()";
+  DCHECK(step_called_) << __func__ << " can only be used after Step()";
+#endif  // DCHECK_IS_ON()
 
   if (!CheckValid())
     return std::string();
+  DCHECK_GE(column_index, 0);
+  DCHECK_LT(column_index, sqlite3_data_count(ref_->stmt()))
+      << "Invalid column index";
 
-  const char* str = reinterpret_cast<const char*>(
-      sqlite3_column_text(ref_->stmt(), col));
-  int len = sqlite3_column_bytes(ref_->stmt(), col);
+  const char* string_buffer = reinterpret_cast<const char*>(
+      sqlite3_column_text(ref_->stmt(), column_index));
+  int size = sqlite3_column_bytes(ref_->stmt(), column_index);
 
   std::string result;
-  if (str && len > 0)
-    result.assign(str, len);
+  if (string_buffer && size > 0)
+    result.assign(string_buffer, size);
   return result;
 }
 
-std::u16string Statement::ColumnString16(int col) const {
-#if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
+std::u16string Statement::ColumnString16(int column_index) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#endif  // OS_ANDROID
+
+#if DCHECK_IS_ON()
+  DCHECK(!run_called_) << __func__ << " can be used after Step(), not Run()";
+  DCHECK(step_called_) << __func__ << " can only be used after Step()";
+#endif  // DCHECK_IS_ON()
 
   if (!CheckValid())
     return std::u16string();
+  DCHECK_GE(column_index, 0);
+  DCHECK_LT(column_index, sqlite3_data_count(ref_->stmt()))
+      << "Invalid column index";
 
-  std::string s = ColumnString(col);
-  return !s.empty() ? base::UTF8ToUTF16(s) : std::u16string();
+  std::string string = ColumnString(column_index);
+  return string.empty() ? std::u16string() : base::UTF8ToUTF16(string);
 }
 
-int Statement::ColumnByteLength(int col) const {
-#if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
+int Statement::ColumnByteLength(int column_index) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#endif  // OS_ANDROID
+
+#if DCHECK_IS_ON()
+  DCHECK(!run_called_) << __func__ << " can be used after Step(), not Run()";
+  DCHECK(step_called_) << __func__ << " can only be used after Step()";
+#endif  // DCHECK_IS_ON()
 
   if (!CheckValid())
     return 0;
-  return sqlite3_column_bytes(ref_->stmt(), col);
+  DCHECK_GE(column_index, 0);
+  DCHECK_LT(column_index, sqlite3_data_count(ref_->stmt()))
+      << "Invalid column index";
+
+  return sqlite3_column_bytes(ref_->stmt(), column_index);
 }
 
-const void* Statement::ColumnBlob(int col) const {
-#if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
+const void* Statement::ColumnBlob(int column_index) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#endif  // OS_ANDROID
+
+#if DCHECK_IS_ON()
+  DCHECK(!run_called_) << __func__ << " can be used after Step(), not Run()";
+  DCHECK(step_called_) << __func__ << " can only be used after Step()";
+#endif  // DCHECK_IS_ON()
 
   if (!CheckValid())
     return nullptr;
+  DCHECK_GE(column_index, 0);
+  DCHECK_LT(column_index, sqlite3_data_count(ref_->stmt()))
+      << "Invalid column index";
 
-  return sqlite3_column_blob(ref_->stmt(), col);
+  return sqlite3_column_blob(ref_->stmt(), column_index);
 }
 
-bool Statement::ColumnBlobAsString(int col, std::string* blob) const {
-#if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
+bool Statement::ColumnBlobAsString(int column_index, std::string* result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#endif  // OS_ANDROID
+
+#if DCHECK_IS_ON()
+  DCHECK(!run_called_) << __func__ << " can be used after Step(), not Run()";
+  DCHECK(step_called_) << __func__ << " can only be used after Step()";
+#endif  // DCHECK_IS_ON()
 
   if (!CheckValid())
     return false;
+  DCHECK_GE(column_index, 0);
+  DCHECK_LT(column_index, sqlite3_data_count(ref_->stmt()))
+      << "Invalid column index";
 
-  const void* p = ColumnBlob(col);
-  size_t len = ColumnByteLength(col);
-  blob->resize(len);
-  if (blob->size() != len) {
-    return false;
-  }
-  blob->assign(reinterpret_cast<const char*>(p), len);
-  return true;
-}
-
-bool Statement::ColumnBlobAsString16(int col, std::u16string* val) const {
-#if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#endif  // OS_ANDROID
-
-  if (!CheckValid())
-    return false;
-
-  const void* data = ColumnBlob(col);
-  size_t len = ColumnByteLength(col) / sizeof(char16_t);
-  val->resize(len);
-  if (val->size() != len)
-    return false;
-  val->assign(reinterpret_cast<const char16_t*>(data), len);
-  return true;
-}
-
-bool Statement::ColumnBlobAsVector(int col, std::vector<char>* val) const {
-#if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#endif  // OS_ANDROID
-
-  val->clear();
-
-  if (!CheckValid())
-    return false;
-
-  const void* data = sqlite3_column_blob(ref_->stmt(), col);
-  int len = sqlite3_column_bytes(ref_->stmt(), col);
-  if (data && len > 0) {
-    val->resize(len);
-    memcpy(&(*val)[0], data, len);
+  const void* result_buffer = sqlite3_column_blob(ref_->stmt(), column_index);
+  int size = sqlite3_column_bytes(ref_->stmt(), column_index);
+  if (result_buffer && size > 0) {
+    result->assign(reinterpret_cast<const char*>(result_buffer), size);
+  } else {
+    result->clear();
   }
   return true;
 }
 
-bool Statement::ColumnBlobAsVector(
-    int col,
-    std::vector<unsigned char>* val) const {
-#if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
+bool Statement::ColumnBlobAsVector(int column_index,
+                                   std::vector<char>* result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#endif  // OS_ANDROID
 
-  return ColumnBlobAsVector(col, reinterpret_cast<std::vector<char>*>(val));
+#if DCHECK_IS_ON()
+  DCHECK(!run_called_) << __func__ << " can be used after Step(), not Run()";
+  DCHECK(step_called_) << __func__ << " can only be used after Step()";
+#endif  // DCHECK_IS_ON()
+
+  if (!CheckValid())
+    return false;
+  DCHECK_GE(column_index, 0);
+  DCHECK_LT(column_index, sqlite3_data_count(ref_->stmt()))
+      << "Invalid column index";
+
+  const void* result_buffer = sqlite3_column_blob(ref_->stmt(), column_index);
+  int size = sqlite3_column_bytes(ref_->stmt(), column_index);
+  if (result_buffer && size > 0) {
+    // Unlike std::string, std::vector does not have an assign() overload that
+    // takes a buffer and a size.
+    result->assign(static_cast<const char*>(result_buffer),
+                   static_cast<const char*>(result_buffer) + size);
+  } else {
+    result->clear();
+  }
+  return true;
+}
+
+bool Statement::ColumnBlobAsVector(int column_index,
+                                   std::vector<uint8_t>* result) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  return ColumnBlobAsVector(column_index,
+                            reinterpret_cast<std::vector<char>*>(result));
 }
 
 const char* Statement::GetSQLStatement() {
-#if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#endif  // OS_ANDROID
 
   return sqlite3_sql(ref_->stmt());
 }
 
-bool Statement::CheckOk(int err) const {
-#if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#endif  // OS_ANDROID
-
-  // Binding to a non-existent variable is evidence of a serious error.
-  // TODO(gbillock,shess): make this invalidate the statement so it
-  // can't wreak havoc.
-  DCHECK_NE(err, SQLITE_RANGE) << "Bind value out of range";
-  return err == SQLITE_OK;
-}
-
 int Statement::CheckError(int err) {
-#if !defined(OS_ANDROID)  // TODO(crbug.com/866218): Remove this conditional
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#endif  // OS_ANDROID
 
   // Please don't add DCHECKs here, OnSqliteError() already has them.
   succeeded_ = (err == SQLITE_OK || err == SQLITE_ROW || err == SQLITE_DONE);

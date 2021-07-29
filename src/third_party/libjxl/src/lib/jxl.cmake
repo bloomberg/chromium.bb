@@ -109,6 +109,8 @@ set(JPEGXL_INTERNAL_SOURCES_DEC
   jxl/dec_xyb.cc
   jxl/dec_xyb.h
   jxl/decode.cc
+  jxl/decode_to_jpeg.cc
+  jxl/decode_to_jpeg.h
   jxl/enc_bit_writer.cc
   jxl/enc_bit_writer.h
   jxl/entropy_coder.cc
@@ -301,6 +303,10 @@ set(JPEGXL_DEC_INTERNAL_LIBS
   hwy
 )
 
+set_source_files_properties(jxl/decode.cc PROPERTIES
+  COMPILE_FLAGS -Wno-deprecated-declarations
+)
+
 if(JPEGXL_ENABLE_PROFILER)
 list(APPEND JPEGXL_DEC_INTERNAL_LIBS jxl_profiler)
 endif()
@@ -325,6 +331,10 @@ if (JPEGXL_ENABLE_SKCMS)
   list(APPEND JPEGXL_INTERNAL_LIBS skcms)
 else ()
   list(APPEND JPEGXL_INTERNAL_LIBS lcms2)
+endif ()
+
+if (NOT JPEGXL_ENABLE_TRANSCODE_JPEG)
+  list(APPEND JPEGXL_INTERNAL_FLAGS -DJPEGXL_ENABLE_TRANSCODE_JPEG=0)
 endif ()
 
 set(OBJ_COMPILE_DEFINITIONS

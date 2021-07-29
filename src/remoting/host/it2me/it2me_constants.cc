@@ -6,13 +6,8 @@
 
 namespace remoting {
 
-const char kMessageId[] = "id";
-const char kMessageType[] = "type";
-
-const char kHelloMessage[] = "hello";
-const char kHostVersion[] = "version";
-const char kSupportedFeatures[] = "supportedFeatures";
-const char kHelloResponse[] = "helloResponse";
+const char kFeatureAccessTokenAuth[] = "accessTokenAuth";
+const char kFeatureDelegatedSignaling[] = "delegatedSignaling";
 
 const char kConnectMessage[] = "connect";
 const char kUserName[] = "userName";

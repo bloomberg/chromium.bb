@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/test/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/auth/arc_auth_context.h"
 #include "chrome/browser/ash/arc/auth/arc_auth_service.h"
@@ -27,10 +28,10 @@
 #include "chrome/browser/ash/certificate_provider/certificate_provider_service_factory.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
@@ -47,10 +48,10 @@
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/arc/arc_util.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/session/arc_data_remover.h"
 #include "components/arc/session/arc_session_runner.h"
+#include "components/arc/test/arc_util_test_support.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_arc_session.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
@@ -68,6 +69,7 @@
 #include "content/public/test/browser_test.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -313,9 +315,10 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
     identity_test_env->SetAutomaticIssueOfAccessTokens(true);
     if (user_type != user_manager::USER_TYPE_ACTIVE_DIRECTORY) {
       // IdentityManager doesn't have a primary account for Active Directory
-      // sessions. Use "unconsented" because ARC doesn't care about browser
-      // sync consent.
-      identity_test_env->MakeUnconsentedPrimaryAccountAvailable(kFakeUserName);
+      // sessions. Use ConsentLevel::kSignin because ARC doesn't care about
+      // browser sync consent.
+      identity_test_env->MakePrimaryAccountAvailable(
+          kFakeUserName, signin::ConsentLevel::kSignin);
     }
 
     profile()->GetPrefs()->SetBoolean(prefs::kArcSignedIn, true);
@@ -506,6 +509,7 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
 // Tests that when ARC requests account info for a non-managed account,
 // Chrome supplies the info configured in SetAccountAndProfile() method.
 IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, SuccessfulBackgroundFetch) {
+  base::HistogramTester histogram_tester;
   SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
   test_url_loader_factory()->AddResponse(arc::kAuthTokenExchangeEndPoint,
                                          GetFakeAuthTokenResponse());
@@ -513,6 +517,59 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, SuccessfulBackgroundFetch) {
   base::RunLoop run_loop;
   auth_instance().RequestPrimaryAccountInfo(run_loop.QuitClosure());
   run_loop.Run();
+
+  histogram_tester.ExpectUniqueSample(
+      "Arc.Auth.CodeFetcher.ProxyBypass.Unmanaged", /*proxy_bypass=*/false,
+      /*count=*/1);
+  ASSERT_TRUE(auth_instance().account_info());
+  EXPECT_EQ(kFakeUserName,
+            auth_instance().account_info()->account_name.value());
+  EXPECT_EQ(kFakeAuthCode, auth_instance().account_info()->auth_code.value());
+  EXPECT_EQ(mojom::ChromeAccountType::USER_ACCOUNT,
+            auth_instance().account_info()->account_type);
+  EXPECT_FALSE(auth_instance().account_info()->enrollment_token);
+  EXPECT_FALSE(auth_instance().account_info()->is_managed);
+}
+
+// Tests that the `ArcBackgroundAuthCodeFetcher` will retry the network request
+// which fetches the auth code to be used for Google Play Store sign-in if the
+// request has failed because of a unreachable mandatory PAC script.
+IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, SuccessfulBackgroundProxyBypass) {
+  base::HistogramTester histogram_tester;
+  SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
+  int requests_count = 0;
+  test_url_loader_factory()->SetInterceptor(base::BindLambdaForTesting(
+      [&requests_count, this](const network::ResourceRequest& request) {
+        network::URLLoaderCompletionStatus status(
+            net::ERR_MANDATORY_PROXY_CONFIGURATION_FAILED);
+        switch (requests_count) {
+          case 0:
+            // Reply with broken PAC script state.
+            test_url_loader_factory()->AddResponse(
+                GURL(arc::kAuthTokenExchangeEndPoint),
+                network::mojom::URLResponseHead::New(), "response", status);
+            break;
+          case 1:
+            // Reply with the auth token.
+            test_url_loader_factory()->AddResponse(
+                arc::kAuthTokenExchangeEndPoint, GetFakeAuthTokenResponse());
+            break;
+          default:
+            NOTREACHED();
+        }
+        requests_count++;
+      }));
+  base::RunLoop run_loop;
+  auth_instance().RequestPrimaryAccountInfo(run_loop.QuitClosure());
+  run_loop.Run();
+
+  // Expect two network requests to have happened: the first one which failed
+  // because the mandatory PAC script is unreachable and the second request
+  // which bypassed the proxy and succeeded.
+  EXPECT_EQ(2, requests_count);
+  histogram_tester.ExpectUniqueSample(
+      "Arc.Auth.CodeFetcher.ProxyBypass.Unmanaged", /*proxy_bypass*/ true,
+      /*count*/ 1);
 
   ASSERT_TRUE(auth_instance().account_info());
   EXPECT_EQ(kFakeUserName,
@@ -768,18 +825,17 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, AccountRemovalsArePropagated) {
 
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile());
-  absl::optional<AccountInfo> maybe_account_info =
-      identity_manager
-          ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
-              kSecondaryAccountEmail);
-  ASSERT_TRUE(maybe_account_info.has_value());
+  AccountInfo account_info =
+      identity_manager->FindExtendedAccountInfoByEmailAddress(
+          kSecondaryAccountEmail);
+  ASSERT_TRUE(!account_info.IsEmpty());
 
   // Necessary to ensure that the OnExtendedAccountInfoRemoved() observer will
   // be sent.
   EnableRemovalOfExtendedAccountInfo();
 
   signin::RemoveRefreshTokenForAccount(identity_manager,
-                                       maybe_account_info.value().account_id);
+                                       account_info.account_id);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1, auth_instance().num_account_removed_calls());

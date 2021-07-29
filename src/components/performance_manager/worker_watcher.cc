@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/contains.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/performance_manager/frame_node_source.h"
 #include "components/performance_manager/graph/frame_node_impl.h"
@@ -155,7 +156,7 @@ void WorkerWatcher::TearDown() {
 
   // First clear client-child connections between frames and workers.
   for (auto& kv : frame_node_child_worker_connections_) {
-    const content::GlobalFrameRoutingId& render_frame_host_id = kv.first;
+    const content::GlobalRenderFrameHostId& render_frame_host_id = kv.first;
     WorkerNodeConnections& child_worker_connections = kv.second;
     DCHECK(!child_worker_connections.empty());
 
@@ -225,7 +226,7 @@ void WorkerWatcher::TearDown() {
 void WorkerWatcher::OnWorkerCreated(
     const blink::DedicatedWorkerToken& dedicated_worker_token,
     int worker_process_id,
-    content::GlobalFrameRoutingId ancestor_render_frame_host_id) {
+    content::GlobalRenderFrameHostId ancestor_render_frame_host_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // TODO(https://crbug.com/993029): Plumb through the URL.
@@ -243,7 +244,7 @@ void WorkerWatcher::OnWorkerCreated(
 
 void WorkerWatcher::OnBeforeWorkerDestroyed(
     const blink::DedicatedWorkerToken& dedicated_worker_token,
-    content::GlobalFrameRoutingId ancestor_render_frame_host_id) {
+    content::GlobalRenderFrameHostId ancestor_render_frame_host_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   auto it = dedicated_worker_nodes_.find(dedicated_worker_token);
@@ -334,7 +335,7 @@ void WorkerWatcher::OnFinalResponseURLDetermined(
 
 void WorkerWatcher::OnClientAdded(
     const blink::SharedWorkerToken& shared_worker_token,
-    content::GlobalFrameRoutingId render_frame_host_id) {
+    content::GlobalRenderFrameHostId render_frame_host_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   AddFrameClientConnection(GetSharedWorkerNode(shared_worker_token),
@@ -343,7 +344,7 @@ void WorkerWatcher::OnClientAdded(
 
 void WorkerWatcher::OnClientRemoved(
     const blink::SharedWorkerToken& shared_worker_token,
-    content::GlobalFrameRoutingId render_frame_host_id) {
+    content::GlobalRenderFrameHostId render_frame_host_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   RemoveFrameClientConnection(GetSharedWorkerNode(shared_worker_token),
@@ -496,7 +497,7 @@ void WorkerWatcher::OnControlleeRemoved(int64_t version_id,
 void WorkerWatcher::OnControlleeNavigationCommitted(
     int64_t version_id,
     const std::string& client_uuid,
-    content::GlobalFrameRoutingId render_frame_host_id) {
+    content::GlobalRenderFrameHostId render_frame_host_id) {
   size_t removed = client_frames_awaiting_commit_.erase(
       AwaitingKey(version_id, client_uuid));
   DCHECK_EQ(removed, 1u);
@@ -513,7 +514,7 @@ void WorkerWatcher::OnControlleeNavigationCommitted(
 
 void WorkerWatcher::AddFrameClientConnection(
     WorkerNodeImpl* worker_node,
-    content::GlobalFrameRoutingId client_render_frame_host_id) {
+    content::GlobalRenderFrameHostId client_render_frame_host_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(worker_node);
 
@@ -556,7 +557,7 @@ void WorkerWatcher::AddFrameClientConnection(
 
 void WorkerWatcher::RemoveFrameClientConnection(
     WorkerNodeImpl* worker_node,
-    content::GlobalFrameRoutingId client_render_frame_host_id) {
+    content::GlobalRenderFrameHostId client_render_frame_host_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(worker_node);
 
@@ -793,7 +794,7 @@ void WorkerWatcher::DisconnectAllServiceWorkerClients(
 }
 
 void WorkerWatcher::OnBeforeFrameNodeRemoved(
-    content::GlobalFrameRoutingId render_frame_host_id,
+    content::GlobalRenderFrameHostId render_frame_host_id,
     FrameNodeImpl* frame_node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -820,7 +821,7 @@ void WorkerWatcher::OnBeforeFrameNodeRemoved(
 }
 
 void WorkerWatcher::AddChildWorkerConnection(
-    content::GlobalFrameRoutingId render_frame_host_id,
+    content::GlobalRenderFrameHostId render_frame_host_id,
     WorkerNodeImpl* child_worker_node,
     bool* is_first_child_worker,
     bool* is_first_child_worker_connection) {
@@ -837,7 +838,7 @@ void WorkerWatcher::AddChildWorkerConnection(
 }
 
 void WorkerWatcher::RemoveChildWorkerConnection(
-    content::GlobalFrameRoutingId render_frame_host_id,
+    content::GlobalRenderFrameHostId render_frame_host_id,
     WorkerNodeImpl* child_worker_node,
     bool* was_last_child_worker,
     bool* was_last_child_worker_connection) {

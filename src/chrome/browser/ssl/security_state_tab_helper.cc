@@ -19,6 +19,7 @@
 #include "chrome/browser/reputation/reputation_web_contents_observer.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
+#include "chrome/browser/ssl/https_only_mode_tab_helper.h"
 #include "chrome/browser/ssl/known_interception_disclosure_infobar_delegate.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -44,14 +45,16 @@
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/chromeos/policy/policy_cert_service.h"
-#include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
+#include "chrome/browser/ash/policy/networking/policy_cert_service.h"
+#include "chrome/browser/ash/policy/networking/policy_cert_service_factory.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
@@ -125,6 +128,13 @@ SecurityStateTabHelper::GetVisibleSecurityState() {
     }
   }
 
+  auto* https_only_mode_tab_helper =
+      HttpsOnlyModeTabHelper::FromWebContents(web_contents());
+  if (https_only_mode_tab_helper &&
+      https_only_mode_tab_helper->is_navigation_upgraded()) {
+    state->is_https_only_mode_upgraded = true;
+  }
+
   return state;
 }
 
@@ -144,6 +154,18 @@ void SecurityStateTabHelper::DidStartNavigation(
           "Security.SecurityLevel.InsecureMainFrameFormSubmission",
           GetSecurityLevel(), security_state::SECURITY_LEVEL_COUNT);
     }
+
+    if (navigation_handle->GetURL().SchemeIs(url::kHttpsScheme)) {
+      ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
+      CHECK(ukm_recorder);
+      ukm::SourceId source_id =
+          ukm::ConvertToSourceId(navigation_handle->GetNavigationId(),
+                                 ukm::SourceIdType::NAVIGATION_ID);
+      ukm::builders::OmniboxSecurityIndicator_FormSubmission(source_id)
+          .SetSubmitted(true)
+          .Record(ukm_recorder);
+    }
+
   } else if (navigation_handle->IsInMainFrame() &&
              !security_state::IsSchemeCryptographic(
                  GetVisibleSecurityState()->url)) {
@@ -280,6 +302,7 @@ SecurityStateTabHelper::GetMaliciousContentStatus() const {
       case safe_browsing::SB_THREAT_TYPE_SUSPICIOUS_SITE:
       case safe_browsing::SB_THREAT_TYPE_APK_DOWNLOAD:
       case safe_browsing::SB_THREAT_TYPE_HIGH_CONFIDENCE_ALLOWLIST:
+      case safe_browsing::SB_THREAT_TYPE_ACCURACY_TIPS:
         // These threat types are not currently associated with
         // interstitials, and thus resources with these threat types are
         // not ever whitelisted or pending whitelisting.

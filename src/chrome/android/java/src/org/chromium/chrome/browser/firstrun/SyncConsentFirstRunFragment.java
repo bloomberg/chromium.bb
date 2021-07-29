@@ -15,6 +15,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.cards.SignInPromo;
 import org.chromium.chrome.browser.signin.SyncConsentFragmentBase;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
+import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.ChildAccountStatus;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 
@@ -29,14 +30,15 @@ public class SyncConsentFirstRunFragment
     // TODO(crbug/1168516): Remove CHILD_ACCOUNT_STATUS
     public static final String CHILD_ACCOUNT_STATUS = "ChildAccountStatus";
 
-    // Every fragment must have a public default constructor.
+    // Do not remove. Empty fragment constructor is required for re-creating the fragment from a
+    // saved state bundle. See crbug.com/1225102
     public SyncConsentFirstRunFragment() {}
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        final List<Account> accounts =
-                AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts();
+        final List<Account> accounts = AccountUtils.getAccountsIfFulfilledOrEmpty(
+                AccountManagerFacadeProvider.getInstance().getAccounts());
         final @ChildAccountStatus.Status int childAccountStatus =
                 getPageDelegate().getProperties().getInt(CHILD_ACCOUNT_STATUS);
         setArguments(createArguments(SigninAccessPoint.START_PAGE,

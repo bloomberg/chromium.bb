@@ -13,6 +13,8 @@
 #include "base/callback_helpers.h"
 #include "build/build_config.h"
 #include "ipc/ipc_message.h"
+#include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
+#include "third_party/blink/public/mojom/frame/text_autosizer_page_info.mojom.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
@@ -87,6 +89,15 @@ bool RenderFrameHostDelegate::CanEnterFullscreenMode() {
   return true;
 }
 
+bool RenderFrameHostDelegate::HasEnteredFullscreenMode() {
+  return false;
+}
+
+void RenderFrameHostDelegate::FullscreenStateChanged(
+    RenderFrameHostImpl* rfh,
+    bool is_fullscreen,
+    blink::mojom::FullscreenOptionsPtr options) {}
+
 bool RenderFrameHostDelegate::ShouldRouteMessageEvent(
     RenderFrameHostImpl* target_rfh,
     SiteInstance* source_site_instance) const {
@@ -98,10 +109,6 @@ RenderFrameHostDelegate::GetFocusedFrameIncludingInnerWebContents() {
   return nullptr;
 }
 
-RenderFrameHostImpl* RenderFrameHostDelegate::GetMainFrame() {
-  return nullptr;
-}
-
 std::unique_ptr<WebUIImpl>
 RenderFrameHostDelegate::CreateWebUIForRenderFrameHost(
     RenderFrameHostImpl* frame_host,
@@ -109,7 +116,7 @@ RenderFrameHostDelegate::CreateWebUIForRenderFrameHost(
   return nullptr;
 }
 
-RenderFrameHostDelegate* RenderFrameHostDelegate::CreateNewWindow(
+FrameTree* RenderFrameHostDelegate::CreateNewWindow(
     RenderFrameHostImpl* opener,
     const mojom::CreateNewWindowParams& params,
     bool is_new_browsing_instance,
@@ -140,11 +147,6 @@ Visibility RenderFrameHostDelegate::GetVisibility() {
   return Visibility::HIDDEN;
 }
 
-ukm::SourceId RenderFrameHostDelegate::
-    GetUkmSourceIdForLastCommittedSourceIncludingSameDocument() const {
-  return ukm::kInvalidSourceId;
-}
-
 RenderFrameHostImpl* RenderFrameHostDelegate::GetMainFrameForInnerDelegate(
     FrameTreeNode* frame_tree_node) {
   return nullptr;
@@ -167,6 +169,10 @@ void RenderFrameHostDelegate::IsClipboardPasteContentAllowed(
     IsClipboardPasteContentAllowedCallback callback) {
   std::move(callback).Run(ClipboardPasteContentAllowed(true));
 }
+
+void RenderFrameHostDelegate::OnTextAutosizerPageInfoChanged(
+    RenderFrameHostImpl* source,
+    blink::mojom::TextAutosizerPageInfoPtr page_info) {}
 
 bool RenderFrameHostDelegate::HasSeenRecentScreenOrientationChange() {
   return false;

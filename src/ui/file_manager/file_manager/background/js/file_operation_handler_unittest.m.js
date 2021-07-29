@@ -2,19 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
 import { assertArrayEquals,assertEquals, assertTrue} from 'chrome://test/chai_assert.js';
 
-import {FileOperationProgressEvent} from '../../common/js/file_operation_common.m.js';
-import {ProgressItemState} from '../../common/js/progress_center_common.m.js';
-import {util} from '../../common/js/util.m.js';
+import {FileOperationProgressEvent} from '../../common/js/file_operation_common.js';
+import {ProgressItemState} from '../../common/js/progress_center_common.js';
+import {util} from '../../common/js/util.js';
 
-import {FileOperationHandler} from './file_operation_handler.m.js';
-import {fileOperationUtil} from './file_operation_util.m.js';
-import {MockFileOperationManager} from './mock_file_operation_manager.m.js';
-import {MockProgressCenter} from './mock_progress_center.m.js';
-// clang-format on
-
+import {FileOperationHandler} from './file_operation_handler.js';
+import {fileOperationUtil} from './file_operation_util.js';
+import {MockFileOperationManager} from './mock_file_operation_manager.js';
+import {MockProgressCenter} from './mock_progress_center.js';
 
 /** @type {!MockFileOperationManager} */
 let fileOperationManager;
@@ -65,8 +62,7 @@ class MockDate {
 // Set up the test components.
 export function setUp() {
   // Mock LoadTimeData strings.
-  window.loadTimeData.resetForTesting();
-  window.loadTimeData.overrideValues({
+  window.loadTimeData.resetForTesting({
     COPY_FILE_NAME: 'Copying $1...',
     COPY_TARGET_EXISTS_ERROR: '$1 is already exists.',
     COPY_FILESYSTEM_ERROR: 'Copy filesystem error: $1',

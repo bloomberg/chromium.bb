@@ -11,9 +11,12 @@
 #include "third_party/blink/public/common/privacy_budget/identifiability_metric_builder.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
 #include "third_party/blink/public/common/privacy_budget/identifiable_surface.h"
+#include "third_party/blink/public/mojom/media/capture_handle_config.mojom-blink.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_capture_handle_config.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_stream_constraints.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_track_supported_constraints.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_union_domexception_overconstrainederror.h"
@@ -23,7 +26,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
-#include "third_party/blink/renderer/modules/mediastream/capture_handle_config.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/modules/mediastream/identifiability_metrics.h"
 #include "third_party/blink/renderer/modules/mediastream/input_device_info.h"
 #include "third_party/blink/renderer/modules/mediastream/media_error_state.h"
@@ -56,17 +59,10 @@ class PromiseResolverCallbacks final : public UserMediaRequest::Callbacks {
                  MediaStream* stream) override {
     resolver_->Resolve(stream);
   }
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   void OnError(ScriptWrappable* callback_this_value,
                const V8MediaStreamError* error) override {
     resolver_->Reject(error);
   }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  void OnError(ScriptWrappable* callback_this_value,
-               DOMExceptionOrOverconstrainedError error) override {
-    resolver_->Reject(error);
-  }
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   void Trace(Visitor* visitor) const override {
     visitor->Trace(resolver_);

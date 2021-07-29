@@ -10,7 +10,7 @@ import type * as Protocol from '../../generated/protocol.js';
 export class WebAudioModel extends SDK.SDKModel.SDKModel implements ProtocolProxyApi.WebAudioDispatcher {
   _enabled: boolean;
   _agent: ProtocolProxyApi.WebAudioApi;
-  constructor(target: SDK.SDKModel.Target) {
+  constructor(target: SDK.Target.Target) {
     super(target);
 
     this._enabled = false;
@@ -26,7 +26,7 @@ export class WebAudioModel extends SDK.SDKModel.SDKModel implements ProtocolProx
     // To resolve this inconsistency, we flush the leftover from the previous
     // frame when the current page is loaded. This call can be omitted when the
     // bug is fixed.
-    SDK.SDKModel.TargetManager.instance().addModelListener(
+    SDK.TargetManager.TargetManager.instance().addModelListener(
         SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.FrameNavigated, this._flushContexts,
         this);
   }
@@ -120,7 +120,7 @@ export class WebAudioModel extends SDK.SDKModel.SDKModel implements ProtocolProx
   }
 }
 
-SDK.SDKModel.SDKModel.register(WebAudioModel, {capabilities: SDK.SDKModel.Capability.DOM, autostart: false});
+SDK.SDKModel.SDKModel.register(WebAudioModel, {capabilities: SDK.Target.Capability.DOM, autostart: false});
 
 export const enum Events {
   ContextCreated = 'ContextCreated',

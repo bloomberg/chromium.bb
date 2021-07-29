@@ -14,6 +14,11 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/quota/special_storage_policy.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
+
+namespace blink {
+class StorageKey;
+}  // namespace blink
 
 namespace content {
 
@@ -43,22 +48,23 @@ class CONTENT_EXPORT NativeIOContextImpl : public NativeIOContext {
   // Binds `receiver` to the NativeIOHost serving `origin`.
   //
   // Must be called on the UI thread.
-  void BindReceiver(const url::Origin& origin,
+  void BindReceiver(const blink::StorageKey& storage_key,
                     mojo::PendingReceiver<blink::mojom::NativeIOHost> receiver);
 
-  // Deletes all data stored for origin `origin`.
+  // Deletes all data stored for storage key `storage_key`.
   //
   // Must be called on the UI thread.
-  void DeleteOriginData(
-      const url::Origin& origin,
-      storage::mojom::QuotaClient::DeleteOriginDataCallback callback) override;
-
-  // Returns the usage in bytes for all origins.
-  //
-  // Must be called on the UI thread.
-  void GetOriginUsageMap(
-      base::OnceCallback<void(const std::map<url::Origin, int64_t>)> callback)
+  void DeleteStorageKeyData(
+      const blink::StorageKey& storage_key,
+      storage::mojom::QuotaClient::DeleteStorageKeyDataCallback callback)
       override;
+
+  // Returns the usage in bytes for all storage keys.
+  //
+  // Must be called on the UI thread.
+  void GetStorageKeyUsageMap(
+      base::OnceCallback<void(const std::map<blink::StorageKey, int64_t>&)>
+          callback) override;
 
  protected:
   ~NativeIOContextImpl() override;
@@ -70,16 +76,17 @@ class CONTENT_EXPORT NativeIOContextImpl : public NativeIOContext {
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy);
 
   void BindReceiverOnIOThread(
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       mojo::PendingReceiver<blink::mojom::NativeIOHost> receiver,
       mojo::ReportBadMessageCallback bad_message_callback);
 
-  void DeleteOriginDataOnIOThread(
-      const url::Origin& origin,
-      storage::mojom::QuotaClient::DeleteOriginDataCallback callback);
+  void DeleteStorageKeyDataOnIOThread(
+      const blink::StorageKey& storage_key,
+      storage::mojom::QuotaClient::DeleteStorageKeyDataCallback callback);
 
-  void GetOriginUsageMapOnIOThread(
-      base::OnceCallback<void(const std::map<url::Origin, int64_t>)> callback);
+  void GetStorageKeyUsageMapOnIOThread(
+      base::OnceCallback<void(const std::map<blink::StorageKey, int64_t>&)>
+          callback);
 
   // Only to be accessed on the IO thread.
   std::unique_ptr<NativeIOManager> native_io_manager_;

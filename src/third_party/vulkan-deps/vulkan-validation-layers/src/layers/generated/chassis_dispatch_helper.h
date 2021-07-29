@@ -1060,6 +1060,9 @@ typedef enum InterceptId{
     InterceptIdPreCallValidateGetSemaphoreZirconHandleFUCHSIA,
     InterceptIdPreCallRecordGetSemaphoreZirconHandleFUCHSIA,
     InterceptIdPostCallRecordGetSemaphoreZirconHandleFUCHSIA,
+    InterceptIdPreCallValidateGetMemoryRemoteAddressNV,
+    InterceptIdPreCallRecordGetMemoryRemoteAddressNV,
+    InterceptIdPostCallRecordGetMemoryRemoteAddressNV,
     InterceptIdPreCallValidateCmdSetPatchControlPointsEXT,
     InterceptIdPreCallRecordCmdSetPatchControlPointsEXT,
     InterceptIdPostCallRecordCmdSetPatchControlPointsEXT,
@@ -1078,6 +1081,12 @@ typedef enum InterceptId{
     InterceptIdPreCallValidateCmdSetColorWriteEnableEXT,
     InterceptIdPreCallRecordCmdSetColorWriteEnableEXT,
     InterceptIdPostCallRecordCmdSetColorWriteEnableEXT,
+    InterceptIdPreCallValidateCmdDrawMultiEXT,
+    InterceptIdPreCallRecordCmdDrawMultiEXT,
+    InterceptIdPostCallRecordCmdDrawMultiEXT,
+    InterceptIdPreCallValidateCmdDrawMultiIndexedEXT,
+    InterceptIdPreCallRecordCmdDrawMultiIndexedEXT,
+    InterceptIdPostCallRecordCmdDrawMultiIndexedEXT,
     InterceptIdPreCallValidateCreateAccelerationStructureKHR,
     InterceptIdPreCallRecordCreateAccelerationStructureKHR,
     InterceptIdPostCallRecordCreateAccelerationStructureKHR,
@@ -1144,46 +1153,67 @@ typedef enum InterceptId{
     InterceptIdCount,
 } InterceptId;
 
-
-#define INTERCEPTIDNAME(name) InterceptId ## name
-#define BUILD_DISPATCH_VECTOR(name) \
-    for (auto item : object_dispatch) { \
-        auto intercept_vector = &intercept_vectors[INTERCEPTIDNAME(name)];  \
-        switch (item->container_type) { \
-            case LayerObjectTypeThreading:  \
-                if (typeid(&ThreadSafety::name) != typeid(&ValidationObject::name)) intercept_vector->push_back(item);  \
-                break;  \
-            case LayerObjectTypeParameterValidation:    \
-                if (typeid(&StatelessValidation::name) != typeid(&ValidationObject::name)) intercept_vector->push_back(item);   \
-                break;  \
-            case LayerObjectTypeObjectTracker:  \
-                if (typeid(&ObjectLifetimes::name) != typeid(&ValidationObject::name)) intercept_vector->push_back(item);   \
-                break;  \
-            case LayerObjectTypeCoreValidation: \
-                if (typeid(&CoreChecks::name) != typeid(&ValidationObject::name)) intercept_vector->push_back(item);    \
-                break;  \
-            case LayerObjectTypeBestPractices:  \
-                if (typeid(&BestPractices::name) != typeid(&ValidationObject::name)) intercept_vector->push_back(item);     \
-                break;  \
-            case LayerObjectTypeGpuAssisted:    \
-                if (typeid(&GpuAssisted::name) != typeid(&ValidationObject::name)) intercept_vector->push_back(item);   \
-                break;  \
-            case LayerObjectTypeDebugPrintf:    \
-                if (typeid(&DebugPrintf::name) != typeid(&ValidationObject::name)) intercept_vector->push_back(item);   \
-                break;  \
-            case LayerObjectTypeSyncValidation: \
-                if (typeid(&SyncValidator::name) != typeid(&ValidationObject::name)) intercept_vector->push_back(item);     \
-                break;  \
-            case LayerObjectTypeInstance: \
-            case LayerObjectTypeDevice:   \
-                break;  \
-            default:    \
-                /* Chassis codegen needs to be updated for unknown validation object type */ \
-                assert(0);  \
-        }   \
-    }
-
 void ValidationObject::InitObjectDispatchVectors() {
+
+#define BUILD_DISPATCH_VECTOR(name) \
+    init_object_dispatch_vector(InterceptId ## name, \
+                                typeid(&ValidationObject::name), \
+                                typeid(&ThreadSafety::name), \
+                                typeid(&StatelessValidation::name), \
+                                typeid(&ObjectLifetimes::name), \
+                                typeid(&CoreChecks::name), \
+                                typeid(&BestPractices::name), \
+                                typeid(&GpuAssisted::name), \
+                                typeid(&DebugPrintf::name), \
+                                typeid(&SyncValidator::name));
+
+    auto init_object_dispatch_vector = [this](InterceptId id,
+                                              const std::type_info& vo_typeid,
+                                              const std::type_info& tt_typeid,
+                                              const std::type_info& tpv_typeid,
+                                              const std::type_info& tot_typeid,
+                                              const std::type_info& tcv_typeid,
+                                              const std::type_info& tbp_typeid,
+                                              const std::type_info& tga_typeid,
+                                              const std::type_info& tdp_typeid,
+                                              const std::type_info& tsv_typeid) {
+        for (auto item : this->object_dispatch) {
+            auto intercept_vector = &this->intercept_vectors[id];
+            switch (item->container_type) {
+            case LayerObjectTypeThreading:
+                if (tt_typeid != vo_typeid) intercept_vector->push_back(item);
+                break;
+            case LayerObjectTypeParameterValidation:
+                if (tpv_typeid != vo_typeid) intercept_vector->push_back(item);
+                break;
+            case LayerObjectTypeObjectTracker:
+                if (tot_typeid != vo_typeid) intercept_vector->push_back(item);
+                break;
+            case LayerObjectTypeCoreValidation:
+                if (tcv_typeid != vo_typeid) intercept_vector->push_back(item);
+                break;
+            case LayerObjectTypeBestPractices:
+                if (tbp_typeid != vo_typeid) intercept_vector->push_back(item);
+                break;
+            case LayerObjectTypeGpuAssisted:
+                if (tga_typeid != vo_typeid) intercept_vector->push_back(item);
+                break;
+            case LayerObjectTypeDebugPrintf:
+                if (tdp_typeid != vo_typeid) intercept_vector->push_back(item);
+                break;
+            case LayerObjectTypeSyncValidation:
+                if (tsv_typeid != vo_typeid) intercept_vector->push_back(item);
+                break;
+            case LayerObjectTypeInstance:
+            case LayerObjectTypeDevice:
+                break;
+            default:
+                /* Chassis codegen needs to be updated for unknown validation object type */
+                assert(0);
+            }
+        }
+    };
+
     intercept_vectors.resize(InterceptIdCount);
 
     BUILD_DISPATCH_VECTOR(PreCallValidateGetDeviceQueue);
@@ -2319,6 +2349,9 @@ void ValidationObject::InitObjectDispatchVectors() {
     BUILD_DISPATCH_VECTOR(PreCallRecordGetSemaphoreZirconHandleFUCHSIA);
     BUILD_DISPATCH_VECTOR(PostCallRecordGetSemaphoreZirconHandleFUCHSIA);
 #endif
+    BUILD_DISPATCH_VECTOR(PreCallValidateGetMemoryRemoteAddressNV);
+    BUILD_DISPATCH_VECTOR(PreCallRecordGetMemoryRemoteAddressNV);
+    BUILD_DISPATCH_VECTOR(PostCallRecordGetMemoryRemoteAddressNV);
     BUILD_DISPATCH_VECTOR(PreCallValidateCmdSetPatchControlPointsEXT);
     BUILD_DISPATCH_VECTOR(PreCallRecordCmdSetPatchControlPointsEXT);
     BUILD_DISPATCH_VECTOR(PostCallRecordCmdSetPatchControlPointsEXT);
@@ -2341,6 +2374,12 @@ void ValidationObject::InitObjectDispatchVectors() {
     BUILD_DISPATCH_VECTOR(PreCallValidateCmdSetColorWriteEnableEXT);
     BUILD_DISPATCH_VECTOR(PreCallRecordCmdSetColorWriteEnableEXT);
     BUILD_DISPATCH_VECTOR(PostCallRecordCmdSetColorWriteEnableEXT);
+    BUILD_DISPATCH_VECTOR(PreCallValidateCmdDrawMultiEXT);
+    BUILD_DISPATCH_VECTOR(PreCallRecordCmdDrawMultiEXT);
+    BUILD_DISPATCH_VECTOR(PostCallRecordCmdDrawMultiEXT);
+    BUILD_DISPATCH_VECTOR(PreCallValidateCmdDrawMultiIndexedEXT);
+    BUILD_DISPATCH_VECTOR(PreCallRecordCmdDrawMultiIndexedEXT);
+    BUILD_DISPATCH_VECTOR(PostCallRecordCmdDrawMultiIndexedEXT);
     BUILD_DISPATCH_VECTOR(PreCallValidateCreateAccelerationStructureKHR);
     BUILD_DISPATCH_VECTOR(PreCallRecordCreateAccelerationStructureKHR);
     BUILD_DISPATCH_VECTOR(PostCallRecordCreateAccelerationStructureKHR);

@@ -762,8 +762,7 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::FinishLayout(
   if (container_builder_.HasSeenAllChildren() &&
       HasLineEvenIfEmpty(Node().GetLayoutBox())) {
     intrinsic_block_size_ +=
-        std::max(intrinsic_block_size_,
-                 Node().GetLayoutBox()->LogicalHeightForEmptyLine());
+        std::max(intrinsic_block_size_, Node().EmptyLineBlockSize());
     if (container_builder_.IsInitialColumnBalancingPass()) {
       container_builder_.PropagateTallestUnbreakableBlockSize(
           intrinsic_block_size_);
@@ -1722,7 +1721,7 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::FinishInflow(
       return NGLayoutResult::kBfcBlockOffsetResolved;
   }
 
-  // We have special behaviour for a self-collapsing child which gets pushed
+  // We have special behavior for a self-collapsing child which gets pushed
   // down due to clearance, see comment inside |ComputeInflowPosition|.
   bool self_collapsing_child_had_clearance =
       is_self_collapsing && has_clearance_past_adjoining_floats;
@@ -2044,7 +2043,7 @@ NGPreviousInflowPosition NGBlockLayoutAlgorithm::ComputeInflowPosition(
 
   bool is_self_collapsing = layout_result.IsSelfCollapsing();
   if (is_self_collapsing) {
-    // The default behaviour for self-collapsing children is they just pass
+    // The default behavior for self-collapsing children is they just pass
     // through the previous inflow position.
     logical_block_offset = previous_inflow_position.logical_block_offset;
 
@@ -2317,10 +2316,29 @@ NGBreakStatus NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
       // is what we need to add to consumed block-size for the next break
       // token. The fragment block-size itself will be based directly on the
       // fragmentainer size from the constraint space, though.
-      container_builder_.SetFragmentBlockSize(
-          ConstraintSpace().FragmentainerBlockSize());
-      container_builder_.SetConsumedBlockSize(
-          consumed_block_size + FragmentainerCapacity(ConstraintSpace()));
+      LayoutUnit block_size = ConstraintSpace().FragmentainerBlockSize();
+      LayoutUnit fragmentainer_capacity =
+          FragmentainerCapacity(ConstraintSpace());
+      container_builder_.SetFragmentBlockSize(block_size);
+      consumed_block_size += fragmentainer_capacity;
+      container_builder_.SetConsumedBlockSize(consumed_block_size);
+
+      // We clamp the fragmentainer block size from 0 to 1 for legacy write-back
+      // if there is content that overflows the zero-height fragmentainer.
+      // Set the consumed block size adjustment for legacy if this results
+      // in a different consumed block size than is used for NG layout.
+      LayoutUnit consumed_block_size_for_legacy =
+          BreakToken() ? BreakToken()->ConsumedBlockSizeForLegacy()
+                       : LayoutUnit();
+      LayoutUnit legacy_fragmentainer_block_size =
+          (container_builder_.IntrinsicBlockSize() > LayoutUnit())
+              ? fragmentainer_capacity
+              : block_size;
+      LayoutUnit consumed_block_size_legacy_adjustment =
+          consumed_block_size_for_legacy + legacy_fragmentainer_block_size -
+          consumed_block_size;
+      container_builder_.SetConsumedBlockSizeLegacyAdjustment(
+          consumed_block_size_legacy_adjustment);
     } else {
       // When we are in the initial column balancing pass, use the block-size
       // calculated by the algorithm. Since any previously consumed block-size
@@ -2532,7 +2550,7 @@ NGBoxStrut NGBlockLayoutAlgorithm::CalculateMargins(
                                      /* is_new_fc */ false);
     builder.SetAvailableSize(ChildAvailableSize());
     builder.SetPercentageResolutionSize(child_percentage_size_);
-    builder.SetStretchInlineSizeIfAuto(true);
+    builder.SetInlineAutoBehavior(NGAutoBehavior::kStretchImplicit);
     NGConstraintSpace space = builder.ToConstraintSpace();
 
     const auto block_child = To<NGBlockNode>(child);
@@ -2571,7 +2589,7 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
                             child_writing_direction.GetWritingMode())) {
     if (!child.GetLayoutBox()->AutoWidthShouldFitContent() &&
         !child.IsReplaced() && !child.IsTable())
-      builder.SetStretchInlineSizeIfAuto(true);
+      builder.SetInlineAutoBehavior(NGAutoBehavior::kStretchImplicit);
   }
 
   builder.SetAvailableSize(child_available_size);
@@ -2581,20 +2599,27 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
   if (ConstraintSpace().IsTableCell()) {
     builder.SetIsTableCellChild(true);
 
-    // Some scrollable percentage-sized children of table-cells (in the
-    // "measure" phase) use their min-size (instead of sizing normally).
+    // Only apply the restricted block-size behaviour if we are in the
+    // measuring phase, or we are in the layout phase and the %-block-size is
+    // indefinite.
+    const bool is_measuring_or_indefinite =
+        !ConstraintSpace().IsFixedBlockSize() ||
+        (ConstraintSpace().IsFixedBlockSize() &&
+         child_percentage_size_.block_size == kIndefiniteSize);
+
+    // Some scrollable percentage-sized children of table-cells use their
+    // min-size (instead of sizing normally).
     //
     // We only apply this rule if the block size of the containing table cell
-    // is considered to be "restricted", though. Otherwise, especially if this
-    // is the only child of the cell, and that is the only cell in the row,
-    // we'd end up with zero block size.
+    // is considered to be "restricted". Otherwise, especially if this is the
+    // only child of the cell, and that is the only cell in the row, we'd end
+    // up with zero block size.
     if (ConstraintSpace().IsRestrictedBlockSizeTableCell() &&
-        !ConstraintSpace().IsFixedBlockSize() &&
-        !child.ShouldBeConsideredAsReplaced() &&
+        is_measuring_or_indefinite && !child.ShouldBeConsideredAsReplaced() &&
         child_style.LogicalHeight().IsPercentOrCalc() &&
         (child_style.OverflowBlockDirection() == EOverflow::kAuto ||
          child_style.OverflowBlockDirection() == EOverflow::kScroll))
-      builder.SetIsMeasuringRestrictedBlockSizeTableCellChild();
+      builder.SetIsRestrictedBlockSizeTableCellChild();
   }
 
   bool has_bfc_block_offset = container_builder_.BfcBlockOffset().has_value();
@@ -2938,7 +2963,7 @@ void NGBlockLayoutAlgorithm::HandleRubyText(NGBlockNode ruby_text_child) {
   builder.SetAvailableSize(ChildAvailableSize());
   if (IsParallelWritingMode(ConstraintSpace().GetWritingMode(),
                             rt_style.GetWritingMode()))
-    builder.SetStretchInlineSizeIfAuto(true);
+    builder.SetInlineAutoBehavior(NGAutoBehavior::kStretchImplicit);
 
   scoped_refptr<const NGLayoutResult> result =
       ruby_text_child.Layout(builder.ToConstraintSpace(), break_token.get());

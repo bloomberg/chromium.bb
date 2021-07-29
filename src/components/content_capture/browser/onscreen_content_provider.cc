@@ -15,6 +15,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 
 namespace content_capture {
 namespace {
@@ -211,6 +212,40 @@ void OnscreenContentProvider::DidUpdateTitle(
 
   for (auto* consumer : consumers_)
     consumer->DidUpdateTitle(*session.begin());
+}
+
+void OnscreenContentProvider::DidUpdateFaviconURL(
+    content::RenderFrameHost* render_frame_host,
+    const std::vector<blink::mojom::FaviconURLPtr>& candidates) {
+  if (ContentCaptureReceiver::
+          disable_get_favicon_from_web_contents_for_testing()) {
+    return;
+  }
+  NotifyFaviconURLUpdated(render_frame_host, candidates);
+}
+
+void OnscreenContentProvider::NotifyFaviconURLUpdated(
+    content::RenderFrameHost* render_frame_host,
+    const std::vector<blink::mojom::FaviconURLPtr>& candidates) {
+  // Only set the favicons for the mainframe.
+  if (render_frame_host != web_contents()->GetMainFrame())
+    return;
+
+  if (auto* receiver = ContentCaptureReceiverForFrame(render_frame_host)) {
+    receiver->UpdateFaviconURL(candidates);
+  }
+}
+
+void OnscreenContentProvider::DidUpdateFavicon(
+    ContentCaptureReceiver* content_capture_receiver) {
+  ContentCaptureSession session;
+  BuildContentCaptureSession(content_capture_receiver,
+                             /*ancestor_only=*/false, &session);
+
+  // Shall only update mainframe's title.
+  DCHECK(session.size() == 1);
+  for (auto* consumer : consumers_)
+    consumer->DidUpdateFavicon(*session.begin());
 }
 
 void OnscreenContentProvider::BuildContentCaptureSession(

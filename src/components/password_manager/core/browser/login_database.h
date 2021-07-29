@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "components/password_manager/core/browser/field_info_table.h"
 #include "components/password_manager/core/browser/insecure_credentials_table.h"
+#include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/browser/password_store_sync.h"
@@ -29,10 +30,6 @@
 
 #if defined(OS_IOS)
 #include "base/gtest_prod_util.h"
-#endif
-
-#if defined(OS_MAC)
-#include "components/password_manager/core/browser/password_recovery_util_mac.h"
 #endif
 
 namespace password_manager {
@@ -66,12 +63,6 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   // Actually creates/opens the database. If false is returned, no other method
   // should be called.
   virtual bool Init();
-
-#if defined(OS_MAC)
-  // Registers utility which is used to save password recovery status on MacOS.
-  void InitPasswordRecoveryUtil(
-      std::unique_ptr<PasswordRecoveryUtilMac> password_recovery_util);
-#endif
 
   // Reports usage metrics to UMA.
   void ReportMetrics(const std::string& sync_username,
@@ -125,7 +116,7 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
 
   // Gets a list of credentials matching |form|, including blocklisted matches
   // and federated credentials.
-  bool GetLogins(const PasswordStore::FormDigest& form,
+  bool GetLogins(const PasswordFormDigest& form,
                  std::vector<std::unique_ptr<PasswordForm>>* forms)
       WARN_UNUSED_RESULT;
 
@@ -292,7 +283,7 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   // |decrypt_and_fill_password_value| is set to false, it always returns
   // ENCRYPTION_RESULT_SUCCESS.
   EncryptionResult InitPasswordFormFromStatement(
-      const sql::Statement& s,
+      sql::Statement& s,
       bool decrypt_and_fill_password_value,
       int* primary_key,
       PasswordForm* form) const WARN_UNUSED_RESULT;
@@ -324,10 +315,10 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   // when encryption was available from the database. On success returns true.
   // |key_to_form_map| must not be null and will be used to return the results.
   // The key of the map is the DB primary key.
-  FormRetrievalResult StatementToForms(
-      sql::Statement* statement,
-      const PasswordStore::FormDigest* matched_form,
-      PrimaryKeyToFormMap* key_to_form_map) WARN_UNUSED_RESULT;
+  FormRetrievalResult StatementToForms(sql::Statement* statement,
+                                       const PasswordFormDigest* matched_form,
+                                       PrimaryKeyToFormMap* key_to_form_map)
+      WARN_UNUSED_RESULT;
 
   // Initializes all the *_statement_ data members with appropriate SQL
   // fragments based on |builder|.
@@ -336,6 +327,18 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   // Sets the `in_store` member of `form` to either kProfileStore or
   // kAccountStore depending on the value of `is_account_store_`.
   void FillFormInStore(PasswordForm* form) const;
+
+  // Reads the insecure credentials corresponding to the `primary_key` from the
+  // database and fills them into `form->password_issues`.
+  void PopulateFormWithPasswordIssues(FormPrimaryKey primary_key,
+                                      PasswordForm* form) const;
+
+  // Updates data in the `insecure_credentials_table_` with the password issues
+  // data from `password_issues`. Returns whether any insecure credential entry
+  // was changed.
+  InsecureCredentialsChanged UpdateInsecureCredentials(
+      FormPrimaryKey primary_key,
+      const base::flat_map<InsecureType, InsecurityMetadata>& password_issues);
 
   const base::FilePath db_path_;
   const IsAccountStore is_account_store_;
@@ -362,10 +365,6 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   std::string blocklisted_statement_;
   std::string encrypted_password_statement_by_id_;
   std::string id_and_password_statement_;
-
-#if defined(OS_MAC)
-  std::unique_ptr<PasswordRecoveryUtilMac> password_recovery_util_;
-#endif
 
 #if defined(OS_POSIX) && !defined(OS_APPLE)
   // Whether password values should be encrypted.

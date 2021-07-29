@@ -105,6 +105,10 @@ cr.define('app_management', function() {
         hideMoreSettings: false,
         hidePinToShelf: false,
         isPreferredApp: false,
+        windowMode: apps.mojom.WindowMode.kWindow,
+        resizeLocked: false,
+        hideResizeLocked: true,
+        supportedLinks: [],
       };
 
       if (optConfig) {
@@ -197,9 +201,50 @@ cr.define('app_management', function() {
 
     /**
      * @param {string} appId
+     * @param {boolean} locked
+     */
+    setResizeLocked(appId, locked) {
+      const app =
+          app_management.AppManagementStore.getInstance().data.apps[appId];
+
+      const newApp =
+          /** @type {!App} */ (Object.assign({}, app, {resizeLocked: locked}));
+      this.page.onAppChanged(newApp);
+    }
+
+    /**
+     * @param {string} appId
+     * @param {boolean} hide
+     */
+    setHideResizeLocked(appId, hide) {
+      const app =
+          app_management.AppManagementStore.getInstance().data.apps[appId];
+
+      const newApp =
+          /** @type {!App} */ (
+              Object.assign({}, app, {hideResizeLocked: hide}));
+      this.page.onAppChanged(newApp);
+    }
+
+    /**
+     * @param {string} appId
      */
     uninstall(appId) {
       this.page.onAppRemoved(appId);
+    }
+
+    /**
+     * @param {string} appId
+     * @param {boolean} preferredAppValue
+     */
+    setPreferredApp(appId, preferredAppValue) {
+      const app =
+          app_management.AppManagementStore.getInstance().data.apps[appId];
+
+      const newApp =
+          /** @type {!App} */ (
+              Object.assign({}, app, {isPreferredApp: preferredAppValue}));
+      this.page.onAppChanged(newApp);
     }
 
     /**

@@ -23,7 +23,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -56,6 +55,10 @@ class ScopedDictionaryPrefUpdate;
 namespace subtle {
 class PrefMemberBase;
 class ScopedUserPrefUpdateBase;
+}
+
+namespace variations {
+class VariationsFieldTrialCreator;
 }
 
 // Base class for PrefServices. You can use the base class to read and
@@ -195,7 +198,7 @@ class COMPONENTS_PREFS_EXPORT PrefService {
       base::OnceClosure reply_callback = base::OnceClosure(),
       base::OnceClosure synchronous_done_callback = base::OnceClosure());
 
-  // Schedule a write if there is any lossy data pending. Unlike
+  // Schedules a write if there is any lossy data pending. Unlike
   // CommitPendingWrite() this does not immediately sync to disk, instead it
   // triggers an eventual write if there is lossy data pending and if there
   // isn't one scheduled already.
@@ -420,6 +423,10 @@ class COMPONENTS_PREFS_EXPORT PrefService {
   friend class PrefChangeRegistrar;
   friend class subtle::PrefMemberBase;
 
+  // Give access to CommitPendingWriteSynchronously().
+  // TODO(crbug/1218908): Limit VariationsFieldTrialCreator's access.
+  friend class variations::VariationsFieldTrialCreator;
+
   // These are protected so they can only be accessed by the friend
   // classes listed above.
   //
@@ -465,6 +472,12 @@ class COMPONENTS_PREFS_EXPORT PrefService {
   // actually get the value.).
   const base::Value* GetPreferenceValue(const std::string& path) const;
   const base::Value* GetPreferenceValueChecked(const std::string& path) const;
+
+  // Like CommitPendingWrite(), but writes to disk on this thread synchronously
+  // rather than scheduling a write. CommitPendingWriteSynchronously() is
+  // appropriate to call only in the exceptional situation in which you need to
+  // write to disk early on during startup before threads have been started.
+  void CommitPendingWriteSynchronously();
 
   const scoped_refptr<PrefRegistry> pref_registry_;
 

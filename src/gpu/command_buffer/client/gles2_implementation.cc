@@ -26,8 +26,8 @@
 #include "base/bits.h"
 #include "base/compiler_specific.h"
 #include "base/containers/span.h"
+#include "base/cxx17_backports.h"
 #include "base/numerics/safe_math.h"
-#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/system/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -387,7 +387,8 @@ void GLES2Implementation::OnGpuControlErrorMessage(const char* message,
 }
 
 void GLES2Implementation::OnGpuControlSwapBuffersCompleted(
-    const SwapBuffersCompleteParams& params) {
+    const SwapBuffersCompleteParams& params,
+    gfx::GpuFenceHandle release_fence) {
   auto found = pending_swap_callbacks_.find(params.swap_response.swap_id);
   if (found == pending_swap_callbacks_.end())
     return;
@@ -397,7 +398,7 @@ void GLES2Implementation::OnGpuControlSwapBuffersCompleted(
   auto callback = std::move(found->second);
   pending_swap_callbacks_.erase(found);
 
-  std::move(callback).Run(params);
+  std::move(callback).Run(params, std::move(release_fence));
 }
 
 void GLES2Implementation::OnGpuSwitched(

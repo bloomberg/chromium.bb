@@ -269,7 +269,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.CRWWKNavigationStatesRemoveOldPending" enum="Boolean"
-    expires_after="2021-06-14">
+    expires_after="2021-12-14">
   <owner>justincohen@chromium.org</owner>
   <owner>gambard@chromium.org</owner>
   <summary>
@@ -302,7 +302,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.DefaultBrowserFullscreenPromoRemindMeSecondPromo"
-    enum="IOSDefaultBrowserFullscreenPromoAction" expires_after="2021-10-10">
+    enum="IOSDefaultBrowserFullscreenPromoAction" expires_after="2021-12-19">
   <owner>thegreenfrog@chromium.org</owner>
   <owner>rohitrao@chromium.org</owner>
   <summary>
@@ -396,6 +396,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="IOS.Dialogs.JavaScriptDialogClosed"
     enum="IOSJavaScriptDialogDismissalCause" expires_after="M80">
+  <obsolete>
+    Deprecated 07/2021 as it is no longer used for analysis.
+  </obsolete>
   <owner>kkhorimoto@chromium.org</owner>
   <owner>michaeldo@chromium.org</owner>
   <summary>Tracks the way JavaScript dialogs are closed on iOS.</summary>
@@ -519,7 +522,27 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="IOS.IsDefaultBrowser" enum="Boolean" expires_after="never">
 <!-- expires-never: used internally for filtering -->
 
+  <owner>javierrobles@chromium.org</owner>
   <owner>thegreenfrog@chromium.org</owner>
+  <owner>rohitrao@chromium.org</owner>
+  <owner>chrome-metrics-team@google.com</owner>
+  <summary>
+    Prefer to use IOS.IsDefaultBrowser21 as this metric is based in a 7 days
+    look back window, which appears to be too small. As of iOS14, users will be
+    able to set a default browser other than Safari. When Chrome is the default
+    browser, it will receive all URL opens, which is likely to change certain
+    stability metrics. Thus, it will be good to filter those metrics by default
+    browser status. This metrics records whether the user was deemed to have set
+    Chrome as the device's default browser. This metric will be logged once per
+    metrics log upload. As long as a link is opened in Chrome in the last 7
+    days, the user will be considered a default user.
+  </summary>
+</histogram>
+
+<histogram name="IOS.IsDefaultBrowser21" enum="Boolean" expires_after="never">
+<!-- expires-never: used internally for filtering -->
+
+  <owner>javierrobles@chromium.org</owner>
   <owner>rohitrao@chromium.org</owner>
   <owner>chrome-metrics-team@google.com</owner>
   <summary>
@@ -528,7 +551,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     likely to change certain stability metrics. Thus, it will be good to filter
     those metrics by default browser status. This metrics records whether the
     user was deemed to have set Chrome as the device's default browser. This
-    metric will be logged once per metrics log upload.
+    metric will be logged once per metrics log upload. As long as link is opened
+    in Chrome in the last 21 days, the user will be considered a default user.
   </summary>
 </histogram>
 
@@ -566,7 +590,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.LocationPermissions.FirstRunModal.Interaction"
-    enum="LocationPermissionsFirstRunModalIOSEnum" expires_after="2021-10-04">
+    enum="LocationPermissionsFirstRunModalIOSEnum" expires_after="2021-12-05">
   <owner>thegreenfrog@chromium.org</owner>
   <owner>rohitrao@chromium.org</owner>
   <summary>
@@ -575,13 +599,25 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.LocationPermissionsUI" enum="LocationPermissionsIOSUI"
-    expires_after="2021-10-04">
+    expires_after="2021-12-05">
   <owner>thegreenfrog@chromium.org</owner>
   <owner>rohitrao@chromium.org</owner>
   <summary>
     The user was shown an arm of the location permissions experiment. Recorded
     when the user is shown the UI of an experiment arm. Not recorded for the
     control arm.
+  </summary>
+</histogram>
+
+<histogram name="IOS.MainThreadFreezeDetection.HangWithCleanExit"
+    enum="Boolean" expires_after="2021-12-11">
+  <owner>justincohen@chromium.org</owner>
+  <owner>olivierrobin@chromium.org</owner>
+  <summary>
+    Recorded when the MainThreadFreezeDetector initializes. If a hang was
+    detected on a previous run, it's expected the app will be killed and not
+    exit cleanly. Set to `true` if the app exited cleanly and a hang was
+    detected, indicating no watchdog kill and an error in freeze detection.
   </summary>
 </histogram>
 
@@ -729,7 +765,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.MetricKit.ForegroundTimePerDay" units="s"
-    expires_after="2021-09-19">
+    expires_after="2021-11-21">
   <owner>justincohen@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -747,7 +783,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.MetricKit.PeakMemoryUsage" units="MB"
-    expires_after="2021-09-19">
+    expires_after="2021-11-21">
   <owner>justincohen@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -766,7 +802,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.MetricKit.TimeToFirstDraw" units="ms"
-    expires_after="2021-09-19">
+    expires_after="2021-11-21">
   <owner>justincohen@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -779,10 +815,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.MultiWindow.Configuration"
-    enum="IOSMultiWindowConfiguration" expires_after="2021-06-30">
+    enum="IOSMultiWindowConfiguration" expires_after="2021-12-11">
   <owner>marq@chromium.org</owner>
   <owner>djean@chromium.org</owner>
-  <summary>MultiWindow configration sampled once per minute.</summary>
+  <summary>MultiWindow configuration sampled once per minute.</summary>
 </histogram>
 
 <histogram name="IOS.MultiWindow.OpenInNewWindow" enum="WindowActivityOrigin"
@@ -815,7 +851,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.OpenIn.DownloadResult" enum="IOSOpenInDownloadResult"
-    expires_after="2021-10-10">
+    expires_after="2021-12-12">
   <owner>mrefaat@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>
@@ -825,7 +861,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.OpenIn.MimeType" enum="IOSOpenInMimeType"
-    expires_after="2021-09-19">
+    expires_after="2021-11-21">
   <owner>ewannpv@chromium.org</owner>
   <owner>gambard@chromium.org</owner>
   <owner>bling-team@google.com</owner>
@@ -836,7 +872,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.PageLoadCount.Counts"
-    enum="IOSPageLoadCountNavigationType" expires_after="2021-10-17">
+    enum="IOSPageLoadCountNavigationType" expires_after="2021-12-19">
   <owner>gambard@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>The number of navigation started events by navigation type.</summary>
@@ -869,6 +905,53 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Measures the time from the end of user input in the omnibox to when the page
     is fully loaded. Only measures page loads initiated by user typing a URL or
     selecting a suggested entry from the URL bar.
+  </summary>
+</histogram>
+
+<histogram name="IOS.ReadingList.Javascript.ExecutionTime" units="ms"
+    expires_after="2022-06-11">
+  <owner>thegreenfrog@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <summary>
+    Tracks the execution time of the distillability scoring JavaScript for the
+    Reading List Messages presentation heuristic. Reported for each main frame
+    navigation.
+  </summary>
+</histogram>
+
+<histogram name="IOS.ReadingList.Javascript.LongPageDistillabilityScore"
+    units="Score" expires_after="2022-06-11">
+  <owner>thegreenfrog@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <summary>
+    The calculated distillability score for a page returned by
+    DistillablePageDetector::GetLongPageModel(). Score is translated by +1 to
+    make histogram logging simpler by keeping all scores positive. It is
+    multiplied by 100 to get granular scoring logging to the hundredth digit.
+    Reported for each main frame navigation.
+  </summary>
+</histogram>
+
+<histogram name="IOS.ReadingList.Javascript.RegularDistillabilityScore"
+    units="Score" expires_after="2022-06-11">
+  <owner>thegreenfrog@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <summary>
+    The calculated distillability score for a page returned by
+    DistillablePageDetector::GetNewModel(). Score is translated by +1 to make
+    histogram logging simpler by keeping all scores positive. It is multiplied
+    by 100 to get granular scoring logging to the hundredth digit. Reported for
+    each main frame navigation.
+  </summary>
+</histogram>
+
+<histogram name="IOS.ReadingList.Javascript.TimeToRead" units="Minutes"
+    expires_after="2022-06-11">
+  <owner>thegreenfrog@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <summary>
+    The estimated &quot;time to read&quot; calculated for a page. Reported for
+    each main frame navigation.
   </summary>
 </histogram>
 
@@ -1035,7 +1118,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="IOS.SiriShortcuts.Count" units="shortcuts"
-    expires_after="2021-10-04">
+    expires_after="2021-12-05">
   <owner>gujen@google.com</owner>
   <owner>sebsg@chromium.org</owner>
   <summary>
@@ -1058,7 +1141,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="IOS.Snapshots.ImageSize" units="KB" expires_after="2021-09-12">
+<histogram name="IOS.Snapshots.ImageSize" units="KB" expires_after="2021-11-28">
   <owner>ajuma@chromium.org</owner>
   <owner>edchin@chromium.org</owner>
   <summary>
@@ -1067,7 +1150,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="IOS.Snapshots.PDFSize" units="KB" expires_after="2021-09-12">
+<histogram name="IOS.Snapshots.PDFSize" units="KB" expires_after="2021-11-28">
   <owner>ajuma@chromium.org</owner>
   <owner>edchin@chromium.org</owner>
   <summary>
@@ -1136,6 +1219,17 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>bling-team@google.com</owner>
   <summary>
     Whether the StoreKit loaded the required iTunes product successfully or not.
+  </summary>
+</histogram>
+
+<histogram name="IOS.TabGrid.Selection.CloseTabs" units="Tabs"
+    expires_after="M95">
+  <owner>mrefaat@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <owner>bling-team@google.com</owner>
+  <summary>
+    The number of Tab Grid items closed with a single Close Tab(s) operation
+    from the tab grid selection mode.
   </summary>
 </histogram>
 

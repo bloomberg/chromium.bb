@@ -61,6 +61,15 @@ const UIStrings = {
   *@description Text in DOMStorage Items View of the Application panel
   */
   selectAValueToPreview: 'Select a value to preview',
+  /**
+   *@description Text for announcing a DOM Storage key/value item has been deleted
+   */
+  domStorageItemDeleted: 'The storage item was deleted.',
+  /**
+   *@description Text for announcing number of entries after filtering
+   *@example {5} PH1
+   */
+  domStorageNumberEntries: 'Number of entries shown in table: {PH1}',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/application/DOMStorageItemsView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -123,7 +132,7 @@ export class DOMStorageItemsView extends StorageItemsView {
   }
 
   setStorage(domStorage: DOMStorage): void {
-    Common.EventTarget.EventTarget.removeEventListeners(this._eventListeners);
+    Common.EventTarget.removeEventListeners(this._eventListeners);
     this._domStorage = domStorage;
     this._eventListeners = [
       this._domStorage.addEventListener(DOMStorage.Events.DOMStorageItemsCleared, this._domStorageItemsCleared, this),
@@ -216,7 +225,8 @@ export class DOMStorageItemsView extends StorageItemsView {
     rootNode.removeChildren();
     let selectedNode: DataGrid.DataGrid.DataGridNode<unknown>|null = null;
     const filteredItems = (item: string[]): string => `${item[0]} ${item[1]}`;
-    for (const item of this.filter(items, filteredItems)) {
+    const filteredList = this.filter(items, filteredItems);
+    for (const item of filteredList) {
       const key = item[0];
       const value = item[1];
       const node = new DataGrid.DataGrid.DataGridNode({key: key, value: value}, false);
@@ -231,6 +241,7 @@ export class DOMStorageItemsView extends StorageItemsView {
     }
     this._dataGrid.addCreationNode(false);
     this.setCanDeleteSelected(Boolean(selectedNode));
+    UI.ARIAUtils.alert(i18nString(UIStrings.domStorageNumberEntries, {PH1: filteredList.length}));
   }
 
   deleteSelectedItem(): void {
@@ -285,6 +296,8 @@ export class DOMStorageItemsView extends StorageItemsView {
     if (this._domStorage) {
       this._domStorage.removeItem(node.data.key);
     }
+
+    UI.ARIAUtils.alert(i18nString(UIStrings.domStorageItemDeleted));
   }
 
   _showPreview(preview: UI.Widget.Widget|null, value: string|null): void {

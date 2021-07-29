@@ -399,17 +399,17 @@ void ExtensionAssetsManagerChromeOS::InstallSharedExtensionDone(
   auto version_info = std::make_unique<base::DictionaryValue>();
   version_info->SetString(kSharedExtensionPath, shared_version_dir.value());
 
-  auto users = std::make_unique<base::ListValue>();
+  base::Value users(base::Value::Type::LIST);
   for (size_t i = 0; i < pending_installs.size(); i++) {
     ExtensionAssetsManagerHelper::PendingInstallInfo& info =
         pending_installs[i];
-      users->AppendString(info.profile->GetProfileUserName());
+    users.Append(info.profile->GetProfileUserName());
 
-      GetExtensionFileTaskRunner()->PostTask(
-          FROM_HERE,
-          base::BindOnce(std::move(info.callback), shared_version_dir));
+    GetExtensionFileTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(info.callback), shared_version_dir));
   }
-  version_info->Set(kSharedExtensionUsers, std::move(users));
+  version_info->SetKey(kSharedExtensionUsers, std::move(users));
   extension_info_weak->SetKey(
       version, base::Value::FromUniquePtrValue(std::move(version_info)));
 }
@@ -433,44 +433,42 @@ void ExtensionAssetsManagerChromeOS::MarkSharedExtensionUnused(
 
   PrefService* local_state = g_browser_process->local_state();
   DictionaryPrefUpdate shared_extensions(local_state, kSharedExtensions);
-  base::DictionaryValue* extension_info = NULL;
-  if (!shared_extensions->GetDictionary(id, &extension_info)) {
+  base::Value* extension_info = shared_extensions->FindDictKey(id);
+  if (!extension_info) {
     NOTREACHED();
     return;
   }
 
   std::vector<std::string> versions;
   versions.reserve(extension_info->DictSize());
-  for (base::DictionaryValue::Iterator it(*extension_info);
-       !it.IsAtEnd();
-       it.Advance()) {
-    versions.push_back(it.key());
+  for (const auto kv : extension_info->DictItems()) {
+    versions.push_back(kv.first);
   }
 
   base::Value user_name(profile->GetProfileUserName());
   for (std::vector<std::string>::const_iterator it = versions.begin();
        it != versions.end(); it++) {
-    base::DictionaryValue* version_info = NULL;
-    if (!extension_info->GetDictionaryWithoutPathExpansion(*it,
-                                                           &version_info)) {
+    base::Value* version_info = extension_info->FindDictKey(*it);
+    if (!version_info) {
       NOTREACHED();
       continue;
     }
-    base::ListValue* users = NULL;
-    if (!version_info->GetList(kSharedExtensionUsers, &users)) {
+    base::Value* users = version_info->FindListKey(kSharedExtensionUsers);
+    if (!users) {
       NOTREACHED();
       continue;
     }
-    if (users->Remove(user_name, NULL) && !users->GetSize()) {
-      std::string shared_path;
-      if (!version_info->GetString(kSharedExtensionPath, &shared_path)) {
+    if (users->EraseListValue(user_name) && users->GetList().empty()) {
+      std::string* shared_path =
+          version_info->FindStringKey(kSharedExtensionPath);
+      if (!shared_path) {
         NOTREACHED();
         continue;
       }
       GetExtensionFileTaskRunner()->PostTask(
           FROM_HERE,
           base::BindOnce(&ExtensionAssetsManagerChromeOS::DeleteSharedVersion,
-                         base::FilePath(shared_path)));
+                         base::FilePath(*shared_path)));
       extension_info->RemoveKey(*it);
     }
   }
@@ -552,7 +550,7 @@ bool ExtensionAssetsManagerChromeOS::CleanUpExtension(
       }
 
       if (not_used) {
-        users->Remove(i, NULL);
+        users->EraseListIter(users->GetList().begin() + i);
 
         i--;
         num_users--;

@@ -22,6 +22,7 @@
 
 class GrAppliedClip;
 class GrCaps;
+class GrDstProxyView;
 class GrOpFlushState;
 class GrOpsRenderPass;
 class GrPaint;
@@ -68,7 +69,7 @@ class GrPaint;
 
 class GrOp : private SkNoncopyable {
 public:
-        using Owner = std::unique_ptr<GrOp>;
+    using Owner = std::unique_ptr<GrOp>;
 
     template<typename Op, typename... Args>
     static Owner Make(GrRecordingContext* context, Args&&... args) {
@@ -91,9 +92,7 @@ public:
 
     virtual const char* name() const = 0;
 
-    using VisitProxyFunc = std::function<void(GrSurfaceProxy*, GrMipmapped)>;
-
-    virtual void visitProxies(const VisitProxyFunc&) const {
+    virtual void visitProxies(const GrVisitProxyFunc&) const {
         // This default implementation assumes the op has no proxies
     }
 
@@ -172,7 +171,7 @@ public:
      * ahead of time and when it has not been called).
      */
     void prePrepare(GrRecordingContext* context, const GrSurfaceProxyView& dstView,
-                    GrAppliedClip* clip, const GrXferProcessor::DstProxyView& dstProxyView,
+                    GrAppliedClip* clip, const GrDstProxyView& dstProxyView,
                     GrXferBarrierFlags renderPassXferBarriers, GrLoadOp colorLoadOp) {
         TRACE_EVENT0("skia.gpu", name());
         this->onPrePrepare(context, dstView, clip, dstProxyView, renderPassXferBarriers,
@@ -311,7 +310,7 @@ private:
     virtual void onPrePrepare(GrRecordingContext*,
                               const GrSurfaceProxyView& writeView,
                               GrAppliedClip*,
-                              const GrXferProcessor::DstProxyView&,
+                              const GrDstProxyView&,
                               GrXferBarrierFlags renderPassXferBarriers,
                               GrLoadOp colorLoadOp) = 0;
     virtual void onPrepare(GrOpFlushState*) = 0;

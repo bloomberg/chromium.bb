@@ -20,21 +20,6 @@ class Database;
 namespace password_manager {
 
 using BulkCheckDone = base::StrongAlias<class BulkCheckDoneTag, bool>;
-using IsMuted = base::StrongAlias<class IsMutedTag, bool>;
-
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class InsecureType {
-  // If the credentials was leaked by a data breach.
-  kLeaked = 0,
-  // If the credentials was entered on a phishing site.
-  kPhished = 1,
-  // If the password is weak.
-  kWeak = 2,
-  // If the password is reused for other accounts.
-  kReused = 3,
-  kMaxValue = kReused
-};
 
 enum class RemoveInsecureCredentialsReason {
   // If the password was updated in the password store.
@@ -61,6 +46,8 @@ struct InsecureCredential {
   InsecureCredential& operator=(const InsecureCredential& rhs);
   InsecureCredential& operator=(InsecureCredential&& rhs);
   ~InsecureCredential();
+
+  bool SameMetadata(const InsecurityMetadata& metadata) const;
 
   // The primary key of an affected Login.
   FormPrimaryKey parent_key{-1};
@@ -95,13 +82,22 @@ class InsecureCredentialsTable {
   // if the SQL completed successfully and an item was created.
   bool AddRow(const InsecureCredential& compromised_credentials);
 
+  // Adds information about the insecure credential if it doesn't exist.
+  // If it does, it removes the previous entry and adds the new one.
+  bool InsertOrReplace(FormPrimaryKey parent_key,
+                       InsecureType type,
+                       InsecurityMetadata metadata);
+
+  // Removes the row corresponding to |parent_key| and |insecure_type|.
+  bool RemoveRow(FormPrimaryKey parent_key, InsecureType insecure_type);
+
   // Removes information about the credentials compromised for |username| on
-  // |signon_realm|. |reason| is the reason why the credentials is removed from
+  // |signon_realm|. |reason| is the reason why the credentials are removed from
   // the table. Returns true if the SQL completed successfully.
   // Also logs the compromise type in UMA.
-  bool RemoveRow(const std::string& signon_realm,
-                 const std::u16string& username,
-                 RemoveInsecureCredentialsReason reason);
+  bool RemoveRows(const std::string& signon_realm,
+                  const std::u16string& username,
+                  RemoveInsecureCredentialsReason reason);
 
   // Gets all the rows in the database for |signon_realm|.
   std::vector<InsecureCredential> GetRows(

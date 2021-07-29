@@ -21,14 +21,15 @@
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "chrome/browser/safe_browsing/download_protection/download_request_maker.h"
 #include "chrome/browser/safe_browsing/download_protection/file_analyzer.h"
-#include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/services/file_util/public/cpp/sandboxed_rar_analyzer.h"
 #include "chrome/services/file_util/public/cpp/sandboxed_zip_analyzer.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/safe_browsing/content/browser/safe_browsing_navigation_observer_manager.h"
+#include "components/safe_browsing/core/browser/db/database_manager.h"
 #include "components/safe_browsing/core/browser/sync/safe_browsing_primary_account_token_fetcher.h"
-#include "components/safe_browsing/core/db/database_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 #if defined(OS_MAC)
@@ -123,7 +124,6 @@ class CheckClientDownloadRequestBase {
   // Called when finishing the download, to decide whether to prompt the user
   // for deep scanning or not.
   virtual bool ShouldPromptForDeepScanning(
-      DownloadCheckResultReason reason,
       bool server_requests_prompt) const = 0;
 
   // Called when |token_fetcher_| has finished fetching the access token.

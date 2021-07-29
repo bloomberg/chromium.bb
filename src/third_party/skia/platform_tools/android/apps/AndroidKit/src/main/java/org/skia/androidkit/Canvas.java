@@ -7,10 +7,7 @@
 
 package org.skia.androidkit;
 
-import org.skia.androidkit.Color;
-import org.skia.androidkit.Matrix;
-import org.skia.androidkit.Paint;
-import org.skia.androidkit.Surface;
+import android.support.annotation.Nullable;
 
 public class Canvas {
     private long mNativeInstance;
@@ -24,12 +21,24 @@ public class Canvas {
         return nGetHeight(mNativeInstance);
     }
 
-    public void save() {
-        nSave(mNativeInstance);
+    public int save() {
+        return nSave(mNativeInstance);
     }
 
     public void restore() {
         nRestore(mNativeInstance);
+    }
+
+    public void restoreToCount(int count) {
+        nRestoreToCount(mNativeInstance, count);
+    }
+
+    public int saveLayer(@Nullable Paint paint) {
+        long nativePaint = 0;
+        if (paint != null) {
+            nativePaint = paint.getNativeInstance();
+        }
+        return nSaveLayer(mNativeInstance, nativePaint);
     }
 
     public Matrix getLocalToDevice() {
@@ -49,8 +58,42 @@ public class Canvas {
         nConcat16f(mNativeInstance, rowMajorMatrix);
     }
 
-    public void drawRect(float left, float right, float top, float bottom, Paint paint) {
-        nDrawRect(mNativeInstance, left, right, top, bottom, paint.getNativeInstance());
+    public void translate(float tx, float ty, float tz) {
+        nTranslate(mNativeInstance, tx ,ty, tz);
+    }
+
+    public void translate(float tx, float ty) {
+        nTranslate(mNativeInstance, tx ,ty, 0);
+    }
+
+    public void scale(float sx, float sy, float sz) {
+        nScale(mNativeInstance, sx ,sy, sz);
+    }
+
+    public void scale(float sx, float sy) {
+        nScale(mNativeInstance, sx ,sy, 1);
+    }
+
+    public void clipPath(Path path, ClipOp op, boolean antiAliasing) {
+        nClipPath(mNativeInstance, path.getNativeInstance(), op.mNativeInt, antiAliasing);
+    }
+
+    public void clipRect(float left, float top, float right, float bottom,
+                         ClipOp op, boolean antiAliasing) {
+        nClipRect(mNativeInstance, left, top, right, bottom, op.mNativeInt, antiAliasing);
+    }
+
+    public void clipRRect(float left, float top, float right, float bottom, float xRad, float yRad,
+                         ClipOp op, boolean antiAliasing) {
+        nClipRRect(mNativeInstance, left, top, right, bottom, xRad, yRad, op.mNativeInt, antiAliasing);
+    }
+
+    public void clipShader(Shader shader, ClipOp op) {
+        nClipShader(mNativeInstance, shader.getNativeInstance(), op.mNativeInt);
+    }
+
+    public void drawRect(float left, float top, float right, float bottom, Paint paint) {
+        nDrawRect(mNativeInstance, left, top, right, bottom, paint.getNativeInstance());
     }
 
     public void drawColor(Color c) {
@@ -70,6 +113,19 @@ public class Canvas {
         );
     }
 
+    public void drawImage(Image image, float x, float y) {
+        drawImage(image, x, y, new SamplingOptions());
+    }
+
+    public void drawImage(Image image, float x, float y, SamplingOptions sampling) {
+        nDrawImage(mNativeInstance, image.getNativeInstance(), x, y,
+                   sampling.getNativeDesc(), sampling.getCubicCoeffB(), sampling.getCubicCoeffC());
+    }
+
+    public void drawPath(Path path, Paint paint) {
+        nDrawPath(mNativeInstance, path.getNativeInstance(), paint.getNativeInstance());
+    }
+
     // package private
     Canvas(Surface surface, long native_instance) {
         mNativeInstance = native_instance;
@@ -81,15 +137,33 @@ public class Canvas {
 
     private static native int  nGetWidth(long nativeInstance);
     private static native int  nGetHeight(long nativeInstance);
-    private static native void nSave(long nativeInstance);
+    private static native int  nSave(long nativeInstance);
     private static native void nRestore(long nativeInstance);
+    private static native void nRestoreToCount(long nativeInstance, int count);
+    private static native int  nSaveLayer(long nativeInstance, long nativePaint);
     private static native long nGetLocalToDevice(long mNativeInstance);
     private static native void nConcat(long nativeInstance, long nativeMatrix);
     private static native void nConcat16f(long nativeInstance, float[] floatMatrix);
+    private static native void nTranslate(long nativeInstance, float tx, float ty, float tz);
+    private static native void nScale(long nativeInstance, float sx, float sy, float sz);
+
+    private static native void nClipPath(long nativeInstance, long nativePath, int clipOp,
+                                         boolean doAA);
+    private static native void nClipRect(long nativeInstance, float left, float top, float right,
+                                         float bottom, int clipOp, boolean doAA);
+    private static native void nClipRRect(long nativeInstance, float left, float top, float right,
+                                          float bottom, float xRad, float yRad,
+                                          int clipOp, boolean doAA);
+    private static native void nClipShader(long nativeInstance, long nativeShader, int clipOp);
+
 
     private static native void nDrawColor(long nativeInstance, float r, float g, float b, float a);
 
     private static native void nDrawRect(long nativeInstance,
-                                         float left, float right, float top, float bottom,
+                                         float left, float top, float right, float bottom,
                                          long nativePaint);
+    private static native void nDrawImage(long nativeInstance, long nativeImage, float x, float y,
+                                          int samplingDesc,
+                                          float samplingCoeffB, float samplingCoeffC);
+    private static native void nDrawPath(long mNativeInstance, long nativePath, long nativePaint);
 }

@@ -372,7 +372,7 @@ static int config_input_ref(AVFilterLink *inlink)
     if (!s->score)
         return AVERROR(ENOMEM);
 
-    for (int t = 0; t < s->nb_threads && s->score; t++) {
+    for (int t = 0; t < s->nb_threads; t++) {
         s->score[t] = av_calloc(s->nb_components, sizeof(*s->score[0]));
         if (!s->score[t])
             return AVERROR(ENOMEM);
@@ -467,7 +467,7 @@ static const AVFilterPad psnr_outputs[] = {
     { NULL }
 };
 
-AVFilter ff_vf_psnr = {
+const AVFilter ff_vf_psnr = {
     .name          = "psnr",
     .description   = NULL_IF_CONFIG_SMALL("Calculate the PSNR between two video streams."),
     .preinit       = psnr_framesync_preinit,

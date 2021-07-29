@@ -31,8 +31,8 @@
 #include "core/fxcrt/scoped_set_insertion.h"
 #include "third_party/base/check.h"
 #include "third_party/base/check_op.h"
+#include "third_party/base/containers/contains.h"
 #include "third_party/base/notreached.h"
-#include "third_party/base/stl_util.h"
 
 namespace {
 
@@ -119,12 +119,13 @@ void CPDF_Parser::ShrinkObjectMap(uint32_t size) {
 bool CPDF_Parser::InitSyntaxParser(
     const RetainPtr<CPDF_ReadValidator>& validator) {
   const Optional<FX_FILESIZE> header_offset = GetHeaderOffset(validator);
-  if (!header_offset)
+  if (!header_offset.has_value())
     return false;
-  if (validator->GetSize() < *header_offset + kPDFHeaderSize)
+  if (validator->GetSize() < header_offset.value() + kPDFHeaderSize)
     return false;
 
-  m_pSyntax = std::make_unique<CPDF_SyntaxParser>(validator, *header_offset);
+  m_pSyntax =
+      std::make_unique<CPDF_SyntaxParser>(validator, header_offset.value());
   return ParseFileVersion();
 }
 

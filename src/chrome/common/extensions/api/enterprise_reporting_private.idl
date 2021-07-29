@@ -16,7 +16,7 @@ namespace enterprise.reportingPrivate {
   callback GetDeviceIdCallback = void(DOMString id);
 
   // Invoked by <code>getPersistentSecret</code> to return the secret.
-  [platforms = ("win", "mac", "linux")]
+  [platforms = ("win", "mac")]
   callback GetPersistentSecretCallback = void(ArrayBuffer secret);
 
   // Invoked by <code>getDeviceDataCallback</code> to return the device data.
@@ -47,6 +47,17 @@ namespace enterprise.reportingPrivate {
   // Possible states for the EnterpriseRealTimeUrlCheckMode policy.
   enum RealtimeUrlCheckMode { DISABLED, ENABLED_MAIN_FRAME };
 
+  // Possible states for the SafeBrowsingProtectionLevel policy.
+  enum SafeBrowsingLevel { DISABLED, STANDARD, ENHANCED };
+
+  // Possible states for the PasswordProtectionWarningTrigger policy
+  enum PasswordProtectionTrigger {
+    PASSWORD_PROTECTION_OFF,
+    PASSWORD_REUSE,
+    PHISHING_REUSE,
+    POLICY_UNSET
+  };
+
   // Context info fields returned by the getContextInfo API.
   dictionary ContextInfo {
     DOMString[] browserAffiliationIds;
@@ -57,6 +68,12 @@ namespace enterprise.reportingPrivate {
     RealtimeUrlCheckMode realtimeUrlCheckMode;
     DOMString[] onSecurityEventProviders;
     DOMString browserVersion;
+    SafeBrowsingLevel safeBrowsingProtectionLevel;
+    boolean siteIsolationEnabled;
+    boolean builtInDnsClientEnabled;
+    PasswordProtectionTrigger passwordProtectionWarningTrigger;
+    boolean? chromeCleanupEnabled;
+    boolean chromeRemoteDesktopAppBlocked;
   };
 
   // Invoked by <code>getContextInfo</code> to return context information.
@@ -89,7 +106,7 @@ namespace enterprise.reportingPrivate {
     // optional parameter |forceCreation| is set to true the secret is recreated
     // in case of any failure to retrieve the currently stored one. Sets
     // $(ref:runtime.lastError) on failure.
-    [platforms = ("win", "mac", "linux")]
+    [platforms = ("win", "mac")]
     static void getPersistentSecret(optional boolean resetSecret,
         GetPersistentSecretCallback callback);
 

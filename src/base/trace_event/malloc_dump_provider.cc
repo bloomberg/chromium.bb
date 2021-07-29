@@ -10,6 +10,7 @@
 
 #include "base/allocator/allocator_extension.h"
 #include "base/allocator/buildflags.h"
+#include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/debug/profiler.h"
 #include "base/format_macros.h"
 #include "base/memory/nonscannable_memory.h"
@@ -28,8 +29,16 @@
 #include <windows.h>
 #endif
 
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#include <features.h>
+#endif
+
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 #include "base/allocator/allocator_shim_default_dispatch_to_partition_alloc.h"
+#endif
+
+#if defined(PA_THREAD_CACHE_ALLOC_STATS)
+#include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #endif
 
 namespace base {
@@ -204,7 +213,16 @@ bool MallocDumpProvider::OnMemoryDump(const MemoryDumpArgs& args,
 #elif defined(OS_FUCHSIA)
 // TODO(fuchsia): Port, see https://crbug.com/706592.
 #else
+#if defined(__GLIBC__) && defined(__GLIBC_PREREQ)
+#if __GLIBC_PREREQ(2, 33)
+#define MALLINFO2_FOUND_IN_LIBC
+  struct mallinfo2 info = mallinfo2();
+#endif
+#endif  // defined(__GLIBC__) && defined(__GLIBC_PREREQ)
+#if !defined(MALLINFO2_FOUND_IN_LIBC)
   struct mallinfo info = mallinfo();
+#endif
+#undef MALLINFO2_FOUND_IN_LIBC
   // In case of Android's jemalloc |arena| is 0 and the outer pages size is
   // reported by |hblkhd|. In case of dlmalloc the total is given by
   // |arena| + |hblkhd|. For more details see link: http://goo.gl/fMR8lF.
@@ -377,9 +395,11 @@ void ReportPartitionAllocThreadCacheStats(ProcessMemoryDump* pmd,
     if (detailed) {
       std::string name = dump->absolute_name();
       for (size_t i = 0; i < kNumBuckets; i++) {
-        std::string dump_name =
-            base::StringPrintf("%s/buckets_alloc/%d", name.c_str(),
-                               static_cast<int>(stats.bucket_size_[i]));
+        size_t bucket_size = stats.bucket_size_[i];
+        if (bucket_size == kInvalidBucketSize)
+          continue;
+        std::string dump_name = base::StringPrintf(
+            "%s/buckets_alloc/%d", name.c_str(), static_cast<int>(bucket_size));
         auto* buckets_alloc_dump = pmd->CreateAllocatorDump(dump_name);
         buckets_alloc_dump->AddScalar("count", "objects",
                                       stats.allocs_per_bucket_[i]);

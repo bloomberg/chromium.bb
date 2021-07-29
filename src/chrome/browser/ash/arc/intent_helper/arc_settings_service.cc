@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/constants/ash_pref_names.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/gtest_prod_util.h"
@@ -728,13 +728,13 @@ void ArcSettingsServiceImpl::SyncUse24HourClock() const {
 
 void ArcSettingsServiceImpl::ResetFontScaleToDefault() const {
   base::DictionaryValue extras;
-  extras.SetDouble("scale", kAndroidFontScaleNormal);
+  extras.SetDoubleKey("scale", kAndroidFontScaleNormal);
   SendSettingsBroadcast(kSetFontScaleAction, extras);
 }
 
 void ArcSettingsServiceImpl::ResetPageZoomToDefault() const {
   base::DictionaryValue extras;
-  extras.SetDouble("zoomFactor", 1.0);
+  extras.SetDoubleKey("zoomFactor", 1.0);
   SendSettingsBroadcast(kSetPageZoomAction, extras);
 }
 

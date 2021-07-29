@@ -12,7 +12,6 @@
 #include "base/callback_helpers.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/stringprintf.h"
-#include "components/services/storage/public/cpp/storage_key.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/browser/background_fetch/background_fetch_registration_service_impl.h"
 #include "content/browser/devtools/devtools_background_services_context_impl.h"
@@ -21,6 +20,7 @@
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/background_fetch/background_fetch_types.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 
 namespace content {
 
@@ -273,7 +273,7 @@ void BackgroundFetchEventDispatcher::LoadServiceWorkerRegistrationForDispatch(
     ServiceWorkerLoadedCallback loaded_callback) {
   service_worker_context_->FindReadyRegistrationForId(
       registration_id.service_worker_registration_id(),
-      storage::StorageKey(registration_id.origin()),
+      registration_id.storage_key(),
       base::BindOnce(
           &BackgroundFetchEventDispatcher::StartActiveWorkerForDispatch, event,
           std::move(finished_closure), std::move(loaded_callback)));
@@ -368,9 +368,12 @@ void BackgroundFetchEventDispatcher::LogBackgroundFetchCompletionForDevTools(
     metadata["Failure Reason"] = stream.str();
   }
 
+  // TODO(https://crbug.com/1199077): Pass `registration_id.storage_key()`
+  // directly once DevToolsBackgroundServicesContextImpl implements StorageKey.
   devtools_context_->LogBackgroundServiceEventOnCoreThread(
       registration_id.service_worker_registration_id(),
-      registration_id.origin(), DevToolsBackgroundService::kBackgroundFetch,
+      registration_id.storage_key().origin(),
+      DevToolsBackgroundService::kBackgroundFetch,
       /* event_name= */ "Background Fetch completed",
       /* instance_id= */ registration_id.developer_id(), metadata);
 }

@@ -27,6 +27,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
@@ -195,7 +196,7 @@ class SplitCacheContentBrowserTest : public ContentBrowserTest {
     // 2) Navigate to a WebUI URL, which uses a new process.
     DisableForRenderFrameHostForTesting(
         shell()->web_contents()->GetMainFrame());
-    EXPECT_TRUE(NavigateToURL(shell(), GetWebUIURL(kChromeUIGpuHost)));
+    EXPECT_TRUE(NavigateToURL(shell(), GetWebUIURL("blob-internals")));
 
     // In the case of a redirect, the observed URL will be different from
     // what NavigateToURL(...) expects.
@@ -267,7 +268,7 @@ class SplitCacheContentBrowserTest : public ContentBrowserTest {
       EXPECT_TRUE(frame_host->GetNetworkIsolationKey().IsTransient());
     }
 
-    return (*observer.FindResource(resource))->was_cached;
+    return (*observer.GetResource(resource))->was_cached;
   }
 
   // Navigates to |url| and returns if the navigation resource was fetched from
@@ -286,10 +287,10 @@ class SplitCacheContentBrowserTest : public ContentBrowserTest {
                                 const GURL& sub_frame,
                                 bool subframe_navigation_resource_cached) {
     // Do a cross-process navigation to clear the in-memory cache.
-    // We assume that we don't start this call from "chrome://gpu", as
-    // otherwise it won't be a cross-process navigation. We are relying
-    // on this navigation to discard the old process.
-    EXPECT_TRUE(NavigateToURL(shell(), GetWebUIURL("gpu")));
+    // We assume that we don't start this call from "chrome://blob-internals",
+    // as otherwise it won't be a cross-process navigation. We are relying on
+    // this navigation to discard the old process.
+    EXPECT_TRUE(NavigateToURL(shell(), GetWebUIURL("blob-internals")));
 
     // Observe network requests.
     ResourceLoadObserver observer(shell());
@@ -307,10 +308,10 @@ class SplitCacheContentBrowserTest : public ContentBrowserTest {
       EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
       observer.WaitForResourceCompletion(sub_frame);
       EXPECT_EQ(subframe_navigation_resource_cached,
-                (*observer.FindResource(sub_frame))->was_cached);
+                (*observer.GetResource(sub_frame))->was_cached);
     }
 
-    return (*observer.FindResource(url))->was_cached;
+    return (*observer.GetResource(url))->was_cached;
   }
 
   // Loads a dedicated worker script and checks to see whether or not the
@@ -322,10 +323,10 @@ class SplitCacheContentBrowserTest : public ContentBrowserTest {
     DCHECK(worker.is_valid());
 
     // Do a cross-process navigation to clear the in-memory cache.
-    // We assume that we don't start this call from "chrome://gpu", as
-    // otherwise it won't be a cross-process navigation. We are relying
-    // on this navigation to discard the old process.
-    EXPECT_TRUE(NavigateToURL(shell(), GetWebUIURL("gpu")));
+    // We assume that we don't start this call from "chrome://blob-internals",
+    // as otherwise it won't be a cross-process navigation. We are relying on
+    // this navigation to discard the old process.
+    EXPECT_TRUE(NavigateToURL(shell(), GetWebUIURL("blob-internals")));
 
     // Observe network requests.
     ResourceLoadObserver observer(shell());
@@ -345,7 +346,7 @@ class SplitCacheContentBrowserTest : public ContentBrowserTest {
     observer.WaitForResourceCompletion(GenURL("3p.com", "/script"));
     observer.WaitForResourceCompletion(worker);
 
-    return (*observer.FindResource(worker))->was_cached;
+    return (*observer.GetResource(worker))->was_cached;
   }
 
   // Gets script to create subframe.
@@ -427,14 +428,7 @@ class SplitCacheContentBrowserTestDisabled
   base::test::ScopedFeatureList feature_list_;
 };
 
-#if defined(THREAD_SANITIZER)
-// Flaky under TSan: https://crbug.com/995181
-#define MAYBE_SplitCache DISABLED_SplitCache
-#else
-#define MAYBE_SplitCache SplitCache
-#endif
-
-IN_PROC_BROWSER_TEST_P(SplitCacheContentBrowserTestEnabled, MAYBE_SplitCache) {
+IN_PROC_BROWSER_TEST_P(SplitCacheContentBrowserTestEnabled, SplitCache) {
   // Load a cacheable resource for the first time, and it's not cached.
   EXPECT_FALSE(TestResourceLoad(GenURL("a.com", "/title1.html"), GURL()));
 
@@ -501,14 +495,8 @@ IN_PROC_BROWSER_TEST_P(SplitCacheContentBrowserTestEnabled, MAYBE_SplitCache) {
   EXPECT_FALSE(TestResourceLoad(blank_url, GURL()));
 }
 
-#if defined(THREAD_SANITIZER)
-// Flaky under TSan: https://crbug.com/1185462
-#define MAYBE_SplitCache DISABLED_SplitCache
-#else
-#define MAYBE_SplitCache SplitCache
-#endif
 IN_PROC_BROWSER_TEST_F(SplitCacheRegistrableDomainContentBrowserTest,
-                       MAYBE_SplitCache) {
+                       SplitCache) {
   // Load a cacheable resource for the first time, and it's not cached.
   EXPECT_FALSE(TestResourceLoad(GenURL("a.com", "/title1.html"), GURL()));
 
@@ -547,6 +535,12 @@ IN_PROC_BROWSER_TEST_F(SplitCacheRegistrableDomainContentBrowserTest,
   // seen the object before but the top frame hasn't. It should not be cached.
   EXPECT_FALSE(TestResourceLoad(GenURL("f.com", "/title1.html"),
                                 GenURL("a.com", "/title1.html")));
+}
+
+IN_PROC_BROWSER_TEST_F(SplitCacheRegistrableDomainContentBrowserTest,
+                       SplitCacheAndDataUrl) {
+  // Load a cacheable resource for the first time, and it's not cached.
+  EXPECT_FALSE(TestResourceLoad(GenURL("a.com", "/title1.html"), GURL()));
 
   // Load the resource from a data url which has an opaque origin. It shouldn't
   // be cached.
@@ -556,6 +550,12 @@ IN_PROC_BROWSER_TEST_F(SplitCacheRegistrableDomainContentBrowserTest,
   // Load the same resource from the same data url, it shouldn't be cached
   // because the origin should be unique.
   EXPECT_FALSE(TestResourceLoad(GenURL("a.com", "/title1.html"), data_url));
+}
+
+IN_PROC_BROWSER_TEST_F(SplitCacheRegistrableDomainContentBrowserTest,
+                       SplitCacheAndAboutBlank) {
+  // Load a cacheable resource for the first time, and it's not cached.
+  EXPECT_FALSE(TestResourceLoad(GenURL("a.com", "/title1.html"), GURL()));
 
   // Load the resource from a subframe document that points to about:blank. The
   // resource is cached because the resource load is using the main frame's
@@ -570,6 +570,12 @@ IN_PROC_BROWSER_TEST_F(SplitCacheRegistrableDomainContentBrowserTest,
   // set to (a.com, a.com) which is already in the cache.
   EXPECT_TRUE(
       TestResourceLoadFromPopup(GenURL("a.com", "/title1.html"), blank_url));
+}
+
+IN_PROC_BROWSER_TEST_F(SplitCacheRegistrableDomainContentBrowserTest,
+                       SplitCacheAndPopup) {
+  // Load a cacheable resource for the first time, and it's not cached.
+  EXPECT_FALSE(TestResourceLoad(GenURL("a.com", "/title1.html"), GURL()));
 
   // Load the resource from a popup window that points to a new origin. The
   // resource is not cached because the resource load is using a NIK set to
@@ -743,7 +749,7 @@ IN_PROC_BROWSER_TEST_F(SplitCacheRegistrableDomainContentBrowserTest,
                      GetSubframeScript(subframe_url)));
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   observer.WaitForResourceCompletion(subframe_url);
-  EXPECT_EQ(false, (*observer.FindResource(subframe_url))->was_cached);
+  EXPECT_EQ(false, (*observer.GetResource(subframe_url))->was_cached);
 }
 
 namespace {
@@ -891,8 +897,10 @@ IN_PROC_BROWSER_TEST_P(SplitCacheContentBrowserTestEnabled,
       GenURL("e.com", "/worker.js")));
 }
 
+// https://crbug.com/1218723 started flaking after Field Trial Testing Config
+// was enabled for content_browsertests.
 IN_PROC_BROWSER_TEST_P(SplitCacheContentBrowserTestEnabled,
-                       SplitCacheDedicatedWorkersScripts) {
+                       DISABLED_SplitCacheDedicatedWorkersScripts) {
   // Load a.com's worker. The first time the worker script is loaded from the
   // network and the second it's cached.
   EXPECT_FALSE(DedicatedWorkerScriptCached(

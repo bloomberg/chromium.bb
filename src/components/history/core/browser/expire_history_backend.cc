@@ -15,13 +15,13 @@
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/compiler_specific.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/containers/flat_set.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "components/favicon/core/favicon_database.h"
 #include "components/history/core/browser/history_backend_client.h"
@@ -429,10 +429,9 @@ void ExpireHistoryBackend::BroadcastNotifications(
     const DeletionTimeRange& time_range,
     absl::optional<std::set<GURL>> restrict_urls) {
   if (!effects->modified_urls.empty()) {
-    notifier_->NotifyURLsModified(effects->modified_urls,
-                                  type == DELETION_EXPIRED
-                                      ? UrlsModifiedReason::kExpired
-                                      : UrlsModifiedReason::kUserDeleted);
+    notifier_->NotifyURLsModified(
+        effects->modified_urls,
+        /*is_from_expiration=*/type == DELETION_EXPIRED);
   }
   if (!effects->deleted_urls.empty() || time_range.IsValid()) {
     notifier_->NotifyURLsDeleted(DeletionInfo(
@@ -475,6 +474,8 @@ void ExpireHistoryBackend::DeleteVisitRelatedInfo(const VisitVector& visits,
 
     // Delete content & context annotations associated with visit.
     main_db_->DeleteAnnotationsForVisit(visit.visit_id);
+
+    notifier_->NotifyVisitDeleted(visit);
   }
 }
 

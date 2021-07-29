@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "media/mojo/mojom/media_types.mojom.h"
 #include "media/mojo/mojom/speech_recognition_service.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -69,14 +70,13 @@ void FakeSpeechRecognitionService::SendAudioToSpeechRecognitionService(
 }
 
 void FakeSpeechRecognitionService::SendSpeechRecognitionResult(
-    media::mojom::SpeechRecognitionResultPtr result) {
+    const media::SpeechRecognitionResult& result) {
   ASSERT_TRUE(recognizer_client_remote_.is_bound());
   EXPECT_TRUE(capturing_audio_ || has_received_audio_);
   recognizer_client_remote_->OnSpeechRecognitionRecognitionEvent(
-      std::move(result),
-      base::BindOnce(&FakeSpeechRecognitionService::
-                         OnSpeechRecognitionRecognitionEventCallback,
-                     base::Unretained(this)));
+      result, base::BindOnce(&FakeSpeechRecognitionService::
+                                 OnSpeechRecognitionRecognitionEventCallback,
+                             base::Unretained(this)));
 }
 
 void FakeSpeechRecognitionService::OnSpeechRecognitionRecognitionEventCallback(

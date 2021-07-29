@@ -30,6 +30,7 @@
 #include "chrome/browser/safe_browsing/download_protection/download_request_maker.h"
 #include "chrome/browser/safe_browsing/download_protection/download_url_sb_client.h"
 #include "chrome/browser/safe_browsing/download_protection/ppapi_download_request.h"
+#include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager_factory.h"
 #include "chrome/browser/safe_browsing/services_delegate.h"
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
 #include "chrome/common/safe_browsing/download_type_util.h"
@@ -37,10 +38,11 @@
 #include "components/download/public/common/download_item.h"
 #include "components/google/core/common/google_util.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing/content/web_ui/safe_browsing_ui.h"
+#include "components/safe_browsing/content/browser/safe_browsing_navigation_observer_manager.h"
+#include "components/safe_browsing/content/browser/web_ui/safe_browsing_ui.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/common/safebrowsing_switches.h"
-#include "components/safe_browsing/core/features.h"
 #include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -108,7 +110,6 @@ const void* const DownloadProtectionService::kDownloadPingTokenKey =
 DownloadProtectionService::DownloadProtectionService(
     SafeBrowsingService* sb_service)
     : sb_service_(sb_service),
-      navigation_observer_manager_(nullptr),
       enabled_(false),
       binary_feature_extractor_(new BinaryFeatureExtractor()),
       download_request_timeout_ms_(kDownloadRequestTimeoutMs),
@@ -122,7 +123,6 @@ DownloadProtectionService::DownloadProtectionService(
   if (sb_service) {
     ui_manager_ = sb_service->ui_manager();
     database_manager_ = sb_service->database_manager();
-    navigation_observer_manager_ = sb_service->navigation_observer_manager();
     ParseManualBlocklistFlag();
   }
 }
@@ -432,6 +432,11 @@ void DownloadProtectionService::MaybeSendDangerousDownloadOpenedReport(
         ClientSafeBrowsingReportRequest::DANGEROUS_DOWNLOAD_OPENED);
     report->set_token(token);
     report->set_show_download_in_folder(show_download_in_folder);
+    // If the download is opened, it indicates the user has bypassed the warning
+    // and decided to proceed.
+    report->set_did_proceed(true);
+    report->set_download_verdict(
+        DownloadDangerTypeToDownloadResponseVerdict(item->GetDangerType()));
     std::string serialized_report;
     if (report->SerializeToString(&serialized_report)) {
       sb_service_->SendSerializedDownloadReport(profile, serialized_report);
@@ -454,16 +459,16 @@ void DownloadProtectionService::MaybeSendDangerousDownloadOpenedReport(
 std::unique_ptr<ReferrerChainData>
 DownloadProtectionService::IdentifyReferrerChain(
     const download::DownloadItem& item) {
-  // If navigation_observer_manager_ is null, return immediately. This could
-  // happen in tests.
-  if (!navigation_observer_manager_)
-    return nullptr;
-
   std::unique_ptr<ReferrerChain> referrer_chain =
       std::make_unique<ReferrerChain>();
   content::WebContents* web_contents =
       content::DownloadItemUtils::GetWebContents(
           const_cast<download::DownloadItem*>(&item));
+  // If web_contents is null, return immediately. This could happen in tests.
+  if (!web_contents) {
+    return nullptr;
+  }
+
   SessionID download_tab_id =
       sessions::SessionTabHelper::IdForTab(web_contents);
   UMA_HISTOGRAM_BOOLEAN(
@@ -471,9 +476,11 @@ DownloadProtectionService::IdentifyReferrerChain(
       !download_tab_id.is_valid());
   // We look for the referrer chain that leads to the download url first.
   SafeBrowsingNavigationObserverManager::AttributionResult result =
-      navigation_observer_manager_->IdentifyReferrerChainByEventURL(
-          item.GetURL(), download_tab_id,
-          GetDownloadAttributionUserGestureLimit(item), referrer_chain.get());
+      GetNavigationObserverManager(web_contents)
+          ->IdentifyReferrerChainByEventURL(
+              item.GetURL(), download_tab_id,
+              GetDownloadAttributionUserGestureLimit(item),
+              referrer_chain.get());
 
   // If no navigation event is found, this download is not triggered by regular
   // navigation (e.g. html5 file apis, etc). We look for the referrer chain
@@ -482,9 +489,10 @@ DownloadProtectionService::IdentifyReferrerChain(
           SafeBrowsingNavigationObserverManager::NAVIGATION_EVENT_NOT_FOUND &&
       web_contents && web_contents->GetLastCommittedURL().is_valid()) {
     AddEventUrlToReferrerChain(item, referrer_chain.get());
-    result = navigation_observer_manager_->IdentifyReferrerChainByWebContents(
-        web_contents, GetDownloadAttributionUserGestureLimit(item),
-        referrer_chain.get());
+    result = GetNavigationObserverManager(web_contents)
+                 ->IdentifyReferrerChainByWebContents(
+                     web_contents, GetDownloadAttributionUserGestureLimit(item),
+                     referrer_chain.get());
   }
 
   UMA_HISTOGRAM_ENUMERATION(
@@ -495,15 +503,16 @@ DownloadProtectionService::IdentifyReferrerChain(
 
   // Determines how many recent navigation events to append to referrer chain
   // if any.
+  auto* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
   size_t recent_navigations_to_collect =
       web_contents ? SafeBrowsingNavigationObserverManager::
                          CountOfRecentNavigationsToAppend(
-                             *Profile::FromBrowserContext(
-                                 web_contents->GetBrowserContext()),
-                             result)
+                             profile, profile->GetPrefs(), result)
                    : 0u;
-  navigation_observer_manager_->AppendRecentNavigations(
-      recent_navigations_to_collect, referrer_chain.get());
+  GetNavigationObserverManager(web_contents)
+      ->AppendRecentNavigations(recent_navigations_to_collect,
+                                referrer_chain.get());
 
   return std::make_unique<ReferrerChainData>(std::move(referrer_chain),
                                              referrer_chain_length,
@@ -513,11 +522,6 @@ DownloadProtectionService::IdentifyReferrerChain(
 std::unique_ptr<ReferrerChainData>
 DownloadProtectionService::IdentifyReferrerChain(
     const content::FileSystemAccessWriteItem& item) {
-  // If navigation_observer_manager_ is null, return immediately. This could
-  // happen in tests.
-  if (!navigation_observer_manager_)
-    return nullptr;
-
   std::unique_ptr<ReferrerChain> referrer_chain =
       std::make_unique<ReferrerChain>();
 
@@ -530,9 +534,10 @@ DownloadProtectionService::IdentifyReferrerChain(
       item.web_contents ? item.web_contents->GetVisibleURL() : GURL();
 
   SafeBrowsingNavigationObserverManager::AttributionResult result =
-      navigation_observer_manager_->IdentifyReferrerChainByHostingPage(
-          item.frame_url, tab_url, tab_id, item.has_user_gesture,
-          kDownloadAttributionUserGestureLimit, referrer_chain.get());
+      GetNavigationObserverManager(item.web_contents)
+          ->IdentifyReferrerChainByHostingPage(
+              item.frame_url, tab_url, tab_id, item.has_user_gesture,
+              kDownloadAttributionUserGestureLimit, referrer_chain.get());
 
   UMA_HISTOGRAM_ENUMERATION(
       "SafeBrowsing.ReferrerAttributionResult.NativeFileSystemWriteAttribution",
@@ -543,14 +548,15 @@ DownloadProtectionService::IdentifyReferrerChain(
 
   // Determines how many recent navigation events to append to referrer chain
   // if any.
+  auto* profile = Profile::FromBrowserContext(item.browser_context);
   size_t recent_navigations_to_collect =
-      item.browser_context
-          ? SafeBrowsingNavigationObserverManager::
-                CountOfRecentNavigationsToAppend(
-                    *Profile::FromBrowserContext(item.browser_context), result)
-          : 0u;
-  navigation_observer_manager_->AppendRecentNavigations(
-      recent_navigations_to_collect, referrer_chain.get());
+      item.browser_context ? SafeBrowsingNavigationObserverManager::
+                                 CountOfRecentNavigationsToAppend(
+                                     profile, profile->GetPrefs(), result)
+                           : 0u;
+  GetNavigationObserverManager(item.web_contents)
+      ->AppendRecentNavigations(recent_navigations_to_collect,
+                                referrer_chain.get());
 
   return std::make_unique<ReferrerChainData>(std::move(referrer_chain),
                                              referrer_chain_length,
@@ -558,22 +564,26 @@ DownloadProtectionService::IdentifyReferrerChain(
 }
 
 void DownloadProtectionService::AddReferrerChainToPPAPIClientDownloadRequest(
+    content::WebContents* web_contents,
     const GURL& initiating_frame_url,
     const GURL& initiating_main_frame_url,
     SessionID tab_id,
     bool has_user_gesture,
     ClientDownloadRequest* out_request) {
-  if (!navigation_observer_manager_)
+  // If web_contents is null, return immediately. This could happen in tests.
+  if (!web_contents) {
     return;
+  }
 
   UMA_HISTOGRAM_BOOLEAN(
       "SafeBrowsing.ReferrerHasInvalidTabID.DownloadAttribution",
       !tab_id.is_valid());
   SafeBrowsingNavigationObserverManager::AttributionResult result =
-      navigation_observer_manager_->IdentifyReferrerChainByHostingPage(
-          initiating_frame_url, initiating_main_frame_url, tab_id,
-          has_user_gesture, kDownloadAttributionUserGestureLimit,
-          out_request->mutable_referrer_chain());
+      GetNavigationObserverManager(web_contents)
+          ->IdentifyReferrerChainByHostingPage(
+              initiating_frame_url, initiating_main_frame_url, tab_id,
+              has_user_gesture, kDownloadAttributionUserGestureLimit,
+              out_request->mutable_referrer_chain());
   UMA_HISTOGRAM_COUNTS_100(
       "SafeBrowsing.ReferrerURLChainSize.PPAPIDownloadAttribution",
       out_request->referrer_chain_size());
@@ -646,6 +656,13 @@ void DownloadProtectionService::RequestFinished(DeepScanningRequest* request) {
 BinaryUploadService* DownloadProtectionService::GetBinaryUploadService(
     Profile* profile) {
   return BinaryUploadServiceFactory::GetForProfile(profile);
+}
+
+SafeBrowsingNavigationObserverManager*
+DownloadProtectionService::GetNavigationObserverManager(
+    content::WebContents* web_contents) {
+  return SafeBrowsingNavigationObserverManagerFactory::GetForBrowserContext(
+      web_contents->GetBrowserContext());
 }
 
 }  // namespace safe_browsing

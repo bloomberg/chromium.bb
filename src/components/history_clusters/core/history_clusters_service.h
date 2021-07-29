@@ -15,12 +15,14 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "base/time/time.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
-#include "components/history_clusters/core/memories.mojom.h"
-#include "components/history_clusters/core/memories_remote_model_helper.h"
+#include "components/history_clusters/core/clustering_backend.h"
+#include "components/history_clusters/core/history_clusters.mojom.h"
 #include "components/history_clusters/core/visit_data.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/query_parser/query_parser.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace history_clusters {
@@ -33,15 +35,9 @@ class HistoryClustersService : public KeyedService {
     virtual void OnMemoriesDebugMessage(const std::string& message) = 0;
   };
 
-  struct QueryMemoriesResponse {
-    QueryMemoriesResponse(mojom::QueryParamsPtr query_params,
-                          std::vector<mojom::MemoryPtr> clusters);
-    QueryMemoriesResponse(QueryMemoriesResponse&& other);
-    ~QueryMemoriesResponse();
-    mojom::QueryParamsPtr query_params;
-    std::vector<mojom::MemoryPtr> clusters;
-  };
-
+  // `url_loader_factory` is allowed to be nullptr, like in unit tests.
+  // In that case, HistoryClustersService will never instantiate a clustering
+  // backend that requires it, such as the RemoteClusteringBackend.
   explicit HistoryClustersService(
       history::HistoryService* history_service,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
@@ -78,14 +74,18 @@ class HistoryClustersService : public KeyedService {
   // have been recorded. References retrieved prior will no longer be valid.
   void CompleteVisitContextAnnotationsIfReady(int64_t nav_id);
 
-  // Returns the freshest Memories created from the user visit history, in
-  // reverse chronological order, based on the parameters in `query_params`
-  // along with continuation query params meant to be used in the follow-up
-  // request to load older Memories.
-  // Note: At the moment, this method asks `remote_model_helper_` to construct
-  // Memories from `visits_`.
-  void QueryMemories(mojom::QueryParamsPtr query_params,
-                     base::OnceCallback<void(QueryMemoriesResponse)> callback,
+  // Returns the freshest clusters created from the user visit history based on
+  // `query`, `end_time`, and `max_count`. `end_time` is an exclusive upper
+  // bound, and should be set to `base::Time()` if the caller wants everything.
+  // The returned clusters are sorted in reverse-chronological order based on
+  // their highest scoring visit. The visits within each cluster are sorted by
+  // score, from highest to lowest.
+  using QueryClustersCallback =
+      base::OnceCallback<void(std::vector<mojom::ClusterPtr>)>;
+  void QueryClusters(const std::string& query,
+                     base::Time end_time,
+                     size_t max_count,
+                     QueryClustersCallback callback,
                      base::CancelableTaskTracker* task_tracker);
   // Removes all visits to the specified URLs in the specified time ranges in
   // `expire_list`. Calls `closure` when done.
@@ -93,35 +93,49 @@ class HistoryClustersService : public KeyedService {
                     base::OnceClosure closure,
                     base::CancelableTaskTracker* task_tracker);
 
+  // Returns true synchronously if `query` matches a cluster keyword.
+  // Note: This depends on the cache state, so this may kick off a cache refresh
+  // request while immediately returning false. It's expected that on the next
+  // keystroke, the cache may be ready and return true then.
+  bool DoesQueryMatchAnyCluster(const std::string& query);
+
  private:
   friend class HistoryClustersServiceTestApi;
 
-  // If the Memories flag is enabled, this contains all the visits in-memory
-  // during the Profile lifetime. If the `kPersistContextAnnotationsInHistoryDb`
-  // param is true, this will be empty.
-  // TODO(tommycli): Hide this better behind a new debug flag.
-  std::vector<history::AnnotatedVisit> visits_;
+  using IncompleteVisitMap =
+      std::map<int64_t, IncompleteVisitContextAnnotations>;
+
+  // This is a callback used for the `QueryClusters()` call from
+  // `DoesQueryMatchAnyCluster()`. Populates the cluster keyword cache from the
+  // keywords in `clusters`.
+  void PopulateClusterKeywordCache(std::vector<mojom::ClusterPtr> clusters);
 
   // `VisitContextAnnotations`s are constructed stepwise; they're initially
-  // placed in `incomplete_visit_context_annotations_` and moved either to
-  // `visits_` or the history database once completed.
-  std::map<int64_t, IncompleteVisitContextAnnotations>
-      incomplete_visit_context_annotations_;
+  // placed in `incomplete_visit_context_annotations_` and saved to the history
+  // database once completed (if persistence is enabled).
+  IncompleteVisitMap incomplete_visit_context_annotations_;
 
-  history::HistoryService* history_service_;
+  // Non-owning pointer, but never nullptr.
+  history::HistoryService* const history_service_;
 
-  // Helper service to handle communicating with the remote model. This will be
-  // used for debugging only; the launch ready feature will use a local model
-  // instead.
-  std::unique_ptr<MemoriesRemoteModelHelper> remote_model_helper_;
+  // The backend used for clustering. This can be nullptr.
+  std::unique_ptr<ClusteringBackend> backend_;
+
+  // In-memory cache of keywords match clusters, so we can query this
+  // synchronously as the user types in the omnibox. Also save the timestamp
+  // the cache was generated so we can periodically re-generate.
+  // TODO(tommycli): Make a smarter mechanism for regenerating the cache.
+  query_parser::QueryWordVector all_keywords_cache_;
+  base::Time all_keywords_cache_timestamp_;
+  base::CancelableTaskTracker cache_query_task_tracker_;
 
   // A list of observers for this service.
   base::ObserverList<Observer> observers_;
 
-  // Used to asyncly call into `remote_model_helper_` after async history
-  // request.
-  std::unique_ptr<base::WeakPtrFactory<MemoriesRemoteModelHelper>>
-      remote_model_helper_weak_factory_;
+  // Used to asyncly call into `backend_` after async history request. This can
+  // be nullptr.
+  std::unique_ptr<base::WeakPtrFactory<ClusteringBackend>>
+      backend_weak_factory_;
   // Weak pointers issued from this factory never get invalidated before the
   // service is destroyed.
   base::WeakPtrFactory<HistoryClustersService> weak_ptr_factory_{this};

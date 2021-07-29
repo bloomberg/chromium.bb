@@ -31,6 +31,7 @@ typedef struct fs_ctx fs_ctx;
 #define SSIM_C1_12 (4095 * 4095 * 0.01 * 0.01)
 #define SSIM_C2_10 (1023 * 1023 * 0.03 * 0.03)
 #define SSIM_C2_12 (4095 * 4095 * 0.03 * 0.03)
+#define MAX_SSIM_DB 100.0
 
 #define FS_MINI(_a, _b) ((_a) < (_b) ? (_a) : (_b))
 #define FS_MAXI(_a, _b) ((_a) > (_b) ? (_a) : (_b))

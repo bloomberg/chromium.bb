@@ -21,7 +21,6 @@ class TOutputVulkanGLSL : public TOutputGLSL
 {
   public:
     TOutputVulkanGLSL(TInfoSinkBase &objSink,
-                      ShArrayIndexClampingStrategy clampingStrategy,
                       ShHashFunction64 hashFunction,
                       NameMap &nameMap,
                       TSymbolTable *symbolTable,
@@ -47,7 +46,7 @@ class TOutputVulkanGLSL : public TOutputGLSL
     }
 
   protected:
-    void writeLayoutQualifier(TIntermTyped *variable) override;
+    void writeLayoutQualifier(TIntermSymbol *variable) override;
     void writeVariableType(const TType &type,
                            const TSymbol *symbol,
                            bool isFunctionArgument) override;

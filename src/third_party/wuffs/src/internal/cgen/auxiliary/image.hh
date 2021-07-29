@@ -20,13 +20,11 @@ namespace wuffs_aux {
 
 struct DecodeImageResult {
   DecodeImageResult(MemOwner&& pixbuf_mem_owner0,
-                    wuffs_base__slice_u8 pixbuf_mem_slice0,
                     wuffs_base__pixel_buffer pixbuf0,
                     std::string&& error_message0);
   DecodeImageResult(std::string&& error_message0);
 
   MemOwner pixbuf_mem_owner;
-  wuffs_base__slice_u8 pixbuf_mem_slice;
   wuffs_base__pixel_buffer pixbuf;
   std::string error_message;
 };
@@ -43,17 +41,31 @@ struct DecodeImageResult {
 // one fails - but the final callback (Done) is always invoked.
 class DecodeImageCallbacks {
  public:
-  // AllocResult holds a memory allocation (the result of malloc or new, a
-  // statically allocated pointer, etc), or an error message. The memory is
+  // AllocPixbufResult holds a memory allocation (the result of malloc or new,
+  // a statically allocated pointer, etc), or an error message. The memory is
   // de-allocated when mem_owner goes out of scope and is destroyed.
-  struct AllocResult {
-    AllocResult(MemOwner&& mem_owner0, wuffs_base__slice_u8 mem_slice0);
-    AllocResult(std::string&& error_message0);
+  struct AllocPixbufResult {
+    AllocPixbufResult(MemOwner&& mem_owner0, wuffs_base__pixel_buffer pixbuf0);
+    AllocPixbufResult(std::string&& error_message0);
 
     MemOwner mem_owner;
-    wuffs_base__slice_u8 mem_slice;
+    wuffs_base__pixel_buffer pixbuf;
     std::string error_message;
   };
+
+  // AllocWorkbufResult holds a memory allocation (the result of malloc or new,
+  // a statically allocated pointer, etc), or an error message. The memory is
+  // de-allocated when mem_owner goes out of scope and is destroyed.
+  struct AllocWorkbufResult {
+    AllocWorkbufResult(MemOwner&& mem_owner0, wuffs_base__slice_u8 workbuf0);
+    AllocWorkbufResult(std::string&& error_message0);
+
+    MemOwner mem_owner;
+    wuffs_base__slice_u8 workbuf;
+    std::string error_message;
+  };
+
+  virtual ~DecodeImageCallbacks();
 
   // SelectDecoder returns the image decoder for the input data's file format.
   // Returning a nullptr means failure (DecodeImage_UnsupportedImageFormat).
@@ -85,7 +97,10 @@ class DecodeImageCallbacks {
   //  - WUFFS_BASE__PIXEL_FORMAT__BGR_565
   //  - WUFFS_BASE__PIXEL_FORMAT__BGR
   //  - WUFFS_BASE__PIXEL_FORMAT__BGRA_NONPREMUL
+  //  - WUFFS_BASE__PIXEL_FORMAT__BGRA_NONPREMUL_4X16LE
   //  - WUFFS_BASE__PIXEL_FORMAT__BGRA_PREMUL
+  //  - WUFFS_BASE__PIXEL_FORMAT__RGBA_NONPREMUL
+  //  - WUFFS_BASE__PIXEL_FORMAT__RGBA_PREMUL
   // or return image_config.pixcfg.pixel_format(). The latter means to use the
   // image file's natural pixel format. For example, GIF images' natural pixel
   // format is an indexed one.
@@ -93,8 +108,8 @@ class DecodeImageCallbacks {
   // Returning otherwise means failure (DecodeImage_UnsupportedPixelFormat).
   //
   // The default SelectPixfmt implementation returns
-  // wuffs_base__make_pixel_format(WUFFS_BASE__PIXEL_FORMAT__BGRA_NONPREMUL)
-  // which is 4 bytes per pixel (8 bits per channel × 4 channels).
+  // wuffs_base__make_pixel_format(WUFFS_BASE__PIXEL_FORMAT__BGRA_PREMUL) which
+  // is 4 bytes per pixel (8 bits per channel × 4 channels).
   virtual wuffs_base__pixel_format  //
   SelectPixfmt(const wuffs_base__image_config& image_config);
 
@@ -107,7 +122,7 @@ class DecodeImageCallbacks {
   // The default AllocPixbuf implementation allocates either uninitialized or
   // zeroed memory. Zeroed memory typically corresponds to filling with opaque
   // black or transparent black, depending on the pixel format.
-  virtual AllocResult  //
+  virtual AllocPixbufResult  //
   AllocPixbuf(const wuffs_base__image_config& image_config,
               bool allow_uninitialized_memory);
 
@@ -117,7 +132,7 @@ class DecodeImageCallbacks {
   //
   // The default AllocWorkbuf implementation allocates len_range.max_incl bytes
   // of either uninitialized or zeroed memory.
-  virtual AllocResult  //
+  virtual AllocWorkbufResult  //
   AllocWorkbuf(wuffs_base__range_ii_u64 len_range,
                bool allow_uninitialized_memory);
 

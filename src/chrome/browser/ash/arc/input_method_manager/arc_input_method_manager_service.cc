@@ -7,16 +7,16 @@
 #include <algorithm>
 #include <utility>
 
-#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/keyboard/arc/arc_input_method_bounds_tracker.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_piece.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/input_method_manager/arc_input_method_manager_bridge_impl.h"
@@ -486,8 +486,6 @@ void ArcInputMethodManagerService::UpdateInputMethodEntryWithImeInfo() {
   // If the active input method is changed, call InputMethodChanged() here.
   if (active_ime_id != state->GetCurrentInputMethod().id())
     InputMethodChanged(InputMethodManager::Get(), nullptr, false);
-
-  UMA_HISTOGRAM_COUNTS_100("Arc.ImeCount", installed_imes.size());
 }
 
 void ArcInputMethodManagerService::OnConnectionClosed() {

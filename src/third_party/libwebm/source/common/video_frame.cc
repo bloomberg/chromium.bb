@@ -7,6 +7,8 @@
 // be found in the AUTHORS file in the root of the source tree.
 #include "common/video_frame.h"
 
+#include <cstdio>
+
 namespace libwebm {
 
 bool VideoFrame::Buffer::Init(std::size_t new_length) {

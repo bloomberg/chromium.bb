@@ -1,65 +1,74 @@
 <style>
   :host {
-    margin-top: 10px;
     --emoji-group-clear-recents-icon-size: 16px;
+    /*These padding values being discussed with UX*/
+    --emoji-group-heading-size: 32px;
+    --emoji-group-heading-padding-bottom: 18px;
+    --emoji-group-heading-padding-top: 14px;
+    margin-top: 10px;
+    position: relative;
   }
 
   #heading {
-    color: var(--cr-secondary-text-color);
+    color: var(--cros-text-color-secondary);
     display: flex;
     font-size: 10pt;
-    padding-bottom: 0;
-    padding-top: 12px;
+    padding-bottom: var(--emoji-group-heading-padding-bottom);
+    padding-top: var(--emoji-group-heading-padding-top);
   }
   #heading:focus,
   #heading:active {
-    outline-color: var(--cr-toggle-color);
+    outline-color: var(--cros-toggle-color);
     outline-width: 2px;
   }
 
   #heading-left {
-    height: 32px;
-    line-height: 32px;
+    height: var(--emoji-group-heading-size);
+    line-height: var(--emoji-group-heading-size);
     width: 100%;
   }
 
   #emoji {
     display: grid;
+    gap: var(--emoji-spacing);
     grid-auto-rows: max-content;
     grid-template-columns: repeat(var(--emoji-per-row), 1fr);
     justify-items: center;
   }
 
   #show-clear {
+    height: var(--emoji-group-heading-size);
+    left: var(--emoji-picker-last-emoji-left);
     margin: 0;
-    margin-inline-end: calc(
-      (var(--emoji-group-button-size) -
-       var(--emoji-group-clear-recents-icon-size))* .5);
-    --cr-icon-button-size: var(--emoji-group-clear-recents-icon-size);
+    width: var(--emoji-group-button-size);
   }
 
   #clear-recents {
-    background-color: var(--cr-menu-background-color);
+    background-color: var(--cros-bg-color);
     border: 2px solid transparent;
     border-radius: 4px;
-    box-shadow: var(--cr-elevation-3);
-    color: var(--cr-secondary-text-color);
+    box-shadow: var(--cr-elevation-1);
+    color: var(--cros-text-color-secondary);
     cursor: pointer;
-    display: float;
     font-family: 'Roboto', sans-serif;
     font-size: 12px;
-    margin: auto 0 auto auto;
+    height: var(--emoji-size);
     outline: none;
     padding: 0;
     position: absolute;
-    right: var(--emoji-picker-side-padding);
+    right: calc(2px
+      + 2*var(--emoji-picker-side-padding) - var(--emoji-picker-width));
+    top: calc(var(--emoji-group-heading-padding-top)
+      + var(--emoji-group-heading-padding-bottom)
+      + var(--emoji-group-heading-size));
+    white-space: nowrap;
     width: fit-content;
     z-index: 200;
   }
 
   #clear-recents:focus,
   #clear-recents:active {
-    border: 2px solid var(--cr-toggle-color);
+    border: 2px solid var(--cros-toggle-color);
   }
 
   #fake-focus-target {
@@ -69,11 +78,13 @@
   #clear-recents-hover {
     border: 2px solid transparent;
     margin: -2px;
-    padding: 6px 10px 6px 10px;
+    /* Padding should be 6/10 not 7/11, but without adding 1 there is a weird
+     * border.*/
+    padding: 7px 11px 7px 11px;
   }
   #clear-recents-hover:hover {
-    background-color: rgba(var(--google-blue-refresh-500-rgb), .04);
-    border: 2px solid rgba(var(--google-blue-refresh-500-rgb), .04);
+    background-color: var(--cros-button-background-color-secondary-hover);
+    border: 2px solid var(--cros-button-background-color-secondary-hover);
   }
 </style>
 

@@ -10,6 +10,7 @@
 <translation id="1125124144982679672">Кто использует Chrome?</translation>
 <translation id="1142745911746664600">Не удалось обновить Chrome</translation>
 <translation id="1154147086299354128">&amp;Открыть в Chrome</translation>
+<translation id="1182414570724401860">Браузер Chrome не рекомендует скачивать и открывать этот файл.</translation>
 <translation id="1278833599417554002">Перезапустить для обновления &amp;Chrome</translation>
 <translation id="1293325835983155583">Согласно действующим правилам (источник правил: <ph name="MANAGER" />), до начала работы с устройством необходимо ознакомиться с приведенными ниже Условиями использования и принять их. Они не дополняют, не заменяют и не ограничивают Условия использования Google Chrome OS.</translation>
 <translation id="1302523850133262269">Подождите, пока Chrome устанавливает последние обновления системы</translation>
@@ -34,7 +35,7 @@
 <translation id="174539241580958092">Google Chrome не удалось синхронизировать данные из-за ошибки входа в аккаунт.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1786003790898721085">Убедитесь, что вы вошли в Chrome на устройстве <ph name="TARGET_DEVICE_NAME" />, и попробуйте повторить отправку.</translation>
-<translation id="1807517590912578995">Использовать отдельный профиль Chrome?</translation>
+<translation id="1810203443153428607">При установке Chrome OS все данные на устройстве будут перезаписаны.</translation>
 <translation id="1812689907177901597">Отключив эту функцию, вы сможете входить в систему на сайтах Google (например, Gmail) без необходимости выполнять вход в Chrome.</translation>
 <translation id="1860536484129686729">Для этого сайта Chrome запрашивает доступ к камере.</translation>
 <translation id="1873233029667955273">Google Chrome не является браузером по умолчанию.</translation>
@@ -55,6 +56,16 @@
 <translation id="2348335408836342058">Для этого сайта Chrome запрашивает доступ к камере и микрофону.</translation>
 <translation id="234869673307233423">Не удается запустить проверку паролей в Chrome. Повторите попытку позже.</translation>
 <translation id="235650106824528204">Администратор рабочего профиля может удалять любые данные, сохраненные в браузере Chrome при использовании этого профиля (например, добавленные закладки, историю, пароли и настройки). <ph name="LEARN_MORE" /></translation>
+<translation id="2409866122341731384">Удалить все данные с жесткого диска и установить Chrome OS</translation>
+<translation id="2417565246123344595"><ph name="BEGIN_PARAGRAPH1" />Вы можете приступить к установке Chrome OS. Когда вы запустите ее, произойдет следующее:
+          <ph name="BEGIN_LIST" />
+          <ph name="LIST_ITEM" />Файлы, данные и текущая операционная система будут удалены.
+          <ph name="LIST_ITEM" />Будет установлена система Chrome OS.
+          <ph name="LIST_ITEM" />По окончании установки устройство будет выключено.
+          <ph name="END_LIST" />
+          <ph name="END_PARAGRAPH1" />
+          <ph name="BEGIN_PARAGRAPH2" />Ещё раз обращаем ваше внимание на то, что при установке с жесткого диска будет удалена вся информация. Убедитесь, что вы сохранили резервные копии нужных данных.<ph name="END_PARAGRAPH2" />
+          <ph name="BEGIN_PARAGRAPH3" />Установку нельзя будет отменить.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="2429317896000329049">Google Chrome не удалось синхронизировать данные, поскольку служба Sync недоступна для вашего домена.</translation>
 <translation id="2467438592969358367">Чтобы экспортировать пароли из Google Chrome, введите пароль своего аккаунта Windows.</translation>
 <translation id="2485422356828889247">Удалить</translation>
@@ -62,7 +73,6 @@
 <translation id="2574930892358684005">Пользователь <ph name="EXISTING_USER" /> уже вошел в этот профиль Chrome. Вы можете создать свой профиль, чтобы использовать браузер Chrome отдельно.</translation>
 <translation id="2580411288591421699">Не удается установить версию Google Chrome, аналогичную уже выполняемой. Закройте Google Chrome и повторите попытку.</translation>
 <translation id="2586406160782125153">Данные о работе в браузере будут удалены с устройства. Чтобы восстановить данные позже, войдите в Chrome как <ph name="USER_EMAIL" />.</translation>
-<translation id="2588634262982826227">Chrome OS может автоматически восстанавливать ваши приложения и страницы после перезагрузки.</translation>
 <translation id="2622559029861875898">Не удалось проверить наличие обновлений в Chrome. Проверьте подключение к Интернету.</translation>
 <translation id="2644798301485385923">Chrome OS</translation>
 <translation id="2652691236519827073">Открыть ссылку в новой вкладке браузера Chrome</translation>
@@ -126,6 +136,7 @@
 <translation id="4251615635259297716">Связать данные Chrome с этим аккаунтом?</translation>
 <translation id="4281844954008187215">Условия использования</translation>
 <translation id="4293420128516039005">Войдите, чтобы синхронизировать данные Chrome на всех устройствах</translation>
+<translation id="429583012151745428">Выполняется установка. Не отключайте устройство. Процедура закончится через двадцать минут или раньше. После завершения устройство автоматически выключится.</translation>
 <translation id="4325083532956419387">Версия Chrome OS</translation>
 <translation id="4328355335528187361">Google Chrome для разработчиков (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -166,6 +177,10 @@
 <translation id="5394833366792865639">Откройте доступ к вкладке Chrome</translation>
 <translation id="5430073640787465221">Файл настроек поврежден или недействителен. Google Chrome не может восстановить ваши параметры.</translation>
 <translation id="5434383153637353914">На этой странице можно управлять аккаунтами Google, в которые выполнен вход. Они будут доступны в Chrome, Google Play и других сервисах (например, Gmail, Диск и YouTube). <ph name="LINK_BEGIN" />Подробнее…<ph name="LINK_END" /></translation>
+<translation id="5449497480926255862"><ph name="BEGIN_PARAGRAPH1" />Перед началом установки убедитесь, что для всех данных созданы резервные копии. При установке Chrome OS все данные на жестком диске будут перезаписаны.<ph name="END_PARAGRAPH1" />
+          <ph name="BEGIN_PARAGRAPH2" />Компания Google не несет ответственности за потерю данных при установке ОС и не гарантирует, что Chrome OS будет работать на несертифицированных устройствах. Узнать, какие модели сертифицированы, можно на сайте [TBD].<ph name="END_PARAGRAPH2" />
+          <ph name="BEGIN_PARAGRAPH3" />Подробнее об установке Chrome OS и удалении данных с устройства: [TBD URL].<ph name="END_PARAGRAPH3" />
+          <ph name="BEGIN_PARAGRAPH4" />Если все готово, нажмите "Установить Chrome OS" и следуйте инструкциям на экране. У вас будет возможность подтвердить установку перед тем, как она начнется.<ph name="END_PARAGRAPH4" /></translation>
 <translation id="5486618155264784386">Установить Chrome OS</translation>
 <translation id="556024056938947818">Вводимые пароли будут отображаться в Google Chrome.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
@@ -200,11 +215,11 @@
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome для разработчиков</translation>
 <translation id="6566149418543181476">Обновление Google Chrome (<ph name="PROGRESS_PERCENT" />)…</translation>
 <translation id="6568793831116033768">Chrome OS</translation>
+<translation id="664235759707825982">Устройство готово к установке Chrome OS</translation>
 <translation id="6676384891291319759">Доступ в Интернет</translation>
 <translation id="6679975945624592337">Разрешить Google Chrome работать в фоновом режиме</translation>
 <translation id="6739177684496155661">Продолжить работу в новом профиле Chrome?</translation>
 <translation id="6750954913813541382">Для проверки правописания Chrome отправляет в Google текст, который вы вводите в браузере.</translation>
-<translation id="6755885556185485672">Работа Chrome OS была завершена некорректно.</translation>
 <translation id="677276454032249905">Закрыть Chrome?</translation>
 <translation id="683440813066116847">Разрешить в Google Chrome Canary передачу входящего трафика по протоколу mDNS</translation>
 <translation id="6885412569789873916">Приложения Chrome (бета)</translation>
@@ -219,9 +234,9 @@
 <translation id="7155997830309522122">Если да, то вам нужно сменить пароль, сохраненный в Chrome, на новый.</translation>
 <translation id="7161904924553537242">Добро пожаловать в Google Chrome</translation>
 <translation id="7242029209006116544">Выполнив вход в управляемый аккаунт, вы предоставляете администратору право контролировать настройки вашего профиля Google Chrome. Ваши данные Chrome (приложения, закладки, история, пароли и другие настройки) будут временно связаны с аккаунтом <ph name="USER_NAME" />. Эти данные можно удалить в Личном кабинете Google, но их нельзя связать с другим аккаунтом. Чтобы сохранить данные Chrome отдельно, создайте новый профиль. <ph name="LEARN_MORE" /></translation>
+<translation id="7275165473619697274">Выполняется установка Chrome OS</translation>
 <translation id="7295052994004373688">На этом языке отображается интерфейс Google Chrome</translation>
 <translation id="7296210096911315575">Использование и безопасность</translation>
-<translation id="7303916856901595720">Перенести аккаунт в новый профиль Chrome?</translation>
 <translation id="7308322188646931570">Для скачивания файлов браузеру Chrome требуется доступ к хранилищу.</translation>
 <translation id="7339898014177206373">Новое окно</translation>
 <translation id="7398801000654795464">Ранее вы входили в Chrome как <ph name="USER_EMAIL_ADDRESS" />. Войдите снова, используя тот же аккаунт.</translation>
@@ -248,7 +263,6 @@
 <translation id="7890208801193284374">Если, кроме вас, компьютером пользуется кто-то ещё, например родные или друзья, они тоже смогут настроить Chrome на свой вкус.</translation>
 <translation id="7896673875602241923">Ранее вход в Chrome на этом компьютере выполнялся из аккаунта <ph name="ACCOUNT_EMAIL_LAST" />. Чтобы ваши данные хранились отдельно, создайте новый профиль Chrome.</translation>
 <translation id="7930071585467473040">Google Chrome пытается скопировать пароли</translation>
-<translation id="7951988079884443914">Chrome рекомендует не скачивать и не открывать этот файл.</translation>
 <translation id="7962410387636238736">Google Chrome больше не будет обновляться на этом компьютере, так как поддержка Windows XP и Windows Vista прекращена.</translation>
 <translation id="79947657522496226">Chrome OS, как и <ph name="BEGIN_LINK_LINUX_OSS" />среда разработки Linux<ph name="END_LINK_LINUX_OSS" />, работает благодаря дополнительному <ph name="BEGIN_LINK_CROS_OSS" />программному обеспечению с открытым исходным кодом<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="8008534537613507642">Переустановить Chrome</translation>

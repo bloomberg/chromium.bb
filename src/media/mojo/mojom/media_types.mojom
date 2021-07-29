@@ -130,6 +130,14 @@ struct EncryptionPattern {
 [Native]
 enum EncryptionScheme;
 
+// See media::EncryptionType for descriptions.
+enum EncryptionType {
+  kNone,
+  kClear,
+  kEncrypted,
+  kEncryptedWithClearLead,
+};
+
 // This defines a mojo transport format for media::VideoColorSpace.
 // See media/base/video_color_space.h for description.
 struct VideoColorSpace {
@@ -150,7 +158,6 @@ struct VideoColorSpace {
   MatrixID matrix;
   RangeID range;
 };
-
 
 // This defines a mojo transport format for media::AudioDecoderConfig.
 // See media/base/audio_decoder_config.h for descriptions.
@@ -186,6 +193,15 @@ struct VideoDecoderConfig {
 // Native struct media::SubsampleEntry;
 [Native]
 struct SubsampleEntry;
+
+// See media::CdmSessionClosedReason for descriptions.
+enum CdmSessionClosedReason {
+  kInternalError,
+  kClose,
+  kReleaseAcknowledged,
+  kHardwareContextReset,
+  kResourceEvicted,
+};
 
 // This defines a mojo transport format for media::DecryptConfig.
 // See media/base/decrypt_config.h for descriptions.
@@ -310,6 +326,8 @@ struct VideoFrameMetadata {
   mojo_base.mojom.UnguessableToken? overlay_plane_id;
 
   bool power_efficient;
+
+  bool texture_origin_is_top_left;
 
   bool has_device_scale_factor;
   double device_scale_factor;
@@ -438,17 +456,19 @@ struct PredictionTargets {
 };
 
 // See media/base/pipeline_status.h for descriptions.
-struct AudioDecoderInfo {
+struct AudioPipelineInfo {
   AudioDecoderType decoder_type;
   bool is_platform_decoder = false;
   bool has_decrypting_demuxer_stream = false;
+  EncryptionType encryption_type;
 };
 
 // See media/base/pipeline_status.h for descriptions.
-struct VideoDecoderInfo {
+struct VideoPipelineInfo {
   VideoDecoderType decoder_type;
   bool is_platform_decoder = false;
   bool has_decrypting_demuxer_stream = false;
+  EncryptionType encryption_type;
 };
 
 // See media/base/status.h for descriptions.
@@ -477,4 +497,19 @@ enum MediaStreamType {
 enum InputStreamErrorCode {
   kUnknown = 0,
   kSystemPermissions = 1,
+  kDeviceInUse = 2,
+};
+
+// See media/base/renderer_factory_selector.h for description.
+enum RendererType {
+  kDefault = 0,          // DefaultRendererFactory
+  kMojo = 1,             // MojoRendererFactory
+  kMediaPlayer = 2,      // MediaPlayerRendererClientFactory
+  kCourier = 3,          // CourierRendererFactory
+  kFlinging = 4,         // FlingingRendererClientFactory
+  kCast = 5,             // CastRendererClientFactory
+  kMediaFoundation = 6,  // MediaFoundationRendererClientFactory
+  kFuchsia = 7,          // FuchsiaRendererFactory
+  kRemoting = 8,         // RemotingRendererFactory for remoting::Receiver
+  kCastStreaming = 9,    // CastStreamingRendererFactory
 };

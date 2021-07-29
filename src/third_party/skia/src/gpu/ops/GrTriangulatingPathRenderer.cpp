@@ -161,34 +161,6 @@ private:
 }  // namespace
 
 //-------------------------------------------------------------------------------------------------
-void* GrCpuVertexAllocator::lock(size_t stride, int eagerCount) {
-    SkASSERT(!fLockStride && !fVertices && !fVertexData);
-    SkASSERT(stride && eagerCount);
-
-    fVertices = sk_malloc_throw(eagerCount * stride);
-    fLockStride = stride;
-
-    return fVertices;
-}
-
-void GrCpuVertexAllocator::unlock(int actualCount) {
-    SkASSERT(fLockStride && fVertices && !fVertexData);
-
-    fVertices = sk_realloc_throw(fVertices, actualCount * fLockStride);
-
-    fVertexData = GrThreadSafeCache::MakeVertexData(fVertices, actualCount, fLockStride);
-
-    fVertices = nullptr;
-    fLockStride = 0;
-}
-
-sk_sp<GrThreadSafeCache::VertexData> GrCpuVertexAllocator::detachVertexData() {
-    SkASSERT(!fLockStride && !fVertices && fVertexData);
-
-    return std::move(fVertexData);
-}
-
-//-------------------------------------------------------------------------------------------------
 GrTriangulatingPathRenderer::GrTriangulatingPathRenderer()
   : fMaxVerbCount(GR_AA_TESSELLATOR_MAX_VERB_COUNT) {
 }
@@ -196,7 +168,7 @@ GrTriangulatingPathRenderer::GrTriangulatingPathRenderer()
 GrPathRenderer::CanDrawPath
 GrTriangulatingPathRenderer::onCanDrawPath(const CanDrawPathArgs& args) const {
     // Don't use this path renderer with dynamic MSAA. DMSAA tries to not rely on caching.
-    if (args.fSurfaceProps->flags() & kDMSAA_SkSurfacePropsPrivateFlag) {
+    if (args.fSurfaceProps->flags() & SkSurfaceProps::kDynamicMSAA_Flag) {
         return CanDrawPath::kNo;
     }
     // This path renderer can draw fill styles, and can do screenspace antialiasing via a
@@ -252,7 +224,7 @@ public:
 
     const char* name() const override { return "TriangulatingPathOp"; }
 
-    void visitProxies(const VisitProxyFunc& func) const override {
+    void visitProxies(const GrVisitProxyFunc& func) const override {
         if (fProgramInfo) {
             fProgramInfo->visitFPProxies(func);
         } else {
@@ -348,7 +320,7 @@ private:
         return GrTriangulator::PathToTriangles(path, tol, clipBounds, allocator, isLinear);
     }
 
-    void createNonAAMesh(Target* target) {
+    void createNonAAMesh(GrMeshDrawTarget* target) {
         SkASSERT(!fAntiAlias);
         GrResourceProvider* rp = target->resourceProvider();
         auto threadSafeCache = target->threadSafeCache();
@@ -415,7 +387,7 @@ private:
         fMesh = CreateMesh(target, fVertexData->refGpuBuffer(), 0, fVertexData->numVertices());
     }
 
-    void createAAMesh(Target* target) {
+    void createAAMesh(GrMeshDrawTarget* target) {
         SkASSERT(!fVertexData);
         SkASSERT(fAntiAlias);
         SkPath path = this->getPath();
@@ -440,8 +412,9 @@ private:
     void onCreateProgramInfo(const GrCaps* caps,
                              SkArenaAlloc* arena,
                              const GrSurfaceProxyView& writeView,
+                             bool usesMSAASurface,
                              GrAppliedClip&& appliedClip,
-                             const GrXferProcessor::DstProxyView& dstProxyView,
+                             const GrDstProxyView& dstProxyView,
                              GrXferBarrierFlags renderPassXferBarriers,
                              GrLoadOp colorLoadOp) override {
         GrGeometryProcessor* gp;
@@ -494,7 +467,7 @@ private:
     void onPrePrepareDraws(GrRecordingContext* rContext,
                            const GrSurfaceProxyView& writeView,
                            GrAppliedClip* clip,
-                           const GrXferProcessor::DstProxyView& dstProxyView,
+                           const GrDstProxyView& dstProxyView,
                            GrXferBarrierFlags renderPassXferBarriers,
                            GrLoadOp colorLoadOp) override {
         TRACE_EVENT0("skia.gpu", TRACE_FUNC);
@@ -555,7 +528,7 @@ private:
         }
     }
 
-    void onPrepareDraws(Target* target) override {
+    void onPrepareDraws(GrMeshDrawTarget* target) override {
         if (fAntiAlias) {
             this->createAAMesh(target);
         } else {
@@ -563,8 +536,10 @@ private:
         }
     }
 
-    static GrSimpleMesh* CreateMesh(Target* target, sk_sp<const GrBuffer> vb,
-                                    int firstVertex, int count) {
+    static GrSimpleMesh* CreateMesh(GrMeshDrawTarget* target,
+                                    sk_sp<const GrBuffer> vb,
+                                    int firstVertex,
+                                    int count) {
         auto mesh = target->allocMesh();
         mesh->set(std::move(vb), count, firstVertex);
         return mesh;
@@ -609,13 +584,13 @@ private:
 }  // anonymous namespace
 
 bool GrTriangulatingPathRenderer::onDrawPath(const DrawPathArgs& args) {
-    GR_AUDIT_TRAIL_AUTO_FRAME(args.fRenderTargetContext->auditTrail(),
+    GR_AUDIT_TRAIL_AUTO_FRAME(args.fContext->priv().auditTrail(),
                               "GrTriangulatingPathRenderer::onDrawPath");
 
     GrOp::Owner op = TriangulatingPathOp::Make(
             args.fContext, std::move(args.fPaint), *args.fShape, *args.fViewMatrix,
             *args.fClipConservativeBounds, args.fAAType, args.fUserStencilSettings);
-    args.fRenderTargetContext->addDrawOp(args.fClip, std::move(op));
+    args.fSurfaceDrawContext->addDrawOp(args.fClip, std::move(op));
     return true;
 }
 

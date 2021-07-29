@@ -19,27 +19,21 @@
 namespace content {
 
 CachedNavigationURLLoader::CachedNavigationURLLoader(
+    LoaderType loader_type,
     std::unique_ptr<NavigationRequestInfo> request_info,
-    NavigationURLLoaderDelegate* delegate)
-    : request_info_(std::move(request_info)), delegate_(delegate) {
-  // Respond with a fake response. We use PostTask here to mimic the flow of
-  // a normal navigation.
-  //
-  // Normal navigations never call OnResponseStarted on the same message loop
-  // iteration that the NavigationURLLoader is created, because they have to
-  // make a network request.
-  GetUIThreadTaskRunner({})->PostTask(
-      FROM_HERE, base::BindOnce(&CachedNavigationURLLoader::OnResponseStarted,
-                                weak_factory_.GetWeakPtr()));
-}
+    NavigationURLLoaderDelegate* delegate,
+    network::mojom::URLResponseHeadPtr cached_response_head)
+    : loader_type_(loader_type),
+      request_info_(std::move(request_info)),
+      delegate_(delegate),
+      cached_response_head_(std::move(cached_response_head)) {}
 
 void CachedNavigationURLLoader::OnResponseStarted() {
   GlobalRequestID global_id = GlobalRequestID::MakeBrowserInitiated();
 
-  auto response_head = network::mojom::URLResponseHead::New();
-  response_head->parsed_headers = network::mojom::ParsedHeaders::New();
+  DCHECK(cached_response_head_);
   delegate_->OnResponseStarted(
-      /*url_loader_client_endpoints=*/nullptr, std::move(response_head),
+      /*url_loader_client_endpoints=*/nullptr, std::move(cached_response_head_),
       /*response_body=*/mojo::ScopedDataPipeConsumerHandle(), global_id,
       /*is_download=*/false, blink::NavigationDownloadPolicy(),
       request_info_->isolation_info.network_isolation_key(), absl::nullopt,
@@ -49,10 +43,42 @@ CachedNavigationURLLoader::~CachedNavigationURLLoader() {}
 
 // static
 std::unique_ptr<NavigationURLLoader> CachedNavigationURLLoader::Create(
+    LoaderType loader_type,
     std::unique_ptr<NavigationRequestInfo> request_info,
-    NavigationURLLoaderDelegate* delegate) {
-  return std::make_unique<CachedNavigationURLLoader>(std::move(request_info),
-                                                     delegate);
+    NavigationURLLoaderDelegate* delegate,
+    network::mojom::URLResponseHeadPtr cached_response_head) {
+  return std::make_unique<CachedNavigationURLLoader>(
+      loader_type, std::move(request_info), delegate,
+      std::move(cached_response_head));
+}
+
+void CachedNavigationURLLoader::Start() {
+  // Respond with a fake response.
+  switch (loader_type_) {
+    case LoaderType::kRegular:
+      NOTREACHED();
+      break;
+    case LoaderType::kNoopForBackForwardCache:
+      // We use PostTask here to mimic the flow of a normal navigation.
+      //
+      // Normal navigations never call OnResponseStarted on the same message
+      // loop iteration that the NavigationURLLoader is created, because they
+      // have to make a network request.
+      //
+      // TODO(https://crbug.com/1226442): Remove this post task and
+      // synchronously run the loader like kNoopForPrerender.
+      GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE,
+          base::BindOnce(&CachedNavigationURLLoader::OnResponseStarted,
+                         weak_factory_.GetWeakPtr()));
+      break;
+    case LoaderType::kNoopForPrerender:
+      // Call OnResponseStarted() synchronously. Prerendered page activation
+      // synchronously runs so that it doesn't have to worry about cases where
+      // cancellation is requested during page activation.
+      OnResponseStarted();
+      break;
+  }
 }
 
 void CachedNavigationURLLoader::FollowRedirect(

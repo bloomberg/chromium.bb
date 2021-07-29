@@ -203,6 +203,24 @@
   "core/host/ResourceLoader.ts | unknownError": {
     "message": "Ûńk̂ńôẃn̂ ér̂ŕôŕ"
   },
+  "core/i18n/i18nImpl.ts | fdays": {
+    "message": "{PH1} d̂áŷś"
+  },
+  "core/i18n/i18nImpl.ts | fhrs": {
+    "message": "{PH1} ĥŕŝ"
+  },
+  "core/i18n/i18nImpl.ts | fmin": {
+    "message": "{PH1} m̂ín̂"
+  },
+  "core/i18n/i18nImpl.ts | fmms": {
+    "message": "{PH1} μŝ"
+  },
+  "core/i18n/i18nImpl.ts | fms": {
+    "message": "{PH1} m̂ś"
+  },
+  "core/i18n/i18nImpl.ts | fs": {
+    "message": "{PH1} ŝ"
+  },
   "core/sdk/CompilerSourceMappingContentProvider.ts | couldNotLoadContentForSS": {
     "message": "Ĉóûĺd̂ ńôt́ l̂óâd́ ĉón̂t́êńt̂ f́ôŕ {PH1} ({PH2})"
   },
@@ -1175,6 +1193,9 @@
   "models/bindings/DebuggerLanguagePlugins.ts | failedToLoadDebugSymbolsFor": {
     "message": "[{PH1}] F̂áîĺêd́ t̂ó l̂óâd́ d̂éb̂úĝ śŷḿb̂ól̂ś f̂ór̂ {PH2} ({PH3})"
   },
+  "models/bindings/DebuggerLanguagePlugins.ts | failedToLoadDebugSymbolsForFunction": {
+    "message": "M̂íŝśîńĝ d́êb́ûǵ ŝým̂b́ôĺŝ f́ôŕ f̂ún̂ćt̂íôń \"{PH1}\""
+  },
   "models/bindings/DebuggerLanguagePlugins.ts | loadedDebugSymbolsForButDidnt": {
     "message": "[{PH1}] L̂óâd́êd́ d̂éb̂úĝ śŷḿb̂ól̂ś f̂ór̂ {PH2}, b́ût́ d̂íd̂ń't̂ f́îńd̂ án̂ý ŝóûŕĉé f̂íl̂éŝ"
   },
@@ -1186,6 +1207,9 @@
   },
   "models/bindings/DebuggerLanguagePlugins.ts | loadingDebugSymbolsForVia": {
     "message": "[{PH1}] L̂óâd́îńĝ d́êb́ûǵ ŝým̂b́ôĺŝ f́ôŕ {PH2} (v̂íâ {PH3})..."
+  },
+  "models/bindings/DebuggerLanguagePlugins.ts | symbolFileNotFound": {
+    "message": "Ŝým̂b́ôĺ f̂íl̂é \"{PH1}\" n̂ót̂ f́ôún̂d́"
   },
   "models/bindings/ResourceScriptMapping.ts | liveEditCompileFailed": {
     "message": "LiveEdit ĉóm̂ṕîĺê f́âíl̂éd̂: {PH1}"
@@ -1258,6 +1282,9 @@
   },
   "models/issues_manager/TrustedWebActivityIssue.ts | changesToQualityCriteriaForPwas": {
     "message": "Ĉh́âńĝéŝ t́ô q́ûál̂ít̂ý ĉŕît́êŕîá f̂ór̂ ṔŴÁŝ úŝín̂ǵ T̂ŕûśt̂éd̂ Ẃêb́ Âćt̂ív̂ít̂ý"
+  },
+  "models/issues_manager/WasmCrossOriginModuleSharingIssue.ts | linkTitle": {
+    "message": "Ŵáŝḿ ĉŕôśŝ-ór̂íĝín̂ ḿôd́ûĺê śĥár̂ín̂ǵ d̂ép̂ŕêćât́îón̂"
   },
   "models/logs/logs-meta.ts | clear": {
     "message": "ĉĺêár̂"
@@ -1390,12 +1417,6 @@
   },
   "models/persistence/WorkspaceSettingsTab.ts | workspace": {
     "message": "Ŵór̂ḱŝṕâćê"
-  },
-  "models/recorder/RecordingFileSystem.ts | defaultRecordingName": {
-    "message": "R̂éĉór̂d́îńĝ #{nextId}"
-  },
-  "models/recorder/RecordingFileSystem.ts | linkedToS": {
-    "message": "L̂ín̂ḱêd́ t̂ó {PH1}"
   },
   "models/timeline_model/TimelineIRModel.ts | twoFlingsAtTheSameTimeSVsS": {
     "message": "T̂ẃô f́l̂ín̂ǵŝ át̂ t́ĥé ŝám̂é t̂ím̂é? {PH1} v̂ś {PH2}"
@@ -2030,6 +2051,9 @@
   "panels/application/AppManifestView.ts | aUrlInTheManifestContainsA": {
     "message": "Â ÚR̂Ĺ îń t̂h́ê ḿâńîf́êśt̂ ćôńt̂áîńŝ á ûśêŕn̂ám̂é, p̂áŝśŵór̂d́, ôŕ p̂ór̂t́"
   },
+  "panels/application/AppManifestView.ts | avoidPurposeAnyAndMaskable": {
+    "message": "D̂éĉĺâŕîńĝ án̂ íĉón̂ ẃît́ĥ purpose: \"any maskable\" íŝ d́îśĉóûŕâǵêd́. Ît́ îś l̂ík̂él̂ý t̂ó l̂óôḱ îńĉór̂ŕêćt̂ ón̂ śôḿê ṕl̂át̂f́ôŕm̂ś d̂úê t́ô t́ôó m̂úĉh́ ôŕ t̂óô ĺît́t̂ĺê ṕâd́d̂ín̂ǵ."
+  },
   "panels/application/AppManifestView.ts | backgroundColor": {
     "message": "B̂áĉḱĝŕôún̂d́ ĉól̂ór̂"
   },
@@ -2085,7 +2109,7 @@
     "message": "M̂án̂íf̂éŝt́ d̂óêś n̂ót̂ ćôńt̂áîń â 'name' ór̂ 'short_name' f́îél̂d́"
   },
   "panels/application/AppManifestView.ts | manifestDoesNotContainASuitable": {
-    "message": "M̂án̂íf̂éŝt́ d̂óêś n̂ót̂ ćôńt̂áîń â śûít̂áb̂ĺê íĉón̂ - ṔN̂Ǵ, ŜV́Ĝ ór̂ Ẃêb́P̂ f́ôŕm̂át̂ óf̂ át̂ ĺêáŝt́ {PH1}p̂x́ îś r̂éq̂úîŕêd́, t̂h́ê sizes át̂t́r̂íb̂út̂é m̂úŝt́ b̂é ŝét̂, án̂d́ t̂h́ê purpose át̂t́r̂íb̂út̂é, îf́ ŝét̂, ḿûśt̂ ín̂ćl̂úd̂é \"any\" âńd̂ śĥóûĺd̂ ńôt́ îńĉĺûd́ê \"maskable\"."
+    "message": "M̂án̂íf̂éŝt́ d̂óêś n̂ót̂ ćôńt̂áîń â śûít̂áb̂ĺê íĉón̂ - ṔN̂Ǵ, ŜV́Ĝ ór̂ Ẃêb́P̂ f́ôŕm̂át̂ óf̂ át̂ ĺêáŝt́ {PH1}p̂x́ îś r̂éq̂úîŕêd́, t̂h́ê sizes át̂t́r̂íb̂út̂é m̂úŝt́ b̂é ŝét̂, án̂d́ t̂h́ê purpose át̂t́r̂íb̂út̂é, îf́ ŝét̂, ḿûśt̂ ín̂ćl̂úd̂é \"any\"."
   },
   "panels/application/AppManifestView.ts | manifestSpecifies": {
     "message": "M̂án̂íf̂éŝt́ ŝṕêćîf́îéŝ prefer_related_applications: t́r̂úê"
@@ -2098,6 +2122,9 @@
   },
   "panels/application/AppManifestView.ts | needHelpReadOurS": {
     "message": "N̂éêd́ ĥél̂ṕ? R̂éâd́ {PH1}."
+  },
+  "panels/application/AppManifestView.ts | newNoteUrl": {
+    "message": "N̂éŵ ńôt́ê ÚR̂Ĺ"
   },
   "panels/application/AppManifestView.ts | noManifestDetected": {
     "message": "N̂ó m̂án̂íf̂éŝt́ d̂ét̂éĉt́êd́"
@@ -2147,6 +2174,9 @@
   "panels/application/AppManifestView.ts | screenshot": {
     "message": "Ŝćr̂éêńŝh́ôt́"
   },
+  "panels/application/AppManifestView.ts | screenshotPixelSize": {
+    "message": "Ŝćr̂éêńŝh́ôt́ {url} ŝh́ôúl̂d́ ŝṕêćîf́ŷ á p̂íx̂él̂ śîźê [width]x[height] ín̂śt̂éâd́ ôf́ \"any\" âś f̂ír̂śt̂ śîźê."
+  },
   "panels/application/AppManifestView.ts | screenshotS": {
     "message": "Ŝćr̂éêńŝh́ôt́ #{PH1}"
   },
@@ -2178,7 +2208,7 @@
     "message": "M̂óŝt́ ôṕêŕât́îńĝ śŷśt̂ém̂ś r̂éq̂úîŕê śq̂úâŕê íĉón̂ś. P̂ĺêáŝé îńĉĺûd́ê át̂ ĺêáŝt́ ôńê śq̂úâŕê íĉón̂ ín̂ t́ĥé âŕr̂áŷ."
   },
   "panels/application/AppManifestView.ts | sSShouldSpecifyItsSizeAs": {
-    "message": "{PH1} {PH2} ŝh́ôúl̂d́ ŝṕêćîf́ŷ ít̂ś ŝíẑé âś {width}x{height}"
+    "message": "{PH1} {PH2} ŝh́ôúl̂d́ ŝṕêćîf́ŷ ít̂ś ŝíẑé âś [width]x[height]"
   },
   "panels/application/AppManifestView.ts | sSSizeShouldBeAtLeast320": {
     "message": "{PH1} {PH2} ŝíẑé ŝh́ôúl̂d́ b̂é ât́ l̂éâśt̂ 320×320"
@@ -2212,6 +2242,9 @@
   },
   "panels/application/BackForwardCacheView.ts | bfcacheStatus": {
     "message": "B̂áĉḱ-f̂ór̂ẃâŕd̂ Ćâćĥé Ŝt́ât́ûś"
+  },
+  "panels/application/BackForwardCacheView.ts | explanations": {
+    "message": "Êx́p̂ĺâńât́îón̂ś"
   },
   "panels/application/BackForwardCacheView.ts | lastMainFrameNavigation": {
     "message": "L̂áŝt́ M̂áîń F̂ŕâḿê Ńâv́îǵât́îón̂"
@@ -2315,9 +2348,6 @@
   "panels/application/components/FrameDetailsView.ts | aFrameAncestorIsAnInsecure": {
     "message": "Â f́r̂ám̂é âńĉéŝt́ôŕ îś âń îńŝéĉúr̂é ĉón̂t́êx́t̂"
   },
-  "panels/application/components/FrameDetailsView.ts | allowedFeatures": {
-    "message": "Âĺl̂óŵéd̂ F́êát̂úr̂éŝ"
-  },
   "panels/application/components/FrameDetailsView.ts | apiAvailability": {
     "message": "ÂṔÎ áv̂áîĺâb́îĺît́ŷ"
   },
@@ -2336,6 +2366,9 @@
   "panels/application/components/FrameDetailsView.ts | child": {
     "message": "ĉh́îĺd̂"
   },
+  "panels/application/components/FrameDetailsView.ts | childDescription": {
+    "message": "T̂h́îś f̂ŕâḿê h́âś b̂éêń îd́êńt̂íf̂íêd́ âś â ćĥíl̂d́ f̂ŕâḿê óf̂ án̂ ád̂"
+  },
   "panels/application/components/FrameDetailsView.ts | clickToRevealInElementsPanel": {
     "message": "Ĉĺîćk̂ t́ô ŕêv́êál̂ ín̂ Él̂ém̂én̂t́ŝ ṕâńêĺ"
   },
@@ -2348,11 +2381,8 @@
   "panels/application/components/FrameDetailsView.ts | clickToRevealInSourcesPanel": {
     "message": "Ĉĺîćk̂ t́ô ŕêv́êál̂ ín̂ Śôúr̂ćêś p̂án̂él̂"
   },
-  "panels/application/components/FrameDetailsView.ts | clickToShowHeader": {
-    "message": "Ĉĺîćk̂ t́ô ŕêv́êál̂ t́ĥé r̂éq̂úêśt̂ ẃĥóŝé \"Permissions-Policy\" ĤT́T̂Ṕ ĥéâd́êŕ d̂íŝáb̂ĺêś t̂h́îś f̂éât́ûŕê."
-  },
-  "panels/application/components/FrameDetailsView.ts | clickToShowIframe": {
-    "message": "Ĉĺîćk̂ t́ô ŕêv́êál̂ t́ĥé t̂óp̂-ḿôśt̂ íf̂ŕâḿê ẃĥíĉh́ d̂óêś n̂ót̂ ál̂ĺôẃ t̂h́îś f̂éât́ûŕê ín̂ t́ĥé êĺêḿêńt̂ś p̂án̂él̂."
+  "panels/application/components/FrameDetailsView.ts | createdByAdScriptExplanation": {
+    "message": "T̂h́êŕê ẃâś âń âd́ ŝćr̂íp̂t́ îń t̂h́ê (áŝýn̂ć) ŝt́âćk̂ ẃĥén̂ t́ĥíŝ f́r̂ám̂é ŵáŝ ćr̂éât́êd́. Êx́âḿîńîńĝ t́ĥé ĉŕêát̂íôń ŝt́âćk̂ t́r̂áĉé ôf́ t̂h́îś f̂ŕâḿê ḿîǵĥt́ p̂ŕôv́îd́ê ḿôŕê ín̂śîǵĥt́."
   },
   "panels/application/components/FrameDetailsView.ts | creationStackTrace": {
     "message": "F̂ŕâḿê Ćr̂éât́îón̂ Śt̂áĉḱ T̂ŕâćê"
@@ -2369,29 +2399,20 @@
   "panels/application/components/FrameDetailsView.ts | crossoriginOpenerPolicy": {
     "message": "Ĉŕôśŝ-Ór̂íĝín̂ Óp̂én̂ér̂ Ṕôĺîćŷ"
   },
-  "panels/application/components/FrameDetailsView.ts | disabledByHeader": {
-    "message": "d̂íŝáb̂ĺêd́ b̂ý \"Permissions-Policy\" ĥéâd́êŕ"
-  },
-  "panels/application/components/FrameDetailsView.ts | disabledByIframe": {
-    "message": "m̂íŝśîńĝ ín̂ íf̂ŕâḿê \"allow\" át̂t́r̂íb̂út̂é"
-  },
-  "panels/application/components/FrameDetailsView.ts | disabledFeatures": {
-    "message": "D̂íŝáb̂ĺêd́ F̂éât́ûŕêś"
-  },
   "panels/application/components/FrameDetailsView.ts | document": {
     "message": "D̂óĉúm̂én̂t́"
   },
   "panels/application/components/FrameDetailsView.ts | frameId": {
     "message": "F̂ŕâḿê ÍD̂"
   },
-  "panels/application/components/FrameDetailsView.ts | hideDetails": {
-    "message": "Ĥíd̂é d̂ét̂áîĺŝ"
-  },
   "panels/application/components/FrameDetailsView.ts | learnMore": {
     "message": "L̂éâŕn̂ ḿôŕê"
   },
   "panels/application/components/FrameDetailsView.ts | localhostIsAlwaysASecureContext": {
     "message": "L̂óĉál̂h́ôśt̂ íŝ ál̂ẃâýŝ á ŝéĉúr̂é ĉón̂t́êx́t̂"
+  },
+  "panels/application/components/FrameDetailsView.ts | matchedBlockingRuleExplanation": {
+    "message": "T̂h́îś f̂ŕâḿê íŝ ćôńŝíd̂ér̂éd̂ án̂ ád̂ f́r̂ám̂é b̂éĉáûśê ít̂ś ĉúr̂ŕêńt̂ (ór̂ ṕr̂év̂íôúŝ) ḿâín̂ d́ôćûḿêńt̂ íŝ án̂ ád̂ ŕêśôúr̂ćê."
   },
   "panels/application/components/FrameDetailsView.ts | measureMemory": {
     "message": "M̂éâśûŕê Ḿêḿôŕŷ"
@@ -2402,8 +2423,14 @@
   "panels/application/components/FrameDetailsView.ts | origin": {
     "message": "Ôŕîǵîń"
   },
+  "panels/application/components/FrameDetailsView.ts | originTrials": {
+    "message": "Ôŕîǵîń T̂ŕîál̂ś"
+  },
   "panels/application/components/FrameDetailsView.ts | ownerElement": {
     "message": "Ôẃn̂ér̂ Él̂ém̂én̂t́"
+  },
+  "panels/application/components/FrameDetailsView.ts | parentIsAdExplanation": {
+    "message": "T̂h́îś f̂ŕâḿê íŝ ćôńŝíd̂ér̂éd̂ án̂ ád̂ f́r̂ám̂é b̂éĉáûśê ít̂ś p̂ár̂én̂t́ f̂ŕâḿê íŝ án̂ ád̂ f́r̂ám̂é."
   },
   "panels/application/components/FrameDetailsView.ts | reportingTo": {
     "message": "r̂ép̂ór̂t́îńĝ t́ô"
@@ -2413,6 +2440,9 @@
   },
   "panels/application/components/FrameDetailsView.ts | root": {
     "message": "r̂óôt́"
+  },
+  "panels/application/components/FrameDetailsView.ts | rootDescription": {
+    "message": "T̂h́îś f̂ŕâḿê h́âś b̂éêń îd́êńt̂íf̂íêd́ âś t̂h́ê ŕôót̂ f́r̂ám̂é ôf́ âń âd́"
   },
   "panels/application/components/FrameDetailsView.ts | secureContext": {
     "message": "Ŝéĉúr̂é Ĉón̂t́êx́t̂"
@@ -2426,9 +2456,6 @@
   "panels/application/components/FrameDetailsView.ts | sharedarraybufferConstructorIsAvailable": {
     "message": "Ŝh́âŕêd́Âŕr̂áŷB́ûf́f̂ér̂ ćôńŝt́r̂úĉt́ôŕ îś âv́âíl̂áb̂ĺê b́ût́ ŜÁB̂ś ĉán̂ńôt́ b̂é t̂ŕâńŝf́êŕr̂éd̂ v́îá p̂óŝt́M̂éŝśâǵê"
   },
-  "panels/application/components/FrameDetailsView.ts | showDetails": {
-    "message": "Ŝh́ôẃ d̂ét̂áîĺŝ"
-  },
   "panels/application/components/FrameDetailsView.ts | theFramesSchemeIsInsecure": {
     "message": "T̂h́ê f́r̂ám̂é'ŝ śĉh́êḿê íŝ ín̂śêćûŕê"
   },
@@ -2440,12 +2467,6 @@
   },
   "panels/application/components/FrameDetailsView.ts | thisAdditionalDebugging": {
     "message": "T̂h́îś âd́d̂ít̂íôńâĺ (d̂éb̂úĝǵîńĝ) ín̂f́ôŕm̂át̂íôń îś ŝh́ôẃn̂ b́êćâúŝé t̂h́ê 'Ṕr̂ót̂óĉól̂ Ḿôńît́ôŕ' êx́p̂ér̂ím̂én̂t́ îś êńâb́l̂éd̂."
-  },
-  "panels/application/components/FrameDetailsView.ts | thisFrameHasBeenIdentifiedAsThe": {
-    "message": "T̂h́îś f̂ŕâḿê h́âś b̂éêń îd́êńt̂íf̂íêd́ âś t̂h́ê ŕôót̂ f́r̂ám̂é ôf́ âń âd́"
-  },
-  "panels/application/components/FrameDetailsView.ts | thisFrameHasBeenIdentifiedAsTheA": {
-    "message": "T̂h́îś f̂ŕâḿê h́âś b̂éêń îd́êńt̂íf̂íêd́ âś â ćĥíl̂d́ f̂ŕâḿê óf̂ án̂ ád̂"
   },
   "panels/application/components/FrameDetailsView.ts | transferRequiresCrossoriginIsolatedPermission": {
     "message": "SharedArrayBuffer t̂ŕâńŝf́êŕ r̂éq̂úîŕêś êńâb́l̂ín̂ǵ t̂h́ê ṕêŕm̂íŝśîón̂ ṕôĺîćŷ:"
@@ -2464,6 +2485,57 @@
   },
   "panels/application/components/FrameDetailsView.ts | yes": {
     "message": "Ŷéŝ"
+  },
+  "panels/application/components/OriginTrialTreeView.ts | expiryTime": {
+    "message": "Êx́p̂ír̂ý T̂ím̂é"
+  },
+  "panels/application/components/OriginTrialTreeView.ts | isThirdParty": {
+    "message": "T̂h́îŕd̂ Ṕâŕt̂ý"
+  },
+  "panels/application/components/OriginTrialTreeView.ts | matchSubDomains": {
+    "message": "M̂át̂ćĥ Śûb́-D̂óm̂áîńŝ"
+  },
+  "panels/application/components/OriginTrialTreeView.ts | origin": {
+    "message": "Ôŕîǵîń"
+  },
+  "panels/application/components/OriginTrialTreeView.ts | rawTokenText": {
+    "message": "R̂áŵ T́ôḱêń"
+  },
+  "panels/application/components/OriginTrialTreeView.ts | status": {
+    "message": "T̂ók̂én̂ Śt̂át̂úŝ"
+  },
+  "panels/application/components/OriginTrialTreeView.ts | token": {
+    "message": "T̂ók̂én̂"
+  },
+  "panels/application/components/OriginTrialTreeView.ts | tokens": {
+    "message": "t̂ók̂én̂ś"
+  },
+  "panels/application/components/OriginTrialTreeView.ts | usageRestriction": {
+    "message": "Ûśâǵê Ŕêśt̂ŕîćt̂íôń"
+  },
+  "panels/application/components/PermissionsPolicySection.ts | allowedFeatures": {
+    "message": "Âĺl̂óŵéd̂ F́êát̂úr̂éŝ"
+  },
+  "panels/application/components/PermissionsPolicySection.ts | clickToShowHeader": {
+    "message": "Ĉĺîćk̂ t́ô ŕêv́êál̂ t́ĥé r̂éq̂úêśt̂ ẃĥóŝé \"Permissions-Policy\" ĤT́T̂Ṕ ĥéâd́êŕ d̂íŝáb̂ĺêś t̂h́îś f̂éât́ûŕê."
+  },
+  "panels/application/components/PermissionsPolicySection.ts | clickToShowIframe": {
+    "message": "Ĉĺîćk̂ t́ô ŕêv́êál̂ t́ĥé t̂óp̂-ḿôśt̂ íf̂ŕâḿê ẃĥíĉh́ d̂óêś n̂ót̂ ál̂ĺôẃ t̂h́îś f̂éât́ûŕê ín̂ t́ĥé êĺêḿêńt̂ś p̂án̂él̂."
+  },
+  "panels/application/components/PermissionsPolicySection.ts | disabledByHeader": {
+    "message": "d̂íŝáb̂ĺêd́ b̂ý \"Permissions-Policy\" ĥéâd́êŕ"
+  },
+  "panels/application/components/PermissionsPolicySection.ts | disabledByIframe": {
+    "message": "m̂íŝśîńĝ ín̂ íf̂ŕâḿê \"allow\" át̂t́r̂íb̂út̂é"
+  },
+  "panels/application/components/PermissionsPolicySection.ts | disabledFeatures": {
+    "message": "D̂íŝáb̂ĺêd́ F̂éât́ûŕêś"
+  },
+  "panels/application/components/PermissionsPolicySection.ts | hideDetails": {
+    "message": "Ĥíd̂é d̂ét̂áîĺŝ"
+  },
+  "panels/application/components/PermissionsPolicySection.ts | showDetails": {
+    "message": "Ŝh́ôẃ d̂ét̂áîĺŝ"
   },
   "panels/application/components/StackTrace.ts | cannotRenderStackTrace": {
     "message": "Ĉán̂ńôt́ r̂én̂d́êŕ ŝt́âćk̂ t́r̂áĉé"
@@ -2540,8 +2612,14 @@
   "panels/application/DOMStorageItemsView.ts | domStorage": {
     "message": "D̂ÓM̂ Śt̂ór̂áĝé"
   },
+  "panels/application/DOMStorageItemsView.ts | domStorageItemDeleted": {
+    "message": "T̂h́ê śt̂ór̂áĝé ît́êḿ ŵáŝ d́êĺêt́êd́."
+  },
   "panels/application/DOMStorageItemsView.ts | domStorageItems": {
     "message": "D̂ÓM̂ Śt̂ór̂áĝé Ît́êḿŝ"
+  },
+  "panels/application/DOMStorageItemsView.ts | domStorageNumberEntries": {
+    "message": "N̂úm̂b́êŕ ôf́ êńt̂ŕîéŝ śĥóŵń îń t̂áb̂ĺê: {PH1}"
   },
   "panels/application/DOMStorageItemsView.ts | key": {
     "message": "K̂éŷ"
@@ -3113,9 +3191,6 @@
   "panels/console_counters/WarningErrorCounter.ts | openIssuesToView": {
     "message": "{n, plural, =1 {Ôṕêń Îśŝúêś t̂ó v̂íêẃ # îśŝúê:} other {Óp̂én̂ Íŝśûéŝ t́ô v́îéŵ # íŝśûéŝ:}}"
   },
-  "panels/console_counters/WarningErrorCounter.ts | openLighthouseToView": {
-    "message": "{n, plural, =1 {Ôṕêń L̂íĝh́t̂h́ôúŝé t̂ó v̂íêẃ # v̂íôĺât́îón̂} other {Óp̂én̂ Ĺîǵĥt́ĥóûśê t́ô v́îéŵ # v́îól̂át̂íôńŝ}}"
-  },
   "panels/console_counters/WarningErrorCounter.ts | sErrors": {
     "message": "{n, plural, =1 {# êŕr̂ór̂} other {# ér̂ŕôŕŝ}}"
   },
@@ -3283,6 +3358,9 @@
   },
   "panels/console/ConsoleView.ts | filter": {
     "message": "F̂íl̂t́êŕ"
+  },
+  "panels/console/ConsoleView.ts | filteredMessagesInConsole": {
+    "message": "{PH1} m̂éŝśâǵêś îń ĉón̂śôĺê"
   },
   "panels/console/ConsoleView.ts | findStringInLogs": {
     "message": "F̂ín̂d́ ŝt́r̂ín̂ǵ îń l̂óĝś"
@@ -3773,7 +3851,7 @@
   "panels/elements/ColorSwatchPopoverIcon.ts | openShadowEditor": {
     "message": "Ôṕêń ŝh́âd́ôẃ êd́ît́ôŕ"
   },
-  "panels/elements/components/AccessibilityTreeUtils.ts | ignored": {
+  "panels/elements/components/AccessibilityTreeNode.ts | ignored": {
     "message": "Îǵn̂ór̂éd̂"
   },
   "panels/elements/components/AdornerSettingsPane.ts | closeButton": {
@@ -3784,9 +3862,6 @@
   },
   "panels/elements/components/ElementsBreadcrumbsUtils.ts | text": {
     "message": "(t̂éx̂t́)"
-  },
-  "panels/elements/components/LayoutPane.ts | feedback": {
-    "message": "F̂éêd́b̂áĉḱ"
   },
   "panels/elements/components/LayoutPane.ts | flexbox": {
     "message": "F̂ĺêx́b̂óx̂"
@@ -4232,6 +4307,78 @@
   "panels/elements/StylesSidebarPane.ts | viaInspector": {
     "message": "v̂íâ ín̂śp̂éĉt́ôŕ"
   },
+  "panels/emulation/components/UserAgentClientHintsForm.ts | addBrand": {
+    "message": "Âd́d̂ B́r̂án̂d́"
+  },
+  "panels/emulation/components/UserAgentClientHintsForm.ts | architecture": {
+    "message": "Âŕĉh́ît́êćt̂úr̂é"
+  },
+  "panels/emulation/components/UserAgentClientHintsForm.ts | architecturePlaceholder": {
+    "message": "Âŕĉh́ît́êćt̂úr̂é (ê.ǵ. x̂86)"
+  },
+  "panels/emulation/components/UserAgentClientHintsForm.ts | brandDeleteAriaLabel": {
+    "message": "D̂él̂ét̂é {PH1}"
+  },
+  "panels/emulation/components/UserAgentClientHintsForm.ts | brandName": {
+    "message": "B̂ŕâńd̂"
+  },
+  "panels/emulation/components/UserAgentClientHintsForm.ts | brandNameAriaLabel": {
+    "message": "B̂ŕâńd̂ {PH1}"
+  },
+  "panels/emulation/components/UserAgentClientHintsForm.ts | brandProperties": {
+    "message": "B̂ŕâńd̂ ṕr̂óp̂ér̂t́îéŝ"
+  },
+  "panels/emulation/components/UserAgentClientHintsForm.ts | brands": {
+    "message": "B̂ŕâńd̂ś"
+  },
+  "panels/emulation/components/UserAgentClientHintsForm.ts | brandVersionAriaLabel": {
+    "message": "V̂ér̂śîón̂ {PH1}"
+  },
+  "panels/emulation/components/UserAgentClientHintsForm.ts | deleteTooltip": {
+    "message": "D̂él̂ét̂é"
+  },
+  "panels/emulation/components/UserAgentClientHintsForm.ts | deviceModel": {
+    "message": "D̂év̂íĉé m̂ód̂él̂"
+  },
+  "panels/emulation/components/UserAgentClientHintsForm.ts | deviceProperties": {
+    "message": "D̂év̂íĉé p̂ŕôṕêŕt̂íêś"
+  },
+  "panels/emulation/components/UserAgentClientHintsForm.ts | fullBrowserVersion": {
+    "message": "F̂úl̂ĺ b̂ŕôẃŝér̂ v́êŕŝíôń"
+  },
+  "panels/emulation/components/UserAgentClientHintsForm.ts | fullBrowserVersionPlaceholder": {
+    "message": "F̂úl̂ĺ b̂ŕôẃŝér̂ v́êŕŝíôń (ê.ǵ. 87.0.4280.88)"
+  },
+  "panels/emulation/components/UserAgentClientHintsForm.ts | mobileCheckboxLabel": {
+    "message": "M̂ób̂íl̂é"
+  },
+  "panels/emulation/components/UserAgentClientHintsForm.ts | notRepresentable": {
+    "message": "N̂ót̂ ŕêṕr̂éŝén̂t́âb́l̂é âś ŝt́r̂úĉt́ûŕêd́ ĥéâd́êŕŝ śt̂ŕîńĝ."
+  },
+  "panels/emulation/components/UserAgentClientHintsForm.ts | platformLabel": {
+    "message": "P̂ĺât́f̂ór̂ḿ"
+  },
+  "panels/emulation/components/UserAgentClientHintsForm.ts | platformPlaceholder": {
+    "message": "P̂ĺât́f̂ór̂ḿ (ê.ǵ. Âńd̂ŕôíd̂)"
+  },
+  "panels/emulation/components/UserAgentClientHintsForm.ts | platformProperties": {
+    "message": "P̂ĺât́f̂ór̂ḿ p̂ŕôṕêŕt̂íêś"
+  },
+  "panels/emulation/components/UserAgentClientHintsForm.ts | platformVersion": {
+    "message": "P̂ĺât́f̂ór̂ḿ v̂ér̂śîón̂"
+  },
+  "panels/emulation/components/UserAgentClientHintsForm.ts | title": {
+    "message": "Ûśêŕ âǵêńt̂ ćl̂íêńt̂ h́îńt̂ś"
+  },
+  "panels/emulation/components/UserAgentClientHintsForm.ts | update": {
+    "message": "Ûṕd̂át̂é"
+  },
+  "panels/emulation/components/UserAgentClientHintsForm.ts | userAgentClientHintsInfo": {
+    "message": "Ûśêŕ âǵêńt̂ ćl̂íêńt̂ h́îńt̂ś âŕê án̂ ál̂t́êŕn̂át̂ív̂é t̂ó t̂h́ê úŝér̂ áĝén̂t́ ŝt́r̂ín̂ǵ t̂h́ât́ îd́êńt̂íf̂ý t̂h́ê b́r̂óŵśêŕ âńd̂ t́ĥé d̂év̂íĉé îń â ḿôŕê śt̂ŕûćt̂úr̂éd̂ ẃâý ŵít̂h́ b̂ét̂t́êŕ p̂ŕîv́âćŷ áĉćôún̂t́îńĝ. Ćl̂íĉḱ t̂h́ê b́ût́t̂ón̂ t́ô ĺêár̂ń m̂ór̂é."
+  },
+  "panels/emulation/components/UserAgentClientHintsForm.ts | version": {
+    "message": "V̂ér̂śîón̂"
+  },
   "panels/emulation/DeviceModeModel.ts | devicePixelRatioMustBeANumberOr": {
     "message": "D̂év̂íĉé p̂íx̂él̂ ŕât́îó m̂úŝt́ b̂é â ńûḿb̂ér̂ ór̂ b́l̂án̂ḱ."
   },
@@ -4376,20 +4523,8 @@
   "panels/emulation/DevicesSettingsTab.ts | addCustomDevice": {
     "message": "Âd́d̂ ćûśt̂óm̂ d́êv́îćê..."
   },
-  "panels/emulation/DevicesSettingsTab.ts | architecture": {
-    "message": "Âŕĉh́ît́êćt̂úr̂é (ê.ǵ. x̂86)"
-  },
-  "panels/emulation/DevicesSettingsTab.ts | brandsList": {
-    "message": "B̂ŕâńd̂ś l̂íŝt́ îś n̂ót̂ á v̂ál̂íd̂ śt̂ŕûćt̂úr̂éd̂ f́îél̂d́ŝ ĺîśt̂."
-  },
-  "panels/emulation/DevicesSettingsTab.ts | brandsListMust": {
-    "message": "B̂ŕâńd̂ś l̂íŝt́ m̂úŝt́ ĉón̂śîśt̂ óf̂ śt̂ŕîńĝś, êáĉh́ ŵít̂h́ â v́ p̂ár̂ám̂ét̂ér̂ ẃît́ĥ á ŝt́r̂ín̂ǵ v̂ál̂úê."
-  },
   "panels/emulation/DevicesSettingsTab.ts | device": {
     "message": "D̂év̂íĉé"
-  },
-  "panels/emulation/DevicesSettingsTab.ts | deviceModel": {
-    "message": "D̂év̂íĉé m̂ód̂él̂"
   },
   "panels/emulation/DevicesSettingsTab.ts | deviceName": {
     "message": "D̂év̂íĉé N̂ám̂é"
@@ -4406,29 +4541,8 @@
   "panels/emulation/DevicesSettingsTab.ts | emulatedDevices": {
     "message": "Êḿûĺât́êd́ D̂év̂íĉéŝ"
   },
-  "panels/emulation/DevicesSettingsTab.ts | fullBrowserVersion": {
-    "message": "F̂úl̂ĺ b̂ŕôẃŝér̂ v́êŕŝíôń (ê.ǵ. 87.0.4280.88)"
-  },
   "panels/emulation/DevicesSettingsTab.ts | height": {
     "message": "Ĥéîǵĥt́"
-  },
-  "panels/emulation/DevicesSettingsTab.ts | notRepresentable": {
-    "message": "N̂ót̂ ŕêṕr̂éŝén̂t́âb́l̂é âś ŝt́r̂úĉt́ûŕêd́ ĥéâd́êŕŝ śt̂ŕîńĝ."
-  },
-  "panels/emulation/DevicesSettingsTab.ts | platform": {
-    "message": "P̂ĺât́f̂ór̂ḿ (ê.ǵ. Âńd̂ŕôíd̂)"
-  },
-  "panels/emulation/DevicesSettingsTab.ts | platformVersion": {
-    "message": "P̂ĺât́f̂ór̂ḿ v̂ér̂śîón̂"
-  },
-  "panels/emulation/DevicesSettingsTab.ts | UABrands": {
-    "message": "ÛÁ b̂ŕâńd̂ś l̂íŝt́ (ê.ǵ. \"Chromium\";v=\"87\")"
-  },
-  "panels/emulation/DevicesSettingsTab.ts | userAgentClient": {
-    "message": "Ûśêŕ âǵêńt̂ ćl̂íêńt̂ h́îńt̂ś"
-  },
-  "panels/emulation/DevicesSettingsTab.ts | userAgentClientHintsAre": {
-    "message": "Ûśêŕ âǵêńt̂ ćl̂íêńt̂ h́îńt̂ś âŕê án̂ ál̂t́êŕn̂át̂ív̂é t̂ó t̂h́ê úŝér̂ áĝén̂t́ ŝt́r̂ín̂ǵ t̂h́ât́ îd́êńt̂íf̂ý t̂h́ê b́r̂óŵśêŕ âńd̂ t́ĥé d̂év̂íĉé îń â ḿôŕê śt̂ŕûćt̂úr̂éd̂ ẃâý ŵít̂h́ b̂ét̂t́êŕ p̂ŕîv́âćŷ áĉćôún̂t́îńĝ. Ćl̂íĉḱ t̂h́ê b́ût́t̂ón̂ t́ô ĺêár̂ń m̂ór̂é."
   },
   "panels/emulation/DevicesSettingsTab.ts | userAgentString": {
     "message": "Ûśêŕ âǵêńt̂ śt̂ŕîńĝ"
@@ -4603,15 +4717,6 @@
   },
   "panels/emulation/MediaQueryInspector.ts | revealInSourceCode": {
     "message": "R̂év̂éâĺ îń ŝóûŕĉé ĉód̂é"
-  },
-  "panels/emulation/ModuleUIStrings.ts | laptopWithHiDPI": {
-    "message": "L̂áp̂t́ôṕ ŵít̂h́ ĤíD̂ṔÎ śĉŕêén̂"
-  },
-  "panels/emulation/ModuleUIStrings.ts | laptopWithMDPI": {
-    "message": "L̂áp̂t́ôṕ ŵít̂h́ M̂D́P̂Í ŝćr̂éêń"
-  },
-  "panels/emulation/ModuleUIStrings.ts | laptopWithTouch": {
-    "message": "L̂áp̂t́ôṕ ŵít̂h́ t̂óûćĥ"
   },
   "panels/emulation/SensorsView.ts | adjustWithMousewheelOrUpdownKeys": {
     "message": "Âd́ĵúŝt́ ŵít̂h́ m̂óûśêẃĥéêĺ ôŕ ûṕ/d̂óŵń k̂éŷś. {PH1}: ±10, Ŝh́îf́t̂: ±1, Ál̂t́: ±0.01"
@@ -4814,6 +4919,33 @@
   "panels/issues/AffectedCookiesView.ts | path": {
     "message": "P̂át̂h́"
   },
+  "panels/issues/AffectedDirectivesView.ts | blocked": {
+    "message": "b̂ĺôćk̂éd̂"
+  },
+  "panels/issues/AffectedDirectivesView.ts | clickToRevealTheViolatingDomNode": {
+    "message": "Ĉĺîćk̂ t́ô ŕêv́êál̂ t́ĥé v̂íôĺât́îńĝ D́ÔḾ n̂ód̂é îń t̂h́ê Él̂ém̂én̂t́ŝ ṕâńêĺ"
+  },
+  "panels/issues/AffectedDirectivesView.ts | directiveC": {
+    "message": "D̂ír̂éĉt́îv́ê"
+  },
+  "panels/issues/AffectedDirectivesView.ts | element": {
+    "message": "Êĺêḿêńt̂"
+  },
+  "panels/issues/AffectedDirectivesView.ts | nDirectives": {
+    "message": "{n, plural, =1 {# d̂ír̂éĉt́îv́ê} other {# d́îŕêćt̂ív̂éŝ}}"
+  },
+  "panels/issues/AffectedDirectivesView.ts | reportonly": {
+    "message": "r̂ép̂ór̂t́-ôńl̂ý"
+  },
+  "panels/issues/AffectedDirectivesView.ts | resourceC": {
+    "message": "R̂éŝóûŕĉé"
+  },
+  "panels/issues/AffectedDirectivesView.ts | sourceLocation": {
+    "message": "Ŝóûŕĉé L̂óĉát̂íôń"
+  },
+  "panels/issues/AffectedDirectivesView.ts | status": {
+    "message": "Ŝt́ât́ûś"
+  },
   "panels/issues/AffectedDocumentsInQuirksModeView.ts | documentInTheDOMTree": {
     "message": "D̂óĉúm̂én̂t́ îń t̂h́ê D́ÔḾ t̂ŕêé"
   },
@@ -4828,9 +4960,6 @@
   },
   "panels/issues/AffectedElementsView.ts | nElements": {
     "message": "{n, plural, =1 {# êĺêḿêńt̂} other {# él̂ém̂én̂t́ŝ}}"
-  },
-  "panels/issues/AffectedElementsView.ts | unavailable": {
-    "message": "ûńâv́âíl̂áb̂ĺê"
   },
   "panels/issues/AffectedElementsWithLowContrastView.ts | contrastRatio": {
     "message": "Ĉón̂t́r̂áŝt́ r̂át̂íô"
@@ -4880,11 +5009,8 @@
   "panels/issues/AffectedResourcesView.ts | clickToRevealTheFramesDomNodeIn": {
     "message": "Ĉĺîćk̂ t́ô ŕêv́êál̂ t́ĥé f̂ŕâḿê'ś D̂ÓM̂ ńôd́ê ín̂ t́ĥé Êĺêḿêńt̂ś p̂án̂él̂"
   },
-  "panels/issues/AffectedResourcesView.ts | clickToShowRequestInTheNetwork": {
-    "message": "Ĉĺîćk̂ t́ô śĥóŵ ŕêq́ûéŝt́ îń t̂h́ê ńêt́ŵór̂ḱ p̂án̂él̂"
-  },
-  "panels/issues/AffectedResourcesView.ts | requestUnavailableInTheNetwork": {
-    "message": "R̂éq̂úêśt̂ ún̂áv̂áîĺâb́l̂é îń t̂h́ê ńêt́ŵór̂ḱ p̂án̂él̂, t́r̂ý r̂él̂óâd́îńĝ t́ĥé îńŝṕêćt̂éd̂ ṕâǵê"
+  "panels/issues/AffectedResourcesView.ts | unavailable": {
+    "message": "ûńâv́âíl̂áb̂ĺê"
   },
   "panels/issues/AffectedResourcesView.ts | unknown": {
     "message": "ûńk̂ńôẃn̂"
@@ -4919,6 +5045,9 @@
   "panels/issues/AffectedSharedArrayBufferIssueDetailsView.ts | warning": {
     "message": "ŵár̂ńîńĝ"
   },
+  "panels/issues/AffectedSourcesView.ts | nSources": {
+    "message": "{n, plural, =1 {# ŝóûŕĉé} other {# ŝóûŕĉéŝ}}"
+  },
   "panels/issues/AffectedTrustedWebActivityIssueDetailsView.ts | nResources": {
     "message": "{n, plural, =1 {# r̂éŝóûŕĉé} other {# r̂éŝóûŕĉéŝ}}"
   },
@@ -4933,6 +5062,27 @@
   },
   "panels/issues/AffectedTrustedWebActivityIssueDetailsView.ts | url": {
     "message": "Ûŕl̂"
+  },
+  "panels/issues/AttributionReportingIssueDetailsView.ts | element": {
+    "message": "Êĺêḿêńt̂"
+  },
+  "panels/issues/AttributionReportingIssueDetailsView.ts | frame": {
+    "message": "F̂ŕâḿê"
+  },
+  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidSourceEventId": {
+    "message": "Îńv̂ál̂íd̂ attributionsourceeventid"
+  },
+  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidTriggerData": {
+    "message": "Îńv̂ál̂íd̂ trigger-data"
+  },
+  "panels/issues/AttributionReportingIssueDetailsView.ts | nViolations": {
+    "message": "{n, plural, =1 {# v̂íôĺât́îón̂} other {# v́îól̂át̂íôńŝ}}"
+  },
+  "panels/issues/AttributionReportingIssueDetailsView.ts | request": {
+    "message": "R̂éq̂úêśt̂"
+  },
+  "panels/issues/AttributionReportingIssueDetailsView.ts | untrustworthyOrigin": {
+    "message": "Ûńt̂ŕûśt̂ẃôŕt̂h́ŷ ór̂íĝín̂"
   },
   "panels/issues/CorsIssueDetailsView.ts | allowCredentialsValueFromHeader": {
     "message": "Access-Control-Allow-Credentials Ĥéâd́êŕ V̂ál̂úê"
@@ -5087,23 +5237,11 @@
   "panels/issues/IssueView.ts | blocked": {
     "message": "b̂ĺôćk̂éd̂"
   },
-  "panels/issues/IssueView.ts | clickToRevealTheViolatingDomNode": {
-    "message": "Ĉĺîćk̂ t́ô ŕêv́êál̂ t́ĥé v̂íôĺât́îńĝ D́ÔḾ n̂ód̂é îń t̂h́ê Él̂ém̂én̂t́ŝ ṕâńêĺ"
-  },
-  "panels/issues/IssueView.ts | directiveC": {
-    "message": "D̂ír̂éĉt́îv́ê"
-  },
-  "panels/issues/IssueView.ts | element": {
-    "message": "Êĺêḿêńt̂"
-  },
   "panels/issues/IssueView.ts | learnMoreS": {
     "message": "L̂éâŕn̂ ḿôŕê: {PH1}"
   },
   "panels/issues/IssueView.ts | name": {
     "message": "N̂ám̂é"
-  },
-  "panels/issues/IssueView.ts | nDirectives": {
-    "message": "{n, plural, =1 {# d̂ír̂éĉt́îv́ê} other {# d́îŕêćt̂ív̂éŝ}}"
   },
   "panels/issues/IssueView.ts | nRequests": {
     "message": "{n, plural, =1 {# r̂éq̂úêśt̂} other {# ŕêq́ûéŝt́ŝ}}"
@@ -5111,26 +5249,32 @@
   "panels/issues/IssueView.ts | nResources": {
     "message": "{n, plural, =1 {# r̂éŝóûŕĉé} other {# r̂éŝóûŕĉéŝ}}"
   },
-  "panels/issues/IssueView.ts | nSources": {
-    "message": "{n, plural, =1 {# ŝóûŕĉé} other {# ŝóûŕĉéŝ}}"
-  },
-  "panels/issues/IssueView.ts | reportonly": {
-    "message": "r̂ép̂ór̂t́-ôńl̂ý"
-  },
-  "panels/issues/IssueView.ts | resourceC": {
-    "message": "R̂éŝóûŕĉé"
-  },
   "panels/issues/IssueView.ts | restrictionStatus": {
     "message": "R̂éŝt́r̂íĉt́îón̂ Śt̂át̂úŝ"
   },
-  "panels/issues/IssueView.ts | sourceLocation": {
-    "message": "Ŝóûŕĉé L̂óĉát̂íôń"
-  },
-  "panels/issues/IssueView.ts | status": {
-    "message": "Ŝt́ât́ûś"
-  },
   "panels/issues/IssueView.ts | warned": {
     "message": "Ŵár̂ńêd́"
+  },
+  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | blocked": {
+    "message": "b̂ĺôćk̂éd̂"
+  },
+  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | nModuleTransfers": {
+    "message": "{n, plural, =1 {# m̂ód̂úl̂é} other {# m̂ód̂úl̂éŝ}}"
+  },
+  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | sourceOrigin": {
+    "message": "Ŝóûŕĉé Ôŕîǵîń"
+  },
+  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | status": {
+    "message": "Ŝt́ât́ûś"
+  },
+  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | targetOrigin": {
+    "message": "T̂ár̂ǵêt́ Ôŕîǵîń"
+  },
+  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | warned": {
+    "message": "ŵár̂ńîńĝ"
+  },
+  "panels/issues/WasmCrossOriginModuleSharingAffectedResourcesView.ts | wasmModuleUrl": {
+    "message": "Ŵáŝḿ M̂ód̂úl̂é ÛŔL̂"
   },
   "panels/js_profiler/js_profiler-meta.ts | profiler": {
     "message": "P̂ŕôf́îĺêŕ"
@@ -5897,6 +6041,9 @@
   "panels/network/BlockedURLsPane.ts | enableNetworkRequestBlocking": {
     "message": "Êńâb́l̂é n̂ét̂ẃôŕk̂ ŕêq́ûéŝt́ b̂ĺôćk̂ín̂ǵ"
   },
+  "panels/network/BlockedURLsPane.ts | itemDeleted": {
+    "message": "Ît́êḿ ŝúĉćêśŝf́ûĺl̂ý d̂él̂ét̂éd̂"
+  },
   "panels/network/BlockedURLsPane.ts | networkRequestsAreNotBlockedS": {
     "message": "N̂ét̂ẃôŕk̂ ŕêq́ûéŝt́ŝ ár̂é n̂ót̂ b́l̂óĉḱêd́. {PH1}"
   },
@@ -5962,6 +6109,9 @@
   },
   "panels/network/components/RequestTrustTokensView.ts | type": {
     "message": "T̂ýp̂é"
+  },
+  "panels/network/components/WebBundleInfoView.ts | bundledResource": {
+    "message": "B̂ún̂d́l̂éd̂ ŕêśôúr̂ćê"
   },
   "panels/network/EventSourceMessagesView.ts | copyMessage": {
     "message": "Ĉóp̂ý m̂éŝśâǵê"
@@ -6176,6 +6326,9 @@
   "panels/network/NetworkDataGridNode.ts | servedFromSignedHttpExchange": {
     "message": "Ŝér̂v́êd́ f̂ŕôḿ Ŝíĝńêd́ ĤT́T̂Ṕ Êx́ĉh́âńĝé, r̂éŝóûŕĉé ŝíẑé: {PH1}"
   },
+  "panels/network/NetworkDataGridNode.ts | servedFromWebBundle": {
+    "message": "Ŝér̂v́êd́ f̂ŕôḿ Ŵéb̂ B́ûńd̂ĺê, ŕêśôúr̂ćê śîźê: {PH1}"
+  },
   "panels/network/NetworkDataGridNode.ts | serviceworker": {
     "message": "(ServiceWorker)"
   },
@@ -6184,6 +6337,21 @@
   },
   "panels/network/NetworkDataGridNode.ts | sPreflight": {
     "message": "{PH1} + P̂ŕêf́l̂íĝh́t̂"
+  },
+  "panels/network/NetworkDataGridNode.ts | unknown": {
+    "message": "(ûńk̂ńôẃn̂)"
+  },
+  "panels/network/NetworkDataGridNode.ts | unknownExplanation": {
+    "message": "T̂h́ê ŕêq́ûéŝt́ ŝt́ât́ûś ĉán̂ńôt́ b̂é ŝh́ôẃn̂ h́êŕê b́êćâúŝé t̂h́ê ṕâǵê t́ĥát̂ íŝśûéd̂ ít̂ ún̂ĺôád̂éd̂ ẃĥíl̂é t̂h́ê ŕêq́ûéŝt́ ŵáŝ ín̂ f́l̂íĝh́t̂. Ýôú ĉán̂ úŝé ĉh́r̂óm̂é://n̂ét̂-éx̂ṕôŕt̂ t́ô ćâṕt̂úr̂é â ńêt́ŵór̂ḱ l̂óĝ án̂d́ ŝéê ál̂ĺ r̂éq̂úêśt̂ d́êt́âíl̂ś."
+  },
+  "panels/network/NetworkDataGridNode.ts | webBundle": {
+    "message": "(Ŵéb̂ B́ûńd̂ĺê)"
+  },
+  "panels/network/NetworkDataGridNode.ts | webBundleError": {
+    "message": "Ŵéb̂ B́ûńd̂ĺê ér̂ŕôŕ"
+  },
+  "panels/network/NetworkDataGridNode.ts | webBundleInnerRequest": {
+    "message": "Ŝér̂v́êd́ f̂ŕôḿ Ŵéb̂ B́ûńd̂ĺê"
   },
   "panels/network/NetworkItemView.ts | cookies": {
     "message": "Ĉóôḱîéŝ"
@@ -6347,6 +6515,9 @@
   "panels/network/NetworkLogView.ts | onlyShowRequestsWithBlocked": {
     "message": "Ôńl̂ý ŝh́ôẃ r̂éq̂úêśt̂ś ŵít̂h́ b̂ĺôćk̂éd̂ ŕêśp̂ón̂śê ćôók̂íêś"
   },
+  "panels/network/NetworkLogView.ts | onlyShowThirdPartyRequests": {
+    "message": "Ŝh́ôẃŝ ón̂ĺŷ ŕêq́ûéŝt́ŝ ẃît́ĥ ór̂íĝín̂ d́îf́f̂ér̂én̂t́ f̂ŕôḿ p̂áĝé ôŕîǵîń"
+  },
   "panels/network/NetworkLogView.ts | performARequestOrHitSToRecordThe": {
     "message": "P̂ér̂f́ôŕm̂ á r̂éq̂úêśt̂ ór̂ h́ît́ {PH1} t̂ó r̂éĉór̂d́ t̂h́ê ŕêĺôád̂."
   },
@@ -6394,6 +6565,9 @@
   },
   "panels/network/NetworkLogView.ts | sTransferred": {
     "message": "{PH1} t̂ŕâńŝf́êŕr̂éd̂"
+  },
+  "panels/network/NetworkLogView.ts | thirdParty": {
+    "message": "3r̂d́-p̂ár̂t́ŷ ŕêq́ûéŝt́ŝ"
   },
   "panels/network/NetworkLogView.ts | unblockS": {
     "message": "Ûńb̂ĺôćk̂ {PH1}"
@@ -7874,14 +8048,8 @@
   "panels/security/SecurityPanel.ts | contentWithCertificateErrors": {
     "message": "ĉón̂t́êńt̂ ẃît́ĥ ćêŕt̂íf̂íĉát̂é êŕr̂ór̂ś"
   },
-  "panels/security/SecurityPanel.ts | dataWasEnteredInAFieldOnA": {
-    "message": "D̂át̂á ŵáŝ én̂t́êŕêd́ îń â f́îél̂d́ ôń â ńôń-ŝéĉúr̂é p̂áĝé. Â ẃâŕn̂ín̂ǵ ĥáŝ b́êén̂ ád̂d́êd́ t̂ó t̂h́ê ÚR̂Ĺ b̂ár̂."
-  },
   "panels/security/SecurityPanel.ts | flaggedByGoogleSafeBrowsing": {
     "message": "F̂ĺâǵĝéd̂ b́ŷ Ǵôóĝĺê Śâf́ê B́r̂óŵśîńĝ"
-  },
-  "panels/security/SecurityPanel.ts | formFieldEditedOnANonsecurePage": {
-    "message": "F̂ór̂ḿ f̂íêĺd̂ éd̂ít̂éd̂ ón̂ á n̂ón̂-śêćûŕê ṕâǵê"
   },
   "panels/security/SecurityPanel.ts | hashAlgorithm": {
     "message": "Ĥáŝh́ âĺĝór̂ít̂h́m̂"
@@ -8279,6 +8447,9 @@
   "panels/settings/SettingsScreen.ts | filterExperimentsLabel": {
     "message": "F̂íl̂t́êŕ"
   },
+  "panels/settings/SettingsScreen.ts | learnMore": {
+    "message": "L̂éâŕn̂ ḿôŕê"
+  },
   "panels/settings/SettingsScreen.ts | noResults": {
     "message": "N̂ó êx́p̂ér̂ím̂én̂t́ŝ ḿât́ĉh́ t̂h́ê f́îĺt̂ér̂"
   },
@@ -8340,7 +8511,7 @@
     "message": "L̂óĝ á m̂éŝśâǵê t́ô Ćôńŝól̂é, d̂ó n̂ót̂ b́r̂éâḱ"
   },
   "panels/sources/BreakpointEditDialog.ts | logMessageEgXIsX": {
-    "message": "L̂óĝ ḿêśŝáĝé, ê.ǵ. 'x̂ íŝ', x́"
+    "message": "L̂óĝ ḿêśŝáĝé, ê.ǵ. 'x is', x"
   },
   "panels/sources/BreakpointEditDialog.ts | logpoint": {
     "message": "L̂óĝṕôín̂t́"
@@ -8651,15 +8822,6 @@
   "panels/sources/OutlineQuickOpen.ts | openAJavascriptOrCssFileToSee": {
     "message": "Ôṕêń â J́âv́âŚĉŕîṕt̂ ór̂ ĆŜŚ f̂íl̂é t̂ó ŝéê śŷḿb̂ól̂ś"
   },
-  "panels/sources/RecorderPlugin.ts | export": {
-    "message": "Êx́p̂ór̂t́"
-  },
-  "panels/sources/RecorderPlugin.ts | play": {
-    "message": "R̂ép̂ĺâý"
-  },
-  "panels/sources/RecorderPlugin.ts | record": {
-    "message": "R̂éĉór̂d́"
-  },
   "panels/sources/ScopeChainSidebarPane.ts | closure": {
     "message": "Ĉĺôśûŕê"
   },
@@ -8756,6 +8918,9 @@
   "panels/sources/sources-meta.ts | disableAutocompletion": {
     "message": "D̂íŝáb̂ĺê áût́ôćôḿp̂ĺêt́îón̂"
   },
+  "panels/sources/sources-meta.ts | disableAutoFocusOnDebuggerPaused": {
+    "message": "D̂ó n̂ót̂ f́ôćûś Ŝóûŕĉéŝ ṕâńêĺ ŵh́êń t̂ŕîǵĝér̂ín̂ǵ â b́r̂éâḱp̂óîńt̂"
+  },
   "panels/sources/sources-meta.ts | disableBracketMatching": {
     "message": "D̂íŝáb̂ĺê b́r̂áĉḱêt́ m̂át̂ćĥín̂ǵ"
   },
@@ -8795,6 +8960,9 @@
   "panels/sources/sources-meta.ts | enableAutocompletion": {
     "message": "Êńâb́l̂é âút̂óĉóm̂ṕl̂ét̂íôń"
   },
+  "panels/sources/sources-meta.ts | enableAutoFocusOnDebuggerPaused": {
+    "message": "F̂óĉúŝ Śôúr̂ćêś p̂án̂él̂ ẃĥén̂ t́r̂íĝǵêŕîńĝ á b̂ŕêák̂ṕôín̂t́"
+  },
   "panels/sources/sources-meta.ts | enableBracketMatching": {
     "message": "Êńâb́l̂é b̂ŕâćk̂ét̂ ḿât́ĉh́îńĝ"
   },
@@ -8812,9 +8980,6 @@
   },
   "panels/sources/sources-meta.ts | evaluateSelectedTextInConsole": {
     "message": "Êv́âĺûát̂é ŝél̂éĉt́êd́ t̂éx̂t́ îń ĉón̂śôĺê"
-  },
-  "panels/sources/sources-meta.ts | exportRecording": {
-    "message": "Êx́p̂ór̂t́"
   },
   "panels/sources/sources-meta.ts | filesystem": {
     "message": "F̂íl̂éŝýŝt́êḿ"
@@ -8855,17 +9020,8 @@
   "panels/sources/sources-meta.ts | quickSource": {
     "message": "Q̂úîćk̂ śôúr̂ćê"
   },
-  "panels/sources/sources-meta.ts | record": {
-    "message": "R̂éĉór̂d́"
-  },
-  "panels/sources/sources-meta.ts | recordings": {
-    "message": "R̂éĉór̂d́îńĝś"
-  },
   "panels/sources/sources-meta.ts | rename": {
     "message": "R̂én̂ám̂é"
-  },
-  "panels/sources/sources-meta.ts | replayRecording": {
-    "message": "R̂ép̂ĺâý"
   },
   "panels/sources/sources-meta.ts | resumeScriptExecution": {
     "message": "R̂éŝúm̂é ŝćr̂íp̂t́ êx́êćût́îón̂"
@@ -8900,9 +9056,6 @@
   "panels/sources/sources-meta.ts | showQuickSource": {
     "message": "Ŝh́ôẃ Q̂úîćk̂ śôúr̂ćê"
   },
-  "panels/sources/sources-meta.ts | showRecordings": {
-    "message": "Ŝh́ôẃ R̂éĉór̂d́îńĝś"
-  },
   "panels/sources/sources-meta.ts | showScope": {
     "message": "Ŝh́ôẃ Ŝćôṕê"
   },
@@ -8933,9 +9086,6 @@
   "panels/sources/sources-meta.ts | sources": {
     "message": "Ŝóûŕĉéŝ"
   },
-  "panels/sources/sources-meta.ts | startRecording": {
-    "message": "Ŝt́âŕt̂ Ŕêćôŕd̂ín̂ǵ"
-  },
   "panels/sources/sources-meta.ts | step": {
     "message": "Ŝt́êṕ"
   },
@@ -8947,9 +9097,6 @@
   },
   "panels/sources/sources-meta.ts | stepOverNextFunctionCall": {
     "message": "Ŝt́êṕ ôv́êŕ n̂éx̂t́ f̂ún̂ćt̂íôń ĉál̂ĺ"
-  },
-  "panels/sources/sources-meta.ts | stop": {
-    "message": "Ŝt́ôṕ"
   },
   "panels/sources/sources-meta.ts | switchFile": {
     "message": "Ŝẃît́ĉh́ f̂íl̂é"
@@ -8971,9 +9118,6 @@
   },
   "panels/sources/sources-meta.ts | watch": {
     "message": "Ŵát̂ćĥ"
-  },
-  "panels/sources/SourcesNavigator.ts | addRecording": {
-    "message": "Âd́d̂ ŕêćôŕd̂ín̂ǵ"
   },
   "panels/sources/SourcesNavigator.ts | clearConfiguration": {
     "message": "Ĉĺêár̂ ćôńf̂íĝúr̂át̂íôń"
@@ -8999,9 +9143,6 @@
   "panels/sources/SourcesNavigator.ts | overridePageAssetsWithFilesFromA": {
     "message": "Ôv́êŕr̂íd̂é p̂áĝé âśŝét̂ś ŵít̂h́ f̂íl̂éŝ f́r̂óm̂ á l̂óĉál̂ f́ôĺd̂ér̂"
   },
-  "panels/sources/SourcesNavigator.ts | recordAndReplayBrowser": {
-    "message": "R̂éĉór̂d́ âńd̂ ŕêṕl̂áŷ b́r̂óŵśêŕ îńt̂ér̂áĉt́îón̂ś"
-  },
   "panels/sources/SourcesNavigator.ts | remove": {
     "message": "R̂ém̂óv̂é"
   },
@@ -9025,6 +9166,15 @@
   },
   "panels/sources/SourcesPanel.ts | copyS": {
     "message": "Ĉóp̂ý {PH1}"
+  },
+  "panels/sources/SourcesPanel.ts | copyStringAsJSLiteral": {
+    "message": "Ĉóp̂ý ŝt́r̂ín̂ǵ âś Ĵáv̂áŜćr̂íp̂t́ l̂ít̂ér̂ál̂"
+  },
+  "panels/sources/SourcesPanel.ts | copyStringAsJSONLiteral": {
+    "message": "Ĉóp̂ý ŝt́r̂ín̂ǵ âś ĴŚÔŃ l̂ít̂ér̂ál̂"
+  },
+  "panels/sources/SourcesPanel.ts | copyStringContents": {
+    "message": "Ĉóp̂ý ŝt́r̂ín̂ǵ ĉón̂t́êńt̂ś"
   },
   "panels/sources/SourcesPanel.ts | dontPauseOnExceptions": {
     "message": "D̂ón̂'t́ p̂áûśê ón̂ éx̂ćêṕt̂íôńŝ"
@@ -9689,6 +9839,9 @@
   "panels/timeline/TimelineUIUtils.ts | compile": {
     "message": "Ĉóm̂ṕîĺê"
   },
+  "panels/timeline/TimelineUIUtils.ts | compileCode": {
+    "message": "Ĉóm̂ṕîĺê Ćôd́ê"
+  },
   "panels/timeline/TimelineUIUtils.ts | compiledWasmModule": {
     "message": "Ĉóm̂ṕîĺêd́ Ŵáŝḿ M̂ód̂úl̂é"
   },
@@ -9724,6 +9877,12 @@
   },
   "panels/timeline/TimelineUIUtils.ts | cumulativeScore": {
     "message": "Ĉúm̂úl̂át̂ív̂é Ŝćôŕê"
+  },
+  "panels/timeline/TimelineUIUtils.ts | currentClusterId": {
+    "message": "Ĉúr̂ŕêńt̂ Ćl̂úŝt́êŕ ÎD́"
+  },
+  "panels/timeline/TimelineUIUtils.ts | currentClusterScore": {
+    "message": "Ĉúr̂ŕêńt̂ Ćl̂úŝt́êŕ Ŝćôŕê"
   },
   "panels/timeline/TimelineUIUtils.ts | decodedBody": {
     "message": "D̂éĉód̂éd̂ B́ôd́ŷ"
@@ -9793,6 +9952,9 @@
   },
   "panels/timeline/TimelineUIUtils.ts | event": {
     "message": "Êv́êńt̂"
+  },
+  "panels/timeline/TimelineUIUtils.ts | evolvedClsLink": {
+    "message": "êv́ôĺv̂éd̂"
   },
   "panels/timeline/TimelineUIUtils.ts | experience": {
     "message": "Êx́p̂ér̂íêńĉé"
@@ -10028,6 +10190,9 @@
   "panels/timeline/TimelineUIUtils.ts | onloadEvent": {
     "message": "Ôńl̂óâd́ Êv́êńt̂"
   },
+  "panels/timeline/TimelineUIUtils.ts | optimizeCode": {
+    "message": "Ôṕt̂ím̂íẑé Ĉód̂é"
+  },
   "panels/timeline/TimelineUIUtils.ts | other": {
     "message": "Ôt́ĥér̂"
   },
@@ -10160,14 +10325,14 @@
   "panels/timeline/TimelineUIUtils.ts | sBytes": {
     "message": "{n, plural, =1 {# B̂ýt̂é} other {# B̂ýt̂éŝ}}"
   },
-  "panels/timeline/TimelineUIUtils.ts | sCanResultInPoorUserExperiences": {
-    "message": "{PH1} ĉán̂ ŕêśûĺt̂ ín̂ ṕôór̂ úŝér̂ éx̂ṕêŕîén̂ćêś."
-  },
   "panels/timeline/TimelineUIUtils.ts | scheduleStyleRecalculation": {
     "message": "Ŝćĥéd̂úl̂é Ŝt́ŷĺê Ŕêćâĺĉúl̂át̂íôń"
   },
   "panels/timeline/TimelineUIUtils.ts | sChildren": {
     "message": "{PH1} (ĉh́îĺd̂ŕêń)"
+  },
+  "panels/timeline/TimelineUIUtils.ts | sCLSInformation": {
+    "message": "{PH1} ĉán̂ ŕêśûĺt̂ ín̂ ṕôór̂ úŝér̂ éx̂ṕêŕîén̂ćêś. Ît́ ĥáŝ ŕêćêńt̂ĺŷ {PH2}."
   },
   "panels/timeline/TimelineUIUtils.ts | sCollected": {
     "message": "{PH1} ĉól̂ĺêćt̂éd̂"
@@ -10589,6 +10754,15 @@
   "ui/components/issue_counter/IssueCounter.ts | possibleImprovements": {
     "message": "{issueCount, plural, =1 {# p̂óŝśîb́l̂é îḿp̂ŕôv́êḿêńt̂} other {# ṕôśŝíb̂ĺê ím̂ṕr̂óv̂ém̂én̂t́ŝ}}"
   },
+  "ui/components/issue_counter/IssueLinkIcon.ts | clickToShowIssue": {
+    "message": "Ĉĺîćk̂ t́ô śĥóŵ íŝśûé îń t̂h́ê íŝśûéŝ t́âb́"
+  },
+  "ui/components/issue_counter/IssueLinkIcon.ts | clickToShowIssueWithTitle": {
+    "message": "Ĉĺîćk̂ t́ô óp̂én̂ t́ĥé îśŝúê t́âb́ âńd̂ śĥóŵ íŝśûé '{title}'"
+  },
+  "ui/components/issue_counter/IssueLinkIcon.ts | issueUnavailable": {
+    "message": "Îśŝúê ún̂áv̂áîĺâb́l̂é ât́ t̂h́îś t̂ím̂é"
+  },
   "ui/components/linear_memory_inspector/linear_memory_inspector-meta.ts | memoryInspector": {
     "message": "M̂ém̂ór̂ý Îńŝṕêćt̂ór̂"
   },
@@ -10645,6 +10819,15 @@
   },
   "ui/components/linear_memory_inspector/ValueInterpreterSettings.ts | otherGroup": {
     "message": "Ôt́ĥér̂"
+  },
+  "ui/components/request_link_icon/RequestLinkIcon.ts | clickToShowRequestInTheNetwork": {
+    "message": "Ĉĺîćk̂ t́ô óp̂én̂ t́ĥé n̂ét̂ẃôŕk̂ ṕâńêĺ âńd̂ śĥóŵ ŕêq́ûéŝt́ f̂ór̂ ÚR̂Ĺ: {url}"
+  },
+  "ui/components/request_link_icon/RequestLinkIcon.ts | requestUnavailableInTheNetwork": {
+    "message": "R̂éq̂úêśt̂ ún̂áv̂áîĺâb́l̂é îń t̂h́ê ńêt́ŵór̂ḱ p̂án̂él̂, t́r̂ý r̂él̂óâd́îńĝ t́ĥé îńŝṕêćt̂éd̂ ṕâǵê"
+  },
+  "ui/components/request_link_icon/RequestLinkIcon.ts | shortenedURL": {
+    "message": "Ŝh́ôŕt̂én̂éd̂ ÚR̂Ĺ"
   },
   "ui/components/survey_link/SurveyLink.ts | anErrorOccurredWithTheSurvey": {
     "message": "Âń êŕr̂ór̂ óĉćûŕr̂éd̂ ẃît́ĥ t́ĥé ŝúr̂v́êý"
@@ -10786,6 +10969,9 @@
   },
   "ui/legacy/components/data_grid/DataGrid.ts | editS": {
     "message": "Êd́ît́ \"{PH1}\""
+  },
+  "ui/legacy/components/data_grid/DataGrid.ts | emptyRowCreated": {
+    "message": "Âń êḿp̂t́ŷ t́âb́l̂é r̂óŵ h́âś b̂éêń ĉŕêát̂éd̂. Ýôú m̂áŷ d́ôúb̂ĺê ćl̂íĉḱ ôŕ ûśê ćôńt̂éx̂t́ m̂én̂ú t̂ó êd́ît́."
   },
   "ui/legacy/components/data_grid/DataGrid.ts | expanded": {
     "message": "êx́p̂án̂d́êd́"
@@ -11082,7 +11268,7 @@
     "message": "Q̂úîćk̂ óp̂én̂ ṕr̂óm̂ṕt̂"
   },
   "ui/legacy/components/quick_open/quick_open-meta.ts | openFile": {
-    "message": "Ôṕêń F̂íl̂é"
+    "message": "Ôṕêń f̂íl̂é"
   },
   "ui/legacy/components/quick_open/quick_open-meta.ts | runCommand": {
     "message": "R̂ún̂ ćôḿm̂án̂d́"
@@ -11294,6 +11480,9 @@
   "ui/legacy/InspectorView.ts | closeDrawer": {
     "message": "Ĉĺôśê d́r̂áŵér̂"
   },
+  "ui/legacy/InspectorView.ts | devToolsLanguageMissmatch": {
+    "message": "D̂év̂T́ôól̂ś îś n̂óŵ áv̂áîĺâb́l̂é îń {PH1}!"
+  },
   "ui/legacy/InspectorView.ts | moreTools": {
     "message": "M̂ór̂é T̂óôĺŝ"
   },
@@ -11308,6 +11497,12 @@
   },
   "ui/legacy/InspectorView.ts | reloadDevtools": {
     "message": "R̂él̂óâd́ D̂év̂T́ôól̂ś"
+  },
+  "ui/legacy/InspectorView.ts | setToBrowserLanguage": {
+    "message": "Âĺŵáŷś m̂át̂ćĥ Ćĥŕôḿê'ś l̂án̂ǵûáĝé"
+  },
+  "ui/legacy/InspectorView.ts | setToSpecificLanguage": {
+    "message": "Ŝẃît́ĉh́ D̂év̂T́ôól̂ś t̂ó {PH1}"
   },
   "ui/legacy/ListWidget.ts | addString": {
     "message": "Âd́d̂"
@@ -11387,6 +11582,9 @@
   "ui/legacy/SuggestBox.ts | sSuggestionSOfS": {
     "message": "{PH1}, ŝúĝǵêśt̂íôń {PH2} ôf́ {PH3}"
   },
+  "ui/legacy/SuggestBox.ts | sSuggestionSSelected": {
+    "message": "{PH1}, ŝúĝǵêśt̂íôń ŝél̂éĉt́êd́"
+  },
   "ui/legacy/TabbedPane.ts | close": {
     "message": "Ĉĺôśê"
   },
@@ -11437,24 +11635,6 @@
   },
   "ui/legacy/UIUtils.ts | copyLinkAddress": {
     "message": "Ĉóp̂ý l̂ín̂ḱ âd́d̂ŕêśŝ"
-  },
-  "ui/legacy/UIUtils.ts | fdays": {
-    "message": "{PH1} d̂áŷś"
-  },
-  "ui/legacy/UIUtils.ts | fhrs": {
-    "message": "{PH1} ĥŕŝ"
-  },
-  "ui/legacy/UIUtils.ts | fmin": {
-    "message": "{PH1} m̂ín̂"
-  },
-  "ui/legacy/UIUtils.ts | fmms": {
-    "message": "{PH1} μŝ"
-  },
-  "ui/legacy/UIUtils.ts | fms": {
-    "message": "{PH1} m̂ś"
-  },
-  "ui/legacy/UIUtils.ts | fs": {
-    "message": "{PH1} ŝ"
   },
   "ui/legacy/UIUtils.ts | ok": {
     "message": "ÔḰ"

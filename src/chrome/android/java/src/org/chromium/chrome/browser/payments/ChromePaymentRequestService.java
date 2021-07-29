@@ -136,15 +136,6 @@ public class ChromePaymentRequestService
         }
 
         /**
-         * Creates an instance of service-worker payment app factory.
-         * @return The instance, can be null for testing.
-         */
-        @Nullable
-        default PaymentAppFactoryInterface createServiceWorkerPaymentAppFactory() {
-            return new PaymentAppServiceBridge();
-        }
-
-        /**
          * Creates an instance of Autofill payment app factory.
          * @return The instance, can be null for testing.
          */
@@ -236,7 +227,6 @@ public class ChromePaymentRequestService
         mPaymentUiService = mDelegate.createPaymentUiService(/*delegate=*/this,
                 /*params=*/paymentRequestService, mWebContents,
                 paymentRequestService.isOffTheRecord(), mJourneyLogger, topLevelOrigin);
-        mPaymentRequestService = paymentRequestService;
         if (PaymentRequestService.getNativeObserverForTest() != null) {
             PaymentRequestService.getNativeObserverForTest().onPaymentUiServiceCreated(
                     mPaymentUiService);
@@ -315,10 +305,6 @@ public class ChromePaymentRequestService
     @Override
     public void addPaymentAppFactories(
             PaymentAppService service, PaymentAppFactoryDelegate delegate) {
-        String swFactoryId = PaymentAppServiceBridge.class.getName();
-        if (!service.containsFactory(swFactoryId)) {
-            service.addUniqueFactory(mDelegate.createServiceWorkerPaymentAppFactory(), swFactoryId);
-        }
 
         String autofillFactoryId = AutofillPaymentAppFactory.class.getName();
         if (!service.containsFactory(autofillFactoryId)) {
@@ -354,7 +340,8 @@ public class ChromePaymentRequestService
         // Only allowing payment apps that own their own UIs.
         // This excludes AutofillPaymentInstrument as its UI is rendered inline in
         // the app selector UI, thus can't be skipped.
-        if (!urlPaymentMethodIdentifiersSupported && !mDelegate.skipUiForBasicCard()) {
+        if (!urlPaymentMethodIdentifiersSupported && !mDelegate.skipUiForBasicCard()
+                && !mSpec.isSecurePaymentConfirmationRequested()) {
             shouldSkipAppSelector = false;
         }
         if (mSkipToGPayHelper != null) shouldSkipAppSelector = true;
@@ -625,9 +612,10 @@ public class ChromePaymentRequestService
 
     // Implements BrowserPaymentRequest:
     @Override
-    public void onPaymentAppCreated(PaymentApp paymentApp) {
+    public boolean onPaymentAppCreated(PaymentApp paymentApp) {
         mHideServerAutofillCards |= paymentApp.isServerAutofillInstrumentReplacement();
         paymentApp.setHaveRequestedAutofillData(mPaymentUiService.haveRequestedAutofillData());
+        return true;
     }
 
     // Implements BrowserPaymentRequest:

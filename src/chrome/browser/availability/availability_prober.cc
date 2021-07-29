@@ -32,6 +32,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "net/android/network_library.h"
@@ -174,7 +175,7 @@ void RemoveOldestDictionaryEntry(base::DictionaryValue* dict) {
 
   std::string oldest_key;
   base::Time oldest_mod_time = base::Time::Max();
-  for (const auto& iter : dict->DictItems()) {
+  for (auto iter : dict->DictItems()) {
     absl::optional<AvailabilityProberCacheEntry> entry =
         DecodeCacheEntryValue(iter.second);
     if (!entry.has_value()) {

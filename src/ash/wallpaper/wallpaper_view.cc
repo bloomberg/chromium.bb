@@ -97,7 +97,7 @@ void WallpaperView::SetLockShieldEnabled(bool enabled) {
     shield_view_->SetBoundsRect(parent()->GetLocalBounds());
   } else {
     DCHECK(shield_view_);
-    parent()->RemoveChildView(shield_view_);
+    parent()->RemoveChildViewT(shield_view_);
     shield_view_ = nullptr;
   }
 }
@@ -221,8 +221,9 @@ std::unique_ptr<views::Widget> CreateWallpaperWidget(
   *out_wallpaper_view = wallpaper_view;
   int animation_type =
       controller->ShouldShowInitialAnimation()
-          ? WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE
-          : wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE;
+          ? static_cast<int>(
+                WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE)
+          : static_cast<int>(wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
   aura::Window* wallpaper_window = wallpaper_widget->GetNativeWindow();
   ::wm::SetWindowVisibilityAnimationType(wallpaper_window, animation_type);
 

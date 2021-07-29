@@ -9,11 +9,13 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
+#include "base/strings/strcat.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "components/feed/core/v2/common_enums.h"
 #include "components/feed/core/v2/prefs.h"
+#include "components/feed/core/v2/public/common_enums.h"
 #include "components/feed/core/v2/public/feed_api.h"
+#include "components/feed/core/v2/public/stream_type.h"
 
 namespace feed {
 namespace {
@@ -89,7 +91,53 @@ void ReportLoadLatencies(std::unique_ptr<LoadLatencyTimes> latencies) {
   }
 }
 
+base::StringPiece NetworkRequestTypeUmaName(NetworkRequestType type) {
+  switch (type) {
+    case NetworkRequestType::kFeedQuery:
+      return "FeedQuery";
+    case NetworkRequestType::kUploadActions:
+      return "UploadActions";
+    case NetworkRequestType::kNextPage:
+      return "NextPage";
+    case NetworkRequestType::kListWebFeeds:
+      return "ListFollowedWebFeeds";
+    case NetworkRequestType::kUnfollowWebFeed:
+      return "UnfollowWebFeed";
+    case NetworkRequestType::kFollowWebFeed:
+      return "FollowWebFeed";
+    case NetworkRequestType::kListRecommendedWebFeeds:
+      return "ListRecommendedWebFeeds";
+    case NetworkRequestType::kWebFeedListContents:
+      return "WebFeedListContents";
+    case NetworkRequestType::kQueryInteractiveFeed:
+      return "QueryInteractiveFeed";
+    case NetworkRequestType::kQueryBackgroundFeed:
+      return "QueryBackgroundFeed";
+    case NetworkRequestType::kQueryNextPage:
+      return "QueryNextPage";
+  }
+}
+
+base::StringPiece HistogramReplacement(const StreamType& stream_type) {
+  return stream_type.IsWebFeed() ? "Feed.WebFeed." : "Feed.";
+}
+
 }  // namespace
+
+MetricsReporter::SurfaceWaiting::SurfaceWaiting() = default;
+MetricsReporter::SurfaceWaiting::SurfaceWaiting(
+    const feed::StreamType& stream_type,
+    base::TimeTicks wait_start)
+    : stream_type(stream_type), wait_start(wait_start) {}
+
+MetricsReporter::SurfaceWaiting::~SurfaceWaiting() = default;
+MetricsReporter::SurfaceWaiting::SurfaceWaiting(const SurfaceWaiting&) =
+    default;
+MetricsReporter::SurfaceWaiting::SurfaceWaiting(SurfaceWaiting&&) = default;
+MetricsReporter::SurfaceWaiting& MetricsReporter::SurfaceWaiting::operator=(
+    const SurfaceWaiting&) = default;
+MetricsReporter::SurfaceWaiting& MetricsReporter::SurfaceWaiting::operator=(
+    SurfaceWaiting&&) = default;
 
 MetricsReporter::MetricsReporter(PrefService* profile_prefs)
     : profile_prefs_(profile_prefs) {
@@ -200,7 +248,8 @@ void MetricsReporter::StreamScrolled(const StreamType& stream_type,
 }
 
 void MetricsReporter::ContentSliceViewed(const StreamType& stream_type,
-                                         int index_in_stream) {
+                                         int index_in_stream,
+                                         int stream_slice_count) {
   if (stream_type.IsForYou()) {
     base::UmaHistogramExactLinear("NewTabPage.ContentSuggestions.Shown",
                                   index_in_stream, kMaxSuggestionsTotal);
@@ -208,6 +257,13 @@ void MetricsReporter::ContentSliceViewed(const StreamType& stream_type,
     DCHECK(stream_type.IsWebFeed());
     base::UmaHistogramExactLinear("ContentSuggestions.Feed.WebFeed.Shown",
                                   index_in_stream, kMaxSuggestionsTotal);
+  }
+
+  if (index_in_stream == stream_slice_count - 1) {
+    base::UmaHistogramExactLinear(
+        base::StrCat({"ContentSuggestions.", HistogramReplacement(stream_type),
+                      "ReachedEndOfFeed"}),
+        stream_slice_count, kMaxSuggestionsTotal);
   }
 }
 
@@ -238,7 +294,7 @@ void MetricsReporter::FeedViewed(SurfaceId surface_id) {
 
 void MetricsReporter::OpenAction(const StreamType& stream_type,
                                  int index_in_stream) {
-  CardOpenBegin();
+  CardOpenBegin(stream_type);
   ReportUserActionHistogram(FeedUserActionType::kTappedOnCard);
   base::RecordAction(
       base::UserMetricsAction("ContentSuggestions.Feed.CardAction.Open"));
@@ -253,7 +309,7 @@ void MetricsReporter::OpenVisitComplete(base::TimeDelta visit_time) {
 
 void MetricsReporter::OpenInNewTabAction(const StreamType& stream_type,
                                          int index_in_stream) {
-  CardOpenBegin();
+  CardOpenBegin(stream_type);
   ReportUserActionHistogram(FeedUserActionType::kTappedOpenInNewTab);
   base::RecordAction(base::UserMetricsAction(
       "ContentSuggestions.Feed.CardAction.OpenInNewTab"));
@@ -341,7 +397,6 @@ void MetricsReporter::OtherUserAction(const StreamType& stream_type,
       RecordInteraction(stream_type);
       break;
     case FeedUserActionType::kEphemeralChange:
-      FALLTHROUGH;
     case FeedUserActionType::kEphemeralChangeRejected:
     case FeedUserActionType::kTappedTurnOn:
     case FeedUserActionType::kTappedTurnOff:
@@ -356,15 +411,27 @@ void MetricsReporter::OtherUserAction(const StreamType& stream_type,
     case FeedUserActionType::kClosedNativeContextMenu:
     case FeedUserActionType::kOpenedNativePulldownMenu:
     case FeedUserActionType::kClosedNativePulldownMenu:
+    case FeedUserActionType::kTappedManageFollowing:
+    case FeedUserActionType::kTappedFollowOnManagementSurface:
+    case FeedUserActionType::kTappedUnfollowOnManagementSurface:
+    case FeedUserActionType::kTappedFollowOnFollowAccelerator:
+    case FeedUserActionType::kTappedFollowTryAgainOnSnackbar:
+    case FeedUserActionType::kTappedRefollowAfterUnfollowOnSnackbar:
+    case FeedUserActionType::kTappedUnfollowTryAgainOnSnackbar:
+    case FeedUserActionType::kTappedGoToFeedPostFollowActiveHelp:
+    case FeedUserActionType::kTappedDismissPostFollowActiveHelp:
       // Nothing additional for these actions. Note that some of these are iOS
       // only.
+
       break;
   }
 }
 
-void MetricsReporter::SurfaceOpened(SurfaceId surface_id) {
+void MetricsReporter::SurfaceOpened(const StreamType& stream_type,
+                                    SurfaceId surface_id) {
   ReportPersistentDataIfDayIsDone();
-  surfaces_waiting_for_content_.emplace(surface_id, base::TimeTicks::Now());
+  surfaces_waiting_for_content_.emplace(
+      surface_id, SurfaceWaiting{stream_type, base::TimeTicks::Now()});
   ReportUserActionHistogram(FeedUserActionType::kOpenedFeedSurface);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
@@ -397,18 +464,15 @@ void MetricsReporter::ReportOpenFeedIfNeeded(SurfaceId surface_id,
   auto iter = surfaces_waiting_for_content_.find(surface_id);
   if (iter == surfaces_waiting_for_content_.end())
     return;
-  base::TimeDelta latency = base::TimeTicks::Now() - iter->second;
+  SurfaceWaiting surface_waiting = std::move(iter->second);
   surfaces_waiting_for_content_.erase(iter);
 
-  if (success) {
-    base::UmaHistogramCustomTimes(
-        "ContentSuggestions.Feed.UserJourney.OpenFeed.SuccessDuration", latency,
-        base::TimeDelta::FromMilliseconds(50), kLoadTimeout, 50);
-  } else {
-    base::UmaHistogramCustomTimes(
-        "ContentSuggestions.Feed.UserJourney.OpenFeed.FailureDuration", latency,
-        base::TimeDelta::FromMilliseconds(50), kLoadTimeout, 50);
-  }
+  base::UmaHistogramCustomTimes(
+      base::StrCat({"ContentSuggestions.Feed.UserJourney.OpenFeed",
+                    surface_waiting.stream_type.IsWebFeed() ? ".WebFeed" : "",
+                    success ? ".SuccessDuration" : ".FailureDuration"}),
+      base::TimeTicks::Now() - surface_waiting.wait_start,
+      base::TimeDelta::FromMilliseconds(50), kLoadTimeout, 50);
 }
 
 void MetricsReporter::ReportGetMoreIfNeeded(SurfaceId surface_id,
@@ -416,125 +480,90 @@ void MetricsReporter::ReportGetMoreIfNeeded(SurfaceId surface_id,
   auto iter = surfaces_waiting_for_more_content_.find(surface_id);
   if (iter == surfaces_waiting_for_more_content_.end())
     return;
-  base::TimeDelta latency = base::TimeTicks::Now() - iter->second;
+  SurfaceWaiting surface_waiting = std::move(iter->second);
   surfaces_waiting_for_more_content_.erase(iter);
-  if (success) {
-    base::UmaHistogramCustomTimes(
-        "ContentSuggestions.Feed.UserJourney.GetMore.SuccessDuration", latency,
-        base::TimeDelta::FromMilliseconds(50), kLoadTimeout, 50);
-  } else {
-    base::UmaHistogramCustomTimes(
-        "ContentSuggestions.Feed.UserJourney.GetMore.FailureDuration", latency,
-        base::TimeDelta::FromMilliseconds(50), kLoadTimeout, 50);
-  }
+
+  base::UmaHistogramCustomTimes(
+      base::StrCat({"ContentSuggestions.Feed.UserJourney.GetMore.",
+                    success ? "SuccessDuration" : "FailureDuration"}),
+      base::TimeTicks::Now() - surface_waiting.wait_start,
+      base::TimeDelta::FromMilliseconds(50), kLoadTimeout, 50);
 }
 
-void MetricsReporter::CardOpenBegin() {
+void MetricsReporter::CardOpenBegin(const StreamType& stream_type) {
   ReportCardOpenEndIfNeeded(false);
-  pending_open_ = base::TimeTicks::Now();
+  pending_open_ = {stream_type, base::TimeTicks::Now()};
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&MetricsReporter::CardOpenTimeout, GetWeakPtr(),
-                     *pending_open_),
+                     pending_open_.wait_start),
       kOpenTimeout);
 }
 
 void MetricsReporter::CardOpenTimeout(base::TimeTicks start_ticks) {
-  if (pending_open_ && start_ticks == *pending_open_)
+  if (pending_open_ && start_ticks == pending_open_.wait_start)
     ReportCardOpenEndIfNeeded(false);
 }
 
 void MetricsReporter::ReportCardOpenEndIfNeeded(bool success) {
   if (!pending_open_)
     return;
-  base::TimeDelta latency = base::TimeTicks::Now() - *pending_open_;
-  pending_open_.reset();
+  base::TimeDelta latency = base::TimeTicks::Now() - pending_open_.wait_start;
+
+  std::string histogram_name =
+      base::StrCat({"ContentSuggestions.Feed.UserJourney.OpenCard",
+                    pending_open_.stream_type.IsWebFeed() ? ".WebFeed" : "",
+                    success ? ".SuccessDuration" : ".Failure"});
+
   if (success) {
-    base::UmaHistogramCustomTimes(
-        "ContentSuggestions.Feed.UserJourney.OpenCard.SuccessDuration", latency,
-        base::TimeDelta::FromMilliseconds(100), kOpenTimeout, 50);
+    base::UmaHistogramCustomTimes(histogram_name, latency,
+                                  base::TimeDelta::FromMilliseconds(100),
+                                  kOpenTimeout, 50);
   } else {
-    base::UmaHistogramBoolean(
-        "ContentSuggestions.Feed.UserJourney.OpenCard.Failure", true);
+    base::UmaHistogramBoolean(histogram_name, true);
   }
+
+  pending_open_ = {};
 }
 
 void MetricsReporter::NetworkRequestComplete(NetworkRequestType type,
-                                             int http_status_code) {
-  switch (type) {
-    case NetworkRequestType::kFeedQuery:
-      base::UmaHistogramSparse(
-          "ContentSuggestions.Feed.Network.ResponseStatus.FeedQuery",
-          http_status_code);
-      return;
-    case NetworkRequestType::kUploadActions:
-      base::UmaHistogramSparse(
-          "ContentSuggestions.Feed.Network.ResponseStatus.UploadActions",
-          http_status_code);
-      return;
-    case NetworkRequestType::kNextPage:
-      base::UmaHistogramSparse(
-          "ContentSuggestions.Feed.Network.ResponseStatus.NextPage",
-          http_status_code);
-      return;
-    case NetworkRequestType::kListWebFeeds:
-      base::UmaHistogramSparse(
-          "ContentSuggestions.Feed.Network.ResponseStatus.ListFollowedWebFeeds",
-          http_status_code);
-      return;
-    case NetworkRequestType::kUnfollowWebFeed:
-      base::UmaHistogramSparse(
-          "ContentSuggestions.Feed.Network.ResponseStatus.UnfollowWebFeed",
-          http_status_code);
-      return;
-    case NetworkRequestType::kFollowWebFeed:
-      base::UmaHistogramSparse(
-          "ContentSuggestions.Feed.Network.ResponseStatus.FollowWebFeed",
-          http_status_code);
-      return;
-    case NetworkRequestType::kListRecommendedWebFeeds:
-      base::UmaHistogramSparse(
-          "ContentSuggestions.Feed.Network.ResponseStatus."
-          "ListRecommendedWebFeeds",
-          http_status_code);
-      return;
-    case NetworkRequestType::kWebFeedListContents:
-      base::UmaHistogramSparse(
-          "ContentSuggestions.Feed.Network.ResponseStatus.WebFeedListContents",
-          http_status_code);
-      return;
-    case NetworkRequestType::kQueryInteractiveFeed:
-      base::UmaHistogramSparse(
-          "ContentSuggestions.Feed.Network.ResponseStatus.QueryInteractiveFeed",
-          http_status_code);
-      return;
-    case NetworkRequestType::kQueryBackgroundFeed:
-      base::UmaHistogramSparse(
-          "ContentSuggestions.Feed.Network.ResponseStatus.QueryBackgroundFeed",
-          http_status_code);
-      return;
-    case NetworkRequestType::kQueryNextPage:
-      base::UmaHistogramSparse(
-          "ContentSuggestions.Feed.Network.ResponseStatus.QueryNextPage",
-          http_status_code);
-      return;
-  }
+                                             int http_status_code,
+                                             base::TimeDelta latency) {
+  base::StringPiece request_name = NetworkRequestTypeUmaName(type);
+  base::UmaHistogramSparse(
+      base::StrCat(
+          {"ContentSuggestions.Feed.Network.ResponseStatus.", request_name}),
+      http_status_code);
+  base::UmaHistogramMediumTimes(
+      base::StrCat({"ContentSuggestions.Feed.Network.Duration.", request_name}),
+      latency);
 }
 
 void MetricsReporter::OnLoadStream(
+    const StreamType& stream_type,
     LoadStreamStatus load_from_store_status,
     LoadStreamStatus final_status,
+    bool is_initial_load,
     bool loaded_new_content_from_network,
     base::TimeDelta stored_content_age,
+    int content_count,
     std::unique_ptr<LoadLatencyTimes> load_latencies) {
   DVLOG(1) << "OnLoadStream load_from_store_status=" << load_from_store_status
            << " final_status=" << final_status;
   load_latencies_ = std::move(load_latencies);
+
+  std::string load_type_name = is_initial_load ? "Initial" : "ManualRefresh";
   base::UmaHistogramEnumeration(
-      "ContentSuggestions.Feed.LoadStreamStatus.Initial", final_status);
+      base::StrCat({"ContentSuggestions.", HistogramReplacement(stream_type),
+                    "LoadStreamStatus.", load_type_name}),
+      final_status);
+  if (!is_initial_load)
+    return;
+
   if (load_from_store_status != LoadStreamStatus::kNoStatus) {
     base::UmaHistogramEnumeration(
-        "ContentSuggestions.Feed.LoadStreamStatus.InitialFromStore",
+        base::StrCat({"ContentSuggestions.", HistogramReplacement(stream_type),
+                      "LoadStreamStatus.InitialFromStore"}),
         load_from_store_status);
   }
 
@@ -557,18 +586,28 @@ void MetricsReporter::OnLoadStream(
           /*buckets=*/50);
     }
   }
+
+  if (IsLoadingSuccessfulAndFresh(final_status)) {
+    base::UmaHistogramSparse(
+        base::StrCat({"ContentSuggestions.", HistogramReplacement(stream_type),
+                      "LoadedCardCount"}),
+        content_count);
+  }
 }
 
-void MetricsReporter::OnBackgroundRefresh(LoadStreamStatus final_status) {
+void MetricsReporter::OnBackgroundRefresh(const StreamType& stream_type,
+                                          LoadStreamStatus final_status) {
   base::UmaHistogramEnumeration(
-      "ContentSuggestions.Feed.LoadStreamStatus.BackgroundRefresh",
+      base::StrCat({"ContentSuggestions.", HistogramReplacement(stream_type),
+                    "LoadStreamStatus.BackgroundRefresh"}),
       final_status);
 }
 
-void MetricsReporter::OnLoadMoreBegin(SurfaceId surface_id) {
+void MetricsReporter::OnLoadMoreBegin(const StreamType& stream_type,
+                                      SurfaceId surface_id) {
   ReportGetMoreIfNeeded(surface_id, false);
-  surfaces_waiting_for_more_content_.emplace(surface_id,
-                                             base::TimeTicks::Now());
+  surfaces_waiting_for_more_content_.emplace(
+      surface_id, SurfaceWaiting{stream_type, base::TimeTicks::Now()});
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
@@ -668,33 +707,52 @@ MetricsReporter::StreamStats& MetricsReporter::ForStream(
 }
 
 void MetricsReporter::OnFollowAttempt(
+    bool followed_with_id,
     const WebFeedSubscriptions::FollowWebFeedResult& result) {
   DVLOG(1) << "OnFollowAttempt web_feed_id="
            << result.web_feed_metadata.web_feed_id
            << " status=" << result.request_status;
-  // TODO(crbug/1152592): Add UMA.
+
+  if (followed_with_id) {
+    base::UmaHistogramEnumeration(
+        "ContentSuggestions.Feed.WebFeed.FollowByIdResult",
+        result.request_status);
+  } else {
+    base::UmaHistogramEnumeration(
+        "ContentSuggestions.Feed.WebFeed.FollowUriResult",
+        result.request_status);
+  }
 }
 
 void MetricsReporter::OnUnfollowAttempt(
     const WebFeedSubscriptions::UnfollowWebFeedResult& result) {
   DVLOG(1) << "OnUnfollowAttempt status=" << result.request_status;
-  // TODO(crbug/1152592): Add UMA.
+  base::UmaHistogramEnumeration(
+      "ContentSuggestions.Feed.WebFeed.UnfollowResult", result.request_status);
 }
 
 void MetricsReporter::RefreshRecommendedWebFeedsAttempted(
     WebFeedRefreshStatus status,
     int recommended_web_feed_count) {
-  // TODO(crbug/1152592): Add UMA.
   DVLOG(1) << "RefreshRecommendedWebFeedsAttempted status=" << status
            << " count=" << recommended_web_feed_count;
+  base::UmaHistogramEnumeration(
+      "ContentSuggestions.Feed.WebFeed.RefreshRecommendedFeeds", status);
 }
 
 void MetricsReporter::RefreshSubscribedWebFeedsAttempted(
+    bool subscriptions_were_stale,
     WebFeedRefreshStatus status,
     int subscribed_web_feed_count) {
-  // TODO(crbug/1152592): Add UMA.
   DVLOG(1) << "RefreshSubscribedWebFeedsAttempted status=" << status
            << " count=" << subscribed_web_feed_count;
+  if (subscriptions_were_stale) {
+    base::UmaHistogramEnumeration(
+        "ContentSuggestions.Feed.WebFeed.RefreshSubscribedFeeds.Stale", status);
+  } else {
+    base::UmaHistogramEnumeration(
+        "ContentSuggestions.Feed.WebFeed.RefreshSubscribedFeeds.Force", status);
+  }
 }
 
 }  // namespace feed

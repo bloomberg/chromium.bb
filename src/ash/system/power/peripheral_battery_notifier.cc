@@ -7,8 +7,8 @@
 #include <string>
 #include <vector>
 
+#include "ash/constants/ash_features.h"
 #include "ash/power/hid_battery_util.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/system_tray_client.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -154,7 +154,7 @@ void PeripheralBatteryNotifier::OnRemovingBattery(
 
 void PeripheralBatteryNotifier::UpdateBattery(
     const PeripheralBatteryListener::BatteryInfo& battery_info) {
-  if (!battery_info.level) {
+  if (!battery_info.level || !battery_info.battery_report_eligible) {
     CancelNotification(battery_info);
     return;
   }

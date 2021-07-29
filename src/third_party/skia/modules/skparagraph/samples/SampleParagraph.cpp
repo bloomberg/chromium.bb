@@ -2073,14 +2073,16 @@ protected:
             auto impl = static_cast<ParagraphImpl*>(paragraph.get());
             for (auto& line : impl->lines()) {
                 if (this->isVerbose()) {
-                    SkDebugf("line[%d]: %f + %f\n", &line - impl->lines().begin(), line.offset().fX, line.shift());
+                    SkDebugf("line[%d]: %f + %f\n", (int)(&line - impl->lines().begin()),
+                                                    line.offset().fX, line.shift());
                 }
                 line.iterateThroughVisualRuns(true,
                     [&](const Run* run, SkScalar runOffset, TextRange textRange, SkScalar* width) {
                     *width = line.measureTextInsideOneRun(textRange, run, runOffset, 0, true, false).clip.width();
                     if (this->isVerbose()) {
-                        SkDebugf("%d[%d: %d) @%f + %f %s\n", run->index(),
-                                 textRange.start, textRange.end, runOffset, *width, run->leftToRight() ? "left" : "right");
+                        SkDebugf("%zu[%zu: %zu) @%f + %f %s\n",
+                                 run->index(), textRange.start, textRange.end, runOffset, *width,
+                                 run->leftToRight() ? "left" : "right");
                     }
                     return true;
                 });
@@ -2277,8 +2279,9 @@ protected:
             {18, 22},
         };
         for (auto rect: rects) {
-            auto results = paragraph->getRectsForRange(rect.first, rect.second, RectHeightStyle::kTight, RectWidthStyle::kTight);
-            SkDebugf("[%d : %d) ", rect.first, rect.second);
+            auto results = paragraph->getRectsForRange(
+                    rect.first, rect.second, RectHeightStyle::kTight, RectWidthStyle::kTight);
+            SkDebugf("[%zu : %zu) ", rect.first, rect.second);
             if (!results.empty()) {
                 SkASSERT(results.size() == 1);
                 SkDebugf("[%f : %f]\n", results[0].rect.fLeft,results[0].rect.fRight);
@@ -2571,7 +2574,7 @@ protected:
             size_t c = 0;
             SkDebugf("clusters\n");
             for (auto& cluster: clusters) {
-                SkDebugf("%d: [%d:%d) %s\n", c++,
+                SkDebugf("%zu: [%zu:%zu) %s\n", c++,
                          cluster.textRange().start, cluster.textRange().end,
                          cluster.isSoftBreak() ? "soft" :
                          cluster.isHardBreak() ? "hard" :
@@ -2582,7 +2585,7 @@ protected:
             size_t i = 0;
             SkDebugf("lines\n");
             for (auto& line : lines) {
-                SkDebugf("%d: [%d:%d)\n", i++, line.trimmedText().start, line.trimmedText().end);
+                SkDebugf("%zu: [%zu:%zu)\n", i++, line.trimmedText().start, line.trimmedText().end);
             }
         }
 
@@ -3501,32 +3504,53 @@ protected:
 
         SkString text("");
         canvas->drawColor(SK_ColorWHITE);
-
-        auto fontCollection = sk_make_sp<FontCollection>();
-        fontCollection->setDefaultFontManager(SkFontMgr::RefDefault());
-        fontCollection->enableFontFallback();
+        auto fontCollection = sk_make_sp<TestFontCollection>(GetResourcePath("fonts").c_str(), true, true);
 
         TextStyle text_style;
         text_style.setColor(SK_ColorBLACK);
-        text_style.setFontFamilies({SkString("Roboto")});
-        text_style.setFontSize(56.0f);
-        text_style.setHeight(3.0f);
-        text_style.setHeightOverride(true);
+        text_style.setFontFamilies({SkString("Ahem")});
+        text_style.setFontSize(10.0f);
         ParagraphStyle paragraph_style;
         paragraph_style.setTextStyle(text_style);
+        ParagraphBuilderImpl builder(paragraph_style, fontCollection);
+        builder.pushStyle(text_style);
+        builder.addText("    ");
+        auto paragraph = builder.Build();
+        paragraph->layout(width());
+        auto result = paragraph->getGlyphPositionAtCoordinate(20, 2); // "hello    " 60,2
+        SkDebugf("getGlyphPositionAtCoordinate(20,2)=%d %s\n", result.position, result.affinity == Affinity::kDownstream ? "D" : "U");
+    }
 
-        auto draw = [&](const char* text) {
-            ParagraphBuilderImpl builder(paragraph_style, fontCollection);
-            builder.pushStyle(text_style);
-            builder.addText(text);
-            auto paragraph = builder.Build();
-            paragraph->layout(width());
-            paragraph->paint(canvas, 0, 0);
-            SkDebugf("Height: %f\n", paragraph->getHeight());
-        };
-        draw("Something");
-        draw("\n");
-        draw("");
+private:
+    using INHERITED = Sample;
+};
+
+class ParagraphView61 : public ParagraphView_Base {
+protected:
+    SkString name() override { return SkString("ParagraphView61"); }
+
+    void onDrawContent(SkCanvas* canvas) override {
+
+        SkString text("");
+        canvas->drawColor(SK_ColorWHITE);
+        auto fontCollection = sk_make_sp<TestFontCollection>(GetResourcePath("fonts").c_str(), true, true);
+
+        TextStyle text_style;
+        text_style.setColor(SK_ColorBLACK);
+        text_style.setFontFamilies({SkString("Ahem")});
+        text_style.setFontSize(10.0f);
+        ParagraphStyle paragraph_style;
+        paragraph_style.setTextStyle(text_style);
+        ParagraphBuilderImpl builder(paragraph_style, fontCollection);
+        builder.pushStyle(text_style);
+        builder.addText("one two\n\nthree four\nwith spaces     \n    ");
+        auto paragraph = builder.Build();
+        paragraph->layout(width());
+        std::vector<LineMetrics> metrics;
+        paragraph->getLineMetrics(metrics);
+        for (auto& metric : metrics) {
+            SkDebugf("Line[%d:%d <= %d <=%d)\n", metric.fStartIndex, metric.fEndExcludingWhitespaces, metric.fEndIndex, metric.fEndIncludingNewline);
+        }
     }
 
 private:
@@ -3593,3 +3617,4 @@ DEF_SAMPLE(return new ParagraphView57();)
 DEF_SAMPLE(return new ParagraphView58();)
 DEF_SAMPLE(return new ParagraphView59();)
 DEF_SAMPLE(return new ParagraphView60();)
+DEF_SAMPLE(return new ParagraphView61();)

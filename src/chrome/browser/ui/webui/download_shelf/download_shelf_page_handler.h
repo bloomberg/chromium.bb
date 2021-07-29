@@ -29,15 +29,20 @@ class DownloadShelfPageHandler : public download_shelf::mojom::PageHandler,
   ~DownloadShelfPageHandler() override;
 
   // download_shelf::mojom::PageHandler:
+  void DoShowAll() override;
   void DoClose() override;
+  void DiscardDownload(uint32_t download_id) override;
+  void KeepDownload(uint32_t download_id) override;
   void GetDownloads(GetDownloadsCallback callback) override;
   void ShowContextMenu(uint32_t download_id,
                        int32_t client_x,
                        int32_t client_y,
                        double timestamp) override;
+  void OpenDownload(uint32_t download_id) override;
 
   // DownloadShelfHandler:
   void DoShowDownload(DownloadUIModel* download_model) override;
+  void OnDownloadOpened(uint32_t download_id) override;
   void OnDownloadUpdated(DownloadUIModel* download_model) override;
   void OnDownloadErased(uint32_t download_id) override;
 

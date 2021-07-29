@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/profiles/profile_customization_bubble_sync_controller.h"
 
 #include "base/metrics/histogram_functions.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -58,7 +58,7 @@ void ProfileCustomizationBubbleSyncController::
                                              views::View* anchor_view,
                                              SkColor suggested_profile_color) {
   syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
+      SyncServiceFactory::GetForProfile(profile);
   // TODO(crbug.com/1213112): A speculative fix, remove if not functional or not
   // needed.
   if (!profile || !anchor_view || !sync_service)
@@ -92,7 +92,7 @@ void ProfileCustomizationBubbleSyncController::
 bool ProfileCustomizationBubbleSyncController::CanThemeSyncStart(
     Profile* profile) {
   syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
+      SyncServiceFactory::GetForProfile(profile);
   return CanSyncStart(sync_service);
 }
 
@@ -109,11 +109,11 @@ ProfileCustomizationBubbleSyncController::
       show_bubble_callback_(std::move(show_bubble_callback)),
       suggested_profile_color_(suggested_profile_color),
       observation_start_time_(base::TimeTicks::Now()) {
-  DCHECK(profile);
-  DCHECK(anchor_view);
-  DCHECK(sync_service_);
-  DCHECK(theme_service_);
-  DCHECK(show_bubble_callback_);
+  CHECK(profile);
+  CHECK(anchor_view);
+  CHECK(sync_service_);
+  CHECK(theme_service_);
+  CHECK(show_bubble_callback_);
 
   profile_observation_.Observe(profile);
   view_observation_.Observe(anchor_view);
@@ -131,13 +131,19 @@ void ProfileCustomizationBubbleSyncController::Init() {
     return;
   }
 
-  // Observe also the sync service to abort waiting for theme sync if the user
-  // hits any error or if custom passphrase is needed.
+  absl::optional<ThemeSyncableService::ThemeSyncState> theme_state =
+      theme_service_->GetThemeSyncableService()->GetThemeSyncStartState();
+  if (theme_state) {
+    // There's enough information to decide whether to show the bubble right on
+    // init, finish the flow.
+    OnThemeSyncStarted(*theme_state);
+    return;
+  }
+
+  // Observe the sync service to abort waiting for theme sync if the user hits
+  // any error or if custom passphrase is needed.
   sync_observation_.Observe(sync_service_);
 
-  // If theme sync is finished now, this will result in calling
-  // OnThemeSyncStarted, finishing the process, and deleting this class, thus do
-  // this as the last call.
   theme_observation_.Observe(theme_service_->GetThemeSyncableService());
 }
 
@@ -217,7 +223,7 @@ void ApplyProfileColorAndShowCustomizationBubbleWhenNoValueSynced(
   views::View* anchor_view = BrowserView::GetBrowserViewForBrowser(browser)
                                  ->toolbar_button_provider()
                                  ->GetAvatarToolbarButton();
-  DCHECK(anchor_view);
+  CHECK(anchor_view);
   ProfileCustomizationBubbleSyncController::
       ApplyColorAndShowBubbleWhenNoValueSynced(browser->profile(), anchor_view,
                                                suggested_profile_color);

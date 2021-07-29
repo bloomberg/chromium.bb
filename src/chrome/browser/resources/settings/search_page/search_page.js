@@ -19,48 +19,66 @@ import '../settings_shared_css.js';
 import '../settings_vars_css.js';
 
 import {addWebUIListener} from 'chrome://resources/js/cr.m.js';
-import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {BaseMixin, BaseMixinInterface} from '../base_mixin.js';
 import {routes} from '../route.js';
 import {Router} from '../router.js';
 import {SearchEngine, SearchEnginesBrowserProxy, SearchEnginesBrowserProxyImpl} from '../search_engines_page/search_engines_browser_proxy.js';
 
-Polymer({
-  is: 'settings-search-page',
 
-  _template: html`{__html_template__}`,
+/**
+ * @constructor
+ * @extends {PolymerElement}
+ * @appliesMixin {BaseMixin}
+ * @implements {BaseMixinInterface}
+ */
+const SettingsSearchPageElementBase = BaseMixin(PolymerElement);
 
-  properties: {
-    prefs: Object,
+/** @polymer */
+export class SettingsSearchPageElement extends SettingsSearchPageElementBase {
+  static get is() {
+    return 'settings-search-page';
+  }
 
-    /**
-     * List of default search engines available.
-     * @private {!Array<!SearchEngine>}
-     */
-    searchEngines_: {
-      type: Array,
-      value() {
-        return [];
-      }
-    },
+  static get template() {
+    return html`{__html_template__}`;
+  }
 
-    /** @private Filter applied to search engines. */
-    searchEnginesFilter_: String,
+  static get properties() {
+    return {
+      prefs: Object,
 
-    /** @type {?Map<string, string>} */
-    focusConfig_: Object,
-  },
+      /**
+       * List of default search engines available.
+       * @private {!Array<!SearchEngine>}
+       */
+      searchEngines_: {
+        type: Array,
+        value() {
+          return [];
+        }
+      },
 
-  /** @private {?SearchEnginesBrowserProxy} */
-  browserProxy_: null,
+      /** @private Filter applied to search engines. */
+      searchEnginesFilter_: String,
 
-  /** @override */
-  created() {
+      /** @type {?Map<string, string>} */
+      focusConfig_: Object,
+    };
+  }
+
+  constructor() {
+    super();
+
+    /** @private {!SearchEnginesBrowserProxy} */
     this.browserProxy_ = SearchEnginesBrowserProxyImpl.getInstance();
-  },
+  }
 
   /** @override */
   ready() {
+    super.ready();
+
     // Omnibox search engine
     const updateSearchEngines = searchEngines => {
       this.set('searchEngines_', searchEngines.defaults);
@@ -73,24 +91,29 @@ Polymer({
       this.focusConfig_.set(
           routes.SEARCH_ENGINES.path, '#enginesSubpageTrigger');
     }
-  },
+  }
 
   /** @private */
   onChange_() {
-    const select = /** @type {!HTMLSelectElement} */ (this.$$('select'));
+    const select = /** @type {!HTMLSelectElement} */ (
+        this.shadowRoot.querySelector('select'));
     const searchEngine = this.searchEngines_[select.selectedIndex];
     this.browserProxy_.setDefaultSearchEngine(searchEngine.modelIndex);
-  },
+  }
 
   /** @private */
   onDisableExtension_() {
-    this.fire('refresh-pref', 'default_search_provider.enabled');
-  },
+    this.dispatchEvent(new CustomEvent('refresh-pref', {
+      bubbles: true,
+      composed: true,
+      detail: 'default_search_provider.enabled'
+    }));
+  }
 
   /** @private */
   onManageSearchEnginesTap_() {
     Router.getInstance().navigateTo(routes.SEARCH_ENGINES);
-  },
+  }
 
   /**
    * @param {!chrome.settingsPrivate.PrefObject} pref
@@ -100,7 +123,7 @@ Polymer({
   isDefaultSearchControlledByPolicy_(pref) {
     return pref.controlledBy ===
         chrome.settingsPrivate.ControlledBy.USER_POLICY;
-  },
+  }
 
   /**
    * @param {!chrome.settingsPrivate.PrefObject} pref
@@ -109,5 +132,7 @@ Polymer({
    */
   isDefaultSearchEngineEnforced_(pref) {
     return pref.enforcement === chrome.settingsPrivate.Enforcement.ENFORCED;
-  },
-});
+  }
+}
+
+customElements.define(SettingsSearchPageElement.is, SettingsSearchPageElement);

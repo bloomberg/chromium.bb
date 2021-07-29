@@ -287,6 +287,64 @@ static const arg_def_t *rc_args[] = {
   &buf_sz,           &buf_initial_sz,     &buf_optimal_sz, NULL
 };
 
+#if CONFIG_VP9_ENCODER
+static const arg_def_t use_vizier_rc_params =
+    ARG_DEF(NULL, "use-vizier-rc-params", 1, "Use vizier rc params");
+static const arg_def_t active_wq_factor =
+    ARG_DEF(NULL, "active-wq-factor", 1, "Active worst quality factor");
+static const arg_def_t err_per_mb_factor =
+    ARG_DEF(NULL, "err-per-mb-factor", 1, "Error per macroblock factor");
+static const arg_def_t sr_default_decay_limit = ARG_DEF(
+    NULL, "sr-default-decay-limit", 1, "Second reference default decay limit");
+static const arg_def_t sr_diff_factor =
+    ARG_DEF(NULL, "sr-diff-factor", 1, "Second reference diff factor");
+static const arg_def_t kf_err_per_mb_factor = ARG_DEF(
+    NULL, "kf-err-per-mb-factor", 1, "Keyframe error per macroblock factor");
+static const arg_def_t kf_frame_min_boost_factor =
+    ARG_DEF(NULL, "kf-frame-min-boost-factor", 1, "Keyframe min boost");
+static const arg_def_t kf_frame_max_boost_first_factor =
+    ARG_DEF(NULL, "kf-frame-max-boost-first-factor", 1,
+            "Max keyframe boost adjustment factor for first frame");
+static const arg_def_t kf_frame_max_boost_subs_factor =
+    ARG_DEF(NULL, "kf-frame-max-boost-subs-factor", 1,
+            "Max boost adjustment factor for subsequent KFs");
+static const arg_def_t kf_max_total_boost_factor = ARG_DEF(
+    NULL, "kf-max-total-boost-factor", 1, "Keyframe max total boost factor");
+static const arg_def_t gf_max_total_boost_factor =
+    ARG_DEF(NULL, "gf-max-total-boost-factor", 1,
+            "Golden frame max total boost factor");
+static const arg_def_t gf_frame_max_boost_factor =
+    ARG_DEF(NULL, "gf-frame-max-boost-factor", 1,
+            "Golden frame max per frame boost factor");
+static const arg_def_t zm_factor =
+    ARG_DEF(NULL, "zm-factor", 1, "Zero motion power factor");
+static const arg_def_t rd_mult_inter_qp_fac =
+    ARG_DEF(NULL, "rd-mult-inter-qp-fac", 1,
+            "RD multiplier adjustment for inter frames");
+static const arg_def_t rd_mult_arf_qp_fac =
+    ARG_DEF(NULL, "rd-mult-arf-qp-fac", 1,
+            "RD multiplier adjustment for alt-ref frames");
+static const arg_def_t rd_mult_key_qp_fac = ARG_DEF(
+    NULL, "rd-mult-key-qp-fac", 1, "RD multiplier adjustment for key frames");
+static const arg_def_t *vizier_rc_args[] = { &use_vizier_rc_params,
+                                             &active_wq_factor,
+                                             &err_per_mb_factor,
+                                             &sr_default_decay_limit,
+                                             &sr_diff_factor,
+                                             &kf_err_per_mb_factor,
+                                             &kf_frame_min_boost_factor,
+                                             &kf_frame_max_boost_first_factor,
+                                             &kf_frame_max_boost_subs_factor,
+                                             &kf_max_total_boost_factor,
+                                             &gf_max_total_boost_factor,
+                                             &gf_frame_max_boost_factor,
+                                             &zm_factor,
+                                             &rd_mult_inter_qp_fac,
+                                             &rd_mult_arf_qp_fac,
+                                             &rd_mult_key_qp_fac,
+                                             NULL };
+#endif
+
 static const arg_def_t bias_pct =
     ARG_DEF(NULL, "bias-pct", 1, "CBR/VBR bias (0=CBR, 100=VBR)");
 static const arg_def_t minsection_pct =
@@ -573,6 +631,8 @@ static void show_help(FILE *fout, int shorthelp) {
 #if CONFIG_VP9_ENCODER
   fprintf(fout, "\nVP9 Specific Options:\n");
   arg_show_usage(fout, vp9_args);
+  fprintf(fout, "\nVizier Rate Control Options:\n");
+  arg_show_usage(fout, vizier_rc_args);
 #endif
   fprintf(fout,
           "\nStream timebase (--timebase):\n"
@@ -983,6 +1043,40 @@ static int parse_stream_params(struct VpxEncoderConfig *global,
       config->cfg.kf_max_dist = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &kf_disabled, argi)) {
       config->cfg.kf_mode = VPX_KF_DISABLED;
+#if CONFIG_VP9_ENCODER
+    } else if (arg_match(&arg, &use_vizier_rc_params, argi)) {
+      config->cfg.use_vizier_rc_params = arg_parse_int(&arg);
+    } else if (arg_match(&arg, &active_wq_factor, argi)) {
+      config->cfg.active_wq_factor = arg_parse_rational(&arg);
+    } else if (arg_match(&arg, &err_per_mb_factor, argi)) {
+      config->cfg.err_per_mb_factor = arg_parse_rational(&arg);
+    } else if (arg_match(&arg, &sr_default_decay_limit, argi)) {
+      config->cfg.sr_default_decay_limit = arg_parse_rational(&arg);
+    } else if (arg_match(&arg, &sr_diff_factor, argi)) {
+      config->cfg.sr_diff_factor = arg_parse_rational(&arg);
+    } else if (arg_match(&arg, &kf_err_per_mb_factor, argi)) {
+      config->cfg.kf_err_per_mb_factor = arg_parse_rational(&arg);
+    } else if (arg_match(&arg, &kf_frame_min_boost_factor, argi)) {
+      config->cfg.kf_frame_min_boost_factor = arg_parse_rational(&arg);
+    } else if (arg_match(&arg, &kf_frame_max_boost_first_factor, argi)) {
+      config->cfg.kf_frame_max_boost_first_factor = arg_parse_rational(&arg);
+    } else if (arg_match(&arg, &kf_frame_max_boost_subs_factor, argi)) {
+      config->cfg.kf_frame_max_boost_subs_factor = arg_parse_rational(&arg);
+    } else if (arg_match(&arg, &kf_max_total_boost_factor, argi)) {
+      config->cfg.kf_max_total_boost_factor = arg_parse_rational(&arg);
+    } else if (arg_match(&arg, &gf_max_total_boost_factor, argi)) {
+      config->cfg.gf_max_total_boost_factor = arg_parse_rational(&arg);
+    } else if (arg_match(&arg, &gf_frame_max_boost_factor, argi)) {
+      config->cfg.gf_frame_max_boost_factor = arg_parse_rational(&arg);
+    } else if (arg_match(&arg, &zm_factor, argi)) {
+      config->cfg.zm_factor = arg_parse_rational(&arg);
+    } else if (arg_match(&arg, &rd_mult_inter_qp_fac, argi)) {
+      config->cfg.rd_mult_inter_qp_fac = arg_parse_rational(&arg);
+    } else if (arg_match(&arg, &rd_mult_arf_qp_fac, argi)) {
+      config->cfg.rd_mult_arf_qp_fac = arg_parse_rational(&arg);
+    } else if (arg_match(&arg, &rd_mult_key_qp_fac, argi)) {
+      config->cfg.rd_mult_key_qp_fac = arg_parse_rational(&arg);
+#endif
 #if CONFIG_VP9_HIGHBITDEPTH
     } else if (arg_match(&arg, &test16bitinternalarg, argi)) {
       if (strcmp(global->codec->name, "vp9") == 0) {
@@ -1177,6 +1271,10 @@ static void show_stream_config(struct stream_state *stream,
   SHOW(kf_mode);
   SHOW(kf_min_dist);
   SHOW(kf_max_dist);
+  // Temporary use for debug
+  SHOW(use_vizier_rc_params);
+  SHOW(active_wq_factor.num);
+  SHOW(active_wq_factor.den);
 }
 
 static void open_output_file(struct stream_state *stream,

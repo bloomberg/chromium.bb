@@ -11,6 +11,7 @@ from .blink_v8_bridge import make_v8_to_blink_value
 from .blink_v8_bridge import native_value_tag
 from .blink_v8_bridge import v8_bridge_class_name
 from .code_node import EmptyNode
+from .code_node import FormatNode
 from .code_node import ListNode
 from .code_node import SequenceNode
 from .code_node import SymbolDefinitionNode
@@ -42,6 +43,14 @@ from .task_queue import TaskQueue
 
 
 class _UnionMember(object):
+    """
+    _UnionMember represents the properties that the code generator directly
+    needs while web_idl.Union represents properties of IDL union independent
+    from ECMAScript binding.  _UnionMember is specific to not only ECMAScript
+    binding but also Blink implementation of IDL union and its flattened member
+    types.
+    """
+
     def __init__(self, base_name):
         assert isinstance(base_name, str)
 
@@ -98,8 +107,16 @@ class _UnionMember(object):
 
 
 class _UnionMemberImpl(_UnionMember):
+    """
+    Represents a flattened member type of an union type or the special null
+    type, which represents that the union type includes a nullable type.
+
+    For example, either of (A? or B) or (A or B?) is represented as a list of
+    [_UnionMemberImpl(A), _UnionMemberImpl(B), _UnionMemberImpl(null)].
+    """
+
     def __init__(self, union, idl_type):
-        assert isinstance(union, web_idl.NewUnion)
+        assert isinstance(union, web_idl.Union)
         assert idl_type is None or isinstance(idl_type, web_idl.IdlType)
 
         if idl_type is None:
@@ -120,13 +137,24 @@ class _UnionMemberImpl(_UnionMember):
 
 
 class _UnionMemberSubunion(_UnionMember):
+    """
+    Represents a subset of flattened member types in an union type as
+    'subunion'.
+
+    For example, given an union type X = (A or B or C) with the following use
+    cases,
+      ((A or B) or C)
+      (A or (B or C))
+    subunions of the union type X are represented as
+    [_UnionMemberSubunion(A or B), _UnionMemberSubunion(B or C)].
+    """
+
     def __init__(self, union, subunion):
-        assert isinstance(union, web_idl.NewUnion)
-        assert isinstance(subunion, web_idl.NewUnion)
+        assert isinstance(union, web_idl.Union)
+        assert isinstance(subunion, web_idl.Union)
 
         _UnionMember.__init__(self, base_name=blink_class_name(subunion))
-        self._type_info = blink_type_info(subunion.idl_types[0],
-                                          use_new_union=True)
+        self._type_info = blink_type_info(subunion.idl_types[0])
         self._typedef_aliases = tuple(
             map(lambda typedef: _UnionMemberAlias(impl=self, typedef=typedef),
                 subunion.aliasing_typedefs))
@@ -138,17 +166,29 @@ class _UnionMemberSubunion(_UnionMember):
 
 
 class _UnionMemberAlias(_UnionMember):
+    """
+    Represents a typedef'ed aliases to a flattened member type or subunion of
+    an union type.
+
+    For example, given the following Web IDL fragments,
+      typedef (A or B) T1;
+      typedef B T2;
+      (T1 or C)
+    _UnionMemberAlias(T1) represents an alias to _UnionMemberSubunion(A or B)
+    and _UnionMemberAlias(T2) represents an alias to _UnionMemberImpl(B).
+    """
+
     def __init__(self, impl, typedef):
         assert isinstance(impl, (_UnionMemberImpl, _UnionMemberSubunion))
         assert isinstance(typedef, web_idl.Typedef)
 
-        _UnionMember.__init__(self, base_name=typedef.identifier)
+        _UnionMember.__init__(self, base_name=blink_class_name(typedef))
         self._var_name = impl.var_name
         self._type_info = impl.type_info
 
 
 def create_union_members(union):
-    assert isinstance(union, web_idl.NewUnion)
+    assert isinstance(union, web_idl.Union)
 
     union_members = list(map(
         lambda member_type: _UnionMemberImpl(union, member_type),
@@ -195,7 +235,7 @@ def make_factory_methods(cg_context):
 
     S = SymbolNode
     T = TextNode
-    F = lambda *args, **kwargs: T(_format(*args, **kwargs))
+    F = FormatNode
 
     func_decl = CxxFuncDeclNode(name="Create",
                                 arg_decls=[
@@ -372,8 +412,9 @@ def make_factory_methods(cg_context):
             T("ScriptIterator script_iterator = ScriptIterator::FromIterable("
               "${isolate}, ${v8_value}.As<v8::Object>(), "
               "${exception_state});"),
-            CxxUnlikelyIfNode(cond="${exception_state}.HadException()",
-                              body=T("return nullptr;")),
+            CxxUnlikelyIfNode(
+                cond="UNLIKELY(${exception_state}.HadException())",
+                body=T("return nullptr;")),
         ])
 
         def blink_value_from_iterator(union_member):
@@ -386,8 +427,9 @@ def make_factory_methods(cg_context):
                        "${exception_state});"),
                       native_value_tag(
                           union_member.idl_type.unwrap().element_type)),
-                    CxxUnlikelyIfNode(cond="${exception_state}.HadException()",
-                                      body=T("return nullptr;")),
+                    CxxUnlikelyIfNode(
+                        cond="UNLIKELY(${exception_state}.HadException())",
+                        body=T("return nullptr;")),
                 ])
                 return node
 
@@ -543,15 +585,10 @@ def make_accessor_functions(cg_context):
     assert isinstance(cg_context, CodeGenContext)
 
     T = TextNode
-    F = lambda *args, **kwargs: T(_format(*args, **kwargs))
+    F = FormatNode
 
     decls = ListNode()
     defs = ListNode()
-
-    def add(func_decl, func_def):
-        decls.append(func_decl)
-        defs.append(func_def)
-        defs.append(EmptyNode())
 
     func_def = CxxFuncDefNode(name="GetContentType",
                               arg_decls=[],
@@ -651,23 +688,6 @@ def make_accessor_functions(cg_context):
         ])
         return func_def, None
 
-    for member in cg_context.union_members:
-        if member.is_null:
-            add(*make_api_pred(member))
-            add(*make_api_set_null(member))
-        else:
-            add(*make_api_pred(member))
-            for alias in member.typedef_aliases:
-                add(*make_api_pred(alias))
-            add(*make_api_get(member))
-            for alias in member.typedef_aliases:
-                add(*make_api_get(alias))
-            if member.type_info.is_move_effective:
-                add(*make_api_set_copy_and_move(member))
-            else:
-                add(*make_api_set(member))
-        decls.append(EmptyNode())
-
     def make_api_subunion_pred(subunion, subunion_members):
         func_def = CxxFuncDefNode(name=subunion.api_pred,
                                   arg_decls=[],
@@ -724,12 +744,56 @@ def make_accessor_functions(cg_context):
         func_def.body.append(node)
         return func_decl, func_def
 
+    def make_api_subunion_alias_pred(subunion, alias):
+        func_def = CxxFuncDefNode(name=alias.api_pred,
+                                  arg_decls=[],
+                                  return_type="bool",
+                                  const=True)
+        func_def.set_base_template_vars(cg_context.template_bindings())
+        func_def.body.append(F("return {}();", subunion.api_pred))
+        return func_def, None
+
+    def make_api_subunion_alias_get(subunion, alias):
+        func_def = CxxFuncDefNode(name=alias.api_get,
+                                  arg_decls=[],
+                                  return_type=alias.type_info.value_t,
+                                  const=True)
+        func_def.set_base_template_vars(cg_context.template_bindings())
+        func_def.body.append(F("return {}();", subunion.api_get))
+        return func_def, None
+
+    def add(func_decl, func_def):
+        decls.append(func_decl)
+        defs.append(func_def)
+        defs.append(EmptyNode())
+
+    # Accessors to member types of the union type
+    for member in cg_context.union_members:
+        if member.is_null:
+            add(*make_api_pred(member))
+            add(*make_api_set_null(member))
+        else:
+            add(*make_api_pred(member))
+            add(*make_api_get(member))
+            if member.type_info.is_move_effective:
+                add(*make_api_set_copy_and_move(member))
+            else:
+                add(*make_api_set(member))
+            for alias in member.typedef_aliases:
+                add(*make_api_pred(alias))
+                add(*make_api_get(alias))
+        decls.append(EmptyNode())
+
+    # Accessors to subunions in the union type
     for subunion in cg_context.union.union_members:
         subunion_members = create_union_members(subunion)
         subunion = _UnionMemberSubunion(cg_context.union, subunion)
         add(*make_api_subunion_pred(subunion, subunion_members))
         add(*make_api_subunion_get(subunion, subunion_members))
         add(*make_api_subunion_set(subunion, subunion_members))
+        for alias in subunion.typedef_aliases:
+            add(*make_api_subunion_alias_pred(subunion, alias))
+            add(*make_api_subunion_alias_get(subunion, alias))
         decls.append(EmptyNode())
 
     return decls, defs
@@ -855,11 +919,20 @@ def make_member_vars_def(cg_context):
         EmptyNode(),
     ])
 
-    entries = [
-        "{} {};".format(member.type_info.member_t, member.var_name)
-        for member in cg_context.union_members if not member.is_null
-    ]
-    member_vars_def.extend(map(TextNode, entries))
+    for member in cg_context.union_members:
+        if member.is_null:
+            continue
+        if member.idl_type.is_enumeration:
+            # Since the IDL enumeration class is not default constructible,
+            # construct the IDL enumeration with 0th enum value.  Note that
+            # this is necessary only for compilation, and the value must never
+            # be used due to the guard by `content_type_`.
+            pattern = "{} {}{{static_cast<{}::Enum>(0)}};"
+        else:
+            pattern = "{} {};"
+        node = FormatNode(pattern, member.type_info.member_t, member.var_name,
+                          member.type_info.value_t)
+        member_vars_def.append(node)
 
     return member_vars_def
 
@@ -1033,5 +1106,5 @@ def generate_unions(task_queue):
 
     web_idl_database = package_initializer().web_idl_database()
 
-    for union in web_idl_database.new_union_types:
+    for union in web_idl_database.union_types:
         task_queue.post_task(generate_union, union.identifier)

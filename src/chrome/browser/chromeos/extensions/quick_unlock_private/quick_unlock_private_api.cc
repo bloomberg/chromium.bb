@@ -8,7 +8,7 @@
 #include <string>
 #include <utility>
 
-#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/constants/ash_pref_names.h"
 #include "base/bind.h"
 #include "base/containers/contains.h"
 #include "chrome/browser/ash/login/quick_unlock/auth_token.h"
@@ -22,7 +22,6 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/pref_names.h"
 #include "chromeos/login/auth/extended_authenticator.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/prefs/pref_service.h"
@@ -62,6 +61,7 @@ const char kPinDisabledByPolicy[] = "PIN unlock has been disabled by policy";
 
 const char kInvalidPIN[] = "Invalid PIN.";
 const char kInvalidCredential[] = "Invalid credential.";
+const char kInternalError[] = "Internal error.";
 const char kWeakCredential[] = "Weak credential.";
 
 const char kPasswordIncorrect[] = "Incorrect Password.";
@@ -120,9 +120,10 @@ bool IsPinNumeric(const std::string& pin) {
 // - maximum must be at least |min_length|, or 0.
 std::pair<int, int> GetSanitizedPolicyPinMinMaxLength(
     PrefService* pref_service) {
-  int min_length =
-      std::max(pref_service->GetInteger(prefs::kPinUnlockMinimumLength), 1);
-  int max_length = pref_service->GetInteger(prefs::kPinUnlockMaximumLength);
+  int min_length = std::max(
+      pref_service->GetInteger(ash::prefs::kPinUnlockMinimumLength), 1);
+  int max_length =
+      pref_service->GetInteger(ash::prefs::kPinUnlockMaximumLength);
   max_length = max_length > 0 ? std::max(max_length, min_length) : 0;
 
   DCHECK_GE(min_length, 1);
@@ -456,9 +457,10 @@ QuickUnlockPrivateCheckCredentialFunction::Run() {
 
   Profile* profile = GetActiveProfile(browser_context());
   PrefService* pref_service = profile->GetPrefs();
-  bool allow_weak = pref_service->GetBoolean(prefs::kPinUnlockWeakPinsAllowed);
+  bool allow_weak =
+      pref_service->GetBoolean(ash::prefs::kPinUnlockWeakPinsAllowed);
   bool is_allow_weak_pin_pref_set =
-      pref_service->HasPrefPath(prefs::kPinUnlockWeakPinsAllowed);
+      pref_service->HasPrefPath(ash::prefs::kPinUnlockWeakPinsAllowed);
 
   // Check and return the problems.
   std::vector<CredentialProblem>& warnings = result->warnings;
@@ -543,7 +545,8 @@ ExtensionFunction::ResponseAction QuickUnlockPrivateSetModesFunction::Run() {
   }
 
   // Verify every credential is valid based on policies.
-  bool allow_weak = pref_service->GetBoolean(prefs::kPinUnlockWeakPinsAllowed);
+  bool allow_weak =
+      pref_service->GetBoolean(ash::prefs::kPinUnlockWeakPinsAllowed);
   for (size_t i = 0; i < params_->modes.size(); ++i) {
     if (params_->credentials[i].empty())
       continue;
@@ -606,14 +609,13 @@ void QuickUnlockPrivateSetModesFunction::OnGetActiveModes(
       chromeos::quick_unlock::PinBackend::GetInstance()->Remove(
           user->GetAccountId(), params_->token,
           base::BindOnce(
-              &QuickUnlockPrivateSetModesFunction::PinBackendCallComplete,
+              &QuickUnlockPrivateSetModesFunction::PinRemoveCallComplete,
               this));
     } else {
       chromeos::quick_unlock::PinBackend::GetInstance()->Set(
           user->GetAccountId(), params_->token, pin_credential,
           base::BindOnce(
-              &QuickUnlockPrivateSetModesFunction::PinBackendCallComplete,
-              this));
+              &QuickUnlockPrivateSetModesFunction::PinSetCallComplete, this));
     }
   } else {
     // No changes to apply. Call result directly.
@@ -621,7 +623,18 @@ void QuickUnlockPrivateSetModesFunction::OnGetActiveModes(
   }
 }
 
-void QuickUnlockPrivateSetModesFunction::PinBackendCallComplete(bool result) {
+void QuickUnlockPrivateSetModesFunction::PinSetCallComplete(bool result) {
+  if (!result) {
+    Respond(Error(kInternalError));
+    return;
+  }
+  ComputeActiveModes(
+      GetActiveProfile(browser_context()),
+      base::BindOnce(&QuickUnlockPrivateSetModesFunction::ModeChangeComplete,
+                     this));
+}
+
+void QuickUnlockPrivateSetModesFunction::PinRemoveCallComplete(bool result) {
   ComputeActiveModes(
       GetActiveProfile(browser_context()),
       base::BindOnce(&QuickUnlockPrivateSetModesFunction::ModeChangeComplete,

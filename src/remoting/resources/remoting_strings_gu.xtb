@@ -24,6 +24,7 @@
 જો '<ph name="SERVICE_SCRIPT_NAME" />' પહેલેથી જ ચેક કરેલું હોય, તો તેને અનચેક કરીને ફરી ચેક કરો.</translation>
 <translation id="225614027745146050">સ્વાગત છે</translation>
 <translation id="2320166752086256636">કીબોર્ડ છુપાવો</translation>
+<translation id="2329392777730037872">ગ્રાહકના ડિવાઇસ પર <ph name="URL" /> ખોલવામાં નિષ્ફળ રહ્યાં.</translation>
 <translation id="2333212046079545895">કૉપિરાઇટ 2021 Google LLC. સર્વાધિકાર સુરક્ષિત.</translation>
 <translation id="2359808026110333948">આગળ વધો</translation>
 <translation id="2366718077645204424">હોસ્ટ સુધી પહોંચવામાં અક્ષમ. આ કદાચ તમે ઉપયોગ કરી રહ્યાં છો એ નેટવર્કની ગોઠવણીનાં કારણે છે.</translation>
@@ -67,6 +68,7 @@
 <translation id="4176825807642096119">ઍક્સેસ કોડ</translation>
 <translation id="4227991223508142681">હોસ્ટ જોગવાઇ ઉપયોગિતા</translation>
 <translation id="4240294130679914010">Chromoting હોસ્ટ અનઇન્સ્ટોલર</translation>
+<translation id="4257751272692708833"><ph name="PRODUCT_NAME" /> URLને ફૉરવર્ડ કરતી ઍપ્લિકેશન</translation>
 <translation id="4277736576214464567">ઍક્સેસ કોડ અમાન્ય છે. કૃપા કરીને ફરીથી પ્રયાસ કરો.</translation>
 <translation id="4281844954008187215">સેવાની શરતો</translation>
 <translation id="4405930547258349619">મુખ્ય લાઇબ્રેરી</translation>
@@ -87,6 +89,7 @@
 <translation id="4867841927763172006">PrtScn મોકલો</translation>
 <translation id="4974476491460646149"><ph name="HOSTNAME" /> માટે કનેક્શન બંધ થયું</translation>
 <translation id="4985296110227979402">તમારે પહેલા તમારા કમ્પ્યુટરને રીમોટ ઍક્સેસ માટે સેટ કરવાની જરૂર છે</translation>
+<translation id="4987330545941822761">Chrome રીમોટ ડેસ્કટૉપ, કમ્પ્યુટર પર URLsને ખોલવા માટે બ્રાઉઝરને નિર્ધારિત કરી શકતું નથી. કૃપા કરીને નીચે આપેલી સૂચિમાંથી તેને પસંદ કરો.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (ઑફલાઇન)</translation>
 <translation id="507204348399810022">શું તમે ખરેખર <ph name="HOSTNAME" /> માટેના રિમોટ કનેક્શન્સને બંધ કરવા માગો છો?</translation>
 <translation id="5170982930780719864">અમાન્ય હોસ્ટ id.</translation>
@@ -121,6 +124,7 @@
 <translation id="6612717000975622067">Ctrl-Alt-Del મોકલો</translation>
 <translation id="6654753848497929428">શેર કરો</translation>
 <translation id="677755392401385740">આ વપરાશકર્તા માટે હોસ્ટ શરૂ: <ph name="HOST_USERNAME" />.</translation>
+<translation id="6902524959760471898"><ph name="PRODUCT_NAME" /> ક્લાયન્ટના ડિવાઇસ પર URL ખોલવા માટેની સહાયક ઍપ્લિકેશન</translation>
 <translation id="6939719207673461467">કીબોર્ડ બતાવો/છુપાવો.</translation>
 <translation id="6963936880795878952">રીમોટ કમ્પ્યુટરથી કનેક્શન્સ અસ્થાયીરૂપે અવરોધિત કરવામાં આવ્યાં છે કારણ કે કોઈ વ્યક્તિએ અમાન્ય PIN વડે તેની સાથે કનેક્ટ કરવાનો પ્રયાસ કર્યો હતો. કૃપા કરીને પછીથી ફરી પ્રયાસ કરો.</translation>
 <translation id="6965382102122355670">બરાબર, સમજાઇ ગયું</translation>
@@ -133,6 +137,7 @@
 <translation id="7144878232160441200">ફરી પ્રયત્ન કરો</translation>
 <translation id="7312846573060934304">હોસ્ટ ઑફલાઇન છે.</translation>
 <translation id="7319983568955948908">શેર કરવાનું રોકો</translation>
+<translation id="7359298090707901886">સ્થાનિક મશીન પર URLs ખોલવા માટે, પસંદ કરેલા બ્રાઉઝરનો ઉપયોગ કરી શકાતો નથી.</translation>
 <translation id="7401733114166276557">Chrome રીમોટ ડેસ્કટૉપ</translation>
 <translation id="7434397035092923453">ક્લાઇન્ટ માટે ઍક્સેસ નકારી: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">ક્લાઇન્ટ કનેક્ટ થયાં: <ph name="CLIENT_USERNAME" />.</translation>

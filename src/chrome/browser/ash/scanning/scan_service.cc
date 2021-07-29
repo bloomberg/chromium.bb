@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "ash/constants/ash_features.h"
-#include "ash/content/scanning/scanning_uma.h"
+#include "ash/webui/scanning/scanning_uma.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/check.h"
@@ -26,29 +26,18 @@
 #include "base/task_runner_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/scanning/lorgnette_scanner_manager.h"
+#include "chrome/browser/ash/scanning/scanning_file_path_helper.h"
 #include "chrome/browser/ash/scanning/scanning_type_converters.h"
+#include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service.h"
+#include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service_factory.h"
+#include "chromeos/utils/pdf_conversion.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/re2/src/re2/re2.h"
-#include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkData.h"
-#include "third_party/skia/include/core/SkImage.h"
-#include "third_party/skia/include/core/SkStream.h"
-#include "third_party/skia/include/core/SkTypes.h"
-#include "third_party/skia/include/docs/SkPDFDocument.h"
-#include "ui/gfx/image/image.h"
-#include "ui/gfx/image/image_util.h"
 
 namespace ash {
 
 namespace {
 
 namespace mojo_ipc = scanning::mojom;
-
-// The conversion quality when converting from PNG to JPG.
-constexpr int kJpgQuality = 100;
-
-// The number of degrees to rotate a PDF image.
-constexpr int kRotationDegrees = 180;
 
 // The max progress percent that can be reported for a scanned page.
 constexpr uint32_t kMaxProgressPercent = 100;
@@ -98,98 +87,14 @@ bool WriteImage(const base::FilePath& file_path,
   return true;
 }
 
-// Converts |png_img| to JPG.
-std::string PngToJpg(const std::string& png_img) {
-  std::vector<uint8_t> jpg_img;
-  const gfx::Image img = gfx::Image::CreateFrom1xPNGBytes(
-      reinterpret_cast<const unsigned char*>(png_img.c_str()), png_img.size());
-  if (!gfx::JPEG1xEncodedDataFromImage(img, kJpgQuality, &jpg_img)) {
-    LOG(ERROR) << "Failed to convert image from PNG to JPG.";
-    return "";
-  }
-
-  return std::string(jpg_img.begin(), jpg_img.end());
-}
-
-// Creates a new page for the PDF document and adds |image_data| to the page.
-// |rotate| indicates whether the page should be rotated 180 degrees.
-// Returns whether the page was successfully created.
-bool AddPdfPage(sk_sp<SkDocument> pdf_doc,
-                const sk_sp<SkData>& image_data,
-                bool rotate) {
-  const sk_sp<SkImage> image = SkImage::MakeFromEncoded(image_data);
-  if (!image) {
-    LOG(ERROR) << "Unable to generate image from encoded image data.";
-    return false;
-  }
-
-  SkCanvas* page_canvas = pdf_doc->beginPage(image->width(), image->height());
-  if (!page_canvas) {
-    LOG(ERROR) << "Unable to access PDF page canvas.";
-    return false;
-  }
-
-  // Rotate pages that were flipped by an ADF scanner.
-  if (rotate) {
-    page_canvas->rotate(kRotationDegrees);
-    page_canvas->translate(-image->width(), -image->height());
-  }
-
-  page_canvas->drawImage(image, /*left=*/0, /*top=*/0);
-  pdf_doc->endPage();
-  return true;
-}
-
-// Converts |png_images| into JPGs, adds them to a single PDF, and writes the
-// PDF to |file_path|. If |rotate_alternate_pages| is true, every other page
-// is rotated 180 degrees. Returns whether the PDF was successfully saved.
-bool SaveAsPdf(const std::vector<std::string>& png_images,
+// Adds |jpg_images| to a single PDF, and writes the PDF to |file_path|. If
+// |rotate_alternate_pages| is true, every other page is rotated 180 degrees.
+// Returns whether the PDF was successfully saved.
+bool SaveAsPdf(const std::vector<std::string>& jpg_images,
                const base::FilePath& file_path,
                bool rotate_alternate_pages) {
-  DCHECK(!file_path.empty());
-
-  SkFILEWStream pdf_outfile(file_path.value().c_str());
-  if (!pdf_outfile.isValid()) {
-    LOG(ERROR) << "Unable to open output file.";
-    return false;
-  }
-
-  sk_sp<SkDocument> pdf_doc = SkPDF::MakeDocument(&pdf_outfile);
-  SkASSERT(pdf_doc);
-
-  // Never rotate first page of PDF.
-  bool rotate_current_page = false;
-  for (const auto& png_img : png_images) {
-    const std::string jpg_img = PngToJpg(png_img);
-    if (jpg_img.empty()) {
-      LOG(ERROR) << "Unable to convert PNG image to JPG.";
-      return false;
-    }
-
-    SkDynamicMemoryWStream img_stream;
-    if (!img_stream.write(jpg_img.c_str(), jpg_img.size())) {
-      LOG(ERROR) << "Unable to write image to dynamic memory stream.";
-      return false;
-    }
-
-    const sk_sp<SkData> img_data = img_stream.detachAsData();
-    if (img_data->isEmpty()) {
-      LOG(ERROR) << "Stream data is empty.";
-      return false;
-    }
-
-    if (!AddPdfPage(pdf_doc, img_data, rotate_current_page)) {
-      LOG(ERROR) << "Unable to add new PDF page.";
-      return false;
-    }
-
-    if (rotate_alternate_pages) {
-      rotate_current_page = !rotate_current_page;
-    }
-  }
-
-  pdf_doc->close();
-  return true;
+  return chromeos::ConvertJpgImagesToPdf(jpg_images, file_path,
+                                         rotate_alternate_pages);
 }
 
 // Saves |scanned_image| to a file after converting it if necessary. Returns the
@@ -200,21 +105,8 @@ base::FilePath SavePage(const base::FilePath& scan_to_path,
                         uint32_t page_number,
                         const base::Time::Exploded& start_time) {
   std::string filename = CreateFilename(start_time, page_number, file_type);
-  if (file_type == mojo_ipc::FileType::kPng) {
-    if (!WriteImage(scan_to_path.Append(filename), scanned_image))
-      return base::FilePath();
-  } else if (file_type == mojo_ipc::FileType::kJpg) {
-    scanned_image = PngToJpg(scanned_image);
-    if (scanned_image.empty() ||
-        !WriteImage(scan_to_path.Append(filename), scanned_image)) {
-      return base::FilePath();
-    }
-  }
-  // Temporarily set searchable pdfs to follow png pipeline while implementing.
-  else if (file_type == mojo_ipc::FileType::kSearchablePdf) {
-    if (!WriteImage(scan_to_path.Append(filename), scanned_image))
-      return base::FilePath();
-  }
+  if (!WriteImage(scan_to_path.Append(filename), scanned_image))
+    return base::FilePath();
 
   return scan_to_path.Append(filename);
 }
@@ -247,9 +139,11 @@ scanning::ScanJobFailureReason GetScanJobFailureReason(
 void RecordScanJobResult(
     bool success,
     const absl::optional<scanning::ScanJobFailureReason>& failure_reason,
+    int num_files_created,
     int num_pages_scanned) {
   base::UmaHistogramBoolean("Scanning.ScanJobSuccessful", success);
   if (success) {
+    base::UmaHistogramCounts100("Scanning.NumFilesCreated", num_files_created);
     base::UmaHistogramCounts100("Scanning.NumPagesScanned", num_pages_scanned);
     return;
   }
@@ -264,14 +158,17 @@ void RecordScanJobResult(
 
 ScanService::ScanService(LorgnetteScannerManager* lorgnette_scanner_manager,
                          base::FilePath my_files_path,
-                         base::FilePath google_drive_path)
+                         base::FilePath google_drive_path,
+                         content::BrowserContext* context)
     : lorgnette_scanner_manager_(lorgnette_scanner_manager),
-      my_files_path_(std::move(my_files_path)),
-      google_drive_path_(std::move(google_drive_path)),
+      context_(context),
       task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
+      file_path_helper_(std::move(google_drive_path),
+                        std::move(my_files_path)) {
   DCHECK(lorgnette_scanner_manager_);
+  DCHECK(context_);
 }
 
 ScanService::~ScanService() = default;
@@ -307,21 +204,19 @@ void ScanService::StartScan(
   if (scanner_name.empty()) {
     std::move(callback).Run(false);
     RecordScanJobResult(false, scanning::ScanJobFailureReason::kScannerNotFound,
-                        /*not used*/ 0);
+                        /*not used*/ 0, /*not used*/ 0);
     return;
   }
 
   // Determine if an ADF scanner that flips alternate pages was selected.
-  rotate_alternate_pages_ =
-      RE2::PartialMatch(scanner_name, RE2("([Ee][Pp][Ss][Oo][Nn])(.*)")) &&
-      RE2::PartialMatch(settings->source_name,
-                        RE2("([Aa][Dd][Ff] [Dd][Uu][Pp][Ll][Ee][Xx])"));
+  rotate_alternate_pages_ = lorgnette_scanner_manager_->IsRotateAlternate(
+      scanner_name, settings->source_name);
 
-  if (!FilePathSupported(settings->scan_to_path)) {
+  if (!file_path_helper_.IsFilePathSupported(settings->scan_to_path)) {
     std::move(callback).Run(false);
     RecordScanJobResult(false,
                         scanning::ScanJobFailureReason::kUnsupportedScanToPath,
-                        /*not used*/ 0);
+                        /*not used*/ 0, /*not used*/ 0);
     return;
   }
 
@@ -354,16 +249,6 @@ void ScanService::CancelScan() {
 void ScanService::BindInterface(
     mojo::PendingReceiver<mojo_ipc::ScanService> pending_receiver) {
   receiver_.Bind(std::move(pending_receiver));
-}
-
-void ScanService::SetGoogleDrivePathForTesting(
-    const base::FilePath& google_drive_path) {
-  google_drive_path_ = google_drive_path;
-}
-
-void ScanService::SetMyFilesPathForTesting(
-    const base::FilePath& my_files_path) {
-  my_files_path_ = my_files_path;
 }
 
 void ScanService::Shutdown() {
@@ -515,27 +400,24 @@ void ScanService::OnAllPagesSaved(lorgnette::ScanFailureMode failure_mode) {
       mojo::ConvertTo<mojo_ipc::ScanResult>(
           static_cast<lorgnette::ScanFailureMode>(failure_mode)),
       scanned_file_paths_);
+  HoldingSpaceKeyedService* holding_space_keyed_service =
+      HoldingSpaceKeyedServiceFactory::GetInstance()->GetService(context_);
+  if (holding_space_keyed_service) {
+    for (const auto& saved_scan_path : scanned_file_paths_)
+      holding_space_keyed_service->AddScan(saved_scan_path);
+  }
   RecordScanJobResult(failure_mode == lorgnette::SCAN_FAILURE_MODE_NO_FAILURE &&
                           !page_save_failed_,
-                      failure_reason, num_pages_scanned_);
+                      failure_reason, scanned_file_paths_.size(),
+                      num_pages_scanned_);
 }
 
 void ScanService::ClearScanState() {
   page_save_failed_ = false;
+  rotate_alternate_pages_ = false;
   scanned_file_paths_.clear();
   scanned_images_.clear();
   num_pages_scanned_ = 0;
-}
-
-bool ScanService::FilePathSupported(const base::FilePath& file_path) {
-  if (file_path == my_files_path_ ||
-      (!file_path.ReferencesParent() &&
-       (my_files_path_.IsParent(file_path) ||
-        google_drive_path_.IsParent(file_path)))) {
-    return true;
-  }
-
-  return false;
 }
 
 std::string ScanService::GetScannerName(

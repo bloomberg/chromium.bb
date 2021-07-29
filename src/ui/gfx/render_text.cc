@@ -16,7 +16,6 @@
 #include "base/notreached.h"
 #include "base/numerics/ranges.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -28,6 +27,7 @@
 #include "third_party/icu/source/common/unicode/utf16.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
 #include "third_party/skia/include/core/SkFontStyle.h"
+#include "third_party/skia/include/core/SkTextBlob.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/gfx/canvas.h"
@@ -41,6 +41,10 @@
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/gfx/utf16_indexing.h"
+
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
 
 namespace gfx {
 
@@ -231,6 +235,31 @@ UChar32 ReplaceControlCharacter(UChar32 codepoint) {
     // see: http://www.unicode.org/Public/MAPPINGS/VENDORS/APPLE/CORPCHAR.TXT
     if (codepoint == 0xF8FF)
       return codepoint;
+#endif
+#if defined(OS_WIN)
+    // Support Microsoft defined PUA on Windows.
+    // see:
+    // https://docs.microsoft.com/en-us/windows/uwp/design/style/segoe-ui-symbol-font
+    if (base::win::GetVersion() >= base::win::Version::WIN10) {
+      switch (codepoint) {
+        case 0xF093:  // ButtonA
+        case 0xF094:  // ButtonB
+        case 0xF095:  // ButtonY
+        case 0xF096:  // ButtonX
+        case 0xF108:  // LeftStick
+        case 0xF109:  // RightStick
+        case 0xF10A:  // TriggerLeft
+        case 0xF10B:  // TriggerRight
+        case 0xF10C:  // BumperLeft
+        case 0xF10D:  // BumperRight
+        case 0xF10E:  // Dpad
+        case 0xEECA:  // ButtonView2
+        case 0xEDE3:  // ButtonMenu
+          return codepoint;
+        default:
+          break;
+      }
+    }
 #endif
     const int8_t codepoint_category = u_charType(codepoint);
     if (codepoint_category == U_PRIVATE_USE_CHAR ||
@@ -1002,7 +1031,7 @@ SelectionModel RenderText::FindCursorPosition(const Point& view_point,
   // Newline segment should be ignored in finding segment index with x
   // coordinate because it's not drawn.
   Vector2d newline_offset;
-  if (line.segments.size() > 1 && IsNewlineSegment(line.segments.front()))
+  if (line.segments.size() >= 1 && IsNewlineSegment(line.segments.front()))
     newline_offset.set_x(line.segments.front().width());
 
   float point_offset_relative_segment = 0;

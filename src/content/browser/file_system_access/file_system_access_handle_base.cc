@@ -45,7 +45,7 @@ FileSystemAccessHandleBase::FileSystemAccessHandleBase(
     Observe(WebContentsImpl::FromRenderFrameHostID(context_.frame_id));
 
     // Disable back-forward cache as File System Access's usage of
-    // RenderFrameHost::IsCurrent at the moment is not compatible with bfcache.
+    // RenderFrameHost::IsActive at the moment is not compatible with bfcache.
     BackForwardCache::DisableForRenderFrameHost(
         context_.frame_id,
         BackForwardCacheDisable::DisabledReason(
@@ -175,6 +175,31 @@ void FileSystemAccessHandleBase::DidRequestPermission(
       return;
   }
   NOTREACHED();
+}
+
+void FileSystemAccessHandleBase::DoRemove(
+    const storage::FileSystemURL& url,
+    bool recurse,
+    base::OnceCallback<void(blink::mojom::FileSystemAccessErrorPtr)> callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_EQ(GetWritePermissionStatus(),
+            blink::mojom::PermissionStatus::GRANTED);
+
+  DoFileSystemOperation(
+      FROM_HERE, &storage::FileSystemOperationRunner::Remove,
+      base::BindOnce(
+          [](base::OnceCallback<void(blink::mojom::FileSystemAccessErrorPtr)>
+                 callback,
+             base::File::Error result) {
+            std::move(callback).Run(
+                file_system_access_error::FromFileError(result));
+          },
+          std::move(callback)),
+      url, recurse);
+}
+
+WebContentsImpl* FileSystemAccessHandleBase::web_contents() const {
+  return static_cast<WebContentsImpl*>(WebContentsObserver::web_contents());
 }
 
 }  // namespace content

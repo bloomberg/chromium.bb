@@ -8,21 +8,29 @@
 #include <vector>
 
 #include "base/containers/contains.h"
+#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "ui/base/linux/linux_desktop.h"
 #include "ui/display/display.h"
 #include "ui/display/display_finder.h"
 #include "ui/display/display_list.h"
+#include "ui/display/util/gpu_info_util.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/display_color_spaces.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/ozone/platform/wayland/host/org_kde_kwin_idle.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_cursor_position.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
+#include "ui/ozone/platform/wayland/host/zwp_idle_inhibit_manager.h"
+
+#if defined(USE_DBUS)
+#include "ui/ozone/platform/wayland/host/org_gnome_mutter_idle_monitor.h"
+#endif
 
 namespace ui {
 
@@ -101,7 +109,8 @@ void WaylandScreen::AddOrUpdateDisplay(uint32_t output_id,
                                        int32_t scale_factor) {
   display::Display changed_display(output_id);
   if (!display::Display::HasForceDeviceScaleFactor()) {
-    changed_display.SetScaleAndBounds(scale_factor, new_bounds);
+    changed_display.SetScaleAndBounds(scale_factor + additional_scale_,
+                                      new_bounds);
   } else {
     changed_display.set_bounds(new_bounds);
     changed_display.set_work_area(new_bounds);
@@ -166,7 +175,7 @@ display::Display WaylandScreen::GetDisplayForAcceleratedWidget(
   // has not received enter surface events yet. Another case is when a user
   // switches between displays in a single output mode - Wayland may not send
   // enter events immediately, which can result in empty container of entered
-  // ids (check comments in WaylandWindow::RemoveEnteredOutputId). In this
+  // ids (check comments in WaylandWindow::OnEnteredOutputIdRemoved). In this
   // case, it's also safe to return the primary display.
   if (entered_output_id == 0)
     return GetPrimaryDisplay();
@@ -209,7 +218,7 @@ gfx::AcceleratedWidget WaylandScreen::GetAcceleratedWidgetAtScreenPoint(
   // point or not.
   auto* window =
       connection_->wayland_window_manager()->GetCurrentFocusedWindow();
-  if (window && window->GetBounds().Contains(point))
+  if (window && window->GetBoundsInDIP().Contains(point))
     return window->GetWidget();
   return gfx::kNullAcceleratedWidget;
 }
@@ -241,6 +250,60 @@ display::Display WaylandScreen::GetDisplayMatching(
   return display_matching ? *display_matching : GetPrimaryDisplay();
 }
 
+void WaylandScreen::SetScreenSaverSuspended(bool suspend) {
+  if (!connection_->zwp_idle_inhibit_manager())
+    return;
+
+  if (suspend) {
+    // Wayland inhibits idle behaviour on certain output, and implies that a
+    // surface bound to that output should obtain the inhibitor and hold it
+    // until it no longer needs to prevent the output to go idle.
+    // We assume that the idle lock is initiated by the user, and therefore the
+    // surface that we should use is the one owned by the window that is focused
+    // currently.
+    const auto* window_manager = connection_->wayland_window_manager();
+    DCHECK(window_manager);
+    const auto* current_window = window_manager->GetCurrentFocusedWindow();
+    if (!current_window) {
+      LOG(WARNING) << "Cannot inhibit going idle when no window is focused";
+      return;
+    }
+    DCHECK(current_window->root_surface());
+    idle_inhibitor_ = connection_->zwp_idle_inhibit_manager()->CreateInhibitor(
+        current_window->root_surface()->surface());
+  } else {
+    idle_inhibitor_.reset();
+  }
+}
+
+bool WaylandScreen::IsScreenSaverActive() const {
+  return idle_inhibitor_ != nullptr;
+}
+
+base::TimeDelta WaylandScreen::CalculateIdleTime() const {
+  // Try the org_kde_kwin_idle Wayland protocol extension (KWin).
+  if (const auto* kde_idle = connection_->org_kde_kwin_idle()) {
+    const auto idle_time = kde_idle->GetIdleTime();
+    if (idle_time)
+      return *idle_time;
+  }
+
+#if defined(USE_DBUS)
+  // Try the org.gnome.Mutter.IdleMonitor D-Bus service (Mutter).
+  if (!org_gnome_mutter_idle_monitor_)
+    org_gnome_mutter_idle_monitor_ =
+        std::make_unique<OrgGnomeMutterIdleMonitor>();
+  const auto idle_time = org_gnome_mutter_idle_monitor_->GetIdleTime();
+  if (idle_time)
+    return *idle_time;
+#endif  // defined(USE_DBUS)
+
+  NOTIMPLEMENTED_LOG_ONCE();
+
+  // No providers.  Return 0 which means the system never gets idle.
+  return base::TimeDelta::FromSeconds(0);
+}
+
 void WaylandScreen::AddObserver(display::DisplayObserver* observer) {
   display_list_.AddObserver(observer);
 }
@@ -251,11 +314,34 @@ void WaylandScreen::RemoveObserver(display::DisplayObserver* observer) {
 
 base::Value WaylandScreen::GetGpuExtraInfoAsListValue(
     const gfx::GpuExtraInfo& gpu_extra_info) {
-  // TODO(https://crbug.com/1138740): it'd be good to have the compositor name
-  // in the about://gpu as well.
   auto list_value = GetDesktopEnvironmentInfoAsListValue();
+  DCHECK(list_value.is_list());
+  std::vector<std::string> protocols;
+  for (const auto& protocol_and_version : connection_->available_globals()) {
+    protocols.push_back(base::StringPrintf("%s:%u",
+                                           protocol_and_version.first.c_str(),
+                                           protocol_and_version.second));
+  }
+  list_value.Append(
+      display::BuildGpuInfoEntry("Interfaces exposed by the Wayland compositor",
+                                 base::JoinString(protocols, " ")));
   StorePlatformNameIntoListValue(list_value, "wayland");
   return list_value;
+}
+
+void WaylandScreen::SetDeviceScaleFactor(float scale) {
+  // If the device scale factor is forced, ignore the one provided as it's
+  // already set.
+  if (display::Display::HasForceDeviceScaleFactor())
+    return;
+
+  // See comment near the additional_scale_ in the header file.
+  float whole = 0;
+  additional_scale_ = std::modf(scale, &whole);
+  for (const auto& display : display_list_.displays()) {
+    OnOutputAddedOrUpdated(display.id(), display.bounds(),
+                           display.device_scale_factor());
+  }
 }
 
 }  // namespace ui

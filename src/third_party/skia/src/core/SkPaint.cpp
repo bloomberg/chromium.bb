@@ -18,6 +18,7 @@
 #include "include/core/SkTypeface.h"
 #include "include/private/SkMutex.h"
 #include "include/private/SkTo.h"
+#include "src/core/SkBlenderBase.h"
 #include "src/core/SkColorFilterBase.h"
 #include "src/core/SkColorSpacePriv.h"
 #include "src/core/SkColorSpaceXformSteps.h"
@@ -26,7 +27,7 @@
 #include "src/core/SkOpts.h"
 #include "src/core/SkPaintDefaults.h"
 #include "src/core/SkPaintPriv.h"
-#include "src/core/SkPathEffectPriv.h"
+#include "src/core/SkPathEffectBase.h"
 #include "src/core/SkReadBuffer.h"
 #include "src/core/SkSafeRange.h"
 #include "src/core/SkStringUtils.h"
@@ -51,7 +52,6 @@ SkPaint::SkPaint()
                  (unsigned)SkPaint::kDefault_Join,  // fJoinType
                  (unsigned)SkPaint::kFill_Style,    // fStyle
                  (unsigned)kNone_SkFilterQuality,   // fFilterQuality
-                 (unsigned)SkBlendMode::kSrcOver,   // fBlendMode
                  0}                                 // fPadding
 {
     static_assert(sizeof(fBitfields) == sizeof(fBitfieldsUInt), "");
@@ -77,6 +77,7 @@ bool operator==(const SkPaint& a, const SkPaint& b) {
         && EQUAL(fShader)
         && EQUAL(fMaskFilter)
         && EQUAL(fColorFilter)
+        && EQUAL(fBlender)
         && EQUAL(fImageFilter)
         && EQUAL(fColor4f)
         && EQUAL(fWidth)
@@ -86,13 +87,26 @@ bool operator==(const SkPaint& a, const SkPaint& b) {
 #undef EQUAL
 }
 
-#define DEFINE_REF_FOO(type)    sk_sp<Sk##type> SkPaint::ref##type() const { return f##type; }
-DEFINE_REF_FOO(ColorFilter)
-DEFINE_REF_FOO(ImageFilter)
-DEFINE_REF_FOO(MaskFilter)
-DEFINE_REF_FOO(PathEffect)
-DEFINE_REF_FOO(Shader)
-#undef DEFINE_REF_FOO
+#define DEFINE_FIELD_REF(type) \
+    sk_sp<Sk##type> SkPaint::ref##type() const { return f##type; }
+DEFINE_FIELD_REF(ColorFilter)
+DEFINE_FIELD_REF(Blender)
+DEFINE_FIELD_REF(ImageFilter)
+DEFINE_FIELD_REF(MaskFilter)
+DEFINE_FIELD_REF(PathEffect)
+DEFINE_FIELD_REF(Shader)
+#undef DEFINE_FIELD_REF
+
+#define DEFINE_FIELD_SET(Field) \
+    void SkPaint::set##Field(sk_sp<Sk##Field> f) { f##Field = std::move(f); }
+DEFINE_FIELD_SET(ColorFilter)
+DEFINE_FIELD_SET(ImageFilter)
+DEFINE_FIELD_SET(MaskFilter)
+DEFINE_FIELD_SET(PathEffect)
+DEFINE_FIELD_SET(Shader)
+#undef DEFINE_FIELD_SET
+
+///////////////////////////////////////////////////////////////////////////////
 
 void SkPaint::reset() { *this = SkPaint(); }
 
@@ -130,6 +144,27 @@ void SkPaint::setAlphaf(float a) {
 
 void SkPaint::setARGB(U8CPU a, U8CPU r, U8CPU g, U8CPU b) {
     this->setColor(SkColorSetARGB(a, r, g, b));
+}
+
+skstd::optional<SkBlendMode> SkPaint::asBlendMode() const {
+    return fBlender ? as_BB(fBlender)->asBlendMode()
+                    : SkBlendMode::kSrcOver;
+}
+
+SkBlendMode SkPaint::getBlendMode_or(SkBlendMode defaultMode) const {
+    return this->asBlendMode().value_or(defaultMode);
+}
+
+bool SkPaint::isSrcOver() const {
+    return !fBlender || as_BB(fBlender)->asBlendMode() == SkBlendMode::kSrcOver;
+}
+
+void SkPaint::setBlendMode(SkBlendMode mode) {
+    this->setBlender(mode == SkBlendMode::kSrcOver ? nullptr : SkBlender::Mode(mode));
+}
+
+void SkPaint::setBlender(sk_sp<SkBlender> blender) {
+    fBlender = std::move(blender);
 }
 
 void SkPaint::setStrokeWidth(SkScalar width) {
@@ -174,16 +209,6 @@ void SkPaint::setStrokeJoin(Join jt) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define MOVE_FIELD(Field) void SkPaint::set##Field(sk_sp<Sk##Field> f) { f##Field = std::move(f); }
-MOVE_FIELD(ImageFilter)
-MOVE_FIELD(Shader)
-MOVE_FIELD(ColorFilter)
-MOVE_FIELD(PathEffect)
-MOVE_FIELD(MaskFilter)
-#undef MOVE_FIELD
-
-///////////////////////////////////////////////////////////////////////////////
-
 #include "include/core/SkStream.h"
 
 #ifdef SK_DEBUG
@@ -214,6 +239,8 @@ template <typename T> uint32_t shift_bits(T value, unsigned shift, unsigned bits
     return v << shift;
 }
 
+constexpr uint8_t CUSTOM_BLEND_MODE_SENTINEL = 0xFF;
+
 /*  Packing the paint
  flags :  8  // 2...
  blend :  8  // 30+
@@ -226,9 +253,13 @@ template <typename T> uint32_t shift_bits(T value, unsigned shift, unsigned bits
  */
 static uint32_t pack_v68(const SkPaint& paint, unsigned flatFlags) {
     uint32_t packed = 0;
+    const auto bm = paint.asBlendMode();
+    const unsigned mode = bm ? static_cast<unsigned>(bm.value())
+                             : CUSTOM_BLEND_MODE_SENTINEL;
+
     packed |= shift_bits(((unsigned)paint.isDither() << 1) |
                           (unsigned)paint.isAntiAlias(), 0, 8);
-    packed |= shift_bits(paint.getBlendMode(),      8, 8);
+    packed |= shift_bits(mode,                      8, 8);
     packed |= shift_bits(paint.getStrokeCap(),     16, 2);
     packed |= shift_bits(paint.getStrokeJoin(),    18, 2);
     packed |= shift_bits(paint.getStyle(),         20, 2);
@@ -243,7 +274,13 @@ static uint32_t unpack_v68(SkPaint* paint, uint32_t packed, SkSafeRange& safe) {
     paint->setAntiAlias((packed & 1) != 0);
     paint->setDither((packed & 2) != 0);
     packed >>= 8;
-    paint->setBlendMode(safe.checkLE(packed & 0xFF, SkBlendMode::kLastMode));
+    {
+        unsigned mode = packed & 0xFF;
+        if (mode != CUSTOM_BLEND_MODE_SENTINEL) { // sentinel for custom blender
+            paint->setBlendMode(safe.checkLE(mode, SkBlendMode::kLastMode));
+        }
+        // else we will unflatten the custom blender
+    }
     packed >>= 8;
     paint->setStrokeCap(safe.checkLE(packed & 0x3, SkPaint::kLast_Cap));
     packed >>= 2;
@@ -268,7 +305,8 @@ void SkPaintPriv::Flatten(const SkPaint& paint, SkWriteBuffer& buffer) {
         paint.getShader() ||
         paint.getMaskFilter() ||
         paint.getColorFilter() ||
-        paint.getImageFilter()) {
+        paint.getImageFilter() ||
+        !paint.asBlendMode()) {
         flatFlags |= kHasEffects_FlatFlag;
     }
 
@@ -283,8 +321,8 @@ void SkPaintPriv::Flatten(const SkPaint& paint, SkWriteBuffer& buffer) {
         buffer.writeFlattenable(paint.getShader());
         buffer.writeFlattenable(paint.getMaskFilter());
         buffer.writeFlattenable(paint.getColorFilter());
-        buffer.write32(0);  // legacy, was drawlooper
         buffer.writeFlattenable(paint.getImageFilter());
+        buffer.writeFlattenable(paint.getBlender());
     }
 }
 
@@ -301,19 +339,28 @@ SkReadPaintResult SkPaintPriv::Unflatten(SkPaint* paint, SkReadBuffer& buffer, S
 
     unsigned flatFlags = unpack_v68(paint, buffer.readUInt(), safe);
 
-    if (flatFlags & kHasEffects_FlatFlag) {
-        paint->setPathEffect(buffer.readPathEffect());
-        paint->setShader(buffer.readShader());
-        paint->setMaskFilter(buffer.readMaskFilter());
-        paint->setColorFilter(buffer.readColorFilter());
-        (void)buffer.read32();  // was drawLooper (zero)
-        paint->setImageFilter(buffer.readImageFilter());
-    } else {
+    if (!(flatFlags & kHasEffects_FlatFlag)) {
+        // This is a simple SkPaint without any effects, so clear all the effect-related fields.
         paint->setPathEffect(nullptr);
         paint->setShader(nullptr);
         paint->setMaskFilter(nullptr);
         paint->setColorFilter(nullptr);
         paint->setImageFilter(nullptr);
+    } else if (buffer.isVersionLT(SkPicturePriv::kSkBlenderInSkPaint)) {
+        // This paint predates the introduction of user blend functions (via SkBlender).
+        paint->setPathEffect(buffer.readPathEffect());
+        paint->setShader(buffer.readShader());
+        paint->setMaskFilter(buffer.readMaskFilter());
+        paint->setColorFilter(buffer.readColorFilter());
+        (void)buffer.read32();  // was drawLooper (now deprecated)
+        paint->setImageFilter(buffer.readImageFilter());
+    } else {
+        paint->setPathEffect(buffer.readPathEffect());
+        paint->setShader(buffer.readShader());
+        paint->setMaskFilter(buffer.readMaskFilter());
+        paint->setColorFilter(buffer.readColorFilter());
+        paint->setImageFilter(buffer.readImageFilter());
+        paint->setBlender(buffer.readBlender());
     }
 
     if (!buffer.validate(safe)) {
@@ -327,11 +374,17 @@ SkReadPaintResult SkPaintPriv::Unflatten(SkPaint* paint, SkReadBuffer& buffer, S
 
 bool SkPaint::getFillPath(const SkPath& src, SkPath* dst, const SkRect* cullRect,
                           SkScalar resScale) const {
+    return this->getFillPath(src, dst, cullRect, SkMatrix::Scale(resScale, resScale));
+}
+
+bool SkPaint::getFillPath(const SkPath& src, SkPath* dst, const SkRect* cullRect,
+                          const SkMatrix& ctm) const {
     if (!src.isFinite()) {
         dst->reset();
         return false;
     }
 
+    const SkScalar resScale = SkPaintPriv::ComputeResScaleForStroking(ctm);
     SkStrokeRec rec(*this, resScale);
 
 #if defined(SK_BUILD_FOR_FUZZER)
@@ -344,7 +397,7 @@ bool SkPaint::getFillPath(const SkPath& src, SkPath* dst, const SkRect* cullRect
     const SkPath* srcPtr = &src;
     SkPath tmpPath;
 
-    if (fPathEffect && fPathEffect->filterPath(&tmpPath, src, &rec, cullRect)) {
+    if (fPathEffect && fPathEffect->filterPath(&tmpPath, src, &rec, cullRect, ctm)) {
         srcPtr = &tmpPath;
     }
 
@@ -373,7 +426,7 @@ bool SkPaint::canComputeFastBounds() const {
     }
     // Pass nullptr for the bounds to determine if they can be computed
     if (this->getPathEffect() &&
-        !SkPathEffectPriv::ComputeFastBounds(this->getPathEffect(), nullptr)) {
+        !as_PEB(this->getPathEffect())->computeFastBounds(nullptr)) {
         return false;
     }
     return true;
@@ -389,7 +442,7 @@ const SkRect& SkPaint::doComputeFastBounds(const SkRect& origSrc,
     SkRect tmpSrc;
     if (this->getPathEffect()) {
         tmpSrc = origSrc;
-        SkAssertResult(SkPathEffectPriv::ComputeFastBounds(this->getPathEffect(), &tmpSrc));
+        SkAssertResult(as_PEB(this->getPathEffect())->computeFastBounds(&tmpSrc));
         src = &tmpSrc;
     }
 
@@ -422,7 +475,11 @@ static bool affects_alpha(const SkImageFilter* imf) {
 }
 
 bool SkPaint::nothingToDraw() const {
-    switch (this->getBlendMode()) {
+    auto bm = this->asBlendMode();
+    if (!bm) {
+        return false;
+    }
+    switch (bm.value()) {
         case SkBlendMode::kSrcOver:
         case SkBlendMode::kSrcATop:
         case SkBlendMode::kDstOut:
@@ -438,13 +495,4 @@ bool SkPaint::nothingToDraw() const {
             break;
     }
     return false;
-}
-
-uint32_t SkPaint::getHash() const {
-    // We're going to hash 5 pointers and 6 floats, finishing up with fBitfields,
-    // so fBitfields should be 5 pointers and 6 floats from the start.
-    static_assert(offsetof(SkPaint, fBitfieldsUInt) == 5 * sizeof(void*) + 6 * sizeof(float),
-                  "SkPaint_notPackedTightly");
-    return SkOpts::hash(reinterpret_cast<const uint32_t*>(this),
-                        offsetof(SkPaint, fBitfieldsUInt) + sizeof(fBitfieldsUInt));
 }

@@ -11,7 +11,7 @@
 #include <utility>
 
 #include "chrome/browser/ash/arc/arc_util.h"
-#include "chrome/browser/chromeos/file_manager/path_util.h"
+#include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_features_util.h"
 #include "chrome/grit/generated_resources.h"
@@ -30,6 +30,9 @@ namespace settings {
 namespace {
 
 constexpr char kAndroidEnabled[] = "androidEnabled";
+// Dummy UUID for testing. The UUID is taken from
+// components/arc/volume_mounter/arc_volume_mounter_bridge.cc.
+constexpr char kDummyUuid[] = "00000000000000000000000000000000DEADBEEF";
 
 const char* CalculationTypeToEventName(
     calculator::SizeCalculator::CalculationType x) {
@@ -200,10 +203,10 @@ void StorageHandler::UpdateExternalStorages() {
     const chromeos::disks::Disk* disk =
         DiskMountManager::GetInstance()->FindDiskBySourcePath(
             mount_info.source_path);
-    if (!disk)
-      continue;
 
-    std::string label = disk->device_label();
+    // Assigning a dummy UUID for diskless volume for testing.
+    const std::string uuid = disk ? disk->fs_uuid() : kDummyUuid;
+    std::string label = disk ? disk->device_label() : std::string();
     if (label.empty()) {
       // To make volume labels consistent with Files app, we follow how Files
       // generates a volume label when the volume doesn't have specific label.
@@ -213,7 +216,7 @@ void StorageHandler::UpdateExternalStorages() {
       label = base::FilePath(mount_info.mount_path).BaseName().AsUTF8Unsafe();
     }
     base::Value device(base::Value::Type::DICTIONARY);
-    device.SetKey("uuid", base::Value(disk->fs_uuid()));
+    device.SetKey("uuid", base::Value(uuid));
     device.SetKey("label", base::Value(label));
     devices.Append(std::move(device));
   }
@@ -304,8 +307,8 @@ void StorageHandler::UpdateSizeStat(
   base::DictionaryValue size_stat;
   size_stat.SetString("availableSize", ui::FormatBytes(available_bytes));
   size_stat.SetString("usedSize", ui::FormatBytes(in_use_total_bytes_));
-  size_stat.SetDouble("usedRatio", static_cast<double>(in_use_total_bytes_) /
-                                       rounded_total_bytes);
+  size_stat.SetDoubleKey("usedRatio", static_cast<double>(in_use_total_bytes_) /
+                                          rounded_total_bytes);
   int storage_space_state =
       static_cast<int>(StorageSpaceState::kStorageSpaceNormal);
   if (available_bytes < kSpaceCriticallyLowBytes)

@@ -597,6 +597,152 @@ void InsertFormatInfo(InternalFormatInfoMap *map, const InternalFormat &formatIn
     (*map)[formatInfo.internalFormat][formatInfo.type] = formatInfo;
 }
 
+// YuvFormatInfo implementation
+YuvFormatInfo::YuvFormatInfo(GLenum internalFormat, const Extents &yPlaneExtent)
+{
+    ASSERT(gl::IsYuvFormat(internalFormat));
+    ASSERT((gl::GetPlaneCount(internalFormat) > 0) && (gl::GetPlaneCount(internalFormat) <= 3));
+
+    glInternalFormat = internalFormat;
+    planeCount       = gl::GetPlaneCount(internalFormat);
+
+    // Chroma planes of a YUV format can be subsampled
+    int horizontalSubsampleFactor = 0;
+    int verticalSubsampleFactor   = 0;
+    gl::GetSubSampleFactor(internalFormat, &horizontalSubsampleFactor, &verticalSubsampleFactor);
+
+    // Compute plane Bpp
+    planeBpp[0] = gl::GetYPlaneBpp(internalFormat);
+    planeBpp[1] = gl::GetChromaPlaneBpp(internalFormat);
+    planeBpp[2] = (planeCount > 2) ? planeBpp[1] : 0;
+
+    // Compute plane extent
+    planeExtent[0] = yPlaneExtent;
+    planeExtent[1] = {(yPlaneExtent.width / horizontalSubsampleFactor),
+                      (yPlaneExtent.height / verticalSubsampleFactor), yPlaneExtent.depth};
+    planeExtent[2] = (planeCount > 2) ? planeExtent[1] : Extents();
+
+    // Compute plane pitch
+    planePitch[0] = planeExtent[0].width * planeBpp[0];
+    planePitch[1] = planeExtent[1].width * planeBpp[1];
+    planePitch[2] = planeExtent[2].width * planeBpp[2];
+
+    // Compute plane size
+    planeSize[0] = planePitch[0] * planeExtent[0].height;
+    planeSize[1] = planePitch[1] * planeExtent[1].height;
+    planeSize[2] = planePitch[2] * planeExtent[2].height;
+
+    // Compute plane offset
+    planeOffset[0] = 0;
+    planeOffset[1] = planeSize[0];
+    planeOffset[2] = planeSize[0] + planeSize[1];
+}
+
+// YUV format related helpers
+bool IsYuvFormat(GLenum format)
+{
+    switch (format)
+    {
+        case GL_G8_B8R8_2PLANE_420_UNORM_ANGLE:
+        case GL_G8_B8_R8_3PLANE_420_UNORM_ANGLE:
+        case GL_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16_ANGLE:
+        case GL_G10X6_B10X6_R10X6_3PLANE_420_UNORM_3PACK16_ANGLE:
+        case GL_G12X4_B12X4R12X4_2PLANE_420_UNORM_3PACK16_ANGLE:
+        case GL_G12X4_B12X4_R12X4_3PLANE_420_UNORM_3PACK16_ANGLE:
+        case GL_G16_B16R16_2PLANE_420_UNORM_ANGLE:
+        case GL_G16_B16_R16_3PLANE_420_UNORM_ANGLE:
+            return true;
+        default:
+            return false;
+    }
+}
+
+uint32_t GetPlaneCount(GLenum format)
+{
+    switch (format)
+    {
+        case GL_G8_B8R8_2PLANE_420_UNORM_ANGLE:
+        case GL_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16_ANGLE:
+        case GL_G12X4_B12X4R12X4_2PLANE_420_UNORM_3PACK16_ANGLE:
+        case GL_G16_B16R16_2PLANE_420_UNORM_ANGLE:
+            return 2;
+        case GL_G8_B8_R8_3PLANE_420_UNORM_ANGLE:
+        case GL_G10X6_B10X6_R10X6_3PLANE_420_UNORM_3PACK16_ANGLE:
+        case GL_G12X4_B12X4_R12X4_3PLANE_420_UNORM_3PACK16_ANGLE:
+        case GL_G16_B16_R16_3PLANE_420_UNORM_ANGLE:
+            return 3;
+        default:
+            UNREACHABLE();
+            return 0;
+    }
+}
+
+uint32_t GetYPlaneBpp(GLenum format)
+{
+    switch (format)
+    {
+        case GL_G8_B8R8_2PLANE_420_UNORM_ANGLE:
+        case GL_G8_B8_R8_3PLANE_420_UNORM_ANGLE:
+            return 1;
+        case GL_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16_ANGLE:
+        case GL_G10X6_B10X6_R10X6_3PLANE_420_UNORM_3PACK16_ANGLE:
+        case GL_G12X4_B12X4R12X4_2PLANE_420_UNORM_3PACK16_ANGLE:
+        case GL_G12X4_B12X4_R12X4_3PLANE_420_UNORM_3PACK16_ANGLE:
+        case GL_G16_B16R16_2PLANE_420_UNORM_ANGLE:
+        case GL_G16_B16_R16_3PLANE_420_UNORM_ANGLE:
+            return 2;
+        default:
+            UNREACHABLE();
+            return 0;
+    }
+}
+
+uint32_t GetChromaPlaneBpp(GLenum format)
+{
+    // 2 plane 420 YUV formats have CbCr channels interleaved.
+    // 3 plane 420 YUV formats have separate Cb and Cr planes.
+    switch (format)
+    {
+        case GL_G8_B8_R8_3PLANE_420_UNORM_ANGLE:
+            return 1;
+        case GL_G8_B8R8_2PLANE_420_UNORM_ANGLE:
+        case GL_G10X6_B10X6_R10X6_3PLANE_420_UNORM_3PACK16_ANGLE:
+        case GL_G12X4_B12X4_R12X4_3PLANE_420_UNORM_3PACK16_ANGLE:
+        case GL_G16_B16_R16_3PLANE_420_UNORM_ANGLE:
+            return 2;
+        case GL_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16_ANGLE:
+        case GL_G12X4_B12X4R12X4_2PLANE_420_UNORM_3PACK16_ANGLE:
+        case GL_G16_B16R16_2PLANE_420_UNORM_ANGLE:
+            return 4;
+        default:
+            UNREACHABLE();
+            return 0;
+    }
+}
+
+void GetSubSampleFactor(GLenum format, int *horizontalSubsampleFactor, int *verticalSubsampleFactor)
+{
+    ASSERT(horizontalSubsampleFactor && verticalSubsampleFactor);
+
+    switch (format)
+    {
+        case GL_G8_B8R8_2PLANE_420_UNORM_ANGLE:
+        case GL_G8_B8_R8_3PLANE_420_UNORM_ANGLE:
+        case GL_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16_ANGLE:
+        case GL_G10X6_B10X6_R10X6_3PLANE_420_UNORM_3PACK16_ANGLE:
+        case GL_G12X4_B12X4R12X4_2PLANE_420_UNORM_3PACK16_ANGLE:
+        case GL_G12X4_B12X4_R12X4_3PLANE_420_UNORM_3PACK16_ANGLE:
+        case GL_G16_B16R16_2PLANE_420_UNORM_ANGLE:
+        case GL_G16_B16_R16_3PLANE_420_UNORM_ANGLE:
+            *horizontalSubsampleFactor = 2;
+            *verticalSubsampleFactor   = 2;
+            break;
+        default:
+            UNREACHABLE();
+            break;
+    }
+}
+
 void AddRGBAFormat(InternalFormatInfoMap *map,
                    GLenum internalFormat,
                    bool sized,
@@ -742,6 +888,51 @@ void AddCompressedFormat(InternalFormatInfoMap *map,
     formatInfo.componentType            = GL_UNSIGNED_NORMALIZED;
     formatInfo.colorEncoding            = (srgb ? GL_SRGB : GL_LINEAR);
     formatInfo.compressed               = true;
+    formatInfo.textureSupport           = textureSupport;
+    formatInfo.filterSupport            = filterSupport;
+    formatInfo.textureAttachmentSupport = textureAttachmentSupport;
+    formatInfo.renderbufferSupport      = renderbufferSupport;
+    formatInfo.blendSupport             = blendSupport;
+
+    InsertFormatInfo(map, formatInfo);
+}
+
+void AddYUVFormat(InternalFormatInfoMap *map,
+                  GLenum internalFormat,
+                  bool sized,
+                  GLuint cr,
+                  GLuint y,
+                  GLuint cb,
+                  GLuint alpha,
+                  GLuint shared,
+                  GLenum format,
+                  GLenum type,
+                  GLenum componentType,
+                  bool srgb,
+                  InternalFormat::SupportCheckFunction textureSupport,
+                  InternalFormat::SupportCheckFunction filterSupport,
+                  InternalFormat::SupportCheckFunction textureAttachmentSupport,
+                  InternalFormat::SupportCheckFunction renderbufferSupport,
+                  InternalFormat::SupportCheckFunction blendSupport)
+{
+    ASSERT(sized);
+
+    InternalFormat formatInfo;
+    formatInfo.internalFormat      = internalFormat;
+    formatInfo.sized               = sized;
+    formatInfo.sizedInternalFormat = internalFormat;
+    formatInfo.redBits             = cr;
+    formatInfo.greenBits           = y;
+    formatInfo.blueBits            = cb;
+    formatInfo.alphaBits           = alpha;
+    formatInfo.sharedBits          = shared;
+    formatInfo.pixelBytes          = (cr + y + cb + alpha + shared) / 8;
+    formatInfo.componentCount =
+        ((cr > 0) ? 1 : 0) + ((y > 0) ? 1 : 0) + ((cb > 0) ? 1 : 0) + ((alpha > 0) ? 1 : 0);
+    formatInfo.format                   = format;
+    formatInfo.type                     = type;
+    formatInfo.componentType            = componentType;
+    formatInfo.colorEncoding            = (srgb ? GL_SRGB : GL_LINEAR);
     formatInfo.textureSupport           = textureSupport;
     formatInfo.filterSupport            = filterSupport;
     formatInfo.textureAttachmentSupport = textureAttachmentSupport;
@@ -1010,6 +1201,10 @@ static InternalFormatInfoMap BuildInternalFormatInfoMap()
     //                 | Internal format    |sized| R | G | B | A |S | Format | Type             | Component type        | SRGB | Texture supported                     | Filterable     | Texture attachment                    | Renderbuffer                          | Blend
     AddRGBAFormat(&map, GL_SR8_EXT,          true,  8,  0,  0,  0, 0, GL_RED,  GL_UNSIGNED_BYTE,  GL_UNSIGNED_NORMALIZED, true,  RequireExt<&Extensions::sRGBR8EXT>,     AlwaysSupported, NeverSupported,                         NeverSupported,                         NeverSupported);
 
+    // From EXT_texture_sRGB_RG8
+    //                 | Internal format    |sized| R | G | B | A |S | Format | Type             | Component type        | SRGB | Texture supported                     | Filterable     | Texture attachment                    | Renderbuffer                          | Blend
+    AddRGBAFormat(&map, GL_SRG8_EXT,         true,  8,  8,  0,  0, 0, GL_RG,   GL_UNSIGNED_BYTE,  GL_UNSIGNED_NORMALIZED, true,  RequireExt<&Extensions::sRGBRG8EXT>,    AlwaysSupported, NeverSupported,                         NeverSupported,                         NeverSupported);
+
     // Unsized formats
     //                 | Internal format  |sized | R | G | B | A |S | Format           | Type                          | Component type        | SRGB | Texture supported                               | Filterable     | Texture attachment                            | Renderbuffer  | Blend
     AddRGBAFormat(&map, GL_RED,            false,  8,  0,  0,  0, 0, GL_RED,            GL_UNSIGNED_BYTE,               GL_UNSIGNED_NORMALIZED, false, RequireExt<&Extensions::textureRG>,               AlwaysSupported, RequireExt<&Extensions::textureRG>,             NeverSupported, NeverSupported);
@@ -1116,6 +1311,11 @@ static InternalFormatInfoMap BuildInternalFormatInfoMap()
     AddDepthStencilFormat(&map, GL_DEPTH_STENCIL,   false, 32, 8, 24, GL_DEPTH_STENCIL,   GL_FLOAT_32_UNSIGNED_INT_24_8_REV, GL_FLOAT,               RequireESOrExt<3, 0, &Extensions::packedDepthStencilOES>, AlwaysSupported, RequireExt<&Extensions::packedDepthStencilOES>,                                       RequireExt<&Extensions::packedDepthStencilOES>,                                       RequireExt<&Extensions::packedDepthStencilOES>);
     AddDepthStencilFormat(&map, GL_STENCIL,         false,  0, 8,  0, GL_STENCIL,         GL_UNSIGNED_BYTE,                  GL_UNSIGNED_NORMALIZED, RequireES<1, 0>,                                          NeverSupported , RequireES<1, 0>,                                                                      RequireES<1, 0>,                                                                      RequireES<1, 0>);
     AddDepthStencilFormat(&map, GL_STENCIL_INDEX,   false,  0, 8,  0, GL_STENCIL_INDEX,   GL_UNSIGNED_BYTE,                  GL_UNSIGNED_NORMALIZED, RequireES<3, 1>,                                          NeverSupported , RequireES<3, 1>,                                                                      RequireES<3, 1>,                                                                      RequireES<3, 1>);
+
+    // Non-standard YUV formats
+    //                 | Internal format                             | sized | Cr | Y | Cb | A | S | Format                              | Type            | Comp                  | SRGB | Texture supported                                       | Filterable                                              | Texture attachment                                      | Renderbuffer  | Blend
+    AddYUVFormat(&map,  GL_G8_B8R8_2PLANE_420_UNORM_ANGLE,            true,   8,   8,  8,   0,  0,  GL_G8_B8R8_2PLANE_420_UNORM_ANGLE,    GL_UNSIGNED_BYTE, GL_UNSIGNED_NORMALIZED, false, RequireExt<&Extensions::yuvInternalFormatANGLE>,          RequireExt<&Extensions::yuvInternalFormatANGLE>,          RequireExt<&Extensions::yuvInternalFormatANGLE>,          NeverSupported, NeverSupported);
+    AddYUVFormat(&map,  GL_G8_B8_R8_3PLANE_420_UNORM_ANGLE,           true,   8,   8,  8,   0,  0,  GL_G8_B8_R8_3PLANE_420_UNORM_ANGLE,   GL_UNSIGNED_BYTE, GL_UNSIGNED_NORMALIZED, false, RequireExt<&Extensions::yuvInternalFormatANGLE>,          RequireExt<&Extensions::yuvInternalFormatANGLE>,          RequireExt<&Extensions::yuvInternalFormatANGLE>,          NeverSupported, NeverSupported);
     // clang-format on
 
     return map;
@@ -2591,6 +2791,182 @@ size_t GetVertexFormatSize(angle::FormatID vertexFormatID)
             return 0;
 #endif
     }
+}
+
+angle::FormatID ConvertFormatSignedness(const angle::Format &format)
+{
+    switch (format.id)
+    {
+        // 1 byte signed to unsigned
+        case angle::FormatID::R8_SINT:
+            return angle::FormatID::R8_UINT;
+        case angle::FormatID::R8_SNORM:
+            return angle::FormatID::R8_UNORM;
+        case angle::FormatID::R8_SSCALED:
+            return angle::FormatID::R8_USCALED;
+        case angle::FormatID::R8G8_SINT:
+            return angle::FormatID::R8G8_UINT;
+        case angle::FormatID::R8G8_SNORM:
+            return angle::FormatID::R8G8_UNORM;
+        case angle::FormatID::R8G8_SSCALED:
+            return angle::FormatID::R8G8_USCALED;
+        case angle::FormatID::R8G8B8_SINT:
+            return angle::FormatID::R8G8B8_UINT;
+        case angle::FormatID::R8G8B8_SNORM:
+            return angle::FormatID::R8G8B8_UNORM;
+        case angle::FormatID::R8G8B8_SSCALED:
+            return angle::FormatID::R8G8B8_USCALED;
+        case angle::FormatID::R8G8B8A8_SINT:
+            return angle::FormatID::R8G8B8A8_UINT;
+        case angle::FormatID::R8G8B8A8_SNORM:
+            return angle::FormatID::R8G8B8A8_UNORM;
+        case angle::FormatID::R8G8B8A8_SSCALED:
+            return angle::FormatID::R8G8B8A8_USCALED;
+        // 1 byte unsigned to signed
+        case angle::FormatID::R8_UINT:
+            return angle::FormatID::R8_SINT;
+        case angle::FormatID::R8_UNORM:
+            return angle::FormatID::R8_SNORM;
+        case angle::FormatID::R8_USCALED:
+            return angle::FormatID::R8_SSCALED;
+        case angle::FormatID::R8G8_UINT:
+            return angle::FormatID::R8G8_SINT;
+        case angle::FormatID::R8G8_UNORM:
+            return angle::FormatID::R8G8_SNORM;
+        case angle::FormatID::R8G8_USCALED:
+            return angle::FormatID::R8G8_SSCALED;
+        case angle::FormatID::R8G8B8_UINT:
+            return angle::FormatID::R8G8B8_SINT;
+        case angle::FormatID::R8G8B8_UNORM:
+            return angle::FormatID::R8G8B8_SNORM;
+        case angle::FormatID::R8G8B8_USCALED:
+            return angle::FormatID::R8G8B8_SSCALED;
+        case angle::FormatID::R8G8B8A8_UINT:
+            return angle::FormatID::R8G8B8A8_SINT;
+        case angle::FormatID::R8G8B8A8_UNORM:
+            return angle::FormatID::R8G8B8A8_SNORM;
+        case angle::FormatID::R8G8B8A8_USCALED:
+            return angle::FormatID::R8G8B8A8_SSCALED;
+        // 2 byte signed to unsigned
+        case angle::FormatID::R16_SINT:
+            return angle::FormatID::R16_UINT;
+        case angle::FormatID::R16_SNORM:
+            return angle::FormatID::R16_UNORM;
+        case angle::FormatID::R16_SSCALED:
+            return angle::FormatID::R16_USCALED;
+        case angle::FormatID::R16G16_SINT:
+            return angle::FormatID::R16G16_UINT;
+        case angle::FormatID::R16G16_SNORM:
+            return angle::FormatID::R16G16_UNORM;
+        case angle::FormatID::R16G16_SSCALED:
+            return angle::FormatID::R16G16_USCALED;
+        case angle::FormatID::R16G16B16_SINT:
+            return angle::FormatID::R16G16B16_UINT;
+        case angle::FormatID::R16G16B16_SNORM:
+            return angle::FormatID::R16G16B16_UNORM;
+        case angle::FormatID::R16G16B16_SSCALED:
+            return angle::FormatID::R16G16B16_USCALED;
+        case angle::FormatID::R16G16B16A16_SINT:
+            return angle::FormatID::R16G16B16A16_UINT;
+        case angle::FormatID::R16G16B16A16_SNORM:
+            return angle::FormatID::R16G16B16A16_UNORM;
+        case angle::FormatID::R16G16B16A16_SSCALED:
+            return angle::FormatID::R16G16B16A16_USCALED;
+        // 2 byte unsigned to signed
+        case angle::FormatID::R16_UINT:
+            return angle::FormatID::R16_SINT;
+        case angle::FormatID::R16_UNORM:
+            return angle::FormatID::R16_SNORM;
+        case angle::FormatID::R16_USCALED:
+            return angle::FormatID::R16_SSCALED;
+        case angle::FormatID::R16G16_UINT:
+            return angle::FormatID::R16G16_SINT;
+        case angle::FormatID::R16G16_UNORM:
+            return angle::FormatID::R16G16_SNORM;
+        case angle::FormatID::R16G16_USCALED:
+            return angle::FormatID::R16G16_SSCALED;
+        case angle::FormatID::R16G16B16_UINT:
+            return angle::FormatID::R16G16B16_SINT;
+        case angle::FormatID::R16G16B16_UNORM:
+            return angle::FormatID::R16G16B16_SNORM;
+        case angle::FormatID::R16G16B16_USCALED:
+            return angle::FormatID::R16G16B16_SSCALED;
+        case angle::FormatID::R16G16B16A16_UINT:
+            return angle::FormatID::R16G16B16A16_SINT;
+        case angle::FormatID::R16G16B16A16_UNORM:
+            return angle::FormatID::R16G16B16A16_SNORM;
+        case angle::FormatID::R16G16B16A16_USCALED:
+            return angle::FormatID::R16G16B16A16_SSCALED;
+        // 4 byte signed to unsigned
+        case angle::FormatID::R32_SINT:
+            return angle::FormatID::R32_UINT;
+        case angle::FormatID::R32_SNORM:
+            return angle::FormatID::R32_UNORM;
+        case angle::FormatID::R32_SSCALED:
+            return angle::FormatID::R32_USCALED;
+        case angle::FormatID::R32G32_SINT:
+            return angle::FormatID::R32G32_UINT;
+        case angle::FormatID::R32G32_SNORM:
+            return angle::FormatID::R32G32_UNORM;
+        case angle::FormatID::R32G32_SSCALED:
+            return angle::FormatID::R32G32_USCALED;
+        case angle::FormatID::R32G32B32_SINT:
+            return angle::FormatID::R32G32B32_UINT;
+        case angle::FormatID::R32G32B32_SNORM:
+            return angle::FormatID::R32G32B32_UNORM;
+        case angle::FormatID::R32G32B32_SSCALED:
+            return angle::FormatID::R32G32B32_USCALED;
+        case angle::FormatID::R32G32B32A32_SINT:
+            return angle::FormatID::R32G32B32A32_UINT;
+        case angle::FormatID::R32G32B32A32_SNORM:
+            return angle::FormatID::R32G32B32A32_UNORM;
+        case angle::FormatID::R32G32B32A32_SSCALED:
+            return angle::FormatID::R32G32B32A32_USCALED;
+        // 4 byte unsigned to signed
+        case angle::FormatID::R32_UINT:
+            return angle::FormatID::R32_SINT;
+        case angle::FormatID::R32_UNORM:
+            return angle::FormatID::R32_SNORM;
+        case angle::FormatID::R32_USCALED:
+            return angle::FormatID::R32_SSCALED;
+        case angle::FormatID::R32G32_UINT:
+            return angle::FormatID::R32G32_SINT;
+        case angle::FormatID::R32G32_UNORM:
+            return angle::FormatID::R32G32_SNORM;
+        case angle::FormatID::R32G32_USCALED:
+            return angle::FormatID::R32G32_SSCALED;
+        case angle::FormatID::R32G32B32_UINT:
+            return angle::FormatID::R32G32B32_SINT;
+        case angle::FormatID::R32G32B32_UNORM:
+            return angle::FormatID::R32G32B32_SNORM;
+        case angle::FormatID::R32G32B32_USCALED:
+            return angle::FormatID::R32G32B32_SSCALED;
+        case angle::FormatID::R32G32B32A32_UINT:
+            return angle::FormatID::R32G32B32A32_SINT;
+        case angle::FormatID::R32G32B32A32_UNORM:
+            return angle::FormatID::R32G32B32A32_SNORM;
+        case angle::FormatID::R32G32B32A32_USCALED:
+            return angle::FormatID::R32G32B32A32_SSCALED;
+        // 1010102 signed to unsigned
+        case angle::FormatID::R10G10B10A2_SINT:
+            return angle::FormatID::R10G10B10A2_UINT;
+        case angle::FormatID::R10G10B10A2_SSCALED:
+            return angle::FormatID::R10G10B10A2_USCALED;
+        case angle::FormatID::R10G10B10A2_SNORM:
+            return angle::FormatID::R10G10B10A2_UNORM;
+        // 1010102 unsigned to signed
+        case angle::FormatID::R10G10B10A2_UINT:
+            return angle::FormatID::R10G10B10A2_SINT;
+        case angle::FormatID::R10G10B10A2_USCALED:
+            return angle::FormatID::R10G10B10A2_SSCALED;
+        case angle::FormatID::R10G10B10A2_UNORM:
+            return angle::FormatID::R10G10B10A2_SNORM;
+        default:
+            UNREACHABLE();
+    }
+#if !UNREACHABLE_IS_NORETURN
+    return angle::FormatID::NONE;
+#endif
 }
 
 bool ValidES3InternalFormat(GLenum internalFormat)

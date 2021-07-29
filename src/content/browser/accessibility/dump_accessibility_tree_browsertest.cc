@@ -201,6 +201,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityCSSContentVisibilityAutoAriaHidden) {
+  RunCSSTest(FILE_PATH_LITERAL("content-visibility-auto-aria-hidden.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        AccessibilityCSSContentVisibilityHiddenCheckFailure) {
   RunCSSTest(FILE_PATH_LITERAL("content-visibility-hidden-check-failure.html"));
 }
@@ -565,6 +570,16 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaColAttr) {
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityAriaColRowIndex) {
+  RunAriaTest(FILE_PATH_LITERAL("aria-col-row-index.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityAriaColRowIndexUndefined) {
+  RunAriaTest(FILE_PATH_LITERAL("aria-col-row-index-undefined.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        AccessibilityAriaColumnHeader) {
   RunAriaTest(FILE_PATH_LITERAL("aria-columnheader.html"));
 }
@@ -616,6 +631,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityContinuations) {
   RunHtmlTest(FILE_PATH_LITERAL("continuations.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityContinuationsParserSplitsMarkup) {
+  RunHtmlTest(FILE_PATH_LITERAL("continuations-parser-splits-markup.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaControls) {
@@ -775,8 +795,16 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunAriaTest(FILE_PATH_LITERAL("aria-hidden-labelled-by.html"));
 }
 
+// TODO(https://crbug.com/1227569): This test is flaky on linux.
+#if defined(OS_LINUX)
+#define MAYBE_AccessibilityAriaHiddenIframeBody \
+  DISABLED_AccessibilityAriaHiddenIframeBody
+#else
+#define MAYBE_AccessibilityAriaHiddenIframeBody \
+  AccessibilityAriaHiddenIframeBody
+#endif
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       AccessibilityAriaHiddenIframeBody) {
+                       MAYBE_AccessibilityAriaHiddenIframeBody) {
   RunAriaTest(FILE_PATH_LITERAL("aria-hidden-iframe-body.html"));
 }
 
@@ -1103,6 +1131,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaOption) {
   RunAriaTest(FILE_PATH_LITERAL("aria-option.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityAriaOptionComplexChildren) {
+  RunAriaTest(FILE_PATH_LITERAL("aria-option-complex-children.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaParagraph) {
   RunAriaTest(FILE_PATH_LITERAL("aria-paragraph.html"));
 }
@@ -1141,6 +1174,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaRadio) {
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaRadiogroup) {
   RunAriaTest(FILE_PATH_LITERAL("aria-radiogroup.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityAriaRadioInShadowRoot) {
+  RunAriaTest(FILE_PATH_LITERAL("aria-radio-in-shadow-root.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaReadonly) {
@@ -1296,6 +1334,16 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaTextbox) {
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityAriaTextboxWithAriaTextboxChild) {
+  RunAriaTest(FILE_PATH_LITERAL("aria-textbox-with-aria-textbox-child.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityAriaTextboxWithNonTextChildren) {
+  RunAriaTest(FILE_PATH_LITERAL("aria-textbox-with-non-text-children.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        AccessibilityAriaTextboxWithRichText) {
   RunAriaTest(FILE_PATH_LITERAL("aria-textbox-with-rich-text.html"));
 }
@@ -1416,6 +1464,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAside) {
 // Super flaky with NetworkService.
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, DISABLED_AccessibilityAudio) {
   RunHtmlTest(FILE_PATH_LITERAL("audio.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAWithBefore) {
+  RunHtmlTest(FILE_PATH_LITERAL("a-with-before.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAWithImg) {
@@ -2332,6 +2384,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityMain) {
   RunHtmlTest(FILE_PATH_LITERAL("main.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityMapAnyContents) {
+  RunHtmlTest(FILE_PATH_LITERAL("map-any-contents.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityMapUnused) {
   RunHtmlTest(FILE_PATH_LITERAL("map-unused.html"));
 }
@@ -2942,6 +2998,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        ContentVisibilityWithPseudoElement) {
   RunRegressionTest(
       FILE_PATH_LITERAL("content-visibility-with-pseudo-element.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, ContentVisibilityLabel) {
+  RunRegressionTest(FILE_PATH_LITERAL("content-visibility-label.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, DisplayContentsSelectCrash) {

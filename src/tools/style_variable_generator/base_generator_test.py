@@ -1,8 +1,14 @@
+#!/usr/bin/env python3
 # Copyright 2019 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from base_generator import BaseGenerator, VariableType, Modes
+import os
+import sys
+
+sys.path += [os.path.dirname(os.path.dirname(__file__))]
+
+from style_variable_generator.base_generator import BaseGenerator, VariableType, Modes
 import unittest
 
 
@@ -154,6 +160,26 @@ class BaseGeneratorTest(unittest.TestCase):
 }
         ''')
         self.generator.Validate()
+
+    def testSelfReferenceColor(self):
+        self.generator.AddJSONToModel('''
+{
+  colors: {
+    google_grey_900: "$google_grey_900",
+  }
+}
+        ''')
+        self.assertRaises(ValueError, self.generator.Validate)
+
+    def testSelfReferenceOpacity(self):
+        self.generator.AddJSONToModel('''
+{
+  opacities: {
+    some_opacity: "$some_opacity",
+  }
+}
+        ''')
+        self.assertRaises(ValueError, self.generator.Validate)
 
 
 if __name__ == '__main__':

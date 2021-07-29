@@ -110,6 +110,7 @@ class LoginScreenClientImpl : public ash::LoginScreenClient {
   void FocusLockScreenApps(bool reverse) override;
   void FocusOobeDialog() override;
   void ShowGaiaSignin(const AccountId& prefilled_account) override;
+  void ShowOsInstallScreen() override;
   void OnRemoveUserWarningShown() override;
   void RemoveUser(const AccountId& account_id) override;
   void LaunchPublicSession(const AccountId& account_id,
@@ -119,7 +120,7 @@ class LoginScreenClientImpl : public ash::LoginScreenClient {
                                            const std::string& locale) override;
   void HandleAccelerator(ash::LoginAcceleratorAction action) override;
   void ShowAccountAccessHelpApp(gfx::NativeWindow parent_window) override;
-  void ShowParentAccessHelpApp(gfx::NativeWindow parent_window) override;
+  void ShowParentAccessHelpApp() override;
   void ShowLockScreenNotificationSettings() override;
   void OnFocusLeavingSystemTray(bool reverse) override;
   void OnSystemTrayBubbleShown() override;

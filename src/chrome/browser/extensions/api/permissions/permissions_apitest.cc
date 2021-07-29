@@ -35,6 +35,11 @@ using ContextType = ExtensionBrowserTest::ContextType;
 
 class ExperimentalApiTest : public ExtensionApiTest {
  public:
+  ExperimentalApiTest() = default;
+  ~ExperimentalApiTest() override = default;
+  ExperimentalApiTest(const ExperimentalApiTest&) = delete;
+  ExperimentalApiTest& operator=(const ExperimentalApiTest&) = delete;
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
@@ -43,6 +48,11 @@ class ExperimentalApiTest : public ExtensionApiTest {
 
 class PermissionsApiTest : public ExtensionApiTest {
  public:
+  PermissionsApiTest() = default;
+  ~PermissionsApiTest() override = default;
+  PermissionsApiTest(const PermissionsApiTest&) = delete;
+  PermissionsApiTest& operator=(const PermissionsApiTest&) = delete;
+
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -52,10 +62,18 @@ class PermissionsApiTest : public ExtensionApiTest {
 class PermissionsApiTestWithContextType
     : public PermissionsApiTest,
       public testing::WithParamInterface<ContextType> {
+ public:
+  PermissionsApiTestWithContextType() = default;
+  ~PermissionsApiTestWithContextType() override = default;
+  PermissionsApiTestWithContextType(const PermissionsApiTestWithContextType&) =
+      delete;
+  PermissionsApiTestWithContextType& operator=(
+      const PermissionsApiTestWithContextType&) = delete;
+
  protected:
   bool RunTest(const char* extension_name) {
     return RunExtensionTest(
-        {.name = extension_name},
+        extension_name, {},
         {.load_as_service_worker = GetParam() == ContextType::kServiceWorker});
   }
 };
@@ -208,7 +226,7 @@ IN_PROC_BROWSER_TEST_F(PermissionsApiTest, OptionalPermissionsFileAccess) {
 
   EXPECT_TRUE(RunExtensionTest("permissions/file_access_no")) << message_;
   EXPECT_FALSE(prefs->AllowFileAccess(last_loaded_extension_id()));
-  EXPECT_TRUE(RunExtensionTest({.name = "permissions/file_access_yes"},
+  EXPECT_TRUE(RunExtensionTest("permissions/file_access_yes", {},
                                {.allow_file_access = true}))
       << message_;
   EXPECT_TRUE(prefs->AllowFileAccess(last_loaded_extension_id()));
@@ -229,8 +247,8 @@ IN_PROC_BROWSER_TEST_F(PermissionsApiTest, FileLoad) {
     EXPECT_TRUE(base::CopyFile(original_empty_file, empty_file));
   }
   EXPECT_TRUE(RunExtensionTest(
-      {.name = "permissions/file_load",
-       .custom_arg = temp_dir.GetPath().MaybeAsASCII().c_str()},
+      "permissions/file_load",
+      {.custom_arg = temp_dir.GetPath().MaybeAsASCII().c_str()},
       {.allow_file_access = true}))
       << message_;
   {

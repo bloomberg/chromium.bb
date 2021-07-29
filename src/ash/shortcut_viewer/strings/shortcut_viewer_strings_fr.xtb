@@ -17,6 +17,7 @@
 <translation id="1516966594427080024">Ouvrir une nouvelle fenêtre en mode navigation privée</translation>
 <translation id="152892567002884378">Augmenter le volume</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, puis <ph name="ESC" /></translation>
+<translation id="1633761758045565086">Sélectionner une boîte de dialogue d'aide</translation>
 <translation id="1652741121070700329">Atteindre le début du mot précédent</translation>
 <translation id="1679841710523778799">Augmenter la luminosité</translation>
 <translation id="168356808214100546">Appuyez de manière prolongée sur <ph name="ALT" />, puis appuyez sur <ph name="TAB" /> pour sélectionner la fenêtre de votre choix et relâchez pour l'ouvrir.</translation>
@@ -125,6 +126,7 @@
 <translation id="526651782186312376">Sélectionner du texte jusqu'au début de la ligne</translation>
 <translation id="5316716239522500219">Mettre en miroir les moniteurs</translation>
 <translation id="539072479502328326">Activer ou désactiver la loupe ancrée</translation>
+<translation id="5466615362193675484">Activer/Désactiver le menu pour le mode de verrouillage du redimensionnement</translation>
 <translation id="5541719484267030947">Appuyez sur <ph name="ESC" /> tout en faisant glisser l'onglet</translation>
 <translation id="5554139136362089836">Rechercher sur la page active</translation>
 <translation id="5563050856984839829">Appuyez sur <ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> et cliquez sur un lien</translation>
@@ -148,6 +150,7 @@
 <translation id="6276708887952587684">Afficher le code source de la page</translation>
 <translation id="6321940490215594447">Ouvrir la page "Historique"</translation>
 <translation id="6340769215862220182">Zoom avant de l'écran</translation>
+<translation id="634687982629734605">Alterner entre la zone d'état (là où se trouve la photo de votre compte), le Lanceur d'applications, la barre d'adresse, la barre de favoris (si elle est visible), la page Web ouverte ou la barre de téléchargements (si elle est visible). Si une boîte de dialogue sélectionnable est ouverte, placer le curseur sur cette dernière.</translation>
 <translation id="6359811074279051077"><ph name="MODIFIER" /><ph name="SEPARATOR" /><ph name="KEY" /></translation>
 <translation id="6395172954772765143">Sélectionner du texte jusqu'à la fin de la ligne</translation>
 <translation id="6425378783626925378">Cliquer sur les icônes de 1 à 8 de l'étagère</translation>
@@ -191,7 +194,6 @@
 <translation id="8026334261755873520">Effacer les données de navigation</translation>
 <translation id="8130528849632411619">Accéder au début du document</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> ou <ph name="E" /></translation>
-<translation id="8232835244134740473">Alterner entre la zone d'état (là où se trouve la photo de votre compte), le lanceur d'applications, la barre d'adresse, la barre de favoris (si elle est visible), la page Web ouverte ou la barre de téléchargements (si elle est visible).</translation>
 <translation id="8234414138295101081">Faire pivoter l'écran de 90 degrés</translation>
 <translation id="8241665785394195545">crochet droit</translation>
 <translation id="8264941229485248811">Afficher ou masquer l'inspecteur des outils pour les développeurs</translation>

@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/rand_util.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/process/arc_process.h"
@@ -14,6 +14,7 @@
 #include "chrome/browser/performance_manager/mechanisms/working_set_trimmer.h"
 #include "chrome/browser/performance_manager/mechanisms/working_set_trimmer_chromeos.h"
 #include "chrome/browser/performance_manager/policies/policy_features.h"
+#include "chrome/browser/performance_manager/policies/working_set_trimmer_policy_arcvm.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/performance_manager/performance_manager_impl.h"
@@ -29,6 +30,19 @@ namespace performance_manager {
 namespace policies {
 
 namespace {
+// TODO(crbug.com/1189677): Remove the global static variable and make it
+// GraphOwned once performance_manager code is migrated to UI thread.
+WorkingSetTrimmerPolicyChromeOS::ArcVmDelegate* g_arcvm_delegate_for_testing =
+    nullptr;
+
+// Reports ARCVM trim metrics every |kArcVmTrimMetricReportDelay| minutes.
+constexpr base::TimeDelta kArcVmTrimMetricReportDelay =
+    base::TimeDelta::FromMinutes(30);
+
+// It is very unlikely to do the trim more than |kArcVmTrimMetricMaxCount|
+// times in |kArcVmTrimMetricReportDelay|.
+constexpr int kArcVmTrimMetricMaxCount = 30;
+
 enum ArcProcessType { kApp, kSystem };
 void GetArcProcessListOnUIThread(
     ArcProcessType type,
@@ -61,6 +75,16 @@ void GetArcProcessListOnUIThread(
   }
 }
 
+void OnTrimArcVmWorkingSetOnUIThread(bool success,
+                                     const std::string& failure_reason) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (success) {
+    VLOG(2) << "Reclaimed ARCVM memory";
+    return;
+  }
+  LOG(WARNING) << "Failed to reclaim ARCVM memory: " << failure_reason;
+}
+
 }  // namespace
 
 WorkingSetTrimmerPolicyChromeOS::WorkingSetTrimmerPolicyChromeOS() {
@@ -69,6 +93,8 @@ WorkingSetTrimmerPolicyChromeOS::WorkingSetTrimmerPolicyChromeOS() {
   trim_on_freeze_ = base::FeatureList::IsEnabled(features::kTrimOnFreeze);
   trim_arc_on_memory_pressure_ =
       base::FeatureList::IsEnabled(features::kTrimArcOnMemoryPressure);
+  trim_arcvm_on_memory_pressure_ =
+      base::FeatureList::IsEnabled(features::kTrimArcVmOnMemoryPressure);
 
   params_ = features::TrimOnMemoryPressureParams::GetParams();
 
@@ -83,8 +109,15 @@ WorkingSetTrimmerPolicyChromeOS::WorkingSetTrimmerPolicyChromeOS() {
       DLOG(ERROR) << "ARC is not available";
       trim_arc_on_memory_pressure_ = false;
     } else if (arc::IsArcVmEnabled()) {
-      // TODO(b/165850234): Integrate with ARCVM.
+      // ARCVM is handled separately.
       trim_arc_on_memory_pressure_ = false;
+    }
+  }
+
+  if (trim_arcvm_on_memory_pressure_) {
+    if (!arc::IsArcAvailable() || !arc::IsArcVmEnabled()) {
+      DLOG(ERROR) << "ARCVM is not available";
+      trim_arcvm_on_memory_pressure_ = false;
     }
   }
 }
@@ -104,18 +137,32 @@ void WorkingSetTrimmerPolicyChromeOS::OnMemoryPressure(
   // memory pressure notifications every 10s.
 
   if (trim_on_memory_pressure_) {
-    if (base::TimeTicks::Now() - last_graph_walk_ >
-        params_.graph_walk_backoff_time) {
+    if (!last_graph_walk_ || (base::TimeTicks::Now() - *last_graph_walk_ >
+                              params_.graph_walk_backoff_time)) {
       TrimNodesOnGraph();
     }
   }
 
   if (trim_arc_on_memory_pressure_) {
-    if (base::TimeTicks::Now() - last_arc_process_fetch_ >
-        params_.arc_process_list_fetch_backoff_time) {
+    if (!last_arc_process_fetch_ ||
+        (base::TimeTicks::Now() - *last_arc_process_fetch_ >
+         params_.arc_process_list_fetch_backoff_time)) {
       TrimArcProcesses();
     }
   }
+
+  if (trim_arcvm_on_memory_pressure_) {
+    if (!last_arcvm_trim_ || (base::TimeTicks::Now() - *last_arcvm_trim_ >
+                              params_.arcvm_trim_backoff_time)) {
+      TrimArcVmProcesses(level);
+    }
+  }
+}
+
+void WorkingSetTrimmerPolicyChromeOS::set_arcvm_delegate_for_testing(
+    ArcVmDelegate* delegate) {
+  DCHECK(!g_arcvm_delegate_for_testing || !delegate);
+  g_arcvm_delegate_for_testing = delegate;
 }
 
 void WorkingSetTrimmerPolicyChromeOS::TrimNodesOnGraph() {
@@ -203,8 +250,8 @@ bool WorkingSetTrimmerPolicyChromeOS::TrimArcProcess(base::ProcessId pid) {
   SetArcProcessLastTrimTime(pid, base::TimeTicks::Now());
 
   static int arc_processes_trimmed = 0;
-  UMA_HISTOGRAM_COUNTS_10000("Memory.WorkingSetTrim.ArcProcessTrimCount",
-                             ++arc_processes_trimmed);
+  base::UmaHistogramCounts10000("Memory.WorkingSetTrim.ArcProcessTrimCount",
+                                ++arc_processes_trimmed);
 
   auto* trimmer = static_cast<mechanism::WorkingSetTrimmerChromeOS*>(
       mechanism::WorkingSetTrimmer::GetInstance());
@@ -264,8 +311,110 @@ void WorkingSetTrimmerPolicyChromeOS::TrimArcProcesses() {
   }
 }
 
+void WorkingSetTrimmerPolicyChromeOS::TrimArcVmProcesses(
+    base::MemoryPressureListener::MemoryPressureLevel level) {
+  DCHECK_NE(level, base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE);
+  // TODO(crbug.com/1189677): Remove the PostTask once performance_manager code
+  // is migrated to UI thread.
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&TrimArcVmProcessesOnUIThread, level, params_,
+                                weak_ptr_factory_.GetWeakPtr()));
+}
+
+// static
+void WorkingSetTrimmerPolicyChromeOS::TrimArcVmProcessesOnUIThread(
+    base::MemoryPressureListener::MemoryPressureLevel level,
+    features::TrimOnMemoryPressureParams params,
+    base::WeakPtr<WorkingSetTrimmerPolicyChromeOS> ptr) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // TODO(crbug.com/1189677): Let the policy own WorkingSetTrimmerPolicyArcVm
+  // instance once performance_manager code is migrated to UI thread.
+  auto* arcvm_delegate = g_arcvm_delegate_for_testing
+                             ? g_arcvm_delegate_for_testing
+                             : WorkingSetTrimmerPolicyArcVm::Get();
+
+  const bool force_reclaim =
+      params.trim_arcvm_on_critical_pressure &&
+      (level == base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
+  const bool need_reclaim =
+      force_reclaim ||
+      arcvm_delegate->IsEligibleForReclaim(params.arcvm_inactivity_time);
+  PerformanceManager::CallOnGraph(
+      FROM_HERE,
+      base::BindOnce(&WorkingSetTrimmerPolicyChromeOS::OnTrimArcVmProcesses,
+                     ptr, need_reclaim));
+}
+
+void WorkingSetTrimmerPolicyChromeOS::OnTrimArcVmProcesses(bool need_reclaim) {
+  if (!need_reclaim)
+    return;
+  // TODO(crbug.com/1189677): Remove the PostTask once performance_manager code
+  // is migrated to UI thread.
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindRepeating(&DoTrimArcVmOnUIThread));
+  last_arcvm_trim_ = base::TimeTicks::Now();
+  ++arcvm_trim_count_;
+}
+
+// static
+void WorkingSetTrimmerPolicyChromeOS::DoTrimArcVmOnUIThread() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  auto* trimmer = static_cast<mechanism::WorkingSetTrimmerChromeOS*>(
+      mechanism::WorkingSetTrimmer::GetInstance());
+  trimmer->TrimArcVmWorkingSet(
+      base::BindOnce(&OnTrimArcVmWorkingSetOnUIThread));
+}
+
+// static
+size_t WorkingSetTrimmerPolicyChromeOS::GetArcVmTrimCountForFinalReport(
+    size_t current_arcvm_trim_count,
+    const base::TimeDelta& time_since_last_arcvm_trim_metric_report,
+    const base::TimeDelta& arcvm_trim_backoff_time,
+    const base::TimeDelta& arcvm_trim_metric_report_delay) {
+  DCHECK_NE(0, time_since_last_arcvm_trim_metric_report.InMinutes());
+  DCHECK_NE(0, arcvm_trim_backoff_time.InMinutes());
+
+  // In |kArcVmTrimMetricReportDelay|, only |max_trim_count| times of ARCVM
+  // trims can happen.
+  const size_t max_trim_count = arcvm_trim_metric_report_delay.InMinutes() /
+                                    arcvm_trim_backoff_time.InMinutes() +
+                                1;
+
+  // Adjust the |arcvm_trim_count_| before the final report. Use std::min() to
+  // avoid reporting unrealistically large counts.
+  return std::min<size_t>(
+      current_arcvm_trim_count * arcvm_trim_metric_report_delay.InMinutes() /
+          time_since_last_arcvm_trim_metric_report.InMinutes(),
+      max_trim_count);
+}
+
+void WorkingSetTrimmerPolicyChromeOS::ReportArcVmTrimMetric() {
+  base::UmaHistogramExactLinear("Memory.WorkingSetTrim.ArcVmTrimCountPer30Mins",
+                                arcvm_trim_count_, kArcVmTrimMetricMaxCount);
+  time_since_last_arcvm_trim_metric_report_ = base::ElapsedTimer();
+  arcvm_trim_count_ = 0;
+}
+
+void WorkingSetTrimmerPolicyChromeOS::ReportArcVmTrimMetricOnDestruction() {
+  if (!trim_arcvm_on_memory_pressure_)
+    return;
+
+  const base::TimeDelta elapsed =
+      time_since_last_arcvm_trim_metric_report_.Elapsed();
+  if (!elapsed.InMinutes())
+    return;
+
+  arcvm_trim_count_ = GetArcVmTrimCountForFinalReport(
+      arcvm_trim_count_, elapsed, params_.arcvm_trim_backoff_time,
+      kArcVmTrimMetricReportDelay);
+  ReportArcVmTrimMetric();
+}
+
 void WorkingSetTrimmerPolicyChromeOS::OnTakenFromGraph(Graph* graph) {
   memory_pressure_listener_.reset();
+  arcvm_trim_metric_report_timer_.Stop();
+  ReportArcVmTrimMetricOnDestruction();
   graph_ = nullptr;
   WorkingSetTrimmerPolicy::OnTakenFromGraph(graph);
 }
@@ -286,6 +435,13 @@ void WorkingSetTrimmerPolicyChromeOS::OnPassedToGraph(Graph* graph) {
         FROM_HERE,
         base::BindRepeating(&WorkingSetTrimmerPolicyChromeOS::OnMemoryPressure,
                             base::Unretained(this)));
+  }
+  if (trim_arcvm_on_memory_pressure_) {
+    arcvm_trim_metric_report_timer_.Start(
+        FROM_HERE, kArcVmTrimMetricReportDelay,
+        base::BindRepeating(
+            &WorkingSetTrimmerPolicyChromeOS::ReportArcVmTrimMetric,
+            weak_ptr_factory_.GetWeakPtr()));
   }
 
   graph_ = graph;

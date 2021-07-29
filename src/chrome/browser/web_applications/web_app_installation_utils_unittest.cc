@@ -42,7 +42,8 @@ TEST(WebAppInstallationUtils, SetWebAppManifestFields_Summary) {
   web_app_info.theme_color = SK_ColorCYAN;
   web_app_info.background_color = SK_ColorMAGENTA;
 
-  const AppId app_id = GenerateAppIdFromURL(web_app_info.start_url);
+  const AppId app_id =
+      GenerateAppId(/*manifest_id=*/absl::nullopt, web_app_info.start_url);
   auto web_app = std::make_unique<WebApp>(app_id);
   SetWebAppManifestFields(web_app_info, *web_app);
 
@@ -67,7 +68,8 @@ TEST(WebAppInstallationUtils, SetWebAppManifestFields_ShareTarget) {
   web_app_info.scope = web_app_info.start_url.GetWithoutFilename();
   web_app_info.title = u"App Name";
 
-  const AppId app_id = GenerateAppIdFromURL(web_app_info.start_url);
+  const AppId app_id =
+      GenerateAppId(/*manifest_id=*/absl::nullopt, web_app_info.start_url);
   auto web_app = std::make_unique<WebApp>(app_id);
 
   {
@@ -153,7 +155,8 @@ TEST(WebAppInstallationUtils, SetWebAppManifestFields_LimitFileHandlers) {
   web_app_info.scope = web_app_info.start_url.GetWithoutFilename();
   web_app_info.title = u"App Name";
 
-  const AppId app_id = GenerateAppIdFromURL(web_app_info.start_url);
+  const AppId app_id =
+      GenerateAppId(/*manifest_id=*/absl::nullopt, web_app_info.start_url);
   auto web_app = std::make_unique<WebApp>(app_id);
 
   {
@@ -163,7 +166,8 @@ TEST(WebAppInstallationUtils, SetWebAppManifestFields_LimitFileHandlers) {
       std::map<std::u16string, std::vector<std::u16string>> accept;
       accept[UTF8ToUTF16(mime_type(i))] = {UTF8ToUTF16(extension(i))};
       web_app_info.file_handlers.push_back(
-          {action_url(i), name, std::move(accept)});
+          {action_url(i), name, std::vector<blink::Manifest::ImageResource>(),
+           std::move(accept)});
     }
     EXPECT_GT(web_app_info.file_handlers.size(), kMaxFileHandlers);
   }

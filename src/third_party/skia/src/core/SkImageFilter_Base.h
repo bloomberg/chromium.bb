@@ -108,31 +108,26 @@ public:
     }
 
     /**
-     *  ImageFilters can natively handle scaling and translate components in the CTM. Only some of
-     *  them can handle affine (or more complex) matrices. This call returns true iff the filter
-     *  and all of its (non-null) inputs can handle these more complex matrices.
+     *  Most ImageFilters can natively handle scaling and translate components in the CTM. Only
+     *  some of them can handle affine (or more complex) matrices. Some may only handle translation.
+     *  This call returns the maximum "kind" of CTM for a filter and all of its (non-null) inputs.
      */
-    bool canHandleComplexCTM() const;
-
-    /**
-     * Return an image filter representing this filter applied with the given ctm. This will modify
-     * the DAG as needed if this filter does not support complex CTMs and 'ctm' is not simple. The
-     * ctm matrix will be decomposed such that ctm = A*B; B will be incorporated directly into the
-     * DAG and A must be the ctm set on the context passed to filterImage(). 'remainder' will be set
-     * to A.
-     *
-     * If this filter supports complex ctms, or 'ctm' is not complex, then A = ctm and B = I. When
-     * the filter does not support complex ctms, and the ctm is complex, then A represents the
-     * extracted simple portion of the ctm, and the complex portion is baked into a new DAG using a
-     * matrix filter.
-     *
-     * This will never return null.
-     *
-     * DEPRECATED - Should draw the results of filterImage() directly with the remainder matrix.
-     */
-    sk_sp<SkImageFilter> applyCTM(const SkMatrix& ctm, SkMatrix* remainder) const;
+    enum class MatrixCapability {
+        kTranslate,
+        kScaleTranslate,
+        kComplex,
+    };
+    MatrixCapability getCTMCapability() const;
 
     uint32_t uniqueID() const { return fUniqueID; }
+
+    static SkFlattenable::Type GetFlattenableType() {
+        return kSkImageFilter_Type;
+    }
+
+    SkFlattenable::Type getFlattenableType() const override {
+        return kSkImageFilter_Type;
+    }
 
 protected:
     // DEPRECATED: Will be removed once cropping is handled by a standalone image filter
@@ -368,11 +363,14 @@ private:
     virtual bool onIsColorFilterNode(SkColorFilter** /*filterPtr*/) const { return false; }
 
     /**
-     *  Return true if this filter can map from its parameter space to a layer space described by an
-     *  arbitrary transformation matrix. If this returns false, the filter only needs to worry about
-     *  mapping from parameter to layer using a scale+translate matrix.
+     *  Return the most complex matrix type this filter can support (mapping from its parameter
+     *  space to a layer space). If this returns anything less than kComplex, the filter only needs
+     *  to worry about mapping from parameter to layer using a matrix that is constrained in that
+     *  way (eg, scale+translate).
      */
-    virtual bool onCanHandleComplexCTM() const { return false; }
+    virtual MatrixCapability onGetCTMCapability() const {
+        return MatrixCapability::kScaleTranslate;
+    }
 
     /**
      *  Return true if this filter would transform transparent black pixels to a color other than
@@ -501,6 +499,7 @@ void SkRegisterMergeImageFilterFlattenable();
 void SkRegisterMorphologyImageFilterFlattenables();
 void SkRegisterOffsetImageFilterFlattenable();
 void SkRegisterPictureImageFilterFlattenable();
+void SkRegisterRuntimeImageFilterFlattenable();
 void SkRegisterShaderImageFilterFlattenable();
 void SkRegisterTileImageFilterFlattenable();
 

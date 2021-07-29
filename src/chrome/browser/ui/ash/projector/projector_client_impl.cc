@@ -10,6 +10,8 @@
 #include "components/soda/soda_installer.h"
 #include "media/base/media_switches.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 
 namespace {
 // On-device speech recognition is only available in US English.
@@ -21,20 +23,22 @@ bool ShouldUseWebSpeechFallback() {
 
 }  // namespace
 
-ProjectorClientImpl::ProjectorClientImpl() {
-  ash::ProjectorController::Get()->SetClient(this);
-
+ProjectorClientImpl::ProjectorClientImpl(ash::ProjectorController* controller)
+    : controller_(controller) {
+  controller_->SetClient(this);
   bool recognition_available =
       OnDeviceSpeechRecognizer::IsOnDeviceSpeechRecognizerAvailable(
           kEnglishLanguageCode) ||
       ShouldUseWebSpeechFallback();
 
-  ash::ProjectorController::Get()->OnSpeechRecognitionAvailable(
-      recognition_available);
+  controller_->OnSpeechRecognitionAvailable(recognition_available);
   if (!recognition_available) {
-    observed_soda_installer_.Observe(speech::SodaInstaller::GetInstance());
+    speech::SodaInstaller::GetInstance()->AddObserver(this);
   }
 }
+
+ProjectorClientImpl::ProjectorClientImpl()
+    : ProjectorClientImpl(ash::ProjectorController::Get()) {}
 
 ProjectorClientImpl::~ProjectorClientImpl() = default;
 
@@ -46,10 +50,11 @@ void ProjectorClientImpl::StartSpeechRecognition() {
              kEnglishLanguageCode) ||
          ShouldUseWebSpeechFallback());
   DCHECK_EQ(speech_recognizer_.get(), nullptr);
+  recognizer_status_ = SPEECH_RECOGNIZER_OFF;
   speech_recognizer_ = std::make_unique<OnDeviceSpeechRecognizer>(
       weak_ptr_factory_.GetWeakPtr(), ProfileManager::GetPrimaryUserProfile(),
-      kEnglishLanguageCode, /*recognition_mode_ime=*/false);
-  speech_recognizer_->Start();
+      kEnglishLanguageCode, /*recognition_mode_ime=*/false,
+      /*enable_formatting=*/true);
 }
 
 void ProjectorClientImpl::StopSpeechRecognition() {
@@ -58,7 +63,9 @@ void ProjectorClientImpl::StopSpeechRecognition() {
 }
 
 void ProjectorClientImpl::ShowSelfieCam() {
-  selfie_cam_bubble_manager_.Show(ProfileManager::GetPrimaryUserProfile());
+  selfie_cam_bubble_manager_.Show(
+      ProfileManager::GetPrimaryUserProfile(),
+      display::Screen::GetScreen()->GetPrimaryDisplay().work_area());
 }
 
 void ProjectorClientImpl::CloseSelfieCam() {
@@ -72,29 +79,31 @@ bool ProjectorClientImpl::IsSelfieCamVisible() const {
 void ProjectorClientImpl::OnSpeechResult(
     const std::u16string& text,
     bool is_final,
-    const absl::optional<SpeechRecognizerDelegate::TranscriptTiming>& timing) {
-  DCHECK(timing.has_value() || ShouldUseWebSpeechFallback());
-
-  if (timing.has_value()) {
-    ash::ProjectorController::Get()->OnTranscription(
-        text, timing->audio_start_time, timing->audio_end_time,
-        timing->word_offsets, is_final);
-  } else {
-    // This is only used for development.
-    ash::ProjectorController::Get()->OnTranscription(
-        text, absl::nullopt, absl::nullopt, absl::nullopt, is_final);
-  }
+    const absl::optional<media::SpeechRecognitionResult>& full_result) {
+  DCHECK(full_result.has_value());
+  controller_->OnTranscription(full_result.value());
 }
 
 void ProjectorClientImpl::OnSpeechRecognitionStateChanged(
     SpeechRecognizerStatus new_state) {
+  if (new_state == SPEECH_RECOGNIZER_ERROR) {
+    speech_recognizer_.reset();
+    recognizer_status_ = SPEECH_RECOGNIZER_OFF;
+    controller_->OnTranscriptionError();
+  } else if (new_state == SPEECH_RECOGNIZER_READY) {
+    if (recognizer_status_ == SPEECH_RECOGNIZER_OFF && speech_recognizer_) {
+      // The SpeechRecognizer was initialized after being created, and
+      // is ready to start recognizing speech.
+      speech_recognizer_->Start();
+    }
+  }
+
   recognizer_status_ = new_state;
-  // TODO(yilkal): Handle the new state appropriately.
 }
 
 void ProjectorClientImpl::OnSodaInstalled() {
   // OnDevice has been installed! Notify ProjectorController in ash.
   DCHECK(OnDeviceSpeechRecognizer::IsOnDeviceSpeechRecognizerAvailable(
       kEnglishLanguageCode));
-  ash::ProjectorController::Get()->OnSpeechRecognitionAvailable(true);
+  controller_->OnSpeechRecognitionAvailable(true);
 }

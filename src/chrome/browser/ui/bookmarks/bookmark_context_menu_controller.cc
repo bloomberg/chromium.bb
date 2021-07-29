@@ -70,7 +70,6 @@ const UserMetricsAction* GetActionForLocationAndDisposition(
         default:
           return nullptr;
       }
-      break;
     case BOOKMARK_LAUNCH_LOCATION_APP_MENU:
       switch (disposition) {
         case WindowOpenDisposition::NEW_BACKGROUND_TAB:
@@ -189,7 +188,7 @@ void BookmarkContextMenuController::BuildMenu() {
     AddCheckboxItem(IDC_BOOKMARK_BAR_SHOW_APPS_SHORTCUT,
                     IDS_BOOKMARK_BAR_SHOW_APPS_SHORTCUT);
   }
-  if (base::FeatureList::IsEnabled(reading_list::switches::kReadLater)) {
+  if (reading_list::switches::IsReadingListEnabled()) {
     AddCheckboxItem(IDC_BOOKMARK_BAR_SHOW_READING_LIST,
                     IDS_BOOKMARK_BAR_SHOW_READING_LIST);
   }

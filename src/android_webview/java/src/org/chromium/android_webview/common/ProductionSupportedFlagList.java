@@ -8,6 +8,7 @@ import org.chromium.base.BaseSwitches;
 import org.chromium.blink_public.common.BlinkFeatures;
 import org.chromium.cc.base.CcSwitches;
 import org.chromium.components.metrics.MetricsSwitches;
+import org.chromium.components.power_scheduler.PowerSchedulerFeatures;
 import org.chromium.components.viz.common.VizFeatures;
 import org.chromium.gpu.config.GpuFeatures;
 import org.chromium.gpu.config.GpuSwitches;
@@ -45,11 +46,18 @@ public final class ProductionSupportedFlagList {
             Flag.commandLine(CcSwitches.SHOW_COMPOSITED_LAYER_BORDERS,
                     "Renders a border around compositor layers to help debug and study layer "
                             + "compositing."),
+            Flag.commandLine(CcSwitches.ANIMATED_IMAGE_RESUME,
+                    "Resumes animated images from where they were."),
             Flag.commandLine(AwSwitches.FINCH_SEED_EXPIRATION_AGE,
                     "Forces all variations seeds to be considered stale.", "0"),
             Flag.commandLine(AwSwitches.FINCH_SEED_IGNORE_PENDING_DOWNLOAD,
                     "Forces the WebView service to reschedule a variations seed download job even "
                             + "if one is already pending."),
+            Flag.commandLine(AwSwitches.FINCH_SEED_NO_CHARGING_REQUIREMENT,
+                    "Forces WebView's service to always schedule a new variations seed download "
+                            + "job, even if the device is not charging. Note this switch may be "
+                            + "necessary for testing on Android emulators as these are not always "
+                            + "considered to be charging."),
             Flag.commandLine(AwSwitches.FINCH_SEED_MIN_DOWNLOAD_PERIOD,
                     "Disables throttling of variations seed download jobs.", "0"),
             Flag.commandLine(AwSwitches.FINCH_SEED_MIN_UPDATE_PERIOD,
@@ -102,14 +110,20 @@ public final class ProductionSupportedFlagList {
                             + "feature flag until the true runtime cost can be measured."),
             Flag.baseFeature(AwFeatures.WEBVIEW_DISPLAY_CUTOUT,
                     "Enables display cutout (notch) support in WebView for Android P and above."),
-            Flag.baseFeature(AwFeatures.WEBVIEW_CPU_AFFINITY_RESTRICT_TO_LITTLE_CORES,
+            Flag.baseFeature(PowerSchedulerFeatures.WEBVIEW_CPU_AFFINITY_RESTRICT_TO_LITTLE_CORES,
                     "Forces WebView to do rendering work on LITTLE CPU cores on big.LITTLE "
                             + "architectures"),
-            Flag.baseFeature(AwFeatures.WEBVIEW_POWER_SCHEDULER_THROTTLE_IDLE,
+            Flag.baseFeature(PowerSchedulerFeatures.WEBVIEW_POWER_SCHEDULER_THROTTLE_IDLE,
                     "Restricts all of WebView's out-of-process renderer threads to use only LITTLE "
                             + "CPU cores on big.LITTLE architectures when the power mode is idle. "
                             + "WebViewCpuAffinityRestrictToLittleCores, if set, takes precedence "
                             + "over this flag."),
+            Flag.baseFeature(PowerSchedulerFeatures.POWER_SCHEDULER,
+                    "Enables the Power Scheduler. Defaults to throttling when idle or in no-op "
+                            + "animations, if at least 250ms of CPU time were spent "
+                            + "in the first 500ms after entering idle/no-op animation mode. "
+                            + "Can be further configured via field trial parameters, "
+                            + "see power_scheduler.h/cc for details."),
             Flag.baseFeature(BlinkFeatures.WEBVIEW_ACCELERATE_SMALL_CANVASES,
                     "Accelerate all canvases in webview."),
             Flag.baseFeature(AwFeatures.WEBVIEW_MIXED_CONTENT_AUTOUPGRADES,
@@ -122,11 +136,16 @@ public final class ProductionSupportedFlagList {
                     "Enables the new Java/JS Bridge code path with mojo implementation."),
             Flag.baseFeature(
                     AwFeatures.WEBVIEW_ORIGIN_TRIALS, "Enables Origin Trials support on WebView."),
-            Flag.baseFeature(UiFeatures.FORM_CONTROLS_REFRESH,
-                    "Enables the Form Controls visual improvements and dark mode."),
             Flag.baseFeature(
                     BlinkFeatures.LAYOUT_NG_TABLE, "Enables Blink's next generation table layout."),
             Flag.baseFeature(
                     NetworkServiceFeatures.TRUST_TOKENS, "Enables the prototype Trust Tokens API."),
+            Flag.baseFeature(AwFeatures.WEBVIEW_APPS_PACKAGE_NAMES_ALLOWLIST,
+                    "Enables using a server-defined allowlist of apps whose name can be recorded "
+                            + "in UMA logs. The allowlist is downloaded and fetched via component "
+                            + "updater services in WebView."),
+            Flag.commandLine(AwSwitches.WEBVIEW_DISABLE_APPS_PACKAGE_NAMES_ALLOWLIST_COMPONENT,
+                    "Disable downloading the apps package names allowlist component by the "
+                            + "component updater."),
     };
 }

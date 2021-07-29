@@ -9,34 +9,59 @@
 
 #include "base/callback.h"
 #include "base/strings/string_piece.h"
+#include "chrome/browser/nearby_sharing/instantmessaging/proto/instantmessaging.pb.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+namespace google {
+namespace protobuf {
+namespace io {
+class CodedInputStream;
+}  // namespace io
+}  // namespace protobuf
+}  // namespace google
+
+namespace net {
+class GrowableIOBuffer;
+}  // namespace net
 
 namespace chrome_browser_nearby_sharing_instantmessaging {
 class StreamBody;
 }  // namespace chrome_browser_nearby_sharing_instantmessaging
 
-// Parses incoming stream of data into valid proto objects and delegates them to
-// the registered callback.
+// Parses incoming stream of data into valid proto objects.
 class StreamParser {
  public:
-  explicit StreamParser(
-      base::RepeatingCallback<void(const std::string& message)> listener,
-      base::OnceClosure fastpath_ready);
+  StreamParser();
   ~StreamParser();
 
-  void Append(base::StringPiece data);
+  // Appends the stream data (which should be the partial or full serialized
+  // StreamBody) and returns a vector of response protos that can be parsed
+  // from the available stream data. If no responses can be parsed yet, an
+  // empty vector is returned.
+  std::vector<
+      chrome_browser_nearby_sharing_instantmessaging::ReceiveMessagesResponse>
+  Append(base::StringPiece data);
 
  private:
-  absl::optional<chrome_browser_nearby_sharing_instantmessaging::StreamBody>
-  GetNextMessage();
-  void DelegateMessage(
-      const chrome_browser_nearby_sharing_instantmessaging::StreamBody&
-          stream_body);
+  enum class StreamParsingResult {
+    kSuccessfullyParsedResponse,
+    kNoop,
+    kNotEnoughDataYet,
+    kParsingUnexpectedlyFailed
+  };
 
-  base::RepeatingCallback<void(const std::string& message)> listener_;
-  base::OnceClosure fastpath_ready_callback_;
-  std::string data_;
-  int parsing_counter_for_metrics_ = 0;
+  std::vector<
+      chrome_browser_nearby_sharing_instantmessaging::ReceiveMessagesResponse>
+  ParseStreamIfAvailable();
+
+  // Only supports reading single field type and assumes the StreamBody messages
+  // field and the noop field are the only ones we will ever see.
+  StreamParsingResult ParseNextMessagesFieldFromStream(
+      google::protobuf::io::CodedInputStream* input_stream,
+      chrome_browser_nearby_sharing_instantmessaging::ReceiveMessagesResponse*
+          parsed_response);
+
+  scoped_refptr<net::GrowableIOBuffer> unparsed_data_buffer_;
 };
 
 #endif  // CHROME_BROWSER_NEARBY_SHARING_INSTANTMESSAGING_STREAM_PARSER_H_

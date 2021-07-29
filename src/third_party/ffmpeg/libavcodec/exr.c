@@ -418,11 +418,16 @@ static int huf_decode(VLC *vlc, GetByteContext *gb, int nbits, int run_sym,
 
     init_get_bits(&gbit, gb->buffer, nbits);
     while (get_bits_left(&gbit) > 0 && oe < no) {
-        uint16_t x = get_vlc2(&gbit, vlc->table, 12, 2);
+        uint16_t x = get_vlc2(&gbit, vlc->table, 12, 3);
 
         if (x == run_sym) {
             int run = get_bits(&gbit, 8);
-            uint16_t fill = out[oe - 1];
+            uint16_t fill;
+
+            if (oe == 0 || oe + run > no)
+                return AVERROR_INVALIDDATA;
+
+            fill = out[oe - 1];
 
             while (run-- > 0)
                 out[oe++] = fill;
@@ -1213,6 +1218,11 @@ static int decode_block(AVCodecContext *avctx, void *tdata,
             avpriv_report_missing_feature(s->avctx, "Subres tile before full res tile");
             return AVERROR_PATCHWELCOME;
         }
+
+        if (tile_x && s->tile_attr.xSize + (int64_t)FFMAX(s->xmin, 0) >= INT_MAX / tile_x )
+            return AVERROR_INVALIDDATA;
+        if (tile_y && s->tile_attr.ySize + (int64_t)FFMAX(s->ymin, 0) >= INT_MAX / tile_y )
+            return AVERROR_INVALIDDATA;
 
         line = s->ymin + s->tile_attr.ySize * tile_y;
         col = s->tile_attr.xSize * tile_x;
@@ -2235,7 +2245,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
     // allocate thread data, used for non EXR_RAW compression types
     s->thread_data = av_mallocz_array(avctx->thread_count, sizeof(EXRThreadData));
     if (!s->thread_data)
-        return AVERROR_INVALIDDATA;
+        return AVERROR(ENOMEM);
 
     return 0;
 }
@@ -2321,7 +2331,7 @@ static const AVClass exr_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVCodec ff_exr_decoder = {
+const AVCodec ff_exr_decoder = {
     .name             = "exr",
     .long_name        = NULL_IF_CONFIG_SMALL("OpenEXR image"),
     .type             = AVMEDIA_TYPE_VIDEO,

@@ -157,6 +157,8 @@ def prefixName (prefix, name):
 	name = name.replace("AABBNV", "AABB_NV")
 	name = name.replace("_H_264_", "_H264_")
 	name = name.replace("_H_265_", "_H265_")
+	name = name.replace("RDMAFEATURES", "RDMA_FEATURES")
+
 
 	return prefix + name
 
@@ -1938,6 +1940,8 @@ def generateDevicePropertiesDefs(src):
 				extType = "MAINTENANCE2"
 			elif extType == "SHADER_CORE":
 				extType = "SHADER_CORE_PROPERTIES"
+			elif extType == "DRM":
+				extType = "PHYSICAL_DEVICE_DRM"
 			# end handling special cases
 			ptrnExtensionName	= r'^\s*#define\s+(\w+' + sExtSuffix + '_' + extType + sVerSuffix +'[_0-9]*_EXTENSION_NAME).+$'
 			matchExtensionName	= re.search(ptrnExtensionName, src, re.M)
@@ -2372,7 +2376,7 @@ def preprocessTopInclude(src, dir):
 			return src
 		incFileName = inc.string[inc.start(1):inc.end(1)]
 		patternIncNamed = r'#include\s+"' + incFileName + '"'
-		incBody = readFile(os.path.join(dir, incFileName)) if incFileName != 'vk_platform.h' else ''
+		incBody = readFile(os.path.join(dir, incFileName)) if incFileName != 'vulkan/vk_platform.h' else ''
 		incBodySanitized = re.sub(pattern, '', incBody)
 		bodyEndSanitized = re.sub(patternIncNamed, '', src[inc.end(0):])
 		src = src[0:inc.start(0)] + incBodySanitized + bodyEndSanitized

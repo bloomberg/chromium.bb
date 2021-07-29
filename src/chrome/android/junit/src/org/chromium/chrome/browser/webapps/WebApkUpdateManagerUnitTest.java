@@ -44,15 +44,18 @@ import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.background_task_scheduler.ChromeBackgroundTaskFactory;
 import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider;
-import org.chromium.chrome.browser.browserservices.intents.WebApkDistributor;
 import org.chromium.chrome.browser.browserservices.intents.WebApkExtras;
 import org.chromium.chrome.browser.browserservices.intents.WebApkShareTarget;
 import org.chromium.chrome.browser.browserservices.intents.WebDisplayMode;
+import org.chromium.chrome.browser.browserservices.intents.WebappConstants;
 import org.chromium.chrome.browser.browserservices.intents.WebappIcon;
+import org.chromium.chrome.browser.browserservices.intents.WebappInfo;
+import org.chromium.chrome.browser.browserservices.intents.WebappIntentUtils;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.embedder_support.util.ShadowUrlUtilities;
 import org.chromium.components.webapk.lib.common.WebApkMetaDataKeys;
+import org.chromium.components.webapps.WebApkDistributor;
 import org.chromium.device.mojom.ScreenOrientationLockType;
 import org.chromium.webapk.lib.common.WebApkConstants;
 import org.chromium.webapk.lib.common.splash.SplashLayout;
@@ -136,14 +139,15 @@ public class WebApkUpdateManagerUnitTest {
         public void storeWebApkUpdateRequestToFile(String updateRequestPath, String startUrl,
                 String scope, String name, String shortName, String primaryIconUrl,
                 Bitmap primaryIcon, boolean isPrimaryIconMaskable, String splashIconUrl,
-                Bitmap splashIcon, String[] iconUrls, String[] iconHashes,
-                @WebDisplayMode int displayMode, int orientation, long themeColor,
-                long backgroundColor, String shareTargetAction, String shareTargetParamTitle,
-                String shareTargetParamText, boolean shareTargetParamIsMethodPost,
-                boolean shareTargetParamIsEncTypeMultipart, String[] shareTargetParamFileNames,
-                Object[] shareTargetParamAccepts, String[][] shortcuts, String manifestUrl,
-                String webApkPackage, int webApkVersion, boolean isManifestStale,
-                int[] updateReasons, Callback<Boolean> callback) {}
+                Bitmap splashIcon, boolean isSplashIconMaskable, String[] iconUrls,
+                String[] iconHashes, @WebDisplayMode int displayMode, int orientation,
+                long themeColor, long backgroundColor, String shareTargetAction,
+                String shareTargetParamTitle, String shareTargetParamText,
+                boolean shareTargetParamIsMethodPost, boolean shareTargetParamIsEncTypeMultipart,
+                String[] shareTargetParamFileNames, Object[] shareTargetParamAccepts,
+                String[][] shortcuts, String manifestUrl, String webApkPackage, int webApkVersion,
+                boolean isManifestStale, boolean isAppIdentityUpdateSupported, int[] updateReasons,
+                Callback<Boolean> callback) {}
 
         @Override
         public void updateWebApkFromFile(
@@ -217,7 +221,8 @@ public class WebApkUpdateManagerUnitTest {
         @Override
         protected void storeWebApkUpdateRequestToFile(String updateRequestPath, WebappInfo info,
                 String primaryIconUrl, String splashIconUrl, boolean isManifestStale,
-                List<Integer> updateReasons, Callback<Boolean> callback) {
+                boolean isAppIdentityUpdateSupported, List<Integer> updateReasons,
+                Callback<Boolean> callback) {
             mStoreUpdateRequestCallback = callback;
             mUpdateName = info.name();
             writeRandomTextToFile(updateRequestPath);
@@ -424,7 +429,7 @@ public class WebApkUpdateManagerUnitTest {
         // Use the intent version of {@link WebApkInfo#create()} in order to test default values
         // set by the intent version of {@link WebApkInfo#create()}.
         Intent intent = new Intent();
-        intent.putExtra(ShortcutHelper.EXTRA_URL, "");
+        intent.putExtra(WebappConstants.EXTRA_URL, "");
         intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, packageName);
         BrowserServicesIntentDataProvider intentDataProvider =
                 WebApkIntentDataProviderFactory.create(intent);
@@ -1108,11 +1113,11 @@ public class WebApkUpdateManagerUnitTest {
         assertNotEquals(oldDefaultBackgroundColor, splashLayoutDefaultBackgroundColor);
 
         ManifestData androidManifestData = defaultManifestData();
-        androidManifestData.backgroundColor = ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING;
+        androidManifestData.backgroundColor = WebappConstants.MANIFEST_COLOR_INVALID_OR_MISSING;
         androidManifestData.defaultBackgroundColor = oldDefaultBackgroundColor;
 
         ManifestData fetchedManifestData = defaultManifestData();
-        fetchedManifestData.backgroundColor = ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING;
+        fetchedManifestData.backgroundColor = WebappConstants.MANIFEST_COLOR_INVALID_OR_MISSING;
         fetchedManifestData.defaultBackgroundColor = splashLayoutDefaultBackgroundColor;
 
         assertFalse(checkUpdateNeededForFetchedManifest(androidManifestData, fetchedManifestData));

@@ -6,6 +6,8 @@
 <translation id="1430915738399379752">Cetak</translation>
 <translation id="1467231725790366244">Palam <ph name="CAMERA" /> dicabut.</translation>
 <translation id="1473110567575736769">Pemasa 3 saat</translation>
+<translation id="1478594628797167447">Pengimbas</translation>
+<translation id="1545749641540134597">Imbas Kod QR</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">Tiada apa-apa yang dirakamkan</translation>
@@ -19,6 +21,8 @@
 <translation id="2050339315714019657">Potret</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> aktif</translation>
 <translation id="2144806332417375165">Sesuaikan parameter video</translation>
+<translation id="2175927920773552910">Kod QR</translation>
+<translation id="2268107369530950373">Beralih kepada mod pengimbas</translation>
 <translation id="229579744168541441">Eksport ke cakera</translation>
 <translation id="2320741269052147773">Sorot ke kiri</translation>
 <translation id="2501278716633472235">Kembali</translation>
@@ -38,6 +42,7 @@
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3240426699337459095">Pautan disalin</translation>
 <translation id="3259149966178251584">Peleraian kamera</translation>
+<translation id="3448774564454087943">Video tidak disimpan kerana terlalu pendek</translation>
 <translation id="3517926952904427380">Tidak dapat mengambil foto potret</translation>
 <translation id="3569311554794739032">Adakah anda benar-benar mahu mengalih keluar <ph name="FILE" />?</translation>
 <translation id="3733597664308256288">Kawalan kamera tambahan tersedia. Carian + Anak panah ke kanan untuk mengakses.</translation>
@@ -56,11 +61,14 @@
 <translation id="4628948037717959914">Foto</translation>
 <translation id="4649291346448517080">Tidak dapat menyimpan fail</translation>
 <translation id="4890010094662541459">3 x 3</translation>
+<translation id="491895758387112773">Rakaman video berbilang strim</translation>
 <translation id="5057360777601936059">Kamera anda tidak tersedia pada masa ini.
         Sila periksa sama ada kamera telah disambungkan dengan betul.</translation>
 <translation id="5152121255775685072">Pergi ke galeri</translation>
+<translation id="5268823927180092501">Dayakan mod dokumen pada semua kamera</translation>
 <translation id="5422455049771430511">Foto dan video anda mempunyai wadah baharu</translation>
 <translation id="5671277269877808209">Segi empat sama</translation>
+<translation id="5753488212459587150">Dayakan mod pakar</translation>
 <translation id="5775960006311140197">Mod pakar</translation>
 <translation id="5869546221129391014">Grid</translation>
 <translation id="5975083100439434680">Zum keluar</translation>

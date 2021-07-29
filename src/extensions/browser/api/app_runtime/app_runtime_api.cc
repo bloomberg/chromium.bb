@@ -38,9 +38,10 @@ void DispatchOnEmbedRequestedEventImpl(
     content::BrowserContext* context) {
   std::unique_ptr<base::ListValue> args(new base::ListValue());
   args->Append(std::move(app_embedding_request_data));
-  auto event = std::make_unique<Event>(
-      events::APP_RUNTIME_ON_EMBED_REQUESTED,
-      app_runtime::OnEmbedRequested::kEventName, args->TakeList(), context);
+  auto event =
+      std::make_unique<Event>(events::APP_RUNTIME_ON_EMBED_REQUESTED,
+                              app_runtime::OnEmbedRequested::kEventName,
+                              std::move(*args).TakeList(), context);
   EventRouter::Get(context)
       ->DispatchEventWithLazyListener(extension_id, std::move(event));
 
@@ -72,7 +73,7 @@ void DispatchOnLaunchedEventImpl(
   args->Append(std::move(launch_data));
   auto event = std::make_unique<Event>(events::APP_RUNTIME_ON_LAUNCHED,
                                        app_runtime::OnLaunched::kEventName,
-                                       args->TakeList(), context);
+                                       std::move(*args).TakeList(), context);
   EventRouter::Get(context)
       ->DispatchEventWithLazyListener(extension_id, std::move(event));
   ExtensionPrefs::Get(context)
@@ -187,9 +188,10 @@ void AppRuntimeEventRouter::DispatchOnLaunchedEventWithFileEntries(
   }
 
   if (action_data)
-    launch_data->Set("actionData", action_data->ToValue());
+    launch_data->SetKey(
+        "actionData", base::Value::FromUniquePtrValue(action_data->ToValue()));
 
-  std::unique_ptr<base::ListValue> items(new base::ListValue);
+  base::Value items(base::Value::Type::LIST);
   DCHECK(file_entries.size() == entries.size());
   for (size_t i = 0; i < file_entries.size(); ++i) {
     std::unique_ptr<base::DictionaryValue> launch_item(
@@ -203,9 +205,9 @@ void AppRuntimeEventRouter::DispatchOnLaunchedEventWithFileEntries(
     launch_item->SetString("mimeType", entries[i].mime_type);
     launch_item->SetString("entryId", file_entries[i].id);
     launch_item->SetBoolean("isDirectory", entries[i].is_directory);
-    items->Append(std::move(launch_item));
+    items.Append(std::move(*launch_item));
   }
-  launch_data->Set("items", std::move(items));
+  launch_data->SetKey("items", std::move(items));
   DispatchOnLaunchedEventImpl(extension->id(), source_enum,
                               std::move(launch_data), context);
 }

@@ -16,6 +16,26 @@ const char kQuickAnswersNoticed[] = "settings.quick_answers.consented";
 // A preference that indicates the user has enabled the Quick Answers services.
 const char kQuickAnswersEnabled[] = "settings.quick_answers.enabled";
 
+// A preference that indicates the user consent status for the Quick
+// Answers feature.
+const char kQuickAnswersConsentStatus[] =
+    "settings.quick_answers.consent_status";
+
+// A preference that indicates the user has enabled the Quick Answers definition
+// services.
+const char kQuickAnswersDefinitionEnabled[] =
+    "settings.quick_answers.definition.enabled";
+
+// A preference that indicates the user has enabled the Quick Answers
+// translation services.
+const char kQuickAnswersTranslationEnabled[] =
+    "settings.quick_answers.translation.enabled";
+
+// A preference that indicates the user has enabled the Quick Answers unit
+// conversion services.
+const char kQuickAnswersUnitConverstionEnabled[] =
+    "settings.quick_answers.unit_conversion.enabled";
+
 // A preference to keep track of the number of Quick Answers notice impression.
 const char kQuickAnswersNoticeImpressionCount[] =
     "settings.quick_answers.consent.count";
@@ -28,6 +48,11 @@ const char kQuickAnswersNoticeImpressionDuration[] =
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kQuickAnswersNoticed, false);
   registry->RegisterBooleanPref(kQuickAnswersEnabled, false);
+  registry->RegisterIntegerPref(kQuickAnswersConsentStatus,
+                                ConsentStatus::kUnknown);
+  registry->RegisterBooleanPref(kQuickAnswersDefinitionEnabled, true);
+  registry->RegisterBooleanPref(kQuickAnswersTranslationEnabled, true);
+  registry->RegisterBooleanPref(kQuickAnswersUnitConverstionEnabled, true);
   registry->RegisterIntegerPref(kQuickAnswersNoticeImpressionCount, 0);
   registry->RegisterIntegerPref(kQuickAnswersNoticeImpressionDuration, 0);
 }

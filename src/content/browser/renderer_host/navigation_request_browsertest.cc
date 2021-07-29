@@ -10,7 +10,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "build/build_config.h"
 #include "content/browser/renderer_host/debug_urls.h"
 #include "content/browser/renderer_host/navigation_controller_impl.h"
 #include "content/browser/renderer_host/navigation_request.h"
@@ -28,6 +30,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -38,6 +41,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
+#include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_download_manager_delegate.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/mock_commit_deferring_condition.h"
@@ -1988,22 +1992,6 @@ IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest, ErrorPageNetworkError) {
   }
 }
 
-class MockCommitDeferringConditionInstaller : public WebContentsObserver {
- public:
-  MockCommitDeferringConditionInstaller(
-      WebContents* web_contents,
-      std::unique_ptr<MockCommitDeferringCondition> condition)
-      : WebContentsObserver(web_contents), condition_(std::move(condition)) {}
-  ~MockCommitDeferringConditionInstaller() override = default;
-
-  void DidStartNavigation(NavigationHandle* handle) override {
-    static_cast<NavigationRequest*>(handle)
-        ->RegisterCommitDeferringConditionForTesting(std::move(condition_));
-  }
-
-  std::unique_ptr<MockCommitDeferringCondition> condition_;
-};
-
 class ReadyToCommitObserver : public WebContentsObserver {
  public:
   explicit ReadyToCommitObserver(WebContents* web_contents) {
@@ -2033,8 +2021,7 @@ IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest,
   ReadyToCommitObserver observer(web_contents);
 
   MockCommitDeferringConditionWrapper condition(/*is_ready_to_commit=*/true);
-  MockCommitDeferringConditionInstaller installer(web_contents,
-                                                  condition.PassToDelegate());
+  MockCommitDeferringConditionInstaller installer(condition.PassToDelegate());
 
   shell()->LoadURL(simple_url);
   ASSERT_TRUE(manager.WaitForResponse());
@@ -2058,12 +2045,10 @@ IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest,
   WebContents* web_contents = shell()->web_contents();
 
   MockCommitDeferringConditionWrapper condition1(/*is_ready_to_commit=*/false);
-  MockCommitDeferringConditionInstaller installer1(web_contents,
-                                                   condition1.PassToDelegate());
+  MockCommitDeferringConditionInstaller installer1(condition1.PassToDelegate());
 
   MockCommitDeferringConditionWrapper condition2(/*is_ready_to_commit=*/false);
-  MockCommitDeferringConditionInstaller installer2(web_contents,
-                                                   condition2.PassToDelegate());
+  MockCommitDeferringConditionInstaller installer2(condition2.PassToDelegate());
 
   ReadyToCommitObserver observer(web_contents);
 
@@ -2109,14 +2094,12 @@ IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest,
   WebContents* web_contents = shell()->web_contents();
 
   MockCommitDeferringConditionWrapper condition(/*is_ready_to_commit=*/false);
-  MockCommitDeferringConditionInstaller installer(web_contents,
-                                                  condition.PassToDelegate());
+  MockCommitDeferringConditionInstaller installer(condition.PassToDelegate());
 
   // We'll cancel the navigation while the first condition is deferred so this
   // is added only to make sure it's never invoked.
   MockCommitDeferringConditionWrapper condition2(/*is_ready_to_commit=*/false);
-  MockCommitDeferringConditionInstaller installer2(web_contents,
-                                                   condition2.PassToDelegate());
+  MockCommitDeferringConditionInstaller installer2(condition2.PassToDelegate());
 
   shell()->LoadURL(simple_url);
   ASSERT_TRUE(manager.WaitForResponse());
@@ -2145,6 +2128,68 @@ IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest,
   condition.CallResumeClosure();
 
   EXPECT_FALSE(condition2.WasInvoked());
+}
+
+// Ensure throttles registered by tests using RegisterThrottleForTesting() are
+// executed after those registered by the WebContents' browser client (i.e. how
+// non-test throttles are normally registered).
+IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest,
+                       RegisterThrottleForTestingIsLast) {
+  WebContents* web_contents = shell()->web_contents();
+  GURL simple_url(embedded_test_server()->GetURL("/simple_page.html"));
+
+  TestNavigationThrottle* client_throttle = nullptr;
+
+  // Set the client to register a TestNavigationThrottle that defers in
+  // WillStartRequest. We'll save a pointer to this throttle in
+  // |client_throttle| when its registered.
+  content::ShellContentBrowserClient::Get()
+      ->set_create_throttles_for_navigation_callback(base::BindLambdaForTesting(
+          [&client_throttle](content::NavigationHandle* handle)
+              -> std::vector<std::unique_ptr<content::NavigationThrottle>> {
+            std::vector<std::unique_ptr<content::NavigationThrottle>> throttles;
+            std::unique_ptr<TestNavigationThrottle> throttle(
+                new TestNavigationThrottle(
+                    handle, NavigationThrottle::DEFER,
+                    NavigationThrottle::PROCEED, NavigationThrottle::PROCEED,
+                    NavigationThrottle::PROCEED, base::DoNothing(),
+                    base::DoNothing(), base::DoNothing(), base::DoNothing()));
+            client_throttle = throttle.get();
+            throttles.push_back(std::move(throttle));
+            return throttles;
+          }));
+
+  // Add another similar throttle using the installer which will use
+  // RegisterThrottleForTesting and registers throttles in DidStartNavigation,
+  // before browser client throttles are registered.
+  TestNavigationThrottleInstaller test_throttle_installer(
+      web_contents, NavigationThrottle::DEFER, NavigationThrottle::PROCEED,
+      NavigationThrottle::PROCEED, NavigationThrottle::PROCEED);
+
+  // Start navigating.
+  TestNavigationManager manager(shell()->web_contents(), simple_url);
+  shell()->LoadURL(simple_url);
+  auto* handle = manager.GetNavigationHandle();
+  auto* runner =
+      NavigationRequest::From(handle)->GetNavigationThrottleRunnerForTesting();
+
+  // The navigation should have been deferred by one of our throttles. Ensure
+  // it's the client throttle since we explicitly want test throttles to
+  // execute after all others.
+  ASSERT_TRUE(handle->IsDeferredForTesting());
+  ASSERT_NE(client_throttle, nullptr);
+  EXPECT_EQ(runner->GetDeferringThrottle(), client_throttle);
+
+  // Now when we resume we should get deferred by the other throttle. This
+  // should be the throttle installed via RegisterThrottleForTesting.
+  client_throttle->ResumeNavigation();
+  ASSERT_TRUE(handle->IsDeferredForTesting());
+  EXPECT_EQ(runner->GetDeferringThrottle(),
+            test_throttle_installer.navigation_throttle());
+
+  // Finish the navigation.
+  test_throttle_installer.navigation_throttle()->ResumeNavigation();
+  manager.WaitForNavigationFinished();
 }
 
 // Tests the case where a browser-initiated navigation to a normal webpage is
@@ -2441,9 +2486,15 @@ IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest, StartToCommitMetrics) {
   }
   {
     base::HistogramTester histograms;
+    int previous_process_id =
+        shell()->web_contents()->GetMainFrame()->GetProcess()->GetID();
     EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
-    check_navigation(histograms, ProcessType::kSame, FrameType::kMain,
-                     TransitionType::kNew);
+    bool process_changed =
+        (previous_process_id !=
+         shell()->web_contents()->GetMainFrame()->GetProcess()->GetID());
+    check_navigation(histograms,
+                     process_changed ? ProcessType::kCross : ProcessType::kSame,
+                     FrameType::kMain, TransitionType::kNew);
   }
 
   // Subframe tests. All of these tests just navigate a frame within
@@ -2931,8 +2982,8 @@ IN_PROC_BROWSER_TEST_F(NavigationRequestBackForwardBrowserTest,
   const GURL url1(embedded_test_server()->GetURL("/title1.html"));
   const GURL url1_fragment1(
       embedded_test_server()->GetURL("/title1.html#id_1"));
-  const GURL url2(
-      embedded_test_server()->GetURL("/frame_tree/page_with_one_frame.html"));
+  const GURL url2(embedded_test_server()->GetURL(
+      "b.com", "/frame_tree/page_with_one_frame.html"));
   const char kChildFrameId[] = "child0";
 
   EXPECT_TRUE(NavigateToURL(shell(), url1));
@@ -2958,7 +3009,11 @@ IN_PROC_BROWSER_TEST_F(NavigationRequestBackForwardBrowserTest,
 
   {
     // We are waiting for two navigations here: main frame and subframe.
-    TestNavigationObserver navigation_observer(shell()->web_contents(), 2);
+    // However, when back/forward cache is enabled, back navigation to a page
+    // with subframes will not trigger a subframe navigation (since the
+    // subframe is cached with the page).
+    TestNavigationObserver navigation_observer(
+        shell()->web_contents(), IsBackForwardCacheEnabled() ? 1 : 2);
     shell()->GoBackOrForward(-1);
     navigation_observer.WaitForNavigationFinished();
   }
@@ -3001,8 +3056,16 @@ IN_PROC_BROWSER_TEST_F(NavigationRequestBackForwardBrowserTest,
   // navigations have offset 3 as requested.
   // Note that all subframe navigations have offset 1 regardless of whether they
   // result in a new entry being generated or not.
-  EXPECT_THAT(offsets_,
-              testing::ElementsAre(1, 1, 1, 0, 1, 1, -1, 1, -1, -1, -1, 4));
+  if (IsBackForwardCacheEnabled()) {
+    // When back/forward cache is enabled, back navigation to a page with
+    // subframes will not trigger a subframe navigation (since the subframe is
+    // cached with the page and won't need to be reconstructed/navigated).
+    EXPECT_THAT(offsets_,
+                testing::ElementsAre(1, 1, 1, 0, 1, 1, -1, -1, -1, -1, 4));
+  } else {
+    EXPECT_THAT(offsets_,
+                testing::ElementsAre(1, 1, 1, 0, 1, 1, -1, 1, -1, -1, -1, 4));
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(NavigationRequestBackForwardBrowserTest,

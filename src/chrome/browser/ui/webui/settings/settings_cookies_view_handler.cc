@@ -11,8 +11,8 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/cxx17_backports.h"
 #include "base/i18n/number_formatting.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browsing_data/third_party_data_remover.h"
@@ -460,7 +460,8 @@ void CookiesViewHandler::ReturnLocalDataList(const std::string& callback_id) {
           FALLTHROUGH;
         case CookieTreeNode::DetailedInfo::TYPE_COOKIES:
           description += l10n_util::GetPluralStringFUTF16(
-              IDS_SETTINGS_SITE_SETTINGS_NUM_COOKIES, int{item_count});
+              IDS_SETTINGS_SITE_SETTINGS_NUM_COOKIES,
+              static_cast<int>(item_count));
           break;
         default:
           int ids_value = GetCategoryLabelID(node_type);

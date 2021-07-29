@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <numeric>
 
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -13,9 +14,11 @@
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text_combine.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_bidi_paragraph.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item.h"
@@ -47,6 +50,22 @@
 namespace blink {
 
 namespace {
+
+// Returns sum of |ShapeResult::Width()| in |data.items|. Note: All items
+// should be text item other type of items are not allowed.
+float CalculateWidthForTextCombine(const NGInlineItemsData& data) {
+  return std::accumulate(
+      data.items.begin(), data.items.end(), 0.0f,
+      [](float sum, const NGInlineItem& item) {
+        DCHECK(item.Type() == NGInlineItem::kText ||
+               item.Type() == NGInlineItem::kBidiControl ||
+               item.Type() == NGInlineItem::kControl)
+            << item.Type();
+        if (auto* const shape_result = item.TextShapeResult())
+          return shape_result->Width() + sum;
+        return 0.0f;
+      });
+}
 
 bool IsLeftAligned(const ComputedStyle& style) {
   switch (style.GetTextAlign()) {
@@ -161,22 +180,23 @@ class ReusingTextShaper final {
         shaper_(data->text_content) {}
 
   scoped_refptr<ShapeResult> Shape(const NGInlineItem& start_item,
+                                   const Font& font,
                                    unsigned end_offset) {
     const unsigned start_offset = start_item.StartOffset();
     DCHECK_LT(start_offset, end_offset);
 
     if (!reusable_items_)
-      return Reshape(start_item, start_offset, end_offset);
+      return Reshape(start_item, font, start_offset, end_offset);
 
     // TODO(yosin): We should support segment text
     if (data_.segments)
-      return Reshape(start_item, start_offset, end_offset);
+      return Reshape(start_item, font, start_offset, end_offset);
 
     const Vector<const ShapeResult*> reusable_shape_results =
         CollectReusableShapeResults(start_offset, end_offset,
                                     start_item.Direction());
     if (reusable_shape_results.IsEmpty())
-      return Reshape(start_item, start_offset, end_offset);
+      return Reshape(start_item, font, start_offset, end_offset);
 
     const scoped_refptr<ShapeResult> shape_result =
         ShapeResult::CreateEmpty(*reusable_shape_results.front());
@@ -187,9 +207,9 @@ class ReusingTextShaper final {
       // e.g. <div style="white-space:pre">&nbsp; abc</div>, deleteChar(0, 1)
       // See xternal/wpt/editing/run/delete.html?993-993
       if (offset < reusable_shape_result->StartIndex()) {
-        AppendShapeResult(
-            *Reshape(start_item, offset, reusable_shape_result->StartIndex()),
-            shape_result.get());
+        AppendShapeResult(*Reshape(start_item, font, offset,
+                                   reusable_shape_result->StartIndex()),
+                          shape_result.get());
         offset = shape_result->EndIndex();
       }
       DCHECK_LT(offset, reusable_shape_result->EndIndex());
@@ -203,7 +223,7 @@ class ReusingTextShaper final {
         return shape_result;
     }
     DCHECK_LT(offset, end_offset);
-    AppendShapeResult(*Reshape(start_item, offset, end_offset),
+    AppendShapeResult(*Reshape(start_item, font, offset, end_offset),
                       shape_result.get());
     return shape_result;
   }
@@ -244,11 +264,11 @@ class ReusingTextShaper final {
   }
 
   scoped_refptr<ShapeResult> Reshape(const NGInlineItem& start_item,
+                                     const Font& font,
                                      unsigned start_offset,
                                      unsigned end_offset) {
     DCHECK_LT(start_offset, end_offset);
     const TextDirection direction = start_item.Direction();
-    const Font& font = start_item.FontWithSVGScaling();
     if (data_.segments) {
       return data_.segments->ShapeText(&shaper_, &font, direction, start_offset,
                                        end_offset,
@@ -292,21 +312,18 @@ void CollectInlinesInternal(ItemsBuilder* builder,
         builder->SetIsSymbolMarker();
 
       builder->ClearNeedsLayout(layout_text);
-
     } else if (node->IsFloating()) {
       builder->AppendFloating(node);
       if (builder->ShouldAbort())
         return;
 
       builder->ClearInlineFragment(node);
-
     } else if (node->IsOutOfFlowPositioned()) {
       builder->AppendOutOfFlowPositioned(node);
       if (builder->ShouldAbort())
         return;
 
       builder->ClearInlineFragment(node);
-
     } else if (node->IsAtomicInlineLevel()) {
       if (node->IsBoxListMarkerIncludingNG()) {
         // LayoutNGListItem produces the 'outside' list marker as an inline
@@ -320,13 +337,7 @@ void CollectInlinesInternal(ItemsBuilder* builder,
         builder->AppendAtomicInline(node);
       }
       builder->ClearInlineFragment(node);
-
-    } else {
-      // Because we're collecting from LayoutObject tree, block-level children
-      // should not appear. LayoutObject tree should have created an anonymous
-      // box to prevent having inline/block-mixed children.
-      DCHECK(node->IsInline());
-      auto* layout_inline = To<LayoutInline>(node);
+    } else if (auto* layout_inline = DynamicTo<LayoutInline>(node)) {
       builder->UpdateShouldCreateBoxFragment(layout_inline);
 
       builder->EnterInline(layout_inline);
@@ -340,6 +351,11 @@ void CollectInlinesInternal(ItemsBuilder* builder,
       // An empty inline node.
       builder->ExitInline(layout_inline);
       builder->ClearNeedsLayout(layout_inline);
+    } else {
+      DCHECK(!node->IsInline());
+      DCHECK(RuntimeEnabledFeatures::LayoutNGBlockInInlineEnabled());
+      builder->AppendBlockInInline(node);
+      builder->ClearInlineFragment(node);
     }
 
     // Find the next sibling, or parent, until we reach |block|.
@@ -485,7 +501,10 @@ void NGInlineNode::PrepareLayoutIfNeeded() const {
     if (!block_flow->NeedsCollectInlines())
       return;
 
-    previous_data.reset(block_flow->TakeNGInlineNodeData());
+    // Note: For "text-combine-upright:all", we use a font calculated from
+    // text width, so we can't reuse previous data.
+    if (LIKELY(!IsTextCombine()))
+      previous_data.reset(block_flow->TakeNGInlineNodeData());
     block_flow->ResetNGInlineNodeData();
   }
 
@@ -507,6 +526,12 @@ void NGInlineNode::PrepareLayout(
 
   LayoutBlockFlow* block_flow = GetLayoutBlockFlow();
   block_flow->ClearNeedsCollectInlines();
+
+  if (UNLIKELY(IsTextCombine())) {
+    // To use |LayoutNGTextCombine::UsersScaleX()| in |NGFragmentItemsBuilder|,
+    // we adjust font here instead in |Layout()|,
+    AdjustFontForTextCombineUprightAll();
+  }
 
 #if DCHECK_IS_ON()
   // ComputeOffsetMappingIfNeeded() runs some integrity checks as part of
@@ -543,6 +568,11 @@ class NGInlineNodeDataEditor final {
         !block_flow_->GetNGInlineNodeData() ||
         block_flow_->GetNGInlineNodeData()->text_content.IsNull() ||
         block_flow_->GetNGInlineNodeData()->items.IsEmpty())
+      return nullptr;
+
+    // For "text-combine-upright:all", we choose font to fit layout result in
+    // 1em, so font can be different than original font.
+    if (UNLIKELY(IsA<LayoutNGTextCombine>(block_flow_)))
       return nullptr;
 
     // Because of current text content has secured text, e.g. whole text is
@@ -920,13 +950,18 @@ void NGInlineNode::ComputeOffsetMapping(LayoutBlockFlow* layout_block_flow,
   DCHECK(!layout_block_flow->GetDocument().NeedsLayoutTreeUpdate() ||
          layout_block_flow->IsLayoutNGObjectForCanvasFormattedText());
 
+  const SvgTextChunkOffsets* chunk_offsets = nullptr;
+  if (data->svg_node_data_ && data->svg_node_data_->chunk_offsets.size() > 0)
+    chunk_offsets = &data->svg_node_data_->chunk_offsets;
+
   // TODO(xiaochengh): ComputeOffsetMappingIfNeeded() discards the
   // NGInlineItems and text content built by |builder|, because they are
   // already there in NGInlineNodeData. For efficiency, we should make
   // |builder| not construct items and text content.
   Vector<NGInlineItem> items;
   items.ReserveCapacity(EstimateInlineItemsCount(*layout_block_flow));
-  NGInlineItemsBuilderForOffsetMapping builder(layout_block_flow, &items);
+  NGInlineItemsBuilderForOffsetMapping builder(layout_block_flow, &items,
+                                               chunk_offsets);
   builder.GetOffsetMappingBuilder().ReserveCapacity(
       EstimateOffsetMappingItemsCount(*layout_block_flow));
   CollectInlinesInternal(&builder, nullptr);
@@ -990,38 +1025,75 @@ void NGInlineNode::CollectInlines(NGInlineNodeData* data,
   LayoutBlockFlow* block = GetLayoutBlockFlow();
   block->WillCollectInlines();
 
+  const SvgTextChunkOffsets* chunk_offsets = nullptr;
   if (block->IsNGSVGText()) {
     // SVG <text> doesn't support reusing the previous result now.
     previous_data = nullptr;
-
-    // Build NGInlineItems and NGOffsetMapping first.  They are used only by
-    // NGSVGTextLayoutAttributesBuilder, and are discarded because they might
-    // be different from final ones.
-    Vector<NGInlineItem> items;
-    items.ReserveCapacity(EstimateInlineItemsCount(*block));
-    NGInlineItemsBuilderForOffsetMapping items_builder(block, &items);
-    items_builder.GetOffsetMappingBuilder().ReserveCapacity(
-        EstimateOffsetMappingItemsCount(*block));
-    CollectInlinesInternal(&items_builder, nullptr);
-
-    NGSVGTextLayoutAttributesBuilder svg_attr_builder(*this);
-    svg_attr_builder.Build(items_builder.ToString(), items);
-
-    auto svg_data = std::make_unique<SVGInlineNodeData>();
-    svg_data->character_data_list = svg_attr_builder.CharacterDataList();
-    svg_data->text_path_range_list = svg_attr_builder.TextPathRangeList();
-    data->svg_node_data_ = std::move(svg_data);
-
-    // TODO(tkent): Pass "text chunk" information to NGInlineItemsBuilder.
+    chunk_offsets = FindSvgTextChunks(*block, *data);
   }
 
   data->items.ReserveCapacity(EstimateInlineItemsCount(*block));
-  NGInlineItemsBuilder builder(block, &data->items);
+  NGInlineItemsBuilder builder(block, &data->items, chunk_offsets);
   CollectInlinesInternal(&builder, previous_data);
   builder.DidFinishCollectInlines(data);
 
   if (UNLIKELY(builder.HasUnicodeBidiPlainText()))
     UseCounter::Count(GetDocument(), WebFeature::kUnicodeBidiPlainText);
+}
+
+const SvgTextChunkOffsets* NGInlineNode::FindSvgTextChunks(
+    LayoutBlockFlow& block,
+    NGInlineNodeData& data) const {
+  TRACE_EVENT0("blink", "NGInlineNode::FindSvgTextChunks");
+  // Build NGInlineItems and NGOffsetMapping first.  They are used only by
+  // NGSVGTextLayoutAttributesBuilder, and are discarded because they might
+  // be different from final ones.
+  Vector<NGInlineItem> items;
+  items.ReserveCapacity(EstimateInlineItemsCount(block));
+  NGInlineItemsBuilderForOffsetMapping items_builder(&block, &items);
+  NGOffsetMappingBuilder& mapping_builder =
+      items_builder.GetOffsetMappingBuilder();
+  mapping_builder.ReserveCapacity(EstimateOffsetMappingItemsCount(block));
+  CollectInlinesInternal(&items_builder, nullptr);
+  String ifc_text_content = items_builder.ToString();
+
+  NGSvgTextLayoutAttributesBuilder svg_attr_builder(*this);
+  svg_attr_builder.Build(ifc_text_content, items);
+
+  auto svg_data = std::make_unique<SvgInlineNodeData>();
+  svg_data->character_data_list = svg_attr_builder.CharacterDataList();
+  svg_data->text_length_range_list = svg_attr_builder.TextLengthRangeList();
+  svg_data->text_path_range_list = svg_attr_builder.TextPathRangeList();
+  data.svg_node_data_ = std::move(svg_data);
+
+  // Compute DOM offsets of text chunks.
+  mapping_builder.SetDestinationString(ifc_text_content);
+  std::unique_ptr<NGOffsetMapping> mapping = mapping_builder.Build();
+  // Index in a UTF-32 sequence
+  unsigned last_addressable = 0;
+  // Index in a UTF-16 sequence for last_addressable.
+  unsigned text_content_offset = 0;
+  StringView ifc_text_view(ifc_text_content);
+  for (const auto& char_data : data.svg_node_data_->character_data_list) {
+    if (!char_data.second.anchored_chunk)
+      continue;
+    unsigned addressable_offset = char_data.first;
+    if (addressable_offset == 0u)
+      continue;
+    while (last_addressable < addressable_offset) {
+      ++last_addressable;
+      text_content_offset =
+          ifc_text_view.NextCodePointOffset(text_content_offset);
+    }
+    const auto* unit = mapping->GetLastMappingUnit(text_content_offset);
+    auto result = data.svg_node_data_->chunk_offsets.insert(
+        To<LayoutText>(&unit->GetLayoutObject()), Vector<unsigned>());
+    result.stored_value->value.push_back(
+        unit->ConvertTextContentToFirstDOMOffset(text_content_offset));
+  }
+  return data.svg_node_data_->chunk_offsets.size() > 0
+             ? &data.svg_node_data_->chunk_offsets
+             : nullptr;
 }
 
 void NGInlineNode::SegmentText(NGInlineNodeData* data) const {
@@ -1034,85 +1106,42 @@ void NGInlineNode::SegmentText(NGInlineNodeData* data) const {
 
 // Segment NGInlineItem by script, Emoji, and orientation using RunSegmenter.
 void NGInlineNode::SegmentScriptRuns(NGInlineNodeData* data) const {
-  DCHECK_EQ(data->segments.get(), nullptr);
-
   String& text_content = data->text_content;
   if (text_content.IsEmpty()) {
-    return;
-  }
-
-  Vector<NGInlineItem>& items = data->items;
-  if (items.IsEmpty()) {
+    data->segments = nullptr;
     return;
   }
 
   if (text_content.Is8Bit() && !data->is_bidi_enabled_) {
-    RunSegmenter::RunSegmenterRange range = {
-        0u, data->text_content.length(), USCRIPT_LATIN,
-        OrientationIterator::kOrientationKeep, FontFallbackPriority::kText};
-    NGInlineItem::SetSegmentData(range, &items);
+    if (data->items.size()) {
+      RunSegmenter::RunSegmenterRange range = {
+          0u, data->text_content.length(), USCRIPT_LATIN,
+          OrientationIterator::kOrientationKeep, FontFallbackPriority::kText};
+      NGInlineItem::SetSegmentData(range, &data->items);
+    }
+    data->segments = nullptr;
     return;
   }
 
   // Segment by script and Emoji.
   // Orientation is segmented separately, because it may vary by items.
   text_content.Ensure16Bit();
-
-  NGInlineItem* current_item = &items.front();
-  unsigned range_length = current_item->Length();
+  RunSegmenter segmenter(text_content.Characters16(), text_content.length(),
+                         FontOrientation::kHorizontal);
 
   RunSegmenter::RunSegmenterRange range = RunSegmenter::NullRange();
-  if (data->is_bidi_enabled_) {
-    // run RunSegmenter for each bidi run
-    for (wtf_size_t idx = 1; idx < items.size(); idx++) {
-      NGInlineItem& item = items[idx];
-      if (item.BidiLevel() == current_item->BidiLevel()) {
-        // same bidi level as the previous item. We can merge
-        range_length += item.Length();
-        continue;
-      }
-
-      // We have reached the boundary of a bidi run. We need to run the script
-      // segmenter.
-      if (!data->segments) {
-        data->segments = std::make_unique<NGInlineItemSegments>();
-      }
-      RunSegmenter segmenter(text_content.Characters16(), range_length,
-                             FontOrientation::kHorizontal,
-                             current_item->StartOffset());
-      while (segmenter.Consume(&range)) {
-        data->segments->Append(range);
-      }
-      range_length = item.Length();
-      current_item = &item;
-    }
-  } else {
-    range_length = text_content.length();
-  }
-
-  // We will now handle the last item. If the text is not bidirectional, it
-  // will be the only one.
-
-  if (range_length == 0) {
-    return;
-  }
-
-  RunSegmenter segmenter(text_content.Characters16(), range_length,
-                         FontOrientation::kHorizontal,
-                         current_item->StartOffset());
   bool consumed = segmenter.Consume(&range);
   DCHECK(consumed);
-  if (range.start == 0 && range.end == text_content.length()) {
-    NGInlineItem::SetSegmentData(range, &items);
+  if (range.end == text_content.length()) {
+    NGInlineItem::SetSegmentData(range, &data->items);
+    data->segments = nullptr;
     return;
   }
 
-  if (!data->segments) {
+  // This node has multiple segments.
+  if (!data->segments)
     data->segments = std::make_unique<NGInlineItemSegments>();
-  }
-  do {
-    data->segments->Append(range);
-  } while (segmenter.Consume(&range));
+  data->segments->ComputeSegments(&segmenter, &range);
   DCHECK_EQ(range.end, text_content.length());
 }
 
@@ -1203,14 +1232,15 @@ void NGInlineNode::SegmentBidiRuns(NGInlineNodeData* data) const {
 
 void NGInlineNode::ShapeText(NGInlineItemsData* data,
                              const String* previous_text,
-                             const Vector<NGInlineItem>* previous_items) const {
+                             const Vector<NGInlineItem>* previous_items,
+                             const Font* override_font) const {
   TRACE_EVENT0("fonts", "NGInlineNode::ShapeText");
   const String& text_content = data->text_content;
   Vector<NGInlineItem>* items = &data->items;
 
   // Provide full context of the entire node to the shaper.
   ReusingTextShaper shaper(data, previous_items);
-  ShapeResultSpacing<String> spacing(text_content);
+  ShapeResultSpacing<String> spacing(text_content, IsSvgText());
 
   DCHECK(!data->segments ||
          data->segments->EndOffset() == text_content.length());
@@ -1223,7 +1253,19 @@ void NGInlineNode::ShapeText(NGInlineItemsData* data,
     }
 
     const ComputedStyle& start_style = *start_item.Style();
-    const Font& font = start_item.FontWithSVGScaling();
+    const Font& font =
+        override_font ? *override_font : start_item.FontWithSvgScaling();
+#if DCHECK_IS_ON()
+    if (!IsTextCombine()) {
+      DCHECK(!override_font);
+    } else {
+      DCHECK_EQ(font.GetFontDescription().Orientation(),
+                FontOrientation::kHorizontal);
+      LayoutNGTextCombine::AssertStyleIsValid(start_style);
+      DCHECK(!override_font ||
+             font.GetFontDescription().WidthVariant() != kRegularWidth);
+    }
+#endif
     TextDirection direction = start_item.Direction();
     unsigned end_index = index + 1;
     unsigned end_offset = start_item.EndOffset();
@@ -1284,7 +1326,7 @@ void NGInlineNode::ShapeText(NGInlineItemsData* data,
 
     // Shaping a single item. Skip if the existing results remain valid.
     if (previous_text && end_offset == start_item.EndOffset() &&
-        !NeedsShaping(start_item)) {
+        !NeedsShaping(start_item) && LIKELY(!IsTextCombine())) {
       DCHECK_EQ(start_item.StartOffset(),
                 start_item.TextShapeResult()->StartIndex());
       DCHECK_EQ(start_item.EndOffset(),
@@ -1322,9 +1364,10 @@ void NGInlineNode::ShapeText(NGInlineItemsData* data,
 
     // Shape each item with the full context of the entire node.
     scoped_refptr<ShapeResult> shape_result =
-        shaper.Shape(start_item, end_offset);
+        shaper.Shape(start_item, font, end_offset);
 
-    if (UNLIKELY(spacing.SetSpacing(font))) {
+    if (UNLIKELY(spacing.SetSpacing(font.GetFontDescription()))) {
+      DCHECK(!IsTextCombine()) << GetLayoutBlockFlow();
       shape_result->ApplySpacing(spacing);
       if (spacing.LetterSpacing() &&
           ShouldReportLetterSpacingUseCounter(
@@ -1782,7 +1825,7 @@ static LayoutUnit ComputeContentSize(
 
   if (mode == NGLineBreakerMode::kMinContent &&
       can_compute_max_size_from_min_size) {
-    if (node.IsSVGText()) {
+    if (node.IsSvgText()) {
       *max_size_out = result;
       return result;
       // The following DCHECK_EQ() doesn't work well for SVG <text> because
@@ -1861,15 +1904,63 @@ bool NGInlineNode::ShouldReportLetterSpacingUseCounterForTesting(
                                              block_flow);
 }
 
-const Vector<std::pair<unsigned, NGSVGCharacterData>>&
-NGInlineNode::SVGCharacterDataList() const {
-  DCHECK(IsSVGText());
+const Vector<std::pair<unsigned, NGSvgCharacterData>>&
+NGInlineNode::SvgCharacterDataList() const {
+  DCHECK(IsSvgText());
   return Data().svg_node_data_->character_data_list;
 }
 
-const Vector<SVGTextPathRange>& NGInlineNode::SVGTextPathRangeList() const {
-  DCHECK(IsSVGText());
+const Vector<SvgTextContentRange>& NGInlineNode::SvgTextLengthRangeList()
+    const {
+  DCHECK(IsSvgText());
+  return Data().svg_node_data_->text_length_range_list;
+}
+
+const Vector<SvgTextContentRange>& NGInlineNode::SvgTextPathRangeList() const {
+  DCHECK(IsSvgText());
   return Data().svg_node_data_->text_path_range_list;
+}
+
+void NGInlineNode::AdjustFontForTextCombineUprightAll() const {
+  DCHECK(IsTextCombine()) << GetLayoutBlockFlow();
+  DCHECK(IsPrepareLayoutFinished()) << GetLayoutBlockFlow();
+
+  const float content_width = CalculateWidthForTextCombine(ItemsData(false));
+  if (UNLIKELY(content_width == 0.0f))
+    return;  // See "fast/css/zero-font-size-crash.html".
+  auto& text_combine = *To<LayoutNGTextCombine>(GetLayoutBlockFlow());
+  const float desired_width = text_combine.DesiredWidth();
+  text_combine.ResetLayout();
+  if (UNLIKELY(desired_width == 0.0f)) {
+    NOTREACHED() << "We get the test case!";
+    return;
+  }
+  if (content_width <= desired_width)
+    return;
+
+  const Font& font = Style().GetFont();
+  FontSelector* const font_selector = font.GetFontSelector();
+  FontDescription description = font.GetFontDescription();
+
+  // Try compressed fonts.
+  static const std::array<FontWidthVariant, 3> kWidthVariants = {
+      kHalfWidth, kThirdWidth, kQuarterWidth};
+  for (const auto width_variant : kWidthVariants) {
+    description.SetWidthVariant(width_variant);
+    Font compressed_font(description, font_selector);
+    ShapeText(MutableData(), nullptr, nullptr, &compressed_font);
+    if (CalculateWidthForTextCombine(ItemsData(false)) <= desired_width) {
+      text_combine.SetCompressedFont(compressed_font);
+      return;
+    }
+  }
+
+  // There is no compressed font to fit within 1em. We use original font with
+  // scaling.
+  ShapeText(MutableData());
+  DCHECK_EQ(content_width, CalculateWidthForTextCombine(ItemsData(false)));
+  DCHECK_NE(content_width, 0.0f);
+  text_combine.SetScaleX(desired_width / content_width);
 }
 
 bool NGInlineNode::NeedsShapingForTesting(const NGInlineItem& item) {

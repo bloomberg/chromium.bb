@@ -11,7 +11,8 @@
 #include "build/build_config.h"
 #include "core/fxcrt/fx_extension.h"
 #include "core/fxcrt/fx_safe_types.h"
-#include "third_party/base/stl_util.h"
+#include "core/fxcrt/fx_system.h"
+#include "third_party/base/cxx17_backports.h"
 
 #ifndef NDEBUG
 #include <ostream>
@@ -90,6 +91,9 @@ void FX_RECT::Intersect(const FX_RECT& src) {
 // Y-axis runs the opposite way in FX_RECT.
 CFX_FloatRect::CFX_FloatRect(const FX_RECT& rect)
     : left(rect.left), bottom(rect.top), right(rect.right), top(rect.bottom) {}
+
+CFX_FloatRect::CFX_FloatRect(const CFX_PointF& point)
+    : left(point.x), bottom(point.y), right(point.x), top(point.y) {}
 
 // static
 CFX_FloatRect CFX_FloatRect::GetBBox(const CFX_PointF* pPoints, int nPoints) {

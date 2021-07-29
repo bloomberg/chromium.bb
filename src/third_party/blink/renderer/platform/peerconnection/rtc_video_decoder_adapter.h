@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -69,17 +68,15 @@ class PLATFORM_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
   // resolution streams, but they'll fall back if they adapt below the limit.
   static constexpr int32_t kMaxDecoderInstances = 8;
 
-  // Lists which implementations can be queried, this can vary based on platform
-  // and enabled features.
-  static std::vector<media::VideoDecoderImplementation>
-  SupportedImplementations();
-
   // Creates and initializes an RTCVideoDecoderAdapter. Returns nullptr if
   // |format| cannot be supported.
   // Called on the worker thread.
   static std::unique_ptr<RTCVideoDecoderAdapter> Create(
       media::GpuVideoAcceleratorFactories* gpu_factories,
       const webrtc::SdpVideoFormat& format);
+
+  RTCVideoDecoderAdapter(const RTCVideoDecoderAdapter&) = delete;
+  RTCVideoDecoderAdapter& operator=(const RTCVideoDecoderAdapter&) = delete;
 
   // Called on |media_task_runner_|.
   ~RTCVideoDecoderAdapter() override;
@@ -105,6 +102,11 @@ class PLATFORM_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
   static void IncrementCurrentDecoderCountForTesting();
   static void DecrementCurrentDecoderCountForTesting();
 
+  // Returns true if there's VP9 HW support for spatial layers. Please note that
+  // the response from this function implicitly assumes that HW decoding is
+  // enabled and that VP9 decoding is supported in HW.
+  static bool Vp9HwSupportForSpatialLayers();
+
  private:
   using CreateVideoDecoderCB =
       base::RepeatingCallback<std::unique_ptr<media::VideoDecoder>(
@@ -115,8 +117,7 @@ class PLATFORM_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
   // Called on the worker thread.
   RTCVideoDecoderAdapter(media::GpuVideoAcceleratorFactories* gpu_factories,
                          const media::VideoDecoderConfig& config,
-                         const webrtc::SdpVideoFormat& format,
-                         media::VideoDecoderImplementation implementation);
+                         const webrtc::SdpVideoFormat& format);
 
   bool InitializeSync(const media::VideoDecoderConfig& config);
   void InitializeOnMediaThread(const media::VideoDecoderConfig& config,
@@ -137,7 +138,6 @@ class PLATFORM_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
   const scoped_refptr<base::SequencedTaskRunner> media_task_runner_;
   media::GpuVideoAcceleratorFactories* const gpu_factories_;
   const webrtc::SdpVideoFormat format_;
-  const media::VideoDecoderImplementation implementation_;
   media::VideoDecoderConfig config_;
 
   // Media thread members.
@@ -178,8 +178,6 @@ class PLATFORM_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
 
   base::WeakPtr<RTCVideoDecoderAdapter> weak_this_;
   base::WeakPtrFactory<RTCVideoDecoderAdapter> weak_this_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(RTCVideoDecoderAdapter);
 };
 
 }  // namespace blink

@@ -16,13 +16,11 @@
 #include "include/core/SkScalar.h"
 #include "include/core/SkSize.h"
 #include "include/core/SkString.h"
-#include "include/private/GrSharedEnums.h"
 #include "include/private/GrTypesPriv.h"
 #include "src/core/SkTLList.h"
 #include "src/gpu/GrFragmentProcessor.h"
 #include "src/gpu/GrPaint.h"
 #include "src/gpu/GrSurfaceDrawContext.h"
-#include "src/gpu/effects/generated/GrAARectEffect.h"
 #include "tools/gpu/TestOps.h"
 
 #include <memory>
@@ -74,7 +72,7 @@ protected:
             for (int et = 0; et < kGrClipEdgeTypeCnt; ++et) {
                 SkRect rect = r.makeOffset(x, y);
                 GrClipEdgeType edgeType = static_cast<GrClipEdgeType>(et);
-                auto fp = GrAARectEffect::Make(/*inputFP=*/nullptr, edgeType, rect);
+                auto fp = GrFragmentProcessor::Rect(/*inputFP=*/nullptr, edgeType, rect);
                 SkASSERT(fp);
 
                 GrPaint grPaint;

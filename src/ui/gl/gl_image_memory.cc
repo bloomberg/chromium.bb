@@ -22,6 +22,7 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_enums.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/gl_utils.h"
 #include "ui/gl/gl_version_info.h"
 #include "ui/gl/scoped_binders.h"
 #include "ui/gl/scoped_make_current.h"
@@ -349,8 +350,12 @@ bool GLImageMemory::CopyTexImage(unsigned target) {
                            &data_type, &data_row_length);
   }
 
-  if (data_row_length != size_.width())
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, data_row_length);
+  ScopedPixelStore scoped_unpack_row_length(
+      GL_UNPACK_ROW_LENGTH,
+      data_row_length == size_.width() ? 0 : data_row_length);
+  ScopedPixelStore scoped_unpack_skip_pixels(GL_UNPACK_SKIP_PIXELS, 0);
+  ScopedPixelStore scoped_unpack_skip_rows(GL_UNPACK_SKIP_ROWS, 0);
+  ScopedPixelStore scoped_unpack_alignment(GL_UNPACK_ALIGNMENT, 4);
 
   const void* src;
   size_t size;
@@ -406,9 +411,6 @@ bool GLImageMemory::CopyTexImage(unsigned target) {
                  0, data_format, data_type, src);
   }
 
-  if (data_row_length != size_.width())
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-
   return true;
 }
 
@@ -437,15 +439,16 @@ bool GLImageMemory::CopyTexSubImage(unsigned target,
                            &data_type, &data_row_length);
   }
 
-  if (data_row_length != rect.width())
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, data_row_length);
+  ScopedPixelStore scoped_unpack_row_length(
+      GL_UNPACK_ROW_LENGTH,
+      data_row_length == rect.width() ? 0 : data_row_length);
+  ScopedPixelStore scoped_unpack_skip_pixels(GL_UNPACK_SKIP_PIXELS, 0);
+  ScopedPixelStore scoped_unpack_skip_rows(GL_UNPACK_SKIP_ROWS, 0);
+  ScopedPixelStore scoped_unpack_alignment(GL_UNPACK_ALIGNMENT, 4);
 
   glTexSubImage2D(target, 0, offset.x(), offset.y(), rect.width(),
                   rect.height(), data_format, data_type,
                   gles2_data ? gles2_data->data() : data);
-
-  if (data_row_length != rect.width())
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 
   return true;
 }

@@ -152,7 +152,8 @@ class RealtimeReportingJobConfigurationTest : public testing::Test {
   }
 
   base::test::SingleThreadTaskEnvironment task_environment_;
-  MockDeviceManagementService service_;
+  StrictMock<MockJobCreationHandler> job_creation_handler_;
+  FakeDeviceManagementService service_{&job_creation_handler_};
   MockCloudPolicyClient client_;
   StrictMock<MockCallbackObserver> callback_observer_;
   DeviceManagementService::Job job_;
@@ -160,8 +161,9 @@ class RealtimeReportingJobConfigurationTest : public testing::Test {
   chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
   class ScopedFakeSerialNumber {
    public:
-    ScopedFakeSerialNumber(chromeos::system::ScopedFakeStatisticsProvider*
-                               fake_statistics_provider) {
+    explicit ScopedFakeSerialNumber(
+        chromeos::system::ScopedFakeStatisticsProvider*
+            fake_statistics_provider) {
       // The fake serial number must be set before |configuration_| is
       // constructed below.
       fake_statistics_provider->SetMachineStatistic(

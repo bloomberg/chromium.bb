@@ -45,7 +45,7 @@ static constexpr int kLargeCubeOffset = kSmallCube * kSmallCube * kSmallCube;
 static constexpr int kMinImplicitPaletteIndex = -(2 * 72 - 1);
 
 static constexpr pixel_type Scale(int value, int bit_depth, int denom) {
-  return (static_cast<pixel_type_w>(value) * ((1 << bit_depth) - 1)) / denom;
+  return (value * ((static_cast<pixel_type_w>(1) << bit_depth) - 1)) / denom;
 }
 
 // The purpose of this function is solely to extend the interpretation of
@@ -227,7 +227,9 @@ static Status InvPalette(Image &input, uint32_t begin_c, uint32_t nb_colors,
   // JXL_DASSERT(input.channel[c0].maxval == palette.w-1);
   if (nb < 1) return JXL_FAILURE("Corrupted transforms");
   for (int i = 1; i < nb; i++) {
-    input.channel.insert(input.channel.begin() + c0 + 1, Channel(w, h));
+    input.channel.insert(
+        input.channel.begin() + c0 + 1,
+        Channel(w, h, input.channel[c0].hshift, input.channel[c0].vshift));
   }
   const Channel &palette = input.channel[0];
   const pixel_type *JXL_RESTRICT p_palette = input.channel[0].Row(0);
@@ -384,27 +386,9 @@ static Status InvPalette(Image &input, uint32_t begin_c, uint32_t nb_colors,
   return num_errors.load(std::memory_order_relaxed) == 0;
 }
 
-static Status CheckPaletteParams(const Image &image, uint32_t begin_c,
-                                 uint32_t end_c) {
-  uint32_t c1 = begin_c;
-  uint32_t c2 = end_c;
-  // The range is including c1 and c2, so c2 may not be num_channels.
-  if (c1 > image.channel.size() || c2 >= image.channel.size() || c2 < c1) {
-    return JXL_FAILURE("Invalid channel range");
-  }
-  for (size_t c = begin_c + 1; c <= end_c; c++) {
-    if (image.channel[c].w != image.channel[begin_c].w ||
-        image.channel[c].h != image.channel[begin_c].h) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
 static Status MetaPalette(Image &input, uint32_t begin_c, uint32_t end_c,
                           uint32_t nb_colors, uint32_t nb_deltas, bool lossy) {
-  JXL_RETURN_IF_ERROR(CheckPaletteParams(input, begin_c, end_c));
+  JXL_RETURN_IF_ERROR(CheckEqualChannels(input, begin_c, end_c));
 
   size_t nb = end_c - begin_c + 1;
   input.nb_meta_channels++;
@@ -424,7 +408,7 @@ static Status FwdPalette(Image &input, uint32_t begin_c, uint32_t end_c,
                          uint32_t &nb_colors, bool ordered, bool lossy,
                          Predictor &predictor,
                          const weighted::Header &wp_header) {
-  JXL_QUIET_RETURN_IF_ERROR(CheckPaletteParams(input, begin_c, end_c));
+  JXL_QUIET_RETURN_IF_ERROR(CheckEqualChannels(input, begin_c, end_c));
   uint32_t nb = end_c - begin_c + 1;
 
   size_t w = input.channel[begin_c].w;

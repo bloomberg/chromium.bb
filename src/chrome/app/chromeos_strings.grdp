@@ -322,33 +322,33 @@
     We've found multiple profiles available to download. Select the ones you would like to download before proceeding.
   </message>
   <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE" desc="Label for informing the user on ways to retrieve an eSim profile">
-    Scan a QR code using your device camera or enter the activation code provided by your carrier
+    Scan a QR Code using your device camera or enter the activation code provided by your carrier
   </message>
   <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_ENTER_ACTIVATION_CODE" desc="Label for informing the user to enter activation code when no media devices have been found">
     Please enter your activation code
   </message>
-  <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_USE_CAMERA" desc="Label for button that uses the camera to scan for QR codes when clicked.">
-    Use camera to scan QR code
+  <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_USE_CAMERA" desc="Label for button that uses the camera to scan for QR Codes when clicked.">
+    Use camera to scan QR Code
   </message>
   <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_SWITCH_CAMERA" desc="Label for button that toggles the camera between user-facing and environment-facing.">
     Flip camera
   </message>
-  <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_A11Y_QR_CODE_CAMERA_ON" desc="Accessibility announcement provided during the eSIM setup flow which alerts the user about how to set up an eSIM profile to use for a cellular connection. The flow involves clicking a button to cause the device's webcam to turn on, then the user showing a QR code to the camera to continue.">
-    Device camera has turned on. Please place your eSIM QR code in front of the camera.
+  <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_A11Y_QR_CODE_CAMERA_ON" desc="Accessibility announcement provided during the eSIM setup flow which alerts the user about how to set up an eSIM profile to use for a cellular connection. The flow involves clicking a button to cause the device's webcam to turn on, then the user showing a QR Code to the camera to continue.">
+    Device camera has turned on. Please place your eSIM QR Code in front of the camera.
   </message>
   <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_A11Y_QR_CODE_CAMERA_SCAN_SUCCESS" desc="Accessibility announcement provided during the eSIM setup flow which alerts the user that a qr code has been succesfully scanned by the device camera.">
-    QR code has been scanned.
+    QR Code has been scanned.
   </message>
   <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_SUCCESS" desc="Label informing the user that an an activation code was scanned successfully.">
     Activation code detected
   </message>
-  <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_USE_CAMERA_AGAIN" desc="Label for button informing the user to click to use the camera to rescan for QR codes.">
+  <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_USE_CAMERA_AGAIN" desc="Label for button informing the user to click to use the camera to rescan for QR Codes.">
     Use camera again
   </message>
   <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_ERROR" desc="Label informing the user that there was an error detecting activation code.">
     Error detecting code
   </message>
-  <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_RETRY" desc="Label for button informing user to retry rescan of QR codes.">
+  <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_RETRY" desc="Label for button informing user to retry rescan of QR Codes.">
     Try again
   </message>
   <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_LOADING" desc="Label informing the user that the activation code is currently being verified.">
@@ -363,16 +363,16 @@
   <message name="IDS_CELLULAR_SETUP_ESTABLISH_NETWORK_CONNECTION" desc="Message, informing user that a network connection is being established during cellular setup">
     Establishing network connection ...
   </message>
-  <message name="IDS_CELLULAR_SETUP_EID_MENU_ITEM_TITLE" desc="Title for menu item in the eSIM list triple dot menu that shows the EID and QR code dialog when clicked.">
+  <message name="IDS_CELLULAR_SETUP_EID_MENU_ITEM_TITLE" desc="Title for menu item in the eSIM list triple dot menu that shows the EID and QR Code dialog when clicked.">
     Show device EID
   </message>
-  <message name="IDS_CELLULAR_SETUP_EID_POPUP_TITLE" desc="Label shown when vewing EID and QR code popup describing device EID">
+  <message name="IDS_CELLULAR_SETUP_EID_POPUP_TITLE" desc="Label shown when vewing EID and QR Code popup describing device EID">
     Your device EID
   </message>
-  <message name="IDS_CELLULAR_SETUP_EID_POPUP_DESCRIPTION" desc="Label shown when veiwing EID and QR code popup describing what an EID number is used for">
+  <message name="IDS_CELLULAR_SETUP_EID_POPUP_DESCRIPTION" desc="Label shown when veiwing EID and QR Code popup describing what an EID number is used for">
     A customer service rep can use this EID number to help you activate service
   </message>
-  <message name="IDS_CELLULAR_SETUP_EID_POPUP_A11Y_LABEL" desc="A11y label for EID and QR code dialog describing what the device's EID number is and what it's used for">
+  <message name="IDS_CELLULAR_SETUP_EID_POPUP_A11Y_LABEL" desc="A11y label for EID and QR Code dialog describing what the device's EID number is and what it's used for">
     Your device EID is <ph name="EID_NUMBER">$1<ex>123456789</ex></ph>. A customer service rep can use the EID number to help you activate service.
   </message>
   <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_CONFIRMATION_CODE_MESSAGE" desc="Message, prompting the user to enter the confirmation code to activate an eSIM profile.">
@@ -1035,6 +1035,43 @@
     Please retry. If you see this error again please contact your support representative.
   </message>
 
+  <!-- Strings for OS install -->
+  <message name="IDS_OS_INSTALL_SCREEN_ERROR_TITLE" desc="Title of the error page of the OS install screen">
+    Installation failed
+  </message>
+  <message name="IDS_OS_INSTALL_SCREEN_ERROR_FAILED_SUBTITLE" desc="Subtitle of the error page of the OS install screen for general failure" translateable="false">
+    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Sorry, something went wrong and we were unable to install CloudReady.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>Please visit [TBD LINK] for additional information or view logs for details.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
+  </message>
+  <message name="IDS_OS_INSTALL_SCREEN_ERROR_NO_DEST_SUBTITLE" desc="Subtitle of the error page of the OS install screen when no valid destination for installation was found" translateable="false">
+    The installer could not find a valid destination to install CloudReady. Please visit [TBD LINK] for additional information.
+  </message>
+  <message name="IDS_OS_INSTALL_SCREEN_ERROR_NO_DEST_CONTENT" desc="Content of the error page of the OS install screen when no valid destination for installation was found" translateable="false">
+    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Check that your device contains working internal storage such as a HDD, SDD, or eMMC.
+    <ph name="BEGIN_LIST">&lt;ul&gt;</ph>
+    <ph name="LIST_ITEM">&lt;li&gt;</ph>Check that your internal storage device is greater than 16GB.
+    <ph name="LIST_ITEM">&lt;li&gt;</ph>Check the connection to the internal storage, if physically accessible.
+    <ph name="LIST_ITEM">&lt;li&gt;</ph>Make sure you're using a certified model, and if so check all install notes for this model.
+    <ph name="END_LIST">&lt;/ul&gt;</ph>
+    <ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>View logs for additional details.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
+  </message>
+  <message name="IDS_OS_INSTALL_SCREEN_ERROR_SERVICE_LOGS_LINK_TEXT" desc="Text of the link to service logs dialog of the OS install screen">
+    Show service logs
+  </message>
+  <message name="IDS_OS_INSTALL_SCREEN_SERVICE_LOGS_TITLE" desc="Title of service logs dialog of the OS install screen">
+    Service logs
+  </message>
+  <message name="IDS_OS_INSTALL_SCREEN_SUCCESS_TITLE" desc="Title of the success page of the OS install screen">
+    Installation complete
+  </message>
+  <message name="IDS_OS_INSTALL_SCREEN_SEND_FEEDBACK" desc="Text of the send feedback button on the OS install screen">
+    Send feedback
+  </message>
+  <message name="IDS_OS_INSTALL_SCREEN_SHUTDOWN_BUTTON" desc="Text of the shutdown button on the OS install screen">
+    Shut down
+  </message>
+
   <!-- Strings for parental handoff login screen -->
   <message name="IDS_LOGIN_PARENTAL_HANDOFF_SCREEN_TITLE" desc="Title of screen which tells user that the parent can handoff the device to supervised user.">
     Now it's <ph name="SUPERVISED_USER_NAME">$1<ex>Child 1</ex></ph>'s turn
@@ -1070,19 +1107,31 @@
     You're signed in!
   </message>
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_TITLE_WITH_DEVICE" desc="Alternate title for the dialog that explains Chrome Sync and privacy options on first login.">
-    Personalize your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+    Sync your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
   </message>
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_SUBTITLE" desc="The subtitle of the dialog that explains Chrome Sync and privacy options on first login.">
     The following services help keep your data safe and secure. You can turn these features off at any time.
   </message>
+  <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_SUBTITLE_2" desc="Alternate subtitle of the dialog that explains Chrome Sync and privacy options on first login for non-split.">
+    Your saved preferences and activity will be ready on any Chrome OS device when you sign in with your Google Account. You can choose what to sync in Settings.
+  </message>
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_NAME" desc="Title of the 'Settings sync' section of the sync confirmation dialog that is displayed on the first user log in.">
     Chrome OS settings sync
+  </message>
+  <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_NAME_2" desc="Alternate title of the 'Settings sync' section of the sync confirmation dialog that is displayed on the first user log in.">
+    Sync your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> apps, settings, and more
   </message>
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_DESCRIPTION" desc="Description of 'Settings sync' section of the sync confirmation dialog that is displayed on the first user log in.">
     Your apps, settings, and other customizations will be synced across all Chrome OS devices signed in with your Google Account.
   </message>
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_CHROME_BROWSER_SYNC_NAME" desc="Title of the 'Chrome browser sync' section of the sync confirmation dialog that is displayed on the first user log in.">
     Chrome browser sync
+  </message>
+  <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_CHROME_BROWSER_SYNC_NAME_2" desc="Alternate title of the 'Chrome browser sync' section of the sync confirmation dialog that is displayed on the first user log in.">
+    Sync your Chrome browser bookmarks, passwords, history, and more
+  </message>
+  <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_CHROME_BROWSER_SYNC_DESCRIPTION" desc="Description of the 'Chrome browser sync' section of the sync confirmation dialog that is displayed on the first user log in.">
+    Google may use your history to personalize Search and other Google services
   </message>
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_CHROME_SYNC_NAME" desc="Title of the 'Chrome sync' section of the sync confirmation dialog that is displayed on the first user log in.">
     Chrome sync
@@ -1094,7 +1143,7 @@
     Personalize Google services
   </message>
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_PERSONALIZE_GOOGLE_SERVICES_DESCRIPTION" desc="The description of how services personalization works and a URL to configure personalization settings in Google user profile.">
-    Google may use your browsing history to personalize Search, ads, and other Google services. You can change this anytime at myaccount.google.com/activitycontrols/search
+    Google may use your browsing history to personalize Search and other Google services. You can change this anytime at myaccount.google.com/activitycontrols/search
   </message>
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_PERSONALIZE_GOOGLE_SERVICES_DESCRIPTION_SUPERVISED_USER" desc="The description of how services personalization works and a URL to configure personalization settings in Google supervised user profile.">
     Google may use your browsing history to personalize Search and other Google services. You or your parent can change this anytime at myaccount.google.com/activitycontrols/search
@@ -1104,6 +1153,9 @@
   </message>
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT_AND_CONTINUE" desc="The label on the button that closes dialog while accepting the selected settings.">
     Accept and continue
+  </message>
+  <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_TURN_ON_SYNC" desc="The label on the button that closes the dialog while agreeing to sync for minor users.">
+    Turn on sync
   </message>
   <!-- TODO(jamescook): We landed both sets of labels to get them in before
        string freeze. After M85 branches, delete the ones we didn't use. -->
@@ -1222,8 +1274,14 @@
   <message name="IDS_DISCOVER_PIN_SETUP_TITLE1" desc="A title of the dialog that starts 'PIN-unlock' setup process, and asks user to type their pin.">
     Choose your PIN
   </message>
+  <message name="IDS_DISCOVER_PIN_SETUP_TITLE1_CHILD" desc="A title of the dialog that starts 'PIN-unlock' setup process, and asks user to type their pin, when a child account is in use.">
+    Choose a PIN
+  </message>
   <message name="IDS_DISCOVER_PIN_SETUP_SUBTITLE1" desc="A sub-title of the dialog that starts 'PIN-unlock' setup process. Subtitle explains to the user how this feature can be configured.">
     Use a number (PIN) instead of a password to unlock your device. To set your PIN later, go to Settings.
+  </message>
+  <message name="IDS_DISCOVER_PIN_SETUP_SUBTITLE1_CHILD" desc="A sub-title of the dialog that starts 'PIN-unlock' setup process, when a child account is in use. Subtitle explains to the user how this feature can be configured.">
+    Your child can use a number (PIN) instead of a password to unlock this device. To set a PIN later, go to Settings.
   </message>
   <message name="IDS_DISCOVER_PIN_SETUP_SKIP" desc="A label on the button that interrupts current setup flow.">
     Skip
@@ -1231,14 +1289,26 @@
   <message name="IDS_DISCOVER_PIN_SETUP_TITLE2" desc="A title of the dialog that continues 'PIN-unlock' setup process, and asks user to type their pin again for verification.">
     Type your PIN again
   </message>
+  <message name="IDS_DISCOVER_PIN_SETUP_TITLE2_CHILD" desc="A title of the dialog that continues 'PIN-unlock' setup process, and asks user to type their pin again for verification, when a child account is in use.">
+    Type the PIN again
+  </message>
   <message name="IDS_DISCOVER_PIN_SETUP_TITLE3" desc="A title of the dialog that finishes 'PIN-unlock' setup process suggesting that it was successful.">
-    Your PIN is added
+    Your PIN has been added
+  </message>
+  <message name="IDS_DISCOVER_PIN_SETUP_TITLE3_CHILD" desc="A title of the dialog that finishes 'PIN-unlock' setup process suggesting that it was successful, when a child account is in use.">
+    Your child’s PIN has been added
   </message>
   <message name="IDS_DISCOVER_PIN_SETUP_SUBTITLE3_NO_LOGIN" desc="A sub-title of the dialog that finishes 'PIN-unlock' setup process successfully suggesting how user can use the PIN that they have just set up.">
     You can use your PIN to unlock your device.
   </message>
+  <message name="IDS_DISCOVER_PIN_SETUP_SUBTITLE3_NO_LOGIN_CHILD" desc="A sub-title of the dialog that finishes 'PIN-unlock' setup process successfully suggesting how user can use the PIN that they have just set up, when a child account is in use.">
+    Your child can use a PIN to unlock the device.
+  </message>
   <message name="IDS_DISCOVER_PIN_SETUP_SUBTITLE3_WITH_LOGIN" desc="A sub-title of the dialog that finishes 'PIN-unlock' setup process successfully suggesting how user can use the PIN that they have just set up.">
     You can use your PIN to sign in to or unlock your device.
+  </message>
+  <message name="IDS_DISCOVER_PIN_SETUP_SUBTITLE3_WITH_LOGIN_CHILD" desc="A sub-title of the dialog that finishes 'PIN-unlock' setup process successfully suggesting how user can use the PIN that they have just set up, when a child account is in use.">
+    Your child can use a PIN to sign in to or unlock the device.
   </message>
   <message name="IDS_DISCOVER_PIN_SETUP" desc="A label on the button that leads to Pin Unlock feature set up.">
     Pin setup
@@ -1497,101 +1567,6 @@
     A critical update is ready to install. Sign in to get started.
   </message>
 
-  <!-- Network error strings -->
-  <message name="IDS_CHROMEOS_NETWORK_ERROR_UNKNOWN" desc="Network error details in notifications: UNKNOWN">
-    Unknown network error
-  </message>
-  <message name="IDS_CHROMEOS_NETWORK_ERROR_OUT_OF_RANGE" desc="Network error details in notifications: OUT_OF_RANGE">
-    Out of range
-  </message>
-  <message name="IDS_CHROMEOS_NETWORK_ERROR_PIN_MISSING" desc="Network error details in notifications: PIN_MISSING">
-    PIN missing
-  </message>
-  <message name="IDS_CHROMEOS_NETWORK_ERROR_DHCP_FAILED" desc="Network error details in notifications: DHCP_FAILED">
-    DHCP lookup failed
-  </message>
-  <message name="IDS_CHROMEOS_NETWORK_ERROR_CONNECT_FAILED" desc="Network error details in notifications: CONNECT_FAILED">
-    Connect failed
-  </message>
-  <message name="IDS_CHROMEOS_NETWORK_ERROR_BAD_PASSPHRASE" desc="Network error details in notifications: BAD_PASSPHRASE. Error when a bad wifi password/passphrase is entered.">
-    Bad password
-  </message>
-  <message name="IDS_CHROMEOS_NETWORK_ERROR_BAD_WEPKEY" desc="Network error details in notifications: BAD_WEPKEY">
-    Bad WEP key
-  </message>
-  <message name="IDS_CHROMEOS_NETWORK_ERROR_ACTIVATION_FAILED" desc="Network error details in notifications: ACTIVATION_FAILED">
-    Activation failed
-  </message>
-  <message name="IDS_CHROMEOS_NETWORK_ERROR_NEED_EVDO" desc="Network error details in notifications: NEED_EVDO">
-    Need EVDO
-  </message>
-  <message name="IDS_CHROMEOS_NETWORK_ERROR_NEED_HOME_NETWORK" desc="Network error details in notifications: NEED_HOME_NETWORK">
-    Need home network
-  </message>
-  <message name="IDS_CHROMEOS_NETWORK_ERROR_OTASP_FAILED" desc="Network error details in notifications: OTASP_FAILED">
-    OTASP failed
-  </message>
-  <message name="IDS_CHROMEOS_NETWORK_ERROR_AAA_FAILED" desc="Network error details in notifications: AAA_FAILED">
-    AAA check failed
-  </message>
-  <message name="IDS_CHROMEOS_NETWORK_ERROR_INTERNAL" desc="Network error details in notifications: INTERNAL">
-    Internal error
-  </message>
-  <message name="IDS_CHROMEOS_NETWORK_ERROR_DNS_LOOKUP_FAILED" desc="Network error details in notifications: DNS_LOOKUP_FAILED">
-    DNS lookup failed
-  </message>
-  <message name="IDS_CHROMEOS_NETWORK_ERROR_HTTP_GET_FAILED" desc="Network error details in notifications: HTTP_GET_FAILED">
-    HTTP get failed
-  </message>
-  <message name="IDS_CHROMEOS_NETWORK_ERROR_IPSEC_PSK_AUTH_FAILED" desc="Network error details in notifications: IPSEC_PSK_AUTH_FAILED">
-    Incorrect password
-  </message>
-  <message name="IDS_CHROMEOS_NETWORK_ERROR_CERT_AUTH_FAILED" desc="Network error details in notifications: IPSEC_CERT_AUTH_FAILED">
-    Authentication certificate rejected by network
-  </message>
-  <message name="IDS_CHROMEOS_NETWORK_ERROR_EAP_LOCAL_TLS_FAILED" desc="Network error details in notifications: EAP_LOCAL_TLS_FAILED">
-    Authentication certificate rejected locally
-  </message>
-  <message name="IDS_CHROMEOS_NETWORK_ERROR_EAP_REMOTE_TLS_FAILED" desc="Network error details in notifications: EAP_REMOTE_TLS_FAILED">
-    Authentication certificate rejected remotely
-  </message>
-  <message name="IDS_CHROMEOS_NETWORK_ERROR_EAP_AUTH_FAILED" desc="Network error details in notifications: IPSEC_CERT_AUTH_FAILED">
-    Username/password incorrect or EAP-auth failed
-  </message>
-  <message name="IDS_CHROMEOS_NETWORK_ERROR_PPP_AUTH_FAILED" desc="Network error details in notifications: PPP_AUTH_FAILED">
-    PPP authentication failed due to an incorrect username or password
-  </message>
-  <message name="IDS_CHROMEOS_NETWORK_ERROR_NOT_ON_HOME_NETWORK" desc="Network error details in notifications when a user attempts to connect to a Cellular network while not on their home network.">
-    Home network is not available. Mobile data roaming must be enabled to connect.
-  </message>
-  <message name="IDS_CHROMEOS_NETWORK_ERROR_CONFIGURE_FAILED" desc="Network error details in notifications: Configuration error">
-    Failed to configure network
-  </message>
-  <message name="IDS_CHROMEOS_NETWORK_ERROR_CERTIFICATES_NOT_LOADED" desc="Network error details in notifications: Certificates not loaded">
-    Certificates not loaded
-  </message>
-  <message name="IDS_CHROMEOS_NETWORK_ERROR_NOT_REGISTERED" desc="Network error details in notifications: NOT_REGISTERED. Error when a connect attempt fails because the modem is not registered.">
-    Modem not registered
-  </message>
-  <message name="IDS_CHROMEOS_NETWORK_ERROR_WRONG_STATE" desc="Network error details in notifications: NOT_REGISTERED. Error when a connect attempt fails because the modem is in a busy state.">
-    Device is busy
-  </message>
-  <message name="IDS_NETWORK_ERROR_CANNOT_CHANGE_SHARED_CONFIG" desc="Network error message shown when attempting to change a shared network configuration if the operation is not allowed">
-    Changing shared network configurations is not allowed
-  </message>
-  <message name="IDS_NETWORK_ERROR_NO_USER_CERT" desc="In the network connect dialog, when creating a VPN or enterprise Wi-Fi connection, error message to display when no user certificates are installed.">
-    Please install a user certificate.
-  </message>
-  <message name="IDS_NETWORK_ERROR_POLICY_CONTROLLED" desc="Network error message shown when attempting to remove or illegally modify a policy controlled network">
-    Network is policy controlled
-  </message>
-  <message name="IDS_NETWORK_ERROR_PASSPHRASE_REQUIRED" desc="Network error message shown when a passphrase is required to connect to a network but was not supplied.">
-    Passphrase required
-  </message>
-  <message name="IDS_NETWORK_ERROR_UNKNOWN" desc="Network error message shown for an unknown or unexpected network configuration error">
-    Error configuring network
-  </message>
-
   <!-- Sync/sign-in error messages -->
   <message name="IDS_SIGNIN_ERROR_SECONDARY_ACCOUNT_BUBBLE_VIEW_TITLE" desc="Title in the sign-in error bubble view/notification for Chrome OS Secondary Accounts.">
     Sign-in again
@@ -1613,149 +1588,6 @@
   </message>
   <message name="IDS_FAILED_TO_FETCH_SAML_REDIRECT" desc="Error message shown when SAML redirect URL failed to be fetched">
     Failed to fetch the SAML redirect URL from the server
-  </message>
-
-  <!-- Strings used in <network-list>, used in Settings and OOBE -->
-  <message name="IDS_NETWORK_LIST_INITIALIZING" desc="Text in the network list element when a Cellular network is initiailizing.">
-    Initializing...
-  </message>
-  <message name="IDS_NETWORK_LIST_NOT_AVAILABLE" desc="Text in the network list element when a network is not available to be selected but is still present in the list (e.g., if cellular activation is not allowed in the current context, this message is displayed next to unactivated cellular networks).">
-    Not available
-  </message>
-  <message name="IDS_NETWORK_LIST_SIM_CARD_LOCKED" desc="Text in the network list element when a Cellular network's SIM card is locked.">
-    SIM card is locked
-  </message>
-  <message name="IDS_NETWORK_LIST_UPDATED_CELLULAR_SIM_CARD_LOCKED" desc="Text in the network list element when a Cellular network's SIM card is locked. Used when updated cellular activation flag in on.">
-    Locked
-  </message>
-  <message name="IDS_NETWORK_LIST_NOT_CONNECTED" desc="Text in the network list element when there is a network for the type, but it is not connected or connecting.">
-    Not connected
-  </message>
-  <message name="IDS_NETWORK_LIST_NO_NETWORK" desc="Text in the network list element when there is no network for the type.">
-    No network
-  </message>
-  <message name="IDS_NETWORK_LIST_CONNECTING_TO" desc="Text in a network summary element when the default network for a type (e.g. WiFi) is connecting.">
-    Connecting to <ph name="NAME">$1<ex>GoogleGuest</ex></ph>
-  </message>
-  <message name="IDS_NETWORK_LIST_THIRD_PARTY_VPN_NAME_TEMPLATE" desc="Template for constructing the name of a VPN network that is handled by a third-party VPN provider from the provider name and the network name.">
-    <ph name="PROVIDER_NAME">$1<ex>OpenVPN</ex></ph>: <ph name="NETWORK_NAME">$2<ex>Work Network</ex></ph>
-  </message>
-  <message name="IDS_NETWORK_LIST_ITEM_TITLE" desc="Label for a network shown in a list in settings and oobe displaying its name and subtitle.">
-    <ph name="NETWORK_NAME">$1<ex>My Verizon eSIM</ex></ph> · <ph name="CARRIER_NAME">$2<ex>Verizon Wireless</ex></ph>
-  </message>
-  <message name="IDS_NETWORK_LIST_ITEM_SUBPAGE_BUTTON_LABEL" desc="A11y label for a button which links to details about a network, shown in settings.">
-    <ph name="NETWORK_NAME">$1<ex>GuestNetwork</ex></ph>, Details
-  </message>
-  <message name="IDS_NETWORK_LIST_ITEM_LABEL" desc="A11y label for a network shown in a list in settings and oobe.  Clicking the network starts a connection attempt.">
-    Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>Ethernet</ex></ph>, Connect
-  </message>
-  <message name="IDS_NETWORK_LIST_ITEM_LABEL_ETHERNET_MANAGED" desc="A11y label for an enterprise managed ethernet network shown in a list in settings and oobe.  Clicking the network starts a connection attempt.">
-    Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>Ethernet</ex></ph>, Managed by your Administrator, Connect
-  </message>
-  <message name="IDS_NETWORK_LIST_ITEM_LABEL_ETHERNET_WITH_CONNECTION_STATUS" desc="A11y label for an enterprise managed ethernet network with connection status shown in a list in settings and oobe.  Clicking the network navigates to the details page.">
-    Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>Ethernet</ex></ph>, <ph name="CONNECTION_STATUS">$4<ex>Connected</ex></ph>, Details
-  </message>
-  <message name="IDS_NETWORK_LIST_ITEM_LABEL_ETHERNET_MANAGED_WITH_CONNECTION_STATUS" desc="A11y label for an enterprise managed ethernet network in a list in settings and oobe.  Includes connection status.  Clicking the network navigates to the details page.">
-    Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>Ethernet</ex></ph>, <ph name="CONNECTION_STATUS">$4<ex>Connected</ex></ph>, Managed by your Administrator, Details
-  </message>
-  <message name="IDS_NETWORK_LIST_ITEM_LABEL_WIFI" desc="A11y label for a Wi-Fi network in a list in settings and oobe.  Clicking the network starts a connection attempt.">
-    Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>GuestNetwork</ex></ph>, <ph name="SECURITY_STATUS">$4<ex>Unsecured</ex></ph>, Signal Strength <ph name="SIGNAL_STRENGTH">$5<ex>80</ex></ph>%, Connect
-  </message>
-  <message name="IDS_NETWORK_LIST_ITEM_LABEL_WIFI_MANAGED" desc="A11y label for an enterprise managed Wi-Fi network in a list in settings and oobe. Clicking the network starts a connection attempt.">
-    Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>GuestNetwork</ex></ph>, <ph name="SECURITY_STATUS">$4<ex>Unsecured</ex></ph>, Signal Strength <ph name="SIGNAL_STRENGTH">$5<ex>80</ex></ph>%, Managed by your Administrator, Connect
-  </message>
-  <message name="IDS_NETWORK_LIST_ITEM_LABEL_WIFI_WITH_CONNECTION_STATUS" desc="A11y label for a Wi-Fi network in a list in settings and oobe.  Includes connection status.  Clicking the network navigates to the details page.">
-    Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>GuestNetwork</ex></ph>, <ph name="SECURITY_STATUS">$4<ex>Unsecured</ex></ph>, <ph name="CONNECTION_STATUS">$5<ex>Connecting</ex></ph>, Signal Strength <ph name="SIGNAL_STRENGTH">$6<ex>80</ex></ph>%, Details
-  </message>
-  <message name="IDS_NETWORK_LIST_ITEM_LABEL_WIFI_MANAGED_WITH_CONNECTION_STATUS" desc="A11y label for an enterprise managed Wi-Fi network in a list in settings and oobe.  Includes connection status.  Clicking the network navigates to the details page.">
-    Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>GuestNetwork</ex></ph>, <ph name="SECURITY_STATUS">$4<ex>Unsecured</ex></ph>, <ph name="CONNECTION_STATUS">$5<ex>Connecting</ex></ph>, Signal Strength <ph name="SIGNAL_STRENGTH">$6<ex>80</ex></ph>%, Managed by your Administrator, Details
-  </message>
-  <message name="IDS_NETWORK_LIST_ITEM_LABEL_CELLULAR" desc="A11y label for a cellular network in a list in settings and oobe. Clicking the network starts a connection attempt.">
-    Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>Verizon Wireless</ex></ph>, Signal Strength <ph name="SIGNAL_STRENGTH">$4<ex>80</ex></ph>%, Connect
-  </message>
-  <message name="IDS_NETWORK_LIST_ITEM_LABEL_CELLULAR_WITH_PROVIDER_NAME" desc="A11y label for a cellular network in a list in settings and oobe. Includes provider name. Clicking the network starts a connection attempt.">
-    Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>Verizon Wireless</ex></ph>, <ph name="NETWORK_PROVIDER_NAME">$4<ex>Verizon LTE</ex></ph>, Signal Strength <ph name="SIGNAL_STRENGTH">$5<ex>80</ex></ph>%, Connect
-  </message>
-  <message name="IDS_NETWORK_LIST_ITEM_LABEL_CELLULAR_MANAGED" desc="A11y label for an enterprise managed cellular network in a list in settings and oobe. Clicking the network starts a connection attempt. Clicking the network navigates to the details page.">
-    Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>Verizon Wireless</ex></ph>, Signal Strength <ph name="SIGNAL_STRENGTH">$4<ex>80</ex></ph>%, Managed by your Administrator, Connect
-  </message>
-   <message name="IDS_NETWORK_LIST_ITEM_LABEL_CELLULAR_MANAGED_WITH_PROVIDER_NAME" desc="A11y label for an enterprise managed cellular network in a list in settings and oobe. Includes provider name. Clicking the network starts a connection attempt. Clicking the network navigates to the details page.">
-    Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>Verizon Wireless</ex></ph>, <ph name="NETWORK_PROVIDER_NAME">$4<ex>Verizon LTE</ex></ph> Signal Strength <ph name="SIGNAL_STRENGTH">$5<ex>80</ex></ph>%, Managed by your Administrator, Connect
-  </message>
-  <message name="IDS_NETWORK_LIST_ITEM_LABEL_CELLULAR_WITH_CONNECTION_STATUS" desc="A11y label for a cellular network in a list in settings and oobe .  Includes connection status. Clicking the network navigates to the details page.">
-    Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>Verizon Wireless</ex></ph>, <ph name="CONNECTION_STATUS">$4<ex>Connecting...</ex></ph>, Signal Strength <ph name="SIGNAL_STRENGTH">$5<ex>80</ex></ph>%, Details
-  </message>
-  <message name="IDS_NETWORK_LIST_ITEM_LABEL_CELLULAR_WITH_CONNECTION_STATUS_AND_PROVIDER_NAME" desc="A11y label for a cellular network in a list in settings and oobe .  Includes connection status and provider name. Clicking the network navigates to the details page.">
-    Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>Verizon Wireless</ex></ph>, <ph name="NETWORK_PROVIDER_NAME">$4<ex>Verizon LTE</ex></ph>, <ph name="CONNECTION_STATUS">$5<ex>Connecting...</ex></ph>, Signal Strength <ph name="SIGNAL_STRENGTH">$6<ex>80</ex></ph>%, Details
-  </message>
-  <message name="IDS_NETWORK_LIST_ITEM_LABEL_CELLULAR_MANAGED_WITH_CONNECTION_STATUS" desc="A11y label for an enterprise managed cellular network in a list in settings and oobe.  Includes connection status. Clicking the network navigates to the details page.">
-    Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>Verizon Wireless</ex></ph>, <ph name="CONNECTION_STATUS">$4<ex>Connecting...</ex></ph>, Signal Strength <ph name="SIGNAL_STRENGTH">$5<ex>80</ex></ph>%, Managed by your Administrator, Details
-  </message>
-  <message name="IDS_NETWORK_LIST_ITEM_LABEL_CELLULAR_MANAGED_WITH_CONNECTION_STATUS_AND_PROVIDER_NAME" desc="A11y label for an enterprise managed cellular network in a list in settings and oobe.  Includes connection status and provider name. Clicking the network navigates to the details page.">
-    Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>Verizon Wireless</ex></ph>, <ph name="NETWORK_PROVIDER_NAME">$4<ex>Verizon LTE</ex></ph>, <ph name="CONNECTION_STATUS">$5<ex>Connecting...</ex></ph>, Signal Strength <ph name="SIGNAL_STRENGTH">$6<ex>80</ex></ph>%, Managed by your Administrator, Details
-  </message>
-  <message name="IDS_NETWORK_LIST_ITEM_LABEL_CELLULAR_UNACTIVATED" desc="A11y label for a cellular network in a list in settings and oobe that has not been activated to be available for use. Clicking the network navigates to the details page.">
-    Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>Verizon Wireless</ex></ph>, Unactivated, Signal Strength <ph name="SIGNAL_STRENGTH">$4<ex>80</ex></ph>%, Details
-  </message>
-  <message name="IDS_NETWORK_LIST_ITEM_LABEL_CELLULAR_UNACTIVATED_WITH_CONNECTION_STATUS" desc="A11y label for a cellular network in a list in settings and oobe that has not been activated to be available for use. Includes connection status. Clicking the network navigates to the details page.">
-    Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>Verizon Wireless</ex></ph>, Unactivated, <ph name="CONNECTION_STATUS">$4<ex>Connecting...</ex></ph>, Signal Strength <ph name="SIGNAL_STRENGTH">$5<ex>80</ex></ph>%, Details
-  </message>
-  <message name="IDS_NETWORK_LIST_ITEM_LABEL_TETHER" desc="A11y label for a phone tether network in a list in settings and oobe. Clicking the network navigates to the details page.">
-    Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="PHONE_NAME">$3<ex>Pixel 4</ex></ph>, Signal Strength <ph name="SIGNAL_STRENGTH">$4<ex>80</ex></ph>%, Phone Battery <ph name="BATTERY_STATUS">$5<ex>80</ex></ph>%, Connect
-  </message>
-   <message name="IDS_NETWORK_LIST_ITEM_LABEL_TETHER_WITH_PROVIDER_NAME" desc="A11y label for a phone tether network in a list in settings and oobe. Includes provider name. Clicking the network navigates to the details page.">
-    Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="PHONE_NAME">$3<ex>Pixel 4</ex></ph>, <ph name="PROVIDER_NAME">$4<ex>Google Fi</ex></ph>, Signal Strength <ph name="SIGNAL_STRENGTH">$5<ex>80</ex></ph>%, Phone Battery <ph name="BATTERY_STATUS">$6<ex>80</ex></ph>%, Connect
-  </message>
-  <message name="IDS_NETWORK_LIST_ITEM_LABEL_TETHER_WITH_CONNECTION_STATUS" desc="A11y label for a phone tether network in a list in settings and oobe.  Includes connection status. Clicking the network navigates to the details page.">
-    Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="PHONE_NAME">$3<ex>Pixel 4</ex></ph>, <ph name="CONNECTION_STATUS">$4<ex>Connecting...</ex></ph>, Signal Strength <ph name="SIGNAL_STRENGTH">$5<ex>80</ex></ph>%, Phone Battery <ph name="BATTERY_STATUS">$6<ex>80</ex></ph>%, Details
-  </message>
-  <message name="IDS_NETWORK_LIST_ITEM_LABEL_TETHER_WITH_CONNECTION_STATUS_AND_PROVIDER_NAME" desc="A11y label for a phone tether network in a list in settings and oobe.  Includes connection status. Clicking the network navigates to the details page.">
-    Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="PHONE_NAME">$3<ex>Pixel 4</ex></ph>, <ph name="PROVIDER_NAME">$4<ex>Google Fi</ex></ph>, <ph name="CONNECTION_STATUS">$5<ex>Connecting...</ex></ph>, Signal Strength <ph name="SIGNAL_STRENGTH">$6<ex>80</ex></ph>%, Phone Battery <ph name="BATTERY_STATUS">$7<ex>80</ex></ph>%, Details
-  </message>
-  <message name="IDS_NETWORK_LIST_ITEM_LABEL_ESIM_PENDING_PROFILE" desc="A11y label for an eSIM profile that's ready to be installed, shown in a list in settings and oobe.  Clicking the profile installs the eSIM profile so that the cellular network is available for connecting.">
-    Download mobile profile, Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>Verizon Wireless</ex></ph>
-  </message>
-  <message name="IDS_NETWORK_LIST_ITEM_LABEL_ESIM_PENDING_PROFILE_WITH_PROVIDER_NAME" desc="A11y label for an eSIM profile that's ready to be installed, shown in a list in settings and oobe. Includes the provider name.  Clicking the profile installs the eSIM profile so that the cellular network is available for connecting.">
-    Download mobile profile, Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>Verizon Wireless</ex></ph>, <ph name="NETWORK_PROVIDER_NAME">$4<ex>Verizon LTE</ex></ph>
-  </message>
-  <message name="IDS_NETWORK_LIST_ITEM_LABEL_ESIM_PENDING_PROFILE_INSTALLING" desc="A11y label for an eSIM profile that is currently installing, shown in a list in settings and oobe.">
-    Installing mobile profile, Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>Verizon Wireless</ex></ph>
-  </message>
-  <message name="IDS_NETWORK_LIST_ITEM_LABEL_ESIM_PENDING_PROFILE_WITH_PROVIDER_NAME_INSTALLING" desc="A11y label for an eSIM profile that is currently installing, shown in a list in settings and oobe. Includes the provider name.">
-    Installing mobile profile, Network <ph name="NETWORK_INDEX">$1<ex>1</ex></ph> of <ph name="NETWORK_COUNT">$2<ex>10</ex></ph>, <ph name="NETWORK_NAME">$3<ex>Verizon Wireless</ex></ph>, <ph name="NETWORK_PROVIDER_NAME">$4<ex>Verizon LTE</ex></ph>
-  </message>
-  <message name="IDS_NETWORK_LIST_ITEM_ACTIVATE" desc="Text for the button displayed for SIM networks that haven't been setup that opens the SIM setup dialog when clicked.">
-    Activate
-  </message>
-  <message name="IDS_NETWORK_LIST_ITEM_ACTIVATE_A11Y_LABEL" desc="A11Y label for the button displayed for SIM networks that haven't been setup that opens the SIM setup dialog when clicked. Includes network name.">
-    Activate, <ph name="NETWORK_NAME">$1<ex>Verizon</ex></ph>
-  </message>
-  <message name="IDS_NETWORK_LIST_ITEM_ACTIVATING" desc="Loading text indicating that the SIM network is currently being set up so that the user can connect to it to access the Internet.">
-    Activating...
-  </message>
-  <message name="IDS_NETWORK_LIST_ITEM_UNAVAILABLE_SIM_NETWORK" desc="Text for label displayed for SIM networks that are not available to be setup.">
-    Not activated. Contact your carrier.
-  </message>
-  <message name="IDS_NETWORK_LIST_ITEM_DOWNLOAD" desc="Text for the button displayed for pending eSIM profiles that installs the profile when pressed.">
-    Download
-  </message>
-  <message name="IDS_NETWORK_LIST_ITEM_DOWNLOAD_A11Y_LABEL" desc="A11Y label for the button displayed for pending eSIM profiles that installs the profile when pressed. Includes profile name">
-    Download, <ph name="PROFILE_NAME">$1<ex>Cellular</ex></ph>
-  </message>
-  <message name="IDS_NETWORK_LIST_ITEM_UNLOCK" desc="Text for the button displayed for locked cellular networks that opens a dialog to unlock the network when pressed ">
-    Unlock
-  </message>
-  <message name="IDS_NETWORK_LIST_ITEM_UNLOCK_A11Y_LABEL" desc="A11Y label for button displayed for locked cellular networks that opens a dialog to unlock the network when pressed. Includes network name.">
-    <ph name="NETWORK_NAME">$1<ex>Cellular</ex></ph>, Unlock
-  </message>
-  <message name="IDS_NETWORK_LIST_ITEM_ADDING_PROFILE" desc="Loading text indicating that an eSIM profile is currently installing.">
-    Adding Profile...
-  </message>
-  <message name="IDS_WIFI_NETWORK_STATUS_SECURED" desc="a11y label used when a Wi-Fi network is secured.">
-    Secured
-  </message>
-  <message name="IDS_WIFI_NETWORK_STATUS_UNSECURED" desc="a11y label used when a Wi-Fi network connection is not secured.">
-    Unsecured
   </message>
 
   <!-- Other Network UI strings -->
@@ -1784,9 +1616,6 @@
   <message name="IDS_NETWORK_OUT_OF_CREDITS_BODY" desc="Message body for network out of data error notification">
     You may have used up your mobile data allowance. Visit the <ph name="name">$1<ex>GoogleGuest</ex></ph> activation portal to buy more data
   </message>
-  <message name="IDS_NETWORK_UNRECOGNIZED_ERROR" desc="Unrecognized Network error text">
-    Unrecognized error: <ph name="desc">$1<ex>ShillErrorString</ex></ph>
-  </message>
   <message name="IDS_NETWORK_CELLULAR_ACTIVATED_TITLE" desc="Title for cellular activated notification">
     Mobile data activated
   </message>
@@ -1799,261 +1628,8 @@
   <message name="IDS_NETWORK_ACTIVATION_NEEDS_CONNECTION" desc="Message when attempting to activate a mobile network that requires a connection">
     To activate '<ph name="name">$1<ex>Generic Wireless</ex></ph>' data, first connect to a Wi-Fi network
   </message>
-  <message name="IDS_NETWORK_IP_ADDRESS_NA" desc="IP address value to be shown in network configuration section in network details page when the IP address is not available.">
-    Not available
-  </message>
 
   <!-- ONC (Open Network Configuration) strings have moved to //chromeos/chromeos_strings.grd -->
-
-  <!-- Settings Internet Page-->
-  <message name="IDS_SETTINGS_INTERNET_CONFIG" desc="Title for the network configuration dialog.">
-    Configure network
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_CONFIG_SHARE" desc="Settings > Internet > Network config: Label for setting allowing other device users to use the network configuration.">
-    Allow other users of this device to use this network
-  </message>
-  <message name="IDS_SETTINGS_HIDDEN_NETWORK_WARNING" desc="Settings > Internet > Network config: Text shown when auto connect to the WiFi network is enabled, warning about the dangers of auto-connecting to hidden networks.">
-    Automatically connecting to a hidden network allows others to see your device and some network settings, and is not recommended.
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_CONFIG_SAVE_CREDENTIALS" desc="Settings > Internet > Network config: Label for the setting to save identity and password.">
-    Save identity and password
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_CA_USE_DEFAULT" desc="Settings > Internet > Network config: Label for selecting the default Certificate Authority for an EAP network.">
-    Default
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_CA_DO_NOT_CHECK" desc="Settings > Internet > Network config: Label for selecting that no Certificate Authority should be used for an EAP network.">
-    Do not check
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_NO_USER_CERT" desc="Settings > Internet > Network config: Label for selecting that no User Certificate should be used when connected to an OpenVPN network.">
-    No user certificate
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_CERTIFICATE_NAME" desc="Settings > Internet > Network config: Formatting string for network certificate names.">
-    <ph name="ISSUED_BY">$1<ex>Google LLC</ex></ph> [<ph name="ISSUED_TO">$2<ex>John Doe</ex></ph>]
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_CERTIFICATE_NAME_HARDWARE_BACKED" desc="Settings > Internet > Network configuration: Formatting string for network certificate names that are hardware backed.">
-    <ph name="ISSUED_BY">$1<ex>Google LLC</ex></ph> [<ph name="ISSUED_TO">$2<ex>John Doe</ex></ph>] (hardware-backed)
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_CERTIFICATE_NONE_INSTALLED" desc="Settings > Internet > Network configuration: Label when no certificates are installed.">
-    None installed
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_NOT_AVAILABLE_FOR_NETWORK_AUTH" desc="In the network connect dialog, when creating a VPN or enterprise Wi-Fi connection, error message to display when a certificate is selected which is not available for network authentication .">
-    User certificate is not available for network authentication.
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_ACCESS_POINT" desc="Settings > Internet > Network details: Access Point section label.">
-    Access Point
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_NAMESERVERS" desc="Settings > Network: Name servers label.">
-    Name servers
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_NAMESERVERS_AUTOMATIC" desc="Settings > Internet > Network details: Label for setting automatic name servers.">
-    Automatic name servers
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_NAMESERVERS_CUSTOM" desc="Settings > Internet > Network details: Label for setting custom name servers.">
-    Custom name servers
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_NAMESERVERS_GOOGLE" desc="Settings > Internet > Network details: Label for setting Google name servers.">
-    Google name servers
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_NAMESERVERS_INPUT_ACCESSIBILITY_LABEL" desc="Settings > Internet > Network details: Accessibility only label for custom nameserver input box.">
-    Custom nameserver <ph name="INPUT_INDEX">$1<ex>1</ex></ph>
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_WPAD" desc="Settings > Internet > Network details: Web Proxy Auto Discovery (WPAD) label.">
-    Web Proxy Auto Discovery URL:
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_WPAD_NONE" desc="Settings > Internet > Network details: Value for Web Proxy Auto Discovery when no URL is provided.">
-    Not provided
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_CHOOSE_MOBILE" desc="Settings > Internet > Network details: Label for control to choose a mobile data network.">
-    Mobile data network
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_CELLULAR_SCAN" desc="Settings > Internet > Network details: Label for button to start a Cellular scan.">
-    Scan
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_CELLULAR_SCAN_COMPLETED" desc="Settings > Internet > Network details: Status text when a scan has completed.">
-    Scan completed
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_CELLULAR_SCAN_CONNECTED_HELP" desc="Settings > Internet > Network details: Help message for scan button when network is connected.">
-    Disconnect to enable scanning
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_CELLULAR_SCANNING" desc="Settings > Internet > Network details: Status text when a scan is in progress.">
-    Scanning...
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_CELLULAR_NO_NETWORKS" desc="Settings > Internet > Network details: Dropdown text when no cellular networks were found after a scan.">
-    No networks
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_ENFORCED_POLICY" desc="Settings > Internet > Network details: Text to show when a network proxy is policy enforced.">
-    This proxy is enforced by your administrator
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_ALLOW_SHARED" desc="Settings > Internet > Network details: Text next to the checkbox for allowing proxy settings for shared networks.">
-    Allow proxies for shared networks
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_ALLOW_SHARED_ENABLE_WARNING_TITLE" desc="Settings > Internet > Network details: Title for warning dialog when changing the allow shared proxies setting is enabled.">
-    Allow proxies for shared networks
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_ALLOW_SHARED_DISABLE_WARNING_TITLE" desc="Settings > Internet > Network details: Title for warning dialog when changing the allow shared proxies setting is disabled.">
-    Disallow proxies for shared networks
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_ALLOW_SHARED_WARNING_MESSAGE" desc="Settings > Internet > Network details: Warning message when changing the allow shared proxies setting.">
-    Changing this setting will affect all shared networks
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_TYPE_DIRECT" desc="Radio used to tell it to just connect directly, not use a proxy.">
-    Direct Internet connection
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_TYPE_MANUAL" desc="Radio used to tell it to configure manually.">
-    Manual proxy configuration
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_TYPE_PAC" desc="Radio to select configuring from a URL.">
-    Automatic proxy configuration
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_TYPE_WPAD" desc="Label for the checkbox that controls whether to use an autoconfiguration URL.">
-    Web proxy autodiscovery
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_USE_SAME" desc="Settings > Internet > Network details: Label for checkbox indicating that a network proxy uses the same value for all protocols.">
-    Use the same proxy for all protocols
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_EXCEPTION_INPUT_ACCESSIBILITY_LABEL" desc="Settings > Internet > Accessibility only label for input field to add proxy exceptions.">
-    Host or domain to exclude
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_EXCEPTION_LIST" desc="Settings > Internet > Network details: Label for list of network proxy exceptions.">
-    Do not use the proxy settings for these hosts and domains:
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_EXCEPT_REMOVE_ACCESSIBILITY_LABEL" desc="Settings > Internet > Network details: Accessibility only label for button to remove proxy exception.">
-    Remove exception for <ph name="HOST_NAME">$1<ex>example.com</ex></ph>
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_ADD_EXCEPTION" desc="Settings > Internet > Network details: Label for button to add a network proxy exception.">
-    Add exception
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_CONNECTION_TYPE" desc="Settings > Internet > Network details: Label for proxy connection type dropdown.">
-    Connection type
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_CONNECTION_TYPE_DIALOG" desc="Label for proxy connection type dropdown in the network details dialog used in the login screen.">
-    Proxy connection type
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_AUTO_CONFIG" desc="Settings > Internet > Network details: Label for proxy autoconfiguration URL input.">
-    Autoconfiguration URL:
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_PROXY" desc="Settings > Internet > Network details: Label for all proxies.">
-    Proxy
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_HOST_INPUT_ACCESSIBILITY_LABEL" desc="Settings > Internet > Network details: Accessibility only label for proxy host input field.">
-    <ph name="INPUT_LABEL">$1<ex>HTTP Proxy</ex></ph> - Host
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_HTTP_PROXY" desc="Settings > Internet > Network details: Label for HTTP proxy.">
-    HTTP Proxy
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_SHTTP_PROXY" desc="Settings > Internet > Network details: Label for SHTTP proxy.">
-    Secure HTTP Proxy
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_FTP_PROXY" desc="Settings > Internet > Network details: Label for FTP proxy.">
-    FTP Proxy
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_SOCKS_HOST" desc="Settings > Internet > Network details: Label for SOCKS host proxy.">
-    SOCKS Host
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_PORT" desc="Settings > Internet > Network details: Label for proxy port input.">
-    Port
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_PORT_INPUT_ACCESSIBILITY_LABEL" desc="Settings > Internet > Network details: Accessibility only label for proxy port number input field.">
-    <ph name="INPUT_LABEL">$1<ex>HTTP Proxy</ex></ph> - Port
-  </message>
-
-  <!-- Settings > Internet > SIM lock/unlock dialog -->
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_CHANGE_PIN" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for buton to change the PIN.">
-    Change PIN
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_CARD_MISSING" desc="Settings > Internet > Network details > Lock/unlock SIM card: Message when SIM card is missing.">
-    Missing SIM card
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_CARD_LOCKED" desc="Settings > Internet > Network details > Lock/unlock SIM card: Message when SIM card is locked.">
-    SIM card is locked
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCK_ENABLE" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for toggle to enable SIM card locking.">
-   Lock SIM card
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCK_ENABLE_SUBLABEL" desc="Settings > Internet > Network details > Lock/unlock SIM card: Sublabel for toggle to enable SIM card locking.">
-    PIN is required to use mobile data
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_BUTTON_CHANGE" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for dialog button to change a PIN.">
-    Change
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_BUTTON_ENTER" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for dialog button to enter a PIN; note that in this context, 'Enter' refers to the act of entering a PIN, not the name of a key on the keyboard." meaning="Enter a PIN into the device. [Verb]">
-    Enter
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_BUTTON_UNLOCK" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for button to unlock the SIM card.">
-    Unlock
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_PIN_TITLE" desc="Settings > Internet > Network details > Lock/unlock SIM card: Title for enter PIN dialog.">
-    Enter PIN
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_PIN_DESCRIPTION" desc="Settings > Internet > Network details > Lock/unlock SIM card: Description for enter PIN dialog.">
-    Anyone using this device will need to enter the PIN to connect to this mobile network
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_PIN_DESCRIPTION_TEXT_LABEL" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for the text input.">
-    Enter at least 4 numbers
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_CHANGE_PIN_TITLE" desc="Settings > Internet > Network details > Lock/unlock SIM card: Title for change PIN dialog.">
-    Change SIM PIN
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_TOOLTIP" desc="Settings > Internet > Network details > Lock/unlock SIM card: Tooltip over SIM lock toggle that indicates that the operation cannot be performed without network connection">
-    Connect to this network to change SIM lock setting
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_TITLE" desc="Settings > Internet > Network details > Lock/unlock SIM card: Title for SIM locked dialog.">
-    SIM card is locked
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_PUK_SUBTITLE" desc="Settings > Internet > Network details > Lock/unlock SIM card: Title informing the user to enter a PIN provided by the carrier in order unlock network.">
-    An incorrect PIN was entered too many times. To set up a new PIN, enter the 8-digit Personal Unblocking Key (PUK) provided by your carrier.
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_PUK_WARNING_NO_FAILURES" desc="Settings > Internet > Network details > Lock/unlock SIM card: Warning shown to the user indicating that the network cannot be used until a new PIN is set up.">
-    You won't be able to use this network until you set up a new PIN
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_PUK_WARNING_WITH_FAILURE" desc="Settings > Internet > Network details > Lock/unlock SIM card: Warning shown to the user indicating that the network cannot be used until a new PIN is set up and alerting the user that they have one attempt left to enter the correct code.">
-    You have 1 remaining attempt. You won't be able to use this network until you set up a new PIN.
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_PUK_WARNING_WITH_FAILURES" desc="Settings > Internet > Network details > Lock/unlock SIM card: Warning shown to the user indicating that the network cannot be used until a new PIN is set up and alerting the user about the number of attempts they have left to enter the correct code.">
-    You have <ph name="RETRIES">$1<ex>3</ex></ph> remaining attempts. You won't be able to use this network until you set up a new PIN.
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_SUBTITLE" desc="Subtitle for Network Summary item when the SIM is locked.">
-    SIM Locked
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_WARNING" desc="Settings > Internet > Network details > Lock/unlock SIM card: Warning for SIM locked dialog when PUK is required.">
-    If you fail to verify, your network access will be disabled.
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_PIN" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for entering a PIN.">
-    Enter PIN
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_OLD_PIN" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for entering an old (current) PIN.">
-    Enter current PIN
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_NEW_PIN" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for entering a new PIN.">
-    Enter new PIN
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_RE_ENTER_NEW_PIN" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for re-entering a new PIN.">
-    Re-enter new PIN
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_PUK" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for entering a PUK.">
-    Enter Personal Unblocking Key (PUK)
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INCORRECT_PIN" desc="Settings > Internet > Network details > Lock/unlock SIM card: Message when an incorrect PIN was entered and there is only a single retry attempt remaining.">
-    Incorrect PIN. You have 1 remaining attempt.
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INCORRECT_PIN_PLURAL" desc="Settings > Internet > Network details > Lock/unlock SIM card: Message when an incorrect PIN was entered and there are multiple retry attempts remaining.">
-    Incorrect PIN. You have <ph name="RETRIES">$1<ex>3</ex></ph> remaining attempts.
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INCORRECT_PUK" desc="Settings > Internet > Network details > Lock/unlock SIM card: Message when an incorrect PUK was entered.">
-    Incorrect PUK
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INVALID_PIN" desc="Settings > Internet > Network details > Lock/unlock SIM card: Message when an invalid PIN was entered.">
-    Invalid PIN. You have 1 remaining attempt.
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INVALID_PIN_PLURAL" desc="Settings > Internet > Network details > Lock/unlock SIM card: Message when an invalid PIN was entered and there are multiple retry attempts remaining.">
-    Invalid PIN. You have <ph name="RETRIES">$1<ex>3</ex></ph> remaining attempts.
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_INVALID_PUK" desc="Settings > Internet > Network details > Lock/unlock SIM card: Message when an invalid PUK was entered and there is only a single retry attempt remaining.">
-    Invalid PUK
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ERROR_PIN_MISMATCH" desc="Settings > Internet > Network details > Lock/unlock SIM card: Message when PIN values do not match.">
-    PIN values do not match.
-  </message>
 
   <!-- Strings shown within Tether notifications -->
   <message name="IDS_TETHER_NOTIFICATION_CONNECTION_FAILED_TITLE" desc="Title of the notification shown to the user when an attempt to tether to another device has failed.">
@@ -2347,37 +1923,7 @@
     Mobile data
   </message>
 
-
-  <!-- Network icon accessibility descriptions -->
-  <message name="IDS_NETWORK_ICON_LABEL_ETHERNET" desc="Network icon accessibility label for an Ethernet network.">
-    Ethernet network
-  </message>
-  <message name="IDS_NETWORK_ICON_LABEL_VPN" desc="Network icon accessibility label for a VPN network.">
-    VPN network
-  </message>
-  <message name="IDS_NETWORK_ICON_LABEL_NETWORK_OFF" desc="Network icon accessibility label for a network that is turned off.">
-    <ph name="NETWORK_TYPE">$1<ex>Instant Tethering</ex></ph> network, off
-  </message>
-  <message name="IDS_NETWORK_ICON_LABEL_NO_NETWORK" desc="Network icon accessibility label for a celluar or tether connection with no network available.">
-    <ph name="NETWORK_TYPE">$1<ex>Instant Tethering</ex></ph>, no network
-  </message>
-  <message name="IDS_NETWORK_ICON_LABEL_CONNECTING" desc="Network icon accessibility label for a network that is currently attempting to connect.">
-    <ph name="NETWORK_TYPE">$1<ex>Instant Tethering</ex></ph> network, connecting
-  </message>
-  <message name="IDS_NETWORK_ICON_LABEL_NOT_CONNECTED" desc="Network icon accessibility label for a network that is not connected.">
-    <ph name="NETWORK_TYPE">$1<ex>Instant Tethering</ex></ph> network, not connected
-  </message>
-  <message name="IDS_NETWORK_ICON_LABEL_SIGNAL_STRENGTH" desc="Network icon accessibility label for a network that is currently connected with signal strength percentage available.">
-    <ph name="NETWORK_TYPE">$1<ex>Instant Tethering</ex></ph> network, signal strength <ph name="SIGNAL_STRENGTH">$2<ex>80</ex></ph>%
-  </message>
-
   <!-- Status bar -->
-  <message name="IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING" desc="The network device status connecting.">
-    Connecting...
-  </message>
-  <message name="IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED" desc="The network device status connected.">
-    Connected
-  </message>
   <message name="IDS_STATUSBAR_NETWORK_DEVICE_ENABLE" desc="Enable the network device.">
     Enable <ph name="NETWORKDEVICE">$1<ex>Wifi</ex></ph>
   </message>
@@ -3021,11 +2567,6 @@
     The Files app provides quick access to files that you've saved on Google Drive, external storage, or your Chrome OS device.
   </message>
 
-  <!-- Platform verification UI -->
-  <message name="IDS_PLATFORM_VERIFICATION_DIALOG_HEADLINE" desc="The label to describe what the dialog wants to confirm.">
-    <ph name="DOMAIN">$1<ex>example.com</ex></ph> wants to uniquely identify your device so it can play the highest quality protected video and audio.
-  </message>
-
   <!-- Network portal notification -->
   <message name="IDS_PORTAL_DETECTION_NOTIFICATION_TITLE_WIRED" desc="Title for the system notification that current wired network is behind captive portal">
     Connect to network
@@ -3271,6 +2812,9 @@
   <message name="IDS_ENTERPRISE_ENROLLMENT_CONSUMER_ACCOUNT_WITH_PACKAGED_LICENSE" desc="Error message to show when the user tries to enroll a device with a packaged license using a consumer account.">
     Your device includes a Chrome Enterprise Upgrade, but your username is not associated with an enterprise account. Please create an enterprise account by visiting g.co/ChromeEnterpriseAccount on a secondary device.
   </message>
+  <message name="IDS_ENTERPRISE_ENROLLMENT_CONSUMER_ACCOUNT_BUSINESS_DOMAIN_WITH_PACKAGED_LICENSE" desc="Error message to show when the user tries to enroll a device with a packaged license using a consumer account with business domain.">
+    <ph name="DOMAIN">$1<ex>gmail.com</ex></ph> isn't a valid organization. Contact your administator. If you are an administator, you can set up your organization by visiting: g.co/ChromeEnterpriseAccount
+  </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_ENTERPRISE_ACCOUNT_IS_NOT_ELIGIBLE_TO_ENROLL" desc="Error message to show when the user tries to enroll a device with an ineligible enterprise account.">
     Your username belongs to your organization's enterprise account. To enroll devices to the account, first verify domain ownership in the Admin console. You will need administrative privileges on the account to verify.
   </message>
@@ -3300,6 +2844,9 @@
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_SCREEN_TITLE" desc="The title on the enterprise enrollment dialog.">
     Enterprise enrollment
+  </message>
+  <message name="IDS_ENTERPRISE_ACCOUNT_CHECK_TITLE" desc="The title of spinner dialog shown during account check.">
+    Checking eligibility
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_DEVICE_INFORMATION" desc="The subtitle on the device attribute prompt screen.">
     Device information
@@ -3714,6 +3261,9 @@
   <message name="IDS_ARC_OPT_IN_DIALOG_BUTTON_SEND_FEEDBACK" desc="Send feedback button of the opt-in dialog for Android apps.">
     Send feedback
   </message>
+  <message name="IDS_ARC_OPT_IN_DIALOG_BUTTON_RUN_NETWORK_TESTS" desc="Run network tests button of the opt-in dialog for Android apps.">
+    Check my network
+  </message>
   <message name="IDS_ARC_OPT_IN_DIALOG_PROGRESS_TERMS" desc="Name of Terms Of Services loading progress of the opt-in dialog for Android apps.">
     Just a sec...
   </message>
@@ -4013,8 +3563,14 @@
   <message name="IDS_ARC_OOBE_TERMS_HEADING" desc="Heading of the Arc Terms OOBE dialog.">
     Google Play apps and services
   </message>
+  <message name="IDS_ARC_OOBE_TERMS_HEADING_CHILD" desc="Heading of the Arc Terms OOBE dialog, when a child account is in use.">
+    Review Google Play apps and services
+  </message>
   <message name="IDS_ARC_OOBE_TERMS_DESCRIPTION" desc="Description of the Arc Terms OOBE dialog.">
     Use Google Play to install Android apps
+  </message>
+  <message name="IDS_ARC_OOBE_TERMS_DESCRIPTION_CHILD" desc="Description of the Arc Terms OOBE dialog, when a child account is in use.">
+    With your permission, your child can use Google Play to install apps
   </message>
   <message name="IDS_ARC_OOBE_TERMS_LOADING" desc="Loading message of the Arc Terms OOBE dialog.">
     Loading...
@@ -4134,10 +3690,13 @@
     Show related info when you right click or long press on content
   </message>
   <message name="IDS_ASSISTANT_SCREEN_CONTEXT_TITLE" desc="Title for assistant screen context optin. This is also used as the title for a toggle that lets the assistant use whats on the screen in Assistant settings page.">
-    Related info
+    Screen context
   </message>
-  <message name="IDS_ASSISTANT_SCREEN_CONTEXT_DESC" desc="Description for assistant screen context optin. This is also used as the sub label for context-enable toggle in Assistant settings page.">
-    Allow Assistant to use information on screen to provide quick answers such as translation, definition, unit conversion and more
+  <message name="IDS_ASSISTANT_SCREEN_CONTEXT_DESC" desc="Description for assistant screen context optin.">
+    To get tailored responses when you ask questions, let your Assistant access a screenshot of what’s on your screen. This may also include info about songs or videos that are playing.
+  </message>
+  <message name="IDS_ASSISTANT_SCREEN_CONTEXT_DESC_CHILD" desc="Description for assistant screen context optin, when a child account is in use.">
+    To get tailored responses when <ph name="SUPERVISED_USER_NAME">$1<ex>Child 1</ex></ph> asks questions, let Assistant access a screenshot of what’s on <ph name="SUPERVISED_USER_NAME">$1<ex>Child 1</ex></ph>’s screen. This may also include info about songs or videos that are playing.
   </message>
   <message name="IDS_ASSISTANT_READY_SCREEN_TITLE" desc="Title for assistant ready screen.">
     Your Assistant is ready
@@ -4146,18 +3705,28 @@
     When your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> is set up, press the Assistant button or say "Ok Google" to get help anytime. Go to Assistant settings to make changes.
   </message>
   <message name="IDS_ASSISTANT_RELATED_INFO_SCREEN_TITLE" desc="Title for assistant related info screen.">
-    Let your Assistant use information on your screen to help
+    Allow your Assistant to use info on your screen to help
+  </message>
+  <message name="IDS_ASSISTANT_RELATED_INFO_SCREEN_TITLE_CHILD" desc="Title for assistant related info screen, when a child account is in use.">
+    Allow Google Assistant to use info on <ph name="SUPERVISED_USER_NAME">$1<ex>Child 1</ex></ph>’s screen to help
   </message>
   <message name="IDS_ASSISTANT_RELATED_INFO_SCREEN_MESSAGE" desc="Message for assistant related info screen.">
-    Allow Assistant to use information on screen to provide quick answers such as translation, definition, unit conversion and more.
-    <ph name="BR">&lt;br&gt;&lt;br&gt;</ph>
-    <ph name="BEGIN_BOLD">&lt;b&gt;</ph>Keep in mind:<ph name="END_BOLD">&lt;/b&gt;</ph> You can always change this later in Google Assistant Settings > Related info.
+    You can change this any time in Settings &gt; Google Assistant &gt; Screen context.
   </message>
   <message name="IDS_ASSISTANT_RELATED_INFO_SCREEN_RETURNED_USER_TITLE" desc="Title for assistant related info screen for returned users.">
-    Your Google Assistant works here too
+    Google Assistant works here too
   </message>
   <message name="IDS_ASSISTANT_RELATED_INFO_SCREEN_RETURNED_USER_MESSAGE" desc="Message for assistant related info screen for returned users.">
-    Looks like you've already set up personalized Assistant on a different device. Get even more out of your Assistant by turning on the following setting.
+    Looks like you’ve already set up Google Assistant on another device. Get even more out of your Assistant by turning on Screen context on this device.
+  </message>
+  <message name="IDS_ASSISTANT_RELATED_INFO_SCREEN_RETURNED_USER_MESSAGE_CHILD" desc="Message for assistant related info screen for returned users, when a child account is in use.">
+    Looks like <ph name="SUPERVISED_USER_NAME">$1<ex>Child 1</ex></ph> has already set up Google Assistant on another device. <ph name="SUPERVISED_USER_NAME">$1<ex>Child 1</ex></ph> can get even more out of Assistant by turning on Screen context on this device.
+  </message>
+  <message name="IDS_ASSISTANT_RELATED_INFO_SCREEN_EXAMPLE" desc="Message to illustrate the use cases for assistant related info.">
+    You could ask “Hey Google, what song is this?” or “Hey Google, what's on my screen?”
+  </message>
+  <message name="IDS_ASSISTANT_RELATED_INFO_SCREEN_EXAMPLE_CHILD" desc="Message to illustrate the use cases for assistant related info, when a child account is in use.">
+    Try “Hey Google, what song is this?” or “Hey Google, what's on my screen?”
   </message>
   <message name="IDS_ASSISTANT_CONTINUE_BUTTON" desc="Continue button for asssitant optin flow.">
     Continue
@@ -4169,26 +3738,59 @@
     Learn more
   </message>
   <message name="IDS_ASSISTANT_VOICE_MATCH_TITLE" desc="Title for assistant voice match screen.">
-    Access your Assistant with "Hey Google"
+    Access your Assistant with “Hey Google”
+  </message>
+  <message name="IDS_ASSISTANT_VOICE_MATCH_TITLE_CHILD" desc="Title for assistant voice match screen, when a child account is in use.">
+    Let <ph name="SUPERVISED_USER_NAME">$1<ex>Child 1</ex></ph> access Google Assistant with “Hey Google”
   </message>
   <message name="IDS_ASSISTANT_VOICE_MATCH_MESSAGE" desc="Message for Assistant voice match screen.">
-    Voice Match helps your Google Assistant identify your voice on your Chromebook and tell you apart from others.
+    If you agree, Google Assistant will wait in standby mode to detect “Hey Google” and can recognize it is you speaking with Voice Match.
     <ph name="BR">&lt;br&gt;&lt;br&gt;</ph>
-    <ph name="BEGIN_BOLD">&lt;b&gt;</ph>Keep in mind:<ph name="END_BOLD">&lt;/b&gt;</ph> A similar voice or recording might be able to access your personal results, too. You can remove Voice Match permission later by turning it off in Assistant Settings.
+    Voice Match allows your Assistant to identify you and tell you apart from others. The Assistant takes clips of your voice to form a unique voice model, which is only stored on your device. Your voice model may be sent temporarily to Google to better identify your voice.
+    <ph name="BR">&lt;br&gt;&lt;br&gt;</ph>
+    If you decide later that Voice Match isn’t for you, simply remove it in Assistant settings. To view or delete the audio clips you record during Voice Match setup, go to <ph name="VOICE_MATCH_SETTINGS_URL">g.co/assistant/match</ph>.
+    <ph name="BR">&lt;br&gt;&lt;br&gt;</ph>
+    <ph name="FOOTER_MESSAGE">$1<ex>Note: A similar voice or recording might be able to access your personal results or your Assistant.</ex></ph>
   </message>
-  <message name="IDS_ASSISTANT_VOICE_MATCH_NO_DSP_MESSAGE" desc="Message without DSP support for Assistant voice match screen.">
-    Voice Match helps your Google Assistant identify your voice on your Chromebook and tell you apart from others. To save battery, "Hey Google" is only on when your device is connected to a power source. To make changes, go to Settings.
+  <message name="IDS_ASSISTANT_VOICE_MATCH_NOTICE_MESSAGE" desc="Notice message for Assistant voice match screen.">
+    <ph name="BEGIN_BOLD">&lt;b&gt;</ph>Note:<ph name="END_BOLD">&lt;/b&gt;</ph> A similar voice or recording might be able to access your personal results or your Assistant.
+  </message>
+  <message name="IDS_ASSISTANT_VOICE_MATCH_NO_DSP_NOTICE_MESSAGE" desc="Notice message without DSP support for Assistant voice match screen.">
+    <ph name="BEGIN_BOLD">&lt;b&gt;</ph>Note:<ph name="END_BOLD">&lt;/b&gt;</ph> A similar voice or recording might be able to access your personal results or your Assistant. To save battery, you can select in your Assistant settings to have “Hey Google” on only when this device is connected to a power source.
+  </message>
+  <message name="IDS_ASSISTANT_VOICE_MATCH_MESSAGE_CHILD" desc="Message for Assistant voice match screen, when a child account is in use.">
+    If you agree, Google Assistant will wait in standby mode to detect “Hey Google” and can recognize it is <ph name="SUPERVISED_USER_NAME">$1<ex>Child 1</ex></ph> speaking with Voice Match.
     <ph name="BR">&lt;br&gt;&lt;br&gt;</ph>
-    <ph name="BEGIN_BOLD">&lt;b&gt;</ph>Keep in mind:<ph name="END_BOLD">&lt;/b&gt;</ph> A similar voice or recording might be able to access your personal results, too. You can remove Voice Match permission later by turning it off in Assistant Settings.
+    Voice Match helps Google Assistant identify <ph name="SUPERVISED_USER_NAME">$1<ex>Child 1</ex></ph>’s voice on your <ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph> and tell them apart from others.
+    <ph name="BR">&lt;br&gt;&lt;br&gt;</ph>
+    The Assistant takes clips of your child’s voice to form a unique voice model, which is only stored on their device(s). Your child’s voice model may be sent temporarily to Google to better identify their voice.
+    <ph name="BR">&lt;br&gt;&lt;br&gt;</ph>
+    If you decide later that Voice Match isn’t right for your child, simply remove it in their Assistant Settings. To view or delete the audio clips your child records during Voice Match setup, go to <ph name="VOICE_MATCH_SETTINGS_URL">g.co/assistant/match</ph> from your child’s account.
+    <ph name="BR">&lt;br&gt;&lt;br&gt;</ph>
+    <ph name="FOOTER_MESSAGE">$3<ex>Note: A similar voice or recording might be able to access your personal results or your Assistant.</ex></ph>
+  </message>
+  <message name="IDS_ASSISTANT_VOICE_MATCH_NOTICE_MESSAGE_CHILD" desc="Footer message for Assistant voice match screen, when a child account is in use.">
+    <ph name="BEGIN_BOLD">&lt;b&gt;</ph>Note:<ph name="END_BOLD">&lt;/b&gt;</ph> A similar voice or recording might be able to access <ph name="SUPERVISED_USER_NAME">$1<ex>Child 1</ex></ph>’s personal results.
+  </message>
+  <message name="IDS_ASSISTANT_VOICE_MATCH_NO_DSP_NOTICE_MESSAGE_CHILD" desc="Footer message without DSP support for Assistant voice match screen, when a child account is in use.">
+    <ph name="BEGIN_BOLD">&lt;b&gt;</ph>Note:<ph name="END_BOLD">&lt;/b&gt;</ph> A similar voice or recording might be able to access <ph name="SUPERVISED_USER_NAME">$1<ex>Child 1</ex></ph>’s personal results. To save battery, you can select in <ph name="SUPERVISED_USER_NAME">$1<ex>Child 1</ex></ph>’s Assistant settings to have “Hey Google” on only when this device is connected to a power source.
   </message>
   <message name="IDS_ASSISTANT_VOICE_MATCH_RECORDING" desc="Title for recording in assistant voice match screen. This is also used as the sub label for the Assistant voice settings.">
     Teach your Assistant to recognize your voice
+  </message>
+  <message name="IDS_ASSISTANT_VOICE_MATCH_RECORDING_CHILD" desc="Title for recording in assistant voice match screen, when a child account is in use.">
+    Teach Google Assistant to recognize <ph name="SUPERVISED_USER_NAME">$1<ex>Child 1</ex></ph>’s voice
   </message>
   <message name="IDS_ASSISTANT_VOICE_MATCH_COMPLETED" desc="Title for completed assistant voice match screen.">
     Ok Google is all set
   </message>
   <message name="IDS_ASSISTANT_VOICE_MATCH_FOOTER" desc="Footer message for Assistant voice match screen.">
     Your Assistant uses these recordings and your spoken requests to create and update your voice model, which is only stored on devices where you've turned on Voice Match. View or retrain voice activity in Assistant Settings.
+  </message>
+  <message name="IDS_ASSISTANT_VOICE_MATCH_FOOTER_CHILD" desc="Footer message for Assistant voice match screen, when a child account is in use.">
+    Ask <ph name="SUPERVISED_USER_NAME">$1<ex>Child 1</ex></ph> to come to the computer. Your child will be reading a few phrases on this screen to create their voice model.
+    <ph name="BR">&lt;br&gt;&lt;br&gt;</ph>
+    If <ph name="SUPERVISED_USER_NAME">$1<ex>Child 1</ex></ph> needs help with reading, have your child repeat after you. Whisper away from the mic so that the Assistant learns your child’s voice instead of yours.
   </message>
   <message name="IDS_ASSISTANT_VOICE_MATCH_INSTRUCTION0" desc="Instruction message for assistant voice match recording.">
     Say "Ok Google"
@@ -4216,6 +3818,9 @@
   </message>
   <message name="IDS_ASSISTANT_VOICE_MATCH_ALREADY_SETUP_MESSAGE" desc="Message for assistant voice match already setup.">
     It looks like you've already set up Voice Match with your Assistant on another device. These previous recordings were used to make a voice model on this device.
+  </message>
+  <message name="IDS_ASSISTANT_VOICE_MATCH_ALREADY_SETUP_MESSAGE_CHILD" desc="Message for assistant voice match already setup, when a child account is in use.">
+    It looks like <ph name="SUPERVISED_USER_NAME">$1<ex>Child 1</ex></ph> already set up Voice Match with Assistant on another device. These previous recordings were used to make a voice model on this device.
   </message>
   <message name="IDS_ASSISTANT_NO_THANKS_BUTTON" desc="No thanks button for asssitant optin flow.">
     No thanks
@@ -4260,6 +3865,14 @@
   </message>
   <message name="IDS_SUPERVISION_TRANSITION_ERROR_BUTTON" desc="Button label for acknowledging that supervision transition failed.">
     OK
+  </message>
+
+  <!-- Lacros data migration screen. -->
+  <message name="IDS_LACROS_DATA_MIGRATION_SCREEN_TITLE" desc="Title of the data migration screen.">
+    Updating Chrome browser
+  </message>
+  <message name="IDS_LACROS_DATA_MIGRATION_SCREEN_SUBTITLE" desc="Subtitle of the data migration screen.">
+    You will be able to use your Chromebook shortly.
   </message>
 
   <!-- Print Job Notification -->
@@ -5063,11 +4676,20 @@
   <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_TITLE" desc="The title of the dialog that allow users to register their fingerprint.">
     Unlock faster with your fingerprint
   </message>
+  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_TITLE_CHILD" desc="The title of the dialog that allow users to register their fingerprint, when a child account is in use.">
+    Unlock faster with fingerprint
+  </message>
   <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_SENSOR_POWER_BUTTON_DESCRIPTION" desc="The label that explains that the fingerprint sensor is in the power button.">
     Touch the power button with your finger. Your data is stored securely and never leaves your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
   </message>
+  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_SENSOR_POWER_BUTTON_DESCRIPTION_CHILD" desc="The label that explains that the fingerprint sensor is in the power button, when a child account is in use.">
+    To set up fingerprint, have your child touch the power button. Your child’s fingerprint data is stored securely and never leaves this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
+  </message>
   <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_SENSOR_GENERAL_DESCRIPTION" desc="The label that explains the location of the fingerprint sensor on the device.">
     Touch the fingerprint sensor with your finger. Your data is stored securely and never leaves your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
+  </message>
+  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_SENSOR_GENERAL_DESCRIPTION_CHILD" desc="The label that explains the location of the fingerprint sensor on the device, when a child account is in use.">
+    To set up fingerprint, have your child touch the fingerprint sensor. Your child’s fingerprint data is stored securely and never leaves this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
   </message>
   <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_ENROLLMENT_PROGRESS_TITLE" desc="The title of the dialog that shows where the fingerprint sensor is.">
     Lift, then touch again
@@ -5077,6 +4699,9 @@
   </message>
   <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_ENROLLMENT_SUCCESS_DESCRIPTION" desc="The label that shows when fingerprint enrollment is successful.">
     When you see this icon, use your fingerprint for identification or to approve purchases.
+  </message>
+  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_ENROLLMENT_SUCCESS_DESCRIPTION_CHILD" desc="The label that shows when fingerprint enrollment is successful, when a child account is in use.">
+    When your child sees this icon, a fingerprint can be used for identification or to approve purchases.
   </message>
   <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_BUTTON_SKIP" desc="In fingerprint setup screen, button label to skip the fingerprint setup.">
     Skip
@@ -5098,6 +4723,9 @@
   </message>
   <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_INSTRUCTION_MOVE_FINGER" desc="Text in the fingerprint setup screen telling users to lift their finger to capture the different parts of fingerprint.">
     Keep lifting your finger to add the different parts of your fingerprint
+  </message>
+  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_INSTRUCTION_MOVE_FINGER_CHILD" desc="Text in the fingerprint setup screen telling users to lift their finger to capture the different parts of fingerprint, when a child account is in use.">
+    Have your child keep lifting their finger to save the fingerprint
   </message>
   <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_INSTRUCTION_TRY_AGAIN" desc="Text in the fingerprint setup screen telling users to scan their finger again.">
     Try again.
@@ -5404,6 +5032,9 @@
   </message>
   <message name="IDS_PLUGIN_VM_INSTALLER_ERROR_MESSAGE_DOWNLOAD_FAILED" desc="Text of the Plugin VM installer if the installation failed because something went wrong while downloading the virtual machine.">
     Couldn't install the virtual machine because of a network error. Please try again, or contact your administrator. Error code: <ph name="ERROR_CODE">$1<ex>7</ex></ph>.
+  </message>
+  <message name="IDS_PLUGIN_VM_INSTALLER_ERROR_MESSAGE_DOWNLOAD_HTTP_ERROR" desc="Text of the Parallels Desktop installer when downloading the virtual machine image failed due to a HTTP error (e.g. 401, 403, 404).">
+    Couldn't install <ph name="VM_NAME">$1<ex>Parallels Desktop</ex></ph>: Image URL returned a <ph name="HTTP_ERROR">$2<ex>404</ex></ph> error code. Please contact your administrator.
   </message>
   <message name="IDS_PLUGIN_VM_INSTALLER_ERROR_MESSAGE_INSTALLING_FAILED" desc="Text of the Plugin VM installer if the installation failed because downloaded Plugin VM could not be installed.">
     Couldn't install the virtual machine. Please try again, or contact your administrator. Error code: <ph name="ERROR_CODE">$1<ex>7</ex></ph>.
@@ -5864,6 +5495,9 @@ You can manage this account’s settings by installing the Family Link app on yo
   <message name="IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_WEAK_PIN" desc="Message shown below the title that warns the user they have entered a PIN that is easy to guess.">
     PIN may be easy to guess
   </message>
+  <message name="IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_INTERNAL_ERROR" desc="Message shown below the title that warns the user that internal error occured.">
+    Internal error
+  </message>
   <message name="IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_TOO_SHORT" desc="Message shown below the title that tells the user that the PIN they entered needs to be at least minimum digits long.">
     PIN must be at least <ph name="MINIMUM">$1<ex>4</ex></ph> digits
   </message>
@@ -5939,6 +5573,9 @@ You can manage this account’s settings by installing the Family Link app on yo
   </message>
   <message name="IDS_SUGGESTION_AUTOCORRECT_UNDO_WINDOW_SHOWN" desc="String announced by screenreader when a button to undo an autocorrect is shown. Example, user types 'hllo', system autocorrects to 'hello', user then prepares to revert the autocorrect.">
     Autocorrect undo dialog is shown for <ph name="TYPED_WORD">$1<ex>hllo</ex></ph> corrected to <ph name="CORRECTED_WORD">$2<ex>hello</ex></ph>.  Press up arrow to access, escape to ignore.
+  </message>
+  <message name="IDS_SUGGESTION_TAB_KEY" desc="This string is the tab key annotation, which is used to educate users how to accept a predictive writing suggestion">
+    tab
   </message>
 
   <!-- Strings for emoji picker-->
@@ -6034,26 +5671,34 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
     <message name="IDS_RESTORE_NOTIFICATION_RESTORE_BUTTON" desc="The restore button label of the notification for the user to select restore apps and pages on startup.">
       Restore
     </message>
-    <message name="IDS_SET_RESTORE_NOTIFICATION_BUTTON" desc="The button label of the notification for the user to set restore by default.">
-      Settings
-    </message>
     <message name="IDS_RESTORE_NOTIFICATION_CANCEL_BUTTON" desc="The cancel button label of the notification for the user to select not restore on startup.">
-      Cancel
+      No thanks
     </message>
     <message name="IDS_RESTORE_NOTIFICATION_TITLE" desc="This is the title of the notification for the user to select restore or not on startup.">
-      Restore apps &amp; pages?
+      Restore apps?
     </message>
-    <message name="IDS_SET_RESTORE_NOTIFICATION_TITLE" desc="This is the title of the notification for the user to set restore by default.">
-      Restore apps &amp; pages by default?
+    <message name="IDS_RESTORE_CRASH_NOTIFICATION_TITLE" desc="This is the title of the notification for the user to select restore or not on startup after crash.">
+      Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> restarted unexpectedly
     </message>
-    <message name="IDS_RESTORE_NOTIFICATION_MESSAGE" desc="This is the text message of the notification for the user to select restore or not on startup if the 'restore_apps_and_pages' setting is 'Ask every time', and the system is not crashed before reboot.">
-      Continue where you left off.
+    <message name="IDS_RESTORE_NOTIFICATION_MESSAGE" desc="This is the text message of the notification for the user to select restore or not on startup if the 'restore_apps' setting is 'Ask every time', and the system is not crashed before reboot.">
+      Continue from where you left off. You can set apps to restore automatically in Settings.
+    </message>
+    <message name="IDS_RESTORE_CRASH_NOTIFICATION_MESSAGE" desc="This is the text message of the notification for the user to select restore or not on startup after crash.">
+      You can restore your previous apps
     </message>
   </if>
 
    <!-- Strings for Projector-->
   <message name="IDS_SELFIE_CAM_TITLE" desc="The title for the selfie camera dialog.">
     Selfie Camera
+  </message>
+
+  <message name="IDS_SELFIE_CAMERA_BUBBLE_EXPANDED" desc="Tooltip for the selfie camera resize button in expanded state">
+    2x
+  </message>
+
+  <message name="IDS_SELFIE_CAMERA_BUBBLE_COLLAPSED" desc="Tooltip for the selfie camera resize button in collapsed state">
+    1x
   </message>
 
 </grit-part>

@@ -35,7 +35,7 @@ class TextureZeroInitTest : public DawnTest {
   protected:
     void SetUp() override {
         DawnTest::SetUp();
-        DAWN_SKIP_TEST_IF(UsesWire());
+        DAWN_TEST_UNSUPPORTED_IF(UsesWire());
     }
     wgpu::TextureDescriptor CreateTextureDescriptor(uint32_t mipLevelCount,
                                                     uint32_t arrayLayerCount,
@@ -66,7 +66,7 @@ class TextureZeroInitTest : public DawnTest {
         return descriptor;
     }
     wgpu::RenderPipeline CreatePipelineForTest(float depth = 0.f) {
-        utils::ComboRenderPipelineDescriptor2 pipelineDescriptor;
+        utils::ComboRenderPipelineDescriptor pipelineDescriptor;
         pipelineDescriptor.vertex.module = CreateBasicVertexShaderForTest(depth);
         const char* fs = R"(
             ;
@@ -79,21 +79,20 @@ class TextureZeroInitTest : public DawnTest {
         depthStencil->depthCompare = wgpu::CompareFunction::Equal;
         depthStencil->stencilFront.compare = wgpu::CompareFunction::Equal;
 
-        return device.CreateRenderPipeline2(&pipelineDescriptor);
+        return device.CreateRenderPipeline(&pipelineDescriptor);
     }
     wgpu::ShaderModule CreateBasicVertexShaderForTest(float depth = 0.f) {
         std::string source = R"(
-            let pos : array<vec2<f32>, 6> = array<vec2<f32>, 6>(
-                vec2<f32>(-1.0, -1.0),
-                vec2<f32>(-1.0,  1.0),
-                vec2<f32>( 1.0, -1.0),
-                vec2<f32>( 1.0,  1.0),
-                vec2<f32>(-1.0,  1.0),
-                vec2<f32>( 1.0, -1.0)
-            );
-
             [[stage(vertex)]]
             fn main([[builtin(vertex_index)]] VertexIndex : u32) -> [[builtin(position)]] vec4<f32> {
+                var pos = array<vec2<f32>, 6>(
+                    vec2<f32>(-1.0, -1.0),
+                    vec2<f32>(-1.0,  1.0),
+                    vec2<f32>( 1.0, -1.0),
+                    vec2<f32>( 1.0,  1.0),
+                    vec2<f32>(-1.0,  1.0),
+                    vec2<f32>( 1.0, -1.0)
+                );
                 return vec4<f32>(pos[VertexIndex], )" +
                              std::to_string(depth) + R"(, 1.0);
             })";
@@ -586,8 +585,9 @@ TEST_P(TextureZeroInitTest, RenderingLoadingDepthStencil) {
 
 // Test that clear state is tracked independently for depth/stencil textures.
 TEST_P(TextureZeroInitTest, IndependentDepthStencilLoadAfterDiscard) {
-    // TODO(enga): Figure out why this fails on Metal Intel.
-    DAWN_SKIP_TEST_IF(IsMetal() && IsIntel());
+    // TODO(crbug.com/dawn/704): Readback after clear via stencil copy does not work
+    // on some Intel drivers.
+    DAWN_SUPPRESS_TEST_IF(IsMetal() && IsIntel());
 
     wgpu::TextureDescriptor depthStencilDescriptor = CreateTextureDescriptor(
         1, 1, wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::CopySrc,
@@ -600,7 +600,7 @@ TEST_P(TextureZeroInitTest, IndependentDepthStencilLoadAfterDiscard) {
         {
             utils::ComboRenderPassDescriptor renderPassDescriptor({},
                                                                   depthStencilTexture.CreateView());
-            renderPassDescriptor.cDepthStencilAttachmentInfo.depthStoreOp = wgpu::StoreOp::Clear;
+            renderPassDescriptor.cDepthStencilAttachmentInfo.depthStoreOp = wgpu::StoreOp::Discard;
             renderPassDescriptor.cDepthStencilAttachmentInfo.clearStencil = 2;
             renderPassDescriptor.cDepthStencilAttachmentInfo.stencilStoreOp = wgpu::StoreOp::Store;
 
@@ -676,7 +676,8 @@ TEST_P(TextureZeroInitTest, IndependentDepthStencilLoadAfterDiscard) {
                                                                   depthStencilTexture.CreateView());
             renderPassDescriptor.cDepthStencilAttachmentInfo.clearDepth = 0.7;
             renderPassDescriptor.cDepthStencilAttachmentInfo.depthStoreOp = wgpu::StoreOp::Store;
-            renderPassDescriptor.cDepthStencilAttachmentInfo.stencilStoreOp = wgpu::StoreOp::Clear;
+            renderPassDescriptor.cDepthStencilAttachmentInfo.stencilStoreOp =
+                wgpu::StoreOp::Discard;
 
             wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
             auto pass = encoder.BeginRenderPass(&renderPassDescriptor);
@@ -746,10 +747,10 @@ TEST_P(TextureZeroInitTest, IndependentDepthStencilLoadAfterDiscard) {
 // Lazy clear of the stencil aspect via copy should not touch depth.
 TEST_P(TextureZeroInitTest, IndependentDepthStencilCopyAfterDiscard) {
     // TODO(crbug.com/dawn/439): Implement stencil copies on other platforms
-    DAWN_SKIP_TEST_IF(!(IsMetal() || IsVulkan() || IsD3D12()));
+    DAWN_SUPPRESS_TEST_IF(!(IsMetal() || IsVulkan() || IsD3D12()));
 
     // TODO(enga): Figure out why this fails on Metal Intel.
-    DAWN_SKIP_TEST_IF(IsMetal() && IsIntel());
+    DAWN_SUPPRESS_TEST_IF(IsMetal() && IsIntel());
 
     wgpu::TextureDescriptor depthStencilDescriptor = CreateTextureDescriptor(
         1, 1, wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::CopySrc,
@@ -761,7 +762,7 @@ TEST_P(TextureZeroInitTest, IndependentDepthStencilCopyAfterDiscard) {
         utils::ComboRenderPassDescriptor renderPassDescriptor({}, depthStencilTexture.CreateView());
         renderPassDescriptor.cDepthStencilAttachmentInfo.clearDepth = 0.3;
         renderPassDescriptor.cDepthStencilAttachmentInfo.depthStoreOp = wgpu::StoreOp::Store;
-        renderPassDescriptor.cDepthStencilAttachmentInfo.stencilStoreOp = wgpu::StoreOp::Clear;
+        renderPassDescriptor.cDepthStencilAttachmentInfo.stencilStoreOp = wgpu::StoreOp::Discard;
 
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
         auto pass = encoder.BeginRenderPass(&renderPassDescriptor);
@@ -857,11 +858,11 @@ TEST_P(TextureZeroInitTest, RenderPassSampledTextureClear) {
     wgpu::Texture renderTexture = device.CreateTexture(&renderTextureDescriptor);
 
     // Create render pipeline
-    utils::ComboRenderPipelineDescriptor2 renderPipelineDescriptor;
+    utils::ComboRenderPipelineDescriptor renderPipelineDescriptor;
     renderPipelineDescriptor.cTargets[0].format = kColorFormat;
     renderPipelineDescriptor.vertex.module = CreateBasicVertexShaderForTest();
     renderPipelineDescriptor.cFragment.module = CreateSampledTextureFragmentShaderForTest();
-    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline2(&renderPipelineDescriptor);
+    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline(&renderPipelineDescriptor);
 
     // Create bindgroup
     wgpu::BindGroup bindGroup = utils::MakeBindGroup(device, renderPipeline.GetBindGroupLayout(0),
@@ -895,7 +896,7 @@ TEST_P(TextureZeroInitTest, RenderPassSampledTextureClear) {
 // subresource is correctly cleared.
 TEST_P(TextureZeroInitTest, TextureBothSampledAndAttachmentClear) {
     // TODO(crbug.com/dawn/593): This test uses glTextureView() which is not supported on OpenGL ES.
-    DAWN_SKIP_TEST_IF(IsOpenGLES());
+    DAWN_TEST_UNSUPPORTED_IF(IsOpenGLES());
 
     // Create a 2D array texture, layer 0 will be used as attachment, layer 1 as sampled.
     wgpu::TextureDescriptor texDesc;
@@ -916,11 +917,11 @@ TEST_P(TextureZeroInitTest, TextureBothSampledAndAttachmentClear) {
     wgpu::TextureView sampleView = texture.CreateView(&viewDesc);
 
     // Create render pipeline
-    utils::ComboRenderPipelineDescriptor2 renderPipelineDescriptor;
+    utils::ComboRenderPipelineDescriptor renderPipelineDescriptor;
     renderPipelineDescriptor.cTargets[0].format = wgpu::TextureFormat::RGBA8Unorm;
     renderPipelineDescriptor.vertex.module = CreateBasicVertexShaderForTest();
     renderPipelineDescriptor.cFragment.module = CreateSampledTextureFragmentShaderForTest();
-    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline2(&renderPipelineDescriptor);
+    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline(&renderPipelineDescriptor);
 
     wgpu::BindGroup bindGroup =
         utils::MakeBindGroup(device, renderPipeline.GetBindGroupLayout(0), {{0, sampleView}});
@@ -972,19 +973,19 @@ TEST_P(TextureZeroInitTest, ComputePassSampledTextureClear) {
 
     // Create compute pipeline
     wgpu::ComputePipelineDescriptor computePipelineDescriptor;
-    wgpu::ProgrammableStageDescriptor computeStage;
+    wgpu::ProgrammableStageDescriptor compute;
     const char* cs = R"(
         [[group(0), binding(0)]] var tex : texture_2d<f32>;
         [[block]] struct Result {
             value : vec4<f32>;
         };
-        [[group(0), binding(1)]] var<storage> result : [[access(read_write)]] Result;
-        [[stage(compute)]] fn main() {
+        [[group(0), binding(1)]] var<storage, read_write> result : Result;
+        [[stage(compute), workgroup_size(1)]] fn main() {
            result.value = textureLoad(tex, vec2<i32>(0,0), 0);
         }
     )";
-    computePipelineDescriptor.computeStage.module = utils::CreateShaderModule(device, cs);
-    computePipelineDescriptor.computeStage.entryPoint = "main";
+    computePipelineDescriptor.compute.module = utils::CreateShaderModule(device, cs);
+    computePipelineDescriptor.compute.entryPoint = "main";
     wgpu::ComputePipeline computePipeline =
         device.CreateComputePipeline(&computePipelineDescriptor);
 
@@ -1015,7 +1016,7 @@ TEST_P(TextureZeroInitTest, ComputePassSampledTextureClear) {
 TEST_P(TextureZeroInitTest, NonRenderableTextureClear) {
     // TODO(crbug.com/dawn/667): Work around the fact that some platforms do not support reading
     // from Snorm textures.
-    DAWN_SKIP_TEST_IF(HasToggleEnabled("disable_snorm_read"));
+    DAWN_TEST_UNSUPPORTED_IF(HasToggleEnabled("disable_snorm_read"));
 
     wgpu::TextureDescriptor descriptor =
         CreateTextureDescriptor(1, 1, wgpu::TextureUsage::CopySrc, kNonrenderableColorFormat);
@@ -1048,7 +1049,7 @@ TEST_P(TextureZeroInitTest, NonRenderableTextureClear) {
 TEST_P(TextureZeroInitTest, NonRenderableTextureClearUnalignedSize) {
     // TODO(crbug.com/dawn/667): Work around the fact that some platforms do not support reading
     // from Snorm textures.
-    DAWN_SKIP_TEST_IF(HasToggleEnabled("disable_snorm_read"));
+    DAWN_TEST_UNSUPPORTED_IF(HasToggleEnabled("disable_snorm_read"));
 
     wgpu::TextureDescriptor descriptor =
         CreateTextureDescriptor(1, 1, wgpu::TextureUsage::CopySrc, kNonrenderableColorFormat);
@@ -1084,7 +1085,7 @@ TEST_P(TextureZeroInitTest, NonRenderableTextureClearUnalignedSize) {
 TEST_P(TextureZeroInitTest, NonRenderableTextureClearWithMultiArrayLayers) {
     // TODO(crbug.com/dawn/667): Work around the fact that some platforms do not support reading
     // from Snorm textures.
-    DAWN_SKIP_TEST_IF(HasToggleEnabled("disable_snorm_read"));
+    DAWN_TEST_UNSUPPORTED_IF(HasToggleEnabled("disable_snorm_read"));
 
     wgpu::TextureDescriptor descriptor =
         CreateTextureDescriptor(1, 2, wgpu::TextureUsage::CopySrc, kNonrenderableColorFormat);
@@ -1142,11 +1143,11 @@ TEST_P(TextureZeroInitTest, RenderPassStoreOpClear) {
     EXPECT_LAZY_CLEAR(0u, queue.Submit(1, &commands));
 
     // Create render pipeline
-    utils::ComboRenderPipelineDescriptor2 renderPipelineDescriptor;
+    utils::ComboRenderPipelineDescriptor renderPipelineDescriptor;
     renderPipelineDescriptor.vertex.module = CreateBasicVertexShaderForTest();
     renderPipelineDescriptor.cFragment.module = CreateSampledTextureFragmentShaderForTest();
     renderPipelineDescriptor.cTargets[0].format = kColorFormat;
-    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline2(&renderPipelineDescriptor);
+    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline(&renderPipelineDescriptor);
 
     // Create bindgroup
     wgpu::BindGroup bindGroup = utils::MakeBindGroup(device, renderPipeline.GetBindGroupLayout(0),
@@ -1157,7 +1158,7 @@ TEST_P(TextureZeroInitTest, RenderPassStoreOpClear) {
     utils::ComboRenderPassDescriptor renderPassDesc({renderTexture.CreateView()});
     renderPassDesc.cColorAttachments[0].clearColor = {0.0, 0.0, 0.0, 0.0};
     renderPassDesc.cColorAttachments[0].loadOp = wgpu::LoadOp::Clear;
-    renderPassDesc.cColorAttachments[0].storeOp = wgpu::StoreOp::Clear;
+    renderPassDesc.cColorAttachments[0].storeOp = wgpu::StoreOp::Discard;
     wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPassDesc);
     pass.SetPipeline(renderPipeline);
     pass.SetBindGroup(0, bindGroup);
@@ -1180,9 +1181,9 @@ TEST_P(TextureZeroInitTest, RenderPassStoreOpClear) {
 
 // This tests storeOp Clear on depth and stencil textures.
 // We put the depth stencil texture through 2 passes:
-// 1) LoadOp::Clear and StoreOp::Clear, fail the depth and stencil test set in the render pipeline.
-//      This means nothing is drawn and subresource is set as uninitialized.
-// 2) LoadOp::Load and StoreOp::Clear, pass the depth and stencil test set in the render pipeline.
+// 1) LoadOp::Clear and StoreOp::Discard, fail the depth and stencil test set in the render
+//      pipeline. This means nothing is drawn and subresource is set as uninitialized.
+// 2) LoadOp::Load and StoreOp::Discard, pass the depth and stencil test set in the render pipeline.
 //      Because LoadOp is Load and the subresource is uninitialized, the texture will be cleared to
 //      0's This means the depth and stencil test will pass and the red square is drawn.
 TEST_P(TextureZeroInitTest, RenderingLoadingDepthStencilStoreOpClear) {
@@ -1209,8 +1210,8 @@ TEST_P(TextureZeroInitTest, RenderingLoadingDepthStencilStoreOpClear) {
     renderPassDescriptor.cDepthStencilAttachmentInfo.stencilLoadOp = wgpu::LoadOp::Clear;
     renderPassDescriptor.cDepthStencilAttachmentInfo.clearDepth = 1.0f;
     renderPassDescriptor.cDepthStencilAttachmentInfo.clearStencil = 1u;
-    renderPassDescriptor.cDepthStencilAttachmentInfo.depthStoreOp = wgpu::StoreOp::Clear;
-    renderPassDescriptor.cDepthStencilAttachmentInfo.stencilStoreOp = wgpu::StoreOp::Clear;
+    renderPassDescriptor.cDepthStencilAttachmentInfo.depthStoreOp = wgpu::StoreOp::Discard;
+    renderPassDescriptor.cDepthStencilAttachmentInfo.stencilStoreOp = wgpu::StoreOp::Discard;
     {
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
         wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPassDescriptor);
@@ -1288,11 +1289,11 @@ TEST_P(TextureZeroInitTest, PreservesInitializedMip) {
     EXPECT_LAZY_CLEAR(0u, queue.Submit(1, &commands));
 
     // Create render pipeline
-    utils::ComboRenderPipelineDescriptor2 renderPipelineDescriptor;
+    utils::ComboRenderPipelineDescriptor renderPipelineDescriptor;
     renderPipelineDescriptor.vertex.module = CreateBasicVertexShaderForTest();
     renderPipelineDescriptor.cFragment.module = CreateSampledTextureFragmentShaderForTest();
     renderPipelineDescriptor.cTargets[0].format = kColorFormat;
-    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline2(&renderPipelineDescriptor);
+    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline(&renderPipelineDescriptor);
 
     // Create bindgroup
     wgpu::BindGroup bindGroup = utils::MakeBindGroup(device, renderPipeline.GetBindGroupLayout(0),
@@ -1303,7 +1304,7 @@ TEST_P(TextureZeroInitTest, PreservesInitializedMip) {
     utils::ComboRenderPassDescriptor renderPassDesc({renderTexture.CreateView()});
     renderPassDesc.cColorAttachments[0].clearColor = {0.0, 0.0, 0.0, 0.0};
     renderPassDesc.cColorAttachments[0].loadOp = wgpu::LoadOp::Clear;
-    renderPassDesc.cColorAttachments[0].storeOp = wgpu::StoreOp::Clear;
+    renderPassDesc.cColorAttachments[0].storeOp = wgpu::StoreOp::Discard;
     wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPassDesc);
     pass.SetPipeline(renderPipeline);
     pass.SetBindGroup(0, bindGroup);
@@ -1337,7 +1338,7 @@ TEST_P(TextureZeroInitTest, PreservesInitializedMip) {
 // the uninitialized layer does not clear the initialized layer.
 TEST_P(TextureZeroInitTest, PreservesInitializedArrayLayer) {
     // TODO(crbug.com/dawn/593): This test uses glTextureView() which is not supported on OpenGL ES.
-    DAWN_SKIP_TEST_IF(IsOpenGLES());
+    DAWN_TEST_UNSUPPORTED_IF(IsOpenGLES());
 
     wgpu::TextureDescriptor sampleTextureDescriptor = CreateTextureDescriptor(
         1, 2,
@@ -1365,11 +1366,11 @@ TEST_P(TextureZeroInitTest, PreservesInitializedArrayLayer) {
     EXPECT_LAZY_CLEAR(0u, queue.Submit(1, &commands));
 
     // Create render pipeline
-    utils::ComboRenderPipelineDescriptor2 renderPipelineDescriptor;
+    utils::ComboRenderPipelineDescriptor renderPipelineDescriptor;
     renderPipelineDescriptor.vertex.module = CreateBasicVertexShaderForTest();
     renderPipelineDescriptor.cFragment.module = CreateSampledTextureFragmentShaderForTest();
     renderPipelineDescriptor.cTargets[0].format = kColorFormat;
-    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline2(&renderPipelineDescriptor);
+    wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline(&renderPipelineDescriptor);
 
     // Only sample from the uninitialized first layer.
     wgpu::TextureViewDescriptor textureViewDescriptor;
@@ -1386,7 +1387,7 @@ TEST_P(TextureZeroInitTest, PreservesInitializedArrayLayer) {
     utils::ComboRenderPassDescriptor renderPassDesc({renderTexture.CreateView()});
     renderPassDesc.cColorAttachments[0].clearColor = {0.0, 0.0, 0.0, 0.0};
     renderPassDesc.cColorAttachments[0].loadOp = wgpu::LoadOp::Clear;
-    renderPassDesc.cColorAttachments[0].storeOp = wgpu::StoreOp::Clear;
+    renderPassDesc.cColorAttachments[0].storeOp = wgpu::StoreOp::Discard;
     wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPassDesc);
     pass.SetPipeline(renderPipeline);
     pass.SetBindGroup(0, bindGroup);
@@ -1421,7 +1422,7 @@ TEST_P(TextureZeroInitTest, PreservesInitializedArrayLayer) {
 TEST_P(TextureZeroInitTest, CopyTextureToBufferNonRenderableUnaligned) {
     // TODO(crbug.com/dawn/667): Work around the fact that some platforms do not support reading
     // from Snorm textures.
-    DAWN_SKIP_TEST_IF(HasToggleEnabled("disable_snorm_read"));
+    DAWN_TEST_UNSUPPORTED_IF(HasToggleEnabled("disable_snorm_read"));
 
     wgpu::TextureDescriptor descriptor;
     descriptor.size.width = kUnalignedSize;
@@ -1702,8 +1703,8 @@ class CompressedTextureZeroInitTest : public TextureZeroInitTest {
     void SetUp() override {
         DawnTest::SetUp();
 
-        DAWN_SKIP_TEST_IF(UsesWire());
-        DAWN_SKIP_TEST_IF(!IsBCFormatSupported());
+        DAWN_TEST_UNSUPPORTED_IF(UsesWire());
+        DAWN_TEST_UNSUPPORTED_IF(!IsBCFormatSupported());
     }
 
     std::vector<const char*> GetRequiredExtensions() override {
@@ -1789,12 +1790,12 @@ class CompressedTextureZeroInitTest : public TextureZeroInitTest {
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
         {
             wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
-            utils::ComboRenderPipelineDescriptor2 renderPipelineDescriptor;
+            utils::ComboRenderPipelineDescriptor renderPipelineDescriptor;
             renderPipelineDescriptor.cTargets[0].format = kColorFormat;
             renderPipelineDescriptor.vertex.module = CreateBasicVertexShaderForTest();
             renderPipelineDescriptor.cFragment.module = CreateSampledTextureFragmentShaderForTest();
             wgpu::RenderPipeline renderPipeline =
-                device.CreateRenderPipeline2(&renderPipelineDescriptor);
+                device.CreateRenderPipeline(&renderPipelineDescriptor);
             pass.SetPipeline(renderPipeline);
 
             wgpu::TextureViewDescriptor textureViewDescriptor = CreateTextureViewDescriptor(
@@ -1846,7 +1847,7 @@ TEST_P(CompressedTextureZeroInitTest, FullMipCopy) {
 // Test that 1 lazy clear count happens when we copy to half the texture
 TEST_P(CompressedTextureZeroInitTest, HalfCopyBufferToTexture) {
     // TODO(crbug.com/dawn/643): diagnose and fix this failure on OpenGL.
-    DAWN_SKIP_TEST_IF(IsOpenGL() || IsOpenGLES());
+    DAWN_SUPPRESS_TEST_IF(IsOpenGL() || IsOpenGLES());
 
     wgpu::TextureDescriptor textureDescriptor;
     textureDescriptor.usage =
@@ -1866,7 +1867,7 @@ TEST_P(CompressedTextureZeroInitTest, HalfCopyBufferToTexture) {
 // (with physical size different from the virtual mip size)
 TEST_P(CompressedTextureZeroInitTest, FullCopyToNonZeroMipLevel) {
     // TODO(crbug.com/dawn/593): This test uses glTextureView() which is not supported on OpenGL ES.
-    DAWN_SKIP_TEST_IF(IsOpenGLES());
+    DAWN_TEST_UNSUPPORTED_IF(IsOpenGLES());
 
     wgpu::TextureDescriptor textureDescriptor;
     textureDescriptor.usage =
@@ -1891,7 +1892,7 @@ TEST_P(CompressedTextureZeroInitTest, FullCopyToNonZeroMipLevel) {
 // (with physical size different from the virtual mip size)
 TEST_P(CompressedTextureZeroInitTest, HalfCopyToNonZeroMipLevel) {
     // TODO(crbug.com/dawn/643): diagnose and fix this failure on OpenGL.
-    DAWN_SKIP_TEST_IF(IsOpenGL() || IsOpenGLES());
+    DAWN_SUPPRESS_TEST_IF(IsOpenGL() || IsOpenGLES());
 
     wgpu::TextureDescriptor textureDescriptor;
     textureDescriptor.usage =
@@ -1915,7 +1916,7 @@ TEST_P(CompressedTextureZeroInitTest, HalfCopyToNonZeroMipLevel) {
 // Test that 0 lazy clear count happens when we copy buffer to nonzero array layer
 TEST_P(CompressedTextureZeroInitTest, FullCopyToNonZeroArrayLayer) {
     // TODO(crbug.com/dawn/593): This test uses glTextureView() which is not supported on OpenGL ES.
-    DAWN_SKIP_TEST_IF(IsOpenGLES());
+    DAWN_TEST_UNSUPPORTED_IF(IsOpenGLES());
 
     wgpu::TextureDescriptor textureDescriptor;
     textureDescriptor.usage =
@@ -1935,7 +1936,7 @@ TEST_P(CompressedTextureZeroInitTest, FullCopyToNonZeroArrayLayer) {
 // Test that 1 lazy clear count happens when we copy buffer to half texture to a nonzero array layer
 TEST_P(CompressedTextureZeroInitTest, HalfCopyToNonZeroArrayLayer) {
     // TODO(crbug.com/dawn/643): diagnose and fix this failure on OpenGL.
-    DAWN_SKIP_TEST_IF(IsOpenGL() || IsOpenGLES());
+    DAWN_SUPPRESS_TEST_IF(IsOpenGL() || IsOpenGLES());
 
     wgpu::TextureDescriptor textureDescriptor;
     textureDescriptor.usage =
@@ -1955,7 +1956,7 @@ TEST_P(CompressedTextureZeroInitTest, HalfCopyToNonZeroArrayLayer) {
 // full copy texture to texture, 0 lazy clears are needed
 TEST_P(CompressedTextureZeroInitTest, FullCopyTextureToTextureMipLevel) {
     // TODO(crbug.com/dawn/593): This test uses glTextureView() which is not supported on OpenGL ES.
-    DAWN_SKIP_TEST_IF(IsOpenGLES());
+    DAWN_TEST_UNSUPPORTED_IF(IsOpenGLES());
 
     // create srcTexture and fill it with data
     wgpu::TextureDescriptor srcDescriptor = CreateTextureDescriptor(
@@ -2002,7 +2003,7 @@ TEST_P(CompressedTextureZeroInitTest, FullCopyTextureToTextureMipLevel) {
 // half copy texture to texture, lazy clears are needed for noncopied half
 TEST_P(CompressedTextureZeroInitTest, HalfCopyTextureToTextureMipLevel) {
     // TODO(crbug.com/dawn/643): diagnose and fix this failure on OpenGL.
-    DAWN_SKIP_TEST_IF(IsOpenGL() || IsOpenGLES());
+    DAWN_SUPPRESS_TEST_IF(IsOpenGL() || IsOpenGLES());
 
     // create srcTexture with data
     wgpu::TextureDescriptor srcDescriptor = CreateTextureDescriptor(

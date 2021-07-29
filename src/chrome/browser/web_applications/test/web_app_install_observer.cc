@@ -8,15 +8,15 @@
 
 #include "base/run_loop.h"
 #include "base/test/bind.h"
-#include "chrome/browser/web_applications/components/web_app_provider_base.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 
 namespace web_app {
 
-WebAppInstallObserver::WebAppInstallObserver(AppRegistrar* registrar) {
+WebAppInstallObserver::WebAppInstallObserver(WebAppRegistrar* registrar) {
   observation_.Observe(registrar);
 }
 WebAppInstallObserver::WebAppInstallObserver(
-    AppRegistrar* registrar,
+    WebAppRegistrar* registrar,
     const std::set<AppId>& listening_for_install_app_ids,
     const std::set<AppId>& listening_for_uninstall_app_ids,
     const std::set<AppId>& listening_for_install_with_os_hooks_app_ids)
@@ -42,19 +42,17 @@ WebAppInstallObserver::WebAppInstallObserver(
 }
 
 WebAppInstallObserver::WebAppInstallObserver(Profile* profile)
-    : WebAppInstallObserver(
-          &WebAppProviderBase::GetProviderBase(profile)->registrar()) {}
+    : WebAppInstallObserver(&WebAppProvider::Get(profile)->registrar()) {}
 
 WebAppInstallObserver::WebAppInstallObserver(
     Profile* profile,
     const std::set<AppId>& listening_for_install_app_ids,
     const std::set<AppId>& listening_for_uninstall_app_id,
     const std::set<AppId>& listening_for_install_with_os_hooks_app_ids)
-    : WebAppInstallObserver(
-          &WebAppProviderBase::GetProviderBase(profile)->registrar(),
-          listening_for_install_app_ids,
-          listening_for_uninstall_app_id,
-          listening_for_install_with_os_hooks_app_ids) {}
+    : WebAppInstallObserver(&WebAppProvider::Get(profile)->registrar(),
+                            listening_for_install_app_ids,
+                            listening_for_uninstall_app_id,
+                            listening_for_install_with_os_hooks_app_ids) {}
 
 WebAppInstallObserver::~WebAppInstallObserver() = default;
 

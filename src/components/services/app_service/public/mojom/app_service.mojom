@@ -81,7 +81,7 @@ interface AppService {
       string app_id);
 
   // Unpauses an app, and recover the icon effect for the app.
-  UnpauseApps(
+  UnpauseApp(
       AppType app_type,
       string app_id);
 
@@ -130,11 +130,18 @@ interface AppService {
       string app_id,
       IntentFilter intent_filter);
 
-  // Enables resize lock mode for the app identified by |app_id|.
+  // Enables resize lock mode for the app identified by |app_id| with the given
+  // |app_type|.
   SetResizeLocked(
       AppType app_type,
       string app_id,
       OptionalBool locked);
+
+  // Set the window display mode for the app identified by |app_id|.
+  SetWindowMode(
+      AppType app_type,
+      string app_id,
+      WindowMode window_mode);
 };
 
 interface Publisher {
@@ -193,7 +200,7 @@ interface Publisher {
       string app_id);
 
   // Unpauses an app, and recover the icon effect for the app.
-  UnpauseApps(
+  UnpauseApp(
       string app_id);
 
   // Stops the current running app for the given |app_id|.
@@ -232,6 +239,11 @@ interface Publisher {
   SetResizeLocked(
       string app_id,
       OptionalBool locked);
+
+  // Set the window display mode for the app identified by |app_id|.
+  SetWindowMode(
+      string app_id,
+      WindowMode window_mode);
 };
 
 // Subscriber works as a proxy, to receive a stream of apps from publishers,

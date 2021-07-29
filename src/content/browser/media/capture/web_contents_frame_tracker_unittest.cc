@@ -15,7 +15,7 @@
 #include "content/test/test_web_contents.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/widget/screen_info.h"
+#include "ui/display/screen_info.h"
 
 namespace content {
 namespace {
@@ -71,7 +71,8 @@ class MockCaptureDevice : public WebContentsVideoCaptureDevice,
                           public base::SupportsWeakPtr<MockCaptureDevice> {
  public:
   using WebContentsVideoCaptureDevice::AsWeakPtr;
-  MOCK_METHOD1(OnTargetChanged, void(const viz::FrameSinkId&));
+  MOCK_METHOD1(OnTargetChanged,
+               void(const FrameSinkVideoCaptureDevice::VideoCaptureTarget&));
   MOCK_METHOD0(OnTargetPermanentlyLost, void());
 };
 
@@ -313,7 +314,10 @@ TEST_F(WebContentsFrameTrackerTest, NotifiesOfLostTargets) {
 // test the observer callbacks here.
 TEST_F(WebContentsFrameTrackerTest, NotifiesOfTargetChanges) {
   const viz::FrameSinkId kNewId(42, 1337);
-  EXPECT_CALL(*device(), OnTargetChanged(kNewId)).Times(1);
+  EXPECT_CALL(
+      *device(),
+      OnTargetChanged(FrameSinkVideoCaptureDevice::VideoCaptureTarget{kNewId}))
+      .Times(1);
   SetFrameSinkId(kNewId);
   // The tracker doesn't actually use the frame host information, just
   // posts a possible target change.

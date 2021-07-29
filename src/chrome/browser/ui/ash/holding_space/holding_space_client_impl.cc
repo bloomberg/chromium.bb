@@ -9,15 +9,16 @@
 #include "ash/public/cpp/holding_space/holding_space_constants.h"
 #include "ash/public/cpp/holding_space/holding_space_item.h"
 #include "ash/public/cpp/holding_space/holding_space_metrics.h"
+#include "ash/public/cpp/holding_space/holding_space_progress.h"
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/notreached.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
-#include "chrome/browser/chromeos/file_manager/app_id.h"
-#include "chrome/browser/chromeos/file_manager/fileapi_util.h"
-#include "chrome/browser/chromeos/file_manager/open_util.h"
-#include "chrome/browser/chromeos/file_manager/path_util.h"
+#include "chrome/browser/ash/file_manager/app_id.h"
+#include "chrome/browser/ash/file_manager/fileapi_util.h"
+#include "chrome/browser/ash/file_manager/open_util.h"
+#include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ui/ash/clipboard_util.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service_factory.h"
@@ -67,6 +68,11 @@ HoldingSpaceClientImpl::HoldingSpaceClientImpl(Profile* profile)
 
 HoldingSpaceClientImpl::~HoldingSpaceClientImpl() = default;
 
+void HoldingSpaceClientImpl::AddDiagnosticsLog(
+    const base::FilePath& file_path) {
+  GetHoldingSpaceKeyedService(profile_)->AddDiagnosticsLog(file_path);
+}
+
 void HoldingSpaceClientImpl::AddScreenshot(const base::FilePath& file_path) {
   GetHoldingSpaceKeyedService(profile_)->AddScreenshot(file_path);
 }
@@ -74,6 +80,13 @@ void HoldingSpaceClientImpl::AddScreenshot(const base::FilePath& file_path) {
 void HoldingSpaceClientImpl::AddScreenRecording(
     const base::FilePath& file_path) {
   GetHoldingSpaceKeyedService(profile_)->AddScreenRecording(file_path);
+}
+
+void HoldingSpaceClientImpl::CancelItems(
+    const std::vector<const HoldingSpaceItem*>& items) {
+  auto* const service = GetHoldingSpaceKeyedService(profile_);
+  for (const HoldingSpaceItem* item : items)
+    service->CancelItem(item);
 }
 
 void HoldingSpaceClientImpl::CopyImageToClipboard(const HoldingSpaceItem& item,
@@ -158,7 +171,18 @@ void HoldingSpaceClientImpl::OpenItems(
                                                        item->file_path());
       *complete_success_ptr = false;
       barrier_closure.Run();
-      return;
+      continue;
+    }
+    if (!item->progress().IsComplete()) {
+      const bool success =
+          GetHoldingSpaceKeyedService(profile_)->OpenItemWhenComplete(item);
+      if (!success) {
+        holding_space_metrics::RecordItemFailureToLaunch(item->type(),
+                                                         item->file_path());
+      }
+      *complete_success_ptr &= success;
+      barrier_closure.Run();
+      continue;
     }
     GetFileInfo(
         profile_, item->file_path(),
@@ -216,25 +240,11 @@ void HoldingSpaceClientImpl::OpenMyFiles(SuccessCallback callback) {
           std::move(callback)));
 }
 
-void HoldingSpaceClientImpl::ShowItemInFolder(const HoldingSpaceItem& item,
-                                              SuccessCallback callback) {
-  holding_space_metrics::RecordItemAction(
-      {&item}, holding_space_metrics::ItemAction::kShowInFolder);
-
-  if (item.file_path().empty()) {
-    std::move(callback).Run(/*success=*/false);
-    return;
-  }
-
-  file_manager::util::ShowItemInFolder(
-      profile_, item.file_path(),
-      base::BindOnce(
-          [](SuccessCallback callback,
-             platform_util::OpenOperationResult result) {
-            const bool success = result == platform_util::OPEN_SUCCEEDED;
-            std::move(callback).Run(success);
-          },
-          std::move(callback)));
+void HoldingSpaceClientImpl::PauseItems(
+    const std::vector<const HoldingSpaceItem*>& items) {
+  auto* const service = GetHoldingSpaceKeyedService(profile_);
+  for (const HoldingSpaceItem* item : items)
+    service->PauseItem(item);
 }
 
 void HoldingSpaceClientImpl::PinFiles(
@@ -258,8 +268,11 @@ void HoldingSpaceClientImpl::PinItems(
     const std::vector<const HoldingSpaceItem*>& items) {
   std::vector<storage::FileSystemURL> file_system_urls;
 
+  // NOTE: In-progress holding space items are neither pin- nor unpin-able.
   HoldingSpaceKeyedService* service = GetHoldingSpaceKeyedService(profile_);
   for (const HoldingSpaceItem* item : items) {
+    if (!item->progress().IsComplete())
+      continue;
     const storage::FileSystemURL& file_system_url =
         file_manager::util::GetFileManagerFileSystemContext(profile_)->CrackURL(
             item->file_system_url());
@@ -271,12 +284,43 @@ void HoldingSpaceClientImpl::PinItems(
     service->AddPinnedFiles(file_system_urls);
 }
 
+void HoldingSpaceClientImpl::ResumeItems(
+    const std::vector<const HoldingSpaceItem*>& items) {
+  auto* const service = GetHoldingSpaceKeyedService(profile_);
+  for (const HoldingSpaceItem* item : items)
+    service->ResumeItem(item);
+}
+
+void HoldingSpaceClientImpl::ShowItemInFolder(const HoldingSpaceItem& item,
+                                              SuccessCallback callback) {
+  holding_space_metrics::RecordItemAction(
+      {&item}, holding_space_metrics::ItemAction::kShowInFolder);
+
+  if (item.file_path().empty()) {
+    std::move(callback).Run(/*success=*/false);
+    return;
+  }
+
+  file_manager::util::ShowItemInFolder(
+      profile_, item.file_path(),
+      base::BindOnce(
+          [](SuccessCallback callback,
+             platform_util::OpenOperationResult result) {
+            const bool success = result == platform_util::OPEN_SUCCEEDED;
+            std::move(callback).Run(success);
+          },
+          std::move(callback)));
+}
+
 void HoldingSpaceClientImpl::UnpinItems(
     const std::vector<const HoldingSpaceItem*>& items) {
   std::vector<storage::FileSystemURL> file_system_urls;
 
+  // NOTE: In-progress holding space items are neither pin- nor unpin-able.
   HoldingSpaceKeyedService* service = GetHoldingSpaceKeyedService(profile_);
   for (const HoldingSpaceItem* item : items) {
+    if (!item->progress().IsComplete())
+      continue;
     const storage::FileSystemURL& file_system_url =
         file_manager::util::GetFileManagerFileSystemContext(profile_)->CrackURL(
             item->file_system_url());

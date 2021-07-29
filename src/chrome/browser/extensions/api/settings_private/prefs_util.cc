@@ -59,24 +59,25 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_pref_names.h"
+#include "ash/constants/ash_pref_names.h"  // nogncheck
 #include "ash/public/cpp/ambient/ambient_prefs.h"
-#include "ash/public/cpp/ash_pref_names.h"  // nogncheck
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/guest_os/guest_os_pref_names.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash_factory.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_pref_names.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/settings/supervised_user_cros_settings_provider.h"
 #include "chrome/browser/ash/system/timezone_util.h"
 #include "chrome/browser/chromeos/full_restore/full_restore_prefs.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/extensions/api/settings_private/chromeos_resolve_time_zone_by_geolocation_method_short.h"
 #include "chrome/browser/extensions/api/settings_private/chromeos_resolve_time_zone_by_geolocation_on_off.h"
 #include "chromeos/components/quick_answers/public/cpp/quick_answers_prefs.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/account_manager_core/pref_names.h"
 #include "components/arc/arc_prefs.h"
 #include "ui/chromeos/events/pref_names.h"
 #endif
@@ -133,7 +134,7 @@ bool IsSettingReadOnly(const std::string& pref_name) {
   // enable_screen_lock and pin_unlock_autosubmit_enabled
   // must be changed through the quickUnlockPrivate API.
   if (pref_name == ash::prefs::kEnableAutoScreenLock ||
-      pref_name == prefs::kPinUnlockAutosubmitEnabled) {
+      pref_name == ::prefs::kPinUnlockAutosubmitEnabled) {
     return true;
   }
 #endif
@@ -247,10 +248,6 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::PREF_TYPE_STRING;
 #endif
 
-  // Printing settings.
-  (*s_allowlist)[::prefs::kLocalDiscoveryNotificationsEnabled] =
-      settings_api::PrefType::PREF_TYPE_BOOLEAN;
-
   // Miscellaneous. TODO(stevenjb): categorize.
   (*s_allowlist)[::prefs::kEnableDoNotTrack] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
@@ -298,6 +295,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[::safe_browsing::kGeneratedSafeBrowsingPref] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
+  (*s_allowlist)[::prefs::kHttpsOnlyModeEnabled] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Sync and personalization page.
   (*s_allowlist)[::prefs::kSearchSuggestEnabled] =
@@ -454,13 +453,14 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[chromeos::kAccountsPrefUsers] =
       settings_api::PrefType::PREF_TYPE_LIST;
-  (*s_allowlist)[chromeos::prefs::kSecondaryGoogleAccountSigninAllowed] =
-      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)
+      [::account_manager::prefs::kSecondaryGoogleAccountSigninAllowed] =
+          settings_api::PrefType::PREF_TYPE_BOOLEAN;
   // kEnableAutoScreenLock is read-only.
   (*s_allowlist)[ash::prefs::kEnableAutoScreenLock] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   // kPinUnlockAutosubmitEnabled is read-only.
-  (*s_allowlist)[prefs::kPinUnlockAutosubmitEnabled] =
+  (*s_allowlist)[::prefs::kPinUnlockAutosubmitEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[ash::prefs::kMessageCenterLockScreenMode] =
       settings_api::PrefType::PREF_TYPE_STRING;
@@ -488,6 +488,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[ash::prefs::kAccessibilityDictationEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[ash::prefs::kAccessibilityDictationLocale] =
+      settings_api::PrefType::PREF_TYPE_STRING;
   (*s_allowlist)[ash::prefs::kAccessibilityFocusHighlightEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[ash::prefs::kAccessibilityHighContrastEnabled] =
@@ -587,6 +589,12 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
   (*s_allowlist)[ash::ambient::prefs::kAmbientModePhotoRefreshIntervalSeconds] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
 
+  // Dark Mode.
+  (*s_allowlist)[ash::prefs::kDarkModeEnabled] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[ash::prefs::kColorModeThemed] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+
   // Google Assistant.
   (*s_allowlist)[chromeos::assistant::prefs::kAssistantConsentStatus] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
@@ -608,6 +616,15 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
   // Quick Answers.
   (*s_allowlist)[chromeos::quick_answers::prefs::kQuickAnswersEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)
+      [chromeos::quick_answers::prefs::kQuickAnswersDefinitionEnabled] =
+          settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)
+      [chromeos::quick_answers::prefs::kQuickAnswersTranslationEnabled] =
+          settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)
+      [chromeos::quick_answers::prefs::kQuickAnswersUnitConverstionEnabled] =
+          settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Misc.
   (*s_allowlist)[::prefs::kUse24HourClock] =
@@ -625,6 +642,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
   (*s_allowlist)[prefs::kRestoreLastLockScreenNote] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[chromeos::kDevicePeripheralDataAccessEnabled] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[::ash::prefs::kLocalStateDevicePeripheralDataAccessEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Bluetooth & Internet settings.
@@ -969,6 +988,13 @@ std::unique_ptr<settings_api::PrefObject> PrefsUtil::GetPref(
         GetRestrictedCrosSettingValueForChildUser(profile_, name)->Clone());
     return pref_object;
   }
+
+  if (IsHotwordDisabledForChildUser(name)) {
+    pref_object->controlled_by =
+        settings_api::ControlledBy::CONTROLLED_BY_CHILD_RESTRICTION;
+    pref_object->enforcement = settings_api::Enforcement::ENFORCEMENT_ENFORCED;
+    return pref_object;
+  }
 #endif
 
   const Extension* extension = GetExtensionControllingPref(*pref_object);
@@ -1029,19 +1055,21 @@ settings_private::SetPrefResult PrefsUtil::SetPref(const std::string& pref_name,
       // Otherwise if the number is a whole number like 2.0, it will
       // automatically be of type INTEGER causing type mismatches in
       // PrefService::SetUserPrefValue for doubles, and vice versa.
-      double double_value;
-      if (!value->GetAsDouble(&double_value))
+      if (!value->is_double() && !value->is_int())
         return settings_private::SetPrefResult::PREF_TYPE_MISMATCH;
+      double double_value;
+      double_value = value->GetDouble();
+
       if (pref->GetType() == base::Value::Type::DOUBLE)
         pref_service->SetDouble(pref_name, double_value);
       else
         pref_service->SetInteger(pref_name, static_cast<int>(double_value));
       break;
     case base::Value::Type::STRING: {
-      std::string string_value;
-      if (!value->GetAsString(&string_value))
+      if (!value->is_string())
         return settings_private::SetPrefResult::PREF_TYPE_MISMATCH;
 
+      std::string string_value = value->GetString();
       if (IsPrefTypeURL(pref_name)) {
         GURL fixed = url_formatter::FixupURL(string_value, std::string());
         if (fixed.is_valid())
@@ -1128,7 +1156,7 @@ bool PrefsUtil::IsPrefTypeURL(const std::string& pref_name) {
 bool PrefsUtil::IsPrefEnterpriseManaged(const std::string& pref_name) {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  if (!connector->IsEnterpriseManaged())
+  if (!connector->IsDeviceEnterpriseManaged())
     return false;
   if (IsPrivilegedCrosSetting(pref_name))
     return true;
@@ -1166,6 +1194,20 @@ bool PrefsUtil::IsPrefPrimaryUserControlled(const std::string& pref_name) {
     }
   }
   return false;
+}
+
+bool PrefsUtil::IsHotwordDisabledForChildUser(const std::string& pref_name) {
+  const std::string& hotwordEnabledPref =
+      chromeos::assistant::prefs::kAssistantHotwordEnabled;
+  if (!profile_->IsChild() || pref_name != hotwordEnabledPref)
+    return false;
+
+  PrefService* pref_service = FindServiceForPref(hotwordEnabledPref);
+  const PrefService::Preference* pref =
+      pref_service->FindPreference(hotwordEnabledPref);
+  DCHECK(pref);
+  const bool isHotwordEnabled = pref->GetValue()->GetIfBool().value_or(false);
+  return !isHotwordEnabled;
 }
 #endif
 

@@ -34,7 +34,6 @@ class OSExchangeData;
 class WaylandConnection;
 class WaylandSubsurface;
 class WaylandWindowDragController;
-class WaylandOutput;
 class WaylandPopup;
 
 using WidgetSubsurfaceSet = base::flat_set<std::unique_ptr<WaylandSubsurface>>;
@@ -54,12 +53,12 @@ class WaylandWindow : public PlatformWindow,
 
   void OnWindowLostCapture();
 
-  // Updates the surface buffer scale of the window.  Top level windows take
+  // Updates the surface scale of the window.  Top level windows take
   // scale from the output attached to either their current display or the
   // primary one if their widget is not yet created, children inherit scale from
   // their parent.  The method recalculates window bounds appropriately if asked
   // to do so (this is not needed upon window initialization).
-  virtual void UpdateBufferScale(bool update_bounds);
+  virtual void UpdateWindowScale(bool update_bounds);
 
   WaylandSurface* root_surface() const { return root_surface_.get(); }
   WaylandSubsurface* primary_subsurface() const {
@@ -104,7 +103,11 @@ class WaylandWindow : public PlatformWindow,
   void set_child_window(WaylandWindow* window) { child_window_ = window; }
   WaylandWindow* child_window() const { return child_window_; }
 
-  int32_t buffer_scale() const { return root_surface_->buffer_scale(); }
+  // Sets the window_scale for this window with respect to a display this window
+  // is located at. This determines how events can be translated and how size of
+  // the surface is treated (px to DIP conversion and vice versa.)
+  void SetWindowScale(int32_t new_scale);
+  int32_t window_scale() const { return window_scale_; }
   float ui_scale() const { return ui_scale_; }
 
   // A preferred output is the one with the largest scale. This is needed to
@@ -113,9 +116,6 @@ class WaylandWindow : public PlatformWindow,
   // factor, the very first entered output is chosen as there is no way to
   // figure out what output the window occupies the most.
   uint32_t GetPreferredEnteredOutputId();
-  const std::vector<WaylandOutput*>& entered_outputs() const {
-    return entered_outputs_;
-  }
 
   // Returns current type of the window.
   PlatformWindowType type() const { return type_; }
@@ -198,19 +198,22 @@ class WaylandWindow : public PlatformWindow,
 
   virtual absl::optional<std::vector<gfx::Rect>> GetWindowShape() const;
 
+  // Tells if the surface has already been configured.
+  virtual bool IsSurfaceConfigured() = 0;
+
   // Returns a root parent window within the same hierarchy.
   WaylandWindow* GetRootParentWindow();
 
   // Returns a top most child window within the same hierarchy.
   WaylandWindow* GetTopMostChildWindow();
 
-  // This should be called when a WaylandSurface part of this window becomes
-  // partially or fully within the scanout region of |output|.
-  void AddEnteredOutputId(struct wl_output* output);
+  // Called by the WaylandSurface attached to this window when that surface
+  // becomes partially or fully within the scanout region of |output|.
+  void OnEnteredOutputIdAdded();
 
-  // This should be called when a WaylandSurface part of this window becomes
-  // fully outside of the scanout region of |output|.
-  void RemoveEnteredOutputId(struct wl_output* output);
+  // Called by the WaylandSurface attached to this window when that surface
+  // becomes fully outside of the scanout region of |output|.
+  void OnEnteredOutputIdRemoved();
 
   // Returns true iff this window is opaque.
   bool IsOpaqueWindow() const;
@@ -229,6 +232,9 @@ class WaylandWindow : public PlatformWindow,
     return ui_task_runner_;
   }
 
+  // Returns bounds in DIP.
+  gfx::Rect GetBoundsInDIP() const;
+
  protected:
   WaylandWindow(PlatformWindowDelegate* delegate,
                 WaylandConnection* connection);
@@ -245,7 +251,7 @@ class WaylandWindow : public PlatformWindow,
   virtual void UpdateWindowMask();
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(WaylandScreenTest, SetBufferScale);
+  FRIEND_TEST_ALL_PREFIXES(WaylandScreenTest, SetWindowScale);
 
   // Initializes the WaylandWindow with supplied properties.
   bool Initialize(PlatformWindowInitProperties properties);
@@ -323,19 +329,11 @@ class WaylandWindow : public PlatformWindow,
   // replaces the default value that is equal to the natural device scale.
   // We need it to place and size the menus properly.
   float ui_scale_ = 1.0f;
+  // Current scale factor of the output where the window is located at.
+  int32_t window_scale_ = 1;
 
   // Stores current opacity of the window. Set on ::Initialize call.
   ui::PlatformWindowOpacity opacity_;
-
-  // For top level window, stores outputs that the window is currently rendered
-  // at.
-  //
-  // Not used by popups.  When sub-menus are hidden and shown again, Wayland
-  // 'repositions' them to wrong outputs by sending them leave and enter
-  // events so their list of entered outputs becomes meaningless after they have
-  // been hidden at least once.  To determine which output the popup belongs to,
-  // we ask its parent.
-  std::vector<WaylandOutput*> entered_outputs_;
 
   // The type of the current WaylandWindow object.
   ui::PlatformWindowType type_ = ui::PlatformWindowType::kWindow;
@@ -357,6 +355,9 @@ class WaylandWindow : public PlatformWindow,
   base::OnceClosure drag_loop_quit_closure_;
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
+
+  // Stores pending buffer_scale pair, where the key is the visual size.
+  std::vector<std::pair<gfx::Size, int32_t>> pending_buffer_scale_;
 
   base::WeakPtrFactory<WaylandWindow> weak_ptr_factory_{this};
 

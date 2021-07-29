@@ -15,6 +15,10 @@ struct gtk_primary_selection_offer;
 struct gtk_primary_selection_source;
 struct gtk_shell1;
 struct gtk_surface1;
+struct org_kde_kwin_idle;
+struct org_kde_kwin_idle_timeout;
+struct zwp_idle_inhibit_manager_v1;
+struct zwp_idle_inhibitor_v1;
 struct zwp_primary_selection_device_v1;
 struct zwp_primary_selection_device_manager_v1;
 struct zwp_primary_selection_offer_v1;
@@ -63,8 +67,12 @@ struct zwp_linux_dmabuf_v1;
 struct zwp_linux_buffer_release_v1;
 struct zwp_linux_explicit_synchronization_v1;
 struct zwp_linux_surface_synchronization_v1;
+struct zwp_locked_pointer_v1;
+struct zwp_pointer_constraints_v1;
 struct zwp_pointer_gesture_pinch_v1;
 struct zwp_pointer_gestures_v1;
+struct zwp_relative_pointer_manager_v1;
+struct zwp_relative_pointer_v1;
 struct zxdg_shell_v6;
 struct zxdg_surface_v6;
 struct zxdg_toplevel_v6;
@@ -128,6 +136,30 @@ template <>
 struct ObjectTraits<gtk_surface1> {
   static const wl_interface* interface;
   static void (*deleter)(gtk_surface1*);
+};
+
+template <>
+struct ObjectTraits<org_kde_kwin_idle> {
+  static const wl_interface* interface;
+  static void (*deleter)(org_kde_kwin_idle*);
+};
+
+template <>
+struct ObjectTraits<org_kde_kwin_idle_timeout> {
+  static const wl_interface* interface;
+  static void (*deleter)(org_kde_kwin_idle_timeout*);
+};
+
+template <>
+struct ObjectTraits<zwp_idle_inhibit_manager_v1> {
+  static const wl_interface* interface;
+  static void (*deleter)(zwp_idle_inhibit_manager_v1*);
+};
+
+template <>
+struct ObjectTraits<zwp_idle_inhibitor_v1> {
+  static const wl_interface* interface;
+  static void (*deleter)(zwp_idle_inhibitor_v1*);
 };
 
 template <>
@@ -311,6 +343,18 @@ struct ObjectTraits<wl_proxy> {
 };
 
 template <>
+struct ObjectTraits<zwp_locked_pointer_v1> {
+  static const wl_interface* interface;
+  static void (*deleter)(zwp_locked_pointer_v1*);
+};
+
+template <>
+struct ObjectTraits<zwp_pointer_constraints_v1> {
+  static const wl_interface* interface;
+  static void (*deleter)(zwp_pointer_constraints_v1*);
+};
+
+template <>
 struct ObjectTraits<zwp_pointer_gesture_pinch_v1> {
   static const wl_interface* interface;
   static void (*deleter)(zwp_pointer_gesture_pinch_v1*);
@@ -320,6 +364,18 @@ template <>
 struct ObjectTraits<zwp_pointer_gestures_v1> {
   static const wl_interface* interface;
   static void (*deleter)(zwp_pointer_gestures_v1*);
+};
+
+template <>
+struct ObjectTraits<zwp_relative_pointer_manager_v1> {
+  static const wl_interface* interface;
+  static void (*deleter)(zwp_relative_pointer_manager_v1*);
+};
+
+template <>
+struct ObjectTraits<zwp_relative_pointer_v1> {
+  static const wl_interface* interface;
+  static void (*deleter)(zwp_relative_pointer_v1*);
 };
 
 template <>

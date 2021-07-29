@@ -56,7 +56,9 @@
 #include "ui/accessibility/ax_enums.mojom-blink.h"
 #include "ui/accessibility/ax_mode.h"
 
-class SkMatrix44;
+namespace skia {
+class Matrix44;
+}
 
 namespace ui {
 struct AXActionData;
@@ -173,98 +175,6 @@ namespace blink {
 class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
  public:
   typedef HeapVector<Member<AXObject>> AXObjectVector;
-
-  // Iterator for doing an in-order traversal of the accessibility tree.
-  //
-  // Includes objects that are ignored but included in the accessibility tree in
-  // the traversal.
-  class MODULES_EXPORT InOrderTraversalIterator final
-      : public GarbageCollected<InOrderTraversalIterator> {
-   public:
-    ~InOrderTraversalIterator() = default;
-
-    InOrderTraversalIterator(const InOrderTraversalIterator& other)
-        : current_(other.current_), previous_(other.previous_) {}
-
-    InOrderTraversalIterator& operator=(const InOrderTraversalIterator& other) {
-      current_ = other.current_;
-      previous_ = other.previous_;
-      return *this;
-    }
-
-    InOrderTraversalIterator& operator++() {
-      previous_ = current_;
-      current_ = (current_ && !current_->IsDetached())
-                     ? current_->NextInPreOrderIncludingIgnored()
-                     : nullptr;
-      return *this;
-    }
-
-    InOrderTraversalIterator operator++(int) {
-      InOrderTraversalIterator ret = *this;
-      ++*this;
-      return ret;
-    }
-
-    InOrderTraversalIterator& operator--() {
-      current_ = previous_;
-      previous_ = (current_ && !current_->IsDetached())
-                      ? current_->PreviousInPreOrderIncludingIgnored()
-                      : nullptr;
-      return *this;
-    }
-
-    InOrderTraversalIterator operator--(int) {
-      InOrderTraversalIterator ret = *this;
-      --*this;
-      return ret;
-    }
-
-    AXObject& operator*() const {
-      DCHECK(current_);
-      return *current_;
-    }
-
-    AXObject* operator->() const {
-      DCHECK(current_);
-      return static_cast<AXObject*>(current_);
-    }
-
-    void Trace(Visitor* visitor) const {
-      visitor->Trace(current_);
-      visitor->Trace(previous_);
-    }
-
-    MODULES_EXPORT friend void swap(InOrderTraversalIterator& left,
-                                    InOrderTraversalIterator& right) {
-      std::swap(left.current_, right.current_);
-      std::swap(left.previous_, right.previous_);
-    }
-
-    MODULES_EXPORT friend bool operator==(
-        const InOrderTraversalIterator& left,
-        const InOrderTraversalIterator& right) {
-      return left.current_ == right.current_;
-    }
-
-    MODULES_EXPORT friend bool operator!=(
-        const InOrderTraversalIterator& left,
-        const InOrderTraversalIterator& right) {
-      return !(left == right);
-    }
-
-   private:
-    InOrderTraversalIterator() = default;
-
-    explicit InOrderTraversalIterator(AXObject& current)
-        : current_(&current), previous_(nullptr) {}
-
-    friend class AXObject;
-    friend class AXObjectCacheImpl;
-
-    Member<AXObject> current_;
-    Member<AXObject> previous_;
-  };
 
   // Iterator for the ancestors of an |AXObject|.
   // Walks through all the unignored parents of the object up to the root.
@@ -438,7 +348,6 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
 
   // Check object role or purpose.
   ax::mojom::blink::Role RoleValue() const;
-  bool IsAnchor() const;
 
   // Returns true if this object is an ARIA text field, i.e. it is neither an
   // <input> nor a <textarea>, but it has an ARIA role of textbox, searchbox or
@@ -454,9 +363,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   bool IsHeading() const;
   bool IsImage() const;
   virtual bool IsInputImage() const;
-  bool IsLandmarkRelated() const;
   bool IsLink() const;
-  virtual bool IsInPageLinkTarget() const;
   bool IsMenu() const;
   bool IsMenuRelated() const;
   bool IsMeter() const;
@@ -513,7 +420,11 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // aria-grabbed is deprecated in WAI-ARIA 1.1.
   virtual AccessibilityGrabbedState IsGrabbed() const;
   virtual bool IsHovered() const;
+
+  // Returns true if this object starts a new paragraph in the accessibility
+  // tree's text representation.
   virtual bool IsLineBreakingObject() const;
+
   virtual bool IsLinked() const;
   virtual bool IsLoaded() const;
   virtual bool IsModal() const;
@@ -521,6 +432,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   virtual bool IsOffScreen() const;
   virtual bool IsRequired() const;
   virtual AccessibilitySelectedState IsSelected() const;
+  virtual bool IsSelectedFromFocusSupported() const;
   // Is the object selected because selection is following focus?
   virtual bool IsSelectedFromFocus() const;
   virtual bool IsSelectedOptionActive() const;
@@ -622,7 +534,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // Internal functions used by name and description, above.
   typedef HeapHashSet<Member<const AXObject>> AXObjectSet;
   virtual String TextAlternative(bool recursive,
-                                 bool in_aria_labelled_by_traversal,
+                                 const AXObject* aria_label_or_description_root,
                                  AXObjectSet& visited,
                                  ax::mojom::blink::NameFrom& name_from,
                                  AXRelatedObjectVector* related_objects,
@@ -675,6 +587,10 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   virtual String ImageDataUrl(const IntSize& max_size) const {
     return g_null_atom;
   }
+  // If this element points to another element in the same page, e.g.
+  // <a href="#foo">, this will return the AXObject for the target.
+  // The object returned should be unignored. If necessary, it will return
+  // a descendant of the actual target.
   virtual AXObject* InPageLinkTarget() const { return nullptr; }
   virtual AccessibilityOrientation Orientation() const;
   virtual ax::mojom::blink::ListStyle GetListStyle() const {
@@ -903,7 +819,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // set |clips_children| to true.
   virtual void GetRelativeBounds(AXObject** out_container,
                                  FloatRect& out_bounds_in_container,
-                                 SkMatrix44& out_container_transform,
+                                 skia::Matrix44& out_container_transform,
                                  bool* clips_children = nullptr) const;
 
   FloatRect LocalBoundingBoxRectForAccessibility();
@@ -944,12 +860,6 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // that are unignored and included in the accessibility tree.
   AncestorsIterator UnignoredAncestorsBegin() const;
   AncestorsIterator UnignoredAncestorsEnd() const;
-
-  // Iterator for doing an in-order traversal of the accessibility tree.
-  //
-  // Includes nodes that are accessibility ignored but "included in tree" in the
-  // traversal.
-  InOrderTraversalIterator GetInOrderTraversalIterator();
 
   // Returns the number of children, including children that are included in the
   // accessibility tree but are accessibility ignored.
@@ -1133,12 +1043,20 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // used, only allows <option>/AXMenuListOption children.
   static bool CanComputeAsNaturalParent(Node*);
 
+  // For a given image, return a <map> that's actually used for it.
+  static HTMLMapElement* GetMapForImage(Node* image);
+
   // Compute the AXObject parent for the given node or layout_object.
   // The layout object is only necessary if the node is null, which is the case
   // only for pseudo elements. ** Does not take aria-owns into account. **
   static AXObject* ComputeNonARIAParent(AXObjectCacheImpl& cache,
                                         Node* node,
                                         LayoutObject* layout_object = nullptr);
+
+  // Compute parent for an AccessibleNode, which is not backed up a DOM node
+  // or layout object.
+  static AXObject* ComputeAccessibleNodeParent(AXObjectCacheImpl& cache,
+                                               AccessibleNode& accessible_node);
 
   // Returns true if |parent_| is null and not at the root.
   bool IsMissingParent() const;
@@ -1330,10 +1248,6 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // Return the equivalent ARIA name for an enumerated role, or g_null_atom.
   static const AtomicString& ARIARoleName(ax::mojom::blink::Role);
 
-  // For a native role get the equivalent ARIA role for use in the xml-roles
-  // object attribute.
-  static const AtomicString& GetEquivalentAriaRoleName(ax::mojom::blink::Role);
-
   // Return the equivalent internal role name as a string.
   static const String InternalRoleName(ax::mojom::blink::Role);
 
@@ -1363,6 +1277,10 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // What should the role be assuming an ARIA role is not present?
   virtual ax::mojom::blink::Role NativeRoleIgnoringAria() const = 0;
 
+  // Get the role to be used in StringAttribute::kRole, which is used in the
+  // xml-roles object attribute.
+  const AtomicString& GetRoleAttributeStringForObjectAttribute();
+
   // Returns a string representation of this object.
   // |cached_values_only| avoids recomputing cached values, and thus can be
   // used during UpdateCachedValuesIfNecessary() without causing recursion.
@@ -1386,21 +1304,23 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
 
   // Used only inside textAlternative():
   static String CollapseWhitespace(const String&);
-  static String RecursiveTextAlternative(const AXObject&,
-                                         bool in_aria_labelled_by_traversal,
-                                         AXObjectSet& visited);
-  static String RecursiveTextAlternative(const AXObject&,
-                                         bool in_aria_labelled_by_traversal,
-                                         AXObjectSet& visited,
-                                         ax::mojom::blink::NameFrom& name_from);
+  static String RecursiveTextAlternative(
+      const AXObject&,
+      const AXObject* aria_label_or_description_root,
+      AXObjectSet& visited);
+  static String RecursiveTextAlternative(
+      const AXObject&,
+      const AXObject* aria_label_or_description_root,
+      AXObjectSet& visited,
+      ax::mojom::blink::NameFrom& name_from);
   String AriaTextAlternative(bool recursive,
-                             bool in_aria_labelled_by_traversal,
+                             const AXObject* aria_label_or_description_root,
                              AXObjectSet& visited,
                              ax::mojom::blink::NameFrom&,
                              AXRelatedObjectVector*,
                              NameSources*,
                              bool* found_text_alternative) const;
-  String TextFromElements(bool in_aria_labelled_by_traversal,
+  String TextFromElements(bool in_aria_labelledby_traversal,
                           AXObjectSet& visited,
                           HeapVector<Member<Element>>& elements,
                           AXRelatedObjectVector* related_objects) const;

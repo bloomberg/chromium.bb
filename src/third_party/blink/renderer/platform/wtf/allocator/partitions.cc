@@ -30,9 +30,11 @@
 
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 
+#include "base/allocator/buildflags.h"
 #include "base/allocator/partition_allocator/memory_reclaimer.h"
 #include "base/allocator/partition_allocator/oom.h"
 #include "base/allocator/partition_allocator/page_allocator.h"
+#include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/allocator/partition_allocator/partition_alloc_features.h"
 #include "base/debug/alias.h"
 #include "base/feature_list.h"
@@ -48,7 +50,7 @@ namespace WTF {
 const char* const Partitions::kAllocatedObjectPoolName =
     "partition_alloc/allocated_objects";
 
-#if PA_ALLOW_PCSCAN
+#if defined(PA_ALLOW_PCSCAN)
 // Runs PCScan on WTF partitions.
 const base::Feature kPCScanBlinkPartitions{"PCScanBlinkPartitions",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
@@ -75,12 +77,17 @@ void Partitions::Initialize() {
 bool Partitions::InitializeOnce() {
 #if !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
   static base::NoDestructor<base::PartitionAllocator> fast_malloc_allocator{};
-  fast_malloc_allocator->init(
-      {base::PartitionOptions::AlignedAlloc::kDisallowed,
-       base::PartitionOptions::ThreadCache::kEnabled,
-       base::PartitionOptions::Quarantine::kAllowed,
-       base::PartitionOptions::Cookies::kAllowed,
-       base::PartitionOptions::RefCount::kDisallowed});
+  fast_malloc_allocator->init({
+    base::PartitionOptions::AlignedAlloc::kDisallowed,
+        base::PartitionOptions::ThreadCache::kEnabled,
+        base::PartitionOptions::Quarantine::kAllowed,
+        base::PartitionOptions::Cookies::kAllowed,
+#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_IN_RENDERER_PROCESS)
+        base::PartitionOptions::RefCount::kAllowed
+#else
+        base::PartitionOptions::RefCount::kDisallowed
+#endif
+  });
 
   fast_malloc_root_ = fast_malloc_allocator->root();
 #endif  // !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
@@ -92,28 +99,41 @@ bool Partitions::InitializeOnce() {
 
   base::PartitionAllocGlobalInit(&Partitions::HandleOutOfMemory);
 
-  array_buffer_allocator->init(
-      {base::PartitionOptions::AlignedAlloc::kDisallowed,
-       base::PartitionOptions::ThreadCache::kDisabled,
-       base::PartitionOptions::Quarantine::kAllowed,
-       base::PartitionOptions::Cookies::kAllowed,
-       base::PartitionOptions::RefCount::kDisallowed});
-  buffer_allocator->init({base::PartitionOptions::AlignedAlloc::kDisallowed,
-                          base::PartitionOptions::ThreadCache::kDisabled,
-                          base::PartitionOptions::Quarantine::kAllowed,
-                          base::PartitionOptions::Cookies::kAllowed,
-                          base::PartitionOptions::RefCount::kDisallowed});
-  layout_allocator->init({base::PartitionOptions::AlignedAlloc::kDisallowed,
-                          base::PartitionOptions::ThreadCache::kDisabled,
-                          base::PartitionOptions::Quarantine::kAllowed,
-                          base::PartitionOptions::Cookies::kAllowed,
-                          base::PartitionOptions::RefCount::kDisallowed});
+  // RefCount disallowed because it will prevent allocations from being 16B
+  // aligned as required by ArrayBufferContents.
+  array_buffer_allocator->init({
+    base::PartitionOptions::AlignedAlloc::kDisallowed,
+        base::PartitionOptions::ThreadCache::kDisabled,
+        base::PartitionOptions::Quarantine::kAllowed,
+        base::PartitionOptions::Cookies::kAllowed,
+        base::PartitionOptions::RefCount::kDisallowed
+  });
+  buffer_allocator->init({
+    base::PartitionOptions::AlignedAlloc::kDisallowed,
+        base::PartitionOptions::ThreadCache::kDisabled,
+        base::PartitionOptions::Quarantine::kAllowed,
+        base::PartitionOptions::Cookies::kAllowed,
+#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_IN_RENDERER_PROCESS)
+        base::PartitionOptions::RefCount::kAllowed
+#else
+        base::PartitionOptions::RefCount::kDisallowed
+#endif
+  });
+  // RefCount disallowed because layout code will be excluded from CheckedPtr
+  // rewrite due to performance.
+  layout_allocator->init({
+    base::PartitionOptions::AlignedAlloc::kDisallowed,
+        base::PartitionOptions::ThreadCache::kDisabled,
+        base::PartitionOptions::Quarantine::kAllowed,
+        base::PartitionOptions::Cookies::kAllowed,
+        base::PartitionOptions::RefCount::kDisallowed
+  });
 
   array_buffer_root_ = array_buffer_allocator->root();
   buffer_root_ = buffer_allocator->root();
   layout_root_ = layout_allocator->root();
 
-#if PA_ALLOW_PCSCAN
+#if defined(PA_ALLOW_PCSCAN)
   if (base::FeatureList::IsEnabled(base::features::kPartitionAllocPCScan) ||
       base::FeatureList::IsEnabled(kPCScanBlinkPartitions)) {
     base::internal::PCScan::RegisterNonScannableRoot(array_buffer_root_);
@@ -122,7 +142,7 @@ bool Partitions::InitializeOnce() {
 #endif
     base::internal::PCScan::RegisterScannableRoot(buffer_root_);
   }
-#endif
+#endif  // defined(PA_ALLOW_PCSCAN)
 
   initialized_ = true;
   return initialized_;

@@ -15,6 +15,7 @@
 #include "SampleUtils.h"
 
 #include "utils/ComboRenderPipelineDescriptor.h"
+#include "utils/ScopedAutoreleasePool.h"
 #include "utils/SystemUtils.h"
 #include "utils/WGPUHelpers.h"
 
@@ -36,7 +37,7 @@ float RandomFloat(float min, float max) {
 
 constexpr size_t kNumTriangles = 10000;
 
-struct alignas(kMinDynamicBufferOffsetAlignment) ShaderData {
+struct alignas(kMinUniformBufferOffsetAlignment) ShaderData {
     float scale;
     float time;
     float offsetX;
@@ -64,14 +65,14 @@ void init() {
             scalar : f32;
             scalarOffset : f32;
         };
-        [[set(0), binding(0)]] var<uniform> c : Constants;
+        [[group(0), binding(0)]] var<uniform> c : Constants;
 
         struct VertexOut {
             [[location(0)]] v_color : vec4<f32>;
             [[builtin(position)]] Position : vec4<f32>;
         };
 
-        [[stage(vertex)]] fn main([[builtin(vertex_idx)]] VertexIndex : u32) -> VertexOut {
+        [[stage(vertex)]] fn main([[builtin(vertex_index)]] VertexIndex : u32) -> VertexOut {
             var positions : array<vec4<f32>, 3> = array<vec4<f32>, 3>(
                 vec4<f32>( 0.0,  0.1, 0.0, 1.0),
                 vec4<f32>(-0.1, -0.1, 0.0, 1.0),
@@ -119,13 +120,13 @@ void init() {
     wgpu::BindGroupLayout bgl = utils::MakeBindGroupLayout(
         device, {{0, wgpu::ShaderStage::Vertex, wgpu::BufferBindingType::Uniform, true}});
 
-    utils::ComboRenderPipelineDescriptor2 descriptor;
+    utils::ComboRenderPipelineDescriptor descriptor;
     descriptor.layout = utils::MakeBasicPipelineLayout(device, &bgl);
     descriptor.vertex.module = vsModule;
     descriptor.cFragment.module = fsModule;
     descriptor.cTargets[0].format = GetPreferredSwapChainTextureFormat();
 
-    pipeline = device.CreateRenderPipeline2(&descriptor);
+    pipeline = device.CreateRenderPipeline(&descriptor);
 
     shaderData.resize(kNumTriangles);
     for (auto& data : shaderData) {
@@ -184,6 +185,7 @@ int main(int argc, const char* argv[]) {
     init();
 
     while (!ShouldQuit()) {
+        utils::ScopedAutoreleasePool pool;
         frame();
         utils::USleep(16000);
     }

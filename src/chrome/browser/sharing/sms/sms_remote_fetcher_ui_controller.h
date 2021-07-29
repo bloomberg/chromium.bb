@@ -52,6 +52,7 @@ class SmsRemoteFetcherUiController
   void OnAppChosen(const SharingApp& app) override;
   std::u16string GetContentType() const override;
   const gfx::VectorIcon& GetVectorIcon() const override;
+  bool ShouldShowLoadingIcon() const override;
   std::u16string GetTextForTooltipAndAccessibleName() const override;
   SharingFeatureName GetFeatureMetricsPrefix() const override;
 
@@ -60,7 +61,7 @@ class SmsRemoteFetcherUiController
       SharingSendMessageResult result,
       std::unique_ptr<chrome_browser_sharing::ResponseMessage> response);
 
-  base::OnceClosure FetchRemoteSms(const url::Origin& origin,
+  base::OnceClosure FetchRemoteSms(const std::vector<url::Origin>& origin_list,
                                    OnRemoteCallback callback);
 
  protected:

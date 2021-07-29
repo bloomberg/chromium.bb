@@ -14,9 +14,9 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
+#include "components/safe_browsing/content/common/file_type_policies.h"
+#include "components/safe_browsing/core/browser/db/database_manager.h"
 #include "components/safe_browsing/core/common/utils.h"
-#include "components/safe_browsing/core/db/database_manager.h"
-#include "components/safe_browsing/core/file_type_policies.h"
 #include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -28,6 +28,7 @@
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 using content::BrowserThread;
 
@@ -59,17 +60,23 @@ PPAPIDownloadRequest::PPAPIDownloadRequest(
       start_time_(base::TimeTicks::Now()),
       supported_path_(
           GetSupportedFilePath(default_file_path, alternate_extensions)),
-      profile_(profile) {
+      profile_(profile),
+      web_contents_(web_contents) {
   DCHECK(profile);
   is_extended_reporting_ = IsExtendedReportingEnabled(*profile->GetPrefs());
   is_enhanced_protection_ = IsEnhancedProtectionEnabled(*profile->GetPrefs());
 
-  if (service->navigation_observer_manager()) {
-    has_user_gesture_ =
-        service->navigation_observer_manager()->HasUserGesture(web_contents);
+  // web_contents can be null in tests.
+  if (!web_contents) {
+    return;
+  }
+
+  SafeBrowsingNavigationObserverManager* observer_manager =
+      service->GetNavigationObserverManager(web_contents);
+  if (observer_manager) {
+    has_user_gesture_ = observer_manager->HasUserGesture(web_contents);
     if (has_user_gesture_) {
-      service->navigation_observer_manager()->OnUserGestureConsumed(
-          web_contents);
+      observer_manager->OnUserGestureConsumed(web_contents);
     }
   }
 }
@@ -196,7 +203,7 @@ void PPAPIDownloadRequest::SendRequest() {
   }
 
   service_->AddReferrerChainToPPAPIClientDownloadRequest(
-      initiating_frame_url_, initiating_main_frame_url_, tab_id_,
+      web_contents_, initiating_frame_url_, initiating_main_frame_url_, tab_id_,
       has_user_gesture_, &request);
 
   if (!request.SerializeToString(&client_download_request_data_)) {

@@ -24,7 +24,6 @@ import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Batch;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionHost;
 import org.chromium.chrome.browser.omnibox.suggestions.carousel.BaseCarouselSuggestionViewProperties;
 import org.chromium.chrome.test.util.browser.Features;
@@ -93,10 +92,12 @@ public final class MostVisitedTilesProcessorUnitTest {
         Mockito.doReturn(mResources).when(mContext).getResources();
         Mockito.doReturn(84)
                 .when(mResources)
-                .getDimensionPixelSize(R.dimen.tile_view_icon_size);
+                .getDimensionPixelSize(
+                        org.chromium.chrome.browser.omnibox.R.dimen.tile_view_icon_size);
         Mockito.doReturn(24)
                 .when(mResources)
-                .getDimensionPixelSize(R.dimen.omnibox_suggestion_favicon_size);
+                .getDimensionPixelSize(org.chromium.chrome.browser.omnibox.R.dimen
+                                               .omnibox_suggestion_favicon_size);
         Mockito.doReturn(mDisplayMetrics).when(mResources).getDisplayMetrics();
 
         MostVisitedTilesProcessor processor = new MostVisitedTilesProcessor(mContext,

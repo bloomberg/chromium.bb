@@ -27,6 +27,7 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/native_theme/themed_vector_icon.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/button.h"
@@ -66,22 +67,23 @@ class TransparentButton : public Button {
     button_controller()->set_notify_action(
         ButtonController::NotifyAction::kOnPress);
 
-    ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
+    InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
     SetHasInkDropActionOnClick(true);
-    InkDrop::UseInkDropForSquareRipple(ink_drop(),
+    InkDrop::UseInkDropForSquareRipple(InkDrop::Get(this),
                                        /*highlight_on_hover=*/false);
-    ink_drop()->SetCreateRippleCallback(base::BindRepeating(
+    InkDrop::Get(this)->SetCreateRippleCallback(base::BindRepeating(
         [](Button* host) -> std::unique_ptr<views::InkDropRipple> {
           return std::make_unique<views::FloodFillInkDropRipple>(
               host->size(),
-              host->ink_drop()->GetInkDropCenterBasedOnLastEvent(),
+              InkDrop::Get(host)->GetInkDropCenterBasedOnLastEvent(),
               host->GetNativeTheme()->GetSystemColor(
                   ui::NativeTheme::kColorId_LabelEnabledColor),
-              host->ink_drop()->GetVisibleOpacity());
+              InkDrop::Get(host)->GetVisibleOpacity());
         },
         this));
   }
-
+  TransparentButton(const TransparentButton&) = delete;
+  TransparentButton& operator&=(const TransparentButton&) = delete;
   ~TransparentButton() override = default;
 
   bool OnMousePressed(const ui::MouseEvent& mouse_event) override {
@@ -96,9 +98,6 @@ class TransparentButton : public Button {
   double GetAnimationValue() const {
     return hover_animation().GetCurrentValue();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TransparentButton);
 };
 
 #if !defined(OS_MAC)
@@ -125,6 +124,8 @@ class Combobox::ComboboxMenuModel : public ui::MenuModel {
  public:
   ComboboxMenuModel(Combobox* owner, ui::ComboboxModel* model)
       : owner_(owner), model_(model) {}
+  ComboboxMenuModel(const ComboboxMenuModel&) = delete;
+  ComboboxMenuModel& operator&(const ComboboxMenuModel&) = delete;
   ~ComboboxMenuModel() override = default;
 
  private:
@@ -213,8 +214,6 @@ class Combobox::ComboboxMenuModel : public ui::MenuModel {
 
   Combobox* owner_;           // Weak. Owns this.
   ui::ComboboxModel* model_;  // Weak.
-
-  DISALLOW_COPY_AND_ASSIGN(ComboboxMenuModel);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -253,7 +252,7 @@ Combobox::Combobox(ui::ComboboxModel* model, int text_context, int text_style)
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
-  focus_ring_ = FocusRing::Install(this);
+  FocusRing::Install(this);
 }
 
 Combobox::~Combobox() {
@@ -270,6 +269,7 @@ const gfx::FontList& Combobox::GetFontList() const {
 void Combobox::SetSelectedIndex(int index) {
   if (selected_index_ == index)
     return;
+  // TODO(pbos): Add (D)CHECKs to validate the selected index.
   selected_index_ = index;
   if (size_to_largest_label_) {
     OnPropertyChanged(&selected_index_, kPropertyEffectsPaint);
@@ -277,6 +277,11 @@ void Combobox::SetSelectedIndex(int index) {
     content_size_ = GetContentSize();
     OnPropertyChanged(&selected_index_, kPropertyEffectsPreferredSizeChanged);
   }
+}
+
+base::CallbackListSubscription Combobox::AddSelectedIndexChangedCallback(
+    views::PropertyChangedCallback callback) {
+  return AddPropertyChangedCallback(&selected_index_, std::move(callback));
 }
 
 bool Combobox::SelectValue(const std::u16string& value) {
@@ -338,8 +343,8 @@ void Combobox::SetInvalid(bool invalid) {
 
   invalid_ = invalid;
 
-  if (focus_ring_)
-    focus_ring_->SetInvalid(invalid);
+  if (views::FocusRing::Get(this))
+    views::FocusRing::Get(this)->SetInvalid(invalid);
 
   UpdateBorder();
   OnPropertyChanged(&selected_index_, kPropertyEffectsPaint);
@@ -361,6 +366,7 @@ void Combobox::OnThemeChanged() {
           GetNativeTheme()->GetSystemColor(
               ui::NativeTheme::kColorId_TextfieldDefaultBackground),
           FocusableBorder::kCornerRadiusDp)));
+  OnContentSizeMaybeChanged();
 }
 
 int Combobox::GetRowCount() {
@@ -419,9 +425,11 @@ bool Combobox::OnKeyPressed(const ui::KeyEvent& e) {
   // TODO(oshima): handle IME.
   DCHECK_EQ(e.type(), ui::ET_KEY_PRESSED);
 
+  // TODO(pbos): Do we need to handle selected_index_ == -1 for unselected here?
+  // Ditto on handling an empty model?
   DCHECK_GE(selected_index_, 0);
   DCHECK_LT(selected_index_, GetModel()->GetItemCount());
-  if (selected_index_ < 0 || selected_index_ > GetModel()->GetItemCount())
+  if (selected_index_ < 0 || selected_index_ >= GetModel()->GetItemCount())
     SetSelectedIndex(0);
 
   bool show_menu = false;
@@ -519,6 +527,11 @@ void Combobox::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   // an editable text field, which views::Combobox does not have. Use
   // ax::mojom::Role::kPopUpButton to match an HTML <select> element.
   node_data->role = ax::mojom::Role::kPopUpButton;
+  if (menu_runner_) {
+    node_data->AddState(ax::mojom::State::kExpanded);
+  } else {
+    node_data->AddState(ax::mojom::State::kCollapsed);
+  }
 
   node_data->SetName(accessible_name_);
   node_data->SetValue(model_->GetItemAt(selected_index_));
@@ -556,9 +569,7 @@ void Combobox::OnComboboxModelChanged(ui::ComboboxModel* model) {
     SetSelectedIndex(model_->GetDefaultIndex());
   }
 
-  content_size_ = GetContentSize();
-  PreferredSizeChanged();
-  SchedulePaint();
+  OnContentSizeMaybeChanged();
 }
 
 const base::RepeatingClosure& Combobox::GetCallback() const {
@@ -607,10 +618,13 @@ void Combobox::PaintIconAndText(gfx::Canvas* canvas) {
 
   // Draw the text.
   SkColor text_color = GetTextColorForEnableState(*this, GetEnabled());
-  if (selected_index_ < 0 || selected_index_ > GetModel()->GetItemCount()) {
-    NOTREACHED();
+  // TODO(pbos): Do we need to handle selected_index_ == -1 for unselected here?
+  // Ditto on handling an empty model?
+  DCHECK_GE(selected_index_, 0);
+  DCHECK_LT(selected_index_, GetModel()->GetItemCount());
+  if (selected_index_ < 0 || selected_index_ >= GetModel()->GetItemCount())
     SetSelectedIndex(0);
-  }
+
   std::u16string text = GetModel()->GetItemAt(selected_index_);
 
   int disclosure_arrow_offset = width() - kComboboxArrowContainerWidth;
@@ -669,12 +683,14 @@ void Combobox::ShowDropDownMenu(ui::MenuSourceType source_type) {
   }
   menu_runner_->RunMenuAt(GetWidget(), nullptr, bounds,
                           MenuAnchorPosition::kTopLeft, source_type);
+  NotifyAccessibilityEvent(ax::mojom::Event::kExpandedChanged, true);
 }
 
 void Combobox::OnMenuClosed(Button::ButtonState original_button_state) {
   menu_runner_.reset();
   arrow_button_->SetState(original_button_state);
   closed_time_ = base::TimeTicks::Now();
+  NotifyAccessibilityEvent(ax::mojom::Event::kExpandedChanged, true);
 }
 
 void Combobox::OnPerformAction() {
@@ -699,8 +715,9 @@ gfx::Size Combobox::GetContentSize() const {
       int item_width = gfx::GetStringWidth(GetModel()->GetItemAt(i), font_list);
       ui::ImageModel icon = GetModel()->GetIconAt(i);
       if (!icon.IsEmpty()) {
-        gfx::ImageSkia icon_skia =
-            GetImageSkiaFromImageModel(icon, GetNativeTheme());
+        gfx::ImageSkia icon_skia;
+        if (GetWidget())
+          icon_skia = GetImageSkiaFromImageModel(icon, GetNativeTheme());
         item_width +=
             icon_skia.width() + LayoutProvider::Get()->GetDistanceMetric(
                                     DISTANCE_RELATED_LABEL_HORIZONTAL);
@@ -710,6 +727,11 @@ gfx::Size Combobox::GetContentSize() const {
     }
   }
   return gfx::Size(width, height);
+}
+
+void Combobox::OnContentSizeMaybeChanged() {
+  content_size_ = GetContentSize();
+  PreferredSizeChanged();
 }
 
 PrefixSelector* Combobox::GetPrefixSelector() {

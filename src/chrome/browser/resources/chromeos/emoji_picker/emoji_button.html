@@ -1,8 +1,9 @@
 <style>
   :host {
     --emoji-background: transparent;
-
+    --emoji-hover-background: var(--cros-ink-ripple-color);
     height: var(--emoji-size);
+    position: relative;
     width: var(--emoji-size);
   }
 
@@ -13,7 +14,7 @@
     cursor: pointer;
     display: block;
     font-family: 'Noto Color Emoji';
-    font-size: 17px;
+    font-size: 17px; /*This gives emoji with height of 20px*/
     height: 100%;
     line-height: var(--emoji-size);
     padding: 0;
@@ -24,7 +25,7 @@
 
   #emoji-button:focus,
   #emoji-button:active {
-    outline-color: var(--cr-toggle-color);
+    outline-color: var(--cros-toggle-color);
     outline-width: 2px;
   }
 
@@ -38,7 +39,7 @@
   }
 
   #emoji-button:hover {
-    background-color: var(--cr-hover-background-color);
+    background-color: var(--emoji-hover-background);
     border-radius: 50%;
   }
 
@@ -48,6 +49,8 @@
   .has-variants::after {
     /* 4px grey triangle in bottom-right.
     * 315 degrees means starting at bottom-right towards top-left.
+    * Manual color here because there isn't something easy to use, but fine for
+    * dark mode since dark mode is the same.
     */
     background: linear-gradient(
         315deg, var(--google-grey-refresh-500) 4px,
@@ -61,11 +64,11 @@
   }
 
   #tooltip {
-    --paper-tooltip-background: var(--cr-menu-background-color);
+    --paper-tooltip-background: var(--cros-tooltip-background-color);
     --paper-tooltip-opacity: 1;
-    --paper-tooltip-text-color: var(--cr-secondary-text-color);
-    --paper-tooltip-delay-in: 200ms;
-    --paper-tooltip-delay-out: 200ms;
+    --paper-tooltip-text-color: var(--cros-tooltip-label-color);
+    --paper-tooltip-delay-in: 500ms;
+    --paper-tooltip-delay-out: 500ms;
     --paper-tooltip-duration-in: 0;
     --paper-tooltip-duration-out: 0;
 
@@ -74,7 +77,7 @@
      * third_party)
      */
     --paper-tooltip: {
-      box-shadow: var(--cr-elevation-3);
+      box-shadow: var(--cr-elevation-1);
       font-family: 'Roboto', sans-serif;
       font-size: 12px;
       margin: 4px;
@@ -94,10 +97,13 @@
     aria-label="[[_label(emoji, variants)]]">
   [[emoji]]
 </button>
-<paper-tooltip id="tooltip" for="emoji-button" fit-to-visible-bounds
-  part="tooltip" offset="8">
-  [[tooltip]]
-</paper-tooltip>
+<template is="dom-if" if="[[!variant]]">
+  <paper-tooltip id="tooltip" for="emoji-button" fit-to-visible-bounds
+    part="tooltip" offset="8">
+    [[tooltip]]
+  </paper-tooltip>
+</tooltip>
 <template is="dom-if" if="[[variantsVisible]]">
-  <emoji-variants variants="[[variants]]"></emoji-variants>
+  <emoji-variants variants="[[variants]]" tooltip="[[tooltip]]">
+  </emoji-variants>
 </template>

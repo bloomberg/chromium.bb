@@ -8,16 +8,18 @@
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
+#include "chrome/browser/sync/sync_service_factory.h"
+#include "chrome/browser/sync/test/integration/sync_service_impl_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
+#include "chrome/browser/ui/views/page_info/page_info_view_factory.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/page_info/features.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
-#include "components/safe_browsing/content/password_protection/password_protection_test_util.h"
-#include "components/safe_browsing/core/password_protection/metrics_util.h"
+#include "components/safe_browsing/content/browser/password_protection/password_protection_test_util.h"
+#include "components/safe_browsing/core/browser/password_protection/metrics_util.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -85,14 +87,26 @@ views::View* GetView(Browser* browser, int view_id) {
 }  // namespace
 
 // This test suite tests functionality that requires Sync to be active.
-class PageInfoBubbleViewSyncBrowserTest : public SyncTest {
+class PageInfoBubbleViewSyncBrowserTest
+    : public SyncTest,
+      public ::testing::WithParamInterface<bool> {
  public:
-  PageInfoBubbleViewSyncBrowserTest() : SyncTest(SINGLE_CLIENT) {}
+  PageInfoBubbleViewSyncBrowserTest() : SyncTest(SINGLE_CLIENT) {
+    feature_list_.InitWithFeatureState(page_info::kPageInfoV2Desktop,
+                                       is_page_info_v2_enabled());
+  }
+
+  PageInfoBubbleViewSyncBrowserTest(
+      const PageInfoBubbleViewSyncBrowserTest& chip) = delete;
+  PageInfoBubbleViewSyncBrowserTest& operator=(
+      const PageInfoBubbleViewSyncBrowserTest& chip) = delete;
 
  protected:
+  bool is_page_info_v2_enabled() const { return GetParam(); }
+
   void SetupSyncForAccount(Profile* profile) {
-    syncer::ProfileSyncService* sync_service =
-        ProfileSyncServiceFactory::GetAsProfileSyncServiceForProfile(profile);
+    syncer::SyncServiceImpl* sync_service =
+        SyncServiceFactory::GetAsSyncServiceImplForProfile(profile);
 
     sync_service->OverrideNetworkForTest(
         fake_server::CreateFakeServerHttpPostProviderFactory(
@@ -104,10 +118,10 @@ class PageInfoBubbleViewSyncBrowserTest : public SyncTest {
       username = "user@gmail.com";
     }
 
-    std::unique_ptr<ProfileSyncServiceHarness> harness =
-        ProfileSyncServiceHarness::Create(
+    std::unique_ptr<SyncServiceImplHarness> harness =
+        SyncServiceImplHarness::Create(
             browser()->profile(), username, "password",
-            ProfileSyncServiceHarness::SigninType::FAKE_SIGNIN);
+            SyncServiceImplHarness::SigninType::FAKE_SIGNIN);
 
     // Sign the profile in.
     ASSERT_TRUE(harness->SignInPrimaryAccount());
@@ -129,18 +143,18 @@ class PageInfoBubbleViewSyncBrowserTest : public SyncTest {
   }
 
   const std::u16string GetPageInfoBubbleViewDetailText() {
-    PageInfoBubbleView* page_info_bubble_view =
-        static_cast<PageInfoBubbleView*>(
-            PageInfoBubbleView::GetPageInfoBubbleForTesting());
-    return page_info_bubble_view->details_text();
+    auto* label =
+        PageInfoBubbleView::GetPageInfoBubbleForTesting()->GetViewByID(
+            PageInfoViewFactory::VIEW_ID_PAGE_INFO_SECURITY_DETAILS_LABEL);
+    return static_cast<views::StyledLabel*>(label)->GetText();
   }
 
-  DISALLOW_COPY_AND_ASSIGN(PageInfoBubbleViewSyncBrowserTest);
+  base::test::ScopedFeatureList feature_list_;
 };
 
 // Test opening page info bubble that matches
 // SB_THREAT_TYPE_GAIA_PASSWORD_REUSE threat type.
-IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewSyncBrowserTest,
+IN_PROC_BROWSER_TEST_P(PageInfoBubbleViewSyncBrowserTest,
                        VerifySignInPasswordReusePageInfoBubble) {
   Profile* profile = browser()->profile();
   // PageInfo calls GetPasswordProtectionReusedPasswordAccountType which checks
@@ -173,10 +187,10 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewSyncBrowserTest,
 
   OpenPageInfoBubble(browser());
   views::View* change_password_button = GetView(
-      browser(), PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_CHANGE_PASSWORD);
+      browser(), PageInfoViewFactory::VIEW_ID_PAGE_INFO_BUTTON_CHANGE_PASSWORD);
   views::View* safelist_password_reuse_button = GetView(
       browser(),
-      PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_ALLOWLIST_PASSWORD_REUSE);
+      PageInfoViewFactory::VIEW_ID_PAGE_INFO_BUTTON_ALLOWLIST_PASSWORD_REUSE);
 
   SecurityStateTabHelper* helper =
       SecurityStateTabHelper::FromWebContents(contents);
@@ -186,7 +200,8 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewSyncBrowserTest,
       security_state::MALICIOUS_CONTENT_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE,
       visible_security_state->malicious_content_status);
   ASSERT_EQ(
-      l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SYNC),
+      l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SYNC) +
+          u" " + l10n_util::GetStringUTF16(IDS_LEARN_MORE),
       GetPageInfoBubbleViewDetailText());
 
   // Verify these two buttons are showing.
@@ -222,3 +237,8 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewSyncBrowserTest,
   EXPECT_EQ(security_state::MALICIOUS_CONTENT_STATUS_NONE,
             visible_security_state->malicious_content_status);
 }
+
+// Run tests with kPageInfoV2Desktop flag enabled and disabled.
+INSTANTIATE_TEST_SUITE_P(All,
+                         PageInfoBubbleViewSyncBrowserTest,
+                         ::testing::Values(false, true));

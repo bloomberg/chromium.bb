@@ -124,6 +124,7 @@ void ManifestParser::Parse() {
   manifest_->short_name = ParseShortName(root_object.get());
   manifest_->description = ParseDescription(root_object.get());
   manifest_->start_url = ParseStartURL(root_object.get());
+  manifest_->id = ParseId(root_object.get(), manifest_->start_url);
   manifest_->scope = ParseScope(root_object.get(), manifest_->start_url);
   manifest_->display = ParseDisplay(root_object.get());
   manifest_->display_override = ParseDisplayOverride(root_object.get());
@@ -157,6 +158,11 @@ void ManifestParser::Parse() {
   manifest_->gcm_sender_id = ParseGCMSenderID(root_object.get());
   manifest_->shortcuts = ParseShortcuts(root_object.get());
   manifest_->capture_links = ParseCaptureLinks(root_object.get());
+
+  if (base::FeatureList::IsEnabled(
+          blink::features::kWebAppEnableIsolatedStorage)) {
+    manifest_->isolated_storage = ParseIsolatedStorage(root_object.get());
+  }
 
   ManifestUmaUtil::ParseSucceeded(manifest_);
 }
@@ -326,6 +332,33 @@ String ManifestParser::ParseDescription(const JSONObject* object) {
   return description.has_value() ? *description : String();
 }
 
+String ManifestParser::ParseId(const JSONObject* object,
+                               const KURL& start_url) {
+  if (!base::FeatureList::IsEnabled(blink::features::kWebAppEnableManifestId)) {
+    ManifestUmaUtil::ParseIdResult(
+        ManifestUmaUtil::ParseIdResultType::kFeatureDisabled);
+    return String();
+  }
+
+  absl::optional<String> id = ParseString(object, "id", NoTrim);
+  if (id.has_value()) {
+    ManifestUmaUtil::ParseIdResult(
+        ManifestUmaUtil::ParseIdResultType::kSucceed);
+    return *id;
+  } else {
+    // If id is not specified, sets to start_url with origin stripped.
+    if (start_url.IsValid()) {
+      ManifestUmaUtil::ParseIdResult(
+          ManifestUmaUtil::ParseIdResultType::kDefaultToStartUrl);
+      return start_url.GetString().Substring(start_url.PathStart() + 1);
+    } else {
+      ManifestUmaUtil::ParseIdResult(
+          ManifestUmaUtil::ParseIdResultType::kInvalidStartUrl);
+      return String();
+    }
+  }
+}
+
 KURL ManifestParser::ParseStartURL(const JSONObject* object) {
   return ParseURL(object, "start_url", manifest_url_,
                   ParseURLRestrictions::kSameOriginOnly);
@@ -406,6 +439,11 @@ Vector<mojom::blink::DisplayMode> ManifestParser::ParseDisplayOverride(
     if (!RuntimeEnabledFeatures::WebAppWindowControlsOverlayEnabled(
             feature_context_) &&
         display_enum == mojom::blink::DisplayMode::kWindowControlsOverlay) {
+      display_enum = mojom::blink::DisplayMode::kUndefined;
+    }
+
+    if (!RuntimeEnabledFeatures::WebAppTabStripEnabled(feature_context_) &&
+        display_enum == mojom::blink::DisplayMode::kTabbed) {
       display_enum = mojom::blink::DisplayMode::kUndefined;
     }
 
@@ -874,17 +912,17 @@ ManifestParser::ParseShareTarget(const JSONObject* object) {
 
 Vector<mojom::blink::ManifestFileHandlerPtr> ManifestParser::ParseFileHandlers(
     const JSONObject* object) {
-  Vector<mojom::blink::ManifestFileHandlerPtr> result;
 
   if (!object->Get("file_handlers"))
-    return result;
+    return {};
 
   JSONArray* entry_array = object->GetArray("file_handlers");
   if (!entry_array) {
     AddErrorInfo("property 'file_handlers' ignored, type array expected.");
-    return result;
+    return {};
   }
 
+  Vector<mojom::blink::ManifestFileHandlerPtr> result;
   for (wtf_size_t i = 0; i < entry_array->size(); ++i) {
     JSONObject* json_entry = JSONObject::Cast(entry_array->at(i));
     if (!json_entry) {
@@ -915,6 +953,12 @@ ManifestParser::ParseFileHandler(const JSONObject* file_handler) {
   }
 
   entry->name = ParseString(file_handler, "name", Trim).value_or("");
+  const bool feature_enabled =
+      base::FeatureList::IsEnabled(blink::features::kFileHandlingIcons) ||
+      RuntimeEnabledFeatures::FileHandlingIconsEnabled(feature_context_);
+  if (feature_enabled) {
+    entry->icons = ParseIcons(file_handler);
+  }
 
   entry->accept = ParseFileHandlerAccept(file_handler->GetJSONObject("accept"));
   if (entry->accept.IsEmpty()) {
@@ -1087,7 +1131,7 @@ ManifestParser::ParseProtocolHandler(const JSONObject* object) {
 Vector<mojom::blink::ManifestUrlHandlerPtr> ManifestParser::ParseUrlHandlers(
     const JSONObject* from) {
   Vector<mojom::blink::ManifestUrlHandlerPtr> url_handlers;
-  bool feature_enabled =
+  const bool feature_enabled =
       base::FeatureList::IsEnabled(blink::features::kWebAppEnableUrlHandlers) ||
       RuntimeEnabledFeatures::WebAppUrlHandlingEnabled(feature_context_);
   if (!feature_enabled || !from->Get("url_handlers")) {
@@ -1126,7 +1170,8 @@ Vector<mojom::blink::ManifestUrlHandlerPtr> ManifestParser::ParseUrlHandlers(
 absl::optional<mojom::blink::ManifestUrlHandlerPtr>
 ManifestParser::ParseUrlHandler(const JSONObject* object) {
   DCHECK(
-      base::FeatureList::IsEnabled(blink::features::kWebAppEnableUrlHandlers));
+      base::FeatureList::IsEnabled(blink::features::kWebAppEnableUrlHandlers) ||
+      RuntimeEnabledFeatures::WebAppUrlHandlingEnabled(feature_context_));
   if (!object->Get("origin")) {
     AddErrorInfo(
         "url_handlers entry ignored, required property 'origin' is missing.");
@@ -1324,12 +1369,8 @@ String ManifestParser::ParseGCMSenderID(const JSONObject* object) {
 
 mojom::blink::CaptureLinks ManifestParser::ParseCaptureLinks(
     const JSONObject* object) {
-  // Parse if either the command line flag is passed (for about:flags) or the
-  // runtime enabled feature is turned on (for origin trial).
-  if (!base::FeatureList::IsEnabled(features::kWebAppEnableLinkCapturing) &&
-      !RuntimeEnabledFeatures::WebAppLinkCapturingEnabled(feature_context_)) {
+  if (!RuntimeEnabledFeatures::WebAppLinkCapturingEnabled(feature_context_))
     return mojom::blink::CaptureLinks::kUndefined;
-  }
 
   String capture_links_string;
   if (object->GetString("capture_links", &capture_links_string)) {
@@ -1371,6 +1412,15 @@ mojom::blink::CaptureLinks ManifestParser::ParseCaptureLinks(
   }
 
   return mojom::blink::CaptureLinks::kUndefined;
+}
+
+bool ManifestParser::ParseIsolatedStorage(const JSONObject* object) {
+  bool is_storage_isolated = ParseBoolean(object, "isolated_storage", false);
+  if (is_storage_isolated && manifest_->scope.GetPath() != "/") {
+    AddErrorInfo("Isolated storage is only supported with a scope of \"/\".");
+    return false;
+  }
+  return is_storage_isolated;
 }
 
 void ManifestParser::AddErrorInfo(const String& error_msg,

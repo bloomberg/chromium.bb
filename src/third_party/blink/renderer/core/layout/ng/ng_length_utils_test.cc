@@ -6,6 +6,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
@@ -31,7 +32,7 @@ static NGConstraintSpace ConstructConstraintSpace(
                                    /* is_new_fc */ false);
   builder.SetAvailableSize(size);
   builder.SetPercentageResolutionSize(size);
-  builder.SetStretchInlineSizeIfAuto(true);
+  builder.SetInlineAutoBehavior(NGAutoBehavior::kStretchImplicit);
   builder.SetIsFixedInlineSize(fixed_inline);
   builder.SetIsFixedBlockSize(fixed_block);
   return builder.ToConstraintSpace();
@@ -50,8 +51,12 @@ class NGLengthUtilsTest : public testing::Test {
     NGBoxStrut border_padding = ComputeBordersForTest(*style_) +
                                 ComputePadding(constraint_space, *style_);
 
-    return ::blink::ResolveMainInlineLength(constraint_space, *style_,
-                                            border_padding, sizes, length);
+    return ::blink::ResolveMainInlineLength(
+        constraint_space, *style_, border_padding,
+        [&](MinMaxSizesType) -> MinMaxSizesResult {
+          return {*sizes, /* depends_on_block_constraints */ false};
+        },
+        length);
   }
 
   LayoutUnit ResolveMinInlineLength(
@@ -61,8 +66,12 @@ class NGLengthUtilsTest : public testing::Test {
     NGBoxStrut border_padding = ComputeBordersForTest(*style_) +
                                 ComputePadding(constraint_space, *style_);
 
-    return ::blink::ResolveMinInlineLength(constraint_space, *style_,
-                                           border_padding, sizes, length);
+    return ::blink::ResolveMinInlineLength(
+        constraint_space, *style_, border_padding,
+        [&](MinMaxSizesType) -> MinMaxSizesResult {
+          return {*sizes, /* depends_on_block_constraints */ false};
+        },
+        length);
   }
 
   LayoutUnit ResolveMaxInlineLength(
@@ -72,8 +81,12 @@ class NGLengthUtilsTest : public testing::Test {
     NGBoxStrut border_padding = ComputeBordersForTest(*style_) +
                                 ComputePadding(constraint_space, *style_);
 
-    return ::blink::ResolveMaxInlineLength(constraint_space, *style_,
-                                           border_padding, sizes, length);
+    return ::blink::ResolveMaxInlineLength(
+        constraint_space, *style_, border_padding,
+        [&](MinMaxSizesType) -> MinMaxSizesResult {
+          return {*sizes, /* depends_on_block_constraints */ false};
+        },
+        length);
   }
 
   LayoutUnit ResolveMainBlockLength(const Length& length,

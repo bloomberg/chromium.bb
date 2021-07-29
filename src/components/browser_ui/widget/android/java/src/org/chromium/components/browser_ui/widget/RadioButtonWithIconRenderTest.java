@@ -40,8 +40,15 @@ public class RadioButtonWithIconRenderTest extends DummyUiActivityTestCase {
     private static List<ParameterSet> sClassParams =
             new NightModeTestUtils.NightModeParams().getParameters();
 
+    private static final int REVISION = 2;
+    private static final String REVISION_DESCRIPTION =
+            "Use Google standard colors as the background.";
+
     @Rule
-    public RenderTestRule mRenderTestRule = RenderTestRule.Builder.withPublicCorpus().build();
+    public RenderTestRule mRenderTestRule = RenderTestRule.Builder.withPublicCorpus()
+                                                    .setRevision(REVISION)
+                                                    .setDescription(REVISION_DESCRIPTION)
+                                                    .build();
 
     private RadioButtonWithDescriptionLayout mLayout;
 
@@ -69,9 +76,9 @@ public class RadioButtonWithIconRenderTest extends DummyUiActivityTestCase {
             mLayout = content.findViewById(R.id.test_radio_button_layout);
             mLayout.setBackgroundColor(mFakeBgColor);
 
-            mRadioButtonWithIcon1 = content.findViewById(R.id.test_radio_icon_1);
-            mRadioButtonWithIcon2 = content.findViewById(R.id.test_radio_icon_2);
-            mRadioButtonWithIcon3 = content.findViewById(R.id.test_radio_icon_3);
+            mRadioButtonWithIcon1 = content.findViewById(R.id.icon_primary_only);
+            mRadioButtonWithIcon2 = content.findViewById(R.id.icon_primary_description);
+            mRadioButtonWithIcon3 = content.findViewById(R.id.icon_bg_override);
         });
 
         Assert.assertNotNull(mLayout);
@@ -84,8 +91,8 @@ public class RadioButtonWithIconRenderTest extends DummyUiActivityTestCase {
     @SmallTest
     @Feature({"RenderTest", "RadioButton"})
     public void testRadioButtonWithIcon() throws Exception {
-        mRenderTestRule.render(mRadioButtonWithIcon1, "test_radio_icon_1");
-        mRenderTestRule.render(mRadioButtonWithIcon2, "test_radio_icon_2");
-        mRenderTestRule.render(mRadioButtonWithIcon3, "test_radio_icon_3");
+        mRenderTestRule.render(mRadioButtonWithIcon1, "icon_primary_only");
+        mRenderTestRule.render(mRadioButtonWithIcon2, "icon_primary_description");
+        mRenderTestRule.render(mRadioButtonWithIcon3, "icon_bg_override");
     }
 }

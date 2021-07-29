@@ -42,7 +42,11 @@ bool SkPaintPriv::Overwrites(const SkPaint* paint, ShaderOverrideOpacity overrid
         }
     }
 
-    return SkXfermode::IsOpaque(paint->getBlendMode(), opacityType);
+    const auto bm = paint->asBlendMode();
+    if (!bm) {
+        return false;   // don't know for sure, so we play it safe and return false.
+    }
+    return SkXfermode::IsOpaque(bm.value(), opacityType);
 }
 
 bool SkPaintPriv::ShouldDither(const SkPaint& p, SkColorType dstCT) {
@@ -101,4 +105,17 @@ void SkPaintPriv::RemoveColorFilter(SkPaint* p, SkColorSpace* dstCS) {
         }
         p->setColorFilter(nullptr);
     }
+}
+
+SkScalar SkPaintPriv::ComputeResScaleForStroking(const SkMatrix& matrix) {
+    // Not sure how to handle perspective differently, so we just don't try (yet)
+    SkScalar sx = SkPoint::Length(matrix[SkMatrix::kMScaleX], matrix[SkMatrix::kMSkewY]);
+    SkScalar sy = SkPoint::Length(matrix[SkMatrix::kMSkewX],  matrix[SkMatrix::kMScaleY]);
+    if (SkScalarsAreFinite(sx, sy)) {
+        SkScalar scale = std::max(sx, sy);
+        if (scale > 0) {
+            return scale;
+        }
+    }
+    return 1;
 }

@@ -17,6 +17,7 @@
 #include "content/browser/background_fetch/background_fetch_request_match_params.h"
 #include "content/browser/background_fetch/background_fetch_scheduler.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/common/background_fetch/background_fetch_types.h"
 #include "content/public/browser/background_fetch_delegate.h"
 #include "content/public/browser/browser_context.h"
@@ -24,33 +25,32 @@
 #include "content/public/browser/web_contents.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 
 namespace content {
 
 using FailureReason = blink::mojom::BackgroundFetchFailureReason;
 
 BackgroundFetchContext::BackgroundFetchContext(
-    BrowserContext* browser_context,
-    StoragePartition* storage_partition,
+    base::WeakPtr<StoragePartitionImpl> storage_partition,
     const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context,
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
     scoped_refptr<DevToolsBackgroundServicesContextImpl> devtools_context)
     : base::RefCountedDeleteOnSequence<BackgroundFetchContext>(
           BrowserThread::GetTaskRunnerForThread(
               ServiceWorkerContext::GetCoreThreadId())),
-      browser_context_(browser_context),
       service_worker_context_(service_worker_context),
       devtools_context_(std::move(devtools_context)),
       registration_notifier_(
           std::make_unique<BackgroundFetchRegistrationNotifier>()),
-      delegate_proxy_(browser_context_) {
+      delegate_proxy_(storage_partition) {
   // Although this lives only on the service worker core thread, it is
   // constructed on UI thread.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(service_worker_context_);
 
   data_manager_ = std::make_unique<BackgroundFetchDataManager>(
-      browser_context_, storage_partition, service_worker_context,
+      storage_partition, service_worker_context,
       std::move(quota_manager_proxy));
   scheduler_ = std::make_unique<BackgroundFetchScheduler>(
       this, data_manager_.get(), registration_notifier_.get(), &delegate_proxy_,
@@ -96,25 +96,25 @@ void BackgroundFetchContext::DidGetInitializationData(
 
 void BackgroundFetchContext::GetRegistration(
     int64_t service_worker_registration_id,
-    const url::Origin& origin,
+    const blink::StorageKey& storage_key,
     const std::string& developer_id,
     blink::mojom::BackgroundFetchService::GetRegistrationCallback callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   data_manager_->GetRegistration(
-      service_worker_registration_id, origin, developer_id,
+      service_worker_registration_id, storage_key, developer_id,
       base::BindOnce(&BackgroundFetchContext::DidGetRegistration,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void BackgroundFetchContext::GetDeveloperIdsForServiceWorker(
     int64_t service_worker_registration_id,
-    const url::Origin& origin,
+    const blink::StorageKey& storage_key,
     blink::mojom::BackgroundFetchService::GetDeveloperIdsCallback callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
-  data_manager_->GetDeveloperIdsForServiceWorker(service_worker_registration_id,
-                                                 origin, std::move(callback));
+  data_manager_->GetDeveloperIdsForServiceWorker(
+      service_worker_registration_id, storage_key, std::move(callback));
 }
 
 void BackgroundFetchContext::DidGetRegistration(
@@ -159,7 +159,7 @@ void BackgroundFetchContext::StartFetch(
   fetch_callbacks_[registration_id] = std::move(callback);
 
   delegate_proxy_.GetPermissionForOrigin(
-      registration_id.origin(), wc_getter,
+      registration_id.storage_key().origin(), wc_getter,
       base::BindOnce(&BackgroundFetchContext::DidGetPermission,
                      weak_factory_.GetWeakPtr(), registration_id,
                      std::move(requests), std::move(options), icon,
@@ -179,9 +179,9 @@ void BackgroundFetchContext::DidGetPermission(
   RunOrPostTaskOnThread(
       FROM_HERE, BrowserThread::UI,
       base::BindOnce(&background_fetch::RecordBackgroundFetchUkmEvent,
-                     registration_id.origin(), requests.size(), options.Clone(),
-                     icon, std::move(ukm_data), frame_tree_node_id,
-                     permission));
+                     registration_id.storage_key(), requests.size(),
+                     options.Clone(), icon, std::move(ukm_data),
+                     frame_tree_node_id, permission));
 
   if (permission != BackgroundFetchPermission::BLOCKED) {
     data_manager_->CreateRegistration(

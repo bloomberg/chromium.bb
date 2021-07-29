@@ -71,11 +71,17 @@ if (is_clang) {
   fuzzer_list += [ "pdf_nametree_fuzzer" ]
 }
 
+# Note that this only compiles all the fuzzers, to prevent compile breakages.
+# It does not link and create fuzzer executables. That is done in Chromium.
 group("fuzzers") {
   testonly = true
   deps = []
   foreach(fuzzer, fuzzer_list) {
     deps += [ ":${fuzzer}_src" ]
+  }
+
+  if (is_component_build) {
+    deps += [ ":fuzzer_impls" ]
   }
 }
 
@@ -83,7 +89,10 @@ source_set("fuzzer_init") {
   testonly = true
   sources = [ "pdf_fuzzer_init.cc" ]
   include_dirs = [ "../.." ]
-  deps = [ "../../:pdfium_public_headers" ]
+  deps = [
+    "../../:pdfium_public_headers",
+    "../../fpdfsdk",
+  ]
 }
 
 if (pdf_enable_xfa) {
@@ -109,6 +118,7 @@ source_set("fuzzer_init_public") {
   deps = [
     ":fuzzer_utils",
     "../../:pdfium_public_headers",
+    "../../fpdfsdk",
   ]
   if (pdf_enable_v8) {
     configs += [ "//v8:external_startup_data" ]
@@ -144,6 +154,7 @@ source_set("fuzzer_helper") {
   configs += [ ":fuzzer_config" ]
   deps = [
     "../../:pdfium_public_headers",
+    "../../fpdfsdk",
     "../../third_party:pdfium_base",
   ]
 }
@@ -170,11 +181,12 @@ template("pdfium_fuzzer") {
   }
   if (is_component_build) {
     # In component builds, fuzzers are split into "_impl" and "_src" targets.
-    # The "_impl" target exports the fuzzer implementation and gets statically
-    # linked into the PDFium shared library.  The "_src" target is a thin
-    # wrapper that imports the fuzzer from PDFium; this gets linked into the
-    # real fuzzer executable.  In static builds, there's only a single "_src"
-    # target that contains the implementation and statically links in PDFium.
+    # The "_impl" target exports the fuzzer implementation. The "_src" target
+    # is a thin wrapper that imports the fuzzer from PDFium; this gets linked
+    # into the real fuzzer executable. The real fuzzer target has to depend on
+    # both the "_impl" and "_src" targets.
+    # In static builds, there's only a single "_src" target that contains the
+    # implementation and statically links in PDFium.
 
     impl_name = target_name + "_impl"
     template_target_name = target_name
@@ -182,7 +194,7 @@ template("pdfium_fuzzer") {
       testonly = true
       sources = [ "component_fuzzer_template.cc" ]
       deps = [
-        "../../:pdfium",
+        "../../:pdfium_public_headers",
         init_dep,
       ]
       configs += [ ":fuzzer_config" ]
@@ -225,6 +237,7 @@ if (pdf_enable_v8) {
     sources = [ "pdf_cjs_util_fuzzer.cc" ]
     deps = [
       "../../core/fxcrt",
+      "../../fpdfsdk",
       "../../fxjs",
     ]
   }
@@ -232,6 +245,7 @@ if (pdf_enable_v8) {
     sources = [ "pdf_fx_date_helpers_fuzzer.cc" ]
     deps = [
       "../../core/fxcrt",
+      "../../fpdfsdk",
       "../../fxjs",
     ]
   }
@@ -254,8 +268,10 @@ if (pdf_enable_v8) {
       deps = [
         ":fuzzer_utils",
         "../../core/fxcrt",
+        "../../fpdfsdk",
         "../../fxjs:gc",
         "../../xfa/fgas/crt",
+        "../../xfa/fxfa",
         "../../xfa/fxfa/parser",
       ]
       public_fuzzer = true
@@ -364,6 +380,7 @@ if (pdf_enable_v8) {
       deps = [
         ":fuzzer_utils",
         "../../core/fxcrt",
+        "../../fpdfsdk",
         "../../fxjs",
       ]
       public_fuzzer = true

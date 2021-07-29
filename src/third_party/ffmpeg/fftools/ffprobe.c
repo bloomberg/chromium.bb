@@ -117,6 +117,11 @@ static int use_byte_value_binary_prefix = 0;
 static int use_value_sexagesimal_format = 0;
 static int show_private_data            = 1;
 
+#define SHOW_OPTIONAL_FIELDS_AUTO       -1
+#define SHOW_OPTIONAL_FIELDS_NEVER       0
+#define SHOW_OPTIONAL_FIELDS_ALWAYS      1
+static int show_optional_fields = SHOW_OPTIONAL_FIELDS_AUTO;
+
 static char *print_format;
 static char *stream_specifier;
 static char *show_data_hash;
@@ -257,7 +262,7 @@ static const OptionDef *options;
 /* FFprobe context */
 static const char *input_filename;
 static const char *print_input_filename;
-static AVInputFormat *iformat = NULL;
+static const AVInputFormat *iformat = NULL;
 
 static struct AVHashContext *hash;
 
@@ -745,8 +750,10 @@ static inline int writer_print_string(WriterContext *wctx,
     const struct section *section = wctx->section[wctx->level];
     int ret = 0;
 
-    if ((flags & PRINT_STRING_OPT)
-        && !(wctx->writer->flags & WRITER_FLAG_DISPLAY_OPTIONAL_FIELDS))
+    if (show_optional_fields == SHOW_OPTIONAL_FIELDS_NEVER ||
+        (show_optional_fields == SHOW_OPTIONAL_FIELDS_AUTO
+        && (flags & PRINT_STRING_OPT)
+        && !(wctx->writer->flags & WRITER_FLAG_DISPLAY_OPTIONAL_FIELDS)))
         return 0;
 
     if (section->show_all_entries || av_dict_get(section->entries_to_show, key, NULL, 0)) {
@@ -1660,13 +1667,6 @@ static av_cold int xml_init(WriterContext *wctx)
         CHECK_COMPLIANCE(show_private_data, "private");
         CHECK_COMPLIANCE(show_value_unit,   "unit");
         CHECK_COMPLIANCE(use_value_prefix,  "prefix");
-
-        if (do_show_frames && do_show_packets) {
-            av_log(wctx, AV_LOG_ERROR,
-                   "Interleaved frames and packets are not allowed in XSD. "
-                   "Select only one between the -show_frames and the -show_packets options.\n");
-            return AVERROR(EINVAL);
-        }
     }
 
     return 0;
@@ -2029,6 +2029,23 @@ static void print_pkt_side_data(WriterContext *w,
             print_int("el_present_flag", dovi->el_present_flag);
             print_int("bl_present_flag", dovi->bl_present_flag);
             print_int("dv_bl_signal_compatibility_id", dovi->dv_bl_signal_compatibility_id);
+        } else if (sd->type == AV_PKT_DATA_AUDIO_SERVICE_TYPE) {
+            enum AVAudioServiceType *t = (enum AVAudioServiceType *)sd->data;
+            print_int("type", *t);
+        } else if (sd->type == AV_PKT_DATA_MPEGTS_STREAM_ID) {
+            print_int("id", *sd->data);
+        } else if (sd->type == AV_PKT_DATA_CPB_PROPERTIES) {
+            const AVCPBProperties *prop = (AVCPBProperties *)sd->data;
+            print_int("max_bitrate", prop->max_bitrate);
+            print_int("min_bitrate", prop->min_bitrate);
+            print_int("avg_bitrate", prop->avg_bitrate);
+            print_int("buffer_size", prop->buffer_size);
+            print_int("vbv_delay",   prop->vbv_delay);
+        } else if (sd->type == AV_PKT_DATA_WEBVTT_IDENTIFIER ||
+                   sd->type == AV_PKT_DATA_WEBVTT_SETTINGS) {
+            if (do_show_data)
+                writer_print_data(w, "data", sd->data, sd->size);
+            writer_print_data_hash(w, "data_hash", sd->data, sd->size);
         }
         writer_print_section_footer(w);
     }
@@ -2165,7 +2182,7 @@ static void show_packet(WriterContext *w, InputFile *ifile, AVPacket *pkt, int p
               pkt->flags & AV_PKT_FLAG_DISCARD ? 'D' : '_');
 
     if (pkt->side_data_elems) {
-        int size;
+        size_t size;
         const uint8_t *side_metadata;
 
         side_metadata = av_packet_get_side_data(pkt, AV_PKT_DATA_STRINGS_METADATA, &size);
@@ -2453,13 +2470,11 @@ static int read_interval_packets(WriterContext *w, InputFile *ifile,
                                  const ReadInterval *interval, int64_t *cur_ts)
 {
     AVFormatContext *fmt_ctx = ifile->fmt_ctx;
-    AVPacket pkt;
+    AVPacket *pkt = NULL;
     AVFrame *frame = NULL;
     int ret = 0, i = 0, frame_count = 0;
     int64_t start = -INT64_MAX, end = interval->end;
     int has_start = 0, has_end = interval->has_end && !interval->end_is_offset;
-
-    av_init_packet(&pkt);
 
     av_log(NULL, AV_LOG_VERBOSE, "Processing read interval ");
     log_read_interval(interval, NULL, AV_LOG_VERBOSE);
@@ -2493,18 +2508,23 @@ static int read_interval_packets(WriterContext *w, InputFile *ifile,
         ret = AVERROR(ENOMEM);
         goto end;
     }
-    while (!av_read_frame(fmt_ctx, &pkt)) {
+    pkt = av_packet_alloc();
+    if (!pkt) {
+        ret = AVERROR(ENOMEM);
+        goto end;
+    }
+    while (!av_read_frame(fmt_ctx, pkt)) {
         if (fmt_ctx->nb_streams > nb_streams) {
             REALLOCZ_ARRAY_STREAM(nb_streams_frames,  nb_streams, fmt_ctx->nb_streams);
             REALLOCZ_ARRAY_STREAM(nb_streams_packets, nb_streams, fmt_ctx->nb_streams);
             REALLOCZ_ARRAY_STREAM(selected_streams,   nb_streams, fmt_ctx->nb_streams);
             nb_streams = fmt_ctx->nb_streams;
         }
-        if (selected_streams[pkt.stream_index]) {
-            AVRational tb = ifile->streams[pkt.stream_index].st->time_base;
+        if (selected_streams[pkt->stream_index]) {
+            AVRational tb = ifile->streams[pkt->stream_index].st->time_base;
 
-            if (pkt.pts != AV_NOPTS_VALUE)
-                *cur_ts = av_rescale_q(pkt.pts, tb, AV_TIME_BASE_Q);
+            if (pkt->pts != AV_NOPTS_VALUE)
+                *cur_ts = av_rescale_q(pkt->pts, tb, AV_TIME_BASE_Q);
 
             if (!has_start && *cur_ts != AV_NOPTS_VALUE) {
                 start = *cur_ts;
@@ -2526,26 +2546,27 @@ static int read_interval_packets(WriterContext *w, InputFile *ifile,
             frame_count++;
             if (do_read_packets) {
                 if (do_show_packets)
-                    show_packet(w, ifile, &pkt, i++);
-                nb_streams_packets[pkt.stream_index]++;
+                    show_packet(w, ifile, pkt, i++);
+                nb_streams_packets[pkt->stream_index]++;
             }
             if (do_read_frames) {
                 int packet_new = 1;
-                while (process_frame(w, ifile, frame, &pkt, &packet_new) > 0);
+                while (process_frame(w, ifile, frame, pkt, &packet_new) > 0);
             }
         }
-        av_packet_unref(&pkt);
+        av_packet_unref(pkt);
     }
-    av_packet_unref(&pkt);
+    av_packet_unref(pkt);
     //Flush remaining frames that are cached in the decoder
     for (i = 0; i < fmt_ctx->nb_streams; i++) {
-        pkt.stream_index = i;
+        pkt->stream_index = i;
         if (do_read_frames)
-            while (process_frame(w, ifile, frame, &pkt, &(int){1}) > 0);
+            while (process_frame(w, ifile, frame, pkt, &(int){1}) > 0);
     }
 
 end:
     av_frame_free(&frame);
+    av_packet_free(&pkt);
     if (ret < 0) {
         av_log(NULL, AV_LOG_ERROR, "Could not read packets in interval ");
         log_read_interval(interval, NULL, AV_LOG_ERROR);
@@ -2710,7 +2731,7 @@ static int show_stream(WriterContext *w, AVFormatContext *fmt_ctx, int stream_id
         const AVOption *opt = NULL;
         while (opt = av_opt_next(dec_ctx->priv_data,opt)) {
             uint8_t *str;
-            if (opt->flags) continue;
+            if (!(opt->flags & AV_OPT_FLAG_EXPORT)) continue;
             if (av_opt_get(dec_ctx->priv_data, opt->name, 0, &str) >= 0) {
                 print_str(opt->name, str);
                 av_free(str);
@@ -2744,8 +2765,11 @@ static int show_stream(WriterContext *w, AVFormatContext *fmt_ctx, int stream_id
     if (do_show_data)
         writer_print_data(w, "extradata", par->extradata,
                                           par->extradata_size);
-    writer_print_data_hash(w, "extradata_hash", par->extradata,
-                                                par->extradata_size);
+
+    if (par->extradata_size > 0) {
+        writer_print_data_hash(w, "extradata_hash", par->extradata,
+                                                    par->extradata_size);
+    }
 
     /* Print disposition information */
 #define PRINT_DISPOSITION(flagname, name) do {                                \
@@ -2766,6 +2790,11 @@ static int show_stream(WriterContext *w, AVFormatContext *fmt_ctx, int stream_id
         PRINT_DISPOSITION(CLEAN_EFFECTS,    "clean_effects");
         PRINT_DISPOSITION(ATTACHED_PIC,     "attached_pic");
         PRINT_DISPOSITION(TIMED_THUMBNAILS, "timed_thumbnails");
+        PRINT_DISPOSITION(CAPTIONS,         "captions");
+        PRINT_DISPOSITION(DESCRIPTIONS,     "descriptions");
+        PRINT_DISPOSITION(METADATA,         "metadata");
+        PRINT_DISPOSITION(DEPENDENT,        "dependent");
+        PRINT_DISPOSITION(STILL_IMAGE,      "still_image");
         writer_print_section_footer(w);
     }
 
@@ -3242,6 +3271,17 @@ static void ffprobe_show_pixel_formats(WriterContext *w)
     writer_print_section_footer(w);
 }
 
+static int opt_show_optional_fields(void *optctx, const char *opt, const char *arg)
+{
+    if      (!av_strcasecmp(arg, "always")) show_optional_fields = SHOW_OPTIONAL_FIELDS_ALWAYS;
+    else if (!av_strcasecmp(arg, "never"))  show_optional_fields = SHOW_OPTIONAL_FIELDS_NEVER;
+    else if (!av_strcasecmp(arg, "auto"))   show_optional_fields = SHOW_OPTIONAL_FIELDS_AUTO;
+
+    if (show_optional_fields == SHOW_OPTIONAL_FIELDS_AUTO && av_strcasecmp(arg, "auto"))
+        show_optional_fields = parse_number_or_die("show_optional_fields", arg, OPT_INT, SHOW_OPTIONAL_FIELDS_AUTO, SHOW_OPTIONAL_FIELDS_ALWAYS);
+    return 0;
+}
+
 static int opt_format(void *optctx, const char *opt, const char *arg)
 {
     iformat = av_find_input_format(arg);
@@ -3629,6 +3669,7 @@ static const OptionDef real_options[] = {
     { "show_library_versions", 0, { .func_arg = &opt_show_library_versions }, "show library versions" },
     { "show_versions",         0, { .func_arg = &opt_show_versions }, "show program and library versions" },
     { "show_pixel_formats", 0, { .func_arg = &opt_show_pixel_formats }, "show pixel format descriptions" },
+    { "show_optional_fields", HAS_ARG, { .func_arg = &opt_show_optional_fields }, "show optional fields" },
     { "show_private_data", OPT_BOOL, { &show_private_data }, "show private data" },
     { "private",           OPT_BOOL, { &show_private_data }, "same as show_private_data" },
     { "bitexact", OPT_BOOL, {&do_bitexact}, "force bitexact output" },

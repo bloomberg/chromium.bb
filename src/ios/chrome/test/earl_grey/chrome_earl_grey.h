@@ -30,6 +30,10 @@ namespace chrome_test_util {
 // returned.
 id ExecuteJavaScript(NSString* javascript, NSError** out_error);
 
+// Returns current keyWindow, from the list of all of the remote application
+// windows. Use only for single window tests.
+UIWindow* GetAnyKeyWindow();
+
 }  // namespace chrome_test_util
 
 #define ChromeEarlGrey \
@@ -88,9 +92,9 @@ id ExecuteJavaScript(NSString* javascript, NSError** out_error);
 
 #pragma mark - Navigation Utilities (EG2)
 
-// Instructs the application delegate to open |URL| with default opening
+// Instructs some connected scene to open |URL| with default opening
 // options.
-- (void)applicationOpenURL:(const GURL&)URL;
+- (void)sceneOpenURL:(const GURL&)URL;
 
 // Loads |URL| in the current WebState with transition type
 // ui::PAGE_TRANSITION_TYPED, and if waitForCompletion is YES
@@ -199,11 +203,11 @@ id ExecuteJavaScript(NSString* javascript, NSError** out_error);
                      autofillProfileName:(const std::string&)fullName
     WARN_UNUSED_RESULT;
 
-// Sets up a fake sync server to be used by the ProfileSyncService.
+// Sets up a fake sync server to be used by the SyncServiceImpl.
 - (void)setUpFakeSyncServer;
 
-// Tears down the fake sync server used by the ProfileSyncService and restores
-// the real one.
+// Tears down the fake sync server used by the SyncServiceImpl and restores the
+// real one.
 - (void)tearDownFakeSyncServer;
 
 // Gets the number of entities of the given |type|.
@@ -517,6 +521,11 @@ id ExecuteJavaScript(NSString* javascript, NSError** out_error);
 - (void)waitForWebStateContainingLoadedImageElementWithID:
     (const std::string&)UTF8ImageID;
 
+// Waits for the web state's scroll view zoom scale to be suitably close (within
+// 0.05) of the expected scale. Returns nil if the condition is met within a
+// timeout, or else an NSError indicating why the operation failed.
+- (void)waitForWebStateZoomScale:(CGFloat)scale;
+
 // Returns the current web state's VisibleURL.
 - (GURL)webStateVisibleURL;
 
@@ -598,9 +607,6 @@ id ExecuteJavaScript(NSString* javascript, NSError** out_error);
 // Returns YES if a variation triggering server-side behavior is enabled.
 - (BOOL)isTriggerVariationEnabled:(int)variationID;
 
-// Returns YES if UmaCellular feature is enabled.
-- (BOOL)isUMACellularEnabled WARN_UNUSED_RESULT;
-
 // Returns YES if UKM feature is enabled.
 - (BOOL)isUKMEnabled WARN_UNUSED_RESULT;
 
@@ -620,9 +626,6 @@ id ExecuteJavaScript(NSString* javascript, NSError** out_error);
 
 // Returns whether the mobile version of the websites are requested by default.
 - (BOOL)isMobileModeByDefault WARN_UNUSED_RESULT;
-
-// Returns whether the native context menus feature is enabled or not.
-- (BOOL)isNativeContextMenusEnabled;
 
 // Returns whether the app is configured to, and running in an environment which
 // can, open multiple windows.
@@ -685,10 +688,8 @@ id ExecuteJavaScript(NSString* javascript, NSError** out_error);
 #pragma mark - Context Menus Utilities (EG2)
 
 // Taps on the Copy Link context menu action and verifies that the |text| has
-// been copied to the pasteboard. |useNewString| determines which action string
-// to use.
-- (void)verifyCopyLinkActionWithText:(NSString*)text
-                        useNewString:(BOOL)useNewString;
+// been copied to the pasteboard.
+- (void)verifyCopyLinkActionWithText:(NSString*)text;
 
 // Taps on the Open in New Tab context menu action and waits for the |URL| to be
 // present in the omnibox.
@@ -699,10 +700,8 @@ id ExecuteJavaScript(NSString* javascript, NSError** out_error);
 - (void)verifyOpenInNewWindowActionWithContent:(const std::string&)content;
 
 // Taps on the Open in Incognito context menu action and waits for the |URL| to
-// be present in the omnibox. |useNewString| determines which action string
-// to use.
-- (void)verifyOpenInIncognitoActionWithURL:(const std::string&)URL
-                              useNewString:(BOOL)useNewString;
+// be present in the omnibox.
+- (void)verifyOpenInIncognitoActionWithURL:(const std::string&)URL;
 
 // Taps on the Share context menu action and validates that the ActivityView
 // was brought up with the correct title in its header. The title starts as the

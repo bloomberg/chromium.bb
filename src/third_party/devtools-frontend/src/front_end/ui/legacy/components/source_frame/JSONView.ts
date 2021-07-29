@@ -56,7 +56,7 @@ export class JSONView extends UI.Widget.VBox implements UI.SearchableView.Search
   constructor(parsedJSON: ParsedJSON, startCollapsed?: boolean) {
     super();
     this._initialized = false;
-    this.registerRequiredCSS('ui/legacy/components/source_frame/jsonView.css', {enableLegacyPatching: false});
+    this.registerRequiredCSS('ui/legacy/components/source_frame/jsonView.css');
     this._parsedJSON = parsedJSON;
     this._startCollapsed = Boolean(startCollapsed);
     this.element.classList.add('json-view');
@@ -163,8 +163,8 @@ export class JSONView extends UI.Widget.VBox implements UI.SearchableView.Search
 
     const obj = SDK.RemoteObject.RemoteObject.fromLocalObject(this._parsedJSON.data);
     const title = this._parsedJSON.prefix + obj.description + this._parsedJSON.suffix;
-    this._treeOutline = new ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection(
-        obj, title, undefined, undefined, undefined, undefined, true /* showOverflow */);
+    this._treeOutline =
+        new ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection(obj, title, undefined, true /* showOverflow */);
     this._treeOutline.enableContextMenu();
     this._treeOutline.setEditable(false);
     if (!this._startCollapsed) {

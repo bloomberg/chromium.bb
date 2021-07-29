@@ -13,10 +13,10 @@
 
 namespace views {
 class ImageButton;
-class ImageView;
-}  // namespace views
+}
 
 class ChosenObjectViewObserver;
+class PageInfoRowView;
 
 // A ChosenObjectView is a row in the Page Info bubble that shows an individual
 // object (e.g. a Bluetooth device, a USB device) that the current site has
@@ -31,14 +31,18 @@ class ChosenObjectView : public views::View {
   ~ChosenObjectView() override;
 
   void AddObserver(ChosenObjectViewObserver* observer);
+  void ResetPermission();
+
+  // views::View:
+  void OnThemeChanged() override;
 
  private:
   void UpdateIconImage(bool is_deleted) const;
 
   void ExecuteDeleteCommand();
 
-  views::ImageView* icon_;             // Owned by the views hierarchy.
-  views::ImageButton* delete_button_;  // Owned by the views hierarchy.
+  views::ImageButton* delete_button_ = nullptr;
+  PageInfoRowView* row_view_ = nullptr;
 
   base::ObserverList<ChosenObjectViewObserver>::Unchecked observer_list_;
   std::unique_ptr<PageInfoUI::ChosenObjectInfo> info_;

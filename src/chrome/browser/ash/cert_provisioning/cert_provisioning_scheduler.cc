@@ -21,12 +21,12 @@
 #include "chrome/browser/ash/cert_provisioning/cert_provisioning_common.h"
 #include "chrome/browser/ash/cert_provisioning/cert_provisioning_metrics.h"
 #include "chrome/browser/ash/cert_provisioning/cert_provisioning_worker.h"
+#include "chrome/browser/ash/policy/core/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service_factory.h"
-#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/platform_keys/platform_keys.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
@@ -242,12 +242,12 @@ void CertProvisioningSchedulerImpl::DeleteCertsWithoutPolicy() {
 }
 
 void CertProvisioningSchedulerImpl::OnDeleteCertsWithoutPolicyDone(
-    platform_keys::Status status) {
+    chromeos::platform_keys::Status status) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (status != platform_keys::Status::kSuccess) {
+  if (status != chromeos::platform_keys::Status::kSuccess) {
     LOG(ERROR) << "Failed to delete certificates without policies: "
-               << platform_keys::StatusToString(status);
+               << chromeos::platform_keys::StatusToString(status);
   }
 
   DeserializeWorkers();
@@ -307,7 +307,7 @@ void CertProvisioningSchedulerImpl::DeserializeWorkers() {
     return;
   }
 
-  for (const auto& kv : saved_workers->DictItems()) {
+  for (const auto kv : saved_workers->DictItems()) {
     const base::Value& saved_worker = kv.second;
 
     std::unique_ptr<CertProvisioningWorker> worker =
@@ -403,12 +403,12 @@ void CertProvisioningSchedulerImpl::UpdateCertListWithExistingCerts(
     std::vector<CertProfile> profiles,
     base::flat_map<CertProfileId, scoped_refptr<net::X509Certificate>>
         existing_certs_with_ids,
-    platform_keys::Status status) {
+    chromeos::platform_keys::Status status) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (status != platform_keys::Status::kSuccess) {
+  if (status != chromeos::platform_keys::Status::kSuccess) {
     LOG(ERROR) << "Failed to get existing cert ids: "
-               << platform_keys::StatusToString(status);
+               << chromeos::platform_keys::StatusToString(status);
     return;
   }
 

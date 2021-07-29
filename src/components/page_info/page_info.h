@@ -10,15 +10,11 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "components/browsing_data/content/local_shared_objects_container.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/security_state/core/security_state.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "ui/gfx/vector_icon_types.h"
-#include "url/gurl.h"
 
 namespace content {
 class WebContents;
@@ -40,11 +36,10 @@ namespace ui {
 class Event;
 }
 
+class GURL;
 class HostContentSettingsMap;
 class PageInfoDelegate;
 class PageInfoUI;
-
-using password_manager::metrics_util::PasswordType;
 
 // The |PageInfo| provides information about a website's permissions,
 // connection state and its identity. It owns a UI that displays the
@@ -149,6 +144,13 @@ class PageInfo : public content::WebContentsObserver {
     PAGE_INFO_FORGET_SITE_OPENED = 17,
     PAGE_INFO_FORGET_SITE_CLEARED = 18,
     PAGE_INFO_HISTORY_OPENED = 19,
+    PAGE_INFO_HISTORY_ENTRY_REMOVED = 20,
+    PAGE_INFO_HISTORY_ENTRY_CLICKED = 21,
+    PAGE_INFO_PASSWORD_REUSE_ALLOWED = 22,
+    PAGE_INFO_CHANGE_PASSWORD_PRESSED = 23,
+    PAGE_INFO_SAFETY_TIP_HELP_OPENED = 24,
+    PAGE_INFO_CHOOSER_OBJECT_DELETED = 25,
+    PAGE_INFO_RESET_DECISIONS_CLICKED = 26,
     PAGE_INFO_COUNT
   };
 
@@ -176,7 +178,10 @@ class PageInfo : public content::WebContentsObserver {
   };
 
   // Creates a PageInfo for the passed |url| using the given |ssl| status
-  // object to determine the status of the site's connection.
+  // object to determine the status of the site's connection. Computes the UI
+  // inputs and records page info opened action. It is assumed that this is
+  // created when page info dialog is opened and destroyed when the dialog is
+  // closed.
   PageInfo(std::unique_ptr<PageInfoDelegate> delegate,
            content::WebContents* web_contents,
            const GURL& url);
@@ -195,13 +200,8 @@ class PageInfo : public content::WebContentsObserver {
   // Returns whether this page info is for an internal page.
   static bool IsFileOrInternalPage(const GURL& url);
 
-  // Initializes UI state that is dependent on having access to the PageInfoUI
-  // object associated with this object. This explicit post-construction
-  // initialization step is necessary as PageInfoUI subclasses create this
-  // object and also may invoke it as part of the initialization flow that
-  // occurs in this method. If this initialization flow was done as part of
-  // PageInfo's constructor, those subclasses would not have their PageInfo
-  // member set and crashes would ensue.
+  // Initializes the current UI and calls present data methods on it to notify
+  // the current UI about the data it is subscribed to.
   void InitializeUiState(PageInfoUI* ui);
 
   // This method is called to update the presenter's security state and forwards
@@ -244,6 +244,9 @@ class PageInfo : public content::WebContentsObserver {
   // Handles opening the connection help center page and records the event.
   void OpenConnectionHelpCenterPage(const ui::Event& event);
 
+  // Handles opening the settings page for a permission.
+  void OpenContentSettingsExceptions(ContentSettingsType content_settings_type);
+
   // This method is called when the user pressed "Change password" button.
   void OnChangePasswordButtonPressed();
 
@@ -279,6 +282,8 @@ class PageInfo : public content::WebContentsObserver {
   // Retrieves all the permissions that are shown in Page Info.
   // Exposed for testing.
   static std::vector<ContentSettingsType> GetAllPermissionsForTesting();
+
+  PageInfoUI* ui_for_testing() const { return ui_; }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PageInfoTest,

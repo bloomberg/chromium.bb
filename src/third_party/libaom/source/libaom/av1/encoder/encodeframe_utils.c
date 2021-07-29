@@ -18,14 +18,6 @@
 #include "av1/encoder/partition_strategy.h"
 #include "av1/encoder/rdopt.h"
 
-static AOM_INLINE int set_deltaq_rdmult(const AV1_COMP *const cpi,
-                                        const MACROBLOCK *const x) {
-  const AV1_COMMON *const cm = &cpi->common;
-  const CommonQuantParams *quant_params = &cm->quant_params;
-  return av1_compute_rd_mult(cpi, quant_params->base_qindex + x->delta_qindex +
-                                      quant_params->y_dc_delta_q);
-}
-
 void av1_set_ssim_rdmult(const AV1_COMP *const cpi, int *errorperbit,
                          const BLOCK_SIZE bsize, const int mi_row,
                          const int mi_col, int *const rdmult) {
@@ -44,7 +36,6 @@ void av1_set_ssim_rdmult(const AV1_COMP *const cpi, int *errorperbit,
 
   assert(cpi->oxcf.tune_cfg.tuning == AOM_TUNE_SSIM);
 
-  aom_clear_system_state();
   for (row = mi_row / num_mi_w;
        row < num_rows && row < mi_row / num_mi_w + num_brows; ++row) {
     for (col = mi_col / num_mi_h;
@@ -59,7 +50,16 @@ void av1_set_ssim_rdmult(const AV1_COMP *const cpi, int *errorperbit,
   *rdmult = (int)((double)(*rdmult) * geom_mean_of_scale + 0.5);
   *rdmult = AOMMAX(*rdmult, 0);
   av1_set_error_per_bit(errorperbit, *rdmult);
-  aom_clear_system_state();
+}
+
+// TODO(angiebird): Move these function to tpl_model.c
+#if !CONFIG_REALTIME_ONLY
+static AOM_INLINE int set_deltaq_rdmult(const AV1_COMP *const cpi,
+                                        const MACROBLOCK *const x) {
+  const AV1_COMMON *const cm = &cpi->common;
+  const CommonQuantParams *quant_params = &cm->quant_params;
+  return av1_compute_rd_mult(cpi, quant_params->base_qindex + x->delta_qindex +
+                                      quant_params->y_dc_delta_q);
 }
 
 // Return the end column for the current superblock, in unit of TPL blocks.
@@ -90,12 +90,10 @@ int av1_get_hier_tpl_rdmult(const AV1_COMP *const cpi, MACROBLOCK *const x,
   assert(IMPLIES(cpi->ppi->gf_group.size > 0,
                  cpi->gf_frame_index < cpi->ppi->gf_group.size));
   const int tpl_idx = cpi->gf_frame_index;
-  const TplDepFrame *tpl_frame = &cpi->ppi->tpl_data.tpl_frame[tpl_idx];
   const int deltaq_rdmult = set_deltaq_rdmult(cpi, x);
-  if (tpl_frame->is_valid == 0) return deltaq_rdmult;
+  if (!av1_tpl_stats_ready(&cpi->ppi->tpl_data, tpl_idx)) return deltaq_rdmult;
   if (!is_frame_tpl_eligible(gf_group, cpi->gf_frame_index))
     return deltaq_rdmult;
-  if (tpl_idx >= MAX_TPL_FRAME_IDX) return deltaq_rdmult;
   if (cpi->oxcf.q_cfg.aq_mode != NO_AQ) return deltaq_rdmult;
 
   const int mi_col_sr =
@@ -117,7 +115,6 @@ int av1_get_hier_tpl_rdmult(const AV1_COMP *const cpi, MACROBLOCK *const x,
   int row, col;
   double base_block_count = 0.0;
   double geom_mean_of_scale = 0.0;
-  aom_clear_system_state();
   for (row = mi_row / num_mi_w;
        row < num_rows && row < mi_row / num_mi_w + num_brows; ++row) {
     for (col = mi_col_sr / num_mi_h;
@@ -133,14 +130,16 @@ int av1_get_hier_tpl_rdmult(const AV1_COMP *const cpi, MACROBLOCK *const x,
   int rdmult = (int)((double)orig_rdmult * geom_mean_of_scale + 0.5);
   rdmult = AOMMAX(rdmult, 0);
   av1_set_error_per_bit(&x->errorperbit, rdmult);
-  aom_clear_system_state();
+#if !CONFIG_RD_COMMAND
   if (bsize == cm->seq_params->sb_size) {
     const int rdmult_sb = set_deltaq_rdmult(cpi, x);
     assert(rdmult_sb == rdmult);
     (void)rdmult_sb;
   }
+#endif  // !CONFIG_RD_COMMAND
   return rdmult;
 }
+#endif  // !CONFIG_REALTIME_ONLY
 
 static AOM_INLINE void update_filter_type_count(FRAME_COUNTS *counts,
                                                 const MACROBLOCKD *xd,
@@ -688,20 +687,22 @@ int av1_get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
                  cpi->gf_frame_index < cpi->ppi->gf_group.size));
   const int tpl_idx = cpi->gf_frame_index;
   TplParams *const tpl_data = &cpi->ppi->tpl_data;
-  TplDepFrame *tpl_frame = &tpl_data->tpl_frame[tpl_idx];
-  TplDepStats *tpl_stats = tpl_frame->tpl_stats_ptr;
   const uint8_t block_mis_log2 = tpl_data->tpl_stats_block_mis_log2;
-  int tpl_stride = tpl_frame->stride;
   int64_t intra_cost = 0;
   int64_t mc_dep_cost = 0;
   const int mi_wide = mi_size_wide[bsize];
   const int mi_high = mi_size_high[bsize];
 
-  if (tpl_frame->is_valid == 0) return orig_rdmult;
+  TplDepFrame *tpl_frame = &tpl_data->tpl_frame[tpl_idx];
+  TplDepStats *tpl_stats = tpl_frame->tpl_stats_ptr;
+  int tpl_stride = tpl_frame->stride;
 
-  if (!is_frame_tpl_eligible(gf_group, cpi->gf_frame_index)) return orig_rdmult;
-
-  if (cpi->gf_frame_index >= MAX_TPL_FRAME_IDX) return orig_rdmult;
+  if (!av1_tpl_stats_ready(&cpi->ppi->tpl_data, cpi->gf_frame_index)) {
+    return orig_rdmult;
+  }
+  if (!is_frame_tpl_eligible(gf_group, cpi->gf_frame_index)) {
+    return orig_rdmult;
+  }
 
   int mi_count = 0;
   const int mi_col_sr =
@@ -728,8 +729,6 @@ int av1_get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
   }
   assert(mi_count <= MAX_TPL_BLK_IN_SB * MAX_TPL_BLK_IN_SB);
 
-  aom_clear_system_state();
-
   double beta = 1.0;
   if (mc_dep_cost > 0 && intra_cost > 0) {
     const double r0 = cpi->rd.r0;
@@ -738,8 +737,6 @@ int av1_get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
   }
 
   int rdmult = av1_get_adaptive_rdmult(cpi, beta);
-
-  aom_clear_system_state();
 
   rdmult = AOMMIN(rdmult, orig_rdmult * 3 / 2);
   rdmult = AOMMAX(rdmult, orig_rdmult * 1 / 2);
@@ -825,14 +822,13 @@ void av1_get_tpl_stats_sb(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
   AV1_COMMON *const cm = &cpi->common;
   const int gf_group_index = cpi->gf_frame_index;
   TplParams *const tpl_data = &cpi->ppi->tpl_data;
-  TplDepFrame *tpl_frame = &tpl_data->tpl_frame[gf_group_index];
-  TplDepStats *tpl_stats = tpl_frame->tpl_stats_ptr;
-  int tpl_stride = tpl_frame->stride;
+  if (!av1_tpl_stats_ready(tpl_data, gf_group_index)) return;
   const int mi_wide = mi_size_wide[bsize];
   const int mi_high = mi_size_high[bsize];
 
-  if (tpl_frame->is_valid == 0) return;
-  if (gf_group_index >= MAX_TPL_FRAME_IDX) return;
+  TplDepFrame *tpl_frame = &tpl_data->tpl_frame[gf_group_index];
+  TplDepStats *tpl_stats = tpl_frame->tpl_stats_ptr;
+  int tpl_stride = tpl_frame->stride;
 
   int mi_count = 0;
   int count = 0;
@@ -896,21 +892,21 @@ int av1_get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
                  cpi->gf_frame_index < cpi->ppi->gf_group.size));
   const int tpl_idx = cpi->gf_frame_index;
   TplParams *const tpl_data = &cpi->ppi->tpl_data;
-  TplDepFrame *tpl_frame = &tpl_data->tpl_frame[tpl_idx];
-  TplDepStats *tpl_stats = tpl_frame->tpl_stats_ptr;
   const uint8_t block_mis_log2 = tpl_data->tpl_stats_block_mis_log2;
-  int tpl_stride = tpl_frame->stride;
   int64_t intra_cost = 0;
   int64_t mc_dep_cost = 0;
   const int mi_wide = mi_size_wide[bsize];
   const int mi_high = mi_size_high[bsize];
   const int base_qindex = cm->quant_params.base_qindex;
 
-  if (tpl_frame->is_valid == 0) return base_qindex;
+  if (tpl_idx >= MAX_TPL_FRAME_IDX) return base_qindex;
+
+  TplDepFrame *tpl_frame = &tpl_data->tpl_frame[tpl_idx];
+  TplDepStats *tpl_stats = tpl_frame->tpl_stats_ptr;
+  int tpl_stride = tpl_frame->stride;
+  if (!tpl_frame->is_valid) return base_qindex;
 
   if (!is_frame_tpl_eligible(gf_group, cpi->gf_frame_index)) return base_qindex;
-
-  if (cpi->gf_frame_index >= MAX_TPL_FRAME_IDX) return base_qindex;
 
   int mi_count = 0;
   const int mi_col_sr =
@@ -937,8 +933,6 @@ int av1_get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
   }
   assert(mi_count <= MAX_TPL_BLK_IN_SB * MAX_TPL_BLK_IN_SB);
 
-  aom_clear_system_state();
-
   int offset = 0;
   double beta = 1.0;
   if (mc_dep_cost > 0 && intra_cost > 0) {
@@ -947,8 +941,7 @@ int av1_get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
     beta = (r0 / rk);
     assert(beta > 0.0);
   }
-  offset = av1_get_deltaq_offset(cpi, base_qindex, beta);
-  aom_clear_system_state();
+  offset = av1_get_deltaq_offset(cm->seq_params->bit_depth, base_qindex, beta);
 
   const DeltaQInfo *const delta_q_info = &cm->delta_q_info;
   offset = AOMMIN(offset, delta_q_info->delta_q_res * 9 - 1);
@@ -1382,6 +1375,9 @@ void av1_set_cost_upd_freq(AV1_COMP *cpi, ThreadData *td,
       if (mi_col != tile_info->mi_col_start) break;
       AOM_FALLTHROUGH_INTENDED;
     case COST_UPD_SB:  // SB level
+      if (cpi->sf.inter_sf.coeff_cost_upd_level == INTERNAL_COST_UPD_SBROW &&
+          mi_col != tile_info->mi_col_start)
+        break;
       av1_fill_coeff_costs(&x->coeff_costs, xd->tile_ctx, num_planes);
       break;
     default: assert(0);
@@ -1395,6 +1391,9 @@ void av1_set_cost_upd_freq(AV1_COMP *cpi, ThreadData *td,
       if (mi_col != tile_info->mi_col_start) break;
       AOM_FALLTHROUGH_INTENDED;
     case COST_UPD_SB:  // SB level
+      if (cpi->sf.inter_sf.mode_cost_upd_level == INTERNAL_COST_UPD_SBROW &&
+          mi_col != tile_info->mi_col_start)
+        break;
       av1_fill_mode_rates(cm, &x->mode_costs, xd->tile_ctx);
       break;
     default: assert(0);

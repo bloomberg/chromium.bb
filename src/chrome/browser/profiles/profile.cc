@@ -62,6 +62,7 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/common/chrome_constants.h"
 #include "chromeos/lacros/lacros_chrome_service_impl.h"
 #endif
 
@@ -381,19 +382,6 @@ bool Profile::IsIncognitoProfile() const {
          profile_metrics::BrowserProfileType::kIncognito;
 }
 
-// static
-bool Profile::IsEphemeralGuestProfileEnabled() {
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
-// of lacros-chrome is complete.
-#if defined(OS_WIN) || (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) || \
-    defined(OS_MAC)
-  return base::FeatureList::IsEnabled(
-      features::kEnableEphemeralGuestProfilesOnDesktop);
-#else
-  return false;
-#endif
-}
-
 bool Profile::IsGuestSession() const {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   static bool is_guest_session =
@@ -417,15 +405,18 @@ PrefService* Profile::GetReadOnlyOffTheRecordPrefs() {
   return nullptr;
 }
 
-bool Profile::IsEphemeralGuestProfile() const {
-  return profile_metrics::GetBrowserProfileType(this) ==
-         profile_metrics::BrowserProfileType::kEphemeralGuest;
-}
-
 bool Profile::IsSystemProfile() const {
   return profile_metrics::GetBrowserProfileType(this) ==
          profile_metrics::BrowserProfileType::kSystem;
 }
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+// static
+bool Profile::IsMainProfilePath(base::FilePath profile_path) {
+  // The main profile is the one with the "Default" path.
+  return profile_path.BaseName().value() == chrome::kInitialProfile;
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 bool Profile::IsPrimaryOTRProfile() const {
   return IsOffTheRecord() && GetOTRProfileID() == OTRProfileID::PrimaryID();

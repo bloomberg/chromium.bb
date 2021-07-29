@@ -171,7 +171,7 @@ export class LayerDetailsView extends UI.Widget.Widget implements LayerView {
 
   constructor(layerViewHost: LayerViewHost) {
     super(true);
-    this.registerRequiredCSS('panels/layer_viewer/layerDetailsView.css', {enableLegacyPatching: true});
+    this.registerRequiredCSS('panels/layer_viewer/layerDetailsView.css');
     this._layerViewHost = layerViewHost;
     this._layerViewHost.registerView(this);
     this._emptyWidget = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.selectALayerToSeeItsDetails));
@@ -230,7 +230,7 @@ export class LayerDetailsView extends UI.Widget.Widget implements LayerView {
       element.classList.add('active');
     }
     element.textContent = i18nString(UIStrings.scrollRectangleDimensions, {
-      PH1: slowScrollRectNames.get(scrollRect.type as unknown as SDK.LayerTreeBase.Layer.ScrollRectType)?.(),
+      PH1: String(slowScrollRectNames.get(scrollRect.type as unknown as SDK.LayerTreeBase.Layer.ScrollRectType)?.()),
       PH2: scrollRect.rect.width,
       PH3: scrollRect.rect.height,
       PH4: scrollRect.rect.x,

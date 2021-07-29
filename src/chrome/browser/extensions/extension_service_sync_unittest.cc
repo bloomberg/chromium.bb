@@ -14,7 +14,6 @@
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
-#include "base/stl_util.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -25,7 +24,7 @@
 #include "chrome/browser/extensions/test_blocklist.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/profiles/profile_key.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/themes/test/theme_service_changed_waiter.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -330,7 +329,7 @@ TEST_F(ExtensionServiceSyncTest, DisableExtensionFromSync) {
 
   // The user has enabled sync.
   syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile());
+      SyncServiceFactory::GetForProfile(profile());
   sync_service->GetUserSettings()->SetFirstSetupComplete(kSetSourceFromTest);
 
   service()->Init();
@@ -366,7 +365,7 @@ TEST_F(ExtensionServiceSyncTest, ReenableDisabledExtensionFromSync) {
 
   // Enable sync.
   syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile());
+      SyncServiceFactory::GetForProfile(profile());
   sync_service->GetUserSettings()->SetFirstSetupComplete(kSetSourceFromTest);
 
   service()->Init();
@@ -448,7 +447,7 @@ TEST_F(ExtensionServiceSyncTest,
 
   // Enable sync.
   syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile());
+      SyncServiceFactory::GetForProfile(profile());
   sync_service->GetUserSettings()->SetFirstSetupComplete(kSetSourceFromTest);
 
   service()->Init();
@@ -514,7 +513,7 @@ TEST_F(ExtensionServiceSyncTest, IgnoreSyncChangesWhenLocalStateIsMoreRecent) {
 
   // The user has enabled sync.
   syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile());
+      SyncServiceFactory::GetForProfile(profile());
   sync_service->GetUserSettings()->SetFirstSetupComplete(kSetSourceFromTest);
   // Make sure ExtensionSyncService is created, so it'll be notified of changes.
   extension_sync_service();
@@ -575,7 +574,7 @@ TEST_F(ExtensionServiceSyncTest, DontSelfNotify) {
   InitializeInstalledExtensionService(pref_path, source_install_dir);
 
   // The user has enabled sync.
-  ProfileSyncServiceFactory::GetForProfile(profile())
+  SyncServiceFactory::GetForProfile(profile())
       ->GetUserSettings()
       ->SetFirstSetupComplete(kSetSourceFromTest);
   // Make sure ExtensionSyncService is created, so it'll be notified of changes.
@@ -1704,7 +1703,7 @@ TEST_F(ExtensionServiceSyncTest, DontSyncThemes) {
   InitializeEmptyExtensionService();
 
   // The user has enabled sync.
-  ProfileSyncServiceFactory::GetForProfile(profile())
+  SyncServiceFactory::GetForProfile(profile())
       ->GetUserSettings()
       ->SetFirstSetupComplete(kSetSourceFromTest);
   // Make sure ExtensionSyncService is created, so it'll be notified of changes.
@@ -1840,7 +1839,7 @@ class BlocklistedExtensionSyncServiceTest : public ExtensionServiceSyncTest {
 
     // Enable sync.
     syncer::SyncService* sync_service =
-        ProfileSyncServiceFactory::GetForProfile(profile());
+        SyncServiceFactory::GetForProfile(profile());
     sync_service->GetUserSettings()->SetFirstSetupComplete(kSetSourceFromTest);
 
     test_blocklist_.Attach(service()->blocklist_);

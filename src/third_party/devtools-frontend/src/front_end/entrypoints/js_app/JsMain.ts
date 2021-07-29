@@ -35,8 +35,8 @@ export class JsMainImpl extends Common.ObjectWrapper.ObjectWrapper implements Co
   async run(): Promise<void> {
     Host.userMetrics.actionTaken(Host.UserMetrics.Action.ConnectToNodeJSDirectly);
     SDK.Connections.initMainConnection(async () => {
-      const target = SDK.SDKModel.TargetManager.instance().createTarget(
-          'main', i18nString(UIStrings.main), SDK.SDKModel.Type.Node, null);
+      const target = SDK.TargetManager.TargetManager.instance().createTarget(
+          'main', i18nString(UIStrings.main), SDK.Target.Type.Node, null);
       target.runtimeAgent().invoke_runIfWaitingForDebugger();
     }, Components.TargetDetachedDialog.TargetDetachedDialog.webSocketConnectionLost);
   }

@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/bluetooth/bluetooth_chooser_context_factory.h"
@@ -29,7 +30,9 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_base.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/prerender_test_util.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "device/bluetooth/bluetooth_adapter.h"
@@ -42,6 +45,7 @@
 #include "device/bluetooth/test/mock_bluetooth_device.h"
 #include "device/bluetooth/test/mock_bluetooth_gatt_connection.h"
 #include "device/bluetooth/test/mock_bluetooth_gatt_service.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/bluetooth/web_bluetooth_device_id.h"
 
@@ -162,15 +166,14 @@ class FakeBluetoothDevice
                                                        /*connected=*/true) {}
 
   void CreateGattConnection(
-      base::OnceCallback<void(std::unique_ptr<device::BluetoothGattConnection>)>
-          callback,
-      base::OnceCallback<void(enum ConnectErrorCode)> error_callback,
+      device::BluetoothDevice::GattConnectionCallback callback,
       absl::optional<device::BluetoothUUID> service_uuid =
           absl::nullopt) override {
     SetConnected(true);
     gatt_services_discovery_complete_ = true;
     std::move(callback).Run(
-        std::make_unique<FakeBluetoothGattConnection>(adapter_, GetAddress()));
+        std::make_unique<FakeBluetoothGattConnection>(adapter_, GetAddress()),
+        /*error_code=*/absl::nullopt);
   }
 
   bool IsGattServicesDiscoveryComplete() const override {
@@ -381,7 +384,7 @@ class WebBluetoothTest : public InProcessBrowserTest {
   std::unique_ptr<content::URLLoaderInterceptor> url_loader_interceptor_;
 };
 
-IN_PROC_BROWSER_TEST_F(WebBluetoothTest, DISABLED_WebBluetoothAfterCrash) {
+IN_PROC_BROWSER_TEST_F(WebBluetoothTest, WebBluetoothAfterCrash) {
   // Make sure we can use Web Bluetooth after the tab crashes.
   // Set up adapter with one device.
   adapter_->SetIsPresent(false);
@@ -855,6 +858,14 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTestWithNewPermissionsBackendEnabled,
     })()
   )"));
 
+  url::Origin origin =
+      url::Origin::Create(web_contents_->GetLastCommittedURL());
+  permissions::BluetoothChooserContext* context =
+      BluetoothChooserContextFactory::GetForProfile(browser()->profile());
+  auto objects = context->GetGrantedObjects(origin);
+  ASSERT_EQ(1u, objects.size());
+  const auto first_object_key = context->GetKeyForObject(objects.at(0)->value);
+
   // Add a second listener on a different device which is used purely as an
   // indicator of how much to wait until we can be reasonably sure that the
   // second advertisement will not arrive.
@@ -882,11 +893,7 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTestWithNewPermissionsBackendEnabled,
   )"));
 
   // Number of granted objects should be 2.
-  url::Origin origin =
-      url::Origin::Create(web_contents_->GetLastCommittedURL());
-  permissions::BluetoothChooserContext* context =
-      BluetoothChooserContextFactory::GetForProfile(browser()->profile());
-  const auto objects = context->GetGrantedObjects(origin);
+  objects = context->GetGrantedObjects(origin);
   EXPECT_EQ(2u, objects.size());
 
   // Send first advertisement and wait for the event to be resolved.
@@ -896,7 +903,7 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTestWithNewPermissionsBackendEnabled,
             content::EvalJs(web_contents_, "first_device_promise"));
 
   // Revoke the permission.
-  context->RevokeObjectPermission(origin, objects.at(0)->value);
+  context->RevokeObjectPermission(origin, first_object_key);
   EXPECT_EQ(1ul, context->GetGrantedObjects(origin).size());
 
   // Send another advertisement after the permission was revoked, this
@@ -911,6 +918,155 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTestWithNewPermissionsBackendEnabled,
 
   EXPECT_EQ("advertisement_name1|second_device_advertisement_name2",
             content::EvalJs(web_contents_, "second_device_promise"));
+}
+
+class WebBluetoothTestWithNewPermissionsBackendEnabledInPrerendering
+    : public WebBluetoothTestWithNewPermissionsBackendEnabled {
+ public:
+  WebBluetoothTestWithNewPermissionsBackendEnabledInPrerendering()
+      : prerender_helper_(base::BindRepeating(
+            &WebBluetoothTestWithNewPermissionsBackendEnabledInPrerendering::
+                GetWebContents,
+            base::Unretained(this))) {}
+  ~WebBluetoothTestWithNewPermissionsBackendEnabledInPrerendering() override =
+      default;
+
+  void SetUpOnMainThread() override {
+    prerender_helper_.SetUpOnMainThread(embedded_test_server());
+    WebBluetoothTestWithNewPermissionsBackendEnabled::SetUpOnMainThread();
+    ASSERT_TRUE(test_server_handle_ =
+                    embedded_test_server()->StartAndReturnHandle());
+
+    auto url = embedded_test_server()->GetURL("/empty.html");
+    ui_test_utils::NavigateToURL(browser(), url);
+    web_contents_ = browser()->tab_strip_model()->GetActiveWebContents();
+  }
+
+  content::WebContents* GetWebContents() { return web_contents_; }
+
+  content::test::PrerenderTestHelper* prerender_helper() {
+    return &prerender_helper_;
+  }
+
+ private:
+  content::test::PrerenderTestHelper prerender_helper_;
+  net::test_server::EmbeddedTestServerHandle test_server_handle_;
+};
+
+class TestWebContentsObserver : public content::WebContentsObserver {
+ public:
+  explicit TestWebContentsObserver(content::WebContents* contents)
+      : WebContentsObserver(contents) {}
+  TestWebContentsObserver(const TestWebContentsObserver&) = delete;
+  TestWebContentsObserver& operator=(const TestWebContentsObserver&) = delete;
+  ~TestWebContentsObserver() override = default;
+
+  void OnIsConnectedToBluetoothDeviceChanged(
+      bool is_connected_to_bluetooth_device) override {
+    ++num_is_connected_to_bluetooth_device_changed_;
+    last_is_connected_to_bluetooth_device_ = is_connected_to_bluetooth_device;
+    if (quit_closure_ && expected_updating_count_ ==
+                             num_is_connected_to_bluetooth_device_changed_) {
+      std::move(quit_closure_).Run();
+    }
+  }
+
+  int num_is_connected_to_bluetooth_device_changed() {
+    return num_is_connected_to_bluetooth_device_changed_;
+  }
+
+  const absl::optional<bool>& last_is_connected_to_bluetooth_device() {
+    return last_is_connected_to_bluetooth_device_;
+  }
+
+  void clear_last_is_connected_to_bluetooth_device() {
+    last_is_connected_to_bluetooth_device_.reset();
+  }
+
+  void WaitUntilConnectionIsUpdated(int expected_count) {
+    if (num_is_connected_to_bluetooth_device_changed_ == expected_count)
+      return;
+    expected_updating_count_ = expected_count;
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
+ private:
+  int num_is_connected_to_bluetooth_device_changed_ = 0;
+  absl::optional<bool> last_is_connected_to_bluetooth_device_;
+  int expected_updating_count_;
+  base::OnceClosure quit_closure_;
+};
+
+// Tests that the connection of Web Bluetooth is deferred in the prerendering.
+IN_PROC_BROWSER_TEST_F(
+    WebBluetoothTestWithNewPermissionsBackendEnabledInPrerendering,
+    WebBluetoothDeviceConnectInPrerendering) {
+  TestWebContentsObserver observer(GetWebContents());
+
+  AddFakeDevice(kDeviceAddress);
+  SetDeviceToSelect(kDeviceAddress);
+
+  ASSERT_TRUE(content::ExecJs(GetWebContents(), R"((async() => {
+          try {
+            let device = await navigator.bluetooth.requestDevice({
+              filters: [{name: 'Test Device'}]});
+            let gatt = await device.gatt.connect();
+            let service = await gatt.getPrimaryService('heart_rate');
+            return service.uuid;
+          } catch(e) {
+            return `${e.name}: ${e.message}`;
+          }
+        })())"));
+
+  observer.WaitUntilConnectionIsUpdated(1);
+  // In the active main frame, the connection of Web Bluetooth works.
+  EXPECT_EQ(observer.num_is_connected_to_bluetooth_device_changed(), 1);
+  EXPECT_TRUE(observer.last_is_connected_to_bluetooth_device().has_value());
+  EXPECT_TRUE(observer.last_is_connected_to_bluetooth_device().value());
+  observer.clear_last_is_connected_to_bluetooth_device();
+
+  // Loads a page in the prerender.
+  auto prerender_url = embedded_test_server()->GetURL("/simple.html");
+  // The prerendering doesn't affect the current scanning.
+  int host_id = prerender_helper()->AddPrerender(prerender_url);
+  content::test::PrerenderHostObserver host_observer(*GetWebContents(),
+                                                     host_id);
+  content::RenderFrameHost* prerendered_frame_host =
+      prerender_helper()->GetPrerenderedMainFrameHost(host_id);
+
+  // Runs JS asynchronously since Mojo calls is deferred on the prerendering.
+  content::ExecuteScriptAsync(prerendered_frame_host, R"((async() => {
+          try {
+            let device = await navigator.bluetooth.requestDevice({
+              filters: [{name: 'Test Device'}]});
+            let gatt = await device.gatt.connect();
+            let service = await gatt.getPrimaryService('heart_rate');
+            return service.uuid;
+          } catch(e) {
+            return `${e.name}: ${e.message}`;
+          }
+        })())");
+
+  // In the prerendering, the connection of Web Bluetooth is deferred and
+  // `observer` doesn't have any update.
+  EXPECT_EQ(observer.num_is_connected_to_bluetooth_device_changed(), 1);
+  EXPECT_FALSE(observer.last_is_connected_to_bluetooth_device().has_value());
+
+  // Navigates the primary page to the URL.
+  prerender_helper()->NavigatePrimaryPage(prerender_url);
+  // The page should be activated from the prerendering.
+  EXPECT_TRUE(host_observer.was_activated());
+
+  // Waits for the deferred Mojo call.
+  observer.WaitUntilConnectionIsUpdated(3);
+
+  // After the prerendering activation, the connection of Web Bluetooth is
+  // updated.
+  EXPECT_EQ(observer.num_is_connected_to_bluetooth_device_changed(), 3);
+  EXPECT_TRUE(observer.last_is_connected_to_bluetooth_device().has_value());
+  EXPECT_TRUE(observer.last_is_connected_to_bluetooth_device().value());
 }
 
 }  // namespace

@@ -5,21 +5,29 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOCUMENT_TRANSITION_DOCUMENT_TRANSITION_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOCUMENT_TRANSITION_DOCUMENT_TRANSITION_H_
 
-#include "cc/document_transition/document_transition_request.h"
+#include <memory>
+
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/graphics/document_transition_shared_element_id.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
+
+namespace cc {
+class DocumentTransitionRequest;
+}
 
 namespace blink {
 
+class AbortSignal;
 class Document;
 class DocumentTransitionPrepareOptions;
 class DocumentTransitionStartOptions;
+class Element;
+class ExceptionState;
+class ScriptPromise;
+class ScriptPromiseResolver;
 class ScriptState;
 
 class CORE_EXPORT DocumentTransition
@@ -80,12 +88,24 @@ class CORE_EXPORT DocumentTransition
   void SetActiveSharedElements(HeapVector<Member<Element>> elements);
   void InvalidateActiveElements();
 
+  // Used to defer visual updates between transition prepare finishing and
+  // transition start to allow the page to set up the final scene
+  // asynchronously.
+  void StartDeferringCommits();
+  void StopDeferringCommits();
+
+  // Allow canceling a transition until it reaches start().
+  void CancelPendingTransition(const char* abort_message);
+
+  void Abort(AbortSignal* signal);
+
   Member<Document> document_;
 
   State state_ = State::kIdle;
 
   Member<ScriptPromiseResolver> prepare_promise_resolver_;
   Member<ScriptPromiseResolver> start_promise_resolver_;
+  Member<AbortSignal> signal_;
 
   // `active_shared_elements_` represents elements that are identified as shared
   // during the current step of the transition. Specifically, it represents
@@ -111,6 +131,8 @@ class CORE_EXPORT DocumentTransition
   // The document tag identifies the document to which this transition belongs.
   // It's unique among other local documents.
   uint32_t document_tag_ = 0u;
+
+  bool deferring_commits_ = false;
 };
 
 }  // namespace blink

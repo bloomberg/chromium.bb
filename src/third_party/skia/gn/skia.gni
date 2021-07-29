@@ -13,8 +13,8 @@ declare_args() {
   skia_compile_processors = false
   skia_enable_api_available_macro = true
   skia_enable_android_utils = is_skia_dev_build
-  skia_enable_ccpr = true
-  skia_enable_nga = false
+  skia_enable_skgpu_v2 = false
+  skia_enable_skgpu_v1 = true
   skia_enable_discrete_gpu = true
   skia_enable_flutter_defines = false
   skia_enable_fontmgr_empty = false
@@ -63,7 +63,6 @@ declare_args() {
   skia_use_lua = is_skia_dev_build && !is_ios
   skia_use_metal = false
   skia_use_ndk_images = is_android && defined(ndk_api) && ndk_api >= 30
-  skia_use_opencl = false
   skia_use_piex = !is_win
   skia_use_sfml = false
   skia_use_webgl = false
@@ -116,6 +115,7 @@ declare_args() {
   skia_use_sfntly = skia_use_icu
   skia_enable_vulkan_debug_layers = skia_enable_gpu_debug_layers
   skia_enable_direct3d_debug_layer = skia_enable_gpu_debug_layers
+  skia_enable_metal_debug_info = skia_enable_gpu_debug_layers
   skia_use_vma = skia_use_vulkan
 }
 

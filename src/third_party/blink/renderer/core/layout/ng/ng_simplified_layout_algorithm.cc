@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_simplified_layout_algorithm.h"
 
 #include "third_party/blink/renderer/core/layout/geometry/writing_mode_converter.h"
+#include "third_party/blink/renderer/core/layout/ng/grid/ng_grid_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_layout_algorithm_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
@@ -23,7 +24,8 @@ namespace blink {
 
 NGSimplifiedLayoutAlgorithm::NGSimplifiedLayoutAlgorithm(
     const NGLayoutAlgorithmParams& params,
-    const NGLayoutResult& result)
+    const NGLayoutResult& result,
+    bool keep_old_size)
     : NGLayoutAlgorithm(params),
       previous_result_(result),
       writing_direction_(Style().GetWritingDirection()) {
@@ -35,6 +37,17 @@ NGSimplifiedLayoutAlgorithm::NGSimplifiedLayoutAlgorithm(
 
   container_builder_.SetIsNewFormattingContext(
       physical_fragment.IsFormattingContextRoot());
+
+  container_builder_.SetIsFirstForNode(physical_fragment.IsFirstForNode());
+
+  if (physical_fragment.IsFragmentationContextRoot())
+    container_builder_.SetIsBlockFragmentationContextRoot();
+
+  if (keep_old_size) {
+    // When we're cloning a fragment to insert additional fragmentainers to hold
+    // OOFs, re-use the old break token. This may not be the last fragment.
+    container_builder_.PresetNextBreakToken(physical_fragment.BreakToken());
+  }
 
   if (is_block_flow && !physical_fragment.IsFieldsetContainer()) {
     container_builder_.SetIsInlineFormattingContext(
@@ -133,6 +146,11 @@ NGSimplifiedLayoutAlgorithm::NGSimplifiedLayoutAlgorithm(
     }
   }
 
+  if (physical_fragment.IsGridNG()) {
+    container_builder_.TransferGridData(
+        std::make_unique<NGGridData>(*result.GridData()));
+  }
+
   if (physical_fragment.IsHiddenForPaint())
     container_builder_.SetIsHiddenForPaint(true);
 
@@ -141,30 +159,59 @@ NGSimplifiedLayoutAlgorithm::NGSimplifiedLayoutAlgorithm(
   if (physical_fragment.IsTableNGPart())
     container_builder_.SetIsTableNGPart();
 
-  container_builder_.SetIntrinsicBlockSize(result.IntrinsicBlockSize());
-
-  LayoutUnit new_block_size = ComputeBlockSizeForFragment(
-      ConstraintSpace(), Style(), BorderPadding(), result.IntrinsicBlockSize(),
-      container_builder_.InitialBorderBoxSize().inline_size);
-
-  // Only block-flow is allowed to change its block-size during "simplified"
-  // layout, all other layout types must remain the same size.
-  if (is_block_flow) {
-    container_builder_.SetFragmentBlockSize(new_block_size);
-  } else {
+  if (keep_old_size) {
     LayoutUnit old_block_size =
         NGFragment(writing_direction_, physical_fragment).BlockSize();
-#if DCHECK_IS_ON()
-    // Tables don't respect the typical block-sizing rules.
-    if (!physical_fragment.IsTableNG())
-      DCHECK_EQ(old_block_size, new_block_size);
-#endif
     container_builder_.SetFragmentBlockSize(old_block_size);
+  } else {
+    container_builder_.SetIntrinsicBlockSize(result.IntrinsicBlockSize());
+
+    LayoutUnit new_block_size = ComputeBlockSizeForFragment(
+        ConstraintSpace(), Style(), BorderPadding(),
+        result.IntrinsicBlockSize(),
+        container_builder_.InitialBorderBoxSize().inline_size);
+
+    // Only block-flow is allowed to change its block-size during "simplified"
+    // layout, all other layout types must remain the same size.
+    if (is_block_flow) {
+      container_builder_.SetFragmentBlockSize(new_block_size);
+    } else {
+      LayoutUnit old_block_size =
+          NGFragment(writing_direction_, physical_fragment).BlockSize();
+#if DCHECK_IS_ON()
+      // Tables, sections, rows don't respect the typical block-sizing rules.
+      if (!physical_fragment.IsTableNG() &&
+          !physical_fragment.IsTableNGSection() &&
+          !physical_fragment.IsTableNGRow())
+        DCHECK_EQ(old_block_size, new_block_size);
+#endif
+      container_builder_.SetFragmentBlockSize(old_block_size);
+    }
   }
 
   // We need the previous physical container size to calculate the position of
   // any child fragments.
   previous_physical_container_size_ = physical_fragment.Size();
+}
+
+void NGSimplifiedLayoutAlgorithm::CloneOldChildren() {
+  const auto& previous_fragment =
+      To<NGPhysicalBoxFragment>(previous_result_.PhysicalFragment());
+  for (const auto& child_link : previous_fragment.Children()) {
+    const auto& child_fragment = *child_link.get();
+    AddChildFragment(child_link, child_fragment);
+  }
+}
+
+void NGSimplifiedLayoutAlgorithm::AppendNewChildFragment(
+    const NGPhysicalFragment& fragment,
+    LogicalOffset offset) {
+  container_builder_.AddChild(fragment, offset);
+}
+
+scoped_refptr<const NGLayoutResult>
+NGSimplifiedLayoutAlgorithm::CreateResultAfterManualChildLayout() {
+  return container_builder_.ToBoxFragment();
 }
 
 scoped_refptr<const NGLayoutResult> NGSimplifiedLayoutAlgorithm::Layout() {
@@ -220,10 +267,24 @@ scoped_refptr<const NGLayoutResult> NGSimplifiedLayoutAlgorithm::Layout() {
     // calculated it.
     const auto* layer = child.GetLayoutBox()->Layer();
     NGLogicalStaticPosition position = layer->GetStaticPosition();
-
+    absl::optional<LogicalRect> containing_block_rect;
+    if (previous_fragment.IsGridNG()) {
+      // TODO(ansollan): We could move this into
+      // |NGOutOfFlowLayoutPart::GetContainingBlockInfo| and unify both
+      // codepaths. Positioned items with a defined grid area are rare, but grid
+      // tracks would need to be recomputed in those cases.
+      containing_block_rect =
+          NGGridLayoutAlgorithm::PlaceOutOfFlowItemFromSimplifiedLayout(
+              To<NGBlockNode>(child), container_builder_.GetNGGridData(),
+              Style(), writing_direction_.GetWritingMode(),
+              container_builder_.Borders(),
+              container_builder_.InitialBorderBoxSize(),
+              container_builder_.FragmentsTotalBlockSize());
+    }
     container_builder_.AddOutOfFlowChildCandidate(
         To<NGBlockNode>(child), position.offset, position.inline_edge,
-        position.block_edge, /* needs_block_offset_adjustment */ false);
+        position.block_edge, /* needs_block_offset_adjustment */ false,
+        containing_block_rect);
   }
 
   // We add both items and line-box fragments for existing mechanisms to work.

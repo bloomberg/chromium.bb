@@ -6,12 +6,13 @@
 
 #include <stddef.h>
 #include <string.h>
+
 #include <atomic>
+#include <ostream>
 
 #include "base/check_op.h"
 #include "base/compiler_specific.h"
 #include "base/no_destructor.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "url/url_canon_internal.h"
 #include "url/url_constants.h"

@@ -443,18 +443,14 @@ wtf_size_t NGGridBlockTrackCollection::RangeCount() const {
 NGGridSet::NGGridSet(wtf_size_t track_count)
     : track_count_(track_count),
       track_size_(Length::Auto(), Length::Auto()),
-      growth_limit_(kIndefiniteSize),
-      fit_content_limit_(kIndefiniteSize),
-      is_infinitely_growable_(false) {}
+      fit_content_limit_(kIndefiniteSize) {}
 
 NGGridSet::NGGridSet(wtf_size_t track_count,
                      const GridTrackSize& track_size,
                      bool is_available_size_indefinite)
     : track_count_(track_count),
       track_size_(track_size),
-      growth_limit_(kIndefiniteSize),
-      fit_content_limit_(kIndefiniteSize),
-      is_infinitely_growable_(false) {
+      fit_content_limit_(kIndefiniteSize) {
   if (track_size_.IsFitContent()) {
     DCHECK(track_size_.FitContentTrackBreadth().IsLength());
 
@@ -521,6 +517,12 @@ void NGGridSet::SetBaseSize(LayoutUnit base_size) {
   EnsureGrowthLimitIsNotLessThanBaseSize();
 }
 
+void NGGridSet::InitBaseSize(LayoutUnit base_size) {
+  DCHECK_NE(base_size, kIndefiniteSize);
+  base_size_ = base_size;
+  EnsureGrowthLimitIsNotLessThanBaseSize();
+}
+
 LayoutUnit NGGridSet::GrowthLimit() const {
   DCHECK(!IsGrowthLimitLessThanBaseSize());
   return growth_limit_;
@@ -566,6 +568,11 @@ NGGridLayoutAlgorithmTrackCollection::NGGridLayoutAlgorithmTrackCollection(
                      is_available_size_indefinite);
   }
 }
+
+NGGridLayoutAlgorithmTrackCollection::NGGridLayoutAlgorithmTrackCollection(
+    const Vector<Range>& ranges,
+    GridTrackSizingDirection direction)
+    : direction_(direction), ranges_(ranges) {}
 
 void NGGridLayoutAlgorithmTrackCollection::AppendTrackRange(
     const NGGridBlockTrackCollection::Range& block_track_range,

@@ -16,14 +16,8 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 
-class GURL;
 struct ExtensionMsg_ExternalConnectionInfo;
 struct ExtensionMsg_TabTargetConnectionInfo;
-struct ServiceWorkerIdentifier;
-
-namespace base {
-class DictionaryValue;
-}
 
 namespace content {
 class BrowserContext;
@@ -64,30 +58,6 @@ class ExtensionMessageFilter : public content::BrowserMessageFilter {
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // Message handlers on the UI thread.
-  void OnExtensionAddLazyListener(const std::string& extension_id,
-                                  const std::string& event_name);
-  void OnExtensionAddLazyServiceWorkerListener(
-      const std::string& extension_id,
-      const std::string& event_name,
-      const GURL& service_worker_scope);
-  void OnExtensionRemoveLazyListener(const std::string& extension_id,
-                                     const std::string& event_name);
-  void OnExtensionRemoveLazyServiceWorkerListener(
-      const std::string& extension_id,
-      const std::string& event_name,
-      const GURL& worker_scope_url);
-  void OnExtensionAddFilteredListener(
-      const std::string& extension_id,
-      const std::string& event_name,
-      absl::optional<ServiceWorkerIdentifier> sw_identifier,
-      const base::DictionaryValue& filter,
-      bool lazy);
-  void OnExtensionRemoveFilteredListener(
-      const std::string& extension_id,
-      const std::string& event_name,
-      absl::optional<ServiceWorkerIdentifier> sw_identifier,
-      const base::DictionaryValue& filter,
-      bool lazy);
   void OnExtensionTransferBlobsAck(const std::vector<std::string>& blob_uuids);
   void OnExtensionWakeEventPage(int request_id,
                                 const std::string& extension_id);

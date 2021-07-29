@@ -6,12 +6,10 @@
 #define SERVICES_NETWORK_IGNORE_ERRORS_CERT_VERIFIER_H_
 
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/component_export.h"
-#include "base/containers/flat_set.h"
 #include "net/base/completion_once_callback.h"
 #include "net/cert/cert_verifier.h"
 #include "services/network/public/cpp/spki_hash_set.h"

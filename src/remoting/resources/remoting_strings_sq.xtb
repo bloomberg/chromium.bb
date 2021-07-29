@@ -24,6 +24,7 @@ Për të dhënë këtë autorizim, kliko "<ph name="BUTTON_NAME" />" më poshtë
 Nëse "<ph name="SERVICE_SCRIPT_NAME" />" është e zgjedhur tashmë, anulo zgjedhjen e saj dhe më pas zgjidhe përsëri.</translation>
 <translation id="225614027745146050">Mirë se erdhe</translation>
 <translation id="2320166752086256636">Fshih tastierën</translation>
+<translation id="2329392777730037872">Hapja e <ph name="URL" /> në pajisjen e klientit dështoi.</translation>
 <translation id="2333212046079545895">Të drejtat e autorit 2021 Google LLC. Të gjitha të drejtat të rezervuara.</translation>
 <translation id="2359808026110333948">Vazhdo</translation>
 <translation id="2366718077645204424">Strehuesi nuk mund të arrihet. Kjo ndodh ndoshta për shkak të konfigurimit të rrjetit që po përdor.</translation>
@@ -67,6 +68,7 @@ Nëse "<ph name="SERVICE_SCRIPT_NAME" />" është e zgjedhur tashmë, anulo zgje
 <translation id="4176825807642096119">Kodi i qasjes</translation>
 <translation id="4227991223508142681">Mjeti i sigurimit të strehuesit</translation>
 <translation id="4240294130679914010">Çinstaluesi i strehuesit të Chromoting</translation>
+<translation id="4257751272692708833">Përcjellësi i URL së <ph name="PRODUCT_NAME" /></translation>
 <translation id="4277736576214464567">Kodi i qasjes është i pavlefshëm. Provo sërish.</translation>
 <translation id="4281844954008187215">Kushtet e shërbimit</translation>
 <translation id="4405930547258349619">Biblioteka kryesore</translation>
@@ -87,6 +89,7 @@ Nëse "<ph name="SERVICE_SCRIPT_NAME" />" është e zgjedhur tashmë, anulo zgje
 <translation id="4867841927763172006">Dërgo PrtScn</translation>
 <translation id="4974476491460646149">Lidhja u mbyll për <ph name="HOSTNAME" /></translation>
 <translation id="4985296110227979402">Në fillim duhet të konfigurosh kompjuterin për qasjen në largësi</translation>
+<translation id="4987330545941822761">"Desktopi në distancë i Chrome" nuk mund të përcaktojë shfletuesin për hapjen e URL-ve në nivel lokal. Zgjidhe atë nga lista më poshtë.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (jashtë linje)</translation>
 <translation id="507204348399810022">A je i sigurt se dëshiron t'i çaktivizosh lidhjet me <ph name="HOSTNAME" />?</translation>
 <translation id="5170982930780719864">ID e pavlefshme strehuesi.</translation>
@@ -121,6 +124,7 @@ Nëse "<ph name="SERVICE_SCRIPT_NAME" />" është e zgjedhur tashmë, anulo zgje
 <translation id="6612717000975622067">Dërgo Ctrl-Alt-Del</translation>
 <translation id="6654753848497929428">Ndaj</translation>
 <translation id="677755392401385740">Strehuesi u nis për përdoruesin: <ph name="HOST_USERNAME" />.</translation>
+<translation id="6902524959760471898">Aplikacion ndihmës për të hapur një URL te klienti <ph name="PRODUCT_NAME" /></translation>
 <translation id="6939719207673461467">Shfaq/fshih tastierën.</translation>
 <translation id="6963936880795878952">Lidhjet me kompjuterin në largësi janë të bllokuara përkohësisht sepse dikush po përpiqej të lidhej me të nëpërmjet një kodi PIN të pavlefshëm. Provo përsëri më vonë.</translation>
 <translation id="6965382102122355670">Në rregull</translation>
@@ -133,6 +137,7 @@ Nëse "<ph name="SERVICE_SCRIPT_NAME" />" është e zgjedhur tashmë, anulo zgje
 <translation id="7144878232160441200">Provo sërish</translation>
 <translation id="7312846573060934304">Strehuesi është jashtë linje.</translation>
 <translation id="7319983568955948908">Ndalo ndarjen</translation>
+<translation id="7359298090707901886">Shfletuesi i zgjedhur nuk mund të përdoret për të hapur URL-të në pajisjen lokale.</translation>
 <translation id="7401733114166276557">"Desktopi në distancë" i Chrome</translation>
 <translation id="7434397035092923453">Qasja u refuzua për klientin: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Klienti i lidhur: <ph name="CLIENT_USERNAME" />.</translation>

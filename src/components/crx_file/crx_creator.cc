@@ -4,9 +4,9 @@
 
 #include "components/crx_file/crx_creator.h"
 
+#include "base/cxx17_backports.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/stl_util.h"
 #include "components/crx_file/crx3.pb.h"
 #include "components/crx_file/crx_file.h"
 #include "crypto/rsa_private_key.h"
@@ -73,8 +73,10 @@ CreatorResult SignArchiveAndCreateHeader(const base::FilePath& output_path,
       signed_header_data.SerializeAsString();
   const int signed_header_size = signed_header_data_str.size();
   const uint8_t signed_header_size_octets[] = {
-      signed_header_size, signed_header_size >> 8, signed_header_size >> 16,
-      signed_header_size >> 24};
+      static_cast<uint8_t>(signed_header_size),
+      static_cast<uint8_t>(signed_header_size >> 8),
+      static_cast<uint8_t>(signed_header_size >> 16),
+      static_cast<uint8_t>(signed_header_size >> 24)};
 
   // Create a signer, init with purpose, SignedData length, run SignedData
   // through, run ZIP through.
@@ -106,8 +108,10 @@ CreatorResult WriteCRX(const CrxFileHeader& header,
                        base::File* file) {
   const std::string header_str = header.SerializeAsString();
   const int header_size = header_str.size();
-  const uint8_t header_size_octets[] = {header_size, header_size >> 8,
-                                        header_size >> 16, header_size >> 24};
+  const uint8_t header_size_octets[] = {
+      static_cast<uint8_t>(header_size), static_cast<uint8_t>(header_size >> 8),
+      static_cast<uint8_t>(header_size >> 16),
+      static_cast<uint8_t>(header_size >> 24)};
 
   const uint8_t format_version_octets[] = {3, 0, 0, 0};
   base::File crx(output_path,

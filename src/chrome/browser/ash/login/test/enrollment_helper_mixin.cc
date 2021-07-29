@@ -9,7 +9,7 @@
 #include "chrome/browser/ash/login/enrollment/enterprise_enrollment_helper.h"
 #include "chrome/browser/ash/login/enrollment/enterprise_enrollment_helper_mock.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
-#include "chrome/browser/chromeos/policy/active_directory_join_delegate.h"
+#include "chrome/browser/ash/policy/active_directory/active_directory_join_delegate.h"
 
 using testing::_;
 using testing::AtLeast;
@@ -154,7 +154,7 @@ void EnrollmentHelperMixin::ExpectAttributePromptUpdate(
 }
 
 void EnrollmentHelperMixin::SetupActiveDirectoryJoin(
-    ActiveDirectoryJoinDelegate* delegate,
+    policy::ActiveDirectoryJoinDelegate* delegate,
     const std::string& expected_domain,
     const std::string& domain_join_config,
     const std::string& dm_token) {
@@ -178,13 +178,6 @@ void EnrollmentHelperMixin::ExpectTokenEnrollmentSuccess(
   EXPECT_CALL(*mock_, EnrollUsingEnrollmentToken(token))
       .WillOnce(InvokeWithoutArgs(
           [this]() { mock_->status_consumer()->OnDeviceEnrolled(); }));
-}
-
-void EnrollmentHelperMixin::ExpectRestoreAfterRollback() {
-  EXPECT_CALL(*mock_, RestoreAfterRollback)
-      .WillOnce(InvokeWithoutArgs([this]() {
-        mock_->status_consumer()->OnRestoreAfterRollbackCompleted();
-      }));
 }
 
 }  // namespace test

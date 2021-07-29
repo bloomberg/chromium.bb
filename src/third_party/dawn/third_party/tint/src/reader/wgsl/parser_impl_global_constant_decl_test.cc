@@ -48,6 +48,33 @@ TEST_F(ParserImplTest, GlobalConstantDecl) {
       ast::HasDecoration<ast::OverrideDecoration>(e.value->decorations()));
 }
 
+TEST_F(ParserImplTest, GlobalConstantDecl_Inferred) {
+  auto p = parser("let a = 1.");
+  auto decos = p->decoration_list();
+  EXPECT_FALSE(decos.errored);
+  EXPECT_FALSE(decos.matched);
+  auto e = p->global_constant_decl(decos.value);
+  EXPECT_FALSE(p->has_error()) << p->error();
+  EXPECT_TRUE(e.matched);
+  EXPECT_FALSE(e.errored);
+  ASSERT_NE(e.value, nullptr);
+
+  EXPECT_TRUE(e->is_const());
+  EXPECT_EQ(e->symbol(), p->builder().Symbols().Get("a"));
+  EXPECT_EQ(e->type(), nullptr);
+
+  EXPECT_EQ(e->source().range.begin.line, 1u);
+  EXPECT_EQ(e->source().range.begin.column, 5u);
+  EXPECT_EQ(e->source().range.end.line, 1u);
+  EXPECT_EQ(e->source().range.end.column, 6u);
+
+  ASSERT_NE(e->constructor(), nullptr);
+  EXPECT_TRUE(e->constructor()->Is<ast::ConstructorExpression>());
+
+  EXPECT_FALSE(
+      ast::HasDecoration<ast::OverrideDecoration>(e.value->decorations()));
+}
+
 TEST_F(ParserImplTest, GlobalConstantDecl_InvalidVariable) {
   auto p = parser("let a : invalid = 1.");
   auto decos = p->decoration_list();
@@ -58,7 +85,7 @@ TEST_F(ParserImplTest, GlobalConstantDecl_InvalidVariable) {
   EXPECT_TRUE(e.errored);
   EXPECT_FALSE(e.matched);
   EXPECT_EQ(e.value, nullptr);
-  EXPECT_EQ(p->error(), "1:9: unknown constructed type 'invalid'");
+  EXPECT_EQ(p->error(), "1:9: unknown type 'invalid'");
 }
 
 TEST_F(ParserImplTest, GlobalConstantDecl_InvalidExpression) {
@@ -179,23 +206,6 @@ TEST_F(ParserImplTest, GlobalConstantDec_Override_InvalidId) {
 
   EXPECT_TRUE(p->has_error());
   EXPECT_EQ(p->error(), "1:12: override decoration must be positive");
-}
-
-TEST_F(ParserImplTest, GlobalConstantDec_Const) {
-  auto p = parser("const a : i32 = 1");
-  auto decos = p->decoration_list();
-  EXPECT_FALSE(decos.errored);
-  EXPECT_FALSE(decos.matched);
-
-  auto e = p->global_constant_decl(decos.value);
-  EXPECT_TRUE(e.matched);
-  EXPECT_FALSE(e.errored);
-  EXPECT_EQ(
-      p->builder().Diagnostics().str(),
-      R"(test.wgsl:1:1 warning: use of deprecated language feature: use 'let' instead of 'const'
-const a : i32 = 1
-^^^^^
-)");
 }
 
 }  // namespace

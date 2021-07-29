@@ -1047,7 +1047,8 @@
                         "ExcludeSameSiteUnspecifiedTreatedAsLax",
                         "ExcludeSameSiteNoneInsecure",
                         "ExcludeSameSiteLax",
-                        "ExcludeSameSiteStrict"
+                        "ExcludeSameSiteStrict",
+                        "ExcludeInvalidSameParty"
                     ]
                 },
                 {
@@ -1079,7 +1080,14 @@
                     "properties": [
                         {
                             "name": "cookie",
+                            "description": "If AffectedCookie is not set then rawCookieLine contains the raw\nSet-Cookie header string. This hints at a problem where the\ncookie line is syntactically or semantically malformed in a way\nthat no valid cookie could be created.",
+                            "optional": true,
                             "$ref": "AffectedCookie"
+                        },
+                        {
+                            "name": "rawCookieLine",
+                            "optional": true,
+                            "type": "string"
                         },
                         {
                             "name": "cookieWarningReasons",
@@ -1558,6 +1566,43 @@
                     ]
                 },
                 {
+                    "id": "NavigatorUserAgentIssueDetails",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "url",
+                            "type": "string"
+                        },
+                        {
+                            "name": "location",
+                            "optional": true,
+                            "$ref": "SourceCodeLocation"
+                        }
+                    ]
+                },
+                {
+                    "id": "WasmCrossOriginModuleSharingIssueDetails",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "wasmModuleUrl",
+                            "type": "string"
+                        },
+                        {
+                            "name": "sourceOrigin",
+                            "type": "string"
+                        },
+                        {
+                            "name": "targetOrigin",
+                            "type": "string"
+                        },
+                        {
+                            "name": "isWarning",
+                            "type": "boolean"
+                        }
+                    ]
+                },
+                {
                     "id": "InspectorIssueCode",
                     "description": "A unique identifier for the type of issue. Each type may use one of the\noptional fields in InspectorIssueDetails to convey more specific\ninformation about the kind of issue.",
                     "type": "string",
@@ -1572,7 +1617,9 @@
                         "LowTextContrastIssue",
                         "CorsIssue",
                         "AttributionReportingIssue",
-                        "QuirksModeIssue"
+                        "QuirksModeIssue",
+                        "NavigatorUserAgentIssue",
+                        "WasmCrossOriginModuleSharingIssue"
                     ]
                 },
                 {
@@ -1634,8 +1681,23 @@
                             "name": "quirksModeIssueDetails",
                             "optional": true,
                             "$ref": "QuirksModeIssueDetails"
+                        },
+                        {
+                            "name": "navigatorUserAgentIssueDetails",
+                            "optional": true,
+                            "$ref": "NavigatorUserAgentIssueDetails"
+                        },
+                        {
+                            "name": "wasmCrossOriginModuleSharingIssue",
+                            "optional": true,
+                            "$ref": "WasmCrossOriginModuleSharingIssueDetails"
                         }
                     ]
+                },
+                {
+                    "id": "IssueId",
+                    "description": "A unique id for a DevTools inspector issue. Allows other entities (e.g.\nexceptions, CDP message, console messages, etc.) to reference an issue.",
+                    "type": "string"
                 },
                 {
                     "id": "InspectorIssue",
@@ -1649,6 +1711,12 @@
                         {
                             "name": "details",
                             "$ref": "InspectorIssueDetails"
+                        },
+                        {
+                            "name": "issueId",
+                            "description": "A unique id for this issue. May be omitted if no other entity (e.g.\nexception, CDP message, etc.) is referencing this issue.",
+                            "optional": true,
+                            "$ref": "IssueId"
                         }
                     ]
                 }
@@ -2625,7 +2693,7 @@
                         },
                         {
                             "name": "sourceURL",
-                            "description": "Stylesheet resource URL.",
+                            "description": "Stylesheet resource URL. Empty if this is a constructed stylesheet created using\nnew CSSStyleSheet() (but non-empty if this is a constructed sylesheet imported\nas a CSS module script).",
                             "type": "string"
                         },
                         {
@@ -2673,7 +2741,7 @@
                         },
                         {
                             "name": "isConstructed",
-                            "description": "Whether this stylesheet is a constructed stylesheet (created using new CSSStyleSheet()).",
+                            "description": "True if this stylesheet is created through new CSSStyleSheet() or imported as a\nCSS module script.",
                             "type": "boolean"
                         },
                         {
@@ -2736,6 +2804,16 @@
                             "type": "array",
                             "items": {
                                 "$ref": "CSSMedia"
+                            }
+                        },
+                        {
+                            "name": "containerQueries",
+                            "description": "Container query list array (for rules involving container queries).\nThe array enumerates container queries starting with the innermost one, going outwards.",
+                            "experimental": true,
+                            "optional": true,
+                            "type": "array",
+                            "items": {
+                                "$ref": "CSSContainerQuery"
                             }
                         }
                     ]
@@ -3027,6 +3105,37 @@
                             "description": "Computed length of media query expression (if applicable).",
                             "optional": true,
                             "type": "number"
+                        }
+                    ]
+                },
+                {
+                    "id": "CSSContainerQuery",
+                    "description": "CSS container query rule descriptor.",
+                    "experimental": true,
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "text",
+                            "description": "Container query text.",
+                            "type": "string"
+                        },
+                        {
+                            "name": "range",
+                            "description": "The associated rule header range in the enclosing stylesheet (if\navailable).",
+                            "optional": true,
+                            "$ref": "SourceRange"
+                        },
+                        {
+                            "name": "styleSheetId",
+                            "description": "Identifier of the stylesheet containing this object (if exists).",
+                            "optional": true,
+                            "$ref": "StyleSheetId"
+                        },
+                        {
+                            "name": "name",
+                            "description": "Optional name for the container.",
+                            "optional": true,
+                            "type": "string"
                         }
                     ]
                 },
@@ -3587,6 +3696,32 @@
                             "name": "media",
                             "description": "The resulting CSS media rule after modification.",
                             "$ref": "CSSMedia"
+                        }
+                    ]
+                },
+                {
+                    "name": "setContainerQueryText",
+                    "description": "Modifies the expression of a container query.",
+                    "experimental": true,
+                    "parameters": [
+                        {
+                            "name": "styleSheetId",
+                            "$ref": "StyleSheetId"
+                        },
+                        {
+                            "name": "range",
+                            "$ref": "SourceRange"
+                        },
+                        {
+                            "name": "text",
+                            "type": "string"
+                        }
+                    ],
+                    "returns": [
+                        {
+                            "name": "containerQuery",
+                            "description": "The resulting CSS container query rule after modification.",
+                            "$ref": "CSSContainerQuery"
                         }
                     ]
                 },
@@ -4161,6 +4296,7 @@
                         "target-text",
                         "spelling-error",
                         "grammar-error",
+                        "highlight",
                         "first-line-inherited",
                         "scrollbar",
                         "scrollbar-thumb",
@@ -4180,6 +4316,16 @@
                         "user-agent",
                         "open",
                         "closed"
+                    ]
+                },
+                {
+                    "id": "CompatibilityMode",
+                    "description": "Document compatibility mode.",
+                    "type": "string",
+                    "enum": [
+                        "QuirksMode",
+                        "LimitedQuirksMode",
+                        "NoQuirksMode"
                     ]
                 },
                 {
@@ -4364,6 +4510,11 @@
                             "description": "Whether the node is SVG.",
                             "optional": true,
                             "type": "boolean"
+                        },
+                        {
+                            "name": "compatibilityMode",
+                            "optional": true,
+                            "$ref": "CompatibilityMode"
                         }
                     ]
                 },
@@ -5492,6 +5643,30 @@
                         {
                             "name": "nodeId",
                             "description": "Id of the node at given coordinates, only when enabled and requested document.",
+                            "optional": true,
+                            "$ref": "NodeId"
+                        }
+                    ]
+                },
+                {
+                    "name": "getContainerForNode",
+                    "description": "Returns the container of the given node based on container query conditions.\nIf containerName is given, it will find the nearest container with a matching name;\notherwise it will find the nearest container regardless of its container name.",
+                    "experimental": true,
+                    "parameters": [
+                        {
+                            "name": "nodeId",
+                            "$ref": "NodeId"
+                        },
+                        {
+                            "name": "containerName",
+                            "optional": true,
+                            "type": "string"
+                        }
+                    ],
+                    "returns": [
+                        {
+                            "name": "nodeId",
+                            "description": "The container node for the given node, or null if not found.",
                             "optional": true,
                             "$ref": "NodeId"
                         }
@@ -10238,6 +10413,13 @@
                             "experimental": true,
                             "optional": true,
                             "$ref": "TrustTokenParams"
+                        },
+                        {
+                            "name": "isSameSite",
+                            "description": "True if this resource request is considered to be the 'same site' as the\nrequest correspondinfg to the main frame.",
+                            "experimental": true,
+                            "optional": true,
+                            "type": "boolean"
                         }
                     ]
                 },
@@ -11406,7 +11588,7 @@
                     "type": "string",
                     "enum": [
                         "None",
-                        "CorsOrCredentialless",
+                        "Credentialless",
                         "RequireCorp"
                     ]
                 },
@@ -12055,23 +12237,6 @@
                             "items": {
                                 "$ref": "CookieParam"
                             }
-                        }
-                    ]
-                },
-                {
-                    "name": "setDataSizeLimitsForTest",
-                    "description": "For testing.",
-                    "experimental": true,
-                    "parameters": [
-                        {
-                            "name": "maxTotalSize",
-                            "description": "Maximum total buffer size.",
-                            "type": "integer"
-                        },
-                        {
-                            "name": "maxResourceSize",
-                            "description": "Maximum per-resource size.",
-                            "type": "integer"
                         }
                     ]
                 },
@@ -12871,6 +13036,94 @@
                             "type": "integer"
                         }
                     ]
+                },
+                {
+                    "name": "subresourceWebBundleMetadataReceived",
+                    "description": "Fired once when parsing the .wbn file has succeeded.\nThe event contains the information about the web bundle contents.",
+                    "experimental": true,
+                    "parameters": [
+                        {
+                            "name": "requestId",
+                            "description": "Request identifier. Used to match this information to another event.",
+                            "$ref": "RequestId"
+                        },
+                        {
+                            "name": "urls",
+                            "description": "A list of URLs of resources in the subresource Web Bundle.",
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "subresourceWebBundleMetadataError",
+                    "description": "Fired once when parsing the .wbn file has failed.",
+                    "experimental": true,
+                    "parameters": [
+                        {
+                            "name": "requestId",
+                            "description": "Request identifier. Used to match this information to another event.",
+                            "$ref": "RequestId"
+                        },
+                        {
+                            "name": "errorMessage",
+                            "description": "Error message",
+                            "type": "string"
+                        }
+                    ]
+                },
+                {
+                    "name": "subresourceWebBundleInnerResponseParsed",
+                    "description": "Fired when handling requests for resources within a .wbn file.\nNote: this will only be fired for resources that are requested by the webpage.",
+                    "experimental": true,
+                    "parameters": [
+                        {
+                            "name": "innerRequestId",
+                            "description": "Request identifier of the subresource request",
+                            "$ref": "RequestId"
+                        },
+                        {
+                            "name": "innerRequestURL",
+                            "description": "URL of the subresource resource.",
+                            "type": "string"
+                        },
+                        {
+                            "name": "bundleRequestId",
+                            "description": "Bundle request identifier. Used to match this information to another event.\nThis made be absent in case when the instrumentation was enabled only\nafter webbundle was parsed.",
+                            "optional": true,
+                            "$ref": "RequestId"
+                        }
+                    ]
+                },
+                {
+                    "name": "subresourceWebBundleInnerResponseError",
+                    "description": "Fired when request for resources within a .wbn file failed.",
+                    "experimental": true,
+                    "parameters": [
+                        {
+                            "name": "innerRequestId",
+                            "description": "Request identifier of the subresource request",
+                            "$ref": "RequestId"
+                        },
+                        {
+                            "name": "innerRequestURL",
+                            "description": "URL of the subresource resource.",
+                            "type": "string"
+                        },
+                        {
+                            "name": "errorMessage",
+                            "description": "Error message",
+                            "type": "string"
+                        },
+                        {
+                            "name": "bundleRequestId",
+                            "description": "Bundle request identifier. Used to match this information to another event.\nThis made be absent in case when the instrumentation was enabled only\nafter webbundle was parsed.",
+                            "optional": true,
+                            "$ref": "RequestId"
+                        }
+                    ]
                 }
             ]
         },
@@ -13273,6 +13526,12 @@
                             "description": "The contrast algorithm to use for the contrast ratio (default: aa).",
                             "optional": true,
                             "$ref": "ContrastAlgorithm"
+                        },
+                        {
+                            "name": "containerQueryContainerHighlightConfig",
+                            "description": "The container query container highlight configuration (default: all transparent).",
+                            "optional": true,
+                            "$ref": "ContainerQueryContainerHighlightConfig"
                         }
                     ]
                 },
@@ -13385,6 +13644,34 @@
                             "description": "The content box highlight outline color (default: transparent).",
                             "optional": true,
                             "$ref": "DOM.RGBA"
+                        }
+                    ]
+                },
+                {
+                    "id": "ContainerQueryHighlightConfig",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "containerQueryContainerHighlightConfig",
+                            "description": "A descriptor for the highlight appearance of container query containers.",
+                            "$ref": "ContainerQueryContainerHighlightConfig"
+                        },
+                        {
+                            "name": "nodeId",
+                            "description": "Identifier of the container node to highlight.",
+                            "$ref": "DOM.NodeId"
+                        }
+                    ]
+                },
+                {
+                    "id": "ContainerQueryContainerHighlightConfig",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "containerBorder",
+                            "description": "The style of the container border",
+                            "optional": true,
+                            "$ref": "LineStyle"
                         }
                     ]
                 },
@@ -13744,6 +14031,19 @@
                     ]
                 },
                 {
+                    "name": "setShowContainerQueryOverlays",
+                    "parameters": [
+                        {
+                            "name": "containerQueryHighlightConfigs",
+                            "description": "An array of node identifiers and descriptors for the highlight appearance.",
+                            "type": "array",
+                            "items": {
+                                "$ref": "ContainerQueryHighlightConfig"
+                            }
+                        }
+                    ]
+                },
+                {
                     "name": "setShowPaintRects",
                     "description": "Requests that backend shows paint rectangles",
                     "parameters": [
@@ -13888,6 +14188,36 @@
                     ]
                 },
                 {
+                    "id": "AdFrameExplanation",
+                    "experimental": true,
+                    "type": "string",
+                    "enum": [
+                        "ParentIsAd",
+                        "CreatedByAdScript",
+                        "MatchedBlockingRule"
+                    ]
+                },
+                {
+                    "id": "AdFrameStatus",
+                    "description": "Indicates whether a frame has been identified as an ad and why.",
+                    "experimental": true,
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "adFrameType",
+                            "$ref": "AdFrameType"
+                        },
+                        {
+                            "name": "explanations",
+                            "optional": true,
+                            "type": "array",
+                            "items": {
+                                "$ref": "AdFrameExplanation"
+                            }
+                        }
+                    ]
+                },
+                {
                     "id": "SecureContextType",
                     "description": "Indicates whether the frame is a secure context and why it is the case.",
                     "experimental": true,
@@ -13923,12 +14253,13 @@
                 },
                 {
                     "id": "PermissionsPolicyFeature",
-                    "description": "All Permissions Policy features. This enum should match the one defined\nin renderer/core/feature_policy/feature_policy_features.json5.",
+                    "description": "All Permissions Policy features. This enum should match the one defined\nin third_party/blink/renderer/core/permissions_policy/permissions_policy_features.json5.",
                     "experimental": true,
                     "type": "string",
                     "enum": [
                         "accelerometer",
                         "ambient-light-sensor",
+                        "attribution-reporting",
                         "autoplay",
                         "camera",
                         "ch-dpr",
@@ -13936,9 +14267,11 @@
                         "ch-downlink",
                         "ch-ect",
                         "ch-lang",
+                        "ch-prefers-color-scheme",
                         "ch-rtt",
                         "ch-ua",
                         "ch-ua-arch",
+                        "ch-ua-bitness",
                         "ch-ua-platform",
                         "ch-ua-model",
                         "ch-ua-mobile",
@@ -13948,7 +14281,6 @@
                         "ch-width",
                         "clipboard-read",
                         "clipboard-write",
-                        "conversion-measurement",
                         "cross-origin-isolated",
                         "direct-sockets",
                         "display-capture",
@@ -13981,6 +14313,7 @@
                         "usb",
                         "vertical-scroll",
                         "web-share",
+                        "window-placement",
                         "xr-spatial-tracking"
                     ]
                 },
@@ -14206,11 +14539,11 @@
                             "type": "string"
                         },
                         {
-                            "name": "adFrameType",
-                            "description": "Indicates whether this frame was tagged as an ad.",
+                            "name": "adFrameStatus",
+                            "description": "Indicates whether this frame was tagged as an ad and why.",
                             "experimental": true,
                             "optional": true,
-                            "$ref": "AdFrameType"
+                            "$ref": "AdFrameStatus"
                         },
                         {
                             "name": "secureContextType",
@@ -14780,6 +15113,134 @@
                         "Navigation",
                         "BackForwardCacheRestore"
                     ]
+                },
+                {
+                    "id": "BackForwardCacheNotRestoredReason",
+                    "description": "List of not restored reasons for back-forward cache.",
+                    "experimental": true,
+                    "type": "string",
+                    "enum": [
+                        "NotMainFrame",
+                        "BackForwardCacheDisabled",
+                        "RelatedActiveContentsExist",
+                        "HTTPStatusNotOK",
+                        "SchemeNotHTTPOrHTTPS",
+                        "Loading",
+                        "WasGrantedMediaAccess",
+                        "DisableForRenderFrameHostCalled",
+                        "DomainNotAllowed",
+                        "HTTPMethodNotGET",
+                        "SubframeIsNavigating",
+                        "Timeout",
+                        "CacheLimit",
+                        "JavaScriptExecution",
+                        "RendererProcessKilled",
+                        "RendererProcessCrashed",
+                        "GrantedMediaStreamAccess",
+                        "SchedulerTrackedFeatureUsed",
+                        "ConflictingBrowsingInstance",
+                        "CacheFlushed",
+                        "ServiceWorkerVersionActivation",
+                        "SessionRestored",
+                        "ServiceWorkerPostMessage",
+                        "EnteredBackForwardCacheBeforeServiceWorkerHostAdded",
+                        "RenderFrameHostReused_SameSite",
+                        "RenderFrameHostReused_CrossSite",
+                        "ServiceWorkerClaim",
+                        "IgnoreEventAndEvict",
+                        "HaveInnerContents",
+                        "TimeoutPuttingInCache",
+                        "BackForwardCacheDisabledByLowMemory",
+                        "BackForwardCacheDisabledByCommandLine",
+                        "NetworkRequestDatapipeDrainedAsBytesConsumer",
+                        "NetworkRequestRedirected",
+                        "NetworkRequestTimeout",
+                        "NetworkExceedsBufferLimit",
+                        "NavigationCancelledWhileRestoring",
+                        "NotMostRecentNavigationEntry",
+                        "BackForwardCacheDisabledForPrerender",
+                        "UserAgentOverrideDiffers",
+                        "ForegroundCacheLimit",
+                        "BrowsingInstanceNotSwapped",
+                        "BackForwardCacheDisabledForDelegate",
+                        "OptInUnloadHeaderNotPresent",
+                        "UnloadHandlerExistsInSubFrame",
+                        "ServiceWorkerUnregistration",
+                        "WebSocket",
+                        "WebRTC",
+                        "MainResourceHasCacheControlNoStore",
+                        "MainResourceHasCacheControlNoCache",
+                        "SubresourceHasCacheControlNoStore",
+                        "SubresourceHasCacheControlNoCache",
+                        "ContainsPlugins",
+                        "DocumentLoaded",
+                        "DedicatedWorkerOrWorklet",
+                        "OutstandingNetworkRequestOthers",
+                        "OutstandingIndexedDBTransaction",
+                        "RequestedGeolocationPermission",
+                        "RequestedNotificationsPermission",
+                        "RequestedMIDIPermission",
+                        "RequestedAudioCapturePermission",
+                        "RequestedVideoCapturePermission",
+                        "RequestedBackForwardCacheBlockedSensors",
+                        "RequestedBackgroundWorkPermission",
+                        "BroadcastChannel",
+                        "IndexedDBConnection",
+                        "WebXR",
+                        "SharedWorker",
+                        "WebLocks",
+                        "WebHID",
+                        "WebShare",
+                        "RequestedStorageAccessGrant",
+                        "WebNfc",
+                        "WebFileSystem",
+                        "OutstandingNetworkRequestFetch",
+                        "OutstandingNetworkRequestXHR",
+                        "AppBanner",
+                        "Printing",
+                        "WebDatabase",
+                        "PictureInPicture",
+                        "Portal",
+                        "SpeechRecognizer",
+                        "IdleManager",
+                        "PaymentManager",
+                        "SpeechSynthesis",
+                        "KeyboardLock",
+                        "WebOTPService",
+                        "OutstandingNetworkRequestDirectSocket",
+                        "IsolatedWorldScript",
+                        "InjectedStyleSheet",
+                        "MediaSessionImplOnServiceCreated",
+                        "Unknown"
+                    ]
+                },
+                {
+                    "id": "BackForwardCacheNotRestoredReasonType",
+                    "description": "Types of not restored reasons for back-forward cache.",
+                    "experimental": true,
+                    "type": "string",
+                    "enum": [
+                        "SupportPending",
+                        "PageSupportNeeded",
+                        "Circumstantial"
+                    ]
+                },
+                {
+                    "id": "BackForwardCacheNotRestoredExplanation",
+                    "experimental": true,
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "type",
+                            "description": "Type of the reason",
+                            "$ref": "BackForwardCacheNotRestoredReasonType"
+                        },
+                        {
+                            "name": "reason",
+                            "description": "Not restored reason",
+                            "$ref": "BackForwardCacheNotRestoredReason"
+                        }
+                    ]
                 }
             ],
             "commands": [
@@ -14848,7 +15309,8 @@
                             "type": "string",
                             "enum": [
                                 "jpeg",
-                                "png"
+                                "png",
+                                "webp"
                             ]
                         },
                         {
@@ -16255,6 +16717,14 @@
                             "name": "frameId",
                             "description": "The frame id of the associated frame.",
                             "$ref": "FrameId"
+                        },
+                        {
+                            "name": "notRestoredExplanations",
+                            "description": "Array of reasons why the page could not be cached. This must not be empty.",
+                            "type": "array",
+                            "items": {
+                                "$ref": "BackForwardCacheNotRestoredExplanation"
+                            }
                         }
                     ]
                 },
@@ -18858,7 +19328,7 @@
                 },
                 {
                     "id": "RequestStage",
-                    "description": "Stages of the request to handle. Request will intercept before the request is\nsent. Response will intercept after the response is received (but before response\nbody is received.",
+                    "description": "Stages of the request to handle. Request will intercept before the request is\nsent. Response will intercept after the response is received (but before response\nbody is received).",
                     "type": "string",
                     "enum": [
                         "Request",
@@ -20539,7 +21009,7 @@
                     "parameters": [
                         {
                             "name": "maxScriptsCacheSize",
-                            "description": "The maximum size in bytes of collected scripts (not referenced by other heap objects)\nthe debugger can hold. Puts no limit if paramter is omitted.",
+                            "description": "The maximum size in bytes of collected scripts (not referenced by other heap objects)\nthe debugger can hold. Puts no limit if parameter is omitted.",
                             "experimental": true,
                             "optional": true,
                             "type": "number"
@@ -21717,7 +22187,7 @@
                         },
                         {
                             "name": "treatGlobalObjectsAsRoots",
-                            "description": "If true, a raw snapshot without artifical roots will be generated",
+                            "description": "If true, a raw snapshot without artificial roots will be generated",
                             "optional": true,
                             "type": "boolean"
                         },
@@ -22302,7 +22772,7 @@
                 },
                 {
                     "name": "preciseCoverageDeltaUpdate",
-                    "description": "Reports coverage delta since the last poll (either from an event like this, or from\n`takePreciseCoverage` for the current isolate. May only be sent if precise code\ncoverage has been started. This event can be trigged by the embedder to, for example,\ntrigger collection of coverage data immediatelly at a certain point in time.",
+                    "description": "Reports coverage delta since the last poll (either from an event like this, or from\n`takePreciseCoverage` for the current isolate. May only be sent if precise code\ncoverage has been started. This event can be trigged by the embedder to, for example,\ntrigger collection of coverage data immediately at a certain point in time.",
                     "experimental": true,
                     "parameters": [
                         {
@@ -22311,7 +22781,7 @@
                             "type": "number"
                         },
                         {
-                            "name": "occassion",
+                            "name": "occasion",
                             "description": "Identifier for distinguishing coverage events.",
                             "type": "string"
                         },
@@ -22784,7 +23254,7 @@
                         },
                         {
                             "name": "uniqueId",
-                            "description": "A system-unique execution context identifier. Unlike the id, this is unique accross\nmultiple processes, so can be reliably used to identify specific context while backend\nperforms a cross-process navigation.",
+                            "description": "A system-unique execution context identifier. Unlike the id, this is unique across\nmultiple processes, so can be reliably used to identify specific context while backend\nperforms a cross-process navigation.",
                             "experimental": true,
                             "type": "string"
                         },
@@ -22850,6 +23320,13 @@
                             "description": "Identifier of the context where exception happened.",
                             "optional": true,
                             "$ref": "ExecutionContextId"
+                        },
+                        {
+                            "name": "exceptionMetaData",
+                            "description": "Dictionary with entries of meta data that the client associated\nwith this exception, such as information about associated network\nrequests, etc.",
+                            "experimental": true,
+                            "optional": true,
+                            "type": "object"
                         }
                     ]
                 },
@@ -23056,6 +23533,13 @@
                             "description": "Symbolic group name that can be used to release multiple objects. If objectGroup is not\nspecified and objectId is, objectGroup will be inherited from object.",
                             "optional": true,
                             "type": "string"
+                        },
+                        {
+                            "name": "throwOnSideEffect",
+                            "description": "Whether to throw an exception if side effect cannot be ruled out during evaluation.",
+                            "experimental": true,
+                            "optional": true,
+                            "type": "boolean"
                         }
                     ],
                     "returns": [
@@ -23220,7 +23704,7 @@
                         },
                         {
                             "name": "uniqueContextId",
-                            "description": "An alternative way to specify the execution context to evaluate in.\nCompared to contextId that may be reused accross processes, this is guaranteed to be\nsystem-unique, so it can be used to prevent accidental evaluation of the expression\nin context different than intended (e.g. as a result of navigation accross process\nboundaries).\nThis is mutually exclusive with `contextId`.",
+                            "description": "An alternative way to specify the execution context to evaluate in.\nCompared to contextId that may be reused across processes, this is guaranteed to be\nsystem-unique, so it can be used to prevent accidental evaluation of the expression\nin context different than intended (e.g. as a result of navigation across process\nboundaries).\nThis is mutually exclusive with `contextId`.",
                             "experimental": true,
                             "optional": true,
                             "type": "string"

@@ -33,8 +33,8 @@
 #include "content/browser/renderer_host/render_widget_host_view_event_handler.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/public/browser/render_process_host.h"
-#include "gpu/ipc/common/gpu_messages.h"
 #include "third_party/blink/public/common/input/web_touch_event.h"
+#include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom.h"
 #include "third_party/blink/public/mojom/frame/viewport_intersection_state.mojom.h"
 #include "ui/base/ime/mojom/text_input_state.mojom.h"
 #include "ui/gfx/geometry/dip_util.h"
@@ -47,7 +47,7 @@ namespace content {
 // static
 RenderWidgetHostViewChildFrame* RenderWidgetHostViewChildFrame::Create(
     RenderWidgetHost* widget,
-    const blink::ScreenInfo& parent_screen_info) {
+    const display::ScreenInfo& parent_screen_info) {
   RenderWidgetHostViewChildFrame* view =
       new RenderWidgetHostViewChildFrame(widget, parent_screen_info);
   view->Init();
@@ -56,7 +56,7 @@ RenderWidgetHostViewChildFrame* RenderWidgetHostViewChildFrame::Create(
 
 RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
     RenderWidgetHost* widget_host,
-    const blink::ScreenInfo& parent_screen_info)
+    const display::ScreenInfo& parent_screen_info)
     : RenderWidgetHostViewBase(widget_host),
       frame_sink_id_(
           base::checked_cast<uint32_t>(widget_host->GetProcess()->GetID()),
@@ -415,6 +415,23 @@ void RenderWidgetHostViewChildFrame::UpdateTooltipUnderCursor(
 
   if (cursor_manager->IsViewUnderCursor(this))
     root_view->UpdateTooltip(tooltip_text);
+}
+
+void RenderWidgetHostViewChildFrame::UpdateTooltipFromKeyboard(
+    const std::u16string& tooltip_text,
+    const gfx::Rect& bounds) {
+  if (!frame_connector_)
+    return;
+
+  auto* root_view = frame_connector_->GetRootRenderWidgetHostView();
+  if (!root_view)
+    return;
+
+  // TODO(bebeaudr): Keyboard-triggered tooltips are not positioned correctly
+  // when set for an element in an OOPIF. See https://crbug.com/1210269.
+  gfx::Rect adjusted_bounds(TransformPointToRootCoordSpace(bounds.origin()),
+                            bounds.size());
+  root_view->UpdateTooltipFromKeyboard(tooltip_text, adjusted_bounds);
 }
 
 RenderWidgetHostViewBase* RenderWidgetHostViewChildFrame::GetParentView() {
@@ -791,7 +808,7 @@ void RenderWidgetHostViewChildFrame::CopyFromSurface(
   if (src_subrect.IsEmpty()) {
     request->set_area(gfx::Rect(GetCompositorViewportPixelSize()));
   } else {
-    blink::ScreenInfo screen_info;
+    display::ScreenInfo screen_info;
     GetScreenInfo(&screen_info);
     // |src_subrect| is in DIP coordinates; convert to Surface coordinates.
     request->set_area(
@@ -910,7 +927,7 @@ RenderWidgetHostViewChildFrame::FilterInputEvent(
 }
 
 void RenderWidgetHostViewChildFrame::GetScreenInfo(
-    blink::ScreenInfo* screen_info) {
+    display::ScreenInfo* screen_info) {
   // TODO(crbug.com/1182855): Propagate screen infos from the parent on changes
   // and on connection init; avoid lazily updating the local cache like this.
   if (frame_connector_)
@@ -984,6 +1001,12 @@ void RenderWidgetHostViewChildFrame::OnDidUpdateVisualPropertiesComplete(
 
 void RenderWidgetHostViewChildFrame::DidNavigate() {
   host()->SynchronizeVisualProperties();
+}
+
+ui::Compositor* RenderWidgetHostViewChildFrame::GetCompositor() {
+  if (!GetRootView())
+    return nullptr;
+  return GetRootView()->GetCompositor();
 }
 
 }  // namespace content

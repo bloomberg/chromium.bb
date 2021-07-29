@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser;
 
+import static org.chromium.chrome.browser.base.SplitCompatUtils.CHROME_SPLIT_NAME;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
@@ -14,8 +16,12 @@ import androidx.annotation.Nullable;
 import androidx.annotation.StyleRes;
 import androidx.appcompat.app.AppCompatActivity;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.base.SplitChromeApplication;
 import org.chromium.chrome.browser.base.SplitCompatUtils;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -23,19 +29,33 @@ import org.chromium.chrome.browser.language.GlobalAppLocaleController;
 import org.chromium.chrome.browser.night_mode.GlobalNightModeStateProviderHolder;
 import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
 import org.chromium.chrome.browser.night_mode.NightModeUtils;
+import org.chromium.chrome.browser.ui.theme.ColorDelegateImpl;
+import org.chromium.ui.modaldialog.ModalDialogManager;
+import org.chromium.ui.modaldialog.ModalDialogManagerHolder;
 
 /**
- * A subclass of {@link AppCompatActivity} that maintains states applied to all activities in
- * {@link ChromeApplication} (e.g. night mode).
+ * A subclass of {@link AppCompatActivity} that maintains states and objects applied to all
+ * activities in {@link ChromeApplication} (e.g. night mode).
  */
-public class ChromeBaseAppCompatActivity
-        extends AppCompatActivity implements NightModeStateProvider.Observer {
+public class ChromeBaseAppCompatActivity extends AppCompatActivity
+        implements NightModeStateProvider.Observer, ModalDialogManagerHolder {
+    private final ObservableSupplierImpl<ModalDialogManager> mModalDialogManagerSupplier =
+            new ObservableSupplierImpl<>();
     private NightModeStateProvider mNightModeStateProvider;
     private @StyleRes int mThemeResId;
 
     @Override
     protected void attachBaseContext(Context newBase) {
         super.attachBaseContext(newBase);
+
+        // Make sure the "chrome" split is loaded before checking if ClassLoaders are equal.
+        SplitChromeApplication.finishPreload(CHROME_SPLIT_NAME);
+        if (!ChromeBaseAppCompatActivity.class.getClassLoader().equals(
+                    ContextUtils.getApplicationContext().getClassLoader())) {
+            // This should only happen on Android O. See crbug.com/1146745 for more info.
+            throw new IllegalStateException("ClassLoader mismatch detected.");
+        }
+
         mNightModeStateProvider = createNightModeStateProvider();
 
         Configuration config = new Configuration();
@@ -51,13 +71,12 @@ public class ChromeBaseAppCompatActivity
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         getSupportFragmentManager().setFragmentFactory(SplitCompatUtils.createFragmentFactory());
+        mModalDialogManagerSupplier.set(createModalDialogManager());
 
         initializeNightModeStateProvider();
         mNightModeStateProvider.addObserver(this);
-        if (CachedFeatureFlags.isEnabled(ChromeFeatureList.THEME_REFACTOR_ANDROID)) {
-            setTheme(R.style.ThemeRefactorAppThemeOverlay);
-        }
         super.onCreate(savedInstanceState);
+        applyThemeOverlays();
 
         // Activity level locale overrides must be done in onCreate.
         GlobalAppLocaleController.getInstance().maybeOverrideContextConfig(this);
@@ -66,6 +85,10 @@ public class ChromeBaseAppCompatActivity
     @Override
     protected void onDestroy() {
         mNightModeStateProvider.removeObserver(this);
+        if (mModalDialogManagerSupplier.get() != null) {
+            mModalDialogManagerSupplier.get().destroy();
+            mModalDialogManagerSupplier.set(null);
+        }
         super.onDestroy();
     }
 
@@ -80,6 +103,33 @@ public class ChromeBaseAppCompatActivity
         super.onConfigurationChanged(newConfig);
         NightModeUtils.updateConfigurationForNightMode(
                 this, mNightModeStateProvider.isInNightMode(), newConfig, mThemeResId);
+    }
+
+    // Implementation of ModalDialogManagerHolder
+    /**
+     * @return The {@link ModalDialogManager} that manages the display of modal dialogs (e.g.
+     *         JavaScript dialogs).
+     */
+    @Override
+    public ModalDialogManager getModalDialogManager() {
+        // TODO(jinsukkim): Remove this method in favor of getModalDialogManagerSupplier().
+        return getModalDialogManagerSupplier().get();
+    }
+
+    /**
+     * Returns the supplier of {@link ModalDialogManager} that manages the display of modal dialogs.
+     */
+    public ObservableSupplier<ModalDialogManager> getModalDialogManagerSupplier() {
+        return mModalDialogManagerSupplier;
+    }
+
+    /**
+     * Creates a {@link ModalDialogManager} for this class. Subclasses that need one should override
+     * this method.
+     */
+    @Nullable
+    protected ModalDialogManager createModalDialogManager() {
+        return null;
     }
 
     /**
@@ -118,6 +168,28 @@ public class ChromeBaseAppCompatActivity
      * state.
      */
     protected void initializeNightModeStateProvider() {}
+
+    /**
+     * Apply theme overlay to this activity class.
+     */
+    @CallSuper
+    protected void applyThemeOverlays() {
+        setTheme(R.style.ColorOverlay_ChromiumAndroid);
+
+        if (CachedFeatureFlags.isEnabled(ChromeFeatureList.DYNAMIC_COLOR_ANDROID)) {
+            new ColorDelegateImpl().applyDynamicColorsIfAvailable(this);
+        }
+        // Try to enable browser overscroll when content overscroll is enabled for consistency. This
+        // needs to be in a cached feature because activity startup happens before native is
+        // initialized. Unfortunately content overscroll is read in renderer threads, and these two
+        // are not synchronized. Typically the first time overscroll is enabled, the following will
+        // use the old value and then content will pick up the enabled value, causing one execution
+        // of inconsistency.
+        if (BuildInfo.isAtLeastS()
+                && !CachedFeatureFlags.isEnabled(ChromeFeatureList.ELASTIC_OVERSCROLL)) {
+            setTheme(R.style.ThemeOverlay_DisableOverscroll);
+        }
+    }
 
     // NightModeStateProvider.Observer implementation.
     @Override

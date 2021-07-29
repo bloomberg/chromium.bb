@@ -5,128 +5,151 @@
 #include "components/arc/compat_mode/resize_util.h"
 
 #include <memory>
-#include <set>
-#include <string>
 
-#include "ash/public/cpp/window_properties.h"
-#include "base/stl_util.h"
-#include "components/arc/compat_mode/arc_resize_lock_pref_delegate.h"
-#include "components/exo/test/exo_test_base_views.h"
+#include "ash/public/cpp/toast_manager.h"
+#include "components/arc/compat_mode/test/compat_mode_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/aura/window.h"
-#include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 
 namespace arc {
 namespace {
 
 constexpr char kTestAppId[] = "123";
 
-class TestArcResizeLockPrefDelegate : public ArcResizeLockPrefDelegate {
+class FakeToastManager : public ash::ToastManager {
  public:
-  ~TestArcResizeLockPrefDelegate() override = default;
+  ~FakeToastManager() override = default;
 
-  // ArcResizeLockPrefDelegate:
-  mojom::ArcResizeLockState GetResizeLockState(
-      const std::string& app_id) const override {
-    return mojom::ArcResizeLockState::UNDEFINED;
-  }
-  void SetResizeLockState(const std::string& app_id,
-                          mojom::ArcResizeLockState state) override {}
-  bool GetResizeLockNeedsConfirmation(const std::string& app_id) override {
-    return base::Contains(confirmation_needed_app_ids_, app_id);
-  }
-  void SetResizeLockNeedsConfirmation(const std::string& app_id,
-                                      bool is_needed) override {
-    if (GetResizeLockNeedsConfirmation(app_id) == is_needed)
-      return;
+  // ToastManager overrides:
+  void Show(const ash::ToastData& data) override { called_show_ = true; }
+  void Cancel(const std::string& id) override { called_cancel_ = true; }
 
-    if (is_needed)
-      confirmation_needed_app_ids_.push_back(app_id);
-    else
-      base::Erase(confirmation_needed_app_ids_, app_id);
-  }
+  bool called_show() { return called_show_; }
+  bool called_cancel() { return called_cancel_; }
 
  private:
-  std::vector<std::string> confirmation_needed_app_ids_;
+  bool called_show_{false};
+  bool called_cancel_{false};
 };
 
 }  // namespace
 
-class ResizeUtilTest : public exo::test::ExoTestBaseViews {
+class ResizeUtilTest : public CompatModeTestBase {
  public:
   // Overridden from test::Test.
   void SetUp() override {
-    exo::test::ExoTestBaseViews::SetUp();
-    widget_ = CreateTestWidget(views::Widget::InitParams::TYPE_WINDOW);
-    widget_->GetNativeWindow()->SetProperty(ash::kAppIDKey,
-                                            std::string(kTestAppId));
+    CompatModeTestBase::SetUp();
+    widget_ = CreateArcWidget(std::string(kTestAppId));
+  }
+  void TearDown() override {
+    widget_->CloseNow();
+    CompatModeTestBase::TearDown();
   }
 
-  TestArcResizeLockPrefDelegate* pref_delegate() { return &pref_delegate_; }
   views::Widget* widget() { return widget_.get(); }
 
  private:
-  TestArcResizeLockPrefDelegate pref_delegate_;
   std::unique_ptr<views::Widget> widget_;
 };
 
 // Test that resize phone works properly in both needs-confirmation and no
 // needs-conirmation case.
-TEST_F(ResizeUtilTest, TestResizeToPhone) {
+TEST_F(ResizeUtilTest, TestResizeLockToPhone) {
   widget()->Maximize();
 
-  // Test the widget is NOT resized immediately if the confirmation dialog is
-  // needed.
-  pref_delegate()->SetResizeLockNeedsConfirmation(kTestAppId, true);
-  ResizeToPhoneWithConfirmationIfNeeded(widget(), pref_delegate());
-  EXPECT_TRUE(widget()->IsMaximized());
-
-  // Test the widget is resized without confirmation.
+  // Test the widget is resized.
   pref_delegate()->SetResizeLockNeedsConfirmation(kTestAppId, false);
   EXPECT_TRUE(widget()->IsMaximized());
-  ResizeToPhoneWithConfirmationIfNeeded(widget(), pref_delegate());
+  ResizeLockToPhone(widget(), pref_delegate());
   EXPECT_FALSE(widget()->IsMaximized());
   EXPECT_LT(widget()->GetWindowBoundsInScreen().width(),
             widget()->GetWindowBoundsInScreen().height());
+  EXPECT_EQ(PredictCurrentMode(widget(), pref_delegate()),
+            ResizeCompatMode::kPhone);
 }
 
 // Test that resize tablet works properly in both needs-confirmation and no
 // needs-conirmation case.
-TEST_F(ResizeUtilTest, TestResizeToTablet) {
+TEST_F(ResizeUtilTest, TestResizeLockToTablet) {
   widget()->Maximize();
 
-  // Test the widget is NOT resized immediately if the confirmation dialog is
-  // needed.
-  pref_delegate()->SetResizeLockNeedsConfirmation(kTestAppId, true);
-  ResizeToTabletWithConfirmationIfNeeded(widget(), pref_delegate());
-  EXPECT_TRUE(widget()->IsMaximized());
-
-  // Test the widget is resized without confirmation.
+  // Test the widget is resized.
   pref_delegate()->SetResizeLockNeedsConfirmation(kTestAppId, false);
   EXPECT_TRUE(widget()->IsMaximized());
-  ResizeToTabletWithConfirmationIfNeeded(widget(), pref_delegate());
+  ResizeLockToTablet(widget(), pref_delegate());
   EXPECT_FALSE(widget()->IsMaximized());
   EXPECT_GT(widget()->GetWindowBoundsInScreen().width(),
             widget()->GetWindowBoundsInScreen().height());
+  EXPECT_EQ(PredictCurrentMode(widget(), pref_delegate()),
+            ResizeCompatMode::kTablet);
 }
 
-// Test that resize desktop works properly in both needs-confirmation and no
-// needs-conirmation case.
-TEST_F(ResizeUtilTest, TestResizeToDesktop) {
-  widget()->Restore();
+// Test that resize phone/tablet works properly on small displays.
+TEST_F(ResizeUtilTest, TestResizeLockToPhoneTabletOnSmallDisplay) {
+  pref_delegate()->SetResizeLockNeedsConfirmation(kTestAppId, false);
 
-  // Test the widget is NOT resized immediately if the confirmation dialog is
+  // Set small workarea size.
+  constexpr gfx::Size workarea_size(300, 300);
+  SetDisplayWorkArea(gfx::Rect(workarea_size));
+
+  // Shrink size according to the workarea size.
+  ResizeLockToPhone(widget(), pref_delegate());
+  EXPECT_LT(widget()->GetWindowBoundsInScreen().width(),
+            widget()->GetWindowBoundsInScreen().height());
+  EXPECT_LT(widget()->GetWindowBoundsInScreen().width(), workarea_size.width());
+  EXPECT_LT(widget()->GetWindowBoundsInScreen().height(),
+            workarea_size.height());
+
+  // Don't shrink size so that Android can decide what to do.
+  ResizeLockToTablet(widget(), pref_delegate());
+  EXPECT_GE(widget()->GetWindowBoundsInScreen().width(), workarea_size.width());
+  EXPECT_GE(widget()->GetWindowBoundsInScreen().height(),
+            workarea_size.height());
+}
+
+// Test that enabling resizing works properly in both needs-confirmation and no
+// needs-conirmation case.
+TEST_F(ResizeUtilTest, TestEnableResizing) {
+  FakeToastManager fake_toast_manager;
+
+  // Test the state is NOT changed immediately if the confirmation dialog is
   // needed.
   pref_delegate()->SetResizeLockNeedsConfirmation(kTestAppId, true);
-  ResizeToDesktopWithConfirmationIfNeeded(widget(), pref_delegate());
-  EXPECT_FALSE(widget()->IsMaximized());
+  EnableResizingWithConfirmationIfNeeded(widget(), pref_delegate());
+  EXPECT_NE(pref_delegate()->GetResizeLockState(kTestAppId),
+            mojom::ArcResizeLockState::OFF);
+  EXPECT_FALSE(fake_toast_manager.called_cancel());
+  EXPECT_FALSE(fake_toast_manager.called_show());
 
-  // Test the widget is resized without confirmation.
+  // Test the state is changed without confirmation.
   pref_delegate()->SetResizeLockNeedsConfirmation(kTestAppId, false);
-  EXPECT_FALSE(widget()->IsMaximized());
-  ResizeToDesktopWithConfirmationIfNeeded(widget(), pref_delegate());
-  EXPECT_TRUE(widget()->IsMaximized());
+  EnableResizingWithConfirmationIfNeeded(widget(), pref_delegate());
+  EXPECT_EQ(pref_delegate()->GetResizeLockState(kTestAppId),
+            mojom::ArcResizeLockState::OFF);
+  EXPECT_EQ(PredictCurrentMode(widget(), pref_delegate()),
+            ResizeCompatMode::kResizable);
+  EXPECT_TRUE(fake_toast_manager.called_cancel());
+  EXPECT_TRUE(fake_toast_manager.called_show());
+}
+
+// Test that should show dialog screen dialog caps at a preset limit
+TEST_F(ResizeUtilTest, TestShouldShowSplashScreenDialog) {
+  // Defines maximum number of showing splash screen per user.
+  const int kMaxNumSplashScreen = 2;
+  pref_delegate()->SetShowSplashScreenDialogCount(kMaxNumSplashScreen);
+
+  for (int i = 0; i < kMaxNumSplashScreen; i++)
+    EXPECT_TRUE(ShouldShowSplashScreenDialog(pref_delegate()));
+  EXPECT_FALSE(ShouldShowSplashScreenDialog(pref_delegate()));
+}
+
+// Test that an unresizable app is not in resizable mode.
+TEST_F(ResizeUtilTest, TestPredictCurrentModeForUnresizable) {
+  widget()->widget_delegate()->SetCanResize(false);
+  ResizeLockToPhone(widget(), pref_delegate());
+  EXPECT_EQ(PredictCurrentMode(widget(), pref_delegate()),
+            ResizeCompatMode::kPhone);
 }
 
 }  // namespace arc

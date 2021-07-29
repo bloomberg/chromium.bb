@@ -7,19 +7,20 @@
 
 #include <map>
 
+#include "base/types/id_type.h"
 #include "base/types/pass_key.h"
-#include "base/util/type_safety/id_type.h"
 #include "device/vr/android/arcore/address_to_id_map.h"
 #include "device/vr/android/arcore/arcore_plane_manager.h"
 #include "device/vr/android/arcore/arcore_sdk.h"
 #include "device/vr/android/arcore/scoped_arcore_objects.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace device {
 
 class ArCoreImpl;
 
-using AnchorId = util::IdTypeU64<class AnchorTag>;
+using AnchorId = base::IdTypeU64<class AnchorTag>;
 
 class ArCoreAnchorManager {
  public:
@@ -28,8 +29,7 @@ class ArCoreAnchorManager {
   ~ArCoreAnchorManager();
 
   // Updates anchor manager state - it should be called in every frame if the
-  // ARCore session supports anchors. Currently, all ARCore sessions support
-  // anchors.
+  // ARCore session has anchors feature enabled.
   void Update(ArFrame* ar_frame);
 
   mojom::XRAnchorsDataPtr GetAnchorsData() const;
@@ -86,6 +86,17 @@ class ArCoreAnchorManager {
   // Set containing IDs of anchors updated in the last frame. It should be
   // modified only during calls to |Update()|.
   std::set<AnchorId> updated_anchor_ids_;
+
+#if DCHECK_IS_ON()
+  // True if |GetAnchorsData()| was called after |Update()|. It is used to track
+  // if |Update()| was called twice in a row w/o a call to |GetAnchorsData()| in
+  // between. Initially true since we expect the call to |Update()| to happen
+  // next.
+  // TODO(https://crbug.com/1192844): remove the assumption that the calls to
+  // |Update()| will always be followed by at least one call to
+  // |GetAnchorsData()| before the next call to |Update()| happens.
+  mutable bool was_anchor_data_retrieved_in_current_frame_ = true;
+#endif
 };
 
 }  // namespace device

@@ -45,6 +45,7 @@
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_info.h"
 #include "services/network/public/cpp/http_raw_request_response_info.h"
+#include "services/network/public/cpp/ip_address_space_util.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
@@ -59,7 +60,6 @@
 #include "third_party/blink/public/common/loader/referrer_utils.h"
 #include "third_party/blink/public/common/loader/resource_type_util.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
-#include "third_party/blink/public/common/net/ip_address_space_util.h"
 #include "third_party/blink/public/common/security/security_style.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
@@ -344,7 +344,7 @@ class WebURLLoader::Context : public WebRequestPeer {
   scoped_refptr<base::SingleThreadTaskRunner> GetMaybeUnfreezableTaskRunner();
 
   void Cancel();
-  void SetDefersLoading(WebURLLoader::DeferType value);
+  void Freeze(WebLoaderFreezeMode mode);
   void DidChangePriority(WebURLRequest::Priority new_priority,
                          int intra_priority_value);
   void Start(std::unique_ptr<network::ResourceRequest> request,
@@ -373,13 +373,6 @@ class WebURLLoader::Context : public WebRequestPeer {
       std::unique_ptr<WebResourceRequestSender> resource_request_sender);
 
  private:
-  // The maximal number of bytes consumed in a task. When there are more bytes
-  // in the data pipe, they will be consumed in following tasks. Setting a too
-  // small number will generate ton of tasks but setting a too large number will
-  // lead to thread janks. Also, some clients cannot handle too large chunks
-  // (512k for example).
-  static constexpr uint32_t kMaxNumConsumedBytesInTask = 64 * 1024;
-
   ~Context() override;
 
   // Called when the body data stream is detached from the reader side.
@@ -417,7 +410,7 @@ class WebURLLoader::Context : public WebRequestPeer {
   scoped_refptr<base::SingleThreadTaskRunner> freezable_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> unfreezable_task_runner_;
   mojo::PendingRemote<mojom::KeepAliveHandle> keep_alive_handle_;
-  WebURLLoader::DeferType defers_loading_;
+  WebLoaderFreezeMode freeze_mode_ = WebLoaderFreezeMode::kNone;
   const WebVector<WebString> cors_exempt_header_list_;
   base::WaitableEvent* terminate_sync_load_event_;
 
@@ -435,9 +428,6 @@ class WebURLLoader::Context : public WebRequestPeer {
 };
 
 // WebURLLoader::Context -------------------------------------------------------
-
-// static
-constexpr uint32_t WebURLLoader::Context::kMaxNumConsumedBytesInTask;
 
 WebURLLoader::Context::Context(
     WebURLLoader* loader,
@@ -460,7 +450,6 @@ WebURLLoader::Context::Context(
       unfreezable_task_runner_(
           unfreezable_task_runner_handle_->GetTaskRunner()),
       keep_alive_handle_(std::move(keep_alive_handle)),
-      defers_loading_(WebURLLoader::DeferType::kNotDeferred),
       cors_exempt_header_list_(cors_exempt_header_list),
       terminate_sync_load_event_(terminate_sync_load_event),
       request_id_(-1),
@@ -490,10 +479,10 @@ void WebURLLoader::Context::Cancel() {
   loader_ = nullptr;
 }
 
-void WebURLLoader::Context::SetDefersLoading(WebURLLoader::DeferType value) {
+void WebURLLoader::Context::Freeze(WebLoaderFreezeMode mode) {
   if (request_id_ != -1)
-    resource_request_sender_->SetDefersLoading(value);
-  defers_loading_ = value;
+    resource_request_sender_->Freeze(mode);
+  freeze_mode_ = mode;
 }
 
 void WebURLLoader::Context::DidChangePriority(
@@ -592,7 +581,7 @@ void WebURLLoader::Context::Start(
   }
 
   if (sync_load_response) {
-    DCHECK(defers_loading_ == WebURLLoader::DeferType::kNotDeferred);
+    DCHECK(freeze_mode_ == WebLoaderFreezeMode::kNone);
 
     loader_options |= network::mojom::kURLLoadOptionSynchronous;
     request->load_flags |= net::LOAD_IGNORE_LIMITS;
@@ -623,9 +612,8 @@ void WebURLLoader::Context::Start(
       std::move(throttles), std::move(resource_load_info_notifier_wrapper),
       back_forward_cache_loader_helper_);
 
-  if (defers_loading_ != WebURLLoader::DeferType::kNotDeferred) {
-    resource_request_sender_->SetDefersLoading(
-        WebURLLoader::DeferType::kDeferred);
+  if (freeze_mode_ != WebLoaderFreezeMode::kNone) {
+    resource_request_sender_->Freeze(WebLoaderFreezeMode::kStrict);
   }
 }
 
@@ -829,7 +817,7 @@ void WebURLLoader::PopulateURLResponse(
   // answer.
   //
   // Implements: https://wicg.github.io/cors-rfc1918/#integration-html
-  response->SetAddressSpace(CalculateResourceAddressSpace(
+  response->SetAddressSpace(network::CalculateResourceAddressSpace(
       KURL(response->ResponseUrl()), head.remote_endpoint));
 
   WebVector<WebString> cors_exposed_header_names(
@@ -895,6 +883,7 @@ void WebURLLoader::PopulateURLResponse(
   }
 
   response->SetAuthChallengeInfo(head.auth_challenge_info);
+  response->SetRequestIncludeCredentials(head.request_include_credentials);
 
   const net::HttpResponseHeaders* headers = head.headers.get();
   if (!headers)
@@ -1058,9 +1047,9 @@ void WebURLLoader::Cancel() {
     context_->Cancel();
 }
 
-void WebURLLoader::SetDefersLoading(DeferType value) {
+void WebURLLoader::Freeze(WebLoaderFreezeMode mode) {
   if (context_)
-    context_->SetDefersLoading(value);
+    context_->Freeze(mode);
 }
 
 void WebURLLoader::DidChangePriority(WebURLRequest::Priority new_priority,

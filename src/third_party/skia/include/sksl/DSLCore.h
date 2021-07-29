@@ -23,6 +23,7 @@
 namespace SkSL {
 
 class Compiler;
+struct Program;
 struct ProgramSettings;
 
 namespace dsl {
@@ -48,14 +49,21 @@ void Start(SkSL::Compiler* compiler, SkSL::ProgramKind kind, const SkSL::Program
 void End();
 
 /**
+ * Returns all global elements (functions and global variables) as a self-contained Program.
+ */
+std::unique_ptr<SkSL::Program> ReleaseProgram();
+
+/**
  * Installs an ErrorHandler which will be notified of any errors that occur during DSL calls. If
  * no ErrorHandler is installed, any errors will be fatal.
  */
 void SetErrorHandler(ErrorHandler* errorHandler);
 
-DSLVar sk_FragColor();
+DSLGlobalVar sk_FragColor();
 
-DSLVar sk_FragCoord();
+DSLGlobalVar sk_FragCoord();
+
+DSLExpression sk_Position();
 
 /**
  * break;
@@ -68,14 +76,14 @@ DSLStatement Break();
 DSLStatement Continue();
 
 /**
- * Creates a variable declaration statement.
+ * Creates a local variable declaration statement.
  */
 DSLStatement Declare(DSLVar& var, PositionInfo pos = PositionInfo());
 
 /**
  * Declares a global variable.
  */
-void DeclareGlobal(DSLVar& var, PositionInfo pos = PositionInfo());
+void Declare(DSLGlobalVar& var, PositionInfo pos = PositionInfo());
 
 /**
  * default: statements
@@ -106,6 +114,10 @@ DSLStatement For(DSLStatement initializer, DSLExpression test, DSLExpression nex
  */
 DSLStatement If(DSLExpression test, DSLStatement ifTrue, DSLStatement ifFalse = DSLStatement(),
                 PositionInfo pos = PositionInfo());
+
+DSLGlobalVar InterfaceBlock(DSLModifiers modifiers,  skstd::string_view typeName,
+                            SkTArray<DSLField> fields, skstd::string_view varName = "",
+                            int arraySize = 0, PositionInfo pos = PositionInfo());
 
 /**
  * return [value];

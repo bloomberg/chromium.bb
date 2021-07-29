@@ -19,6 +19,7 @@
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/color_space.h"
 
 namespace base {
@@ -52,7 +53,6 @@ class MojoVideoDecoder final : public VideoDecoder,
       GpuVideoAcceleratorFactories* gpu_factories,
       MediaLog* media_log,
       mojo::PendingRemote<mojom::VideoDecoder> pending_remote_decoder,
-      VideoDecoderImplementation implementation,
       RequestOverlayInfoCB request_overlay_info_cb,
       const gfx::ColorSpace& target_color_space);
   ~MojoVideoDecoder() final;
@@ -155,8 +155,6 @@ class MojoVideoDecoder final : public VideoDecoder,
   bool initial_playback_outcome_reported_ = false;
   int total_frames_decoded_ = 0;
   int32_t max_decode_requests_ = 1;
-
-  VideoDecoderImplementation video_decoder_implementation_;
 
   base::WeakPtr<MojoVideoDecoder> weak_this_;
   base::WeakPtrFactory<MojoVideoDecoder> weak_factory_{this};

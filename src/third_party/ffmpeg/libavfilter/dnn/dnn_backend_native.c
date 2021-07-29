@@ -28,6 +28,7 @@
 #include "dnn_backend_native_layer_conv2d.h"
 #include "dnn_backend_native_layers.h"
 #include "dnn_io_proc.h"
+#include "dnn_backend_common.h"
 
 #define OFFSET(x) offsetof(NativeContext, x)
 #define FLAGS AV_OPT_FLAG_FILTERING_PARAM
@@ -114,10 +115,10 @@ static DNNReturnType get_output_native(void *model, const char *input_name, int 
 // For DEPTH_TO_SPACE layer: block_size
 DNNModel *ff_dnn_load_model_native(const char *model_filename, DNNFunctionType func_type, const char *options, AVFilterContext *filter_ctx)
 {
+#define DNN_NATIVE_MAGIC "FFMPEGDNNNATIVE"
     DNNModel *model = NULL;
-    char header_expected[] = "FFMPEGDNNNATIVE";
-    char *buf;
-    size_t size;
+    // sizeof - 1 to skip the terminating '\0' which is not written in the file
+    char buf[sizeof(DNN_NATIVE_MAGIC) - 1];
     int version, header_size, major_version_expected = 1;
     NativeModel *native_model = NULL;
     AVIOContext *model_file_context;
@@ -138,20 +139,10 @@ DNNModel *ff_dnn_load_model_native(const char *model_filename, DNNFunctionType f
     /**
      * check file header with string and version
      */
-    size = sizeof(header_expected);
-    buf = av_malloc(size);
-    if (!buf) {
+    if (avio_read(model_file_context, buf, sizeof(buf)) != sizeof(buf) ||
+        memcmp(buf, DNN_NATIVE_MAGIC, sizeof(buf)))
         goto fail;
-    }
-
-    // size - 1 to skip the ending '\0' which is not saved in file
-    avio_get_str(model_file_context, size - 1, buf, size);
-    dnn_size = size - 1;
-    if (strncmp(buf, header_expected, size) != 0) {
-        av_freep(&buf);
-        goto fail;
-    }
-    av_freep(&buf);
+    dnn_size = sizeof(buf);
 
     version = (int32_t)avio_rl32(model_file_context);
     dnn_size += 4;
@@ -168,12 +159,12 @@ DNNModel *ff_dnn_load_model_native(const char *model_filename, DNNFunctionType f
     if (!native_model){
         goto fail;
     }
+    model->model = native_model;
 
     native_model->ctx.class = &dnn_native_class;
     model->options = options;
     if (av_opt_set_from_string(&native_model->ctx, model->options, NULL, "=", "&") < 0)
         goto fail;
-    model->model = (void *)native_model;
     native_model->model = model;
 
 #if !HAVE_PTHREAD_CANCEL
@@ -242,6 +233,8 @@ DNNModel *ff_dnn_load_model_native(const char *model_filename, DNNFunctionType f
             oprd->dims[dim] = (int32_t)avio_rl32(model_file_context);
             dnn_size += 4;
         }
+        if (oprd->type == DOT_INPUT && oprd->dims[0] != 1)
+            goto fail;
 
         oprd->isNHWC = 1;
     }
@@ -318,8 +311,8 @@ static DNNReturnType execute_model_native(const DNNModel *model, const char *inp
     input.data = oprd->data;
     input.dt = oprd->data_type;
     if (do_ioproc) {
-        if (native_model->model->pre_proc != NULL) {
-            native_model->model->pre_proc(in_frame, &input, native_model->model->filter_ctx);
+        if (native_model->model->frame_pre_proc != NULL) {
+            native_model->model->frame_pre_proc(in_frame, &input, native_model->model->filter_ctx);
         } else {
             ff_proc_from_frame_to_dnn(in_frame, &input, native_model->model->func_type, ctx);
         }
@@ -339,7 +332,7 @@ static DNNReturnType execute_model_native(const DNNModel *model, const char *inp
                                             native_model->layers[layer].output_operand_index,
                                             native_model->layers[layer].params,
                                             &native_model->ctx) == DNN_ERROR) {
-            av_log(ctx, AV_LOG_ERROR, "Failed to execuet model\n");
+            av_log(ctx, AV_LOG_ERROR, "Failed to execute model\n");
             return DNN_ERROR;
         }
     }
@@ -366,8 +359,8 @@ static DNNReturnType execute_model_native(const DNNModel *model, const char *inp
         output.dt = oprd->data_type;
 
         if (do_ioproc) {
-            if (native_model->model->post_proc != NULL) {
-                native_model->model->post_proc(out_frame, &output, native_model->model->filter_ctx);
+            if (native_model->model->frame_post_proc != NULL) {
+                native_model->model->frame_post_proc(out_frame, &output, native_model->model->filter_ctx);
             } else {
                 ff_proc_from_dnn_to_frame(out_frame, &output, ctx);
             }
@@ -380,23 +373,17 @@ static DNNReturnType execute_model_native(const DNNModel *model, const char *inp
     return DNN_SUCCESS;
 }
 
-DNNReturnType ff_dnn_execute_model_native(const DNNModel *model, const char *input_name, AVFrame *in_frame,
-                                          const char **output_names, uint32_t nb_output, AVFrame *out_frame)
+DNNReturnType ff_dnn_execute_model_native(const DNNModel *model, DNNExecBaseParams *exec_params)
 {
     NativeModel *native_model = model->model;
     NativeContext *ctx = &native_model->ctx;
 
-    if (!in_frame) {
-        av_log(ctx, AV_LOG_ERROR, "in frame is NULL when execute model.\n");
+    if (ff_check_exec_params(ctx, DNN_NATIVE, model->func_type, exec_params) != 0) {
         return DNN_ERROR;
     }
 
-    if (!out_frame) {
-        av_log(ctx, AV_LOG_ERROR, "out frame is NULL when execute model.\n");
-        return DNN_ERROR;
-    }
-
-    return execute_model_native(model, input_name, in_frame, output_names, nb_output, out_frame, 1);
+    return execute_model_native(model, exec_params->input_name, exec_params->in_frame,
+                                exec_params->output_names, exec_params->nb_output, exec_params->out_frame, 1);
 }
 
 int32_t ff_calculate_operand_dims_count(const DnnOperand *oprd)

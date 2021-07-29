@@ -9,7 +9,17 @@
  */
 
 import '/strings.m.js';
+import './local_images_element.js';
 import './personalization_router_element.js';
+import './wallpaper_breadcrumb_element.js';
 import './wallpaper_collections_element.js';
 import './wallpaper_images_element.js';
+import './wallpaper_selected_element.js';
 import './styles.js';
+import {onMessageReceived} from './personalization_message_handler.js';
+import {emptyState} from './personalization_reducers.js';
+import {PersonalizationStore} from './personalization_store.js';
+
+PersonalizationStore.getInstance().init(emptyState());
+
+window.addEventListener('message', onMessageReceived);

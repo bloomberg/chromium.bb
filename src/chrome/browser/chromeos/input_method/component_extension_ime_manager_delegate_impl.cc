@@ -14,7 +14,6 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
@@ -257,9 +256,7 @@ bool ComponentExtensionIMEManagerDelegateImpl::ReadEngineComponent(
   const base::Value* language_value = nullptr;
   if (dict.Get(extensions::manifest_keys::kLanguage, &language_value)) {
     if (language_value->is_string()) {
-      std::string language_str;
-      language_value->GetAsString(&language_str);
-      languages.insert(language_str);
+      languages.insert(language_value->GetString());
     } else if (language_value->is_list()) {
       const base::ListValue* language_list = nullptr;
       language_value->GetAsList(&language_list);
@@ -282,7 +279,7 @@ bool ComponentExtensionIMEManagerDelegateImpl::ReadEngineComponent(
   if (!dict.GetList(extensions::manifest_keys::kLayouts, &layouts))
     return false;
 
-  if (layouts->empty() || !layouts->GetString(0, &out->layout)) {
+  if (layouts->GetList().empty() || !layouts->GetString(0, &out->layout)) {
     out->layout = "us";
   }
 

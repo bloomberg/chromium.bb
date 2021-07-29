@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
@@ -78,8 +77,7 @@ class CheckClientDownloadRequest : public CheckClientDownloadRequestBase,
 
   // Called when finishing the download, to decide whether to prompt the user
   // for deep scanning or not.
-  bool ShouldPromptForDeepScanning(DownloadCheckResultReason reason,
-                                   bool server_requests_prompt) const override;
+  bool ShouldPromptForDeepScanning(bool server_requests_prompt) const override;
 
   bool IsAllowlistedByPolicy() const override;
 

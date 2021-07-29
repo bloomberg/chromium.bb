@@ -43,51 +43,23 @@ enum TestContextOptions {
   SKIP_SETTINGS_INITIALIZATION = 0x2,
   // Permits mocking of the underlying |DataReductionProxyService|.
   USE_MOCK_SERVICE = 0x4,
-  // Permits mocking of the underlying |DataReductionProxyRequestOptions|.
-  USE_MOCK_REQUEST_OPTIONS = 0x8,
-  // Specifies the use of the |DataReductionProxyConfigServiceClient|.
-  USE_CONFIG_CLIENT = 0x10,
-  // Specifies the use of the |TESTDataReductionProxyConfigServiceClient|.
-  USE_TEST_CONFIG_CLIENT = 0x20,
 };
-
-const char kTestKey[] = "test-key";
-
 
 }  // namespace
 
 namespace data_reduction_proxy {
-
-TestDataReductionProxyRequestOptions::TestDataReductionProxyRequestOptions(
-    Client client,
-    const std::string& version)
-    : DataReductionProxyRequestOptions(client, version) {}
-
-std::string TestDataReductionProxyRequestOptions::GetDefaultKey() const {
-  return kTestKey;
-}
-
-MockDataReductionProxyRequestOptions::MockDataReductionProxyRequestOptions(
-    Client client)
-    : TestDataReductionProxyRequestOptions(client, "1.2.3.4") {}
-
-MockDataReductionProxyRequestOptions::~MockDataReductionProxyRequestOptions() {}
 
 MockDataReductionProxyService::MockDataReductionProxyService(
     data_use_measurement::DataUseMeasurement* data_use_measurement,
     DataReductionProxySettings* settings,
     PrefService* prefs,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
-    : DataReductionProxyService(
-          settings,
-          prefs,
-          std::make_unique<TestDataStore>(),
-          data_use_measurement,
-          task_runner,
-          base::TimeDelta(),
-          Client::UNKNOWN,
-          std::string(),
-          std::string()) {}
+    : DataReductionProxyService(settings,
+                                prefs,
+                                std::make_unique<TestDataStore>(),
+                                data_use_measurement,
+                                task_runner,
+                                base::TimeDelta()) {}
 
 MockDataReductionProxyService::~MockDataReductionProxyService() {}
 
@@ -96,16 +68,12 @@ TestDataReductionProxyService::TestDataReductionProxyService(
     DataReductionProxySettings* settings,
     PrefService* prefs,
     const scoped_refptr<base::SequencedTaskRunner>& db_task_runner)
-    : DataReductionProxyService(
-          settings,
-          prefs,
-          std::make_unique<TestDataStore>(),
-          data_use_measurement,
-          db_task_runner,
-          base::TimeDelta(),
-          Client::UNKNOWN,
-          std::string(),
-          std::string()) {}
+    : DataReductionProxyService(settings,
+                                prefs,
+                                std::make_unique<TestDataStore>(),
+                                data_use_measurement,
+                                db_task_runner,
+                                base::TimeDelta()) {}
 
 TestDataReductionProxyService::~TestDataReductionProxyService() {}
 
@@ -144,10 +112,8 @@ DataStore::Status TestDataStore::RecreateDB() {
 }
 
 DataReductionProxyTestContext::Builder::Builder()
-    : client_(Client::UNKNOWN),
-      use_mock_config_(false),
+    : use_mock_config_(false),
       use_mock_service_(false),
-      use_mock_request_options_(false),
       skip_settings_initialization_(false),
       data_use_measurement_(
           std::make_unique<data_use_measurement::DataUseMeasurement>(
@@ -155,12 +121,6 @@ DataReductionProxyTestContext::Builder::Builder()
               network::TestNetworkConnectionTracker::GetInstance())) {}
 
 DataReductionProxyTestContext::Builder::~Builder() {}
-
-DataReductionProxyTestContext::Builder&
-DataReductionProxyTestContext::Builder::WithClient(Client client) {
-  client_ = client;
-  return *this;
-}
 
 DataReductionProxyTestContext::Builder&
 DataReductionProxyTestContext::Builder::WithMockConfig() {
@@ -171,12 +131,6 @@ DataReductionProxyTestContext::Builder::WithMockConfig() {
 DataReductionProxyTestContext::Builder&
 DataReductionProxyTestContext::Builder::WithMockDataReductionProxyService() {
   use_mock_service_ = true;
-  return *this;
-}
-
-DataReductionProxyTestContext::Builder&
-DataReductionProxyTestContext::Builder::WithMockRequestOptions() {
-  use_mock_request_options_ = true;
   return *this;
 }
 
@@ -207,16 +161,6 @@ DataReductionProxyTestContext::Builder::Build() {
     test_context_flags ^= USE_MOCK_CONFIG;
   }
 
-  std::unique_ptr<TestDataReductionProxyRequestOptions> request_options;
-
-  if (use_mock_request_options_) {
-    test_context_flags |= USE_MOCK_REQUEST_OPTIONS;
-    request_options =
-        std::make_unique<MockDataReductionProxyRequestOptions>(client_);
-  } else {
-    request_options = std::make_unique<TestDataReductionProxyRequestOptions>(
-        client_, "1.2.3.4");
-  }
 
   if (!settings_)
     settings_ = std::make_unique<DataReductionProxySettings>(false);
@@ -239,8 +183,6 @@ DataReductionProxyTestContext::Builder::Build() {
         data_use_measurement_.get(), settings_.get(), pref_service.get(),
         task_runner);
   }
-
-  service->SetDependenciesForTesting(std::move(request_options));
 
   std::unique_ptr<DataReductionProxyTestContext> test_context(
       new DataReductionProxyTestContext(
@@ -365,13 +307,6 @@ DataReductionProxyTestContext::mock_data_reduction_proxy_service() const {
   DCHECK(test_context_flags_ & USE_MOCK_SERVICE);
   return static_cast<MockDataReductionProxyService*>(
       data_reduction_proxy_service());
-}
-
-MockDataReductionProxyRequestOptions*
-DataReductionProxyTestContext::mock_request_options() const {
-  DCHECK(test_context_flags_ & USE_MOCK_REQUEST_OPTIONS);
-  return static_cast<MockDataReductionProxyRequestOptions*>(
-      data_reduction_proxy_service()->request_options());
 }
 
 }  // namespace data_reduction_proxy

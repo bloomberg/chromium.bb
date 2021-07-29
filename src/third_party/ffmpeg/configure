@@ -132,7 +132,6 @@ Component options:
   --disable-swscale        disable libswscale build
   --disable-postproc       disable libpostproc build
   --disable-avfilter       disable libavfilter build
-  --enable-avresample      enable libavresample build (deprecated) [no]
   --disable-pthreads       disable pthreads [autodetect]
   --disable-w32threads     disable Win32 threads [autodetect]
   --disable-os2threads     disable OS/2 threads [autodetect]
@@ -259,6 +258,7 @@ External library support:
   --enable-libpulse        enable Pulseaudio input via libpulse [no]
   --enable-librabbitmq     enable RabbitMQ library [no]
   --enable-librav1e        enable AV1 encoding via rav1e [no]
+  --enable-librist         enable RIST via librist [no]
   --enable-librsvg         enable SVG rasterization via librsvg [no]
   --enable-librubberband   enable rubberband needed for rubberband filter [no]
   --enable-librtmp         enable RTMP[E] support via librtmp [no]
@@ -450,7 +450,6 @@ Optimization options (experts only):
   --disable-mipsdsp        disable MIPS DSP ASE R1 optimizations
   --disable-mipsdspr2      disable MIPS DSP ASE R2 optimizations
   --disable-msa            disable MSA optimizations
-  --disable-msa2           disable MSA2 optimizations
   --disable-mipsfpu        disable floating point MIPS optimizations
   --disable-mmi            disable Loongson SIMD optimizations
   --disable-fast-unaligned consider unaligned accesses slow
@@ -1451,10 +1450,34 @@ test_pkg_config(){
         set_sanitized "${name}_extralibs" $pkg_libs
 }
 
+test_pkg_config_cpp(){
+    log test_pkg_config_cpp "$@"
+    name="$1"
+    pkg_version="$2"
+    pkg="${2%% *}"
+    headers="$3"
+    cond="$4"
+    shift 4
+    disable $name
+    test_cmd $pkg_config --exists --print-errors $pkg_version || return
+    pkg_cflags=$($pkg_config --cflags $pkg_config_flags $pkg)
+    pkg_incdir=$($pkg_config --variable=includedir $pkg_config_flags $pkg)
+    test_cpp_condition "$pkg_incdir/$headers" "$cond" "$@" &&
+        enable $name &&
+        set_sanitized "${name}_cflags" $pkg_cflags
+}
+
 check_pkg_config(){
     log check_pkg_config "$@"
     name="$1"
     test_pkg_config "$@" &&
+        eval add_cflags \$${name}_cflags
+}
+
+check_pkg_config_cpp(){
+    log check_pkg_config_cpp "$@"
+    name="$1"
+    test_pkg_config_cpp "$@" &&
         eval add_cflags \$${name}_cflags
 }
 
@@ -1579,6 +1602,12 @@ require_pkg_config(){
     log require_pkg_config "$@"
     pkg_version="$2"
     check_pkg_config "$@" || die "ERROR: $pkg_version not found using pkg-config$pkg_config_fail_message"
+}
+
+require_pkg_config_cpp(){
+    log require_pkg_config_cpp "$@"
+    pkg_version="$2"
+    check_pkg_config_cpp "$@" || die "ERROR: $pkg_version not found using pkg-config$pkg_config_fail_message"
 }
 
 test_host_cc(){
@@ -1797,6 +1826,7 @@ EXTERNAL_LIBRARY_LIST="
     libpulse
     librabbitmq
     librav1e
+    librist
     librsvg
     librtmp
     libshine
@@ -1899,7 +1929,6 @@ LIBRARY_LIST="
     avformat
     avcodec
     swresample
-    avresample
     avutil
 "
 
@@ -2023,7 +2052,6 @@ ARCH_EXT_LIST_MIPS="
     mipsdsp
     mipsdspr2
     msa
-    msa2
 "
 
 ARCH_EXT_LIST_LOONGSON="
@@ -2288,6 +2316,7 @@ TOOLCHAIN_FEATURES="
 
 TYPES_LIST="
     kCMVideoCodecType_HEVC
+    kCMVideoCodecType_HEVCWithAlpha
     kCVPixelFormatType_420YpCbCr10BiPlanarVideoRange
     kCVImageBufferTransferFunction_SMPTE_ST_2084_PQ
     kCVImageBufferTransferFunction_ITU_R_2100_HLG
@@ -2561,7 +2590,6 @@ mipsdsp_deps="mips"
 mipsdspr2_deps="mips"
 mmi_deps_any="loongson2 loongson3"
 msa_deps="mipsfpu"
-msa2_deps="msa"
 
 cpunop_deps="i686"
 x86_64_select="i686"
@@ -2629,7 +2657,7 @@ cbs_vp9_select="cbs"
 dct_select="rdft"
 dirac_parse_select="golomb"
 dnn_suggest="libtensorflow libopenvino"
-dnn_deps="swscale"
+dnn_deps="avformat swscale"
 error_resilience_select="me_cmp"
 faandct_deps="faan"
 faandct_select="fdctdsp"
@@ -2758,6 +2786,7 @@ indeo3_decoder_select="hpeldsp"
 indeo4_decoder_select="ividsp"
 indeo5_decoder_select="ividsp"
 interplay_video_decoder_select="hpeldsp"
+ipu_decoder_select="mpegvideo"
 jpegls_decoder_select="mjpeg_decoder"
 jv_decoder_select="blockdsp"
 lagarith_decoder_select="llviddsp"
@@ -2919,6 +2948,7 @@ nvdec_deps="ffnvcodec"
 vaapi_x11_deps="xlib"
 videotoolbox_hwaccel_deps="videotoolbox pthreads"
 videotoolbox_hwaccel_extralibs="-framework QuartzCore"
+vulkan_deps_any="libdl LoadLibrary"
 xvmc_deps="X11_extensions_XvMClib_h"
 
 av1_d3d11va_hwaccel_deps="d3d11va DXVA_PicParams_AV1"
@@ -3061,7 +3091,6 @@ overlay_cuda_filter_deps_any="cuda_nvcc cuda_llvm"
 amf_deps_any="libdl LoadLibrary"
 nvenc_deps="ffnvcodec"
 nvenc_deps_any="libdl LoadLibrary"
-nvenc_encoder_deps="nvenc"
 
 aac_mf_encoder_deps="mediafoundation"
 ac3_mf_encoder_deps="mediafoundation"
@@ -3129,8 +3158,6 @@ mpeg4_omx_encoder_deps="omx"
 mpeg4_v4l2m2m_decoder_deps="v4l2_m2m mpeg4_v4l2_m2m"
 mpeg4_v4l2m2m_encoder_deps="v4l2_m2m mpeg4_v4l2_m2m"
 msmpeg4_crystalhd_decoder_select="crystalhd"
-nvenc_h264_encoder_select="h264_nvenc_encoder"
-nvenc_hevc_encoder_select="hevc_nvenc_encoder"
 vc1_crystalhd_decoder_select="crystalhd"
 vc1_cuvid_decoder_deps="cuvid"
 vc1_mmal_decoder_deps="mmal"
@@ -3361,6 +3388,7 @@ opus_muxer_select="ogg_muxer"
 psp_muxer_select="mov_muxer"
 rtp_demuxer_select="sdp_demuxer"
 rtp_muxer_select="golomb jpegtables"
+rtp_mpegts_muxer_select="mpegts_muxer rtp_muxer"
 rtpdec_select="asf_demuxer jpegtables mov_demuxer mpegts_demuxer rm_demuxer rtp_protocol srtp"
 rtsp_demuxer_select="http_protocol rtpdec"
 rtsp_muxer_select="rtp_muxer http_protocol rtp_protocol rtpenc_chain"
@@ -3449,7 +3477,8 @@ ffrtmpcrypt_protocol_select="tcp_protocol"
 ffrtmphttp_protocol_conflict="librtmp_protocol"
 ffrtmphttp_protocol_select="http_protocol"
 ftp_protocol_select="tcp_protocol"
-gopher_protocol_select="network"
+gopher_protocol_select="tcp_protocol"
+gophers_protocol_select="tls_protocol"
 http_protocol_select="tcp_protocol"
 http_protocol_suggest="zlib"
 httpproxy_protocol_select="tcp_protocol"
@@ -3490,6 +3519,8 @@ unix_protocol_select="network"
 # external library protocols
 libamqp_protocol_deps="librabbitmq"
 libamqp_protocol_select="network"
+librist_protocol_deps="librist"
+librist_protocol_select="network"
 librtmp_protocol_deps="librtmp"
 librtmpe_protocol_deps="librtmp"
 librtmps_protocol_deps="librtmp"
@@ -3510,6 +3541,7 @@ afftfilt_filter_deps="avcodec"
 afftfilt_filter_select="fft"
 afir_filter_deps="avcodec"
 afir_filter_select="rdft"
+ametadata_filter_deps="avformat"
 amovie_filter_deps="avcodec avformat"
 aresample_filter_deps="swresample"
 asoftclip_filter_deps="swresample"
@@ -3518,7 +3550,7 @@ ass_filter_deps="libass"
 atempo_filter_deps="avcodec"
 atempo_filter_select="rdft"
 avgblur_opencl_filter_deps="opencl"
-avgblur_vulkan_filter_deps="vulkan libglslang"
+avgblur_vulkan_filter_deps="vulkan_lib libglslang"
 azmq_filter_deps="libzmq"
 blackframe_filter_deps="gpl"
 bm3d_filter_deps="avcodec"
@@ -3526,7 +3558,7 @@ bm3d_filter_select="dct"
 boxblur_filter_deps="gpl"
 boxblur_opencl_filter_deps="opencl gpl"
 bs2b_filter_deps="libbs2b"
-chromaber_vulkan_filter_deps="vulkan libglslang"
+chromaber_vulkan_filter_deps="vulkan_lib libglslang"
 colorkey_opencl_filter_deps="opencl"
 colormatrix_filter_deps="gpl"
 convolution_opencl_filter_deps="opencl"
@@ -3548,6 +3580,8 @@ derain_filter_select="dnn"
 deshake_filter_select="pixelutils"
 deshake_opencl_filter_deps="opencl"
 dilation_opencl_filter_deps="opencl"
+dnn_classify_filter_select="dnn"
+dnn_detect_filter_select="dnn"
 dnn_processing_filter_select="dnn"
 drawtext_filter_deps="libfreetype"
 drawtext_filter_suggest="libfontconfig libfribidi"
@@ -3567,6 +3601,7 @@ freezedetect_filter_select="scene_sad"
 frei0r_filter_deps="frei0r libdl"
 frei0r_src_filter_deps="frei0r libdl"
 fspp_filter_deps="gpl"
+headphone_filter_deps="avcodec"
 headphone_filter_select="fft"
 histeq_filter_deps="gpl"
 hqdn3d_filter_deps="gpl"
@@ -3576,6 +3611,7 @@ ladspa_filter_deps="ladspa libdl"
 lensfun_filter_deps="liblensfun version3"
 lv2_filter_deps="lv2"
 mcdeint_filter_deps="avcodec gpl"
+metadata_filter_deps="avformat"
 movie_filter_deps="avcodec avformat"
 mpdecimate_filter_deps="gpl"
 mpdecimate_filter_select="pixelutils"
@@ -3590,7 +3626,7 @@ openclsrc_filter_deps="opencl"
 overlay_opencl_filter_deps="opencl"
 overlay_qsv_filter_deps="libmfx"
 overlay_qsv_filter_select="qsvvpp"
-overlay_vulkan_filter_deps="vulkan libglslang"
+overlay_vulkan_filter_deps="vulkan_lib libglslang"
 owdenoise_filter_deps="gpl"
 pad_opencl_filter_deps="opencl"
 pan_filter_deps="swresample"
@@ -3604,7 +3640,6 @@ program_opencl_filter_deps="opencl"
 pullup_filter_deps="gpl"
 removelogo_filter_deps="avcodec avformat swscale"
 repeatfields_filter_deps="gpl"
-resample_filter_deps="avresample"
 roberts_opencl_filter_deps="opencl"
 rubberband_filter_deps="librubberband"
 sab_filter_deps="gpl swscale"
@@ -3619,12 +3654,14 @@ showcqt_filter_suggest="libfontconfig libfreetype"
 showcqt_filter_select="fft"
 showfreqs_filter_deps="avcodec"
 showfreqs_filter_select="fft"
+showspatial_filter_deps="avcodec"
 showspatial_filter_select="fft"
 showspectrum_filter_deps="avcodec"
 showspectrum_filter_select="fft"
 showspectrumpic_filter_deps="avcodec"
 showspectrumpic_filter_select="fft"
 signature_filter_deps="gpl avcodec avformat"
+sinc_filter_deps="avcodec"
 sinc_filter_select="rdft"
 smartblur_filter_deps="gpl swscale"
 sobel_opencl_filter_deps="opencl"
@@ -3640,7 +3677,9 @@ stereo3d_filter_deps="gpl"
 subtitles_filter_deps="avformat avcodec libass"
 super2xsai_filter_deps="gpl"
 pixfmts_super2xsai_test_deps="super2xsai_filter"
+superequalizer_filter_deps="avcodec"
 superequalizer_filter_select="rdft"
+surround_filter_deps="avcodec"
 surround_filter_select="rdft"
 tinterlace_filter_deps="gpl"
 tinterlace_merge_test_deps="tinterlace_filter"
@@ -3660,7 +3699,7 @@ zmq_filter_deps="libzmq"
 zoompan_filter_deps="swscale"
 zscale_filter_deps="libzimg const_nan"
 scale_vaapi_filter_deps="vaapi"
-scale_vulkan_filter_deps="vulkan libglslang"
+scale_vulkan_filter_deps="vulkan_lib libglslang"
 vpp_qsv_filter_deps="libmfx"
 vpp_qsv_filter_select="qsvvpp"
 xfade_opencl_filter_deps="opencl"
@@ -3706,8 +3745,6 @@ avfilter_deps="avutil"
 avfilter_suggest="libm"
 avformat_deps="avcodec avutil"
 avformat_suggest="libm network zlib"
-avresample_deps="avutil"
-avresample_suggest="libm"
 avutil_suggest="clock_gettime ffnvcodec libm libdrm libmfx opencl user32 vaapi vulkan videotoolbox corefoundation corevideo coremedia bcrypt"
 postproc_deps="avutil gpl"
 postproc_suggest="libm"
@@ -3790,7 +3827,7 @@ intrinsics="none"
 enable $PROGRAM_LIST
 enable $DOCUMENT_LIST
 enable $EXAMPLE_LIST
-enable $(filter_out avresample $LIBRARY_LIST)
+enable $LIBRARY_LIST
 enable stripping
 
 enable asm
@@ -3899,7 +3936,7 @@ find_things_extern(){
 
 find_filters_extern(){
     file=$source_path/$1
-    sed -n 's/^extern AVFilter ff_[avfsinkrc]\{2,5\}_\([[:alnum:]_]\{1,\}\);/\1_filter/p' $file
+    sed -n 's/^extern const AVFilter ff_[avfsinkrc]\{2,5\}_\([[:alnum:]_]\{1,\}\);/\1_filter/p' $file
 }
 
 FILTER_LIST=$(find_filters_extern libavfilter/allfilters.c)
@@ -5910,9 +5947,8 @@ elif enabled mips; then
     enabled mipsdsp && check_inline_asm_flags mipsdsp '"addu.qb $t0, $t1, $t2"' '-mdsp'
     enabled mipsdspr2 && check_inline_asm_flags mipsdspr2 '"absq_s.qb $t0, $t1"' '-mdspr2'
 
-    # MSA and MSA2 can be detected at runtime so we supply extra flags here
+    # MSA can be detected at runtime so we supply extra flags here
     enabled mipsfpu && enabled msa && check_inline_asm msa '"addvi.b $w0, $w1, 1"' '-mmsa' && append MSAFLAGS '-mmsa'
-    enabled msa && enabled msa2 && check_inline_asm msa2 '"nxbits.any.b $w0, $w0"' '-mmsa2' && append MSAFLAGS '-mmsa2'
 
     # loongson2 have no switch cflag so we can only probe toolchain ability
     enabled loongson2 && check_inline_asm loongson2 '"dmult.g $8, $9, $10"' && disable loongson3
@@ -6220,6 +6256,7 @@ enabled avfoundation && {
 enabled videotoolbox && {
     check_lib coreservices CoreServices/CoreServices.h UTGetOSTypeFromString "-framework CoreServices"
     check_func_headers CoreMedia/CMFormatDescription.h kCMVideoCodecType_HEVC "-framework CoreMedia"
+    check_func_headers CoreMedia/CMFormatDescription.h kCMVideoCodecType_HEVCWithAlpha "-framework CoreMedia"
     check_func_headers CoreVideo/CVPixelBuffer.h kCVPixelFormatType_420YpCbCr10BiPlanarVideoRange "-framework CoreVideo"
     check_func_headers CoreVideo/CVImageBuffer.h kCVImageBufferTransferFunction_SMPTE_ST_2084_PQ "-framework CoreVideo"
     check_func_headers CoreVideo/CVImageBuffer.h kCVImageBufferTransferFunction_ITU_R_2100_HLG "-framework CoreVideo"
@@ -6420,6 +6457,7 @@ enabled libopenvino       && require libopenvino c_api/ie_c_api.h ie_c_api_versi
 enabled libpulse          && require_pkg_config libpulse libpulse pulse/pulseaudio.h pa_context_new
 enabled librabbitmq       && require_pkg_config librabbitmq "librabbitmq >= 0.7.1" amqp.h amqp_new_connection
 enabled librav1e          && require_pkg_config librav1e "rav1e >= 0.4.0" rav1e.h rav1e_context_new
+enabled librist           && require_pkg_config librist "librist >= 0.2" librist/librist.h rist_receiver_create
 enabled librsvg           && require_pkg_config librsvg librsvg-2.0 librsvg-2.0/librsvg/rsvg.h rsvg_handle_render_cairo
 enabled librtmp           && require_pkg_config librtmp librtmp librtmp/rtmp.h RTMP_Socket
 enabled librubberband     && require_pkg_config librubberband "rubberband >= 1.8.1" rubberband/rubberband-c.h rubberband_new -lstdc++ && append librubberband_extralibs "-lstdc++"
@@ -6747,8 +6785,12 @@ enabled vdpau &&
 
 enabled crystalhd && check_lib crystalhd "stdint.h libcrystalhd/libcrystalhd_if.h" DtsCrystalHDVersion -lcrystalhd
 
-enabled vulkan &&
-    require_pkg_config vulkan "vulkan >= 1.1.97" "vulkan/vulkan.h" vkCreateInstance
+if enabled vulkan; then
+    require_pkg_config_cpp vulkan "vulkan >= 1.1.97" "vulkan/vulkan.h" "defined VK_VERSION_1_1" ||
+        require_cpp_condition vulkan "vulkan/vulkan.h" "defined VK_VERSION_1_1"
+    # vulkan_lib should be removed once glslang filters are updated
+    check_pkg_config vulkan_lib "vulkan >= 1.1.97" "vulkan/vulkan.h" vkCreateInstance
+fi
 
 if enabled x86; then
     case $target_os in
@@ -6849,7 +6891,7 @@ EOF
 
 # add some linker flags
 check_ldflags -Wl,--warn-common
-check_ldflags -Wl,-rpath-link=:libpostproc:libswresample:libswscale:libavfilter:libavdevice:libavformat:libavcodec:libavutil:libavresample
+check_ldflags -Wl,-rpath-link=:libpostproc:libswresample:libswscale:libavfilter:libavdevice:libavformat:libavcodec:libavutil
 enabled rpath && add_ldexeflags -Wl,-rpath,$libdir && add_ldsoflags -Wl,-rpath,$libdir
 test_ldflags -Wl,-Bsymbolic && append SHFLAGS -Wl,-Bsymbolic
 
@@ -6858,34 +6900,24 @@ check_stripflags -x
 
 enabled neon_clobber_test &&
     check_ldflags -Wl,--wrap,avcodec_open2              \
-                  -Wl,--wrap,avcodec_decode_audio4      \
-                  -Wl,--wrap,avcodec_decode_video2      \
                   -Wl,--wrap,avcodec_decode_subtitle2   \
-                  -Wl,--wrap,avcodec_encode_audio2      \
-                  -Wl,--wrap,avcodec_encode_video2      \
                   -Wl,--wrap,avcodec_encode_subtitle    \
                   -Wl,--wrap,avcodec_send_packet        \
                   -Wl,--wrap,avcodec_receive_packet     \
                   -Wl,--wrap,avcodec_send_frame         \
                   -Wl,--wrap,avcodec_receive_frame      \
-                  -Wl,--wrap,swr_convert                \
-                  -Wl,--wrap,avresample_convert ||
+                  -Wl,--wrap,swr_convert        ||
     disable neon_clobber_test
 
 enabled xmm_clobber_test &&
     check_ldflags -Wl,--wrap,avcodec_open2              \
-                  -Wl,--wrap,avcodec_decode_audio4      \
-                  -Wl,--wrap,avcodec_decode_video2      \
                   -Wl,--wrap,avcodec_decode_subtitle2   \
-                  -Wl,--wrap,avcodec_encode_audio2      \
-                  -Wl,--wrap,avcodec_encode_video2      \
                   -Wl,--wrap,avcodec_encode_subtitle    \
                   -Wl,--wrap,avcodec_send_packet        \
                   -Wl,--wrap,avcodec_receive_packet     \
                   -Wl,--wrap,avcodec_send_frame         \
                   -Wl,--wrap,avcodec_receive_frame      \
                   -Wl,--wrap,swr_convert                \
-                  -Wl,--wrap,avresample_convert         \
                   -Wl,--wrap,sws_scale ||
     disable xmm_clobber_test
 
@@ -7096,6 +7128,12 @@ esac
 
 enable frame_thread_encoder
 
+# these filters depend on removed avcodec APIs
+# they are kept disabled for now, but will be removed if
+# nobody updates and re-enables them
+disable mcdeint_filter
+disable uspp_filter
+
 enabled asm || { arch=c; disable $ARCH_LIST $ARCH_EXT_LIST; }
 
 check_deps $CONFIG_LIST       \
@@ -7104,7 +7142,6 @@ check_deps $CONFIG_LIST       \
            $ALL_COMPONENTS    \
 
 enabled threads && ! enabled pthreads && ! enabled atomics_native && die "non pthread threading without atomics not supported, try adding --enable-pthreads or --cpu=i486 or higher if you are on x86"
-enabled avresample && warn "Building with deprecated library libavresample"
 
 case $target_os in
 haiku)
@@ -7220,7 +7257,6 @@ enabled movie_filter    && prepend avfilter_deps "avformat avcodec"
 enabled pan_filter          && prepend avfilter_deps "swresample"
 enabled pp_filter           && prepend avfilter_deps "postproc"
 enabled removelogo_filter   && prepend avfilter_deps "avformat avcodec swscale"
-enabled resample_filter && prepend avfilter_deps "avresample"
 enabled sab_filter          && prepend avfilter_deps "swscale"
 enabled scale_filter    && prepend avfilter_deps "swscale"
 enabled scale2ref_filter    && prepend avfilter_deps "swscale"
@@ -7342,7 +7378,6 @@ if enabled mips; then
     echo "MIPS DSP R1 enabled       ${mipsdsp-no}"
     echo "MIPS DSP R2 enabled       ${mipsdspr2-no}"
     echo "MIPS MSA enabled          ${msa-no}"
-    echo "MIPS MSA2 enabled         ${msa2-no}"
     echo "LOONGSON MMI enabled      ${mmi-no}"
 fi
 if enabled ppc; then
@@ -7651,7 +7686,7 @@ cp_if_changed $TMPH libavutil/avconfig.h
 # full_filter_name_foo=vf_foo
 # full_filter_name_bar=asrc_bar
 # ...
-eval "$(sed -n "s/^extern AVFilter ff_\([avfsinkrc]\{2,5\}\)_\(.*\);/full_filter_name_\2=\1_\2/p" $source_path/libavfilter/allfilters.c)"
+eval "$(sed -n "s/^extern const AVFilter ff_\([avfsinkrc]\{2,5\}\)_\(.*\);/full_filter_name_\2=\1_\2/p" $source_path/libavfilter/allfilters.c)"
 
 # generate the lists of enabled components
 print_enabled_components(){
@@ -7713,7 +7748,6 @@ extralibs_avcodec="$avcodec_extralibs"
 extralibs_avformat="$avformat_extralibs"
 extralibs_avdevice="$avdevice_extralibs"
 extralibs_avfilter="$avfilter_extralibs"
-extralibs_avresample="$avresample_extralibs"
 extralibs_postproc="$postproc_extralibs"
 extralibs_swscale="$swscale_extralibs"
 extralibs_swresample="$swresample_extralibs"

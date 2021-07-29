@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "ash/frame/header_view.h"
-#include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/move_to_desks_menu_delegate.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/public/cpp/window_properties.h"
@@ -425,6 +424,20 @@ void NonClientFrameViewAsh::SetFrameEnabled(bool enabled) {
   frame_enabled_ = enabled;
   overlay_view_->SetVisible(frame_enabled_);
   InvalidateLayout();
+}
+
+void NonClientFrameViewAsh::SetToggleResizeLockMenuCallback(
+    base::RepeatingCallback<void()> callback) {
+  toggle_resize_lock_menu_callback_ = std::move(callback);
+}
+
+void NonClientFrameViewAsh::ClearToggleResizeLockMenuCallback() {
+  toggle_resize_lock_menu_callback_.Reset();
+}
+
+base::RepeatingCallback<void()>
+NonClientFrameViewAsh::GetToggleResizeLockMenuCallback() const {
+  return toggle_resize_lock_menu_callback_;
 }
 
 void NonClientFrameViewAsh::OnDidSchedulePaint(const gfx::Rect& r) {

@@ -1022,10 +1022,12 @@ static void dealloc_compressor_data(VP9_COMP *cpi) {
   cpi->mi_ssim_rdmult_scaling_factors = NULL;
 
 #if CONFIG_RATE_CTRL
-  free_partition_info(cpi);
-  free_motion_vector_info(cpi);
-  free_fp_motion_vector_info(cpi);
-  free_tpl_stats_info(cpi);
+  if (cpi->oxcf.use_simple_encode_api) {
+    free_partition_info(cpi);
+    free_motion_vector_info(cpi);
+    free_fp_motion_vector_info(cpi);
+    free_tpl_stats_info(cpi);
+  }
 #endif
 
   vp9_free_ref_frame_buffers(cm->buffer_pool);
@@ -2317,6 +2319,7 @@ VP9_COMP *vp9_create_compressor(const VP9EncoderConfig *oxcf,
   cpi->frame_info = vp9_get_frame_info(oxcf);
 
   vp9_rc_init(&cpi->oxcf, oxcf->pass, &cpi->rc);
+  vp9_init_rd_parameters(cpi);
 
   init_frame_indexes(cm);
   cpi->partition_search_skippable_frame = 0;
@@ -2668,10 +2671,12 @@ VP9_COMP *vp9_create_compressor(const VP9EncoderConfig *oxcf,
 
 #if CONFIG_RATE_CTRL
   encode_command_init(&cpi->encode_command);
-  partition_info_init(cpi);
-  motion_vector_info_init(cpi);
-  fp_motion_vector_info_init(cpi);
-  tpl_stats_info_init(cpi);
+  if (oxcf->use_simple_encode_api) {
+    partition_info_init(cpi);
+    motion_vector_info_init(cpi);
+    fp_motion_vector_info_init(cpi);
+    tpl_stats_info_init(cpi);
+  }
 #endif
 
   return cpi;
@@ -4397,10 +4402,23 @@ static void encode_with_recode_loop(VP9_COMP *cpi, size_t *size, uint8_t *dest
   int frame_over_shoot_limit;
   int frame_under_shoot_limit;
   int q = 0, q_low = 0, q_high = 0;
+  int last_q_attempt = 0;
   int enable_acl;
 #ifdef AGGRESSIVE_VBR
   int qrange_adj = 1;
 #endif
+
+  // A flag which indicates whether we are recoding the current frame
+  // when the current frame size is larger than the max frame size in the
+  // external rate control model.
+  // This flag doesn't have any impact when external rate control is not used.
+  int ext_rc_recode = 0;
+  // Maximal frame size allowed by the external rate control.
+  // case: 0, we ignore the max frame size limit, and encode with the qindex
+  // passed in by the external rate control model.
+  // case: -1, we take VP9's decision for the max frame size.
+  int ext_rc_max_frame_size = 0;
+  const int orig_rc_max_frame_bandwidth = rc->max_frame_bandwidth;
 
 #if CONFIG_RATE_CTRL
   const FRAME_UPDATE_TYPE update_type =
@@ -4456,11 +4474,6 @@ static void encode_with_recode_loop(VP9_COMP *cpi, size_t *size, uint8_t *dest
       loop_at_this_size = 0;
     }
 
-#if CONFIG_RATE_CTRL
-    if (cpi->encode_command.use_external_target_frame_bits) {
-      q = rq_model_predict_q_index(rq_model, rq_history, rc->this_frame_target);
-    }
-#endif  // CONFIG_RATE_CTRL
     // Decide frame size bounds first time through.
     if (loop_count == 0) {
       vp9_rc_compute_frame_size_bounds(cpi, rc->this_frame_target,
@@ -4503,11 +4516,17 @@ static void encode_with_recode_loop(VP9_COMP *cpi, size_t *size, uint8_t *dest
 #if CONFIG_RATE_CTRL
     // TODO(angiebird): This is a hack for making sure the encoder use the
     // external_quantize_index exactly. Avoid this kind of hack later.
-    if (cpi->encode_command.use_external_quantize_index) {
-      q = cpi->encode_command.external_quantize_index;
+    if (cpi->oxcf.use_simple_encode_api) {
+      if (cpi->encode_command.use_external_target_frame_bits) {
+        q = rq_model_predict_q_index(rq_model, rq_history,
+                                     rc->this_frame_target);
+      }
+      if (cpi->encode_command.use_external_quantize_index) {
+        q = cpi->encode_command.external_quantize_index;
+      }
     }
-#endif
-    if (cpi->ext_ratectrl.ready) {
+#endif  // CONFIG_RATE_CTRL
+    if (cpi->ext_ratectrl.ready && !ext_rc_recode) {
       vpx_codec_err_t codec_status;
       const GF_GROUP *gf_group = &cpi->twopass.gf_group;
       vpx_rc_encodeframe_decision_t encode_frame_decision;
@@ -4526,6 +4545,7 @@ static void encode_with_recode_loop(VP9_COMP *cpi, size_t *size, uint8_t *dest
                            "vp9_extrc_get_encodeframe_decision() failed");
       }
       q = encode_frame_decision.q_index;
+      ext_rc_max_frame_size = encode_frame_decision.max_frame_size;
     }
 
     vp9_set_quantizer(cpi, q);
@@ -4567,36 +4587,61 @@ static void encode_with_recode_loop(VP9_COMP *cpi, size_t *size, uint8_t *dest
     }
 
     if (cpi->ext_ratectrl.ready) {
-      break;
+      last_q_attempt = q;
+      // In general, for the external rate control, we take the qindex provided
+      // as input and encode the frame with this qindex faithfully. However,
+      // in some extreme scenarios, the provided qindex leads to a massive
+      // overshoot of frame size. In this case, we fall back to VP9's decision
+      // to pick a new qindex and recode the frame. We return the new qindex
+      // through the API to the external model.
+      if (ext_rc_max_frame_size == 0) {
+        break;
+      } else if (ext_rc_max_frame_size == -1) {
+        if (rc->projected_frame_size < rc->max_frame_bandwidth) {
+          break;
+        }
+      } else {
+        if (rc->projected_frame_size < ext_rc_max_frame_size) {
+          break;
+        }
+      }
+      rc->max_frame_bandwidth = ext_rc_max_frame_size;
+      // If the current frame size exceeds the ext_rc_max_frame_size,
+      // we adjust the worst qindex to meet the frame size constraint.
+      q_high = 255;
+      ext_rc_recode = 1;
     }
 #if CONFIG_RATE_CTRL
-    // This part needs to be after save_coding_context() because
-    // restore_coding_context will be called in the end of this function.
-    // TODO(angiebird): This is a hack for making sure the encoder use the
-    // external_quantize_index exactly. Avoid this kind of hack later.
-    if (cpi->encode_command.use_external_quantize_index) {
-      break;
-    }
-
-    if (cpi->encode_command.use_external_target_frame_bits) {
-      const double percent_diff = get_bits_percent_diff(
-          rc->this_frame_target, rc->projected_frame_size);
-      update_rq_history(rq_history, rc->this_frame_target,
-                        rc->projected_frame_size, q);
-      loop_count += 1;
-
-      rq_model_update(rq_history, rc->this_frame_target, rq_model);
-
-      // Check if we hit the target bitrate.
-      if (percent_diff <= cpi->encode_command.target_frame_bits_error_percent ||
-          rq_history->recode_count >= RATE_CTRL_MAX_RECODE_NUM ||
-          rq_history->q_index_low >= rq_history->q_index_high) {
+    if (cpi->oxcf.use_simple_encode_api) {
+      // This part needs to be after save_coding_context() because
+      // restore_coding_context will be called in the end of this function.
+      // TODO(angiebird): This is a hack for making sure the encoder use the
+      // external_quantize_index exactly. Avoid this kind of hack later.
+      if (cpi->encode_command.use_external_quantize_index) {
         break;
       }
 
-      loop = 1;
-      restore_coding_context(cpi);
-      continue;
+      if (cpi->encode_command.use_external_target_frame_bits) {
+        const double percent_diff = get_bits_percent_diff(
+            rc->this_frame_target, rc->projected_frame_size);
+        update_rq_history(rq_history, rc->this_frame_target,
+                          rc->projected_frame_size, q);
+        loop_count += 1;
+
+        rq_model_update(rq_history, rc->this_frame_target, rq_model);
+
+        // Check if we hit the target bitrate.
+        if (percent_diff <=
+                cpi->encode_command.target_frame_bits_error_percent ||
+            rq_history->recode_count >= RATE_CTRL_MAX_RECODE_NUM ||
+            rq_history->q_index_low >= rq_history->q_index_high) {
+          break;
+        }
+
+        loop = 1;
+        restore_coding_context(cpi);
+        continue;
+      }
     }
 #endif  // CONFIG_RATE_CTRL
 
@@ -4766,6 +4811,23 @@ static void encode_with_recode_loop(VP9_COMP *cpi, size_t *size, uint8_t *dest
         rc->projected_frame_size < rc->max_frame_bandwidth)
       loop = 0;
 
+    // Special handling of external max frame size constraint
+    if (ext_rc_recode) {
+      // If the largest q is not able to meet the max frame size limit,
+      // do nothing.
+      if (rc->projected_frame_size > ext_rc_max_frame_size &&
+          last_q_attempt == 255) {
+        break;
+      }
+      // If VP9's q selection leads to a smaller q, we force it to use
+      // a larger q to better approximate the external max frame size
+      // constraint.
+      if (rc->projected_frame_size > ext_rc_max_frame_size &&
+          q <= last_q_attempt) {
+        q = VPXMIN(255, last_q_attempt + 1);
+      }
+    }
+
     if (loop) {
       ++loop_count;
       ++loop_at_this_size;
@@ -4778,6 +4840,8 @@ static void encode_with_recode_loop(VP9_COMP *cpi, size_t *size, uint8_t *dest
     if (cpi->sf.recode_loop >= ALLOW_RECODE_KFARFGF)
       if (loop) restore_coding_context(cpi);
   } while (loop);
+
+  rc->max_frame_bandwidth = orig_rc_max_frame_bandwidth;
 
 #ifdef AGGRESSIVE_VBR
   if (two_pass_first_group_inter(cpi)) {
@@ -5312,17 +5376,81 @@ static void set_mb_wiener_variance(VP9_COMP *cpi) {
 }
 
 #if !CONFIG_REALTIME_ONLY
-static void update_encode_frame_result(
+static void update_encode_frame_result_basic(
+    FRAME_UPDATE_TYPE update_type, int show_idx, int quantize_index,
+    ENCODE_FRAME_RESULT *encode_frame_result) {
+  encode_frame_result->show_idx = show_idx;
+  encode_frame_result->update_type = update_type;
+  encode_frame_result->quantize_index = quantize_index;
+}
+
+#if CONFIG_RATE_CTRL
+static void yv12_buffer_to_image_buffer(const YV12_BUFFER_CONFIG *yv12_buffer,
+                                        IMAGE_BUFFER *image_buffer) {
+  const uint8_t *src_buf_ls[3] = { yv12_buffer->y_buffer, yv12_buffer->u_buffer,
+                                   yv12_buffer->v_buffer };
+  const int src_stride_ls[3] = { yv12_buffer->y_stride, yv12_buffer->uv_stride,
+                                 yv12_buffer->uv_stride };
+  const int w_ls[3] = { yv12_buffer->y_crop_width, yv12_buffer->uv_crop_width,
+                        yv12_buffer->uv_crop_width };
+  const int h_ls[3] = { yv12_buffer->y_crop_height, yv12_buffer->uv_crop_height,
+                        yv12_buffer->uv_crop_height };
+  int plane;
+  for (plane = 0; plane < 3; ++plane) {
+    const int src_stride = src_stride_ls[plane];
+    const int w = w_ls[plane];
+    const int h = h_ls[plane];
+    const uint8_t *src_buf = src_buf_ls[plane];
+    uint8_t *dst_buf = image_buffer->plane_buffer[plane];
+    int r;
+    assert(image_buffer->plane_width[plane] == w);
+    assert(image_buffer->plane_height[plane] == h);
+    for (r = 0; r < h; ++r) {
+      memcpy(dst_buf, src_buf, sizeof(*src_buf) * w);
+      src_buf += src_stride;
+      dst_buf += w;
+    }
+  }
+}
+// This function will update extra information specific for simple_encode APIs
+static void update_encode_frame_result_simple_encode(
     int ref_frame_flags, FRAME_UPDATE_TYPE update_type,
     const YV12_BUFFER_CONFIG *source_frame, const RefCntBuffer *coded_frame_buf,
-    RefCntBuffer *ref_frame_buf[MAX_INTER_REF_FRAMES], int quantize_index,
+    RefCntBuffer *ref_frame_bufs[MAX_INTER_REF_FRAMES], int quantize_index,
     uint32_t bit_depth, uint32_t input_bit_depth, const FRAME_COUNTS *counts,
-#if CONFIG_RATE_CTRL
     const PARTITION_INFO *partition_info,
     const MOTION_VECTOR_INFO *motion_vector_info,
     const TplDepStats *tpl_stats_info,
+    ENCODE_FRAME_RESULT *encode_frame_result) {
+  PSNR_STATS psnr;
+  update_encode_frame_result_basic(update_type, coded_frame_buf->frame_index,
+                                   quantize_index, encode_frame_result);
+#if CONFIG_VP9_HIGHBITDEPTH
+  vpx_calc_highbd_psnr(source_frame, &coded_frame_buf->buf, &psnr, bit_depth,
+                       input_bit_depth);
+#else   // CONFIG_VP9_HIGHBITDEPTH
+  (void)bit_depth;
+  (void)input_bit_depth;
+  vpx_calc_psnr(source_frame, &coded_frame_buf->buf, &psnr);
+#endif  // CONFIG_VP9_HIGHBITDEPTH
+  encode_frame_result->frame_coding_index = coded_frame_buf->frame_coding_index;
+
+  vp9_get_ref_frame_info(update_type, ref_frame_flags, ref_frame_bufs,
+                         encode_frame_result->ref_frame_coding_indexes,
+                         encode_frame_result->ref_frame_valid_list);
+
+  encode_frame_result->psnr = psnr.psnr[0];
+  encode_frame_result->sse = psnr.sse[0];
+  encode_frame_result->frame_counts = *counts;
+  encode_frame_result->partition_info = partition_info;
+  encode_frame_result->motion_vector_info = motion_vector_info;
+  encode_frame_result->tpl_stats_info = tpl_stats_info;
+  if (encode_frame_result->coded_frame.allocated) {
+    yv12_buffer_to_image_buffer(&coded_frame_buf->buf,
+                                &encode_frame_result->coded_frame);
+  }
+}
 #endif  // CONFIG_RATE_CTRL
-    ENCODE_FRAME_RESULT *encode_frame_result);
 #endif  // !CONFIG_REALTIME_ONLY
 
 static void encode_frame_to_data_rate(
@@ -5417,10 +5545,14 @@ static void encode_frame_to_data_rate(
   memset(cpi->mode_chosen_counts, 0,
          MAX_MODES * sizeof(*cpi->mode_chosen_counts));
 #endif
-#if CONFIG_CONSISTENT_RECODE || CONFIG_RATE_CTRL
+#if CONFIG_CONSISTENT_RECODE
   // Backup to ensure consistency between recodes
   save_encode_params(cpi);
-#endif  // CONFIG_CONSISTENT_RECODE || CONFIG_RATE_CTRL
+#elif CONFIG_RATE_CTRL
+  if (cpi->oxcf.use_simple_encode_api) {
+    save_encode_params(cpi);
+  }
+#endif
 
   if (cpi->sf.recode_loop == DISALLOW_RECODE) {
     if (!encode_without_recode_loop(cpi, size, dest)) return;
@@ -5501,7 +5633,7 @@ static void encode_frame_to_data_rate(
         get_ref_cnt_buffer(cm, cm->new_fb_idx);
     vpx_codec_err_t codec_status = vp9_extrc_update_encodeframe_result(
         &cpi->ext_ratectrl, (*size) << 3, cpi->Source, &coded_frame_buf->buf,
-        cm->bit_depth, cpi->oxcf.input_bit_depth);
+        cm->bit_depth, cpi->oxcf.input_bit_depth, cm->base_qindex);
     if (codec_status != VPX_CODEC_OK) {
       vpx_internal_error(&cm->error, codec_status,
                          "vp9_extrc_update_encodeframe_result() failed");
@@ -5512,10 +5644,12 @@ static void encode_frame_to_data_rate(
   assert(encode_frame_result == NULL);
 #else  // CONFIG_REALTIME_ONLY
   if (encode_frame_result != NULL) {
-    const int ref_frame_flags = get_ref_frame_flags(cpi);
     const RefCntBuffer *coded_frame_buf =
         get_ref_cnt_buffer(cm, cm->new_fb_idx);
     RefCntBuffer *ref_frame_bufs[MAX_INTER_REF_FRAMES];
+    FRAME_UPDATE_TYPE update_type =
+        cpi->twopass.gf_group.update_type[cpi->twopass.gf_group.index];
+    int quantize_index = vp9_get_quantizer(cpi);
     get_ref_frame_bufs(cpi, ref_frame_bufs);
     // update_encode_frame_result() depends on twopass.gf_group.index and
     // cm->new_fb_idx, cpi->Source, cpi->lst_fb_idx, cpi->gld_fb_idx and
@@ -5533,15 +5667,21 @@ static void encode_frame_to_data_rate(
     // This function needs to be called before vp9_update_reference_frames().
     // TODO(angiebird): Improve the codebase to make the update of frame
     // dependent variables more robust.
-    update_encode_frame_result(
-        ref_frame_flags,
-        cpi->twopass.gf_group.update_type[cpi->twopass.gf_group.index],
-        cpi->Source, coded_frame_buf, ref_frame_bufs, vp9_get_quantizer(cpi),
-        cm->bit_depth, cpi->oxcf.input_bit_depth, cpi->td.counts,
+
+    update_encode_frame_result_basic(update_type, coded_frame_buf->frame_index,
+                                     quantize_index, encode_frame_result);
 #if CONFIG_RATE_CTRL
-        cpi->partition_info, cpi->motion_vector_info, cpi->tpl_stats_info,
+    if (cpi->oxcf.use_simple_encode_api) {
+      const int ref_frame_flags = get_ref_frame_flags(cpi);
+      update_encode_frame_result_simple_encode(
+          ref_frame_flags,
+          cpi->twopass.gf_group.update_type[cpi->twopass.gf_group.index],
+          cpi->Source, coded_frame_buf, ref_frame_bufs, quantize_index,
+          cm->bit_depth, cpi->oxcf.input_bit_depth, cpi->td.counts,
+          cpi->partition_info, cpi->motion_vector_info, cpi->tpl_stats_info,
+          encode_frame_result);
+    }
 #endif  // CONFIG_RATE_CTRL
-        encode_frame_result);
   }
 #endif  // CONFIG_REALTIME_ONLY
 
@@ -7461,7 +7601,9 @@ static void setup_tpl_stats(VP9_COMP *cpi) {
 #endif  // CONFIG_NON_GREEDY_MV
 
 #if CONFIG_RATE_CTRL
-  accumulate_frame_tpl_stats(cpi);
+  if (cpi->oxcf.use_simple_encode_api) {
+    accumulate_frame_tpl_stats(cpi);
+  }
 #endif  // CONFIG_RATE_CTRL
 }
 
@@ -7488,206 +7630,6 @@ void vp9_get_ref_frame_info(FRAME_UPDATE_TYPE update_type, int ref_frame_flags,
     }
   }
 }
-
-#if !CONFIG_REALTIME_ONLY
-#if CONFIG_RATE_CTRL
-static void copy_frame_counts(const FRAME_COUNTS *input_counts,
-                              FRAME_COUNTS *output_counts) {
-  int i, j, k, l, m, n;
-  for (i = 0; i < BLOCK_SIZE_GROUPS; ++i) {
-    for (j = 0; j < INTRA_MODES; ++j) {
-      output_counts->y_mode[i][j] = input_counts->y_mode[i][j];
-    }
-  }
-  for (i = 0; i < INTRA_MODES; ++i) {
-    for (j = 0; j < INTRA_MODES; ++j) {
-      output_counts->uv_mode[i][j] = input_counts->uv_mode[i][j];
-    }
-  }
-  for (i = 0; i < PARTITION_CONTEXTS; ++i) {
-    for (j = 0; j < PARTITION_TYPES; ++j) {
-      output_counts->partition[i][j] = input_counts->partition[i][j];
-    }
-  }
-  for (i = 0; i < TX_SIZES; ++i) {
-    for (j = 0; j < PLANE_TYPES; ++j) {
-      for (k = 0; k < REF_TYPES; ++k) {
-        for (l = 0; l < COEF_BANDS; ++l) {
-          for (m = 0; m < COEFF_CONTEXTS; ++m) {
-            output_counts->eob_branch[i][j][k][l][m] =
-                input_counts->eob_branch[i][j][k][l][m];
-            for (n = 0; n < UNCONSTRAINED_NODES + 1; ++n) {
-              output_counts->coef[i][j][k][l][m][n] =
-                  input_counts->coef[i][j][k][l][m][n];
-            }
-          }
-        }
-      }
-    }
-  }
-  for (i = 0; i < SWITCHABLE_FILTER_CONTEXTS; ++i) {
-    for (j = 0; j < SWITCHABLE_FILTERS; ++j) {
-      output_counts->switchable_interp[i][j] =
-          input_counts->switchable_interp[i][j];
-    }
-  }
-  for (i = 0; i < INTER_MODE_CONTEXTS; ++i) {
-    for (j = 0; j < INTER_MODES; ++j) {
-      output_counts->inter_mode[i][j] = input_counts->inter_mode[i][j];
-    }
-  }
-  for (i = 0; i < INTRA_INTER_CONTEXTS; ++i) {
-    for (j = 0; j < 2; ++j) {
-      output_counts->intra_inter[i][j] = input_counts->intra_inter[i][j];
-    }
-  }
-  for (i = 0; i < COMP_INTER_CONTEXTS; ++i) {
-    for (j = 0; j < 2; ++j) {
-      output_counts->comp_inter[i][j] = input_counts->comp_inter[i][j];
-    }
-  }
-  for (i = 0; i < REF_CONTEXTS; ++i) {
-    for (j = 0; j < 2; ++j) {
-      for (k = 0; k < 2; ++k) {
-        output_counts->single_ref[i][j][k] = input_counts->single_ref[i][j][k];
-      }
-    }
-  }
-  for (i = 0; i < REF_CONTEXTS; ++i) {
-    for (j = 0; j < 2; ++j) {
-      output_counts->comp_ref[i][j] = input_counts->comp_ref[i][j];
-    }
-  }
-  for (i = 0; i < SKIP_CONTEXTS; ++i) {
-    for (j = 0; j < 2; ++j) {
-      output_counts->skip[i][j] = input_counts->skip[i][j];
-    }
-  }
-  for (i = 0; i < TX_SIZE_CONTEXTS; i++) {
-    for (j = 0; j < TX_SIZES; j++) {
-      output_counts->tx.p32x32[i][j] = input_counts->tx.p32x32[i][j];
-    }
-    for (j = 0; j < TX_SIZES - 1; j++) {
-      output_counts->tx.p16x16[i][j] = input_counts->tx.p16x16[i][j];
-    }
-    for (j = 0; j < TX_SIZES - 2; j++) {
-      output_counts->tx.p8x8[i][j] = input_counts->tx.p8x8[i][j];
-    }
-  }
-  for (i = 0; i < TX_SIZES; i++) {
-    output_counts->tx.tx_totals[i] = input_counts->tx.tx_totals[i];
-  }
-  for (i = 0; i < MV_JOINTS; i++) {
-    output_counts->mv.joints[i] = input_counts->mv.joints[i];
-  }
-  for (k = 0; k < 2; k++) {
-    nmv_component_counts *const comps = &output_counts->mv.comps[k];
-    const nmv_component_counts *const comps_t = &input_counts->mv.comps[k];
-    for (i = 0; i < 2; i++) {
-      comps->sign[i] = comps_t->sign[i];
-      comps->class0_hp[i] = comps_t->class0_hp[i];
-      comps->hp[i] = comps_t->hp[i];
-    }
-    for (i = 0; i < MV_CLASSES; i++) {
-      comps->classes[i] = comps_t->classes[i];
-    }
-    for (i = 0; i < CLASS0_SIZE; i++) {
-      comps->class0[i] = comps_t->class0[i];
-      for (j = 0; j < MV_FP_SIZE; j++) {
-        comps->class0_fp[i][j] = comps_t->class0_fp[i][j];
-      }
-    }
-    for (i = 0; i < MV_OFFSET_BITS; i++) {
-      for (j = 0; j < 2; j++) {
-        comps->bits[i][j] = comps_t->bits[i][j];
-      }
-    }
-    for (i = 0; i < MV_FP_SIZE; i++) {
-      comps->fp[i] = comps_t->fp[i];
-    }
-  }
-}
-
-static void yv12_buffer_to_image_buffer(const YV12_BUFFER_CONFIG *yv12_buffer,
-                                        IMAGE_BUFFER *image_buffer) {
-  const uint8_t *src_buf_ls[3] = { yv12_buffer->y_buffer, yv12_buffer->u_buffer,
-                                   yv12_buffer->v_buffer };
-  const int src_stride_ls[3] = { yv12_buffer->y_stride, yv12_buffer->uv_stride,
-                                 yv12_buffer->uv_stride };
-  const int w_ls[3] = { yv12_buffer->y_crop_width, yv12_buffer->uv_crop_width,
-                        yv12_buffer->uv_crop_width };
-  const int h_ls[3] = { yv12_buffer->y_crop_height, yv12_buffer->uv_crop_height,
-                        yv12_buffer->uv_crop_height };
-  int plane;
-  for (plane = 0; plane < 3; ++plane) {
-    const int src_stride = src_stride_ls[plane];
-    const int w = w_ls[plane];
-    const int h = h_ls[plane];
-    const uint8_t *src_buf = src_buf_ls[plane];
-    uint8_t *dst_buf = image_buffer->plane_buffer[plane];
-    int r;
-    assert(image_buffer->plane_width[plane] == w);
-    assert(image_buffer->plane_height[plane] == h);
-    for (r = 0; r < h; ++r) {
-      memcpy(dst_buf, src_buf, sizeof(*src_buf) * w);
-      src_buf += src_stride;
-      dst_buf += w;
-    }
-  }
-}
-#endif  // CONFIG_RATE_CTRL
-
-static void update_encode_frame_result(
-    int ref_frame_flags, FRAME_UPDATE_TYPE update_type,
-    const YV12_BUFFER_CONFIG *source_frame, const RefCntBuffer *coded_frame_buf,
-    RefCntBuffer *ref_frame_bufs[MAX_INTER_REF_FRAMES], int quantize_index,
-    uint32_t bit_depth, uint32_t input_bit_depth, const FRAME_COUNTS *counts,
-#if CONFIG_RATE_CTRL
-    const PARTITION_INFO *partition_info,
-    const MOTION_VECTOR_INFO *motion_vector_info,
-    const TplDepStats *tpl_stats_info,
-#endif  // CONFIG_RATE_CTRL
-    ENCODE_FRAME_RESULT *encode_frame_result) {
-#if CONFIG_RATE_CTRL
-  PSNR_STATS psnr;
-#if CONFIG_VP9_HIGHBITDEPTH
-  vpx_calc_highbd_psnr(source_frame, &coded_frame_buf->buf, &psnr, bit_depth,
-                       input_bit_depth);
-#else   // CONFIG_VP9_HIGHBITDEPTH
-  (void)bit_depth;
-  (void)input_bit_depth;
-  vpx_calc_psnr(source_frame, &coded_frame_buf->buf, &psnr);
-#endif  // CONFIG_VP9_HIGHBITDEPTH
-  encode_frame_result->frame_coding_index = coded_frame_buf->frame_coding_index;
-
-  vp9_get_ref_frame_info(update_type, ref_frame_flags, ref_frame_bufs,
-                         encode_frame_result->ref_frame_coding_indexes,
-                         encode_frame_result->ref_frame_valid_list);
-
-  encode_frame_result->psnr = psnr.psnr[0];
-  encode_frame_result->sse = psnr.sse[0];
-  copy_frame_counts(counts, &encode_frame_result->frame_counts);
-  encode_frame_result->partition_info = partition_info;
-  encode_frame_result->motion_vector_info = motion_vector_info;
-  encode_frame_result->tpl_stats_info = tpl_stats_info;
-  if (encode_frame_result->coded_frame.allocated) {
-    yv12_buffer_to_image_buffer(&coded_frame_buf->buf,
-                                &encode_frame_result->coded_frame);
-  }
-#else   // CONFIG_RATE_CTRL
-  (void)ref_frame_flags;
-  (void)bit_depth;
-  (void)input_bit_depth;
-  (void)source_frame;
-  (void)coded_frame_buf;
-  (void)ref_frame_bufs;
-  (void)counts;
-#endif  // CONFIG_RATE_CTRL
-  encode_frame_result->show_idx = coded_frame_buf->frame_index;
-  encode_frame_result->update_type = update_type;
-  encode_frame_result->quantize_index = quantize_index;
-}
-#endif  // !CONFIG_REALTIME_ONLY
 
 void vp9_init_encode_frame_result(ENCODE_FRAME_RESULT *encode_frame_result) {
   encode_frame_result->show_idx = -1;  // Actual encoding doesn't happen.

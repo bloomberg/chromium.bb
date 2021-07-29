@@ -10,7 +10,6 @@
 #include "base/callback_helpers.h"
 #include "base/containers/flat_map.h"
 #include "base/no_destructor.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/media/router/data_decoder_util.h"
@@ -76,7 +75,7 @@ void DialMediaRouteProvider::Init(
   // TODO(crbug.com/816702): This needs to be set properly according to sinks
   // discovered.
   media_router_->OnSinkAvailabilityUpdated(
-      MediaRouteProviderId::DIAL,
+      mojom::MediaRouteProviderId::DIAL,
       mojom::MediaRouter::SinkAvailability::PER_SOURCE);
 }
 
@@ -536,7 +535,8 @@ void DialMediaRouteProvider::NotifyAllOnRoutesUpdated() {
 void DialMediaRouteProvider::NotifyOnRoutesUpdated(
     const MediaSource::Id& source_id,
     const std::vector<MediaRoute>& routes) {
-  media_router_->OnRoutesUpdated(MediaRouteProviderId::DIAL, routes, source_id,
+  media_router_->OnRoutesUpdated(mojom::MediaRouteProviderId::DIAL, routes,
+                                 source_id,
                                  /* joinable_route_ids */ {});
 }
 
@@ -685,8 +685,8 @@ void DialMediaRouteProvider::NotifyOnSinksReceived(
     const MediaSource::Id& source_id,
     const std::vector<MediaSinkInternal>& sinks,
     const std::vector<url::Origin>& origins) {
-  media_router_->OnSinksReceived(MediaRouteProviderId::DIAL, source_id, sinks,
-                                 origins);
+  media_router_->OnSinksReceived(mojom::MediaRouteProviderId::DIAL, source_id,
+                                 sinks, origins);
 }
 
 std::vector<url::Origin> DialMediaRouteProvider::GetOrigins(

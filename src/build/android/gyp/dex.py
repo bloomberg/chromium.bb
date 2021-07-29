@@ -23,11 +23,14 @@ sys.path.insert(1, os.path.join(os.path.dirname(__file__), os.path.pardir))
 import convert_dex_profile
 
 
+_DEX_XMX = '2G'  # Increase this when __final_dex OOMs.
+
 _IGNORE_WARNINGS = (
     # Caused by Play Services:
     r'Type `libcore.io.Memory` was not found',
-    # Caused by a missing final class in flogger:
+    # Caused by flogger supporting these as fallbacks. Not needed at runtime.
     r'Type `dalvik.system.VMStack` was not found',
+    r'Type `sun.misc.SharedSecrets` was not found',
     # Caused by jacoco code coverage:
     r'Type `java.lang.management.ManagementFactory` was not found',
     # TODO(wnwen): Remove this after R8 version 3.0.26-dev:
@@ -539,7 +542,7 @@ def _OnStaleMd5(changes, options, final_dex_inputs, dex_cmd):
 
 def MergeDexForIncrementalInstall(r8_jar_path, src_paths, dest_dex_jar,
                                   min_api):
-  dex_cmd = build_utils.JavaCmd(verify=False) + [
+  dex_cmd = build_utils.JavaCmd(verify=False, xmx=_DEX_XMX) + [
       '-cp',
       r8_jar_path,
       'com.android.tools.r8.D8',
@@ -577,7 +580,7 @@ def main(args):
     final_dex_inputs = list(options.class_inputs)
   final_dex_inputs += options.dex_inputs
 
-  dex_cmd = build_utils.JavaCmd(options.warnings_as_errors)
+  dex_cmd = build_utils.JavaCmd(options.warnings_as_errors, xmx=_DEX_XMX)
 
   if options.dump_inputs:
     dex_cmd += ['-Dcom.android.tools.r8.dumpinputtofile=d8inputs.zip']

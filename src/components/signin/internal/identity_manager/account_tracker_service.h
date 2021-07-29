@@ -14,7 +14,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
@@ -27,6 +26,7 @@
 #include "base/android/scoped_java_ref.h"
 #endif
 
+class AccountCapabilities;
 class PrefRegistrySimple;
 class PrefService;
 
@@ -159,6 +159,11 @@ class AccountTrackerService {
   void SetAccountImage(const CoreAccountId& account_id,
                        const std::string& image_url_with_size,
                        const gfx::Image& image);
+
+  // Updates the account capabilities in AccountInfo for |account_id|. Does
+  // nothing if |account_id| does not exist in |accounts_|.
+  void SetAccountCapabilities(const CoreAccountId& account_id,
+                              const AccountCapabilities& account_capabilities);
 
  private:
   friend class AccountFetcherService;

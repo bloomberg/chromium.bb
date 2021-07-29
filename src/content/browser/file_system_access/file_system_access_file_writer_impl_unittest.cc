@@ -27,6 +27,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "storage/browser/file_system/file_stream_reader.h"
+#include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/test/async_file_test_helper.h"
 #include "storage/browser/test/test_file_system_backend.h"
 #include "storage/browser/test/test_file_system_context.h"
@@ -116,8 +117,8 @@ class FileSystemAccessFileWriterImplTest : public testing::Test {
 
     file_system_context_ =
         storage::CreateFileSystemContextWithAdditionalProvidersForTesting(
-            base::ThreadTaskRunnerHandle::Get().get(),
-            base::ThreadTaskRunnerHandle::Get().get(),
+            base::ThreadTaskRunnerHandle::Get(),
+            base::ThreadTaskRunnerHandle::Get(),
             /*quota_manager_proxy=*/nullptr, std::move(additional_providers),
             dir_.GetPath());
 
@@ -291,7 +292,7 @@ class FileSystemAccessFileWriterImplTest : public testing::Test {
   const url::Origin kTestOrigin = url::Origin::Create(kTestURL);
   const int kProcessId = 1;
   const int kFrameRoutingId = 2;
-  const GlobalFrameRoutingId kFrameId{kProcessId, kFrameRoutingId};
+  const GlobalRenderFrameHostId kFrameId{kProcessId, kFrameRoutingId};
   BrowserTaskEnvironment task_environment_;
 
   base::ScopedTempDir dir_;
@@ -382,7 +383,7 @@ TEST_F(FileSystemAccessFileWriterImplTest, HashLargerFileOK) {
         EXPECT_EQ(
             "34A82D28CB1E0BA92CADC4BE8497DC9EEA9AC4F63B9C445A9E52D298990AC491",
             GetHexEncodedString(hash_value));
-        EXPECT_EQ(int64_t{target_size}, size);
+        EXPECT_EQ(static_cast<int64_t>(target_size), size);
         loop.Quit();
       }));
   loop.Run();
@@ -597,7 +598,7 @@ TEST_F(FileSystemAccessFileWriterAfterWriteChecksTest,
   base::RunLoop loop;
   EXPECT_CALL(permission_context_, PerformAfterWriteChecks_)
       .WillOnce(testing::Invoke([&](FileSystemAccessWriteItem* item,
-                                    GlobalFrameRoutingId frame_id,
+                                    GlobalRenderFrameHostId frame_id,
                                     SBCallback& callback) {
         sb_callback = std::move(callback);
         loop.Quit();
@@ -639,7 +640,7 @@ TEST_F(FileSystemAccessFileWriterAfterWriteChecksTest,
   base::RunLoop loop;
   EXPECT_CALL(permission_context_, PerformAfterWriteChecks_)
       .WillOnce(testing::Invoke([&](FileSystemAccessWriteItem* item,
-                                    GlobalFrameRoutingId frame_id,
+                                    GlobalRenderFrameHostId frame_id,
                                     SBCallback& callback) {
         sb_callback = std::move(callback);
         loop.Quit();
@@ -710,7 +711,7 @@ TEST_F(FileSystemAccessFileWriterAfterWriteChecksTest,
   base::RunLoop sb_loop;
   EXPECT_CALL(permission_context_, PerformAfterWriteChecks_)
       .WillOnce(testing::Invoke([&](FileSystemAccessWriteItem* item,
-                                    GlobalFrameRoutingId frame_id,
+                                    GlobalRenderFrameHostId frame_id,
                                     SBCallback& callback) {
         sb_callback = std::move(callback);
         sb_loop.Quit();

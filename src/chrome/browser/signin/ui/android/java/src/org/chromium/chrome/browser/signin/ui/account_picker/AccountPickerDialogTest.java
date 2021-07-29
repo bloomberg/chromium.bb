@@ -34,17 +34,15 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.signin.ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.DummyUiChromeActivityTestCase;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
-import org.chromium.components.signin.ProfileDataSource;
-import org.chromium.components.signin.identitymanager.AccountInfoService;
-import org.chromium.components.signin.identitymanager.AccountTrackerService;
-import org.chromium.components.signin.identitymanager.IdentityManager;
-import org.chromium.components.signin.test.util.FakeProfileDataSource;
+import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
+import org.chromium.components.signin.test.util.FakeAccountInfoService;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.ui.test.util.DummyUiActivityTestCase;
+import org.chromium.ui.modaldialog.ModalDialogManager;
+import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
 
 import java.io.IOException;
 
@@ -53,10 +51,9 @@ import java.io.IOException;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-@DisableFeatures(
-        {ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY, ChromeFeatureList.DEPRECATE_MENAGERIE_API})
+@Features.EnableFeatures(ChromeFeatureList.DEPRECATE_MENAGERIE_API)
 @Batch(Batch.PER_CLASS)
-public class AccountPickerDialogTest extends DummyUiActivityTestCase {
+public class AccountPickerDialogTest extends DummyUiChromeActivityTestCase {
     @Rule
     public final Features.JUnitProcessor mProcessor = new Features.JUnitProcessor();
 
@@ -66,16 +63,10 @@ public class AccountPickerDialogTest extends DummyUiActivityTestCase {
 
     @Rule
     public final AccountManagerTestRule mAccountManagerTestRule =
-            new AccountManagerTestRule(new FakeProfileDataSource());
+            new AccountManagerTestRule(new FakeAccountInfoService());
 
     @Rule
     public final MockitoRule mMockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
-
-    @Mock
-    private AccountTrackerService mAccountTrackerServiceMock;
-
-    @Mock
-    private IdentityManager mIdentityManagerMock;
 
     @Mock
     private AccountPickerCoordinator.Listener mListenerMock;
@@ -90,18 +81,18 @@ public class AccountPickerDialogTest extends DummyUiActivityTestCase {
 
     @Before
     public void setUp() {
-        AccountInfoService.init(mIdentityManagerMock, mAccountTrackerServiceMock);
-        addAccount(mAccountName1, mFullName1);
-        addAccount(mAccountName2, "");
+        mAccountManagerTestRule.addAccount(mAccountName1, mFullName1, null, null);
+        mAccountManagerTestRule.addAccount(mAccountName2, "", null, null);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mCoordinator = new AccountPickerDialogCoordinator(getActivity(), mListenerMock);
+            mCoordinator = new AccountPickerDialogCoordinator(getActivity(), mListenerMock,
+                    new ModalDialogManager(
+                            new AppModalPresenter(getActivity()), ModalDialogType.APP));
         });
     }
 
     @After
     public void tearDown() {
         TestThreadUtils.runOnUiThreadBlocking(mCoordinator::dismissDialog);
-        AccountInfoService.resetForTests();
     }
 
     @Test
@@ -113,7 +104,7 @@ public class AccountPickerDialogTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     public void testAddAccount() {
-        onView(withText(R.string.signin_add_account)).perform(click());
+        onView(withText(R.string.signin_add_account_to_device)).perform(click());
         verify(mListenerMock).addAccount();
     }
 
@@ -135,25 +126,9 @@ public class AccountPickerDialogTest extends DummyUiActivityTestCase {
     @Test
     @LargeTest
     @Feature("RenderTest")
-    public void testAccountPickerDialogViewLegacy() throws IOException {
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        mRenderTestRule.render(
-                mCoordinator.getAccountPickerViewForTests(), "account_picker_dialog_legacy");
-    }
-
-    @Test
-    @LargeTest
-    @Feature("RenderTest")
-    @Features.EnableFeatures({ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY})
     public void testAccountPickerDialogView() throws IOException {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         mRenderTestRule.render(
                 mCoordinator.getAccountPickerViewForTests(), "account_picker_dialog");
-    }
-
-    private void addAccount(String accountName, String fullName) {
-        ProfileDataSource.ProfileData profileData =
-                new ProfileDataSource.ProfileData(accountName, null, fullName, null);
-        mAccountManagerTestRule.addAccount(profileData);
     }
 }

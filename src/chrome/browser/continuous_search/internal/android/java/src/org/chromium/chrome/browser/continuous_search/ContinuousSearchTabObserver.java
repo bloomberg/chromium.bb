@@ -26,7 +26,7 @@ public class ContinuousSearchTabObserver extends EmptyTabObserver implements Sea
     }
 
     @Override
-    public void onPageLoadStarted(Tab tab, GURL url) {
+    public void onUpdateUrl(Tab tab, GURL url) {
         ContinuousNavigationUserDataImpl continuousNavigationUserData =
                 ContinuousNavigationUserDataImpl.getOrCreateForTab(tab);
         continuousNavigationUserData.updateCurrentUrl(url);
@@ -36,10 +36,16 @@ public class ContinuousSearchTabObserver extends EmptyTabObserver implements Sea
     public void onPageLoadFinished(Tab tab, GURL url) {
         ContinuousNavigationUserDataImpl continuousNavigationUserData =
                 ContinuousNavigationUserDataImpl.getOrCreateForTab(tab);
-        continuousNavigationUserData.updateCurrentUrl(url);
+        if (ContinuousSearchConfiguration.isPermanentlyDismissed()) {
+            continuousNavigationUserData.invalidateData();
+            return;
+        }
 
         // Cancel any existing requests.
         resetProducer();
+
+        // Don't fetch new data if we already have data for this SRP.
+        if (continuousNavigationUserData.isMatchingSrp(url)) return;
 
         String query = SearchUrlHelper.getQueryIfValidSrpUrl(url);
         if (query == null) return;
@@ -60,6 +66,13 @@ public class ContinuousSearchTabObserver extends EmptyTabObserver implements Sea
 
     @Override
     public void onDestroyed(Tab tab) {
+        // If the tab is destroyed the {@link UserDataHost} will also be destroyed. We need to stop
+        // {@link #onResult()} from running by resetting the producer and cancelling the request.
+        resetProducer();
+
+        // The tab's {@link UserDataHost} is destroyed after running observers so this is safe.
+        ContinuousNavigationUserDataImpl.getOrCreateForTab(tab).invalidateData();
+
         tab.removeObserver(this);
     }
 
@@ -68,6 +81,9 @@ public class ContinuousSearchTabObserver extends EmptyTabObserver implements Sea
     @Override
     public void onResult(ContinuousNavigationMetadata metadata) {
         assert metadata != null;
+
+        if (mProducer == null) return;
+
         reportStatus(mProducer.getSuccessStatus(), mProducer.getClass());
         mProducer = null;
 

@@ -2,32 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
-// #import {EntryLocation} from '../../externs/entry_location.m.js';
-// #import {VolumeInfo} from '../../externs/volume_info.m.js';
-// #import {List} from 'chrome://resources/js/cr/ui/list.m.js';
-// #import {FilesAppDirEntry, FakeEntry, FilesAppEntry} from '../../externs/files_app_entry_interfaces.m.js';
-// #import {Command} from 'chrome://resources/js/cr/ui/command.m.js';
-// #import {VolumeManager} from '../../externs/volume_manager.m.js';
-// #import {DirectoryModel} from './directory_model.m.js';
-// #import {ThumbnailModel} from './metadata/thumbnail_model.m.js';
-// #import {MetadataModel} from './metadata/metadata_model.m.js';
-// #import {FileOperationManager} from '../../externs/background/file_operation_manager.m.js';
-// #import {ProgressCenter} from '../../externs/background/progress_center.m.js';
-// #import {ListContainer} from './ui/list_container.m.js';
-// #import {DropEffectAndLabel, DropEffectType} from './drop_effect_and_label.m.js';
-// #import {FileSelectionHandler} from './file_selection.m.js';
-// #import {DragSelector} from './ui/drag_selector.m.js';
-// #import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
-// #import {VolumeManagerCommon} from '../../common/js/volume_manager_types.m.js';
-// #import {DirectoryItem, DirectoryTree} from './ui/directory_tree.m.js';
-// #import {TreeItem} from 'chrome://resources/js/cr/ui/tree.m.js';
-// #import {ThumbnailLoader} from './thumbnail_loader.m.js';
-// #import {ProgressCenterItem, ProgressItemType, ProgressItemState} from '../../common/js/progress_center_common.m.js';
-// #import {FileType} from '../../common/js/file_type.m.js';
-// #import {util, strf} from '../../common/js/util.m.js';
-// #import {queryRequiredElement} from 'chrome://resources/js/util.m.js';
-// clang-format on
+import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {Command} from 'chrome://resources/js/cr/ui/command.m.js';
+import {List} from 'chrome://resources/js/cr/ui/list.m.js';
+import {TreeItem} from 'chrome://resources/js/cr/ui/tree.js';
+import {queryRequiredElement} from 'chrome://resources/js/util.m.js';
+
+import {FileType} from '../../common/js/file_type.js';
+import {ProgressCenterItem, ProgressItemState, ProgressItemType} from '../../common/js/progress_center_common.js';
+import {strf, util} from '../../common/js/util.js';
+import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
+import {FileOperationManager} from '../../externs/background/file_operation_manager.js';
+import {ProgressCenter} from '../../externs/background/progress_center.js';
+import {EntryLocation} from '../../externs/entry_location.js';
+import {FakeEntry, FilesAppDirEntry, FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
+import {VolumeInfo} from '../../externs/volume_info.js';
+import {VolumeManager} from '../../externs/volume_manager.js';
+
+import {DirectoryModel} from './directory_model.js';
+import {DropEffectAndLabel, DropEffectType} from './drop_effect_and_label.js';
+import {FileSelectionHandler} from './file_selection.js';
+import {MetadataModel} from './metadata/metadata_model.js';
+import {DirectoryItem, DirectoryTree} from './ui/directory_tree.js';
+import {DragSelector} from './ui/drag_selector.js';
+import {ListContainer} from './ui/list_container.js';
 
 /**
  * Global (placed in the window object) variable name to hold internal
@@ -42,7 +40,7 @@ const DRAG_AND_DROP_GLOBAL_DATA = '__drag_and_drop_global_data';
  */
 let FileAsyncData;
 
-/* #export */ class FileTransferController {
+export class FileTransferController {
   /**
    * @param {!Document} doc Owning document.
    * @param {!ListContainer} listContainer List container.
@@ -55,15 +53,14 @@ let FileAsyncData;
    * @param {!FileOperationManager} fileOperationManager File operation manager
    *     instance.
    * @param {!MetadataModel} metadataModel Metadata cache service.
-   * @param {!ThumbnailModel} thumbnailModel
    * @param {!DirectoryModel} directoryModel Directory model instance.
    * @param {!VolumeManager} volumeManager Volume manager instance.
    * @param {!FileSelectionHandler} selectionHandler Selection handler.
    */
   constructor(
       doc, listContainer, directoryTree, confirmationCallback, progressCenter,
-      fileOperationManager, metadataModel, thumbnailModel, directoryModel,
-      volumeManager, selectionHandler) {
+      fileOperationManager, metadataModel, directoryModel, volumeManager,
+      selectionHandler) {
     /**
      * @private {!Document}
      * @const
@@ -87,12 +84,6 @@ let FileAsyncData;
      * @const
      */
     this.metadataModel_ = metadataModel;
-
-    /**
-     * @private {!ThumbnailModel}
-     * @const
-     */
-    this.thumbnailModel_ = thumbnailModel;
 
     /**
      * @private {!DirectoryModel}
@@ -132,13 +123,6 @@ let FileAsyncData;
     this.pendingTaskIds = [];
 
     /**
-     * Promise to be fulfilled with the thumbnail image of selected file in drag
-     * operation. Used if only one element is selected.
-     * @private {Promise}
-     */
-    this.preloadedThumbnailImagePromise_ = null;
-
-    /**
      * File objects for selected files.
      *
      * @private {Object<FileAsyncData>}
@@ -164,17 +148,17 @@ let FileAsyncData;
     this.sourceNotFoundErrorCount_ = 0;
 
     /**
-     * @private {!cr.ui.Command}
+     * @private {!Command}
      * @const
      */
-    this.copyCommand_ = /** @type {!cr.ui.Command} */ (
+    this.copyCommand_ = /** @type {!Command} */ (
         queryRequiredElement('command#copy', assert(this.document_.body)));
 
     /**
-     * @private {!cr.ui.Command}
+     * @private {!Command}
      * @const
      */
-    this.cutCommand_ = /** @type {!cr.ui.Command} */ (
+    this.cutCommand_ = /** @type {!Command} */ (
         queryRequiredElement('command#cut', assert(this.document_.body)));
 
     /**
@@ -205,9 +189,6 @@ let FileAsyncData;
 
     // Register the events.
     selectionHandler.addEventListener(
-        FileSelectionHandler.EventType.CHANGE,
-        this.onFileSelectionChanged_.bind(this));
-    selectionHandler.addEventListener(
         FileSelectionHandler.EventType.CHANGE_THROTTLED,
         this.onFileSelectionChangedThrottled_.bind(this));
     this.attachDragSource_(listContainer.table.list);
@@ -222,7 +203,7 @@ let FileAsyncData;
   }
 
   /**
-   * @param {!cr.ui.List} list Items in the list will be draggable.
+   * @param {!List} list Items in the list will be draggable.
    * @private
    */
   attachDragSource_(list) {
@@ -237,7 +218,7 @@ let FileAsyncData;
   }
 
   /**
-   * @param {!cr.ui.List} list List itself and its directory items will could
+   * @param {!List} list List itself and its directory items will could
    *                          be drop target.
    * @param {boolean=} opt_onlyIntoDirectories If true only directory list
    *     items could be drop targets. Otherwise any other place of the list
@@ -313,23 +294,6 @@ let FileAsyncData;
         !this.selectionHandler_.isAvailable());
     this.appendUriList_(
         clipboardData, this.selectionHandler_.selection.entries);
-    if (util.isCopyImageEnabled()) {
-      const entries = this.selectionHandler_.selection.entries;
-      if (entries.length == 1 && FileType.isImage(entries[0])) {
-        // We are using setTimeout to ensure that the previous copy commands
-        // execute successfully, so we can append our image to the system
-        // clipboard at the end of the event loop.
-        setTimeout(() => {
-          chrome.fileManagerPrivate.copyImageToClipboard(entries[0],
-            () => {
-              if (chrome.runtime.lastError) {
-                console.error(chrome.runtime.lastError.message);
-                return;
-              }
-          });
-        });
-      }
-    }
   }
 
   /**
@@ -646,121 +610,12 @@ let FileAsyncData;
   }
 
   /**
-   * Preloads an image thumbnail for the specified file entry.
-   *
-   * @param {!Entry} entry Entry to preload a thumbnail for.
-   * @private
-   */
-  preloadThumbnailImage_(entry) {
-    const imagePromise = this.thumbnailModel_.get([entry]).then(metadata => {
-      return new Promise((fulfill, reject) => {
-        const loader = new ThumbnailLoader(
-            entry, ThumbnailLoader.LoaderType.IMAGE, metadata[0]);
-        loader.loadDetachedImage(result => {
-          if (result) {
-            fulfill(loader.getImage());
-          }
-        });
-      });
-    });
-
-    imagePromise.then(image => {
-      // Store the image so that we can obtain the image synchronously.
-      imagePromise.value = image;
-    });
-
-    this.preloadedThumbnailImagePromise_ = imagePromise;
-  }
-
-  /**
    * Renders a drag-and-drop thumbnail.
-   *
-   * @return {!HTMLElement} Element containing the thumbnail.
-   * @private
-   */
-  renderThumbnail_() {
-    const length = this.selectionHandler_.selection.entries.length;
-    const container = /** @type {HTMLElement} */ (
-        this.document_.body.querySelector('#drag-container'));
-    const contents = this.document_.createElement('div');
-    contents.className = 'drag-contents';
-    container.appendChild(contents);
-
-    // Option 1. Multiple selection, render only a label.
-    if (length > 1) {
-      const label = this.document_.createElement('div');
-      label.className = 'label';
-      label.textContent = strf('DRAGGING_MULTIPLE_ITEMS', length);
-      contents.appendChild(label);
-      return container;
-    }
-
-    // Option 2. Thumbnail image available from preloadedThumbnailImagePromise_,
-    // then render it without a label.
-    if (this.preloadedThumbnailImagePromise_ &&
-        this.preloadedThumbnailImagePromise_.value) {
-      const thumbnailImage = this.preloadedThumbnailImagePromise_.value;
-
-      // Resize the image to canvas.
-      const canvas = document.createElement('canvas');
-      canvas.width = FileTransferController.DRAG_THUMBNAIL_SIZE_;
-      canvas.height = FileTransferController.DRAG_THUMBNAIL_SIZE_;
-
-      const minScale = Math.min(
-          thumbnailImage.width / canvas.width,
-          thumbnailImage.height / canvas.height);
-      const srcWidth = Math.min(canvas.width * minScale, thumbnailImage.width);
-      const srcHeight =
-          Math.min(canvas.height * minScale, thumbnailImage.height);
-
-      const context = canvas.getContext('2d');
-      context.drawImage(
-          thumbnailImage, (thumbnailImage.width - srcWidth) / 2,
-          (thumbnailImage.height - srcHeight) / 2, srcWidth, srcHeight, 0, 0,
-          canvas.width, canvas.height);
-      contents.classList.add('for-image');
-      contents.appendChild(canvas);
-      return container;
-    }
-
-    // Option 3. Thumbnail image available from file grid / list, render it
-    // without a label.
-    // Because of Option 1, there is only exactly one item selected.
-    const index = this.selectionHandler_.selection.indexes[0];
-    // We only need one of the thumbnails.
-    const thumbnail = this.listContainer_.currentView.getThumbnail(index);
-    if (thumbnail) {
-      const canvas = document.createElement('canvas');
-      canvas.width = FileTransferController.DRAG_THUMBNAIL_SIZE_;
-      canvas.height = FileTransferController.DRAG_THUMBNAIL_SIZE_;
-      canvas.style.backgroundImage = thumbnail.style.backgroundImage;
-      canvas.style.backgroundSize = 'cover';
-      canvas.classList.add('for-image');
-      contents.appendChild(canvas);
-      return container;
-    }
-
-    // Option 4. Thumbnail not available. Render an icon and a label.
-    const entry = this.selectionHandler_.selection.entries[0];
-    const icon = this.document_.createElement('div');
-    icon.className = 'detail-icon';
-    icon.setAttribute('file-type-icon', FileType.getIcon(entry));
-    contents.appendChild(icon);
-    const label = this.document_.createElement('div');
-    label.className = 'label';
-    label.textContent = entry.name;
-    contents.appendChild(label);
-    return container;
-  }
-
-  /**
-   * Renders a drag-and-drop thumbnail. TODO(files-ng): remove renderThumbnail_
-   * and its strings, preloadedThumbnailImagePromise_, constants, etc.
    *
    * @return {!HTMLElement} Thumbnail element.
    * @private
    */
-  renderThumbnailFilesNg_() {
+  renderThumbnail_() {
     const entry = this.selectionHandler_.selection.entries[0];
     const index = this.selectionHandler_.selection.indexes[0];
     const items = this.selectionHandler_.selection.entries.length;
@@ -789,7 +644,7 @@ let FileAsyncData;
   }
 
   /**
-   * @param {!cr.ui.List} list Drop target list
+   * @param {!List} list Drop target list
    * @param {!Event} event A dragstart event of DOM.
    * @private
    */
@@ -842,7 +697,7 @@ let FileAsyncData;
 
     const thumbnail = {element: null, x: 0, y: 0};
 
-    thumbnail.element = this.renderThumbnailFilesNg_();
+    thumbnail.element = this.renderThumbnail_();
     if (this.document_.querySelector(':root[dir=rtl]')) {
       thumbnail.x = thumbnail.element.clientWidth * window.devicePixelRatio;
     }
@@ -856,7 +711,7 @@ let FileAsyncData;
   }
 
   /**
-   * @param {!cr.ui.List} list Drop target list.
+   * @param {!List} list Drop target list.
    * @param {!Event} event A dragend event of DOM.
    * @private
    */
@@ -874,7 +729,7 @@ let FileAsyncData;
   /**
    * @param {boolean} onlyIntoDirectories True if the drag is only into
    *     directories.
-   * @param {(!cr.ui.List|!DirectoryTree)} list Drop target list.
+   * @param {(!List|!DirectoryTree)} list Drop target list.
    * @param {Event} event A dragover event of DOM.
    * @private
    */
@@ -892,7 +747,7 @@ let FileAsyncData;
   }
 
   /**
-   * @param {(!cr.ui.List|!DirectoryTree)} list Drop target list.
+   * @param {(!List|!DirectoryTree)} list Drop target list.
    * @param {!Event} event A dragenter event of DOM.
    * @private
    */
@@ -931,7 +786,7 @@ let FileAsyncData;
 
     this.lastEnteredTarget_ = event.target;
     let item = event.target;
-    while (item && !(item instanceof cr.ui.TreeItem)) {
+    while (item && !(item instanceof TreeItem)) {
       item = item.parentNode;
     }
 
@@ -1442,13 +1297,6 @@ let FileAsyncData;
   /**
    * @private
    */
-  onFileSelectionChanged_() {
-    this.preloadedThumbnailImagePromise_ = null;
-  }
-
-  /**
-   * @private
-   */
   onFileSelectionChangedThrottled_() {
     // Remove file objects that are no longer in the selection.
     const asyncData = {};
@@ -1487,13 +1335,6 @@ let FileAsyncData;
           }
         })(fileEntries[i]);
       }
-    }
-
-    if (entries.length === 1) {
-      // For single selection, the dragged element is created in advance,
-      // otherwise an image may not be loaded at the time the 'dragstart' event
-      // comes.
-      this.preloadThumbnailImage_(entries[0]);
     }
 
     this.metadataModel_
@@ -1617,15 +1458,6 @@ let FileAsyncData;
     }, 100);
   }
 }
-
-/**
- * Size of drag thumbnail for image files.
- *
- * @type {number}
- * @const
- * @private
- */
-FileTransferController.DRAG_THUMBNAIL_SIZE_ = 64;
 
 /**
  * Y coordinate of the label to describe drop action, relative to mouse cursor.

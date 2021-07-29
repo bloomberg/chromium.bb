@@ -39,6 +39,7 @@
 #include "cc/input/layer_selection_bound.h"
 #include "cc/input/overscroll_behavior.h"
 #include "cc/trees/layer_tree_host.h"
+#include "cc/trees/paint_holding_reason.h"
 #include "services/viz/public/mojom/hit_test/input_target_client.mojom-blink.h"
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
 #include "third_party/blink/public/common/input/web_gesture_device.h"
@@ -336,7 +337,7 @@ class CORE_EXPORT WebFrameWidgetImpl
   // WebWidget overrides.
   void InitializeCompositing(
       scheduler::WebAgentGroupScheduler& agent_group_scheduler,
-      const ScreenInfos& screen_infos,
+      const display::ScreenInfos& screen_infos,
       const cc::LayerTreeSettings* settings) override;
   void SetCompositorVisible(bool visible) override;
   gfx::Size Size() override;
@@ -359,10 +360,10 @@ class CORE_EXPORT WebFrameWidgetImpl
       const VisualProperties& visual_properties) override;
   bool PinchGestureActiveInMainFrame() override;
   float PageScaleInMainFrame() override;
-  const ScreenInfo& GetScreenInfo() override;
-  const ScreenInfos& GetScreenInfos() override;
-  const ScreenInfo& GetOriginalScreenInfo() override;
-  const ScreenInfos& GetOriginalScreenInfos() override;
+  const display::ScreenInfo& GetScreenInfo() override;
+  const display::ScreenInfos& GetScreenInfos() override;
+  const display::ScreenInfo& GetOriginalScreenInfo() override;
+  const display::ScreenInfos& GetOriginalScreenInfos() override;
   gfx::Rect WindowRect() override;
   gfx::Rect ViewRect() override;
   void SetScreenRects(const gfx::Rect& widget_screen_rect,
@@ -446,7 +447,8 @@ class CORE_EXPORT WebFrameWidgetImpl
   // updates without committing the layer tree. Commits are deferred
   // until at most the given |timeout| has passed. If multiple calls are made
   // when deferral is active then the initial timeout applies.
-  void StartDeferringCommits(base::TimeDelta timeout);
+  bool StartDeferringCommits(base::TimeDelta timeout,
+                             cc::PaintHoldingReason reason);
   // Immediately stop deferring commits.
   void StopDeferringCommits(cc::PaintHoldingCommitTrigger);
 
@@ -496,6 +498,9 @@ class CORE_EXPORT WebFrameWidgetImpl
   void SetWindowRectSynchronouslyForTesting(const gfx::Rect& new_window_rect);
 
   void UpdateTooltipUnderCursor(const String& tooltip_text, TextDirection dir);
+  void UpdateTooltipFromKeyboard(const String& tooltip_text,
+                                 TextDirection dir,
+                                 const gfx::Rect& bounds);
 
   void ShowVirtualKeyboardOnElementFocus();
   void ProcessTouchAction(WebTouchAction touch_action);
@@ -547,7 +552,7 @@ class CORE_EXPORT WebFrameWidgetImpl
   void SetScreenMetricsEmulationParameters(
       bool enabled,
       const blink::DeviceEmulationParams& params);
-  void SetScreenInfoAndSize(const ScreenInfos& screen_infos,
+  void SetScreenInfoAndSize(const display::ScreenInfos& screen_infos,
                             const gfx::Size& widget_size,
                             const gfx::Size& visible_viewport_size);
 
@@ -556,10 +561,10 @@ class CORE_EXPORT WebFrameWidgetImpl
   void UpdateSurfaceAndScreenInfo(
       const viz::LocalSurfaceId& new_local_surface_id,
       const gfx::Rect& compositor_viewport_pixel_rect,
-      const ScreenInfos& screen_infos);
+      const display::ScreenInfos& screen_infos);
   // Similar to UpdateSurfaceAndScreenInfo but the surface allocation
   // and compositor viewport rect remains the same.
-  void UpdateScreenInfo(const ScreenInfos& screen_infos);
+  void UpdateScreenInfo(const display::ScreenInfos& screen_infos);
   void UpdateSurfaceAndCompositorRect(
       const viz::LocalSurfaceId& new_local_surface_id,
       const gfx::Rect& compositor_viewport_pixel_rect);
@@ -631,7 +636,8 @@ class CORE_EXPORT WebFrameWidgetImpl
       base::TimeTicks first_scroll_timestamp) override;
   void DidCompletePageScaleAnimation() override;
   void FocusChangeComplete() override;
-  bool WillHandleGestureEvent(const WebGestureEvent& event) override;
+  void WillHandleGestureEvent(const WebGestureEvent& event,
+                              bool* suppress) override;
   void WillHandleMouseEvent(const WebMouseEvent& event) override;
   void ObserveGestureEventAndResult(
       const WebGestureEvent& gesture_event,
@@ -651,10 +657,10 @@ class CORE_EXPORT WebFrameWidgetImpl
                          const gfx::Rect& window_screen_rect) override;
   void OrientationChanged() override;
   void DidUpdateSurfaceAndScreen(
-      const ScreenInfo& previous_original_screen_info) override;
+      const display::ScreenInfo& previous_original_screen_info) override;
   gfx::Rect ViewportVisibleRect() override;
-  absl::optional<blink::mojom::ScreenOrientation> ScreenOrientationOverride()
-      override;
+  absl::optional<display::mojom::blink::ScreenOrientation>
+  ScreenOrientationOverride() override;
   void WasHidden() override;
   void WasShown(bool was_evicted) override;
   void RunPaintBenchmark(int repeat_count,

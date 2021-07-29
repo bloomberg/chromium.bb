@@ -18,6 +18,7 @@
 #include "ui/events/base_event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/test/ink_drop_host_view_test_api.h"
 #include "ui/views/animation/test/test_ink_drop.h"
 #include "ui/views/controls/image_view.h"
@@ -70,7 +71,7 @@ class TestIconLabelBubbleView : public IconLabelBubbleView {
 
   State state() const {
     const double kOpenFraction = double{kOpenTimeMS} / kAnimationDurationMS;
-    double state = double{value_} / kNumberOfSteps;
+    double state = static_cast<double>(value_) / kNumberOfSteps;
     if (state < kOpenFraction)
       return GROWING;
     if (state > (1.0 - kOpenFraction))
@@ -79,8 +80,8 @@ class TestIconLabelBubbleView : public IconLabelBubbleView {
   }
 
   void HideBubble() {
-    ink_drop()->AnimateToState(views::InkDropState::HIDDEN,
-                               nullptr /* event */);
+    views::InkDrop::Get(this)->AnimateToState(views::InkDropState::HIDDEN,
+                                              nullptr /* event */);
     is_bubble_showing_ = false;
   }
 
@@ -115,8 +116,8 @@ class TestIconLabelBubbleView : public IconLabelBubbleView {
   bool IsShrinking() const override { return state() == SHRINKING; }
 
   bool ShowBubble(const ui::Event& event) override {
-    ink_drop()->AnimateToState(views::InkDropState::ACTIVATED,
-                               nullptr /* event */);
+    views::InkDrop::Get(this)->AnimateToState(views::InkDropState::ACTIVATED,
+                                              nullptr /* event */);
     is_bubble_showing_ = true;
     return true;
   }
@@ -187,7 +188,7 @@ class IconLabelBubbleViewTest : public IconLabelBubbleViewTestBase {
 
   void AttachInkDrop() {
     ink_drop_ = new TestInkDrop();
-    InkDropHostTestApi(view_->ink_drop())
+    InkDropHostTestApi(views::InkDrop::Get(view_))
         .SetInkDrop(base::WrapUnique(ink_drop_));
   }
 

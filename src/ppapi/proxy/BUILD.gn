@@ -16,8 +16,11 @@ component("proxy") {
     # easily make async callbacks in the proxy. We can't depend on the
     # full C++ wrappers at this layer since the C++ wrappers expect
     # symbols defining the globals for "being a plugin" which we are not.
-    # These callback files are standalone.
+    #
+    # These callback files are supposed to be standalone, but are not; see
+    # http://crbug.com/1228394.
     "../cpp/completion_callback.h",
+    "../cpp/logging.h",
     "../utility/completion_callback_factory.h",
     "audio_buffer_resource.cc",
     "audio_buffer_resource.h",
@@ -245,6 +248,8 @@ component("proxy") {
     "//base",
     "//device/base/synchronization",
     "//device/gamepad/public/cpp:shared_with_blink",
+    "//gpu/command_buffer/client:client",
+    "//gpu/command_buffer/client:gles2_cmd_helper",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/common",
     "//gpu/ipc/common:command_buffer_traits",
@@ -276,6 +281,8 @@ source_set("common") {
     "tcp_socket_resource_constants.h",
     "udp_socket_resource_constants.h",
   ]
+
+  deps = [ "//base:base" ]
 }
 
 group("ipc") {
@@ -341,6 +348,7 @@ static_library("test_support") {
     "//ipc:test_support",
     "//ppapi/proxy",
     "//ppapi/shared_impl",
+    "//ppapi/shared_impl:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

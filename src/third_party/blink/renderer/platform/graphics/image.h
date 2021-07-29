@@ -27,10 +27,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_IMAGE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_IMAGE_H_
 
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "third_party/blink/public/mojom/webpreferences/web_preferences.mojom-blink.h"
+#include "third_party/blink/public/mojom/webpreferences/web_preferences.mojom-blink-forward.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
@@ -63,6 +62,8 @@ class WebGraphicsContext3DProvider;
 class WebGraphicsContext3DProviderWrapper;
 class DarkModeImageCache;
 
+struct ImageTilingInfo;
+
 class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   friend class GeneratedImage;
   friend class CrossfadeGeneratedImage;
@@ -70,13 +71,15 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   friend class GraphicsContext;
 
  public:
+  Image(const Image&) = delete;
+  Image& operator=(const Image&) = delete;
   virtual ~Image();
 
   static cc::ImageDecodeCache& SharedCCDecodeCache(SkColorType);
 
   static scoped_refptr<Image> LoadPlatformResource(
       int resource_id,
-      ui::ScaleFactor scale_factor = ui::SCALE_FACTOR_100P);
+      ui::ResourceScaleFactor scale_factor = ui::SCALE_FACTOR_100P);
 
   static PaintImage ResizeAndOrientImage(
       const PaintImage&,
@@ -89,6 +92,7 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   virtual bool IsBitmapImage() const { return false; }
   virtual bool IsStaticBitmapImage() const { return false; }
   virtual bool IsPlaceholderImage() const { return false; }
+  virtual bool IsGradientGeneratedImage() const { return false; }
 
   virtual bool CurrentFrameKnownToBeOpaque() = 0;
 
@@ -106,14 +110,58 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
 
   virtual bool HasIntrinsicSize() const { return true; }
 
-  virtual IntSize Size() const = 0;
-  virtual IntSize DensityCorrectedSize() const { return Size(); }
-  IntSize Size(RespectImageOrientationEnum) const;
-  virtual IntSize PreferredDisplaySize() const { return Size(); }
-  virtual FloatSize SizeAsFloat(
-      RespectImageOrientationEnum respect_orientation) const {
-    return FloatSize(Size(respect_orientation));
+  struct SizeConfig {
+    // Apply density correction.
+    bool apply_density = false;
+
+    // Apply preferred orientation.
+    bool apply_orientation = false;
+  };
+
+  // Size of the Image optionally modified per the provided SizeConfig.
+  virtual IntSize SizeWithConfig(SizeConfig) const = 0;
+  virtual FloatSize SizeWithConfigAsFloat(SizeConfig config) const {
+    return FloatSize(SizeWithConfig(config));
   }
+
+  // Size of the Image.
+  IntSize Size() const { return SizeWithConfig({}); }
+
+  // Size of the Image with density correction applied.
+  IntSize DensityCorrectedSize() const {
+    SizeConfig config;
+    config.apply_density = true;
+    return SizeWithConfig(config);
+  }
+
+  // Size of the Image with density correction and orientation applied
+  // regardless of any settings or style affecting orientation.
+  IntSize PreferredDisplaySize() const {
+    SizeConfig config;
+    config.apply_density = true;
+    config.apply_orientation = true;
+    return SizeWithConfig(config);
+  }
+
+  // Size of the Image with density correction applied. If the argument is
+  // kRespectImageOrientation orientation is applied as well.
+  IntSize Size(RespectImageOrientationEnum respect_orientation) const {
+    SizeConfig config;
+    config.apply_density = true;
+    config.apply_orientation = respect_orientation == kRespectImageOrientation;
+    return SizeWithConfig(config);
+  }
+
+  // Same as Size(RespectImageOrientationEnum) above, but returns a floating
+  // point representation of the size. For subclasses of Image that can have a
+  // fractional size this will return the unrounded size.
+  FloatSize SizeAsFloat(RespectImageOrientationEnum respect_orientation) const {
+    SizeConfig config;
+    config.apply_density = true;
+    config.apply_orientation = respect_orientation == kRespectImageOrientation;
+    return SizeWithConfigAsFloat(config);
+  }
+
   IntRect Rect() const { return IntRect(IntPoint(), Size()); }
   int width() const { return Size().Width(); }
   int height() const { return Size().Height(); }
@@ -144,7 +192,22 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
 
   virtual void DestroyDecodedData() = 0;
 
+  // In some overrides, |Data()| can be somewhat expensive (e.g. in BitmapImage,
+  // we don't use a SharedBuffer to store the image data, so |Data()| involves a
+  // copy). |HasData()| and |DataSize()| should be preferred in cases where the
+  // data itself is not needed.
+  //
+  // If a subclass overrides |Data|, it must override |HasData| and |DataSize|
+  // as well.
   virtual scoped_refptr<SharedBuffer> Data() { return encoded_image_data_; }
+  // Returns true iff the encoded image data is available.
+  virtual bool HasData() const { return encoded_image_data_ != nullptr; }
+  // Returns the size of the encoded image data, in bytes. Should only be called
+  // if |HasData()| is true.
+  virtual size_t DataSize() const {
+    DCHECK(encoded_image_data_);
+    return encoded_image_data_->size();
+  }
 
   // Animation begins whenever someone draws the image, so startAnimation() is
   // not normally called. It will automatically pause once all observers no
@@ -157,9 +220,7 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
 
   // Set animationPolicy
   virtual void SetAnimationPolicy(mojom::blink::ImageAnimationPolicy) {}
-  virtual mojom::blink::ImageAnimationPolicy AnimationPolicy() {
-    return mojom::blink::ImageAnimationPolicy::kImageAnimationPolicyAllowed;
-  }
+  virtual mojom::blink::ImageAnimationPolicy AnimationPolicy();
 
   // Advances an animated image. For BitmapImage (e.g., animated gifs) this
   // will advance to the next frame. For SVGImage, this will trigger an
@@ -207,15 +268,14 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
 
   virtual PaintImage PaintImageForCurrentFrame() = 0;
 
-  virtual bool HasDefaultOrientation() const { return true; }
-
   // Most image types have the default orientation. Only bitmap derived image
   // types need to override this method.
   virtual ImageOrientation CurrentFrameOrientation() const {
     return ImageOrientationEnum::kDefault;
   }
-
-  virtual IntSize CurrentFrameDensityCorrectedSize() const { return IntSize(); }
+  bool HasDefaultOrientation() const {
+    return CurrentFrameOrientation() == ImageOrientationEnum::kDefault;
+  }
 
   // Correct the src rect (rotate and maybe translate it) to account for a
   // non-default image orientation. The image must have non-default orientation
@@ -266,12 +326,9 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   Image(ImageObserver* = nullptr, bool is_multipart = false);
 
   virtual void DrawPattern(GraphicsContext&,
-                           const FloatRect&,
-                           const FloatSize&,
-                           const FloatPoint& phase,
-                           SkBlendMode,
-                           const FloatRect&,
-                           const FloatSize& repeat_spacing,
+                           const cc::PaintFlags&,
+                           const FloatRect& dest_rect,
+                           const ImageTilingInfo& tiling_info,
                            RespectImageOrientationEnum);
 
   // Creates and initializes a PaintImageBuilder with the metadata flags for the
@@ -295,7 +352,6 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   PaintImage::Id stable_image_id_;
   const bool is_multipart_;
   std::unique_ptr<DarkModeImageCache> dark_mode_image_cache_;
-  DISALLOW_COPY_AND_ASSIGN(Image);
 };
 
 }  // namespace blink

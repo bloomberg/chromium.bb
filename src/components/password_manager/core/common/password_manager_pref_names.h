@@ -37,30 +37,15 @@ extern const char kOsPasswordLastChanged[];
 // The current status of migrating the passwords from the Keychain to the
 // database. Stores a value from MigrationStatus.
 extern const char kKeychainMigrationStatus[];
-
-// The date of when passwords were cleaned up for MacOS users who previously
-// lost access to their password because of encryption key modification in
-// Keychain.
-extern const char kPasswordRecovery[];
 #endif
 
 // Boolean that indicated whether first run experience for the auto sign-in
 // prompt was shown or not.
 extern const char kWasAutoSignInFirstRunExperienceShown[];
 
-// Boolean that indicated whether one time upload of phished credentials was
-// performed for syncing users.
-extern const char kWasPhishedCredentialsUploadedToSync[];
-
-// Boolean that indicated if user interacted with the Chrome Sign in promo.
-extern const char kWasSignInPasswordPromoClicked[];
-
-// Number of times the Chrome Sign in promo popped up.
-extern const char kNumberSignInPasswordPromoShown[];
-
-// True if the counters for the sign in promo were reset for M79.
-// Safe to remove for M82.
-extern const char kSignInPasswordPromoRevive[];
+// Boolean that indicated whether one time removal of old google.com logins was
+// performed.
+extern const char kWereOldGoogleLoginsRemoved[];
 
 // A dictionary of account-storage-related settings that exist per Gaia account
 // (e.g. whether that user has opted in). It maps from hash of Gaia ID to

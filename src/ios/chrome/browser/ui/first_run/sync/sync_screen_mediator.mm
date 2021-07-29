@@ -10,6 +10,9 @@
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/sync/sync_setup_service.h"
+#import "ios/chrome/browser/ui/authentication/authentication_flow.h"
+#import "ios/chrome/browser/ui/first_run/sync/sync_screen_consumer.h"
+#import "ios/chrome/browser/ui/first_run/sync/sync_screen_mediator_delegate.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 
@@ -25,11 +28,13 @@
 @property(nonatomic, assign) consent_auditor::ConsentAuditor* consentAuditor;
 // Chrome interface to the iOS shared authentication library.
 @property(nonatomic, assign) AuthenticationService* authenticationService;
+// Service that allows for configuring sync.
+@property(nonatomic, assign) SyncSetupService* syncSetupService;
 // Manager for user consent.
 @property(nonatomic, assign)
     unified_consent::UnifiedConsentService* unifiedConsentService;
-// Service that allows for configuring sync.
-@property(nonatomic, assign) SyncSetupService* syncSetupService;
+// Manager for the authentication flow.
+@property(nonatomic, strong) AuthenticationFlow* authenticationFlow;
 
 @end
 
@@ -40,31 +45,68 @@
                   identityManager:(signin::IdentityManager*)identityManager
                    consentAuditor:
                        (consent_auditor::ConsentAuditor*)consentAuditor
+                 syncSetupService:(SyncSetupService*)syncSetupService
             unifiedConsentService:
-                (unified_consent::UnifiedConsentService*)unifiedConsentService
-                 syncSetupService:(SyncSetupService*)syncSetupService {
+                (unified_consent::UnifiedConsentService*)unifiedConsentService {
   self = [super init];
   if (self) {
+    DCHECK(unifiedConsentService);
+
     _identityManager = identityManager;
     _consentAuditor = consentAuditor;
     _authenticationService = authenticationService;
-    _unifiedConsentService = unifiedConsentService;
     _syncSetupService = syncSetupService;
+    _unifiedConsentService = unifiedConsentService;
   }
   return self;
 }
 
-- (void)startSync {
+- (void)startSyncWithConfirmationID:(const int)confirmationID
+                           consentIDs:(NSArray<NSNumber*>*)consentIDs
+                   authenticationFlow:(AuthenticationFlow*)authenticationFlow
+    advancedSyncSettingsLinkWasTapped:(BOOL)advancedSyncSettingsLinkWasTapped {
+  DCHECK(!self.authenticationFlow);
+
+  [self.consumer setUIEnabled:NO];
+
+  // Local copy to be captured.
+  NSArray<NSNumber*>* consentIDsCopy = [consentIDs copy];
+
+  self.authenticationFlow = authenticationFlow;
+  __weak __typeof(self) weakSelf = self;
+  [self.authenticationFlow startSignInWithCompletion:^(BOOL success) {
+    [weakSelf signinCompletedWithSuccess:success
+                          confirmationID:confirmationID
+                              consentIDs:consentIDsCopy
+               advancedSettingsRequested:advancedSyncSettingsLinkWasTapped];
+  }];
+}
+
+#pragma mark - Private
+
+// Callback used when the sign in flow is complete, with |success|.
+- (void)signinCompletedWithSuccess:(BOOL)success
+                    confirmationID:(const int)confirmationID
+                        consentIDs:(NSArray<NSNumber*>*)consentIDs
+         advancedSettingsRequested:(BOOL)advancedSettingsRequested {
+  self.authenticationFlow = nil;
+  [self.consumer setUIEnabled:YES];
+
+  if (!success)
+    return;
+
+  ChromeIdentity* identity = self.authenticationService->GetPrimaryIdentity(
+      signin::ConsentLevel::kSignin);
+  DCHECK(identity);
+
   sync_pb::UserConsentTypes::SyncConsent syncConsent;
   syncConsent.set_status(sync_pb::UserConsentTypes::ConsentStatus::
                              UserConsentTypes_ConsentStatus_GIVEN);
 
-  syncConsent.set_confirmation_grd_id(
-      IDS_IOS_FIRST_RUN_SYNC_SCREEN_PRIMARY_ACTION);
-
-  ChromeIdentity* identity =
-      self.authenticationService->GetAuthenticatedIdentity();
-  DCHECK(identity);
+  syncConsent.set_confirmation_grd_id(confirmationID);
+  for (NSNumber* consentID in consentIDs) {
+    syncConsent.add_description_grd_ids([consentID intValue]);
+  }
 
   CoreAccountId coreAccountId = self.identityManager->PickAccountIdForAccount(
       base::SysNSStringToUTF8([identity gaiaID]),
@@ -72,12 +114,21 @@
   self.consentAuditor->RecordSyncConsent(coreAccountId, syncConsent);
   self.authenticationService->GrantSyncConsent(identity);
 
-  // Turn on FirstSetupComplete flag after the authentication service has
-  // granted user consent to start Sync.
-  self.syncSetupService->SetFirstSetupComplete(
-      syncer::SyncFirstSetupCompleteSource::BASIC_FLOW);
+  // The consent has to be given as soon as the user is signed in. Even when
+  // they open the settings through the link.
+  self.unifiedConsentService->SetUrlKeyedAnonymizedDataCollectionEnabled(true);
 
-  self.syncSetupService->CommitSyncChanges();
+  if (!advancedSettingsRequested) {
+    // Turn on FirstSetupComplete flag after the authentication service has
+    // granted user consent to start Sync.
+    self.syncSetupService->SetFirstSetupComplete(
+        syncer::SyncFirstSetupCompleteSource::BASIC_FLOW);
+
+    self.syncSetupService->CommitSyncChanges();
+  }
+
+  [self.delegate syncScreenMediator:self
+          didFinishSigninWithResult:SigninCoordinatorResultSuccess];
 }
 
 @end

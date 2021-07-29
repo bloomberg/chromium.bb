@@ -127,6 +127,7 @@ def _RunStoryAndProcessErrorIfNeeded(
 
   with CaptureLogsAsArtifacts(results):
     try:
+      has_existing_exception = False
       if isinstance(test, story_test.StoryTest):
         test.WillRunStory(state.platform, story)
       state.WillRunStory(story)
@@ -149,15 +150,19 @@ def _RunStoryAndProcessErrorIfNeeded(
         test.Measure(state.platform, results)
 
     except page_action.PageActionNotSupported as exc:
+      has_existing_exception = True
       results.Skip('Unsupported page action: %s' % exc)
     except (legacy_page_test.Failure, exceptions.TimeoutException,
             exceptions.LoginException, py_utils.TimeoutException):
+      has_existing_exception = True
       ProcessError(log_message='Handleable error')
     except _UNHANDLEABLE_ERRORS:
+      has_existing_exception = True
       ProcessError(log_message=('Unhandleable error. '
                                 'Benchmark run will be interrupted'))
       raise
     except Exception:  # pylint: disable=broad-except
+      has_existing_exception = True
       ProcessError(log_message=('Possibly handleable error. '
                                 'Will try to restart shared state'))
       # The caller, RunStorySet, will catch this exception, destory and
@@ -166,7 +171,6 @@ def _RunStoryAndProcessErrorIfNeeded(
     finally:
       if finder_options.periodic_screenshot_frequency_ms:
         state.browser.StopCollectingPeriodicScreenshots()
-      has_existing_exception = (sys.exc_info() != (None, None, None))
       try:
         if hasattr(state, 'browser') and state.browser:
           try:
@@ -257,7 +261,9 @@ def RunStorySet(test, story_set, finder_options, results,
   # Sort the stories based on the archive name, to minimize how often the
   # network replay-server needs to be restarted.
   if wpr_archive_info:
-    stories = sorted(stories, key=wpr_archive_info.WprFilePathForStory)
+    stories = sorted(
+        stories,
+        key=lambda story: wpr_archive_info.WprFilePathForStory(story) or '')
 
   if finder_options.print_only:
     if finder_options.print_only == 'tags':
@@ -302,6 +308,7 @@ def RunStorySet(test, story_set, finder_options, results,
   # TODO(crbug.com/866458): unwind the nested blocks
   # pylint: disable=too-many-nested-blocks
   try:
+    has_existing_exception = False
     pageset_repeat = finder_options.pageset_repeat
     for storyset_repeat_counter in range(pageset_repeat):
       for story in stories:
@@ -332,12 +339,14 @@ def RunStorySet(test, story_set, finder_options, results,
             _RunStoryAndProcessErrorIfNeeded(story, results, state, test,
                                              finder_options)
           except _UNHANDLEABLE_ERRORS as exc:
+            has_existing_exception = True
             interruption = (
                 'Benchmark execution interrupted by a fatal exception: %r' %
                 exc)
             results.InterruptBenchmark(interruption)
             exception_formatter.PrintFormattedException()
           except Exception:  # pylint: disable=broad-except
+            has_existing_exception = True
             logging.exception('Exception raised during story run.')
             results.Fail(sys.exc_info())
             # For all other errors, try to give the rest of stories a chance
@@ -367,7 +376,6 @@ def RunStorySet(test, story_set, finder_options, results,
           results.InterruptBenchmark(interruption)
   finally:
     if state:
-      has_existing_exception = sys.exc_info() != (None, None, None)
       try:
         state.TearDownState()
       except Exception: # pylint: disable=broad-except

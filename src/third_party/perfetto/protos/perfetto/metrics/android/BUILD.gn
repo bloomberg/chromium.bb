@@ -40,11 +40,13 @@ perfetto_proto_library("@TYPE@") {
     "package_list.proto",
     "powrails_metric.proto",
     "process_metadata.proto",
+    "profiler_smaps.proto",
     "startup_metric.proto",
     "surfaceflinger.proto",
     "sysui_cuj_metrics.proto",
     "task_names.proto",
     "thread_time_in_state_metric.proto",
+    "trace_quality.proto",
     "unsymbolized_frames.proto",
   ]
 }

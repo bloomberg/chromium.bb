@@ -21,7 +21,6 @@
 #include "src/gpu/GrResourceProvider.h"
 #include "src/gpu/GrShaderUtils.h"
 #include "src/gpu/GrSurfaceContext.h"
-#include "src/gpu/ccpr/GrCoverageCountingPathRenderer.h"
 #include "src/gpu/effects/GrSkSLFP.h"
 #include "src/gpu/gl/GrGLGpu.h"
 #include "src/gpu/mock/GrMockGpu.h"
@@ -193,7 +192,7 @@ void GrDirectContext::freeGpuResources() {
 
     this->drawingManager()->freeGpuResources();
 
-    fResourceCache->purgeAllUnlocked();
+    fResourceCache->purgeUnlockedResources();
 }
 
 bool GrDirectContext::init() {
@@ -317,7 +316,8 @@ void GrDirectContext::purgeUnlockedResources(bool scratchResourcesOnly) {
     fGpu->releaseUnlockedBackendObjects();
 }
 
-void GrDirectContext::performDeferredCleanup(std::chrono::milliseconds msNotUsed) {
+void GrDirectContext::performDeferredCleanup(std::chrono::milliseconds msNotUsed,
+                                             bool scratchResourcesOnly) {
     TRACE_EVENT0("skia.gpu", TRACE_FUNC);
 
     ASSERT_SINGLE_OWNER
@@ -331,7 +331,7 @@ void GrDirectContext::performDeferredCleanup(std::chrono::milliseconds msNotUsed
     auto purgeTime = GrStdSteadyClock::now() - msNotUsed;
 
     fResourceCache->purgeAsNeeded();
-    fResourceCache->purgeResourcesNotUsedSince(purgeTime);
+    fResourceCache->purgeResourcesNotUsedSince(purgeTime, scratchResourcesOnly);
 
     // The textBlob Cache doesn't actually hold any GPU resource but this is a convenient
     // place to purge stale blobs
@@ -358,7 +358,7 @@ bool GrDirectContext::wait(int numSemaphores, const GrBackendSemaphore waitSemap
             deleteSemaphoresAfterWait ? kAdopt_GrWrapOwnership : kBorrow_GrWrapOwnership;
     for (int i = 0; i < numSemaphores; ++i) {
         std::unique_ptr<GrSemaphore> sema = fResourceProvider->wrapBackendSemaphore(
-                waitSemaphores[i], GrResourceProvider::SemaphoreWrapType::kWillWait, ownership);
+                waitSemaphores[i], GrSemaphoreWrapType::kWillWait, ownership);
         // If we failed to wrap the semaphore it means the client didn't give us a valid semaphore
         // to begin with. Therefore, it is fine to not wait on it.
         if (sema) {

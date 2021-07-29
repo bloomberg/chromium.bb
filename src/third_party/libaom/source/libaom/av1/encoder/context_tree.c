@@ -13,10 +13,6 @@
 #include "av1/encoder/encoder.h"
 #include "av1/encoder/rd.h"
 
-static const BLOCK_SIZE square[MAX_SB_SIZE_LOG2 - 1] = {
-  BLOCK_4X4, BLOCK_8X8, BLOCK_16X16, BLOCK_32X32, BLOCK_64X64, BLOCK_128X128,
-};
-
 void av1_copy_tree_context(PICK_MODE_CONTEXT *dst_ctx,
                            PICK_MODE_CONTEXT *src_ctx) {
   dst_ctx->mic = src_ctx->mic;
@@ -41,16 +37,16 @@ void av1_copy_tree_context(PICK_MODE_CONTEXT *dst_ctx,
   dst_ctx->rd_mode_is_ready = src_ctx->rd_mode_is_ready;
 }
 
-void av1_setup_shared_coeff_buffer(AV1_COMMON *cm,
+void av1_setup_shared_coeff_buffer(struct aom_internal_error_info *error,
                                    PC_TREE_SHARED_BUFFERS *shared_bufs) {
   for (int i = 0; i < 3; i++) {
     const int max_num_pix = MAX_SB_SIZE * MAX_SB_SIZE;
-    CHECK_MEM_ERROR(cm, shared_bufs->coeff_buf[i],
-                    aom_memalign(32, max_num_pix * sizeof(tran_low_t)));
-    CHECK_MEM_ERROR(cm, shared_bufs->qcoeff_buf[i],
-                    aom_memalign(32, max_num_pix * sizeof(tran_low_t)));
-    CHECK_MEM_ERROR(cm, shared_bufs->dqcoeff_buf[i],
-                    aom_memalign(32, max_num_pix * sizeof(tran_low_t)));
+    AOM_CHECK_MEM_ERROR(error, shared_bufs->coeff_buf[i],
+                        aom_memalign(32, max_num_pix * sizeof(tran_low_t)));
+    AOM_CHECK_MEM_ERROR(error, shared_bufs->qcoeff_buf[i],
+                        aom_memalign(32, max_num_pix * sizeof(tran_low_t)));
+    AOM_CHECK_MEM_ERROR(error, shared_bufs->dqcoeff_buf[i],
+                        aom_memalign(32, max_num_pix * sizeof(tran_low_t)));
   }
 }
 
@@ -219,20 +215,12 @@ void av1_free_pc_tree_recursive(PC_TREE *pc_tree, int num_planes, int keep_best,
   if (!keep_best && !keep_none) aom_free(pc_tree);
 }
 
-static AOM_INLINE int get_pc_tree_nodes(const int is_sb_size_128,
-                                        int stat_generation_stage) {
-  const int tree_nodes_inc = is_sb_size_128 ? 1024 : 0;
-  const int tree_nodes =
-      stat_generation_stage ? 1 : (tree_nodes_inc + 256 + 64 + 16 + 4 + 1);
-  return tree_nodes;
-}
-
 void av1_setup_sms_tree(AV1_COMP *const cpi, ThreadData *td) {
   AV1_COMMON *const cm = &cpi->common;
   const int stat_generation_stage = is_stat_generation_stage(cpi);
   const int is_sb_size_128 = cm->seq_params->sb_size == BLOCK_128X128;
   const int tree_nodes =
-      get_pc_tree_nodes(is_sb_size_128, stat_generation_stage);
+      av1_get_pc_tree_nodes(is_sb_size_128, stat_generation_stage);
   int sms_tree_index = 0;
   SIMPLE_MOTION_DATA_TREE *this_sms;
   int square_index = 1;

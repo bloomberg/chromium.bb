@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/threading/thread_checker.h"
+#include "base/sequence_checker.h"
 #include "build/build_config.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
 #include "components/policy/core/common/policy_bundle.h"
@@ -53,6 +53,9 @@ class POLICY_EXPORT PolicyServiceImpl
   static std::unique_ptr<PolicyServiceImpl> CreateWithThrottledInitialization(
       Providers providers,
       Migrators migrators = std::vector<std::unique_ptr<PolicyMigrator>>());
+
+  PolicyServiceImpl(const PolicyServiceImpl&) = delete;
+  PolicyServiceImpl& operator=(const PolicyServiceImpl&) = delete;
 
   ~PolicyServiceImpl() override;
 
@@ -109,16 +112,18 @@ class POLICY_EXPORT PolicyServiceImpl
   void MergeAndTriggerUpdates();
 
   // Checks if all providers are initialized or have loaded their policies and
-  // sets |policy_domain_status_| accordingly. If initialization is not
-  // throttled, will also notify the observers of the appropriate status.
-  void CheckPolicyDomainStatus();
+  // sets |policy_domain_status_| accordingly.
+  // Returns the updated domains. The returned domains should be passed to
+  // MaybeNotifyPolicyDomainStatusChange.
+  std::vector<PolicyDomain> UpdatePolicyDomainStatus();
 
-  // If initialization is not throttled, observers of |policy_domain| of the
+  // If initialization is not throttled, observers of |updated_domains| of the
   // initialization will be notified of the domains' initialization and of the
   // first policies being loaded. This function should only be called when
-  // |policy_domain| just became initialized, just got its first policies or
+  // |updated_domains| just became initialized, just got its first policies or
   // when initialization has been unthrottled.
-  void MaybeNotifyPolicyDomainStatusChange(PolicyDomain policy_domain);
+  void MaybeNotifyPolicyDomainStatusChange(
+      const std::vector<PolicyDomain>& updated_domains);
 
   // Invokes all the refresh callbacks if there are no more refreshes pending.
   void CheckRefreshComplete();
@@ -168,14 +173,16 @@ class POLICY_EXPORT PolicyServiceImpl
   std::unique_ptr<android::PolicyServiceAndroid> policy_service_android_;
 #endif
 
-  // Used to verify thread-safe usage.
-  base::ThreadChecker thread_checker_;
+  // Used to verify usage in correct sequence.
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // Used to create tasks to delay new policy updates while we may be already
   // processing previous policy updates.
+  // All WeakPtrs will be reset in |RefreshPolicies| and |OnUpdatePolicy|.
   base::WeakPtrFactory<PolicyServiceImpl> update_task_ptr_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(PolicyServiceImpl);
+  // Used to protect against crbug.com/747817 until crbug.com/1221454 is done.
+  base::WeakPtrFactory<PolicyServiceImpl> weak_ptr_factory_{this};
 };
 
 }  // namespace policy

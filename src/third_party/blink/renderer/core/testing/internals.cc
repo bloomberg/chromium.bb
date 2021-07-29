@@ -30,7 +30,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/macros.h"
 #include "base/process/process_handle.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/trees/layer_tree_host.h"
@@ -123,6 +122,7 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/loader/history_item.h"
+#include "third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -215,6 +215,9 @@ class UseCounterImplObserverImpl final : public UseCounterImpl::Observer {
   UseCounterImplObserverImpl(ScriptPromiseResolver* resolver,
                              WebFeature feature)
       : resolver_(resolver), feature_(feature) {}
+  UseCounterImplObserverImpl(const UseCounterImplObserverImpl&) = delete;
+  UseCounterImplObserverImpl& operator=(const UseCounterImplObserverImpl&) =
+      delete;
 
   bool OnCountFeature(WebFeature feature) final {
     if (feature_ != feature)
@@ -231,7 +234,6 @@ class UseCounterImplObserverImpl final : public UseCounterImpl::Observer {
  private:
   Member<ScriptPromiseResolver> resolver_;
   WebFeature feature_;
-  DISALLOW_COPY_AND_ASSIGN(UseCounterImplObserverImpl);
 };
 
 class TestReadableStreamSource : public UnderlyingSourceBase {
@@ -709,10 +711,6 @@ InternalRuntimeFlags* Internals::runtimeFlags() const {
 
 unsigned Internals::workerThreadCount() const {
   return WorkerThread::WorkerThreadCount();
-}
-
-bool Internals::isFormControlsRefreshEnabled() const {
-  return ::features::IsFormControlsRefreshEnabled();
 }
 
 GCObservation* Internals::observeGC(ScriptValue script_value) {
@@ -2216,7 +2214,7 @@ HitTestLayerRectList* Internals::touchEventTargetLayerRects(
                          IntSize(layer->bounds()));
 
       Vector<IntRect> layer_hit_test_rects;
-      for (const auto& hit_test_rect : touch_action_region.GetAllRegions())
+      for (auto hit_test_rect : touch_action_region.GetAllRegions())
         layer_hit_test_rects.push_back(IntRect(hit_test_rect));
       MergeRects(layer_hit_test_rects);
 
@@ -2358,8 +2356,7 @@ bool Internals::canHyphenate(const AtomicString& locale) {
 }
 
 void Internals::setMockHyphenation(const AtomicString& locale) {
-  LayoutLocale::SetHyphenationForTesting(locale,
-                                         base::AdoptRef(new MockHyphenation));
+  LayoutLocale::SetHyphenationForTesting(locale, MockHyphenation::Create());
 }
 
 unsigned Internals::numberOfLiveNodes() const {
@@ -2521,7 +2518,7 @@ DOMRectList* Internals::nonFastScrollableRects(
   Vector<IntRect> layer_non_fast_scrollable_rects;
   for (auto* layer : *layer_tree_host) {
     const cc::Region& non_fast_region = layer->non_fast_scrollable_region();
-    for (const gfx::Rect& non_fast_rect : non_fast_region) {
+    for (gfx::Rect non_fast_rect : non_fast_region) {
       gfx::RectF layer_rect(non_fast_rect);
 
       // Map |layer_rect| into screen space.
@@ -3467,6 +3464,18 @@ void Internals::forceLoseCanvasContext(HTMLCanvasElement* canvas,
   CanvasContextCreationAttributesCore attr;
   CanvasRenderingContext* context =
       canvas->GetCanvasRenderingContext(context_type, attr);
+  if (!context)
+    return;
+  context->LoseContext(CanvasRenderingContext::kSyntheticLostContext);
+}
+
+void Internals::forceLoseCanvasContext(OffscreenCanvas* offscreencanvas,
+                                       const String& context_type) {
+  CanvasContextCreationAttributesCore attr;
+  CanvasRenderingContext* context = offscreencanvas->GetCanvasRenderingContext(
+      document_->GetExecutionContext(), context_type, attr);
+  if (!context)
+    return;
   context->LoseContext(CanvasRenderingContext::kSyntheticLostContext);
 }
 
@@ -3829,10 +3838,12 @@ void Internals::setIsAdSubframe(HTMLIFrameElement* iframe,
   }
   LocalFrame* parent_frame = iframe->GetDocument().GetFrame();
   LocalFrame* child_frame = To<LocalFrame>(iframe->ContentFrame());
-  bool parent_is_ad = parent_frame && parent_frame->IsAdSubframe();
-  child_frame->SetIsAdSubframe(parent_is_ad
-                                   ? blink::mojom::AdFrameType::kChildAd
-                                   : blink::mojom::AdFrameType::kRootAd);
+  blink::FrameAdEvidence ad_evidence(parent_frame &&
+                                     parent_frame->IsAdSubframe());
+  ad_evidence.set_created_by_ad_script(
+      mojom::FrameCreationStackEvidence::kCreatedByAdScript);
+  ad_evidence.set_is_complete();
+  child_frame->SetAdEvidence(ad_evidence);
 }
 
 ReadableStream* Internals::createReadableStream(

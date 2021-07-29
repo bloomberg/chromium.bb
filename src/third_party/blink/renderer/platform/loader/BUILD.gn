@@ -12,14 +12,10 @@ make_names("make_platform_loader_generated_fetch_initiator_type_names") {
 }
 
 blink_platform_sources("loader") {
-  configs += [ "//build/config/compiler:noshadowing" ]
-
   sources = [
     "allowed_by_nosniff.cc",
     "allowed_by_nosniff.h",
     "child_url_loader_factory_bundle.cc",
-    "code_cache_loader.cc",
-    "code_cache_loader.h",
     "cors/cors.cc",
     "cors/cors.h",
     "cors/cors_error_string.cc",
@@ -56,6 +52,7 @@ blink_platform_sources("loader") {
     "fetch/https_state.h",
     "fetch/integrity_metadata.cc",
     "fetch/integrity_metadata.h",
+    "fetch/loader_freeze_mode.h",
     "fetch/loading_attribute_value.h",
     "fetch/loading_behavior_observer.h",
     "fetch/memory_cache.cc",
@@ -120,10 +117,14 @@ blink_platform_sources("loader") {
     "fetch/trust_token_params_conversion.h",
     "fetch/unique_identifier.cc",
     "fetch/unique_identifier.h",
+    "fetch/url_loader/code_cache_loader.cc",
+    "fetch/url_loader/code_cache_loader.h",
     "fetch/url_loader/dedicated_or_shared_worker_fetch_context_impl.cc",
     "fetch/url_loader/dedicated_or_shared_worker_fetch_context_impl.h",
     "fetch/url_loader/mojo_url_loader_client.cc",
     "fetch/url_loader/mojo_url_loader_client.h",
+    "fetch/url_loader/navigation_body_loader.cc",
+    "fetch/url_loader/navigation_body_loader.h",
     "fetch/url_loader/request_conversion.cc",
     "fetch/url_loader/request_conversion.h",
     "fetch/url_loader/sync_load_context.cc",
@@ -214,6 +215,7 @@ source_set("unit_tests") {
     "fetch/shared_buffer_bytes_consumer_test.cc",
     "fetch/source_keyed_cached_metadata_handler_test.cc",
     "fetch/url_loader/mojo_url_loader_client_unittest.cc",
+    "fetch/url_loader/navigation_body_loader_unittest.cc",
     "fetch/url_loader/sync_load_context_unittest.cc",
     "fetch/url_loader/web_resource_request_sender_unittest.cc",
     "fetch/url_loader/web_url_loader_unittest.cc",

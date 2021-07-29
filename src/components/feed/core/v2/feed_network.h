@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "components/feed/core/proto/v2/wire/consistency_token.pb.h"
 #include "components/feed/core/proto/v2/wire/feed_query.pb.h"
 #include "components/feed/core/proto/v2/wire/request.pb.h"
 #include "components/feed/core/proto/v2/wire/response.pb.h"
@@ -76,7 +77,7 @@ struct ListWebFeedsDiscoverApi {
   using Response = feedwire::webfeed::ListWebFeedsResponse;
   static constexpr NetworkRequestType kRequestType =
       NetworkRequestType::kListWebFeeds;
-  static base::StringPiece Method() { return "GET"; }
+  static base::StringPiece Method() { return "POST"; }
   static base::StringPiece RequestPath(const Request&) { return "v1/webFeeds"; }
 };
 
@@ -85,7 +86,7 @@ struct ListRecommendedWebFeedDiscoverApi {
   using Response = feedwire::webfeed::ListRecommendedWebFeedsResponse;
   static constexpr NetworkRequestType kRequestType =
       NetworkRequestType::kListRecommendedWebFeeds;
-  static base::StringPiece Method() { return "GET"; }
+  static base::StringPiece Method() { return "POST"; }
   static base::StringPiece RequestPath(const Request&) {
     return "v1/recommendedWebFeeds";
   }

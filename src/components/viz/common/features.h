@@ -21,6 +21,7 @@ VIZ_COMMON_EXPORT extern const base::Feature kDisableDeJelly;
 #if defined(OS_ANDROID)
 VIZ_COMMON_EXPORT extern const base::Feature kDynamicColorGamut;
 #endif
+VIZ_COMMON_EXPORT extern const base::Feature kDynamicBufferQueueAllocation;
 VIZ_COMMON_EXPORT extern const base::Feature kFastSolidColorDraw;
 VIZ_COMMON_EXPORT extern const base::Feature kVizFrameSubmissionForWebView;
 VIZ_COMMON_EXPORT extern const base::Feature kUsePreferredIntervalForVideo;
@@ -40,6 +41,7 @@ VIZ_COMMON_EXPORT extern const base::Feature kUsePlatformDelegatedInk;
 #if defined(OS_ANDROID)
 VIZ_COMMON_EXPORT extern const base::Feature kUseSurfaceLayerForVideoDefault;
 #endif
+VIZ_COMMON_EXPORT extern const base::Feature kSurfaceSyncThrottling;
 
 VIZ_COMMON_EXPORT bool IsAdpfEnabled();
 VIZ_COMMON_EXPORT bool IsSimpleFrameRateThrottlingEnabled();
@@ -47,6 +49,7 @@ VIZ_COMMON_EXPORT bool IsSimpleFrameRateThrottlingEnabled();
 VIZ_COMMON_EXPORT bool IsDynamicColorGamutEnabled();
 #endif
 VIZ_COMMON_EXPORT bool IsOverlayPrioritizationEnabled();
+VIZ_COMMON_EXPORT bool IsDelegatedCompositingEnabled();
 VIZ_COMMON_EXPORT bool IsSyncWindowDestructionEnabled();
 VIZ_COMMON_EXPORT bool IsUsingFastPathForSolidColorQuad();
 VIZ_COMMON_EXPORT bool IsUsingSkiaRenderer();
@@ -63,6 +66,7 @@ VIZ_COMMON_EXPORT bool ShouldUsePlatformDelegatedInk();
 #if defined(OS_ANDROID)
 VIZ_COMMON_EXPORT bool UseSurfaceLayerForVideo();
 #endif
+VIZ_COMMON_EXPORT bool IsSurfaceSyncThrottling();
 
 }  // namespace features
 

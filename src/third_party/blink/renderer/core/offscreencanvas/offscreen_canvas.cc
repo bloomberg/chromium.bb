@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/metrics/histogram_functions.h"
+#include "base/numerics/safe_conversions.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_metric_builder.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_metrics.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
@@ -24,9 +25,11 @@
 #include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context_factory.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_resource_tracker.h"
 #include "third_party/blink/renderer/core/html/canvas/image_data.h"
 #include "third_party/blink/renderer/core/html/canvas/ukm_parameters.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_dispatcher.h"
@@ -72,6 +75,7 @@ OffscreenCanvas::OffscreenCanvas(ExecutionContext* context, const IntSize& size)
     }
   }
 
+  CanvasResourceTracker::For(context->GetIsolate())->Add(this, context);
   UpdateMemoryUsage();
 }
 
@@ -170,13 +174,13 @@ void OffscreenCanvas::SetSize(const IntSize& size) {
   if (frame_dispatcher_)
     frame_dispatcher_->Reshape(size_);
   if (context_) {
-    if (context_->Is3d()) {
+    if (context_->IsWebGL()) {
       context_->Reshape(size_.Width(), size_.Height());
     } else if (context_->IsRenderingContext2D()) {
       context_->Reset();
       origin_clean_ = true;
     }
-    context_->DidDraw();
+    context_->DidDraw(CanvasPerformanceMonitor::DrawType::kOther);
   }
 }
 
@@ -237,7 +241,8 @@ void OffscreenCanvas::RecordIdentifiabilityMetric(
 
 scoped_refptr<Image> OffscreenCanvas::GetSourceImageForCanvas(
     SourceImageStatus* status,
-    const FloatSize& size) {
+    const FloatSize& size,
+    const AlphaDisposition alpha_disposition) {
   if (!context_) {
     *status = kInvalidSourceImageStatus;
     sk_sp<SkSurface> surface =
@@ -250,11 +255,14 @@ scoped_refptr<Image> OffscreenCanvas::GetSourceImageForCanvas(
     *status = kZeroSizeCanvasSourceImageStatus;
     return nullptr;
   }
-  scoped_refptr<Image> image = context_->GetImage();
+  scoped_refptr<StaticBitmapImage> image = context_->GetImage();
   if (!image)
     image = CreateTransparentImage(Size());
+
   *status = image ? kNormalSourceImageStatus : kInvalidSourceImageStatus;
-  return image;
+
+  // If the alpha_disposition is already correct, this is a no-op.
+  return GetImageWithAlphaDisposition(std::move(image), alpha_disposition);
 }
 
 IntSize OffscreenCanvas::BitmapSourceSize() const {
@@ -295,6 +303,15 @@ CanvasRenderingContext* OffscreenCanvas::GetCanvasRenderingContext(
     return nullptr;
   }
 
+  // TODO(crbug.com/1229274): Remove 'gpupresent' type after deprecation period.
+  if (id == "gpupresent") {
+    auto* console_message = MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kRendering,
+        mojom::blink::ConsoleMessageLevel::kWarning,
+        "The context type 'gpupresent' is deprecated. Use 'webgpu' instead.");
+    execution_context->AddConsoleMessage(console_message);
+  }
+
   if (auto* window = DynamicTo<LocalDOMWindow>(GetExecutionContext())) {
     if (attributes.color_space != kSRGBCanvasColorSpaceName ||
         attributes.pixel_format != kUint8CanvasPixelFormatName) {
@@ -328,6 +345,8 @@ CanvasRenderingContext* OffscreenCanvas::GetCanvasRenderingContext(
       recomputed_attributes.power_preference = "low-power";
 
     context_ = factory->Create(this, recomputed_attributes);
+    if (context_)
+      context_->RecordUKMCanvasRenderingAPI();
   }
 
   return context_.Get();
@@ -392,14 +411,17 @@ CanvasResourceProvider* OffscreenCanvas::GetOrCreateResourceProvider() {
   IntSize surface_size(width(), height());
   const bool can_use_gpu =
       SharedGpuContext::IsGpuCompositingEnabled() &&
-      (Is3d() || (RuntimeEnabledFeatures::Accelerated2dCanvasEnabled() &&
-                  !context_->CreationAttributes().will_read_frequently));
+      (IsWebGL() || IsWebGPU() ||
+       (RuntimeEnabledFeatures::Accelerated2dCanvasEnabled() &&
+        !context_->CreationAttributes().will_read_frequently));
   const bool composited_mode =
-      (Is3d() ? RuntimeEnabledFeatures::WebGLImageChromiumEnabled()
-              : RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled());
+      IsWebGPU() ||
+      (IsWebGL() && RuntimeEnabledFeatures::WebGLImageChromiumEnabled()) ||
+      (IsRenderingContext2D() &&
+       RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled());
 
   uint32_t shared_image_usage_flags = gpu::SHARED_IMAGE_USAGE_DISPLAY;
-  if (composited_mode)
+  if (composited_mode && HasPlaceholderCanvas())
     shared_image_usage_flags |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
 
   const CanvasResourceParams resource_params =
@@ -461,12 +483,8 @@ CanvasResourceProvider* OffscreenCanvas::GetOrCreateResourceProvider() {
   return ResourceProvider();
 }
 
-void OffscreenCanvas::DidDraw() {
-  DidDraw(FloatRect(0, 0, Size().Width(), Size().Height()));
-}
-
-void OffscreenCanvas::DidDraw(const FloatRect& rect) {
-  if (rect.IsEmpty())
+void OffscreenCanvas::DidDraw(const SkIRect& rect) {
+  if (rect.isEmpty())
     return;
 
   if (HasPlaceholderCanvas()) {
@@ -528,6 +546,11 @@ UkmParameters OffscreenCanvas::GetUkmParameters() {
   return {context->UkmRecorder(), context->UkmSourceID()};
 }
 
+void OffscreenCanvas::NotifyGpuContextLost() {
+  if (context_)
+    context_->LoseContext(CanvasRenderingContext::kRealLostContext);
+}
+
 FontSelector* OffscreenCanvas::GetFontSelector() {
   if (auto* window = DynamicTo<LocalDOMWindow>(GetExecutionContext())) {
     return window->document()->GetStyleEngine().GetFontSelector();
@@ -547,6 +570,10 @@ void OffscreenCanvas::UpdateMemoryUsage() {
   v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
       new_memory_usage - memory_usage_);
   memory_usage_ = new_memory_usage;
+}
+
+size_t OffscreenCanvas::GetMemoryUsage() const {
+  return base::saturated_cast<size_t>(memory_usage_);
 }
 
 void OffscreenCanvas::Trace(Visitor* visitor) const {

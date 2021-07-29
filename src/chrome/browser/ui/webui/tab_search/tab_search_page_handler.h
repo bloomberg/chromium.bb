@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search.mojom.h"
 #include "components/sessions/core/tab_restore_service.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -33,8 +32,7 @@ enum class TabSearchCloseAction {
 
 class TabSearchPageHandler : public tab_search::mojom::PageHandler,
                              public TabStripModelObserver,
-                             public BrowserTabStripTrackerDelegate,
-                             public content::WebContentsObserver {
+                             public BrowserTabStripTrackerDelegate {
  public:
   TabSearchPageHandler(
       mojo::PendingReceiver<tab_search::mojom::PageHandler> receiver,
@@ -48,14 +46,10 @@ class TabSearchPageHandler : public tab_search::mojom::PageHandler,
   // tab_search::mojom::PageHandler:
   void CloseTab(int32_t tab_id) override;
   void GetProfileData(GetProfileDataCallback callback) override;
-  void GetTabGroups(GetTabGroupsCallback callback) override;
   void SwitchToTab(
       tab_search::mojom::SwitchToTabInfoPtr switch_to_tab_info) override;
-  void OpenRecentlyClosedTab(int32_t tab_id) override;
+  void OpenRecentlyClosedEntry(int32_t session_id) override;
   void ShowUI() override;
-  // TODO(tluk): Remove this once all uses of the CloseUI() interface are
-  // removed from the Tab Search WebUI code.
-  void CloseUI() override {}
 
   // TabStripModelObserver:
   void OnTabStripModelChanged(
@@ -69,13 +63,20 @@ class TabSearchPageHandler : public tab_search::mojom::PageHandler,
   // BrowserTabStripTrackerDelegate:
   bool ShouldTrackBrowser(Browser* browser) override;
 
-  // content::WebContentsObserver:
-  void OnVisibilityChanged(content::Visibility visibility) override;
+  // Returns true if the WebContents hosting the WebUI is visible to the user
+  // (in either a fully visible or partially occluded state).
+  bool IsWebContentsVisible();
 
  protected:
   void SetTimerForTesting(std::unique_ptr<base::RetainingOneShotTimer> timer);
 
  private:
+  // Used to determine if a specific tab should be included or not in the
+  // results of GetProfileData. Tab url/group combinations that have been
+  // previously added to the ProfileData will not be added more than once by
+  // leveraging DedupKey comparisons.
+  typedef std::tuple<std::string, absl::optional<base::Token>> DedupKey;
+
   // Encapsulates tab details to facilitate performing an action on a tab.
   struct TabDetails {
     TabDetails(Browser* browser, TabStripModel* tab_strip_model, int index)
@@ -88,20 +89,25 @@ class TabSearchPageHandler : public tab_search::mojom::PageHandler,
 
   tab_search::mojom::ProfileDataPtr CreateProfileData();
 
-  // Adds recently closed tabs in a flattened list.
-  void AddRecentlyClosedTabs(
+  // Adds recently closed tabs and tab groups.
+  void AddRecentlyClosedEntries(
       std::vector<tab_search::mojom::RecentlyClosedTabPtr>&
           recently_closed_tabs,
-      std::set<std::string>& tab_urls);
+      std::vector<tab_search::mojom::RecentlyClosedTabGroupPtr>&
+          recently_closed_tab_groups,
+      std::set<tab_groups::TabGroupId>& tab_group_ids,
+      std::vector<tab_search::mojom::TabGroupPtr>& tab_groups,
+      std::set<DedupKey>& tab_dedup_keys);
 
-  // Tries to add a single recently closed tab to a flattened list. Returns
-  // whether the the tab fits within |max_tab_count|.
+  // Tries to add a recently closed tab to the profile data.
+  // Returns true if a recently closed tab was added to `recently_closed_tabs`
   bool AddRecentlyClosedTab(
+      sessions::TabRestoreService::Tab* tab,
       std::vector<tab_search::mojom::RecentlyClosedTabPtr>&
           recently_closed_tabs,
-      sessions::TabRestoreService::Tab* tab,
-      std::set<std::string>& tab_urls,
-      size_t max_tab_count);
+      std::set<DedupKey>& tab_dedup_keys,
+      std::set<tab_groups::TabGroupId>& tab_group_ids,
+      std::vector<tab_search::mojom::TabGroupPtr>& tab_groups);
 
   tab_search::mojom::TabPtr GetTab(TabStripModel* tab_strip_model,
                                    content::WebContents* contents,
@@ -125,7 +131,6 @@ class TabSearchPageHandler : public tab_search::mojom::PageHandler,
   ui::MojoBubbleWebUIController* const webui_controller_;
   BrowserTabStripTracker browser_tab_strip_tracker_{this, this};
   std::unique_ptr<base::RetainingOneShotTimer> debounce_timer_;
-  bool webui_hidden_ = false;
 
   // Tracks how many times |CloseTab()| has been evoked for the currently open
   // instance of Tab Search for logging in UMA.

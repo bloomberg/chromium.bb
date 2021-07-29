@@ -22,6 +22,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/manifest_icon_downloader.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/page.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
@@ -181,8 +182,9 @@ bool ShouldRejectDisplayMode(blink::mojom::DisplayMode display_mode) {
       display_mode == blink::mojom::DisplayMode::kStandalone ||
       display_mode == blink::mojom::DisplayMode::kFullscreen ||
       display_mode == blink::mojom::DisplayMode::kMinimalUi ||
-      (display_mode == blink::mojom::DisplayMode::kWindowControlsOverlay &&
-       base::FeatureList::IsEnabled(features::kWebAppWindowControlsOverlay)));
+      (display_mode == blink::mojom::DisplayMode::kWindowControlsOverlay) ||
+      (display_mode == blink::mojom::DisplayMode::kTabbed &&
+       base::FeatureList::IsEnabled(features::kDesktopPWAsTabStrip)));
 }
 
 void OnDidCompleteGetAllErrors(
@@ -393,12 +395,17 @@ std::vector<InstallableStatusCode> InstallableManager::GetErrors(
   if (params.valid_splash_icon) {
     IconProperty& icon = icons_[IconUsage::kSplash];
 
+    // If the icon is MASKABLE, ignore any error since we want to fallback to
+    // fetch IconPurpose::ANY.
     // If the error is NO_ACCEPTABLE_ICON, there is no icon suitable as a splash
     // icon in the manifest. Ignore this case since we only want to fail the
     // check if there was a suitable splash icon specified and we couldn't fetch
     // it.
-    if (icon.error != NO_ERROR_DETECTED && icon.error != NO_ACCEPTABLE_ICON)
+    if (icon.error != NO_ERROR_DETECTED &&
+        icon.purpose != IconPurpose::MASKABLE &&
+        icon.error != NO_ACCEPTABLE_ICON) {
       errors.push_back(icon.error);
+    }
   }
 
   return errors;
@@ -511,14 +518,17 @@ void InstallableManager::RunCallback(
   IconProperty* primary_icon = &null_icon;
   bool has_maskable_primary_icon = false;
   IconProperty* splash_icon = &null_icon;
+  bool has_maskable_splash_icon = false;
 
   if (params.valid_primary_icon && IsIconFetchComplete(IconUsage::kPrimary)) {
     primary_icon = &icons_[IconUsage::kPrimary];
     has_maskable_primary_icon =
         (primary_icon->purpose == IconPurpose::MASKABLE);
   }
-  if (params.valid_splash_icon && IsIconFetchComplete(IconUsage::kSplash))
+  if (params.valid_splash_icon && IsIconFetchComplete(IconUsage::kSplash)) {
     splash_icon = &icons_[IconUsage::kSplash];
+    has_maskable_splash_icon = (splash_icon->purpose == IconPurpose::MASKABLE);
+  }
 
   InstallableData data = {
       std::move(errors),
@@ -529,6 +539,7 @@ void InstallableManager::RunCallback(
       has_maskable_primary_icon,
       splash_icon->url,
       splash_icon->icon.get(),
+      has_maskable_splash_icon,
       screenshots_,
       valid_manifest_->is_valid,
       worker_->has_worker,
@@ -578,6 +589,11 @@ void InstallableManager::WorkOnTask() {
     CheckAndFetchScreenshots();
   } else if (params.has_worker && !worker_->fetched) {
     CheckServiceWorker();
+  } else if (params.valid_splash_icon && params.prefer_maskable_icon &&
+             !IsMaskableIconFetched(IconUsage::kSplash)) {
+    CheckAndFetchBestIcon(GetIdealSplashIconSizeInPx(),
+                          GetMinimumSplashIconSizeInPx(), IconPurpose::MASKABLE,
+                          IconUsage::kSplash);
   } else if (params.valid_splash_icon &&
              !IsIconFetchComplete(IconUsage::kSplash)) {
     CheckAndFetchBestIcon(GetIdealSplashIconSizeInPx(),
@@ -608,7 +624,9 @@ void InstallableManager::FetchManifest() {
   content::WebContents* web_contents = GetWebContents();
   DCHECK(web_contents);
 
-  web_contents->GetManifest(base::BindOnce(
+  // This uses DidFinishNavigation to abort when the primary page changes.
+  // Therefore this should always be the correct page.
+  web_contents->GetPrimaryPage().GetManifest(base::BindOnce(
       &InstallableManager::OnDidGetManifest, weak_factory_.GetWeakPtr()));
 }
 
@@ -957,15 +975,14 @@ void InstallableManager::OnDestruct(content::ServiceWorkerContext* context) {
 
 void InstallableManager::DidFinishNavigation(
     content::NavigationHandle* handle) {
-  if (handle->IsInMainFrame() && handle->HasCommitted() &&
+  if (handle->IsInPrimaryMainFrame() && handle->HasCommitted() &&
       !handle->IsSameDocument()) {
     Reset(USER_NAVIGATED);
   }
 }
 
-void InstallableManager::DidUpdateWebManifestURL(
-    content::RenderFrameHost* rfh,
-    const absl::optional<GURL>& manifest_url) {
+void InstallableManager::DidUpdateWebManifestURL(content::RenderFrameHost* rfh,
+                                                 const GURL& manifest_url) {
   // A change in the manifest URL invalidates our entire internal state.
   Reset(MANIFEST_URL_CHANGED);
 }

@@ -213,7 +213,7 @@ enum class PromoAction : int {
   PROMO_ACTION_NEW_ACCOUNT_EXISTING_ACCOUNT
 };
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
 // This class is used to record user action that was taken after
 // receiving the header from Gaia in the web sign-in flow.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.signin.metrics
@@ -284,7 +284,7 @@ enum class AccountConsistencyPromoAfterDismissal {
 
   kMaxValue = kSignedInOnWebWithOtherAccount,
 };
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 // Enum values which enumerates all reasons to start sign in process.
 // These values are persisted to logs. Entries should not be renumbered and
@@ -307,16 +307,6 @@ enum class Reason : int {
   // work in incognito mode.
   kFetchLstOnly = 6,
   kMaxValue = kFetchLstOnly,
-};
-
-// Enum values used for use with the "Signin.Reauth" histogram.
-enum AccountReauth {
-  // The user gave the wrong email when doing a reauthentication.
-  HISTOGRAM_ACCOUNT_MISSMATCH,
-  // The user was shown a reauthentication login screen.
-  HISTOGRAM_REAUTH_SHOWN,
-
-  HISTOGRAM_REAUTH_MAX
 };
 
 // Enum values used for "Signin.AccountReconcilorState.OnGaiaResponse"
@@ -431,6 +421,32 @@ enum class SourceForRefreshTokenOperation {
 
 // Different types of reporting. This is used as a histogram suffix.
 enum class ReportingType { PERIODIC, ON_CHANGE };
+
+// Result for fetching account capabilities from the system library, used to
+// record histogram Signin.AccountCapabilities.GetFromSystemLibraryResult.
+//
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.signin.metrics
+enum class FetchAccountCapabilitiesFromSystemLibraryResult {
+  // Errors common to iOS and Android.
+  kSuccess = 0,
+  kErrorGeneric = 1,
+
+  // Errors from 10 to 19 are reserved for Android.
+  kApiRequestFailed = 10,
+  kApiError = 11,
+  kApiNotPermitted = 12,
+  kApiUnknownCapability = 13,
+  kApiFailedToSync = 14,
+  kApiNotAvailable = 15,
+
+  // Errors after 20 are reserved for iOS.
+  kErrorMissingCapability = 20,
+  kErrorUnexpectedValue = 21,
+
+  kMaxValue = kErrorUnexpectedValue
+};
 
 // -----------------------------------------------------------------------------
 // Histograms
@@ -547,6 +563,11 @@ void RecordSigninImpressionUserActionForAccessPoint(AccessPoint access_point);
 void RecordSigninImpressionWithAccountUserActionForAccessPoint(
     AccessPoint access_point,
     bool with_account);
+
+#if defined(OS_IOS)
+// Records |Signin.AccountConsistencyPromoAction| histogram.
+void RecordConsistencyPromoUserAction(AccountConsistencyPromoAction action);
+#endif  // defined(OS_IOS)
 
 }  // namespace signin_metrics
 

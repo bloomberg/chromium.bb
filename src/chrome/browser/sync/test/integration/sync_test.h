@@ -59,7 +59,7 @@
 #define E2E_ONLY(test_name) MACRO_CONCAT(DISABLED_E2ETest, test_name)
 #define E2E_ENABLED(test_name) MACRO_CONCAT(test_name, E2ETest)
 
-class ProfileSyncServiceHarness;
+class SyncServiceImplHarness;
 
 namespace arc {
 class SyncArcPackageHelper;
@@ -75,7 +75,7 @@ class FakeServer;
 }  // namespace fake_server
 
 namespace syncer {
-class ProfileSyncService;
+class SyncServiceImpl;
 }  // namespace syncer
 
 namespace switches {
@@ -222,19 +222,19 @@ class SyncTest : public PlatformBrowserTest {
 
   // Returns a pointer to a particular sync client. Callee owns the object
   // and manages its lifetime.
-  ProfileSyncServiceHarness* GetClient(int index);
+  SyncServiceImplHarness* GetClient(int index);
 
   // Returns a list of the collection of sync clients.
-  std::vector<ProfileSyncServiceHarness*> GetSyncClients();
+  std::vector<SyncServiceImplHarness*> GetSyncClients();
 
-  // Returns a ProfileSyncService at the given index.
-  syncer::ProfileSyncService* GetSyncService(int index);
+  // Returns a SyncServiceImpl at the given index.
+  syncer::SyncServiceImpl* GetSyncService(int index);
 
-  // Returns the set of ProfileSyncServices.
-  std::vector<syncer::ProfileSyncService*> GetSyncServices();
+  // Returns the set of SyncServiceImpls.
+  std::vector<syncer::SyncServiceImpl*> GetSyncServices();
 
   // Returns the set of registered UserSelectableTypes.  This is retrieved from
-  // the ProfileSyncService at the given |index|.
+  // the SyncServiceImpl at the given |index|.
   syncer::UserSelectableTypeSet GetRegisteredSelectableTypes(int index);
 
   // Returns a pointer to the sync profile that is used to verify changes to
@@ -402,10 +402,6 @@ class SyncTest : public PlatformBrowserTest {
   void OnBrowserRemoved(Browser* browser);
 #endif
 
-  // Helper to Profile::CreateProfile that handles path creation. It creates
-  // a profile then registers it as a testing profile.
-  Profile* MakeTestProfile(base::FilePath profile_path, int index);
-
   // Helper to block the current thread while the data models sync depends on
   // finish loading.
   void WaitForDataModels(Profile* profile);
@@ -481,11 +477,6 @@ class SyncTest : public PlatformBrowserTest {
   // directory. Profiles are owned by the ProfileManager.
   std::vector<Profile*> profiles_;
 
-  // Collection of profile delegates. Only used for test profiles, which
-  // require a custom profile delegate to ensure initialization happens at the
-  // right time.
-  std::vector<std::unique_ptr<Profile::Delegate>> profile_delegates_;
-
   // List of temporary directories that need to be deleted when the test is
   // completed, used for two-client tests with external server.
   std::vector<std::unique_ptr<base::ScopedTempDir>> scoped_temp_dirs_;
@@ -504,7 +495,7 @@ class SyncTest : public PlatformBrowserTest {
   // Collection of sync clients used by a test. A sync client is associated
   // with a sync profile, and implements methods that sync the contents of the
   // profile with the server.
-  std::vector<std::unique_ptr<ProfileSyncServiceHarness>> clients_;
+  std::vector<std::unique_ptr<SyncServiceImplHarness>> clients_;
 
   // Mapping from client indexes to encryption passphrases to use for them.
   std::map<int, std::string> client_encryption_passphrases_;

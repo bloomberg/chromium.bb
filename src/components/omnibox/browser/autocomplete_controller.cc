@@ -29,6 +29,7 @@
 #include "base/trace_event/memory_usage_estimator.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "components/omnibox/browser/actions/history_clusters_action.h"
 #include "components/omnibox/browser/actions/omnibox_pedal_provider.h"
 #include "components/omnibox/browser/bookmark_provider.h"
 #include "components/omnibox/browser/builtin_provider.h"
@@ -326,11 +327,8 @@ AutocompleteController::AutocompleteController(
     providers_.push_back(
         new MostVisitedSitesProvider(provider_client_.get(), this));
     // Note: the need for the always-present verbatim match originates from the
-    // OmniboxSearchReadyIncognito feature.
-    // The feature aims at showing SRO in an Incognito mode, where the
+    // search-ready omnibox (SRO) in Incognito mode, where the
     // ZeroSuggestProvider intentionally never gets invoked.
-    // The gating flag here should be removed when the SRO Incognito is
-    // launched.
     providers_.push_back(
         new ZeroSuggestVerbatimMatchProvider(provider_client_.get()));
   }
@@ -717,6 +715,8 @@ void AutocompleteController::UpdateResult(
   }
   result_.SortAndCull(input_, template_url_service_, preserve_default_match);
 
+  // TODO(tommycli): It sure seems like this should be moved down below
+  // `TransferOldMatches()` along with all the other annotation code.
   result_.AttachPedalsToMatches(input_, *provider_client_);
 
   // Need to validate before invoking CopyOldMatches as the old matches are not
@@ -738,6 +738,9 @@ void AutocompleteController::UpdateResult(
                                                      result_);
   }
 
+  // Below are all annotations after the match list is ready.
+  AttachHistoryClustersActions(provider_client_->GetHistoryClustersService(),
+                               result_);
   UpdateKeywordDescriptions(&result_);
   UpdateAssociatedKeywords(&result_);
   UpdateAssistedQueryStats(&result_);

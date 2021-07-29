@@ -11,18 +11,18 @@
 
 #include "core/fxcrt/css/cfx_csscomputedstyle.h"
 #include "core/fxcrt/css/cfx_cssstyleselector.h"
+#include "core/fxcrt/stl_util.h"
 #include "core/fxcrt/xml/cfx_xmlelement.h"
 #include "core/fxcrt/xml/cfx_xmlnode.h"
 #include "core/fxcrt/xml/cfx_xmltext.h"
 #include "core/fxge/cfx_fillrenderoptions.h"
 #include "core/fxge/cfx_graphstatedata.h"
-#include "core/fxge/cfx_pathdata.h"
+#include "core/fxge/cfx_path.h"
 #include "core/fxge/cfx_renderdevice.h"
 #include "core/fxge/text_char_pos.h"
 #include "fxjs/xfa/cjx_object.h"
 #include "third_party/base/check.h"
 #include "third_party/base/notreached.h"
-#include "third_party/base/stl_util.h"
 #include "xfa/fde/cfde_textout.h"
 #include "xfa/fgas/font/cfgas_gefont.h"
 #include "xfa/fgas/layout/cfgas_linkuserdata.h"
@@ -634,7 +634,7 @@ bool CXFA_TextLayout::DrawString(CFX_RenderDevice* pFxDevice,
     for (size_t j = 0; j < pPieceLine->m_textPieces.size(); ++j) {
       const TextPiece* pPiece = pPieceLine->m_textPieces[j].get();
       int32_t iChars = pPiece->iChars;
-      if (pdfium::CollectionSize<int32_t>(char_pos) < iChars)
+      if (fxcrt::CollectionSize<int32_t>(char_pos) < iChars)
         char_pos.resize(iChars);
       RenderString(pFxDevice, pPieceLine, j, &char_pos, mtDoc2Device);
     }
@@ -812,8 +812,8 @@ bool CXFA_TextLayout::LoadRichText(
         } else {
           Optional<WideString> obj =
               m_pTextParser->GetEmbeddedObj(m_pTextProvider, pXMLNode);
-          if (obj)
-            wsText = *obj;
+          if (obj.has_value())
+            wsText = obj.value();
         }
       }
 
@@ -961,14 +961,14 @@ void CXFA_TextLayout::DoTabstops(CFX_CSSComputedStyle* pStyle,
   if (!m_pTabstopContext || m_pTabstopContext->m_tabstops.empty())
     return;
 
-  int32_t iPieces = pdfium::CollectionSize<int32_t>(pPieceLine->m_textPieces);
+  int32_t iPieces = fxcrt::CollectionSize<int32_t>(pPieceLine->m_textPieces);
   if (iPieces == 0)
     return;
 
   TextPiece* pPiece = pPieceLine->m_textPieces[iPieces - 1].get();
   int32_t& iTabstopsIndex = m_pTabstopContext->m_iTabIndex;
   int32_t iCount = m_pTextParser->CountTabs(pStyle);
-  if (!pdfium::IndexInBounds(m_pTabstopContext->m_tabstops, iTabstopsIndex))
+  if (!fxcrt::IndexInBounds(m_pTabstopContext->m_tabstops, iTabstopsIndex))
     return;
 
   if (iCount > 0) {
@@ -985,12 +985,12 @@ void CXFA_TextLayout::DoTabstops(CFX_CSSComputedStyle* pStyle,
     float fLeft = 0;
     if (m_pTabstopContext->m_bHasTabstops) {
       uint32_t dwAlign = m_pTabstopContext->m_tabstops[iTabstopsIndex].dwAlign;
-      if (dwAlign == FX_HashCode_GetW(L"center", false)) {
+      if (dwAlign == FX_HashCode_GetW(L"center")) {
         fLeft = pPiece->rtPiece.width / 2.0f;
-      } else if (dwAlign == FX_HashCode_GetW(L"right", false) ||
-                 dwAlign == FX_HashCode_GetW(L"before", false)) {
+      } else if (dwAlign == FX_HashCode_GetW(L"right") ||
+                 dwAlign == FX_HashCode_GetW(L"before")) {
         fLeft = pPiece->rtPiece.width;
-      } else if (dwAlign == FX_HashCode_GetW(L"decimal", false)) {
+      } else if (dwAlign == FX_HashCode_GetW(L"decimal")) {
         int32_t iChars = pPiece->iChars;
         for (int32_t i = 0; i < iChars; i++) {
           if (pPiece->szText[i] == L'.')
@@ -1174,7 +1174,7 @@ void CXFA_TextLayout::RenderPath(CFX_RenderDevice* pDevice,
   if (bNoUnderline && bNoLineThrough)
     return;
 
-  CFX_PathData path;
+  CFX_Path path;
   size_t szChars = GetDisplayPos(pPiece, pCharPos);
   if (szChars > 0) {
     CFX_PointF pt1;

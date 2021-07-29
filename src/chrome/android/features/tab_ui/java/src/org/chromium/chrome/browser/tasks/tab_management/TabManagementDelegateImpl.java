@@ -14,6 +14,7 @@ import androidx.annotation.NonNull;
 
 import org.chromium.base.SysUtils;
 import org.chromium.base.annotations.UsedByReflection;
+import org.chromium.base.jank_tracker.JankTracker;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.base.supplier.OneshotSupplierImpl;
@@ -153,9 +154,9 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
 
     @Override
     public Layout createStartSurfaceLayout(Context context, LayoutUpdateHost updateHost,
-            LayoutRenderHost renderHost, StartSurface startSurface) {
+            LayoutRenderHost renderHost, StartSurface startSurface, JankTracker jankTracker) {
         return StartSurfaceDelegate.createStartSurfaceLayout(
-                context, updateHost, renderHost, startSurface);
+                context, updateHost, renderHost, startSurface, jankTracker);
     }
 
     @Override
@@ -177,14 +178,15 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
             @NonNull ActivityLifecycleDispatcher activityLifecycleDispatcher,
             @NonNull TabCreatorManager tabCreatorManager,
             @NonNull MenuOrKeyboardActionController menuOrKeyboardActionController,
-            @NonNull MultiWindowModeStateDispatcher multiWindowModeStateDispatcher) {
+            @NonNull MultiWindowModeStateDispatcher multiWindowModeStateDispatcher,
+            @NonNull JankTracker jankTracker) {
         return StartSurfaceDelegate.createStartSurface(activity, scrimCoordinator, sheetController,
                 startSurfaceOneshotSupplier, parentTabSupplier, hadWarmStart, windowAndroid,
                 containerView, dynamicResourceLoaderSupplier, tabModelSelector,
                 browserControlsManager, snackbarManager, shareDelegateSupplier, omniboxStubSupplier,
                 tabContentManager, modalDialogManager, chromeActivityNativeDelegate,
                 activityLifecycleDispatcher, tabCreatorManager, menuOrKeyboardActionController,
-                multiWindowModeStateDispatcher);
+                multiWindowModeStateDispatcher, jankTracker);
     }
 
     @Override
@@ -199,5 +201,10 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
             @NonNull ActivityLifecycleDispatcher activityLifecycleDispatcher) {
         return new TabSuggestionsOrchestrator(
                 context, tabModelSelector, activityLifecycleDispatcher);
+    }
+
+    @Override
+    public void applyThemeOverlays(Activity activity) {
+        activity.setTheme(TabUiThemeProvider.getThemeOverlayStyleResourceId());
     }
 }

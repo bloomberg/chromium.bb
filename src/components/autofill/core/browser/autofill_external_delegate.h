@@ -43,22 +43,24 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
   void OnPopupHidden() override;
   void OnPopupSuppressed() override;
   void DidSelectSuggestion(const std::u16string& value,
-                           int identifier) override;
+                           int frontend_id) override;
   void DidAcceptSuggestion(const std::u16string& value,
-                           int identifier,
+                           int frontend_id,
+                           const std::string& backend_id,
                            int position) override;
   bool GetDeletionConfirmationText(const std::u16string& value,
-                                   int identifier,
+                                   int frontend_id,
                                    std::u16string* title,
                                    std::u16string* body) override;
-  bool RemoveSuggestion(const std::u16string& value, int identifier) override;
+  bool RemoveSuggestion(const std::u16string& value, int frontend_id) override;
   void ClearPreviewedForm() override;
 
   // Returns PopupType::kUnspecified for all popups prior to |onQuery|, or the
   // popup type after call to |onQuery|.
   PopupType GetPopupType() const override;
 
-  AutofillDriver* GetAutofillDriver() override;
+  absl::variant<AutofillDriver*, password_manager::PasswordManagerDriver*>
+  GetDriver() override;
 
   // Returns the ax node id associated with the current web contents' element
   // who has a controller relation to the current autofill popup.

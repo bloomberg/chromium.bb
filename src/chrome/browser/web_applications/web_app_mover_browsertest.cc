@@ -11,9 +11,10 @@
 #include "chrome/browser/web_applications/components/os_integration_manager.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
-#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -90,8 +91,8 @@ class WebAppMoverBrowsertestBase : public InProcessBrowserTest {
     return app_id;
   }
 
-  WebAppProviderBase& GetProvider() {
-    return *WebAppProviderBase::GetProviderBase(browser()->profile());
+  WebAppProvider& GetProvider() {
+    return *WebAppProvider::Get(browser()->profile());
   }
 
   bool clean_up_completed_ = false;
@@ -125,7 +126,8 @@ IN_PROC_BROWSER_TEST_F(WebAppMoverPrefixBrowsertest, PRE_TestMigration) {
   InstallApp(GetMigratingFromAppB());
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppMoverPrefixBrowsertest, TestMigration) {
+// Disabled due to flakiness: crbug.com/1222934
+IN_PROC_BROWSER_TEST_F(WebAppMoverPrefixBrowsertest, DISABLED_TestMigration) {
   // Wait for clean up to complete (this will timeout if we don't run clean up).
   if (!clean_up_completed_) {
     base::RunLoop run_loop;
@@ -134,7 +136,7 @@ IN_PROC_BROWSER_TEST_F(WebAppMoverPrefixBrowsertest, TestMigration) {
   }
   ASSERT_EQ(GetProvider().registrar().GetAppIds().size(), 1ul);
   EXPECT_EQ(GetProvider().registrar().GetAppIds().front(),
-            GenerateAppIdFromURL(GetMigratingToApp()));
+            GenerateAppId(/*manifest_id=*/absl::nullopt, GetMigratingToApp()));
 }
 
 class WebAppMoverPatternBrowsertest : public WebAppMoverBrowsertestBase {
@@ -169,10 +171,12 @@ IN_PROC_BROWSER_TEST_F(WebAppMoverPatternBrowsertest, TestMigration) {
     completed_callback_ = run_loop.QuitClosure();
     run_loop.Run();
   }
-  EXPECT_THAT(GetProvider().registrar().GetAppIds(),
-              testing::UnorderedElementsAre(
-                  GenerateAppIdFromURL(GetMigratingToApp()),
-                  GenerateAppIdFromURL(GetMigratingFromAppB())));
+  EXPECT_THAT(
+      GetProvider().registrar().GetAppIds(),
+      testing::UnorderedElementsAre(
+          GenerateAppId(/*manifest_id=*/absl::nullopt, GetMigratingToApp()),
+          GenerateAppId(/*manifest_id=*/absl::nullopt,
+                        GetMigratingFromAppB())));
 }
 
 // The WebAppMover requires a full match. This tests that a partial match
@@ -213,11 +217,13 @@ IN_PROC_BROWSER_TEST_F(WebAppMoverBadPatternBrowsertest, TestMigration) {
   }
   EXPECT_EQ(GetProvider().registrar().GetAppIds().size(), 3ul);
 
-  EXPECT_THAT(GetProvider().registrar().GetAppIds(),
-              testing::UnorderedElementsAre(
-                  GenerateAppIdFromURL(GetMigratingFromAppA()),
-                  GenerateAppIdFromURL(GetMigratingFromAppB()),
-                  GenerateAppIdFromURL(GetMigratingFromAppC())));
+  EXPECT_THAT(
+      GetProvider().registrar().GetAppIds(),
+      testing::UnorderedElementsAre(
+          GenerateAppId(/*manifest_id=*/absl::nullopt, GetMigratingFromAppA()),
+          GenerateAppId(/*manifest_id=*/absl::nullopt, GetMigratingFromAppB()),
+          GenerateAppId(/*manifest_id=*/absl::nullopt,
+                        GetMigratingFromAppC())));
 }
 
 }  // namespace

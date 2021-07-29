@@ -2,31 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
+import {RootPath, sendTestMessage} from '../test_util.js';
+import {testcase} from '../testcase.js';
 
-(() => {
-  /**
-   * Returns provider name of the given testing provider manifest viz., the
-   * the value of the name field in the |manifest| file.
-   * @param {string} manifest Testing provider manifest file name.
-   * @return {string} Testing provider name.
-   */
-  function getProviderNameForTest(manifest) {
-    if (manifest === 'manifest.json') {
-      return 'Files Testing Provider test extension';
-    }
-    if (manifest === 'manifest_multiple_mounts.json') {
-      return 'Files Testing Provider multiple mounts test extension';
-    }
-    if (manifest === 'manifest_source_device.json') {
-      return 'Files Testing Provider device test extension';
-    }
-    if (manifest === 'manifest_source_file.json') {
-      return 'Files Testing Provider file test extension';
-    }
+import {IGNORE_APP_ERRORS, remoteCall, setupAndWaitUntilReady} from './background.js';
 
-    throw new Error('unknown mainfest: '.concat(manifest));
+/**
+ * Returns provider name of the given testing provider manifest viz., the
+ * the value of the name field in the |manifest| file.
+ * @param {string} manifest Testing provider manifest file name.
+ * @return {string} Testing provider name.
+ */
+function getProviderNameForTest(manifest) {
+  if (manifest === 'manifest.json') {
+    return 'Files Testing Provider test extension';
   }
+  if (manifest === 'manifest_multiple_mounts.json') {
+    return 'Files Testing Provider multiple mounts test extension';
+  }
+  if (manifest === 'manifest_source_device.json') {
+    return 'Files Testing Provider device test extension';
+  }
+  if (manifest === 'manifest_source_file.json') {
+    return 'Files Testing Provider file test extension';
+  }
+
+  throw new Error('unknown mainfest: '.concat(manifest));
+}
 
   /**
    * Initializes the provider extension.
@@ -171,10 +173,16 @@
       return;
     }
 
+    const isDevtoolsCoverageActive =
+        await sendTestMessage({name: 'isDevtoolsCoverageActive'});
+    const expectedServicesText = isDevtoolsCoverageActive === 'true' ?
+        '$i18n{SHOW_PROVIDERS_BUTTON_LABEL}' :
+        'Services';
+
     // Since a provider is installed (here isSmbEnabled), we need to test that
     // 'providers-menu' sub-menu does not contain the |manifest| provider.
     chrome.test.assertTrue(isSmbEnabled);
-    chrome.test.assertEq('Services', element.text);
+    chrome.test.assertEq(expectedServicesText, element.text);
     chrome.test.assertEq(
         '#show-providers-submenu', element.attributes['command']);
     chrome.test.assertEq('#providers-menu', element.attributes['sub-menu']);
@@ -253,4 +261,3 @@
     // ejected.
     return IGNORE_APP_ERRORS;
   };
-})();

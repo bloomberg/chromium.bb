@@ -17,8 +17,9 @@
 
 #include <vector>
 
-#include "src/ast/access_control.h"
+#include "src/ast/access.h"
 #include "src/ast/storage_class.h"
+#include "src/sem/binding_point.h"
 #include "src/sem/expression.h"
 
 namespace tint {
@@ -42,11 +43,13 @@ class Variable : public Castable<Variable, Node> {
   /// @param declaration the AST declaration node
   /// @param type the variable type
   /// @param storage_class the variable storage class
-  /// @param access_control the variable access control type
+  /// @param access the variable access control type
+  /// @param binding_point the optional resource binding point of the variable
   Variable(const ast::Variable* declaration,
            const sem::Type* type,
            ast::StorageClass storage_class,
-           ast::AccessControl::Access access_control);
+           ast::Access access,
+           sem::BindingPoint binding_point = {});
 
   /// Constructor for overridable pipeline constants
   /// @param declaration the AST declaration node
@@ -69,7 +72,10 @@ class Variable : public Castable<Variable, Node> {
   ast::StorageClass StorageClass() const { return storage_class_; }
 
   /// @returns the access control for the variable
-  ast::AccessControl::Access AccessControl() const { return access_control_; }
+  ast::Access Access() const { return access_; }
+
+  /// @returns the resource binding point for the variable
+  sem::BindingPoint BindingPoint() const { return binding_point_; }
 
   /// @returns the expressions that use the variable
   const std::vector<const VariableUser*>& Users() const { return users_; }
@@ -87,7 +93,8 @@ class Variable : public Castable<Variable, Node> {
   const ast::Variable* const declaration_;
   const sem::Type* const type_;
   ast::StorageClass const storage_class_;
-  ast::AccessControl::Access const access_control_;
+  ast::Access const access_;
+  sem::BindingPoint binding_point_;
   std::vector<const VariableUser*> users_;
   const bool is_pipeline_constant_;
   const uint16_t constant_id_ = 0;
@@ -102,10 +109,12 @@ class VariableUser : public Castable<VariableUser, Expression> {
   /// @param type the resolved type of the expression
   /// @param statement the statement that owns this expression
   /// @param variable the semantic variable
+  /// @param constant_value the constant value for the variable. May be invalid
   VariableUser(ast::IdentifierExpression* declaration,
                const sem::Type* type,
                Statement* statement,
-               sem::Variable* variable);
+               sem::Variable* variable,
+               Constant constant_value);
 
   /// @returns the variable that this expression refers to
   const sem::Variable* Variable() const { return variable_; }

@@ -11,16 +11,18 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/mojom/file_system_access/file_system_access_error.mojom-blink.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_manager.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_manager.mojom-blink.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_manager.mojom-shared.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_usvstring_usvstringsequence.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_directory_picker_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_file_picker_accept_type.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_open_file_picker_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_save_file_picker_options.h"
-#include "third_party/blink/renderer/bindings/modules/v8/well_known_directory_or_file_system_handle.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_union_filesystemhandle_wellknowndirectory.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
@@ -138,15 +140,21 @@ Vector<mojom::blink::ChooseFileSystemEntryAcceptsOptionPtr> ConvertAccepts(
       }
 
       mimeTypes.push_back(type);
-      if (a.second.IsUSVString()) {
-        if (!AddExtension(a.second.GetAsUSVString(), extensions,
-                          exception_state))
-          return {};
-      } else {
-        for (const auto& extension : a.second.GetAsUSVStringSequence()) {
-          if (!AddExtension(extension, extensions, exception_state))
+      switch (a.second->GetContentType()) {
+        case V8UnionUSVStringOrUSVStringSequence::ContentType::kUSVString:
+          if (!AddExtension(a.second->GetAsUSVString(), extensions,
+                            exception_state)) {
             return {};
-        }
+          }
+          break;
+        case V8UnionUSVStringOrUSVStringSequence::ContentType::
+            kUSVStringSequence:
+          for (const auto& extension : a.second->GetAsUSVStringSequence()) {
+            if (!AddExtension(extension, extensions, exception_state)) {
+              return {};
+            }
+          }
+          break;
       }
     }
     result.emplace_back(
@@ -309,13 +317,17 @@ ScriptPromise GlobalFileSystemAccess::showOpenFilePicker(
       mojom::blink::WellKnownDirectory::kDefault;
   mojo::PendingRemote<blink::mojom::blink::FileSystemAccessTransferToken> token;
   if (options->hasStartIn()) {
-    auto& start_in = options->startIn();
-    if (start_in.IsWellKnownDirectory()) {
-      well_known_starting_directory =
-          ConvertWellKnownDirectory(start_in.GetAsWellKnownDirectory());
-    }
-    if (start_in.IsFileSystemHandle()) {
-      token = start_in.GetAsFileSystemHandle()->Transfer();
+    const auto* start_in = options->startIn();
+    switch (start_in->GetContentType()) {
+      case V8UnionFileSystemHandleOrWellKnownDirectory::ContentType::
+          kFileSystemHandle:
+        token = start_in->GetAsFileSystemHandle()->Transfer();
+        break;
+      case V8UnionFileSystemHandleOrWellKnownDirectory::ContentType::
+          kWellKnownDirectory:
+        well_known_starting_directory =
+            ConvertWellKnownDirectory(start_in->GetAsWellKnownDirectory());
+        break;
     }
   }
 
@@ -368,13 +380,17 @@ ScriptPromise GlobalFileSystemAccess::showSaveFilePicker(
       mojom::blink::WellKnownDirectory::kDefault;
   mojo::PendingRemote<blink::mojom::blink::FileSystemAccessTransferToken> token;
   if (options->hasStartIn()) {
-    auto& start_in = options->startIn();
-    if (start_in.IsWellKnownDirectory()) {
-      well_known_starting_directory =
-          ConvertWellKnownDirectory(start_in.GetAsWellKnownDirectory());
-    }
-    if (start_in.IsFileSystemHandle()) {
-      token = start_in.GetAsFileSystemHandle()->Transfer();
+    const auto* start_in = options->startIn();
+    switch (start_in->GetContentType()) {
+      case V8UnionFileSystemHandleOrWellKnownDirectory::ContentType::
+          kFileSystemHandle:
+        token = start_in->GetAsFileSystemHandle()->Transfer();
+        break;
+      case V8UnionFileSystemHandleOrWellKnownDirectory::ContentType::
+          kWellKnownDirectory:
+        well_known_starting_directory =
+            ConvertWellKnownDirectory(start_in->GetAsWellKnownDirectory());
+        break;
     }
   }
 
@@ -417,13 +433,17 @@ ScriptPromise GlobalFileSystemAccess::showDirectoryPicker(
       mojom::blink::WellKnownDirectory::kDefault;
   mojo::PendingRemote<blink::mojom::blink::FileSystemAccessTransferToken> token;
   if (options->hasStartIn()) {
-    auto& start_in = options->startIn();
-    if (start_in.IsWellKnownDirectory()) {
-      well_known_starting_directory =
-          ConvertWellKnownDirectory(start_in.GetAsWellKnownDirectory());
-    }
-    if (start_in.IsFileSystemHandle()) {
-      token = start_in.GetAsFileSystemHandle()->Transfer();
+    const auto* start_in = options->startIn();
+    switch (start_in->GetContentType()) {
+      case V8UnionFileSystemHandleOrWellKnownDirectory::ContentType::
+          kFileSystemHandle:
+        token = start_in->GetAsFileSystemHandle()->Transfer();
+        break;
+      case V8UnionFileSystemHandleOrWellKnownDirectory::ContentType::
+          kWellKnownDirectory:
+        well_known_starting_directory =
+            ConvertWellKnownDirectory(start_in->GetAsWellKnownDirectory());
+        break;
     }
   }
 
@@ -431,7 +451,9 @@ ScriptPromise GlobalFileSystemAccess::showDirectoryPicker(
   if (exception_state.HadException())
     return ScriptPromise();
 
-  auto directory_picker_options = mojom::blink::DirectoryPickerOptions::New();
+  bool request_writable = options->mode() == "readwrite";
+  auto directory_picker_options =
+      mojom::blink::DirectoryPickerOptions::New(request_writable);
   return ShowFilePickerImpl(
       script_state, window,
       mojom::blink::FilePickerOptions::NewDirectoryPickerOptions(

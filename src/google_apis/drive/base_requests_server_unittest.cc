@@ -23,6 +23,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/test/fake_test_cert_verifier_params_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -108,7 +109,7 @@ class BaseRequestsServerTest : public testing::Test {
 };
 
 TEST_F(BaseRequestsServerTest, DownloadFileRequest_ValidFile) {
-  DriveApiErrorCode result_code = DRIVE_OTHER_ERROR;
+  ApiErrorCode result_code = OTHER_ERROR;
   base::FilePath temp_file;
   {
     base::RunLoop run_loop;
@@ -142,7 +143,7 @@ TEST_F(BaseRequestsServerTest, DownloadFileRequest_ValidFile) {
 }
 
 TEST_F(BaseRequestsServerTest, DownloadFileRequest_NonExistentFile) {
-  DriveApiErrorCode result_code = DRIVE_OTHER_ERROR;
+  ApiErrorCode result_code = OTHER_ERROR;
   base::FilePath temp_file;
   {
     base::RunLoop run_loop;
@@ -161,8 +162,7 @@ TEST_F(BaseRequestsServerTest, DownloadFileRequest_NonExistentFile) {
   }
   EXPECT_EQ(HTTP_NOT_FOUND, result_code);
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
-  EXPECT_EQ("/files/gdata/no-such-file.txt",
-            http_request_.relative_url);
+  EXPECT_EQ("/files/gdata/no-such-file.txt", http_request_.relative_url);
   // Do not verify the not found message.
 }
 

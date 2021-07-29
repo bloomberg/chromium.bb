@@ -61,6 +61,7 @@ const char kSourceUserPolicy[] = "UserPolicy";
 const char kSource[] = "Source";
 const char kStaticIPConfig[] = "StaticIPConfig";
 const char kTether[] = "Tether";
+const char kTrafficCounterResetTime[] = "TrafficCounterResetTime";
 const char kType[] = "Type";
 const char kVPN[] = "VPN";
 const char kWiFi[] = "WiFi";
@@ -247,6 +248,8 @@ const char kEAP[] = "EAP";
 namespace client_cert {
 const char kClientCertPattern[] = "ClientCertPattern";
 const char kClientCertPKCS11Id[] = "ClientCertPKCS11Id";
+const char kClientCertProvisioningProfileId[] =
+    "ClientCertProvisioningProfileId";
 const char kClientCertRef[] = "ClientCertRef";
 const char kClientCertType[] = "ClientCertType";
 const char kClientCertTypeNone[] = "None";
@@ -260,6 +263,7 @@ const char kLocality[] = "Locality";
 const char kOrganization[] = "Organization";
 const char kOrganizationalUnit[] = "OrganizationalUnit";
 const char kPattern[] = "Pattern";
+const char kProvisioningProfileId[] = "ProvisioningProfileId";
 const char kPKCS11Id[] = "PKCS11Id";
 const char kRef[] = "Ref";
 const char kSubject[] = "Subject";
@@ -338,6 +342,7 @@ const char kURI[] = "URI";
 }  // namespace eap_subject_alternative_name_match
 
 namespace vpn {
+const char kArcVpn[] = "ARCVPN";
 const char kAutoConnect[] = "AutoConnect";
 const char kHost[] = "Host";
 const char kIPsec[] = "IPsec";
@@ -346,10 +351,10 @@ const char kOpenVPN[] = "OpenVPN";
 const char kPassword[] = "Password";
 const char kSaveCredentials[] = "SaveCredentials";
 const char kThirdPartyVpn[] = "ThirdPartyVPN";
-const char kArcVpn[] = "ARCVPN";
 const char kTypeL2TP_IPsec[] = "L2TP-IPsec";
 const char kType[] = "Type";
 const char kUsername[] = "Username";
+const char kWireGuard[] = "WireGuard";
 }  // namespace vpn
 
 namespace ipsec {
@@ -428,6 +433,16 @@ const char kOTP[] = "OTP";
 const char kPassword[] = "Password";
 const char kPasswordAndOTP[] = "PasswordAndOTP";
 }  // openvpn_user_auth_type
+
+namespace wireguard {
+const char kAllowedIPs[] = "AllowedIPs";
+const char kEndpoint[] = "Endpoint";
+const char kPeers[] = "Peers";
+const char kPersistentKeepalive[] = "PersistentKeepalive";
+const char kPresharedKey[] = "PresharedKey";
+const char kPrivateKey[] = "PrivateKey";
+const char kPublicKey[] = "PublicKey";
+}  // namespace wireguard
 
 namespace third_party_vpn {
 const char kExtensionID[] = "ExtensionID";

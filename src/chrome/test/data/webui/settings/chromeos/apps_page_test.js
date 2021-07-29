@@ -18,6 +18,44 @@ let appsPage = null;
 /** @type {?TestAndroidAppsBrowserProxy} */
 let androidAppsBrowserProxy = null;
 
+function getFakePrefs() {
+  return {
+    arc: {
+      enabled: {
+        key: 'arc.enabledd',
+        type: chrome.settingsPrivate.PrefType.BOOLEAN,
+        value: false,
+      }
+    },
+    settings: {
+      restore_apps_and_pages: {
+        key: 'settings.restore_apps_and_pages',
+        type: chrome.settingsPrivate.PrefType.NUMBER,
+        value: 2,
+      }
+    }
+  };
+}
+
+function setPrefs(restoreOption) {
+  return {
+    arc: {
+      enabled: {
+        key: 'arc.enabledd',
+        type: chrome.settingsPrivate.PrefType.BOOLEAN,
+        value: false,
+      }
+    },
+    settings: {
+      restore_apps_and_pages: {
+        key: 'settings.restore_apps_and_pages',
+        type: chrome.settingsPrivate.PrefType.NUMBER,
+        value: restoreOption,
+      }
+    }
+  };
+}
+
 suite('AppsPageTests', function() {
   setup(function() {
     androidAppsBrowserProxy = new TestAndroidAppsBrowserProxy();
@@ -37,26 +75,42 @@ suite('AppsPageTests', function() {
   suite('Page Combinations', function() {
     setup(function() {
       appsPage.havePlayStoreApp = true;
-      appsPage.prefs = {arc: {enabled: {value: false}}};
+      appsPage.prefs = getFakePrefs();
     });
 
     const AndroidAppsShown = () => !!appsPage.$$('#android-apps');
     const AppManagementShown = () => !!appsPage.$$('#appManagement');
+    const RestoreAppsOnStartupShown = () => !!appsPage.$$('#onStartupDropdown');
 
     test('Only App Management Shown', function() {
       appsPage.showAndroidApps = false;
+      appsPage.showStartup = false;
       Polymer.dom.flush();
 
       assertTrue(AppManagementShown());
       assertFalse(AndroidAppsShown());
+      assertFalse(RestoreAppsOnStartupShown());
     });
 
     test('Android Apps and App Management Shown', function() {
       appsPage.showAndroidApps = true;
+      appsPage.showStartup = false;
       Polymer.dom.flush();
 
       assertTrue(AppManagementShown());
       assertTrue(AndroidAppsShown());
+      assertFalse(RestoreAppsOnStartupShown());
+    });
+
+    test('Android Apps, On Startup and App Management Shown', function() {
+      appsPage.showAndroidApps = true;
+      appsPage.showStartup = true;
+      Polymer.dom.flush();
+
+      assertTrue(AppManagementShown());
+      assertTrue(AndroidAppsShown());
+      assertTrue(RestoreAppsOnStartupShown());
+      expectEquals(3, appsPage.onStartupOptions_.length);
     });
   });
 
@@ -64,7 +118,8 @@ suite('AppsPageTests', function() {
     setup(function() {
       appsPage.showAndroidApps = true;
       appsPage.havePlayStoreApp = true;
-      appsPage.prefs = {arc: {enabled: {value: false}}};
+      appsPage.showStartup = true;
+      appsPage.prefs = getFakePrefs();
       appsPage.androidAppsInfo = {
         playStoreEnabled: false,
         settingsAppAvailable: false,
@@ -89,6 +144,39 @@ suite('AppsPageTests', function() {
       assertTrue(!!appsPage.$$('.subpage-arrow'));
     });
 
+    test('On startup dropdown menu', async () => {
+      appsPage.prefs = setPrefs(1);
+      Polymer.dom.flush();
+      assertEquals(1, appsPage.$$('#onStartupDropdown').pref.value);
+
+      appsPage.prefs = setPrefs(2);
+      Polymer.dom.flush();
+      assertEquals(2, appsPage.$$('#onStartupDropdown').pref.value);
+
+      appsPage.prefs = setPrefs(3);
+      Polymer.dom.flush();
+      assertEquals(3, appsPage.$$('#onStartupDropdown').pref.value);
+    });
+
+    test('Deep link to On startup dropdown menu', async () => {
+      loadTimeData.overrideValues({
+        isDeepLinkingEnabled: true,
+      });
+
+      Polymer.dom.flush();
+
+      const params = new URLSearchParams;
+      params.append('settingId', '703');
+      settings.Router.getInstance().navigateTo(settings.routes.APPS, params);
+
+      const deepLinkElement =
+          appsPage.$$('#onStartupDropdown').$$('#dropdownMenu');
+      await test_util.waitAfterNextRender(deepLinkElement);
+      assertEquals(
+          deepLinkElement, getDeepActiveElement(),
+          'On startup dropdown menu should be focused for settingId=703.');
+    });
+
     test('Deep link to manage android prefs', async () => {
       loadTimeData.overrideValues({
         isDeepLinkingEnabled: true,
@@ -101,7 +189,8 @@ suite('AppsPageTests', function() {
       params.append('settingId', '700');
       settings.Router.getInstance().navigateTo(settings.routes.APPS, params);
 
-      const deepLinkElement = appsPage.$$('#manageApps').$$('cr-icon-button');
+      const deepLinkElement =
+          appsPage.$$('#manageApps').shadowRoot.querySelector('cr-icon-button');
       await test_util.waitAfterNextRender(deepLinkElement);
       assertEquals(
           deepLinkElement, getDeepActiveElement(),
@@ -262,7 +351,8 @@ suite('AppsPageTests', function() {
       settings.Router.getInstance().navigateTo(
           settings.routes.ANDROID_APPS_DETAILS, params);
 
-      const deepLinkElement = subpage.$$('#manageApps').$$('cr-icon-button');
+      const deepLinkElement =
+          subpage.$$('#manageApps').shadowRoot.querySelector('cr-icon-button');
       await test_util.waitAfterNextRender(deepLinkElement);
       assertEquals(
           deepLinkElement, getDeepActiveElement(),

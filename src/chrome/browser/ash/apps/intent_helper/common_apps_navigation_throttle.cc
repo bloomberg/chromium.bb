@@ -14,13 +14,13 @@
 #include "chrome/browser/apps/intent_helper/intent_picker_internal.h"
 #include "chrome/browser/ash/apps/intent_helper/ash_intent_picker_helpers.h"
 #include "chrome/browser/ash/apps/metrics/intent_handling_metrics.h"
+#include "chrome/browser/ash/policy/handlers/system_features_disable_list_policy_handler.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/policy/system_features_disable_list_policy_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_id_constants.h"
-#include "chrome/browser/web_applications/components/web_app_tab_helper_base.h"
+#include "chrome/browser/web_applications/web_app_tab_helper.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/browser_resources.h"
 #include "components/policy/core/common/policy_pref_names.h"
@@ -149,8 +149,7 @@ bool CommonAppsNavigationThrottle::ShouldCancelNavigation(
 
   // Don't capture if already inside the target app scope.
   if (app_type == apps::mojom::AppType::kWeb) {
-    auto* tab_helper =
-        web_app::WebAppTabHelperBase::FromWebContents(web_contents);
+    auto* tab_helper = web_app::WebAppTabHelper::FromWebContents(web_contents);
     if (tab_helper && tab_helper->GetAppId() == preferred_app_id.value())
       return false;
   }
@@ -185,7 +184,7 @@ bool CommonAppsNavigationThrottle::ShouldShowDisablePage(
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   std::vector<std::string> app_ids =
       apps::AppServiceProxyFactory::GetForProfile(profile)->GetAppIdsForUrl(
-          url, /*exclude_browser=*/true);
+          url, /*exclude_browser=*/true, /*exclude_browser_tab_apps=*/false);
 
   for (auto app_id : app_ids) {
     if (IsAppDisabled(app_id)) {

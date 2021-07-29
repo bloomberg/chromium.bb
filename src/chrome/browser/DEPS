@@ -40,6 +40,7 @@ include_rules = [
   "+components/account_id",
   "+components/federated_learning",
   "+components/arc",
+  "+components/accuracy_tips",
   "+components/account_manager_core",
   "+components/assist_ranker",
   "+components/autofill_assistant/browser",
@@ -89,6 +90,7 @@ include_rules = [
   "+components/consent_auditor",
   "+components/constrained_window",
   "+components/content_capture/browser",
+  "+components/content_creation/notes/core",
   "+components/content_settings/browser",
   "+components/content_settings/core/browser",
   "+components/content_settings/core/test",
@@ -141,6 +143,7 @@ include_rules = [
   "+components/feedback",
   "+components/find_in_page",
   "+components/flags_ui",
+  "+components/full_restore",
   "+components/gcm_driver",
   "+components/google/core/browser",
   "+components/google/core/common",
@@ -232,6 +235,7 @@ include_rules = [
   "+components/performance_manager/performance_manager_impl.h",
   "+components/permissions",
   "+components/pdf/browser",
+  "+components/pdf/common",
   "+components/policy",
   "+components/power_metrics",
   "+components/pref_registry",
@@ -255,7 +259,12 @@ include_rules = [
   "+components/reputation",
   "+components/reporting",
   "+components/rlz",
-  "+components/safe_browsing",
+  "+components/safe_browsing/android",
+  "+components/safe_browsing/buildflags.h",
+  "+components/safe_browsing/content/browser",
+  "+components/safe_browsing/content/common",
+  "+components/safe_browsing/core/browser",
+  "+components/safe_browsing/core/common",
   "+components/safe_search_api",
   "+components/schema_org",
   "+components/shared_highlighting/core/common",
@@ -300,7 +309,7 @@ include_rules = [
   "+components/subresource_filter/core/browser",
   "+components/subresource_filter/core/common",
   "+components/subresource_filter/core/mojom",
-  "+components/suggestions",
+  "+components/subresource_redirect/common",
   "+components/supervised_user_error_page",
   "+components/sync",
   "+components/sync_bookmarks",
@@ -417,8 +426,9 @@ include_rules = [
   "+chrome/services/speech",
   # Code under //ash should be accessed via its public API. See //ash/README.md.
   "-ash",
+  "+ash/components",
   "+ash/constants",
-  "+ash/content",
+  "+ash/webui",
   "+ash/public",
   "+ash/keyboard/ui/grit",
   "+ash/keyboard/ui/resources",
@@ -503,6 +513,10 @@ specific_include_rules = {
     "+chrome/android/java/src/org/chromium/chrome/browser/app/ChromeActivity.java",
     "+chrome/android/java/src/org/chromium/chrome/browser/ChromeTabbedActivity.java",
   ],
+  '.*TestUtils\.java': [
+      "+chrome/android/java/src/org/chromium/chrome/browser/searchwidget/SearchActivity.java",
+      "+chrome/android/java/src/org/chromium/chrome/browser/ChromeTabbedActivity.java",
+    ],
   "platform_util_linux.cc": [
     # The following is used to call the org.freedesktop.FileManager1
     # DBus interface to highlight a file within its parent folder
@@ -549,5 +563,8 @@ specific_include_rules = {
   ],
   "about_flags\.cc" : [
     "+mojo/core/embedder/features.h",
+  ],
+  "app_controller_mac_browsertest\.mm" : [
+    "+chrome/browser/ui/views/web_apps/web_app_url_handler_intent_picker_dialog_view.h",
   ]
 }

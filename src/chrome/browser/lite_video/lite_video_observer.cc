@@ -65,7 +65,9 @@ void LiteVideoObserver::MaybeCreateForWebContents(
 
 LiteVideoObserver::LiteVideoObserver(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      receivers_(web_contents, this) {
+      receivers_(web_contents,
+                 this,
+                 content::WebContentsFrameReceiverSetPassKey()) {
   lite_video_decider_ = GetLiteVideoDeciderFromWebContents(web_contents);
   routing_ids_to_notify_ = {};
 }
@@ -90,7 +92,10 @@ void LiteVideoObserver::DidFinishNavigation(
   lite_video::LiteVideoBlocklistReason blocklist_reason =
       lite_video::LiteVideoBlocklistReason::kUnknown;
 
-  if (navigation_handle->IsInMainFrame()) {
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
+  if (navigation_handle->IsInPrimaryMainFrame()) {
     FlushUKMMetrics();
     routing_ids_to_notify_.clear();
     nav_metrics_ = lite_video::LiteVideoNavigationMetrics(
@@ -108,13 +113,13 @@ void LiteVideoObserver::DidFinishNavigation(
       navigation_handle,
       base::BindOnce(&LiteVideoObserver::OnHintAvailable,
                      weak_ptr_factory_.GetWeakPtr(),
-                     content::GlobalFrameRoutingId(
+                     content::GlobalRenderFrameHostId(
                          render_frame_host->GetProcess()->GetID(),
                          render_frame_host->GetRoutingID())));
 }
 
 void LiteVideoObserver::OnHintAvailable(
-    const content::GlobalFrameRoutingId& render_frame_host_routing_id,
+    const content::GlobalRenderFrameHostId& render_frame_host_routing_id,
     absl::optional<lite_video::LiteVideoHint> hint,
     lite_video::LiteVideoBlocklistReason blocklist_reason,
     optimization_guide::OptimizationGuideDecision opt_guide_decision) {
@@ -178,7 +183,7 @@ void LiteVideoObserver::OnHintAvailable(
 }
 
 void LiteVideoObserver::SendHintToRenderFrameAgentForID(
-    const content::GlobalFrameRoutingId& routing_id,
+    const content::GlobalRenderFrameHostId& routing_id,
     const lite_video::LiteVideoHint& hint) {
   auto* render_frame_host = content::RenderFrameHost::FromID(routing_id);
   if (!render_frame_host)
@@ -227,7 +232,10 @@ void LiteVideoObserver::FlushUKMMetrics() {
 // Returns the result of a coinflip.
 void LiteVideoObserver::MaybeUpdateCoinflipExperimentState(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame())
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
+  if (!navigation_handle->IsInPrimaryMainFrame())
     return;
   if (!lite_video::features::IsCoinflipExperimentEnabled())
     return;

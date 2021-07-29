@@ -10,8 +10,8 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/check_op.h"
+#include "base/cxx17_backports.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "components/browsing_data/content/browsing_data_helper.h"
@@ -20,6 +20,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "storage/browser/quota/quota_manager.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "url/origin.h"
 
@@ -77,23 +78,23 @@ void BrowsingDataQuotaHelperImpl::FetchQuotaInfoOnIOThread(
                      base::Owned(pending_hosts)));
 
   for (const StorageType& type : types) {
-    quota_manager_->GetOriginsModifiedBetween(
+    quota_manager_->GetStorageKeysModifiedBetween(
         type, base::Time(), base::Time::Max(),
-        base::BindOnce(&BrowsingDataQuotaHelperImpl::GotOrigins,
+        base::BindOnce(&BrowsingDataQuotaHelperImpl::GotStorageKeys,
                        weak_factory_.GetWeakPtr(), pending_hosts, completion));
   }
 }
 
-void BrowsingDataQuotaHelperImpl::GotOrigins(
+void BrowsingDataQuotaHelperImpl::GotStorageKeys(
     PendingHosts* pending_hosts,
     base::OnceClosure completion,
-    const std::set<url::Origin>& origins,
+    const std::set<blink::StorageKey>& storage_keys,
     StorageType type) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  for (const url::Origin& origin : origins) {
-    if (!browsing_data::IsWebScheme(origin.scheme()))
+  for (const blink::StorageKey& storage_key : storage_keys) {
+    if (!browsing_data::IsWebScheme(storage_key.origin().scheme()))
       continue;  // Non-websafe state is not considered browsing data.
-    pending_hosts->insert(std::make_pair(origin.host(), type));
+    pending_hosts->insert(std::make_pair(storage_key.origin().host(), type));
   }
   std::move(completion).Run();
 }

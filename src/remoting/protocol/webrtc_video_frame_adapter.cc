@@ -13,23 +13,50 @@ namespace remoting {
 namespace protocol {
 
 WebrtcVideoFrameAdapter::WebrtcVideoFrameAdapter(
-    std::unique_ptr<webrtc::DesktopFrame> frame)
-    : frame_(std::move(frame)), frame_size_(frame_->size()) {}
+    std::unique_ptr<webrtc::DesktopFrame> frame,
+    std::unique_ptr<WebrtcVideoEncoder::FrameStats> frame_stats)
+    : frame_(std::move(frame)),
+      frame_size_(frame_->size()),
+      frame_stats_(std::move(frame_stats)) {}
 
 WebrtcVideoFrameAdapter::~WebrtcVideoFrameAdapter() = default;
 
 // static
 webrtc::VideoFrame WebrtcVideoFrameAdapter::CreateVideoFrame(
-    std::unique_ptr<webrtc::DesktopFrame> desktop_frame) {
+    std::unique_ptr<webrtc::DesktopFrame> desktop_frame,
+    std::unique_ptr<WebrtcVideoEncoder::FrameStats> frame_stats) {
+  // The frame-builder only accepts a bounding rectangle, so compute it here.
+  // WebRTC only tracks and accumulates update-rectangles, not regions, when
+  // sending video-frames to the encoder.
+  webrtc::VideoFrame::UpdateRect video_update_rect{};
+  for (webrtc::DesktopRegion::Iterator i(desktop_frame->updated_region());
+       !i.IsAtEnd(); i.Advance()) {
+    const auto& rect = i.rect();
+    video_update_rect.Union(webrtc::VideoFrame::UpdateRect{
+        rect.left(), rect.top(), rect.width(), rect.height()});
+  }
+
   rtc::scoped_refptr<WebrtcVideoFrameAdapter> adapter =
       new rtc::RefCountedObject<WebrtcVideoFrameAdapter>(
-          std::move(desktop_frame));
-  return webrtc::VideoFrame::Builder().set_video_frame_buffer(adapter).build();
+          std::move(desktop_frame), std::move(frame_stats));
+
+  // In the empty case, it is important to set the video-frame's update
+  // rectangle explicitly to empty, otherwise an unset value would be
+  // interpreted as a full frame update - see webrtc::VideoFrame::update_rect().
+  return webrtc::VideoFrame::Builder()
+      .set_video_frame_buffer(adapter)
+      .set_update_rect(video_update_rect)
+      .build();
 }
 
 std::unique_ptr<webrtc::DesktopFrame>
 WebrtcVideoFrameAdapter::TakeDesktopFrame() {
   return std::move(frame_);
+}
+
+std::unique_ptr<WebrtcVideoEncoder::FrameStats>
+WebrtcVideoFrameAdapter::TakeFrameStats() {
+  return std::move(frame_stats_);
 }
 
 webrtc::VideoFrameBuffer::Type WebrtcVideoFrameAdapter::type() const {

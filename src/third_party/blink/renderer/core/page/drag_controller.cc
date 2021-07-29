@@ -31,7 +31,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/common/page/drag_operation.h"
-#include "third_party/blink/public/common/widget/screen_info.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_drag_data.h"
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
@@ -92,6 +91,7 @@
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-blink.h"
+#include "ui/display/screen_info.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -1118,10 +1118,11 @@ static IntPoint DragLocationForImage(
 
 static std::unique_ptr<DragImage> DragImageForLink(const KURL& link_url,
                                                    const String& link_text,
-                                                   float device_scale_factor) {
+                                                   float device_scale_factor,
+                                                   const Document* document) {
   FontDescription font_description;
-  LayoutTheme::GetTheme().SystemFont(blink::CSSValueID::kNone,
-                                     font_description);
+  LayoutTheme::GetTheme().SystemFont(blink::CSSValueID::kNone, font_description,
+                                     document);
   return DragImage::Create(link_url, link_text, font_description,
                            device_scale_factor);
 }
@@ -1282,8 +1283,9 @@ bool DragController::StartDrag(LocalFrame* src,
       DCHECK(src->GetPage());
       float screen_device_scale_factor =
           src->GetChromeClient().GetScreenInfo(*src).device_scale_factor;
-      drag_image = DragImageForLink(link_url, hit_test_result.TextContent(),
-                                    screen_device_scale_factor);
+      drag_image =
+          DragImageForLink(link_url, hit_test_result.TextContent(),
+                           screen_device_scale_factor, src->GetDocument());
       drag_location = DragLocationForLink(drag_image.get(), mouse_dragged_point,
                                           screen_device_scale_factor,
                                           src->GetPage()->PageScaleFactor());

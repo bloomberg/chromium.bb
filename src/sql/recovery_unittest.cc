@@ -16,7 +16,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "sql/database.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
@@ -781,16 +780,10 @@ TEST_F(SQLRecoveryTest, RecoverDatabase) {
   ASSERT_TRUE(
       db_.Execute("CREATE VIEW v AS SELECT x.v FROM x, y WHERE x.v = y.v"));
 
-  // When an element is deleted from [x], trigger a delete on [y].  Between the
-  // BEGIN and END, [old] stands for the deleted rows from [x].
-  ASSERT_TRUE(
-      db_.Execute("CREATE TRIGGER t AFTER DELETE ON x "
-                  "BEGIN DELETE FROM y WHERE y.v = old.v; END"));
-
   // Save aside a copy of the original schema, verifying that it has the created
   // items plus the sqlite_sequence table.
   const std::string orig_schema(GetSchema(&db_));
-  ASSERT_EQ(6, std::count(orig_schema.begin(), orig_schema.end(), '\n'));
+  ASSERT_EQ(5, std::count(orig_schema.begin(), orig_schema.end(), '\n'));
 
   static const char kXSql[] = "SELECT * FROM x ORDER BY 1";
   static const char kYSql[] = "SELECT * FROM y ORDER BY 1";
@@ -816,13 +809,6 @@ TEST_F(SQLRecoveryTest, RecoverDatabase) {
   EXPECT_EQ("bob|truck\ndean|trailer\njim|telephone",
             ExecuteWithResults(&db_, kYSql, "|", "\n"));
   EXPECT_EQ("trailer\ntruck", ExecuteWithResults(&db_, kVSql, "|", "\n"));
-
-  // Test that the trigger works.
-  ASSERT_TRUE(db_.Execute("DELETE FROM x WHERE v = 'truck'"));
-  EXPECT_EQ("1|turtle\n3|trailer", ExecuteWithResults(&db_, kXSql, "|", "\n"));
-  EXPECT_EQ("dean|trailer\njim|telephone",
-            ExecuteWithResults(&db_, kYSql, "|", "\n"));
-  EXPECT_EQ("trailer", ExecuteWithResults(&db_, kVSql, "|", "\n"));
 }
 
 // When RecoverDatabase() encounters SQLITE_NOTADB, the database is deleted.
@@ -902,7 +888,6 @@ TEST_F(SQLRecoveryTest, BeginRecoverDatabase) {
   EXPECT_EQ("1,2", ExecuteWithResults(&db_, kSelectTableIdSql, "|", ","));
 }
 
-// Test histograms recorded when the invalid database cannot be attached.
 TEST_F(SQLRecoveryTest, AttachFailure) {
   // Create a valid database, then write junk over the header.  This should lead
   // to SQLITE_NOTADB, which will cause ATTACH to fail.
@@ -910,11 +895,6 @@ TEST_F(SQLRecoveryTest, AttachFailure) {
   ASSERT_TRUE(db_.Execute("INSERT INTO x VALUES ('This is a test')"));
   db_.Close();
   ASSERT_TRUE(OverwriteDatabaseHeader());
-
-  static const char kEventHistogramName[] = "Sqlite.RecoveryEvents";
-  const int kEventEnum = 5;  // RECOVERY_FAILED_ATTACH
-  static const char kErrorHistogramName[] = "Sqlite.RecoveryAttachError";
-  base::HistogramTester tester;
 
   {
     sql::test::ScopedErrorExpecter expecter;
@@ -925,14 +905,10 @@ TEST_F(SQLRecoveryTest, AttachFailure) {
 
     // Begin() should fail.
     std::unique_ptr<Recovery> recovery = Recovery::Begin(&db_, db_path_);
-    ASSERT_FALSE(recovery.get());
+    EXPECT_FALSE(recovery.get());
 
     ASSERT_TRUE(expecter.SawExpectedErrors());
   }
-
-  // Verify that the failure was in the right place with the expected code.
-  tester.ExpectBucketCount(kEventHistogramName, kEventEnum, 1);
-  tester.ExpectBucketCount(kErrorHistogramName, SQLITE_NOTADB, 1);
 }
 
 // Helper for SQLRecoveryTest.PageSize.  Creates a fresh db based on db_prefix,

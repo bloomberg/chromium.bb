@@ -11,6 +11,7 @@
 #include "third_party/blink/public/common/navigation/navigation_policy.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/fullscreen.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/referrer.mojom-blink.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
@@ -62,6 +63,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "ui/base/window_open_disposition.h"
 
 namespace blink {
@@ -218,11 +220,8 @@ void RemoteFrame::Navigate(FrameLoadRequest& frame_request,
       window->GetFrame() ? window->GetFrame()->GetContentSettingsClient()
                          : nullptr);
 
-  // Navigations in portal contexts do not create back/forward entries.
-  if (GetPage()->InsidePortal() &&
-      frame_load_type == WebFrameLoadType::kStandard) {
+  if (NavigationShouldReplaceCurrentHistoryEntry(frame_load_type))
     frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
-  }
 
   bool is_opener_navigation = false;
   bool initiator_frame_has_download_sandbox_flag = false;
@@ -316,6 +315,15 @@ void RemoteFrame::Navigate(FrameLoadRequest& frame_request,
   GetRemoteFrameHostRemote().OpenURL(std::move(params));
 }
 
+bool RemoteFrame::NavigationShouldReplaceCurrentHistoryEntry(
+    WebFrameLoadType frame_load_type) const {
+  // Portal contexts do not create back/forward entries.
+  // TODO(https:/crbug.com/1197384, https://crbug.com/1190644): We may want to
+  // support a prerender in RemoteFrame.
+  return frame_load_type == WebFrameLoadType::kStandard &&
+         GetPage()->InsidePortal();
+}
+
 bool RemoteFrame::DetachImpl(FrameDetachType type) {
   PluginScriptForbiddenScope forbid_plugin_destructor_scripting;
 
@@ -361,15 +369,6 @@ void RemoteFrame::SetCcLayer(scoped_refptr<cc::Layer> layer,
   }
   HTMLFrameOwnerElement* owner = To<HTMLFrameOwnerElement>(Owner());
   owner->SetNeedsCompositingUpdate();
-
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    // New layers for remote frames are controlled by Blink's embedder.
-    // To ensure the new surface is painted, we need to repaint the frame
-    // owner's PaintLayer.
-    LayoutBoxModelObject* layout_object = owner->GetLayoutBoxModelObject();
-    if (layout_object && layout_object->Layer())
-      layout_object->Layer()->SetNeedsRepaint();
-  }
 
   // Schedule an animation so that a new frame is produced with the updated
   // layer, otherwise this local root's visible content may not be up to date.
@@ -618,9 +617,12 @@ void RemoteFrame::SetReplicatedOrigin(
   }
 }
 
-void RemoteFrame::SetReplicatedAdFrameType(
-    mojom::blink::AdFrameType ad_frame_type) {
-  ad_frame_type_ = ad_frame_type;
+bool RemoteFrame::IsAdSubframe() const {
+  return is_ad_subframe_;
+}
+
+void RemoteFrame::SetReplicatedIsAdSubframe(bool is_ad_subframe) {
+  is_ad_subframe_ = is_ad_subframe;
 }
 
 void RemoteFrame::SetReplicatedName(const String& name,
@@ -687,7 +689,7 @@ void RemoteFrame::SetEmbeddingToken(
 }
 
 void RemoteFrame::SetPageFocus(bool is_focused) {
-  static_cast<WebViewImpl*>(WebFrame::FromCoreFrame(this)->View())
+  To<WebViewImpl>(WebFrame::FromCoreFrame(this)->View())
       ->SetPageFocus(is_focused);
 }
 
@@ -744,7 +746,7 @@ void RemoteFrame::ScrollRectToVisible(
   // view on Android which also requires an automatic zoom into legible scale.
   // This is handled by main frame's WebView.
   WebViewImpl* web_view =
-      static_cast<WebViewImpl*>(WebFrame::FromCoreFrame(this)->View());
+      To<WebViewImpl>(WebFrame::FromCoreFrame(this)->View());
   web_view->ZoomAndScrollToFocusedEditableElementRect(
       element_bounds_in_document, caret_bounds_in_document, true);
 }
@@ -884,6 +886,11 @@ void RemoteFrame::WasAttachedAsRemoteMainFrame(
 
 const viz::LocalSurfaceId& RemoteFrame::GetLocalSurfaceId() const {
   return parent_local_surface_id_allocator_->GetCurrentLocalSurfaceId();
+}
+
+void RemoteFrame::SetCcLayerForTesting(scoped_refptr<cc::Layer> layer,
+                                       bool is_surface_layer) {
+  SetCcLayer(layer, is_surface_layer);
 }
 
 viz::FrameSinkId RemoteFrame::GetFrameSinkId() {
@@ -1073,7 +1080,7 @@ void RemoteFrame::SetViewportIntersection(
       intersection_state.Clone(), visual_properties);
 }
 
-void RemoteFrame::DidChangeScreenInfo(const ScreenInfo& screen_info) {
+void RemoteFrame::DidChangeScreenInfo(const display::ScreenInfo& screen_info) {
   pending_visual_properties_.screen_info = screen_info;
   SynchronizeVisualProperties();
 }

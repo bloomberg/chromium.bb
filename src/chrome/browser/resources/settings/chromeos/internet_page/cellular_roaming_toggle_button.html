@@ -1,0 +1,10 @@
+<!-- TODO(crbug/1220691): Remove when allowPerNetworkRoaming flag
+    launches -->
+<template is="dom-if" if="[[!allowPerNetworkRoaming_]]">
+    <settings-toggle-button id="cellularRoamingToggle" class="hr"
+        disabled="[[disabled]]"
+        label="$i18n{networkAllowDataRoaming}"
+        sub-label="[[getRoamingDetails_(managedProperties)]]"
+        pref="{{prefs.cros.signed.data_roaming_enabled}}">
+    </settings-toggle-button>
+</template>

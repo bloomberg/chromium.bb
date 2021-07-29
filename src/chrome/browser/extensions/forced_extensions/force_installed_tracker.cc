@@ -110,7 +110,7 @@ void ForceInstalledTracker::OnForcedExtensionsPrefReady() {
       pref_service_->GetDictionary(pref_names::kInstallForceList);
   if (value) {
     // Add each extension to |extensions_|.
-    for (const auto& entry : value->DictItems()) {
+    for (auto entry : value->DictItems()) {
       const ExtensionId& extension_id = entry.first;
       const std::string* update_url = nullptr;
       if (entry.second.is_dict()) {
@@ -273,6 +273,19 @@ bool ForceInstalledTracker::IsMisconfiguration(
         return true;
       }
     }
+  }
+
+  if (installation_data.failure_reason ==
+      InstallStageTracker::FailureReason::MANIFEST_INVALID) {
+    auto extension = extensions_.find(id);
+    if (extension != extensions_.end() && !extension->second.is_from_store) {
+      return true;
+    }
+  }
+
+  if (installation_data.failure_reason ==
+      InstallStageTracker::FailureReason::OVERRIDDEN_BY_SETTINGS) {
+    return true;
   }
 
   return false;

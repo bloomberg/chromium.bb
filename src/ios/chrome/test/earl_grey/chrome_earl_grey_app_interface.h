@@ -45,8 +45,8 @@
 // the operation failed.
 + (NSError*)removeBrowsingCache;
 
-// Opens |URL| using the application delegate.
-+ (void)applicationOpenURL:(NSString*)spec;
+// Opens |URL| using some connected scene.
++ (void)sceneOpenURL:(NSString*)spec;
 
 // Loads the URL |spec| in the current WebState with transition type
 // ui::PAGE_TRANSITION_TYPED and returns without waiting for the page to load.
@@ -279,6 +279,11 @@
 // indicating why the operation failed.
 + (NSError*)waitForWebStateContainingBlockedImage:(NSString*)imageID;
 
+// Waits for the web state's scroll view zoom scale to be suitably close (within
+// 0.05) of the expected scale. Returns nil if the condition is met within a
+// timeout, or else an NSError indicating why the operation failed.
++ (NSError*)waitForWebStateZoomScale:(CGFloat)scale;
+
 // Sets value for content setting.
 + (void)setContentSettings:(ContentSetting)setting;
 
@@ -369,11 +374,11 @@
 // Whether or not the fake sync server has been setup.
 + (BOOL)isFakeSyncServerSetUp;
 
-// Sets up a fake sync server to be used by the ProfileSyncService.
+// Sets up a fake sync server to be used by the SyncServiceImpl.
 + (void)setUpFakeSyncServer;
 
-// Tears down the fake sync server used by the ProfileSyncService and restores
-// the real one.
+// Tears down the fake sync server used by the SyncServiceImpl and restores the
+// real one.
 + (void)tearDownFakeSyncServer;
 
 // Gets the number of entities of the given |type|.
@@ -482,9 +487,6 @@
 // Returns YES if a variation triggering server-side behavior is enabled.
 + (BOOL)isTriggerVariationEnabled:(int)variationID;
 
-// Returns YES if UmaCellular feature is enabled.
-+ (BOOL)isUMACellularEnabled WARN_UNUSED_RESULT;
-
 // Returns YES if UKM feature is enabled.
 + (BOOL)isUKMEnabled WARN_UNUSED_RESULT;
 
@@ -507,9 +509,6 @@
 
 // Returns whether the mobile version of the websites are requested by default.
 + (BOOL)isMobileModeByDefault WARN_UNUSED_RESULT;
-
-// Returns whether the native context menus feature is enabled or not.
-+ (BOOL)isNativeContextMenusEnabled;
 
 // Returns whether the app is configured to, and running in an environment which
 // can, open multiple windows.
@@ -594,6 +593,19 @@
 
 // Clear the watcher list, stopping monitoring.
 + (void)stopWatcher;
+
+#pragma mark - Default Browser Promo Utilities
+
+// Clears default browser promo data to restart capping for the promos.
++ (void)clearDefaultBrowserPromoData;
+
+// Copies a chrome:// URL that doesn't require internet connection.
++ (void)copyURLToPasteBoard;
+
+// Disables default browser promo. If a test needs to check a message drop down
+// in a second window, this needs to be disabled or the popup will kill the
+// message.
++ (void)disableDefaultBrowserPromo;
 
 @end
 

@@ -22,7 +22,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -415,6 +414,7 @@ bool RenderViewHostImpl::CreateRenderView(
   } else {
     main_rfph =
         RenderFrameProxyHost::FromID(GetProcess()->GetID(), proxy_route_id);
+    DCHECK(main_rfph);
   }
   const FrameTreeNode* const frame_tree_node =
       main_rfh ? main_rfh->frame_tree_node() : main_rfph->frame_tree_node();
@@ -429,6 +429,8 @@ bool RenderViewHostImpl::CreateRenderView(
   params->replication_state =
       frame_tree_node->current_replication_state().Clone();
   params->devtools_main_frame_token = frame_tree_node->devtools_frame_token();
+  DCHECK_EQ(frame_tree_node->frame_tree(), frame_tree_);
+  params->is_prerendering = frame_tree_->is_prerendering();
 
   if (main_rfh) {
     auto local_frame_params = mojom::CreateLocalMainFrameParams::New();
@@ -468,7 +470,7 @@ bool RenderViewHostImpl::CreateRenderView(
     params->main_frame = mojom::CreateMainFrameUnion::NewRemoteParams(
         mojom::CreateRemoteMainFrameParams::New(
             main_rfph->GetFrameToken(), proxy_route_id,
-            main_rfph->BindAndPassRemoteMainFrameInterfaces()));
+            main_rfph->CreateAndBindRemoteMainFrameInterfaces()));
   }
 
   params->session_storage_namespace_id =
@@ -476,6 +478,7 @@ bool RenderViewHostImpl::CreateRenderView(
   params->hidden = frame_tree_->delegate()->IsHidden();
   params->never_composited = delegate_->IsNeverComposited();
   params->window_was_created_with_opener = window_was_created_with_opener;
+  params->base_background_color = delegate_->GetBaseBackgroundColor();
 
   bool is_portal = delegate_->IsPortal();
   bool is_guest_view = delegate_->IsGuest();
@@ -555,6 +558,15 @@ void RenderViewHostImpl::LeaveBackForwardCache(
   is_in_back_forward_cache_ = false;
   page_lifecycle_state_manager_->SetIsInBackForwardCache(
       is_in_back_forward_cache_, std::move(page_restore_params));
+}
+
+void RenderViewHostImpl::ActivatePrerenderedPage() {
+  // Null in some unit tests that use TestRenderViewHost.
+  // TODO(falken): Bind this in tests.
+  if (!page_broadcast_)
+    return;
+
+  page_broadcast_->ActivatePrerenderedPage();
 }
 
 void RenderViewHostImpl::SetFrameTreeVisibility(
@@ -753,11 +765,6 @@ void RenderViewHostImpl::AnimateDoubleTapZoom(const gfx::Point& point,
       ->AnimateDoubleTapZoom(point, rect);
 }
 
-void RenderViewHostImpl::RenderWidgetDidFirstVisuallyNonEmptyPaint() {
-  did_first_visually_non_empty_paint_ = true;
-  delegate_->DidFirstVisuallyNonEmptyPaint(this);
-}
-
 bool RenderViewHostImpl::SuddenTerminationAllowed() {
   // If there is a JavaScript dialog up, don't bother sending the renderer the
   // close event because it is known unresponsive, waiting for the reply from
@@ -772,11 +779,7 @@ bool RenderViewHostImpl::SuddenTerminationAllowed() {
 // RenderViewHostImpl, IPC message handlers:
 
 bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
-  // Crash reports trigerred by the IPC messages below should be associated
-  // with URL of the main frame.
-  ScopedActiveURL scoped_active_url(this);
-
-  return delegate_->OnMessageReceived(this, msg);
+  return false;
 }
 
 void RenderViewHostImpl::OnDidContentsPreferredSizeChange(
@@ -899,7 +902,7 @@ std::vector<viz::SurfaceId> RenderViewHostImpl::CollectSurfaceIdsForEviction() {
   if (!is_active())
     return {};
   RenderFrameHostImpl* rfh = static_cast<RenderFrameHostImpl*>(GetMainFrame());
-  if (!rfh || !rfh->IsCurrent())
+  if (!rfh || !rfh->IsActive())
     return {};
   FrameTreeNode* root = rfh->frame_tree_node();
   FrameTree* tree = root->frame_tree();
@@ -917,54 +920,6 @@ std::vector<viz::SurfaceId> RenderViewHostImpl::CollectSurfaceIdsForEviction() {
     view->set_is_evicted();
   }
   return ids;
-}
-
-void RenderViewHostImpl::ResetPerPageState() {
-  did_first_visually_non_empty_paint_ = false;
-  main_frame_theme_color_.reset();
-  is_document_on_load_completed_in_main_frame_ = false;
-}
-
-void RenderViewHostImpl::OnThemeColorChanged(
-    RenderFrameHostImpl* rfh,
-    const absl::optional<SkColor>& theme_color) {
-  if (GetMainFrame() != rfh)
-    return;
-  main_frame_theme_color_ = theme_color;
-  delegate_->OnThemeColorChanged(this);
-}
-
-void RenderViewHostImpl::DidChangeBackgroundColor(
-    RenderFrameHostImpl* rfh,
-    const SkColor& background_color,
-    bool color_adjust) {
-  if (GetMainFrame() != rfh)
-    return;
-
-  main_frame_background_color_ = background_color;
-  delegate_->OnBackgroundColorChanged(this);
-  if (color_adjust) {
-    // <meta name="color-scheme" content="dark"> may pass the dark canvas
-    // background before the first paint in order to avoid flashing the white
-    // background in between loading documents. If we perform a navigation
-    // within the same renderer process, we keep the content background from the
-    // previous page while rendering is blocked in the new page, but for cross
-    // process navigations we would paint the default background (typically
-    // white) while the rendering is blocked.
-    GetWidget()->GetView()->SetContentBackgroundColor(background_color);
-  }
-}
-
-void RenderViewHostImpl::SetContentsMimeType(const std::string mime_type) {
-  contents_mime_type_ = mime_type;
-}
-
-void RenderViewHostImpl::DocumentOnLoadCompletedInMainFrame() {
-  is_document_on_load_completed_in_main_frame_ = true;
-}
-
-bool RenderViewHostImpl::IsDocumentOnLoadCompletedInMainFrame() {
-  return is_document_on_load_completed_in_main_frame_;
 }
 
 bool RenderViewHostImpl::IsTestRenderViewHost() const {

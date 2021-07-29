@@ -18,7 +18,7 @@
 #include "chrome/browser/ash/arc/session/adb_sideloading_availability_delegate_impl.h"
 #include "chrome/browser/ash/arc/session/arc_app_id_provider_impl.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager_observer.h"
-#include "chrome/browser/chromeos/policy/android_management_client.h"
+#include "chrome/browser/ash/policy/arc/android_management_client.h"
 #include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/arc/session/arc_session_runner.h"
@@ -153,6 +153,10 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // via SetProfile().
   void Initialize();
 
+  // Set the device scale factor used to start the arc. This must be called
+  // before staring mini-ARC.
+  void SetDefaultDeviceScaleFactor(float default_device_scale_factor);
+
   void Shutdown();
 
   // Sets the |profile|, and sets up Profile related fields in this instance.
@@ -203,6 +207,7 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   void OnWindowClosed() override;
   void OnRetryClicked() override;
   void OnSendFeedbackClicked() override;
+  void OnRunNetworkTestsClicked() override;
 
   // StopArc(), then restart. Between them data clear may happens.
   // This is a special method to support enterprise device lost case.
@@ -395,7 +400,8 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // Requests the support host (if it exists) to show the error, and notifies
   // the observers.
   void ShowArcSupportHostError(ArcSupportHost::ErrorInfo error_info,
-                               bool should_show_send_feedback);
+                               bool should_show_send_feedback,
+                               bool should_show_run_network_tests);
 
   // chromeos::SessionManagerClient::Observer:
   void EmitLoginPromptVisibleCalled() override;

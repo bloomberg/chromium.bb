@@ -1,0 +1,27 @@
+#include <metal_stdlib>
+
+using namespace metal;
+struct tint_symbol {
+  float4 value [[position]];
+};
+
+void exp2_d6777c() {
+  float2 res = exp2(float2());
+}
+
+vertex tint_symbol vertex_main() {
+  exp2_d6777c();
+  tint_symbol const tint_symbol_1 = {.value=float4()};
+  return tint_symbol_1;
+}
+
+fragment void fragment_main() {
+  exp2_d6777c();
+  return;
+}
+
+kernel void compute_main() {
+  exp2_d6777c();
+  return;
+}
+

@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
-// #import {background} from './background.m.js';
-// #import {test} from './test_util_base.m.js';
-// #import {launcher} from './launcher.m.js';
-// #import {util} from '../../common/js/util.m.js';
-// #import {ProgressCenterItem} from '../../common/js/progress_center_common.m.js';
-// clang-format on
+import {ProgressCenterItem} from '../../common/js/progress_center_common.js';
+import {util} from '../../common/js/util.js';
+
+import {background} from './background.js';
+import {launcher} from './launcher.js';
+import {test} from './test_util_base.js';
+
+export {test};
 
 /**
  * Opens the main Files app's window and waits until it is ready.
@@ -353,7 +354,15 @@ test.util.sync.deleteFile = (contentWindow, filename) => {
  * @return {boolean} True if the command is executed successfully.
  */
 test.util.sync.execCommand = (contentWindow, command) => {
-  return contentWindow.document.execCommand(command);
+  const ret = contentWindow.document.execCommand(command);
+  if (!ret && contentWindow.isSWA) {
+    // TODO(b/191831968): Fix execCommand for SWA.
+    console.warn(
+        `execCommand(${command}) returned false for SWA, forcing ` +
+        `return value to true. b/191831968`);
+    return true;
+  }
+  return ret;
 };
 
 /**
@@ -372,13 +381,14 @@ test.util.sync.overrideTasks = (contentWindow, taskList) => {
     }, 0);
   };
 
-  const executeTask = (taskId, entries, callback) => {
-    test.util.executedTasks_.push({taskId, entries, callback});
+  const executeTask = (descriptor, entries, callback) => {
+    test.util.executedTasks_.push({descriptor, entries, callback});
   };
 
-  const setDefaultTask = taskId => {
+  const setDefaultTask = descriptor => {
     for (let i = 0; i < taskList.length; i++) {
-      taskList[i].isDefault = taskList[i].taskId === taskId;
+      taskList[i].isDefault =
+          util.descriptorEqual(taskList[i].descriptor, descriptor);
     }
   };
 
@@ -392,34 +402,55 @@ test.util.sync.overrideTasks = (contentWindow, taskList) => {
 /**
  * Obtains the list of executed tasks.
  * @param {Window} contentWindow Window to be tested.
- * @return {Array<string>} List of executed task ID.
+ * @return {Array<!chrome.fileManagerPrivate.FileTaskDescriptor>} List of
+ *     executed tasks.
  */
 test.util.sync.getExecutedTasks = contentWindow => {
   if (!test.util.executedTasks_) {
     console.error('Please call overrideTasks() first.');
     return null;
   }
-  return test.util.executedTasks_.map(task => task.taskId);
+  return test.util.executedTasks_.map(task => task.descriptor);
+};
+
+/**
+ * Obtains the list of executed tasks.
+ * @param {Window} contentWindow Window to be tested.
+ * @param {!chrome.fileManagerPrivate.FileTaskDescriptor} descriptor the task to
+ *     check.
+ * @return {boolean} True if the task was executed.
+ */
+test.util.sync.taskWasExecuted = (contentWindow, descriptor) => {
+  if (!test.util.executedTasks_) {
+    console.error('Please call overrideTasks() first.');
+    return null;
+  }
+  return !!test.util.executedTasks_.find(util.descriptorEqual.bind(descriptor));
 };
 
 /**
  * Invokes an executed task with |responseArgs|.
  * @param {Window} contentWindow Window to be tested.
- * @param {string} taskId the task to be replied to.
+ * @param {!chrome.fileManagerPrivate.FileTaskDescriptor} descriptor the task to
+ *     be replied to.
  * @param {Array<Object>} responseArgs the arguments to inoke the callback with.
  */
-test.util.sync.replyExecutedTask = (contentWindow, taskId, responseArgs) => {
-  if (!test.util.executedTasks_) {
-    console.error('Please call overrideTasks() first.');
-    return null;
-  }
-  const found = test.util.executedTasks_.find(task => task.taskId === taskId);
-  if (!found) {
-    console.error(`No task with id ${taskId}`);
-    return null;
-  }
-  found.callback(...responseArgs);
-};
+test.util.sync.replyExecutedTask =
+    (contentWindow, descriptor, responseArgs) => {
+      if (!test.util.executedTasks_) {
+        console.error('Please call overrideTasks() first.');
+        return false;
+      }
+      const found = test.util.executedTasks_.find(
+          task => util.descriptorEqual(task.descriptor, descriptor));
+      if (!found) {
+        const {appId, taskType, actionId} = descriptor;
+        console.error(`No task with id ${appId}|${taskType}|${actionId}`);
+        return false;
+      }
+      found.callback(...responseArgs);
+      return true;
+    };
 
 /**
  * Calls the unload handler for the window.
@@ -469,6 +500,7 @@ test.util.async.getPreferences = callback => {
 test.util.sync.overrideFormat = contentWindow => {
   contentWindow.chrome.fileManagerPrivate.formatVolume =
       (volumeId, filesystem, volumeLabel) => {};
+  return true;
 };
 
 /**
@@ -805,7 +837,8 @@ test.util.sync.removeAllBackgroundFakes = () => {
  *  value'].
  */
 test.util.sync.foregroundFake = (contentWindow, fakeData) => {
-  for (const [path, mockValue] of Object.entries(fakeData)) {
+  const entries = Object.entries(fakeData);
+  for (const [path, mockValue] of entries) {
     const fakeId = mockValue[0];
     const fakeArgs = mockValue[1] || [];
     const fake =
@@ -813,6 +846,7 @@ test.util.sync.foregroundFake = (contentWindow, fakeData) => {
     fake.prepare();
     fake.replace(test.util.FakeType.FOREGROUND_FAKE, contentWindow);
   }
+  return entries.length;
 };
 
 /**
@@ -868,7 +902,10 @@ test.util.sync.sendProgressItem =
       item.itemCount = count;
 
       background.progressCenter.updateItem(item);
+      return true;
     };
 
-// Register the test utils.
-test.util.registerRemoteTestUtils();
+// Register the test utils, however the SWA uses a different util.
+if (!window.isSWA) {
+  test.util.registerRemoteTestUtils();
+}

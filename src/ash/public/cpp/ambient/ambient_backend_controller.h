@@ -10,22 +10,12 @@
 #include <vector>
 
 #include "ash/public/cpp/ambient/common/ambient_settings.h"
+#include "ash/public/cpp/ambient/proto/photo_cache_entry.pb.h"
 #include "ash/public/cpp/ash_public_export.h"
 #include "base/callback_forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
-
-enum class AmbientModeTopicType {
-  kCurated,
-  kPersonal,
-  kFeatured,
-  kGeo,
-  kCulturalInstitute,
-  kRss,
-  kCapturedOnPixel,
-  kOther,
-};
 
 // AmbientModeTopic contains the information we need for rendering photo frame
 // for Ambient Mode. Corresponding to the |backdrop::ScreenUpdate::Topic| proto.
@@ -42,10 +32,16 @@ struct ASH_PUBLIC_EXPORT AmbientModeTopic {
   // Image url.
   std::string url;
 
-  // Only support portrait image tiling in landscape orientation.
-  absl::optional<std::string> related_image_url;
+  std::string related_image_url;
 
-  AmbientModeTopicType topic_type = AmbientModeTopicType::kOther;
+  std::string related_details;
+
+  ::ambient::TopicType topic_type = ::ambient::TopicType::kOther;
+
+  // Whether the original image is portrait or not. Cannot use aspect ratio of
+  // the fetched image to determine it because the fetched image could be
+  // cropped.
+  bool is_portrait = false;
 };
 
 // WeatherInfo contains the weather information we need for rendering a

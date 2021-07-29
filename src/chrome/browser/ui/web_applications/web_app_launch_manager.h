@@ -44,7 +44,6 @@ class WebAppLaunchManager {
   WebAppLaunchManager& operator=(const WebAppLaunchManager&) = delete;
   virtual ~WebAppLaunchManager();
 
-  // apps::LaunchManager:
   content::WebContents* OpenApplication(apps::AppLaunchParams&& params);
 
   // |browser| may be nullptr if the navigation fails.
@@ -80,6 +79,7 @@ Browser* CreateWebApplicationWindow(Profile* profile,
                                     const std::string& app_id,
                                     WindowOpenDisposition disposition,
                                     int32_t restore_id,
+                                    bool omit_from_session_restore = false,
                                     bool can_resize = true,
                                     bool can_maximize = true);
 

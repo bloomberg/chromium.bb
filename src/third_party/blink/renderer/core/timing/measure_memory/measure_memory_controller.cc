@@ -11,7 +11,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
-#include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_traits.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_memory_attribution.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_memory_attribution_container.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_memory_breakdown_entry.h"
@@ -46,6 +46,7 @@ namespace {
 
 // String constants used for building the result.
 constexpr const char* kCrossOriginUrl = "cross-origin-url";
+constexpr const char* kMemoryTypeCanvas = "Canvas";
 constexpr const char* kMemoryTypeDom = "DOM";
 constexpr const char* kMemoryTypeJavaScript = "JavaScript";
 constexpr const char* kMemoryTypeShared = "Shared";
@@ -184,7 +185,6 @@ ScriptPromise MeasureMemoryController::StartMeasurement(
   return ScriptPromise(script_state, promise_resolver->GetPromise());
 }
 
-
 namespace {
 
 // Satisfies the requirements of UniformRandomBitGenerator from C++ standard.
@@ -237,11 +237,13 @@ MemoryAttribution* ConvertAttribution(
     result->setUrl(kCrossOriginUrl);
   }
   result->setScope(ConvertScope(attribution->scope));
-  result->setContainer(ConvertContainer(attribution));
+  if (auto* container = ConvertContainer(attribution)) {
+    result->setContainer(container);
+  }
   return result;
 }
 
-MemoryBreakdownEntry* ConvertBreakdown(
+MemoryBreakdownEntry* ConvertJavaScriptBreakdown(
     const WebMemoryBreakdownEntryPtr& breakdown_entry) {
   auto* result = MemoryBreakdownEntry::Create();
   DCHECK(breakdown_entry->memory);
@@ -252,6 +254,20 @@ MemoryBreakdownEntry* ConvertBreakdown(
   }
   result->setAttribution(attribution);
   result->setTypes({WTF::AtomicString(kMemoryTypeJavaScript)});
+  return result;
+}
+
+MemoryBreakdownEntry* ConvertCanvasBreakdown(
+    const WebMemoryBreakdownEntryPtr& breakdown_entry) {
+  auto* result = MemoryBreakdownEntry::Create();
+  DCHECK(breakdown_entry->canvas_memory);
+  result->setBytes(breakdown_entry->canvas_memory->bytes);
+  HeapVector<Member<MemoryAttribution>> attribution;
+  for (const auto& entry : breakdown_entry->attribution) {
+    attribution.push_back(ConvertAttribution(entry));
+  }
+  result->setAttribution(attribution);
+  result->setTypes({WTF::AtomicString(kMemoryTypeCanvas)});
   return result;
 }
 
@@ -280,8 +296,13 @@ MemoryMeasurement* ConvertResult(const WebMemoryMeasurementPtr& measurement) {
   HeapVector<Member<MemoryBreakdownEntry>> breakdown;
   for (const auto& entry : measurement->breakdown) {
     // Skip breakdowns that didn't get a measurement.
-    if (entry->memory)
-      breakdown.push_back(ConvertBreakdown(entry));
+    if (entry->memory) {
+      breakdown.push_back(ConvertJavaScriptBreakdown(entry));
+    }
+    // Skip breakdowns that didn't get a measurement.
+    if (entry->canvas_memory) {
+      breakdown.push_back(ConvertCanvasBreakdown(entry));
+    }
   }
   // Add breakdowns for memory that isn't attributed to an execution context.
   breakdown.push_back(CreateUnattributedBreakdown(measurement->shared_memory,
@@ -369,14 +390,16 @@ void MeasureMemoryController::MeasurementComplete(
   }
   v8::HandleScope handle_scope(isolate_);
   v8::Local<v8::Context> context = context_.NewLocal(isolate_);
+  ScriptState* script_state = ScriptState::From(context);
   v8::Context::Scope context_scope(context);
   v8::MicrotasksScope microtasks_scope(
       isolate_, v8::MicrotasksScope::kDoNotRunMicrotasks);
-  auto* result = ConvertResult(measurement);
+  MemoryMeasurement* result = ConvertResult(measurement);
   v8::Local<v8::Promise::Resolver> promise_resolver =
       promise_resolver_.NewLocal(isolate_);
-  promise_resolver->Resolve(context, ToV8(result, promise_resolver, isolate_))
-      .ToChecked();
+  v8::MaybeLocal<v8::Value> v8_result =
+      ToV8Traits<MemoryMeasurement>::ToV8(script_state, result);
+  promise_resolver->Resolve(context, v8_result.ToLocalChecked()).ToChecked();
   promise_resolver_.Clear();
   RecordWebMemoryUkm(context, measurement);
 }

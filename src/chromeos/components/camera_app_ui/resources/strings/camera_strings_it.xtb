@@ -6,6 +6,8 @@
 <translation id="1430915738399379752">Stampa</translation>
 <translation id="1467231725790366244">Videocamera <ph name="CAMERA" /> scollegata.</translation>
 <translation id="1473110567575736769">Timer di 3 secondi</translation>
+<translation id="1478594628797167447">Scanner</translation>
+<translation id="1545749641540134597">Scansiona codice QR</translation>
 <translation id="1620510694547887537">Fotocamera</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">Nessun dato registrato</translation>
@@ -19,6 +21,8 @@
 <translation id="2050339315714019657">Verticale</translation>
 <translation id="2064538373111010176">Fotocamera <ph name="CAMERA" /> attiva</translation>
 <translation id="2144806332417375165">Parametri video personalizzati</translation>
+<translation id="2175927920773552910">Codice QR</translation>
+<translation id="2268107369530950373">Passa alla modalità Scanner</translation>
 <translation id="229579744168541441">Esporta su disco</translation>
 <translation id="2320741269052147773">Esegui una panoramica a sinistra</translation>
 <translation id="2501278716633472235">Indietro</translation>
@@ -38,6 +42,7 @@ Le app con autorizzazioni di accesso allo spazio di archiviazione potranno acced
 <translation id="3227137524299004712">Microfono</translation>
 <translation id="3240426699337459095">Link copiato</translation>
 <translation id="3259149966178251584">Risoluzione della fotocamera</translation>
+<translation id="3448774564454087943">Video non salvato perché è troppo breve</translation>
 <translation id="3517926952904427380">Impossibile scattare foto verticale</translation>
 <translation id="3569311554794739032">Vuoi rimuovere <ph name="FILE" />?</translation>
 <translation id="3733597664308256288">Disponibili controlli della videocamera aggiuntivi. Tasto per la ricerca + Freccia destra per accedere.</translation>
@@ -56,11 +61,14 @@ Le app con autorizzazioni di accesso allo spazio di archiviazione potranno acced
 <translation id="4628948037717959914">Foto</translation>
 <translation id="4649291346448517080">Impossibile salvare il file</translation>
 <translation id="4890010094662541459">3 x 3</translation>
+<translation id="491895758387112773">Registrazione video multistream</translation>
 <translation id="5057360777601936059">La tua fotocamera non è attualmente disponibile.
         Controlla se la fotocamera è collegata correttamente.</translation>
 <translation id="5152121255775685072">Vai alla galleria</translation>
+<translation id="5268823927180092501">Abilita la modalità documento per tutte le fotocamere</translation>
 <translation id="5422455049771430511">Le tue foto e i tuoi video hanno cambiato posto</translation>
 <translation id="5671277269877808209">Quadrato</translation>
+<translation id="5753488212459587150">Attiva modalità Esperto</translation>
 <translation id="5775960006311140197">Modalità Esperto</translation>
 <translation id="5869546221129391014">Griglia</translation>
 <translation id="5975083100439434680">Diminuisci lo zoom</translation>

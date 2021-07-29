@@ -8,11 +8,8 @@
 #include <set>
 
 #include "base/macros.h"
-#include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "ui/aura/window_tracker.h"
-#include "ui/events/devices/device_data_manager.h"
-#include "ui/events/devices/input_device_event_observer.h"
 #include "ui/events/event_handler.h"
 
 class PrefChangeRegistrar;
@@ -33,8 +30,7 @@ namespace fast_ink {
 
 // Base class for a fast ink based pointer controller. Enables/disables
 // the pointer, receives points and passes them off to be rendered.
-class FastInkPointerController : public ui::EventHandler,
-                                 public ui::InputDeviceEventObserver {
+class FastInkPointerController : public ui::EventHandler {
  public:
   FastInkPointerController();
   ~FastInkPointerController() override;
@@ -52,6 +48,10 @@ class FastInkPointerController : public ui::EventHandler,
   // Whether the controller is ready to start handling a new gesture.
   virtual bool CanStartNewGesture(ui::LocatedEvent* event);
   // Whether the event should be processed and stop propagation.
+  // Default implementation will catch basic mouse events (e.g. mouse clicking)
+  // and touch events (e.g. touch pressing) and stop them from being further
+  // dispatched, so derived class should override it if the default behavior is
+  // not as expected. See b/191044469 as an example.
   virtual bool ShouldProcessEvent(ui::LocatedEvent* event);
 
   bool IsEnabledForMouseEvent() const;
@@ -70,9 +70,6 @@ class FastInkPointerController : public ui::EventHandler,
   // ui::EventHandler:
   void OnTouchEvent(ui::TouchEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
-
-  // ui::InputDeviceEventObserver:
-  void OnDeviceListsComplete() override;
 
   void OnHasSeenStylusPrefChanged();
   void UpdateEnabledForMouseEvent();
@@ -95,7 +92,6 @@ class FastInkPointerController : public ui::EventHandler,
   const base::TimeDelta presentation_delay_;
 
   bool enabled_ = false;
-  bool has_stylus_ = false;
   bool has_seen_stylus_ = false;
 
   // Set of touch ids.
@@ -106,9 +102,6 @@ class FastInkPointerController : public ui::EventHandler,
   aura::WindowTracker excluded_windows_;
 
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_local_;
-
-  base::ScopedObservation<ui::DeviceDataManager, ui::InputDeviceEventObserver>
-      input_device_event_observation_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FastInkPointerController);
 };

@@ -4,6 +4,7 @@
 
 #include "chrome/services/printing/print_backend_service_impl.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -11,10 +12,10 @@
 #include "base/notreached.h"
 #include "build/build_config.h"
 #include "chrome/services/printing/public/mojom/print_backend_service.mojom.h"
+#include "components/crash/core/common/crash_keys.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "printing/backend/print_backend.h"
 #include "printing/mojom/print.mojom.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if defined(OS_MAC)
 #include "base/threading/thread_restrictions.h"
@@ -32,6 +33,10 @@ PrintBackendServiceImpl::~PrintBackendServiceImpl() = default;
 void PrintBackendServiceImpl::Init(const std::string& locale) {
   print_backend_ = PrintBackend::CreateInstance(locale);
 }
+
+// TODO(crbug.com/1225111)  Do nothing, this is just to assist an idle timeout
+// change by providing a low-cost call to ensure it is applied.
+void PrintBackendServiceImpl::Poke() {}
 
 void PrintBackendServiceImpl::EnumeratePrinters(
     mojom::PrintBackendService::EnumeratePrintersCallback callback) {
@@ -58,10 +63,20 @@ void PrintBackendServiceImpl::GetDefaultPrinterName(
   if (!print_backend_) {
     DLOG(ERROR)
         << "Print backend instance has not been initialized for locale.";
-    std::move(callback).Run(absl::nullopt);
+    std::move(callback).Run(mojom::DefaultPrinterNameResult::NewResultCode(
+        mojom::ResultCode::kFailed));
     return;
   }
-  std::move(callback).Run(print_backend_->GetDefaultPrinterName());
+  std::string default_printer;
+  mojom::ResultCode result =
+      print_backend_->GetDefaultPrinterName(default_printer);
+  if (result != mojom::ResultCode::kSuccess) {
+    std::move(callback).Run(
+        mojom::DefaultPrinterNameResult::NewResultCode(result));
+    return;
+  }
+  std::move(callback).Run(
+      mojom::DefaultPrinterNameResult::NewDefaultPrinterName(default_printer));
 }
 
 void PrintBackendServiceImpl::GetPrinterSemanticCapsAndDefaults(
@@ -76,6 +91,9 @@ void PrintBackendServiceImpl::GetPrinterSemanticCapsAndDefaults(
             mojom::ResultCode::kFailed));
     return;
   }
+
+  crash_keys_ = std::make_unique<crash_keys::ScopedPrinterInfo>(
+      print_backend_->GetPrinterDriverInfo(printer_name));
 
   PrinterSemanticCapsAndDefaults printer_caps;
   const mojom::ResultCode result =
@@ -101,6 +119,9 @@ void PrintBackendServiceImpl::FetchCapabilities(
         mojom::ResultCode::kFailed));
     return;
   }
+
+  crash_keys_ = std::make_unique<crash_keys::ScopedPrinterInfo>(
+      print_backend_->GetPrinterDriverInfo(printer_name));
 
   PrinterSemanticCapsAndDefaults::Papers user_defined_papers;
 #if defined(OS_MAC)

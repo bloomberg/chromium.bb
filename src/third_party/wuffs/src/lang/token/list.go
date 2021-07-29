@@ -504,13 +504,14 @@ const (
 	IDSkipU32       = ID(0x16B)
 	IDSkipU32Fast   = ID(0x16C)
 
-	IDCopyFromSlice                            = ID(0x170)
-	IDLimitedCopyU32FromHistory                = ID(0x171)
-	IDLimitedCopyU32FromHistory8ByteChunksFast = ID(0x172)
-	IDLimitedCopyU32FromHistoryFast            = ID(0x173)
-	IDLimitedCopyU32FromReader                 = ID(0x174)
-	IDLimitedCopyU32FromSlice                  = ID(0x175)
-	IDLimitedCopyU32ToSlice                    = ID(0x176)
+	IDCopyFromSlice                                     = ID(0x170)
+	IDLimitedCopyU32FromHistory                         = ID(0x171)
+	IDLimitedCopyU32FromHistory8ByteChunksDistance1Fast = ID(0x172)
+	IDLimitedCopyU32FromHistory8ByteChunksFast          = ID(0x173)
+	IDLimitedCopyU32FromHistoryFast                     = ID(0x174)
+	IDLimitedCopyU32FromReader                          = ID(0x175)
+	IDLimitedCopyU32FromSlice                           = ID(0x176)
+	IDLimitedCopyU32ToSlice                             = ID(0x177)
 
 	// -------- 0x180 block.
 
@@ -709,8 +710,10 @@ const (
 	IDX86SSE42Utility = ID(0x391)
 	IDX86AVX2         = ID(0x392)
 	IDX86AVX2Utility  = ID(0x393)
+	IDX86BMI2         = ID(0x394)
 
 	IDX86M128I = ID(0x3A0)
+	IDX86M256I = ID(0x3A1)
 )
 
 var builtInsByID = [nBuiltInIDs]string{
@@ -928,13 +931,14 @@ var builtInsByID = [nBuiltInIDs]string{
 	IDSkipU32:       "skip_u32",
 	IDSkipU32Fast:   "skip_u32_fast",
 
-	IDCopyFromSlice:                            "copy_from_slice",
-	IDLimitedCopyU32FromHistory:                "limited_copy_u32_from_history",
-	IDLimitedCopyU32FromHistory8ByteChunksFast: "limited_copy_u32_from_history_8_byte_chunks_fast",
-	IDLimitedCopyU32FromHistoryFast:            "limited_copy_u32_from_history_fast",
-	IDLimitedCopyU32FromReader:                 "limited_copy_u32_from_reader",
-	IDLimitedCopyU32FromSlice:                  "limited_copy_u32_from_slice",
-	IDLimitedCopyU32ToSlice:                    "limited_copy_u32_to_slice",
+	IDCopyFromSlice:             "copy_from_slice",
+	IDLimitedCopyU32FromHistory: "limited_copy_u32_from_history",
+	IDLimitedCopyU32FromHistory8ByteChunksDistance1Fast: "limited_copy_u32_from_history_8_byte_chunks_distance_1_fast",
+	IDLimitedCopyU32FromHistory8ByteChunksFast:          "limited_copy_u32_from_history_8_byte_chunks_fast",
+	IDLimitedCopyU32FromHistoryFast:                     "limited_copy_u32_from_history_fast",
+	IDLimitedCopyU32FromReader:                          "limited_copy_u32_from_reader",
+	IDLimitedCopyU32FromSlice:                           "limited_copy_u32_from_slice",
+	IDLimitedCopyU32ToSlice:                             "limited_copy_u32_to_slice",
 
 	// -------- 0x180 block.
 
@@ -1120,8 +1124,10 @@ var builtInsByID = [nBuiltInIDs]string{
 	IDX86SSE42Utility: "x86_sse42_utility",
 	IDX86AVX2:         "x86_avx2",
 	IDX86AVX2Utility:  "x86_avx2_utility",
+	IDX86BMI2:         "x86_bmi2",
 
 	IDX86M128I: "x86_m128i",
+	IDX86M256I: "x86_m256i",
 }
 
 var builtInsByName = map[string]ID{}

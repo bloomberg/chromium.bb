@@ -60,23 +60,23 @@ EncryptionScheme GetEncryptionScheme(const ProtectionSchemeInfo& sinf) {
   return EncryptionScheme::kUnencrypted;
 }
 
-gfx::MasteringMetadata ConvertMdcvToMasteringMetadata(
+gfx::ColorVolumeMetadata ConvertMdcvToColorVolumeMetadata(
     const MasteringDisplayColorVolume& mdcv) {
-  gfx::MasteringMetadata mastering_metadata;
+  gfx::ColorVolumeMetadata color_volume_metadata;
 
-  mastering_metadata.primary_r = gfx::MasteringMetadata::Chromaticity(
+  color_volume_metadata.primary_r = gfx::ColorVolumeMetadata::Chromaticity(
       mdcv.display_primaries_rx, mdcv.display_primaries_ry);
-  mastering_metadata.primary_g = gfx::MasteringMetadata::Chromaticity(
+  color_volume_metadata.primary_g = gfx::ColorVolumeMetadata::Chromaticity(
       mdcv.display_primaries_gx, mdcv.display_primaries_gy);
-  mastering_metadata.primary_b = gfx::MasteringMetadata::Chromaticity(
+  color_volume_metadata.primary_b = gfx::ColorVolumeMetadata::Chromaticity(
       mdcv.display_primaries_bx, mdcv.display_primaries_by);
-  mastering_metadata.white_point = gfx::MasteringMetadata::Chromaticity(
+  color_volume_metadata.white_point = gfx::ColorVolumeMetadata::Chromaticity(
       mdcv.white_point_x, mdcv.white_point_y);
 
-  mastering_metadata.luminance_max = mdcv.max_display_mastering_luminance;
-  mastering_metadata.luminance_min = mdcv.min_display_mastering_luminance;
+  color_volume_metadata.luminance_max = mdcv.max_display_mastering_luminance;
+  color_volume_metadata.luminance_min = mdcv.min_display_mastering_luminance;
 
-  return mastering_metadata;
+  return color_volume_metadata;
 }
 
 }  // namespace
@@ -504,16 +504,16 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
 
       // If PASP is available, use the coded size and PASP to calculate the
       // natural size. Otherwise, use the size in track header for natural size.
-      gfx::Size natural_size(visible_rect.size());
+      VideoAspectRatio aspect_ratio;
       if (entry.pixel_aspect.h_spacing != 1 ||
           entry.pixel_aspect.v_spacing != 1) {
-        natural_size =
-            GetNaturalSize(visible_rect.size(), entry.pixel_aspect.h_spacing,
-                           entry.pixel_aspect.v_spacing);
+        aspect_ratio = VideoAspectRatio::PAR(entry.pixel_aspect.h_spacing,
+                                             entry.pixel_aspect.v_spacing);
       } else if (track->header.width && track->header.height) {
-        natural_size =
-            gfx::Size(track->header.width, track->header.height);
+        aspect_ratio =
+            VideoAspectRatio::DAR(track->header.width, track->header.height);
       }
+      gfx::Size natural_size = aspect_ratio.GetNaturalSize(visible_rect);
 
       uint32_t video_track_id = track->header.track_id;
       if (video_track_ids_.find(video_track_id) != video_track_ids_.end()) {
@@ -537,6 +537,7 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
                               // No decoder-specific buffer needed for AVC;
                               // SPS/PPS are embedded in the video stream
                               EmptyExtraData(), scheme);
+      video_config.set_aspect_ratio(aspect_ratio);
       video_config.set_level(entry.video_codec_level);
 
       if (entry.video_color_space.IsSpecified())
@@ -546,7 +547,7 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
           entry.content_light_level_information) {
         gfx::HDRMetadata hdr_metadata;
         if (entry.mastering_display_color_volume) {
-          hdr_metadata.mastering_metadata = ConvertMdcvToMasteringMetadata(
+          hdr_metadata.color_volume_metadata = ConvertMdcvToColorVolumeMetadata(
               *entry.mastering_display_color_volume);
         }
 

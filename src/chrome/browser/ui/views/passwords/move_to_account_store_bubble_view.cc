@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/passwords/move_to_account_store_bubble_view.h"
+
 #include <algorithm>
 
 #include "base/bind.h"
@@ -19,7 +20,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/canvas_image_source.h"
@@ -28,7 +31,7 @@
 #include "ui/gfx/text_constants.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/views/bubble/bubble_frame_view.h"
-#include "ui/views/controls/color_tracking_icon_view.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/layout_provider.h"
@@ -229,8 +232,10 @@ MoveToAccountStoreBubbleView::MovingBannerView::MovingBannerView(
 
   from_view = AddChildView(std::move(from_image));
 
-  auto arrow_view = std::make_unique<views::ColorTrackingIconView>(
-      kChevronRightIcon, gfx::kFaviconSize);
+  auto arrow_view =
+      std::make_unique<views::ImageView>(ui::ImageModel::FromVectorIcon(
+          kChevronRightIcon, ui::NativeTheme::kColorId_DefaultIconColor,
+          gfx::kFaviconSize));
   arrow_view->SetFlipCanvasOnPaintForRTLUI(true);
   AddChildView(std::move(arrow_view));
 

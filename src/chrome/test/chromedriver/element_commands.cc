@@ -8,6 +8,9 @@
 
 #include <cmath>
 #include <memory>
+#include <set>
+#include <string>
+#include <unordered_set>
 #include <vector>
 
 #include "base/callback.h"
@@ -911,24 +914,27 @@ Status ExecuteGetElementRect(Session* session,
     return Status(kUnknownError, "could not convert to DictionaryValue");
 
   // grab values
-  double x, y, width, height;
-  if (!location_dict->GetDouble("x", &x))
+  absl::optional<double> maybe_x = location_dict->FindDoubleKey("x");
+  if (!maybe_x.has_value())
     return Status(kUnknownError, "x coordinate is missing in element location");
 
-  if (!location_dict->GetDouble("y", &y))
+  absl::optional<double> maybe_y = location_dict->FindDoubleKey("y");
+  if (!maybe_y.has_value())
     return Status(kUnknownError, "y coordinate is missing in element location");
 
-  if (!size_dict->GetDouble("height", &height))
+  absl::optional<double> maybe_height = size_dict->FindDoubleKey("height");
+  if (!maybe_height.has_value())
     return Status(kUnknownError, "height is missing in element size");
 
-  if (!size_dict->GetDouble("width", &width))
+  absl::optional<double> maybe_width = size_dict->FindDoubleKey("width");
+  if (!maybe_width.has_value())
     return Status(kUnknownError, "width is missing in element size");
 
   base::DictionaryValue ret;
-  ret.SetDouble("x", x);
-  ret.SetDouble("y", y);
-  ret.SetDouble("width", width);
-  ret.SetDouble("height", height);
+  ret.SetDoubleKey("x", maybe_x.value());
+  ret.SetDoubleKey("y", maybe_y.value());
+  ret.SetDoubleKey("width", maybe_width.value());
+  ret.SetDoubleKey("height", maybe_height.value());
   value->reset(ret.DeepCopy());
   return Status(kOk);
 }
@@ -1092,16 +1098,16 @@ Status ExecuteElementScreenshot(Session* session,
   // element, but its x and y are relative to containing frame. We replace them
   // with the x and y relative to top-level document origin, as expected by
   // CaptureScreenshot.
-  clip_dict->SetDouble("x", location.x + scroll_left);
-  clip_dict->SetDouble("y", location.y + scroll_top);
-  clip_dict->SetDouble("scale", 1 / device_pixel_ratio);
+  clip_dict->SetDoubleKey("x", location.x + scroll_left);
+  clip_dict->SetDoubleKey("y", location.y + scroll_top);
+  clip_dict->SetDoubleKey("scale", 1 / device_pixel_ratio);
   // Crop screenshot by viewport if element is larger than viewport
-  clip_dict->SetDouble("height",
-                       std::min(viewport_height - location.y,
-                                clip_dict->FindKey("height")->GetDouble()));
-  clip_dict->SetDouble("width",
-                       std::min(viewport_width - location.x,
-                                clip_dict->FindKey("width")->GetDouble()));
+  clip_dict->SetDoubleKey("height",
+                          std::min(viewport_height - location.y,
+                                   clip_dict->FindKey("height")->GetDouble()));
+  clip_dict->SetDoubleKey("width",
+                          std::min(viewport_width - location.x,
+                                   clip_dict->FindKey("width")->GetDouble()));
   base::DictionaryValue screenshot_params;
   screenshot_params.SetDictionary("clip", std::move(clip_dict));
 

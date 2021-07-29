@@ -17,7 +17,7 @@
 #include "fxjs/xfa/cjx_object.h"
 #include "third_party/base/check.h"
 #include "third_party/base/check_op.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/containers/contains.h"
 #include "xfa/fxfa/parser/cxfa_document.h"
 #include "xfa/fxfa/parser/cxfa_localemgr.h"
 #include "xfa/fxfa/parser/cxfa_node.h"
@@ -165,7 +165,7 @@ bool CFXJSE_ResolveProcessor::ResolveDollar(v8::Isolate* pIsolate,
     return false;
 
   XFA_HashCode dwNameHash = static_cast<XFA_HashCode>(
-      FX_HashCode_GetW(wsName.AsStringView().Last(iNameLen - 1), false));
+      FX_HashCode_GetW(wsName.AsStringView().Last(iNameLen - 1)));
   if (dwNameHash == XFA_HASHCODE_Xfa) {
     rnd.m_Result.objects.emplace_back(rnd.m_pSC->GetDocument()->GetRoot());
   } else {
@@ -192,7 +192,7 @@ bool CFXJSE_ResolveProcessor::ResolveExcalmatory(v8::Isolate* pIsolate,
   rndFind.m_CurObject = datasets;
   rndFind.m_wsName = rnd.m_wsName.Last(rnd.m_wsName.GetLength() - 1);
   rndFind.m_uHashName = static_cast<XFA_HashCode>(
-      FX_HashCode_GetW(rndFind.m_wsName.AsStringView(), false));
+      FX_HashCode_GetW(rndFind.m_wsName.AsStringView()));
   rndFind.m_nLevel = rnd.m_nLevel + 1;
   rndFind.m_dwStyles = XFA_RESOLVENODE_Children;
   rndFind.m_wsCondition = rnd.m_wsCondition;
@@ -219,7 +219,7 @@ bool CFXJSE_ResolveProcessor::ResolveNumberSign(v8::Isolate* pIsolate,
   rndFind.m_dwStyles &= ~XFA_RESOLVENODE_Attributes;
   rndFind.m_wsName = std::move(wsName);
   rndFind.m_uHashName = static_cast<XFA_HashCode>(
-      FX_HashCode_GetW(rndFind.m_wsName.AsStringView(), false));
+      FX_HashCode_GetW(rndFind.m_wsName.AsStringView()));
   rndFind.m_wsCondition = wsCondition;
   rndFind.m_CurObject = curNode;
   ResolveNormal(pIsolate, rndFind);
@@ -521,7 +521,7 @@ bool CFXJSE_ResolveProcessor::ResolveNormal(v8::Isolate* pIsolate,
 bool CFXJSE_ResolveProcessor::ResolveAsterisk(CFXJSE_ResolveNodeData& rnd) {
   CXFA_Node* curNode = ToNode(rnd.m_CurObject.Get());
   std::vector<CXFA_Node*> array = curNode->GetNodeListWithFilter(
-      XFA_NODEFILTER_Children | XFA_NODEFILTER_Properties);
+      XFA_NodeFilter_Children | XFA_NodeFilter_Properties);
   rnd.m_Result.objects.insert(rnd.m_Result.objects.end(), array.begin(),
                               array.end());
   return !rnd.m_Result.objects.empty();
@@ -603,7 +603,7 @@ int32_t CFXJSE_ResolveProcessor::GetFilter(WideStringView wsExpression,
   wsName.Trim();
   wsCondition.Trim();
   rnd.m_uHashName =
-      static_cast<XFA_HashCode>(FX_HashCode_GetW(wsName.AsStringView(), false));
+      static_cast<XFA_HashCode>(FX_HashCode_GetW(wsName.AsStringView()));
   return nStart;
 }
 

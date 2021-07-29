@@ -38,10 +38,8 @@ endfunction()
 
 set(TINT_LIB_SRCS
   ../include/tint/tint.h
-  ast/access_control.cc
-  ast/access_control.h
-  ast/access_decoration.cc
-  ast/access_decoration.h
+  ast/access.cc
+  ast/access.h
   ast/alias.cc
   ast/alias.h
   ast/array_accessor_expression.cc
@@ -50,6 +48,8 @@ set(TINT_LIB_SRCS
   ast/array.h
   ast/assignment_statement.cc
   ast/assignment_statement.h
+  ast/atomic.cc
+  ast/atomic.h
   ast/binary_expression.cc
   ast/binary_expression.h
   ast/binding_decoration.cc
@@ -98,6 +98,8 @@ set(TINT_LIB_SRCS
   ast/fallthrough_statement.h
   ast/float_literal.cc
   ast/float_literal.h
+  ast/for_loop_statement.cc
+  ast/for_loop_statement.h
   ast/function.cc
   ast/function.h
   ast/group_decoration.cc
@@ -112,6 +114,10 @@ set(TINT_LIB_SRCS
   ast/int_literal.h
   ast/internal_decoration.cc
   ast/internal_decoration.h
+  ast/interpolate_decoration.cc
+  ast/interpolate_decoration.h
+  ast/invariant_decoration.cc
+  ast/invariant_decoration.h
   ast/literal.cc
   ast/literal.h
   ast/location_decoration.cc
@@ -126,8 +132,6 @@ set(TINT_LIB_SRCS
   ast/module.h
   ast/multisampled_texture.cc
   ast/multisampled_texture.h
-  ast/named_type.cc
-  ast/named_type.h
   ast/node.cc
   ast/node.h
   ast/override_decoration.cc
@@ -178,6 +182,8 @@ set(TINT_LIB_SRCS
   ast/type_name.h
   ast/ast_type.cc  # TODO(bclayton) - rename to type.cc
   ast/type.h
+  ast/type_decl.cc
+  ast/type_decl.h
   ast/type_name.cc
   ast/type_name.h
   ast/u32.cc
@@ -217,10 +223,14 @@ set(TINT_LIB_SRCS
   inspector/entry_point.h
   inspector/inspector.cc
   inspector/inspector.h
+  inspector/resource_binding.cc
+  inspector/resource_binding.h
+  inspector/sampler_texture_pair.h
   inspector/scalar.cc
   inspector/scalar.h
   intrinsic_table.cc
   intrinsic_table.h
+  intrinsic_table.inl
   program_builder.cc
   program_builder.h
   program_id.cc
@@ -230,10 +240,13 @@ set(TINT_LIB_SRCS
   reader/reader.cc
   reader/reader.h
   resolver/resolver.cc
+  resolver/resolver_constants.cc
   resolver/resolver.h
   scope_stack.h
   sem/array.cc
   sem/array.h
+  sem/atomic_type.cc
+  sem/atomic_type.h
   sem/binding_point.h
   sem/block_statement.cc
   sem/block_statement.h
@@ -241,14 +254,21 @@ set(TINT_LIB_SRCS
   sem/call_target.h
   sem/call.cc
   sem/call.h
+  sem/constant.cc
+  sem/constant.h
   sem/expression.cc
   sem/expression.h
   sem/function.cc
   sem/info.cc
   sem/info.h
+  sem/intrinsic_type.cc
+  sem/intrinsic_type.h
   sem/intrinsic.cc
   sem/intrinsic.h
   sem/member_accessor_expression.cc
+  sem/parameter_usage.cc
+  sem/parameter_usage.h
+  sem/pipeline_stage_set.h
   sem/node.cc
   sem/node.h
   sem/statement.cc
@@ -262,34 +282,52 @@ set(TINT_LIB_SRCS
   symbol.cc
   symbol.h
   traits.h
+  transform/array_length_from_uniform.cc
+  transform/array_length_from_uniform.h
   transform/binding_remapper.cc
   transform/binding_remapper.h
-  transform/bound_array_accessors.cc
-  transform/bound_array_accessors.h
   transform/calculate_array_length.cc
   transform/calculate_array_length.h
   transform/canonicalize_entry_point_io.cc
   transform/canonicalize_entry_point_io.h
-  transform/decompose_storage_access.cc
-  transform/decompose_storage_access.h
+  transform/decompose_memory_access.cc
+  transform/decompose_memory_access.h
   transform/external_texture_transform.cc
   transform/external_texture_transform.h
   transform/first_index_offset.cc
   transform/first_index_offset.h
+  transform/fold_constants.cc
+  transform/fold_constants.h
+  transform/fold_trivial_single_use_lets.cc
+  transform/fold_trivial_single_use_lets.h
+  transform/for_loop_to_loop.cc
+  transform/for_loop_to_loop.h
   transform/inline_pointer_lets.cc
   transform/inline_pointer_lets.h
+  transform/loop_to_for_loop.cc
+  transform/loop_to_for_loop.h
   transform/manager.cc
   transform/manager.h
+  transform/pad_array_elements.cc
+  transform/pad_array_elements.h
+  transform/promote_initializers_to_const_var.cc
+  transform/promote_initializers_to_const_var.h
   transform/renamer.cc
   transform/renamer.h
+  transform/robustness.cc
+  transform/robustness.h
+  transform/simplify.cc
+  transform/simplify.h
   transform/single_entry_point.cc
   transform/single_entry_point.h
   transform/transform.cc
   transform/transform.h
-  transform/var_for_dynamic_index.cc
-  transform/var_for_dynamic_index.h
   transform/vertex_pulling.cc
   transform/vertex_pulling.h
+  transform/wrap_arrays_in_structs.cc
+  transform/wrap_arrays_in_structs.h
+  transform/zero_init_workgroup_memory.cc
+  transform/zero_init_workgroup_memory.h
   sem/bool_type.cc
   sem/bool_type.h
   sem/depth_texture_type.cc
@@ -298,8 +336,14 @@ set(TINT_LIB_SRCS
   sem/external_texture_type.h
   sem/f32_type.cc
   sem/f32_type.h
+  sem/for_loop_statement.cc
+  sem/for_loop_statement.h
   sem/i32_type.cc
   sem/i32_type.h
+  sem/if_statement.cc
+  sem/if_statement.h
+  sem/loop_statement.cc
+  sem/loop_statement.h
   sem/matrix_type.cc
   sem/matrix_type.h
   sem/multisampled_texture_type.cc
@@ -314,6 +358,8 @@ set(TINT_LIB_SRCS
   sem/sampler_type.h
   sem/storage_texture_type.cc
   sem/storage_texture_type.h
+  sem/switch_statement.cc
+  sem/switch_statement.h
   sem/texture_type.cc
   sem/texture_type.h
   sem/type.cc
@@ -326,6 +372,7 @@ set(TINT_LIB_SRCS
   sem/vector_type.h
   sem/void_type.cc
   sem/void_type.h
+  utils/enum_set.h
   utils/get_or_create.h
   utils/hash.h
   utils/math.h
@@ -440,6 +487,38 @@ if(${TINT_BUILD_HLSL_WRITER})
   )
 endif()
 
+## Tint IO utilities. Used by tint_val.
+add_library(tint_utils_io
+  utils/io/command_${TINT_OS_CC_SUFFIX}.cc
+  utils/io/command.h
+  utils/io/tmpfile_${TINT_OS_CC_SUFFIX}.cc
+  utils/io/tmpfile.h
+)
+tint_default_compile_options(tint_utils_io)
+
+## Tint validation utilities. Used by tests and the tint executable.
+add_library(tint_val
+  val/hlsl.cc
+  val/msl.cc
+  val/val.h
+)
+
+# If we're building on mac / ios and we have CoreGraphics, then we can use the
+# metal API to validate our shaders. This is roughly 4x faster than invoking
+# the metal shader compiler executable.
+if(APPLE)
+  find_library(LIB_CORE_GRAPHICS CoreGraphics)
+  if(LIB_CORE_GRAPHICS)
+    target_sources(tint_val PRIVATE "val/msl_metal.mm")
+    target_compile_definitions(tint_val PUBLIC "-DTINT_ENABLE_MSL_VALIDATION_USING_METAL_API=1")
+    target_compile_options(tint_val PRIVATE "-fmodules" "-fcxx-modules")
+    target_link_options(tint_val PUBLIC "-framework" "CoreGraphics")
+  endif()
+endif()
+
+tint_default_compile_options(tint_val)
+target_link_libraries(tint_val tint_utils_io)
+
 ## Tint library
 add_library(libtint ${TINT_LIB_SRCS})
 tint_default_compile_options(libtint)
@@ -468,12 +547,11 @@ endif()
 
 if(${TINT_BUILD_TESTS})
   set(TINT_TEST_SRCS
-    ast/access_control_test.cc
-    ast/access_decoration_test.cc
     ast/alias_test.cc
     ast/array_accessor_expression_test.cc
     ast/array_test.cc
     ast/assignment_statement_test.cc
+    ast/atomic_test.cc
     ast/binary_expression_test.cc
     ast/binding_decoration_test.cc
     ast/bitcast_expression_test.cc
@@ -493,14 +571,17 @@ if(${TINT_BUILD_TESTS})
     ast/f32_test.cc
     ast/fallthrough_statement_test.cc
     ast/float_literal_test.cc
+    ast/for_loop_statement_test.cc
     ast/function_test.cc
     ast/group_decoration_test.cc
     ast/i32_test.cc
     ast/identifier_expression_test.cc
     ast/if_statement_test.cc
     ast/int_literal_test.cc
+    ast/interpolate_decoration_test.cc
     ast/intrinsic_texture_helper_test.cc
     ast/intrinsic_texture_helper_test.h
+    ast/invariant_decoration_test.cc
     ast/location_decoration_test.cc
     ast/loop_statement_test.cc
     ast/matrix_test.cc
@@ -542,21 +623,30 @@ if(${TINT_BUILD_TESTS})
     diagnostic/formatter_test.cc
     diagnostic/printer_test.cc
     inspector/inspector_test.cc
+    inspector/test_inspector_builder.cc
+    inspector/test_inspector_builder.h
     intrinsic_table_test.cc
     program_test.cc
     resolver/assignment_validation_test.cc
-    resolver/block_test.cc
+    resolver/atomics_test.cc
+    resolver/atomics_validation_test.cc
     resolver/builtins_validation_test.cc
+    resolver/call_test.cc
+    resolver/call_validation_test.cc
+    resolver/compound_statement_test.cc
     resolver/control_block_validation_test.cc
     resolver/decoration_validation_test.cc
     resolver/entry_point_validation_test.cc
     resolver/function_validation_test.cc
     resolver/host_shareable_validation_test.cc
+    resolver/inferred_type_test.cc
     resolver/intrinsic_test.cc
+    resolver/intrinsic_validation_test.cc
     resolver/is_host_shareable_test.cc
     resolver/is_storeable_test.cc
     resolver/ptr_ref_test.cc
     resolver/ptr_ref_validation_test.cc
+    resolver/resolver_constants_test.cc
     resolver/pipeline_overridable_constant_test.cc
     resolver/resolver_test_helper.cc
     resolver/resolver_test_helper.h
@@ -576,6 +666,7 @@ if(${TINT_BUILD_TESTS})
     symbol_test.cc
     transform/transform_test.cc
     test_main.cc
+    sem/atomic_type_test.cc
     sem/bool_type_test.cc
     sem/depth_texture_type_test.cc
     sem/external_texture_type_test.cc
@@ -594,19 +685,18 @@ if(${TINT_BUILD_TESTS})
     sem/type_manager_test.cc
     sem/u32_type_test.cc
     sem/vector_type_test.cc
-    utils/command_${TINT_OS_CC_SUFFIX}.cc
-    utils/command_test.cc
-    utils/command.h
+    utils/defer_test.cc
+    utils/enum_set_test.cc
     utils/get_or_create_test.cc
     utils/hash_test.cc
+    utils/io/command_test.cc
+    utils/io/tmpfile_test.cc
     utils/math_test.cc
     utils/scoped_assignment_test.cc
-    utils/tmpfile_${TINT_OS_CC_SUFFIX}.cc
-    utils/tmpfile_test.cc
-    utils/tmpfile.h
     utils/unique_vector_test.cc
     writer/append_vector_test.cc
     writer/float_to_string_test.cc
+    writer/text_generator_test.cc
   )
 
   if(${TINT_BUILD_SPV_READER})
@@ -677,7 +767,6 @@ if(${TINT_BUILD_TESTS})
       reader/wgsl/parser_impl_function_decoration_list_test.cc
       reader/wgsl/parser_impl_function_decoration_test.cc
       reader/wgsl/parser_impl_function_header_test.cc
-      reader/wgsl/parser_impl_function_type_decl_test.cc
       reader/wgsl/parser_impl_global_constant_decl_test.cc
       reader/wgsl/parser_impl_global_decl_test.cc
       reader/wgsl/parser_impl_global_variable_decl_test.cc
@@ -693,6 +782,7 @@ if(${TINT_BUILD_TESTS})
       reader/wgsl/parser_impl_pipeline_stage_test.cc
       reader/wgsl/parser_impl_primary_expression_test.cc
       reader/wgsl/parser_impl_relational_expression_test.cc
+      reader/wgsl/parser_impl_reserved_keyword_test.cc
       reader/wgsl/parser_impl_sampled_texture_type_test.cc
       reader/wgsl/parser_impl_sampler_type_test.cc
       reader/wgsl/parser_impl_shift_expression_test.cc
@@ -722,7 +812,7 @@ if(${TINT_BUILD_TESTS})
       reader/wgsl/parser_impl_variable_decoration_test.cc
       reader/wgsl/parser_impl_variable_ident_decl_test.cc
       reader/wgsl/parser_impl_variable_stmt_test.cc
-      reader/wgsl/parser_impl_variable_storage_decoration_test.cc
+      reader/wgsl/parser_impl_variable_qualifier_test.cc
       reader/wgsl/token_test.cc
     )
   endif()
@@ -788,6 +878,7 @@ if(${TINT_BUILD_TESTS})
       writer/wgsl/generator_impl_identifier_test.cc
       writer/wgsl/generator_impl_if_test.cc
       writer/wgsl/generator_impl_loop_test.cc
+      writer/wgsl/generator_impl_literal_test.cc
       writer/wgsl/generator_impl_member_accessor_test.cc
       writer/wgsl/generator_impl_return_test.cc
       writer/wgsl/generator_impl_switch_test.cc
@@ -801,19 +892,28 @@ if(${TINT_BUILD_TESTS})
 
   if(${TINT_BUILD_WGSL_READER} AND ${TINT_BUILD_WGSL_WRITER})
     list(APPEND TINT_TEST_SRCS
+      transform/array_length_from_uniform_test.cc
       transform/binding_remapper_test.cc
-      transform/bound_array_accessors_test.cc
       transform/calculate_array_length_test.cc
       transform/canonicalize_entry_point_io_test.cc
-      transform/decompose_storage_access_test.cc
+      transform/decompose_memory_access_test.cc
       transform/external_texture_transform_test.cc
       transform/first_index_offset_test.cc
+      transform/fold_constants_test.cc
+      transform/fold_trivial_single_use_lets_test.cc
+      transform/for_loop_to_loop_test.cc
       transform/inline_pointer_lets_test.cc
+      transform/loop_to_for_loop_test.cc
+      transform/pad_array_elements_test.cc
+      transform/promote_initializers_to_const_var_test.cc
       transform/renamer_test.cc
-      transform/single_entry_point.cc
+      transform/robustness_test.cc
+      transform/simplify_test.cc
+      transform/single_entry_point_test.cc
       transform/test_helper.h
-      transform/var_for_dynamic_index_test.cc
       transform/vertex_pulling_test.cc
+      transform/wrap_arrays_in_structs_test.cc
+      transform/zero_init_workgroup_memory_test.cc
     )
   endif()
 
@@ -831,7 +931,6 @@ if(${TINT_BUILD_TESTS})
       writer/msl/generator_impl_constructor_test.cc
       writer/msl/generator_impl_continue_test.cc
       writer/msl/generator_impl_discard_test.cc
-      writer/msl/generator_impl_function_entry_point_data_test.cc
       writer/msl/generator_impl_function_test.cc
       writer/msl/generator_impl_identifier_test.cc
       writer/msl/generator_impl_if_test.cc
@@ -847,7 +946,6 @@ if(${TINT_BUILD_TESTS})
       writer/msl/generator_impl_type_test.cc
       writer/msl/generator_impl_unary_op_test.cc
       writer/msl/generator_impl_variable_decl_statement_test.cc
-      writer/msl/test_helper.cc
       writer/msl/test_helper.h
     )
   endif()
@@ -867,7 +965,6 @@ if(${TINT_BUILD_TESTS})
       writer/hlsl/generator_impl_constructor_test.cc
       writer/hlsl/generator_impl_continue_test.cc
       writer/hlsl/generator_impl_discard_test.cc
-      writer/hlsl/generator_impl_function_entry_point_data_test.cc
       writer/hlsl/generator_impl_function_test.cc
       writer/hlsl/generator_impl_identifier_test.cc
       writer/hlsl/generator_impl_if_test.cc
@@ -885,7 +982,6 @@ if(${TINT_BUILD_TESTS})
       writer/hlsl/generator_impl_unary_op_test.cc
       writer/hlsl/generator_impl_variable_decl_statement_test.cc
       writer/hlsl/generator_impl_workgroup_var_test.cc
-      writer/hlsl/test_helper.cc
       writer/hlsl/test_helper.h
     )
   endif()
@@ -902,7 +998,7 @@ if(${TINT_BUILD_TESTS})
   ## Test executable
   target_include_directories(
       tint_unittests PRIVATE ${gmock_SOURCE_DIR}/include)
-  target_link_libraries(tint_unittests libtint gmock)
+  target_link_libraries(tint_unittests libtint gmock tint_utils_io)
   tint_default_compile_options(tint_unittests)
 
   if(${TINT_BUILD_SPV_READER} OR ${TINT_BUILD_SPV_WRITER})

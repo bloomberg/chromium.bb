@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.features.start_surface;
 
-import android.content.Context;
-import android.content.Intent;
 import android.text.TextUtils;
 
 import androidx.annotation.VisibleForTesting;
@@ -13,7 +11,6 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.flags.BooleanCachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -26,9 +23,6 @@ import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
-import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
-import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
-import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.metrics.OmniboxEventProtos.OmniboxEventProto.PageClassification;
 import org.chromium.components.user_prefs.UserPrefs;
 
@@ -217,31 +211,6 @@ public class StartSurfaceConfiguration {
     public static boolean shouldShowNewSurfaceFromHomeButton() {
         return NEW_SURFACE_FROM_HOME_BUTTON.getValue().equals("hide_tab_switcher_only")
                 || NEW_SURFACE_FROM_HOME_BUTTON.getValue().equals("hide_mv_tiles_and_tab_switcher");
-    }
-
-    /**
-     * @return Whether start surface should be hidden when accessibility is enabled. If it's true,
-     *         NTP is shown as homepage. Also, when time threshold is reached, grid tab switcher or
-     *         overview list layout is shown instead of start surface.
-     */
-    public static boolean shouldHideStartSurfaceWithAccessibilityOn(Context context) {
-        return ChromeAccessibilityUtil.get().isAccessibilityEnabled()
-                && !(SUPPORT_ACCESSIBILITY.getValue()
-                        && TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(context));
-    }
-
-    /**
-     * @return Whether the {@link Intent} will open a new tab with the omnibox focused.
-     */
-    public static boolean shouldIntentShowNewTabOmniboxFocused(Intent intent) {
-        final String intentUrl = IntentHandler.getUrlFromIntent(intent);
-        // If Chrome is launched by tapping the New tab item from the launch icon and
-        // OMNIBOX_FOCUSED_ON_NEW_TAB is enabled, a new Tab with omnibox focused will be shown on
-        // Startup.
-        final boolean isCanonicalizedNTPUrl = UrlUtilities.isCanonicalizedNTPUrl(intentUrl);
-        return isCanonicalizedNTPUrl && IntentHandler.isTabOpenAsNewTabFromLauncher(intent)
-                && OMNIBOX_FOCUSED_ON_NEW_TAB.getValue()
-                && IntentHandler.wasIntentSenderChrome(intent);
     }
 
     @VisibleForTesting

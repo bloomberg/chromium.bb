@@ -12,17 +12,18 @@
 #include "base/values.h"
 #include "chrome/browser/ash/attestation/attestation_ca_client.h"
 #include "chrome/browser/ash/attestation/machine_certificate_uploader.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
+#include "chrome/browser/ash/policy/core/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/platform_keys/key_permissions/key_permissions_manager.h"
 #include "chrome/browser/chromeos/platform_keys/key_permissions/key_permissions_manager_impl.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/attestation/attestation_flow_adaptive.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/attestation/attestation_client.h"
 #include "chromeos/dbus/attestation/interface.pb.h"
@@ -124,7 +125,7 @@ std::string GetKeyNameWithDefault(AttestationKeyType key_type,
 }  // namespace
 
 TpmChallengeKeySubtleImpl::TpmChallengeKeySubtleImpl()
-    : default_attestation_flow_(std::make_unique<AttestationFlow>(
+    : default_attestation_flow_(std::make_unique<AttestationFlowAdaptive>(
           std::make_unique<AttestationCAClient>())),
       attestation_flow_(default_attestation_flow_.get()) {
   policy::DeviceCloudPolicyManagerChromeOS* manager =
@@ -655,10 +656,10 @@ void TpmChallengeKeySubtleImpl::RegisterKeyCallback(
 }
 
 void TpmChallengeKeySubtleImpl::MarkCorporateKeyCallback(
-    platform_keys::Status status) {
+    chromeos::platform_keys::Status status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (status != platform_keys::Status::kSuccess) {
+  if (status != chromeos::platform_keys::Status::kSuccess) {
     std::move(callback_).Run(
         Result::MakeError(ResultCode::kMarkCorporateKeyFailedError));
     return;

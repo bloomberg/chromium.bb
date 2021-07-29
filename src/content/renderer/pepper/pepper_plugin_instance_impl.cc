@@ -7,14 +7,12 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bit_cast.h"
 #include "base/callback_helpers.h"
 #include "base/i18n/char_iterator.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_offset_string_conversions.h"
@@ -29,8 +27,8 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "content/public/renderer/ppapi_gfx_conversion.h"
 #include "content/renderer/pepper/event_conversion.h"
-#include "content/renderer/pepper/gfx_conversion.h"
 #include "content/renderer/pepper/host_dispatcher_wrapper.h"
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/message_channel.h"
@@ -1867,7 +1865,8 @@ void PepperPluginInstanceImpl::PrintPage(int page_number,
     metafile_ = metafile;
   }
 
-  PP_PrintPageNumberRange_Dev page_range = {page_number, page_number};
+  PP_PrintPageNumberRange_Dev page_range = {static_cast<uint32_t>(page_number),
+                                            static_cast<uint32_t>(page_number)};
   ranges_.push_back(page_range);
 #endif
 }
@@ -1928,16 +1927,13 @@ bool PepperPluginInstanceImpl::GetPrintPresetOptionsFromDocument(
       break;
   }
   preset_options->copies = options.copies;
-  preset_options->is_page_size_uniform =
-      PP_ToBool(options.is_page_size_uniform);
-  preset_options->uniform_page_size = gfx::Size(
-      options.uniform_page_size.width, options.uniform_page_size.height);
+
+  if (options.is_page_size_uniform) {
+    preset_options->uniform_page_size = gfx::Size(
+        options.uniform_page_size.width, options.uniform_page_size.height);
+  }
 
   return true;
-}
-
-bool PepperPluginInstanceImpl::IsPdfPlugin() {
-  return LoadPdfInterface();
 }
 
 bool PepperPluginInstanceImpl::CanRotateView() {
@@ -1949,7 +1945,7 @@ void PepperPluginInstanceImpl::RotateView(WebPlugin::RotationType type) {
   if (!LoadPdfInterface())
     return;
   PP_PrivatePageTransformType transform_type =
-      type == WebPlugin::kRotationType90Clockwise
+      type == WebPlugin::RotationType::k90Clockwise
           ? PP_PRIVATEPAGETRANSFORMTYPE_ROTATE_90_CW
           : PP_PRIVATEPAGETRANSFORMTYPE_ROTATE_90_CCW;
   plugin_pdf_interface_->Transform(pp_instance(), transform_type);
@@ -2323,11 +2319,8 @@ PP_Var PepperPluginInstanceImpl::ExecuteScript(PP_Instance instance,
   blink::WebScriptSource script(
       blink::WebString::FromUTF8(script_string.c_str()));
   v8::Local<v8::Value> result;
-  if (HasTransientUserActivation()) {
-    result = frame->ExecuteScriptAndReturnValue(script);
-  } else {
-    result = frame->ExecuteScriptAndReturnValue(script);
-  }
+
+  result = frame->ExecuteScriptAndReturnValue(script);
 
   ScopedPPVar var_result = try_catch.FromV8(result);
   if (try_catch.HasException())
@@ -2371,9 +2364,7 @@ void PepperPluginInstanceImpl::SetPluginToHandleFindRequests(
     PP_Instance instance) {
   if (!LoadFindInterface())
     return;
-  bool is_main_frame =
-      render_frame_ &&
-      render_frame_->GetRenderView()->GetMainRenderFrame() == render_frame_;
+  bool is_main_frame = render_frame_ && render_frame_->IsMainFrame();
   if (!is_main_frame)
     return;
   container_->UsePluginAsFindHandler();
@@ -2440,7 +2431,7 @@ PP_Bool PepperPluginInstanceImpl::GetScreenSize(PP_Instance instance,
   // All other cases: Report the screen size.
   if (!render_frame_)
     return PP_FALSE;
-  blink::ScreenInfo info =
+  display::ScreenInfo info =
       render_frame_->GetLocalRootWebFrameWidget()->GetScreenInfo();
   *size = PP_MakeSize(info.rect.width(), info.rect.height());
   return PP_TRUE;
@@ -2933,7 +2924,7 @@ void PepperPluginInstanceImpl::SetSizeAttributesForFullscreen() {
   // behavior, the width and height should probably be set to 100%, rather than
   // a fixed screen size.
 
-  blink::ScreenInfo info =
+  display::ScreenInfo info =
       render_frame_->GetLocalRootWebFrameWidget()->GetScreenInfo();
   screen_size_for_fullscreen_ = info.rect.size();
   std::string width = base::NumberToString(screen_size_for_fullscreen_.width());

@@ -74,6 +74,7 @@ enum Token
     // Android devices
     kConfigNexus5X,
     kConfigPixel2,
+    kConfigPixel4,
     // GPU devices
     kConfigNVIDIAQuadroP400,
     // PreRotation
@@ -106,6 +107,7 @@ enum ErrorType
     kErrorIllegalEntry,
     kErrorInvalidEntry,
     kErrorEntryWithExpectationConflicts,
+    kErrorEntryWithDisallowedExpectation,
     kErrorEntriesOverlap,
 
     kNumberOfErrors,
@@ -171,6 +173,7 @@ constexpr TokenInfo kTokenData[kNumberOfTokens] = {
     {"metal", GPUTestConfig::kConditionMetal},
     {"nexus5x", GPUTestConfig::kConditionNexus5X},
     {"pixel2orxl", GPUTestConfig::kConditionPixel2OrXL},
+    {"pixel4orxl", GPUTestConfig::kConditionPixel4OrXL},
     {"quadrop400", GPUTestConfig::kConditionNVIDIAQuadroP400},
     {"prerotation", GPUTestConfig::kConditionPreRotation},
     {"prerotation90", GPUTestConfig::kConditionPreRotation90},
@@ -193,6 +196,7 @@ const char *kErrorMessage[kNumberOfErrors] = {
     "entry with wrong format",
     "entry invalid, likely unimplemented modifiers",
     "entry with expectation modifier conflicts",
+    "entry with unsupported expectation",
     "two entries' configs overlap",
 };
 
@@ -236,6 +240,38 @@ inline Token ParseToken(const std::string &word)
     }
     return kTokenWord;
 }
+
+bool ConditionArrayIsSubset(const GPUTestConfig::ConditionArray &subset,
+                            const GPUTestConfig::ConditionArray &superset)
+{
+    for (size_t subsetCondition : subset)
+    {
+        bool foundCondition = false;
+        for (size_t supersetCondition : superset)
+        {
+            if (subsetCondition == supersetCondition)
+            {
+                foundCondition = true;
+                break;
+            }
+        }
+
+        if (!foundCondition)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+// If one array is completely contained within the other, then we say the conditions overlap.
+bool ConditionsOverlap(const GPUTestConfig::ConditionArray &conditionsI,
+                       const GPUTestConfig::ConditionArray &conditionsJ)
+{
+    return ConditionArrayIsSubset(conditionsI, conditionsJ) ||
+           ConditionArrayIsSubset(conditionsJ, conditionsI);
+}
 }  // anonymous namespace
 
 const char *GetConditionName(uint32_t condition)
@@ -260,6 +296,10 @@ const char *GetConditionName(uint32_t condition)
 }
 
 GPUTestExpectationsParser::GPUTestExpectationsParser()
+    : mExpectationsAllowMask(
+          GPUTestExpectationsParser::kGpuTestPass | GPUTestExpectationsParser::kGpuTestFail |
+          GPUTestExpectationsParser::kGpuTestFlaky | GPUTestExpectationsParser::kGpuTestTimeout |
+          GPUTestExpectationsParser::kGpuTestSkip)
 {
     // Some initial checks.
     ASSERT((static_cast<unsigned int>(kNumberOfTokens)) ==
@@ -455,6 +495,7 @@ bool GPUTestExpectationsParser::parseLine(const GPUTestConfig *config,
             case kConfigMetal:
             case kConfigNexus5X:
             case kConfigPixel2:
+            case kConfigPixel4:
             case kConfigNVIDIAQuadroP400:
             case kConfigPreRotation:
             case kConfigPreRotation90:
@@ -547,6 +588,12 @@ bool GPUTestExpectationsParser::parseLine(const GPUTestConfig *config,
                                      lineNumber);
                     return false;
                 }
+                if ((mExpectationsAllowMask & kTokenData[token].expectation) == 0)
+                {
+                    pushErrorMessage(kErrorMessage[kErrorEntryWithDisallowedExpectation],
+                                     lineNumber);
+                    return false;
+                }
                 entry.testExpectation = kTokenData[token].expectation;
                 if (stage == kLineParserEqual)
                     stage++;
@@ -601,10 +648,13 @@ bool GPUTestExpectationsParser::detectConflictsBetweenEntries()
     {
         for (size_t j = i + 1; j < mEntries.size(); ++j)
         {
-            if (mEntries[i].testName == mEntries[j].testName)
+            const GPUTestExpectationEntry &entryI = mEntries[i];
+            const GPUTestExpectationEntry &entryJ = mEntries[j];
+            if (entryI.testName == entryJ.testName &&
+                ConditionsOverlap(entryI.conditions, entryJ.conditions))
             {
-                pushErrorMessage(kErrorMessage[kErrorEntriesOverlap], mEntries[i].lineNumber,
-                                 mEntries[j].lineNumber);
+                pushErrorMessage(kErrorMessage[kErrorEntriesOverlap], entryI.lineNumber,
+                                 entryJ.lineNumber);
                 rt = true;
             }
         }

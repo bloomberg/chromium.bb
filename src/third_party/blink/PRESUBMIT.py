@@ -12,6 +12,8 @@ import inspect
 import os
 import re
 
+USE_PYTHON3 = True
+
 try:
     # pylint: disable=C0103
     audit_non_blink_usage = imp.load_source(
@@ -39,9 +41,10 @@ def _CheckForWrongMojomIncludes(input_api, output_api):
         return input_api.FilterSourceFile(
             path,
             files_to_skip=[
-                r'third_party/blink/common/',
-                r'third_party/blink/public/common',
-                r'third_party/blink/renderer/platform/loader/fetch/url_loader',
+                r'.*_test\.(cc|h)$',
+                r'third_party[\\/]blink[\\/]common[\\/]',
+                r'third_party[\\/]blink[\\/]public[\\/]common[\\/]',
+                r'third_party[\\/]blink[\\/]renderer[\\/]platform[\\/]loader[\\/]fetch[\\/]url_loader[\\/]',
             ])
 
     pattern = input_api.re.compile(r'#include\s+[<"](.+)\.mojom(.*)\.h[>"]')
@@ -62,6 +65,7 @@ def _CheckForWrongMojomIncludes(input_api, output_api):
     # the boundary between Blink and non-Blink.
     allowed_interfaces = (
         'services/network/public/mojom/cross_origin_embedder_policy',
+        'services/network/public/mojom/early_hints',
         'services/network/public/mojom/fetch_api',
         'services/network/public/mojom/load_timing_info',
         'services/network/public/mojom/url_loader',
@@ -73,6 +77,7 @@ def _CheckForWrongMojomIncludes(input_api, output_api):
         'third_party/blink/public/mojom/loader/resource_load_info_notifier',
         'third_party/blink/public/mojom/worker/subresource_loader_updater',
         'third_party/blink/public/mojom/loader/transferrable_url_loader',
+        'third_party/blink/public/mojom/loader/code_cache',
         'media/mojo/mojom/interface_factory', 'media/mojo/mojom/audio_decoder',
         'media/mojo/mojom/video_decoder',
         'media/mojo/mojom/media_metrics_provider')

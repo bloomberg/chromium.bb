@@ -23,6 +23,8 @@ static_library("security_interstitial_page") {
     "connection_help_ui.h",
     "content_metrics_helper.cc",
     "content_metrics_helper.h",
+    "https_only_mode_blocking_page.cc",
+    "https_only_mode_blocking_page.h",
     "insecure_form_blocking_page.cc",
     "insecure_form_blocking_page.h",
     "insecure_form_navigation_throttle.cc",
@@ -70,7 +72,7 @@ static_library("security_interstitial_page") {
 
   public_deps = [
     "//components/captive_portal/core:buildflags",
-    "//components/safe_browsing/core/db:hit_report",
+    "//components/safe_browsing/core/browser/db:hit_report",
   ]
 
   deps = [

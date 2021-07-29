@@ -28,18 +28,8 @@
 namespace {
 
 base::FilePath GetPythonPath() {
-#if defined(OS_WIN)
-  // Windows bots do not have python installed and available on the PATH.
-  // Please see infra/doc/users/python.md
-  base::FilePath bot_path =
-      base::FilePath(FILE_PATH_LITERAL("c:/infra-system/bin/python.exe"));
-
-  if (base::PathExists(bot_path))
-    return bot_path;
-  return base::FilePath(FILE_PATH_LITERAL("python.exe"));
-#else
-  return base::FilePath(FILE_PATH_LITERAL("python"));
-#endif
+  // Every environment should have python3.
+  return base::FilePath(FILE_PATH_LITERAL("python3"));
 }
 
 const base::FilePath kTestDataPath = base::FilePath(
@@ -297,8 +287,14 @@ IN_PROC_BROWSER_TEST_P(MediaEngagementAutoplayBrowserTest,
   ExpectAutoplayAllowedIfEnabled();
 }
 
+// Disabled due to being flaky. crbug.com/1212507
+#if defined(OS_MAC)
+#define MAYBE_UsePreloadedData_Allowed DISABLED_UsePreloadedData_Allowed
+#else
+#define MAYBE_UsePreloadedData_Allowed UsePreloadedData_Allowed
+#endif
 IN_PROC_BROWSER_TEST_P(MediaEngagementAutoplayBrowserTest,
-                       UsePreloadedData_Allowed) {
+                       MAYBE_UsePreloadedData_Allowed) {
   // Autoplay should be blocked by default if we have a bad score.
   SetScores(PrimaryOrigin(), 0, 0);
   LoadTestPage("engagement_autoplay_test.html");

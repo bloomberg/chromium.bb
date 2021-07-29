@@ -22,7 +22,7 @@
 #include <utility>
 #include <vector>
 
-#include "src/ast/access_control.h"
+#include "src/ast/access.h"
 #include "src/program_builder.h"
 #include "src/reader/wgsl/parser_impl_detail.h"
 #include "src/reader/wgsl/token.h"
@@ -112,7 +112,7 @@ class ParserImpl {
     /// return type will always be a pointer to a non-pointer type. #errored
     /// must be false to call.
     inline typename detail::OperatorArrow<T>::type operator->() {
-      TINT_ASSERT(!errored);
+      TINT_ASSERT(Reader, !errored);
       return detail::OperatorArrow<T>::ptr(value);
     }
 
@@ -183,7 +183,7 @@ class ParserImpl {
     /// return type will always be a pointer to a non-pointer type. #errored
     /// must be false to call.
     inline typename detail::OperatorArrow<T>::type operator->() {
-      TINT_ASSERT(!errored);
+      TINT_ASSERT(Reader, !errored);
       return detail::OperatorArrow<T>::ptr(value);
     }
 
@@ -214,8 +214,8 @@ class ParserImpl {
     /// Destructor
     ~TypedIdentifier();
 
-    /// Parsed type.
-    ast::Type* type;
+    /// Parsed type. May be nullptr for inferred types.
+    ast::Type* type = nullptr;
     /// Parsed identifier.
     std::string name;
     /// Source to the identifier.
@@ -270,10 +270,12 @@ class ParserImpl {
     /// @param source_in variable declaration source
     /// @param name_in variable name
     /// @param storage_class_in variable storage class
+    /// @param access_in variable access control
     /// @param type_in variable type
     VarDeclInfo(Source source_in,
                 std::string name_in,
                 ast::StorageClass storage_class_in,
+                ast::Access access_in,
                 ast::Type* type_in);
     /// Destructor
     ~VarDeclInfo();
@@ -283,9 +285,19 @@ class ParserImpl {
     /// Variable name
     std::string name;
     /// Variable storage class
-    ast::StorageClass storage_class;
+    ast::StorageClass storage_class = ast::StorageClass::kNone;
+    /// Variable access control
+    ast::Access access = ast::Access::kUndefined;
     /// Variable type
     ast::Type* type = nullptr;
+  };
+
+  /// VariableQualifier contains the parsed information for a variable qualifier
+  struct VariableQualifier {
+    /// The variable's storage class
+    ast::StorageClass storage_class = ast::StorageClass::kNone;
+    /// The variable's access control
+    ast::Access access = ast::Access::kUndefined;
   };
 
   /// Creates a new parser using the given file
@@ -324,12 +336,16 @@ class ParserImpl {
 
   /// @returns the next token
   Token next();
-  /// @returns the next token without advancing
-  Token peek();
-  /// Peeks ahead and returns the token at `idx` head of the current position
+  /// Peeks ahead and returns the token at `idx` ahead of the current position
   /// @param idx the index of the token to return
   /// @returns the token `idx` positions ahead without advancing
-  Token peek(size_t idx);
+  Token peek(size_t idx = 0);
+  /// Peeks ahead and returns true if the token at `idx` ahead of the current
+  /// position is |tok|
+  /// @param idx the index of the token to return
+  /// @param tok the token to look for
+  /// @returns true if the token `idx` positions ahead is |tok|
+  bool peek_is(Token::Type tok, size_t idx = 0);
   /// @returns the last token that was returned by `next()`
   Token last_token() const;
   /// Appends an error at `t` with the message `msg`
@@ -360,16 +376,16 @@ class ParserImpl {
   /// @param source the source to associate the error with
   /// @param msg the warning message
   void deprecated(const Source& source, const std::string& msg);
-  /// Registers a constructed type into the parser
+  /// Registers a declared type into the parser
   /// TODO(crbug.com/tint/724): Remove
-  /// @param name the constructed name
-  /// @param type the constructed type
-  void register_constructed(const std::string& name, const ast::Type* type);
-  /// Retrieves a constructed type
+  /// @param name the type name
+  /// @param type_decl the type declaration
+  void register_type(const std::string& name, const ast::TypeDecl* type_decl);
+  /// Retrieves a declared type
   /// TODO(crbug.com/tint/724): Remove
   /// @param name The name to lookup
-  /// @returns the constructed type for `name` or `nullptr` if not found
-  const ast::Type* get_constructed(const std::string& name);
+  /// @returns the declared type for `name` or `nullptr` if not found
+  const ast::TypeDecl* get_type(const std::string& name);
 
   /// Parses the `translation_unit` grammar element
   void translation_unit();
@@ -387,16 +403,22 @@ class ParserImpl {
   /// @param decos the list of decorations for the constant declaration.
   Maybe<ast::Variable*> global_constant_decl(ast::DecorationList& decos);
   /// Parses a `variable_decl` grammar element
+  /// @param allow_inferred if true, do not fail if variable decl does not
+  /// specify type
   /// @returns the parsed variable declaration info
-  Maybe<VarDeclInfo> variable_decl();
+  Maybe<VarDeclInfo> variable_decl(bool allow_inferred = false);
   /// Parses a `variable_ident_decl` grammar element, erroring on parse
   /// failure.
   /// @param use a description of what was being parsed if an error was raised.
+  /// @param allow_inferred if true, do not fail if variable decl does not
+  /// specify type
   /// @returns the identifier and type parsed or empty otherwise
-  Expect<TypedIdentifier> expect_variable_ident_decl(const std::string& use);
-  /// Parses a `variable_storage_decoration` grammar element
-  /// @returns the storage class or StorageClass::kNone if none matched
-  Maybe<ast::StorageClass> variable_storage_decoration();
+  Expect<TypedIdentifier> expect_variable_ident_decl(
+      const std::string& use,
+      bool allow_inferred = false);
+  /// Parses a `variable_qualifier` grammar element
+  /// @returns the variable qualifier information
+  Maybe<VariableQualifier> variable_qualifier();
   /// Parses a `type_alias` grammar element
   /// @returns the type alias or nullptr on error
   Maybe<ast::Alias*> type_alias();
@@ -458,9 +480,6 @@ class ParserImpl {
   /// @param use a description of what was being parsed if an error was raised
   /// @returns returns the image format or kNone if none matched.
   Expect<ast::ImageFormat> expect_image_storage_type(const std::string& use);
-  /// Parses a `function_type_decl` grammar element
-  /// @returns the parsed type or nullptr otherwise
-  Maybe<ast::Type*> function_type_decl();
   /// Parses a `function_header` grammar element
   /// @returns the parsed function header
   Maybe<FunctionHeader> function_header();
@@ -474,10 +493,11 @@ class ParserImpl {
   /// not match a stage name.
   /// @returns the pipeline stage.
   Expect<ast::PipelineStage> expect_pipeline_stage();
-  /// Parses an access type identifier, erroring if the next token does not
-  /// match a valid access type name.
+  /// Parses an access control identifier, erroring if the next token does not
+  /// match a valid access control.
+  /// @param use a description of what was being parsed if an error was raised
   /// @returns the parsed access control.
-  Expect<ast::AccessControl::Access> expect_access_type();
+  Expect<ast::Access> expect_access(const std::string& use);
   /// Parses a builtin identifier, erroring if the next token does not match a
   /// valid builtin name.
   /// @returns the parsed builtin.
@@ -538,7 +558,7 @@ class ParserImpl {
   Expect<std::unique_ptr<ForHeader>> expect_for_header();
   /// Parses a `for_stmt` grammar element
   /// @returns the parsed for loop or nullptr
-  Maybe<ast::Statement*> for_stmt();
+  Maybe<ast::ForLoopStatement*> for_stmt();
   /// Parses a `continuing_stmt` grammar element
   /// @returns the parsed statements
   Maybe<ast::BlockStatement*> continuing_stmt();
@@ -808,6 +828,12 @@ class ParserImpl {
   /// @see sync().
   bool is_sync_token(const Token& t) const;
 
+  /// @returns true if #synchronized_ is true and the number of reported errors
+  /// is less than #max_errors_.
+  bool continue_parsing() {
+    return synchronized_ && builder_.Diagnostics().error_count() < max_errors_;
+  }
+
   /// without_error() calls the function `func` muting any grammatical errors
   /// found while executing the function. This can be used as a best-effort to
   /// produce a meaningful error message when the parser is out of sync.
@@ -817,16 +843,12 @@ class ParserImpl {
   template <typename F, typename T = ReturnType<F>>
   T without_error(F&& func);
 
-  /// Returns all the decorations taken from `list` that matches the type `T`.
-  /// Those that do not match are kept in `list`.
-  template <typename T>
-  std::vector<T*> take_decorations(ast::DecorationList& list);
-
   /// Reports an error if the decoration list `list` is not empty.
   /// Used to ensure that all decorations are consumed.
   bool expect_decorations_consumed(const ast::DecorationList& list);
 
   Expect<ast::Type*> expect_type_decl_pointer(Token t);
+  Expect<ast::Type*> expect_type_decl_atomic(Token t);
   Expect<ast::Type*> expect_type_decl_vector(Token t);
   Expect<ast::Type*> expect_type_decl_array(Token t, ast::DecorationList decos);
   Expect<ast::Type*> expect_type_decl_matrix(Token t);
@@ -854,10 +876,10 @@ class ParserImpl {
   std::deque<Token> token_queue_;
   Token last_token_;
   bool synchronized_ = true;
-  uint32_t sync_depth_ = 0;
+  uint32_t parse_depth_ = 0;
   std::vector<Token::Type> sync_tokens_;
   int silence_errors_ = 0;
-  std::unordered_map<std::string, const ast::Type*> registered_constructs_;
+  std::unordered_map<std::string, const ast::TypeDecl*> registered_types_;
   ProgramBuilder builder_;
   size_t max_errors_ = 25;
 };

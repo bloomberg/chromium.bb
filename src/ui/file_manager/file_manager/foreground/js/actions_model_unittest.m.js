@@ -6,20 +6,20 @@ import {assert} from 'chrome://resources/js/assert.m.js';
 import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://test/chai_assert.js';
 
-import {MockDriveSyncHandler} from '../../background/js/mock_drive_sync_handler.m.js';
-import {MockVolumeManager} from '../../background/js/mock_volume_manager.m.js';
-import {metrics} from '../../common/js/metrics.m.js';
-import {installMockChrome, MockCommandLinePrivate} from '../../common/js/mock_chrome.m.js';
-import {MockDirectoryEntry, MockFileEntry} from '../../common/js/mock_entry.m.js';
-import {reportPromise} from '../../common/js/test_error_reporting.m.js';
-import {VolumeManagerCommon} from '../../common/js/volume_manager_types.m.js';
+import {MockDriveSyncHandler} from '../../background/js/mock_drive_sync_handler.js';
+import {MockVolumeManager} from '../../background/js/mock_volume_manager.js';
+import {metrics} from '../../common/js/metrics.js';
+import {installMockChrome, MockCommandLinePrivate} from '../../common/js/mock_chrome.js';
+import {MockDirectoryEntry, MockFileEntry} from '../../common/js/mock_entry.js';
+import {reportPromise} from '../../common/js/test_error_reporting.js';
+import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 
-import {ActionsModel} from './actions_model.m.js';
-import {FolderShortcutsDataModel} from './folder_shortcuts_data_model.m.js';
-import {MockMetadataModel} from './metadata/mock_metadata.m.js';
-import {ActionModelUI} from './ui/action_model_ui.m.js';
-import {FilesAlertDialog} from './ui/files_alert_dialog.m.js';
-import {ListContainer} from './ui/list_container.m.js';
+import {ActionsModel} from './actions_model.js';
+import {FolderShortcutsDataModel} from './folder_shortcuts_data_model.js';
+import {MockMetadataModel} from './metadata/mock_metadata.js';
+import {ActionModelUI} from './ui/action_model_ui.js';
+import {FilesAlertDialog} from './ui/files_alert_dialog.js';
+import {ListContainer} from './ui/list_container.js';
 
 /**
  * @type {!MockVolumeManager}
@@ -99,7 +99,7 @@ let ui;
 export function setUp() {
   // Mock loadTimeData strings.
   window.loadTimeData.getString = id => id;
-  window.loadTimeData.resetForTesting();
+  window.loadTimeData.resetForTesting({});
 
   // Mock Chrome APIs.
   const mockChrome = {

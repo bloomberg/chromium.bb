@@ -5,7 +5,6 @@
 #include "third_party/blink/public/common/loader/throttling_url_loader.h"
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "base/run_loop.h"
@@ -14,8 +13,10 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/early_hints.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
@@ -35,6 +36,8 @@ class TestURLLoaderFactory : public network::mojom::URLLoaderFactory,
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             factory_remote_.get());
   }
+  TestURLLoaderFactory(const TestURLLoaderFactory&) = delete;
+  TestURLLoaderFactory& operator=(const TestURLLoaderFactory&) = delete;
 
   ~TestURLLoaderFactory() override { shared_factory_->Detach(); }
 
@@ -160,12 +163,13 @@ class TestURLLoaderFactory : public network::mojom::URLLoaderFactory,
   mojo::Remote<network::mojom::URLLoaderClient> client_remote_;
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory> shared_factory_;
   OnCreateLoaderAndStartCallback on_create_loader_and_start_callback_;
-  DISALLOW_COPY_AND_ASSIGN(TestURLLoaderFactory);
 };
 
 class TestURLLoaderClient : public network::mojom::URLLoaderClient {
  public:
-  TestURLLoaderClient() {}
+  TestURLLoaderClient() = default;
+  TestURLLoaderClient(const TestURLLoaderClient&) = delete;
+  TestURLLoaderClient& operator=(const TestURLLoaderClient&) = delete;
 
   size_t on_received_response_called() const {
     return on_received_response_called_;
@@ -229,15 +233,16 @@ class TestURLLoaderClient : public network::mojom::URLLoaderClient {
   base::RepeatingClosure on_received_redirect_callback_;
   base::OnceClosure on_received_response_callback_;
   OnCompleteCallback on_complete_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestURLLoaderClient);
 };
 
 class TestURLLoaderThrottle : public blink::URLLoaderThrottle {
  public:
-  TestURLLoaderThrottle() {}
+  TestURLLoaderThrottle() = default;
   explicit TestURLLoaderThrottle(base::OnceClosure destruction_notifier)
       : destruction_notifier_(std::move(destruction_notifier)) {}
+
+  TestURLLoaderThrottle(const TestURLLoaderThrottle&) = delete;
+  TestURLLoaderThrottle& operator=(const TestURLLoaderThrottle&) = delete;
 
   ~TestURLLoaderThrottle() override {
     if (destruction_notifier_)
@@ -352,13 +357,13 @@ class TestURLLoaderThrottle : public blink::URLLoaderThrottle {
   GURL modify_url_in_will_start_;
 
   base::OnceClosure destruction_notifier_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestURLLoaderThrottle);
 };
 
 class ThrottlingURLLoaderTest : public testing::Test {
  public:
-  ThrottlingURLLoaderTest() {}
+  ThrottlingURLLoaderTest() = default;
+  ThrottlingURLLoaderTest(const ThrottlingURLLoaderTest&) = delete;
+  ThrottlingURLLoaderTest& operator=(const ThrottlingURLLoaderTest&) = delete;
 
   std::unique_ptr<ThrottlingURLLoader>& loader() { return loader_; }
   TestURLLoaderThrottle* throttle() const { return throttle_; }
@@ -403,8 +408,6 @@ class ThrottlingURLLoaderTest : public testing::Test {
   TestURLLoaderThrottle* throttle_ = nullptr;
 
   base::WeakPtrFactory<ThrottlingURLLoaderTest> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ThrottlingURLLoaderTest);
 };
 
 TEST_F(ThrottlingURLLoaderTest, CancelBeforeStart) {

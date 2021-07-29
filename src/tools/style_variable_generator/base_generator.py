@@ -7,9 +7,9 @@ import sys
 import collections
 import re
 import textwrap
-import path_overrides
-from color import Color
-from opacity import Opacity
+from style_variable_generator import path_overrides
+from style_variable_generator.color import Color
+from style_variable_generator.opacity import Opacity
 import copy
 
 _FILE_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -27,16 +27,18 @@ import jinja2
 class Modes:
     LIGHT = 'light'
     DARK = 'dark'
+    DEBUG = 'debug'
     # The mode that colors will fallback to when not specified in a
     # non-default mode. An error will be raised if a color in any mode is
     # not specified in the default mode.
     DEFAULT = LIGHT
-    ALL = [LIGHT, DARK]
+    ALL = [LIGHT, DARK, DEBUG]
 
 
 class VariableType:
     COLOR = 'color'
     OPACITY = 'opacity'
+    UNTYPED_CSS = 'untyped_css'
 
 
 class ModeKeyedModel(object):
@@ -137,7 +139,6 @@ class ColorModel(ModeKeyedModel):
     def _CreateValue(self, value):
         return Color(value)
 
-
 class BaseGenerator:
     '''A generic style variable generator.
 
@@ -165,6 +166,12 @@ class BaseGenerator:
         self.model = {
             VariableType.COLOR: color_model,
             VariableType.OPACITY: opacity_model,
+            # A dict of client-defined groups to corresponding dicts of variable
+            # names to values. This is used to store CSS that doesn't have a
+            # dedicated model type. This is used for more freeform variables, or
+            # for variable types that haven't been implemented yet.
+            # See https://crbug.com/1018654.
+            VariableType.UNTYPED_CSS: dict(),
         }
 
         # A dictionary of variable names to objects containing information about
@@ -178,7 +185,7 @@ class BaseGenerator:
         self.generator_options = {}
 
     def _SetVariableContext(self, name, context):
-        if name in self.context_map:
+        if name in self.context_map.keys():
             raise ValueError('Variable name "%s" is reused' % name)
         self.context_map[name] = context or {}
 
@@ -200,6 +207,11 @@ class BaseGenerator:
             raise ValueError('Error parsing opacity "%s": %s' %
                              (value_obj, err))
 
+    def AddUntypedCSSGroup(self, group_name, value_obj, context=None):
+        for var_name in value_obj.keys():
+          self._SetVariableContext(var_name, context)
+        self.model[VariableType.UNTYPED_CSS][group_name] = value_obj
+
     def AddJSONFileToModel(self, path):
         try:
             with open(path, 'r') as f:
@@ -220,8 +232,7 @@ class BaseGenerator:
                            object_pairs_hook=collections.OrderedDict)
         # Use the generator's name to get the generator-specific context from
         # the input.
-        generator_context = data.get('options',
-                                     {}).get(self.GetContextKey(), None)
+        generator_context = data.get('options', {})
         self.in_file_to_context[in_file] = generator_context
 
         for name, value in data.get('colors', {}).items():
@@ -239,6 +250,9 @@ class BaseGenerator:
                     '(lower case, 0-9, _, must end with _opacity)')
 
             self.AddOpacity(name, value, generator_context)
+
+        for name, value in data.get('untyped_css', {}).items():
+            self.AddUntypedCSSGroup(name, value, generator_context)
 
         return generator_context
 
@@ -260,11 +274,15 @@ class BaseGenerator:
         opacity_names = set(opacities.keys())
 
         def CheckColorReference(name, referrer):
+            if name == referrer:
+                raise ValueError(f"{name} refers to itself")
             if name not in color_names:
                 raise ValueError("Cannot find color %s referenced by %s" %
                                  (name, referrer))
 
         def CheckOpacityReference(name, referrer):
+            if name == referrer:
+                raise ValueError(f"{name} refers to itself")
             if name not in opacity_names:
                 raise ValueError("Cannot find opacity %s referenced by %s" %
                                  (name, referrer))

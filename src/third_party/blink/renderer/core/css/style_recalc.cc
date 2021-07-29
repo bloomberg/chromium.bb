@@ -25,6 +25,8 @@ bool StyleRecalcChange::TraverseChild(const Node& node) const {
 }
 
 bool StyleRecalcChange::ShouldRecalcStyleFor(const Node& node) const {
+  if (flags_ & kSuppressRecalc)
+    return false;
   if (RecalcChildren())
     return true;
   if (node.NeedsStyleRecalc())
@@ -56,20 +58,26 @@ bool StyleRecalcChange::ShouldUpdatePseudoElement(
          pseudo_element.ComputedStyleRef().DependsOnContainerQueries();
 }
 
-bool StyleRecalcChange::RecalcContainerQueryDependentChildren(
+StyleRecalcChange::Flags StyleRecalcChange::FlagsForChildren(
     const Element& element) const {
-  // We are at the container root for a container query recalc.
-  if (propagate_ == kRecalcContainerQueryDependent)
-    return true;
-  if (!RecalcContainerQueryDependent())
-    return false;
-  // Don't traverse into children if we hit a descendant container while
-  // recalculating container queries. If the queries for this container also
-  // changes, we will enter another container query recalc for this subtree from
-  // layout.
-  if (LayoutObject* layout_object = element.GetLayoutObject())
-    return !layout_object->IsContainerForContainerQueries();
-  return true;
+  Flags result = flags_;
+
+  // Note that kSuppressRecalc is used on the root container for the
+  // interleaved style recalc.
+  if ((result & (kRecalcContainerFlags | kSuppressRecalc)) ==
+      kRecalcContainer) {
+    // Don't traverse into children if we hit a descendant container while
+    // recalculating container queries. If the queries for this container also
+    // changes, we will enter another container query recalc for this subtree
+    // from layout.
+    const ComputedStyle* old_style = element.GetComputedStyle();
+    if (old_style && old_style->IsContainerForContainerQueries())
+      result &= ~kRecalcContainer;
+  }
+
+  result &= ~kSuppressRecalc;
+
+  return result;
 }
 
 StyleRecalcContext StyleRecalcContext::FromAncestors(Element& element) {
@@ -77,10 +85,10 @@ StyleRecalcContext StyleRecalcContext::FromAncestors(Element& element) {
   // TODO(crbug.com/1145970): Avoid this work if we're not inside a container.
   while ((ancestor = DynamicTo<Element>(
               LayoutTreeBuilderTraversal::Parent(*ancestor)))) {
-    ContainerQueryEvaluator* evaluator = ancestor->GetContainerQueryEvaluator();
-    if (evaluator)
-      return StyleRecalcContext{evaluator};
+    if (ancestor->GetContainerQueryEvaluator())
+      return StyleRecalcContext{ancestor};
   }
+
   return StyleRecalcContext();
 }
 

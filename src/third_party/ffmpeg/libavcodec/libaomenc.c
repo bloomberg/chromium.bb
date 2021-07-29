@@ -654,8 +654,11 @@ static av_cold int aom_init(AVCodecContext *avctx,
 
     if (avctx->qmin >= 0)
         enccfg.rc_min_quantizer = avctx->qmin;
-    if (avctx->qmax >= 0)
+    if (avctx->qmax >= 0) {
         enccfg.rc_max_quantizer = avctx->qmax;
+    } else if (!ctx->crf) {
+        enccfg.rc_max_quantizer = 0;
+    }
 
     if (enccfg.rc_end_usage == AOM_CQ || enccfg.rc_end_usage == AOM_Q) {
         if (ctx->crf < enccfg.rc_min_quantizer || ctx->crf > enccfg.rc_max_quantizer) {
@@ -1345,7 +1348,8 @@ AVCodec ff_libaom_av1_encoder = {
     .init           = av1_init,
     .encode2        = aom_encode,
     .close          = aom_free,
-    .capabilities   = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_AUTO_THREADS,
+    .capabilities   = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_OTHER_THREADS,
+    .caps_internal  = FF_CODEC_CAP_AUTO_THREADS,
     .profiles       = NULL_IF_CONFIG_SMALL(ff_av1_profiles),
     .priv_class     = &class_aom,
     .defaults       = defaults,

@@ -20,10 +20,20 @@ id<GREYMatcher> WindowWithNumber(int window_number) {
   return [ChromeMatchersAppInterface windowWithNumber:window_number];
 }
 
+id<GREYMatcher> BlockerWindowWithNumber(int window_number) {
+  return [ChromeMatchersAppInterface blockerWindowWithNumber:window_number];
+}
+
 id<GREYMatcher> MatchInWindowWithNumber(int window_number,
                                         id<GREYMatcher> matcher) {
   return grey_allOf(matcher, grey_ancestor(WindowWithNumber(window_number)),
                     nil);
+}
+
+id<GREYMatcher> MatchInBlockerWindowWithNumber(int window_number,
+                                               id<GREYMatcher> matcher) {
+  return grey_allOf(matcher,
+                    grey_ancestor(BlockerWindowWithNumber(window_number)), nil);
 }
 
 id<GREYMatcher> ButtonWithAccessibilityLabel(NSString* label) {
@@ -210,9 +220,8 @@ id<GREYMatcher> OpenLinkInNewTabButton() {
   return [ChromeMatchersAppInterface openLinkInNewTabButton];
 }
 
-id<GREYMatcher> OpenLinkInIncognitoButton(BOOL use_new_string) {
-  return [ChromeMatchersAppInterface
-      openLinkInIncognitoButtonWithUseNewString:use_new_string];
+id<GREYMatcher> OpenLinkInIncognitoButton() {
+  return [ChromeMatchersAppInterface openLinkInIncognitoButton];
 }
 
 id<GREYMatcher> OpenLinkInNewWindowButton() {
@@ -464,17 +473,20 @@ id<GREYMatcher> SystemSelectionCalloutCopyButton() {
   return [ChromeMatchersAppInterface systemSelectionCalloutCopyButton];
 }
 
-id<GREYMatcher> CopyActivityButton() API_AVAILABLE(ios(13)) {
+id<GREYMatcher> SystemSelectionCalloutOverflowButton() {
+  return [ChromeMatchersAppInterface systemSelectionCalloutOverflowButton];
+}
+
+id<GREYMatcher> CopyActivityButton() {
   return [ChromeMatchersAppInterface copyActivityButton];
 }
 
-id<GREYMatcher> CopyLinkButton(BOOL use_new_string) {
-  return [ChromeMatchersAppInterface
-      copyLinkButtonWithUseNewString:use_new_string];
+id<GREYMatcher> CopyLinkButton() {
+  return [ChromeMatchersAppInterface copyLinkButton];
 }
 
-id<GREYMatcher> EditButton(BOOL use_new_string) {
-  return [ChromeMatchersAppInterface editButtonWithUseNewString:use_new_string];
+id<GREYMatcher> EditButton() {
+  return [ChromeMatchersAppInterface editButton];
 }
 
 id<GREYMatcher> MoveButton() {
@@ -519,6 +531,11 @@ id<GREYMatcher> WebViewMatcher() {
 
 id<GREYMatcher> WebStateScrollViewMatcher() {
   return [ChromeMatchersAppInterface webStateScrollViewMatcher];
+}
+
+id<GREYMatcher> WebStateScrollViewMatcherInWindowWithNumber(int windowNumber) {
+  return [ChromeMatchersAppInterface
+      webStateScrollViewMatcherInWindowWithNumber:windowNumber];
 }
 
 id<GREYMatcher> HistoryClearBrowsingDataButton() {
@@ -730,6 +747,24 @@ id<GREYMatcher> ManualFallbackSuggestPasswordMatcher() {
 
 id<GREYMatcher> UseSuggestedPasswordMatcher() {
   return [ChromeMatchersAppInterface useSuggestedPasswordMatcher];
+}
+
+#pragma mark - Tab Grid Edit Mode
+
+id<GREYMatcher> TabGridEditButton() {
+  return [ChromeMatchersAppInterface tabGridEditButton];
+}
+
+id<GREYMatcher> TabGridEditAddToButton() {
+  return [ChromeMatchersAppInterface tabGridEditAddToButton];
+}
+
+id<GREYMatcher> TabGridEditCloseTabsButton() {
+  return [ChromeMatchersAppInterface tabGridEditCloseTabsButton];
+}
+
+id<GREYMatcher> TabGridEditSelectAllButton() {
+  return [ChromeMatchersAppInterface tabGridEditSelectAllButton];
 }
 
 }  // namespace chrome_test_util

@@ -5,6 +5,7 @@
 #include <utility>
 
 #include "ash/public/cpp/test/test_image_downloader.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "ui/gfx/image/image_skia.h"
@@ -23,8 +24,10 @@ void TestImageDownloader::Download(
   // Pretend to respond asynchronously.
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(std::move(callback), gfx::test::CreateImageSkia(
-                                              /*width=*/10, /*height=*/20)));
+      base::BindOnce(std::move(callback),
+                     should_fail_ ? gfx::ImageSkia()
+                                  : gfx::test::CreateImageSkia(
+                                        /*width=*/10, /*height=*/20)));
 }
 
 }  // namespace ash

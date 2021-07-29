@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_truncator.h"
 
+#include "base/containers/adapters.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_box_state.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_result.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_info.h"
@@ -138,8 +139,7 @@ LayoutUnit NGLineTruncator::TruncateLine(LayoutUnit line_width,
   absl::optional<NGLogicalLineItem> truncated_child;
   if (IsLtr(line_direction_)) {
     NGLogicalLineItem* first_child = line_box->FirstInFlowChild();
-    for (auto it = line_box->rbegin(); it != line_box->rend(); it++) {
-      auto& child = *it;
+    for (auto& child : base::Reversed(*line_box)) {
       if (EllipsizeChild(line_width, ellipsis_width_, &child == first_child,
                          &child, &truncated_child)) {
         ellipsized_child = &child;
@@ -410,7 +410,12 @@ void NGLineTruncator::HideChild(NGLogicalLineItem* child) {
     if (fragment.HasOutOfFlowPositionedDescendants())
       return;
 
-    child->layout_result = fragment.CloneAsHiddenForPaint();
+    // Truncate this object. Atomic inline is monolithic.
+    DCHECK(fragment.IsMonolithic());
+    LayoutObject* layout_object = fragment.GetMutableLayoutObject();
+    DCHECK(layout_object);
+    DCHECK(layout_object->IsAtomicInlineLevel());
+    layout_object->SetIsTruncated(true);
     return;
   }
 

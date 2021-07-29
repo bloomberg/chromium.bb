@@ -73,12 +73,6 @@ const char kBreakpadNoDelayInitialUploadDescription[] =
     "disabled, initial upload is delayed until deferred initialization. This "
     "does not affect recovery mode.";
 
-const char kChangePasswordAffiliationInfoName[] =
-    "Using Affiliation Service for Change Password URLs";
-const char kChangePasswordAffiliationInfoDescription[] =
-    "In case site doesn't support /.well-known/change-password Chrome will try "
-    "to obtain it using Affiliation Service.";
-
 const char kCollectionsCardPresentationStyleName[] =
     "Card style presentation for Collections.";
 const char kCollectionsCardPresentationStyleDescription[] =
@@ -150,31 +144,56 @@ const char kDiscoverFeedInNtpDescription[] =
     "When enabled, replaces articles feed with new content Suggestion Feed in "
     "the NTP.";
 
+const char kDownloadMobileConfigFileName[] = "Download .mobileconfig file";
+const char kDownloadMobileConfigFileDescription[] =
+    "Allows user to download and install a .mobileconfig file";
+
 const char kEditPasswordsInSettingsName[] = "Edit passwords in settings";
 const char kEditPasswordsInSettingsDescription[] =
     "Enables password editing in settings.";
 
 const char kRestoreSessionFromCacheName[] =
-    "Use iOS_TBA native WKWebView sesion restoration.";
+    "Use native WKWebView sesion restoration (iOS15 only).";
 const char kRestoreSessionFromCacheDescription[] =
-    "Enable iOS_TBA instant session restoration for faster and more "
-    "web session restoration.";
+    "Enable instant session restoration for faster web session restoration "
+    "(iOS15 only).";
 
 const char kEnableAutofillAccountWalletStorageName[] =
     "Enable the account data storage for autofill";
 const char kEnableAutofillAccountWalletStorageDescription[] =
     "Enable the ephemeral storage for account data for autofill.";
 
+const char kEnableAutofillAddressSavePromptAddressVerificationName[] =
+    "Autofill Address Save Prompts Address Verification";
+const char kEnableAutofillAddressSavePromptAddressVerificationDescription[] =
+    "Enable the address verification support in Autofill address save prompts.";
+
 const char kEnableAutofillAddressSavePromptName[] =
     "Autofill Address Save Prompts";
 const char kEnableAutofillAddressSavePromptDescription[] =
     "Enable the Autofill address save prompts.";
+
+const char kEnableAutofillSaveCardInfoBarAccountIndicationFooterName[] =
+    "Display save card infobar with account indication information";
+const char kEnableAutofillSaveCardInfoBarAccountIndicationFooterDescription[] =
+    "When enabled, UI indicating user's e-mail address will appear at the"
+    "bottom of save card infobar.";
 
 const char kEnableCloseAllTabsConfirmationName[] =
     "Enable Close All Tabs confirmation";
 const char kEnableCloseAllTabsConfirmationDescription[] =
     "Enable showing an action sheet that asks for confirmation when 'Close "
     "All' button is tapped on the tab grid to avoid unwanted clearing.";
+
+const char kEnableDiscoverFeedPreviewName[] = "Enable discover feed preview";
+const char kEnableDiscoverFeedPreviewDescription[] =
+    "Enable showing a live preview for discover feed long-press menu.";
+
+const char kEnableExtendedSyncPromosCapabilityName[] =
+    "Enables reading the extended sync promo account capability";
+const char kEnableExtendedSyncPromosCapabilityDescription[] =
+    "When enabled, starts reading the account capability to decide whether "
+    "or not Chrome should display an extended sync promo";
 
 const char kEnableFREUIModuleIOSName[] = "Enable FRE UI module";
 const char kEnableFREUIModuleIOSDescription[] =
@@ -210,6 +229,11 @@ const char kFillingAcrossAffiliatedWebsitesName[] =
 const char kFillingAcrossAffiliatedWebsitesDescription[] =
     "Enables filling password on a website when there is saved "
     "password on affiliated website.";
+
+const char kForceDisableExtendedSyncPromosName[] =
+    "Disable all extended sync promos";
+const char kForceDisableExtendedSyncPromosDescription[] =
+    "When enabled, will not display any extended sync promos";
 
 const char kForceStartupSigninPromoName[] = "Display the startup sign-in promo";
 const char kForceStartupSigninPromoDescription[] =
@@ -303,6 +327,10 @@ const char kLockBottomToolbarDescription[] =
     "When enabled, the bottom toolbar will not get collapsed when scrolling "
     "into fullscreen mode.";
 
+const char kMetrickitCrashReportName[] = "Metrickit crash reports";
+const char kMetrickitCrashReportDescription[] =
+    "Enables sending Metrickit crash reports";
+
 const char kMICEWebSignInName[] = "MICE Web Sign-in";
 const char kMICEWebSignInDescription[] =
     "Enables MICE web sign-in. Requires #mobile-identity-consistency.";
@@ -360,6 +388,11 @@ const char kPasswordReuseDetectionName[] =
 const char kPasswordReuseDetectionDescription[] =
     "Displays warning when user types or pastes a saved password into a "
     "phishing website.";
+
+const char kReadingListMessagesName[] = "Enables Reading List Messages";
+const char kReadingListMessagesDescription[] =
+    "When enabled, a Messages prompt may be presented to allow the user to "
+    "save the current page to Reading List";
 
 const char kRefactoredNTPName[] = "Enables refactored new tab page";
 const char kRefactoredNTPDescription[] =
@@ -424,6 +457,25 @@ const char kSyncSandboxName[] = "Use Chrome Sync sandbox";
 const char kSyncSandboxDescription[] =
     "Connects to the testing server for Chrome Sync.";
 
+const char kSyncTrustedVaultPassphraseiOSRPCName[] =
+    "Enable RPC for sync trusted vault passphrase.";
+const char kSyncTrustedVaultPassphraseiOSRPCDescription[] =
+    "Enables RPC for an experimental sync passphrase type, referred to as "
+    "trusted vault.";
+
+const char kSyncTrustedVaultPassphrasePromoName[] =
+    "Enable promos for sync trusted vault passphrase.";
+const char kSyncTrustedVaultPassphrasePromoDescription[] =
+    "Enables promos for an experimental sync passphrase type, referred to as "
+    "trusted vault.";
+
+const char kSyncTrustedVaultPassphraseRecoveryName[] =
+    "Enable sync trusted vault passphrase with improved recovery.";
+const char kSyncTrustedVaultPassphraseRecoveryDescription[] =
+    "Enables support for an experimental sync passphrase type, referred to as "
+    "trusted vault, including logic and APIs for improved account recovery "
+    "flows.";
+
 const char kStartSurfaceName[] = "Start Surface";
 const char kStartSurfaceDescription[] =
     "Enable showing the Start Surface when launching Chrome via clicking the "
@@ -444,7 +496,7 @@ const char kToolbarContainerDescription[] =
     "managed by the toolbar container coordinator rather than BVC.";
 
 const char kUpdateHistoryEntryPointsInIncognitoName[] =
-    "Update history entry points in Incongito.";
+    "Update history entry points in Incognito.";
 const char kUpdateHistoryEntryPointsInIncognitoDescription[] =
     "When enabled, the entry points to history UI from Incognito mode will be "
     "removed.";
@@ -457,12 +509,6 @@ const char kURLBlocklistIOSDescription[] =
 const char kUseJSForErrorPageName[] = "Enable new error page workflow";
 const char kUseJSForErrorPageDescription[] =
     "Use JavaScript for the error pages";
-
-const char kUseOfHashAffiliationFetcherName[] =
-    "Use of Hash Affiliation Fetcher";
-const char kUseOfHashAffiliationFetcherDescription[] =
-    "All requests to the affiliation fetcher are made through the hash prefix "
-    "lookup. Enables use of Hash Affiliation Service for non-synced users.";
 
 const char kWalletServiceUseSandboxName[] = "Use Google Payments sandbox";
 const char kWalletServiceUseSandboxDescription[] =

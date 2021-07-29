@@ -24,6 +24,7 @@ Ruxsat berish uchun quyidagi “<ph name="BUTTON_NAME" />” tugmasini bosib, ek
 Agar “<ph name="SERVICE_SCRIPT_NAME" />” allaqachon yoniq boʻlsa, uning tanlovini olib tashlang va qayta belgilang.</translation>
 <translation id="225614027745146050">Xush kelibsiz</translation>
 <translation id="2320166752086256636">Klaviaturani berkitish</translation>
+<translation id="2329392777730037872"><ph name="URL" /> mijoz qurilmasida ochilmadi.</translation>
 <translation id="2333212046079545895">Copyright 2021 Google LLC. Barcha huquqlar himoyalangan.</translation>
 <translation id="2359808026110333948">Davom etish</translation>
 <translation id="2366718077645204424">Hostga ulanib bo‘lmadi. Buning sababi - siz foydalanayotgan tarmog sozlamalari bo‘lishi mumkin.</translation>
@@ -67,6 +68,7 @@ Agar “<ph name="SERVICE_SCRIPT_NAME" />” allaqachon yoniq boʻlsa, uning tan
 <translation id="4176825807642096119">Ruxsat kodi</translation>
 <translation id="4227991223508142681">Hostni tayyorlash vositasi</translation>
 <translation id="4240294130679914010">Chrome masofali boshqaruv pult hostini o‘chirish vositasi</translation>
+<translation id="4257751272692708833">URL uzatish uchun <ph name="PRODUCT_NAME" /></translation>
 <translation id="4277736576214464567">Ruxsat kodi noto‘g‘ri. Qayta urinib ko‘ring.</translation>
 <translation id="4281844954008187215">Xizmat shartlari</translation>
 <translation id="4405930547258349619">Yadro kutubxonasi</translation>
@@ -87,6 +89,7 @@ Agar “<ph name="SERVICE_SCRIPT_NAME" />” allaqachon yoniq boʻlsa, uning tan
 <translation id="4867841927763172006">PrtScn yuborish</translation>
 <translation id="4974476491460646149"><ph name="HOSTNAME" /> qurilmasiga ulanish uzilib qoldi</translation>
 <translation id="4985296110227979402">Avval kompyuterda masofaviy ruxsatni sozlang</translation>
+<translation id="4987330545941822761">Chrome Remote Desktop URL manzillarni qurilmada ochish uchun brauzer topa olmaydi. Kerakli ilovani quyidagi roʻyxatdan tanlang.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (oflayn)</translation>
 <translation id="507204348399810022"><ph name="HOSTNAME" /> kompyuteriga masofadan ulanishlar o‘chirib qo‘yilsinmi?</translation>
 <translation id="5170982930780719864">Yaroqsiz host identifikatori</translation>
@@ -121,6 +124,7 @@ Agar “<ph name="SERVICE_SCRIPT_NAME" />” allaqachon yoniq boʻlsa, uning tan
 <translation id="6612717000975622067">Ctrl-Alt-Del yuborish</translation>
 <translation id="6654753848497929428">Ruxsat</translation>
 <translation id="677755392401385740"><ph name="HOST_USERNAME" /> uchun host ishga tushdi.</translation>
+<translation id="6902524959760471898">URL manzilni <ph name="PRODUCT_NAME" /> mijozda ochish uchun yordamchi ilova</translation>
 <translation id="6939719207673461467">Klaviaturani ko‘rsatish/yashirish</translation>
 <translation id="6963936880795878952">Masofaviy kompyuterga ulanishlar vaqtincha taqiqlangan, chunki kimdir unga noto‘g‘ri PIN kod orqali ulanib ko‘rgan. Keyinroq qayta urinib ko‘ring.</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -133,6 +137,7 @@ Agar “<ph name="SERVICE_SCRIPT_NAME" />” allaqachon yoniq boʻlsa, uning tan
 <translation id="7144878232160441200">Qayta urinish</translation>
 <translation id="7312846573060934304">Host tarmoqqa ulanmagan.</translation>
 <translation id="7319983568955948908">Ruxsatni yopish</translation>
+<translation id="7359298090707901886">Tanlangan brauzer yordamida mahalliy kompyuterda URL manzilni ocholmaysiz.</translation>
 <translation id="7401733114166276557">Chrome masofaviy ish stoli</translation>
 <translation id="7434397035092923453">Bu mijoz uchun ruxsat taqiqlangan: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Mijoz ulandi: <ph name="CLIENT_USERNAME" />.</translation>

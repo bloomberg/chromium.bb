@@ -28,7 +28,7 @@ DiscoverFeedService::DiscoverFeedService(
   discover_config.authService = authentication_service;
   discover_config.prefService = pref_service;
   discover_config.metricsRecorder = discover_feed_metrics_recorder_;
-  ios::GetChromeBrowserProvider()->GetDiscoverFeedProvider()->StartFeed(
+  ios::GetChromeBrowserProvider().GetDiscoverFeedProvider()->StartFeed(
       discover_config);
 }
 
@@ -43,7 +43,7 @@ void DiscoverFeedService::Shutdown() {
   identity_manager_observation_.Reset();
 
   // Stop the Discover feed to disconnects its services.
-  ios::GetChromeBrowserProvider()->GetDiscoverFeedProvider()->StopFeed();
+  ios::GetChromeBrowserProvider().GetDiscoverFeedProvider()->StopFeed();
 
   discover_feed_metrics_recorder_ = nil;
 }
@@ -51,6 +51,6 @@ void DiscoverFeedService::Shutdown() {
 void DiscoverFeedService::OnPrimaryAccountChanged(
     const signin::PrimaryAccountChangeEvent& event) {
   ios::GetChromeBrowserProvider()
-      ->GetDiscoverFeedProvider()
+      .GetDiscoverFeedProvider()
       ->UpdateFeedForAccountChange();
 }

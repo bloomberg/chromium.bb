@@ -85,6 +85,29 @@ struct TypedExpression {
   ast::Expression* expr = nullptr;
 };
 
+/// Info about the WorkgroupSize builtin.
+struct WorkgroupSizeInfo {
+  /// Constructor
+  WorkgroupSizeInfo();
+  /// Destructor
+  ~WorkgroupSizeInfo();
+  /// The SPIR-V ID of the WorkgroupSize builtin, if any.
+  uint32_t id = 0u;
+  /// The SPIR-V type ID of the WorkgroupSize builtin, if any.
+  uint32_t type_id = 0u;
+  /// The SPIR-V type IDs of the x, y, and z components.
+  uint32_t component_type_id = 0u;
+  /// The SPIR-V IDs of the X, Y, and Z components of the workgroup size
+  /// builtin.
+  uint32_t x_id = 0u;  /// X component ID
+  uint32_t y_id = 0u;  /// Y component ID
+  uint32_t z_id = 0u;  /// Z component ID
+  /// The effective workgroup size, if this is a compute shader.
+  uint32_t x_value = 0u;  /// X workgroup size
+  uint32_t y_value = 0u;  /// Y workgroup size
+  uint32_t z_value = 0u;  /// Z workgroup size
+};
+
 /// Parser implementation for SPIR-V.
 class ParserImpl : Reader {
  public:
@@ -123,14 +146,6 @@ class ParserImpl : Reader {
 
   /// @returns the accumulated error string
   const std::string error() { return errors_.str(); }
-
-  /// Changes pipeline IO to be HLSL-style: as entry point parameters and
-  /// return.
-  /// TODO(crbug.com/tint/508): Once all this support has landed, switch
-  /// over to that, and remove the old support.
-  void SetHLSLStylePipelineIO() { hlsl_style_pipeline_io_ = true; }
-  /// @returns true if HLSL-style IO should be used.
-  bool UseHLSLStylePipelineIO() const { return hlsl_style_pipeline_io_; }
 
   /// Builds an internal representation of the SPIR-V binary,
   /// and parses it into a Tint AST module.  Diagnostics are emitted
@@ -190,10 +205,10 @@ class ParserImpl : Reader {
                                  const spvtools::opt::analysis::Type* type,
                                  const Type* ast_type);
 
-  /// Adds `type` as a constructed type if it hasn't been added yet.
+  /// Adds `decl` as a declared type if it hasn't been added yet.
   /// @param name the type's unique name
-  /// @param type the type to add
-  void AddConstructedType(Symbol name, ast::NamedType* type);
+  /// @param decl the type declaration to add
+  void AddTypeDecl(Symbol name, ast::TypeDecl* decl);
 
   /// @returns the fail stream object
   FailStream& fail_stream() { return fail_stream_; }
@@ -226,13 +241,16 @@ class ParserImpl : Reader {
   /// a diagnostic), or when the variable should not be emitted, e.g. for a
   /// PointSize builtin.
   /// @param id the ID of the SPIR-V variable
-  /// @param type the WGSL store type for the variable, which should be
+  /// @param store_type the WGSL store type for the variable, which should be
   /// prepopulatd
   /// @param ast_decos the decoration list to populate
+  /// @param transfer_pipeline_io true if pipeline IO decorations (builtins,
+  /// or locations) will update the store type and the decorations list
   /// @returns false when the variable should not be emitted as a variable
   bool ConvertDecorationsForVariable(uint32_t id,
-                                     const Type** type,
-                                     ast::DecorationList* ast_decos);
+                                     const Type** store_type,
+                                     ast::DecorationList* ast_decos,
+                                     bool transfer_pipeline_io);
 
   /// Converts a SPIR-V struct member decoration. If the decoration is
   /// recognized but deliberately dropped, then returns nullptr without a
@@ -303,6 +321,15 @@ class ParserImpl : Reader {
   /// @returns true if parser is still successful.
   bool RegisterUserAndStructMemberNames();
 
+  /// Register the WorkgroupSize builtin and its associated constant value.
+  /// @returns true if parser is still successful.
+  bool RegisterWorkgroupSizeBuiltin();
+
+  /// @returns the workgroup size builtin
+  const WorkgroupSizeInfo& workgroup_size_builtin() {
+    return workgroup_size_builtin_;
+  }
+
   /// Register entry point information.
   /// This is a no-op if the parser has already failed.
   /// @returns true if parser is still successful.
@@ -346,6 +373,19 @@ class ParserImpl : Reader {
   /// @returns the integer constant for its array size, or nullptr.
   const spvtools::opt::analysis::IntConstant* GetArraySize(uint32_t var_id);
 
+  /// Returns the member name for the struct member.
+  /// @param struct_type the parser's structure type.
+  /// @param member_index the member index
+  /// @returns the field name
+  std::string GetMemberName(const Struct& struct_type, int member_index);
+
+  /// Returns the location decoration, if any on a struct member.
+  /// @param struct_type the parser's structure type.
+  /// @param member_index the member index
+  /// @returns a newly created location node, or nullptr
+  ast::Decoration* GetMemberLocation(const Struct& struct_type,
+                                     int member_index);
+
   /// Creates an AST Variable node for a SPIR-V ID, including any attached
   /// decorations, unless it's an ignorable builtin variable.
   /// @param id the SPIR-V result ID
@@ -363,10 +403,26 @@ class ParserImpl : Reader {
                               ast::Expression* constructor,
                               ast::DecorationList decorations);
 
-  /// Creates an AST expression node for a SPIR-V constant.
+  /// Returns true if a constant expression can be generated.
+  /// @param id the SPIR-V ID of the value
+  /// @returns true if a constant expression can be generated
+  bool CanMakeConstantExpression(uint32_t id);
+
+  /// Creates an AST expression node for a SPIR-V ID.  This is valid to call
+  /// when `CanMakeConstantExpression` returns true.
   /// @param id the SPIR-V ID of the constant
   /// @returns a new expression
   TypedExpression MakeConstantExpression(uint32_t id);
+
+  /// Creates an AST expression node for a SPIR-V constant.
+  /// @param source the source location
+  /// @param ast_type the AST type for the value
+  /// @param spirv_const the internal representation of the SPIR-V constant.
+  /// @returns a new expression
+  TypedExpression MakeConstantExpressionForSpirvConstant(
+      Source source,
+      const Type* ast_type,
+      const spvtools::opt::analysis::Constant* spirv_const);
 
   /// Creates an AST expression node for the null value for the given type.
   /// @param type the AST type
@@ -478,6 +534,8 @@ class ParserImpl : Reader {
     /// The ID of the gl_PerVertex variable, if it was declared.
     /// We'll use this for the gl_Position variable instead.
     uint32_t per_vertex_var_id = 0;
+    /// The ID of the initializer to gl_PerVertex, if any.
+    uint32_t per_vertex_var_init_id = 0;
   };
   /// @returns info about the gl_Position builtin variable.
   const BuiltInPositionInfo& GetBuiltInPositionInfo() {
@@ -714,6 +772,10 @@ class ParserImpl : Reader {
   // "NonSemanticInfo." import is ignored.
   std::unordered_set<uint32_t> ignored_imports_;
 
+  // The SPIR-V IDs of structure types that are the store type for buffer
+  // variables, either UBO or SSBO.
+  std::unordered_set<uint32_t> struct_types_for_buffers_;
+
   // Bookkeeping for the gl_Position builtin.
   // In Vulkan SPIR-V, it's the 0 member of the gl_PerVertex structure.
   // But in WGSL we make a module-scope variable:
@@ -760,9 +822,12 @@ class ParserImpl : Reader {
   std::unordered_map<const spvtools::opt::Instruction*, const Pointer*>
       handle_type_;
 
-  // Set of symbols of constructed types that have been added, used to avoid
+  // Set of symbols of declared type that have been added, used to avoid
   // adding duplicates.
-  std::unordered_set<Symbol> constructed_types_;
+  std::unordered_set<Symbol> declared_types_;
+
+  // Maps a struct type name to the SPIR-V ID for the structure type.
+  std::unordered_map<Symbol, uint32_t> struct_id_for_symbol_;
 
   /// Maps the SPIR-V ID of a module-scope builtin variable that should be
   /// ignored or type-converted, to its builtin kind.
@@ -770,9 +835,10 @@ class ParserImpl : Reader {
   /// complex case of replacing an entire structure.
   BuiltInsMap special_builtins_;
 
-  /// This is temporary while this module is converted to use the new style
-  /// of pipeline IO.
-  bool hlsl_style_pipeline_io_ = false;
+  /// Info about the WorkgroupSize builtin. If it's not present, then the 'id'
+  /// field will be 0. Sadly, in SPIR-V right now, there's only one workgroup
+  /// size object in the module.
+  WorkgroupSizeInfo workgroup_size_builtin_;
 };
 
 }  // namespace spirv

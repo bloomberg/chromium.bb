@@ -41,11 +41,10 @@ import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Protocol from '../../generated/protocol.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
+import * as NetworkForward from '../../panels/network/forward/forward.js';
 import * as ClientVariations from '../../third_party/chromium/client-variations/client-variations.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
-
-import {UIHeaderSection} from './NetworkSearchScope.js';
 
 const UIStrings = {
   /**
@@ -257,7 +256,7 @@ export class RequestHeadersView extends UI.Widget.VBox {
 
   constructor(request: SDK.NetworkRequest.NetworkRequest) {
     super();
-    this.registerRequiredCSS('panels/network/requestHeadersView.css', {enableLegacyPatching: false});
+    this.registerRequiredCSS('panels/network/requestHeadersView.css');
     this.element.classList.add('request-headers-view');
 
     this._request = request;
@@ -273,10 +272,9 @@ export class RequestHeadersView extends UI.Widget.VBox {
     this._highlightedElement = null;
 
     const root = new UI.TreeOutline.TreeOutlineInShadow();
-    root.registerRequiredCSS('ui/legacy/components/object_ui/objectValue.css', {enableLegacyPatching: false});
-    root.registerRequiredCSS(
-        'ui/legacy/components/object_ui/objectPropertiesSection.css', {enableLegacyPatching: true});
-    root.registerRequiredCSS('panels/network/requestHeadersTree.css', {enableLegacyPatching: false});
+    root.registerRequiredCSS('ui/legacy/components/object_ui/objectValue.css');
+    root.registerRequiredCSS('ui/legacy/components/object_ui/objectPropertiesSection.css');
+    root.registerRequiredCSS('panels/network/requestHeadersTree.css');
     root.element.classList.add('request-headers-tree');
     root.makeDense();
     this.element.appendChild(root.element);
@@ -432,7 +430,9 @@ export class RequestHeadersView extends UI.Widget.VBox {
   }
 
   _refreshURL(): void {
-    this._urlItem.title = this._formatHeader(i18nString(UIStrings.requestUrl), this._request.url());
+    const requestURL = this._request.url();
+    this._urlItem.title = this._formatHeader(i18nString(UIStrings.requestUrl), requestURL);
+    this._addEntryContextMenuHandler(this._urlItem, requestURL);
   }
 
   _refreshQueryString(): void {
@@ -871,11 +871,18 @@ export class RequestHeadersView extends UI.Widget.VBox {
         cautionText = i18nString(UIStrings.provisionalHeadersAreShown);
       }
       const cautionElement = document.createElement('div');
+      cautionElement.classList.add('request-headers-caution');
       UI.Tooltip.Tooltip.install(cautionElement, cautionTitle);
       (cautionElement.createChild('span', '', 'dt-icon-label') as UI.UIUtils.DevToolsIconLabel).type =
           'smallicon-warning';
       cautionElement.createChild('div', 'caution').textContent = cautionText;
       const cautionTreeElement = new UI.TreeOutline.TreeElement(cautionElement);
+
+      cautionElement.createChild('div', 'learn-more')
+          .appendChild(UI.XLink.XLink.create(
+              'https://developer.chrome.com/docs/devtools/network/reference/#provisional-headers',
+              i18nString(UIStrings.learnMore)));
+
       headersTreeElement.appendChild(cautionTreeElement);
     }
 
@@ -1009,18 +1016,18 @@ export class RequestHeadersView extends UI.Widget.VBox {
     }
   }
 
-  private getCategoryForSection(section: UIHeaderSection): Category {
+  private getCategoryForSection(section: NetworkForward.UIRequestLocation.UIHeaderSection): Category {
     switch (section) {
-      case UIHeaderSection.General:
+      case NetworkForward.UIRequestLocation.UIHeaderSection.General:
         return this._root;
-      case UIHeaderSection.Request:
+      case NetworkForward.UIRequestLocation.UIHeaderSection.Request:
         return this._requestHeadersCategory;
-      case UIHeaderSection.Response:
+      case NetworkForward.UIRequestLocation.UIHeaderSection.Response:
         return this._responseHeadersCategory;
     }
   }
 
-  revealHeader(section: UIHeaderSection, header?: string): void {
+  revealHeader(section: NetworkForward.UIRequestLocation.UIHeaderSection, header?: string): void {
     this._revealAndHighlight(this.getCategoryForSection(section), header);
   }
 }

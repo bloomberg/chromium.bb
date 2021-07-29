@@ -229,12 +229,15 @@ namespace dawn_native { namespace d3d12 {
                 // storage buffer in the BGL produces the wrong output.
                 // Force read-only storage buffer bindings to be treated as UAV
                 // instead of SRV.
+                // Internal storage buffer is a storage buffer used in the internal pipeline.
                 const bool forceStorageBufferAsUAV =
                     (bindingInfo.buffer.type == wgpu::BufferBindingType::ReadOnlyStorage &&
-                     bgl->GetBindingInfo(bindingIndex).buffer.type ==
-                         wgpu::BufferBindingType::Storage);
+                     (bgl->GetBindingInfo(bindingIndex).buffer.type ==
+                          wgpu::BufferBindingType::Storage ||
+                      bgl->GetBindingInfo(bindingIndex).buffer.type ==
+                          kInternalStorageBufferBinding));
                 if (forceStorageBufferAsUAV) {
-                    accessControls.emplace(srcBindingPoint, tint::ast::AccessControl::kReadWrite);
+                    accessControls.emplace(srcBindingPoint, tint::ast::Access::kReadWrite);
                 }
             }
         }
@@ -256,7 +259,6 @@ namespace dawn_native { namespace d3d12 {
         }
         transformManager.Add<tint::transform::BindingRemapper>();
         transformManager.Add<tint::transform::Renamer>();
-        transformManager.Add<tint::transform::Hlsl>();
 
         // D3D12 registers like `t3` and `c3` have the same bindingOffset number in the
         // remapping but should not be considered a collision because they have different types.
@@ -290,14 +292,14 @@ namespace dawn_native { namespace d3d12 {
             return DAWN_VALIDATION_ERROR("Transform output missing renamer data.");
         }
 
-        tint::writer::hlsl::Generator generator(&program);
-        // TODO: Switch to GenerateEntryPoint once HLSL writer supports it.
-        if (!generator.Generate()) {
-            errorStream << "Generator: " << generator.error() << std::endl;
+        tint::writer::hlsl::Options options;
+        auto result = tint::writer::hlsl::Generate(&program, options);
+        if (!result.success) {
+            errorStream << "Generator: " << result.error << std::endl;
             return DAWN_VALIDATION_ERROR(errorStream.str().c_str());
         }
 
-        return generator.result();
+        return std::move(result.hlsl);
     }
 
     ResultOrError<std::string> ShaderModule::TranslateToHLSLWithSPIRVCross(
@@ -391,6 +393,12 @@ namespace dawn_native { namespace d3d12 {
             // Note that the HLSL will always use entryPoint "main" under
             // SPIRV-cross.
             entryPointName = "main";
+        }
+
+        if (device->IsToggleEnabled(Toggle::DumpShaders)) {
+            std::ostringstream dumpedMsg;
+            dumpedMsg << "/* Dumped generated HLSL */" << std::endl << hlslSource;
+            GetDevice()->EmitLog(WGPULoggingType_Info, dumpedMsg.str().c_str());
         }
 
         // Use HLSL source as the input for the key since it does need to know about the pipeline

@@ -10,7 +10,6 @@
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/debug/dump_without_crashing.h"
-#include "base/stl_util.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
@@ -278,6 +277,7 @@ PickerEntryType GetPickerEntryType(mojom::AppType app_type) {
     case mojom::AppType::kPluginVm:
     case mojom::AppType::kExtension:
     case mojom::AppType::kStandaloneBrowser:
+    case mojom::AppType::kStandaloneBrowserExtension:
     case mojom::AppType::kRemote:
     case mojom::AppType::kBorealis:
       break;

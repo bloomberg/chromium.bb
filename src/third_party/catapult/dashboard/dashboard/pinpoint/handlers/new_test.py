@@ -174,6 +174,13 @@ class NewTest(_NewTest):
         job.state._changes[1].id_string,
         'chromium@3 + %s' % ('https://lalala/repo~branch~id/abc123',))
 
+  def testComparisonModeTry_InvalidPatch(self):
+    request = dict(_BASE_REQUEST)
+    request['comparison_mode'] = 'try'
+    request['patch'] = 'https://lalala/c/123/4'
+    response = self.Post('/api/new', request, status=400)
+    self.assertIn('error', json.loads(response.body))
+
   def testComparisonModeTry_ApplyBaseAndExperimentPatchLegacy(self):
     request = dict(_BASE_REQUEST)
     request['comparison_mode'] = 'try'
@@ -203,6 +210,33 @@ class NewTest(_NewTest):
     self.assertEqual(
         job.state._changes[0].id_string,
         'chromium@3 + %s' % ('https://lalala/repo~branch~id/abc123',))
+
+  def testComparisonModeTry_BaseAndExpFlags(self):
+    request = dict(_BASE_REQUEST)
+    del request['end_git_hash']
+    del request['start_git_hash']
+    request['comparison_mode'] = 'try'
+    base_args = [
+        '--extra-browser-args',
+        'something',
+    ]
+    exp_args = [
+        '--extra-browser-args',
+        'something-else',
+    ]
+    request['base_extra_args'] = json.dumps(base_args)
+    request['experiment_extra_args'] = json.dumps(exp_args)
+    response = self.Post('/api/new', request, status=200)
+    job = job_module.JobFromId(json.loads(response.body)['jobId'])
+    self.assertEqual(job.comparison_mode, 'try')
+    self.assertEqual(
+        str(job.state._changes[0]),
+        'base: chromium@3 (%s)' % (', '.join(base_args)),
+    )
+    self.assertEqual(
+        str(job.state._changes[1]),
+        'exp: chromium@3 (%s)' % (', '.join(exp_args)),
+    )
 
   def testComparisonModeTry_BaseNoPatchAndExperimentCommitPatch(self):
     request = dict(_BASE_REQUEST)
@@ -342,6 +376,18 @@ class NewTest(_NewTest):
     request['target'] = ''
     response = self.Post('/api/new', request, status=400)
     self.assertIn('error', json.loads(response.body))
+
+  def testFallbackTarget(self):
+    request = dict(_BASE_REQUEST)
+    request['target'] = 'performance_test_suite_android_chrome'
+    response = self.Post('/api/new', request, status=200)
+    job = job_module.JobFromId(json.loads(response.body)['jobId'])
+    quests = job.state._quests
+    # Make sure we only have one quest with a fallback target and its fallback
+    # target is performance_test_suite.
+    self.assertEqual(
+        ['performance_test_suite'],
+        [q._fallback_target for q in quests if hasattr(q, '_fallback_target')])
 
   def testInvalidTestConfig(self):
     request = dict(_BASE_REQUEST)

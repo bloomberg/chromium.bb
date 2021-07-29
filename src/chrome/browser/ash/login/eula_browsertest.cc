@@ -25,9 +25,9 @@
 #include "chrome/browser/ash/login/test/webview_content_extractor.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
+#include "chrome/browser/ash/policy/enrollment/enrollment_requisition_manager.h"
 #include "chrome/browser/ash/settings/stats_reporting_controller.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/policy/enrollment_requisition_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -350,13 +350,12 @@ IN_PROC_BROWSER_TEST_F(EulaTest, LearnMore) {
           1)));
 }
 
-// Tests that "Additional ToS" dialog could be opened and closed.
-// TODO(crbug.com/1175244): Flaky on linux-chromeos-rel.
-#ifdef NDEBUG
+#if defined(OS_CHROMEOS) && defined(NDEBUG)
 #define MAYBE_AdditionalToS DISABLED_AdditionalToS
 #else
 #define MAYBE_AdditionalToS AdditionalToS
 #endif
+// Tests that "Additional ToS" dialog could be opened and closed.
 IN_PROC_BROWSER_TEST_F(EulaTest, MAYBE_AdditionalToS) {
   base::HistogramTester histogram_tester;
   ShowEulaScreen();

@@ -16,7 +16,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
-#include "base/trace_event/base_tracing.h"
 
 namespace base {
 namespace internal {
@@ -107,7 +106,7 @@ class StatsCollector final {
   using ScannerScope = Scope<Context::kScanner>;
   using MutatorScope = Scope<Context::kMutator>;
 
-  explicit StatsCollector(const char* process_name);
+  StatsCollector(const char* process_name, size_t quarantine_last_size);
 
   StatsCollector(const StatsCollector&) = delete;
   StatsCollector& operator=(const StatsCollector&) = delete;
@@ -159,12 +158,15 @@ class StatsCollector final {
   void ReportTracesAndHistsImpl(
       const DeferredTraceEventMap<context>& event_map) const;
 
+  void ReportSurvivalRate() const;
+
   DeferredTraceEventMap<Context::kMutator> mutator_trace_events_;
   DeferredTraceEventMap<Context::kScanner> scanner_trace_events_;
 
   std::atomic<size_t> survived_quarantine_size_{0u};
   size_t swept_size_ = 0u;
   const char* process_name_ = nullptr;
+  const size_t quarantine_last_size_ = 0u;
 };
 
 template <Context context>

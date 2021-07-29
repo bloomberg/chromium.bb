@@ -8,7 +8,7 @@
 
 #include "fxjs/gc/container_trace.h"
 #include "fxjs/xfa/cjx_object.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/containers/contains.h"
 #include "v8/include/cppgc/heap.h"
 #include "xfa/fxfa/layout/cxfa_contentlayoutitem.h"
 #include "xfa/fxfa/layout/cxfa_contentlayoutprocessor.h"
@@ -43,10 +43,11 @@ void CXFA_LayoutProcessor::SetForceRelayout() {
   m_bNeedLayout = true;
 }
 
-int32_t CXFA_LayoutProcessor::StartLayout(bool bForceRestart) {
-  if (!bForceRestart && !NeedLayout())
-    return 100;
+int32_t CXFA_LayoutProcessor::StartLayout() {
+  return NeedLayout() ? RestartLayout() : 100;
+}
 
+int32_t CXFA_LayoutProcessor::RestartLayout() {
   m_pContentLayoutProcessor = nullptr;
   m_nProgressCounter = 0;
   CXFA_Node* pFormPacketNode =
@@ -118,7 +119,7 @@ int32_t CXFA_LayoutProcessor::DoLayout() {
 
 bool CXFA_LayoutProcessor::IncrementLayout() {
   if (m_bNeedLayout) {
-    StartLayout(true);
+    RestartLayout();
     return DoLayout() == 100;
   }
   return m_rgChangedContainers.empty();

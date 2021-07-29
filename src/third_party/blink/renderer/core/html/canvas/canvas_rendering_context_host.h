@@ -46,8 +46,8 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
 
   virtual void DetachContext() = 0;
 
-  virtual void DidDraw(const FloatRect& rect) = 0;
-  virtual void DidDraw() = 0;
+  virtual void DidDraw(const SkIRect& rect) = 0;
+  void DidDraw() { DidDraw(SkIRect::MakeWH(width(), height())); }
 
   virtual void PreFinalizeFrame() = 0;
   virtual void PostFinalizeFrame() = 0;
@@ -76,8 +76,6 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
 
   virtual bool ShouldAccelerate2dContext() const = 0;
 
-  virtual bool IsNeutered() const { return false; }
-
   virtual void Commit(scoped_refptr<CanvasResource> canvas_resource,
                       const SkIRect& damage_rect);
 
@@ -103,8 +101,10 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
   CanvasResourceProvider* GetOrCreateCanvasResourceProvider(
       RasterModeHint hint) override;
 
-  bool Is3d() const;
+  bool IsWebGL() const;
+  bool IsWebGPU() const;
   bool IsRenderingContext2D() const;
+  bool IsImageBitmapRenderingContext() const;
   CanvasColorParams ColorParams() const;
 
   // blink::CanvasImageSource
@@ -116,7 +116,8 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
   scoped_refptr<StaticBitmapImage> CreateTransparentImage(const IntSize&) const;
 
   void CreateCanvasResourceProvider2D(RasterModeHint hint);
-  void CreateCanvasResourceProvider3D();
+  void CreateCanvasResourceProviderWebGL();
+  void CreateCanvasResourceProviderWebGPU();
 
   // Computes the digest that corresponds to the "input" of this canvas,
   // including the context type, and if applicable, canvas digest, and taint

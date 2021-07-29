@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_ASH_LOGIN_SCREENS_OS_INSTALL_SCREEN_H_
 #define CHROME_BROWSER_ASH_LOGIN_SCREENS_OS_INSTALL_SCREEN_H_
 
+#include <string>
+
 #include "chrome/browser/ash/login/screens/base_screen.h"
 
 namespace chromeos {
@@ -24,10 +26,19 @@ class OsInstallScreen : public BaseScreen {
   // BaseScreen:
   void ShowImpl() override;
   void HideImpl() override;
+  void OnUserAction(const std::string& action_id) override;
+
+  void Shutdown();
 
   OsInstallScreenView* view_ = nullptr;
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace ash {
+using ::chromeos::OsInstallScreen;
+}
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_SCREENS_OS_INSTALL_SCREEN_H_

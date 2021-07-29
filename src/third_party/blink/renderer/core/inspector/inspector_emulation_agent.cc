@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/platform/geometry/double_rect.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/loader/fetch/loader_freeze_mode.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/url_loader/request_conversion.h"
@@ -55,9 +56,7 @@ InspectorEmulationAgent::InspectorEmulationAgent(
                                 /*default_value=*/WTF::String()),
       locale_override_(&agent_state_, /*default_value=*/WTF::String()),
       virtual_time_budget_(&agent_state_, /*default_value*/ 0.0),
-      virtual_time_budget_initial_offset_(&agent_state_, /*default_value=*/0.0),
       initial_virtual_time_(&agent_state_, /*default_value=*/0.0),
-      virtual_time_offset_(&agent_state_, /*default_value=*/0.0),
       virtual_time_policy_(&agent_state_, /*default_value=*/WTF::String()),
       virtual_time_task_starvation_count_(&agent_state_, /*default_value=*/0),
       wait_for_navigation_(&agent_state_, /*default_value=*/false),
@@ -123,11 +122,6 @@ void InspectorEmulationAgent::Restore() {
 
   if (virtual_time_policy_.Get().IsNull())
     return;
-  // Tell the scheduler about the saved virtual time progress to ensure that
-  // virtual time monotonically advances despite the cross origin navigation.
-  // This should be done regardless of the virtual time mode.
-  web_local_frame_->View()->Scheduler()->SetInitialVirtualTimeOffset(
-      base::TimeDelta::FromMillisecondsD(virtual_time_offset_.Get()));
 
   // Preserve wait for navigation in all modes.
   bool wait_for_navigation = wait_for_navigation_.Get();
@@ -146,9 +140,7 @@ void InspectorEmulationAgent::Restore() {
   }
 
   // Calculate remaining budget for the advancing modes.
-  double budget_remaining = virtual_time_budget_.Get() +
-                            virtual_time_budget_initial_offset_.Get() -
-                            virtual_time_offset_.Get();
+  double budget_remaining = virtual_time_budget_.Get();
   DCHECK_GE(budget_remaining, 0);
 
   setVirtualTimePolicy(virtual_time_policy_.Get(), budget_remaining,
@@ -375,9 +367,6 @@ Response InspectorEmulationAgent::setVirtualTimePolicy(
   if (virtual_time_budget_ms.isJust()) {
     new_policy.virtual_time_budget_ms = virtual_time_budget_ms.fromJust();
     virtual_time_budget_.Set(*new_policy.virtual_time_budget_ms);
-    // Record the current virtual time offset so Restore can compute how much
-    // budget is left.
-    virtual_time_budget_initial_offset_.Set(virtual_time_offset_.Get());
   } else {
     virtual_time_budget_.Clear();
   }
@@ -435,7 +424,7 @@ void InspectorEmulationAgent::ApplyVirtualTimePolicy(
         WTF::Bind(&InspectorEmulationAgent::VirtualTimeBudgetExpired,
                   WrapWeakPersistent(this)));
     for (DocumentLoader* loader : pending_document_loaders_)
-      loader->SetDefersLoading(WebURLLoader::DeferType::kNotDeferred);
+      loader->SetDefersLoading(LoaderFreezeMode::kNone);
     pending_document_loaders_.clear();
   }
   if (new_policy.max_virtual_time_task_starvation_count) {
@@ -695,7 +684,7 @@ void InspectorEmulationAgent::WillCommitLoad(LocalFrame*,
       protocol::Emulation::VirtualTimePolicyEnum::Pause) {
     return;
   }
-  loader->SetDefersLoading(WebURLLoader::DeferType::kDeferred);
+  loader->SetDefersLoading(LoaderFreezeMode::kStrict);
   pending_document_loaders_.push_back(loader);
 }
 

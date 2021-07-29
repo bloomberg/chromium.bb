@@ -18,81 +18,83 @@ namespace SkSL {
 
 namespace dsl {
 
-void DSLFunction::init(const DSLType& returnType, const char* name,
-                       SkTArray<DSLVar*> params) {
+void DSLFunction::init(DSLModifiers modifiers, const DSLType& returnType, skstd::string_view name,
+                       SkTArray<DSLParameter*> params) {
+    // Conservatively assume all user-defined functions have side effects.
+    if (!DSLWriter::IsModule()) {
+        modifiers.fModifiers.fFlags |= Modifiers::kHasSideEffects_Flag;
+    }
+
+    if (DSLWriter::Context().fConfig->fSettings.fForceNoInline) {
+        // Apply the `noinline` modifier to every function. This allows us to test Runtime
+        // Effects without any inlining, even when the code is later added to a paint.
+        modifiers.fModifiers.fFlags &= ~Modifiers::kInline_Flag;
+        modifiers.fModifiers.fFlags |= Modifiers::kNoInline_Flag;
+    }
+
     std::vector<std::unique_ptr<Variable>> paramVars;
     paramVars.reserve(params.size());
-    bool isMain = !strcmp(name, "main");
+    bool isMain = name == "main";
     auto typeIsValidForColor = [&](const SkSL::Type& type) {
         return type == *DSLWriter::Context().fTypes.fHalf4 ||
                type == *DSLWriter::Context().fTypes.fFloat4;
     };
-    for (DSLVar* param : params) {
-        // This counts as declaring the variable; make sure it hasn't been previously declared and
-        // then kill its pending declaration statement. Otherwise the statement will hang around
-        // until after the Var is destroyed, which is probably after the End() call and therefore
-        // after the Pool's destruction. Freeing a pooled object after the Pool's destruction is a
-        // Bad Thing.
+    for (DSLParameter* param : params) {
         if (param->fDeclared) {
-            DSLWriter::ReportError("error: using an already-declared variable as a function "
-                                   "parameter\n");
+            DSLWriter::ReportError("error: parameter has already been used in another function\n");
         }
-        if (param->fInitialValue.release()) {
-            DSLWriter::ReportError("error: variables used as function parameters cannot have "
-                                   "initial values\n");
-        }
+        SkASSERT(!param->fInitialValue.valid());
+        SkASSERT(!param->fDeclaration);
         param->fDeclared = true;
-        param->fStorage = SkSL::VariableStorage::kParameter;
-        if (paramVars.empty()) {
-            SkSL::ProgramKind kind = DSLWriter::Context().fConfig->fKind;
-            if (isMain && (kind == ProgramKind::kRuntimeColorFilter ||
-                           kind == ProgramKind::kRuntimeShader ||
-                           kind == ProgramKind::kFragmentProcessor)) {
-                const SkSL::Type& type = param->fType.skslType();
-                // We verify that the signature is fully correct later. For now, if this is an .fp
-                // or runtime effect of any flavor, a float2 param is supposed to be the coords, and
-                // a half4/float parameter is supposed to be the input color:
-                if (type == *DSLWriter::Context().fTypes.fFloat2) {
-                    param->fModifiers.fModifiers.fLayout.fBuiltin = SK_MAIN_COORDS_BUILTIN;
-                } else if (typeIsValidForColor(type)) {
-                    param->fModifiers.fModifiers.fLayout.fBuiltin = SK_INPUT_COLOR_BUILTIN;
-                }
+        SkSL::ProgramKind kind = DSLWriter::Context().fConfig->fKind;
+        if (isMain && (kind == ProgramKind::kRuntimeColorFilter ||
+                       kind == ProgramKind::kRuntimeShader ||
+                       kind == ProgramKind::kRuntimeBlender)) {
+            const SkSL::Type& type = param->fType.skslType();
+            // We verify that the signature is fully correct later. For now, if this is a runtime
+            // effect of any flavor, a float2 param is supposed to be the coords, and a half4/float
+            // parameter is supposed to be the input or destination color:
+            if (type == *DSLWriter::Context().fTypes.fFloat2) {
+                param->fModifiers.fModifiers.fLayout.fBuiltin = SK_MAIN_COORDS_BUILTIN;
+            } else if (typeIsValidForColor(type)) {
+                param->fModifiers.fModifiers.fLayout.fBuiltin = SK_INPUT_COLOR_BUILTIN;
             }
         }
-        std::unique_ptr<SkSL::Variable> paramVar = DSLWriter::ParameterVar(*param);
+        std::unique_ptr<SkSL::Variable> paramVar = DSLWriter::CreateParameterVar(*param);
         if (!paramVar) {
             return;
         }
         paramVars.push_back(std::move(paramVar));
-        param->fDeclaration = nullptr;
     }
     SkASSERT(paramVars.size() == params.size());
-    for (size_t i = 0; i < params.size(); ++i) {
-        params[i]->fVar = paramVars[i].get();
-    }
     fDecl = SkSL::FunctionDeclaration::Convert(DSLWriter::Context(),
                                                *DSLWriter::SymbolTable(),
                                                /*offset=*/-1,
-                                               DSLWriter::Modifiers(SkSL::Modifiers()),
+                                               DSLWriter::Modifiers(modifiers.fModifiers),
                                                isMain ? name : DSLWriter::Name(name),
                                                std::move(paramVars), &returnType.skslType(),
-                                               /*isBuiltin=*/false);
+                                               DSLWriter::IsModule());
+    DSLWriter::ReportErrors();
+    if (fDecl) {
+        for (size_t i = 0; i < params.size(); ++i) {
+            params[i]->fVar = fDecl->parameters()[i];
+        }
+    }
 }
 
 void DSLFunction::define(DSLBlock block) {
     if (!fDecl) {
+        // Evidently we failed to create the declaration; error should already have been reported.
+        // Release the block so we don't fail its destructor assert.
+        block.release();
         return;
     }
     SkASSERTF(!fDecl->definition(), "function '%s' already defined", fDecl->description().c_str());
-    std::unique_ptr<Statement> body = block.release();
-    DSLWriter::IRGenerator().finalizeFunction(*fDecl, body.get());
+    std::unique_ptr<Block> body = block.release();
+    body = DSLWriter::IRGenerator().finalizeFunction(*fDecl, std::move(body));
     auto function = std::make_unique<SkSL::FunctionDefinition>(/*offset=*/-1, fDecl,
                                                                /*builtin=*/false, std::move(body));
-    if (DSLWriter::Compiler().errorCount()) {
-        DSLWriter::ReportError(DSLWriter::Compiler().errorText(/*showCount=*/false).c_str());
-        DSLWriter::Compiler().setErrorCount(0);
-        SkASSERT(!DSLWriter::Compiler().errorCount());
-    }
+    DSLWriter::ReportErrors();
     fDecl->fDefinition = function.get();
     DSLWriter::ProgramElements().push_back(std::move(function));
 }
@@ -103,7 +105,8 @@ DSLExpression DSLFunction::call(SkTArray<DSLWrapper<DSLExpression>> args) {
     for (DSLWrapper<DSLExpression>& arg : args) {
         released.push_back(arg->release());
     }
-    return DSLWriter::Call(*fDecl, std::move(released));
+    std::unique_ptr<SkSL::Expression> result = DSLWriter::Call(*fDecl, std::move(released));
+    return result ? DSLExpression(std::move(result)) : DSLExpression();
 }
 
 } // namespace dsl

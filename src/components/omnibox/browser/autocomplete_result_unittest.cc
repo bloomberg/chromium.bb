@@ -10,9 +10,9 @@
 #include <string>
 #include <vector>
 
+#include "base/cxx17_backports.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -2015,10 +2015,10 @@ TEST_F(AutocompleteResultTest, AttachesPedals) {
 
   // Ensure the entity suggestion doesn't get a pedal even though its contents
   // form a concept match.
-  EXPECT_EQ(nullptr, std::prev(std::prev(result.end()))->pedal);
+  EXPECT_EQ(nullptr, std::prev(std::prev(result.end()))->action);
 
   // The same concept-matching contents on a non-entity suggestion gets a pedal.
-  EXPECT_NE(nullptr, std::prev(result.end())->pedal);
+  EXPECT_NE(nullptr, std::prev(result.end())->action);
 }
 
 TEST_F(AutocompleteResultTest, DocumentSuggestionsCanMergeButNotToDefault) {

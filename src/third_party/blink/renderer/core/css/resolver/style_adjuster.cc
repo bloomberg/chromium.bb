@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
+#include "third_party/blink/renderer/core/html/html_body_element.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html/html_plugin_element.h"
@@ -58,6 +59,7 @@
 #include "third_party/blink/renderer/core/layout/layout_replaced.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/list_marker.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text_combine.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
@@ -94,17 +96,24 @@ bool IsEditableElement(Element* element, const ComputedStyle& style) {
 
 TouchAction AdjustTouchActionForElement(TouchAction touch_action,
                                         const ComputedStyle& style,
+                                        const ComputedStyle& parent_style,
                                         Element* element) {
-  // if body is the viewport defining element then ScrollsOverflow should
-  // return false as body should have overflow-x/overflow-y set to visible
-  Element* body = element ? element->GetDocument().body() : nullptr;
-  bool is_body_and_viewport =
-      element && element == body &&
-      body == element->GetDocument().ViewportDefiningElement();
-  bool is_child_document =
-      element && element == element->GetDocument().documentElement() &&
-      element->GetDocument().LocalOwner();
-  if ((!is_body_and_viewport && style.ScrollsOverflow()) || is_child_document)
+  Element* document_element = element->GetDocument().documentElement();
+  bool scrolls_overflow = style.ScrollsOverflow();
+  if (element && element == element->GetDocument().FirstBodyElement()) {
+    // Body scrolls overflow if html root overflow is not visible or the
+    // propagation of overflow is stopped by containment.
+    if (parent_style.IsOverflowVisibleAlongBothAxes()) {
+      if (!RuntimeEnabledFeatures::CSSContainedBodyPropagationEnabled() ||
+          (!parent_style.ShouldApplyAnyContainment(*document_element) &&
+           !style.ShouldApplyAnyContainment(*element))) {
+        scrolls_overflow = false;
+      }
+    }
+  }
+  bool is_child_document = element && element == document_element &&
+                           element->GetDocument().LocalOwner();
+  if (scrolls_overflow || is_child_document)
     return touch_action | TouchAction::kPan | TouchAction::kInternalPanXScrolls;
   return touch_action;
 }
@@ -230,6 +239,46 @@ void StyleAdjuster::AdjustStyleForEditing(ComputedStyle& style) {
     style.SetWhiteSpace(EWhiteSpace::kPre);
   else if (style.WhiteSpace() == EWhiteSpace::kPreLine)
     style.SetWhiteSpace(EWhiteSpace::kPreWrap);
+}
+
+void StyleAdjuster::AdjustStyleForTextCombine(ComputedStyle& style) {
+  DCHECK_EQ(style.Display(), EDisplay::kInlineBlock);
+  // Set box sizes
+  const Font& font = style.GetFont();
+  DCHECK(font.GetFontDescription().IsVerticalBaseline());
+  const auto one_em = style.ComputedFontSizeAsFixed();
+  const auto line_height = style.GetFontHeight().LineHeight();
+  const auto size =
+      LengthSize(Length::Fixed(line_height), Length::Fixed(one_em));
+  style.SetContainIntrinsicSize(size);
+  style.SetHeight(size.Height());
+  style.SetLineHeight(size.Height());
+  style.SetMaxHeight(size.Height());
+  style.SetMaxWidth(size.Width());
+  style.SetMinHeight(size.Height());
+  style.SetMinWidth(size.Width());
+  style.SetWidth(size.Width());
+  AdjustStyleForCombinedText(style);
+}
+
+void StyleAdjuster::AdjustStyleForCombinedText(ComputedStyle& style) {
+  style.ResetTextCombine();
+  style.SetLetterSpacing(0.0f);
+  style.SetTextAlign(ETextAlign::kCenter);
+  style.SetTextDecoration(TextDecoration::kNone);
+  style.SetTextEmphasisMark(TextEmphasisMark::kNone);
+  style.SetVerticalAlign(EVerticalAlign ::kMiddle);
+  style.SetWordBreak(EWordBreak::kKeepAll);
+  style.SetWordSpacing(0.0f);
+  style.SetWritingMode(WritingMode::kHorizontalTb);
+
+  style.ClearAppliedTextDecorations();
+  style.UpdateFontOrientation();
+
+  DCHECK_EQ(style.GetFont().GetFontDescription().Orientation(),
+            FontOrientation::kHorizontal);
+
+  LayoutNGTextCombine::AssertStyleIsValid(style);
 }
 
 static void AdjustStyleForFirstLetter(ComputedStyle& style) {
@@ -569,8 +618,8 @@ static void AdjustEffectiveTouchAction(ComputedStyle& style,
   // The panning-restricted cancellation should also apply to iframes, so we
   // allow (panning & local touch action) on the first descendant element of a
   // iframe element.
-  inherited_action =
-      AdjustTouchActionForElement(inherited_action, style, element);
+  inherited_action = AdjustTouchActionForElement(inherited_action, style,
+                                                 parent_style, element);
 
   TouchAction enforced_by_policy = TouchAction::kNone;
   if (element->GetDocument().IsVerticalScrollEnforced())
@@ -619,6 +668,9 @@ void StyleAdjuster::AdjustForForcedColorsMode(ComputedStyle& style) {
 
   style.SetTextShadow(ComputedStyleInitialValues::InitialTextShadow());
   style.SetBoxShadow(ComputedStyleInitialValues::InitialBoxShadow());
+  style.SetColorScheme({"light", "dark"});
+  if (style.ShouldForceColor(style.AccentColor()))
+    style.SetAccentColor(ComputedStyleInitialValues::InitialAccentColor());
   if (!style.HasUrlBackgroundImage())
     style.ClearBackgroundImage();
 }
@@ -770,6 +822,20 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     // Columns don't apply to svg text elements.
     if (IsA<SVGTextElement>(*element))
       style.ClearMultiCol();
+
+    // Copy DominantBaseline to CssDominantBaseline without 'no-change',
+    // 'reset-size', and 'use-script'.
+    auto baseline = style.DominantBaseline();
+    if (baseline == EDominantBaseline::kUseScript) {
+      // TODO(fs): The dominant-baseline and the baseline-table components
+      // are set by determining the predominant script of the character data
+      // content.
+      baseline = EDominantBaseline::kAlphabetic;
+    } else if (baseline == EDominantBaseline::kNoChange ||
+               baseline == EDominantBaseline::kResetSize) {
+      baseline = layout_parent_style.CssDominantBaseline();
+    }
+    style.SetCssDominantBaseline(baseline);
   } else if (element && element->IsMathMLElement()) {
     if (style.Display() == EDisplay::kContents) {
       // https://drafts.csswg.org/css-display/#unbox-mathml

@@ -85,6 +85,7 @@ class MODULES_EXPORT MediaStreamVideoTrack : public MediaStreamTrackPlatform {
       WebMediaStreamTrack::ContentHintType content_hint) override;
   void StopAndNotify(base::OnceClosure callback) override;
   void GetSettings(MediaStreamTrackPlatform::Settings& settings) override;
+  MediaStreamTrackPlatform::CaptureHandle GetCaptureHandle() override;
 
   // Add |sink| to receive state changes on the main render thread and video
   // frames in the |callback| method on the IO-thread.
@@ -220,6 +221,7 @@ class MODULES_EXPORT MediaStreamVideoTrack : public MediaStreamTrackPlatform {
 
   // This is used for tracking if no connected video use alpha.
   HashSet<WebMediaStreamSink*> alpha_using_sinks_;
+  HashSet<WebMediaStreamSink*> alpha_discarding_sinks_;
 
   // Remembering our desired video size and frame rate.
   int width_ = 0;

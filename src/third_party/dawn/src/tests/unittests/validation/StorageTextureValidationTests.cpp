@@ -15,7 +15,7 @@
 #include "common/Assert.h"
 #include "tests/unittests/validation/ValidationTest.h"
 #include "utils/ComboRenderPipelineDescriptor.h"
-#include "utils/TextureFormatUtils.h"
+#include "utils/TextureUtils.h"
 #include "utils/WGPUHelpers.h"
 
 class StorageTextureValidationTests : public ValidationTest {
@@ -82,12 +82,11 @@ class StorageTextureValidationTests : public ValidationTest {
         }
 
         std::ostringstream ostream;
-        ostream << "[[group(0), binding(0)]] var image0 : "
-                << "[[access(" << access << ")]] " << imageTypeDeclaration << "<"
-                << imageFormatQualifier
+        ostream << "[[group(0), binding(0)]] var image0 : " << imageTypeDeclaration << "<"
+                << imageFormatQualifier << ", " << access
                 << ">;\n"
-                   "[[stage(compute)]] fn main() {\n"
-                   "    textureDimensions(image0);\n"
+                   "[[stage(compute), workgroup_size(1)]] fn main() {\n"
+                   "    ignore(textureDimensions(image0));\n"
                    "}\n";
 
         return ostream.str();
@@ -96,9 +95,10 @@ class StorageTextureValidationTests : public ValidationTest {
     wgpu::Texture CreateTexture(wgpu::TextureUsage usage,
                                 wgpu::TextureFormat format,
                                 uint32_t sampleCount = 1,
-                                uint32_t arrayLayerCount = 1) {
+                                uint32_t arrayLayerCount = 1,
+                                wgpu::TextureDimension dimension = wgpu::TextureDimension::e2D) {
         wgpu::TextureDescriptor descriptor;
-        descriptor.dimension = wgpu::TextureDimension::e2D;
+        descriptor.dimension = dimension;
         descriptor.size = {16, 16, arrayLayerCount};
         descriptor.sampleCount = sampleCount;
         descriptor.format = format;
@@ -120,65 +120,65 @@ TEST_F(StorageTextureValidationTests, RenderPipeline) {
     // Readonly storage texture can be declared in a vertex shader.
     {
         wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
-            [[group(0), binding(0)]] var image0 : [[access(read)]] texture_storage_2d<rgba8unorm>;
+            [[group(0), binding(0)]] var image0 : texture_storage_2d<rgba8unorm, read>;
             [[stage(vertex)]] fn main(
                 [[builtin(vertex_index)]] VertexIndex : u32
             ) -> [[builtin(position)]] vec4<f32> {
                 return textureLoad(image0, vec2<i32>(i32(VertexIndex), 0));
             })");
 
-        utils::ComboRenderPipelineDescriptor2 descriptor;
+        utils::ComboRenderPipelineDescriptor descriptor;
         descriptor.layout = nullptr;
         descriptor.vertex.module = vsModule;
         descriptor.cFragment.module = mDefaultFSModule;
-        device.CreateRenderPipeline2(&descriptor);
+        device.CreateRenderPipeline(&descriptor);
     }
 
     // Read-only storage textures can be declared in a fragment shader.
     {
         wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
-            [[group(0), binding(0)]] var image0 : [[access(read)]] texture_storage_2d<rgba8unorm>;
+            [[group(0), binding(0)]] var image0 : texture_storage_2d<rgba8unorm, read>;
             [[stage(fragment)]] fn main(
                 [[builtin(position)]] FragCoord : vec4<f32>
             ) -> [[location(0)]] vec4<f32> {
                 return textureLoad(image0, vec2<i32>(FragCoord.xy));
             })");
 
-        utils::ComboRenderPipelineDescriptor2 descriptor;
+        utils::ComboRenderPipelineDescriptor descriptor;
         descriptor.layout = nullptr;
         descriptor.vertex.module = mDefaultVSModule;
         descriptor.cFragment.module = fsModule;
-        device.CreateRenderPipeline2(&descriptor);
+        device.CreateRenderPipeline(&descriptor);
     }
 
     // Write-only storage textures cannot be declared in a vertex shader.
     if ((false) /* TODO(https://crbug.com/tint/449) */) {
         wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
-            [[group(0), binding(0)]] var image0 : [[access(write)]] texture_storage_2d<rgba8unorm>;
+            [[group(0), binding(0)]] var image0 : texture_storage_2d<rgba8unorm, write>;
             [[stage(vertex)]] fn main([[builtin(vertex_index)]] vertex_index : u32) {
                 textureStore(image0, vec2<i32>(i32(vertex_index), 0), vec4<f32>(1.0, 0.0, 0.0, 1.0));
             })");
 
-        utils::ComboRenderPipelineDescriptor2 descriptor;
+        utils::ComboRenderPipelineDescriptor descriptor;
         descriptor.layout = nullptr;
         descriptor.vertex.module = vsModule;
         descriptor.cFragment.module = mDefaultFSModule;
-        ASSERT_DEVICE_ERROR(device.CreateRenderPipeline2(&descriptor));
+        ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
     }
 
     // Write-only storage textures can be declared in a fragment shader.
     {
         wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
-            [[group(0), binding(0)]] var image0 : [[access(write)]] texture_storage_2d<rgba8unorm>;
+            [[group(0), binding(0)]] var image0 : texture_storage_2d<rgba8unorm, write>;
             [[stage(fragment)]] fn main([[builtin(position)]] position : vec4<f32>) {
                 textureStore(image0, vec2<i32>(position.xy), vec4<f32>(1.0, 0.0, 0.0, 1.0));
             })");
 
-        utils::ComboRenderPipelineDescriptor2 descriptor;
+        utils::ComboRenderPipelineDescriptor descriptor;
         descriptor.layout = nullptr;
         descriptor.vertex.module = mDefaultVSModule;
         descriptor.cFragment.module = fsModule;
-        device.CreateRenderPipeline2(&descriptor);
+        device.CreateRenderPipeline(&descriptor);
     }
 }
 
@@ -188,21 +188,21 @@ TEST_F(StorageTextureValidationTests, ComputePipeline) {
     // Read-only storage textures can be declared in a compute shader.
     {
         wgpu::ShaderModule csModule = utils::CreateShaderModule(device, R"(
-            [[group(0), binding(0)]] var image0 : [[access(read)]] texture_storage_2d<rgba8unorm>;
+            [[group(0), binding(0)]] var image0 : texture_storage_2d<rgba8unorm, read>;
 
             [[block]] struct Buf {
                 data : f32;
             };
-            [[group(0), binding(1)]] var<storage> buf : [[access(read_write)]] Buf;
+            [[group(0), binding(1)]] var<storage, read_write> buf : Buf;
 
-            [[stage(compute)]] fn main([[builtin(local_invocation_id)]] LocalInvocationID : vec3<u32>) {
+            [[stage(compute), workgroup_size(1)]] fn main([[builtin(local_invocation_id)]] LocalInvocationID : vec3<u32>) {
                  buf.data = textureLoad(image0, vec2<i32>(LocalInvocationID.xy)).x;
             })");
 
         wgpu::ComputePipelineDescriptor descriptor;
         descriptor.layout = nullptr;
-        descriptor.computeStage.module = csModule;
-        descriptor.computeStage.entryPoint = "main";
+        descriptor.compute.module = csModule;
+        descriptor.compute.entryPoint = "main";
 
         device.CreateComputePipeline(&descriptor);
     }
@@ -210,16 +210,16 @@ TEST_F(StorageTextureValidationTests, ComputePipeline) {
     // Write-only storage textures can be declared in a compute shader.
     {
         wgpu::ShaderModule csModule = utils::CreateShaderModule(device, R"(
-            [[group(0), binding(0)]] var image0 : [[access(write)]] texture_storage_2d<rgba8unorm>;
+            [[group(0), binding(0)]] var image0 : texture_storage_2d<rgba8unorm, write>;
 
-            [[stage(compute)]] fn main([[builtin(local_invocation_id)]] LocalInvocationID : vec3<u32>) {
+            [[stage(compute), workgroup_size(1)]] fn main([[builtin(local_invocation_id)]] LocalInvocationID : vec3<u32>) {
                 textureStore(image0, vec2<i32>(LocalInvocationID.xy), vec4<f32>(0.0, 0.0, 0.0, 0.0));
             })");
 
         wgpu::ComputePipelineDescriptor descriptor;
         descriptor.layout = nullptr;
-        descriptor.computeStage.module = csModule;
-        descriptor.computeStage.entryPoint = "main";
+        descriptor.compute.module = csModule;
+        descriptor.compute.entryPoint = "main";
 
         device.CreateComputePipeline(&descriptor);
     }
@@ -230,27 +230,27 @@ TEST_F(StorageTextureValidationTests, ReadWriteStorageTexture) {
     // Read-write storage textures cannot be declared in a vertex shader by default.
     {
         ASSERT_DEVICE_ERROR(utils::CreateShaderModule(device, R"(
-            [[group(0), binding(0)]] var image0 : [[access(read_write)]] texture_storage_2d<rgba8unorm>;
+            [[group(0), binding(0)]] var image0 : texture_storage_2d<rgba8unorm, read_write>;
             [[stage(vertex)]] fn main() {
-                textureDimensions(image0);
+                ignore(textureDimensions(image0));
             })"));
     }
 
     // Read-write storage textures cannot be declared in a fragment shader by default.
     {
         ASSERT_DEVICE_ERROR(utils::CreateShaderModule(device, R"(
-            [[group(0), binding(0)]] var image0 : [[access(read_write)]] texture_storage_2d<rgba8unorm>;
+            [[group(0), binding(0)]] var image0 : texture_storage_2d<rgba8unorm, read_write>;
             [[stage(fragment)]] fn main() {
-                textureDimensions(image0);
+                ignore(textureDimensions(image0));
             })"));
     }
 
     // Read-write storage textures cannot be declared in a compute shader by default.
     {
         ASSERT_DEVICE_ERROR(utils::CreateShaderModule(device, R"(
-            [[group(0), binding(0)]] var image0 : [[access(read_write)]] texture_storage_2d<rgba8unorm>;
-            [[stage(compute)]] fn main() {
-                textureDimensions(image0);
+            [[group(0), binding(0)]] var image0 : texture_storage_2d<rgba8unorm, read_write>;
+            [[stage(compute), workgroup_size(1)]] fn main() {
+                ignore(textureDimensions(image0));
             })"));
     }
 }
@@ -403,8 +403,8 @@ TEST_F(StorageTextureValidationTests, BindGroupLayoutEntryTypeMatchesShaderDecla
 
         // Set common fields of compute pipeline descriptor.
         wgpu::ComputePipelineDescriptor defaultComputePipelineDescriptor;
-        defaultComputePipelineDescriptor.computeStage.module = csModule;
-        defaultComputePipelineDescriptor.computeStage.entryPoint = "main";
+        defaultComputePipelineDescriptor.compute.module = csModule;
+        defaultComputePipelineDescriptor.compute.entryPoint = "main";
 
         for (utils::BindingLayoutEntryInitializationHelper bindingLayoutEntry :
              kSupportedBindingTypes) {
@@ -479,8 +479,8 @@ TEST_F(StorageTextureValidationTests, BindGroupLayoutStorageTextureFormatMatches
 
             // Set common fields of compute pipeline descriptor.
             wgpu::ComputePipelineDescriptor defaultComputePipelineDescriptor;
-            defaultComputePipelineDescriptor.computeStage.module = csModule;
-            defaultComputePipelineDescriptor.computeStage.entryPoint = "main";
+            defaultComputePipelineDescriptor.compute.module = csModule;
+            defaultComputePipelineDescriptor.compute.entryPoint = "main";
 
             // Set common fileds of bind group layout binding.
             utils::BindingLayoutEntryInitializationHelper defaultBindGroupLayoutEntry = {
@@ -535,8 +535,8 @@ TEST_F(StorageTextureValidationTests, BindGroupLayoutViewDimensionMatchesShaderD
 
             // Set common fields of compute pipeline descriptor.
             wgpu::ComputePipelineDescriptor defaultComputePipelineDescriptor;
-            defaultComputePipelineDescriptor.computeStage.module = csModule;
-            defaultComputePipelineDescriptor.computeStage.entryPoint = "main";
+            defaultComputePipelineDescriptor.compute.module = csModule;
+            defaultComputePipelineDescriptor.compute.entryPoint = "main";
 
             // Set common fields of bind group layout binding.
             utils::BindingLayoutEntryInitializationHelper defaultBindGroupLayoutEntry = {
@@ -564,25 +564,6 @@ TEST_F(StorageTextureValidationTests, BindGroupLayoutViewDimensionMatchesShaderD
                 }
             }
         }
-    }
-}
-
-// Verify that in a bind group layout binding neither read-only nor write-only storage textures
-// are allowed to have dynamic offsets.
-// TODO(dawn:527): No longer be applicable after changes to BindGroupLayoutEntry are complete.
-TEST_F(StorageTextureValidationTests, StorageTextureCannotHaveDynamicOffsets) {
-    const std::array<wgpu::BindingType, 2> kSupportedStorageTextureBindingTypes = {
-        wgpu::BindingType::ReadonlyStorageTexture, wgpu::BindingType::WriteonlyStorageTexture};
-    for (wgpu::BindingType storageBindingType : kSupportedStorageTextureBindingTypes) {
-        wgpu::BindGroupLayoutEntry bindGroupLayoutBinding;
-        bindGroupLayoutBinding.binding = 0;
-        bindGroupLayoutBinding.visibility = wgpu::ShaderStage::Compute;
-        bindGroupLayoutBinding.type = storageBindingType;
-        bindGroupLayoutBinding.storageTextureFormat = wgpu::TextureFormat::R32Float;
-
-        bindGroupLayoutBinding.hasDynamicOffset = true;
-        ASSERT_DEVICE_ERROR(EXPECT_DEPRECATION_WARNING(
-            utils::MakeBindGroupLayout(device, {bindGroupLayoutBinding})));
     }
 }
 
@@ -706,16 +687,13 @@ TEST_F(StorageTextureValidationTests, StorageTextureFormatInBindGroup) {
 // bind group must match the corresponding bind group binding.
 TEST_F(StorageTextureValidationTests, StorageTextureViewDimensionInBindGroup) {
     constexpr wgpu::TextureFormat kStorageTextureFormat = wgpu::TextureFormat::R32Float;
-    constexpr uint32_t kArrayLayerCount = 6u;
+    constexpr uint32_t kDepthOrArrayLayers = 6u;
 
-    // Currently we only support creating 2D-compatible texture view dimensions.
-    // TODO(jiawei.shao@intel.com): test the use of 1D and 3D texture view dimensions when they are
+    // TODO(crbug.com/dawn/814): test the use of 1D texture view dimensions when they are
     // supported in Dawn.
-    constexpr std::array<wgpu::TextureViewDimension, 2> kSupportedDimensions = {
-        wgpu::TextureViewDimension::e2D, wgpu::TextureViewDimension::e2DArray};
-
-    wgpu::Texture texture =
-        CreateTexture(wgpu::TextureUsage::Storage, kStorageTextureFormat, 1, kArrayLayerCount);
+    constexpr std::array<wgpu::TextureViewDimension, 3> kSupportedDimensions = {
+        wgpu::TextureViewDimension::e2D, wgpu::TextureViewDimension::e2DArray,
+        wgpu::TextureViewDimension::e3D};
 
     wgpu::TextureViewDescriptor kDefaultTextureViewDescriptor;
     kDefaultTextureViewDescriptor.format = kStorageTextureFormat;
@@ -740,6 +718,10 @@ TEST_F(StorageTextureValidationTests, StorageTextureViewDimensionInBindGroup) {
 
             for (wgpu::TextureViewDimension dimensionOfTextureView : kSupportedDimensions) {
                 // Create a texture view with given texture view dimension.
+                wgpu::Texture texture = CreateTexture(
+                    wgpu::TextureUsage::Storage, kStorageTextureFormat, 1, kDepthOrArrayLayers,
+                    utils::ViewDimensionToTextureDimension(dimensionOfTextureView));
+
                 wgpu::TextureViewDescriptor textureViewDescriptor = kDefaultTextureViewDescriptor;
                 textureViewDescriptor.dimension = dimensionOfTextureView;
                 wgpu::TextureView storageTextureView = texture.CreateView(&textureViewDescriptor);

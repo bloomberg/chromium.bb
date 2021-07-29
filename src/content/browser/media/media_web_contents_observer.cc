@@ -8,12 +8,12 @@
 #include <tuple>
 
 #include "base/bind.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/browser/media/audible_metrics.h"
-#include "content/browser/media/audio_stream_monitor.h"
 #include "content/browser/media/media_devices_util.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
@@ -74,6 +74,8 @@ class MediaWebContentsObserver::PlayerInfo {
   bool has_video() const { return has_video_; }
   void set_has_video(bool has_video) { has_video_ = has_video; }
 
+  void set_muted(bool muted) { muted_ = muted; }
+
   bool is_playing() const { return is_playing_; }
 
   void SetIsPlaying() {
@@ -93,6 +95,8 @@ class MediaWebContentsObserver::PlayerInfo {
             : WebContentsObserver::MediaStoppedReason::kUnspecified,
         MediaPowerExperimentManager::NotificationMode::kNotify);
   }
+
+  bool IsAudible() const { return has_audio_ && is_playing_ && !muted_; }
 
  private:
   void NotifyPlayerStarted() {
@@ -130,6 +134,7 @@ class MediaWebContentsObserver::PlayerInfo {
 
   bool has_audio_ = false;
   bool has_video_ = false;
+  bool muted_ = false;
   bool is_playing_ = false;
 };
 
@@ -170,8 +175,7 @@ void MediaWebContentsObserver::RenderFrameDeleted(
     RenderFrameHost* render_frame_host) {
   use_after_free_checker_.check();
 
-  GlobalFrameRoutingId frame_routing_id =
-      render_frame_host->GetGlobalFrameRoutingId();
+  GlobalRenderFrameHostId frame_routing_id = render_frame_host->GetGlobalId();
 
   base::EraseIf(
       player_info_map_,
@@ -278,8 +282,10 @@ bool MediaWebContentsObserver::IsPlayerActive(
   return false;
 }
 
+// MediaWebContentsObserver::MediaPlayerHostImpl
+
 MediaWebContentsObserver::MediaPlayerHostImpl::MediaPlayerHostImpl(
-    GlobalFrameRoutingId frame_routing_id,
+    GlobalRenderFrameHostId frame_routing_id,
     MediaWebContentsObserver* media_web_contents_observer)
     : frame_routing_id_(frame_routing_id),
       media_web_contents_observer_(media_web_contents_observer) {}
@@ -300,6 +306,8 @@ void MediaWebContentsObserver::MediaPlayerHostImpl::OnMediaPlayerAdded(
       std::move(media_player), std::move(media_player_observer),
       MediaPlayerId(frame_routing_id_, player_id));
 }
+
+// MediaWebContentsObserver::MediaPlayerObserverHostImpl
 
 MediaWebContentsObserver::MediaPlayerObserverHostImpl::
     MediaPlayerObserverHostImpl(
@@ -328,6 +336,13 @@ void MediaWebContentsObserver::MediaPlayerObserverHostImpl::
     OnMutedStatusChanged(bool muted) {
   media_web_contents_observer_->web_contents_impl()->MediaMutedStatusChanged(
       media_player_id_, muted);
+
+  PlayerInfo* player_info = GetPlayerInfo();
+  if (!player_info)
+    return;
+
+  player_info->set_muted(muted);
+  NotifyAudioStreamMonitorIfNeeded();
 }
 
 void MediaWebContentsObserver::MediaPlayerObserverHostImpl::
@@ -336,6 +351,8 @@ void MediaWebContentsObserver::MediaPlayerObserverHostImpl::
                            media::MediaContentType media_content_type) {
   media_web_contents_observer_->OnMediaMetadataChanged(
       media_player_id_, has_audio, has_video, media_content_type);
+
+  NotifyAudioStreamMonitorIfNeeded();
 }
 
 void MediaWebContentsObserver::MediaPlayerObserverHostImpl::
@@ -371,6 +388,12 @@ void MediaWebContentsObserver::MediaPlayerObserverHostImpl::
 }
 
 void MediaWebContentsObserver::MediaPlayerObserverHostImpl::
+    OnUseAudioServiceChanged(bool uses_audio_service) {
+  uses_audio_service_ = uses_audio_service;
+  NotifyAudioStreamMonitorIfNeeded();
+}
+
+void MediaWebContentsObserver::MediaPlayerObserverHostImpl::
     OnAudioOutputSinkChangingDisabled() {
   media_web_contents_observer_->session_controllers_manager()
       ->OnAudioOutputSinkChangingDisabled(media_player_id_);
@@ -388,8 +411,7 @@ void MediaWebContentsObserver::MediaPlayerObserverHostImpl::OnSeek() {
 }
 
 void MediaWebContentsObserver::MediaPlayerObserverHostImpl::OnMediaPlaying() {
-  PlayerInfo* player_info =
-      media_web_contents_observer_->GetPlayerInfo(media_player_id_);
+  PlayerInfo* player_info = GetPlayerInfo();
   if (!player_info)
     return;
 
@@ -403,12 +425,13 @@ void MediaWebContentsObserver::MediaPlayerObserverHostImpl::OnMediaPlaying() {
 
   if (!player_info->is_playing())
     player_info->SetIsPlaying();
+
+  NotifyAudioStreamMonitorIfNeeded();
 }
 
 void MediaWebContentsObserver::MediaPlayerObserverHostImpl::OnMediaPaused(
     bool stream_ended) {
-  PlayerInfo* player_info =
-      media_web_contents_observer_->GetPlayerInfo(media_player_id_);
+  PlayerInfo* player_info = GetPlayerInfo();
   if (!player_info || !player_info->is_playing())
     return;
 
@@ -416,7 +439,33 @@ void MediaWebContentsObserver::MediaPlayerObserverHostImpl::OnMediaPaused(
 
   media_web_contents_observer_->session_controllers_manager()->OnPause(
       media_player_id_, stream_ended);
+
+  NotifyAudioStreamMonitorIfNeeded();
 }
+
+void MediaWebContentsObserver::MediaPlayerObserverHostImpl::
+    NotifyAudioStreamMonitorIfNeeded() {
+  PlayerInfo* player_info = GetPlayerInfo();
+  if (!player_info)
+    return;
+
+  bool should_add_client = player_info->IsAudible() && !uses_audio_service_;
+  auto* audio_stream_monitor =
+      media_web_contents_observer_->web_contents_impl()->audio_stream_monitor();
+
+  if (should_add_client && !audio_client_registration_) {
+    audio_client_registration_ = audio_stream_monitor->RegisterAudibleClient();
+  } else if (!should_add_client && audio_client_registration_) {
+    audio_client_registration_.reset();
+  }
+}
+
+MediaWebContentsObserver::PlayerInfo*
+MediaWebContentsObserver::MediaPlayerObserverHostImpl::GetPlayerInfo() {
+  return media_web_contents_observer_->GetPlayerInfo(media_player_id_);
+}
+
+// MediaWebContentsObserver
 
 MediaWebContentsObserver::PlayerInfo* MediaWebContentsObserver::GetPlayerInfo(
     const MediaPlayerId& id) const {
@@ -557,7 +606,7 @@ WebContentsImpl* MediaWebContentsObserver::web_contents_impl() const {
 }
 
 void MediaWebContentsObserver::BindMediaPlayerHost(
-    GlobalFrameRoutingId frame_routing_id,
+    GlobalRenderFrameHostId frame_routing_id,
     mojo::PendingAssociatedReceiver<media::mojom::MediaPlayerHost>
         player_receiver) {
   if (!media_player_hosts_.contains(frame_routing_id)) {

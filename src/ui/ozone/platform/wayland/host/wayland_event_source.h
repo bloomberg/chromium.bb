@@ -24,6 +24,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_touch.h"
 #include "ui/ozone/platform/wayland/host/wayland_window_observer.h"
 #include "ui/ozone/platform/wayland/host/wayland_zwp_pointer_gestures.h"
+#include "ui/ozone/platform/wayland/host/wayland_zwp_relative_pointer_manager.h"
 
 struct wl_display;
 
@@ -48,7 +49,8 @@ class WaylandEventSource : public PlatformEventSource,
                            public WaylandKeyboard::Delegate,
                            public WaylandPointer::Delegate,
                            public WaylandTouch::Delegate,
-                           public WaylandZwpPointerGestures::Delegate {
+                           public WaylandZwpPointerGestures::Delegate,
+                           public WaylandZwpRelativePointerManager::Delegate {
  public:
   WaylandEventSource(wl_display* display,
                      wl_event_queue* event_queue,
@@ -128,6 +130,10 @@ class WaylandEventSource : public PlatformEventSource,
                     int device_id,
                     absl::optional<float> scale) override;
 
+  // WaylandZwpRelativePointerManager::Delegate:
+  void SetRelativePointerMotionEnabled(bool enabled) override;
+  void OnRelativePointerMotion(const gfx::Vector2dF& delta) override;
+
  private:
   struct PointerFrame {
     PointerFrame();
@@ -154,8 +160,6 @@ class WaylandEventSource : public PlatformEventSource,
   void OnWindowRemoved(WaylandWindow* window) override;
 
   void UpdateKeyboardModifiers(int modifier, bool down);
-  void HandleKeyboardFocusChange(WaylandWindow* window, bool focused);
-  void HandlePointerFocusChange(WaylandWindow* window);
   void HandleTouchFocusChange(WaylandWindow* window,
                               bool focused,
                               absl::optional<PointerId> id = absl::nullopt);
@@ -178,6 +182,9 @@ class WaylandEventSource : public PlatformEventSource,
   // Last known pointer location.
   gfx::PointF pointer_location_;
 
+  // Last known relative pointer location (used for pointer lock).
+  absl::optional<gfx::PointF> relative_pointer_location_;
+
   // Current frame
   PointerFrame current_pointer_frame_;
 
@@ -187,9 +194,6 @@ class WaylandEventSource : public PlatformEventSource,
   // Recent pointer frames to compute fling scroll.
   // Front is newer, and back is older.
   std::deque<PointerFrame> recent_pointer_frames_;
-
-  // The window the pointer is over.
-  WaylandWindow* window_with_pointer_focus_ = nullptr;
 
   // Map that keeps track of the current touch points, associating touch IDs to
   // to the surface/location where they happened.

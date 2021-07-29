@@ -10,7 +10,6 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chromecast/browser/cast_content_window.h"
@@ -18,7 +17,6 @@
 #include "chromecast/browser/cast_web_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -33,7 +31,6 @@ class RendererPrelauncher;
 
 // A simplified interface for loading and displaying WebContents in cast_shell.
 class CastWebViewDefault : public CastWebView,
-                           public content::WebContentsObserver,
                            private content::WebContentsDelegate {
  public:
   // |web_service| and |browser_context| should outlive this object. If
@@ -53,19 +50,8 @@ class CastWebViewDefault : public CastWebView,
   content::WebContents* web_contents() const override;
   CastWebContents* cast_web_contents() override;
   base::TimeDelta shutdown_delay() const override;
-  void ForceClose() override;
-  void InitializeWindow(mojom::ZOrder z_order,
-                        VisibilityPriority initial_priority) override;
-  void GrantScreenAccess() override;
-  void RevokeScreenAccess() override;
-  void AddObserver(Observer* observer) override;
-  void RemoveObserver(Observer* observer) override;
 
  private:
-  // WebContentsObserver implementation:
-  void DidStartNavigation(
-      content::NavigationHandle* navigation_handle) override;
-
   // WebContentsDelegate implementation:
   content::WebContents* OpenURLFromTab(
       content::WebContents* source,
@@ -108,9 +94,6 @@ class CastWebViewDefault : public CastWebView,
   std::unique_ptr<content::WebContents> web_contents_;
   CastWebContentsImpl cast_web_contents_;
   std::unique_ptr<CastContentWindow> window_;
-  bool resize_window_when_navigation_starts_;
-
-  base::ObserverList<Observer> observer_list_;
 };
 
 }  // namespace chromecast

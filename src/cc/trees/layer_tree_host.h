@@ -41,12 +41,14 @@
 #include "cc/metrics/frame_sequence_tracker.h"
 #include "cc/metrics/web_vital_metrics.h"
 #include "cc/paint/node_id.h"
+#include "cc/trees//presentation_time_callback_buffer.h"
 #include "cc/trees/browser_controls_params.h"
 #include "cc/trees/compositor_mode.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "cc/trees/mutator_host.h"
+#include "cc/trees/paint_holding_reason.h"
 #include "cc/trees/proxy.h"
 #include "cc/trees/swap_promise.h"
 #include "cc/trees/swap_promise_manager.h"
@@ -243,6 +245,12 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // synchronization.
   virtual void SetNeedsCommit();
 
+  // Notifies that a new viz::LocalSurfaceId has been set, ahead of it becoming
+  // activated. Requests that the compositor thread does not produce new frames
+  // until it has activated.
+  virtual void SetTargetLocalSurfaceId(
+      const viz::LocalSurfaceId& target_local_surface_id);
+
   // Returns true after SetNeedsAnimate(), SetNeedsUpdateLayers() or
   // SetNeedsCommit(), until it is satisfied.
   bool RequestedMainFramePendingForTesting() const;
@@ -267,13 +275,17 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // is the interval after which commits will restart if nothing stops
   // deferring sooner. If multiple calls are made to StartDeferringCommits
   // while deferal is active, the first timeout continues to apply.
-  void StartDeferringCommits(base::TimeDelta timeout);
+  bool StartDeferringCommits(base::TimeDelta timeout,
+                             PaintHoldingReason reason);
 
   // Stop deferring commits immediately.
   void StopDeferringCommits(PaintHoldingCommitTrigger);
 
+  // Returns true if commits are currently deferred.
+  bool IsDeferringCommits() const;
+
   // Notification that the proxy started or stopped deferring commits.
-  void OnDeferCommitsChanged(bool);
+  void OnDeferCommitsChanged(bool defer_status, PaintHoldingReason reason);
 
   // Returns whether there are any outstanding ScopedDeferMainFrameUpdate,
   // though commits may be deferred also when the local_surface_id_from_parent()
@@ -332,9 +344,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // Registers a callback that is run when the next frame successfully makes it
   // to the screen (it's entirely possible some frames may be dropped between
   // the time this is called and the callback is run).
-  using PresentationTimeCallback =
-      base::OnceCallback<void(const gfx::PresentationFeedback&)>;
-  void RequestPresentationTimeForNextFrame(PresentationTimeCallback callback);
+  void RequestPresentationTimeForNextFrame(
+      PresentationTimeCallbackBuffer::MainCallback callback);
 
   // Registers a callback that is run when any ongoing scroll-animation ends. If
   // there are no ongoing animations, then the callback is run immediately.
@@ -351,6 +362,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   struct ViewportPropertyIds {
     int overscroll_elasticity_transform = TransformTree::kInvalidNodeId;
+    ElementId overscroll_elasticity_effect;
     int page_scale_transform = TransformTree::kInvalidNodeId;
     int inner_scroll = ScrollTree::kInvalidNodeId;
     int outer_clip = ClipTree::kInvalidNodeId;
@@ -621,7 +633,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   bool UpdateLayers();
   void DidPresentCompositorFrame(
       uint32_t frame_token,
-      std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
+      std::vector<PresentationTimeCallbackBuffer::MainCallback> callbacks,
       const gfx::PresentationFeedback& feedback);
   // Called when the compositor completed page scale animation.
   void DidCompletePageScaleAnimation();
@@ -951,7 +963,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   // Presentation time callbacks requested for the next frame are initially
   // added here.
-  std::vector<PresentationTimeCallback> pending_presentation_time_callbacks_;
+  std::vector<PresentationTimeCallbackBuffer::MainCallback>
+      pending_presentation_time_callbacks_;
 
   struct ScrollAnimationState {
     ScrollAnimationState();

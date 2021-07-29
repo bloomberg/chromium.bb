@@ -24,6 +24,8 @@
 
 namespace tint {
 
+ProgramBuilder::VarOptionals::~VarOptionals() = default;
+
 ProgramBuilder::ProgramBuilder()
     : id_(ProgramID::New()),
       ast_(ast_nodes_.Create<ast::Module>(id_, Source{})) {}
@@ -35,7 +37,9 @@ ProgramBuilder::ProgramBuilder(ProgramBuilder&& rhs)
       sem_nodes_(std::move(rhs.sem_nodes_)),
       ast_(rhs.ast_),
       sem_(std::move(rhs.sem_)),
-      symbols_(std::move(rhs.symbols_)) {
+      symbols_(std::move(rhs.symbols_)),
+      diagnostics_(std::move(rhs.diagnostics_)),
+      transforms_applied_(std::move(rhs.transforms_applied_)) {
   rhs.MarkAsMoved();
 }
 
@@ -51,6 +55,8 @@ ProgramBuilder& ProgramBuilder::operator=(ProgramBuilder&& rhs) {
   ast_ = rhs.ast_;
   sem_ = std::move(rhs.sem_);
   symbols_ = std::move(rhs.symbols_);
+  diagnostics_ = std::move(rhs.diagnostics_);
+  transforms_applied_ = std::move(rhs.transforms_applied_);
   return *this;
 }
 
@@ -63,6 +69,7 @@ ProgramBuilder ProgramBuilder::Wrap(const Program* program) {
   builder.sem_ = sem::Info::Wrap(program->Sem());
   builder.symbols_ = program->Symbols();
   builder.diagnostics_ = program->Diagnostics();
+  builder.transforms_applied_ = program->TransformsApplied();
   return builder;
 }
 
@@ -81,7 +88,7 @@ void ProgramBuilder::MarkAsMoved() {
 
 void ProgramBuilder::AssertNotMoved() const {
   if (moved_) {
-    TINT_ICE(const_cast<ProgramBuilder*>(this)->diagnostics_)
+    TINT_ICE(ProgramBuilder, const_cast<ProgramBuilder*>(this)->diagnostics_)
         << "Attempting to use ProgramBuilder after it has been moved";
   }
 }
@@ -100,73 +107,17 @@ const sem::Type* ProgramBuilder::TypeOf(const ast::Type* type) const {
   return Sem().Get(type);
 }
 
-ast::ConstructorExpression* ProgramBuilder::ConstructValueFilledWith(
-    const ast::Type* type,
-    int elem_value) {
-  CloneContext ctx(this);
-
-  if (type->Is<ast::Bool>()) {
-    return create<ast::ScalarConstructorExpression>(
-        create<ast::BoolLiteral>(elem_value == 0 ? false : true));
-  }
-  if (type->Is<ast::I32>()) {
-    return create<ast::ScalarConstructorExpression>(
-        create<ast::SintLiteral>(static_cast<i32>(elem_value)));
-  }
-  if (type->Is<ast::U32>()) {
-    return create<ast::ScalarConstructorExpression>(
-        create<ast::UintLiteral>(static_cast<u32>(elem_value)));
-  }
-  if (type->Is<ast::F32>()) {
-    return create<ast::ScalarConstructorExpression>(
-        create<ast::FloatLiteral>(static_cast<f32>(elem_value)));
-  }
-  if (auto* v = type->As<ast::Vector>()) {
-    ast::ExpressionList el(v->size());
-    for (size_t i = 0; i < el.size(); i++) {
-      el[i] = ConstructValueFilledWith(ctx.Clone(v->type()), elem_value);
-    }
-    return create<ast::TypeConstructorExpression>(const_cast<ast::Type*>(type),
-                                                  std::move(el));
-  }
-  if (auto* m = type->As<ast::Matrix>()) {
-    ast::ExpressionList el(m->columns());
-    for (size_t i = 0; i < el.size(); i++) {
-      auto* col_vec_type = create<ast::Vector>(ctx.Clone(m->type()), m->rows());
-      el[i] = ConstructValueFilledWith(col_vec_type, elem_value);
-    }
-    return create<ast::TypeConstructorExpression>(const_cast<ast::Type*>(type),
-                                                  std::move(el));
-  }
-  if (auto* tn = type->As<ast::TypeName>()) {
-    if (auto* lookup = AST().LookupType(tn->name())) {
-      if (auto* alias = lookup->As<ast::Alias>()) {
-        return ConstructValueFilledWith(ctx.Clone(alias->type()), elem_value);
-      }
-    }
-    TINT_ICE(diagnostics_) << "unable to find NamedType '"
-                           << Symbols().NameFor(tn->name()) << "'";
-    return nullptr;
-  }
-
-  TINT_ICE(diagnostics_) << "unhandled type: " << type->TypeInfo().name;
-  return nullptr;
+const sem::Type* ProgramBuilder::TypeOf(const ast::TypeDecl* type_decl) const {
+  return Sem().Get(type_decl);
 }
 
-ast::Type* ProgramBuilder::TypesBuilder::MaybeCreateTypename(
-    ast::Type* type) const {
-  if (auto* nt = As<ast::NamedType>(type)) {
-    return type_name(nt->name());
-  }
-  return type;
+ast::TypeName* ProgramBuilder::TypesBuilder::Of(ast::TypeDecl* decl) const {
+  return type_name(decl->name());
 }
 
-const ast::Type* ProgramBuilder::TypesBuilder::MaybeCreateTypename(
-    const ast::Type* type) const {
-  if (auto* nt = As<ast::NamedType>(type)) {
-    return type_name(nt->name());
-  }
-  return type;
+const ast::TypeName* ProgramBuilder::TypesBuilder::Of(
+    const ast::TypeDecl* decl) const {
+  return type_name(decl->name());
 }
 
 ProgramBuilder::TypesBuilder::TypesBuilder(ProgramBuilder* pb) : builder(pb) {}
@@ -177,7 +128,7 @@ ast::Statement* ProgramBuilder::WrapInStatement(ast::Literal* lit) {
 
 ast::Statement* ProgramBuilder::WrapInStatement(ast::Expression* expr) {
   if (auto* ce = expr->As<ast::CallExpression>()) {
-    return create<ast::CallStatement>(ce);
+    return Ignore(ce);
   }
   // Create a temporary variable of inferred type from expr.
   return Decl(Const(symbols_.New(), nullptr, expr));
@@ -193,7 +144,8 @@ ast::Statement* ProgramBuilder::WrapInStatement(ast::Statement* stmt) {
 
 ast::Function* ProgramBuilder::WrapInFunction(ast::StatementList stmts) {
   return Func("test_function", {}, ty.void_(), std::move(stmts),
-              {create<ast::StageDecoration>(ast::PipelineStage::kCompute)});
+              {create<ast::StageDecoration>(ast::PipelineStage::kCompute),
+               WorkgroupSize(1, 1, 1)});
 }
 
 }  // namespace tint

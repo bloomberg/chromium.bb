@@ -97,7 +97,7 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/tablet_mode.h"
-#include "chrome/browser/chromeos/policy/system_features_disable_list_policy_handler.h"
+#include "chrome/browser/ash/policy/handlers/system_features_disable_list_policy_handler.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #endif
 
@@ -109,6 +109,8 @@
 
 using base::UserMetricsAction;
 using content::WebContents;
+
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(AppMenuModel, kHistoryMenuItem);
 
 namespace {
 
@@ -160,7 +162,7 @@ ZoomMenuModel::ZoomMenuModel(ui::SimpleMenuModel::Delegate* delegate)
   Build();
 }
 
-ZoomMenuModel::~ZoomMenuModel() {}
+ZoomMenuModel::~ZoomMenuModel() = default;
 
 void ZoomMenuModel::Build() {
   AddItemWithStringId(IDC_ZOOM_PLUS, IDS_ZOOM_PLUS);
@@ -197,6 +199,14 @@ class HelpMenuModel : public ui::SimpleMenuModel {
       if (base::FeatureList::IsEnabled(features::kChromeTipsInMainMenuNewBadge))
         SetIsNewFeatureAt(GetIndexOfCommandId(IDC_CHROME_TIPS), true);
     }
+    if (base::FeatureList::IsEnabled(features::kChromeWhatsNewUI)) {
+      AddItem(IDC_CHROME_WHATS_NEW,
+              l10n_util::GetStringUTF16(IDS_CHROME_WHATS_NEW));
+      if (base::FeatureList::IsEnabled(
+              features::kChromeWhatsNewInMainMenuNewBadge)) {
+        SetIsNewFeatureAt(GetIndexOfCommandId(IDC_CHROME_WHATS_NEW), true);
+      }
+    }
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
     AddItemWithStringId(IDC_HELP_PAGE_VIA_MENU, help_string_id);
     if (browser_defaults::kShowHelpMenuItemIcon) {
@@ -220,7 +230,7 @@ ToolsMenuModel::ToolsMenuModel(ui::SimpleMenuModel::Delegate* delegate,
   Build(browser);
 }
 
-ToolsMenuModel::~ToolsMenuModel() {}
+ToolsMenuModel::~ToolsMenuModel() = default;
 
 // More tools submenu is constructed as follows:
 // - Page specific actions overflow (save page, adding to desktop).
@@ -257,8 +267,7 @@ void ToolsMenuModel::Build(Browser* browser) {
 
 // static
 const int AppMenuModel::kMinRecentTabsCommandId;
-// static
-const int AppMenuModel::kMaxRecentTabsCommandId;
+const int AppMenuModel::kNumUnboundedMenuTypes;
 
 AppMenuModel::AppMenuModel(ui::AcceleratorProvider* provider,
                            Browser* browser,
@@ -651,6 +660,13 @@ void AppMenuModel::LogMenuMetrics(int command_id) {
         UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.ChromeTips", delta);
       LogMenuAction(MENU_ACTION_CHROME_TIPS);
       break;
+    case IDC_CHROME_WHATS_NEW:
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.ChromeWhatsNew",
+                                   delta);
+      }
+      LogMenuAction(MENU_ACTION_CHROME_WHATS_NEW);
+      break;
 #endif
 
     case IDC_TOGGLE_REQUEST_TABLET_SITE:
@@ -807,10 +823,11 @@ void AppMenuModel::Build() {
         std::make_unique<RecentTabsSubMenuModel>(provider_, browser_));
     AddSubMenuWithStringId(IDC_RECENT_TABS_MENU, IDS_HISTORY_MENU,
                            sub_menus_.back().get());
+    SetElementIdentifierAt(GetIndexOfCommandId(IDC_RECENT_TABS_MENU),
+                           kHistoryMenuItem);
   }
   AddItemWithStringId(IDC_SHOW_DOWNLOADS, IDS_SHOW_DOWNLOADS);
-  if (!browser_->profile()->IsGuestSession() &&
-      !browser_->profile()->IsEphemeralGuestProfile()) {
+  if (!browser_->profile()->IsGuestSession()) {
     bookmark_sub_menu_model_ =
         std::make_unique<BookmarkSubMenuModel>(this, browser_);
     AddSubMenuWithStringId(IDC_BOOKMARKS_MENU, IDS_BOOKMARKS_MENU,
@@ -821,7 +838,7 @@ void AppMenuModel::Build() {
   CreateZoomMenu();
   AddSeparator(ui::UPPER_SEPARATOR);
 
-  if (base::FeatureList::IsEnabled(sharing_hub::kSharingHubDesktopAppMenu)) {
+  if (sharing_hub::SharingHubAppMenuEnabled(browser()->profile())) {
     sub_menus_.push_back(
         std::make_unique<sharing_hub::SharingHubSubMenuModel>(browser_));
     AddSubMenuWithStringId(IDC_SHARING_HUB_MENU, IDS_SHARING_HUB_TITLE,
@@ -961,8 +978,7 @@ void AppMenuModel::UpdateZoomControls() {
 }
 
 bool AppMenuModel::ShouldShowNewIncognitoWindowMenuItem() {
-  if (browser_->profile()->IsGuestSession() ||
-      browser_->profile()->IsEphemeralGuestProfile())
+  if (browser_->profile()->IsGuestSession())
     return false;
 
   return IncognitoModePrefs::GetAvailability(browser_->profile()->GetPrefs()) !=
@@ -977,8 +993,7 @@ bool AppMenuModel::AddGlobalErrorMenuItems() {
   const GlobalErrorService::GlobalErrorList& errors =
       GlobalErrorServiceFactory::GetForProfile(browser_->profile())->errors();
   bool menu_items_added = false;
-  for (auto it = errors.begin(); it != errors.end(); ++it) {
-    GlobalError* error = *it;
+  for (auto* error : errors) {
     DCHECK(error);
     if (error->HasMenuItem()) {
       AddItem(error->MenuItemCommandID(), error->MenuItemLabel());

@@ -11,6 +11,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop.h"
+#include "ui/views/controls/focus_ring.h"
 
 namespace ash {
 namespace {
@@ -30,7 +31,7 @@ ClipboardHistoryMainButton::ClipboardHistoryMainButton(
           base::Unretained(container))),
       container_(container) {
   SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
-  ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
+  views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
   SetID(ClipboardHistoryUtil::kMainButtonViewID);
 
   // Let the parent handle accessibility features.
@@ -50,8 +51,8 @@ ClipboardHistoryMainButton::ClipboardHistoryMainButton(
   // Hence, highlighted background is implemented by customizing in
   // `PaintButtonContents()`.
   views::InkDrop::UseInkDropForFloodFillRipple(
-      ink_drop(), /*highlight_on_hover=*/false,
-      /*highlight_on_focus=*/!focus_ring());
+      views::InkDrop::Get(this), /*highlight_on_hover=*/false,
+      /*highlight_on_focus=*/!views::FocusRing::Get(this));
 }
 
 ClipboardHistoryMainButton::~ClipboardHistoryMainButton() = default;
@@ -90,8 +91,9 @@ void ClipboardHistoryMainButton::OnThemeChanged() {
 
   const AshColorProvider::RippleAttributes ripple_attributes =
       AshColorProvider::Get()->GetRippleAttributes();
-  ink_drop()->SetBaseColor(ripple_attributes.base_color);
-  ink_drop()->SetVisibleOpacity(ripple_attributes.inkdrop_opacity);
+  views::InkDrop::Get(this)->SetBaseColor(ripple_attributes.base_color);
+  views::InkDrop::Get(this)->SetVisibleOpacity(
+      ripple_attributes.inkdrop_opacity);
 }
 
 void ClipboardHistoryMainButton::OnGestureEvent(ui::GestureEvent* event) {

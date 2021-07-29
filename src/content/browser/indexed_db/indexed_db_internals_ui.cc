@@ -29,10 +29,9 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "storage/common/database/database_identifier.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "ui/base/text/bytes_formatting.h"
 #include "url/origin.h"
-
-using url::Origin;
 
 namespace content {
 
@@ -66,18 +65,21 @@ IndexedDBInternalsHandler::IndexedDBInternalsHandler() = default;
 IndexedDBInternalsHandler::~IndexedDBInternalsHandler() = default;
 
 void IndexedDBInternalsHandler::RegisterMessages() {
+  // TODO(https://crbug.com/1199077): Fix this name as part of storage key
+  // migration.
   web_ui()->RegisterMessageCallback(
       "getAllOrigins",
-      base::BindRepeating(&IndexedDBInternalsHandler::GetAllOrigins,
+      base::BindRepeating(&IndexedDBInternalsHandler::GetAllStorageKeys,
                           base::Unretained(this)));
-
+  // TODO(https://crbug.com/1199077): Fix this name as part of storage key
+  // migration.
   web_ui()->RegisterMessageCallback(
       "downloadOriginData",
-      base::BindRepeating(&IndexedDBInternalsHandler::DownloadOriginData,
+      base::BindRepeating(&IndexedDBInternalsHandler::DownloadStorageKeyData,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "forceClose",
-      base::BindRepeating(&IndexedDBInternalsHandler::ForceCloseOrigin,
+      base::BindRepeating(&IndexedDBInternalsHandler::ForceCloseStorageKey,
                           base::Unretained(this)));
 }
 
@@ -85,7 +87,7 @@ void IndexedDBInternalsHandler::OnJavascriptDisallowed() {
   weak_factory_.InvalidateWeakPtrs();
 }
 
-void IndexedDBInternalsHandler::GetAllOrigins(const base::ListValue* args) {
+void IndexedDBInternalsHandler::GetAllStorageKeys(const base::ListValue* args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   AllowJavascript();
@@ -99,14 +101,14 @@ void IndexedDBInternalsHandler::GetAllOrigins(const base::ListValue* args) {
             if (!handler)
               return;
             auto& control = partition->GetIndexedDBControl();
-            control.GetAllOriginsDetails(base::BindOnce(
+            control.GetAllStorageKeysDetails(base::BindOnce(
                 [](base::WeakPtr<IndexedDBInternalsHandler> handler,
                    base::FilePath partition_path, bool incognito,
                    base::Value info_list) {
                   if (!handler)
                     return;
 
-                  handler->OnOriginsReady(
+                  handler->OnStorageKeysReady(
                       info_list, incognito ? base::FilePath() : partition_path);
                 },
                 handler, partition->GetPath()));
@@ -114,10 +116,14 @@ void IndexedDBInternalsHandler::GetAllOrigins(const base::ListValue* args) {
           weak_factory_.GetWeakPtr()));
 }
 
-void IndexedDBInternalsHandler::OnOriginsReady(const base::Value& origins,
-                                               const base::FilePath& path) {
+void IndexedDBInternalsHandler::OnStorageKeysReady(
+    const base::Value& storage_keys,
+    const base::FilePath& path) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  FireWebUIListener("origins-ready", origins, base::Value(path.AsUTF8Unsafe()));
+  // TODO(https://crbug.com/1199077): Fix this name as part of storage key
+  // migration.
+  FireWebUIListener("origins-ready", storage_keys,
+                    base::Value(path.AsUTF8Unsafe()));
 }
 
 static void FindControl(const base::FilePath& partition_path,
@@ -130,11 +136,11 @@ static void FindControl(const base::FilePath& partition_path,
   }
 }
 
-bool IndexedDBInternalsHandler::GetOriginData(
+bool IndexedDBInternalsHandler::GetStorageKeyData(
     const base::ListValue* args,
     std::string* callback_id,
     base::FilePath* partition_path,
-    Origin* origin,
+    blink::StorageKey* storage_key,
     storage::mojom::IndexedDBControl** control) {
   std::string callback_string;
   if (!args->GetString(0, &callback_string)) {
@@ -151,16 +157,16 @@ bool IndexedDBInternalsHandler::GetOriginData(
   if (!args->GetString(2, &url_string))
     return false;
 
-  *origin = Origin::Create(GURL(url_string));
+  *storage_key = blink::StorageKey(url::Origin::Create(GURL(url_string)));
 
-  return GetOriginControl(*partition_path, *origin, control);
+  return GetStorageKeyControl(*partition_path, *storage_key, control);
 }
 
-bool IndexedDBInternalsHandler::GetOriginControl(
+bool IndexedDBInternalsHandler::GetStorageKeyControl(
     const base::FilePath& path,
-    const Origin& origin,
+    const blink::StorageKey& storage_key,
     storage::mojom::IndexedDBControl** control) {
-  // search the origins to find the right context
+  // search the storage keys to find the right context
   BrowserContext* browser_context =
       web_ui()->GetWebContents()->GetBrowserContext();
 
@@ -175,73 +181,79 @@ bool IndexedDBInternalsHandler::GetOriginControl(
   return true;
 }
 
-void IndexedDBInternalsHandler::DownloadOriginData(
+void IndexedDBInternalsHandler::DownloadStorageKeyData(
     const base::ListValue* args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::string callback_id;
   base::FilePath partition_path;
-  Origin origin;
+  blink::StorageKey storage_key;
   storage::mojom::IndexedDBControl* control;
-  if (!GetOriginData(args, &callback_id, &partition_path, &origin, &control))
+  if (!GetStorageKeyData(args, &callback_id, &partition_path, &storage_key,
+                         &control))
     return;
 
   AllowJavascript();
   DCHECK(control);
   control->ForceClose(
-      origin, storage::mojom::ForceCloseReason::FORCE_CLOSE_INTERNALS_PAGE,
+      storage_key, storage::mojom::ForceCloseReason::FORCE_CLOSE_INTERNALS_PAGE,
       base::BindOnce(
-          [](base::WeakPtr<IndexedDBInternalsHandler> handler, Origin origin,
+          [](base::WeakPtr<IndexedDBInternalsHandler> handler,
+             blink::StorageKey storage_key,
              storage::mojom::IndexedDBControl* control,
              const std::string& callback_id) {
             // Is the connection count always zero after closing,
             // such that this can be simplified?
             control->GetConnectionCount(
-                origin,
+                storage_key,
                 base::BindOnce(
                     [](base::WeakPtr<IndexedDBInternalsHandler> handler,
-                       Origin origin, storage::mojom::IndexedDBControl* control,
+                       blink::StorageKey storage_key,
+                       storage::mojom::IndexedDBControl* control,
                        const std::string& callback_id,
                        uint64_t connection_count) {
                       if (!handler)
                         return;
 
-                      control->DownloadOriginData(
-                          origin,
+                      control->DownloadStorageKeyData(
+                          storage_key,
                           base::BindOnce(
                               &IndexedDBInternalsHandler::OnDownloadDataReady,
                               handler, callback_id, connection_count));
                     },
-                    handler, origin, control, callback_id));
+                    handler, storage_key, control, callback_id));
           },
-          weak_factory_.GetWeakPtr(), origin, control, callback_id));
+          weak_factory_.GetWeakPtr(), storage_key, control, callback_id));
 }
 
-void IndexedDBInternalsHandler::ForceCloseOrigin(const base::ListValue* args) {
+void IndexedDBInternalsHandler::ForceCloseStorageKey(
+    const base::ListValue* args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::string callback_id;
   base::FilePath partition_path;
-  Origin origin;
+  blink::StorageKey storage_key;
   storage::mojom::IndexedDBControl* control;
-  if (!GetOriginData(args, &callback_id, &partition_path, &origin, &control))
+  if (!GetStorageKeyData(args, &callback_id, &partition_path, &storage_key,
+                         &control))
     return;
 
   AllowJavascript();
   control->ForceClose(
-      origin, storage::mojom::ForceCloseReason::FORCE_CLOSE_INTERNALS_PAGE,
+      storage_key, storage::mojom::ForceCloseReason::FORCE_CLOSE_INTERNALS_PAGE,
       base::BindOnce(
-          [](base::WeakPtr<IndexedDBInternalsHandler> handler, Origin origin,
+          [](base::WeakPtr<IndexedDBInternalsHandler> handler,
+             blink::StorageKey storage_key,
              storage::mojom::IndexedDBControl* control,
              const std::string& callback_id) {
             if (!handler)
               return;
             control->GetConnectionCount(
-                origin,
+                storage_key,
                 base::BindOnce(&IndexedDBInternalsHandler::OnForcedClose,
                                handler, callback_id));
           },
-          weak_factory_.GetWeakPtr(), origin, control, callback_id));
+          weak_factory_.GetWeakPtr(), storage_key, control, callback_id));
 }
 
 void IndexedDBInternalsHandler::OnForcedClose(const std::string& callback_id,

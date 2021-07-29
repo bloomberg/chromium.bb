@@ -284,11 +284,6 @@ static AOM_INLINE void tf_dealloc_data(TemporalFilterData *tf_data,
   aom_free(tf_data->pred);
 }
 
-// Helper function to compute number of blocks on either side of the frame.
-static INLINE int get_num_blocks(const int frame_length, const int mb_length) {
-  return (frame_length + mb_length - 1) / mb_length;
-}
-
 // Saves the state prior to temporal filter process.
 // Inputs:
 //   mbd: Pointer to the block for filtering.

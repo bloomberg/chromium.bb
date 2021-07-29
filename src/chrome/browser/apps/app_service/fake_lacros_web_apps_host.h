@@ -33,6 +33,16 @@ class FakeLacrosWebAppsHost : public crosapi::mojom::AppController {
                  apps::mojom::UninstallSource uninstall_source,
                  bool clear_site_data,
                  bool report_abuse) override;
+  void PauseApp(const std::string& app_id) override;
+  void UnpauseApp(const std::string& app_id) override;
+  void GetMenuModel(const std::string& app_id,
+                    GetMenuModelCallback callback) override;
+  void LoadIcon(const std::string& app_id,
+                apps::mojom::IconKeyPtr icon_key,
+                apps::mojom::IconType icon_type,
+                int32_t size_hint_in_dip,
+                LoadIconCallback callback) override;
+  void OpenNativeSettings(const std::string& app_id) override;
 
   mojo::Receiver<crosapi::mojom::AppController> receiver_{this};
 };

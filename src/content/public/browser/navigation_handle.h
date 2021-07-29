@@ -40,7 +40,7 @@ class ProxyServer;
 }  // namespace net
 
 namespace content {
-struct GlobalFrameRoutingId;
+struct GlobalRenderFrameHostId;
 struct GlobalRequestID;
 class NavigationEntry;
 class NavigationThrottle;
@@ -94,16 +94,26 @@ class CONTENT_EXPORT NavigationHandle : public base::SupportsUserData {
   // Whether the navigation is taking place in a main frame or in a subframe.
   // This can also return true for navigations in the root of a non-primary
   // page, so consider whether you want to call IsInPrimaryMainFrame() instead.
-  // See the documentation below for details. This remains constant over the
-  // navigation lifetime.
+  // See the documentation below for details. The return value remains constant
+  // over the navigation lifetime.
   virtual bool IsInMainFrame() = 0;
 
   // Whether the navigation is taking place in the main frame of the primary
   // frame tree. With MPArch (crbug.com/1164280), a WebContents may have
   // additional frame trees for prerendering pages in addition to the primary
-  // frame tree (holding the page currently shown to the user). This remains
-  // constant over the navigation lifetime.
+  // frame tree (holding the page currently shown to the user). The return
+  // value remains constant over the navigation lifetime.
   virtual bool IsInPrimaryMainFrame() = 0;
+
+  // Prerender2:
+  // Whether the navigation is taking place in the main frame of the
+  // prerendered frame tree. Prerender will create separate frame trees to load
+  // a page in the background, which later then be activated by a separate
+  // prerender page activation navigation in the primary main frame. This
+  // returns false for prerender page activation navigations, which should be
+  // checked by IsPrerenderedPageActivation(). The return value remains
+  // constant over the navigation lifetime.
+  virtual bool IsInPrerenderedMainFrame() = 0;
 
   // Prerender2
   // Returns true if this navigation will activate a prerendered page. It is
@@ -234,7 +244,7 @@ class CONTENT_EXPORT NavigationHandle : public base::SupportsUserData {
   // same RenderFrameHost.
   // Note: This is not guaranteed to refer to a RenderFrameHost that still
   // exists.
-  virtual GlobalFrameRoutingId GetPreviousRenderFrameHostId() = 0;
+  virtual GlobalRenderFrameHostId GetPreviousRenderFrameHostId() = 0;
 
   // Whether the navigation happened without changing document. Examples of
   // same document navigations are:

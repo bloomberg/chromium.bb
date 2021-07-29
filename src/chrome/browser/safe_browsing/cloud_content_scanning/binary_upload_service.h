@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/callback_forward.h"
 #include "base/containers/flat_set.h"
+#include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -22,7 +23,7 @@
 #include "chrome/browser/safe_browsing/cloud_content_scanning/multipart_uploader.h"
 #include "components/enterprise/common/proto/connectors.pb.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/safe_browsing/core/proto/csd.pb.h"
+#include "components/safe_browsing/core/common/proto/csd.pb.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -38,8 +39,7 @@ class BinaryUploadService : public KeyedService {
   constexpr static size_t kMaxUploadSizeBytes = 50 * 1024 * 1024;  // 50 MB
 
   // The maximum number of uploads that can happen in parallel.
-  // TODO(crbug.com/1191061): Tweak this number to an "optimal" value.
-  constexpr static size_t kParallelActiveRequestsMax = 50;
+  static size_t GetParallelActiveRequestsMax();
 
   explicit BinaryUploadService(Profile* profile);
 
@@ -115,9 +115,14 @@ class BinaryUploadService : public KeyedService {
     // Structure of data returned in the callback to GetRequestData().
     struct Data {
       Data();
+      Data(const Data&);
+      ~Data();
 
-      // The data content.
+      // The data content. Only populated for string requests.
       std::string contents;
+
+      // The path to the file to be scanned. Only populated for file requests.
+      base::FilePath path;
 
       // The SHA256 of the data.
       std::string hash;
@@ -126,6 +131,9 @@ class BinaryUploadService : public KeyedService {
       // file is too large for deep scanning. This field will contain the true
       // size.
       uint64_t size = 0;
+
+      // The mime type of the data. Only populated for file requests.
+      std::string mime_type;
     };
 
     // Asynchronously returns the file contents to upload.
@@ -168,6 +176,7 @@ class BinaryUploadService : public KeyedService {
     void set_digest(const std::string& digest);
     void clear_dlp_scan_request();
     void set_client_metadata(enterprise_connectors::ClientMetadata metadata);
+    void set_content_type(const std::string& type);
 
     // Methods for accessing the ContentAnalysisRequest.
     enterprise_connectors::AnalysisConnector analysis_connector();

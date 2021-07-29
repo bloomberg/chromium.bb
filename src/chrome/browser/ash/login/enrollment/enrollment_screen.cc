@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -20,10 +21,12 @@
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/wizard_context.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
+#include "chrome/browser/ash/policy/enrollment/account_status_check_fetcher.h"
+#include "chrome/browser/ash/policy/enrollment/enrollment_requisition_manager.h"
+#include "chrome/browser/ash/policy/handlers/tpm_auto_update_mode_policy_handler.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/tpm_auto_update_mode_policy_handler.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/policy/enrollment_status.h"
@@ -37,6 +40,7 @@
 namespace ash {
 namespace {
 
+using ::policy::AccountStatusCheckFetcher;
 using ::policy::EnrollmentConfig;
 
 // Do not change the UMA histogram parameters without renaming the histograms!
@@ -164,7 +168,7 @@ void EnrollmentScreen::SetConfig() {
                        ? policy::EnrollmentConfig::MODE_ATTESTATION_LOCAL_FORCED
                        : policy::EnrollmentConfig::MODE_ATTESTATION;
   }
-  view_->SetEnrollmentConfig(this, config_);
+  view_->SetEnrollmentConfig(config_);
   enrollment_helper_ = nullptr;
 }
 
@@ -213,14 +217,26 @@ bool EnrollmentScreen::MaybeSkip(WizardContext* context) {
   return false;
 }
 
-void EnrollmentScreen::ShowImpl() {
-  VLOG(1) << "Show enrollment screen";
-  UMA(policy::kMetricEnrollmentTriggered);
-  if (enrollment_config_.mode ==
-      policy::EnrollmentConfig::MODE_ENROLLED_ROLLBACK) {
-    RestoreAfterRollback();
+void EnrollmentScreen::UpdateFlowType() {
+  if (features::IsLicensePackagedOobeFlowEnabled() &&
+      config_.license_type ==
+          policy::EnrollmentConfig::LicenseType::kEnterprise) {
+    view_->SetFlowType(EnrollmentScreenView::FlowType::kEnterpriseLicense);
     return;
   }
+  const bool cfm = policy::EnrollmentRequisitionManager::IsRemoraRequisition();
+  if (cfm) {
+    view_->SetFlowType(EnrollmentScreenView::FlowType::kCFM);
+  } else {
+    view_->SetFlowType(EnrollmentScreenView::FlowType::kEnterprise);
+  }
+}
+
+void EnrollmentScreen::ShowImpl() {
+  VLOG(1) << "Show enrollment screen";
+  view_->SetEnrollmentController(this);
+  UMA(policy::kMetricEnrollmentTriggered);
+  UpdateFlowType();
   switch (current_auth_) {
     case AUTH_OAUTH:
       ShowInteractiveScreen();
@@ -242,15 +258,6 @@ void EnrollmentScreen::ShowInteractiveScreen() {
 void EnrollmentScreen::HideImpl() {
   view_->Hide();
   weak_ptr_factory_.InvalidateWeakPtrs();
-}
-
-void EnrollmentScreen::RestoreAfterRollback() {
-  VLOG(1) << "Restoring after version rollback.";
-  elapsed_timer_ = std::make_unique<base::ElapsedTimer>();
-  view_->Show();
-  view_->ShowEnrollmentSpinnerScreen();
-  CreateEnrollmentHelper();
-  enrollment_helper_->RestoreAfterRollback();
 }
 
 void EnrollmentScreen::AuthenticateUsingAttestation() {
@@ -300,6 +307,14 @@ void EnrollmentScreen::ProcessRetry() {
   LOG(WARNING) << "Enrollment retries: " << num_retries_
                << ", current auth: " << current_auth_ << ".";
   Show(context());
+}
+
+bool EnrollmentScreen::HandleAccelerator(LoginAcceleratorAction action) {
+  if (action == LoginAcceleratorAction::kCancelScreenAction) {
+    OnCancel();
+    return true;
+  }
+  return false;
 }
 
 void EnrollmentScreen::OnCancel() {
@@ -394,6 +409,42 @@ void EnrollmentScreen::OnDeviceEnrolled() {
       ->GetTPMAutoUpdateModePolicyHandler()
       ->UpdateOnEnrollmentIfNeeded();
 }
+void EnrollmentScreen::OnIdentifierEntered(const std::string& email) {
+  auto callback = base::BindOnce(&EnrollmentScreen::OnAccountStatusFetched,
+                                 base::Unretained(this), email);
+  status_checker_.reset();
+  status_checker_ = std::make_unique<policy::AccountStatusCheckFetcher>(email);
+  status_checker_->Fetch(std::move(callback));
+}
+
+void EnrollmentScreen::OnAccountStatusFetched(
+    const std::string& email,
+    bool result,
+    policy::AccountStatusCheckFetcher::AccountStatus status) {
+  if (!view_)
+    return;
+  if (status == AccountStatusCheckFetcher::AccountStatus::kDasher ||
+      status == AccountStatusCheckFetcher::AccountStatus::kUnknown ||
+      result == false) {
+    view_->ShowSigninScreen();
+    return;
+  }
+  if (status ==
+      AccountStatusCheckFetcher::AccountStatus::kConsumerWithConsumerDomain) {
+    view_->ShowUserError(EnrollmentScreenView::UserErrorType::kConsumerDomain,
+                         email);
+    return;
+  }
+  if (status ==
+      AccountStatusCheckFetcher::AccountStatus::kConsumerWithBusinessDomain) {
+    view_->ShowUserError(EnrollmentScreenView::UserErrorType::kBusinessDomain,
+                         email);
+    return;
+  }
+
+  // For all other types just show signin screen.
+  view_->ShowSigninScreen();
+}
 
 void EnrollmentScreen::OnActiveDirectoryCredsProvided(
     const std::string& machine_name,
@@ -425,16 +476,6 @@ void EnrollmentScreen::OnDeviceAttributeUpdatePermission(bool granted) {
         base::BindOnce(&EnrollmentScreen::ShowEnrollmentStatusOnSuccess,
                        weak_ptr_factory_.GetWeakPtr()));
   }
-}
-
-void EnrollmentScreen::OnRestoreAfterRollbackCompleted() {
-  // Pass the enterprise domain and the device type to be shown.
-  view_->SetEnterpriseDomainInfo(GetEnterpriseDomainManager(),
-                                 ui::GetChromeOSDeviceName());
-  // Show the success screen
-  StartupUtils::MarkDeviceRegistered(
-      base::BindOnce(&EnrollmentScreen::ShowEnrollmentStatusOnSuccess,
-                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void EnrollmentScreen::OnDeviceAttributeUploadCompleted(bool success) {
@@ -504,9 +545,7 @@ void EnrollmentScreen::ShowEnrollmentStatusOnSuccess() {
   if (elapsed_timer_)
     UMA_ENROLLMENT_TIME(kMetricEnrollmentTimeSuccess, elapsed_timer_);
   if (WizardController::UsingHandsOffEnrollment() ||
-      WizardController::skip_enrollment_prompts() ||
-      enrollment_config_.mode ==
-          policy::EnrollmentConfig::MODE_ENROLLED_ROLLBACK) {
+      WizardController::skip_enrollment_prompts()) {
     OnConfirmationClosed();
   } else {
     view_->ShowEnrollmentStatus(
@@ -520,7 +559,6 @@ void EnrollmentScreen::UMA(policy::MetricEnrollment sample) {
 
 void EnrollmentScreen::ShowSigninScreen() {
   view_->Show();
-  view_->ShowSigninScreen();
 }
 
 void EnrollmentScreen::RecordEnrollmentErrorMetrics() {
@@ -530,9 +568,10 @@ void EnrollmentScreen::RecordEnrollmentErrorMetrics() {
     UMA_ENROLLMENT_TIME(kMetricEnrollmentTimeFailure, elapsed_timer_);
 }
 
-void EnrollmentScreen::JoinDomain(const std::string& dm_token,
-                                  const std::string& domain_join_config,
-                                  OnDomainJoinedCallback on_joined_callback) {
+void EnrollmentScreen::JoinDomain(
+    const std::string& dm_token,
+    const std::string& domain_join_config,
+    policy::OnDomainJoinedCallback on_joined_callback) {
   if (!authpolicy_login_helper_)
     authpolicy_login_helper_ = std::make_unique<AuthPolicyHelper>();
   authpolicy_login_helper_->set_dm_token(dm_token);

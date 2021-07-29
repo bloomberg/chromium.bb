@@ -16,7 +16,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/optimization_guide/optimization_guide_navigation_data.h"
+#include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_tab_url_provider.h"
 #include "chrome/browser/optimization_guide/optimization_guide_web_contents_observer.h"
 #include "chrome/test/base/testing_profile.h"
@@ -30,6 +30,7 @@
 #include "components/optimization_guide/core/optimization_guide_constants.h"
 #include "components/optimization_guide/core/optimization_guide_enums.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
+#include "components/optimization_guide/core/optimization_guide_navigation_data.h"
 #include "components/optimization_guide/core/optimization_guide_prefs.h"
 #include "components/optimization_guide/core/optimization_guide_store.h"
 #include "components/optimization_guide/core/optimization_guide_switches.h"
@@ -39,6 +40,7 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/unified_consent/unified_consent_service.h"
+#include "components/variations/scoped_variations_ids_provider.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/test_web_contents_factory.h"
@@ -356,19 +358,23 @@ class OptimizationGuideHintsManagerTest
   }
 
   void ProcessHints(const optimization_guide::proto::Configuration& config,
-                    const std::string& version) {
+                    const std::string& version,
+                    bool should_wait = true) {
     optimization_guide::HintsComponentInfo info(
         base::Version(version),
         temp_dir().Append(FILE_PATH_LITERAL("somefile.pb")));
     ASSERT_NO_FATAL_FAILURE(WriteConfigToFile(config, info.path));
 
     base::RunLoop run_loop;
-    hints_manager_->ListenForNextUpdateForTesting(run_loop.QuitClosure());
+    if (should_wait)
+      hints_manager_->ListenForNextUpdateForTesting(run_loop.QuitClosure());
     hints_manager_->OnHintsComponentAvailable(info);
-    run_loop.Run();
+    if (should_wait)
+      run_loop.Run();
   }
 
-  void InitializeWithDefaultConfig(const std::string& version) {
+  void InitializeWithDefaultConfig(const std::string& version,
+                                   bool should_wait = true) {
     optimization_guide::proto::Configuration config;
     optimization_guide::proto::Hint* hint1 = config.add_hints();
     hint1->set_key("somedomain.org");
@@ -388,7 +394,7 @@ class OptimizationGuideHintsManagerTest
         hint2->add_whitelisted_optimizations();
     opt->set_optimization_type(optimization_guide::proto::NOSCRIPT);
 
-    ProcessHints(config, version);
+    ProcessHints(config, version, should_wait);
   }
 
   std::unique_ptr<optimization_guide::HintsFetcherFactory>
@@ -654,6 +660,20 @@ TEST_F(OptimizationGuideHintsManagerTest, ParseInvalidConfigVersions) {
   }
 }
 
+TEST_F(OptimizationGuideHintsManagerTest, ComponentProcessingWhileShutdown) {
+  base::HistogramTester histogram_tester;
+  InitializeWithDefaultConfig("10.0.0.0", /*should_wait=*/false);
+  hints_manager()->Shutdown();
+
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.ProcessingComponentAtShutdown", true, 1);
+
+  EXPECT_TRUE(
+      pref_service()
+          ->GetString(optimization_guide::prefs::kPendingHintsProcessingVersion)
+          .empty());
+}
+
 TEST_F(OptimizationGuideHintsManagerTest, ParseOlderConfigVersions) {
   // Test the first time parsing the config.
   {
@@ -748,6 +768,32 @@ TEST_F(OptimizationGuideHintsManagerTest, ProcessHintsWithExistingPref) {
   }
 }
 
+TEST_F(OptimizationGuideHintsManagerTest,
+       ProcessHintsWithExistingPrefDoesNotClearOrCountAsMidProcessing) {
+  // Write hints processing pref for version 2.0.0.
+  pref_service()->SetString(
+      optimization_guide::prefs::kPendingHintsProcessingVersion, "2.0.0");
+
+  // Verify component for same version counts as "failed".
+  base::HistogramTester histogram_tester;
+  InitializeWithDefaultConfig("2.0.0", /*should_wait=*/false);
+  hints_manager()->Shutdown();
+
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.ProcessHintsResult",
+      optimization_guide::ProcessHintsComponentResult::kFailedFinishProcessing,
+      1);
+
+  // Verify that pref still not cleared at shutdown and was not counted as
+  // mid-processing.
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.ProcessingComponentAtShutdown", false, 1);
+  EXPECT_FALSE(
+      pref_service()
+          ->GetString(optimization_guide::prefs::kPendingHintsProcessingVersion)
+          .empty());
+}
+
 TEST_F(OptimizationGuideHintsManagerTest, ProcessHintsWithInvalidPref) {
   // Create pref file with invalid version.
   pref_service()->SetString(
@@ -766,7 +812,7 @@ TEST_F(OptimizationGuideHintsManagerTest, ProcessHintsWithInvalidPref) {
     histogram_tester.ExpectUniqueSample(
         "OptimizationGuide.ProcessHintsResult",
         optimization_guide::ProcessHintsComponentResult::
-            kFailedFinishProcessing,
+            kFailedPreviouslyAttemptedVersionInvalid,
         1);
   }
 
@@ -2212,6 +2258,8 @@ class OptimizationGuideHintsManagerFetchingTest
   }
 
  private:
+  variations::ScopedVariationsIdsProvider scoped_variations_ids_provider_{
+      variations::VariationsIdsProvider::Mode::kUseSignedInState};
   base::test::ScopedFeatureList scoped_list_;
 };
 
@@ -2722,7 +2770,7 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
 
     // Make sure navigation data is populated correctly.
     OptimizationGuideNavigationData* navigation_data =
-        OptimizationGuideNavigationData::GetFromNavigationHandle(
+        OptimizationGuideKeyedService::GetNavigationDataFromNavigationHandle(
             navigation_handle.get());
     EXPECT_TRUE(navigation_data->hints_fetch_latency().has_value());
     EXPECT_EQ(navigation_data->hints_fetch_attempt_status(),
@@ -2758,7 +2806,7 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
 
     // Make sure navigation data is populated correctly.
     OptimizationGuideNavigationData* navigation_data =
-        OptimizationGuideNavigationData::GetFromNavigationHandle(
+        OptimizationGuideKeyedService::GetNavigationDataFromNavigationHandle(
             navigation_handle.get());
     EXPECT_FALSE(navigation_data->hints_fetch_latency().has_value());
     EXPECT_EQ(navigation_data->hints_fetch_attempt_status(),
@@ -2800,7 +2848,7 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
 
     // Make sure navigation data is populated correctly.
     OptimizationGuideNavigationData* navigation_data =
-        OptimizationGuideNavigationData::GetFromNavigationHandle(
+        OptimizationGuideKeyedService::GetNavigationDataFromNavigationHandle(
             navigation_handle.get());
     EXPECT_TRUE(navigation_data->hints_fetch_latency().has_value());
     EXPECT_EQ(navigation_data->hints_fetch_attempt_status(),
@@ -2833,7 +2881,7 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
             kRaceNavigationFetchHost,
         1);
     OptimizationGuideNavigationData* navigation_data =
-        OptimizationGuideNavigationData::GetFromNavigationHandle(
+        OptimizationGuideKeyedService::GetNavigationDataFromNavigationHandle(
             navigation_handle.get());
     EXPECT_TRUE(navigation_data->hints_fetch_latency().has_value());
     EXPECT_EQ(navigation_data->hints_fetch_attempt_status(),
@@ -2864,7 +2912,7 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
       "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 0);
   // Make sure navigation data is populated correctly.
   OptimizationGuideNavigationData* navigation_data =
-      OptimizationGuideNavigationData::GetFromNavigationHandle(
+      OptimizationGuideKeyedService::GetNavigationDataFromNavigationHandle(
           navigation_handle.get());
   EXPECT_FALSE(navigation_data->hints_fetch_latency().has_value());
   EXPECT_FALSE(navigation_data->hints_fetch_attempt_status().has_value());
@@ -3195,7 +3243,7 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
         "OptimizationGuide.HintsManager.ConcurrentPageNavigationFetches", 0);
 
     OptimizationGuideNavigationData* navigation_data =
-        OptimizationGuideNavigationData::GetFromNavigationHandle(
+        OptimizationGuideKeyedService::GetNavigationDataFromNavigationHandle(
             navigation_handle.get());
     // Set hints fetch end.so we can figure out if hints fetch start was set.
     navigation_data->set_hints_fetch_end(base::TimeTicks::Now());

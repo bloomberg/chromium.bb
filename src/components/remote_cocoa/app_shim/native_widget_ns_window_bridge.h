@@ -254,6 +254,8 @@ class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowBridge
   void UpdateWindowControlsOverlayNSView(
       const gfx::Rect& bounds,
       const mojom::WindowControlsOverlayNSViewType overlay_type) override;
+  void RemoveWindowControlsOverlayNSView(
+      const mojom::WindowControlsOverlayNSViewType overlay_type) override;
 
   // Return true if [NSApp updateWindows] needs to be called after updating the
   // TextInputClient.
@@ -388,6 +390,8 @@ class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowBridge
   // A blob representing the window's saved state, which is applied and cleared
   // on the first call to SetVisibilityState().
   std::vector<uint8_t> pending_restoration_data_;
+
+  display::ScopedDisplayObserver display_observer_{this};
 
   mojo::AssociatedReceiver<remote_cocoa::mojom::NativeWidgetNSWindow>
       bridge_mojo_receiver_{this};

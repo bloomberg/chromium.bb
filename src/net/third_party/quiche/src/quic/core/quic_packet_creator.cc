@@ -34,6 +34,7 @@
 #include "quic/platform/api/quic_flags.h"
 #include "quic/platform/api/quic_logging.h"
 #include "quic/platform/api/quic_server_stats.h"
+#include "common/print_elements.h"
 
 namespace quic {
 namespace {
@@ -1522,7 +1523,7 @@ bool QuicPacketCreator::FlushAckFrame(const QuicFrames& frames) {
   QUIC_BUG_IF(quic_bug_12398_18,
               GetQuicReloadableFlag(quic_single_ack_in_packet2) &&
                   !frames.empty() && has_ack())
-      << ENDPOINT << "Trying to flush " << frames
+      << ENDPOINT << "Trying to flush " << quiche::PrintElements(frames)
       << " when there is ACK queued";
   for (const auto& frame : frames) {
     QUICHE_DCHECK(frame.type == ACK_FRAME || frame.type == STOP_WAITING_FRAME)
@@ -1596,14 +1597,14 @@ void QuicPacketCreator::SetTransmissionType(TransmissionType type) {
   next_transmission_type_ = type;
 }
 
-MessageStatus QuicPacketCreator::AddMessageFrame(QuicMessageId message_id,
-                                                 QuicMemSliceSpan message) {
+MessageStatus QuicPacketCreator::AddMessageFrame(
+    QuicMessageId message_id, absl::Span<QuicMemSlice> message) {
   QUIC_BUG_IF(quic_bug_10752_33, !flusher_attached_)
       << ENDPOINT
       << "Packet flusher is not attached when "
          "generator tries to add message frame.";
   MaybeBundleAckOpportunistically();
-  const QuicByteCount message_length = message.total_length();
+  const QuicByteCount message_length = MemSliceSpanTotalSize(message);
   if (message_length > GetCurrentLargestMessagePayload()) {
     return MESSAGE_STATUS_TOO_LARGE;
   }
@@ -1618,6 +1619,8 @@ MessageStatus QuicPacketCreator::AddMessageFrame(QuicMessageId message_id,
     delete frame;
     return MESSAGE_STATUS_INTERNAL_ERROR;
   }
+  QUICHE_DCHECK_EQ(MemSliceSpanTotalSize(message),
+                   0u);  // Ensure the old slices are empty.
   return MESSAGE_STATUS_SUCCESS;
 }
 

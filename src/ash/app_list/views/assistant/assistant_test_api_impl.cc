@@ -5,12 +5,13 @@
 #include "ash/app_list/views/assistant/assistant_test_api_impl.h"
 
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/app_list/app_list_presenter_impl.h"
 #include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/app_list_page.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/contents_view.h"
 #include "ash/assistant/ui/assistant_view_ids.h"
-#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/session/session_controller_impl.h"
@@ -144,7 +145,8 @@ void AssistantTestApiImpl::SetTabletMode(bool enable) {
 }
 
 void AssistantTestApiImpl::StartOverview() {
-  Shell::Get()->overview_controller()->StartOverview();
+  Shell::Get()->overview_controller()->StartOverview(
+      OverviewStartAction::kTests);
 }
 
 void AssistantTestApiImpl::SetConsentStatus(

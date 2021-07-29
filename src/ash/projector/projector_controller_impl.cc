@@ -10,6 +10,7 @@
 #include "ash/public/cpp/projector/projector_session.h"
 #include "ash/shell.h"
 #include "base/strings/utf_string_conversions.h"
+#include "media/mojo/mojom/speech_recognition_service.mojom.h"
 
 namespace ash {
 
@@ -33,24 +34,22 @@ void ProjectorControllerImpl::OnSpeechRecognitionAvailable(bool available) {
 }
 
 void ProjectorControllerImpl::OnTranscription(
-    const std::u16string& text,
-    absl::optional<base::TimeDelta> start_time,
-    absl::optional<base::TimeDelta> end_time,
-    const absl::optional<std::vector<base::TimeDelta>>& word_offsets,
-    bool is_final) {
-  std::string transcript = base::UTF16ToUTF8(text);
-
-  if (is_final && start_time.has_value() && end_time.has_value() &&
-      word_offsets.has_value()) {
-    // Records final transcript.
-    metadata_controller_->RecordTranscription(
-        transcript, start_time.value(), end_time.value(), word_offsets.value());
-  }
-
+    const media::SpeechRecognitionResult& result) {
   // Render transcription.
   if (is_caption_on_) {
-    ui_controller_->OnTranscription(transcript, is_final);
+    ui_controller_->OnTranscription(result.transcription, result.is_final);
   }
+
+  if (result.is_final && result.timing_information.has_value()) {
+    // Records final transcript.
+    metadata_controller_->RecordTranscription(result);
+  }
+}
+
+void ProjectorControllerImpl::OnTranscriptionError() {
+  // TODO(http://1206720): Stop recording if there is an error that occurred
+  // during transcription.
+  OnRecordingEnded();
 }
 
 void ProjectorControllerImpl::SetProjectorToolsVisible(bool is_visible) {
@@ -66,6 +65,10 @@ void ProjectorControllerImpl::SetProjectorToolsVisible(bool is_visible) {
   if (client_->IsSelfieCamVisible())
     client_->CloseSelfieCam();
   ui_controller_->CloseToolbar();
+}
+
+bool ProjectorControllerImpl::AreProjectorToolsVisible() const {
+  return ui_controller_->IsToolbarVisible();
 }
 
 bool ProjectorControllerImpl::IsEligible() const {
@@ -86,12 +89,16 @@ void ProjectorControllerImpl::MarkKeyIdea() {
 }
 
 void ProjectorControllerImpl::OnRecordingStarted() {
+  projector_session_->Start();
   StartSpeechRecognition();
   ui_controller_->OnRecordingStateChanged(true /* started */);
   metadata_controller_->OnRecordingStarted();
 }
 
 void ProjectorControllerImpl::OnRecordingEnded() {
+  if (!projector_session_->is_active())
+    return;
+  projector_session_->Stop();
   StopSpeechRecognition();
   ui_controller_->OnRecordingStateChanged(false /* started */);
 
@@ -114,6 +121,10 @@ void ProjectorControllerImpl::OnMarkerPressed() {
 
 void ProjectorControllerImpl::OnClearAllMarkersPressed() {
   ui_controller_->OnClearAllMarkersPressed();
+}
+
+void ProjectorControllerImpl::OnUndoPressed() {
+  ui_controller_->OnUndoPressed();
 }
 
 void ProjectorControllerImpl::OnSelfieCamPressed(bool enabled) {

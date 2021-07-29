@@ -8,7 +8,7 @@
 #include "components/sync/driver/sync_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
-#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 
@@ -23,9 +23,8 @@ namespace sync_bookmarks {
 SyncedBookmarksObserverBridge::SyncedBookmarksObserverBridge(
     id<SyncObserverModelBridge> delegate,
     ChromeBrowserState* browserState)
-    : SyncObserverBridge(
-          delegate,
-          ProfileSyncServiceFactory::GetForBrowserState(browserState)),
+    : SyncObserverBridge(delegate,
+                         SyncServiceFactory::GetForBrowserState(browserState)),
       identity_manager_(
           IdentityManagerFactory::GetForBrowserState(browserState)),
       browser_state_(browserState) {}
@@ -34,22 +33,22 @@ SyncedBookmarksObserverBridge::~SyncedBookmarksObserverBridge() {}
 
 #pragma mark - Signin and syncing status
 
-bool SyncedBookmarksObserverBridge::IsSignedIn() {
+bool SyncedBookmarksObserverBridge::HasSyncConsent() {
   return identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSync);
 }
 
 bool SyncedBookmarksObserverBridge::IsPerformingInitialSync() {
-  if (!IsSignedIn())
+  if (!HasSyncConsent())
     return false;
 
   SyncSetupService* sync_setup_service =
       SyncSetupServiceFactory::GetForBrowserState(browser_state_);
 
-  bool sync_enabled = sync_setup_service->IsSyncEnabled();
+  bool can_sync_start = sync_setup_service->CanSyncFeatureStart();
   bool no_sync_error = (sync_setup_service->GetSyncServiceState() ==
                         SyncSetupService::kNoSyncServiceError);
 
-  return sync_enabled && no_sync_error &&
+  return can_sync_start && no_sync_error &&
          !sync_setup_service->IsDataTypeActive(syncer::BOOKMARKS);
 }
 

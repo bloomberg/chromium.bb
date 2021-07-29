@@ -36,6 +36,10 @@ public class ContextualSearchFieldTrial {
     static final String RELATED_SEARCHES_LANGUAGE_ALLOWLIST_PARAM_NAME = "language_allowlist";
     private static final String RELATED_SEARCHES_CONFIG_STAMP_PARAM_NAME = "stamp";
 
+    static final String RELATED_SEARCHES_SHOW_DEFAULT_QUERY_CHIP_PARAM_NAME = "default_query_chip";
+    static final String RELATED_SEARCHES_DEFAULT_QUERY_CHIP_MAX_WIDTH_SP_PARAM_NAME =
+            "default_query_max_width_sp";
+
     // Deprecated.
     private static final int MANDATORY_PROMO_DEFAULT_LIMIT = 10;
 
@@ -280,7 +284,7 @@ public class ContextualSearchFieldTrial {
      * @return The stamp parameter from the feature. If no stamp param is present then an empty
      *         string is returned.
      */
-    static String getRelatedSearchesExperiementConfigurationStamp() {
+    static String getRelatedSearchesExperimentConfigurationStamp() {
         return getRelatedSearchesParam(RELATED_SEARCHES_CONFIG_STAMP_PARAM_NAME);
     }
 
@@ -304,6 +308,32 @@ public class ContextualSearchFieldTrial {
     static boolean isRelatedSearchesParamEnabled(String relatedSearchesParamName) {
         return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
                 ChromeFeatureList.RELATED_SEARCHES, relatedSearchesParamName, false);
+    }
+
+    static boolean showDefaultChipInBar() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.RELATED_SEARCHES_IN_BAR,
+                RELATED_SEARCHES_SHOW_DEFAULT_QUERY_CHIP_PARAM_NAME, false);
+    }
+
+    static boolean showDefaultChipInPanel() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.RELATED_SEARCHES_ALTERNATE_UX,
+                RELATED_SEARCHES_SHOW_DEFAULT_QUERY_CHIP_PARAM_NAME, false);
+    }
+
+    /* Return the max width of the bar's default chip in Sp. */
+    static int getDefaultChipWidthSpInBar() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                ChromeFeatureList.RELATED_SEARCHES_IN_BAR,
+                RELATED_SEARCHES_DEFAULT_QUERY_CHIP_MAX_WIDTH_SP_PARAM_NAME, 0);
+    }
+
+    /* Return the max width of the panel's default chip in Sp. */
+    static int getDefaultChipWidthSpInPanel() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                ChromeFeatureList.RELATED_SEARCHES_ALTERNATE_UX,
+                RELATED_SEARCHES_DEFAULT_QUERY_CHIP_MAX_WIDTH_SP_PARAM_NAME, 0);
     }
 
     // --------------------------------------------------------------------------------------------

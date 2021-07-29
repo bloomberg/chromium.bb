@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_TO_V8_TRAITS_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_TO_V8_TRAITS_H_
 
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
@@ -45,10 +46,9 @@ struct ToV8Traits<IDLAny> {
     // It is not correct to take empty |script_value|.
     // However, some call sites expect to get v8::Undefined
     // when ToV8 takes empty |script_value|.
-    // TODO(crbug.com/1183637): Remove this if-branch.
-    if (script_value.IsEmpty())
-      return v8::Undefined(script_state->GetIsolate());
-    return script_value.V8Value();
+    // TODO(crbug.com/1183637): Enable the following DCHECK.
+    // DCHECK(!script_value.IsEmpty());
+    return script_value.V8ValueFor(script_state);
   }
 
   static v8::MaybeLocal<v8::Value> WARN_UNUSED_RESULT
@@ -179,7 +179,7 @@ struct ToV8Traits<IDLObject> {
   static v8::MaybeLocal<v8::Value> WARN_UNUSED_RESULT
   ToV8(ScriptState* script_state, const ScriptValue& script_value) {
     DCHECK(!script_value.IsEmpty());
-    v8::Local<v8::Value> v8_value = script_value.V8Value();
+    v8::Local<v8::Value> v8_value = script_value.V8ValueFor(script_state);
     // TODO(crbug.com/1185033): Change this if-branch to DCHECK.
     if (!v8_value->IsObject())
       return v8::Undefined(script_state->GetIsolate());
@@ -266,10 +266,7 @@ struct ToV8Traits<
   static v8::MaybeLocal<v8::Value> WARN_UNUSED_RESULT
   ToV8(ScriptState* script_state, const T* dictionary) {
     DCHECK(dictionary);
-    v8::Local<v8::Value> v8_value = dictionary->CreateV8Object(
-        script_state->GetIsolate(), script_state->GetContext()->Global());
-    DCHECK(!v8_value.IsEmpty());
-    return v8_value;
+    return dictionary->ToV8Value(script_state);
   }
 };
 
@@ -778,7 +775,7 @@ struct ToV8Traits<IDLNullable<IDLObject>> {
     if (script_value.IsEmpty())
       return v8::Null(script_state->GetIsolate());
 
-    v8::Local<v8::Value> v8_value = script_value.V8Value();
+    v8::Local<v8::Value> v8_value = script_value.V8ValueFor(script_state);
     DCHECK(v8_value->IsNull() || v8_value->IsObject());
     return v8_value;
   }

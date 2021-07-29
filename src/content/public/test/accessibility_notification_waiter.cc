@@ -30,7 +30,8 @@ AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(
     : WebContentsObserver(web_contents),
       event_to_wait_for_(ax::mojom::Event::kNone),
       generated_event_to_wait_for_(absl::nullopt),
-      loop_runner_(std::make_unique<base::RunLoop>()) {
+      loop_runner_(std::make_unique<base::RunLoop>()),
+      loop_runner_quit_closure_(loop_runner_->QuitClosure()) {
   ListenToAllFrames(web_contents);
 }
 
@@ -41,7 +42,8 @@ AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(
     : WebContentsObserver(web_contents),
       event_to_wait_for_(event_type),
       generated_event_to_wait_for_(absl::nullopt),
-      loop_runner_(std::make_unique<base::RunLoop>()) {
+      loop_runner_(std::make_unique<base::RunLoop>()),
+      loop_runner_quit_closure_(loop_runner_->QuitClosure()) {
   ListenToAllFrames(web_contents);
   static_cast<WebContentsImpl*>(web_contents)
       ->AddAccessibilityMode(accessibility_mode);
@@ -59,7 +61,8 @@ AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(
     : WebContentsObserver(web_contents),
       event_to_wait_for_(absl::nullopt),
       generated_event_to_wait_for_(event_type),
-      loop_runner_(std::make_unique<base::RunLoop>()) {
+      loop_runner_(std::make_unique<base::RunLoop>()),
+      loop_runner_quit_closure_(loop_runner_->QuitClosure()) {
   ListenToAllFrames(web_contents);
   static_cast<WebContentsImpl*>(web_contents)
       ->AddAccessibilityMode(accessibility_mode);
@@ -103,6 +106,11 @@ void AccessibilityNotificationWaiter::ListenToFrame(
     BindOnAccessibilityEvent(frame_host);
   if (generated_event_to_wait_for_)
     BindOnGeneratedEvent(frame_host);
+
+  if (event_to_wait_for_ == ax::mojom::Event::kNone ||
+      event_to_wait_for_ == ax::mojom::Event::kLocationChanged) {
+    BindOnLocationsChanged(frame_host);
+  }
 }
 
 void AccessibilityNotificationWaiter::WaitForNotification() {
@@ -111,6 +119,7 @@ void AccessibilityNotificationWaiter::WaitForNotification() {
   // Each loop runner can only be called once. Create a new one in case
   // the caller wants to call this again to wait for the next notification.
   loop_runner_ = std::make_unique<base::RunLoop>();
+  loop_runner_quit_closure_ = loop_runner_->QuitClosure();
 }
 
 void AccessibilityNotificationWaiter::WaitForNotificationWithTimeout(
@@ -150,7 +159,7 @@ void AccessibilityNotificationWaiter::OnAccessibilityEvent(
       event_to_wait_for_ == event_type) {
     event_target_id_ = event_target_id;
     event_render_frame_host_ = rfhi;
-    loop_runner_->Quit();
+    loop_runner_quit_closure_.Run();
   }
 }
 
@@ -166,6 +175,15 @@ void AccessibilityNotificationWaiter::BindOnGeneratedEvent(
   }
 }
 
+void AccessibilityNotificationWaiter::BindOnLocationsChanged(
+    RenderFrameHostImpl* frame_host) {
+  if (auto* manager = frame_host->browser_accessibility_manager()) {
+    manager->SetLocationChangeCallbackForTesting(base::BindRepeating(
+        &AccessibilityNotificationWaiter::OnLocationsChanged,
+        weak_factory_.GetWeakPtr()));
+  }
+}
+
 void AccessibilityNotificationWaiter::OnGeneratedEvent(
     BrowserAccessibilityDelegate* delegate,
     ui::AXEventGenerator::Event event,
@@ -176,8 +194,15 @@ void AccessibilityNotificationWaiter::OnGeneratedEvent(
   if (generated_event_to_wait_for_ == event) {
     event_target_id_ = event_target_id;
     event_render_frame_host_ = static_cast<RenderFrameHostImpl*>(delegate);
-    loop_runner_->Quit();
+    loop_runner_quit_closure_.Run();
   }
+}
+
+void AccessibilityNotificationWaiter::OnLocationsChanged() {
+  if (IsAboutBlank())
+    return;
+
+  loop_runner_quit_closure_.Run();
 }
 
 // TODO(982776): Remove this method once we migrate to using AXEventGenerator
@@ -209,7 +234,7 @@ void AccessibilityNotificationWaiter::RenderFrameHostChanged(
 }
 
 void AccessibilityNotificationWaiter::Quit() {
-  loop_runner_->Quit();
+  loop_runner_quit_closure_.Run();
 }
 
 }  // namespace content

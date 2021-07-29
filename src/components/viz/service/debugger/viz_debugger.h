@@ -21,6 +21,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/viz/privileged/mojom/viz_main.mojom.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
 // The visual debugger can be completely disabled/enabled at compile time via
@@ -48,13 +49,15 @@ class VIZ_SERVICE_EXPORT VizDebugger {
                  int file_line,
                  const char* func_name);
     inline bool IsActive() const { return active; }
-    const char* anno;
-    const char* file;
-    const char* func;
-    const int line;
+    inline bool IsEnabled() const { return enabled; }
+    const char* anno = nullptr;
+    const char* file = nullptr;
+    const char* func = nullptr;
+    const int line = 0;
 
-    int reg_index;
-    bool active;
+    int reg_index = 0;
+    bool active = false;
+    bool enabled = false;
   };
 
   struct DrawOption {
@@ -83,6 +86,10 @@ class VIZ_SERVICE_EXPORT VizDebugger {
                 const StaticSource* dcs,
                 DrawOption option);
   void DrawText(const gfx::Vector2dF& pos,
+                const std::string& text,
+                const StaticSource* dcs,
+                DrawOption option);
+  void DrawText(const gfx::PointF& pos,
                 const std::string& text,
                 const StaticSource* dcs,
                 DrawOption option);
@@ -168,13 +175,15 @@ class VIZ_SERVICE_EXPORT VizDebugger {
     FilterBlock(const std::string file_str,
                 const std::string func_str,
                 const std::string anno_str,
-                bool is_active);
+                bool is_active,
+                bool is_enabled);
     ~FilterBlock();
     FilterBlock(const FilterBlock& other);
     std::string file;
     std::string func;
     std::string anno;
-    bool active;
+    bool active = false;
+    bool enabled = false;
   };
 
   // Synchronize access to the variables in the block below as it is mutated by
@@ -202,24 +211,20 @@ class VIZ_SERVICE_EXPORT VizDebugger {
 
 }  // namespace viz
 
-#define DBG_OPT_RED \
-  (viz::VizDebugger::DrawOption) { 255, 0, 0, 0 }
-#define DBG_OPT_GREEN \
-  (viz::VizDebugger::DrawOption) { 0, 255, 0, 0 }
-#define DBG_OPT_BLUE \
-  (viz::VizDebugger::DrawOption) { 0, 0, 255, 0 }
-#define DBG_OPT_BLACK \
-  (viz::VizDebugger::DrawOption) { 0, 0, 0, 0 }
+#define DBG_OPT_RED viz::VizDebugger::DrawOption({255, 0, 0, 0})
+#define DBG_OPT_GREEN viz::VizDebugger::DrawOption({0, 255, 0, 0})
+#define DBG_OPT_BLUE viz::VizDebugger::DrawOption({0, 0, 255, 0})
+#define DBG_OPT_BLACK viz::VizDebugger::DrawOption({0, 0, 0, 0})
 
-#define DBG_DRAW_RECTANGLE_OPT(anno, option, pos, size)                 \
-  do {                                                                  \
-    if (viz::VizDebugger::IsEnabled()) {                                \
-      static VizDebugger::StaticSource dcs(anno, __FILE__, __LINE__,    \
-                                           __func__);                   \
-      if (dcs.IsActive()) {                                             \
-        viz::VizDebugger::GetInstance()->Draw(size, pos, &dcs, option); \
-      }                                                                 \
-    }                                                                   \
+#define DBG_DRAW_RECTANGLE_OPT(anno, option, pos, size)                   \
+  do {                                                                    \
+    if (viz::VizDebugger::IsEnabled()) {                                  \
+      static viz::VizDebugger::StaticSource dcs(anno, __FILE__, __LINE__, \
+                                                __func__);                \
+      if (dcs.IsActive()) {                                               \
+        viz::VizDebugger::GetInstance()->Draw(size, pos, &dcs, option);   \
+      }                                                                   \
+    }                                                                     \
   } while (0)
 
 #define DBG_DRAW_RECTANGLE(anno, pos, size) \
@@ -228,8 +233,8 @@ class VIZ_SERVICE_EXPORT VizDebugger {
 #define DBG_DRAW_TEXT_OPT(anno, option, pos, text)                          \
   do {                                                                      \
     if (viz::VizDebugger::IsEnabled()) {                                    \
-      static VizDebugger::StaticSource dcs(anno, __FILE__, __LINE__,        \
-                                           __func__);                       \
+      static viz::VizDebugger::StaticSource dcs(anno, __FILE__, __LINE__,   \
+                                                __func__);                  \
       if (dcs.IsActive()) {                                                 \
         viz::VizDebugger::GetInstance()->DrawText(pos, text, &dcs, option); \
       }                                                                     \
@@ -239,26 +244,41 @@ class VIZ_SERVICE_EXPORT VizDebugger {
 #define DBG_DRAW_TEXT(anno, pos, text) \
   DBG_DRAW_TEXT_OPT(anno, DBG_OPT_BLACK, pos, text)
 
-#define DBG_LOG_OPT(anno, option, format, ...)                       \
-  do {                                                               \
-    if (VizDebugger::IsEnabled()) {                                  \
-      static VizDebugger::StaticSource dcs(anno, __FILE__, __LINE__, \
-                                           __func__);                \
-      if (dcs.IsActive()) {                                          \
-        VizDebugger::GetInstance()->AddLogMessage(                   \
-            base::StringPrintf(format, __VA_ARGS__), &dcs, option);  \
-      }                                                              \
-    }                                                                \
+#define DBG_LOG_OPT(anno, option, format, ...)                            \
+  do {                                                                    \
+    if (viz::VizDebugger::IsEnabled()) {                                  \
+      static viz::VizDebugger::StaticSource dcs(anno, __FILE__, __LINE__, \
+                                                __func__);                \
+      if (dcs.IsActive()) {                                               \
+        viz::VizDebugger::GetInstance()->AddLogMessage(                   \
+            base::StringPrintf(format, __VA_ARGS__), &dcs, option);       \
+      }                                                                   \
+    }                                                                     \
   } while (0)
 
 #define DBG_LOG(anno, format, ...) \
   DBG_LOG_OPT(anno, DBG_OPT_BLACK, format, __VA_ARGS__)
 
-#define DBG_DRAW_RECT_OPT(anno, option, rect) \
-  DBG_DRAW_RECTANGLE(                         \
-      anno, gfx::Vector2dF(rect.origin().x(), rect.origin().y()), rect.size())
+#define DBG_DRAW_RECT_OPT(anno, option, rect)                                  \
+  DBG_DRAW_RECTANGLE_OPT(anno, option,                                         \
+                         gfx::Vector2dF(rect.origin().x(), rect.origin().y()), \
+                         rect.size())
 
 #define DBG_DRAW_RECT(anno, rect) DBG_DRAW_RECT_OPT(anno, DBG_OPT_BLACK, rect)
+
+#define DBG_FLAG_FBOOL(anno, fun_name)                                    \
+  namespace {                                                             \
+  bool fun_name() {                                                       \
+    if (viz::VizDebugger::IsEnabled()) {                                  \
+      static viz::VizDebugger::StaticSource dcs(anno, __FILE__, __LINE__, \
+                                                __func__);                \
+      if (dcs.IsEnabled()) {                                              \
+        return true;                                                      \
+      }                                                                   \
+    }                                                                     \
+    return false;                                                         \
+  }                                                                       \
+  }  // namespace
 
 #else  //  !BUILDFLAG(USE_VIZ_DEBUGGER)
 
@@ -322,6 +342,11 @@ class VIZ_SERVICE_EXPORT VizDebugger {
   ANALYZER_ALLOW_UNUSED(option) ANALYZER_ALLOW_UNUSED(rect)
 
 #define DBG_DRAW_RECT(anno, rect) DBG_DRAW_RECT_OPT(anno, DBG_OPT_BLACK, rect)
+
+#define DBG_FLAG_FBOOL(anno, fun_name)       \
+  namespace {                                \
+  constexp bool fun_name() { return false; } \
+  }
 
 #endif  // BUILDFLAG(USE_VIZ_DEBUGGER)
 

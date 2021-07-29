@@ -46,6 +46,18 @@ enum class UnmaskAuthFlowType {
   kCvcFallbackFromFido = 4,
 };
 
+// The result of the attempt to fetch full information for a credit card.
+enum class CreditCardFetchResult {
+  kNone = 0,
+  // The attempt succeeded retrieving the full information of a credit card.
+  kSuccess = 1,
+  // The attempt failed due to a transient error.
+  kTransientError = 2,
+  // The attempt failed due to a permanent error.
+  kPermanentError = 3,
+  kMaxValue = kPermanentError,
+};
+
 struct CachedServerCardInfo {
  public:
   // An unmasked CreditCard.
@@ -70,7 +82,7 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
    public:
     virtual ~Accessor() {}
     virtual void OnCreditCardFetched(
-        bool did_succeed,
+        CreditCardFetchResult result,
         const CreditCard* credit_card = nullptr,
         const std::u16string& cvc = std::u16string()) = 0;
   };
@@ -136,9 +148,8 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   // |unamsked_cards_cache_|.
   std::vector<const CachedServerCardInfo*> GetCachedUnmaskedCards() const;
 
-  // Returns true if a |unmasked_cards_cache| contains an entry for the card
-  // with |server_id|.
-  bool IsCardPresentInUnmaskedCache(const std::string& server_id) const;
+  // Returns true if a |unmasked_cards_cache| contains an entry for the card.
+  bool IsCardPresentInUnmaskedCache(const CreditCard& card) const;
 
   CreditCardCVCAuthenticator* GetOrCreateCVCAuthenticator();
 
@@ -151,6 +162,8 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
                            NavigateFromPage_UnmaskedCardCacheResets);
   FRIEND_TEST_ALL_PREFIXES(CreditCardAccessManagerTest,
                            PreflightCallRateLimited);
+  FRIEND_TEST_ALL_PREFIXES(CreditCardAccessManagerTest,
+                           UnmaskAuthFlowEvent_AlsoLogsVirtualCardSubhistogram);
   friend class AutofillAssistantTest;
   friend class BrowserAutofillManagerTest;
   friend class AutofillMetricsTest;
@@ -160,6 +173,16 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   void set_fido_authenticator_for_testing(
       std::unique_ptr<CreditCardFIDOAuthenticator> fido_authenticator) {
     fido_authenticator_ = std::move(fido_authenticator);
+  }
+#endif
+
+#if defined(UNIT_TEST)
+  // Mocks that a virtual card was selected, so unit tests that don't run the
+  // actual Autofill suggestions dropdown UI can still follow their remaining
+  // steps under the guise of doing it for a virtual card.
+  void set_virtual_card_suggestion_selected_on_form_event_logger_for_testing() {
+    form_event_logger_->set_latest_selected_card_was_virtual_card_for_testing(
+        /*latest_selected_card_was_virtual_card=*/true);
   }
 #endif
 
@@ -204,9 +227,8 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
 #if !defined(OS_IOS)
   // CreditCardFIDOAuthenticator::Requester:
   void OnFIDOAuthenticationComplete(
-      bool did_succeed,
-      const CreditCard* card = nullptr,
-      const std::u16string& cvc = std::u16string()) override;
+      const CreditCardFIDOAuthenticator::FidoAuthenticationResponse& response)
+      override;
   void OnFidoAuthorizationComplete(bool did_succeed) override;
 #endif
 
@@ -247,6 +269,10 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   void AdditionallyPerformFidoAuth(
       const CreditCardCVCAuthenticator::CVCAuthenticationResponse& response,
       base::Value request_options);
+
+  // Returns the key for the given card to be used for inserting or querying the
+  // `unmasked_card_cache_`.
+  std::string GetKeyForUnmaskedCardsCache(const CreditCard& card) const;
 
   // The current form of authentication in progress.
   UnmaskAuthFlowType unmask_auth_flow_type_ = UnmaskAuthFlowType::kNone;

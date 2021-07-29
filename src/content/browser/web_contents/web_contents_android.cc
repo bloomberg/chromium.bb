@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/android/callback_android.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -24,6 +25,7 @@
 #include "content/browser/android/java/gin_java_bridge_dispatcher_host.h"
 #include "content/browser/media/media_web_contents_observer.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/web_contents/view_structure_builder_android.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view_android.h"
 #include "content/common/frame.mojom.h"
@@ -56,6 +58,7 @@ using base::android::JavaRef;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 using base::android::ToJavaArrayOfStringArray;
+using base::android::ToJavaArrayOfStrings;
 using base::android::ToJavaIntArray;
 
 namespace content {
@@ -88,11 +91,12 @@ void SmartClipCallback(const ScopedJavaGlobalRef<jobject>& callback,
       clip_rect.bottom(), callback);
 }
 
-ScopedJavaLocalRef<jobject> JNI_WebContentsImpl_CreateJavaAXSnapshot(
-    JNIEnv* env,
-    const ui::AssistantTree* tree,
-    const ui::AssistantNode* node,
-    bool is_root) {
+void CreateJavaAXSnapshot(JNIEnv* env,
+                          const ui::AssistantTree* tree,
+                          const ui::AssistantNode* node,
+                          const JavaRef<jobject>& j_view_structure_node,
+                          const JavaRef<jobject>& j_view_structure_builder,
+                          bool is_root) {
   ScopedJavaLocalRef<jstring> j_text =
       ConvertUTF16ToJavaString(env, node->text);
 
@@ -100,12 +104,27 @@ ScopedJavaLocalRef<jobject> JNI_WebContentsImpl_CreateJavaAXSnapshot(
   ScopedJavaLocalRef<jstring> j_class =
       ConvertUTF8ToJavaString(env, node->class_name);
 
+  bool has_selection = node->selection.has_value();
+  int sel_start = has_selection ? node->selection->start() : 0;
+  int sel_end = has_selection ? node->selection->end() : 0;
+  int child_count = static_cast<int>(node->children_indices.size());
+
+  ViewStructureBuilder_populateViewStructureNode(
+      env, j_view_structure_builder, j_view_structure_node, j_text,
+      has_selection, sel_start, sel_end, node->color, node->bgcolor,
+      node->text_size, node->bold, node->italic, node->underline,
+      node->line_through, j_class, child_count);
+
+  // Bounding box.
+  ViewStructureBuilder_setViewStructureNodeBounds(
+      env, j_view_structure_builder, j_view_structure_node, is_root,
+      node->rect.x(), node->rect.y(), node->rect.width(), node->rect.height());
+
   // HTML/CSS attributes.
   ScopedJavaLocalRef<jstring> j_html_tag =
       ConvertUTF8ToJavaString(env, node->html_tag);
   ScopedJavaLocalRef<jstring> j_css_display =
       ConvertUTF8ToJavaString(env, node->css_display);
-
   std::vector<std::vector<std::u16string>> html_attrs;
   for (const auto& attr : node->html_attributes) {
     html_attrs.push_back(
@@ -114,25 +133,38 @@ ScopedJavaLocalRef<jobject> JNI_WebContentsImpl_CreateJavaAXSnapshot(
   ScopedJavaLocalRef<jobjectArray> j_attrs =
       ToJavaArrayOfStringArray(env, html_attrs);
 
-  ScopedJavaLocalRef<jobject> j_node =
-      Java_WebContentsImpl_createAccessibilitySnapshotNode(
-          env, node->rect.x(), node->rect.y(), node->rect.width(),
-          node->rect.height(), is_root, j_text, node->color, node->bgcolor,
-          node->text_size, node->bold, node->italic, node->underline,
-          node->line_through, j_class, j_html_tag, j_css_display, j_attrs);
+  ViewStructureBuilder_setViewStructureNodeHtmlInfo(
+      env, j_view_structure_builder, j_view_structure_node, j_html_tag,
+      j_css_display, j_attrs);
 
-  if (node->selection.has_value()) {
-    Java_WebContentsImpl_setAccessibilitySnapshotSelection(
-        env, j_node, node->selection->start(), node->selection->end());
+  for (int child_index = 0; child_index < child_count; child_index++) {
+    int child_id = node->children_indices[child_index];
+    ScopedJavaLocalRef<jobject> j_child =
+        ViewStructureBuilder_addViewStructureNodeChild(
+            env, j_view_structure_builder, j_view_structure_node, child_index);
+    CreateJavaAXSnapshot(env, tree, tree->nodes[child_id].get(), j_child,
+                         j_view_structure_builder, false);
   }
 
-  for (int child : node->children_indices) {
-    Java_WebContentsImpl_addAccessibilityNodeAsChild(
-        env, j_node,
-        JNI_WebContentsImpl_CreateJavaAXSnapshot(
-            env, tree, tree->nodes[child].get(), false));
+  if (!is_root) {
+    ViewStructureBuilder_commitViewStructureNode(env, j_view_structure_builder,
+                                                 j_view_structure_node);
   }
-  return j_node;
+}
+
+void AddTreeLevelDataToViewStructure(
+    JNIEnv* env,
+    const JavaRef<jobject>& view_structure_root,
+    const JavaRef<jobject>& view_structure_builder,
+    const ui::AXTreeUpdate& ax_tree_update) {
+  const auto& metadata_strings = ax_tree_update.tree_data.metadata;
+  if (metadata_strings.empty())
+    return;
+
+  ScopedJavaLocalRef<jobjectArray> j_metadata_strings =
+      ToJavaArrayOfStrings(env, metadata_strings);
+  ViewStructureBuilder_setViewStructureNodeHtmlMetadata(
+      env, view_structure_builder, view_structure_root, j_metadata_strings);
 }
 
 }  // namespace
@@ -448,9 +480,9 @@ void WebContentsAndroid::OnShow(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 void WebContentsAndroid::SetImportance(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
-    jint main_frame_importance) {
-  web_contents_->SetMainFrameImportance(
-      static_cast<ChildProcessImportance>(main_frame_importance));
+    jint primary_main_frame_importance) {
+  web_contents_->SetPrimaryMainFrameImportance(
+      static_cast<ChildProcessImportance>(primary_main_frame_importance));
 }
 
 void WebContentsAndroid::SuspendAllMediaPlayers(
@@ -612,7 +644,8 @@ void WebContentsAndroid::PostMessageToMainFrame(
     const JavaParamRef<jstring>& jtarget_origin,
     const JavaParamRef<jobjectArray>& jports) {
   content::MessagePortProvider::PostMessageToFrame(
-      web_contents_, env, jsource_origin, jtarget_origin, jmessage, jports);
+      web_contents_->GetPrimaryPage(), env, jsource_origin, jtarget_origin,
+      jmessage, jports);
 }
 
 jboolean WebContentsAndroid::HasAccessedInitialDocument(
@@ -651,37 +684,49 @@ void WebContentsAndroid::RequestSmartClipExtract(
 }
 
 void WebContentsAndroid::AXTreeSnapshotCallback(
-    const ScopedJavaGlobalRef<jobject>& callback,
+    const JavaRef<jobject>& view_structure_root,
+    const JavaRef<jobject>& view_structure_builder,
+    const JavaRef<jobject>& callback,
     const ui::AXTreeUpdate& result) {
   JNIEnv* env = base::android::AttachCurrentThread();
   if (result.nodes.empty()) {
-    Java_WebContentsImpl_onAccessibilitySnapshot(env, nullptr, callback);
+    RunRunnableAndroid(callback);
     return;
   }
   std::unique_ptr<ui::AssistantTree> assistant_tree =
       ui::CreateAssistantTree(result);
-  ScopedJavaLocalRef<jobject> j_root = JNI_WebContentsImpl_CreateJavaAXSnapshot(
-      env, assistant_tree.get(), assistant_tree->nodes.front().get(), true);
-  Java_WebContentsImpl_onAccessibilitySnapshot(env, j_root, callback);
+  CreateJavaAXSnapshot(env, assistant_tree.get(),
+                       assistant_tree->nodes.front().get(), view_structure_root,
+                       view_structure_builder, true);
+  AddTreeLevelDataToViewStructure(env, view_structure_root,
+                                  view_structure_builder, result);
+  RunRunnableAndroid(callback);
 }
 
 void WebContentsAndroid::RequestAccessibilitySnapshot(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& view_structure_root,
+    const JavaParamRef<jobject>& view_structure_builder,
     const JavaParamRef<jobject>& callback) {
-  // Secure the Java callback in a scoped object and give ownership of it to the
+  // Secure the Java objects in scoped objects and give ownership of them to the
   // base::OnceCallback below.
   ScopedJavaGlobalRef<jobject> j_callback;
   j_callback.Reset(env, callback);
+  ScopedJavaGlobalRef<jobject> j_view_structure_root;
+  j_view_structure_root.Reset(env, view_structure_root);
+  ScopedJavaGlobalRef<jobject> j_view_structure_builder;
+  j_view_structure_builder.Reset(env, view_structure_builder);
 
   // Set a timeout of 2.0 seconds to compute the snapshot of the
   // accessibility tree because Google Assistant ignores results that
   // don't come back within 3.0 seconds.
   static_cast<WebContentsImpl*>(web_contents_)
       ->RequestAXTreeSnapshot(
-          base::BindOnce(&WebContentsAndroid::AXTreeSnapshotCallback,
-                         weak_factory_.GetWeakPtr(), j_callback),
-          ui::kAXModeComplete,
+          base::BindOnce(
+              &WebContentsAndroid::AXTreeSnapshotCallback,
+              weak_factory_.GetWeakPtr(), std::move(j_view_structure_root),
+              std::move(j_view_structure_builder), std::move(j_callback)),
+          ui::AXMode(ui::kAXModeComplete.mode() | ui::AXMode::kHTMLMetadata),
           /* exclude_offscreen= */ false,
           /* max_nodes= */ 5000,
           /* timeout= */ base::TimeDelta::FromSeconds(2));

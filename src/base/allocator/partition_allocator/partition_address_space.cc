@@ -5,6 +5,7 @@
 #include "base/allocator/partition_allocator/partition_address_space.h"
 
 #include <array>
+#include <ostream>
 
 #include "base/allocator/partition_allocator/address_pool_manager.h"
 #include "base/allocator/partition_allocator/page_allocator.h"
@@ -71,7 +72,7 @@ void PartitionAddressSpace::Init() {
   PA_DCHECK(IsInBRPPool(reinterpret_cast<void*>(current - 1)));
   PA_DCHECK(!IsInBRPPool(reinterpret_cast<void*>(current)));
 
-#if PA_ALLOW_PCSCAN
+#if defined(PA_ALLOW_PCSCAN)
   // Reserve memory for PCScan quarantine card table.
   void* requested_address = reinterpret_cast<void*>(brp_pool_base_address_);
   char* actual_address = internal::AddressPoolManager::GetInstance()->Reserve(
@@ -80,21 +81,7 @@ void PartitionAddressSpace::Init() {
       << "QuarantineCardTable is required to be allocated in the beginning of "
          "the BRPPool";
   SetSystemPagesAccess(actual_address, kSuperPageSize, PageInaccessible);
-#endif
-
-#if BUILDFLAG(ENABLE_BRP_DIRECTMAP_SUPPORT)
-  // Allocate the BRP pool offset table in the BRP pool.
-  void* requested_offset_table_address = reinterpret_cast<void*>(
-      brp_pool_base_address_ + kBRPPoolSize - kBRPPoolOffsetTableSize);
-  void* actual_offset_table_address =
-      internal::AddressPoolManager::GetInstance()->Reserve(
-          brp_pool_, requested_offset_table_address, kBRPPoolOffsetTableSize);
-  PA_CHECK(requested_offset_table_address == actual_offset_table_address)
-      << "ReservationStartOffsetTable is required to be allocated in the end "
-         "of the BRPPool";
-  RecommitSystemPages(actual_offset_table_address, kBRPPoolOffsetTableSize,
-                      PageReadWrite, PageUpdatePermissions);
-#endif
+#endif  // defined(PA_ALLOW_PCSCAN)
 
   PA_DCHECK(reserved_base_address_ + properties.size == current);
 }

@@ -42,6 +42,8 @@ enum PDFSDK_XFAAActionType {
 
 class CPDFSDK_Widget final : public CPDFSDK_BAAnnot {
  public:
+  enum ValueChanged : bool { kValueUnchanged = false, kValueChanged = true };
+
   CPDFSDK_Widget(CPDF_Annot* pAnnot,
                  CPDFSDK_PageView* pPageView,
                  CPDFSDK_InteractiveForm* pInteractiveForm);
@@ -86,20 +88,20 @@ class CPDFSDK_Widget final : public CPDFSDK_BAAnnot {
   bool HasXFAAAction(PDFSDK_XFAAActionType eXFAAAT) const;
   bool OnXFAAAction(PDFSDK_XFAAActionType eXFAAAT,
                     CPDFSDK_FieldAction* data,
-                    CPDFSDK_PageView* pPageView);
+                    const CPDFSDK_PageView* pPageView);
   void Synchronize(bool bSynchronizeElse);
   // TODO(thestig): Figure out if the parameter should be used or removed.
-  void ResetXFAAppearance(bool bValueChanged);
+  void ResetXFAAppearance(ValueChanged bValueChanged);
 #endif  // PDF_ENABLE_XFA
 
-  void ResetAppearance(Optional<WideString> sValue, bool bValueChanged);
+  void ResetAppearance(Optional<WideString> sValue, ValueChanged bValueChanged);
   void ResetFieldAppearance();
   void UpdateField();
   Optional<WideString> OnFormat();
 
   bool OnAAction(CPDF_AAction::AActionType type,
                  CPDFSDK_FieldAction* data,
-                 CPDFSDK_PageView* pPageView);
+                 const CPDFSDK_PageView* pPageView);
 
   CPDFSDK_InteractiveForm* GetInteractiveForm() const {
     return m_pInteractiveForm.Get();

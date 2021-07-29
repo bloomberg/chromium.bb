@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/observer_list.h"
-#include "base/stl_util.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -238,6 +237,27 @@ int BrowserViewLayout::NonClientHitTest(const gfx::Point& point) {
   views::View::ConvertPointToTarget(
       parent, browser_view_, &point_in_browser_view_coords);
 
+  // Let the frame handle any events that fall within the bounds of the window
+  // controls overlay.
+  if (browser_view_->IsWindowControlsOverlayEnabled() &&
+      browser_view_->GetActiveWebContents()) {
+    // The window controls overlays are to the left and/or right of the
+    // |titlebar_area_rect|.
+    gfx::Rect titlebar_area_rect =
+        browser_view_->GetActiveWebContents()->GetWindowsControlsOverlayRect();
+
+    // The top area rect is the same height as the |titlebar_area_rect| but
+    // fills the full width of the browser view.
+    gfx::Rect top_area_rect(0, titlebar_area_rect.y(), browser_view_->width(),
+                            titlebar_area_rect.height());
+
+    // If the point is within the top_area_rect but not the titlebar_area_rect,
+    // then it must be in the window controls overlay.
+    if (top_area_rect.Contains(point_in_browser_view_coords) &&
+        !titlebar_area_rect.Contains(point_in_browser_view_coords))
+      return HTNOWHERE;
+  }
+
   // Determine if the TabStrip exists and is capable of being clicked on. We
   // might be a popup window without a TabStrip.
   if (delegate_->IsTabStripVisible()) {
@@ -271,7 +291,8 @@ int BrowserViewLayout::NonClientHitTest(const gfx::Point& point) {
       browser_view_->browser()->app_controller();
   if (controller && controller->IsWindowControlsOverlayEnabled() &&
       controller->draggable_region().has_value() &&
-      controller->draggable_region()->contains(point.x(), point.y())) {
+      controller->draggable_region()->contains(
+          point_in_browser_view_coords.x(), point_in_browser_view_coords.y())) {
     return HTCAPTION;
   }
 
@@ -566,22 +587,7 @@ void BrowserViewLayout::LayoutSidePanelView(
                                     kSidePanelSeparatorWidth);
   }
 
-  gfx::Rect contents_separator_bounds = contents_separator_->bounds();
-  const int contents_separator_height = contents_separator_bounds.height();
-  // Raise the side panel bounds with the height of the contents separator to
-  // have it connected to the toolbar area (and not be spoofable by web
-  // content).
-  side_panel_bounds.set_y(side_panel_bounds.y() - contents_separator_height);
-  side_panel_bounds.set_height(side_panel_bounds.height() +
-                               contents_separator_height);
   side_panel->SetBoundsRect(side_panel_bounds);
-
-  // Resize the contents separator so that it separates the contents area only.
-  contents_separator_bounds.set_width(contents_container_bounds.width() + 1);
-  contents_separator_bounds.set_x(is_right_aligned
-                                      ? contents_container_bounds.x()
-                                      : contents_container_bounds.x() - 1);
-  contents_separator_->SetBoundsRect(contents_separator_bounds);
 
   // Adjust the side panel separator bounds based on the side panel bounds
   // calculated above.

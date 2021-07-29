@@ -30,7 +30,7 @@
 
 typedef struct TTAMuxContext {
     AVIOContext *seek_table;
-    AVPacketList *queue, *queue_end;
+    PacketList *queue, *queue_end;
     uint32_t nb_samples;
     int frame_size;
     int last_frame;
@@ -165,7 +165,7 @@ static void tta_deinit(AVFormatContext *s)
     avpriv_packet_list_free(&tta->queue, &tta->queue_end);
 }
 
-AVOutputFormat ff_tta_muxer = {
+const AVOutputFormat ff_tta_muxer = {
     .name              = "tta",
     .long_name         = NULL_IF_CONFIG_SMALL("TTA (True Audio)"),
     .mime_type         = "audio/x-tta",

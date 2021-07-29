@@ -445,7 +445,9 @@ class TabListMediator {
         @Override
         public void onDidStartNavigation(Tab tab, NavigationHandle navigationHandle) {
             if (UrlUtilities.isNTPUrl(tab.getUrl())) return;
-            if (navigationHandle.isSameDocument() || !navigationHandle.isInMainFrame()) return;
+            if (navigationHandle.isSameDocument() || !navigationHandle.isInPrimaryMainFrame()) {
+                return;
+            }
             if (mModel.indexFromId(tab.getId()) == TabModel.INVALID_TAB_INDEX) return;
             mModel.get(mModel.indexFromId(tab.getId()))
                     .model.set(TabProperties.FAVICON,
@@ -1629,11 +1631,11 @@ class TabListMediator {
             }
 
             // The order of the url list matches the multi-thumbnail.
-            List<String> urls = new ArrayList<>();
+            List<GURL> urls = new ArrayList<>();
             urls.add(pseudoTab.getUrl());
             for (int i = 0; urls.size() < 4 && i < relatedTabList.size(); i++) {
                 if (pseudoTab.getId() == relatedTabList.get(i).getId()) continue;
-                urls.add(relatedTabList.get(i).getUrl().getSpec());
+                urls.add(relatedTabList.get(i).getUrl());
             }
 
             // For tab group card in grid tab switcher, the favicon is the composed favicon.
@@ -1648,8 +1650,7 @@ class TabListMediator {
 
         // If there is an available icon, we fetch favicon synchronously; otherwise asynchronously.
         if (icon != null) {
-            Drawable drawable = mTabListFaviconProvider.getFaviconForUrlSync(
-                    pseudoTab.getUrl(), pseudoTab.isIncognito(), icon);
+            Drawable drawable = mTabListFaviconProvider.getFaviconForUrlSync(icon);
             mModel.get(modelIndex).model.set(TabProperties.FAVICON, drawable);
             return;
         }

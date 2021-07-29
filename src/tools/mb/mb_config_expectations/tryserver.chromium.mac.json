@@ -1,6 +1,7 @@
 {
   "gpu-fyi-try-mac-amd-pro-rel": {
     "gn_args": {
+      "blink_enable_generated_code_formatting": false,
       "build_angle_gles1_conform_tests": true,
       "build_angle_trace_perf_tests": true,
       "dcheck_always_on": true,
@@ -30,6 +31,7 @@
   },
   "gpu-fyi-try-mac-amd-retina-exp": {
     "gn_args": {
+      "blink_enable_generated_code_formatting": false,
       "build_angle_gles1_conform_tests": true,
       "build_angle_trace_perf_tests": true,
       "dcheck_always_on": true,
@@ -45,6 +47,7 @@
   },
   "gpu-fyi-try-mac-amd-retina-rel": {
     "gn_args": {
+      "blink_enable_generated_code_formatting": false,
       "build_angle_gles1_conform_tests": true,
       "build_angle_trace_perf_tests": true,
       "dcheck_always_on": true,
@@ -60,6 +63,7 @@
   },
   "gpu-fyi-try-mac-arm64-apple-dtk-rel": {
     "gn_args": {
+      "blink_enable_generated_code_formatting": false,
       "build_angle_gles1_conform_tests": true,
       "build_angle_trace_perf_tests": true,
       "dcheck_always_on": true,
@@ -76,6 +80,7 @@
   },
   "gpu-fyi-try-mac-asan": {
     "gn_args": {
+      "blink_enable_generated_code_formatting": false,
       "build_angle_gles1_conform_tests": true,
       "build_angle_trace_perf_tests": true,
       "dcheck_always_on": true,
@@ -106,6 +111,7 @@
   },
   "gpu-fyi-try-mac-intel-exp": {
     "gn_args": {
+      "blink_enable_generated_code_formatting": false,
       "build_angle_gles1_conform_tests": true,
       "build_angle_trace_perf_tests": true,
       "dcheck_always_on": true,
@@ -121,6 +127,7 @@
   },
   "gpu-fyi-try-mac-intel-rel": {
     "gn_args": {
+      "blink_enable_generated_code_formatting": false,
       "build_angle_gles1_conform_tests": true,
       "build_angle_trace_perf_tests": true,
       "dcheck_always_on": true,
@@ -136,6 +143,7 @@
   },
   "gpu-fyi-try-mac-intel-uhd-630-rel": {
     "gn_args": {
+      "blink_enable_generated_code_formatting": false,
       "build_angle_gles1_conform_tests": true,
       "build_angle_trace_perf_tests": true,
       "dcheck_always_on": true,
@@ -165,6 +173,7 @@
   },
   "gpu-fyi-try-mac-nvidia-retina-exp": {
     "gn_args": {
+      "blink_enable_generated_code_formatting": false,
       "build_angle_gles1_conform_tests": true,
       "build_angle_trace_perf_tests": true,
       "dcheck_always_on": true,
@@ -180,6 +189,7 @@
   },
   "gpu-fyi-try-mac-nvidia-retina-rel": {
     "gn_args": {
+      "blink_enable_generated_code_formatting": false,
       "build_angle_gles1_conform_tests": true,
       "build_angle_trace_perf_tests": true,
       "dcheck_always_on": true,
@@ -269,6 +279,7 @@
       "include_transport_security_state_preload_list": false,
       "ios_deployment_target": "10.0",
       "ios_set_attributes_for_xcode_project_generation": false,
+      "ios_stack_profiler_enabled": false,
       "is_component_build": false,
       "is_cronet_build": true,
       "is_debug": true,
@@ -352,32 +363,6 @@
       "use_goma": true
     }
   },
-  "ios13-beta-simulator": {
-    "gn_args": {
-      "enable_run_ios_unittests_with_xctest": true,
-      "ios_set_attributes_for_xcode_project_generation": false,
-      "is_component_build": false,
-      "is_debug": true,
-      "symbol_level": 1,
-      "target_cpu": "x64",
-      "target_environment": "simulator",
-      "target_os": "ios",
-      "use_goma": true
-    }
-  },
-  "ios13-sdk-simulator": {
-    "gn_args": {
-      "enable_run_ios_unittests_with_xctest": true,
-      "ios_set_attributes_for_xcode_project_generation": false,
-      "is_component_build": false,
-      "is_debug": true,
-      "symbol_level": 1,
-      "target_cpu": "x64",
-      "target_environment": "simulator",
-      "target_os": "ios",
-      "use_goma": true
-    }
-  },
   "ios14-beta-simulator": {
     "gn_args": {
       "enable_run_ios_unittests_with_xctest": true,
@@ -404,8 +389,35 @@
       "use_goma": true
     }
   },
+  "ios15-beta-simulator": {
+    "gn_args": {
+      "enable_run_ios_unittests_with_xctest": true,
+      "ios_set_attributes_for_xcode_project_generation": false,
+      "is_component_build": false,
+      "is_debug": true,
+      "symbol_level": 1,
+      "target_cpu": "x64",
+      "target_environment": "simulator",
+      "target_os": "ios",
+      "use_goma": true
+    }
+  },
+  "ios15-sdk-simulator": {
+    "gn_args": {
+      "enable_run_ios_unittests_with_xctest": true,
+      "ios_set_attributes_for_xcode_project_generation": false,
+      "is_component_build": false,
+      "is_debug": true,
+      "symbol_level": 1,
+      "target_cpu": "x64",
+      "target_environment": "simulator",
+      "target_os": "ios",
+      "use_goma": true
+    }
+  },
   "mac-arm64-rel": {
     "gn_args": {
+      "blink_enable_generated_code_formatting": false,
       "dcheck_always_on": true,
       "is_component_build": false,
       "is_debug": false,
@@ -416,12 +428,12 @@
   },
   "mac-inverse-fieldtrials-fyi-rel": {
     "gn_args": {
+      "blink_enable_generated_code_formatting": false,
       "dcheck_always_on": true,
       "ffmpeg_branding": "Chrome",
       "invert_fieldtrials": true,
       "is_component_build": false,
       "is_debug": false,
-      "mac_deterministic_build": true,
       "proprietary_codecs": true,
       "symbol_level": 1,
       "use_goma": true
@@ -429,11 +441,11 @@
   },
   "mac-osxbeta-rel": {
     "gn_args": {
+      "blink_enable_generated_code_formatting": false,
       "dcheck_always_on": true,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
       "is_debug": false,
-      "mac_deterministic_build": true,
       "proprietary_codecs": true,
       "symbol_level": 1,
       "use_goma": true
@@ -441,11 +453,11 @@
   },
   "mac-rel": {
     "gn_args": {
+      "blink_enable_generated_code_formatting": false,
       "dcheck_always_on": true,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
       "is_debug": false,
-      "mac_deterministic_build": true,
       "proprietary_codecs": true,
       "symbol_level": 1,
       "use_goma": true
@@ -453,11 +465,11 @@
   },
   "mac-rel-rts": {
     "gn_args": {
+      "blink_enable_generated_code_formatting": false,
       "dcheck_always_on": true,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
       "is_debug": false,
-      "mac_deterministic_build": true,
       "proprietary_codecs": true,
       "symbol_level": 1,
       "use_goma": true
@@ -465,11 +477,11 @@
   },
   "mac_chromium_10.11_rel_ng": {
     "gn_args": {
+      "blink_enable_generated_code_formatting": false,
       "dcheck_always_on": true,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
       "is_debug": false,
-      "mac_deterministic_build": true,
       "proprietary_codecs": true,
       "symbol_level": 1,
       "use_goma": true
@@ -477,11 +489,11 @@
   },
   "mac_chromium_10.12_rel_ng": {
     "gn_args": {
+      "blink_enable_generated_code_formatting": false,
       "dcheck_always_on": true,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
       "is_debug": false,
-      "mac_deterministic_build": true,
       "proprietary_codecs": true,
       "symbol_level": 1,
       "use_goma": true
@@ -489,6 +501,7 @@
   },
   "mac_chromium_10.13_rel_ng": {
     "gn_args": {
+      "blink_enable_generated_code_formatting": false,
       "dcheck_always_on": true,
       "is_component_build": false,
       "is_debug": false,
@@ -498,6 +511,7 @@
   },
   "mac_chromium_10.14_rel_ng": {
     "gn_args": {
+      "blink_enable_generated_code_formatting": false,
       "dcheck_always_on": true,
       "is_component_build": false,
       "is_debug": false,
@@ -507,6 +521,7 @@
   },
   "mac_chromium_10.15_rel_ng": {
     "gn_args": {
+      "blink_enable_generated_code_formatting": false,
       "dcheck_always_on": true,
       "enable_nacl": false,
       "is_component_build": false,
@@ -517,6 +532,7 @@
   },
   "mac_chromium_11.0_rel_ng": {
     "gn_args": {
+      "blink_enable_generated_code_formatting": false,
       "dcheck_always_on": true,
       "is_component_build": false,
       "is_debug": false,
@@ -555,11 +571,11 @@
   },
   "mac_chromium_compile_rel_ng": {
     "gn_args": {
+      "blink_enable_generated_code_formatting": false,
       "dcheck_always_on": true,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
       "is_debug": false,
-      "mac_deterministic_build": true,
       "proprietary_codecs": true,
       "symbol_level": 1,
       "use_goma": true
@@ -577,6 +593,7 @@
   },
   "mac_optional_gpu_tests_rel": {
     "gn_args": {
+      "blink_enable_generated_code_formatting": false,
       "build_angle_gles1_conform_tests": true,
       "build_angle_trace_perf_tests": true,
       "dcheck_always_on": true,

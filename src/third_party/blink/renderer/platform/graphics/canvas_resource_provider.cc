@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
@@ -74,7 +73,8 @@ bool IsGMBAllowed(IntSize size,
                   const CanvasResourceParams& params,
                   const gpu::Capabilities& caps) {
   return gpu::IsImageSizeValidForGpuMemoryBufferFormat(
-             gfx::Size(size), params.GetBufferFormat()) &&
+             gfx::Size(size), params.GetBufferFormat(),
+             gfx::BufferPlane::DEFAULT) &&
          gpu::IsImageFromGpuMemoryBufferFormatSupported(
              params.GetBufferFormat(), caps);
 }
@@ -88,6 +88,8 @@ class CanvasResourceProvider::CanvasImageProvider : public cc::ImageProvider {
                       const gfx::ColorSpace& target_color_space,
                       SkColorType target_color_type,
                       cc::PlaybackImageProvider::RasterMode raster_mode);
+  CanvasImageProvider(const CanvasImageProvider&) = delete;
+  CanvasImageProvider& operator=(const CanvasImageProvider&) = delete;
   ~CanvasImageProvider() override = default;
 
   // cc::ImageProvider implementation.
@@ -108,8 +110,6 @@ class CanvasResourceProvider::CanvasImageProvider : public cc::ImageProvider {
   absl::optional<cc::PlaybackImageProvider> playback_image_provider_f16_;
 
   base::WeakPtrFactory<CanvasImageProvider> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(CanvasImageProvider);
 };
 
 // * Renders to a Skia RAM-backed bitmap.
@@ -224,16 +224,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
             skia_use_dawn ? kSkiaDawnSharedImage : kSharedImage,
             size,
             filter_quality,
-            // TODO(khushalsagar): The software path seems to be assuming N32
-            // somewhere in the later pipeline but for offscreen canvas only.
-            // TODO(https://crbug.com/1157747): This is RGBA, but the above
-            // comment suggests N32. See if this can be N32.
-            CanvasResourceParams(params.ColorSpace(),
-                                 is_accelerated && params.GetSkColorType() !=
-                                                       kRGBA_F16_SkColorType
-                                     ? kRGBA_8888_SkColorType
-                                     : params.GetSkColorType(),
-                                 params.GetSkAlphaType()),
+            params,
             is_origin_top_left,
             std::move(context_provider_wrapper),
             nullptr /* resource_dispatcher */),
@@ -280,6 +271,10 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
 
   GLenum GetBackingTextureTarget() const override {
     return resource()->TextureTarget();
+  }
+
+  uint32_t GetSharedImageUsageFlags() const override {
+    return shared_image_usage_flags_;
   }
 
   bool WritePixels(const SkImageInfo& orig_info,
@@ -965,8 +960,25 @@ CanvasResourceProvider::CreateSharedImageProvider(
     return nullptr;
   }
 
+  const bool is_accelerated = raster_mode == RasterMode::kGPU;
+
+  CanvasResourceParams adjusted_params = params;
+  // TODO(https://crbug.com/1210946): Pass in params as is for all cases.
+  // Overriding the params to use RGBA instead of N32 is needed because code
+  // elsewhere assumes RGBA. OTOH the software path seems to be assuming N32
+  // somewhere in the later pipeline but for offscreen canvas only.
+  if (!(shared_image_usage_flags & gpu::SHARED_IMAGE_USAGE_WEBGPU)) {
+    adjusted_params = CanvasResourceParams(
+        params.ColorSpace(),
+        is_accelerated && params.GetSkColorType() != kRGBA_F16_SkColorType
+            ? kRGBA_8888_SkColorType
+            : params.GetSkColorType(),
+        params.GetSkAlphaType());
+  }
+
   const bool is_gpu_memory_buffer_image_allowed =
-      is_gpu_compositing_enabled && IsGMBAllowed(size, params, capabilities) &&
+      is_gpu_compositing_enabled &&
+      IsGMBAllowed(size, adjusted_params, capabilities) &&
       Platform::Current()->GetGpuMemoryBufferManager();
 
   if (raster_mode == RasterMode::kCPU && !is_gpu_memory_buffer_image_allowed)
@@ -975,14 +987,14 @@ CanvasResourceProvider::CreateSharedImageProvider(
   // If we cannot use overlay, we have to remove the scanout flag and the
   // concurrent read write flag.
   if (!is_gpu_memory_buffer_image_allowed ||
-      !capabilities.texture_storage_image) {
+      (is_accelerated && !capabilities.texture_storage_image)) {
     shared_image_usage_flags &= ~gpu::SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE;
     shared_image_usage_flags &= ~gpu::SHARED_IMAGE_USAGE_SCANOUT;
   }
 
   auto provider = std::make_unique<CanvasResourceProviderSharedImage>(
-      size, filter_quality, params, context_provider_wrapper,
-      is_origin_top_left, raster_mode == RasterMode::kGPU, skia_use_dawn,
+      size, filter_quality, adjusted_params, context_provider_wrapper,
+      is_origin_top_left, is_accelerated, skia_use_dawn,
       shared_image_usage_flags);
   if (provider->IsValid()) {
     if (should_initialize ==
@@ -1384,6 +1396,8 @@ void CanvasResourceProvider::RasterRecordOOP(
     sk_sp<cc::PaintRecord> last_recording,
     bool needs_clear,
     gpu::Mailbox mailbox) {
+  if (IsGpuContextLost())
+    return;
   gpu::raster::RasterInterface* ri = RasterInterface();
   SkColor background_color =
       ColorParams().GetSkAlphaType() == kOpaque_SkAlphaType
@@ -1406,9 +1420,9 @@ void CanvasResourceProvider::RasterRecordOOP(
   gfx::Vector2dF post_scale(1.f, 1.f);
 
   ri->BeginRasterCHROMIUM(
-      background_color, needs_clear, /*msaa_sample_count=*/0,
-      /*can_use_lcd_text=*/false, ColorParams().GetStorageGfxColorSpace(),
-      mailbox.name);
+      background_color, needs_clear, /*msaa_sample_count=*/1,
+      gpu::raster::MsaaMode::kDMSAA, ColorParams().CanUseLcdText(),
+      ColorParams().GetStorageGfxColorSpace(), mailbox.name);
 
   ri->RasterCHROMIUM(list.get(), GetOrCreateCanvasImageProvider(), size,
                      full_raster_rect, playback_rect, post_translate,

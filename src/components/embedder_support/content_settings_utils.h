@@ -13,12 +13,12 @@
 class GURL;
 class HostContentSettingsMap;
 
+namespace blink {
+class StorageKey;
+}  // namespace blink
+
 namespace content_settings {
 class CookieSettings;
-}
-
-namespace storage {
-class StorageKey;
 }
 
 namespace embedder_support {
@@ -43,7 +43,7 @@ bool AllowSharedWorker(const GURL& worker_url,
                        const GURL& site_for_cookies,
                        const absl::optional<url::Origin>& top_frame_origin,
                        const std::string& name,
-                       const storage::StorageKey& storage_key,
+                       const blink::StorageKey& storage_key,
                        int render_process_id,
                        int render_frame_id,
                        const content_settings::CookieSettings* cookie_settings);
@@ -52,21 +52,21 @@ bool AllowSharedWorker(const GURL& worker_url,
 // settings of file system access.
 bool AllowWorkerFileSystem(
     const GURL& url,
-    const std::vector<content::GlobalFrameRoutingId>& render_frames,
+    const std::vector<content::GlobalRenderFrameHostId>& render_frames,
     const content_settings::CookieSettings* cookie_settings);
 
 // See ContentBrowserClient::AllowWorkerIndexedDB. This also notifies content
 // settings of Indexed DB access.
 bool AllowWorkerIndexedDB(
     const GURL& url,
-    const std::vector<content::GlobalFrameRoutingId>& render_frames,
+    const std::vector<content::GlobalRenderFrameHostId>& render_frames,
     const content_settings::CookieSettings* cookie_settings);
 
 // See ContentBrowserClient::AllowWorkerCacheStorage. This also notifies content
 // settings of cache storage access.
 bool AllowWorkerCacheStorage(
     const GURL& url,
-    const std::vector<content::GlobalFrameRoutingId>& render_frames,
+    const std::vector<content::GlobalRenderFrameHostId>& render_frames,
     const content_settings::CookieSettings* cookie_settings);
 
 // See ContentBrowserClient::AllowWorkerWebLocks.

@@ -52,7 +52,7 @@ class FaviconDelegate : public ui::MenuModelDelegate {
  public:
   FaviconDelegate() : was_called_(false) {}
 
-  void OnIconChanged(int model_index) override {
+  void OnIconChanged(int command_id) override {
     was_called_ = true;
     base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
@@ -513,20 +513,11 @@ TEST_F(BackFwdMenuModelTest, EscapeLabel) {
   EXPECT_EQ(0, back_model->GetItemCount());
   EXPECT_FALSE(back_model->ItemHasCommand(1));
 
-  // Note: Multiple navigations to the same URL in a row have to be
-  // renderer-initiated.  If they were browser-initiated, the
-  // NavigationController would treat them as reloads.
   LoadURLAndUpdateState("http://www.a.com/1", "A B");
-  NavigationSimulator::NavigateAndCommitFromDocument(GURL("http://www.a.com/1"),
-                                                     main_rfh());
-  web_contents()->UpdateTitleForEntry(controller().GetLastCommittedEntry(),
-                                      u"A & B");
-  LoadURLAndUpdateState("http://www.a.com/2", "A && B");
-  NavigationSimulator::NavigateAndCommitFromDocument(GURL("http://www.a.com/2"),
-                                                     main_rfh());
-  web_contents()->UpdateTitleForEntry(controller().GetLastCommittedEntry(),
-                                      u"A &&& B");
-  LoadURLAndUpdateState("http://www.a.com/3", "");
+  LoadURLAndUpdateState("http://www.a.com/2", "A & B");
+  LoadURLAndUpdateState("http://www.a.com/3", "A && B");
+  LoadURLAndUpdateState("http://www.a.com/4", "A &&& B");
+  LoadURLAndUpdateState("http://www.a.com/5", "");
 
   EXPECT_EQ(6, back_model->GetItemCount());
 
@@ -545,7 +536,7 @@ TEST_F(BackFwdMenuModelTest, FaviconLoadTest) {
 
   BackForwardMenuModel back_model(browser.get(),
                                   BackForwardMenuModel::ModelType::kBackward);
-  back_model.set_test_web_contents(controller().GetWebContents());
+  back_model.set_test_web_contents(web_contents());
   back_model.SetMenuModelDelegate(&favicon_delegate);
 
   SkBitmap new_icon_bitmap(CreateBitmap(SK_ColorRED));

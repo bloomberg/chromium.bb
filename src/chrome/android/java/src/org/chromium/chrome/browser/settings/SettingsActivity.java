@@ -11,33 +11,34 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.VisibleForTesting;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.ListFragment;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.IntentUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ApplicationLifetime;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
-import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
+import org.chromium.chrome.browser.browsing_data.ClearBrowsingDataFragmentBasic;
 import org.chromium.chrome.browser.feedback.FragmentHelpAndFeedbackLauncher;
 import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncherImpl;
 import org.chromium.chrome.browser.image_descriptions.ImageDescriptionsController;
 import org.chromium.chrome.browser.image_descriptions.ImageDescriptionsSettings;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.language.settings.LanguageSettings;
+import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.password_check.PasswordCheckComponentUiFactory;
 import org.chromium.chrome.browser.password_check.PasswordCheckEditFragmentView;
 import org.chromium.chrome.browser.password_check.PasswordCheckFactory;
@@ -58,10 +59,8 @@ import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.components.browser_ui.settings.FragmentSettingsLauncher;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
-import org.chromium.components.browser_ui.settings.SettingsUtils;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsPreferenceFragment;
 import org.chromium.ui.UiUtils;
-import org.chromium.ui.util.ColorUtils;
 
 /**
  * The Chrome settings activity.
@@ -70,12 +69,6 @@ import org.chromium.ui.util.ColorUtils;
  * As the user navigates through settings, a separate Settings activity is created for each
  * screen. Thus each fragment may freely modify its activity's action bar or title. This mimics the
  * behavior of {@link android.preference.PreferenceActivity}.
- *
- * If the main fragment does not use the default layout for {@link PreferenceFragmentCompat} or
- * {@link ListFragment}, add the following:
- * 1) settings_action_bar_shadow.xml to the custom XML hierarchy and
- * 2) an OnScrollChangedListener to the main content's view's view tree observer via
- *    {@link SettingsUtils#getShowShadowOnScrollListener(View, View)}.
  */
 public class SettingsActivity extends ChromeBaseAppCompatActivity
         implements PreferenceFragmentCompat.OnPreferenceStartFragmentCallback, SnackbarManageable {
@@ -122,13 +115,16 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
 
         super.onCreate(savedInstanceState);
 
+        setContentView(R.layout.settings_activity);
+
+        Toolbar actionBar = findViewById(R.id.action_bar);
+        setSupportActionBar(actionBar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         mIsNewlyCreated = savedInstanceState == null;
 
         String initialFragment = getIntent().getStringExtra(EXTRA_SHOW_FRAGMENT);
         Bundle initialArguments = getIntent().getBundleExtra(EXTRA_SHOW_FRAGMENT_ARGUMENTS);
-
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setElevation(0);
 
         // If savedInstanceState is non-null, then the activity is being
         // recreated and super.onCreate() has already recreated the fragment.
@@ -136,10 +132,7 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
             if (initialFragment == null) initialFragment = MainSettings.class.getName();
 
             Fragment fragment = Fragment.instantiate(this, initialFragment, initialArguments);
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(android.R.id.content, fragment)
-                    .commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.content, fragment).commit();
         }
 
         Resources res = getResources();
@@ -188,24 +181,6 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
                                                           .getSiteSettingsDelegate());
             delegate.setSnackbarManager(mSnackbarManager);
         }
-
-        ViewGroup listView = null;
-        if (fragment instanceof PreferenceFragmentCompat) {
-            listView = ((PreferenceFragmentCompat) fragment).getListView();
-        } else if (fragment instanceof ListFragment) {
-            listView = ((ListFragment) fragment).getListView();
-        }
-
-        if (listView == null) return;
-
-        // Append action bar shadow to layout.
-        View inflatedView =
-                getLayoutInflater().inflate(R.layout.settings_action_bar_shadow, contentView);
-
-        // Display shadow on scroll.
-        listView.getViewTreeObserver().addOnScrollChangedListener(
-                SettingsUtils.getShowShadowOnScrollListener(
-                        listView, inflatedView.findViewById(R.id.shadow)));
     }
 
     @Override
@@ -249,7 +224,7 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
      */
     @VisibleForTesting
     public Fragment getMainFragment() {
-        return getSupportFragmentManager().findFragmentById(android.R.id.content);
+        return getSupportFragmentManager().findFragmentById(R.id.content);
     }
 
     @Override
@@ -331,7 +306,7 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
             PasswordCheckComponentUiFactory.create((PasswordCheckFragmentView) fragment,
                     HelpAndFeedbackLauncherImpl.getInstance(), mSettingsLauncher,
                     LaunchIntentDispatcher::createCustomTabActivityIntent,
-                    IntentHandler::addTrustedIntentExtras);
+                    IntentUtils::addTrustedIntentExtras);
         } else if (fragment instanceof PasswordCheckEditFragmentView) {
             PasswordCheckEditFragmentView editFragment = (PasswordCheckEditFragmentView) fragment;
             editFragment.setCheckProvider(
@@ -344,7 +319,7 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
         if (fragment instanceof SearchEngineSettings) {
             SearchEngineSettings settings = (SearchEngineSettings) fragment;
             settings.setDisableAutoSwitchRunnable(
-                    () -> AppHooks.get().getLocaleManager().setSearchEngineAutoSwitch(false));
+                    () -> LocaleManager.getInstance().setSearchEngineAutoSwitch(false));
             settings.setSettingsLauncher(mSettingsLauncher);
         }
         if (fragment instanceof ImageDescriptionsSettings) {
@@ -362,18 +337,23 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
         }
         if (fragment instanceof PrivacySandboxSettingsFragment) {
             ((PrivacySandboxSettingsFragment) fragment)
-                    .setCctHelpers(LaunchIntentDispatcher::createCustomTabActivityIntent,
-                            IntentHandler::addTrustedIntentExtras);
+                    .setCustomTabIntentHelper(
+                            LaunchIntentDispatcher::createCustomTabActivityIntent);
         }
         if (fragment instanceof FlocSettingsFragment) {
             ((FlocSettingsFragment) fragment)
-                    .setCctHelpers(LaunchIntentDispatcher::createCustomTabActivityIntent,
-                            IntentHandler::addTrustedIntentExtras);
+                    .setCustomTabIntentHelper(
+                            LaunchIntentDispatcher::createCustomTabActivityIntent);
         }
         if (fragment instanceof LanguageSettings) {
             ((LanguageSettings) fragment).setRestartAction(() -> {
                 ApplicationLifetime.terminate(true);
             });
+        }
+        if (fragment instanceof ClearBrowsingDataFragmentBasic) {
+            ((ClearBrowsingDataFragmentBasic) fragment)
+                    .setCustomTabIntentHelper(
+                            LaunchIntentDispatcher::createCustomTabActivityIntent);
         }
     }
 
@@ -399,6 +379,13 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
         }
     }
 
+    @Override
+    protected void applyThemeOverlays() {
+        super.applyThemeOverlays();
+
+        setTheme(R.style.ThemeRefactorOverlay_Disabled_Settings);
+    }
+
     /**
      * Set device status bar to match the activity background color, if supported.
      */
@@ -411,15 +398,11 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
         // Dark status icons only supported on M+.
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return;
 
-        // Use background color as status bar color.
-        int statusBarColor =
-                ApiCompatibilityUtils.getColor(getResources(), R.color.default_bg_color);
-        ApiCompatibilityUtils.setStatusBarColor(getWindow(), statusBarColor);
+        // Use transparent color, so the AppBarLayout can color the status bar on scroll.
+        ApiCompatibilityUtils.setStatusBarColor(getWindow(), Color.TRANSPARENT);
 
         // Set status bar icon color according to background color.
-        boolean needsDarkStatusBarIcons =
-                !ColorUtils.shouldUseLightForegroundOnBackground(statusBarColor);
-        ApiCompatibilityUtils.setStatusBarIconColor(
-                getWindow().getDecorView().getRootView(), needsDarkStatusBarIcons);
+        ApiCompatibilityUtils.setStatusBarIconColor(getWindow().getDecorView().getRootView(),
+                getResources().getBoolean(R.bool.window_light_status_bar));
     }
 }

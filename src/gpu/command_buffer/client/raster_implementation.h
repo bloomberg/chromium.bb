@@ -140,6 +140,7 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
   void BeginRasterCHROMIUM(GLuint sk_color,
                            GLboolean needs_clear,
                            GLuint msaa_sample_count,
+                           MsaaMode msaa_mode,
                            GLboolean can_use_lcd_text,
                            const gfx::ColorSpace& color_space,
                            const GLbyte* mailbox) override;
@@ -295,7 +296,8 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
   void OnGpuControlLostContextMaybeReentrant() final;
   void OnGpuControlErrorMessage(const char* message, int32_t id) final;
   void OnGpuControlSwapBuffersCompleted(
-      const SwapBuffersCompleteParams& params) final;
+      const SwapBuffersCompleteParams& params,
+      gfx::GpuFenceHandle release_fence) final;
   void OnSwapBufferPresented(uint64_t swap_id,
                              const gfx::PresentationFeedback& feedback) final;
   void OnGpuControlReturnData(base::span<const uint8_t> data) final;

@@ -15,6 +15,7 @@
 #ifdef SK_DIRECT3D
 #include "include/gpu/d3d/GrD3DTypes.h"
 #endif
+#include "src/gpu/BaseDevice.h"
 #include "src/gpu/GrBackendTextureImageGenerator.h"
 #include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrDrawingManager.h"
@@ -26,7 +27,6 @@
 #include "src/gpu/GrSurfaceProxyPriv.h"
 #include "src/gpu/GrTexture.h"
 #include "src/gpu/GrTextureProxy.h"
-#include "src/gpu/SkGpuDevice.h"
 #include "src/image/SkImage_Base.h"
 #include "src/image/SkSurface_Gpu.h"
 #include "tests/Test.h"
@@ -78,8 +78,8 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrWrappedMipMappedTest, reporter, ctxInfo) {
                         sk_gpu_test::ManagedBackendTexture::ReleaseProc,
                         mbet->releaseContext());
 
-                SkGpuDevice* device = ((SkSurface_Gpu*)surface.get())->getDevice();
-                proxy = device->surfaceDrawContext()->asTextureProxyRef();
+                auto device = ((SkSurface_Gpu*)surface.get())->getDevice();
+                proxy = device->readSurfaceView().asTextureProxyRef();
             } else {
                 image = SkImage::MakeFromTexture(dContext,
                                                  mbet->texture(),
@@ -310,8 +310,8 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrImageSnapshotMipMappedTest, reporter, ctxIn
                                                       willUseMips);
             }
             REPORTER_ASSERT(reporter, surface);
-            SkGpuDevice* device = ((SkSurface_Gpu*)surface.get())->getDevice();
-            GrTextureProxy* texProxy = device->surfaceDrawContext()->asTextureProxy();
+            auto device = ((SkSurface_Gpu*)surface.get())->getDevice();
+            GrTextureProxy* texProxy = device->readSurfaceView().asTextureProxy();
             REPORTER_ASSERT(reporter, mipmapped == texProxy->mipmapped());
 
             texProxy->instantiate(resourceProvider);
@@ -385,8 +385,8 @@ static std::unique_ptr<GrSurfaceDrawContext> draw_mipmap_into_new_render_target(
 
     auto rtc = GrSurfaceDrawContext::Make(rContext,
                                           colorType,
-                                          nullptr,
                                           std::move(renderTarget),
+                                          nullptr,
                                           kTopLeft_GrSurfaceOrigin,
                                           SkSurfaceProps(),
                                           false);
@@ -446,7 +446,7 @@ DEF_GPUTEST(GrManyDependentsMipMappedTest, reporter, /* options */) {
         mipmapProxy->markMipmapsClean();
 
         auto mipmapRTC = GrSurfaceDrawContext::Make(
-            dContext.get(), colorType, nullptr, mipmapProxy, kTopLeft_GrSurfaceOrigin,
+            dContext.get(), colorType, mipmapProxy, nullptr, kTopLeft_GrSurfaceOrigin,
             SkSurfaceProps(), false);
 
         mipmapRTC->clear(SkPMColor4f{.1f, .2f, .3f, .4f});

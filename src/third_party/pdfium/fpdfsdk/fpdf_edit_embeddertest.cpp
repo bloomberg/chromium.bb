@@ -9,7 +9,6 @@
 
 #include "build/build_config.h"
 #include "core/fpdfapi/font/cpdf_font.h"
-#include "core/fpdfapi/page/cpdf_formobject.h"
 #include "core/fpdfapi/page/cpdf_page.h"
 #include "core/fpdfapi/page/cpdf_pageobject.h"
 #include "core/fpdfapi/parser/cpdf_array.h"
@@ -335,7 +334,8 @@ TEST_F(FPDFEditEmbedderTest, RasterizePDF) {
     FPDF_PAGEOBJECT temp_img = FPDFPageObj_NewImageObj(temp_doc);
     EXPECT_TRUE(
         FPDFImageObj_SetBitmap(&temp_page, 1, temp_img, orig_bitmap.get()));
-    EXPECT_TRUE(FPDFImageObj_SetMatrix(temp_img, 612, 0, 0, 792, 0, 0));
+    static constexpr FS_MATRIX kLetterScaleMatrix{612, 0, 0, 792, 0, 0};
+    EXPECT_TRUE(FPDFPageObj_SetMatrix(temp_img, &kLetterScaleMatrix));
     FPDFPage_InsertObject(temp_page, temp_img);
     EXPECT_TRUE(FPDFPage_GenerateContent(temp_page));
     EXPECT_TRUE(FPDF_SaveAsCopy(temp_doc, this, 0));
@@ -371,13 +371,11 @@ TEST_F(FPDFEditEmbedderTest, AddPaths) {
   EXPECT_EQ(FPDF_FILLMODE_ALTERNATE, fillmode);
   EXPECT_FALSE(stroke);
 
-  static const FS_MATRIX kMatrix = {1, 2, 3, 4, 5, 6};
-  EXPECT_FALSE(FPDFPath_SetMatrix(nullptr, &kMatrix));
-  EXPECT_TRUE(FPDFPath_SetMatrix(red_rect, &kMatrix));
+  static constexpr FS_MATRIX kMatrix = {1, 2, 3, 4, 5, 6};
+  EXPECT_TRUE(FPDFPageObj_SetMatrix(red_rect, &kMatrix));
 
   FS_MATRIX matrix;
-  EXPECT_FALSE(FPDFPath_GetMatrix(nullptr, &matrix));
-  EXPECT_TRUE(FPDFPath_GetMatrix(red_rect, &matrix));
+  EXPECT_TRUE(FPDFPageObj_GetMatrix(red_rect, &matrix));
   EXPECT_FLOAT_EQ(1.0f, matrix.a);
   EXPECT_FLOAT_EQ(2.0f, matrix.b);
   EXPECT_FLOAT_EQ(3.0f, matrix.c);
@@ -387,7 +385,7 @@ TEST_F(FPDFEditEmbedderTest, AddPaths) {
 
   // Set back the identity matrix.
   matrix = {1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f};
-  EXPECT_TRUE(FPDFPath_SetMatrix(red_rect, &matrix));
+  EXPECT_TRUE(FPDFPageObj_SetMatrix(red_rect, &matrix));
 
   FPDFPage_InsertObject(page, red_rect);
   {
@@ -413,8 +411,8 @@ TEST_F(FPDFEditEmbedderTest, AddPaths) {
   EXPECT_EQ(0u, B);
   EXPECT_EQ(128u, A);
 
-  // Make sure the path has 5 points (1 FXPT_TYPE::MoveTo and 4
-  // FXPT_TYPE::LineTo).
+  // Make sure the path has 5 points (1 CFX_Path::Point::Type::kMove and 4
+  // CFX_Path::Point::Type::kLine).
   ASSERT_EQ(5, FPDFPath_CountSegments(green_rect));
   // Verify actual coordinates.
   FPDF_PATHSEGMENT segment = FPDFPath_GetPathSegment(green_rect, 0);
@@ -466,8 +464,8 @@ TEST_F(FPDFEditEmbedderTest, AddPaths) {
   EXPECT_TRUE(FPDFPath_LineTo(black_path, 300, 100));
   EXPECT_TRUE(FPDFPath_Close(black_path));
 
-  // Make sure the path has 3 points (1 FXPT_TYPE::MoveTo and 2
-  // FXPT_TYPE::LineTo).
+  // Make sure the path has 3 points (1 CFX_Path::Point::Type::kMove and 2
+  // CFX_Path::Point::Type::kLine).
   ASSERT_EQ(3, FPDFPath_CountSegments(black_path));
   // Verify actual coordinates.
   segment = FPDFPath_GetPathSegment(black_path, 0);
@@ -661,6 +659,36 @@ TEST_F(FPDFEditEmbedderTest, BUG_1399) {
   EXPECT_FALSE(FPDFClipPath_GetPathSegment(clip_path, 0, 0));
 
   UnloadPage(page);
+}
+
+TEST_F(FPDFEditEmbedderTest, BUG_1549) {
+  static const char kOriginalChecksum[] = "126366fb95e6caf8ea196780075b22b2";
+  static const char kRemovedChecksum[] = "6ec2f27531927882624b37bc7d8e12f4";
+
+  ASSERT_TRUE(OpenDocument("bug_1549.pdf"));
+  FPDF_PAGE page = LoadPage(0);
+
+  {
+    ScopedFPDFBitmap bitmap = RenderLoadedPage(page);
+    CompareBitmap(bitmap.get(), 100, 150, kOriginalChecksum);
+
+    ScopedFPDFPageObject obj(FPDFPage_GetObject(page, 0));
+    ASSERT_EQ(FPDF_PAGEOBJ_IMAGE, FPDFPageObj_GetType(obj.get()));
+    ASSERT_TRUE(FPDFPage_RemoveObject(page, obj.get()));
+  }
+
+  ASSERT_TRUE(FPDFPage_GenerateContent(page));
+
+  {
+    ScopedFPDFBitmap bitmap = RenderLoadedPage(page);
+    CompareBitmap(bitmap.get(), 100, 150, kRemovedChecksum);
+  }
+
+  ASSERT_TRUE(FPDF_SaveAsCopy(document(), this, 0));
+  UnloadPage(page);
+
+  // TODO(crbug.com/pdfium/1549): Should be `kRemovedChecksum`.
+  VerifySavedDocument(100, 150, "4f9889cd5993db20f1ab37d677ac8d26");
 }
 
 TEST_F(FPDFEditEmbedderTest, SetText) {
@@ -2204,7 +2232,7 @@ TEST_F(FPDFEditEmbedderTest, MAYBE_AddStrokedPaths) {
 // Tests adding text from standard font using FPDFPageObj_NewTextObj.
 TEST_F(FPDFEditEmbedderTest, AddStandardFontText) {
   // Start with a blank page
-  FPDF_PAGE page = FPDFPage_New(CreateNewDocument(), 0, 612, 792);
+  ScopedFPDFPage page(FPDFPage_New(CreateNewDocument(), 0, 612, 792));
 
   // Add some text to the page
   FPDF_PAGEOBJECT text_object1 =
@@ -2212,11 +2240,12 @@ TEST_F(FPDFEditEmbedderTest, AddStandardFontText) {
   EXPECT_TRUE(text_object1);
   ScopedFPDFWideString text1 = GetFPDFWideString(kBottomText);
   EXPECT_TRUE(FPDFText_SetText(text_object1, text1.get()));
-  FPDFPageObj_Transform(text_object1, 1, 0, 0, 1, 20, 20);
-  FPDFPage_InsertObject(page, text_object1);
-  EXPECT_TRUE(FPDFPage_GenerateContent(page));
+  static constexpr FS_MATRIX kMatrix1{1, 0, 0, 1, 20, 20};
+  EXPECT_TRUE(FPDFPageObj_SetMatrix(text_object1, &kMatrix1));
+  FPDFPage_InsertObject(page.get(), text_object1);
+  EXPECT_TRUE(FPDFPage_GenerateContent(page.get()));
   {
-    ScopedFPDFBitmap page_bitmap = RenderPage(page);
+    ScopedFPDFBitmap page_bitmap = RenderPage(page.get());
     CompareBitmap(page_bitmap.get(), 612, 792, kBottomTextChecksum);
 
     EXPECT_TRUE(FPDF_SaveAsCopy(document(), this, 0));
@@ -2231,10 +2260,10 @@ TEST_F(FPDFEditEmbedderTest, AddStandardFontText) {
       GetFPDFWideString(L"Hi, I'm Bold. Times New Roman Bold.");
   EXPECT_TRUE(FPDFText_SetText(text_object2, text2.get()));
   FPDFPageObj_Transform(text_object2, 1, 0, 0, 1, 100, 600);
-  FPDFPage_InsertObject(page, text_object2);
-  EXPECT_TRUE(FPDFPage_GenerateContent(page));
+  FPDFPage_InsertObject(page.get(), text_object2);
+  EXPECT_TRUE(FPDFPage_GenerateContent(page.get()));
   {
-    ScopedFPDFBitmap page_bitmap = RenderPage(page);
+    ScopedFPDFBitmap page_bitmap = RenderPage(page.get());
 #if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
     static constexpr char md5[] = "285cf09ca5600fc4ec061dc5ad5c6400";
 #else
@@ -2259,10 +2288,10 @@ TEST_F(FPDFEditEmbedderTest, AddStandardFontText) {
   ScopedFPDFWideString text3 = GetFPDFWideString(L"Can you read me? <:)>");
   EXPECT_TRUE(FPDFText_SetText(text_object3, text3.get()));
   FPDFPageObj_Transform(text_object3, 1, 1.5, 2, 0.5, 200, 200);
-  FPDFPage_InsertObject(page, text_object3);
-  EXPECT_TRUE(FPDFPage_GenerateContent(page));
+  FPDFPage_InsertObject(page.get(), text_object3);
+  EXPECT_TRUE(FPDFPage_GenerateContent(page.get()));
   {
-    ScopedFPDFBitmap page_bitmap = RenderPage(page);
+    ScopedFPDFBitmap page_bitmap = RenderPage(page.get());
 #if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
 #if defined(OS_WIN)
     static constexpr char md5[] = "03c4d98eae4fda51ca67743665ab61f4";
@@ -2285,8 +2314,7 @@ TEST_F(FPDFEditEmbedderTest, AddStandardFontText) {
   }
 
   FS_MATRIX matrix;
-  EXPECT_FALSE(FPDFTextObj_GetMatrix(nullptr, &matrix));
-  EXPECT_TRUE(FPDFTextObj_GetMatrix(text_object3, &matrix));
+  EXPECT_TRUE(FPDFPageObj_GetMatrix(text_object3, &matrix));
   EXPECT_FLOAT_EQ(1.0f, matrix.a);
   EXPECT_FLOAT_EQ(1.5f, matrix.b);
   EXPECT_FLOAT_EQ(2.0f, matrix.c);
@@ -2294,12 +2322,43 @@ TEST_F(FPDFEditEmbedderTest, AddStandardFontText) {
   EXPECT_FLOAT_EQ(200.0f, matrix.e);
   EXPECT_FLOAT_EQ(200.0f, matrix.f);
 
-  EXPECT_EQ(0, FPDFTextObj_GetFontSize(nullptr));
-  EXPECT_EQ(20, FPDFTextObj_GetFontSize(text_object3));
+  EXPECT_FALSE(FPDFTextObj_GetFontSize(nullptr, nullptr));
+  float size = 55;
+  EXPECT_FALSE(FPDFTextObj_GetFontSize(nullptr, &size));
+  EXPECT_EQ(55, size);
+  EXPECT_TRUE(FPDFTextObj_GetFontSize(text_object3, &size));
+  EXPECT_EQ(20, size);
 
   // TODO(npm): Why are there issues with text rotated by 90 degrees?
   // TODO(npm): FPDF_SaveAsCopy not giving the desired result after this.
-  FPDF_ClosePage(page);
+}
+
+TEST_F(FPDFEditEmbedderTest, AddStandardFontTextOfSizeZero) {
+  // Start with a blank page
+  ScopedFPDFPage page(FPDFPage_New(CreateNewDocument(), 0, 612, 792));
+
+  // Add some text of size 0 to the page.
+  FPDF_PAGEOBJECT text_object =
+      FPDFPageObj_NewTextObj(document(), "Arial", 0.0f);
+  EXPECT_TRUE(text_object);
+  ScopedFPDFWideString text = GetFPDFWideString(kBottomText);
+  EXPECT_TRUE(FPDFText_SetText(text_object, text.get()));
+  FPDFPageObj_Transform(text_object, 1, 0, 0, 1, 20, 20);
+
+  float size = -1;  // Make sure 'size' gets changed.
+  EXPECT_TRUE(FPDFTextObj_GetFontSize(text_object, &size));
+  EXPECT_EQ(0.0f, size);
+
+  FPDFPage_InsertObject(page.get(), text_object);
+  EXPECT_TRUE(FPDFPage_GenerateContent(page.get()));
+  {
+    ScopedFPDFBitmap page_bitmap = RenderPage(page.get());
+    CompareBitmap(page_bitmap.get(), 612, 792,
+                  pdfium::kBlankPage612By792Checksum);
+
+    EXPECT_TRUE(FPDF_SaveAsCopy(document(), this, 0));
+    VerifySavedDocument(612, 792, pdfium::kBlankPage612By792Checksum);
+  }
 }
 
 TEST_F(FPDFEditEmbedderTest, GetTextRenderMode) {
@@ -2400,7 +2459,7 @@ TEST_F(FPDFEditEmbedderTest, SetTextRenderMode) {
   }
 }
 
-TEST_F(FPDFEditEmbedderTest, TestGetTextFontName) {
+TEST_F(FPDFEditEmbedderTest, GetTextFontName) {
   ASSERT_TRUE(OpenDocument("text_font.pdf"));
   FPDF_PAGE page = LoadPage(0);
   ASSERT_TRUE(page);
@@ -2428,14 +2487,14 @@ TEST_F(FPDFEditEmbedderTest, TestGetTextFontName) {
   UnloadPage(page);
 }
 
-TEST_F(FPDFEditEmbedderTest, TestFormGetObjects) {
+TEST_F(FPDFEditEmbedderTest, FormGetObjects) {
   ASSERT_TRUE(OpenDocument("form_object.pdf"));
   FPDF_PAGE page = LoadPage(0);
   ASSERT_TRUE(page);
   ASSERT_EQ(1, FPDFPage_CountObjects(page));
 
   FPDF_PAGEOBJECT form = FPDFPage_GetObject(page, 0);
-  EXPECT_EQ(FPDF_PAGEOBJ_FORM, FPDFPageObj_GetType(form));
+  ASSERT_EQ(FPDF_PAGEOBJ_FORM, FPDFPageObj_GetType(form));
   ASSERT_EQ(-1, FPDFFormObj_CountObjects(nullptr));
   ASSERT_EQ(2, FPDFFormObj_CountObjects(form));
 
@@ -2459,17 +2518,12 @@ TEST_F(FPDFEditEmbedderTest, TestFormGetObjects) {
   ASSERT_EQ(nullptr, FPDFFormObj_GetObject(form, -1));
   ASSERT_EQ(nullptr, FPDFFormObj_GetObject(form, 2));
 
-  // Reset the form object matrix to identity.
-  auto* pPageObj = CPDFPageObjectFromFPDFPageObject(form);
-  CPDF_FormObject* pFormObj = pPageObj->AsForm();
-  pFormObj->Transform(pFormObj->form_matrix().GetInverse());
-
-  // FPDFFormObj_GetMatrix() positive testing.
+  // FPDFPageObj_GetMatrix() positive testing for forms.
   static constexpr FS_MATRIX kMatrix = {1.0f, 1.5f, 2.0f, 2.5f, 100.0f, 200.0f};
-  pFormObj->Transform(CFXMatrixFromFSMatrix(kMatrix));
+  EXPECT_TRUE(FPDFPageObj_SetMatrix(form, &kMatrix));
 
   FS_MATRIX matrix;
-  EXPECT_TRUE(FPDFFormObj_GetMatrix(form, &matrix));
+  EXPECT_TRUE(FPDFPageObj_GetMatrix(form, &matrix));
   EXPECT_FLOAT_EQ(kMatrix.a, matrix.a);
   EXPECT_FLOAT_EQ(kMatrix.b, matrix.b);
   EXPECT_FLOAT_EQ(kMatrix.c, matrix.c);
@@ -2477,10 +2531,56 @@ TEST_F(FPDFEditEmbedderTest, TestFormGetObjects) {
   EXPECT_FLOAT_EQ(kMatrix.e, matrix.e);
   EXPECT_FLOAT_EQ(kMatrix.f, matrix.f);
 
-  // FPDFFormObj_GetMatrix() negative testing.
-  EXPECT_FALSE(FPDFFormObj_GetMatrix(nullptr, &matrix));
-  EXPECT_FALSE(FPDFFormObj_GetMatrix(form, nullptr));
-  EXPECT_FALSE(FPDFFormObj_GetMatrix(nullptr, nullptr));
+  // FPDFPageObj_GetMatrix() negative testing for forms.
+  EXPECT_FALSE(FPDFPageObj_GetMatrix(form, nullptr));
+
+  UnloadPage(page);
+}
+
+TEST_F(FPDFEditEmbedderTest, ModifyFormObject) {
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+#if defined(OS_WIN)
+  const char kOrigChecksum[] = "d511cae0c8ec3e7b2e7b672485a45859";
+#else
+  const char kOrigChecksum[] = "6332486c11a830d52163e453cac3f0f7";
+#endif  // defined(OS_WIN)
+  const char kNewChecksum[] = "9851fb1b59d91655ac8961ac89f383ae";
+#else
+#if defined(OS_WIN)
+  const char kOrigChecksum[] = "9993d8fd85dfc1f9522c4e5f1533ed78";
+  const char kNewChecksum[] = "ba6450c9060786c5aca3b7552ba7ec9e";
+#elif defined(OS_APPLE)
+  const char kOrigChecksum[] = "98c13e90ec592eea79b6458c0ca2822b";
+  const char kNewChecksum[] = "8cbad8c9281e1f3bac2306a5beb1fdcd";
+#else
+  const char kOrigChecksum[] = "26e65fb47da5674d1b7284932c3c94d6";
+  const char kNewChecksum[] = "fd408e99373b275316f7816ae8d35842";
+#endif  // defined(OS_WIN)
+#endif  // defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
+
+  ASSERT_TRUE(OpenDocument("form_object.pdf"));
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+  ASSERT_EQ(1, FPDFPage_CountObjects(page));
+
+  {
+    ScopedFPDFBitmap bitmap = RenderLoadedPage(page);
+    CompareBitmap(bitmap.get(), 62, 69, kOrigChecksum);
+  }
+
+  FPDF_PAGEOBJECT form = FPDFPage_GetObject(page, 0);
+  ASSERT_EQ(FPDF_PAGEOBJ_FORM, FPDFPageObj_GetType(form));
+
+  FPDFPageObj_Transform(form, 0.5, 0, 0, 0.5, 0, 0);
+  EXPECT_TRUE(FPDFPage_GenerateContent(page));
+
+  {
+    ScopedFPDFBitmap bitmap = RenderLoadedPage(page);
+    CompareBitmap(bitmap.get(), 62, 69, kNewChecksum);
+  }
+
+  EXPECT_TRUE(FPDF_SaveAsCopy(document(), this, 0));
+  VerifySavedDocument(62, 69, kNewChecksum);
 
   UnloadPage(page);
 }
@@ -3490,35 +3590,30 @@ TEST_F(FPDFEditEmbedderTest, GetBitmapIgnoresSetMatrix) {
   }
 
   // Check the matrix for |obj|.
-  double a;
-  double b;
-  double c;
-  double d;
-  double e;
-  double f;
-  EXPECT_TRUE(FPDFImageObj_GetMatrix(obj, &a, &b, &c, &d, &e, &f));
-  EXPECT_DOUBLE_EQ(53.0, a);
-  EXPECT_DOUBLE_EQ(0.0, b);
-  EXPECT_DOUBLE_EQ(0.0, c);
-  EXPECT_DOUBLE_EQ(43.0, d);
-  EXPECT_DOUBLE_EQ(72.0, e);
-  EXPECT_DOUBLE_EQ(646.510009765625, f);
+  FS_MATRIX matrix;
+  EXPECT_TRUE(FPDFPageObj_GetMatrix(obj, &matrix));
+  EXPECT_FLOAT_EQ(53.0f, matrix.a);
+  EXPECT_FLOAT_EQ(0.0f, matrix.b);
+  EXPECT_FLOAT_EQ(0.0f, matrix.c);
+  EXPECT_FLOAT_EQ(43.0f, matrix.d);
+  EXPECT_FLOAT_EQ(72.0f, matrix.e);
+  EXPECT_FLOAT_EQ(646.510009765625f, matrix.f);
 
   // Modify the matrix for |obj|.
-  a = 120.0;
-  EXPECT_TRUE(FPDFImageObj_SetMatrix(obj, a, b, c, d, e, f));
+  matrix.a = 120.0;
+  EXPECT_TRUE(FPDFPageObj_SetMatrix(obj, &matrix));
 
   // Make sure the matrix modification took place.
-  EXPECT_TRUE(FPDFImageObj_GetMatrix(obj, &a, &b, &c, &d, &e, &f));
-  EXPECT_DOUBLE_EQ(120.0, a);
-  EXPECT_DOUBLE_EQ(0.0, b);
-  EXPECT_DOUBLE_EQ(0.0, c);
-  EXPECT_DOUBLE_EQ(43.0, d);
-  EXPECT_DOUBLE_EQ(72.0, e);
-  EXPECT_DOUBLE_EQ(646.510009765625, f);
+  EXPECT_TRUE(FPDFPageObj_GetMatrix(obj, &matrix));
+  EXPECT_FLOAT_EQ(120.0f, matrix.a);
+  EXPECT_FLOAT_EQ(0.0f, matrix.b);
+  EXPECT_FLOAT_EQ(0.0f, matrix.c);
+  EXPECT_FLOAT_EQ(43.0f, matrix.d);
+  EXPECT_FLOAT_EQ(72.0f, matrix.e);
+  EXPECT_FLOAT_EQ(646.510009765625f, matrix.f);
 
   {
-    // Render |obj| again. Note that the FPDFImageObj_SetMatrix() call has no
+    // Render |obj| again. Note that the FPDFPageObj_SetMatrix() call has no
     // effect.
     ScopedFPDFBitmap bitmap(FPDFImageObj_GetBitmap(obj));
     EXPECT_EQ(FPDFBitmap_BGR, FPDFBitmap_GetFormat(bitmap.get()));
@@ -3588,44 +3683,39 @@ TEST_F(FPDFEditEmbedderTest, MAYBE_GetRenderedBitmapHandlesSetMatrix) {
     ScopedFPDFBitmap bitmap(
         FPDFImageObj_GetRenderedBitmap(document(), page, obj));
     EXPECT_EQ(FPDFBitmap_BGRA, FPDFBitmap_GetFormat(bitmap.get()));
-    CompareBitmap(bitmap.get(), 53, 43, "90fa16c2fb2bf8ad3654c2258417664c");
+    CompareBitmap(bitmap.get(), 53, 43, "582ca300e003f512d7b552c7b5b45d2e");
   }
 
   // Check the matrix for |obj|.
-  double a;
-  double b;
-  double c;
-  double d;
-  double e;
-  double f;
-  EXPECT_TRUE(FPDFImageObj_GetMatrix(obj, &a, &b, &c, &d, &e, &f));
-  EXPECT_DOUBLE_EQ(53.0, a);
-  EXPECT_DOUBLE_EQ(0.0, b);
-  EXPECT_DOUBLE_EQ(0.0, c);
-  EXPECT_DOUBLE_EQ(43.0, d);
-  EXPECT_DOUBLE_EQ(72.0, e);
-  EXPECT_DOUBLE_EQ(646.510009765625, f);
+  FS_MATRIX matrix;
+  EXPECT_TRUE(FPDFPageObj_GetMatrix(obj, &matrix));
+  EXPECT_FLOAT_EQ(53.0f, matrix.a);
+  EXPECT_FLOAT_EQ(0.0f, matrix.b);
+  EXPECT_FLOAT_EQ(0.0f, matrix.c);
+  EXPECT_FLOAT_EQ(43.0f, matrix.d);
+  EXPECT_FLOAT_EQ(72.0f, matrix.e);
+  EXPECT_FLOAT_EQ(646.510009765625f, matrix.f);
 
   // Modify the matrix for |obj|.
-  a = 120.0;
-  EXPECT_TRUE(FPDFImageObj_SetMatrix(obj, a, b, c, d, e, f));
+  matrix.a = 120.0;
+  EXPECT_TRUE(FPDFPageObj_SetMatrix(obj, &matrix));
 
   // Make sure the matrix modification took place.
-  EXPECT_TRUE(FPDFImageObj_GetMatrix(obj, &a, &b, &c, &d, &e, &f));
-  EXPECT_DOUBLE_EQ(120.0, a);
-  EXPECT_DOUBLE_EQ(0.0, b);
-  EXPECT_DOUBLE_EQ(0.0, c);
-  EXPECT_DOUBLE_EQ(43.0, d);
-  EXPECT_DOUBLE_EQ(72.0, e);
-  EXPECT_DOUBLE_EQ(646.510009765625, f);
+  EXPECT_TRUE(FPDFPageObj_GetMatrix(obj, &matrix));
+  EXPECT_FLOAT_EQ(120.0f, matrix.a);
+  EXPECT_FLOAT_EQ(0.0f, matrix.b);
+  EXPECT_FLOAT_EQ(0.0f, matrix.c);
+  EXPECT_FLOAT_EQ(43.0f, matrix.d);
+  EXPECT_FLOAT_EQ(72.0f, matrix.e);
+  EXPECT_FLOAT_EQ(646.510009765625f, matrix.f);
 
   {
-    // Render |obj| again. Note that the FPDFImageObj_SetMatrix() call has an
+    // Render |obj| again. Note that the FPDFPageObj_SetMatrix() call has an
     // effect.
     ScopedFPDFBitmap bitmap(
         FPDFImageObj_GetRenderedBitmap(document(), page, obj));
     EXPECT_EQ(FPDFBitmap_BGRA, FPDFBitmap_GetFormat(bitmap.get()));
-    CompareBitmap(bitmap.get(), 120, 43, "57ed8e15daa535490ff0c8b7640a36b4");
+    CompareBitmap(bitmap.get(), 120, 43, "0824c16dcf2dfcef44b45d88db1fddce");
   }
 
   UnloadPage(page);
@@ -3742,72 +3832,67 @@ TEST_F(FPDFEditEmbedderTest, GetImageMatrix) {
   ASSERT_EQ(39, FPDFPage_CountObjects(page));
 
   FPDF_PAGEOBJECT obj;
-  double a;
-  double b;
-  double c;
-  double d;
-  double e;
-  double f;
+  FS_MATRIX matrix;
 
   obj = FPDFPage_GetObject(page, 33);
   ASSERT_EQ(FPDF_PAGEOBJ_IMAGE, FPDFPageObj_GetType(obj));
-  EXPECT_TRUE(FPDFImageObj_GetMatrix(obj, &a, &b, &c, &d, &e, &f));
-  EXPECT_DOUBLE_EQ(53.0, a);
-  EXPECT_DOUBLE_EQ(0.0, b);
-  EXPECT_DOUBLE_EQ(0.0, c);
-  EXPECT_DOUBLE_EQ(43.0, d);
-  EXPECT_DOUBLE_EQ(72.0, e);
-  EXPECT_DOUBLE_EQ(646.510009765625, f);
+  EXPECT_TRUE(FPDFPageObj_GetMatrix(obj, &matrix));
+  EXPECT_FLOAT_EQ(53.0f, matrix.a);
+  EXPECT_FLOAT_EQ(0.0f, matrix.b);
+  EXPECT_FLOAT_EQ(0.0f, matrix.c);
+  EXPECT_FLOAT_EQ(43.0f, matrix.d);
+  EXPECT_FLOAT_EQ(72.0f, matrix.e);
+  EXPECT_FLOAT_EQ(646.510009765625f, matrix.f);
 
   obj = FPDFPage_GetObject(page, 34);
   ASSERT_EQ(FPDF_PAGEOBJ_IMAGE, FPDFPageObj_GetType(obj));
-  EXPECT_TRUE(FPDFImageObj_GetMatrix(obj, &a, &b, &c, &d, &e, &f));
-  EXPECT_DOUBLE_EQ(70.0, a);
-  EXPECT_DOUBLE_EQ(0.0, b);
-  EXPECT_DOUBLE_EQ(0.0, c);
-  EXPECT_DOUBLE_EQ(51.0, d);
-  EXPECT_DOUBLE_EQ(216.0, e);
-  EXPECT_DOUBLE_EQ(646.510009765625, f);
+  EXPECT_TRUE(FPDFPageObj_GetMatrix(obj, &matrix));
+  EXPECT_FLOAT_EQ(70.0f, matrix.a);
+  EXPECT_FLOAT_EQ(0.0f, matrix.b);
+  EXPECT_FLOAT_EQ(0.0f, matrix.c);
+  EXPECT_FLOAT_EQ(51.0f, matrix.d);
+  EXPECT_FLOAT_EQ(216.0f, matrix.e);
+  EXPECT_FLOAT_EQ(646.510009765625f, matrix.f);
 
   obj = FPDFPage_GetObject(page, 35);
   ASSERT_EQ(FPDF_PAGEOBJ_IMAGE, FPDFPageObj_GetType(obj));
-  EXPECT_TRUE(FPDFImageObj_GetMatrix(obj, &a, &b, &c, &d, &e, &f));
-  EXPECT_DOUBLE_EQ(69.0, a);
-  EXPECT_DOUBLE_EQ(0.0, b);
-  EXPECT_DOUBLE_EQ(0.0, c);
-  EXPECT_DOUBLE_EQ(51.0, d);
-  EXPECT_DOUBLE_EQ(360.0, e);
-  EXPECT_DOUBLE_EQ(646.510009765625, f);
+  EXPECT_TRUE(FPDFPageObj_GetMatrix(obj, &matrix));
+  EXPECT_FLOAT_EQ(69.0f, matrix.a);
+  EXPECT_FLOAT_EQ(0.0f, matrix.b);
+  EXPECT_FLOAT_EQ(0.0f, matrix.c);
+  EXPECT_FLOAT_EQ(51.0f, matrix.d);
+  EXPECT_FLOAT_EQ(360.0f, matrix.e);
+  EXPECT_FLOAT_EQ(646.510009765625f, matrix.f);
 
   obj = FPDFPage_GetObject(page, 36);
   ASSERT_EQ(FPDF_PAGEOBJ_IMAGE, FPDFPageObj_GetType(obj));
-  EXPECT_TRUE(FPDFImageObj_GetMatrix(obj, &a, &b, &c, &d, &e, &f));
-  EXPECT_DOUBLE_EQ(59.0, a);
-  EXPECT_DOUBLE_EQ(0.0, b);
-  EXPECT_DOUBLE_EQ(0.0, c);
-  EXPECT_DOUBLE_EQ(45.0, d);
-  EXPECT_DOUBLE_EQ(72.0, e);
-  EXPECT_DOUBLE_EQ(553.510009765625, f);
+  EXPECT_TRUE(FPDFPageObj_GetMatrix(obj, &matrix));
+  EXPECT_FLOAT_EQ(59.0f, matrix.a);
+  EXPECT_FLOAT_EQ(0.0f, matrix.b);
+  EXPECT_FLOAT_EQ(0.0f, matrix.c);
+  EXPECT_FLOAT_EQ(45.0f, matrix.d);
+  EXPECT_FLOAT_EQ(72.0f, matrix.e);
+  EXPECT_FLOAT_EQ(553.510009765625f, matrix.f);
 
   obj = FPDFPage_GetObject(page, 37);
   ASSERT_EQ(FPDF_PAGEOBJ_IMAGE, FPDFPageObj_GetType(obj));
-  EXPECT_TRUE(FPDFImageObj_GetMatrix(obj, &a, &b, &c, &d, &e, &f));
-  EXPECT_DOUBLE_EQ(55.94000244140625, a);
-  EXPECT_DOUBLE_EQ(0.0, b);
-  EXPECT_DOUBLE_EQ(0.0, c);
-  EXPECT_DOUBLE_EQ(46.950000762939453, d);
-  EXPECT_DOUBLE_EQ(216.0, e);
-  EXPECT_DOUBLE_EQ(552.510009765625, f);
+  EXPECT_TRUE(FPDFPageObj_GetMatrix(obj, &matrix));
+  EXPECT_FLOAT_EQ(55.94000244140625f, matrix.a);
+  EXPECT_FLOAT_EQ(0.0f, matrix.b);
+  EXPECT_FLOAT_EQ(0.0f, matrix.c);
+  EXPECT_FLOAT_EQ(46.950000762939453f, matrix.d);
+  EXPECT_FLOAT_EQ(216.0f, matrix.e);
+  EXPECT_FLOAT_EQ(552.510009765625f, matrix.f);
 
   obj = FPDFPage_GetObject(page, 38);
   ASSERT_EQ(FPDF_PAGEOBJ_IMAGE, FPDFPageObj_GetType(obj));
-  EXPECT_TRUE(FPDFImageObj_GetMatrix(obj, &a, &b, &c, &d, &e, &f));
-  EXPECT_DOUBLE_EQ(70.528999328613281, a);
-  EXPECT_DOUBLE_EQ(0.0, b);
-  EXPECT_DOUBLE_EQ(0.0, c);
-  EXPECT_DOUBLE_EQ(43.149997711181641, d);
-  EXPECT_DOUBLE_EQ(360.0, e);
-  EXPECT_DOUBLE_EQ(553.3599853515625, f);
+  EXPECT_TRUE(FPDFPageObj_GetMatrix(obj, &matrix));
+  EXPECT_FLOAT_EQ(70.528999328613281f, matrix.a);
+  EXPECT_FLOAT_EQ(0.0f, matrix.b);
+  EXPECT_FLOAT_EQ(0.0f, matrix.c);
+  EXPECT_FLOAT_EQ(43.149997711181641f, matrix.d);
+  EXPECT_FLOAT_EQ(360.0f, matrix.e);
+  EXPECT_FLOAT_EQ(553.3599853515625f, matrix.f);
 
   UnloadPage(page);
 }

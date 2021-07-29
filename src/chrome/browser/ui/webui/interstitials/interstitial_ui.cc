@@ -16,20 +16,22 @@
 #include "chrome/browser/lookalikes/lookalike_url_blocking_page.h"
 #include "chrome/browser/lookalikes/lookalike_url_controller_client.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_blocking_page_quiet.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/ssl/chrome_security_blocking_page_factory.h"
+#include "chrome/browser/ssl/https_only_mode_controller_client.h"
 #include "chrome/browser/ssl/insecure_form/insecure_form_controller_client.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/url_constants.h"
 #include "components/captive_portal/core/buildflags.h"
 #include "components/grit/dev_ui_components_resources.h"
 #include "components/lookalikes/core/lookalike_url_util.h"
-#include "components/safe_browsing/core/db/database_manager.h"
+#include "components/safe_browsing/content/browser/safe_browsing_blocking_page.h"
+#include "components/safe_browsing/core/browser/db/database_manager.h"
 #include "components/security_interstitials/content/bad_clock_blocking_page.h"
 #include "components/security_interstitials/content/blocked_interception_blocking_page.h"
+#include "components/security_interstitials/content/https_only_mode_blocking_page.h"
 #include "components/security_interstitials/content/insecure_form_blocking_page.h"
 #include "components/security_interstitials/content/legacy_tls_blocking_page.h"
 #include "components/security_interstitials/content/mitm_software_blocking_page.h"
@@ -87,8 +89,8 @@ scoped_refptr<net::X509Certificate> CreateFakeCert() {
     return nullptr;
   }
 
-  return net::X509Certificate::CreateFromBytes(cert_der.data(),
-                                               cert_der.size());
+  return net::X509Certificate::CreateFromBytes(
+      base::as_bytes(base::make_span(cert_der)));
 }
 
 // Implementation of chrome://interstitials demonstration pages. This code is
@@ -287,6 +289,15 @@ CreateInsecureFormPage(content::WebContents* web_contents) {
                                                      request_url));
 }
 
+std::unique_ptr<security_interstitials::HttpsOnlyModeBlockingPage>
+CreateHttpsOnlyModePage(content::WebContents* web_contents) {
+  GURL request_url("http://example.com");
+  return std::make_unique<security_interstitials::HttpsOnlyModeBlockingPage>(
+      web_contents, request_url,
+      std::make_unique<HttpsOnlyModeControllerClient>(web_contents,
+                                                      request_url));
+}
+
 std::unique_ptr<safe_browsing::SafeBrowsingBlockingPage>
 CreateSafeBrowsingBlockingPage(content::WebContents* web_contents) {
   safe_browsing::SBThreatType threat_type =
@@ -336,10 +347,11 @@ CreateSafeBrowsingBlockingPage(content::WebContents* web_contents) {
   // creates a SafeBrowsingBlockingPage but does not actually show a real
   // interstitial. Instead it extracts the html and displays it manually, so the
   // parts which depend on the NavigationEntry are not hit.
+  auto* ui_manager =
+      g_browser_process->safe_browsing_service()->ui_manager().get();
   return base::WrapUnique<safe_browsing::SafeBrowsingBlockingPage>(
-      safe_browsing::SafeBrowsingBlockingPage::CreateBlockingPage(
-          g_browser_process->safe_browsing_service()->ui_manager().get(),
-          web_contents, main_frame_url, resource, true));
+      ui_manager->blocking_page_factory()->CreateSafeBrowsingPage(
+          ui_manager, web_contents, main_frame_url, {resource}, true));
 }
 
 std::unique_ptr<TestSafeBrowsingBlockingPageQuiet>
@@ -524,6 +536,8 @@ void InterstitialHTMLSource::StartDataRequest(
     interstitial_delegate = CreateOriginPolicyInterstitialPage(web_contents);
   } else if (path_without_query == "/insecure_form") {
     interstitial_delegate = CreateInsecureFormPage(web_contents);
+  } else if (path_without_query == "/https_only") {
+    interstitial_delegate = CreateHttpsOnlyModePage(web_contents);
   }
 
   if (path_without_query == "/quietsafebrowsing") {

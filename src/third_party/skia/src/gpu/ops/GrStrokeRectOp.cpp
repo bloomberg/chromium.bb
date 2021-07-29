@@ -91,7 +91,7 @@ public:
 
     const char* name() const override { return "NonAAStrokeRectOp"; }
 
-    void visitProxies(const VisitProxyFunc& func) const override {
+    void visitProxies(const GrVisitProxyFunc& func) const override {
         if (fProgramInfo) {
             fProgramInfo->visitFPProxies(func);
         } else {
@@ -172,8 +172,9 @@ private:
     void onCreateProgramInfo(const GrCaps* caps,
                              SkArenaAlloc* arena,
                              const GrSurfaceProxyView& writeView,
+                             bool usesMSAASurface,
                              GrAppliedClip&& clip,
-                             const GrXferProcessor::DstProxyView& dstProxyView,
+                             const GrDstProxyView& dstProxyView,
                              GrXferBarrierFlags renderPassXferBarriers,
                              GrLoadOp colorLoadOp) override {
         GrGeometryProcessor* gp;
@@ -195,7 +196,7 @@ private:
                                                  renderPassXferBarriers, colorLoadOp);
     }
 
-    void onPrepareDraws(Target* target) override {
+    void onPrepareDraws(GrMeshDrawTarget* target) override {
         if (!fProgramInfo) {
             this->createProgramInfo(target);
         }
@@ -276,12 +277,28 @@ private:
 GR_DECLARE_STATIC_UNIQUE_KEY(gMiterIndexBufferKey);
 GR_DECLARE_STATIC_UNIQUE_KEY(gBevelIndexBufferKey);
 
-static void compute_aa_rects(SkRect* devOutside, SkRect* devOutsideAssist, SkRect* devInside,
-                             bool* isDegenerate, const SkMatrix& viewMatrix, const SkRect& rect,
-                             SkScalar strokeWidth, bool miterStroke, SkVector* devHalfStrokeSize) {
-    SkRect devRect;
-    viewMatrix.mapRect(&devRect, rect);
+static bool stroke_dev_half_size_supported(SkVector devHalfStrokeSize) {
+    // Since the horizontal and vertical strokes share internal corners, the coverage value at that
+    // corner needs to be equal for the horizontal and vertical strokes both.
+    //
+    // The inner coverage values will be equal if the horizontal and vertical stroke widths are
+    // equal (in which case innerCoverage is same for all sides of the rects) or if the horizontal
+    // and vertical stroke widths are both greater than 1 (in which case innerCoverage will always
+    // be 1).
+    return devHalfStrokeSize.fX == devHalfStrokeSize.fY ||
+           std::min(devHalfStrokeSize.fX, devHalfStrokeSize.fY) >= .5f;
+}
 
+static bool compute_aa_rects(const GrCaps& caps,
+                             SkRect* devOutside,
+                             SkRect* devOutsideAssist,
+                             SkRect* devInside,
+                             bool* isDegenerate,
+                             const SkMatrix& viewMatrix,
+                             const SkRect& rect,
+                             SkScalar strokeWidth,
+                             bool miterStroke,
+                             SkVector* devHalfStrokeSize) {
     SkVector devStrokeSize;
     if (strokeWidth > 0) {
         devStrokeSize.set(strokeWidth, strokeWidth);
@@ -298,6 +315,17 @@ static void compute_aa_rects(SkRect* devOutside, SkRect* devOutsideAssist, SkRec
 
     devHalfStrokeSize->fX = rx;
     devHalfStrokeSize->fY = ry;
+
+    SkRect devRect;
+    viewMatrix.mapRect(&devRect, rect);
+
+    // Clip our draw rect 1 full stroke width plus bloat outside the viewport. This avoids
+    // interpolation precision issues with very large coordinates.
+    const float m = caps.maxRenderTargetSize();
+    const SkRect visibilityBounds = SkRect::MakeWH(m, m).makeOutset(dx + 1, dy + 1);
+    if (!devRect.intersect(visibilityBounds)) {
+        return false;
+    }
 
     *devOutside = devRect;
     *devOutsideAssist = devRect;
@@ -329,17 +357,24 @@ static void compute_aa_rects(SkRect* devOutside, SkRect* devOutsideAssist, SkRec
         devOutside->inset(0, ry);
         devOutsideAssist->outset(0, ry);
     }
+
+    return true;
 }
 
 static GrGeometryProcessor* create_aa_stroke_rect_gp(SkArenaAlloc* arena,
+                                                     bool usesMSAASurface,
                                                      bool tweakAlphaForCoverage,
                                                      const SkMatrix& viewMatrix,
                                                      bool usesLocalCoords,
                                                      bool wideColor) {
     using namespace GrDefaultGeoProcFactory;
 
-    Coverage::Type coverageType =
-        tweakAlphaForCoverage ? Coverage::kSolid_Type : Coverage::kAttribute_Type;
+    // When MSAA is enabled, we have to extend our AA bloats and interpolate coverage values outside
+    // 0..1. We tell the gp in this case that coverage is an unclamped attribute so it will call
+    // saturate(coverage) in the fragment shader.
+    Coverage::Type coverageType = usesMSAASurface ? Coverage::kAttributeUnclamped_Type
+                        : (!tweakAlphaForCoverage ? Coverage::kAttribute_Type
+                                                  : Coverage::kSolid_Type);
     LocalCoords::Type localCoordsType =
         usesLocalCoords ? LocalCoords::kUsePosition_Type : LocalCoords::kUnused_Type;
     Color::Type colorType =
@@ -355,12 +390,29 @@ private:
 public:
     DEFINE_OP_CLASS_ID
 
+    // TODO support AA rotated stroke rects by copying around view matrices
+    struct RectInfo {
+        SkPMColor4f fColor;
+        SkRect      fDevOutside;
+        SkRect      fDevOutsideAssist;
+        SkRect      fDevInside;
+        SkVector    fDevHalfStrokeSize;
+        bool        fDegenerate;
+    };
+
     static GrOp::Owner Make(GrRecordingContext* context,
                             GrPaint&& paint,
                             const SkMatrix& viewMatrix,
                             const SkRect& devOutside,
                             const SkRect& devInside,
                             const SkVector& devHalfStrokeSize) {
+        if (!viewMatrix.rectStaysRect()) {
+            // The AA op only supports axis-aligned rectangles
+            return nullptr;
+        }
+        if (!stroke_dev_half_size_supported(devHalfStrokeSize)) {
+            return nullptr;
+        }
         return Helper::FactoryHelper<AAStrokeRectOp>(context, std::move(paint), viewMatrix,
                                                      devOutside, devInside, devHalfStrokeSize);
     }
@@ -384,25 +436,41 @@ public:
                             const SkMatrix& viewMatrix,
                             const SkRect& rect,
                             const SkStrokeRec& stroke) {
+        if (!viewMatrix.rectStaysRect()) {
+            // The AA op only supports axis-aligned rectangles
+            return nullptr;
+        }
         bool isMiter;
         if (!allowed_stroke(stroke, GrAA::kYes, &isMiter)) {
             return nullptr;
         }
-        return Helper::FactoryHelper<AAStrokeRectOp>(context, std::move(paint), viewMatrix, rect,
-                                                     stroke, isMiter);
+        RectInfo info;
+        if (!compute_aa_rects(*context->priv().caps(),
+                              &info.fDevOutside,
+                              &info.fDevOutsideAssist,
+                              &info.fDevInside,
+                              &info.fDegenerate,
+                              viewMatrix,
+                              rect,
+                              stroke.getWidth(),
+                              isMiter,
+                              &info.fDevHalfStrokeSize)) {
+            return nullptr;
+        }
+        if (!stroke_dev_half_size_supported(info.fDevHalfStrokeSize)) {
+            return nullptr;
+        }
+        return Helper::FactoryHelper<AAStrokeRectOp>(context, std::move(paint), viewMatrix, info,
+                                                     isMiter);
     }
 
     AAStrokeRectOp(GrProcessorSet* processorSet, const SkPMColor4f& color,
-                   const SkMatrix& viewMatrix, const SkRect& rect, const SkStrokeRec& stroke,
-                   bool isMiter)
+                   const SkMatrix& viewMatrix, const RectInfo& infoExceptColor, bool isMiter)
             : INHERITED(ClassID())
             , fHelper(processorSet, GrAAType::kCoverage)
             , fViewMatrix(viewMatrix) {
         fMiterStroke = isMiter;
-        RectInfo& info = fRects.push_back();
-        compute_aa_rects(&info.fDevOutside, &info.fDevOutsideAssist, &info.fDevInside,
-                         &info.fDegenerate, viewMatrix, rect, stroke.getWidth(), isMiter,
-                         &info.fDevHalfStrokeSize);
+        RectInfo& info = fRects.push_back(infoExceptColor);
         info.fColor = color;
         if (isMiter) {
             this->setBounds(info.fDevOutside, HasAABloat::kYes, IsHairline::kNo);
@@ -417,7 +485,7 @@ public:
 
     const char* name() const override { return "AAStrokeRect"; }
 
-    void visitProxies(const VisitProxyFunc& func) const override {
+    void visitProxies(const GrVisitProxyFunc& func) const override {
         if (fProgramInfo) {
             fProgramInfo->visitFPProxies(func);
         } else {
@@ -437,15 +505,22 @@ public:
 private:
     GrProgramInfo* programInfo() override { return fProgramInfo; }
 
+    bool compatibleWithCoverageAsAlpha(bool usesMSAASurface) const {
+        // When MSAA is enabled, we have to extend our AA bloats and interpolate coverage values
+        // outside 0..1. This makes us incompatible with coverage as alpha.
+        return !usesMSAASurface && fHelper.compatibleWithCoverageAsAlpha();
+    }
+
     void onCreateProgramInfo(const GrCaps*,
                              SkArenaAlloc*,
                              const GrSurfaceProxyView& writeView,
+                             bool usesMSAASurface,
                              GrAppliedClip&&,
-                             const GrXferProcessor::DstProxyView&,
+                             const GrDstProxyView&,
                              GrXferBarrierFlags renderPassXferBarriers,
                              GrLoadOp colorLoadOp) override;
 
-    void onPrepareDraws(Target*) override;
+    void onPrepareDraws(GrMeshDrawTarget*) override;
     void onExecute(GrOpFlushState*, const SkRect& chainBounds) override;
 
 #if GR_TEST_UTILS
@@ -490,18 +565,8 @@ private:
                                       const SkRect& devInside,
                                       bool miterStroke,
                                       bool degenerate,
-                                      bool tweakAlphaForCoverage,
-                                      const SkVector& devHalfStrokeSize) const;
-
-    // TODO support AA rotated stroke rects by copying around view matrices
-    struct RectInfo {
-        SkPMColor4f fColor;
-        SkRect      fDevOutside;
-        SkRect      fDevOutsideAssist;
-        SkRect      fDevInside;
-        SkVector    fDevHalfStrokeSize;
-        bool        fDegenerate;
-    };
+                                      const SkVector& devHalfStrokeSize,
+                                      bool usesMSAASurface) const;
 
     Helper         fHelper;
     SkSTArray<1, RectInfo, true> fRects;
@@ -517,33 +582,43 @@ private:
 void AAStrokeRectOp::onCreateProgramInfo(const GrCaps* caps,
                                          SkArenaAlloc* arena,
                                          const GrSurfaceProxyView& writeView,
+                                         bool usesMSAASurface,
                                          GrAppliedClip&& appliedClip,
-                                         const GrXferProcessor::DstProxyView& dstProxyView,
+                                         const GrDstProxyView& dstProxyView,
                                          GrXferBarrierFlags renderPassXferBarriers,
                                          GrLoadOp colorLoadOp) {
 
-    GrGeometryProcessor* gp = create_aa_stroke_rect_gp(arena,
-                                                       fHelper.compatibleWithCoverageAsAlpha(),
-                                                       this->viewMatrix(),
-                                                       fHelper.usesLocalCoords(),
-                                                       fWideColor);
+    GrGeometryProcessor* gp = create_aa_stroke_rect_gp(
+            arena,
+            usesMSAASurface,
+            this->compatibleWithCoverageAsAlpha(usesMSAASurface),
+            this->viewMatrix(),
+            fHelper.usesLocalCoords(),
+            fWideColor);
     if (!gp) {
         SkDebugf("Couldn't create GrGeometryProcessor\n");
         return;
     }
 
-    fProgramInfo = fHelper.createProgramInfo(caps,
-                                             arena,
-                                             writeView,
-                                             std::move(appliedClip),
-                                             dstProxyView,
-                                             gp,
-                                             GrPrimitiveType::kTriangles,
-                                             renderPassXferBarriers,
-                                             colorLoadOp);
+    GrPipeline::InputFlags pipelineFlags = fHelper.pipelineFlags();
+    if (usesMSAASurface) {
+        pipelineFlags |= GrPipeline::InputFlags::kHWAntialias;
+    }
+
+    fProgramInfo = GrSimpleMeshDrawOpHelper::CreateProgramInfo(caps,
+                                                               arena,
+                                                               writeView,
+                                                               std::move(appliedClip),
+                                                               dstProxyView,
+                                                               gp,
+                                                               fHelper.detachProcessorSet(),
+                                                               GrPrimitiveType::kTriangles,
+                                                               renderPassXferBarriers,
+                                                               colorLoadOp,
+                                                               pipelineFlags);
 }
 
-void AAStrokeRectOp::onPrepareDraws(Target* target) {
+void AAStrokeRectOp::onPrepareDraws(GrMeshDrawTarget* target) {
 
     if (!fProgramInfo) {
         this->createProgramInfo(target);
@@ -584,8 +659,8 @@ void AAStrokeRectOp::onPrepareDraws(Target* target) {
                                            info.fDevInside,
                                            fMiterStroke,
                                            info.fDegenerate,
-                                           fHelper.compatibleWithCoverageAsAlpha(),
-                                           info.fDevHalfStrokeSize);
+                                           info.fDevHalfStrokeSize,
+                                           target->usesMSAASurface());
     }
     fMesh = helper.mesh();
 }
@@ -720,15 +795,6 @@ GrOp::CombineResult AAStrokeRectOp::onCombineIfPossible(GrOp* t, SkArenaAlloc*, 
     return CombineResult::kMerged;
 }
 
-// Compute the coverage for the inner two rects.
-static float compute_inner_coverage(SkScalar maxDevHalfStrokeSize) {
-    if (maxDevHalfStrokeSize < SK_ScalarHalf) {
-        return 2.0f * maxDevHalfStrokeSize / (maxDevHalfStrokeSize + SK_ScalarHalf);
-    }
-
-    return 1.0f;
-}
-
 void AAStrokeRectOp::generateAAStrokeRectGeometry(GrVertexWriter& vertices,
                                                   const SkPMColor4f& color,
                                                   bool wideColor,
@@ -737,77 +803,124 @@ void AAStrokeRectOp::generateAAStrokeRectGeometry(GrVertexWriter& vertices,
                                                   const SkRect& devInside,
                                                   bool miterStroke,
                                                   bool degenerate,
-                                                  bool tweakAlphaForCoverage,
-                                                  const SkVector& devHalfStrokeSize) const {
+                                                  const SkVector& devHalfStrokeSize,
+                                                  bool usesMSAASurface) const {
     // We create vertices for four nested rectangles. There are two ramps from 0 to full
     // coverage, one on the exterior of the stroke and the other on the interior.
 
-    // The following code only really works if either devStrokeSize's fX and fY are
+    // The following code only works if either devStrokeSize's fX and fY are
     // equal (in which case innerCoverage is same for all sides of the rects) or
     // if devStrokeSize's fX and fY are both greater than 1.0 (in which case
-    // innerCoverage will always be 1). The most problematic case is when one of
-    // fX and fY is greater than 1.0 and the other is less than 1.0. In this case
-    // the smaller side should have a partial coverage but the larger side will
-    // force the coverage to be 1.0.
+    // innerCoverage will always be 1).
+    SkASSERT(stroke_dev_half_size_supported(devHalfStrokeSize));
 
     auto inset_fan = [](const SkRect& r, SkScalar dx, SkScalar dy) {
         return GrVertexWriter::TriFanFromRect(r.makeInset(dx, dy));
     };
 
+    bool tweakAlphaForCoverage = this->compatibleWithCoverageAsAlpha(usesMSAASurface);
+
     auto maybe_coverage = [tweakAlphaForCoverage](float coverage) {
         return GrVertexWriter::If(!tweakAlphaForCoverage, coverage);
     };
 
-    GrVertexColor outerColor(tweakAlphaForCoverage ? SK_PMColor4fTRANSPARENT : color, wideColor);
-
-    // For device-space stroke widths less than one we can't inset more than the original
-    // device space stroke width if we want to keep the sizing of all the rects correct.
-    const SkScalar insetX = std::min(SK_ScalarHalf, devHalfStrokeSize.fX);
-    const SkScalar insetY = std::min(SK_ScalarHalf, devHalfStrokeSize.fY);
-
-    // But, correspondingly, we always want to keep the AA picture frame one pixel wide.
-    const SkScalar outsetX = SK_Scalar1 - insetX;
-    const SkScalar outsetY = SK_Scalar1 - insetY;
-
-    // Outermost rect
-    vertices.writeQuad(inset_fan(devOutside, -outsetX, -outsetY),
-                       outerColor,
-                       maybe_coverage(0.0f));
-
-    if (!miterStroke) {
-        // Second outermost
-        vertices.writeQuad(inset_fan(devOutsideAssist, -outsetX, -outsetY),
-                           outerColor,
-                           maybe_coverage(0.0f));
+    // How much do we inset toward the inside of the strokes?
+    float inset = .5f;
+    float innerCoverage = 1;
+    if (inset > devHalfStrokeSize.fX) {
+        SkASSERT(devHalfStrokeSize.fX == devHalfStrokeSize.fY);
+        inset = devHalfStrokeSize.fX;
+        innerCoverage = 2 * inset / (inset + .5f);
     }
 
-    float innerCoverage = compute_inner_coverage(std::max(devHalfStrokeSize.fX,
-                                                        devHalfStrokeSize.fY));
+    // How much do we outset away from the outside of the strokes?
+    // We always want to keep the AA picture frame one pixel wide.
+    float outset = 1 - inset;
+    float outerCoverage = 0;
 
-    SkPMColor4f scaledColor = color * innerCoverage;
-    GrVertexColor innerColor(tweakAlphaForCoverage ? scaledColor : color, wideColor);
+    // How much do we outset away from the interior side of the stroke (toward the center)?
+    float interiorOutset = outset;
+    float interiorCoverage = outerCoverage;
 
-    // Inner rect
-    vertices.writeQuad(inset_fan(devOutside, insetX, insetY),
+    if (usesMSAASurface) {
+        // Since we're using MSAA, extend our outsets to ensure any pixel with partial coverage has
+        // a full sample mask.
+        constexpr float msaaExtraBloat = SK_ScalarSqrt2 - .5f;
+        outset += msaaExtraBloat;
+        outerCoverage -= msaaExtraBloat;
+
+        float insetExtraBloat =
+                std::min(inset + msaaExtraBloat,
+                         std::min(devHalfStrokeSize.fX, devHalfStrokeSize.fY)) - inset;
+        inset += insetExtraBloat;
+        innerCoverage += insetExtraBloat;
+
+        float interiorExtraBloat =
+                std::min(interiorOutset + msaaExtraBloat,
+                         std::min(devInside.width(), devInside.height()) / 2) - interiorOutset;
+        interiorOutset += interiorExtraBloat;
+        interiorCoverage -= interiorExtraBloat;
+    }
+
+    GrVertexColor innerColor(tweakAlphaForCoverage ? color * innerCoverage : color, wideColor);
+    GrVertexColor outerColor(tweakAlphaForCoverage ? SK_PMColor4fTRANSPARENT : color, wideColor);
+
+    // Exterior outset rect (away from stroke).
+    vertices.writeQuad(inset_fan(devOutside, -outset, -outset),
+                       outerColor,
+                       maybe_coverage(outerCoverage));
+
+    if (!miterStroke) {
+        // Second exterior outset.
+        vertices.writeQuad(inset_fan(devOutsideAssist, -outset, -outset),
+                           outerColor,
+                           maybe_coverage(outerCoverage));
+    }
+
+    // Exterior inset rect (toward stroke).
+    vertices.writeQuad(inset_fan(devOutside, inset, inset),
                        innerColor,
                        maybe_coverage(innerCoverage));
 
     if (!miterStroke) {
-        // Second inner
-        vertices.writeQuad(inset_fan(devOutsideAssist, insetX, insetY),
+        // Second exterior inset.
+        vertices.writeQuad(inset_fan(devOutsideAssist, inset, inset),
                            innerColor,
                            maybe_coverage(innerCoverage));
     }
 
     if (!degenerate) {
-        vertices.writeQuad(inset_fan(devInside, -insetX, -insetY),
+        // Interior inset rect (toward stroke).
+        vertices.writeQuad(inset_fan(devInside, -inset, -inset),
                            innerColor,
                            maybe_coverage(innerCoverage));
 
-        // The innermost rect has 0 coverage...
-        vertices.writeQuad(inset_fan(devInside, outsetX, outsetY),
-                           outerColor,
-                           maybe_coverage(0.0f));
+        // Interior outset rect (away from stroke, toward center of rect).
+        SkRect interiorAABoundary = devInside.makeInset(interiorOutset, interiorOutset);
+        float coverageBackset = 0;  // Adds back coverage when the interior AA edges cross.
+        if (interiorAABoundary.fLeft > interiorAABoundary.fRight) {
+            coverageBackset =
+                    (interiorAABoundary.fLeft - interiorAABoundary.fRight) / (interiorOutset * 2);
+            interiorAABoundary.fLeft = interiorAABoundary.fRight = interiorAABoundary.centerX();
+        }
+        if (interiorAABoundary.fTop > interiorAABoundary.fBottom) {
+            coverageBackset = std::max(
+                    (interiorAABoundary.fTop - interiorAABoundary.fBottom) / (interiorOutset * 2),
+                    coverageBackset);
+            interiorAABoundary.fTop = interiorAABoundary.fBottom = interiorAABoundary.centerY();
+        }
+        if (coverageBackset > 0) {
+            // The interior edges crossed. Lerp back toward innerCoverage, which is what this op
+            // will draw in the degenerate case. This gives a smooth transition into the degenerate
+            // case.
+            interiorCoverage += interiorCoverage * (1 - coverageBackset) +
+                                innerCoverage * coverageBackset;
+        }
+        GrVertexColor interiorColor(tweakAlphaForCoverage ? color * interiorCoverage : color,
+                                    wideColor);
+        vertices.writeQuad(GrVertexWriter::TriFanFromRect(interiorAABoundary),
+                           interiorColor,
+                           maybe_coverage(interiorCoverage));
     } else {
         // When the interior rect has become degenerate we smoosh to a single point
         SkASSERT(devInside.fLeft == devInside.fRight && devInside.fTop == devInside.fBottom);
@@ -833,11 +946,8 @@ GrOp::Owner Make(GrRecordingContext* context,
                  const SkMatrix& viewMatrix,
                  const SkRect& rect,
                  const SkStrokeRec& stroke) {
+    SkASSERT(!context->priv().caps()->reducedShaderMode());
     if (aaType == GrAAType::kCoverage) {
-        // The AA op only supports axis-aligned rectangles
-        if (!viewMatrix.rectStaysRect()) {
-            return nullptr;
-        }
         return AAStrokeRectOp::Make(context, std::move(paint), viewMatrix, rect, stroke);
     } else {
         return NonAAStrokeRectOp::Make(context, std::move(paint), viewMatrix, rect, stroke, aaType);
@@ -851,10 +961,21 @@ GrOp::Owner MakeNested(GrRecordingContext* context,
     SkASSERT(viewMatrix.rectStaysRect());
     SkASSERT(!rects[0].isEmpty() && !rects[1].isEmpty());
 
-    SkRect devOutside, devInside;
-    viewMatrix.mapRect(&devOutside, rects[0]);
-    viewMatrix.mapRect(&devInside, rects[1]);
-    if (devInside.isEmpty()) {
+    SkRect devOutside = viewMatrix.mapRect(rects[0]);
+    SkRect devInside = viewMatrix.mapRect(rects[1]);
+    float dx = devOutside.fRight - devInside.fRight;
+    float dy = devOutside.fBottom - devInside.fBottom;
+
+    // Clips our draw rects 1 full pixel outside the viewport. This avoids interpolation precision
+    // issues with very large coordinates.
+    const float m = context->priv().caps()->maxRenderTargetSize();
+    const SkRect visibilityBounds = SkRect::MakeWH(m, m).makeOutset(1, 1);
+
+    if (!devOutside.intersect(visibilityBounds.makeOutset(dx, dy))) {
+        return nullptr;
+    }
+
+    if (devInside.isEmpty() || !devInside.intersect(visibilityBounds)) {
         if (devOutside.isEmpty()) {
             return nullptr;
         }
@@ -863,10 +984,8 @@ GrOp::Owner MakeNested(GrRecordingContext* context,
         return GrFillRectOp::Make(context, std::move(paint), GrAAType::kCoverage, &quad);
     }
 
-    SkVector devHalfStrokeSize{ SkScalarHalf(devOutside.fRight - devInside.fRight),
-                                SkScalarHalf(devOutside.fBottom - devInside.fBottom) };
     return AAStrokeRectOp::Make(context, std::move(paint), viewMatrix, devOutside,
-                                devInside, devHalfStrokeSize);
+                                devInside, SkVector{dx, dy} * .5f);
 }
 
 }  // namespace GrStrokeRectOp

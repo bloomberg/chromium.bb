@@ -18,7 +18,6 @@
 #include "base/location.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
@@ -243,10 +242,12 @@ void URLBlocklistManager::Update() {
       background_task_runner_.get(), FROM_HERE,
       base::BindOnce(
           &BuildBlocklist,
-          base::Owned(
-              pref_service_->GetList(policy_prefs::kUrlBlocklist)->DeepCopy()),
-          base::Owned(
-              pref_service_->GetList(policy_prefs::kUrlAllowlist)->DeepCopy())),
+          base::Owned(pref_service_->GetList(policy_prefs::kUrlBlocklist)
+                          ->CreateDeepCopy()
+                          .release()),
+          base::Owned(pref_service_->GetList(policy_prefs::kUrlAllowlist)
+                          ->CreateDeepCopy()
+                          .release())),
       base::BindOnce(&URLBlocklistManager::SetBlocklist,
                      ui_weak_ptr_factory_.GetWeakPtr()));
 }

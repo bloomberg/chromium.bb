@@ -11,14 +11,14 @@
 
 #include "core/fpdfdoc/cpvt_word.h"
 #include "core/fxcrt/fx_extension.h"
+#include "core/fxcrt/stl_util.h"
 #include "fpdfsdk/pwl/cpwl_edit_impl.h"
 #include "fpdfsdk/pwl/cpwl_list_box.h"
-#include "third_party/base/stl_util.h"
 
 CPWL_ListCtrl::NotifyIface::~NotifyIface() = default;
 
 CPWL_ListCtrl::Item::Item() : m_pEdit(std::make_unique<CPWL_EditImpl>()) {
-  m_pEdit->SetAlignmentV(1, true);
+  m_pEdit->SetAlignmentV(1);
   m_pEdit->Initialize();
 }
 
@@ -30,10 +30,12 @@ void CPWL_ListCtrl::Item::SetFontMap(IPVT_FontMap* pFontMap) {
 
 void CPWL_ListCtrl::Item::SetText(const WideString& text) {
   m_pEdit->SetText(text);
+  m_pEdit->Paint();
 }
 
 void CPWL_ListCtrl::Item::SetFontSize(float fFontSize) {
   m_pEdit->SetFontSize(fFontSize);
+  m_pEdit->Paint();
 }
 
 float CPWL_ListCtrl::Item::GetItemHeight() const {
@@ -421,12 +423,12 @@ void CPWL_ListCtrl::ScrollToListItem(int32_t nItemIndex) {
   CFX_FloatRect rcItem = GetItemRectInternal(nItemIndex);
   CFX_FloatRect rcItemCtrl = GetItemRect(nItemIndex);
 
-  if (IsFloatSmaller(rcItemCtrl.bottom, rcPlate.bottom)) {
-    if (IsFloatSmaller(rcItemCtrl.top, rcPlate.top)) {
+  if (FXSYS_IsFloatSmaller(rcItemCtrl.bottom, rcPlate.bottom)) {
+    if (FXSYS_IsFloatSmaller(rcItemCtrl.top, rcPlate.top)) {
       SetScrollPosY(rcItem.bottom + rcPlate.Height());
     }
-  } else if (IsFloatBigger(rcItemCtrl.top, rcPlate.top)) {
-    if (IsFloatBigger(rcItemCtrl.bottom, rcPlate.bottom)) {
+  } else if (FXSYS_IsFloatBigger(rcItemCtrl.top, rcPlate.top)) {
+    if (FXSYS_IsFloatBigger(rcItemCtrl.bottom, rcPlate.bottom)) {
       SetScrollPosY(rcItem.top);
     }
   }
@@ -452,16 +454,16 @@ void CPWL_ListCtrl::SetScrollPos(const CFX_PointF& point) {
 }
 
 void CPWL_ListCtrl::SetScrollPosY(float fy) {
-  if (!IsFloatEqual(m_ptScrollPos.y, fy)) {
+  if (!FXSYS_IsFloatEqual(m_ptScrollPos.y, fy)) {
     CFX_FloatRect rcPlate = m_rcPlate;
     CFX_FloatRect rcContent = GetContentRectInternal();
 
     if (rcPlate.Height() > rcContent.Height()) {
       fy = rcPlate.top;
     } else {
-      if (IsFloatSmaller(fy - rcPlate.Height(), rcContent.bottom)) {
+      if (FXSYS_IsFloatSmaller(fy - rcPlate.Height(), rcContent.bottom)) {
         fy = rcContent.bottom + rcPlate.Height();
-      } else if (IsFloatBigger(fy, rcContent.top)) {
+      } else if (FXSYS_IsFloatBigger(fy, rcContent.top)) {
         fy = rcContent.top;
       }
     }
@@ -532,9 +534,9 @@ int32_t CPWL_ListCtrl::GetItemIndex(const CFX_PointF& point) const {
   bool bLast = true;
   for (const auto& pListItem : m_ListItems) {
     CFX_FloatRect rcListItem = pListItem->GetRect();
-    if (IsFloatBigger(pt.y, rcListItem.top))
+    if (FXSYS_IsFloatBigger(pt.y, rcListItem.top))
       bFirst = false;
-    if (IsFloatSmaller(pt.y, rcListItem.bottom))
+    if (FXSYS_IsFloatSmaller(pt.y, rcListItem.bottom))
       bLast = false;
     if (pt.y >= rcListItem.top && pt.y < rcListItem.bottom)
       return &pListItem - &m_ListItems.front();
@@ -567,7 +569,7 @@ CPWL_EditImpl* CPWL_ListCtrl::GetItemEdit(int32_t nIndex) const {
 }
 
 int32_t CPWL_ListCtrl::GetCount() const {
-  return pdfium::CollectionSize<int32_t>(m_ListItems);
+  return fxcrt::CollectionSize<int32_t>(m_ListItems);
 }
 
 float CPWL_ListCtrl::GetFirstHeight() const {
@@ -621,7 +623,7 @@ void CPWL_ListCtrl::SetItemSelect(int32_t nIndex, bool bSelected) {
 }
 
 bool CPWL_ListCtrl::IsValid(int32_t nItemIndex) const {
-  return pdfium::IndexInBounds(m_ListItems, nItemIndex);
+  return fxcrt::IndexInBounds(m_ListItems, nItemIndex);
 }
 
 WideString CPWL_ListCtrl::GetItemText(int32_t nIndex) const {

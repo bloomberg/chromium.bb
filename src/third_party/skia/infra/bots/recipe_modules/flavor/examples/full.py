@@ -83,7 +83,7 @@ TEST_BUILDERS = [
   'Perf-Android-Clang-GalaxyS7_G930FD-GPU-MaliT880-arm64-Debug-All-Android',
   'Perf-Android-Clang-NVIDIA_Shield-CPU-TegraX1-arm64-Release-All-Android',
   'Perf-Android-Clang-Nexus5x-GPU-Adreno418-arm64-Debug-All-Android',
-  'Perf-Android-Clang-Pixel-GPU-Adreno530-arm64-Release-All-Android_Skpbench_Mskp',
+  'Perf-Android-Clang-Pixel2XL-GPU-Adreno540-arm64-Release-All-Android_Skpbench_Mskp',
   'Perf-Android-Clang-GalaxyS20-GPU-MaliG77-arm64-Release-All-Android_Vulkan',
   'Perf-ChromeOS-Clang-SamsungChromebookPlus-GPU-MaliT860-arm-Release-All',
   'Perf-Debian10-Clang-GCE-CPU-AVX2-x86_64-Debug-All-MSAN',
@@ -101,7 +101,6 @@ TEST_BUILDERS = [
   'Test-Debian10-Clang-GCE-CPU-AVX2-x86_64-Release-All-Lottie',
   'Test-Debian10-Clang-GCE-CPU-AVX2-x86_64-Release-All-TSAN',
   'Test-Debian10-Clang-GCE-GPU-SwiftShader-x86_64-Debug-All-SwiftShader',
-  'Test-Debian10-Clang-NUC7i5BNK-GPU-IntelIris640-x86_64-Debug-All-OpenCL',
   'Test-Debian10-Clang-NUC7i5BNK-GPU-IntelIris640-x86_64-Debug-All-Vulkan',
   'Test-Mac10.13-Clang-MacBookPro11.5-CPU-AVX2-x86_64-Debug-All-ASAN',
   ('Test-Ubuntu18-Clang-Golo-GPU-QuadroP400-x86_64-Release-All'

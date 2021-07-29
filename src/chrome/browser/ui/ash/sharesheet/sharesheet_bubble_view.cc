@@ -167,15 +167,14 @@ SharesheetBubbleView::~SharesheetBubbleView() = default;
 void SharesheetBubbleView::ShowBubble(
     std::vector<TargetInfo> targets,
     apps::mojom::IntentPtr intent,
-    ::sharesheet::DeliveredCallback delivered_callback) {
+    ::sharesheet::DeliveredCallback delivered_callback,
+    ::sharesheet::CloseCallback close_callback) {
   intent_ = std::move(intent);
   delivered_callback_ = std::move(delivered_callback);
+  close_callback_ = std::move(close_callback);
 
   main_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical,
-      /* inside_border_insets */ gfx::Insets(),
-      /* between_child_spacing */ 0, /* collapse_margins_spacing */ true));
-
+      views::BoxLayout::Orientation::kVertical));
   // When there are no targets, don't show any previews. Otherwise, show
   // previews if the flag is enabled.
   bool show_content_previews =
@@ -186,16 +185,12 @@ void SharesheetBubbleView::ShowBubble(
           intent_->Clone(), delegate_->GetProfile(), show_content_previews));
   auto* body_view = main_view_->AddChildView(std::make_unique<views::View>());
   body_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical,
-      /* inside_border_insets */ gfx::Insets(),
-      /* between_child_spacing */ 0, /* collapse_margins_spacing */ true));
+      views::BoxLayout::Orientation::kVertical));
   footer_view_ = main_view_->AddChildView(std::make_unique<views::View>());
   auto* footer_layout =
       footer_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal,
-          gfx::Insets(kFooterDefaultVerticalPadding, 0),
-          /* between_child_spacing */ 0,
-          /* collapse_margins_spacing */ false));
+          gfx::Insets(kFooterDefaultVerticalPadding, 0)));
   footer_layout->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::kCenter);
   footer_layout->set_cross_axis_alignment(
@@ -220,6 +215,7 @@ void SharesheetBubbleView::ShowBubble(
           body_view->AddChildView(std::make_unique<views::Separator>());
     }
 
+    const size_t targets_size = targets.size();
     auto scroll_view = std::make_unique<views::ScrollView>();
     scroll_view->SetContents(MakeScrollableTargetView(std::move(targets)));
     scroll_view->ClipHeightTo(kTargetViewHeight, kTargetViewExpandedHeight);
@@ -232,7 +228,7 @@ void SharesheetBubbleView::ShowBubble(
           footer_view_->AddChildView(std::make_unique<SharesheetExpandButton>(
               base::BindRepeating(&SharesheetBubbleView::ExpandButtonPressed,
                                   base::Unretained(this))));
-    } else if (targets.size() <= kMaxTargetsPerRow * kMaxRowsForDefaultView) {
+    } else if (targets_size <= kMaxTargetsPerRow * kMaxRowsForDefaultView) {
       // When we have between 1 and 8 targets inclusive. Update |footer_layout|
       // padding.
       footer_layout->set_inside_border_insets(
@@ -254,8 +250,11 @@ void SharesheetBubbleView::ShowBubble(
 
 void SharesheetBubbleView::ShowNearbyShareBubble(
     apps::mojom::IntentPtr intent,
-    ::sharesheet::DeliveredCallback delivered_callback) {
-  ShowBubble({}, std::move(intent), std::move(delivered_callback));
+    ::sharesheet::DeliveredCallback delivered_callback,
+    ::sharesheet::CloseCallback close_callback) {
+  user_selection_made_ = true;  // Disable close when clicking outside bubble.
+  ShowBubble({}, std::move(intent), std::move(delivered_callback),
+             std::move(close_callback));
   if (delivered_callback_) {
     std::move(delivered_callback_)
         .Run(::sharesheet::SharesheetResult::kSuccess);
@@ -510,9 +509,9 @@ bool SharesheetBubbleView::OnKeyPressed(const ui::KeyEvent& event) {
   const size_t targets =
       default_views +
       (show_expanded_view_ ? (expanded_view_->children().size() - 1) : 0);
-  const int new_target = int{keyboard_highlighted_target_} + delta;
-  keyboard_highlighted_target_ =
-      size_t{base::ClampToRange(new_target, 0, int{targets} - 1)};
+  const int new_target = static_cast<int>(keyboard_highlighted_target_) + delta;
+  keyboard_highlighted_target_ = static_cast<size_t>(
+      base::ClampToRange(new_target, 0, static_cast<int>(targets) - 1));
 
   if (keyboard_highlighted_target_ < default_views) {
     default_view_->children()[keyboard_highlighted_target_]->RequestFocus();
@@ -585,7 +584,7 @@ void SharesheetBubbleView::CreateBubble() {
 
   auto share_action_view = std::make_unique<views::View>();
   share_action_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical, gfx::Insets(), 0, true));
+      views::BoxLayout::Orientation::kVertical));
   share_action_view_ = AddChildView(std::move(share_action_view));
   share_action_view_->SetVisible(false);
 }
@@ -702,6 +701,9 @@ void SharesheetBubbleView::CloseWidgetWithAnimateFadeOut(
       base::TimeDelta::FromMilliseconds(80);
 
   is_bubble_closing_ = true;
+  if (close_callback_) {
+    std::move(close_callback_).Run();
+  }
   ui::Layer* layer = View::GetWidget()->GetLayer();
 
   auto scoped_settings =

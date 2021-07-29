@@ -291,10 +291,19 @@ View::FocusBehavior MenuItemView::GetFocusBehavior() const {
 
 // static
 bool MenuItemView::IsBubble(MenuAnchorPosition anchor) {
-  return anchor == MenuAnchorPosition::kBubbleAbove ||
-         anchor == MenuAnchorPosition::kBubbleBelow ||
-         anchor == MenuAnchorPosition::kBubbleLeft ||
-         anchor == MenuAnchorPosition::kBubbleRight;
+  switch (anchor) {
+    case MenuAnchorPosition::kTopLeft:
+    case MenuAnchorPosition::kTopRight:
+    case MenuAnchorPosition::kBottomCenter:
+      return false;
+    case MenuAnchorPosition::kBubbleTopLeft:
+    case MenuAnchorPosition::kBubbleTopRight:
+    case MenuAnchorPosition::kBubbleLeft:
+    case MenuAnchorPosition::kBubbleRight:
+    case MenuAnchorPosition::kBubbleBottomLeft:
+    case MenuAnchorPosition::kBubbleBottomRight:
+      return true;
+  }
 }
 
 // static
@@ -352,7 +361,7 @@ MenuItemView* MenuItemView::AddMenuItemAt(
   DCHECK_GE(index, 0);
   if (!submenu_)
     CreateSubmenu();
-  DCHECK_LE(size_t{index}, submenu_->children().size());
+  DCHECK_LE(static_cast<size_t>(index), submenu_->children().size());
   if (type == Type::kSeparator) {
     submenu_->AddChildViewAt(std::make_unique<MenuSeparator>(separator_style),
                              index);
@@ -398,18 +407,18 @@ void MenuItemView::RemoveAllMenuItems() {
 
 MenuItemView* MenuItemView::AppendMenuItem(int item_id,
                                            const std::u16string& label,
-                                           const gfx::ImageSkia& icon) {
+                                           const ui::ImageModel& icon) {
   return AppendMenuItemImpl(item_id, label, icon, Type::kNormal);
 }
 
 MenuItemView* MenuItemView::AppendSubMenu(int item_id,
                                           const std::u16string& label,
-                                          const gfx::ImageSkia& icon) {
+                                          const ui::ImageModel& icon) {
   return AppendMenuItemImpl(item_id, label, icon, Type::kSubMenu);
 }
 
 void MenuItemView::AppendSeparator() {
-  AppendMenuItemImpl(0, std::u16string(), gfx::ImageSkia(), Type::kSeparator);
+  AppendMenuItemImpl(0, std::u16string(), ui::ImageModel(), Type::kSeparator);
 }
 
 void MenuItemView::AddSeparatorAt(int index) {
@@ -424,12 +433,12 @@ void MenuItemView::AddSeparatorAt(int index) {
 
 MenuItemView* MenuItemView::AppendMenuItemImpl(int item_id,
                                                const std::u16string& label,
-                                               const gfx::ImageSkia& icon,
+                                               const ui::ImageModel& icon,
                                                Type type) {
-  const int index = submenu_ ? int{submenu_->children().size()} : 0;
+  const int index =
+      submenu_ ? static_cast<int>(submenu_->children().size()) : 0;
   return AddMenuItemAt(index, item_id, label, std::u16string(),
-                       std::u16string(), ui::ImageModel(),
-                       ui::ImageModel::FromImageSkia(icon), type,
+                       std::u16string(), ui::ImageModel(), icon, type,
                        ui::NORMAL_SEPARATOR);
 }
 
@@ -1385,7 +1394,7 @@ gfx::Insets MenuItemView::GetContainerMargins() const {
 }
 
 int MenuItemView::NonIconChildViewsCount() const {
-  return int{children().size()} - (icon_view_ ? 1 : 0) -
+  return static_cast<int>(children().size()) - (icon_view_ ? 1 : 0) -
          (radio_check_image_view_ ? 1 : 0) -
          (submenu_arrow_image_view_ ? 1 : 0) - (vertical_separator_ ? 1 : 0);
 }

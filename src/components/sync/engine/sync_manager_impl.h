@@ -18,16 +18,13 @@
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "components/sync/base/time.h"
-#include "components/sync/engine/all_status.h"
 #include "components/sync/engine/debug_info_event_listener.h"
 #include "components/sync/engine/events/protocol_event_buffer.h"
-#include "components/sync/engine/js_sync_encryption_handler_observer.h"
-#include "components/sync/engine/js_sync_manager_observer.h"
 #include "components/sync/engine/net/server_connection_manager.h"
 #include "components/sync/engine/nudge_handler.h"
 #include "components/sync/engine/sync_engine_event_listener.h"
 #include "components/sync/engine/sync_manager.h"
-#include "components/sync/js/js_backend.h"
+#include "components/sync/engine/sync_status_tracker.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 
 namespace syncer {
@@ -41,7 +38,6 @@ class SyncCycleContext;
 class SyncManagerImpl
     : public SyncManager,
       public network::NetworkConnectionTracker::NetworkConnectionObserver,
-      public JsBackend,
       public SyncEngineEventListener,
       public ServerConnectionEventListener,
       public SyncEncryptionHandler::Observer,
@@ -75,7 +71,6 @@ class SyncManagerImpl
   void ShutdownOnSyncThread() override;
   ModelTypeConnector* GetModelTypeConnector() override;
   std::unique_ptr<ModelTypeConnector> GetModelTypeConnectorProxy() override;
-  WeakHandle<JsBackend> GetJsBackend() override;
   WeakHandle<DataTypeDebugInfoListener> GetDebugInfoListener() override;
   std::string cache_guid() override;
   std::string birthday() override;
@@ -86,9 +81,8 @@ class SyncManagerImpl
       override;
   void OnCookieJarChanged(bool account_mismatch) override;
   void UpdateInvalidationClientId(const std::string& client_id) override;
-  void UpdateSingleClientStatus(bool single_client) override;
-  void UpdateActiveDeviceFCMRegistrationTokens(
-      std::vector<std::string> fcm_registration_tokens) override;
+  void UpdateActiveDevicesInvalidationInfo(
+      ActiveDevicesInvalidationInfo active_devices_invalidation_info) override;
 
   // SyncEncryptionHandler::Observer implementation.
   void OnPassphraseRequired(
@@ -118,10 +112,6 @@ class SyncManagerImpl
   // ServerConnectionEventListener implementation.
   void OnServerConnectionEvent(const ServerConnectionEvent& event) override;
 
-  // JsBackend implementation.
-  void SetJsEventHandler(
-      const WeakHandle<JsEventHandler>& event_handler) override;
-
   // Handle explicit requests to fetch updates for the given types.
   void RefreshTypes(ModelTypeSet types) override;
 
@@ -133,7 +123,7 @@ class SyncManagerImpl
   void NudgeForCommit(ModelType type) override;
 
  private:
-  void NotifyInitializationSuccess();
+  void NotifySyncStatusChanged(const SyncStatus& status);
 
   const std::string name_;
 
@@ -160,17 +150,13 @@ class SyncManagerImpl
   std::unique_ptr<SyncScheduler> scheduler_;
 
   // A multi-purpose status watch object that aggregates stats from various
-  // sync components.
-  AllStatus allstatus_;
+  // sync components. Initialized in Init().
+  std::unique_ptr<SyncStatusTracker> sync_status_tracker_;
 
   // Set to true once Init has been called.
   bool initialized_;
 
   bool observing_network_connectivity_changes_;
-
-  // These are for interacting with chrome://sync-internals.
-  JsSyncManagerObserver js_sync_manager_observer_;
-  JsSyncEncryptionHandlerObserver js_sync_encryption_handler_observer_;
 
   // This is for keeping track of client events to send to the server.
   DebugInfoEventListener debug_info_event_listener_;

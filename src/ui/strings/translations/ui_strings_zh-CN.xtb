@@ -58,6 +58,7 @@
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="2353636109065292463">检查互联网连接状况</translation>
 <translation id="2388990488038464401">要用手机拨打此号码？</translation>
+<translation id="2435457462613246316">显示密码</translation>
 <translation id="24452542372838207">展开通知</translation>
 <translation id="2445449901874883781">使用高密度</translation>
 <translation id="2482878487686419369">通知</translation>
@@ -79,6 +80,7 @@
 <translation id="2824719307700604149">{YEARS,plural, =1{1 年前}other{# 年前}}</translation>
 <translation id="2878511608894704031">全部删除</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{1 天后}other{# 天后}}</translation>
+<translation id="2922712708897119705">“<ph name="COLUMN_NAME" />”列目前是按降序排列。</translation>
 <translation id="2931838996092594335">点击</translation>
 <translation id="2981684127883932071">显示了建议</translation>
 <translation id="3036649622769666520">打开文件</translation>
@@ -114,6 +116,7 @@
 <translation id="3897092660631435901">菜单</translation>
 <translation id="3909791450649380159">剪切(&amp;T)</translation>
 <translation id="3990502903496589789">右边缘</translation>
+<translation id="3994749195054421561">“<ph name="COLUMN_NAME" />”列目前是按升序排列。</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 条未读通知}other{# 条未读通知}}</translation>
 <translation id="4202807286478387388">略过</translation>
 <translation id="4250229828105606438">屏幕截图</translation>
@@ -123,6 +126,7 @@
 <translation id="4306392492252714209">从剪贴板中移除。</translation>
 <translation id="4316910396681052118">所有应用</translation>
 <translation id="4491109536499578614">图片</translation>
+<translation id="4565377596337484307">隐藏密码</translation>
 <translation id="4588090240171750605">向右滚动</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />，星级评分为 <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />，推荐的应用</translation>
@@ -165,6 +169,7 @@
 <translation id="6012623610530968780">第 <ph name="SELECTED_PAGE" /> 页（共 <ph name="TOTAL_PAGE_NUM" /> 页）</translation>
 <translation id="6022924867608035986">清除搜索框文字</translation>
 <translation id="6040143037577758943">关闭</translation>
+<translation id="6117103120090651229">居中的按钮</translation>
 <translation id="6119846243427417423">激活</translation>
 <translation id="6129953537138746214">空格</translation>
 <translation id="6134259848159370930">搜索您的设备、应用、设置和网站。</translation>
@@ -173,6 +178,7 @@
 <translation id="6156262341071374681">展开以显示所有应用</translation>
 <translation id="6165508094623778733">了解详情</translation>
 <translation id="6166852626429024716">搜索您的设备、应用、设置、网站…</translation>
+<translation id="6237461503717005873">已选择“<ph name="ROW_NAME" />”。</translation>
 <translation id="6264365405983206840">全选(&amp;A)</translation>
 <translation id="6351032674660237738">应用推荐</translation>
 <translation id="6364916375976753737">向左滚动</translation>
@@ -213,6 +219,7 @@
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{还剩 1 分钟}other{还剩 # 分钟}}</translation>
 <translation id="7430878839542012341">要将这项搜索从您的历史记录中删除吗？</translation>
+<translation id="7437971918971306061">“<ph name="COLUMN_NAME" />”列已取消排序。</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">表情符号</translation>
 <translation id="7620655452534002301">已移除。</translation>

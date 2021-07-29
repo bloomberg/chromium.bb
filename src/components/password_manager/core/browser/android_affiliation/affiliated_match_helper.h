@@ -31,14 +31,14 @@ struct PasswordForm;
 // realms affiliated with the web site containing the observed form. This is
 // achieved by implementing the "proactive fetching" strategy for interacting
 // with the AndroidAffiliationService (see android_affiliation_service.h for
-// details), with Android applications and web realms playing the role of 
+// details), with Android applications and web realms playing the role of
 // facet Y.
 //
 // More specifically, this class prefetches affiliation information on start-up
 // for all credentials stored in the PasswordStore. Then, the actual GetLogins()
 // can be restricted to the cache, so that realms of the observed web forms will
 // never be looked up against the Affiliation API.
-class AffiliatedMatchHelper : public PasswordStore::Observer,
+class AffiliatedMatchHelper : public PasswordStoreInterface::Observer,
                               public PasswordStoreConsumer {
  public:
   // Callback to returns the list of affiliated signon_realms (as per defined in
@@ -64,7 +64,7 @@ class AffiliatedMatchHelper : public PasswordStore::Observer,
   // empty list. The |result_callback| will be invoked in both cases, on the
   // same thread.
   virtual void GetAffiliatedAndroidAndWebRealms(
-      const PasswordStore::FormDigest& observed_form,
+      const PasswordFormDigest& observed_form,
       AffiliatedRealmsCallback result_callback);
 
   // Retrieves realms of web sites affiliated with the Android application that
@@ -74,9 +74,8 @@ class AffiliatedMatchHelper : public PasswordStore::Observer,
   // API if affiliations of the Android application are not cached. However, as
   // long as the |android_form| is from the PasswordStore, this should rarely
   // happen as affiliation information for those applications are prefetched.
-  virtual void GetAffiliatedWebRealms(
-      const PasswordStore::FormDigest& android_form,
-      AffiliatedRealmsCallback result_callback);
+  virtual void GetAffiliatedWebRealms(const PasswordFormDigest& android_form,
+                                      AffiliatedRealmsCallback result_callback);
 
   // Retrieves affiliation and branding information about the Android
   // credentials in |forms|, sets |affiliated_web_realm|, |app_display_name| and
@@ -91,11 +90,11 @@ class AffiliatedMatchHelper : public PasswordStore::Observer,
       PasswordFormsCallback result_callback);
 
   // Returns whether or not |form| represents an Android credential.
-  static bool IsValidAndroidCredential(const PasswordStore::FormDigest& form);
+  static bool IsValidAndroidCredential(const PasswordFormDigest& form);
 
   // Returns whether or not |form| represents a valid Web credential for the
   // purposes of affiliation-based matching.
-  static bool IsValidWebCredential(const PasswordStore::FormDigest& form);
+  static bool IsValidWebCredential(const PasswordFormDigest& form);
 
   // I/O heavy initialization on start-up will be delayed by this long.
   // This should be high enough not to exacerbate start-up I/O contention too
@@ -137,8 +136,12 @@ class AffiliatedMatchHelper : public PasswordStore::Observer,
       const AffiliatedFacets& results,
       bool success);
 
-  // PasswordStore::Observer:
-  void OnLoginsChanged(const PasswordStoreChangeList& changes) override;
+  // PasswordStoreInterface::Observer:
+  void OnLoginsChanged(PasswordStoreInterface* store,
+                       const PasswordStoreChangeList& changes) override;
+  void OnLoginsRetained(
+      PasswordStoreInterface* store,
+      const std::vector<PasswordForm>& retained_passwords) override;
 
   // PasswordStoreConsumer:
   void OnGetPasswordStoreResults(

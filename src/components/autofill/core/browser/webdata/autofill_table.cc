@@ -14,6 +14,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/guid.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
@@ -108,7 +109,7 @@ void BindAutofillProfileToStatement(const AutofillProfile& profile,
   s->BindBool(index++, profile.disallow_settings_visible_updates());
 }
 
-void AddAutofillProfileDetailsFromStatement(const sql::Statement& s,
+void AddAutofillProfileDetailsFromStatement(sql::Statement& s,
                                             AutofillProfile* profile) {
   int index = 1;  // 0 is for the guid.
   profile->SetRawInfo(COMPANY_NAME, s.ColumnString16(index++));
@@ -137,8 +138,7 @@ void BindEncryptedCardToColumn(sql::Statement* s,
                                const AutofillTableEncryptor& encryptor) {
   std::string encrypted_data;
   encryptor.EncryptString16(number, &encrypted_data);
-  s->BindBlob(column_index, encrypted_data.data(),
-              static_cast<int>(encrypted_data.length()));
+  s->BindBlob(column_index, encrypted_data);
 }
 
 void BindCreditCardToStatement(const CreditCard& credit_card,
@@ -164,7 +164,7 @@ void BindCreditCardToStatement(const CreditCard& credit_card,
 }
 
 std::u16string UnencryptedCardFromColumn(
-    const sql::Statement& s,
+    sql::Statement& s,
     int column_index,
     const AutofillTableEncryptor& encryptor) {
   std::u16string credit_card_number;
@@ -180,7 +180,7 @@ std::u16string UnencryptedCardFromColumn(
 }
 
 std::unique_ptr<CreditCard> CreditCardFromStatement(
-    const sql::Statement& s,
+    sql::Statement& s,
     const AutofillTableEncryptor& encryptor) {
   std::unique_ptr<CreditCard> credit_card(new CreditCard);
 
@@ -2039,8 +2039,7 @@ bool AutofillTable::AddCreditCardArtImage(
       "VALUES (?,?,?)"));
   s.BindString(0, credit_card_art_image.id);
   s.BindInt64(1, credit_card_art_image.instrument_id);
-  s.BindBlob(2, credit_card_art_image.card_art_image.data(),
-             credit_card_art_image.card_art_image.size());
+  s.BindBlob(2, credit_card_art_image.card_art_image);
   s.Run();
 
   return transaction.Commit();
@@ -2172,7 +2171,7 @@ void AutofillTable::SetAutofillOffers(
       insert_offer_eligible_instruments.Reset(true);
     }
 
-    for (const GURL& merchant_domain : data.merchant_domain) {
+    for (const GURL& merchant_origin : data.merchant_origins) {
       // Insert new offer_merchant_domain values.
       sql::Statement insert_offer_merchant_domains(
           db_->GetUniqueStatement("INSERT INTO offer_merchant_domain("
@@ -2180,8 +2179,7 @@ void AutofillTable::SetAutofillOffers(
                                   "merchant_domain) "  // 1
                                   "VALUES (?,?)"));
       insert_offer_merchant_domains.BindInt64(0, data.offer_id);
-      insert_offer_merchant_domains.BindString(
-          1, merchant_domain.GetOrigin().spec());
+      insert_offer_merchant_domains.BindString(1, merchant_origin.spec());
       insert_offer_merchant_domains.Run();
       insert_offer_merchant_domains.Reset(true);
     }
@@ -2244,7 +2242,7 @@ bool AutofillTable::GetAutofillOffers(
       const std::string merchant_domain =
           s_offer_merchant_domain.ColumnString(1);
       if (!merchant_domain.empty()) {
-        data->merchant_domain.emplace_back(merchant_domain);
+        data->merchant_origins.emplace_back(merchant_domain);
       }
     }
 
@@ -3795,8 +3793,7 @@ void AutofillTable::AddUnmaskedCreditCard(const std::string& id,
 
   std::string encrypted_data;
   autofill_table_encryptor_->EncryptString16(full_number, &encrypted_data);
-  s.BindBlob(1, encrypted_data.data(),
-             static_cast<int>(encrypted_data.length()));
+  s.BindBlob(1, encrypted_data);
   s.BindInt64(2, AutofillClock::Now().ToInternalValue());  // unmask_date
 
   s.Run();

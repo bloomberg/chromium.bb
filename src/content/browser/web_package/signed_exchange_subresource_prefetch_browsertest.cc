@@ -5,13 +5,13 @@
 #include <string>
 #include <vector>
 
+#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner.h"
@@ -46,6 +46,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/common/shell_switches.h"
+#include "content/test/content_browser_test_utils_internal.h"
 #include "net/base/features.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_cache.h"
@@ -236,6 +237,9 @@ class SignedExchangePrefetchBrowserTest
 
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
+    inactive_rfh_deletion_observer_ =
+        std::make_unique<InactiveRenderFrameHostDeletionObserver>(
+            shell()->web_contents());
     PrefetchBrowserTestBase::SetUpOnMainThread();
   }
 
@@ -246,6 +250,9 @@ class SignedExchangePrefetchBrowserTest
   static constexpr uint64_t kTestBlobStorageMaxDiskSpace = 500;
   static constexpr uint64_t kTestBlobStorageMinFileSizeBytes = 10;
   static constexpr uint64_t kTestBlobStorageMaxFileSizeBytes = 100;
+
+  std::unique_ptr<InactiveRenderFrameHostDeletionObserver>
+      inactive_rfh_deletion_observer_;
 
   static bool IsSignedExchangePrefetchCacheEnabled() {
     return base::FeatureList::IsEnabled(
@@ -317,6 +324,9 @@ class SignedExchangePrefetchBrowserTest
       // the target URL. The target content should still be read correctly.
       // The content is loaded from HTTPCache.
       NavigateToURLAndWaitTitle(sxg_url, "Prefetch Target (SXG)");
+      // Wait for the previous page's RFH to be deleted (if it changed) so that
+      // the histograms will get updated.
+      inactive_rfh_deletion_observer_->Wait();
 
       EXPECT_EQ(1, sxg_request_counter->GetRequestCount());
       histograms.ExpectTotalCount("PrefetchedSignedExchangeCache.Count", 0);
@@ -349,6 +359,9 @@ class SignedExchangePrefetchBrowserTest
     // the target URL. The target content should still be read correctly.
     // The content is loaded from PrefetchedSignedExchangeCache.
     NavigateToURLAndWaitTitle(sxg_url, "Prefetch Target (SXG)");
+    // Wait for the previous page's RFH to be deleted (if it changed) so that
+    // the histograms will get updated.
+    inactive_rfh_deletion_observer_->Wait();
 
     EXPECT_EQ(1, sxg_request_counter->GetRequestCount());
     histograms.ExpectBucketCount("PrefetchedSignedExchangeCache.Count", 1, 1);
@@ -910,6 +923,10 @@ IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
     // HTTPCache. But the script is loaded from the server.
     NavigateToURLAndWaitTitle(sxg_page_url, "from server");
   }
+
+  // Wait for the previous page's RFH to be deleted (if it changed) so that the
+  // histograms will get updated.
+  inactive_rfh_deletion_observer_->Wait();
 
   EXPECT_EQ(1, page_sxg_request_counter->GetRequestCount());
 
@@ -2189,7 +2206,8 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeSubresourcePrefetchBrowserTest, CORS) {
     requests_list_string += base::StringPrintf(
         "new Request('%s', {credentials: '%s'})", data_url.spec().c_str(),
         kTestCases[i].request_credentials);
-    const net::SHA256HashValue data_header_integrity = {{0x02 + i}};
+    const net::SHA256HashValue data_header_integrity = {
+        {static_cast<uint8_t>(0x02 + i)}};
 
     target_sxg_outer_link_header +=
         CreateAlternateLinkHeader(data_sxg_url, data_url);

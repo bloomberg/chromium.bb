@@ -42,24 +42,6 @@
  * Functions for using HarfBuzz with DirectWrite fonts.
  **/
 
-/* Declare object creator for dynamic support of DWRITE */
-typedef HRESULT (* WINAPI t_DWriteCreateFactory)(
-  DWRITE_FACTORY_TYPE factoryType,
-  REFIID              iid,
-  IUnknown            **factory
-);
-
-/*
- * hb-directwrite uses new/delete syntatically but as we let users
- * to override malloc/free, we will redefine new/delete so users
- * won't need to do that by their own.
- */
-void* operator new (size_t size)        { return malloc (size); }
-void* operator new [] (size_t size)     { return malloc (size); }
-void operator delete (void* pointer)    { free (pointer); }
-void operator delete [] (void* pointer) { free (pointer); }
-
-
 /*
  * DirectWrite font stream helpers
  */
@@ -154,7 +136,6 @@ public:
 
 struct hb_directwrite_face_data_t
 {
-  HMODULE dwrite_dll;
   IDWriteFactory *dwriteFactory;
   IDWriteFontFile *fontFile;
   DWriteFontFileStream *fontFileStream;
@@ -176,33 +157,12 @@ _hb_directwrite_shaper_face_data_create (hb_face_t *face)
     return nullptr; \
   } HB_STMT_END
 
-  data->dwrite_dll = LoadLibrary (TEXT ("DWRITE"));
-  if (unlikely (!data->dwrite_dll))
-    FAIL ("Cannot find DWrite.DLL");
-
-  t_DWriteCreateFactory p_DWriteCreateFactory;
-
-#if defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wcast-function-type"
-#endif
-
-  p_DWriteCreateFactory = (t_DWriteCreateFactory)
-			  GetProcAddress (data->dwrite_dll, "DWriteCreateFactory");
-
-#if defined(__GNUC__)
-#pragma GCC diagnostic pop
-#endif
-
-  if (unlikely (!p_DWriteCreateFactory))
-    FAIL ("Cannot find DWriteCreateFactory().");
-
   HRESULT hr;
 
   // TODO: factory and fontFileLoader should be cached separately
   IDWriteFactory* dwriteFactory;
-  hr = p_DWriteCreateFactory (DWRITE_FACTORY_TYPE_SHARED, __uuidof (IDWriteFactory),
-			      (IUnknown**) &dwriteFactory);
+  hr = DWriteCreateFactory (DWRITE_FACTORY_TYPE_SHARED, __uuidof (IDWriteFactory),
+			    (IUnknown**) &dwriteFactory);
 
   if (unlikely (hr != S_OK))
     FAIL ("Failed to run DWriteCreateFactory().");
@@ -266,8 +226,6 @@ _hb_directwrite_shaper_face_data_destroy (hb_directwrite_face_data_t *data)
     delete data->fontFileStream;
   if (data->faceBlob)
     hb_blob_destroy (data->faceBlob);
-  if (data->dwrite_dll)
-    FreeLibrary (data->dwrite_dll);
   if (data)
     delete data;
 }
@@ -552,13 +510,50 @@ protected:
  * shaper
  */
 
-static hb_bool_t
-_hb_directwrite_shape_full (hb_shape_plan_t    *shape_plan,
-			    hb_font_t          *font,
-			    hb_buffer_t        *buffer,
-			    const hb_feature_t *features,
-			    unsigned int        num_features,
-			    float               lineWidth)
+struct active_feature_t {
+  DWRITE_FONT_FEATURE fea;
+  unsigned int order;
+
+  HB_INTERNAL static int cmp (const void *pa, const void *pb) {
+    const active_feature_t *a = (const active_feature_t *) pa;
+    const active_feature_t *b = (const active_feature_t *) pb;
+    return a->fea.nameTag < b->fea.nameTag ? -1 : a->fea.nameTag > b->fea.nameTag ? 1 :
+	   a->order < b->order ? -1 : a->order > b->order ? 1 :
+	   a->fea.parameter < b->fea.parameter ? -1 : a->fea.parameter > b->fea.parameter ? 1 :
+	   0;
+  }
+  bool operator== (const active_feature_t *f)
+  { return cmp (this, f) == 0; }
+};
+
+struct feature_event_t {
+  unsigned int index;
+  bool start;
+  active_feature_t feature;
+
+  HB_INTERNAL static int cmp (const void *pa, const void *pb)
+  {
+    const feature_event_t *a = (const feature_event_t *) pa;
+    const feature_event_t *b = (const feature_event_t *) pb;
+    return a->index < b->index ? -1 : a->index > b->index ? 1 :
+	   a->start < b->start ? -1 : a->start > b->start ? 1 :
+	   active_feature_t::cmp (&a->feature, &b->feature);
+  }
+};
+
+struct range_record_t {
+  DWRITE_TYPOGRAPHIC_FEATURES features;
+  unsigned int index_first; /* == start */
+  unsigned int index_last;  /* == end - 1 */
+};
+
+
+hb_bool_t
+_hb_directwrite_shape (hb_shape_plan_t    *shape_plan,
+		       hb_font_t          *font,
+		       hb_buffer_t        *buffer,
+		       const hb_feature_t *features,
+		       unsigned int        num_features)
 {
   hb_face_t *face = font->face;
   const hb_directwrite_face_data_t *face_data = face->data.directwrite;
@@ -611,8 +606,6 @@ _hb_directwrite_shape_full (hb_shape_plan_t    *shape_plan,
       log_clusters[chars_len++] = cluster; /* Surrogates. */
   }
 
-  // TODO: Handle TEST_DISABLE_OPTIONAL_LIGATURES
-
   DWRITE_READING_DIRECTION readingDirection;
   readingDirection = buffer->props.direction ?
 		     DWRITE_READING_DIRECTION_RIGHT_TO_LEFT :
@@ -648,28 +641,157 @@ _hb_directwrite_shape_full (hb_shape_plan_t    *shape_plan,
     mbstowcs ((wchar_t*) localeName,
 	      hb_language_to_string (buffer->props.language), 20);
 
-  // TODO: it does work but doesn't care about ranges
-  DWRITE_TYPOGRAPHIC_FEATURES typographic_features;
-  typographic_features.featureCount = num_features;
+  /*
+   * Set up features.
+   */
+  hb_vector_t<DWRITE_FONT_FEATURE> feature_records;
+  hb_vector_t<range_record_t> range_records;
   if (num_features)
   {
-    typographic_features.features = new DWRITE_FONT_FEATURE[num_features];
-    for (unsigned int i = 0; i < num_features; ++i)
+    /* Sort features by start/end events. */
+    hb_vector_t<feature_event_t> feature_events;
+    for (unsigned int i = 0; i < num_features; i++)
     {
-      typographic_features.features[i].nameTag = (DWRITE_FONT_FEATURE_TAG)
-						 hb_uint32_swap (features[i].tag);
-      typographic_features.features[i].parameter = features[i].value;
+      active_feature_t feature;
+      feature.fea.nameTag = (DWRITE_FONT_FEATURE_TAG) hb_uint32_swap (features[i].tag);
+      feature.fea.parameter = features[i].value;
+      feature.order = i;
+
+      feature_event_t *event;
+
+      event = feature_events.push ();
+      event->index = features[i].start;
+      event->start = true;
+      event->feature = feature;
+
+      event = feature_events.push ();
+      event->index = features[i].end;
+      event->start = false;
+      event->feature = feature;
+    }
+    feature_events.qsort ();
+    /* Add a strategic final event. */
+    {
+      active_feature_t feature;
+      feature.fea.nameTag = (DWRITE_FONT_FEATURE_TAG) 0;
+      feature.fea.parameter = 0;
+      feature.order = num_features + 1;
+
+      feature_event_t *event = feature_events.push ();
+      event->index = 0; /* This value does magic. */
+      event->start = false;
+      event->feature = feature;
+    }
+
+    /* Scan events and save features for each range. */
+    hb_vector_t<active_feature_t> active_features;
+    unsigned int last_index = 0;
+    for (unsigned int i = 0; i < feature_events.length; i++)
+    {
+      feature_event_t *event = &feature_events[i];
+
+      if (event->index != last_index)
+      {
+	/* Save a snapshot of active features and the range. */
+	range_record_t *range = range_records.push ();
+
+	unsigned int offset = feature_records.length;
+
+	active_features.qsort ();
+	for (unsigned int j = 0; j < active_features.length; j++)
+	{
+	  if (!j || active_features[j].fea.nameTag != feature_records[feature_records.length - 1].nameTag)
+	  {
+	    feature_records.push (active_features[j].fea);
+	  }
+	  else
+	  {
+	    /* Overrides value for existing feature. */
+	    feature_records[feature_records.length - 1].parameter = active_features[j].fea.parameter;
+	  }
+	}
+
+	/* Will convert to pointer after all is ready, since feature_records.array
+	 * may move as we grow it. */
+	range->features.features = reinterpret_cast<DWRITE_FONT_FEATURE *> (offset);
+	range->features.featureCount = feature_records.length - offset;
+	range->index_first = last_index;
+	range->index_last  = event->index - 1;
+
+	last_index = event->index;
+      }
+
+      if (event->start)
+      {
+	active_features.push (event->feature);
+      }
+      else
+      {
+	active_feature_t *feature = active_features.find (&event->feature);
+	if (feature)
+	  active_features.remove (feature - active_features.arrayZ);
+      }
+    }
+
+    if (!range_records.length) /* No active feature found. */
+      num_features = 0;
+
+    /* Fixup the pointers. */
+    for (unsigned int i = 0; i < range_records.length; i++)
+    {
+      range_record_t *range = &range_records[i];
+      range->features.features = (DWRITE_FONT_FEATURE *) feature_records + reinterpret_cast<uintptr_t> (range->features.features);
     }
   }
-  const DWRITE_TYPOGRAPHIC_FEATURES* dwFeatures;
-  dwFeatures = (const DWRITE_TYPOGRAPHIC_FEATURES*) &typographic_features;
-  const uint32_t featureRangeLengths[] = { textLength };
+
+  hb_vector_t<DWRITE_TYPOGRAPHIC_FEATURES *> range_features;
+  hb_vector_t<uint32_t> range_char_counts;
+  if (num_features)
+  {
+      range_features.shrink (0);
+      range_char_counts.shrink (0);
+
+      range_record_t *last_range = &range_records[0];
+      for (unsigned int i = 0; i < textLength; i++)
+      {
+	range_record_t *range = last_range;
+	while (log_clusters[i] < range->index_first)
+	  range--;
+	while (log_clusters[i] > range->index_last)
+	  range++;
+	if (!range_features.length ||
+	    &range->features != range_features[range_features.length - 1])
+	{
+	  auto **typoFeatures = range_features.push ();
+	  auto *c = range_char_counts.push ();
+	  if (unlikely (!typoFeatures || !c))
+	  {
+	    range_features.shrink (0);
+	    range_char_counts.shrink (0);
+	    break;
+	  }
+	  *typoFeatures = &range->features;
+	  *c = 1;
+	}
+	else
+	{
+	  range_char_counts[range_char_counts.length - 1]++;
+	}
+
+	last_range = range;
+      }
+  }
+
+  const auto **dwFeatures = (const DWRITE_TYPOGRAPHIC_FEATURES**) range_features.arrayZ;
+  auto featureRanges = range_features.length;
+  const auto *featureRangeLengths = range_char_counts.arrayZ;
   //
 
   uint16_t* clusterMap;
   clusterMap = new uint16_t[textLength];
   DWRITE_SHAPING_TEXT_PROPERTIES* textProperties;
   textProperties = new DWRITE_SHAPING_TEXT_PROPERTIES[textLength];
+
 retry_getglyphs:
   uint16_t* glyphIndices = new uint16_t[maxGlyphCount];
   DWRITE_SHAPING_GLYPH_PROPERTIES* glyphProperties;
@@ -677,7 +799,7 @@ retry_getglyphs:
 
   hr = analyzer->GetGlyphs (textString, textLength, fontFace, false,
 			    isRightToLeft, &runHead->mScript, localeName,
-			    nullptr, &dwFeatures, featureRangeLengths, 1,
+			    nullptr, dwFeatures, featureRangeLengths, featureRanges,
 			    maxGlyphCount, clusterMap, textProperties,
 			    glyphIndices, glyphProperties, &glyphCount);
 
@@ -719,96 +841,11 @@ retry_getglyphs:
 				     textLength, glyphIndices, glyphProperties,
 				     glyphCount, fontFace, fontEmSize,
 				     false, isRightToLeft, &runHead->mScript, localeName,
-				     &dwFeatures, featureRangeLengths, 1,
+				     dwFeatures, featureRangeLengths, featureRanges,
 				     glyphAdvances, glyphOffsets);
 
   if (FAILED (hr))
     FAIL ("Analyzer failed to get glyph placements.");
-
-  IDWriteTextAnalyzer1* analyzer1;
-  analyzer->QueryInterface (&analyzer1);
-
-  if (analyzer1 && lineWidth)
-  {
-    DWRITE_JUSTIFICATION_OPPORTUNITY* justificationOpportunities =
-      new DWRITE_JUSTIFICATION_OPPORTUNITY[maxGlyphCount];
-    hr = analyzer1->GetJustificationOpportunities (fontFace, fontEmSize, runHead->mScript,
-						   textLength, glyphCount, textString,
-						   clusterMap, glyphProperties,
-						   justificationOpportunities);
-
-    if (FAILED (hr))
-      FAIL ("Analyzer failed to get justification opportunities.");
-
-    float* justifiedGlyphAdvances = new float[maxGlyphCount];
-    DWRITE_GLYPH_OFFSET* justifiedGlyphOffsets = new DWRITE_GLYPH_OFFSET[glyphCount];
-    hr = analyzer1->JustifyGlyphAdvances (lineWidth, glyphCount, justificationOpportunities,
-					  glyphAdvances, glyphOffsets, justifiedGlyphAdvances,
-					  justifiedGlyphOffsets);
-
-    if (FAILED (hr)) FAIL ("Analyzer failed to get justify glyph advances.");
-
-    DWRITE_SCRIPT_PROPERTIES scriptProperties;
-    hr = analyzer1->GetScriptProperties (runHead->mScript, &scriptProperties);
-    if (FAILED (hr)) FAIL ("Analyzer failed to get script properties.");
-    uint32_t justificationCharacter = scriptProperties.justificationCharacter;
-
-    // if a script justificationCharacter is not space, it can have GetJustifiedGlyphs
-    if (justificationCharacter != 32)
-    {
-      uint16_t* modifiedClusterMap = new uint16_t[textLength];
-    retry_getjustifiedglyphs:
-      uint16_t* modifiedGlyphIndices = new uint16_t[maxGlyphCount];
-      float* modifiedGlyphAdvances = new float[maxGlyphCount];
-      DWRITE_GLYPH_OFFSET* modifiedGlyphOffsets = new DWRITE_GLYPH_OFFSET[maxGlyphCount];
-      uint32_t actualGlyphsCount;
-      hr = analyzer1->GetJustifiedGlyphs (fontFace, fontEmSize, runHead->mScript,
-					  textLength, glyphCount, maxGlyphCount,
-					  clusterMap, glyphIndices, glyphAdvances,
-					  justifiedGlyphAdvances, justifiedGlyphOffsets,
-					  glyphProperties, &actualGlyphsCount,
-					  modifiedClusterMap, modifiedGlyphIndices,
-					  modifiedGlyphAdvances, modifiedGlyphOffsets);
-
-      if (hr == HRESULT_FROM_WIN32 (ERROR_INSUFFICIENT_BUFFER))
-      {
-	maxGlyphCount = actualGlyphsCount;
-	delete [] modifiedGlyphIndices;
-	delete [] modifiedGlyphAdvances;
-	delete [] modifiedGlyphOffsets;
-
-	maxGlyphCount = actualGlyphsCount;
-
-	goto retry_getjustifiedglyphs;
-      }
-      if (FAILED (hr))
-	FAIL ("Analyzer failed to get justified glyphs.");
-
-      delete [] clusterMap;
-      delete [] glyphIndices;
-      delete [] glyphAdvances;
-      delete [] glyphOffsets;
-
-      glyphCount = actualGlyphsCount;
-      clusterMap = modifiedClusterMap;
-      glyphIndices = modifiedGlyphIndices;
-      glyphAdvances = modifiedGlyphAdvances;
-      glyphOffsets = modifiedGlyphOffsets;
-
-      delete [] justifiedGlyphAdvances;
-      delete [] justifiedGlyphOffsets;
-    }
-    else
-    {
-      delete [] glyphAdvances;
-      delete [] glyphOffsets;
-
-      glyphAdvances = justifiedGlyphAdvances;
-      glyphOffsets = justifiedGlyphOffsets;
-    }
-
-    delete [] justificationOpportunities;
-  }
 
   /* Ok, we've got everything we need, now compose output buffer,
    * very, *very*, carefully! */
@@ -870,41 +907,8 @@ retry_getglyphs:
   delete [] glyphAdvances;
   delete [] glyphOffsets;
 
-  if (num_features)
-    delete [] typographic_features.features;
-
   /* Wow, done! */
   return true;
-}
-
-hb_bool_t
-_hb_directwrite_shape (hb_shape_plan_t    *shape_plan,
-		       hb_font_t          *font,
-		       hb_buffer_t        *buffer,
-		       const hb_feature_t *features,
-		       unsigned int        num_features)
-{
-  return _hb_directwrite_shape_full (shape_plan, font, buffer,
-				     features, num_features, 0);
-}
-
-HB_UNUSED static bool
-_hb_directwrite_shape_experimental_width (hb_font_t          *font,
-					  hb_buffer_t        *buffer,
-					  const hb_feature_t *features,
-					  unsigned int        num_features,
-					  float               width)
-{
-  static const char *shapers = "directwrite";
-  hb_shape_plan_t *shape_plan;
-  shape_plan = hb_shape_plan_create_cached (font->face, &buffer->props,
-					    features, num_features, &shapers);
-  hb_bool_t res = _hb_directwrite_shape_full (shape_plan, font, buffer,
-					      features, num_features, width);
-
-  buffer->unsafe_to_break_all ();
-
-  return res;
 }
 
 struct _hb_directwrite_font_table_context {
@@ -917,7 +921,7 @@ _hb_directwrite_table_data_release (void *data)
 {
   _hb_directwrite_font_table_context *context = (_hb_directwrite_font_table_context *) data;
   context->face->ReleaseFontTable (context->table_context);
-  delete context;
+  free (context);
 }
 
 static hb_blob_t *
@@ -938,7 +942,7 @@ _hb_directwrite_reference_table (hb_face_t *face HB_UNUSED, hb_tag_t tag, void *
     return nullptr;
   }
 
-  _hb_directwrite_font_table_context *context = new _hb_directwrite_font_table_context;
+  _hb_directwrite_font_table_context *context = (_hb_directwrite_font_table_context *) malloc (sizeof (_hb_directwrite_font_table_context));
   context->face = dw_face;
   context->table_context = table_context;
 

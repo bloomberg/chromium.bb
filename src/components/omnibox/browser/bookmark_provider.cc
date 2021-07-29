@@ -8,10 +8,11 @@
 #include <functional>
 #include <vector>
 
+#include "base/containers/cxx20_erase.h"
+#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -152,8 +153,8 @@ std::vector<TitledUrlMatch> BookmarkProvider::GetMatchesWithBookmarkPaths(
   //   determine if the feature triggered.
   // - When set to "enabled", counterfactual logging will occur and path matched
   //   bookmarks will be returned.
-  std::string counterfactual = base::GetFieldTrialParamValueByFeature(
-      omnibox::kBookmarkPaths, OmniboxFieldTrial::kBookmarkPathsCounterfactual);
+  std::string counterfactual =
+      OmniboxFieldTrial::kBookmarkPathsCounterfactual.Get();
 
   bool match_paths = base::FeatureList::IsEnabled(omnibox::kBookmarkPaths) &&
                      counterfactual != "control";
@@ -198,7 +199,8 @@ query_parser::MatchingAlgorithm BookmarkProvider::GetMatchingAlgorithm(
         OmniboxTriggeredFeatureService::Feature::
             kShortBookmarkSuggestionsByTotalInputLength);
     return OmniboxFieldTrial::
-                   ShortBookmarkSuggestionsByTotalInputLengthCounterfactual()
+                   kShortBookmarkSuggestionsByTotalInputLengthCounterfactual
+                       .Get()
                ? query_parser::MatchingAlgorithm::DEFAULT
                : query_parser::MatchingAlgorithm::ALWAYS_PREFIX_SEARCH;
   }

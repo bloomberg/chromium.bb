@@ -6,8 +6,8 @@
 
 #include <stdint.h>
 
+#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
-#include "base/stl_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -20,11 +20,11 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/common/frame.mojom.h"
-#include "content/common/navigation_params.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_navigation_throttle_inserter.h"
@@ -50,6 +50,16 @@ namespace {
 bool ExpectSiteInstanceChange(SiteInstanceImpl* site_instance) {
   return AreAllSitesIsolatedForTesting() ||
          CanCrossSiteNavigationsProactivelySwapBrowsingInstances() ||
+         !site_instance->IsDefaultSiteInstance();
+}
+
+// Same as above but does not return true if back/forward cache is the only
+// trigger for SiteInstance change. This function is useful if, e.g. the test
+// intends to disable back/forward cache.
+bool ExpectSiteInstanceChangeWithoutBackForwardCache(
+    SiteInstanceImpl* site_instance) {
+  return AreAllSitesIsolatedForTesting() ||
+         IsProactivelySwapBrowsingInstanceEnabled() ||
          !site_instance->IsDefaultSiteInstance();
 }
 
@@ -121,7 +131,7 @@ TEST_F(NavigatorTest, SimpleBrowserInitiatedNavigationFromNonLiveRenderer) {
 
   // Commit the navigation.
   navigation->Commit();
-  EXPECT_TRUE(main_test_rfh()->IsCurrent());
+  EXPECT_TRUE(main_test_rfh()->IsActive());
   EXPECT_EQ(main_test_rfh()->lifecycle_state(),
             RenderFrameHostImpl::LifecycleStateImpl::kActive);
   if (AreDefaultSiteInstancesEnabled()) {
@@ -191,7 +201,7 @@ TEST_F(NavigatorTest, SimpleRendererInitiatedSameSiteNavigation) {
 
   // Commit the navigation.
   navigation->Commit();
-  EXPECT_TRUE(main_test_rfh()->IsCurrent());
+  EXPECT_TRUE(main_test_rfh()->IsActive());
   if (AreDefaultSiteInstancesEnabled()) {
     EXPECT_TRUE(main_test_rfh()->GetSiteInstance()->IsDefaultSiteInstance());
   } else {
@@ -246,7 +256,7 @@ TEST_F(NavigatorTest, SimpleRendererInitiatedCrossSiteNavigation) {
 
   // Commit the navigation.
   navigation->Commit();
-  EXPECT_TRUE(main_test_rfh()->IsCurrent());
+  EXPECT_TRUE(main_test_rfh()->IsActive());
   EXPECT_EQ(kUrl2, contents()->GetLastCommittedURL());
   EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
 
@@ -271,8 +281,17 @@ TEST_F(NavigatorTest, RendererAbortedAboutBlankNavigation) {
 
   contents()->NavigateAndCommit(kUrl0);
   EXPECT_TRUE(main_test_rfh()->IsRenderFrameLive());
-  if (!ExpectSiteInstanceChange(main_test_rfh()->GetSiteInstance()))
+
+  // The test expects cross-site navigations to change SiteInstances, but not
+  // same-site navigations. Return if SiteInstance change is not possible, and
+  // disable same-site back/forward cache to ensure SiteInstance won't change
+  // for same-site navigations.
+  DisableBackForwardCacheForTesting(
+      contents(), BackForwardCache::TEST_ASSUMES_NO_RENDER_FRAME_CHANGE);
+  if (!ExpectSiteInstanceChangeWithoutBackForwardCache(
+          main_test_rfh()->GetSiteInstance())) {
     return;
+  }
 
   // Start a renderer-initiated navigation to about:blank.
   EXPECT_FALSE(main_test_rfh()->is_loading());
@@ -322,8 +341,17 @@ TEST_F(NavigatorTest,
 
   contents()->NavigateAndCommit(kUrl0);
   EXPECT_TRUE(main_test_rfh()->IsRenderFrameLive());
-  if (!ExpectSiteInstanceChange(main_test_rfh()->GetSiteInstance()))
+
+  // The test expects cross-site navigations to change SiteInstances, but not
+  // same-site navigations. Return if SiteInstance change is not possible, and
+  // disable same-site back/forward cache to ensure SiteInstance won't change
+  // for same-site navigations.
+  DisableBackForwardCacheForTesting(
+      contents(), BackForwardCache::TEST_ASSUMES_NO_RENDER_FRAME_CHANGE);
+  if (!ExpectSiteInstanceChangeWithoutBackForwardCache(
+          main_test_rfh()->GetSiteInstance())) {
     return;
+  }
 
   // Start a renderer-initiated navigation to about:blank.
   EXPECT_FALSE(main_test_rfh()->is_loading());
@@ -981,7 +1009,7 @@ TEST_F(NavigatorTest, Reload) {
   // A NavigationRequest should have been generated.
   NavigationRequest* main_request = node->navigation_request();
   ASSERT_TRUE(main_request != nullptr);
-  EXPECT_EQ(mojom::NavigationType::RELOAD,
+  EXPECT_EQ(blink::mojom::NavigationType::RELOAD,
             main_request->common_params().navigation_type);
   reload1->ReadyToCommit();
   EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
@@ -995,7 +1023,7 @@ TEST_F(NavigatorTest, Reload) {
   // A NavigationRequest should have been generated.
   main_request = node->navigation_request();
   ASSERT_TRUE(main_request != nullptr);
-  EXPECT_EQ(mojom::NavigationType::RELOAD_BYPASSING_CACHE,
+  EXPECT_EQ(blink::mojom::NavigationType::RELOAD_BYPASSING_CACHE,
             main_request->common_params().navigation_type);
   reload2->ReadyToCommit();
   EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
@@ -1169,7 +1197,6 @@ TEST_F(NavigatorTest, DataUrls) {
   navigation_to_data_url->Start();
   EXPECT_FALSE(main_test_rfh()->is_loading());
   EXPECT_TRUE(node->navigation_request());
-  EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
 }
 
 // Tests several cases for converting SiteInstanceDescriptors into

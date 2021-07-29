@@ -25,13 +25,10 @@ class CORE_EXPORT CSSScrollTimeline : public ScrollTimeline {
    public:
     Options(Document&, StyleRuleScrollTimeline&);
 
-    // TODO(crbug.com/1097041): Support 'auto' value.
-    bool IsValid() const { return time_range_.has_value(); }
-
    private:
     friend class CSSScrollTimeline;
 
-    Element* source_;
+    absl::optional<Element*> source_;
     ScrollTimeline::ScrollDirection direction_;
     HeapVector<Member<ScrollTimelineOffset>> offsets_;
     absl::optional<double> time_range_;
@@ -41,6 +38,8 @@ class CORE_EXPORT CSSScrollTimeline : public ScrollTimeline {
   CSSScrollTimeline(Document*, Options&&);
 
   const AtomicString& Name() const;
+
+  StyleRuleScrollTimeline* GetRule() const { return rule_; }
 
   bool Matches(const Options&) const;
 

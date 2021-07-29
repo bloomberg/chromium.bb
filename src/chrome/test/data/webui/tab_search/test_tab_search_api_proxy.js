@@ -12,10 +12,9 @@ export class TestTabSearchApiProxy extends TestBrowserProxy {
     super([
       'closeTab',
       'getProfileData',
-      'openRecentlyClosedTab',
+      'openRecentlyClosedEntry',
       'switchToTab',
       'showUI',
-      'closeUI',
     ]);
 
     /** @type {!PageCallbackRouter} */
@@ -41,8 +40,8 @@ export class TestTabSearchApiProxy extends TestBrowserProxy {
   }
 
   /** @override */
-  openRecentlyClosedTab(tabId) {
-    this.methodCalled('openRecentlyClosedTab', tabId);
+  openRecentlyClosedEntry(id, withSearch, isTab) {
+    this.methodCalled('openRecentlyClosedEntry', [id, withSearch, isTab]);
   }
 
   /** @override */
@@ -53,11 +52,6 @@ export class TestTabSearchApiProxy extends TestBrowserProxy {
   /** @override */
   showUI() {
     this.methodCalled('showUI');
-  }
-
-  /** @override */
-  closeUI() {
-    this.methodCalled('closeUI');
   }
 
   /** @override */

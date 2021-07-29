@@ -87,9 +87,10 @@ enum SampleFormat : int {
   kSampleFormatPlanarF32,  // Float 32-bit planar.
   kSampleFormatPlanarS32,  // Signed 32-bit planar.
   kSampleFormatS24,        // Signed 24-bit.
+  kSampleFormatPlanarU8,   // Unsigned 8-bit w/ bias of 128 planar.
 
   kSampleFormatMin = kUnknownSampleFormat,
-  kSampleFormatMax = kSampleFormatS24,
+  kSampleFormatMax = kSampleFormatPlanarU8,
 };
 
 enum VideoCodec : int {
@@ -227,9 +228,9 @@ enum class RangeID : int8_t {
 };
 // ---- Begin copy/paste from //ui/gfx/color_space.h ----
 
-// ---- Begin copy/paste from media/base/hdr_metadata.h ----
-// SMPTE ST 2086 mastering metadata.
-struct MasteringMetadata {
+// ---- Begin copy/paste from //ui/gfx/hdr_metadata.h ----
+// SMPTE ST 2086 color volume metadata.
+struct ColorVolumeMetadata {
   float primary_r_chromaticity_x = 0;
   float primary_r_chromaticity_y = 0;
   float primary_g_chromaticity_x = 0;
@@ -241,27 +242,32 @@ struct MasteringMetadata {
   float luminance_max = 0;
   float luminance_min = 0;
 
-  MasteringMetadata();
-  MasteringMetadata(const MasteringMetadata& rhs);
+  ColorVolumeMetadata();
+  ColorVolumeMetadata(const ColorVolumeMetadata& rhs);
+  ColorVolumeMetadata& operator=(const ColorVolumeMetadata& rhs);
 };
 
 // HDR metadata common for HDR10 and WebM/VP9-based HDR formats.
 struct HDRMetadata {
-  MasteringMetadata mastering_metadata;
+  ColorVolumeMetadata color_volume_metadata;
   unsigned max_content_light_level = 0;
   unsigned max_frame_average_light_level = 0;
 
   HDRMetadata();
   HDRMetadata(const HDRMetadata& rhs);
+  HDRMetadata& operator=(const HDRMetadata& rhs);
 };
 
-inline MasteringMetadata::MasteringMetadata() {}
-inline MasteringMetadata::MasteringMetadata(const MasteringMetadata& rhs) =
+inline ColorVolumeMetadata::ColorVolumeMetadata() {}
+inline ColorVolumeMetadata::ColorVolumeMetadata(const ColorVolumeMetadata&) =
     default;
+inline ColorVolumeMetadata& ColorVolumeMetadata::operator=(
+    const ColorVolumeMetadata&) = default;
 
 inline HDRMetadata::HDRMetadata() {}
-inline HDRMetadata::HDRMetadata(const HDRMetadata& rhs) = default;
-// ---- End copy/paste from media/base/hdr_metadata.h ----
+inline HDRMetadata::HDRMetadata(const HDRMetadata&) = default;
+inline HDRMetadata& HDRMetadata::operator=(const HDRMetadata&) = default;
+// ---- End copy/paste from //ui/gfx/hdr_metadata.h ----
 
 constexpr int kChannelAll = -1;
 

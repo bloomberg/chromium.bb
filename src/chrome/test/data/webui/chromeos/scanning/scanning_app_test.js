@@ -509,6 +509,7 @@ export function scanningAppTest() {
           assertFalse(resolutionSelect.disabled);
           assertFalse(scanButton.disabled);
           assertTrue(isVisible(/** @type {!CrButtonElement} */ (scanButton)));
+          assertEquals('Scan', scanButton.textContent.trim());
           assertFalse(
               isVisible(/** @type {!CrButtonElement} */ (cancelButton)));
           assertTrue(isVisible(/** @type {!HTMLElement} */ (helperText)));
@@ -647,6 +648,37 @@ export function scanningAppTest() {
           assertFalse(scanningApp.$$('#scanFailedDialog').open);
           assertFalse(scanButton.disabled);
           assertTrue(isVisible(/** @type {!CrButtonElement} */ (scanButton)));
+        });
+  });
+
+  // Verify a multi-page scan job can be initiated.
+  test('MultiPageScan', () => {
+    return initializeScanningApp(expectedScanners, capabilities)
+        .then(() => {
+          return getScannerCapabilities();
+        })
+        .then(() => {
+          scanningApp.selectedSource = PLATEN;
+          scanningApp.selectedFileType = FileType.PDF.toString();
+          return waitAfterNextRender(/** @type {!HTMLElement} */ (scanningApp));
+        })
+        .then(() => {
+          scanningApp.multiPageScanChecked = true;
+        })
+        .then(() => {
+          const scanButton = scanningApp.$$('#scanButton');
+          assertEquals('Scan page 1', scanButton.textContent.trim());
+          scanButton.click();
+          return fakeScanService_.whenCalled('startScan');
+        })
+        .then(() => {
+          return fakeScanService_.simulatePageComplete(1);
+        })
+        .then(() => {
+          assertTrue(isVisible(/** @type {!HTMLElement} */ (
+              scanningApp.$$('#scanPreview').$$('#scannedImages'))));
+          assertTrue(isVisible(
+              /** @type {!HTMLElement} */ (scanningApp.$$('multi-page-scan'))));
         });
   });
 
@@ -1489,6 +1521,56 @@ export function scanningAppTest() {
           assertEquals(
               MAX_NUM_SAVED_SCANNERS, actualSavedScanSettings.scanners.length);
           compareSavedScanSettings(savedScanSettings, actualSavedScanSettings);
+        });
+  });
+
+  // Verify that the multi-page scanning checkbox is only visible when both
+  // Flatbed and PDF scan settings are selected.
+  test('showMultiPageCheckbox', () => {
+    if (!loadTimeData.getBoolean('scanAppMultiPageScanEnabled')) {
+      return;
+    }
+
+    return initializeScanningApp(expectedScanners, capabilities)
+        .then(() => {
+          return getScannerCapabilities();
+        })
+        .then(() => {
+          scanningApp.selectedSource = ADF_DUPLEX;
+          scanningApp.selectedFileType = FileType.PNG.toString();
+          return waitAfterNextRender(/** @type {!HTMLElement} */ (scanningApp));
+        })
+        .then(() => {
+          assertFalse(isVisible(
+              /** @type {!HTMLElement} */ (
+                  scanningApp.$$('multi-page-checkbox').$$('#checkboxDiv'))));
+
+          scanningApp.selectedSource = PLATEN;
+          scanningApp.selectedFileType = FileType.PNG.toString();
+          return waitAfterNextRender(/** @type {!HTMLElement} */ (scanningApp));
+        })
+        .then(() => {
+          assertFalse(isVisible(
+              /** @type {!HTMLElement} */ (
+                  scanningApp.$$('multi-page-checkbox').$$('#checkboxDiv'))));
+
+          scanningApp.selectedSource = ADF_DUPLEX;
+          scanningApp.selectedFileType = FileType.PDF.toString();
+          return waitAfterNextRender(/** @type {!HTMLElement} */ (scanningApp));
+        })
+        .then(() => {
+          assertFalse(isVisible(
+              /** @type {!HTMLElement} */ (
+                  scanningApp.$$('multi-page-checkbox').$$('#checkboxDiv'))));
+
+          scanningApp.selectedSource = PLATEN;
+          scanningApp.selectedFileType = FileType.PDF.toString();
+          return waitAfterNextRender(/** @type {!HTMLElement} */ (scanningApp));
+        })
+        .then(() => {
+          assertTrue(isVisible(
+              /** @type {!HTMLElement} */ (
+                  scanningApp.$$('#multiPageCheckbox').$$('#checkboxDiv'))));
         });
   });
 }

@@ -171,14 +171,12 @@ def AskForData(message):
 
 
 def FileRead(filename, mode='rbU'):
-  # Always decodes output to a Unicode string.
-  # On Python 3 newlines are converted to '\n' by default and 'U' is deprecated.
-  if mode == 'rbU' and sys.version_info.major == 3:
-    mode = 'rb'
-  with open(filename, mode=mode) as f:
+  # mode is ignored now; we always return unicode strings.
+  with open(filename, mode='rb') as f:
     s = f.read()
-    if isinstance(s, bytes):
-      return s.decode('utf-8', 'replace')
+  try:
+    return s.decode('utf-8', 'replace')
+  except (UnicodeDecodeError, AttributeError):
     return s
 
 

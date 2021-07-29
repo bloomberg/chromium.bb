@@ -62,6 +62,7 @@ void VideoDecoderConfig::Initialize(VideoCodec codec,
   coded_size_ = coded_size;
   visible_rect_ = visible_rect;
   natural_size_ = natural_size;
+  aspect_ratio_ = VideoAspectRatio(visible_rect, natural_size);
   extra_data_ = extra_data;
   encryption_scheme_ = encryption_scheme;
   color_space_info_ = color_space;
@@ -108,16 +109,17 @@ std::string VideoDecoderConfig::AsHumanReadableString() const {
 
   if (hdr_metadata().has_value()) {
     s << std::setprecision(4) << ", luminance range: "
-      << hdr_metadata()->mastering_metadata.luminance_min << "-"
-      << hdr_metadata()->mastering_metadata.luminance_max << ", primaries: r("
-      << hdr_metadata()->mastering_metadata.primary_r.x() << ","
-      << hdr_metadata()->mastering_metadata.primary_r.y() << ") g("
-      << hdr_metadata()->mastering_metadata.primary_g.x() << ","
-      << hdr_metadata()->mastering_metadata.primary_g.y() << ") b("
-      << hdr_metadata()->mastering_metadata.primary_b.x() << ","
-      << hdr_metadata()->mastering_metadata.primary_b.y() << ") wp("
-      << hdr_metadata()->mastering_metadata.white_point.x() << ","
-      << hdr_metadata()->mastering_metadata.white_point.y()
+      << hdr_metadata()->color_volume_metadata.luminance_min << "-"
+      << hdr_metadata()->color_volume_metadata.luminance_max
+      << ", primaries: r("
+      << hdr_metadata()->color_volume_metadata.primary_r.x() << ","
+      << hdr_metadata()->color_volume_metadata.primary_r.y() << ") g("
+      << hdr_metadata()->color_volume_metadata.primary_g.x() << ","
+      << hdr_metadata()->color_volume_metadata.primary_g.y() << ") b("
+      << hdr_metadata()->color_volume_metadata.primary_b.x() << ","
+      << hdr_metadata()->color_volume_metadata.primary_b.y() << ") wp("
+      << hdr_metadata()->color_volume_metadata.white_point.x() << ","
+      << hdr_metadata()->color_volume_metadata.white_point.y()
       << "), max_content_light_level="
       << hdr_metadata()->max_content_light_level
       << ", max_frame_average_light_level="
@@ -129,10 +131,6 @@ std::string VideoDecoderConfig::AsHumanReadableString() const {
 
 std::string VideoDecoderConfig::GetHumanReadableCodecName() const {
   return GetCodecName(codec());
-}
-
-double VideoDecoderConfig::GetPixelAspectRatio() const {
-  return ::media::GetPixelAspectRatio(visible_rect_, natural_size_);
 }
 
 void VideoDecoderConfig::SetExtraData(const std::vector<uint8_t>& extra_data) {

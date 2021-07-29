@@ -27,15 +27,17 @@ enum class RestoreOption {
 };
 
 extern const char kRestoreAppsAndPagesPrefName[];
-extern const char kRestoreSelectedCountPrefName[];
 
-// Registers the restore pref |kRestoreAppsAndPagesPrefName| and
-// |kRestoreSelectedCountPrefName|.
+// Registers the restore pref |kRestoreAppsAndPagesPrefName|.
 void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
 // Returns true if the pref has |kRestoreAppsAndPagesPrefName|. Otherwise,
 // return false.
 bool HasRestorePref(PrefService* prefs);
+
+// Returns true if the pref has |kRestoreOnStartup|. Otherwise,
+// return false.
+bool HasSessionStartupPref(PrefService* prefs);
 
 // Returns true if the restore pref doesn't exist or the pref is 'Always' or
 // 'Ask every time'. Otherwise, return false for 'Do not restore'.
@@ -53,12 +55,6 @@ void SetDefaultRestorePrefIfNecessary(PrefService* prefs);
 // Updates the restore pref |kRestoreAppsAndPagesPrefName| when the browser
 // restore settings is synced.
 void UpdateRestorePrefIfNecessary(PrefService* prefs);
-
-// Returns the value of the pref |kRestoreSelectedCountPrefName|.
-int GetRestoreSelectedCountPref(PrefService* prefs);
-
-// Sets the pref |kRestoreSelectedCountPrefName| as |count|.
-void SetRestoreSelectedCountPref(PrefService* prefs, int count);
 
 }  // namespace full_restore
 }  // namespace chromeos

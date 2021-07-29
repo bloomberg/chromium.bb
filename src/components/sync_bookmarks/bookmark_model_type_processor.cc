@@ -190,6 +190,12 @@ void BookmarkModelTypeProcessor::OnUpdateReceived(
     return;
   }
 
+  // Before applying incremental updates, run a quirk to mitigate some data
+  // corruption issue introduced by crbug.com/1231450.
+  for (syncer::UpdateResponseData& update : updates) {
+    MaybeFixGuidInSpecificsDueToPastBug(*bookmark_tracker_, &update.entity);
+  }
+
   // Incremental updates.
   ScopedRemoteUpdateBookmarks update_bookmarks(
       bookmark_model_, bookmark_undo_service_, bookmark_model_observer_.get());
@@ -555,7 +561,9 @@ void BookmarkModelTypeProcessor::AppendNodeAndChildrenForDebugging(
   }
   data_dictionary->SetInteger("LOCAL_EXTERNAL_ID", node->id());
   data_dictionary->SetInteger("positionIndex", index);
-  data_dictionary->Set("metadata", syncer::EntityMetadataToValue(*metadata));
+  data_dictionary->SetKey("metadata",
+                          base::Value::FromUniquePtrValue(
+                              syncer::EntityMetadataToValue(*metadata)));
   data_dictionary->SetString("modelType", "Bookmarks");
   all_nodes->Append(std::move(data_dictionary));
 

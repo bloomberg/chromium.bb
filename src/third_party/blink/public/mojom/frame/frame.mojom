@@ -21,13 +21,13 @@ import "services/network/public/mojom/url_request.mojom";
 import "services/network/public/mojom/web_sandbox_flags.mojom";
 import "services/viz/public/mojom/compositing/frame_sink_id.mojom";
 import "skia/public/mojom/skcolor.mojom";
-import "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom";
 import "third_party/blink/public/mojom/blob/blob.mojom";
 import "third_party/blink/public/mojom/blob/blob_url_store.mojom";
 import "third_party/blink/public/mojom/messaging/transferable_message.mojom";
 import "third_party/blink/public/mojom/choosers/popup_menu.mojom";
 import "third_party/blink/public/mojom/context_menu/context_menu.mojom";
 import "third_party/blink/public/mojom/conversions/conversions.mojom";
+import "third_party/blink/public/mojom/css/preferred_color_scheme.mojom";
 import "third_party/blink/public/mojom/devtools/console_message.mojom";
 import "third_party/blink/public/mojom/devtools/devtools_agent.mojom";
 import "third_party/blink/public/mojom/devtools/inspector_issue.mojom";
@@ -350,6 +350,19 @@ interface LocalFrameHost {
   // of a user action.
   GoToEntryAtOffset(int32 offset, bool has_user_gesture);
 
+  // Tells the browser to navigate back or forward in session history to the
+  // history entry associated with |key|. |key| is a renderer-generated random
+  // UUID, per
+  // https://wicg.github.io/app-history/#session-history-entry-app-history-key
+  //
+  // The key is only used to trigger a back/forward navigation, so it is
+  // fundamentally similar to |offset| in GoToEntryAtOffset(). However,
+  // appHistory also requires that |key| match a FrameNavigationEntry in this
+  // frame, and that the target FNE is contiguously same-origin and
+  // same-site-instance with the current FNE, so navigating via this
+  // function is more restrictive than GoToEntryAtOffset().
+  NavigateToAppHistoryKey(string key, bool has_user_gesture);
+
   // Changes the title for the page in the UI when the page is navigated or the
   // title changes. Sent for top-level frames. This can be null when loading an
   // initial empty document (and in some tests).
@@ -497,11 +510,12 @@ interface LocalFrameHost {
       blink.mojom.FrameToken child_frame_token,
       blink.mojom.FramePolicy frame_policy);
 
-  // Notifies the browser that the frame changed the 'csp' attribute
-  // of one of its child frames.
-  DidChangeCSPAttribute(
+  // Notifies the browser that one of the iframe attributes tracked by the
+  // browser process changed.
+  DidChangeIframeAttributes(
       blink.mojom.FrameToken child_frame_token,
-      network.mojom.ContentSecurityPolicy? parsed_csp_attribute);
+      network.mojom.ContentSecurityPolicy? parsed_csp_attribute,
+      bool anonymous);
 
   // Sent by the renderer to request a paint preview of a subframe. |clip_rect|
   // is the size of the frame in it's parent. |guid| is an an identifier for
@@ -545,6 +559,10 @@ interface LocalFrameHost {
   // Used when a prerendered page is activated. Notifies the browser that the
   // document in this frame dispatched the prerenderingchange event.
   DidActivateForPrerendering();
+
+  // Notifies the frame that the document preferred color scheme has changed
+  // due to DevTools media emulation.
+  DidUpdatePreferredColorScheme(PreferredColorScheme preferred_color_scheme);
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will
@@ -800,7 +818,9 @@ interface LocalFrame {
   // Sent to a prerendered frame to inform it that it is being activated.
   // The document in the frame updates `document.prerendering` and dispatches
   // the prerenderingchange event.
-  ActivateForPrerendering();
+  // |activation_start| is the time that activation started for use in
+  // PerformanceNavigationTiming.
+  ActivateForPrerendering(mojo_base.mojom.TimeTicks activation_start);
 
   // Returns a DevToolsAgent interface for this frame, used for
   // remote debugging. See DevToolsAgent for details.
@@ -991,9 +1011,9 @@ interface RemoteFrame {
   SetReplicatedOrigin(url.mojom.Origin origin,
     bool is_potentially_trustworthy_unique_origin);
 
-  // Update the replicated ad frame type. Used when the frame is determined to
-  // be an ad frame.
-  SetReplicatedAdFrameType(blink.mojom.AdFrameType ad_frame_type);
+  // Update the replicated ad status. Used when the frame is tagged or untagged
+  // as an ad frame by Ad Tagging.
+  SetReplicatedIsAdSubframe(bool is_ad_subframe);
 
   // Sets the replicated name and unique name for the frame. Used when the
   // name of a frame changes.
@@ -1194,10 +1214,6 @@ interface LocalMainFrame {
   UpdateBrowserControlsState(cc.mojom.BrowserControlsState constraints,
                              cc.mojom.BrowserControlsState current,
                              bool animate);
-
-  // Notify renderer that the window controls overlay has changed size or
-  // visibility.
-  UpdateWindowControlsOverlay(gfx.mojom.Rect window_controls_overlay_rect);
 };
 
 // Implemented in Blink, this interface defines remote main-frame-specific
@@ -1258,6 +1274,10 @@ interface LocalMainFrameHost {
   // This corresponds to the window.resizeTo() and window.moveTo() APIs, and the browser
   // may ignore this message.
   SetWindowRect(gfx.mojom.Rect bounds) => ();
+
+  // Sent once a paint happens after the first non empty layout. In other words,
+  // after the frame has painted something.
+  DidFirstVisuallyNonEmptyPaint();
 };
 
 // Implemented in Browser, this interface defines remote-main-frame-specific

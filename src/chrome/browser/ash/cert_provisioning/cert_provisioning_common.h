@@ -15,7 +15,7 @@
 // TODO(https://crbug.com/1164001): forward declare KeyPermissionsManager
 // after //chrom/browser/chromeos/platform_keys is moved to ash.
 #include "chrome/browser/chromeos/platform_keys/key_permissions/key_permissions_manager.h"
-#include "chrome/browser/chromeos/platform_keys/platform_keys.h"
+#include "chrome/browser/platform_keys/platform_keys.h"
 // TODO(https://crbug.com/1164001): forward declare PlatformKeysService
 // after //chrom/browser/chromeos/platform_keys is moved to ash.
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
@@ -131,7 +131,7 @@ const char* GetPrefNameForSerialization(CertScope scope);
 std::string GetKeyName(CertProfileId profile_id);
 // Returns the key type for VA API calls for |scope|.
 attestation::AttestationKeyType GetVaKeyType(CertScope scope);
-platform_keys::TokenId GetPlatformKeysTokenId(CertScope scope);
+chromeos::platform_keys::TokenId GetPlatformKeysTokenId(CertScope scope);
 
 // This functions should be used to delete keys that were created by
 // TpmChallengeKey* and were not registered yet. (To delete registered keys

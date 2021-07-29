@@ -39,7 +39,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_custom_extension_provider.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_service.h"
-#include "chrome/browser/extensions/blocklist_extension_prefs.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/data_deleter.h"
@@ -80,6 +79,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
+#include "extensions/browser/blocklist_extension_prefs.h"
 #include "extensions/browser/blocklist_state.h"
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/event_router.h"
@@ -149,7 +149,11 @@ const char* const kMigratedExtensionIds[] = {
 // Note: We preserve at least one entry here for continued testing coverage.
 const char* const kObsoleteComponentExtensionIds[] = {
     // Obsolete since M91.
-    "nlkncpkkdoccmpiclbokaimcnedabhhm"  // Gallery
+    "nlkncpkkdoccmpiclbokaimcnedabhhm",  // Gallery
+    // The Video Player chrome app became obsolete in m93. This entry can be
+    // removed after references to kVideoPlayerAppId in component_loader.cc
+    // are removed (and it's no longer used for regression tests).
+    "jcgeabjmjgoblfofpppfkcoakmfobdko"  // Video Player
 };
 
 }  // namespace
@@ -793,7 +797,6 @@ bool ExtensionService::UninstallExtension(
 
   UMA_HISTOGRAM_ENUMERATION("Extensions.UninstallType", extension->GetType(),
                             100);
-  RecordPermissionMessagesHistogram(extension.get(), "Uninstall");
 
   // Unload before doing more cleanup to ensure that nothing is hanging on to
   // any of these resources.
@@ -1076,7 +1079,6 @@ void ExtensionService::UnblockAllExtensions() {
 void ExtensionService::GrantPermissionsAndEnableExtension(
     const Extension* extension) {
   GrantPermissions(extension);
-  RecordPermissionMessagesHistogram(extension, "ReEnable");
   EnableExtension(extension->id());
 }
 
@@ -1152,8 +1154,8 @@ void ExtensionService::PostDeactivateExtension(
       util::GetStoragePartitionForExtensionId(extension->id(), profile_)
           ->GetFileSystemContext();
   if (filesystem_context && filesystem_context->external_backend()) {
-    filesystem_context->external_backend()->RevokeAccessForExtension(
-        extension->id());
+    filesystem_context->external_backend()->RevokeAccessForOrigin(
+        extension->origin());
   }
 #endif
 
@@ -1573,8 +1575,6 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
   if (is_privilege_increase &&
       !(disable_reasons & disable_reason::DISABLE_REMOTE_INSTALL)) {
     disable_reasons |= disable_reason::DISABLE_PERMISSIONS_INCREASE;
-    if (!extension_prefs_->DidExtensionEscalatePermissions(extension->id()))
-      RecordPermissionMessagesHistogram(extension, "AutoDisable");
   }
 
   if (disable_reasons == disable_reason::DISABLE_NONE)

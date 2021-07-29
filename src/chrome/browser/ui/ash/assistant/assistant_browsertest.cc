@@ -5,6 +5,7 @@
 #include "ash/components/audio/cras_audio_handler.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_run_loop_timeout.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/ash/assistant/assistant_test_mixin.h"
@@ -43,7 +44,12 @@ using chromeos::assistant::test::ExpectResult;
 
 class AssistantBrowserTest : public MixinBasedInProcessBrowserTest {
  public:
-  AssistantBrowserTest() = default;
+  AssistantBrowserTest() {
+    // TODO(b/190633242): enable sandbox in browser tests.
+    feature_list_.InitAndDisableFeature(
+        chromeos::assistant::features::kEnableLibAssistantSandbox);
+  }
+
   ~AssistantBrowserTest() override = default;
 
   AssistantTestMixin* tester() { return &tester_; }

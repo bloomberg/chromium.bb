@@ -248,6 +248,7 @@ static AOM_INLINE void setup_delta_q(AV1_COMP *const cpi, ThreadData *td,
   // Delta-q modulation based on variance
   av1_setup_src_planes(x, cpi->source, mi_row, mi_col, num_planes, sb_size);
 
+  const int delta_q_res = delta_q_info->delta_q_res;
   int current_qindex = cm->quant_params.base_qindex;
   if (cpi->oxcf.q_cfg.deltaq_mode == DELTA_Q_PERCEPTUAL) {
     if (DELTA_Q_PERCEPTUAL_MODULATION == 1) {
@@ -267,17 +268,10 @@ static AOM_INLINE void setup_delta_q(AV1_COMP *const cpi, ThreadData *td,
     // Setup deltaq based on tpl stats
     current_qindex =
         av1_get_q_for_deltaq_objective(cpi, sb_size, mi_row, mi_col);
-  }
-
-  const int delta_q_res = delta_q_info->delta_q_res;
-  // Right now deltaq only works with tpl model. So if tpl is disabled, we set
-  // the current_qindex to base_qindex.
-  if (cpi->oxcf.algo_cfg.enable_tpl_model &&
-      cpi->oxcf.q_cfg.deltaq_mode != NO_DELTA_Q) {
-    current_qindex =
-        clamp(current_qindex, delta_q_res, 256 - delta_q_info->delta_q_res);
-  } else {
-    current_qindex = cm->quant_params.base_qindex;
+    current_qindex = clamp(current_qindex, delta_q_res, 256 - delta_q_res);
+  } else if (cpi->oxcf.q_cfg.deltaq_mode == DELTA_Q_PERCEPTUAL_AI) {
+    current_qindex = av1_get_sbq_perceptual_ai(cpi, sb_size, mi_row, mi_col);
+    current_qindex = clamp(current_qindex, delta_q_res, 256 - delta_q_res);
   }
 
   MACROBLOCKD *const xd = &x->e_mbd;
@@ -333,14 +327,12 @@ static void init_ref_frame_space(AV1_COMP *cpi, ThreadData *td, int mi_row,
   MACROBLOCK *x = &td->mb;
   const int frame_idx = cpi->gf_frame_index;
   TplParams *const tpl_data = &cpi->ppi->tpl_data;
-  TplDepFrame *tpl_frame = &tpl_data->tpl_frame[frame_idx];
   const uint8_t block_mis_log2 = tpl_data->tpl_stats_block_mis_log2;
 
   av1_zero(x->tpl_keep_ref_frame);
 
-  if (tpl_frame->is_valid == 0) return;
+  if (!av1_tpl_stats_ready(tpl_data, frame_idx)) return;
   if (!is_frame_tpl_eligible(gf_group, cpi->gf_frame_index)) return;
-  if (frame_idx >= MAX_TPL_FRAME_IDX) return;
   if (cpi->oxcf.q_cfg.aq_mode != NO_AQ) return;
 
   const int is_overlay =
@@ -350,6 +342,7 @@ static void init_ref_frame_space(AV1_COMP *cpi, ThreadData *td, int mi_row,
     return;
   }
 
+  TplDepFrame *tpl_frame = &tpl_data->tpl_frame[frame_idx];
   TplDepStats *tpl_stats = tpl_frame->tpl_stats_ptr;
   const int tpl_stride = tpl_frame->stride;
   int64_t inter_cost[INTER_REFS_PER_FRAME] = { 0 };
@@ -560,6 +553,20 @@ static AOM_INLINE void encode_nonrd_sb(AV1_COMP *cpi, ThreadData *td,
          sf->part_sf.partition_search_type == VAR_BASED_PARTITION);
   set_cb_offsets(td->mb.cb_offset, 0, 0);
 
+  // Initialize the flag to skip cdef for 64x64 blocks: if color sensitivy is
+  // on, set to 0 (don't skip).
+  if (sf->rt_sf.skip_cdef_sb) {
+    const int block64_in_sb = (sb_size == BLOCK_128X128) ? 2 : 1;
+    for (int r = 0; r < block64_in_sb; ++r) {
+      for (int c = 0; c < block64_in_sb; ++c) {
+        const int idx_in_sb =
+            r * MI_SIZE_64X64 * cm->mi_params.mi_stride + c * MI_SIZE_64X64;
+        if (mi[idx_in_sb])
+          mi[idx_in_sb]->skip_cdef_curr_sb =
+              !(x->color_sensitivity_sb[0] || x->color_sensitivity_sb[1]);
+      }
+    }
+  }
   // Adjust and encode the superblock
   PC_TREE *const pc_root = av1_alloc_pc_tree_node(sb_size);
   av1_nonrd_use_partition(cpi, td, tile_data, mi, tp, mi_row, mi_col, sb_size,
@@ -844,6 +851,8 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
     av1_set_cost_upd_freq(cpi, td, tile_info, mi_row, mi_col);
 
     // Reset color coding related parameters
+    x->color_sensitivity_sb[0] = 0;
+    x->color_sensitivity_sb[1] = 0;
     x->color_sensitivity[0] = 0;
     x->color_sensitivity[1] = 0;
     x->content_state_sb.source_sad = kMedSad;
@@ -944,6 +953,7 @@ void av1_init_tile_data(AV1_COMP *cpi) {
       TileInfo *const tile_info = &tile_data->tile_info;
       av1_tile_init(tile_info, cm, tile_row, tile_col);
       tile_data->firstpass_top_mv = kZeroMv;
+      tile_data->abs_sum_level = 0;
 
       if (pre_tok != NULL && tplist != NULL) {
         token_info->tile_tok[tile_row][tile_col] = pre_tok + tile_tok;
@@ -1033,6 +1043,7 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
        mi_row += cm->seq_params->mib_size) {
     av1_encode_sb_row(cpi, td, tile_row, tile_col, mi_row);
   }
+  this_tile->abs_sum_level = td->abs_sum_level;
 }
 
 /*!\brief Break one frame into tiles and encode the tiles
@@ -1061,6 +1072,7 @@ static AOM_INLINE void encode_tiles(AV1_COMP *cpi) {
           &cpi->tile_data[tile_row * cm->tiles.cols + tile_col];
       cpi->td.intrabc_used = 0;
       cpi->td.deltaq_used = 0;
+      cpi->td.abs_sum_level = 0;
       cpi->td.mb.e_mbd.tile_ctx = &this_tile->tctx;
       cpi->td.mb.tile_pb_ctx = &this_tile->tctx;
       // Reset cyclic refresh counters.
@@ -1260,6 +1272,9 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
   MACROBLOCKD *const xd = &x->e_mbd;
   RD_COUNTS *const rdc = &cpi->td.rd_counts;
   FrameProbInfo *const frame_probs = &cpi->frame_probs;
+#if CONFIG_FRAME_PARALLEL_ENCODE
+  FrameProbInfo *const temp_frame_probs = &cpi->ppi->temp_frame_probs;
+#endif  // CONFIG_FRAME_PARALLEL_ENCODE
   IntraBCHashInfo *const intrabc_hash_info = &x->intrabc_hash_info;
   MultiThreadInfo *const mt_info = &cpi->mt_info;
   AV1EncRowMultiThreadInfo *const enc_row_mt = &mt_info->enc_row_mt;
@@ -1292,8 +1307,13 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
       cpi->sf.inter_sf.prune_warped_prob_thresh > 0) {
     const FRAME_UPDATE_TYPE update_type =
         get_frame_update_type(&cpi->ppi->gf_group, cpi->gf_frame_index);
-    if (frame_probs->warped_probs[update_type] <
-        cpi->sf.inter_sf.prune_warped_prob_thresh)
+    int warped_probability;
+#if CONFIG_FRAME_PARALLEL_ENCODE
+    warped_probability = temp_frame_probs->warped_probs[update_type];
+#else
+    warped_probability = frame_probs->warped_probs[update_type];
+#endif
+    if (warped_probability < cpi->sf.inter_sf.prune_warped_prob_thresh)
       features->allow_warped_motion = 0;
   }
 
@@ -1381,6 +1401,8 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
     if (deltaq_mode == DELTA_Q_OBJECTIVE)
       cm->delta_q_info.delta_q_res = DEFAULT_DELTA_Q_RES_OBJECTIVE;
     else if (deltaq_mode == DELTA_Q_PERCEPTUAL)
+      cm->delta_q_info.delta_q_res = DEFAULT_DELTA_Q_RES_PERCEPTUAL;
+    else if (deltaq_mode == DELTA_Q_PERCEPTUAL_AI)
       cm->delta_q_info.delta_q_res = DEFAULT_DELTA_Q_RES_PERCEPTUAL;
     // Set delta_q_present_flag before it is used for the first time
     cm->delta_q_info.delta_lf_res = DEFAULT_DELTA_LF_RES;
@@ -1532,6 +1554,25 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
         left -= prob;
         if (j == 0) prob += left;
         frame_probs->tx_type_probs[update_type][i][j] = prob;
+#if CONFIG_FRAME_PARALLEL_ENCODE
+        /* TODO(FPMT): The current update is happening in cpi->frame_probs,
+         * this need to be taken care appropriately in final FPMT implementation
+         * to carry these values to subsequent frames. The frame_probs update is
+         * accumulated across frames, so the values from all individual parallel
+         * frames need to be taken into account after all the parallel frames
+         * are encoded.
+         *
+         * Only for quality simulation purpose - Update the accumulated frame
+         * probabilities in ppi->temp_variable based on the update flag.
+         */
+        if (cpi->do_frame_data_update) {
+          for (int update_type_idx = 0; update_type_idx < FRAME_UPDATE_TYPES;
+               update_type_idx++) {
+            temp_frame_probs->tx_type_probs[update_type_idx][i][j] =
+                frame_probs->tx_type_probs[update_type_idx][i][j];
+          }
+        }
+#endif  // CONFIG_FRAME_PARALLEL_ENCODE
       }
     }
   }
@@ -1549,6 +1590,25 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
           sum ? 128 * cpi->td.rd_counts.obmc_used[i][1] / sum : 0;
       frame_probs->obmc_probs[update_type][i] =
           (frame_probs->obmc_probs[update_type][i] + new_prob) >> 1;
+#if CONFIG_FRAME_PARALLEL_ENCODE
+      /* TODO(FPMT): The current update is happening in cpi->frame_probs,
+       * this need to be taken care appropriately in final FPMT
+       * implementation to carry these values to subsequent frames.
+       * The frame_probs update is accumulated across frames, so the
+       * values from all individual parallel frames need to be taken
+       * into account after all the parallel frames are encoded.
+       *
+       * Only for quality simulation purpose - Update the accumulated frame
+       * probabilities in ppi->temp_variable based on the update flag.
+       */
+      if (cpi->do_frame_data_update) {
+        for (int update_type_idx = 0; update_type_idx < FRAME_UPDATE_TYPES;
+             update_type_idx++) {
+          temp_frame_probs->obmc_probs[update_type_idx][i] =
+              frame_probs->obmc_probs[update_type_idx][i];
+        }
+      }
+#endif  // CONFIG_FRAME_PARALLEL_ENCODE
     }
   }
 
@@ -1561,6 +1621,25 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
     const int new_prob = sum ? 128 * cpi->td.rd_counts.warped_used[1] / sum : 0;
     frame_probs->warped_probs[update_type] =
         (frame_probs->warped_probs[update_type] + new_prob) >> 1;
+#if CONFIG_FRAME_PARALLEL_ENCODE
+    /* TODO(FPMT): The current update is happening in cpi->frame_probs,
+     * this need to be taken care appropriately in final FPMT
+     * implementation to carry these values to subsequent frames.
+     * The frame_probs update is accumulated across frames, so the
+     * values from all individual parallel frames need to be taken
+     * into account after all the parallel frames are encoded.
+     *
+     * Only for quality simulation purpose - Update the accumulated frame
+     * probabilities in ppi->temp_variable based on the update flag.
+     */
+    if (cpi->do_frame_data_update) {
+      for (int update_type_idx = 0; update_type_idx < FRAME_UPDATE_TYPES;
+           update_type_idx++) {
+        temp_frame_probs->warped_probs[update_type_idx] =
+            frame_probs->warped_probs[update_type_idx];
+      }
+    }
+#endif  // CONFIG_FRAME_PARALLEL_ENCODE
   }
 
   if (cm->current_frame.frame_type != KEY_FRAME &&
@@ -1588,6 +1667,25 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
         left -= prob;
         if (j == 0) prob += left;
         frame_probs->switchable_interp_probs[update_type][i][j] = prob;
+#if CONFIG_FRAME_PARALLEL_ENCODE
+        /* TODO(FPMT): The current update is happening in cpi->frame_probs,
+         * this need to be taken care appropriately in final FPMT
+         * implementation to carry these values to subsequent frames.
+         * The frame_probs update is accumulated across frames, so the
+         * values from all individual parallel frames need to be taken
+         * into account after all the parallel frames are encoded.
+         *
+         * Only for quality simulation purpose - Update the accumulated frame
+         * probabilities in ppi->temp_variable based on the update flag.
+         */
+        if (cpi->do_frame_data_update) {
+          for (int update_type_idx = 0; update_type_idx < FRAME_UPDATE_TYPES;
+               update_type_idx++) {
+            temp_frame_probs->switchable_interp_probs[update_type_idx][i][j] =
+                frame_probs->switchable_interp_probs[update_type_idx][i][j];
+          }
+        }
+#endif  // CONFIG_FRAME_PARALLEL_ENCODE
       }
     }
   }
@@ -1641,7 +1739,8 @@ void av1_encode_frame(AV1_COMP *cpi) {
   (void)num_planes;
 #endif
 
-  if (cpi->sf.hl_sf.frame_parameter_update) {
+  if (cpi->sf.hl_sf.frame_parameter_update ||
+      cpi->sf.rt_sf.use_comp_ref_nonrd) {
     RD_COUNTS *const rdc = &cpi->td.rd_counts;
 
     if (frame_is_intra_only(cm))
@@ -1685,6 +1784,10 @@ void av1_encode_frame(AV1_COMP *cpi) {
         features->tx_mode = TX_MODE_LARGEST;
     }
   } else {
+    // This is needed if real-time speed setting is changed on the fly
+    // from one using compound prediction to one using single reference.
+    if (current_frame->reference_mode == REFERENCE_MODE_SELECT)
+      current_frame->reference_mode = SINGLE_REFERENCE;
     encode_frame_internal(cpi);
   }
 }

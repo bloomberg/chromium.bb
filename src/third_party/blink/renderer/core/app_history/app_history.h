@@ -19,6 +19,7 @@ namespace blink {
 class AppHistoryEntry;
 class AppHistoryNavigateEvent;
 class AppHistoryNavigateOptions;
+class AppHistoryNavigationOptions;
 class HTMLFormElement;
 class HistoryItem;
 class KURL;
@@ -52,6 +53,9 @@ class CORE_EXPORT AppHistory final : public EventTargetWithInlineData,
   AppHistoryEntry* current() const;
   HeapVector<Member<AppHistoryEntry>> entries();
 
+  bool canGoBack() const;
+  bool canGoForward() const;
+
   ScriptPromise navigate(ScriptState*,
                          const String& url,
                          AppHistoryNavigateOptions*,
@@ -60,17 +64,29 @@ class CORE_EXPORT AppHistory final : public EventTargetWithInlineData,
                          AppHistoryNavigateOptions*,
                          ExceptionState&);
 
+  ScriptPromise goTo(ScriptState*,
+                     const String& key,
+                     AppHistoryNavigationOptions*,
+                     ExceptionState&);
+  ScriptPromise back(ScriptState*,
+                     AppHistoryNavigationOptions*,
+                     ExceptionState&);
+  ScriptPromise forward(ScriptState*,
+                        AppHistoryNavigationOptions*,
+                        ExceptionState&);
+
   DEFINE_ATTRIBUTE_EVENT_LISTENER(navigate, kNavigate)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(navigatesuccess, kNavigatesuccess)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(navigateerror, kNavigateerror)
 
-  // Returns true if the navigation should continue.
-  bool DispatchNavigateEvent(const KURL& url,
-                             HTMLFormElement* form,
-                             NavigateEventType,
-                             WebFrameLoadType,
-                             UserNavigationInvolvement,
-                             SerializedScriptValue* = nullptr);
+  enum class DispatchResult { kContinue, kAbort, kRespondWith };
+  DispatchResult DispatchNavigateEvent(const KURL& url,
+                                       HTMLFormElement* form,
+                                       NavigateEventType,
+                                       WebFrameLoadType,
+                                       UserNavigationInvolvement,
+                                       SerializedScriptValue* = nullptr,
+                                       HistoryItem* destination_item = nullptr);
   void CancelOngoingNavigateEvent();
 
   int GetIndexFor(AppHistoryEntry*);
@@ -94,7 +110,12 @@ class CORE_EXPORT AppHistory final : public EventTargetWithInlineData,
   Member<ScriptPromiseResolver> navigate_method_call_promise_resolver_;
   scoped_refptr<SerializedScriptValue> navigate_serialized_state_;
 
+  bool did_react_to_promise_ = false;
+  Member<ScriptPromiseResolver> goto_promise_resolver_;
+
   ScriptValue navigate_event_info_;
+  ScriptValue goto_navigate_event_info_;
+  int64_t goto_item_sequence_number_ = 0;
 };
 
 }  // namespace blink

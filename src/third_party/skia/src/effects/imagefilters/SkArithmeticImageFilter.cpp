@@ -16,18 +16,15 @@
 #include "src/core/SkWriteBuffer.h"
 
 #if SK_SUPPORT_GPU
-#include "include/effects/SkRuntimeEffect.h"
 #include "include/gpu/GrRecordingContext.h"
+#include "src/core/SkRuntimeEffectPriv.h"
 #include "src/gpu/GrColorSpaceXform.h"
 #include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/GrTextureProxy.h"
 #include "src/gpu/SkGr.h"
-#include "src/gpu/effects/generated/GrArithmeticProcessor.h"
-#include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
-#include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
-#include "src/gpu/glsl/GrGLSLProgramDataManager.h"
-#include "src/gpu/glsl/GrGLSLUniformHandler.h"
+#include "src/gpu/effects/GrSkSLFP.h"
+#include "src/gpu/effects/GrTextureEffect.h"
 #endif
 
 namespace {
@@ -307,6 +304,34 @@ SkIRect SkArithmeticImageFilter::onFilterBounds(const SkIRect& src,
 
 #if SK_SUPPORT_GPU
 
+std::unique_ptr<GrFragmentProcessor> make_arithmetic_fp(
+        std::unique_ptr<GrFragmentProcessor> srcFP,
+        std::unique_ptr<GrFragmentProcessor> dstFP,
+        const SkV4& k,
+        bool enforcePMColor) {
+    static auto effect = SkMakeRuntimeEffect(SkRuntimeEffect::MakeForShader, R"(
+        uniform shader srcFP;
+        uniform shader dstFP;
+        uniform half4 k;
+        uniform half pmClamp;
+        half4 main(float2 xy) {
+            half4 src = sample(srcFP, xy);
+            half4 dst = sample(dstFP, xy);
+            half4 color = saturate(k.x * src * dst +
+                                   k.y * src +
+                                   k.z * dst +
+                                   k.w);
+            color.rgb = min(color.rgb, max(color.a, pmClamp));
+            return color;
+        }
+    )");
+    return GrSkSLFP::Make(effect, "arithmetic_fp", /*inputFP=*/nullptr, GrSkSLFP::OptFlags::kNone,
+                          "srcFP", std::move(srcFP),
+                          "dstFP", std::move(dstFP),
+                          "k", k,
+                          "pmClamp", enforcePMColor ? 0.0f : 1.0f);
+}
+
 sk_sp<SkSpecialImage> SkArithmeticImageFilter::filterImageGPU(
         const Context& ctx,
         sk_sp<SkSpecialImage> background,
@@ -374,7 +399,7 @@ sk_sp<SkSpecialImage> SkArithmeticImageFilter::filterImageGPU(
                                              foreground->alphaType(),
                                              ctx.colorSpace(),
                                              kPremul_SkAlphaType);
-        fp = GrArithmeticProcessor::Make(std::move(fgFP), std::move(fp), fK, fEnforcePMColor);
+        fp = make_arithmetic_fp(std::move(fgFP), std::move(fp), fK, fEnforcePMColor);
     }
 
     GrImageInfo info(ctx.grColorType(), kPremul_SkAlphaType, ctx.refColorSpace(), bounds.size());

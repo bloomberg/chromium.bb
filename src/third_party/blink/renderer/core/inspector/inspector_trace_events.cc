@@ -391,6 +391,7 @@ const char* PseudoTypeToString(CSSSelector::PseudoType pseudo_type) {
     DEFINE_STRING_MAPPING(PseudoHighlight)
     DEFINE_STRING_MAPPING(PseudoSpellingError)
     DEFINE_STRING_MAPPING(PseudoGrammarError)
+    DEFINE_STRING_MAPPING(PseudoHas)
 #undef DEFINE_STRING_MAPPING
   }
 
@@ -793,18 +794,9 @@ void inspector_change_resource_priority_event::Data(
   dict.Add("priority", ResourcePriorityString(load_priority));
 }
 
-void inspector_send_request_event::Data(
-    perfetto::TracedValue context,
-    DocumentLoader* loader,
-    uint64_t identifier,
-    LocalFrame* frame,
-    const ResourceRequest& request,
+namespace {
+String GetRenderBlockingStringFromBehavior(
     RenderBlockingBehavior render_blocking_behavior) {
-  auto dict = std::move(context).WriteDictionary();
-  dict.Add("requestId", IdentifiersFactory::RequestId(loader, identifier));
-  dict.Add("frame", IdentifiersFactory::FrameId(frame));
-  dict.Add("url", request.Url().GetString());
-  dict.Add("requestMethod", request.HttpMethod());
   String render_blocking_string;
   switch (render_blocking_behavior) {
     case RenderBlockingBehavior::kUnset:
@@ -827,6 +819,25 @@ void inspector_send_request_event::Data(
     default:
       NOTREACHED();
   }
+  return render_blocking_string;
+}
+
+}  // namespace
+
+void inspector_send_request_event::Data(
+    perfetto::TracedValue context,
+    DocumentLoader* loader,
+    uint64_t identifier,
+    LocalFrame* frame,
+    const ResourceRequest& request,
+    RenderBlockingBehavior render_blocking_behavior) {
+  auto dict = std::move(context).WriteDictionary();
+  dict.Add("requestId", IdentifiersFactory::RequestId(loader, identifier));
+  dict.Add("frame", IdentifiersFactory::FrameId(frame));
+  dict.Add("url", request.Url().GetString());
+  dict.Add("requestMethod", request.HttpMethod());
+  String render_blocking_string =
+      GetRenderBlockingStringFromBehavior(render_blocking_behavior);
   if (!render_blocking_string.IsNull()) {
     dict.Add("renderBlocking", render_blocking_string);
   }
@@ -834,6 +845,24 @@ void inspector_send_request_event::Data(
   if (priority)
     dict.Add("priority", priority);
   SetCallStack(dict);
+}
+
+void inspector_change_render_blocking_behavior_event::Data(
+    perfetto::TracedValue context,
+    DocumentLoader* loader,
+    uint64_t identifier,
+    const ResourceRequestHead& request,
+    RenderBlockingBehavior render_blocking_behavior) {
+  String request_id = IdentifiersFactory::RequestId(loader, identifier);
+
+  auto dict = std::move(context).WriteDictionary();
+  dict.Add("requestId", request_id);
+  dict.Add("url", request.Url().GetString());
+  String render_blocking_string =
+      GetRenderBlockingStringFromBehavior(render_blocking_behavior);
+  if (!render_blocking_string.IsNull()) {
+    dict.Add("renderBlocking", render_blocking_string);
+  }
 }
 
 void inspector_send_navigation_request_event::Data(

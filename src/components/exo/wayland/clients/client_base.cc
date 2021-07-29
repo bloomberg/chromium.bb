@@ -606,7 +606,9 @@ bool ClientBase::Init(const InitParams& params) {
     wl_output_add_listener(globals_.output.get(), &kOutputListener, this);
   } else {
     for (size_t i = 0; i < params.num_buffers; ++i) {
-      auto buffer = CreateBuffer(size_, params.drm_format, params.bo_usage);
+      auto buffer =
+          CreateBuffer(size_, params.drm_format, params.bo_usage,
+                       /*add_buffer_listener=*/!params.use_release_fences);
       if (!buffer) {
         LOG(ERROR) << "Failed to create buffer";
         return false;
@@ -864,8 +866,7 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateBuffer(
     const gfx::Size& size,
     int32_t drm_format,
     int32_t bo_usage,
-    wl_buffer_listener* buffer_listener,
-    void* data) {
+    bool add_buffer_listener) {
   std::unique_ptr<Buffer> buffer;
 #if defined(USE_GBM)
   if (device_) {
@@ -882,7 +883,7 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateBuffer(
 
     if (use_memfd_) {
       // udmabuf_create requires a page aligned buffer.
-      length = base::bits::Align(length, getpagesize());
+      length = base::bits::AlignUp(length, getpagesize());
       int memfd = memfd_create("memfd", MFD_ALLOW_SEALING);
       if (memfd < 0) {
         PLOG(ERROR) << "memfd_create failed";
@@ -962,9 +963,10 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateBuffer(
     DCHECK(buffer->sk_surface);
   }
 
-  wl_buffer_add_listener(buffer->buffer.get(),
-                         buffer_listener ? buffer_listener : &g_buffer_listener,
-                         data ? data : buffer.get());
+  if (add_buffer_listener) {
+    wl_buffer_add_listener(buffer->buffer.get(), &g_buffer_listener,
+                           buffer.get());
+  }
   return buffer;
 }
 
@@ -1017,13 +1019,13 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateDrmBuffer(
         EGL_LINUX_DRM_FOURCC_EXT,
         drm_format,
         EGL_DMA_BUF_PLANE0_PITCH_EXT,
-        gbm_bo_get_stride_for_plane(buffer->bo.get(), 0),
+        static_cast<EGLint>(gbm_bo_get_stride_for_plane(buffer->bo.get(), 0)),
         EGL_DMA_BUF_PLANE0_OFFSET_EXT,
         0,
         EGL_DMA_BUF_PLANE0_MODIFIER_LO_EXT,
-        modifier,
+        static_cast<EGLint>(modifier),
         EGL_DMA_BUF_PLANE0_MODIFIER_HI_EXT,
-        modifier >> 32,
+        static_cast<EGLint>(modifier >> 32),
         EGL_NONE};
     EGLImageKHR image = eglCreateImageKHR(
         eglGetCurrentDisplay(), EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT,
@@ -1086,7 +1088,8 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateDrmBuffer(
             VK_STRUCTURE_TYPE_DMA_BUF_IMAGE_CREATE_INFO_INTEL),
         .fd = vk_image_fd.release(),
         .format = VK_FORMAT_A8B8G8R8_UNORM_PACK32,
-        .extent = (VkExtent3D){size.width(), size.height(), 1},
+        .extent = (VkExtent3D){static_cast<uint32_t>(size.width()),
+                               static_cast<uint32_t>(size.height()), 1},
         .strideInBytes = gbm_bo_get_stride(buffer->bo.get()),
     };
 
@@ -1139,8 +1142,8 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateDrmBuffer(
         .renderPass = vk_render_pass_->get(),
         .attachmentCount = 1,
         .pAttachments = &buffer->vk_image_view->get(),
-        .width = size.width(),
-        .height = size.height(),
+        .width = static_cast<uint32_t>(size.width()),
+        .height = static_cast<uint32_t>(size.height()),
         .layers = 1,
     };
     buffer->vk_framebuffer.reset(

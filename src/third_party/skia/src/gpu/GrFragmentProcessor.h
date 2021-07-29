@@ -12,7 +12,6 @@
 
 #include "include/private/SkSLSampleUsage.h"
 #include "src/gpu/GrProcessor.h"
-#include "src/gpu/ops/GrOp.h"
 
 class GrGLSLFragmentProcessor;
 class GrPaint;
@@ -21,6 +20,15 @@ class GrProcessorKeyBuilder;
 class GrShaderCaps;
 class GrSwizzle;
 class GrTextureEffect;
+
+/**
+ * Some fragment-processor creation methods have preconditions that might not be satisfied by the
+ * calling code. Those methods can return a `GrFPResult` from their factory methods. If creation
+ * succeeds, the new fragment processor is created and `success` is true. If a precondition is not
+ * met, `success` is set to false and the input FP is returned unchanged.
+ */
+class GrFragmentProcessor;
+using GrFPResult = std::tuple<bool /*success*/, std::unique_ptr<GrFragmentProcessor>>;
 
 /** Provides custom fragment shader code. Fragment processors receive an input position and
     produce an output color. They may contain uniforms and may have children fragment processors
@@ -53,14 +61,16 @@ public:
 
     /**
      *  Returns a fragment processor that generates the passed-in color, modulated by the child's
-     *  alpha channel. (Pass a null FP to use the alpha from fInputColor instead of a child FP.)
+     *  alpha channel. The child's input color will be the parent's fInputColor. (Pass a null FP to
+     *  use the alpha from fInputColor instead of a child FP.)
      */
     static std::unique_ptr<GrFragmentProcessor> ModulateAlpha(
             std::unique_ptr<GrFragmentProcessor> child, const SkPMColor4f& color);
 
     /**
      *  Returns a fragment processor that generates the passed-in color, modulated by the child's
-     *  RGBA color. (Pass a null FP to use the color from fInputColor instead of a child FP.)
+     *  RGBA color. The child's input color will be the parent's fInputColor. (Pass a null FP to use
+     *  the color from fInputColor instead of a child FP.)
      */
     static std::unique_ptr<GrFragmentProcessor> ModulateRGBA(
             std::unique_ptr<GrFragmentProcessor> child, const SkPMColor4f& color);
@@ -84,10 +94,12 @@ public:
                                                               bool useUniform = true);
 
     /**
-     *  Returns a fragment processor that premuls the input before calling the passed in fragment
-     *  processor.
+     *  Returns a parent fragment processor that adopts the passed fragment processor as a child.
+     *  The parent will unpremul its input color, make it opaque, and pass that as the input to
+     *  the child. Then the original input alpha is applied to the result of the child.
      */
-    static std::unique_ptr<GrFragmentProcessor> PremulInput(std::unique_ptr<GrFragmentProcessor>);
+    static std::unique_ptr<GrFragmentProcessor> MakeInputOpaqueAndPostApplyAlpha(
+            std::unique_ptr<GrFragmentProcessor>);
 
     /**
      *  Returns a fragment processor that calls the passed in fragment processor, and then swizzles
@@ -95,6 +107,12 @@ public:
      */
     static std::unique_ptr<GrFragmentProcessor> SwizzleOutput(std::unique_ptr<GrFragmentProcessor>,
                                                               const GrSwizzle&);
+
+    /**
+     *  Returns a fragment processor that calls the passed in fragment processor, and then clamps
+     *  the output to [0, 1].
+     */
+    static std::unique_ptr<GrFragmentProcessor> ClampOutput(std::unique_ptr<GrFragmentProcessor>);
 
     /**
      *  Returns a fragment processor that calls the passed in fragment processor, and then ensures
@@ -110,6 +128,55 @@ public:
      */
     static std::unique_ptr<GrFragmentProcessor> Compose(std::unique_ptr<GrFragmentProcessor> f,
                                                         std::unique_ptr<GrFragmentProcessor> g);
+
+    /*
+     * Returns a fragment processor that calls the passed in fragment processor, then runs the
+     * resulting color through the supplied color matrix.
+     */
+    static std::unique_ptr<GrFragmentProcessor> ColorMatrix(
+            std::unique_ptr<GrFragmentProcessor> child,
+            const float matrix[20],
+            bool unpremulInput,
+            bool clampRGBOutput,
+            bool premulOutput);
+
+    /**
+     * Returns a fragment processor that reads back the destination color; that is, sampling will
+     * return the color of the sample that is currently being painted over.
+     */
+    static std::unique_ptr<GrFragmentProcessor> DestColor();
+
+    /**
+     * Returns a fragment processor that calls the passed in fragment processor, but evaluates it
+     * in device-space (rather than local space).
+     */
+    static std::unique_ptr<GrFragmentProcessor> DeviceSpace(std::unique_ptr<GrFragmentProcessor>);
+
+    /**
+     * "Shape" FPs, often used for clipping. Each one evaluates a particular kind of shape (rect,
+     * circle, ellipse), and modulates the coverage of that shape against the results of the input
+     * FP. GrClipEdgeType is used to select inverse/normal fill, and AA or non-AA edges.
+     */
+    static std::unique_ptr<GrFragmentProcessor> Rect(std::unique_ptr<GrFragmentProcessor>,
+                                                     GrClipEdgeType,
+                                                     SkRect);
+
+    static GrFPResult Circle(std::unique_ptr<GrFragmentProcessor>,
+                             GrClipEdgeType,
+                             SkPoint center,
+                             float radius);
+
+    static GrFPResult Ellipse(std::unique_ptr<GrFragmentProcessor>,
+                              GrClipEdgeType,
+                              SkPoint center,
+                              SkPoint radii,
+                              const GrShaderCaps&);
+
+    /**
+     * Returns a fragment processor that calls the passed in fragment processor, but ensures the
+     * entire program is compiled with high-precision types.
+     */
+    static std::unique_ptr<GrFragmentProcessor> HighPrecision(std::unique_ptr<GrFragmentProcessor>);
 
     /**
      * Makes a copy of this fragment processor that draws equivalently to the original.
@@ -167,6 +234,11 @@ public:
         return (SkToBool(fFlags & kUsesSampleCoordsDirectly_Flag) ||
                 SkToBool(fFlags & kUsesSampleCoordsIndirectly_Flag)) &&
                !SkToBool(fFlags & kSampledWithExplicitCoords_Flag);
+    }
+
+    /** Do any of the FPs in this tree read back the color from the destination surface? */
+    bool willReadDstColor() const {
+        return SkToBool(fFlags & kWillReadDstColor_Flag);
     }
 
    /**
@@ -247,7 +319,7 @@ public:
      */
     bool isEqual(const GrFragmentProcessor& that) const;
 
-    void visitProxies(const GrOp::VisitProxyFunc& func) const;
+    void visitProxies(const GrVisitProxyFunc&) const;
 
     void visitTextureEffects(const std::function<void(const GrTextureEffect&)>&) const;
 
@@ -387,6 +459,12 @@ protected:
         fFlags |= kUsesSampleCoordsDirectly_Flag;
     }
 
+    // FP implementations must set this flag if their GrGLSLFragmentProcessor's emitCode() function
+    // calls dstColor() to read back the framebuffer.
+    void setWillReadDstColor() {
+        fFlags |= kWillReadDstColor_Flag;
+    }
+
     void mergeOptimizationFlags(OptimizationFlags flags) {
         SkASSERT((flags & ~kAll_OptimizationFlags) == 0);
         fFlags &= (flags | ~kAll_OptimizationFlags);
@@ -415,7 +493,7 @@ private:
     enum PrivateFlags {
         kFirstPrivateFlag = kAll_OptimizationFlags + 1,
 
-        // Propagate up the FP tree to the root
+        // Propagates up the FP tree to the root
         kUsesSampleCoordsIndirectly_Flag = kFirstPrivateFlag,
 
         // Does not propagate at all
@@ -424,6 +502,9 @@ private:
         // Propagates down the FP to all its leaves
         kSampledWithExplicitCoords_Flag = kFirstPrivateFlag << 2,
         kNetTransformHasPerspective_Flag = kFirstPrivateFlag << 3,
+
+        // Propagates up the FP tree to the root
+        kWillReadDstColor_Flag = kFirstPrivateFlag << 4,
     };
     void addAndPushFlagToChildren(PrivateFlags flag);
 
@@ -459,8 +540,12 @@ public:
     // Hopefully this does not actually get called because of RVO.
     CIter(const CIter&) = default;
 
+    CIter(CIter&&) = default;
+
     // Because each iterator carries a stack we want to avoid copies.
     CIter& operator=(const CIter&) = delete;
+
+    CIter& operator=(CIter&&) = default;
 
 protected:
     CIter() = delete;
@@ -480,13 +565,6 @@ private:
     const Src& fT;
 };
 
-/**
- * Some fragment-processor creation methods have preconditions that might not be satisfied by the
- * calling code. Those methods can return a `GrFPResult` from their factory methods. If creation
- * succeeds, the new fragment processor is created and `success` is true. If a precondition is not
- * met, `success` is set to false and the input FP is returned unchanged.
- */
-using GrFPResult = std::tuple<bool /*success*/, std::unique_ptr<GrFragmentProcessor>>;
 static inline GrFPResult GrFPFailure(std::unique_ptr<GrFragmentProcessor> fp) {
     return {false, std::move(fp)};
 }

@@ -10,6 +10,7 @@
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/span.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/attestation/attestation_flow.h"
+#include "chromeos/attestation/attestation_flow_adaptive.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/attestation/attestation.pb.h"
 #include "chromeos/dbus/attestation/attestation_client.h"
@@ -32,6 +34,7 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_result.h"
+#include "components/permissions/permission_util.h"
 #include "components/user_manager/user.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -49,7 +52,7 @@ using ash::attestation::PlatformVerificationFlow;
 
 const int kTimeoutInSeconds = 8;
 const char kAttestationResultHistogram[] =
-    "ChromeOS.PlatformVerification.Result";
+    "ChromeOS.PlatformVerification.Result2";
 const char kAttestationAvailableHistogram[] =
     "ChromeOS.PlatformVerification.Available";
 const int kOpportunisticRenewalThresholdInDays = 30;
@@ -73,43 +76,7 @@ class DefaultDelegate : public PlatformVerificationFlow::Delegate {
   DefaultDelegate() {}
   ~DefaultDelegate() override {}
 
-  const GURL& GetURL(content::WebContents* web_contents) override {
-    const GURL& url = web_contents->GetLastCommittedURL();
-    if (!url.is_valid())
-      return web_contents->GetVisibleURL();
-    return url;
-  }
-
-  const user_manager::User* GetUser(
-      content::WebContents* web_contents) override {
-    return ProfileHelper::Get()->GetUserByProfile(
-        Profile::FromBrowserContext(web_contents->GetBrowserContext()));
-  }
-
-  bool IsPermittedByUser(content::WebContents* web_contents) override {
-    // TODO(xhwang): Using delegate_->GetURL() here is not right. The platform
-    // verification may be requested by a frame from a different origin. This
-    // will be solved when http://crbug.com/454847 is fixed.
-    const GURL& requesting_origin = GetURL(web_contents).GetOrigin();
-
-    GURL embedding_origin = web_contents->GetLastCommittedURL().GetOrigin();
-    ContentSetting content_setting =
-        PermissionManagerFactory::GetForProfile(
-            Profile::FromBrowserContext(web_contents->GetBrowserContext()))
-            ->GetPermissionStatus(
-                ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER,
-                requesting_origin, embedding_origin)
-            .content_setting;
-
-    return content_setting == CONTENT_SETTING_ALLOW;
-  }
-
-  bool IsInSupportedMode(content::WebContents* web_contents) override {
-    Profile* profile =
-        Profile::FromBrowserContext(web_contents->GetBrowserContext());
-    if (profile->IsOffTheRecord() || profile->IsGuestSession())
-      return false;
-
+  bool IsInSupportedMode() override {
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     return !command_line->HasSwitch(chromeos::switches::kSystemDevMode) ||
            command_line->HasSwitch(chromeos::switches::kAllowRAInDevMode);
@@ -120,11 +87,11 @@ class DefaultDelegate : public PlatformVerificationFlow::Delegate {
 };
 
 PlatformVerificationFlow::ChallengeContext::ChallengeContext(
-    content::WebContents* web_contents,
+    const AccountId& account_id,
     const std::string& service_id,
     const std::string& challenge,
     ChallengeCallback callback)
-    : web_contents(web_contents),
+    : account_id(account_id),
       service_id(service_id),
       challenge(challenge),
       callback(std::move(callback)) {}
@@ -141,8 +108,8 @@ PlatformVerificationFlow::PlatformVerificationFlow()
       timeout_delay_(base::TimeDelta::FromSeconds(kTimeoutInSeconds)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   std::unique_ptr<ServerProxy> attestation_ca_client(new AttestationCAClient());
-  default_attestation_flow_ =
-      std::make_unique<AttestationFlow>(std::move(attestation_ca_client));
+  default_attestation_flow_ = std::make_unique<AttestationFlowAdaptive>(
+      std::move(attestation_ca_client));
   attestation_flow_ = default_attestation_flow_.get();
   default_delegate_ = std::make_unique<DefaultDelegate>();
   delegate_ = default_delegate_.get();
@@ -165,18 +132,40 @@ PlatformVerificationFlow::PlatformVerificationFlow(
 
 PlatformVerificationFlow::~PlatformVerificationFlow() = default;
 
+// static
+bool PlatformVerificationFlow::IsAttestationAllowedByPolicy() {
+  // Check the device policy for the feature.
+  bool enabled_for_device = false;
+  if (!CrosSettings::Get()->GetBoolean(kAttestationForContentProtectionEnabled,
+                                       &enabled_for_device)) {
+    LOG(ERROR) << "Failed to get device setting.";
+    return false;
+  }
+  if (!enabled_for_device) {
+    VLOG(1) << "Platform verification denied because Verified Access is "
+            << "disabled for the device.";
+    return false;
+  }
+
+  return true;
+}
+
 void PlatformVerificationFlow::ChallengePlatformKey(
     content::WebContents* web_contents,
     const std::string& service_id,
     const std::string& challenge,
     ChallengeCallback callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  const user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(
+      Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+  ChallengePlatformKey(user, service_id, challenge, std::move(callback));
+}
 
-  if (!delegate_->GetURL(web_contents).is_valid()) {
-    LOG(WARNING) << "PlatformVerificationFlow: Invalid URL.";
-    ReportError(std::move(callback), INTERNAL_ERROR);
-    return;
-  }
+void PlatformVerificationFlow::ChallengePlatformKey(
+    const user_manager::User* user,
+    const std::string& service_id,
+    const std::string& challenge,
+    ChallengeCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Note: The following checks are performed when use of the protected media
   // identifier is indicated. The first two in GetPermissionStatus and the third
@@ -193,19 +182,19 @@ void PlatformVerificationFlow::ChallengePlatformKey(
     return;
   }
 
-  if (!delegate_->IsInSupportedMode(web_contents)) {
+  if (!delegate_->IsInSupportedMode()) {
     LOG(ERROR) << "Platform verification not supported in the current mode.";
     ReportError(std::move(callback), PLATFORM_NOT_VERIFIED);
     return;
   }
 
-  if (!delegate_->IsPermittedByUser(web_contents)) {
-    VLOG(1) << "Platform verification not permitted by user.";
-    ReportError(std::move(callback), USER_REJECTED);
+  if (!user) {
+    LOG(ERROR) << "Profile does not map to a valid user.";
+    ReportError(std::move(callback), INTERNAL_ERROR);
     return;
   }
 
-  ChallengeContext context(web_contents, service_id, challenge,
+  ChallengeContext context(user->GetAccountId(), service_id, challenge,
                            std::move(callback));
 
   // Check if the device has been prepared to use attestation.
@@ -234,24 +223,14 @@ void PlatformVerificationFlow::OnAttestationPrepared(
     return;
   }
 
-  // Permission allowed. Now proceed to get certificate.
-  const user_manager::User* user = delegate_->GetUser(context.web_contents);
-  if (!user) {
-    ReportError(std::move(context).callback, INTERNAL_ERROR);
-    LOG(ERROR) << "Profile does not map to a valid user.";
-    return;
-  }
-
   auto shared_context =
       base::MakeRefCounted<base::RefCountedData<ChallengeContext>>(
           std::move(context));
-  GetCertificate(std::move(shared_context), user->GetAccountId(),
-                 false /* Don't force a new key */);
+  GetCertificate(std::move(shared_context), false /* Don't force a new key */);
 }
 
 void PlatformVerificationFlow::GetCertificate(
     scoped_refptr<base::RefCountedData<ChallengeContext>> context,
-    const AccountId& account_id,
     bool force_new_key) {
   auto timer = std::make_unique<base::OneShotTimer>();
   base::OnceClosure timeout_callback = base::BindOnce(
@@ -260,11 +239,11 @@ void PlatformVerificationFlow::GetCertificate(
 
   AttestationFlow::CertificateCallback certificate_callback =
       base::BindOnce(&PlatformVerificationFlow::OnCertificateReady, this,
-                     context, account_id, std::move(timer));
-  attestation_flow_->GetCertificate(PROFILE_CONTENT_PROTECTION_CERTIFICATE,
-                                    account_id, context->data.service_id,
-                                    force_new_key, std::string() /*key_name*/,
-                                    std::move(certificate_callback));
+                     context, context->data.account_id, std::move(timer));
+  attestation_flow_->GetCertificate(
+      PROFILE_CONTENT_PROTECTION_CERTIFICATE, context->data.account_id,
+      context->data.service_id, force_new_key, std::string() /*key_name*/,
+      std::move(certificate_callback));
 }
 
 void PlatformVerificationFlow::OnCertificateReady(
@@ -290,7 +269,7 @@ void PlatformVerificationFlow::OnCertificateReady(
   }
   ExpiryStatus expiry_status = CheckExpiry(certificate_chain);
   if (expiry_status == EXPIRY_STATUS_EXPIRED) {
-    GetCertificate(std::move(context), account_id, true /* Force a new key */);
+    GetCertificate(std::move(context), true /* Force a new key */);
     return;
   }
   bool is_expiring_soon = (expiry_status == EXPIRY_STATUS_EXPIRING_SOON);
@@ -343,29 +322,13 @@ void PlatformVerificationFlow::OnChallengeReady(
         base::BindOnce(&PlatformVerificationFlow::RenewCertificateCallback,
                        this, std::move(certificate_chain));
     attestation_flow_->GetCertificate(
-        PROFILE_CONTENT_PROTECTION_CERTIFICATE, account_id, context.service_id,
+        PROFILE_CONTENT_PROTECTION_CERTIFICATE, context.account_id,
+        context.service_id,
         true,           // force_new_key
         std::string(),  // key_name, empty means a default one will be
                         // generated.
         std::move(renew_callback));
   }
-}
-
-bool PlatformVerificationFlow::IsAttestationAllowedByPolicy() {
-  // Check the device policy for the feature.
-  bool enabled_for_device = false;
-  if (!CrosSettings::Get()->GetBoolean(kAttestationForContentProtectionEnabled,
-                                       &enabled_for_device)) {
-    LOG(ERROR) << "Failed to get device setting.";
-    return false;
-  }
-  if (!enabled_for_device) {
-    VLOG(1) << "Platform verification denied because Verified Access is "
-            << "disabled for the device.";
-    return false;
-  }
-
-  return true;
 }
 
 PlatformVerificationFlow::ExpiryStatus PlatformVerificationFlow::CheckExpiry(
@@ -377,8 +340,8 @@ PlatformVerificationFlow::ExpiryStatus PlatformVerificationFlow::CheckExpiry(
   while (pem_tokenizer.GetNext()) {
     ++num_certificates;
     scoped_refptr<net::X509Certificate> x509 =
-        net::X509Certificate::CreateFromBytes(pem_tokenizer.data().data(),
-                                              pem_tokenizer.data().length());
+        net::X509Certificate::CreateFromBytes(
+            base::as_bytes(base::make_span(pem_tokenizer.data())));
     if (!x509.get() || x509->valid_expiry().is_null()) {
       // This logic intentionally fails open. In theory this should not happen
       // but in practice parsing X.509 can be brittle and there are a lot of

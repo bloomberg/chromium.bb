@@ -47,7 +47,7 @@ export class ClassesPaneWidget extends UI.Widget.Widget {
 
   constructor() {
     super(true);
-    this.registerRequiredCSS('panels/elements/classesPaneWidget.css', {enableLegacyPatching: false});
+    this.registerRequiredCSS('panels/elements/classesPaneWidget.css');
     this.contentElement.className = 'styles-element-classes-pane';
     const container = this.contentElement.createChild('div', 'title-container');
     this._input = container.createChild('div', 'new-class-input monospace');
@@ -63,7 +63,7 @@ export class ClassesPaneWidget extends UI.Widget.Widget {
     this._prompt.addEventListener(UI.TextPrompt.Events.TextChanged, this._onTextChanged, this);
     proxyElement.addEventListener('keydown', this._onKeyDown.bind(this), false);
 
-    SDK.SDKModel.TargetManager.instance().addModelListener(
+    SDK.TargetManager.TargetManager.instance().addModelListener(
         SDK.DOMModel.DOMModel, SDK.DOMModel.Events.DOMMutated, this._onDOMMutated, this);
     this._mutatingNodes = new Set();
     this._pendingNodeClasses = new Map();
@@ -152,6 +152,7 @@ export class ClassesPaneWidget extends UI.Widget.Widget {
   }
 
   wasShown(): void {
+    super.wasShown();
     this._update();
   }
 

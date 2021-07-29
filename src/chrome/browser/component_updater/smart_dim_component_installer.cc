@@ -18,19 +18,19 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/version.h"
-#include "chrome/browser/chromeos/power/ml/smart_dim/metrics.h"
-#include "chrome/browser/chromeos/power/ml/smart_dim/ml_agent.h"
+#include "chrome/browser/ash/power/ml/smart_dim/metrics.h"
+#include "chrome/browser/ash/power/ml/smart_dim/ml_agent.h"
 #include "components/component_updater/component_updater_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace {
 
-using ::chromeos::power::ml::ComponentFileContents;
-using ::chromeos::power::ml::ComponentVersionType;
-using ::chromeos::power::ml::LoadComponentEvent;
-using ::chromeos::power::ml::LogComponentVersionType;
-using ::chromeos::power::ml::LogLoadComponentEvent;
+using ::ash::power::ml::ComponentFileContents;
+using ::ash::power::ml::ComponentVersionType;
+using ::ash::power::ml::LoadComponentEvent;
+using ::ash::power::ml::LogComponentVersionType;
+using ::ash::power::ml::LogLoadComponentEvent;
 
 const base::FilePath::CharType kSmartDimFeaturePreprocessorConfigFileName[] =
     FILE_PATH_LITERAL("example_preprocessor_config.pb");
@@ -80,7 +80,7 @@ void UpdateSmartDimMlAgent(
     return;
   }
 
-  chromeos::power::ml::SmartDimMlAgent::GetInstance()->OnComponentReady(
+  ash::power::ml::SmartDimMlAgent::GetInstance()->OnComponentReady(
       result.value());
 }
 
@@ -119,8 +119,7 @@ void SmartDimComponentInstallerPolicy::ComponentReady(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // If IsDownloadWorkerReady(), newly downloaded components will take effect
   // on next reboot. This makes sure the updating happens at most once.
-  if (chromeos::power::ml::SmartDimMlAgent::GetInstance()
-          ->IsDownloadWorkerReady()) {
+  if (ash::power::ml::SmartDimMlAgent::GetInstance()->IsDownloadWorkerReady()) {
     DVLOG(1) << "Download_worker in SmartDimMlAgent is ready, does nothing.";
     return;
   }

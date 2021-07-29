@@ -17,7 +17,7 @@
 #include "core/fxcrt/unowned_ptr.h"
 #include "core/fxge/dib/fx_dib.h"
 
-class CFFL_FormFiller;
+class CFFL_FormField;
 class CFX_RenderDevice;
 class CPWL_Edit;
 class IPWL_SystemHandler;
@@ -49,7 +49,7 @@ class CPWL_EditImpl {
                        const CFX_PointF& ptOffset,
                        const CPVT_WordRange* pRange,
                        IPWL_SystemHandler* pSystemHandler,
-                       CFFL_FormFiller* pFFLData);
+                       CFFL_FormField* pFFLData);
 
   CPWL_EditImpl();
   ~CPWL_EditImpl();
@@ -67,23 +67,24 @@ class CPWL_EditImpl {
   void SetScrollPos(const CFX_PointF& point);
 
   // Set the horizontal text alignment. (nFormat [0:left, 1:middle, 2:right])
-  void SetAlignmentH(int32_t nFormat, bool bPaint);
+  void SetAlignmentH(int32_t nFormat);
+
   // Set the vertical text alignment. (nFormat [0:left, 1:middle, 2:right])
-  void SetAlignmentV(int32_t nFormat, bool bPaint);
+  void SetAlignmentV(int32_t nFormat);
 
   // Set the substitution character for hidden text.
-  void SetPasswordChar(uint16_t wSubWord, bool bPaint);
+  void SetPasswordChar(uint16_t wSubWord);
 
   // Set the maximum number of words in the text.
   void SetLimitChar(int32_t nLimitChar);
   void SetCharArray(int32_t nCharArray);
   void SetCharSpace(float fCharSpace);
-  void SetMultiLine(bool bMultiLine, bool bPaint);
-  void SetAutoReturn(bool bAuto, bool bPaint);
-  void SetAutoFontSize(bool bAuto, bool bPaint);
-  void SetAutoScroll(bool bAuto, bool bPaint);
+  void SetMultiLine(bool bMultiLine);
+  void SetAutoReturn(bool bAuto);
+  void SetAutoFontSize(bool bAuto);
+  void SetAutoScroll(bool bAuto);
   void SetFontSize(float fFontSize);
-  void SetTextOverflow(bool bAllowed, bool bPaint);
+  void SetTextOverflow(bool bAllowed);
   void OnMouseDown(const CFX_PointF& point, bool bShift, bool bCtrl);
   void OnMouseMove(const CFX_PointF& point, bool bShift, bool bCtrl);
   void OnVK_UP(bool bShift, bool bCtrl);

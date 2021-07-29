@@ -76,8 +76,6 @@ source_set("storage_minimal") {
     "importers/ftrace/ftrace_module.h",
     "importers/fuchsia/fuchsia_record.h",
     "importers/fuchsia/fuchsia_trace_utils.h",
-    "importers/gzip/gzip_utils.cc",
-    "importers/gzip/gzip_utils.h",
     "importers/json/json_utils.cc",
     "importers/json/json_utils.h",
     "importers/ninja/ninja_log_parser.cc",
@@ -154,6 +152,7 @@ source_set("storage_minimal") {
     "types",
     "util",
     "util:descriptors",
+    "util:gzip",
     "util:interned_message_view",
     "util:proto_to_args_parser",
   ]
@@ -179,11 +178,6 @@ source_set("storage_minimal") {
   # json_utils optionally depends on jsoncpp.
   if (enable_perfetto_trace_processor_json) {
     deps += [ "../../gn:jsoncpp" ]
-  }
-
-  # gzip_utils optionally depends on zlib.
-  if (enable_perfetto_zlib) {
-    deps += [ "../../gn:zlib" ]
   }
 }
 
@@ -272,6 +266,7 @@ source_set("storage_full") {
     "tables",
     "types",
     "util",
+    "util:gzip",
   ]
   if (enable_perfetto_trace_processor_json) {
     deps += [ "../../gn:jsoncpp" ]
@@ -313,6 +308,8 @@ if (enable_perfetto_trace_processor_sqlite) {
       "dynamic/experimental_counter_dur_generator.h",
       "dynamic/experimental_flamegraph_generator.cc",
       "dynamic/experimental_flamegraph_generator.h",
+      "dynamic/experimental_flat_slice_generator.cc",
+      "dynamic/experimental_flat_slice_generator.h",
       "dynamic/experimental_sched_upid_generator.cc",
       "dynamic/experimental_sched_upid_generator.h",
       "dynamic/experimental_slice_layout_generator.cc",
@@ -344,6 +341,7 @@ if (enable_perfetto_trace_processor_sqlite) {
       "tables",
       "types",
       "util",
+      "util:gzip",
       "util:protozero_to_text",
     ]
     public_deps = [
@@ -360,6 +358,7 @@ if (enable_perfetto_trace_processor_sqlite) {
       ":lib",
       "../../gn:default_deps",
       "../../gn:protobuf_full",
+      "../../protos/perfetto/trace_processor:zero",
       "../../src/profiling:deobfuscator",
       "../../src/profiling/symbolizer",
       "../../src/profiling/symbolizer:symbolize_database",
@@ -446,6 +445,7 @@ perfetto_unittest_source_set("unittests") {
   if (enable_perfetto_trace_processor_sqlite) {
     sources += [
       "dynamic/experimental_counter_dur_generator_unittest.cc",
+      "dynamic/experimental_flat_slice_generator_unittest.cc",
       "dynamic/experimental_slice_layout_generator_unittest.cc",
       "dynamic/thread_state_generator_unittest.cc",
     ]

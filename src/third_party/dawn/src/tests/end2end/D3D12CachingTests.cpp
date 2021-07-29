@@ -112,26 +112,26 @@ TEST_P(D3D12CachingTests, SameShaderNoCache) {
 
     // Store the WGSL shader into the cache.
     {
-        utils::ComboRenderPipelineDescriptor2 desc;
+        utils::ComboRenderPipelineDescriptor desc;
         desc.vertex.module = module;
         desc.vertex.entryPoint = "vertex_main";
         desc.cFragment.module = module;
         desc.cFragment.entryPoint = "fragment_main";
 
-        EXPECT_CACHE_HIT(0u, device.CreateRenderPipeline2(&desc));
+        EXPECT_CACHE_HIT(0u, device.CreateRenderPipeline(&desc));
     }
 
     EXPECT_EQ(mPersistentCache.mCache.size(), 0u);
 
     // Load the same WGSL shader from the cache.
     {
-        utils::ComboRenderPipelineDescriptor2 desc;
+        utils::ComboRenderPipelineDescriptor desc;
         desc.vertex.module = module;
         desc.vertex.entryPoint = "vertex_main";
         desc.cFragment.module = module;
         desc.cFragment.entryPoint = "fragment_main";
 
-        EXPECT_CACHE_HIT(0u, device.CreateRenderPipeline2(&desc));
+        EXPECT_CACHE_HIT(0u, device.CreateRenderPipeline(&desc));
     }
 
     EXPECT_EQ(mPersistentCache.mCache.size(), 0u);
@@ -153,20 +153,20 @@ TEST_P(D3D12CachingTests, ReuseShaderWithMultipleEntryPointsPerStage) {
 
     // Store the WGSL shader into the cache.
     {
-        utils::ComboRenderPipelineDescriptor2 desc;
+        utils::ComboRenderPipelineDescriptor desc;
         desc.vertex.module = module;
         desc.vertex.entryPoint = "vertex_main";
         desc.cFragment.module = module;
         desc.cFragment.entryPoint = "fragment_main";
 
-        EXPECT_CACHE_HIT(0u, device.CreateRenderPipeline2(&desc));
+        EXPECT_CACHE_HIT(0u, device.CreateRenderPipeline(&desc));
     }
 
     EXPECT_EQ(mPersistentCache.mCache.size(), 2u);
 
     // Load the same WGSL shader from the cache.
     {
-        utils::ComboRenderPipelineDescriptor2 desc;
+        utils::ComboRenderPipelineDescriptor desc;
         desc.vertex.module = module;
         desc.vertex.entryPoint = "vertex_main";
         desc.cFragment.module = module;
@@ -174,7 +174,7 @@ TEST_P(D3D12CachingTests, ReuseShaderWithMultipleEntryPointsPerStage) {
 
         // Cached HLSL shader calls LoadData twice (once to peek, again to get), so check 2 x
         // kNumOfShaders hits.
-        EXPECT_CACHE_HIT(4u, device.CreateRenderPipeline2(&desc));
+        EXPECT_CACHE_HIT(4u, device.CreateRenderPipeline(&desc));
     }
 
     EXPECT_EQ(mPersistentCache.mCache.size(), 2u);
@@ -191,12 +191,12 @@ TEST_P(D3D12CachingTests, ReuseShaderWithMultipleEntryPointsPerStage) {
   )");
 
     {
-        utils::ComboRenderPipelineDescriptor2 desc;
+        utils::ComboRenderPipelineDescriptor desc;
         desc.vertex.module = newModule;
         desc.vertex.entryPoint = "vertex_main";
         desc.cFragment.module = newModule;
         desc.cFragment.entryPoint = "fragment_main";
-        EXPECT_CACHE_HIT(0u, device.CreateRenderPipeline2(&desc));
+        EXPECT_CACHE_HIT(0u, device.CreateRenderPipeline(&desc));
     }
 
     // Cached HLSL shader calls LoadData twice (once to peek, again to get), so check 2 x
@@ -211,13 +211,13 @@ TEST_P(D3D12CachingTests, ReuseShaderWithMultipleEntryPoints) {
         [[block]] struct Data {
             data : u32;
         };
-        [[binding(0), group(0)]] var<storage> data : [[access(read_write)]] Data;
+        [[binding(0), group(0)]] var<storage, read_write> data : Data;
 
-        [[stage(compute)]] fn write1() {
+        [[stage(compute), workgroup_size(1)]] fn write1() {
             data.data = 1u;
         }
 
-        [[stage(compute)]] fn write42() {
+        [[stage(compute), workgroup_size(1)]] fn write42() {
             data.data = 42u;
         }
     )");
@@ -225,12 +225,12 @@ TEST_P(D3D12CachingTests, ReuseShaderWithMultipleEntryPoints) {
     // Store the WGSL shader into the cache.
     {
         wgpu::ComputePipelineDescriptor desc;
-        desc.computeStage.module = module;
-        desc.computeStage.entryPoint = "write1";
+        desc.compute.module = module;
+        desc.compute.entryPoint = "write1";
         EXPECT_CACHE_HIT(0u, device.CreateComputePipeline(&desc));
 
-        desc.computeStage.module = module;
-        desc.computeStage.entryPoint = "write42";
+        desc.compute.module = module;
+        desc.compute.entryPoint = "write42";
         EXPECT_CACHE_HIT(0u, device.CreateComputePipeline(&desc));
     }
 
@@ -239,15 +239,15 @@ TEST_P(D3D12CachingTests, ReuseShaderWithMultipleEntryPoints) {
     // Load the same WGSL shader from the cache.
     {
         wgpu::ComputePipelineDescriptor desc;
-        desc.computeStage.module = module;
-        desc.computeStage.entryPoint = "write1";
+        desc.compute.module = module;
+        desc.compute.entryPoint = "write1";
 
         // Cached HLSL shader calls LoadData twice (once to peek, again to get), so check 2 x
         // kNumOfShaders hits.
         EXPECT_CACHE_HIT(2u, device.CreateComputePipeline(&desc));
 
-        desc.computeStage.module = module;
-        desc.computeStage.entryPoint = "write42";
+        desc.compute.module = module;
+        desc.compute.entryPoint = "write42";
 
         // Cached HLSL shader calls LoadData twice, so check 2 x kNumOfShaders hits.
         EXPECT_CACHE_HIT(2u, device.CreateComputePipeline(&desc));

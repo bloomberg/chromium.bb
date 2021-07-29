@@ -8,11 +8,10 @@
 #include "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
-#include "base/scoped_observer.h"
 #include "base/strings/sys_string_conversions.h"
 #import "components/feature_engagement/public/event_constants.h"
 #import "components/feature_engagement/public/tracker.h"
-#include "components/feed/core/shared_prefs/pref_names.h"
+#include "components/feed/core/v2/public/ios/pref_names.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/remote/remote_suggestions_scheduler.h"
@@ -71,6 +70,7 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_commands.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_feed_delegate.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/ntp/notification_promo_whats_new.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
@@ -264,9 +264,11 @@
   if (IsDiscoverFeedEnabled() && !IsRefactoredNTP()) {
     web::NavigationManager* navigationManager =
         self.webState->GetNavigationManager();
-    web::NavigationItem* item = navigationManager->GetVisibleItem();
-    if (item) {
-      offset = item->GetPageDisplayState().scroll_state().content_offset().y;
+    if (navigationManager) {
+      web::NavigationItem* item = navigationManager->GetVisibleItem();
+      if (item) {
+        offset = item->GetPageDisplayState().scroll_state().content_offset().y;
+      }
     }
   }
 
@@ -274,7 +276,8 @@
               initWithStyle:CollectionViewControllerStyleDefault
                      offset:offset
                 feedVisible:[self isFeedVisible]
-      refactoredFeedVisible:[self isRefactoredFeedVisible]];
+      refactoredFeedVisible:[self.ntpFeedDelegate
+                                    isNTPRefactoredAndFeedVisible]];
   [self.suggestionsViewController
       setDataSource:self.contentSuggestionsMediator];
   self.suggestionsViewController.suggestionCommandHandler = self.ntpMediator;
@@ -329,7 +332,7 @@
   // synchronizer instead.
   self.suggestionsViewController.headerProvider = self.headerController;
 
-  if ([self isRefactoredFeedVisible]) {
+  if ([self.ntpFeedDelegate isNTPRefactoredAndFeedVisible]) {
     self.suggestionsViewController.collectionView.accessibilityIdentifier =
         kContentSuggestionsCollectionIdentifier;
   } else {
@@ -337,7 +340,7 @@
         kNTPCollectionViewIdentifier;
   }
 
-  if (![self isRefactoredFeedVisible]) {
+  if (![self.ntpFeedDelegate isNTPRefactoredAndFeedVisible]) {
     self.headerCollectionInteractionHandler =
         [[ContentSuggestionsHeaderSynchronizer alloc]
             initWithCollectionController:self.suggestionsViewController
@@ -373,7 +376,7 @@
   self.headerController = nil;
   if (IsDiscoverFeedEnabled() && !IsRefactoredNTP()) {
     ios::GetChromeBrowserProvider()
-        ->GetDiscoverFeedProvider()
+        .GetDiscoverFeedProvider()
         ->RemoveFeedViewController(self.discoverFeedViewController);
   }
   self.contentSuggestionsExpanded = nil;
@@ -411,7 +414,7 @@
 
 - (void)discoverFeedShown {
   if (IsDiscoverFeedEnabled() && !self.feedShownWasCalled) {
-    ios::GetChromeBrowserProvider()->GetDiscoverFeedProvider()->FeedWasShown();
+    ios::GetChromeBrowserProvider().GetDiscoverFeedProvider()->FeedWasShown();
     self.feedShownWasCalled = YES;
   }
 }
@@ -487,7 +490,7 @@
 
 - (void)handleThemeChange {
   if (IsDiscoverFeedEnabled()) {
-    ios::GetChromeBrowserProvider()->GetDiscoverFeedProvider()->UpdateTheme();
+    ios::GetChromeBrowserProvider().GetDiscoverFeedProvider()->UpdateTheme();
   }
 }
 
@@ -523,7 +526,8 @@
                              IDS_IOS_DISCOVER_FEED_MENU_TURN_OFF_ITEM)
                   action:^{
                     [weakSelf setDiscoverFeedVisible:NO];
-                    if ([weakSelf isRefactoredFeedVisible]) {
+                    if ([weakSelf.ntpFeedDelegate
+                                isNTPRefactoredAndFeedVisible]) {
                       [weakSelf.ntpCommandHandler updateDiscoverFeedVisibility];
                     }
                   }
@@ -534,14 +538,15 @@
                              IDS_IOS_DISCOVER_FEED_MENU_TURN_ON_ITEM)
                   action:^{
                     [weakSelf setDiscoverFeedVisible:YES];
-                    if ([weakSelf isRefactoredFeedVisible]) {
+                    if ([weakSelf.ntpFeedDelegate
+                                isNTPRefactoredAndFeedVisible]) {
                       [weakSelf.ntpCommandHandler updateDiscoverFeedVisibility];
                     }
                   }
                    style:UIAlertActionStyleDefault];
   }
 
-  if (self.authService->IsAuthenticated()) {
+  if (self.authService->HasPrimaryIdentity(signin::ConsentLevel::kSignin)) {
     [self.alertCoordinator
         addItemWithTitle:l10n_util::GetNSString(
                              IDS_IOS_DISCOVER_FEED_MENU_MANAGE_ACTIVITY_ITEM)
@@ -595,11 +600,12 @@
 
 - (void)contentSuggestionsWasUpdated {
   [self.ntpCommandHandler updateDiscoverFeedLayout];
+  [self.ntpCommandHandler setContentOffsetToTop];
 }
 
 - (void)returnToRecentTabWasAdded {
   [self.ntpCommandHandler updateDiscoverFeedLayout];
-  if ([self.ntpMediator isRefactoredFeedVisible]) {
+  if ([self.ntpFeedDelegate isNTPRefactoredAndFeedVisible]) {
     [self.ntpCommandHandler setContentOffsetToTop];
   } else {
     [self.suggestionsViewController setContentOffset:0];
@@ -625,7 +631,7 @@
 
 - (void)loadMoreFeedArticles {
   ios::GetChromeBrowserProvider()
-      ->GetDiscoverFeedProvider()
+      .GetDiscoverFeedProvider()
       ->LoadMoreFeedArticles();
   [self.discoverFeedMetricsRecorder recordInfiniteFeedTriggered];
 }
@@ -663,7 +669,7 @@
 
 - (void)reload {
   if (IsDiscoverFeedEnabled() && !IsRefactoredNTP() && [self isFeedVisible]) {
-    ios::GetChromeBrowserProvider()->GetDiscoverFeedProvider()->RefreshFeed();
+    ios::GetChromeBrowserProvider().GetDiscoverFeedProvider()->RefreshFeed();
   }
   [self.contentSuggestionsMediator.dataSink reloadAllData];
 }
@@ -680,8 +686,7 @@
 
 - (UIContextMenuConfiguration*)contextMenuConfigurationForItem:
                                    (ContentSuggestionsMostVisitedItem*)item
-                                                      fromView:(UIView*)view
-    API_AVAILABLE(ios(13.0)) {
+                                                      fromView:(UIView*)view {
   __weak __typeof(self) weakSelf = self;
 
   UIContextMenuActionProvider actionProvider =
@@ -804,7 +809,7 @@
     return nil;
 
   UIViewController* discoverFeed = ios::GetChromeBrowserProvider()
-                                       ->GetDiscoverFeedProvider()
+                                       .GetDiscoverFeedProvider()
                                        ->NewFeedViewController(self.browser);
   // TODO(crbug.com/1085419): Once the CollectionView is cleanly exposed, remove
   // this loop.

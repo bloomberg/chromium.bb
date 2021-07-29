@@ -46,8 +46,9 @@ import {CSSStyleSheetHeader} from './CSSStyleSheetHeader.js';
 import type {DOMNode} from './DOMModel.js';
 import {DOMModel} from './DOMModel.js';  // eslint-disable-line no-unused-vars
 import {Events as ResourceTreeModelEvents, ResourceTreeModel} from './ResourceTreeModel.js';
-import type {Target} from './SDKModel.js';
-import {Capability, SDKModel} from './SDKModel.js';  // eslint-disable-line no-unused-vars
+import type {Target} from './Target.js';
+import {Capability} from './Target.js';
+import {SDKModel} from './SDKModel.js';
 import {SourceMapManager} from './SourceMapManager.js';
 
 export class CSSModel extends SDKModel {
@@ -111,7 +112,7 @@ export class CSSModel extends SDKModel {
 
   headersForSourceURL(sourceURL: string): CSSStyleSheetHeader[] {
     const headers = [];
-    for (const headerId of this.styleSheetIdsForURL(sourceURL)) {
+    for (const headerId of this.getStyleSheetIdsForURL(sourceURL)) {
       const header = this.styleSheetHeaderForId(headerId);
       if (header) {
         headers.push(header);
@@ -265,9 +266,7 @@ export class CSSModel extends SDKModel {
     return this._isEnabled;
   }
 
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async _enable(): Promise<any> {
+  async _enable(): Promise<void> {
     await this._agent.invoke_enable();
     this._isEnabled = true;
     if (this._isRuleUsageTrackingEnabled) {
@@ -276,7 +275,7 @@ export class CSSModel extends SDKModel {
     this.dispatchEventToListeners(Events.ModelWasEnabled);
   }
 
-  async matchedStylesPromise(nodeId: number): Promise<CSSMatchedStyles|null> {
+  async matchedStylesPromise(nodeId: Protocol.DOM.NodeId): Promise<CSSMatchedStyles|null> {
     const response = await this._agent.invoke_getMatchedStylesForNode({nodeId});
 
     if (response.getError()) {
@@ -299,11 +298,11 @@ export class CSSModel extends SDKModel {
     return classNames || [];
   }
 
-  computedStylePromise(nodeId: number): Promise<Map<string, string>|null> {
+  computedStylePromise(nodeId: Protocol.DOM.NodeId): Promise<Map<string, string>|null> {
     return this._styleLoader.computedStylePromise(nodeId);
   }
 
-  async backgroundColorsPromise(nodeId: number): Promise<ContrastInfo|null> {
+  async backgroundColorsPromise(nodeId: Protocol.DOM.NodeId): Promise<ContrastInfo|null> {
     const response = await this._agent.invoke_getBackgroundColors({nodeId});
     if (response.getError()) {
       return null;
@@ -316,7 +315,7 @@ export class CSSModel extends SDKModel {
     };
   }
 
-  async platformFontsPromise(nodeId: number): Promise<Protocol.CSS.PlatformFontUsage[]|null> {
+  async platformFontsPromise(nodeId: Protocol.DOM.NodeId): Promise<Protocol.CSS.PlatformFontUsage[]|null> {
     const {fonts} = await this._agent.invoke_getPlatformFontsForNode({nodeId});
     return fonts;
   }
@@ -337,7 +336,7 @@ export class CSSModel extends SDKModel {
     return values;
   }
 
-  async inlineStylesPromise(nodeId: number): Promise<InlineStyleResult|null> {
+  async inlineStylesPromise(nodeId: Protocol.DOM.NodeId): Promise<InlineStyleResult|null> {
     const response = await this._agent.invoke_getInlineStylesForNode({nodeId});
 
     if (response.getError() || !response.inlineStyle) {
@@ -396,6 +395,27 @@ export class CSSModel extends SDKModel {
       }
       this._domModel.markUndoableState();
       const edit = new Edit(styleSheetId, range, newMediaText, media);
+      this._fireStyleSheetChanged(styleSheetId, edit);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  async setContainerQueryText(
+      styleSheetId: string, range: TextUtils.TextRange.TextRange, newContainerQueryText: string): Promise<boolean> {
+    Host.userMetrics.actionTaken(Host.UserMetrics.Action.StyleRuleEdited);
+
+    try {
+      await this._ensureOriginalStyleSheetText(styleSheetId);
+      const {containerQuery} =
+          await this._agent.invoke_setContainerQueryText({styleSheetId, range, text: newContainerQueryText});
+
+      if (!containerQuery) {
+        return false;
+      }
+      this._domModel.markUndoableState();
+      const edit = new Edit(styleSheetId, range, newContainerQueryText, containerQuery);
       this._fireStyleSheetChanged(styleSheetId, edit);
       return true;
     } catch (e) {
@@ -543,7 +563,7 @@ export class CSSModel extends SDKModel {
     this.dispatchEventToListeners(Events.StyleSheetRemoved, header);
   }
 
-  styleSheetIdsForURL(url: string): string[] {
+  getStyleSheetIdsForURL(url: string): string[] {
     const frameIdToStyleSheetIds = this._styleSheetIdsForURL.get(url);
     if (!frameIdToStyleSheetIds) {
       return [];
@@ -602,22 +622,18 @@ export class CSSModel extends SDKModel {
     this._fontFaces.clear();
   }
 
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async suspendModel(): Promise<any> {
+  async suspendModel(): Promise<void> {
     this._isEnabled = false;
     await this._agent.invoke_disable();
     this._resetStyleSheets();
     this._resetFontFaces();
   }
 
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async resumeModel(): Promise<any> {
+  async resumeModel(): Promise<void> {
     return this._enable();
   }
 
-  setEffectivePropertyValueForNode(nodeId: number, propertyName: string, value: string): void {
+  setEffectivePropertyValueForNode(nodeId: Protocol.DOM.NodeId, propertyName: string, value: string): void {
     this._agent.invoke_setEffectivePropertyValueForNode({nodeId, propertyName, value});
   }
 
@@ -787,7 +803,7 @@ class ComputedStyleLoader {
     this._nodeIdToPromise = new Map();
   }
 
-  computedStylePromise(nodeId: number): Promise<Map<string, string>|null> {
+  computedStylePromise(nodeId: Protocol.DOM.NodeId): Promise<Map<string, string>|null> {
     let promise = this._nodeIdToPromise.get(nodeId);
     if (promise) {
       return promise;

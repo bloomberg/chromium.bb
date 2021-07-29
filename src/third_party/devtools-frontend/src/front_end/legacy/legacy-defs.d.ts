@@ -17,12 +17,6 @@ interface RegExp {
   __fromRegExpQuery: boolean;
 }
 
-interface NumberConstructor {
-  secondsToString(seconds: number, higherResolution?: boolean): string;
-  millisToString(ms: number, higherResolution?: boolean): string;
-  preciseMillisToString(ms: number, precision?: number): string;
-}
-
 declare class AnchorBox {
   x: number;
   y: number;
@@ -82,7 +76,6 @@ declare namespace Adb {
 }
 
 interface Document {
-  createElementWithClass(elementName: string, className?: string, customElementType?: string): Element;
   deepActiveElement(): Element|null;
 }
 

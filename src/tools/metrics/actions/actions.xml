@@ -867,6 +867,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Accel_NewIncognitoWindow">
+  <owner>rhalavati@chromium.org</owner>
+  <owner>chrome-incognito@google.com</owner>
+  <description>
+    User pressed CMD+Shift+N to open a new Incognito window.
+  </description>
+</action>
+
 <action name="Accel_NewTab_T">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -1256,6 +1264,13 @@ should be able to be added at any place in this file.
   <description>
     Metric recorded when the user toggles the privacy screen when using the
     accelerator.
+  </description>
+</action>
+
+<action name="Accel_Toggle_Resize_Lock_Menu">
+  <owner>takise@chromium.org</owner>
+  <description>
+    Records how often the ARC resize lock menu is launched from accelerator.
   </description>
 </action>
 
@@ -2878,6 +2893,42 @@ should be able to be added at any place in this file.
   <owner>napper@chromium.org</owner>
   <description>
     A click on an app reinstall app candidate from Arc++.
+  </description>
+</action>
+
+<action name="ArcResizeLock_ResizeToPhone">
+  <owner>toshikikikuchi@chromium.org</owner>
+  <owner>takise@chromium.org</owner>
+  <description>
+    User pressed Phone button in compatibility mode menu to resize the ARC app
+    window.
+  </description>
+</action>
+
+<action name="ArcResizeLock_ResizeToTablet">
+  <owner>toshikikikuchi@chromium.org</owner>
+  <owner>takise@chromium.org</owner>
+  <description>
+    User pressed Tablet button in compatibility mode menu to resize the ARC app
+    window.
+  </description>
+</action>
+
+<action name="ArcResizeLock_TurnOffResizeLock">
+  <owner>toshikikikuchi@chromium.org</owner>
+  <owner>takise@chromium.org</owner>
+  <description>
+    User pressed Resizable button in compatibility mode menu to turn off the
+    resize lock for the ARC app window.
+  </description>
+</action>
+
+<action name="ArcResizeLock_TurnOnResizeLock">
+  <owner>toshikikikuchi@chromium.org</owner>
+  <owner>takise@chromium.org</owner>
+  <description>
+    User pressed non Resizable button in compatibility mode menu to turn on the
+    resize lock for the ARC app window.
   </description>
 </action>
 
@@ -5102,6 +5153,27 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="ContentSettings.Geolocation.BlockedIconShown">
+  <owner>corising@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>The geolocation blocked icon is shown.</description>
+</action>
+
+<action name="ContentSettings.GeolocationDialog.Closed">
+  <owner>corising@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>The content settings geolocation bubble is closed.</description>
+</action>
+
+<action name="ContentSettings.GeolocationDialog.OpenPreferencesClicked">
+  <owner>corising@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    The user clicked 'open preferences' from the content settings geolocation
+    bubble .
+  </description>
+</action>
+
 <action name="ContentSuggestions.Feed.CardAction.ClosedContextMenu">
   <owner>harringtond@chromium.org</owner>
   <owner>carlosk@chromium.org</owner>
@@ -5265,6 +5337,26 @@ should be able to be added at any place in this file.
   <description>The user selected 'share' option for a Feed card.</description>
 </action>
 
+<action name="ContentSuggestions.Feed.DeviceOrientationChanged.Landscape">
+  <owner>adamta@google.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <description>
+    The user rotates the device to landscape from the NTP with the feed visible.
+    iOS only.
+  </description>
+</action>
+
+<action name="ContentSuggestions.Feed.DeviceOrientationChanged.Portrait">
+  <owner>adamta@google.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <description>
+    The user rotates the device to portrait from the NTP with the feed visible.
+    iOS only.
+  </description>
+</action>
+
 <action name="ContentSuggestions.Feed.HeaderAction.ManageActivity">
   <owner>adamta@google.org</owner>
   <owner>sczs@chromium.org</owner>
@@ -5425,6 +5517,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="ContextualSearch.SerpResultClicked">
+  <owner>donnd@chromium.org</owner>
+  <owner>contextual-search-eng@google.com</owner>
+  <description>
+    The user clicked on a search result in the Search Result Page that was shown
+    due to a Contextual Search.
+  </description>
+</action>
+
 <action name="ContextualSearch.SmartSelectionSuppressed">
   <owner>donnd@chromium.org</owner>
   <description>
@@ -5460,6 +5561,16 @@ should be able to be added at any place in this file.
   <description>
     The user did a swip or fling to move the Contextual Search panel to the peek
     position.
+  </description>
+</action>
+
+<action name="ContextualSearch.TabPromotion">
+  <owner>donnd@chromium.org</owner>
+  <owner>contextual-search-eng@google.com</owner>
+  <description>
+    The user took an action that promotes the bottom sheet from an overlay into
+    its own separate Tab. The bottom sheet was showing results from a Contextual
+    Search.
   </description>
 </action>
 
@@ -7213,6 +7324,15 @@ should be able to be added at any place in this file.
 <action name="FocusChromeOSStatus">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="FocusHelpBubble">
+  <owner>collinbaker@chromium.org</owner>
+  <owner>dfried@chromium.org</owner>
+  <description>
+    Recorded when the user focuses a help bubble (i.e. for in-product help or a
+    tutorial) with a keyboard shortcut.
+  </description>
 </action>
 
 <action name="FocusInactivePopupForAccessibility">
@@ -15232,6 +15352,16 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobilePullGestureReloadNTP">
+  <owner>jianli@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <description>
+    Emitted on Android when a pull-to-refresh touch gesture initiates a NTP
+    reload. This fires only after the triggering touch is released while the
+    refresh effect has been pulled beyond the activation threshold.
+  </description>
+</action>
+
 <action name="MobileQRScannerClose">
   <owner>jif@chromium.org</owner>
   <description>User closed the QR Scanner without scanning a code.</description>
@@ -15313,6 +15443,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileReceivedExternalIntent">
+  <obsolete>
+    Deprecated as of 06/2021. Replaced by MobileTabbedModeViewIntentFromApp and
+    MobileTabbedModeViewIntentFromChrome.
+  </obsolete>
   <owner>tedchoc@chromium.org</owner>
   <description>
     A VIEW intent was received by the tabbed mode activity. This will combine
@@ -15324,6 +15458,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileReceivedExternalIntent.App">
+  <obsolete>
+    Deprecated as of 06/2021. Replaced by MobileTabbedModeViewIntentFromApp.
+  </obsolete>
   <owner>tedchoc@chromium.org</owner>
   <description>
     A VIEW intent was received by the tabbed mode activity from an external
@@ -15332,6 +15469,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileReceivedExternalIntent.Chrome">
+  <obsolete>
+    Deprecated as of 06/2021. Replaced by MobileTabbedModeViewIntentFromChrome.
+  </obsolete>
   <owner>tedchoc@chromium.org</owner>
   <description>
     A VIEW intent was received by the tabbed mode activity from Chrome. This is
@@ -15895,6 +16035,79 @@ should be able to be added at any place in this file.
   <owner>marq@chromium.org</owner>
   <description>
     User selected the iOS Tab Grid incognito panel by tapping the page control.
+  </description>
+</action>
+
+<action name="MobileTabGridSelectionCloseAllIncognitoTabsConfirmed">
+  <owner>mrefaat@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <description>
+    User in the incognito iOS tab grid used the Close All control with all
+    available tab items selected and the action sheet that asks for confirmation
+    has been Confirmed.
+  </description>
+</action>
+
+<action name="MobileTabGridSelectionCloseAllRegularTabsConfirmed">
+  <owner>mrefaat@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <description>
+    User in the regular iOS tab grid used the Close All control with all
+    available tab items selected and the action sheet that asks for confirmation
+    has been Confirmed.
+  </description>
+</action>
+
+<action name="MobileTabGridSelectionCloseIncognitoTabsConfirmationPresented">
+  <owner>mrefaat@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <description>
+    User in the iOS incognito tab grid used the Close Tabs control and the
+    action sheet that asks for confirmation has been displayed.
+  </description>
+</action>
+
+<action name="MobileTabGridSelectionCloseRegularTabsConfirmationPresented">
+  <owner>mrefaat@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <description>
+    User in the iOS regular tab grid used the Close Tabs control and the action
+    sheet that asks for confirmation has been displayed.
+  </description>
+</action>
+
+<action name="MobileTabGridSelectionCloseTabsCanceled">
+  <owner>mrefaat@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <description>
+    User in the iOS tab grid used the Close All control and the action sheet
+    that asks for confirmation has been Canceled.
+  </description>
+</action>
+
+<action name="MobileTabGridSelectionCloseTabsConfirmed">
+  <owner>mrefaat@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <description>
+    User in the iOS tab grid used the Close All control and the action sheet
+    that asks for confirmation has been Confirmed.
+  </description>
+</action>
+
+<action name="MobileTabGridSelectionDone">
+  <owner>mrefaat@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <description>
+    User in the iOS tab grid used the Done button to exit selection mode and
+    return to regular or incognito tabs panel.
+  </description>
+</action>
+
+<action name="MobileTabGridSelectionSelectAll">
+  <owner>mrefaat@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <description>
+    User in the iOS tab grid used the Select All button to select all items.
   </description>
 </action>
 
@@ -21019,6 +21232,22 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="ReadingList.Dialog.AddCurrentPage">
+  <owner>corising@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    The user added a page to the reading list from the dialog bubble.
+  </description>
+</action>
+
+<action name="ReadingList.Dialog.Navigation">
+  <owner>corising@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    The user navigated to a page from the reading list dialog bubble.
+  </description>
+</action>
+
 <action name="Redo">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -21052,6 +21281,25 @@ should be able to be added at any place in this file.
 <action name="RegisterProtocolHandler.InfoBar_Shown">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="RelatedSearches.SerpResultClicked">
+  <owner>donnd@chromium.org</owner>
+  <owner>related-searches-vteam@google.com</owner>
+  <description>
+    The user clicked on a search result in the Search Result Page that was shown
+    due to a Related Searches suggestion.
+  </description>
+</action>
+
+<action name="RelatedSearches.TabPromotion">
+  <owner>donnd@chromium.org</owner>
+  <owner>related-searches-vteam@google.com</owner>
+  <description>
+    The user took an action that promotes the bottom sheet from an overlay into
+    its own separate Tab. The bottom sheet was showing results from a Related
+    Searches suggestion.
+  </description>
 </action>
 
 <action name="RelaunchRecommended_Accept">
@@ -23034,6 +23282,58 @@ should be able to be added at any place in this file.
 <action name="Shutdown">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="SidePanel.Bookmarks.FolderClose">
+  <owner>corising@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    The user collapsed a bookmarks folder within the side panel.
+  </description>
+</action>
+
+<action name="SidePanel.Bookmarks.FolderOpen">
+  <owner>corising@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    The user expanded a bookmarks folder within the side panel.
+  </description>
+</action>
+
+<action name="SidePanel.Bookmarks.Navigation">
+  <owner>corising@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    The user navigated to a page from bookmarks in the side panel.
+  </description>
+</action>
+
+<action name="SidePanel.Hide">
+  <owner>corising@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>The user closed the side panel.</description>
+</action>
+
+<action name="SidePanel.ReadingList.AddCurrentPage">
+  <owner>corising@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    The user added a page to the reading list from the side panel.
+  </description>
+</action>
+
+<action name="SidePanel.ReadingList.Navigation">
+  <owner>corising@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    The user navigated to a page from the reading list in the side panel.
+  </description>
+</action>
+
+<action name="SidePanel.Show">
+  <owner>corising@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>The user opened the side panel.</description>
 </action>
 
 <action name="Signin_Abort_Signin">
@@ -28516,12 +28816,17 @@ should be able to be added at any place in this file.
   <suffix name="ReadingListEntryPoint"
       label="For ReadingListEntryPoint feature."/>
   <suffix name="ReopenTab" label="For ReopenTab feature."/>
+  <suffix name="SharedHighlightingBuilder"
+      label="For SharedHighlightingBuilder feature."/>
+  <suffix name="StartSurfaceTabSwitcherHomeButton"
+      label="For StartSurfaceTabSwitcherHomeButton feature."/>
   <suffix name="TabGroupsDragAndDrop" label="For drop-to-merge in tab group."/>
   <suffix name="TabGroupsQuicklyComparePages"
       label="For long press links to create tab groups."/>
   <suffix name="TabGroupsTapToSeeAnotherTab" label="For tab strip."/>
   <suffix name="TabGroupsYourTabsTogether"
       label="For tab switcher with tab groups."/>
+  <suffix name="TabSearch" label="For the tab search feature."/>
   <suffix name="TabSwitcherButton" label="For tab switcher button."/>
   <suffix name="TranslateMenuButton" label="For translate menu button."/>
   <suffix name="UpdatedConnectionSecurityIndicators"

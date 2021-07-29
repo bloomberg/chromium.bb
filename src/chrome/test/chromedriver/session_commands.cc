@@ -861,15 +861,16 @@ Status ExecuteSwitchToWindow(Session* session,
 Status ExecuteSetTimeoutLegacy(Session* session,
                                const base::DictionaryValue& params,
                                std::unique_ptr<base::Value>* value) {
-  double ms_double;
-  if (!params.GetDouble("ms", &ms_double))
+  absl::optional<double> maybe_ms = params.FindDoubleKey("ms");
+  if (!maybe_ms.has_value())
     return Status(kInvalidArgument, "'ms' must be a double");
+
   std::string type;
   if (!params.GetString("type", &type))
     return Status(kInvalidArgument, "'type' must be a string");
 
   base::TimeDelta timeout =
-      base::TimeDelta::FromMilliseconds(static_cast<int>(ms_double));
+      base::TimeDelta::FromMilliseconds(static_cast<int>(maybe_ms.value()));
   if (type == "implicit") {
     session->implicit_wait = timeout;
   } else if (type == "script") {
@@ -887,7 +888,7 @@ Status ExecuteSetTimeoutLegacy(Session* session,
 Status ExecuteSetTimeoutsW3C(Session* session,
                              const base::DictionaryValue& params,
                              std::unique_ptr<base::Value>* value) {
-  for (const auto& setting : params.DictItems()) {
+  for (auto setting : params.DictItems()) {
     int64_t timeout_ms_int64 = -1;
     base::TimeDelta timeout;
     const std::string& type = setting.first;
@@ -948,22 +949,22 @@ Status ExecuteGetTimeouts(Session* session,
 Status ExecuteSetScriptTimeout(Session* session,
                                const base::DictionaryValue& params,
                                std::unique_ptr<base::Value>* value) {
-  double ms;
-  if (!params.GetDouble("ms", &ms) || ms < 0)
+  absl::optional<double> maybe_ms = params.FindDoubleKey("ms");
+  if (!maybe_ms.has_value() || maybe_ms.value() < 0)
     return Status(kInvalidArgument, "'ms' must be a non-negative number");
   session->script_timeout =
-      base::TimeDelta::FromMilliseconds(static_cast<int>(ms));
+      base::TimeDelta::FromMilliseconds(static_cast<int>(maybe_ms.value()));
   return Status(kOk);
 }
 
 Status ExecuteImplicitlyWait(Session* session,
                              const base::DictionaryValue& params,
                              std::unique_ptr<base::Value>* value) {
-  double ms;
-  if (!params.GetDouble("ms", &ms) || ms < 0)
+  absl::optional<double> maybe_ms = params.FindDoubleKey("ms");
+  if (!maybe_ms.has_value() || maybe_ms.value() < 0)
     return Status(kInvalidArgument, "'ms' must be a non-negative number");
   session->implicit_wait =
-      base::TimeDelta::FromMilliseconds(static_cast<int>(ms));
+      base::TimeDelta::FromMilliseconds(static_cast<int>(maybe_ms.value()));
   return Status(kOk);
 }
 
@@ -995,12 +996,13 @@ Status ExecuteGetLocation(Session* session,
                   "Location must be set before it can be retrieved");
   }
   base::DictionaryValue location;
-  location.SetDouble("latitude", session->overridden_geoposition->latitude);
-  location.SetDouble("longitude", session->overridden_geoposition->longitude);
-  location.SetDouble("accuracy", session->overridden_geoposition->accuracy);
+  location.SetDoubleKey("latitude", session->overridden_geoposition->latitude);
+  location.SetDoubleKey("longitude",
+                        session->overridden_geoposition->longitude);
+  location.SetDoubleKey("accuracy", session->overridden_geoposition->accuracy);
   // Set a dummy altitude to make WebDriver clients happy.
   // https://code.google.com/p/chromedriver/issues/detail?id=281
-  location.SetDouble("altitude", 0);
+  location.SetDoubleKey("altitude", 0);
   value->reset(location.DeepCopy());
   return Status(kOk);
 }
@@ -1134,14 +1136,15 @@ Status ExecuteGetWindowPosition(Session* session,
 Status ExecuteSetWindowPosition(Session* session,
                                 const base::DictionaryValue& params,
                                 std::unique_ptr<base::Value>* value) {
-  double x = 0;
-  double y = 0;
-  if (!params.GetDouble("x", &x) || !params.GetDouble("y", &y))
+  absl::optional<double> maybe_x = params.FindDoubleKey("x");
+  absl::optional<double> maybe_y = params.FindDoubleKey("y");
+
+  if (!maybe_x.has_value() || !maybe_y.has_value())
     return Status(kInvalidArgument, "missing or invalid 'x' or 'y'");
 
   base::DictionaryValue rect_params;
-  rect_params.SetInteger("x", static_cast<int>(x));
-  rect_params.SetInteger("y", static_cast<int>(y));
+  rect_params.SetInteger("x", static_cast<int>(maybe_x.value()));
+  rect_params.SetInteger("y", static_cast<int>(maybe_y.value()));
   return session->chrome->SetWindowRect(session->window, rect_params);
 }
 
@@ -1164,15 +1167,15 @@ Status ExecuteGetWindowSize(Session* session,
 Status ExecuteSetWindowSize(Session* session,
                             const base::DictionaryValue& params,
                             std::unique_ptr<base::Value>* value) {
-  double width = 0;
-  double height = 0;
-  if (!params.GetDouble("width", &width) ||
-      !params.GetDouble("height", &height))
+  absl::optional<double> maybe_width = params.FindDoubleKey("width");
+  absl::optional<double> maybe_height = params.FindDoubleKey("height");
+
+  if (!maybe_width.has_value() || !maybe_height.has_value())
     return Status(kInvalidArgument, "missing or invalid 'width' or 'height'");
 
   base::DictionaryValue rect_params;
-  rect_params.SetInteger("width", static_cast<int>(width));
-  rect_params.SetInteger("height", static_cast<int>(height));
+  rect_params.SetInteger("width", static_cast<int>(maybe_width.value()));
+  rect_params.SetInteger("height", static_cast<int>(maybe_height.value()));
   return session->chrome->SetWindowRect(session->window, rect_params);
 }
 

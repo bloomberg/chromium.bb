@@ -28,6 +28,28 @@ using ButtonTitleInfo = std::pair<std::u16string, mojom::ButtonTitleType>;
 // List of button titles of a given form.
 using ButtonTitleList = std::vector<ButtonTitleInfo>;
 
+// Element of FormData::child_frames.
+struct FrameTokenWithPredecessor {
+  FrameTokenWithPredecessor();
+  FrameTokenWithPredecessor(const FrameTokenWithPredecessor&);
+  FrameTokenWithPredecessor(FrameTokenWithPredecessor&&);
+  FrameTokenWithPredecessor& operator=(const FrameTokenWithPredecessor&);
+  FrameTokenWithPredecessor& operator=(FrameTokenWithPredecessor&&);
+  ~FrameTokenWithPredecessor();
+
+  // An identifier of the child frame.
+  FrameToken token;
+  // This index represents which field, if any, precedes the frame in DOM order.
+  // It shall be the maximum integer |i| such that the |i|th field precedes the
+  // frame |token|. If there is no such field, it shall be -1.
+  int predecessor = -1;
+
+  friend bool operator==(const FrameTokenWithPredecessor& a,
+                         const FrameTokenWithPredecessor& b);
+  friend bool operator!=(const FrameTokenWithPredecessor& a,
+                         const FrameTokenWithPredecessor& b);
+};
+
 // Holds information about a form to be filled and/or submitted.
 struct FormData {
   // Less-than relation for STL containers. Compares only members needed to
@@ -43,6 +65,8 @@ struct FormData {
   FormData& operator=(FormData&&);
   ~FormData();
 
+  // An identifier that is unique across all forms in all frames.
+  // Must not be leaked to renderer process. See FieldGlobalId for details.
   FormGlobalId global_id() const { return {host_frame, unique_renderer_id}; }
 
   // Returns true if two forms are the same, not counting the values of the
@@ -81,6 +105,7 @@ struct FormData {
   // The URL (minus query parameters and fragment) containing the form.
   GURL url;
   // The full URL, including query parameters and fragment.
+  // This value should be set only for password forms.
   GURL full_url;
   // The action target of the form.
   GURL action;
@@ -92,13 +117,16 @@ struct FormData {
   url::Origin main_frame_origin;
   // True if this form is a form tag.
   bool is_form_tag = true;
-  // Unique ID of the containing frame. A FormData must not be serialized if
-  // |host_frame| is default-initialized.
+  // A unique identifier of the containing frame. This value is not serialized
+  // because LocalFrameTokens must not be leaked to other renderer processes.
   LocalFrameToken host_frame;
-  // Unique renderer id returned by WebFormElement::UniqueRendererFormId(). It
-  // is not persistent between page loads, so it is not saved and not used in
-  // comparison in SameFormAs().
+  // An identifier of the form that is unique among the forms from the same
+  // frame. In the browser process, it should only be used in conjunction with
+  // |host_frame| to identify a field; see global_id(). It is not persistent
+  // between page loads and therefore not used in comparison in SameFieldAs().
   FormRendererId unique_renderer_id;
+  // A vector of all frames in the form.
+  std::vector<FrameTokenWithPredecessor> child_frames;
   // The type of the event that was taken as an indication that this form is
   // being or has already been submitted. This field is filled only in Password
   // Manager for submitted password forms.

@@ -20,6 +20,7 @@ class MockSigninUI : public SigninUI {
 
   MOCK_METHOD(void, StartUserOnboarding, (), (override));
   MOCK_METHOD(void, StartManagementTransition, (), (override));
+  MOCK_METHOD(void, ShowTosForExistingUser, (), (override));
   MOCK_METHOD(void,
               StartEncryptionMigration,
               (const UserContext&,
@@ -36,8 +37,9 @@ class MockSigninUI : public SigninUI {
               (override));
   MOCK_METHOD(void,
               ShowSigninError,
-              (SigninError, const std::string&, int),
+              (SigninError, const std::string&),
               (override));
+  MOCK_METHOD(void, StartBrowserDataMigration, (), (override));
 };
 
 }  // namespace chromeos

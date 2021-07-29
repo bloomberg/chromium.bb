@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/external_arc/message_center/arc_notification_surface.h"
 #include "ash/public/cpp/external_arc/message_center/arc_notification_view.h"
 #include "base/auto_reset.h"
@@ -355,8 +354,8 @@ void ArcNotificationContentView::UpdateControlButtonsVisibility() {
     floating_control_buttons_widget_->Hide();
 }
 
-void ArcNotificationContentView::UpdateCornerRadius(int top_radius,
-                                                    int bottom_radius) {
+void ArcNotificationContentView::UpdateCornerRadius(float top_radius,
+                                                    float bottom_radius) {
   bool force_update =
       top_radius_ != top_radius || bottom_radius_ != bottom_radius;
 

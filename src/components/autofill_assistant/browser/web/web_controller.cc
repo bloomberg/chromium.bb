@@ -12,14 +12,16 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/browser/browser_autofill_manager.h"
+#include "components/autofill/core/browser/data_model/autofill_data_model.h"
+#include "components/autofill/core/browser/data_model/autofillable_data.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/form_data.h"
@@ -39,15 +41,6 @@ namespace autofill_assistant {
 using autofill::ContentAutofillDriver;
 
 namespace {
-
-// Get the visual viewport as a list of values to fill into RectF, that is:
-// left, top, right, bottom.
-const char* const kGetVisualViewport =
-    R"({ const v = window.visualViewport;
-         [v.pageLeft,
-          v.pageTop,
-          v.pageLeft + v.width,
-          v.pageTop + v.height] })";
 
 // Scrolls to the specified node with top padding. The top padding can
 // be specified through pixels or ratio. Pixels take precedence.
@@ -72,15 +65,61 @@ const char* const kScrollIntoViewWithPaddingScript =
   })";
 
 // Scroll the window or any scrollable container as needed for the element to
-// appear, center if specified.
+// appear. Behave as specified according to |animation|, |verticalAlignment|
+// and |horizontalAlignment|.
 const char* const kScrollIntoViewScript =
-    R"(function(center) {
-      if (center) {
-        this.scrollIntoView({block: "center", inline: "center"});
-      } else {
-        this.scrollIntoViewIfNeeded();
+    R"(function(animation, verticalAlignment, horizontalAlignment) {
+      const options = {};
+      if (animation !== '') {
+        options.behavior = animation;
       }
+      if (verticalAlignment !== '') {
+        options.block = verticalAlignment;
+      }
+      if (horizontalAlignment !== '') {
+        options.inline = horizontalAlignment;
+      }
+      this.scrollIntoView(options);
   })";
+
+// Scroll the window or any scrollable container as needed for the element to
+// appear. Center the element if specified.
+const char* const kScrollIntoViewIfNeededScript =
+    R"(function(center) {
+      this.scrollIntoViewIfNeeded(center);
+    })";
+
+// Scroll the current window by a given amount of |pixels|. If |pixels| is 0,
+// take a ratio of the window's height instead.
+const char* const kScrollWindowScript =
+    R"(function(pixels, windowRatio, animation) {
+      let scrollDistance = pixels;
+      if (scrollDistance === 0) {
+        scrollDistance = window.innerHeight * windowRatio;
+      }
+      const options = {};
+      options.top = scrollDistance;
+      if (animation !== '') {
+        options.behavior = animation;
+      }
+      window.scrollBy(options);
+    })";
+
+// Scroll the container by a given amount of |pixels|. If |pixels| is 0,
+// take a ratio of the window's height instead.
+const char* const kScrollContainerScript =
+    R"(function(pixels, windowRatio, animation) {
+      let scrollDistance = pixels;
+      if (scrollDistance === 0) {
+        scrollDistance = window.innerHeight * windowRatio;
+      }
+      const options = {};
+      options.top = scrollDistance;
+      if (animation !== '') {
+        options.behavior = animation;
+      }
+      this.scrollBy(options);
+    })";
 
 // Javascript to select a value from a select box. Also fires a "change" event
 // to trigger any listeners. Changing the index directly does not trigger this.
@@ -92,7 +131,8 @@ const char* const kSelectOptionScript =
       let numResults = 0;
       let newIndex = -1;
       for (let i = 0; i < this.options.length; ++i) {
-        if (regexp.test(this.options[i][valueSourceAttribute])) {
+        if (!this.options[i].disabled &&
+            regexp.test(this.options[i][valueSourceAttribute])) {
           ++numResults;
           if (newIndex === -1) {
             newIndex = i;
@@ -335,23 +375,23 @@ void DecorateControllerStatusWithValue(
 
 // static
 std::unique_ptr<WebController> WebController::CreateForWebContents(
-    content::WebContents* web_contents) {
+    content::WebContents* web_contents,
+    const UserData* user_data) {
   return std::make_unique<WebController>(
       web_contents,
       std::make_unique<DevtoolsClient>(
-          content::DevToolsAgentHost::GetOrCreateFor(web_contents)));
+          content::DevToolsAgentHost::GetOrCreateFor(web_contents)),
+      user_data);
 }
 
 WebController::WebController(content::WebContents* web_contents,
-                             std::unique_ptr<DevtoolsClient> devtools_client)
+                             std::unique_ptr<DevtoolsClient> devtools_client,
+                             const UserData* user_data)
     : web_contents_(web_contents),
-      devtools_client_(std::move(devtools_client)) {}
+      devtools_client_(std::move(devtools_client)),
+      user_data_(user_data) {}
 
 WebController::~WebController() {}
-
-WebController::FillFormInputData::FillFormInputData() {}
-
-WebController::FillFormInputData::~FillFormInputData() {}
 
 void WebController::LoadURL(const GURL& url) {
 #ifdef NDEBUG
@@ -451,6 +491,31 @@ void WebController::OnJavaScriptResultForStringArray(
 }
 
 void WebController::ScrollIntoView(
+    const std::string& animation,
+    const std::string& vertical_alignment,
+    const std::string& horizontal_alignment,
+    const ElementFinder::Result& element,
+    base::OnceCallback<void(const ClientStatus&)> callback) {
+  std::vector<std::unique_ptr<runtime::CallArgument>> arguments;
+  AddRuntimeCallArgument(animation, &arguments);
+  AddRuntimeCallArgument(vertical_alignment, &arguments);
+  AddRuntimeCallArgument(horizontal_alignment, &arguments);
+  devtools_client_->GetRuntime()->CallFunctionOn(
+      runtime::CallFunctionOnParams::Builder()
+          .SetObjectId(element.object_id())
+          .SetArguments(std::move(arguments))
+          .SetFunctionDeclaration(std::string(kScrollIntoViewScript))
+          .SetReturnByValue(true)
+          .Build(),
+      element.node_frame_id(),
+      base::BindOnce(
+          &WebController::OnJavaScriptResult, weak_ptr_factory_.GetWeakPtr(),
+          base::BindOnce(&DecorateWebControllerStatus,
+                         WebControllerErrorInfoProto::SCROLL_INTO_VIEW,
+                         std::move(callback))));
+}
+
+void WebController::ScrollIntoViewIfNeeded(
     bool center,
     const ElementFinder::Result& element,
     base::OnceCallback<void(const ClientStatus&)> callback) {
@@ -460,14 +525,71 @@ void WebController::ScrollIntoView(
       runtime::CallFunctionOnParams::Builder()
           .SetObjectId(element.object_id())
           .SetArguments(std::move(argument))
-          .SetFunctionDeclaration(std::string(kScrollIntoViewScript))
+          .SetFunctionDeclaration(std::string(kScrollIntoViewIfNeededScript))
+          .SetReturnByValue(true)
+          .Build(),
+      element.node_frame_id(),
+      base::BindOnce(
+          &WebController::OnJavaScriptResult, weak_ptr_factory_.GetWeakPtr(),
+          base::BindOnce(
+              &DecorateWebControllerStatus,
+              WebControllerErrorInfoProto::SCROLL_INTO_VIEW_IF_NEEDED,
+              std::move(callback))));
+}
+
+void WebController::ScrollWindow(
+    const ScrollDistance& scroll_distance,
+    const std::string& animation,
+    const ElementFinder::Result& optional_frame,
+    base::OnceCallback<void(const ClientStatus&)> callback) {
+  std::string scroll_script = base::StrCat(
+      {"(", kScrollWindowScript, ")",
+       base::StringPrintf("(%d, %f, %s)", scroll_distance.pixels(),
+                          scroll_distance.window_ratio(), animation.c_str())});
+  // Note: An optional frame element will have an empty node_frame_id which
+  // will be considered as operating in the main frame.
+  devtools_client_->GetRuntime()->Evaluate(
+      runtime::EvaluateParams::Builder()
+          .SetExpression(scroll_script)
+          .SetReturnByValue(true)
+          .Build(),
+      optional_frame.node_frame_id(),
+      base::BindOnce(&WebController::OnScrollWindow,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     base::BindOnce(&DecorateWebControllerStatus,
+                                    WebControllerErrorInfoProto::SCROLL_WINDOW,
+                                    std::move(callback))));
+}
+
+void WebController::OnScrollWindow(
+    base::OnceCallback<void(const ClientStatus&)> callback,
+    const DevtoolsClient::ReplyStatus& reply_status,
+    std::unique_ptr<runtime::EvaluateResult> result) {
+  std::move(callback).Run(
+      CheckJavaScriptResult(reply_status, result.get(), __FILE__, __LINE__));
+}
+
+void WebController::ScrollContainer(
+    const ScrollDistance& scroll_distance,
+    const std::string& animation,
+    const ElementFinder::Result& element,
+    base::OnceCallback<void(const ClientStatus&)> callback) {
+  std::vector<std::unique_ptr<runtime::CallArgument>> arguments;
+  AddRuntimeCallArgument(scroll_distance.pixels(), &arguments);
+  AddRuntimeCallArgument(scroll_distance.window_ratio(), &arguments);
+  AddRuntimeCallArgument(animation, &arguments);
+  devtools_client_->GetRuntime()->CallFunctionOn(
+      runtime::CallFunctionOnParams::Builder()
+          .SetObjectId(element.object_id())
+          .SetArguments(std::move(arguments))
+          .SetFunctionDeclaration(std::string(kScrollContainerScript))
           .SetReturnByValue(true)
           .Build(),
       element.node_frame_id(),
       base::BindOnce(
           &WebController::OnJavaScriptResult, weak_ptr_factory_.GetWeakPtr(),
           base::BindOnce(&DecorateWebControllerStatus,
-                         WebControllerErrorInfoProto::SCROLL_INTO_VIEW,
+                         WebControllerErrorInfoProto::SCROLL_CONTAINER,
                          std::move(callback))));
 }
 
@@ -681,7 +803,7 @@ void WebController::RunElementFinder(const Selector& selector,
                                      ElementFinder::ResultType result_type,
                                      ElementFinder::Callback callback) {
   auto finder = std::make_unique<ElementFinder>(
-      web_contents_, devtools_client_.get(), selector, result_type);
+      web_contents_, devtools_client_.get(), user_data_, selector, result_type);
 
   auto* ptr = finder.get();
   pending_workers_.emplace_back(std::move(finder));
@@ -702,17 +824,15 @@ void WebController::OnFindElementResult(
 }
 
 void WebController::FillAddressForm(
-    const autofill::AutofillProfile* profile,
+    std::unique_ptr<autofill::AutofillProfile> profile,
     const Selector& selector,
     base::OnceCallback<void(const ClientStatus&)> callback) {
   VLOG(3) << __func__ << " " << selector;
-  auto data_to_autofill = std::make_unique<FillFormInputData>();
-  data_to_autofill->profile = MakeUniqueFromProfile(*profile);
+  autofill::AutofillableData data_to_autofill(profile.get());
   GetElementFormAndFieldData(
-      selector,
-      base::BindOnce(&WebController::OnGetFormAndFieldDataForFilling,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     std::move(data_to_autofill), std::move(callback)));
+      selector, base::BindOnce(&WebController::OnGetFormAndFieldDataForFilling,
+                               weak_ptr_factory_.GetWeakPtr(), data_to_autofill,
+                               std::move(profile), std::move(callback)));
 }
 
 void WebController::FillCardForm(
@@ -721,14 +841,11 @@ void WebController::FillCardForm(
     const Selector& selector,
     base::OnceCallback<void(const ClientStatus&)> callback) {
   VLOG(3) << __func__ << " " << selector;
-  auto data_to_autofill = std::make_unique<FillFormInputData>();
-  data_to_autofill->card = std::move(card);
-  data_to_autofill->cvc = cvc;
+  autofill::AutofillableData data_to_autofill(card.get(), cvc);
   GetElementFormAndFieldData(
-      selector,
-      base::BindOnce(&WebController::OnGetFormAndFieldDataForFilling,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     std::move(data_to_autofill), std::move(callback)));
+      selector, base::BindOnce(&WebController::OnGetFormAndFieldDataForFilling,
+                               weak_ptr_factory_.GetWeakPtr(), data_to_autofill,
+                               std::move(card), std::move(callback)));
 }
 
 void WebController::RetrieveElementFormAndFieldData(
@@ -891,7 +1008,8 @@ void WebController::OnGetFormAndFieldData(
 }
 
 void WebController::OnGetFormAndFieldDataForFilling(
-    std::unique_ptr<FillFormInputData> data_to_autofill,
+    const autofill::AutofillableData& data_to_autofill,
+    std::unique_ptr<autofill::AutofillDataModel> retain_data,
     base::OnceCallback<void(const ClientStatus&)> callback,
     const ClientStatus& form_status,
     ContentAutofillDriver* driver,
@@ -901,16 +1019,7 @@ void WebController::OnGetFormAndFieldDataForFilling(
     std::move(callback).Run(form_status);
     return;
   }
-
-  if (data_to_autofill->card) {
-    driver->browser_autofill_manager()->FillCreditCardForm(
-        autofill::kNoQueryId, form_data, form_field, *data_to_autofill->card,
-        data_to_autofill->cvc);
-  } else {
-    driver->browser_autofill_manager()->FillProfileForm(
-        *data_to_autofill->profile, form_data, form_field);
-  }
-
+  driver->FillFormForAssistant(data_to_autofill, form_data, form_field);
   std::move(callback).Run(OkClientStatus());
 }
 
@@ -1075,8 +1184,8 @@ void WebController::HighlightElement(
 
 void WebController::ScrollToElementPosition(
     std::unique_ptr<ElementFinder::Result> container,
-    const ElementFinder::Result& element,
     const TopPadding& top_padding,
+    const ElementFinder::Result& element,
     base::OnceCallback<void(const ClientStatus&)> callback) {
   std::vector<std::unique_ptr<runtime::CallArgument>> arguments;
   AddRuntimeCallArgumentObjectId(element.object_id(), &arguments);
@@ -1310,51 +1419,6 @@ void WebController::FocusField(
                                     std::move(wrapped_callback))));
 }
 
-void WebController::GetVisualViewport(
-    base::OnceCallback<void(const ClientStatus&, const RectF&)> callback) {
-  devtools_client_->GetRuntime()->Evaluate(
-      runtime::EvaluateParams::Builder()
-          .SetExpression(std::string(kGetVisualViewport))
-          .SetReturnByValue(true)
-          .Build(),
-      /* node_frame_id= */ std::string(),
-      base::BindOnce(&WebController::OnGetVisualViewport,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-}
-
-void WebController::OnGetVisualViewport(
-    base::OnceCallback<void(const ClientStatus&, const RectF&)> callback,
-    const DevtoolsClient::ReplyStatus& reply_status,
-    std::unique_ptr<runtime::EvaluateResult> result) {
-  ClientStatus status =
-      CheckJavaScriptResult(reply_status, result.get(), __FILE__, __LINE__);
-  if (!status.ok() || !result->GetResult()->HasValue() ||
-      !result->GetResult()->GetValue()->is_list() ||
-      result->GetResult()->GetValue()->GetList().size() != 4u) {
-    VLOG(1) << __func__ << " Failed to get visual viewport: " << status;
-    std::move(callback).Run(
-        JavaScriptErrorStatus(reply_status, __FILE__, __LINE__, nullptr),
-        RectF());
-    return;
-  }
-  const auto& list = result->GetResult()->GetValue()->GetList();
-  // Value::GetDouble() is safe to call without checking the value type; it'll
-  // return 0.0 if the value has the wrong type.
-
-  float left = static_cast<float>(list[0].GetDouble());
-  float top = static_cast<float>(list[1].GetDouble());
-  float width = static_cast<float>(list[2].GetDouble());
-  float height = static_cast<float>(list[3].GetDouble());
-
-  RectF rect;
-  rect.left = left;
-  rect.top = top;
-  rect.right = left + width;
-  rect.bottom = top + height;
-
-  std::move(callback).Run(OkClientStatus(), rect);
-}
-
 void WebController::GetElementRect(
     const ElementFinder::Result& element,
     ElementRectGetter::ElementRectCallback callback) {
@@ -1456,7 +1520,7 @@ void WebController::SendChangeEvent(
 }
 
 void WebController::DispatchJsEvent(
-    base::OnceCallback<void(const ClientStatus&)> callback) const {
+    base::OnceCallback<void(const ClientStatus&)> callback) {
   devtools_client_->GetRuntime()->Evaluate(
       runtime::EvaluateParams::Builder()
           .SetExpression(kDispatchEventToDocumentScript)

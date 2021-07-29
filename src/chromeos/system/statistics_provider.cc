@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/flat_map.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
@@ -20,7 +21,6 @@
 #include "base/memory/singleton.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/atomic_flag.h"
@@ -87,6 +87,7 @@ const base::CommandLine::CharType kOemManifestFilePath[] =
 const char kKeyboardsPath[] = "keyboards";
 const char kLocalesPath[] = "locales";
 const char kTimeZonesPath[] = "time_zones";
+const char kKeyboardMechanicalLayoutPath[] = "keyboard_mechanical_layout";
 
 // These are the machine serial number keys that we check in order until we find
 // a non-empty serial number.
@@ -113,16 +114,16 @@ const char* const kMachineInfoSerialNumberKeys[] = {
 // Gets ListValue from given |dictionary| by given |key| and (unless |result| is
 // nullptr) sets |result| to a string with all list values joined by ','.
 // Returns true on success.
-bool JoinListValuesToString(const base::DictionaryValue* dictionary,
+bool JoinListValuesToString(const base::Value& dictionary,
                             const std::string key,
                             std::string* result) {
-  const base::ListValue* list = nullptr;
-  if (!dictionary->GetListWithoutPathExpansion(key, &list))
+  const base::Value* list_value = dictionary.FindListKey(key);
+  if (list_value == nullptr)
     return false;
 
   std::string buffer;
   bool first = true;
-  for (const auto& v : list->GetList()) {
+  for (const auto& v : list_value->GetList()) {
     std::string value;
     if (!v.GetAsString(&value))
       return false;
@@ -142,33 +143,42 @@ bool JoinListValuesToString(const base::DictionaryValue* dictionary,
 // Gets ListValue from given |dictionary| by given |key| and (unless |result| is
 // nullptr) sets |result| to the first value as string.  Returns true on
 // success.
-bool GetFirstListValueAsString(const base::DictionaryValue* dictionary,
+bool GetFirstListValueAsString(const base::Value& dictionary,
                                const std::string key,
                                std::string* result) {
-  const base::ListValue* list = nullptr;
-  if (!dictionary->GetListWithoutPathExpansion(key, &list))
+  const base::Value* list_value = dictionary.FindListKey(key);
+  if (list_value == nullptr || list_value->GetList().empty())
     return false;
 
-  std::string value;
-  if (!list->GetString(0, &value))
+  const std::string* value = list_value->GetList()[0].GetIfString();
+  if (value == nullptr)
     return false;
   if (result != nullptr)
-    *result = value;
+    *result = *value;
   return true;
 }
 
-bool GetKeyboardLayoutFromRegionalData(const base::DictionaryValue* region_dict,
+bool GetKeyboardLayoutFromRegionalData(const base::Value& region_dict,
                                        std::string* result) {
   return JoinListValuesToString(region_dict, kKeyboardsPath, result);
 }
 
-bool GetInitialTimezoneFromRegionalData(
-    const base::DictionaryValue* region_dict,
-    std::string* result) {
+bool GetKeyboardMechanicalLayoutFromRegionalData(const base::Value& region_dict,
+                                                 std::string* result) {
+  const std::string* value =
+      region_dict.FindStringPath(kKeyboardMechanicalLayoutPath);
+  if (value == nullptr)
+    return false;
+  *result = *value;
+  return true;
+}
+
+bool GetInitialTimezoneFromRegionalData(const base::Value& region_dict,
+                                        std::string* result) {
   return GetFirstListValueAsString(region_dict, kTimeZonesPath, result);
 }
 
-bool GetInitialLocaleFromRegionalData(const base::DictionaryValue* region_dict,
+bool GetInitialLocaleFromRegionalData(const base::Value& region_dict,
                                       std::string* result) {
   return JoinListValuesToString(region_dict, kLocalesPath, result);
 }
@@ -211,6 +221,7 @@ const char kSerialNumberKeyForTest[] = "serial_number";
 const char kInitialLocaleKey[] = "initial_locale";
 const char kInitialTimezoneKey[] = "initial_timezone";
 const char kKeyboardLayoutKey[] = "keyboard_layout";
+const char kKeyboardMechanicalLayoutKey[] = "keyboard_mechanical_layout";
 const char kAttestedDeviceIdKey[] = "attested_device_id";
 
 // OEM specific statistics. Must be prefixed with "oem_".
@@ -242,8 +253,7 @@ class StatisticsProviderImpl : public StatisticsProvider {
 
  private:
   typedef std::map<std::string, bool> MachineFlags;
-  typedef bool (*RegionDataExtractor)(const base::DictionaryValue*,
-                                      std::string*);
+  typedef bool (*RegionDataExtractor)(const base::Value&, std::string*);
   friend struct base::DefaultSingletonTraits<StatisticsProviderImpl>;
 
   StatisticsProviderImpl();
@@ -272,9 +282,6 @@ class StatisticsProviderImpl : public StatisticsProvider {
   bool GetRegionalInformation(const std::string& name,
                               std::string* result) const;
 
-  // Returns current region dictionary or NULL if not found.
-  const base::DictionaryValue* GetRegionDictionary() const;
-
   // Returns extractor from regional_data_extractors_ or nullptr.
   RegionDataExtractor GetRegionalDataExtractor(const std::string& name) const;
 
@@ -284,7 +291,7 @@ class StatisticsProviderImpl : public StatisticsProvider {
   base::AtomicFlag cancellation_flag_;
   bool oem_manifest_loaded_;
   std::string region_;
-  std::unique_ptr<base::Value> regional_data_;
+  base::Value region_dict_;
   base::flat_map<std::string, RegionDataExtractor> regional_data_extractors_;
 
   // Lock held when |statistics_loaded_| is signaled and when
@@ -348,19 +355,6 @@ bool StatisticsProviderImpl::WaitForStatisticsLoaded() {
   return false;
 }
 
-const base::DictionaryValue* StatisticsProviderImpl::GetRegionDictionary()
-    const {
-  const base::DictionaryValue* full_dict = nullptr;
-  if (!regional_data_->GetAsDictionary(&full_dict))
-    return nullptr;
-
-  const base::DictionaryValue* region_dict = nullptr;
-  if (!full_dict->GetDictionaryWithoutPathExpansion(region_, &region_dict))
-    return nullptr;
-
-  return region_dict;
-}
-
 StatisticsProviderImpl::RegionDataExtractor
 StatisticsProviderImpl::GetRegionalDataExtractor(
     const std::string& name) const {
@@ -373,18 +367,14 @@ StatisticsProviderImpl::GetRegionalDataExtractor(
 
 bool StatisticsProviderImpl::GetRegionalInformation(const std::string& name,
                                                     std::string* result) const {
-  if (region_.empty() || !regional_data_.get())
+  if (region_.empty() || region_dict_.is_none())
     return false;
 
   const RegionDataExtractor extractor = GetRegionalDataExtractor(name);
   if (!extractor)
     return false;
 
-  const base::DictionaryValue* region_dict = GetRegionDictionary();
-  if (!region_dict)
-    return false;
-
-  return extractor(region_dict, result);
+  return extractor(region_dict_, result);
 }
 
 bool StatisticsProviderImpl::GetMachineStatistic(const std::string& name,
@@ -472,6 +462,8 @@ StatisticsProviderImpl::StatisticsProviderImpl()
       &GetInitialLocaleFromRegionalData;
   regional_data_extractors_[kKeyboardLayoutKey] =
       &GetKeyboardLayoutFromRegionalData;
+  regional_data_extractors_[kKeyboardMechanicalLayoutKey] =
+      &GetKeyboardMechanicalLayoutFromRegionalData;
   regional_data_extractors_[kInitialTimezoneKey] =
       &GetInitialTimezoneFromRegionalData;
 }
@@ -618,8 +610,6 @@ void StatisticsProviderImpl::LoadMachineStatistics(bool load_oem_manifest) {
     }
   }
 
-  LoadRegionsFile(base::FilePath(kCrosRegions));
-
   // Set region
   const auto region_iter = machine_info_.find(kRegionKey);
   if (region_iter != machine_info_.end())
@@ -636,8 +626,7 @@ void StatisticsProviderImpl::LoadMachineStatistics(bool load_oem_manifest) {
     LOG(WARNING) << "CrOS region set to '" << region_ << "'";
   }
 
-  if (regional_data_.get() && !region_.empty() && !GetRegionDictionary())
-    LOG(ERROR) << "Bad regional data: '" << region_ << "' << not found.";
+  LoadRegionsFile(base::FilePath(kCrosRegions));
 
   SignalStatisticsLoaded();
 }
@@ -646,21 +635,27 @@ void StatisticsProviderImpl::LoadRegionsFile(const base::FilePath& filename) {
   JSONFileValueDeserializer regions_file(filename);
   int regions_error_code = 0;
   std::string regions_error_message;
-  regional_data_ =
+  std::unique_ptr<base::Value> json_value =
       regions_file.Deserialize(&regions_error_code, &regions_error_message);
-  if (!regional_data_.get()) {
+  if (!json_value.get()) {
     if (base::SysInfo::IsRunningOnChromeOS())
       LOG(ERROR) << "Failed to load regions file '" << filename.value()
                  << "': error='" << regions_error_message << "'";
 
     return;
   }
-  const base::DictionaryValue* full_dict = nullptr;
-  if (!regional_data_->GetAsDictionary(&full_dict)) {
+  if (!json_value->is_dict()) {
     LOG(ERROR) << "Bad regions file '" << filename.value()
                << "': not a dictionary.";
-    regional_data_.reset();
+    return;
   }
+
+  base::Value* region_dict = json_value->FindDictKey(region_);
+  if (region_dict == nullptr) {
+    LOG(ERROR) << "Bad regional data: '" << region_ << "' << not found.";
+    return;
+  }
+  region_dict_ = std::move(*region_dict);
 }
 
 void StatisticsProviderImpl::LoadOemManifestFromFile(

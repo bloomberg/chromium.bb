@@ -6,6 +6,7 @@
 <translation id="1013923882670373915">Bluetooth デバイス「<ph name="DEVICE_NAME" />」がペア設定の権限をリクエストしています。このデバイスに次の PIN コードを入力してください: <ph name="PINCODE" /></translation>
 <translation id="1024261588257374085">画面の一部のスクリーンショットを選択しました</translation>
 <translation id="1032891413405719768">タッチペンのバッテリー残量が少なくなっています</translation>
+<translation id="1036073649888683237">通知の管理は設定アプリで行うことができす</translation>
 <translation id="1036672894875463507">私は Google アシスタント、あなたの 1 日をサポートします。
 使用できるフレーズをいくつか紹介します。</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> が追加されました</translation>
@@ -14,6 +15,8 @@
 <translation id="1052916631016577720">アイテムのスキャン</translation>
 <translation id="1056775291175587022">なし</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="1073899992769346247">バッテリーを交換または充電してください</translation>
+<translation id="1077253978657569125">改善にご協力ください。</translation>
 <translation id="108486256082349153">携帯電話: <ph name="ADDRESS" /></translation>
 <translation id="1087110696012418426">こんにちは、<ph name="GIVEN_NAME" /> さん</translation>
 <translation id="109942774857561566">退屈だな</translation>
@@ -61,6 +64,7 @@
 <translation id="1341651618736211726">オーバーフロー</translation>
 <translation id="1346748346194534595">右</translation>
 <translation id="1351937230027495976">メニューを折りたたむ</translation>
+<translation id="1383597849754832576">読み上げファイルをダウンロードできません。しばらくしてからもう一度お試しください。</translation>
 <translation id="1383876407941801731">検索</translation>
 <translation id="1391102559483454063">オン</translation>
 <translation id="1407069428457324124">ダークモード</translation>
@@ -79,13 +83,13 @@
 <translation id="1516740043221086139">サイレント モードはオンです。</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{通知設定を表示します。1 件のアプリで通知がオフになっています}other{通知設定を表示します。# 件のアプリで通知がオフになっています}}</translation>
 <translation id="1525508553941733066">閉じる</translation>
+<translation id="1536604384701784949"><ph name="USER_EMAIL_ADDRESS" /> を使用するには、すべてのアカウントからログアウトする必要があります。ログアウトするには、[キャンセル] を選択して元に戻ります。次に時刻を選択してステータス領域を開き、[ログアウト] を選択します。最後にもう一度 <ph name="USER_EMAIL_ADDRESS_2" /> にログインします。</translation>
 <translation id="15373452373711364">大きいマウスカーソル</translation>
 <translation id="1546492247443594934">デスク 2</translation>
 <translation id="1550523713251050646">クリックするとその他のオプションが表示されます</translation>
 <translation id="1555130319947370107">青</translation>
 <translation id="1570871743947603115">Bluetooth を切り替えます。<ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">このセッションのすべてのアクティビティにアクセスする</translation>
-<translation id="159255010947577753">マーカー</translation>
 <translation id="1611993646327628135">オン</translation>
 <translation id="1615402009686901181">管理者のポリシーによって、機密コンテンツが表示されているときは、スクリーン キャプチャが無効になります</translation>
 <translation id="1632985212731562677">スイッチ アクセスは [設定] &gt; [ユーザー補助機能] で無効にできます。</translation>
@@ -131,9 +135,10 @@
 <translation id="1972950159383891558"><ph name="USERNAME" /> さん、こんにちは</translation>
 <translation id="1978498689038657292">テキストを入力</translation>
 <translation id="1989113344093894667">コンテンツをキャプチャできません</translation>
+<translation id="1990046457226896323">読み上げファイルをダウンロードしました</translation>
 <translation id="1993072747612765854"><ph name="SYSTEM_APP_NAME" /> の最新アップデートの詳細をご確認ください</translation>
-<translation id="1995660704900986789">電源を切る</translation>
 <translation id="1998100899771863792">現在のデスク</translation>
+<translation id="1999628559811343244">ネットワーク パケットのキャプチャを開始しました</translation>
 <translation id="2016340657076538683">メッセージを入力</translation>
 <translation id="2018630726571919839">面白いこと言って</translation>
 <translation id="2021864487439853900">クリックしてロックを解除</translation>
@@ -153,13 +158,10 @@
 <translation id="2127372758936585790">低電力の充電器</translation>
 <translation id="2132302418721800944">全画面を録画</translation>
 <translation id="2135456203358955318">ドッキング拡大鏡</translation>
-<translation id="2146800439053023141">バーの位置を切り替え</translation>
 <translation id="2158971754079422508"><ph name="DESC_TEXT" />: 再試行</translation>
-<translation id="2167870087604746126">+ V</translation>
 <translation id="2170530631236737939">概要モードを終了するには、3 本の指で下にスワイプします</translation>
 <translation id="2208323208084708176">デスクトップ統合モード</translation>
 <translation id="2220572644011485463">PIN またはパスワード</translation>
-<translation id="2222338659135520253">ログインしてください</translation>
 <translation id="2222841058024245321">デスク 7</translation>
 <translation id="2224075387478458881">保護されたコンテンツが表示されているときは、画面を録画できません</translation>
 <translation id="225680501294068881">デバイスをスキャンしています...</translation>
@@ -180,7 +182,6 @@
 <translation id="2352467521400612932">タッチペンの設定</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> を有効にしています</translation>
 <translation id="2359808026110333948">続行</translation>
-<translation id="2365393535144473978">モバイルデータ通信を有効にすると、Bluetooth も有効になります。</translation>
 <translation id="2369165858548251131">中国語で「こんにちは」ってどう言うの</translation>
 <translation id="2390318262976603432">言語 / 地域設定</translation>
 <translation id="2391579633712104609">180°</translation>
@@ -202,10 +203,12 @@
 <translation id="2542089167727451762">プロフィール画像をタップしてください</translation>
 <translation id="255671100581129685">Google アシスタントは、公開セッションではご利用いただけません。</translation>
 <translation id="256712445991462162">ドッキング拡大鏡</translation>
+<translation id="2573588302192866788"><ph name="NAME" /> を接続できませんでした</translation>
 <translation id="2575685495496069081">マルチログインは無効にされています</translation>
 <translation id="2582112259361606227">再起動して更新</translation>
 <translation id="2595239820337756193">5 km は何マイル</translation>
 <translation id="2596078834055697711">ウィンドウのスクリーンショットを撮影する</translation>
+<translation id="2607678425161541573">オンライン ログインが必要です</translation>
 <translation id="2617342710774726426">SIM カードはロックされています</translation>
 <translation id="2621713457727696555">保護あり</translation>
 <translation id="2653019840645008922">ウィンドウ キャプチャ</translation>
@@ -290,7 +293,6 @@
 <translation id="3307642347673023554">ノートパソコン モードに切り替えました</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> が後でログインすることは引き続き可能です。</translation>
 <translation id="3321628682574733415">保護者のコードが間違っています</translation>
-<translation id="332587331255250389">バッテリーを交換してください</translation>
 <translation id="3341303451326249809">スクリーンショットをキャプチャしました</translation>
 <translation id="334252345105450327">スクリーンショットを撮って</translation>
 <translation id="3351879221545518001">現在、画面をキャストしています。</translation>
@@ -307,6 +309,7 @@
 <translation id="3430396595145920809">右側からスワイプすると前の画面に戻ります</translation>
 <translation id="343571671045587506">リマインダーの編集</translation>
 <translation id="3435967511775410570">指紋を認識しました</translation>
+<translation id="3441920967307853524"><ph name="RECEIVED_BYTES" />/<ph name="TOTAL_BYTES" /></translation>
 <translation id="3445288400492335833"><ph name="MINUTES" />分</translation>
 <translation id="3445925074670675829">USB-C デバイス</translation>
 <translation id="3454224730401036106">より安全なネットワークに接続が切り替えられました</translation>
@@ -318,6 +321,7 @@
 <translation id="3510164367642747937">マウスカーソルをハイライト表示する</translation>
 <translation id="3513798432020909783">このアカウントは <ph name="MANAGER_EMAIL" /> により管理されています</translation>
 <translation id="3552189655002856821">Wi-Fi はオフです</translation>
+<translation id="3560866052109807830">マーカー描画ツール</translation>
 <translation id="3563775809269155755">アクセス ポイントを有効にする</translation>
 <translation id="3571734092741541777">設定</translation>
 <translation id="3573179567135747900">「<ph name="FROM_LOCALE" />」に戻します（再起動が必要です）</translation>
@@ -327,6 +331,7 @@
 <translation id="3595596368722241419">バッテリー残量: フル</translation>
 <translation id="3604801046548457007">デスク <ph name="DESK_TITILE" /> が作成されました</translation>
 <translation id="3606978283550408104">ブライユ点字ディスプレイが接続されています。</translation>
+<translation id="3615926715408477684">モバイルデータ通信を有効にすると、Bluetooth も有効になります</translation>
 <translation id="3616883743181209306">メニューは画面右上に移動しました。</translation>
 <translation id="3621202678540785336">入力</translation>
 <translation id="3621712662352432595">オーディオ設定</translation>
@@ -344,9 +349,11 @@
 <translation id="370665806235115550">読み込んでいます...</translation>
 <translation id="3712407551474845318">一部分をキャプチャ</translation>
 <translation id="371370241367527062">前方のマイク</translation>
+<translation id="3713734891607377840">完了したら開く</translation>
 <translation id="3742055079367172538">スクリーンショット撮影完了</translation>
 <translation id="3771549900096082774">ハイ コントラスト モード</translation>
 <translation id="3773700760453577392"><ph name="USER_EMAIL" /> へのマルチログインは、管理者によって禁止されています。続行するには、すべてのユーザーがログアウトする必要があります。</translation>
+<translation id="3779139509281456663"><ph name="NAME" /> を接続中</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">ロック</translation>
 <translation id="3796746699333205839">アプリケーションがカメラとマイクを使用しています</translation>
@@ -372,6 +379,7 @@
 <translation id="394485226368336402">音声設定</translation>
 <translation id="3945319193631853098">設定を完了するにはタップしてください</translation>
 <translation id="3945867833895287237">アクセス ポイントに接続しています…</translation>
+<translation id="3950820424414687140">ログイン</translation>
 <translation id="3958465044488004317">アシスタントで結果を見る</translation>
 <translation id="3962859241508114581">前の曲</translation>
 <translation id="3969043077941541451">オフ</translation>
@@ -412,6 +420,7 @@
 <translation id="4274537685965975248">キーボード ショートカット「Ctrl+Alt+下矢印」が変更されました。End キーを使用するには、<ph name="LAUNCHER_KEY_NAME" />+右矢印キーを押してください。</translation>
 <translation id="4279490309300973883">ミラーリング</translation>
 <translation id="4285498937028063278">固定を解除</translation>
+<translation id="429402653707266969">ツールバーの場所を切り替え</translation>
 <translation id="4294319844246081198">おはようございます、<ph name="GIVEN_NAME" /> さん</translation>
 <translation id="4296136865091727875"><ph name="COUNT" /> 件の通知をすべて消去</translation>
 <translation id="4302592941791324970">使用できません</translation>
@@ -429,6 +438,7 @@
 <translation id="4378551569595875038">接続中...</translation>
 <translation id="4379531060876907730">タッチペン ツール</translation>
 <translation id="4389184120735010762">ドッキング拡大鏡のキーボード ショートカットを押しました。この機能をオンにしますか？</translation>
+<translation id="439598569299422042">一時停止中、<ph name="SIZE_INFO" /></translation>
 <translation id="4412944820643904175"><ph name="FEATURE_NAME" /> はオフになっています。</translation>
 <translation id="4421231901400348175">リモート サポート経由で <ph name="HELPER_NAME" /> と画面の制御を共有しています。</translation>
 <translation id="4424159417645388645">デスク 5</translation>
@@ -439,6 +449,7 @@
 <translation id="4451374464530248585">キーボード ショートカット「Alt+下矢印」が変更されました。PageDown キーを使用するには、<ph name="LAUNCHER_KEY_NAME" />+下矢印キーを押してください。</translation>
 <translation id="445864333228800152">こんばんは</translation>
 <translation id="4458688154122353284">画面の録画を停止</translation>
+<translation id="4471354919263203780">音声認識ファイルをダウンロードしています... <ph name="PERCENT" />%</translation>
 <translation id="4472575034687746823">始める</translation>
 <translation id="4477350412780666475">次の曲</translation>
 <translation id="4477892968187500306">このデバイスには Google が確認していないアプリがインストールされている可能性があります。</translation>
@@ -522,6 +533,7 @@
 <translation id="5033299697334913360">全画面をキャプチャするには任意の場所をクリックしてください</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> が新しいスマートフォンに接続されました</translation>
 <translation id="5035389544768382859">ディスプレイ設定の確定</translation>
+<translation id="5039804452771397117">許可</translation>
 <translation id="504465286040788597">前の段落</translation>
 <translation id="5071064518267176975">アプリがマイクの使用を求めています</translation>
 <translation id="5075554201838155866">字幕を開始</translation>
@@ -542,8 +554,10 @@
 <translation id="5283198616748585639">1 分追加</translation>
 <translation id="528468243742722775">終了</translation>
 <translation id="5286194356314741248">スキャン中</translation>
+<translation id="5297423144044956168">モバイル デバイスが見つかりませんでした</translation>
 <translation id="5297704307811127955">オフ</translation>
 <translation id="5302048478445481009">言語</translation>
+<translation id="5308380583665731573">接続</translation>
 <translation id="5313326810920013265">Bluetooth 設定</translation>
 <translation id="5314219114274263156">画面を録画しました</translation>
 <translation id="5322611492012084517">スマートフォンが見つかりません</translation>
@@ -696,6 +710,7 @@
 <translation id="6614169507485700968">プライバシー スクリーンはオンになっています</translation>
 <translation id="6627638273713273709">検索+Shift+K</translation>
 <translation id="6629480180092995136"><ph name="APP_NAME" /> がマイクの使用を求めています</translation>
+<translation id="6630773993843701741">デバイスを手動でペア設定するには、Bluetooth 設定を開いてください</translation>
 <translation id="6637729079642709226">時間を変更</translation>
 <translation id="6641720045729354415">自動字幕起こしを切り替えます。<ph name="STATE_TEXT" /></translation>
 <translation id="6650072551060208490"><ph name="ORIGIN_NAME" /> が本人確認をリクエストしています</translation>
@@ -709,7 +724,6 @@
 <translation id="6696025732084565524">お使いのキーボード（取り外し可能）に重要なアップデートを適用する必要があります</translation>
 <translation id="6700713906295497288">IME メニューボタン</translation>
 <translation id="6713285437468012787">Bluetooth デバイス「<ph name="DEVICE_NAME" />」がペア設定されました。すべてのユーザーはこのデバイスを使用できます。[設定] から、このペア設定を削除することもできます。</translation>
-<translation id="6715542151869432661">モバイル デバイスが見つかりませんでした。</translation>
 <translation id="6723839937902243910">電源</translation>
 <translation id="6727969043791803658">接続済み、<ph name="BATTERY_PERCENTAGE" />% のバッテリー残量</translation>
 <translation id="6732800389263199929">+<ph name="COUNT" /></translation>
@@ -717,12 +731,14 @@
 <translation id="6751826523481687655">パフォーマンス追跡機能が有効になっています</translation>
 <translation id="6752912906630585008">デスク <ph name="REMOVED_DESK" /> が削除されデスク <ph name="RECEIVE_DESK" /> に統合されました</translation>
 <translation id="6757237461819837179">再生中のメディアはありません</translation>
+<translation id="6773040085467426602">パケットのキャプチャ処理を停止するには、[停止] をクリックしてください。</translation>
 <translation id="6777216307882431711">接続された USB-C デバイスを充電中</translation>
 <translation id="6790428901817661496">再生</translation>
 <translation id="6803622936009808957">サポートされている解像度が見つからなかったため、ディスプレイをミラーリングできませんでした。代わりに拡張デスクトップ モードに切り替えました。</translation>
 <translation id="6816797338148849397">選択した項目に関連する情報があります。上矢印キーでアクセスできます。</translation>
 <translation id="6818242057446442178">1 語戻る</translation>
 <translation id="6820676911989879663">休憩の時間です！</translation>
+<translation id="6837064795450991317">デスクバーを非表示にする</translation>
 <translation id="6850010208275816200">アプリが全画面表示になっています。パスワードの入力を求められたら、まず全画面表示を終了してください。</translation>
 <translation id="6852052252232534364">クリックして有効にする</translation>
 <translation id="6857725247182211756"><ph name="SECONDS" /> 秒</translation>
@@ -758,6 +774,7 @@
 <translation id="7076293881109082629">ログイン中</translation>
 <translation id="7088960765736518739">スイッチ アクセス</translation>
 <translation id="7098389117866926363">USB-C デバイス（背面左のポート）</translation>
+<translation id="7106330611027933926">デスクバーを表示する</translation>
 <translation id="7118268675952955085">スクリーンショット</translation>
 <translation id="7131634465328662194">制限時間になると自動的にログアウトします。</translation>
 <translation id="7143207342074048698">接続中</translation>
@@ -779,6 +796,7 @@
 <translation id="7348093485538360975">画面キーボード</translation>
 <translation id="735745346212279324">VPN が切断されました</translation>
 <translation id="7360036564632145207">周辺機器の設定でデータアクセスの保護を変更すると、パフォーマンスを最適化できます。</translation>
+<translation id="7366890467478514168"><ph name="NAME" /> を接続</translation>
 <translation id="7371404428569700291">ウィンドウを録画</translation>
 <translation id="7377169924702866686">CapsLock 
 がオンになっています。</translation>
@@ -800,7 +818,9 @@
 <translation id="7461924472993315131">固定</translation>
 <translation id="746232733191930409">画面の録画モード</translation>
 <translation id="7466449121337984263">センサーをタッチしてください</translation>
+<translation id="7473891865547856676">スキップ</translation>
 <translation id="7477793887173910789">音楽、動画、その他のメディアを操作します</translation>
+<translation id="7482097454533720217">テキストを右クリックまたは長押しすると、定義、翻訳、単位変換を確認できます。</translation>
 <translation id="7483025031359818980">選択領域を全画面に設定しました</translation>
 <translation id="7486227320194954040">マーカーツールを折りたたむ</translation>
 <translation id="7497767806359279797">言語とキーボードを選択</translation>
@@ -926,6 +946,7 @@
 <translation id="8433977262951327081">シェルフに入力オプション メニューのふきだしを表示するためのショートカットが変わりました。今後は <ph name="OLD_SHORTCUT" /> ではなく <ph name="NEW_SHORTCUT" /> を使用してください。</translation>
 <translation id="8444246603146515890">デスク <ph name="DESK_TITILE" /> が有効になりました</translation>
 <translation id="8452135315243592079">SIM カードがありません</translation>
+<translation id="8456543082656546101"><ph name="SHORTCUT_KEY_NAME" />+V</translation>
 <translation id="8462305545768648477">「選択して読み上げ」を閉じる</translation>
 <translation id="847056008324733326">表示スケールの設定</translation>
 <translation id="8473301994082929012"><ph name="FEATURE_NAME" />は <ph name="ORGANIZATION_NAME" /> により<ph name="FEATURE_STATE" />に設定されています。</translation>
@@ -977,6 +998,7 @@
 <translation id="8843682306134542540">画面の向きの固定を切り替えます。<ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8853703225951107899">PIN またはパスワードはまだ確認されていません。注: パスワードを最近変更した場合は、古いパスワードを使用してください。新しいパスワードはログアウトした後に適用されます。</translation>
+<translation id="8863888432376731307">「<ph name="QUERY" />」の <ph name="INTENT" /> の取得など</translation>
 <translation id="8870509716567206129">アプリで分割画面がサポートされていません。</translation>
 <translation id="8871580645200179206">ダークモードを切り替えます。<ph name="STATE_TEXT" /></translation>
 <translation id="8874184842967597500">未接続</translation>
@@ -1012,6 +1034,7 @@
 <translation id="9080132581049224423">ホームに移動するには上にスワイプしてください</translation>
 <translation id="9080206825613744995">マイクは使用中です。</translation>
 <translation id="9084606467167974638">メニューの位置を切り替え</translation>
+<translation id="9087578468327036362">このクエリを報告</translation>
 <translation id="9089416786594320554">入力方法</translation>
 <translation id="9091626656156419976">ディスプレイ「<ph name="DISPLAY_NAME" />」が取り外されました</translation>
 <translation id="9098969848082897657">スマートフォンを消音する</translation>
@@ -1027,6 +1050,7 @@
 <translation id="9193626018745640770">不明な受信デバイスにキャストしています</translation>
 <translation id="9194617393863864469">別のユーザーとしてログイン...</translation>
 <translation id="9198992156681343238"><ph name="DISPLAY_NAME" /> の解像度を <ph name="RESOLUTION" /> に変更しました。変更を保存するには確定してください。<ph name="TIMEOUT_SECONDS" /> 秒後に以前の設定に戻ります。</translation>
+<translation id="9201044636667689546">この Chromebook に <ph name="NAME" /> を接続してください</translation>
 <translation id="9201374708878217446"><ph name="CONNECTION_STATUS" />、管理者によって管理</translation>
 <translation id="9210037371811586452">デスクトップ統合モードの終了中</translation>
 <translation id="9211490828691860325">すべてのデスク</translation>

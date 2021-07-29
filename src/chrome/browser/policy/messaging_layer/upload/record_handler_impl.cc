@@ -240,7 +240,6 @@ void RecordHandlerImpl::ReportUploader::HandleSuccessfulUpload() {
     return;
   }
 
-  // Decipher 'response' containing a base::Value dictionary that looks like:
   //  {
   //    "lastSucceedUploadedRecord": ... // SequencingInformation proto
   //    "firstFailedUploadedRecord": {

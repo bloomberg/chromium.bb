@@ -48,7 +48,7 @@ enum class SystemAppType {
   //
   // You can find information about this SWA at: http://go/shimless-ux.
   //
-  // Source: //ash/content/shimless_rma/
+  // Source: //ash/webui/shimless_rma/
   // Contact: cros-peripherals@google.com
   SHIMLESS_RMA = 17,
 
@@ -66,7 +66,7 @@ enum class SystemAppType {
   // OS FEEDBACK is a SWA that provides step by step guides to submit a
   // feedback report on Chrome OS.
   //
-  // Source: //ash/components/os_feedback_ui
+  // Source: //ash/webui/os_feedback_ui
   // contact: cros-telemetry@google.com
   OS_FEEDBACK = 19,
 
@@ -100,6 +100,9 @@ enum class SystemAppType {
   // 5. Use web_app::LaunchSystemWebAppAsync to launch your SWA (with the type
   //    added above). This provides extra safety in edge cases (e.g. when in
   //    incognito or guest sessions).
+  //
+  // 6. Update kMaxValue.
+  kMaxValue = OS_FEEDBACK
 };
 
 }  // namespace web_app

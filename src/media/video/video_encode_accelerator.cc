@@ -39,7 +39,7 @@ BitstreamBufferMetadata::~BitstreamBufferMetadata() = default;
 VideoEncodeAccelerator::Config::Config()
     : input_format(PIXEL_FORMAT_UNKNOWN),
       output_profile(VIDEO_CODEC_PROFILE_UNKNOWN),
-      initial_bitrate(0),
+      bitrate(Bitrate::ConstantBitrate(0u)),
       content_type(ContentType::kCamera) {}
 
 VideoEncodeAccelerator::Config::Config(const Config& config) = default;
@@ -48,18 +48,19 @@ VideoEncodeAccelerator::Config::Config(
     VideoPixelFormat input_format,
     const gfx::Size& input_visible_size,
     VideoCodecProfile output_profile,
-    uint32_t initial_bitrate,
+    const Bitrate& bitrate,
     absl::optional<uint32_t> initial_framerate,
     absl::optional<uint32_t> gop_length,
     absl::optional<uint8_t> h264_output_level,
     bool is_constrained_h264,
     absl::optional<StorageType> storage_type,
     ContentType content_type,
-    const std::vector<SpatialLayer>& spatial_layers)
+    const std::vector<SpatialLayer>& spatial_layers,
+    InterLayerPredMode inter_layer_pred)
     : input_format(input_format),
       input_visible_size(input_visible_size),
       output_profile(output_profile),
-      initial_bitrate(initial_bitrate),
+      bitrate(bitrate),
       initial_framerate(initial_framerate.value_or(
           VideoEncodeAccelerator::kDefaultFramerate)),
       gop_length(gop_length),
@@ -67,17 +68,18 @@ VideoEncodeAccelerator::Config::Config(
       is_constrained_h264(is_constrained_h264),
       storage_type(storage_type),
       content_type(content_type),
-      spatial_layers(spatial_layers) {}
+      spatial_layers(spatial_layers),
+      inter_layer_pred(inter_layer_pred) {}
 
 VideoEncodeAccelerator::Config::~Config() = default;
 
 std::string VideoEncodeAccelerator::Config::AsHumanReadableString() const {
   std::string str = base::StringPrintf(
       "input_format: %s, input_visible_size: %s, output_profile: %s, "
-      "initial_bitrate: %u",
+      "bitrate: %s",
       VideoPixelFormatToString(input_format).c_str(),
       input_visible_size.ToString().c_str(),
-      GetProfileName(output_profile).c_str(), initial_bitrate);
+      GetProfileName(output_profile).c_str(), bitrate.ToString().c_str());
   if (initial_framerate) {
     str += base::StringPrintf(", initial_framerate: %u",
                               initial_framerate.value());
@@ -105,6 +107,21 @@ std::string VideoEncodeAccelerator::Config::AsHumanReadableString() const {
         ", max_qp=%u, num_of_temporal_layers=%u}",
         i, sl.width, sl.height, sl.bitrate_bps, sl.framerate, sl.max_qp,
         sl.num_of_temporal_layers);
+  }
+
+  switch (inter_layer_pred) {
+    case Config::InterLayerPredMode::kOff:
+      str += base::StringPrintf(", InterLayerPredMode::kOff");
+      break;
+    case Config::InterLayerPredMode::kOn:
+      str += base::StringPrintf(", InterLayerPredMode::kOn");
+      break;
+    case Config::InterLayerPredMode::kOnKeyPic:
+      str += base::StringPrintf(", InterLayerPredMode::kOnKeyPic");
+      break;
+    default:
+      str += base::StringPrintf(", Unknown InterLayerPredMode");
+      break;
   }
   return str;
 }
@@ -166,7 +183,8 @@ bool VideoEncodeAccelerator::IsGpuFrameResizeSupported() {
 void VideoEncodeAccelerator::RequestEncodingParametersChange(
     const VideoBitrateAllocation& bitrate_allocation,
     uint32_t framerate) {
-  RequestEncodingParametersChange(bitrate_allocation.GetSumBps(), framerate);
+  RequestEncodingParametersChange(
+      Bitrate::ConstantBitrate(bitrate_allocation.GetSumBps()), framerate);
 }
 
 bool operator==(const Vp8Metadata& l, const Vp8Metadata& r) {
@@ -177,7 +195,13 @@ bool operator==(const Vp8Metadata& l, const Vp8Metadata& r) {
 bool operator==(const Vp9Metadata& l, const Vp9Metadata& r) {
   return l.has_reference == r.has_reference &&
          l.temporal_up_switch == r.temporal_up_switch &&
-         l.temporal_idx == r.temporal_idx && l.p_diffs == r.p_diffs;
+         l.referenced_by_upper_spatial_layers ==
+             r.referenced_by_upper_spatial_layers &&
+         l.reference_lower_spatial_layers == r.reference_lower_spatial_layers &&
+         l.end_of_picture == r.end_of_picture &&
+         l.temporal_idx == r.temporal_idx && l.spatial_idx == r.spatial_idx &&
+         l.spatial_layer_resolutions == r.spatial_layer_resolutions &&
+         l.p_diffs == r.p_diffs;
 }
 
 bool operator==(const BitstreamBufferMetadata& l,
@@ -199,13 +223,13 @@ bool operator==(const VideoEncodeAccelerator::Config& l,
                 const VideoEncodeAccelerator::Config& r) {
   return l.input_format == r.input_format &&
          l.input_visible_size == r.input_visible_size &&
-         l.output_profile == r.output_profile &&
-         l.initial_bitrate == r.initial_bitrate &&
+         l.output_profile == r.output_profile && l.bitrate == r.bitrate &&
          l.initial_framerate == r.initial_framerate &&
          l.gop_length == r.gop_length &&
          l.h264_output_level == r.h264_output_level &&
          l.storage_type == r.storage_type && l.content_type == r.content_type &&
-         l.spatial_layers == r.spatial_layers;
+         l.spatial_layers == r.spatial_layers &&
+         l.inter_layer_pred == r.inter_layer_pred;
 }
 }  // namespace media
 

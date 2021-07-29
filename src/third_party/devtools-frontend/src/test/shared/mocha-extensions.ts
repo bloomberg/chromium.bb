@@ -81,6 +81,7 @@ async function timeoutHook(this: Mocha.Runnable, done: Mocha.Done|undefined, err
     }
     for (const scope of scopes.values()) {
       const stack = scope.stack;
+      scope.setCanceled();
       if (stack) {
         yield `${stack.join('\n')}\n`;
       }
@@ -91,7 +92,7 @@ async function timeoutHook(this: Mocha.Runnable, done: Mocha.Done|undefined, err
   if (stacks.length > 0) {
     console.error(`Pending async operations during failure:\n${stacks.join('\n\n')}`);
   }
-  if (err && !getEnvVar('DEBUG')) {
+  if (err && !getEnvVar('DEBUG_TEST')) {
     await takeScreenshots();
   }
   if (done) {
@@ -164,6 +165,15 @@ function wrapMochaCall(
 export class AsyncScope {
   static scopes: Set<AsyncScope> = new Set();
   private asyncStack: string[][] = [];
+  private canceled: boolean = false;
+
+  setCanceled(): void {
+    this.canceled = true;
+  }
+
+  isCanceled(): boolean {
+    return this.canceled;
+  }
 
   get stack() {
     if (this.asyncStack.length === 0) {

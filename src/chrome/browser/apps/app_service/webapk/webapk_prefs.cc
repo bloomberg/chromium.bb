@@ -17,6 +17,7 @@ namespace {
 //  "generated_webapks" : {
 //    <app_id_1> : {
 //      "package_name" : <webapk_package_name_1>
+//      "update_needed" : <bool>
 //    },
 //    <app_id_2> : {
 //      "package_name" : <webapk_package_name_2>,
@@ -27,6 +28,7 @@ namespace {
 // }
 constexpr char kGeneratedWebApksPref[] = "generated_webapks";
 constexpr char kPackageNameKey[] = "package_name";
+constexpr char kUpdateNeededKey[] = "update_needed";
 
 }  // namespace
 
@@ -71,6 +73,52 @@ base::flat_set<std::string> GetWebApkAppIds(Profile* profile) {
 
   for (auto kv : generated_webapks->DictItems()) {
     ids.insert(kv.first);
+  }
+
+  return ids;
+}
+
+absl::optional<std::string> RemoveWebApkByPackageName(
+    Profile* profile,
+    const std::string& package_name) {
+  DictionaryPrefUpdate generated_webapks(profile->GetPrefs(),
+                                         kGeneratedWebApksPref);
+
+  for (auto kv : generated_webapks->DictItems()) {
+    const std::string* item_package_name =
+        kv.second.FindStringKey(kPackageNameKey);
+    if (item_package_name && *item_package_name == package_name) {
+      std::string app_id = kv.first;
+      generated_webapks->RemoveKey(kv.first);
+      return app_id;
+    }
+  }
+
+  return absl::nullopt;
+}
+
+void SetUpdateNeededForApp(Profile* profile,
+                           const std::string& app_id,
+                           bool update_needed) {
+  DictionaryPrefUpdate generated_webapks(profile->GetPrefs(),
+                                         kGeneratedWebApksPref);
+  if (generated_webapks->HasKey(app_id)) {
+    generated_webapks->SetPath({app_id, kUpdateNeededKey},
+                               base::Value(update_needed));
+  }
+}
+
+base::flat_set<std::string> GetUpdateNeededAppIds(Profile* profile) {
+  base::flat_set<std::string> ids;
+  const base::Value* generated_webapks =
+      profile->GetPrefs()->GetDictionary(kGeneratedWebApksPref);
+
+  for (auto kv : generated_webapks->DictItems()) {
+    absl::optional<bool> update_needed =
+        kv.second.FindBoolKey(kUpdateNeededKey);
+    if (update_needed.has_value() && update_needed.value()) {
+      ids.insert(kv.first);
+    }
   }
 
   return ids;

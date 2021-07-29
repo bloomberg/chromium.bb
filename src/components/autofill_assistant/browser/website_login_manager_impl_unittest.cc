@@ -7,6 +7,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
@@ -14,7 +15,9 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_task_environment.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_renderer_host.h"
+#include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -31,7 +34,9 @@ namespace autofill_assistant {
 
 namespace {
 const char kFakeUrl[] = "http://www.example.com/";
+const char kFakeUrl2[] = "https://www.example2.com";
 const char kFakeUsername[] = "user@example.com";
+const char kFakeUsername2[] = "user2@example.com";
 const char16_t kFakeUsername16[] = u"user@example.com";
 const char16_t kFakePassword[] = u"old_password";
 const char kFakeNewPassword[] = "new_password";
@@ -94,19 +99,15 @@ PasswordForm MakeSimplePasswordFormWithoutUsername() {
 
 }  // namespace
 
-class WebsiteLoginManagerImplTest : public content::RenderViewHostTestHarness {
+class WebsiteLoginManagerImplTest : public testing::Test {
  public:
-  WebsiteLoginManagerImplTest()
-      : RenderViewHostTestHarness(
-            base::test::TaskEnvironment::MainThreadType::UI,
-            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
-  ~WebsiteLoginManagerImplTest() override = default;
+  WebsiteLoginManagerImplTest() = default;
 
  protected:
   void SetUp() override {
-    RenderViewHostTestHarness::SetUp();
+    web_contents_ = content::WebContentsTester::CreateTestWebContents(
+        &browser_context_, nullptr);
     profile_store_ = new password_manager::MockPasswordStore;
-    ON_CALL(*profile_store_, IsAccountStore()).WillByDefault(Return(false));
     ASSERT_TRUE(profile_store_->Init(/*prefs=*/nullptr));
 
     ON_CALL(client_, GetProfilePasswordStore())
@@ -115,15 +116,22 @@ class WebsiteLoginManagerImplTest : public content::RenderViewHostTestHarness {
     if (base::FeatureList::IsEnabled(
             password_manager::features::kEnablePasswordsAccountStorage)) {
       account_store_ = new password_manager::MockPasswordStore;
-      ON_CALL(*account_store_, IsAccountStore()).WillByDefault(Return(true));
       ASSERT_TRUE(account_store_->Init(/*prefs=*/nullptr));
 
       ON_CALL(client_, GetAccountPasswordStore())
           .WillByDefault(Return(account_store_.get()));
     }
+    ON_CALL(*store(), GetLogins(_, _))
+        .WillByDefault(
+            WithArg<1>([](password_manager::PasswordStoreConsumer* consumer) {
+              std::vector<std::unique_ptr<PasswordForm>> result;
+              result.push_back(
+                  std::make_unique<PasswordForm>(MakeSimplePasswordForm()));
+              consumer->OnGetPasswordStoreResults(std::move(result));
+            }));
 
-    manager_ =
-        std::make_unique<WebsiteLoginManagerImpl>(&client_, web_contents());
+    manager_ = std::make_unique<WebsiteLoginManagerImpl>(&client_,
+                                                         web_contents_.get());
   }
 
   void TearDown() override {
@@ -131,15 +139,18 @@ class WebsiteLoginManagerImplTest : public content::RenderViewHostTestHarness {
       account_store_->ShutdownOnUIThread();
     }
     profile_store_->ShutdownOnUIThread();
-    RenderViewHostTestHarness::TearDown();
   }
 
   WebsiteLoginManagerImpl* manager() { return manager_.get(); }
   password_manager::MockPasswordStore* store() { return profile_store_.get(); }
 
-  void WaitForPasswordStore() { task_environment()->RunUntilIdle(); }
+  void WaitForPasswordStore() { task_environment_.RunUntilIdle(); }
 
  private:
+  content::BrowserTaskEnvironment task_environment_;
+  content::RenderViewHostTestEnabler rvh_test_enabler_;
+  content::TestBrowserContext browser_context_;
+  std::unique_ptr<content::WebContents> web_contents_;
   testing::NiceMock<MockPasswordManagerClient> client_;
   std::unique_ptr<WebsiteLoginManagerImpl> manager_;
   scoped_refptr<password_manager::MockPasswordStore> profile_store_;
@@ -156,16 +167,7 @@ MATCHER_P(FormMatches, form, "") {
 }
 
 TEST_F(WebsiteLoginManagerImplTest, SaveGeneratedPassword) {
-  ON_CALL(*store(), GetLogins(_, _))
-      .WillByDefault(WithArg<1>(
-          Invoke([](password_manager::PasswordStoreConsumer* consumer) {
-            std::vector<std::unique_ptr<PasswordForm>> result;
-            result.push_back(
-                std::make_unique<PasswordForm>(MakeSimplePasswordForm()));
-            consumer->OnGetPasswordStoreResults(std::move(result));
-          })));
-
-  password_manager::PasswordStore::FormDigest form_digest(
+  password_manager::PasswordFormDigest form_digest(
       password_manager::PasswordForm::Scheme::kHtml, kFakeUrl, GURL(kFakeUrl));
   // Presave generated password. Form with empty username is presaved.
   EXPECT_CALL(*store(), GetLogins(form_digest, _));
@@ -182,6 +184,57 @@ TEST_F(WebsiteLoginManagerImplTest, SaveGeneratedPassword) {
   // Check that additional data is populated correctly from matched form.
   EXPECT_CALL(*store(), UpdateLoginWithPrimaryKey(FormMatches(new_form), _));
   manager()->CommitGeneratedPassword();
+  WaitForPasswordStore();
+}
+
+TEST_F(WebsiteLoginManagerImplTest, DeletePasswordSuccess) {
+  password_manager::PasswordFormDigest form_digest(
+      password_manager::PasswordForm::Scheme::kHtml, kFakeUrl, GURL());
+  base::MockCallback<base::OnceCallback<void(bool)>> mock_callback;
+  // |DeletePasswordForLogin| will first fetch all existing logins
+  EXPECT_CALL(*store(), GetLogins(form_digest, _));
+  EXPECT_CALL(*store(), RemoveLogin(FormMatches(MakeSimplePasswordForm())));
+  EXPECT_CALL(mock_callback, Run(true)).Times(1);
+  manager()->DeletePasswordForLogin({GURL(kFakeUrl), kFakeUsername},
+                                    mock_callback.Get());
+  WaitForPasswordStore();
+}
+
+TEST_F(WebsiteLoginManagerImplTest, DeletePasswordFailed) {
+  base::MockCallback<base::OnceCallback<void(bool)>> mock_callback;
+  // |DeletePasswordForLogin| will first fetch all existing logins
+  EXPECT_CALL(*store(), GetLogins);
+  EXPECT_CALL(*store(), RemoveLogin).Times(0);
+  EXPECT_CALL(mock_callback, Run(false)).Times(1);
+  manager()->DeletePasswordForLogin({GURL(kFakeUrl2), kFakeUsername2},
+                                    mock_callback.Get());
+  WaitForPasswordStore();
+}
+
+TEST_F(WebsiteLoginManagerImplTest, EditPasswordSuccess) {
+  password_manager::PasswordFormDigest form_digest(
+      password_manager::PasswordForm::Scheme::kHtml, kFakeUrl, GURL());
+  base::MockCallback<base::OnceCallback<void(bool)>> mock_callback;
+  // |EditPasswordForLogin| will first fetch all existing logins
+  EXPECT_CALL(*store(), GetLogins(form_digest, _));
+  PasswordForm new_form = MakeSimplePasswordForm();
+  new_form.password_value = kFakeNewPassword16;
+  // Check that additional data is populated correctly from matched form.
+  EXPECT_CALL(*store(), UpdateLogin(FormMatches(new_form)));
+  EXPECT_CALL(mock_callback, Run(true)).Times(1);
+  manager()->EditPasswordForLogin({GURL(kFakeUrl), kFakeUsername},
+                                  kFakeNewPassword, mock_callback.Get());
+  WaitForPasswordStore();
+}
+
+TEST_F(WebsiteLoginManagerImplTest, EditPasswordFailed) {
+  base::MockCallback<base::OnceCallback<void(bool)>> mock_callback;
+  // |EditPasswordForLogin| will first fetch all existing logins
+  EXPECT_CALL(*store(), GetLogins);
+  EXPECT_CALL(*store(), UpdateLogin).Times(0);
+  EXPECT_CALL(mock_callback, Run(false)).Times(1);
+  manager()->EditPasswordForLogin({GURL(kFakeUrl2), kFakeUsername2},
+                                  kFakeNewPassword, mock_callback.Get());
   WaitForPasswordStore();
 }
 

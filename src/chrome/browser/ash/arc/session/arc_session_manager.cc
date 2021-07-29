@@ -7,10 +7,12 @@
 #include <string>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
@@ -36,9 +38,9 @@
 #include "chrome/browser/ash/arc/session/arc_provisioning_result.h"
 #include "chrome/browser/ash/login/demo_mode/demo_resources.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
+#include "chrome/browser/ash/policy/handlers/powerwash_requirements_checker.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/policy/powerwash_requirements_checker.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
@@ -49,6 +51,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_pai_starter.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/webui/chromeos/diagnostics_dialog.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/system/statistics_provider.h"
@@ -61,14 +64,16 @@
 #include "components/arc/metrics/stability_metrics_manager.h"
 #include "components/arc/session/arc_data_remover.h"
 #include "components/arc/session/arc_instance_mode.h"
+#include "components/arc/session/arc_management_transition.h"
 #include "components/arc/session/arc_session.h"
 #include "components/arc/session/arc_session_runner.h"
-#include "components/arc/session/arc_supervision_transition.h"
+#include "components/exo/wm_helper_chromeos.h"
 #include "components/prefs/pref_service.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_features.h"
 #include "crypto/random.h"
 #include "crypto/sha2.h"
 #include "ui/display/types/display_constants.h"
@@ -416,6 +421,50 @@ ArcSupportHost::Error GetSupportHostError(const ArcProvisioningResult& result) {
   return ArcSupportHost::Error::SIGN_IN_UNKNOWN_ERROR;
 }
 
+bool ShouldShowNetworkTests(const ArcProvisioningResult& result) {
+  if (!base::FeatureList::IsEnabled(
+          ash::features::kButtonARCNetworkDiagnostics)) {
+    return false;
+  }
+
+  // For GMS signin errors
+  if (result.gms_sign_in_error() ==
+          mojom::GMSSignInError::GMS_SIGN_IN_TIMEOUT ||
+      result.gms_sign_in_error() ==
+          mojom::GMSSignInError::GMS_SIGN_IN_SERVICE_UNAVAILABLE) {
+    return true;
+  }
+
+  // For GMS checkin errors
+  if (result.gms_check_in_error() ==
+      mojom::GMSCheckInError::GMS_CHECK_IN_TIMEOUT) {
+    return true;
+  }
+
+  // For Cloud Provision Flow errors
+  if (result.cloud_provision_flow_error() ==
+          mojom::CloudProvisionFlowError::ERROR_SERVER_TRANSIENT_ERROR ||
+      result.cloud_provision_flow_error() ==
+          mojom::CloudProvisionFlowError::ERROR_TIMEOUT ||
+      result.cloud_provision_flow_error() ==
+          mojom::CloudProvisionFlowError::ERROR_NETWORK_UNAVAILABLE ||
+      result.cloud_provision_flow_error() ==
+          mojom::CloudProvisionFlowError::ERROR_SERVER) {
+    return true;
+  }
+
+  // For General signin errors
+  if (result.general_error() ==
+          mojom::GeneralSignInError::GENERIC_PROVISIONING_TIMEOUT ||
+      result.general_error() ==
+          mojom::GeneralSignInError::NO_NETWORK_CONNECTION ||
+      result.general_error() ==
+          mojom::GeneralSignInError::CHROME_SERVER_COMMUNICATION_ERROR) {
+    return true;
+  }
+  return false;
+}
+
 ArcSessionManager::ExpansionResult ReadSaltInternal() {
   DCHECK(arc::IsArcVmEnabled());
 
@@ -733,8 +782,10 @@ void ArcSessionManager::OnProvisioningFinished(
   } else if (result.sign_in_error()) {
     error_code = GetSignInErrorCode(result.sign_in_error());
   }
+
   ShowArcSupportHostError({support_error, error_code} /* error_info */,
-                          true /* should_show_send_feedback */);
+                          true /* should_show_send_feedback */,
+                          ShouldShowNetworkTests(result));
 }
 
 bool ArcSessionManager::IsAllowed() const {
@@ -821,8 +872,8 @@ void ArcSessionManager::Initialize() {
     ArcAndroidManagementChecker::StartClient();
 
   // Request removing data if enabled for a regular->child transition.
-  if (GetSupervisionTransition(profile_) ==
-          ArcSupervisionTransition::REGULAR_TO_CHILD &&
+  if (GetManagementTransition(profile_) ==
+          ArcManagementTransition::REGULAR_TO_CHILD &&
       base::FeatureList::IsEnabled(
           kCleanArcDataOnRegularToChildTransitionFeature)) {
     LOG(WARNING) << "User transited from regular to child, deleting ARC data";
@@ -1161,8 +1212,8 @@ void ArcSessionManager::RequestArcDataRemoval() {
 
   data_remover_->Schedule();
   profile_->GetPrefs()->SetInteger(
-      prefs::kArcSupervisionTransition,
-      static_cast<int>(ArcSupervisionTransition::NO_TRANSITION));
+      prefs::kArcManagementTransition,
+      static_cast<int>(ArcManagementTransition::NO_TRANSITION));
   // To support 1) case above, maybe start data removal.
   if (state_ == State::STOPPED)
     MaybeStartArcDataRemoval();
@@ -1321,14 +1372,16 @@ void ArcSessionManager::OnAndroidManagementChecked(
       ShowArcSupportHostError(
           ArcSupportHost::ErrorInfo(
               ArcSupportHost::Error::ANDROID_MANAGEMENT_REQUIRED_ERROR),
-          false /* should_show_send_feedback */);
+          false /* should_show_send_feedback */,
+          false /* should_show_run_network_tests */);
       UpdateOptInCancelUMA(OptInCancelReason::ANDROID_MANAGEMENT_REQUIRED);
       break;
     case policy::AndroidManagementClient::Result::ERROR:
       ShowArcSupportHostError(
           ArcSupportHost::ErrorInfo(
               ArcSupportHost::Error::SERVER_COMMUNICATION_ERROR),
-          true /* should_show_send_feedback */);
+          true /* should_show_send_feedback */,
+          true /* should_show_run_network_tests */);
       UpdateOptInCancelUMA(OptInCancelReason::NETWORK_ERROR);
       break;
   }
@@ -1420,8 +1473,8 @@ void ArcSessionManager::OnFirstPoliciesLoadedOrTimeout() {
     // User has become managed, notify ARC by setting transition preference,
     // which is eventually passed to ARC via ArcSession parameters.
     profile_->GetPrefs()->SetInteger(
-        arc::prefs::kArcSupervisionTransition,
-        static_cast<int>(arc::ArcSupervisionTransition::UNMANAGED_TO_MANAGED));
+        arc::prefs::kArcManagementTransition,
+        static_cast<int>(arc::ArcManagementTransition::UNMANAGED_TO_MANAGED));
 
     // Restart ARC to perform managed re-provisioning.
     // kArcIsManaged and kArcSignedIn are not reset during the restart.
@@ -1480,7 +1533,7 @@ void ArcSessionManager::StartArc() {
         demo_session->resources()->GetDemoAppsPath();
   }
 
-  params.supervision_transition = GetSupervisionTransition(profile_);
+  params.management_transition = GetManagementTransition(profile_);
   params.locale = locale;
   // Empty |preferred_languages| is converted to empty array.
   params.preferred_languages = base::SplitString(
@@ -1587,6 +1640,8 @@ void ArcSessionManager::MaybeStartTimer() {
 
 void ArcSessionManager::StartMiniArc() {
   pre_start_time_ = base::TimeTicks::Now();
+  arc_session_runner_->set_default_device_scale_factor(
+      exo::GetDefaultDeviceScaleFactor());
   arc_session_runner_->RequestStartMiniInstance();
 }
 
@@ -1637,6 +1692,11 @@ void ArcSessionManager::OnSendFeedbackClicked() {
   chrome::OpenFeedbackDialog(nullptr, chrome::kFeedbackSourceArcApp);
 }
 
+void ArcSessionManager::OnRunNetworkTestsClicked() {
+  DCHECK(support_host_);
+  chromeos::DiagnosticsDialog::ShowDialog();
+}
+
 void ArcSessionManager::SetArcSessionRunnerForTesting(
     std::unique_ptr<ArcSessionRunner> arc_session_runner) {
   DCHECK(arc_session_runner);
@@ -1658,9 +1718,11 @@ void ArcSessionManager::SetAttemptUserExitCallbackForTesting(
 
 void ArcSessionManager::ShowArcSupportHostError(
     ArcSupportHost::ErrorInfo error_info,
-    bool should_show_send_feedback) {
+    bool should_show_send_feedback,
+    bool should_show_run_network_tests) {
   if (support_host_)
-    support_host_->ShowError(error_info, should_show_send_feedback);
+    support_host_->ShowError(error_info, should_show_send_feedback,
+                             should_show_run_network_tests);
   for (auto& observer : observer_list_)
     observer.OnArcErrorShowRequested(error_info);
 }

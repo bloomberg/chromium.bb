@@ -29,8 +29,6 @@
 #include <algorithm>
 
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
-#include "third_party/blink/renderer/bindings/core/v8/node_or_string_or_trusted_script.h"
-#include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_get_root_node_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_node_string_trustedscript.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_string_trustedscript.h"
@@ -108,6 +106,7 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/input/input_device_capabilities.h"
+#include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_shift_tracker.h"
@@ -182,10 +181,11 @@ struct SameSizeAsNode : EventTarget {
   uint32_t node_flags_;
   Member<void*> willbe_member_[4];
   Member<NodeData> member_;
-#if !DCHECK_IS_ON()
   // Increasing size of Member increases size of Node.
-  ASSERT_SIZE(Member<NodeData>, void*);
-#endif  // !DCHECK_IS_ON()
+  static_assert(kBlinkGCHasDebugChecks ||
+                    ::WTF::internal::SizesEqual<sizeof(Member<NodeData>),
+                                                sizeof(void*)>::value,
+                "Member<NodeData> should stay small");
 };
 
 ASSERT_SIZE(Node, SameSizeAsNode);
@@ -766,7 +766,6 @@ Node* Node::appendChild(Node* new_child) {
   return appendChild(new_child, ASSERT_NO_EXCEPTION);
 }
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 static bool IsNodeInNodes(
     const Node* const node,
     const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes) {
@@ -776,25 +775,10 @@ static bool IsNodeInNodes(
   }
   return false;
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-static bool IsNodeInNodes(
-    const Node* const node,
-    const HeapVector<NodeOrStringOrTrustedScript>& nodes) {
-  for (const NodeOrStringOrTrustedScript& node_or_string : nodes) {
-    if (node_or_string.IsNode() && node_or_string.GetAsNode() == node)
-      return true;
-  }
-  return false;
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 static Node* FindViablePreviousSibling(
     const Node& node,
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-    const HeapVector<NodeOrStringOrTrustedScript>& nodes
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 ) {
   for (Node* sibling = node.previousSibling(); sibling;
        sibling = sibling->previousSibling()) {
@@ -806,11 +790,7 @@ static Node* FindViablePreviousSibling(
 
 static Node* FindViableNextSibling(
     const Node& node,
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-    const HeapVector<NodeOrStringOrTrustedScript>& nodes
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 ) {
   for (Node* sibling = node.nextSibling(); sibling;
        sibling = sibling->nextSibling()) {
@@ -820,7 +800,6 @@ static Node* FindViableNextSibling(
   return nullptr;
 }
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 static Node* NodeOrStringToNode(
     const V8UnionNodeOrStringOrTrustedScript* node_or_string,
     Document& document,
@@ -862,54 +841,11 @@ static Node* NodeOrStringToNode(
     return nullptr;
   return Text::Create(document, string_value);
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-static Node* NodeOrStringToNode(
-    const NodeOrStringOrTrustedScript& node_or_string,
-    Document& document,
-    bool needs_trusted_types_check,
-    ExceptionState& exception_state) {
-  if (!needs_trusted_types_check) {
-    // Without trusted type checks, we simply extract the string from whatever
-    // constituent type we find.
-    if (node_or_string.IsNode())
-      return node_or_string.GetAsNode();
-    if (node_or_string.IsTrustedScript()) {
-      return Text::Create(document,
-                          node_or_string.GetAsTrustedScript()->toString());
-    }
-    return Text::Create(document, node_or_string.GetAsString());
-  }
-
-  // With trusted type checks, we can process trusted script or non-text nodes
-  // directly. Strings or text nodes need to be checked.
-  if (node_or_string.IsNode() && !node_or_string.GetAsNode()->IsTextNode())
-    return node_or_string.GetAsNode();
-
-  if (node_or_string.IsTrustedScript()) {
-    return Text::Create(document,
-                        node_or_string.GetAsTrustedScript()->toString());
-  }
-
-  String string_value = node_or_string.IsString()
-                            ? node_or_string.GetAsString()
-                            : node_or_string.GetAsNode()->textContent();
-
-  string_value = TrustedTypesCheckForScript(
-      string_value, document.GetExecutionContext(), exception_state);
-  if (exception_state.HadException())
-    return nullptr;
-  return Text::Create(document, string_value);
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 // Returns nullptr if an exception was thrown.
 static Node* ConvertNodesIntoNode(
     const Node* parent,
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes,
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-    const HeapVector<NodeOrStringOrTrustedScript>& nodes,
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     Document& document,
     ExceptionState& exception_state) {
   bool needs_check = IsA<HTMLScriptElement>(parent) &&
@@ -932,11 +868,7 @@ static Node* ConvertNodesIntoNode(
 }
 
 void Node::Prepend(
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes,
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-    const HeapVector<NodeOrStringOrTrustedScript>& nodes,
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     ExceptionState& exception_state) {
   auto* this_node = DynamicTo<ContainerNode>(this);
   if (!this_node) {
@@ -948,15 +880,11 @@ void Node::Prepend(
 
   if (Node* node =
           ConvertNodesIntoNode(this, nodes, GetDocument(), exception_state))
-    this_node->InsertBefore(node, firstChild(), exception_state);
+    this_node->InsertBefore(node, this_node->firstChild(), exception_state);
 }
 
 void Node::Append(
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes,
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-    const HeapVector<NodeOrStringOrTrustedScript>& nodes,
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     ExceptionState& exception_state) {
   auto* this_node = DynamicTo<ContainerNode>(this);
   if (!this_node) {
@@ -972,92 +900,54 @@ void Node::Append(
 }
 
 void Node::Before(
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes,
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-    const HeapVector<NodeOrStringOrTrustedScript>& nodes,
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     ExceptionState& exception_state) {
-  Node* parent = parentNode();
+  ContainerNode* parent = parentNode();
   if (!parent)
     return;
-  auto* parent_node = DynamicTo<ContainerNode>(parent);
-  if (!parent_node) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kHierarchyRequestError,
-        "This node type does not support this method.");
-    return;
-  }
   Node* viable_previous_sibling = FindViablePreviousSibling(*this, nodes);
   if (Node* node =
           ConvertNodesIntoNode(parent, nodes, GetDocument(), exception_state)) {
-    parent_node->InsertBefore(node,
-                              viable_previous_sibling
-                                  ? viable_previous_sibling->nextSibling()
-                                  : parent->firstChild(),
-                              exception_state);
+    parent->InsertBefore(node,
+                         viable_previous_sibling
+                             ? viable_previous_sibling->nextSibling()
+                             : parent->firstChild(),
+                         exception_state);
   }
 }
 
 void Node::After(
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes,
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-    const HeapVector<NodeOrStringOrTrustedScript>& nodes,
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     ExceptionState& exception_state) {
-  Node* parent = parentNode();
+  ContainerNode* parent = parentNode();
   if (!parent)
     return;
-  auto* parent_node = DynamicTo<ContainerNode>(parent);
-  if (!parent_node) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kHierarchyRequestError,
-        "This node type does not support this method.");
-    return;
-  }
   Node* viable_next_sibling = FindViableNextSibling(*this, nodes);
   if (Node* node =
           ConvertNodesIntoNode(parent, nodes, GetDocument(), exception_state))
-    parent_node->InsertBefore(node, viable_next_sibling, exception_state);
+    parent->InsertBefore(node, viable_next_sibling, exception_state);
 }
 
 void Node::ReplaceWith(
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes,
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-    const HeapVector<NodeOrStringOrTrustedScript>& nodes,
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     ExceptionState& exception_state) {
-  Node* parent = parentNode();
+  ContainerNode* parent = parentNode();
   if (!parent)
     return;
-  auto* parent_node = DynamicTo<ContainerNode>(parent);
-  if (!parent_node) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kHierarchyRequestError,
-        "This node type does not support this method.");
-    return;
-  }
-
   Node* viable_next_sibling = FindViableNextSibling(*this, nodes);
   Node* node =
       ConvertNodesIntoNode(parent, nodes, GetDocument(), exception_state);
   if (exception_state.HadException())
     return;
-  if (parent_node == parentNode())
-    parent_node->ReplaceChild(node, this, exception_state);
+  if (parent == parentNode())
+    parent->ReplaceChild(node, this, exception_state);
   else
-    parent_node->InsertBefore(node, viable_next_sibling, exception_state);
+    parent->InsertBefore(node, viable_next_sibling, exception_state);
 }
 
 // https://dom.spec.whatwg.org/#dom-parentnode-replacechildren
 void Node::ReplaceChildren(
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes,
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-    const HeapVector<NodeOrStringOrTrustedScript>& nodes,
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     ExceptionState& exception_state) {
   auto* this_node = DynamicTo<ContainerNode>(this);
   if (!this_node) {
@@ -1081,13 +971,13 @@ void Node::ReplaceChildren(
 
   // 3. Replace all with node within this.
   ChildListMutationScope mutation(*this);
-  while (Node* first_child = firstChild()) {
-    removeChild(first_child, exception_state);
+  while (Node* first_child = this_node->firstChild()) {
+    this_node->RemoveChild(first_child, exception_state);
     if (exception_state.HadException())
       return;
   }
 
-  appendChild(node, exception_state);
+  this_node->AppendChild(node, exception_state);
 }
 
 void Node::remove(ExceptionState& exception_state) {
@@ -2120,8 +2010,6 @@ String Node::textContent(bool convert_brs_to_newlines) const {
   return content.ToString();
 }
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-
 V8UnionStringOrTrustedScript* Node::textContentForBinding() const {
   const String& value = textContent();
   if (value.IsNull())
@@ -2143,28 +2031,6 @@ void Node::setTextContentForBinding(const V8UnionStringOrTrustedScript* value,
 
   NOTREACHED();
 }
-
-#else  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-
-void Node::textContentForBinding(StringOrTrustedScript& result) {
-  String value = textContent();
-  if (!value.IsNull())
-    result.SetString(value);
-}
-
-void Node::setTextContentForBinding(
-    const StringOrTrustedScript& string_or_trusted_script,
-    ExceptionState& exception_state) {
-  String value =
-      string_or_trusted_script.IsString()
-          ? string_or_trusted_script.GetAsString()
-          : string_or_trusted_script.IsTrustedScript()
-                ? string_or_trusted_script.GetAsTrustedScript()->toString()
-                : g_empty_string;
-  setTextContent(value);
-}
-
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 void Node::setTextContent(const String& text) {
   switch (getNodeType()) {
@@ -2836,11 +2702,24 @@ EventTargetData* Node::GetEventTargetData() {
   return HasEventTargetData() ? GetEventTargetDataMap().at(this) : nullptr;
 }
 
+namespace {
+
+// Helper object to allocate EventTargetData which is otherwise only used
+// through EventTargetWithInlineData.
+class EventTargetDataObject final
+    : public GarbageCollected<EventTargetDataObject>,
+      public EventTargetData {
+ public:
+  void Trace(Visitor* visitor) const final { EventTargetData::Trace(visitor); }
+};
+
+}  // namespace
+
 EventTargetData& Node::EnsureEventTargetData() {
   if (HasEventTargetData())
     return *GetEventTargetDataMap().at(this);
   DCHECK(!GetEventTargetDataMap().Contains(this));
-  EventTargetData* data = MakeGarbageCollected<EventTargetData>();
+  auto* data = MakeGarbageCollected<EventTargetDataObject>();
   GetEventTargetDataMap().Set(this, data);
   SetHasEventTargetData(true);
   return *data;
@@ -3222,8 +3101,15 @@ HTMLSlotElement* Node::AssignedSlot() const {
   // dirty. RecalcAssignment() is almost no-op if we don't need to recalc.
   root->GetSlotAssignment().RecalcAssignment();
   if (FlatTreeNodeData* data = GetFlatTreeNodeData()) {
-    DCHECK_EQ(root->AssignedSlotFor(*this), data->AssignedSlot())
-        << "Assigned slot mismatch for node " << this;
+#if DCHECK_IS_ON()
+    // User agent shadow slot assignment (FindSlotInUserAgentShadow()) will
+    // re-check the DOM tree, and if we're in the process of removing nodes
+    // from the tree, there could be a mismatch here.
+    if (root->SupportsNameBasedSlotAssignment()) {
+      DCHECK_EQ(root->AssignedSlotFor(*this), data->AssignedSlot())
+          << "Assigned slot mismatch for node " << this;
+    }
+#endif
     return data->AssignedSlot();
   }
   return nullptr;

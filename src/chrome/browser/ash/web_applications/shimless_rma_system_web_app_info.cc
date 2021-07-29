@@ -6,9 +6,10 @@
 
 #include <memory>
 
-#include "ash/content/shimless_rma/url_constants.h"
+#include "ash/constants/ash_features.h"
 #include "ash/grit/ash_shimless_rma_resources.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/webui/shimless_rma/url_constants.h"
 #include "chrome/browser/ash/web_applications/system_web_app_install_utils.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
@@ -30,4 +31,39 @@ CreateWebAppInfoForShimlessRMASystemWebApp() {
   info->open_as_window = true;
 
   return info;
+}
+
+ShimlessRMASystemAppDelegate::ShimlessRMASystemAppDelegate(Profile* profile)
+    : web_app::SystemWebAppDelegate(web_app::SystemAppType::SHIMLESS_RMA,
+                                    "ShimlessRMA",
+                                    GURL(ash::kChromeUIShimlessRMAUrl),
+                                    profile) {}
+
+std::unique_ptr<WebApplicationInfo>
+ShimlessRMASystemAppDelegate::GetWebAppInfo() const {
+  return CreateWebAppInfoForShimlessRMASystemWebApp();
+}
+
+bool ShimlessRMASystemAppDelegate::ShouldCaptureNavigations() const {
+  return true;
+}
+
+bool ShimlessRMASystemAppDelegate::ShouldShowInLauncher() const {
+  return false;
+}
+
+bool ShimlessRMASystemAppDelegate::ShouldShowInSearch() const {
+  return false;
+}
+
+bool ShimlessRMASystemAppDelegate::ShouldAllowResize() const {
+  return false;
+}
+
+bool ShimlessRMASystemAppDelegate::ShouldAllowScriptsToCloseWindows() const {
+  return true;
+}
+
+bool ShimlessRMASystemAppDelegate::IsAppEnabled() const {
+  return ash::features::IsShimlessRMAFlowEnabled();
 }

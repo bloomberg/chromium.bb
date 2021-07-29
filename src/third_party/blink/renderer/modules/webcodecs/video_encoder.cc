@@ -35,18 +35,23 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_exception.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_arraybuffer_arraybufferview.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_avc_encoder_config.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_encoded_video_chunk_metadata.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_video_color_space_init.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_decoder_config.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_encoder_config.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_encoder_encode_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_encoder_init.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_encoder_support.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_video_pixel_format.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/modules/webcodecs/codec_state_helper.h"
 #include "third_party/blink/renderer/modules/webcodecs/encoded_video_chunk.h"
+#include "third_party/blink/renderer/modules/webcodecs/gpu_factories_retriever.h"
+#include "third_party/blink/renderer/modules/webcodecs/video_color_space.h"
 #include "third_party/blink/renderer/platform/bindings/enumeration_base.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -79,6 +84,7 @@ namespace blink {
 namespace {
 
 constexpr const char kCategory[] = "media";
+constexpr int kMaxActiveEncodes = 5;
 
 // Use this function in cases when we can't immediately delete |ptr| because
 // there might be its methods on the call stack.
@@ -123,7 +129,7 @@ bool IsAcceleratedConfigurationSupported(
     }
 
     double max_supported_framerate =
-        double{supported_profile.max_framerate_numerator} /
+        static_cast<double>(supported_profile.max_framerate_numerator) /
         supported_profile.max_framerate_denominator;
     if (options.framerate.has_value() &&
         options.framerate.value() > max_supported_framerate) {
@@ -195,6 +201,21 @@ VideoEncoderTraits::ParsedConfig* ParseConfigStatic(
     return nullptr;
   }
 
+  if (config->hasBitrate()) {
+    uint32_t bps = static_cast<uint32_t>(base::ClampToRange(
+        config->bitrate(), uint64_t{0},
+        static_cast<uint64_t>(std::numeric_limits<uint32_t>::max())));
+    if (config->hasBitrateMode() && config->bitrateMode() == "constant") {
+      result->options.bitrate = media::Bitrate::ConstantBitrate(bps);
+    } else {
+      // VBR in media:Bitrate supports both target and peak bitrate.
+      // Currently webcodecs doesn't expose peak bitrate
+      // (assuming unconstrained VBR), here we just set peak as 10 times target
+      // as a good enough way of expressing unconstrained VBR.
+      result->options.bitrate = media::Bitrate::VariableBitrate(bps, 10 * bps);
+    }
+  }
+
   if (config->hasDisplayWidth() && config->hasDisplayHeight()) {
     result->display_size.emplace(config->displayWidth(),
                                  config->displayHeight());
@@ -203,7 +224,8 @@ VideoEncoderTraits::ParsedConfig* ParseConfigStatic(
   if (config->hasFramerate()) {
     constexpr double kMinFramerate = .0001;
     constexpr double kMaxFramerate = 1'000'000'000;
-    if (config->framerate() < kMinFramerate ||
+    if (std::isnan(config->framerate()) ||
+        config->framerate() < kMinFramerate ||
         config->framerate() > kMaxFramerate) {
       exception_state.ThrowTypeError(String::Format(
           "Invalid framerate; expected range from %f to %f, received %f.",
@@ -212,9 +234,6 @@ VideoEncoderTraits::ParsedConfig* ParseConfigStatic(
     }
     result->options.framerate = config->framerate();
   }
-
-  if (config->hasBitrate())
-    result->options.bitrate = config->bitrate();
 
   // https://w3c.github.io/webrtc-svc/
   if (config->hasScalabilityMode()) {
@@ -237,6 +256,7 @@ VideoEncoderTraits::ParsedConfig* ParseConfigStatic(
   bool is_codec_ambiguous = true;
   result->codec = media::kUnknownVideoCodec;
   result->profile = media::VIDEO_CODEC_PROFILE_UNKNOWN;
+  // TODO(crbug.com/1138680): Default to sRGB if encoding an RGB format.
   result->color_space = media::VideoColorSpace::REC709();
   result->level = 0;
   result->codec_string = config->codec();
@@ -248,6 +268,12 @@ VideoEncoderTraits::ParsedConfig* ParseConfigStatic(
   if (!parse_succeeded || is_codec_ambiguous) {
     exception_state.ThrowTypeError("Unknown codec.");
     return nullptr;
+  }
+
+  if (config->hasColorSpace()) {
+    VideoColorSpace* color_space =
+        MakeGarbageCollected<VideoColorSpace>(config->colorSpace());
+    result->color_space = color_space->ToMediaColorSpace();
   }
 
   // We are done with the parsing.
@@ -328,7 +354,22 @@ VideoEncoderConfig* CopyConfig(const VideoEncoderConfig& config) {
   if (config.hasHardwareAcceleration())
     result->setHardwareAcceleration(config.hardwareAcceleration());
 
-  if (config.hasAvc() && config.avc()->format()) {
+  if (config.hasAlpha())
+    result->setAlpha(config.alpha());
+
+  if (config.hasBitrateMode())
+    result->setBitrateMode(config.bitrateMode());
+
+  if (config.hasColorSpace()) {
+    VideoColorSpace* color_space =
+        MakeGarbageCollected<VideoColorSpace>(config.colorSpace());
+    result->setColorSpace(color_space->toJSON());
+  }
+
+  if (config.hasLatencyMode())
+    result->setLatencyMode(config.latencyMode());
+
+  if (config.hasAvc() && config.avc()->hasFormat()) {
     auto* avc = AvcEncoderConfig::Create();
     avc->setFormat(config.avc()->format());
     result->setAvc(avc);
@@ -506,6 +547,9 @@ void VideoEncoder::ProcessEncode(Request* request) {
 
   bool keyframe = request->encodeOpts->hasKeyFrameNonNull() &&
                   request->encodeOpts->keyFrameNonNull();
+  active_encodes_++;
+  if (active_encodes_ == kMaxActiveEncodes)
+    stall_request_processing_ = true;
 
   request->StartTracingVideoEncode(keyframe);
 
@@ -516,6 +560,12 @@ void VideoEncoder::ProcessEncode(Request* request) {
       return;
     }
     DCHECK_CALLED_ON_VALID_SEQUENCE(self->sequence_checker_);
+
+    if (self->active_encodes_ == kMaxActiveEncodes)
+      self->stall_request_processing_ = false;
+
+    self->active_encodes_--;
+
     if (!status.is_ok()) {
       self->HandleError(
           self->logger_->MakeException("Encoding error.", status));
@@ -677,13 +727,11 @@ void VideoEncoder::CallOutputCallback(
     return;
   }
 
-  auto deleter = [](void* data, size_t length, void*) {
-    delete[] static_cast<uint8_t*>(data);
-  };
-  ArrayBufferContents data(output.data.release(), output.size, deleter);
-  auto* dom_array = MakeGarbageCollected<DOMArrayBuffer>(std::move(data));
-  auto* chunk = MakeGarbageCollected<EncodedVideoChunk>(
-      output.timestamp, output.key_frame, dom_array);
+  auto buffer =
+      media::DecoderBuffer::FromArray(std::move(output.data), output.size);
+  buffer->set_timestamp(output.timestamp);
+  buffer->set_is_key_frame(output.key_frame);
+  auto* chunk = MakeGarbageCollected<EncodedVideoChunk>(std::move(buffer));
 
   auto* metadata = EncodedVideoChunkMetadata::Create();
   if (active_config->options.temporal_layers > 0)
@@ -696,28 +744,22 @@ void VideoEncoder::CallOutputCallback(
     decoder_config->setCodedHeight(active_config->options.frame_size.height());
     decoder_config->setCodedWidth(active_config->options.frame_size.width());
 
-    auto* visible_region = VideoFrameRegion::Create();
-    decoder_config->setVisibleRegion(visible_region);
-    visible_region->setTop(0);
-    visible_region->setLeft(0);
-    visible_region->setHeight(active_config->options.frame_size.height());
-    visible_region->setWidth(active_config->options.frame_size.width());
-
     if (active_config->display_size.has_value()) {
-      decoder_config->setDisplayHeight(
+      decoder_config->setDisplayAspectHeight(
           active_config->display_size.value().height());
-      decoder_config->setDisplayWidth(
+      decoder_config->setDisplayAspectWidth(
           active_config->display_size.value().width());
-    } else {
-      decoder_config->setDisplayHeight(visible_region->height());
-      decoder_config->setDisplayWidth(visible_region->width());
     }
+
+    VideoColorSpace* color_space =
+        MakeGarbageCollected<VideoColorSpace>(active_config->color_space);
+    decoder_config->setColorSpace(color_space->toJSON());
 
     if (codec_desc.has_value()) {
       auto* desc_array_buf = DOMArrayBuffer::Create(codec_desc.value().data(),
                                                     codec_desc.value().size());
       decoder_config->setDescription(
-          ArrayBufferOrArrayBufferView::FromArrayBuffer(desc_array_buf));
+          MakeGarbageCollected<V8BufferSource>(desc_array_buf));
     }
     metadata->setDecoderConfig(decoder_config);
   }
@@ -729,6 +771,11 @@ void VideoEncoder::CallOutputCallback(
   output_callback_->InvokeAndReportException(nullptr, chunk, metadata);
 
   TRACE_EVENT_END0(kCategory, GetTraceNames()->output.c_str());
+}
+
+void VideoEncoder::ResetInternal() {
+  Base::ResetInternal();
+  active_encodes_ = 0;
 }
 
 static void isConfigSupportedWithSoftwareOnly(

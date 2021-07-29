@@ -6,11 +6,13 @@
 
 #include <memory>
 
-#include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/bluetooth/bluetooth_chooser_context_factory.h"
+#include "chrome/browser/chooser_controller/title_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/bluetooth/chrome_bluetooth_chooser_controller.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "components/permissions/contexts/bluetooth_chooser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -20,14 +22,16 @@
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/ui/android/device_dialog/bluetooth_chooser_android.h"
-#include "chrome/browser/ui/android/device_dialog/bluetooth_scanning_prompt_android.h"
+#include "chrome/browser/ui/android/device_dialog/chrome_bluetooth_chooser_android_delegate.h"
+#include "chrome/browser/ui/android/device_dialog/chrome_bluetooth_scanning_prompt_android_delegate.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
+#include "components/permissions/android/bluetooth_chooser_android.h"
+#include "components/permissions/android/bluetooth_scanning_prompt_android.h"
 #else
-#include "chrome/browser/ui/bluetooth/bluetooth_chooser_controller.h"
-#include "chrome/browser/ui/bluetooth/bluetooth_chooser_desktop.h"
-#include "chrome/browser/ui/bluetooth/bluetooth_scanning_prompt_controller.h"
-#include "chrome/browser/ui/bluetooth/bluetooth_scanning_prompt_desktop.h"
+#include "components/permissions/bluetooth_chooser_desktop.h"
+#include "components/permissions/bluetooth_scanning_prompt_controller.h"
+#include "components/permissions/bluetooth_scanning_prompt_desktop.h"
+#include "components/strings/grit/components_strings.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/extensions_browser_client.h"
 #endif  // OS_ANDROID
@@ -61,7 +65,9 @@ ChromeBluetoothDelegate::RunBluetoothChooser(
           vr::UiSuppressedElement::kBluetoothChooser)) {
     return nullptr;
   }
-  return std::make_unique<BluetoothChooserAndroid>(frame, event_handler);
+  return std::make_unique<permissions::BluetoothChooserAndroid>(
+      frame, event_handler,
+      std::make_unique<ChromeBluetoothChooserAndroidDelegate>());
 #else
   if (extensions::AppWindowRegistry::Get(frame->GetBrowserContext())
           ->GetAppWindowForWebContents(
@@ -70,7 +76,12 @@ ChromeBluetoothDelegate::RunBluetoothChooser(
         frame, event_handler);
   }
 
-  return std::make_unique<BluetoothChooserDesktop>(frame, event_handler);
+  auto controller =
+      std::make_unique<ChromeBluetoothChooserController>(frame, event_handler);
+  auto controller_weak = controller->GetWeakPtr();
+  return std::make_unique<permissions::BluetoothChooserDesktop>(
+      std::move(controller),
+      base::BindOnce(chrome::ShowDeviceChooserDialog, frame));
 #endif
 }
 
@@ -79,7 +90,9 @@ ChromeBluetoothDelegate::ShowBluetoothScanningPrompt(
     content::RenderFrameHost* frame,
     const content::BluetoothScanningPrompt::EventHandler& event_handler) {
 #if defined(OS_ANDROID)
-  return std::make_unique<BluetoothScanningPromptAndroid>(frame, event_handler);
+  return std::make_unique<permissions::BluetoothScanningPromptAndroid>(
+      frame, event_handler,
+      std::make_unique<ChromeBluetoothScanningPromptAndroidDelegate>());
 #else
   if (extensions::AppWindowRegistry::Get(frame->GetBrowserContext())
           ->GetAppWindowForWebContents(
@@ -87,7 +100,12 @@ ChromeBluetoothDelegate::ShowBluetoothScanningPrompt(
     return nullptr;
   }
 
-  return std::make_unique<BluetoothScanningPromptDesktop>(frame, event_handler);
+  return std::make_unique<permissions::BluetoothScanningPromptDesktop>(
+      frame, event_handler,
+      CreateExtensionAwareChooserTitle(frame,
+                                       IDS_BLUETOOTH_SCANNING_PROMPT_ORIGIN,
+                                       IDS_BLUETOOTH_SCANNING_PROMPT_ORIGIN),
+      base::BindOnce(chrome::ShowDeviceChooserDialog, frame));
 #endif
 }
 

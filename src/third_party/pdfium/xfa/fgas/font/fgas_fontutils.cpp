@@ -9,7 +9,7 @@
 #include "build/build_config.h"
 #include "core/fxcrt/fx_codepage.h"
 #include "core/fxcrt/fx_extension.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/cxx17_backports.h"
 #include "xfa/fgas/font/cfgas_fontmgr.h"
 
 namespace {
@@ -1873,7 +1873,7 @@ const FGAS_FONTUSB* FGAS_GetUnicodeBitField(wchar_t unicode) {
 }
 
 WideString FGAS_FontNameToEnglishName(WideStringView wsLocalName) {
-  uint32_t dwLocalNameHash = FX_HashCode_GetW(wsLocalName, true);
+  uint32_t dwLocalNameHash = FX_HashCode_GetLoweredW(wsLocalName);
   const FGAS_FontInfo* pEnd = g_XFAFontsMap + pdfium::size(g_XFAFontsMap);
   const FGAS_FontInfo* pFontInfo =
       std::lower_bound(g_XFAFontsMap, pEnd, dwLocalNameHash,
@@ -1889,7 +1889,7 @@ const FGAS_FontInfo* FGAS_FontInfoByFontName(WideStringView wsFontName) {
   WideString wsFontNameTemp(wsFontName);
   wsFontNameTemp.Remove(L' ');
   uint32_t dwCurFontNameHash =
-      FX_HashCode_GetW(wsFontNameTemp.AsStringView(), true);
+      FX_HashCode_GetLoweredW(wsFontNameTemp.AsStringView());
   const FGAS_FontInfo* pEnd = g_XFAFontsMap + pdfium::size(g_XFAFontsMap);
   const FGAS_FontInfo* pFontInfo =
       std::lower_bound(g_XFAFontsMap, pEnd, dwCurFontNameHash,

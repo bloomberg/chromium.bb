@@ -2,25 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @fileoverview
- * @suppress {uselessCode} Temporary suppress because of the line exporting.
- */
+import {util} from '../../common/js/util.js';
 
-// #import {AppWindowWrapper} from './app_window_wrapper.m.js';
-// #import {util} from '../../common/js/util.m.js';
+import {AppWindowWrapper} from './app_window_wrapper.js';
 
 /**
+ * Namespace
  * @type {!Object}
  */
-// eslint-disable-next-line no-var
-var launcher = {};
+const launcher = {};
 
 /**
  * Type of a Files app's instance launch.
  * @enum {number}
  */
-/* #export */ const LaunchType = {
+export const LaunchType = {
   ALWAYS_CREATE: 0,
   FOCUS_ANY_OR_CREATE: 1,
   FOCUS_SAME_OR_CREATE: 2
@@ -36,7 +32,7 @@ const FILES_ID_PREFIX = 'files#';
  * Value of the next file manager window ID.
  * @type {number}
  */
-/* #export */ let nextFileManagerWindowID = 0;
+export let nextFileManagerWindowID = 0;
 
 /**
  * File manager window create options.
@@ -60,8 +56,7 @@ const FILE_MANAGER_WINDOW_CREATE_OPTIONS = {
  * Regexp matching a file manager window ID.
  * @const {!RegExp}
  */
-/* #export */ const FILES_ID_PATTERN =
-    new RegExp('^' + FILES_ID_PREFIX + '(\\d*)$');
+export const FILES_ID_PATTERN = new RegExp('^' + FILES_ID_PREFIX + '(\\d*)$');
 
 /**
  * Promise to serialize asynchronous calls.
@@ -168,9 +163,8 @@ launcher.launchFileManager = async (opt_appState, opt_id, opt_type) => {
   nextFileManagerWindowID = Math.max(nextFileManagerWindowID, id + 1);
   const appId = FILES_ID_PREFIX + id;
 
-  const htmlFile = 'main_modules.html';
-  const appWindow =
-      new AppWindowWrapper(htmlFile, appId, FILE_MANAGER_WINDOW_CREATE_OPTIONS);
+  const appWindow = new AppWindowWrapper(
+      'main.html', appId, FILE_MANAGER_WINDOW_CREATE_OPTIONS);
 
   await appWindow.launch(opt_appState || {}, false);
   if (!appWindow.rawAppWindow) {
@@ -181,5 +175,4 @@ launcher.launchFileManager = async (opt_appState, opt_id, opt_type) => {
   return appId;
 };
 
-// eslint-disable-next-line semi,no-extra-semi
-/* #export */ {launcher};
+export {launcher};

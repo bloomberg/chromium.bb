@@ -19,13 +19,13 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
-#include "chrome/browser/web_applications/components/app_registrar.h"
-#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "components/arc/arc_util.h"
+#include "components/arc/test/arc_util_test_support.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "content/public/test/browser_test.h"
@@ -180,8 +180,7 @@ class WebAppsUninstallDialogViewBrowserTest
     web_app::LaunchWebAppBrowser(browser()->profile(), app_id_);
     navigation_observer.WaitForNavigationFinished();
 
-    auto* provider =
-        web_app::WebAppProviderBase::GetProviderBase(browser()->profile());
+    auto* provider = web_app::WebAppProvider::Get(browser()->profile());
     DCHECK(provider);
     app_name_ = provider->registrar().GetAppShortName(app_id_);
   }

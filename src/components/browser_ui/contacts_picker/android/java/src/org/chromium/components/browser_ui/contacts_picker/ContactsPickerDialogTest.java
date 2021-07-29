@@ -38,6 +38,7 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
 import org.chromium.payments.mojom.PaymentAddress;
 import org.chromium.ui.base.ActivityWindowAndroid;
+import org.chromium.ui.base.IntentRequestTracker;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
 import org.chromium.ui.test.util.DummyUiActivityTestCase;
@@ -106,8 +107,10 @@ public class ContactsPickerDialogTest extends DummyUiActivityTestCase
 
     @Before
     public void setUp() throws Exception {
-        mWindowAndroid = TestThreadUtils.runOnUiThreadBlocking(
-                () -> { return new ActivityWindowAndroid(getActivity()); });
+        mWindowAndroid = TestThreadUtils.runOnUiThreadBlocking(() -> {
+            return new ActivityWindowAndroid(getActivity(), /* listenToActivityState= */ true,
+                    IntentRequestTracker.createFromActivity(getActivity()));
+        });
         FeatureList.setTestFeatures(Collections.singletonMap(
                 ContactsPickerFeatureList.CONTACTS_PICKER_SELECT_ALL, true));
         mIcon = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);

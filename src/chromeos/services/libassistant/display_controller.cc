@@ -8,9 +8,12 @@
 
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chromeos/assistant/internal/internal_util.h"
+#include "chromeos/assistant/internal/proto/shared/proto/v2/internal_options.pb.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
 #include "chromeos/services/libassistant/display_connection_impl.h"
+#include "chromeos/services/libassistant/grpc/assistant_client.h"
 #include "chromeos/services/libassistant/public/mojom/speech_recognition_observer.mojom.h"
+#include "chromeos/services/libassistant/util.h"
 #include "libassistant/shared/internal_api/assistant_manager_internal.h"
 
 namespace chromeos {
@@ -49,8 +52,7 @@ DisplayController::DisplayController(
     : event_observer_(std::make_unique<EventObserver>(this)),
       display_connection_(std::make_unique<DisplayConnectionImpl>(
           event_observer_.get(),
-          /*feedback_ui_enabled=*/true,
-          assistant::features::IsMediaSessionIntegrationEnabled())),
+          /*feedback_ui_enabled=*/true)),
       speech_recognition_observers_(*speech_recognition_observers),
       mojom_task_runner_(base::SequencedTaskRunnerHandle::Get()) {
   DCHECK(speech_recognition_observers);
@@ -91,19 +93,16 @@ void DisplayController::SetAndroidAppList(
   display_connection_->OnAndroidAppListRefreshed(apps);
 }
 
-void DisplayController::OnAssistantManagerCreated(
-    assistant_client::AssistantManager* assistant_manager,
-    assistant_client::AssistantManagerInternal* assistant_manager_internal) {
-  DCHECK(assistant_manager_internal);
-  assistant_manager_internal->SetDisplayConnection(display_connection_.get());
-
-  assistant_manager_internal_ = assistant_manager_internal;
+void DisplayController::OnAssistantClientCreated(
+    AssistantClient* assistant_client) {
+  assistant_client_ = assistant_client;
+  assistant_client_->assistant_manager_internal()->SetDisplayConnection(
+      display_connection_.get());
 }
 
-void DisplayController::OnDestroyingAssistantManager(
-    assistant_client::AssistantManager* assistant_manager,
-    assistant_client::AssistantManagerInternal* assistant_manager_internal) {
-  assistant_manager_internal_ = nullptr;
+void DisplayController::OnDestroyingAssistantClient(
+    AssistantClient* assistant_client) {
+  assistant_client_ = nullptr;
 }
 
 // Called from Libassistant thread.
@@ -121,18 +120,19 @@ void DisplayController::OnVerifyAndroidApp(
     result_apps_info.emplace_back(result_app_info);
   }
 
-  std::string interaction_proto = CreateVerifyProviderResponseInteraction(
-      interaction.interaction_id, result_apps_info);
+  auto interaction_proto =
+      chromeos::libassistant::CreateVerifyProviderResponseInteraction(
+          interaction.interaction_id, result_apps_info);
 
-  assistant_client::VoicelessOptions options;
-  options.obfuscated_gaia_id = interaction.user_id;
+  ::assistant::api::VoicelessOptions options;
+  options.set_obfuscated_gaia_id(interaction.user_id);
   // Set the request to be user initiated so that a new conversation will be
   // created to handle the client OPs in the response of this request.
-  options.is_user_initiated = true;
+  options.set_is_user_initiated(true);
 
-  assistant_manager_internal_->SendVoicelessInteraction(
+  assistant_client_->SendVoicelessInteraction(
       interaction_proto, /*description=*/"verify_provider_response", options,
-      [](auto) {});
+      base::DoNothing());
 }
 
 chromeos::assistant::AppStatus DisplayController::GetAndroidAppStatus(

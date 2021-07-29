@@ -11,9 +11,10 @@
 #include <utility>
 
 #include "core/fxcrt/cfx_datetime.h"
+#include "core/fxcrt/stl_util.h"
 #include "third_party/base/check.h"
+#include "third_party/base/containers/contains.h"
 #include "third_party/base/notreached.h"
-#include "third_party/base/stl_util.h"
 #include "xfa/fde/cfde_textout.h"
 #include "xfa/fwl/cfwl_datetimepicker.h"
 #include "xfa/fwl/cfwl_messagemouse.h"
@@ -125,7 +126,7 @@ void CFWL_MonthCalendar::DrawWidget(CFGAS_GEGraphics* pGraphics,
     return;
 
   if (HasBorder())
-    DrawBorder(pGraphics, CFWL_Part::Border, matrix);
+    DrawBorder(pGraphics, CFWL_ThemePart::Part::kBorder, matrix);
 
   DrawBackground(pGraphics, matrix);
   DrawHeadBK(pGraphics, matrix);
@@ -151,7 +152,7 @@ void CFWL_MonthCalendar::SetSelect(int32_t iYear,
 void CFWL_MonthCalendar::DrawBackground(CFGAS_GEGraphics* pGraphics,
                                         const CFX_Matrix& mtMatrix) {
   CFWL_ThemeBackground params(this, pGraphics);
-  params.m_iPart = CFWL_Part::Background;
+  params.m_iPart = CFWL_ThemePart::Part::kBackground;
   params.m_PartRect = m_ClientRect;
   params.m_matrix = mtMatrix;
   GetThemeProvider()->DrawBackground(params);
@@ -160,7 +161,7 @@ void CFWL_MonthCalendar::DrawBackground(CFGAS_GEGraphics* pGraphics,
 void CFWL_MonthCalendar::DrawHeadBK(CFGAS_GEGraphics* pGraphics,
                                     const CFX_Matrix& mtMatrix) {
   CFWL_ThemeBackground params(this, pGraphics);
-  params.m_iPart = CFWL_Part::Header;
+  params.m_iPart = CFWL_ThemePart::Part::kHeader;
   params.m_PartRect = m_HeadRect;
   params.m_matrix = mtMatrix;
   GetThemeProvider()->DrawBackground(params);
@@ -169,7 +170,7 @@ void CFWL_MonthCalendar::DrawHeadBK(CFGAS_GEGraphics* pGraphics,
 void CFWL_MonthCalendar::DrawLButton(CFGAS_GEGraphics* pGraphics,
                                      const CFX_Matrix& mtMatrix) {
   CFWL_ThemeBackground params(this, pGraphics);
-  params.m_iPart = CFWL_Part::LBtn;
+  params.m_iPart = CFWL_ThemePart::Part::kLBtn;
   params.m_dwStates = m_iLBtnPartStates;
   params.m_PartRect = m_LBtnRect;
   params.m_matrix = mtMatrix;
@@ -179,7 +180,7 @@ void CFWL_MonthCalendar::DrawLButton(CFGAS_GEGraphics* pGraphics,
 void CFWL_MonthCalendar::DrawRButton(CFGAS_GEGraphics* pGraphics,
                                      const CFX_Matrix& mtMatrix) {
   CFWL_ThemeBackground params(this, pGraphics);
-  params.m_iPart = CFWL_Part::RBtn;
+  params.m_iPart = CFWL_ThemePart::Part::kRBtn;
   params.m_dwStates = m_iRBtnPartStates;
   params.m_PartRect = m_RBtnRect;
   params.m_matrix = mtMatrix;
@@ -189,7 +190,7 @@ void CFWL_MonthCalendar::DrawRButton(CFGAS_GEGraphics* pGraphics,
 void CFWL_MonthCalendar::DrawCaption(CFGAS_GEGraphics* pGraphics,
                                      const CFX_Matrix& mtMatrix) {
   CFWL_ThemeText textParam(this, pGraphics);
-  textParam.m_iPart = CFWL_Part::Caption;
+  textParam.m_iPart = CFWL_ThemePart::Part::kCaption;
   textParam.m_wsText = GetHeadText(m_iCurYear, m_iCurMonth);
   m_HeadSize = CalcTextSize(textParam.m_wsText, false);
   CalcHeadSize();
@@ -203,7 +204,7 @@ void CFWL_MonthCalendar::DrawCaption(CFGAS_GEGraphics* pGraphics,
 void CFWL_MonthCalendar::DrawSeparator(CFGAS_GEGraphics* pGraphics,
                                        const CFX_Matrix& mtMatrix) {
   CFWL_ThemeBackground params(this, pGraphics);
-  params.m_iPart = CFWL_Part::HSeparator;
+  params.m_iPart = CFWL_ThemePart::Part::kHSeparator;
   params.m_PartRect = m_HSepRect;
   params.m_matrix = mtMatrix;
   GetThemeProvider()->DrawBackground(params);
@@ -212,11 +213,11 @@ void CFWL_MonthCalendar::DrawSeparator(CFGAS_GEGraphics* pGraphics,
 void CFWL_MonthCalendar::DrawDatesInBK(CFGAS_GEGraphics* pGraphics,
                                        const CFX_Matrix& mtMatrix) {
   CFWL_ThemeBackground params(this, pGraphics);
-  params.m_iPart = CFWL_Part::DateInBK;
+  params.m_iPart = CFWL_ThemePart::Part::kDateInBK;
   params.m_matrix = mtMatrix;
 
   IFWL_ThemeProvider* pTheme = GetThemeProvider();
-  int32_t iCount = pdfium::CollectionSize<int32_t>(m_DateArray);
+  int32_t iCount = fxcrt::CollectionSize<int32_t>(m_DateArray);
   for (int32_t j = 0; j < iCount; j++) {
     DATEINFO* pDataInfo = m_DateArray[j].get();
     if (pDataInfo->dwStates & FWL_ITEMSTATE_MCD_Selected) {
@@ -239,7 +240,7 @@ void CFWL_MonthCalendar::DrawDatesInBK(CFGAS_GEGraphics* pGraphics,
 void CFWL_MonthCalendar::DrawWeek(CFGAS_GEGraphics* pGraphics,
                                   const CFX_Matrix& mtMatrix) {
   CFWL_ThemeText params(this, pGraphics);
-  params.m_iPart = CFWL_Part::Week;
+  params.m_iPart = CFWL_ThemePart::Part::kWeek;
   params.m_iTTOAlign = FDE_TextAlignment::kCenter;
   params.m_dwTTOStyles.single_line_ = true;
   params.m_matrix = mtMatrix;
@@ -260,7 +261,7 @@ void CFWL_MonthCalendar::DrawWeek(CFGAS_GEGraphics* pGraphics,
 void CFWL_MonthCalendar::DrawToday(CFGAS_GEGraphics* pGraphics,
                                    const CFX_Matrix& mtMatrix) {
   CFWL_ThemeText params(this, pGraphics);
-  params.m_iPart = CFWL_Part::Today;
+  params.m_iPart = CFWL_ThemePart::Part::kToday;
   params.m_iTTOAlign = FDE_TextAlignment::kCenterLeft;
   params.m_wsText = GetTodayText(m_iYear, m_iMonth, m_iDay);
   m_TodaySize = CalcTextSize(params.m_wsText, false);
@@ -274,12 +275,12 @@ void CFWL_MonthCalendar::DrawToday(CFGAS_GEGraphics* pGraphics,
 void CFWL_MonthCalendar::DrawDatesIn(CFGAS_GEGraphics* pGraphics,
                                      const CFX_Matrix& mtMatrix) {
   CFWL_ThemeText params(this, pGraphics);
-  params.m_iPart = CFWL_Part::DatesIn;
+  params.m_iPart = CFWL_ThemePart::Part::kDatesIn;
   params.m_iTTOAlign = FDE_TextAlignment::kCenter;
   params.m_matrix = mtMatrix;
 
   IFWL_ThemeProvider* pTheme = GetThemeProvider();
-  int32_t iCount = pdfium::CollectionSize<int32_t>(m_DateArray);
+  int32_t iCount = fxcrt::CollectionSize<int32_t>(m_DateArray);
   for (int32_t j = 0; j < iCount; j++) {
     DATEINFO* pDataInfo = m_DateArray[j].get();
     params.m_wsText = pDataInfo->wsDay;
@@ -296,7 +297,7 @@ void CFWL_MonthCalendar::DrawDatesIn(CFGAS_GEGraphics* pGraphics,
 void CFWL_MonthCalendar::DrawDatesOut(CFGAS_GEGraphics* pGraphics,
                                       const CFX_Matrix& mtMatrix) {
   CFWL_ThemeText params(this, pGraphics);
-  params.m_iPart = CFWL_Part::DatesOut;
+  params.m_iPart = CFWL_ThemePart::Part::kDatesOut;
   params.m_iTTOAlign = FDE_TextAlignment::kCenter;
   params.m_matrix = mtMatrix;
   GetThemeProvider()->DrawText(params);
@@ -307,7 +308,7 @@ void CFWL_MonthCalendar::DrawDatesInCircle(CFGAS_GEGraphics* pGraphics,
   if (m_iMonth != m_iCurMonth || m_iYear != m_iCurYear)
     return;
 
-  if (m_iDay < 1 || m_iDay > pdfium::CollectionSize<int32_t>(m_DateArray))
+  if (m_iDay < 1 || m_iDay > fxcrt::CollectionSize<int32_t>(m_DateArray))
     return;
 
   DATEINFO* pDate = m_DateArray[m_iDay - 1].get();
@@ -315,7 +316,7 @@ void CFWL_MonthCalendar::DrawDatesInCircle(CFGAS_GEGraphics* pGraphics,
     return;
 
   CFWL_ThemeBackground params(this, pGraphics);
-  params.m_iPart = CFWL_Part::DateInCircle;
+  params.m_iPart = CFWL_ThemePart::Part::kDateInCircle;
   params.m_PartRect = pDate->rect;
   params.m_matrix = mtMatrix;
   GetThemeProvider()->DrawBackground(params);
@@ -532,7 +533,7 @@ void CFWL_MonthCalendar::ChangeToMonth(int32_t iYear, int32_t iMonth) {
 }
 
 void CFWL_MonthCalendar::RemoveSelDay() {
-  int32_t iDatesCount = pdfium::CollectionSize<int32_t>(m_DateArray);
+  int32_t iDatesCount = fxcrt::CollectionSize<int32_t>(m_DateArray);
   for (int32_t iSelDay : m_SelDayArray) {
     if (iSelDay <= iDatesCount)
       m_DateArray[iSelDay - 1]->dwStates &= ~FWL_ITEMSTATE_MCD_Selected;
@@ -546,7 +547,7 @@ void CFWL_MonthCalendar::AddSelDay(int32_t iDay) {
     return;
 
   RemoveSelDay();
-  if (iDay <= pdfium::CollectionSize<int32_t>(m_DateArray))
+  if (iDay <= fxcrt::CollectionSize<int32_t>(m_DateArray))
     m_DateArray[iDay - 1]->dwStates |= FWL_ITEMSTATE_MCD_Selected;
 
   m_SelDayArray.push_back(iDay);
@@ -593,7 +594,7 @@ int32_t CFWL_MonthCalendar::GetDayAtPoint(const CFX_PointF& point) const {
 }
 
 CFX_RectF CFWL_MonthCalendar::GetDayRect(int32_t iDay) {
-  if (iDay <= 0 || iDay > pdfium::CollectionSize<int32_t>(m_DateArray))
+  if (iDay <= 0 || iDay > fxcrt::CollectionSize<int32_t>(m_DateArray))
     return CFX_RectF();
 
   DATEINFO* pDateInfo = m_DateArray[iDay - 1].get();
@@ -676,18 +677,17 @@ void CFWL_MonthCalendar::OnLButtonUp(CFWL_MessageMouse* pMsg) {
 
   int32_t iCurSel = GetDayAtPoint(pMsg->m_pos);
   if (iCurSel > 0) {
-    DATEINFO* lpDatesInfo = m_DateArray[iCurSel - 1].get();
-    CFX_RectF rtInvalidate(lpDatesInfo->rect);
-    if (iOldSel > 0 &&
-        iOldSel <= pdfium::CollectionSize<int32_t>(m_DateArray)) {
-      lpDatesInfo = m_DateArray[iOldSel - 1].get();
-      rtInvalidate.Union(lpDatesInfo->rect);
+    DATEINFO* pDateInfo = m_DateArray[iCurSel - 1].get();
+    CFX_RectF rtInvalidate(pDateInfo->rect);
+    if (iOldSel > 0 && iOldSel <= fxcrt::CollectionSize<int32_t>(m_DateArray)) {
+      pDateInfo = m_DateArray[iOldSel - 1].get();
+      rtInvalidate.Union(pDateInfo->rect);
     }
     AddSelDay(iCurSel);
     CFWL_DateTimePicker* pDateTime =
         static_cast<CFWL_DateTimePicker*>(GetOuter());
     pDateTime->ProcessSelChanged(m_iCurYear, m_iCurMonth, iCurSel);
-    pDateTime->ShowMonthCalendar(false);
+    pDateTime->HideMonthCalendar();
   }
 }
 

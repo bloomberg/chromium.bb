@@ -9,7 +9,6 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/android/navigation_handle_proxy.h"
@@ -132,7 +131,8 @@ void WebContentsObserverProxy::DidFailLoad(RenderFrameHost* render_frame_host,
   JNIEnv* env = AttachCurrentThread();
   Java_WebContentsObserverProxy_didFailLoad(
       env, java_observer_, !render_frame_host->GetParent(), error_code,
-      url::GURLAndroid::FromNativeGURL(env, validated_url));
+      url::GURLAndroid::FromNativeGURL(env, validated_url),
+      static_cast<jint>(render_frame_host->GetLifecycleState()));
 }
 
 void WebContentsObserverProxy::DidChangeVisibleSecurityState() {
@@ -179,17 +179,20 @@ void WebContentsObserverProxy::DidFinishLoad(RenderFrameHost* render_frame_host,
   bool assume_valid = SetToBaseURLForDataURLIfNeeded(&url);
 
   Java_WebContentsObserverProxy_didFinishLoad(
-      env, java_observer_, render_frame_host->GetRoutingID(),
+      env, java_observer_, render_frame_host->GetProcess()->GetID(),
+      render_frame_host->GetRoutingID(),
       url::GURLAndroid::FromNativeGURL(env, url), assume_valid,
-      !render_frame_host->GetParent());
+      !render_frame_host->GetParent(),
+      static_cast<jint>(render_frame_host->GetLifecycleState()));
 }
 
 void WebContentsObserverProxy::DOMContentLoaded(
     RenderFrameHost* render_frame_host) {
   JNIEnv* env = AttachCurrentThread();
   Java_WebContentsObserverProxy_documentLoadedInFrame(
-      env, java_observer_, render_frame_host->GetRoutingID(),
-      !render_frame_host->GetParent());
+      env, java_observer_, render_frame_host->GetProcess()->GetID(),
+      render_frame_host->GetRoutingID(), !render_frame_host->GetParent(),
+      static_cast<jint>(render_frame_host->GetLifecycleState()));
 }
 
 void WebContentsObserverProxy::NavigationEntryCommitted(
@@ -220,6 +223,21 @@ void WebContentsObserverProxy::NavigationEntryChanged(
 void WebContentsObserverProxy::DidChangeThemeColor() {
   JNIEnv* env = AttachCurrentThread();
   Java_WebContentsObserverProxy_didChangeThemeColor(env, java_observer_);
+}
+
+void WebContentsObserverProxy::MediaStartedPlaying(
+    const MediaPlayerInfo& video_type,
+    const MediaPlayerId& id) {
+  JNIEnv* env = AttachCurrentThread();
+  Java_WebContentsObserverProxy_mediaStartedPlaying(env, java_observer_);
+}
+
+void WebContentsObserverProxy::MediaStoppedPlaying(
+    const MediaPlayerInfo& video_type,
+    const MediaPlayerId& id,
+    WebContentsObserver::MediaStoppedReason reason) {
+  JNIEnv* env = AttachCurrentThread();
+  Java_WebContentsObserverProxy_mediaStoppedPlaying(env, java_observer_);
 }
 
 void WebContentsObserverProxy::MediaEffectivelyFullscreenChanged(

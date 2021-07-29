@@ -124,76 +124,6 @@ public:
                        SkSpan<skvm::Val> outReturn);
 
 private:
-    enum class Intrinsic {
-        // sksl_public.sksl declares these intrinsics (and defines some other inline)
-
-        // Angle & Trigonometry
-        kRadians,
-        kDegrees,
-        kSin,
-        kCos,
-        kTan,
-
-        kASin,
-        kACos,
-        kATan,
-
-        // Exponential
-        kPow,
-        kExp,
-        kLog,
-        kExp2,
-        kLog2,
-
-        kSqrt,
-        kInverseSqrt,
-
-        // Common
-        kAbs,
-        kSign,
-        kFloor,
-        kCeil,
-        kFract,
-        kMod,
-
-        kMin,
-        kMax,
-        kClamp,
-        kSaturate,
-        kMix,
-        kStep,
-        kSmoothstep,
-
-        // Geometric
-        kLength,
-        kDistance,
-        kDot,
-        kCross,
-        kNormalize,
-        kFaceforward,
-        kReflect,
-        kRefract,
-
-        // Matrix
-        kMatrixCompMult,
-        kInverse,
-
-        // Vector Relational
-        kLessThan,
-        kLessThanEqual,
-        kGreaterThan,
-        kGreaterThanEqual,
-        kEqual,
-        kNotEqual,
-
-        kAny,
-        kAll,
-        kNot,
-
-        // SkSL
-        kSample,
-    };
-
     /**
      * In SkSL, a Variable represents a named, typed value (along with qualifiers, etc).
      * Every Variable is mapped to one (or several, contiguous) indices into our vector of
@@ -714,7 +644,7 @@ Value SkVMGenerator::writeTypeConversion(const Value& src,
         default:
             break;
     }
-    SkDEBUGFAILF("Unsupported type conversion: %d -> %d", srcKind, dstKind);
+    SkDEBUGFAILF("Unsupported type conversion: %d -> %d", (int)srcKind, (int)dstKind);
     return {};
 }
 
@@ -1418,7 +1348,7 @@ Value SkVMGenerator::writeExpression(const Expression& e) {
 
 Value SkVMGenerator::writeStore(const Expression& lhs, const Value& rhs) {
     SkASSERTF(rhs.slots() == lhs.type().slotCount(),
-              "lhs=%s (%s)\nrhs=%d slot",
+              "lhs=%s (%s)\nrhs=%zu slot",
               lhs.type().description().c_str(), lhs.description().c_str(), rhs.slots());
 
     // We need to figure out the collection of slots that we're storing into. The l-value (lhs)
@@ -1616,25 +1546,36 @@ skvm::Color ProgramToSkVM(const Program& program,
                           skvm::Coord device,
                           skvm::Coord local,
                           skvm::Color inputColor,
+                          skvm::Color destColor,
                           SampleChildFn sampleChild) {
     skvm::Val zero = builder->splat(0.0f).id;
     skvm::Val result[4] = {zero,zero,zero,zero};
 
-    skvm::Val args[6];  // At most 6 arguments (float2 coords, half4 inColor)
+    skvm::Val args[8];  // At most 8 arguments (half4 srcColor, half4 dstColor)
     size_t argSlots = 0;
     for (const SkSL::Variable* param : function.declaration().parameters()) {
         switch (param->modifiers().fLayout.fBuiltin) {
             case SK_MAIN_COORDS_BUILTIN:
                 SkASSERT(param->type().slotCount() == 2);
+                SkASSERT((argSlots + 2) <= SK_ARRAY_COUNT(args));
                 args[argSlots++] = local.x.id;
                 args[argSlots++] = local.y.id;
                 break;
             case SK_INPUT_COLOR_BUILTIN:
                 SkASSERT(param->type().slotCount() == 4);
+                SkASSERT((argSlots + 4) <= SK_ARRAY_COUNT(args));
                 args[argSlots++] = inputColor.r.id;
                 args[argSlots++] = inputColor.g.id;
                 args[argSlots++] = inputColor.b.id;
                 args[argSlots++] = inputColor.a.id;
+                break;
+            case SK_DEST_COLOR_BUILTIN:
+                SkASSERT(param->type().slotCount() == 4);
+                SkASSERT((argSlots + 4) <= SK_ARRAY_COUNT(args));
+                args[argSlots++] = destColor.r.id;
+                args[argSlots++] = destColor.g.id;
+                args[argSlots++] = destColor.b.id;
+                args[argSlots++] = destColor.a.id;
                 break;
             default:
                 SkDEBUGFAIL("Invalid parameter to main()");
@@ -1755,7 +1696,7 @@ std::unique_ptr<UniformInfo> Program_GetUniformInfo(const Program& program) {
         const GlobalVarDeclaration& decl = e->as<GlobalVarDeclaration>();
         const Variable& var = decl.declaration()->as<VarDeclaration>().var();
         if (var.modifiers().fFlags & Modifiers::kUniform_Flag) {
-            gather_uniforms(info.get(), var.type(), var.name());
+            gather_uniforms(info.get(), var.type(), String(var.name()));
         }
     }
     return info;
@@ -1816,9 +1757,10 @@ bool testingOnly_ProgramToSkVMShader(const Program& program, skvm::Builder* buil
     }
 
     skvm::Color inColor = builder->uniformColor(SkColors::kWhite, &uniforms);
+    skvm::Color destColor = builder->uniformColor(SkColors::kBlack, &uniforms);
 
-    skvm::Color result = SkSL::ProgramToSkVM(
-            program, *main, builder, SkMakeSpan(uniformVals), device, local, inColor, sampleChild);
+    skvm::Color result = SkSL::ProgramToSkVM(program, *main, builder, SkMakeSpan(uniformVals),
+                                             device, local, inColor, destColor, sampleChild);
 
     storeF(builder->varying<float>(), result.r);
     storeF(builder->varying<float>(), result.g);

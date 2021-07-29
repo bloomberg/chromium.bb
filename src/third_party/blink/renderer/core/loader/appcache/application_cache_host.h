@@ -32,11 +32,11 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_APPCACHE_APPLICATION_CACHE_HOST_H_
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom-blink.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -57,6 +57,8 @@ class CORE_EXPORT ApplicationCacheHost
   ApplicationCacheHost(
       const BrowserInterfaceBrokerProxy& interface_broker_proxy,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  ApplicationCacheHost(const ApplicationCacheHost&) = delete;
+  ApplicationCacheHost& operator=(const ApplicationCacheHost&) = delete;
   ~ApplicationCacheHost() override;
   virtual void Detach();
 
@@ -148,8 +150,6 @@ class CORE_EXPORT ApplicationCacheHost
   base::OnceClosure select_cache_for_worker_completion_callback_;
 
   FRIEND_TEST_ALL_PREFIXES(DocumentTest, SandboxDisablesAppCache);
-
-  DISALLOW_COPY_AND_ASSIGN(ApplicationCacheHost);
 };
 
 }  // namespace blink

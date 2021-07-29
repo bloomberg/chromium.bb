@@ -32,6 +32,7 @@
 <translation id="1499900233129743732"><ph name="MANAGER" /> manages this user and may remotely manage settings and monitor user activity.</translation>
 <translation id="150962533380566081">Invalid PUK.</translation>
 <translation id="1510238584712386396">Launcher</translation>
+<translation id="1600964289716072707">Place another page on the scanner and select Scan to add page.</translation>
 <translation id="1621067168122174824">Run charge test</translation>
 <translation id="1641857168437328880">Document feeder (one-sided)</translation>
 <translation id="1644574205037202324">History</translation>
@@ -41,6 +42,7 @@
 <translation id="1715359911173058521">There's an issue communicating with the scanner. Check the network or USB connection and try again.</translation>
 <translation id="1717874160321062422">Managed by <ph name="FIRST_MANAGER" /> and <ph name="SECOND_MANAGER" /></translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
+<translation id="1759842336958782510">Chrome</translation>
 <translation id="1792647875738159689">Cancelling scanning</translation>
 <translation id="1851218745569890714">Video conferencing</translation>
 <translation id="1887850431809612466">Hardware revision</translation>
@@ -50,6 +52,7 @@
 <translation id="1947737735496445907">Printed</translation>
 <translation id="1979103255016296513">Password change overdue</translation>
 <translation id="1999615961760456652">Captive portal</translation>
+<translation id="2006864819935886708">Connectivity</translation>
 <translation id="2008685064673031089">Prime search</translation>
 <translation id="2080070583977670716">More settings</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, version <ph name="MILESTONE_VERSION" /></translation>
@@ -57,10 +60,12 @@
 <translation id="2141644705054017895"><ph name="PERCENTAGE_VALUE" />%</translation>
 <translation id="2157959690810728433">QUEUED</translation>
 <translation id="2161394479394250669">Cancel print job</translation>
+<translation id="2209788852729124853">Reset traffic counters</translation>
 <translation id="2217935453350629363">Current speed</translation>
 <translation id="2224337661447660594">No Internet</translation>
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="225692081236532131">Activation status</translation>
+<translation id="2294675138977897428">No Ethernet connection detected</translation>
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> DPI</translation>
 <translation id="2338501278241028356">Turn on Bluetooth to discover nearby devices</translation>
 <translation id="2364498172489649528">Passed</translation>
@@ -76,6 +81,7 @@
 <translation id="2620436844016719705">System</translation>
 <translation id="2740531572673183784">OK</translation>
 <translation id="2751739896257479635">EAP Phase 2 authentication</translation>
+<translation id="2783010256799387990">PASSED</translation>
 <translation id="2789486458103222910">OK</translation>
 <translation id="2805756323405976993">Apps</translation>
 <translation id="2862104018715411648">Place your document on the scanner and select 'Scan' to get started</translation>
@@ -115,6 +121,7 @@
 <translation id="3595596368722241419">Battery full</translation>
 <translation id="360565022852130722">Wi-Fi network is secured with weak protocol WEP 802.1x</translation>
 <translation id="3689839747745352263"><ph name="TEST_NAME" /> test</translation>
+<translation id="373232531963562220">{PAGE_NUMBER,plural, =0{Rescan page}=1{Rescan page {PAGE_NUMBER}}other{Rescan page {PAGE_NUMBER}}}</translation>
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (<ph name="AGGREGATED_COUNT" /> reviews)</translation>
 <translation id="3748026146096797577">Not Connected</translation>
 <translation id="3749289110408117711">File name</translation>
@@ -125,6 +132,7 @@
 <translation id="387301095347517405">The number of times that your battery has gone through a full charging cycle</translation>
 <translation id="3941014780699102620">Failed to resolve host</translation>
 <translation id="3942420633017001071">Diagnostics</translation>
+<translation id="3966286471246132217">For more accurate results, close all apps until the test is complete.</translation>
 <translation id="3967822245660637423">Download complete</translation>
 <translation id="397105322502079400">Calculating...</translation>
 <translation id="39823212440917567">Print jobs older than <ph name="NUMBER_OF_DAYS" /> days will be removed</translation>
@@ -137,12 +145,17 @@
 <translation id="4176463684765177261">Disabled</translation>
 <translation id="4227825898293920515">Password expires in <ph name="TIME" /></translation>
 <translation id="4238516577297848345">No print jobs in progress</translation>
+<translation id="4244962993387259361">You need at least 500 MB free to run a Memory test. To free up space, go to Settings &gt; Storage management.</translation>
+<translation id="4289540628985791613">Overview</translation>
 <translation id="4297501883039923494">Stopped – unknown error</translation>
+<translation id="4300073214558989"><ph name="IMAGE_COUNT" /> images</translation>
 <translation id="4378373042927530923">Not run</translation>
+<translation id="4378551569595875038">Connecting...</translation>
 <translation id="4382484599443659549">PDF</translation>
 <translation id="4425149324548788773">My Drive</translation>
 <translation id="4429881212383817840">Kerberos ticket expires soon</translation>
 <translation id="4431821876790500265">See report</translation>
+<translation id="4439309966561990606">{PAGE_NUMBER,plural, =0{Remove page}=1{Remove page {PAGE_NUMBER}}other{Remove page {PAGE_NUMBER}}}</translation>
 <translation id="445059817448385655">Old password</translation>
 <translation id="4453205916657964690">Subnet mask</translation>
 <translation id="4454245904991689773">Scan to</translation>
@@ -164,9 +177,11 @@
 <translation id="469379815867856270">Signal strength</translation>
 <translation id="4707579418881001319">L2TP/IPsec + user certificate</translation>
 <translation id="4731797938093519117">Parent access</translation>
+<translation id="475869545581454722">Chrome OS password updated</translation>
 <translation id="4773299976671772492">Stopped</translation>
 <translation id="4794140124556169553">Running a CPU test may affect your system performance</translation>
 <translation id="4808449224298348341">Cancelled print job <ph name="DOCUMENT_TITLE" /></translation>
+<translation id="4813136279048157860">My Images</translation>
 <translation id="4813345808229079766">Connection</translation>
 <translation id="4832079907277790330">Select folder in the Files app…</translation>
 <translation id="4835901797422965222">No active networks</translation>
@@ -208,6 +223,7 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="5317780077021120954">Save</translation>
 <translation id="5318334351163689047">TCP request failures</translation>
 <translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
+<translation id="5327248766486351172">Name</translation>
 <translation id="5332948983412042822">Choose a new one now</translation>
 <translation id="5333530671332546086">Unknown portal state</translation>
 <translation id="5372659122375744710">Wi-Fi network is not secure</translation>
@@ -225,9 +241,10 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="5669267381087807207">Activating</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">Family</translation>
+<translation id="5701381305118179107">Centre</translation>
+<translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> of <ph name="TOTAL_PAGES" /></translation>
 <translation id="5752751666635965375">Make your own game</translation>
 <translation id="5760715441271661976">Portal state</translation>
-<translation id="5797428682393400134">SUCCESS</translation>
 <translation id="5832805196449965646">Add Person</translation>
 <translation id="583281660410589416">Unknown</translation>
 <translation id="5849570051105887917">Home provider code</translation>
@@ -236,6 +253,7 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="5916084858004523819">Prohibited</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{Your file has been successfully scanned and saved to <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}other{Your files have been successfully scanned and saved to <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}}</translation>
 <translation id="5931523347251946569">File not found</translation>
+<translation id="5972388717451707488">Update engine</translation>
 <translation id="6037291330010597344">The scanner’s document feeder is empty. Add documents and try again.</translation>
 <translation id="6040143037577758943">Close</translation>
 <translation id="6040852767465482106">Anonymous Identity</translation>
@@ -256,6 +274,8 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="6191293864534840972">Malformed name servers</translation>
 <translation id="6223752125779001553">No scanners available</translation>
 <translation id="6232017090690406397">Battery</translation>
+<translation id="6243280677745499710">Currently set</translation>
+<translation id="6280912520669706465">ARC</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" /> test has been cancelled</translation>
 <translation id="6325525973963619867">Failed</translation>
 <translation id="636850387210749493">Enterprise enrolment</translation>
@@ -271,6 +291,8 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="6527081081771465939">Unknown Wi-Fi security protocol</translation>
 <translation id="65587193855025101">Flatbed</translation>
 <translation id="6564646048574748301">Failed – Printer unreachable</translation>
+<translation id="6574762126505704998">Fill</translation>
+<translation id="6603230386432466813">Having trouble connecting?</translation>
 <translation id="6618744767048954150">Running</translation>
 <translation id="6620487321149975369">Print jobs will appear in history unless they are removed manually</translation>
 <translation id="6643016212128521049">Clear</translation>
@@ -281,10 +303,12 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="6766275201586212568">Failed DNS resolutions</translation>
 <translation id="6768237774506518020">High DNS resolution failure rate</translation>
 <translation id="6853312040151791195">Discharging rate</translation>
+<translation id="6905724422583748843">Back to <ph name="PAGE_NAME" /></translation>
 <translation id="6910312834584889076">The scanner’s cover is open. Close the cover and try again.</translation>
 <translation id="6911383237894364323">Unable to connect to media servers</translation>
 <translation id="6957231940976260713">Service name</translation>
 <translation id="6977381486153291903">Firmware revision</translation>
+<translation id="6982876849933694860">To set up a new connection, go to <ph name="BEGIN_LINK" />Settings<ph name="END_LINK" />.</translation>
 <translation id="7028979494427204405"><ph name="MANAGER" /> manages this device and has access to all user activity, including web pages visited, passwords and email.</translation>
 <translation id="7040230719604914234">Operator</translation>
 <translation id="7059230779847288458">Charging; <ph name="TIME_VALUE" /> until full</translation>
@@ -294,10 +318,12 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="7144878232160441200">Retry</translation>
 <translation id="714876143603641390">LAN connectivity</translation>
 <translation id="7162487448488904999">Gallery</translation>
+<translation id="7172721935181587524">1 image</translation>
 <translation id="7177485034254901881">This <ph name="DEVICE_TYPE" /> is managed by <ph name="MANAGER" />. Administrators may remotely configure the device.</translation>
 <translation id="7216409898977639127">Mobile provider</translation>
 <translation id="7271040990581020067">Scanner is currently in use. Try again later.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7287310195820267359">Wallpaper collections</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7343649194310845056">Network devices</translation>
 <translation id="7359657277149375382">File type</translation>
@@ -314,15 +340,18 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="7569444139234840525"><ph name="QUERY_TEXT" /> · /<ph name="PHONETICS" />/</translation>
 <translation id="7595982850646262331"><ph name="TIME_VALUE" /> left</translation>
 <translation id="7620771111601174153">Find out more in the Help Centre</translation>
+<translation id="763165478673169849">Last reset time</translation>
 <translation id="7648838807254605802">High HTTPS latency</translation>
 <translation id="7658239707568436148">Cancel</translation>
 <translation id="7690294790491645610">Confirm new password</translation>
 <translation id="7701040980221191251">None</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="773153675489693198">Cycle count</translation>
+<translation id="7762130827864645708">Your password change was successful. Please use the new password from now on.</translation>
 <translation id="7769672763586021400">Model ID</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7819857487979277519">PSK (WPA or RSN)</translation>
+<translation id="7835501727204647447">Install CloudReady</translation>
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">Provider type</translation>
 <translation id="7936303884198020182">No name servers found</translation>
@@ -333,14 +362,17 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="8075838845814659848">Remaining charge</translation>
 <translation id="808894953321890993">Change password</translation>
 <translation id="8129620843620772246"><ph name="TEMPERATURE_C" />° C</translation>
+<translation id="8132480444149501833">Request traffic counters</translation>
 <translation id="8206859287963243715">Mobile</translation>
 <translation id="8208861521865154048">Perks</translation>
+<translation id="8214184102975786227">Scan multiple pages to one PDF</translation>
 <translation id="8230672074305416752">Failed to ping the default network gateway</translation>
 <translation id="8246209727385807362">Unknown operator</translation>
 <translation id="8291967909914612644">Home provider country</translation>
 <translation id="8294431847097064396">Source</translation>
 <translation id="8297006494302853456">Weak</translation>
 <translation id="8302368968391049045">HTTPS Firewall</translation>
+<translation id="8318753676953949627">No images</translation>
 <translation id="8347227221149377169">Print jobs</translation>
 <translation id="8352772353338965963">Add an account to multiple sign-in. All signed-in accounts can be accessed without a password, so this feature should only be used with trusted accounts.</translation>
 <translation id="8364946094152050673">Empty name servers</translation>
@@ -352,8 +384,11 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="8475690821716466388">Wi-Fi network is secured with weak protocol WEP PSK</translation>
 <translation id="8477551185774834963">DNS latency slightly above allowable threshold</translation>
 <translation id="8483248364096924578">IP address</translation>
+<translation id="8498220429738806196">Traffic counters</translation>
 <translation id="8503813439785031346">Username</translation>
 <translation id="8503836310948963452">Just a few more minutes…</translation>
+<translation id="8521021929829989041">Use as personal device</translation>
+<translation id="8528615187455571738">Crosvm</translation>
 <translation id="8575298406870537639">Your operator may require this option to connect to their network. Contact your operator for details.</translation>
 <translation id="8576249514688522074">Uninitialised</translation>
 <translation id="8620617069779373398">Roaming status</translation>
@@ -370,6 +405,7 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8818152010000655963">Wallpaper</translation>
 <translation id="8845001906332463065">Get help</translation>
+<translation id="8868741746785112895">GUID</translation>
 <translation id="8881098542468797602">Test succeeded</translation>
 <translation id="8898840733695078011">Signal strength</translation>
 <translation id="8910721771319628100">Default network above latency threshold</translation>
@@ -379,11 +415,13 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="8930622219860340959">Wireless</translation>
 <translation id="8968751544471797276">Charging rate</translation>
 <translation id="8970109610781093811">Run again</translation>
+<translation id="8987565828374052507">{NUMBER_OF_PAGES,plural, =0{Scan}=1{Scan page {NUMBER_OF_PAGES}}other{Scan page {NUMBER_OF_PAGES}}}</translation>
 <translation id="9003704114456258138">Frequency:</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9088306295921699330">Current usage</translation>
+<translation id="9095775724867566971">PluginVm</translation>
 <translation id="910415269708673980">Refresh ticket for <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9106415115617144481">Scanning page <ph name="PAGE_NUMBER" /></translation>
 <translation id="9111102763498581341">Unlock</translation>

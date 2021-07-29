@@ -978,7 +978,7 @@ TEST_F(BrowserAccessibilityWinTest, TestCreateEmptyDocument) {
   BrowserAccessibility* root = manager->GetRoot();
   EXPECT_EQ(1, root->GetId());
   EXPECT_EQ(ax::mojom::Role::kRootWebArea, root->GetRole());
-  EXPECT_EQ(0, root->GetState());
+  EXPECT_EQ(ax::mojom::State::kNone, root->GetState());
   EXPECT_EQ(true, root->GetBoolAttribute(ax::mojom::BoolAttribute::kBusy));
 
   // Tree with a child textfield.
@@ -1060,7 +1060,7 @@ TEST_F(BrowserAccessibilityWinTest, EmptyDocHasUniqueIdWin) {
   BrowserAccessibility* root = manager->GetRoot();
   EXPECT_EQ(1, root->GetId());
   EXPECT_EQ(ax::mojom::Role::kRootWebArea, root->GetRole());
-  EXPECT_EQ(0, root->GetState());
+  EXPECT_EQ(ax::mojom::State::kNone, root->GetState());
   EXPECT_EQ(true, root->GetBoolAttribute(ax::mojom::BoolAttribute::kBusy));
 
   BrowserAccessibilityWin* win_root = ToBrowserAccessibilityWin(root);
@@ -1227,7 +1227,9 @@ TEST_F(BrowserAccessibilityWinTest, TestValueAttributeInTextControls) {
   BrowserAccessibilityWin* combo_box_accessible =
       ToBrowserAccessibilityWin(root_accessible->PlatformGetChild(0));
   ASSERT_NE(nullptr, combo_box_accessible);
-  manager->SetFocusLocallyForTesting(combo_box_accessible);
+  ui::AXTreeData data = manager->GetTreeData();
+  data.focus_id = combo_box_accessible->GetId();
+  manager->ax_tree()->UpdateDataForTesting(data);
   ASSERT_EQ(combo_box_accessible,
             ToBrowserAccessibilityWin(manager->GetFocus()));
   BrowserAccessibilityWin* search_box_accessible =
@@ -1884,7 +1886,9 @@ TEST_F(BrowserAccessibilityWinTest, TestCaretAndSelectionInSimpleFields) {
   BrowserAccessibilityWin* combo_box_accessible =
       ToBrowserAccessibilityWin(root_accessible->PlatformGetChild(0));
   ASSERT_NE(nullptr, combo_box_accessible);
-  manager->SetFocusLocallyForTesting(combo_box_accessible);
+  ui::AXTreeData data = manager->GetTreeData();
+  data.focus_id = combo_box_accessible->GetId();
+  manager->ax_tree()->UpdateDataForTesting(data);
   ASSERT_EQ(combo_box_accessible,
             ToBrowserAccessibilityWin(manager->GetFocus()));
   BrowserAccessibilityWin* text_field_accessible =
@@ -1907,7 +1911,9 @@ TEST_F(BrowserAccessibilityWinTest, TestCaretAndSelectionInSimpleFields) {
   EXPECT_EQ(2, caret_offset);
 
   // Move the focus to the text field.
-  manager->SetFocusLocallyForTesting(text_field_accessible);
+  data = manager->GetTreeData();
+  data.focus_id = text_field_accessible->GetId();
+  manager->ax_tree()->UpdateDataForTesting(data);
   ASSERT_EQ(text_field_accessible,
             ToBrowserAccessibilityWin(manager->GetFocus()));
 
@@ -2017,7 +2023,9 @@ TEST_F(BrowserAccessibilityWinTest, TestCaretInContentEditables) {
   EXPECT_EQ(6, caret_offset);
 
   // Move the focus to the content editable.
-  manager->SetFocusLocallyForTesting(div_editable_accessible);
+  ui::AXTreeData data = manager->GetTreeData();
+  data.focus_id = div_editable_accessible->GetId();
+  manager->ax_tree()->UpdateDataForTesting(data);
   ASSERT_EQ(div_editable_accessible,
             ToBrowserAccessibilityWin(manager->GetFocus()));
 
@@ -2187,7 +2195,9 @@ TEST_F(BrowserAccessibilityWinTest, TestSelectionInContentEditables) {
   EXPECT_EQ(7, caret_offset);
 
   // Move the focus to the content editable.
-  manager->SetFocusLocallyForTesting(div_editable_accessible);
+  ui::AXTreeData data = manager->GetTreeData();
+  data.focus_id = div_editable_accessible->GetId();
+  manager->ax_tree()->UpdateDataForTesting(data);
   ASSERT_EQ(div_editable_accessible,
             ToBrowserAccessibilityWin(manager->GetFocus()));
 
@@ -2386,8 +2396,8 @@ TEST_F(BrowserAccessibilityWinTest, TestTextAttributesInContentEditables) {
   div_editable.role = ax::mojom::Role::kGenericContainer;
   div_editable.AddState(ax::mojom::State::kEditable);
   div_editable.AddState(ax::mojom::State::kRichlyEditable);
-  div_editable.AddBoolAttribute(ax::mojom::BoolAttribute::kContentEditableRoot,
-                                true);
+  div_editable.AddBoolAttribute(
+      ax::mojom::BoolAttribute::kNonAtomicTextFieldRoot, true);
   div_editable.AddState(ax::mojom::State::kFocusable);
   div_editable.AddStringAttribute(ax::mojom::StringAttribute::kFontFamily,
                                   "Helvetica");

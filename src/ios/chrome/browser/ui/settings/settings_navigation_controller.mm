@@ -190,11 +190,11 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
                              handler:(id<ApplicationCommands>)handler {
   DCHECK(browser);
   DCHECK(ios::GetChromeBrowserProvider()
-             ->GetUserFeedbackProvider()
+             .GetUserFeedbackProvider()
              ->IsUserFeedbackEnabled());
   UIViewController* controller =
       ios::GetChromeBrowserProvider()
-          ->GetUserFeedbackProvider()
+          .GetUserFeedbackProvider()
           ->CreateViewController(dataSource, handler, sender);
   DCHECK(controller);
   SettingsNavigationController* nc = [[SettingsNavigationController alloc]
@@ -207,9 +207,7 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 
   // If the controller overrides overrideUserInterfaceStyle, respect that in the
   // SettingsNavigationController.
-  if (@available(iOS 13.0, *)) {
-    nc.overrideUserInterfaceStyle = controller.overrideUserInterfaceStyle;
-  }
+  nc.overrideUserInterfaceStyle = controller.overrideUserInterfaceStyle;
   return nc;
 }
 
@@ -221,12 +219,12 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
                     (id<ImportDataControllerDelegate>)importDataDelegate
                          fromEmail:(NSString*)fromEmail
                            toEmail:(NSString*)toEmail
-                        isSignedIn:(BOOL)isSignedIn {
+                         isSyncing:(BOOL)isSyncing {
   UIViewController* controller =
       [[ImportDataTableViewController alloc] initWithDelegate:importDataDelegate
                                                     fromEmail:fromEmail
                                                       toEmail:toEmail
-                                                   isSignedIn:isSignedIn];
+                                                    isSyncing:isSyncing];
 
   SettingsNavigationController* nc = [[SettingsNavigationController alloc]
       initWithRootViewController:controller
@@ -489,6 +487,10 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
     (ManageSyncSettingsCoordinator*)coordinator {
   DCHECK_EQ(self.manageSyncSettingsCoordinator, coordinator);
   [self stopSyncSettingsCoordinator];
+}
+
+- (NSString*)manageSyncSettingsCoordinatorTitle {
+  return l10n_util::GetNSString(IDS_IOS_MANAGE_SYNC_SETTINGS_TITLE);
 }
 
 #pragma mark - PasswordsCoordinatorDelegate

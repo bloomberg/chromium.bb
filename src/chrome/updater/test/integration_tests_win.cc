@@ -31,8 +31,8 @@
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/updater_version.h"
 #include "chrome/updater/util.h"
-#include "chrome/updater/win/constants.h"
 #include "chrome/updater/win/setup/setup_util.h"
+#include "chrome/updater/win/win_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
@@ -107,9 +107,35 @@ absl::optional<base::FilePath> GetDataDirPath(UpdaterScope scope) {
       .AppendASCII(PRODUCT_FULLNAME_STRING);
 }
 
+bool DeleteService() {
+  SC_HANDLE scm = ::OpenSCManager(
+      nullptr, nullptr, SC_MANAGER_CONNECT | SC_MANAGER_CREATE_SERVICE);
+  if (!scm)
+    return false;
+
+  SC_HANDLE service = ::OpenService(scm, kWindowsServiceName, DELETE);
+  bool is_service_deleted = !service;
+  if (!is_service_deleted) {
+    is_service_deleted =
+        ::DeleteService(service)
+            ? true
+            : ::GetLastError() == ERROR_SERVICE_MARKED_FOR_DELETE;
+
+    ::CloseServiceHandle(service);
+  }
+
+  ::CloseServiceHandle(scm);
+
+  base::win::RegKey(HKEY_LOCAL_MACHINE, base::ASCIIToWide(UPDATER_KEY).c_str(),
+                    KEY_WRITE)
+      .DeleteValue(kWindowsServiceName);
+
+  return is_service_deleted;
+}
+
 void Clean(UpdaterScope scope) {
-  // TODO(crbug.com/1096654): Add support for system scope.
-  const HKEY root = HKEY_CURRENT_USER;
+  const HKEY root =
+      scope == UpdaterScope::kSystem ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   for (const char* key : {CLIENT_STATE_KEY, CLIENTS_KEY, UPDATER_KEY}) {
     EXPECT_TRUE(DeleteRegKey(root, KEY_WOW64_32KEY, base::ASCIIToWide(key)));
   }
@@ -117,21 +143,24 @@ void Clean(UpdaterScope scope) {
                              kRegKeyCompanyEnrollment, UPDATER_POLICIES_KEY}) {
     EXPECT_TRUE(DeleteRegKey(HKEY_LOCAL_MACHINE, 0, key));
   }
-  for (const CLSID& clsid : GetSideBySideServers()) {
+
+  for (const CLSID& clsid :
+       JoinVectors(GetSideBySideServers(scope), GetActiveServers(scope))) {
     EXPECT_TRUE(DeleteRegKey(root, 0, GetComServerClsidRegistryPath(clsid)));
+    if (scope == UpdaterScope::kSystem)
+      EXPECT_TRUE(DeleteRegKey(root, 0, GetComServerAppidRegistryPath(clsid)));
   }
-  for (const CLSID& clsid : GetActiveServers()) {
-    EXPECT_TRUE(DeleteRegKey(root, 0, GetComServerClsidRegistryPath(clsid)));
+
+  for (const IID& iid :
+       JoinVectors(GetSideBySideInterfaces(), GetActiveInterfaces())) {
+    EXPECT_TRUE(DeleteRegKey(root, 0, GetComIidRegistryPath(iid)));
+    EXPECT_TRUE(DeleteRegKey(root, 0, GetComTypeLibRegistryPath(iid)));
   }
-  for (const GUID& guid : GetSideBySideInterfaces()) {
-    EXPECT_TRUE(DeleteRegKey(root, 0, GetComIidRegistryPath(guid)));
-    EXPECT_TRUE(DeleteRegKey(root, 0, GetComTypeLibRegistryPath(guid)));
+
+  if (scope == UpdaterScope::kSystem) {
+    EXPECT_TRUE(DeleteService());
   }
-  for (const GUID& guid : GetActiveInterfaces()) {
-    EXPECT_TRUE(DeleteRegKey(root, 0, GetComIidRegistryPath(guid)));
-    EXPECT_TRUE(DeleteRegKey(root, 0, GetComTypeLibRegistryPath(guid)));
-  }
-  // TODO(crbug.com/1062288): Delete the COM service items.
+
   // TODO(crbug.com/1062288): Delete the Wake task.
   absl::optional<base::FilePath> path = GetProductPath();
   EXPECT_TRUE(path);
@@ -143,9 +172,37 @@ void Clean(UpdaterScope scope) {
     EXPECT_TRUE(base::DeletePathRecursively(*path));
 }
 
+bool IsServiceGone() {
+  SC_HANDLE scm = ::OpenSCManager(
+      nullptr, nullptr, SC_MANAGER_CONNECT | SC_MANAGER_CREATE_SERVICE);
+  if (!scm)
+    return false;
+
+  SC_HANDLE service = ::OpenService(
+      scm, kWindowsServiceName, SERVICE_QUERY_CONFIG | SERVICE_CHANGE_CONFIG);
+  bool is_service_gone = !service;
+  if (!is_service_gone) {
+    if (!::ChangeServiceConfig(service, SERVICE_NO_CHANGE, SERVICE_NO_CHANGE,
+                               SERVICE_NO_CHANGE, nullptr, nullptr, nullptr,
+                               nullptr, nullptr, nullptr,
+                               L"Test Service Display Name")) {
+      is_service_gone = ::GetLastError() == ERROR_SERVICE_MARKED_FOR_DELETE;
+    }
+
+    ::CloseServiceHandle(service);
+  }
+
+  ::CloseServiceHandle(scm);
+
+  return is_service_gone &&
+         !base::win::RegKey(HKEY_LOCAL_MACHINE,
+                            base::ASCIIToWide(UPDATER_KEY).c_str(), KEY_READ)
+              .HasValue(kWindowsServiceName);
+}
+
 void ExpectClean(UpdaterScope scope) {
-  // TODO(crbug.com/1096654): Add support for system scope.
-  const HKEY root = HKEY_CURRENT_USER;
+  const HKEY root =
+      scope == UpdaterScope::kSystem ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   for (const char* key : {CLIENT_STATE_KEY, CLIENTS_KEY, UPDATER_KEY}) {
     EXPECT_FALSE(RegKeyExists(root, KEY_WOW64_32KEY, base::ASCIIToWide(key)));
   }
@@ -153,21 +210,23 @@ void ExpectClean(UpdaterScope scope) {
                              kRegKeyCompanyEnrollment, UPDATER_POLICIES_KEY}) {
     EXPECT_FALSE(RegKeyExists(HKEY_LOCAL_MACHINE, 0, key));
   }
-  for (const CLSID& clsid : GetSideBySideServers()) {
+
+  for (const CLSID& clsid :
+       JoinVectors(GetSideBySideServers(scope), GetActiveServers(scope))) {
     EXPECT_FALSE(RegKeyExists(root, 0, GetComServerClsidRegistryPath(clsid)));
+    if (scope == UpdaterScope::kSystem)
+      EXPECT_FALSE(RegKeyExists(root, 0, GetComServerAppidRegistryPath(clsid)));
   }
-  for (const CLSID& clsid : GetActiveServers()) {
-    EXPECT_FALSE(RegKeyExists(root, 0, GetComServerClsidRegistryPath(clsid)));
+
+  for (const IID& iid :
+       JoinVectors(GetSideBySideInterfaces(), GetActiveInterfaces())) {
+    EXPECT_FALSE(RegKeyExists(root, 0, GetComIidRegistryPath(iid)));
+    EXPECT_FALSE(RegKeyExists(root, 0, GetComTypeLibRegistryPath(iid)));
   }
-  for (const GUID& guid : GetSideBySideInterfaces()) {
-    EXPECT_FALSE(RegKeyExists(root, 0, GetComIidRegistryPath(guid)));
-    EXPECT_FALSE(RegKeyExists(root, 0, GetComTypeLibRegistryPath(guid)));
-  }
-  for (const GUID& guid : GetActiveInterfaces()) {
-    EXPECT_FALSE(RegKeyExists(root, 0, GetComIidRegistryPath(guid)));
-    EXPECT_FALSE(RegKeyExists(root, 0, GetComTypeLibRegistryPath(guid)));
-  }
-  // TODO(crbug.com/1062288): Assert there are no COM service items.
+
+  if (scope == UpdaterScope::kSystem)
+    EXPECT_TRUE(IsServiceGone());
+
   // TODO(crbug.com/1062288): Assert there are no Wake tasks.
 
   // Files must not exist on the file system.
@@ -295,30 +354,31 @@ void ExpectNotActive(UpdaterScope scope, const std::string& id) {
 }
 
 void WaitForServerExit(UpdaterScope scope) {
-  // TODO(crbug.com/1096654): Need to pass `scope` here.
   // CreateGlobalPrefs will block until it can acquire the prefs lock.
-  CreateGlobalPrefs();
+  CreateGlobalPrefs(scope);
 }
 
 // Tests if the typelibs and some of the public, internal, and
 // legacy interfaces are available. Failure to query these interfaces indicates
 // an issue with typelib registration.
-void ExpectInterfacesRegistered() {
+void ExpectInterfacesRegistered(UpdaterScope scope) {
   {  // IUpdater, IGoogleUpdate3Web and IAppBundleWeb.
     // The block is necessary so that updater_server goes out of scope and
     // releases the prefs lock before updater_internal_server tries to acquire
     // it to mode-check.
     Microsoft::WRL::ComPtr<IUnknown> updater_server;
-    EXPECT_HRESULT_SUCCEEDED(::CoCreateInstance(__uuidof(UpdaterClass), nullptr,
-                                                CLSCTX_LOCAL_SERVER,
-                                                IID_PPV_ARGS(&updater_server)));
+    ASSERT_HRESULT_SUCCEEDED(::CoCreateInstance(
+        scope == UpdaterScope::kSystem ? __uuidof(UpdaterSystemClass)
+                                       : __uuidof(UpdaterUserClass),
+        nullptr, CLSCTX_LOCAL_SERVER, IID_PPV_ARGS(&updater_server)));
     Microsoft::WRL::ComPtr<IUpdater> updater;
     EXPECT_HRESULT_SUCCEEDED(updater_server.As(&updater));
 
     Microsoft::WRL::ComPtr<IUnknown> updater_legacy_server;
     EXPECT_HRESULT_SUCCEEDED(::CoCreateInstance(
-        __uuidof(GoogleUpdate3WebUserClass), nullptr, CLSCTX_LOCAL_SERVER,
-        IID_PPV_ARGS(&updater_legacy_server)));
+        scope == UpdaterScope::kSystem ? __uuidof(GoogleUpdate3WebSystemClass)
+                                       : __uuidof(GoogleUpdate3WebUserClass),
+        nullptr, CLSCTX_LOCAL_SERVER, IID_PPV_ARGS(&updater_legacy_server)));
     Microsoft::WRL::ComPtr<IGoogleUpdate3Web> google_update;
     EXPECT_HRESULT_SUCCEEDED(updater_legacy_server.As(&google_update));
     Microsoft::WRL::ComPtr<IAppBundleWeb> app_bundle;
@@ -330,8 +390,9 @@ void ExpectInterfacesRegistered() {
   // IUpdaterInternal.
   Microsoft::WRL::ComPtr<IUnknown> updater_internal_server;
   EXPECT_HRESULT_SUCCEEDED(::CoCreateInstance(
-      __uuidof(UpdaterInternalClass), nullptr, CLSCTX_LOCAL_SERVER,
-      IID_PPV_ARGS(&updater_internal_server)));
+      scope == UpdaterScope::kSystem ? __uuidof(UpdaterInternalSystemClass)
+                                     : __uuidof(UpdaterInternalUserClass),
+      nullptr, CLSCTX_LOCAL_SERVER, IID_PPV_ARGS(&updater_internal_server)));
   Microsoft::WRL::ComPtr<IUpdaterInternal> updater_internal;
   EXPECT_HRESULT_SUCCEEDED(updater_internal_server.As(&updater_internal));
 }

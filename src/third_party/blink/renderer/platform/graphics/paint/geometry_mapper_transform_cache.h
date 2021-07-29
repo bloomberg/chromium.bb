@@ -20,6 +20,9 @@ class PLATFORM_EXPORT GeometryMapperTransformCache {
   USING_FAST_MALLOC(GeometryMapperTransformCache);
  public:
   GeometryMapperTransformCache() = default;
+  GeometryMapperTransformCache(const GeometryMapperTransformCache&) = delete;
+  GeometryMapperTransformCache& operator=(const GeometryMapperTransformCache&) =
+      delete;
 
   static void ClearCache();
   bool IsValid() const;
@@ -112,6 +115,8 @@ class PLATFORM_EXPORT GeometryMapperTransformCache {
            plane_root_transform_->has_animation;
   }
 
+  bool has_fixed() const { return has_fixed_; }
+
  private:
   friend class GeometryMapperTransformCacheTest;
 
@@ -203,8 +208,10 @@ class PLATFORM_EXPORT GeometryMapperTransformCache {
   };
   std::unique_ptr<ScreenTransform> screen_transform_;
 
+  // Whether or not there is a fixed position transform to the root.
+  bool has_fixed_ = false;
+
   unsigned cache_generation_ = s_global_generation - 1;
-  DISALLOW_COPY_AND_ASSIGN(GeometryMapperTransformCache);
 };
 
 }  // namespace blink

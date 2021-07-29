@@ -10,8 +10,8 @@
 
 namespace gfx {
 
-// SMPTE ST 2086 mastering metadata.
-struct GFX_EXPORT MasteringMetadata {
+// SMPTE ST 2086 color volume metadata.
+struct GFX_EXPORT ColorVolumeMetadata {
   using Chromaticity = PointF;
   Chromaticity primary_r;
   Chromaticity primary_g;
@@ -20,10 +20,11 @@ struct GFX_EXPORT MasteringMetadata {
   float luminance_max = 0;
   float luminance_min = 0;
 
-  MasteringMetadata();
-  MasteringMetadata(const MasteringMetadata& rhs);
+  ColorVolumeMetadata();
+  ColorVolumeMetadata(const ColorVolumeMetadata& rhs);
+  ColorVolumeMetadata& operator=(const ColorVolumeMetadata& rhs);
 
-  bool operator==(const MasteringMetadata& rhs) const {
+  bool operator==(const ColorVolumeMetadata& rhs) const {
     return ((primary_r == rhs.primary_r) && (primary_g == rhs.primary_g) &&
             (primary_b == rhs.primary_b) && (white_point == rhs.white_point) &&
             (luminance_max == rhs.luminance_max) &&
@@ -33,7 +34,7 @@ struct GFX_EXPORT MasteringMetadata {
 
 // HDR metadata common for HDR10 and WebM/VP9-based HDR formats.
 struct GFX_EXPORT HDRMetadata {
-  MasteringMetadata mastering_metadata;
+  ColorVolumeMetadata color_volume_metadata;
   // Max content light level (CLL), i.e. maximum brightness level present in the
   // stream), in nits.
   unsigned max_content_light_level = 0;
@@ -43,18 +44,19 @@ struct GFX_EXPORT HDRMetadata {
 
   HDRMetadata();
   HDRMetadata(const HDRMetadata& rhs);
+  HDRMetadata& operator=(const HDRMetadata& rhs);
 
   bool IsValid() const {
     return !((max_content_light_level == 0) &&
              (max_frame_average_light_level == 0) &&
-             (mastering_metadata == MasteringMetadata()));
+             (color_volume_metadata == ColorVolumeMetadata()));
   }
 
   bool operator==(const HDRMetadata& rhs) const {
     return (
         (max_content_light_level == rhs.max_content_light_level) &&
         (max_frame_average_light_level == rhs.max_frame_average_light_level) &&
-        (mastering_metadata == rhs.mastering_metadata));
+        (color_volume_metadata == rhs.color_volume_metadata));
   }
 };
 

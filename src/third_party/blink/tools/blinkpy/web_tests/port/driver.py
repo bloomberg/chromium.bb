@@ -380,7 +380,8 @@ class Driver(object):
         relative_path = test_name[len(test_dir_prefix):]
 
         if ('/https/' in test_name or '.https.' in test_name
-                or '.h2.' in test_name or '.serviceworker.' in test_name):
+                or '.h2.' in test_name or '.serviceworker.' in test_name
+                or '.serviceworker-module.' in test_name):
             return 'https://%s:%d%s%s' % (hostname, secure_port,
                                           test_url_prefix, relative_path)
         return 'http://%s:%d%s%s' % (hostname, insecure_port, test_url_prefix,
@@ -529,8 +530,18 @@ class Driver(object):
         cmd.extend(self._port.additional_driver_flags())
         if self._port.get_option('enable_leak_detection'):
             cmd.append('--enable-leak-detection')
-
         cmd.extend(per_test_args)
+
+        # The following code temporarily disables CompositeAfterPaint in web
+        # tests unless it is explicitly enabled. CompositeAfterPaint is enabled
+        # via fieldtrial_testing_config.json which would make web tests run
+        # with CompositeAfterPaint. This is disabled in order to stage the
+        # enabling of the feature because of the number of rebaselines needed.
+        # TODO(pdr): Remove this code and run web tests with
+        # CompositeAfterPaint.
+        if '--enable-blink-features=CompositeAfterPaint' not in cmd:
+            cmd.append('--disable-blink-features=CompositeAfterPaint')
+
         cmd = coalesce_repeated_switches(cmd)
         cmd.append('-')
         return cmd
@@ -672,7 +683,7 @@ class Driver(object):
                 assert not self.err_seen_eof
                 err_line, self.err_seen_eof = self._strip_eof(err_line)
             if out_line:
-                if out_line[-1] != '\n':
+                if not out_line.endswith(b'\n'):
                     _log.error(
                         'Last character read from DRT stdout line was not a newline!  This indicates either a NRWT or DRT bug.'
                     )

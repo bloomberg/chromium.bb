@@ -7,9 +7,10 @@
 
 #include <string>
 
+#include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "chromeos/assistant/internal/proto/assistant/display_connection.pb.h"
 #include "chromeos/services/libassistant/public/cpp/android_app_info.h"
-#include "libassistant/display/proto/display_connection.pb.h"
 #include "libassistant/shared/internal_api/display_connection.h"
 
 namespace chromeos {
@@ -26,8 +27,7 @@ class DisplayConnectionObserver {
 class DisplayConnectionImpl : public assistant_client::DisplayConnection {
  public:
   DisplayConnectionImpl(DisplayConnectionObserver* observer,
-                        bool feedback_ui_enabled,
-                        bool media_session_enabled);
+                        bool feedback_ui_enabled);
   DisplayConnectionImpl(const DisplayConnectionImpl&) = delete;
   DisplayConnectionImpl& operator=(const DisplayConnectionImpl&) = delete;
   ~DisplayConnectionImpl() override;
@@ -53,13 +53,11 @@ class DisplayConnectionImpl : public assistant_client::DisplayConnection {
 
   Delegate* delegate_ GUARDED_BY(update_display_request_mutex_) = nullptr;
 
+  // Owned by the parent which also owns `this`.
   DisplayConnectionObserver* const observer_;
 
   // Whether Assistant feedback UI is enabled.
   const bool feedback_ui_enabled_;
-
-  // Whether Media Session support is enabled.
-  const bool media_session_enabled_;
 
   // Whether ARC++ is enabled.
   bool arc_play_store_enabled_ GUARDED_BY(update_display_request_mutex_) =
@@ -78,6 +76,8 @@ class DisplayConnectionImpl : public assistant_client::DisplayConnection {
   // Both LibAssistant and Chrome threads may update and send display request so
   // we always guard access with |update_display_request_mutex_|.
   base::Lock update_display_request_mutex_;
+
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 };
 
 }  // namespace libassistant

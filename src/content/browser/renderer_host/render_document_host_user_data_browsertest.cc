@@ -8,6 +8,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
@@ -319,7 +320,7 @@ IN_PROC_BROWSER_TEST_F(RenderDocumentHostUserDataTest,
   // 5) Check that the RDHUD object is not cleared after renderer process
   // crashes.
   EXPECT_EQ(top_frame_host(), rfh_a);
-  EXPECT_FALSE(pending_rfh->IsCurrent());
+  EXPECT_FALSE(pending_rfh->IsActive());
   EXPECT_FALSE(rfh_a->IsRenderFrameLive());
   EXPECT_TRUE(pending_rfh->IsRenderFrameLive());
   EXPECT_TRUE(data);
@@ -379,7 +380,7 @@ IN_PROC_BROWSER_TEST_F(RenderDocumentHostUserDataTest,
   EXPECT_EQ(navigation_request->associated_site_instance_type(),
             NavigationRequest::AssociatedSiteInstanceType::CURRENT);
   EXPECT_TRUE(current_rfh);
-  EXPECT_TRUE(current_rfh->IsCurrent());
+  EXPECT_TRUE(current_rfh->IsActive());
 
   // 4) Get the RenderDocumentHostUserData associated with speculative
   // RenderFrameHost.
@@ -572,8 +573,8 @@ IN_PROC_BROWSER_TEST_F(RenderDocumentHostUserDataTest,
   EXPECT_TRUE(data_a);
   EXPECT_TRUE(data_b);
 
-  EXPECT_FALSE(rfh_a->IsCurrent());
-  EXPECT_FALSE(rfh_b->IsCurrent());
+  EXPECT_FALSE(rfh_a->IsActive());
+  EXPECT_FALSE(rfh_b->IsActive());
 }
 
 // Tests that RenderDocumentHostUserData associated with RenderFrameHost is not
@@ -717,12 +718,14 @@ IN_PROC_BROWSER_TEST_F(RenderDocumentHostUserDataTest, CrossSiteNavigation) {
   EXPECT_FALSE(data);
 }
 
-// Tests that RenderDocumentHostUserData object is cleared on performing same
-// site navigation.
 IN_PROC_BROWSER_TEST_F(RenderDocumentHostUserDataTest, SameSiteNavigation) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url_a1(embedded_test_server()->GetURL("a.com", "/title1.html"));
   GURL url_a2(embedded_test_server()->GetURL("a.com", "/title2.html"));
+  // The test assumes the previous page gets deleted after navigation. Disable
+  // back-forward cache to ensure that it doesn't get preserved in the cache.
+  DisableBackForwardCacheForTesting(shell()->web_contents(),
+                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
 
   // 1) Navigate to A1.
   EXPECT_TRUE(NavigateToURL(shell(), url_a1));

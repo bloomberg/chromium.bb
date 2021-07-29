@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/ash/shelf/app_service/exo_app_type_resolver.h"
 
-#include "ash/public/cpp/app_types.h"
+#include "ash/constants/app_types.h"
 #include "base/strings/string_piece.h"
 #include "chrome/browser/ash/borealis/borealis_window_manager.h"
 #include "chromeos/crosapi/cpp/crosapi_constants.h"
@@ -30,6 +30,9 @@ void ExoAppTypeResolver::PopulateProperties(
   if (IsLacrosAppId(params.app_id)) {
     out_properties_container.SetProperty(
         aura::client::kAppType, static_cast<int>(ash::AppType::LACROS));
+    // Make sure Lacros is treated as opaque for occlusion tracking purposes.
+    out_properties_container.SetProperty(
+        chromeos::kWindowManagerManagesOpacityKey, true);
     // Lacros is trusted not to abuse window activation, so grant it a
     // non-expiring permission to activate.
     out_properties_container.SetProperty(
@@ -46,14 +49,30 @@ void ExoAppTypeResolver::PopulateProperties(
                                          false);
   }
 
-  int task_id = arc::GetTaskIdFromWindowAppId(params.app_id);
-  if (task_id == arc::kNoTaskId)
+  auto task_id = arc::GetTaskIdFromWindowAppId(params.app_id);
+  auto session_id = arc::GetSessionIdFromWindowAppId(params.app_id);
+
+  // If neither |task_id| nor |session_id| are valid, this is not an ARC window.
+  if (!task_id.has_value() && !session_id.has_value())
     return;
 
   out_properties_container.SetProperty(aura::client::kAppType,
                                        static_cast<int>(ash::AppType::ARC_APP));
-  out_properties_container.SetProperty(full_restore::kWindowIdKey, task_id);
-  int32_t restore_window_id = full_restore::GetArcRestoreWindowId(task_id);
+
+  if (task_id.has_value())
+    out_properties_container.SetProperty(full_restore::kWindowIdKey, *task_id);
+
+  int32_t restore_window_id = 0;
+  if (task_id.has_value()) {
+    restore_window_id = full_restore::GetArcRestoreWindowIdForTaskId(*task_id);
+  } else {
+    DCHECK(session_id.has_value());
+    out_properties_container.SetProperty(full_restore::kGhostWindowSessionIdKey,
+                                         *session_id);
+    restore_window_id =
+        full_restore::GetArcRestoreWindowIdForSessionId(*session_id);
+  }
+
   out_properties_container.SetProperty(full_restore::kRestoreWindowIdKey,
                                        restore_window_id);
 

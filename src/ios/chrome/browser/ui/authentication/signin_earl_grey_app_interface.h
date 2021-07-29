@@ -27,6 +27,11 @@
 // Adds |fakeIdentity| to the fake identity service.
 + (void)addFakeIdentity:(FakeChromeIdentity*)fakeIdentity;
 
+// Maps |capabilities| to the |fakeIdentity|.
+// Must be called after |addFakeIdentity|.
++ (void)setCapabilities:(NSDictionary*)capabilities
+            forIdentity:(FakeChromeIdentity*)fakeIdentity;
+
 // Removes |fakeIdentity| from the fake chrome identity service asynchronously
 // to simulate identity removal from the device.
 + (void)forgetFakeIdentity:(FakeChromeIdentity*)fakeIdentity;
@@ -45,8 +50,8 @@
 // Returns a matcher for an identity picker cell for |email|.
 + (id<GREYMatcher>)identityCellMatcherForEmail:(NSString*)email;
 
-// Checks if any identity is currently authenticated.
-+ (BOOL)isAuthenticated;
+// Checks whether there is a primary identity.
++ (BOOL)hasPrimaryIdentity;
 
 // Signs out the current user.
 + (void)signOut;

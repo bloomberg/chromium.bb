@@ -13,6 +13,7 @@
 
 #include "absl/numeric/int128.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/span.h"
 #include "quic/core/crypto/quic_random.h"
 #include "quic/core/frames/quic_frame.h"
 #include "quic/core/quic_connection_id.h"
@@ -21,6 +22,7 @@
 #include "quic/core/quic_versions.h"
 #include "quic/platform/api/quic_export.h"
 #include "quic/platform/api/quic_iovec.h"
+#include "quic/platform/api/quic_mem_slice.h"
 #include "quic/platform/api/quic_socket_address.h"
 
 namespace quic {
@@ -237,12 +239,22 @@ class QUIC_EXPORT_PRIVATE QuicUtils {
 
   // Return true if this frame is an IETF probing frame.
   static bool IsProbingFrame(QuicFrameType type);
+
+  // Return true if the two stateless reset tokens are equal. Performs the
+  // comparison in constant time.
+  static bool AreStatelessResetTokensEqual(const StatelessResetToken& token1,
+                                           const StatelessResetToken& token2);
+
+  // Return ture if this frame is an ack-eliciting frame.
+  static bool IsAckElicitingFrame(QuicFrameType type);
 };
 
 // Returns true if the specific ID is a valid WebTransport session ID that our
 // implementation can process.
 bool IsValidWebTransportSessionId(WebTransportSessionId id,
                                   ParsedQuicVersion transport_version);
+
+QuicByteCount MemSliceSpanTotalSize(absl::Span<QuicMemSlice> span);
 
 template <typename Mask>
 class QUIC_EXPORT_PRIVATE BitMask {

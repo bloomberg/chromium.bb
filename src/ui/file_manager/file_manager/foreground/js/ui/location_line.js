@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
-// #import {FakeEntry} from '../../../externs/files_app_entry_interfaces.m.js';
-// #import {FilesTooltip} from '../../elements/files_tooltip.m.js';
-// #import {ListContainer} from './list_container.m.js';
-// #import {VolumeManager} from '../../../externs/volume_manager.m.js';
-// #import {util} from '../../../common/js/util.m.js';
-// #import {PathComponent} from '../path_component.m.js';
-// #import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
-// #import {metrics} from '../../../common/js/metrics.m.js';
-// #import {BreadCrumb} from './breadcrumb.m.js';
-// clang-format on
+import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
+
+import {metrics} from '../../../common/js/metrics.js';
+import {util} from '../../../common/js/util.js';
+import {FakeEntry} from '../../../externs/files_app_entry_interfaces.js';
+import {VolumeManager} from '../../../externs/volume_manager.js';
+import {FilesTooltip} from '../../elements/files_tooltip.js';
+import {PathComponent} from '../path_component.js';
+
+import {BreadCrumb} from './breadcrumb.js';
+import {ListContainer} from './list_container.js';
 
 /**
  * Location line.
  */
-/* #export */ class LocationLine extends cr.EventTarget {
+export class LocationLine extends EventTarget {
   /**
    * @param {!Element} breadcrumbs Container element for breadcrumbs.
    * @param {!VolumeManager} volumeManager Volume manager.

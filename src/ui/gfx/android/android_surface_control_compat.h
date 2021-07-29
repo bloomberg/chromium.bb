@@ -5,10 +5,11 @@
 #ifndef UI_GFX_ANDROID_ANDROID_SURFACE_CONTROL_COMPAT_H_
 #define UI_GFX_ANDROID_ANDROID_SURFACE_CONTROL_COMPAT_H_
 
-#include <memory>
-
 #include <android/hardware_buffer.h>
 #include <android/native_window.h>
+
+#include <memory>
+#include <vector>
 
 #include "base/files/scoped_file.h"
 #include "base/memory/ref_counted.h"
@@ -54,6 +55,8 @@ class GFX_EXPORT SurfaceControl {
   // pass raw ASurfaceTransaction object. For use inside Chromium use
   // Transaction class below instead.
   static void ApplyTransaction(ASurfaceTransaction* transaction);
+
+  static void SetStubImplementationForTesting();
 
   class GFX_EXPORT Surface : public base::RefCounted<Surface> {
    public:
@@ -132,6 +135,9 @@ class GFX_EXPORT SurfaceControl {
                        const gfx::ColorSpace& color_space);
     void SetFrameRate(const Surface& surface, float frame_rate);
     void SetParent(const Surface& surface, Surface* new_parent);
+    void SetPosition(const Surface& surface, const gfx::Point& position);
+    void SetScale(const Surface& surface, float sx, float sy);
+    void SetCrop(const Surface& surface, const gfx::Rect& rect);
 
     // Sets the callback which will be dispatched when the transaction is acked
     // by the framework.
@@ -147,9 +153,11 @@ class GFX_EXPORT SurfaceControl {
                        scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
     void Apply();
-    ASurfaceTransaction* transaction() { return transaction_; }
+    ASurfaceTransaction* GetTransaction();
 
    private:
+    void PrepareCallbacks();
+
     int id_;
     ASurfaceTransaction* transaction_;
     OnCommitCb on_commit_cb_;

@@ -164,6 +164,40 @@ TEST_F(ProcessTrackerTest, SetStartTsIfUnset) {
   ASSERT_EQ(context.storage->process_table().start_ts()[upid], 1000);
 }
 
+TEST_F(ProcessTrackerTest, PidReuseAfterExplicitEnd) {
+  UniquePid upid = context.process_tracker->GetOrCreateProcess(123);
+  context.process_tracker->EndThread(100, 123);
+
+  UniquePid reuse = context.process_tracker->GetOrCreateProcess(123);
+  ASSERT_NE(upid, reuse);
+}
+
+TEST_F(ProcessTrackerTest, TidReuseAfterExplicitEnd) {
+  UniqueTid utid = context.process_tracker->UpdateThread(123, 123);
+  context.process_tracker->EndThread(100, 123);
+
+  UniqueTid reuse = context.process_tracker->UpdateThread(123, 123);
+  ASSERT_NE(utid, reuse);
+
+  UniqueTid reuse_again = context.process_tracker->UpdateThread(123, 123);
+  ASSERT_EQ(reuse, reuse_again);
+}
+
+TEST_F(ProcessTrackerTest, EndThreadAfterProcessEnd) {
+  context.process_tracker->StartNewProcess(100, base::nullopt, 123,
+                                           kNullStringId);
+  context.process_tracker->UpdateThread(124, 123);
+
+  context.process_tracker->EndThread(200, 123);
+  context.process_tracker->EndThread(201, 124);
+
+  // We expect two processes: the idle process and 123.
+  ASSERT_EQ(context.storage->process_table().row_count(), 2u);
+
+  // We expect three theads: the idle thread, 123 and 124.
+  ASSERT_EQ(context.storage->thread_table().row_count(), 3u);
+}
+
 }  // namespace
 }  // namespace trace_processor
 }  // namespace perfetto

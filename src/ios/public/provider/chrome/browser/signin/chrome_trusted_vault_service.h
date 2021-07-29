@@ -5,6 +5,8 @@
 #ifndef IOS_PUBLIC_PROVIDER_CHROME_BROWSER_SIGNIN_CHROME_TRUSTED_VAULT_SERVICE_H_
 #define IOS_PUBLIC_PROVIDER_CHROME_BROWSER_SIGNIN_CHROME_TRUSTED_VAULT_SERVICE_H_
 
+#include <CoreFoundation/CoreFoundation.h>
+
 #include <memory>
 #include <vector>
 
@@ -41,27 +43,57 @@ class ChromeTrustedVaultService {
       ChromeIdentity* chrome_identity,
       base::OnceCallback<void(const TrustedVaultSharedKeyList&)> callback) = 0;
 
+  // Invoked when the result of FetchKeys() contains keys that are not
+  // up-to-date. During the execution, before |cb| is invoked, the behavior is
+  // unspecified if FetchKeys() is invoked, that is, FetchKeys() may or may not
+  // treat existing keys as stale (only guaranteed upon completion of
+  // MarkLocalKeysAsStale()).
+  // TODO(crbug.com/1100278): Make pure virtual.
+  virtual void MarkLocalKeysAsStale(ChromeIdentity* chrome_identity,
+                                    base::OnceClosure callback);
+
   // Returns whether recoverability of the keys is degraded and user action is
   // required to add a new method.
-  // TODO(crbug.com/1100278): Make pure.
-  virtual void GetIsRecoverabilityDegraded(
+  virtual void GetDegradedRecoverabilityStatus(
       ChromeIdentity* chrome_identity,
-      base::OnceCallback<void(bool)> callback);
+      base::OnceCallback<void(bool)> callback) = 0;
 
-  // Presents the trusted vault key reauthentication UI for |identity|.
-  // Once the reauth is done and the UI is dismissed, |callback| is called.
-  // |callback| is not called if the reauthentication is canceled.
+  // Presents the trusted vault key reauthentication UI for |identity| for the
+  // purpose of extending the set of keys returned via FetchKeys(). Once the
+  // reauth is done and the UI is dismissed, |callback| is called. |callback| is
+  // not called if the reauthentication is canceled.
   virtual void Reauthentication(ChromeIdentity* chrome_identity,
                                 UIViewController* presentingViewController,
                                 void (^callback)(BOOL success,
                                                  NSError* error)) = 0;
 
-  // Cancels the presented trusted vault key reauthentication UI.
-  // The reauthentication callback will not be called.
-  // If no reauthentication dialog is not present, |callback| is called
-  // synchronously.
-  virtual void CancelReauthentication(BOOL animated,
-                                      void (^callback)(void)) = 0;
+  // Presents the trusted vault key reauthentication UI for |identity| for the
+  // purpose of improving recoverability as returned via
+  // GetDegradedRecoverabilityStatus(). Once the reauth is done and the UI is
+  // dismissed, |callback| is called. |callback| is not called if the
+  // reauthentication is canceled.
+  // TODO(crbug.com/1100278): Make pure.
+  virtual void FixDegradedRecoverability(
+      ChromeIdentity* chrome_identity,
+      UIViewController* presentingViewController,
+      void (^callback)(BOOL success, NSError* error)) = 0;
+
+  // Presents the trusted vault key reauthentication UI for |identity| for the
+  // purpose of opting into trusted vault passphrase. Once the reauth is done
+  // and the UI is dismissed, |callback| is called. |callback| is not called if
+  // the reauthentication is canceled.
+  // TODO(crbug.com/1202088): Make pure.
+  virtual void ReauthenticationForOptIn(
+      ChromeIdentity* chrome_identity,
+      UIViewController* presentingViewController,
+      void (^callback)(BOOL success, NSError* error));
+
+  // Cancels the presented trusted vault reauthentication UI, triggered via
+  // either Reauthentication() or via
+  // FixDegradedRecoverability(). The reauthentication callback
+  // will not be called. If no reauthentication dialog is not present,
+  // |callback| is called synchronously.
+  virtual void CancelDialog(BOOL animated, void (^callback)(void)) = 0;
 
  protected:
   // Functions to notify observers.

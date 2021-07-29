@@ -34,7 +34,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="CrosDisks.ArchiveType" enum="CrosDisksArchiveType"
-    expires_after="2021-10-10">
+    expires_after="2021-12-12">
   <owner>fdegros@chromium.org</owner>
   <owner>chromeos-files-app@google.com</owner>
   <summary>
@@ -44,7 +44,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="CrosDisks.DeviceMediaType" enum="CrosDisksDeviceMediaType"
-    expires_after="2021-10-10">
+    expires_after="2021-12-12">
   <owner>fdegros@chromium.org</owner>
   <owner>chromeos-files-app@google.com</owner>
   <summary>
@@ -54,7 +54,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="CrosDisks.FilesystemType" enum="CrosDisksFilesystemType"
-    expires_after="2021-10-10">
+    expires_after="2021-12-12">
   <owner>fdegros@chromium.org</owner>
   <owner>chromeos-files-app@google.com</owner>
   <summary>
@@ -63,8 +63,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="CrosDisks.Fuse.Archivemount" enum="ArchivemountError"
+    expires_after="2021-12-05">
+  <owner>fdegros@chromium.org</owner>
+  <owner>chromeos-files-app@google.com</owner>
+  <summary>
+    The error code returned by the archivemount program, which is called every
+    time a user opens various archive files in ChromeOS Files App.
+  </summary>
+</histogram>
+
 <histogram name="CrosDisks.Fuse.FuseZip" enum="FuseZipError"
-    expires_after="2021-10-01">
+    expires_after="2021-12-05">
   <owner>fdegros@chromium.org</owner>
   <owner>chromeos-files-app@google.com</owner>
   <summary>
@@ -74,7 +84,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="CrosDisks.Fuse.Rar2fs" enum="Rar2fsError"
-    expires_after="2021-10-10">
+    expires_after="2021-12-12">
   <owner>fdegros@chromium.org</owner>
   <owner>chromeos-files-app@google.com</owner>
   <summary>
@@ -93,7 +103,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="CrosDisksClient.FormatTime" units="ms"
-    expires_after="2021-10-24">
+    expires_after="2021-12-26">
   <owner>austinct@chromium.org</owner>
   <summary>
     Time taken for the Chrome OS cros-disks daemon to perform a format
@@ -112,7 +122,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="CrosDisksClient.MountErrorMountType"
-    enum="CrosDisksMountTypeError" expires_after="2021-10-19">
+    enum="CrosDisksMountTypeError" expires_after="2021-12-19">
   <owner>dats@chromium.org</owner>
   <owner>fdegros@chromium.org</owner>
   <summary>

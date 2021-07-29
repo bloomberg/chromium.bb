@@ -53,7 +53,7 @@ class HyphenationTest : public testing::Test {
     path = path.AppendASCII(filename);
     base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
     if (file.IsValid())
-      return HyphenationMinikin::FromFileForTesting(std::move(file));
+      return HyphenationMinikin::FromFileForTesting(locale, std::move(file));
 #else
     if (const LayoutLocale* layout_locale = LayoutLocale::Get(locale))
       return layout_locale->GetHyphenation();
@@ -105,7 +105,7 @@ TEST_F(HyphenationTest, MapLocale) {
   EXPECT_EQ(HyphenationMinikin::MapLocale("de-de-xyz"), "de-1996");
   EXPECT_EQ(HyphenationMinikin::MapLocale("de-li"), "de-1996");
   EXPECT_EQ(HyphenationMinikin::MapLocale("de-li-1901"), "de-ch-1901");
-  EXPECT_EQ(HyphenationMinikin::MapLocale("en"), "en-gb");
+  EXPECT_EQ(HyphenationMinikin::MapLocale("en"), "en-us");
   EXPECT_EQ(HyphenationMinikin::MapLocale("en-gu"), "en-us");
   EXPECT_EQ(HyphenationMinikin::MapLocale("en-gu-xyz"), "en-us");
   EXPECT_EQ(HyphenationMinikin::MapLocale("en-xyz"), "en-gb");
@@ -204,6 +204,23 @@ TEST_F(HyphenationTest, LeadingSpaces) {
   EXPECT_EQ(0u, hyphenation->LastHyphenLocation(only_spaces, 3));
 }
 
+TEST_F(HyphenationTest, NonLetters) {
+  scoped_refptr<Hyphenation> hyphenation = GetHyphenation("en-us");
+#if defined(OS_ANDROID)
+  // Hyphenation is available only for Android M MR1 or later.
+  if (!hyphenation)
+    return;
+#endif
+
+  String non_letters("**********");
+  EXPECT_EQ(0u,
+            hyphenation->LastHyphenLocation(non_letters, non_letters.length()));
+
+  non_letters.Ensure16Bit();
+  EXPECT_EQ(0u,
+            hyphenation->LastHyphenLocation(non_letters, non_letters.length()));
+}
+
 TEST_F(HyphenationTest, English) {
   scoped_refptr<Hyphenation> hyphenation = GetHyphenation("en-us");
 #if defined(OS_ANDROID)
@@ -216,6 +233,10 @@ TEST_F(HyphenationTest, English) {
   Vector<wtf_size_t, 8> locations = hyphenation->HyphenLocations("hyphenation");
   EXPECT_THAT(locations, testing::AnyOf(ElementsAreArray({6, 2}),
                                         ElementsAreArray({7, 6, 2})));
+
+  // Avoid hyphenating capitalized words.
+  locations = hyphenation->HyphenLocations("Hyphenation");
+  EXPECT_EQ(locations.size(), 0u);
 }
 
 TEST_F(HyphenationTest, German) {
@@ -229,6 +250,10 @@ TEST_F(HyphenationTest, German) {
 
   Vector<wtf_size_t, 8> locations =
       hyphenation->HyphenLocations("konsonantien");
+  EXPECT_THAT(locations, ElementsAreArray({8, 5, 3}));
+
+  // Hyphenate capitalized words if German.
+  locations = hyphenation->HyphenLocations("Konsonantien");
   EXPECT_THAT(locations, ElementsAreArray({8, 5, 3}));
 
   // Test words with non-ASCII (> U+0080) characters.

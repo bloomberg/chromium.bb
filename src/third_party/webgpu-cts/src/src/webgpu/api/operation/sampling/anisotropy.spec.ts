@@ -11,8 +11,9 @@ things. If there are no guarantees we can issue warnings instead of failures. Id
 `;
 
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
-import { assert } from '../../../../common/framework/util/util.js';
+import { assert } from '../../../../common/util/util.js';
 import { GPUTest } from '../../../gpu_test.js';
+import { checkElementsEqual } from '../../../util/check_contents.js';
 
 const kRTSize = 16;
 const kBytesPerRow = 256;
@@ -63,8 +64,8 @@ class SamplerAnisotropicFilteringSlantedPlaneTest extends GPUTest {
             };
 
             [[stage(vertex)]] fn main(
-              [[builtin(vertex_index)]] VertexIndex : i32) -> Outputs {
-              let position : array<vec3<f32>, 6> = array<vec3<f32>, 6>(
+              [[builtin(vertex_index)]] VertexIndex : u32) -> Outputs {
+              var position : array<vec3<f32>, 6> = array<vec3<f32>, 6>(
                 vec3<f32>(-0.5, 0.5, -0.5),
                 vec3<f32>(0.5, 0.5, -0.5),
                 vec3<f32>(-0.5, 0.5, 0.5),
@@ -72,7 +73,7 @@ class SamplerAnisotropicFilteringSlantedPlaneTest extends GPUTest {
                 vec3<f32>(0.5, 0.5, -0.5),
                 vec3<f32>(0.5, 0.5, 0.5));
               // uv is pre-scaled to mimic repeating tiled texture
-              let uv : array<vec2<f32>, 6> = array<vec2<f32>, 6>(
+              var uv : array<vec2<f32>, 6> = array<vec2<f32>, 6>(
                 vec2<f32>(0.0, 0.0),
                 vec2<f32>(1.0, 0.0),
                 vec2<f32>(0.0, 50.0),
@@ -98,8 +99,8 @@ class SamplerAnisotropicFilteringSlantedPlaneTest extends GPUTest {
       fragment: {
         module: this.device.createShaderModule({
           code: `
-            [[set(0), binding(0)]] var sampler0 : sampler;
-            [[set(0), binding(1)]] var texture0 : texture_2d<f32>;
+            [[group(0), binding(0)]] var sampler0 : sampler;
+            [[group(0), binding(1)]] var texture0 : texture_2d<f32>;
 
             [[stage(fragment)]] fn main(
               [[builtin(position)]] FragCoord : vec4<f32>,
@@ -220,7 +221,7 @@ g.test('anisotropic_filter_checkerboard')
 
     const textureView = texture.createView();
     const byteLength = kRTSize * kBytesPerRow;
-    const results: Uint8Array[] = [];
+    const results = [];
 
     for (const maxAnisotropy of [1, 16, 1024]) {
       const sampler = t.device.createSampler({
@@ -229,25 +230,27 @@ g.test('anisotropic_filter_checkerboard')
         mipmapFilter: 'linear',
         maxAnisotropy,
       });
-      const d = t.createAlignedCopyForMapRead(
+      const result = await t.readGPUBufferRangeTyped(
         t.copyRenderTargetToBuffer(t.drawSlantedPlane(textureView, sampler)),
-        byteLength,
-        0
-      ).dst;
-      await d.mapAsync(GPUMapMode.READ);
-      results.push(new Uint8Array(d.getMappedRange()));
+        { type: Uint8Array, typedLength: byteLength }
+      );
+      results.push(result);
     }
 
-    const check0 = t.checkBuffer(results[0], results[1]);
+    const check0 = checkElementsEqual(results[0].data, results[1].data);
     if (check0 === undefined) {
       t.warn('Render results with sampler.maxAnisotropy being 1 and 16 should be different.');
     }
-    const check1 = t.checkBuffer(results[1], results[2]);
+    const check1 = checkElementsEqual(results[1].data, results[2].data);
     if (check1 !== undefined) {
       t.expect(
         false,
         'Render results with sampler.maxAnisotropy being 16 and 1024 should be the same.'
       );
+    }
+
+    for (const result of results) {
+      result.cleanup();
     }
   });
 
@@ -260,7 +263,7 @@ g.test('anisotropic_filter_mipmap_color')
     if it fits expectations.
     A similar webgl demo is at https://jsfiddle.net/t8k7c95o/5/`
   )
-  .params([
+  .paramsSimple([
     {
       maxAnisotropy: 1,
       _results: [

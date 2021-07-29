@@ -9,6 +9,7 @@
 
 #import "base/test/ios/wait_util.h"
 #import "ios/testing/earl_grey/earl_grey_app.h"
+#import "ios/web/common/uikit_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -28,9 +29,18 @@ UIAccessibilityElement* KeyboardDismissKeyInLayout() {
   if ([layout accessibilityElementCount] != NSNotFound) {
     for (NSInteger i = [layout accessibilityElementCount]; i >= 0; --i) {
       id element = [layout accessibilityElementAtIndex:i];
-      if ([[[element key] valueForKey:@"name"] isEqual:@"Dismiss-Key"]) {
-        key = element;
-        break;
+      if (@available(iOS 15, *)) {
+        // TODO(crbug.com/1221204): Find a better way to identify the Dismiss
+        // key.
+        if ([[element description] containsString:@"Dismiss-Key"]) {
+          key = element;
+          break;
+        }
+      } else {
+        if ([[[element key] valueForKey:@"name"] isEqual:@"Dismiss-Key"]) {
+          key = element;
+          break;
+        }
       }
     }
   }
@@ -68,7 +78,7 @@ BOOL IsKeyboardDockedForLayout() {
     auto block = ^(NSNotification* note) {
       CGRect keyboardFrame =
           [note.userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];
-      UIWindow* window = [UIApplication sharedApplication].keyWindow;
+      UIWindow* window = GetAnyKeyWindow();
       keyboardFrame = [window convertRect:keyboardFrame fromWindow:nil];
       CGRect windowFrame = window.frame;
       CGRect frameIntersection = CGRectIntersection(windowFrame, keyboardFrame);
@@ -153,7 +163,7 @@ BOOL IsKeyboardDockedForLayout() {
     CGRect rect = CGRectMake(0, 0, 300, 100);
     textField = [[UITextField alloc] initWithFrame:rect];
     textField.backgroundColor = [UIColor blueColor];
-    [[[UIApplication sharedApplication] keyWindow] addSubview:textField];
+    [GetAnyKeyWindow() addSubview:textField];
     [textField becomeFirstResponder];
   }
 

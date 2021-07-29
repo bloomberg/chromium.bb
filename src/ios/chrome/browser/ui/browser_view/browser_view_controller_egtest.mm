@@ -8,6 +8,7 @@
 #import "base/ios/ios_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -30,6 +31,12 @@
 @end
 
 @implementation BrowserViewControllerTestCase
+
+- (AppLaunchConfiguration)appConfigurationForTestCase {
+  AppLaunchConfiguration config;
+  config.features_disabled.push_back(kStartSurface);
+  return config;
+}
 
 // Tests that the NTP is interactable even when multiple NTP are opened during
 // the animation of the first NTP opening. See crbug.com/1032544.
@@ -163,7 +170,7 @@
 // Tests that BVC properly handles open URL. When NTP is visible, the URL
 // should be opened in the same tab (not create a new tab).
 - (void)testOpenURLFromNTP {
-  [ChromeEarlGrey applicationOpenURL:GURL("https://anything")];
+  [ChromeEarlGrey sceneOpenURL:GURL("https://anything")];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           "https://anything")]
       assertWithMatcher:grey_notNil()];
@@ -179,7 +186,7 @@
 // tab, the URL should be opened in a new tab, adding to the tab count.
 - (void)testOpenURLFromTab {
   [ChromeEarlGrey loadURL:GURL("https://invalid")];
-  [ChromeEarlGrey applicationOpenURL:GURL("https://anything")];
+  [ChromeEarlGrey sceneOpenURL:GURL("https://anything")];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           "https://anything")]
       assertWithMatcher:grey_notNil()];
@@ -191,7 +198,7 @@
 - (void)testOpenURLFromTabSwitcher {
   [ChromeEarlGrey closeCurrentTab];
   [ChromeEarlGrey waitForMainTabCount:0];
-  [ChromeEarlGrey applicationOpenURL:GURL("https://anything")];
+  [ChromeEarlGrey sceneOpenURL:GURL("https://anything")];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           "https://anything")]
       assertWithMatcher:grey_notNil()];

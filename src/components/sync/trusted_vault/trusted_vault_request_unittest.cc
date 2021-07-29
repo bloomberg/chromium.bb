@@ -19,6 +19,7 @@
 #include "google_apis/gaia/core_account_id.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -116,7 +117,7 @@ class TrustedVaultRequestTest : public testing::Test {
   }
 
  private:
-  base::test::TaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
@@ -227,6 +228,34 @@ TEST_F(TrustedVaultRequestTest, ShouldHandleHttpErrors) {
                                    /*response_body=*/""));
 }
 
+TEST_F(TrustedVaultRequestTest, ShouldHandleBadRequestStatus) {
+  base::MockCallback<TrustedVaultRequest::CompletionCallback>
+      completion_callback;
+  std::unique_ptr<TrustedVaultRequest> request = StartNewRequestWithAccessToken(
+      kAccessToken, TrustedVaultRequest::HttpMethod::kGet,
+      /*request_body=*/absl::nullopt, completion_callback.Get());
+
+  // |completion_callback| should be called after receiving response.
+  EXPECT_CALL(completion_callback,
+              Run(TrustedVaultRequest::HttpStatus::kBadRequest, _));
+  EXPECT_TRUE(RespondToHttpRequest(net::OK, net::HTTP_BAD_REQUEST,
+                                   /*response_body=*/""));
+}
+
+TEST_F(TrustedVaultRequestTest,
+       ShouldHandleConflictStatusAndPopulateResponseBody) {
+  base::MockCallback<TrustedVaultRequest::CompletionCallback>
+      completion_callback;
+  std::unique_ptr<TrustedVaultRequest> request = StartNewRequestWithAccessToken(
+      kAccessToken, TrustedVaultRequest::HttpMethod::kGet,
+      /*request_body=*/absl::nullopt, completion_callback.Get());
+
+  // |completion_callback| should be called after receiving response.
+  EXPECT_CALL(completion_callback,
+              Run(TrustedVaultRequest::HttpStatus::kConflict, kResponseBody));
+  EXPECT_TRUE(RespondToHttpRequest(net::OK, net::HTTP_CONFLICT, kResponseBody));
+}
+
 TEST_F(TrustedVaultRequestTest, ShouldHandleNotFoundStatus) {
   base::MockCallback<TrustedVaultRequest::CompletionCallback>
       completion_callback;
@@ -238,20 +267,6 @@ TEST_F(TrustedVaultRequestTest, ShouldHandleNotFoundStatus) {
   EXPECT_CALL(completion_callback,
               Run(TrustedVaultRequest::HttpStatus::kNotFound, _));
   EXPECT_TRUE(RespondToHttpRequest(net::OK, net::HTTP_NOT_FOUND,
-                                   /*response_body=*/""));
-}
-
-TEST_F(TrustedVaultRequestTest, ShouldHandlePreconditionFailedStatus) {
-  base::MockCallback<TrustedVaultRequest::CompletionCallback>
-      completion_callback;
-  std::unique_ptr<TrustedVaultRequest> request = StartNewRequestWithAccessToken(
-      kAccessToken, TrustedVaultRequest::HttpMethod::kGet,
-      /*request_body=*/absl::nullopt, completion_callback.Get());
-
-  // |completion_callback| should be called after receiving response.
-  EXPECT_CALL(completion_callback,
-              Run(TrustedVaultRequest::HttpStatus::kFailedPrecondition, _));
-  EXPECT_TRUE(RespondToHttpRequest(net::OK, net::HTTP_PRECONDITION_FAILED,
                                    /*response_body=*/""));
 }
 

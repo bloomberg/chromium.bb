@@ -100,9 +100,7 @@ TEST_F(ParserImplTest, SingularExpression_Call_Empty) {
   ASSERT_TRUE(e->Is<ast::CallExpression>());
   auto* c = e->As<ast::CallExpression>();
 
-  ASSERT_TRUE(c->func()->Is<ast::IdentifierExpression>());
-  auto* func = c->func()->As<ast::IdentifierExpression>();
-  EXPECT_EQ(func->symbol(), p->builder().Symbols().Get("a"));
+  EXPECT_EQ(c->func()->symbol(), p->builder().Symbols().Get("a"));
 
   EXPECT_EQ(c->params().size(), 0u);
 }
@@ -118,9 +116,7 @@ TEST_F(ParserImplTest, SingularExpression_Call_WithArgs) {
   ASSERT_TRUE(e->Is<ast::CallExpression>());
   auto* c = e->As<ast::CallExpression>();
 
-  ASSERT_TRUE(c->func()->Is<ast::IdentifierExpression>());
-  auto* func = c->func()->As<ast::IdentifierExpression>();
-  EXPECT_EQ(func->symbol(), p->builder().Symbols().Get("test"));
+  EXPECT_EQ(c->func()->symbol(), p->builder().Symbols().Get("test"));
 
   EXPECT_EQ(c->params().size(), 3u);
   EXPECT_TRUE(c->params()[0]->Is<ast::ConstructorExpression>());
@@ -238,6 +234,30 @@ TEST_F(ParserImplTest, SingularExpression_Array_NestedArrayAccessor) {
       inner_accessor->idx_expr()->As<ast::IdentifierExpression>();
   ASSERT_TRUE(index_expr);
   EXPECT_EQ(index_expr->symbol(), p->builder().Symbols().Get("c"));
+}
+
+TEST_F(ParserImplTest, SingularExpression_PostfixPlusPlus) {
+  auto p = parser("a++");
+  auto e = p->singular_expression();
+  EXPECT_FALSE(e.matched);
+  EXPECT_TRUE(e.errored);
+  EXPECT_EQ(e.value, nullptr);
+  EXPECT_TRUE(p->has_error());
+  EXPECT_EQ(p->error(),
+            "1:2: postfix increment and decrement operators are reserved for a "
+            "future WGSL version");
+}
+
+TEST_F(ParserImplTest, SingularExpression_PostfixMinusMinus) {
+  auto p = parser("a--");
+  auto e = p->singular_expression();
+  EXPECT_FALSE(e.matched);
+  EXPECT_TRUE(e.errored);
+  EXPECT_EQ(e.value, nullptr);
+  EXPECT_TRUE(p->has_error());
+  EXPECT_EQ(p->error(),
+            "1:2: postfix increment and decrement operators are reserved for a "
+            "future WGSL version");
 }
 
 }  // namespace

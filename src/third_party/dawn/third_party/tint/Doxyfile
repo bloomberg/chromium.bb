@@ -757,7 +757,7 @@ WARN_NO_PARAMDOC       = YES
 # a warning is encountered.
 # The default value is: NO.
 
-WARN_AS_ERROR          = NO
+WARN_AS_ERROR          = $(DOXYGEN_WARN_AS_ERROR)
 
 # The WARN_FORMAT tag determines the format of the warning messages that doxygen
 # can produce. The string should contain the $file, $line, and $text tags, which
@@ -767,7 +767,7 @@ WARN_AS_ERROR          = NO
 # FILE_VERSION_FILTER)
 # The default value is: $file:$line: $text.
 
-WARN_FORMAT            = "$file:$line: $text"
+WARN_FORMAT             = $(DOXYGEN_WARN_FORMAT)
 
 # The WARN_LOGFILE tag can be used to specify a file to which warning and error
 # messages should be written. If left blank the output is written to standard
@@ -786,7 +786,11 @@ WARN_LOGFILE           =
 # Note: If this tag is empty the current directory is searched.
 
 INPUT                  = CODE_OF_CONDUCT.md \
-                         src
+                         fuzzers/tint_spirv_tools_fuzzer \
+                         src \
+                         tools/src \
+                         fuzzers/tint_spirv_tools_fuzzer \
+                         fuzzers/tint_ast_fuzzer
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses

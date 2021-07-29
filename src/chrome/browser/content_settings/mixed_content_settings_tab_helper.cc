@@ -29,17 +29,17 @@ MixedContentSettingsTabHelper::MixedContentSettingsTabHelper(WebContents* tab)
   MixedContentSettingsTabHelper* opener_settings =
       MixedContentSettingsTabHelper::FromWebContents(
           WebContents::FromRenderFrameHost(tab->GetOpener()));
-  if (opener_settings && opener_settings->IsRunningInsecureContentAllowed()) {
-    AllowRunningOfInsecureContent();
+  if (opener_settings &&
+      opener_settings->IsRunningInsecureContentAllowed(*tab->GetOpener())) {
+    AllowRunningOfInsecureContent(*tab->GetOpener());
   }
 }
 
 MixedContentSettingsTabHelper::~MixedContentSettingsTabHelper() {}
 
-void MixedContentSettingsTabHelper::AllowRunningOfInsecureContent() {
-  // TODO(crbug.com/1061899): use render_frame_host->GetMainFrame() for the
-  // correct render_frame_host instead of going through web_contents().
-  auto* main_frame = web_contents()->GetMainFrame();
+void MixedContentSettingsTabHelper::AllowRunningOfInsecureContent(
+    RenderFrameHost& render_frame_host) {
+  auto* main_frame = render_frame_host.GetMainFrame();
   if (!base::Contains(settings_, main_frame)) {
     settings_[main_frame] = std::make_unique<PageSettings>(main_frame);
   }
@@ -48,7 +48,7 @@ void MixedContentSettingsTabHelper::AllowRunningOfInsecureContent() {
 
 void MixedContentSettingsTabHelper::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
-  if (!IsRunningInsecureContentAllowed())
+  if (!IsRunningInsecureContentAllowed(*render_frame_host))
     return;
 
   mojo::AssociatedRemote<content_settings::mojom::ContentSettingsAgent> agent;
@@ -60,11 +60,9 @@ void MixedContentSettingsTabHelper::RenderFrameDeleted(RenderFrameHost* frame) {
   settings_.erase(frame);
 }
 
-bool MixedContentSettingsTabHelper::IsRunningInsecureContentAllowed() {
-  // TODO(crbug.com/1061899): use render_frame_host->GetMainFrame() for the
-  // correct render_frame_host instead of going through web_contents().
-  auto* main_frame = web_contents()->GetMainFrame();
-  auto setting_it = settings_.find(main_frame);
+bool MixedContentSettingsTabHelper::IsRunningInsecureContentAllowed(
+    RenderFrameHost& render_frame_host) {
+  auto setting_it = settings_.find(render_frame_host.GetMainFrame());
   if (setting_it == settings_.end())
     return false;
   return setting_it->second->is_running_insecure_content_allowed();

@@ -40,6 +40,7 @@
 #include "chrome/browser/ui/views/page_info/chosen_object_view.h"
 #include "chrome/browser/ui/views/page_info/page_info_hover_button.h"
 #include "chrome/browser/ui/views/page_info/page_info_new_bubble_view.h"
+#include "chrome/browser/ui/views/page_info/page_info_view_factory.h"
 #include "chrome/browser/ui/views/page_info/permission_selector_row.h"
 #include "chrome/browser/ui/views/page_info/safety_tip_page_info_bubble_view.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
@@ -207,6 +208,7 @@ views::BubbleDialogDelegateView* PageInfoBubbleView::CreatePageInfoBubble(
     content::WebContents* web_contents,
     const GURL& url,
     PageInfoClosingCallback closing_callback) {
+  DCHECK(web_contents);
   gfx::NativeView parent_view = platform_util::GetViewForWindow(parent_window);
 
   if (PageInfo::IsFileOrInternalPage(url) ||
@@ -243,17 +245,18 @@ PageInfoBubbleView::PageInfoBubbleView(
     const gfx::Rect& anchor_rect,
     gfx::NativeView parent_window,
     Profile* profile,
-    content::WebContents* web_contents,
+    content::WebContents* associated_web_contents,
     const GURL& url,
     PageInfoClosingCallback closing_callback)
     : PageInfoBubbleViewBase(anchor_view,
                              anchor_rect,
                              parent_window,
                              PageInfoBubbleViewBase::BUBBLE_PAGE_INFO,
-                             web_contents),
+                             associated_web_contents),
       profile_(profile),
       closing_callback_(std::move(closing_callback)) {
   DCHECK(closing_callback_);
+  DCHECK(web_contents());
 
   // Capture the default bubble margin, and move it to the Layout classes. This
   // is necessary so that the views::Separator can extend the full width of the
@@ -284,6 +287,8 @@ PageInfoBubbleView::PageInfoBubbleView(
 
   layout->StartRow(views::GridLayout::kFixedSize, kColumnId);
   permissions_view_ = layout->AddView(std::make_unique<views::View>());
+  permissions_view_->SetID(
+      PageInfoViewFactory::VIEW_ID_PAGE_INFO_PERMISSION_VIEW);
 
   layout->StartRow(views::GridLayout::kFixedSize, kColumnId);
   layout->AddView(std::make_unique<views::Separator>());
@@ -305,9 +310,9 @@ PageInfoBubbleView::PageInfoBubbleView(
               view->HandleMoreInfoRequest(view->site_settings_link);
             },
             this),
-        PageInfoUI::GetSiteSettingsIcon(), IDS_PAGE_INFO_SITE_SETTINGS_LINK,
-        std::u16string(),
-        PageInfoBubbleView::VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_SITE_SETTINGS,
+        PageInfoViewFactory::GetSiteSettingsIcon(),
+        IDS_PAGE_INFO_SITE_SETTINGS_LINK, std::u16string(),
+        PageInfoViewFactory::VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_SITE_SETTINGS,
         tooltip, std::u16string()));
   }
 
@@ -322,9 +327,11 @@ PageInfoBubbleView::PageInfoBubbleView(
   // before PageInfo updates trigger child layouts.
   SetSize(GetPreferredSize());
 
+  SetID(PageInfoViewFactory::VIEW_ID_PAGE_INFO_CURRENT_VIEW);
+
   ui_delegate_ = std::make_unique<ChromePageInfoUiDelegate>(profile, url);
   presenter_ = std::make_unique<PageInfo>(
-      std::make_unique<ChromePageInfoDelegate>(web_contents), web_contents,
+      std::make_unique<ChromePageInfoDelegate>(web_contents()), web_contents(),
       url);
   presenter_->InitializeUiState(this);
 }
@@ -352,14 +359,17 @@ void PageInfoBubbleView::OnChosenObjectDeleted(
 void PageInfoBubbleView::OnWidgetDestroying(views::Widget* widget) {
   PageInfoBubbleViewBase::OnWidgetDestroying(widget);
 
-  bool reload_prompt;
-  presenter_->OnUIClosing(&reload_prompt);
-
   // This method mostly shouldn't be re-entrant but there are a few cases where
   // it can be (see crbug/966308). In that case, we have already run the closing
-  // callback so should not attempt to do it again.
-  if (closing_callback_)
+  // callback so should not attempt to do it again. As there will always be a
+  // |closing_callback_|, this is also used to ensure that |presenter_| is
+  // informed exactly once.
+  if (closing_callback_) {
+    bool reload_prompt;
+    presenter_->OnUIClosing(&reload_prompt);
+
     std::move(closing_callback_).Run(widget->closed_reason(), reload_prompt);
+  }
 }
 
 
@@ -397,7 +407,7 @@ void PageInfoBubbleView::SetCookieInfo(const CookieInfoList& cookie_info_list) {
     PageInfo::PermissionInfo info;
     info.type = ContentSettingsType::COOKIES;
     info.setting = CONTENT_SETTING_ALLOW;
-    const ui::ImageModel icon = PageInfoUI::GetPermissionIcon(info);
+    const ui::ImageModel icon = PageInfoViewFactory::GetPermissionIcon(info);
 
     const std::u16string& tooltip =
         l10n_util::GetStringUTF16(IDS_PAGE_INFO_COOKIES_TOOLTIP);
@@ -410,8 +420,8 @@ void PageInfoBubbleView::SetCookieInfo(const CookieInfoList& cookie_info_list) {
                 },
                 this),
             icon, IDS_PAGE_INFO_COOKIES_BUTTON_TEXT, num_cookies_text,
-            VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_COOKIE_DIALOG, tooltip,
-            std::u16string())
+            PageInfoViewFactory::VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_COOKIE_DIALOG,
+            tooltip, std::u16string())
             .release();
     site_settings_view_->AddChildView(cookie_button_);
   }
@@ -556,7 +566,7 @@ void PageInfoBubbleView::SetIdentityInfo(const IdentityInfo& identity_info) {
     }
 
     // Add the Certificate Section.
-    const ui::ImageModel icon = PageInfoUI::GetValidCertificateIcon();
+    const ui::ImageModel icon = PageInfoViewFactory::GetValidCertificateIcon();
     const std::u16string secondary_text = l10n_util::GetStringUTF16(
         valid_identity ? IDS_PAGE_INFO_CERTIFICATE_VALID_PARENTHESIZED
                        : IDS_PAGE_INFO_CERTIFICATE_INVALID_PARENTHESIZED);
@@ -596,8 +606,9 @@ void PageInfoBubbleView::SetIdentityInfo(const IdentityInfo& identity_info) {
                 },
                 this),
             icon, IDS_PAGE_INFO_CERTIFICATE_BUTTON_TEXT, secondary_text,
-            VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_CERTIFICATE_VIEWER, tooltip,
-            subtitle_text)
+            PageInfoViewFactory::
+                VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_CERTIFICATE_VIEWER,
+            tooltip, subtitle_text)
             .release());
   }
 
@@ -611,8 +622,8 @@ void PageInfoBubbleView::SetIdentityInfo(const IdentityInfo& identity_info) {
             this),
         base::BindRepeating(
             [](PageInfoBubbleView* view) {
-              view->GetWidget()->Close();
               view->presenter_->OnAllowlistPasswordReuseButtonPressed();
+              view->GetWidget()->Close();
             },
             this));
   }
@@ -642,7 +653,7 @@ void PageInfoBubbleView::SetPageFeatureInfo(const PageFeatureInfo& info) {
       content_view->SetLayoutManager(std::make_unique<views::FlexLayout>());
 
   auto icon = std::make_unique<NonAccessibleImageView>();
-  icon->SetImage(PageInfoUI::GetVrSettingsIcon());
+  icon->SetImage(PageInfoViewFactory::GetVrSettingsIcon());
   content_view->AddChildView(std::move(icon));
 
   auto label = std::make_unique<views::Label>(
@@ -669,7 +680,7 @@ void PageInfoBubbleView::SetPageFeatureInfo(const PageFeatureInfo& info) {
           },
           this),
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_VR_TURN_OFF_BUTTON_TEXT));
-  exit_button->SetID(VIEW_ID_PAGE_INFO_BUTTON_END_VR);
+  exit_button->SetID(PageInfoViewFactory::VIEW_ID_PAGE_INFO_BUTTON_END_VR);
   exit_button->SetProminent(true);
   // Set views::kInternalPaddingKey for flex layout to account for internal
   // button padding when calculating margins.
@@ -771,13 +782,13 @@ void PageInfoBubbleView::HandleMoreInfoRequest(views::View* source) {
 
 void PageInfoBubbleView::HandleMoreInfoRequestAsync(int view_id) {
   switch (view_id) {
-    case PageInfoBubbleView::VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_SITE_SETTINGS:
+    case PageInfoViewFactory::VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_SITE_SETTINGS:
       presenter_->OpenSiteSettingsView();
       break;
-    case PageInfoBubbleView::VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_COOKIE_DIALOG:
+    case PageInfoViewFactory::VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_COOKIE_DIALOG:
       presenter_->OpenCookiesDialog();
       break;
-    case PageInfoBubbleView::
+    case PageInfoViewFactory::
         VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_CERTIFICATE_VIEWER:
       presenter_->OpenCertificateDialog(certificate_.get());
       break;
@@ -796,6 +807,7 @@ void ShowPageInfoDialogImpl(Browser* browser,
   gfx::Rect anchor_rect =
       configuration.anchor_view ? gfx::Rect() : GetPageInfoAnchorRect(browser);
   gfx::NativeWindow parent_window = browser->window()->GetNativeWindow();
+  DCHECK(web_contents);
   views::BubbleDialogDelegateView* bubble =
       PageInfoBubbleView::CreatePageInfoBubble(
           configuration.anchor_view, anchor_rect, parent_window,

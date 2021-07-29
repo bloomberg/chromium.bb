@@ -117,6 +117,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void SetInsets(const gfx::Insets& insets) override;
   TouchSelectionControllerClientManager*
   GetTouchSelectionControllerClientManager() override;
+  bool ShouldVirtualKeyboardOverlayContent() override;
 
   // Overridden from RenderWidgetHostViewBase:
   void InitAsPopup(RenderWidgetHostView* parent_host_view,
@@ -131,6 +132,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void Destroy() override;
   void UpdateTooltipUnderCursor(const std::u16string& tooltip_text) override;
   void UpdateTooltip(const std::u16string& tooltip_text) override;
+  void UpdateTooltipFromKeyboard(const std::u16string& tooltip_text,
+                                 const gfx::Rect& bounds) override;
   uint32_t GetCaptureSequenceNumber() const override;
   bool IsSurfaceAvailableForCopy() override;
   void CopyFromSurface(
@@ -357,7 +360,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void SetTooltipsEnabled(bool enable) override;
   void Shutdown() override;
 
-  bool ShouldVirtualKeyboardOverlayContent() const;
   void NotifyVirtualKeyboardOverlayRect(const gfx::Rect& keyboard_rect);
   bool FocusedFrameHasStickyActivation() const;
 
@@ -370,6 +372,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   ui::EventPointerType GetLastPointerType() const { return last_pointer_type_; }
 
   MouseWheelPhaseHandler* GetMouseWheelPhaseHandler() override;
+
+  ui::Compositor* GetCompositor() override;
 
  protected:
   ~RenderWidgetHostViewAura() override;
@@ -480,6 +484,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest,
                            WebContentsViewReparent);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest, TakeFallbackContent);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
+                           TakeFallbackContentForPrerender);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
                            DiscardDelegatedFrames);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessHitTestBrowserTest,
@@ -727,6 +733,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // are expressed in DIPs relative to the view. See display_feature.h for more
   // details.
   absl::optional<DisplayFeature> display_feature_;
+
+  absl::optional<display::ScopedDisplayObserver> display_observer_;
 
   base::WeakPtrFactory<RenderWidgetHostViewAura> weak_ptr_factory_{this};
 };

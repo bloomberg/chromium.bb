@@ -17,7 +17,6 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "components/sync/engine/events/protocol_event.h"
-#include "components/sync/js/js_event_details.h"
 #include "components/sync/model/type_entities_count.h"
 #include "ios/components/webui/web_ui_provider.h"
 #include "ios/web/public/thread/web_thread.h"
@@ -43,10 +42,6 @@ SyncInternalsMessageHandler::SyncInternalsMessageHandler()
       weak_ptr_factory_(this) {}
 
 SyncInternalsMessageHandler::~SyncInternalsMessageHandler() {
-  if (js_controller_) {
-    js_controller_->RemoveJsEventHandler(this);
-  }
-
   syncer::SyncService* service = GetSyncService();
   if (service && service->HasObserver(this)) {
     service->RemoveObserver(this);
@@ -111,7 +106,7 @@ void SyncInternalsMessageHandler::RegisterMessages() {
 
 void SyncInternalsMessageHandler::HandleRequestDataAndRegisterForUpdates(
     const base::ListValue* args) {
-  DCHECK(args->empty());
+  DCHECK(args->GetList().empty());
 
   // is_registered_ flag protects us from double-registering.  This could
   // happen on a page refresh, where the JavaScript gets re-run but the
@@ -120,8 +115,6 @@ void SyncInternalsMessageHandler::HandleRequestDataAndRegisterForUpdates(
   if (service && !is_registered_) {
     service->AddObserver(this);
     service->AddProtocolEventObserver(this);
-    js_controller_ = service->GetJsController();
-    js_controller_->AddJsEventHandler(this);
     is_registered_ = true;
   }
 
@@ -130,7 +123,7 @@ void SyncInternalsMessageHandler::HandleRequestDataAndRegisterForUpdates(
 
 void SyncInternalsMessageHandler::HandleRequestListOfTypes(
     const base::ListValue* args) {
-  DCHECK(args->empty());
+  DCHECK(args->GetList().empty());
   base::DictionaryValue event_details;
   auto type_list = std::make_unique<base::ListValue>();
   syncer::ModelTypeSet protocol_types = syncer::ProtocolTypes();
@@ -143,7 +136,7 @@ void SyncInternalsMessageHandler::HandleRequestListOfTypes(
 
 void SyncInternalsMessageHandler::HandleRequestIncludeSpecificsInitialState(
     const base::ListValue* args) {
-  DCHECK(args->empty());
+  DCHECK(args->GetList().empty());
 
   base::DictionaryValue value;
   value.SetBoolean(syncer::sync_ui_util::kIncludeSpecifics,
@@ -224,8 +217,8 @@ void SyncInternalsMessageHandler::HandleTriggerRefresh(
 
   // Only allowed to trigger refresh/schedule nudges for protocol types, things
   // like PROXY_TABS are not allowed.
-  service->TriggerRefresh(syncer::Intersection(service->GetActiveDataTypes(),
-                                               syncer::ProtocolTypes()));
+  service->TriggerRefresh(base::util::Intersection(
+      service->GetActiveDataTypes(), syncer::ProtocolTypes()));
 }
 
 void SyncInternalsMessageHandler::OnReceivedAllNodes(
@@ -248,14 +241,6 @@ void SyncInternalsMessageHandler::OnProtocolEvent(
   std::unique_ptr<base::DictionaryValue> value(
       event.ToValue(include_specifics_));
   DispatchEvent(syncer::sync_ui_util::kOnProtocolEvent, *value);
-}
-
-void SyncInternalsMessageHandler::HandleJsEvent(
-    const std::string& name,
-    const syncer::JsEventDetails& details) {
-  DVLOG(1) << "Handling event: " << name << " with details "
-           << details.ToString();
-  DispatchEvent(name, details.Get());
 }
 
 void SyncInternalsMessageHandler::SendAboutInfoAndEntityCounts() {

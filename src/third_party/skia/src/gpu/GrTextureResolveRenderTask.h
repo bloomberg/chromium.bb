@@ -23,7 +23,7 @@ private:
     }
     void gatherProxyIntervals(GrResourceAllocator*) const override;
 
-    ExpectedOutcome onMakeClosed(const GrCaps&, SkIRect*) override {
+    ExpectedOutcome onMakeClosed(GrRecordingContext*, SkIRect*) override {
         return ExpectedOutcome::kTargetUnchanged;
     }
 
@@ -33,7 +33,7 @@ private:
     const char* name() const final { return "TextureResolve"; }
 #endif
 #ifdef SK_DEBUG
-    void visitProxies_debugOnly(const GrOp::VisitProxyFunc&) const override;
+    void visitProxies_debugOnly(const GrVisitProxyFunc&) const override;
 #endif
 
     struct Resolve {

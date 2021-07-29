@@ -578,7 +578,9 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
               "format, \"unified-plan\", has been used by default since M72 "
               "(January, 2019). Dropping support for Plan B is targeted for "
               "M93. See https://www.chromestatus.com/feature/5823036655665152 "
-              "for more details."};
+              "for more details, including the possibility of registering for "
+              "a Deprecation Trial in order to extend the Plan B deprecation "
+              "deadline for a limited amount of time."};
 
     case WebFeature::kRTCPeerConnectionSdpSemanticsPlanBWithReverseOriginTrial:
       return {"RTCPeerConnectionSdpSemanticsPlanBWithReverseOriginTrial", kM96,
@@ -617,6 +619,9 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
               "errors when attempting to parse the a=extmap-allow-mixed "
               "line in the SDP remove the line from the SDP during "
               "signalling."};
+    case WebFeature::kXHRJSONEncodingDetection:
+      return {"XHRJSONEncodingDetection", kM93,
+              "UTF-16 is not supported by response json in XMLHttpRequest"};
     // Features that aren't deprecated don't have a deprecation message.
     default:
       return {"NotDeprecated", kUnknown, ""};

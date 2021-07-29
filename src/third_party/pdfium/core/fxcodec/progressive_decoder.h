@@ -17,6 +17,7 @@
 #include "core/fxcrt/fx_memory_wrappers.h"
 #include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/retain_ptr.h"
+#include "core/fxge/dib/cstretchengine.h"
 #include "core/fxge/dib/fx_dib.h"
 
 #ifdef PDF_ENABLE_XFA_BMP
@@ -102,15 +103,12 @@ class ProgressiveDecoder :
 
 #ifdef PDF_ENABLE_XFA_GIF
   // GifDecoder::Delegate
-  void GifRecordCurrentPosition(uint32_t& cur_pos) override;
+  uint32_t GifCurrentPosition() const override;
   bool GifInputRecordPositionBuf(uint32_t rcd_pos,
                                  const FX_RECT& img_rc,
                                  int32_t pal_num,
                                  CFX_GifPalette* pal_ptr,
-                                 int32_t delay_time,
-                                 bool user_input,
                                  int32_t trans_index,
-                                 int32_t disposal_method,
                                  bool interlace) override;
   void GifReadScanline(int32_t row_num, uint8_t* row_buf) override;
 #endif  // PDF_ENABLE_XFA_GIF
@@ -123,28 +121,15 @@ class ProgressiveDecoder :
 #endif  // PDF_ENABLE_XFA_BMP
 
  private:
-  class WeightTable {
-   public:
-    WeightTable();
-    ~WeightTable();
-
-    void Calc(int dest_len, int src_len);
-    PixelWeight* GetPixelWeight(int pixel) {
-      return reinterpret_cast<PixelWeight*>(m_pWeightTables.data() +
-                                            (pixel - m_DestMin) * m_ItemSize);
-    }
-
-    int m_DestMin;
-    int m_ItemSize;
-    std::vector<uint8_t, FxAllocAllocator<uint8_t>> m_pWeightTables;
-  };
+  using WeightTable = CStretchEngine::WeightTable;
+  using PixelWeight = CStretchEngine::PixelWeight;
 
   class HorzTable {
    public:
     HorzTable();
     ~HorzTable();
 
-    void Calc(int dest_len, int src_len);
+    void CalculateWeights(int dest_len, int src_len);
     PixelWeight* GetPixelWeight(int pixel) {
       return reinterpret_cast<PixelWeight*>(m_pWeightTables.data() +
                                             pixel * m_ItemSize);
@@ -159,7 +144,7 @@ class ProgressiveDecoder :
     VertTable();
     ~VertTable();
 
-    void Calc(int dest_len, int src_len);
+    void CalculateWeights(int dest_len, int src_len);
     PixelWeight* GetPixelWeight(int pixel) {
       return reinterpret_cast<PixelWeight*>(m_pWeightTables.data() +
                                             pixel * m_ItemSize);
@@ -236,8 +221,8 @@ class ProgressiveDecoder :
   RetainPtr<IFX_SeekableReadStream> m_pFile;
   RetainPtr<CFX_DIBitmap> m_pDeviceBitmap;
   RetainPtr<CFX_CodecMemory> m_pCodecMemory;
-  std::unique_ptr<uint8_t, FxFreeDeleter> m_pDecodeBuf;
-  std::unique_ptr<FX_ARGB, FxFreeDeleter> m_pSrcPalette;
+  std::vector<uint8_t, FxAllocAllocator<uint8_t>> m_DecodeBuf;
+  std::vector<FX_ARGB, FxAllocAllocator<FX_ARGB>> m_SrcPalette;
   std::unique_ptr<ProgressiveDecoderIface::Context> m_pJpegContext;
 #ifdef PDF_ENABLE_XFA_BMP
   std::unique_ptr<ProgressiveDecoderIface::Context> m_pBmpContext;

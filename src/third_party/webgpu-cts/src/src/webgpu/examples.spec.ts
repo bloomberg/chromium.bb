@@ -4,13 +4,12 @@ Examples of writing CTS tests with various features.
 Start here when looking for examples of basic framework usage.
 `;
 
-import { params, pbool, poptions } from '../common/framework/params_builder.js';
 import { makeTestGroup } from '../common/framework/test_group.js';
 
 import { GPUTest } from './gpu_test.js';
 
 // To run these tests in the standalone runner, run `npm start` then open:
-// - http://localhost:XXXX/standalone/?runnow=1&q=webgpu:examples:
+// - http://localhost:XXXX/standalone/?runnow=1&q=webgpu:examples:*
 // To run in WPT, copy/symlink the out-wpt/ directory as the webgpu/ directory in WPT, then open:
 // - (wpt server url)/webgpu/cts.html?q=webgpu:examples:
 //
@@ -23,7 +22,6 @@ import { GPUTest } from './gpu_test.js';
 export const g = makeTestGroup(GPUTest);
 
 // Note: spaces in test names are replaced with underscores: webgpu:examples:test_name=
-/* eslint-disable-next-line  @typescript-eslint/no-unused-vars */
 g.test('test_name').fn(t => {});
 
 g.test('not_implemented_yet,without_plan').unimplemented();
@@ -74,21 +72,43 @@ g.test('basic,async').fn(async t => {
   );
 });
 
-// A test can be parameterized with a simple array of objects using .cases().
-// Each such instance of the test is a "case".
-//
-// Parameters can be public (x, y) which means they're part of the case name.
-// They can also be private by starting with an underscore (_result), which passes
-// them into the test but does not make them part of the case name:
-//
-// In this example, the following cases are generated (identified by their "query string"):
-//   - webgpu:examples:basic,cases:x=2;y=4     runs once, with t.params set to:
-//       - { x:   2, y:  4, _result: 6 }
-//   - webgpu:examples:basic,cases:x=-10;y=18  runs once, with t.params set to:
-//       - { x: -10, y: 18, _result: 8 }
+g.test('basic,plain_cases')
+  .desc(
+    `
+A test can be parameterized with a simple array of objects using .paramsSimple([ ... ]).
+Each such instance of the test is a "case".
 
-g.test('basic,cases')
-  .cases([
+In this example, the following cases are generated (identified by their "query string"),
+each with just one subcase:
+  - webgpu:examples:basic,cases:x=2;y=2      runs 1 subcase, with t.params set to:
+      - { x:   2, y:   2 }
+  - webgpu:examples:basic,cases:x=-10;y=-10  runs 1 subcase, with t.params set to:
+      - { x: -10, y: -10 }
+  `
+  )
+  .paramsSimple([
+    { x: 2, y: 2 }, //
+    { x: -10, y: -10 },
+  ])
+  .fn(t => {
+    t.expect(t.params.x === t.params.y);
+  });
+
+g.test('basic,plain_cases_private')
+  .desc(
+    `
+Parameters can be public ("x", "y") which means they're part of the case name.
+They can also be private by starting with an underscore ("_result"), which passes
+them into the test but does not make them part of the case name:
+
+In this example, the following cases are generated, each with just one subcase:
+  - webgpu:examples:basic,cases:x=2;y=4     runs 1 subcase, with t.params set to:
+      - { x:   2, y:  4, _result: 6 }
+  - webgpu:examples:basic,cases:x=-10;y=18  runs 1 subcase, with t.params set to:
+      - { x: -10, y: 18, _result: 8 }
+  `
+  )
+  .paramsSimple([
     { x: 2, y: 4, _result: 6 }, //
     { x: -10, y: 18, _result: 8 },
   ])
@@ -97,38 +117,91 @@ g.test('basic,cases')
   });
 // (note the blank comment above to enforce newlines on autoformat)
 
-// Each case can be further parameterized using .subcases().
-// Each such instance of the test is a "subcase", which cannot be run independently of other
-// subcases. It is analogous to wrapping the entire fn body in a for-loop.
-//
-// In this example, the following cases are generated (identified by their "query string"):
-//   - webgpu:examples:basic,cases:x=1  runs twice, with t.params set to each of:
-//       - { x: 1, a: 2 }
-//       - { x: 1, b: 2 }
-//   - webgpu:examples:basic,cases:x=2  runs twice, with t.params set to each of:
-//       - { x: 2, a: 3 }
-//       - { x: 2, b: 2 }
+g.test('basic,builder_cases')
+  .desc(
+    `
+A "CaseParamsBuilder" or "SubcaseParamsBuilder" can be passed to .params() instead.
+The params builder provides facilities for generating tests combinatorially (by cartesian
+product). For convenience, the "unit" CaseParamsBuilder is passed as an argument ("u" below).
 
-g.test('basic,subcases')
-  .cases([{ x: 1 }, { x: 2 }])
-  .subcases(p => [{ a: p.x + 1 }, { b: 2 }])
-  .fn(t => {
-    t.expect(
-      ((t.params.a === 2 || t.params.a === 3) && t.params.b === undefined) ||
-        (t.params.a === undefined && t.params.b === 2)
-    );
-  });
+In this example, the following cases are generated, each with just one subcase:
+  - webgpu:examples:basic,cases:x=1,y=1  runs 1 subcase, with t.params set to:
+      - { x: 1, y: 1 }
+  - webgpu:examples:basic,cases:x=1,y=2  runs 1 subcase, with t.params set to:
+      - { x: 1, y: 2 }
+  - webgpu:examples:basic,cases:x=2,y=1  runs 1 subcase, with t.params set to:
+      - { x: 2, y: 1 }
+  - webgpu:examples:basic,cases:x=2,y=2  runs 1 subcase, with t.params set to:
+      - { x: 2, y: 2 }
+  `
+  )
+  .params(u =>
+    u //
+      .combineWithParams([{ x: 1 }, { x: 2 }])
+      .combineWithParams([{ y: 1 }, { y: 2 }])
+  )
+  .fn(() => {});
 
-// Runs the following cases:
-// { x: 2, y: 2 }
-// { x: 2, z: 3 }
-// { x: 3, y: 2 }
-// { x: 3, z: 3 }
-g.test('basic,params_builder')
-  .cases(
-    params()
-      .combine(poptions('x', [2, 3]))
-      .combine([{ y: 2 }, { z: 3 }])
+g.test('basic,builder_cases_subcases')
+  .desc(
+    `
+Each case sub-parameterized using .beginSubcases().
+Each such instance of the test is a "subcase", which cannot be run independently of other
+subcases. It is somewhat like wrapping the entire fn body in a for-loop.
+
+In this example, the following cases are generated:
+  - webgpu:examples:basic,cases:x=1      runs 2 subcases, with t.params set to:
+      - { x: 1, y: 1 }
+      - { x: 1, y: 2 }
+  - webgpu:examples:basic,cases:x=2      runs 2 subcases, with t.params set to:
+      - { x: 2, y: 1 }
+      - { x: 2, y: 2 }
+  `
+  )
+  .params(u =>
+    u //
+      .combineWithParams([{ x: 1 }, { x: 2 }])
+      .beginSubcases()
+      .combineWithParams([{ y: 1 }, { y: 2 }])
+  )
+  .fn(() => {});
+
+g.test('basic,builder_subcases')
+  .desc(
+    `
+In this example, the following single case is generated:
+  - webgpu:examples:basic,cases:         runs 4 subcases, with t.params set to:
+      - { x: 1, y: 1 }
+      - { x: 1, y: 2 }
+      - { x: 2, y: 1 }
+      - { x: 2, y: 2 }
+  `
+  )
+  .params(u =>
+    u //
+      .beginSubcases()
+      .combineWithParams([{ x: 1 }, { x: 2 }])
+      .combineWithParams([{ y: 1 }, { y: 2 }])
+  )
+  .fn(() => {});
+
+g.test('basic,builder_subcases_short')
+  .desc(
+    `
+As a shorthand, .paramsSubcasesOnly() can be used.
+
+In this example, the following single case is generated:
+  - webgpu:examples:basic,cases:         runs 4 subcases, with t.params set to:
+      - { x: 1, y: 1 }
+      - { x: 1, y: 2 }
+      - { x: 2, y: 1 }
+      - { x: 2, y: 2 }
+  `
+  )
+  .paramsSubcasesOnly(u =>
+    u //
+      .combineWithParams([{ x: 1 }, { x: 2 }])
+      .combineWithParams([{ y: 1 }, { y: 2 }])
   )
   .fn(() => {});
 
@@ -149,7 +222,7 @@ g.test('gpu,buffers').fn(async t => {
 
   // Use the expectContents helper to check the actual contents of a GPUBuffer.
   // Like shouldReject, it must be awaited.
-  t.expectContents(src, data);
+  t.expectGPUBufferValuesEqual(src, data);
 });
 
 // One of the following two tests should be skipped on most platforms.
@@ -159,7 +232,7 @@ g.test('gpu,with_texture_compression,bc')
     `Example of a test using a device descriptor.
 Tests that a BC format passes validation iff the feature is enabled.`
   )
-  .cases(pbool('textureCompressionBC'))
+  .params(u => u.combine('textureCompressionBC', [false, true]))
   .fn(async t => {
     const { textureCompressionBC } = t.params;
 
@@ -187,7 +260,7 @@ g.test('gpu,with_texture_compression,etc')
 
 TODO: Test that an ETC format passes validation iff the feature is enabled.`
   )
-  .cases(pbool('textureCompressionETC'))
+  .params(u => u.combine('textureCompressionETC', [false, true]))
   .fn(async t => {
     const { textureCompressionETC } = t.params;
 

@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 # Watchlist Rules
-# Refer: https://chromium.googlesource.com/chromium/src/+/master/docs/infra/watchlists.md
+# Refer: https://chromium.googlesource.com/chromium/src/+/main/docs/infra/watchlists.md
 
 # IMPORTANT: The regular expression filepath is tested against each path using
 # re.search, so it is not usually necessary to add .*.
@@ -72,7 +72,7 @@
                   'chrome/android/javatests/src/org/chromium/chrome/browser/.*ChooserDialogTest.java'
     },
     'android_omnibox': {
-      'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/omnibox/'
+      'filepath': 'chrome/browser/ui/android/omnibox/',
     },
     'android_search_widget': {
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/locale/' \
@@ -87,7 +87,8 @@
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/Tab'
     },
     'android_toolbar': {
-      'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/toolbar/'
+      'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/toolbar/' \
+                  '|chrome/browser/ui/android/toolbar/'
     },
     'android_uma_settings': {
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/settings/privacy/PrivacyPreferencesManager.java|'\
@@ -747,7 +748,7 @@
     },
     'chromeos_media_app': {
       'filepath': 'chromeos/components/media_app_ui/|'\
-                  'chrome/browser/ash/web_applications/',
+                  'chrome/browser/ash/web_applications/media_app/',
     },
     'chromeos_net': {
       'filepath': 'ash/system/network/|'\
@@ -839,6 +840,7 @@
       'filepath': 'ash/policy/'\
                   '|components/policy/'\
                   '|chromeos/policy/'\
+                  '|chrome/browser/ash/policy/'\
                   '|chrome/browser/chromeos/policy/'\
                   '|chrome/browser/policy/'
     },
@@ -918,7 +920,7 @@
       'filepath': 'devtools',
     },
     'diagnostics_ui': {
-      'filepath': 'chromeos/components/diagnostics_ui/',
+      'filepath': 'ash/webui/diagnostics_ui/',
     },
     'discardable_memory': {
         'filepath': 'components/discardable_memory/',
@@ -952,6 +954,11 @@
                   'media/base/android/.*drm|' \
                   'media/cdm/|' \
                   'third_party/widevine/cdm/'
+    },
+    'enterprise_reporting_private': {
+      'filepath': 'chrome/common/extensions/api/enterprise_reporting_private.idl|' \
+                  'chrome/browser/extensions/api/enterprise_reporting_private/|' \
+                  'chrome/browser/enterprise/signals/'
     },
     'exo': {
       'filepath': 'components/exo',
@@ -989,14 +996,15 @@
     },
     'filesapp': {
       'filepath': 'chrome/browser/ash/drive|' \
+                  'chrome/browser/ash/file_manager|' \
                   'chrome/browser/ash/file_system_provider|' \
                   'chrome/browser/chromeos/extensions/file_manager|' \
                   'chrome/browser/chromeos/extensions/file_system_provider|' \
-                  'chrome/browser/chromeos/file_manager|' \
                   'chrome/browser/drive|' \
                   'chrome/test/data/extensions/api_test/file_system_provider|' \
                   'components/drive|' \
                   'google_apis/drive|' \
+                  'ash/webui/file_manager|' \
                   'ui/file_manager'
     },
     'freetype_update': {
@@ -1090,7 +1098,8 @@
                   'ash/system/holding_space|'\
                   'chrome/browser/lacros/.*holding_space.*|'\
                   'chrome/browser/ui/ash/holding_space|'\
-                  'chromeos/crosapi/mojom/.*holding_space.*'
+                  'chromeos/crosapi/mojom/.*holding_space.*|'\
+                  'tools/metrics/histograms/histograms_xml/holding_space'
     },
     'i18n': {
       'filepath': 'base/i18n/|base/string|l10n|icu|'\
@@ -1261,9 +1270,10 @@
     },
     'media_remoting': {
       'filepath': 'chrome/browser/media/cast_remoting'\
-                  '|media/blink/webmediaplayer_'\
                   '|media/mojo/mojom/remoting.mojom'\
-                  '|media/remoting/',
+                  '|media/remoting/'\
+                  '|third_party/blink/public/platform/media/web_media_player_'\
+                  '|third_party/blink/renderer/platform/media/web_media_player_',
     },
     'media_router': {
       'filepath': 'chrome/app/media_router_strings.grdp' \
@@ -1429,9 +1439,6 @@
         'components/ntp_tiles/|'\
         'ios/chrome/browser/ntp_tiles'
     },
-    'offline_items_collection': {
-      'filepath': 'components/offline_items_collection/',
-    },
     'offline_pages': {
       'filepath': 'components/offline_pages/'\
                   '|chrome/browser/android/offline_pages/'\
@@ -1439,11 +1446,14 @@
     },
     'omnibox': {
       'filepath': '^chrome/browser/autocomplete/|'\
+                  '^chrome/browser/resources/new_tab_page/realbox/|'\
                   '^chrome/browser/resources/omnibox|'\
                   '^chrome/browser/ui/location_bar/|'\
                   '^chrome/browser/ui/omnibox/|'\
                   '^chrome/browser/ui/.*/location_bar/|'\
                   '^chrome/browser/ui/.*/omnibox/|'\
+                  '^chrome/browser/ui/.*/realbox/|'\
+                  '^chrome/test/data/webui/new_tab_page/realbox/|'\
                   '^components/omnibox/|'\
                   '^components/search_engines/'
     },
@@ -1591,10 +1601,11 @@
       'filepath': 'chrome/android/features/media_router/java/src/org/chromium/chrome/browser/media/router/FlingingController' \
                   '|chrome/android/java/src/org/chromium/chrome/browser/media/remote/' \
                   '|chrome/browser/media/android/remote/' \
-                  '|media/blink/remote_playback' \
                   '|media/renderers/remote_playback' \
+                  '|third_party/blink/public/platform/media/remote_playback' \
                   '|third_party/blink/public/platform/modules/remoteplayback/' \
                   '|third_party/blink/renderer/core/html/media/remote_playback' \
+                  '|third_party/blink/renderer/platform/media/remote_playback' \
                   '|third_party/blink/renderer/modules/remoteplayback/' \
                   '|third_party/blink/web_tests/media/remoteplayback/' \
                   '|third_party/blink/web_tests/virtual/new-remote-playback-pipeline/'
@@ -1623,7 +1634,7 @@
                   '|components/metrics/public/mojom/call_stack*',
     },
     'scanning': {
-      'filepath': 'ash/content/scanning/'\
+      'filepath': 'ash/webui/scanning/'\
                   '|chrome/browser/ash/scanning/',
     },
     'security': {
@@ -1688,7 +1699,7 @@
     },
     'smb': {
       'filepath': 'chrome/browser/ash/file_system_provider' \
-                  '|chrome/browser/chromeos/smb_client'\
+                  '|chrome/browser/ash/smb_client'\
                   '|chromeos/dbus/fake_smb_provider_client'\
                   '|chromeos/dbus/smb_provider_client',
     },
@@ -1707,6 +1718,10 @@
     },
     'startup': {
       'filepath': 'chrome/browser/ui/startup/',
+    },
+    'status_area': {
+      'filepath': 'ash/system/'\
+                  '|google_apis/calendar/',
     },
     'storage_service' : {
       'filepath': 'components/services/storage/',
@@ -1870,6 +1885,12 @@
                   'ios/chrome/browser/ui/translate|'\
                   'ios/web_view/internal/translate'
     },
+    'turtledove': {
+      'filepath': 'content/browser/interest_group/|'\
+                  'content/services/auction_worklet/|'\
+                  'third_party/blink/public/mojom/interest_group/|'\
+                  'third_party/blink/renderer/modules/ad_auction/'
+    },
     'ui_compositor': {
       'filepath': 'ui/compositor/layer\.|'\
                   'ui/compositor/layer_unittest|'\
@@ -2000,6 +2021,13 @@
     'weblayer_ssl': {
         'filepath': 'weblayer/browser/ssl*',
     },
+    'webotp': {
+        'filepath': 'third_party/blink/renderer/modules/credentialmanager/credentials_container\.cc'\
+                    '|third_party/blink/renderer/modules/credentialmanager/.*otp'\
+                    '|third_party/blink/public/mojom/sms/'\
+                    '|content/browser/.*sms/'\
+                    '|chrome/browser/sharing/.*sms',
+    },
     'webrtc_browser_tests': {
       'filepath': 'chrome/browser/media/.*webrtc.*browsertest|'\
                   'content/browser/media/.*webrtc.*browsertest',
@@ -2008,8 +2036,10 @@
       'filepath': 'chrome/browser/content_settings/'\
                   '|chrome/browser/ui/views/website_settings/'\
                   '|chrome/browser/ui/website_settings/'\
+                  '|chrome/browser/privacy_sandbox/privacy_sandbox_settings'\
                   '|chrome/common/content_settings'\
-                  '|components/content_settings/',
+                  '|components/content_settings/'\
+                  '|services/network/cookie_settings',
     },
     'windows_sandboxing': {
       'filepath': 'sandbox/win/',
@@ -2072,10 +2102,8 @@
     'android_flags': ['hnakashima+watch@chromium.org'],
     'android_infobars': ['dfalcantara+watch@chromium.org'],
     'android_infra': ['agrieve+watch@chromium.org'],
-    'android_item_chooser_dialogs': ['juncai+watch@chromium.org',
-                                     'ortuno+watch@chromium.org'],
-    'android_omnibox': ['ender+watch@chromium.org',
-                         'jinsukkim+watch@chromium.org'],
+    'android_item_chooser_dialogs': ['juncai+watch@chromium.org'],
+    'android_omnibox': ['ender+watch@chromium.org'],
     'android_search_widget': ['tedchoc+watch@chromium.org',
                               'yusufo+watch@chromium.org'],
     'android_studio': ['wnwen+watch@chromium.org',
@@ -2166,13 +2194,11 @@
     'blink_animation': ['alexis.menard@intel.com',
                         'gerchiko@microsoft.com',
                         'blink-reviews-animation@chromium.org'],
-    'blink_audio': ['hongchan@chromium.org',
-                    'rtoy@chromium.org'],
+    'blink_audio': ['hongchan@chromium.org'],
     'blink_battery_status': ['timvolodine@chromium.org'],
     'blink_bindings': ['blink-reviews-bindings@chromium.org', 'haraken@chromium.org'],
     'blink_bindings_serialization': ['jbroman+watch@chromium.org'],
     'blink_bluetooth': ['mattreynolds+watch@chromium.org',
-                        'ortuno+watch@chromium.org',
                         'odejesush+watch@chromium.org'],
     'blink_client_hints': ['yoavweiss@chromium.org'],
     'blink_clipboard': ['dcheng@chromium.org'],
@@ -2324,19 +2350,16 @@
                    'pmonette+watch@chromium.org'],
     'chrome_grc': ['chrome-grc-reviews@chromium.org'],
     'chrome_performance_manager': ['performance-manager-reviews@chromium.org'],
-    'chromecast': ['alokp+watch@chromium.org',
-                   'halliwell+watch@chromium.org',
+    'chromecast': ['halliwell+watch@chromium.org',
                    'lcwu+watch@chromium.org'],
     'chromecast_public': ['gfhuang+watch@chromium.org'],
     'chromedriver': ['mathias@chromium.org'],
     'chromeos': ['oshima+watch@chromium.org'],
     'chromeos_attestation': ['dkrahn+watch@chromium.org'],
-    'chromeos_bluetooth': ['hansberry+watch-bluetooth@chromium.org',
-                           'vecore+watch-bluetooth@google.com'],
+    'chromeos_bluetooth': ['hansberry+watch-bluetooth@chromium.org'],
     'chromeos_cellular': ['azeemarshad+watch-cellular@chromium.org',
                           'benchan+watch-cellular@chromium.org',
-                          'ejcaruso+watch-cellular@chromium.org',
-                          'vecore+watch-cellular@google.com'],
+                          'ejcaruso+watch-cellular@chromium.org'],
     'chromeos_geolocation': ['alemate+watch@chromium.org'],
     'chromeos_lkgm': ['achuith+watch@chromium.org',
                       'bpastene+watch@chromium.org'],
@@ -2348,17 +2371,14 @@
                      'benchan+watch-network@chromium.org',
                      'ejcaruso+watch-network@chromium.org',
                      'jonmann+watch-network@chromium.org',
-                     'stevenjb+watch-network@chromium.org',
-                     'vecore+watch-network@google.com'],
+                     'stevenjb+watch-network@chromium.org'],
     'chromeos_tast_control': ['chromeos-engprod+watch@google.com',
                               'bpastene+watch@chromium.org',
-                              'mukai+watch@chromium.org',
                               'chrome-os-gardeners+watch@google.com'],
     'chromeos_timezone': ['alemate+watch@chromium.org'],
     'chromeos_webui': ['alemate+watch@chromium.org'],
     'chromeos_wifi_sync': ['jonmann+watch@chromium.org',
-                           'stevenjb+watch@chromium.org',
-                           'vecore+watch@google.com'],
+                           'stevenjb+watch@chromium.org'],
     'chromevox': ['akihiroota@chromium.org',
                   'anastasi+watch@google.com',
                   'dtseng+chromevox@chromium.org',
@@ -2379,8 +2399,7 @@
     'clipboard': ['dcheng@chromium.org'],
     'components_deps': ['droger+watchlist@chromium.org'],
     'compositor_animator': ['mdjones+watch@chromium.org'],
-    'content_bluetooth': ['mattreynolds+watch@chromium.org',
-                          'ortuno+watch@chromium.org'],
+    'content_bluetooth': ['mattreynolds+watch@chromium.org'],
     'content_index': ['rayankans+watch@chromium.org'],
     'content_loader': ['loading-reviews@chromium.org'],
     'content_security_policy':['antoniosartori+watch-csp@chromium.org',
@@ -2422,8 +2441,7 @@
     'dbus': ['hashimoto+watch@chromium.org'],
     'demo_mode': ['cros-essential-apps-dev+watch@chromium.org'],
     'desktop_in_product_help': ['collinbaker+watch@chromium.org'],
-    'device_bluetooth': ['mattreynolds+watch@chromium.org',
-                         'ortuno+watch@chromium.org'],
+    'device_bluetooth': ['mattreynolds+watch@chromium.org'],
     'device_chooser': ['juncai+watch@chromium.org',
                        'mattreynolds+watch@chromium.org',
                        'odejesush+watch@chromium.org'],
@@ -2432,7 +2450,8 @@
                        'joonbug+diagnostics-watch@chromium.org',
                        'michaelcheco+diagnostics-watch@google.com',
                        'zentaro+diagnostics-watch@chromium.org',
-                       'gavindodd+diagnostics-watch@google.com'],
+                       'gavindodd+diagnostics-watch@google.com',
+                       'ashleydp+diagnostics-watch@google.com'],
     'discardable_memory': ['thiabaud+watch-discardable-memory@google.com'],
     'disk_cache': ['gavinp+disk@chromium.org'],
     'dom_storage': ['dmurph+watchingdomstorage@chromium.org'],
@@ -2440,6 +2459,8 @@
     'downloads_ui': ['dtrainor+watch@chromium.org'],
     'drive_resource_metadata': ['hashimoto+watch@chromium.org'],
     'eme': ['eme-reviews@chromium.org'],
+    'enterprise_reporting_private': ['domfc+watch@chromium.org',
+                                     'anthonyvd+watch@chormium.org'],
     'exo': ['crostini-ui+exo@chromium.org'],
     'explore_sites': ['chili+watch@chromium.org',
                       'dewittj+watch@chromium.org',
@@ -2559,8 +2580,7 @@
     'media_gpu_cros': ['media-cros-reviews@chromium.org'],
     'media_gpu_vaapi': ['vaapi-reviews@chromium.org'],
     'media_gpu_win': ['media-win-reviews@chromium.org'],
-    'media_mojo': ['alokp+watch@chromium.org',
-                   'xhwang+watch@chromium.org'],
+    'media_mojo': ['xhwang+watch@chromium.org'],
     'media_recorder': ['emircan+watch+mediarecorder@chromium.org',
                        'mcasas+mediarecorder@chromium.org'],
     'media_remoting': ['erickung+watch@chromium.org',
@@ -2577,8 +2597,7 @@
     'midi': ['toyoshim+midi@chromium.org'],
     'multidevice': ['hansberry+watch-multidevice@chromium.org',
                     'nohle+watch-multidevice@chromium.org',
-                    'themaxli+watch-multidevice@chromium.org',
-                    'vecore+watch-multidevice@google.com'],
+                    'themaxli+watch-multidevice@chromium.org'],
     'multipaste': ['andrewxu+watch-multipaste@google.com',
                    'dmblack+watch-multipaste@google.com',
                    'newcomer+watch-multipaste@google.com'],
@@ -2587,7 +2606,6 @@
                           'sbc@chromium.org'],
     'navigation': ['alexmos+watch@chromium.org',
                    'creis+watch@chromium.org',
-                   'nasko+codewatch@chromium.org',
                    'navigation-cc+reviews@chromium.org'],
     'nearby': ['cclem+watch-nearby@google.com',
                'hais+watch-nearby@google.com',
@@ -2595,8 +2613,6 @@
                'hansenmichael+watch-nearby@google.com',
                'knollr+watch-nearby@chromium.org',
                'nohle+watch-nearby@chromium.org',
-               'peter+watch-nearby@chromium.org',
-               'vecore+watch-nearby@google.com',
                'xlythe+watch-nearby@google.com'],
     'net': ['net-reviews@chromium.org'],
     'net_base': ['bnc+watch@chromium.org',
@@ -2615,15 +2631,13 @@
     'nqe': ['tbansal+watch-nqe@chromium.org'],
     'ntp_snippets': ['ntp-dev+reviews@chromium.org'],
     'ntp_tiles': ['ntp-dev+reviews@chromium.org'],
-    'offline_items_collection': ['peter@chromium.org'],
     'offline_pages': ['chili+watch@chromium.org',
                       'carlosk+watch@chromium.org',
                       'dewittj+watch@chromium.org',
                       'dimich+watch@chromium.org',
                       'fgorski+watch@chromium.org',
                       'petewil+watch@chromium.org',
-                      'romax+watch@chromium.org',
-                      'harringtond+watch@google.com'],
+                      'romax+watch@chromium.org'],
     'omnibox': ['jdonnelly+watch@chromium.org'],
     'origin_trials': ['chasej+watch@chromium.org',
                       'iclelland+watch@chromium.org'],
@@ -2710,15 +2724,12 @@
     'share_service': ['melzhang+watch+share-service@chromium.org'],
     'share_sheet': ['chrome-sharing-eng+watch@google.com'],
     'sharing': ['knollr+watch-sharing@chromium.org',
-                'mvanouwerkerk+watch-sharing@chromium.org',
-                'peter+watch-sharing@chromium.org'],
+                'mvanouwerkerk+watch-sharing@chromium.org'],
     'site_engagement': ['dominickn+watch-engagement@chromium.org'],
     'site_instance': ['ajwong+watch@chromium.org',
                       'alexmos+watch@chromium.org',
-                      'creis+watch@chromium.org',
-                      'nasko+codewatch@chromium.org'],
-    'smartlock': ['hansberry+watch-smartlock@chromium.org',
-                  'vecore+watch-smartlock@google.com'],
+                      'creis+watch@chromium.org'],
+    'smartlock': ['hansberry+watch-smartlock@chromium.org'],
     'smb': ['cros-enterprise-lax+smbwatch@chromium.org'],
     'source_idls': ['jmedley+watch@chromium.org'],
     'speed_metrics_changelog': ['igrigorik@chromium.org',
@@ -2732,6 +2743,7 @@
                    'timvolodine@chromium.org'],
     'startup': ['grt+watch@chromium.org',
                 'pastarmovj+watch@chromium.org'],
+    'status_area': ['cros-status-area-eng+watchlist@google.com'],
     'storage_service': ['dmurph+watching-storageservice@chromium.org'],
     'structured_headers': ['iclelland+watch@chromium.org'],
     'styleguide': ['danakj+watch@chromium.org',
@@ -2767,8 +2779,7 @@
     'telemetry': ['telemetry-reviews@chromium.org'],
     'test_runner': ['einbinder+watch-test-runner@chromium.org'],
     'tests': [],
-    'tether': ['hansberry+watch-tether@chromium.org',
-               'vecore+watch-tether@google.com'],
+    'tether': ['hansberry+watch-tether@chromium.org'],
     'text_to_speech': ['dtseng+watch@chromium.org'],
     'textinput': ['keithlee+watch@chromium.org',
                   'nona+watch@chromium.org',
@@ -2778,7 +2789,6 @@
                   'yhanada+watch@chromium.org',
                   'yusukes+watch@chromium.org'],
     'textinput_chromeos': ['keithlee+watch@chromium.org',
-                           'kentonlam+watch@google.com',
                            'nona+watch@chromium.org',
                            'shuchen+watch@chromium.org',
                            'tranbaoduy+watch@chromium.org',
@@ -2794,6 +2804,7 @@
                 'spang+watch@chromium.org'],
     'traffic_annotation': ['nicolaso+watch@chromium.org'],
     'translate': ['translate-reviews@chromium.org'],
+    'turtledove': ['taymon@google.com'],
     'ui_compositor': ['cc-bugs@chromium.org'],
     'ui_display_win': ['robliao+watch@chromium.org'],
     'ui_resources': ['oshima+watch@chromium.org'],
@@ -2809,7 +2820,6 @@
     'video_capture': ['chfremer+watch@chromium.org',
                       'rijubrata.bhaumik@intel.com'],
     'virtual_keyboard': ['dfaden+virtualkb@google.com',
-                         'kentonlam+watch@google.com',
                          'shend+watch@chromium.org',
                          'tranbaoduy+watch@chromium.org',
                          'yhanada+watchvk@chromium.org'],
@@ -2841,6 +2851,7 @@
     'weblayer': ['cricke+watch@chromium.org'],
     'weblayer_safe_browsing' : ['carlosil+watch@chromium.org'],
     'weblayer_ssl' : ['carlosil+watch@chromium.org'],
+    'webotp': ['yigu+watch@chromium.org'],
     'webrtc_browser_tests': ['phoglund+watch@chromium.org'],
     'website_settings': ['dullweber+watch@chromium.org',
                          'msramek+watch@chromium.org'],

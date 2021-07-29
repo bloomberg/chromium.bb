@@ -1,0 +1,80 @@
+<style include="cr-shared-style">
+:host {
+  --focus-border-width: 1px;
+}
+.navigation-item {
+  align-items: center;
+  border-block-end-width: var(--focus-border-width);
+  border-block-start-width: var(--focus-border-width);
+  border-color: transparent;
+  border-inline-end-width: var(--focus-border-width);
+  border-inline-start-width: 0;
+  border-radius: 0 20px 20px 0;
+  border-style: solid;
+  color: var(--cros-text-color-secondary);
+  cursor: pointer;
+  display: flex;
+  font-weight: 500;
+  margin-bottom: 8px;
+  margin-inline-end: 2px;
+  min-height: 32px;
+  padding-inline-start: 20px;
+  width: 225px;
+}
+
+div:hover:not(.selected).navigation-item {
+  background-color: var(--google-grey-100);
+}
+
+.navigation-item.selected {
+  background-color: var(--google-blue-50);
+  color: var(--google-blue-600);
+}
+
+iron-icon {
+  --iron-icon-fill-color: var(--google-grey-700);
+  margin-inline-end: 16px;
+  pointer-events: none;
+  vertical-align: top;
+}
+
+.navigation-item.selected > iron-icon {
+  --iron-icon-fill-color: var(--google-blue-600);
+}
+
+cr-expand-button {
+  padding-inline-start: 20px;
+}
+
+</style>
+
+<div id="navigationSelectorComponent">
+  <div id="navigationSelectorMenu">
+    <template id="menuItems" is="dom-repeat" items="{{menuItems}}">
+      <template is="dom-if" if="[[!isCollapsible_(item)]]">
+        <div class$="{{computeInitialClass_(item.selectorItem)}}" tabindex="0"
+            on-click="onSelected_">
+          <iron-icon class="icon" icon="[[item.selectorItem.icon]]" alt="">
+          </iron-icon>
+          [[item.selectorItem.name]]
+        </div>
+      </template>
+      <template is="dom-if" if="[[isCollapsible_(item)]]">
+        <cr-expand-button class="expand-button" on-click="onExpandClicked_">
+          [[item.selectorItem.name]]
+        </cr-expand-button>
+        <iron-collapse opened="[[item.properties.isExpanded]]">
+          <template class="collapsed-list" is="dom-repeat"
+              items="{{item.properties.subMenuItems}}">
+            <div class$="{{computeInitialClass_(item)}}" tabindex="0"
+                on-click="onNestedSelected_">
+              <iron-icon class="icon" icon="[[getIcon_(item)]]" alt="">
+              </iron-icon>
+              [[item.name]]
+            </div>
+          </template>
+        </iron-collapse>
+      </template>
+    </template>
+  </div>
+</div>

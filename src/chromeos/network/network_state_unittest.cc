@@ -18,6 +18,7 @@
 #include "chromeos/network/network_state_test_helper.h"
 #include "chromeos/network/tether_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
@@ -147,10 +148,9 @@ TEST_F(NetworkStateTest, SsidHex) {
   // Check HexSSID via network state dictionary.
   base::DictionaryValue dictionary;
   network_state_.GetStateProperties(&dictionary);
-  std::string value;
-  EXPECT_TRUE(
-      dictionary.GetStringWithoutPathExpansion(shill::kWifiHexSsid, &value));
-  EXPECT_EQ(wifi_hex, value);
+  std::string* value = dictionary.FindStringKey(shill::kWifiHexSsid);
+  EXPECT_NE(nullptr, value);
+  EXPECT_EQ(wifi_hex, *value);
 }
 
 // Non-UTF-8 SSID should be preserved in |raw_ssid_| field.
@@ -345,25 +345,24 @@ TEST_F(NetworkStateTest, TetherProperties) {
   base::DictionaryValue dictionary;
   network_state_.GetStateProperties(&dictionary);
 
-  int signal_strength;
-  EXPECT_TRUE(dictionary.GetIntegerWithoutPathExpansion(kTetherSignalStrength,
-                                                        &signal_strength));
-  EXPECT_EQ(75, signal_strength);
+  absl::optional<int> signal_strength =
+      dictionary.FindIntKey(kTetherSignalStrength);
+  EXPECT_TRUE(signal_strength.has_value());
+  EXPECT_EQ(75, signal_strength.value());
 
-  int battery_percentage;
-  EXPECT_TRUE(dictionary.GetIntegerWithoutPathExpansion(
-      kTetherBatteryPercentage, &battery_percentage));
-  EXPECT_EQ(85, battery_percentage);
+  absl::optional<int> battery_percentage =
+      dictionary.FindIntKey(kTetherBatteryPercentage);
+  EXPECT_TRUE(battery_percentage.has_value());
+  EXPECT_EQ(85, battery_percentage.value());
 
-  bool tether_has_connected_to_host;
-  EXPECT_TRUE(dictionary.GetBooleanWithoutPathExpansion(
-      kTetherHasConnectedToHost, &tether_has_connected_to_host));
-  EXPECT_TRUE(tether_has_connected_to_host);
+  absl::optional<bool> tether_has_connected_to_host =
+      dictionary.FindBoolKey(kTetherHasConnectedToHost);
+  EXPECT_TRUE(tether_has_connected_to_host.has_value());
+  EXPECT_TRUE(tether_has_connected_to_host.value());
 
-  std::string carrier;
-  EXPECT_TRUE(
-      dictionary.GetStringWithoutPathExpansion(kTetherCarrier, &carrier));
-  EXPECT_EQ("Project Fi", carrier);
+  std::string* carrier = dictionary.FindStringKey(kTetherCarrier);
+  EXPECT_NE(nullptr, carrier);
+  EXPECT_EQ("Project Fi", *carrier);
 }
 
 TEST_F(NetworkStateTest, CelularPaymentPortalPost) {

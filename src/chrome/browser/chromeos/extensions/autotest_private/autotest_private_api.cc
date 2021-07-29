@@ -12,13 +12,12 @@
 #include <sstream>
 #include <utility>
 
+#include "ash/constants/app_types.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/accelerators.h"
 #include "ash/public/cpp/accessibility_controller.h"
 #include "ash/public/cpp/ambient/ambient_ui_model.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
-#include "ash/public/cpp/app_types.h"
-#include "ash/public/cpp/ash_pref_names.h"
-#include "ash/public/cpp/assistant/assistant_client.h"
 #include "ash/public/cpp/autotest_ambient_api.h"
 #include "ash/public/cpp/autotest_desks_api.h"
 #include "ash/public/cpp/autotest_private_api_utils.h"
@@ -73,6 +72,7 @@
 #include "chrome/browser/ash/crostini/crostini_manager.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
+#include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/ash/login/lock/screen_locker.h"
@@ -86,7 +86,6 @@
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -111,11 +110,10 @@
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer_ui.h"
-#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/app_registrar_observer.h"
-#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/extensions/api/autotest_private.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -131,6 +129,7 @@
 #include "chromeos/ui/frame/immersive/immersive_fullscreen_controller.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
+#include "components/full_restore/full_restore_utils.h"
 #include "components/policy/core/browser/policy_conversions.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
@@ -201,8 +200,7 @@ int AccessArray(const volatile int arr[], const volatile int* index) {
   return arr[*index];
 }
 
-std::unique_ptr<base::ListValue> GetHostPermissions(const Extension* ext,
-                                                    bool effective_perm) {
+base::ListValue GetHostPermissions(const Extension* ext, bool effective_perm) {
   const PermissionsData* permissions_data = ext->permissions_data();
 
   const URLPatternSet* pattern_set = nullptr;
@@ -214,20 +212,20 @@ std::unique_ptr<base::ListValue> GetHostPermissions(const Extension* ext,
     pattern_set = &permissions_data->active_permissions().explicit_hosts();
   }
 
-  auto permissions = std::make_unique<base::ListValue>();
+  base::ListValue permissions;
   for (const auto& perm : *pattern_set)
-    permissions->AppendString(perm.GetAsString());
+    permissions.AppendString(perm.GetAsString());
 
   return permissions;
 }
 
-std::unique_ptr<base::ListValue> GetAPIPermissions(const Extension* ext) {
-  auto permissions = std::make_unique<base::ListValue>();
+base::ListValue GetAPIPermissions(const Extension* ext) {
+  base::ListValue permissions;
   std::set<std::string> perm_list =
       ext->permissions_data()->active_permissions().GetAPIsAsStrings();
   for (std::set<std::string>::const_iterator perm = perm_list.begin();
        perm != perm_list.end(); ++perm) {
-    permissions->AppendString(*perm);
+    permissions.AppendString(*perm);
   }
   return permissions;
 }
@@ -342,6 +340,11 @@ api::autotest_private::AppType GetAppType(apps::mojom::AppType type) {
       return api::autotest_private::AppType::APP_TYPE_REMOTE;
     case apps::mojom::AppType::kBorealis:
       return api::autotest_private::AppType::APP_TYPE_BOREALIS;
+    case apps::mojom::AppType::kStandaloneBrowserExtension:
+      // Intentionally fall-through for now.
+      // TODO(https://crbug.com/1225848): Figure out appropriate behavior for
+      // Lacros-hosted chrome-apps.
+      break;
   }
   NOTREACHED();
   return api::autotest_private::AppType::APP_TYPE_NONE;
@@ -510,6 +513,8 @@ std::string SetWhitelistedPref(Profile* profile,
     DCHECK(value.is_bool());
   } else if (pref_name == plugin_vm::prefs::kPluginVmMicAllowed) {
     DCHECK(value.is_bool());
+  } else if (pref_name == plugin_vm::prefs::kPluginVmDataCollectionAllowed) {
+    DCHECK(value.is_bool());
   } else {
     return "The pref " + pref_name + " is not whitelisted.";
   }
@@ -545,9 +550,9 @@ chromeos::WindowStateType GetExpectedWindowState(
     case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTFULLSCREEN:
       return chromeos::WindowStateType::kFullscreen;
     case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTSNAPLEFT:
-      return chromeos::WindowStateType::kLeftSnapped;
+      return chromeos::WindowStateType::kPrimarySnapped;
     case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTSNAPRIGHT:
-      return chromeos::WindowStateType::kRightSnapped;
+      return chromeos::WindowStateType::kSecondarySnapped;
     default:
       NOTREACHED();
       return chromeos::WindowStateType::kNormal;
@@ -565,9 +570,9 @@ ash::WMEventType ToWMEventType(api::autotest_private::WMEventType event_type) {
     case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTFULLSCREEN:
       return ash::WMEventType::WM_EVENT_FULLSCREEN;
     case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTSNAPLEFT:
-      return ash::WMEventType::WM_EVENT_SNAP_LEFT;
+      return ash::WMEventType::WM_EVENT_SNAP_PRIMARY;
     case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTSNAPRIGHT:
-      return ash::WMEventType::WM_EVENT_SNAP_RIGHT;
+      return ash::WMEventType::WM_EVENT_SNAP_SECONDARY;
     default:
       NOTREACHED();
       return ash::WMEventType::WM_EVENT_NORMAL;
@@ -590,10 +595,10 @@ api::autotest_private::WindowStateType ToWindowStateType(
     case chromeos::WindowStateType::kFullscreen:
       return api::autotest_private::WindowStateType::
           WINDOW_STATE_TYPE_FULLSCREEN;
-    case chromeos::WindowStateType::kLeftSnapped:
+    case chromeos::WindowStateType::kPrimarySnapped:
       return api::autotest_private::WindowStateType::
           WINDOW_STATE_TYPE_LEFTSNAPPED;
-    case chromeos::WindowStateType::kRightSnapped:
+    case chromeos::WindowStateType::kSecondarySnapped:
       return api::autotest_private::WindowStateType::
           WINDOW_STATE_TYPE_RIGHTSNAPPED;
     case chromeos::WindowStateType::kPip:
@@ -1174,8 +1179,8 @@ ExtensionFunction::ResponseAction AutotestPrivateLoginStatusFunction::Run() {
   // default_screen_locker()->locked() is set when the UI is ready, so this
   // tells us both views based lockscreen UI and screenlocker are ready.
   const bool is_screen_locked =
-      !!chromeos::ScreenLocker::default_screen_locker() &&
-      chromeos::ScreenLocker::default_screen_locker()->locked();
+      !!ash::ScreenLocker::default_screen_locker() &&
+      ash::ScreenLocker::default_screen_locker()->locked();
 
   if (user_manager) {
     result->SetBoolean("isLoggedIn", user_manager->IsUserLoggedIn());
@@ -1289,7 +1294,7 @@ AutotestPrivateGetExtensionsInfoFunction::Run() {
   ExtensionActionManager* extension_action_manager =
       ExtensionActionManager::Get(browser_context());
 
-  auto extensions_values = std::make_unique<base::ListValue>();
+  base::ListValue extensions_values;
   ExtensionList all;
   all.insert(all.end(), extensions.begin(), extensions.end());
   all.insert(all.end(), disabled_extensions.begin(), disabled_extensions.end());
@@ -1308,11 +1313,11 @@ AutotestPrivateGetExtensionsInfoFunction::Run() {
     extension_value->SetString(
         "optionsUrl", OptionsPageInfo::GetOptionsPage(extension).spec());
 
-    extension_value->Set("hostPermissions",
-                         GetHostPermissions(extension, false));
-    extension_value->Set("effectiveHostPermissions",
-                         GetHostPermissions(extension, true));
-    extension_value->Set("apiPermissions", GetAPIPermissions(extension));
+    extension_value->SetKey("hostPermissions",
+                            GetHostPermissions(extension, false));
+    extension_value->SetKey("effectiveHostPermissions",
+                            GetHostPermissions(extension, true));
+    extension_value->SetKey("apiPermissions", GetAPIPermissions(extension));
 
     ManifestLocation location = extension->location();
     extension_value->SetBoolean("isComponent",
@@ -1331,12 +1336,12 @@ AutotestPrivateGetExtensionsInfoFunction::Run() {
         "hasPageAction",
         action && action->action_type() == ActionInfo::TYPE_PAGE);
 
-    extensions_values->Append(std::move(extension_value));
+    extensions_values.Append(std::move(extension_value));
   }
 
   std::unique_ptr<base::DictionaryValue> return_value(
       new base::DictionaryValue);
-  return_value->Set("extensions", std::move(extensions_values));
+  return_value->SetKey("extensions", std::move(extensions_values));
   return RespondNow(
       OneArgument(base::Value::FromUniquePtrValue(std::move(return_value))));
 }
@@ -1824,8 +1829,7 @@ AutotestPrivateWaitForSystemWebAppsInstallFunction::
 ExtensionFunction::ResponseAction
 AutotestPrivateWaitForSystemWebAppsInstallFunction::Run() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  web_app::WebAppProviderBase* provider =
-      web_app::WebAppProviderBase::GetProviderBase(profile);
+  web_app::WebAppProvider* provider = web_app::WebAppProvider::Get(profile);
 
   if (!provider)
     return RespondNow(Error("Web Apps are not available for profile."));
@@ -1851,8 +1855,7 @@ AutotestPrivateGetRegisteredSystemWebAppsFunction::
 ExtensionFunction::ResponseAction
 AutotestPrivateGetRegisteredSystemWebAppsFunction::Run() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  web_app::WebAppProviderBase* provider =
-      web_app::WebAppProviderBase::GetProviderBase(profile);
+  web_app::WebAppProvider* provider = web_app::WebAppProvider::Get(profile);
 
   if (!provider)
     return RespondNow(Error("Web Apps are not available for profile."));
@@ -1862,9 +1865,9 @@ AutotestPrivateGetRegisteredSystemWebAppsFunction::Run() {
   for (const auto& type_and_info :
        provider->system_web_app_manager().GetRegisteredSystemAppsForTesting()) {
     api::autotest_private::SystemApp system_app;
-    web_app::SystemAppInfo info = type_and_info.second;
-    system_app.internal_name = info.internal_name;
-    system_app.url = info.install_url.GetOrigin().spec();
+    web_app::SystemWebAppDelegate* delegate = type_and_info.second.get();
+    system_app.internal_name = delegate->GetInternalName();
+    system_app.url = delegate->GetInstallUrl().GetOrigin().spec();
     result.push_back(std::move(system_app));
   }
 
@@ -1886,8 +1889,7 @@ AutotestPrivateIsSystemWebAppOpenFunction::
 ExtensionFunction::ResponseAction
 AutotestPrivateIsSystemWebAppOpenFunction::Run() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  web_app::WebAppProviderBase* provider =
-      web_app::WebAppProviderBase::GetProviderBase(profile);
+  web_app::WebAppProvider* provider = web_app::WebAppProvider::Get(profile);
 
   if (!provider)
     return RespondNow(Error("Web Apps are not available for profile."));
@@ -1975,7 +1977,7 @@ AutotestPrivateLaunchSystemWebAppFunction::Run() {
   absl::optional<web_app::SystemAppType> app_type;
   for (const auto& type_and_info :
        provider->system_web_app_manager().GetRegisteredSystemAppsForTesting()) {
-    if (type_and_info.second.internal_name == params->app_name) {
+    if (type_and_info.second->GetInternalName() == params->app_name) {
       app_type = type_and_info.first;
       break;
     }
@@ -1986,6 +1988,7 @@ AutotestPrivateLaunchSystemWebAppFunction::Run() {
   web_app::SystemAppLaunchParams swa_params;
   swa_params.url = GURL(params->url);
   web_app::LaunchSystemWebAppAsync(profile, *app_type, swa_params);
+  web_app::FlushSystemWebAppLaunchesForTesting(profile);
 
   return RespondNow(NoArguments());
 }
@@ -2278,10 +2281,6 @@ AutotestPrivateShowPluginVMInstallerFunction::Run() {
   DVLOG(1) << "AutotestPrivateShowPluginVMInstallerFunction";
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  plugin_vm::PluginVmInstallerFactory::GetForProfile(profile)
-      ->SetFreeDiskSpaceForTesting(
-          plugin_vm::PluginVmInstallerFactory::GetForProfile(profile)
-              ->RequiredFreeDiskSpace());
   plugin_vm::ShowPluginVmInstallerView(profile);
 
   return RespondNow(NoArguments());
@@ -3825,6 +3824,12 @@ AutotestPrivateGetAppWindowListFunction::Run() {
                    << " (ID: " << window->GetId()
                    << ") isn't available even though it is an ARC window.";
       }
+
+      std::string* app_id = window->GetProperty(full_restore::kAppIdKey);
+      if (app_id) {
+        window_info.full_restore_window_app_id =
+            std::make_unique<std::string>(*app_id);
+      }
     }
 
     // Frame information
@@ -3944,11 +3949,11 @@ AutotestPrivateSetAppWindowStateFunction::Run() {
 
   // TODO(crbug.com/990713): Make WMEvent trigger split view in tablet mode.
   if (ash::TabletMode::Get()->InTabletMode()) {
-    if (expected_state == chromeos::WindowStateType::kLeftSnapped) {
+    if (expected_state == chromeos::WindowStateType::kPrimarySnapped) {
       ash::SplitViewTestApi().SnapWindow(
           window, ash::SplitViewTestApi::SnapPosition::LEFT);
       return RespondLater();
-    } else if (expected_state == chromeos::WindowStateType::kRightSnapped) {
+    } else if (expected_state == chromeos::WindowStateType::kSecondarySnapped) {
       ash::SplitViewTestApi().SnapWindow(
           window, ash::SplitViewTestApi::SnapPosition::RIGHT);
       return RespondLater();
@@ -4086,8 +4091,7 @@ class AutotestPrivateInstallPWAForCurrentURLFunction::PWARegistrarObserver
   PWARegistrarObserver(Profile* profile,
                        base::OnceCallback<void(const web_app::AppId&)> callback)
       : callback_(std::move(callback)) {
-    observation_.Observe(
-        &web_app::WebAppProviderBase::GetProviderBase(profile)->registrar());
+    observation_.Observe(&web_app::WebAppProvider::Get(profile)->registrar());
   }
   ~PWARegistrarObserver() override {}
 
@@ -4097,7 +4101,8 @@ class AutotestPrivateInstallPWAForCurrentURLFunction::PWARegistrarObserver
   }
 
  private:
-  base::ScopedObservation<web_app::AppRegistrar, web_app::AppRegistrarObserver>
+  base::ScopedObservation<web_app::WebAppRegistrar,
+                          web_app::AppRegistrarObserver>
       observation_{this};
   base::OnceCallback<void(const web_app::AppId&)> callback_;
 
@@ -4681,6 +4686,64 @@ ExtensionFunction::ResponseAction AutotestPrivatePinShelfIconFunction::Run() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateSetShelfIconPinFunction
+////////////////////////////////////////////////////////////////////////////////
+AutotestPrivateSetShelfIconPinFunction::
+    AutotestPrivateSetShelfIconPinFunction() = default;
+AutotestPrivateSetShelfIconPinFunction::
+    ~AutotestPrivateSetShelfIconPinFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateSetShelfIconPinFunction::Run() {
+  std::unique_ptr<api::autotest_private::SetShelfIconPin::Params> params(
+      api::autotest_private::SetShelfIconPin::Params::Create(*args_));
+
+  ChromeShelfController* const controller = ChromeShelfController::instance();
+  if (!controller)
+    return RespondNow(Error("Controller not available"));
+
+  const std::vector<api::autotest_private::ShelfIconPinUpdateParam>&
+      update_params = params->update_params;
+
+  // Save the app IDs causing errors.
+  std::vector<std::string> problematic_app_ids;
+
+  for (const auto& update_param : update_params) {
+    const std::string& app_id = update_param.app_id;
+    if (!controller->AllowedToSetAppPinState(app_id, update_param.pinned))
+      problematic_app_ids.push_back(app_id);
+  }
+
+  if (!problematic_app_ids.empty()) {
+    return RespondNow(
+        Error(base::StrCat({"Unable to update pin state: ",
+                            base::JoinString(problematic_app_ids, ",")})));
+  }
+
+  // Save the ids of the apps whose pin states are updated. Note that the apps
+  // which reach the target pin states before api function execution are not
+  // included in `updated_apps`.
+  std::vector<std::string> updated_apps;
+
+  for (const auto& update_param : update_params) {
+    const std::string& app_id = update_param.app_id;
+
+    // Already reach the target pin state. No op.
+    if (update_param.pinned == controller->IsAppPinned(app_id))
+      continue;
+
+    if (update_param.pinned)
+      controller->PinAppWithID(app_id);
+    else
+      controller->UnpinAppWithID(app_id);
+    updated_apps.push_back(app_id);
+  }
+
+  return RespondNow(ArgumentList(
+      api::autotest_private::SetShelfIconPin::Results::Create(updated_apps)));
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // AutotestPrivateGetScrollableShelfInfoForStateFunction
 ////////////////////////////////////////////////////////////////////////////////
 AutotestPrivateGetScrollableShelfInfoForStateFunction::
@@ -4757,6 +4820,8 @@ AutotestPrivateGetShelfUIInfoForStateFunction::Run() {
     scrollable_shelf_ui_info.right_arrow_bounds =
         ToBoundsDictionary(fetched_info.right_arrow_bounds);
     scrollable_shelf_ui_info.is_animating = fetched_info.is_animating;
+    scrollable_shelf_ui_info.icons_under_animation =
+        fetched_info.icons_under_animation;
     scrollable_shelf_ui_info.is_overflow = fetched_info.is_overflow;
     scrollable_shelf_ui_info.icons_bounds_in_screen =
         ToBoundsDictionaryList(fetched_info.icons_bounds_in_screen);

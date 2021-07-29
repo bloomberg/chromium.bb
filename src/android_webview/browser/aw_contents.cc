@@ -61,13 +61,13 @@
 #include "base/supports_user_data.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/android_autofill/android/autofill_provider_android.h"
 #include "components/android_autofill/browser/android_autofill_manager.h"
+#include "components/android_autofill/browser/autofill_provider_android.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
-#include "components/safe_browsing/core/features.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "content/public/browser/android/child_process_importance.h"
@@ -1131,7 +1131,7 @@ void AwContents::SetBackgroundColor(JNIEnv* env,
                                     const JavaParamRef<jobject>& obj,
                                     jint color) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  render_view_host_ext_->SetBackgroundColor(color);
+  web_contents_->SetPageBaseBackgroundColor(color);
 }
 
 void AwContents::ZoomBy(JNIEnv* env,

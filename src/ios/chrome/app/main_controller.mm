@@ -29,13 +29,14 @@
 #include "components/prefs/ios/pref_observer_bridge.h"
 #include "components/prefs/pref_change_registrar.h"
 #import "components/previous_session_info/previous_session_info.h"
-#include "components/ukm/ios/features.h"
 #include "components/web_resource/web_resource_pref_names.h"
 #include "ios/chrome/app/app_metrics_app_state_agent.h"
 #import "ios/chrome/app/application_delegate/metrics_mediator.h"
 #import "ios/chrome/app/blocking_scene_commands.h"
 #import "ios/chrome/app/content_suggestions_scheduler_app_state_agent.h"
 #import "ios/chrome/app/deferred_initialization_runner.h"
+#import "ios/chrome/app/enterprise_app_agent.h"
+#import "ios/chrome/app/first_run_app_state_agent.h"
 #import "ios/chrome/app/memory_monitor.h"
 #import "ios/chrome/app/safe_mode_app_state_agent.h"
 #import "ios/chrome/app/spotlight/spotlight_manager.h"
@@ -94,7 +95,6 @@
 #import "ios/chrome/browser/ui/appearance/appearance_customization.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
-#import "ios/chrome/browser/ui/first_run/first_run_util.h"
 #import "ios/chrome/browser/ui/first_run/welcome_to_chrome_view_controller.h"
 #import "ios/chrome/browser/ui/main/browser_view_wrangler.h"
 #import "ios/chrome/browser/ui/main/scene_delegate.h"
@@ -364,6 +364,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 // - StartupInformation
 @synthesize isColdStart = _isColdStart;
 @synthesize appLaunchTime = _appLaunchTime;
+@synthesize isFirstRun = _isFirstRun;
 
 #pragma mark - Application lifecycle
 
@@ -417,7 +418,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   _chromeMain = [ChromeMainStarter startChromeMain];
 
   // Initialize the ChromeBrowserProvider.
-  ios::GetChromeBrowserProvider()->Initialize();
+  ios::GetChromeBrowserProvider().Initialize();
 
   // If the user is interacting, crashes affect the user experience. Start
   // reporting as soon as possible.
@@ -472,19 +473,12 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // browser state.
   BOOL needRestoration = NO;
   if (isPostCrashLaunch) {
-    NSSet<NSString*>* sessions = nil;
-    if (@available(ios 13, *)) {
-      sessions =
-          [[PreviousSessionInfo sharedInstance] connectedSceneSessionsIDs];
-    } else {
-      sessions = [NSSet setWithObjects:SessionIdentifierForScene(nil), nil];
-    }
-
+    NSSet<NSString*>* sessions =
+        [[PreviousSessionInfo sharedInstance] connectedSceneSessionsIDs];
     needRestoration = [CrashRestoreHelper moveAsideSessions:sessions
                                             forBrowserState:chromeBrowserState];
   }
-  if (!base::ios::IsMultipleScenesSupported() &&
-      base::ios::IsMultiwindowSupported()) {
+  if (!base::ios::IsMultipleScenesSupported()) {
     NSSet<NSString*>* previousSessions =
         [PreviousSessionInfo sharedInstance].connectedSceneSessionsIDs;
     DCHECK(previousSessions.count <= 1);
@@ -553,7 +547,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
       logLaunchMetricsWithStartupInformation:self
                              connectedScenes:self.appState.connectedScenes];
 
-  ios::GetChromeBrowserProvider()->GetOverridesProvider()->InstallOverrides();
+  ios::GetChromeBrowserProvider().GetOverridesProvider()->InstallOverrides();
 
   [self scheduleLowPriorityStartupTasks];
 
@@ -588,11 +582,24 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 - (void)appState:(AppState*)appState
     firstSceneHasInitializedUI:(SceneState*)sceneState {
   DCHECK(self.appState.initStage > InitStageSafeMode);
+
+  if (self.appState.initStage <= InitStageNormalUI) {
+    return;
+  }
+
+  // TODO(crbug.com/1213955): Pass the scene to this method to make sure that
+  // the chosen scene is initialized.
   [self startUpAfterFirstWindowCreated];
 }
 
 - (void)appState:(AppState*)appState
     didTransitionFromInitStage:(InitStage)previousInitStage {
+  // TODO(crbug.com/1213955): Remove this once the bug fixed.
+  if (previousInitStage == InitStageNormalUI &&
+      appState.firstSceneHasInitializedUI) {
+    [self startUpAfterFirstWindowCreated];
+  }
+
   switch (appState.initStage) {
     case InitStageStart:
       [appState queueTransitionToNextInitStage];
@@ -602,6 +609,8 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
       break;
     case InitStageSafeMode:
       [self addPostSafeModeAgents];
+      break;
+    case InitStageEnterprise:
       break;
     case InitStageBrowserObjectsForBackgroundHandlers:
       [self startUpBrowserBackgroundInitialization];
@@ -614,11 +623,13 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
       [self startUpBrowserForegroundInitialization];
       [appState queueTransitionToNextInitStage];
       break;
+    case InitStageNormalUI:
+      // Scene controllers use this stage to create the normal UI if needed.
+      // There is no specific agent (other than SceneController) handling
+      // this stage.
+      [appState queueTransitionToNextInitStage];
+      break;
     case InitStageFirstRun:
-      // TODO(crbug.com/1178821): Move this to the FRE agent.
-      if (!ShouldPresentFirstRunExperience()) {
-        [appState queueTransitionToNextInitStage];
-      }
       break;
     case InitStageFinal:
       break;
@@ -627,7 +638,10 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 - (void)addPostSafeModeAgents {
   [self.appState addAgent:[[ContentSuggestionsSchedulerAppAgent alloc] init]];
+  [self.appState addAgent:[[EnterpriseAppAgent alloc] init]];
   [self.appState addAgent:[[IncognitoUsageAppStateAgent alloc] init]];
+
+  [self.appState addAgent:[[FirstRunAppAgent alloc] init]];
 }
 
 #pragma mark - Property implementation.
@@ -664,14 +678,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 #pragma mark - StartupInformation implementation.
 
-- (BOOL)isPresentingFirstRunUI {
-  BOOL isPresentingFirstRunUI = NO;
-  for (SceneState* scene in self.appState.connectedScenes) {
-    isPresentingFirstRunUI |= scene.presentingFirstRunUI;
-  }
-
-  return isPresentingFirstRunUI;
-}
 
 - (FirstUserActionRecorder*)firstUserActionRecorder {
   return _firstUserActionRecorder.get();
@@ -755,7 +761,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
       enqueueBlockNamed:kSendQueuedFeedback
                   block:^{
                     ios::GetChromeBrowserProvider()
-                        ->GetUserFeedbackProvider()
+                        .GetUserFeedbackProvider()
                         ->Synchronize();
                   }];
 }
@@ -791,16 +797,11 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   _localStatePrefObserverBridge->ObserveChangesForPreference(
       metrics::prefs::kMetricsReportingEnabled,
       &_localStatePrefChangeRegistrar);
-  if (!base::FeatureList::IsEnabled(kUmaCellular)) {
-    _localStatePrefObserverBridge->ObserveChangesForPreference(
-        prefs::kMetricsReportingWifiOnly, &_localStatePrefChangeRegistrar);
-  }
 
   // Calls the onPreferenceChanged function in case there was
   // a change to the observed preferences before the observer
   // bridge was set up.
   [self onPreferenceChanged:metrics::prefs::kMetricsReportingEnabled];
-  [self onPreferenceChanged:prefs::kMetricsReportingWifiOnly];
 
   // Track changes to default search engine.
   TemplateURLService* service =
@@ -818,7 +819,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
                                                 ->GetSharedURLLoaderFactory();
                     const bool is_first_run = FirstRun::IsChromeFirstRun();
                     ios::GetChromeBrowserProvider()
-                        ->GetAppDistributionProvider()
+                        .GetAppDistributionProvider()
                         ->ScheduleDistributionNotifications(URLLoaderFactory,
                                                             is_first_run);
 
@@ -827,7 +828,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
                             metrics::prefs::kInstallDate));
 
                     ios::GetChromeBrowserProvider()
-                        ->GetAppDistributionProvider()
+                        .GetAppDistributionProvider()
                         ->InitializeFirebase(install_date, is_first_run);
                   }];
 }
@@ -916,7 +917,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   DCHECK(!_memoryDebuggerManager);
   DCHECK(experimental_flags::IsMemoryDebuggingEnabled());
   _memoryDebuggerManager = [[MemoryDebuggerManager alloc]
-      initWithView:self.window
+      initWithView:self.appState.foregroundActiveScene.window
              prefs:GetApplicationContext()->GetLocalState()];
 }
 
@@ -930,13 +931,13 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
                       return;
                     }
                     ios::GetChromeBrowserProvider()
-                        ->GetMailtoHandlerProvider()
+                        .GetMailtoHandlerProvider()
                         ->PrepareMailtoHandling(
                             strongSelf.appState.mainBrowserState);
 
                     [strongSelf registerCleanupClosure:base::BindOnce([] {
                                   ios::GetChromeBrowserProvider()
-                                      ->GetMailtoHandlerProvider()
+                                      .GetMailtoHandlerProvider()
                                       ->RemoveMailtoHandling();
                                 })];
                   }];
@@ -1006,12 +1007,9 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
   breadcrumbs::BreadcrumbPersistentStorageManager* persistentStorageManager =
       GetApplicationContext()->GetBreadcrumbPersistentStorageManager();
+  DCHECK(persistentStorageManager);
 
-  // Application context can return a null persistent storage manager if
-  // breadcrumbs are not being persisted.
-  if (persistentStorageManager) {
-    breadcrumbService->StartPersisting(persistentStorageManager);
-  }
+  breadcrumbService->StartPersisting(persistentStorageManager);
 
   // Get stored persistent breadcrumbs from last run to set on crash reports.
   persistentStorageManager->GetStoredEvents(
@@ -1117,8 +1115,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 - (void)onPreferenceChanged:(const std::string&)preferenceName {
   // Turn on or off metrics & crash reporting when either preference changes.
-  if (preferenceName == metrics::prefs::kMetricsReportingEnabled ||
-      preferenceName == prefs::kMetricsReportingWifiOnly) {
+  if (preferenceName == metrics::prefs::kMetricsReportingEnabled) {
     [_metricsMediator updateMetricsStateBasedOnPrefsUserTriggered:YES];
   }
 }
@@ -1196,13 +1193,11 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   BOOL willShowActivityIndicator = NO;
   BOOL didShowActivityIndicator = NO;
 
-  if (@available(iOS 13, *)) {
-    // TODO(crbug.com/632772): Visited links clearing doesn't require disabling
-    // web usage with iOS 13. Stop disabling web usage once iOS 12 is not
-    // supported.
-    willShowActivityIndicator = disableWebUsageDuringRemoval;
-    disableWebUsageDuringRemoval = NO;
-  }
+  // TODO(crbug.com/632772): Visited links clearing doesn't require disabling
+  // web usage with iOS 13. Stop disabling web usage once iOS 12 is not
+  // supported.
+  willShowActivityIndicator = disableWebUsageDuringRemoval;
+  disableWebUsageDuringRemoval = NO;
 
   for (SceneState* sceneState in self.appState.connectedScenes) {
     // Assumes all scenes share |browserState|.
@@ -1265,8 +1260,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 #pragma mark - BlockingSceneCommands
 
-- (void)activateBlockingScene:(UIScene*)requestingScene
-    API_AVAILABLE(ios(13.0)) {
+- (void)activateBlockingScene:(UIScene*)requestingScene {
   id<UIBlockerTarget> uiBlocker = self.appState.currentUIBlocker;
   if (!uiBlocker) {
     return;

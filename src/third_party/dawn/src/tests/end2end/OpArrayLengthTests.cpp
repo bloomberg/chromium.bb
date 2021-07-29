@@ -53,20 +53,15 @@ class OpArrayLengthTest : public DawnTest {
         // Common shader code to use these buffers in shaders, assuming they are in bindgroup index
         // 0.
         mShaderInterface = R"(
-            // TODO(crbug.com/tint/386): Use the same struct.
-            [[block]] struct DataBuffer1 {
-                data : [[stride(4)]] array<f32>;
-            };
-
-            [[block]] struct DataBuffer2 {
+            [[block]] struct DataBuffer {
                 data : [[stride(4)]] array<f32>;
             };
 
             // The length should be 1 because the buffer is 4-byte long.
-            [[group(0), binding(0)]] var<storage> buffer1 : [[access(read)]] DataBuffer1;
+            [[group(0), binding(0)]] var<storage, read> buffer1 : DataBuffer;
 
             // The length should be 64 because the buffer is 256 bytes long.
-            [[group(0), binding(1)]] var<storage> buffer2 : [[access(read)]] DataBuffer2;
+            [[group(0), binding(1)]] var<storage, read> buffer2 : DataBuffer;
 
             // The length should be (512 - 16*4) / 8 = 56 because the buffer is 512 bytes long
             // and the structure is 8 bytes big.
@@ -79,7 +74,7 @@ class OpArrayLengthTest : public DawnTest {
                 [[size(64)]] garbage : mat4x4<f32>;
                 data : [[stride(8)]] array<Buffer3Data>;
             };
-            [[group(0), binding(2)]] var<storage> buffer3 : [[access(read)]] Buffer3;
+            [[group(0), binding(2)]] var<storage, read> buffer3 : Buffer3;
         )";
 
         // See comments in the shader for an explanation of these values
@@ -98,10 +93,10 @@ class OpArrayLengthTest : public DawnTest {
 
 // Test OpArrayLength in the compute stage
 TEST_P(OpArrayLengthTest, Compute) {
-    // TODO(cwallez@chromium.org): The computations for length() of unsized buffer is broken on
-    // Nvidia OpenGL. See https://bugs.chromium.org/p/dawn/issues/detail?id=197
-    DAWN_SKIP_TEST_IF(IsNvidia() && IsOpenGL());
-    DAWN_SKIP_TEST_IF(IsNvidia() && IsOpenGLES());
+    // TODO(crbug.com/dawn/197): The computations for length() of unsized buffer is broken on
+    // Nvidia OpenGL.
+    DAWN_SUPPRESS_TEST_IF(IsNvidia() && (IsOpenGL() || IsOpenGLES()));
+
     // Create a buffer to hold the result sizes and create a bindgroup for it.
     wgpu::BufferDescriptor bufferDesc;
     bufferDesc.usage = wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopySrc;
@@ -123,19 +118,19 @@ TEST_P(OpArrayLengthTest, Compute) {
 
     wgpu::ComputePipelineDescriptor pipelineDesc;
     pipelineDesc.layout = pl;
-    pipelineDesc.computeStage.entryPoint = "main";
-    pipelineDesc.computeStage.module = utils::CreateShaderModule(device, (R"(
+    pipelineDesc.compute.entryPoint = "main";
+    pipelineDesc.compute.module = utils::CreateShaderModule(device, (R"(
         [[block]] struct ResultBuffer {
             data : [[stride(4)]] array<u32, 3>;
         };
-        [[group(1), binding(0)]] var<storage> result : [[access(read_write)]] ResultBuffer;
+        [[group(1), binding(0)]] var<storage, read_write> result : ResultBuffer;
         )" + mShaderInterface + R"(
-        [[stage(compute)]] fn main() {
-            result.data[0] = arrayLength(buffer1.data);
-            result.data[1] = arrayLength(buffer2.data);
-            result.data[2] = arrayLength(buffer3.data);
+        [[stage(compute), workgroup_size(1)]] fn main() {
+            result.data[0] = arrayLength(&buffer1.data);
+            result.data[1] = arrayLength(&buffer2.data);
+            result.data[2] = arrayLength(&buffer3.data);
         })")
-                                                                             .c_str());
+                                                                        .c_str());
     wgpu::ComputePipeline pipeline = device.CreateComputePipeline(&pipelineDesc);
 
     // Run a single instance of the compute shader
@@ -155,10 +150,9 @@ TEST_P(OpArrayLengthTest, Compute) {
 
 // Test OpArrayLength in the fragment stage
 TEST_P(OpArrayLengthTest, Fragment) {
-    // TODO(cwallez@chromium.org): The computations for length() of unsized buffer is broken on
-    // Nvidia OpenGL. See https://bugs.chromium.org/p/dawn/issues/detail?id=197
-    DAWN_SKIP_TEST_IF(IsNvidia() && IsOpenGL());
-    DAWN_SKIP_TEST_IF(IsNvidia() && IsOpenGLES());
+    // TODO(crbug.com/dawn/197): The computations for length() of unsized buffer is broken on
+    // Nvidia OpenGL.
+    DAWN_SUPPRESS_TEST_IF(IsNvidia() && (IsOpenGL() || IsOpenGLES()));
 
     utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, 1, 1);
 
@@ -172,21 +166,21 @@ TEST_P(OpArrayLengthTest, Fragment) {
     wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, (mShaderInterface + R"(
         [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
             var fragColor : vec4<f32>;
-            fragColor.r = f32(arrayLength(buffer1.data)) / 255.0;
-            fragColor.g = f32(arrayLength(buffer2.data)) / 255.0;
-            fragColor.b = f32(arrayLength(buffer3.data)) / 255.0;
+            fragColor.r = f32(arrayLength(&buffer1.data)) / 255.0;
+            fragColor.g = f32(arrayLength(&buffer2.data)) / 255.0;
+            fragColor.b = f32(arrayLength(&buffer3.data)) / 255.0;
             fragColor.a = 0.0;
             return fragColor;
         })")
                                                                         .c_str());
 
-    utils::ComboRenderPipelineDescriptor2 descriptor;
+    utils::ComboRenderPipelineDescriptor descriptor;
     descriptor.vertex.module = vsModule;
     descriptor.cFragment.module = fsModule;
     descriptor.primitive.topology = wgpu::PrimitiveTopology::PointList;
     descriptor.cTargets[0].format = renderPass.colorFormat;
     descriptor.layout = utils::MakeBasicPipelineLayout(device, &mBindGroupLayout);
-    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&descriptor);
+    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&descriptor);
 
     // "Draw" the lengths to the texture.
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
@@ -207,11 +201,10 @@ TEST_P(OpArrayLengthTest, Fragment) {
 
 // Test OpArrayLength in the vertex stage
 TEST_P(OpArrayLengthTest, Vertex) {
-    // TODO(cwallez@chromium.org): The computations for length() of unsized buffer is broken on
-    // Nvidia OpenGL. Also failing on all GLES (NV, Intel, SwANGLE). See
-    // https://bugs.chromium.org/p/dawn/issues/detail?id=197
-    DAWN_SKIP_TEST_IF(IsNvidia() && IsOpenGL());
-    DAWN_SKIP_TEST_IF(IsOpenGLES());
+    // TODO(crbug.com/dawn/197): The computations for length() of unsized buffer is broken on
+    // Nvidia OpenGL. Also failing on all GLES (NV, Intel, SwANGLE).
+    DAWN_SUPPRESS_TEST_IF(IsNvidia() && IsOpenGL());
+    DAWN_SUPPRESS_TEST_IF(IsOpenGLES());
 
     utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, 1, 1);
 
@@ -225,9 +218,9 @@ TEST_P(OpArrayLengthTest, Vertex) {
 
         [[stage(vertex)]] fn main() -> VertexOut {
             var output : VertexOut;
-            output.color.r = f32(arrayLength(buffer1.data)) / 255.0;
-            output.color.g = f32(arrayLength(buffer2.data)) / 255.0;
-            output.color.b = f32(arrayLength(buffer3.data)) / 255.0;
+            output.color.r = f32(arrayLength(&buffer1.data)) / 255.0;
+            output.color.g = f32(arrayLength(&buffer2.data)) / 255.0;
+            output.color.b = f32(arrayLength(&buffer3.data)) / 255.0;
             output.color.a = 0.0;
 
             output.position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
@@ -241,13 +234,13 @@ TEST_P(OpArrayLengthTest, Vertex) {
             return color;
         })");
 
-    utils::ComboRenderPipelineDescriptor2 descriptor;
+    utils::ComboRenderPipelineDescriptor descriptor;
     descriptor.vertex.module = vsModule;
     descriptor.cFragment.module = fsModule;
     descriptor.primitive.topology = wgpu::PrimitiveTopology::PointList;
     descriptor.cTargets[0].format = renderPass.colorFormat;
     descriptor.layout = utils::MakeBasicPipelineLayout(device, &mBindGroupLayout);
-    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&descriptor);
+    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&descriptor);
 
     // "Draw" the lengths to the texture.
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();

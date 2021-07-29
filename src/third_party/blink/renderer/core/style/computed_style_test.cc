@@ -22,7 +22,10 @@
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/html/html_body_element.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/style/clip_path_operation.h"
 #include "third_party/blink/renderer/core/style/shape_clip_path_operation.h"
 #include "third_party/blink/renderer/core/style/shape_value.h"
@@ -91,30 +94,11 @@ TEST_F(ComputedStyleTest, ClipPathEqual) {
 
 TEST_F(ComputedStyleTest, FocusRingWidth) {
   scoped_refptr<ComputedStyle> style = CreateComputedStyle();
-  if (::features::IsFormControlsRefreshEnabled()) {
-    style->SetOutlineStyleIsAuto(static_cast<bool>(OutlineIsAuto::kOn));
-    EXPECT_EQ(3, style->GetOutlineStrokeWidthForFocusRing());
-    style->SetEffectiveZoom(3.5);
-    style->SetOutlineWidth(4);
-    EXPECT_EQ(3.5, style->GetOutlineStrokeWidthForFocusRing());
-  } else {
-    style->SetEffectiveZoom(3.5);
-    style->SetOutlineStyle(EBorderStyle::kSolid);
-#if defined(OS_MAC)
-    EXPECT_EQ(3, style->GetOutlineStrokeWidthForFocusRing());
-#else
-    style->SetOutlineStyleIsAuto(static_cast<bool>(OutlineIsAuto::kOn));
-    static uint16_t outline_width = 4;
-    style->SetOutlineWidth(outline_width);
-
-    double expected_width = 3.5;
-    EXPECT_EQ(expected_width, style->GetOutlineStrokeWidthForFocusRing());
-
-    expected_width = 1.0;
-    style->SetEffectiveZoom(0.5);
-    EXPECT_EQ(expected_width, style->GetOutlineStrokeWidthForFocusRing());
-#endif
-  }
+  style->SetOutlineStyleIsAuto(static_cast<bool>(OutlineIsAuto::kOn));
+  EXPECT_EQ(3, style->GetOutlineStrokeWidthForFocusRing());
+  style->SetEffectiveZoom(3.5);
+  style->SetOutlineWidth(4);
+  EXPECT_EQ(3.5, style->GetOutlineStrokeWidthForFocusRing());
 }
 
 TEST_F(ComputedStyleTest, FocusRingOutset) {
@@ -122,15 +106,7 @@ TEST_F(ComputedStyleTest, FocusRingOutset) {
   style->SetOutlineStyle(EBorderStyle::kSolid);
   style->SetOutlineStyleIsAuto(static_cast<bool>(OutlineIsAuto::kOn));
   style->SetEffectiveZoom(4.75);
-  if (::features::IsFormControlsRefreshEnabled()) {
-    EXPECT_EQ(4, style->OutlineOutsetExtent());
-  } else {
-#if defined(OS_MAC)
-    EXPECT_EQ(4, style->OutlineOutsetExtent());
-#else
-    EXPECT_EQ(3, style->OutlineOutsetExtent());
-#endif
-  }
+  EXPECT_EQ(4, style->OutlineOutsetExtent());
 }
 
 TEST_F(ComputedStyleTest, SVGStackingContext) {
@@ -679,8 +655,6 @@ TEST_F(ComputedStyleTest, CustomPropertiesInheritance_StyleRecalc) {
 }
 
 TEST_F(ComputedStyleTest, ApplyColorSchemeLightOnDark) {
-  ScopedCSSColorSchemeUARenderingForTest scoped_ua_enabled(true);
-
   std::unique_ptr<DummyPageHolder> dummy_page_holder =
       std::make_unique<DummyPageHolder>(IntSize(0, 0), nullptr);
   Document& document = dummy_page_holder->GetDocument();
@@ -691,7 +665,7 @@ TEST_F(ComputedStyleTest, ApplyColorSchemeLightOnDark) {
   color_scheme_helper.SetPreferredColorScheme(
       mojom::blink::PreferredColorScheme::kDark);
   StyleResolverState state(document, *document.documentElement(),
-                           StyleRequest(initial.get()));
+                           StyleRecalcContext(), StyleRequest(initial.get()));
 
   scoped_refptr<ComputedStyle> style = CreateComputedStyle();
   state.SetStyle(style);
@@ -714,8 +688,6 @@ TEST_F(ComputedStyleTest, ApplyColorSchemeLightOnDark) {
 TEST_F(ComputedStyleTest, ApplyInternalLightDarkColor) {
   using css_test_helpers::ParseDeclarationBlock;
 
-  ScopedCSSColorSchemeUARenderingForTest scoped_ua_enabled(true);
-
   std::unique_ptr<DummyPageHolder> dummy_page_holder =
       std::make_unique<DummyPageHolder>(IntSize(0, 0), nullptr);
   Document& document = dummy_page_holder->GetDocument();
@@ -726,7 +698,7 @@ TEST_F(ComputedStyleTest, ApplyInternalLightDarkColor) {
   color_scheme_helper.SetPreferredColorScheme(
       mojom::blink::PreferredColorScheme::kDark);
   StyleResolverState state(document, *document.documentElement(),
-                           StyleRequest(initial.get()));
+                           StyleRecalcContext(), StyleRequest(initial.get()));
 
   scoped_refptr<ComputedStyle> style = CreateComputedStyle();
   state.SetStyle(style);
@@ -758,8 +730,6 @@ TEST_F(ComputedStyleTest, ApplyInternalLightDarkColor) {
 TEST_F(ComputedStyleTest, ApplyInternalLightDarkBackgroundImage) {
   using css_test_helpers::ParseDeclarationBlock;
 
-  ScopedCSSColorSchemeUARenderingForTest scoped_ua_enabled(true);
-
   std::unique_ptr<DummyPageHolder> dummy_page_holder =
       std::make_unique<DummyPageHolder>(IntSize(0, 0), nullptr);
   Document& document = dummy_page_holder->GetDocument();
@@ -770,7 +740,7 @@ TEST_F(ComputedStyleTest, ApplyInternalLightDarkBackgroundImage) {
   color_scheme_helper.SetPreferredColorScheme(
       mojom::blink::PreferredColorScheme::kDark);
   StyleResolverState state(document, *document.documentElement(),
-                           StyleRequest(initial.get()));
+                           StyleRecalcContext(), StyleRequest(initial.get()));
 
   scoped_refptr<ComputedStyle> style = CreateComputedStyle();
   state.SetStyle(style);
@@ -809,7 +779,7 @@ TEST_F(ComputedStyleTest, StrokeWidthZoomAndCalc) {
       document.GetStyleResolver().InitialStyleForElement();
 
   StyleResolverState state(document, *document.documentElement(),
-                           StyleRequest(initial.get()));
+                           StyleRecalcContext(), StyleRequest(initial.get()));
 
   scoped_refptr<ComputedStyle> style = CreateComputedStyle();
   style->SetEffectiveZoom(1.5);
@@ -924,6 +894,67 @@ TEST_F(ComputedStyleTest, InitialAndInheritedAndNonInheritedVariableNames) {
   EXPECT_TRUE(style->GetVariableNames().Contains("--e"));
 }
 
+TEST_F(ComputedStyleTest, GetVariableNamesCount_Invalidation) {
+  scoped_refptr<ComputedStyle> style = CreateComputedStyle();
+
+  EXPECT_EQ(style->GetVariableNamesCount(), 0u);
+
+  auto data = css_test_helpers::CreateVariableData("foo");
+  style->SetVariableData("--x", data, false);
+  EXPECT_EQ(style->GetVariableNamesCount(), 1u);
+
+  style->SetVariableData("--y", data, false);
+  EXPECT_EQ(style->GetVariableNamesCount(), 2u);
+
+  style->SetVariableData("--z", data, true);
+  EXPECT_EQ(style->GetVariableNamesCount(), 3u);
+}
+
+TEST_F(ComputedStyleTest, GetVariableNames_Invalidation) {
+  scoped_refptr<ComputedStyle> style = CreateComputedStyle();
+
+  auto data = css_test_helpers::CreateVariableData("foo");
+  style->SetVariableData("--x", data, false);
+  EXPECT_EQ(style->GetVariableNames().size(), 1u);
+  EXPECT_TRUE(style->GetVariableNames().Contains("--x"));
+
+  style->SetVariableData("--y", data, false);
+  EXPECT_EQ(style->GetVariableNames().size(), 2u);
+  EXPECT_TRUE(style->GetVariableNames().Contains("--x"));
+  EXPECT_TRUE(style->GetVariableNames().Contains("--y"));
+
+  style->SetVariableData("--z", data, true);
+  EXPECT_EQ(style->GetVariableNames().size(), 3u);
+  EXPECT_TRUE(style->GetVariableNames().Contains("--x"));
+  EXPECT_TRUE(style->GetVariableNames().Contains("--y"));
+  EXPECT_TRUE(style->GetVariableNames().Contains("--z"));
+}
+
+TEST_F(ComputedStyleTest, GetVariableNamesWithInitialData_Invalidation) {
+  using css_test_helpers::CreateLengthRegistration;
+
+  scoped_refptr<ComputedStyle> style = CreateComputedStyle();
+
+  {
+    PropertyRegistry* registry = MakeGarbageCollected<PropertyRegistry>();
+    registry->RegisterProperty("--x", *CreateLengthRegistration("--x", 1));
+    style->SetInitialData(StyleInitialData::Create(*registry));
+  }
+  EXPECT_EQ(style->GetVariableNames().size(), 1u);
+  EXPECT_TRUE(style->GetVariableNames().Contains("--x"));
+
+  // Not set StyleInitialData to something else.
+  {
+    PropertyRegistry* registry = MakeGarbageCollected<PropertyRegistry>();
+    registry->RegisterProperty("--y", *CreateLengthRegistration("--y", 2));
+    registry->RegisterProperty("--z", *CreateLengthRegistration("--z", 3));
+    style->SetInitialData(StyleInitialData::Create(*registry));
+  }
+  EXPECT_EQ(style->GetVariableNames().size(), 2u);
+  EXPECT_TRUE(style->GetVariableNames().Contains("--y"));
+  EXPECT_TRUE(style->GetVariableNames().Contains("--z"));
+}
+
 TEST_F(ComputedStyleTest, BorderWidthZoom) {
   std::unique_ptr<DummyPageHolder> dummy_page_holder =
       std::make_unique<DummyPageHolder>(IntSize(0, 0), nullptr);
@@ -932,7 +963,7 @@ TEST_F(ComputedStyleTest, BorderWidthZoom) {
       document.GetStyleResolver().InitialStyleForElement();
 
   StyleResolverState state(document, *document.documentElement(),
-                           StyleRequest(initial.get()));
+                           StyleRecalcContext(), StyleRequest(initial.get()));
 
   scoped_refptr<ComputedStyle> style = CreateComputedStyle();
   style->SetEffectiveZoom(2);
@@ -980,7 +1011,7 @@ TEST_F(ComputedStyleTest,
       document.GetStyleResolver().InitialStyleForElement();
 
   StyleResolverState state(document, *document.documentElement(),
-                           StyleRequest(initial.get()));
+                           StyleRecalcContext(), StyleRequest(initial.get()));
 
   scoped_refptr<ComputedStyle> style = CreateComputedStyle();
 
@@ -1020,7 +1051,7 @@ TEST_F(ComputedStyleTest, TextDecorationNotEqualRequiresRecomputeInkOverflow) {
       document.GetStyleResolver().InitialStyleForElement();
 
   StyleResolverState state(document, *document.documentElement(),
-                           StyleRequest(initial.get()));
+                           StyleRecalcContext(), StyleRequest(initial.get()));
 
   scoped_refptr<ComputedStyle> style = CreateComputedStyle();
 
@@ -1128,7 +1159,7 @@ TEST_F(ComputedStyleTest, ApplyInitialAnimationNameAndTransitionProperty) {
       document.GetStyleResolver().InitialStyleForElement();
 
   StyleResolverState state(document, *document.documentElement(),
-                           StyleRequest(initial.get()));
+                           StyleRecalcContext(), StyleRequest(initial.get()));
 
   scoped_refptr<ComputedStyle> style = CreateComputedStyle();
   state.SetStyle(style);
@@ -1184,6 +1215,81 @@ TEST_F(ComputedStyleTest, SvgMiscStyleShouldCompareValue) {
   TEST_STYLE_VALUE_NO_DIFF(FloodOpacity);
   TEST_STYLE_VALUE_NO_DIFF(LightingColor);
   TEST_STYLE_VALUE_NO_DIFF(BaselineShift);
+}
+
+TEST_F(ComputedStyleTest, ShouldApplyAnyContainment) {
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      std::make_unique<DummyPageHolder>(IntSize(0, 0), nullptr);
+  Document& document = dummy_page_holder->GetDocument();
+
+  auto* html = document.documentElement();
+  auto* body = document.body();
+  ASSERT_TRUE(html);
+  ASSERT_TRUE(body);
+
+  auto display_types = {CSSValueID::kInline,
+                        CSSValueID::kBlock,
+                        CSSValueID::kListItem,
+                        CSSValueID::kInlineBlock,
+                        CSSValueID::kTable,
+                        CSSValueID::kInlineTable,
+                        CSSValueID::kTableRowGroup,
+                        CSSValueID::kTableHeaderGroup,
+                        CSSValueID::kTableFooterGroup,
+                        CSSValueID::kTableRow,
+                        CSSValueID::kTableColumnGroup,
+                        CSSValueID::kTableColumn,
+                        CSSValueID::kTableCell,
+                        CSSValueID::kTableCaption,
+                        CSSValueID::kWebkitBox,
+                        CSSValueID::kWebkitInlineBox,
+                        CSSValueID::kFlex,
+                        CSSValueID::kInlineFlex,
+                        CSSValueID::kGrid,
+                        CSSValueID::kInlineGrid,
+                        CSSValueID::kContents,
+                        CSSValueID::kFlowRoot,
+                        CSSValueID::kNone,
+                        CSSValueID::kMath};
+
+  for (auto contain :
+       {CSSValueID::kNone, CSSValueID::kLayout, CSSValueID::kPaint,
+        CSSValueID::kSize, CSSValueID::kStyle}) {
+    html->SetInlineStyleProperty(CSSPropertyID::kContain,
+                                 getValueName(contain));
+    body->SetInlineStyleProperty(CSSPropertyID::kContain,
+                                 getValueName(contain));
+    for (auto html_display : display_types) {
+      html->SetInlineStyleProperty(CSSPropertyID::kDisplay, html_display);
+      for (auto body_display : display_types) {
+        body->SetInlineStyleProperty(CSSPropertyID::kDisplay, body_display);
+        document.View()->UpdateAllLifecyclePhasesForTest();
+
+        if (!html->GetLayoutObject()) {
+          EXPECT_TRUE(!html->GetComputedStyle());
+          continue;
+        }
+        EXPECT_EQ(html->GetLayoutObject()->ShouldApplyAnyContainment(),
+                  html->GetLayoutObject()->StyleRef().ShouldApplyAnyContainment(
+                      *html))
+            << "html contain:" << getValueName(contain)
+            << " display:" << getValueName(html_display);
+        if (!body->GetLayoutObject()) {
+          if (const auto* body_style = body->GetComputedStyle()) {
+            EXPECT_EQ(body_style->Display(), EDisplay::kContents);
+            EXPECT_EQ(body_style->ShouldApplyAnyContainment(*body),
+                      contain == CSSValueID::kStyle);
+          }
+          continue;
+        }
+        EXPECT_EQ(body->GetLayoutObject()->ShouldApplyAnyContainment(),
+                  body->GetLayoutObject()->StyleRef().ShouldApplyAnyContainment(
+                      *body))
+            << "body contain:" << getValueName(contain)
+            << " display:" << getValueName(body_display);
+      }
+    }
+  }
 }
 
 #if DCHECK_IS_ON()

@@ -58,8 +58,13 @@ enum PipelineStatus {
   // not exactly an 'error' per say.
   DEMUXER_ERROR_DETECTED_HLS = 22,
 
+  // Used when hardware context is reset (e.g. OS sleep/resume), where we should
+  // recreate the Renderer instead of failing the playback. See
+  // https://crbug.com/1208618
+  PIPELINE_ERROR_HARDWARE_CONTEXT_RESET = 23,
+
   // Must be equal to the largest value ever logged.
-  PIPELINE_STATUS_MAX = DEMUXER_ERROR_DETECTED_HLS,
+  PIPELINE_STATUS_MAX = PIPELINE_ERROR_HARDWARE_CONTEXT_RESET,
 };
 
 MEDIA_EXPORT absl::optional<PipelineStatus> StatusCodeToPipelineStatus(
@@ -78,43 +83,60 @@ MEDIA_EXPORT std::ostream& operator<<(std::ostream& out, PipelineStatus status);
 using PipelineStatusCB = base::RepeatingCallback<void(PipelineStatus)>;
 using PipelineStatusCallback = base::OnceCallback<void(PipelineStatus)>;
 
-template <typename DecoderTypeId>
-struct PipelineDecoderInfo {
-  bool is_platform_decoder = false;
-  bool has_decrypting_demuxer_stream = false;
-  DecoderTypeId decoder_type = DecoderTypeId::kUnknown;
+// Information on how an audio/video stream is encrypted.
+// Warning: Reported to UKM. Do not reuse or change existing values.
+// Note: A stream can be marked as clear (unencrypted) or encrypted in the
+// config. In a clear stream, all buffers must be clear. In an encrypted stream,
+// buffers can be clear or encrypted. The term "clear lead" generally indicates
+// the case where an encrypted stream starts with one or more clear buffers. In
+// implementation, since a playback can start from the middle of a stream, the
+// playback may not hit clear lead even if the stream has clear lead, so it'll
+// be reported as `kEncrypted`, which is okay for metrics' purpose.
+enum class EncryptionType {
+  kNone = 0,                    // No corresponding audio/video stream
+  kClear = 1,                   // Stream is clear (not encrypted)
+  kEncrypted = 2,               // Stream is encrypted without clear lead
+  kEncryptedWithClearLead = 3,  // Stream is encrypted but has clear lead
+  kMaxValue = kEncryptedWithClearLead,
 };
 
-using AudioDecoderInfo = PipelineDecoderInfo<AudioDecoderType>;
-using VideoDecoderInfo = PipelineDecoderInfo<VideoDecoderType>;
+template <typename DecoderType>
+struct PipelineInfo {
+  bool is_platform_decoder = false;
+  bool has_decrypting_demuxer_stream = false;
+  DecoderType decoder_type = DecoderType::kUnknown;
+  EncryptionType encryption_type = EncryptionType::kNone;
+};
 
-template <typename DecoderTypeId>
-MEDIA_EXPORT inline bool operator==(
-    const PipelineDecoderInfo<DecoderTypeId>& first,
-    const PipelineDecoderInfo<DecoderTypeId>& second) {
+using AudioPipelineInfo = PipelineInfo<AudioDecoderType>;
+using VideoPipelineInfo = PipelineInfo<VideoDecoderType>;
+
+template <typename DecoderType>
+MEDIA_EXPORT inline bool operator==(const PipelineInfo<DecoderType>& first,
+                                    const PipelineInfo<DecoderType>& second) {
   return first.decoder_type == second.decoder_type &&
          first.is_platform_decoder == second.is_platform_decoder &&
          first.has_decrypting_demuxer_stream ==
-             second.has_decrypting_demuxer_stream;
+             second.has_decrypting_demuxer_stream &&
+         first.encryption_type == second.encryption_type;
 }
 
-template <typename DecoderTypeId>
-MEDIA_EXPORT inline bool operator!=(
-    const PipelineDecoderInfo<DecoderTypeId>& first,
-    const PipelineDecoderInfo<DecoderTypeId>& second) {
+template <typename DecoderType>
+MEDIA_EXPORT inline bool operator!=(const PipelineInfo<DecoderType>& first,
+                                    const PipelineInfo<DecoderType>& second) {
   return !(first == second);
 }
 
-template <typename DecoderTypeId>
+template <typename DecoderType>
 MEDIA_EXPORT inline std::ostream& operator<<(
     std::ostream& out,
-    const PipelineDecoderInfo<DecoderTypeId>& info) {
-  // TODO(IN THIS CL DON'T FORGET) make a converter to print name.
-  return out << "{decoder_type:" << static_cast<int64_t>(info.decoder_type)
-             << ","
+    const PipelineInfo<DecoderType>& info) {
+  return out << "{decoder_type:" << GetDecoderName(info.decoder_type) << ","
              << "is_platform_decoder:" << info.is_platform_decoder << ","
              << "has_decrypting_demuxer_stream:"
-             << info.has_decrypting_demuxer_stream << "}";
+             << info.has_decrypting_demuxer_stream << ","
+             << "encryption_type:" << static_cast<int>(info.encryption_type)
+             << "}";
 }
 
 struct MEDIA_EXPORT PipelineStatistics {
@@ -138,8 +160,8 @@ struct MEDIA_EXPORT PipelineStatistics {
 
   // Note: Keep these fields at the end of the structure, if you move them you
   // need to also update the test ProtoUtilsTest::PipelineStatisticsConversion.
-  AudioDecoderInfo audio_decoder_info;
-  VideoDecoderInfo video_decoder_info;
+  AudioPipelineInfo audio_pipeline_info;
+  VideoPipelineInfo video_pipeline_info;
 
   // NOTE: always update operator== implementation in pipeline_status.cc when
   // adding a field to this struct. Leave this comment at the end.

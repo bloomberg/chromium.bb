@@ -9,9 +9,14 @@ weight: 8
 
 - [What does a Skia Gardener do?](#what_is_a_skia_gardener)
   - [Skia tree](#skia_tree)
+  - [Triage](#triage)
+  - [Blamer](#blamer)
   - [AutoRollers](#autorollers)
   - [Gold and Perf](#gold_and_perf)
   - [Documentation](#skia_gardener_doc)
+- [Preparing for your rotation](#preparations)
+  - [Useful bookmarks](#useful_bookmarks)
+  - [Chat rooms](#chat_rooms)
 - [View current and upcoming rotations](#view_current_upcoming_rotations)
 - [How to swap rotation shifts](#how_to_swap)
 - [Tips for Skia Gardeners](#tips)
@@ -21,7 +26,9 @@ weight: 8
   - [What to do if DEPS roll fails to land](#deps_roll_failures)
   - [How to rebaseline](#how_to_rebaseline)
 
-<a name="what_is_a_skia_gardener"></a> What does a Skia Gardener do?
+<a name="what_is_a_skia_gardener"></a>
+
+## What does a Skia Gardener do?
 
 ---
 
@@ -114,8 +121,32 @@ In general, gardeners should have a strong bias towards actions that keep the
 tree green and then open; if a simple revert can fix the problem, the gardener
 <b>should revert first and ask questions later</b>.
 
-<a name="view_current_upcoming_rotations"></a> View current and upcoming
-rotations
+<a name="preparations"></a>
+
+## Preparing for your rotation
+
+---
+
+<a name="useful_bookmarks"></a>
+
+### Useful bookmarks
+
+- [The Chromium main console](https://ci.chromium.org/p/chromium/g/main/console).
+- [The Flutter engine console](https://ci.chromium.org/p/flutter/g/engine/console).
+- [Skia client search](https://brianosman.users.x20web.corp.google.com/www/skia-client-search.html),
+  a tool for searching the codebases of all skia clients at once.
+
+<a name="chat_rooms"></a>
+
+### Chat rooms
+
+- [Flutter Engine Sherriff](https://chat.google.com/room/AAAAm69vf-M) room to
+  watch for Flutter issues that are caused by Skia bugs or need assistance from
+  our team.
+
+<a name="view_current_upcoming_rotations"></a>
+
+## View current and upcoming rotations
 
 ---
 
@@ -124,7 +155,9 @@ The list of Skia Gardeners is specified
 gardeners widget on the [status page](https://status.skia.org) also displays the
 current gardeners.
 
-<a name="how_to_swap"></a> How to swap rotation shifts
+<a name="how_to_swap"></a>
+
+## How to swap rotation shifts
 
 ---
 
@@ -133,7 +166,9 @@ vacation), please get approval from the person you want to swap with and
 directly make the swap via the
 [rotations page](https://rotations.corp.google.com/rotation/4699606003744768).
 
-<a name="tips"></a> Tips for Skia Gardeners
+<a name="tips"></a>
+
+## Tips for Skia Gardeners
 
 ---
 

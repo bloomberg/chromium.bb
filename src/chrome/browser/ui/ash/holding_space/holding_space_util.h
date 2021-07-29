@@ -8,9 +8,11 @@
 #include <memory>
 #include <vector>
 
+#include "ash/public/cpp/holding_space/holding_space_image.h"
 #include "ash/public/cpp/holding_space/holding_space_item.h"
 #include "base/callback_forward.h"
 #include "base/time/time.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class GURL;
 class Profile;
@@ -68,9 +70,21 @@ void PartitionFilePathsByValidity(Profile*,
 // Resolves the file system URL associated with the specified `file_path`.
 GURL ResolveFileSystemUrl(Profile* profile, const base::FilePath& file_path);
 
-// Resolves the image associated with the specified `file_path`.
+// Resolves the image associated with the specified `file_path` using the
+// default placeholder resolver which creates a placeholder corresponding to the
+// associated file type when a thumbnail cannot be generated.
 std::unique_ptr<HoldingSpaceImage> ResolveImage(
     ThumbnailLoader* thumbnail_loader,
+    HoldingSpaceItem::Type type,
+    const base::FilePath& file_path);
+
+// Resolves the image associated with the specified `file_path`using the
+// specified `placeholder_image_skia_resolver` to create a placeholder when a
+// thumbnail cannot be generated.
+std::unique_ptr<HoldingSpaceImage> ResolveImageWithPlaceholderImageSkiaResolver(
+    ThumbnailLoader* thumbnail_loader,
+    HoldingSpaceImage::PlaceholderImageSkiaResolver
+        placeholder_image_skia_resolver,
     HoldingSpaceItem::Type type,
     const base::FilePath& file_path);
 

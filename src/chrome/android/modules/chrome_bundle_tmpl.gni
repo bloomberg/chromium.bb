@@ -45,6 +45,7 @@ template("chrome_bundle") {
         java_deps += [
           "//components/webxr/android:ar_java",
           "//third_party/arcore-android-sdk-client:com_google_ar_core_java",
+          "//third_party/arcore-android-sdk-client:com_google_ar_core_java__ignored_manifest",
         ]
       }
       if (defined(invoker.chrome_deps)) {
@@ -164,9 +165,12 @@ template("chrome_bundle") {
     proguard_enabled = !is_java_debug
     enable_language_splits = true
     extra_modules = _extra_modules
-    system_image_locale_allowlist = android_apk_locales
+    system_image_locale_allowlist = locales - android_bundle_only_locales
     is_multi_abi = _is_multi_abi
     validate_services = _enable_chrome_module
+
+    # For this to be respected, it must also be set on the base module target.
+    strip_unused_resources = is_official_build
 
     # List of DFMs that are installed by default by wrapper scripts, to make
     # testing easier. This removes the need to manually specify, e.g.,

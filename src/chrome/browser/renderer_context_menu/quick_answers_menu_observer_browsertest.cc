@@ -6,13 +6,13 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/quick_answers/controller/quick_answers_controller.h"
+#include "ash/public/cpp/quick_answers/quick_answers_state.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/renderer_context_menu/mock_render_view_context_menu.h"
 #include "chrome/test/base/chrome_test_utils.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chromeos/components/quick_answers/test/test_helpers.h"
 #include "content/public/browser/context_menu_params.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -34,7 +34,7 @@ class QuickAnswersMenuObserverTest : public InProcessBrowserTest {
   // InProcessBrowserTest overrides:
   void SetUpOnMainThread() override {
     Reset(false);
-    observer_->OnEligibilityChanged(true);
+    ash::QuickAnswersState::Get()->set_eligibility_for_testing(true);
   }
 
   void TearDownOnMainThread() override {
@@ -74,7 +74,7 @@ class QuickAnswersMenuObserverTest : public InProcessBrowserTest {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(QuickAnswersMenuObserverTest, FeatureIneligible) {
-  observer_->OnEligibilityChanged(false);
+  ash::QuickAnswersState::Get()->set_eligibility_for_testing(false);
 
   content::ContextMenuParams params;
   params.selection_text = u"test";
@@ -87,7 +87,7 @@ IN_PROC_BROWSER_TEST_F(QuickAnswersMenuObserverTest, FeatureIneligible) {
 }
 
 IN_PROC_BROWSER_TEST_F(QuickAnswersMenuObserverTest, PasswordField) {
-  observer_->OnEligibilityChanged(true);
+  ash::QuickAnswersState::Get()->set_eligibility_for_testing(true);
 
   content::ContextMenuParams params;
   params.input_field_type =
@@ -103,7 +103,7 @@ IN_PROC_BROWSER_TEST_F(QuickAnswersMenuObserverTest, PasswordField) {
 }
 
 IN_PROC_BROWSER_TEST_F(QuickAnswersMenuObserverTest, NoSelectedText) {
-  observer_->OnEligibilityChanged(true);
+  ash::QuickAnswersState::Get()->set_eligibility_for_testing(true);
 
   content::ContextMenuParams params;
   ShowMenu(params);
@@ -114,7 +114,7 @@ IN_PROC_BROWSER_TEST_F(QuickAnswersMenuObserverTest, NoSelectedText) {
 }
 
 IN_PROC_BROWSER_TEST_F(QuickAnswersMenuObserverTest, QuickAnswersPending) {
-  observer_->OnEligibilityChanged(true);
+  ash::QuickAnswersState::Get()->set_eligibility_for_testing(true);
 
   content::ContextMenuParams params;
   params.selection_text = u"test";

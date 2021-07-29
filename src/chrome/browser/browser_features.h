@@ -26,11 +26,15 @@ extern const char kPromoBrowserCommandIdParam[];
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 extern const base::Feature kDoubleTapToZoomInTabletMode;
+extern const base::Feature kQuickSettingsPWANotifications;
 #endif
 
 #if !defined(OS_ANDROID)
 extern const base::Feature kCopyLinkToText;
+extern const base::Feature kMuteNotificationSnoozeAction;
 #endif
+
+extern const base::Feature kPwaUpdateDialogForNameAndIcon;
 
 #if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 extern const base::Feature kUserDataSnapshot;

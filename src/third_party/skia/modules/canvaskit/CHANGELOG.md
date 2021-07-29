@@ -6,6 +6,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Breaking
+ - Paint.getBlendMode() has been removed.
+ - Canvas.drawImageAtCurrentFrame() has been removed.
+
+## [0.28.1] - 2021-06-28
+
+### Added
+ - `Typeface.MakeFreeTypeFaceFromData` as a more convenient way to create a Typeface from the bytes
+   of a .ttf, .woff, or .woff2 file.
+ - `Typeface.getGlyphIDs` - provides the same functionality as `Font.getGlyphIDs`.
+
+### Changed
+ - ICU has been updated from v65 to v69.
+ - Freetype has been updated from f9350be to ff40776.
+
+### Fixed
+ - We should no longer have to decode the same font multiple times (skbug.com/12112)
+ - `Font.getGlyphIDs` had the wrong type for the third argument. It is now correctly a Uint16Array.
+
+### Deprecated
+ - `FontMgr.MakeTypefaceFromData` will be removed in favor of `Typeface.MakeFreeTypeFaceFromData`
+ - `FontMgr.RefDefault` will be removed in an upcoming version. It's only real use was
+   for `FontMgr.MakeTypefaceFromData`.
+
+## [0.28.0] - 2021-06-17
+
+### Added
+ - `Surface.makeImageFromTexture` and `Surface.makeImageFromTextureSource` as easy ways to provide
+   CanvasKit with a WebGL texture and interact with WebGL texture sources (e.g. &lt;video&gt;)
+
+### Changed
+ - We now build/ship with emscripten 2.0.20.
+
+### Breaking
+ - `Path.toCmds()` returns a flattened Float32Array instead of a 2D Array.
+ - `Canvaskit.Path.MakeFromCmds` no longer accepts a 2D Array. Inputs must be flattened,
+   but can be an array, a TypedArray, or a MallocObj.
+ - `CanvasKit.*Builder` have all been removed. Clients should use Malloc instead.
+
+### Removed
+ - `CanvasKit.Shader.MakeLerp`, the same effect can be easily generated with `RuntimeEffect`
+
+### Known Bugs
+ - On legacy (non-ANGLE) SwiftShader, certain paths that require tessellation may not be drawn
+   correctly when using a WebGL-backed surface. (skbug.com/11965)
+
 ## [0.27.0] - 2021-05-20
 
 ### Added

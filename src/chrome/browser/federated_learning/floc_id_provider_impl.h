@@ -59,7 +59,8 @@ class FlocIdProviderImpl : public FlocIdProvider,
                            public history::HistoryServiceObserver {
  public:
   struct ComputeFlocResult {
-    ComputeFlocResult() = default;
+    explicit ComputeFlocResult(FlocId::Status status)
+        : floc_id(FlocId::CreateInvalid(status)) {}
 
     ComputeFlocResult(uint64_t sim_hash, const FlocId& floc_id)
         : sim_hash_computed(true), sim_hash(sim_hash), floc_id(floc_id) {}
@@ -93,6 +94,8 @@ class FlocIdProviderImpl : public FlocIdProvider,
   blink::mojom::InterestCohortPtr GetInterestCohortForJsApi(
       const GURL& url,
       const absl::optional<url::Origin>& top_frame_origin) const override;
+
+  mojom::WebUIFlocStatusPtr GetFlocStatusForWebUi() const override;
 
   void MaybeRecordFlocToUkm(ukm::SourceId source_id) override;
 

@@ -196,7 +196,6 @@ static av_cold int libvorbis_encode_close(AVCodecContext *avctx)
 
     av_fifo_freep(&s->pkt_fifo);
     ff_af_queue_close(&s->afq);
-    av_freep(&avctx->extradata);
 
     av_vorbis_parse_free(&s->vp);
 
@@ -374,7 +373,7 @@ static int libvorbis_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
     return 0;
 }
 
-AVCodec ff_libvorbis_encoder = {
+const AVCodec ff_libvorbis_encoder = {
     .name           = "libvorbis",
     .long_name      = NULL_IF_CONFIG_SMALL("libvorbis"),
     .type           = AVMEDIA_TYPE_AUDIO,

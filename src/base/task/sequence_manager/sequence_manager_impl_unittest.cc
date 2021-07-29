@@ -744,13 +744,14 @@ TEST_P(SequenceManagerTest, TaskQueueDisabledFromNestedLoop) {
   EXPECT_THAT(run_order, ElementsAre(2u, 1u, 3u));
 }
 
-TEST_P(SequenceManagerTest, HasPendingImmediateWork_ImmediateTask) {
+TEST_P(SequenceManagerTest,
+       HasTaskToRunImmediatelyOrReadyDelayedTask_ImmediateTask) {
   auto queue = CreateTaskQueue();
 
   std::vector<EnqueueOrder> run_order;
-  EXPECT_FALSE(queue->HasTaskToRunImmediately());
+  EXPECT_FALSE(queue->HasTaskToRunImmediatelyOrReadyDelayedTask());
   queue->task_runner()->PostTask(FROM_HERE, BindOnce(&TestTask, 1, &run_order));
-  EXPECT_TRUE(queue->HasTaskToRunImmediately());
+  EXPECT_TRUE(queue->HasTaskToRunImmediatelyOrReadyDelayedTask());
 
   // Move the task into the |immediate_work_queue|.
   EXPECT_TRUE(queue->GetTaskQueueImpl()->immediate_work_queue()->Empty());
@@ -759,31 +760,32 @@ TEST_P(SequenceManagerTest, HasPendingImmediateWork_ImmediateTask) {
   voter->SetVoteToEnable(false);
   RunLoop().RunUntilIdle();
   EXPECT_FALSE(queue->GetTaskQueueImpl()->immediate_work_queue()->Empty());
-  EXPECT_TRUE(queue->HasTaskToRunImmediately());
+  EXPECT_TRUE(queue->HasTaskToRunImmediatelyOrReadyDelayedTask());
 
   // Run the task, making the queue empty.
   voter->SetVoteToEnable(true);
   RunLoop().RunUntilIdle();
-  EXPECT_FALSE(queue->HasTaskToRunImmediately());
+  EXPECT_FALSE(queue->HasTaskToRunImmediatelyOrReadyDelayedTask());
 }
 
-TEST_P(SequenceManagerTest, HasPendingImmediateWork_DelayedTask) {
+TEST_P(SequenceManagerTest,
+       HasTaskToRunImmediatelyOrReadyDelayedTask_DelayedTask) {
   auto queue = CreateTaskQueue();
 
   std::vector<EnqueueOrder> run_order;
   TimeDelta delay(TimeDelta::FromMilliseconds(10));
   queue->task_runner()->PostDelayedTask(
       FROM_HERE, BindOnce(&TestTask, 1, &run_order), delay);
-  EXPECT_FALSE(queue->HasTaskToRunImmediately());
+  EXPECT_FALSE(queue->HasTaskToRunImmediatelyOrReadyDelayedTask());
   AdvanceMockTickClock(delay);
-  EXPECT_TRUE(queue->HasTaskToRunImmediately());
+  EXPECT_TRUE(queue->HasTaskToRunImmediatelyOrReadyDelayedTask());
 
   // Move the task into the |delayed_work_queue|.
   LazyNow lazy_now(mock_tick_clock());
   sequence_manager()->MoveReadyDelayedTasksToWorkQueues(&lazy_now);
   sequence_manager()->ScheduleWork();
   EXPECT_FALSE(queue->GetTaskQueueImpl()->delayed_work_queue()->Empty());
-  EXPECT_TRUE(queue->HasTaskToRunImmediately());
+  EXPECT_TRUE(queue->HasTaskToRunImmediatelyOrReadyDelayedTask());
 
   // Run the task, making the queue empty.
   RunLoop().RunUntilIdle();
@@ -798,7 +800,7 @@ TEST_P(SequenceManagerTest, DelayedTaskPosting) {
   queue->task_runner()->PostDelayedTask(
       FROM_HERE, BindOnce(&TestTask, 1, &run_order), delay);
   EXPECT_EQ(TimeDelta::FromMilliseconds(10), NextPendingTaskDelay());
-  EXPECT_FALSE(queue->HasTaskToRunImmediately());
+  EXPECT_FALSE(queue->HasTaskToRunImmediatelyOrReadyDelayedTask());
   EXPECT_TRUE(run_order.empty());
 
   // The task doesn't run before the delay has completed.
@@ -808,7 +810,7 @@ TEST_P(SequenceManagerTest, DelayedTaskPosting) {
   // After the delay has completed, the task runs normally.
   FastForwardBy(TimeDelta::FromMilliseconds(1));
   EXPECT_THAT(run_order, ElementsAre(1u));
-  EXPECT_FALSE(queue->HasTaskToRunImmediately());
+  EXPECT_FALSE(queue->HasTaskToRunImmediatelyOrReadyDelayedTask());
 }
 
 TEST(SequenceManagerTestWithMockTaskRunner,
@@ -1000,7 +1002,7 @@ TEST_P(SequenceManagerTest, InsertAndRemoveFence) {
   RunLoop().RunUntilIdle();
 
   // However polling still works.
-  EXPECT_TRUE(queue->HasTaskToRunImmediately());
+  EXPECT_TRUE(queue->HasTaskToRunImmediatelyOrReadyDelayedTask());
 
   // After removing the fence the task runs normally.
   queue->RemoveFence();
@@ -1794,40 +1796,43 @@ TEST_P(SequenceManagerTest, GetAndClearSystemIsQuiescentBit) {
   EXPECT_TRUE(sequence_manager()->GetAndClearSystemIsQuiescentBit());
 }
 
-TEST_P(SequenceManagerTest, HasPendingImmediateWork) {
+TEST_P(SequenceManagerTest, HasTaskToRunImmediatelyOrReadyDelayedTask) {
   auto queue = CreateTaskQueue();
 
-  EXPECT_FALSE(queue->HasTaskToRunImmediately());
+  EXPECT_FALSE(queue->HasTaskToRunImmediatelyOrReadyDelayedTask());
   queue->task_runner()->PostTask(FROM_HERE, BindOnce(NullTask));
-  EXPECT_TRUE(queue->HasTaskToRunImmediately());
+  EXPECT_TRUE(queue->HasTaskToRunImmediatelyOrReadyDelayedTask());
 
   RunLoop().RunUntilIdle();
-  EXPECT_FALSE(queue->HasTaskToRunImmediately());
+  EXPECT_FALSE(queue->HasTaskToRunImmediatelyOrReadyDelayedTask());
 }
 
-TEST_P(SequenceManagerTest, HasPendingImmediateWork_DelayedTasks) {
+TEST_P(SequenceManagerTest,
+       HasTaskToRunImmediatelyOrReadyDelayedTask_DelayedTasks) {
   auto queue = CreateTaskQueue();
 
-  EXPECT_FALSE(queue->HasTaskToRunImmediately());
+  EXPECT_FALSE(queue->HasTaskToRunImmediatelyOrReadyDelayedTask());
   queue->task_runner()->PostDelayedTask(FROM_HERE, BindOnce(NullTask),
                                         TimeDelta::FromMilliseconds(12));
-  EXPECT_FALSE(queue->HasTaskToRunImmediately());
+  EXPECT_FALSE(queue->HasTaskToRunImmediatelyOrReadyDelayedTask());
 
   // Move time forwards until just before the delayed task should run.
   AdvanceMockTickClock(TimeDelta::FromMilliseconds(10));
   LazyNow lazy_now_1(mock_tick_clock());
   sequence_manager()->MoveReadyDelayedTasksToWorkQueues(&lazy_now_1);
-  EXPECT_FALSE(queue->HasTaskToRunImmediately());
+  EXPECT_FALSE(queue->HasTaskToRunImmediatelyOrReadyDelayedTask());
 
   // Force the delayed task onto the work queue.
   AdvanceMockTickClock(TimeDelta::FromMilliseconds(2));
+  EXPECT_TRUE(queue->HasTaskToRunImmediatelyOrReadyDelayedTask());
+
   LazyNow lazy_now_2(mock_tick_clock());
   sequence_manager()->MoveReadyDelayedTasksToWorkQueues(&lazy_now_2);
-  EXPECT_TRUE(queue->HasTaskToRunImmediately());
+  EXPECT_TRUE(queue->HasTaskToRunImmediatelyOrReadyDelayedTask());
 
   sequence_manager()->ScheduleWork();
   RunLoop().RunUntilIdle();
-  EXPECT_FALSE(queue->HasTaskToRunImmediately());
+  EXPECT_FALSE(queue->HasTaskToRunImmediatelyOrReadyDelayedTask());
 }
 
 TEST_P(SequenceManagerTest, ImmediateTasksAreNotStarvedByDelayedTasks) {
@@ -2610,6 +2615,54 @@ TEST_P(SequenceManagerTest, CancelledTaskPostAnother) {
   EXPECT_TRUE(did_post);
 }
 
+TEST_P(SequenceManagerTest, CancelledImmediateTaskShutsDownQueue) {
+  // This check ensures that an immediate task whose destruction causes the
+  // owning task queue to be shut down doesn't cause us to access freed memory.
+  auto queue = CreateTaskQueue();
+  bool did_shutdown = false;
+  auto on_destroy = BindLambdaForTesting([&] {
+    queue->ShutdownTaskQueue();
+    did_shutdown = true;
+  });
+
+  DestructionCallback destruction_observer(std::move(on_destroy));
+  CancelableTask task(mock_tick_clock());
+  queue->task_runner()->PostTask(
+      FROM_HERE, BindOnce(&CancelableTask::FailTask<DestructionCallback>,
+                          task.weak_factory_.GetWeakPtr(),
+                          std::move(destruction_observer)));
+
+  task.weak_factory_.InvalidateWeakPtrs();
+  EXPECT_FALSE(did_shutdown);
+  RunLoop().RunUntilIdle();
+  EXPECT_TRUE(did_shutdown);
+}
+
+TEST_P(SequenceManagerTest, CancelledDelayedTaskShutsDownQueue) {
+  // This check ensures that a delayed task whose destruction causes the owning
+  // task queue to be shut down doesn't cause us to access freed memory.
+  auto queue = CreateTaskQueue();
+  bool did_shutdown = false;
+  auto on_destroy = BindLambdaForTesting([&] {
+    queue->ShutdownTaskQueue();
+    did_shutdown = true;
+  });
+
+  DestructionCallback destruction_observer(std::move(on_destroy));
+  CancelableTask task(mock_tick_clock());
+  queue->task_runner()->PostDelayedTask(
+      FROM_HERE,
+      BindOnce(&CancelableTask::FailTask<DestructionCallback>,
+               task.weak_factory_.GetWeakPtr(),
+               std::move(destruction_observer)),
+      base::TimeDelta::FromSeconds(1));
+
+  task.weak_factory_.InvalidateWeakPtrs();
+  EXPECT_FALSE(did_shutdown);
+  sequence_manager()->ReclaimMemory();
+  EXPECT_TRUE(did_shutdown);
+}
+
 namespace {
 
 void ChromiumRunloopInspectionTask(
@@ -2909,7 +2962,7 @@ TEST_P(SequenceManagerTest, BlameContextAttribution) {
 
   trace_analyzer::Start("*");
   {
-    trace_event::BlameContext blame_context("cat", "name", "type", "scope", 0,
+    trace_event::BlameContext blame_context("base", "name", "type", "scope", 0,
                                             nullptr);
     blame_context.Initialize();
     queue->SetBlameContext(&blame_context);

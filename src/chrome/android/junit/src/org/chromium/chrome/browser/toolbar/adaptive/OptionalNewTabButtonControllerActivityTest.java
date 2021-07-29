@@ -31,7 +31,6 @@ import org.robolectric.annotation.Implements;
 import org.chromium.base.CommandLine;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.app.tabmodel.TabWindowManagerSingleton;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -47,6 +46,8 @@ import org.chromium.chrome.test.util.browser.tabmodel.MockTabCreatorManager;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModelSelector;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.display.DisplayAndroidManager;
+import org.chromium.url.JUnitTestGURLs;
+import org.chromium.url.ShadowGURL;
 
 import java.util.HashMap;
 import java.util.List;
@@ -58,7 +59,8 @@ import java.util.NoSuchElementException;
  * ChromeTabbedActivity}.
  */
 @Config(shadows = {OptionalNewTabButtonControllerActivityTest.ShadowDelegate.class,
-                OptionalNewTabButtonControllerActivityTest.ShadowChromeFeatureList.class})
+                OptionalNewTabButtonControllerActivityTest.ShadowChromeFeatureList.class,
+                ShadowGURL.class})
 @RunWith(BaseRobolectricTestRunner.class)
 public class OptionalNewTabButtonControllerActivityTest {
     /**
@@ -69,12 +71,10 @@ public class OptionalNewTabButtonControllerActivityTest {
     public static class ShadowDelegate {
         private static MockTabCreatorManager sTabCreatorManager;
         private static MockTabModelSelector sTabModelSelector;
-        private static boolean sIsNTP;
 
         protected static void reset() {
             sTabModelSelector = null;
             sTabCreatorManager = null;
-            sIsNTP = false;
         }
 
         @Implementation
@@ -85,11 +85,6 @@ public class OptionalNewTabButtonControllerActivityTest {
         @Implementation
         protected TabModelSelector getTabModelSelector() {
             return sTabModelSelector;
-        }
-
-        @Implementation
-        protected boolean isNTPTab(Tab tab) {
-            return sIsNTP;
         }
     }
 
@@ -116,7 +111,7 @@ public class OptionalNewTabButtonControllerActivityTest {
 
     private ActivityScenario<ChromeTabbedActivity> mActivityScenario;
     private AdaptiveToolbarButtonController mAdaptiveButtonController;
-    private Tab mTab;
+    private MockTab mTab;
 
     @Before
     public void setUp() {
@@ -136,7 +131,8 @@ public class OptionalNewTabButtonControllerActivityTest {
         assertNull(ShadowDelegate.sTabCreatorManager);
         ShadowDelegate.sTabModelSelector = tabModelSelector;
         ShadowDelegate.sTabCreatorManager = new MockTabCreatorManager(tabModelSelector);
-        mTab = tabModelSelector.getCurrentTab();
+        mTab = (MockTab) tabModelSelector.getCurrentTab();
+        mTab.setGurlOverrideForTesting(JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL));
 
         mActivityScenario = ActivityScenario.launch(ChromeTabbedActivity.class);
         mActivityScenario.onActivity(activity -> {
@@ -268,10 +264,10 @@ public class OptionalNewTabButtonControllerActivityTest {
         mActivityScenario.onActivity(activity -> {
             assertTrue(mAdaptiveButtonController.get(mTab).canShow());
 
-            ShadowDelegate.sIsNTP = true;
+            mTab.setGurlOverrideForTesting(JUnitTestGURLs.getGURL(JUnitTestGURLs.NTP_URL));
             assertFalse(mAdaptiveButtonController.get(mTab).canShow());
 
-            ShadowDelegate.sIsNTP = false;
+            mTab.setGurlOverrideForTesting(JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL));
             assertTrue(mAdaptiveButtonController.get(mTab).canShow());
         });
     }
@@ -297,7 +293,7 @@ public class OptionalNewTabButtonControllerActivityTest {
     }
 
     /** Sets device qualifiers and notifies the activity about configuration change. */
-    private static void applyQualifiers(ChromeActivity activity, String qualifiers) {
+    private static void applyQualifiers(ChromeTabbedActivity activity, String qualifiers) {
         RuntimeEnvironment.setQualifiers(qualifiers);
         Configuration configuration = Resources.getSystem().getConfiguration();
         activity.onConfigurationChanged(configuration);

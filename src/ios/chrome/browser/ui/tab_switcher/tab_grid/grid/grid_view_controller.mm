@@ -25,6 +25,7 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_empty_view.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_image_data_source.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_layout.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_shareable_items_provider.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/horizontal_layout.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/plus_sign_cell.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/transitions/grid_transition_layout.h"
@@ -32,8 +33,7 @@
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#import "ios/public/provider/chrome/browser/modals/modals_provider.h"
+#include "ios/public/provider/chrome/browser/modals/modals_api.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -77,6 +77,11 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 @property(nonatomic, copy) NSString* selectedItemID;
 // Index of the selected item in |items|.
 @property(nonatomic, readonly) NSUInteger selectedIndex;
+// Items selected for editing.
+@property(nonatomic, strong) NSMutableSet<NSString*>* selectedEditingItemIDs;
+// Items selected for editing which are shareable outside of the app.
+@property(nonatomic, strong)
+    NSMutableSet<NSString*>* selectedSharableEditingItemIDs;
 // ID of the last item to be inserted. This is used to track if the active tab
 // was newly created when building the animation layout for transitions.
 @property(nonatomic, copy) NSString* lastInsertedItemID;
@@ -118,7 +123,10 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 - (instancetype)init {
   if (self = [super init]) {
     _items = [[NSMutableArray<TabSwitcherItem*> alloc] init];
+    _selectedEditingItemIDs = [[NSMutableSet<NSString*> alloc] init];
+    _selectedSharableEditingItemIDs = [[NSMutableSet<NSString*> alloc] init];
     _showsSelectionUpdates = YES;
+    _mode = TabGridModeNormal;
   }
   return self;
 }
@@ -227,6 +235,16 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 - (BOOL)isGridEmpty {
   return self.items.count == 0;
+}
+
+- (void)setMode:(TabGridMode)mode {
+  _mode = mode;
+  // Clear items when exiting selection mode.
+  if (mode == TabGridModeNormal) {
+    [self.selectedEditingItemIDs removeAllObjects];
+    [self.selectedSharableEditingItemIDs removeAllObjects];
+  }
+  [self.collectionView reloadData];
 }
 
 - (BOOL)isSelectedCellVisible {
@@ -404,9 +422,9 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 - (UIContextMenuConfiguration*)collectionView:(UICollectionView*)collectionView
     contextMenuConfigurationForItemAtIndexPath:(NSIndexPath*)indexPath
-                                         point:(CGPoint)point
-    API_AVAILABLE(ios(13.0)) {
-  if (!IsTabGridContextMenuEnabled()) {
+                                         point:(CGPoint)point {
+  // Context menu shouldn't appear in the selection mode.
+  if (!IsTabGridContextMenuEnabled() || _mode == TabGridModeSelection) {
     return nil;
   }
   GridCell* cell = base::mac::ObjCCastStrict<GridCell>(
@@ -441,8 +459,24 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     // Return an empty array because the plus sign cell should not be dragged.
     return @[];
   }
-  TabSwitcherItem* item = self.items[indexPath.item];
-  return @[ [self.dragDropHandler dragItemForItemWithID:item.identifier] ];
+  if (_mode != TabGridModeSelection) {
+    TabSwitcherItem* item = self.items[indexPath.item];
+    return @[ [self.dragDropHandler dragItemForItemWithID:item.identifier] ];
+  }
+
+  // Make sure that the long pressed cell is selected before initiating a drag
+  // from it.
+  NSUInteger index = base::checked_cast<NSUInteger>(indexPath.item);
+  NSString* itemID = self.items[index].identifier;
+  if (![self isItemWithIDSelectedForEditing:itemID]) {
+    [self tappedItemAtIndexPath:indexPath];
+  }
+
+  NSMutableArray<UIDragItem*>* dragItems = [[NSMutableArray alloc] init];
+  for (NSString* itemID in self.selectedEditingItemIDs) {
+    [dragItems addObject:[self.dragDropHandler dragItemForItemWithID:itemID]];
+  }
+  return dragItems;
 }
 
 - (NSArray<UIDragItem*>*)collectionView:(UICollectionView*)collectionView
@@ -469,7 +503,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 - (BOOL)collectionView:(UICollectionView*)collectionView
     canHandleDropSession:(id<UIDropSession>)session {
-  return session.items.count == 1U;
+  return YES;
 }
 
 - (UICollectionViewDropProposal*)
@@ -489,66 +523,68 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 - (void)collectionView:(UICollectionView*)collectionView
     performDropWithCoordinator:
         (id<UICollectionViewDropCoordinator>)coordinator {
-  id<UICollectionViewDropItem> item = coordinator.items.firstObject;
+  NSArray<id<UICollectionViewDropItem>>* items = coordinator.items;
 
-  // Append to the end of the collection, unless drop index is specified.
-  // The sourceIndexPath is nil if the drop item is not from the same
-  // collection view. Set the destinationIndex to reflect the addition of an
-  // item.
-  NSUInteger destinationIndex =
-      item.sourceIndexPath ? self.items.count - 1 : self.items.count;
-  if (coordinator.destinationIndexPath) {
-    destinationIndex =
-        base::checked_cast<NSUInteger>(coordinator.destinationIndexPath.item);
-  }
-  if (self.thumbStripEnabled) {
+  for (id<UICollectionViewDropItem> item in items) {
+    // Append to the end of the collection, unless drop index is specified.
     // The sourceIndexPath is nil if the drop item is not from the same
-    // collection view.
-    NSUInteger plusSignCellIndex =
-        item.sourceIndexPath ? self.items.count : self.items.count + 1;
-    // Can't use [self isIndexPathForPlusSignCell:] here because the index of
-    // the plus sign cell in this point in code depends on
-    // |item.sourceIndexPath|.
-    // I.e., in this point in code, |collectionView.numberOfItemsInSection| is
-    // equal to |self.items.count + 1|.
-    if (destinationIndex == plusSignCellIndex) {
-      // Prevent the cell from being dropped where the plus sign cell is.
-      destinationIndex = plusSignCellIndex - 1;
+    // collection view. Set the destinationIndex to reflect the addition of an
+    // item.
+    NSUInteger destinationIndex =
+        item.sourceIndexPath ? self.items.count - 1 : self.items.count;
+    if (coordinator.destinationIndexPath) {
+      destinationIndex =
+          base::checked_cast<NSUInteger>(coordinator.destinationIndexPath.item);
+    }
+    if (self.thumbStripEnabled) {
+      // The sourceIndexPath is nil if the drop item is not from the same
+      // collection view.
+      NSUInteger plusSignCellIndex =
+          item.sourceIndexPath ? self.items.count : self.items.count + 1;
+      // Can't use [self isIndexPathForPlusSignCell:] here because the index of
+      // the plus sign cell in this point in code depends on
+      // |item.sourceIndexPath|.
+      // I.e., in this point in code, |collectionView.numberOfItemsInSection| is
+      // equal to |self.items.count + 1|.
+      if (destinationIndex == plusSignCellIndex) {
+        // Prevent the cell from being dropped where the plus sign cell is.
+        destinationIndex = plusSignCellIndex - 1;
+      }
+    }
+    NSIndexPath* dropIndexPath = CreateIndexPath(destinationIndex);
+    // Drop synchronously if local object is available.
+    if (item.dragItem.localObject) {
+      [coordinator dropItem:item.dragItem toItemAtIndexPath:dropIndexPath];
+      // The sourceIndexPath is non-nil if the drop item is from this same
+      // collection view.
+      [self.dragDropHandler dropItem:item.dragItem
+                             toIndex:destinationIndex
+                  fromSameCollection:(item.sourceIndexPath != nil)];
+    } else {
+      // Drop asynchronously if local object is not available.
+      UICollectionViewDropPlaceholder* placeholder =
+          [[UICollectionViewDropPlaceholder alloc]
+              initWithInsertionIndexPath:dropIndexPath
+                         reuseIdentifier:kCellIdentifier];
+      placeholder.cellUpdateHandler = ^(UICollectionViewCell* placeholderCell) {
+        GridCell* gridCell =
+            base::mac::ObjCCastStrict<GridCell>(placeholderCell);
+        gridCell.theme = self.theme;
+      };
+      placeholder.previewParametersProvider =
+          ^UIDragPreviewParameters*(UICollectionViewCell* placeholderCell) {
+        GridCell* gridCell =
+            base::mac::ObjCCastStrict<GridCell>(placeholderCell);
+        return gridCell.dragPreviewParameters;
+      };
+
+      id<UICollectionViewDropPlaceholderContext> context =
+          [coordinator dropItem:item.dragItem toPlaceholder:placeholder];
+      [self.dragDropHandler dropItemFromProvider:item.dragItem.itemProvider
+                                         toIndex:destinationIndex
+                              placeholderContext:context];
     }
   }
-  NSIndexPath* dropIndexPath = CreateIndexPath(destinationIndex);
-
-  // Drop synchronously if local object is available.
-  if (item.dragItem.localObject) {
-    [coordinator dropItem:item.dragItem toItemAtIndexPath:dropIndexPath];
-    // The sourceIndexPath is non-nil if the drop item is from this same
-    // collection view.
-    [self.dragDropHandler dropItem:item.dragItem
-                           toIndex:destinationIndex
-                fromSameCollection:(item.sourceIndexPath != nil)];
-    return;
-  }
-
-  // Drop asynchronously if local object is not available.
-  UICollectionViewDropPlaceholder* placeholder =
-      [[UICollectionViewDropPlaceholder alloc]
-          initWithInsertionIndexPath:dropIndexPath
-                     reuseIdentifier:kCellIdentifier];
-  placeholder.cellUpdateHandler = ^(UICollectionViewCell* placeholderCell) {
-    GridCell* gridCell = base::mac::ObjCCastStrict<GridCell>(placeholderCell);
-    gridCell.theme = self.theme;
-  };
-  placeholder.previewParametersProvider =
-      ^UIDragPreviewParameters*(UICollectionViewCell* placeholderCell) {
-    GridCell* gridCell = base::mac::ObjCCastStrict<GridCell>(placeholderCell);
-    return gridCell.dragPreviewParameters;
-  };
-
-  id<UICollectionViewDropPlaceholderContext> context =
-      [coordinator dropItem:item.dragItem toPlaceholder:placeholder];
-  [self.dragDropHandler dropItemFromProvider:item.dragItem.itemProvider
-                                     toIndex:destinationIndex
-                          placeholderContext:context];
 }
 
 #pragma mark - UIScrollViewDelegate
@@ -633,6 +669,8 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
   self.items = [items mutableCopy];
   self.selectedItemID = selectedItemID;
+  [self.selectedEditingItemIDs removeAllObjects];
+  [self.selectedSharableEditingItemIDs removeAllObjects];
   [self.collectionView reloadData];
   [self.collectionView selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
                                     animated:YES
@@ -697,6 +735,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   auto modelUpdates = ^{
     [self.items removeObjectAtIndex:index];
     self.selectedItemID = selectedItemID;
+    [self deselectItemWithIDForEditing:removedItemID];
     [self.delegate gridViewController:self didChangeItemCount:self.items.count];
   };
   auto collectionViewUpdates = ^{
@@ -783,9 +822,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 }
 
 - (void)dismissModals {
-  ios::GetChromeBrowserProvider()
-      ->GetModalsProvider()
-      ->DismissModalsForCollectionView(self.collectionView);
+  ios::provider::DismissModalsForCollectionView(self.collectionView);
 }
 
 #pragma mark - LayoutSwitcher
@@ -968,6 +1005,15 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   cell.itemIdentifier = item.identifier;
   cell.title = item.title;
   cell.titleHidden = item.hidesTitle;
+  if (self.mode == TabGridModeSelection) {
+    if ([self isItemWithIDSelectedForEditing:item.identifier]) {
+      cell.state = GridCellStateEditingSelected;
+    } else {
+      cell.state = GridCellStateEditingUnselected;
+    }
+  } else {
+    cell.state = GridCellStateNotEditing;
+  }
   NSString* itemIdentifier = item.identifier;
   [self.imageDataSource faviconForIdentifier:itemIdentifier
                                   completion:^(UIImage* icon) {
@@ -1009,6 +1055,15 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     return;
 
   NSString* itemID = self.items[index].identifier;
+  if (_mode == TabGridModeSelection) {
+    if ([self isItemWithIDSelectedForEditing:itemID]) {
+      [self deselectItemWithIDForEditing:itemID];
+    } else {
+      [self selectItemWithIDForEditing:itemID];
+    }
+    [self.collectionView reloadItemsAtIndexPaths:@[ indexPath ]];
+  }
+
   [self.delegate gridViewController:self didSelectItemWithID:itemID];
 }
 
@@ -1078,6 +1133,44 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     cell.accessibilityIdentifier = [NSString
         stringWithFormat:@"%@%ld", kGridCellIdentifierPrefix, itemIndex];
   }
+}
+
+#pragma mark - Public Editing Mode Selection
+- (void)selectAllItemsForEditing {
+  if (_mode != TabGridModeSelection) {
+    return;
+  }
+
+  for (TabSwitcherItem* item in self.items) {
+    [self selectItemWithIDForEditing:item.identifier];
+  }
+  [self.collectionView reloadData];
+}
+
+- (NSArray<NSString*>*)selectedItemIDsForEditing {
+  return [self.selectedEditingItemIDs allObjects];
+}
+
+- (NSArray<NSString*>*)selectedShareableItemIDsForEditing {
+  return [self.selectedSharableEditingItemIDs allObjects];
+}
+
+#pragma mark - Private Editing Mode Selection
+
+- (BOOL)isItemWithIDSelectedForEditing:(NSString*)identifier {
+  return [self.selectedEditingItemIDs containsObject:identifier];
+}
+
+- (void)selectItemWithIDForEditing:(NSString*)identifier {
+  [self.selectedEditingItemIDs addObject:identifier];
+  if ([self.shareableItemsProvider isItemWithIdentifierSharable:identifier]) {
+    [self.selectedSharableEditingItemIDs addObject:identifier];
+  }
+}
+
+- (void)deselectItemWithIDForEditing:(NSString*)identifier {
+  [self.selectedEditingItemIDs removeObject:identifier];
+  [self.selectedSharableEditingItemIDs removeObject:identifier];
 }
 
 #pragma mark - ThumbStripSupporting

@@ -24,6 +24,7 @@ Jos haluat myöntää käyttöluvan, valitse alta <ph name="BUTTON_NAME" />, nii
 Jos <ph name="SERVICE_SCRIPT_NAME" /> on jo valittuna, poista valinta ja valitse se uudelleen.</translation>
 <translation id="225614027745146050">Tervetuloa</translation>
 <translation id="2320166752086256636">Piilota näppäimistö</translation>
+<translation id="2329392777730037872"><ph name="URL" /> ei avaudu asiakassovelluksessa.</translation>
 <translation id="2333212046079545895">Copyright 2021 Google LLC. Kaikki oikeudet pidätetään.</translation>
 <translation id="2359808026110333948">Jatka</translation>
 <translation id="2366718077645204424">Isäntään ei saatu yhteyttä. Tämä johtuu luultavasti käyttämäsi verkon määrityksistä.</translation>
@@ -67,6 +68,7 @@ Jos <ph name="SERVICE_SCRIPT_NAME" /> on jo valittuna, poista valinta ja valitse
 <translation id="4176825807642096119">Käyttökoodi</translation>
 <translation id="4227991223508142681">Isäntien hallintatyökalu</translation>
 <translation id="4240294130679914010">Chromoting-isännän asennuksen poisto</translation>
+<translation id="4257751272692708833">URL-osoitteen välittäjä: <ph name="PRODUCT_NAME" /></translation>
 <translation id="4277736576214464567">Käyttökoodi on virheellinen. Yritä uudelleen.</translation>
 <translation id="4281844954008187215">Käyttöehdot</translation>
 <translation id="4405930547258349619">Ydinkirjasto</translation>
@@ -87,6 +89,7 @@ Jos <ph name="SERVICE_SCRIPT_NAME" /> on jo valittuna, poista valinta ja valitse
 <translation id="4867841927763172006">Lähetä PrtScn</translation>
 <translation id="4974476491460646149">Yhteys suljettu isäntään <ph name="HOSTNAME" /></translation>
 <translation id="4985296110227979402">Määritä ensin tietokone, johon haluat muodostaa etäyhteyden.</translation>
+<translation id="4987330545941822761">Chrome-etäkäyttö ei tunnista URL-osoitteiden paikalliseen avaamiseen käytettävää selainta. Valitse se listalta.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="507204348399810022">Haluatko varmasti poistaa käytöstä etäyhteydet kohteeseen <ph name="HOSTNAME" />?</translation>
 <translation id="5170982930780719864">Isännän tunnus on virheellinen.</translation>
@@ -121,6 +124,7 @@ Jos <ph name="SERVICE_SCRIPT_NAME" /> on jo valittuna, poista valinta ja valitse
 <translation id="6612717000975622067">Lähetä Ctrl-Alt-Del</translation>
 <translation id="6654753848497929428">Jaa</translation>
 <translation id="677755392401385740">Käyttäjän <ph name="HOST_USERNAME" /> isäntä käynnistettiin.</translation>
+<translation id="6902524959760471898">Apusovellus URL-osoitteen avaamiseen asiakassovelluksessa: <ph name="PRODUCT_NAME" /></translation>
 <translation id="6939719207673461467">Näytä/piilota näppäimistö</translation>
 <translation id="6963936880795878952">Yhteydet etätietokoneeseen on väliaikaisesti estetty, sillä siihen yritettiin muodostaa yhteys virheellisellä PIN-koodilla. Yritä myöhemmin uudelleen.</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -133,6 +137,7 @@ Jos <ph name="SERVICE_SCRIPT_NAME" /> on jo valittuna, poista valinta ja valitse
 <translation id="7144878232160441200">Yritä uudelleen</translation>
 <translation id="7312846573060934304">Isäntä on offline-tilassa.</translation>
 <translation id="7319983568955948908">Lopeta jakaminen</translation>
+<translation id="7359298090707901886">Valitulla selaimella ei voi avata URL-osoitteita paikallisella laitteella.</translation>
 <translation id="7401733114166276557">Chrome-etäkäyttö</translation>
 <translation id="7434397035092923453">Käyttöoikeus kiellettiin asiakkaalta <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Asiakas <ph name="CLIENT_USERNAME" /> yhdistettiin.</translation>

@@ -14,9 +14,10 @@
 #include "core/fxcrt/fx_extension.h"
 #include "core/fxcrt/fx_string.h"
 #include "core/fxcrt/fx_system.h"
+#include "core/fxcrt/fx_unicode.h"
+#include "core/fxcrt/stl_util.h"
 #include "third_party/base/check.h"
 #include "third_party/base/ptr_util.h"
-#include "third_party/base/stl_util.h"
 
 namespace {
 
@@ -97,7 +98,7 @@ Optional<WideString> ExtractSubString(const wchar_t* lpszFullString,
   while (iSubString--) {
     lpszFullString = std::wcschr(lpszFullString, L' ');
     if (!lpszFullString)
-      return {};
+      return pdfium::nullopt;
 
     lpszFullString++;
     while (*lpszFullString == L' ')
@@ -108,7 +109,7 @@ Optional<WideString> ExtractSubString(const wchar_t* lpszFullString,
   int nLen = lpchEnd ? static_cast<int>(lpchEnd - lpszFullString)
                      : static_cast<int>(wcslen(lpszFullString));
   if (nLen < 0)
-    return {};
+    return pdfium::nullopt;
 
   return WideString(lpszFullString, static_cast<size_t>(nLen));
 }
@@ -129,7 +130,7 @@ std::vector<WideString> ExtractFindWhat(const WideString& findwhat) {
   int index = 0;
   while (1) {
     Optional<WideString> word = ExtractSubString(findwhat.c_str(), index);
-    if (!word)
+    if (!word.has_value())
       break;
 
     if (word->IsEmpty()) {
@@ -141,9 +142,9 @@ std::vector<WideString> ExtractFindWhat(const WideString& findwhat) {
     size_t pos = 0;
     while (pos < word->GetLength()) {
       WideString curStr = word->Substr(pos, 1);
-      wchar_t curChar = (*word)[pos];
+      wchar_t curChar = word.value()[pos];
       if (IsIgnoreSpaceCharacter(curChar)) {
-        if (pos > 0 && curChar == 0x2019) {
+        if (pos > 0 && curChar == pdfium::unicode::kRightSingleQuotationMark) {
           pos++;
           continue;
         }
@@ -217,7 +218,7 @@ bool CPDF_TextPageFind::FindNext() {
   if (m_findNextStart.value() > strLen - 1)
     return false;
 
-  int nCount = pdfium::CollectionSize<int>(m_csFindWhatArray);
+  int nCount = fxcrt::CollectionSize<int>(m_csFindWhatArray);
   Optional<size_t> nResultPos = 0;
   size_t nStartPos = m_findNextStart.value();
   bool bSpaceStart = false;

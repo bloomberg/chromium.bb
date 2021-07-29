@@ -23,8 +23,48 @@ namespace transform {
 /// Msl is a transform used to sanitize a Program for use with the Msl writer.
 /// Passing a non-sanitized Program to the Msl writer will result in undefined
 /// behavior.
-class Msl : public Transform {
+class Msl : public Castable<Msl, Transform> {
  public:
+  /// The default buffer slot to use for the storage buffer size buffer.
+  const uint32_t kDefaultBufferSizeUniformIndex = 30;
+
+  /// Configuration options for the Msl sanitizer transform.
+  struct Config : public Castable<Data, transform::Data> {
+    /// Constructor
+    /// @param buffer_size_ubo_idx the index to use for the buffer size UBO
+    /// @param sample_mask the fixed sample mask to use for fragment shaders
+    explicit Config(uint32_t buffer_size_ubo_idx,
+                    uint32_t sample_mask = 0xFFFFFFFF);
+
+    /// Copy constructor
+    Config(const Config&);
+
+    /// Destructor
+    ~Config() override;
+
+    /// The index to use when generating a UBO to receive storage buffer sizes.
+    uint32_t buffer_size_ubo_index;
+
+    /// The fixed sample mask to combine with fragment shader outputs.
+    uint32_t fixed_sample_mask;
+  };
+
+  /// Information produced by the sanitizer that users may need to act on.
+  struct Result : public Castable<Result, transform::Data> {
+    /// Constructor
+    /// @param needs_buffer_sizes True if the shader needs a UBO of buffer sizes
+    explicit Result(bool needs_buffer_sizes);
+
+    /// Copy constructor
+    Result(const Result&);
+
+    /// Destructor
+    ~Result() override;
+
+    /// True if the shader needs a UBO of buffer sizes.
+    bool const needs_storage_buffer_sizes;
+  };
+
   /// Constructor
   Msl();
   ~Msl() override;
@@ -34,6 +74,12 @@ class Msl : public Transform {
   /// @param data optional extra transform-specific input data
   /// @returns the transformation result
   Output Run(const Program* program, const DataMap& data = {}) override;
+
+ private:
+  /// Pushes module-scope variables with certain storage classes into the entry
+  /// point function, and passes them as function parameters to any functions
+  /// that need them.
+  void HandleModuleScopeVariables(CloneContext& ctx) const;
 };
 
 }  // namespace transform

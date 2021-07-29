@@ -4,7 +4,7 @@
 
 #include "components/autofill_assistant/browser/actions/get_element_status_action.h"
 
-#include "base/stl_util.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
@@ -165,7 +165,7 @@ void GetElementStatusAction::OnGetStringAttribute(const ClientStatus& status,
       CompareResult(text, expected_match.re2(), /* is_re2= */ true);
       return;
     case GetElementStatusProto::TextMatch::kTextValue:
-      ResolveTextValue(
+      user_data::ResolveTextValue(
           expected_match.text_value(), *element_, delegate_,
           base::BindOnce(&GetElementStatusAction::OnResolveTextValue,
                          weak_ptr_factory_.GetWeakPtr(), text));

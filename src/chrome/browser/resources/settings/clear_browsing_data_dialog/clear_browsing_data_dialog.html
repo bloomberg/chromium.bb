@@ -101,19 +101,37 @@
         position: fixed;
       }
 
-      #searchHistoryTextBox {
+      .search-history-box {
         background-color: var(--google-grey-50);
         border: 1px solid var(--google-grey-200);
         border-radius: 4px;
+        display: flex;
         margin-top: 12px;
-        padding: 12px;
+        padding: 8px;
       }
 
       /* dark mode */
       @media (prefers-color-scheme: dark) {
-        #searchHistoryTextBox {
+        .search-history-box {
           background-color: rgba(0, 0, 0, .3);
           border-color: transparent;
+        }
+      }
+
+      .search-history-box-icon {
+        --iron-icon-fill-color: var(--cr-link-row-start-icon-color,
+            var(--google-grey-refresh-700));
+        display: flex;
+        flex-shrink: 0;
+        margin: auto;
+        padding-inline-end: 10px;
+        width: var(--cr-link-row-icon-width, var(--cr-icon-size));
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .search-history-box-icon {
+          --iron-icon-fill-color: var(--cr-link-row-start-icon-color,
+              var(--google-grey-refresh-500));
         }
       }
     </style>
@@ -178,9 +196,23 @@
                 sub-label="[[counters_.cache_basic]]"
                 disabled="[[clearingInProgress_]]" no-set-pref>
             </settings-checkbox>
-            <div id="searchHistoryTextBox"
-                hidden="[[!shouldShowSearchHistoryLabel_]]">
-              $i18nRaw{clearSearchHistorySummarySignedIn}
+            <div class="search-history-box"
+                hidden="[[!shouldShowGoogleSearchHistoryLabel_(isSignedIn_)]]">
+              <iron-icon class="search-history-box-icon" aria-hidden="true"
+                  icon="settings20:googleg">
+              </iron-icon>
+              <div id="googleSearchHistoryLabel"
+                  inner-h-t-m-l="[[googleSearchHistoryString_]]">
+              </div>
+            </div>
+            <div class="search-history-box"
+                hidden="[[!shouldShowNonGoogleSearchHistoryLabel_(isNonGoogleDse_)]]">
+              <iron-icon class="search-history-box-icon" aria-hidden="true"
+                  icon="cr:search">
+              </iron-icon>
+              <div id="nonGoogleSearchHistoryLabel"
+                  inner-h-t-m-l="[[nonGoogleSearchHistoryString_]]">
+              </div>
             </div>
           </div>
           <div id="advanced-tab">

@@ -52,7 +52,8 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry);
 bool IsPinDisabledByPolicy(PrefService* pref_service);
 
 // Returns true if the quick unlock feature flag is present.
-bool IsPinEnabled(PrefService* pref_service);
+// TODO(crbug/1111541): Remove this function because it always returns true.
+bool IsPinEnabled();
 
 // Returns true if the fingerprint is supported by the device.
 bool IsFingerprintSupported();
@@ -87,9 +88,12 @@ void AddFingerprintResources(content::WebUIDataSource* html_source);
 // source migration is finished.
 namespace ash {
 namespace quick_unlock {
+using ::chromeos::quick_unlock::DisablePinByPolicyForTesting;
 using ::chromeos::quick_unlock::EnabledForTesting;
 using ::chromeos::quick_unlock::IsPinDisabledByPolicy;
 using ::chromeos::quick_unlock::IsPinEnabled;
+using ::chromeos::quick_unlock::PasswordConfirmationFrequency;
+using ::chromeos::quick_unlock::PasswordConfirmationFrequencyToTimeDelta;
 }  // namespace quick_unlock
 }  // namespace ash
 

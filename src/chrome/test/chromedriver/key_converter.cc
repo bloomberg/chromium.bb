@@ -6,8 +6,8 @@
 
 #include <stddef.h>
 
+#include "base/cxx17_backports.h"
 #include "base/format_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
@@ -755,7 +755,7 @@ Status ConvertKeyActionToKeyEvent(const base::DictionaryValue* action_object,
   if (is_key_down)
     pressed->SetBoolean(key, true);
   else
-    pressed->Remove(key, nullptr);
+    pressed->RemoveKey(key);
 
   KeyEventBuilder builder;
   builder.SetKeyCode(key_code)

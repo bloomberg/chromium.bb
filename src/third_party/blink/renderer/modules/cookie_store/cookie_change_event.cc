@@ -109,8 +109,7 @@ CookieListItem* CookieChangeEvent::ToCookieListItem(
   if (!is_deleted) {
     list_item->setValue(String::FromUTF8(canonical_cookie.Value()));
     if (canonical_cookie.ExpiryDate().is_null()) {
-      // TODO(crbug.com/1070871): Use absl::nullopt instead.
-      list_item->setExpiresToNull();
+      list_item->setExpires(absl::nullopt);
     } else {
       list_item->setExpires(ConvertSecondsToDOMTimeStamp(
           canonical_cookie.ExpiryDate().ToDoubleT()));

@@ -21,6 +21,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
 
@@ -44,7 +45,7 @@ namespace content {
 //  -if you need to delay when the server sends the response, use
 //   net::test_server::ControllableHttpResponse
 //  -otherwise, if you need full control over the net::Error and/or want to
-//   inspect and/or modify the C++ structs used by URLoader interface, then use
+//   inspect and/or modify the C++ structs used by URLLoader interface, then use
 //   this helper class
 //
 // Notes:

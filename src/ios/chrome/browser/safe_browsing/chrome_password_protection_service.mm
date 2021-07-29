@@ -17,12 +17,12 @@
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/ui/password_check_referrer.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/core/browser/verdict_cache_manager.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/common/safebrowsing_constants.h"
 #include "components/safe_browsing/core/common/utils.h"
-#include "components/safe_browsing/core/features.h"
-#include "components/safe_browsing/core/verdict_cache_manager.h"
-#include "components/safe_browsing/ios/password_protection/password_protection_request_ios.h"
+#include "components/safe_browsing/ios/browser/password_protection/password_protection_request_ios.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/base/model_type.h"
@@ -39,7 +39,7 @@
 #import "ios/chrome/browser/safe_browsing/verdict_cache_manager_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/sync/ios_user_event_service_factory.h"
-#include "ios/chrome/browser/sync/profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/sync_service_factory.h"
 #include "ios/web/public/navigation/navigation_item.h"
 #include "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/thread/web_thread.h"
@@ -356,13 +356,6 @@ ChromePasswordProtectionService::GetUrlDisplayExperiment() const {
       base::FeatureList::IsEnabled(safe_browsing::kDelayedWarnings));
   experiment.set_delayed_warnings_mouse_clicks_enabled(
       safe_browsing::kDelayedWarningsEnableMouseClicks.Get());
-  // Actual URL display experiments:
-  experiment.set_reveal_on_hover(base::FeatureList::IsEnabled(
-      omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover));
-  experiment.set_hide_on_interaction(base::FeatureList::IsEnabled(
-      omnibox::kHideSteadyStateUrlPathQueryAndRefOnInteraction));
-  experiment.set_elide_to_registrable_domain(
-      base::FeatureList::IsEnabled(omnibox::kMaybeElideToRegistrableDomain));
   return experiment;
 }
 
@@ -371,10 +364,8 @@ AccountInfo ChromePasswordProtectionService::GetAccountInfo() const {
       IdentityManagerFactory::GetForBrowserState(browser_state_);
   if (!identity_manager)
     return AccountInfo();
-  absl::optional<AccountInfo> primary_account_info =
-      identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
-          identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSync));
-  return primary_account_info.value_or(AccountInfo());
+  return identity_manager->FindExtendedAccountInfo(
+      identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSync));
 }
 
 AccountInfo ChromePasswordProtectionService::GetSignedInNonSyncAccount(
@@ -396,9 +387,7 @@ AccountInfo ChromePasswordProtectionService::GetSignedInNonSyncAccount(
   if (account_iterator == signed_in_accounts.end())
     return AccountInfo();
 
-  return identity_manager
-      ->FindExtendedAccountInfoForAccountWithRefreshToken(*account_iterator)
-      .value_or(AccountInfo());
+  return identity_manager->FindExtendedAccountInfo(*account_iterator);
 }
 
 LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType
@@ -471,7 +460,7 @@ bool ChromePasswordProtectionService::IsExtendedReporting() {
 
 bool ChromePasswordProtectionService::IsPrimaryAccountSyncing() const {
   syncer::SyncService* sync =
-      ProfileSyncServiceFactory::GetForBrowserState(browser_state_);
+      SyncServiceFactory::GetForBrowserState(browser_state_);
   return sync && sync->IsSyncFeatureActive() && !sync->IsLocalSyncEnabled();
 }
 
@@ -802,4 +791,3 @@ PrefService* ChromePasswordProtectionService::GetPrefs() const {
 bool ChromePasswordProtectionService::IsSafeBrowsingEnabled() {
   return ::safe_browsing::IsSafeBrowsingEnabled(*GetPrefs());
 }
-

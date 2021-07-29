@@ -4,9 +4,12 @@
 
 #include "ui/base/clipboard/test/clipboard_test_util.h"
 
+#include <vector>
+
+#include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/bind.h"
-#include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
 
 namespace ui {
@@ -19,22 +22,42 @@ class ReadImageHelper {
  public:
   ReadImageHelper() = default;
   ~ReadImageHelper() = default;
+
+  std::vector<uint8_t> ReadPng(Clipboard* clipboard) {
+    base::RunLoop loop;
+    std::vector<uint8_t> png;
+    clipboard->ReadPng(
+        ClipboardBuffer::kCopyPaste,
+        /* data_dst = */ nullptr,
+        base::BindLambdaForTesting([&](const std::vector<uint8_t>& result) {
+          png = result;
+          loop.Quit();
+        }));
+    loop.Run();
+    return png;
+  }
+
   SkBitmap ReadImage(Clipboard* clipboard) {
-    base::WaitableEvent event;
+    base::RunLoop loop;
     SkBitmap bitmap;
     clipboard->ReadImage(
         ClipboardBuffer::kCopyPaste,
         /* data_dst = */ nullptr,
         base::BindLambdaForTesting([&](const SkBitmap& result) {
           bitmap = result;
-          event.Signal();
+          loop.Quit();
         }));
-    event.Wait();
+    loop.Run();
     return bitmap;
   }
 };
 
 }  // namespace
+
+std::vector<uint8_t> ReadPng(Clipboard* clipboard) {
+  ReadImageHelper read_image_helper;
+  return read_image_helper.ReadPng(clipboard);
+}
 
 SkBitmap ReadImage(Clipboard* clipboard) {
   ReadImageHelper read_image_helper;

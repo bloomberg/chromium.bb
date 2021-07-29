@@ -305,11 +305,7 @@ enum AVPacketSideDataType {
 
 typedef struct AVPacketSideData {
     uint8_t *data;
-#if FF_API_BUFFER_SIZE_T
-    int      size;
-#else
     size_t   size;
-#endif
     enum AVPacketSideDataType type;
 } AVPacketSideData;
 
@@ -323,10 +319,6 @@ typedef struct AVPacketSideData {
  * packets, with no compressed data, containing only side data
  * (e.g. to update some stream parameters at the end of encoding).
  *
- * AVPacket is one of the few structs in FFmpeg, whose size is a part of public
- * ABI. Thus it may be allocated on stack and no new fields can be added to it
- * without libavcodec and libavformat major bump.
- *
  * The semantics of data ownership depends on the buf field.
  * If it is set, the packet data is dynamically allocated and is
  * valid indefinitely until a call to av_packet_unref() reduces the
@@ -338,6 +330,12 @@ typedef struct AVPacketSideData {
  * The side data is always allocated with av_malloc(), copied by
  * av_packet_ref() and freed by av_packet_unref().
  *
+ * sizeof(AVPacket) being a part of the public ABI is deprecated. once
+ * av_init_packet() is removed, new packets will only be able to be allocated
+ * with av_packet_alloc(), and new fields may be added to the end of the struct
+ * with a minor bump.
+ *
+ * @see av_packet_alloc
  * @see av_packet_ref
  * @see av_packet_unref
  */
@@ -385,22 +383,15 @@ typedef struct AVPacket {
     int64_t duration;
 
     int64_t pos;                            ///< byte position in stream, -1 if unknown
-
-#if FF_API_CONVERGENCE_DURATION
-    /**
-     * @deprecated Same as the duration field, but as int64_t. This was required
-     * for Matroska subtitles, whose duration values could overflow when the
-     * duration field was still an int.
-     */
-    attribute_deprecated
-    int64_t convergence_duration;
-#endif
 } AVPacket;
 
+#if FF_API_INIT_PACKET
+attribute_deprecated
 typedef struct AVPacketList {
     AVPacket pkt;
     struct AVPacketList *next;
 } AVPacketList;
+#endif
 
 #define AV_PKT_FLAG_KEY     0x0001 ///< The packet contains a keyframe
 #define AV_PKT_FLAG_CORRUPT 0x0002 ///< The packet content is corrupted
@@ -464,6 +455,7 @@ AVPacket *av_packet_clone(const AVPacket *src);
  */
 void av_packet_free(AVPacket **pkt);
 
+#if FF_API_INIT_PACKET
 /**
  * Initialize optional fields of a packet with default values.
  *
@@ -471,8 +463,16 @@ void av_packet_free(AVPacket **pkt);
  * initialized separately.
  *
  * @param pkt packet
+ *
+ * @see av_packet_alloc
+ * @see av_packet_unref
+ *
+ * @deprecated This function is deprecated. Once it's removed,
+               sizeof(AVPacket) will not be a part of the ABI anymore.
  */
+attribute_deprecated
 void av_init_packet(AVPacket *pkt);
+#endif
 
 /**
  * Allocate the payload of a packet and initialize its fields with
@@ -515,45 +515,6 @@ int av_grow_packet(AVPacket *pkt, int grow_by);
  */
 int av_packet_from_data(AVPacket *pkt, uint8_t *data, int size);
 
-#if FF_API_AVPACKET_OLD_API
-/**
- * @warning This is a hack - the packet memory allocation stuff is broken. The
- * packet is allocated if it was not really allocated.
- *
- * @deprecated Use av_packet_ref or av_packet_make_refcounted
- */
-attribute_deprecated
-int av_dup_packet(AVPacket *pkt);
-/**
- * Copy packet, including contents
- *
- * @return 0 on success, negative AVERROR on fail
- *
- * @deprecated Use av_packet_ref
- */
-attribute_deprecated
-int av_copy_packet(AVPacket *dst, const AVPacket *src);
-
-/**
- * Copy packet side data
- *
- * @return 0 on success, negative AVERROR on fail
- *
- * @deprecated Use av_packet_copy_props
- */
-attribute_deprecated
-int av_copy_packet_side_data(AVPacket *dst, const AVPacket *src);
-
-/**
- * Free a packet.
- *
- * @deprecated Use av_packet_unref
- *
- * @param pkt packet to free
- */
-attribute_deprecated
-void av_free_packet(AVPacket *pkt);
-#endif
 /**
  * Allocate new information of a packet.
  *
@@ -563,11 +524,7 @@ void av_free_packet(AVPacket *pkt);
  * @return pointer to fresh allocated data or NULL otherwise
  */
 uint8_t* av_packet_new_side_data(AVPacket *pkt, enum AVPacketSideDataType type,
-#if FF_API_BUFFER_SIZE_T
-                                 int size);
-#else
                                  size_t size);
-#endif
 
 /**
  * Wrap an existing array as a packet side data.
@@ -594,11 +551,7 @@ int av_packet_add_side_data(AVPacket *pkt, enum AVPacketSideDataType type,
  * @return 0 on success, < 0 on failure
  */
 int av_packet_shrink_side_data(AVPacket *pkt, enum AVPacketSideDataType type,
-#if FF_API_BUFFER_SIZE_T
-                               int size);
-#else
                                size_t size);
-#endif
 
 /**
  * Get side information from packet.
@@ -610,19 +563,7 @@ int av_packet_shrink_side_data(AVPacket *pkt, enum AVPacketSideDataType type,
  * @return pointer to data if present or NULL otherwise
  */
 uint8_t* av_packet_get_side_data(const AVPacket *pkt, enum AVPacketSideDataType type,
-#if FF_API_BUFFER_SIZE_T
-                                 int *size);
-#else
                                  size_t *size);
-#endif
-
-#if FF_API_MERGE_SD_API
-attribute_deprecated
-int av_packet_merge_side_data(AVPacket *pkt);
-
-attribute_deprecated
-int av_packet_split_side_data(AVPacket *pkt);
-#endif
 
 const char *av_packet_side_data_name(enum AVPacketSideDataType type);
 
@@ -633,7 +574,7 @@ const char *av_packet_side_data_name(enum AVPacketSideDataType type);
  * @param size pointer to store the size of the returned data
  * @return pointer to data if successful, NULL otherwise
  */
-uint8_t *av_packet_pack_dictionary(AVDictionary *dict, int *size);
+uint8_t *av_packet_pack_dictionary(AVDictionary *dict, size_t *size);
 /**
  * Unpack a dictionary from side_data.
  *
@@ -642,8 +583,8 @@ uint8_t *av_packet_pack_dictionary(AVDictionary *dict, int *size);
  * @param dict the metadata storage dictionary
  * @return 0 on success, < 0 on failure
  */
-int av_packet_unpack_dictionary(const uint8_t *data, int size, AVDictionary **dict);
-
+int av_packet_unpack_dictionary(const uint8_t *data, size_t size,
+                                AVDictionary **dict);
 
 /**
  * Convenience function to free all the side data stored.

@@ -17,14 +17,14 @@ namespace session_manager {
 class SessionManager;
 }
 
-namespace chromeos {
+namespace ash {
 
 class FakeLoginDisplayHost : public LoginDisplayHost {
  public:
   FakeLoginDisplayHost();
   ~FakeLoginDisplayHost() override;
 
-  // chromeos::LoginDisplayHost:
+  // LoginDisplayHost:
   LoginDisplay* GetLoginDisplay() override;
   ExistingUserController* GetExistingUserController() override;
   gfx::NativeWindow GetNativeWindow() const override;
@@ -55,13 +55,14 @@ class FakeLoginDisplayHost : public LoginDisplayHost {
       const AccountId& account_id,
       const absl::optional<user_manager::UserType>& user_type) override;
   void ShowGaiaDialog(const AccountId& prefilled_account) override;
+  void ShowOsInstallScreen() override;
   void HideOobeDialog() override;
   void SetShelfButtonsEnabled(bool enabled) override;
-  void UpdateOobeDialogState(ash::OobeDialogState state) override;
+  void UpdateOobeDialogState(OobeDialogState state) override;
   void CancelPasswordChangedFlow() override;
   void MigrateUserData(const std::string& old_password) override;
   void ResyncUserData() override;
-  bool HandleAccelerator(ash::LoginAcceleratorAction action) override;
+  bool HandleAccelerator(LoginAcceleratorAction action) override;
   void HandleDisplayCaptivePortal() override;
   void UpdateAddUserButtonStatus() override;
   void RequestSystemInfoUpdate() override;
@@ -82,6 +83,12 @@ class FakeLoginDisplayHost : public LoginDisplayHost {
   DISALLOW_COPY_AND_ASSIGN(FakeLoginDisplayHost);
 };
 
-}  // namespace chromeos
+}  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace chromeos {
+using ::ash::FakeLoginDisplayHost;
+}
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_UI_FAKE_LOGIN_DISPLAY_HOST_H_

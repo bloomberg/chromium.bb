@@ -8,13 +8,13 @@
 
 #include "base/containers/contains.h"
 #include "base/memory/weak_ptr.h"
-#include "components/autofill/core/browser/payments/internal_authenticator.h"
 #include "components/payments/content/android_app_communication.h"
 #include "components/payments/content/android_app_communication_test_support.h"
 #include "components/payments/content/payment_app_factory.h"
 #include "components/payments/content/payment_manifest_web_data_service.h"
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/core/android_app_description.h"
+#include "components/webauthn/core/browser/internal_authenticator.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_web_contents_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -63,6 +63,8 @@ class MockPaymentAppFactoryDelegate : public PaymentAppFactory::Delegate {
   const GURL& GetFrameOrigin() override { return frame_origin_; }
   MOCK_METHOD0(GetFrameSecurityOrigin, const url::Origin&());
   MOCK_CONST_METHOD0(GetInitiatorRenderFrameHost, content::RenderFrameHost*());
+  MOCK_CONST_METHOD0(GetInitiatorRenderFrameHostId,
+                     content::GlobalRenderFrameHostId());
   MOCK_CONST_METHOD0(GetMethodData,
                      const std::vector<mojom::PaymentMethodDataPtr>&());
   MOCK_CONST_METHOD0(CreateInternalAuthenticator,

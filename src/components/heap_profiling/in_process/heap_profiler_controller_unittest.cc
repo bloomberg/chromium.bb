@@ -14,20 +14,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/sampled_profile.pb.h"
 
-// TODO(crbug.com/961073): Fix memory leaks in tests and re-enable on LSAN.
-#ifdef LEAK_SANITIZER
-#define MAYBE_EmptyProfileIsNotEmitted DISABLED_EmptyProfileIsNotEmitted
-#else
-#define MAYBE_EmptyProfileIsNotEmitted EmptyProfileIsNotEmitted
-#endif
-
 class HeapProfilerControllerTest : public testing::Test {
  protected:
   base::test::TaskEnvironment task_environment{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 };
 
-TEST_F(HeapProfilerControllerTest, MAYBE_EmptyProfileIsNotEmitted) {
+TEST_F(HeapProfilerControllerTest, EmptyProfileIsNotEmitted) {
   HeapProfilerController controller;
   metrics::CallStackProfileBuilder::SetBrowserProcessReceiverCallback(
       base::BindLambdaForTesting(
@@ -89,27 +82,3 @@ TEST_F(HeapProfilerControllerTest, ProfileCollectionsScheduler) {
   EXPECT_LE(kSnapshotsToCollect, profile_count);
 }
 #endif
-
-TEST_F(HeapProfilerControllerTest, MergeSamples) {
-  using Sample = base::SamplingHeapProfiler::Sample;
-  Sample sample1(/*size=*/5, /*total=*/100, /*ordinal=*/1);
-  sample1.stack = {reinterpret_cast<void*>(0x1), reinterpret_cast<void*>(0x2)};
-  Sample sample2(/*size=*/6, /*total=*/102, /*ordinal=*/2);
-  sample2.stack = {reinterpret_cast<void*>(0x1), reinterpret_cast<void*>(0x3)};
-  Sample sample3(/*size=*/7, /*total=*/105, /*ordinal=*/3);
-  sample3.stack = {reinterpret_cast<void*>(0x1), reinterpret_cast<void*>(0x2)};
-
-  std::vector<Sample> samples = {sample1, sample2, sample3};
-
-  HeapProfilerController::SampleMap map =
-      HeapProfilerController::MergeSamples(samples);
-  ASSERT_EQ(map.size(), 2u);
-  auto it = map.find(sample1);
-  ASSERT_TRUE(it != map.end());
-  EXPECT_EQ(it->second.count, 35u);  // 100 / 5 + 105 / 7  = 35
-  EXPECT_EQ(it->second.total, 205u);
-  it = map.find(sample2);
-  ASSERT_TRUE(it != map.end());
-  EXPECT_EQ(it->second.count, 17u);  // 102 / 6 = 17
-  EXPECT_EQ(it->second.total, 102u);
-}

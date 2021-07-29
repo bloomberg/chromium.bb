@@ -8,10 +8,10 @@
 #include <utility>
 #include <vector>
 
-#include "ash/components/account_manager/account_manager.h"
-#include "ash/components/account_manager/account_manager_ash.h"
 #include "ash/components/account_manager/account_manager_factory.h"
 #include "base/dcheck_is_on.h"
+#include "chrome/browser/apps/app_service/publishers/standalone_browser_extension_apps.h"
+#include "chrome/browser/apps/app_service/publishers/standalone_browser_extension_apps_factory.h"
 #include "chrome/browser/apps/app_service/publishers/web_apps_crosapi.h"
 #include "chrome/browser/apps/app_service/publishers/web_apps_crosapi_factory.h"
 #include "chrome/browser/ash/crosapi/automation_ash.h"
@@ -27,11 +27,17 @@
 #include "chrome/browser/ash/crosapi/feedback_ash.h"
 #include "chrome/browser/ash/crosapi/file_manager_ash.h"
 #include "chrome/browser/ash/crosapi/idle_service_ash.h"
+#include "chrome/browser/ash/crosapi/image_writer_ash.h"
 #include "chrome/browser/ash/crosapi/keystore_service_ash.h"
 #include "chrome/browser/ash/crosapi/local_printer_ash.h"
 #include "chrome/browser/ash/crosapi/message_center_ash.h"
 #include "chrome/browser/ash/crosapi/metrics_reporting_ash.h"
+#include "chrome/browser/ash/crosapi/native_theme_service_ash.h"
+#include "chrome/browser/ash/crosapi/networking_attributes_ash.h"
+#include "chrome/browser/ash/crosapi/power_ash.h"
 #include "chrome/browser/ash/crosapi/prefs_ash.h"
+#include "chrome/browser/ash/crosapi/remoting_ash.h"
+#include "chrome/browser/ash/crosapi/resource_manager_ash.h"
 #include "chrome/browser/ash/crosapi/screen_manager_ash.h"
 #include "chrome/browser/ash/crosapi/select_file_ash.h"
 #include "chrome/browser/ash/crosapi/system_display_ash.h"
@@ -39,6 +45,7 @@
 #include "chrome/browser/ash/crosapi/test_controller_ash.h"
 #include "chrome/browser/ash/crosapi/url_handler_ash.h"
 #include "chrome/browser/ash/crosapi/video_capture_device_factory_ash.h"
+#include "chrome/browser/ash/crosapi/web_page_info_ash.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -50,6 +57,7 @@
 #include "chromeos/crosapi/mojom/drive_integration_service.mojom.h"
 #include "chromeos/crosapi/mojom/feedback.mojom.h"
 #include "chromeos/crosapi/mojom/file_manager.mojom.h"
+#include "chromeos/crosapi/mojom/image_writer.mojom.h"
 #include "chromeos/crosapi/mojom/keystore_service.mojom.h"
 #include "chromeos/crosapi/mojom/local_printer.mojom.h"
 #include "chromeos/crosapi/mojom/message_center.mojom.h"
@@ -58,6 +66,8 @@
 #include "chromeos/crosapi/mojom/task_manager.mojom.h"
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
+#include "components/account_manager_core/chromeos/account_manager.h"
+#include "components/account_manager_core/chromeos/account_manager_ash.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/device_service.h"
 #include "content/public/browser/media_session_service.h"
@@ -98,17 +108,24 @@ CrosapiAsh::CrosapiAsh()
       feedback_ash_(std::make_unique<FeedbackAsh>()),
       file_manager_ash_(std::make_unique<FileManagerAsh>()),
       idle_service_ash_(std::make_unique<IdleServiceAsh>()),
+      image_writer_ash_(std::make_unique<ImageWriterAsh>()),
       keystore_service_ash_(std::make_unique<KeystoreServiceAsh>()),
       local_printer_ash_(std::make_unique<LocalPrinterAsh>()),
       message_center_ash_(std::make_unique<MessageCenterAsh>()),
       metrics_reporting_ash_(std::make_unique<MetricsReportingAsh>(
           g_browser_process->local_state())),
+      native_theme_service_ash_(std::make_unique<NativeThemeServiceAsh>()),
+      networking_attributes_ash_(std::make_unique<NetworkingAttributesAsh>()),
+      power_ash_(std::make_unique<PowerAsh>()),
       prefs_ash_(
           std::make_unique<PrefsAsh>(g_browser_process->profile_manager(),
                                      g_browser_process->local_state())),
+      remoting_ash_(std::make_unique<RemotingAsh>()),
+      resource_manager_ash_(std::make_unique<ResourceManagerAsh>()),
       screen_manager_ash_(std::make_unique<ScreenManagerAsh>()),
       select_file_ash_(std::make_unique<SelectFileAsh>()),
       system_display_ash_(std::make_unique<SystemDisplayAsh>()),
+      web_page_info_factory_ash_(std::make_unique<WebPageInfoFactoryAsh>()),
       task_manager_ash_(std::make_unique<TaskManagerAsh>()),
       test_controller_ash_(std::make_unique<TestControllerAsh>()),
       url_handler_ash_(std::make_unique<UrlHandlerAsh>()),
@@ -162,6 +179,14 @@ void CrosapiAsh::BindBrowserServiceHost(
                                           std::move(receiver));
 }
 
+void CrosapiAsh::BindChromeAppPublisher(
+    mojo::PendingReceiver<mojom::AppPublisher> receiver) {
+  Profile* profile = ProfileManager::GetPrimaryUserProfile();
+  apps::StandaloneBrowserExtensionApps* chrome_apps =
+      apps::StandaloneBrowserExtensionAppsFactory::GetForProfile(profile);
+  chrome_apps->RegisterChromeAppsCrosapiHost(std::move(receiver));
+}
+
 void CrosapiAsh::BindFileManager(
     mojo::PendingReceiver<crosapi::mojom::FileManager> receiver) {
   file_manager_ash_->BindReceiver(std::move(receiver));
@@ -184,6 +209,11 @@ void CrosapiAsh::BindIdleService(
   idle_service_ash_->BindReceiver(std::move(receiver));
 }
 
+void CrosapiAsh::BindImageWriter(
+    mojo::PendingReceiver<mojom::ImageWriter> receiver) {
+  image_writer_ash_->BindReceiver(std::move(receiver));
+}
+
 void CrosapiAsh::BindKeystoreService(
     mojo::PendingReceiver<crosapi::mojom::KeystoreService> receiver) {
   keystore_service_ash_->BindReceiver(std::move(receiver));
@@ -202,6 +232,11 @@ void CrosapiAsh::BindMessageCenter(
 void CrosapiAsh::BindMetricsReporting(
     mojo::PendingReceiver<mojom::MetricsReporting> receiver) {
   metrics_reporting_ash_->BindReceiver(std::move(receiver));
+}
+
+void CrosapiAsh::BindNativeThemeService(
+    mojo::PendingReceiver<crosapi::mojom::NativeThemeService> receiver) {
+  native_theme_service_ash_->BindReceiver(std::move(receiver));
 }
 
 void CrosapiAsh::BindSelectFile(
@@ -262,6 +297,11 @@ void CrosapiAsh::BindTestController(
   test_controller_ash_->BindReceiver(std::move(receiver));
 }
 
+void CrosapiAsh::BindWebPageInfoFactory(
+    mojo::PendingReceiver<mojom::WebPageInfoFactory> receiver) {
+  web_page_info_factory_ash_->BindReceiver(std::move(receiver));
+}
+
 void CrosapiAsh::BindClipboard(
     mojo::PendingReceiver<mojom::Clipboard> receiver) {
   clipboard_ash_->BindReceiver(std::move(receiver));
@@ -287,14 +327,32 @@ void CrosapiAsh::BindDownloadController(
   download_controller_ash_->BindReceiver(std::move(receiver));
 }
 
+void CrosapiAsh::BindNetworkingAttributes(
+    mojo::PendingReceiver<mojom::NetworkingAttributes> receiver) {
+  networking_attributes_ash_->BindReceiver(std::move(receiver));
+}
+
 void CrosapiAsh::BindSensorHalClient(
     mojo::PendingRemote<chromeos::sensors::mojom::SensorHalClient> remote) {
   chromeos::sensors::SensorHalDispatcher::GetInstance()->RegisterClient(
       std::move(remote));
 }
 
+void CrosapiAsh::BindPower(mojo::PendingReceiver<mojom::Power> receiver) {
+  power_ash_->BindReceiver(std::move(receiver));
+}
+
 void CrosapiAsh::BindPrefs(mojo::PendingReceiver<mojom::Prefs> receiver) {
   prefs_ash_->BindReceiver(std::move(receiver));
+}
+
+void CrosapiAsh::BindRemoting(mojo::PendingReceiver<mojom::Remoting> receiver) {
+  remoting_ash_->BindReceiver(std::move(receiver));
+}
+
+void CrosapiAsh::BindResourceManager(
+    mojo::PendingReceiver<mojom::ResourceManager> receiver) {
+  resource_manager_ash_->BindReceiver(std::move(receiver));
 }
 
 void CrosapiAsh::BindUrlHandler(
@@ -314,7 +372,7 @@ void CrosapiAsh::BindVideoCaptureDeviceFactory(
   video_capture_device_factory_ash_->BindReceiver(std::move(receiver));
 }
 
-void CrosapiAsh::BindAppPublisher(
+void CrosapiAsh::BindWebAppPublisher(
     mojo::PendingReceiver<mojom::AppPublisher> receiver) {
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
   apps::WebAppsCrosapi* web_apps =

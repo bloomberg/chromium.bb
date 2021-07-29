@@ -12,8 +12,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager_observer.h"
-#include "chrome/browser/chromeos/full_restore/arc_window_handler.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/shelf/shelf_spinner_item_controller.h"
@@ -22,11 +22,9 @@
 // ArcShelfSpinnerItemController displays the icon of the ARC app that
 // cannot be launched immediately (due to ARC not being ready) on Chrome OS'
 // shelf, with an overlaid spinner to provide visual feedback.
-class ArcShelfSpinnerItemController
-    : public ShelfSpinnerItemController,
-      public ArcAppListPrefs::Observer,
-      public arc::ArcSessionManagerObserver,
-      public chromeos::full_restore::ArcWindowHandler::Observer {
+class ArcShelfSpinnerItemController : public ShelfSpinnerItemController,
+                                      public ArcAppListPrefs::Observer,
+                                      public arc::ArcSessionManagerObserver {
  public:
   ArcShelfSpinnerItemController(const std::string& arc_app_id,
                                 int event_flags,
@@ -38,18 +36,27 @@ class ArcShelfSpinnerItemController
   // ShelfSpinnerItemController:
   void SetHost(const base::WeakPtr<ShelfSpinnerController>& host) override;
 
+  // ash::ShelfItemDelegate overrides:
+  void ItemSelected(std::unique_ptr<ui::Event> event,
+                    int64_t display_id,
+                    ash::ShelfLaunchSource source,
+                    ItemSelectedCallback callback,
+                    const ItemFilterPredicate& filter_predicate) override;
+
   // ArcAppListPrefs::Observer:
   void OnAppStatesChanged(const std::string& app_id,
                           const ArcAppListPrefs::AppInfo& app_info) override;
   void OnAppRemoved(const std::string& removed_app_id) override;
+  void OnAppConnectionReady() override;
 
   // arc::ArcSessionManagerObserver:
   void OnArcPlayStoreEnabledChanged(bool enabled) override;
 
-  // chromeos::full_restore::ArcWindowHandler::Observer:
-  void OnWindowCloseRequested(int window_id) override;
-
  private:
+  // Returns true if this item is created by full restore. Otherwise, returns
+  // false.
+  bool IsCreatedByFullRestore();
+
   // The flags of the event that caused the ARC app to be activated. These will
   // be propagated to the launch event once the app is actually launched.
   const int event_flags_;
@@ -62,9 +69,10 @@ class ArcShelfSpinnerItemController
   // Unowned
   Profile* observed_profile_ = nullptr;
 
-  base::ScopedObservation<chromeos::full_restore::ArcWindowHandler,
-                          chromeos::full_restore::ArcWindowHandler::Observer>
-      arc_handler_observation_{this};
+  // A one shot timer to close this item.
+  std::unique_ptr<base::OneShotTimer> close_timer_;
+
+  base::WeakPtrFactory<ArcShelfSpinnerItemController> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcShelfSpinnerItemController);
 };

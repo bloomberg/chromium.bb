@@ -90,6 +90,11 @@ SkBlitter* SkCreateRasterPipelineBlitter(const SkPixmap& dst,
                                          const SkMatrixProvider& matrixProvider,
                                          SkArenaAlloc* alloc,
                                          sk_sp<SkShader> clipShader) {
+    if (!paint.asBlendMode()) {
+        // The raster pipeline doesn't support SkBlender.
+        return nullptr;
+    }
+
     SkColorSpace* dstCS = dst.colorSpace();
     SkColorType dstCT = dst.colorType();
     SkColor4f paintColor = paint.getColor4f();
@@ -146,10 +151,12 @@ SkBlitter* SkRasterPipelineBlitter::Create(const SkPixmap& dst,
                                            bool is_opaque,
                                            bool is_constant,
                                            sk_sp<SkShader> clipShader) {
-    auto blitter = alloc->make<SkRasterPipelineBlitter>(dst,
-                                                        paint.getBlendMode(),
-                                                        alloc);
+    const auto bm = paint.asBlendMode();
+    if (!bm) {
+        return nullptr;
+    }
 
+    auto blitter = alloc->make<SkRasterPipelineBlitter>(dst, bm.value(), alloc);
 
     // Our job in this factory is to fill out the blitter's color pipeline.
     // This is the common front of the full blit pipelines, each constructed lazily on first use.

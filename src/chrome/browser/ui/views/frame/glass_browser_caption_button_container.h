@@ -14,7 +14,9 @@
 #include "ui/views/widget/widget_observer.h"
 
 class GlassBrowserFrameView;
+class TabSearchBubbleHost;
 class Windows10CaptionButton;
+class Windows10TabSearchCaptionButton;
 
 // Provides a container for Windows 10 caption buttons that can be moved between
 // frame and browser window as needed. When extended horizontally, becomes a
@@ -35,12 +37,17 @@ class GlassBrowserCaptionButtonContainer : public views::View,
   // See also ClientView::NonClientHitTest.
   int NonClientHitTest(const gfx::Point& point) const;
 
+  void OnWindowControlsOverlayEnabledChanged();
+
+  TabSearchBubbleHost* GetTabSearchBubbleHost();
+
  private:
   friend class GlassBrowserFrameView;
 
   // views::View:
   void AddedToWidget() override;
   void RemovedFromWidget() override;
+  void OnThemeChanged() override;
 
   // views::WidgetObserver:
   void OnWidgetBoundsChanged(views::Widget* widget,
@@ -54,6 +61,7 @@ class GlassBrowserCaptionButtonContainer : public views::View,
   void UpdateButtons();
 
   GlassBrowserFrameView* const frame_view_;
+  Windows10TabSearchCaptionButton* tab_search_button_ = nullptr;
   Windows10CaptionButton* const minimize_button_;
   Windows10CaptionButton* const maximize_button_;
   Windows10CaptionButton* const restore_button_;

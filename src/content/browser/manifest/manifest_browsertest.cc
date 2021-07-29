@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "content/public/browser/page.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
@@ -92,7 +93,7 @@ class ManifestBrowserTest : public ContentBrowserTest,
   }
 
   void GetManifestAndWait() {
-    shell()->web_contents()->GetManifest(base::BindOnce(
+    shell()->web_contents()->GetPrimaryPage().GetManifest(base::BindOnce(
         &ManifestBrowserTest::OnGetManifest, base::Unretained(this)));
 
     message_loop_runner_ = new MessageLoopRunner();
@@ -156,16 +157,14 @@ class ManifestBrowserTest : public ContentBrowserTest,
         reported_manifest_urls_.size());
   }
 
-  void DidUpdateWebManifestURL(
-      RenderFrameHost* rfh,
-      const absl::optional<GURL>& manifest_url) override {
-    if (!manifest_url) {
+  void DidUpdateWebManifestURL(RenderFrameHost* rfh,
+                               const GURL& manifest_url) override {
+    if (manifest_url.is_empty()) {
       reported_manifest_urls_.emplace_back();
       return;
     }
-    EXPECT_FALSE(manifest_url->is_empty());
-    EXPECT_TRUE(manifest_url->is_valid());
-    reported_manifest_urls_.push_back(*manifest_url);
+    EXPECT_TRUE(manifest_url.is_valid());
+    reported_manifest_urls_.push_back(manifest_url);
   }
 
  private:

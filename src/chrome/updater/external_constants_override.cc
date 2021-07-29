@@ -17,8 +17,10 @@
 #include "build/build_config.h"
 #include "chrome/updater/constants.h"
 #include "chrome/updater/external_constants.h"
+#include "chrome/updater/external_constants_default.h"
 #include "chrome/updater/external_constants_override.h"
 #include "chrome/updater/updater_branding.h"
+#include "chrome/updater/updater_scope.h"
 #include "chrome/updater/updater_version.h"
 #include "chrome/updater/util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -117,7 +119,8 @@ int ExternalConstantsOverrider::ServerKeepAliveSeconds() const {
 std::unique_ptr<ExternalConstantsOverrider>
 ExternalConstantsOverrider::FromDefaultJSONFile(
     std::unique_ptr<ExternalConstants> next_provider) {
-  absl::optional<base::FilePath> data_dir_path = GetBaseDirectory();
+  const absl::optional<base::FilePath> data_dir_path =
+      GetBaseDirectory(GetUpdaterScope());
   if (!data_dir_path) {
     LOG(ERROR) << "Cannot find app data path.";
     return nullptr;
@@ -142,8 +145,17 @@ ExternalConstantsOverrider::FromDefaultJSONFile(
     return nullptr;
   }
 
-  return std::make_unique<ExternalConstantsOverrider>(parsed_value->TakeDict(),
-                                                      std::move(next_provider));
+  return std::make_unique<ExternalConstantsOverrider>(
+      std::move(*parsed_value).TakeDict(), std::move(next_provider));
+}
+
+// Declared in external_constants.h. This implementation of the function is
+// used only if external_constants_override is linked into the binary.
+std::unique_ptr<ExternalConstants> CreateExternalConstants() {
+  std::unique_ptr<ExternalConstants> overrider =
+      ExternalConstantsOverrider::FromDefaultJSONFile(
+          CreateDefaultExternalConstants());
+  return overrider ? std::move(overrider) : CreateDefaultExternalConstants();
 }
 
 }  // namespace updater

@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/cpu.h"
 #include "base/files/scoped_file.h"
 #include "base/json/json_writer.h"
@@ -20,7 +21,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
@@ -790,7 +790,7 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
     RETURN_AND_NOTIFY_ON_FAILURE(
         vaapi_wrapper_->CreateContextAndSurfaces(
             va_surface_format_, requested_pic_size_,
-            VaapiWrapper::SurfaceUsageHint::kVideoDecoder,
+            {VaapiWrapper::SurfaceUsageHint::kVideoDecoder},
             requested_num_surfaces, &va_surface_ids),
         "Failed creating VA Surfaces", PLATFORM_FAILURE, );
 

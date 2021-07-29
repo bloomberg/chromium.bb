@@ -48,7 +48,7 @@ static int generate_raw_frame(uint16_t *frame_data, int i, int sample_rate,
     return 0;
 }
 
-static int init_encoder(AVCodec *enc, AVCodecContext **enc_ctx,
+static int init_encoder(const AVCodec *enc, AVCodecContext **enc_ctx,
                         int64_t ch_layout, int sample_rate)
 {
     AVCodecContext *ctx;
@@ -78,7 +78,7 @@ static int init_encoder(AVCodec *enc, AVCodecContext **enc_ctx,
     return 0;
 }
 
-static int init_decoder(AVCodec *dec, AVCodecContext **dec_ctx,
+static int init_decoder(const AVCodec *dec, AVCodecContext **dec_ctx,
                         int64_t ch_layout)
 {
     AVCodecContext *ctx;
@@ -105,16 +105,22 @@ static int init_decoder(AVCodec *dec, AVCodecContext **dec_ctx,
     return 0;
 }
 
-static int run_test(AVCodec *enc, AVCodec *dec, AVCodecContext *enc_ctx,
-                    AVCodecContext *dec_ctx)
+static int run_test(const AVCodec *enc, const AVCodec *dec,
+                    AVCodecContext *enc_ctx, AVCodecContext *dec_ctx)
 {
-    AVPacket enc_pkt;
+    AVPacket *enc_pkt;
     AVFrame *in_frame, *out_frame;
     uint8_t *raw_in = NULL, *raw_out = NULL;
     int in_offset = 0, out_offset = 0;
     int result = 0;
     int i = 0;
     int in_frame_bytes, out_frame_bytes;
+
+    enc_pkt = av_packet_alloc();
+    if (!enc_pkt) {
+        av_log(NULL, AV_LOG_ERROR, "Can't allocate output packet\n");
+        return AVERROR(ENOMEM);
+    }
 
     in_frame = av_frame_alloc();
     if (!in_frame) {
@@ -149,10 +155,6 @@ static int run_test(AVCodec *enc, AVCodec *dec, AVCodecContext *enc_ctx,
     }
 
     for (i = 0; i < NUMBER_OF_AUDIO_FRAMES; i++) {
-        av_init_packet(&enc_pkt);
-        enc_pkt.data = NULL;
-        enc_pkt.size = 0;
-
         result = av_frame_make_writable(in_frame);
         if (result < 0)
             return result;
@@ -173,7 +175,7 @@ static int run_test(AVCodec *enc, AVCodec *dec, AVCodecContext *enc_ctx,
         }
 
         while (result >= 0) {
-            result = avcodec_receive_packet(enc_ctx, &enc_pkt);
+            result = avcodec_receive_packet(enc_ctx, enc_pkt);
             if (result == AVERROR(EAGAIN))
                 break;
             else if (result < 0 && result != AVERROR_EOF) {
@@ -182,8 +184,8 @@ static int run_test(AVCodec *enc, AVCodec *dec, AVCodecContext *enc_ctx,
             }
 
             /* if we get an encoded packet, feed it straight to the decoder */
-            result = avcodec_send_packet(dec_ctx, &enc_pkt);
-            av_packet_unref(&enc_pkt);
+            result = avcodec_send_packet(dec_ctx, enc_pkt);
+            av_packet_unref(enc_pkt);
             if (result < 0) {
                 av_log(NULL, AV_LOG_ERROR, "Error submitting a packet for decoding\n");
                 return result;
@@ -234,6 +236,7 @@ static int run_test(AVCodec *enc, AVCodec *dec, AVCodecContext *enc_ctx,
 
     av_freep(&raw_in);
     av_freep(&raw_out);
+    av_packet_free(&enc_pkt);
     av_frame_free(&in_frame);
     av_frame_free(&out_frame);
     return 0;
@@ -241,7 +244,7 @@ static int run_test(AVCodec *enc, AVCodec *dec, AVCodecContext *enc_ctx,
 
 int main(void)
 {
-    AVCodec *enc = NULL, *dec = NULL;
+    const AVCodec *enc = NULL, *dec = NULL;
     AVCodecContext *enc_ctx = NULL, *dec_ctx = NULL;
     uint64_t channel_layouts[] = {AV_CH_LAYOUT_STEREO, AV_CH_LAYOUT_5POINT1_BACK, AV_CH_LAYOUT_SURROUND, AV_CH_LAYOUT_STEREO_DOWNMIX};
     int sample_rates[] = {8000, 44100, 48000, 192000};

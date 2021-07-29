@@ -9,14 +9,14 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "build/build_config.h"
 #include "media/cdm/cdm_auxiliary_helper.h"
 #include "media/media_buildflags.h"
+#include "media/mojo/mojom/cdm_document_service.mojom.h"
 #include "media/mojo/mojom/cdm_storage.mojom.h"
 #include "media/mojo/mojom/frame_interface_factory.mojom.h"
 #include "media/mojo/mojom/output_protection.mojom.h"
-#include "media/mojo/mojom/platform_verification.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "media/mojo/services/mojo_cdm_file_io.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -30,6 +30,8 @@ class MEDIA_MOJO_EXPORT MojoCdmHelper final : public CdmAuxiliaryHelper,
                                               public MojoCdmFileIO::Delegate {
  public:
   explicit MojoCdmHelper(mojom::FrameInterfaceFactory* frame_interfaces);
+  MojoCdmHelper(const MojoCdmHelper&) = delete;
+  MojoCdmHelper operator=(const MojoCdmHelper&) = delete;
   ~MojoCdmHelper() final;
 
   // CdmAuxiliaryHelper implementation.
@@ -45,6 +47,9 @@ class MEDIA_MOJO_EXPORT MojoCdmHelper final : public CdmAuxiliaryHelper,
                          const std::string& challenge,
                          ChallengePlatformCB callback) final;
   void GetStorageId(uint32_t version, StorageIdCB callback) final;
+#if defined(OS_WIN)
+  void GetCdmOriginId(GetCdmOriginIdCB callback) final;
+#endif  // defined(OS_WIN)
 
   // MojoCdmFileIO::Delegate implementation.
   void CloseCdmFileIO(MojoCdmFileIO* cdm_file_io) final;
@@ -52,22 +57,21 @@ class MEDIA_MOJO_EXPORT MojoCdmHelper final : public CdmAuxiliaryHelper,
 
  private:
   // All services are created lazily.
-  void ConnectToCdmStorage();
-  CdmAllocator* GetAllocator();
   void ConnectToOutputProtection();
-  void ConnectToPlatformVerification();
+  void ConnectToCdmDocumentService();
+
+  CdmAllocator* GetAllocator();
 
   // Provides interfaces when needed.
   mojom::FrameInterfaceFactory* frame_interfaces_;
 
-  // Connections to the additional services. For the mojom classes, if a
-  // connection error occurs, we will not be able to reconnect to the
-  // service as the document has been destroyed (see FrameServiceBase) or
-  // the browser crashed, so there's no point in trying to reconnect.
-  mojo::Remote<mojom::CdmStorage> cdm_storage_remote_;
-  std::unique_ptr<CdmAllocator> allocator_;
+  // Connections to the additional services. Will try to reconnect if
+  // disconnected, to handle cases like page refresh, where the document is
+  // destroyed but RenderFrameHostImpl is not.
   mojo::Remote<mojom::OutputProtection> output_protection_;
-  mojo::Remote<mojom::PlatformVerification> platform_verification_;
+  mojo::Remote<mojom::CdmDocumentService> cdm_document_service_;
+
+  std::unique_ptr<CdmAllocator> allocator_;
 
   FileReadCB file_read_cb_;
 
@@ -76,7 +80,6 @@ class MEDIA_MOJO_EXPORT MojoCdmHelper final : public CdmAuxiliaryHelper,
   std::vector<std::unique_ptr<MojoCdmFileIO>> cdm_file_io_set_;
 
   base::WeakPtrFactory<MojoCdmHelper> weak_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(MojoCdmHelper);
 };
 
 }  // namespace media

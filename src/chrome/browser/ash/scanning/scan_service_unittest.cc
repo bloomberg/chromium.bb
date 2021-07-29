@@ -6,12 +6,15 @@
 
 #include <cstdint>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "ash/content/scanning/mojom/scanning.mojom-test-utils.h"
-#include "ash/content/scanning/mojom/scanning.mojom.h"
+#include "ash/constants/ash_features.h"
+#include "ash/webui/scanning/mojom/scanning.mojom-test-utils.h"
+#include "ash/webui/scanning/mojom/scanning.mojom.h"
 #include "base/containers/flat_set.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -21,8 +24,20 @@
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/scanning/fake_lorgnette_scanner_manager.h"
+#include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service.h"
+#include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service_factory.h"
+#include "chrome/browser/ui/ash/holding_space/scoped_test_mount_point.h"
+#include "chrome/browser/ui/ash/test_session_controller.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/dbus/lorgnette/lorgnette_service.pb.h"
+#include "components/account_id/account_id.h"
+#include "components/user_manager/scoped_user_manager.h"
+#include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -32,6 +47,8 @@
 #include "ui/gfx/codec/png_codec.h"
 
 namespace ash {
+
+using holding_space::ScopedTestMountPoint;
 
 namespace {
 
@@ -45,7 +62,8 @@ constexpr char kFirstTestScannerName[] = "Test Scanner 1";
 constexpr char16_t kFirstTestScannerName16[] = u"Test Scanner 1";
 constexpr char kSecondTestScannerName[] = "Test Scanner 2";
 constexpr char16_t kSecondTestScannerName16[] = u"Test Scanner 2";
-constexpr char kEpsonTestName[] = "Epson";
+constexpr char kEpsonTestName[] =
+    "airscan:escl:EPSON XP-7100 Series:http://100.107.108.190:443/eSCL/";
 
 // Document source name used for tests.
 constexpr char kDocumentSourceName[] = "Flatbed";
@@ -54,6 +72,18 @@ constexpr char kAdfSourceName[] = "ADF Duplex";
 // Resolutions used for tests.
 constexpr uint32_t kFirstResolution = 75;
 constexpr uint32_t kSecondResolution = 300;
+
+// Email used for test profile.
+constexpr char kUserEmail[] = "user@email.com";
+
+// Translation from file type to saved file extension.
+const std::map<mojo_ipc::FileType, std::string> kFileTypes = {
+    {mojo_ipc::FileType::kJpg, "jpg"},
+    {mojo_ipc::FileType::kPdf, "pdf"},
+    {mojo_ipc::FileType::kPng, "png"},
+    // Temporarily set searchable pdfs to follow png pipeline while
+    // implementing.
+    {mojo_ipc::FileType::kSearchablePdf, "png"}};
 
 // Returns a DocumentSource object.
 lorgnette::DocumentSource CreateLorgnetteDocumentSource() {
@@ -92,23 +122,6 @@ lorgnette::ScannerCapabilities CreateEpsonScannerCapabilities() {
   return caps;
 }
 
-// Returns a vector of FilePaths to mimic saved scans.
-std::vector<base::FilePath> CreateSavedScanPaths(
-    const base::FilePath& dir,
-    const base::Time::Exploded& scan_time,
-    const std::string& type,
-    int num_pages_to_scan) {
-  std::vector<base::FilePath> file_paths;
-  file_paths.reserve(num_pages_to_scan);
-  for (int i = 1; i <= num_pages_to_scan; i++) {
-    file_paths.push_back(dir.Append(base::StringPrintf(
-        "scan_%02d%02d%02d-%02d%02d%02d_%d.%s", scan_time.year, scan_time.month,
-        scan_time.day_of_month, scan_time.hour, scan_time.minute,
-        scan_time.second, i, type.c_str())));
-  }
-  return file_paths;
-}
-
 // Returns single FilePath to mimic saved PDF format scan.
 base::FilePath CreateSavedPdfScanPath(const base::FilePath& dir,
                                       const base::Time::Exploded& scan_time) {
@@ -116,6 +129,31 @@ base::FilePath CreateSavedPdfScanPath(const base::FilePath& dir,
                                        scan_time.year, scan_time.month,
                                        scan_time.day_of_month, scan_time.hour,
                                        scan_time.minute, scan_time.second));
+}
+
+// Returns a vector of FilePaths to mimic saved scans.
+std::vector<base::FilePath> CreateSavedScanPaths(
+    const base::FilePath& dir,
+    const base::Time::Exploded& scan_time,
+    const mojo_ipc::FileType& file_type,
+    int num_pages_to_scan) {
+  const auto typeAndExtension = kFileTypes.find(file_type);
+  EXPECT_NE(typeAndExtension, kFileTypes.cend());
+  std::vector<base::FilePath> file_paths;
+  if (file_type == mojo_ipc::FileType::kPdf) {
+    file_paths.reserve(1);
+    file_paths.push_back(CreateSavedPdfScanPath(dir, scan_time));
+  } else {
+    file_paths.reserve(num_pages_to_scan);
+    for (int i = 1; i <= num_pages_to_scan; i++) {
+      file_paths.push_back(dir.Append(base::StringPrintf(
+          "scan_%02d%02d%02d-%02d%02d%02d_%d.%s", scan_time.year,
+          scan_time.month, scan_time.day_of_month, scan_time.hour,
+          scan_time.minute, scan_time.second, i,
+          typeAndExtension->second.c_str())));
+    }
+  }
+  return file_paths;
 }
 
 // Returns a manually generated PNG image.
@@ -130,11 +168,21 @@ std::string CreatePng() {
 
 // Returns scan settings with the given path and file type.
 mojo_ipc::ScanSettings CreateScanSettings(const base::FilePath& scan_to_path,
-                                          const mojo_ipc::FileType& file_type) {
+                                          const mojo_ipc::FileType& file_type,
+                                          const std::string source = "") {
   mojo_ipc::ScanSettings settings;
   settings.scan_to_path = scan_to_path;
   settings.file_type = file_type;
+  settings.source_name = source;
   return settings;
+}
+
+// Returns a profile manager set up to generate testing profiles.
+std::unique_ptr<TestingProfileManager> CreateTestingProfileManager() {
+  auto profile_manager = std::make_unique<TestingProfileManager>(
+      TestingBrowserProcess::GetGlobal());
+  EXPECT_TRUE(profile_manager->SetUp());
+  return profile_manager;
 }
 
 }  // namespace
@@ -207,11 +255,31 @@ class FakeScanJobObserver : public mojo_ipc::ScanJobObserver {
 
 class ScanServiceTest : public testing::Test {
  public:
-  ScanServiceTest() = default;
+  ScanServiceTest()
+      : profile_manager_(CreateTestingProfileManager()),
+        profile_(profile_manager_->CreateTestingProfile(kUserEmail)),
+        scanned_files_mount_(
+            ScopedTestMountPoint::CreateAndMountDownloads(profile_)),
+        session_controller_(std::make_unique<TestSessionController>()),
+        user_manager_(new ash::FakeChromeUserManager),
+        user_manager_owner_(base::WrapUnique(user_manager_)) {
+    DCHECK(scanned_files_mount_->IsValid());
+    const AccountId account_id(AccountId::FromUserEmail(kUserEmail));
+    user_manager_->AddUser(account_id);
+    user_manager_->LoginUser(account_id);
+    SetupScanService(scanned_files_mount_->GetRootPath(),
+                     base::FilePath("/google/drive"));
+  }
 
-  void SetUp() override {
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    scan_service_.BindInterface(
+  void SetupScanService(base::FilePath my_files_path,
+                        base::FilePath google_drive_path) {
+    scan_service_ = std::make_unique<ScanService>(
+        &fake_lorgnette_scanner_manager_, my_files_path, google_drive_path,
+        profile_);
+    if (scan_service_remote_.is_bound()) {
+      scan_service_remote_.reset();
+    }
+    scan_service_->BindInterface(
         scan_service_remote_.BindNewPipeAndPassReceiver());
   }
 
@@ -253,13 +321,18 @@ class ScanServiceTest : public testing::Test {
   }
 
  protected:
-  base::test::TaskEnvironment task_environment_{
+  // A `BrowserTaskEnvironment` allows the test to create a `TestingProfile`.
+  content::BrowserTaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
-  base::ScopedTempDir temp_dir_;
   FakeLorgnetteScannerManager fake_lorgnette_scanner_manager_;
   FakeScanJobObserver fake_scan_job_observer_;
-  ScanService scan_service_{&fake_lorgnette_scanner_manager_, base::FilePath(),
-                            base::FilePath()};
+  std::unique_ptr<TestingProfileManager> profile_manager_;
+  TestingProfile* const profile_;
+  std::unique_ptr<ScopedTestMountPoint> scanned_files_mount_;
+  std::unique_ptr<TestSessionController> session_controller_;
+  ash::FakeChromeUserManager* const user_manager_;
+  user_manager::ScopedUserManager user_manager_owner_;
+  std::unique_ptr<ScanService> scan_service_;
 
  private:
   mojo::Remote<mojo_ipc::ScanService> scan_service_remote_;
@@ -365,9 +438,9 @@ TEST_F(ScanServiceTest, ScanWithUnsupportedFilePath) {
   ASSERT_EQ(scanners.size(), 1u);
 
   const base::FilePath my_files_path(kMyFilesPath);
-  scan_service_.SetMyFilesPathForTesting(my_files_path);
   const mojo_ipc::ScanSettings settings = CreateScanSettings(
       my_files_path.Append("../../../var/log"), mojo_ipc::FileType::kPng);
+  SetupScanService(my_files_path, base::FilePath("/google/drive"));
   EXPECT_FALSE(StartScan(scanners[0]->id, settings.Clone()));
 }
 
@@ -385,17 +458,26 @@ TEST_F(ScanServiceTest, Scan) {
   // Since we're using mock time, this is deterministic.
   base::Time::Now().LocalExplode(&scan_time);
 
-  scan_service_.SetMyFilesPathForTesting(temp_dir_.GetPath());
-  std::map<std::string, mojo_ipc::FileType> file_types = {
-      {"png", mojo_ipc::FileType::kPng}, {"jpg", mojo_ipc::FileType::kJpg}};
-  for (const auto& type : file_types) {
+  base::HistogramTester histogram_tester;
+  int num_single_file_scans = 0u;
+  int num_multi_file_scans = 0u;
+  for (int type_num = static_cast<int>(mojo_ipc::FileType::kMinValue);
+       type_num <= static_cast<int>(mojo_ipc::FileType::kMaxValue);
+       ++type_num) {
+    auto type = static_cast<mojo_ipc::FileType>(type_num);
+    if (type == mojo_ipc::FileType::kSearchablePdf &&
+        !base::FeatureList::IsEnabled(
+            chromeos::features::kScanAppSearchablePdf)) {
+      continue;
+    }
+
     const std::vector<base::FilePath> saved_scan_paths = CreateSavedScanPaths(
-        temp_dir_.GetPath(), scan_time, type.first, scan_data.size());
+        scanned_files_mount_->GetRootPath(), scan_time, type, scan_data.size());
     for (const auto& saved_scan_path : saved_scan_paths)
       EXPECT_FALSE(base::PathExists(saved_scan_path));
 
     mojo_ipc::ScanSettings settings =
-        CreateScanSettings(temp_dir_.GetPath(), type.second);
+        CreateScanSettings(scanned_files_mount_->GetRootPath(), type);
     EXPECT_TRUE(StartScan(scanners[0]->id, settings.Clone()));
     for (const auto& saved_scan_path : saved_scan_paths)
       EXPECT_TRUE(base::PathExists(saved_scan_path));
@@ -404,38 +486,16 @@ TEST_F(ScanServiceTest, Scan) {
     EXPECT_EQ(mojo_ipc::ScanResult::kSuccess,
               fake_scan_job_observer_.scan_result());
     EXPECT_EQ(saved_scan_paths, fake_scan_job_observer_.scanned_file_paths());
+
+    // Verify that the histograms have been updated correctly.
+    histogram_tester.ExpectBucketCount(
+        "Scanning.NumFilesCreated", saved_scan_paths.size(),
+        type == mojo_ipc::FileType::kPdf ? ++num_single_file_scans
+                                         : ++num_multi_file_scans);
+    histogram_tester.ExpectUniqueSample(
+        "Scanning.NumPagesScanned", scan_data.size(),
+        num_single_file_scans + num_multi_file_scans);
   }
-}
-
-// Test that a scan with PDF file format can be perfomed successfully.
-TEST_F(ScanServiceTest, PdfScan) {
-  fake_lorgnette_scanner_manager_.SetGetScannerNamesResponse(
-      {kFirstTestScannerName});
-  const std::vector<std::string> scan_data = {CreatePng(), CreatePng(),
-                                              CreatePng()};
-  fake_lorgnette_scanner_manager_.SetScanResponse(scan_data);
-  auto scanners = GetScanners();
-  ASSERT_EQ(scanners.size(), 1u);
-
-  base::Time::Exploded scan_time;
-  // Since we're using mock time, this is deterministic.
-  base::Time::Now().LocalExplode(&scan_time);
-
-  scan_service_.SetMyFilesPathForTesting(temp_dir_.GetPath());
-  mojo_ipc::ScanSettings settings =
-      CreateScanSettings(temp_dir_.GetPath(), mojo_ipc::FileType::kPdf);
-  const base::FilePath saved_scan_path =
-      CreateSavedPdfScanPath(temp_dir_.GetPath(), scan_time);
-  EXPECT_FALSE(base::PathExists(saved_scan_path));
-  EXPECT_TRUE(StartScan(scanners[0]->id, settings.Clone()));
-  EXPECT_TRUE(base::PathExists(saved_scan_path));
-  EXPECT_TRUE(fake_scan_job_observer_.scan_success());
-  EXPECT_EQ(mojo_ipc::ScanResult::kSuccess,
-            fake_scan_job_observer_.scan_result());
-  const std::vector<base::FilePath> scanned_file_paths =
-      fake_scan_job_observer_.scanned_file_paths();
-  EXPECT_EQ(1u, scanned_file_paths.size());
-  EXPECT_EQ(saved_scan_path, scanned_file_paths.front());
 }
 
 // Test that an Epson ADF Duplex scan, which produces flipped pages, completes
@@ -454,11 +514,11 @@ TEST_F(ScanServiceTest, RotateEpsonADF) {
   // Since we're using mock time, this is deterministic.
   base::Time::Now().LocalExplode(&scan_time);
 
-  scan_service_.SetMyFilesPathForTesting(temp_dir_.GetPath());
   mojo_ipc::ScanSettings settings =
-      CreateScanSettings(temp_dir_.GetPath(), mojo_ipc::FileType::kPdf);
+      CreateScanSettings(scanned_files_mount_->GetRootPath(),
+                         mojo_ipc::FileType::kPdf, "ADF Duplex");
   const base::FilePath saved_scan_path =
-      CreateSavedPdfScanPath(temp_dir_.GetPath(), scan_time);
+      CreateSavedPdfScanPath(scanned_files_mount_->GetRootPath(), scan_time);
   EXPECT_FALSE(base::PathExists(saved_scan_path));
   EXPECT_TRUE(StartScan(scanners[0]->id, settings.Clone()));
   EXPECT_TRUE(base::PathExists(saved_scan_path));
@@ -478,35 +538,12 @@ TEST_F(ScanServiceTest, ScanFails) {
   auto scanners = GetScanners();
   ASSERT_EQ(scanners.size(), 1u);
 
-  scan_service_.SetMyFilesPathForTesting(temp_dir_.GetPath());
-  const mojo_ipc::ScanSettings settings =
-      CreateScanSettings(temp_dir_.GetPath(), mojo_ipc::FileType::kPng);
+  const mojo_ipc::ScanSettings settings = CreateScanSettings(
+      scanned_files_mount_->GetRootPath(), mojo_ipc::FileType::kPng);
 
   EXPECT_TRUE(StartScan(scanners[0]->id, settings.Clone()));
   EXPECT_FALSE(fake_scan_job_observer_.scan_success());
   EXPECT_EQ(mojo_ipc::ScanResult::kDeviceBusy,
-            fake_scan_job_observer_.scan_result());
-  EXPECT_TRUE(fake_scan_job_observer_.scanned_file_paths().empty());
-}
-
-// Test that when a page fails to save during the scan, the scan job is marked
-// as failed.
-TEST_F(ScanServiceTest, PageSaveFails) {
-  fake_lorgnette_scanner_manager_.SetGetScannerNamesResponse(
-      {kFirstTestScannerName});
-  // Sending an empty string in test data simulates a page failing to save.
-  const std::vector<std::string> scan_data = {"TestData1", "", "TestData3"};
-  fake_lorgnette_scanner_manager_.SetScanResponse(scan_data);
-  auto scanners = GetScanners();
-  ASSERT_EQ(scanners.size(), 1u);
-
-  scan_service_.SetMyFilesPathForTesting(temp_dir_.GetPath());
-  const mojo_ipc::ScanSettings settings =
-      CreateScanSettings(temp_dir_.GetPath(), mojo_ipc::FileType::kJpg);
-
-  EXPECT_TRUE(StartScan(scanners[0]->id, settings.Clone()));
-  EXPECT_FALSE(fake_scan_job_observer_.scan_success());
-  EXPECT_EQ(mojo_ipc::ScanResult::kUnknownError,
             fake_scan_job_observer_.scan_result());
   EXPECT_TRUE(fake_scan_job_observer_.scanned_file_paths().empty());
 }
@@ -520,9 +557,8 @@ TEST_F(ScanServiceTest, ScanAfterFailedScan) {
   auto scanners = GetScanners();
   ASSERT_EQ(scanners.size(), 1u);
 
-  scan_service_.SetMyFilesPathForTesting(temp_dir_.GetPath());
-  const mojo_ipc::ScanSettings settings =
-      CreateScanSettings(temp_dir_.GetPath(), mojo_ipc::FileType::kPng);
+  const mojo_ipc::ScanSettings settings = CreateScanSettings(
+      scanned_files_mount_->GetRootPath(), mojo_ipc::FileType::kPng);
 
   EXPECT_TRUE(StartScan(scanners[0]->id, settings.Clone()));
   EXPECT_FALSE(fake_scan_job_observer_.scan_success());
@@ -538,8 +574,9 @@ TEST_F(ScanServiceTest, ScanAfterFailedScan) {
   // Since we're using mock time, this is deterministic.
   base::Time::Now().LocalExplode(&scan_time);
 
-  const std::vector<base::FilePath> saved_scan_paths = CreateSavedScanPaths(
-      temp_dir_.GetPath(), scan_time, "png", scan_data.size());
+  const std::vector<base::FilePath> saved_scan_paths =
+      CreateSavedScanPaths(scanned_files_mount_->GetRootPath(), scan_time,
+                           mojo_ipc::FileType::kPng, scan_data.size());
   for (const auto& saved_scan_path : saved_scan_paths)
     EXPECT_FALSE(base::PathExists(saved_scan_path));
 
@@ -568,11 +605,11 @@ TEST_F(ScanServiceTest, FailedScanAfterSuccessfulScan) {
   // Since we're using mock time, this is deterministic.
   base::Time::Now().LocalExplode(&scan_time);
 
-  scan_service_.SetMyFilesPathForTesting(temp_dir_.GetPath());
-  const mojo_ipc::ScanSettings settings =
-      CreateScanSettings(temp_dir_.GetPath(), mojo_ipc::FileType::kPng);
-  const std::vector<base::FilePath> saved_scan_paths = CreateSavedScanPaths(
-      temp_dir_.GetPath(), scan_time, "png", scan_data.size());
+  const mojo_ipc::ScanSettings settings = CreateScanSettings(
+      scanned_files_mount_->GetRootPath(), mojo_ipc::FileType::kPng);
+  const std::vector<base::FilePath> saved_scan_paths =
+      CreateSavedScanPaths(scanned_files_mount_->GetRootPath(), scan_time,
+                           mojo_ipc::FileType::kPng, scan_data.size());
   for (const auto& saved_scan_path : saved_scan_paths)
     EXPECT_FALSE(base::PathExists(saved_scan_path));
 
@@ -605,13 +642,85 @@ TEST_F(ScanServiceTest, CancelScanBeforeScanCompletes) {
   auto scanners = GetScanners();
   ASSERT_EQ(scanners.size(), 1u);
 
-  scan_service_.SetMyFilesPathForTesting(temp_dir_.GetPath());
-  const mojo_ipc::ScanSettings settings =
-      CreateScanSettings(temp_dir_.GetPath(), mojo_ipc::FileType::kPng);
+  const mojo_ipc::ScanSettings settings = CreateScanSettings(
+      scanned_files_mount_->GetRootPath(), mojo_ipc::FileType::kPng);
 
   StartScan(scanners[0]->id, settings.Clone());
   CancelScan();
   EXPECT_TRUE(fake_scan_job_observer_.cancel_scan_success());
+}
+
+// Test that a multi-page image scan creates a holding space item.
+TEST_F(ScanServiceTest, HoldingSpaceScan) {
+  fake_lorgnette_scanner_manager_.SetGetScannerNamesResponse(
+      {kFirstTestScannerName});
+  const std::vector<std::string> scan_data = {CreatePng(), CreatePng(),
+                                              CreatePng()};
+  auto scanners = GetScanners();
+  ASSERT_EQ(scanners.size(), 1u);
+
+  base::Time::Exploded scan_time;
+  // Since we're using mock time, this is deterministic.
+  base::Time::Now().LocalExplode(&scan_time);
+
+  // Verify that the holding space starts out empty.
+  HoldingSpaceKeyedService* holding_space_keyed_service =
+      HoldingSpaceKeyedServiceFactory::GetInstance()->GetService(profile_);
+  ASSERT_TRUE(holding_space_keyed_service);
+  const HoldingSpaceModel* holding_space_model =
+      holding_space_keyed_service->model_for_testing();
+  ASSERT_TRUE(holding_space_model);
+  size_t num_items_in_holding_space = 0u;
+  ASSERT_EQ(num_items_in_holding_space, holding_space_model->items().size());
+
+  for (int type_num = static_cast<int>(mojo_ipc::FileType::kMinValue);
+       type_num <= static_cast<int>(mojo_ipc::FileType::kMaxValue);
+       ++type_num) {
+    auto type = static_cast<mojo_ipc::FileType>(type_num);
+    if (type == mojo_ipc::FileType::kSearchablePdf &&
+        !base::FeatureList::IsEnabled(
+            chromeos::features::kScanAppSearchablePdf)) {
+      continue;
+    }
+
+    fake_lorgnette_scanner_manager_.SetScanResponse(scan_data);
+    const std::vector<base::FilePath> saved_scan_paths = CreateSavedScanPaths(
+        scanned_files_mount_->GetRootPath(), scan_time, type, scan_data.size());
+    for (const auto& saved_scan_path : saved_scan_paths)
+      EXPECT_FALSE(base::PathExists(saved_scan_path));
+
+    mojo_ipc::ScanSettings settings =
+        CreateScanSettings(scanned_files_mount_->GetRootPath(), type);
+    EXPECT_TRUE(StartScan(scanners[0]->id, settings.Clone()));
+    EXPECT_TRUE(fake_scan_job_observer_.scan_success());
+    EXPECT_EQ(mojo_ipc::ScanResult::kSuccess,
+              fake_scan_job_observer_.scan_result());
+    EXPECT_EQ(saved_scan_paths, fake_scan_job_observer_.scanned_file_paths());
+
+    // Verify that the all pages of each scan are added to the holding space.
+    EXPECT_EQ(num_items_in_holding_space + saved_scan_paths.size(),
+              holding_space_model->items().size());
+    for (const auto& saved_scan_path : saved_scan_paths) {
+      EXPECT_TRUE(base::PathExists(saved_scan_path));
+      HoldingSpaceItem* scanned_item =
+          holding_space_model->items()[num_items_in_holding_space++].get();
+      EXPECT_EQ(scanned_item->type(), HoldingSpaceItem::Type::kScan);
+      EXPECT_EQ(scanned_item->file_path(), saved_scan_path);
+    }
+
+    // Remove the scan data from FakeLorgnetteScannerManager so the scan will
+    // fail.
+    fake_lorgnette_scanner_manager_.SetScanResponse({});
+
+    EXPECT_TRUE(StartScan(scanners[0]->id, settings.Clone()));
+    EXPECT_FALSE(fake_scan_job_observer_.scan_success());
+    EXPECT_EQ(mojo_ipc::ScanResult::kDeviceBusy,
+              fake_scan_job_observer_.scan_result());
+    EXPECT_TRUE(fake_scan_job_observer_.scanned_file_paths().empty());
+
+    // Verify that no item is added to the holding space when a scan fails.
+    EXPECT_EQ(num_items_in_holding_space, holding_space_model->items().size());
+  }
 }
 
 }  // namespace ash

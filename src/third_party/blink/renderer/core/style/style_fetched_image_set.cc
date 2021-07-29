@@ -93,8 +93,15 @@ bool StyleFetchedImageSet::ErrorOccurred() const {
   return best_fit_image_->ErrorOccurred();
 }
 
+bool StyleFetchedImageSet::IsAccessAllowed(String& failing_url) const {
+  DCHECK(best_fit_image_->IsLoaded());
+  if (best_fit_image_->IsAccessAllowed())
+    return true;
+  failing_url = best_fit_image_->Url().ElidedString();
+  return false;
+}
+
 FloatSize StyleFetchedImageSet::ImageSize(
-    const Document&,
     float multiplier,
     const FloatSize& default_object_size,
     RespectImageOrientationEnum respect_orientation) const {

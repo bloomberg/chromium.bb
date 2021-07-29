@@ -382,8 +382,6 @@ void ProfilePickerView::ShowScreen(
     return;
   }
 
-  // Make sure to load the url as the last step so that the UI state is
-  // coherent upon the NavigationStateChanged notification.
   contents->GetController().LoadURL(url, content::Referrer(),
                                     ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
                                     std::string());
@@ -411,9 +409,8 @@ void ProfilePickerView::ShowScreenInSystemContents(
 }
 
 void ProfilePickerView::CreateToolbarBackButton() {
-  // The sign-in profile is needed to obtain the ThemeProvider which is needed
-  // by ToolbarButton on construction.
-  DCHECK(sign_in_->profile());
+  // ThemeProvider is needed by ToolbarButton on construction.
+  DCHECK(GetThemeProvider());
   auto back_button = std::make_unique<SimpleBackButton>(base::BindRepeating(
       &ProfilePickerView::BackButtonPressed, base::Unretained(this)));
   toolbar_->AddChildView(std::move(back_button));
@@ -603,18 +600,15 @@ void ProfilePickerView::SwitchToSignIn(
           ->GetProfileAttributesStorage()
           .ChooseNameForNewProfile(icon_index),
       icon_index, /*is_hidden=*/true,
-      base::BindRepeating(
-          &ProfilePickerView::OnProfileForSigninCreated,
-          weak_ptr_factory_.GetWeakPtr(), profile_color,
-          base::Owned(std::make_unique<base::OnceCallback<void(bool)>>(
-              std::move(switch_finished_callback)))));
+      base::BindRepeating(&ProfilePickerView::OnProfileForSigninCreated,
+                          weak_ptr_factory_.GetWeakPtr(), profile_color,
+                          base::OwnedRef(std::move(switch_finished_callback))));
 }
 
 void ProfilePickerView::CancelSignIn() {
   DCHECK(sign_in_);
 
-  g_browser_process->profile_manager()->ScheduleProfileForDeletion(
-      sign_in_->profile()->GetPath(), base::DoNothing());
+  sign_in_->Cancel();
 
   switch (entry_point_) {
     case ProfilePicker::EntryPoint::kOnStartup:
@@ -634,9 +628,7 @@ void ProfilePickerView::CancelSignIn() {
       return;
     }
     case ProfilePicker::EntryPoint::kProfileMenuAddNewProfile: {
-      // Finished here, avoid aborting the flow in the destructor (which is
-      // called as a result of Clear()).
-      sign_in_->Cancel();
+      // This results in destroying `this` incl. `sign_in_`.
       Clear();
       return;
     }
@@ -645,18 +637,18 @@ void ProfilePickerView::CancelSignIn() {
 
 void ProfilePickerView::OnProfileForSigninCreated(
     SkColor profile_color,
-    base::OnceCallback<void(bool)>* switch_finished_callback,
+    base::OnceCallback<void(bool)>& switch_finished_callback,
     Profile* profile,
     Profile::CreateStatus status) {
   if (status == Profile::CREATE_STATUS_LOCAL_FAIL) {
-    std::move(*switch_finished_callback).Run(false);
+    std::move(switch_finished_callback).Run(false);
     return;
   } else if (status != Profile::CREATE_STATUS_INITIALIZED) {
     return;
   }
 
   DCHECK(profile);
-  std::move(*switch_finished_callback).Run(true);
+  std::move(switch_finished_callback).Run(true);
 
   if (signin_util::IsForceSigninEnabled()) {
     // Show the embedded sign-in flow if the force signin is enabled.
@@ -720,15 +712,6 @@ gfx::Size ProfilePickerView::GetMinimumSize() const {
 }
 
 bool ProfilePickerView::AcceleratorPressed(const ui::Accelerator& accelerator) {
-  // Ignore presses of the Escape key. The profile picker may be Chrome's only
-  // top-level window, in which case we don't want presses of Esc to maybe quit
-  // the entire browser. This has higher priority than the default dialog Esc
-  // accelerator (which would otherwise close the window).
-  if (accelerator.key_code() == ui::VKEY_ESCAPE &&
-      accelerator.modifiers() == ui::EF_NONE) {
-    return true;
-  }
-
   const auto& iter = accelerator_table_.find(accelerator);
   DCHECK(iter != accelerator_table_.end());
   int command_id = iter->second;
@@ -758,8 +741,7 @@ bool ProfilePickerView::AcceleratorPressed(const ui::Accelerator& accelerator) {
     case IDC_RELOAD_CLEARING_CACHE: {
       // Sign-in may fail due to connectivity issues, allow reloading.
       if (GetSigningIn()) {
-        sign_in_->contents()->GetController().Reload(
-            content::ReloadType::BYPASSING_CACHE, true);
+        sign_in_->ReloadSignInPage();
       }
       break;
     }
@@ -807,8 +789,7 @@ void ProfilePickerView::BuildLayout() {
 }
 
 void ProfilePickerView::UpdateToolbarColor() {
-  // The sign-in profile is needed to obtain the ThemeProvider.
-  DCHECK(sign_in_->profile());
+  DCHECK(GetThemeProvider());
   SkColor background_color =
       GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR);
   toolbar_->SetBackground(views::CreateSolidBackground(background_color));
@@ -871,10 +852,6 @@ void ProfilePickerView::SetExtendedAccountInfoTimeoutForTesting(
 }
 
 void ProfilePickerView::ConfigureAccelerators() {
-  // By default, dialog views close when pressing escape. Override this
-  // behavior as the profile picker should not close in that case.
-  AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
-
   const std::vector<AcceleratorMapping> accelerator_list(GetAcceleratorList());
   for (const auto& entry : accelerator_list) {
     if (!base::Contains(kSupportedAcceleratorCommands, entry.command_id))

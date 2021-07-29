@@ -11,7 +11,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/dbus/concierge/concierge_client.h"
@@ -26,7 +25,7 @@
 
 class CrosUsbDetectorTest;
 
-namespace chromeos {
+namespace ash {
 
 const uint8_t kInvalidUsbPortNumber = 0xff;
 
@@ -274,6 +273,12 @@ class CrosUsbDetector : public device::mojom::UsbDeviceManagerClient,
   DISALLOW_COPY_AND_ASSIGN(CrosUsbDetector);
 };
 
+}  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove when ChromOS code migration is done.
+namespace chromeos {
+using ::ash::CrosUsbDetector;
+using ::ash::CrosUsbDeviceObserver;
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_ASH_USB_CROS_USB_DETECTOR_H_

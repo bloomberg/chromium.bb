@@ -263,7 +263,7 @@ TEST_P(ReportingCacheTest, Reports) {
   ASSERT_TRUE(report);
   EXPECT_EQ(1, report->attempts);
 
-  cache()->RemoveReports(reports, ReportingReport::Outcome::UNKNOWN);
+  cache()->RemoveReports(reports);
   EXPECT_EQ(3, observer()->cached_reports_update_count());
 
   cache()->GetReports(&reports);
@@ -285,7 +285,7 @@ TEST_P(ReportingCacheTest, RemoveAllReports) {
   cache()->GetReports(&reports);
   EXPECT_EQ(2u, reports.size());
 
-  cache()->RemoveAllReports(ReportingReport::Outcome::UNKNOWN);
+  cache()->RemoveAllReports();
   EXPECT_EQ(3, observer()->cached_reports_update_count());
 
   cache()->GetReports(&reports);
@@ -314,7 +314,7 @@ TEST_P(ReportingCacheTest, RemovePendingReports) {
   // pending, so another call to GetReportsToDeliver should return nothing.
   EXPECT_EQ(0u, cache()->GetReportsToDeliver().size());
 
-  cache()->RemoveReports(reports, ReportingReport::Outcome::UNKNOWN);
+  cache()->RemoveReports(reports);
   EXPECT_TRUE(cache()->IsReportPendingForTesting(reports[0]));
   EXPECT_TRUE(cache()->IsReportDoomedForTesting(reports[0]));
   EXPECT_EQ(2, observer()->cached_reports_update_count());
@@ -352,7 +352,7 @@ TEST_P(ReportingCacheTest, RemoveAllPendingReports) {
   // pending, so another call to GetReportsToDeliver should return nothing.
   EXPECT_EQ(0u, cache()->GetReportsToDeliver().size());
 
-  cache()->RemoveAllReports(ReportingReport::Outcome::UNKNOWN);
+  cache()->RemoveAllReports();
   EXPECT_TRUE(cache()->IsReportPendingForTesting(reports[0]));
   EXPECT_TRUE(cache()->IsReportDoomedForTesting(reports[0]));
   EXPECT_EQ(2, observer()->cached_reports_update_count());
@@ -385,7 +385,7 @@ TEST_P(ReportingCacheTest, GetReportsAsValue) {
   EXPECT_THAT(cache()->GetReportsToDeliver(),
               ::testing::UnorderedElementsAre(report1, report2));
   // Mark report2 as doomed.
-  cache()->RemoveReports({report2}, ReportingReport::Outcome::UNKNOWN);
+  cache()->RemoveReports({report2});
 
   base::Value actual = cache()->GetReportsAsValue();
   base::Value expected = base::test::ParseJson(base::StringPrintf(
@@ -937,8 +937,8 @@ TEST_P(ReportingCacheTest, GetClientsAsValue) {
       kNik_.ToDebugString().c_str(), kOtherNik_.ToDebugString().c_str()));
 
   // Compare disregarding order.
-  auto expected_list = expected.TakeList();
-  auto actual_list = actual.TakeList();
+  auto expected_list = std::move(expected).TakeList();
+  auto actual_list = std::move(actual).TakeList();
   std::sort(expected_list.begin(), expected_list.end());
   std::sort(actual_list.begin(), actual_list.end());
   EXPECT_EQ(expected_list, actual_list);

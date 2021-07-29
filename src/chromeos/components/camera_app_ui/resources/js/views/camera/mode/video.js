@@ -7,9 +7,15 @@ import {
   assert,
   assertString,
 } from '../../../chrome_util.js';
+import {
+  CaptureStream,  // eslint-disable-line no-unused-vars
+  StreamManager,
+} from '../../../device/stream_manager.js';
 import * as dom from '../../../dom.js';
+import {reportError} from '../../../error.js';
 // eslint-disable-next-line no-unused-vars
 import * as h264 from '../../../h264.js';
+import {I18nString} from '../../../i18n_string.js';
 import {Filenamer} from '../../../models/file_namer.js';
 import * as loadTimeData from '../../../models/load_time_data.js';
 import {
@@ -21,7 +27,10 @@ import * as state from '../../../state.js';
 import * as toast from '../../../toast.js';
 import {
   CanceledError,
+  ErrorLevel,
+  ErrorType,
   Facing,  // eslint-disable-line no-unused-vars
+  NoChunkError,
   PerfEvent,
   Resolution,
   ResolutionList,  // eslint-disable-line no-unused-vars
@@ -48,6 +57,9 @@ const encoderPreference = new Map([
  * @type {?h264.EncoderParameters}
  */
 let avc1Parameters = null;
+
+// The minimum duration of videos captured via cca.
+const MINIMUM_VIDEO_DURATION_IN_MILLISECONDS = 500;
 
 /**
  * Sets avc1 parameter used in video recording.
@@ -170,11 +182,31 @@ export class VideoHandler {
 export class Video extends ModeBase {
   /**
    * @param {!MediaStream} stream Preview stream.
+   * @param {?MediaStreamConstraints} captureConstraints
+   * @param {?Resolution} captureResolution
    * @param {!Facing} facing
    * @param {!VideoHandler} handler
    */
-  constructor(stream, facing, handler) {
+  constructor(stream, captureConstraints, captureResolution, facing, handler) {
     super(stream, facing);
+
+    /**
+     * @const {?MediaStreamConstraints}
+     * @private
+     */
+    this.captureConstraints_ = captureConstraints;
+
+    /**
+     * @const {!Resolution}
+     * @private
+     */
+    this.captureResolution_ = (() => {
+      if (captureResolution !== null) {
+        return captureResolution;
+      }
+      const {width, height} = stream.getVideoTracks()[0].getSettings();
+      return new Resolution(width, height);
+    })();
 
     /**
      * @const {!VideoHandler}
@@ -183,11 +215,23 @@ export class Video extends ModeBase {
     this.handler_ = handler;
 
     /**
+     * @type {?CaptureStream}
+     * @private
+     */
+    this.captureStream_ = null;
+
+    /**
      * MediaRecorder object to record motion pictures.
      * @type {?MediaRecorder}
      * @private
      */
     this.mediaRecorder_ = null;
+
+    /**
+     * @type {?ImageCapture}
+     * @private
+     */
+    this.imageCapture_ = null;
 
     /**
      * Record-time for the elapsed recording time.
@@ -222,6 +266,9 @@ export class Video extends ModeBase {
    */
   async clear() {
     await this.stopCapture();
+    if (this.captureStream_ !== null) {
+      await this.captureStream_.close();
+    }
   }
 
   /**
@@ -230,13 +277,24 @@ export class Video extends ModeBase {
    */
   takeSnapshot() {
     const doSnapshot = async () => {
-      const blob = await this.handler_.getPreviewFrame();
+      const bitmap = await this.imageCapture_.grabFrame();
+      const {canvas, ctx} = util.newDrawingCanvas(this.captureResolution_);
+      ctx.drawImage(bitmap, 0, 0);
+      const blob = await (new Promise((resolve, reject) => {
+        canvas.toBlob((blob) => {
+          if (blob) {
+            resolve(blob);
+          } else {
+            reject(new Error('Photo blob error.'));
+          }
+        }, 'image/jpeg');
+      }));
+
       this.handler_.playShutterEffect();
-      const {width, height} = await util.blobToImage(blob);
       const imageName = (new Filenamer()).newImageName();
       await this.handler_.handleResultPhoto(
           {
-            resolution: new Resolution(width, height),
+            resolution: this.captureResolution_,
             blob,
             isVideoSnapshot: true,
           },
@@ -302,18 +360,38 @@ export class Video extends ModeBase {
     const preference = encoderPreference.get(loadTimeData.getBoard()) ||
         {profile: h264.Profile.HIGH, multiplier: 2};
     const {profile, multiplier} = preference;
-    const {width, height, frameRate} =
-        this.stream_.getVideoTracks()[0].getSettings();
+    const {width, height, frameRate} = this.getVideoTrack_().getSettings();
     const resolution = new Resolution(width, height);
     const bitrate = resolution.area * multiplier;
     const level = h264.getMinimalLevel(profile, bitrate, frameRate, resolution);
     if (level === null) {
-      console.warn(
-          `No valid level found for ` +
-          `profile: ${h264.getProfileName(profile)} bitrate: ${bitrate}`);
+      reportError(
+          ErrorType.NO_AVAILABLE_LEVEL, ErrorLevel.WARNING,
+          new Error(
+              `No valid level found for ` +
+              `profile: ${h264.getProfileName(profile)} bitrate: ${bitrate}`));
       return null;
     }
     return {profile, level, bitrate};
+  }
+
+  /**
+   * @return {!MediaStream}
+   * @private
+   */
+  getRecordingStream_() {
+    if (this.captureStream_ !== null) {
+      return this.captureStream_.stream;
+    }
+    return this.stream_;
+  }
+
+  /**
+   * Gets video track of recording stream.
+   * @return {!MediaStreamTrack}
+   */
+  getVideoTrack_() {
+    return this.getRecordingStream_().getVideoTracks()[0];
   }
 
   /**
@@ -330,6 +408,14 @@ export class Video extends ModeBase {
       throw new CanceledError('Recording sound is canceled');
     }
 
+    if (this.captureConstraints_ !== null && this.captureStream_ === null) {
+      this.captureStream_ = await StreamManager.getInstance().openCaptureStream(
+          this.captureConstraints_);
+    }
+    if (this.imageCapture_ === null) {
+      this.imageCapture_ = new ImageCapture(this.getVideoTrack_());
+    }
+
     try {
       const param = this.getEncoderParameters_();
       const mimeType = getVideoMimeType(param);
@@ -341,41 +427,59 @@ export class Video extends ModeBase {
       if (param !== null) {
         option.videoBitsPerSecond = param.bitrate;
       }
-      this.mediaRecorder_ = new MediaRecorder(this.stream_, option);
+      this.mediaRecorder_ =
+          new MediaRecorder(this.getRecordingStream_(), option);
     } catch (e) {
-      toast.show('error_msg_record_start_failed');
+      toast.show(I18nString.ERROR_MSG_RECORD_START_FAILED);
       throw e;
     }
 
     this.recordTime_.start({resume: false});
     let /** ?VideoSaver */ videoSaver = null;
-    let /** number */ duration = 0;
-    try {
-      videoSaver = await this.captureVideo_();
-    } catch (e) {
-      toast.show('error_msg_empty_recording');
-      throw e;
-    } finally {
-      duration = this.recordTime_.stop({pause: false});
-    }
-    sound.play(dom.get('#sound-rec-end', HTMLAudioElement));
+    const isVideoTooShort = () => this.recordTime_.inMilliseconds() <
+        MINIMUM_VIDEO_DURATION_IN_MILLISECONDS;
 
-    const settings = this.stream_.getVideoTracks()[0].getSettings();
-    const resolution = new Resolution(settings.width, settings.height);
+    try {
+      try {
+        videoSaver = await this.captureVideo_();
+      } finally {
+        this.recordTime_.stop({pause: false});
+        sound.play(dom.get('#sound-rec-end', HTMLAudioElement));
+        await this.snapshots_.flush();
+      }
+    } catch (e) {
+      // Tolerates the error if it is due to the very short duration. Reports
+      // for other errors.
+      if (!(e instanceof NoChunkError && isVideoTooShort())) {
+        toast.show(I18nString.ERROR_MSG_EMPTY_RECORDING);
+        throw e;
+      }
+    }
+
+    if (isVideoTooShort()) {
+      toast.show(I18nString.ERROR_MSG_VIDEO_TOO_SHORT);
+      if (videoSaver !== null) {
+        await videoSaver.cancel();
+      }
+      return;
+    }
+
     state.set(PerfEvent.VIDEO_CAPTURE_POST_PROCESSING, true);
     try {
-      await this.handler_.handleResultVideo(new VideoResult(
-          {resolution, duration, videoSaver, everPaused: this.everPaused_}));
+      await this.handler_.handleResultVideo(new VideoResult({
+        resolution: this.captureResolution_,
+        duration: this.recordTime_.inMinutes(),
+        videoSaver,
+        everPaused: this.everPaused_,
+      }));
       state.set(
           PerfEvent.VIDEO_CAPTURE_POST_PROCESSING, false,
-          {resolution, facing: this.facing_});
+          {resolution: this.captureResolution_, facing: this.facing_});
     } catch (e) {
       state.set(
           PerfEvent.VIDEO_CAPTURE_POST_PROCESSING, false, {hasError: true});
       throw e;
     }
-
-    await this.snapshots_.flush();
   }
 
   /**
@@ -401,45 +505,51 @@ export class Video extends ModeBase {
   async captureVideo_() {
     const saver = await this.handler_.createVideoSaver();
 
-    return new Promise((resolve, reject) => {
-      let noChunk = true;
+    try {
+      await new Promise((resolve, reject) => {
+        let noChunk = true;
 
-      const ondataavailable = (event) => {
-        if (event.data && event.data.size > 0) {
-          noChunk = false;
-          saver.write(event.data);
-        }
-      };
-      const onstop = (event) => {
-        state.set(state.State.RECORDING, false);
+        const ondataavailable = (event) => {
+          if (event.data && event.data.size > 0) {
+            noChunk = false;
+            saver.write(event.data);
+          }
+        };
+        const onstop = async (event) => {
+          state.set(state.State.RECORDING, false);
+          state.set(state.State.RECORDING_PAUSED, false);
+          state.set(state.State.RECORDING_UI_PAUSED, false);
+
+          this.mediaRecorder_.removeEventListener(
+              'dataavailable', ondataavailable);
+          this.mediaRecorder_.removeEventListener('stop', onstop);
+
+          if (noChunk) {
+            reject(new NoChunkError());
+          } else {
+            // TODO(yuli): Handle insufficient storage.
+            resolve(saver);
+          }
+        };
+        const onstart = () => {
+          state.set(state.State.RECORDING, true);
+          this.mediaRecorder_.removeEventListener('start', onstart);
+        };
+        this.mediaRecorder_.addEventListener('dataavailable', ondataavailable);
+        this.mediaRecorder_.addEventListener('stop', onstop);
+        this.mediaRecorder_.addEventListener('start', onstart);
+
+        window.addEventListener('beforeunload', beforeUnloadListener);
+
+        this.mediaRecorder_.start(100);
         state.set(state.State.RECORDING_PAUSED, false);
         state.set(state.State.RECORDING_UI_PAUSED, false);
-
-        this.mediaRecorder_.removeEventListener(
-            'dataavailable', ondataavailable);
-        this.mediaRecorder_.removeEventListener('stop', onstop);
-
-        if (noChunk) {
-          reject(new Error('Video blob error.'));
-        } else {
-          // TODO(yuli): Handle insufficient storage.
-          resolve(saver);
-        }
-      };
-      const onstart = () => {
-        state.set(state.State.RECORDING, true);
-        this.mediaRecorder_.removeEventListener('start', onstart);
-      };
-      this.mediaRecorder_.addEventListener('dataavailable', ondataavailable);
-      this.mediaRecorder_.addEventListener('stop', onstop);
-      this.mediaRecorder_.addEventListener('start', onstart);
-
-      window.addEventListener('beforeunload', beforeUnloadListener);
-
-      this.mediaRecorder_.start(100);
-      state.set(state.State.RECORDING_PAUSED, false);
-      state.set(state.State.RECORDING_UI_PAUSED, false);
-    });
+      });
+      return saver;
+    } catch (e) {
+      await saver.cancel();
+      throw e;
+    }
   }
 }
 
@@ -458,6 +568,12 @@ export class VideoFactory extends ModeFactory {
      * @private
      */
     this.handler_ = handler;
+
+    /**
+     * @type {?MediaStreamConstraints}
+     * @private
+     */
+    this.captureConstraints_ = null;
   }
 
   /**
@@ -466,34 +582,51 @@ export class VideoFactory extends ModeFactory {
   async prepareDevice(constraints, resolution) {
     this.captureResolution_ = resolution;
     const deviceId = assertString(constraints.video.deviceId.exact);
-    const deviceOperator = await DeviceOperator.getInstance();
-    if (deviceOperator !== null) {
-      await deviceOperator.setCaptureIntent(
-          deviceId, cros.mojom.CaptureIntent.VIDEO_RECORD);
-
-      let /** number */ minFrameRate = 0;
-      let /** number */ maxFrameRate = 0;
-      if (constraints.video && constraints.video.frameRate) {
-        const frameRate = constraints.video.frameRate;
-        if (frameRate.exact) {
-          minFrameRate = frameRate.exact;
-          maxFrameRate = frameRate.exact;
-        } else if (frameRate.min && frameRate.max) {
-          minFrameRate = frameRate.min;
-          maxFrameRate = frameRate.max;
-        }
-        // TODO(wtlee): To set the fps range to the default value, we should
-        // remove the frameRate from constraints instead of using incomplete
-        // range.
+    if (state.get(state.State.ENABLE_MULTISTREAM_RECORDING)) {
+      this.captureConstraints_ = {
+        audio: constraints.audio,
+        video: {
+          deviceId: constraints.video.deviceId,
+          frameRate: constraints.video.frameRate,
+        },
+      };
+      if (resolution !== null) {
+        this.captureConstraints_.video.width = resolution.width;
+        this.captureConstraints_.video.height = resolution.height;
       }
-      await deviceOperator.setFpsRange(deviceId, minFrameRate, maxFrameRate);
     }
+
+    const deviceOperator = await DeviceOperator.getInstance();
+    if (deviceOperator === null) {
+      return;
+    }
+    await deviceOperator.setCaptureIntent(
+        deviceId, cros.mojom.CaptureIntent.VIDEO_RECORD);
+
+    let /** number */ minFrameRate = 0;
+    let /** number */ maxFrameRate = 0;
+    if (constraints.video && constraints.video.frameRate) {
+      const frameRate = constraints.video.frameRate;
+      if (frameRate.exact) {
+        minFrameRate = frameRate.exact;
+        maxFrameRate = frameRate.exact;
+      } else if (frameRate.min && frameRate.max) {
+        minFrameRate = frameRate.min;
+        maxFrameRate = frameRate.max;
+      }
+      // TODO(wtlee): To set the fps range to the default value, we should
+      // remove the frameRate from constraints instead of using incomplete
+      // range.
+    }
+    await deviceOperator.setFpsRange(deviceId, minFrameRate, maxFrameRate);
   }
 
   /**
    * @override
    */
   produce_() {
-    return new Video(this.previewStream_, this.facing_, this.handler_);
+    return new Video(
+        this.previewStream_, this.captureConstraints_, this.captureResolution_,
+        this.facing_, this.handler_);
   }
 }

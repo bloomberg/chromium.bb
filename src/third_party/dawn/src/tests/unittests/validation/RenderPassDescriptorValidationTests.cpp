@@ -101,45 +101,30 @@ namespace {
 
     // Test OOB color attachment indices are handled
     TEST_F(RenderPassDescriptorValidationTest, ColorAttachmentOutOfBounds) {
-        wgpu::TextureView color0 =
-            Create2DAttachment(device, 1, 1, wgpu::TextureFormat::RGBA8Unorm);
-        wgpu::TextureView color1 =
-            Create2DAttachment(device, 1, 1, wgpu::TextureFormat::RGBA8Unorm);
-        wgpu::TextureView color2 =
-            Create2DAttachment(device, 1, 1, wgpu::TextureFormat::RGBA8Unorm);
-        wgpu::TextureView color3 =
-            Create2DAttachment(device, 1, 1, wgpu::TextureFormat::RGBA8Unorm);
-        // For setting the color attachment, control case
+        std::array<wgpu::RenderPassColorAttachmentDescriptor, kMaxColorAttachments + 1>
+            colorAttachments;
+        for (uint32_t i = 0; i < colorAttachments.size(); i++) {
+            colorAttachments[i].view =
+                Create2DAttachment(device, 1, 1, wgpu::TextureFormat::RGBA8Unorm);
+            colorAttachments[i].resolveTarget = nullptr;
+            colorAttachments[i].clearColor = {0.0f, 0.0f, 0.0f, 0.0f};
+            colorAttachments[i].loadOp = wgpu::LoadOp::Clear;
+            colorAttachments[i].storeOp = wgpu::StoreOp::Store;
+        }
+
+        // Control case: kMaxColorAttachments is valid.
         {
-            utils::ComboRenderPassDescriptor renderPass({color0, color1, color2, color3});
+            wgpu::RenderPassDescriptor renderPass;
+            renderPass.colorAttachmentCount = kMaxColorAttachments;
+            renderPass.colorAttachments = colorAttachments.data();
+            renderPass.depthStencilAttachment = nullptr;
             AssertBeginRenderPassSuccess(&renderPass);
         }
-        // For setting the color attachment, OOB
+
+        // Error case: kMaxColorAttachments + 1 is an error.
         {
-            // We cannot use utils::ComboRenderPassDescriptor here because it only supports at most
-            // kMaxColorAttachments(4) color attachments.
-            std::array<wgpu::RenderPassColorAttachmentDescriptor, 5> colorAttachments;
-            colorAttachments[0].view = color0;
-            colorAttachments[0].resolveTarget = nullptr;
-            colorAttachments[0].clearColor = {0.0f, 0.0f, 0.0f, 0.0f};
-            colorAttachments[0].loadOp = wgpu::LoadOp::Clear;
-            colorAttachments[0].storeOp = wgpu::StoreOp::Store;
-
-            colorAttachments[1] = colorAttachments[0];
-            colorAttachments[1].view = color1;
-
-            colorAttachments[2] = colorAttachments[0];
-            colorAttachments[2].view = color2;
-
-            colorAttachments[3] = colorAttachments[0];
-            colorAttachments[3].view = color3;
-
-            colorAttachments[4] = colorAttachments[0];
-            colorAttachments[4].view =
-                Create2DAttachment(device, 1, 1, wgpu::TextureFormat::RGBA8Unorm);
-
             wgpu::RenderPassDescriptor renderPass;
-            renderPass.colorAttachmentCount = 5;
+            renderPass.colorAttachmentCount = kMaxColorAttachments + 1;
             renderPass.colorAttachments = colorAttachments.data();
             renderPass.depthStencilAttachment = nullptr;
             AssertBeginRenderPassError(&renderPass);
@@ -257,8 +242,8 @@ namespace {
         // Base case: StoreOps match so render pass is a success
         {
             utils::ComboRenderPassDescriptor renderPass({}, depthStencilView);
-            renderPass.cDepthStencilAttachmentInfo.stencilStoreOp = wgpu::StoreOp::Clear;
-            renderPass.cDepthStencilAttachmentInfo.depthStoreOp = wgpu::StoreOp::Clear;
+            renderPass.cDepthStencilAttachmentInfo.stencilStoreOp = wgpu::StoreOp::Discard;
+            renderPass.cDepthStencilAttachmentInfo.depthStoreOp = wgpu::StoreOp::Discard;
             AssertBeginRenderPassSuccess(&renderPass);
         }
 
@@ -266,7 +251,7 @@ namespace {
         {
             utils::ComboRenderPassDescriptor renderPass({}, depthStencilView);
             renderPass.cDepthStencilAttachmentInfo.stencilStoreOp = wgpu::StoreOp::Store;
-            renderPass.cDepthStencilAttachmentInfo.depthStoreOp = wgpu::StoreOp::Clear;
+            renderPass.cDepthStencilAttachmentInfo.depthStoreOp = wgpu::StoreOp::Discard;
             AssertBeginRenderPassSuccess(&renderPass);
         }
     }
@@ -574,7 +559,9 @@ namespace {
         wgpu::Texture resolveTexture =
             CreateTexture(device, wgpu::TextureDimension::e2D, kColorFormat, kSize, kSize,
                           kArrayLayers2, kLevelCount);
-        wgpu::TextureView resolveTextureView = resolveTexture.CreateView();
+        wgpu::TextureViewDescriptor viewDesc;
+        viewDesc.dimension = wgpu::TextureViewDimension::e2DArray;
+        wgpu::TextureView resolveTextureView = resolveTexture.CreateView(&viewDesc);
 
         utils::ComboRenderPassDescriptor renderPass = CreateMultisampledRenderPass();
         renderPass.cColorAttachments[0].resolveTarget = resolveTextureView;
@@ -871,13 +858,69 @@ namespace {
         {
             utils::ComboRenderPassDescriptor renderPass({colorView}, depthStencilView);
             renderPass.cDepthStencilAttachmentInfo.depthLoadOp = wgpu::LoadOp::Load;
-            renderPass.cDepthStencilAttachmentInfo.depthStoreOp = wgpu::StoreOp::Clear;
+            renderPass.cDepthStencilAttachmentInfo.depthStoreOp = wgpu::StoreOp::Discard;
             renderPass.cDepthStencilAttachmentInfo.depthReadOnly = true;
             renderPass.cDepthStencilAttachmentInfo.stencilLoadOp = wgpu::LoadOp::Load;
-            renderPass.cDepthStencilAttachmentInfo.stencilStoreOp = wgpu::StoreOp::Clear;
+            renderPass.cDepthStencilAttachmentInfo.stencilStoreOp = wgpu::StoreOp::Discard;
             renderPass.cDepthStencilAttachmentInfo.stencilReadOnly = true;
             AssertBeginRenderPassError(&renderPass);
         }
+    }
+
+    // Check that the depth stencil attachment must use all aspects.
+    TEST_F(RenderPassDescriptorValidationTest, ValidateDepthStencilAllAspects) {
+        wgpu::TextureDescriptor texDesc;
+        texDesc.usage = wgpu::TextureUsage::RenderAttachment;
+        texDesc.size = {1, 1, 1};
+
+        wgpu::TextureViewDescriptor viewDesc;
+        viewDesc.baseMipLevel = 0;
+        viewDesc.mipLevelCount = 1;
+        viewDesc.baseArrayLayer = 0;
+        viewDesc.arrayLayerCount = 1;
+
+        // Using all aspects of a depth+stencil texture is allowed.
+        {
+            texDesc.format = wgpu::TextureFormat::Depth24PlusStencil8;
+            viewDesc.aspect = wgpu::TextureAspect::All;
+
+            wgpu::TextureView view = device.CreateTexture(&texDesc).CreateView(&viewDesc);
+            utils::ComboRenderPassDescriptor renderPass({}, view);
+            AssertBeginRenderPassSuccess(&renderPass);
+        }
+
+        // Using only depth of a depth+stencil texture is an error.
+        {
+            texDesc.format = wgpu::TextureFormat::Depth24PlusStencil8;
+            viewDesc.aspect = wgpu::TextureAspect::DepthOnly;
+
+            wgpu::TextureView view = device.CreateTexture(&texDesc).CreateView(&viewDesc);
+            utils::ComboRenderPassDescriptor renderPass({}, view);
+            AssertBeginRenderPassError(&renderPass);
+        }
+
+        // Using only stencil of a depth+stencil texture is an error.
+        {
+            texDesc.format = wgpu::TextureFormat::Depth24PlusStencil8;
+            viewDesc.aspect = wgpu::TextureAspect::StencilOnly;
+
+            wgpu::TextureView view = device.CreateTexture(&texDesc).CreateView(&viewDesc);
+            utils::ComboRenderPassDescriptor renderPass({}, view);
+            AssertBeginRenderPassError(&renderPass);
+        }
+
+        // Using DepthOnly of a depth only texture us allowed.
+        {
+            texDesc.format = wgpu::TextureFormat::Depth24Plus;
+            viewDesc.aspect = wgpu::TextureAspect::DepthOnly;
+
+            wgpu::TextureView view = device.CreateTexture(&texDesc).CreateView(&viewDesc);
+            utils::ComboRenderPassDescriptor renderPass({}, view);
+            AssertBeginRenderPassSuccess(&renderPass);
+        }
+
+        // TODO(https://crbug.com/dawn/666): Add a test case for stencil-only on stencil8 once this
+        // format is supported.
     }
 
     // TODO(cwallez@chromium.org): Constraints on attachment aliasing?

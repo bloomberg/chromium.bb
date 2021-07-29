@@ -36,3 +36,27 @@ CreateWebAppInfoForOSSettingsSystemWebApp() {
   info->open_as_window = true;
   return info;
 }
+
+OSSettingsSystemAppDelegate::OSSettingsSystemAppDelegate(Profile* profile)
+    : web_app::SystemWebAppDelegate(web_app::SystemAppType::SETTINGS,
+                                    "OSSettings",
+                                    GURL(chrome::kChromeUISettingsURL),
+                                    profile) {}
+
+std::unique_ptr<WebApplicationInfo> OSSettingsSystemAppDelegate::GetWebAppInfo()
+    const {
+  return CreateWebAppInfoForOSSettingsSystemWebApp();
+}
+
+bool OSSettingsSystemAppDelegate::ShouldCaptureNavigations() const {
+  return true;
+}
+
+gfx::Size OSSettingsSystemAppDelegate::GetMinimumWindowSize() const {
+  return {300, 100};
+}
+
+std::vector<web_app::AppId>
+OSSettingsSystemAppDelegate::GetAppIdsToUninstallAndReplace() const {
+  return {web_app::kSettingsAppId, ash::kInternalAppIdSettings};
+}

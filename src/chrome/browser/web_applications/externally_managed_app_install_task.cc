@@ -40,7 +40,7 @@ void ExternallyManagedAppInstallTask::CreateTabHelpers(
 ExternallyManagedAppInstallTask::ExternallyManagedAppInstallTask(
     Profile* profile,
     WebAppUrlLoader* url_loader,
-    AppRegistrar* registrar,
+    WebAppRegistrar* registrar,
     OsIntegrationManager* os_integration_manager,
     WebAppUiManager* ui_manager,
     InstallFinalizer* install_finalizer,
@@ -254,6 +254,7 @@ void ExternallyManagedAppInstallTask::InstallPlaceholder(
     case DisplayMode::kStandalone:
     case DisplayMode::kFullscreen:
     case DisplayMode::kWindowControlsOverlay:
+    case DisplayMode::kTabbed:
       web_app_info.open_as_window = true;
       break;
   }

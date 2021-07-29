@@ -169,7 +169,6 @@ void AMPPageLoadMetricsObserver::OnRenderFrameDeleted(
     MaybeRecordAmpDocumentMetrics();
     current_main_frame_nav_info_->subframe_rfh = nullptr;
   }
-
   amp_subframe_info_.erase(rfh);
 }
 
@@ -184,6 +183,26 @@ void AMPPageLoadMetricsObserver::OnTimingUpdate(
     return;
 
   it->second.timing = timing.Clone();
+}
+
+void AMPPageLoadMetricsObserver::OnMobileFriendlinessUpdate(
+    const blink::MobileFriendliness& mf) {
+  if (mf == blink::MobileFriendliness() ||
+      current_main_frame_nav_info_ == nullptr ||
+      current_main_frame_nav_info_->subframe_rfh == nullptr)
+    return;
+
+  auto it = amp_subframe_info_.find(current_main_frame_nav_info_->subframe_rfh);
+  if (it == amp_subframe_info_.end())
+    return;
+
+  SubFrameInfo& subframe_info = it->second;
+  if (subframe_info.viewer_url != current_main_frame_nav_info_->url ||
+      !subframe_info.amp_document_loaded) {
+    return;
+  }
+
+  subframe_info.mobile_friendliness = mf;
 }
 
 void AMPPageLoadMetricsObserver::OnSubFrameRenderDataUpdate(
@@ -462,23 +481,10 @@ void AMPPageLoadMetricsObserver::MaybeRecordAmpDocumentMetrics() {
       subframe_info.layout_shift_normalization.normalized_cls_data();
   if (!normalized_cls_data.data_tainted) {
     builder
-        .SetSubFrame_LayoutInstability_AverageCumulativeShiftScore_SessionWindow_Gap5000ms(
-            page_load_metrics::LayoutShiftUkmValue(
-                normalized_cls_data
-                    .session_windows_gap5000ms_maxMax_average_cls))
-        .SetSubFrame_LayoutInstability_MaxCumulativeShiftScore_SessionWindow_Gap1000ms(
-            page_load_metrics::LayoutShiftUkmValue(
-                normalized_cls_data.session_windows_gap1000ms_maxMax_max_cls))
         .SetSubFrame_LayoutInstability_MaxCumulativeShiftScore_SessionWindow_Gap1000ms_Max5000ms(
             page_load_metrics::LayoutShiftUkmValue(
                 normalized_cls_data
-                    .session_windows_gap1000ms_max5000ms_max_cls))
-        .SetSubFrame_LayoutInstability_MaxCumulativeShiftScore_SlidingWindow_Duration300ms(
-            page_load_metrics::LayoutShiftUkmValue(
-                normalized_cls_data.sliding_windows_duration300ms_max_cls))
-        .SetSubFrame_LayoutInstability_MaxCumulativeShiftScore_SlidingWindow_Duration1000ms(
-            page_load_metrics::LayoutShiftUkmValue(
-                normalized_cls_data.sliding_windows_duration1000ms_max_cls));
+                    .session_windows_gap1000ms_max5000ms_max_cls));
   }
 
   // For UMA, report (shift_score * 10) an an int in the range [0,100].
@@ -495,6 +501,7 @@ void AMPPageLoadMetricsObserver::MaybeRecordAmpDocumentMetrics() {
           page_load_metrics::LayoutShiftUmaValue(
               normalized_cls_data.session_windows_gap1000ms_max5000ms_max_cls));
     }
+    RecordMobileFriendliness(builder);
   } else {
     UMA_HISTOGRAM_COUNTS_100(
         std::string(kHistogramPrefix)
@@ -511,4 +518,50 @@ void AMPPageLoadMetricsObserver::MaybeRecordAmpDocumentMetrics() {
   }
 
   builder.Record(ukm::UkmRecorder::Get());
+}
+
+void AMPPageLoadMetricsObserver::RecordMobileFriendliness(
+    ukm::builders::AmpPageLoad& builder) {
+  auto it = amp_subframe_info_.find(current_main_frame_nav_info_->subframe_rfh);
+  if (it == amp_subframe_info_.end())
+    return;
+
+  const SubFrameInfo& subframe_info = it->second;
+  if (subframe_info.viewer_url != current_main_frame_nav_info_->url)
+    return;
+
+  if (!subframe_info.amp_document_loaded)
+    return;
+
+  const blink::MobileFriendliness& mf = subframe_info.mobile_friendliness;
+
+  if (mf.viewport_device_width == blink::mojom::ViewportStatus::kYes)
+    builder.SetSubFrame_MobileFriendliness_ViewportDeviceWidth(true);
+  else if (mf.viewport_device_width == blink::mojom::ViewportStatus::kNo)
+    builder.SetSubFrame_MobileFriendliness_ViewportDeviceWidth(false);
+
+  if (mf.allow_user_zoom == blink::mojom::ViewportStatus::kYes)
+    builder.SetSubFrame_MobileFriendliness_AllowUserZoom(true);
+  else if (mf.allow_user_zoom == blink::mojom::ViewportStatus::kNo)
+    builder.SetSubFrame_MobileFriendliness_AllowUserZoom(false);
+
+  if (mf.small_text_ratio != -1)
+    builder.SetSubFrame_MobileFriendliness_SmallTextRatio(mf.small_text_ratio);
+
+  if (mf.viewport_initial_scale_x10 != -1) {
+    builder.SetSubFrame_MobileFriendliness_ViewportInitialScaleX10(
+        page_load_metrics::GetBucketedViewportInitialScale(mf));
+  }
+
+  if (mf.viewport_hardcoded_width != -1) {
+    builder.SetSubFrame_MobileFriendliness_ViewportHardcodedWidth(
+        page_load_metrics::GetBucketedViewportHardcodedWidth(mf));
+  }
+  if (mf.text_content_outside_viewport_percentage != -1) {
+    builder.SetSubFrame_MobileFriendliness_TextContentOutsideViewportPercentage(
+        mf.text_content_outside_viewport_percentage);
+  }
+  if (mf.bad_tap_targets_ratio != -1)
+    builder.SetSubFrame_MobileFriendliness_BadTapTargetsRatio(
+        mf.bad_tap_targets_ratio);
 }

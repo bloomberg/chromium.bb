@@ -563,7 +563,7 @@ GuestOsRegistryService::GetAllRegisteredApps() const {
                  GetTerminalRegistration(
                      apps->FindKeyOfType(crostini::kCrostiniTerminalSystemAppId,
                                          base::Value::Type::DICTIONARY)));
-  for (const auto& item : apps->DictItems()) {
+  for (const auto item : apps->DictItems()) {
     if (item.first != crostini::kCrostiniTerminalSystemAppId) {
       result.emplace(item.first, Registration(item.first, item.second.Clone()));
     }
@@ -656,7 +656,7 @@ void GuestOsRegistryService::RecordStartupMetrics() {
   int num_crostini_apps = 0;
   int num_plugin_vm_apps = 0;
 
-  for (const auto& item : apps->DictItems()) {
+  for (const auto item : apps->DictItems()) {
     if (item.first == crostini::kCrostiniTerminalSystemAppId)
       continue;
 
@@ -696,25 +696,13 @@ base::FilePath GuestOsRegistryService::GetAppPath(
 
 base::FilePath GuestOsRegistryService::GetIconPath(
     const std::string& app_id,
-    ui::ScaleFactor scale_factor) const {
+    ui::ResourceScaleFactor scale_factor) const {
   const base::FilePath app_path = GetAppPath(app_id);
   switch (scale_factor) {
     case ui::SCALE_FACTOR_100P:
       return app_path.AppendASCII("icon_100p.png");
-    case ui::SCALE_FACTOR_125P:
-      return app_path.AppendASCII("icon_125p.png");
-    case ui::SCALE_FACTOR_133P:
-      return app_path.AppendASCII("icon_133p.png");
-    case ui::SCALE_FACTOR_140P:
-      return app_path.AppendASCII("icon_140p.png");
-    case ui::SCALE_FACTOR_150P:
-      return app_path.AppendASCII("icon_150p.png");
-    case ui::SCALE_FACTOR_180P:
-      return app_path.AppendASCII("icon_180p.png");
     case ui::SCALE_FACTOR_200P:
       return app_path.AppendASCII("icon_200p.png");
-    case ui::SCALE_FACTOR_250P:
-      return app_path.AppendASCII("icon_250p.png");
     case ui::SCALE_FACTOR_300P:
       return app_path.AppendASCII("icon_300p.png");
     default:
@@ -771,7 +759,7 @@ void GuestOsRegistryService::LoadIconFromVM(
     const std::string& app_id,
     apps::mojom::IconType icon_type,
     int32_t size_hint_in_dip,
-    ui::ScaleFactor scale_factor,
+    ui::ResourceScaleFactor scale_factor,
     apps::IconEffects icon_effects,
     int fallback_icon_resource_id,
     apps::mojom::Publisher::LoadIconCallback callback) {
@@ -809,7 +797,7 @@ void GuestOsRegistryService::OnLoadIconFromVM(
 
 void GuestOsRegistryService::RequestIcon(
     const std::string& app_id,
-    ui::ScaleFactor scale_factor,
+    ui::ResourceScaleFactor scale_factor,
     base::OnceCallback<void(std::string)> callback) {
   if (!GetRegistration(app_id)) {
     // App isn't registered (e.g. a GUI app launched from within Crostini
@@ -838,7 +826,7 @@ void GuestOsRegistryService::ClearApplicationList(
     DictionaryPrefUpdate update(prefs_, guest_os::prefs::kGuestOsRegistry);
     base::DictionaryValue* apps = update.Get();
 
-    for (const auto& item : apps->DictItems()) {
+    for (const auto item : apps->DictItems()) {
       if (item.first == crostini::kCrostiniTerminalSystemAppId)
         continue;
       Registration registration(item.first, item.second.Clone());
@@ -946,7 +934,7 @@ void GuestOsRegistryService::UpdateApplicationList(
       apps->SetKey(app_id, std::move(pref_registration));
     }
 
-    for (const auto& item : apps->DictItems()) {
+    for (const auto item : apps->DictItems()) {
       if (item.first == crostini::kCrostiniTerminalSystemAppId)
         continue;
       if (item.second.FindKey(guest_os::prefs::kAppVmNameKey)->GetString() ==
@@ -969,7 +957,8 @@ void GuestOsRegistryService::UpdateApplicationList(
   // due to the container being offline.
   for (auto retry_iter = retry_icon_requests_.begin();
        retry_iter != retry_icon_requests_.end(); ++retry_iter) {
-    for (ui::ScaleFactor scale_factor : ui::GetSupportedScaleFactors()) {
+    for (ui::ResourceScaleFactor scale_factor :
+         ui::GetSupportedResourceScaleFactors()) {
       if (retry_iter->second & (1 << scale_factor)) {
         RequestContainerAppIcon(retry_iter->first, scale_factor);
       }
@@ -1058,7 +1047,7 @@ std::string GuestOsRegistryService::GenerateAppId(
 
 void GuestOsRegistryService::RequestContainerAppIcon(
     const std::string& app_id,
-    ui::ScaleFactor scale_factor) {
+    ui::ResourceScaleFactor scale_factor) {
   // Ignore requests for app_id that isn't registered.
   absl::optional<GuestOsRegistryService::Registration> registration =
       GetRegistration(app_id);
@@ -1078,9 +1067,7 @@ void GuestOsRegistryService::RequestContainerAppIcon(
   // needs.
   uint32_t icon_scale = 1;
   switch (scale_factor) {
-    case ui::SCALE_FACTOR_180P:  // Close enough to 2, so use 2.
     case ui::SCALE_FACTOR_200P:
-    case ui::SCALE_FACTOR_250P:  // Rounding scale factor down is better.
       icon_scale = 2;
       break;
     case ui::SCALE_FACTOR_300P:
@@ -1102,7 +1089,7 @@ void GuestOsRegistryService::RequestContainerAppIcon(
 
 void GuestOsRegistryService::OnContainerAppIcon(
     const std::string& app_id,
-    ui::ScaleFactor scale_factor,
+    ui::ResourceScaleFactor scale_factor,
     bool success,
     const std::vector<crostini::Icon>& icons) {
   std::string icon_content;
@@ -1125,7 +1112,8 @@ void GuestOsRegistryService::OnContainerAppIcon(
   }
 
   // Invoke all active icon request callbacks with the icon.
-  auto key = std::pair<std::string, ui::ScaleFactor>(app_id, scale_factor);
+  auto key =
+      std::pair<std::string, ui::ResourceScaleFactor>(app_id, scale_factor);
   auto& callbacks = active_icon_requests_[key];
   VLOG(1) << "Invoking icon callbacks for app: " << app_id
           << ", num callbacks: " << callbacks.size();

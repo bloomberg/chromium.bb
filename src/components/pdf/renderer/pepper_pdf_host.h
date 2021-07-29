@@ -13,15 +13,20 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "components/pdf/common/pdf.mojom.h"
 #include "ipc/ipc_platform_file.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "pdf/buildflags.h"
+#include "pdf/mojom/pdf.mojom.h"
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/host/resource_host.h"
 #include "ppapi/proxy/serialized_structs.h"
 #include "ppapi/shared_impl/pdf_accessibility_shared.h"
+
+#if !BUILDFLAG(ENABLE_PDF)
+#error "PDF must be enabled"
+#endif
 
 namespace blink {
 class WebLocalFrame;
@@ -110,10 +115,10 @@ class PepperPDFHost : public ppapi::host::ResourceHost,
                                       const std::string& url);
   int32_t OnHostMsgSetAccessibilityViewportInfo(
       ppapi::host::HostMessageContext* context,
-      const PP_PrivateAccessibilityViewportInfo& viewport_info);
+      const PP_PrivateAccessibilityViewportInfo& pp_viewport_info);
   int32_t OnHostMsgSetAccessibilityDocInfo(
       ppapi::host::HostMessageContext* context,
-      const PP_PrivateAccessibilityDocInfo& doc_info);
+      const PP_PrivateAccessibilityDocInfo& pp_doc_info);
   int32_t OnHostMsgSetAccessibilityPageInfo(
       ppapi::host::HostMessageContext* context,
       const PP_PrivateAccessibilityPageInfo& page_info,

@@ -73,7 +73,7 @@ task locally* section on the task page. For example, to download them for
 into a tmp directory and run:
 ```
 $CHROME_DIR/tools/luci-go/isolated download -I https://chrome-isolated.appspot.com --namespace default-gzip -isolated 64919fee8b02d826df2401544a9dc0f7dfa2172d -output-dir input
-python $CHROME_DIR/tools/swarming_client/swarming.py collect -S chrome-swarming.appspot.com 506a01dd12c8a610 --task-output-dir output
+$CHROME_DIR/tools/luci-go/swarming collect -S chrome-swarming.appspot.com -output-dir output 506a01dd12c8a610
 ```
 
 Once both isolates have been fetched you must then generate the breakpad
@@ -103,7 +103,7 @@ To run a Tast test the same way it's ran on Chrome's builders:
 
 - Finally, run the Tast test on the device via the `cros_run_test` tool under
   `//third_party/chromite/bin/`. eg:
-  `cros_run_test --device $DEVICE_IP --tast ui.ChromeLogin`. See [here] for more
+  `cros_run_test --device $DEVICE_IP --tast login.Chrome`. See [here] for more
   info on cros_run_test.
 
 ## Telemetry

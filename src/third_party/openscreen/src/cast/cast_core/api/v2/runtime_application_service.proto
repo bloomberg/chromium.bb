@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// **** DO NOT EDIT - this .proto was automatically generated. ****
+// **** DO NOT EDIT - this file was automatically generated. ****
 syntax = "proto3";
 
 package cast.v2;
@@ -18,6 +18,7 @@ option optimize_for = LITE_RUNTIME;
 // This service is implemented by the Runtime and represents services
 // specific to a Cast application.
 service RuntimeApplicationService {
+  // DEPRECATED
   // Sends a Cast message to the runtime.
   rpc SendCastMessage(CastMessageRequest) returns (CastMessageResponse);
 
@@ -27,6 +28,7 @@ service RuntimeApplicationService {
   rpc SetUrlRewriteRules(SetUrlRewriteRulesRequest)
       returns (SetUrlRewriteRulesResponse);
 
+  // DEPRECATED
   // "MessageConnectorService" provides the transport for MessagePorts.
   // MessagePorts are connected using other services (e.g. ApiBindings), then
   // registered with the MessageConnectorService to communicate over IPC

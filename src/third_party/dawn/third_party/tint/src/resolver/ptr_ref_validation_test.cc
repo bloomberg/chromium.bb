@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "src/ast/bitcast_expression.h"
+#include "src/ast/struct_block_decoration.h"
 #include "src/resolver/resolver.h"
 #include "src/resolver/resolver_test_helper.h"
 #include "src/sem/reference_type.h"
@@ -75,6 +77,55 @@ TEST_F(ResolverPtrRefValidationTest, DerefOfVar) {
 
   EXPECT_EQ(r()->error(),
             "12:34 error: cannot dereference expression of type 'i32'");
+}
+
+TEST_F(ResolverPtrRefValidationTest, InferredPtrAccessMismatch) {
+  // struct Inner {
+  //    arr: array<i32, 4>;
+  // }
+  // [[block]] struct S {
+  //    inner: Inner;
+  // }
+  // [[group(0), binding(0)]] var<storage, read_write> s : S;
+  // fn f() {
+  //   let p : pointer<storage, i32> = &s.inner.arr[2];
+  // }
+  auto* inner = Structure("Inner", {Member("arr", ty.array<i32, 4>())});
+  auto* buf = Structure("S", {Member("inner", ty.Of(inner))},
+                        {create<ast::StructBlockDecoration>()});
+  auto* storage = Global("s", ty.Of(buf), ast::StorageClass::kStorage,
+                         ast::Access::kReadWrite,
+                         ast::DecorationList{
+                             create<ast::BindingDecoration>(0),
+                             create<ast::GroupDecoration>(0),
+                         });
+
+  auto* expr =
+      IndexAccessor(MemberAccessor(MemberAccessor(storage, "inner"), "arr"), 4);
+  auto* ptr =
+      Const(Source{{12, 34}}, "p", ty.pointer<i32>(ast::StorageClass::kStorage),
+            AddressOf(expr));
+
+  WrapInFunction(ptr);
+
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(),
+            "12:34 error: cannot initialize let of type "
+            "'ptr<storage, i32>' with value of type "
+            "'ptr<storage, i32, read_write>'");
+}
+
+TEST_F(ResolverTest, Expr_Bitcast_ptr) {
+  auto* vf = Var("vf", ty.f32());
+  auto* bitcast = create<ast::BitcastExpression>(
+      Source{{12, 34}}, ty.pointer<i32>(ast::StorageClass::kFunction),
+      Expr("vf"));
+  auto* ip =
+      Const("ip", ty.pointer<i32>(ast::StorageClass::kFunction), bitcast);
+  WrapInFunction(Decl(vf), Decl(ip));
+
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(), "12:34 error: cannot cast to a pointer");
 }
 
 }  // namespace

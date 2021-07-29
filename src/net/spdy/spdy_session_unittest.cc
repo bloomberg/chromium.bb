@@ -11,8 +11,8 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/cxx17_backports.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -28,6 +28,7 @@
 #include "net/base/proxy_server.h"
 #include "net/base/request_priority.h"
 #include "net/base/schemeful_site.h"
+#include "net/base/test_completion_callback.h"
 #include "net/base/test_data_stream.h"
 #include "net/cert/ct_policy_status.h"
 #include "net/dns/public/secure_dns_policy.h"
@@ -60,6 +61,8 @@
 #include "testing/platform_test.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
+#include "url/scheme_host_port.h"
+#include "url/url_constants.h"
 
 using net::test::IsError;
 using net::test::IsOk;
@@ -3629,12 +3632,11 @@ TEST_F(SpdySessionTest, CloseOneIdleConnection) {
   // Trying to create a new connection should cause the pool to be stalled, and
   // post a task asynchronously to try and close the session.
   TestCompletionCallback callback2;
-  HostPortPair host_port2("2.com", 80);
   auto connection2 = std::make_unique<ClientSocketHandle>();
   EXPECT_EQ(ERR_IO_PENDING,
             connection2->Init(
                 ClientSocketPool::GroupId(
-                    host_port2, ClientSocketPool::SocketType::kHttp,
+                    url::SchemeHostPort(url::kHttpScheme, "2.com", 80),
                     PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
                     SecureDnsPolicy::kAllow),
                 ClientSocketPool::SocketParams::CreateForHttpForTesting(),
@@ -3719,12 +3721,11 @@ TEST_F(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
   // Trying to create a new connection should cause the pool to be stalled, and
   // post a task asynchronously to try and close the session.
   TestCompletionCallback callback3;
-  HostPortPair host_port3("3.com", 80);
   auto connection3 = std::make_unique<ClientSocketHandle>();
   EXPECT_EQ(ERR_IO_PENDING,
             connection3->Init(
                 ClientSocketPool::GroupId(
-                    host_port3, ClientSocketPool::SocketType::kHttp,
+                    url::SchemeHostPort(url::kHttpScheme, "3.com", 80),
                     PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
                     SecureDnsPolicy::kAllow),
                 ClientSocketPool::SocketParams::CreateForHttpForTesting(),
@@ -3800,12 +3801,11 @@ TEST_F(SpdySessionTest, CloseSessionOnIdleWhenPoolStalled) {
   // Trying to create a new connection should cause the pool to be stalled, and
   // post a task asynchronously to try and close the session.
   TestCompletionCallback callback2;
-  HostPortPair host_port2("2.com", 80);
   auto connection2 = std::make_unique<ClientSocketHandle>();
   EXPECT_EQ(ERR_IO_PENDING,
             connection2->Init(
                 ClientSocketPool::GroupId(
-                    host_port2, ClientSocketPool::SocketType::kHttp,
+                    url::SchemeHostPort(url::kHttpScheme, "2.com", 80),
                     PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
                     SecureDnsPolicy::kAllow),
                 ClientSocketPool::SocketParams::CreateForHttpForTesting(),
@@ -6032,14 +6032,14 @@ TEST_F(SpdySessionTest, GreaseFrameTypeAfterSettings) {
       CombineFrames({&preface, &settings_frame});
 
   // Greased frame sent on stream 0 after initial SETTINGS frame.
-  const char kRawFrameData[] = {
+  uint8_t kRawFrameData[] = {
       0x00, 0x00, 0x03,        // length
       0x0b,                    // type
       0xcc,                    // flags
       0x00, 0x00, 0x00, 0x00,  // stream ID
       'f',  'o',  'o'          // payload
   };
-  spdy::SpdySerializedFrame grease(const_cast<char*>(kRawFrameData),
+  spdy::SpdySerializedFrame grease(reinterpret_cast<char*>(kRawFrameData),
                                    base::size(kRawFrameData),
                                    /* owns_buffer = */ false);
 
@@ -7422,6 +7422,39 @@ TEST_F(SpdySessionTest, AlpsAcceptChInvalidOrigin) {
   const int kOnlyInvalidEntries = 2;
   histogram_tester.ExpectUniqueSample("Net.SpdySession.AlpsAcceptChEntries",
                                       kOnlyInvalidEntries, 1);
+}
+
+// Test that ConfirmHandshake() correctly handles the client aborting the
+// connection. See https://crbug.com/1211639.
+TEST_F(SpdySessionTest, ConfirmHandshakeAfterClose) {
+  base::HistogramTester histogram_tester;
+
+  session_deps_.enable_early_data = true;
+  // Arrange for StreamSocket::ConfirmHandshake() to hang.
+  ssl_.confirm = MockConfirm(SYNCHRONOUS, ERR_IO_PENDING);
+  SequencedSocketData data;
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  AddSSLSocketData();
+
+  CreateNetworkSession();
+  CreateSpdySession();
+
+  TestCompletionCallback callback1;
+  int rv1 = session_->ConfirmHandshake(callback1.callback());
+  EXPECT_THAT(rv1, IsError(ERR_IO_PENDING));
+
+  // Abort the session. Although the underlying StreamSocket::ConfirmHandshake()
+  // operation never completes, SpdySession::ConfirmHandshake() is signaled when
+  // the session is discarded.
+  session_->CloseSessionOnError(ERR_ABORTED, "Aborting session");
+  EXPECT_THAT(callback1.GetResult(rv1), IsError(ERR_ABORTED));
+
+  // Subsequent calls to SpdySession::ConfirmHandshake() fail gracefully. This
+  // tests that SpdySession honors StreamSocket::ConfirmHandshake() invariants.
+  // (MockSSLClientSocket::ConfirmHandshake() checks it internally.)
+  TestCompletionCallback callback2;
+  int rv2 = session_->ConfirmHandshake(callback2.callback());
+  EXPECT_THAT(rv2, IsError(ERR_CONNECTION_CLOSED));
 }
 
 }  // namespace net

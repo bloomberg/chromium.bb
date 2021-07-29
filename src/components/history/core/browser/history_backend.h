@@ -158,11 +158,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
     // be forwarded to the HistoryServiceObservers in the correct thread.
     virtual void NotifyURLsModified(const URLRows& changed_urls) = 0;
 
-    // TODO(https://crbug.com/1141501): this is for an experiment, and will be
-    // removed once data is collected from experiment.
-    virtual void NotifyURLsModified(const URLRows& changed_urls,
-                                    UrlsModifiedReason reason);
-
     // Notify HistoryService that some or all of the URLs have been deleted.
     // The event will be forwarded to the HistoryServiceObservers in the correct
     // thread.
@@ -428,12 +423,19 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                                     const std::u16string& term);
 
   // Clusters ------------------------------------------------------------------
+  // See `HistoryService`'s comments for details on these functions.
 
   void AddContextAnnotationsForVisit(
       VisitID visit_id,
       const VisitContextAnnotations& visit_context_annotations);
 
-  std::vector<AnnotatedVisit> GetAnnotatedVisits(int max_results);
+  std::vector<AnnotatedVisit> GetAnnotatedVisits(const QueryOptions& options);
+
+  ClusterIdsAndAnnotatedVisitsResult GetRecentClusterIdsAndAnnotatedVisits(
+      base::Time minimum_time,
+      int max_results);
+
+  std::vector<Cluster> GetClusters(int max_results);
 
   // Observers -----------------------------------------------------------------
 
@@ -645,6 +647,13 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                         const QueryOptions& options,
                         QueryResults* result);
 
+  // Clusters ------------------------------------------------------------------
+
+  // Convert `AnnotatedVisitRow`s to `AnnotatedVisit`s. Drops rows without
+  // associated URL or visit rows, though this shouldn't happen usually.
+  std::vector<AnnotatedVisit> AnnotatedVisitsFromRows(
+      const std::vector<AnnotatedVisitRow>& rows);
+
   // Committing ----------------------------------------------------------------
 
   // We always keep a transaction open on the history database so that multiple
@@ -709,8 +718,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                         const RedirectList& redirects,
                         base::Time visit_time) override;
   void NotifyURLsModified(const URLRows& changed_urls,
-                          UrlsModifiedReason reason) override;
+                          bool is_from_expiration) override;
   void NotifyURLsDeleted(DeletionInfo deletion_info) override;
+  void NotifyVisitDeleted(const VisitRow& visit) override;
 
   // Deleting all history ------------------------------------------------------
 

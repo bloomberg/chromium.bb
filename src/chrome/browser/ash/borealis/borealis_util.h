@@ -7,9 +7,14 @@
 
 #include <string>
 
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/views/widget/widget.h"
 
 class Profile;
+
+namespace guest_os {
+class GuestOsRegistryService;
+}
 
 namespace borealis {
 
@@ -36,6 +41,12 @@ absl::optional<int> GetBorealisAppId(std::string exec);
 void ShowBorealisSplashScreenView(Profile* profile);
 // Closes the splash screen (borealis_splash_screen_view).
 void CloseBorealisSplashScreenView();
+
+// Returns a URL for a feedback form with prefilled app/device info, or an
+// invalid URL if we don't want to collect feedback for the given |app_id|.
+GURL FeedbackFormUrl(const guest_os::GuestOsRegistryService* registry_service,
+                     const std::string& app_id,
+                     const std::string& window_title);
 
 }  // namespace borealis
 

@@ -9,9 +9,12 @@
 
 #include "base/callback.h"
 #include "base/callback_forward.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/rand_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "content/browser/interest_group/auction_process_manager.h"
 #include "content/browser/interest_group/auction_url_loader_factory_proxy.h"
 #include "content/browser/interest_group/interest_group_manager.h"
 #include "content/services/auction_worklet/public/mojom/auction_worklet_service.mojom.h"
@@ -73,6 +76,11 @@ AuctionRunner::BidState::BidState() = default;
 AuctionRunner::BidState::~BidState() = default;
 AuctionRunner::BidState::BidState(BidState&&) = default;
 
+void AuctionRunner::BidState::ClosePipes() {
+  bidder_worklet.reset();
+  process_handle.reset();
+}
+
 std::unique_ptr<AuctionRunner> AuctionRunner::CreateAndStart(
     Delegate* delegate,
     InterestGroupManager* interest_group_manager,
@@ -84,9 +92,8 @@ std::unique_ptr<AuctionRunner> AuctionRunner::CreateAndStart(
   DCHECK(!filtered_buyers.empty());
   std::unique_ptr<AuctionRunner> instance(new AuctionRunner(
       delegate, interest_group_manager, std::move(auction_config),
-      std::move(filtered_buyers), std::move(browser_signals), frame_origin,
-      std::move(callback)));
-  instance->ReadNextInterestGroup();
+      std::move(browser_signals), frame_origin, std::move(callback)));
+  instance->ReadInterestGroups(std::move(filtered_buyers));
   return instance;
 }
 
@@ -94,137 +101,195 @@ AuctionRunner::AuctionRunner(
     Delegate* delegate,
     InterestGroupManager* interest_group_manager,
     blink::mojom::AuctionAdConfigPtr auction_config,
-    std::vector<url::Origin> filtered_buyers,
     auction_worklet::mojom::BrowserSignalsPtr browser_signals,
     const url::Origin& frame_origin,
     RunAuctionCallback callback)
     : delegate_(delegate),
       interest_group_manager_(interest_group_manager),
       auction_config_(std::move(auction_config)),
-      pending_buyers_(std::move(filtered_buyers)),
       browser_signals_(std::move(browser_signals)),
       frame_origin_(frame_origin),
       callback_(std::move(callback)) {}
 
 AuctionRunner::~AuctionRunner() = default;
 
-void AuctionRunner::ReadNextInterestGroup() {
-  DCHECK_LT(next_pending_buyer_, pending_buyers_.size());
+void AuctionRunner::FailAuction(AuctionResult result,
+                                absl::optional<std::string> error) {
+  DCHECK(callback_);
 
-  interest_group_manager_->GetInterestGroupsForOwner(
-      pending_buyers_[next_pending_buyer_],
-      base::BindOnce(&AuctionRunner::OnInterestGroupRead,
-                     weak_ptr_factory_.GetWeakPtr()));
+  if (error)
+    errors_.emplace_back(std::move(error).value());
+  RecordResult(result);
+
+  ClosePipes();
+
+  std::move(callback_).Run(this, absl::nullopt, absl::nullopt, absl::nullopt,
+                           errors_);
+}
+
+void AuctionRunner::ReadInterestGroups(
+    std::vector<url::Origin> filtered_buyers) {
+  num_pending_buyers_ = filtered_buyers.size();
+
+  for (const url::Origin& buyer : filtered_buyers) {
+    interest_group_manager_->GetInterestGroupsForOwner(
+        buyer, base::BindOnce(&AuctionRunner::OnInterestGroupRead,
+                              weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void AuctionRunner::OnInterestGroupRead(
     std::vector<auction_worklet::mojom::BiddingInterestGroupPtr>
         interest_groups) {
-  for (auto bidder = std::make_move_iterator(interest_groups.begin());
-       bidder != std::make_move_iterator(interest_groups.end()); ++bidder) {
-    bid_states_.emplace_back(BidState());
-    bid_states_.back().bidder = std::move(*bidder);
-  }
-  next_pending_buyer_++;
+  DCHECK_GT(num_pending_buyers_, 0u);
+  --num_pending_buyers_;
 
-  // If more buyers in the queue, load the next one.
-  if (next_pending_buyer_ < pending_buyers_.size()) {
-    ReadNextInterestGroup();
+  if (!interest_groups.empty()) {
+    for (auto bidder = std::make_move_iterator(interest_groups.begin());
+         bidder != std::make_move_iterator(interest_groups.end()); ++bidder) {
+      bid_states_.emplace_back(BidState());
+      bid_states_.back().bidder = std::move(*bidder);
+    }
+    ++num_owners_with_interest_groups_;
+  }
+
+  // Wait for more buyers to be loaded, if there are still some pending.
+  if (num_pending_buyers_ > 0)
     return;
-  }
 
-  // Pending buyers are no longer needed.
-  pending_buyers_.clear();
+  // Record histograms about the interest groups participating in the auction.
+  UMA_HISTOGRAM_COUNTS_1000("Ads.InterestGroup.Auction.NumInterestGroups",
+                            bid_states_.size());
+  UMA_HISTOGRAM_COUNTS_100(
+      "Ads.InterestGroup.Auction.NumOwnersWithInterestGroups",
+      num_owners_with_interest_groups_);
 
   // If no interest groups were found, end the auction without a winner.
   if (bid_states_.empty()) {
-    FailAuction();
+    FailAuction(AuctionResult::kNoInterestGroups);
     return;
   }
 
-  StartBidding();
+  outstanding_bids_ = bid_states_.size();
+  RequestSellerWorkletProcess();
 }
 
-void AuctionRunner::StartBidding() {
-  // Auctions are only run when there are bidders participating. As-is, and
+void AuctionRunner::RequestSellerWorkletProcess() {
+  seller_worklet_process_handle_ =
+      std::make_unique<AuctionProcessManager::ProcessHandle>();
+
+  // Request a seller worklet process. If one is received synchronously, start
+  // loading the seller worklet and requesting bidder processes.
+  if (interest_group_manager_->auction_process_manager().RequestWorkletService(
+          AuctionProcessManager::WorkletType::kSeller, auction_config_->seller,
+          seller_worklet_process_handle_.get(),
+          base::BindOnce(&AuctionRunner::OnSellerWorkletProcessReceived,
+                         weak_ptr_factory_.GetWeakPtr()))) {
+    OnSellerWorkletProcessReceived();
+  }
+}
+
+void AuctionRunner::OnSellerWorkletProcessReceived() {
+  // Auctions are only run when there are bidders participating. As-is, an
   // empty bidder vector here would result in synchronously calling back into
   // the creator, which isn't allowed.
   DCHECK(!bid_states_.empty());
 
-  outstanding_bids_ = bid_states_.size();
-
-  for (auto& bid_state : bid_states_) {
-    auction_worklet::mojom::BiddingInterestGroup* bidder =
-        bid_state.bidder.get();
-
-    // Assemble list of URLs the bidder can request.
-
-    // TODO(mmenke): This largely duplicates logic in the auction worklet
-    // service. Avoid duplicating code.
-    absl::optional<GURL> trusted_bidding_signals_full_url;
-    if (bid_state.bidder->group->trusted_bidding_signals_url &&
-        bid_state.bidder->group->trusted_bidding_signals_keys) {
-      std::string query_params =
-          "hostname=" + net::EscapeQueryParamValue(
-                            browser_signals_->top_frame_origin.host(), true);
-      query_params += "&keys=";
-      bool first_key = true;
-      for (const auto& key :
-           *bid_state.bidder->group->trusted_bidding_signals_keys) {
-        if (first_key) {
-          first_key = false;
-        } else {
-          query_params.append(",");
-        }
-        query_params.append(net::EscapeQueryParamValue(key, true));
-      }
-
-      GURL::Replacements replacements;
-      replacements.SetQueryStr(query_params);
-      trusted_bidding_signals_full_url =
-          bid_state.bidder->group->trusted_bidding_signals_url
-              ->ReplaceComponents(replacements);
-    }
-
-    mojo::PendingRemote<network::mojom::URLLoaderFactory> url_loader_factory;
-    bid_state.url_loader_factory_ =
-        std::make_unique<AuctionURLLoaderFactoryProxy>(
-            url_loader_factory.InitWithNewPipeAndPassReceiver(),
-            base::BindRepeating(&Delegate::GetTrustedURLLoaderFactory,
-                                base::Unretained(delegate_)),
-            frame_origin_, false /* use_cors */,
-            bid_state.bidder->group->bidding_url.value_or(GURL()),
-            trusted_bidding_signals_full_url);
-
-    delegate_->GetWorkletService()->LoadBidderWorkletAndGenerateBid(
-        bid_state.bidder_worklet.BindNewPipeAndPassReceiver(),
-        std::move(url_loader_factory), bidder->Clone(),
-        auction_config_->auction_signals, PerBuyerSignals(&bid_state),
-        browser_signals_->top_frame_origin, browser_signals_->seller,
-        auction_start_time_,
-        base::BindOnce(&AuctionRunner::OnGenerateBidComplete,
-                       weak_ptr_factory_.GetWeakPtr(), &bid_state));
-    bid_state.bidder_worklet.set_disconnect_handler(
-        base::BindOnce(&AuctionRunner::OnGenerateBidCrashed,
-                       weak_ptr_factory_.GetWeakPtr(), &bid_state));
-  }
-
-  // Also initiate the script fetch for the seller script.
+  // Start loading the seller worklet.
   mojo::PendingRemote<network::mojom::URLLoaderFactory> url_loader_factory;
   seller_url_loader_factory_ = std::make_unique<AuctionURLLoaderFactoryProxy>(
       url_loader_factory.InitWithNewPipeAndPassReceiver(),
       base::BindRepeating(&Delegate::GetFrameURLLoaderFactory,
                           base::Unretained(delegate_)),
       frame_origin_, true /* use_cors */, auction_config_->decision_logic_url);
-  delegate_->GetWorkletService()->LoadSellerWorklet(
+  seller_worklet_process_handle_->GetService()->LoadSellerWorklet(
       seller_worklet_.BindNewPipeAndPassReceiver(),
       std::move(url_loader_factory), auction_config_->decision_logic_url,
       base::BindOnce(&AuctionRunner::OnSellerWorkletLoaded,
                      weak_ptr_factory_.GetWeakPtr()));
   // Fail auction if the seller worklet pipe is disconnected.
   seller_worklet_.set_disconnect_handler(base::BindOnce(
-      &AuctionRunner::FailAuctionWithError, weak_ptr_factory_.GetWeakPtr(),
+      &AuctionRunner::FailAuction, weak_ptr_factory_.GetWeakPtr(),
+      AuctionResult::kSellerWorkletCrashed,
       base::StrCat({auction_config_->decision_logic_url.spec(), " crashed."})));
+
+  // Request processes for all bidder worklets.
+  for (auto& bid_state : bid_states_) {
+    DCHECK_EQ(bid_state.state,
+              BidState::State::kLoadingWorkletsAndOnSellerProcess);
+
+    bid_state.state = BidState::State::kWaitingForProcess;
+    bid_state.process_handle =
+        std::make_unique<AuctionProcessManager::ProcessHandle>();
+    if (interest_group_manager_->auction_process_manager()
+            .RequestWorkletService(
+                AuctionProcessManager::WorkletType::kBidder,
+                bid_state.bidder->group->owner, bid_state.process_handle.get(),
+                base::BindOnce(&AuctionRunner::OnBidderWorkletProcessReceived,
+                               weak_ptr_factory_.GetWeakPtr(), &bid_state))) {
+      OnBidderWorkletProcessReceived(&bid_state);
+    }
+  }
+}
+
+void AuctionRunner::OnBidderWorkletProcessReceived(BidState* bid_state) {
+  DCHECK_EQ(bid_state->state, BidState::State::kWaitingForProcess);
+
+  bid_state->state = BidState::State::kGeneratingBid;
+  auction_worklet::mojom::BiddingInterestGroup* bidder =
+      bid_state->bidder.get();
+
+  // Assemble list of URLs the bidder can request.
+
+  // TODO(mmenke): This largely duplicates logic in the auction worklet
+  // service. Avoid duplicating code.
+  absl::optional<GURL> trusted_bidding_signals_full_url;
+  if (bid_state->bidder->group->trusted_bidding_signals_url &&
+      bid_state->bidder->group->trusted_bidding_signals_keys) {
+    std::string query_params =
+        "hostname=" + net::EscapeQueryParamValue(
+                          browser_signals_->top_frame_origin.host(), true);
+    query_params += "&keys=";
+    bool first_key = true;
+    for (const auto& key : *bidder->group->trusted_bidding_signals_keys) {
+      if (first_key) {
+        first_key = false;
+      } else {
+        query_params.append(",");
+      }
+      query_params.append(net::EscapeQueryParamValue(key, true));
+    }
+
+    GURL::Replacements replacements;
+    replacements.SetQueryStr(query_params);
+    trusted_bidding_signals_full_url =
+        bid_state->bidder->group->trusted_bidding_signals_url
+            ->ReplaceComponents(replacements);
+  }
+
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> url_loader_factory;
+  bid_state->url_loader_factory =
+      std::make_unique<AuctionURLLoaderFactoryProxy>(
+          url_loader_factory.InitWithNewPipeAndPassReceiver(),
+          base::BindRepeating(&Delegate::GetTrustedURLLoaderFactory,
+                              base::Unretained(delegate_)),
+          frame_origin_, false /* use_cors */,
+          bid_state->bidder->group->bidding_url.value_or(GURL()),
+          trusted_bidding_signals_full_url);
+
+  bid_state->state = BidState::State::kGeneratingBid;
+
+  bid_state->process_handle->GetService()->LoadBidderWorkletAndGenerateBid(
+      bid_state->bidder_worklet.BindNewPipeAndPassReceiver(),
+      std::move(url_loader_factory), bidder->Clone(),
+      auction_config_->auction_signals, PerBuyerSignals(bid_state),
+      browser_signals_->top_frame_origin, browser_signals_->seller,
+      auction_start_time_,
+      base::BindOnce(&AuctionRunner::OnGenerateBidComplete,
+                     weak_ptr_factory_.GetWeakPtr(), bid_state));
+  bid_state->bidder_worklet.set_disconnect_handler(
+      base::BindOnce(&AuctionRunner::OnGenerateBidCrashed,
+                     weak_ptr_factory_.GetWeakPtr(), bid_state));
 }
 
 void AuctionRunner::OnGenerateBidCrashed(BidState* state) {
@@ -240,8 +305,7 @@ void AuctionRunner::OnGenerateBidComplete(
     const std::vector<std::string>& errors) {
   DCHECK(!state->bid_result);
   DCHECK_GT(outstanding_bids_, 0);
-
-  --outstanding_bids_;
+  DCHECK_EQ(state->state, BidState::State::kGeneratingBid);
 
   errors_.insert(errors_.end(), errors.begin(), errors.end());
 
@@ -252,19 +316,25 @@ void AuctionRunner::OnGenerateBidComplete(
       bid.reset();
   }
 
-  // On failure, close the worklet pipe. On success, clear the disconnect
-  // handler - crashed bidders only matters if it's the winning bidder that
-  // crashed. That's checked for at the end of the auction.
   if (!bid) {
-    state->bidder_worklet.reset();
-  } else {
-    state->bidder_worklet.set_disconnect_handler(base::OnceClosure());
+    // On failure, close the worklet pipes.
+    state->ClosePipes();
+
+    state->state = BidState::State::kScoringComplete;
+    --outstanding_bids_;
+    MaybeCompleteAuction();
+    return;
   }
 
-  state->bid_result = std::move(bid);
+  // On success, clear the disconnect handler. After generating a bid, a crashed
+  // bidder only matters if it's the winning bidder that crashed. That's checked
+  // for at the end of the auction.
+  state->bidder_worklet.set_disconnect_handler(base::OnceClosure());
 
-  if (ReadyToScore())
-    ScoreOne();
+  state->bid_result = std::move(bid);
+  state->state = BidState::State::kWaitingOnSellerWorkletLoad;
+  if (seller_loaded_)
+    ScoreBid(state);
 }
 
 void AuctionRunner::OnSellerWorkletLoaded(
@@ -272,55 +342,76 @@ void AuctionRunner::OnSellerWorkletLoaded(
     const std::vector<std::string>& errors) {
   errors_.insert(errors_.end(), errors.begin(), errors.end());
 
-  if (load_result) {
-    seller_loaded_ = true;
-    if (ReadyToScore())
-      ScoreOne();
-  } else {
+  if (!load_result) {
     // Failed to load the seller/auction script --- nothing useful can be
     // done, so abort, possibly cancelling other fetches, so we don't waste
     // time.
-    FailAuction();
-  }
-}
-
-void AuctionRunner::ScoreOne() {
-  size_t num_bidders = bid_states_.size();
-
-  // Find next valid bid to score, if any.
-  while (seller_considering_ < num_bidders) {
-    BidState* bid_state = &bid_states_[seller_considering_];
-
-    // Skip over bidders that produced no valid bid.
-    if (!bid_state->bid_result) {
-      ++seller_considering_;
-      continue;
-    }
-
-    ScoreBid(bid_state);
+    FailAuction(AuctionResult::kSellerWorkletLoadFailed);
     return;
   }
 
-  DCHECK_EQ(seller_considering_, num_bidders);
-  CompleteAuction();
+  seller_loaded_ = true;
+  // Start scoring any bids that were waiting on the seller worklet to load.
+  for (BidState& state : bid_states_) {
+    // Bids can be complete at this point (if no bid was offered, or on
+    // error), but they can't be scoring a bid.
+    DCHECK_NE(state.state, BidState::State::kSellerScoringBid);
+
+    if (state.state == BidState::State::kWaitingOnSellerWorkletLoad)
+      ScoreBid(&state);
+  }
 }
 
-void AuctionRunner::ScoreBid(const BidState* state) {
+void AuctionRunner::ScoreBid(BidState* state) {
+  DCHECK_EQ(state->state, BidState::State::kWaitingOnSellerWorkletLoad);
+  state->state = BidState::State::kSellerScoringBid;
   seller_worklet_->ScoreAd(
       state->bid_result->ad, state->bid_result->bid, auction_config_.Clone(),
       browser_signals_->top_frame_origin, state->bidder->group->owner,
       AdRenderFingerprint(state),
       state->bid_result->bid_duration.InMilliseconds(),
       base::BindOnce(&AuctionRunner::OnBidScored,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr(), state));
 }
 
-void AuctionRunner::OnBidScored(double score,
+void AuctionRunner::OnBidScored(BidState* state,
+                                double score,
                                 const std::vector<std::string>& errors) {
-  bid_states_[seller_considering_].seller_score = score;
+  DCHECK_EQ(state->state, BidState::State::kSellerScoringBid);
+  state->seller_score = score;
+  --outstanding_bids_;
+  state->state = BidState::State::kScoringComplete;
   errors_.insert(errors_.end(), errors.begin(), errors.end());
-  ++seller_considering_;
-  ScoreOne();
+
+  if (score <= 0) {
+    // If the worklet didn't bid, destroy the worklet.
+    state->ClosePipes();
+  } else {
+    bool replace_top_bidder = false;
+    if (!top_bidder_ || score > top_bidder_->seller_score) {
+      // If there's no previous top bidder, or the bidder has the highest score,
+      // need to replace the previous top bidder.
+      replace_top_bidder = true;
+      num_top_bidders_ = 1;
+    } else if (score == top_bidder_->seller_score) {
+      // If there's a tie, replace the top-bidder with 1-in-`num_top_bidders_`
+      // chance. This is the select random value from a stream with fixed
+      // storage problem.
+      ++num_top_bidders_;
+      if (1 == base::RandInt(1, num_top_bidders_))
+        replace_top_bidder = true;
+    }
+
+    if (replace_top_bidder) {
+      if (top_bidder_)
+        top_bidder_->ClosePipes();
+      top_bidder_ = state;
+    } else {
+      state->ClosePipes();
+    }
+  }
+
+  MaybeCompleteAuction();
 }
 
 std::string AuctionRunner::AdRenderFingerprint(const BidState* state) {
@@ -342,147 +433,140 @@ absl::optional<std::string> AuctionRunner::PerBuyerSignals(
   return absl::nullopt;
 }
 
-void AuctionRunner::CompleteAuction() {
-  double best_bid_score = 0.0;
-  BidState* best_bid = nullptr;
+void AuctionRunner::MaybeCompleteAuction() {
+  if (!AllBidsScored())
+    return;
 
-  // Find the best bid, if any, and record the bid of all bidders that made a
-  // bid. Record bidders at this point because the auction has successfully
-  // completed, and need to record bids even in the case the seller rejected all
-  // bids.
+  // Record which interest groups bid.
   //
-  // TODO(morlovich): What if there is a tie?
+  // TODO(mmenke): Maybe this should be recorded at bid time, and the interest
+  // group thrown away if it's not the top bid?
+  bool some_bidder_bid = false;
   for (BidState& bid_state : bid_states_) {
     if (bid_state.bid_result) {
+      some_bidder_bid = true;
       interest_group_manager_->RecordInterestGroupBid(
           bid_state.bidder->group->owner, bid_state.bidder->group->name);
-      if (bid_state.seller_score > best_bid_score) {
-        best_bid_score = bid_state.seller_score;
-        best_bid = &bid_state;
-      }
     }
   }
 
-  if (best_bid) {
-    // Will eventually send a report to the seller and clean up `this`.
-    ReportSellerResult(best_bid);
-  } else {
-    FailAuction();
+  if (!top_bidder_) {
+    FailAuction(some_bidder_bid ? AuctionResult::kAllBidsRejected
+                                : AuctionResult::kNoBids);
+    return;
   }
+
+  // Will eventually send a report to the seller and clean up `this`.
+  ReportSellerResult();
 }
 
-void AuctionRunner::ReportSellerResult(BidState* best_bid) {
-  DCHECK(best_bid->bid_result);
-  DCHECK_GT(best_bid->seller_score, 0);
+void AuctionRunner::ReportSellerResult() {
+  DCHECK(top_bidder_);
+
+  DCHECK(top_bidder_->bid_result);
+  DCHECK_GT(top_bidder_->seller_score, 0);
+  DCHECK(top_bidder_->bidder_worklet);
+
   seller_worklet_->ReportResult(
       auction_config_.Clone(), browser_signals_->top_frame_origin,
-      best_bid->bidder->group->owner, best_bid->bid_result->render_url,
-      AdRenderFingerprint(best_bid), best_bid->bid_result->bid,
-      best_bid->seller_score,
+      top_bidder_->bidder->group->owner, top_bidder_->bid_result->render_url,
+      AdRenderFingerprint(top_bidder_), top_bidder_->bid_result->bid,
+      top_bidder_->seller_score,
       base::BindOnce(&AuctionRunner::OnReportSellerResultComplete,
-                     weak_ptr_factory_.GetWeakPtr(), best_bid));
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AuctionRunner::OnReportSellerResultComplete(
-    BidState* best_bid,
     const absl::optional<std::string>& signals_for_winner,
     const absl::optional<GURL>& seller_report_url,
     const std::vector<std::string>& errors) {
-  signals_for_winner_ = signals_for_winner;
   seller_report_url_ = seller_report_url;
   errors_.insert(errors_.end(), errors.begin(), errors.end());
 
   absl::optional<GURL> opt_bidder_report_url;
   if (seller_report_url && !IsUrlValid(*seller_report_url)) {
     mojo::ReportBadMessage("Invalid seller report URL");
-    FailAuction();
+    FailAuction(AuctionResult::kBadMojoMessage);
     return;
   }
 
-  ReportBidWin(best_bid);
+  ReportBidWin(signals_for_winner);
 }
 
-void AuctionRunner::ReportBidWin(BidState* best_bid) {
-  CHECK(best_bid->bid_result);
+void AuctionRunner::ReportBidWin(
+    const absl::optional<std::string>& signals_for_winner) {
+  DCHECK(top_bidder_->bid_result);
   std::string signals_for_winner_arg;
-  // TODO(mmenke): It's unclear what should happen here if
-  // `signals_for_winner_` is null. As-is, an empty string will result in the
-  // BidderWorklet's ReportWin() method failing, since it's not valid JSON.
-  if (signals_for_winner_)
-    signals_for_winner_arg = *signals_for_winner_;
+  if (signals_for_winner) {
+    signals_for_winner_arg = *signals_for_winner;
+  } else {
+    // `signals_for_winner_arg` is passed as JSON, so need to pass "null" when
+    // it's not provided. Pass in "null" instead of making the API take an
+    // optional to limit the information provided to the untrusted BidderWorklet
+    // process that's not part of the FLEDGE API. Unlikely to matter, but best
+    // to be safe.
+    signals_for_winner_arg = "null";
+  }
 
   // Fail the auction if the winning bidder process has crashed.
-  //
-  // TODO(mmenke): Be smarter about process crashes in general. Even without
-  // the report URL, can display the ad and report to the seller (though will
-  // need to think more about that case).
-  if (!best_bid->bidder_worklet.is_connected()) {
-    FailAuctionWithError(
-        base::StrCat({best_bid->bidder->group->bidding_url->spec(),
-                      " crashed while idle."}));
+  if (!top_bidder_->bidder_worklet.is_connected()) {
+    FailAuction(AuctionResult::kWinningBidderWorkletCrashed,
+                base::StrCat({top_bidder_->bidder->group->bidding_url->spec(),
+                              " crashed while idle."}));
     return;
   }
 
-  best_bid->bidder_worklet->ReportWin(
-      signals_for_winner_arg, best_bid->bid_result->render_url,
-      AdRenderFingerprint(best_bid), best_bid->bid_result->bid,
+  top_bidder_->bidder_worklet->ReportWin(
+      signals_for_winner_arg, top_bidder_->bid_result->render_url,
+      AdRenderFingerprint(top_bidder_), top_bidder_->bid_result->bid,
       base::BindOnce(&AuctionRunner::OnReportBidWinComplete,
-                     weak_ptr_factory_.GetWeakPtr(), best_bid));
-  best_bid->bidder_worklet.set_disconnect_handler(base::BindOnce(
-      &AuctionRunner::FailAuctionWithError, weak_ptr_factory_.GetWeakPtr(),
-      base::StrCat({best_bid->bidder->group->bidding_url->spec(),
+                     weak_ptr_factory_.GetWeakPtr()));
+  top_bidder_->bidder_worklet.set_disconnect_handler(base::BindOnce(
+      &AuctionRunner::FailAuction, weak_ptr_factory_.GetWeakPtr(),
+      AuctionResult::kWinningBidderWorkletCrashed,
+      base::StrCat({top_bidder_->bidder->group->bidding_url->spec(),
                     " crashed while trying to run reportWin()."})));
 }
 
 void AuctionRunner::OnReportBidWinComplete(
-    const BidState* best_bid,
     const absl::optional<GURL>& bidder_report_url,
     const std::vector<std::string>& errors) {
   if (bidder_report_url && !IsUrlValid(*bidder_report_url)) {
     mojo::ReportBadMessage("Invalid bidder report URL");
-    FailAuction();
+    FailAuction(AuctionResult::kBadMojoMessage);
     return;
   }
 
   bidder_report_url_ = bidder_report_url;
   errors_.insert(errors_.end(), errors.begin(), errors.end());
-  ReportSuccess(best_bid);
+  ReportSuccess();
 }
 
-void AuctionRunner::FailAuction() {
+void AuctionRunner::ReportSuccess() {
   DCHECK(callback_);
+  DCHECK(top_bidder_->bid_result);
   ClosePipes();
 
-  std::move(callback_).Run(this, absl::nullopt, absl::nullopt, absl::nullopt,
-                           errors_);
-}
-
-void AuctionRunner::FailAuctionWithError(std::string error) {
-  errors_.emplace_back(std::move(error));
-  FailAuction();
-}
-
-void AuctionRunner::ReportSuccess(const BidState* state) {
-  DCHECK(callback_);
-  DCHECK(state->bid_result);
-  ClosePipes();
+  RecordResult(AuctionResult::kSuccess);
 
   std::string ad_metadata;
-  if (state->bid_ad->metadata) {
+  if (top_bidder_->bid_ad->metadata) {
     //`metadata` is already in JSON so no quotes are needed.
     ad_metadata =
         base::StringPrintf(R"({"render_url":"%s","metadata":%s})",
-                           state->bid_result->render_url.spec().c_str(),
-                           state->bid_ad->metadata.value().c_str());
+                           top_bidder_->bid_result->render_url.spec().c_str(),
+                           top_bidder_->bid_ad->metadata.value().c_str());
   } else {
-    ad_metadata = base::StringPrintf(
-        R"({"render_url":"%s"})", state->bid_result->render_url.spec().c_str());
+    ad_metadata =
+        base::StringPrintf(R"({"render_url":"%s"})",
+                           top_bidder_->bid_result->render_url.spec().c_str());
   }
 
   interest_group_manager_->RecordInterestGroupWin(
-      state->bidder->group->owner, state->bidder->group->name, ad_metadata);
+      top_bidder_->bidder->group->owner, top_bidder_->bidder->group->name,
+      ad_metadata);
 
-  std::move(callback_).Run(this, state->bid_result->render_url,
+  std::move(callback_).Run(this, top_bidder_->bid_result->render_url,
                            std::move(bidder_report_url_),
                            std::move(seller_report_url_), std::move(errors_));
 }
@@ -493,9 +577,35 @@ void AuctionRunner::ClosePipes() {
   weak_ptr_factory_.InvalidateWeakPtrs();
 
   for (BidState& bid_state : bid_states_) {
-    bid_state.bidder_worklet.reset();
+    bid_state.ClosePipes();
   }
   seller_worklet_.reset();
+  seller_worklet_process_handle_.reset();
+}
+
+void AuctionRunner::RecordResult(AuctionResult result) const {
+  UMA_HISTOGRAM_ENUMERATION("Ads.InterestGroup.Auction.Result", result);
+
+  // Only record time of full auctions and aborts.
+  switch (result) {
+    case AuctionResult::kAborted:
+      UMA_HISTOGRAM_MEDIUM_TIMES("Ads.InterestGroup.Auction.AbortTime",
+                                 base::Time::Now() - auction_start_time_);
+      break;
+    case AuctionResult::kNoBids:
+    case AuctionResult::kAllBidsRejected:
+      UMA_HISTOGRAM_MEDIUM_TIMES(
+          "Ads.InterestGroup.Auction.CompletedWithoutWinnerTime",
+          base::Time::Now() - auction_start_time_);
+      break;
+    case AuctionResult::kSuccess:
+      UMA_HISTOGRAM_MEDIUM_TIMES(
+          "Ads.InterestGroup.Auction.AuctionWithWinnerTime",
+          base::Time::Now() - auction_start_time_);
+      break;
+    default:
+      break;
+  }
 }
 
 }  // namespace content

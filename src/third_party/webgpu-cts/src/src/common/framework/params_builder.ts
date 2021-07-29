@@ -1,154 +1,314 @@
-import {
-  CaseParams,
-  CaseParamsIterable,
-  FlattenUnionOfInterfaces,
-  Merged,
-  mergeParams,
-  publicParamsEquals,
-} from './params_utils.js';
-import { ResolveType, UnionToIntersection } from './util/types.js';
+import { Merged, mergeParams } from '../internal/params_utils.js';
 
-/** Conditionally chooses between two types depending on whether T is a union. */
-type CheckForUnion<T, TErr, TOk> = [T] extends [UnionToIntersection<T>] ? TOk : TErr;
+// ================================================================
+// "Public" ParamsBuilder API / Documentation
+// ================================================================
 
-/** Conditionally chooses a type (or void) depending on whether T is a string. */
-type CheckForStringLiteralType<T, TOk> = string extends T ? void : CheckForUnion<T, void, TOk>;
-
-/* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-function typeAssert<T extends 'pass'>() {}
-{
-  type Test<T, U> = [T] extends [U]
-    ? [U] extends [T]
-      ? 'pass'
-      : { actual: ResolveType<T>; expected: U }
-    : { actual: ResolveType<T>; expected: U };
-
-  type T01 = { a: number } | { b: string };
-  type T02 = { a: number } | { b?: string };
-  type T03 = { a: number } | { a?: number };
-  type T04 = { a: number } | { a: string };
-  type T05 = { a: number } | { a?: string };
-
-  type T11 = { a: number; b?: undefined } | { a?: undefined; b: string };
-
-  type T21 = { a: number; b?: undefined } | { b: string };
-  type T22 = { a: number; b?: undefined } | { b?: string };
-  type T23 = { a: number; b?: undefined } | { a?: number };
-  type T24 = { a: number; b?: undefined } | { a: string };
-  type T25 = { a: number; b?: undefined } | { a?: string };
-  type T26 = { a: number; b?: undefined } | { a: undefined };
-  type T27 = { a: number; b?: undefined } | { a: undefined; b: undefined };
-
-  /* prettier-ignore */ {
-    typeAssert<Test<FlattenUnionOfInterfaces<T01>, { a: number | undefined; b: string | undefined }>>();
-    typeAssert<Test<FlattenUnionOfInterfaces<T02>, { a: number | undefined; b: string | undefined }>>();
-    typeAssert<Test<FlattenUnionOfInterfaces<T03>, { a: number | undefined }>>();
-    typeAssert<Test<FlattenUnionOfInterfaces<T04>, { a: number | string }>>();
-    typeAssert<Test<FlattenUnionOfInterfaces<T05>, { a: number | string | undefined }>>();
-
-    typeAssert<Test<FlattenUnionOfInterfaces<T11>, { a: number | undefined; b: string | undefined }>>();
-
-    typeAssert<Test<FlattenUnionOfInterfaces<T22>, { a: number | undefined; b: string | undefined }>>();
-    typeAssert<Test<FlattenUnionOfInterfaces<T23>, { a: number | undefined; b: undefined }>>();
-    typeAssert<Test<FlattenUnionOfInterfaces<T24>, { a: number | string; b: undefined }>>();
-    typeAssert<Test<FlattenUnionOfInterfaces<T25>, { a: number | string | undefined; b: undefined }>>();
-    typeAssert<Test<FlattenUnionOfInterfaces<T27>, { a: number | undefined; b: undefined }>>();
-
-    // Unexpected test results - hopefully okay to ignore these
-    typeAssert<Test<FlattenUnionOfInterfaces<T21>, { b: string | undefined }>>();
-    typeAssert<Test<FlattenUnionOfInterfaces<T26>, { a: number | undefined }>>();
-  }
-}
-
-export function poptions<Name extends string, V>(
-  name: Name,
-  values: Iterable<V>
-): CheckForStringLiteralType<Name, Iterable<{ [name in Name]: V }>> {
-  const iter = makeReusableIterable(function* () {
-    for (const value of values) {
-      yield { [name]: value };
-    }
-  });
+/**
+ * Provides doc comments for the methods of CaseParamsBuilder and SubcaseParamsBuilder.
+ * (Also enforces rough interface match between them.)
+ */
+export interface ParamsBuilder {
+  /**
+   * Expands each item in `this` into zero or more items.
+   * Each item has its parameters expanded with those returned by the `expander`.
+   *
+   * **Note:** When only a single key is being added, use the simpler `expand` for readability.
+   *
+   * ```text
+   *               this = [     a       ,      b     ,       c       ]
+   * this.map(expander) = [   f(a)           f(b)          f(c)      ]
+   *                    = [[a1, a2, a3] ,    [ b1 ]  ,       []      ]
+   *  merge and flatten = [ merge(a, a1), merge(a, a2), merge(a, a3), merge(b, b1) ]
+   * ```
+   */
   /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-  return iter as any;
+  expandWithParams(expander: (_: any) => any): any;
+
+  /**
+   * Expands each item in `this` into zero or more items. Each item has its parameters expanded
+   * with one new key, `key`, and the values returned by `expander`.
+   */
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+  expand(key: string, expander: (_: any) => any): any;
+
+  /**
+   * Expands each item in `this` to multiple items, one for each item in `newParams`.
+   *
+   * In other words, takes the cartesian product of [ the items in `this` ] and `newParams`.
+   *
+   * **Note:** When only a single key is being added, use the simpler `combine` for readability.
+   *
+   * ```text
+   *                     this = [ {a:1}, {b:2} ]
+   *                newParams = [ {x:1}, {y:2} ]
+   * this.combineP(newParams) = [ {a:1,x:1}, {a:1,y:2}, {b:2,x:1}, {b:2,y:2} ]
+   * ```
+   */
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+  combineWithParams(newParams: Iterable<any>): any;
+
+  /**
+   * Expands each item in `this` to multiple items with `{ [name]: value }` for each value.
+   *
+   * In other words, takes the cartesian product of [ the items in `this` ]
+   * and `[ {[name]: value} for each value in values ]`
+   */
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+  combine(key: string, newParams: Iterable<any>): any;
+
+  /**
+   * Filters `this` to only items for which `pred` returns true.
+   */
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+  filter(pred: (_: any) => boolean): any;
+
+  /**
+   * Filters `this` to only items for which `pred` returns false.
+   */
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+  unless(pred: (_: any) => boolean): any;
 }
 
-export function pbool<Name extends string>(
-  name: Name
-): CheckForStringLiteralType<Name, Iterable<{ [name in Name]: boolean }>> {
-  return poptions(name, [false, true]);
+/**
+ * Determines the resulting parameter object type which would be generated by an object of
+ * the given ParamsBuilder type.
+ */
+export type ParamTypeOf<
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+  T extends ParamsBuilder
+> = T extends SubcaseParamsBuilder<infer CaseP, infer SubcaseP>
+  ? Merged<CaseP, SubcaseP>
+  : T extends CaseParamsBuilder<infer CaseP>
+  ? CaseP
+  : never;
+
+// ================================================================
+// Implementation
+// ================================================================
+
+/**
+ * Iterable over pairs of either:
+ * - `[case params, Iterable<subcase params>]` if there are subcases.
+ * - `[case params, undefined]` if not.
+ */
+export type CaseSubcaseIterable<CaseP, SubcaseP> = Iterable<
+  readonly [CaseP, Iterable<SubcaseP> | undefined]
+>;
+
+/**
+ * Base class for `CaseParamsBuilder` and `SubcaseParamsBuilder`.
+ */
+export abstract class ParamsBuilderBase<CaseP extends {}, SubcaseP extends {}> {
+  protected readonly cases: () => Generator<CaseP>;
+
+  constructor(cases: () => Generator<CaseP>) {
+    this.cases = cases;
+  }
+
+  /**
+   * Hidden from test files. Use `builderIterateCasesWithSubcases` to access this.
+   */
+  protected abstract iterateCasesWithSubcases(): CaseSubcaseIterable<CaseP, SubcaseP>;
 }
 
-export function params(): ParamsBuilder<{}> {
-  return new ParamsBuilder();
+/**
+ * Calls the (normally hidden) `iterateCasesWithSubcases()` method.
+ */
+export function builderIterateCasesWithSubcases(builder: ParamsBuilderBase<{}, {}>) {
+  interface IterableParamsBuilder {
+    iterateCasesWithSubcases(): CaseSubcaseIterable<{}, {}>;
+  }
+
+  return ((builder as unknown) as IterableParamsBuilder).iterateCasesWithSubcases();
 }
 
-export class ParamsBuilder<A extends {}> implements CaseParamsIterable {
-  private paramSpecs: CaseParamsIterable = [{}];
-
-  [Symbol.iterator](): Iterator<A> {
-    const iter: Iterator<CaseParams> = this.paramSpecs[Symbol.iterator]();
-    return iter as Iterator<A>;
+/**
+ * Builder for combinatorial test **case** parameters.
+ *
+ * CaseParamsBuilder is immutable. Each method call returns a new, immutable object,
+ * modifying the list of cases according to the method called.
+ *
+ * This means, for example, that the `unit` passed into `TestBuilder.params()` can be reused.
+ */
+export class CaseParamsBuilder<CaseP extends {}>
+  extends ParamsBuilderBase<CaseP, {}>
+  implements Iterable<CaseP>, ParamsBuilder {
+  *iterateCasesWithSubcases(): CaseSubcaseIterable<CaseP, {}> {
+    for (const a of this.cases()) {
+      yield [a, undefined];
+    }
   }
 
-  combine<B extends {}>(newParams: Iterable<B>): ParamsBuilder<Merged<A, B>> {
-    const paramSpecs = this.paramSpecs as Iterable<A>;
-    this.paramSpecs = makeReusableIterable(function* () {
-      for (const a of paramSpecs) {
-        for (const b of newParams) {
-          yield mergeParams(a, b);
-        }
-      }
-    }) as CaseParamsIterable;
-    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-    return this as any;
+  [Symbol.iterator](): Iterator<CaseP> {
+    return this.cases();
   }
 
-  expand<B extends {}>(expander: (_: A) => Iterable<B>): ParamsBuilder<Merged<A, B>> {
-    const paramSpecs = this.paramSpecs as Iterable<A>;
-    this.paramSpecs = makeReusableIterable(function* () {
-      for (const a of paramSpecs) {
-        for (const b of expander(a)) {
-          yield mergeParams(a, b);
-        }
-      }
-    }) as CaseParamsIterable;
-    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-    return this as any;
+  /** @inheritdoc */
+  expandWithParams<NewP extends {}>(
+    expander: (_: Merged<{}, CaseP>) => Iterable<NewP>
+  ): CaseParamsBuilder<Merged<CaseP, NewP>> {
+    const newGenerator = expanderGenerator(this.cases, expander);
+    return new CaseParamsBuilder(() => newGenerator({}));
   }
 
-  filter(pred: (_: A) => boolean): ParamsBuilder<A> {
-    const paramSpecs = this.paramSpecs as Iterable<A>;
-    this.paramSpecs = makeReusableIterable(function* () {
-      for (const p of paramSpecs) {
-        if (pred(p)) {
-          yield p;
-        }
+  /** @inheritdoc */
+  expand<NewPKey extends string, NewPValue>(
+    key: NewPKey,
+    expander: (_: Merged<{}, CaseP>) => Iterable<NewPValue>
+  ): CaseParamsBuilder<Merged<CaseP, { [name in NewPKey]: NewPValue }>> {
+    return this.expandWithParams(function* (p) {
+      for (const value of expander(p)) {
+        // TypeScript doesn't know here that NewPKey is always a single literal string type.
+        yield { [key]: value } as { [name in NewPKey]: NewPValue };
       }
     });
-    return this;
   }
 
-  unless(pred: (_: A) => boolean): ParamsBuilder<A> {
+  /** @inheritdoc */
+  combineWithParams<NewP extends {}>(
+    newParams: Iterable<NewP>
+  ): CaseParamsBuilder<Merged<CaseP, NewP>> {
+    return this.expandWithParams(() => newParams);
+  }
+
+  /** @inheritdoc */
+  combine<NewPKey extends string, NewPValue>(
+    key: NewPKey,
+    values: Iterable<NewPValue>
+  ): CaseParamsBuilder<Merged<CaseP, { [name in NewPKey]: NewPValue }>> {
+    return this.expand(key, () => values);
+  }
+
+  /** @inheritdoc */
+  filter(pred: (_: Merged<{}, CaseP>) => boolean): CaseParamsBuilder<CaseP> {
+    const newGenerator = filterGenerator(this.cases, pred);
+    return new CaseParamsBuilder(() => newGenerator({}));
+  }
+
+  /** @inheritdoc */
+  unless(pred: (_: Merged<{}, CaseP>) => boolean): CaseParamsBuilder<CaseP> {
     return this.filter(x => !pred(x));
   }
 
-  exclude(exclude: CaseParamsIterable): ParamsBuilder<A> {
-    const excludeArray = Array.from(exclude);
-    const paramSpecs = this.paramSpecs;
-    this.paramSpecs = makeReusableIterable(function* () {
-      for (const p of paramSpecs) {
-        if (excludeArray.every(e => !publicParamsEquals(p, e))) {
-          yield p;
-        }
+  /**
+   * "Finalize" the list of cases and begin defining subcases.
+   * Returns a new SubcaseParamsBuilder. Methods called on SubcaseParamsBuilder
+   * generate new subcases instead of new cases.
+   */
+  beginSubcases(): SubcaseParamsBuilder<CaseP, {}> {
+    return new SubcaseParamsBuilder(
+      () => this.cases(),
+      function* () {
+        yield {};
       }
-    });
-    return this;
+    );
   }
 }
 
-// If you create an Iterable by calling a generator function (e.g. in IIFE), it is exhausted after
-// one use. This just wraps a generator function in an object so it be iterated multiple times.
-function makeReusableIterable<P>(generatorFn: () => Generator<P>): Iterable<P> {
-  return { [Symbol.iterator]: generatorFn };
+/**
+ * The unit CaseParamsBuilder, representing a single case with no params: `[ {} ]`.
+ *
+ * `punit` is passed to every `.params()`/`.paramsSubcasesOnly()` call, so `kUnitCaseParamsBuilder`
+ * is only explicitly needed if constructing a ParamsBuilder outside of a test builder.
+ */
+export const kUnitCaseParamsBuilder = new CaseParamsBuilder(function* () {
+  yield {};
+});
+
+/**
+ * Builder for combinatorial test _subcase_ parameters.
+ *
+ * SubcaseParamsBuilder is immutable. Each method call returns a new, immutable object,
+ * modifying the list of subcases according to the method called.
+ */
+export class SubcaseParamsBuilder<CaseP extends {}, SubcaseP extends {}>
+  extends ParamsBuilderBase<CaseP, SubcaseP>
+  implements ParamsBuilder {
+  protected readonly subcases: (_: CaseP) => Generator<SubcaseP>;
+
+  constructor(cases: () => Generator<CaseP>, generator: (_: CaseP) => Generator<SubcaseP>) {
+    super(cases);
+    this.subcases = generator;
+  }
+
+  *iterateCasesWithSubcases(): CaseSubcaseIterable<CaseP, SubcaseP> {
+    for (const caseP of this.cases()) {
+      const subcases = Array.from(this.subcases(caseP));
+      if (subcases.length) {
+        yield [caseP, subcases];
+      }
+    }
+  }
+
+  /** @inheritdoc */
+  expandWithParams<NewP extends {}>(
+    expander: (_: Merged<CaseP, SubcaseP>) => Iterable<NewP>
+  ): SubcaseParamsBuilder<CaseP, Merged<SubcaseP, NewP>> {
+    return new SubcaseParamsBuilder(this.cases, expanderGenerator(this.subcases, expander));
+  }
+
+  /** @inheritdoc */
+  expand<NewPKey extends string, NewPValue>(
+    key: NewPKey,
+    expander: (_: Merged<CaseP, SubcaseP>) => Iterable<NewPValue>
+  ): SubcaseParamsBuilder<CaseP, Merged<SubcaseP, { [name in NewPKey]: NewPValue }>> {
+    return this.expandWithParams(function* (p) {
+      for (const value of expander(p)) {
+        // TypeScript doesn't know here that NewPKey is always a single literal string type.
+        yield { [key]: value } as { [name in NewPKey]: NewPValue };
+      }
+    });
+  }
+
+  /** @inheritdoc */
+  combineWithParams<NewP extends {}>(
+    newParams: Iterable<NewP>
+  ): SubcaseParamsBuilder<CaseP, Merged<SubcaseP, NewP>> {
+    return this.expandWithParams(() => newParams);
+  }
+
+  /** @inheritdoc */
+  combine<NewPKey extends string, NewPValue>(
+    key: NewPKey,
+    values: Iterable<NewPValue>
+  ): SubcaseParamsBuilder<CaseP, Merged<SubcaseP, { [name in NewPKey]: NewPValue }>> {
+    return this.expand(key, () => values);
+  }
+
+  /** @inheritdoc */
+  filter(pred: (_: Merged<CaseP, SubcaseP>) => boolean): SubcaseParamsBuilder<CaseP, SubcaseP> {
+    return new SubcaseParamsBuilder(this.cases, filterGenerator(this.subcases, pred));
+  }
+
+  /** @inheritdoc */
+  unless(pred: (_: Merged<CaseP, SubcaseP>) => boolean): SubcaseParamsBuilder<CaseP, SubcaseP> {
+    return this.filter(x => !pred(x));
+  }
+}
+
+function expanderGenerator<Base, A, B>(
+  baseGenerator: (_: Base) => Generator<A>,
+  expander: (_: Merged<Base, A>) => Iterable<B>
+): (_: Base) => Generator<Merged<A, B>> {
+  return function* (base: Base) {
+    for (const a of baseGenerator(base)) {
+      for (const b of expander(mergeParams(base, a))) {
+        yield mergeParams(a, b);
+      }
+    }
+  };
+}
+
+function filterGenerator<Base, A>(
+  baseGenerator: (_: Base) => Generator<A>,
+  pred: (_: Merged<Base, A>) => boolean
+): (_: Base) => Generator<A> {
+  return function* (base: Base) {
+    for (const a of baseGenerator(base)) {
+      if (pred(mergeParams(base, a))) {
+        yield a;
+      }
+    }
+  };
 }

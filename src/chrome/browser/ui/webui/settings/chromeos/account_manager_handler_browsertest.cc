@@ -7,7 +7,6 @@
 #include <memory>
 #include <ostream>
 
-#include "ash/components/account_manager/account_manager.h"
 #include "ash/components/account_manager/account_manager_factory.h"
 #include "base/test/bind.h"
 #include "chrome/browser/account_manager_facade_factory.h"
@@ -20,6 +19,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/account_manager_core/account_manager_facade.h"
+#include "components/account_manager_core/chromeos/account_manager.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -30,7 +30,7 @@
 
 namespace {
 
-using ::ash::AccountManager;
+using ::account_manager::AccountManager;
 
 constexpr char kGetAccountsMessage[] = "getAccounts";
 constexpr char kHandleFunctionName[] = "handleFunctionName";
@@ -267,9 +267,10 @@ IN_PROC_BROWSER_TEST_P(AccountManagerUIHandlerTest,
   ASSERT_EQ(1UL, account_manager_accounts.size());
 
   // Call "getAccounts".
-  base::ListValue args;
-  args.AppendString(kHandleFunctionName);
-  web_ui()->HandleReceivedMessage(kGetAccountsMessage, &args);
+  base::Value args(base::Value::Type::LIST);
+  args.Append(kHandleFunctionName);
+  web_ui()->HandleReceivedMessage(kGetAccountsMessage,
+                                  &base::Value::AsListValue(args));
 
   const content::TestWebUI::CallData& call_data = *web_ui()->call_data().back();
   EXPECT_EQ("cr.webUIResponse", call_data.function_name());
@@ -315,9 +316,10 @@ IN_PROC_BROWSER_TEST_P(AccountManagerUIHandlerTest,
   base::RunLoop().RunUntilIdle();
 
   // Call "getAccounts".
-  base::ListValue args;
-  args.AppendString(kHandleFunctionName);
-  web_ui()->HandleReceivedMessage(kGetAccountsMessage, &args);
+  base::Value args(base::Value::Type::LIST);
+  args.Append(kHandleFunctionName);
+  web_ui()->HandleReceivedMessage(kGetAccountsMessage,
+                                  &base::Value::AsListValue(args));
 
   const content::TestWebUI::CallData& call_data = *web_ui()->call_data().back();
   EXPECT_EQ("cr.webUIResponse", call_data.function_name());
@@ -371,16 +373,15 @@ IN_PROC_BROWSER_TEST_P(AccountManagerUIHandlerTest,
     EXPECT_EQ(expected_account.raw_email,
               ValueOrEmpty(account.FindStringKey("email")));
 
-    absl::optional<AccountInfo> expected_account_info =
-        identity_manager()
-            ->FindExtendedAccountInfoForAccountWithRefreshTokenByGaiaId(
-                expected_account.key.id);
-    EXPECT_TRUE(expected_account_info.has_value());
-    EXPECT_EQ(expected_account_info->full_name,
+    AccountInfo expected_account_info =
+        identity_manager()->FindExtendedAccountInfoByGaiaId(
+            expected_account.key.id);
+    EXPECT_FALSE(expected_account_info.IsEmpty());
+    EXPECT_EQ(expected_account_info.full_name,
               ValueOrEmpty(account.FindStringKey("fullName")));
     EXPECT_EQ(
         !identity_manager()->HasAccountWithRefreshTokenInPersistentErrorState(
-            expected_account_info->account_id),
+            expected_account_info.account_id),
         account.FindBoolKey("isSignedIn").value());
   }
 }

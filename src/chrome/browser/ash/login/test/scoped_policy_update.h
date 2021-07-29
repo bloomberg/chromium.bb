@@ -7,8 +7,8 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "chrome/browser/chromeos/policy/device_policy_builder.h"
-#include "components/policy/core/common/cloud/policy_builder.h"
+#include "chrome/browser/ash/policy/core/device_policy_builder.h"
+#include "components/policy/core/common/cloud/test/policy_builder.h"
 
 namespace chromeos {
 
@@ -73,6 +73,7 @@ class ScopedDevicePolicyUpdate {
 // TODO(https://crbug.com/1164001): remove when moved to ash.
 namespace ash {
 using ::chromeos::ScopedDevicePolicyUpdate;
+using ::chromeos::ScopedUserPolicyUpdate;
 }
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_TEST_SCOPED_POLICY_UPDATE_H_

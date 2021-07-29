@@ -8,6 +8,8 @@
 #include "src/gpu/ops/GrQuadPerEdgeAA.h"
 
 #include "include/private/SkVx.h"
+#include "src/gpu/GrMeshDrawTarget.h"
+#include "src/gpu/GrResourceProvider.h"
 #include "src/gpu/SkGr.h"
 #include "src/gpu/geometry/GrQuadUtils.h"
 #include "src/gpu/glsl/GrGLSLColorSpaceXformHelper.h"
@@ -374,7 +376,12 @@ void Tessellator::append(GrQuad* deviceQuad, GrQuad* localQuad,
             // Then outer vertices, which use 0.f for their coverage. If the inset was degenerate
             // to a line (had all coverages < 1), tweak the outset distance so the outer frame's
             // narrow axis reaches out to 2px, which gives better animation under translation.
-            if (coverage[0] < 1.f && coverage[1] < 1.f && coverage[2] < 1.f && coverage[3] < 1.f) {
+            const bool hairline = aaFlags == GrQuadAAFlags::kAll &&
+                                  coverage[0] < 1.f &&
+                                  coverage[1] < 1.f &&
+                                  coverage[2] < 1.f &&
+                                  coverage[3] < 1.f;
+            if (hairline) {
                 skvx::Vec<4, float> len = fAAHelper.getEdgeLengths();
                 // Using max guards us against trying to scale a degenerate triangle edge of 0 len
                 // up to 2px. The shuffles are so that edge 0's adjustment is based on the lengths
@@ -398,7 +405,7 @@ void Tessellator::append(GrQuad* deviceQuad, GrQuad* localQuad,
     }
 }
 
-sk_sp<const GrBuffer> GetIndexBuffer(GrMeshDrawOp::Target* target,
+sk_sp<const GrBuffer> GetIndexBuffer(GrMeshDrawTarget* target,
                                      IndexBufferOption indexBufferOption) {
     auto resourceProvider = target->resourceProvider();
 
@@ -461,7 +468,7 @@ void IssueDraw(const GrCaps& caps, GrOpsRenderPass* renderPass, const VertexSpec
         int numIndicesToDraw = quadsInDraw * numIndicesPerQuad;
 
         int minVertex = runningQuadCount * numVertsPerQuad;
-        int maxVertex = (runningQuadCount + quadsInDraw) * numVertsPerQuad;
+        int maxVertex = (runningQuadCount + quadsInDraw) * numVertsPerQuad - 1; // inclusive
 
         renderPass->drawIndexed(numIndicesToDraw, baseIndex, minVertex, maxVertex,
                                 absVertBufferOffset);

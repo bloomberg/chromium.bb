@@ -103,7 +103,6 @@
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
-#include "gpu/ipc/common/gpu_messages.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -117,10 +116,13 @@
 #include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/common/widget/visual_properties.h"
+#include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom.h"
 #include "third_party/blink/public/mojom/input/touch_event.mojom.h"
 #include "third_party/blink/public/mojom/page/drag.mojom.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
+#include "ui/base/ime/mojom/text_input_state.mojom.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/screen.h"
@@ -167,6 +169,15 @@ bool g_check_for_pending_visual_properties_ack = true;
 bool ShouldDisableHangMonitor() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableHangMonitor);
+}
+
+// Returns the cached result of IsUseZoomForDSFEnabled().
+// IsUseZoomForDSFEnabled() calls base::CommandLine::HasSwitch() which
+// is relatively heavyweight when invoked repeatedly (some functions that
+// check this setting can be called frequently). https://crbug.com/1220717 .
+bool ShouldUseZoomForDSF() {
+  static bool is_use_zoom_for_DSF_enabled = IsUseZoomForDSFEnabled();
+  return is_use_zoom_for_DSF_enabled;
 }
 
 // <process id, routing id>
@@ -323,6 +334,37 @@ class UnboundWidgetInputHandler : public blink::mojom::WidgetInputHandler {
   }
 };
 
+std::u16string GetWrappedTooltipText(
+    const std::u16string& tooltip_text,
+    base::i18n::TextDirection text_direction_hint) {
+  // First, add directionality marks around tooltip text if necessary.
+  // A naive solution would be to simply always wrap the text. However, on
+  // windows, Unicode directional embedding characters can't be displayed on
+  // systems that lack RTL fonts and are instead displayed as empty squares.
+  //
+  // To get around this we only wrap the string when we deem it necessary i.e.
+  // when the locale direction is different than the tooltip direction hint.
+  //
+  // Currently, we use element's directionality as the tooltip direction hint.
+  // An alternate solution would be to set the overall directionality based on
+  // trying to detect the directionality from the tooltip text rather than the
+  // element direction.  One could argue that would be a preferable solution
+  // but we use the current approach to match Fx & IE's behavior.
+  std::u16string wrapped_tooltip_text = tooltip_text;
+  if (!tooltip_text.empty()) {
+    if (text_direction_hint == base::i18n::LEFT_TO_RIGHT) {
+      // Force the tooltip to have LTR directionality.
+      wrapped_tooltip_text =
+          base::i18n::GetDisplayStringInLTRDirectionality(wrapped_tooltip_text);
+    } else if (text_direction_hint == base::i18n::RIGHT_TO_LEFT &&
+               !base::i18n::IsRTL()) {
+      // Force the tooltip to have RTL directionality.
+      base::i18n::WrapStringWithRTLFormatting(&wrapped_tooltip_text);
+    }
+  }
+  return wrapped_tooltip_text;
+}
+
 base::LazyInstance<UnboundWidgetInputHandler>::Leaky g_unbound_input_handler =
     LAZY_INSTANCE_INITIALIZER;
 
@@ -385,7 +427,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(
 #if defined(OS_MAC)
           ui::WindowResizeHelperMac::Get()->task_runner(),
 #else
-          base::ThreadTaskRunnerHandle::Get(),
+          content::GetUIThreadTaskRunner({BrowserTaskType::kUserInput}),
 #endif
           frame_token_message_queue_.get()),
       frame_sink_id_(base::checked_cast<uint32_t>(
@@ -440,6 +482,8 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(
         base::BindRepeating(&RenderWidgetHostImpl::ClearDisplayedGraphics,
                             weak_factory_.GetWeakPtr()));
   }
+  input_event_ack_timeout_.SetTaskRunner(
+      content::GetUIThreadTaskRunner({BrowserTaskType::kUserInput}));
 
   delegate_->RenderWidgetCreated(this);
   render_frame_metadata_provider_.AddObserver(this);
@@ -613,15 +657,20 @@ void RenderWidgetHostImpl::BindWidgetInterfaces(
   blink_widget_host_receiver_.reset();
   blink_widget_.reset();
   widget_input_handler_.reset();
-  blink_widget_host_receiver_.Bind(std::move(widget_host));
-  blink_widget_.Bind(std::move(widget));
+  blink_widget_host_receiver_.Bind(
+      std::move(widget_host),
+      content::GetUIThreadTaskRunner({BrowserTaskType::kUserInput}));
+  blink_widget_.Bind(std::move(widget), content::GetUIThreadTaskRunner(
+                                            {BrowserTaskType::kUserInput}));
 }
 
 void RenderWidgetHostImpl::BindPopupWidgetInterface(
     mojo::PendingAssociatedReceiver<blink::mojom::PopupWidgetHost>
         popup_widget_host) {
   blink_popup_widget_host_receiver_.reset();
-  blink_popup_widget_host_receiver_.Bind(std::move(popup_widget_host));
+  blink_popup_widget_host_receiver_.Bind(
+      std::move(popup_widget_host),
+      content::GetUIThreadTaskRunner({BrowserTaskType::kUserInput}));
 }
 
 void RenderWidgetHostImpl::BindFrameWidgetInterfaces(
@@ -636,8 +685,12 @@ void RenderWidgetHostImpl::BindFrameWidgetInterfaces(
   frame_widget_input_handler_.reset();
   input_target_client_.reset();
   widget_compositor_.reset();
-  blink_frame_widget_host_receiver_.Bind(std::move(frame_widget_host));
-  blink_frame_widget_.Bind(std::move(frame_widget));
+  blink_frame_widget_host_receiver_.Bind(
+      std::move(frame_widget_host),
+      content::GetUIThreadTaskRunner({BrowserTaskType::kUserInput}));
+  blink_frame_widget_.Bind(
+      std::move(frame_widget),
+      content::GetUIThreadTaskRunner({BrowserTaskType::kUserInput}));
 }
 
 void RenderWidgetHostImpl::RendererWidgetCreated(bool for_frame_widget) {
@@ -646,13 +699,17 @@ void RenderWidgetHostImpl::RendererWidgetCreated(bool for_frame_widget) {
   renderer_widget_created_ = true;
 
   blink_widget_->GetWidgetInputHandler(
-      widget_input_handler_.BindNewPipeAndPassReceiver(),
-      input_router_->BindNewHost());
+      widget_input_handler_.BindNewPipeAndPassReceiver(
+          content::GetUIThreadTaskRunner({BrowserTaskType::kUserInput})),
+      input_router_->BindNewHost(
+          content::GetUIThreadTaskRunner({BrowserTaskType::kUserInput})));
   if (for_frame_widget) {
     widget_input_handler_->GetFrameWidgetInputHandler(
-        frame_widget_input_handler_.BindNewEndpointAndPassReceiver());
+        frame_widget_input_handler_.BindNewEndpointAndPassReceiver(
+            content::GetUIThreadTaskRunner({BrowserTaskType::kUserInput})));
     blink_frame_widget_->BindInputTargetClient(
-        input_target_client_.BindNewPipeAndPassReceiver());
+        input_target_client_.BindNewPipeAndPassReceiver(
+            content::GetUIThreadTaskRunner({BrowserTaskType::kUserInput})));
   }
 
   // TODO(crbug.com/1161585): The `view_` can be null. :( Speculative
@@ -877,6 +934,8 @@ blink::VisualProperties RenderWidgetHostImpl::GetVisualProperties() {
   auto& current_screen_info = visual_properties.screen_infos.mutable_current();
 
   visual_properties.is_fullscreen_granted = delegate_->IsFullscreen();
+  visual_properties.window_controls_overlay_rect =
+      delegate_->GetWindowsControlsOverlayRect();
 
   if (is_frame_widget)
     visual_properties.display_mode = delegate_->GetDisplayMode();
@@ -905,7 +964,7 @@ blink::VisualProperties RenderWidgetHostImpl::GetVisualProperties() {
   // The top and bottom control sizes are physical pixels but the IPC wants
   // DIPs *when not using page zoom for DSF* because blink layout is working
   // in DIPs then.
-  if (!IsUseZoomForDSFEnabled())
+  if (!ShouldUseZoomForDSF())
     browser_controls_dsf_multiplier = current_screen_info.device_scale_factor;
   visual_properties.browser_controls_params.top_controls_height =
       top_controls_height / browser_controls_dsf_multiplier;
@@ -967,7 +1026,7 @@ blink::VisualProperties RenderWidgetHostImpl::GetVisualProperties() {
   } else {
     visual_properties.compositor_viewport_pixel_rect =
         properties_from_parent_local_root_.compositor_viewport;
-    if (!IsUseZoomForDSFEnabled()) {
+    if (!ShouldUseZoomForDSF()) {
       // If UseZoomForDSF is not used, the coordinates were not scaled by DSF
       // when coming from the renderer.
       visual_properties.compositor_viewport_pixel_rect =
@@ -1246,9 +1305,6 @@ void RenderWidgetHostImpl::LostCapture() {
     touch_emulator->CancelTouch();
 
   GetWidgetInputHandler()->MouseCaptureLost();
-
-  if (delegate_)
-    delegate_->LostCapture(this);
 }
 
 void RenderWidgetHostImpl::SetActive(bool active) {
@@ -1802,7 +1858,7 @@ void RenderWidgetHostImpl::RemoveObserver(RenderWidgetHostObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void RenderWidgetHostImpl::GetScreenInfo(blink::ScreenInfo* result) {
+void RenderWidgetHostImpl::GetScreenInfo(display::ScreenInfo* result) {
   TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::GetScreenInfo");
   if (view_)
     view_->GetScreenInfo(result);
@@ -1816,7 +1872,7 @@ void RenderWidgetHostImpl::GetScreenInfo(blink::ScreenInfo* result) {
 
   // TODO(sievers): find a way to make this done another way so the method
   // can be const.
-  if (IsUseZoomForDSFEnabled())
+  if (ShouldUseZoomForDSF())
     input_router_->SetDeviceScaleFactor(result->device_scale_factor);
 }
 
@@ -1885,7 +1941,7 @@ void RenderWidgetHostImpl::DragTargetDragLeave(
   // TODO(https://crbug.com/1102769): Replace with a for_frame() check.
   if (blink_frame_widget_) {
     gfx::PointF viewport_point = client_point;
-    if (IsUseZoomForDSFEnabled())
+    if (ShouldUseZoomForDSF())
       viewport_point.Scale(GetScaleFactorForView(GetView()));
     blink_frame_widget_->DragTargetDragLeave(viewport_point, screen_point);
   }
@@ -1961,7 +2017,8 @@ void RenderWidgetHostImpl::InsertVisualStateCallback(
 
   if (!widget_compositor_) {
     blink_frame_widget_->BindWidgetCompositor(
-        widget_compositor_.BindNewPipeAndPassReceiver());
+        widget_compositor_.BindNewPipeAndPassReceiver(
+            content::GetUIThreadTaskRunner({BrowserTaskType::kUserInput})));
   }
 
   widget_compositor_->VisualStateRequest(base::BindOnce(
@@ -2024,11 +2081,11 @@ void RenderWidgetHostImpl::NotifyScreenInfoChanged() {
     touch_emulator->SetDeviceScaleFactor(GetScaleFactorForView(view_.get()));
 }
 
-blink::ScreenInfos RenderWidgetHostImpl::GetScreenInfos() {
+display::ScreenInfos RenderWidgetHostImpl::GetScreenInfos() {
   TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::GetScreenInfos");
 
   // Use GetScreenInfo here to retain legacy behavior for the current screen.
-  blink::ScreenInfo current_screen_info;
+  display::ScreenInfo current_screen_info;
   GetScreenInfo(&current_screen_info);
 
   // If this widget has not been connected to a view yet (or has been
@@ -2036,7 +2093,7 @@ blink::ScreenInfos RenderWidgetHostImpl::GetScreenInfos() {
   // In these cases, temporarily return the legacy screen info until
   // it is connected and visual properties updates this correctly.
   if (!view_) {
-    return blink::ScreenInfos(current_screen_info);
+    return display::ScreenInfos(current_screen_info);
   }
 
   // TODO(enne): add ScreenInfos to FrameVisualProperties and store these
@@ -2045,7 +2102,7 @@ blink::ScreenInfos RenderWidgetHostImpl::GetScreenInfos() {
   // property propagation of legacy screen info vs GetAllDisplays.
   // In the future, child frames should use screen_infos from the connector.
   if (view_->IsRenderWidgetHostViewChildFrame()) {
-    return blink::ScreenInfos(current_screen_info);
+    return display::ScreenInfos(current_screen_info);
   }
 
   // Get displays from RenderWidgetHostView, not directly from display::Screen.
@@ -2060,12 +2117,12 @@ blink::ScreenInfos RenderWidgetHostImpl::GetScreenInfos() {
   if (current_screen_info.display_id == display::kInvalidDisplayId ||
       current_screen_info.display_id == display::kDefaultDisplayId ||
       displays.empty()) {
-    return blink::ScreenInfos(current_screen_info);
+    return display::ScreenInfos(current_screen_info);
   }
 
   // Build multi-screen info from the displays returned by RenderWidgetHostView,
   // ensure its legacy singular screen info struct is included in this set.
-  blink::ScreenInfos result;
+  display::ScreenInfos result;
   bool current_display_added = false;
   for (const auto& display : displays) {
     if (display.id() == current_screen_info.display_id) {
@@ -2075,7 +2132,7 @@ blink::ScreenInfos RenderWidgetHostImpl::GetScreenInfos() {
       current_display_added = true;
       continue;
     }
-    blink::ScreenInfo screen_info;
+    display::ScreenInfo screen_info;
     DisplayUtil::DisplayToScreenInfo(&screen_info, display);
     if (display::Display::HasForceRasterColorProfile()) {
       screen_info.display_color_spaces = gfx::DisplayColorSpaces(
@@ -2110,7 +2167,7 @@ blink::ScreenInfos RenderWidgetHostImpl::GetScreenInfos() {
   }
 
   // Fall back to legacy screen info, if we are in a bad state.
-  return blink::ScreenInfos(current_screen_info);
+  return display::ScreenInfos(current_screen_info);
 }
 
 void RenderWidgetHostImpl::GetSnapshotFromBrowser(
@@ -2465,7 +2522,10 @@ void RenderWidgetHostImpl::RequestClosePopup() {
 
 void RenderWidgetHostImpl::SetPopupBounds(const gfx::Rect& bounds,
                                           SetPopupBoundsCallback callback) {
-  if (view_)
+  // If the browser changes bounds, do not allow renderer changing bounds at the
+  // same time until it acked the changes. Otherwise, if they simultaneously
+  // change bounds, browser's bounds can be clobbered.
+  if (view_ && !waiting_for_screen_rects_ack_)
     view_->SetBounds(bounds);
   std::move(callback).Run();
 }
@@ -2483,32 +2543,19 @@ void RenderWidgetHostImpl::UpdateTooltipUnderCursor(
   if (!GetView())
     return;
 
-  // First, add directionality marks around tooltip text if necessary.
-  // A naive solution would be to simply always wrap the text. However, on
-  // windows, Unicode directional embedding characters can't be displayed on
-  // systems that lack RTL fonts and are instead displayed as empty squares.
-  //
-  // To get around this we only wrap the string when we deem it necessary i.e.
-  // when the locale direction is different than the tooltip direction hint.
-  //
-  // Currently, we use element's directionality as the tooltip direction hint.
-  // An alternate solution would be to set the overall directionality based on
-  // trying to detect the directionality from the tooltip text rather than the
-  // element direction.  One could argue that would be a preferable solution
-  // but we use the current approach to match Fx & IE's behavior.
-  std::u16string wrapped_tooltip_text = tooltip_text;
-  if (!tooltip_text.empty()) {
-    if (text_direction_hint == base::i18n::LEFT_TO_RIGHT) {
-      // Force the tooltip to have LTR directionality.
-      wrapped_tooltip_text =
-          base::i18n::GetDisplayStringInLTRDirectionality(wrapped_tooltip_text);
-    } else if (text_direction_hint == base::i18n::RIGHT_TO_LEFT &&
-               !base::i18n::IsRTL()) {
-      // Force the tooltip to have RTL directionality.
-      base::i18n::WrapStringWithRTLFormatting(&wrapped_tooltip_text);
-    }
-  }
-  view_->UpdateTooltipUnderCursor(wrapped_tooltip_text);
+  view_->UpdateTooltipUnderCursor(
+      GetWrappedTooltipText(tooltip_text, text_direction_hint));
+}
+
+void RenderWidgetHostImpl::UpdateTooltipFromKeyboard(
+    const std::u16string& tooltip_text,
+    base::i18n::TextDirection text_direction_hint,
+    const gfx::Rect& bounds) {
+  if (!GetView())
+    return;
+
+  view_->UpdateTooltipFromKeyboard(
+      GetWrappedTooltipText(tooltip_text, text_direction_hint), bounds);
 }
 
 void RenderWidgetHostImpl::OnUpdateScreenRectsAck() {
@@ -2652,7 +2699,9 @@ bool RenderWidgetHostImpl::StoredVisualPropertiesNeedsUpdate(
          old_visual_properties->is_pinch_gesture_active !=
              new_visual_properties.is_pinch_gesture_active ||
          old_visual_properties->root_widget_window_segments !=
-             new_visual_properties.root_widget_window_segments;
+             new_visual_properties.root_widget_window_segments ||
+         old_visual_properties->window_controls_overlay_rect !=
+             new_visual_properties.window_controls_overlay_rect;
 }
 
 void RenderWidgetHostImpl::AutoscrollStart(const gfx::PointF& position) {
@@ -2710,11 +2759,6 @@ void RenderWidgetHostImpl::AutoscrollEnd() {
 
   ForwardGestureEventWithLatencyInfo(
       cancel_event, ui::LatencyInfo(ui::SourceEventType::OTHER));
-}
-
-void RenderWidgetHostImpl::DidFirstVisuallyNonEmptyPaint() {
-  if (owner_delegate_)
-    owner_delegate_->RenderWidgetDidFirstVisuallyNonEmptyPaint();
 }
 
 void RenderWidgetHostImpl::StartDragging(
@@ -2834,7 +2878,7 @@ void RenderWidgetHostImpl::RequestMouseLock(
     bool from_user_gesture,
     bool unadjusted_movement,
     InputRouterImpl::RequestMouseLockCallback response) {
-  if (pending_mouse_lock_request_) {
+  if (pending_mouse_lock_request_ || IsMouseLocked()) {
     std::move(response).Run(blink::mojom::PointerLockResult::kAlreadyLocked,
                             /*context=*/mojo::NullRemote());
     return;
@@ -3000,6 +3044,7 @@ void RenderWidgetHostImpl::IncrementInFlightEventCount() {
     power_mode_input_voter_->VoteFor(power_scheduler::PowerMode::kResponse);
     user_input_active_handle_ = BrowserTaskExecutor::OnUserInputStart();
   }
+
   if (!is_hidden_)
     StartInputEventAckTimeout();
 }
@@ -3238,7 +3283,8 @@ bool RenderWidgetHostImpl::GotResponseToLockMouseRequest(
   }
 
   mojo::PendingRemote<blink::mojom::PointerLockContext> context =
-      mouse_lock_context_.BindNewPipeAndPassRemote();
+      mouse_lock_context_.BindNewPipeAndPassRemote(
+          content::GetUIThreadTaskRunner({BrowserTaskType::kUserInput}));
 
   std::move(request_mouse_callback_)
       .Run(blink::mojom::PointerLockResult::kSuccess, std::move(context));
@@ -3484,7 +3530,7 @@ void RenderWidgetHostImpl::SetupInputRouter() {
   // input_router_ recreated, need to update the force_enable_zoom_ state.
   input_router_->SetForceEnableZoom(force_enable_zoom_);
 
-  if (IsUseZoomForDSFEnabled()) {
+  if (ShouldUseZoomForDSF()) {
     input_router_->SetDeviceScaleFactor(GetScaleFactorForView(view_.get()));
   }
 }
@@ -3518,7 +3564,7 @@ void RenderWidgetHostImpl::StopFling() {
 
 void RenderWidgetHostImpl::SetScreenOrientationForTesting(
     uint16_t angle,
-    blink::mojom::ScreenOrientation type) {
+    display::mojom::ScreenOrientation type) {
   screen_orientation_angle_for_testing_ = angle;
   screen_orientation_type_for_testing_ = type;
   SynchronizeVisualProperties();
@@ -3695,7 +3741,7 @@ gfx::Size RenderWidgetHostImpl::GetRootWidgetViewportSize() {
 gfx::PointF RenderWidgetHostImpl::ConvertWindowPointToViewport(
     const gfx::PointF& window_point) {
   gfx::PointF viewport_point = window_point;
-  if (IsUseZoomForDSFEnabled())
+  if (ShouldUseZoomForDSF())
     viewport_point.Scale(GetScaleFactorForView(GetView()));
   return viewport_point;
 }

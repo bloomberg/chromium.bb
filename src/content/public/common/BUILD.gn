@@ -176,10 +176,6 @@ source_set("common_sources") {
     ]
   }
 
-  if (is_linux || is_chromeos) {
-    sources += [ "common_sandbox_support_linux.h" ]
-  }
-
   configs += [
     "//build/config:precompiled_headers",
     "//content:content_implementation",
@@ -313,7 +309,6 @@ mojom("interfaces") {
   sources = [
     "drop_data.mojom",
     "resource_usage_reporter.mojom",
-    "was_activated_option.mojom",
     "webplugininfo.mojom",
     "window_container_type.mojom",
   ]

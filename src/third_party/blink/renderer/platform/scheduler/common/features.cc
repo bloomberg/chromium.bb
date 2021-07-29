@@ -63,29 +63,7 @@ bool IsIntensiveWakeUpThrottlingEnabled() {
 // that admins get consistent behaviour that clients can't override. Otherwise
 // use the base::FeatureParams.
 
-base::TimeDelta GetIntensiveWakeUpThrottlingDurationBetweenWakeUps() {
-  DCHECK(IsIntensiveWakeUpThrottlingEnabled());
-
-  // Controls the period during which at most 1 wake up from throttleable
-  // TaskQueues in a page can take place.
-  static const base::FeatureParam<int>
-      kIntensiveWakeUpThrottling_DurationBetweenWakeUpsSeconds{
-          &features::kIntensiveWakeUpThrottling,
-          kIntensiveWakeUpThrottling_DurationBetweenWakeUpsSeconds_Name,
-          kIntensiveWakeUpThrottling_DurationBetweenWakeUpsSeconds_Default};
-
-  int seconds =
-      kIntensiveWakeUpThrottling_DurationBetweenWakeUpsSeconds_Default;
-  if (GetIntensiveWakeUpThrottlingPolicyOverride() ==
-      PolicyOverride::NO_OVERRIDE) {
-    seconds = kIntensiveWakeUpThrottling_DurationBetweenWakeUpsSeconds.Get();
-  }
-  return base::TimeDelta::FromSeconds(seconds);
-}
-
 base::TimeDelta GetIntensiveWakeUpThrottlingGracePeriod() {
-  DCHECK(IsIntensiveWakeUpThrottlingEnabled());
-
   // Controls the time that elapses after a page is backgrounded before the
   // throttling policy takes effect.
   static const base::FeatureParam<int>
@@ -102,41 +80,34 @@ base::TimeDelta GetIntensiveWakeUpThrottlingGracePeriod() {
   return base::TimeDelta::FromSeconds(seconds);
 }
 
-base::TimeDelta GetTimeToInhibitIntensiveThrottlingOnTitleOrFaviconUpdate() {
-  DCHECK(IsIntensiveWakeUpThrottlingEnabled());
+const base::Feature kThrottleForegroundTimers{
+    "ThrottleForegroundTimers", base::FEATURE_DISABLED_BY_DEFAULT};
 
-  constexpr int kDefaultSeconds = 3;
-
-  static const base::FeatureParam<int> kFeatureParam{
-      &features::kIntensiveWakeUpThrottling,
-      "inhibit_seconds_on_title_or_favicon_update_seconds", kDefaultSeconds};
-
-  int seconds = kDefaultSeconds;
-  if (GetIntensiveWakeUpThrottlingPolicyOverride() ==
-      PolicyOverride::NO_OVERRIDE) {
-    seconds = kFeatureParam.Get();
-  }
-
-  return base::TimeDelta::FromSeconds(seconds);
+base::TimeDelta GetForegroundTimersThrottledWakeUpInterval() {
+  constexpr int kForegroundTimersThrottling_WakeUpIntervalMillis_Default = 100;
+  static const base::FeatureParam<int>
+      kForegroundTimersThrottledWakeUpIntervalMills{
+          &kThrottleForegroundTimers,
+          "ForegroundTimersThrottledWakeUpIntervalMills",
+          kForegroundTimersThrottling_WakeUpIntervalMillis_Default};
+  return base::TimeDelta::FromMilliseconds(
+      kForegroundTimersThrottledWakeUpIntervalMills.Get());
 }
 
-bool CanIntensivelyThrottleLowNestingLevel() {
-  DCHECK(IsIntensiveWakeUpThrottlingEnabled());
+const base::Feature kDeprioritizeDOMTimersDuringPageLoading{
+    "DeprioritizeDOMTimersDuringPageLoading",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
-  static const base::FeatureParam<bool> kFeatureParam{
-      &features::kIntensiveWakeUpThrottling,
-      kIntensiveWakeUpThrottling_CanIntensivelyThrottleLowNestingLevel_Name,
-      kIntensiveWakeUpThrottling_CanIntensivelyThrottleLowNestingLevel_Default};
+const base::FeatureParam<DeprioritizeDOMTimersPhase>::Option
+    kDeprioritizeDOMTimersPhaseOptions[] = {
+        {DeprioritizeDOMTimersPhase::kOnDOMContentLoaded, "ondomcontentloaded"},
+        {DeprioritizeDOMTimersPhase::kFirstContentfulPaint, "fcp"},
+        {DeprioritizeDOMTimersPhase::kOnLoad, "onload"}};
 
-  bool value =
-      kIntensiveWakeUpThrottling_CanIntensivelyThrottleLowNestingLevel_Default;
-  if (GetIntensiveWakeUpThrottlingPolicyOverride() ==
-      PolicyOverride::NO_OVERRIDE) {
-    value = kFeatureParam.Get();
-  }
-
-  return value;
-}
-
+const base::FeatureParam<DeprioritizeDOMTimersPhase>
+    kDeprioritizeDOMTimersPhase{&kDeprioritizeDOMTimersDuringPageLoading,
+                                "phase",
+                                DeprioritizeDOMTimersPhase::kOnDOMContentLoaded,
+                                &kDeprioritizeDOMTimersPhaseOptions};
 }  // namespace scheduler
 }  // namespace blink

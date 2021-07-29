@@ -21,12 +21,10 @@
 
 #if BUILDFLAG(ENABLE_WIDEVINE)
 #include "third_party/widevine/cdm/widevine_cdm_common.h"  // nogncheck
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || \
-    BUILDFLAG(ENABLE_MEDIA_FOUNDATION_WIDEVINE_CDM)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN)
 #include "base/native_library.h"
 #include "chrome/common/chrome_paths.h"
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) ||
-        // BUILDFLAG(ENABLE_MEDIA_FOUNDATION_WIDEVINE_CDM)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN)
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "base/no_destructor.h"
 #include "components/cdm/common/cdm_manifest.h"
@@ -119,11 +117,14 @@ std::unique_ptr<content::CdmInfo> CreateCdmInfoForChromeOS(
   capability.audio_codecs = media::GetCdmSupportedAudioCodecs();
 
   // Add the supported codecs as if they came from the component manifest.
-  capability.video_codecs.push_back(media::VideoCodec::kCodecVP8);
-  capability.video_codecs.push_back(media::VideoCodec::kCodecVP9);
-  capability.video_codecs.push_back(media::VideoCodec::kCodecAV1);
+  // Not specifying any profiles to indicate that all relevant profiles
+  // should be considered supported.
+  const std::vector<media::VideoCodecProfile> kAllProfiles = {};
+  capability.video_codecs.emplace(media::VideoCodec::kCodecVP8, kAllProfiles);
+  capability.video_codecs.emplace(media::VideoCodec::kCodecVP9, kAllProfiles);
+  capability.video_codecs.emplace(media::VideoCodec::kCodecAV1, kAllProfiles);
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-  capability.video_codecs.push_back(media::VideoCodec::kCodecH264);
+  capability.video_codecs.emplace(media::VideoCodec::kCodecH264, kAllProfiles);
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
   // Both encryption schemes are supported on ChromeOS.
@@ -240,13 +241,15 @@ void AddHardwareSecureWidevine(std::vector<content::CdmInfo>* cdms) {
   capability.audio_codecs = media::GetCdmSupportedAudioCodecs();
 
   // We currently support VP9, H264 and HEVC video formats with
-  // decrypt-and-decode.
-  capability.video_codecs.push_back(media::VideoCodec::kCodecVP9);
+  // decrypt-and-decode. Not specifying any profiles to indicate that all
+  // relevant profiles should be considered supported.
+  const std::vector<media::VideoCodecProfile> kAllProfiles = {};
+  capability.video_codecs.emplace(media::VideoCodec::kCodecVP9, kAllProfiles);
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-  capability.video_codecs.push_back(media::VideoCodec::kCodecH264);
+  capability.video_codecs.emplace(media::VideoCodec::kCodecH264, kAllProfiles);
 #endif
 #if BUILDFLAG(ENABLE_PLATFORM_HEVC)
-  capability.video_codecs.push_back(media::VideoCodec::kCodecHEVC);
+  capability.video_codecs.emplace(media::VideoCodec::kCodecHEVC, kAllProfiles);
 #endif
 
   // Both encryption schemes are supported on ChromeOS.
@@ -262,26 +265,6 @@ void AddHardwareSecureWidevine(std::vector<content::CdmInfo>* cdms) {
 
   cdms->push_back(content::CdmInfo(
       kWidevineKeySystem, Robustness::kHardwareSecure, std::move(capability)));
-#elif BUILDFLAG(ENABLE_MEDIA_FOUNDATION_WIDEVINE_CDM)
-  // TODO(hmchen): Remove this after the Windows CDM is component updated.
-  base::FilePath install_dir;
-  if (!base::PathService::Get(chrome::DIR_BUNDLED_WIDEVINE_CDM, &install_dir))
-    return;
-
-  auto widevine_cdm_path = install_dir.AppendASCII(
-      base::GetNativeLibraryName(kMediaFoundationWidevineCdmLibraryName));
-  if (!base::PathExists(widevine_cdm_path))
-    return;
-
-  // Register Widevine hardware secure support for lazy initialization.
-  // TODO(xhwang): Get the version from the DLL.
-  VLOG(1) << "Registering " << kMediaFoundationWidevineCdmDisplayName;
-  cdms->push_back(content::CdmInfo(
-      kWidevineKeySystem, Robustness::kHardwareSecure, absl::nullopt,
-      /*supports_sub_key_systems=*/false,
-      kMediaFoundationWidevineCdmDisplayName, kMediaFoundationWidevineCdmGuid,
-      base::Version(), widevine_cdm_path,
-      /*file_system_id=*/""));
 #endif  // BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
 }
 

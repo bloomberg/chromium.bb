@@ -89,14 +89,14 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/policy/active_directory/active_directory_policy_manager.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
+#include "chrome/browser/ash/policy/core/device_cloud_policy_store_chromeos.h"
+#include "chrome/browser/ash/policy/core/device_local_account_policy_service.h"
+#include "chrome/browser/ash/policy/core/user_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/ash/policy/off_hours/device_off_hours_controller.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/policy/active_directory_policy_manager.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
-#include "chrome/browser/chromeos/policy/off_hours/device_off_hours_controller.h"
-#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chromeos/dbus/util/version_loader.h"
 #include "components/user_manager/user_manager.h"
 #else
@@ -119,6 +119,8 @@
 #endif
 
 #if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#include <windows.h>
+
 #include <DSRole.h>
 
 #include "chrome/browser/google/google_update_policy_fetcher_win.h"
@@ -661,7 +663,7 @@ void PolicyUIHandler::RegisterMessages() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  if (connector->IsEnterpriseManaged()) {
+  if (connector->IsDeviceEnterpriseManaged()) {
     if (connector->GetDeviceActiveDirectoryPolicyManager()) {
       device_status_provider_ =
           std::make_unique<DeviceActiveDirectoryPolicyStatusProvider>(
@@ -935,6 +937,11 @@ void PolicyUIHandler::AddExtensionPolicyNames(
 void PolicyUIHandler::SendStatus() {
   if (!IsJavascriptAllowed())
     return;
+
+  FireWebUIListener("status-updated", GetStatusValue(/*for_webui*/ true));
+}
+
+base::DictionaryValue PolicyUIHandler::GetStatusValue(bool for_webui) const {
   std::unique_ptr<base::DictionaryValue> device_status(
       new base::DictionaryValue);
   device_status_provider_->GetStatus(device_status.get());
@@ -958,26 +965,29 @@ void PolicyUIHandler::SendStatus() {
 
   base::DictionaryValue status;
   if (!device_status->DictEmpty()) {
-    device_status->SetString("boxLegendKey", "statusDevice");
+    if (for_webui)
+      device_status->SetString("boxLegendKey", "statusDevice");
     status.Set("device", std::move(device_status));
   }
 
   if (!machine_status->DictEmpty()) {
-    machine_status->SetString("boxLegendKey", "statusMachine");
+    if (for_webui)
+      machine_status->SetString("boxLegendKey", "statusMachine");
     status.Set("machine", std::move(machine_status));
   }
 
   if (!user_status->DictEmpty()) {
-    user_status->SetString("boxLegendKey", "statusUser");
+    if (for_webui)
+      user_status->SetString("boxLegendKey", "statusUser");
     status.Set("user", std::move(user_status));
   }
 
   if (!updater_status->DictEmpty()) {
-    updater_status->SetString("boxLegendKey", "statusUpdater");
+    if (for_webui)
+      updater_status->SetString("boxLegendKey", "statusUpdater");
     status.Set("updater", std::move(updater_status));
   }
-
-  FireWebUIListener("status-updated", status);
+  return status;
 }
 
 void PolicyUIHandler::HandleExportPoliciesJson(const base::ListValue* args) {
@@ -1100,6 +1110,7 @@ std::string PolicyUIHandler::GetPoliciesAsJson() {
                          base::Value(version_info::GetLastChange()));
 
   dict.SetKey("chromeMetadata", std::move(chrome_metadata));
+  dict.SetKey("status", GetStatusValue(/*for_webui*/ false));
 
   std::string json_policies;
   base::JSONWriter::WriteWithOptions(

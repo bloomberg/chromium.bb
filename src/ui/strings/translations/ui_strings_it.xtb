@@ -58,6 +58,7 @@
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="2353636109065292463">Controllare la connessione a Internet</translation>
 <translation id="2388990488038464401">Vuoi chiamare questo numero dal telefono?</translation>
+<translation id="2435457462613246316">Mostra password</translation>
 <translation id="24452542372838207">Espandi la notifica</translation>
 <translation id="2445449901874883781">Usa densità alta</translation>
 <translation id="2482878487686419369">Notifiche</translation>
@@ -79,6 +80,7 @@
 <translation id="2824719307700604149">{YEARS,plural, =1{1 anno fa}other{# anni fa}}</translation>
 <translation id="2878511608894704031">Elimina tutto</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{tra 1 g}other{tra # g}}</translation>
+<translation id="2922712708897119705">Colonna <ph name="COLUMN_NAME" /> ordinata in ordine decrescente.</translation>
 <translation id="2931838996092594335">fai clic</translation>
 <translation id="2981684127883932071">Visualizzazione dei suggerimenti</translation>
 <translation id="3036649622769666520">Apri file</translation>
@@ -114,6 +116,7 @@
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3909791450649380159">T&amp;aglia</translation>
 <translation id="3990502903496589789">Margine destro</translation>
+<translation id="3994749195054421561">Colonna <ph name="COLUMN_NAME" /> ordinata in ordine crescente.</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 notifica da leggere}other{# notifiche da leggere}}</translation>
 <translation id="4202807286478387388">vai</translation>
 <translation id="4250229828105606438">Screenshot</translation>
@@ -123,6 +126,7 @@
 <translation id="4306392492252714209">Rimuovi dagli appunti.</translation>
 <translation id="4316910396681052118">TUTTE LE APP</translation>
 <translation id="4491109536499578614">Immagine</translation>
+<translation id="4565377596337484307">Nascondi password</translation>
 <translation id="4588090240171750605">Scorri a destra</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, valutazione a stelle <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, consiglio applicazione</translation>
@@ -165,6 +169,7 @@
 <translation id="6012623610530968780">Pagina <ph name="SELECTED_PAGE" /> di <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Cancella testo dalla casella di ricerca</translation>
 <translation id="6040143037577758943">Chiudi</translation>
+<translation id="6117103120090651229">Pulsante centrale</translation>
 <translation id="6119846243427417423">attiva</translation>
 <translation id="6129953537138746214">Spazio</translation>
 <translation id="6134259848159370930">Cerca sul dispositivo, nelle app, nelle impostazioni e sul Web.</translation>
@@ -173,6 +178,7 @@
 <translation id="6156262341071374681">Espandi per vedere tutte le app</translation>
 <translation id="6165508094623778733">Ulteriori informazioni</translation>
 <translation id="6166852626429024716">Cerca sul dispositivo, nelle app, nelle impostazioni e sul Web.</translation>
+<translation id="6237461503717005873">Elemento selezionato: <ph name="ROW_NAME" />.</translation>
 <translation id="6264365405983206840">Seleziona &amp;tutto</translation>
 <translation id="6351032674660237738">APP SUGGERITE</translation>
 <translation id="6364916375976753737">Scorri a sinistra</translation>
@@ -213,6 +219,7 @@
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minuto rimanente}other{# minuti rimanenti}}</translation>
 <translation id="7430878839542012341">Eliminare questa ricerca dalla cronologia?</translation>
+<translation id="7437971918971306061">Colonna <ph name="COLUMN_NAME" /> non ordinata.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emoji</translation>
 <translation id="7620655452534002301">Voce rimossa.</translation>

@@ -9,7 +9,8 @@
 #include "base/macros.h"
 #include "gpu/ipc/client/client_shared_image_interface.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
-#include "gpu/ipc/common/gpu_messages.h"
+#include "gpu/ipc/common/gpu_channel.mojom.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace content {
@@ -101,6 +102,22 @@ void StreamTextureProxy::OnFrameWithInfoAvailable(
 
 void StreamTextureProxy::ForwardStreamTextureForSurfaceRequest(
     const base::UnguessableToken& request_token) {
+  base::AutoLock lock(lock_);
+  if (!task_runner_)
+    return;
+
+  if (!task_runner_->BelongsToCurrentThread()) {
+    // Note that Unretained is safe here because this object is deleted
+    // exclusively by posting a task to the same task runner, after its owner
+    // has dropped the only reference to it.
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &StreamTextureProxy::ForwardStreamTextureForSurfaceRequest,
+            base::Unretained(this), request_token));
+    return;
+  }
+
   host_->ForwardStreamTextureForSurfaceRequest(request_token);
 }
 
@@ -123,27 +140,28 @@ StreamTextureFactory::StreamTextureFactory(
 StreamTextureFactory::~StreamTextureFactory() = default;
 
 ScopedStreamTextureProxy StreamTextureFactory::CreateProxy() {
-  int32_t route_id = CreateStreamTexture();
-  if (!route_id)
+  // Send a StreamTexure receiver down to the GPU process. This will be bound to
+  // a concrete StreamTexture impl there.
+  int32_t stream_id = channel_->GenerateRouteID();
+  bool succeeded = false;
+  mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync;
+  mojo::PendingAssociatedRemote<gpu::mojom::StreamTexture> remote;
+  channel_->GetGpuChannel().CreateStreamTexture(
+      stream_id, remote.InitWithNewEndpointAndPassReceiver(), &succeeded);
+  if (!succeeded) {
+    DLOG(ERROR) << "CreateStreamTexture failed";
     return ScopedStreamTextureProxy();
-  return ScopedStreamTextureProxy(new StreamTextureProxy(
-      std::make_unique<StreamTextureHost>(channel_, route_id)));
+  }
+
+  // Now instantiate a new StreamTextureHost here to remotely control the new
+  // GPU-side StreamTexture instance.
+  return ScopedStreamTextureProxy(
+      new StreamTextureProxy(std::make_unique<StreamTextureHost>(
+          channel_, stream_id, std::move(remote))));
 }
 
 bool StreamTextureFactory::IsLost() const {
   return channel_->IsLost();
-}
-
-unsigned StreamTextureFactory::CreateStreamTexture() {
-  int32_t stream_id = channel_->GenerateRouteID();
-  bool succeeded = false;
-  mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync;
-  channel_->GetGpuChannel().CreateStreamTexture(stream_id, &succeeded);
-  if (!succeeded) {
-    DLOG(ERROR) << "CreateStreamTexture returned failure";
-    return 0;
-  }
-  return stream_id;
 }
 
 gpu::SharedImageInterface* StreamTextureFactory::SharedImageInterface() {

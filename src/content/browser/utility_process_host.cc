@@ -11,10 +11,10 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/i18n/base_i18n_switches.h"
 #include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/chromeos_buildflags.h"
 #include "components/network_session_configurator/common/network_switches.h"
@@ -94,13 +94,6 @@ base::WeakPtr<UtilityProcessHost> UtilityProcessHost::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-bool UtilityProcessHost::Send(IPC::Message* message) {
-  if (!StartProcess())
-    return false;
-
-  return process_->Send(message);
-}
-
 void UtilityProcessHost::SetSandboxType(
     sandbox::policy::SandboxType sandbox_type) {
   sandbox_type_ = sandbox_type;
@@ -164,7 +157,6 @@ bool UtilityProcessHost::StartProcess() {
   started_ = true;
   process_->SetName(name_);
   process_->SetMetricsName(metrics_name_);
-  process_->GetHost()->CreateChannelMojo();
 
   if (RenderProcessHost::run_renderer_in_process()) {
     DCHECK(g_utility_main_thread_factory);
@@ -256,6 +248,7 @@ bool UtilityProcessHost::StartProcess() {
       switches::kForceUIDirection,
       switches::kIgnoreCertificateErrors,
       switches::kLoggingLevel,
+      switches::kOverrideUseSoftwareGLForHeadless,
       switches::kOverrideUseSoftwareGLForTests,
       switches::kOverrideEnabledCdmInterfaceVersion,
       switches::kProxyServer,
@@ -339,10 +332,6 @@ bool UtilityProcessHost::StartProcess() {
                                        GetV8SnapshotFilesToPreload(), true);
   }
 
-  return true;
-}
-
-bool UtilityProcessHost::OnMessageReceived(const IPC::Message& message) {
   return true;
 }
 

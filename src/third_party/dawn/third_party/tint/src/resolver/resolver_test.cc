@@ -23,6 +23,7 @@
 #include "src/ast/break_statement.h"
 #include "src/ast/call_statement.h"
 #include "src/ast/continue_statement.h"
+#include "src/ast/float_literal.h"
 #include "src/ast/if_statement.h"
 #include "src/ast/intrinsic_texture_helper_test.h"
 #include "src/ast/loop_statement.h"
@@ -51,9 +52,39 @@ namespace resolver {
 namespace {
 
 // Helpers and typedefs
-using i32 = ProgramBuilder::i32;
-using u32 = ProgramBuilder::u32;
-using f32 = ProgramBuilder::f32;
+template <typename T>
+using DataType = builder::DataType<T>;
+template <int N, typename T>
+using vec = builder::vec<N, T>;
+template <typename T>
+using vec2 = builder::vec2<T>;
+template <typename T>
+using vec3 = builder::vec3<T>;
+template <typename T>
+using vec4 = builder::vec4<T>;
+template <int N, int M, typename T>
+using mat = builder::mat<N, M, T>;
+template <typename T>
+using mat2x2 = builder::mat2x2<T>;
+template <typename T>
+using mat2x3 = builder::mat2x3<T>;
+template <typename T>
+using mat3x2 = builder::mat3x2<T>;
+template <typename T>
+using mat3x3 = builder::mat3x3<T>;
+template <typename T>
+using mat4x4 = builder::mat4x4<T>;
+template <typename T, int ID = 0>
+using alias = builder::alias<T, ID>;
+template <typename T>
+using alias1 = builder::alias1<T>;
+template <typename T>
+using alias2 = builder::alias2<T>;
+template <typename T>
+using alias3 = builder::alias3<T>;
+using f32 = builder::f32;
+using i32 = builder::i32;
+using u32 = builder::u32;
 using Op = ast::BinaryOp;
 
 TEST_F(ResolverTest, Stmt_Assign) {
@@ -235,7 +266,7 @@ TEST_F(ResolverTest, Stmt_Switch) {
 
 TEST_F(ResolverTest, Stmt_Call) {
   ast::VariableList params;
-  Func("my_func", params, ty.f32(), {Return(0.0f)}, ast::DecorationList{});
+  Func("my_func", params, ty.void_(), {Return()}, ast::DecorationList{});
 
   auto* expr = Call("my_func");
 
@@ -245,7 +276,7 @@ TEST_F(ResolverTest, Stmt_Call) {
   EXPECT_TRUE(r()->Resolve()) << r()->error();
 
   ASSERT_NE(TypeOf(expr), nullptr);
-  EXPECT_TRUE(TypeOf(expr)->Is<sem::F32>());
+  EXPECT_TRUE(TypeOf(expr)->Is<sem::Void>());
   EXPECT_EQ(StmtOf(expr), call);
 }
 
@@ -263,9 +294,8 @@ TEST_F(ResolverTest, Stmt_VariableDecl) {
 }
 
 TEST_F(ResolverTest, Stmt_VariableDecl_Alias) {
-  auto* my_int = ty.alias("MyInt", ty.i32());
-  AST().AddConstructedType(my_int);
-  auto* var = Var("my_var", my_int, ast::StorageClass::kNone, Expr(2));
+  auto* my_int = Alias("MyInt", ty.i32());
+  auto* var = Var("my_var", ty.Of(my_int), ast::StorageClass::kNone, Expr(2));
   auto* init = var->constructor();
 
   auto* decl = Decl(var);
@@ -278,10 +308,8 @@ TEST_F(ResolverTest, Stmt_VariableDecl_Alias) {
 }
 
 TEST_F(ResolverTest, Stmt_VariableDecl_AliasRedeclared) {
-  auto* my_int1 = ty.alias(Source{{12, 34}}, "MyInt", ty.i32());
-  auto* my_int2 = ty.alias(Source{{56, 78}}, "MyInt", ty.i32());
-  AST().AddConstructedType(my_int1);
-  AST().AddConstructedType(my_int2);
+  Alias(Source{{12, 34}}, "MyInt", ty.i32());
+  Alias(Source{{56, 78}}, "MyInt", ty.i32());
   WrapInFunction();
 
   EXPECT_FALSE(r()->Resolve());
@@ -292,7 +320,7 @@ TEST_F(ResolverTest, Stmt_VariableDecl_AliasRedeclared) {
 
 TEST_F(ResolverTest, Stmt_VariableDecl_ModuleScope) {
   auto* init = Expr(2);
-  Global("my_var", ty.i32(), ast::StorageClass::kInput, init);
+  Global("my_var", ty.i32(), ast::StorageClass::kPrivate, init);
 
   EXPECT_TRUE(r()->Resolve()) << r()->error();
 
@@ -377,7 +405,7 @@ TEST_F(ResolverTest, Stmt_VariableDecl_ModuleScopeAfterFunctionScope) {
   Func("func_i32", params, ty.void_(), {fn_i32_decl}, ast::DecorationList{});
 
   // Declare f32 "foo" at module scope
-  auto* mod_f32 = Var("foo", ty.f32(), ast::StorageClass::kInput, Expr(2.f));
+  auto* mod_f32 = Var("foo", ty.f32(), ast::StorageClass::kPrivate, Expr(2.f));
   auto* mod_init = mod_f32->constructor();
   AST().AddGlobalVariable(mod_f32);
 
@@ -420,10 +448,9 @@ TEST_F(ResolverTest, Expr_ArrayAccessor_Array) {
 }
 
 TEST_F(ResolverTest, Expr_ArrayAccessor_Alias_Array) {
-  auto* aary = ty.alias("myarrty", ty.array<f32, 3>());
-  AST().AddConstructedType(aary);
+  auto* aary = Alias("myarrty", ty.array<f32, 3>());
 
-  Global("my_var", aary, ast::StorageClass::kPrivate);
+  Global("my_var", ty.Of(aary), ast::StorageClass::kPrivate);
 
   auto* acc = IndexAccessor("my_var", 2);
   WrapInFunction(acc);
@@ -449,8 +476,71 @@ TEST_F(ResolverTest, Expr_ArrayAccessor_Array_Constant) {
   EXPECT_TRUE(TypeOf(acc)->Is<sem::F32>()) << TypeOf(acc)->type_name();
 }
 
+TEST_F(ResolverTest, ArrayAccessor_Matrix_Dynamic_F32) {
+  Global("my_var", ty.mat2x3<f32>(), ast::StorageClass::kPrivate);
+  auto* acc = IndexAccessor("my_var", Expr(Source{{12, 34}}, 1.0f));
+  WrapInFunction(acc);
+
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(),
+            "12:34 error: index must be of type 'i32' or 'u32', found: 'f32'");
+}
+
+TEST_F(ResolverTest, ArrayAccessor_Matrix_Dynamic_Ref) {
+  Global("my_var", ty.mat2x3<f32>(), ast::StorageClass::kPrivate);
+  auto* idx = Var("idx", ty.i32(), Construct(ty.i32()));
+  auto* acc = IndexAccessor("my_var", idx);
+  WrapInFunction(Decl(idx), acc);
+
+  EXPECT_TRUE(r()->Resolve()) << r()->error();
+}
+
+TEST_F(ResolverTest, ArrayAccessor_Matrix_BothDimensions_Dynamic_Ref) {
+  Global("my_var", ty.mat4x4<f32>(), ast::StorageClass::kPrivate);
+  auto* idx = Var("idx", ty.u32(), Expr(3u));
+  auto* idy = Var("idy", ty.u32(), Expr(2u));
+  auto* acc = IndexAccessor(IndexAccessor("my_var", idx), idy);
+  WrapInFunction(Decl(idx), Decl(idy), acc);
+
+  EXPECT_TRUE(r()->Resolve()) << r()->error();
+}
+
+TEST_F(ResolverTest, ArrayAccessor_Matrix_Dynamic) {
+  GlobalConst("my_const", ty.mat2x3<f32>(), Construct(ty.mat2x3<f32>()));
+  auto* idx = Var("idx", ty.i32(), Construct(ty.i32()));
+  auto* acc = IndexAccessor("my_const", Expr(Source{{12, 34}}, idx));
+  WrapInFunction(Decl(idx), acc);
+
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(),
+            "12:34 error: index must be signed or unsigned integer literal");
+}
+
+TEST_F(ResolverTest, ArrayAccessor_Matrix_XDimension_Dynamic) {
+  GlobalConst("my_var", ty.mat4x4<f32>(), Construct(ty.mat4x4<f32>()));
+  auto* idx = Var("idx", ty.u32(), Expr(3u));
+  auto* acc = IndexAccessor("my_var", Expr(Source{{12, 34}}, idx));
+  WrapInFunction(Decl(idx), acc);
+
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(),
+            "12:34 error: index must be signed or unsigned integer literal");
+}
+
+TEST_F(ResolverTest, ArrayAccessor_Matrix_BothDimension_Dynamic) {
+  GlobalConst("my_var", ty.mat4x4<f32>(), Construct(ty.mat4x4<f32>()));
+  auto* idx = Var("idy", ty.u32(), Expr(2u));
+  auto* acc =
+      IndexAccessor(IndexAccessor("my_var", Expr(Source{{12, 34}}, idx)), 1);
+  WrapInFunction(Decl(idx), acc);
+
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(),
+            "12:34 error: index must be signed or unsigned integer literal");
+}
+
 TEST_F(ResolverTest, Expr_ArrayAccessor_Matrix) {
-  Global("my_var", ty.mat2x3<f32>(), ast::StorageClass::kInput);
+  Global("my_var", ty.mat2x3<f32>(), ast::StorageClass::kPrivate);
 
   auto* acc = IndexAccessor("my_var", 2);
   WrapInFunction(acc);
@@ -466,7 +556,7 @@ TEST_F(ResolverTest, Expr_ArrayAccessor_Matrix) {
 }
 
 TEST_F(ResolverTest, Expr_ArrayAccessor_Matrix_BothDimensions) {
-  Global("my_var", ty.mat2x3<f32>(), ast::StorageClass::kInput);
+  Global("my_var", ty.mat2x3<f32>(), ast::StorageClass::kPrivate);
 
   auto* acc = IndexAccessor(IndexAccessor("my_var", 2), 1);
   WrapInFunction(acc);
@@ -480,8 +570,36 @@ TEST_F(ResolverTest, Expr_ArrayAccessor_Matrix_BothDimensions) {
   EXPECT_TRUE(ref->StoreType()->Is<sem::F32>());
 }
 
+TEST_F(ResolverTest, Expr_ArrayAccessor_Vector_F32) {
+  Global("my_var", ty.vec3<f32>(), ast::StorageClass::kPrivate);
+  auto* acc = IndexAccessor("my_var", Expr(Source{{12, 34}}, 2.0f));
+  WrapInFunction(acc);
+
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(),
+            "12:34 error: index must be of type 'i32' or 'u32', found: 'f32'");
+}
+
+TEST_F(ResolverTest, Expr_ArrayAccessor_Vector_Dynamic_Ref) {
+  Global("my_var", ty.vec3<f32>(), ast::StorageClass::kPrivate);
+  auto* idx = Var("idx", ty.i32(), Expr(2));
+  auto* acc = IndexAccessor("my_var", idx);
+  WrapInFunction(Decl(idx), acc);
+
+  EXPECT_TRUE(r()->Resolve());
+}
+
+TEST_F(ResolverTest, Expr_ArrayAccessor_Vector_Dynamic) {
+  GlobalConst("my_var", ty.vec3<f32>(), Construct(ty.vec3<f32>()));
+  auto* idx = Var("idx", ty.i32(), Expr(2));
+  auto* acc = IndexAccessor("my_var", Expr(Source{{12, 34}}, idx));
+  WrapInFunction(Decl(idx), acc);
+
+  EXPECT_TRUE(r()->Resolve());
+}
+
 TEST_F(ResolverTest, Expr_ArrayAccessor_Vector) {
-  Global("my_var", ty.vec3<f32>(), ast::StorageClass::kInput);
+  Global("my_var", ty.vec3<f32>(), ast::StorageClass::kPrivate);
 
   auto* acc = IndexAccessor("my_var", 2);
   WrapInFunction(acc);
@@ -534,8 +652,7 @@ TEST_F(ResolverTest, Expr_Call_InBinaryOp) {
 }
 
 TEST_F(ResolverTest, Expr_Call_WithParams) {
-  ast::VariableList params;
-  Func("my_func", params, ty.f32(),
+  Func("my_func", {Param(Sym(), ty.f32())}, ty.f32(),
        {
            Return(1.2f),
        });
@@ -620,7 +737,7 @@ TEST_F(ResolverTest, Expr_Constructor_Type_Vec4) {
 }
 
 TEST_F(ResolverTest, Expr_Identifier_GlobalVariable) {
-  auto* my_var = Global("my_var", ty.f32(), ast::StorageClass::kInput);
+  auto* my_var = Global("my_var", ty.f32(), ast::StorageClass::kPrivate);
 
   auto* ident = Expr("my_var");
   WrapInFunction(ident);
@@ -672,13 +789,83 @@ TEST_F(ResolverTest, Expr_Identifier_FunctionVariable_Const) {
   EXPECT_EQ(VarOf(my_var_a)->Declaration(), var);
 }
 
+TEST_F(ResolverTest, ArrayAccessor_Dynamic_Ref_F32) {
+  // var a : array<bool, 10> = 0;
+  // var idx : f32 = f32();
+  // var f : f32 = a[idx];
+  auto* a = Var("a", ty.array<bool, 10>(), array<bool, 10>());
+  auto* idx = Var("idx", ty.f32(), Construct(ty.f32()));
+  auto* f = Var("f", ty.f32(), IndexAccessor("a", Expr(Source{{12, 34}}, idx)));
+  Func("my_func", ast::VariableList{}, ty.void_(),
+       {
+           Decl(a),
+           Decl(idx),
+           Decl(f),
+       },
+       ast::DecorationList{});
+
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(),
+            "12:34 error: index must be of type 'i32' or 'u32', found: 'f32'");
+}
+
+TEST_F(ResolverTest, ArrayAccessor_Dynamic_I32) {
+  // let a : array<f32, 3> = 0;
+  // var idx : i32 = 0;
+  // var f : f32 = a[idx];
+  auto* a = Const("a", ty.array<f32, 3>(), array<f32, 3>());
+  auto* idx = Var("idx", ty.i32(), Construct(ty.i32()));
+  auto* f = Var("f", ty.f32(), IndexAccessor("a", Expr(Source{{12, 34}}, idx)));
+  Func("my_func", ast::VariableList{}, ty.void_(),
+       {
+           Decl(a),
+           Decl(idx),
+           Decl(f),
+       },
+       ast::DecorationList{});
+
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(),
+            "12:34 error: index must be signed or unsigned integer literal");
+}
+
+TEST_F(ResolverTest, ArrayAccessor_Literal_F32) {
+  // let a : array<f32, 3>;
+  // var f : f32 = a[2.0f];
+  auto* a = Const("a", ty.array<f32, 3>(), array<f32, 3>());
+  auto* f =
+      Var("a_2", ty.f32(), IndexAccessor("a", Expr(Source{{12, 34}}, 2.0f)));
+  Func("my_func", ast::VariableList{}, ty.void_(),
+       {
+           Decl(a),
+           Decl(f),
+       },
+       ast::DecorationList{});
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(),
+            "12:34 error: index must be of type 'i32' or 'u32', found: 'f32'");
+}
+TEST_F(ResolverTest, ArrayAccessor_Literal_I32) {
+  // let a : array<f32, 3>;
+  // var f : f32 = a[2];
+  auto* a = Const("a", ty.array<f32, 3>(), array<f32, 3>());
+  auto* f = Var("a_2", ty.f32(), IndexAccessor("a", 2));
+  Func("my_func", ast::VariableList{}, ty.void_(),
+       {
+           Decl(a),
+           Decl(f),
+       },
+       ast::DecorationList{});
+  EXPECT_TRUE(r()->Resolve()) << r()->error();
+}
+
 TEST_F(ResolverTest, Expr_Identifier_FunctionVariable) {
   auto* my_var_a = Expr("my_var");
   auto* my_var_b = Expr("my_var");
   auto* assign = Assign(my_var_a, my_var_b);
 
-  auto* var = Var("my_var", ty.f32(), ast::StorageClass::kNone, nullptr,
-                  {
+  auto* var = Var("my_var", ty.f32(),
+                  ast::DecorationList{
                       create<ast::BindingDecoration>(0),
                       create<ast::GroupDecoration>(0),
                   });
@@ -784,12 +971,10 @@ TEST_F(ResolverTest, Function_Parameters) {
 TEST_F(ResolverTest, Function_RegisterInputOutputVariables) {
   auto* s = Structure("S", {Member("m", ty.u32())},
                       {create<ast::StructBlockDecoration>()});
-  auto* a = ty.access(ast::AccessControl::kReadOnly, s);
 
-  auto* in_var = Global("in_var", ty.f32(), ast::StorageClass::kInput);
-  auto* out_var = Global("out_var", ty.f32(), ast::StorageClass::kOutput);
-  auto* sb_var = Global("sb_var", a, ast::StorageClass::kStorage, nullptr,
-                        {
+  auto* sb_var = Global("sb_var", ty.Of(s), ast::StorageClass::kStorage,
+                        ast::Access::kReadWrite,
+                        ast::DecorationList{
                             create<ast::BindingDecoration>(0),
                             create<ast::GroupDecoration>(0),
                         });
@@ -798,7 +983,6 @@ TEST_F(ResolverTest, Function_RegisterInputOutputVariables) {
 
   auto* func = Func("my_func", ast::VariableList{}, ty.void_(),
                     {
-                        Assign("out_var", "in_var"),
                         Assign("wg_var", "wg_var"),
                         Assign("sb_var", "sb_var"),
                         Assign("priv_var", "priv_var"),
@@ -812,23 +996,19 @@ TEST_F(ResolverTest, Function_RegisterInputOutputVariables) {
   EXPECT_TRUE(func_sem->ReturnType()->Is<sem::Void>());
 
   const auto& vars = func_sem->ReferencedModuleVariables();
-  ASSERT_EQ(vars.size(), 5u);
-  EXPECT_EQ(vars[0]->Declaration(), out_var);
-  EXPECT_EQ(vars[1]->Declaration(), in_var);
-  EXPECT_EQ(vars[2]->Declaration(), wg_var);
-  EXPECT_EQ(vars[3]->Declaration(), sb_var);
-  EXPECT_EQ(vars[4]->Declaration(), priv_var);
+  ASSERT_EQ(vars.size(), 3u);
+  EXPECT_EQ(vars[0]->Declaration(), wg_var);
+  EXPECT_EQ(vars[1]->Declaration(), sb_var);
+  EXPECT_EQ(vars[2]->Declaration(), priv_var);
 }
 
 TEST_F(ResolverTest, Function_RegisterInputOutputVariables_SubFunction) {
   auto* s = Structure("S", {Member("m", ty.u32())},
                       {create<ast::StructBlockDecoration>()});
-  auto* a = ty.access(ast::AccessControl::kReadOnly, s);
 
-  auto* in_var = Global("in_var", ty.f32(), ast::StorageClass::kInput);
-  auto* out_var = Global("out_var", ty.f32(), ast::StorageClass::kOutput);
-  auto* sb_var = Global("sb_var", a, ast::StorageClass::kStorage, nullptr,
-                        {
+  auto* sb_var = Global("sb_var", ty.Of(s), ast::StorageClass::kStorage,
+                        ast::Access::kReadWrite,
+                        ast::DecorationList{
                             create<ast::BindingDecoration>(0),
                             create<ast::GroupDecoration>(0),
                         });
@@ -836,14 +1016,13 @@ TEST_F(ResolverTest, Function_RegisterInputOutputVariables_SubFunction) {
   auto* priv_var = Global("priv_var", ty.f32(), ast::StorageClass::kPrivate);
 
   Func("my_func", ast::VariableList{}, ty.f32(),
-       {Assign("out_var", "in_var"), Assign("wg_var", "wg_var"),
-        Assign("sb_var", "sb_var"), Assign("priv_var", "priv_var"),
-        Return(0.0f)},
+       {Assign("wg_var", "wg_var"), Assign("sb_var", "sb_var"),
+        Assign("priv_var", "priv_var"), Return(0.0f)},
        ast::DecorationList{});
 
   auto* func2 = Func("func", ast::VariableList{}, ty.void_(),
                      {
-                         Assign("out_var", Call("my_func")),
+                         WrapInStatement(Call("my_func")),
                      },
                      ast::DecorationList{});
 
@@ -854,12 +1033,10 @@ TEST_F(ResolverTest, Function_RegisterInputOutputVariables_SubFunction) {
   EXPECT_EQ(func2_sem->Parameters().size(), 0u);
 
   const auto& vars = func2_sem->ReferencedModuleVariables();
-  ASSERT_EQ(vars.size(), 5u);
-  EXPECT_EQ(vars[0]->Declaration(), out_var);
-  EXPECT_EQ(vars[1]->Declaration(), in_var);
-  EXPECT_EQ(vars[2]->Declaration(), wg_var);
-  EXPECT_EQ(vars[3]->Declaration(), sb_var);
-  EXPECT_EQ(vars[4]->Declaration(), priv_var);
+  ASSERT_EQ(vars.size(), 3u);
+  EXPECT_EQ(vars[0]->Declaration(), wg_var);
+  EXPECT_EQ(vars[1]->Declaration(), sb_var);
+  EXPECT_EQ(vars[2]->Declaration(), priv_var);
 }
 
 TEST_F(ResolverTest, Function_NotRegisterFunctionVariable) {
@@ -869,6 +1046,33 @@ TEST_F(ResolverTest, Function_NotRegisterFunctionVariable) {
                         Assign("var", 1.f),
                     });
 
+  EXPECT_TRUE(r()->Resolve()) << r()->error();
+
+  auto* func_sem = Sem().Get(func);
+  ASSERT_NE(func_sem, nullptr);
+
+  EXPECT_EQ(func_sem->ReferencedModuleVariables().size(), 0u);
+  EXPECT_TRUE(func_sem->ReturnType()->Is<sem::Void>());
+}
+
+TEST_F(ResolverTest, Function_NotRegisterFunctionConstant) {
+  auto* func = Func("my_func", ast::VariableList{}, ty.void_(),
+                    {
+                        Decl(Const("var", ty.f32(), Construct(ty.f32()))),
+                    });
+
+  EXPECT_TRUE(r()->Resolve()) << r()->error();
+
+  auto* func_sem = Sem().Get(func);
+  ASSERT_NE(func_sem, nullptr);
+
+  EXPECT_EQ(func_sem->ReferencedModuleVariables().size(), 0u);
+  EXPECT_TRUE(func_sem->ReturnType()->Is<sem::Void>());
+}
+
+TEST_F(ResolverTest, Function_NotRegisterFunctionParams) {
+  auto* func = Func("my_func", {Const("var", ty.f32(), Construct(ty.f32()))},
+                    ty.void_(), {});
   EXPECT_TRUE(r()->Resolve()) << r()->error();
 
   auto* func_sem = Sem().Get(func);
@@ -903,7 +1107,7 @@ TEST_F(ResolverTest, Function_ReturnStatements) {
 }
 
 TEST_F(ResolverTest, Function_WorkgroupSize_NotSet) {
-  // [[stage(compute)]]
+  // [[stage(compute), workgroup_size(1)]]
   // fn main() {}
   auto* func = Func("main", ast::VariableList{}, ty.void_(), {}, {});
 
@@ -1071,7 +1275,7 @@ TEST_F(ResolverTest, Function_WorkgroupSize_Mixed) {
 TEST_F(ResolverTest, Expr_MemberAccessor_Struct) {
   auto* st = Structure("S", {Member("first_member", ty.i32()),
                              Member("second_member", ty.f32())});
-  Global("my_struct", st, ast::StorageClass::kInput);
+  Global("my_struct", ty.Of(st), ast::StorageClass::kPrivate);
 
   auto* mem = MemberAccessor("my_struct", "second_member");
   WrapInFunction(mem);
@@ -1094,9 +1298,8 @@ TEST_F(ResolverTest, Expr_MemberAccessor_Struct) {
 TEST_F(ResolverTest, Expr_MemberAccessor_Struct_Alias) {
   auto* st = Structure("S", {Member("first_member", ty.i32()),
                              Member("second_member", ty.f32())});
-  auto* alias = ty.alias("alias", st);
-  AST().AddConstructedType(alias);
-  Global("my_struct", alias, ast::StorageClass::kInput);
+  auto* alias = Alias("alias", ty.Of(st));
+  Global("my_struct", ty.Of(alias), ast::StorageClass::kPrivate);
 
   auto* mem = MemberAccessor("my_struct", "second_member");
   WrapInFunction(mem);
@@ -1115,7 +1318,7 @@ TEST_F(ResolverTest, Expr_MemberAccessor_Struct_Alias) {
 }
 
 TEST_F(ResolverTest, Expr_MemberAccessor_VectorSwizzle) {
-  Global("my_vec", ty.vec3<f32>(), ast::StorageClass::kInput);
+  Global("my_vec", ty.vec4<f32>(), ast::StorageClass::kPrivate);
 
   auto* mem = MemberAccessor("my_vec", "xzyw");
   WrapInFunction(mem);
@@ -1132,7 +1335,7 @@ TEST_F(ResolverTest, Expr_MemberAccessor_VectorSwizzle) {
 }
 
 TEST_F(ResolverTest, Expr_MemberAccessor_VectorSwizzle_SingleElement) {
-  Global("my_vec", ty.vec3<f32>(), ast::StorageClass::kInput);
+  Global("my_vec", ty.vec3<f32>(), ast::StorageClass::kPrivate);
 
   auto* mem = MemberAccessor("my_vec", "b");
   WrapInFunction(mem);
@@ -1153,30 +1356,20 @@ TEST_F(ResolverTest, Expr_Accessor_MultiLevel) {
   //   vec4<f32> foo
   // }
   // struct A {
-  //   vec3<struct b> mem
+  //   array<b, 3> mem
   // }
   // var c : A
   // c.mem[0].foo.yx
   //   -> vec2<f32>
   //
-  // MemberAccessor{
-  //   MemberAccessor{
-  //     ArrayAccessor{
-  //       MemberAccessor{
-  //         Identifier{c}
-  //         Identifier{mem}
-  //       }
-  //       ScalarConstructor{0}
-  //     }
-  //     Identifier{foo}
-  //   }
-  //   Identifier{yx}
+  // fn f() {
+  //   c.mem[0].foo
   // }
   //
 
   auto* stB = Structure("B", {Member("foo", ty.vec4<f32>())});
-  auto* stA = Structure("A", {Member("mem", ty.vec(stB, 3))});
-  Global("c", stA, ast::StorageClass::kInput);
+  auto* stA = Structure("A", {Member("mem", ty.array(ty.Of(stB), 3))});
+  Global("c", ty.Of(stA), ast::StorageClass::kPrivate);
 
   auto* mem = MemberAccessor(
       MemberAccessor(IndexAccessor(MemberAccessor("c", "mem"), 0), "foo"),
@@ -1195,7 +1388,7 @@ TEST_F(ResolverTest, Expr_Accessor_MultiLevel) {
 TEST_F(ResolverTest, Expr_MemberAccessor_InBinaryOp) {
   auto* st = Structure("S", {Member("first_member", ty.f32()),
                              Member("second_member", ty.f32())});
-  Global("my_struct", st, ast::StorageClass::kInput);
+  Global("my_struct", ty.Of(st), ast::StorageClass::kPrivate);
 
   auto* expr = Add(MemberAccessor("my_struct", "first_member"),
                    MemberAccessor("my_struct", "second_member"));
@@ -1209,17 +1402,74 @@ TEST_F(ResolverTest, Expr_MemberAccessor_InBinaryOp) {
 
 namespace ExprBinaryTest {
 
-struct Params {
-  ast::BinaryOp op;
-  create_ast_type_func_ptr create_lhs_type;
-  create_ast_type_func_ptr create_rhs_type;
-  create_sem_type_func_ptr create_result_type;
+template <typename T, int ID>
+struct Aliased {
+  using type = alias<T, ID>;
 };
 
-static constexpr create_ast_type_func_ptr all_create_type_funcs[] = {
-    ast_bool,        ast_u32,         ast_i32,        ast_f32,
-    ast_vec3<bool>,  ast_vec3<i32>,   ast_vec3<u32>,  ast_vec3<f32>,
-    ast_mat3x3<i32>, ast_mat3x3<u32>, ast_mat3x3<f32>};
+template <int N, typename T, int ID>
+struct Aliased<vec<N, T>, ID> {
+  using type = vec<N, alias<T, ID>>;
+};
+
+template <int N, int M, typename T, int ID>
+struct Aliased<mat<N, M, T>, ID> {
+  using type = mat<N, M, alias<T, ID>>;
+};
+
+struct Params {
+  ast::BinaryOp op;
+  builder::ast_type_func_ptr create_lhs_type;
+  builder::ast_type_func_ptr create_rhs_type;
+  builder::ast_type_func_ptr create_lhs_alias_type;
+  builder::ast_type_func_ptr create_rhs_alias_type;
+  builder::sem_type_func_ptr create_result_type;
+};
+
+template <typename LHS, typename RHS, typename RES>
+constexpr Params ParamsFor(ast::BinaryOp op) {
+  return Params{op,
+                DataType<LHS>::AST,
+                DataType<RHS>::AST,
+                DataType<typename Aliased<LHS, 0>::type>::AST,
+                DataType<typename Aliased<RHS, 1>::type>::AST,
+                DataType<RES>::Sem};
+}
+
+static constexpr ast::BinaryOp all_ops[] = {
+    ast::BinaryOp::kAnd,
+    ast::BinaryOp::kOr,
+    ast::BinaryOp::kXor,
+    ast::BinaryOp::kLogicalAnd,
+    ast::BinaryOp::kLogicalOr,
+    ast::BinaryOp::kEqual,
+    ast::BinaryOp::kNotEqual,
+    ast::BinaryOp::kLessThan,
+    ast::BinaryOp::kGreaterThan,
+    ast::BinaryOp::kLessThanEqual,
+    ast::BinaryOp::kGreaterThanEqual,
+    ast::BinaryOp::kShiftLeft,
+    ast::BinaryOp::kShiftRight,
+    ast::BinaryOp::kAdd,
+    ast::BinaryOp::kSubtract,
+    ast::BinaryOp::kMultiply,
+    ast::BinaryOp::kDivide,
+    ast::BinaryOp::kModulo,
+};
+
+static constexpr builder::ast_type_func_ptr all_create_type_funcs[] = {
+    DataType<bool>::AST,         //
+    DataType<u32>::AST,          //
+    DataType<i32>::AST,          //
+    DataType<f32>::AST,          //
+    DataType<vec3<bool>>::AST,   //
+    DataType<vec3<i32>>::AST,    //
+    DataType<vec3<u32>>::AST,    //
+    DataType<vec3<f32>>::AST,    //
+    DataType<mat3x3<f32>>::AST,  //
+    DataType<mat2x3<f32>>::AST,  //
+    DataType<mat3x2<f32>>::AST   //
+};
 
 // A list of all valid test cases for 'lhs op rhs', except that for vecN and
 // matNxN, we only test N=3.
@@ -1228,167 +1478,224 @@ static constexpr Params all_valid_cases[] = {
     // https://gpuweb.github.io/gpuweb/wgsl.html#logical-expr
 
     // Binary logical expressions
-    Params{Op::kLogicalAnd, ast_bool, ast_bool, sem_bool},
-    Params{Op::kLogicalOr, ast_bool, ast_bool, sem_bool},
+    ParamsFor<bool, bool, bool>(Op::kLogicalAnd),
+    ParamsFor<bool, bool, bool>(Op::kLogicalOr),
 
-    Params{Op::kAnd, ast_bool, ast_bool, sem_bool},
-    Params{Op::kOr, ast_bool, ast_bool, sem_bool},
-    Params{Op::kAnd, ast_vec3<bool>, ast_vec3<bool>, sem_vec3<sem_bool>},
-    Params{Op::kOr, ast_vec3<bool>, ast_vec3<bool>, sem_vec3<sem_bool>},
+    ParamsFor<bool, bool, bool>(Op::kAnd),
+    ParamsFor<bool, bool, bool>(Op::kOr),
+    ParamsFor<vec3<bool>, vec3<bool>, vec3<bool>>(Op::kAnd),
+    ParamsFor<vec3<bool>, vec3<bool>, vec3<bool>>(Op::kOr),
 
     // Arithmetic expressions
     // https://gpuweb.github.io/gpuweb/wgsl.html#arithmetic-expr
 
     // Binary arithmetic expressions over scalars
-    Params{Op::kAdd, ast_i32, ast_i32, sem_i32},
-    Params{Op::kSubtract, ast_i32, ast_i32, sem_i32},
-    Params{Op::kMultiply, ast_i32, ast_i32, sem_i32},
-    Params{Op::kDivide, ast_i32, ast_i32, sem_i32},
-    Params{Op::kModulo, ast_i32, ast_i32, sem_i32},
+    ParamsFor<i32, i32, i32>(Op::kAdd),
+    ParamsFor<i32, i32, i32>(Op::kSubtract),
+    ParamsFor<i32, i32, i32>(Op::kMultiply),
+    ParamsFor<i32, i32, i32>(Op::kDivide),
+    ParamsFor<i32, i32, i32>(Op::kModulo),
 
-    Params{Op::kAdd, ast_u32, ast_u32, sem_u32},
-    Params{Op::kSubtract, ast_u32, ast_u32, sem_u32},
-    Params{Op::kMultiply, ast_u32, ast_u32, sem_u32},
-    Params{Op::kDivide, ast_u32, ast_u32, sem_u32},
-    Params{Op::kModulo, ast_u32, ast_u32, sem_u32},
+    ParamsFor<u32, u32, u32>(Op::kAdd),
+    ParamsFor<u32, u32, u32>(Op::kSubtract),
+    ParamsFor<u32, u32, u32>(Op::kMultiply),
+    ParamsFor<u32, u32, u32>(Op::kDivide),
+    ParamsFor<u32, u32, u32>(Op::kModulo),
 
-    Params{Op::kAdd, ast_f32, ast_f32, sem_f32},
-    Params{Op::kSubtract, ast_f32, ast_f32, sem_f32},
-    Params{Op::kMultiply, ast_f32, ast_f32, sem_f32},
-    Params{Op::kDivide, ast_f32, ast_f32, sem_f32},
-    Params{Op::kModulo, ast_f32, ast_f32, sem_f32},
+    ParamsFor<f32, f32, f32>(Op::kAdd),
+    ParamsFor<f32, f32, f32>(Op::kSubtract),
+    ParamsFor<f32, f32, f32>(Op::kMultiply),
+    ParamsFor<f32, f32, f32>(Op::kDivide),
+    ParamsFor<f32, f32, f32>(Op::kModulo),
 
     // Binary arithmetic expressions over vectors
-    Params{Op::kAdd, ast_vec3<i32>, ast_vec3<i32>, sem_vec3<sem_i32>},
-    Params{Op::kSubtract, ast_vec3<i32>, ast_vec3<i32>, sem_vec3<sem_i32>},
-    Params{Op::kMultiply, ast_vec3<i32>, ast_vec3<i32>, sem_vec3<sem_i32>},
-    Params{Op::kDivide, ast_vec3<i32>, ast_vec3<i32>, sem_vec3<sem_i32>},
-    Params{Op::kModulo, ast_vec3<i32>, ast_vec3<i32>, sem_vec3<sem_i32>},
+    ParamsFor<vec3<i32>, vec3<i32>, vec3<i32>>(Op::kAdd),
+    ParamsFor<vec3<i32>, vec3<i32>, vec3<i32>>(Op::kSubtract),
+    ParamsFor<vec3<i32>, vec3<i32>, vec3<i32>>(Op::kMultiply),
+    ParamsFor<vec3<i32>, vec3<i32>, vec3<i32>>(Op::kDivide),
+    ParamsFor<vec3<i32>, vec3<i32>, vec3<i32>>(Op::kModulo),
 
-    Params{Op::kAdd, ast_vec3<u32>, ast_vec3<u32>, sem_vec3<sem_u32>},
-    Params{Op::kSubtract, ast_vec3<u32>, ast_vec3<u32>, sem_vec3<sem_u32>},
-    Params{Op::kMultiply, ast_vec3<u32>, ast_vec3<u32>, sem_vec3<sem_u32>},
-    Params{Op::kDivide, ast_vec3<u32>, ast_vec3<u32>, sem_vec3<sem_u32>},
-    Params{Op::kModulo, ast_vec3<u32>, ast_vec3<u32>, sem_vec3<sem_u32>},
+    ParamsFor<vec3<u32>, vec3<u32>, vec3<u32>>(Op::kAdd),
+    ParamsFor<vec3<u32>, vec3<u32>, vec3<u32>>(Op::kSubtract),
+    ParamsFor<vec3<u32>, vec3<u32>, vec3<u32>>(Op::kMultiply),
+    ParamsFor<vec3<u32>, vec3<u32>, vec3<u32>>(Op::kDivide),
+    ParamsFor<vec3<u32>, vec3<u32>, vec3<u32>>(Op::kModulo),
 
-    Params{Op::kAdd, ast_vec3<f32>, ast_vec3<f32>, sem_vec3<sem_f32>},
-    Params{Op::kSubtract, ast_vec3<f32>, ast_vec3<f32>, sem_vec3<sem_f32>},
-    Params{Op::kMultiply, ast_vec3<f32>, ast_vec3<f32>, sem_vec3<sem_f32>},
-    Params{Op::kDivide, ast_vec3<f32>, ast_vec3<f32>, sem_vec3<sem_f32>},
-    Params{Op::kModulo, ast_vec3<f32>, ast_vec3<f32>, sem_vec3<sem_f32>},
+    ParamsFor<vec3<f32>, vec3<f32>, vec3<f32>>(Op::kAdd),
+    ParamsFor<vec3<f32>, vec3<f32>, vec3<f32>>(Op::kSubtract),
+    ParamsFor<vec3<f32>, vec3<f32>, vec3<f32>>(Op::kMultiply),
+    ParamsFor<vec3<f32>, vec3<f32>, vec3<f32>>(Op::kDivide),
+    ParamsFor<vec3<f32>, vec3<f32>, vec3<f32>>(Op::kModulo),
 
-    // Binary arithmetic expressions with mixed scalar, vector, and matrix
-    // operands
-    Params{Op::kMultiply, ast_vec3<f32>, ast_f32, sem_vec3<sem_f32>},
-    Params{Op::kMultiply, ast_f32, ast_vec3<f32>, sem_vec3<sem_f32>},
+    // Binary arithmetic expressions with mixed scalar and vector operands
+    ParamsFor<vec3<i32>, i32, vec3<i32>>(Op::kAdd),
+    ParamsFor<vec3<i32>, i32, vec3<i32>>(Op::kSubtract),
+    ParamsFor<vec3<i32>, i32, vec3<i32>>(Op::kMultiply),
+    ParamsFor<vec3<i32>, i32, vec3<i32>>(Op::kDivide),
+    ParamsFor<vec3<i32>, i32, vec3<i32>>(Op::kModulo),
 
-    Params{Op::kMultiply, ast_mat3x3<f32>, ast_f32, sem_mat3x3<sem_f32>},
-    Params{Op::kMultiply, ast_f32, ast_mat3x3<f32>, sem_mat3x3<sem_f32>},
+    ParamsFor<i32, vec3<i32>, vec3<i32>>(Op::kAdd),
+    ParamsFor<i32, vec3<i32>, vec3<i32>>(Op::kSubtract),
+    ParamsFor<i32, vec3<i32>, vec3<i32>>(Op::kMultiply),
+    ParamsFor<i32, vec3<i32>, vec3<i32>>(Op::kDivide),
+    ParamsFor<i32, vec3<i32>, vec3<i32>>(Op::kModulo),
 
-    Params{Op::kMultiply, ast_vec3<f32>, ast_mat3x3<f32>, sem_vec3<sem_f32>},
-    Params{Op::kMultiply, ast_mat3x3<f32>, ast_vec3<f32>, sem_vec3<sem_f32>},
-    Params{Op::kMultiply, ast_mat3x3<f32>, ast_mat3x3<f32>,
-           sem_mat3x3<sem_f32>},
+    ParamsFor<vec3<u32>, u32, vec3<u32>>(Op::kAdd),
+    ParamsFor<vec3<u32>, u32, vec3<u32>>(Op::kSubtract),
+    ParamsFor<vec3<u32>, u32, vec3<u32>>(Op::kMultiply),
+    ParamsFor<vec3<u32>, u32, vec3<u32>>(Op::kDivide),
+    ParamsFor<vec3<u32>, u32, vec3<u32>>(Op::kModulo),
+
+    ParamsFor<u32, vec3<u32>, vec3<u32>>(Op::kAdd),
+    ParamsFor<u32, vec3<u32>, vec3<u32>>(Op::kSubtract),
+    ParamsFor<u32, vec3<u32>, vec3<u32>>(Op::kMultiply),
+    ParamsFor<u32, vec3<u32>, vec3<u32>>(Op::kDivide),
+    ParamsFor<u32, vec3<u32>, vec3<u32>>(Op::kModulo),
+
+    ParamsFor<vec3<f32>, f32, vec3<f32>>(Op::kAdd),
+    ParamsFor<vec3<f32>, f32, vec3<f32>>(Op::kSubtract),
+    ParamsFor<vec3<f32>, f32, vec3<f32>>(Op::kMultiply),
+    ParamsFor<vec3<f32>, f32, vec3<f32>>(Op::kDivide),
+    // NOTE: no kModulo for vec3<f32>, f32
+    // ParamsFor<vec3<f32>, f32, vec3<f32>>(Op::kModulo),
+
+    ParamsFor<f32, vec3<f32>, vec3<f32>>(Op::kAdd),
+    ParamsFor<f32, vec3<f32>, vec3<f32>>(Op::kSubtract),
+    ParamsFor<f32, vec3<f32>, vec3<f32>>(Op::kMultiply),
+    ParamsFor<f32, vec3<f32>, vec3<f32>>(Op::kDivide),
+    // NOTE: no kModulo for f32, vec3<f32>
+    // ParamsFor<f32, vec3<f32>, vec3<f32>>(Op::kModulo),
+
+    // Matrix arithmetic
+    ParamsFor<mat2x3<f32>, f32, mat2x3<f32>>(Op::kMultiply),
+    ParamsFor<mat3x2<f32>, f32, mat3x2<f32>>(Op::kMultiply),
+    ParamsFor<mat3x3<f32>, f32, mat3x3<f32>>(Op::kMultiply),
+
+    ParamsFor<f32, mat2x3<f32>, mat2x3<f32>>(Op::kMultiply),
+    ParamsFor<f32, mat3x2<f32>, mat3x2<f32>>(Op::kMultiply),
+    ParamsFor<f32, mat3x3<f32>, mat3x3<f32>>(Op::kMultiply),
+
+    ParamsFor<vec3<f32>, mat2x3<f32>, vec2<f32>>(Op::kMultiply),
+    ParamsFor<vec2<f32>, mat3x2<f32>, vec3<f32>>(Op::kMultiply),
+    ParamsFor<vec3<f32>, mat3x3<f32>, vec3<f32>>(Op::kMultiply),
+
+    ParamsFor<mat3x2<f32>, vec3<f32>, vec2<f32>>(Op::kMultiply),
+    ParamsFor<mat2x3<f32>, vec2<f32>, vec3<f32>>(Op::kMultiply),
+    ParamsFor<mat3x3<f32>, vec3<f32>, vec3<f32>>(Op::kMultiply),
+
+    ParamsFor<mat2x3<f32>, mat3x2<f32>, mat3x3<f32>>(Op::kMultiply),
+    ParamsFor<mat3x2<f32>, mat2x3<f32>, mat2x2<f32>>(Op::kMultiply),
+    ParamsFor<mat3x2<f32>, mat3x3<f32>, mat3x2<f32>>(Op::kMultiply),
+    ParamsFor<mat3x3<f32>, mat3x3<f32>, mat3x3<f32>>(Op::kMultiply),
+    ParamsFor<mat3x3<f32>, mat2x3<f32>, mat2x3<f32>>(Op::kMultiply),
+
+    ParamsFor<mat2x3<f32>, mat2x3<f32>, mat2x3<f32>>(Op::kAdd),
+    ParamsFor<mat3x2<f32>, mat3x2<f32>, mat3x2<f32>>(Op::kAdd),
+    ParamsFor<mat3x3<f32>, mat3x3<f32>, mat3x3<f32>>(Op::kAdd),
+
+    ParamsFor<mat2x3<f32>, mat2x3<f32>, mat2x3<f32>>(Op::kSubtract),
+    ParamsFor<mat3x2<f32>, mat3x2<f32>, mat3x2<f32>>(Op::kSubtract),
+    ParamsFor<mat3x3<f32>, mat3x3<f32>, mat3x3<f32>>(Op::kSubtract),
 
     // Comparison expressions
     // https://gpuweb.github.io/gpuweb/wgsl.html#comparison-expr
 
     // Comparisons over scalars
-    Params{Op::kEqual, ast_bool, ast_bool, sem_bool},
-    Params{Op::kNotEqual, ast_bool, ast_bool, sem_bool},
+    ParamsFor<bool, bool, bool>(Op::kEqual),
+    ParamsFor<bool, bool, bool>(Op::kNotEqual),
 
-    Params{Op::kEqual, ast_i32, ast_i32, sem_bool},
-    Params{Op::kNotEqual, ast_i32, ast_i32, sem_bool},
-    Params{Op::kLessThan, ast_i32, ast_i32, sem_bool},
-    Params{Op::kLessThanEqual, ast_i32, ast_i32, sem_bool},
-    Params{Op::kGreaterThan, ast_i32, ast_i32, sem_bool},
-    Params{Op::kGreaterThanEqual, ast_i32, ast_i32, sem_bool},
+    ParamsFor<i32, i32, bool>(Op::kEqual),
+    ParamsFor<i32, i32, bool>(Op::kNotEqual),
+    ParamsFor<i32, i32, bool>(Op::kLessThan),
+    ParamsFor<i32, i32, bool>(Op::kLessThanEqual),
+    ParamsFor<i32, i32, bool>(Op::kGreaterThan),
+    ParamsFor<i32, i32, bool>(Op::kGreaterThanEqual),
 
-    Params{Op::kEqual, ast_u32, ast_u32, sem_bool},
-    Params{Op::kNotEqual, ast_u32, ast_u32, sem_bool},
-    Params{Op::kLessThan, ast_u32, ast_u32, sem_bool},
-    Params{Op::kLessThanEqual, ast_u32, ast_u32, sem_bool},
-    Params{Op::kGreaterThan, ast_u32, ast_u32, sem_bool},
-    Params{Op::kGreaterThanEqual, ast_u32, ast_u32, sem_bool},
+    ParamsFor<u32, u32, bool>(Op::kEqual),
+    ParamsFor<u32, u32, bool>(Op::kNotEqual),
+    ParamsFor<u32, u32, bool>(Op::kLessThan),
+    ParamsFor<u32, u32, bool>(Op::kLessThanEqual),
+    ParamsFor<u32, u32, bool>(Op::kGreaterThan),
+    ParamsFor<u32, u32, bool>(Op::kGreaterThanEqual),
 
-    Params{Op::kEqual, ast_f32, ast_f32, sem_bool},
-    Params{Op::kNotEqual, ast_f32, ast_f32, sem_bool},
-    Params{Op::kLessThan, ast_f32, ast_f32, sem_bool},
-    Params{Op::kLessThanEqual, ast_f32, ast_f32, sem_bool},
-    Params{Op::kGreaterThan, ast_f32, ast_f32, sem_bool},
-    Params{Op::kGreaterThanEqual, ast_f32, ast_f32, sem_bool},
+    ParamsFor<f32, f32, bool>(Op::kEqual),
+    ParamsFor<f32, f32, bool>(Op::kNotEqual),
+    ParamsFor<f32, f32, bool>(Op::kLessThan),
+    ParamsFor<f32, f32, bool>(Op::kLessThanEqual),
+    ParamsFor<f32, f32, bool>(Op::kGreaterThan),
+    ParamsFor<f32, f32, bool>(Op::kGreaterThanEqual),
 
     // Comparisons over vectors
-    Params{Op::kEqual, ast_vec3<bool>, ast_vec3<bool>, sem_vec3<sem_bool>},
-    Params{Op::kNotEqual, ast_vec3<bool>, ast_vec3<bool>, sem_vec3<sem_bool>},
+    ParamsFor<vec3<bool>, vec3<bool>, vec3<bool>>(Op::kEqual),
+    ParamsFor<vec3<bool>, vec3<bool>, vec3<bool>>(Op::kNotEqual),
 
-    Params{Op::kEqual, ast_vec3<i32>, ast_vec3<i32>, sem_vec3<sem_bool>},
-    Params{Op::kNotEqual, ast_vec3<i32>, ast_vec3<i32>, sem_vec3<sem_bool>},
-    Params{Op::kLessThan, ast_vec3<i32>, ast_vec3<i32>, sem_vec3<sem_bool>},
-    Params{Op::kLessThanEqual, ast_vec3<i32>, ast_vec3<i32>,
-           sem_vec3<sem_bool>},
-    Params{Op::kGreaterThan, ast_vec3<i32>, ast_vec3<i32>, sem_vec3<sem_bool>},
-    Params{Op::kGreaterThanEqual, ast_vec3<i32>, ast_vec3<i32>,
-           sem_vec3<sem_bool>},
+    ParamsFor<vec3<i32>, vec3<i32>, vec3<bool>>(Op::kEqual),
+    ParamsFor<vec3<i32>, vec3<i32>, vec3<bool>>(Op::kNotEqual),
+    ParamsFor<vec3<i32>, vec3<i32>, vec3<bool>>(Op::kLessThan),
+    ParamsFor<vec3<i32>, vec3<i32>, vec3<bool>>(Op::kLessThanEqual),
+    ParamsFor<vec3<i32>, vec3<i32>, vec3<bool>>(Op::kGreaterThan),
+    ParamsFor<vec3<i32>, vec3<i32>, vec3<bool>>(Op::kGreaterThanEqual),
 
-    Params{Op::kEqual, ast_vec3<u32>, ast_vec3<u32>, sem_vec3<sem_bool>},
-    Params{Op::kNotEqual, ast_vec3<u32>, ast_vec3<u32>, sem_vec3<sem_bool>},
-    Params{Op::kLessThan, ast_vec3<u32>, ast_vec3<u32>, sem_vec3<sem_bool>},
-    Params{Op::kLessThanEqual, ast_vec3<u32>, ast_vec3<u32>,
-           sem_vec3<sem_bool>},
-    Params{Op::kGreaterThan, ast_vec3<u32>, ast_vec3<u32>, sem_vec3<sem_bool>},
-    Params{Op::kGreaterThanEqual, ast_vec3<u32>, ast_vec3<u32>,
-           sem_vec3<sem_bool>},
+    ParamsFor<vec3<u32>, vec3<u32>, vec3<bool>>(Op::kEqual),
+    ParamsFor<vec3<u32>, vec3<u32>, vec3<bool>>(Op::kNotEqual),
+    ParamsFor<vec3<u32>, vec3<u32>, vec3<bool>>(Op::kLessThan),
+    ParamsFor<vec3<u32>, vec3<u32>, vec3<bool>>(Op::kLessThanEqual),
+    ParamsFor<vec3<u32>, vec3<u32>, vec3<bool>>(Op::kGreaterThan),
+    ParamsFor<vec3<u32>, vec3<u32>, vec3<bool>>(Op::kGreaterThanEqual),
 
-    Params{Op::kEqual, ast_vec3<f32>, ast_vec3<f32>, sem_vec3<sem_bool>},
-    Params{Op::kNotEqual, ast_vec3<f32>, ast_vec3<f32>, sem_vec3<sem_bool>},
-    Params{Op::kLessThan, ast_vec3<f32>, ast_vec3<f32>, sem_vec3<sem_bool>},
-    Params{Op::kLessThanEqual, ast_vec3<f32>, ast_vec3<f32>,
-           sem_vec3<sem_bool>},
-    Params{Op::kGreaterThan, ast_vec3<f32>, ast_vec3<f32>, sem_vec3<sem_bool>},
-    Params{Op::kGreaterThanEqual, ast_vec3<f32>, ast_vec3<f32>,
-           sem_vec3<sem_bool>},
-
-    // Bit expressions
-    // https://gpuweb.github.io/gpuweb/wgsl.html#bit-expr
+    ParamsFor<vec3<f32>, vec3<f32>, vec3<bool>>(Op::kEqual),
+    ParamsFor<vec3<f32>, vec3<f32>, vec3<bool>>(Op::kNotEqual),
+    ParamsFor<vec3<f32>, vec3<f32>, vec3<bool>>(Op::kLessThan),
+    ParamsFor<vec3<f32>, vec3<f32>, vec3<bool>>(Op::kLessThanEqual),
+    ParamsFor<vec3<f32>, vec3<f32>, vec3<bool>>(Op::kGreaterThan),
+    ParamsFor<vec3<f32>, vec3<f32>, vec3<bool>>(Op::kGreaterThanEqual),
 
     // Binary bitwise operations
-    Params{Op::kOr, ast_i32, ast_i32, sem_i32},
-    Params{Op::kAnd, ast_i32, ast_i32, sem_i32},
-    Params{Op::kXor, ast_i32, ast_i32, sem_i32},
+    ParamsFor<i32, i32, i32>(Op::kOr),
+    ParamsFor<i32, i32, i32>(Op::kAnd),
+    ParamsFor<i32, i32, i32>(Op::kXor),
 
-    Params{Op::kOr, ast_u32, ast_u32, sem_u32},
-    Params{Op::kAnd, ast_u32, ast_u32, sem_u32},
-    Params{Op::kXor, ast_u32, ast_u32, sem_u32},
+    ParamsFor<u32, u32, u32>(Op::kOr),
+    ParamsFor<u32, u32, u32>(Op::kAnd),
+    ParamsFor<u32, u32, u32>(Op::kXor),
+
+    ParamsFor<vec3<i32>, vec3<i32>, vec3<i32>>(Op::kOr),
+    ParamsFor<vec3<i32>, vec3<i32>, vec3<i32>>(Op::kAnd),
+    ParamsFor<vec3<i32>, vec3<i32>, vec3<i32>>(Op::kXor),
+
+    ParamsFor<vec3<u32>, vec3<u32>, vec3<u32>>(Op::kOr),
+    ParamsFor<vec3<u32>, vec3<u32>, vec3<u32>>(Op::kAnd),
+    ParamsFor<vec3<u32>, vec3<u32>, vec3<u32>>(Op::kXor),
 
     // Bit shift expressions
-    Params{Op::kShiftLeft, ast_i32, ast_u32, sem_i32},
-    Params{Op::kShiftLeft, ast_vec3<i32>, ast_vec3<u32>, sem_vec3<sem_i32>},
+    ParamsFor<i32, u32, i32>(Op::kShiftLeft),
+    ParamsFor<vec3<i32>, vec3<u32>, vec3<i32>>(Op::kShiftLeft),
 
-    Params{Op::kShiftLeft, ast_u32, ast_u32, sem_u32},
-    Params{Op::kShiftLeft, ast_vec3<u32>, ast_vec3<u32>, sem_vec3<sem_u32>},
+    ParamsFor<u32, u32, u32>(Op::kShiftLeft),
+    ParamsFor<vec3<u32>, vec3<u32>, vec3<u32>>(Op::kShiftLeft),
 
-    Params{Op::kShiftRight, ast_i32, ast_u32, sem_i32},
-    Params{Op::kShiftRight, ast_vec3<i32>, ast_vec3<u32>, sem_vec3<sem_i32>},
+    ParamsFor<i32, u32, i32>(Op::kShiftRight),
+    ParamsFor<vec3<i32>, vec3<u32>, vec3<i32>>(Op::kShiftRight),
 
-    Params{Op::kShiftRight, ast_u32, ast_u32, sem_u32},
-    Params{Op::kShiftRight, ast_vec3<u32>, ast_vec3<u32>, sem_vec3<sem_u32>}};
+    ParamsFor<u32, u32, u32>(Op::kShiftRight),
+    ParamsFor<vec3<u32>, vec3<u32>, vec3<u32>>(Op::kShiftRight),
+};
 
 using Expr_Binary_Test_Valid = ResolverTestWithParam<Params>;
 TEST_P(Expr_Binary_Test_Valid, All) {
   auto& params = GetParam();
 
-  auto* lhs_type = params.create_lhs_type(ty);
-  auto* rhs_type = params.create_rhs_type(ty);
-  auto* result_type = params.create_result_type(ty);
+  auto* lhs_type = params.create_lhs_type(*this);
+  auto* rhs_type = params.create_rhs_type(*this);
+  auto* result_type = params.create_result_type(*this);
 
   std::stringstream ss;
   ss << FriendlyName(lhs_type) << " " << params.op << " "
      << FriendlyName(rhs_type);
   SCOPED_TRACE(ss.str());
 
-  Global("lhs", lhs_type, ast::StorageClass::kInput);
-  Global("rhs", rhs_type, ast::StorageClass::kInput);
+  Global("lhs", lhs_type, ast::StorageClass::kPrivate);
+  Global("rhs", rhs_type, ast::StorageClass::kPrivate);
 
   auto* expr =
       create<ast::BinaryExpression>(params.op, Expr("lhs"), Expr("rhs"));
@@ -1409,44 +1716,28 @@ TEST_P(Expr_Binary_Test_WithAlias_Valid, All) {
   const Params& params = std::get<0>(GetParam());
   BinaryExprSide side = std::get<1>(GetParam());
 
-  auto* lhs_type = params.create_lhs_type(ty);
-  auto* rhs_type = params.create_rhs_type(ty);
+  auto* create_lhs_type =
+      (side == BinaryExprSide::Left || side == BinaryExprSide::Both)
+          ? params.create_lhs_alias_type
+          : params.create_lhs_type;
+  auto* create_rhs_type =
+      (side == BinaryExprSide::Right || side == BinaryExprSide::Both)
+          ? params.create_rhs_alias_type
+          : params.create_rhs_type;
+
+  auto* lhs_type = create_lhs_type(*this);
+  auto* rhs_type = create_rhs_type(*this);
 
   std::stringstream ss;
   ss << FriendlyName(lhs_type) << " " << params.op << " "
      << FriendlyName(rhs_type);
 
-  // For vectors and matrices, wrap the sub type in an alias
-  auto make_alias = [this](ast::Type* type) -> ast::Type* {
-    if (auto* v = type->As<ast::Vector>()) {
-      auto* alias = ty.alias(Symbols().New(), v->type());
-      AST().AddConstructedType(alias);
-      return ty.vec(alias, v->size());
-    }
-    if (auto* m = type->As<ast::Matrix>()) {
-      auto* alias = ty.alias(Symbols().New(), m->type());
-      AST().AddConstructedType(alias);
-      return ty.mat(alias, m->columns(), m->rows());
-    }
-    auto* alias = ty.alias(Symbols().New(), type);
-    AST().AddConstructedType(alias);
-    return ty.type_name(alias->name());
-  };
-
-  // Wrap in alias
-  if (side == BinaryExprSide::Left || side == BinaryExprSide::Both) {
-    lhs_type = make_alias(lhs_type);
-  }
-  if (side == BinaryExprSide::Right || side == BinaryExprSide::Both) {
-    rhs_type = make_alias(rhs_type);
-  }
-
   ss << ", After aliasing: " << FriendlyName(lhs_type) << " " << params.op
      << " " << FriendlyName(rhs_type);
   SCOPED_TRACE(ss.str());
 
-  Global("lhs", lhs_type, ast::StorageClass::kInput);
-  Global("rhs", rhs_type, ast::StorageClass::kInput);
+  Global("lhs", lhs_type, ast::StorageClass::kPrivate);
+  Global("rhs", rhs_type, ast::StorageClass::kPrivate);
 
   auto* expr =
       create<ast::BinaryExpression>(params.op, Expr("lhs"), Expr("rhs"));
@@ -1456,7 +1747,7 @@ TEST_P(Expr_Binary_Test_WithAlias_Valid, All) {
   ASSERT_NE(TypeOf(expr), nullptr);
   // TODO(amaiorano): Bring this back once we have a way to get the canonical
   // type
-  // auto* *result_type = params.create_result_type(ty);
+  // auto* *result_type = params.create_result_type(*this);
   // ASSERT_TRUE(TypeOf(expr) == result_type);
 }
 INSTANTIATE_TEST_SUITE_P(
@@ -1467,44 +1758,41 @@ INSTANTIATE_TEST_SUITE_P(
                                      BinaryExprSide::Right,
                                      BinaryExprSide::Both)));
 
+// This test works by taking the cartesian product of all possible
+// (type * type * op), and processing only the triplets that are not found in
+// the `all_valid_cases` table.
 using Expr_Binary_Test_Invalid =
-    ResolverTestWithParam<std::tuple<Params, create_ast_type_func_ptr>>;
+    ResolverTestWithParam<std::tuple<builder::ast_type_func_ptr,
+                                     builder::ast_type_func_ptr,
+                                     ast::BinaryOp>>;
 TEST_P(Expr_Binary_Test_Invalid, All) {
-  const Params& params = std::get<0>(GetParam());
-  auto& create_type_func = std::get<1>(GetParam());
+  const builder::ast_type_func_ptr& lhs_create_type_func =
+      std::get<0>(GetParam());
+  const builder::ast_type_func_ptr& rhs_create_type_func =
+      std::get<1>(GetParam());
+  const ast::BinaryOp op = std::get<2>(GetParam());
 
-  // Currently, for most operations, for a given lhs type, there is exactly one
-  // rhs type allowed.  The only exception is for multiplication, which allows
-  // any permutation of f32, vecN<f32>, and matNxN<f32>. We are fed valid inputs
-  // only via `params`, and all possible types via `create_type_func`, so we
-  // test invalid combinations by testing every other rhs type, modulo
-  // exceptions.
-
-  // Skip valid rhs type
-  if (params.create_rhs_type == create_type_func) {
-    return;
+  // Skip if valid case
+  // TODO(amaiorano): replace linear lookup with O(1) if too slow
+  for (auto& c : all_valid_cases) {
+    if (c.create_lhs_type == lhs_create_type_func &&
+        c.create_rhs_type == rhs_create_type_func && c.op == op) {
+      return;
+    }
   }
 
-  auto* lhs_type = params.create_lhs_type(ty);
-  auto* rhs_type = create_type_func(ty);
-
-  // Skip exceptions: multiplication of f32, vecN<f32>, and matNxN<f32>
-  if (params.op == Op::kMultiply &&
-      lhs_type->is_float_scalar_or_vector_or_matrix() &&
-      rhs_type->is_float_scalar_or_vector_or_matrix()) {
-    return;
-  }
+  auto* lhs_type = lhs_create_type_func(*this);
+  auto* rhs_type = rhs_create_type_func(*this);
 
   std::stringstream ss;
-  ss << FriendlyName(lhs_type) << " " << params.op << " "
-     << FriendlyName(rhs_type);
+  ss << FriendlyName(lhs_type) << " " << op << " " << FriendlyName(rhs_type);
   SCOPED_TRACE(ss.str());
 
-  Global("lhs", lhs_type, ast::StorageClass::kInput);
-  Global("rhs", rhs_type, ast::StorageClass::kInput);
+  Global("lhs", lhs_type, ast::StorageClass::kPrivate);
+  Global("rhs", rhs_type, ast::StorageClass::kPrivate);
 
-  auto* expr = create<ast::BinaryExpression>(Source{{12, 34}}, params.op,
-                                             Expr("lhs"), Expr("rhs"));
+  auto* expr = create<ast::BinaryExpression>(Source{{12, 34}}, op, Expr("lhs"),
+                                             Expr("rhs"));
   WrapInFunction(expr);
 
   ASSERT_FALSE(r()->Resolve());
@@ -1517,8 +1805,9 @@ TEST_P(Expr_Binary_Test_Invalid, All) {
 INSTANTIATE_TEST_SUITE_P(
     ResolverTest,
     Expr_Binary_Test_Invalid,
-    testing::Combine(testing::ValuesIn(all_valid_cases),
-                     testing::ValuesIn(all_create_type_funcs)));
+    testing::Combine(testing::ValuesIn(all_create_type_funcs),
+                     testing::ValuesIn(all_create_type_funcs),
+                     testing::ValuesIn(all_ops)));
 
 using Expr_Binary_Test_Invalid_VectorMatrixMultiply =
     ResolverTestWithParam<std::tuple<bool, uint32_t, uint32_t, uint32_t>>;
@@ -1545,8 +1834,8 @@ TEST_P(Expr_Binary_Test_Invalid_VectorMatrixMultiply, All) {
     is_valid_expr = vec_size == mat_cols;
   }
 
-  Global("lhs", lhs_type, ast::StorageClass::kInput);
-  Global("rhs", rhs_type, ast::StorageClass::kInput);
+  Global("lhs", lhs_type, ast::StorageClass::kPrivate);
+  Global("rhs", rhs_type, ast::StorageClass::kPrivate);
 
   auto* expr = Mul(Source{{12, 34}}, Expr("lhs"), Expr("rhs"));
   WrapInFunction(expr);
@@ -1586,8 +1875,8 @@ TEST_P(Expr_Binary_Test_Invalid_MatrixMatrixMultiply, All) {
   auto* col = create<sem::Vector>(f32, lhs_mat_rows);
   auto* result_type = create<sem::Matrix>(col, rhs_mat_cols);
 
-  Global("lhs", lhs_type, ast::StorageClass::kInput);
-  Global("rhs", rhs_type, ast::StorageClass::kInput);
+  Global("lhs", lhs_type, ast::StorageClass::kPrivate);
+  Global("rhs", rhs_type, ast::StorageClass::kPrivate);
 
   auto* expr = Mul(Source{{12, 34}}, Expr("lhs"), Expr("rhs"));
   WrapInFunction(expr);
@@ -1618,7 +1907,13 @@ using UnaryOpExpressionTest = ResolverTestWithParam<ast::UnaryOp>;
 TEST_P(UnaryOpExpressionTest, Expr_UnaryOp) {
   auto op = GetParam();
 
-  Global("ident", ty.vec4<f32>(), ast::StorageClass::kInput);
+  if (op == ast::UnaryOp::kNot) {
+    Global("ident", ty.vec4<bool>(), ast::StorageClass::kPrivate);
+  } else if (op == ast::UnaryOp::kNegation || op == ast::UnaryOp::kComplement) {
+    Global("ident", ty.vec4<i32>(), ast::StorageClass::kPrivate);
+  } else {
+    Global("ident", ty.vec4<f32>(), ast::StorageClass::kPrivate);
+  }
   auto* der = create<ast::UnaryOpExpression>(op, Expr("ident"));
   WrapInFunction(der);
 
@@ -1626,17 +1921,24 @@ TEST_P(UnaryOpExpressionTest, Expr_UnaryOp) {
 
   ASSERT_NE(TypeOf(der), nullptr);
   ASSERT_TRUE(TypeOf(der)->Is<sem::Vector>());
-  EXPECT_TRUE(TypeOf(der)->As<sem::Vector>()->type()->Is<sem::F32>());
+  if (op == ast::UnaryOp::kNot) {
+    EXPECT_TRUE(TypeOf(der)->As<sem::Vector>()->type()->Is<sem::Bool>());
+  } else if (op == ast::UnaryOp::kNegation || op == ast::UnaryOp::kComplement) {
+    EXPECT_TRUE(TypeOf(der)->As<sem::Vector>()->type()->Is<sem::I32>());
+  } else {
+    EXPECT_TRUE(TypeOf(der)->As<sem::Vector>()->type()->Is<sem::F32>());
+  }
   EXPECT_EQ(TypeOf(der)->As<sem::Vector>()->size(), 4u);
 }
 INSTANTIATE_TEST_SUITE_P(ResolverTest,
                          UnaryOpExpressionTest,
-                         testing::Values(ast::UnaryOp::kNegation,
+                         testing::Values(ast::UnaryOp::kComplement,
+                                         ast::UnaryOp::kNegation,
                                          ast::UnaryOp::kNot));
 
 TEST_F(ResolverTest, StorageClass_SetsIfMissing) {
-  auto* var = Var("var", ty.i32(), ast::StorageClass::kNone, nullptr,
-                  {
+  auto* var = Var("var", ty.i32(),
+                  ast::DecorationList{
                       create<ast::BindingDecoration>(0),
                       create<ast::GroupDecoration>(0),
                   });
@@ -1651,8 +1953,8 @@ TEST_F(ResolverTest, StorageClass_SetsIfMissing) {
 
 TEST_F(ResolverTest, StorageClass_SetForSampler) {
   auto* t = ty.sampler(ast::SamplerKind::kSampler);
-  auto* var = Global("var", t, ast::StorageClass::kNone, nullptr,
-                     {
+  auto* var = Global("var", t,
+                     ast::DecorationList{
                          create<ast::BindingDecoration>(0),
                          create<ast::GroupDecoration>(0),
                      });
@@ -1665,9 +1967,8 @@ TEST_F(ResolverTest, StorageClass_SetForSampler) {
 
 TEST_F(ResolverTest, StorageClass_SetForTexture) {
   auto* t = ty.sampled_texture(ast::TextureDimension::k1d, ty.f32());
-  auto* ac = ty.access(ast::AccessControl::kReadOnly, t);
-  auto* var = Global("var", ac, ast::StorageClass::kNone, nullptr,
-                     {
+  auto* var = Global("var", t,
+                     ast::DecorationList{
                          create<ast::BindingDecoration>(0),
                          create<ast::GroupDecoration>(0),
                      });
@@ -1686,6 +1987,39 @@ TEST_F(ResolverTest, StorageClass_DoesNotSetOnConst) {
   EXPECT_TRUE(r()->Resolve()) << r()->error();
 
   EXPECT_EQ(Sem().Get(var)->StorageClass(), ast::StorageClass::kNone);
+}
+
+TEST_F(ResolverTest, Access_SetForStorageBuffer) {
+  // [[block]] struct S { x : i32 };
+  // var<storage> g : S;
+  auto* s = Structure("S", {Member(Source{{12, 34}}, "x", ty.i32())},
+                      {create<ast::StructBlockDecoration>()});
+  auto* var =
+      Global(Source{{56, 78}}, "g", ty.Of(s), ast::StorageClass::kStorage,
+             ast::DecorationList{
+                 create<ast::BindingDecoration>(0),
+                 create<ast::GroupDecoration>(0),
+             });
+
+  EXPECT_TRUE(r()->Resolve()) << r()->error();
+
+  EXPECT_EQ(Sem().Get(var)->Access(), ast::Access::kRead);
+}
+
+TEST_F(ResolverTest, BindingPoint_SetForResources) {
+  // [[group(1), binding(2)]] var s1 : sampler;
+  // [[group(3), binding(4)]] var s2 : sampler;
+  auto* s1 = Global(Sym(), ty.sampler(ast::SamplerKind::kSampler),
+                    ast::DecorationList{create<ast::GroupDecoration>(1),
+                                        create<ast::BindingDecoration>(2)});
+  auto* s2 = Global(Sym(), ty.sampler(ast::SamplerKind::kSampler),
+                    ast::DecorationList{create<ast::GroupDecoration>(3),
+                                        create<ast::BindingDecoration>(4)});
+
+  EXPECT_TRUE(r()->Resolve()) << r()->error();
+
+  EXPECT_EQ(Sem().Get(s1)->BindingPoint(), (sem::BindingPoint{1u, 2u}));
+  EXPECT_EQ(Sem().Get(s2)->BindingPoint(), (sem::BindingPoint{3u, 4u}));
 }
 
 TEST_F(ResolverTest, Function_EntryPoints_StageDecoration) {
@@ -1723,17 +2057,15 @@ TEST_F(ResolverTest, Function_EntryPoints_StageDecoration) {
                         Assign("call_a", Call("a")),
                         Assign("call_b", Call("b")),
                     },
-                    ast::DecorationList{
-                        Stage(ast::PipelineStage::kCompute),
-                    });
+                    ast::DecorationList{Stage(ast::PipelineStage::kCompute),
+                                        WorkgroupSize(1)});
 
   auto* ep_2 = Func("ep_2", params, ty.void_(),
                     {
                         Assign("call_c", Call("c")),
                     },
-                    ast::DecorationList{
-                        Stage(ast::PipelineStage::kCompute),
-                    });
+                    ast::DecorationList{Stage(ast::PipelineStage::kCompute),
+                                        WorkgroupSize(1)});
 
   ASSERT_TRUE(r()->Resolve()) << r()->error();
 
@@ -1810,9 +2142,7 @@ TEST_F(ResolverTest, Function_EntryPoints_LinearTime) {
            create<ast::CallStatement>(Call(fn_a(0))),
            create<ast::CallStatement>(Call(fn_b(0))),
        },
-       {
-           Stage(ast::PipelineStage::kCompute),
-       });
+       {Stage(ast::PipelineStage::kCompute), WorkgroupSize(1)});
 
   ASSERT_TRUE(r()->Resolve()) << r()->error();
 }
@@ -1849,6 +2179,38 @@ TEST_F(ResolverTest, ASTNodeReachedTwice) {
       "encountered twice in the same AST of a Program");
 }
 
+TEST_F(ResolverTest, UnaryOp_Not) {
+  Global("ident", ty.vec4<f32>(), ast::StorageClass::kPrivate);
+  auto* der = create<ast::UnaryOpExpression>(ast::UnaryOp::kNot,
+                                             Expr(Source{{12, 34}}, "ident"));
+  WrapInFunction(der);
+
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(),
+            "12:34 error: cannot logical negate expression of type 'vec4<f32>");
+}
+
+TEST_F(ResolverTest, UnaryOp_Complement) {
+  Global("ident", ty.vec4<f32>(), ast::StorageClass::kPrivate);
+  auto* der = create<ast::UnaryOpExpression>(ast::UnaryOp::kComplement,
+                                             Expr(Source{{12, 34}}, "ident"));
+  WrapInFunction(der);
+
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(
+      r()->error(),
+      "12:34 error: cannot bitwise complement expression of type 'vec4<f32>");
+}
+
+TEST_F(ResolverTest, UnaryOp_Negation) {
+  Global("ident", ty.u32(), ast::StorageClass::kPrivate);
+  auto* der = create<ast::UnaryOpExpression>(ast::UnaryOp::kNegation,
+                                             Expr(Source{{12, 34}}, "ident"));
+  WrapInFunction(der);
+
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(), "12:34 error: cannot negate expression of type 'u32");
+}
 }  // namespace
 }  // namespace resolver
 }  // namespace tint

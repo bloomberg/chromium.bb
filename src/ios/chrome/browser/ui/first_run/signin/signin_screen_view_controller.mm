@@ -6,7 +6,7 @@
 
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/ui/authentication/views/identity_button_control.h"
-#import "ios/chrome/browser/ui/elements/activity_overlay_view.h"
+#import "ios/chrome/browser/ui/first_run/first_run_constants.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_google_chrome_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -26,8 +26,9 @@ const CGFloat kIdentityControlMaxWidth = 327;
 // Button controlling the display of the selected identity.
 @property(nonatomic, strong) IdentityButtonControl* identityControl;
 
-// Scrim displayed above the view when the UI is disabled.
-@property(nonatomic, strong) ActivityOverlayView* overlay;
+// The string to be displayed in the "Cotinue" button to personalize it. Usually
+// the given name, or the email address if no given name.
+@property(nonatomic, copy) NSString* personalizedButtonPrompt;
 
 @end
 
@@ -37,7 +38,12 @@ const CGFloat kIdentityControlMaxWidth = 327;
 #pragma mark - Public
 
 - (void)viewDidLoad {
+  self.view.accessibilityIdentifier =
+      first_run::kFirstRunSignInScreenAccessibilityIdentifier;
   self.bannerImage = [UIImage imageNamed:@"signin_screen_banner"];
+  self.isTallBanner = NO;
+  self.scrollToEndMandatory = YES;
+
   self.titleText = l10n_util::GetNSString(IDS_IOS_FIRST_RUN_SIGNIN_TITLE);
   self.subtitleText = l10n_util::GetNSString(IDS_IOS_FIRST_RUN_SIGNIN_SUBTITLE);
   if (!self.primaryActionString) {
@@ -67,22 +73,12 @@ const CGFloat kIdentityControlMaxWidth = 327;
                                               .bottomAnchor],
   ]];
 
-  // TODO(crbug.com/1189836): Add the identity control to the wrapper view.
-
   // Call super after setting up the strings and others, as required per super
   // class.
   [super viewDidLoad];
 }
 
 #pragma mark - Properties
-
-- (ActivityOverlayView*)overlay {
-  if (!_overlay) {
-    _overlay = [[ActivityOverlayView alloc] init];
-    _overlay.translatesAutoresizingMaskIntoConstraints = NO;
-  }
-  return _overlay;
-}
 
 - (IdentityButtonControl*)identityControl {
   if (!_identityControl) {
@@ -106,40 +102,19 @@ const CGFloat kIdentityControlMaxWidth = 327;
 #pragma mark - SignInScreenConsumer
 
 - (void)setUserImage:(UIImage*)userImage {
-  if (userImage) {
-    [self.identityControl setIdentityAvatar:userImage];
-  } else {
-    // TODO(crbug.com/1189836): Update with default avatar.
-  }
+  [self.identityControl setIdentityAvatar:userImage];
 }
 
-- (void)setSelectedIdentityUserName:(NSString*)userName email:(NSString*)email {
+- (void)setSelectedIdentityUserName:(NSString*)userName
+                              email:(NSString*)email
+                          givenName:(NSString*)givenName {
+  self.personalizedButtonPrompt = givenName ? givenName : email;
   [self updateUIForIdentityAvailable:YES];
   [self.identityControl setIdentityName:userName email:email];
 }
 
 - (void)noIdentityAvailable {
   [self updateUIForIdentityAvailable:NO];
-}
-
-- (void)setUIEnabled:(BOOL)UIEnabled {
-  if (UIEnabled) {
-    [self.overlay removeFromSuperview];
-  } else {
-    [self.view addSubview:self.overlay];
-    AddSameConstraints(self.view, self.overlay);
-    [self.overlay.indicator startAnimating];
-  }
-}
-
-#pragma mark - AuthenticationFlowDelegate
-
-- (void)didPresentDialog {
-  [self.overlay.indicator stopAnimating];
-}
-
-- (void)didDismissDialog {
-  [self.overlay.indicator startAnimating];
 }
 
 #pragma mark - Private
@@ -154,10 +129,9 @@ const CGFloat kIdentityControlMaxWidth = 327;
 - (void)updateUIForIdentityAvailable:(BOOL)identityAvailable {
   self.identityControl.hidden = !identityAvailable;
   if (identityAvailable) {
-    // TODO(crbug.com/1189836): Use the real name.
     self.primaryActionString = l10n_util::GetNSStringF(
         IDS_IOS_FIRST_RUN_SIGNIN_CONTINUE_AS,
-        base::SysNSStringToUTF16(@"Account Name (Test)"));
+        base::SysNSStringToUTF16(self.personalizedButtonPrompt));
     ;
   } else {
     self.primaryActionString =

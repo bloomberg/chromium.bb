@@ -7,7 +7,7 @@
 See chrome/browser/PRESUBMIT.py
 """
 
-import regex_check
+from . import regex_check
 
 
 class JSChecker(object):
@@ -73,7 +73,7 @@ class JSChecker(object):
     args += ["--format", format, "--ignore-pattern", "!.eslintrc.js"]
     args += affected_js_files_paths
 
-    import eslint
+    from . import eslint
     output = eslint.Run(os_path=os_path, args=args)
 
     return [self.output_api.PresubmitError(output)] if output else []
@@ -92,14 +92,15 @@ class JSChecker(object):
 
   def RunChecks(self):
     """Check for violations of the Chromium JavaScript style guide. See
-       https://chromium.googlesource.com/chromium/src/+/master/styleguide/web/web.md#JavaScript
+       https://chromium.googlesource.com/chromium/src/+/main/styleguide/web/web.md#JavaScript
     """
     results = []
 
     affected_files = self.input_api.AffectedFiles(file_filter=self.file_filter,
                                                   include_deletes=False)
-    affected_js_files = filter(lambda f: f.LocalPath().endswith(".js"),
-                               affected_files)
+    affected_js_files = [
+        f for f in affected_files if f.LocalPath().endswith((".js", "ts"))
+    ]
 
     if affected_js_files:
       results += self.RunEsLintChecks(affected_js_files)
@@ -108,15 +109,17 @@ class JSChecker(object):
       error_lines = []
 
       for i, line in enumerate(f.NewContents(), start=1):
-        error_lines += filter(None, [
-            self.ChromeSendCheck(i, line),
-            self.CommentIfAndIncludeCheck(i, line),
-            self.EndJsDocCommentCheck(i, line),
-            self.ExtraDotInGenericCheck(i, line),
-            self.InheritDocCheck(i, line),
-            self.PolymerLocalIdCheck(i, line),
-            self.VariableNameCheck(i, line),
-        ])
+        error_lines += [
+            _f for _f in [
+                self.ChromeSendCheck(i, line),
+                self.CommentIfAndIncludeCheck(i, line),
+                self.EndJsDocCommentCheck(i, line),
+                self.ExtraDotInGenericCheck(i, line),
+                self.InheritDocCheck(i, line),
+                self.PolymerLocalIdCheck(i, line),
+                self.VariableNameCheck(i, line),
+            ] if _f
+        ]
 
       if error_lines:
         error_lines = [
@@ -127,6 +130,6 @@ class JSChecker(object):
     if results:
       results.append(self.output_api.PresubmitNotifyResult(
           "See the JavaScript style guide at "
-          "https://chromium.googlesource.com/chromium/src/+/master/styleguide/web/web.md#JavaScript"))
+          "https://chromium.googlesource.com/chromium/src/+/main/styleguide/web/web.md#JavaScript"))
 
     return results

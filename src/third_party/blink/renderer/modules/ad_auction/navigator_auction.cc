@@ -5,10 +5,13 @@
 #include "third_party/blink/renderer/modules/ad_auction/navigator_auction.h"
 
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_usvstring_usvstringsequence.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_auction_ad.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_auction_ad_config.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_auction_ad_interest_group.h"
+#include "third_party/blink/renderer/modules/ad_auction/validate_blink_interest_group.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin_hash.h"
 
@@ -256,31 +259,37 @@ bool CopyInterestGroupBuyersFromIdlToMojo(
   if (!input.hasInterestGroupBuyers())
     return true;
   output.interest_group_buyers = mojom::blink::InterestGroupBuyers::New();
-  if (input.interestGroupBuyers().IsUSVString()) {
-    String maybe_wildcard = input.interestGroupBuyers().GetAsUSVString();
-    if (maybe_wildcard != "*") {
-      exception_state.ThrowTypeError(ErrorInvalidAuctionConfig(
-          input, "interestGroupBuyers", maybe_wildcard,
-          "must be \"*\" (wildcard) or a list of buyer https origin strings."));
-      return false;
-    }
-    output.interest_group_buyers->set_all_buyers(
-        mojom::blink::AllBuyers::New());
-  } else {
-    DCHECK(input.interestGroupBuyers().IsUSVStringSequence());
-    Vector<scoped_refptr<const SecurityOrigin>> buyers;
-    for (const auto& buyer_str :
-         input.interestGroupBuyers().GetAsUSVStringSequence()) {
-      scoped_refptr<const SecurityOrigin> buyer = ParseOrigin(buyer_str);
-      if (!buyer) {
+  switch (input.interestGroupBuyers()->GetContentType()) {
+    case V8UnionUSVStringOrUSVStringSequence::ContentType::kUSVString: {
+      const String& maybe_wildcard =
+          input.interestGroupBuyers()->GetAsUSVString();
+      if (maybe_wildcard != "*") {
         exception_state.ThrowTypeError(ErrorInvalidAuctionConfig(
-            input, "interestGroupBuyers buyer", buyer_str,
-            "must be a valid https origin."));
+            input, "interestGroupBuyers", maybe_wildcard,
+            "must be \"*\" (wildcard) or a list of buyer https origin "
+            "strings."));
         return false;
       }
-      buyers.push_back(buyer);
+      output.interest_group_buyers->set_all_buyers(
+          mojom::blink::AllBuyers::New());
+      break;
     }
-    output.interest_group_buyers->set_buyers(std::move(buyers));
+    case V8UnionUSVStringOrUSVStringSequence::ContentType::kUSVStringSequence: {
+      Vector<scoped_refptr<const SecurityOrigin>> buyers;
+      for (const auto& buyer_str :
+           input.interestGroupBuyers()->GetAsUSVStringSequence()) {
+        scoped_refptr<const SecurityOrigin> buyer = ParseOrigin(buyer_str);
+        if (!buyer) {
+          exception_state.ThrowTypeError(ErrorInvalidAuctionConfig(
+              input, "interestGroupBuyers buyer", buyer_str,
+              "must be a valid https origin."));
+          return false;
+        }
+        buyers.push_back(buyer);
+      }
+      output.interest_group_buyers->set_buyers(std::move(buyers));
+      break;
+    }
   }
 
   return true;
@@ -388,22 +397,39 @@ void NavigatorAuction::joinAdInterestGroup(ScriptState* script_state,
     return;
   mojo_group->name = group->name();
   if (!CopyBiddingLogicUrlFromIdlToMojo(*context, exception_state, *group,
-                                        *mojo_group))
+                                        *mojo_group)) {
     return;
+  }
   if (!CopyDailyUpdateUrlFromIdlToMojo(*context, exception_state, *group,
-                                       *mojo_group))
+                                       *mojo_group)) {
     return;
+  }
   if (!CopyTrustedBiddingSignalsUrlFromIdlToMojo(*context, exception_state,
-                                                 *group, *mojo_group))
+                                                 *group, *mojo_group)) {
     return;
+  }
   if (!CopyTrustedBiddingSignalsKeysFromIdlToMojo(*group, *mojo_group))
     return;
   if (!CopyUserBiddingSignalsFromIdlToMojo(*script_state, exception_state,
-                                           *group, *mojo_group))
+                                           *group, *mojo_group)) {
     return;
+  }
   if (!CopyAdsFromIdlToMojo(*context, *script_state, exception_state, *group,
-                            *mojo_group))
+                            *mojo_group)) {
     return;
+  }
+
+  String error_field_name;
+  String error_field_value;
+  String error;
+  if (!ValidateBlinkInterestGroup(
+          *ExecutionContext::From(script_state)->GetSecurityOrigin(),
+          *mojo_group, error_field_name, error_field_value, error)) {
+    exception_state.ThrowTypeError(ErrorInvalidInterestGroup(
+        *group, error_field_name, error_field_value, error));
+    return;
+  }
+
   interest_group_store_->JoinInterestGroup(std::move(mojo_group));
 }
 

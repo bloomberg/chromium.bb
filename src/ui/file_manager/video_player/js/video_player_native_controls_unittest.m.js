@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {MockChromeStorageAPI} from 'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/mock_chrome.m.js';
+import {MockChromeStorageAPI} from 'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/mock_chrome.js';
 import {assertEquals} from 'chrome://test/chai_assert.js';
 
-import {NativeControlsVideoPlayer} from './video_player_native_controls.m.js';
+import {NativeControlsVideoPlayer} from './video_player_native_controls.js';
 
 /**
  * Helper function for creating an mock HTMLVideoElement.

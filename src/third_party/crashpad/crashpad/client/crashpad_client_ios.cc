@@ -18,11 +18,10 @@
 
 #include <ios>
 
+#include "base/cxx17_backports.h"
 #include "base/logging.h"
 #include "base/mac/mach_logging.h"
 #include "base/mac/scoped_mach_port.h"
-#include "base/stl_util.h"
-#include "snapshot/ios/process_snapshot_ios.h"
 #include "util/ios/exception_processor.h"
 #include "util/ios/ios_system_data_collector.h"
 #include "util/mach/exc_server_variants.h"
@@ -54,6 +53,10 @@ class CrashHandler : public Thread, public UniversalMachExcServer::Interface {
   }
 
   void ProcessIntermediateDumps(
+      const std::map<std::string, std::string>& annotations = {}) {}
+
+  void ProcessIntermediateDump(
+      const base::FilePath& file,
       const std::map<std::string, std::string>& annotations = {}) {}
 
   void DumpWithoutCrash(NativeCPUContext* context) {
@@ -168,16 +171,6 @@ class CrashHandler : public Thread, public UniversalMachExcServer::Interface {
                            ConstThreadState old_state,
                            mach_msg_type_number_t old_state_count) {
     // TODO(justincohen): This is incomplete.
-    ProcessSnapshotIOS process_snapshot;
-    process_snapshot.Initialize(system_data_);
-    process_snapshot.SetExceptionFromMachException(behavior,
-                                                   thread,
-                                                   exception,
-                                                   code,
-                                                   code_count,
-                                                   flavor,
-                                                   old_state,
-                                                   old_state_count);
   }
 
   // The signal handler installed at OS-level.
@@ -190,9 +183,6 @@ class CrashHandler : public Thread, public UniversalMachExcServer::Interface {
                               siginfo_t* siginfo,
                               ucontext_t* context) {
     // TODO(justincohen): This is incomplete.
-    ProcessSnapshotIOS process_snapshot;
-    process_snapshot.Initialize(system_data_);
-    process_snapshot.SetExceptionFromSignal(siginfo, context);
 
     // Always call system handler.
     Signals::RestoreHandlerAndReraiseSignalOnReturn(siginfo, &old_action_);
@@ -234,7 +224,16 @@ void CrashpadClient::ProcessIntermediateDumps(
 }
 
 // static
-void CrashpadClient::StartProcesingPendingReports() {
+void CrashpadClient::ProcessIntermediateDump(
+    const base::FilePath& file,
+    const std::map<std::string, std::string>& annotations) {
+  CrashHandler* crash_handler = CrashHandler::Get();
+  DCHECK(crash_handler);
+  crash_handler->ProcessIntermediateDump(file, annotations);
+}
+
+// static
+void CrashpadClient::StartProcessingPendingReports() {
   // TODO(justincohen): Start the CrashReportUploadThread.
 }
 
@@ -253,6 +252,16 @@ void CrashpadClient::DumpWithoutCrashAndDeferProcessing(
     NativeCPUContext* context) {
   CrashHandler* crash_handler = CrashHandler::Get();
   DCHECK(crash_handler);
+  crash_handler->DumpWithoutCrash(context);
+}
+
+// static
+void CrashpadClient::DumpWithoutCrashAndDeferProcessingAtPath(
+    NativeCPUContext* context,
+    const base::FilePath path) {
+  CrashHandler* crash_handler = CrashHandler::Get();
+  DCHECK(crash_handler);
+  // TODO(justincohen): Change to DumpWithoutCrashAtPath(context, path).
   crash_handler->DumpWithoutCrash(context);
 }
 

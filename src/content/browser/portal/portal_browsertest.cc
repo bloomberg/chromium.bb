@@ -207,14 +207,19 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, CreatePortal) {
       shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
   WebContentsImpl* web_contents_impl =
       static_cast<WebContentsImpl*>(shell()->web_contents());
-  RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
+  RenderFrameHostImpl* primary_rfh = web_contents_impl->GetMainFrame();
 
-  PortalCreatedObserver portal_created_observer(main_frame);
+  PortalCreatedObserver portal_created_observer(primary_rfh);
   EXPECT_TRUE(
-      ExecJs(main_frame,
+      ExecJs(primary_rfh,
              "document.body.appendChild(document.createElement('portal'));"));
   Portal* portal = portal_created_observer.WaitUntilPortalCreated();
   EXPECT_NE(nullptr, portal);
+
+  RenderFrameHostImpl* portal_rfh = portal->GetPortalContents()->GetMainFrame();
+  EXPECT_NE(&primary_rfh->GetPage(), &portal_rfh->GetPage());
+  EXPECT_TRUE(primary_rfh->GetPage().IsPrimary());
+  EXPECT_TRUE(portal_rfh->GetPage().IsPrimary());
 }
 
 // Tests the the renderer can navigate a Portal.
@@ -353,8 +358,14 @@ IN_PROC_BROWSER_TEST_F(PortalDefaultActivationBrowserTest,
   VerifyActivationTraceEvents(StopTracing());
 }
 
+#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+// https://crbug.com/1222682
+#define MAYBE_AdoptPredecessor DISABLED_AdoptPredecessor
+#else
+#define MAYBE_AdoptPredecessor AdoptPredecessor
+#endif
 // Tests if a portal can be activated and the predecessor can be adopted.
-IN_PROC_BROWSER_TEST_F(PortalBrowserTest, AdoptPredecessor) {
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest, MAYBE_AdoptPredecessor) {
   StartTracing();
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
@@ -2120,6 +2131,7 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(PortalBrowserTest, NavigationPrecedence) {
   GURL main_url1(embedded_test_server()->GetURL("portal.test", "/title1.html"));
   GURL main_url2(embedded_test_server()->GetURL("portal.test", "/title2.html"));
+  GURL main_url3(embedded_test_server()->GetURL("portal.test", "/title3.html"));
   ASSERT_TRUE(NavigateToURL(shell(), main_url1));
   ASSERT_TRUE(NavigateToURL(shell(), main_url2));
   WebContentsImpl* web_contents_impl =
@@ -2129,18 +2141,17 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, NavigationPrecedence) {
   GURL portal_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   CreatePortalToUrl(web_contents_impl, portal_url);
 
-  TestNavigationManager pending_back_navigation(web_contents_impl, main_url1);
-  ASSERT_TRUE(web_contents_impl->GetController().CanGoBack());
-  web_contents_impl->GetController().GoBack();
-  EXPECT_TRUE(pending_back_navigation.WaitForRequestStart());
+  TestNavigationManager pending_navigation(web_contents_impl, main_url3);
+  shell()->LoadURL(main_url3);
+  EXPECT_TRUE(pending_navigation.WaitForRequestStart());
 
   EXPECT_EQ("reject", EvalJs(main_frame,
                              "document.querySelector('portal').activate().then("
                              "    () => 'resolve', () => 'reject');",
                              EXECUTE_SCRIPT_NO_USER_GESTURE));
 
-  pending_back_navigation.WaitForNavigationFinished();
-  EXPECT_TRUE(pending_back_navigation.was_successful());
+  pending_navigation.WaitForNavigationFinished();
+  EXPECT_TRUE(pending_navigation.was_successful());
 }
 
 IN_PROC_BROWSER_TEST_F(PortalBrowserTest, RejectActivationOfErrorPages) {

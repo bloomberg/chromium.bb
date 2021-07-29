@@ -79,6 +79,8 @@ class ChromeCleanerRunnerSimpleTest
 
     if (reset_shortcuts_enabled_)
       scoped_feature_list_.InitAndEnableFeature(kResetShortcutsFeature);
+    else
+      scoped_feature_list_.InitAndDisableFeature(kResetShortcutsFeature);
 
     SetChromeCleanerRunnerTestDelegateForTesting(this);
   }
@@ -373,7 +375,6 @@ TEST_P(ChromeCleanerRunnerTest, WithMockCleanerProcess) {
       break;
     default:
       FAIL() << "Invalid crash point";
-      break;
   }
 
   // If the prompt was shown, validate its contents.

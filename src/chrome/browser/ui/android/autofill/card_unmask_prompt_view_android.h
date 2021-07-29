@@ -36,7 +36,6 @@ class CardUnmaskPromptViewAndroid : public CardUnmaskPromptView {
                    const base::android::JavaParamRef<jstring>& cvc,
                    const base::android::JavaParamRef<jstring>& month,
                    const base::android::JavaParamRef<jstring>& year,
-                   jboolean should_store_locally,
                    jboolean enable_fido_auth);
   void OnNewCardLinkClicked(JNIEnv* env,
                             const base::android::JavaParamRef<jobject>& obj);
@@ -47,6 +46,7 @@ class CardUnmaskPromptViewAndroid : public CardUnmaskPromptView {
 
   // CardUnmaskPromptView implementation.
   void Show() override;
+  void Dismiss() override;
   void ControllerGone() override;
   void DisableAndWaitForVerification() override;
   void GotVerificationResult(const std::u16string& error_message,

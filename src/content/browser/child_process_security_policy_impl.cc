@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
@@ -18,11 +19,9 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/isolated_origin_util.h"
@@ -176,8 +175,10 @@ void LogCanAccessDataForOriginCrashKeys(
 // static
 ProcessLock ProcessLock::CreateAllowAnySite(
     const WebExposedIsolationInfo& web_exposed_isolation_info) {
-  return ProcessLock(
-      SiteInfo(GURL(), GURL(), false, web_exposed_isolation_info));
+  return ProcessLock(SiteInfo(
+      GURL(), GURL(), false, web_exposed_isolation_info, /* is_guest */ false,
+      /* does_site_request_dedicated_process_for_coop */ false,
+      /* is_jit_disabled */ false));
 }
 
 // static
@@ -797,8 +798,9 @@ bool ChildProcessSecurityPolicyImpl::IsolatedOriginEntry::
 // time is needed rather than leaving the interval open ended, so that we can
 // enforce a max delay here and in RenderProcessHost. https://crbug.com/1181838
 ChildProcessSecurityPolicyImpl::ChildProcessSecurityPolicyImpl()
-    : browsing_instance_cleanup_delay_in_seconds_(
-          RenderFrameHostImpl::kKeepAliveHandleFactoryTimeoutInSeconds + 2) {
+    : browsing_instance_cleanup_delay_(
+          RenderProcessHostImpl::kKeepAliveHandleFactoryTimeout +
+          base::TimeDelta::FromSeconds(2)) {
   // We know about these schemes and believe them to be safe.
   RegisterWebSafeScheme(url::kHttpScheme);
   RegisterWebSafeScheme(url::kHttpsScheme);
@@ -2352,15 +2354,14 @@ void ChildProcessSecurityPolicyImpl::
         ChildProcessSecurityPolicyImpl::GetInstance();
     policy->RemoveOptInIsolatedOriginsForBrowsingInstanceInternal(id);
   };
-  if (browsing_instance_cleanup_delay_in_seconds_ > 0) {
+  if (browsing_instance_cleanup_delay_ > base::TimeDelta()) {
     // Do the actual state cleanup after posting a task to the IO thread, to
     // give a chance for any last unprocessed tasks to be handled. The cleanup
     // itself locks the data structures and can safely happen from either
     // thread.
     GetIOThreadTaskRunner({})->PostDelayedTask(
         FROM_HERE, base::BindOnce(task_closure, browsing_instance_id),
-        base::TimeDelta::FromSeconds(
-            browsing_instance_cleanup_delay_in_seconds_));
+        browsing_instance_cleanup_delay_);
   } else {
     // Since this is just used in tests, it's ok to do it on either thread.
     task_closure(browsing_instance_id);

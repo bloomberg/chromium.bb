@@ -21,7 +21,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -327,7 +326,7 @@ int MoveTabToWindow(ExtensionFunction* function,
   }
 
   std::unique_ptr<content::WebContents> web_contents =
-      source_tab_strip->DetachWebContentsAt(source_index);
+      source_tab_strip->DetachWebContentsAtForInsertion(source_index);
   if (!web_contents) {
     *error = ErrorUtils::FormatErrorMessage(tabs_constants::kTabNotFoundError,
                                             base::NumberToString(tab_id));
@@ -705,7 +704,7 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
   if (window_type == Browser::TYPE_NORMAL || urls.empty()) {
     if (source_tab_strip) {
       std::unique_ptr<content::WebContents> detached_tab =
-          source_tab_strip->DetachWebContentsAt(tab_index);
+          source_tab_strip->DetachWebContentsAtForInsertion(tab_index);
       contents = detached_tab.get();
       TabStripModel* target_tab_strip =
           ExtensionTabUtil::GetEditableTabStripModel(new_window);
@@ -1085,7 +1084,7 @@ ExtensionFunction::ResponseAction TabsQueryFunction::Run() {
 
       if (group_id.has_value()) {
         absl::optional<tab_groups::TabGroupId> group =
-            tab_strip->GetTabGroupForTab(index);
+            tab_strip->GetTabGroupForTab(i);
         if (group_id.value() == -1) {
           if (group.has_value())
             continue;
@@ -1168,6 +1167,8 @@ ExtensionFunction::ResponseAction TabsCreateFunction::Run() {
   std::unique_ptr<tabs::Create::Params> params(
       tabs::Create::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
+  if (!ExtensionTabUtil::IsTabStripEditable())
+    return RespondNow(Error(tabs_constants::kTabStripNotEditableError));
 
   ExtensionTabUtil::OpenTabParams options;
   AssignOptionalValue(params->create_properties.window_id, &options.window_id);
@@ -1197,6 +1198,8 @@ ExtensionFunction::ResponseAction TabsDuplicateFunction::Run() {
   std::unique_ptr<tabs::Duplicate::Params> params(
       tabs::Duplicate::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
+  if (!ExtensionTabUtil::IsTabStripEditable())
+    return RespondNow(Error(tabs_constants::kTabStripNotEditableError));
   int tab_id = params->tab_id;
 
   Browser* browser = NULL;
@@ -1558,7 +1561,7 @@ ExtensionFunction::ResponseAction TabsMoveFunction::Run() {
 
   int new_index = params->move_properties.index;
   int* window_id = params->move_properties.window_id.get();
-  std::unique_ptr<base::ListValue> tab_values(new base::ListValue());
+  base::ListValue tab_values;
 
   size_t num_tabs = 0;
   std::string error;
@@ -1566,13 +1569,13 @@ ExtensionFunction::ResponseAction TabsMoveFunction::Run() {
     std::vector<int>& tab_ids = *params->tab_ids.as_integers;
     num_tabs = tab_ids.size();
     for (int tab_id : tab_ids) {
-      if (!MoveTab(tab_id, &new_index, tab_values.get(), window_id, &error))
+      if (!MoveTab(tab_id, &new_index, &tab_values, window_id, &error))
         return RespondNow(Error(std::move(error)));
     }
   } else {
     EXTENSION_FUNCTION_VALIDATE(params->tab_ids.as_integer);
     num_tabs = 1;
-    if (!MoveTab(*params->tab_ids.as_integer, &new_index, tab_values.get(),
+    if (!MoveTab(*params->tab_ids.as_integer, &new_index, &tab_values,
                  window_id, &error)) {
       return RespondNow(Error(std::move(error)));
     }
@@ -1586,15 +1589,12 @@ ExtensionFunction::ResponseAction TabsMoveFunction::Run() {
   if (num_tabs == 0)
     return RespondNow(Error("No tabs given."));
   if (num_tabs == 1) {
-    std::unique_ptr<base::Value> value;
-    CHECK(tab_values->Remove(0, &value));
-    return RespondNow(
-        OneArgument(base::Value::FromUniquePtrValue(std::move(value))));
+    CHECK_EQ(1u, tab_values.GetList().size());
+    return RespondNow(OneArgument(std::move(tab_values.GetList()[0])));
   }
 
   // Return the results as an array if there are multiple tabs.
-  return RespondNow(
-      OneArgument(base::Value::FromUniquePtrValue(std::move(tab_values))));
+  return RespondNow(OneArgument(std::move(tab_values)));
 }
 
 bool TabsMoveFunction::MoveTab(int tab_id,

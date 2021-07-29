@@ -69,14 +69,14 @@ namespace {
             [[stage(vertex)]]
             fn main([[builtin(vertex_index)]] VertexIndex : u32) -> VertexOut {
                 var output : VertexOut;
-                let pos : array<vec2<f32>, 6> = array<vec2<f32>, 6>(
+                var pos = array<vec2<f32>, 6>(
                                             vec2<f32>(-2., -2.),
                                             vec2<f32>(-2.,  2.),
                                             vec2<f32>( 2., -2.),
                                             vec2<f32>(-2.,  2.),
                                             vec2<f32>( 2., -2.),
                                             vec2<f32>( 2.,  2.));
-                let texCoord : array<vec2<f32>, 6> = array<vec2<f32>, 6>(
+                var texCoord = array<vec2<f32>, 6>(
                                                  vec2<f32>(0., 0.),
                                                  vec2<f32>(0., 1.),
                                                  vec2<f32>(1., 0.),
@@ -170,12 +170,12 @@ class TextureViewSamplingTest : public DawnTest {
     void Verify(const wgpu::TextureView& textureView, const char* fragmentShader, int expected) {
         wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, fragmentShader);
 
-        utils::ComboRenderPipelineDescriptor2 textureDescriptor;
+        utils::ComboRenderPipelineDescriptor textureDescriptor;
         textureDescriptor.vertex.module = mVSModule;
         textureDescriptor.cFragment.module = fsModule;
         textureDescriptor.cTargets[0].format = mRenderPass.colorFormat;
 
-        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&textureDescriptor);
+        wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&textureDescriptor);
 
         wgpu::BindGroup bindGroup = utils::MakeBindGroup(device, pipeline.GetBindGroupLayout(0),
                                                          {{0, mSampler}, {1, textureView}});
@@ -204,7 +204,7 @@ class TextureViewSamplingTest : public DawnTest {
                            uint32_t textureViewBaseLayer,
                            uint32_t textureViewBaseMipLevel) {
         // TODO(crbug.com/dawn/593): This test requires glTextureView, which is unsupported on GLES.
-        DAWN_SKIP_TEST_IF(IsOpenGLES());
+        DAWN_TEST_UNSUPPORTED_IF(IsOpenGLES());
         ASSERT(textureViewBaseLayer < textureArrayLayers);
         ASSERT(textureViewBaseMipLevel < textureMipLevels);
 
@@ -237,7 +237,7 @@ class TextureViewSamplingTest : public DawnTest {
                                 uint32_t textureViewBaseLayer,
                                 uint32_t textureViewBaseMipLevel) {
         // TODO(crbug.com/dawn/593): This test requires glTextureView, which is unsupported on GLES.
-        DAWN_SKIP_TEST_IF(IsOpenGLES());
+        DAWN_TEST_UNSUPPORTED_IF(IsOpenGLES());
         ASSERT(textureViewBaseLayer < textureArrayLayers);
         ASSERT(textureViewBaseMipLevel < textureMipLevels);
 
@@ -318,7 +318,7 @@ class TextureViewSamplingTest : public DawnTest {
                             bool isCubeMapArray) {
         // TODO(crbug.com/dawn/600): In OpenGL ES, cube map textures cannot be treated as arrays
         // of 2D textures. Find a workaround.
-        DAWN_SKIP_TEST_IF(IsOpenGLES());
+        DAWN_TEST_UNSUPPORTED_IF(IsOpenGLES());
         constexpr uint32_t kMipLevels = 1u;
         initTexture(textureArrayLayers, kMipLevels);
 
@@ -355,13 +355,15 @@ class TextureViewSamplingTest : public DawnTest {
 // Test drawing a rect with a 2D array texture.
 TEST_P(TextureViewSamplingTest, Default2DArrayTexture) {
     // TODO(cwallez@chromium.org) understand what the issue is
-    DAWN_SKIP_TEST_IF(IsVulkan() && IsNvidia());
+    DAWN_SUPPRESS_TEST_IF(IsVulkan() && IsNvidia());
 
     constexpr uint32_t kLayers = 3;
     constexpr uint32_t kMipLevels = 1;
     initTexture(kLayers, kMipLevels);
 
-    wgpu::TextureView textureView = mTexture.CreateView();
+    wgpu::TextureViewDescriptor descriptor;
+    descriptor.dimension = wgpu::TextureViewDimension::e2DArray;
+    wgpu::TextureView textureView = mTexture.CreateView(&descriptor);
 
     const char* fragmentShader = R"(
             [[group(0), binding(0)]] var sampler0 : sampler;
@@ -387,7 +389,7 @@ TEST_P(TextureViewSamplingTest, Texture2DViewOn2DArrayTexture) {
 
 // Test sampling from a 2D array texture view created on a 2D array texture.
 TEST_P(TextureViewSamplingTest, Texture2DArrayViewOn2DArrayTexture) {
-    DAWN_SKIP_TEST_IF(IsMetal() && IsIntel());
+    DAWN_SUPPRESS_TEST_IF(IsMetal() && IsIntel());
     Texture2DArrayViewTest(6, 1, 2, 0);
 }
 
@@ -403,7 +405,7 @@ TEST_P(TextureViewSamplingTest, Texture2DViewOnOneLevelOf2DArrayTexture) {
 
 // Test sampling from a 2D array texture view created on a mipmap level of a 2D array texture.
 TEST_P(TextureViewSamplingTest, Texture2DArrayViewOnOneLevelOf2DArrayTexture) {
-    DAWN_SKIP_TEST_IF(IsMetal() && IsIntel());
+    DAWN_SUPPRESS_TEST_IF(IsMetal() && IsIntel());
     Texture2DArrayViewTest(6, 6, 2, 4);
 }
 
@@ -435,7 +437,7 @@ TEST_P(TextureViewSamplingTest, TextureCubeMapArrayOnWholeTexture) {
 TEST_P(TextureViewSamplingTest, TextureCubeMapArrayViewOnPartOfTexture) {
     // Test failing on the GPU FYI Mac Pro (AMD), see
     // https://bugs.chromium.org/p/dawn/issues/detail?id=58
-    DAWN_SKIP_TEST_IF(IsMacOS() && IsMetal() && IsAMD());
+    DAWN_SUPPRESS_TEST_IF(IsMacOS() && IsMetal() && IsAMD());
 
     TextureCubeMapTest(20, 3, 12, true);
 }
@@ -445,7 +447,7 @@ TEST_P(TextureViewSamplingTest, TextureCubeMapArrayViewOnPartOfTexture) {
 TEST_P(TextureViewSamplingTest, TextureCubeMapArrayViewCoveringLastLayer) {
     // Test failing on the GPU FYI Mac Pro (AMD), see
     // https://bugs.chromium.org/p/dawn/issues/detail?id=58
-    DAWN_SKIP_TEST_IF(IsMacOS() && IsMetal() && IsAMD());
+    DAWN_SUPPRESS_TEST_IF(IsMacOS() && IsMetal() && IsAMD());
 
     constexpr uint32_t kTotalLayers = 20;
     constexpr uint32_t kBaseLayer = 8;
@@ -456,7 +458,7 @@ TEST_P(TextureViewSamplingTest, TextureCubeMapArrayViewCoveringLastLayer) {
 TEST_P(TextureViewSamplingTest, TextureCubeMapArrayViewSingleCubeMap) {
     // Test failing on the GPU FYI Mac Pro (AMD), see
     // https://bugs.chromium.org/p/dawn/issues/detail?id=58
-    DAWN_SKIP_TEST_IF(IsMacOS() && IsMetal() && IsAMD());
+    DAWN_SUPPRESS_TEST_IF(IsMacOS() && IsMetal() && IsAMD());
 
     TextureCubeMapTest(20, 7, 6, true);
 }
@@ -503,12 +505,12 @@ class TextureViewRenderingTest : public DawnTest {
         wgpu::ShaderModule oneColorFsModule =
             utils::CreateShaderModule(device, oneColorFragmentShader);
 
-        utils::ComboRenderPipelineDescriptor2 pipelineDescriptor;
+        utils::ComboRenderPipelineDescriptor pipelineDescriptor;
         pipelineDescriptor.vertex.module = vsModule;
         pipelineDescriptor.cFragment.module = oneColorFsModule;
         pipelineDescriptor.cTargets[0].format = kDefaultFormat;
 
-        wgpu::RenderPipeline oneColorPipeline = device.CreateRenderPipeline2(&pipelineDescriptor);
+        wgpu::RenderPipeline oneColorPipeline = device.CreateRenderPipeline(&pipelineDescriptor);
 
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
         {

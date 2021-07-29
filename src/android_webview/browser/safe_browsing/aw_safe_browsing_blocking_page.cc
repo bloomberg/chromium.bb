@@ -16,11 +16,11 @@
 #include "base/metrics/histogram_macros.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/content/browser/threat_details.h"
+#include "components/safe_browsing/content/browser/triggers/trigger_manager.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/common/safebrowsing_constants.h"
 #include "components/safe_browsing/core/common/utils.h"
-#include "components/safe_browsing/core/features.h"
-#include "components/safe_browsing/core/triggers/trigger_manager.h"
 #include "components/security_interstitials/content/security_interstitial_controller_client.h"
 #include "components/security_interstitials/content/settings_page_helper.h"
 #include "components/security_interstitials/content/unsafe_resource_util.h"
@@ -56,8 +56,6 @@ AwSafeBrowsingBlockingPage::AwSafeBrowsingBlockingPage(
                        display_options),
       threat_details_in_progress_(false),
       resource_request_(std::move(resource_request)) {
-  UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.Interstitial.Type", errorUiType,
-                            ErrorUiType::COUNT);
   if (errorUiType == ErrorUiType::QUIET_SMALL ||
       errorUiType == ErrorUiType::QUIET_GIANT) {
     set_sb_error_ui(std::make_unique<SafeBrowsingQuietErrorUI>(
@@ -84,6 +82,7 @@ AwSafeBrowsingBlockingPage::AwSafeBrowsingBlockingPage(
                 safe_browsing::TriggerType::SECURITY_INTERSTITIAL, web_contents,
                 unsafe_resources[0], url_loader_factory,
                 /*history_service*/ nullptr,
+                /*referrer_chain_provider*/ nullptr,
                 sb_error_ui()->get_error_display_options());
   }
 }

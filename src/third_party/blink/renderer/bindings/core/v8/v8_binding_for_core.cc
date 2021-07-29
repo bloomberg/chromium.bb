@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer_view.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_element.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_event_target.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_html_link_element.h"
@@ -780,8 +779,7 @@ v8::Local<v8::Context> ToV8ContextEvenIfDetached(LocalFrame* frame,
 ScriptState* ToScriptState(ExecutionContext* context, DOMWrapperWorld& world) {
   DCHECK(context);
   if (LocalDOMWindow* window = DynamicTo<LocalDOMWindow>(context)) {
-    if (LocalFrame* frame = window->GetFrame())
-      return ToScriptState(frame, world);
+    return ToScriptState(window->GetFrame(), world);
   } else if (auto* scope = DynamicTo<WorkerOrWorkletGlobalScope>(context)) {
     if (WorkerOrWorkletScriptController* script = scope->ScriptController())
       return script->GetScriptState();
@@ -790,6 +788,8 @@ ScriptState* ToScriptState(ExecutionContext* context, DOMWrapperWorld& world) {
 }
 
 ScriptState* ToScriptState(LocalFrame* frame, DOMWrapperWorld& world) {
+  if (!frame)
+    return nullptr;
   v8::HandleScope handle_scope(ToIsolate(frame));
   return ToScriptStateImpl(frame, world);
 }

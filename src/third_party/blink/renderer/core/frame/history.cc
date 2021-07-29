@@ -211,13 +211,13 @@ void History::pushState(v8::Isolate* isolate,
                         const String& url,
                         ExceptionState& exception_state) {
   WebFrameLoadType load_type = WebFrameLoadType::kStandard;
-  // Navigations in portal contexts do not create back/forward entries.
-  if (DomWindow() && DomWindow()->GetFrame()->GetPage()->InsidePortal()) {
+  if (DomWindow() &&
+      DomWindow()->GetFrame()->ShouldMaintainTrivialSessionHistory()) {
     DomWindow()->AddConsoleMessage(
         MakeGarbageCollected<ConsoleMessage>(
-            mojom::ConsoleMessageSource::kJavaScript,
-            mojom::ConsoleMessageLevel::kWarning,
-            "Use of history.pushState in a portal context "
+            mojom::blink::ConsoleMessageSource::kJavaScript,
+            mojom::blink::ConsoleMessageLevel::kWarning,
+            "Use of history.pushState in a prerender context "
             "is treated as history.replaceState."),
         /* discard_duplicates */ true);
     load_type = WebFrameLoadType::kReplaceCurrentItem;
@@ -302,15 +302,17 @@ void History::StateObjectAdded(
   }
 
   if (auto* app_history = AppHistory::appHistory(*DomWindow())) {
-    if (!app_history->DispatchNavigateEvent(
+    if (app_history->DispatchNavigateEvent(
             full_url, nullptr, NavigateEventType::kHistoryApi, type,
-            UserNavigationInvolvement::kNone, data.get())) {
+            UserNavigationInvolvement::kNone,
+            data.get()) != AppHistory::DispatchResult::kContinue) {
       return;
     }
   }
 
   DomWindow()->document()->Loader()->RunURLAndHistoryUpdateSteps(
-      full_url, std::move(data), type, restoration_type);
+      full_url, kSameDocumentNavigationHistoryApi, std::move(data), type,
+      restoration_type);
 }
 
 }  // namespace blink

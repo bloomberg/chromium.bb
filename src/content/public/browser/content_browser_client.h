@@ -103,6 +103,7 @@ struct WebPreferences;
 class AssociatedInterfaceRegistry;
 struct NavigationDownloadPolicy;
 struct RendererPreferences;
+class StorageKey;
 class URLLoaderThrottle;
 }  // namespace blink
 
@@ -184,7 +185,6 @@ class Origin;
 
 namespace storage {
 class FileSystemBackend;
-class StorageKey;
 }  // namespace storage
 
 namespace content {
@@ -229,7 +229,7 @@ class WebAuthenticationDelegate;
 class WebContents;
 class WebContentsViewDelegate;
 class XrIntegrationClient;
-struct GlobalFrameRoutingId;
+struct GlobalRenderFrameHostId;
 struct GlobalRequestID;
 struct MainFunctionParams;
 struct OpenURLParams;
@@ -497,15 +497,7 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Allows the embedder to override parameters when navigating. Called for both
   // opening new URLs and when transferring URLs across processes.
-  // |web_contents| is the WebContents the navigation will occur in, which is
-  // not necessarily the WebContents the navigation was initiated from. For
-  // example, a popup results in a new WebContents. In some situations
-  // |web_contents| is null. This generally only occurs when code outside of
-  // content triggers this function, such as restore.
-  // WARNING: |web_contents| is temporary, and will be removed. See
-  // https://crbug.com/1141501.
   virtual void OverrideNavigationParams(
-      WebContents* web_contents,
       SiteInstance* site_instance,
       ui::PageTransition* transition,
       bool* is_renderer_initiated,
@@ -692,7 +684,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       const GURL& site_for_cookies,
       const absl::optional<url::Origin>& top_frame_origin,
       const std::string& name,
-      const storage::StorageKey& storage_key,
+      const blink::StorageKey& storage_key,
       BrowserContext* context,
       int render_process_id,
       int render_frame_id);
@@ -721,7 +713,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void AllowWorkerFileSystem(
       const GURL& url,
       BrowserContext* browser_context,
-      const std::vector<GlobalFrameRoutingId>& render_frames,
+      const std::vector<GlobalRenderFrameHostId>& render_frames,
       base::OnceCallback<void(bool)> callback);
 
   // Allow the embedder to control if access to IndexedDB by a shared worker
@@ -729,21 +721,21 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual bool AllowWorkerIndexedDB(
       const GURL& url,
       BrowserContext* browser_context,
-      const std::vector<GlobalFrameRoutingId>& render_frames);
+      const std::vector<GlobalRenderFrameHostId>& render_frames);
 
   // Allow the embedder to control if access to Web Locks by a shared worker
   // is allowed.
   virtual bool AllowWorkerWebLocks(
       const GURL& url,
       BrowserContext* browser_context,
-      const std::vector<GlobalFrameRoutingId>& render_frames);
+      const std::vector<GlobalRenderFrameHostId>& render_frames);
 
   // Allow the embedder to control if access to CacheStorage by a shared worker
   // is allowed.
   virtual bool AllowWorkerCacheStorage(
       const GURL& url,
       BrowserContext* browser_context,
-      const std::vector<GlobalFrameRoutingId>& render_frames);
+      const std::vector<GlobalRenderFrameHostId>& render_frames);
 
   // Allow the embedder to control whether we can use Web Bluetooth.
   // TODO(crbug.com/589228): Replace this with a use of the permission system.
@@ -780,30 +772,24 @@ class CONTENT_EXPORT ContentBrowserClient {
       const url::Origin& top_frame_origin,
       const GURL& api_url);
 
-  // Returns whether conversion measurement is allowed anywhere in
-  // |browser_context|. Returns false if Conversion Measurement is not allowed
-  // by default on any origin.
-  virtual bool IsConversionMeasurementAllowed(
-      content::BrowserContext* browser_context);
-
   enum class ConversionMeasurementOperation {
     kImpression,
     kConversion,
     kReport,
+    kAny,
   };
 
   // Allows the embedder to control if conversion measurement API operations can
   // happen in a given context. Origins must be provided for a given operation
   // as follows:
-  //   - kImpression must provide a non-null `impression_origin` and
+  //   - `kImpression` must provide a non-null `impression_origin` and
   //   `reporting_origin`
-  //   - kConversion must provide a non-null `conversion_origin` and
+  //   - `kConversion` must provide a non-null `conversion_origin` and
   //   `reporting_origin`
-  //   - kReport must provide all non-null origins
-  //
-  // When gating an operation, this should not be checked in conjunction with
-  // `IsConversionMeasurementAllowed()`, as the API may not be allowed by
-  // default, but allowed in a specific context due to an exception rule.
+  //   - `kReport` must provide all non-null origins
+  //   - `kAny` may provide all null origins. It checks whether conversion
+  //   measurement is allowed anywhere in `browser_context`, returning false if
+  //   conversion measurement is not allowed by default on any origin.
   virtual bool IsConversionMeasurementOperationAllowed(
       content::BrowserContext* browser_context,
       ConversionMeasurementOperation operation,
@@ -1243,6 +1229,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   // an AppContainer. Called on PROCESS_LAUNCHER thread.
   virtual std::wstring GetAppContainerSidForSandboxType(
       sandbox::policy::SandboxType sandbox_type);
+
+  // Returns the LPAC capability name to use for file data that the network
+  // service needs to access to when running within LPAC sandbox. Embedders
+  // should override this with their own unique name to ensure security of the
+  // network service data.
+  virtual std::wstring GetLPACCapabilityNameForNetworkService();
 
   // Returns whether renderer code integrity is enabled.
   // This is called on the UI thread.
@@ -1760,7 +1752,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // decisions about whether to allow an external application to launch.
   virtual bool HandleExternalProtocol(
       const GURL& url,
-      base::OnceCallback<WebContents*()> web_contents_getter,
+      base::RepeatingCallback<WebContents*()> web_contents_getter,
       int child_id,
       int frame_tree_node_id,
       NavigationUIData* navigation_data,
@@ -1882,6 +1874,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Creates the TtsEnvironmentAndroid. A return value of null results in using
   // a default implementation.
   virtual std::unique_ptr<TtsEnvironmentAndroid> CreateTtsEnvironmentAndroid();
+
+  // If enabled, DialogOverlays will observe the container view for location
+  // changes and reposition themselves automatically. Note that this comes with
+  // some overhead and should only be enabled if the embedder itself can be
+  // moved. Defaults to false.
+  virtual bool ShouldObserveContainerViewLocationForDialogOverlays();
 #endif
 
   // Obtains the list of MIME types that are for plugins with external handlers.
@@ -1926,7 +1924,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       const GURL& site_for_cookies,
       const absl::optional<url::Origin>& top_frame_origin);
 
-  // Requests an SMS from |origin| from a remote device with telephony
+  // Requests an SMS from |origin_list| from a remote device with telephony
   // capabilities, for example the user's mobile phone. Callbacks |callback|
   // with the origins and one-time-code from the SMS upon success or a failure
   // type on error. The returned callback cancels receiving of the response.
@@ -1935,7 +1933,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // is disabled.
   virtual base::OnceClosure FetchRemoteSms(
       content::WebContents* web_contents,
-      const url::Origin& origin,
+      const std::vector<url::Origin>& origin_list,
       base::OnceCallback<void(absl::optional<std::vector<url::Origin>>,
                               absl::optional<std::string>,
                               absl::optional<content::SmsFetchFailureType>)>
@@ -2024,6 +2022,14 @@ class CONTENT_EXPORT ContentBrowserClient {
       BrowserContext* browser_context,
       const url::Origin& origin);
 
+  // Whether the JIT should be disabled for the given |browser_context| and
+  // |site_url|. Pass an empty GURL for |site_url| to get the default JIT policy
+  // for the current |browser_context|.
+  // |site_url| should not be resolved to an effective URL before passing to
+  // this function.
+  virtual bool IsJitDisabledForSite(BrowserContext* browser_context,
+                                    const GURL& site_url);
+
   // Returns the URL-Keyed Metrics service for chrome:ukm.
   virtual ukm::UkmService* GetUkmService();
 
@@ -2065,6 +2071,17 @@ class CONTENT_EXPORT ContentBrowserClient {
   // `render_frame_host`.
   virtual std::unique_ptr<SpeculationHostDelegate>
   CreateSpeculationHostDelegate(RenderFrameHost& render_frame_host);
+
+  // Allows the embedder to show a dialog that will be used to control whether a
+  // connection through the Direct Sockets API is permitted. If the connection
+  // is permitted, the remote address and port that the user input will be sent
+  // back to the caller through callback.
+  virtual void ShowDirectSocketsConnectionDialog(
+      RenderFrameHost* owner,
+      const std::string& address,
+      base::OnceCallback<void(bool accepted,
+                              const std::string& address,
+                              const std::string& port)> callback);
 };
 
 }  // namespace content

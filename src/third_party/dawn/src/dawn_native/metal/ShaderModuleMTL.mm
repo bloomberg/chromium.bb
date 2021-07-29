@@ -55,41 +55,79 @@ namespace dawn_native { namespace metal {
         const char* entryPointName,
         SingleShaderStage stage,
         const PipelineLayout* layout,
-        // TODO(crbug.com/tint/387): AND in a fixed sample mask in the shader.
         uint32_t sampleMask,
         const RenderPipeline* renderPipeline,
         const VertexState* vertexState,
         std::string* remappedEntryPointName,
-        bool* needsStorageBufferLength) {
-        // TODO(crbug.com/tint/256): Set this accordingly if arrayLength(..) is used.
-        *needsStorageBufferLength = false;
-
+        bool* needsStorageBufferLength,
+        bool* hasInvariantAttribute) {
         ScopedTintICEHandler scopedICEHandler(GetDevice());
 
         std::ostringstream errorStream;
         errorStream << "Tint MSL failure:" << std::endl;
+
+        // Remap BindingNumber to BindingIndex in WGSL shader
+        using BindingRemapper = tint::transform::BindingRemapper;
+        using BindingPoint = tint::transform::BindingPoint;
+        BindingRemapper::BindingPoints bindingPoints;
+        BindingRemapper::AccessControls accessControls;
+
+        for (BindGroupIndex group : IterateBitSet(layout->GetBindGroupLayoutsMask())) {
+            const BindGroupLayoutBase::BindingMap& bindingMap =
+                layout->GetBindGroupLayout(group)->GetBindingMap();
+            for (const auto& it : bindingMap) {
+                BindingNumber bindingNumber = it.first;
+                BindingIndex bindingIndex = it.second;
+
+                const BindingInfo& bindingInfo =
+                    layout->GetBindGroupLayout(group)->GetBindingInfo(bindingIndex);
+
+                if (!(bindingInfo.visibility & StageBit(stage))) {
+                    continue;
+                }
+
+                uint32_t shaderIndex = layout->GetBindingIndexInfo(stage)[group][bindingIndex];
+
+                BindingPoint srcBindingPoint{static_cast<uint32_t>(group),
+                                             static_cast<uint32_t>(bindingNumber)};
+                BindingPoint dstBindingPoint{0, shaderIndex};
+                if (srcBindingPoint != dstBindingPoint) {
+                    bindingPoints.emplace(srcBindingPoint, dstBindingPoint);
+                }
+            }
+        }
 
         tint::transform::Manager transformManager;
         tint::transform::DataMap transformInputs;
 
         if (stage == SingleShaderStage::Vertex &&
             GetDevice()->IsToggleEnabled(Toggle::MetalEnableVertexPulling)) {
+            transformManager.Add<tint::transform::VertexPulling>();
             AddVertexPullingTransformConfig(*vertexState, entryPointName, kPullingBufferBindingSet,
                                             &transformInputs);
 
             for (VertexBufferSlot slot :
                  IterateBitSet(renderPipeline->GetVertexBufferSlotsUsed())) {
                 uint32_t metalIndex = renderPipeline->GetMtlVertexBufferIndex(slot);
-                DAWN_UNUSED(metalIndex);
-                // TODO(crbug.com/tint/104): Tell Tint to map (kPullingBufferBindingSet, slot) to
-                // this MSL buffer index.
+
+                // Tell Tint to map (kPullingBufferBindingSet, slot) to this MSL buffer index.
+                BindingPoint srcBindingPoint{static_cast<uint32_t>(kPullingBufferBindingSet),
+                                             static_cast<uint8_t>(slot)};
+                BindingPoint dstBindingPoint{0, metalIndex};
+                if (srcBindingPoint != dstBindingPoint) {
+                    bindingPoints.emplace(srcBindingPoint, dstBindingPoint);
+                }
             }
         }
         if (GetDevice()->IsRobustnessEnabled()) {
             transformManager.Add<tint::transform::BoundArrayAccessors>();
         }
+        transformManager.Add<tint::transform::BindingRemapper>();
         transformManager.Add<tint::transform::Renamer>();
-        transformManager.Add<tint::transform::Msl>();
+
+        transformInputs.Add<BindingRemapper::Remappings>(std::move(bindingPoints),
+                                                         std::move(accessControls),
+                                                         /* mayCollide */ true);
 
         tint::Program program;
         tint::transform::DataMap transformOutputs;
@@ -106,14 +144,19 @@ namespace dawn_native { namespace metal {
             return DAWN_VALIDATION_ERROR("Transform output missing renamer data.");
         }
 
-        tint::writer::msl::Generator generator(&program);
-        if (!generator.Generate()) {
-            errorStream << "Generator: " << generator.error() << std::endl;
+        tint::writer::msl::Options options;
+        options.buffer_size_ubo_index = kBufferLengthBufferSlot;
+        options.fixed_sample_mask = sampleMask;
+        auto result = tint::writer::msl::Generate(&program, options);
+        if (!result.success) {
+            errorStream << "Generator: " << result.error << std::endl;
             return DAWN_VALIDATION_ERROR(errorStream.str().c_str());
         }
 
-        std::string msl = generator.result();
-        return std::move(msl);
+        *needsStorageBufferLength = result.needs_storage_buffer_sizes;
+        *hasInvariantAttribute = result.has_invariant_attribute;
+
+        return std::move(result.msl);
     }
 
     ResultOrError<std::string> ShaderModule::TranslateToMSLWithSPIRVCross(
@@ -244,11 +287,12 @@ namespace dawn_native { namespace metal {
 
         std::string remappedEntryPointName;
         std::string msl;
+        bool hasInvariantAttribute = false;
         if (GetDevice()->IsToggleEnabled(Toggle::UseTintGenerator)) {
-            DAWN_TRY_ASSIGN(
-                msl, TranslateToMSLWithTint(entryPointName, stage, layout, sampleMask,
-                                            renderPipeline, vertexState, &remappedEntryPointName,
-                                            &out->needsStorageBufferLength));
+            DAWN_TRY_ASSIGN(msl, TranslateToMSLWithTint(
+                                     entryPointName, stage, layout, sampleMask, renderPipeline,
+                                     vertexState, &remappedEntryPointName,
+                                     &out->needsStorageBufferLength, &hasInvariantAttribute));
         } else {
             DAWN_TRY_ASSIGN(msl, TranslateToMSLWithSPIRVCross(entryPointName, stage, layout,
                                                               sampleMask, renderPipeline,
@@ -266,13 +310,25 @@ namespace dawn_native { namespace metal {
 #endif
 )" + msl;
 
+        if (GetDevice()->IsToggleEnabled(Toggle::DumpShaders)) {
+            std::ostringstream dumpedMsg;
+            dumpedMsg << "/* Dumped generated MSL */" << std::endl << msl;
+            GetDevice()->EmitLog(WGPULoggingType_Info, dumpedMsg.str().c_str());
+        }
+
         NSRef<NSString> mslSource = AcquireNSRef([[NSString alloc] initWithUTF8String:msl.c_str()]);
 
+        NSRef<MTLCompileOptions> compileOptions = AcquireNSRef([[MTLCompileOptions alloc] init]);
+        if (hasInvariantAttribute) {
+            if (@available(macOS 11.0, iOS 13.0, *)) {
+                (*compileOptions).preserveInvariance = true;
+            }
+        }
         auto mtlDevice = ToBackend(GetDevice())->GetMTLDevice();
         NSError* error = nullptr;
         NSPRef<id<MTLLibrary>> library =
             AcquireNSPRef([mtlDevice newLibraryWithSource:mslSource.Get()
-                                                  options:nullptr
+                                                  options:compileOptions.Get()
                                                     error:&error]);
         if (error != nullptr) {
             if (error.code != MTLLibraryErrorCompileWarning) {

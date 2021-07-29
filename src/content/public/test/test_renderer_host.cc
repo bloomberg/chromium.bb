@@ -80,8 +80,8 @@ void RenderFrameHostTester::CommitPendingLoad(
   // (rather than WebContentsImpl directly). It is not trivial to make
   // that change, so for now we have this extra function for
   // non-TestWebContents.
-  auto navigation =
-      NavigationSimulator::CreateFromPending(controller->GetWebContents());
+  auto navigation = NavigationSimulator::CreateFromPending(
+      controller->DeprecatedGetWebContents());
   navigation->Commit();
 }
 
@@ -90,13 +90,6 @@ void RenderFrameHostTester::CommitPendingLoad(
 // static
 RenderViewHostTester* RenderViewHostTester::For(RenderViewHost* host) {
   return static_cast<TestRenderViewHost*>(host);
-}
-
-// static
-void RenderViewHostTester::SimulateFirstPaint(RenderViewHost* rvh) {
-  static_cast<RenderViewHostImpl*>(rvh)
-      ->GetWidget()
-      ->DidFirstVisuallyNonEmptyPaint();
 }
 
 // static
@@ -180,26 +173,11 @@ WebContents* RenderViewHostTestHarness::web_contents() {
 }
 
 RenderViewHost* RenderViewHostTestHarness::rvh() {
-  RenderViewHost* result = web_contents()->GetMainFrame()->GetRenderViewHost();
-  CHECK_EQ(result, web_contents()->GetMainFrame()->GetRenderViewHost());
-  return result;
-}
-
-RenderViewHost* RenderViewHostTestHarness::pending_rvh() {
-  return pending_main_rfh() ? pending_main_rfh()->GetRenderViewHost() : nullptr;
-}
-
-RenderViewHost* RenderViewHostTestHarness::active_rvh() {
-  return pending_rvh() ? pending_rvh() : rvh();
+  return web_contents()->GetMainFrame()->GetRenderViewHost();
 }
 
 RenderFrameHost* RenderViewHostTestHarness::main_rfh() {
   return web_contents()->GetMainFrame();
-}
-
-RenderFrameHost* RenderViewHostTestHarness::pending_main_rfh() {
-  return static_cast<TestWebContents*>(web_contents())
-      ->GetSpeculativePrimaryMainFrame();
 }
 
 BrowserContext* RenderViewHostTestHarness::browser_context() {
@@ -207,7 +185,8 @@ BrowserContext* RenderViewHostTestHarness::browser_context() {
 }
 
 MockRenderProcessHost* RenderViewHostTestHarness::process() {
-  return static_cast<MockRenderProcessHost*>(active_rvh()->GetProcess());
+  auto* contents = static_cast<TestWebContents*>(web_contents());
+  return contents->GetMainFrame()->GetProcess();
 }
 
 void RenderViewHostTestHarness::DeleteContents() {

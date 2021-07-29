@@ -28,6 +28,7 @@
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/variations/entropy_provider.h"
+#include "components/variations/scoped_variations_ids_provider.h"
 #include "components/variations/variations_associated_data.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -38,8 +39,9 @@ namespace {
 class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
  public:
   FakeAutocompleteProviderClient()
-      : template_url_service_(new TemplateURLService(nullptr, 0)) {
-    pref_service_.registry()->RegisterStringPref(
+      : template_url_service_(new TemplateURLService(nullptr, 0)),
+        pref_service_(new TestingPrefServiceSimple()) {
+    pref_service_->registry()->RegisterStringPref(
         omnibox::kZeroSuggestCachedResults, std::string());
   }
   FakeAutocompleteProviderClient(const FakeAutocompleteProviderClient&) =
@@ -57,7 +59,7 @@ class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
     return template_url_service_.get();
   }
 
-  PrefService* GetPrefs() override { return &pref_service_; }
+  PrefService* GetPrefs() const override { return pref_service_.get(); }
 
   bool IsPersonalizedUrlDataCollectionActive() const override { return true; }
 
@@ -79,7 +81,7 @@ class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
 
  private:
   std::unique_ptr<TemplateURLService> template_url_service_;
-  TestingPrefServiceSimple pref_service_;
+  std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   TestSchemeClassifier scheme_classifier_;
 };
 }  // namespace
@@ -96,12 +98,6 @@ class ZeroSuggestProviderTest : public testing::Test,
  protected:
   // AutocompleteProviderListener:
   void OnProviderUpdate(bool updated_matches) override;
-
-  base::test::SingleThreadTaskEnvironment task_environment_;
-  std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
-
-  std::unique_ptr<FakeAutocompleteProviderClient> client_;
-  scoped_refptr<ZeroSuggestProvider> provider_;
 
   network::TestURLLoaderFactory* test_loader_factory() {
     return client_->test_url_loader_factory();
@@ -126,6 +122,13 @@ class ZeroSuggestProviderTest : public testing::Test,
     input.set_focus_type(OmniboxFocusType::ON_FOCUS);
     return input;
   }
+
+  base::test::SingleThreadTaskEnvironment task_environment_;
+  std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
+  variations::ScopedVariationsIdsProvider scoped_variations_ids_provider_{
+      variations::VariationsIdsProvider::Mode::kUseSignedInState};
+  std::unique_ptr<FakeAutocompleteProviderClient> client_;
+  scoped_refptr<ZeroSuggestProvider> provider_;
 };
 
 void ZeroSuggestProviderTest::SetUp() {
@@ -165,12 +168,19 @@ TEST_F(ZeroSuggestProviderTest, AllowZeroSuggestSuggestions) {
   on_clobber_input.set_current_url(GURL(input_url));
   on_clobber_input.set_focus_type(OmniboxFocusType::DELETED_PERMANENT_TEXT);
 
-  // ZeroSuggest should never deal with prefix suggestions.
-  EXPECT_FALSE(provider_->AllowZeroSuggestSuggestions(prefix_input));
+  // Disable on-clobber.
+  {
+    base::test::ScopedFeatureList features;
+    features.InitAndDisableFeature(
+        omnibox::kClobberTriggersContextualWebZeroSuggest);
 
-  EXPECT_TRUE(provider_->AllowZeroSuggestSuggestions(on_focus_input));
+    // ZeroSuggest should never deal with prefix suggestions.
+    EXPECT_FALSE(provider_->AllowZeroSuggestSuggestions(prefix_input));
 
-  EXPECT_FALSE(provider_->AllowZeroSuggestSuggestions(on_clobber_input));
+    EXPECT_TRUE(provider_->AllowZeroSuggestSuggestions(on_focus_input));
+
+    EXPECT_FALSE(provider_->AllowZeroSuggestSuggestions(on_clobber_input));
+  }
 
   // Enable on-clobber.
   {
@@ -287,17 +297,27 @@ TEST_F(ZeroSuggestProviderTest, TypeOfResultToRunForContextualWeb) {
   const ZeroSuggestProvider::ResultType kDefaultContextualWebResultType =
       ZeroSuggestProvider::ResultType::NONE;
 
-  EXPECT_EQ(kDefaultContextualWebResultType,
-            ZeroSuggestProvider::TypeOfResultToRun(
-                client_.get(), on_focus_input, suggest_url));
-  EXPECT_EQ(kDefaultContextualWebResultType,
-            ZeroSuggestProvider::TypeOfResultToRun(
-                client_.get(), on_clobber_input, suggest_url));
+  // Disable on-clobber.
+  {
+    base::test::ScopedFeatureList features;
+    features.InitAndDisableFeature(
+        omnibox::kClobberTriggersContextualWebZeroSuggest);
+
+    EXPECT_EQ(kDefaultContextualWebResultType,
+              ZeroSuggestProvider::TypeOfResultToRun(
+                  client_.get(), on_focus_input, suggest_url));
+    EXPECT_EQ(kDefaultContextualWebResultType,
+              ZeroSuggestProvider::TypeOfResultToRun(
+                  client_.get(), on_clobber_input, suggest_url));
+  }
 
   // Enable on-focus only.
   {
     base::test::ScopedFeatureList features;
-    features.InitAndEnableFeature(omnibox::kOnFocusSuggestionsContextualWeb);
+    features.InitWithFeatures(
+        {omnibox::kOnFocusSuggestionsContextualWeb},         // Enabled
+        {omnibox::kClobberTriggersContextualWebZeroSuggest}  // Disabled
+    );
 
     EXPECT_EQ(ZeroSuggestProvider::ResultType::REMOTE_SEND_URL,
               ZeroSuggestProvider::TypeOfResultToRun(
@@ -324,8 +344,9 @@ TEST_F(ZeroSuggestProviderTest, TypeOfResultToRunForContextualWeb) {
     base::test::ScopedFeatureList features;
     features.InitWithFeatures(
         {omnibox::kOnFocusSuggestionsContextualWeb,
-         omnibox::kClobberTriggersContextualWebZeroSuggest},
-        {});
+         omnibox::kClobberTriggersContextualWebZeroSuggest},  // Enabled
+        {}                                                    // Disabled
+    );
 
     EXPECT_EQ(ZeroSuggestProvider::ResultType::REMOTE_SEND_URL,
               ZeroSuggestProvider::TypeOfResultToRun(

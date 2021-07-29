@@ -320,6 +320,9 @@ typedef struct MB_MODE_INFO {
   int8_t cdef_strength : 4;
   /**@}*/
 
+  /*! \brief Skip CDEF for this superblock */
+  uint8_t skip_cdef_curr_sb;
+
 #if CONFIG_RD_DEBUG
   /*! \brief RD info used for debugging */
   RD_STATS rd_stats;

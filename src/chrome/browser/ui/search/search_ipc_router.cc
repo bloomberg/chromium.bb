@@ -34,6 +34,8 @@ bool IsInInstantProcess(content::RenderFrameHost* render_frame) {
   return instant_service->IsInstantProcess(process_host->GetID());
 }
 
+}  // namespace
+
 class EmbeddedSearchClientFactoryImpl
     : public SearchIPCRouter::EmbeddedSearchClientFactory,
       public search::mojom::EmbeddedSearchConnector {
@@ -42,7 +44,10 @@ class EmbeddedSearchClientFactoryImpl
   EmbeddedSearchClientFactoryImpl(
       content::WebContents* web_contents,
       mojo::AssociatedReceiver<search::mojom::EmbeddedSearch>* receiver)
-      : client_receiver_(receiver), factory_receivers_(web_contents, this) {
+      : client_receiver_(receiver),
+        factory_receivers_(web_contents,
+                           this,
+                           content::WebContentsFrameReceiverSetPassKey()) {
     DCHECK(web_contents);
     DCHECK(receiver);
     // Before we are connected to a frame we throw away all messages.
@@ -90,8 +95,6 @@ void EmbeddedSearchClientFactoryImpl::Connect(
   embedded_search_client_.reset();
   embedded_search_client_.Bind(std::move(client));
 }
-
-}  // namespace
 
 SearchIPCRouter::SearchIPCRouter(content::WebContents* web_contents,
                                  Delegate* delegate,
@@ -205,97 +208,6 @@ void SearchIPCRouter::UndoAllMostVisitedDeletions(int page_seq_no) {
     return;
 
   delegate_->OnUndoAllMostVisitedDeletions();
-}
-
-void SearchIPCRouter::AddCustomLink(int page_seq_no,
-                                    const GURL& url,
-                                    const std::string& title,
-                                    AddCustomLinkCallback callback) {
-  bool result = false;
-  if (page_seq_no == commit_counter_ && policy_->ShouldProcessAddCustomLink()) {
-    result = delegate_->OnAddCustomLink(url, title);
-  }
-
-  std::move(callback).Run(result);
-}
-
-void SearchIPCRouter::UpdateCustomLink(int page_seq_no,
-                                       const GURL& url,
-                                       const GURL& new_url,
-                                       const std::string& new_title,
-                                       UpdateCustomLinkCallback callback) {
-  bool result = false;
-  if (page_seq_no == commit_counter_ &&
-      policy_->ShouldProcessUpdateCustomLink()) {
-    result = delegate_->OnUpdateCustomLink(url, new_url, new_title);
-  }
-
-  std::move(callback).Run(result);
-}
-
-void SearchIPCRouter::ReorderCustomLink(int page_seq_no,
-                                        const GURL& url,
-                                        int new_pos) {
-  if (page_seq_no != commit_counter_)
-    return;
-
-  if (!policy_->ShouldProcessReorderCustomLink())
-    return;
-
-  delegate_->OnReorderCustomLink(url, new_pos);
-}
-
-void SearchIPCRouter::DeleteCustomLink(int page_seq_no,
-                                       const GURL& url,
-                                       DeleteCustomLinkCallback callback) {
-  bool result = false;
-  if (page_seq_no == commit_counter_ &&
-      policy_->ShouldProcessDeleteCustomLink()) {
-    result = delegate_->OnDeleteCustomLink(url);
-  }
-
-  std::move(callback).Run(result);
-}
-
-void SearchIPCRouter::UndoCustomLinkAction(int page_seq_no) {
-  if (page_seq_no != commit_counter_)
-    return;
-
-  if (!policy_->ShouldProcessUndoCustomLinkAction())
-    return;
-
-  delegate_->OnUndoCustomLinkAction();
-}
-
-void SearchIPCRouter::ResetCustomLinks(int page_seq_no) {
-  if (page_seq_no != commit_counter_)
-    return;
-
-  if (!policy_->ShouldProcessResetCustomLinks())
-    return;
-
-  delegate_->OnResetCustomLinks();
-}
-
-void SearchIPCRouter::ToggleMostVisitedOrCustomLinks(int page_seq_no) {
-  if (page_seq_no != commit_counter_)
-    return;
-
-  if (!policy_->ShouldProcessToggleMostVisitedOrCustomLinks())
-    return;
-
-  delegate_->OnToggleMostVisitedOrCustomLinks();
-}
-
-void SearchIPCRouter::ToggleShortcutsVisibility(int page_seq_no,
-                                                bool do_notify) {
-  if (page_seq_no != commit_counter_)
-    return;
-
-  if (!policy_->ShouldProcessToggleShortcutsVisibility())
-    return;
-
-  delegate_->OnToggleShortcutsVisibility(do_notify);
 }
 
 void SearchIPCRouter::LogEvent(int page_seq_no,
@@ -447,18 +359,6 @@ void SearchIPCRouter::BlocklistPromo(const std::string& promo_id) {
   }
 
   delegate_->BlocklistPromo(promo_id);
-}
-
-void SearchIPCRouter::OpenExtensionsPage(double button,
-                                         bool alt_key,
-                                         bool ctrl_key,
-                                         bool meta_key,
-                                         bool shift_key) {
-  if (!policy_->ShouldProcessOpenExtensionsPage()) {
-    return;
-  }
-
-  delegate_->OpenExtensionsPage(button, alt_key, ctrl_key, meta_key, shift_key);
 }
 
 void SearchIPCRouter::set_delegate_for_testing(Delegate* delegate) {

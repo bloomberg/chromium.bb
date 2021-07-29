@@ -11,6 +11,11 @@
 #include "base/win/current_module.h"
 #include "base/win/wrapped_window_proc.h"
 
+#include <windows.h>
+
+// To avoid conflicts with the macro from the Windows SDK...
+#undef FindWindow
+
 const wchar_t kMessageWindowClassName[] = L"Chrome_MessageWindow";
 
 namespace base {

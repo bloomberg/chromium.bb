@@ -25,6 +25,7 @@ import {ListPropertyUpdateBehavior} from '//resources/js/list_property_update_be
 import '//resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import '//resources/polymer/v3_0/iron-list/iron-list.js';
 import '//resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
+import '//resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
 import {loadTimeData} from '../../i18n_setup.js';
 import {DeepLinkingBehavior} from '../deep_linking_behavior.m.js';
 import {routes} from '../os_route.m.js';
@@ -200,9 +201,9 @@ Polymer({
   },
 
   observers: [
-    'adapterStateChanged_(adapterState.*)',
     'deviceListChanged_(deviceList_.*)',
     'listUpdateFrequencyMsChanged_(listUpdateFrequencyMs)',
+    'updateDiscoveryAndMaybeRefreshDeviceList_(adapterState.*)',
   ],
 
   /**
@@ -211,6 +212,38 @@ Polymer({
    * @private
    */
   updateTimerId_: undefined,
+
+  /**
+   * Used to prevent duplicate event listeners being added for the focus event.
+   * @type {function(Event)|undefined}
+   * @private
+   */
+  onWindowFocusedListener_: undefined,
+
+  /**
+   * Used to prevent duplicate event listeners being added for the blur event.
+   * @type {function(Event)|undefined}
+   * @private
+   */
+  onWindowBlurredListener_: undefined,
+
+  /**
+   * Used to determine if the window has focus. This is overridden by tests so
+   * that focus logic can be better encapsulated in this element.
+   * @type {function():boolean}
+   * @private
+   */
+  isWindowFocusedFunction_: function() {
+    return document.hasFocus();
+  },
+
+  /**
+   * The address of the device corresponding to the tooltip if it is currently
+   * showing. If undefined, the tooltip is not showing.
+   * @type {string|undefined}
+   * @private
+   */
+  currentTooltipDeviceAddress_: undefined,
 
   /**
    * Overridden from DeepLinkingBehavior.
@@ -251,13 +284,15 @@ Polymer({
   currentRouteChanged(route) {
     // Any navigation resets the previous attempt to deep link.
     this.pendingSettingId_ = null;
-    this.updateDiscovery_();
-    this.startOrStopRefreshingDeviceList_();
+    this.updateDiscoveryAndMaybeRefreshDeviceList_();
 
     // Does not apply to this page.
     if (route !== routes.BLUETOOTH_DEVICES) {
+      this.removeWindowFocusEventListeners_();
       return;
     }
+
+    this.addWindowFocusEventListeners_();
 
     this.attemptDeepLink().then(result => {
       if (!result.deepLinkShown && result.pendingSettingId) {
@@ -270,11 +305,12 @@ Polymer({
 
   /** @private */
   computeShowSpinner_() {
-    return !this.dialogShown_ && this.get('adapterState.discovering');
+    return !this.dialogShown_ && this.adapterState &&
+        this.adapterState.discovering;
   },
 
   /** @private */
-  adapterStateChanged_() {
+  updateDiscoveryAndMaybeRefreshDeviceList_() {
     this.updateDiscovery_();
     this.startOrStopRefreshingDeviceList_();
   },
@@ -335,7 +371,11 @@ Polymer({
     if (!this.adapterState || !this.adapterState.powered) {
       return;
     }
-    if (Router.getInstance().getCurrentRoute() === routes.BLUETOOTH_DEVICES) {
+
+    // Don't enable discovery if the window isn't focused to avoid keeping the
+    // Bluetooth stack in a busy loop.
+    if (Router.getInstance().getCurrentRoute() === routes.BLUETOOTH_DEVICES &&
+        this.isWindowFocusedFunction_()) {
       this.startDiscovery_();
     } else {
       this.stopDiscovery_();
@@ -361,7 +401,7 @@ Polymer({
 
   /** @private */
   stopDiscovery_() {
-    if (!this.get('adapterState.discovering')) {
+    if (!this.adapterState || !this.adapterState.discovering) {
       return;
     }
 
@@ -406,6 +446,32 @@ Polymer({
       this.bluetoothToggleState = !this.bluetoothToggleState;
     }
     event.stopPropagation();
+  },
+
+  /** @private */
+  addWindowFocusEventListeners_() {
+    // Prevent duplicate event listener registrations by binding the event
+    // listener callbacks a single time and storing their values.
+    if (!this.onWindowFocusedListener_) {
+      this.onWindowFocusedListener_ =
+          this.updateDiscoveryAndMaybeRefreshDeviceList_.bind(this);
+    }
+    if (!this.onWindowBlurredListener_) {
+      this.onWindowBlurredListener_ =
+          this.updateDiscoveryAndMaybeRefreshDeviceList_.bind(this);
+    }
+    window.addEventListener('focus', this.onWindowFocusedListener_);
+    window.addEventListener('blur', this.onWindowBlurredListener_);
+  },
+
+  /** @private */
+  removeWindowFocusEventListeners_() {
+    if (this.onWindowFocusedListener_) {
+      window.removeEventListener('focus', this.onWindowFocusedListener_);
+    }
+    if (this.onWindowBlurredListener_) {
+      window.removeEventListener('blur', this.onWindowBlurredListener_);
+    }
   },
 
   /**
@@ -520,7 +586,7 @@ Polymer({
     this.bluetoothPrivate.forgetDevice(device.address, () => {
       if (chrome.runtime.lastError) {
         console.error(
-            'Error forgetting: ' + device.name + ': ' +
+            'Error forgetting bluetooth device: ' +
             chrome.runtime.lastError.message);
       }
     });
@@ -646,5 +712,56 @@ Polymer({
         Date.now() - this.discoveryStartTimestampMs_, wasPaired, transport);
 
     this.discoveryStartTimestampMs_ = null;
+  },
+
+  /**
+   * Updates the visibility of the enterprise policy UI tooltip. This is
+   * triggered by the blocked-tooltip-state-change event. This event can be
+   * fired in two cases:
+   * 1) We want to show the tooltip for a given device's icon. Here, show will
+   *    be true and the element will be defined.
+   * 2) We want to make sure there is no tooltip showing for a given device's
+   *    icon. Here, show will be false and the element undefined.
+   * In both cases, address will be the item's device address.
+   * We need to use a common tooltip since a tooltip within the item gets cut
+   * off from the iron-list.
+   * @param {!{detail: {address: string, show: boolean, element: ?HTMLElement}}}
+   *     e
+   * @private
+   */
+  onBlockedTooltipStateChange_: function(e) {
+    const target = e.detail.element;
+    const hide = () => {
+      /** @type {{hide: Function}} */ (this.$.tooltip).hide();
+      this.$.tooltip.removeEventListener('mouseenter', hide);
+      this.currentTooltipDeviceAddress_ = undefined;
+      if (target) {
+        target.removeEventListener('mouseleave', hide);
+        target.removeEventListener('blur', hide);
+        target.removeEventListener('tap', hide);
+      }
+    };
+
+    if (!e.detail.show) {
+      if (this.currentTooltipDeviceAddress_ &&
+          e.detail.address === this.currentTooltipDeviceAddress_) {
+        hide();
+      }
+      return;
+    }
+
+    // paper-tooltip normally determines the target from the |for| property,
+    // which is a selector. Here paper-tooltip is being reused by multiple
+    // potential targets. Since paper-tooltip does not expose a public property
+    // or method to update the target, the private property |_target| is
+    // updated directly.
+    this.$.tooltip._target = target;
+    /** @type {{updatePosition: Function}} */ (this.$.tooltip).updatePosition();
+    target.addEventListener('mouseleave', hide);
+    target.addEventListener('blur', hide);
+    target.addEventListener('tap', hide);
+    this.$.tooltip.addEventListener('mouseenter', hide);
+    this.$.tooltip.show();
+    this.currentTooltipDeviceAddress_ = e.detail.address;
   },
 });

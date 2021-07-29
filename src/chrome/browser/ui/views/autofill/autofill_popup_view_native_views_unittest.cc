@@ -22,6 +22,8 @@
 #include "ui/views/test/ax_event_counter.h"
 #include "ui/views/widget/widget_utils.h"
 
+using testing::NiceMock;
+
 namespace {
 
 struct TypeClicks {
@@ -46,11 +48,15 @@ const struct TypeClicks kClickTestCase[] = {
     {autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_RE_SIGNIN, 1},
     {autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE, 1},
     {autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_EMPTY, 1},
+    {autofill::POPUP_ITEM_ID_VIRTUAL_CREDIT_CARD_ENTRY, 1},
 };
 
 class AutofillPopupViewNativeViewsTest : public ChromeViewsTestBase {
  public:
   AutofillPopupViewNativeViewsTest() = default;
+  AutofillPopupViewNativeViewsTest(AutofillPopupViewNativeViewsTest&) = delete;
+  AutofillPopupViewNativeViewsTest& operator=(
+      AutofillPopupViewNativeViewsTest&) = delete;
   ~AutofillPopupViewNativeViewsTest() override = default;
 
   void SetUp() override {
@@ -81,12 +87,9 @@ class AutofillPopupViewNativeViewsTest : public ChromeViewsTestBase {
 
  protected:
   std::unique_ptr<autofill::AutofillPopupViewNativeViews> view_;
-  autofill::MockAutofillPopupController autofill_popup_controller_;
+  NiceMock<autofill::MockAutofillPopupController> autofill_popup_controller_;
   std::unique_ptr<views::Widget> widget_;
   std::unique_ptr<ui::test::EventGenerator> generator_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AutofillPopupViewNativeViewsTest);
 };
 
 class AutofillPopupViewNativeViewsForEveryTypeTest

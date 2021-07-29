@@ -149,7 +149,7 @@ class CaptionBubbleControllerViewsTest : public InProcessBrowserTest {
       LiveCaptionSpeechRecognitionHost* live_caption_speech_recognition_host) {
     return GetController()->OnTranscription(
         live_caption_speech_recognition_host,
-        media::mojom::SpeechRecognitionResult::New(text, false));
+        media::SpeechRecognitionResult(text, false));
   }
 
   bool OnFinalTranscription(std::string text) {
@@ -161,7 +161,7 @@ class CaptionBubbleControllerViewsTest : public InProcessBrowserTest {
       LiveCaptionSpeechRecognitionHost* live_caption_speech_recognition_host) {
     return GetController()->OnTranscription(
         live_caption_speech_recognition_host,
-        media::mojom::SpeechRecognitionResult::New(text, true));
+        media::SpeechRecognitionResult(text, true));
   }
 
   void OnError() { OnError(GetLiveCaptionSpeechRecognitionHost()); }
@@ -606,7 +606,7 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
 #if defined(OS_MAC)
   a = 230;
 #else
-  a = 127;
+  a = 128;
 #endif
   GetController()->UpdateCaptionStyle(caption_style);
   EXPECT_EQ(SkColorSetA(SK_ColorBLUE, a), GetLabel()->GetEnabledColor());
@@ -653,7 +653,7 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
 #if defined(OS_MAC)
   a = 230;
 #else
-  a = 127;
+  a = 128;
 #endif
   caption_style.background_color = "";
   GetController()->UpdateCaptionStyle(caption_style);
@@ -996,13 +996,8 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
 }
 
 // Disable due to flaky, https://crbug.com/1206677
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
-#define MAYBE_HidesAfterInactivity DISABLED_HidesAfterInactivity
-#else
-#define MAYBE_HidesAfterInactivity HidesAfterInactivity
-#endif
 IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
-                       MAYBE_HidesAfterInactivity) {
+                       DISABLED_HidesAfterInactivity) {
   // Use a ScopedMockTimeMessageLoopTaskRunner to test the inactivity timer with
   // a mock tick clock that replaces the default tick clock with mock time.
   base::ScopedMockTimeMessageLoopTaskRunner test_task_runner;
@@ -1047,8 +1042,14 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
   // works in app but the tests aren't working.
 }
 
+// TODO(https://crbug.com/1207312): Flaky test.
+#if defined(USE_OZONE)
+#define MAYBE_ClearsTextAfterInactivity DISABLED_ClearsTextAfterInactivity
+#else
+#define MAYBE_ClearsTextAfterInactivity ClearsTextAfterInactivity
+#endif
 IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
-                       ClearsTextAfterInactivity) {
+                       MAYBE_ClearsTextAfterInactivity) {
   // Use a ScopedMockTimeMessageLoopTaskRunner to test the inactivity timer with
   // a mock tick clock that replaces the default tick clock with mock time.
   base::ScopedMockTimeMessageLoopTaskRunner test_task_runner;

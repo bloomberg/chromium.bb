@@ -24,22 +24,25 @@ class FakeMissiveClient : public MissiveClient {
   void Init();
 
  private:
-  void AddRecord(
+  void EnqueueRecord(
       const reporting::Priority priority,
       reporting::Record record,
-      base::OnceCallback<void(reporting::Status)> completion_callback) override;
+      base::OnceCallback<void(reporting::Status)> completion_callback);
 
-  void Flush(
-      const reporting::Priority priority,
-      base::OnceCallback<void(reporting::Status)> completion_callback) override;
+  void Flush(const reporting::Priority priority,
+             base::OnceCallback<void(reporting::Status)> completion_callback);
 
   void ReportSuccess(
       const reporting::SequencingInformation& sequencing_information,
-      bool force_confirm) override;
+      bool force_confirm);
 
   void UpdateEncryptionKey(
-      const reporting::SignedEncryptionInfo& encryption_info) override;
+      const reporting::SignedEncryptionInfo& encryption_info);
 
+  // Sequenced task runner - must be first member of the class.
+  scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
+
+  // Weak pointer factory - must be last member of the class.
   base::WeakPtrFactory<FakeMissiveClient> weak_ptr_factory_{this};
 };
 

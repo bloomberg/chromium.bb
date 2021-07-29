@@ -463,6 +463,25 @@ static SkPath make_octagon(const SkRect& r) {
 
 static constexpr SkIRect kDeviceBounds = {0, 0, 100, 100};
 
+class NoOp : public GrDrawOp {
+public:
+    static NoOp* Get() {
+        static NoOp gNoOp;
+        return &gNoOp;
+    }
+private:
+    DEFINE_OP_CLASS_ID
+    NoOp() : GrDrawOp(ClassID()) {}
+    const char* name() const override { return "NoOp"; }
+    GrProcessorSet::Analysis finalize(const GrCaps&, const GrAppliedClip*, GrClampType) override {
+        return GrProcessorSet::EmptySetAnalysis();
+    }
+    void onPrePrepare(GrRecordingContext*, const GrSurfaceProxyView&, GrAppliedClip*, const
+                      GrDstProxyView&, GrXferBarrierFlags, GrLoadOp) override {}
+    void onPrepare(GrOpFlushState*) override {}
+    void onExecute(GrOpFlushState*, const SkRect&) override {}
+};
+
 } // anonymous namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1654,7 +1673,7 @@ DEF_TEST(GrClipStack_DiffRects, r) {
 
     GrAppliedClip out(kDeviceBounds.size());
     SkRect drawBounds = SkRect::Make(kDeviceBounds);
-    GrClip::Effect effect = cs.apply(context.get(), rtc.get(), GrAAType::kCoverage, false,
+    GrClip::Effect effect = cs.apply(context.get(), rtc.get(), NoOp::Get(), GrAAType::kCoverage,
                                      &out, &drawBounds);
 
     REPORTER_ASSERT(r, effect == GrClip::Effect::kClipped);
@@ -1798,7 +1817,7 @@ DEF_TEST(GrClipStack_Shader, r) {
 
     GrAppliedClip out(kDeviceBounds.size());
     SkRect drawBounds = {10.f, 11.f, 16.f, 32.f};
-    GrClip::Effect effect = cs.apply(context.get(), rtc.get(), GrAAType::kCoverage, false,
+    GrClip::Effect effect = cs.apply(context.get(), rtc.get(), NoOp::Get(), GrAAType::kCoverage,
                                      &out, &drawBounds);
 
     REPORTER_ASSERT(r, effect == GrClip::Effect::kClipped,
@@ -1808,8 +1827,8 @@ DEF_TEST(GrClipStack_Shader, r) {
 
     GrAppliedClip out2(kDeviceBounds.size());
     drawBounds = {-15.f, -10.f, -1.f, 10.f}; // offscreen
-    effect = cs.apply(context.get(), rtc.get(), GrAAType::kCoverage, false,
-                      &out2, &drawBounds);
+    effect = cs.apply(context.get(), rtc.get(), NoOp::Get(), GrAAType::kCoverage, &out2,
+                      &drawBounds);
     REPORTER_ASSERT(r, effect == GrClip::Effect::kClippedOut,
                     "apply() should still discard offscreen draws with a clip shader");
 
@@ -1846,8 +1865,8 @@ DEF_TEST(GrClipStack_SimpleApply, r) {
         SkRect drawBounds = {-15.f, -15.f, -1.f, -1.f};
 
         GrAppliedClip out(kDeviceBounds.size());
-        GrClip::Effect effect = cs.apply(context.get(), rtc.get(), GrAAType::kCoverage, false,
-                                        &out, &drawBounds);
+        GrClip::Effect effect = cs.apply(context.get(), rtc.get(), NoOp::Get(), GrAAType::kCoverage,
+                                         &out, &drawBounds);
         REPORTER_ASSERT(r, effect == GrClip::Effect::kClippedOut, "Offscreen draw is clipped out");
     }
 
@@ -1859,7 +1878,7 @@ DEF_TEST(GrClipStack_SimpleApply, r) {
                     GrAA::kYes, SkClipOp::kIntersect);
 
         GrAppliedClip out(kDeviceBounds.size());
-        GrClip::Effect effect = cs.apply(context.get(), rtc.get(), GrAAType::kCoverage, false,
+        GrClip::Effect effect = cs.apply(context.get(), rtc.get(), NoOp::Get(), GrAAType::kCoverage,
                                          &out, &drawBounds);
         REPORTER_ASSERT(r, effect == GrClip::Effect::kUnclipped, "Draw inside clip is unclipped");
         cs.restore();
@@ -1874,7 +1893,7 @@ DEF_TEST(GrClipStack_SimpleApply, r) {
         cs.clipRect(SkMatrix::I(), clipRect, GrAA::kNo, SkClipOp::kIntersect);
 
         GrAppliedClip out(kDeviceBounds.size());
-        GrClip::Effect effect = cs.apply(context.get(), rtc.get(), GrAAType::kCoverage, false,
+        GrClip::Effect effect = cs.apply(context.get(), rtc.get(), NoOp::Get(), GrAAType::kCoverage,
                                          &out, &drawRect);
         REPORTER_ASSERT(r, SkRect::Make(kDeviceBounds).contains(drawRect),
                         "Draw rect should be clipped to device rect");
@@ -1893,7 +1912,7 @@ DEF_TEST(GrClipStack_SimpleApply, r) {
         cs.clipRect(SkMatrix::I(), clipRect, GrAA::kNo, SkClipOp::kIntersect);
 
         GrAppliedClip out(kDeviceBounds.size());
-        GrClip::Effect effect = cs.apply(context.get(), rtc.get(), GrAAType::kCoverage, false,
+        GrClip::Effect effect = cs.apply(context.get(), rtc.get(), NoOp::Get(), GrAAType::kCoverage,
                                          &out, &drawRect);
         REPORTER_ASSERT(r, effect == GrClip::Effect::kClipped, "Draw should be clipped by rect");
         REPORTER_ASSERT(r, !out.hasCoverageFragmentProcessor(), "Clip should not use coverage FPs");
@@ -1909,7 +1928,7 @@ DEF_TEST(GrClipStack_SimpleApply, r) {
     // Analytic coverage FPs
     auto testHasCoverageFP = [&](SkRect drawBounds) {
         GrAppliedClip out(kDeviceBounds.size());
-        GrClip::Effect effect = cs.apply(context.get(), rtc.get(), GrAAType::kCoverage, false,
+        GrClip::Effect effect = cs.apply(context.get(), rtc.get(), NoOp::Get(), GrAAType::kCoverage,
                                          &out, &drawBounds);
         REPORTER_ASSERT(r, effect == GrClip::Effect::kClipped, "Draw should be clipped");
         REPORTER_ASSERT(r, out.scissorState().enabled(), "Coverage FPs should still set scissor");
@@ -1955,15 +1974,15 @@ DEF_TEST(GrClipStack_SimpleApply, r) {
     }
 }
 
-// Must disable CCPR in order to trigger SW mask generation when the clip stack is applied.
-static void only_allow_default(GrContextOptions* options) {
+// Must disable tessellation in order to trigger SW mask generation when the clip stack is applied.
+static void disable_tessellation_atlas(GrContextOptions* options) {
     options->fGpuPathRenderers = GpuPathRenderers::kNone;
-    options->fDisableCoverageCountingPaths = true;
+    options->fAvoidStencilBuffers = true;
 }
 
 DEF_GPUTEST_FOR_CONTEXTS(GrClipStack_SWMask,
                          sk_gpu_test::GrContextFactory::IsRenderingContext,
-                         r, ctxInfo, only_allow_default) {
+                         r, ctxInfo, disable_tessellation_atlas) {
     GrDirectContext* context = ctxInfo.directContext();
     std::unique_ptr<GrSurfaceDrawContext> rtc = GrSurfaceDrawContext::Make(
             context, GrColorType::kRGBA_8888, nullptr, SkBackingFit::kExact, kDeviceBounds.size(),

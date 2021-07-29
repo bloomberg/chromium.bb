@@ -24,6 +24,7 @@
 #include "components/autofill_assistant/browser/rectf.h"
 #include "components/autofill_assistant/browser/selector.h"
 #include "components/autofill_assistant/browser/top_padding.h"
+#include "components/autofill_assistant/browser/user_data.h"
 #include "components/autofill_assistant/browser/web/check_on_top_worker.h"
 #include "components/autofill_assistant/browser/web/click_or_tap_worker.h"
 #include "components/autofill_assistant/browser/web/element_finder.h"
@@ -36,6 +37,8 @@
 #include "url/gurl.h"
 
 namespace autofill {
+class AutofillableData;
+class AutofillDataModel;
 class AutofillProfile;
 class ContentAutofillDriver;
 class CreditCard;
@@ -61,14 +64,16 @@ namespace autofill_assistant {
 // multiple operations, whether in sequence or in parallel.
 class WebController {
  public:
-  // Create web controller for a given |web_contents|. |settings| must be valid
+  // Create web controller for a given |web_contents|. |user_data| must be valid
   // for the lifetime of the controller.
   static std::unique_ptr<WebController> CreateForWebContents(
-      content::WebContents* web_contents);
+      content::WebContents* web_contents,
+      const UserData* user_data);
 
-  // |web_contents| and |settings| must outlive this web controller.
+  // |web_contents| and |user_data| must outlive this web controller.
   WebController(content::WebContents* web_contents,
-                std::unique_ptr<DevtoolsClient> devtools_client);
+                std::unique_ptr<DevtoolsClient> devtools_client,
+                const UserData* user_data);
   virtual ~WebController();
 
   // Load |url| in the current tab. Returns immediately, before the new page has
@@ -89,10 +94,38 @@ class WebController {
   virtual void FindAllElements(const Selector& selector,
                                ElementFinder::Callback callback);
 
-  // Scroll the |element| into view if needed, center the element on the screen
-  // if specified.
+  // Scroll the |element| into view. |animation| defines the transition
+  // animation, |vertical_alignment| defines the vertical alignment,
+  // |horizontal_alignment| defines the horizontal alignment.
   virtual void ScrollIntoView(
+      const std::string& animation,
+      const std::string& vertical_alignment,
+      const std::string& horizontal_alignment,
+      const ElementFinder::Result& element,
+      base::OnceCallback<void(const ClientStatus&)> callback);
+
+  // Scroll the |element| into view only if needed. |center| the element if
+  // requested.
+  virtual void ScrollIntoViewIfNeeded(
       bool center,
+      const ElementFinder::Result& element,
+      base::OnceCallback<void(const ClientStatus&)> callback);
+
+  // Scroll the window by |scroll_distance|. |animation| defines the transition
+  // animation. Specify |optional_frame| if an iFrame instead of the main
+  // window should be scrolled.
+  virtual void ScrollWindow(
+      const ScrollDistance& scroll_distance,
+      const std::string& animation,
+      const ElementFinder::Result& optional_frame,
+      base::OnceCallback<void(const ClientStatus&)> callback);
+
+  // Scroll the |element| by |scroll_distance|. |animation| defines the
+  // transition animation. Specify |optional_frame| if an iFrame instead of the
+  // main window should be scrolled.
+  virtual void ScrollContainer(
+      const ScrollDistance& scroll_distance,
+      const std::string& animation,
       const ElementFinder::Result& element,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
@@ -125,7 +158,7 @@ class WebController {
   // Fill the address form given by |selector| with the given address
   // |profile|.
   virtual void FillAddressForm(
-      const autofill::AutofillProfile* profile,
+      std::unique_ptr<autofill::AutofillProfile> profile,
       const Selector& selector,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
@@ -178,8 +211,8 @@ class WebController {
   // scrolled instead.
   virtual void ScrollToElementPosition(
       std::unique_ptr<ElementFinder::Result> container,
-      const ElementFinder::Result& element,
       const TopPadding& top_padding,
+      const ElementFinder::Result& element,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
   // Get the value attribute of an |element| and return the result through
@@ -271,12 +304,6 @@ class WebController {
       base::OnceCallback<void(const ClientStatus&, const std::string&)>
           callback);
 
-  // Gets the visual viewport coordinates and size.
-  //
-  // The rectangle is expressed in absolute CSS coordinates.
-  virtual void GetVisualViewport(
-      base::OnceCallback<void(const ClientStatus&, const RectF&)> callback);
-
   // Gets the position of the |element|.
   //
   // If unsuccessful, the callback gets the failure status with an empty rect.
@@ -312,26 +339,14 @@ class WebController {
       const ElementFinder::Result& element,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
-  // Dispatch a custom JS event 'duplexweb' with an optional payload.
+  // Dispatch a custom JS event 'duplexweb'.
   virtual void DispatchJsEvent(
-      base::OnceCallback<void(const ClientStatus&)> callback) const;
+      base::OnceCallback<void(const ClientStatus&)> callback);
 
   virtual base::WeakPtr<WebController> GetWeakPtr() const;
 
  private:
   friend class WebControllerBrowserTest;
-
-  struct FillFormInputData {
-    FillFormInputData();
-    ~FillFormInputData();
-
-    // Data for filling address form.
-    std::unique_ptr<autofill::AutofillProfile> profile;
-
-    // Data for filling card form.
-    std::unique_ptr<autofill::CreditCard> card;
-    std::u16string cvc;
-  };
 
   // RAII object that sets the action state to "running" when the object is
   // allocated and to "not running" when it gets deallocated.
@@ -376,6 +391,9 @@ class WebController {
                               const std::vector<std::string>&)> callback,
       const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
+  void OnScrollWindow(base::OnceCallback<void(const ClientStatus&)> callback,
+                      const DevtoolsClient::ReplyStatus& reply_status,
+                      std::unique_ptr<runtime::EvaluateResult> result);
   void OnCheckOnTop(CheckOnTopWorker* worker,
                     base::OnceCallback<void(const ClientStatus&)> callback,
                     const ClientStatus& status);
@@ -450,8 +468,11 @@ class WebController {
       autofill::ContentAutofillDriver* driver,
       const autofill::FormData& form_data,
       const autofill::FormFieldData& form_field);
+  // Use |retain_data| to retain the source data until the form filling has
+  // been performed.
   void OnGetFormAndFieldDataForFilling(
-      std::unique_ptr<FillFormInputData> data_to_autofill,
+      const autofill::AutofillableData& data_to_autofill,
+      std::unique_ptr<autofill::AutofillDataModel> retain_data,
       base::OnceCallback<void(const ClientStatus&)> callback,
       const ClientStatus& form_status,
       autofill::ContentAutofillDriver* driver,
@@ -477,21 +498,14 @@ class WebController {
       ProcessedActionStatusProto status_if_zero,
       const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
-
   void OnSendKeyboardInputDone(
       SendKeyboardInputWorker* worker_to_release,
       base::OnceCallback<void(const ClientStatus&)> callback,
       const ClientStatus& status);
-
   void OnGetElementRect(ElementRectGetter* getter_to_release,
                         ElementRectGetter::ElementRectCallback callback,
                         const ClientStatus& rect_status,
                         const RectF& element_rect);
-  void OnGetVisualViewport(
-      base::OnceCallback<void(const ClientStatus&, const RectF&)> callback,
-      const DevtoolsClient::ReplyStatus& reply_status,
-      std::unique_ptr<runtime::EvaluateResult> result);
-
   void OnWaitForDocumentReadyState(
       base::OnceCallback<void(const ClientStatus&,
                               DocumentReadyState,
@@ -499,7 +513,6 @@ class WebController {
       base::TimeTicks wait_start_time,
       const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<runtime::EvaluateResult> result);
-
   void OnDispatchJsEvent(base::OnceCallback<void(const ClientStatus&)> callback,
                          const DevtoolsClient::ReplyStatus& reply_status,
                          std::unique_ptr<runtime::EvaluateResult> result) const;
@@ -521,8 +534,9 @@ class WebController {
 
   // Weak pointer is fine here since it must outlive this web controller, which
   // is guaranteed by the owner of this object.
-  content::WebContents* web_contents_;
+  content::WebContents* const web_contents_;
   std::unique_ptr<DevtoolsClient> devtools_client_;
+  const UserData* const user_data_;
 
   // Currently running workers.
   std::vector<std::unique_ptr<WebControllerWorker>> pending_workers_;

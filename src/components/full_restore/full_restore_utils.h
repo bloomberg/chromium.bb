@@ -49,19 +49,30 @@ extern const ui::ClassProperty<int32_t>* const kWindowIdKey;
 COMPONENT_EXPORT(FULL_RESTORE)
 extern const ui::ClassProperty<int32_t>* const kRestoreWindowIdKey;
 
+// A property key to indicate the session id for the ARC ghost window from
+// RestoreData.
+COMPONENT_EXPORT(FULL_RESTORE)
+extern const ui::ClassProperty<int32_t>* const kGhostWindowSessionIdKey;
+
 // A property key to store the app id.
 COMPONENT_EXPORT(FULL_RESTORE)
 extern const ui::ClassProperty<std::string*>* const kAppIdKey;
+
+// A property key to store the browser app name.
+COMPONENT_EXPORT(FULL_RESTORE)
+extern const ui::ClassProperty<std::string*>* const kBrowserAppNameKey;
+
+// A property key to indicate that the browser window type is an app type.
+COMPONENT_EXPORT(FULL_RESTORE)
+extern const ui::ClassProperty<bool>* const kAppTypeBrowser;
 
 // A property key to store the activation index of an app. Used by ash to
 // determine where to stack a window among its siblings. Also used to determine
 // if a window is restored by the full restore process. Only a window, restored
 // from the full restore file and read by FullRestoreReadHandler during the
-// system startup phase, could have a kActivationIndexKey. This is cleared after
-// the window been activated. A smaller index indicates a more recently used
-// window. If this key is null, then the window was not launched from full
-// restore, or it is longer treated like a full restore launched window (i.e.
-// user clicked on it).
+// system startup phase, could have a kActivationIndexKey. A smaller index
+// indicates a more recently used window. If this key is null, then the window
+// was not launched from full restore.
 COMPONENT_EXPORT(FULL_RESTORE)
 extern const ui::ClassProperty<int32_t*>* const kActivationIndexKey;
 
@@ -75,6 +86,14 @@ extern const ui::ClassProperty<bool>* const kParentToHiddenContainerKey;
 COMPONENT_EXPORT(FULL_RESTORE)
 extern const ui::ClassProperty<bool>* const kLaunchedFromFullRestoreKey;
 
+// A property key indicating whether a ARC ghost window has replaced by real
+// ARC task window.
+COMPONENT_EXPORT(FULL_RESTORE)
+extern const ui::ClassProperty<bool>* const kRealArcTaskWindow;
+
+COMPONENT_EXPORT(FULL_RESTORE)
+extern const ui::ClassProperty<WindowInfo*>* const kWindowInfoKey;
+
 // Saves the app launch parameters to the full restore file.
 COMPONENT_EXPORT(FULL_RESTORE)
 void SaveAppLaunchInfo(const base::FilePath& profile_path,
@@ -83,6 +102,12 @@ void SaveAppLaunchInfo(const base::FilePath& profile_path,
 // Saves the window information to the full restore file.
 COMPONENT_EXPORT(FULL_RESTORE)
 void SaveWindowInfo(const WindowInfo& window_info);
+
+// Gets the ARC app launch information from the full restore file for `app_id`
+// and `session_id`.
+COMPONENT_EXPORT(FULL_RESTORE)
+std::unique_ptr<AppLaunchInfo> GetArcAppLaunchInfo(const std::string& app_id,
+                                                   int32_t session_id);
 
 // Gets the window information from the full restore file for |window|.
 COMPONENT_EXPORT(FULL_RESTORE)
@@ -95,7 +120,11 @@ int32_t FetchRestoreWindowId(const std::string& app_id);
 
 // Returns the restore window id for the ARC app's |task_id|.
 COMPONENT_EXPORT(FULL_RESTORE)
-int32_t GetArcRestoreWindowId(int32_t task_id);
+int32_t GetArcRestoreWindowIdForTaskId(int32_t task_id);
+
+// Returns the restore window id for the ARC app's |session_id|.
+COMPONENT_EXPORT(FULL_RESTORE)
+int32_t GetArcRestoreWindowIdForSessionId(int32_t session_id);
 
 // Returns true if we should restore apps and pages based on the restore setting
 // and the user's choice from the notification. Otherwise, returns false.
@@ -111,6 +140,16 @@ bool CanPerformRestore(const AccountId& account_id);
 // Sets the current active profile path.
 COMPONENT_EXPORT(FULL_RESTORE)
 void SetActiveProfilePath(const base::FilePath& profile_path);
+
+// Returns true if there are app type browsers from the full restore file.
+// Otherwise, returns false.
+COMPONENT_EXPORT(FULL_RESTORE)
+bool HasAppTypeBrowser(const base::FilePath& profile_path);
+
+// Returns true if there are normal browsers from the full restore file.
+// Otherwise, returns false.
+COMPONENT_EXPORT(FULL_RESTORE)
+bool HasBrowser(const base::FilePath& profile_path);
 
 // Returns true if there is a window info for |restore_window_id| from the full
 // restore file. Otherwise, returns false. This interface can't be used for Arc
@@ -139,6 +178,9 @@ COMPONENT_EXPORT(FULL_RESTORE)
 void OnTaskThemeColorUpdated(int32_t task_id,
                              uint32_t primary_color,
                              uint32_t status_bar_color);
+
+COMPONENT_EXPORT(FULL_RESTORE)
+void AddChromeBrowserLaunchInfoForTesting(const base::FilePath& profile_path);
 
 }  // namespace full_restore
 

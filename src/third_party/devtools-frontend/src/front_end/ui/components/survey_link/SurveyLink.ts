@@ -8,6 +8,7 @@ import * as LitHtml from '../../lit-html/lit-html.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as ComponentHelpers from '../../components/helpers/helpers.js';
 import * as IconButton from '../icon_button/icon_button.js';
+import surveyLinkStyles from './surveyLink.css.js';
 
 const UIStrings = {
   /**
@@ -48,7 +49,7 @@ const enum State {
 // A link to a survey. The link is rendered aysnchronously because we need to first check if
 // canShowSurvey succeeds.
 export class SurveyLink extends HTMLElement {
-  static litTagName = LitHtml.literal`devtools-survey-link`;
+  static readonly litTagName = LitHtml.literal`devtools-survey-link`;
 
   private readonly shadow = this.attachShadow({mode: 'open'});
   private trigger = '';
@@ -56,6 +57,10 @@ export class SurveyLink extends HTMLElement {
   private canShowSurvey: (trigger: string, callback: CanShowSurveyCallback) => void = () => {};
   private showSurvey: (trigger: string, callback: ShowSurveyCallback) => void = () => {};
   private state: State = State.Checking;
+
+  connectedCallback(): void {
+    this.shadow.adoptedStyleSheets = [surveyLinkStyles];
+  }
 
   // Re-setting data will cause the state to go back to 'Checking' which hides the link.
   set data(data: SurveyLinkData) {
@@ -116,41 +121,8 @@ export class SurveyLink extends HTMLElement {
     const ariaDisabled = this.state !== State.ShowLink;
 
     // clang-format off
+    // eslint-disable-next-line rulesdir/ban_style_tags_in_lit_html
     const output = LitHtml.html`
-      <style>
-        .link-icon {
-          vertical-align: sub;
-          margin-right: 0.5ch;
-        }
-
-        .link {
-          padding: var(--issue-link-padding, 4px 0 0 0);
-          text-decoration: var(--issue-link-text-decoration, underline);
-          cursor: pointer;
-          font-size: var(--issue-link-font-size, 14px);
-          color: var(--color-link);
-          border: none;
-          background: none;
-          font-family: inherit;
-        }
-
-        .link:focus:not(:focus-visible) {
-          outline: none;
-        }
-
-        .pending-link {
-          opacity: 75%;
-          pointer-events: none;
-          cursor: default;
-          text-decoration: none;
-        }
-
-        .disabled-link {
-          pointer-events: none;
-          cursor: default;
-          text-decoration: none;
-        }
-      </style>
       <button class="link ${linkState}" tabindex=${ariaDisabled ? '-1' : '0'} .disabled=${ariaDisabled} aria-disabled=${ariaDisabled} @click=${this.sendSurvey}>
         <${IconButton.Icon.Icon.litTagName} class="link-icon" .data=${{iconName: 'feedback_thin_16x16_icon', color: 'var(--color-link)', width: 'var(--issue-link-icon-size, 16px)', height: 'var(--issue-link-icon-size, 16px)'} as IconButton.Icon.IconData}></${IconButton.Icon.Icon.litTagName}><!--
       -->${linkText}

@@ -208,7 +208,7 @@ export class SensorsView extends UI.Widget.VBox {
 
   constructor() {
     super(true);
-    this.registerRequiredCSS('panels/emulation/sensors.css', {enableLegacyPatching: true});
+    this.registerRequiredCSS('panels/emulation/sensors.css');
     this.contentElement.classList.add('sensors-view');
 
     this._LocationSetting = Common.Settings.Settings.instance().createSetting('emulation.locationOverride', '');
@@ -408,7 +408,7 @@ export class SensorsView extends UI.Widget.VBox {
     } else {
       this._LocationSetting.set('');
     }
-    for (const emulationModel of SDK.SDKModel.TargetManager.instance().models(SDK.EmulationModel.EmulationModel)) {
+    for (const emulationModel of SDK.TargetManager.TargetManager.instance().models(SDK.EmulationModel.EmulationModel)) {
       emulationModel.emulateLocation(this._LocationOverrideEnabled ? this._Location : null).catch(err => {
         switch (err.type) {
           case 'emulation-set-timezone': {
@@ -529,7 +529,7 @@ export class SensorsView extends UI.Widget.VBox {
     if (this._deviceOrientationOverrideEnabled) {
       this._deviceOrientationSetting.set(this._deviceOrientation.toSetting());
     }
-    for (const emulationModel of SDK.SDKModel.TargetManager.instance().models(SDK.EmulationModel.EmulationModel)) {
+    for (const emulationModel of SDK.TargetManager.TargetManager.instance().models(SDK.EmulationModel.EmulationModel)) {
       emulationModel.emulateDeviceOrientation(this._deviceOrientationOverrideEnabled ? this._deviceOrientation : null);
     }
   }
@@ -596,7 +596,7 @@ export class SensorsView extends UI.Widget.VBox {
 
   _createDeviceOrientationOverrideElement(deviceOrientation: SDK.EmulationModel.DeviceOrientation):
       HTMLFieldSetElement {
-    const fieldsetElement = (document.createElement('fieldset') as HTMLFieldSetElement);
+    const fieldsetElement = document.createElement('fieldset');
     fieldsetElement.classList.add('device-orientation-override-section');
     const cellElement = fieldsetElement.createChild('td', 'orientation-inputs-cell');
 

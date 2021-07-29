@@ -39,9 +39,9 @@
 #include <string>
 #include <utility>
 
+#include "base/cxx17_backports.h"
 #include "base/debug/alias.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -57,6 +57,8 @@
 #include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/ports/SkTypeface_win.h"
 
+// For GetACP()
+#include <windows.h>
 
 namespace blink {
 
@@ -107,7 +109,7 @@ int32_t EnsureMinimumFontHeightIfNeeded(int32_t font_height) {
   // Adjustment for codepage 936 to make the fonts more legible in Simplified
   // Chinese.  Please refer to LayoutThemeFontProviderWin.cpp for more
   // information.
-  return (font_height < 12.0f) && (GetACP() == 936) ? 12.0f : font_height;
+  return ((font_height < 12.0f) && (GetACP() == 936)) ? 12.0f : font_height;
 }
 
 // Test-only code for matching sideloaded fonts by postscript name. This
@@ -135,7 +137,7 @@ sk_sp<SkTypeface> FindUniqueFontNameFromSideloadedFonts(
     FT_Open_Args open_args = {
         FT_OPEN_MEMORY,
         reinterpret_cast<const FT_Byte*>(typeface_stream->getMemoryBase()),
-        typeface_stream->getLength()};
+        static_cast<FT_Long>(typeface_stream->getLength())};
     CHECK_EQ(FT_Err_Ok, FT_Open_Face(library, &open_args, 0, &font_face));
     font_family_name = FT_Get_Postscript_Name(font_face);
     FT_Done_Face(font_face);

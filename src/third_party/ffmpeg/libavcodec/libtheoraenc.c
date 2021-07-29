@@ -346,11 +346,6 @@ static int encode_frame(AVCodecContext* avc_context, AVPacket *pkt,
     // HACK: assumes no encoder delay, this is true until libtheora becomes
     // multithreaded (which will be disabled unless explicitly requested)
     pkt->pts = pkt->dts = frame->pts;
-#if FF_API_CODED_FRAME
-FF_DISABLE_DEPRECATION_WARNINGS
-    avc_context->coded_frame->key_frame = !(o_packet.granulepos & h->keyframe_mask);
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
     if (!(o_packet.granulepos & h->keyframe_mask))
         pkt->flags |= AV_PKT_FLAG_KEY;
     *got_packet = 1;
@@ -365,14 +360,13 @@ static av_cold int encode_close(AVCodecContext* avc_context)
     th_encode_free(h->t_state);
     av_freep(&h->stats);
     av_freep(&avc_context->stats_out);
-    av_freep(&avc_context->extradata);
     avc_context->extradata_size = 0;
 
     return 0;
 }
 
 /** AVCodec struct exposed to libavcodec */
-AVCodec ff_libtheora_encoder = {
+const AVCodec ff_libtheora_encoder = {
     .name           = "libtheora",
     .long_name      = NULL_IF_CONFIG_SMALL("libtheora Theora"),
     .type           = AVMEDIA_TYPE_VIDEO,

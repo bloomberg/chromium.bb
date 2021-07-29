@@ -12,11 +12,13 @@
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/signin/public/identity_manager/tribool.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/driver/sync_service.h"
 #include "content/public/browser/render_process_host.h"
@@ -28,14 +30,23 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/constants/ash_pref_names.h"
+#include "components/account_manager_core/pref_names.h"
 #endif
 
 namespace signin {
 
+#if defined(OS_ANDROID)
+HeaderModificationDelegateImpl::HeaderModificationDelegateImpl(
+    Profile* profile,
+    bool incognito_enabled)
+    : profile_(profile),
+      cookie_settings_(CookieSettingsFactory::GetForProfile(profile_)),
+      incognito_enabled_(incognito_enabled) {}
+#else
 HeaderModificationDelegateImpl::HeaderModificationDelegateImpl(Profile* profile)
     : profile_(profile),
       cookie_settings_(CookieSettingsFactory::GetForProfile(profile_)) {}
+#endif
 
 HeaderModificationDelegateImpl::~HeaderModificationDelegateImpl() = default;
 
@@ -59,41 +70,41 @@ void HeaderModificationDelegateImpl::ProcessRequest(
   const PrefService* prefs = profile_->GetPrefs();
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
+      SyncServiceFactory::GetForProfile(profile_);
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   bool is_secondary_account_addition_allowed = true;
   if (!prefs->GetBoolean(
-          chromeos::prefs::kSecondaryGoogleAccountSigninAllowed)) {
+          ::account_manager::prefs::kSecondaryGoogleAccountSigninAllowed)) {
     is_secondary_account_addition_allowed = false;
   }
 #endif
 
   ConsentLevel consent_level = ConsentLevel::kSync;
 #if defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(kMobileIdentityConsistency))
-    consent_level = ConsentLevel::kSignin;
+  consent_level = ConsentLevel::kSignin;
 #endif
 
   IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile_);
   CoreAccountInfo account =
       identity_manager->GetPrimaryAccountInfo(consent_level);
-  absl::optional<bool> is_child_account = absl::nullopt;
-  if (!account.IsEmpty()) {
-    absl::optional<AccountInfo> extended_account_info =
-        identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
-            account);
-    if (extended_account_info.has_value()) {
-      is_child_account = absl::make_optional<bool>(
-          extended_account_info.value().is_child_account);
-    }
-  }
+  signin::Tribool is_child_account =
+      // Defaults to kUnknown if the account is not found.
+      identity_manager->FindExtendedAccountInfo(account).is_child_account;
+
+  int incognito_mode_availability =
+      prefs->GetInteger(prefs::kIncognitoModeAvailability);
+#if defined(OS_ANDROID)
+  incognito_mode_availability = incognito_enabled_
+                                    ? incognito_mode_availability
+                                    : IncognitoModePrefs::DISABLED;
+#endif
 
   FixAccountConsistencyRequestHeader(
       request_adapter, redirect_url, profile_->IsOffTheRecord(),
-      prefs->GetInteger(prefs::kIncognitoModeAvailability),
+      incognito_mode_availability,
       AccountConsistencyModeManager::GetMethodForProfile(profile_),
       account.gaia, is_child_account,
 #if BUILDFLAG(IS_CHROMEOS_ASH)

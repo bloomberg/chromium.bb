@@ -7,13 +7,13 @@
 
 #include <string>
 
-#include "ash/components/account_manager/account_manager.h"
 #include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler_modal_delegate.h"
 #include "components/account_manager_core/account_manager_facade.h"
+#include "components/account_manager_core/chromeos/account_manager.h"
 #include "components/web_modal/modal_dialog_host.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 
@@ -32,24 +32,6 @@ class InlineLoginDialogChromeOS : public SystemWebDialogDelegate,
                                   public web_modal::WebContentsModalDialogHost {
  public:
   static bool IsShown();
-
-  // Displays the dialog. |email| pre-fills the account email field in the
-  // sign-in dialog - useful for account re-authentication. |source| specifies
-  // the source UX surface used for launching the dialog.
-  // DEPRECATED: Use AccountManagerFacade instead (see
-  // https://crbug.com/1140469).
-  static void ShowDeprecated(
-      const std::string& email,
-      const ::account_manager::AccountManagerFacade::AccountAdditionSource&
-          source);
-
-  // Displays the dialog for account addition. |source| specifies the source UX
-  // surface used for launching the dialog.
-  // DEPRECATED: Use AccountManagerFacade instead (see
-  // https://crbug.com/1140469).
-  static void ShowDeprecated(
-      const ::account_manager::AccountManagerFacade::AccountAdditionSource&
-          source);
 
   // ui::SystemWebDialogDelegate overrides.
   void AdjustWidgetInitParams(views::Widget::InitParams* params) override;

@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -40,6 +41,14 @@
 namespace updater {
 namespace test {
 
+int CountDirectoryFiles(const base::FilePath& dir) {
+  base::FileEnumerator it(dir, false, base::FileEnumerator::FILES);
+  int res = 0;
+  for (base::FilePath name = it.Next(); !name.empty(); name = it.Next())
+    ++res;
+  return res;
+}
+
 void RegisterApp(const std::string& app_id) {
   scoped_refptr<UpdateService> update_service = CreateUpdateService();
   RegistrationRequest registration;
@@ -56,11 +65,11 @@ void RegisterApp(const std::string& app_id) {
 }
 
 void ExpectVersionActive(const std::string& version) {
-  EXPECT_EQ(CreateGlobalPrefs()->GetActiveVersion(), version);
+  EXPECT_EQ(CreateGlobalPrefs(GetUpdaterScope())->GetActiveVersion(), version);
 }
 
 void ExpectVersionNotActive(const std::string& version) {
-  EXPECT_NE(CreateGlobalPrefs()->GetActiveVersion(), version);
+  EXPECT_NE(CreateGlobalPrefs(GetUpdaterScope())->GetActiveVersion(), version);
 }
 
 void PrintLog(UpdaterScope scope) {
@@ -120,7 +129,8 @@ void RunWake(UpdaterScope scope, int expected_exit_code) {
 }
 
 void SetupFakeUpdaterPrefs(const base::Version& version) {
-  std::unique_ptr<GlobalPrefs> global_prefs = CreateGlobalPrefs();
+  scoped_refptr<GlobalPrefs> global_prefs =
+      CreateGlobalPrefs(GetUpdaterScope());
   ASSERT_TRUE(global_prefs) << "No global prefs.";
   global_prefs->SetActiveVersion(version.GetString());
   global_prefs->SetSwapping(false);
@@ -162,14 +172,25 @@ void SetupFakeUpdaterHigherVersion(UpdaterScope scope) {
 
 void SetExistenceCheckerPath(const std::string& app_id,
                              const base::FilePath& path) {
-  std::unique_ptr<GlobalPrefs> global_prefs = CreateGlobalPrefs();
+  scoped_refptr<GlobalPrefs> global_prefs =
+      CreateGlobalPrefs(GetUpdaterScope());
   base::MakeRefCounted<PersistedData>(global_prefs->GetPrefService())
       ->SetExistenceCheckerPath(app_id, path);
   PrefsCommitPendingWrites(global_prefs->GetPrefService());
 }
 
+void SetServerStarts(int value) {
+  scoped_refptr<GlobalPrefs> global_prefs =
+      CreateGlobalPrefs(GetUpdaterScope());
+  for (int i = 0; i <= value; ++i) {
+    global_prefs->CountServerStarts();
+  }
+  PrefsCommitPendingWrites(global_prefs->GetPrefService());
+}
+
 void ExpectAppUnregisteredExistenceCheckerPath(const std::string& app_id) {
-  std::unique_ptr<GlobalPrefs> global_prefs = CreateGlobalPrefs();
+  scoped_refptr<GlobalPrefs> global_prefs =
+      CreateGlobalPrefs(GetUpdaterScope());
   auto persisted_data =
       base::MakeRefCounted<PersistedData>(global_prefs->GetPrefService());
   EXPECT_EQ(base::FilePath(FILE_PATH_LITERAL("")).value(),
@@ -178,8 +199,8 @@ void ExpectAppUnregisteredExistenceCheckerPath(const std::string& app_id) {
 
 bool Run(UpdaterScope scope, base::CommandLine command_line, int* exit_code) {
   base::ScopedAllowBaseSyncPrimitivesForTesting allow_wait_process;
-  command_line.AppendSwitch("enable-logging");
-  command_line.AppendSwitchASCII("vmodule", "*/updater/*=2");
+  command_line.AppendSwitch(kEnableLoggingSwitch);
+  command_line.AppendSwitchASCII(kLoggingModuleSwitch, "*/updater/*=2");
   if (scope == UpdaterScope::kSystem) {
     command_line.AppendSwitch(kSystemSwitch);
     command_line = MakeElevated(command_line);

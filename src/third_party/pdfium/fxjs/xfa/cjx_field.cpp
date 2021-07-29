@@ -111,7 +111,7 @@ CJS_Result CJX_Field::getSaveItem(
     return CJS_Result::Success(runtime->NewNull());
 
   Optional<WideString> value = node->GetChoiceListItem(iIndex, true);
-  if (!value)
+  if (!value.has_value())
     return CJS_Result::Success(runtime->NewNull());
 
   return CJS_Result::Success(
@@ -177,7 +177,7 @@ CJS_Result CJX_Field::getDisplayItem(
     return CJS_Result::Success(runtime->NewNull());
 
   Optional<WideString> value = node->GetChoiceListItem(iIndex, false);
-  if (!value)
+  if (!value.has_value())
     return CJS_Result::Success(runtime->NewNull());
 
   return CJS_Result::Success(
@@ -311,12 +311,13 @@ void CJX_Field::editValue(v8::Isolate* pIsolate,
     return;
 
   if (bSetting) {
-    node->SetValue(XFA_VALUEPICTURE_Edit,
+    node->SetValue(XFA_ValuePicture::kEdit,
                    fxv8::ReentrantToWideStringHelper(pIsolate, *pValue));
     return;
   }
   *pValue = fxv8::NewStringHelper(
-      pIsolate, node->GetValue(XFA_VALUEPICTURE_Edit).ToUTF8().AsStringView());
+      pIsolate,
+      node->GetValue(XFA_ValuePicture::kEdit).ToUTF8().AsStringView());
 }
 
 void CJX_Field::formatMessage(v8::Isolate* pIsolate,
@@ -335,13 +336,13 @@ void CJX_Field::formattedValue(v8::Isolate* pIsolate,
     return;
 
   if (bSetting) {
-    node->SetValue(XFA_VALUEPICTURE_Display,
+    node->SetValue(XFA_ValuePicture::kDisplay,
                    fxv8::ReentrantToWideStringHelper(pIsolate, *pValue));
     return;
   }
   *pValue = fxv8::NewStringHelper(
       pIsolate,
-      node->GetValue(XFA_VALUEPICTURE_Display).ToUTF8().AsStringView());
+      node->GetValue(XFA_ValuePicture::kDisplay).ToUTF8().AsStringView());
 }
 
 void CJX_Field::length(v8::Isolate* pIsolate,

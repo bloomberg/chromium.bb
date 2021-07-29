@@ -37,43 +37,44 @@ discovery::Config MakeDiscoveryConfig(const InterfaceInfo& interface) {
 
 }  // namespace
 
-CastService::CastService(TaskRunner* task_runner,
-                         const InterfaceInfo& interface,
-                         GeneratedCredentials credentials,
-                         const std::string& friendly_name,
-                         const std::string& model_name,
-                         bool enable_discovery)
-    : local_endpoint_(DetermineEndpoint(interface)),
-      credentials_(std::move(credentials)),
-      agent_(task_runner, credentials_.provider.get()),
-      mirroring_application_(task_runner, local_endpoint_.address, &agent_),
+CastService::CastService(CastService::Configuration config)
+    : local_endpoint_(DetermineEndpoint(config.interface)),
+      credentials_(std::move(config.credentials)),
+      agent_(config.task_runner, credentials_.provider.get()),
+      mirroring_application_(config.task_runner,
+                             local_endpoint_.address,
+                             &agent_),
       socket_factory_(&agent_, agent_.cast_socket_client()),
       connection_factory_(
-          TlsConnectionFactory::CreateFactory(&socket_factory_, task_runner)),
-      discovery_service_(enable_discovery ? discovery::CreateDnsSdService(
-                                                task_runner,
-                                                this,
-                                                MakeDiscoveryConfig(interface))
-                                          : LazyDeletedDiscoveryService()),
+          TlsConnectionFactory::CreateFactory(&socket_factory_,
+                                              config.task_runner)),
+      discovery_service_(config.enable_discovery
+                             ? discovery::CreateDnsSdService(
+                                   config.task_runner,
+                                   this,
+                                   MakeDiscoveryConfig(config.interface))
+                             : LazyDeletedDiscoveryService()),
       discovery_publisher_(
           discovery_service_
-              ? MakeSerialDelete<discovery::DnsSdServicePublisher<ServiceInfo>>(
-                    task_runner,
+              ? MakeSerialDelete<
+                    discovery::DnsSdServicePublisher<ReceiverInfo>>(
+                    config.task_runner,
                     discovery_service_.get(),
                     kCastV2ServiceId,
-                    ServiceInfoToDnsSdInstance)
+                    ReceiverInfoToDnsSdInstance)
               : LazyDeletedDiscoveryPublisher()) {
   connection_factory_->SetListenCredentials(credentials_.tls_credentials);
   connection_factory_->Listen(local_endpoint_, kDefaultListenOptions);
 
   if (discovery_publisher_) {
-    ServiceInfo info;
+    ReceiverInfo info;
     info.port = local_endpoint_.port;
-    info.unique_id = HexEncode(interface.hardware_address);
-    info.friendly_name = friendly_name;
-    info.model_name = model_name;
+    info.unique_id = HexEncode(config.interface.hardware_address.data(),
+                               config.interface.hardware_address.size());
+    info.friendly_name = config.friendly_name;
+    info.model_name = config.model_name;
     info.capabilities = kHasVideoOutput | kHasAudioOutput;
-    Error error = discovery_publisher_->Register(info);
+    const Error error = discovery_publisher_->Register(info);
     if (!error.ok()) {
       OnFatalError(std::move(error));
     }

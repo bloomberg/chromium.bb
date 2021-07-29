@@ -16,8 +16,8 @@
 #include "chrome/browser/policy/profile_policy_connector_builder.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
-#include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
+#include "chrome/browser/sync/test/integration/sync_service_impl_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
@@ -25,8 +25,8 @@
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
-#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_service_impl.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 #include "components/sync/engine/loopback_server/persistent_permanent_entity.h"
 #include "content/public/test/browser_test.h"
@@ -222,10 +222,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SC_SetFaviconHiDPI) {
   // Set the supported scale factors to include 2x such that CreateFavicon()
   // creates a favicon with hidpi representations and that methods in the
   // FaviconService request hidpi favicons.
-  std::vector<ui::ScaleFactor> supported_scale_factors;
+  std::vector<ui::ResourceScaleFactor> supported_scale_factors;
   supported_scale_factors.push_back(ui::SCALE_FACTOR_100P);
   supported_scale_factors.push_back(ui::SCALE_FACTOR_200P);
-  ui::SetSupportedScaleFactors(supported_scale_factors);
+  ui::SetSupportedResourceScaleFactors(supported_scale_factors);
 
   const GURL page_url(kGenericURL);
   const GURL icon_url1("http://www.google.com/favicon1.ico");
@@ -277,9 +277,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
                        SC_UpdatingTitleDoesNotUpdateFaviconLastUpdatedTime) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
-  std::vector<ui::ScaleFactor> supported_scale_factors;
+  std::vector<ui::ResourceScaleFactor> supported_scale_factors;
   supported_scale_factors.push_back(ui::SCALE_FACTOR_100P);
-  ui::SetSupportedScaleFactors(supported_scale_factors);
+  ui::SetSupportedResourceScaleFactors(supported_scale_factors);
 
   const GURL page_url(kGenericURL);
   const GURL icon_url("http://www.google.com/favicon.ico");
@@ -2429,9 +2429,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, RacyPositionChanges) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   // Add initial bookmarks.
-  const size_t num_bookmarks = 5;
+  constexpr size_t kNumBookmarks = 5;
   std::vector<BookmarkNodeMatcher> matchers;
-  for (size_t i = 0; i < num_bookmarks; ++i) {
+  for (size_t i = 0; i < kNumBookmarks; ++i) {
     ASSERT_NE(nullptr, AddURL(0, i, IndexedURLTitle(i), GURL(IndexedURL(i))));
     matchers.push_back(
         IsUrlBookmarkWithTitleAndUrl(IndexedURLTitle(i), GURL(IndexedURL(i))));
@@ -2440,18 +2440,20 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, RacyPositionChanges) {
   ASSERT_TRUE(BookmarksMatchChecker().Wait());
 
   // Make changes on client 0.
-  for (size_t i = 0; i < num_bookmarks; ++i) {
+  for (size_t i = 0; i < kNumBookmarks; ++i) {
     const BookmarkNode* node = GetUniqueNodeByURL(0, GURL(IndexedURL(i)));
-    size_t rand_pos = size_t{base::RandInt(0, int{num_bookmarks} - 1)};
+    size_t rand_pos =
+        static_cast<size_t>(base::RandInt(0, int{kNumBookmarks} - 1));
     DVLOG(1) << "Moving client 0's bookmark " << i << " to position "
              << rand_pos;
     Move(0, node, node->parent(), rand_pos);
   }
 
   // Make changes on client 1.
-  for (size_t i = 0; i < num_bookmarks; ++i) {
+  for (size_t i = 0; i < kNumBookmarks; ++i) {
     const BookmarkNode* node = GetUniqueNodeByURL(1, GURL(IndexedURL(i)));
-    size_t rand_pos = size_t{base::RandInt(0, int{num_bookmarks} - 1)};
+    size_t rand_pos =
+        static_cast<size_t>(base::RandInt(0, int{kNumBookmarks} - 1));
     DVLOG(1) << "Moving client 1's bookmark " << i << " to position "
              << rand_pos;
     Move(1, node, node->parent(), rand_pos);
@@ -2460,18 +2462,20 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, RacyPositionChanges) {
   ASSERT_TRUE(BookmarksMatchChecker().Wait());
 
   // Now make changes to client 1 first.
-  for (size_t i = 0; i < num_bookmarks; ++i) {
+  for (size_t i = 0; i < kNumBookmarks; ++i) {
     const BookmarkNode* node = GetUniqueNodeByURL(1, GURL(IndexedURL(i)));
-    size_t rand_pos = size_t{base::RandInt(0, int{num_bookmarks} - 1)};
+    size_t rand_pos =
+        static_cast<size_t>(base::RandInt(0, int{kNumBookmarks} - 1));
     DVLOG(1) << "Moving client 1's bookmark " << i << " to position "
              << rand_pos;
     Move(1, node, node->parent(), rand_pos);
   }
 
   // Make changes on client 0.
-  for (size_t i = 0; i < num_bookmarks; ++i) {
+  for (size_t i = 0; i < kNumBookmarks; ++i) {
     const BookmarkNode* node = GetUniqueNodeByURL(0, GURL(IndexedURL(i)));
-    size_t rand_pos = size_t{base::RandInt(0, int{num_bookmarks} - 1)};
+    size_t rand_pos =
+        static_cast<size_t>(base::RandInt(0, int{kNumBookmarks} - 1));
     DVLOG(1) << "Moving client 0's bookmark " << i << " to position "
              << rand_pos;
     Move(0, node, node->parent(), rand_pos);

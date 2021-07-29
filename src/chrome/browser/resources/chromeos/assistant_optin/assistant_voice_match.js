@@ -28,6 +28,25 @@ Polymer({
 
   behaviors: [OobeI18nBehavior, MultiStepBehavior],
 
+  properties: {
+    /**
+     * Indicates whether to use same design for accept/decline buttons.
+     */
+    equalWeightButtons_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * The given name of the user, if a child account is in use; otherwise,
+     * this is an empty string.
+     */
+    childName_: {
+      type: String,
+      value: '',
+    },
+  },
+
   /**
    * Whether voice match is the first screen of the flow.
    * @type {boolean}
@@ -108,6 +127,14 @@ Polymer({
   /** @override */
   created() {
     this.browserProxy_ = assistant.BrowserProxyImpl.getInstance();
+  },
+
+  /**
+   * Reload the page with the given settings data.
+   */
+  reloadContent(data) {
+    this.equalWeightButtons_ = data['equalWeightButtons'];
+    this.childName_ = data['childName'];
   },
 
   /**
@@ -194,9 +221,34 @@ Polymer({
   },
 
   /**
+   * Returns the text for dialog title.
+   */
+  getDialogTitle_(locale, uiStep, childName) {
+    if (uiStep == VoiceMatchUIState.INTRO) {
+      return childName ?
+          this.i18n('assistantVoiceMatchTitleForChild', childName) :
+          this.i18n('assistantVoiceMatchTitle');
+    } else if (uiStep === VoiceMatchUIState.RECORDING) {
+      return childName ?
+          this.i18n('assistantVoiceMatchRecordingForChild', childName) :
+          this.i18n('assistantVoiceMatchRecording');
+    } else if (uiStep === VoiceMatchUIState.COMPLETED) {
+      return this.i18n('assistantVoiceMatchCompleted');
+    }
+  },
+
+  /**
    * Returns the text for subtitle.
    */
-  getSubtitleMessage_(locale) {
-    return this.i18nAdvanced('assistantVoiceMatchMessage');
+  getSubtitleMessage_(locale, uiStep, childName) {
+    if (uiStep == VoiceMatchUIState.INTRO) {
+      return childName ? this.i18nAdvanced(
+                             'assistantVoiceMatchMessageForChild',
+                             {substitutions: [childName]}) :
+                         this.i18nAdvanced('assistantVoiceMatchMessage');
+    } else if (uiStep === VoiceMatchUIState.RECORDING) {
+      return this.i18nAdvanced(
+          'assistantVoiceMatchFooterForChild', {substitutions: [childName]});
+    }
   },
 });

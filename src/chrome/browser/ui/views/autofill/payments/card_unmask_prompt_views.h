@@ -20,7 +20,6 @@ class WebContents;
 }  // namespace content
 
 namespace views {
-class Checkbox;
 class Combobox;
 class Label;
 class Textfield;
@@ -54,7 +53,6 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   void AddedToWidget() override;
   void OnThemeChanged() override;
   std::u16string GetWindowTitle() const override;
-  void DeleteDelegate() override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   View* GetInitiallyFocusedView() override;
   bool ShouldShowCloseButton() const override;
@@ -104,7 +102,6 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   views::Label* error_label_ = nullptr;
 
   views::View* controls_container_ = nullptr;
-  views::Checkbox* storage_checkbox_ = nullptr;
 
   // Elements related to progress or error when the request is being made.
   views::View* overlay_ = nullptr;

@@ -5,6 +5,7 @@
 import * as LitHtml from '../../lit-html/lit-html.js';
 import type * as Marked from '../../../third_party/marked/marked.js';
 import * as ComponentHelpers from '../../components/helpers/helpers.js';
+import markdownViewStyles from './markdownView.css.js';
 
 import type {MarkdownImageData} from './MarkdownImage.js';
 import type {MarkdownLinkData} from './MarkdownLink.js';
@@ -19,10 +20,15 @@ export interface MarkdownViewData {
 }
 
 export class MarkdownView extends HTMLElement {
+  static readonly litTagName = LitHtml.literal`devtools-markdown-view`;
   private readonly shadow = this.attachShadow({mode: 'open'});
 
   // TODO(crbug.com/1108699): Replace with `Marked.Marked.Token[]` once AST types are fixed upstream.
   private tokenData: readonly Object[] = [];
+
+  connectedCallback(): void {
+    this.shadow.adoptedStyleSheets = [markdownViewStyles];
+  }
 
   set data(data: MarkdownViewData) {
     this.tokenData = data.tokens;
@@ -37,47 +43,6 @@ export class MarkdownView extends HTMLElement {
     // Disabled until https://crbug.com/1079231 is fixed.
     // clang-format off
     render(html`
-      <style>
-      .message {
-        line-height: 20px;
-        font-size: 14px;
-        color: var(--color-text-secondary);
-        margin-bottom: 4px;
-        user-select: text;
-      }
-
-      .message p {
-        margin-bottom: 16px;
-        margin-block-start: 2px;
-      }
-
-      .message ul {
-        list-style-type: none;
-        list-style-position: inside;
-        padding-inline-start: 0;
-      }
-
-      .message li {
-        margin-top: 8px;
-        display: list-item;
-      }
-
-      .message li::before {
-        content: "→";
-        -webkit-mask-image: none;
-        padding-right: 5px;
-        position: relative;
-        top: -1px;
-      }
-
-      .message code {
-        color: var(--color-text-primary);
-        font-size: 12px;
-        user-select: text;
-        cursor: text;
-        background: var(--color-background-elevation-1);
-      }
-      </style>
       <div class='message'>
         ${this.tokenData.map(renderToken)}
       </div>
@@ -132,21 +97,21 @@ const renderText = (token: any): LitHtml.TemplateResult => {
 // TODO(crbug.com/1108699): Fix types when they are available.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const tokenRenderers = new Map<string, (token: any) => LitHtml.TemplateResult>([
-  ['paragraph', (token): LitHtml.TemplateResult => html`<p>${renderChildTokens(token)}</p>`],
+  ['paragraph', (token): LitHtml.TemplateResult => html`<p>${renderChildTokens(token)}`],
   ['list', (token): LitHtml.TemplateResult => html`<ul>${token.items.map(renderToken)}</ul>`],
-  ['list_item', (token): LitHtml.TemplateResult => html`<li>${renderChildTokens(token)}</li>`],
+  ['list_item', (token): LitHtml.TemplateResult => html`<li>${renderChildTokens(token)}`],
   ['text', renderText],
   ['codespan', (token): LitHtml.TemplateResult => html`<code>${unescape(token.text)}</code>`],
   ['space', (): LitHtml.TemplateResult => html``],
   [
     'link',
-    (token): LitHtml.TemplateResult => html`<${MarkdownLink.litTagName} .data=${
-        {key: token.href, title: token.text} as MarkdownLinkData}></${MarkdownLink.litTagName}>`,
+    (token): LitHtml.TemplateResult => html`<${MarkdownLink.litTagName} .data="${
+        {key: token.href, title: token.text} as MarkdownLinkData}"></${MarkdownLink.litTagName}>`,
   ],
   [
     'image',
-    (token): LitHtml.TemplateResult => html`<${MarkdownImage.litTagName} .data=${
-        {key: token.href, title: token.text} as MarkdownImageData}></${MarkdownImage.litTagName}>`,
+    (token): LitHtml.TemplateResult => html`<${MarkdownImage.litTagName} .data="${
+        {key: token.href, title: token.text} as MarkdownImageData}"></${MarkdownImage.litTagName}>`,
   ],
 ]);
 

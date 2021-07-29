@@ -38,6 +38,7 @@
 #include "build/build_config.h"
 #include "cc/animation/animation_host.h"
 #include "cc/layers/picture_layer.h"
+#include "cc/trees/paint_holding_reason.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
@@ -108,6 +109,7 @@
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/widget/frame_widget.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_concatenate.h"
@@ -255,13 +257,11 @@ Page* ChromeClientImpl::CreateWindowDelegate(
   NotifyPopupOpeningObservers();
   const AtomicString& frame_name =
       !EqualIgnoringASCIICase(name, "_blank") ? name : g_empty_atom;
-  WebViewImpl* new_view =
-      static_cast<WebViewImpl*>(web_view_->Client()->CreateView(
-          WebLocalFrameImpl::FromFrame(frame),
-          WrappedResourceRequest(r.GetResourceRequest()), features, frame_name,
-          static_cast<WebNavigationPolicy>(r.GetNavigationPolicy()),
-          sandbox_flags, session_storage_namespace_id, consumed_user_gesture,
-          r.Impression()));
+  WebViewImpl* new_view = To<WebViewImpl>(web_view_->Client()->CreateView(
+      WebLocalFrameImpl::FromFrame(frame),
+      WrappedResourceRequest(r.GetResourceRequest()), features, frame_name,
+      static_cast<WebNavigationPolicy>(r.GetNavigationPolicy()), sandbox_flags,
+      session_storage_namespace_id, consumed_user_gesture, r.Impression()));
   if (!new_view)
     return nullptr;
   return new_view->GetPage();
@@ -469,11 +469,13 @@ float ChromeClientImpl::WindowToViewportScalar(LocalFrame* frame,
   return frame->GetWidgetForLocalRoot()->DIPsToBlinkSpace(scalar_value);
 }
 
-const ScreenInfo& ChromeClientImpl::GetScreenInfo(LocalFrame& frame) const {
+const display::ScreenInfo& ChromeClientImpl::GetScreenInfo(
+    LocalFrame& frame) const {
   return frame.GetWidgetForLocalRoot()->GetScreenInfo();
 }
 
-const ScreenInfos& ChromeClientImpl::GetScreenInfos(LocalFrame& frame) const {
+const display::ScreenInfos& ChromeClientImpl::GetScreenInfos(
+    LocalFrame& frame) const {
   return frame.GetWidgetForLocalRoot()->GetScreenInfos();
 }
 
@@ -585,7 +587,9 @@ void ChromeClientImpl::UpdateTooltipFromKeyboard(LocalFrame& frame,
   if (!RuntimeEnabledFeatures::KeyboardAccessibleTooltipEnabled())
     return;
 
-  // TODO(bebeaudr): Add WidgetHost function and call it here.
+  WebLocalFrameImpl::FromFrame(frame)
+      ->LocalRootFrameWidget()
+      ->UpdateTooltipFromKeyboard(tooltip_text, dir, bounds);
 }
 
 void ChromeClientImpl::DispatchViewportPropertiesDidChange(
@@ -595,8 +599,8 @@ void ChromeClientImpl::DispatchViewportPropertiesDidChange(
 
 void ChromeClientImpl::PrintDelegate(LocalFrame* frame) {
   NotifyPopupOpeningObservers();
-  if (web_view_->Client())
-    web_view_->Client()->PrintPage(WebLocalFrameImpl::FromFrame(frame));
+  WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(frame);
+  web_frame->Client()->ScriptedPrint();
 }
 
 ColorChooser* ChromeClientImpl::OpenColorChooser(
@@ -659,13 +663,9 @@ void ChromeClientImpl::OpenFileChooser(
     scoped_refptr<FileChooser> file_chooser) {
   NotifyPopupOpeningObservers();
 
-  Document* doc = frame->GetDocument();
-  if (doc)
-    doc->MaybeQueueSendDidEditFieldInInsecureContext();
-
   static const wtf_size_t kMaximumPendingFileChooseRequests = 4;
   if (file_chooser_queue_.size() > kMaximumPendingFileChooseRequests) {
-    // This sanity check prevents too many file choose requests from getting
+    // This check prevents too many file choose requests from getting
     // queued which could DoS the user. Getting these is most likely a
     // programming error (there are many ways to DoS the user so it's not
     // considered a "real" security check), either in JS requesting many file
@@ -984,12 +984,13 @@ void ChromeClientImpl::BeginLifecycleUpdates(LocalFrame& main_frame) {
   web_view_->StopDeferringMainFrameUpdate();
 }
 
-void ChromeClientImpl::StartDeferringCommits(LocalFrame& main_frame,
-                                             base::TimeDelta timeout) {
+bool ChromeClientImpl::StartDeferringCommits(LocalFrame& main_frame,
+                                             base::TimeDelta timeout,
+                                             cc::PaintHoldingReason reason) {
   DCHECK(main_frame.IsMainFrame());
-  WebLocalFrameImpl::FromFrame(main_frame)
+  return WebLocalFrameImpl::FromFrame(main_frame)
       ->FrameWidgetImpl()
-      ->StartDeferringCommits(timeout);
+      ->StartDeferringCommits(timeout, reason);
 }
 
 void ChromeClientImpl::StopDeferringCommits(
@@ -1099,7 +1100,6 @@ void ChromeClientImpl::DidChangeValueInTextField(
     UseCounter::Count(doc, doc.GetExecutionContext()->IsSecureContext()
                                ? WebFeature::kFieldEditInSecureContext
                                : WebFeature::kFieldEditInNonSecureContext);
-    doc.MaybeQueueSendDidEditFieldInInsecureContext();
     // The resource coordinator is not available in some tests.
     if (auto* rc = doc.GetResourceCoordinator())
       rc->SetHadFormInteraction();

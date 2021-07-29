@@ -39,8 +39,9 @@ using testing::Return;
 class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
  public:
   FakeAutocompleteProviderClient()
-      : template_url_service_(new TemplateURLService(nullptr, 0)) {
-    pref_service_.registry()->RegisterBooleanPref(
+      : template_url_service_(new TemplateURLService(nullptr, 0)),
+        pref_service_(new TestingPrefServiceSimple()) {
+    pref_service_->registry()->RegisterBooleanPref(
         omnibox::kDocumentSuggestEnabled, true);
   }
   FakeAutocompleteProviderClient(const FakeAutocompleteProviderClient&) =
@@ -58,11 +59,11 @@ class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
     return template_url_service_.get();
   }
 
-  PrefService* GetPrefs() override { return &pref_service_; }
+  PrefService* GetPrefs() const override { return pref_service_.get(); }
 
  private:
   std::unique_ptr<TemplateURLService> template_url_service_;
-  TestingPrefServiceSimple pref_service_;
+  std::unique_ptr<TestingPrefServiceSimple> pref_service_;
 };
 
 }  // namespace
@@ -508,37 +509,10 @@ TEST_F(DocumentProviderTest, MatchDescriptionString) {
   ASSERT_TRUE(response->is_dict());
   provider_->input_.UpdateText(u"input", 0, {});
 
-  // Verify correct formatting when the DisplayOwner feature param is false.
+  // Verify correct formatting when displaying owner.
   {
     base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeatureWithParameters(
-        omnibox::kDocumentProvider, {
-                                        {"DisplayOwner", "false"},
-                                    });
-    ACMatches matches = provider_->ParseDocumentSearchResults(*response);
-
-    EXPECT_EQ(matches.size(), 5u);
-    EXPECT_EQ(matches[0].description, u"1/12/94 - Google Docs");
-    EXPECT_EQ(matches[1].description, u"1/12/94 - Google Drive");
-    EXPECT_EQ(matches[2].description, u"1/12/94 - Google Sheets");
-    EXPECT_EQ(matches[3].description, u"Google Sheets");
-    EXPECT_EQ(matches[4].description, u"");
-
-    // Also verify description_for_shortcuts does not include dates.
-    EXPECT_EQ(matches[0].description_for_shortcuts, u"Google Docs");
-    EXPECT_EQ(matches[1].description_for_shortcuts, u"Google Drive");
-    EXPECT_EQ(matches[2].description_for_shortcuts, u"Google Sheets");
-    EXPECT_EQ(matches[3].description_for_shortcuts, u"Google Sheets");
-    EXPECT_EQ(matches[4].description_for_shortcuts, u"");
-  }
-
-  // Verify correct formatting when the DisplayOwner feature param is true.
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeatureWithParameters(
-        omnibox::kDocumentProvider, {
-                                        {"DisplayOwner", "true"},
-                                    });
+    feature_list.InitAndEnableFeature(omnibox::kDocumentProvider);
     ACMatches matches = provider_->ParseDocumentSearchResults(*response);
 
     EXPECT_EQ(matches.size(), 5u);

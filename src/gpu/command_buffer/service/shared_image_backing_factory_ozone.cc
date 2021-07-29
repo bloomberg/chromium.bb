@@ -8,6 +8,7 @@
 #include <dawn_native/DawnNative.h>
 
 #include "base/logging.h"
+#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/shared_image_backing_ozone.h"
 #include "ui/gl/buildflags.h"
 
@@ -72,10 +73,39 @@ SharedImageBackingFactoryOzone::CreateSharedImage(
   return nullptr;
 }
 
-bool SharedImageBackingFactoryOzone::CanImportGpuMemoryBuffer(
-    gfx::GpuMemoryBufferType memory_buffer_type) {
-  NOTIMPLEMENTED_LOG_ONCE();
-  return false;
+bool SharedImageBackingFactoryOzone::IsSupported(
+    uint32_t usage,
+    viz::ResourceFormat format,
+    bool thread_safe,
+    gfx::GpuMemoryBufferType gmb_type,
+    GrContextType gr_context_type,
+    bool* allow_legacy_mailbox,
+    bool is_pixel_used) {
+  if (is_pixel_used) {
+    return false;
+  }
+  // Doesn't support gmb for now
+  if (gmb_type != gfx::EMPTY_BUFFER) {
+    return false;
+  }
+  // TODO(crbug.com/969114): Not all shared image factory implementations
+  // support concurrent read/write usage.
+  if (usage & SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE) {
+    return false;
+  }
+
+  // TODO(hitawala): Until SharedImageBackingOzone supports all use cases prefer
+  // using SharedImageBackingGLImage instead
+  bool needs_interop_factory = (gr_context_type == GrContextType::kVulkan &&
+                                (usage & SHARED_IMAGE_USAGE_DISPLAY)) ||
+                               (usage & SHARED_IMAGE_USAGE_WEBGPU) ||
+                               (usage & SHARED_IMAGE_USAGE_VIDEO_DECODE);
+  if (!needs_interop_factory) {
+    return false;
+  }
+
+  *allow_legacy_mailbox = false;
+  return true;
 }
 
 }  // namespace gpu

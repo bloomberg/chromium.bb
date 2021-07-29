@@ -20,7 +20,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
-#include "components/services/storage/public/cpp/storage_key.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
@@ -40,10 +39,12 @@
 #include "net/base/test_completion_callback.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_registration_options.mojom.h"
 
 namespace content {
 namespace service_worker_version_unittest {
@@ -97,12 +98,13 @@ class ServiceWorkerVersionTest : public testing::Test {
     blink::mojom::ServiceWorkerRegistrationOptions options;
     options.scope = scope_;
     registration_ = CreateNewServiceWorkerRegistration(
-        helper_->context()->registry(), options);
+        helper_->context()->registry(), options,
+        blink::StorageKey(url::Origin::Create(scope_)));
     version_ = CreateNewServiceWorkerVersion(
         helper_->context()->registry(), registration_.get(),
         GURL("https://www.example.com/test/service_worker.js"),
         blink::mojom::ScriptType::kClassic);
-    EXPECT_EQ(url::Origin::Create(scope_), version_->origin());
+    EXPECT_EQ(url::Origin::Create(scope_), version_->key().origin());
     std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records;
     records.push_back(WriteToDiskCacheWithIdSync(
         helper_->context()->GetStorageControl(), version_->script_url(), 10,
@@ -350,7 +352,7 @@ TEST_F(ServiceWorkerVersionTest, StartUnregisteredButStillLiveWorker) {
   base::RunLoop run_loop;
   helper_->context()->registry()->DeleteRegistration(
       registration_,
-      storage::StorageKey(url::Origin::Create(registration_->scope())),
+      blink::StorageKey(url::Origin::Create(registration_->scope())),
       ReceiveServiceWorkerStatus(&status, run_loop.QuitClosure()));
   run_loop.Run();
   ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
@@ -1145,8 +1147,10 @@ TEST_F(ServiceWorkerVersionTest, BadOrigin) {
   const GURL scope("bad-origin://www.example.com/test/");
   blink::mojom::ServiceWorkerRegistrationOptions options;
   options.scope = scope;
+
   auto registration = CreateNewServiceWorkerRegistration(
-      helper_->context()->registry(), options);
+      helper_->context()->registry(), options,
+      blink::StorageKey(url::Origin::Create(scope)));
   auto version = CreateNewServiceWorkerVersion(
       helper_->context()->registry(), registration_.get(),
       GURL("bad-origin://www.example.com/test/service_worker.js"),
@@ -1254,9 +1258,10 @@ TEST_F(ServiceWorkerVersionTest,
   // worker. This should cause the worker to stop being considered foreground
   // priority.
   container_host->OnBeginNavigationCommit(
-      version_->embedded_worker()->process_id(),
-      /* render_frame_id = */ 1, network::CrossOriginEmbedderPolicy(),
-      std::move(reporter), ukm::UkmRecorder::GetNewSourceID());
+      GlobalRenderFrameHostId(version_->embedded_worker()->process_id(),
+                              /*frame_routing_id=*/1),
+      network::CrossOriginEmbedderPolicy(), std::move(reporter),
+      ukm::UkmRecorder::GetNewSourceID());
 
   // RenderProcessHost should be notified of foreground worker.
   base::RunLoop().RunUntilIdle();

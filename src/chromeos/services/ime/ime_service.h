@@ -11,9 +11,10 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "chromeos/services/ime/decoder/decoder_engine.h"
 #include "chromeos/services/ime/input_engine.h"
 #include "chromeos/services/ime/public/cpp/shared_lib/interfaces.h"
-#include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
+#include "chromeos/services/ime/public/mojom/ime_service.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -43,6 +44,11 @@ class ImeService : public mojom::ImeService,
       mojo::PendingRemote<mojom::InputChannel> from_engine,
       const std::vector<uint8_t>& extra,
       ConnectToImeEngineCallback callback) override;
+  void ConnectToInputMethod(
+      const std::string& ime_spec,
+      mojo::PendingReceiver<mojom::InputMethod> input_method,
+      mojo::PendingRemote<mojom::InputMethodHost> input_method_host,
+      ConnectToInputMethodCallback callback) override;
 
   // ImeCrosPlatform overrides:
   const char* GetImeBundleDir() override;
@@ -69,12 +75,14 @@ class ImeService : public mojom::ImeService,
   void SimpleDownloadFinishedV2(SimpleDownloadCallbackV2 callback,
                                 const std::string& url_str,
                                 const base::FilePath& file);
+  const MojoSystemThunks* GetMojoSystemThunks() override;
 
   mojo::Receiver<mojom::ImeService> receiver_;
   scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
 
   // For the duration of this service lifetime, there should be only one
-  // input engine instance.
+  // decoder engine or input engine instance.
+  std::unique_ptr<DecoderEngine> decoder_engine_;
   std::unique_ptr<InputEngine> input_engine_;
 
   // Platform delegate for access to privilege resources.

@@ -99,16 +99,11 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
     }
 
     /**
-     * Should be called when the app starts showing a view with multiple tabs.
-     */
-    public void onTabsViewShown() {
-    }
-
-    /**
      * Should be called once the native library is loaded so that the actual internals of this
      * class can be initialized.
      * @param tabContentProvider A {@link TabContentManager} instance.
      */
+    @Override
     public void onNativeLibraryReady(TabContentManager tabContentProvider) {
         assert mTabContentManager == null : "onNativeLibraryReady called twice!";
 
@@ -161,19 +156,8 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
             }
 
             @Override
-            public void onPageLoadFinished(Tab tab, GURL url) {
-                tab.getId();
-            }
-
-            @Override
-            public void onPageLoadFailed(Tab tab, int errorCode) {
-                tab.getId();
-            }
-
-            @Override
             public void onCrash(Tab tab) {
                 if (SadTab.isShowing(tab)) mTabContentManager.removeTabThumbnail(tab.getId());
-                tab.getId();
             }
 
             @Override
@@ -298,11 +282,5 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
     @Override
     public boolean isSessionRestoreInProgress() {
         return mSessionRestoreInProgress.get();
-    }
-
-    // TODO(tedchoc): Remove the need for this to be exposed.
-    @Override
-    public void notifyChanged() {
-        super.notifyChanged();
     }
 }

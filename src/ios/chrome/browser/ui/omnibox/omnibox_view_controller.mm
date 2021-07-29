@@ -22,7 +22,6 @@
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/common/ui/colors/dynamic_color_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/pointer_interaction_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -107,16 +106,10 @@ const CGFloat kClearButtonSize = 28.0f;
 #pragma mark - UIViewController
 
 - (void)loadView {
-  UIColor* textColor = color::DarkModeDynamicColor(
-      [UIColor colorNamed:kTextPrimaryColor], self.incognito,
-      [UIColor colorNamed:kTextPrimaryDarkColor]);
-  UIColor* textFieldTintColor = color::DarkModeDynamicColor(
-      [UIColor colorNamed:kBlueColor], self.incognito,
-      [UIColor colorNamed:kBlueDarkColor]);
+  UIColor* textColor = [UIColor colorNamed:kTextPrimaryColor];
+  UIColor* textFieldTintColor = [UIColor colorNamed:kBlueColor];
   UIColor* iconTintColor;
-  iconTintColor = color::DarkModeDynamicColor(
-      [UIColor colorNamed:kToolbarButtonColor], self.incognito,
-      [UIColor colorNamed:kToolbarButtonDarkColor]);
+  iconTintColor = [UIColor colorNamed:kToolbarButtonColor];
 
   self.view = [[OmniboxContainerView alloc] initWithFrame:CGRectZero
                                                 textColor:textColor
@@ -430,9 +423,7 @@ const CGFloat kClearButtonSize = 28.0f;
 
 // Tint color for the textfield placeholder and the clear button.
 - (UIColor*)placeholderAndClearButtonColor {
-  return color::DarkModeDynamicColor(
-      [UIColor colorNamed:kTextfieldPlaceholderColor], self.incognito,
-      [UIColor colorNamed:kTextfieldPlaceholderDarkColor]);
+  return [UIColor colorNamed:kTextfieldPlaceholderColor];
 }
 
 #pragma mark notification callbacks

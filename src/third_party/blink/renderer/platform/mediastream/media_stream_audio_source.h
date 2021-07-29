@@ -9,7 +9,6 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/audio_capturer_source.h"
 #include "media/base/limits.h"
@@ -70,6 +69,8 @@ class PLATFORM_EXPORT MediaStreamAudioSource
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       bool is_local_source,
       bool disable_local_echo);
+  MediaStreamAudioSource(const MediaStreamAudioSource&) = delete;
+  MediaStreamAudioSource& operator=(const MediaStreamAudioSource&) = delete;
   ~MediaStreamAudioSource() override;
 
   // Returns the MediaStreamAudioSource instance owned by the given blink
@@ -129,7 +130,7 @@ class PLATFORM_EXPORT MediaStreamAudioSource
   }
 
   absl::optional<media::AudioCapturerSource::ErrorCode> ErrorCode() {
-    DCHECK(task_runner_->BelongsToCurrentThread());
+    DCHECK(GetTaskRunner()->BelongsToCurrentThread());
     return error_code_;
   }
 
@@ -181,9 +182,6 @@ class PLATFORM_EXPORT MediaStreamAudioSource
   // Sets muted state and notifies it to all registered tracks.
   void SetMutedState(bool state);
 
-  // Gets the TaskRunner for the main thread, for subclasses that need it.
-  base::SingleThreadTaskRunner* GetTaskRunner() const;
-
   // Maximum number of channels preferred by any connected track or -1 if
   // unknown.
   int NumPreferredChannels() const;
@@ -204,7 +202,7 @@ class PLATFORM_EXPORT MediaStreamAudioSource
   void LogMessage(const std::string& message);
 
   void SetErrorCode(media::AudioCapturerSource::ErrorCode code) {
-    DCHECK(task_runner_->BelongsToCurrentThread());
+    DCHECK(GetTaskRunner()->BelongsToCurrentThread());
     error_code_ = code;
   }
 
@@ -225,19 +223,12 @@ class PLATFORM_EXPORT MediaStreamAudioSource
   // Manages tracks connected to this source and the audio format and data flow.
   MediaStreamAudioDeliverer<MediaStreamAudioTrack> deliverer_;
 
-  // The task runner for main thread. Also used to check that all methods that
-  // could cause object graph or data flow changes are being called on the main
-  // thread.
-  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-
   // Code set if this source was closed due to an error.
   absl::optional<media::AudioCapturerSource::ErrorCode> error_code_;
 
   // Provides weak pointers so that MediaStreamAudioTracks won't call
   // StopAudioDeliveryTo() if this instance dies first.
   base::WeakPtrFactory<MediaStreamAudioSource> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(MediaStreamAudioSource);
 };
 
 }  // namespace blink

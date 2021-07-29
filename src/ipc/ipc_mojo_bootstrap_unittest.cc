@@ -26,8 +26,15 @@ class Connection {
   explicit Connection(std::unique_ptr<IPC::MojoBootstrap> bootstrap,
                       int32_t sender_id)
       : bootstrap_(std::move(bootstrap)) {
-    bootstrap_->Connect(&sender_, &receiver_);
+    mojo::PendingAssociatedRemote<IPC::mojom::Channel> sender;
+    bootstrap_->Connect(&sender, &receiver_);
+    sender_.Bind(std::move(sender));
     sender_->SetPeerPid(sender_id);
+
+    // It's OK to start receiving right away even though `receiver_` isn't
+    // bound, because all of these tests are single-threaded and it will be
+    // bound before any incoming messages can be scheduled for processing.
+    bootstrap_->StartReceiving();
   }
 
   void TakeReceiver(
@@ -86,9 +93,7 @@ class PeerPidReceiver : public IPC::mojom::Channel {
   }
 
   void GetAssociatedInterface(
-      const std::string& name,
-      mojo::PendingAssociatedReceiver<IPC::mojom::GenericInterface> receiver)
-      override {}
+      mojo::GenericPendingAssociatedReceiver receiver) override {}
 
   int32_t peer_pid() const { return peer_pid_; }
 

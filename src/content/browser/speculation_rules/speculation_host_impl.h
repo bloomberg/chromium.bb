@@ -7,18 +7,22 @@
 
 #include <vector>
 
-#include "content/public/browser/frame_service_base.h"
+#include "base/containers/flat_set.h"
+#include "content/common/content_export.h"
+#include "content/public/browser/document_service_base.h"
 #include "content/public/browser/speculation_host_delegate.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/mojom/speculation_rules/speculation_rules.mojom.h"
 
 namespace content {
 class RenderFrameHost;
+class PrerenderHostRegistry;
+class Page;
 
 // Receiver for speculation rules from the web platform. See
 // third_party/blink/renderer/core/speculation_rules/README.md
-class SpeculationHostImpl
-    : public content::FrameServiceBase<blink::mojom::SpeculationHost> {
+class CONTENT_EXPORT SpeculationHostImpl final
+    : public content::DocumentServiceBase<blink::mojom::SpeculationHost> {
  public:
   // Creates and binds an instance of this per-frame.
   static void Bind(
@@ -26,6 +30,14 @@ class SpeculationHostImpl
       mojo::PendingReceiver<blink::mojom::SpeculationHost> receiver);
 
   ~SpeculationHostImpl() override;
+
+  SpeculationHostImpl(const SpeculationHostImpl&) = delete;
+  SpeculationHostImpl& operator=(const SpeculationHostImpl&) = delete;
+  SpeculationHostImpl(SpeculationHostImpl&&) = delete;
+  SpeculationHostImpl& operator=(SpeculationHostImpl&&) = delete;
+
+  // WebContentsObserver implementation:
+  void PrimaryPageChanged(Page& page) override;
 
  private:
   SpeculationHostImpl(
@@ -35,7 +47,17 @@ class SpeculationHostImpl
   void UpdateSpeculationCandidates(
       std::vector<blink::mojom::SpeculationCandidatePtr> candidates) override;
 
+  void ProcessCandidatesForPrerender(
+      const std::vector<blink::mojom::SpeculationCandidatePtr>& candidates);
+
+  void CancelStartedPrerenders();
+
   std::unique_ptr<SpeculationHostDelegate> delegate_;
+
+  // TODO(https://crbug.com/1197133): Record the prerendering URLs as well so
+  // that this can cancel started prerenders when candidates are updated.
+  base::flat_set<int> started_prerender_host_ids_;
+  base::WeakPtr<PrerenderHostRegistry> registry_;
 };
 
 }  // namespace content

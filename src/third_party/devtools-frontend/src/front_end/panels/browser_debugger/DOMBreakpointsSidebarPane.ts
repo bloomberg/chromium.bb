@@ -126,7 +126,7 @@ export class DOMBreakpointsSidebarPane extends UI.Widget.VBox implements
 
   private constructor() {
     super(true);
-    this.registerRequiredCSS('panels/browser_debugger/domBreakpointsSidebarPane.css', {enableLegacyPatching: false});
+    this.registerRequiredCSS('panels/browser_debugger/domBreakpointsSidebarPane.css');
 
     this.elementToCheckboxes = new WeakMap();
 
@@ -140,17 +140,17 @@ export class DOMBreakpointsSidebarPane extends UI.Widget.VBox implements
     UI.ARIAUtils.setAccessibleName(this._list.element, i18nString(UIStrings.domBreakpointsList));
     this._emptyElement.tabIndex = -1;
 
-    SDK.SDKModel.TargetManager.instance().addModelListener(
+    SDK.TargetManager.TargetManager.instance().addModelListener(
         SDK.DOMDebuggerModel.DOMDebuggerModel, SDK.DOMDebuggerModel.Events.DOMBreakpointAdded, this._breakpointAdded,
         this);
-    SDK.SDKModel.TargetManager.instance().addModelListener(
+    SDK.TargetManager.TargetManager.instance().addModelListener(
         SDK.DOMDebuggerModel.DOMDebuggerModel, SDK.DOMDebuggerModel.Events.DOMBreakpointToggled,
         this._breakpointToggled, this);
-    SDK.SDKModel.TargetManager.instance().addModelListener(
+    SDK.TargetManager.TargetManager.instance().addModelListener(
         SDK.DOMDebuggerModel.DOMDebuggerModel, SDK.DOMDebuggerModel.Events.DOMBreakpointsRemoved,
         this._breakpointsRemoved, this);
 
-    for (const domDebuggerModel of SDK.SDKModel.TargetManager.instance().models(
+    for (const domDebuggerModel of SDK.TargetManager.TargetManager.instance().models(
              SDK.DOMDebuggerModel.DOMDebuggerModel)) {
       domDebuggerModel.retrieveDOMBreakpoints();
       for (const breakpoint of domDebuggerModel.domBreakpoints()) {
@@ -195,14 +195,15 @@ export class DOMBreakpointsSidebarPane extends UI.Widget.VBox implements
     const description = document.createElement('div');
     const breakpointTypeLabel = BreakpointTypeLabels.get(item.type);
     description.textContent = breakpointTypeLabel ? breakpointTypeLabel() : null;
-    UI.ARIAUtils.setAccessibleName(checkboxElement, breakpointTypeLabel ? breakpointTypeLabel() : '');
+    const breakpointTypeText = breakpointTypeLabel ? breakpointTypeLabel() : '';
+    UI.ARIAUtils.setAccessibleName(checkboxElement, breakpointTypeText);
     const linkifiedNode = document.createElement('monospace');
     linkifiedNode.style.display = 'block';
     labelElement.appendChild(linkifiedNode);
     Common.Linkifier.Linkifier.linkify(item.node, {preventKeyboardFocus: true, tooltip: undefined}).then(linkified => {
       linkifiedNode.appendChild(linkified);
       UI.ARIAUtils.setAccessibleName(
-          checkboxElement, i18nString(UIStrings.sS, {PH1: breakpointTypeLabel, PH2: linkified.deepTextContent()}));
+          checkboxElement, i18nString(UIStrings.sS, {PH1: breakpointTypeText, PH2: linkified.deepTextContent()}));
     });
 
     labelElement.appendChild(description);

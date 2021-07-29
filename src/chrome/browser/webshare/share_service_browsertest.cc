@@ -2,14 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/webshare/share_service_impl.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/safe_browsing/core/browser/db/fake_database_manager.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -95,6 +100,9 @@ IN_PROC_BROWSER_TEST_F(ShareServiceBrowserTest, Text) {
     return;
 #endif
 
+  const int kRepeats = 4;
+
+  base::HistogramTester histogram_tester;
   ASSERT_TRUE(embedded_test_server()->Start());
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/webshare/index.html"));
@@ -102,7 +110,69 @@ IN_PROC_BROWSER_TEST_F(ShareServiceBrowserTest, Text) {
   content::WebContents* const contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   const std::string script = "share_text('hello')";
-  const content::EvalJsResult result = content::EvalJs(contents, script);
+  for (int index = 0; index < kRepeats; ++index) {
+    const content::EvalJsResult result = content::EvalJs(contents, script);
+    EXPECT_EQ("share succeeded", result);
+  }
 
-  EXPECT_EQ("share succeeded", result);
+  histogram_tester.ExpectBucketCount(kWebShareApiCountMetric,
+                                     WebShareMethod::kShare, kRepeats);
+}
+
+class SafeBrowsingShareServiceBrowserTest : public ShareServiceBrowserTest {
+ public:
+  SafeBrowsingShareServiceBrowserTest()
+      : safe_browsing_factory_(
+            std::make_unique<safe_browsing::TestSafeBrowsingServiceFactory>()) {
+  }
+
+ protected:
+  void CreatedBrowserMainParts(
+      content::BrowserMainParts* browser_main_parts) override {
+    fake_safe_browsing_database_manager_ =
+        base::MakeRefCounted<safe_browsing::FakeSafeBrowsingDatabaseManager>(
+            content::GetUIThreadTaskRunner({}),
+            content::GetIOThreadTaskRunner({}));
+    safe_browsing_factory_->SetTestDatabaseManager(
+        fake_safe_browsing_database_manager_.get());
+    safe_browsing::SafeBrowsingService::RegisterFactory(
+        safe_browsing_factory_.get());
+    ShareServiceBrowserTest::CreatedBrowserMainParts(browser_main_parts);
+  }
+
+  void AddDangerousUrl(const GURL& dangerous_url) {
+    fake_safe_browsing_database_manager_->AddDangerousUrl(
+        dangerous_url, safe_browsing::SB_THREAT_TYPE_URL_BINARY_MALWARE);
+  }
+
+  void TearDown() override {
+    ShareServiceBrowserTest::TearDown();
+    safe_browsing::SafeBrowsingService::RegisterFactory(nullptr);
+  }
+
+ private:
+  scoped_refptr<safe_browsing::FakeSafeBrowsingDatabaseManager>
+      fake_safe_browsing_database_manager_;
+  std::unique_ptr<safe_browsing::TestSafeBrowsingServiceFactory>
+      safe_browsing_factory_;
+};
+
+IN_PROC_BROWSER_TEST_F(SafeBrowsingShareServiceBrowserTest,
+                       PortableDocumentFile) {
+#if defined(OS_WIN)
+  if (!IsSupportedEnvironment())
+    return;
+#endif
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/webshare/index.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+  content::WebContents* const contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  EXPECT_EQ("share succeeded", content::EvalJs(contents, "share_pdf_file()"));
+
+  AddDangerousUrl(url);
+  EXPECT_EQ("share failed: NotAllowedError: Permission denied",
+            content::EvalJs(contents, "share_pdf_file()"));
 }

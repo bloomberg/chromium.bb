@@ -54,6 +54,7 @@ namespace blink {
 class AccessibleNode;
 class Attr;
 class Attribute;
+class ContainerQueryEvaluator;
 class CSSPropertyValueSet;
 class CSSStyleDeclaration;
 class CustomElementDefinition;
@@ -84,12 +85,10 @@ class PseudoElement;
 class ResizeObservation;
 class ResizeObserver;
 class ScrollIntoViewOptions;
-class ScrollIntoViewOptionsOrBoolean;
 class ScrollToOptions;
 class ShadowRoot;
 class ShadowRootInit;
 class SpaceSplitString;
-class StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL;
 class StylePropertyMap;
 class StylePropertyMapReadOnly;
 class StyleRecalcContext;
@@ -243,22 +242,12 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   }
 
   // Trusted Types variant for explicit setAttribute() use.
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   void setAttribute(const AtomicString& name,
                     const V8TrustedString* trusted_string,
                     ExceptionState& exception_state) {
     SetAttributeHinted(name, WeakLowercaseIfNecessary(name), trusted_string,
                        exception_state);
   }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  void setAttribute(const AtomicString& name,
-                    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL&
-                        string_or_trusted,
-                    ExceptionState& exception_state) {
-    SetAttributeHinted(name, WeakLowercaseIfNecessary(name), string_or_trusted,
-                       exception_state);
-  }
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   // Returns attributes that should be checked against Trusted Types
   virtual const AttrNameToTrustedType& GetCheckedAttributeTypes() const;
@@ -269,18 +258,10 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
                                  const AtomicString& namespace_uri,
                                  const AtomicString& qualified_name,
                                  ExceptionState&);
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   void setAttributeNS(const AtomicString& namespace_uri,
                       const AtomicString& qualified_name,
                       const V8TrustedString* trusted_string,
                       ExceptionState& exception_state);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  void setAttributeNS(
-      const AtomicString& namespace_uri,
-      const AtomicString& qualified_name,
-      const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL&,
-      ExceptionState&);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   bool toggleAttribute(const AtomicString&, ExceptionState&);
   bool toggleAttribute(const AtomicString&, bool force, ExceptionState&);
@@ -319,11 +300,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // when not interested in style attribute or one of the SVG attributes.
   AttributeCollection AttributesWithoutUpdate() const;
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   void scrollIntoView(const V8UnionBooleanOrScrollIntoViewOptions* arg);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  void scrollIntoView(ScrollIntoViewOptionsOrBoolean);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   void scrollIntoView(bool align_to_top = true);
   void scrollIntoViewWithOptions(const ScrollIntoViewOptions*);
   void ScrollIntoViewNoVisualUpdate(const ScrollIntoViewOptions*);
@@ -758,8 +735,12 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   // Retrieve the ComputedStyle (if any) corresponding to the provided
   // PseudoId from cache, calculating the ComputedStyle on-demand if it's
-  // missing from the cache.
-  const ComputedStyle* CachedStyleForPseudoElement(PseudoId);
+  // missing from the cache. The |pseudo_argument| is also used to match the
+  // ComputedStyle in cases where the PseudoId corresponds to a pseudo element
+  // that takes arguments (e.g. ::highlight()).
+  const ComputedStyle* CachedStyleForPseudoElement(
+      PseudoId,
+      const AtomicString& pseudo_argument = g_null_atom);
 
   // Calculate the ComputedStyle corresponding to the provided StyleRequest,
   // bypassing the pseudo style cache.
@@ -979,6 +960,10 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // See third_party/blink/renderer/core/document_transition/README.md for more
   // information.
   bool ShouldCompositeForDocumentTransition() const;
+
+  // For undo stack cleanup
+  bool HasUndoStack() const;
+  void SetHasUndoStack(bool);
 
  protected:
   const ElementData* GetElementData() const { return element_data_.Get(); }
@@ -1205,18 +1190,10 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
                           WTF::AtomicStringTable::WeakResult hint,
                           const AtomicString& value,
                           ExceptionState& = ASSERT_NO_EXCEPTION);
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   void SetAttributeHinted(const AtomicString& name,
                           WTF::AtomicStringTable::WeakResult hint,
                           const V8TrustedString* trusted_string,
                           ExceptionState& exception_state);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  void SetAttributeHinted(
-      const AtomicString& name,
-      WTF::AtomicStringTable::WeakResult hint,
-      const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL&,
-      ExceptionState&);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   std::pair<wtf_size_t, const QualifiedName> LookupAttributeQNameHinted(
       const AtomicString& name,
       WTF::AtomicStringTable::WeakResult hint) const;
@@ -1285,6 +1262,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
       return;
     SetStyleShouldForceLegacyLayoutInternal(force);
   }
+  FRIEND_TEST_ALL_PREFIXES(LayoutNGTextCombineTest, LegacyQuote);
   void SetStyleShouldForceLegacyLayoutInternal(bool);
 
   // Return whether this element needs legacy layout because of a child.
@@ -1304,7 +1282,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // Update ForceLegacyLayout flags for this element, and for ancestors, if
   // necessary. We cannot establish a ForceLegacyLayout subtree at an arbitrary
   // element; it needs to be a block formatting context root.
-  void UpdateForceLegacyLayout(const ComputedStyle& new_style,
+  // Returns true if we need to reattach this element or any ancestor element.
+  bool UpdateForceLegacyLayout(const ComputedStyle& new_style,
                                const ComputedStyle* old_style);
 
   // If this element requires legacy layout, and we can't tell for sure that it
@@ -1312,7 +1291,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // layout on ancestors until we reach one that we're sure that will establish
   // a new formatting context. LayoutNG and legacy layout cannot cooperate
   // within a formatting context.
-  void ForceLegacyLayoutInFormattingContext(const ComputedStyle& new_style);
+  // Returns true if we need to reattach this element or any ancestor element.
+  bool ForceLegacyLayoutInFormattingContext(const ComputedStyle& new_style);
 
   // If this element requires legacy layout, and we're inside a fragmentation
   // context, we need to force legacy layout for the entire fragmentation

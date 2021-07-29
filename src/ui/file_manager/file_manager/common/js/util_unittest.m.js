@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {EntryList, FakeEntryImpl, VolumeEntry} from './files_app_entry_types.m.js';
-import {MockFileSystem} from './mock_entry.m.js';
-import * as wrappedUtil from './util.m.js';
-const {util} = wrappedUtil;
-import * as wrappedVolumeManagerCommon from './volume_manager_types.m.js';
-const {VolumeManagerCommon} = wrappedVolumeManagerCommon;
-import {MockVolumeManager} from '../../background/js/mock_volume_manager.m.js';
-import {assertEquals, assertTrue, assertFalse} from 'chrome://test/chai_assert.js';
+import {assertEquals, assertFalse, assertTrue} from 'chrome://test/chai_assert.js';
+
+import {MockVolumeManager} from '../../background/js/mock_volume_manager.js';
+
+import {EntryList, FakeEntryImpl, VolumeEntry} from './files_app_entry_types.js';
+import {MockFileSystem} from './mock_entry.js';
+import {util} from './util.js';
+import {VolumeManagerCommon} from './volume_manager_types.js';
 
 let fileSystem;
 
@@ -27,8 +27,7 @@ export function setUp() {
   ];
   fileSystem.populate(filenames);
 
-  window.loadTimeData.resetForTesting();
-  window.loadTimeData.overrideValues({
+  window.loadTimeData.resetForTesting({
     SIZE_BYTES: '$1 bytes',
     SIZE_KB: '$1 KB',
     SIZE_MB: '$1 MB',
@@ -344,4 +343,21 @@ export function testGetFileErrorString() {
 
   i18nErrorName = util.getFileErrorString('PathExistsError');
   assertEquals(i18nErrorName, 'FILE_ERROR_PATH_EXISTS');
+}
+
+export function testExtractFilePath() {
+  let url = '';
+
+  assertEquals(util.extractFilePath(''), null);
+  assertEquals(util.extractFilePath(null), null);
+  assertEquals(util.extractFilePath(undefined), null);
+
+  // In the Extension:
+  url =
+      'filesystem:chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/external/Downloads-u/Downloads/f.zip';
+  assertEquals(util.extractFilePath(url), '/Downloads-u/Downloads/f.zip');
+
+  // In the SWA:
+  url = 'filesystem:chrome://file-manager/external/Downloads-u/Downloads/f.zip';
+  assertEquals(util.extractFilePath(url), '/Downloads-u/Downloads/f.zip');
 }

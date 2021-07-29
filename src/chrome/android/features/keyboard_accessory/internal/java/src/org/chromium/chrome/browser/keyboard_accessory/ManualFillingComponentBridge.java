@@ -1,3 +1,4 @@
+
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -146,6 +147,13 @@ class ManualFillingComponentBridge {
     }
 
     @CalledByNative
+    private void showAccessorySheetTab(int tabType) {
+        if (getManualFillingComponent() != null) {
+            getManualFillingComponent().showAccessorySheetTab(tabType);
+        }
+    }
+
+    @CalledByNative
     private void addOptionToggleToAccessorySheetData(Object objAccessorySheetData,
             String displayText, boolean enabled, @AccessoryAction int accessoryAction) {
         ((AccessorySheetData) objAccessorySheetData)
@@ -166,8 +174,8 @@ class ManualFillingComponentBridge {
 
     @CalledByNative
     private void addFieldToUserInfo(Object objUserInfo, @AccessoryTabType int sheetType,
-            String displayText, String a11yDescription, String guid, boolean isObfuscated,
-            boolean selectable) {
+            String displayText, String textToFill, String a11yDescription, String guid,
+            boolean isObfuscated, boolean selectable) {
         Callback<UserInfoField> callback = null;
         if (selectable) {
             callback = (field) -> {
@@ -180,7 +188,14 @@ class ManualFillingComponentBridge {
         }
         ((UserInfo) objUserInfo)
                 .getFields()
-                .add(new UserInfoField(displayText, a11yDescription, guid, isObfuscated, callback));
+                .add(new UserInfoField.Builder()
+                                .setDisplayText(displayText)
+                                .setTextToFill(textToFill)
+                                .setA11yDescription(a11yDescription)
+                                .setId(guid)
+                                .setIsObfuscated(isObfuscated)
+                                .setCallback(callback)
+                                .build());
     }
 
     @CalledByNative

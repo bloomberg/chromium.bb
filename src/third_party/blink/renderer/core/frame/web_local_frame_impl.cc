@@ -91,7 +91,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
@@ -195,6 +194,7 @@
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/web_frame_widget_impl.h"
 #include "third_party/blink/renderer/core/frame/web_remote_frame_impl.h"
+#include "third_party/blink/renderer/core/html/fenced_frame/html_fenced_frame_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
@@ -260,6 +260,7 @@
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
@@ -284,6 +285,8 @@ class ChromePrintContext : public PrintContext {
  public:
   ChromePrintContext(LocalFrame* frame, bool use_printing_layout)
       : PrintContext(frame, use_printing_layout), printed_page_width_(0) {}
+  ChromePrintContext(const ChromePrintContext&) = delete;
+  ChromePrintContext& operator=(const ChromePrintContext&) = delete;
 
   ~ChromePrintContext() override = default;
 
@@ -464,8 +467,6 @@ class ChromePrintContext : public PrintContext {
   // Set when printing.
   float printed_page_width_;
   float printed_page_height_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromePrintContext);
 };
 
 // Simple class to override some of PrintContext behavior. This is used when
@@ -527,7 +528,10 @@ class ChromePluginPrintContext final : public ChromePrintContext {
 
 class PaintPreviewContext : public PrintContext {
  public:
-  PaintPreviewContext(LocalFrame* frame) : PrintContext(frame, false) {}
+  explicit PaintPreviewContext(LocalFrame* frame)
+      : PrintContext(frame, false) {}
+  PaintPreviewContext(const PaintPreviewContext&) = delete;
+  PaintPreviewContext& operator=(const PaintPreviewContext&) = delete;
   ~PaintPreviewContext() override = default;
 
   bool Capture(cc::PaintCanvas* canvas,
@@ -577,9 +581,6 @@ class PaintPreviewContext : public PrintContext {
     canvas->drawPicture(builder.EndRecording(property_tree_state.Unalias()));
     return true;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PaintPreviewContext);
 };
 
 static WebDocumentLoader* DocumentLoaderForDocLoader(DocumentLoader* loader) {
@@ -859,15 +860,6 @@ void WebLocalFrameImpl::SetAdEvidence(
     const blink::FrameAdEvidence& ad_evidence) {
   DCHECK(GetFrame());
   GetFrame()->SetAdEvidence(ad_evidence);
-
-  // TODO(alexmt): Remove when AdFrameType is replaced.
-  blink::mojom::AdFrameType ad_frame_type = blink::mojom::AdFrameType::kNonAd;
-  if (ad_evidence.IndicatesAdSubframe()) {
-    ad_frame_type = ad_evidence.parent_is_ad()
-                        ? blink::mojom::AdFrameType::kChildAd
-                        : blink::mojom::AdFrameType::kRootAd;
-  }
-  GetFrame()->SetIsAdSubframe(ad_frame_type);
 }
 
 const absl::optional<blink::FrameAdEvidence>& WebLocalFrameImpl::AdEvidence() {
@@ -1082,6 +1074,14 @@ int32_t WebLocalFrameImpl::GetScriptContextWorldId(
     v8::Local<v8::Context> script_context) const {
   DCHECK_EQ(this, FrameForContext(script_context));
   return DOMWrapperWorld::World(script_context).GetWorldId();
+}
+
+v8::Local<v8::Context> WebLocalFrameImpl::GetScriptContextFromWorldId(
+    v8::Isolate* isolate,
+    int world_id) const {
+  scoped_refptr<DOMWrapperWorld> world =
+      DOMWrapperWorld::EnsureIsolatedWorld(isolate, world_id);
+  return ToScriptState(GetFrame(), *world)->GetContext();
 }
 
 v8::Local<v8::Object> WebLocalFrameImpl::GlobalProxy() const {
@@ -1901,7 +1901,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateMainFrame(
       base::PassKey<WebLocalFrameImpl>(),
       mojom::blink::TreeScopeType::kDocument, client, interface_registry,
       frame_token);
-  Page& page = *static_cast<WebViewImpl*>(web_view)->GetPage();
+  Page& page = *To<WebViewImpl>(web_view)->GetPage();
   DCHECK(!page.MainFrame());
   frame->InitializeCoreFrame(
       page, nullptr, nullptr, nullptr, FrameInsertType::kInsertInConstructor,
@@ -1922,10 +1922,8 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
   DCHECK(name.IsEmpty() || name.Equals(previous_frame->Tree().GetName()));
   auto* web_frame = MakeGarbageCollected<WebLocalFrameImpl>(
       base::PassKey<WebLocalFrameImpl>(),
-      previous_web_frame->InShadowTree()
-          ? mojom::blink::TreeScopeType::kShadow
-          : mojom::blink::TreeScopeType::kDocument,
-      client, interface_registry, frame_token);
+      previous_web_frame->GetTreeScopeType(), client, interface_registry,
+      frame_token);
   network::mojom::blink::WebSandboxFlags sandbox_flags =
       network::mojom::blink::WebSandboxFlags::kNone;
   PermissionsPolicyFeatureState feature_state;
@@ -1949,10 +1947,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
   web_frame->InitializeCoreFrame(
       *previous_frame->GetPage(), MakeGarbageCollected<DummyFrameOwner>(),
       previous_web_frame->Parent(), nullptr, FrameInsertType::kInsertLater,
-      name,
-      frame_policy.disallow_document_access
-          ? nullptr
-          : &ToCoreFrame(*previous_web_frame)->window_agent_factory(),
+      name, &ToCoreFrame(*previous_web_frame)->window_agent_factory(),
       previous_web_frame->Opener(), /* policy_container */ nullptr,
       sandbox_flags);
 
@@ -2143,10 +2138,8 @@ LocalFrame* WebLocalFrameImpl::CreateChildFrame(
   webframe_child->InitializeCoreFrameInternal(
       *GetFrame()->GetPage(), owner_element, this, LastChild(),
       FrameInsertType::kInsertInConstructor, name,
-      owner_element->GetFramePolicy().disallow_document_access
-          ? nullptr
-          : &GetFrame()->window_agent_factory(),
-      nullptr, std::move(policy_container));
+      &GetFrame()->window_agent_factory(), nullptr,
+      std::move(policy_container));
 
   webframe_child->Client()->InitializeAsChildFrame(/*parent=*/this);
 
@@ -2169,6 +2162,12 @@ RemoteFrame* WebLocalFrameImpl::AdoptPortal(HTMLPortalElement* portal) {
   auto* portal_frame =
       To<WebRemoteFrameImpl>(client_->AdoptPortal(portal->GetToken(), portal));
   return portal_frame->GetFrame();
+}
+
+RemoteFrame* WebLocalFrameImpl::CreateFencedFrame(
+    HTMLFencedFrameElement* fenced_frame) {
+  WebRemoteFrame* frame = client_->CreateFencedFrame(fenced_frame);
+  return To<WebRemoteFrameImpl>(frame)->GetFrame();
 }
 
 void WebLocalFrameImpl::DidChangeContentsSize(const IntSize& size) {

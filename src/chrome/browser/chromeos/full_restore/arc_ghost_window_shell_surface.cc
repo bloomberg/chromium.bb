@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/full_restore/arc_window_utils.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "components/exo/buffer.h"
+#include "components/full_restore/full_restore_utils.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "ui/aura/env.h"
 #include "ui/views/window/caption_button_types.h"
@@ -31,6 +32,7 @@ std::unique_ptr<exo::ClientControlledShellSurface> InitArcGhostWindow(
     gfx::Rect bounds,
     absl::optional<gfx::Size> maximum_size,
     absl::optional<gfx::Size> minimum_size,
+    absl::optional<std::u16string> title,
     absl::optional<uint32_t> color,
     base::RepeatingClosure close_callback) {
   absl::optional<double> scale_factor = GetDisplayScaleFactor(display_id);
@@ -47,14 +49,15 @@ std::unique_ptr<exo::ClientControlledShellSurface> InitArcGhostWindow(
 
   auto surface = std::make_unique<exo::Surface>();
   auto shell_surface = std::make_unique<ArcGhostWindowShellSurface>(
-      std::move(surface), container, scale_factor.value());
+      std::move(surface), container, scale_factor.value(),
+      WindowIdToAppId(window_id));
 
   // TODO(sstan): Add set_surface_destroyed_callback.
   shell_surface->set_delegate(std::make_unique<ArcGhostWindowDelegate>(
       shell_surface.get(), window_handler, window_id, display_id, bounds));
   shell_surface->set_close_callback(std::move(close_callback));
 
-  shell_surface->SetApplicationId(app_id.c_str());
+  shell_surface->SetAppId(app_id.c_str());
   shell_surface->SetBounds(display_id, bounds);
 
   if (maximum_size.has_value())
@@ -62,6 +65,9 @@ std::unique_ptr<exo::ClientControlledShellSurface> InitArcGhostWindow(
 
   if (minimum_size.has_value())
     shell_surface->SetMinimumSize(minimum_size.value());
+
+  if (title.has_value())
+    shell_surface->SetTitle(title.value());
 
   // Set frame buttons.
   constexpr uint32_t kAllButtonMask =
@@ -73,10 +79,10 @@ std::unique_ptr<exo::ClientControlledShellSurface> InitArcGhostWindow(
   shell_surface->SetFrameButtons(kAllButtonMask, kAllButtonMask);
   shell_surface->OnSetFrameColors(theme_color, theme_color);
 
+  shell_surface->controller_surface()->Commit();
   shell_surface->InitContentOverlay(app_id, theme_color);
 
   // Relayout overlay.
-  shell_surface->controller_surface()->Commit();
   shell_surface->GetWidget()->LayoutRootViewIfNecessary();
 
   return shell_surface;
@@ -85,7 +91,8 @@ std::unique_ptr<exo::ClientControlledShellSurface> InitArcGhostWindow(
 ArcGhostWindowShellSurface::ArcGhostWindowShellSurface(
     std::unique_ptr<exo::Surface> surface,
     int container,
-    double scale_factor)
+    double scale_factor,
+    const std::string& application_id)
     : ClientControlledShellSurface(surface.get(),
                                    /*can_minimize=*/true,
                                    container,
@@ -98,9 +105,9 @@ ArcGhostWindowShellSurface::ArcGhostWindowShellSurface(
           ->CreateGpuMemoryBuffer({1, 1}, gfx::BufferFormat::RGBA_8888,
                                   gfx::BufferUsage::GPU_READ,
                                   gpu::kNullSurfaceHandle, nullptr));
+  SetApplicationId(application_id.c_str());
   controller_surface_->Attach(buffer_.get());
   controller_surface_->SetFrame(exo::SurfaceFrameType::NORMAL);
-  controller_surface_->Commit();
   SetScale(scale_factor);
   CommitPendingScale();
 }
@@ -114,13 +121,37 @@ exo::Surface* ArcGhostWindowShellSurface::controller_surface() {
   return controller_surface_.get();
 }
 
+void ArcGhostWindowShellSurface::OverrideInitParams(
+    views::Widget::InitParams* params) {
+  ClientControlledShellSurface::OverrideInitParams(params);
+  SetShellAppId(&params->init_properties_container, app_id_);
+}
+
 void ArcGhostWindowShellSurface::InitContentOverlay(const std::string& app_id,
                                                     uint32_t theme_color) {
-  exo::ShellSurfaceBase::OverlayParams overlay_params(
-      std::make_unique<ArcGhostWindowView>(kDiameter, app_id, theme_color));
+  auto view = std::make_unique<ArcGhostWindowView>(kDiameter, theme_color);
+  view->LoadIcon(app_id);
+  exo::ShellSurfaceBase::OverlayParams overlay_params(std::move(view));
   overlay_params.translucent = true;
   overlay_params.overlaps_frame = false;
   AddOverlay(std::move(overlay_params));
+}
+
+void ArcGhostWindowShellSurface::SetAppId(
+    const absl::optional<std::string>& id) {
+  app_id_ = id;
+  if (GetWidget() && GetWidget()->GetNativeWindow()) {
+    SetShellAppId(GetWidget()->GetNativeWindow(), app_id_);
+  }
+}
+
+void ArcGhostWindowShellSurface::SetShellAppId(
+    ui::PropertyHandler* property_handler,
+    const absl::optional<std::string>& id) {
+  if (id)
+    property_handler->SetProperty(::full_restore::kAppIdKey, *id);
+  else
+    property_handler->ClearProperty(::full_restore::kAppIdKey);
 }
 
 }  // namespace full_restore

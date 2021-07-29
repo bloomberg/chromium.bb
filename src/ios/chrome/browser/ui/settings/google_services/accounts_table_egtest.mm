@@ -33,11 +33,6 @@ namespace {
 
 // Constant for timeout while waiting for asynchronous sync operations.
 const NSTimeInterval kSyncOperationTimeout = 10.0;
-
-// Returns a matcher for when there are no bookmarks saved.
-id<GREYMatcher> NoBookmarksLabel() {
-  return grey_text(l10n_util::GetNSString(IDS_IOS_BOOKMARK_NO_BOOKMARKS_LABEL));
-}
 }
 
 // Integration tests using the Account Settings screen.
@@ -67,6 +62,7 @@ id<GREYMatcher> NoBookmarksLabel() {
 
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   AppLaunchConfiguration config;
+  config.features_disabled.push_back(signin::kMobileIdentityConsistency);
   config.features_disabled.push_back(signin::kSimplifySignOutIOS);
   return config;
 }
@@ -143,6 +139,29 @@ id<GREYMatcher> NoBookmarksLabel() {
       performAction:grey_tap()];
 }
 
+// Opens the MyGoogleUI for the primary account, and then the primary account
+// is removed while MyGoogle UI is still opened.
+- (void)testRemoveAccountWithMyGoogleUIOpened {
+  FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
+
+  // Sign In |fakeIdentity|, then open the Account Settings.
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI tapSettingsMenuButton:SettingsAccountButton()];
+
+  // Open MyGoogleUI.
+  [SigninEarlGreyUI openMyGoogleDialogWithFakeIdentity:fakeIdentity];
+
+  // Forget Identity.
+  [SigninEarlGrey forgetFakeIdentity:fakeIdentity];
+  [ChromeEarlGreyUI waitForAppToIdle];
+  [SigninEarlGrey verifySignedOut];
+
+  // Close settings.
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
+      performAction:grey_tap()];
+}
+
 // Tests opening the remove identity confirmation dialog once, and cancel the
 // dialog. Then we open the remove identity confirmation dialog to remove the
 // identity. And finally the remove identity confirmation dialog is opened a
@@ -214,9 +233,8 @@ id<GREYMatcher> NoBookmarksLabel() {
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
 
-  // Assert that the no bookmarks label is not present.
-  [[EarlGrey selectElementWithMatcher:NoBookmarksLabel()]
-      assertWithMatcher:grey_nil()];
+  // Assert that the empty state background is absent.
+  [BookmarkEarlGreyUI verifyEmptyBackgroundIsAbsent];
 }
 
 // Tests that selecting sign-out and clear data from a non-managed user account
@@ -283,15 +301,8 @@ id<GREYMatcher> NoBookmarksLabel() {
 }
 
 // Tests that the user isn't signed out and the UI is correct when the
-// disconnect is cancelled in the Account Settings screen.
-#if !TARGET_IPHONE_SIMULATOR
-// TODO(crbug.com/669613): Re-enable this test on devices.
-#define MAYBE_testSignInDisconnectCancelled \
-  DISABLED_testSignInDisconnectCancelled
-#else
-#define MAYBE_testSignInDisconnectCancelled testSignInDisconnectCancelled
-#endif
-- (void)MAYBE_testSignInDisconnectCancelled {
+// sign-out is cancelled in the Account Settings screen.
+- (void)testSignOutCancelled {
   FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
 
   // Sign In |fakeIdentity|, then open the Account Settings.
@@ -299,7 +310,7 @@ id<GREYMatcher> NoBookmarksLabel() {
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:SettingsAccountButton()];
 
-  // Open the "Disconnect Account" dialog, then tap "Cancel".
+  // Open the SignOut dialog, then tap "Cancel".
   [ChromeEarlGreyUI tapAccountsMenuButton:SignOutAccountsButton()];
   // Note that the iPad does not provide a CANCEL button by design. Click
   // anywhere on the screen to exit.

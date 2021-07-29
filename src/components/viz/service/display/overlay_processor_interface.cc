@@ -23,6 +23,7 @@
 #include "components/viz/service/display/overlay_processor_android.h"
 #include "components/viz/service/display/overlay_processor_surface_control.h"
 #elif defined(USE_OZONE)
+#include "components/viz/service/display/overlay_processor_delegated.h"
 #include "components/viz/service/display/overlay_processor_ozone.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/ozone/public/overlay_manager_ozone.h"
@@ -88,7 +89,6 @@ OverlayProcessorInterface::CreateOverlayProcessor(
   // overlay for WebView is enabled, this check still works.
   if (surface_handle == gpu::kNullSurfaceHandle)
     return std::make_unique<OverlayProcessorStub>();
-
 #if defined(OS_APPLE)
   DCHECK(capabilities.supports_surfaceless);
 
@@ -126,12 +126,21 @@ OverlayProcessorInterface::CreateOverlayProcessor(
 
   gpu::SharedImageInterface* sii = nullptr;
   if (features::ShouldUseRealBuffersForPageFlipTest() &&
+      ui::OzonePlatform::GetInstance()->GetOverlayManager() &&
       ui::OzonePlatform::GetInstance()
           ->GetOverlayManager()
           ->allow_sync_and_real_buffer_page_flip_testing()) {
     sii = shared_image_interface;
     CHECK(shared_image_interface);
   }
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (features::IsDelegatedCompositingEnabled()) {
+    return std::make_unique<OverlayProcessorDelegated>(
+        std::move(overlay_candidates),
+        std::move(renderer_settings.overlay_strategies), sii);
+  }
+#endif
 
   return std::make_unique<OverlayProcessorOzone>(
       std::move(overlay_candidates),

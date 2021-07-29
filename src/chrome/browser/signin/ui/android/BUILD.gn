@@ -37,7 +37,7 @@ android_library("java") {
     "//ui/android:ui_utils_java",
   ]
   sources = [
-    "java/src/org/chromium/chrome/browser/signin/ui/ConfirmImportSyncDataDialog.java",
+    "java/src/org/chromium/chrome/browser/signin/ui/ConfirmImportSyncDataDialogCoordinator.java",
     "java/src/org/chromium/chrome/browser/signin/ui/ConfirmManagedSyncDataDialog.java",
     "java/src/org/chromium/chrome/browser/signin/ui/ConfirmSyncDataStateMachine.java",
     "java/src/org/chromium/chrome/browser/signin/ui/ConfirmSyncDataStateMachineDelegate.java",
@@ -82,9 +82,7 @@ android_resources("java_resources") {
     "java/res/layout/account_picker_bottom_sheet_view.xml",
     "java/res/layout/account_picker_dialog_body.xml",
     "java/res/layout/account_picker_new_account_row.xml",
-    "java/res/layout/account_picker_new_account_row_legacy.xml",
     "java/res/layout/account_picker_row.xml",
-    "java/res/layout/account_picker_row_legacy.xml",
     "java/res/layout/account_picker_state_auth_error.xml",
     "java/res/layout/account_picker_state_collapsed.xml",
     "java/res/layout/account_picker_state_expanded.xml",
@@ -121,6 +119,7 @@ android_library("junit") {
     "junit/src/org/chromium/chrome/browser/signin/ui/ConfirmSyncDataStateMachineDelegateTest.java",
     "junit/src/org/chromium/chrome/browser/signin/ui/ConfirmSyncDataStateMachineTest.java",
     "junit/src/org/chromium/chrome/browser/signin/ui/SignOutDialogFragmentTest.java",
+    "junit/src/org/chromium/chrome/browser/signin/ui/SigninPromoControllerTest.java",
     "junit/src/org/chromium/chrome/browser/signin/ui/SigninPromoUtilLaunchSigninPromoTest.java",
     "junit/src/org/chromium/chrome/browser/signin/ui/account_picker/AccountPickerDelegateImplTest.java",
     "junit/src/org/chromium/chrome/browser/signin/ui/account_picker/AccountPickerMediatorTest.java",
@@ -136,6 +135,7 @@ android_library("junit") {
     "//chrome/browser/signin/services/android:java",
     "//chrome/browser/tab:java",
     "//chrome/test/android:chrome_java_test_support",
+    "//components/browser_ui/modaldialog/android:java",
     "//components/prefs/android:java",
     "//components/signin/core/browser:signin_enums_java",
     "//components/signin/public/android:java",
@@ -146,6 +146,7 @@ android_library("junit") {
     "//third_party/android_deps:robolectric_all_java",
     "//third_party/androidx:androidx_appcompat_appcompat_java",
     "//third_party/androidx:androidx_fragment_fragment_java",
+    "//third_party/androidx:androidx_test_core_java",
     "//third_party/junit",
     "//third_party/mockito:mockito_java",
     "//ui/android:ui_no_recycler_view_java",
@@ -175,6 +176,7 @@ android_library("javatests") {
     "//chrome/browser/ui/android/night_mode:night_mode_java_test_support",
     "//chrome/test/android:chrome_java_test_support",
     "//components/browser_ui/bottomsheet/android:java",
+    "//components/browser_ui/modaldialog/android:java",
     "//components/externalauth/android:java",
     "//components/signin/core/browser:signin_enums_java",
     "//components/signin/public/android:java",
@@ -190,5 +192,6 @@ android_library("javatests") {
     "//third_party/junit",
     "//third_party/mockito:mockito_java",
     "//ui/android:ui_java_test_support",
+    "//ui/android:ui_no_recycler_view_java",
   ]
 }

@@ -25,6 +25,7 @@
 
 #include "avcodec.h"
 #include "ass.h"
+#include "internal.h"
 #include "libavutil/bprint.h"
 #include "libavutil/opt.h"
 
@@ -81,7 +82,7 @@ static void text_flush(AVCodecContext *avctx)
 #define text_options options
 DECLARE_CLASS(text);
 
-AVCodec ff_text_decoder = {
+const AVCodec ff_text_decoder = {
     .name           = "text",
     .long_name      = NULL_IF_CONFIG_SMALL("Raw text subtitle"),
     .priv_data_size = sizeof(TextContext),
@@ -91,6 +92,7 @@ AVCodec ff_text_decoder = {
     .init           = ff_ass_subtitle_header_default,
     .priv_class     = &text_decoder_class,
     .flush          = text_flush,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };
 #endif
 
@@ -107,7 +109,7 @@ static int linebreak_init(AVCodecContext *avctx)
 #define vplayer_options options
 DECLARE_CLASS(vplayer);
 
-AVCodec ff_vplayer_decoder = {
+const AVCodec ff_vplayer_decoder = {
     .name           = "vplayer",
     .long_name      = NULL_IF_CONFIG_SMALL("VPlayer subtitle"),
     .priv_data_size = sizeof(TextContext),
@@ -117,6 +119,7 @@ AVCodec ff_vplayer_decoder = {
     .init           = linebreak_init,
     .priv_class     = &vplayer_decoder_class,
     .flush          = text_flush,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };
 #endif
 
@@ -124,7 +127,7 @@ AVCodec ff_vplayer_decoder = {
 #define stl_options options
 DECLARE_CLASS(stl);
 
-AVCodec ff_stl_decoder = {
+const AVCodec ff_stl_decoder = {
     .name           = "stl",
     .long_name      = NULL_IF_CONFIG_SMALL("Spruce subtitle format"),
     .priv_data_size = sizeof(TextContext),
@@ -134,6 +137,7 @@ AVCodec ff_stl_decoder = {
     .init           = linebreak_init,
     .priv_class     = &stl_decoder_class,
     .flush          = text_flush,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };
 #endif
 
@@ -141,7 +145,7 @@ AVCodec ff_stl_decoder = {
 #define pjs_options options
 DECLARE_CLASS(pjs);
 
-AVCodec ff_pjs_decoder = {
+const AVCodec ff_pjs_decoder = {
     .name           = "pjs",
     .long_name      = NULL_IF_CONFIG_SMALL("PJS subtitle"),
     .priv_data_size = sizeof(TextContext),
@@ -151,6 +155,7 @@ AVCodec ff_pjs_decoder = {
     .init           = linebreak_init,
     .priv_class     = &pjs_decoder_class,
     .flush          = text_flush,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };
 #endif
 
@@ -158,7 +163,7 @@ AVCodec ff_pjs_decoder = {
 #define subviewer1_options options
 DECLARE_CLASS(subviewer1);
 
-AVCodec ff_subviewer1_decoder = {
+const AVCodec ff_subviewer1_decoder = {
     .name           = "subviewer1",
     .long_name      = NULL_IF_CONFIG_SMALL("SubViewer1 subtitle"),
     .priv_data_size = sizeof(TextContext),
@@ -168,6 +173,7 @@ AVCodec ff_subviewer1_decoder = {
     .init           = linebreak_init,
     .priv_class     = &subviewer1_decoder_class,
     .flush          = text_flush,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };
 #endif
 

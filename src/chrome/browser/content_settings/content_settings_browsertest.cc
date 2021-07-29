@@ -24,7 +24,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/browsing_data/content/cookie_helper.h"
@@ -49,6 +48,7 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/ppapi_test_utils.h"
+#include "content/public/test/prerender_test_util.h"
 #include "content/public/test/test_utils.h"
 #include "net/cookies/canonical_cookie_test_helpers.h"
 #include "net/dns/mock_host_resolver.h"
@@ -920,7 +920,8 @@ class ContentSettingsBackForwardCacheBrowserTest : public ContentSettingsTest {
           {// Set a very long TTL before expiration (longer than the test
            // timeout) so tests that are expecting deletion don't pass when
            // they shouldn't.
-           {"TimeToLiveInBackForwardCacheInSeconds", "3600"}}}},
+           {"TimeToLiveInBackForwardCacheInSeconds", "3600"},
+           {"ignore_outstanding_network_request_for_testing", "true"}}}},
         // Allow BackForwardCache for all devices regardless of their memory.
         {features::kBackForwardCacheMemoryControls});
     ContentSettingsTest::SetUpCommandLine(command_line);
@@ -1319,4 +1320,160 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsWorkerModulesBrowserTest, CookieStore) {
     net::CookieList blocked_cookies = ExtractCookies(blocked);
     EXPECT_THAT(blocked_cookies, net::MatchesCookieLine("second=value"));
   }
+}
+
+class ContentSettingsWithPrerenderingBrowserTest : public ContentSettingsTest {
+ public:
+  ContentSettingsWithPrerenderingBrowserTest()
+      : prerender_test_helper_(base::BindRepeating(
+            &ContentSettingsWithPrerenderingBrowserTest::GetWebContents,
+            base::Unretained(this))) {}
+
+  void SetUpOnMainThread() override {
+    prerender_test_helper().SetUpOnMainThread(embedded_test_server());
+    ContentSettingsTest::SetUpOnMainThread();
+    ASSERT_TRUE(embedded_test_server()->Start());
+  }
+
+  content::test::PrerenderTestHelper& prerender_test_helper() {
+    return prerender_test_helper_;
+  }
+
+  content::WebContents* GetWebContents() {
+    return browser()->tab_strip_model()->GetActiveWebContents();
+  }
+
+ private:
+  content::test::PrerenderTestHelper prerender_test_helper_;
+};
+
+// Used to wait for a prerendering page to set a cookie.
+class PrerenderCookieObserver : public content::WebContentsObserver {
+ public:
+  explicit PrerenderCookieObserver(content::WebContents* web_contents)
+      : content::WebContentsObserver(web_contents) {}
+  ~PrerenderCookieObserver() override = default;
+
+  void OnCookiesAccessed(content::NavigationHandle* navigation_handle,
+                         const content::CookieAccessDetails& details) override {
+    bool is_in_primary_frame =
+        navigation_handle->GetParentFrame()
+            ? navigation_handle->GetParentFrame()->GetPage().IsPrimary()
+            : navigation_handle->IsInPrimaryMainFrame();
+    if (is_in_primary_frame) {
+      cookie_accessed_in_primary_page_ = true;
+    } else {
+      run_loop_.Quit();
+    }
+  }
+
+  void OnCookiesAccessed(content::RenderFrameHost* rfh,
+                         const content::CookieAccessDetails& details) override {
+    if (rfh->GetPage().IsPrimary()) {
+      cookie_accessed_in_primary_page_ = true;
+    } else {
+      run_loop_.Quit();
+    }
+  }
+
+  bool CookieAccessedByPrimaryPage() const {
+    return cookie_accessed_in_primary_page_;
+  }
+
+  // Waits for the prerendering page to set a cookie.
+  void Wait() { run_loop_.Run(); }
+
+ private:
+  bool cookie_accessed_in_primary_page_ = false;
+  base::RunLoop run_loop_;
+};
+
+IN_PROC_BROWSER_TEST_F(ContentSettingsWithPrerenderingBrowserTest,
+                       PrerenderingPageSetsCookie) {
+  const GURL main_url = embedded_test_server()->GetURL("/empty.html");
+  const GURL prerender_url =
+      embedded_test_server()->GetURL("/set_cookie_header.html");
+
+  ui_test_utils::NavigateToURL(browser(), main_url);
+  ASSERT_EQ(GetWebContents()->GetLastCommittedURL(), main_url);
+  auto* main_pscs = PageSpecificContentSettings::GetForFrame(
+      GetWebContents()->GetMainFrame());
+  ASSERT_FALSE(main_pscs->IsContentAllowed(ContentSettingsType::COOKIES));
+
+  {
+    PrerenderCookieObserver cookie_observer(GetWebContents());
+    prerender_test_helper().AddPrerender(prerender_url);
+    int host_id = prerender_test_helper().GetHostForUrl(prerender_url);
+    content::RenderFrameHost* prerender_frame =
+        prerender_test_helper().GetPrerenderedMainFrameHost(host_id);
+    EXPECT_NE(prerender_frame, nullptr);
+    // Ensure notification for cookie access by prerendering page has been sent.
+    cookie_observer.Wait();
+
+    auto* prerender_pscs =
+        PageSpecificContentSettings::GetForFrame(prerender_frame);
+    EXPECT_TRUE(prerender_pscs->IsContentAllowed(ContentSettingsType::COOKIES));
+    EXPECT_EQ(prerender_pscs->allowed_local_shared_objects().GetObjectCount(),
+              1u);
+    // Between when the cookie was set by the prerendering page and now, the
+    // main page might have accessed the cookie (for instance, when sending a
+    // request for a favicon) - check for the appropriate value based on
+    // observed behavior.
+    EXPECT_EQ(main_pscs->allowed_local_shared_objects().GetObjectCount(),
+              cookie_observer.CookieAccessedByPrimaryPage() ? 1u : 0u);
+  }
+
+  prerender_test_helper().NavigatePrimaryPage(prerender_url);
+
+  main_pscs = PageSpecificContentSettings::GetForFrame(
+      GetWebContents()->GetMainFrame());
+  EXPECT_TRUE(main_pscs->IsContentAllowed(ContentSettingsType::COOKIES));
+  EXPECT_EQ(main_pscs->allowed_local_shared_objects().GetObjectCount(), 1u);
+}
+
+IN_PROC_BROWSER_TEST_F(ContentSettingsWithPrerenderingBrowserTest,
+                       PrerenderingPageIframeSetsCookie) {
+  const GURL main_url = embedded_test_server()->GetURL("/empty.html");
+  const GURL prerender_url = embedded_test_server()->GetURL("/title1.html");
+  const GURL iframe_url =
+      embedded_test_server()->GetURL("/set_cookie_header.html");
+
+  ui_test_utils::NavigateToURL(browser(), main_url);
+  ASSERT_EQ(GetWebContents()->GetLastCommittedURL(), main_url);
+
+  auto* main_pscs = PageSpecificContentSettings::GetForFrame(
+      GetWebContents()->GetMainFrame());
+  ASSERT_FALSE(main_pscs->IsContentAllowed(ContentSettingsType::COOKIES));
+
+  prerender_test_helper().AddPrerender(prerender_url);
+  int host_id = prerender_test_helper().GetHostForUrl(prerender_url);
+  content::RenderFrameHost* prerender_frame =
+      prerender_test_helper().GetPrerenderedMainFrameHost(host_id);
+  EXPECT_NE(prerender_frame, nullptr);
+
+  content::TestNavigationManager navigation_manager(GetWebContents(),
+                                                    iframe_url);
+  PrerenderCookieObserver cookie_observer(GetWebContents());
+  EXPECT_TRUE(content::ExecJs(
+      prerender_frame,
+      content::JsReplace("const iframe = document.createElement('iframe');"
+                         "iframe.src = $1;"
+                         "document.body.appendChild(iframe);",
+                         iframe_url)));
+  EXPECT_TRUE(navigation_manager.WaitForRequestStart());
+  navigation_manager.ResumeNavigation();
+  cookie_observer.Wait();
+  navigation_manager.WaitForNavigationFinished();
+
+  auto* prerender_pscs =
+      PageSpecificContentSettings::GetForFrame(prerender_frame);
+  EXPECT_TRUE(prerender_pscs->IsContentAllowed(ContentSettingsType::COOKIES));
+  EXPECT_EQ(prerender_pscs->allowed_local_shared_objects().GetObjectCount(),
+            1u);
+  // Between when the cookie was set by the prerendering page and now, the
+  // main page might have accessed the cookie (for instance, when sending a
+  // request for a favicon) - check for the appropriate value based on observed
+  // behavior.
+  EXPECT_EQ(main_pscs->allowed_local_shared_objects().GetObjectCount(),
+            cookie_observer.CookieAccessedByPrimaryPage() ? 1u : 0u);
 }

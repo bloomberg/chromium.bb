@@ -18,6 +18,7 @@
  */
 #include "aom/aom.h"
 #include "aom/aom_encoder.h"
+#include "aom/aom_external_partition.h"
 
 /*!\file
  * \brief Provides definitions for using AOM or AV1 encoder algorithm within the
@@ -225,8 +226,8 @@ enum aome_enc_control_id {
   /*!\brief Codec control function to set the sharpness parameter,
    * unsigned int parameter.
    *
-   * This parameter controls the level at which transform coeff RD favours
-   * sharpness in the block.
+   * This parameter controls the level at which rate-distortion optimization of
+   * transform coefficients favours sharpness in the block.
    *
    * Valid range: 0..7. The default is 0. Values 1-7 will avoid eob and skip
    * block optimization and will change rdmult in favour of block sharpness.
@@ -1112,7 +1113,8 @@ enum aome_enc_control_id {
    *
    * - 0 = deltaq signaling off
    * - 1 = use modulation to maximize objective quality (default)
-   * - 2 = use modulation to maximize perceptual quality
+   * - 2 = use modulation for local test
+   * - 3 = use modulation for key frame perceptual quality optimization
    */
   AV1E_SET_DELTAQ_MODE = 107,
 
@@ -1324,7 +1326,9 @@ enum aome_enc_control_id {
   /*!\brief Codec control function to turn on / off D45 to D203 intra mode
    * usage, int parameter
    *
-   * This will enable or disable usage of D45 to D203 intra modes.
+   * This will enable or disable usage of D45 to D203 intra modes, whic hare a
+   * subset of directional modes. This control has no effect if directional
+   * modes are disabled (AV1E_SET_ENABLE_DIRECTIONAL_INTRA set to 0).
    *
    * - 0 = disable
    * - 1 = enable (default)
@@ -1345,6 +1349,27 @@ enum aome_enc_control_id {
    * const char * parameter.
    */
   AV1E_SET_PARTITION_INFO_PATH = 143,
+
+  /*!\brief Codec control to use an external partition model
+   * A set of callback functions is passed through this control
+   * to let the encoder encode with given partitions.
+   */
+  AV1E_SET_EXTERNAL_PARTITION = 144,
+
+  /*!\brief Codec control function to turn on / off directional intra mode
+   * usage, int parameter
+   *
+   * - 0 = disable
+   * - 1 = enable (default)
+   */
+  AV1E_SET_ENABLE_DIRECTIONAL_INTRA = 145,
+
+  /*!\brief Control to turn on / off transform size search.
+   *
+   * - 0 = disable, transforms always have the largest possible size
+   * - 1 = enable, search for the best transform size for each block (default)
+   */
+  AV1E_SET_ENABLE_TX_SIZE_SEARCH = 146,
 
   // Any new encoder control IDs should be added above.
   // Maximum allowed encoder control ID is 229.
@@ -1884,6 +1909,15 @@ AOM_CTRL_USE_TYPE(AV1E_SET_DV_COST_UPD_FREQ, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_PARTITION_INFO_PATH, const char *)
 #define AOM_CTRL_AV1E_SET_PARTITION_INFO_PATH
+
+AOM_CTRL_USE_TYPE(AV1E_SET_EXTERNAL_PARTITION, aom_ext_part_funcs_t *)
+#define AOM_CTRL_AV1E_SET_EXTERNAL_PARTITION
+
+AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_DIRECTIONAL_INTRA, int)
+#define AOM_CTRL_AV1E_SET_ENABLE_DIRECTIONAL_INTRA
+
+AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_TX_SIZE_SEARCH, int)
+#define AOM_CTRL_AV1E_SET_ENABLE_TX_SIZE_SEARCH
 
 /*!\endcond */
 /*! @} - end defgroup aom_encoder */

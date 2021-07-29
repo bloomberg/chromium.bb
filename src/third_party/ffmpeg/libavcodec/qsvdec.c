@@ -544,11 +544,6 @@ static int qsv_decode(AVCodecContext *avctx, QSVContext *q,
 
         outsurf = &out_frame->surface;
 
-#if FF_API_PKT_PTS
-FF_DISABLE_DEPRECATION_WARNINGS
-        frame->pkt_pts = outsurf->Data.TimeStamp;
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
         frame->pts = outsurf->Data.TimeStamp;
 
         frame->repeat_pict =
@@ -834,7 +829,7 @@ static const AVClass x##_qsv_class = { \
     .option     = opt, \
     .version    = LIBAVUTIL_VERSION_INT, \
 }; \
-AVCodec ff_##x##_qsv_decoder = { \
+const AVCodec ff_##x##_qsv_decoder = { \
     .name           = #x "_qsv", \
     .long_name      = NULL_IF_CONFIG_SMALL(#X " video (Intel Quick Sync Video acceleration)"), \
     .priv_data_size = sizeof(QSVDecContext), \

@@ -101,6 +101,11 @@ const CGFloat kJavaScriptTimeout = 1;
   __block BOOL javascriptEvaluationComplete = NO;
   __block BOOL isRunLoopComplete = NO;
 
+  // Clear params in case elementFetcher fails, which would lead to a popping
+  // a context menu with the previous context menu params.
+  self.params.link_url = GURL();
+  self.params.src_url = GURL();
+
   __weak __typeof(self) weakSelf = self;
   [self.elementFetcher
       fetchDOMElementAtPoint:locationInWebView
@@ -173,7 +178,11 @@ const CGFloat kJavaScriptTimeout = 1;
                           (UIContextMenuInteraction*)interaction
     previewForDismissingMenuWithConfiguration:
         (UIContextMenuConfiguration*)configuration {
-  return [[UITargetedPreview alloc] initWithView:self.dismissView];
+  // If the dismiss view is not attached to the view hierarchy, fallback to nil
+  // to prevent app crashing. See crbug.com/1231888.
+  return self.dismissView.window
+             ? [[UITargetedPreview alloc] initWithView:self.dismissView]
+             : nil;
 }
 
 @end

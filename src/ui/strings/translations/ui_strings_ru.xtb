@@ -58,6 +58,7 @@
 <translation id="2297836609126180313"><ph name="QUANTITY" /> ТБ/с</translation>
 <translation id="2353636109065292463">Проверка подключения к Интернету</translation>
 <translation id="2388990488038464401">Позвонить на этот номер со своего телефона?</translation>
+<translation id="2435457462613246316">Показать пароль</translation>
 <translation id="24452542372838207">Развернуть уведомление</translation>
 <translation id="2445449901874883781">Показывать больше окон</translation>
 <translation id="2482878487686419369">Уведомления</translation>
@@ -79,6 +80,7 @@
 <translation id="2824719307700604149">{YEARS,plural, =1{год назад}one{# год назад}few{# года назад}many{# лет назад}other{# года назад}}</translation>
 <translation id="2878511608894704031">Удалить все</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{через 1 д.}one{через # д.}few{через # д.}many{через # д.}other{через # д.}}</translation>
+<translation id="2922712708897119705">Значения в столбце "<ph name="COLUMN_NAME" />" упорядочены по убыванию.</translation>
 <translation id="2931838996092594335">нажать</translation>
 <translation id="2981684127883932071">Показаны подсказки</translation>
 <translation id="3036649622769666520">Открытие файлов</translation>
@@ -114,6 +116,7 @@
 <translation id="3897092660631435901">Меню</translation>
 <translation id="3909791450649380159">Выре&amp;зать</translation>
 <translation id="3990502903496589789">Правый край</translation>
+<translation id="3994749195054421561">Значения в столбце "<ph name="COLUMN_NAME" />" упорядочены по возрастанию.</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 непрочитанное уведомление}one{# непрочитанное уведомление}few{# непрочитанных уведомления}many{# непрочитанных уведомлений}other{# непрочитанного уведомления}}</translation>
 <translation id="4202807286478387388">перейти</translation>
 <translation id="4250229828105606438">Скриншот</translation>
@@ -123,6 +126,7 @@
 <translation id="4306392492252714209">Удалить из буфера обмена.</translation>
 <translation id="4316910396681052118">ВСЕ ПРИЛОЖЕНИЯ</translation>
 <translation id="4491109536499578614">Изображение</translation>
+<translation id="4565377596337484307">Скрыть пароль</translation>
 <translation id="4588090240171750605">Прокрутка вправо</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, рейтинг – <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, рекомендуемое приложение</translation>
@@ -165,6 +169,7 @@
 <translation id="6012623610530968780">Страница <ph name="SELECTED_PAGE" /> из <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Удалить текст из окна поиска</translation>
 <translation id="6040143037577758943">Закрыть</translation>
+<translation id="6117103120090651229">Кнопка по центру</translation>
 <translation id="6119846243427417423">активировать</translation>
 <translation id="6129953537138746214">Пробел</translation>
 <translation id="6134259848159370930">Поиск на устройстве, в приложениях, настройках и Интернете…</translation>
@@ -173,6 +178,7 @@
 <translation id="6156262341071374681">Просмотреть все приложения</translation>
 <translation id="6165508094623778733">Подробнее</translation>
 <translation id="6166852626429024716">Поиск на устройстве, в приложениях, настройках и Интернете…</translation>
+<translation id="6237461503717005873">Выбрано: <ph name="ROW_NAME" />.</translation>
 <translation id="6264365405983206840">Выделить все</translation>
 <translation id="6351032674660237738">ПРЕДЛАГАЕМЫЕ ПРИЛОЖЕНИЯ</translation>
 <translation id="6364916375976753737">Прокрутка влево</translation>
@@ -213,6 +219,7 @@
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Осталась 1 минута}one{Осталась # минута}few{Осталось # минуты}many{Осталось # минут}other{Осталось # минуты}}</translation>
 <translation id="7430878839542012341">Удалить этот запрос из истории поиска?</translation>
+<translation id="7437971918971306061">Значения в столбце "<ph name="COLUMN_NAME" />" не упорядочены.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> ТБ</translation>
 <translation id="7507604095951736240">Эмодзи</translation>
 <translation id="7620655452534002301">Удалено.</translation>

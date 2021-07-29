@@ -73,7 +73,7 @@ export const mochaHooks = {
 
     // Pause when running interactively in debug mode. This is mututally
     // exclusive with parallel mode.
-    if (process.env['DEBUG']) {
+    if (process.env['DEBUG_TEST']) {
       console.log('Running in debug mode.');
       console.log(' - Press enter to run the test suite.');
       console.log(' - Press ctrl + c to quit.');
@@ -114,11 +114,9 @@ export const mochaHooks = {
       coverageMap: remappedCoverageMap,
       defaultSummarizer: 'nested',
     });
-    // The types in @types/istanbul-lib-report are incorrectly typing `create`
-    // to return a Visitor instead of a ReportBase.
-    (reports.create('html') as unknown as report.ReportBase).execute(context);
-    (reports.create('json') as unknown as report.ReportBase).execute(context);
-    (reports.create('json-summary') as unknown as report.ReportBase).execute(context);
+    reports.create('html').execute(context);
+    reports.create('json').execute(context);
+    reports.create('json-summary').execute(context);
   },
   // In both modes, run before each test.
   beforeEach: async function(this: Mocha.Suite) {

@@ -174,6 +174,7 @@ google_apis_tmpl("google_apis") {
   deps = [
     "//net",
     "//services/network/public/cpp",
+    "//services/network/public/mojom",
   ]
 }
 
@@ -218,6 +219,7 @@ test("google_apis_unittests") {
   sources = [
     "gaia/gaia_auth_fetcher_unittest.cc",
     "gaia/gaia_auth_util_unittest.cc",
+    "gaia/gaia_config_unittest.cc",
     "gaia/gaia_oauth_client_unittest.cc",
     "gaia/gaia_urls_unittest.cc",
     "gaia/google_service_auth_error_unittest.cc",
@@ -243,6 +245,7 @@ test("google_apis_unittests") {
     "//base/test:test_support",
     "//build:branding_buildflags",
     "//build:chromeos_buildflags",
+    "//google_apis/calendar:calendar_unittests",
     "//testing/gmock",
     "//testing/gtest",
   ]
@@ -251,6 +254,11 @@ test("google_apis_unittests") {
     deps += [ ":google_apis_unittest_bundle_data" ]
   } else {
     data = [ "test/" ]
+  }
+
+  if (is_fuchsia) {
+    additional_manifest_fragments =
+        [ "//build/config/fuchsia/test/network_capabilities.test-cmx" ]
   }
 
   if (enable_extensions) {
@@ -267,6 +275,8 @@ test("google_apis_unittests") {
 bundle_data("google_apis_unittest_bundle_data") {
   testonly = true
   sources = [
+    "test/data/calendar/events.json",
+    "test/data/calendar/invalid_events.json",
     "test/data/gaia/all_base_urls.json",
     "test/data/gaia/all_urls.json",
     "test/data/gaia/api_keys.json",

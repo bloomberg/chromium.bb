@@ -9,15 +9,12 @@
  * wallpaper collection id to avoid refetching data unnecessarily.
  */
 
-import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
 import './styles.js';
-import {assert} from '/assert.m.js';
-import {afterNextRender, html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {EventType} from '../common/constants.js';
-import {sendImages, validateReceivedSelection} from '../common/iframe_api.js';
+import {afterNextRender, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {sendImages} from '../common/iframe_api.js';
 import {isNonEmptyArray, promisifyOnload} from '../common/utils.js';
-import {fetchImagesForCollectionHelper, getWallpaperProvider} from './mojo_interface_provider.js';
+import {WithPersonalizationStore} from './personalization_store.js';
 
 let sendImagesFunction = sendImages;
 
@@ -28,7 +25,8 @@ export function promisifySendImagesForTesting() {
   return promise;
 }
 
-export class WallpaperImages extends PolymerElement {
+/** @polymer */
+export class WallpaperImages extends WithPersonalizationStore {
   static get is() {
     return 'wallpaper-images';
   }
@@ -39,172 +37,143 @@ export class WallpaperImages extends PolymerElement {
 
   static get properties() {
     return {
+      /**
+       * The current collection id to display.
+       */
       collectionId: {
         type: String,
-        observer: 'onCollectionIdChanged_',
       },
 
       /**
-       * Used to bind/unbind the message listener when this element is toggled.
-       * Also hides the element when it is not active.
+       * @type {?Array<!chromeos.personalizationApp.mojom.WallpaperCollection>}
        */
-      active: {
-        type: Boolean,
-        observer: 'onActiveChanged_',
+      collections_: {
+        type: Array,
       },
 
       /**
+       * @type {!Object<string,
+       *     ?Array<!chromeos.personalizationApp.mojom.WallpaperImage>>}
        * @private
-       * @type {?Array<!chromeos.personalizationApp.mojom.WallpaperImage>}
        */
       images_: {
-        type: Array,
-        value: null,
+        type: Object,
       },
 
-      /** @private */
-      isLoading_: {
-        type: Boolean,
-        value: false,
+      /**
+       * Mapping of collection_id to boolean.
+       * @type {!Object<string, boolean>}
+       */
+      imagesLoading_: {
+        type: Object,
       },
 
       /** @private */
       hasError_: {
         type: Boolean,
-        computed: 'computeHasError_(images_, isLoading_)',
+        // Call computed functions with their dependencies as arguments so that
+        // polymer knows when to re-run the computation.
+        computed: 'computeHasError_(images_, imagesLoading_, collectionId)',
       },
 
       /** @private */
       showImages_: {
         type: Boolean,
-        computed: 'computeShowImages_(images_, isLoading_)',
+        computed: 'computeShowImages_(images_, imagesLoading_, collectionId)',
       },
     };
+  }
+
+  static get observers() {
+    return ['onShouldSendImages_(showImages_, collectionId)']
   }
 
   constructor() {
     super();
     this.iframePromise_ = /** @type {!Promise<!HTMLIFrameElement>} */ (
         promisifyOnload(this, 'images-iframe', afterNextRender));
-    this.onImageSelected_ = this.onImageSelected_.bind(this);
-    this.wallpaperProvider_ = getWallpaperProvider();
-    /**
-     * @type {!Map<string,
-     *     !Array<!chromeos.personalizationApp.mojom.WallpaperImage>>}
-     */
-    this.cache_ = new Map();
   }
 
   /** @override */
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    window.removeEventListener('message', this.onImageSelected_);
+  connectedCallback() {
+    super.connectedCallback();
+    this.watch('images_', state => state.backdrop.images);
+    this.watch('imagesLoading_', state => state.loading.images);
+    this.watch('collections_', state => state.backdrop.collections);
+    this.updateFromStore();
   }
 
   /**
-   * Listener for collectionId property.
-   * @private
-   * @param {?string} value
+   * Check if this collection with id |collectionid| is still loading.
+   * @param {?Object<string, boolean>} imagesLoading
+   * @param {?string} collectionId
+   * @return {boolean}
    */
-  async onCollectionIdChanged_(value) {
-    this.setProperties({isLoading_: true, images_: null});
-    if (!value) {
-      this.isLoading_ = false;
-      return;
+  isLoading_(imagesLoading, collectionId) {
+    if (!imagesLoading || !collectionId) {
+      return true;
     }
-
-    // Make sure that iframe is fully loaded.
-    const iframe = await this.iframePromise_;
-
-    // Fetch images from backend.
-    const images = await this.fetchImages_(value);
-    // Send images to iframe. If images is null, send empty array to clear the
-    // page instead.
-    sendImagesFunction(iframe.contentWindow, images || []);
-
-    this.setProperties({isLoading_: false, images_: images});
+    return imagesLoading[collectionId];
   }
 
   /**
    * @private
-   * @param {boolean} value
+   * @param {?Object<string,
+   *     Array<!chromeos.personalizationApp.mojom.WallpaperImage>>} images
+   * @param {?Object<string, boolean>} imagesLoading
+   * @param {string} collectionId
+   * @return {boolean}
    */
-  onActiveChanged_(value) {
-    const func = value ? window.addEventListener : window.removeEventListener;
-    func('message', this.onImageSelected_);
-    this.hidden = !value;
+  computeHasError_(images, imagesLoading, collectionId) {
+    return !this.isLoading_(imagesLoading, collectionId) &&
+        !isNonEmptyArray(images[collectionId]);
   }
 
   /**
-   * Fetch images from wallpaperProvider. If there is a cached value for the
-   * given collectionId, will read from cache instead.
-   * Returns null on failure.
+   * @private
+   * @param {?Object<string,
+   *     Array<!chromeos.personalizationApp.mojom.WallpaperImage>>} images
+   * @param {Object<string, boolean>} imagesLoading
+   * @param {string} collectionId
+   * @return {boolean}
+   */
+  computeShowImages_(images, imagesLoading, collectionId) {
+    return !this.isLoading_(imagesLoading, collectionId) &&
+        isNonEmptyArray(images[collectionId]);
+  }
+
+  /**
+   * Send images if loading is ready and we have some images.
+   * @param {boolean} showImages
+   * @param {string} collectionId
+   */
+  async onShouldSendImages_(showImages, collectionId) {
+    if (showImages && collectionId) {
+      const iframe = await this.iframePromise_;
+      sendImagesFunction(iframe.contentWindow, this.images_[collectionId]);
+    }
+  }
+
+  /**
    * @private
    * @param {string} collectionId
-   * @return {!Promise<?Array<
-   *     !chromeos.personalizationApp.mojom.WallpaperImage>>}
+   * @param {?Array<!chromeos.personalizationApp.mojom.WallpaperCollection>}
+   *     collections
+   * @return {string}
    */
-  async fetchImages_(collectionId) {
-    assert(
-        (typeof collectionId === 'string') && collectionId.length > 0,
-        'Collection id parameter is required');
+  getMainAriaLabel_(collectionId, collections) {
+    if (!collectionId || !Array.isArray(collections)) {
+      return '';
+    }
+    const collection =
+        collections.find(collection => collection.id === collectionId);
 
-    if (this.cache_.has(collectionId)) {
-      return this.cache_.get(collectionId);
+    if (!collection) {
+      console.warn('Did not find collection matching collectionId');
+      return '';
     }
 
-    try {
-      const {images} = await fetchImagesForCollectionHelper(
-          this.wallpaperProvider_, collectionId);
-      this.cache_.set(collectionId, images);
-      return images;
-    } catch (e) {
-      // TODO(b/181697575) handle errors and allow user to retry
-      console.warn(
-          'Fetching wallpaper collection images failed for collection id',
-          collectionId);
-      return null;
-    }
-  }
-
-  /**
-   * @private
-   * @param {?Array<!chromeos.personalizationApp.mojom.WallpaperImage>} images
-   * @param {boolean} loading
-   * @return {boolean}
-   */
-  computeHasError_(images, loading) {
-    return !loading && !this.computeShowImages_(images, loading);
-  }
-
-  /**
-   * @private
-   * @param {?Array<!chromeos.personalizationApp.mojom.WallpaperImage>} images
-   * @param {boolean} loading
-   * @return {boolean}
-   */
-  computeShowImages_(images, loading) {
-    return !loading && isNonEmptyArray(images);
-  }
-
-  /**
-   * Receives events from untrusted iframe. Expects only SelectImageEvent type.
-   * @private
-   * @param {!Event} event
-   */
-  async onImageSelected_(event) {
-    /** @type {!chromeos.personalizationApp.mojom.WallpaperImage} */
-    const image =
-        validateReceivedSelection(event, EventType.SELECT_IMAGE, this.images_);
-
-    // TODO(b/178215472) show a loading indicator.
-    const {success} =
-        await this.wallpaperProvider_.selectWallpaper(image.assetId);
-
-    // TODO(b/181697575) show a user facing error and handle failure cases.
-    if (!success) {
-      console.warn('Setting wallpaper image failed');
-    }
+    return collection.name;
   }
 }
 

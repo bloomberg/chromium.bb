@@ -26,92 +26,118 @@ import './site_details_permission.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
-import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
-import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../i18n_setup.js';
 import {MetricsBrowserProxyImpl, PrivacyElementInteractions} from '../metrics_browser_proxy.js';
 import {routes} from '../route.js';
-import {Route, RouteObserverBehavior, Router} from '../router.js';
+import {Route, RouteObserverMixin, RouteObserverMixinInterface, Router} from '../router.js';
 
 import {ContentSetting, ContentSettingsTypes} from './constants.js';
-import {SiteSettingsBehavior} from './site_settings_behavior.js';
+import {SiteDetailsPermissionElement} from './site_details_permission.js';
+import {SiteSettingsMixin, SiteSettingsMixinInterface} from './site_settings_mixin.js';
 import {WebsiteUsageBrowserProxy, WebsiteUsageBrowserProxyImpl} from './website_usage_browser_proxy.js';
 
-Polymer({
-  is: 'site-details',
+/**
+ * @constructor
+ * @extends {PolymerElement}
+ * @implements {SiteSettingsMixinInterface}
+ * @implements {RouteObserverMixinInterface}
+ * @implements {WebUIListenerBehaviorInterface}
+ */
+const SiteDetailsElementBase = mixinBehaviors(
+    [I18nBehavior, WebUIListenerBehavior],
+    SiteSettingsMixin(RouteObserverMixin(PolymerElement)));
 
-  _template: html`{__html_template__}`,
+/** @polymer */
+class SiteDetailsElement extends SiteDetailsElementBase {
+  static get is() {
+    return 'site-details';
+  }
 
-  behaviors: [
-    I18nBehavior, SiteSettingsBehavior, RouteObserverBehavior,
-    WebUIListenerBehavior
-  ],
+  static get template() {
+    return html`{__html_template__}`;
+  }
 
-  properties: {
-    /**
-     * Whether unified autoplay blocking is enabled.
-     */
-    blockAutoplayEnabled: Boolean,
+  static get properties() {
+    return {
+      /**
+       * Whether unified autoplay blocking is enabled.
+       */
+      blockAutoplayEnabled: Boolean,
 
-    /**
-     * Use the string representing the origin or extension name as the page
-     * title of the settings-subpage parent.
-     */
-    pageTitle: {
-      type: String,
-      notify: true,
-    },
-
-    /**
-     * The origin that this widget is showing details for.
-     * @private
-     */
-    origin_: String,
-
-    /**
-     * The amount of data stored for the origin.
-     * @private
-     */
-    storedData_: {
-      type: String,
-      value: '',
-    },
-
-    /**
-     * The number of cookies stored for the origin.
-     * @private
-     */
-    numCookies_: {
-      type: String,
-      value: '',
-    },
-
-    /** @private */
-    enableExperimentalWebPlatformFeatures_: {
-      type: Boolean,
-      value() {
-        return loadTimeData.getBoolean('enableExperimentalWebPlatformFeatures');
+      /**
+       * Use the string representing the origin or extension name as the page
+       * title of the settings-subpage parent.
+       */
+      pageTitle: {
+        type: String,
+        notify: true,
       },
-    },
 
-    /** @private */
-    enableWebBluetoothNewPermissionsBackend_: {
-      type: Boolean,
-      value: () =>
-          loadTimeData.getBoolean('enableWebBluetoothNewPermissionsBackend'),
-    },
-  },
+      /**
+       * The origin that this widget is showing details for.
+       * @private
+       */
+      origin_: String,
 
-  /** @private {string} */
-  fetchingForHost_: '',
+      /**
+       * The amount of data stored for the origin.
+       * @private
+       */
+      storedData_: {
+        type: String,
+        value: '',
+      },
 
-  /** @private {?WebsiteUsageBrowserProxy} */
-  websiteUsageProxy_: null,
+      /**
+       * The number of cookies stored for the origin.
+       * @private
+       */
+      numCookies_: {
+        type: String,
+        value: '',
+      },
+
+      /** @private */
+      enableExperimentalWebPlatformFeatures_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean(
+              'enableExperimentalWebPlatformFeatures');
+        },
+      },
+
+      /** @private */
+      enableWebBluetoothNewPermissionsBackend_: {
+        type: Boolean,
+        value: () =>
+            loadTimeData.getBoolean('enableWebBluetoothNewPermissionsBackend'),
+      },
+
+      /** @private */
+      contentSettingsTypesEnum_: {
+        type: Object,
+        value: ContentSettingsTypes,
+      },
+    };
+  }
+
+  constructor() {
+    super();
+
+    /** @private {string} */
+    this.fetchingForHost_ = '';
+
+    /** @private {!WebsiteUsageBrowserProxy} */
+    this.websiteUsageProxy_ = WebsiteUsageBrowserProxyImpl.getInstance();
+  }
 
   /** @override */
-  attached() {
-    this.websiteUsageProxy_ = WebsiteUsageBrowserProxyImpl.getInstance();
+  connectedCallback() {
+    super.connectedCallback();
+
     this.addWebUIListener('usage-total-changed', (host, data, cookies) => {
       this.onUsageTotalChanged_(host, data, cookies);
     });
@@ -122,17 +148,11 @@ Polymer({
 
     // Refresh block autoplay status from the backend.
     this.browserProxy.fetchBlockAutoplayStatus();
-  },
-
-  /** @override */
-  ready() {
-    this.ContentSettingsTypes = ContentSettingsTypes;
-  },
+  }
 
   /**
-   * RouteObserverBehavior
-   * @param {!Route} route
-   * @protected
+   * RouteObserverMixin
+   * @override
    */
   currentRouteChanged(route) {
     if (route !== routes.SITE_SETTINGS_SITE_DETAILS) {
@@ -150,10 +170,12 @@ Polymer({
         this.fetchingForHost_ = this.toUrl(this.origin_).hostname;
         this.storedData_ = '';
         this.websiteUsageProxy_.fetchUsageTotal(this.fetchingForHost_);
-        this.updatePermissions_(this.getCategoryList());
+        this.browserProxy.getCategoryList(this.origin_).then((categoryList) => {
+          this.updatePermissions_(categoryList, /*hideOthers=*/ true);
+        });
       }
     });
-  },
+  }
 
   /**
    * Called when a site within a category has been changed.
@@ -169,14 +191,13 @@ Polymer({
         origin === undefined || origin === '') {
       return;
     }
-    if (!this.getCategoryList().includes(category)) {
-      return;
-    }
 
-    // Site details currently doesn't support embedded origins, so ignore it
-    // and just check whether the origins are the same.
-    this.updatePermissions_([category]);
-  },
+    this.browserProxy.getCategoryList(this.origin_).then((categoryList) => {
+      if (categoryList.includes(category)) {
+        this.updatePermissions_([category], /*hideOthers=*/ false);
+      }
+    });
+  }
 
   /**
    * Callback for when the usage total is known.
@@ -192,16 +213,18 @@ Polymer({
       this.storedData_ = usage;
       this.numCookies_ = cookies;
     }
-  },
+  }
 
   /**
    * Retrieves the permissions listed in |categoryList| from the backend for
    * |this.origin_|.
    * @param {!Array<!ContentSettingsTypes>} categoryList The list
    *     of categories to update permissions for.
+   * @param {boolean} hideOthers If true, permissions for categories not in
+   *     |categoryList| will be hidden.
    * @private
    */
-  updatePermissions_(categoryList) {
+  updatePermissions_(categoryList, hideOthers) {
     const permissionsMap =
         /**
          * @type {!Object<!ContentSettingsTypes,
@@ -212,6 +235,9 @@ Polymer({
             (map, element) => {
               if (categoryList.includes(element.category)) {
                 map[element.category] = element;
+              } else if (hideOthers) {
+                // This will hide any permission not in the category list.
+                element.site = null;
               }
               return map;
             },
@@ -233,12 +259,12 @@ Polymer({
           this.pageTitle =
               this.originRepresentation(exceptionList[0].displayName);
         });
-  },
+  }
 
   /** @private */
   onCloseDialog_(e) {
     e.target.closest('cr-dialog').close();
-  },
+  }
 
   /**
    * Confirms the resetting of all content settings for an origin.
@@ -248,7 +274,7 @@ Polymer({
   onConfirmClearSettings_(e) {
     e.preventDefault();
     this.$.confirmResetSettings.showModal();
-  },
+  }
 
   /**
    * Confirms the clearing of storage for an origin.
@@ -258,7 +284,7 @@ Polymer({
   onConfirmClearStorage_(e) {
     e.preventDefault();
     this.$.confirmClearStorageNew.showModal();
-  },
+  }
 
   /**
    * Resets all permissions for the current origin.
@@ -266,10 +292,10 @@ Polymer({
    */
   onResetSettings_(e) {
     this.browserProxy.setOriginPermissions(
-        this.origin_, this.getCategoryList(), ContentSetting.DEFAULT);
+        this.origin_, null, ContentSetting.DEFAULT);
 
     this.onCloseDialog_(e);
-  },
+  }
 
   /**
    * Clears all data stored, except cookies, for the current origin.
@@ -285,7 +311,7 @@ Polymer({
     }
 
     this.onCloseDialog_(e);
-  },
+  }
 
   /**
    * Checks whether this site has any usage information to show.
@@ -295,7 +321,7 @@ Polymer({
    */
   hasUsage_(storage, cookies) {
     return storage !== '' || cookies !== '';
-  },
+  }
 
   /**
    * Checks whether this site has both storage and cookies information to show.
@@ -305,15 +331,18 @@ Polymer({
    */
   hasDataAndCookies_(storage, cookies) {
     return storage !== '' && cookies !== '';
-  },
+  }
 
   /** @private */
   onResetSettingsDialogClosed_() {
-    focusWithoutInk(assert(this.$$('#resetSettingsButton')));
-  },
+    focusWithoutInk(
+        assert(this.shadowRoot.querySelector('#resetSettingsButton')));
+  }
 
   /** @private */
   onClearStorageDialogClosed_() {
-    focusWithoutInk(assert(this.$$('#clearStorage')));
-  },
-});
+    focusWithoutInk(assert(this.shadowRoot.querySelector('#clearStorage')));
+  }
+}
+
+customElements.define(SiteDetailsElement.is, SiteDetailsElement);

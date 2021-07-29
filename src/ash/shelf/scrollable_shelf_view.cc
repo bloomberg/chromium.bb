@@ -4,6 +4,8 @@
 
 #include "ash/shelf/scrollable_shelf_view.h"
 
+#include <algorithm>
+
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/shelf_config.h"
@@ -30,6 +32,7 @@
 #include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/transform_util.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/focus/focus_search.h"
 #include "ui/views/view_targeter_delegate.h"
 
@@ -155,7 +158,7 @@ class ScrollableShelfView::ScrollableShelfArrowView
                         shelf,
                         shelf_button_delegate),
         shelf_(shelf) {
-    ink_drop()->SetMode(views::InkDropHost::InkDropMode::OFF);
+    views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::OFF);
     SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
@@ -1307,20 +1310,6 @@ bool ScrollableShelfView::ShouldShowRightArrow() const {
          (layout_strategy_ == kShowButtons);
 }
 
-int ScrollableShelfView::GetStatusWidgetSizeOnPrimaryAxis(
-    bool use_target_bounds) const {
-  const gfx::Size status_widget_size =
-      use_target_bounds
-          ? GetShelf()->status_area_widget()->GetTargetBounds().size()
-          : GetShelf()
-                ->shelf_widget()
-                ->status_area_widget()
-                ->GetWindowBoundsInScreen()
-                .size();
-  return GetShelf()->PrimaryAxisValue(status_widget_size.width(),
-                                      status_widget_size.height());
-}
-
 gfx::Rect ScrollableShelfView::GetAvailableLocalBounds(
     bool use_target_bounds) const {
   return use_target_bounds
@@ -1677,9 +1666,9 @@ float ScrollableShelfView::CalculatePageScrollingOffsetInAbs(
     }
   }
 
-  DCHECK_GE(offset, 0);
-
-  return offset;
+  // Ensure the return value to be non-negative. Note that if the screen is too
+  // small (usually on the Linux emulator), `offset` may be negative.
+  return std::fmax(offset, 0.f);
 }
 
 float ScrollableShelfView::CalculateTargetOffsetAfterScroll(
@@ -1902,8 +1891,14 @@ std::pair<int, int> ScrollableShelfView::CalculateTappableIconIndices(
   } else {
     DCHECK_EQ(layout_strategy, kShowLeftArrowButton);
     last_visible_view_index = visible_views_indices.size() - 1;
+
+    // In fuzz tests, `visible_size` may be smaller than
+    // `space_needed_for_button` although it never happens on real devices.
     first_visible_view_index =
-        last_visible_view_index - visible_size / space_needed_for_button + 1;
+        visible_size >= space_needed_for_button
+            ? last_visible_view_index - visible_size / space_needed_for_button +
+                  1
+            : last_visible_view_index;
   }
 
   DCHECK_GE(first_visible_view_index, 0);

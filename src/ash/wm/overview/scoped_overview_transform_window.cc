@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <utility>
 
-#include "ash/public/cpp/ash_features.h"
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/delayed_animation_observer_impl.h"
@@ -430,7 +430,7 @@ gfx::RectF ScopedOverviewTransformWindow::ShrinkRectToFitPreservingAspectRatio(
       const gfx::Rect window_bounds =
           ::wm::GetTransientRoot(window_)->GetBoundsInScreen();
       const float window_ratio =
-          float{window_bounds.width()} / window_bounds.height();
+          static_cast<float>(window_bounds.width()) / window_bounds.height();
       if (is_pillar) {
         const float new_x = height * window_ratio;
         new_bounds.set_width(new_x);

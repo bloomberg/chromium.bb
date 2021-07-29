@@ -5,7 +5,7 @@
 import {assert} from 'chai';
 import type * as puppeteer from 'puppeteer';
 
-import {$$, click, hasClass, waitFor, waitForClass, waitForFunction} from '../../shared/helper.js';
+import {$$, click, hasClass, matchStringTable, waitFor, waitForClass, waitForFunction} from '../../shared/helper.js';
 import {openPanelViaMoreTools} from './settings-helpers.js';
 
 export const CATEGORY = '.issue-category';
@@ -41,7 +41,8 @@ export async function getIssueByTitle(issueMessage: string): Promise<puppeteer.E
   const issueMessageElement = await waitFor(ISSUE_TITLE);
   const selectedIssueMessage = await issueMessageElement.evaluate(node => node.textContent);
   assert.strictEqual(selectedIssueMessage, issueMessage);
-  const header = await issueMessageElement.evaluateHandle(el => el.parentElement);
+  const header =
+      await issueMessageElement.evaluateHandle(el => el.parentElement) as puppeteer.ElementHandle<HTMLElement>;
   if (header) {
     const headerClassList = await header.evaluate(el => el.classList.toString());
     assert.include(headerClassList, 'header');
@@ -113,7 +114,8 @@ export async function ensureResourceSectionIsExpanded(section: IssueResourceSect
   await waitForClass(section.content, 'expanded');
 }
 
-export async function extractTableFromResourceSection(resourceContentElement: puppeteer.ElementHandle<Element>) {
+async function extractTableFromResourceSection(resourceContentElement: puppeteer.ElementHandle<Element>):
+    Promise<string[][]|undefined> {
   const table = await resourceContentElement.$('.affected-resource-list');
   if (table) {
     return await table.evaluate(table => {
@@ -121,14 +123,39 @@ export async function extractTableFromResourceSection(resourceContentElement: pu
       for (const tableRow of table.childNodes) {
         const row = [];
         for (const cell of tableRow.childNodes) {
-          row.push(cell.textContent);
+          const requestLinkIcon = cell instanceof HTMLElement && cell.querySelector('devtools-request-link-icon');
+          if (requestLinkIcon) {
+            const label = requestLinkIcon.shadowRoot?.querySelector('[aria-label="Shortened URL"]');
+            row.push(label?.textContent || '');
+          } else {
+            row.push(cell.textContent || '');
+          }
         }
         rows.push(row);
       }
       return rows;
     });
   }
-  return null;
+  return undefined;
+}
+
+
+export async function waitForTableFromResourceSection(
+    resourceContentElement: puppeteer.ElementHandle<Element>,
+    predicate: (table: string[][]) => true | undefined): Promise<string[][]> {
+  return await waitForFunction(async () => {
+    const table = await extractTableFromResourceSection(resourceContentElement);
+    if (!table || predicate(table) !== true) {
+      return undefined;
+    }
+    return table;
+  });
+}
+
+export function waitForTableFromResourceSectionContents(
+    resourceContentElement: puppeteer.ElementHandle<Element>, expected: (string|RegExp)[][]): Promise<string[][]> {
+  return waitForTableFromResourceSection(
+      resourceContentElement, table => matchStringTable(table, expected) === true ? true : undefined);
 }
 
 export async function getGroupByCategoryChecked() {

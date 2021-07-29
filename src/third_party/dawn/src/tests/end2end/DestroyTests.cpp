@@ -23,7 +23,7 @@ class DestroyTest : public DawnTest {
   protected:
     void SetUp() override {
         DawnTest::SetUp();
-        DAWN_SKIP_TEST_IF(HasToggleEnabled("skip_validation"));
+        DAWN_TEST_UNSUPPORTED_IF(HasToggleEnabled("skip_validation"));
 
         renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
 
@@ -38,7 +38,7 @@ class DestroyTest : public DawnTest {
                   return vec4<f32>(0.0, 1.0, 0.0, 1.0);
               })");
 
-        utils::ComboRenderPipelineDescriptor2 descriptor;
+        utils::ComboRenderPipelineDescriptor descriptor;
         descriptor.vertex.module = vsModule;
         descriptor.cFragment.module = fsModule;
         descriptor.primitive.topology = wgpu::PrimitiveTopology::TriangleList;
@@ -48,7 +48,7 @@ class DestroyTest : public DawnTest {
         descriptor.cAttributes[0].format = wgpu::VertexFormat::Float32x4;
         descriptor.cTargets[0].format = renderPass.colorFormat;
 
-        pipeline = device.CreateRenderPipeline2(&descriptor);
+        pipeline = device.CreateRenderPipeline(&descriptor);
 
         vertexBuffer = utils::CreateBufferFromData<float>(
             device, wgpu::BufferUsage::Vertex,

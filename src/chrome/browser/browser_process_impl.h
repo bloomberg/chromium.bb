@@ -78,6 +78,11 @@ namespace webrtc_event_logging {
 class WebRtcEventLogManager;
 }  // namespace webrtc_event_logging
 
+namespace speech {
+class SodaInstallerImpl;
+class SodaInstallerImplChromeOS;
+}  // namespace speech
+
 // Real implementation of BrowserProcess that creates and returns the services.
 class BrowserProcessImpl : public BrowserProcess,
                            public KeepAliveStateObserver {
@@ -200,6 +205,10 @@ class BrowserProcessImpl : public BrowserProcess,
   resource_coordinator::ResourceCoordinatorParts* resource_coordinator_parts()
       override;
 
+#if !defined(OS_ANDROID)
+  SerialPolicyAllowedPorts* serial_policy_allowed_ports() override;
+#endif
+
   BuildState* GetBuildState() override;
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
@@ -250,7 +259,7 @@ class BrowserProcessImpl : public BrowserProcess,
   bool created_profile_manager_ = false;
   std::unique_ptr<ProfileManager> profile_manager_;
 
-  std::unique_ptr<PrefService> local_state_;
+  const std::unique_ptr<PrefService> local_state_;
 
   // |metrics_services_manager_| owns this.
   ChromeMetricsServicesManagerClient* metrics_services_manager_client_ =
@@ -296,7 +305,7 @@ class BrowserProcessImpl : public BrowserProcess,
       background_printing_manager_;
 #endif
 
-#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(ENABLE_CHROME_NOTIFICATIONS)
   // Manager for desktop notification UI.
   bool created_notification_ui_manager_ = false;
   std::unique_ptr<NotificationUIManager> notification_ui_manager_;
@@ -374,6 +383,19 @@ class BrowserProcessImpl : public BrowserProcess,
   // but some users of component updater only install per-user.
   std::unique_ptr<component_updater::ComponentUpdateService> component_updater_;
 
+#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
+  // Used to create a singleton instance of SodaInstallerImpl, which can be
+  // retrieved using speech::SodaInstaller::GetInstance().
+  // SodaInstallerImpl depends on ComponentUpdateService, so define it here
+  // to ensure that SodaInstallerImpl gets destructed first.
+  std::unique_ptr<speech::SodaInstallerImpl> soda_installer_impl_;
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Chrome OS has a different implementation of SodaInstaller.
+  std::unique_ptr<speech::SodaInstallerImplChromeOS> soda_installer_impl_;
+#endif
+
 #if BUILDFLAG(ENABLE_PLUGINS)
   std::unique_ptr<PluginsResourceService> plugins_resource_service_;
 #endif
@@ -402,6 +424,8 @@ class BrowserProcessImpl : public BrowserProcess,
 #if !defined(OS_ANDROID)
   // Called to signal the process' main message loop to exit.
   base::OnceClosure quit_closure_;
+
+  std::unique_ptr<SerialPolicyAllowedPorts> serial_policy_allowed_ports_;
 
   BuildState build_state_;
 #endif

@@ -70,6 +70,8 @@ class CameraAppHelperImpl : public ash::TabletModeObserver,
   void GetWindowStateController(
       GetWindowStateControllerCallback callback) override;
   void SendNewCaptureBroadcast(bool is_video, const std::string& name) override;
+  void MonitorFileDeletion(const std::string& name,
+                           MonitorFileDeletionCallback callback) override;
 
  private:
   void CheckExternalScreenState();
@@ -110,6 +112,8 @@ class CameraAppHelperImpl : public ash::TabletModeObserver,
 
   std::unique_ptr<chromeos::CameraAppWindowStateController>
       window_state_controller_;
+
+  display::ScopedDisplayObserver display_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CameraAppHelperImpl);
 };

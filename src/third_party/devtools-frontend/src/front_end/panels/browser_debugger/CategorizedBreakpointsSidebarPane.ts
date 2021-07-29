@@ -32,8 +32,7 @@ export class CategorizedBreakpointsSidebarPane extends UI.Widget.VBox {
       detailsPausedReason: Protocol.Debugger.PausedEventReason) {
     super(true);
     this._categoriesTreeOutline = new UI.TreeOutline.TreeOutlineInShadow();
-    this._categoriesTreeOutline.registerRequiredCSS(
-        'panels/browser_debugger/categorizedBreakpointsSidebarPane.css', {enableLegacyPatching: true});
+    this._categoriesTreeOutline.registerRequiredCSS('panels/browser_debugger/categorizedBreakpointsSidebarPane.css');
     this._categoriesTreeOutline.setShowSelectionOnKeyboardFocus(/* show */ true);
     this.contentElement.appendChild(this._categoriesTreeOutline.element);
     this._viewId = viewId;
@@ -57,11 +56,11 @@ export class CategorizedBreakpointsSidebarPane extends UI.Widget.VBox {
       this._createBreakpoint(breakpoint);
     }
 
-    SDK.SDKModel.TargetManager.instance().addModelListener(
+    SDK.TargetManager.TargetManager.instance().addModelListener(
         SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.DebuggerPaused, this._update, this);
-    SDK.SDKModel.TargetManager.instance().addModelListener(
+    SDK.TargetManager.TargetManager.instance().addModelListener(
         SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.DebuggerResumed, this._update, this);
-    UI.Context.Context.instance().addFlavorChangeListener(SDK.SDKModel.Target, this._update, this);
+    UI.Context.Context.instance().addFlavorChangeListener(SDK.Target.Target, this._update, this);
   }
 
   focus(): void {
@@ -123,7 +122,7 @@ export class CategorizedBreakpointsSidebarPane extends UI.Widget.VBox {
   }
 
   _update(): void {
-    const target = UI.Context.Context.instance().flavor(SDK.SDKModel.Target);
+    const target = UI.Context.Context.instance().flavor(SDK.Target.Target);
     const debuggerModel = target ? target.model(SDK.DebuggerModel.DebuggerModel) : null;
     const details = debuggerModel ? debuggerModel.debuggerPausedDetails() : null;
 

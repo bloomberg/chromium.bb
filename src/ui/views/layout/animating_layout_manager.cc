@@ -12,7 +12,8 @@
 
 #include "base/auto_reset.h"
 #include "base/containers/contains.h"
-#include "base/stl_util.h"
+#include "base/containers/cxx20_erase.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/gfx/animation/animation_container.h"
 #include "ui/gfx/animation/slide_animation.h"
@@ -969,9 +970,9 @@ ChildLayout AnimatingLayoutManager::CalculateScaleFade(
   }
   trailing_reference_point -= fade_info.offsets.trailing();
 
-  const int new_size =
-      std::min(int{scale_percent * fade_info.reference_bounds.size_main()},
-               trailing_reference_point - leading_reference_point);
+  const int new_size = std::min(
+      base::ClampRound(scale_percent * fade_info.reference_bounds.size_main()),
+      trailing_reference_point - leading_reference_point);
 
   child_layout.child_view = fade_info.child_view;
   if (new_size > 0 &&

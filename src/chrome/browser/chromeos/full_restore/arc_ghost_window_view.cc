@@ -11,8 +11,11 @@
 #include "chrome/browser/chromeos/full_restore/arc_window_handler.h"
 #include "chrome/common/chrome_features.h"
 #include "components/services/app_service/public/mojom/types.mojom-forward.h"
+#include "components/strings/grit/components_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_throbber.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/layout/box_layout.h"
@@ -39,6 +42,11 @@ class Throbber : public views::View {
                                elapsed_time);
   }
 
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    node_data->SetName(
+        l10n_util::GetStringUTF16(IDS_ARC_GHOST_WINDOW_APP_LAUNCHING_THROBBER));
+  }
+
  private:
   uint32_t color_;              // Throbber color.
   base::TimeTicks start_time_;  // Time when Start was called.
@@ -51,10 +59,8 @@ namespace chromeos {
 namespace full_restore {
 
 ArcGhostWindowView::ArcGhostWindowView(int throbber_diameter,
-                                       const std::string& app_id,
                                        uint32_t theme_color) {
   InitLayout(theme_color, throbber_diameter);
-  LoadIcon(app_id);
 }
 
 ArcGhostWindowView::~ArcGhostWindowView() = default;
@@ -76,6 +82,9 @@ void ArcGhostWindowView::InitLayout(uint32_t theme_color, int diameter) {
   auto* throbber = AddChildView(std::make_unique<Throbber>(
       color_utils::GetColorWithMaxContrast(theme_color)));
   throbber->SetPreferredSize({diameter, diameter});
+  throbber->GetViewAccessibility().OverrideRole(ax::mojom::Role::kImage);
+
+  // TODO(sstan): Set window title and accessible name from saved data.
 }
 
 void ArcGhostWindowView::LoadIcon(const std::string& app_id) {
@@ -90,12 +99,15 @@ void ArcGhostWindowView::LoadIcon(const std::string& app_id) {
 
   DCHECK(
       apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile));
+
   apps::AppServiceProxyFactory::GetForProfile(profile)->LoadIcon(
       apps::mojom::AppType::kArc, app_id, icon_type,
       ash::SharedAppListConfig::instance().default_grid_icon_dimension(),
       /*allow_placeholder_icon=*/false,
-      base::BindOnce(&ArcGhostWindowView::OnIconLoaded,
-                     weak_ptr_factory_.GetWeakPtr(), icon_type));
+      icon_loaded_cb_for_testing_.is_null()
+          ? base::BindOnce(&ArcGhostWindowView::OnIconLoaded,
+                           weak_ptr_factory_.GetWeakPtr(), icon_type)
+          : std::move(icon_loaded_cb_for_testing_));
 }
 
 void ArcGhostWindowView::OnIconLoaded(apps::mojom::IconType icon_type,
@@ -103,6 +115,8 @@ void ArcGhostWindowView::OnIconLoaded(apps::mojom::IconType icon_type,
   if (icon_type != icon_value->icon_type)
     return;
   icon_view_->SetImage(icon_value->uncompressed);
+  icon_view_->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_ARC_GHOST_WINDOW_APP_LAUNCHING_ICON));
 }
 
 }  // namespace full_restore

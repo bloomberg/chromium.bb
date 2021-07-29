@@ -194,7 +194,7 @@ void ExceptionState::PushContextScope(ContextScope* scope) {
 }
 
 void ExceptionState::PopContextScope() {
-  DCHECK(!context_stack_top_);
+  DCHECK(context_stack_top_);
   context_stack_top_ = context_stack_top_->GetParent();
 }
 
@@ -207,31 +207,35 @@ String AddContextToMessage(const String& message,
   const String& m = message;
 
   switch (context.GetContext()) {
-    case ExceptionState::kConstructionContext:
+    case ExceptionContext::Context::kConstructorOperationInvoke:
       return ExceptionMessages::FailedToConstruct(c, m);
-    case ExceptionState::kExecutionContext:
+    case ExceptionContext::Context::kOperationInvoke:
       return ExceptionMessages::FailedToExecute(p, c, m);
-    case ExceptionState::kGetterContext:
+    case ExceptionContext::Context::kAttributeGet:
       return ExceptionMessages::FailedToGet(p, c, m);
-    case ExceptionState::kSetterContext:
+    case ExceptionContext::Context::kAttributeSet:
       return ExceptionMessages::FailedToSet(p, c, m);
-    case ExceptionState::kEnumerationContext:
+    case ExceptionContext::Context::kNamedPropertyEnumerate:
       return ExceptionMessages::FailedToEnumerate(c, m);
-    case ExceptionState::kQueryContext:
+    case ExceptionContext::Context::kNamedPropertyQuery:
       break;
-    case ExceptionState::kIndexedGetterContext:
+    case ExceptionContext::Context::kIndexedPropertyGet:
       return ExceptionMessages::FailedToGetIndexed(c, m);
-    case ExceptionState::kIndexedSetterContext:
+    case ExceptionContext::Context::kIndexedPropertySet:
       return ExceptionMessages::FailedToSetIndexed(c, m);
-    case ExceptionState::kIndexedDeletionContext:
+    case ExceptionContext::Context::kIndexedPropertyDelete:
       return ExceptionMessages::FailedToDeleteIndexed(c, m);
-    case ExceptionState::kNamedGetterContext:
+    case ExceptionContext::Context::kNamedPropertyGet:
       return ExceptionMessages::FailedToGetNamed(c, m);
-    case ExceptionState::kNamedSetterContext:
+    case ExceptionContext::Context::kNamedPropertySet:
       return ExceptionMessages::FailedToSetNamed(c, m);
-    case ExceptionState::kNamedDeletionContext:
+    case ExceptionContext::Context::kNamedPropertyDelete:
       return ExceptionMessages::FailedToDeleteNamed(c, m);
-    case ExceptionState::kUnknownContext:
+    case ExceptionContext::Context::kDictionaryMemberGet:
+      return ExceptionMessages::FailedToGet(p, c, m);
+    case ExceptionContext::Context::kDictionaryMemberSet:
+      return ExceptionMessages::FailedToSet(p, c, m);
+    case ExceptionContext::Context::kUnknown:
       break;
     default:
       NOTREACHED();
@@ -254,6 +258,15 @@ String ExceptionState::AddExceptionContext(
   }
   message = AddContextToMessage(message, main_context_);
   return message;
+}
+
+void ExceptionState::PropagateException() {
+  // This is the non-inlined part of the destructor. Not inlining this part
+  // deoptimizes use cases where exceptions are thrown, but it reduces binary
+  // size and results in better performance due to improved code locality in
+  // the bindings for the most frequently used code path (cases where no
+  // exception is thrown).
+  V8ThrowException::ThrowException(isolate_, exception_.NewLocal(isolate_));
 }
 
 NonThrowableExceptionState::NonThrowableExceptionState()

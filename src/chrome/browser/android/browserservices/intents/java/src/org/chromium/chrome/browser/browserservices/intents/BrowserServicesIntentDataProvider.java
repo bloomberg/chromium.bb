@@ -7,12 +7,13 @@ package org.chromium.chrome.browser.browserservices.intents;
 import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Intent;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.widget.RemoteViews;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.Px;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.browser.customtabs.CustomTabsSessionToken;
 import androidx.browser.trusted.TrustedWebActivityDisplayMode;
@@ -145,35 +146,8 @@ public abstract class BrowserServicesIntentDataProvider {
         return true;
     }
 
-    /**
-     * @return The toolbar color.
-     */
-    public int getToolbarColor() {
-        return Color.WHITE;
-    }
-
-    /**
-     * @return Whether the intent specifies a custom toolbar color.
-     */
-    public boolean hasCustomToolbarColor() {
-        return false;
-    }
-
-    /**
-     * @return The navigation bar color specified in the intent, or null if not specified.
-     */
-    @Nullable
-    public Integer getNavigationBarColor() {
-        return null;
-    }
-
-    /**
-     * @return The navigation bar divider color specified in the intent, or null if not specified.
-     */
-    @Nullable
-    public Integer getNavigationBarDividerColor() {
-        return null;
-    }
+    @NonNull
+    public abstract ColorProvider getColorProvider();
 
     /**
      * @return The drawable of the icon of close button shown in the custom tab toolbar.
@@ -209,13 +183,6 @@ public abstract class BrowserServicesIntentDataProvider {
      */
     public List<CustomButtonParams> getCustomButtonsOnBottombar() {
         return Collections.emptyList();
-    }
-
-    /**
-     * @return The color of the bottom bar.
-     */
-    public int getBottomBarColor() {
-        return getToolbarColor();
     }
 
     /**
@@ -287,13 +254,6 @@ public abstract class BrowserServicesIntentDataProvider {
 
     public boolean isFromMediaLauncherActivity() {
         return false;
-    }
-
-    /**
-     * @return Initial RGB background color.
-     */
-    public int getInitialBackgroundColor() {
-        return Color.TRANSPARENT;
     }
 
     /**
@@ -491,44 +451,10 @@ public abstract class BrowserServicesIntentDataProvider {
     }
 
     /**
-     * Returns true if omnibox should hide cct related visits.
+     * @return The value in pixels  of the initial height of the Activity. It will return 0 if there
+     *         is no value set.
      */
-    public boolean shouldHideOmniboxSuggestionsForCctVisits() {
-        return false;
-    }
-
-    /**
-     * Returns true if visits from cct should be hidden.
-     */
-    public boolean shouldHideCctVisits() {
-        return false;
-    }
-
-    /**
-     * Returns true if new notification requests from cct should be blocked.
-     */
-    public boolean shouldBlockNewNotificationRequests() {
-        return false;
-    }
-
-    /**
-     * Returns true if 'open in chrome' should be shown in the tab context menu.
-     */
-    public boolean shouldShowOpenInChromeMenuItemInContextMenu() {
-        return true;
-    }
-
-    /**
-     * Returns true if 'open in chrome' should be shown in the app menu.
-     */
-    public boolean shouldShowOpenInChromeMenuItem() {
-        return true;
-    }
-
-    /**
-     * @return Whether the incognito icon in the toolbar should be hidden in cct-incognito mode.
-     */
-    public boolean shouldHideIncognitoIconOnToolbarInCct() {
-        return false;
+    public @Px int getInitialActivityHeight() {
+        return 0;
     }
 }

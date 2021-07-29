@@ -14,12 +14,14 @@
 #include "src/core/SkCanvasPriv.h"
 #include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/GrSurfaceDrawContext.h"
-#include "src/gpu/tessellate/GrPathTessellator.h"
-#include "src/gpu/tessellate/GrStencilPathShader.h"
+#include "src/gpu/tessellate/GrPathCurveTessellator.h"
+#include "src/gpu/tessellate/GrPathWedgeTessellator.h"
+#include "src/gpu/tessellate/shaders/GrPathTessellationShader.h"
 
 namespace {
 
 enum class Mode {
+    kWedgeMiddleOut,
     kCurveMiddleOut,
     kWedgeTessellate,
     kCurveTessellate
@@ -27,12 +29,14 @@ enum class Mode {
 
 static const char* ModeName(Mode mode) {
     switch (mode) {
+        case Mode::kWedgeMiddleOut:
+            return "MiddleOutShader (kWedges)";
         case Mode::kCurveMiddleOut:
-            return "GrCurveMiddleOutShader";
+            return "MiddleOutShader (kCurves)";
         case Mode::kWedgeTessellate:
-            return "GrWedgeTessellateShader";
+            return "HardwareWedgeShader";
         case Mode::kCurveTessellate:
-            return "GrCurveTessellateShader";
+            return "HardwareCurveShader";
     }
     SkUNREACHABLE;
 }
@@ -52,7 +56,7 @@ private:
         this->setBounds(drawBounds, HasAABloat::kNo, IsHairline::kNo);
     }
     const char* name() const override { return "SamplePathTessellatorOp"; }
-    void visitProxies(const VisitProxyFunc& fn) const override {}
+    void visitProxies(const GrVisitProxyFunc&) const override {}
     FixedFunctionFlags fixedFunctionFlags() const override {
         return FixedFunctionFlags::kUsesHWAA;
     }
@@ -63,35 +67,47 @@ private:
                                     nullptr, caps, clampType, &color);
     }
     void onPrePrepare(GrRecordingContext*, const GrSurfaceProxyView&, GrAppliedClip*,
-                      const GrXferProcessor::DstProxyView&, GrXferBarrierFlags,
-                      GrLoadOp colorLoadOp) override {}
+                      const GrDstProxyView&, GrXferBarrierFlags, GrLoadOp colorLoadOp) override {}
     void onPrepare(GrOpFlushState* flushState) override {
+        constexpr static SkPMColor4f kCyan = {0,1,1,1};
         auto alloc = flushState->allocator();
-        GrPathShader* shader;
-        switch (fMode) {
-            case Mode::kCurveMiddleOut:
-                fTessellator = alloc->make<GrPathIndirectTessellator>(
-                        fMatrix, fPath, GrPathTessellator::DrawInnerFan::kYes);
-                shader = alloc->make<GrCurveMiddleOutShader>(fMatrix);
-                break;
-            case Mode::kWedgeTessellate:
-                fTessellator = alloc->make<GrPathWedgeTessellator>();
-                shader = alloc->make<GrWedgeTessellateShader>(fMatrix);
-                break;
-            case Mode::kCurveTessellate:
-                fTessellator = alloc->make<GrPathOuterCurveTessellator>(
-                        GrPathTessellator::DrawInnerFan::kYes);
-                shader = alloc->make<GrCurveTessellateShader>(fMatrix);
-                break;
-        }
-        fTessellator->prepare(flushState, fMatrix, fPath);
+        const GrCaps& caps = flushState->caps();
+        int numVerbsToGetMiddleOut = 0;
+        int numVerbsToGetTessellation = caps.minPathVerbsForHwTessellation();
         auto pipeline = GrSimpleMeshDrawOpHelper::CreatePipeline(flushState, std::move(fProcessors),
                                                                  fPipelineFlags);
-        fProgram = GrPathShader::MakeProgram({alloc, flushState->writeView(),
-                                             &flushState->dstProxyView(),
-                                             flushState->renderPassBarriers(), GrLoadOp::kClear,
-                                             &flushState->caps()}, shader, pipeline,
-                                             &GrUserStencilSettings::kUnused);
+        switch (fMode) {
+            using DrawInnerFan = GrPathCurveTessellator::DrawInnerFan;
+            case Mode::kWedgeMiddleOut:
+                fTessellator = GrPathWedgeTessellator::Make(alloc, fMatrix, kCyan,
+                                                            numVerbsToGetMiddleOut, *pipeline,
+                                                            caps);
+                break;
+            case Mode::kCurveMiddleOut:
+                fTessellator = GrPathCurveTessellator::Make(alloc, fMatrix, kCyan,
+                                                            DrawInnerFan::kYes,
+                                                            numVerbsToGetMiddleOut, *pipeline,
+                                                            caps);
+                break;
+            case Mode::kWedgeTessellate:
+                fTessellator = GrPathWedgeTessellator::Make(alloc, fMatrix, kCyan,
+                                                            numVerbsToGetTessellation, *pipeline,
+                                                            caps);
+                break;
+            case Mode::kCurveTessellate:
+                fTessellator = GrPathCurveTessellator::Make(alloc, fMatrix, kCyan,
+                                                            DrawInnerFan::kYes,
+                                                            numVerbsToGetTessellation, *pipeline,
+                                                            caps);
+                break;
+        }
+        fTessellator->prepare(flushState, this->bounds(), fPath);
+        fProgram = GrTessellationShader::MakeProgram({alloc, flushState->writeView(),
+                                                     &flushState->dstProxyView(),
+                                                     flushState->renderPassBarriers(),
+                                                     GrLoadOp::kClear, &flushState->caps()},
+                                                     fTessellator->shader(), pipeline,
+                                                     &GrUserStencilSettings::kUnused);
     }
     void onExecute(GrOpFlushState* flushState, const SkRect& chainBounds) override {
         flushState->bindPipeline(*fProgram, chainBounds);
@@ -145,7 +161,7 @@ private:
     SkPath fPath;
     GrPipeline::InputFlags fPipelineFlags = GrPipeline::InputFlags::kHWAntialias |
                                             GrPipeline::InputFlags::kWireframe;
-    Mode fMode = Mode::kCurveMiddleOut;
+    Mode fMode = Mode::kWedgeMiddleOut;
 
     float fConicWeight = .5;
 
@@ -287,6 +303,7 @@ bool SamplePathTessellators::onChar(SkUnichar unichar) {
         case '1':
         case '2':
         case '3':
+        case '4':
             fMode = (Mode)(unichar - '1');
             return true;
     }

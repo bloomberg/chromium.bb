@@ -44,11 +44,18 @@ export class SameSiteCookieIssue extends Issue {
     this.issueDetails = issueDetails;
   }
 
+  private cookieId(): string {
+    if (this.issueDetails.cookie) {
+      const {domain, path, name} = this.issueDetails.cookie;
+      const cookieId = `${domain};${path};${name}`;
+      return cookieId;
+    }
+    return this.issueDetails.rawCookieLine ?? 'no-cookie-info';
+  }
+
   primaryKey(): string {
-    const {domain, path, name} = this.issueDetails.cookie;
-    const cookieId = `${domain};${path};${name}`;
     const requestId = this.issueDetails.request ? this.issueDetails.request.requestId : 'no-request';
-    return `${this.code()}-(${cookieId})-(${requestId})`;
+    return `${this.code()}-(${this.cookieId()})-(${requestId})`;
   }
 
   /**
@@ -153,7 +160,10 @@ export class SameSiteCookieIssue extends Issue {
   }
 
   cookies(): Iterable<Protocol.Audits.AffectedCookie> {
-    return [this.issueDetails.cookie];
+    if (this.issueDetails.cookie) {
+      return [this.issueDetails.cookie];
+    }
+    return [];
   }
 
   requests(): Iterable<Protocol.Audits.AffectedRequest> {
@@ -187,10 +197,9 @@ export class SameSiteCookieIssue extends Issue {
     return IssueKind.BreakingChange;
   }
 
-  static fromInspectorIssue(
-      issuesModel: SDK.IssuesModel.IssuesModel,
-      inspectorDetails: Protocol.Audits.InspectorIssueDetails): SameSiteCookieIssue[] {
-    const sameSiteDetails = inspectorDetails.sameSiteCookieIssueDetails;
+  static fromInspectorIssue(issuesModel: SDK.IssuesModel.IssuesModel, inspectorIssue: Protocol.Audits.InspectorIssue):
+      SameSiteCookieIssue[] {
+    const sameSiteDetails = inspectorIssue.details.sameSiteCookieIssueDetails;
     if (!sameSiteDetails) {
       console.warn('SameSite issue without details received.');
       return [];

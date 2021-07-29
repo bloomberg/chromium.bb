@@ -14,6 +14,7 @@
 #include "services/viz/public/cpp/compositing/copy_output_request_mojom_traits.h"
 #include "services/viz/public/cpp/compositing/quads_mojom_traits.h"
 #include "services/viz/public/mojom/compositing/compositor_render_pass.mojom-shared.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/ipc/color/gfx_param_traits.h"
 #include "ui/gfx/mojom/rrect_f_mojom_traits.h"
 #include "ui/gfx/mojom/transform_mojom_traits.h"
@@ -61,12 +62,23 @@ struct StructTraits<viz::mojom::CompositorRenderPassDataView,
 
   static viz::SubtreeCaptureId subtree_capture_id(
       const std::unique_ptr<viz::CompositorRenderPass>& input) {
+    DCHECK_LE(input->subtree_size.width(), input->output_rect.size().width());
+    DCHECK_LE(input->subtree_size.height(), input->output_rect.size().height());
     return input->subtree_capture_id;
   }
 
+  static gfx::Size subtree_size(
+      const std::unique_ptr<viz::CompositorRenderPass>& input) {
+    return input->subtree_size;
+  }
   static bool has_transparent_background(
       const std::unique_ptr<viz::CompositorRenderPass>& input) {
     return input->has_transparent_background;
+  }
+
+  static bool has_per_quad_damage(
+      const std::unique_ptr<viz::CompositorRenderPass>& input) {
+    return input->has_per_quad_damage;
   }
 
   static bool cache_render_pass(

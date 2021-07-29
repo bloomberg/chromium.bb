@@ -32,7 +32,6 @@
 #endif  // !defined(OS_ANDROID)
 
 class ProfileAttributesStorage;
-class ProfileInfoCache;
 enum class ProfileKeepAliveOrigin;
 class ProfileManagerObserver;
 class ScopedProfileKeepAlive;
@@ -79,6 +78,8 @@ class ProfileManager : public Profile::Delegate {
   // Same as GetLastUsedProfile() but returns the incognito Profile if
   // incognito mode is forced. This should be used if the last used Profile
   // will be used to open new browser windows.
+  // WARNING: if the profile does not exist, this function creates it
+  // synchronously, causing blocking file I/O.
   static Profile* GetLastUsedProfileAllowedByPolicy();
 
   // Helper function that returns true if OffTheRecord mode is forced for
@@ -253,9 +254,12 @@ class ProfileManager : public Profile::Delegate {
   const base::FilePath& user_data_dir() const { return user_data_dir_; }
 
   // Profile::Delegate implementation:
-  void OnProfileCreated(Profile* profile,
-                        bool success,
-                        bool is_new_profile) override;
+  void OnProfileCreationStarted(Profile* profile,
+                                Profile::CreateMode create_mode) override;
+  void OnProfileCreationFinished(Profile* profile,
+                                 Profile::CreateMode create_mode,
+                                 bool success,
+                                 bool is_new_profile) override;
 
   // Used for testing. Returns true if |profile| has at least one ref of type
   // |origin|.
@@ -288,26 +292,59 @@ class ProfileManager : public Profile::Delegate {
   // For AddKeepAlive() and RemoveKeepAlive().
   friend class ScopedProfileKeepAlive;
 
-  // This struct contains information about profiles which are being loaded or
+  // This class contains information about profiles which are being loaded or
   // were loaded.
-  struct ProfileInfo {
-    ProfileInfo(std::unique_ptr<Profile> profile, bool created);
+  class ProfileInfo {
+   public:
     ProfileInfo(const ProfileInfo&) = delete;
     ProfileInfo& operator=(const ProfileInfo&) = delete;
     ~ProfileInfo();
 
-    std::unique_ptr<Profile> profile;
-    // Strong references to this Profile once it's been created (e.g. a Browser
-    // object, a BackgroundModeManager, ...)
+    // Returns a non-created ProfileInfo that does not own |profile|.
+    static std::unique_ptr<ProfileInfo> FromUnownedProfile(Profile* profile);
+
+    // Takes ownership of |profile|, so it gets destroyed when this ProfileInfo
+    // is deleted.
+    void TakeOwnershipOfProfile(std::unique_ptr<Profile> profile);
+
+    // Marks the Profile as created, so GetCreatedProfile() returns non-null.
+    void MarkProfileAsCreated(Profile* profile);
+
+    // Returns the owned Profile, if creation is complete (i.e., prefs are
+    // loaded). Returns null otherwise.
+    Profile* GetCreatedProfile() const;
+
+    // Returns the Profile, regardless of whether it's owned/unowned or whether
+    // prefs are loaded.
+    Profile* GetRawProfile() const;
+
+    // TODO(nicolaso): Make |keep_alives| and |callbacks| private with
+    // accessors.
+
+    // Strong references to this Profile (e.g. a Browser object, a
+    // BackgroundModeManager, ...)
     //
     // Initially contains a kWaitingForFirstBrowserWindow entry, which gets
     // removed when a kBrowserWindow keepalive is added.
     std::map<ProfileKeepAliveOrigin, int> keep_alives;
-    // Whether profile has been fully loaded (created and initialized).
-    bool created;
     // List of callbacks to run when profile initialization is done. Note, when
     // profile is fully loaded this vector will be empty.
     std::vector<CreateCallback> callbacks;
+
+   private:
+    // Callers should use FromOwned/UnownedProfile() instead.
+    ProfileInfo();
+
+    // The Profile pointed to by this ProfileInfo.
+    Profile* unowned_profile_ = nullptr;
+
+    // For when the Profile is owned, via FromOwnedProfile() or
+    // TakeOwnershipOfProfile().
+    std::unique_ptr<Profile> owned_profile_;
+
+    // Whether profile has been fully loaded (created and initialized). See
+    // MarkProfileAsCreated().
+    bool created_ = false;
   };
 
   // Increments/decrements the refcount on a |profile|. (it must not be an
@@ -378,7 +415,8 @@ class ProfileManager : public Profile::Delegate {
 
   // Registers profile with given info. Returns pointer to created ProfileInfo
   // entry.
-  ProfileInfo* RegisterProfile(std::unique_ptr<Profile> profile, bool created);
+  ProfileInfo* RegisterUnownedProfile(Profile* profile);
+  ProfileInfo* RegisterOwnedProfile(std::unique_ptr<Profile> profile);
 
   // Returns ProfileInfo associated with given |path|, registered earlier with
   // RegisterProfile.
@@ -394,11 +432,6 @@ class ProfileManager : public Profile::Delegate {
 
   // Whether a new profile can be created at |path|.
   bool CanCreateProfileAtPath(const base::FilePath& path) const;
-
-  // Returns a ProfileInfoCache object which can be used to get information
-  // about profiles without having to load them from disk.
-  // Deprecated, use GetProfileAttributesStorage() instead.
-  ProfileInfoCache& GetProfileInfoCache();
 
   // Adds |profile| to the profile attributes storage if it hasn't been added
   // yet.
@@ -463,8 +496,8 @@ class ProfileManager : public Profile::Delegate {
   void OnClosingAllBrowsersChanged(bool closing);
 #endif  // !defined(OS_ANDROID)
 
-  // Destroy after |profile_info_cache_| since Profile destruction may trigger
-  // some observers to unregister themselves.
+  // Destroy after |profile_attributes_storage_| since Profile destruction may
+  // trigger some observers to unregister themselves.
   base::ObserverList<ProfileManagerObserver> observers_;
 
   // Object to cache various information about profiles. Contains information
@@ -472,7 +505,7 @@ class ProfileManager : public Profile::Delegate {
   // if it has not been explicitly deleted. It must be destroyed after
   // |profiles_info_| because ~ProfileInfo can trigger a chain of events leading
   // to an access to this member.
-  std::unique_ptr<ProfileInfoCache> profile_info_cache_;
+  std::unique_ptr<ProfileAttributesStorage> profile_attributes_storage_;
 
   base::CallbackListSubscription closing_all_browsers_subscription_;
 
@@ -507,9 +540,6 @@ class ProfileManager : public Profile::Delegate {
 
   // Controls whether to initialize some services. Only disabled for testing.
   bool do_final_services_init_ = true;
-
-  // Path to Guest profile. Can be empty when the profile does not exist.
-  base::FilePath guest_profile_path_;
 
   // TODO(chrome/browser/profiles/OWNERS): Usage of this in profile_manager.cc
   // should likely be turned into DCHECK_CURRENTLY_ON(BrowserThread::UI) for

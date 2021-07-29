@@ -8,11 +8,11 @@
 
 #include <utility>
 
+#include "core/fxcrt/stl_util.h"
 #include "fxjs/gc/container_trace.h"
 #include "fxjs/xfa/cfxjse_engine.h"
 #include "fxjs/xfa/cjx_object.h"
 #include "third_party/base/check.h"
-#include "third_party/base/stl_util.h"
 #include "xfa/fxfa/cxfa_ffnotify.h"
 #include "xfa/fxfa/cxfa_ffpageview.h"
 #include "xfa/fxfa/layout/cxfa_contentlayoutitem.h"
@@ -105,8 +105,10 @@ class TraverseStrategy_PageSet {
 using PageSetIterator =
     CXFA_NodeIteratorTemplate<CXFA_ViewLayoutItem, TraverseStrategy_PageSet>;
 
-uint32_t GetRelevant(CXFA_Node* pFormItem, uint32_t dwParentRelvant) {
-  uint32_t dwRelevant = XFA_WidgetStatus_Viewable | XFA_WidgetStatus_Printable;
+XFA_WidgetStatusMask GetRelevant(CXFA_Node* pFormItem,
+                                 XFA_WidgetStatusMask dwParentRelvant) {
+  XFA_WidgetStatusMask dwRelevant =
+      XFA_WidgetStatus_Viewable | XFA_WidgetStatus_Printable;
   WideString wsRelevant =
       pFormItem->JSObject()->GetCData(XFA_Attribute::Relevant);
   if (!wsRelevant.IsEmpty()) {
@@ -129,12 +131,12 @@ uint32_t GetRelevant(CXFA_Node* pFormItem, uint32_t dwParentRelvant) {
 void SyncContainer(CXFA_FFNotify* pNotify,
                    CXFA_LayoutProcessor* pDocLayout,
                    CXFA_LayoutItem* pViewItem,
-                   uint32_t dwRelevant,
+                   XFA_WidgetStatusMask dwRelevant,
                    bool bVisible,
                    int32_t nPageIndex) {
   bool bVisibleItem = false;
-  uint32_t dwStatus = 0;
-  uint32_t dwRelevantContainer = 0;
+  XFA_WidgetStatusMask dwStatus = 0;
+  XFA_WidgetStatusMask dwRelevantContainer = 0;
   if (bVisible) {
     XFA_AttributeValue eAttributeValue =
         pViewItem->GetFormNode()
@@ -207,16 +209,17 @@ CXFA_Node* ResolveBreakTarget(CXFA_Node* pPageSetRoot,
       if (wsExpr.First(4).EqualsASCII("som(") && wsExpr.Back() == L')')
         wsProcessedTarget = wsExpr.Substr(4, wsExpr.GetLength() - 5);
 
-      constexpr uint32_t dwFlag =
+      constexpr XFA_ResolveNodeMask kFlags =
           XFA_RESOLVENODE_Children | XFA_RESOLVENODE_Properties |
           XFA_RESOLVENODE_Attributes | XFA_RESOLVENODE_Siblings |
           XFA_RESOLVENODE_Parent;
       Optional<CFXJSE_Engine::ResolveResult> maybeResult =
           pDocument->GetScriptContext()->ResolveObjects(
-              pPageSetRoot, wsProcessedTarget.AsStringView(), dwFlag);
+              pPageSetRoot, wsProcessedTarget.AsStringView(), kFlags);
       if (maybeResult.has_value() &&
-          maybeResult.value().objects.front()->IsNode())
+          maybeResult.value().objects.front()->IsNode()) {
         return maybeResult.value().objects.front()->AsNode();
+      }
     }
     iSplitIndex = iSplitNextIndex.value();
   }
@@ -682,7 +685,7 @@ void CXFA_ViewLayoutProcessor::AddPageAreaLayoutItem(
     CXFA_ViewRecord* pNewRecord,
     CXFA_Node* pNewPageArea) {
   CXFA_ViewLayoutItem* pNewPageAreaLayoutItem = nullptr;
-  if (pdfium::IndexInBounds(m_PageArray, m_nAvailPages)) {
+  if (fxcrt::IndexInBounds(m_PageArray, m_nAvailPages)) {
     CXFA_ViewLayoutItem* pViewItem = m_PageArray[m_nAvailPages];
     pViewItem->SetFormNode(pNewPageArea);
     m_nAvailPages++;
@@ -694,7 +697,8 @@ void CXFA_ViewLayoutProcessor::AddPageAreaLayoutItem(
         pNotify->OnCreateViewLayoutItem(pNewPageArea));
     m_PageArray.push_back(pViewItem);
     m_nAvailPages++;
-    pNotify->OnPageEvent(pViewItem, XFA_PAGEVIEWEVENT_PostRemoved);
+    pNotify->OnPageViewEvent(pViewItem,
+                             CXFA_FFDoc::PageViewEvent::kPostRemoved);
     pNewPageAreaLayoutItem = pViewItem;
   }
   pNewRecord->pCurPageSet->AppendLastChild(pNewPageAreaLayoutItem);
@@ -742,11 +746,11 @@ void CXFA_ViewLayoutProcessor::FinishPaginatedPageSets() {
 }
 
 int32_t CXFA_ViewLayoutProcessor::GetPageCount() const {
-  return pdfium::CollectionSize<int32_t>(m_PageArray);
+  return fxcrt::CollectionSize<int32_t>(m_PageArray);
 }
 
 CXFA_ViewLayoutItem* CXFA_ViewLayoutProcessor::GetPage(int32_t index) const {
-  if (!pdfium::IndexInBounds(m_PageArray, index))
+  if (!fxcrt::IndexInBounds(m_PageArray, index))
     return nullptr;
   return m_PageArray[index].Get();
 }
@@ -1152,8 +1156,8 @@ bool CXFA_ViewLayoutProcessor::FindPageAreaFromPageSet_Ordered(
     if (pOccurNode) {
       Optional<int32_t> ret =
           pOccurNode->JSObject()->TryInteger(XFA_Attribute::Max, false);
-      if (ret)
-        iMax = *ret;
+      if (ret.has_value())
+        iMax = ret.value();
     }
     if (iMax >= 0 && iMax <= iPageSetCount)
       return false;
@@ -1321,11 +1325,11 @@ bool CXFA_ViewLayoutProcessor::MatchPageAreaOddOrEven(CXFA_Node* pPageArea) {
 
   Optional<XFA_AttributeValue> ret =
       pPageArea->JSObject()->TryEnum(XFA_Attribute::OddOrEven, true);
-  if (!ret || *ret == XFA_AttributeValue::Any)
+  if (!ret.has_value() || ret == XFA_AttributeValue::Any)
     return true;
 
   int32_t iPageLast = GetPageCount() % 2;
-  return *ret == XFA_AttributeValue::Odd ? iPageLast == 0 : iPageLast == 1;
+  return ret == XFA_AttributeValue::Odd ? iPageLast == 0 : iPageLast == 1;
 }
 
 CXFA_Node* CXFA_ViewLayoutProcessor::GetNextAvailPageArea(
@@ -1350,8 +1354,8 @@ CXFA_Node* CXFA_ViewLayoutProcessor::GetNextAvailPageArea(
       if (pOccurNode) {
         Optional<int32_t> ret =
             pOccurNode->JSObject()->TryInteger(XFA_Attribute::Max, false);
-        if (ret)
-          iMax = *ret;
+        if (ret.has_value())
+          iMax = ret.value();
       }
       if ((iMax < 0 || m_nCurPageCount < iMax)) {
         if (!bQuery) {
@@ -1457,11 +1461,11 @@ int32_t CXFA_ViewLayoutProcessor::CreateMinPageRecord(CXFA_Node* pPageArea,
       pPageArea->GetFirstChildByClass<CXFA_Occur>(XFA_Element::Occur);
   if (pOccurNode) {
     ret = pOccurNode->JSObject()->TryInteger(XFA_Attribute::Min, false);
-    if (ret)
-      iMin = *ret;
+    if (ret.has_value())
+      iMin = ret.value();
   }
 
-  if (!ret && !bTargetPageArea)
+  if (!ret.has_value() && !bTargetPageArea)
     return iMin;
 
   CXFA_Node* pContentArea = pPageArea->GetFirstChildByClass<CXFA_ContentArea>(
@@ -1498,10 +1502,10 @@ void CXFA_ViewLayoutProcessor::CreateMinPageSetRecord(CXFA_Node* pPageSet,
 
   Optional<int32_t> iMin =
       pOccurNode->JSObject()->TryInteger(XFA_Attribute::Min, false);
-  if (!iMin || iCurSetCount >= *iMin)
+  if (!iMin.has_value() || iCurSetCount >= iMin.value())
     return;
 
-  for (int32_t i = 0; i < *iMin - iCurSetCount; i++) {
+  for (int32_t i = 0; i < iMin.value() - iCurSetCount; i++) {
     for (CXFA_Node* node = pPageSet->GetFirstChild(); node;
          node = node->GetNextSibling()) {
       if (node->GetElementType() == XFA_Element::PageArea)
@@ -1510,7 +1514,7 @@ void CXFA_ViewLayoutProcessor::CreateMinPageSetRecord(CXFA_Node* pPageSet,
         CreateMinPageSetRecord(node, true);
     }
   }
-  m_pPageSetMap[pPageSet] = *iMin;
+  m_pPageSetMap[pPageSet] = iMin.value();
 }
 
 void CXFA_ViewLayoutProcessor::CreateNextMinRecord(CXFA_Node* pRecordNode) {
@@ -1564,10 +1568,10 @@ bool CXFA_ViewLayoutProcessor::GetNextAvailContentHeight(float fChildHeight) {
   Optional<int32_t> ret;
   if (pOccurNode) {
     ret = pOccurNode->JSObject()->TryInteger(XFA_Attribute::Max, false);
-    if (ret)
-      iMax = *ret;
+    if (ret.has_value())
+      iMax = ret.value();
   }
-  if (ret) {
+  if (ret.has_value()) {
     if (m_nCurPageCount == iMax) {
       CXFA_Node* pSrcPage = m_pCurPageArea;
       int32_t nSrcPageCount = m_nCurPageCount;
@@ -1881,7 +1885,7 @@ void CXFA_ViewLayoutProcessor::SyncLayoutData() {
         continue;
 
       nPageIdx++;
-      uint32_t dwRelevant =
+      XFA_WidgetStatusMask dwRelevant =
           XFA_WidgetStatus_Viewable | XFA_WidgetStatus_Printable;
       CXFA_LayoutItemIterator iterator(pViewItem);
       CXFA_LayoutItem* pChildLayoutItem = iterator.GetCurrent();
@@ -1899,7 +1903,7 @@ void CXFA_ViewLayoutProcessor::SyncLayoutData() {
                 ->TryEnum(XFA_Attribute::Presence, true)
                 .value_or(XFA_AttributeValue::Visible);
         bool bVisible = presence == XFA_AttributeValue::Visible;
-        uint32_t dwRelevantChild =
+        XFA_WidgetStatusMask dwRelevantChild =
             GetRelevant(pContentItem->GetFormNode(), dwRelevant);
         SyncContainer(pNotify, m_pLayoutProcessor, pContentItem,
                       dwRelevantChild, bVisible, nPageIdx);
@@ -1908,11 +1912,11 @@ void CXFA_ViewLayoutProcessor::SyncLayoutData() {
     }
   }
 
-  int32_t nPage = pdfium::CollectionSize<int32_t>(m_PageArray);
+  int32_t nPage = fxcrt::CollectionSize<int32_t>(m_PageArray);
   for (int32_t i = nPage - 1; i >= m_nAvailPages; i--) {
     CXFA_ViewLayoutItem* pPage = m_PageArray[i];
     m_PageArray.erase(m_PageArray.begin() + i);
-    pNotify->OnPageEvent(pPage, XFA_PAGEVIEWEVENT_PostRemoved);
+    pNotify->OnPageViewEvent(pPage, CXFA_FFDoc::PageViewEvent::kPostRemoved);
   }
   ClearData();
 }

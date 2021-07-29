@@ -239,6 +239,11 @@ View::~View() {
       if (!child->owned_by_client_)
         delete child;
     }
+
+    // Clear `children_` to prevent UAFs from observers and properties that may
+    // end up looking at children(), directly or indirectly, before ~View() goes
+    // out of scope.
+    children_.clear();
   }
 
   for (ViewObserver& observer : observers_)
@@ -273,7 +278,8 @@ void View::ReorderChildView(View* view, int index) {
   DCHECK(i != children_.end());
 
   // If |view| is already at the desired position, there's nothing to do.
-  const bool move_to_end = (index < 0) || (size_t{index} >= children_.size());
+  const bool move_to_end =
+      (index < 0) || (static_cast<size_t>(index) >= children_.size());
   const auto pos = move_to_end ? std::prev(children_.end())
                                : std::next(children_.begin(), index);
   if (i == pos)
@@ -2423,8 +2429,10 @@ void View::PaintFromPaintRoot(const ui::PaintContext& parent_context) {
   PaintInfo paint_info = PaintInfo::CreateRootPaintInfo(
       parent_context, layer() ? layer()->size() : size());
   Paint(paint_info);
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDrawViewBoundsRects))
+  static bool draw_view_bounds_rects =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDrawViewBoundsRects);
+  if (draw_view_bounds_rects)
     PaintDebugRects(paint_info);
 }
 
@@ -2472,7 +2480,7 @@ void View::PaintDebugRects(const PaintInfo& parent_paint_info) {
 void View::AddChildViewAtImpl(View* view, int index) {
   CHECK_NE(view, this) << "You cannot add a view as its own child";
   DCHECK_GE(index, 0);
-  DCHECK_LE(size_t{index}, children_.size());
+  DCHECK_LE(static_cast<size_t>(index), children_.size());
 
   // TODO(https://crbug.com/942298): Should just DCHECK(!view->parent_);.
   View* parent = view->parent_;

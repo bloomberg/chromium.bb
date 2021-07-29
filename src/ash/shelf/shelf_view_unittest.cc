@@ -13,11 +13,11 @@
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/app_list/views/app_list_view.h"
+#include "ash/constants/ash_features.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/focus_cycler.h"
 #include "ash/ime/ime_controller_impl.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
@@ -82,6 +82,7 @@
 #include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/views/animation/bounds_animator.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/test/ink_drop_host_view_test_api.h"
 #include "ui/views/animation/test/ink_drop_impl_test_api.h"
@@ -327,7 +328,11 @@ class ShelfViewTest : public AshTestBase {
   static const char*
       kTimeBetweenWindowMinimizedAndActivatedActionsHistogramName;
 
-  ShelfViewTest() = default;
+  template <typename... TaskEnvironmentTraits>
+  explicit ShelfViewTest(TaskEnvironmentTraits&&... traits)
+      : AshTestBase(std::forward<TaskEnvironmentTraits>(traits)...) {}
+  ShelfViewTest(const ShelfViewTest&) = delete;
+  ShelfViewTest& operator=(const ShelfViewTest&) = delete;
   ~ShelfViewTest() override = default;
 
   void SetUp() override {
@@ -596,9 +601,6 @@ class ShelfViewTest : public AshTestBase {
   int id_ = 0;
 
   std::unique_ptr<ShelfViewTestAPI> test_api_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ShelfViewTest);
 };
 
 class LtrRtlShelfViewTest : public ShelfViewTest,
@@ -2390,9 +2392,9 @@ class ShelfViewInkDropTest : public ShelfViewTest {
 
     auto home_button_ink_drop = std::make_unique<InkDropSpy>(
         views::InkDrop::CreateInkDropWithoutAutoHighlight(
-            home_button_->ink_drop()));
+            views::InkDrop::Get(home_button_)));
     home_button_ink_drop_ = home_button_ink_drop.get();
-    views::test::InkDropHostTestApi(home_button_->ink_drop())
+    views::test::InkDropHostTestApi(views::InkDrop::Get(home_button_))
         .SetInkDrop(std::move(home_button_ink_drop), false);
   }
 
@@ -2400,14 +2402,14 @@ class ShelfViewInkDropTest : public ShelfViewTest {
     browser_button_ = test_api_->GetButton(0);
 
     auto ink_drop_impl = std::make_unique<views::InkDropImpl>(
-        browser_button_->ink_drop(), browser_button_->size(),
+        views::InkDrop::Get(browser_button_), browser_button_->size(),
         views::InkDropImpl::AutoHighlightMode::NONE);
     browser_button_ink_drop_impl_ = ink_drop_impl.get();
 
     auto browser_button_ink_drop =
         std::make_unique<InkDropSpy>(std::move(ink_drop_impl));
     browser_button_ink_drop_ = browser_button_ink_drop.get();
-    views::test::InkDropHostTestApi(browser_button_->ink_drop())
+    views::test::InkDropHostTestApi(views::InkDrop::Get(browser_button_))
         .SetInkDrop(std::move(browser_button_ink_drop));
   }
 
@@ -3056,6 +3058,91 @@ TEST_F(ShelfViewFocusWithNoShelfNavigationTest,
   ExpectFocused(shelf_view_);
   DoShiftTab();
   ExpectFocused(status_area_);
+}
+
+class ShelfViewGestureTapTest : public ShelfViewTest {
+ public:
+  ShelfViewGestureTapTest()
+      : ShelfViewTest(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
+  ~ShelfViewGestureTapTest() override = default;
+
+  // ShelfViewTest:
+  void SetUp() override {
+    ShelfViewTest::SetUp();
+
+    app_icon1_ = GetButtonByID(AddAppShortcut());
+    app_icon2_ = GetButtonByID(AddAppShortcut());
+  }
+
+  views::InkDropState GetInkDropStateOfAppIcon1() const {
+    return views::InkDrop::Get(app_icon1_)
+        ->GetInkDrop()
+        ->GetTargetInkDropState();
+  }
+
+ protected:
+  ShelfAppButton* app_icon1_ = nullptr;
+  ShelfAppButton* app_icon2_ = nullptr;
+};
+
+// Verifies the shelf app button's inkdrop behavior when the mouse click
+// occurs after gesture long press but before the end of gesture.
+TEST_F(ShelfViewGestureTapTest, MouseClickInterruptionAfterGestureLongPress) {
+  const gfx::Point app_icon1_center_point =
+      app_icon1_->GetBoundsInScreen().CenterPoint();
+  GetEventGenerator()->PressTouch(app_icon1_center_point);
+
+  // Fast forward to generate the ET_GESTURE_SHOW_PRESS event.
+  task_environment()->FastForwardBy(base::TimeDelta::FromMilliseconds(200));
+
+  // Fast forward to generate the ET_GESTURE_LONG_PRESS event to show the
+  // context menu.
+  task_environment()->FastForwardBy(base::TimeDelta::FromMilliseconds(1000));
+  ASSERT_TRUE(shelf_view_->IsShowingMenu());
+
+  // Mouse click at `app_icon2_` while gesture pressing `app_icon1_`.
+  GetEventGenerator()->MoveMouseTo(
+      app_icon2_->GetBoundsInScreen().CenterPoint());
+  GetEventGenerator()->ClickLeftButton();
+
+  // Release the gesture press on `app_icon1_`.
+  GetEventGenerator()->set_current_screen_location(app_icon1_center_point);
+  GetEventGenerator()->ReleaseTouch();
+
+  // Verify that the context menu shows and `app_icon1_`'s inkdrop is activated.
+  EXPECT_TRUE(shelf_view_->IsShowingMenu());
+  EXPECT_EQ(views::InkDropState::ACTIVATED, GetInkDropStateOfAppIcon1());
+
+  // Click at the mouse left button at an empty space. Verify that the context
+  // menu is closed and the inkdrop is deactivated.
+  GetEventGenerator()->MoveMouseTo(GetPrimaryDisplay().bounds().CenterPoint());
+  GetEventGenerator()->ClickLeftButton();
+  EXPECT_FALSE(shelf_view_->IsShowingMenu());
+  EXPECT_EQ(views::InkDropState::HIDDEN, GetInkDropStateOfAppIcon1());
+}
+
+// Verifies the shelf app button's inkdrop behavior when the mouse click
+// occurs before gesture long press.
+TEST_F(ShelfViewGestureTapTest, MouseClickInterruptionBeforeGestureLongPress) {
+  const gfx::Point app_icon1_center_point =
+      app_icon1_->GetBoundsInScreen().CenterPoint();
+  GetEventGenerator()->PressTouch(app_icon1_center_point);
+
+  // Fast forward to generate the ET_GESTURE_SHOW_PRESS event.
+  task_environment()->FastForwardBy(base::TimeDelta::FromMilliseconds(200));
+
+  // Mouse click at `app_icon2_` while gesture pressing `app_icon1_`. Note that
+  // we do not need to release the touch on `app_icon1_` because the gesture
+  // is interrupted by the mouse click.
+  GetEventGenerator()->MoveMouseTo(
+      app_icon2_->GetBoundsInScreen().CenterPoint());
+  GetEventGenerator()->ClickLeftButton();
+
+  // Fast forward until the callback is executed.
+  task_environment()->FastForwardBy(base::TimeDelta::FromMilliseconds(200));
+
+  EXPECT_FALSE(shelf_view_->IsShowingMenu());
+  EXPECT_EQ(views::InkDropState::HIDDEN, GetInkDropStateOfAppIcon1());
 }
 
 }  // namespace ash

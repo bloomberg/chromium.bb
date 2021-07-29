@@ -42,29 +42,20 @@ public:
   }
 
   std::unique_ptr<::Ice::Assembler> createAssembler() const override {
-    const bool EmitAddrSizeOverridePrefix =
-        !NeedSandboxing &&
-        getFlags().getApplicationBinaryInterface() == ABI_PNaCl;
-    return makeUnique<X8664::AssemblerX8664>(EmitAddrSizeOverridePrefix);
+    return makeUnique<X8664::AssemblerX8664>();
   }
 
 protected:
   void _add_sp(Operand *Adjustment);
   void _mov_sp(Operand *NewValue);
-  Traits::X86OperandMem *_sandbox_mem_reference(X86OperandMem *Mem);
   void _sub_sp(Operand *Adjustment);
   void _link_bp();
   void _unlink_bp();
   void _push_reg(RegNumT RegNum);
   void _pop_reg(RegNumT RegNum);
 
-  void initRebasePtr();
-  void initSandbox();
-  bool legalizeOptAddrForSandbox(OptAddr *Addr);
-  void emitSandboxedReturn();
   void emitStackProbe(size_t StackSizeBytes);
   void lowerIndirectJump(Variable *JumpTarget);
-  void emitGetIP(CfgNode *Node);
   Inst *emitCallToTarget(Operand *CallTarget, Variable *ReturnReg,
                          size_t NumVariadicFpArgs = 0) override;
   Variable *moveReturnValueToRegister(Operand *Value, Type ReturnType) override;
@@ -74,16 +65,30 @@ private:
   friend class X8664::TargetX86Base<X8664::Traits>;
 
   explicit TargetX8664(Cfg *Func) : TargetX86Base(Func) {}
-
-  void _push_rbp();
-
-  Operand *createNaClReadTPSrcOperand() {
-    Variable *TDB = makeReg(IceType_i32);
-    InstCall *Call = makeHelperCall(RuntimeHelper::H_call_read_tp, TDB, 0);
-    lowerCall(Call);
-    return TDB;
-  }
 };
+
+// The -Wundefined-var-template warning requires to forward-declare static
+// members of template class specializations. Note that "An explicit
+// specialization of a static data member of a template is a definition if the
+// declaration includes an initializer; otherwise, it is a declaration."
+// Visual Studio has a bug which treats these declarations as definitions,
+// leading to multiple definition errors. Since we only enable
+// -Wundefined-var-template for Clang, omit these declarations on other
+// compilers.
+#if defined(__clang__)
+template <>
+std::array<SmallBitVector, RCX86_NUM>
+    TargetX86Base<X8664::Traits>::TypeToRegisterSet;
+
+template <>
+std::array<SmallBitVector, RCX86_NUM>
+    TargetX86Base<X8664::Traits>::TypeToRegisterSetUnfiltered;
+
+template <>
+std::array<SmallBitVector,
+           TargetX86Base<X8664::Traits>::Traits::RegisterSet::Reg_NUM>
+    TargetX86Base<X8664::Traits>::RegisterAliases;
+#endif
 
 } // end of namespace X8664
 } // end of namespace Ice

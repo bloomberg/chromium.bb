@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "chromeos/components/diagnostics_ui/url_constants.h"
+#include "ash/webui/diagnostics_ui/url_constants.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 
@@ -36,11 +36,6 @@ void DiagnosticsDialog::GetDialogSize(gfx::Size* size) const {
       display::Screen::GetScreen()->GetPrimaryDisplay();
 
   gfx::Size display_size = display.size();
-
-  if (display.rotation() == display::Display::ROTATE_90 ||
-      display.rotation() == display::Display::ROTATE_270) {
-    display_size = gfx::Size(display_size.height(), display_size.width());
-  }
 
   display_size = gfx::Size(display_size.width() * kDiagnosticsDialogScale,
                            display_size.height() * kDiagnosticsDialogScale);

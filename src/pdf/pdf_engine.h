@@ -16,13 +16,9 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 #include "pdf/document_layout.h"
 #include "pdf/ppapi_migration/callback.h"
-#include "ppapi/c/dev/ppp_printing_dev.h"
-#include "ppapi/cpp/completion_callback.h"
-#include "ppapi/cpp/private/pdf.h"
-#include "ppapi/cpp/url_loader.h"
+#include "printing/mojom/print.mojom-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-forward.h"
@@ -41,7 +37,6 @@ typedef void (*PDFEnsureTypefaceCharactersAccessible)(const LOGFONT* font,
                                                       size_t text_length);
 #endif
 
-struct PP_PdfPrintSettings_Dev;
 class SkBitmap;
 
 namespace base {
@@ -50,6 +45,7 @@ class Location;
 
 namespace blink {
 class WebInputEvent;
+struct WebPrintParams;
 }  // namespace blink
 
 namespace gfx {
@@ -65,6 +61,7 @@ namespace chrome_pdf {
 class Thumbnail;
 class UrlLoader;
 struct AccessibilityActionData;
+struct AccessibilityFocusInfo;
 struct AccessibilityLinkInfo;
 struct AccessibilityHighlightInfo;
 struct AccessibilityImageInfo;
@@ -75,10 +72,20 @@ struct DocumentMetadata;
 
 using SendThumbnailCallback = base::OnceCallback<void(Thumbnail)>;
 
+enum class FontMappingMode {
+  // Do not perform font mapping.
+  kNoMapping,
+  // Perform font mapping in renderer processes using Blink/content APIs.
+  kBlink,
+  // Perform font mapping in plugin processes using PPAPI.
+  // TODO(crbug.com/702993): Remove when PPAPI is gone.
+  kPepper,
+};
+
 // Do one time initialization of the SDK.
 // If `enable_v8` is false, then the PDFEngine will not be able to run
 // JavaScript.
-void InitializeSDK(bool enable_v8);
+void InitializeSDK(bool enable_v8, FontMappingMode font_mapping_mode);
 // Tells the SDK that we're shutting down.
 void ShutdownSDK();
 
@@ -237,7 +244,9 @@ class PDFEngine {
     // Notifies the client that the document has failed to load.
     virtual void DocumentLoadFailed() {}
 
-    virtual pp::Instance* GetPluginInstance() = 0;
+    // Asks the client to set the last plugin instance when applicable.
+    // TODO(crbug.com/702993): Remove after migrating away from PPAPI.
+    virtual void SetLastPluginInstance() {}
 
     // Notifies that an unsupported feature in the PDF was encountered.
     virtual void DocumentHasUnsupportedFeature(const std::string& feature) {}
@@ -309,13 +318,10 @@ class PDFEngine {
   virtual void PostPaint() = 0;
   virtual bool HandleDocumentLoad(std::unique_ptr<UrlLoader> loader) = 0;
   virtual bool HandleInputEvent(const blink::WebInputEvent& event) = 0;
-  virtual uint32_t QuerySupportedPrintOutputFormats() = 0;
   virtual void PrintBegin() = 0;
-  virtual pp::Resource PrintPages(
-      const PP_PrintPageNumberRange_Dev* page_ranges,
-      uint32_t page_range_count,
-      const PP_PrintSettings_Dev& print_settings,
-      const PP_PdfPrintSettings_Dev& pdf_print_settings) = 0;
+  virtual std::vector<uint8_t> PrintPages(
+      const std::vector<int>& page_numbers,
+      const blink::WebPrintParams& print_params) = 0;
   virtual void PrintEnd() = 0;
   virtual void StartFind(const std::string& text, bool case_sensitive) = 0;
   virtual bool SelectFindResult(bool forward) = 0;
@@ -425,7 +431,7 @@ class PDFEngine {
   // Returns number of copies to be printed.
   virtual int GetCopiesToPrint() = 0;
   // Returns the duplex setting.
-  virtual int GetDuplexType() = 0;
+  virtual printing::mojom::DuplexMode GetDuplexMode() = 0;
   // Returns the uniform page size of the document in points. Returns
   // `absl::nullopt` if the document has more than one page size.
   virtual absl::optional<gfx::Size> GetUniformPageSizePoints() = 0;
@@ -463,7 +469,7 @@ class PDFEngine {
   virtual void UpdateFocus(bool has_focus) = 0;
 
   // Returns the focus info of current focus item.
-  virtual PP_PrivateAccessibilityFocusInfo GetFocusInfo() = 0;
+  virtual AccessibilityFocusInfo GetFocusInfo() = 0;
 
   virtual uint32_t GetLoadedByteSize() = 0;
   virtual bool ReadLoadedBytes(uint32_t length, void* buffer) = 0;
@@ -506,11 +512,11 @@ class PDFEngineExports {
 
   static PDFEngineExports* Get();
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
   // See the definition of CreateFlattenedPdf in pdf.cc for details.
   virtual std::vector<uint8_t> CreateFlattenedPdf(
       base::span<const uint8_t> input_buffer) = 0;
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
   // See the definition of RenderPDFPageToDC in pdf.cc for details.

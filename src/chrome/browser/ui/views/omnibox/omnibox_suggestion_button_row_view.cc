@@ -25,6 +25,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button_border.h"
@@ -55,16 +56,16 @@ class OmniboxSuggestionRowButton : public views::MdTextButton {
     SetCornerRadius(GetInsets().height() +
                     GetLayoutConstant(LOCATION_BAR_ICON_SIZE));
 
-    ink_drop()->SetHighlightOpacity(
+    views::InkDrop::Get(this)->SetHighlightOpacity(
         GetOmniboxStateOpacity(OmniboxPartState::HOVERED));
-    ink_drop()->SetBaseColorCallback(base::BindRepeating(
+    views::InkDrop::Get(this)->SetBaseColorCallback(base::BindRepeating(
         [](OmniboxSuggestionRowButton* host) {
           return color_utils::GetColorWithMaxContrast(
               host->omnibox_bg_color_.value());
         },
         this));
 
-    focus_ring()->SetHasFocusPredicate([=](View* view) {
+    views::FocusRing::Get(this)->SetHasFocusPredicate([=](View* view) {
       return view->GetVisible() &&
              popup_contents_view_->model()->selection() == selection_;
     });
@@ -77,7 +78,7 @@ class OmniboxSuggestionRowButton : public views::MdTextButton {
   ~OmniboxSuggestionRowButton() override = default;
 
   void OnOmniboxBackgroundChange(SkColor omnibox_bg_color) {
-    focus_ring()->SchedulePaint();
+    views::FocusRing::Get(this)->SchedulePaint();
     omnibox_bg_color_ = omnibox_bg_color;
     UpdateBackgroundColor();
   }
@@ -179,11 +180,11 @@ OmniboxSuggestionButtonRowView::OmniboxSuggestionButtonRowView(
   pedal_button_ = AddChildView(std::make_unique<OmniboxSuggestionRowButton>(
       base::BindRepeating(&OmniboxSuggestionButtonRowView::ButtonPressed,
                           base::Unretained(this),
-                          OmniboxPopupModel::FOCUSED_BUTTON_PEDAL),
+                          OmniboxPopupModel::FOCUSED_BUTTON_ACTION),
       std::u16string(), OmniboxPedal::GetDefaultVectorIcon(),
       popup_contents_view_,
       OmniboxPopupModel::Selection(model_index_,
-                                   OmniboxPopupModel::FOCUSED_BUTTON_PEDAL)));
+                                   OmniboxPopupModel::FOCUSED_BUTTON_ACTION)));
 }
 
 OmniboxSuggestionButtonRowView::~OmniboxSuggestionButtonRowView() = default;
@@ -208,13 +209,13 @@ void OmniboxSuggestionButtonRowView::UpdateFromModel() {
                           OmniboxPopupModel::FOCUSED_BUTTON_TAB_SWITCH);
 
   SetPillButtonVisibility(pedal_button_,
-                          OmniboxPopupModel::FOCUSED_BUTTON_PEDAL);
+                          OmniboxPopupModel::FOCUSED_BUTTON_ACTION);
   if (pedal_button_->GetVisible()) {
-    const auto pedal_strings = match().pedal->GetLabelStrings();
+    const auto pedal_strings = match().action->GetLabelStrings();
     pedal_button_->SetText(pedal_strings.hint);
     pedal_button_->SetTooltipText(pedal_strings.suggestion_contents);
     pedal_button_->SetAccessibleName(pedal_strings.accessibility_hint);
-    pedal_button_->SetIcon(match().pedal->GetVectorIcon());
+    pedal_button_->SetIcon(match().action->GetVectorIcon());
   }
 
   bool is_any_button_visible = keyword_button_->GetVisible() ||

@@ -10,7 +10,6 @@
 #import "ios/chrome/browser/ui/badges/badge_button.h"
 #import "ios/chrome/browser/ui/badges/badge_constants.h"
 #import "ios/chrome/browser/ui/badges/badge_delegate.h"
-#import "ios/chrome/common/ui/colors/dynamic_color_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -38,6 +37,8 @@
       return [self overflowBadgeButton];
     case BadgeType::kBadgeTypeSaveAddressProfile:
       return [self saveAddressProfileBadgeButton];
+    case BadgeType::kBadgeTypeAddToReadingList:
+      return [self readingListBadgeButton];
     case BadgeType::kBadgeTypeNone:
       NOTREACHED() << "A badge should not have kBadgeTypeNone";
       return nil;
@@ -111,9 +112,7 @@
                   renderingMode:UIImageRenderingModeAlwaysOriginal];
   button.fullScreenImage = [[UIImage imageNamed:@"incognito_small_badge"]
       imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-  button.tintColor = color::DarkModeDynamicColor(
-      [UIColor colorNamed:kTextPrimaryColor], self.incognito,
-      [UIColor colorNamed:kTextPrimaryDarkColor]);
+  button.tintColor = [UIColor colorNamed:kTextPrimaryColor];
   button.accessibilityTraits &= ~UIAccessibilityTraitButton;
   button.userInteractionEnabled = NO;
   button.accessibilityIdentifier = kBadgeButtonIncognitoAccessibilityIdentifier;
@@ -146,6 +145,20 @@
       forControlEvents:UIControlEventTouchUpInside];
   button.accessibilityIdentifier =
       kBadgeButtonSaveAddressProfileAccessibilityIdentifier;
+  // TODO(crbug.com/1014652): Create a11y label hint.
+  return button;
+}
+
+- (BadgeButton*)readingListBadgeButton {
+  BadgeButton* button =
+      [self createButtonForType:BadgeType::kBadgeTypeAddToReadingList
+                     imageNamed:@"infobar_reading_list"
+                  renderingMode:UIImageRenderingModeAlwaysTemplate];
+  [button addTarget:self.delegate
+                action:@selector(addToReadingListBadgeButtonTapped:)
+      forControlEvents:UIControlEventTouchUpInside];
+  button.accessibilityIdentifier =
+      kBadgeButtonReadingListAccessibilityIdentifier;
   // TODO(crbug.com/1014652): Create a11y label hint.
   return button;
 }

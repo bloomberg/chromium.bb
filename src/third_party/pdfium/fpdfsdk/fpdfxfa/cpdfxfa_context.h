@@ -20,6 +20,7 @@
 #include "fpdfsdk/fpdfxfa/cpdfxfa_page.h"
 #include "fxjs/gc/heap.h"
 #include "v8/include/cppgc/persistent.h"
+#include "xfa/fxfa/cxfa_ffapp.h"
 #include "xfa/fxfa/cxfa_ffdoc.h"
 
 class CFX_XMLDocument;
@@ -38,7 +39,7 @@ void CPDFXFA_ModuleInit();
 void CPDFXFA_ModuleDestroy();
 
 class CPDFXFA_Context final : public CPDF_Document::Extension,
-                              public IXFA_AppProvider {
+                              public CXFA_FFApp::CallbackIface {
  public:
   explicit CPDFXFA_Context(CPDF_Document* pPDFDoc);
   ~CPDFXFA_Context() override;
@@ -73,7 +74,7 @@ class CPDFXFA_Context final : public CPDF_Document::Extension,
   bool ContainsExtensionFullForm() const override;
   bool ContainsExtensionForegroundForm() const override;
 
-  // IFXA_AppProvider:
+  // CXFA_FFApp::CallbackIface:
   WideString GetLanguage() override;
   WideString GetPlatform() override;
   WideString GetAppName() override;

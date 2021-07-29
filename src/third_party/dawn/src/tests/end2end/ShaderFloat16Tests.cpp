@@ -50,12 +50,10 @@ TEST_P(ShaderFloat16Tests, Basic16BitFloatFeaturesTest) {
     wgpu::Buffer bufferIn = utils::CreateBufferFromData(device, &bufferInData, sizeof(bufferInData),
                                                         wgpu::BufferUsage::Storage);
 
-    // TODO(xinghua.cao@intel.com): the zero for padding is required now. No need to
-    // createBufferFromData once buffer lazy-zero-init is done.
-    uint16_t bufferOutData[] = {Float32ToFloat16(0.0), Float32ToFloat16(0.0)};
-    wgpu::Buffer bufferOut =
-        utils::CreateBufferFromData(device, &bufferOutData, sizeof(bufferOutData),
-                                    wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopySrc);
+    wgpu::BufferDescriptor bufferDesc;
+    bufferDesc.size = 2 * sizeof(uint16_t);
+    bufferDesc.usage = wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopySrc;
+    wgpu::Buffer bufferOut = device.CreateBuffer(&bufferDesc);
 
     // SPIR-V ASM produced by glslang for the following fragment shader:
     //
@@ -149,15 +147,15 @@ TEST_P(ShaderFloat16Tests, Basic16BitFloatFeaturesTest) {
     )");
 
     wgpu::ComputePipelineDescriptor csDesc;
-    csDesc.computeStage.module = module;
-    csDesc.computeStage.entryPoint = "main";
+    csDesc.compute.module = module;
+    csDesc.compute.entryPoint = "main";
     wgpu::ComputePipeline pipeline = device.CreateComputePipeline(&csDesc);
 
     wgpu::BindGroup bindGroup = utils::MakeBindGroup(device, pipeline.GetBindGroupLayout(0),
                                                      {
                                                          {0, uniformBuffer, 0, sizeof(uniformData)},
                                                          {1, bufferIn, 0, sizeof(bufferInData)},
-                                                         {2, bufferOut, 0, sizeof(bufferOutData)},
+                                                         {2, bufferOut},
                                                      });
 
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();

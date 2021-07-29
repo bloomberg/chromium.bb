@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/public/cpp/ash_constants.h"
 #include "base/macros.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/view.h"
@@ -37,7 +36,7 @@ class ASH_EXPORT SplitViewDividerHandlerView : public views::View {
 
   // Updates the corner radius of the handler bar to |radius|. Happens during
   // the animation of starting and ending dragging.
-  void UpdateCornerRadius(int radius);
+  void UpdateCornerRadius(float radius);
 
  private:
   class SelectionAnimation;

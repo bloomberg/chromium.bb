@@ -85,9 +85,11 @@
 #include "content/public/common/network_service_util.h"
 #include "content/public/common/page_type.h"
 #include "content/public/common/user_agent.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_base.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/prerender_test_util.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/google_api_keys.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -133,6 +135,7 @@ constexpr gfx::Size kSize(640, 480);
 
 const char kAllowedUAClientHint[] = "sec-ch-ua";
 const char kAllowedUAMobileClientHint[] = "sec-ch-ua-mobile";
+const char kAllowedUAPlatformClientHint[] = "sec-ch-ua-platform";
 
 class TestCustomProxyConfigClient
     : public network::mojom::CustomProxyConfigClient {
@@ -516,7 +519,6 @@ class PrefetchProxyBrowserTest
   }
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
-    InProcessBrowserTest::SetUpCommandLine(cmd);
     cmd->AppendSwitch("prefetch-proxy-never-send-decoy-requests-for-testing");
     // For the proxy.
     cmd->AppendSwitch("ignore-certificate-errors");
@@ -532,6 +534,8 @@ class PrefetchProxyBrowserTest
         SetDataSaverEnabledForTesting(browser()->profile()->GetPrefs(),
                                       enabled);
   }
+
+  void ResetFeatureList() { scoped_feature_list_.Reset(); }
 
   content::WebContents* GetWebContents() const {
     return browser()->tab_strip_model()->GetActiveWebContents();
@@ -631,6 +635,11 @@ class PrefetchProxyBrowserTest
 
       if (std::string(blink::kClientHintsHeaderMapping[i]) ==
           std::string(kAllowedUAMobileClientHint)) {
+        continue;
+      }
+
+      if (std::string(blink::kClientHintsHeaderMapping[i]) ==
+          std::string(kAllowedUAPlatformClientHint)) {
         continue;
       }
 
@@ -754,7 +763,7 @@ class PrefetchProxyBrowserTest
 
       SCOPED_TRACE(request.GetURL().spec());
       EXPECT_EQ(request.headers.find("user-agent")->second,
-                content::GetFrozenUserAgent(
+                content::GetReducedUserAgent(
                     base::CommandLine::ForCurrentProcess()->HasSwitch(
                         switches::kUseMobileUserAgent),
                     version_info::GetMajorVersionNumber()));
@@ -1283,6 +1292,10 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(PrefetchProxyBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(ConnectProxyEndtoEnd)) {
+  // The test assumes the previous page gets deleted after navigation. Disable
+  // back/forward cache to ensure that it doesn't get preserved in the cache.
+  content::DisableBackForwardCacheForTesting(
+      GetWebContents(), content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
   SetDataSaverEnabled(true);
   ui_test_utils::NavigateToURL(browser(), GetOriginServerURL("/simple.html"));
   WaitForUpdatedCustomProxyConfig();
@@ -1950,6 +1963,10 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(PrefetchProxyBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(CookiesUsedAndCopied)) {
+  // The test assumes the previous page gets deleted after navigation. Disable
+  // back/forward cache to ensure that it doesn't get preserved in the cache.
+  content::DisableBackForwardCacheForTesting(
+      GetWebContents(), content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
   GURL starting_page = GetOriginServerURL("/simple.html");
   SetDataSaverEnabled(true);
   ui_test_utils::NavigateToURL(browser(), starting_page);
@@ -2966,6 +2983,10 @@ class PrefetchProxyWithNSPBrowserTest : public PrefetchProxyBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(PrefetchProxyWithNSPBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(SuccessfulNSPEndToEnd)) {
+  // The test assumes the previous page gets deleted after navigation. Disable
+  // back/forward cache to ensure that it doesn't get preserved in the cache.
+  content::DisableBackForwardCacheForTesting(
+      GetWebContents(), content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
   base::HistogramTester histogram_tester;
 
   SetDataSaverEnabled(true);
@@ -3882,6 +3903,10 @@ IN_PROC_BROWSER_TEST_F(ProbingAndNSPEnabledPrefetchProxyBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ProbingAndNSPEnabledPrefetchProxyBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(ProbeBad_NSPSuccess)) {
+  // The test assumes the previous page gets deleted after navigation. Disable
+  // back/forward cache to ensure that it doesn't get preserved in the cache.
+  content::DisableBackForwardCacheForTesting(
+      GetWebContents(), content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
   SetDataSaverEnabled(true);
   GURL starting_page = GetOriginServerURL("/simple.html");
   ui_test_utils::NavigateToURL(browser(), starting_page);
@@ -4152,6 +4177,10 @@ class SpeculationPrefetchProxyTest : public PrefetchProxyBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(SpeculationPrefetchProxyTest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(SuccessfulNSPEndToEnd)) {
+  // The test assumes the previous page gets deleted after navigation. Disable
+  // back/forward cache to ensure that it doesn't get preserved in the cache.
+  content::DisableBackForwardCacheForTesting(
+      GetWebContents(), content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
   base::HistogramTester histogram_tester;
 
   SetDataSaverEnabled(true);
@@ -4403,4 +4432,86 @@ IN_PROC_BROWSER_TEST_F(SpeculationPrefetchProxyTest,
   // Verify that we de-dupe and only fetch one new URL.
   EXPECT_EQ(tab_helper->srp_metrics().prefetch_attempted_count_, 2U);
   EXPECT_EQ(tab_helper->srp_metrics().prefetch_successful_count_, 2U);
+}
+
+class PrefetchProxyPrerenderBrowserTest : public PrefetchProxyBrowserTest {
+ public:
+  PrefetchProxyPrerenderBrowserTest()
+      : prerender_test_helper_(base::BindRepeating(
+            &PrefetchProxyPrerenderBrowserTest::GetWebContents,
+            base::Unretained(this))) {}
+  ~PrefetchProxyPrerenderBrowserTest() override = default;
+  PrefetchProxyPrerenderBrowserTest(const PrefetchProxyPrerenderBrowserTest&) =
+      delete;
+
+  PrefetchProxyPrerenderBrowserTest& operator=(
+      const PrefetchProxyPrerenderBrowserTest&) = delete;
+
+  void SetUp() override { PrefetchProxyBrowserTest::SetUp(); }
+
+  void TearDown() override { PrefetchProxyBrowserTest::ResetFeatureList(); }
+
+  void SetUpOnMainThread() override {
+    prerender_test_helper_.SetUpOnMainThread(embedded_test_server());
+    host_resolver()->AddRule("*", "127.0.0.1");
+    ASSERT_TRUE(embedded_test_server()->Start());
+    PrefetchProxyBrowserTest::SetUpOnMainThread();
+  }
+
+  content::test::PrerenderTestHelper& prerender_test_helper() {
+    return prerender_test_helper_;
+  }
+
+  content::WebContents* GetWebContents() {
+    return browser()->tab_strip_model()->GetActiveWebContents();
+  }
+
+ private:
+  content::test::PrerenderTestHelper prerender_test_helper_;
+};
+
+IN_PROC_BROWSER_TEST_F(PrefetchProxyPrerenderBrowserTest,
+                       ShouldNotAffectPrefetchProxyTabHelperOnPrerendering) {
+  SetDataSaverEnabled(true);
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  WaitForUpdatedCustomProxyConfig();
+
+  ASSERT_TRUE(content::SetCookie(browser()->profile(), GURL("https://foo.com"),
+                                 "type=PeanutButter"));
+
+  GURL initial_url = embedded_test_server()->GetURL("/empty.html");
+  GURL prerender_url = embedded_test_server()->GetURL("/title1.html");
+  ASSERT_NE(ui_test_utils::NavigateToURL(browser(), initial_url), nullptr);
+
+  PrefetchProxyTabHelper* tab_helper =
+      PrefetchProxyTabHelper::FromWebContents(GetWebContents());
+
+  // Start prerendering to check if it affects on the prefetch proxy.
+  int host_id = prerender_test_helper().AddPrerender(prerender_url);
+  content::RenderFrameHost* prerender_render_frame_host =
+      prerender_test_helper().GetPrerenderedMainFrameHost(host_id);
+  EXPECT_NE(prerender_render_frame_host, nullptr);
+  GURL prerender_render_frame_url =
+      prerender_render_frame_host->GetLastCommittedURL();
+  ASSERT_FALSE(tab_helper->after_srp_metrics());
+  EXPECT_EQ(0U, tab_helper->srp_metrics().predicted_urls_count_);
+
+  GURL prefetch_url("https://m.foo.com");
+  GURL doc_url("https://www.google.com/search?q=test");
+  MakeNavigationPrediction(doc_url, {prefetch_url});
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1U, tab_helper->srp_metrics().predicted_urls_count_);
+  EXPECT_EQ(0U, tab_helper->srp_metrics().prefetch_eligible_count_);
+
+  ui_test_utils::NavigateToURL(browser(), prefetch_url);
+
+  ASSERT_TRUE(tab_helper->after_srp_metrics());
+  EXPECT_EQ(
+      absl::make_optional(
+          PrefetchProxyPrefetchStatus::kPrefetchNotEligibleUserHasCookies),
+      tab_helper->after_srp_metrics()->prefetch_status_);
+
+  // Check if the prefetched URL is different from the prerendered frame.
+  EXPECT_NE(tab_helper->after_srp_metrics()->url_, prerender_render_frame_url);
 }

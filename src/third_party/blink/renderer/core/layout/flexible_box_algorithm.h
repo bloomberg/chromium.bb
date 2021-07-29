@@ -47,6 +47,7 @@ namespace blink {
 class FlexItem;
 class FlexLine;
 class FlexLayoutAlgorithm;
+class NGFlexLayoutAlgorithm;
 class LayoutBox;
 struct MinMaxSizes;
 
@@ -338,7 +339,6 @@ class FlexLine {
   LayoutUnit cross_axis_offset_;
   LayoutUnit cross_axis_extent_;
   LayoutUnit max_ascent_;
-  LayoutUnit sum_justify_adjustments_;
 };
 
 // This class implements the CSS Flexbox layout algorithm:
@@ -433,7 +433,8 @@ class FlexLayoutAlgorithm {
       const ComputedStyle& style,
       LayoutUnit available_free_space,
       const StyleContentAlignmentData&,
-      unsigned number_of_items);
+      unsigned number_of_items,
+      bool is_reversed = false);
   static LayoutUnit ContentDistributionSpaceBetweenChildren(
       LayoutUnit available_free_space,
       const StyleContentAlignmentData&,
@@ -451,6 +452,7 @@ class FlexLayoutAlgorithm {
   const LayoutUnit gap_between_lines_;
 
  private:
+  friend class NGFlexLayoutAlgorithm;
   EOverflow MainAxisOverflowForChild(const LayoutBox& child) const;
 
   const ComputedStyle* style_;

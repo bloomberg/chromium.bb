@@ -13,6 +13,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
+#include "base/bind.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -92,7 +93,8 @@ class PinRequestView::FocusableLabelButton : public views::LabelButton {
   FocusableLabelButton(PressedCallback callback, const std::u16string& text)
       : views::LabelButton(std::move(callback), text) {
     SetInstallFocusRingOnFocus(true);
-    focus_ring()->SetColor(ShelfConfig::Get()->shelf_focus_border_color());
+    views::FocusRing::Get(this)->SetColor(
+        ShelfConfig::Get()->shelf_focus_border_color());
     SetFocusBehavior(FocusBehavior::ALWAYS);
   }
 
@@ -354,10 +356,7 @@ PinRequestView::PinRequestView(PinRequest request, Delegate* delegate)
 
   help_button_ = new FocusableLabelButton(
       base::BindRepeating(
-          [](PinRequestView* view) {
-            view->delegate_->OnHelp(view->GetWidget()->GetNativeWindow());
-          },
-          this),
+          [](PinRequestView* view) { view->delegate_->OnHelp(); }, this),
       l10n_util::GetStringUTF16(IDS_ASH_LOGIN_PIN_REQUEST_HELP));
   help_button_->SetPaintToLayer();
   help_button_->layer()->SetFillsBoundsOpaquely(false);
@@ -554,12 +553,14 @@ bool PinRequestView::PinKeyboardVisible() const {
 }
 
 gfx::Size PinRequestView::GetPinRequestViewSize() const {
-  int height = kPinRequestViewMinimumHeightDp +
-               std::min(int{title_label_->GetRequiredLines()}, kTitleMaxLines) *
-                   kTitleLineHeightDp +
-               std::min(int{description_label_->GetRequiredLines()},
-                        kDescriptionMaxLines) *
-                   kDescriptionTextLineHeightDp;
+  int height =
+      kPinRequestViewMinimumHeightDp +
+      std::min(static_cast<int>(title_label_->GetRequiredLines()),
+               kTitleMaxLines) *
+          kTitleLineHeightDp +
+      std::min(static_cast<int>(description_label_->GetRequiredLines()),
+               kDescriptionMaxLines) *
+          kDescriptionTextLineHeightDp;
   if (PinKeyboardVisible())
     height += kPinKeyboardHeightDp;
   return gfx::Size(kPinRequestViewWidthDp, height);

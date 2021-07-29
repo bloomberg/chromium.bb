@@ -20,8 +20,12 @@ std::string SearchTermsData::GoogleBaseURLValue() const {
 std::string SearchTermsData::GoogleBaseSearchByImageURLValue() const {
   const std::string kGoogleHomepageURLPath = std::string("searchbyimage/");
 
+  // If both LensStandalone and LensRegionSearch features are enabled,
+  // LensStandalone parameters will take precedence even if the values differ.
   if (base::FeatureList::IsEnabled(lens::features::kLensStandalone)) {
-    return lens::features::GetHomepageURL();
+    return lens::features::GetHomepageURLForImageSearch();
+  } else if (base::FeatureList::IsEnabled(lens::features::kLensRegionSearch)) {
+    return lens::features::GetHomepageURLForRegionSearch();
   }
   return google_util::kGoogleHomepageURL + kGoogleHomepageURLPath;
 }
@@ -54,7 +58,7 @@ std::string SearchTermsData::GetSearchClient() const {
   return std::string();
 }
 
-std::string SearchTermsData::GetSuggestClient(bool from_ntp) const {
+std::string SearchTermsData::GetSuggestClient() const {
   return std::string();
 }
 

@@ -26,7 +26,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_checker.h"
@@ -1041,7 +1040,7 @@ class DnsTransactionImpl : public DnsTransaction,
                            public base::SupportsWeakPtr<DnsTransactionImpl> {
  public:
   DnsTransactionImpl(DnsSession* session,
-                     const std::string& hostname,
+                     std::string hostname,
                      uint16_t qtype,
                      DnsTransactionFactory::CallbackType callback,
                      const NetLogWithSource& net_log,
@@ -1051,7 +1050,7 @@ class DnsTransactionImpl : public DnsTransaction,
                      ResolveContext* resolve_context,
                      bool fast_timeout)
       : session_(session),
-        hostname_(hostname),
+        hostname_(std::move(hostname)),
         qtype_(qtype),
         opt_rdata_(opt_rdata),
         secure_(secure),
@@ -1649,7 +1648,7 @@ class DnsTransactionFactoryImpl : public DnsTransactionFactory {
   }
 
   std::unique_ptr<DnsTransaction> CreateTransaction(
-      const std::string& hostname,
+      std::string hostname,
       uint16_t qtype,
       CallbackType callback,
       const NetLogWithSource& net_log,
@@ -1658,8 +1657,8 @@ class DnsTransactionFactoryImpl : public DnsTransactionFactory {
       ResolveContext* resolve_context,
       bool fast_timeout) override {
     return std::make_unique<DnsTransactionImpl>(
-        session_.get(), hostname, qtype, std::move(callback), net_log,
-        opt_rdata_.get(), secure, secure_dns_mode, resolve_context,
+        session_.get(), std::move(hostname), qtype, std::move(callback),
+        net_log, opt_rdata_.get(), secure, secure_dns_mode, resolve_context,
         fast_timeout);
   }
 

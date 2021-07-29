@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/core/testing/fake_local_frame_host.h"
 
 #include "skia/public/mojom/skcolor.mojom-blink.h"
+#include "third_party/blink/public/mojom/choosers/popup_menu.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom-blink.h"
 #include "third_party/blink/public/mojom/timing/resource_timing.mojom-blink.h"
 
@@ -200,9 +202,10 @@ void FakeLocalFrameHost::DidChangeFrameOwnerProperties(
 void FakeLocalFrameHost::DidChangeOpener(
     const absl::optional<LocalFrameToken>& opener_frame) {}
 
-void FakeLocalFrameHost::DidChangeCSPAttribute(
+void FakeLocalFrameHost::DidChangeIframeAttributes(
     const blink::FrameToken& child_frame_token,
-    network::mojom::blink::ContentSecurityPolicyPtr) {}
+    network::mojom::blink::ContentSecurityPolicyPtr,
+    bool anonymous) {}
 
 void FakeLocalFrameHost::DidChangeFramePolicy(
     const blink::FrameToken& child_frame_token,
@@ -230,6 +233,9 @@ void FakeLocalFrameHost::DidAddMessageToConsole(
 void FakeLocalFrameHost::FrameSizeChanged(const gfx::Size& frame_size) {}
 
 void FakeLocalFrameHost::DidActivateForPrerendering() {}
+
+void FakeLocalFrameHost::DidUpdatePreferredColorScheme(
+    blink::mojom::PreferredColorScheme preferred_color_scheme) {}
 
 void FakeLocalFrameHost::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {

@@ -27,9 +27,8 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/keyboard/ui/resources/keyboard_resource_util.h"
 #include "base/command_line.h"
+#include "chrome/browser/ash/file_manager/file_manager_string_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/file_manager/file_manager_string_util.h"
-#include "chrome/browser/resources/pdf/ink/buildflags.h"
 #include "ui/file_manager/grit/file_manager_gen_resources_map.h"
 #include "ui/file_manager/grit/file_manager_resources_map.h"
 
@@ -116,7 +115,7 @@ ChromeComponentExtensionResourceManager::Data::Data() {
   // tests.
   if (ui::ResourceBundle::HasSharedInstance() && g_browser_process) {
     ui::TemplateReplacements file_manager_replacements;
-    ui::TemplateReplacementsFromDictionaryValue(*GetFileManagerStrings(),
+    ui::TemplateReplacementsFromDictionaryValue(GetFileManagerStrings(),
                                                 &file_manager_replacements);
     template_replacements_[extension_misc::kFilesManagerAppId] =
         std::move(file_manager_replacements);

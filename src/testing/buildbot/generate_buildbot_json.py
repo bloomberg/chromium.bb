@@ -26,6 +26,13 @@ import buildbot_json_magic_substitutions as magic_substitutions
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
+BROWSER_CONFIG_TO_TARGET_SUFFIX_MAP = {
+    'android-chromium': '_android_chrome',
+    'android-chromium-monochrome': '_android_monochrome',
+    'android-weblayer': '_android_weblayer',
+    'android-webview': '_android_webview',
+}
+
 
 class BBGenErr(Exception):
   def __init__(self, message):
@@ -921,16 +928,30 @@ class BBJSONGenerator(object):
     if not result:
       return None
     result['isolate_name'] = test_config.get(
-      'isolate_name', 'telemetry_gpu_integration_test')
+        'isolate_name',
+        self.get_default_isolate_name(tester_config, is_android_webview))
 
     # Populate test_id_prefix.
-    gn_entry = (
-        self.gn_isolate_map.get(result['isolate_name']) or
-        self.gn_isolate_map.get('telemetry_gpu_integration_test'))
+    gn_entry = self.gn_isolate_map[result['isolate_name']]
     result['test_id_prefix'] = 'ninja:%s/' % gn_entry['label']
 
     args = result.get('args', [])
     test_to_run = result.pop('telemetry_test_name', test_name)
+
+    # TODO(skbug.com/12149): Remove this once Gold-based tests no longer clobber
+    # earlier results on retry attempts.
+    is_gold_based_test = False
+    for a in args:
+      if '--git-revision' in a:
+        is_gold_based_test = True
+        break
+    if is_gold_based_test:
+      for a in args:
+        if '--test-filter' in a or '--isolated-script-test-filter' in a:
+          raise RuntimeError(
+              '--test-filter/--isolated-script-test-filter are currently not '
+              'supported for Gold-based GPU tests. See skbug.com/12100 and '
+              'skbug.com/12149 for more details.')
 
     # These tests upload and download results from cloud storage and therefore
     # aren't idempotent yet. https://crbug.com/549140.
@@ -968,6 +989,16 @@ class BBJSONGenerator(object):
     result['args'] = self.maybe_fixup_args_array(self.substitute_gpu_args(
       tester_config, result['swarming'], args))
     return result
+
+  def get_default_isolate_name(self, tester_config, is_android_webview):
+    if self.is_android(tester_config):
+      if is_android_webview:
+        return 'telemetry_gpu_integration_test_android_webview'
+      return (
+          'telemetry_gpu_integration_test' +
+          BROWSER_CONFIG_TO_TARGET_SUFFIX_MAP[tester_config['browser_config']])
+    else:
+      return 'telemetry_gpu_integration_test'
 
   def get_test_generator_map(self):
     return {
@@ -1491,6 +1522,7 @@ class BBJSONGenerator(object):
         'ANGLE GPU Linux Release (Intel HD 630)',
         'ANGLE GPU Linux Release (NVIDIA)',
         'Optional Android Release (Nexus 5X)',
+        'Optional Android Release (Pixel 4)',
         'Optional Linux Release (Intel HD 630)',
         'Optional Linux Release (NVIDIA)',
         'Optional Mac Release (Intel)',
@@ -1510,6 +1542,7 @@ class BBJSONGenerator(object):
         'mac11.0-blink-rel-dummy',
         'win7-blink-rel-dummy',
         'win10-blink-rel-dummy',
+        'win10.20h2-blink-rel-dummy',
         'WebKit Linux composite_after_paint Dummy Builder',
         'WebKit Linux layout_ng_disabled Builder',
         # chromium, due to https://crbug.com/878915

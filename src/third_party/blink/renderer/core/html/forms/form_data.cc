@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_file_usvstring.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
@@ -49,14 +50,15 @@ namespace blink {
 namespace {
 
 class FormDataIterationSource final
-    : public PairIterable<String, FormDataEntryValue>::IterationSource {
+    : public PairIterable<String,
+                          Member<V8FormDataEntryValue>>::IterationSource {
  public:
   FormDataIterationSource(FormData* form_data)
       : form_data_(form_data), current_(0) {}
 
   bool Next(ScriptState* script_state,
             String& name,
-            FormDataEntryValue& value,
+            Member<V8FormDataEntryValue>& value,
             ExceptionState& exception_state) override {
     if (current_ >= form_data_->size())
       return false;
@@ -64,17 +66,18 @@ class FormDataIterationSource final
     const FormData::Entry& entry = *form_data_->Entries()[current_++];
     name = entry.name();
     if (entry.IsString()) {
-      value.SetUSVString(entry.Value());
+      value = MakeGarbageCollected<V8FormDataEntryValue>(entry.Value());
     } else {
       DCHECK(entry.isFile());
-      value.SetFile(entry.GetFile());
+      value = MakeGarbageCollected<V8FormDataEntryValue>(entry.GetFile());
     }
     return true;
   }
 
   void Trace(Visitor* visitor) const override {
     visitor->Trace(form_data_);
-    PairIterable<String, FormDataEntryValue>::IterationSource::Trace(visitor);
+    PairIterable<String, Member<V8FormDataEntryValue>>::IterationSource::Trace(
+        visitor);
   }
 
  private:
@@ -143,7 +146,6 @@ void FormData::deleteEntry(const String& name) {
   }
 }
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 V8FormDataEntryValue* FormData::get(const String& name) {
   for (const auto& entry : Entries()) {
     if (entry->name() == name) {
@@ -157,23 +159,7 @@ V8FormDataEntryValue* FormData::get(const String& name) {
   }
   return nullptr;
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-void FormData::get(const String& name, FormDataEntryValue& result) {
-  for (const auto& entry : Entries()) {
-    if (entry->name() == name) {
-      if (entry->IsString()) {
-        result.SetUSVString(entry->Value());
-      } else {
-        DCHECK(entry->isFile());
-        result.SetFile(entry->GetFile());
-      }
-      return;
-    }
-  }
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 HeapVector<Member<V8FormDataEntryValue>> FormData::getAll(const String& name) {
   HeapVector<Member<V8FormDataEntryValue>> results;
 
@@ -191,25 +177,6 @@ HeapVector<Member<V8FormDataEntryValue>> FormData::getAll(const String& name) {
   }
   return results;
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-HeapVector<FormDataEntryValue> FormData::getAll(const String& name) {
-  HeapVector<FormDataEntryValue> results;
-
-  for (const auto& entry : Entries()) {
-    if (entry->name() != name)
-      continue;
-    FormDataEntryValue value;
-    if (entry->IsString()) {
-      value.SetUSVString(entry->Value());
-    } else {
-      DCHECK(entry->isFile());
-      value.SetFile(entry->GetFile());
-    }
-    results.push_back(value);
-  }
-  return results;
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 bool FormData::has(const String& name) {
   for (const auto& entry : Entries()) {
@@ -356,7 +323,7 @@ scoped_refptr<EncodedFormData> FormData::EncodeMultiPartFormData() {
   return form_data;
 }
 
-PairIterable<String, FormDataEntryValue>::IterationSource*
+PairIterable<String, Member<V8FormDataEntryValue>>::IterationSource*
 FormData::StartIteration(ScriptState*, ExceptionState&) {
   return MakeGarbageCollected<FormDataIterationSource>(this);
 }

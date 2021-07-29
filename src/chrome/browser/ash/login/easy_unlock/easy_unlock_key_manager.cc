@@ -40,10 +40,10 @@ void EasyUnlockKeyManager::RefreshKeys(const UserContext& user_context,
   auto do_refresh_keys = base::BindRepeating(
       &EasyUnlockKeyManager::RefreshKeysWithTpmKeyPresent,
       weak_ptr_factory_.GetWeakPtr(), user_context,
-      base::Owned(remote_devices.DeepCopy()), base::Passed(&callback));
+      base::Passed(remote_devices.CreateDeepCopy()), base::Passed(&callback));
 
   // Private TPM key is needed only when adding new keys.
-  if (remote_devices.empty() ||
+  if (remote_devices.GetList().empty() ||
       tpm_key_manager->PrepareTpmKey(/*check_private_key=*/false,
                                      do_refresh_keys)) {
     do_refresh_keys.Run();
@@ -60,7 +60,7 @@ void EasyUnlockKeyManager::RefreshKeys(const UserContext& user_context,
 
 void EasyUnlockKeyManager::RefreshKeysWithTpmKeyPresent(
     const UserContext& user_context,
-    base::ListValue* remote_devices,
+    std::unique_ptr<base::ListValue> remote_devices,
     RefreshKeysCallback callback) {
   EasyUnlockTpmKeyManager* tpm_key_manager =
       EasyUnlockTpmKeyManagerFactory::GetInstance()->GetForUser(
@@ -97,9 +97,8 @@ void EasyUnlockKeyManager::DeviceDataToRemoteDeviceDictionary(
     base::DictionaryValue* dict) {
   dict->SetString(key_names::kKeyBluetoothAddress, data.bluetooth_address);
   dict->SetString(key_names::kKeyPsk, data.psk);
-  std::unique_ptr<base::DictionaryValue> permit_record(
-      new base::DictionaryValue);
-  dict->Set(key_names::kKeyPermitRecord, std::move(permit_record));
+  base::DictionaryValue permit_record;
+  dict->SetKey(key_names::kKeyPermitRecord, std::move(permit_record));
   dict->SetString(key_names::kKeyPermitId, data.public_key);
   dict->SetString(key_names::kKeyPermitData, data.public_key);
   dict->SetString(key_names::kKeyPermitType, key_names::kPermitTypeLicence);
@@ -156,7 +155,7 @@ void EasyUnlockKeyManager::DeviceDataListToRemoteDeviceList(
     const AccountId& account_id,
     const EasyUnlockDeviceKeyDataList& data_list,
     base::ListValue* device_list) {
-  device_list->Clear();
+  device_list->ClearList();
   for (size_t i = 0; i < data_list.size(); ++i) {
     std::unique_ptr<base::DictionaryValue> device_dict(
         new base::DictionaryValue);

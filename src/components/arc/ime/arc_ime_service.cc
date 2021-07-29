@@ -6,10 +6,8 @@
 
 #include <utility>
 
-#include "ash/constants/ash_features.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
-#include "ash/public/cpp/app_types.h"
-#include "base/feature_list.h"
+#include "ash/public/cpp/app_types_util.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram_functions.h"
@@ -56,6 +54,16 @@ bool IsCharacterKeyEvent(const ui::KeyEvent* event) {
   return !IsControlChar(event) && !ui::IsSystemKeyModifier(event->flags());
 }
 
+int CursorBehaviorToCursorPosition(
+    ui::TextInputClient::InsertTextCursorBehavior cursor_behavior) {
+  switch (cursor_behavior) {
+    case ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText:
+      return 1;
+    case ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorBeforeText:
+      return 0;
+  }
+}
+
 class ArcWindowDelegateImpl : public ArcImeService::ArcWindowDelegate {
  public:
   explicit ArcWindowDelegateImpl(ArcImeService* ime_service)
@@ -84,7 +92,7 @@ class ArcWindowDelegateImpl : public ArcImeService::ArcWindowDelegate {
       // Specifically, a window of ARC++ Kiosk should have ash::AppType::ARC_APP
       // property. Please see implementation of IsArcAppWindow().
       if (window == active && IsArcKioskMode() &&
-          GetWindowTaskId(window) != kNoTaskId) {
+          GetWindowTaskId(window).has_value()) {
         return true;
       }
     }
@@ -408,11 +416,6 @@ void ArcImeService::OnCursorRectChangedWithSurroundingText(
     input_method->OnCaretBoundsChanged(this);
 }
 
-bool ArcImeService::ShouldEnableKeyEventForwarding() {
-  return base::FeatureList::IsEnabled(
-      chromeos::features::kArcPreImeKeyEventSupport);
-}
-
 void ArcImeService::SendKeyEvent(std::unique_ptr<ui::KeyEvent> key_event,
                                  KeyEventDoneCallback callback) {
   ui::InputMethod* const input_method = GetInputMethod();
@@ -458,16 +461,16 @@ void ArcImeService::ClearCompositionText() {
   InvalidateSurroundingTextAndSelectionRange();
   if (has_composition_text_) {
     has_composition_text_ = false;
-    ime_bridge_->SendInsertText(std::u16string());
+    ime_bridge_->SendInsertText(std::u16string(), /*new_cursor_position=*/1);
   }
 }
 
 void ArcImeService::InsertText(const std::u16string& text,
                                InsertTextCursorBehavior cursor_behavior) {
-  // TODO(crbug.com/1155331): Handle |cursor_behavior| correctly.
   InvalidateSurroundingTextAndSelectionRange();
   has_composition_text_ = false;
-  ime_bridge_->SendInsertText(text);
+  ime_bridge_->SendInsertText(text,
+                              CursorBehaviorToCursorPosition(cursor_behavior));
 }
 
 void ArcImeService::InsertChar(const ui::KeyEvent& event) {
@@ -483,25 +486,10 @@ void ArcImeService::InsertChar(const ui::KeyEvent& event) {
 
   InvalidateSurroundingTextAndSelectionRange();
 
-  // For apps that doesn't handle hardware keyboard events well, keys that are
-  // typically on software keyboard and lack of them are fatal, namely,
-  // unmodified enter and backspace keys are sent through IME.
-  if (!HasModifier(&event) && !ShouldEnableKeyEventForwarding()) {
-    if (event.key_code() ==  ui::VKEY_RETURN) {
-      has_composition_text_ = false;
-      ime_bridge_->SendInsertText(u"\n");
-      return;
-    }
-    if (event.key_code() ==  ui::VKEY_BACK) {
-      has_composition_text_ = false;
-      ime_bridge_->SendInsertText(u"\b");
-      return;
-    }
-  }
-
   if (IsCharacterKeyEvent(&event)) {
     has_composition_text_ = false;
-    ime_bridge_->SendInsertText(std::u16string(1, event.GetText()));
+    ime_bridge_->SendInsertText(std::u16string(1, event.GetText()),
+                                /*new_cursor_position=*/1);
   }
 }
 
@@ -698,9 +686,6 @@ bool ArcImeService::AddGrammarFragments(
 }
 
 void ArcImeService::OnDispatchingKeyEventPostIME(ui::KeyEvent* event) {
-  if (!ShouldEnableKeyEventForwarding())
-    return;
-
   if (receiver_->HasCallback()) {
     receiver_->DispatchKeyEventPostIME(event);
     event->SetHandled();

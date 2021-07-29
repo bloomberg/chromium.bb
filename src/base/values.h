@@ -35,6 +35,7 @@
 #include "base/base_export.h"
 #include "base/containers/checked_iterators.h"
 #include "base/containers/checked_range.h"
+#include "base/containers/cxx20_erase_vector.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/span.h"
 #include "base/strings/string_piece.h"
@@ -220,7 +221,7 @@ class BASE_EXPORT Value {
   // Transfers ownership of the underlying list to the caller. Subsequent
   // calls to `GetList()` will return an empty list.
   // Note: This requires that `type()` is Type::LIST.
-  ListStorage TakeList();
+  ListStorage TakeList() &&;
 
   // Appends `value` to the end of the list.
   // Note: These CHECK that `type()` is Type::LIST.
@@ -508,7 +509,7 @@ class BASE_EXPORT Value {
   // Transfers ownership of the underlying dict to the caller. Subsequent
   // calls to DictItems() will return an empty dict.
   // Note: This requires that `type()` is Type::DICTIONARY.
-  DictStorage TakeDict();
+  DictStorage TakeDict() &&;
 
   // Returns the size of the dictionary, if the dictionary is empty, and clears
   // the dictionary. Note: These CHECK that `type()` is Type::DICTIONARY.
@@ -531,8 +532,6 @@ class BASE_EXPORT Value {
   // otherwise, false is returned and `out_value` is unchanged.
   // DEPRECATED, use `GetIfBool()` instead.
   bool GetAsBoolean(bool* out_value) const;
-  // DEPRECATED, use `GetIfInt()` instead.
-  bool GetAsInteger(int* out_value) const;
   // DEPRECATED, use `GetIfDouble()` instead.
   bool GetAsDouble(double* out_value) const;
   // DEPRECATED, use `GetIfString()` instead.
@@ -650,14 +649,6 @@ class BASE_EXPORT DictionaryValue : public Value {
   // DEPRECATED, use `Value::FindKey(key)` instead.
   bool HasKey(StringPiece key) const;
 
-  // Returns the number of Values in this dictionary.
-  // DEPRECATED, use `Value::DictSize()` instead.
-  size_t size() const { return dict().size(); }
-
-  // Returns whether the dictionary is empty.
-  // DEPRECATED, use `Value::DictEmpty()` instead.
-  bool empty() const { return dict().empty(); }
-
   // Clears any current contents of this dictionary.
   // DEPRECATED, use `Value::DictClear()` instead.
   void Clear();
@@ -745,16 +736,6 @@ class BASE_EXPORT DictionaryValue : public Value {
 
   // Like `Get()`, but without special treatment of '.'.  This allows e.g. URLs
   // to be used as paths.
-  // DEPRECATED, use `Value::FindKey(key)` instead.
-  bool GetWithoutPathExpansion(StringPiece key, const Value** out_value) const;
-  // DEPRECATED, use `Value::FindKey(key)` instead.
-  bool GetWithoutPathExpansion(StringPiece key, Value** out_value);
-  // DEPRECATED, use `Value::FindBoolKey(key)` instead.
-  bool GetBooleanWithoutPathExpansion(StringPiece key, bool* out_value) const;
-  // DEPRECATED, use `Value::FindIntKey(key)` instead.
-  bool GetIntegerWithoutPathExpansion(StringPiece key, int* out_value) const;
-  // DEPRECATED, use `Value::FindDoubleKey(key)` instead.
-  bool GetDoubleWithoutPathExpansion(StringPiece key, double* out_value) const;
   // DEPRECATED, use `Value::FindStringKey(key)` instead.
   bool GetStringWithoutPathExpansion(StringPiece key,
                                      std::string* out_value) const;
@@ -790,14 +771,6 @@ class BASE_EXPORT DictionaryValue : public Value {
   // instead.
   bool RemoveWithoutPathExpansion(StringPiece key,
                                   std::unique_ptr<Value>* out_value);
-
-  // Removes a path, clearing out all dictionaries on `path` that remain empty
-  // after removing the value at `path`.
-  // DEPRECATED, use `Value::RemovePath(path)` or `Value::ExtractPath(path)`
-  // instead.
-  bool RemovePath(StringPiece path, std::unique_ptr<Value>* out_value);
-
-  using Value::RemovePath;  // DictionaryValue::RemovePath shadows otherwise.
 
   // Makes a copy of `this` but doesn't include empty dictionaries and lists in
   // the copy.  This never returns NULL, even if `this` itself is empty.
@@ -848,17 +821,9 @@ class BASE_EXPORT ListValue : public Value {
   explicit ListValue(span<const Value> in_list);
   explicit ListValue(ListStorage&& in_list) noexcept;
 
-  // Clears the contents of this ListValue
-  // DEPRECATED, use `ClearList()` instead.
-  void Clear();
-
   // Returns the number of Values in this list.
   // DEPRECATED, use `GetList()::size()` instead.
   size_t GetSize() const { return list().size(); }
-
-  // Returns whether the list is empty.
-  // DEPRECATED, use `GetList()::empty()` instead.
-  bool empty() const { return list().empty(); }
 
   // Sets the list item at the given index to be the Value specified by
   // the value given.  If the index beyond the current end of the list, null
@@ -895,32 +860,6 @@ class BASE_EXPORT ListValue : public Value {
   bool GetDictionary(size_t index, const DictionaryValue** out_value) const;
   bool GetDictionary(size_t index, DictionaryValue** out_value);
 
-  using Value::GetList;
-  // DEPRECATED, use `GetList()::operator[]::GetList()` instead.
-  bool GetList(size_t index, const ListValue** out_value) const;
-  bool GetList(size_t index, ListValue** out_value);
-
-  // Removes the Value with the specified index from this list.
-  // If `out_value` is non-NULL, the removed Value AND ITS OWNERSHIP will be
-  // passed out via `out_value`.  If `out_value` is NULL, the removed value will
-  // be deleted.  This method returns true if `index` is valid; otherwise
-  // it will return false and the ListValue object will be unchanged.
-  // DEPRECATED, use `GetList()::erase()` instead.
-  bool Remove(size_t index, std::unique_ptr<Value>* out_value);
-
-  // Removes the first instance of `value` found in the list, if any, and
-  // deletes it. `index` is the location where `value` was found. Returns false
-  // if not found.
-  // DEPRECATED, use `GetList()::erase()` instead.
-  bool Remove(const Value& value, size_t* index);
-
-  // Removes the element at `iter`. If `out_value` is NULL, the value will be
-  // deleted, otherwise ownership of the value is passed back to the caller.
-  // Returns an iterator pointing to the location of the element that
-  // followed the erased element.
-  // DEPRECATED, use `GetList()::erase()` instead.
-  iterator Erase(iterator iter, std::unique_ptr<Value>* out_value);
-
   using Value::Append;
   // Appends a Value to the end of the list.
   // DEPRECATED, use `Value::Append()` instead.
@@ -932,20 +871,6 @@ class BASE_EXPORT ListValue : public Value {
   void AppendInteger(int in_value);
   void AppendString(StringPiece in_value);
   void AppendString(const std::u16string& in_value);
-  // DEPRECATED, use `Value::Append()` in a loop instead.
-  void AppendStrings(const std::vector<std::string>& in_values);
-
-  using Value::Insert;
-  // Insert a Value at index.
-  // Returns true if successful, or false if the index was out of range.
-  // DEPRECATED, use `Value::Insert()` instead.
-  bool Insert(size_t index, std::unique_ptr<Value> in_value);
-
-  // Searches for the first instance of `value` in the list using the Equals
-  // method of the Value type.
-  // Returns a const_iterator to the found item or to end() if none exists.
-  // DEPRECATED, use `std::find()` instead.
-  const_iterator Find(const Value& value) const;
 
   // Swaps contents with the `other` list.
   // DEPRECATED, use `GetList()::swap()` instead.

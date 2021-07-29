@@ -40,7 +40,7 @@
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/session/arc_bridge_service.h"
-#include "components/arc/session/arc_supervision_transition.h"
+#include "components/arc/session/arc_management_transition.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/consent_level.h"
 #include "components/user_manager/user_manager.h"
@@ -143,16 +143,13 @@ bool IsPrimaryOrDeviceLocalAccount(
   if (user->IsDeviceLocalAccount())
     return true;
 
-  const absl::optional<AccountInfo> account_info =
-      identity_manager
-          ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
-              account_name);
-  if (!account_info)
+  const AccountInfo account_info =
+      identity_manager->FindExtendedAccountInfoByEmailAddress(account_name);
+  if (account_info.IsEmpty())
     return false;
 
-  const std::string& gaia_id = account_info->gaia;
-  DCHECK(!gaia_id.empty());
-  return IsPrimaryGaiaAccount(gaia_id);
+  DCHECK(!account_info.gaia.empty());
+  return IsPrimaryGaiaAccount(account_info.gaia);
 }
 
 void TriggerAccountManagerMigrationsIfRequired(Profile* profile) {
@@ -373,6 +370,10 @@ void ArcAuthService::ReportAccountCheckStatus(
   UpdateAuthAccountCheckStatus(status, profile_);
 }
 
+void ArcAuthService::ReportAccountReauthReason(mojom::ReauthReason reason) {
+  UpdateAccountReauthReason(reason, profile_);
+}
+
 void ArcAuthService::ReportManagementChangeStatus(
     mojom::ManagementChangeStatus status) {
   UpdateSupervisionTransitionResultUMA(status);
@@ -382,8 +383,8 @@ void ArcAuthService::ReportManagementChangeStatus(
     case mojom::ManagementChangeStatus::CLOUD_DPC_ENABLED:
     case mojom::ManagementChangeStatus::CLOUD_DPC_ALREADY_ENABLED:
       profile_->GetPrefs()->SetInteger(
-          prefs::kArcSupervisionTransition,
-          static_cast<int>(ArcSupervisionTransition::NO_TRANSITION));
+          prefs::kArcManagementTransition,
+          static_cast<int>(ArcManagementTransition::NO_TRANSITION));
       // TODO(brunokim): notify potential observers.
       break;
     case mojom::ManagementChangeStatus::CLOUD_DPC_DISABLING_FAILED:
@@ -665,11 +666,9 @@ void ArcAuthService::FetchSecondaryAccountInfo(
     const std::string& account_name,
     RequestAccountInfoCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  absl::optional<AccountInfo> account_info =
-      identity_manager_
-          ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
-              account_name);
-  if (!account_info.has_value()) {
+  AccountInfo account_info =
+      identity_manager_->FindExtendedAccountInfoByEmailAddress(account_name);
+  if (account_info.IsEmpty()) {
     // Account is in ARC, but not in Chrome OS Account Manager.
     std::move(callback).Run(mojom::ArcAuthCodeStatus::CHROME_ACCOUNT_NOT_FOUND,
                             nullptr /* account_info */,
@@ -677,7 +676,7 @@ void ArcAuthService::FetchSecondaryAccountInfo(
     return;
   }
 
-  const CoreAccountId& account_id = account_info->account_id;
+  const CoreAccountId& account_id = account_info.account_id;
   DCHECK(!account_id.empty());
 
   if (identity_manager_->HasAccountWithRefreshTokenInPersistentErrorState(
@@ -722,16 +721,14 @@ void ArcAuthService::OnSecondaryAccountAuthCodeFetched(
     return;
   }
 
-  absl::optional<AccountInfo> account_info =
-      identity_manager_
-          ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
-              account_name);
+  AccountInfo account_info =
+      identity_manager_->FindExtendedAccountInfoByEmailAddress(account_name);
   // Take care of the case when the user removes an account immediately after
   // adding/re-authenticating it.
-  if (account_info.has_value()) {
+  if (!account_info.IsEmpty()) {
     const bool is_persistent_error =
         identity_manager_->HasAccountWithRefreshTokenInPersistentErrorState(
-            account_info->account_id);
+            account_info.account_id);
     std::move(callback).Run(
         mojom::ArcAuthCodeStatus::CHROME_SERVER_COMMUNICATION_ERROR,
         nullptr /* account_info */, is_persistent_error);
@@ -779,14 +776,12 @@ std::unique_ptr<ArcBackgroundAuthCodeFetcher>
 ArcAuthService::CreateArcBackgroundAuthCodeFetcher(
     const CoreAccountId& account_id,
     bool initial_signin) {
-  absl::optional<AccountInfo> account_info =
-      identity_manager_
-          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
-              account_id);
-  DCHECK(account_info.has_value());
+  const AccountInfo account_info =
+      identity_manager_->FindExtendedAccountInfoByAccountId(account_id);
+  DCHECK(!account_info.IsEmpty());
   auto fetcher = std::make_unique<ArcBackgroundAuthCodeFetcher>(
       url_loader_factory_, profile_, account_id, initial_signin,
-      IsPrimaryGaiaAccount(account_info.value().gaia));
+      IsPrimaryGaiaAccount(account_info.gaia));
 
   return fetcher;
 }

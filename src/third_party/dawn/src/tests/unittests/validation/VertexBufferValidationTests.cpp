@@ -68,7 +68,7 @@ class VertexBufferValidationTest : public ValidationTest {
 
     wgpu::RenderPipeline MakeRenderPipeline(const wgpu::ShaderModule& vsModule,
                                             unsigned int bufferCount) {
-        utils::ComboRenderPipelineDescriptor2 descriptor;
+        utils::ComboRenderPipelineDescriptor descriptor;
         descriptor.vertex.module = vsModule;
         descriptor.cFragment.module = fsModule;
 
@@ -80,7 +80,7 @@ class VertexBufferValidationTest : public ValidationTest {
         }
         descriptor.vertex.bufferCount = bufferCount;
 
-        return device.CreateRenderPipeline2(&descriptor);
+        return device.CreateRenderPipeline(&descriptor);
     }
 
     wgpu::ShaderModule fsModule;
@@ -325,6 +325,32 @@ TEST_F(VertexBufferValidationTest, InvalidUsage) {
     {
         wgpu::RenderBundleEncoder encoder = device.CreateRenderBundleEncoder(&renderBundleDesc);
         encoder.SetVertexBuffer(0, indexBuffer);
+        ASSERT_DEVICE_ERROR(encoder.Finish());
+    }
+}
+
+// Check the alignment constraint on the index buffer offset.
+TEST_F(VertexBufferValidationTest, OffsetAlignment) {
+    wgpu::Buffer vertexBuffer = MakeVertexBuffer();
+
+    DummyRenderPass renderPass(device);
+    // Control cases: vertex buffer offset is a multiple of 4
+    {
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+        wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);
+        pass.SetVertexBuffer(0, vertexBuffer, 0);
+        pass.SetVertexBuffer(0, vertexBuffer, 4);
+        pass.SetVertexBuffer(0, vertexBuffer, 12);
+        pass.EndPass();
+        encoder.Finish();
+    }
+
+    // Error case: vertex buffer offset isn't a multiple of 4
+    {
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+        wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);
+        pass.SetVertexBuffer(0, vertexBuffer, 2);
+        pass.EndPass();
         ASSERT_DEVICE_ERROR(encoder.Finish());
     }
 }

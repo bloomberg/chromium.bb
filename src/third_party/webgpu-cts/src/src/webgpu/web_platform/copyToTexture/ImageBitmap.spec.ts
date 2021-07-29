@@ -10,10 +10,13 @@ TODO: Test ImageBitmap generated from all possible ImageBitmapSource, relevant I
 TODO: Test zero-sized copies from all sources (just make sure params cover it) (e.g. 0x0, 0x4, 4x0).
 `;
 
-import { poptions, params } from '../../../common/framework/params_builder.js';
 import { makeTestGroup } from '../../../common/framework/test_group.js';
-import { unreachable } from '../../../common/framework/util/util.js';
-import { RegularTextureFormat, kRegularTextureFormatInfo } from '../../capability_info.js';
+import { unreachable } from '../../../common/util/util.js';
+import {
+  RegularTextureFormat,
+  kTextureFormatInfo,
+  kValidTextureFormatsForCopyIB2T,
+} from '../../capability_info.js';
 import { GPUTest } from '../../gpu_test.js';
 import { kTexelRepresentationInfo } from '../../util/texture/texel_data.js';
 
@@ -43,6 +46,7 @@ const generatedPixelCache: Map<
 > = new Map();
 
 class F extends GPUTest {
+  // TODO(crbug.com/dawn/868): Should be possible to consolidate this along with texture checking
   checkCopyImageBitmapResult(
     src: GPUBuffer,
     expected: ArrayBufferView,
@@ -52,13 +56,16 @@ class F extends GPUTest {
   ): void {
     const exp = new Uint8Array(expected.buffer, expected.byteOffset, expected.byteLength);
     const rowPitch = calculateRowPitch(width, bytesPerPixel);
-    const dst = this.createCopyForMapRead(src, 0, rowPitch * height);
+
+    const readbackPromise = this.readGPUBufferRangeTyped(src, {
+      type: Uint8Array,
+      typedLength: rowPitch * height,
+    });
 
     this.eventualAsyncExpectation(async niceStack => {
-      await dst.mapAsync(GPUMapMode.READ);
-      const actual = new Uint8Array(dst.getMappedRange());
+      const readback = await readbackPromise;
       const check = this.checkBufferWithRowPitch(
-        actual,
+        readback.data,
         exp,
         width,
         height,
@@ -69,10 +76,11 @@ class F extends GPUTest {
         niceStack.message = check;
         this.rec.expectationFailed(niceStack);
       }
-      dst.destroy();
+      readback.cleanup();
     });
   }
 
+  // TODO(crbug.com/dawn/868): Should be possible to consolidate this along with texture checking
   checkBufferWithRowPitch(
     actual: Uint8Array,
     exp: Uint8Array,
@@ -217,7 +225,7 @@ got [${failedByteActualValues.join(', ')}]`;
     transparentOp: TransparentOp;
     orientationOp: OrientationOp;
   }): Uint8ClampedArray {
-    const bytesPerPixel = kRegularTextureFormatInfo[format].bytesPerBlock;
+    const bytesPerPixel = kTextureFormatInfo[format].bytesPerBlock;
 
     // Generate input contents by iterating 'Color' enum
     const imagePixels = new Uint8ClampedArray(bytesPerPixel * width * height);
@@ -249,28 +257,14 @@ g.test('from_ImageData')
   in CPU back resource.
   `
   )
-  .cases(
-    params()
-      .combine(poptions('alpha', ['none', 'premultiply'] as const))
-      .combine(poptions('orientation', ['none', 'flipY'] as const))
-      .combine(
-        poptions('dstColorFormat', [
-          'rgba8unorm',
-          'bgra8unorm',
-          'rgba8unorm-srgb',
-          'bgra8unorm-srgb',
-          'rgb10a2unorm',
-          'rgba16float',
-          'rgba32float',
-          'rg8unorm',
-          'rg16float',
-        ] as const)
-      )
-  )
-  .subcases(() =>
-    params()
-      .combine(poptions('width', [1, 2, 4, 15, 255, 256]))
-      .combine(poptions('height', [1, 2, 4, 15, 255, 256]))
+  .params(u =>
+    u
+      .combine('alpha', ['none', 'premultiply'] as const)
+      .combine('orientation', ['none', 'flipY'] as const)
+      .combine('dstColorFormat', kValidTextureFormatsForCopyIB2T)
+      .beginSubcases()
+      .combine('width', [1, 2, 4, 15, 255, 256])
+      .combine('height', [1, 2, 4, 15, 255, 256])
   )
   .fn(async t => {
     const { width, height, alpha, orientation, dstColorFormat } = t.params;
@@ -286,7 +280,6 @@ g.test('from_ImageData')
 
     // Generate correct expected values
     const imageData = new ImageData(imagePixels, width, height);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const imageBitmap = await createImageBitmap(imageData, {
       premultiplyAlpha: alpha,
       imageOrientation: orientation,
@@ -304,7 +297,7 @@ g.test('from_ImageData')
     });
 
     // Construct expected value for different dst color format
-    const dstBytesPerPixel = kRegularTextureFormatInfo[dstColorFormat].bytesPerBlock!;
+    const dstBytesPerPixel = kTextureFormatInfo[dstColorFormat].bytesPerBlock;
     const expectedPixels = t.getImagePixels({
       format: dstColorFormat,
       width,
@@ -329,27 +322,13 @@ g.test('from_canvas')
   texture correctly. These imageBitmaps are highly possible living in GPU back resource.
   `
   )
-  .cases(
-    params()
-      .combine(poptions('orientation', ['none', 'flipY'] as const))
-      .combine(
-        poptions('dstColorFormat', [
-          'rgba8unorm',
-          'bgra8unorm',
-          'rgba8unorm-srgb',
-          'bgra8unorm-srgb',
-          'rgb10a2unorm',
-          'rgba16float',
-          'rgba32float',
-          'rg8unorm',
-          'rg16float',
-        ] as const)
-      )
-  )
-  .subcases(() =>
-    params()
-      .combine(poptions('width', [1, 2, 4, 15, 255, 256]))
-      .combine(poptions('height', [1, 2, 4, 15, 255, 256]))
+  .params(u =>
+    u
+      .combine('orientation', ['none', 'flipY'] as const)
+      .combine('dstColorFormat', kValidTextureFormatsForCopyIB2T)
+      .beginSubcases()
+      .combine('width', [1, 2, 4, 15, 255, 256])
+      .combine('height', [1, 2, 4, 15, 255, 256])
   )
   .fn(async t => {
     const { width, height, orientation, dstColorFormat } = t.params;
@@ -392,7 +371,6 @@ g.test('from_canvas')
     // Use putImageData to prevent color space conversion.
     imageCanvasContext.putImageData(imageData, 0, 0);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const imageBitmap = await createImageBitmap(imageCanvas, {
       premultiplyAlpha: 'premultiply',
       imageOrientation: orientation,
@@ -409,7 +387,7 @@ g.test('from_canvas')
         GPUTextureUsage.COPY_DST | GPUTextureUsage.COPY_SRC | GPUTextureUsage.RENDER_ATTACHMENT,
     });
 
-    const dstBytesPerPixel = kRegularTextureFormatInfo[dstColorFormat].bytesPerBlock!;
+    const dstBytesPerPixel = kTextureFormatInfo[dstColorFormat].bytesPerBlock;
     const expectedData = t.getImagePixels({
       format: dstColorFormat,
       width,

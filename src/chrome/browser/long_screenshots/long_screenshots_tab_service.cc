@@ -86,15 +86,15 @@ void LongScreenshotsTabService::CaptureTab(int tab_id,
       base::BindOnce(&LongScreenshotsTabService::CaptureTabInternal,
                      weak_ptr_factory_.GetWeakPtr(), tab_id, key,
                      contents->GetMainFrame()->GetFrameTreeNodeId(),
-                     contents->GetMainFrame()->GetGlobalFrameRoutingId(), clipX,
-                     clipY, clipWidth, clipHeight));
+                     contents->GetMainFrame()->GetGlobalId(), clipX, clipY,
+                     clipWidth, clipHeight));
 }
 
 void LongScreenshotsTabService::CaptureTabInternal(
     int tab_id,
     const paint_preview::DirectoryKey& key,
     int frame_tree_node_id,
-    content::GlobalFrameRoutingId frame_routing_id,
+    content::GlobalRenderFrameHostId frame_routing_id,
     int clipX,
     int clipY,
     int clipWidth,
@@ -116,7 +116,7 @@ void LongScreenshotsTabService::CaptureTabInternal(
   // defunct pointer.
   auto* rfh = content::RenderFrameHost::FromID(frame_routing_id);
   if (!contents || !rfh || contents->IsBeingDestroyed() ||
-      contents->GetMainFrame() != rfh || !rfh->IsCurrent()) {
+      contents->GetMainFrame() != rfh || !rfh->IsActive()) {
     JNIEnv* env = base::android::AttachCurrentThread();
     Java_LongScreenshotsTabService_processCaptureTabStatus(
         env, java_ref_, Status::kWebContentsGone);

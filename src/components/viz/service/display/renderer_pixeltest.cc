@@ -26,6 +26,7 @@
 #include "cc/test/resource_provider_test_utils.h"
 #include "cc/test/test_types.h"
 #include "components/viz/client/client_resource_provider.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/quads/picture_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/resources/bitmap_allocation.h"
@@ -45,6 +46,7 @@
 #include "media/base/video_frame.h"
 #include "media/renderers/video_resource_updater.h"
 #include "media/video/half_float_maker.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -1197,7 +1199,7 @@ TEST_P(GPURendererPixelTest, SolidColorWithTemperature) {
   AggregatedRenderPassList pass_list;
   pass_list.push_back(std::move(pass));
 
-  SkMatrix44 color_matrix(SkMatrix44::kIdentity_Constructor);
+  skia::Matrix44 color_matrix(skia::Matrix44::kIdentity_Constructor);
   color_matrix.set(0, 0, 0.7f);
   color_matrix.set(1, 1, 0.4f);
   color_matrix.set(2, 2, 0.5f);
@@ -1237,7 +1239,7 @@ TEST_P(GPURendererPixelTest, SolidColorWithTemperatureNonRootRenderPass) {
 
   // Set a non-identity output color matrix on the output surface, and expect
   // that the colors will be transformed.
-  SkMatrix44 color_matrix(SkMatrix44::kIdentity_Constructor);
+  skia::Matrix44 color_matrix(skia::Matrix44::kIdentity_Constructor);
   color_matrix.set(0, 0, 0.7f);
   color_matrix.set(1, 1, 0.4f);
   color_matrix.set(2, 2, 0.5f);
@@ -1937,6 +1939,37 @@ TEST_P(VideoRendererPixelTest, SimpleYUVJRect) {
   EXPECT_TRUE(this->RunPixelTest(&pass_list,
                                  base::FilePath(FILE_PATH_LITERAL("green.png")),
                                  cc::FuzzyPixelOffByOneComparator(true)));
+}
+
+TEST_P(VideoRendererPixelTest, SimpleYUVJRectWithTemperature) {
+  gfx::Rect rect(this->device_viewport_size_);
+
+  AggregatedRenderPassId id{1};
+  auto pass = CreateTestRootRenderPass(id, rect);
+
+  SharedQuadState* shared_state = CreateTestSharedQuadState(
+      gfx::Transform(), rect, pass.get(), gfx::RRectF());
+
+  // YUV of (225,0,148) should be yellow (255,255,0) in RGB.
+  CreateTestYUVVideoDrawQuad_Solid(
+      shared_state, media::PIXEL_FORMAT_I420, gfx::ColorSpace::CreateJpeg(),
+      false, gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f), 225, 0, 148, pass.get(),
+      this->video_resource_updater_.get(), rect, rect,
+      this->resource_provider_.get(), this->child_resource_provider_.get(),
+      this->child_context_provider_.get());
+
+  AggregatedRenderPassList pass_list;
+  pass_list.push_back(std::move(pass));
+
+  skia::Matrix44 color_matrix(skia::Matrix44::kIdentity_Constructor);
+  color_matrix.set(0, 0, 0.7f);
+  color_matrix.set(1, 1, 0.4f);
+  color_matrix.set(2, 2, 0.5f);
+  this->output_surface_->set_color_matrix(color_matrix);
+
+  EXPECT_TRUE(this->RunPixelTest(
+      &pass_list, base::FilePath(FILE_PATH_LITERAL("temperature_brown.png")),
+      cc::FuzzyPixelOffByOneComparator(true)));
 }
 
 TEST_P(VideoRendererPixelTest, SimpleNV12JRect) {
@@ -3049,6 +3082,90 @@ TEST_P(RendererPixelTestWithBackdropFilter, InvertFilterWithMask) {
       cc::FuzzyPixelOffByOneComparator(false)));
 }
 
+// Tests if drawing using the fast solid color draw feature returns the same
+// results as drawing without the feature.
+class GLRendererPixelTestFastSolidColorDraw
+    : public VizPixelTest,
+      public testing::WithParamInterface<SkBlendMode> {
+ public:
+  GLRendererPixelTestFastSolidColorDraw() : VizPixelTest(RendererType::kGL) {}
+  void SetUp() override {
+    feature_list_.InitAndEnableFeature(features::kFastSolidColorDraw);
+    VizPixelTest::SetUp();
+  }
+
+ protected:
+  void SetUpRenderPassList() {
+    // Sets up a root render pass with three solid color draw quads.
+    // As the render pass has transparent background, the fast path is used to
+    // draw the quad on the left (semi-transparent) and the quad in the center
+    // (fully-opaque) when the blend mode is kSrcOver, but not when kScreen,
+    // kDstIn or kDstOut.
+    // The quad on the right is fully opaque and has the default kSrcOver blend
+    // mode, so it is drawn using the fast path.
+    pass_list_.clear();
+    gfx::Rect device_viewport_rect(this->device_viewport_size_);
+
+    AggregatedRenderPassId root_id{1};
+    auto root_pass = CreateTestRootRenderPass(root_id, device_viewport_rect);
+
+    const int kGridWidth = device_viewport_rect.width() / 3;
+    const int kGridHeight = device_viewport_rect.height() / 3;
+    gfx::Rect left_rect = gfx::Rect(0, kGridHeight, kGridWidth, kGridHeight);
+
+    gfx::Transform identity_quad_to_target_transform;
+    SharedQuadState* shared_state =
+        CreateTestSharedQuadState(identity_quad_to_target_transform, left_rect,
+                                  root_pass.get(), gfx::RRectF());
+    shared_state->blend_mode = GetParam();
+    auto* color_quad = root_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+    color_quad->SetNew(shared_state, left_rect, left_rect,
+                       SkColorSetARGB(0x33, 0xFF, 0, 0), true);
+
+    gfx::Rect center_rect =
+        gfx::Rect(kGridWidth, kGridHeight, kGridWidth, kGridHeight);
+
+    shared_state =
+        CreateTestSharedQuadState(identity_quad_to_target_transform,
+                                  center_rect, root_pass.get(), gfx::RRectF());
+    shared_state->blend_mode = GetParam();
+    color_quad = root_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+    color_quad->SetNew(shared_state, center_rect, center_rect, SK_ColorRED,
+                       true);
+    shared_state->blend_mode = GetParam();
+
+    gfx::Rect right_rect =
+        gfx::Rect(kGridWidth * 2, kGridHeight, kGridWidth, kGridHeight);
+    shared_state =
+        CreateTestSharedQuadState(identity_quad_to_target_transform, right_rect,
+                                  root_pass.get(), gfx::RRectF());
+    color_quad = root_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+    color_quad->SetNew(shared_state, right_rect, right_rect, SK_ColorRED, true);
+
+    pass_list_.push_back(std::move(root_pass));
+  }
+  AggregatedRenderPassList pass_list_;
+  base::test::ScopedFeatureList feature_list_;
+};
+
+TEST_P(GLRendererPixelTestFastSolidColorDraw, ResultSameAsFeatureDisabled) {
+  this->SetUpRenderPassList();
+  char buff[64];
+  memset(buff, 0, 64);
+  snprintf(buff, sizeof(buff), "gl_solid_color_%s.png",
+           SkBlendMode_Name(GetParam()));
+  EXPECT_TRUE(this->RunPixelTest(&this->pass_list_,
+                                 base::FilePath::FromUTF8Unsafe(buff),
+                                 cc::FuzzyPixelOffByOneComparator(true)));
+}
+
+INSTANTIATE_TEST_SUITE_P(,
+                         GLRendererPixelTestFastSolidColorDraw,
+                         testing::Values(SkBlendMode::kSrcOver,
+                                         SkBlendMode::kDstIn,
+                                         SkBlendMode::kDstOut,
+                                         SkBlendMode::kScreen));
+
 class GLRendererPixelTestWithBackdropFilter : public VizPixelTest {
  public:
   GLRendererPixelTestWithBackdropFilter() : VizPixelTest(RendererType::kGL) {}
@@ -3153,6 +3270,7 @@ TEST_F(GLRendererPixelTestWithBackdropFilter, FilterQuality) {
       &this->pass_list_,
       base::FilePath(FILE_PATH_LITERAL("gl_backdrop_filter_1.png")),
       cc::FuzzyPixelOffByOneComparator(true)));
+
   if (this->context_provider()->ContextCapabilities().major_version < 3)
     return;
   this->backdrop_filter_quality_ = 0.33f;
@@ -5041,9 +5159,8 @@ class ColorTransformPixelTest
     }
 
     std::unique_ptr<gfx::ColorTransform> transform =
-        gfx::ColorTransform::NewColorTransform(
-            this->src_color_space_, this->dst_color_space_,
-            gfx::ColorTransform::Intent::INTENT_PERCEPTUAL);
+        gfx::ColorTransform::NewColorTransform(this->src_color_space_,
+                                               this->dst_color_space_);
 
     for (size_t i = 0; i < expected_output_colors.size(); ++i) {
       gfx::ColorTransform::TriStim color;

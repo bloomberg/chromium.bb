@@ -20,7 +20,7 @@ Perfection is not required!
     - WebGPU is being used correctly; expected results seem reasonable.
     - WebGPU is being tested completely; tests have control cases.
     - Test code has a clear correspondence with the test description.
-    - [Test helpers](helper_index.md) are used or created appropriately
+    - [Test helpers](./helper_index.txt) are used or created appropriately
       (where the reviewer is familiar with the helpers).
 
 - TypeScript Readability: Make sure TypeScript is utilized in a way that:
@@ -56,7 +56,7 @@ Reviewers must carefully ensure the following:
 
 Reviewers should ensure the following:
 
-- New test helpers are documented in [helper_index.md](helper_index.md).
+- New test helpers are documented in [helper index](./helper_index.txt).
 - Framework and test helpers are used where they would make test code clearer.
 
 See also: [Implementing Tests](intro/tests.md).

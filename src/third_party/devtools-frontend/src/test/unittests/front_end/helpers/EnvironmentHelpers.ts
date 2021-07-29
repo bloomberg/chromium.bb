@@ -35,14 +35,14 @@ try {
   console.warn('EnvironmentHelper: Loading en-US locale failed', error.message);
 }
 
-let targetManager: SDK.SDKModel.TargetManager;
+let targetManager: SDK.TargetManager.TargetManager;
 
 function initializeTargetManagerIfNecessary() {
   // Create the target manager.
-  targetManager = targetManager || SDK.SDKModel.TargetManager.instance({forceNew: true});
+  targetManager = targetManager || SDK.TargetManager.TargetManager.instance({forceNew: true});
 }
 
-export function createTarget({id = 'test', name = 'test', type = SDK.SDKModel.Type.Frame} = {}) {
+export function createTarget({id = 'test', name = 'test', type = SDK.Target.Type.Frame} = {}) {
   initializeTargetManagerIfNecessary();
   return targetManager.createTarget(id, name, type, null);
 }
@@ -112,6 +112,10 @@ export async function initializeGlobalVars({reset = true} = {}) {
     createSettingValue(
         Common.Settings.SettingCategory.APPEARANCE, 'help.show-release-note', true,
         Common.Settings.SettingType.BOOLEAN),
+    createSettingValue(Common.Settings.SettingCategory.NETWORK, 'requestBlockingEnabled', false),
+    createSettingValue(Common.Settings.SettingCategory.CONSOLE, 'monitoringXHREnabled', false),
+    createSettingValue(
+        Common.Settings.SettingCategory.NONE, 'customNetworkConditions', [], Common.Settings.SettingType.ARRAY),
   ];
 
   Common.Settings.registerSettingsForTest(settings, reset);
@@ -141,7 +145,7 @@ export async function deinitializeGlobalVars() {
   delete globalObject.ls;
 
   // Remove instances.
-  SDK.SDKModel.TargetManager.removeInstance();
+  SDK.TargetManager.TargetManager.removeInstance();
   Root.Runtime.Runtime.removeInstance();
   Common.Settings.Settings.removeInstance();
   Common.Settings.resetSettings();

@@ -78,6 +78,7 @@ std::vector<float> ToFloatVector(const std::vector<RectF>& areas) {
     flattened.emplace_back(rect.top);
     flattened.emplace_back(rect.right);
     flattened.emplace_back(rect.bottom);
+    flattened.emplace_back(rect.full_width ? 1 : 0);
   }
   return flattened;
 }
@@ -334,6 +335,8 @@ void UiControllerAndroid::Attach(content::WebContents* web_contents,
                                                     java_web_contents);
   Java_AssistantCollectUserDataModel_setWebContents(
       env, GetCollectUserDataModel(), java_web_contents);
+  Java_AssistantOverlayModel_setWebContents(env, GetOverlayModel(),
+                                            java_web_contents);
   OnClientSettingsChanged(ui_delegate_->GetClientSettings());
   Java_AssistantModel_setPeekModeDisabled(env, GetModel(), false);
 
@@ -667,9 +670,7 @@ void UiControllerAndroid::RestoreUi() {
   ui_delegate_->GetTouchableArea(&area);
   std::vector<RectF> restricted_area;
   ui_delegate_->GetRestrictedArea(&restricted_area);
-  RectF visual_viewport;
-  ui_delegate_->GetVisualViewport(&visual_viewport);
-  OnTouchableAreaChanged(visual_viewport, area, restricted_area);
+  OnTouchableAreaChanged(area, restricted_area);
   OnViewportModeChanged(ui_delegate_->GetViewportMode());
   OnPeekModeChanged(ui_delegate_->GetPeekMode());
   OnFormChanged(ui_delegate_->GetForm(), ui_delegate_->GetFormResult());
@@ -1048,7 +1049,6 @@ void UiControllerAndroid::OnShouldShowOverlayChanged(bool should_show) {
 }
 
 void UiControllerAndroid::OnTouchableAreaChanged(
-    const RectF& visual_viewport,
     const std::vector<RectF>& touchable_areas,
     const std::vector<RectF>& restricted_areas) {
   if (!touchable_areas.empty() &&
@@ -1057,9 +1057,6 @@ void UiControllerAndroid::OnTouchableAreaChanged(
   }
 
   JNIEnv* env = AttachCurrentThread();
-  Java_AssistantOverlayModel_setVisualViewport(
-      env, GetOverlayModel(), visual_viewport.left, visual_viewport.top,
-      visual_viewport.right, visual_viewport.bottom);
 
   Java_AssistantOverlayModel_setTouchableArea(
       env, GetOverlayModel(),
@@ -1199,34 +1196,6 @@ void UiControllerAndroid::OnInputTextFocusChanged(bool is_text_focused) {
       base::TimeDelta::FromMilliseconds(50));
 }
 
-bool UiControllerAndroid::IsContactComplete(
-    autofill::AutofillProfile* contact) {
-  auto* options = ui_delegate_->GetCollectUserDataOptions();
-  if (options == nullptr) {
-    return false;
-  }
-  return IsCompleteContact(contact, *options);
-}
-
-bool UiControllerAndroid::IsShippingAddressComplete(
-    autofill::AutofillProfile* address) {
-  auto* options = ui_delegate_->GetCollectUserDataOptions();
-  if (options == nullptr) {
-    return false;
-  }
-  return IsCompleteShippingAddress(address, *options);
-}
-
-bool UiControllerAndroid::IsPaymentInstrumentComplete(
-    autofill::CreditCard* card,
-    autofill::AutofillProfile* address) {
-  auto* options = ui_delegate_->GetCollectUserDataOptions();
-  if (options == nullptr) {
-    return false;
-  }
-  return IsCompleteCreditCard(card, address, *options);
-}
-
 void UiControllerAndroid::HideKeyboardIfFocusNotOnText() {
   Java_AutofillAssistantUiController_hideKeyboardIfFocusNotOnText(
       AttachCurrentThread(), java_object_);
@@ -1290,16 +1259,6 @@ void UiControllerAndroid::OnCollectUserDataOptionsChanged(
           env, collect_user_data_options->accept_terms_and_conditions_text));
   Java_AssistantCollectUserDataModel_setShowTermsAsCheckbox(
       env, jmodel, collect_user_data_options->show_terms_as_checkbox);
-  Java_AssistantCollectUserDataModel_setRequireBillingPostalCode(
-      env, jmodel, collect_user_data_options->require_billing_postal_code);
-  Java_AssistantCollectUserDataModel_setBillingPostalCodeMissingText(
-      env, jmodel,
-      ConvertUTF8ToJavaString(
-          env, collect_user_data_options->billing_postal_code_missing_text));
-  Java_AssistantCollectUserDataModel_setCreditCardExpiredText(
-      env, jmodel,
-      ConvertUTF8ToJavaString(
-          env, collect_user_data_options->credit_card_expired_text));
   Java_AssistantCollectUserDataModel_setSupportedBasicCardNetworks(
       env, jmodel,
       base::android::ToJavaArrayOfStrings(
@@ -1405,8 +1364,6 @@ void UiControllerAndroid::OnCollectUserDataOptionsChanged(
 void UiControllerAndroid::OnUserDataChanged(
     const UserData* state,
     UserData::FieldChange field_change) {
-  JNIEnv* env = AttachCurrentThread();
-  auto jmodel = GetCollectUserDataModel();
   if (!state) {
     return;
   }
@@ -1421,6 +1378,8 @@ void UiControllerAndroid::OnUserDataChanged(
     return;
   }
 
+  JNIEnv* env = AttachCurrentThread();
+  auto jmodel = GetCollectUserDataModel();
   auto jcontext =
       Java_AutofillAssistantUiController_getContext(env, java_object_);
   auto web_contents = client_->GetWebContents()->GetJavaWebContents();
@@ -1431,12 +1390,41 @@ void UiControllerAndroid::OnUserDataChanged(
         env, jmodel, state->terms_and_conditions_);
   }
 
+  const autofill::AutofillProfile* selected_contact_profile =
+      state->selected_address(collect_user_data_options->contact_details_name);
+  auto jselected_contact =
+      selected_contact_profile == nullptr
+          ? nullptr
+          : Java_AssistantCollectUserDataModel_createAutofillContact(
+                env, jcontext,
+                autofill::PersonalDataManagerAndroid::
+                    CreateJavaProfileFromNative(env, *selected_contact_profile),
+                collect_user_data_options->request_payer_name,
+                collect_user_data_options->request_payer_phone,
+                collect_user_data_options->request_payer_email);
+  const auto& selected_contact_errors = user_data::GetContactValidationErrors(
+      selected_contact_profile, *collect_user_data_options);
+
+  const autofill::AutofillProfile* selected_shipping_address =
+      state->selected_address(collect_user_data_options->shipping_address_name);
+  auto jselected_shipping_address =
+      selected_shipping_address == nullptr
+          ? nullptr
+          : Java_AssistantCollectUserDataModel_createAutofillAddress(
+                env, jcontext,
+                autofill::PersonalDataManagerAndroid::
+                    CreateJavaProfileFromNative(env,
+                                                *selected_shipping_address));
+  const auto& selected_shipping_address_errors =
+      user_data::GetShippingAddressValidationErrors(selected_shipping_address,
+                                                    *collect_user_data_options);
+
   if (field_change == UserData::FieldChange::ALL ||
       field_change == UserData::FieldChange::AVAILABLE_PROFILES) {
     // Contact profiles.
     auto jcontactlist =
         Java_AssistantCollectUserDataModel_createAutofillContactList(env);
-    auto contact_indices = SortContactsByCompleteness(
+    auto contact_indices = user_data::SortContactsByCompleteness(
         *collect_user_data_options, state->available_profiles_);
     for (int index : contact_indices) {
       auto jcontact = Java_AssistantCollectUserDataModel_createAutofillContact(
@@ -1447,49 +1435,40 @@ void UiControllerAndroid::OnUserDataChanged(
           collect_user_data_options->request_payer_phone,
           collect_user_data_options->request_payer_email);
       if (jcontact) {
-        Java_AssistantCollectUserDataModel_addAutofillContact(env, jcontactlist,
-                                                              jcontact);
+        const auto& errors = user_data::GetContactValidationErrors(
+            state->available_profiles_[index].get(),
+            *collect_user_data_options);
+        Java_AssistantCollectUserDataModel_addAutofillContact(
+            env, jcontactlist, jcontact,
+            base::android::ToJavaArrayOfStrings(env, errors));
       }
     }
     Java_AssistantCollectUserDataModel_setAvailableContacts(env, jmodel,
                                                             jcontactlist);
-
-    // Ignore changes to FieldChange::CONTACT_PROFILE, this is already coming
-    // from the view.
-    const autofill::AutofillProfile* contact_profile = state->selected_address(
-        collect_user_data_options->contact_details_name);
     Java_AssistantCollectUserDataModel_setSelectedContactDetails(
-        env, jmodel,
-        contact_profile == nullptr
-            ? nullptr
-            : Java_AssistantCollectUserDataModel_createAutofillContact(
-                  env, jcontext,
-                  autofill::PersonalDataManagerAndroid::
-                      CreateJavaProfileFromNative(env, *contact_profile),
-                  collect_user_data_options->request_payer_name,
-                  collect_user_data_options->request_payer_phone,
-                  collect_user_data_options->request_payer_email));
+        env, jmodel, jselected_contact,
+        base::android::ToJavaArrayOfStrings(env, selected_contact_errors));
 
-    // Billing addresses profiles.
+    // Billing address profiles.
     auto jbillinglist =
-        Java_AssistantCollectUserDataModel_createAutofillAddressList(env);
+        Java_AssistantCollectUserDataModel_createBillingAddressList(env);
     for (const auto& profile : state->available_profiles_) {
       auto jaddress = Java_AssistantCollectUserDataModel_createAutofillAddress(
           env, jcontext,
           autofill::PersonalDataManagerAndroid::CreateJavaProfileFromNative(
               env, *profile));
       if (jaddress) {
-        Java_AssistantCollectUserDataModel_addAutofillAddress(env, jbillinglist,
-                                                              jaddress);
+        Java_AssistantCollectUserDataModel_addBillingAddress(env, jbillinglist,
+                                                             jaddress);
       }
     }
     Java_AssistantCollectUserDataModel_setAvailableBillingAddresses(
         env, jmodel, jbillinglist);
 
-    // Address profiles.
+    // Shipping address profiles.
     auto jshippinglist =
-        Java_AssistantCollectUserDataModel_createAutofillAddressList(env);
-    auto address_indices = SortAddressesByCompleteness(
+        Java_AssistantCollectUserDataModel_createShippingAddressList(env);
+    auto address_indices = user_data::SortShippingAddressesByCompleteness(
         *collect_user_data_options, state->available_profiles_);
     for (int index : address_indices) {
       auto jaddress = Java_AssistantCollectUserDataModel_createAutofillAddress(
@@ -1497,26 +1476,53 @@ void UiControllerAndroid::OnUserDataChanged(
           autofill::PersonalDataManagerAndroid::CreateJavaProfileFromNative(
               env, *state->available_profiles_[index]));
       if (jaddress) {
-        Java_AssistantCollectUserDataModel_addAutofillAddress(
-            env, jshippinglist, jaddress);
+        const auto& errors = user_data::GetShippingAddressValidationErrors(
+            state->available_profiles_[index].get(),
+            *collect_user_data_options);
+        Java_AssistantCollectUserDataModel_addShippingAddress(
+            env, jshippinglist, jaddress,
+            base::android::ToJavaArrayOfStrings(env, errors));
       }
     }
     Java_AssistantCollectUserDataModel_setAvailableShippingAddresses(
         env, jmodel, jshippinglist);
-
-    // Ignore changes to FieldChange::SHIPPING_ADDRESS, this is already coming
-    // from the view.
-    const autofill::AutofillProfile* shipping_address = state->selected_address(
-        collect_user_data_options->shipping_address_name);
     Java_AssistantCollectUserDataModel_setSelectedShippingAddress(
-        env, jmodel,
-        shipping_address == nullptr
-            ? nullptr
-            : Java_AssistantCollectUserDataModel_createAutofillAddress(
-                  env, jcontext,
-                  autofill::PersonalDataManagerAndroid::
-                      CreateJavaProfileFromNative(env, *shipping_address)));
+        env, jmodel, jselected_shipping_address,
+        base::android::ToJavaArrayOfStrings(env,
+                                            selected_shipping_address_errors));
   }
+  if (field_change == UserData::FieldChange::CONTACT_PROFILE) {
+    // The selection is already known in Java, but it has no errors. The PDM
+    // off case does not set updated contacts.
+    Java_AssistantCollectUserDataModel_setSelectedContactDetails(
+        env, jmodel, jselected_contact,
+        base::android::ToJavaArrayOfStrings(env, selected_contact_errors));
+  }
+  if (field_change == UserData::FieldChange::SHIPPING_ADDRESS) {
+    // The selection is already known in Java, but it has no errors. The PDM
+    // off case does not set updated shipping addresses.
+    Java_AssistantCollectUserDataModel_setSelectedShippingAddress(
+        env, jmodel, jselected_shipping_address,
+        base::android::ToJavaArrayOfStrings(env,
+                                            selected_shipping_address_errors));
+  }
+
+  const autofill::CreditCard* selected_card = state->selected_card();
+  const autofill::AutofillProfile* selected_billing_address =
+      state->selected_address(collect_user_data_options->billing_address_name);
+  auto jselected_card =
+      selected_card == nullptr
+          ? nullptr
+          : autofill::PersonalDataManagerAndroid::
+                CreateJavaCreditCardFromNative(env, *selected_card);
+  auto jselected_billing_address =
+      selected_billing_address == nullptr
+          ? nullptr
+          : autofill::PersonalDataManagerAndroid::CreateJavaProfileFromNative(
+                env, *selected_billing_address);
+  const auto& selected_payment_instrument_errors =
+      user_data::GetPaymentInstrumentValidationErrors(
+          selected_card, selected_billing_address, *collect_user_data_options);
 
   if (field_change == UserData::FieldChange::ALL ||
       field_change == UserData::FieldChange::AVAILABLE_PAYMENT_INSTRUMENTS) {
@@ -1524,10 +1530,13 @@ void UiControllerAndroid::OnUserDataChanged(
         Java_AssistantCollectUserDataModel_createAutofillPaymentInstrumentList(
             env);
     auto sorted_payment_instrument_indices =
-        SortPaymentInstrumentsByCompleteness(
+        user_data::SortPaymentInstrumentsByCompleteness(
             *collect_user_data_options, state->available_payment_instruments_);
     for (int index : sorted_payment_instrument_indices) {
       const auto& instrument = state->available_payment_instruments_[index];
+      const auto& errors = user_data::GetPaymentInstrumentValidationErrors(
+          instrument->card.get(), instrument->billing_address.get(),
+          *collect_user_data_options);
       Java_AssistantCollectUserDataModel_addAutofillPaymentInstrument(
           env, jlist, web_contents,
           instrument->card == nullptr
@@ -1537,26 +1546,26 @@ void UiControllerAndroid::OnUserDataChanged(
           instrument->billing_address == nullptr
               ? nullptr
               : autofill::PersonalDataManagerAndroid::
-                    CreateJavaProfileFromNative(
-                        env, *(instrument->billing_address)));
+                    CreateJavaProfileFromNative(env,
+                                                *(instrument->billing_address)),
+          base::android::ToJavaArrayOfStrings(env, errors));
     }
     Java_AssistantCollectUserDataModel_setAvailablePaymentInstruments(
         env, jmodel, jlist);
-
-    // Ignore changes to FieldChange::CARD, this is already coming from the
-    // view.
-    const autofill::CreditCard* card = state->selected_card();
-    const autofill::AutofillProfile* billing_address = state->selected_address(
-        collect_user_data_options->billing_address_name);
     Java_AssistantCollectUserDataModel_setSelectedPaymentInstrument(
-        env, jmodel, web_contents,
-        card == nullptr ? nullptr
-                        : autofill::PersonalDataManagerAndroid::
-                              CreateJavaCreditCardFromNative(env, *card),
-        billing_address == nullptr
-            ? nullptr
-            : autofill::PersonalDataManagerAndroid::CreateJavaProfileFromNative(
-                  env, *billing_address));
+        env, jmodel, web_contents, jselected_card, jselected_billing_address,
+        base::android::ToJavaArrayOfStrings(
+            env, selected_payment_instrument_errors));
+  }
+  if (field_change == UserData::FieldChange::CARD) {
+    // Note: Ignore UserData::FieldChange::BILLING_ADDRESS, they are sent in
+    // tandem.
+    // The selection is already known in Java, but it has no errors. The PDM
+    // off case does not set updated payment instruments.
+    Java_AssistantCollectUserDataModel_setSelectedPaymentInstrument(
+        env, jmodel, web_contents, jselected_card, jselected_billing_address,
+        base::android::ToJavaArrayOfStrings(
+            env, selected_payment_instrument_errors));
   }
 
   if (field_change == UserData::FieldChange::ALL ||

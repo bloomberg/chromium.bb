@@ -61,6 +61,17 @@ namespace variations {
 class VariationsClient;
 }  // namespace variations
 
+namespace perfetto {
+template <typename>
+class TracedProto;
+
+namespace protos {
+namespace pbzero {
+class ChromeBrowserContext;
+}
+}  // namespace protos
+}  // namespace perfetto
+
 namespace content {
 
 class BackgroundFetchDelegate;
@@ -269,6 +280,11 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
 
   // Write a representation of this object into a trace.
   void WriteIntoTrace(perfetto::TracedValue context);
+
+  // Write a representation of this object into tracing proto.
+  void WriteIntoTrace(
+      perfetto::TracedProto<perfetto::protos::pbzero::ChromeBrowserContext>
+          context);
 
   //////////////////////////////////////////////////////////////////////////////
   // The //content embedder can override the methods below to change or extend

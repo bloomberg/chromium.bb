@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/recent_tabs_sub_menu_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "content/public/browser/navigation_controller.h"
@@ -83,7 +82,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTabRestoreTest, RecentTabsMenuTabDisposition) {
   content::DOMMessageQueue queue;
   Browser* browser = active_browser_list->get(0);
   RecentTabsSubMenuModel menu(nullptr, browser);
-  menu.ExecuteCommand(RecentTabsSubMenuModel::GetFirstRecentTabsCommandId(), 0);
+  menu.ExecuteCommand(menu.GetFirstRecentTabsCommandId(), 0);
   // There should be 3 restored tabs in the new browser. The active tab should
   // be loading.
   EXPECT_EQ(2u, active_browser_list->size());
@@ -134,7 +133,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTabRestoreTest,
 
   content::WebContents* web_contents = chrome::AddRestoredTab(
       browser(), navigations, /* tab_index=*/1, /* selected_navigation=*/0,
-      /* extension_app_id=*/std::string(), /* raw_group_id=*/absl::nullopt,
+      /* extension_app_id=*/std::string(), /* group=*/absl::nullopt,
       /* select=*/true, /* pin=*/false,
       /* last_active_time=*/base::TimeTicks::Now(),
       /* storage_namespace=*/nullptr,
@@ -156,7 +155,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTabRestoreTest,
 
   content::WebContents* web_contents = chrome::AddRestoredTab(
       browser(), navigations, /* tab_index=*/1, /* selected_navigation=*/0,
-      /* extension_app_id=*/std::string(), /* raw_group_id=*/absl::nullopt,
+      /* extension_app_id=*/std::string(), /* group=*/absl::nullopt,
       /* select=*/false, /* pin=*/false,
       /* last_active_time=*/base::TimeTicks::Now(),
       /* storage_namespace=*/nullptr,

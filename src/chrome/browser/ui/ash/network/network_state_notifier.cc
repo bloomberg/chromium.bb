@@ -13,7 +13,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/chromeos/net/shill_error.h"
 #include "chrome/browser/notifications/system_notification_helper.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/network/cellular_esim_profile_handler.h"
@@ -27,6 +26,8 @@
 #include "chromeos/network/shill_property_util.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/chromeos/shill_error.h"
+#include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
 #include "ui/message_center/public/cpp/notification.h"
 
 namespace chromeos {
@@ -43,6 +44,16 @@ const char kNotifierNetworkError[] = "ash.network.error";
 bool ShillErrorIsIgnored(const std::string& shill_error) {
   return shill_error == shill::kErrorResultInProgress ||
          shill_error == shill::kErrorDisconnect;
+}
+
+// Returns true if |shill_error| is known to be a configuration error.
+bool IsConfigurationError(const std::string& shill_error) {
+  if (shill_error.empty())
+    return false;
+  return shill_error == shill::kErrorPinMissing ||
+         shill_error == shill::kErrorBadPassphrase ||
+         shill_error == shill::kErrorResultInvalidPassphrase ||
+         shill_error == shill::kErrorBadWEPKey;
 }
 
 std::string GetStringFromDictionary(const absl::optional<base::Value>& dict,
@@ -184,6 +195,29 @@ void NetworkStateNotifier::ConnectToNetworkRequested(
     connected_vpn_.reset();
 
   RemoveConnectNotification();
+}
+
+void NetworkStateNotifier::NetworkConnectionStateChanged(
+    const chromeos::NetworkState* network) {
+  if (!network->IsConnectedState() ||
+      connect_error_notification_network_guid_.empty() ||
+      connect_error_notification_network_guid_ != network->guid()) {
+    return;
+  }
+  RemoveConnectNotification();
+}
+
+void NetworkStateNotifier::NetworkIdentifierTransitioned(
+    const std::string& old_service_path,
+    const std::string& new_service_path,
+    const std::string& old_guid,
+    const std::string& new_guid) {
+  if (old_guid == new_guid ||
+      old_guid != connect_error_notification_network_guid_) {
+    return;
+  }
+
+  connect_error_notification_network_guid_ = new_guid;
 }
 
 void NetworkStateNotifier::ConnectSucceeded(const std::string& service_path) {
@@ -415,6 +449,7 @@ void NetworkStateNotifier::ShowMobileActivationErrorForGuid(
 
 void NetworkStateNotifier::RemoveConnectNotification() {
   SystemNotificationHelper::GetInstance()->Close(kNetworkConnectNotificationId);
+  connect_error_notification_network_guid_.clear();
 }
 
 void NetworkStateNotifier::OnConnectErrorGetProperties(
@@ -488,7 +523,7 @@ void NetworkStateNotifier::ShowConnectErrorNotification(
                      << ": Ignoring error: " << error_name;
       return;
     }
-    error = shill_error::GetShillErrorString(shill_error, guid);
+    error = ui::shill_error::GetShillErrorString(shill_error, guid);
     if (error.empty()) {
       if (error_name == NetworkConnectionHandler::kErrorConnectFailed &&
           network && !network->connectable()) {
@@ -549,6 +584,7 @@ void NetworkStateNotifier::ShowConnectErrorNotification(
                                    weak_ptr_factory_.GetWeakPtr(), guid);
   }
 
+  connect_error_notification_network_guid_ = guid;
   ShowErrorNotification(
       NetworkPathId(service_path), kNetworkConnectNotificationId, network_type,
       l10n_util::GetStringUTF16(IDS_NETWORK_CONNECTION_ERROR_TITLE), error_msg,
@@ -580,7 +616,7 @@ void NetworkStateNotifier::ShowNetworkSettings(const std::string& network_id) {
   }
   if (!NetworkTypePattern::Primitive(network->type())
            .MatchesPattern(NetworkTypePattern::Mobile()) &&
-      shill_error::IsConfigurationError(error)) {
+      IsConfigurationError(error)) {
     system_tray_client_->ShowNetworkConfigure(network_id);
   } else {
     system_tray_client_->ShowNetworkSettings(network_id);

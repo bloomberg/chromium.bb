@@ -84,7 +84,6 @@ source_set("common") {
     "font_list.cc",
     "font_list.h",
     "font_list_fontconfig.cc",
-    "frame_messages.h",
     "gin_java_bridge_messages.h",
     "in_process_child_thread_params.cc",
     "in_process_child_thread_params.h",
@@ -119,9 +118,6 @@ source_set("common") {
     "mojo_core_library_support.cc",
     "mojo_core_library_support.h",
     "navigation_gesture.h",
-    "navigation_params.cc",
-    "navigation_params.h",
-    "navigation_params_mojom_traits.h",
     "navigation_params_utils.h",
     "origin_util.cc",
     "partition_alloc_support.cc",
@@ -183,7 +179,7 @@ source_set("common") {
     "//base/third_party/dynamic_annotations",
     "//build:branding_buildflags",
     "//build:chromeos_buildflags",
-    "//build/util:webkit_version",
+    "//build/util:chromium_git_revision",
     "//components/discardable_memory/common",
     "//components/power_scheduler",
     "//components/services/filesystem/public/mojom",
@@ -340,7 +336,6 @@ source_set("common") {
 
   if (is_linux || is_chromeos) {
     sources += [
-      "common_sandbox_support_linux.cc",
       "sandbox_init_linux.cc",
       "zygote/sandbox_support_linux.cc",
       "zygote/send_zygote_child_ping_linux.cc",
@@ -444,8 +439,6 @@ mojom("mojo_bindings") {
     "media/media_log_records.mojom",
     "native_types.mojom",
     "navigation_client.mojom",
-    "navigation_params.mojom",
-    "prefetched_signed_exchange_info.mojom",
     "render_accessibility.mojom",
     "render_message_filter.mojom",
     "renderer.mojom",
@@ -552,7 +545,6 @@ mojom("mojo_bindings") {
       ]
 
       traits_private_headers = [
-        "//content/common/frame_messages.h",
         "//content/public/common/common_param_traits.h",
         "//services/network/public/cpp/p2p_param_traits.h",
       ]
@@ -584,10 +576,6 @@ mojom("mojo_bindings") {
     {
       types = [
         {
-          mojom = "content.mojom.Impression"
-          cpp = "::blink::Impression"
-        },
-        {
           mojom = "content.mojom.PageState"
           cpp = "::blink::PageState"
         },
@@ -595,19 +583,12 @@ mojom("mojo_bindings") {
           mojom = "content.mojom.PageTransition"
           cpp = "::ui::PageTransition"
         },
-        {
-          mojom = "content.mojom.SHA256HashValue"
-          cpp = "::net::SHA256HashValue"
-        },
       ]
       traits_headers = [
-        "//content/common/content_param_traits.h",
-        "//content/common/navigation_params.h",
-        "//third_party/blink/public/common/navigation/impression.h",
+        "//content/public/common/common_param_traits.h",
         "//third_party/blink/public/common/page_state/page_state.h",
         "//ui/base/page_transition_types.h",
       ]
-      traits_private_headers = [ "//content/common/frame_messages.h" ]
     },
   ]
 
@@ -633,6 +614,7 @@ mojom("mojo_bindings") {
     "//ui/accessibility/mojom",
     "//ui/base/ime/mojom",
     "//ui/base/mojom",
+    "//ui/display/mojom",
     "//ui/events/mojom",
     "//ui/gfx/geometry/mojom",
     "//ui/gfx/image/mojom",

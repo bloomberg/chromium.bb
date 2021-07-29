@@ -98,6 +98,20 @@ class AwaitBorealisStartup : public BorealisTask {
   base::WeakPtrFactory<AwaitBorealisStartup> weak_factory_{this};
 };
 
+// Checks the size of the disk and adjusts it if necessary.
+class SyncBorealisDisk : public BorealisTask {
+ public:
+  SyncBorealisDisk();
+  ~SyncBorealisDisk() override;
+  void RunInternal(BorealisContext* context) override;
+
+ private:
+  void OnSyncBorealisDisk(
+      BorealisContext* context,
+      Expected<BorealisSyncDiskSizeResult,
+               Described<BorealisSyncDiskSizeResult>> result);
+  base::WeakPtrFactory<SyncBorealisDisk> weak_factory_{this};
+};
 }  // namespace borealis
 
 #endif  // CHROME_BROWSER_ASH_BOREALIS_BOREALIS_TASK_H_

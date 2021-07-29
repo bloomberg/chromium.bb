@@ -57,7 +57,7 @@ export interface PrecomputedFeatures {
 }
 
 export class ImagePreview {
-  static async build(target: SDK.SDKModel.Target, originalImageURL: string, showDimensions: boolean, options: {
+  static async build(target: SDK.Target.Target, originalImageURL: string, showDimensions: boolean, options: {
     precomputedFeatures: (PrecomputedFeatures|undefined),
     imageAltText: (string|undefined),
   }|undefined = {precomputedFeatures: undefined, imageAltText: undefined}): Promise<Element|null> {
@@ -88,7 +88,7 @@ export class ImagePreview {
     const promise = new Promise<Element|null>(x => {
       fulfill = x;
     });
-    const imageElement = (document.createElement('img') as HTMLImageElement);
+    const imageElement = document.createElement('img');
     imageElement.addEventListener('load', buildContent, false);
     imageElement.addEventListener('error', () => fulfill(null), false);
     if (imageAltText) {
@@ -103,7 +103,7 @@ export class ImagePreview {
 
     function buildContent(): void {
       const container = document.createElement('table');
-      UI.Utils.appendStyle(container, 'ui/legacy/components/utils/imagePreview.css', {enableLegacyPatching: false});
+      UI.Utils.appendStyle(container, 'ui/legacy/components/utils/imagePreview.css');
       container.className = 'image-preview-container';
 
       const imageRow = (container.createChild('tr').createChild('td', 'image-container') as HTMLTableDataCellElement);

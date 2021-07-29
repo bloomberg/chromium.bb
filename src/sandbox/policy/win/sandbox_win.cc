@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/debug/activity_tracker.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
@@ -24,7 +25,6 @@
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -155,7 +155,7 @@ const base::Feature kEnableCsrssLockdownFeature{
 // chrome.exe and chrome.dll.
 class PolicyTraceHelper : public base::trace_event::ConvertableToTraceFormat {
  public:
-  PolicyTraceHelper(TargetPolicy* policy) {
+  explicit PolicyTraceHelper(TargetPolicy* policy) {
     // |info| must live until JsonString() output is copied.
     std::unique_ptr<PolicyInfo> info = policy->GetPolicyInfo();
     json_string_ = std::string(info->JsonString());
@@ -660,7 +660,7 @@ ResultCode SetupAppContainerProfile(AppContainer* container,
     return SBOX_ERROR_UNSUPPORTED;
 
   DCHECK(sandbox_type != SandboxType::kNetwork ||
-         base::FeatureList::IsEnabled(features::kNetworkServiceSandboxLPAC));
+         sandbox::policy::features::IsNetworkServiceSandboxLPACEnabled());
 
   if (sandbox_type == SandboxType::kGpu &&
       !container->AddImpersonationCapability(L"chromeInstallFiles")) {
@@ -923,7 +923,7 @@ bool SandboxWin::IsAppContainerEnabledForSandbox(
     return base::FeatureList::IsEnabled(features::kGpuAppContainer);
 
   if (sandbox_type == SandboxType::kNetwork)
-    return base::FeatureList::IsEnabled(features::kNetworkServiceSandboxLPAC);
+    return sandbox::policy::features::IsNetworkServiceSandboxLPACEnabled();
 
   return false;
 }

@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/containers/flat_set.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "chromeos/services/libassistant/grpc/assistant_client.h"
@@ -23,12 +22,17 @@ class GrpcLibassistantClient;
 // ChromeOS to use.
 class AssistantClientImpl : public AssistantClient {
  public:
-  explicit AssistantClientImpl(const std::string& libassistant_service_address);
+  AssistantClientImpl(
+      std::unique_ptr<assistant_client::AssistantManager> assistant_manager,
+      assistant_client::AssistantManagerInternal* assistant_manager_internal,
+      const std::string& libassistant_service_address,
+      const std::string& assistant_service_address);
 
   ~AssistantClientImpl() override;
 
-  // chromeos::libassistant::AssistantClient:
+  // chromeos::libassistant::AssistantClient overrides:
   bool StartGrpcServices() override;
+  void AddExperimentIds(const std::vector<std::string>& exp_ids) override;
 
  private:
   chromeos::libassistant::GrpcServicesInitializer grpc_services_;

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "src/ast/struct_block_decoration.h"
 #include "src/resolver/resolver.h"
 #include "src/resolver/resolver_test_helper.h"
 #include "src/sem/reference_type.h"
@@ -55,6 +56,64 @@ TEST_F(ResolverPtrRefTest, AddressOfThenDeref) {
 
   ASSERT_TRUE(TypeOf(expr)->Is<sem::Reference>());
   EXPECT_TRUE(TypeOf(expr)->As<sem::Reference>()->StoreType()->Is<sem::I32>());
+}
+
+TEST_F(ResolverPtrRefTest, DefaultPtrStorageClass) {
+  // https://gpuweb.github.io/gpuweb/wgsl/#storage-class
+
+  auto* buf = Structure("S", {Member("m", ty.i32())},
+                        {create<ast::StructBlockDecoration>()});
+  auto* function = Var("f", ty.i32());
+  auto* private_ = Global("p", ty.i32(), ast::StorageClass::kPrivate);
+  auto* workgroup = Global("w", ty.i32(), ast::StorageClass::kWorkgroup);
+  auto* uniform = Global("ub", ty.Of(buf), ast::StorageClass::kUniform,
+                         ast::DecorationList{
+                             create<ast::BindingDecoration>(0),
+                             create<ast::GroupDecoration>(0),
+                         });
+  auto* storage = Global("sb", ty.Of(buf), ast::StorageClass::kStorage,
+                         ast::DecorationList{
+                             create<ast::BindingDecoration>(1),
+                             create<ast::GroupDecoration>(0),
+                         });
+
+  auto* function_ptr =
+      Const("f_ptr", ty.pointer(ty.i32(), ast::StorageClass::kFunction),
+            AddressOf(function));
+  auto* private_ptr =
+      Const("p_ptr", ty.pointer(ty.i32(), ast::StorageClass::kPrivate),
+            AddressOf(private_));
+  auto* workgroup_ptr =
+      Const("w_ptr", ty.pointer(ty.i32(), ast::StorageClass::kWorkgroup),
+            AddressOf(workgroup));
+  auto* uniform_ptr =
+      Const("ub_ptr", ty.pointer(ty.Of(buf), ast::StorageClass::kUniform),
+            AddressOf(uniform));
+  auto* storage_ptr =
+      Const("sb_ptr", ty.pointer(ty.Of(buf), ast::StorageClass::kStorage),
+            AddressOf(storage));
+
+  WrapInFunction(function, function_ptr, private_ptr, workgroup_ptr,
+                 uniform_ptr, storage_ptr);
+
+  EXPECT_TRUE(r()->Resolve()) << r()->error();
+
+  ASSERT_TRUE(TypeOf(function_ptr)->Is<sem::Pointer>());
+  ASSERT_TRUE(TypeOf(private_ptr)->Is<sem::Pointer>());
+  ASSERT_TRUE(TypeOf(workgroup_ptr)->Is<sem::Pointer>());
+  ASSERT_TRUE(TypeOf(uniform_ptr)->Is<sem::Pointer>());
+  ASSERT_TRUE(TypeOf(storage_ptr)->Is<sem::Pointer>());
+
+  EXPECT_EQ(TypeOf(function_ptr)->As<sem::Pointer>()->Access(),
+            ast::Access::kReadWrite);
+  EXPECT_EQ(TypeOf(private_ptr)->As<sem::Pointer>()->Access(),
+            ast::Access::kReadWrite);
+  EXPECT_EQ(TypeOf(workgroup_ptr)->As<sem::Pointer>()->Access(),
+            ast::Access::kReadWrite);
+  EXPECT_EQ(TypeOf(uniform_ptr)->As<sem::Pointer>()->Access(),
+            ast::Access::kRead);
+  EXPECT_EQ(TypeOf(storage_ptr)->As<sem::Pointer>()->Access(),
+            ast::Access::kRead);
 }
 
 }  // namespace

@@ -4,6 +4,7 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
+#include "build/build_config.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -11,6 +12,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -274,6 +276,12 @@ IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), target_text_url));
 
   WebContents* main_contents = shell()->web_contents();
+  // The test assumes the previous page gets deleted after navigation and will
+  // be recreated with did_scroll == false. Disable back/forward cache to ensure
+  // that it doesn't get preserved in the cache.
+  DisableBackForwardCacheForTesting(
+      main_contents, BackForwardCacheImpl::TEST_ASSUMES_NO_CACHING);
+
   {
     // The RenderFrameSubmissionObserver destructor expects the RenderFrameHost
     // stays the same until it gets destructed, so we need to scope this to make
@@ -345,16 +353,16 @@ IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
   EXPECT_DID_SCROLL(true);
 }
 
-// Similar to the above test, we're checking that browser-initiated
-// same-document navigations invoke the text fragment. However, this time, the
-// initial landing on the page is via a non-user-activated script navigation.
-// This ensure we're not inappropriately blocking a text-fragment based on the
-// state of the initial document load.
 IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
                        SameDocumentBrowserNavigationOnScriptNavigatedDocument) {
   ASSERT_TRUE(embedded_test_server()->Start());
   WebContents* main_contents = shell()->web_contents();
   RenderFrameSubmissionObserver frame_observer(main_contents);
+  // The test assumes the RenderWidgetHost stays the same after navigation,
+  // which won't happen if same-site back/forward-cache is enabled. Disable it
+  // so that we will keep RenderWidgetHost even after navigation.
+  DisableBackForwardCacheForTesting(
+      main_contents, BackForwardCacheImpl::TEST_ASSUMES_NO_RENDER_FRAME_CHANGE);
 
   // Load an initial page
   {
@@ -797,6 +805,12 @@ IN_PROC_BROWSER_TEST_F(ForceLoadAtTopBrowserTest, ScrollRestorationDisabled) {
   ASSERT_NO_FATAL_FAILURE(LoadScrollablePageWithContent("/index.html"));
 
   WebContents* main_contents = shell()->web_contents();
+  // This test expects the document is freshly loaded on the back navigation
+  // so that the document policy to force-load-at-top will run. This will not
+  // happen if the document is back-forward cached, so we need to disable it.
+  DisableBackForwardCacheForTesting(main_contents,
+                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+
   RenderFrameSubmissionObserver frame_observer(main_contents);
 
   EXPECT_TRUE(WaitForRenderFrameReady(main_contents->GetMainFrame()));

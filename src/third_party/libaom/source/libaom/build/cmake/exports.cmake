@@ -17,9 +17,9 @@ include("${AOM_ROOT}/build/cmake/exports_sources.cmake")
 
 # Creates the custom target which handles generation of the symbol export lists.
 function(setup_exports_target)
-  if("${AOM_TARGET_SYSTEM}" STREQUAL "Darwin")
+  if(APPLE)
     set(symbol_file_ext "syms")
-  elseif("${AOM_TARGET_SYSTEM}" MATCHES "Windows\|MSYS" AND MSVC)
+  elseif(WIN32)
     set(symbol_file_ext "def")
   else()
     set(symbol_file_ext "ver")
@@ -43,7 +43,7 @@ function(setup_exports_target)
                             -P
                             "${AOM_ROOT}/build/cmake/generate_exports.cmake"
                     SOURCES ${AOM_EXPORTS_SOURCES}
-                    DEPENDS ${AOM_EXPORTS_SOURCES})
+                    DEPENDS ${AOM_EXPORTS_SOURCES} BYPRODUCTS ${aom_sym_file})
 
   # Make libaom depend on the exports file, and set flags to pick it up when
   # creating the dylib.
@@ -54,14 +54,12 @@ function(setup_exports_target)
                  APPEND_STRING
                  PROPERTY LINK_FLAGS "-exported_symbols_list ${aom_sym_file}")
   elseif(WIN32)
-    if(NOT MSVC)
-      set_property(TARGET aom
-                   APPEND_STRING
-                   PROPERTY LINK_FLAGS "-Wl,--version-script ${aom_sym_file}")
-    else()
+    if(MSVC)
       set_property(TARGET aom
                    APPEND_STRING
                    PROPERTY LINK_FLAGS "/DEF:${aom_sym_file}")
+    else()
+      target_sources(aom PRIVATE "${aom_sym_file}")
     endif()
 
     # TODO(tomfinegan): Sort out the import lib situation and flags for MSVC.

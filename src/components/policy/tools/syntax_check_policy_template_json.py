@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -77,7 +77,7 @@ LEGACY_EMBEDDED_JSON_ALLOWLIST = [
 # List of policies where not all properties are required to be presented in the
 # example value. This could be useful e.g. in case of mutually exclusive fields.
 # See crbug.com/1068257 for the details.
-OPTIONAL_PROPERTIES_POLICIES_ALLOWLIST = []
+OPTIONAL_PROPERTIES_POLICIES_ALLOWLIST = ['ProxySettings']
 
 # 100 MiB upper limit on the total device policy external data max size limits
 # due to the security reasons.
@@ -121,11 +121,12 @@ REMOVABLE_SCHEMA_VALUES_PER_TYPE = {
 
 # Defines keys per type that that can be changed in any way without affecting
 # policy compatibility (for example we can change, remove or add a 'description'
-# to a policy schema without causings incompatibilities).
+# to a policy schema without causing incompatibilities).
 MODIFIABLE_SCHEMA_KEYS_PER_TYPE = {
     'integer': ['description', 'sensitiveValue'],
     'string': ['description', 'sensitiveValue'],
-    'object': ['description', 'sensitiveValue']
+    'object': ['description', 'sensitiveValue'],
+    'boolean': ['description']
 }
 
 # Defines keys per type that themselves define a further dictionary of
@@ -136,7 +137,7 @@ KEYS_DEFINING_PROPERTY_DICT_SCHEMAS_PER_TYPE = {
 }
 
 # Defines keys per type that themselves define a schema. For example, 'array'
-# types define an 'items' key defines the scheme for each item in the array.
+# types define an 'items' key defines the schema for each item in the array.
 KEYS_DEFINING_SCHEMAS_PER_TYPE = {
     'object': ['additionalProperties'],
     'array': ['items']
@@ -248,7 +249,7 @@ class PolicyTemplateChecker(object):
 
   def _Warning(self, message):
     self.warning_count += 1
-    print message
+    print(message)
 
   def _Error(self,
              message,
@@ -259,9 +260,9 @@ class PolicyTemplateChecker(object):
     error = ''
     if identifier is not None and parent_element is not None:
       error += 'In %s %s: ' % (parent_element, identifier)
-    print error + 'Error: ' + message
+    print(error + 'Error: ' + message)
     if offending_snippet is not None:
-      print '  Offending:', json.dumps(offending_snippet, indent=2)
+      print('  Offending:', json.dumps(offending_snippet, indent=2))
 
   def _CheckContains(self,
                      container,
@@ -434,15 +435,14 @@ class PolicyTemplateChecker(object):
       return any(self._AppearsToContainEmbeddedJson(v) for v in example_value)
     elif isinstance(example_value, dict):
       return any(
-          self._AppearsToContainEmbeddedJson(v)
-          for v in example_value.itervalues())
+          self._AppearsToContainEmbeddedJson(v) for v in example_value.values())
 
   # Checks that there are no duplicate proto paths in device_policy_proto_map.
   def _CheckDevicePolicyProtoMappingUniqueness(self, device_policy_proto_map,
                                                legacy_device_policy_proto_map):
     # Check that device_policy_proto_map does not have duplicate values.
     proto_paths = set()
-    for proto_path in device_policy_proto_map.itervalues():
+    for proto_path in device_policy_proto_map.values():
       if proto_path in proto_paths:
         self._Error(
             "Duplicate proto path '%s' in device_policy_proto_map. Did you set "
@@ -486,7 +486,7 @@ class PolicyTemplateChecker(object):
   # can it?).
   def _CheckDevicePolicyProtoMappingExistence(self, device_policy_proto_map,
                                               device_policy_proto_path):
-    with open(device_policy_proto_path, 'r') as file:
+    with open(device_policy_proto_path, 'r', encoding='utf-8') as file:
       device_policy_proto = file.read()
 
     for policy, proto_path in device_policy_proto_map.items():
@@ -755,7 +755,7 @@ class PolicyTemplateChecker(object):
 
     # Each policy's description should be within the limit.
     desc = self._CheckContains(policy, 'desc', str)
-    if len(desc.decode("UTF-8")) > POLICY_DESCRIPTION_LENGTH_SOFT_LIMIT:
+    if len(desc) > POLICY_DESCRIPTION_LENGTH_SOFT_LIMIT:
       self._Error(
           'Length of description is more than %d characters, which might '
           'exceed the limit of 4096 characters in one of its '
@@ -1305,7 +1305,7 @@ class PolicyTemplateChecker(object):
           'be dict type.' % (current_schema_key, type(new_schema)))
 
     # Both schemas must either have a 'type' key or not. This covers the case
-    # where the scheme is merely a '$ref'
+    # where the schema is merely a '$ref'
     if ('type' in old_schema) != ('type' in new_schema):
       self._Error(
           'Mismatch in type definition for old schema and new schema for '
@@ -1314,7 +1314,7 @@ class PolicyTemplateChecker(object):
                           new_schema['type']))
       return
 
-    # For schemes that define a 'type', make sure they match.
+    # For schemas that define a 'type', make sure they match.
     schema_type = None
     if ('type' in old_schema):
       if (old_schema['type'] != new_schema['type']):
@@ -1334,7 +1334,7 @@ class PolicyTemplateChecker(object):
         continue
 
       # If the schema key is marked as modifiable (e.g. 'description'), then
-      # no validation is needed. Anything can be done to it include removal.
+      # no validation is needed. Anything can be done to it including removal.
       if IsKeyDefinedForTypeInDictionary(schema_type, old_key,
                                          MODIFIABLE_SCHEMA_KEYS_PER_TYPE):
         continue
@@ -1363,8 +1363,8 @@ class PolicyTemplateChecker(object):
               'dict' % (type(old_value).__name__,))
           continue
 
-        # Make all old properties exist and are compatible. Everything else that
-        # is new requires no validation.
+        # Make sure that all old properties exist and are compatible. Everything
+        # else that is new requires no validation.
         new_schema_value = new_schema[old_key]
         for sub_key in old_value.keys():
           self._CheckSchemasAreCompatible(
@@ -1630,7 +1630,7 @@ class PolicyTemplateChecker(object):
 
   def _LineError(self, message, line_number):
     self.error_count += 1
-    print 'In line %d: Error: %s' % (line_number, message)
+    print('In line %d: Error: %s' % (line_number, message))
 
   def _LineWarning(self, message, line_number):
     self._Warning('In line %d: Warning: Automatically fixing formatting: %s' %
@@ -1644,7 +1644,7 @@ class PolicyTemplateChecker(object):
     # strings. It changes hash of the string and grit can't find translation in
     # the file.
     three_quotes_cnt = 0
-    with open(filename) as f:
+    with open(filename, encoding='utf-8') as f:
       indent = 0
       line_number = 0
       for line in f:
@@ -1704,7 +1704,7 @@ class PolicyTemplateChecker(object):
         if os.path.exists(backupfilename):
           os.remove(backupfilename)
         os.rename(filename, backupfilename)
-      with open(filename, 'w') as f:
+      with open(filename, 'w', encoding='utf-8') as f:
         f.writelines(fixed_lines)
 
   def _ValidatePolicyAtomicGroups(self, atomic_groups, max_id, deleted_ids):
@@ -1731,8 +1731,8 @@ class PolicyTemplateChecker(object):
 
   def Main(self, filename, options, original_file_contents, current_version):
     try:
-      with open(filename, "rb") as f:
-        raw_data = f.read().decode("UTF-8")
+      with open(filename, 'rb') as f:
+        raw_data = f.read().decode('UTF-8')
         data = eval(raw_data)
         DuplicateKeyVisitor().visit(ast.parse(raw_data))
     except ValueError as e:
@@ -1911,7 +1911,7 @@ class PolicyTemplateChecker(object):
               (self.num_policies, self.num_policies_in_groups, self.num_groups,
                (1.0 * self.num_policies_in_groups / self.num_groups)))
       else:
-        print self.num_policies, 'policies, 0 policy groups.'
+        print(self.num_policies, 'policies, 0 policy groups.')
     if self.error_count > 0:
       return 1
     return 0

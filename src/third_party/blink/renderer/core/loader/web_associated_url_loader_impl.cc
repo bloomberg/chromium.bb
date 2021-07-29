@@ -34,7 +34,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "services/network/public/cpp/request_destination.h"
 #include "services/network/public/cpp/request_mode.h"
@@ -73,6 +72,9 @@ namespace {
 class HTTPRequestHeaderValidator : public WebHTTPHeaderVisitor {
  public:
   HTTPRequestHeaderValidator() : is_safe_(true) {}
+  HTTPRequestHeaderValidator(const HTTPRequestHeaderValidator&) = delete;
+  HTTPRequestHeaderValidator& operator=(const HTTPRequestHeaderValidator&) =
+      delete;
   ~HTTPRequestHeaderValidator() override = default;
 
   void VisitHeader(const WebString& name, const WebString& value) override;
@@ -80,8 +82,6 @@ class HTTPRequestHeaderValidator : public WebHTTPHeaderVisitor {
 
  private:
   bool is_safe_;
-
-  DISALLOW_COPY_AND_ASSIGN(HTTPRequestHeaderValidator);
 };
 
 void HTTPRequestHeaderValidator::VisitHeader(const WebString& name,
@@ -107,6 +107,8 @@ class WebAssociatedURLLoaderImpl::ClientAdapter final
                 network::mojom::RequestMode,
                 network::mojom::CredentialsMode,
                 scoped_refptr<base::SingleThreadTaskRunner>);
+  ClientAdapter(const ClientAdapter&) = delete;
+  ClientAdapter& operator=(const ClientAdapter&) = delete;
 
   // ThreadableLoaderClient
   void DidSendData(uint64_t /*bytesSent*/,
@@ -115,11 +117,12 @@ class WebAssociatedURLLoaderImpl::ClientAdapter final
   void DidDownloadData(uint64_t /*dataLength*/) override;
   void DidReceiveData(const char*, unsigned /*dataLength*/) override;
   void DidFinishLoading(uint64_t /*identifier*/) override;
-  void DidFail(const ResourceError&) override;
-  void DidFailRedirectCheck() override;
+  void DidFail(uint64_t /*identifier*/, const ResourceError&) override;
+  void DidFailRedirectCheck(uint64_t /*identifier*/) override;
 
   // ThreadableLoaderClient
   bool WillFollowRedirect(
+      uint64_t /*identifier*/,
       const KURL& /*new_url*/,
       const ResourceResponse& /*redirect_response*/) override;
 
@@ -158,8 +161,6 @@ class WebAssociatedURLLoaderImpl::ClientAdapter final
   HeapTaskRunnerTimer<ClientAdapter> error_timer_;
   bool enable_error_notifications_;
   bool did_fail_;
-
-  DISALLOW_COPY_AND_ASSIGN(ClientAdapter);
 };
 
 WebAssociatedURLLoaderImpl::ClientAdapter::ClientAdapter(
@@ -182,6 +183,7 @@ WebAssociatedURLLoaderImpl::ClientAdapter::ClientAdapter(
 }
 
 bool WebAssociatedURLLoaderImpl::ClientAdapter::WillFollowRedirect(
+    uint64_t identifier,
     const KURL& new_url,
     const ResourceResponse& redirect_response) {
   if (!client_)
@@ -271,6 +273,7 @@ void WebAssociatedURLLoaderImpl::ClientAdapter::DidFinishLoading(
 }
 
 void WebAssociatedURLLoaderImpl::ClientAdapter::DidFail(
+    uint64_t,
     const ResourceError& error) {
   if (!client_)
     return;
@@ -283,8 +286,9 @@ void WebAssociatedURLLoaderImpl::ClientAdapter::DidFail(
     NotifyError(&error_timer_);
 }
 
-void WebAssociatedURLLoaderImpl::ClientAdapter::DidFailRedirectCheck() {
-  DidFail(ResourceError::Failure(NullURL()));
+void WebAssociatedURLLoaderImpl::ClientAdapter::DidFailRedirectCheck(
+    uint64_t identifier) {
+  DidFail(identifier, ResourceError::Failure(NullURL()));
 }
 
 void WebAssociatedURLLoaderImpl::ClientAdapter::EnableErrorNotifications() {
@@ -444,8 +448,10 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
   }
 
   if (!loader_) {
-    client_adapter_->DidFail(ResourceError::CancelledDueToAccessCheckError(
-        request.Url(), ResourceRequestBlockedReason::kOther));
+    client_adapter_->DidFail(
+        0 /* identifier */,
+        ResourceError::CancelledDueToAccessCheckError(
+            request.Url(), ResourceRequestBlockedReason::kOther));
   }
   client_adapter_->EnableErrorNotifications();
 }

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "weblayer/public/google_account_access_token_fetch_delegate.h"
 
 namespace weblayer {
@@ -36,15 +37,20 @@ void SafeBrowsingTokenFetcherImpl::Start(Callback callback) {
   // In contrast, this object does *not* have a determined lifetime relationship
   // with |delegate|.
   delegate->FetchAccessToken(
-      {safe_browsing::kAPIScope},
+      {GaiaConstants::kChromeSafeBrowsingOAuth2Scope},
       base::BindOnce(&SafeBrowsingTokenFetcherImpl::OnTokenFetched,
                      weak_ptr_factory_.GetWeakPtr(), request_id));
 }
 
 void SafeBrowsingTokenFetcherImpl::OnInvalidAccessToken(
     const std::string& invalid_access_token) {
-  // TODO(crbug.com/1209050): The embedders can reset the cache for the token if
-  // applicable, but this is currently not implemented yet.
+  auto* delegate = delegate_getter_.Run();
+
+  if (!delegate)
+    return;
+
+  delegate->OnAccessTokenIdentifiedAsInvalid(
+      {GaiaConstants::kChromeSafeBrowsingOAuth2Scope}, invalid_access_token);
 }
 
 void SafeBrowsingTokenFetcherImpl::OnTokenFetched(

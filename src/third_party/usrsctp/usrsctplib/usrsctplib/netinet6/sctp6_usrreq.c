@@ -341,7 +341,7 @@ sctp6_notify(struct sctp_inpcb *inp,
 	case ICMP6_PARAM_PROB:
 		/* Treat it like an ABORT. */
 		if (icmp6_code == ICMP6_PARAMPROB_NEXTHEADER) {
-			sctp_abort_notification(stcb, 1, 0, NULL, SCTP_SO_NOT_LOCKED);
+			sctp_abort_notification(stcb, true, false, 0, NULL, SCTP_SO_NOT_LOCKED);
 #if defined(__APPLE__)
 			so = SCTP_INP_SO(inp);
 			atomic_add_int(&stcb->asoc.refcnt, 1);
@@ -1287,7 +1287,7 @@ sctp6_connect(struct socket *so, struct mbuf *nam, struct proc *p)
 		return (EALREADY);
 	}
 	/* We are GOOD to go */
-	stcb = sctp_aloc_assoc(inp, addr, &error, 0, vrf_id,
+	stcb = sctp_aloc_assoc(inp, addr, &error, 0, 0, vrf_id,
 	                       inp->sctp_ep.pre_open_stream_count,
 	                       inp->sctp_ep.port, p,
 	                       SCTP_INITIALIZE_AUTH_PARAMS);

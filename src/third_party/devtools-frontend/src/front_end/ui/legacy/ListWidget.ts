@@ -51,7 +51,7 @@ export class ListWidget<T> extends VBox {
   _emptyPlaceholder: Element|null;
   constructor(delegate: Delegate<T>, delegatesFocus: boolean|undefined = true) {
     super(true, delegatesFocus);
-    this.registerRequiredCSS('ui/legacy/listWidget.css', {enableLegacyPatching: true});
+    this.registerRequiredCSS('ui/legacy/listWidget.css');
     this._delegate = delegate;
 
     this._list = this.contentElement.createChild('div', 'list');
@@ -252,15 +252,22 @@ export interface Delegate<T> {
   commitEdit(item: T, editor: Editor<T>, isNew: boolean): void;
 }
 
+export interface CustomEditorControl<T> extends HTMLElement {
+  value: T;
+  validate: () => ValidatorResult;
+}
+
+export type EditorControl<T = string> = (HTMLInputElement|HTMLSelectElement|CustomEditorControl<T>);
+
 export class Editor<T> {
   element: HTMLDivElement;
   _contentElement: HTMLElement;
   _commitButton: HTMLButtonElement;
   _cancelButton: HTMLButtonElement;
   _errorMessageContainer: HTMLElement;
-  _controls: (HTMLInputElement|HTMLSelectElement)[];
-  _controlByName: Map<string, HTMLInputElement|HTMLSelectElement>;
-  _validators: ((arg0: T, arg1: number, arg2: (HTMLInputElement|HTMLSelectElement)) => ValidatorResult)[];
+  _controls: EditorControl[];
+  _controlByName: Map<string, EditorControl>;
+  _validators: ((arg0: T, arg1: number, arg2: EditorControl) => ValidatorResult)[];
   _commit: (() => void)|null;
   _cancel: (() => void)|null;
   _item: T|null;
@@ -310,8 +317,7 @@ export class Editor<T> {
 
   createInput(
       name: string, type: string, title: string,
-      validator: (arg0: T, arg1: number, arg2: (HTMLInputElement|HTMLSelectElement)) => ValidatorResult):
-      HTMLInputElement {
+      validator: (arg0: T, arg1: number, arg2: EditorControl) => ValidatorResult): HTMLInputElement {
     const input = (createInput('', type) as HTMLInputElement);
     input.placeholder = title;
     input.addEventListener('input', this._validateControls.bind(this, false), false);
@@ -324,10 +330,9 @@ export class Editor<T> {
   }
 
   createSelect(
-      name: string, options: string[],
-      validator: (arg0: T, arg1: number, arg2: (HTMLInputElement|HTMLSelectElement)) => ValidatorResult,
+      name: string, options: string[], validator: (arg0: T, arg1: number, arg2: EditorControl) => ValidatorResult,
       title?: string): HTMLSelectElement {
-    const select = (document.createElement('select') as HTMLSelectElement);
+    const select = document.createElement('select');
     select.classList.add('chrome-select');
     for (let index = 0; index < options.length; ++index) {
       const option = (select.createChild('option') as HTMLOptionElement);
@@ -346,9 +351,22 @@ export class Editor<T> {
     return select;
   }
 
-  control(name: string): HTMLInputElement|HTMLSelectElement {
-    return /** @type {!HTMLInputElement|!HTMLSelectElement} */ this._controlByName.get(name) as HTMLInputElement |
-        HTMLSelectElement;
+  createCustomControl<S, U extends CustomEditorControl<S>>(
+      name: string, ctor: {new(): U},
+      validator: (arg0: T, arg1: number, arg2: EditorControl) => ValidatorResult): CustomEditorControl<S> {
+    const control = new ctor();
+    this._controlByName.set(name, control as unknown as CustomEditorControl<string>);
+    this._controls.push(control as unknown as CustomEditorControl<string>);
+    this._validators.push(validator);
+    return control;
+  }
+
+  control(name: string): EditorControl {
+    const control = this._controlByName.get(name);
+    if (!control) {
+      throw new Error(`Control with name ${name} does not exist, please verify.`);
+    }
+    return control;
   }
 
   _validateControls(forceValid: boolean): void {
@@ -372,6 +390,10 @@ export class Editor<T> {
       allValid = allValid && valid;
     }
     this._commitButton.disabled = !allValid;
+  }
+
+  requestValidation(): void {
+    this._validateControls(false);
   }
 
   beginEdit(item: T, index: number, commitButtonTitle: string, commit: () => void, cancel: () => void): void {

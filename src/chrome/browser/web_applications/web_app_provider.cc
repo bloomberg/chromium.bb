@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/web_applications/daily_metrics_helper.h"
 #include "chrome/browser/web_applications/externally_managed_app_manager_impl.h"
 #include "chrome/browser/web_applications/file_utils_wrapper.h"
+#include "chrome/browser/web_applications/isolation_prefs_utils.h"
 #include "chrome/browser/web_applications/manifest_update_manager.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/preinstalled_web_app_manager.h"
@@ -36,12 +38,17 @@
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_shortcut_manager.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
+#include "chrome/common/chrome_features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/web_contents.h"
 
 namespace web_app {
 
 namespace {
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+static bool g_enable_system_web_apps_in_lacros_for_testing = false;
+#endif
 
 WebAppProvider::OsIntegrationManagerFactory
     g_os_integration_manager_factory_for_testing = nullptr;
@@ -51,6 +58,38 @@ WebAppProvider::OsIntegrationManagerFactory
 // static
 WebAppProvider* WebAppProvider::Get(Profile* profile) {
   return WebAppProviderFactory::GetForProfile(profile);
+}
+
+// static
+WebAppProvider* WebAppProvider::GetForSystemWebApps(Profile* profile) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  return g_enable_system_web_apps_in_lacros_for_testing
+             ? WebAppProviderFactory::GetForProfile(profile)
+             : nullptr;
+#else
+  return WebAppProviderFactory::GetForProfile(profile);
+#endif
+}
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+// static
+void WebAppProvider::EnableSystemWebAppsInLacrosForTesting() {
+  g_enable_system_web_apps_in_lacros_for_testing = true;
+}
+#endif
+
+// static
+WebAppProvider* WebAppProvider::GetForWebApps(Profile* profile) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // If features::kWebAppsCrosapi is enabled, Ash browser only manages system
+  // web apps (return nullptr here). Otherwise, Ash browser manages all web apps
+  // (return WebAppProvider).
+  return base::FeatureList::IsEnabled(features::kWebAppsCrosapi)
+             ? nullptr
+             : WebAppProviderFactory::GetForProfile(profile);
+#else
+  return WebAppProviderFactory::GetForProfile(profile);
+#endif
 }
 
 // static
@@ -90,7 +129,7 @@ void WebAppProvider::Start() {
   StartImpl();
 }
 
-AppRegistrar& WebAppProvider::registrar() {
+WebAppRegistrar& WebAppProvider::registrar() {
   CheckIsConnected();
   return *registrar_;
 }
@@ -212,8 +251,8 @@ void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {
 
   auto icon_manager = std::make_unique<WebAppIconManager>(
       profile, *registrar, std::make_unique<FileUtilsWrapper>());
-  install_finalizer_ =
-      std::make_unique<WebAppInstallFinalizer>(profile, icon_manager.get());
+  install_finalizer_ = std::make_unique<WebAppInstallFinalizer>(
+      profile, icon_manager.get(), web_app_policy_manager_.get());
 
   if (g_os_integration_manager_factory_for_testing) {
     os_integration_manager_ =
@@ -322,6 +361,7 @@ void WebAppProvider::RegisterProfilePrefs(
   WebAppPolicyManager::RegisterProfilePrefs(registry);
   SystemWebAppManager::RegisterProfilePrefs(registry);
   WebAppPrefsUtilsRegisterProfilePrefs(registry);
+  IsolationPrefsUtilsRegisterProfilePrefs(registry);
   RegisterInstallBounceMetricProfilePrefs(registry);
   RegisterDailyWebAppMetricsProfilePrefs(registry);
 }

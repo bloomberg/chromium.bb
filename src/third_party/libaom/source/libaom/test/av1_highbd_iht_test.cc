@@ -211,8 +211,7 @@ void AV1HighbdInvTxfm2d::RunAV1InvTxfm2dTest(TX_TYPE tx_type_, TX_SIZE tx_size_,
                                              int run_times, int bit_depth_,
                                              int gt_int16) {
 #if CONFIG_REALTIME_ONLY
-  if (tx_size_ == TX_4X16 || tx_size_ == TX_16X4 || tx_size_ == TX_8X32 ||
-      tx_size_ == TX_32X8 || tx_size_ == TX_16X64 || tx_size_ == TX_64X16) {
+  if (tx_size_ >= TX_4X16) {
     return;
   }
 #endif

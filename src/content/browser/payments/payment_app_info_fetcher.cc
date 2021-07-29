@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "components/payments/content/icon/icon_size.h"
-#include "components/services/storage/public/cpp/storage_key.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -19,8 +18,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/manifest_icon_downloader.h"
+#include "content/public/browser/page.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/manifest/manifest_icon_selector.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "url/origin.h"
@@ -37,9 +38,9 @@ void PaymentAppInfoFetcher::Start(
     PaymentAppInfoFetchCallback callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
-  std::unique_ptr<std::vector<GlobalFrameRoutingId>> frame_routing_ids =
+  std::unique_ptr<std::vector<GlobalRenderFrameHostId>> frame_routing_ids =
       service_worker_context->GetWindowClientFrameRoutingIds(
-          storage::StorageKey(url::Origin::Create(context_url)));
+          blink::StorageKey(url::Origin::Create(context_url)));
 
   RunOrPostTaskOnThread(
       FROM_HERE, BrowserThread::UI,
@@ -49,7 +50,8 @@ void PaymentAppInfoFetcher::Start(
 
 void PaymentAppInfoFetcher::StartOnUI(
     const GURL& context_url,
-    const std::unique_ptr<std::vector<GlobalFrameRoutingId>>& frame_routing_ids,
+    const std::unique_ptr<std::vector<GlobalRenderFrameHostId>>&
+        frame_routing_ids,
     PaymentAppInfoFetchCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -80,7 +82,7 @@ PaymentAppInfoFetcher::SelfDeleteFetcher::~SelfDeleteFetcher() {
 
 void PaymentAppInfoFetcher::SelfDeleteFetcher::Start(
     const GURL& context_url,
-    const std::unique_ptr<std::vector<GlobalFrameRoutingId>>&
+    const std::unique_ptr<std::vector<GlobalRenderFrameHostId>>&
         frame_routing_ids) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -150,7 +152,7 @@ void PaymentAppInfoFetcher::SelfDeleteFetcher::Start(
     web_contents_helper_ =
         std::make_unique<WebContentsHelper>(top_level_web_content);
 
-    top_level_web_content->GetManifest(
+    top_level_render_frame_host->GetPage().GetManifest(
         base::BindOnce(&PaymentAppInfoFetcher::SelfDeleteFetcher::
                            FetchPaymentAppManifestCallback,
                        weak_ptr_factory_.GetWeakPtr()));

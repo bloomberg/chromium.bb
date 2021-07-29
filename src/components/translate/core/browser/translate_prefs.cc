@@ -12,10 +12,10 @@
 #include <utility>
 
 #include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/feature_list.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -24,6 +24,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/language/core/browser/language_prefs.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/language/core/common/language_experiments.h"
 #include "components/language/core/common/language_util.h"
 #include "components/language/core/common/locale_util.h"
@@ -137,6 +138,16 @@ TranslatePrefs::TranslatePrefs(PrefService* user_prefs)
 }
 
 TranslatePrefs::~TranslatePrefs() = default;
+
+// static
+std::string TranslatePrefs::MapPreferenceName(const std::string& pref_name) {
+  if (pref_name == prefs::kPrefAlwaysTranslateList) {
+    return "translate_allowlists";
+  } else if (pref_name == kPrefNeverPromptSitesDeprecated) {
+    return "translate_site_blocklist";
+  }
+  return pref_name;
+}
 
 bool TranslatePrefs::IsOfferTranslateEnabled() const {
   return prefs_->GetBoolean(prefs::kOfferTranslateEnabled);
@@ -478,7 +489,7 @@ std::vector<std::string> TranslatePrefs::GetNeverPromptSitesBetween(
     base::Time end) const {
   std::vector<std::string> result;
   auto* dict = prefs_->GetDictionary(kPrefNeverPromptSitesWithTime);
-  for (const auto& entry : dict->DictItems()) {
+  for (auto entry : dict->DictItems()) {
     absl::optional<base::Time> time = util::ValueToTime(entry.second);
     if (!time) {
       NOTREACHED();
@@ -564,7 +575,7 @@ std::vector<std::string> TranslatePrefs::GetAlwaysTranslateLanguages() const {
   }
 
   std::vector<std::string> languages;
-  for (const auto& language_pair : dict->DictItems()) {
+  for (auto language_pair : dict->DictItems()) {
     std::string chrome_language(language_pair.first);
     language::ToChromeLanguageSynonym(&chrome_language);
     languages.push_back(chrome_language);
@@ -722,6 +733,14 @@ bool TranslatePrefs::GetExplicitLanguageAskPromptShown() const {
 void TranslatePrefs::SetExplicitLanguageAskPromptShown(bool shown) {
   prefs_->SetBoolean(kPrefExplicitLanguageAskShown, shown);
 }
+
+bool TranslatePrefs::GetAppLanguagePromptShown() const {
+  return prefs_->GetBoolean(language::prefs::kAppLanguagePromptShown);
+}
+
+void TranslatePrefs::SetAppLanguagePromptShown() {
+  prefs_->SetBoolean(language::prefs::kAppLanguagePromptShown, true);
+}
 #endif  // defined(OS_ANDROID)
 
 void TranslatePrefs::GetLanguageList(
@@ -737,20 +756,19 @@ void TranslatePrefs::GetUserSelectedLanguageList(
 bool TranslatePrefs::CanTranslateLanguage(
     TranslateAcceptLanguages* accept_languages,
     base::StringPiece language) {
-  // Don't translate any user blocklisted languages.
+  // Languages not on the blocklist can always be translated.
   if (!IsBlockedLanguage(language))
     return true;
 
-  // Checking |is_accept_language| is necessary because if the user eliminates
-  // the language from the preference, it is natural to forget whether or not
-  // the language should be translated. Checking |cannot_be_accept_language| is
-  // also necessary because some minor languages can't be selected in the
-  // language preference even though the language is available in Translate
-  // server.
+  // Languages not on the Accept-Language list should not be blocked unless the
+  // detailed language settings are showing or the language can not be on the
+  // Accept-Language list (this is true for languages that do not have a ICU
+  // localization for the current UI locale.
   bool can_be_accept_language =
       TranslateAcceptLanguages::CanBeAcceptLanguage(language);
   bool is_accept_language = accept_languages->IsAcceptLanguage(language);
-  if (!is_accept_language && can_be_accept_language)
+  if (!is_accept_language && can_be_accept_language &&
+      !IsDetailedLanguageSettingsEnabled())
     return true;
 
   // Under this experiment, translate English page even though English may be
@@ -758,6 +776,17 @@ bool TranslatePrefs::CanTranslateLanguage(
   if (language == "en" && language::ShouldForceTriggerTranslateOnEnglishPages(
                               GetForceTriggerOnEnglishPagesCount()))
     return true;
+  return false;
+}
+
+// static
+bool TranslatePrefs::IsDetailedLanguageSettingsEnabled() {
+#if defined(OS_ANDROID)
+  return base::FeatureList::IsEnabled(language::kDetailedLanguageSettings);
+#elif defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
+  return base::FeatureList::IsEnabled(
+      language::kDesktopDetailedLanguageSettings);
+#endif
   return false;
 }
 

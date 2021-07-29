@@ -131,7 +131,7 @@ export class CoverageView extends UI.Widget.VBox {
     this._decorationManager = null;
     this._resourceTreeModel = null;
 
-    this.registerRequiredCSS('panels/coverage/coverageView.css', {enableLegacyPatching: false});
+    this.registerRequiredCSS('panels/coverage/coverageView.css');
 
     const toolbarContainer = this.contentElement.createChild('div', 'coverage-toolbar-container');
     const toolbar = new UI.Toolbar.Toolbar('coverage-toolbar', toolbarContainer);
@@ -162,7 +162,7 @@ export class CoverageView extends UI.Widget.VBox {
     this._toggleRecordButton = UI.Toolbar.Toolbar.createActionButton(this._toggleRecordAction);
     toolbar.appendToolbarItem(this._toggleRecordButton);
 
-    const mainTarget = SDK.SDKModel.TargetManager.instance().mainTarget();
+    const mainTarget = SDK.TargetManager.TargetManager.instance().mainTarget();
     const mainTargetSupportsRecordOnReload = mainTarget && mainTarget.model(SDK.ResourceTreeModel.ResourceTreeModel);
     this._inlineReloadButton = null;
     if (mainTargetSupportsRecordOnReload) {
@@ -331,7 +331,7 @@ export class CoverageView extends UI.Widget.VBox {
     }
 
     this._reset();
-    const mainTarget = SDK.SDKModel.TargetManager.instance().mainTarget();
+    const mainTarget = SDK.TargetManager.TargetManager.instance().mainTarget();
     if (!mainTarget) {
       return;
     }

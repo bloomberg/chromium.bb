@@ -6,14 +6,14 @@
 
 #include <memory>
 
-#include "ash/public/cpp/ash_features.h"
+#include "ash/bubble/bubble_utils.h"
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/holding_space/holding_space_image.h"
 #include "ash/public/cpp/holding_space/holding_space_item.h"
 #include "ash/public/cpp/rounded_image_view.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/scoped_light_mode_as_default.h"
 #include "ash/system/holding_space/holding_space_item_view.h"
-#include "ash/system/holding_space/holding_space_util.h"
 #include "base/containers/adapters.h"
 #include "base/i18n/rtl.h"
 #include "ui/compositor/canvas_painter.h"
@@ -223,7 +223,8 @@ class DragImageItemChipView : public DragImageItemView {
 
     // Label.
     ScopedLightModeAsDefault scoped_light_mode;
-    auto* label = AddChildView(CreateLabel(LabelStyle::kChip, item->text()));
+    auto* label = AddChildView(bubble_utils::CreateLabel(
+        bubble_utils::LabelStyle::kChipTitle, item->GetText()));
     label->SetElideBehavior(gfx::ElideBehavior::ELIDE_MIDDLE);
     label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
     layout->SetFlexForView(label, 1);
@@ -310,7 +311,8 @@ class DragImageOverflowBadge : public views::View {
         views::BoxLayout::MainAxisAlignment::kCenter);
 
     // Label.
-    auto* label = AddChildView(CreateLabel(LabelStyle::kBadge));
+    auto* label = AddChildView(
+        bubble_utils::CreateLabel(bubble_utils::LabelStyle::kBadge));
     label->SetEnabledColor(AshColorProvider::Get()->IsDarkModeEnabled()
                                ? gfx::kGoogleGrey900
                                : gfx::kGoogleGrey200);

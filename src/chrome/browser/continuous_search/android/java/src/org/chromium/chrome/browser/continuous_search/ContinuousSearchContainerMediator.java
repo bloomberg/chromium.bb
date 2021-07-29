@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.continuous_search.ContinuousSearchContainerCo
 import org.chromium.chrome.browser.layouts.LayoutStateProvider;
 import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.util.TokenHolder;
 
 import java.util.HashSet;
 
@@ -32,11 +33,18 @@ class ContinuousSearchContainerMediator implements BrowserControlsStateProvider.
     private Runnable mRequestLayout;
     private final Supplier<Integer> mDefaultTopContainerHeightSupplier;
     private final Callback<Boolean> mHideToolbarShadow;
+    private final TokenHolder mVisibilityTokenHolder =
+            new TokenHolder(this::onVisibilityTokenUpdate);
 
+    private Runnable mOnFinishedHide;
+    private Runnable mOnFinishedShow;
     private boolean mInitialized;
     private boolean mIsVisible;
-    private boolean mIsTabObscured;
+    private boolean mWantVisible;
+    private boolean mListenForContentOffset;
+    private boolean mAndroidViewSuppressed;
     private int mJavaLayoutHeight;
+    private int mObscuredToken = TokenHolder.INVALID_TOKEN;
 
     ContinuousSearchContainerMediator(BrowserControlsStateProvider browserControlsStateProvider,
             LayoutStateProvider layoutStateProvider,
@@ -49,6 +57,7 @@ class ContinuousSearchContainerMediator implements BrowserControlsStateProvider.
         mDefaultTopContainerHeightSupplier = defaultTopContainerHeightSupplier;
         mInitializeLayout = initializeLayout;
         mHideToolbarShadow = hideToolbarShadow;
+        mBrowserControlsStateProvider.addObserver(this);
     }
 
     void onLayoutInitialized(PropertyModel model, Runnable requestLayout) {
@@ -56,31 +65,61 @@ class ContinuousSearchContainerMediator implements BrowserControlsStateProvider.
         mRequestLayout = requestLayout;
     }
 
+    int hideContainer() {
+        return mVisibilityTokenHolder.acquireToken();
+    }
+
+    void showContainer(int token) {
+        mVisibilityTokenHolder.releaseToken(token);
+    }
+
     /**
      * Called when the obscurity state of the current Tab changes.
      * @param isObscured Whether the tab is obscured.
      */
     void updateTabObscured(boolean isObscured) {
-        mIsTabObscured = isObscured;
+        if (isObscured) {
+            assert mObscuredToken == TokenHolder.INVALID_TOKEN;
+            mObscuredToken = hideContainer();
+            return;
+        }
+        assert mObscuredToken != TokenHolder.INVALID_TOKEN;
+        showContainer(mObscuredToken);
+        mObscuredToken = TokenHolder.INVALID_TOKEN;
+    }
+
+    private void onVisibilityTokenUpdate() {
         if (mModel == null) return;
 
-        mModel.set(ContinuousSearchContainerProperties.ANDROID_VIEW_VISIBILITY,
-                !mIsTabObscured && mIsVisible ? View.VISIBLE : View.INVISIBLE);
+        // Avoid showing on unobscure if the UI should be hidden.
+        if (!mWantVisible && !mVisibilityTokenHolder.hasTokens()) return;
+
+        // Avoid obscuring if already in the correct state.
+        if (mIsVisible != mVisibilityTokenHolder.hasTokens()) return;
+
+        updateVisibility(!mVisibilityTokenHolder.hasTokens(), true);
     }
 
     /**
      * Displays the container. This will increase the top controls height with an animation that
      * is controlled by cc and displays the container.
      */
-    void show() {
-        if (mIsVisible) return;
+    void show(Runnable onFinishedShow) {
+        mOnFinishedHide = null;
+        mOnFinishedShow = onFinishedShow;
+        mWantVisible = true;
+
+        if (mIsVisible) {
+            runOnFinishedShow();
+            return;
+        }
 
         mInitializeLayout.run();
         mInitialized = true;
         if (mJavaLayoutHeight == 0) {
             mRequestLayout.run();
         } else {
-            updateVisibility(true);
+            updateVisibility(true, true);
         }
     }
 
@@ -88,27 +127,36 @@ class ContinuousSearchContainerMediator implements BrowserControlsStateProvider.
      * Hides the container. This will decrease the top controls height with an animation that
      * is controlled by cc and hides the container.
      */
-    void hide() {
-        if (!mInitialized || !mIsVisible) return;
+    void hide(Runnable onFinishedHide) {
+        mOnFinishedHide = onFinishedHide;
+        mOnFinishedShow = null;
+        mWantVisible = false;
 
-        updateVisibility(false);
+        if (!mInitialized || !mIsVisible) {
+            runOnFinishedHide();
+            return;
+        }
+
+        updateVisibility(false, true);
     }
 
     void setJavaHeight(int javaHeight) {
         if (mJavaLayoutHeight > 0 || javaHeight <= 0) return;
 
         mJavaLayoutHeight = javaHeight;
-        updateVisibility(true);
+        updateVisibility(true, true);
     }
 
-    private void updateVisibility(boolean isVisible) {
+    private void updateVisibility(boolean isVisible, boolean forceNoAnimation) {
         mIsVisible = isVisible;
-        mBrowserControlsStateProvider.addObserver(this);
-        mHideToolbarShadow.onResult(isVisible);
+        mListenForContentOffset = true;
+        if (isVisible) {
+            mHideToolbarShadow.onResult(true);
+        }
 
         for (HeightObserver observer : mObservers) {
             observer.onHeightChange(isVisible ? mJavaLayoutHeight : 0,
-                    mLayoutStateProvider.isLayoutVisible(LayoutType.BROWSING));
+                    !forceNoAnimation && mLayoutStateProvider.isLayoutVisible(LayoutType.BROWSING));
         }
     }
 
@@ -123,45 +171,105 @@ class ContinuousSearchContainerMediator implements BrowserControlsStateProvider.
     @Override
     public void onControlsOffsetChanged(int topOffset, int topControlsMinHeightOffset,
             int bottomOffset, int bottomControlsMinHeightOffset, boolean needsAnimate) {
+        updateState();
+    }
+
+    @Override
+    public void onTopControlsHeightChanged(int topControlsHeight, int topControlsMinHeight) {
+        // When animations are disabled {@link #onControlsOffsetChanged} isn't always called when
+        // navigating between pages as the topbar doesn't always move.
+        // TODO(crbug/1217105): updateState() should be calculated relative to the content offset
+        // rather than top offset to ensure this works properly regardless of whether this is
+        // animated.
+        if (mModel == null
+                || mModel.get(ContinuousSearchContainerProperties.ANDROID_VIEW_VISIBILITY)
+                        != View.VISIBLE) {
+            // Avoid triggering on initial height change when making visible.
+            return;
+        }
+        updateState();
+    }
+
+    private void updateState() {
+        if (!mListenForContentOffset) return;
+
+        final int topControlsHeight = mBrowserControlsStateProvider.getTopControlsHeight();
+        final int topControlsMinHeight = mBrowserControlsStateProvider.getTopControlsMinHeight();
+
         // Whether container height is part of top controls height.
-        boolean isIncludedInHeight = mBrowserControlsStateProvider.getTopControlsHeight()
-                > mDefaultTopContainerHeightSupplier.get()
-                        + mBrowserControlsStateProvider.getTopControlsMinHeight();
+        boolean isIncludedInHeight =
+                topControlsHeight > mDefaultTopContainerHeightSupplier.get() + topControlsMinHeight;
+
+        final int topOffset = mBrowserControlsStateProvider.getTopControlOffset();
         // Whether the part of top controls that is not included in min height visible.
-        boolean isNonMinHeightTopControlsVisible = topOffset
-                        + mBrowserControlsStateProvider.getTopControlsHeight()
-                        - mBrowserControlsStateProvider.getTopControlsMinHeight()
-                > 0;
+        boolean isNonMinHeightTopControlsVisible =
+                (topOffset + topControlsHeight - topControlsMinHeight) > 0;
         // Whether container is at least partly visible.
         boolean isUiVisible = isIncludedInHeight && isNonMinHeightTopControlsVisible;
         final boolean uiFullyVisible = isUiVisible && topOffset == 0;
-        int yOffset = topOffset + mBrowserControlsStateProvider.getTopControlsMinHeight()
-                + mDefaultTopContainerHeightSupplier.get();
+        int yOffset = topOffset + topControlsMinHeight + mDefaultTopContainerHeightSupplier.get();
         mModel.set(ContinuousSearchContainerProperties.VERTICAL_OFFSET, yOffset);
 
-        // Only show the composited view when the UI is partly visible (mid transition) and native
-        // can run animations.
-        mModel.set(ContinuousSearchContainerProperties.COMPOSITED_VIEW_VISIBLE,
-                !mIsTabObscured
-                        && (!uiFullyVisible && isUiVisible
-                                && mCanAnimateNativeBrowserControls.get()));
+        // Show the composited view when the UI is at least partly visible and native
+        // can run animations. This change will happen on the next composited frame.
+        final boolean showCompositedView = !mVisibilityTokenHolder.hasTokens() && isUiVisible
+                && mCanAnimateNativeBrowserControls.get();
+        mModel.set(ContinuousSearchContainerProperties.COMPOSITED_VIEW_VISIBLE, showCompositedView);
 
         // If we're running the animations in native, the Android view should only be visible when
         // the container is fully shown. Otherwise, the Android view will be visible if it's within
-        // screen boundaries.
-        mModel.set(ContinuousSearchContainerProperties.ANDROID_VIEW_VISIBILITY,
-                mIsTabObscured
-                        ? View.INVISIBLE
-                        : !uiFullyVisible && isUiVisible && mCanAnimateNativeBrowserControls.get()
-                                ? View.GONE
-                                : ((isUiVisible && !mCanAnimateNativeBrowserControls.get())
-                                                        || uiFullyVisible
-                                                ? View.VISIBLE
-                                                : View.GONE));
+        // screen boundaries. This change will happen immediately.
+        final int androidViewState = (mAndroidViewSuppressed || mVisibilityTokenHolder.hasTokens())
+                ? View.INVISIBLE
+                : !uiFullyVisible && isUiVisible && mCanAnimateNativeBrowserControls.get()
+                        ? View.GONE
+                        : ((isUiVisible && !mCanAnimateNativeBrowserControls.get())
+                                                || uiFullyVisible
+                                        ? View.VISIBLE
+                                        : View.GONE);
+        mModel.set(ContinuousSearchContainerProperties.ANDROID_VIEW_VISIBILITY, androidViewState);
+
+        if (androidViewState == View.VISIBLE) runOnFinishedShow();
 
         final boolean doneHiding = !isUiVisible && !mIsVisible;
         if (doneHiding) {
-            mBrowserControlsStateProvider.removeObserver(this);
+            mHideToolbarShadow.onResult(false);
+            runOnFinishedHide();
+            mListenForContentOffset = false;
+        }
+    }
+
+    /**
+     * Updates the Android visibility in response to {@link SceneOverlay} Android view suppression
+     * requests.
+     * @param visibility The Android View is visiblility.
+     */
+    @Override
+    public void onAndroidVisibilityChanged(int visibility) {
+        if (mModel == null) return;
+
+        mAndroidViewSuppressed = visibility != View.VISIBLE;
+        final int androidViewState =
+                (!mAndroidViewSuppressed && mIsVisible && !mVisibilityTokenHolder.hasTokens())
+                ? View.VISIBLE
+                : View.INVISIBLE;
+
+        mModel.set(ContinuousSearchContainerProperties.ANDROID_VIEW_VISIBILITY, androidViewState);
+    }
+
+    // TODO(crbug.com/1232595): merge onFinishedShow and onFinishedHide logic.
+    @VisibleForTesting
+    void runOnFinishedHide() {
+        if (mOnFinishedHide != null) {
+            mOnFinishedHide.run();
+            mOnFinishedHide = null;
+        }
+    }
+
+    void runOnFinishedShow() {
+        if (mOnFinishedShow != null) {
+            mOnFinishedShow.run();
+            mOnFinishedShow = null;
         }
     }
 

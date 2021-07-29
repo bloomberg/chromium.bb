@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/observer_list.h"
 #include "base/time/clock.h"
 #include "chrome/browser/ash/login/saml/password_sync_token_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
@@ -112,6 +111,13 @@ class InSessionPasswordSyncManager
 
   // Reset lockscreen re-authentication dialog.
   void ResetDialog();
+
+  // Get lockscreen reauth dialog width
+  int GetDialogWidth();
+
+  LockScreenStartReauthDialog* get_reauth_dialog_for_testing() {
+    return lock_screen_start_reauth_dialog_.get();
+  }
 
  private:
   void UpdateOnlineAuth();

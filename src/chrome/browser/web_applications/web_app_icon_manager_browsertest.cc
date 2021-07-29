@@ -17,8 +17,8 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
-#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
@@ -29,6 +29,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/views/image_model_utils.h"
 #include "url/gurl.h"
 
 namespace web_app {
@@ -86,8 +87,7 @@ IN_PROC_BROWSER_TEST_F(WebAppIconManagerBrowserTest, SingleIcon) {
     }
 
     InstallManager& install_manager =
-        WebAppProviderBase::GetProviderBase(browser()->profile())
-            ->install_manager();
+        WebAppProvider::Get(browser()->profile())->install_manager();
 
     base::RunLoop run_loop;
     install_manager.InstallWebAppFromInfo(
@@ -135,7 +135,8 @@ IN_PROC_BROWSER_TEST_F(WebAppIconManagerBrowserTest, SingleIcon) {
     controller->SetReadIconCallbackForTesting(base::BindLambdaForTesting(
         [controller, &image_skia, &run_loop, this]() {
           EXPECT_TRUE(app_service_test().AreIconImageEqual(
-              image_skia, controller->GetWindowAppIcon()));
+              image_skia, views::GetImageSkiaFromImageModel(
+                              controller->GetWindowAppIcon(), nullptr)));
           run_loop.Quit();
         }));
     run_loop.Run();
@@ -145,7 +146,9 @@ IN_PROC_BROWSER_TEST_F(WebAppIconManagerBrowserTest, SingleIcon) {
 
   controller->SetReadIconCallbackForTesting(
       base::BindLambdaForTesting([controller, &run_loop]() {
-        const SkBitmap* bitmap = controller->GetWindowAppIcon().bitmap();
+        const SkBitmap* bitmap = views::GetImageSkiaFromImageModel(
+                                     controller->GetWindowAppIcon(), nullptr)
+                                     .bitmap();
         EXPECT_EQ(SK_ColorBLUE, bitmap->getColor(0, 0));
         EXPECT_EQ(32, bitmap->width());
         EXPECT_EQ(32, bitmap->height());

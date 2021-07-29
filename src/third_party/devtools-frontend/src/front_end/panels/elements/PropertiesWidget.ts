@@ -39,6 +39,8 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
+const OBJECT_GROUP_NAME = 'properties-sidebar-pane';
+
 let propertiesWidgetInstance: PropertiesWidget;
 
 export class PropertiesWidget extends UI.ThrottledWidget.ThrottledWidget {
@@ -48,15 +50,15 @@ export class PropertiesWidget extends UI.ThrottledWidget.ThrottledWidget {
   _lastRequestedNode?: SDK.DOMModel.DOMNode;
   constructor() {
     super(true /* isWebComponent */);
-    this.registerRequiredCSS('panels/elements/propertiesWidget.css', {enableLegacyPatching: false});
+    this.registerRequiredCSS('panels/elements/propertiesWidget.css');
 
-    SDK.SDKModel.TargetManager.instance().addModelListener(
+    SDK.TargetManager.TargetManager.instance().addModelListener(
         SDK.DOMModel.DOMModel, SDK.DOMModel.Events.AttrModified, this._onNodeChange, this);
-    SDK.SDKModel.TargetManager.instance().addModelListener(
+    SDK.TargetManager.TargetManager.instance().addModelListener(
         SDK.DOMModel.DOMModel, SDK.DOMModel.Events.AttrRemoved, this._onNodeChange, this);
-    SDK.SDKModel.TargetManager.instance().addModelListener(
+    SDK.TargetManager.TargetManager.instance().addModelListener(
         SDK.DOMModel.DOMModel, SDK.DOMModel.Events.CharacterDataModified, this._onNodeChange, this);
-    SDK.SDKModel.TargetManager.instance().addModelListener(
+    SDK.TargetManager.TargetManager.instance().addModelListener(
         SDK.DOMModel.DOMModel, SDK.DOMModel.Events.ChildNodeCountUpdated, this._onNodeChange, this);
     UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, this._setNode, this);
     this._node = UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
@@ -91,7 +93,7 @@ export class PropertiesWidget extends UI.ThrottledWidget.ThrottledWidget {
 
   async doUpdate(): Promise<void> {
     if (this._lastRequestedNode) {
-      this._lastRequestedNode.domModel().runtimeModel().releaseObjectGroup(_objectGroupName);
+      this._lastRequestedNode.domModel().runtimeModel().releaseObjectGroup(OBJECT_GROUP_NAME);
       delete this._lastRequestedNode;
     }
 
@@ -101,13 +103,12 @@ export class PropertiesWidget extends UI.ThrottledWidget.ThrottledWidget {
     }
 
     this._lastRequestedNode = this._node;
-    const object = await this._node.resolveToObject(_objectGroupName);
+    const object = await this._node.resolveToObject(OBJECT_GROUP_NAME);
     if (!object) {
       return;
     }
 
     const result = await object.callFunction(protoList);
-    object.release();
 
     if (!result.object || result.wasThrown) {
       return;
@@ -125,21 +126,20 @@ export class PropertiesWidget extends UI.ThrottledWidget.ThrottledWidget {
 
     let selected = false;
     // Get array of property user-friendly names.
-    for (let i = 0; i < properties.length; ++i) {
-      if (!parseInt(properties[i].name, 10)) {
+    for (const {name, value} of properties) {
+      if (isNaN(parseInt(name, 10))) {
         continue;
       }
-      const property = properties[i].value;
-      if (!property) {
+      if (!value) {
         continue;
       }
-      let title: string|(string | undefined) = property.description;
+      let title = value.description;
       if (!title) {
         continue;
       }
       title = title.replace(/Prototype$/, '');
 
-      const section = this._createSectionTreeElement(property, title);
+      const section = this._createSectionTreeElement(value, title, object);
       this._treeOutline.appendChild(section);
       if (!selected) {
         section.select(/* omitFocus= */ true, /* selectedByUser= */ false);
@@ -147,33 +147,25 @@ export class PropertiesWidget extends UI.ThrottledWidget.ThrottledWidget {
       }
     }
 
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    function protoList(this: any): {
-      // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      __proto__: null,
-    } {
-      let proto = this;
-      // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const result = {__proto__: null} as any;
-      let counter = 1;
-      while (proto) {
-        result[counter++] = proto;
-        proto = proto.__proto__;
+    function protoList(this: object): object[] {
+      const result: object[] = [];
+      for (let object = this; object !== null; object = Object.getPrototypeOf(object)) {
+        result.push(object);
       }
       return result;
     }
   }
 
-  _createSectionTreeElement(property: SDK.RemoteObject.RemoteObject, title: string):
-      ObjectUI.ObjectPropertiesSection.RootElement {
+  _createSectionTreeElement(
+      property: SDK.RemoteObject.RemoteObject, title: string,
+      object: SDK.RemoteObject.RemoteObject): ObjectUI.ObjectPropertiesSection.RootElement {
     const titleElement = document.createElement('span');
     titleElement.classList.add('tree-element-title');
     titleElement.textContent = title;
 
-    const section = new ObjectUI.ObjectPropertiesSection.RootElement(property);
+    const section = new ObjectUI.ObjectPropertiesSection.RootElement(
+        property, undefined, undefined, ObjectUI.ObjectPropertiesSection.ObjectPropertiesMode.OwnOnly, undefined,
+        object);
     section.title = titleElement;
     this._expandController.watchSection(title, section);
 
@@ -193,6 +185,3 @@ export class PropertiesWidget extends UI.ThrottledWidget.ThrottledWidget {
   }
 }
 
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const _objectGroupName = 'properties-sidebar-pane';

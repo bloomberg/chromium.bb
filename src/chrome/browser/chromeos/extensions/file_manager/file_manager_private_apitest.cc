@@ -10,28 +10,28 @@
 #include "ash/constants/ash_features.h"
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "chrome/browser/ash/crostini/crostini_manager.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/crostini/fake_crostini_features.h"
 #include "chrome/browser/ash/drive/drivefs_test_support.h"
+#include "chrome/browser/ash/file_manager/file_watcher.h"
+#include "chrome/browser/ash/file_manager/mount_test_util.h"
+#include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/file_system_provider/icon_set.h"
 #include "chrome/browser/ash/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router_factory.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_misc.h"
-#include "chrome/browser/chromeos/file_manager/file_watcher.h"
-#include "chrome/browser/chromeos/file_manager/mount_test_util.h"
-#include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/file_system_provider_capabilities/file_system_provider_capabilities_handler.h"
 #include "chromeos/dbus/concierge/concierge_service.pb.h"
-#include "chromeos/dbus/cros_disks_client.h"
+#include "chromeos/dbus/cros_disks/cros_disks_client.h"
 #include "chromeos/disks/disk.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
 #include "components/drive/drive_pref_names.h"
@@ -354,7 +354,7 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
 };
 
 IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Mount) {
-  using chromeos::file_system_provider::IconSet;
+  using ash::file_system_provider::IconSet;
   profile()->GetPrefs()->SetBoolean(drive::prefs::kDisableDrive, true);
 
   // Add a provided file system, to test passing the |configurable| and
@@ -364,8 +364,8 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Mount) {
                    GURL("chrome://resources/testing-provider-id-16.jpg"));
   icon_set.SetIcon(IconSet::IconSize::SIZE_32x32,
                    GURL("chrome://resources/testing-provider-id-32.jpg"));
-  chromeos::file_system_provider::ProvidedFileSystemInfo info(
-      "testing-provider-id", chromeos::file_system_provider::MountOptions(),
+  ash::file_system_provider::ProvidedFileSystemInfo info(
+      "testing-provider-id", ash::file_system_provider::MountOptions(),
       base::FilePath(), true /* configurable */, false /* watchable */,
       extensions::SOURCE_NETWORK, icon_set);
 
@@ -390,7 +390,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Mount) {
                           _))
       .Times(1);
 
-  ASSERT_TRUE(RunExtensionTest({.name = "file_browser/mount_test"},
+  ASSERT_TRUE(RunExtensionTest("file_browser/mount_test", {},
                                {.load_as_component = true}))
       << message_;
 }
@@ -422,12 +422,12 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, FormatVolume) {
                   FormatFileSystemType::kNtfs, "NEWLABEL3"))
       .Times(1);
 
-  ASSERT_TRUE(RunExtensionTest({.name = "file_browser/format_test"},
+  ASSERT_TRUE(RunExtensionTest("file_browser/format_test", {},
                                {.load_as_component = true}));
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Permissions) {
-  EXPECT_TRUE(RunExtensionTest({.name = "file_browser/permissions"},
+  EXPECT_TRUE(RunExtensionTest("file_browser/permissions", {},
                                {.ignore_manifest_warnings = true}));
   const extensions::Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension);
@@ -439,7 +439,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Permissions) {
 IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, ContentChecksum) {
   AddLocalFileSystem(browser()->profile(), temp_dir_.GetPath());
 
-  ASSERT_TRUE(RunExtensionTest({.name = "file_browser/content_checksum_test"},
+  ASSERT_TRUE(RunExtensionTest("file_browser/content_checksum_test", {},
                                {.load_as_component = true}));
 }
 
@@ -463,7 +463,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Recent) {
     ASSERT_TRUE(video_file.IsValid());
   }
 
-  ASSERT_TRUE(RunExtensionTest({.name = "file_browser/recent_test"},
+  ASSERT_TRUE(RunExtensionTest("file_browser/recent_test", {},
                                {.load_as_component = true}));
 }
 
@@ -519,7 +519,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, MediaMetadata) {
     ASSERT_TRUE(base::CopyFile(image, test_dir.Append(image.BaseName())));
   }
 
-  ASSERT_TRUE(RunExtensionTest({.name = "file_browser/media_metadata"},
+  ASSERT_TRUE(RunExtensionTest("file_browser/media_metadata", {},
                                {.load_as_component = true}));
 }
 
@@ -563,7 +563,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Crostini) {
   guest_os_share_path->RegisterPersistedPath(crostini::kCrostiniDefaultVmName,
                                              shared2);
 
-  ASSERT_TRUE(RunExtensionTest({.name = "file_browser/crostini_test"},
+  ASSERT_TRUE(RunExtensionTest("file_browser/crostini_test", {},
                                {.load_as_component = true}));
 }
 
@@ -614,13 +614,13 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, HoldingSpace) {
     ASSERT_TRUE(video_file.IsValid());
   }
 
-  EXPECT_TRUE(RunExtensionTest({.name = "file_browser/holding_space"},
+  EXPECT_TRUE(RunExtensionTest("file_browser/holding_space", {},
                                {.load_as_component = true}));
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, GetVolumeRoot) {
   AddLocalFileSystem(browser()->profile(), temp_dir_.GetPath());
 
-  ASSERT_TRUE(RunExtensionTest({.name = "file_browser/get_volume_root"},
+  ASSERT_TRUE(RunExtensionTest("file_browser/get_volume_root", {},
                                {.load_as_component = true}));
 }

@@ -25,6 +25,10 @@
 
 namespace {
 
+// This stores the latest milestone with new Release Notes content. If the last
+// milestone the user has seen the notification is before this, a new
+// notification will be shown.
+constexpr int kLastChromeVersionWithReleaseNotes = 93;
 constexpr int kTimesToShowSuggestionChip = 3;
 
 int GetMilestone() {
@@ -32,12 +36,31 @@ int GetMilestone() {
 }
 
 bool IsEligibleProfile(Profile* profile) {
-  std::string user_email = profile->GetProfileUserName();
-  return gaia::IsGoogleInternalAccountEmail(user_email) ||
-         (ash::ProfileHelper::Get()
-              ->GetUserByProfile(profile)
-              ->HasGaiaAccount() &&
-          !profile->GetProfilePolicyConnector()->IsManaged());
+  // Do not show the notification for Ephemeral and Guest profiles.
+  if (ash::ProfileHelper::IsEphemeralUserProfile(profile))
+    return false;
+  if (profile->IsGuestSession())
+    return false;
+
+  // Do not show the notification for managed profiles (e.g. Enterprise,
+  // Education), except for Googlers and Unicorn accounts.
+
+  // Show the notification for Googlers.
+  if (gaia::IsGoogleInternalAccountEmail(profile->GetProfileUserName()))
+    return true;
+
+  // Show the notification for Unicorn profiles. Education profiles are Regular
+  // profiles, so they will not pass this check.
+  if (profile->IsChild())
+    return true;
+
+  // After the above exceptions, do not show the notification for profiles
+  // managed by a policy.
+  if (profile->GetProfilePolicyConnector()->IsManaged())
+    return false;
+
+  // Otherwise, show the notification for Consumer profiles.
+  return ash::ProfileHelper::Get()->GetUserByProfile(profile)->HasGaiaAccount();
 }
 
 bool ShouldShowForCurrentChannel() {
@@ -51,7 +74,6 @@ bool ShouldShowForCurrentChannel() {
 namespace ash {
 
 void ReleaseNotesStorage::RegisterProfilePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterIntegerPref(prefs::kReleaseNotesLastShownMilestone, -1);
   registry->RegisterIntegerPref(
       prefs::kReleaseNotesSuggestionChipTimesLeftToShow, 0);
 }
@@ -72,10 +94,10 @@ bool ReleaseNotesStorage::ShouldNotify() {
   if (!IsEligibleProfile(profile_))
     return false;
 
-  int last_milestone =
-      profile_->GetPrefs()->GetInteger(prefs::kReleaseNotesLastShownMilestone);
+  int last_milestone = profile_->GetPrefs()->GetInteger(
+      prefs::kHelpAppNotificationLastShownMilestone);
   if (profile_->GetPrefs()
-          ->FindPreference(prefs::kReleaseNotesLastShownMilestone)
+          ->FindPreference(prefs::kHelpAppNotificationLastShownMilestone)
           ->IsDefaultValue()) {
     // We don't know if the user has seen any notification before as we have
     // never set which milestone was last seen. So use the version of chrome
@@ -84,15 +106,12 @@ bool ReleaseNotesStorage::ShouldNotify() {
         ChromeVersionService::GetVersion(profile_->GetPrefs()));
     last_milestone = profile_version.components()[0];
   }
-  // Hardcoding this to M91 as that should be the last release notes update that
-  // the current chrome version should see. There is not an update every
-  // milestone.
-  return last_milestone < 91;
+  return last_milestone < kLastChromeVersionWithReleaseNotes;
 }
 
 void ReleaseNotesStorage::MarkNotificationShown() {
-  profile_->GetPrefs()->SetInteger(prefs::kReleaseNotesLastShownMilestone,
-                                   GetMilestone());
+  profile_->GetPrefs()->SetInteger(
+      prefs::kHelpAppNotificationLastShownMilestone, GetMilestone());
   // When the notification is shown we should also show the suggestion chip a
   // number of times.
   profile_->GetPrefs()->SetInteger(

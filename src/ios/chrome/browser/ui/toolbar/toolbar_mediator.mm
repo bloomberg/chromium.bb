@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/ui/toolbar/toolbar_mediator.h"
 
 #include "base/memory/ptr_util.h"
-#include "base/scoped_observer.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
@@ -41,9 +40,6 @@
 
 // The current web state associated with the toolbar.
 @property(nonatomic, assign) web::WebState* webState;
-
-// Whether the associated toolbar is in dark mode.
-@property(nonatomic, assign) BOOL toolbarDarkMode;
 
 // Whether an overlay is currently presented over the web content area.
 @property(nonatomic, assign, getter=isWebContentAreaShowingOverlay)
@@ -210,7 +206,7 @@
 - (void)setConsumer:(id<ToolbarConsumer>)consumer {
   _consumer = consumer;
   [_consumer setVoiceSearchEnabled:ios::GetChromeBrowserProvider()
-                                       ->GetVoiceSearchProvider()
+                                       .GetVoiceSearchProvider()
                                        ->IsVoiceSearchEnabled()];
   if (self.webState) {
     [self updateConsumer];

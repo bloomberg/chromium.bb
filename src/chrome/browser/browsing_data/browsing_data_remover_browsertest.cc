@@ -102,7 +102,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/net/system_proxy_manager.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chromeos/dbus/system_proxy/system_proxy_client.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -492,7 +491,6 @@ class BrowsingDataRemoverBrowserTest
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
     // Testing MediaLicenses requires additional command line parameters as
     // it uses the External Clear Key CDM.
@@ -1380,18 +1378,9 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
   EXPECT_EQ(0, found) << "A non-ignored file contains the hostname.";
 }
 
-// TODO(crbug.com/840080): Filesystem can't be deleted on exit correctly at the
-// moment.
-// TODO(crbug.com/927312): LocalStorage deletion is flaky.
 const std::vector<std::string> kSessionOnlyStorageTestTypes{
-    "Cookie",
-    // "LocalStorage",
-    // "FileSystem",
-    "SessionStorage",
-    "IndexedDb",
-    "WebSql",
-    "ServiceWorker",
-    "CacheStorage",
+    "Cookie",    "LocalStorage", "FileSystem",    "SessionStorage",
+    "IndexedDb", "WebSql",       "ServiceWorker", "CacheStorage",
 };
 
 // Test that storage gets deleted if marked as SessionOnly.

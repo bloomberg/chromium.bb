@@ -6,7 +6,7 @@
 #include <set>
 #include <utility>
 
-#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/constants/ash_pref_names.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -83,9 +83,8 @@ class PowerHandlerTest : public InProcessBrowserTest {
   // InProcessBrowserTest:
   void SetUpInProcessBrowserTestFixture() override {
     // Initialize user policy.
-    ON_CALL(provider_, IsInitializationComplete(_)).WillByDefault(Return(true));
-    ON_CALL(provider_, IsFirstPolicyLoadComplete(_))
-        .WillByDefault(Return(true));
+    provider_.SetDefaultReturns(/*is_initialization_complete_return=*/true,
+                                /*is_first_policy_load_complete_return=*/true);
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
   }
 
@@ -109,15 +108,14 @@ class PowerHandlerTest : public InProcessBrowserTest {
     for (auto it = web_ui_.call_data().rbegin();
          it != web_ui_.call_data().rend(); ++it) {
       const content::TestWebUI::CallData* data = it->get();
-      std::string name;
+      const std::string* name = data->arg1()->GetIfString();
       const base::DictionaryValue* dict = nullptr;
-      if (data->function_name() != "cr.webUIListenerCallback" ||
-          !data->arg1()->GetAsString(&name) ||
-          name != PowerHandler::kPowerManagementSettingsChangedName) {
+      if (data->function_name() != "cr.webUIListenerCallback" || !name ||
+          *name != PowerHandler::kPowerManagementSettingsChangedName) {
         continue;
       }
       if (!data->arg2()->GetAsDictionary(&dict)) {
-        ADD_FAILURE() << "Failed to get dict from " << name << " message";
+        ADD_FAILURE() << "Failed to get dict from " << *name << " message";
         continue;
       }
       std::string out;

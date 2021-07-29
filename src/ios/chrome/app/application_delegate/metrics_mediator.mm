@@ -18,7 +18,6 @@
 #include "components/metrics/metrics_service.h"
 #include "components/prefs/pref_service.h"
 #import "components/previous_session_info/previous_session_info.h"
-#include "components/ukm/ios/features.h"
 #include "components/ukm/ios/ukm_reporting_ios_util.h"
 #import "ios/chrome/app/application_delegate/metric_kit_subscriber.h"
 #import "ios/chrome/app/application_delegate/startup_information.h"
@@ -36,7 +35,7 @@
 #import "ios/chrome/browser/ui/main/scene_state.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
-#import "ios/chrome/browser/widget_kit/widget_metrics_util.h"
+#include "ios/chrome/browser/widget_kit/features.h"
 #include "ios/chrome/common/app_group/app_group_metrics.h"
 #include "ios/chrome/common/app_group/app_group_metrics_mainapp.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -45,6 +44,10 @@
 #include "ios/web/public/thread/web_thread.h"
 #import "ios/web/public/web_state.h"
 #include "url/gurl.h"
+
+#if BUILDFLAG(ENABLE_WIDGET_KIT_EXTENSION)
+#import "ios/chrome/browser/widget_kit/widget_metrics_util.h"  // nogncheck
+#endif
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -242,9 +245,11 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
         base::UserMetricsAction("MobileVoiceOverActiveOnLaunch"));
   }
 
+#if BUILDFLAG(ENABLE_WIDGET_KIT_EXTENSION)
   if (@available(iOS 14, *)) {
     [WidgetMetricsUtil logInstalledWidgets];
   }
+#endif
 
   // Create the first user action recorder and schedule a task to expire it
   // after some timeout. If unable to determine the last time the app entered
@@ -288,12 +293,6 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
 - (void)updateMetricsStateBasedOnPrefsUserTriggered:(BOOL)isUserTriggered {
   BOOL optIn = [self areMetricsEnabled];
   BOOL allowUploading = [self isUploadingEnabled];
-  if (!base::FeatureList::IsEnabled(kUmaCellular)) {
-    BOOL wifiOnly = GetApplicationContext()->GetLocalState()->GetBoolean(
-        prefs::kMetricsReportingWifiOnly);
-    optIn = optIn && wifiOnly;
-  }
-
   if (isUserTriggered)
     [self updateMetricsPrefsOnPermissionChange:optIn];
   [self setMetricsEnabled:optIn withUploading:allowUploading];
@@ -320,19 +319,7 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
 }
 
 - (BOOL)isUploadingEnabled {
-  BOOL optIn = [self areMetricsEnabled];
-  if (base::FeatureList::IsEnabled(kUmaCellular)) {
-    return optIn;
-  }
-  BOOL wifiOnly = GetApplicationContext()->GetLocalState()->GetBoolean(
-      prefs::kMetricsReportingWifiOnly);
-  BOOL allowUploading = optIn;
-  if (optIn && wifiOnly) {
-    BOOL usingWWAN = net::NetworkChangeNotifier::IsConnectionCellular(
-        net::NetworkChangeNotifier::GetConnectionType());
-    allowUploading = !usingWWAN;
-  }
-  return allowUploading;
+  return [self areMetricsEnabled];
 }
 
 #pragma mark - Internal methods.
@@ -362,7 +349,7 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
     PrefService* prefs = GetApplicationContext()->GetLocalState();
     NSString* brandCode =
         base::SysUTF8ToNSString(ios::GetChromeBrowserProvider()
-                                    ->GetAppDistributionProvider()
+                                    .GetAppDistributionProvider()
                                     ->GetDistributionBrandCode());
 
     app_group::main_app::EnableMetrics(
@@ -522,13 +509,8 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
 }
 
 - (BOOL)isMetricsReportingEnabledWifiOnly {
-  BOOL optIn = GetApplicationContext()->GetLocalState()->GetBoolean(
+  return GetApplicationContext()->GetLocalState()->GetBoolean(
       metrics::prefs::kMetricsReportingEnabled);
-  if (base::FeatureList::IsEnabled(kUmaCellular)) {
-    return optIn;
-  }
-  return optIn && GetApplicationContext()->GetLocalState()->GetBoolean(
-                      prefs::kMetricsReportingWifiOnly);
 }
 
 @end

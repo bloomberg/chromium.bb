@@ -32,6 +32,10 @@ extern "C" {
 
 /*!
  * \brief The stucture of acummulated frame stats in the first pass.
+ *
+ * Errors (coded_error, intra_error, etc.) and counters (new_mv_count) are
+ * normalized to each MB. MV related stats (MVc, MVr, etc.) are normalized to
+ * the frame width and height. See function normalize_firstpass_stats.
  */
 typedef struct {
   /*!
@@ -180,7 +184,7 @@ enum {
  * \brief  Data related to the current GF/ARF group and the
  * individual frames within the group
  */
-typedef struct {
+typedef struct GF_GROUP {
   /*!\cond */
   // Frame update type, e.g. ARF/GF/LF/Overlay
   FRAME_UPDATE_TYPE update_type[MAX_STATIC_GF_GROUP_LENGTH];
@@ -211,6 +215,20 @@ typedef struct {
   // 0 : frame is a reference frame.
   // 1 : frame is a non-reference frame.
   int is_frame_non_ref[MAX_STATIC_GF_GROUP_LENGTH];
+
+  // The offset into lookahead_ctx for choosing
+  // source of frame parallel encodes.
+  int src_offset[MAX_STATIC_GF_GROUP_LENGTH];
+#if CONFIG_FRAME_PARALLEL_ENCODE_2
+  // Stores the display order hint of each frame in the current GF_GROUP.
+  int display_idx[MAX_STATIC_GF_GROUP_LENGTH];
+  // Stores the display order hint of the frames not to be
+  // refreshed by the current frame.
+  int skip_frame_refresh[MAX_STATIC_GF_GROUP_LENGTH][REF_FRAMES];
+  // Stores the display order hint of the frame to be excluded during reference
+  // assignment.
+  int skip_frame_as_ref[MAX_STATIC_GF_GROUP_LENGTH];
+#endif  // CONFIG_FRAME_PARALLEL_ENCODE_2
 #endif  // CONFIG_FRAME_PARALLEL_ENCODE
   /*!\endcond */
 } GF_GROUP;
@@ -259,7 +277,7 @@ typedef struct {
   int64_t kf_group_bits;
 
   // Error score of frames still to be coded in kf group
-  int64_t kf_group_error_left;
+  double kf_group_error_left;
 
   // Over time correction for bits per macro block estimation
   double bpm_factor;
@@ -347,6 +365,15 @@ struct AV1_COMP;
 struct EncodeFrameParams;
 struct AV1EncoderConfig;
 struct TileDataEnc;
+
+static INLINE int is_fp_wavelet_energy_invalid(
+    const FIRSTPASS_STATS *fp_stats) {
+  return (fp_stats->frame_avg_wavelet_energy < 0);
+}
+
+static INLINE BLOCK_SIZE get_fp_block_size(int is_screen_content_type) {
+  return (is_screen_content_type ? BLOCK_8X8 : BLOCK_16X16);
+}
 
 int av1_get_unit_rows_in_tile(TileInfo tile, const BLOCK_SIZE fp_block_size);
 int av1_get_unit_cols_in_tile(TileInfo tile, const BLOCK_SIZE fp_block_size);

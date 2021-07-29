@@ -2,15 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "chrome/browser/page_load_metrics/integration_tests/metric_integration_test.h"
 
+#include "base/feature_list.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/strings/strcat.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/trace_event_analyzer.h"
 #include "build/build_config.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
+#include "third_party/blink/public/common/features.h"
 
 using trace_analyzer::Query;
 using trace_analyzer::TraceAnalyzer;
@@ -21,22 +25,22 @@ using ukm::builders::PageLoad;
 namespace {
 
 void ValidateCandidate(int expected_size, const TraceEvent& event) {
-  std::unique_ptr<base::Value> data;
+  base::Value data;
   ASSERT_TRUE(event.GetArgAsValue("data", &data));
 
-  const absl::optional<int> traced_size = data->FindIntKey("size");
+  const absl::optional<int> traced_size = data.FindIntKey("size");
   ASSERT_TRUE(traced_size.has_value());
   EXPECT_EQ(traced_size.value(), expected_size);
 
   const absl::optional<bool> traced_main_frame_flag =
-      data->FindBoolKey("isMainFrame");
+      data.FindBoolKey("isMainFrame");
   ASSERT_TRUE(traced_main_frame_flag.has_value());
   EXPECT_TRUE(traced_main_frame_flag.value());
 }
 
 int GetCandidateIndex(const TraceEvent& event) {
-  std::unique_ptr<base::Value> data = event.GetKnownArgAsValue("data");
-  absl::optional<int> candidate_idx = data->FindIntKey("candidateIndex");
+  base::Value data = event.GetKnownArgAsValue("data");
+  absl::optional<int> candidate_idx = data.FindIntKey("candidateIndex");
   DCHECK(candidate_idx.has_value()) << "couldn't find 'candidateIndex'";
 
   return candidate_idx.value();
@@ -63,7 +67,13 @@ void ValidateTraceEvents(std::unique_ptr<TraceAnalyzer> analyzer) {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(MetricIntegrationTest, LargestContentfulPaint) {
+// Flaky on Linux: https://crbug.com/1223602.
+#if defined(OS_LINUX)
+#define MAYBE_LargestContentfulPaint DISABLED_LargestContentfulPaint
+#else
+#define MAYBE_LargestContentfulPaint LargestContentfulPaint
+#endif
+IN_PROC_BROWSER_TEST_F(MetricIntegrationTest, MAYBE_LargestContentfulPaint) {
   Start();
   StartTracing({"loading"});
   Load("/largest_contentful_paint.html");
@@ -110,16 +120,16 @@ IN_PROC_BROWSER_TEST_F(MetricIntegrationTest, LargestContentfulPaint) {
   ValidateTraceEvents(StopTracingAndAnalyze());
 
   // Check UKM.
-  // Since UKM rounds to an integer while the JS API returns a double, we'll
-  // assert that the UKM and JS values are within 1.0 of each other. Comparing
-  // with strict equality could round incorrectly and introduce flakiness into
-  // the test.
+  // Since UKM rounds to an integer while the JS API returns a coarsened double,
+  // we'll assert that the UKM and JS values are within 1.2 of each other.
+  // Comparing with strict equality could round incorrectly and introduce
+  // flakiness into the test.
   ExpectUKMPageLoadMetricNear(
       PageLoad::kPaintTiming_NavigationToLargestContentfulPaintName,
-      lcp_timestamps[2].value(), 1.0);
+      lcp_timestamps[2].value(), 1.2);
   ExpectUKMPageLoadMetricNear(
       PageLoad::kPaintTiming_NavigationToLargestContentfulPaint_MainFrameName,
-      lcp_timestamps[2].value(), 1.0);
+      lcp_timestamps[2].value(), 1.2);
 
   // Check UMA.
   // Similar to UKM, rounding could introduce flakiness, so use helper to
@@ -144,4 +154,33 @@ IN_PROC_BROWSER_TEST_F(MetricIntegrationTest,
                                 gfx::Point(100, 100));
 
   EXPECT_EQ(EvalJs(sub, "test_step_2()").value.GetString(), "green-16x16.png");
+}
+
+class PageViewportInLCPTest : public MetricIntegrationTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    feature_list_.InitWithFeatures(
+        {blink::features::kUsePageViewportInLCP} /*enabled*/, {} /*disabled*/);
+  }
+
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(PageViewportInLCPTest, DISABLED_FullSizeImageInIframe) {
+  Start();
+  StartTracing({"loading"});
+  Load("/full_size_image.html");
+  content::EvalJsResult result = EvalJs(web_contents(), "waitForLCP()");
+  double lcpTime = EvalJs(web_contents(), "lcpTime").ExtractDouble();
+
+  // Navigate away to force metrics recording.
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+
+  // |lcpTime| is computed from 3 different JS timestamps, so use an epsilon of
+  // 2 to account for coarsening and UKM integer rounding.
+  ExpectUKMPageLoadMetricNear(
+      PageLoad::kPaintTiming_NavigationToLargestContentfulPaint2Name, lcpTime,
+      2.0);
+  ExpectUniqueUMAPageLoadMetricNear(
+      "PageLoad.PaintTiming.NavigationToLargestContentfulPaint2", lcpTime);
 }

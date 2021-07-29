@@ -58,6 +58,7 @@
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/秒</translation>
 <translation id="2353636109065292463">檢查你的網際網路連線</translation>
 <translation id="2388990488038464401">要透過你的手機撥打這個號碼嗎？</translation>
+<translation id="2435457462613246316">顯示密碼</translation>
 <translation id="24452542372838207">展開通知</translation>
 <translation id="2445449901874883781">使用高密度模式</translation>
 <translation id="2482878487686419369">通知</translation>
@@ -79,6 +80,7 @@
 <translation id="2824719307700604149">{YEARS,plural, =1{1 年前}other{# 年前}}</translation>
 <translation id="2878511608894704031">全部刪除</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{1 天內}other{# 天內}}</translation>
+<translation id="2922712708897119705">已依照遞減順序排序「<ph name="COLUMN_NAME" />」欄。</translation>
 <translation id="2931838996092594335">點選</translation>
 <translation id="2981684127883932071">目前正顯示建議項目</translation>
 <translation id="3036649622769666520">開啟檔案</translation>
@@ -114,6 +116,7 @@
 <translation id="3897092660631435901">選單</translation>
 <translation id="3909791450649380159">剪下(&amp;T)</translation>
 <translation id="3990502903496589789">右邊緣</translation>
+<translation id="3994749195054421561">已依照遞增順序排序「<ph name="COLUMN_NAME" />」欄。</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 則未讀取的通知}other{# 則未讀取的通知}}</translation>
 <translation id="4202807286478387388">跳至另一頁</translation>
 <translation id="4250229828105606438">螢幕截圖</translation>
@@ -123,6 +126,7 @@
 <translation id="4306392492252714209">從剪貼簿中移除。</translation>
 <translation id="4316910396681052118">所有應用程式</translation>
 <translation id="4491109536499578614">圖片</translation>
+<translation id="4565377596337484307">隱藏密碼</translation>
 <translation id="4588090240171750605">向右捲動</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />，星級評等 <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />，推薦的應用程式</translation>
@@ -165,6 +169,7 @@
 <translation id="6012623610530968780">第 <ph name="SELECTED_PAGE" /> 頁 (共 <ph name="TOTAL_PAGE_NUM" /> 頁)</translation>
 <translation id="6022924867608035986">清除搜尋框文字</translation>
 <translation id="6040143037577758943">關閉</translation>
+<translation id="6117103120090651229">中間按鈕</translation>
 <translation id="6119846243427417423">啟動</translation>
 <translation id="6129953537138746214">空格</translation>
 <translation id="6134259848159370930">搜尋你的裝置、應用程式、設定和網路。</translation>
@@ -173,6 +178,7 @@
 <translation id="6156262341071374681">展開並顯示所有應用程式</translation>
 <translation id="6165508094623778733">瞭解詳情</translation>
 <translation id="6166852626429024716">搜尋你的裝置、應用程式、設定、網路...</translation>
+<translation id="6237461503717005873">已選取<ph name="ROW_NAME" />。</translation>
 <translation id="6264365405983206840">選取全部(&amp;A)</translation>
 <translation id="6351032674660237738">應用程式建議</translation>
 <translation id="6364916375976753737">向左捲動</translation>
@@ -213,6 +219,7 @@
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{還剩 1 分鐘}other{還剩 # 分鐘}}</translation>
 <translation id="7430878839542012341">要將這個搜尋從你的記錄中刪除嗎？</translation>
+<translation id="7437971918971306061">已取消排序「<ph name="COLUMN_NAME" />」欄。</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">表情符號</translation>
 <translation id="7620655452534002301">已移除。</translation>

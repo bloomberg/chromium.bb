@@ -13,6 +13,7 @@
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_prefs_utils.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/test/test_file_utils.h"
 #include "chrome/browser/web_applications/test/test_web_app_registry_controller.h"
 #include "chrome/browser/web_applications/test/test_web_app_ui_manager.h"
@@ -53,9 +54,10 @@ class InstallFinalizerUnitTest : public WebAppTest {
     auto file_utils = std::make_unique<TestFileUtils>();
     icon_manager_ = std::make_unique<WebAppIconManager>(profile(), registrar(),
                                                         std::move(file_utils));
+    policy_manager_ = std::make_unique<WebAppPolicyManager>(profile());
     ui_manager_ = std::make_unique<TestWebAppUiManager>();
-    finalizer_ = std::make_unique<WebAppInstallFinalizer>(profile(),
-                                                          icon_manager_.get());
+    finalizer_ = std::make_unique<WebAppInstallFinalizer>(
+        profile(), icon_manager_.get(), policy_manager_.get());
 
     finalizer_->SetSubsystems(
         &registrar(), ui_manager_.get(),
@@ -68,6 +70,7 @@ class InstallFinalizerUnitTest : public WebAppTest {
   void TearDown() override {
     finalizer_.reset();
     ui_manager_.reset();
+    policy_manager_.reset();
     icon_manager_.reset();
     test_registry_controller_.reset();
     WebAppTest::TearDown();
@@ -99,6 +102,7 @@ class InstallFinalizerUnitTest : public WebAppTest {
  private:
   std::unique_ptr<TestWebAppRegistryController> test_registry_controller_;
   std::unique_ptr<WebAppIconManager> icon_manager_;
+  std::unique_ptr<WebAppPolicyManager> policy_manager_;
   std::unique_ptr<WebAppUiManager> ui_manager_;
   std::unique_ptr<InstallFinalizer> finalizer_;
 };
@@ -113,7 +117,8 @@ TEST_F(InstallFinalizerUnitTest, BasicInstallSucceeds) {
   FinalizeInstallResult result = AwaitFinalizeInstall(*info, options);
 
   EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
-  EXPECT_EQ(result.installed_app_id, GenerateAppIdFromURL(info->start_url));
+  EXPECT_EQ(result.installed_app_id,
+            GenerateAppId(/*manifest_id=*/absl::nullopt, info->start_url));
 }
 
 TEST_F(InstallFinalizerUnitTest, ConcurrentInstallSucceeds) {
@@ -139,7 +144,9 @@ TEST_F(InstallFinalizerUnitTest, ConcurrentInstallSucceeds) {
         base::BindLambdaForTesting([&](const AppId& installed_app_id,
                                        InstallResultCode code) {
           EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
-          EXPECT_EQ(installed_app_id, GenerateAppIdFromURL(info1->start_url));
+          EXPECT_EQ(
+              installed_app_id,
+              GenerateAppId(/*manifest_id=*/absl::nullopt, info1->start_url));
           callback1_called = true;
           if (callback2_called)
             run_loop.Quit();
@@ -153,7 +160,9 @@ TEST_F(InstallFinalizerUnitTest, ConcurrentInstallSucceeds) {
         base::BindLambdaForTesting([&](const AppId& installed_app_id,
                                        InstallResultCode code) {
           EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
-          EXPECT_EQ(installed_app_id, GenerateAppIdFromURL(info2->start_url));
+          EXPECT_EQ(
+              installed_app_id,
+              GenerateAppId(/*manifest_id=*/absl::nullopt, info2->start_url));
           callback2_called = true;
           if (callback1_called)
             run_loop.Quit();

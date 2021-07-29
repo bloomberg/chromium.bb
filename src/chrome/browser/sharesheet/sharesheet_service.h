@@ -24,7 +24,7 @@ class Profile;
 namespace apps {
 struct IntentLaunchInfo;
 class AppServiceProxyBase;
-}
+}  // namespace apps
 
 namespace views {
 class View;
@@ -59,23 +59,32 @@ class SharesheetService : public KeyedService {
   //
   // |delivered_callback| is run to signify that the intent has been
   // delivered to the target selected by the user (which may then show its own
-  // separate UI, e.g. for Nearby Sharing)
+  // separate UI, e.g. for Nearby Sharing).
+  // |close_callback| is run to signify that the share flow has finished and the
+  // dialog has closed (this includes separate UI, e.g. Nearby Sharing).
   void ShowBubble(content::WebContents* web_contents,
                   apps::mojom::IntentPtr intent,
                   SharesheetMetrics::LaunchSource source,
-                  DeliveredCallback delivered_callback);
+                  DeliveredCallback delivered_callback,
+                  CloseCallback close_callback = base::NullCallback());
   void ShowBubble(content::WebContents* web_contents,
                   apps::mojom::IntentPtr intent,
                   bool contains_hosted_document,
                   SharesheetMetrics::LaunchSource source,
-                  DeliveredCallback delivered_callback);
+                  DeliveredCallback delivered_callback,
+                  CloseCallback close_callback = base::NullCallback());
+  // Closes the sharesheet dialog (aka bubble) for the given |native_window|. If
+  // the |native_window| is null or if it's not showing the sharesheet dialog,
+  // this function is a no-op.
+  void CloseBubble(gfx::NativeWindow native_window);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Skips the generic Sharesheet bubble and directly displays the
   // NearbyShare bubble dialog.
-  void ShowNearbyShareBubble(content::WebContents* web_contents,
+  void ShowNearbyShareBubble(gfx::NativeWindow native_window,
                              apps::mojom::IntentPtr intent,
                              SharesheetMetrics::LaunchSource source,
-                             sharesheet::DeliveredCallback delivered_callback);
+                             sharesheet::DeliveredCallback delivered_callback,
+                             sharesheet::CloseCallback close_callback);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   void OnBubbleClosed(gfx::NativeWindow native_window,
                       const std::u16string& active_action);
@@ -120,12 +129,14 @@ class SharesheetService : public KeyedService {
   void OnAppIconsLoaded(SharesheetServiceDelegate* delegate,
                         apps::mojom::IntentPtr intent,
                         DeliveredCallback delivered_callback,
+                        CloseCallback close_callback,
                         std::vector<TargetInfo> targets);
 
   void ShowBubbleWithDelegate(SharesheetServiceDelegate* delegate,
                               apps::mojom::IntentPtr intent,
                               bool contains_hosted_document,
-                              DeliveredCallback delivered_callback);
+                              DeliveredCallback delivered_callback,
+                              CloseCallback close_callback);
 
   void RecordUserActionMetrics(const std::u16string& target_name);
   void RecordTargetCountMetrics(const std::vector<TargetInfo>& targets);

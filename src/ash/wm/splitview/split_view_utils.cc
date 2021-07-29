@@ -5,8 +5,7 @@
 #include "ash/wm/splitview/split_view_utils.h"
 
 #include "ash/accessibility/accessibility_controller_impl.h"
-#include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/ash_switches.h"
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/toast_data.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
@@ -356,14 +355,14 @@ void MaybeRestoreSplitView(bool refresh_snapped_windows) {
       }
 
       switch (WindowState::Get(window)->GetStateType()) {
-        case WindowStateType::kLeftSnapped:
+        case WindowStateType::kPrimarySnapped:
           if (!split_view_controller->left_window()) {
             split_view_controller->SnapWindow(window,
                                               SplitViewController::LEFT);
           }
           break;
 
-        case WindowStateType::kRightSnapped:
+        case WindowStateType::kSecondarySnapped:
           if (!split_view_controller->right_window()) {
             split_view_controller->SnapWindow(window,
                                               SplitViewController::RIGHT);
@@ -386,9 +385,9 @@ void MaybeRestoreSplitView(bool refresh_snapped_windows) {
   SplitViewController::State state = split_view_controller->state();
   if (state == SplitViewController::State::kLeftSnapped ||
       state == SplitViewController::State::kRightSnapped) {
-    overview_controller->StartOverview();
+    overview_controller->StartOverview(OverviewStartAction::kSplitView);
   } else {
-    overview_controller->EndOverview();
+    overview_controller->EndOverview(OverviewEndAction::kSplitView);
   }
 }
 

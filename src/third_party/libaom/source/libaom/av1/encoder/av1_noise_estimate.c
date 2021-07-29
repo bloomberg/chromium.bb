@@ -73,7 +73,7 @@ static int enable_noise_estimation(AV1_COMP *const cpi) {
   // Enabled for 1 pass CBR, speed >=5, and if resolution is same as original.
   // Not enabled for SVC mode and screen_content_mode.
   // Not enabled for low resolutions.
-  if (cpi->oxcf.pass == 0 && cpi->oxcf.rc_cfg.mode == AOM_CBR &&
+  if (cpi->oxcf.pass == AOM_RC_ONE_PASS && cpi->oxcf.rc_cfg.mode == AOM_CBR &&
       cpi->oxcf.q_cfg.aq_mode == CYCLIC_REFRESH_AQ && cpi->oxcf.speed >= 5 &&
       resize_pending == 0 && !cpi->ppi->use_svc &&
       cpi->oxcf.tune_cfg.content != AOM_CONTENT_SCREEN &&

@@ -23,6 +23,8 @@ import (
 	"boringssl.googlesource.com/boringssl/ssl/test/runner/hpke"
 )
 
+const echBadPayloadByte = 0xff
+
 type clientHandshakeState struct {
 	c                 *Conn
 	serverHello       *serverHelloMsg
@@ -152,7 +154,7 @@ func (c *Conn) clientHandshake() error {
 		}
 
 		info := []byte("tls ech\x00")
-		info = append(info, MarshalECHConfig(c.config.ClientECHConfig)...)
+		info = append(info, c.config.ClientECHConfig.Raw...)
 
 		var echEnc []byte
 		hs.echHPKEContext, echEnc, err = hpke.SetupBaseSenderX25519(echCipherSuite.KDF, echCipherSuite.AEAD, c.config.ClientECHConfig.PublicKey, info, nil)
@@ -353,6 +355,11 @@ func (c *Conn) clientHandshake() error {
 			c.sendAlert(alertUnexpectedMessage)
 			return unexpectedMessageError(hs.serverHello, msg)
 		}
+		if isAllZero(hs.serverHello.random) {
+			// If the server forgets to fill in the server random, it will
+			// likely be all zero.
+			return errors.New("tls: ServerHello random was all zero")
+		}
 
 		hs.writeServerHash(hs.serverHello.marshal())
 		if c.config.Bugs.EarlyChangeCipherSpec > 0 {
@@ -513,8 +520,6 @@ func (hs *clientHandshakeState) createClientHello(innerHello *clientHelloMsg, ec
 		quicTransportParamsLegacy: quicTransportParamsLegacy,
 		duplicateExtension:        c.config.Bugs.DuplicateExtension,
 		channelIDSupported:        c.config.ChannelID != nil,
-		tokenBindingParams:        c.config.TokenBindingParams,
-		tokenBindingVersion:       c.config.TokenBindingVersion,
 		extendedMasterSecret:      maxVersion >= VersionTLS10,
 		srtpProtectionProfiles:    c.config.SRTPProtectionProfiles,
 		srtpMasterKeyIdentifier:   c.config.Bugs.SRTPMasterKeyIdentifer,
@@ -812,10 +817,8 @@ NextCipherSuite:
 	}
 
 	if (isInner && !c.config.Bugs.OmitECHIsInner) || c.config.Bugs.AlwaysSendECHIsInner {
-		hello.echIsInner = []byte{}
-		if len(c.config.Bugs.SendInvalidECHIsInner) != 0 {
-			hello.echIsInner = c.config.Bugs.SendInvalidECHIsInner
-		}
+		hello.echIsInner = true
+		hello.invalidECHIsInner = c.config.Bugs.SendInvalidECHIsInner
 	}
 
 	if innerHello != nil {
@@ -823,7 +826,11 @@ NextCipherSuite:
 			return nil, err
 		}
 		if c.config.Bugs.CorruptEncryptedClientHello {
-			hello.clientECH.payload[0] ^= 1
+			if c.config.Bugs.NullAllCiphers {
+				hello.clientECH.payload = []byte{echBadPayloadByte}
+			} else {
+				hello.clientECH.payload[0] ^= 1
+			}
 		}
 	}
 
@@ -881,10 +888,14 @@ func (hs *clientHandshakeState) encryptClientHello(hello, innerHello *clientHell
 	encodedInner := innerHello.marshalForEncodedInner()
 	payload := hs.echHPKEContext.Seal(encodedInner, aad.finish())
 
+	if c.config.Bugs.NullAllCiphers {
+		payload = encodedInner
+	}
+
 	// Place the ECH extension in the outer CH.
 	hello.clientECH = &clientECH{
-		hpkeKDF:  hs.echHPKEContext.KDF(),
-		hpkeAEAD: hs.echHPKEContext.AEAD(),
+		kdfID:    hs.echHPKEContext.KDF(),
+		aeadID:   hs.echHPKEContext.AEAD(),
 		configID: configID,
 		enc:      enc,
 		payload:  payload,
@@ -986,6 +997,12 @@ func (hs *clientHandshakeState) doTLS13Handshake(msg interface{}) error {
 		return unexpectedMessageError(hs.serverHello, msg)
 	}
 
+	if isAllZero(hs.serverHello.random) {
+		// If the server forgets to fill in the server random, it will
+		// likely be all zero.
+		return errors.New("tls: ServerHello random was all zero")
+	}
+
 	if c.wireVersion != hs.serverHello.vers {
 		c.sendAlert(alertIllegalParameter)
 		return fmt.Errorf("tls: server sent non-matching version %x vs %x", c.wireVersion, hs.serverHello.vers)
@@ -1071,7 +1088,7 @@ func (hs *clientHandshakeState) doTLS13Handshake(msg interface{}) error {
 	} else {
 		// When not offering ECH, we may still expect a confirmation signal to
 		// test the backend server behavior.
-		if hs.hello.echIsInner != nil {
+		if hs.hello.echIsInner {
 			if !echConfirmed {
 				return errors.New("tls: server did not send ECH confirmation when requested")
 			}
@@ -1182,6 +1199,10 @@ func (hs *clientHandshakeState) doTLS13Handshake(msg interface{}) error {
 
 			if expected := c.config.Bugs.ExpectedCompressedCert; expected != 0 && expected != compressedCertMsg.algID {
 				return fmt.Errorf("tls: expected certificate compressed with algorithm %x, but message used %x", expected, compressedCertMsg.algID)
+			}
+
+			if c.config.Bugs.ExpectUncompressedCert {
+				return errors.New("tls: compressed certificate received")
 			}
 		} else {
 			if certMsg, ok = msg.(*certificateMsg); !ok {
@@ -1495,7 +1516,7 @@ func (hs *clientHandshakeState) applyHelloRetryRequest(helloRetryRequest *helloR
 	}
 
 	if isInner && c.config.Bugs.OmitSecondECHIsInner {
-		hello.echIsInner = nil
+		hello.echIsInner = false
 	}
 
 	hello.hasEarlyData = c.config.Bugs.SendEarlyDataOnSecondClientHello
@@ -1525,7 +1546,11 @@ func (hs *clientHandshakeState) applyHelloRetryRequest(helloRetryRequest *helloR
 				return err
 			}
 			if c.config.Bugs.CorruptSecondEncryptedClientHello {
-				hello.clientECH.payload[0] ^= 1
+				if c.config.Bugs.NullAllCiphers {
+					hello.clientECH.payload = []byte{echBadPayloadByte}
+				} else {
+					hello.clientECH.payload[0] ^= 1
+				}
 			}
 		}
 	}
@@ -1922,29 +1947,6 @@ func (hs *clientHandshakeState) processServerExtensions(serverExtensions *server
 	if !hs.hello.channelIDSupported && serverExtensions.channelIDRequested {
 		c.sendAlert(alertHandshakeFailure)
 		return errors.New("server advertised unrequested Channel ID extension")
-	}
-
-	if len(serverExtensions.tokenBindingParams) == 1 {
-		found := false
-		for _, p := range c.config.TokenBindingParams {
-			if p == serverExtensions.tokenBindingParams[0] {
-				c.tokenBindingParam = p
-				found = true
-				break
-			}
-		}
-		if !found {
-			return errors.New("tls: server advertised unsupported Token Binding key param")
-		}
-		if serverExtensions.tokenBindingVersion > c.config.TokenBindingVersion {
-			return errors.New("tls: server's Token Binding version is too new")
-		}
-		if c.vers < VersionTLS13 {
-			if !serverExtensions.extendedMasterSecret || serverExtensions.secureRenegotiation == nil {
-				return errors.New("server sent Token Binding without EMS or RI")
-			}
-		}
-		c.tokenBindingNegotiated = true
 	}
 
 	if serverExtensions.extendedMasterSecret && c.vers >= VersionTLS13 {

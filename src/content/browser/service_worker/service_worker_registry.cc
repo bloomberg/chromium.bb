@@ -26,7 +26,9 @@
 #include "storage/browser/quota/special_storage_policy.h"
 #include "third_party/blink/public/common/service_worker/service_worker_scope_match.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration_options.mojom.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -84,13 +86,13 @@ void RecordRetryCount(size_t retries) {
 void MaybeNotifyWriteFailed(
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
     storage::mojom::ServiceWorkerDatabaseStatus status,
-    const storage::StorageKey& key) {
+    const blink::StorageKey& key) {
   if (!quota_manager_proxy)
     return;
 
   if (status == storage::mojom::ServiceWorkerDatabaseStatus::kErrorFailed ||
       status == storage::mojom::ServiceWorkerDatabaseStatus::kErrorIOError) {
-    quota_manager_proxy->NotifyWriteFailed(key.origin());
+    quota_manager_proxy->NotifyWriteFailed(key);
   }
 }
 
@@ -164,12 +166,13 @@ ServiceWorkerRegistry::~ServiceWorkerRegistry() = default;
 
 void ServiceWorkerRegistry::CreateNewRegistration(
     blink::mojom::ServiceWorkerRegistrationOptions options,
+    const blink::StorageKey& key,
     NewRegistrationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CreateInvokerAndStartRemoteCall(
       &storage::mojom::ServiceWorkerStorageControl::GetNewRegistrationId,
       base::BindOnce(&ServiceWorkerRegistry::DidGetNewRegistrationId,
-                     weak_factory_.GetWeakPtr(), std::move(options),
+                     weak_factory_.GetWeakPtr(), std::move(options), key,
                      std::move(callback)));
 }
 
@@ -177,7 +180,6 @@ void ServiceWorkerRegistry::CreateNewVersion(
     scoped_refptr<ServiceWorkerRegistration> registration,
     const GURL& script_url,
     blink::mojom::ScriptType script_type,
-    const storage::StorageKey& key,
     NewVersionCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(registration);
@@ -185,12 +187,12 @@ void ServiceWorkerRegistry::CreateNewVersion(
       &storage::mojom::ServiceWorkerStorageControl::GetNewVersionId,
       base::BindOnce(&ServiceWorkerRegistry::DidGetNewVersionId,
                      weak_factory_.GetWeakPtr(), registration, script_url,
-                     script_type, key, std::move(callback)));
+                     script_type, std::move(callback)));
 }
 
 void ServiceWorkerRegistry::FindRegistrationForClientUrl(
     const GURL& client_url,
-    const storage::StorageKey& key,
+    const blink::StorageKey& key,
     FindRegistrationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // To connect this TRACE_EVENT with the callback, Time::Now() is used as a
@@ -211,7 +213,7 @@ void ServiceWorkerRegistry::FindRegistrationForClientUrl(
 
 void ServiceWorkerRegistry::FindRegistrationForScope(
     const GURL& scope,
-    const storage::StorageKey& key,
+    const blink::StorageKey& key,
     FindRegistrationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (is_storage_disabled_) {
@@ -240,7 +242,7 @@ void ServiceWorkerRegistry::FindRegistrationForScope(
 
 void ServiceWorkerRegistry::FindRegistrationForId(
     int64_t registration_id,
-    const storage::StorageKey& key,
+    const blink::StorageKey& key,
     FindRegistrationCallback callback) {
   FindRegistrationForIdInternal(registration_id, key, std::move(callback));
 }
@@ -248,12 +250,12 @@ void ServiceWorkerRegistry::FindRegistrationForId(
 void ServiceWorkerRegistry::FindRegistrationForIdOnly(
     int64_t registration_id,
     FindRegistrationCallback callback) {
-  FindRegistrationForIdInternal(registration_id, /*origin=*/absl::nullopt,
+  FindRegistrationForIdInternal(registration_id, /*key=*/absl::nullopt,
                                 std::move(callback));
 }
 
 void ServiceWorkerRegistry::GetRegistrationsForStorageKey(
-    const storage::StorageKey& key,
+    const blink::StorageKey& key,
     GetRegistrationsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CreateInvokerAndStartRemoteCall(
@@ -265,8 +267,8 @@ void ServiceWorkerRegistry::GetRegistrationsForStorageKey(
 }
 
 void ServiceWorkerRegistry::GetStorageUsageForStorageKey(
-    const storage::StorageKey& key,
-    GetStorageUsageForOriginCallback callback) {
+    const blink::StorageKey& key,
+    GetStorageUsageForStorageKeyCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto wrapped_callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
       std::move(callback), blink::ServiceWorkerStatusCode::kErrorFailed, 0);
@@ -287,15 +289,14 @@ void ServiceWorkerRegistry::GetAllRegistrationsInfos(
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-// TODO(crbug.com/1199077): Use `key` once ServiceWorkerRegistration
-// implements StorageKey.
 ServiceWorkerRegistration* ServiceWorkerRegistry::GetUninstallingRegistration(
     const GURL& scope,
-    const storage::StorageKey& key) {
+    const blink::StorageKey& key) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // TODO(bashi): Should we check state of ServiceWorkerStorage?
   for (const auto& registration : uninstalling_registrations_) {
-    if (registration.second->scope() == scope) {
+    if (registration.second->key() == key &&
+        registration.second->scope() == scope) {
       DCHECK(registration.second->is_uninstalling());
       return registration.second.get();
     }
@@ -305,13 +306,11 @@ ServiceWorkerRegistration* ServiceWorkerRegistry::GetUninstallingRegistration(
 
 std::vector<scoped_refptr<ServiceWorkerRegistration>>
 ServiceWorkerRegistry::GetUninstallingRegistrationsForStorageKey(
-    const storage::StorageKey& key) {
+    const blink::StorageKey& key) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::vector<scoped_refptr<ServiceWorkerRegistration>> results;
   for (const auto& registration : uninstalling_registrations_) {
-    // TODO(crbug/1199077): Use full `key` once ServiceWorkerRegistration
-    // implements StorageKey.
-    if (url::Origin::Create(registration.second->scope()) == key.origin()) {
+    if (registration.second->key() == key) {
       results.push_back(registration.second);
     }
   }
@@ -340,6 +339,7 @@ void ServiceWorkerRegistry::StoreRegistration(
   auto data = storage::mojom::ServiceWorkerRegistrationData::New();
   data->registration_id = registration->id();
   data->scope = registration->scope();
+  data->key = registration->key();
   data->script = version->script_url();
   data->script_type = version->script_type();
   data->update_via_cache = registration->update_via_cache();
@@ -383,22 +383,18 @@ void ServiceWorkerRegistry::StoreRegistration(
   }
   data->resources_total_size_bytes = resources_total_size_bytes;
 
-  // TODO(crbug/1199077): Use `key` once ServiceWorkerRegistration implements
-  // StorageKey.
   CreateInvokerAndStartRemoteCall(
       &storage::mojom::ServiceWorkerStorageControl::StoreRegistration,
-      base::BindOnce(
-          &ServiceWorkerRegistry::DidStoreRegistration,
-          weak_factory_.GetWeakPtr(), registration->id(),
-          resources_total_size_bytes, registration->scope(),
-          storage::StorageKey(url::Origin::Create(registration->scope())),
-          std::move(callback)),
+      base::BindOnce(&ServiceWorkerRegistry::DidStoreRegistration,
+                     weak_factory_.GetWeakPtr(), registration->id(),
+                     resources_total_size_bytes, registration->scope(),
+                     registration->key(), std::move(callback)),
       std::move(data), std::move(resources));
 }
 
 void ServiceWorkerRegistry::DeleteRegistration(
     scoped_refptr<ServiceWorkerRegistration> registration,
-    const storage::StorageKey& key,
+    const blink::StorageKey& key,
     StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (is_storage_disabled_) {
@@ -457,7 +453,7 @@ void ServiceWorkerRegistry::NotifyDoneUninstallingRegistration(
 }
 
 void ServiceWorkerRegistry::UpdateToActiveState(int64_t registration_id,
-                                                const storage::StorageKey& key,
+                                                const blink::StorageKey& key,
                                                 StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CreateInvokerAndStartRemoteCall(
@@ -469,7 +465,7 @@ void ServiceWorkerRegistry::UpdateToActiveState(int64_t registration_id,
 
 void ServiceWorkerRegistry::UpdateLastUpdateCheckTime(
     int64_t registration_id,
-    const storage::StorageKey& key,
+    const blink::StorageKey& key,
     base::Time last_update_check_time,
     StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -483,7 +479,7 @@ void ServiceWorkerRegistry::UpdateLastUpdateCheckTime(
 
 void ServiceWorkerRegistry::UpdateNavigationPreloadEnabled(
     int64_t registration_id,
-    const storage::StorageKey& key,
+    const blink::StorageKey& key,
     bool enable,
     StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -498,7 +494,7 @@ void ServiceWorkerRegistry::UpdateNavigationPreloadEnabled(
 
 void ServiceWorkerRegistry::UpdateNavigationPreloadHeader(
     int64_t registration_id,
-    const storage::StorageKey& key,
+    const blink::StorageKey& key,
     const std::string& value,
     StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -512,7 +508,7 @@ void ServiceWorkerRegistry::UpdateNavigationPreloadHeader(
 
 void ServiceWorkerRegistry::StoreUncommittedResourceId(
     int64_t resource_id,
-    const storage::StorageKey& key) {
+    const blink::StorageKey& key) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CreateInvokerAndStartRemoteCall(
       &storage::mojom::ServiceWorkerStorageControl::StoreUncommittedResourceId,
@@ -565,7 +561,7 @@ void ServiceWorkerRegistry::GetUserKeysAndDataByKeyPrefix(
 
 void ServiceWorkerRegistry::StoreUserData(
     int64_t registration_id,
-    const storage::StorageKey& key,
+    const blink::StorageKey& key,
     const std::vector<std::pair<std::string, std::string>>& key_value_pairs,
     StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -666,14 +662,14 @@ void ServiceWorkerRegistry::GetUserDataForAllRegistrationsByKeyPrefix(
       key_prefix);
 }
 
-void ServiceWorkerRegistry::GetRegisteredOrigins(
-    GetRegisteredOriginsCallback callback) {
+void ServiceWorkerRegistry::GetRegisteredStorageKeys(
+    GetRegisteredStorageKeysCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto wrapped_callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-      std::move(callback), std::vector<url::Origin>());
+      std::move(callback), std::vector<blink::StorageKey>());
   CreateInvokerAndStartRemoteCall(
       &storage::mojom::ServiceWorkerStorageControl::GetRegisteredStorageKeys,
-      base::BindOnce(&ServiceWorkerRegistry::DidGetRegisteredOrigins,
+      base::BindOnce(&ServiceWorkerRegistry::DidGetRegisteredStorageKeys,
                      weak_factory_.GetWeakPtr(), std::move(wrapped_callback)));
 }
 
@@ -718,14 +714,14 @@ void ServiceWorkerRegistry::Start() {
                           weak_factory_.GetWeakPtr()),
       GetIOThreadTaskRunner({}), special_storage_policy_);
 
-  GetRegisteredOrigins(
-      base::BindOnce(&ServiceWorkerRegistry::DidGetRegisteredOriginsOnStartup,
-                     weak_factory_.GetWeakPtr()));
+  GetRegisteredStorageKeys(base::BindOnce(
+      &ServiceWorkerRegistry::DidGetRegisteredStorageKeysOnStartup,
+      weak_factory_.GetWeakPtr()));
 }
 
 void ServiceWorkerRegistry::FindRegistrationForIdInternal(
     int64_t registration_id,
-    const absl::optional<storage::StorageKey>& key,
+    const absl::optional<blink::StorageKey>& key,
     FindRegistrationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Registration lookup is expected to abort when storage is disabled.
@@ -749,7 +745,7 @@ void ServiceWorkerRegistry::FindRegistrationForIdInternal(
       if (quota_manager_proxy_) {
         // Can be nullptr in tests.
         quota_manager_proxy_->NotifyStorageAccessed(
-            (*registration)->origin(), blink::mojom::StorageType::kTemporary,
+            (*registration)->key(), blink::mojom::StorageType::kTemporary,
             base::Time::Now());
       }
     }
@@ -767,12 +763,10 @@ void ServiceWorkerRegistry::FindRegistrationForIdInternal(
       static_cast<const int64_t>(registration_id), key);
 }
 
-// TODO(crbug.com/1199077): Use `key` once ServiceWorkerRegistration
-// implements StorageKey.
 ServiceWorkerRegistration*
 ServiceWorkerRegistry::FindInstallingRegistrationForClientUrl(
     const GURL& client_url,
-    const storage::StorageKey& key) {
+    const blink::StorageKey& key) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!client_url.has_ref());
 
@@ -782,20 +776,20 @@ ServiceWorkerRegistry::FindInstallingRegistrationForClientUrl(
   // TODO(nhiroki): This searches over installing registrations linearly and it
   // couldn't be scalable. Maybe the regs should be partitioned by origin.
   for (const auto& registration : installing_registrations_)
-    if (matcher.MatchLongest(registration.second->scope()))
+    if (registration.second->key() == key &&
+        matcher.MatchLongest(registration.second->scope()))
       match = registration.second.get();
   return match;
 }
 
-// TODO(crbug.com/1199077): Use `key` once ServiceWorkerRegistration
-// implements StorageKey.
 ServiceWorkerRegistration*
 ServiceWorkerRegistry::FindInstallingRegistrationForScope(
     const GURL& scope,
-    const storage::StorageKey& key) {
+    const blink::StorageKey& key) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   for (const auto& registration : installing_registrations_)
-    if (registration.second->scope() == scope)
+    if (registration.second->key() == key &&
+        registration.second->scope() == scope)
       return registration.second.get();
   return nullptr;
 }
@@ -826,7 +820,7 @@ ServiceWorkerRegistry::GetOrCreateRegistration(
   blink::mojom::ServiceWorkerRegistrationOptions options(
       data.scope, data.script_type, data.update_via_cache);
   registration = base::MakeRefCounted<ServiceWorkerRegistration>(
-      options, data.registration_id, context_->AsWeakPtr());
+      options, data.key, data.registration_id, context_->AsWeakPtr());
   registration->SetStored();
   registration->set_resources_total_size_bytes(data.resources_total_size_bytes);
   registration->set_last_update_check(data.last_update_check);
@@ -902,7 +896,7 @@ void ServiceWorkerRegistry::DoomUncommittedResources(
 
 void ServiceWorkerRegistry::DidFindRegistrationForClientUrl(
     const GURL& client_url,
-    const storage::StorageKey& key,
+    const blink::StorageKey& key,
     int64_t trace_event_id,
     FindRegistrationCallback callback,
     storage::mojom::ServiceWorkerDatabaseStatus database_status,
@@ -951,7 +945,7 @@ void ServiceWorkerRegistry::DidFindRegistrationForClientUrl(
     if (quota_manager_proxy_) {
       // Can be nullptr in tests.
       quota_manager_proxy_->NotifyStorageAccessed(
-          registration->origin(), blink::mojom::StorageType::kTemporary,
+          registration->key(), blink::mojom::StorageType::kTemporary,
           base::Time::Now());
     }
   }
@@ -988,7 +982,7 @@ void ServiceWorkerRegistry::DidFindRegistrationForScope(
     if (quota_manager_proxy_) {
       // Can be nullptr in tests.
       quota_manager_proxy_->NotifyStorageAccessed(
-          registration->origin(), blink::mojom::StorageType::kTemporary,
+          registration->key(), blink::mojom::StorageType::kTemporary,
           base::Time::Now());
     }
   }
@@ -1033,7 +1027,7 @@ void ServiceWorkerRegistry::DidFindRegistrationForId(
     if (quota_manager_proxy_) {
       // Can be nullptr in tests.
       quota_manager_proxy_->NotifyStorageAccessed(
-          registration->origin(), blink::mojom::StorageType::kTemporary,
+          registration->key(), blink::mojom::StorageType::kTemporary,
           base::Time::Now());
     }
   }
@@ -1043,7 +1037,7 @@ void ServiceWorkerRegistry::DidFindRegistrationForId(
 
 void ServiceWorkerRegistry::DidGetRegistrationsForStorageKey(
     GetRegistrationsCallback callback,
-    const storage::StorageKey& key_filter,
+    const blink::StorageKey& key_filter,
     storage::mojom::ServiceWorkerDatabaseStatus database_status,
     std::vector<storage::mojom::ServiceWorkerFindRegistrationResultPtr>
         entries) {
@@ -1073,11 +1067,8 @@ void ServiceWorkerRegistry::DidGetRegistrationsForStorageKey(
   }
 
   // Add unstored registrations that are being installed.
-  // TODO(crbug/1199077): Use full `key` once ServiceWorkerRegistration
-  // implements StorageKey.
   for (const auto& registration : installing_registrations_) {
-    if (url::Origin::Create(registration.second->scope()) !=
-        key_filter.origin())
+    if (registration.second->key() != key_filter)
       continue;
     if (registration_ids.insert(registration.first).second)
       registrations.push_back(registration.second);
@@ -1111,7 +1102,7 @@ void ServiceWorkerRegistry::DidGetAllRegistrations(
         pushed_registrations.insert(registration_data->registration_id).second;
     DCHECK(inserted);
 
-    ServiceWorkerRegistration* registration =
+    scoped_refptr<ServiceWorkerRegistration> registration =
         context_->GetLiveRegistration(registration_data->registration_id);
     if (registration) {
       infos.push_back(registration->GetInfo());
@@ -1120,6 +1111,7 @@ void ServiceWorkerRegistry::DidGetAllRegistrations(
 
     ServiceWorkerRegistrationInfo info;
     info.scope = registration_data->scope;
+    info.key = registration_data->key;
     info.update_via_cache = registration_data->update_via_cache;
     info.registration_id = registration_data->registration_id;
     info.stored_version_size_bytes =
@@ -1182,7 +1174,7 @@ void ServiceWorkerRegistry::DidGetAllRegistrations(
 }
 
 void ServiceWorkerRegistry::DidGetStorageUsageForStorageKey(
-    GetStorageUsageForOriginCallback callback,
+    GetStorageUsageForStorageKeyCallback callback,
     storage::mojom::ServiceWorkerDatabaseStatus database_status,
     int64_t usage) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -1195,14 +1187,13 @@ void ServiceWorkerRegistry::DidStoreRegistration(
     int64_t stored_registration_id,
     uint64_t stored_resources_total_size_bytes,
     const GURL& stored_scope,
-    const storage::StorageKey& key,
+    const blink::StorageKey& key,
     StatusCallback callback,
     storage::mojom::ServiceWorkerDatabaseStatus database_status,
     uint64_t deleted_resources_size) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   blink::ServiceWorkerStatusCode status =
       DatabaseStatusToStatusCode(database_status);
-  url::Origin origin = key.origin();
 
   MaybeNotifyWriteFailed(quota_manager_proxy_, database_status, key);
 
@@ -1215,7 +1206,7 @@ void ServiceWorkerRegistry::DidStoreRegistration(
   if (quota_manager_proxy_) {
     // Can be nullptr in tests.
     quota_manager_proxy_->NotifyStorageModified(
-        storage::QuotaClientType::kServiceWorker, origin,
+        storage::QuotaClientType::kServiceWorker, key,
         blink::mojom::StorageType::kTemporary,
         stored_resources_total_size_bytes - deleted_resources_size,
         base::Time::Now());
@@ -1231,14 +1222,14 @@ void ServiceWorkerRegistry::DidStoreRegistration(
   context_->NotifyRegistrationStored(stored_registration_id, stored_scope);
 
   if (storage_policy_observer_)
-    storage_policy_observer_->StartTrackingOrigin(origin);
+    storage_policy_observer_->StartTrackingOrigin(key.origin());
 
   std::move(callback).Run(status);
 }
 
 void ServiceWorkerRegistry::DidDeleteRegistration(
     int64_t registration_id,
-    const storage::StorageKey& key,
+    const blink::StorageKey& key,
     StatusCallback callback,
     storage::mojom::ServiceWorkerDatabaseStatus database_status,
     uint64_t deleted_resources_size,
@@ -1256,7 +1247,7 @@ void ServiceWorkerRegistry::DidDeleteRegistration(
   if (quota_manager_proxy_) {
     // Can be nullptr in tests.
     quota_manager_proxy_->NotifyStorageModified(
-        storage::QuotaClientType::kServiceWorker, key.origin(),
+        storage::QuotaClientType::kServiceWorker, key,
         blink::mojom::StorageType::kTemporary, -deleted_resources_size,
         base::Time::Now());
   }
@@ -1288,7 +1279,7 @@ void ServiceWorkerRegistry::DidUpdateRegistration(
 }
 
 void ServiceWorkerRegistry::DidUpdateToActiveState(
-    const storage::StorageKey& key,
+    const blink::StorageKey& key,
     StatusCallback callback,
     storage::mojom::ServiceWorkerDatabaseStatus status) {
   MaybeNotifyWriteFailed(quota_manager_proxy_, status, key);
@@ -1296,7 +1287,7 @@ void ServiceWorkerRegistry::DidUpdateToActiveState(
 }
 
 void ServiceWorkerRegistry::DidWriteUncommittedResourceIds(
-    const storage::StorageKey& key,
+    const blink::StorageKey& key,
     storage::mojom::ServiceWorkerDatabaseStatus status) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   MaybeNotifyWriteFailed(quota_manager_proxy_, status, key);
@@ -1337,7 +1328,7 @@ void ServiceWorkerRegistry::DidGetUserKeysAndData(
 
 void ServiceWorkerRegistry::DidStoreUserData(
     StatusCallback callback,
-    const storage::StorageKey& key,
+    const blink::StorageKey& key,
     storage::mojom::ServiceWorkerDatabaseStatus status) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   MaybeNotifyWriteFailed(quota_manager_proxy_, status, key);
@@ -1379,6 +1370,7 @@ void ServiceWorkerRegistry::DidGetUserDataForAllRegistrations(
 
 void ServiceWorkerRegistry::DidGetNewRegistrationId(
     blink::mojom::ServiceWorkerRegistrationOptions options,
+    const blink::StorageKey& key,
     NewRegistrationCallback callback,
     int64_t registration_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -1387,14 +1379,13 @@ void ServiceWorkerRegistry::DidGetNewRegistrationId(
     return;
   }
   std::move(callback).Run(base::MakeRefCounted<ServiceWorkerRegistration>(
-      std::move(options), registration_id, context_->AsWeakPtr()));
+      std::move(options), key, registration_id, context_->AsWeakPtr()));
 }
 
 void ServiceWorkerRegistry::DidGetNewVersionId(
     scoped_refptr<ServiceWorkerRegistration> registration,
     const GURL& script_url,
     blink::mojom::ScriptType script_type,
-    const storage::StorageKey& key,
     NewVersionCallback callback,
     int64_t version_id,
     mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>
@@ -1404,8 +1395,6 @@ void ServiceWorkerRegistry::DidGetNewVersionId(
     std::move(callback).Run(nullptr);
     return;
   }
-  // TODO(crbug/1199077): Once ServiceWorkerVersion supports StorageKey use
-  // `key` with it.
   auto version = base::MakeRefCounted<ServiceWorkerVersion>(
       registration.get(), script_url, script_type, version_id,
       std::move(version_reference), context_->AsWeakPtr());
@@ -1437,16 +1426,11 @@ void ServiceWorkerRegistry::DidDeleteAndStartOver(
   std::move(callback).Run(DatabaseStatusToStatusCode(status));
 }
 
-void ServiceWorkerRegistry::DidGetRegisteredOrigins(
-    GetRegisteredOriginsCallback callback,
-    const std::vector<storage::StorageKey>& keys) {
+void ServiceWorkerRegistry::DidGetRegisteredStorageKeys(
+    GetRegisteredStorageKeysCallback callback,
+    const std::vector<blink::StorageKey>& keys) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  std::vector<url::Origin> origins;
-  origins.reserve(keys.size());
-  for (const auto& key : keys) {
-    origins.push_back(key.origin());
-  }
-  std::move(callback).Run(std::move(origins));
+  std::move(callback).Run(keys);
 }
 
 void ServiceWorkerRegistry::DidPerformStorageCleanup(
@@ -1464,10 +1448,15 @@ void ServiceWorkerRegistry::DidApplyPolicyUpdates(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
-void ServiceWorkerRegistry::DidGetRegisteredOriginsOnStartup(
-    const std::vector<url::Origin>& origins) {
+void ServiceWorkerRegistry::DidGetRegisteredStorageKeysOnStartup(
+    const std::vector<blink::StorageKey>& storage_keys) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(special_storage_policy_);
+  std::vector<url::Origin> origins;
+  origins.reserve(storage_keys.size());
+  for (const blink::StorageKey& storage_key : storage_keys) {
+    origins.push_back(storage_key.origin());
+  }
   storage_policy_observer_->StartTrackingOrigins(origins);
 }
 
@@ -1487,7 +1476,7 @@ void ServiceWorkerRegistry::ApplyPolicyUpdates(
 }
 
 bool ServiceWorkerRegistry::ShouldPurgeOnShutdownForTesting(
-    const storage::StorageKey& key) {
+    const blink::StorageKey& key) {
   if (!storage_policy_observer_)
     return false;
   return storage_policy_observer_->ShouldPurgeOnShutdownForTesting(  // IN-TEST

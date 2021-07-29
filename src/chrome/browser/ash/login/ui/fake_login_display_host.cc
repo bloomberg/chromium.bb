@@ -7,7 +7,7 @@
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "components/session_manager/core/session_manager.h"
 
-namespace chromeos {
+namespace ash {
 
 class FakeLoginDisplayHost::FakeBaseScreen : public BaseScreen {
  public:
@@ -112,11 +112,13 @@ bool FakeLoginDisplayHost::IsUserAllowlisted(
 
 void FakeLoginDisplayHost::ShowGaiaDialog(const AccountId& prefilled_account) {}
 
+void FakeLoginDisplayHost::ShowOsInstallScreen() {}
+
 void FakeLoginDisplayHost::HideOobeDialog() {}
 
 void FakeLoginDisplayHost::SetShelfButtonsEnabled(bool enabled) {}
 
-void FakeLoginDisplayHost::UpdateOobeDialogState(ash::OobeDialogState state) {}
+void FakeLoginDisplayHost::UpdateOobeDialogState(OobeDialogState state) {}
 
 void FakeLoginDisplayHost::CancelPasswordChangedFlow() {}
 
@@ -124,8 +126,7 @@ void FakeLoginDisplayHost::MigrateUserData(const std::string& old_password) {}
 
 void FakeLoginDisplayHost::ResyncUserData() {}
 
-bool FakeLoginDisplayHost::HandleAccelerator(
-    ash::LoginAcceleratorAction action) {
+bool FakeLoginDisplayHost::HandleAccelerator(LoginAcceleratorAction action) {
   return false;
 }
 
@@ -150,4 +151,4 @@ SigninUI* FakeLoginDisplayHost::GetSigninUI() {
   return nullptr;
 }
 
-}  // namespace chromeos
+}  // namespace ash

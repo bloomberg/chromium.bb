@@ -36,8 +36,8 @@
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
-#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/cicerone/cicerone_client.h"
@@ -347,6 +347,7 @@ TEST_F(AppSearchProviderTest, Basic) {
   result = RunQuery("app1");
   EXPECT_TRUE(result == "Packaged App 1,Fake App 1" ||
               result == "Fake App 1,Packaged App 1");
+  arc_test().TearDown();
 }
 
 TEST_F(AppSearchProviderTest, DisableAndEnable) {
@@ -417,6 +418,8 @@ TEST_F(AppSearchProviderTest, InstallUninstallArc) {
 
   // Let uninstall code to clean up.
   base::RunLoop().RunUntilIdle();
+
+  arc_test().TearDown();
 }
 
 TEST_F(AppSearchProviderTest, FetchRecommendations) {
@@ -719,6 +722,7 @@ TEST_F(AppSearchProviderTest, FilterDuplicate) {
 
   CreateSearch();
   EXPECT_EQ(kGmailExtensionName, RunQuery(kGmailQuery));
+  arc_test().TearDown();
 }
 
 TEST_F(AppSearchProviderTest, FetchInternalApp) {
@@ -1038,7 +1042,7 @@ class AppSearchProviderWithArcAppInstallType
 
 // TODO (879413): Enable this after resolving flakiness.
 TEST_P(AppSearchProviderWithArcAppInstallType,
-       DISABLED_InstallInernallyRanking) {
+       DISABLED_InstallInternallyRanking) {
   const bool default_app =
       GetParam() == TestArcAppInstallType::INSTALLED_BY_DEFAULT;
   if (default_app) {
@@ -1087,7 +1091,7 @@ TEST_P(AppSearchProviderWithArcAppInstallType,
 
   EXPECT_LT(normal_app->install_time, internal_app->install_time);
 
-  // Installed internally app has runking below other apps, even if it's install
+  // Installed internally app has runking below other apps, even if its install
   // time is later.
   CreateSearch();
   EXPECT_EQ(std::string(kRankingNormalAppName) + "," +
@@ -1101,6 +1105,7 @@ TEST_P(AppSearchProviderWithArcAppInstallType,
   EXPECT_EQ(std::string(kRankingInternalAppName) + "," +
                 std::string(kRankingNormalAppName),
             RunQuery(kRankingAppQuery));
+  arc_test().TearDown();
 }
 
 INSTANTIATE_TEST_SUITE_P(

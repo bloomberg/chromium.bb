@@ -5,17 +5,17 @@
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://test/chai_assert.js';
 
-import {importer} from '../../common/js/importer_common.m.js';
-import {metrics} from '../../common/js/metrics.m.js';
-import {installMockChrome, MockChromeStorageAPI} from '../../common/js/mock_chrome.m.js';
-import {MockFileSystem} from '../../common/js/mock_entry.m.js';
-import {reportPromise} from '../../common/js/test_error_reporting.m.js';
-import {VolumeManagerCommon} from '../../common/js/volume_manager_types.m.js';
-import {VolumeInfo} from '../../externs/volume_info.m.js';
+import {importer} from '../../common/js/importer_common.js';
+import {metrics} from '../../common/js/metrics.js';
+import {installMockChrome, MockChromeStorageAPI} from '../../common/js/mock_chrome.js';
+import {MockFileSystem} from '../../common/js/mock_entry.js';
+import {reportPromise} from '../../common/js/test_error_reporting.js';
+import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
+import {VolumeInfo} from '../../externs/volume_info.js';
 
-import {DeviceHandler} from './device_handler.m.js';
-import {MockProgressCenter} from './mock_progress_center.m.js';
-import {MockVolumeManager} from './mock_volume_manager.m.js';
+import {DeviceHandler} from './device_handler.js';
+import {MockProgressCenter} from './mock_progress_center.js';
+import {MockVolumeManager} from './mock_volume_manager.js';
 
 /** @type {!MockVolumeManager} */
 let volumeManager;
@@ -40,8 +40,7 @@ metrics.recordEnum = function(name, value, opt_validValues) {};
 // Set up the test components.
 export function setUp() {
   // Set up string assets.
-  loadTimeData.resetForTesting();
-  loadTimeData.overrideValues({
+  loadTimeData.resetForTesting({
     DEVICE_UNSUPPORTED_MESSAGE: 'DEVICE_UNSUPPORTED: $1',
     DEVICE_UNKNOWN_MESSAGE: 'DEVICE_UNKNOWN: $1',
     MULTIPART_DEVICE_UNSUPPORTED_MESSAGE: 'MULTIPART_DEVICE_UNSUPPORTED: $1',

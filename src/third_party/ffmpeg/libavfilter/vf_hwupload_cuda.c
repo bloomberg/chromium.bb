@@ -57,7 +57,7 @@ static int cudaupload_query_formats(AVFilterContext *ctx)
     int ret;
 
     static const enum AVPixelFormat input_pix_fmts[] = {
-        AV_PIX_FMT_NV12, AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUV444P,
+        AV_PIX_FMT_NV12, AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUVA420P, AV_PIX_FMT_YUV444P,
         AV_PIX_FMT_P010, AV_PIX_FMT_P016, AV_PIX_FMT_YUV444P16,
         AV_PIX_FMT_0RGB32, AV_PIX_FMT_0BGR32,
 #if CONFIG_VULKAN
@@ -183,7 +183,7 @@ static const AVFilterPad cudaupload_outputs[] = {
     { NULL }
 };
 
-AVFilter ff_vf_hwupload_cuda = {
+const AVFilter ff_vf_hwupload_cuda = {
     .name        = "hwupload_cuda",
     .description = NULL_IF_CONFIG_SMALL("Upload a system memory frame to a CUDA device."),
 

@@ -39,6 +39,9 @@ extern const char kDefaultBrowserFullscreenPromoCTAExperimentOpenLinksParam[];
 // The feature parameter to indicate the switch arm.
 extern const char kDefaultBrowserFullscreenPromoCTAExperimentSwitchParam[];
 
+// The feature parameter to activate the remind me later button.
+extern const char kDefaultBrowserFullscreenPromoExperimentRemindMeGroupParam[];
+
 // Indicates if the tailored variant "Built for iOS" is enabled. It is not
 // mutually exclusive with other tailored promos.
 extern const char kDefaultPromoTailoredVariantIOSParam[];
@@ -130,6 +133,10 @@ void LogUserInteractionWithNonModalPromo();
 // Returns true if the last URL open is within the time threshold that would
 // indicate Chrome is likely still the default browser. Returns false otherwise.
 bool IsChromeLikelyDefaultBrowser();
+
+// Do not use. Only for backward compatibility
+// Returns true if the last URL open is within 7 days. Returns false otherwise.
+bool IsChromeLikelyDefaultBrowser7Days();
 
 // Returns true if the past behavior of the user indicates that the user fits
 // the categorization that would likely benefit from having Chrome set as their

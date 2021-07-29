@@ -24,6 +24,7 @@
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/mhtml_generation_result.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/page.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/save_page_type.h"
 #include "content/public/browser/visibility.h"
@@ -55,7 +56,6 @@ namespace blink {
 namespace web_pref {
 struct WebPreferences;
 }
-struct Manifest;
 struct UserAgentOverride;
 struct RendererPreferences;
 }  // namespace blink
@@ -292,7 +292,8 @@ class WebContents : public PageNavigator,
   virtual WebContentsDelegate* GetDelegate() = 0;
   virtual void SetDelegate(WebContentsDelegate* delegate) = 0;
 
-  // Gets the controller for this WebContents.
+  // Gets the NavigationController for primary frame tree of this WebContents.
+  // See comments on NavigationController for more details.
   virtual NavigationController& GetController() = 0;
 
   // Returns the user browser context associated with this WebContents (via the
@@ -317,12 +318,47 @@ class WebContents : public PageNavigator,
   // See also GetVisibleURL above, which may differ from this URL.
   virtual const GURL& GetLastCommittedURL() = 0;
 
-  // Returns the main frame for the currently active view.
-  // With MPArch, this returns the primary main frame. This WebContents may have
-  // additional main frames for prerendered pages, bfcached pages, etc.
+  // Returns the main frame for the currently active view. Always non-null
+  // except during WebContents destruction. With MPArch, this returns the
+  // primary main frame. This WebContents may have additional main frames for
+  // prerendered pages, bfcached pages, etc.
   virtual RenderFrameHost* GetMainFrame() = 0;
 
-  // Returns the focused frame for the currently active view.
+  // Returns the current page in the primary frame tree of this WebContents.
+  // If this WebContents is associated with an omnibox, usually the URL of the
+  // main document of this page will be displayed in it.
+  //
+  // Primary page can change as a result of a navigation, both to a new page
+  // (navigation loading a new main document) and an existing one (when
+  // restoring the page from back/forward cache or activating a prerendering
+  // page). This change can be observed using
+  // WebContentsObserver::PrimaryPageChanged, see the comments there for more
+  // details.
+  //
+  // The primary page's lifetime corresponds to its main document's lifetime
+  // and may differ from a RenderFrameHost's lifetime (for cross-document same
+  // RenderFrameHost navigations).
+  //
+  // Apart from the primary page, additional pages might be associated with this
+  // WebContents:
+  // - Pending commit pages (which will become primary after-and-if the ongoing
+  //   main frame navigation successfully commits).
+  // - Pending deletion pages (pages the user has navigated from, but which are
+  //   still alive as they are running unload handlers in background).
+  // - Pages in back/forward cache (which can be navigated to later).
+  // - Prerendered pages (pages which are loading in the background in
+  //   anticipation of user navigating to them).
+  //
+  // Given the existence of multiple pages, in many cases (especially when
+  // handling IPCs from the renderer process), calling GetPrimaryPage would not
+  // be appropriate as it might return a wrong page. If the code already has a
+  // reference to RenderFrameHost or a Page (e.g. each IPC from the renderer
+  // process should be associated with a particular RenderFrameHost), it should
+  // be used instead of getting the primary page from the WebContents.
+  virtual Page& GetPrimaryPage() = 0;
+
+  // Returns the focused frame for the currently active view. Might be nullptr
+  // if nothing is focused.
   virtual RenderFrameHost* GetFocusedFrame() = 0;
 
   // Returns the current RenderFrameHost for a given FrameTreeNode ID if it is
@@ -412,6 +448,19 @@ class WebContents : public PageNavigator,
   // Returns the background color for the underlying content as set by CSS if
   // any.
   virtual absl::optional<SkColor> GetBackgroundColor() = 0;
+
+  // Sets the renderer-side default background color of the page. This is used
+  // when the page has not loaded enough to know a background color or if the
+  // page does not set a background color.
+  // Pass in nullopt to reset back to the default.
+  // Note there are situations where the base background color is not used, such
+  // as fullscreen.
+  // Note currently this is sent directly to the renderer, so does not interact
+  // directly with `RenderWidgetHostView::SetBackgroundColor`. There is pending
+  // refactor to remove `RenderWidgetHostView::SetBackgroundColor` and merge its
+  // functionality here, which will be more consistent and simpler to
+  // understand.
+  virtual void SetPageBaseBackgroundColor(absl::optional<SkColor> color) = 0;
 
   // Returns the committed WebUI if one exists, otherwise the pending one.
   virtual WebUI* GetWebUI() = 0;
@@ -866,9 +915,9 @@ class WebContents : public PageNavigator,
   // Saves the given frame's URL to the local filesystem. The headers, if
   // provided, is used to make a request to the URL rather than using cache.
   // Format of |headers| is a new line separated list of key value pairs:
-  // "<key1>: <value1>\r\n<key2>: <value2>". If `rfh` is provided, the saving is
-  // performed in its context. For example, the associated navigation isolation
-  // info will be used for making the network request.
+  // "<key1>: <value1>\r\n<key2>: <value2>". The saving is performed in the
+  // context of `rfh`. For example, the associated navigation isolation info
+  // will be used for making the network request.
   virtual void SaveFrameWithHeaders(const GURL& url,
                                     const Referrer& referrer,
                                     const std::string& headers,
@@ -1019,7 +1068,7 @@ class WebContents : public PageNavigator,
   // Same as DownloadImage(), but uses the ImageDownloader from the specified
   // frame instead of the main frame.
   virtual int DownloadImageInFrame(
-      const GlobalFrameRoutingId& initiator_frame_routing_id,
+      const GlobalRenderFrameHostId& initiator_frame_routing_id,
       const GURL& url,
       bool is_favicon,
       uint32_t preferred_size,
@@ -1039,15 +1088,6 @@ class WebContents : public PageNavigator,
   // Returns true if audio has been audible from the WebContents since the last
   // navigation.
   virtual bool WasEverAudible() = 0;
-
-  // The callback invoked when the renderer responds to a request for the main
-  // frame document's manifest. The url will be empty if the document specifies
-  // no manifest, and the manifest will be empty if any other failures occurred.
-  using GetManifestCallback =
-      base::OnceCallback<void(const GURL&, const blink::Manifest&)>;
-
-  // Requests the manifest URL and the Manifest of the main frame's document.
-  virtual void GetManifest(GetManifestCallback callback) = 0;
 
   // Returns whether the renderer is in fullscreen mode.
   virtual bool IsFullscreen() = 0;
@@ -1209,6 +1249,10 @@ class WebContents : public PageNavigator,
   // Intended for desktop PWAs with manifest entry of window-controls-overlay,
   // This sends the available title bar area bounds to the renderer process.
   virtual void UpdateWindowControlsOverlay(const gfx::Rect& bounding_rect) = 0;
+
+  // Returns the Window Control Overlay rectangle. Only applies to an
+  // outermost main frame's widget. Other widgets always returns an empty rect.
+  virtual gfx::Rect GetWindowsControlsOverlayRect() const = 0;
 
   // Whether the WebContents has an active player that is effectively
   // fullscreen. That means that the video is either fullscreen or it is the

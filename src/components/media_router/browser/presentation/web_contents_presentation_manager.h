@@ -8,10 +8,9 @@
 #include <memory>
 #include <vector>
 
-#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "components/media_router/common/mojom/media_router.mojom.h"
 
 namespace content {

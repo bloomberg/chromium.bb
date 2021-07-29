@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_ASH_TEST_WALLPAPER_CONTROLLER_H_
 #define CHROME_BROWSER_UI_ASH_TEST_WALLPAPER_CONTROLLER_H_
 
-#include "ash/public/cpp/wallpaper_controller.h"
-#include "ash/public/cpp/wallpaper_types.h"
+#include "ash/public/cpp/wallpaper/online_wallpaper_params.h"
+#include "ash/public/cpp/wallpaper/wallpaper_controller.h"
+#include "ash/public/cpp/wallpaper/wallpaper_types.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "ui/gfx/image/image_skia.h"
@@ -47,25 +48,22 @@ class TestWallpaperController : public ash::WallpaperController {
             const base::FilePath& device_policy_wallpaper) override;
   void SetCustomWallpaper(const AccountId& account_id,
                           const std::string& wallpaper_files_id,
+                          const base::FilePath& file_path,
+                          ash::WallpaperLayout layout,
+                          bool preview_mode,
+                          SetCustomWallpaperCallback callback) override;
+  void SetCustomWallpaper(const AccountId& account_id,
+                          const std::string& wallpaper_files_id,
                           const std::string& file_name,
                           ash::WallpaperLayout layout,
                           const gfx::ImageSkia& image,
                           bool preview_mode) override;
-  void SetOnlineWallpaper(const AccountId& account_id,
-                          const GURL& url,
-                          ash::WallpaperLayout layout,
-                          bool preview_mode,
+  void SetOnlineWallpaper(const ash::OnlineWallpaperParams& params,
                           SetOnlineWallpaperCallback callback) override;
-  void SetOnlineWallpaperIfExists(const AccountId& account_id,
-                                  const std::string& url,
-                                  ash::WallpaperLayout layout,
-                                  bool preview_mode,
+  void SetOnlineWallpaperIfExists(const ash::OnlineWallpaperParams& params,
                                   SetOnlineWallpaperCallback callback) override;
-  void SetOnlineWallpaperFromData(const AccountId& account_id,
+  void SetOnlineWallpaperFromData(const ash::OnlineWallpaperParams& params,
                                   const std::string& image_data,
-                                  const std::string& url,
-                                  ash::WallpaperLayout layout,
-                                  bool preview_mode,
                                   SetOnlineWallpaperCallback callback) override;
   void SetDefaultWallpaper(const AccountId& account_id,
                            const std::string& wallpaper_files_id,

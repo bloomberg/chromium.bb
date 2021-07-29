@@ -96,12 +96,10 @@ void TlsHandshaker::AdvanceHandshake() {
     return;
   }
 
-  QUICHE_BUG_IF(quic_tls_server_async_done_no_flusher,
-                SSL_is_server(ssl()) && add_packet_flusher_on_async_op_done_ &&
-                    !handshaker_delegate_->PacketFlusherAttached())
-      << "is_server:" << SSL_is_server(ssl())
-      << ", add_packet_flusher_on_async_op_done_:"
-      << add_packet_flusher_on_async_op_done_;
+  QUICHE_BUG_IF(
+      quic_tls_server_async_done_no_flusher,
+      SSL_is_server(ssl()) && !handshaker_delegate_->PacketFlusherAttached())
+      << "is_server:" << SSL_is_server(ssl());
 
   QUIC_VLOG(1) << ENDPOINT << "Continuing handshake";
   int rv = SSL_do_handshake(ssl());
@@ -111,8 +109,7 @@ void TlsHandshaker::AdvanceHandshake() {
   // processed. Retry SSL_do_handshake once will advance the handshake more in
   // that case. If there are no unprocessed ServerHello, the retry will return a
   // non-positive number.
-  if (retry_handshake_on_early_data_ && rv == 1 && SSL_in_early_data(ssl())) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(quic_tls_retry_handshake_on_early_data, 1, 2);
+  if (rv == 1 && SSL_in_early_data(ssl())) {
     OnEnterEarlyData();
     rv = SSL_do_handshake(ssl());
     QUIC_VLOG(1) << ENDPOINT

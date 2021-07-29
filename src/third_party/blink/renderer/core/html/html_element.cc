@@ -25,10 +25,8 @@
 
 #include "third_party/blink/renderer/core/html/html_element.h"
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "third_party/blink/renderer/bindings/core/v8/js_event_handler_for_content_attribute.h"
-#include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script.h"
-#include "third_party/blink/renderer/bindings/core/v8/string_treat_null_as_empty_string_or_trusted_script.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_stringtreatnullasemptystring_trustedscript.h"
 #include "third_party/blink/renderer/core/css/css_color.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
@@ -110,28 +108,33 @@ struct AttributeTriggers {
 
 namespace {
 
-// https://w3c.github.io/editing/execCommand.html#editing-host
-bool IsEditingHost(const Node& node) {
-  auto* html_element = DynamicTo<HTMLElement>(node);
-  if (!html_element)
-    return false;
-  String normalized_value = html_element->contentEditable();
-  if (normalized_value == "true" || normalized_value == "plaintext-only")
-    return true;
-  return node.GetDocument().InDesignMode() &&
-         node.GetDocument().documentElement() == &node;
-}
-
+// https://html.spec.whatwg.org/multipage/interaction.html#editing-host
+// An editing host is either an HTML element with its contenteditable attribute
+// in the true state, or a child HTML element of a Document whose design mode
+// enabled is true.
 // https://w3c.github.io/editing/execCommand.html#editable
-bool IsEditable(const Node& node) {
-  if (IsEditingHost(node))
-    return false;
+// Something is editable if it is a node; it is not an editing host; it does not
+// have a contenteditable attribute set to the false state; its parent is an
+// editing host or editable; and either it is an HTML element, or it is an svg
+// or math element, or it is not an Element and its parent is an HTML element.
+bool IsEditableOrEditingHost(const Node& node) {
   auto* html_element = DynamicTo<HTMLElement>(node);
-  if (html_element && html_element->contentEditable() == "false")
-    return false;
+  if (html_element) {
+    ContentEditableType content_editable =
+        html_element->contentEditableNormalized();
+    if (content_editable == ContentEditableType::kContentEditable ||
+        content_editable == ContentEditableType::kPlaintextOnly)
+      return true;
+    if (html_element->GetDocument().InDesignMode() &&
+        html_element->isConnected()) {
+      return true;
+    }
+    if (content_editable == ContentEditableType::kNotContentEditable)
+      return false;
+  }
   if (!node.parentNode())
     return false;
-  if (!IsEditingHost(*node.parentNode()) && !IsEditable(*node.parentNode()))
+  if (!IsEditableOrEditingHost(*node.parentNode()))
     return false;
   if (html_element)
     return true;
@@ -839,7 +842,6 @@ DocumentFragment* HTMLElement::TextToFragment(const String& text,
   return fragment;
 }
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 V8UnionStringTreatNullAsEmptyStringOrTrustedScript*
 HTMLElement::innerTextForBinding() {
   return MakeGarbageCollected<
@@ -863,23 +865,6 @@ void HTMLElement::setInnerTextForBinding(
   }
   setInnerText(value, exception_state);
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-void HTMLElement::innerTextForBinding(
-    StringTreatNullAsEmptyStringOrTrustedScript& result) {
-  result.SetString(innerText());
-}
-
-void HTMLElement::setInnerTextForBinding(
-    const StringTreatNullAsEmptyStringOrTrustedScript& string_or_trusted_script,
-    ExceptionState& exception_state) {
-  String value;
-  if (string_or_trusted_script.IsString())
-    value = string_or_trusted_script.GetAsString();
-  else if (string_or_trusted_script.IsTrustedScript())
-    value = string_or_trusted_script.GetAsTrustedScript()->toString();
-  setInnerText(value, exception_state);
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 String HTMLElement::innerText() {
   return Element::innerText();
@@ -1017,20 +1002,33 @@ bool HTMLElement::HasCustomFocusLogic() const {
   return false;
 }
 
-String HTMLElement::contentEditable() const {
+ContentEditableType HTMLElement::contentEditableNormalized() const {
   const AtomicString& value =
       FastGetAttribute(html_names::kContenteditableAttr);
 
   if (value.IsNull())
-    return "inherit";
+    return ContentEditableType::kInherit;
   if (value.IsEmpty() || EqualIgnoringASCIICase(value, "true"))
-    return "true";
+    return ContentEditableType::kContentEditable;
   if (EqualIgnoringASCIICase(value, "false"))
-    return "false";
+    return ContentEditableType::kNotContentEditable;
   if (EqualIgnoringASCIICase(value, "plaintext-only"))
-    return "plaintext-only";
+    return ContentEditableType::kPlaintextOnly;
 
-  return "inherit";
+  return ContentEditableType::kInherit;
+}
+
+String HTMLElement::contentEditable() const {
+  switch (contentEditableNormalized()) {
+    case ContentEditableType::kInherit:
+      return "inherit";
+    case ContentEditableType::kContentEditable:
+      return "true";
+    case ContentEditableType::kNotContentEditable:
+      return "false";
+    case ContentEditableType::kPlaintextOnly:
+      return "plaintext-only";
+  }
 }
 
 void HTMLElement::setContentEditable(const String& enabled,
@@ -1077,7 +1075,7 @@ void HTMLElement::setAutocapitalize(const AtomicString& value) {
 }
 
 bool HTMLElement::isContentEditableForBinding() const {
-  return IsEditingHost(*this) || IsEditable(*this);
+  return IsEditableOrEditingHost(*this);
 }
 
 bool HTMLElement::draggable() const {
@@ -1647,20 +1645,11 @@ bool HTMLElement::MatchesReadOnlyPseudoClass() const {
   return !MatchesReadWritePseudoClass();
 }
 
+// https://html.spec.whatwg.org/multipage/semantics-other.html#selector-read-write
+// The :read-write pseudo-class must match ... elements that are editing hosts
+// or editable and are neither input elements nor textarea elements
 bool HTMLElement::MatchesReadWritePseudoClass() const {
-  if (FastHasAttribute(html_names::kContenteditableAttr)) {
-    const AtomicString& value =
-        FastGetAttribute(html_names::kContenteditableAttr);
-
-    if (value.IsEmpty() || EqualIgnoringASCIICase(value, "true") ||
-        EqualIgnoringASCIICase(value, "plaintext-only"))
-      return true;
-    if (EqualIgnoringASCIICase(value, "false"))
-      return false;
-    // All other values should be treated as "inherit".
-  }
-
-  return parentElement() && HasEditableStyle(*parentElement());
+  return IsEditableOrEditingHost(*this);
 }
 
 void HTMLElement::HandleKeypressEvent(KeyboardEvent& event) {
@@ -2046,4 +2035,5 @@ void dumpInnerHTML(blink::HTMLElement*);
 void dumpInnerHTML(blink::HTMLElement* element) {
   printf("%s\n", element->innerHTML().Ascii().c_str());
 }
+
 #endif

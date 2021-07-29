@@ -13,7 +13,6 @@
 #include "include/core/SkRefCnt.h"
 #include "include/core/SkSamplingOptions.h"
 #include "include/core/SkSurface.h"
-#include "src/gpu/GrClientMappedBufferManager.h"
 #include "src/gpu/GrColorInfo.h"
 #include "src/gpu/GrDataUtils.h"
 #include "src/gpu/GrImageInfo.h"
@@ -22,7 +21,6 @@
 #include "src/gpu/GrSurfaceProxy.h"
 #include "src/gpu/GrSurfaceProxyView.h"
 
-class GrAuditTrail;
 class GrDrawingManager;
 class GrRecordingContext;
 class GrRenderTargetProxy;
@@ -90,6 +88,8 @@ public:
     SkISize dimensions() const { return fReadView.dimensions(); }
     int width() const { return fReadView.proxy()->width(); }
     int height() const { return fReadView.proxy()->height(); }
+
+    GrMipmapped mipmapped() const { return fReadView.mipmapped(); }
 
     const GrCaps* caps() const;
 
@@ -164,7 +164,7 @@ public:
         return fReadView.asRenderTargetProxyRef();
     }
 
-    virtual GrSurfaceDrawContext* asRenderTargetContext() { return nullptr; }
+    virtual GrSurfaceDrawContext* asSurfaceDrawContext() { return nullptr; }
     virtual GrSurfaceFillContext* asFillContext() { return nullptr; }
 
     /**
@@ -189,8 +189,6 @@ public:
                      SkIRect srcRect,
                      SkImage::RescaleGamma,
                      SkImage::RescaleMode);
-
-    GrAuditTrail* auditTrail();
 
 #if GR_TEST_UTILS
     bool testCopy(sk_sp<GrSurfaceProxy> src, const SkIRect& srcRect, const SkIPoint& dstPoint) {

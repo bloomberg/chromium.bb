@@ -8,10 +8,10 @@
 
 #include "base/bind.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
-#include "content/browser/web_contents/web_contents_impl.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -85,16 +85,8 @@ void ManifestManagerHost::OnRequestManifestResponse(
   std::move(callback).Run(url, manifest);
 }
 
-void ManifestManagerHost::ManifestUrlChanged(
-    const absl::optional<GURL>& manifest_url) {
-  if (!manifest_manager_frame_->IsCurrent())
-    return;
-
-  manifest_manager_frame_->UpdateManifestURL(manifest_url);
-  WebContents* web_contents =
-      WebContents::FromRenderFrameHost(manifest_manager_frame_);
-  static_cast<WebContentsImpl*>(web_contents)
-      ->NotifyManifestUrlChanged(manifest_manager_frame_, manifest_url);
+void ManifestManagerHost::ManifestUrlChanged(const GURL& manifest_url) {
+  manifest_manager_frame_->GetPage().UpdateManifestUrl(manifest_url);
 }
 
 RENDER_DOCUMENT_HOST_USER_DATA_KEY_IMPL(ManifestManagerHost)

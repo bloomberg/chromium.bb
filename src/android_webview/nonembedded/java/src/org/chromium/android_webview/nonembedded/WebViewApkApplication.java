@@ -15,6 +15,7 @@ import com.android.webview.chromium.WebViewLibraryPreloader;
 import org.chromium.android_webview.AwLocaleConfig;
 import org.chromium.android_webview.ProductConfig;
 import org.chromium.android_webview.common.CommandLineUtil;
+import org.chromium.android_webview.common.SafeModeController;
 import org.chromium.android_webview.devui.util.WebViewPackageHelper;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -62,6 +63,12 @@ public class WebViewApkApplication extends Application {
         // MonochromeApplication has its own locale configuration already, so call this here
         // rather than in maybeInitProcessGlobals.
         ResourceBundle.setAvailablePakLocales(AwLocaleConfig.getWebViewSupportedPakLocales());
+
+        // Only register nonembedded SafeMode actions for webview_apk or webview_service processes.
+        if (isWebViewProcess()) {
+            SafeModeController controller = SafeModeController.getInstance();
+            controller.registerActions(NonembeddedSafeModeActionsList.sList);
+        }
     }
 
     @Override
@@ -81,8 +88,11 @@ public class WebViewApkApplication extends Application {
         if (isWebViewProcess()) {
             PathUtils.setPrivateDataDirectorySuffix("webview", "WebView");
             CommandLineUtil.initCommandLine();
-            // disable using a native recorder in this process because native lib isn't loaded.
-            UmaRecorderHolder.setAllowNativeUmaRecorder(false);
+
+            // TODO(crbug.com/1182693): Do set up a native UMA recorder once we support recording
+            // metrics from native nonembedded code.
+            UmaRecorderHolder.setUpNativeUmaRecorder(false);
+
             UmaRecorderHolder.setNonNativeDelegate(new AwNonembeddedUmaRecorder());
         }
 
@@ -143,9 +153,11 @@ public class WebViewApkApplication extends Application {
      * Performs minimal native library initialization required when running as a stand-alone APK.
      * @return True if the library was loaded, false if running as webview stub.
      */
-    static synchronized boolean initializeNative() {
+    static synchronized boolean ensureNativeLoaded() {
         try {
-            if (LibraryLoader.getInstance().isInitialized()) {
+            // TODO(https://crbug.com/1220862): Investigate calling LibraryLoader#initialize and
+            // LibraryLoader#isInitialized instead and document the findings.
+            if (LibraryLoader.getInstance().isLoaded()) {
                 return true;
             }
             // Should not call LibraryLoader.initialize() since this will reset UmaRecorder
@@ -153,14 +165,14 @@ public class WebViewApkApplication extends Application {
             LibraryLoader.getInstance().setLibraryProcessType(
                     LibraryProcessType.PROCESS_WEBVIEW_NONEMBEDDED);
             LibraryLoader.getInstance().loadNow();
+            LibraryLoader.getInstance().switchCommandLineForWebView();
+            WebViewApkApplicationJni.get().initializeGlobalsAndResources();
+            return true;
         } catch (Throwable unused) {
             // Happens for WebView Stub. Throws NoClassDefFoundError because of no
             // NativeLibraries.java being generated.
             return false;
         }
-        LibraryLoader.getInstance().switchCommandLineForWebView();
-        WebViewApkApplicationJni.get().initializeGlobalsAndResources();
-        return true;
     }
 
     @NativeMethods

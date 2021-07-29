@@ -106,6 +106,8 @@ const ShoppingCarts kEmptyExpected = {};
 const char kMockMerchantADiscountRuleId[] = "1";
 const int kMockMerchantADiscountsPercentOff = 10;
 const char kMockMerchantADiscountsRawMerchantOfferId[] = "merchantAOfferId";
+const bool kNotATester = false;
+const bool kATester = true;
 
 std::vector<cart_db::DiscountInfoProto> BuildMerchantADiscountInfoProtos() {
   cart_db::DiscountInfoProto proto;
@@ -361,7 +363,8 @@ TEST_F(CartServiceTest, TestUpdateDiscounts) {
                          kMockMerchantADiscountsPercentOff,
                          kMockMerchantADiscountsRawMerchantOfferId);
 
-  service_->UpdateDiscounts(GURL(kMockMerchantURLA), cart_with_discount_proto);
+  service_->UpdateDiscounts(GURL(kMockMerchantURLA), cart_with_discount_proto,
+                            kNotATester);
 
   const ShoppingCarts expected = {{kMockMerchantA, cart_with_discount_proto}};
 
@@ -372,7 +375,8 @@ TEST_F(CartServiceTest, TestUpdateDiscounts) {
   run_loop[2].Run();
 
   CacheUsedDiscounts(cart_with_discount_proto);
-  service_->UpdateDiscounts(GURL(kMockMerchantURLA), cart_with_discount_proto);
+  service_->UpdateDiscounts(GURL(kMockMerchantURLA), cart_with_discount_proto,
+                            kNotATester);
   cart_db->LoadCart(
       kMockMerchantA,
       base::BindOnce(&CartServiceTest::GetEvaluationEmptyDiscount,
@@ -1041,6 +1045,40 @@ TEST_F(CartServiceTest, TestCleanUpDiscounts) {
   run_loop[2].Run();
 }
 
+TEST_F(CartServiceTest, TestUpdateDiscountsTesterByPassCachedRuleId) {
+  EXPECT_FALSE(service_->IsDiscountUsed(kMockMerchantADiscountRuleId));
+
+  cart_db::ChromeCartContentProto cart_with_discount_proto = AddDiscountToProto(
+      BuildProto(kMockMerchantA, kMockMerchantURLA), 1,
+      kMockMerchantADiscountRuleId, kMockMerchantADiscountsPercentOff,
+      kMockMerchantADiscountsRawMerchantOfferId);
+  const ShoppingCarts has_discount_cart = {
+      {kMockMerchantA, cart_with_discount_proto}};
+
+  CacheUsedDiscounts(cart_with_discount_proto);
+  EXPECT_TRUE(service_->IsDiscountUsed(kMockMerchantADiscountRuleId));
+
+  base::RunLoop run_loop[2];
+  CartDB* cart_db = service_->GetDB();
+  service_->UpdateDiscounts(GURL(kMockMerchantURLA), cart_with_discount_proto,
+                            kNotATester);
+  cart_db->LoadCart(
+      kMockMerchantA,
+      base::BindOnce(&CartServiceTest::GetEvaluationEmptyDiscount,
+                     base::Unretained(this), run_loop[0].QuitClosure()));
+  run_loop[0].Run();
+
+  service_->UpdateDiscounts(GURL(kMockMerchantURLA), cart_with_discount_proto,
+                            kATester);
+
+  cart_db->LoadCart(
+      kMockMerchantA,
+      base::BindOnce(&CartServiceTest::GetEvaluationDiscount,
+                     base::Unretained(this), run_loop[1].QuitClosure(),
+                     has_discount_cart));
+  run_loop[1].Run();
+}
+
 class CartServiceFakeDataTest : public CartServiceTest {
  public:
   // Features need to be initialized before CartServiceTest::SetUp runs, in
@@ -1395,26 +1433,41 @@ TEST_F(CartServiceDiscountTest, TestNoFetchWhenFeatureDisabled) {
 
 // Tests CartService returning fetched discount URL.
 TEST_F(CartServiceDiscountTest, TestReturnDiscountURL) {
-  base::RunLoop run_loop[2];
+  base::RunLoop run_loop[4];
   const double timestamp = 1;
   GURL discount_url("https://www.discount.com");
   SetCartDiscountURLForTesting(discount_url, true);
+  EXPECT_FALSE(service_->IsDiscountUsed(kMockMerchantADiscountRuleId));
   cart_db::ChromeCartContentProto cart_proto = AddDiscountToProto(
       BuildProto(kMockMerchantA, kMockMerchantURLA), timestamp,
       kMockMerchantADiscountRuleId, kMockMerchantADiscountsPercentOff,
       kMockMerchantADiscountsRawMerchantOfferId);
+  const ShoppingCarts has_discount_cart = {{kMockMerchantA, cart_proto}};
   service_->GetDB()->AddCart(
       kMockMerchantA, cart_proto,
       base::BindOnce(&CartServiceTest::OperationEvaluation,
                      base::Unretained(this), run_loop[0].QuitClosure(), true));
   run_loop[0].Run();
+  service_->LoadCart(
+      kMockMerchantA,
+      base::BindOnce(&CartServiceTest::GetEvaluationDiscount,
+                     base::Unretained(this), run_loop[1].QuitClosure(),
+                     has_discount_cart));
+  run_loop[1].Run();
 
   service_->GetDiscountURL(
       GURL(kMockMerchantURLA),
       base::BindOnce(&CartServiceTest::GetEvaluationDiscountURL,
-                     base::Unretained(this), run_loop[1].QuitClosure(),
+                     base::Unretained(this), run_loop[2].QuitClosure(),
                      discount_url));
-  run_loop[1].Run();
+  run_loop[2].Run();
+
+  EXPECT_TRUE(service_->IsDiscountUsed(kMockMerchantADiscountRuleId));
+  service_->LoadCart(
+      kMockMerchantA,
+      base::BindOnce(&CartServiceTest::GetEvaluationEmptyDiscount,
+                     base::Unretained(this), run_loop[3].QuitClosure()));
+  run_loop[3].Run();
 }
 
 // Tests CartService returning original cart URL as a fallback if the fetch

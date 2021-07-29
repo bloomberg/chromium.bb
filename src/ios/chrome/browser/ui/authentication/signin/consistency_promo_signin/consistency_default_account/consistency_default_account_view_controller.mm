@@ -5,7 +5,9 @@
 #import "ios/chrome/browser/ui/authentication/signin/consistency_promo_signin/consistency_default_account/consistency_default_account_view_controller.h"
 
 #import "base/strings/sys_string_conversions.h"
+#import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/views/identity_button_control.h"
+#import "ios/chrome/browser/ui/authentication/views/identity_view.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/button_util.h"
@@ -23,14 +25,8 @@ namespace {
 
 // Margins for |self.contentView| (top, bottom, leading and trailing).
 constexpr CGFloat kContentMargin = 16.;
-// Avatar height and width.
-constexpr CGFloat kAvatarSize = 30.;
 // Space between elements in |self.contentView|.
 constexpr CGFloat kContentSpacing = 16.;
-// Constants for IdentityButtonControl.
-constexpr CGFloat kMinimumTopMargin = 10.;
-constexpr CGFloat kMinimumBottomMargin = 8.;
-constexpr CGFloat kTitleSubtitleMargin = 0.;
 
 }
 
@@ -153,14 +149,7 @@ constexpr CGFloat kTitleSubtitleMargin = 0.;
   self.identityButtonControl.backgroundColor =
       [UIColor colorNamed:kGroupedSecondaryBackgroundColor];
   self.identityButtonControl.arrowDirection = IdentityButtonControlArrowRight;
-  self.identityButtonControl.avatarSize = kAvatarSize;
-  self.identityButtonControl.minimumTopMargin = kMinimumTopMargin;
-  self.identityButtonControl.minimumBottomMargin = kMinimumBottomMargin;
-  self.identityButtonControl.titleSubtitleMargin = kTitleSubtitleMargin;
-  self.identityButtonControl.titleFont =
-      [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
-  self.identityButtonControl.subtitleFont =
-      [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+  self.identityButtonControl.identityViewStyle = IdentityViewStyleConsistency;
   [self.identityButtonControl addTarget:self
                                  action:@selector(identityButtonControlAction:
                                                                      forEvent:)
@@ -168,12 +157,13 @@ constexpr CGFloat kTitleSubtitleMargin = 0.;
   [self.contentView addArrangedSubview:self.identityButtonControl];
   [NSLayoutConstraint activateConstraints:@[
     [self.identityButtonControl.widthAnchor
-        constraintEqualToAnchor:self.contentView.widthAnchor
-                       constant:0]
+        constraintEqualToAnchor:self.contentView.widthAnchor]
   ]];
   // Add primary button.
   self.continueAsButton =
       PrimaryActionButton(/* pointer_interaction_enabled */ YES);
+  self.continueAsButton.accessibilityIdentifier =
+      kWebSigninContinueAsButtonAccessibilityIdentifier;
   self.continueAsButton.translatesAutoresizingMaskIntoConstraints = NO;
   [self.continueAsButton addTarget:self
                             action:@selector(signInWithDefaultIdentityAction:)
@@ -181,8 +171,7 @@ constexpr CGFloat kTitleSubtitleMargin = 0.;
   [self.contentView addArrangedSubview:self.continueAsButton];
   [NSLayoutConstraint activateConstraints:@[
     [self.continueAsButton.widthAnchor
-        constraintEqualToAnchor:self.contentView.widthAnchor
-                       constant:0]
+        constraintEqualToAnchor:self.contentView.widthAnchor]
   ]];
   // Adjust the identity button control rounded corners to the same value than
   // the "continue as" button.
@@ -210,7 +199,7 @@ constexpr CGFloat kTitleSubtitleMargin = 0.;
       consistencyDefaultAccountViewControllerContinueWithSelectedIdentity:self];
 }
 
-#pragma mark - ChildBottomSheetViewController
+#pragma mark - ChildConsistencySheetViewController
 
 - (CGFloat)layoutFittingHeightForWidth:(CGFloat)width {
   CGFloat contentViewWidth = width - self.view.safeAreaInsets.left -

@@ -6,7 +6,7 @@
  */
 
 #include "include/core/SkStrokeRec.h"
-#include "src/core/SkPathEffectPriv.h"
+#include "include/effects/SkOpPathEffect.h"
 #include "src/core/SkReadBuffer.h"
 #include "src/core/SkRectPriv.h"
 #include "src/core/SkWriteBuffer.h"
@@ -21,17 +21,17 @@ SkOpPE::SkOpPE(sk_sp<SkPathEffect> one, sk_sp<SkPathEffect> two, SkPathOp op)
     : fOne(std::move(one)), fTwo(std::move(two)), fOp(op) {}
 
 bool SkOpPE::onFilterPath(SkPath* dst, const SkPath& src, SkStrokeRec* rec,
-                          const SkRect* cull) const {
+                          const SkRect* cull, const SkMatrix& ctm) const {
     SkPath one, two;
     if (fOne) {
-        if (!fOne->filterPath(&one, src, rec, cull)) {
+        if (!fOne->filterPath(&one, src, rec, cull, ctm)) {
             return false;
         }
     } else {
         one = src;
     }
     if (fTwo) {
-        if (!fTwo->filterPath(&two, src, rec, cull)) {
+        if (!fTwo->filterPath(&two, src, rec, cull, ctm)) {
             return false;
         }
     } else {
@@ -42,16 +42,16 @@ bool SkOpPE::onFilterPath(SkPath* dst, const SkPath& src, SkStrokeRec* rec,
 
 bool SkOpPE::computeFastBounds(SkRect* bounds) const {
     if (!bounds) {
-        return (!SkToBool(fOne) || SkPathEffectPriv::ComputeFastBounds(fOne.get(), nullptr)) &&
-               (!SkToBool(fTwo) || SkPathEffectPriv::ComputeFastBounds(fTwo.get(), nullptr));
+        return (!SkToBool(fOne) || as_PEB(fOne)->computeFastBounds(nullptr)) &&
+               (!SkToBool(fTwo) || as_PEB(fTwo)->computeFastBounds(nullptr));
     }
 
     // bounds will hold the result of the fOne while b2 holds the result of fTwo's fast bounds
     SkRect b2 = *bounds;
-    if (fOne && !SkPathEffectPriv::ComputeFastBounds(fOne.get(), bounds)) {
+    if (fOne && !as_PEB(fOne)->computeFastBounds(bounds)) {
         return false;
     }
-    if (fTwo && !SkPathEffectPriv::ComputeFastBounds(fTwo.get(), &b2)) {
+    if (fTwo && !as_PEB(fTwo)->computeFastBounds(&b2)) {
         return false;
     }
 
@@ -111,7 +111,8 @@ SkMatrixPE::SkMatrixPE(const SkMatrix& matrix) : fMatrix(matrix) {
     SkASSERT(matrix.isFinite());
 }
 
-bool SkMatrixPE::onFilterPath(SkPath* dst, const SkPath& src, SkStrokeRec*, const SkRect*) const {
+bool SkMatrixPE::onFilterPath(SkPath* dst, const SkPath& src, SkStrokeRec*, const SkRect*,
+                              const SkMatrix&) const {
     src.transform(fMatrix, dst);
     return true;
 }
@@ -139,7 +140,8 @@ sk_sp<SkPathEffect> SkStrokePathEffect::Make(SkScalar width, SkPaint::Join join,
 SkStrokePE::SkStrokePE(SkScalar width, SkPaint::Join join, SkPaint::Cap cap, SkScalar miter)
     : fWidth(width), fMiter(miter), fJoin(join), fCap(cap) {}
 
-bool SkStrokePE::onFilterPath(SkPath* dst, const SkPath& src, SkStrokeRec*, const SkRect*) const {
+bool SkStrokePE::onFilterPath(SkPath* dst, const SkPath& src, SkStrokeRec*, const SkRect*,
+                              const SkMatrix&) const {
     SkStrokeRec rec(SkStrokeRec::kFill_InitStyle);
     rec.setStrokeStyle(fWidth);
     rec.setStrokeParams(fCap, fJoin, fMiter);
@@ -195,7 +197,7 @@ static bool known_to_be_opposite_directions(const SkPath& a, const SkPath& b) {
 }
 
 bool SkStrokeAndFillPE::onFilterPath(SkPath* dst, const SkPath& src, SkStrokeRec* rec,
-                                     const SkRect*) const {
+                                     const SkRect*, const SkMatrix&) const {
     // This one is weird, since we exist to allow this paint-style to go away. If we see it,
     // just let the normal machine run its course.
     if (rec->getStyle() == SkStrokeRec::kStrokeAndFill_Style) {

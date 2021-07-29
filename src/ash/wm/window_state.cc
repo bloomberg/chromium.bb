@@ -9,8 +9,7 @@
 
 #include "ash/focus_cycler.h"
 #include "ash/metrics/pip_uma.h"
-#include "ash/public/cpp/app_types.h"
-#include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/app_types_util.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_animation_types.h"
 #include "ash/public/cpp/window_properties.h"
@@ -18,6 +17,7 @@
 #include "ash/shell.h"
 #include "ash/wm/collision_detection/collision_detection_utils.h"
 #include "ash/wm/default_state.h"
+#include "ash/wm/desks/persistent_desks_bar_controller.h"
 #include "ash/wm/full_restore/full_restore_controller.h"
 #include "ash/wm/pip/pip_positioner.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -34,6 +34,7 @@
 #include "chromeos/ui/base/window_pin_type.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/base/window_state_type.h"
+#include "components/full_restore/features.h"
 #include "components/full_restore/full_restore_utils.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/layout_manager.h"
@@ -76,10 +77,15 @@ bool IsToplevelContainer(aura::Window* window) {
 }
 
 // ARC windows will not be in a top level container until they are associated
-// with a task. We still want a WindowState created for these windows as they
-// will be moved to a top level container soon.
+// with a task. We still want a WindowState created for these windows and their
+// transient children as they will be moved to a top level container soon.
 bool IsTemporarilyHiddenForFullrestore(aura::Window* window) {
-  return window->GetProperty(full_restore::kParentToHiddenContainerKey);
+  if (window->GetProperty(full_restore::kParentToHiddenContainerKey))
+    return true;
+
+  auto* transient_parent = ::wm::GetTransientParent(window);
+  return transient_parent && transient_parent->GetProperty(
+                                 full_restore::kParentToHiddenContainerKey);
 }
 
 // A tentative class to set the bounds on the window.
@@ -145,7 +151,7 @@ WMEventType WMEventTypeFromWindowPinType(chromeos::WindowPinType type) {
 float GetCurrentSnappedWidthRatio(aura::Window* window) {
   gfx::Rect maximized_bounds =
       screen_util::GetMaximizedWindowBoundsInParent(window);
-  return static_cast<float>(window->bounds().width()) /
+  return static_cast<float>(window->GetTargetBounds().width()) /
          static_cast<float>(maximized_bounds.width());
 }
 
@@ -188,7 +194,7 @@ void ReportAshPipAndroidPipUseTime(base::TimeDelta duration) {
 
 // Notifies the full restore controller to write to file.
 void SaveWindowForFullRestore(WindowState* window_state) {
-  if (!features::IsFullRestoreEnabled())
+  if (!full_restore::features::IsFullRestoreEnabled())
     return;
 
   auto* controller = FullRestoreController::Get();
@@ -263,8 +269,8 @@ bool WindowState::IsMaximizedOrFullscreenOrPinned() const {
 }
 
 bool WindowState::IsSnapped() const {
-  return GetStateType() == WindowStateType::kLeftSnapped ||
-         GetStateType() == WindowStateType::kRightSnapped;
+  return GetStateType() == WindowStateType::kPrimarySnapped ||
+         GetStateType() == WindowStateType::kSecondarySnapped;
 }
 
 bool WindowState::IsPinned() const {
@@ -404,6 +410,22 @@ void WindowState::OnWMEvent(const WMEvent* event) {
   current_state_->OnWMEvent(this, event);
 
   UpdateSnappedWidthRatio(event);
+
+  PersistentDesksBarController* bar_controller =
+      Shell::Get()->persistent_desks_bar_controller();
+  if (bar_controller &&
+      window_->GetRootWindow() == Shell::GetPrimaryRootWindow()) {
+    if (event->type() == WM_EVENT_TOGGLE_FULLSCREEN) {
+      if (IsFullscreen())
+        bar_controller->DestroyBarWidget();
+      else
+        bar_controller->MaybeInitBarWidget();
+    } else if (event->type() == WM_EVENT_MINIMIZE) {
+      bar_controller->MaybeInitBarWidget();
+    } else if (event->type() == WM_EVENT_FULLSCREEN) {
+      bar_controller->DestroyBarWidget();
+    }
+  }
 }
 
 void WindowState::SaveCurrentBoundsForRestore() {
@@ -502,8 +524,9 @@ void WindowState::UpdateSnappedWidthRatio(const WMEvent* event) {
 
   const WMEventType type = event->type();
   // Initializes |snapped_width_ratio_| whenever |event| is snapping event.
-  if (type == WM_EVENT_SNAP_LEFT || type == WM_EVENT_SNAP_RIGHT ||
-      type == WM_EVENT_CYCLE_SNAP_LEFT || type == WM_EVENT_CYCLE_SNAP_RIGHT) {
+  if (type == WM_EVENT_SNAP_PRIMARY || type == WM_EVENT_SNAP_SECONDARY ||
+      type == WM_EVENT_CYCLE_SNAP_PRIMARY ||
+      type == WM_EVENT_CYCLE_SNAP_SECONDARY) {
     // Since |UpdateSnappedWidthRatio()| is called post WMEvent taking effect,
     // |window_|'s bounds is in a correct state for ratio update.
     snapped_width_ratio_ =
@@ -672,9 +695,9 @@ void WindowState::AdjustSnappedBounds(gfx::Rect* bounds) {
     bounds->set_width(
         static_cast<int>(*snapped_width_ratio_ * maximized_bounds.width()));
   }
-  if (GetStateType() == WindowStateType::kLeftSnapped)
+  if (GetStateType() == WindowStateType::kPrimarySnapped)
     bounds->set_x(maximized_bounds.x());
-  else if (GetStateType() == WindowStateType::kRightSnapped)
+  else if (GetStateType() == WindowStateType::kSecondarySnapped)
     bounds->set_x(maximized_bounds.right() - bounds->width());
   bounds->set_y(maximized_bounds.y());
   bounds->set_height(maximized_bounds.height());
@@ -1031,6 +1054,19 @@ void WindowState::OnWindowDestroying(aura::Window* window) {
 
   current_state_->OnWindowDestroying(this);
   delegate_.reset();
+}
+
+void WindowState::OnWindowVisibilityChanged(aura::Window* window,
+                                            bool visible) {
+  PersistentDesksBarController* bar_controller =
+      Shell::Get()->persistent_desks_bar_controller();
+  if (bar_controller && IsFullscreen() &&
+      window->GetRootWindow() == Shell::GetPrimaryRootWindow()) {
+    if (visible)
+      bar_controller->DestroyBarWidget();
+    else
+      bar_controller->MaybeInitBarWidget();
+  }
 }
 
 void WindowState::OnWindowBoundsChanged(aura::Window* window,

@@ -52,7 +52,7 @@ class TextureSubresourceTest : public DawnTest {
         wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
             [[stage(vertex)]]
             fn main([[builtin(vertex_index)]] VertexIndex : u32) -> [[builtin(position)]] vec4<f32> {
-                let pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
+                var pos = array<vec2<f32>, 3>(
                     vec2<f32>(-1.0,  1.0),
                     vec2<f32>(-1.0, -1.0),
                     vec2<f32>( 1.0, -1.0));
@@ -65,13 +65,13 @@ class TextureSubresourceTest : public DawnTest {
                 return vec4<f32>(1.0, 0.0, 0.0, 1.0);
             })");
 
-        utils::ComboRenderPipelineDescriptor2 descriptor;
+        utils::ComboRenderPipelineDescriptor descriptor;
         descriptor.vertex.module = vsModule;
         descriptor.cFragment.module = fsModule;
         descriptor.primitive.topology = wgpu::PrimitiveTopology::TriangleList;
         descriptor.cTargets[0].format = kFormat;
 
-        wgpu::RenderPipeline rp = device.CreateRenderPipeline2(&descriptor);
+        wgpu::RenderPipeline rp = device.CreateRenderPipeline(&descriptor);
 
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
 
@@ -89,7 +89,7 @@ class TextureSubresourceTest : public DawnTest {
         wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
             [[stage(vertex)]]
             fn main([[builtin(vertex_index)]] VertexIndex : u32) -> [[builtin(position)]] vec4<f32> {
-                let pos : array<vec2<f32>, 6> = array<vec2<f32>, 6>(
+                var pos = array<vec2<f32>, 6>(
                     vec2<f32>(-1.0, -1.0),
                     vec2<f32>( 1.0,  1.0),
                     vec2<f32>(-1.0,  1.0),
@@ -109,7 +109,7 @@ class TextureSubresourceTest : public DawnTest {
                 return textureSample(tex, samp, FragCoord.xy / vec2<f32>(4.0, 4.0));
             })");
 
-        utils::ComboRenderPipelineDescriptor2 descriptor;
+        utils::ComboRenderPipelineDescriptor descriptor;
         descriptor.vertex.module = vsModule;
         descriptor.cFragment.module = fsModule;
         descriptor.primitive.topology = wgpu::PrimitiveTopology::TriangleList;
@@ -117,7 +117,7 @@ class TextureSubresourceTest : public DawnTest {
 
         wgpu::Sampler sampler = device.CreateSampler();
 
-        wgpu::RenderPipeline rp = device.CreateRenderPipeline2(&descriptor);
+        wgpu::RenderPipeline rp = device.CreateRenderPipeline(&descriptor);
         wgpu::BindGroupLayout bgl = rp.GetBindGroupLayout(0);
         wgpu::BindGroup bindGroup =
             utils::MakeBindGroup(device, bgl, {{0, sampler}, {1, samplerView}});
@@ -139,7 +139,7 @@ class TextureSubresourceTest : public DawnTest {
 // Test different mipmap levels
 TEST_P(TextureSubresourceTest, MipmapLevelsTest) {
     // TODO(crbug.com/dawn/593): This test requires glTextureView, which is unsupported on GLES.
-    DAWN_SKIP_TEST_IF(IsOpenGLES());
+    DAWN_TEST_UNSUPPORTED_IF(IsOpenGLES());
 
     // Create a texture with 2 mipmap levels and 1 layer
     wgpu::Texture texture =
@@ -168,7 +168,7 @@ TEST_P(TextureSubresourceTest, MipmapLevelsTest) {
 // Test different array layers
 TEST_P(TextureSubresourceTest, ArrayLayersTest) {
     // TODO(crbug.com/dawn/593): This test requires glTextureView, which is unsupported on GLES.
-    DAWN_SKIP_TEST_IF(IsOpenGLES());
+    DAWN_TEST_UNSUPPORTED_IF(IsOpenGLES());
     // Create a texture with 1 mipmap level and 2 layers
     wgpu::Texture texture =
         CreateTexture(1, 2,

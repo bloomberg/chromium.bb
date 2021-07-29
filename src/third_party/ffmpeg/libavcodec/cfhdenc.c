@@ -766,7 +766,7 @@ static int cfhd_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
                 put_bits(pb, cb[512].size, cb[512].bits);
 
                 flush_put_bits(pb);
-                bytestream2_skip_p(pby, put_bits_count(pb) >> 3);
+                bytestream2_skip_p(pby, put_bytes_output(pb));
                 padd = (4 - (bytestream2_tell_p(pby) & 3)) & 3;
                 while (padd--)
                     bytestream2_put_byte(pby, 0);
@@ -845,7 +845,7 @@ static const AVClass cfhd_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVCodec ff_cfhd_encoder = {
+const AVCodec ff_cfhd_encoder = {
     .name             = "cfhd",
     .long_name        = NULL_IF_CONFIG_SMALL("GoPro CineForm HD"),
     .type             = AVMEDIA_TYPE_VIDEO,
@@ -862,5 +862,5 @@ AVCodec ff_cfhd_encoder = {
                           AV_PIX_FMT_GBRAP12,
                           AV_PIX_FMT_NONE
                         },
-    .caps_internal    = FF_CODEC_CAP_INIT_CLEANUP,
+    .caps_internal    = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
 };

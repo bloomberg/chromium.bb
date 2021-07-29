@@ -10,11 +10,10 @@
 #include "ash/login/ui/hover_notifier.h"
 #include "ash/login/ui/image_parser.h"
 #include "ash/login/ui/login_button.h"
+#include "ash/login/ui/login_constants.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/login/ui/user_switch_flip_animation.h"
 #include "ash/login/ui/views_utils.h"
-#include "ash/public/cpp/ash_constants.h"
-#include "ash/public/cpp/login_constants.h"
 #include "ash/public/cpp/session/user_info.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
@@ -31,6 +30,7 @@
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_elider.h"
@@ -88,7 +88,7 @@ constexpr char kLoginUserLabelClassName[] = "LoginUserLabel";
 class PassthroughAnimationDecoder
     : public AnimatedRoundedImageView::AnimationDecoder {
  public:
-  PassthroughAnimationDecoder(const AnimationFrames& frames)
+  explicit PassthroughAnimationDecoder(const AnimationFrames& frames)
       : frames_(frames) {}
   ~PassthroughAnimationDecoder() override = default;
 
@@ -102,7 +102,7 @@ class PassthroughAnimationDecoder
 
 class IconRoundedView : public views::View {
  public:
-  IconRoundedView(int size) : size_(size) {}
+  explicit IconRoundedView(int size) : size_(size) {}
   ~IconRoundedView() override = default;
 
   IconRoundedView(const IconRoundedView&) = delete;
@@ -166,7 +166,7 @@ class LoginUserView::UserImage : public NonAccessibleView {
     LoginUserView::UserImage* const view_;
   };
 
-  UserImage(LoginDisplayStyle style)
+  explicit UserImage(LoginDisplayStyle style)
       : NonAccessibleView(kLoginUserImageClassName) {
     SetLayoutManager(std::make_unique<views::FillLayout>());
 
@@ -379,8 +379,9 @@ views::View* LoginUserView::TestApi::dropdown() const {
   return view_->dropdown_;
 }
 
-LoginUserMenuView* LoginUserView::TestApi::menu() const {
-  return view_->menu_;
+LoginRemoveAccountDialog* LoginUserView::TestApi::remove_account_dialog()
+    const {
+  return view_->remove_account_dialog_;
 }
 
 views::View* LoginUserView::TestApi::enterprise_icon() const {
@@ -480,15 +481,15 @@ LoginUserView::~LoginUserView() = default;
 void LoginUserView::UpdateForUser(const LoginUserInfo& user, bool animate) {
   current_user_ = user;
 
-  if (menu_ && menu_->parent()) {
-    menu_->parent()->RemoveChildView(menu_);
-    delete menu_;
+  if (remove_account_dialog_ && remove_account_dialog_->parent()) {
+    remove_account_dialog_->parent()->RemoveChildView(remove_account_dialog_);
+    delete remove_account_dialog_;
   }
 
-  menu_ = new LoginUserMenuView(current_user_, dropdown_ /*anchor_view*/,
-                                dropdown_ /*bubble_opener*/,
-                                on_remove_warning_shown_, on_remove_);
-  menu_->SetVisible(false);
+  remove_account_dialog_ = new LoginRemoveAccountDialog(
+      current_user_, dropdown_ /*anchor_view*/, dropdown_ /*bubble_opener*/,
+      on_remove_warning_shown_, on_remove_);
+  remove_account_dialog_->SetVisible(false);
 
   if (animate) {
     // Stop any existing animation.
@@ -499,7 +500,7 @@ void LoginUserView::UpdateForUser(const LoginUserInfo& user, bool animate) {
         user_image_->width(), 0 /*start_degrees*/, 90 /*midpoint_degrees*/,
         180 /*end_degrees*/,
         base::TimeDelta::FromMilliseconds(
-            login_constants::kChangeUserAnimationDurationMs),
+            login::kChangeUserAnimationDurationMs),
         gfx::Tween::Type::EASE_OUT,
         base::BindOnce(&LoginUserView::UpdateCurrentUserState,
                        base::Unretained(this)));
@@ -512,9 +513,8 @@ void LoginUserView::UpdateForUser(const LoginUserInfo& user, bool animate) {
     auto make_opacity_sequence = [is_opaque]() {
       auto make_opacity_element = [](float target_opacity) {
         auto element = ui::LayerAnimationElement::CreateOpacityElement(
-            target_opacity,
-            base::TimeDelta::FromMilliseconds(
-                login_constants::kChangeUserAnimationDurationMs / 2.0f));
+            target_opacity, base::TimeDelta::FromMilliseconds(
+                                login::kChangeUserAnimationDurationMs / 2.0f));
         element->set_tween_type(gfx::Tween::Type::EASE_OUT);
         return element;
       };
@@ -598,29 +598,30 @@ void LoginUserView::OnHover(bool has_hover) {
 
 void LoginUserView::DropdownButtonPressed() {
   DCHECK(dropdown_);
-  DCHECK(menu_);
+  DCHECK(remove_account_dialog_);
 
-  // If menu is showing, just close it
-  if (menu_->GetVisible()) {
-    menu_->Hide();
+  // If the remove account dialog is showing, just close it.
+  if (remove_account_dialog_->GetVisible()) {
+    remove_account_dialog_->Hide();
     return;
   }
 
-  bool opener_focused =
-      menu_->GetBubbleOpener() && menu_->GetBubbleOpener()->HasFocus();
+  bool opener_focused = remove_account_dialog_->GetBubbleOpener() &&
+                        remove_account_dialog_->GetBubbleOpener()->HasFocus();
 
-  if (!menu_->parent())
-    login_views_utils::GetBubbleContainer(this)->AddChildView(menu_);
+  if (!remove_account_dialog_->parent())
+    login_views_utils::GetBubbleContainer(this)->AddChildView(
+        remove_account_dialog_);
 
   // Reset state in case the remove-user button was clicked once previously.
-  menu_->ResetState();
-  menu_->Show();
+  remove_account_dialog_->ResetState();
+  remove_account_dialog_->Show();
 
-  // If the menu was opened by pressing Enter on the focused dropdown, focus
-  // should automatically go to the remove-user button (for keyboard
-  // accessibility).
+  // If the remove account dialog was opened by pressing Enter on the focused
+  // dropdown, focus should automatically go to the remove-user button (for
+  // keyboard accessibility).
   if (opener_focused)
-    menu_->RequestFocus();
+    remove_account_dialog_->RequestFocus();
 }
 
 void LoginUserView::UpdateCurrentUserState() {

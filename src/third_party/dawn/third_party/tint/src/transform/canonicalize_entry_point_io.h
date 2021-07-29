@@ -68,17 +68,49 @@ namespace transform {
 ///   return retval;
 /// }
 /// ```
-class CanonicalizeEntryPointIO : public Transform {
+class CanonicalizeEntryPointIO
+    : public Castable<CanonicalizeEntryPointIO, Transform> {
  public:
+  /// BuiltinStyle is an enumerator of different ways to emit builtins.
+  enum class BuiltinStyle {
+    /// Use non-struct function parameters for all builtins.
+    kParameter,
+    /// Use struct members for all builtins.
+    kStructMember,
+  };
+
+  /// Configuration options for the transform.
+  struct Config : public Castable<Config, Data> {
+    /// Constructor
+    /// @param builtins the approach to use for emitting builtins.
+    /// @param sample_mask an optional sample mask to combine with shader masks
+    explicit Config(BuiltinStyle builtins, uint32_t sample_mask = 0xFFFFFFFF);
+
+    /// Copy constructor
+    Config(const Config&);
+
+    /// Destructor
+    ~Config() override;
+
+    /// The approach to use for emitting builtins.
+    BuiltinStyle const builtin_style;
+
+    /// A fixed sample mask to combine into masks produced by fragment shaders.
+    uint32_t const fixed_sample_mask;
+  };
+
   /// Constructor
   CanonicalizeEntryPointIO();
   ~CanonicalizeEntryPointIO() override;
 
-  /// Runs the transform on `program`, returning the transformation result.
-  /// @param program the source program to transform
-  /// @param data optional extra transform-specific input data
-  /// @returns the transformation result
-  Output Run(const Program* program, const DataMap& data = {}) override;
+ protected:
+  /// Runs the transform using the CloneContext built for transforming a
+  /// program. Run() is responsible for calling Clone() on the CloneContext.
+  /// @param ctx the CloneContext primed with the input program and
+  /// ProgramBuilder
+  /// @param inputs optional extra transform-specific input data
+  /// @param outputs optional extra transform-specific output data
+  void Run(CloneContext& ctx, const DataMap& inputs, DataMap& outputs) override;
 };
 
 }  // namespace transform

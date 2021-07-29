@@ -10,8 +10,10 @@
 
 #include "base/containers/flat_set.h"
 #include "base/time/time.h"
-#include "base/util/type_safety/id_type.h"
+#include "base/types/id_type.h"
 #include "base/values.h"
+#include "components/feed/core/proto/v2/wire/reliability_logging_enums.pb.h"
+#include "components/feed/core/v2/enums.h"
 #include "components/feed/core/v2/public/types.h"
 
 namespace feed {
@@ -26,10 +28,10 @@ using ::feed::WebFeedSubscriptionStatus;
 
 // Uniquely identifies a revision of a |feedstore::Content|. If Content changes,
 // it is assigned a new revision number.
-using ContentRevision = util::IdTypeU32<class ContentRevisionClass>;
+using ContentRevision = base::IdTypeU32<class ContentRevisionClass>;
 
 // ID for a stored pending action.
-using LocalActionId = util::IdType32<class LocalActionIdClass>;
+using LocalActionId = base::IdType32<class LocalActionIdClass>;
 
 std::string ToString(ContentRevision c);
 ContentRevision ToContentRevision(const std::string& str);
@@ -118,6 +120,17 @@ class ContentIdSet {
   // Note, we only store the `id` field of ContentId, with the assumption that
   // `id` is unique enough given these are only `feedstore::Content` ids.
   base::flat_set<int64_t> content_ids_;
+};
+
+struct LaunchResult {
+  LoadStreamStatus load_stream_status;
+  feedwire::DiscoverLaunchResult launch_result;
+
+  LaunchResult(LoadStreamStatus load_stream_status,
+               feedwire::DiscoverLaunchResult launch_result);
+  LaunchResult(const LaunchResult& other);
+  ~LaunchResult();
+  LaunchResult& operator=(const LaunchResult& other);
 };
 
 }  // namespace feed

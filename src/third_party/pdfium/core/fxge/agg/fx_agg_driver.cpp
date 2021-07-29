@@ -13,15 +13,15 @@
 #include "core/fxge/cfx_cliprgn.h"
 #include "core/fxge/cfx_defaultrenderdevice.h"
 #include "core/fxge/cfx_graphstatedata.h"
-#include "core/fxge/cfx_pathdata.h"
+#include "core/fxge/cfx_path.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
 #include "core/fxge/dib/cfx_imagerenderer.h"
 #include "core/fxge/dib/cfx_imagestretcher.h"
 #include "third_party/base/check.h"
 #include "third_party/base/check_op.h"
 #include "third_party/base/notreached.h"
+#include "third_party/base/numerics/ranges.h"
 #include "third_party/base/span.h"
-#include "third_party/base/stl_util.h"
 
 // Ignore fallthrough warnings in agg23 headers.
 #if defined(__clang__)
@@ -294,7 +294,7 @@ agg::filling_rule_e GetAlternateOrWindingFillType(
 }
 
 RetainPtr<CFX_DIBitmap> GetClipMaskFromRegion(const CFX_ClipRgn* r) {
-  return (r && r->GetType() == CFX_ClipRgn::MaskF) ? r->GetMask() : nullptr;
+  return (r && r->GetType() == CFX_ClipRgn::kMaskF) ? r->GetMask() : nullptr;
 }
 
 FX_RECT GetClipBoxFromRegion(const RetainPtr<CFX_DIBitmap>& device,
@@ -964,28 +964,28 @@ class RendererScanLineAaOffset {
 
 // Note: BuildAggPath() has to take |agg_path| as an out-parameter. If it
 // returns the agg::path_storage instead, tests will fail with MSVC builds.
-void BuildAggPath(const CFX_PathData* pPathData,
+void BuildAggPath(const CFX_Path* pPath,
                   const CFX_Matrix* pObject2Device,
                   agg::path_storage& agg_path) {
-  pdfium::span<const FX_PATHPOINT> points = pPathData->GetPoints();
+  pdfium::span<const CFX_Path::Point> points = pPath->GetPoints();
   for (size_t i = 0; i < points.size(); ++i) {
     CFX_PointF pos = points[i].m_Point;
     if (pObject2Device)
       pos = pObject2Device->Transform(pos);
 
     pos = HardClip(pos);
-    FXPT_TYPE point_type = points[i].m_Type;
-    if (point_type == FXPT_TYPE::MoveTo) {
+    CFX_Path::Point::Type point_type = points[i].m_Type;
+    if (point_type == CFX_Path::Point::Type::kMove) {
       agg_path.move_to(pos.x, pos.y);
-    } else if (point_type == FXPT_TYPE::LineTo) {
-      if (i > 0 && points[i - 1].IsTypeAndOpen(FXPT_TYPE::MoveTo) &&
+    } else if (point_type == CFX_Path::Point::Type::kLine) {
+      if (i > 0 && points[i - 1].IsTypeAndOpen(CFX_Path::Point::Type::kMove) &&
           (i == points.size() - 1 ||
-           points[i + 1].IsTypeAndOpen(FXPT_TYPE::MoveTo)) &&
+           points[i + 1].IsTypeAndOpen(CFX_Path::Point::Type::kMove)) &&
           points[i].m_Point == points[i - 1].m_Point) {
         pos.x += 1;
       }
       agg_path.line_to(pos.x, pos.y);
-    } else if (point_type == FXPT_TYPE::BezierTo) {
+    } else if (point_type == CFX_Path::Point::Type::kBezier) {
       if (i > 0 && i + 2 < points.size()) {
         CFX_PointF pos0 = points[i - 1].m_Point;
         CFX_PointF pos2 = points[i + 1].m_Point;
@@ -1123,7 +1123,7 @@ void CFX_AggDeviceDriver::SetClipMask(agg::rasterizer_scanline_aa& rasterizer) {
 }
 
 bool CFX_AggDeviceDriver::SetClip_PathFill(
-    const CFX_PathData* pPathData,
+    const CFX_Path* pPath,
     const CFX_Matrix* pObject2Device,
     const CFX_FillRenderOptions& fill_options) {
   DCHECK(fill_options.fill_type != CFX_FillRenderOptions::FillType::kNoFill);
@@ -1133,21 +1133,18 @@ bool CFX_AggDeviceDriver::SetClip_PathFill(
     m_pClipRgn = std::make_unique<CFX_ClipRgn>(
         GetDeviceCaps(FXDC_PIXEL_WIDTH), GetDeviceCaps(FXDC_PIXEL_HEIGHT));
   }
-  size_t size = pPathData->GetPoints().size();
-  if (size == 5 || size == 4) {
-    Optional<CFX_FloatRect> maybe_rectf = pPathData->GetRect(pObject2Device);
-    if (maybe_rectf.has_value()) {
-      CFX_FloatRect& rectf = maybe_rectf.value();
-      rectf.Intersect(CFX_FloatRect(
-          0, 0, static_cast<float>(GetDeviceCaps(FXDC_PIXEL_WIDTH)),
-          static_cast<float>(GetDeviceCaps(FXDC_PIXEL_HEIGHT))));
-      FX_RECT rect = rectf.GetOuterRect();
-      m_pClipRgn->IntersectRect(rect);
-      return true;
-    }
+  Optional<CFX_FloatRect> maybe_rectf = pPath->GetRect(pObject2Device);
+  if (maybe_rectf.has_value()) {
+    CFX_FloatRect& rectf = maybe_rectf.value();
+    rectf.Intersect(
+        CFX_FloatRect(0, 0, static_cast<float>(GetDeviceCaps(FXDC_PIXEL_WIDTH)),
+                      static_cast<float>(GetDeviceCaps(FXDC_PIXEL_HEIGHT))));
+    FX_RECT rect = rectf.GetOuterRect();
+    m_pClipRgn->IntersectRect(rect);
+    return true;
   }
   agg::path_storage path_data;
-  BuildAggPath(pPathData, pObject2Device, path_data);
+  BuildAggPath(pPath, pObject2Device, path_data);
   path_data.end_poly();
   agg::rasterizer_scanline_aa rasterizer;
   rasterizer.clip_box(0.0f, 0.0f,
@@ -1160,7 +1157,7 @@ bool CFX_AggDeviceDriver::SetClip_PathFill(
 }
 
 bool CFX_AggDeviceDriver::SetClip_PathStroke(
-    const CFX_PathData* pPathData,
+    const CFX_Path* pPath,
     const CFX_Matrix* pObject2Device,
     const CFX_GraphStateData* pGraphState) {
   if (!m_pClipRgn) {
@@ -1168,7 +1165,7 @@ bool CFX_AggDeviceDriver::SetClip_PathStroke(
         GetDeviceCaps(FXDC_PIXEL_WIDTH), GetDeviceCaps(FXDC_PIXEL_HEIGHT));
   }
   agg::path_storage path_data;
-  BuildAggPath(pPathData, nullptr, path_data);
+  BuildAggPath(pPath, nullptr, path_data);
   agg::rasterizer_scanline_aa rasterizer;
   rasterizer.clip_box(0.0f, 0.0f,
                       static_cast<float>(GetDeviceCaps(FXDC_PIXEL_WIDTH)),
@@ -1197,7 +1194,7 @@ void CFX_AggDeviceDriver::RenderRasterizer(
                         m_FillOptions.aliased_path);
 }
 
-bool CFX_AggDeviceDriver::DrawPath(const CFX_PathData* pPathData,
+bool CFX_AggDeviceDriver::DrawPath(const CFX_Path* pPath,
                                    const CFX_Matrix* pObject2Device,
                                    const CFX_GraphStateData* pGraphState,
                                    uint32_t fill_color,
@@ -1214,7 +1211,7 @@ bool CFX_AggDeviceDriver::DrawPath(const CFX_PathData* pPathData,
   if (fill_options.fill_type != CFX_FillRenderOptions::FillType::kNoFill &&
       fill_color) {
     agg::path_storage path_data;
-    BuildAggPath(pPathData, pObject2Device, path_data);
+    BuildAggPath(pPath, pObject2Device, path_data);
     agg::rasterizer_scanline_aa rasterizer;
     rasterizer.clip_box(0.0f, 0.0f,
                         static_cast<float>(GetDeviceCaps(FXDC_PIXEL_WIDTH)),
@@ -1230,7 +1227,7 @@ bool CFX_AggDeviceDriver::DrawPath(const CFX_PathData* pPathData,
 
   if (fill_options.zero_area) {
     agg::path_storage path_data;
-    BuildAggPath(pPathData, pObject2Device, path_data);
+    BuildAggPath(pPath, pObject2Device, path_data);
     agg::rasterizer_scanline_aa rasterizer;
     rasterizer.clip_box(0.0f, 0.0f,
                         static_cast<float>(GetDeviceCaps(FXDC_PIXEL_WIDTH)),
@@ -1254,7 +1251,7 @@ bool CFX_AggDeviceDriver::DrawPath(const CFX_PathData* pPathData,
   }
 
   agg::path_storage path_data;
-  BuildAggPath(pPathData, &matrix1, path_data);
+  BuildAggPath(pPath, &matrix1, path_data);
   agg::rasterizer_scanline_aa rasterizer;
   rasterizer.clip_box(0.0f, 0.0f,
                       static_cast<float>(GetDeviceCaps(FXDC_PIXEL_WIDTH)),
@@ -1282,7 +1279,7 @@ bool CFX_AggDeviceDriver::FillRectWithBlend(const FX_RECT& rect,
   if (draw_rect.IsEmpty())
     return true;
 
-  if (!m_pClipRgn || m_pClipRgn->GetType() == CFX_ClipRgn::RectI) {
+  if (!m_pClipRgn || m_pClipRgn->GetType() == CFX_ClipRgn::kRectI) {
     if (m_bRgbByteOrder) {
       RgbByteOrderCompositeRect(m_pBitmap, draw_rect.left, draw_rect.top,
                                 draw_rect.Width(), draw_rect.Height(),

@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -20,6 +19,7 @@
 #include "components/sync/base/invalidation_interface.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/weak_handle.h"
+#include "components/sync/engine/active_devices_invalidation_info.h"
 #include "components/sync/engine/configure_reason.h"
 #include "components/sync/engine/connection_status.h"
 #include "components/sync/engine/engine_components_factory.h"
@@ -38,11 +38,9 @@ class CancelationSignal;
 class DataTypeDebugInfoListener;
 class EngineComponentsFactory;
 class ExtensionsActivity;
-class JsBackend;
-class JsEventHandler;
 class ProtocolEvent;
 class SyncCycleSnapshot;
-class SyncStatusObserver;
+struct SyncStatus;
 
 // Unless stated otherwise, all methods of SyncManager should be called on the
 // same thread.
@@ -69,6 +67,8 @@ class SyncManager {
 
     virtual void OnProtocolEvent(const ProtocolEvent& event) = 0;
 
+    virtual void OnSyncStatusChanged(const SyncStatus&) = 0;
+
    protected:
     virtual ~Observer();
   };
@@ -77,9 +77,6 @@ class SyncManager {
   struct InitArgs {
     InitArgs();
     ~InitArgs();
-
-    // Used to propagate events to chrome://sync-internals.  Optional.
-    WeakHandle<JsEventHandler> event_handler;
 
     // URL of the sync server.
     GURL service_url;
@@ -118,9 +115,6 @@ class SyncManager {
     std::string cache_guid;
     std::string birthday;
     std::string bag_of_chips;
-
-    // List of observers to be added to AllStatus.
-    std::vector<SyncStatusObserver*> sync_status_observers;
   };
 
   // The state of sync the feature. If the user turned on sync explicitly, it
@@ -193,7 +187,6 @@ class SyncManager {
   // sync engine.
   virtual std::unique_ptr<ModelTypeConnector> GetModelTypeConnectorProxy() = 0;
 
-  virtual WeakHandle<JsBackend> GetJsBackend() = 0;
   virtual WeakHandle<DataTypeDebugInfoListener> GetDebugInfoListener() = 0;
 
   // Returns the cache_guid of the currently open database.
@@ -229,12 +222,9 @@ class SyncManager {
   // Updates invalidation client id.
   virtual void UpdateInvalidationClientId(const std::string& client_id) = 0;
 
-  // Notifies SyncManager that there are no other known active devices.
-  virtual void UpdateSingleClientStatus(bool single_client) = 0;
-
-  // Updates the list of known active device FCM registration tokens.
-  virtual void UpdateActiveDeviceFCMRegistrationTokens(
-      std::vector<std::string> fcm_registration_tokens) = 0;
+  // Updates the invalidation information from known active devices.
+  virtual void UpdateActiveDevicesInvalidationInfo(
+      ActiveDevicesInvalidationInfo active_devices_invalidation_info) = 0;
 };
 
 }  // namespace syncer

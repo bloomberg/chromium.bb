@@ -230,7 +230,8 @@ TEST_F(AccountInvestigatorTest, DiscernRelation) {
 TEST_F(AccountInvestigatorTest, SignedInAccountRelationReport) {
   ExpectRelationReport(just_one, no_accounts, ReportingType::PERIODIC,
                        AccountRelation::WITH_SIGNED_IN_NO_MATCH);
-  identity_test_env()->SetPrimaryAccount("1@mail.com");
+  identity_test_env()->SetPrimaryAccount("1@mail.com",
+                                         signin::ConsentLevel::kSync);
   ExpectRelationReport(just_one, no_accounts, ReportingType::PERIODIC,
                        AccountRelation::SINGLE_SIGNED_IN_MATCH_NO_SIGNED_OUT);
   ExpectRelationReport(just_two, no_accounts, ReportingType::ON_CHANGE,
@@ -246,7 +247,8 @@ TEST_F(AccountInvestigatorTest, SharedCookieJarReportEmpty) {
 }
 
 TEST_F(AccountInvestigatorTest, SharedCookieJarReportWithAccount) {
-  identity_test_env()->SetPrimaryAccount("1@mail.com");
+  identity_test_env()->SetPrimaryAccount("1@mail.com",
+                                         signin::ConsentLevel::kSync);
   base::Time now = base::Time::Now();
   pref_service()->SetDouble(prefs::kGaiaCookieChangedTime, now.ToDoubleT());
   const AccountRelation expected_relation(
@@ -287,7 +289,8 @@ TEST_F(AccountInvestigatorTest, OnGaiaAccountsInCookieUpdatedSigninOnly) {
       GoogleServiceAuthError::AuthErrorNone());
 
   const HistogramTester histogram_tester;
-  identity_test_env()->SetPrimaryAccount("1@mail.com");
+  identity_test_env()->SetPrimaryAccount("1@mail.com",
+                                         signin::ConsentLevel::kSync);
   pref_service()->SetString(prefs::kGaiaCookieHash,
                             Hash(just_one, no_accounts));
   signin::AccountsInCookieJarInfo accounts_in_cookie_jar_info = {
@@ -303,7 +306,8 @@ TEST_F(AccountInvestigatorTest, OnGaiaAccountsInCookieUpdatedSigninOnly) {
 TEST_F(AccountInvestigatorTest,
        OnGaiaAccountsInCookieUpdatedSigninSignOutOfContent) {
   const HistogramTester histogram_tester;
-  identity_test_env()->SetPrimaryAccount("1@mail.com");
+  identity_test_env()->SetPrimaryAccount("1@mail.com",
+                                         signin::ConsentLevel::kSync);
   signin::AccountsInCookieJarInfo accounts_in_cookie_jar_info = {
       /*accounts_are_fresh=*/true, just_one, no_accounts};
   investigator()->OnAccountsInCookieUpdated(
@@ -336,7 +340,8 @@ TEST_F(AccountInvestigatorTest, Initialize) {
 }
 
 TEST_F(AccountInvestigatorTest, InitializeSignedIn) {
-  identity_test_env()->SetPrimaryAccount("1@mail.com");
+  identity_test_env()->SetPrimaryAccount("1@mail.com",
+                                         signin::ConsentLevel::kSync);
   EXPECT_FALSE(*previously_authenticated());
 
   investigator()->Initialize();
@@ -374,7 +379,8 @@ TEST_F(AccountInvestigatorTest, TryPeriodicReportWithPrimary) {
   std::string email("f@bar.com");
   identity_test_env()->SetCookieAccounts(
       {{email, signin::GetTestGaiaIdForEmail(email)}});
-  identity_test_env()->MakePrimaryAccountAvailable(email);
+  identity_test_env()->MakePrimaryAccountAvailable(email,
+                                                   signin::ConsentLevel::kSync);
 
   const HistogramTester histogram_tester;
   TryPeriodicReport();
@@ -395,7 +401,8 @@ TEST_F(AccountInvestigatorTest, TryPeriodicReportWithUnconsentedPrimary) {
   std::string email("f@bar.com");
   identity_test_env()->SetCookieAccounts(
       {{email, signin::GetTestGaiaIdForEmail(email)}});
-  identity_test_env()->MakeUnconsentedPrimaryAccountAvailable(email);
+  identity_test_env()->MakePrimaryAccountAvailable(
+      email, signin::ConsentLevel::kSignin);
 
   const HistogramTester histogram_tester;
   TryPeriodicReport();
@@ -415,8 +422,8 @@ TEST_F(AccountInvestigatorTest, TryPeriodicReportWithEnterprisePrimary) {
   std::string email("f@bar.com");
   identity_test_env()->SetCookieAccounts(
       {{email, signin::GetTestGaiaIdForEmail(email)}});
-  AccountInfo account_info =
-      identity_test_env()->MakePrimaryAccountAvailable(email);
+  AccountInfo account_info = identity_test_env()->MakePrimaryAccountAvailable(
+      email, signin::ConsentLevel::kSync);
   account_info.hosted_domain = "bar.com";
   identity_test_env()->UpdateAccountInfoForAccount(account_info);
 

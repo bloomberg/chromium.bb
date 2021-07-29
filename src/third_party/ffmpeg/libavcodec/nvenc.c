@@ -52,6 +52,8 @@ const enum AVPixelFormat ff_nvenc_pix_fmts[] = {
     AV_PIX_FMT_YUV444P16, // Truncated to 10bits
     AV_PIX_FMT_0RGB32,
     AV_PIX_FMT_0BGR32,
+    AV_PIX_FMT_GBRP,
+    AV_PIX_FMT_GBRP16,    // Truncated to 10bits
     AV_PIX_FMT_CUDA,
 #if CONFIG_D3D11VA
     AV_PIX_FMT_D3D11,
@@ -69,12 +71,18 @@ const AVCodecHWConfigInternal *const ff_nvenc_hw_configs[] = {
     NULL,
 };
 
-#define IS_10BIT(pix_fmt)  (pix_fmt == AV_PIX_FMT_P010    || \
-                            pix_fmt == AV_PIX_FMT_P016    || \
-                            pix_fmt == AV_PIX_FMT_YUV444P16)
+#define IS_10BIT(pix_fmt)  (pix_fmt == AV_PIX_FMT_P010      || \
+                            pix_fmt == AV_PIX_FMT_P016      || \
+                            pix_fmt == AV_PIX_FMT_YUV444P16 || \
+                            pix_fmt == AV_PIX_FMT_GBRP16)
 
-#define IS_YUV444(pix_fmt) (pix_fmt == AV_PIX_FMT_YUV444P || \
-                            pix_fmt == AV_PIX_FMT_YUV444P16)
+#define IS_YUV444(pix_fmt) (pix_fmt == AV_PIX_FMT_YUV444P   || \
+                            pix_fmt == AV_PIX_FMT_YUV444P16 || \
+                            pix_fmt == AV_PIX_FMT_GBRP      || \
+                            pix_fmt == AV_PIX_FMT_GBRP16)
+
+#define IS_GBRP(pix_fmt) (pix_fmt == AV_PIX_FMT_GBRP || \
+                          pix_fmt == AV_PIX_FMT_GBRP16)
 
 static const struct {
     NVENCSTATUS nverr;
@@ -143,6 +151,70 @@ static int nvenc_print_error(AVCodecContext *avctx, NVENCSTATUS err,
 
     return ret;
 }
+
+typedef struct GUIDTuple {
+    const GUID guid;
+    int flags;
+} GUIDTuple;
+
+#define PRESET_ALIAS(alias, name, ...) \
+    [PRESET_ ## alias] = { NV_ENC_PRESET_ ## name ## _GUID, __VA_ARGS__ }
+
+#define PRESET(name, ...) PRESET_ALIAS(name, name, __VA_ARGS__)
+
+static void nvenc_map_preset(NvencContext *ctx)
+{
+    GUIDTuple presets[] = {
+#ifdef NVENC_HAVE_NEW_PRESETS
+        PRESET(P1),
+        PRESET(P2),
+        PRESET(P3),
+        PRESET(P4),
+        PRESET(P5),
+        PRESET(P6),
+        PRESET(P7),
+        PRESET_ALIAS(SLOW,   P7, NVENC_TWO_PASSES),
+        PRESET_ALIAS(MEDIUM, P4, NVENC_ONE_PASS),
+        PRESET_ALIAS(FAST,   P1, NVENC_ONE_PASS),
+        // Compat aliases
+        PRESET_ALIAS(DEFAULT,             P4, NVENC_DEPRECATED_PRESET),
+        PRESET_ALIAS(HP,                  P1, NVENC_DEPRECATED_PRESET),
+        PRESET_ALIAS(HQ,                  P7, NVENC_DEPRECATED_PRESET),
+        PRESET_ALIAS(BD,                  P5, NVENC_DEPRECATED_PRESET),
+        PRESET_ALIAS(LOW_LATENCY_DEFAULT, P4, NVENC_DEPRECATED_PRESET | NVENC_LOWLATENCY),
+        PRESET_ALIAS(LOW_LATENCY_HP,      P1, NVENC_DEPRECATED_PRESET | NVENC_LOWLATENCY),
+        PRESET_ALIAS(LOW_LATENCY_HQ,      P7, NVENC_DEPRECATED_PRESET | NVENC_LOWLATENCY),
+        PRESET_ALIAS(LOSSLESS_DEFAULT,    P4, NVENC_DEPRECATED_PRESET | NVENC_LOSSLESS),
+        PRESET_ALIAS(LOSSLESS_HP,         P1, NVENC_DEPRECATED_PRESET | NVENC_LOSSLESS),
+#else
+        PRESET(DEFAULT),
+        PRESET(HP),
+        PRESET(HQ),
+        PRESET(BD),
+        PRESET_ALIAS(SLOW,   HQ,    NVENC_TWO_PASSES),
+        PRESET_ALIAS(MEDIUM, HQ,    NVENC_ONE_PASS),
+        PRESET_ALIAS(FAST,   HP,    NVENC_ONE_PASS),
+        PRESET(LOW_LATENCY_DEFAULT, NVENC_LOWLATENCY),
+        PRESET(LOW_LATENCY_HP,      NVENC_LOWLATENCY),
+        PRESET(LOW_LATENCY_HQ,      NVENC_LOWLATENCY),
+        PRESET(LOSSLESS_DEFAULT,    NVENC_LOSSLESS),
+        PRESET(LOSSLESS_HP,         NVENC_LOSSLESS),
+#endif
+    };
+
+    GUIDTuple *t = &presets[ctx->preset];
+
+    ctx->init_encode_params.presetGUID = t->guid;
+    ctx->flags = t->flags;
+
+#ifdef NVENC_HAVE_NEW_PRESETS
+    if (ctx->tuning_info == NV_ENC_TUNING_INFO_LOSSLESS)
+        ctx->flags |= NVENC_LOSSLESS;
+#endif
+}
+
+#undef PRESET
+#undef PRESET_ALIAS
 
 static void nvenc_print_driver_requirement(AVCodecContext *avctx, int level)
 {
@@ -358,7 +430,7 @@ static int nvenc_check_capabilities(AVCodecContext *avctx)
     }
 
     ret = nvenc_check_cap(avctx, NV_ENC_CAPS_SUPPORT_LOSSLESS_ENCODE);
-    if (ctx->preset >= PRESET_LOSSLESS_DEFAULT && ret <= 0) {
+    if (ctx->flags & NVENC_LOSSLESS && ret <= 0) {
         av_log(avctx, AV_LOG_WARNING, "Lossless encoding not supported\n");
         return AVERROR(ENOSYS);
     }
@@ -548,6 +620,11 @@ static av_cold int nvenc_setup_device(AVCodecContext *avctx)
         return AVERROR_BUG;
     }
 
+    nvenc_map_preset(ctx);
+
+    if (ctx->flags & NVENC_DEPRECATED_PRESET)
+        av_log(avctx, AV_LOG_WARNING, "The selected preset is deprecated. Use p1 to p7 + -tune or fast/medium/slow.\n");
+
     if (avctx->pix_fmt == AV_PIX_FMT_CUDA || avctx->pix_fmt == AV_PIX_FMT_D3D11 || avctx->hw_frames_ctx || avctx->hw_device_ctx) {
         AVHWFramesContext   *frames_ctx;
         AVHWDeviceContext   *hwdev_ctx;
@@ -637,65 +714,6 @@ static av_cold int nvenc_setup_device(AVCodecContext *avctx)
 
     return 0;
 }
-
-typedef struct GUIDTuple {
-    const GUID guid;
-    int flags;
-} GUIDTuple;
-
-#define PRESET_ALIAS(alias, name, ...) \
-    [PRESET_ ## alias] = { NV_ENC_PRESET_ ## name ## _GUID, __VA_ARGS__ }
-
-#define PRESET(name, ...) PRESET_ALIAS(name, name, __VA_ARGS__)
-
-static void nvenc_map_preset(NvencContext *ctx)
-{
-    GUIDTuple presets[] = {
-#ifdef NVENC_HAVE_NEW_PRESETS
-        PRESET(P1),
-        PRESET(P2),
-        PRESET(P3),
-        PRESET(P4),
-        PRESET(P5),
-        PRESET(P6),
-        PRESET(P7),
-        PRESET_ALIAS(SLOW,   P7, NVENC_TWO_PASSES),
-        PRESET_ALIAS(MEDIUM, P4, NVENC_ONE_PASS),
-        PRESET_ALIAS(FAST,   P1, NVENC_ONE_PASS),
-        // Compat aliases
-        PRESET_ALIAS(DEFAULT,             P4, NVENC_DEPRECATED_PRESET),
-        PRESET_ALIAS(HP,                  P1, NVENC_DEPRECATED_PRESET),
-        PRESET_ALIAS(HQ,                  P7, NVENC_DEPRECATED_PRESET),
-        PRESET_ALIAS(BD,                  P5, NVENC_DEPRECATED_PRESET),
-        PRESET_ALIAS(LOW_LATENCY_DEFAULT, P4, NVENC_DEPRECATED_PRESET | NVENC_LOWLATENCY),
-        PRESET_ALIAS(LOW_LATENCY_HP,      P1, NVENC_DEPRECATED_PRESET | NVENC_LOWLATENCY),
-        PRESET_ALIAS(LOW_LATENCY_HQ,      P7, NVENC_DEPRECATED_PRESET | NVENC_LOWLATENCY),
-        PRESET_ALIAS(LOSSLESS_DEFAULT,    P4, NVENC_DEPRECATED_PRESET | NVENC_LOSSLESS),
-        PRESET_ALIAS(LOSSLESS_HP,         P1, NVENC_DEPRECATED_PRESET | NVENC_LOSSLESS),
-#else
-        PRESET(DEFAULT),
-        PRESET(HP),
-        PRESET(HQ),
-        PRESET(BD),
-        PRESET_ALIAS(SLOW,   HQ,    NVENC_TWO_PASSES),
-        PRESET_ALIAS(MEDIUM, HQ,    NVENC_ONE_PASS),
-        PRESET_ALIAS(FAST,   HP,    NVENC_ONE_PASS),
-        PRESET(LOW_LATENCY_DEFAULT, NVENC_LOWLATENCY),
-        PRESET(LOW_LATENCY_HP,      NVENC_LOWLATENCY),
-        PRESET(LOW_LATENCY_HQ,      NVENC_LOWLATENCY),
-        PRESET(LOSSLESS_DEFAULT,    NVENC_LOSSLESS),
-        PRESET(LOSSLESS_HP,         NVENC_LOSSLESS),
-#endif
-    };
-
-    GUIDTuple *t = &presets[ctx->preset];
-
-    ctx->init_encode_params.presetGUID = t->guid;
-    ctx->flags = t->flags;
-}
-
-#undef PRESET
-#undef PRESET_ALIAS
 
 static av_cold void set_constqp(AVCodecContext *avctx)
 {
@@ -1028,14 +1046,14 @@ static av_cold int nvenc_setup_h264_config(AVCodecContext *avctx)
     NV_ENC_CONFIG_H264 *h264               = &cc->encodeCodecConfig.h264Config;
     NV_ENC_CONFIG_H264_VUI_PARAMETERS *vui = &h264->h264VUIParameters;
 
-    vui->colourMatrix = avctx->colorspace;
+    vui->colourMatrix = IS_GBRP(ctx->data_pix_fmt) ? AVCOL_SPC_RGB : avctx->colorspace;
     vui->colourPrimaries = avctx->color_primaries;
     vui->transferCharacteristics = avctx->color_trc;
     vui->videoFullRangeFlag = (avctx->color_range == AVCOL_RANGE_JPEG
         || ctx->data_pix_fmt == AV_PIX_FMT_YUVJ420P || ctx->data_pix_fmt == AV_PIX_FMT_YUVJ422P || ctx->data_pix_fmt == AV_PIX_FMT_YUVJ444P);
 
     vui->colourDescriptionPresentFlag =
-        (avctx->colorspace != 2 || avctx->color_primaries != 2 || avctx->color_trc != 2);
+        (vui->colourMatrix != 2 || vui->colourPrimaries != 2 || vui->transferCharacteristics != 2);
 
     vui->videoSignalTypePresentFlag =
         (vui->colourDescriptionPresentFlag
@@ -1094,7 +1112,7 @@ static av_cold int nvenc_setup_h264_config(AVCodecContext *avctx)
     }
 
     // force setting profile as high444p if input is AV_PIX_FMT_YUV444P
-    if (ctx->data_pix_fmt == AV_PIX_FMT_YUV444P) {
+    if (IS_YUV444(ctx->data_pix_fmt)) {
         cc->profileGUID = NV_ENC_H264_PROFILE_HIGH_444_GUID;
         avctx->profile = FF_PROFILE_H264_HIGH_444_PREDICTIVE;
     }
@@ -1125,14 +1143,14 @@ static av_cold int nvenc_setup_hevc_config(AVCodecContext *avctx)
     NV_ENC_CONFIG_HEVC *hevc               = &cc->encodeCodecConfig.hevcConfig;
     NV_ENC_CONFIG_HEVC_VUI_PARAMETERS *vui = &hevc->hevcVUIParameters;
 
-    vui->colourMatrix = avctx->colorspace;
+    vui->colourMatrix = IS_GBRP(ctx->data_pix_fmt) ? AVCOL_SPC_RGB : avctx->colorspace;
     vui->colourPrimaries = avctx->color_primaries;
     vui->transferCharacteristics = avctx->color_trc;
     vui->videoFullRangeFlag = (avctx->color_range == AVCOL_RANGE_JPEG
         || ctx->data_pix_fmt == AV_PIX_FMT_YUVJ420P || ctx->data_pix_fmt == AV_PIX_FMT_YUVJ422P || ctx->data_pix_fmt == AV_PIX_FMT_YUVJ444P);
 
     vui->colourDescriptionPresentFlag =
-        (avctx->colorspace != 2 || avctx->color_primaries != 2 || avctx->color_trc != 2);
+        (vui->colourMatrix != 2 || vui->colourPrimaries != 2 || vui->transferCharacteristics != 2);
 
     vui->videoSignalTypePresentFlag =
         (vui->colourDescriptionPresentFlag
@@ -1254,18 +1272,15 @@ static av_cold int nvenc_setup_encoder(AVCodecContext *avctx)
 
     ctx->init_encode_params.encodeConfig = &ctx->encode_config;
 
-    nvenc_map_preset(ctx);
-
-    if (ctx->flags & NVENC_DEPRECATED_PRESET)
-        av_log(avctx, AV_LOG_WARNING, "The selected preset is deprecated. Use p1 to p7 + -tune or fast/medium/slow.\n");
-
     preset_config.version = NV_ENC_PRESET_CONFIG_VER;
     preset_config.presetCfg.version = NV_ENC_CONFIG_VER;
 
 #ifdef NVENC_HAVE_NEW_PRESETS
     ctx->init_encode_params.tuningInfo = ctx->tuning_info;
 
-    if (ctx->flags & NVENC_LOWLATENCY)
+    if (ctx->flags & NVENC_LOSSLESS)
+        ctx->init_encode_params.tuningInfo = NV_ENC_TUNING_INFO_LOSSLESS;
+    else if (ctx->flags & NVENC_LOWLATENCY)
         ctx->init_encode_params.tuningInfo = NV_ENC_TUNING_INFO_LOW_LATENCY;
 
     nv_status = p_nvenc->nvEncGetEncodePresetConfigEx(ctx->nvencoder,
@@ -1307,9 +1322,6 @@ static av_cold int nvenc_setup_encoder(AVCodecContext *avctx)
      * */
     if (ctx->rc_lookahead == 0 && ctx->encode_config.rcParams.enableLookahead)
         ctx->rc_lookahead = ctx->encode_config.rcParams.lookaheadDepth;
-
-    if (ctx->init_encode_params.tuningInfo == NV_ENC_TUNING_INFO_LOSSLESS)
-        ctx->flags |= NVENC_LOSSLESS;
 #endif
 
     if (ctx->weighted_pred == 1)
@@ -1406,8 +1418,10 @@ static NV_ENC_BUFFER_FORMAT nvenc_map_buffer_format(enum AVPixelFormat pix_fmt)
     case AV_PIX_FMT_P010:
     case AV_PIX_FMT_P016:
         return NV_ENC_BUFFER_FORMAT_YUV420_10BIT;
+    case AV_PIX_FMT_GBRP:
     case AV_PIX_FMT_YUV444P:
         return NV_ENC_BUFFER_FORMAT_YUV444_PL;
+    case AV_PIX_FMT_GBRP16:
     case AV_PIX_FMT_YUV444P16:
         return NV_ENC_BUFFER_FORMAT_YUV444_10BIT;
     case AV_PIX_FMT_0RGB32:
@@ -1921,7 +1935,7 @@ static int nvenc_set_timestamp(AVCodecContext *avctx,
     pkt->pts = params->outputTimeStamp;
     pkt->dts = timestamp_queue_dequeue(ctx->timestamp_list);
 
-    pkt->dts -= FFMAX(avctx->max_b_frames, 0) * FFMAX(avctx->ticks_per_frame, 1);
+    pkt->dts -= FFMAX(ctx->encode_config.frameIntervalP - 1, 0) * FFMAX(avctx->ticks_per_frame, 1);
 
     return 0;
 }
@@ -1971,7 +1985,7 @@ static int process_output_surface(AVCodecContext *avctx, AVPacket *pkt, NvencSur
         goto error;
     }
 
-    res = av_new_packet(pkt, lock_params.bitstreamSizeInBytes);
+    res = ff_get_encode_buffer(avctx, pkt, lock_params.bitstreamSizeInBytes, 0);
 
     if (res < 0) {
         p_nvenc->nvEncUnlockBitstream(ctx->nvencoder, tmpoutsurf->output_surface);
@@ -2026,12 +2040,6 @@ static int process_output_surface(AVCodecContext *avctx, AVPacket *pkt, NvencSur
         res = AVERROR_EXTERNAL;
         goto error;
     }
-
-#if FF_API_CODED_FRAME
-FF_DISABLE_DEPRECATION_WARNINGS
-    avctx->coded_frame->pict_type = pict_type;
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
 
     ff_side_data_set_encoder_stats(pkt,
         (lock_params.frameAvgQP - 1) * FF_QP2LAMBDA, NULL, 0, pict_type);

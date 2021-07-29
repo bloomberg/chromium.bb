@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
+#include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
@@ -102,8 +103,15 @@ LayoutBoxModelObject::LayoutBoxModelObject(ContainerNode* node)
 
 bool LayoutBoxModelObject::UsesCompositedScrolling() const {
   NOT_DESTROYED();
-  return IsScrollContainer() && HasLayer() &&
-         Layer()->GetScrollableArea()->UsesCompositedScrolling();
+
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    return IsScrollContainer() && HasLayer() &&
+           Layer()->GetScrollableArea()->UsesCompositedScrolling();
+  }
+
+  const auto* properties = FirstFragment().PaintProperties();
+  return properties && properties->ScrollTranslation() &&
+         properties->ScrollTranslation()->HasDirectCompositingReasons();
 }
 
 static bool HasInsetBoxShadow(const ComputedStyle& style) {
@@ -785,7 +793,7 @@ bool LayoutBoxModelObject::HasAutoHeightOrContainingBlockWithAutoHeight(
       // BoxLayoutExtraInput that we could add a flag to.
       const NGConstraintSpace& space =
           this_box->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
-      if (space.IsFixedBlockSize() && !space.IsFixedBlockSizeIndefinite())
+      if (space.IsFixedBlockSize() && !space.IsInitialBlockSizeIndefinite())
         return false;
     }
   }

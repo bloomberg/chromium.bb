@@ -40,6 +40,47 @@ extern "C" {
  */
 typedef void *aom_ext_part_model_t;
 
+/*!\brief Number of features to determine whether to skip partition none and
+ * do partition split directly. The same as "FEATURE_SIZE_SMS_SPLIT".
+ */
+#define SIZE_DIRECT_SPLIT 17
+
+/*!\brief Number of features to use simple motion search to prune out
+ * rectangular partition in some direction. The same as
+ * "FEATURE_SIZE_SMS_PRUNE_PART".
+ */
+#define SIZE_PRUNE_PART 25
+
+/*!\brief Number of features to prune split and rectangular partition
+ * after PARTITION_NONE.
+ */
+#define SIZE_PRUNE_NONE 4
+
+/*!\brief Number of features to terminates partition after partition none using
+ * simple_motion_search features and the rate, distortion, and rdcost of
+ * PARTITION_NONE. The same as "FEATURE_SIZE_SMS_TERM_NONE".
+ */
+#define SIZE_TERM_NONE 28
+
+/*!\brief Number of features to terminates partition after partition split.
+ */
+#define SIZE_TERM_SPLIT 31
+
+/*!\brief Number of features to prune rectangular partition using stats
+ * collected after partition split.
+ */
+#define SIZE_PRUNE_RECT 9
+
+/*!\brief Number of features to prune AB partition using stats
+ * collected after rectangular partition..
+ */
+#define SIZE_PRUNE_AB 10
+
+/*!\brief Number of features to prune 4-way partition using stats
+ * collected after AB partition.
+ */
+#define SIZE_PRUNE_4_WAY 18
+
 /*!\brief Config information sent to the external partition model.
  *
  * For example, the maximum superblock size determined by the sequence header.
@@ -47,6 +88,71 @@ typedef void *aom_ext_part_model_t;
 typedef struct aom_ext_part_config {
   int superblock_size; /**< super block size (either 64x64 or 128x128) */
 } aom_ext_part_config_t;
+
+/*!\brief Features pass to the external model to make partition decisions.
+ * Specifically, features collected before NONE partition.
+ * Features "f" are used to determine:
+ * partition_none_allowed, partition_horz_allowed, partition_vert_allowed,
+ * do_rectangular_split, do_square_split
+ * Features "f_part2" are used to determine:
+ * prune_horz, prune_vert.
+ */
+typedef struct aom_partition_features_before_none {
+  float f[SIZE_DIRECT_SPLIT]; /**< features to determine whether skip partition
+                                 none and do split directly */
+  float f_part2[SIZE_PRUNE_PART]; /**< features to determine whether to prune
+                                     rectangular partition */
+} aom_partition_features_before_none_t;
+
+/*!\brief Features pass to the external model to make partition decisions.
+ * Specifically, features collected after NONE partition.
+ */
+typedef struct aom_partition_features_none {
+  float f[SIZE_PRUNE_NONE]; /**< features to prune split and rectangular
+                               partition*/
+  float f_terminate[SIZE_TERM_NONE]; /**< features to determine termination of
+                                        partition */
+} aom_partition_features_none_t;
+
+/*!\brief Features pass to the external model to make partition decisions.
+ * Specifically, features collected after SPLIT partition.
+ */
+typedef struct aom_partition_features_split {
+  float f_terminate[SIZE_TERM_SPLIT];  /**< features to determine termination of
+                                          partition */
+  float f_prune_rect[SIZE_PRUNE_RECT]; /**< features to determine pruning rect
+                                          partition */
+} aom_partition_features_split_t;
+
+/*!\brief Features pass to the external model to make partition decisions.
+ * Specifically, features collected after RECTANGULAR partition.
+ */
+typedef struct aom_partition_features_rect {
+  float f[SIZE_PRUNE_AB]; /**< features to determine pruning AB partition */
+} aom_partition_features_rect_t;
+
+/*!\brief Features pass to the external model to make partition decisions.
+ * Specifically, features collected after AB partition: HORZ_A, HORZ_B, VERT_A,
+ * VERT_B.
+ */
+typedef struct aom_partition_features_ab {
+  float
+      f[SIZE_PRUNE_4_WAY]; /**< features to determine pruning 4-way partition */
+} aom_partition_features_ab_t;
+
+/*!\brief Feature id to tell the external model the current stage in partition
+ * pruning and what features to use to make decisions accordingly.
+ */
+typedef enum {
+  FEATURE_BEFORE_PART_NONE,
+  FEATURE_BEFORE_PART_NONE_PART2,
+  FEATURE_AFTER_PART_NONE,
+  FEATURE_AFTER_PART_NONE_PART2,
+  FEATURE_AFTER_PART_SPLIT,
+  FEATURE_AFTER_PART_SPLIT_PART2,
+  FEATURE_AFTER_PART_RECT,
+  FEATURE_AFTER_PART_AB
+} PART_FEATURE_ID;
 
 /*!\brief Features pass to the external model to make partition decisions.
  *
@@ -57,10 +163,17 @@ typedef struct aom_ext_part_config {
  * Once new features are finalized, bump the major version of libaom.
  */
 typedef struct aom_partition_features {
-  // Features are unclear yet
-  // Candidates include:
-  // mv
-  int64_t sse; /**< sum squared error */
+  PART_FEATURE_ID id; /**< Feature ID to indicate active features */
+  aom_partition_features_before_none_t
+      before_part_none; /**< Features collected before NONE partition */
+  aom_partition_features_none_t
+      after_part_none; /**< Features collected after NONE partition */
+  aom_partition_features_split_t
+      after_part_split; /**< Features collected after SPLIT partition */
+  aom_partition_features_rect_t
+      after_part_rect; /**< Features collected after RECTANGULAR partition */
+  aom_partition_features_ab_t
+      after_part_ab; /**< Features collected after AB partition */
 } aom_partition_features_t;
 
 /*!\brief Partition decisions received from the external model.
@@ -73,8 +186,23 @@ typedef struct aom_partition_features {
  * Once new features are finalized, bump the major version of libaom.
  */
 typedef struct aom_partition_decision {
+  // Decisions for directly set partition types
   int is_final_decision;       /**< The flag whether it is the final decision */
   int partition_decision[256]; /**< Partition decisions */
+
+  // Decisions for partition type pruning
+  int terminate_partition_search; /**< Terminate further partition search */
+  int partition_none_allowed;     /**< Allow partition none type */
+  int partition_rect_allowed[2];  /**< Allow rectangular partitions */
+  int do_rectangular_split;       /**< Try rectangular split partition */
+  int do_square_split;            /**< Try square split partition */
+  int prune_rect_part[2];         /**< Prune rectangular partition */
+  int horza_partition_allowed;    /**< Allow HORZ_A partitioin */
+  int horzb_partition_allowed;    /**< Allow HORZ_B partitioin */
+  int verta_partition_allowed;    /**< Allow VERT_A partitioin */
+  int vertb_partition_allowed;    /**< Allow VERT_B partitioin */
+  int partition_horz4_allowed;    /**< Allow HORZ4 partition */
+  int partition_vert4_allowed;    /**< Allow VERT4 partition */
 } aom_partition_decision_t;
 
 /*!\brief Encoding stats for the given partition decision.
@@ -95,6 +223,7 @@ typedef struct aom_partition_stats {
 typedef enum aom_ext_part_status {
   AOM_EXT_PART_OK = 0,    /**< Status of success */
   AOM_EXT_PART_ERROR = 1, /**< Status of failure */
+  AOM_EXT_PART_TEST = 2,  /**< Status used for tests */
 } aom_ext_part_status_t;
 
 /*!\brief Callback of creating an external partition model.

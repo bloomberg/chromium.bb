@@ -58,6 +58,7 @@
 <translation id="2297836609126180313"><ph name="QUANTITY" /> To/s</translation>
 <translation id="2353636109065292463">Vérification de votre connexion Internet en cours…</translation>
 <translation id="2388990488038464401">Appeler ce numéro à partir de votre téléphone?</translation>
+<translation id="2435457462613246316">Affich. mot de passe</translation>
 <translation id="24452542372838207">Développer la notification</translation>
 <translation id="2445449901874883781">Utiliser haute densité</translation>
 <translation id="2482878487686419369">Notifications</translation>
@@ -79,6 +80,7 @@
 <translation id="2824719307700604149">{YEARS,plural, =1{Il y a un an}one{Il y a # an}other{Il y a # ans}}</translation>
 <translation id="2878511608894704031">Tout supprimer</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{dans 1 j}one{dans # j}other{dans # j}}</translation>
+<translation id="2922712708897119705">Le contenu de la colonne <ph name="COLUMN_NAME" /> est trié en ordre décroissant.</translation>
 <translation id="2931838996092594335">cliquer</translation>
 <translation id="2981684127883932071">Affichage des suggestions</translation>
 <translation id="3036649622769666520">Ouvrir des fichiers</translation>
@@ -114,6 +116,7 @@
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3909791450649380159">Cou&amp;per</translation>
 <translation id="3990502903496589789">Bord droit</translation>
+<translation id="3994749195054421561">Le contenu de colonne <ph name="COLUMN_NAME" /> est trié en ordre croissant.</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 notification non lue}one{# notification non lue}other{# notifications non lues}}</translation>
 <translation id="4202807286478387388">Suivre le lien</translation>
 <translation id="4250229828105606438">Saisie d'écran</translation>
@@ -123,6 +126,7 @@
 <translation id="4306392492252714209">Retirer du presse-papiers.</translation>
 <translation id="4316910396681052118">TOUTES LES APPLICATIONS</translation>
 <translation id="4491109536499578614">Image</translation>
+<translation id="4565377596337484307">Masquer le mot de passe</translation>
 <translation id="4588090240171750605">Défilement vers la droite</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, note <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, recommandation d'application</translation>
@@ -165,6 +169,7 @@
 <translation id="6012623610530968780">Page <ph name="SELECTED_PAGE" /> sur <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Effacer le texte de la zone de recherche</translation>
 <translation id="6040143037577758943">Fermer</translation>
+<translation id="6117103120090651229">Bouton central</translation>
 <translation id="6119846243427417423">Activer</translation>
 <translation id="6129953537138746214">Espace</translation>
 <translation id="6134259848159370930">Recherchez dans votre appareil, dans vos applications, dans vos paramètres et sur le Web.</translation>
@@ -173,6 +178,7 @@
 <translation id="6156262341071374681">Afficher toutes les applications</translation>
 <translation id="6165508094623778733">En savoir plus</translation>
 <translation id="6166852626429024716">Rechercher sur votre appareil, dans vos applications, dans vos paramètres, sur le Web…</translation>
+<translation id="6237461503717005873">Langue sélectionnée : <ph name="ROW_NAME" />.</translation>
 <translation id="6264365405983206840">Tout &amp;sélectionner</translation>
 <translation id="6351032674660237738">SUGGESTIONS D'APPLICATIONS</translation>
 <translation id="6364916375976753737">Défilement vers la gauche</translation>
@@ -213,6 +219,7 @@
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minute restante}one{# minute restante}other{# minutes restantes}}</translation>
 <translation id="7430878839542012341">Supprimer cette recherche de votre historique?</translation>
+<translation id="7437971918971306061">Le contenu de la colonne <ph name="COLUMN_NAME" /> n'est pas trié.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> To</translation>
 <translation id="7507604095951736240">Emoji</translation>
 <translation id="7620655452534002301">Retiré.</translation>

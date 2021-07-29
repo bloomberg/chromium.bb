@@ -2,15 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as barcodeChip from '../../barcode_chip.js';
 import {assert, assertInstanceof} from '../../chrome_util.js';
 import * as dom from '../../dom.js';
+import {reportError} from '../../error.js';
 import {FaceOverlay} from '../../face.js';
-import {BarcodeScanner} from '../../models/barcode.js';
 import {DeviceOperator, parseMetadata} from '../../mojo/device_operator.js';
 import * as nav from '../../nav.js';
 import * as state from '../../state.js';
-import {Facing, Mode, Resolution} from '../../type.js';
+import {
+  ErrorLevel,
+  ErrorType,
+  Facing,
+  Resolution,
+} from '../../type.js';
 import * as util from '../../util.js';
 import {windowController} from '../../window_controller.js';
 
@@ -72,12 +76,6 @@ export class Preview {
     this.focus_ = null;
 
     /**
-     * @type {?BarcodeScanner}
-     * @private
-     */
-    this.scanner_ = null;
-
-    /**
      * @type {!Facing}
      * @private
      */
@@ -95,9 +93,6 @@ export class Preview {
 
     [state.State.EXPERT, state.State.SHOW_METADATA].forEach((s) => {
       state.addObserver(s, this.updateShowMetadata_.bind(this));
-    });
-    [state.State.EXPERT, state.State.SCAN_BARCODE].forEach((s) => {
-      state.addObserver(s, this.updateScanBarcode_.bind(this));
     });
   }
 
@@ -209,8 +204,7 @@ export class Preview {
     });
     await video.play();
     this.video_.parentElement.replaceChild(tpl, this.video_);
-    this.video_.removeAttribute('srcObject');
-    this.video_.load();
+    this.video_.srcObject = null;
     this.video_ = video;
     video.addEventListener('resize', () => this.onIntrinsicSizeChanged_());
     video.addEventListener(
@@ -241,10 +235,6 @@ export class Preview {
         }
       }, 100);
       await this.updateFacing_();
-      this.scanner_ = new BarcodeScanner(this.video_, (value) => {
-        barcodeChip.show(value);
-      });
-      this.updateScanBarcode_();
       this.updateShowMetadata_();
 
       const deviceOperator = await DeviceOperator.getInstance();
@@ -254,9 +244,11 @@ export class Preview {
             await deviceOperator.setCameraFrameRotationEnabledAtSource(
                 deviceId, false);
         if (!isSuccess) {
-          console.warn(
-              'Cannot disable camera frame rotation. ' +
-              'The camera is probably being used by another app.');
+          reportError(
+              ErrorType.FRAME_ROTATION_NOT_DISABLED, ErrorLevel.WARNING,
+              new Error(
+                  'Cannot disable camera frame rotation. ' +
+                  'The camera is probably being used by another app.'));
         }
         this.vidPid_ = await deviceOperator.getVidPid(deviceId);
       }
@@ -291,27 +283,7 @@ export class Preview {
       }
       this.stream_ = null;
     }
-    if (this.scanner_ !== null) {
-      this.scanner_.stop();
-      this.scanner_ = null;
-    }
     state.set(state.State.STREAMING, false);
-  }
-
-  /**
-   * Checks whether to scan barcode on preview or not.
-   * @private
-   */
-  updateScanBarcode_() {
-    if (this.scanner_ === null) {
-      return;
-    }
-    if (state.get(Mode.PHOTO) && state.get(state.State.SCAN_BARCODE)) {
-      this.scanner_.start();
-    } else {
-      this.scanner_.stop();
-      barcodeChip.dismiss();
-    }
   }
 
   /**
@@ -381,7 +353,9 @@ export class Preview {
           continue;
         }
         if (map.has(val)) {
-          console.error(`Duplicated value: ${val}`);
+          reportError(
+              ErrorType.METADATA_MAPPING_FAILURE, ErrorLevel.ERROR,
+              new Error(`Duplicated value: ${val}`));
           continue;
         }
         map.set(val, key.slice(prefix.length));
@@ -580,8 +554,10 @@ export class Preview {
     const isSuccess = await deviceOperator.removeMetadataObserver(
         deviceId, this.metadataObserverId_);
     if (!isSuccess) {
-      console.error(`Failed to remove metadata observer with id: ${
-          this.metadataObserverId_}`);
+      reportError(
+          ErrorType.REMOVE_METADATA_OBSERVER_FAILURE, ErrorLevel.ERROR,
+          new Error(`Failed to remove metadata observer with id: ${
+              this.metadataObserverId_}`));
     }
     this.metadataObserverId_ = null;
 

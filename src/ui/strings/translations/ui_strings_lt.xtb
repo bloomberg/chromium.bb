@@ -58,6 +58,7 @@
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="2353636109065292463">Tikrinamas interneto ryšys</translation>
 <translation id="2388990488038464401">Skambinti šiuo numeriu iš jūsų telefono?</translation>
+<translation id="2435457462613246316">Rodyti slaptažodį</translation>
 <translation id="24452542372838207">Išskleisti pranešimą</translation>
 <translation id="2445449901874883781">Naudoti didelį tankį</translation>
 <translation id="2482878487686419369">Pranešimai</translation>
@@ -79,6 +80,7 @@
 <translation id="2824719307700604149">{YEARS,plural, =1{Prieš 1 metus}one{Prieš # metus}few{Prieš # metus}many{Prieš # metų}other{Prieš # metų}}</translation>
 <translation id="2878511608894704031">Ištrinti viską</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{po 1 d.}one{po # d.}few{po # d.}many{po # d.}other{po # d.}}</translation>
+<translation id="2922712708897119705">Stulpelis „<ph name="COLUMN_NAME" />“ rūšiuojamas mažėjimo tvarka.</translation>
 <translation id="2931838996092594335">spustelėti</translation>
 <translation id="2981684127883932071">Pateikiami pasiūlymai</translation>
 <translation id="3036649622769666520">Atidaryti failus</translation>
@@ -114,6 +116,7 @@
 <translation id="3897092660631435901">Meniu</translation>
 <translation id="3909791450649380159">Iškir&amp;pti</translation>
 <translation id="3990502903496589789">Dešinysis kraštas</translation>
+<translation id="3994749195054421561">Stulpelis „<ph name="COLUMN_NAME" />“ rūšiuojamas didėjimo tvarka.</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 neskaitytas pranešimas}one{# neskaitytas pranešimas}few{# neskaityti pranešimai}many{# neskaityto pranešimo}other{# neskaitytų pranešimų}}</translation>
 <translation id="4202807286478387388">peršokti</translation>
 <translation id="4250229828105606438">Ekrano kopija</translation>
@@ -123,6 +126,7 @@
 <translation id="4306392492252714209">Pašalinti iš iškarpinės.</translation>
 <translation id="4316910396681052118">VISOS PROGRAMOS</translation>
 <translation id="4491109536499578614">Vaizdas</translation>
+<translation id="4565377596337484307">Slėpti slaptažodį</translation>
 <translation id="4588090240171750605">Slinkti į dešinę</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, įvertinimas žvaigždutėmis <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485">„<ph name="APP_NAME" />“, programos rekomendacija</translation>
@@ -165,6 +169,7 @@
 <translation id="6012623610530968780"><ph name="SELECTED_PAGE" /> psl. iš <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Išvalyti paieškos laukelio tekstą</translation>
 <translation id="6040143037577758943">Uždaryti</translation>
+<translation id="6117103120090651229">Centrinis mygtukas</translation>
 <translation id="6119846243427417423">suaktyvinti</translation>
 <translation id="6129953537138746214">Tarpas</translation>
 <translation id="6134259848159370930">Ieškokite įrenginyje, programose, nustatymuose ir žiniatinklyje.</translation>
@@ -173,6 +178,7 @@
 <translation id="6156262341071374681">Išskleisti, kad būtų rodomos visos programos</translation>
 <translation id="6165508094623778733">Sužinokite daugiau</translation>
 <translation id="6166852626429024716">Ieškokite įrenginyje, programose, nustatymuose, žiniatinklyje...</translation>
+<translation id="6237461503717005873">Pasirinkta: <ph name="ROW_NAME" />.</translation>
 <translation id="6264365405983206840">Pasirinkti &amp;viską</translation>
 <translation id="6351032674660237738">PROGRAMŲ PASIŪLYMAI</translation>
 <translation id="6364916375976753737">Slinkti į kairę</translation>
@@ -213,6 +219,7 @@
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Liko 1 minutė}one{Liko # minutė}few{Liko # minutės}many{Liko # minutės}other{Liko # minučių}}</translation>
 <translation id="7430878839542012341">Ištrinti šią paiešką iš istorijos?</translation>
+<translation id="7437971918971306061">Stulpelis „<ph name="COLUMN_NAME" />“ nerūšiuojamas.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Jaustukai</translation>
 <translation id="7620655452534002301">Pašalinta.</translation>

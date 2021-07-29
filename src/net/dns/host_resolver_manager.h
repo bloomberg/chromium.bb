@@ -20,10 +20,13 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/base/completion_once_callback.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/network_change_notifier.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/prioritized_dispatcher.h"
 #include "net/dns/dns_config.h"
 #include "net/dns/host_cache.h"
@@ -35,7 +38,11 @@
 #include "net/dns/public/secure_dns_policy.h"
 #include "net/dns/resolve_context.h"
 #include "net/dns/system_dns_config_change_notifier.h"
+#include "net/log/net_log_with_source.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 #include "url/gurl.h"
+#include "url/scheme_host_port.h"
 
 namespace base {
 class TickClock;
@@ -46,13 +53,10 @@ namespace net {
 class AddressList;
 class DnsClient;
 class DnsProbeRunner;
-class HostPortPair;
 class IPAddress;
 class MDnsClient;
 class MDnsSocketFactory;
 class NetLog;
-class NetLogWithSource;
-class NetworkIsolationKey;
 
 // Scheduler and controller of host resolution requests. Because of the global
 // nature of host resolutions, this class is generally expected to be singleton
@@ -149,10 +153,10 @@ class NET_EXPORT HostResolverManager
   // TODO(crbug.com/1022059): Use the HostCache out of the ResolveContext
   // instead of passing it separately.
   std::unique_ptr<CancellableResolveHostRequest> CreateRequest(
-      const HostPortPair& host,
-      const NetworkIsolationKey& network_isolation_key,
-      const NetLogWithSource& net_log,
-      const absl::optional<ResolveHostParameters>& optional_parameters,
+      absl::variant<url::SchemeHostPort, HostPortPair> host,
+      NetworkIsolationKey network_isolation_key,
+      NetLogWithSource net_log,
+      absl::optional<ResolveHostParameters> optional_parameters,
       ResolveContext* resolve_context,
       HostCache* host_cache);
   // |resolve_context| is the context to use for the probes, and it is expected
@@ -273,9 +277,7 @@ class NET_EXPORT HostResolverManager
   // or ERR_DNS_CACHE_MISS if the host could not be resolved using local
   // sources.
   //
-  // On ERR_DNS_CACHE_MISS and OK, effective request parameters are written to
-  // |out_effective_query_type|, |out_effective_host_resolver_flags|, and
-  // |out_effective_secure_dns_mode|. |out_tasks| contains the tentative
+  // On ERR_DNS_CACHE_MISS and OK, |out_tasks| contains the tentative
   // sequence of tasks that a future job should run.
   //
   // If results are returned from the host cache, |out_stale_info| will be
@@ -285,35 +287,24 @@ class NET_EXPORT HostResolverManager
   // If |cache_usage == ResolveHostParameters::CacheUsage::STALE_ALLOWED|, then
   // stale cache entries can be returned.
   HostCache::Entry ResolveLocally(
-      const std::string& hostname,
-      const NetworkIsolationKey& network_isolation_key,
-      DnsQueryType requested_address_family,
-      HostResolverSource source,
-      HostResolverFlags flags,
-      SecureDnsPolicy secure_dns_policy,
+      const JobKey& job_key,
+      const IPAddress& ip_address,
       ResolveHostParameters::CacheUsage cache_usage,
       const NetLogWithSource& request_net_log,
       HostCache* cache,
-      ResolveContext* resolve_context,
-      DnsQueryType* out_effective_query_type,
-      HostResolverFlags* out_effective_host_resolver_flags,
-      SecureDnsMode* out_effective_secure_dns_mode,
       std::deque<TaskType>* out_tasks,
       absl::optional<HostCache::EntryStaleness>* out_stale_info);
 
   // Creates and starts a Job to asynchronously attempt to resolve
   // |request|.
-  void CreateAndStartJob(DnsQueryType effective_query_type,
-                         HostResolverFlags effective_host_resolver_flags,
-                         SecureDnsMode effective_secure_dns_mode,
+  void CreateAndStartJob(JobKey key,
                          std::deque<TaskType> tasks,
                          RequestImpl* request);
 
-  // Tries to resolve |key| and its possible IP address representation,
-  // |ip_address|. Returns a results entry iff the input can be resolved.
-  absl::optional<HostCache::Entry> ResolveAsIP(DnsQueryType query_type,
-                                               bool resolve_canonname,
-                                               const IPAddress* ip_address);
+  // Resolves the IP literal hostname represented by `ip_address`.
+  HostCache::Entry ResolveAsIP(DnsQueryType query_type,
+                               bool resolve_canonname,
+                               const IPAddress& ip_address);
 
   // Returns the result iff |cache_usage| permits cache lookups and a positive
   // match is found for |key| in |cache|. |out_stale_info| must be non-null, and
@@ -364,32 +355,23 @@ class NET_EXPORT HostResolverManager
 
   // Initialized the sequence of tasks to run to resolve a request. The sequence
   // may be adjusted later and not all tasks need to be run.
-  void CreateTaskSequence(const std::string& hostname,
-                          DnsQueryType dns_query_type,
-                          HostResolverSource source,
-                          HostResolverFlags flags,
-                          SecureDnsPolicy secure_dns_policy,
+  void CreateTaskSequence(const JobKey& job_key,
                           ResolveHostParameters::CacheUsage cache_usage,
-                          ResolveContext* resolve_context,
-                          SecureDnsMode* out_effective_secure_dns_mode,
                           std::deque<TaskType>* out_tasks);
 
   // Determines "effective" request parameters using manager properties and IPv6
   // reachability.
   void GetEffectiveParametersForRequest(
-      const std::string& hostname,
+      base::StringPiece hostname,
       DnsQueryType dns_query_type,
-      HostResolverSource source,
       HostResolverFlags flags,
       SecureDnsPolicy secure_dns_policy,
       ResolveHostParameters::CacheUsage cache_usage,
-      const IPAddress* ip_address,
+      bool is_ip,
       const NetLogWithSource& net_log,
-      ResolveContext* resolve_context,
       DnsQueryType* out_effective_type,
       HostResolverFlags* out_effective_flags,
-      SecureDnsMode* out_effective_secure_dns_mode,
-      std::deque<TaskType>* out_tasks);
+      SecureDnsMode* out_effective_secure_dns_mode);
 
   // Probes IPv6 support and returns true if IPv6 support is enabled.
   // Results are cached, i.e. when called repeatedly this method returns result

@@ -39,6 +39,7 @@ class VIEWS_EXPORT ImageView : public View {
   enum class Alignment { kLeading, kCenter, kTrailing };
 
   ImageView();
+  explicit ImageView(const ui::ImageModel& image_model);
   ~ImageView() override;
 
   // Set the image that should be displayed.
@@ -69,6 +70,8 @@ class VIEWS_EXPORT ImageView : public View {
   // Returns the image currently displayed, which can be empty if not set.
   // TODO(pkasting): Convert to an ImageModel getter.
   gfx::ImageSkia GetImage() const;
+
+  ui::ImageModel GetImageModel() const;
 
   // Set / Get the horizontal alignment.
   void SetHorizontalAlignment(Alignment ha);

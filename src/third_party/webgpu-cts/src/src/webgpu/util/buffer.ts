@@ -1,5 +1,8 @@
-import { TypedArrayBufferView, TypedArrayBufferViewConstructor } from '../gpu_test.js';
+import { TypedArrayBufferView, TypedArrayBufferViewConstructor } from '../../common/util/util.js';
 
+/**
+ * Creates a buffer with the contents of some TypedArray.
+ */
 export function makeBufferWithContents(
   device: GPUDevice,
   dataArray: TypedArrayBufferView,

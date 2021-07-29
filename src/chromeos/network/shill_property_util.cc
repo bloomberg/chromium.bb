@@ -52,12 +52,11 @@ std::string ValidateUTF8(const std::string& str) {
 bool CopyStringFromDictionary(const base::DictionaryValue& source,
                               const std::string& key,
                               base::DictionaryValue* dest) {
-  std::string string_value;
-  if (!source.GetStringWithoutPathExpansion(key, &string_value) ||
-      string_value.empty()) {
+  const std::string* string_value = source.FindStringKey(key);
+  if (!string_value || string_value->empty()) {
     return false;
   }
-  dest->SetKey(key, base::Value(string_value));
+  dest->SetKey(key, base::Value(*string_value));
   return true;
 }
 
@@ -191,12 +190,13 @@ std::string GetNameFromProperties(const std::string& service_path,
 
 std::unique_ptr<NetworkUIData> GetUIDataFromValue(
     const base::Value& ui_data_value) {
-  std::string ui_data_str;
-  if (!ui_data_value.GetAsString(&ui_data_str))
+  const std::string* ui_data_str = ui_data_value.GetIfString();
+  if (!ui_data_str)
     return nullptr;
-  if (ui_data_str.empty())
+  if ((*ui_data_str).empty())
     return std::make_unique<NetworkUIData>();
-  base::Value ui_data_dict = chromeos::onc::ReadDictionaryFromJson(ui_data_str);
+  base::Value ui_data_dict =
+      chromeos::onc::ReadDictionaryFromJson(*ui_data_str);
   if (!ui_data_dict.is_dict())
     return nullptr;
   return std::make_unique<NetworkUIData>(ui_data_dict);
@@ -204,9 +204,8 @@ std::unique_ptr<NetworkUIData> GetUIDataFromValue(
 
 std::unique_ptr<NetworkUIData> GetUIDataFromProperties(
     const base::DictionaryValue& shill_dictionary) {
-  const base::Value* ui_data_value = NULL;
-  shill_dictionary.GetWithoutPathExpansion(shill::kUIDataProperty,
-                                           &ui_data_value);
+  const base::Value* ui_data_value =
+      shill_dictionary.FindKey(shill::kUIDataProperty);
   if (!ui_data_value) {
     VLOG(2) << "Dictionary has no UIData entry.";
     return nullptr;
@@ -251,7 +250,10 @@ bool CopyIdentifyingProperties(const base::DictionaryValue& service_properties,
   CopyStringFromDictionary(service_properties, shill::kGuidProperty, dest);
 
   std::string type;
-  service_properties.GetStringWithoutPathExpansion(shill::kTypeProperty, &type);
+  const std::string* type_str =
+      service_properties.FindStringKey(shill::kTypeProperty);
+  if (type_str)
+    type = *type_str;
   success &= !type.empty();
   dest->SetKey(shill::kTypeProperty, base::Value(type));
   if (type == shill::kTypeWifi) {
@@ -281,15 +283,23 @@ bool CopyIdentifyingProperties(const base::DictionaryValue& service_properties,
         NET_LOG(ERROR) << "Missing VPN provider dict: "
                        << GetNetworkIdFromProperties(service_properties);
       }
-      provider_properties->GetStringWithoutPathExpansion(shill::kTypeProperty,
-                                                         &vpn_provider_type);
-      provider_properties->GetStringWithoutPathExpansion(shill::kHostProperty,
-                                                         &vpn_provider_host);
+      const std::string* vpn_provider_type_str =
+          provider_properties->FindStringKey(shill::kTypeProperty);
+      if (vpn_provider_type_str)
+        vpn_provider_type = *vpn_provider_type_str;
+      const std::string* vpn_provider_host_str =
+          provider_properties->FindStringKey(shill::kHostProperty);
+      if (vpn_provider_host_str)
+        vpn_provider_host = *vpn_provider_host_str;
     } else {
-      service_properties.GetStringWithoutPathExpansion(
-          shill::kProviderTypeProperty, &vpn_provider_type);
-      service_properties.GetStringWithoutPathExpansion(
-          shill::kProviderHostProperty, &vpn_provider_host);
+      const std::string* vpn_provider_type_str =
+          service_properties.FindStringKey(shill::kProviderTypeProperty);
+      if (vpn_provider_type_str)
+        vpn_provider_type = *vpn_provider_type_str;
+      const std::string* vpn_provider_host_str =
+          service_properties.FindStringKey(shill::kProviderHostProperty);
+      if (vpn_provider_host_str)
+        vpn_provider_host = *vpn_provider_host_str;
     }
     success &= !vpn_provider_type.empty();
     dest->SetKey(shill::kProviderTypeProperty, base::Value(vpn_provider_type));

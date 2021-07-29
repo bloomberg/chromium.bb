@@ -4,6 +4,9 @@
 
 package org.chromium.android_webview.test;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+
 import static org.chromium.android_webview.test.OnlyRunIn.ProcessMode.MULTI_PROCESS;
 
 import android.os.Build;
@@ -11,6 +14,8 @@ import android.support.test.InstrumentationRegistry;
 
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Description;
+import org.hamcrest.TypeSafeMatcher;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -31,12 +36,16 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.components.metrics.ChromeUserMetricsExtensionProtos.ChromeUserMetricsExtension;
 import org.chromium.components.metrics.MetricsSwitches;
+import org.chromium.components.metrics.StabilityEventType;
 import org.chromium.components.metrics.SystemProfileProtos.SystemProfileProto;
+import org.chromium.components.metrics.SystemProfileProtos.SystemProfileProto.ChromeComponent;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Integration test to verify WebView's metrics implementation. This isn't a great spot to verify
@@ -288,6 +297,79 @@ public class AwMetricsIntegrationTest {
     @Test
     @MediumTest
     @Feature({"AndroidWebView"})
+    public void testMetadata_stability_pageLoad() throws Throwable {
+        EmbeddedTestServer embeddedTestServer = EmbeddedTestServer.createAndStartServer(
+                InstrumentationRegistry.getInstrumentation().getContext());
+        try {
+            // Load a page to ensure the renderer process is created.
+            mRule.loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
+                    embeddedTestServer.getURL("/android_webview/test/data/hello_world.html"));
+
+            Assert.assertEquals("Should have correct stability histogram kPageLoad count", 1,
+                    RecordHistogram.getHistogramValueCountForTesting(
+                            "Stability.Counts2", StabilityEventType.PAGE_LOAD));
+        } finally {
+            embeddedTestServer.stopAndDestroyServer();
+        }
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView"})
+    public void testMetadata_stability_rendererLaunchCount() throws Throwable {
+        EmbeddedTestServer embeddedTestServer = EmbeddedTestServer.createAndStartServer(
+                InstrumentationRegistry.getInstrumentation().getContext());
+        try {
+            // Load a page to ensure the renderer process is created.
+            mRule.loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
+                    embeddedTestServer.getURL("/android_webview/test/data/hello_world.html"));
+
+            Assert.assertEquals("Should have correct stability histogram kRendererLaunch count", 1,
+                    RecordHistogram.getHistogramValueCountForTesting(
+                            "Stability.Counts2", StabilityEventType.RENDERER_LAUNCH));
+        } finally {
+            embeddedTestServer.stopAndDestroyServer();
+        }
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView"})
+    @OnlyRunIn(MULTI_PROCESS) // This functionality is specific to the OOP-renderer
+    public void testMetadata_stability_rendererCrashCount() throws Throwable {
+        TestAwContentsClient.RenderProcessGoneHelper helper =
+                mContentsClient.getRenderProcessGoneHelper();
+        helper.setResponse(true); // Don't automatically kill the browser process.
+
+        // Ensure that the renderer has started.
+        mRule.loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
+                ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
+
+        // Crash the renderer and wait for onRenderProcessGone to be called.
+        int callCount = helper.getCallCount();
+        mRule.loadUrlAsync(mAwContents, "chrome://crash");
+        helper.waitForCallback(
+                callCount, 1, CallbackHelper.WAIT_TIMEOUT_SECONDS * 5, TimeUnit.SECONDS);
+
+        Assert.assertEquals("Should have correct stability histogram kRendererCrash count", 1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "Stability.Counts2", StabilityEventType.RENDERER_CRASH));
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView"})
+    public void testMetadata_stability_browserLaunchCount() throws Throwable {
+        // This should be triggered simply by initializing the MetricsService. This should be logged
+        // (and persisted) even before we start collecting the first metrics log.
+        Assert.assertEquals("Should have correct stability histogram kLaunch count", 1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "Stability.Counts2", StabilityEventType.LAUNCH));
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView"})
     public void testMetadata_androidHistograms() throws Throwable {
         // Wait for a metrics log, since AndroidMetricsProvider only logs this histogram during log
         // collection. Do not assert anything about this histogram before this point (ex. do not
@@ -325,6 +407,64 @@ public class AwMetricsIntegrationTest {
                         "Accessibility.Android.ScreenReader.EveryReport"));
     }
 
+    private static TypeSafeMatcher<ChromeComponent> matchesChromeComponent(
+            ChromeComponent expected) {
+        return new TypeSafeMatcher<ChromeComponent>() {
+            @Override
+            public void describeTo(Description description) {
+                description.appendText(expected.toString());
+            }
+
+            @Override
+            protected void describeMismatchSafely(
+                    ChromeComponent item, Description mismatchDescription) {
+                mismatchDescription.appendText("Doesn't match " + item.toString());
+            }
+
+            @Override
+            public boolean matchesSafely(ChromeComponent item) {
+                return expected.getComponentId() == item.getComponentId()
+                        && expected.getVersion().equals(item.getVersion())
+                        && expected.getOmahaFingerprint() == item.getOmahaFingerprint();
+            }
+        };
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView"})
+    public void testMetadata_chromeComponents() throws Throwable {
+        final String allowlistComponentVersion = "123.456.78.9";
+        // A fake expiry date, the allowlist component info should be recorded regardless of the
+        // expiry date.
+        final long allowlistExpiryDateMs = 1234567891011L;
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            AwMetricsServiceClient.setAppPackageNameLoggingRuleForTesting(
+                    allowlistComponentVersion, allowlistExpiryDateMs);
+        });
+
+        // Ignore the first log because it will likely be recorded before setting the allowlist
+        // version above.
+        mPlatformServiceBridge.waitForNextMetricsLog();
+
+        // The start of a page load should be enough to indicate to the MetricsService that the app
+        // is "in use" and it's OK to upload the next record.
+        mRule.loadUrlAsync(mAwContents, "about:blank");
+        ChromeUserMetricsExtension log = mPlatformServiceBridge.waitForNextMetricsLog();
+        SystemProfileProto systemProfile = log.getSystemProfile();
+
+        Assert.assertEquals(
+                "Should have exactly one component", systemProfile.getChromeComponentCount(), 1);
+        ChromeComponent expectedAllowlistComponent =
+                ChromeComponent.newBuilder()
+                        .setComponentId(
+                                SystemProfileProto.ComponentId.WEBVIEW_APPS_PACKAGE_NAMES_ALLOWLIST)
+                        .setVersion(allowlistComponentVersion)
+                        .build();
+        assertThat(systemProfile.getChromeComponentList(),
+                contains(matchesChromeComponent(expectedAllowlistComponent)));
+    }
+
     @Test
     @MediumTest
     @Feature({"AndroidWebView"})
@@ -354,7 +494,7 @@ public class AwMetricsIntegrationTest {
     @Test
     @MediumTest
     @Feature({"AndroidWebView"})
-    @OnlyRunIn(MULTI_PROCESS) // This test is specific to the OOP-renderer
+    @OnlyRunIn(MULTI_PROCESS) // This functionality is specific to the OOP-renderer
     public void testRendererHistograms() throws Throwable {
         EmbeddedTestServer embeddedTestServer = EmbeddedTestServer.createAndStartServer(
                 InstrumentationRegistry.getInstrumentation().getContext());

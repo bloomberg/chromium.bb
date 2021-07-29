@@ -3,9 +3,12 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/speculation_rules/document_speculation_rules.h"
+
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -73,24 +76,28 @@ void DocumentSpeculationRules::UpdateSpeculationCandidates() {
   if (!host)
     return;
 
+  auto* execution_context = GetSupplementable()->GetExecutionContext();
+  network::mojom::ReferrerPolicy referrer_policy =
+      execution_context->GetReferrerPolicy();
+  String outgoing_referrer = execution_context->OutgoingReferrer();
+
   Vector<mojom::blink::SpeculationCandidatePtr> candidates;
-  auto push_candidates = [&candidates](
+  auto push_candidates = [&candidates, &referrer_policy, &outgoing_referrer](
                              mojom::blink::SpeculationAction action,
                              const HeapVector<Member<SpeculationRule>>& rules) {
     for (SpeculationRule* rule : rules) {
-      mojom::blink::SpeculationCandidate candidate;
-      candidate.action = action;
-      candidate.requires_anonymous_client_ip_when_cross_origin =
-          rule->requires_anonymous_client_ip_when_cross_origin();
       for (const KURL& url : rule->urls()) {
-        candidate.url = url;
-        candidates.push_back(
-            mojom::blink::SpeculationCandidate::New(candidate));
+        Referrer referrer = SecurityPolicy::GenerateReferrer(
+            referrer_policy, url, outgoing_referrer);
+        auto referrer_ptr = mojom::blink::Referrer::New(
+            KURL(referrer.referrer), referrer.referrer_policy);
+        candidates.push_back(mojom::blink::SpeculationCandidate::New(
+            url, action, std::move(referrer_ptr),
+            rule->requires_anonymous_client_ip_when_cross_origin()));
       }
     }
   };
 
-  auto* execution_context = GetSupplementable()->GetExecutionContext();
   for (SpeculationRuleSet* rule_set : rule_sets_) {
     // If kSpeculationRulesPrefetchProxy is enabled, collect all prefetch
     // speculation rules.
@@ -107,6 +114,15 @@ void DocumentSpeculationRules::UpdateSpeculationCandidates() {
     if (RuntimeEnabledFeatures::Prerender2Enabled(execution_context)) {
       push_candidates(mojom::blink::SpeculationAction::kPrerender,
                       rule_set->prerender_rules());
+
+      // Set the flag to evict the cached data of Session Storage when the
+      // document is frozen or unload to avoid reusing old data in the cache
+      // after the session storage has been modified by another renderer
+      // process. See crbug.com/1215680 for more details.
+      LocalFrame* frame = GetSupplementable()->GetFrame();
+      if (frame->IsMainFrame()) {
+        frame->SetEvictCachedSessionStorageOnFreezeOrUnload();
+      }
     }
   }
 

@@ -54,6 +54,9 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
+// For ::GetTickCount()
+#include <windows.h>
+
 namespace component_updater {
 
 namespace {
@@ -167,7 +170,7 @@ bool ExtractInvocationSequenceFromManifest(
 
   // If there are no launch parameters, create a single invocation with default
   // behaviour.
-  if (!parameter_list || parameter_list->empty()) {
+  if (!parameter_list || parameter_list->GetList().empty()) {
     base::CommandLine command_line(exe_path);
     command_line.AppendSwitchASCII(chrome_cleaner::kSessionIdSwitch,
                                    session_id);

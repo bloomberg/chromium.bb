@@ -33,18 +33,17 @@
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/updater_version.h"
 #include "chrome/updater/util.h"
-#include "chrome/updater/win/constants.h"
 #include "chrome/updater/win/setup/setup_util.h"
 #include "chrome/updater/win/task_scheduler.h"
-#include "chrome/updater/win/util.h"
+#include "chrome/updater/win/win_constants.h"
+#include "chrome/updater/win/win_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace updater {
 namespace {
 
-// Adds work items to register the COM Server with Windows.
-void AddComServerWorkItems(HKEY root,
-                           const base::FilePath& com_server_path,
+// Adds work items to register the per-user internal COM Server with Windows.
+void AddComServerWorkItems(const base::FilePath& com_server_path,
                            WorkItemList* list) {
   DCHECK(list);
   if (com_server_path.empty()) {
@@ -52,8 +51,9 @@ void AddComServerWorkItems(HKEY root,
     return;
   }
 
-  for (const auto& clsid : GetSideBySideServers()) {
-    AddInstallServerWorkItems(root, clsid, com_server_path, true, list);
+  for (const auto& clsid : GetSideBySideServers(UpdaterScope::kUser)) {
+    AddInstallServerWorkItems(HKEY_CURRENT_USER, clsid, com_server_path, true,
+                              list);
   }
 }
 
@@ -122,7 +122,8 @@ int Setup(UpdaterScope scope) {
     LOG(ERROR) << "GetTempDir failed.";
     return -1;
   }
-  absl::optional<base::FilePath> versioned_dir = GetVersionedDirectory();
+  const absl::optional<base::FilePath> versioned_dir =
+      GetVersionedDirectory(scope);
   if (!versioned_dir) {
     LOG(ERROR) << "GetVersionedDirectory failed.";
     return -1;
@@ -170,26 +171,26 @@ int Setup(UpdaterScope scope) {
 
   static constexpr base::FilePath::StringPieceType kUpdaterExe =
       FILE_PATH_LITERAL("updater.exe");
-  AddComServerWorkItems(key, versioned_dir->Append(kUpdaterExe),
-                        install_list.get());
 
   AddComInterfacesWorkItems(key, versioned_dir->Append(kUpdaterExe),
                             install_list.get());
-
-  if (scope == UpdaterScope::kSystem) {
-    AddComServiceWorkItems(versioned_dir->Append(kUpdaterExe),
-                           install_list.get());
+  switch (scope) {
+    case UpdaterScope::kUser:
+      AddComServerWorkItems(versioned_dir->Append(kUpdaterExe),
+                            install_list.get());
+      break;
+    case UpdaterScope::kSystem:
+      AddComServiceWorkItems(versioned_dir->Append(kUpdaterExe), true,
+                             install_list.get());
+      break;
   }
 
   base::CommandLine run_updater_wake_command(
       versioned_dir->Append(kUpdaterExe));
   run_updater_wake_command.AppendSwitch(kWakeSwitch);
-
-#if !defined(NDEBUG)
   run_updater_wake_command.AppendSwitch(kEnableLoggingSwitch);
   run_updater_wake_command.AppendSwitchASCII(kLoggingModuleSwitch,
                                              "*/chrome/updater/*=2");
-#endif
   if (!install_list->Do() || !RegisterWakeTask(run_updater_wake_command)) {
     LOG(ERROR) << "Install failed, rolling back...";
     install_list->Rollback();

@@ -171,7 +171,7 @@ public interface WebContents extends Parcelable {
      *         live RenderFrameHost.
      */
     @Nullable
-    RenderFrameHost getRenderFrameHostFromId(GlobalFrameRoutingId id);
+    RenderFrameHost getRenderFrameHostFromId(GlobalRenderFrameHostId id);
 
     /**
      * @return The root level view from the renderer, or {@code null} in some cases where there is
@@ -242,10 +242,11 @@ public interface WebContents extends Parcelable {
 
     /**
      * ChildProcessImportance on Android allows controls of the renderer process bindings
-     * independent of visibility. Note this does not affect importance of subframe processes.
-     * @param mainFrameImportance importance of the main frame process.
+     * independent of visibility. Note this does not affect importance of subframe processes
+     * or main frames processeses for non-primary pages.
+     * @param primaryMainFrameImportance importance of the primary page's main frame process.
      */
-    void setImportance(@ChildProcessImportance int mainFrameImportance);
+    void setImportance(@ChildProcessImportance int primaryMainFrameImportance);
 
     /**
      * Suspends all media players for this WebContents.  Note: There may still
@@ -410,14 +411,6 @@ public interface WebContents extends Parcelable {
      * Register a handler to handle smart clip data once extraction is done.
      */
     void setSmartClipResultHandler(final Handler smartClipHandler);
-
-    /**
-     * Requests a snapshop of accessibility tree. The result is provided asynchronously
-     * using the callback
-     * @param callback The callback to be called when the snapshot is ready. The callback
-     *                 cannot be null.
-     */
-    void requestAccessibilitySnapshot(AccessibilitySnapshotCallback callback);
 
     /**
      * Returns {@link EventForwarder} which is used to forward input/view events

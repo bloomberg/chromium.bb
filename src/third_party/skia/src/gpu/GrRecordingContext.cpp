@@ -61,6 +61,7 @@ bool GrRecordingContext::init() {
         return false;
     }
 
+#if SK_GPU_V1
     GrPathRendererChain::Options prcOptions;
     prcOptions.fAllowPathMaskCaching = this->options().fAllowPathMaskCaching;
 #if GR_TEST_UTILS
@@ -70,8 +71,9 @@ bool GrRecordingContext::init() {
     if (this->options().fDisableDistanceFieldPaths) {
         prcOptions.fGpuPathRenderers &= ~GpuPathRenderers::kSmall;
     }
+#endif
 
-    bool reduceOpsTaskSplitting = false;
+    bool reduceOpsTaskSplitting = true;
     if (this->caps()->avoidReorderingRenderTasks()) {
         reduceOpsTaskSplitting = false;
     } else if (GrContextOptions::Enable::kYes == this->options().fReduceOpsTaskSplitting) {
@@ -80,7 +82,9 @@ bool GrRecordingContext::init() {
         reduceOpsTaskSplitting = false;
     }
     fDrawingManager.reset(new GrDrawingManager(this,
+#if SK_GPU_V1
                                                prcOptions,
+#endif
                                                reduceOpsTaskSplitting));
     return true;
 }

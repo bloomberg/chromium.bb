@@ -58,6 +58,7 @@
 <translation id="2297836609126180313"><ph name="QUANTITY" /> Тб/с</translation>
 <translation id="2353636109065292463">Интернет байланышыңызды текшериңиз</translation>
 <translation id="2388990488038464401">Бул номерге телефонуңуздан чаласызбы?</translation>
+<translation id="2435457462613246316">Сырсөздү көрсөтүү</translation>
 <translation id="24452542372838207">Эскертмени жайып көрсөтүү</translation>
 <translation id="2445449901874883781">Терезелерди көп көрсөтүү</translation>
 <translation id="2482878487686419369">Билдирмелер</translation>
@@ -79,6 +80,7 @@
 <translation id="2824719307700604149">{YEARS,plural, =1{1 жыл мурун}other{# жыл мурун}}</translation>
 <translation id="2878511608894704031">Баарын жок кылуу</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{1 к. кийин}other{# к. кийин}}</translation>
+<translation id="2922712708897119705"><ph name="COLUMN_NAME" /> тилкеси азаюу тартибинде иреттелди.</translation>
 <translation id="2931838996092594335">чыкылдатуу</translation>
 <translation id="2981684127883932071">Сунуштар көрсөтүлүүдө</translation>
 <translation id="3036649622769666520">Файлдарды ачуу</translation>
@@ -114,6 +116,7 @@
 <translation id="3897092660631435901">Меню</translation>
 <translation id="3909791450649380159">Ке&amp;сүү</translation>
 <translation id="3990502903496589789">Оң жак чети</translation>
+<translation id="3994749195054421561"><ph name="COLUMN_NAME" /> тилкеси өсүү тартибинде иреттелди.</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 жаңы билдирме}other{# жаңы билдирме}}</translation>
 <translation id="4202807286478387388">секир</translation>
 <translation id="4250229828105606438">Скриншот</translation>
@@ -123,6 +126,7 @@
 <translation id="4306392492252714209">Алмашуу буферинен өчүрүү.</translation>
 <translation id="4316910396681052118">БАРДЫК КОЛДОНМОЛОР</translation>
 <translation id="4491109536499578614">Сүрөт</translation>
+<translation id="4565377596337484307">Сырсөздү жашыруу</translation>
 <translation id="4588090240171750605">Оңго сыдырып кароо</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, Рейтинги: <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, Сунушталган колдонмо</translation>
@@ -165,6 +169,7 @@
 <translation id="6012623610530968780"><ph name="TOTAL_PAGE_NUM" /> барактын ичинен <ph name="SELECTED_PAGE" /> барак</translation>
 <translation id="6022924867608035986">Издөө кутучасындагы текстти тазалоо</translation>
 <translation id="6040143037577758943">Жабуу</translation>
+<translation id="6117103120090651229">Ортоңку баскыч</translation>
 <translation id="6119846243427417423">жандыруу</translation>
 <translation id="6129953537138746214">Боштук</translation>
 <translation id="6134259848159370930">Түзмөктөн, колдонмолордон, жөндөөлөрдөн жана Интернеттен издеңиз.</translation>
@@ -173,6 +178,7 @@
 <translation id="6156262341071374681">Бардык колдонмолорду көрсөтүү</translation>
 <translation id="6165508094623778733">Кошумча маалымат</translation>
 <translation id="6166852626429024716">Түзмөктөн, колдонмолордон, жөндөөлөрдөн жана Интернеттен издеңиз...</translation>
+<translation id="6237461503717005873"><ph name="ROW_NAME" /> тили тандалды.</translation>
 <translation id="6264365405983206840">&amp;Баарын тандоо</translation>
 <translation id="6351032674660237738">СУНУШТАЛГАН КОЛДОНМОЛОР</translation>
 <translation id="6364916375976753737">Солго сыдырып кароо</translation>
@@ -213,6 +219,7 @@
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 мүнөт калды}other{# мүнөт калды}}</translation>
 <translation id="7430878839542012341">Бул издөө таржымалыңыздан жок кылынсынбы?</translation>
+<translation id="7437971918971306061"><ph name="COLUMN_NAME" /> тилкеси иреттелген жок.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> Тб</translation>
 <translation id="7507604095951736240">Быйтыкча</translation>
 <translation id="7620655452534002301">Өчүрүлдү.</translation>

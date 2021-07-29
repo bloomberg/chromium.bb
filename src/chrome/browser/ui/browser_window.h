@@ -13,7 +13,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/apps/intent_helper/apps_navigation_types.h"
 #include "chrome/browser/lifetime/browser_close_manager.h"
-#include "chrome/browser/sharing/sharing_dialog_data.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
@@ -37,6 +36,7 @@
 
 class Browser;
 class SharingDialog;
+struct SharingDialogData;
 class DownloadShelf;
 class ExclusiveAccessContext;
 class ExtensionsContainer;
@@ -82,6 +82,10 @@ class SharingHubBubbleView;
 namespace ui {
 class NativeTheme;
 }
+
+namespace views {
+class Button;
+}  // namespace views
 
 namespace web_modal {
 class WebContentsModalDialogHost;
@@ -329,6 +333,9 @@ class BrowserWindow : public ui::BaseWindow {
   // Focuses a visible but inactive popup for accessibility.
   virtual void FocusInactivePopupForAccessibility() = 0;
 
+  // Focuses a help bubble if present.
+  virtual void FocusHelpBubble() = 0;
+
   // Moves keyboard focus to the next pane.
   virtual void RotatePaneFocus(bool forwards) = 0;
 
@@ -393,11 +400,16 @@ class BrowserWindow : public ui::BaseWindow {
       send_tab_to_self::SendTabToSelfBubbleController* controller,
       bool is_user_gesture) = 0;
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Returns the PageActionIconView for the Sharing Hub.
+  virtual views::Button* GetSharingHubIconButton() = 0;
+#else
   // Shows the Sharing Hub bubble.
   virtual sharing_hub::SharingHubBubbleView* ShowSharingHubBubble(
       content::WebContents* contents,
       sharing_hub::SharingHubBubbleController* controller,
       bool is_user_gesture) = 0;
+#endif
 
   // Shows the translate bubble.
   //
@@ -481,7 +493,7 @@ class BrowserWindow : public ui::BaseWindow {
   virtual void ShowAvatarBubbleFromAvatarButton(
       AvatarBubbleMode mode,
       signin_metrics::AccessPoint access_point,
-      bool is_source_keyboard) = 0;
+      bool is_source_accelerator) = 0;
 
   // Attempts showing the In-Produce-Help for profile Switching. This is called
   // after creating a new profile or opening an existing profile. If the profile
@@ -530,6 +542,9 @@ class BrowserWindow : public ui::BaseWindow {
   // Gets the windows's FeaturePromoController which manages display of
   // in-product help.
   virtual FeaturePromoController* GetFeaturePromoController() = 0;
+
+  // Shows an Incognito clear browsing data dialog.
+  virtual void ShowIncognitoClearBrowsingDataDialog() = 0;
 
  protected:
   friend class BrowserCloseManager;

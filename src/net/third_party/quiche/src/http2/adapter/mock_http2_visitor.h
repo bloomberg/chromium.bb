@@ -11,8 +11,16 @@ namespace test {
 // A mock visitor class, for use in tests.
 class MockHttp2Visitor : public Http2VisitorInterface {
  public:
-  MockHttp2Visitor() = default;
+  MockHttp2Visitor() {
+    ON_CALL(*this, OnHeaderForStream).WillByDefault(testing::Return(HEADER_OK));
+    ON_CALL(*this, OnInvalidFrame).WillByDefault(testing::Return(true));
+    ON_CALL(*this, OnMetadataEndForStream).WillByDefault(testing::Return(true));
+  }
 
+  MOCK_METHOD(ssize_t,
+              OnReadyToSend,
+              (absl::string_view serialized),
+              (override));
   MOCK_METHOD(void, OnConnectionError, (), (override));
   MOCK_METHOD(
       void,
@@ -28,10 +36,8 @@ class MockHttp2Visitor : public Http2VisitorInterface {
               (Http2StreamId stream_id),
               (override));
 
-  MOCK_METHOD(void,
-              OnHeaderForStream,
-              (Http2StreamId stream_id,
-               absl::string_view key,
+  MOCK_METHOD(OnHeaderResult, OnHeaderForStream,
+              (Http2StreamId stream_id, absl::string_view key,
                absl::string_view value),
               (override));
 
@@ -89,6 +95,19 @@ class MockHttp2Visitor : public Http2VisitorInterface {
               (Http2StreamId stream_id, int window_increment),
               (override));
 
+  MOCK_METHOD(int, OnBeforeFrameSent,
+              (uint8_t frame_type, Http2StreamId stream_id, size_t length,
+               uint8_t flags),
+              (override));
+
+  MOCK_METHOD(int, OnFrameSent,
+              (uint8_t frame_type, Http2StreamId stream_id, size_t length,
+               uint8_t flags, uint32_t error_code),
+              (override));
+
+  MOCK_METHOD(bool, OnInvalidFrame, (Http2StreamId stream_id, int error_code),
+              (override));
+
   MOCK_METHOD(void,
               OnReadyToSendDataForStream,
               (Http2StreamId stream_id,
@@ -114,10 +133,10 @@ class MockHttp2Visitor : public Http2VisitorInterface {
               (Http2StreamId stream_id, absl::string_view metadata),
               (override));
 
-  MOCK_METHOD(void,
-              OnMetadataEndForStream,
-              (Http2StreamId stream_id),
+  MOCK_METHOD(bool, OnMetadataEndForStream, (Http2StreamId stream_id),
               (override));
+
+  MOCK_METHOD(void, OnErrorDebug, (absl::string_view message), (override));
 };
 
 }  // namespace test

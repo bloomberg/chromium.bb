@@ -41,8 +41,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -90,6 +92,7 @@ public class ShoppingPersistedTabData extends PersistedTabData {
 
     private PriceDropData mPriceDropData = new PriceDropData();
     private PriceDropMetricsLogger mPriceDropMetricsLogger;
+    private Map<String, CurrencyFormatter> mCurrencyFormatterMap = new HashMap<>();
 
     @VisibleForTesting
     protected ObservableSupplierImpl<Boolean> mIsTabSaveEnabledSupplier =
@@ -213,7 +216,7 @@ public class ShoppingPersistedTabData extends PersistedTabData {
     @VisibleForTesting
     protected void prefetchOnNewNavigation(
             Tab tab, NavigationHandle navigationHandle, Runnable onCompleteForTesting) {
-        if (!navigationHandle.isInMainFrame()) {
+        if (!navigationHandle.isInPrimaryMainFrame()) {
             return;
         }
         OptimizationGuideBridgeFactoryHolder.sOptimizationGuideBridgeFactory.create()
@@ -282,16 +285,15 @@ public class ShoppingPersistedTabData extends PersistedTabData {
         registerIsTabSaveEnabledSupplier(mIsTabSaveEnabledSupplier);
         mUrlUpdatedObserver = new EmptyTabObserver() {
             @Override
-            public void onUrlUpdated(Tab tab) {
+            public void onDidFinishNavigation(Tab tab, NavigationHandle navigationHandle) {
+                if (!navigationHandle.isInPrimaryMainFrame() || navigationHandle.isSameDocument()) {
+                    return;
+                }
                 // When the URL is updated, the pricing data is stale, no longer
                 // relevant and should be cleaned up.
                 delete();
                 mPriceDropData = new PriceDropData();
                 mPriceDropMetricsLogger = null;
-            }
-
-            @Override
-            public void onDidFinishNavigation(Tab tab, NavigationHandle navigationHandle) {
                 if (isPriceTrackingWithOptimizationGuideEnabled()) {
                     prefetchOnNewNavigation(tab, navigationHandle);
                 }
@@ -320,11 +322,12 @@ public class ShoppingPersistedTabData extends PersistedTabData {
      * - Tab greater than 90 days old
      * - Tab with a non-shopping related page currently navigated to
      * - Tab with a shopping related page for which no shopping related data was found
+     * - Uninitialized Tab
      */
     public static void from(Tab tab, Callback<ShoppingPersistedTabData> callback) {
         // Shopping related data is not available for incognito or Custom Tabs. For example,
         // for incognito Tabs it is not possible to call a backend service with the user's URL.
-        if (tab.isIncognito() || tab.isCustomTab()) {
+        if (tab.isIncognito() || tab.isCustomTab() || !tab.isInitialized()) {
             PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> { callback.onResult(null); });
             return;
         }
@@ -333,8 +336,9 @@ public class ShoppingPersistedTabData extends PersistedTabData {
                         -> { return new ShoppingPersistedTabData(tab, data, storage, id); },
                 (supplierCallback)
                         -> {
-                    if (getTimeSinceTabLastOpenedMs(tab)
-                            > TimeUnit.SECONDS.toMillis(getStaleTabThresholdSeconds())) {
+                    if (!tab.isInitialized()
+                            || getTimeSinceTabLastOpenedMs(tab)
+                                    > TimeUnit.SECONDS.toMillis(getStaleTabThresholdSeconds())) {
                         supplierCallback.onResult(null);
                         return;
                     }
@@ -737,8 +741,10 @@ public class ShoppingPersistedTabData extends PersistedTabData {
 
     // TODO(crbug.com/1130068) support all currencies
     private String formatPrice(long priceMicros) {
-        CurrencyFormatter currencyFormatter =
-                new CurrencyFormatter(mPriceDropData.currencyCode, Locale.getDefault());
+        if (mPriceDropData.currencyCode == null) {
+            return "";
+        }
+        CurrencyFormatter currencyFormatter = getCurrencyFormatter(mPriceDropData.currencyCode);
         String formattedPrice;
         if (priceMicros < TEN_UNITS) {
             currencyFormatter.setMaximumFractionalDigits(FRACTIONAL_DIGITS_LESS_THAN_TEN_UNITS);
@@ -753,6 +759,14 @@ public class ShoppingPersistedTabData extends PersistedTabData {
         return currencyFormatter.format(formattedPrice);
     }
 
+    private CurrencyFormatter getCurrencyFormatter(String currencyCode) {
+        if (mCurrencyFormatterMap.get(currencyCode) == null) {
+            mCurrencyFormatterMap.put(currencyCode,
+                    new CurrencyFormatter(mPriceDropData.currencyCode, Locale.getDefault()));
+        }
+        return mCurrencyFormatterMap.get(currencyCode);
+    }
+
     @Override
     public Supplier<ByteBuffer> getSerializeSupplier() {
         ShoppingPersistedTabDataProto.Builder builder =
@@ -763,6 +777,10 @@ public class ShoppingPersistedTabData extends PersistedTabData {
                         .setLastPriceChangeTimeMs(mLastPriceChangeTimeMs);
         if (mPriceDropData.offerId != null) {
             builder.setMainOfferId(mPriceDropData.offerId);
+        }
+
+        if (mPriceDropData.currencyCode != null) {
+            builder.setPriceCurrencyCode(mPriceDropData.currencyCode);
         }
 
         return () -> {
@@ -786,6 +804,7 @@ public class ShoppingPersistedTabData extends PersistedTabData {
             setLastUpdatedMs(shoppingPersistedTabDataProto.getLastUpdatedMs());
             mLastPriceChangeTimeMs = shoppingPersistedTabDataProto.getLastPriceChangeTimeMs();
             mPriceDropData.offerId = shoppingPersistedTabDataProto.getMainOfferId();
+            mPriceDropData.currencyCode = shoppingPersistedTabDataProto.getPriceCurrencyCode();
             mPriceDropMetricsLogger = new PriceDropMetricsLogger(this);
             return true;
         } catch (InvalidProtocolBufferException e) {
@@ -826,6 +845,11 @@ public class ShoppingPersistedTabData extends PersistedTabData {
     @Override
     public void destroy() {
         mTab.removeObserver(mUrlUpdatedObserver);
+        for (CurrencyFormatter currencyFormatter : mCurrencyFormatterMap.values()) {
+            assert currencyFormatter != null;
+            currencyFormatter.destroy();
+        }
+        mCurrencyFormatterMap.clear();
         super.destroy();
     }
 

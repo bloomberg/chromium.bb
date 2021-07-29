@@ -11,10 +11,10 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -170,9 +170,8 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest,
         prefs_->GetList(spellcheck::prefs::kSpellCheckDictionaries);
     std::vector<base::StringPiece> dictionaries;
     for (const auto& item_value : list_value->GetList()) {
-      base::StringPiece dictionary;
-      EXPECT_TRUE(item_value.GetAsString(&dictionary));
-      dictionaries.push_back(dictionary);
+      EXPECT_TRUE(item_value.is_string());
+      dictionaries.push_back(item_value.GetString());
     }
     return base::JoinString(dictionaries, ",");
   }

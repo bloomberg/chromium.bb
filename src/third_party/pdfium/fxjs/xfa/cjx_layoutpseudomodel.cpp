@@ -14,7 +14,7 @@
 #include "fxjs/js_resources.h"
 #include "fxjs/xfa/cfxjse_class.h"
 #include "fxjs/xfa/cfxjse_engine.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/containers/contains.h"
 #include "v8/include/cppgc/allocation.h"
 #include "xfa/fxfa/cxfa_ffnotify.h"
 #include "xfa/fxfa/layout/cxfa_contentlayoutitem.h"
@@ -112,7 +112,7 @@ CJS_Result CJX_LayoutPseudoModel::HWXY(
     return CJS_Result::Success(runtime->NewNumber(0.0));
 
   CXFA_Measurement measure;
-  CFX_RectF rtRect = pLayoutItem->GetRect(true);
+  CFX_RectF rtRect = pLayoutItem->GetRelativeRect();
   switch (layoutModel) {
     case XFA_LAYOUTMODEL_H:
       measure.Set(rtRect.height, XFA_Unit::Pt);
@@ -161,23 +161,23 @@ CJS_Result CJX_LayoutPseudoModel::y(
   return HWXY(runtime, params, XFA_LAYOUTMODEL_Y);
 }
 
-CJS_Result CJX_LayoutPseudoModel::NumberedPageCount(CFX_V8* runtime,
-                                                    bool bNumbered) {
+CJS_Result CJX_LayoutPseudoModel::AllPageCount(CFX_V8* runtime) {
+  auto* pDocLayout = CXFA_LayoutProcessor::FromDocument(GetDocument());
+  return CJS_Result::Success(runtime->NewNumber(pDocLayout->CountPages()));
+}
+
+CJS_Result CJX_LayoutPseudoModel::NumberedPageCount(CFX_V8* runtime) {
   auto* pDocLayout = CXFA_LayoutProcessor::FromDocument(GetDocument());
   int32_t iPageCount = 0;
   int32_t iPageNum = pDocLayout->CountPages();
-  if (bNumbered) {
-    for (int32_t i = 0; i < iPageNum; i++) {
-      CXFA_ViewLayoutItem* pLayoutPage = pDocLayout->GetPage(i);
-      if (!pLayoutPage)
-        continue;
+  for (int32_t i = 0; i < iPageNum; i++) {
+    CXFA_ViewLayoutItem* pLayoutPage = pDocLayout->GetPage(i);
+    if (!pLayoutPage)
+      continue;
 
-      CXFA_Node* pMasterPage = pLayoutPage->GetMasterPage();
-      if (pMasterPage->JSObject()->GetInteger(XFA_Attribute::Numbered))
-        iPageCount++;
-    }
-  } else {
-    iPageCount = iPageNum;
+    CXFA_Node* pMasterPage = pLayoutPage->GetMasterPage();
+    if (pMasterPage->JSObject()->GetInteger(XFA_Attribute::Numbered))
+      iPageCount++;
   }
   return CJS_Result::Success(runtime->NewNumber(iPageCount));
 }
@@ -185,7 +185,7 @@ CJS_Result CJX_LayoutPseudoModel::NumberedPageCount(CFX_V8* runtime,
 CJS_Result CJX_LayoutPseudoModel::pageCount(
     CFX_V8* runtime,
     const std::vector<v8::Local<v8::Value>>& params) {
-  return NumberedPageCount(runtime, true);
+  return NumberedPageCount(runtime);
 }
 
 CJS_Result CJX_LayoutPseudoModel::pageSpan(
@@ -385,7 +385,7 @@ CJS_Result CJX_LayoutPseudoModel::pageContent(
 CJS_Result CJX_LayoutPseudoModel::absPageCount(
     CFX_V8* runtime,
     const std::vector<v8::Local<v8::Value>>& params) {
-  return NumberedPageCount(runtime, false);
+  return AllPageCount(runtime);
 }
 
 CJS_Result CJX_LayoutPseudoModel::absPageCountInBatch(
@@ -455,7 +455,7 @@ CJS_Result CJX_LayoutPseudoModel::relayoutPageArea(
 CJS_Result CJX_LayoutPseudoModel::sheetCount(
     CFX_V8* runtime,
     const std::vector<v8::Local<v8::Value>>& params) {
-  return NumberedPageCount(runtime, false);
+  return AllPageCount(runtime);
 }
 
 CJS_Result CJX_LayoutPseudoModel::absPage(

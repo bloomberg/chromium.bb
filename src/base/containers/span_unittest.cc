@@ -4,6 +4,13 @@
 
 #include "base/containers/span.h"
 
+// span.h is a widely included header and its size has significant impact on
+// build time. Try not to raise this limit unless absolutely necessary. See
+// https://chromium.googlesource.com/chromium/src/+/HEAD/docs/wmax_tokens.md
+#ifndef NACL_TC_REV
+#pragma clang max_tokens_here 270000
+#endif
+
 #include <stdint.h>
 
 #include <iterator>
@@ -13,8 +20,8 @@
 #include <vector>
 
 #include "base/containers/checked_iterators.h"
+#include "base/cxx17_backports.h"
 #include "base/ranges/algorithm.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

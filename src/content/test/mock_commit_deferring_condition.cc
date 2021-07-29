@@ -4,6 +4,8 @@
 
 #include "content/test/mock_commit_deferring_condition.h"
 
+#include "content/browser/renderer_host/navigation_request.h"
+
 namespace content {
 
 MockCommitDeferringConditionWrapper::MockCommitDeferringConditionWrapper(
@@ -40,10 +42,22 @@ bool MockCommitDeferringConditionWrapper::IsDestroyed() const {
   return !static_cast<bool>(weak_condition_);
 }
 
+void MockCommitDeferringConditionWrapper::WaitUntilInvoked() {
+  if (WasInvoked())
+    return;
+  base::RunLoop loop;
+  invoked_closure_ = loop.QuitClosure();
+  loop.Run();
+}
+
 void MockCommitDeferringConditionWrapper::WillCommitNavigationCalled(
     base::OnceClosure resume_closure) {
   did_call_will_commit_navigation_ = true;
   resume_closure_ = std::move(resume_closure);
+  if (invoked_closure_) {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, std::move(invoked_closure_));
+  }
 }
 
 MockCommitDeferringCondition::MockCommitDeferringCondition(
@@ -54,16 +68,36 @@ MockCommitDeferringCondition::MockCommitDeferringCondition(
 
 MockCommitDeferringCondition::~MockCommitDeferringCondition() = default;
 
-bool MockCommitDeferringCondition::WillCommitNavigation(
-    base::OnceClosure resume) {
+CommitDeferringCondition::Result
+MockCommitDeferringCondition::WillCommitNavigation(base::OnceClosure resume) {
   if (on_will_commit_navigation_)
     std::move(on_will_commit_navigation_).Run(std::move(resume));
-  return is_ready_to_commit_;
+  return is_ready_to_commit_ ? kProceed : kDefer;
 }
 
 base::WeakPtr<MockCommitDeferringCondition>
 MockCommitDeferringCondition::AsWeakPtr() {
   return weak_factory_.GetWeakPtr();
+}
+
+MockCommitDeferringConditionInstaller::MockCommitDeferringConditionInstaller(
+    std::unique_ptr<MockCommitDeferringCondition> condition)
+    : generator_id_(
+          CommitDeferringConditionRunner::InstallConditionGeneratorForTesting(
+              base::BindRepeating(
+                  &MockCommitDeferringConditionInstaller::Install,
+                  base::Unretained(this)))),
+      condition_(std::move(condition)) {}
+
+MockCommitDeferringConditionInstaller::
+    ~MockCommitDeferringConditionInstaller() {
+  CommitDeferringConditionRunner::UninstallConditionGeneratorForTesting(
+      generator_id_);
+}
+
+std::unique_ptr<CommitDeferringCondition>
+MockCommitDeferringConditionInstaller::Install() {
+  return std::move(condition_);
 }
 
 }  //  namespace content

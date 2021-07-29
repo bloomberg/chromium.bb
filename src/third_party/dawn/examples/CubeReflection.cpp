@@ -15,6 +15,7 @@
 #include "SampleUtils.h"
 
 #include "utils/ComboRenderPipelineDescriptor.h"
+#include "utils/ScopedAutoreleasePool.h"
 #include "utils/SystemUtils.h"
 #include "utils/WGPUHelpers.h"
 
@@ -184,7 +185,7 @@ void init() {
     depthStencilView = CreateDefaultDepthStencilView(device);
 
     {
-        utils::ComboRenderPipelineDescriptor2 descriptor;
+        utils::ComboRenderPipelineDescriptor descriptor;
         descriptor.vertex.module = vsModule;
         descriptor.vertex.bufferCount = 1;
         descriptor.vertex.buffers = &vertexBufferLayout;
@@ -198,11 +199,11 @@ void init() {
         depthStencil->depthWriteEnabled = true;
         depthStencil->depthCompare = wgpu::CompareFunction::Less;
 
-        pipeline = device.CreateRenderPipeline2(&descriptor);
+        pipeline = device.CreateRenderPipeline(&descriptor);
     }
 
     {
-        utils::ComboRenderPipelineDescriptor2 descriptor;
+        utils::ComboRenderPipelineDescriptor descriptor;
         descriptor.vertex.module = vsModule;
         descriptor.vertex.bufferCount = 1;
         descriptor.vertex.buffers = &vertexBufferLayout;
@@ -217,11 +218,11 @@ void init() {
         depthStencil->stencilBack.passOp = wgpu::StencilOperation::Replace;
         depthStencil->depthCompare = wgpu::CompareFunction::Less;
 
-        planePipeline = device.CreateRenderPipeline2(&descriptor);
+        planePipeline = device.CreateRenderPipeline(&descriptor);
     }
 
     {
-        utils::ComboRenderPipelineDescriptor2 descriptor;
+        utils::ComboRenderPipelineDescriptor descriptor;
         descriptor.vertex.module = vsModule;
         descriptor.vertex.bufferCount = 1;
         descriptor.vertex.buffers = &vertexBufferLayout;
@@ -239,7 +240,7 @@ void init() {
         depthStencil->depthWriteEnabled = true;
         depthStencil->depthCompare = wgpu::CompareFunction::Less;
 
-        reflectionPipeline = device.CreateRenderPipeline2(&descriptor);
+        reflectionPipeline = device.CreateRenderPipeline(&descriptor);
     }
 
     cameraData.proj = glm::perspective(glm::radians(45.0f), 1.f, 1.0f, 100.0f);
@@ -301,6 +302,7 @@ int main(int argc, const char* argv[]) {
     init();
 
     while (!ShouldQuit()) {
+        utils::ScopedAutoreleasePool pool;
         frame();
         utils::USleep(16000);
     }

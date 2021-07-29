@@ -25,6 +25,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
@@ -34,7 +35,6 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -1662,7 +1662,7 @@ ShellUtil::ShortcutProperties::ShortcutProperties(ShellChange level_in)
 ShellUtil::ShortcutProperties::ShortcutProperties(
     const ShortcutProperties& other) = default;
 
-ShellUtil::ShortcutProperties::~ShortcutProperties() {}
+ShellUtil::ShortcutProperties::~ShortcutProperties() = default;
 
 ShellUtil::ApplicationInfo::ApplicationInfo() = default;
 
@@ -2554,7 +2554,8 @@ bool ShellUtil::AddFileAssociations(
     const base::CommandLine& command_line,
     const std::wstring& application_name,
     const std::wstring& file_type_name,
-    const base::FilePath& icon_path,
+    const base::FilePath& application_icon_path,
+    const base::FilePath& file_type_icon_path,
     const std::set<std::wstring>& file_extensions) {
   std::vector<std::unique_ptr<RegistryEntry>> entries;
 
@@ -2562,10 +2563,10 @@ bool ShellUtil::AddFileAssociations(
   ApplicationInfo app_info;
   app_info.prog_id = prog_id;
   app_info.application_name = application_name;
-  app_info.application_icon_path = icon_path;
+  app_info.application_icon_path = application_icon_path;
   app_info.application_icon_index = 0;
   app_info.file_type_name = file_type_name;
-  app_info.file_type_icon_path = icon_path;
+  app_info.file_type_icon_path = file_type_icon_path;
   app_info.file_type_icon_index = 0;
   app_info.command_line = command_line.GetCommandLineStringForShell();
 

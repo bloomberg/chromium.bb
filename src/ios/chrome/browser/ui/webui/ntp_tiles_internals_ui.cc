@@ -68,7 +68,6 @@ bool IOSNTPTilesInternalsMessageHandlerBridge::DoesSourceExist(
     ntp_tiles::TileSource source) {
   switch (source) {
     case ntp_tiles::TileSource::TOP_SITES:
-    case ntp_tiles::TileSource::SUGGESTIONS_SERVICE:
     case ntp_tiles::TileSource::POPULAR:
     case ntp_tiles::TileSource::POPULAR_BAKED_IN:
     case ntp_tiles::TileSource::HOMEPAGE:
@@ -76,7 +75,6 @@ bool IOSNTPTilesInternalsMessageHandlerBridge::DoesSourceExist(
     case ntp_tiles::TileSource::CUSTOM_LINKS:
     case ntp_tiles::TileSource::ALLOWLIST:
     case ntp_tiles::TileSource::EXPLORE:
-    case ntp_tiles::TileSource::REPEATABLE_QUERIES_SERVICE:
       return false;
   }
   NOTREACHED();

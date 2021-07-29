@@ -168,10 +168,11 @@
 typedef ptrdiff_t  FT_PtrDist;
 
 
-#define ErrRaster_Invalid_Mode      -2
-#define ErrRaster_Invalid_Outline   -1
-#define ErrRaster_Invalid_Argument  -3
-#define ErrRaster_Memory_Overflow   -4
+#define Smooth_Err_Ok                    0
+#define Smooth_Err_Invalid_Outline      -1
+#define Smooth_Err_Cannot_Render_Glyph  -2
+#define Smooth_Err_Invalid_Argument     -3
+#define Smooth_Err_Raster_Overflow      -4
 
 #define FT_BEGIN_HEADER
 #define FT_END_HEADER
@@ -229,18 +230,18 @@ typedef ptrdiff_t  FT_PtrDist;
 #define FT_ERROR( varformat )   FT_Message varformat
 #endif
 
-#define FT_THROW( e )                               \
-          ( FT_Throw( FT_ERR_CAT( ErrRaster_, e ),  \
-                      __LINE__,                     \
-                      __FILE__ )                  | \
-            FT_ERR_CAT( ErrRaster_, e )           )
+#define FT_THROW( e )                                \
+          ( FT_Throw( FT_ERR_CAT( Smooth_Err_, e ),  \
+                      __LINE__,                      \
+                      __FILE__ )                   | \
+            FT_ERR_CAT( Smooth_Err_, e )           )
 
 #else /* !FT_DEBUG_LEVEL_TRACE */
 
 #define FT_TRACE5( x )  do { } while ( 0 )     /* nothing */
 #define FT_TRACE7( x )  do { } while ( 0 )     /* nothing */
 #define FT_ERROR( x )   do { } while ( 0 )     /* nothing */
-#define FT_THROW( e )   FT_ERR_CAT( ErrRaster_, e )
+#define FT_THROW( e )   FT_ERR_CAT( Smooth_Err_, e )
 
 
 #endif /* !FT_DEBUG_LEVEL_TRACE */
@@ -285,10 +286,6 @@ typedef ptrdiff_t  FT_PtrDist;
 #include <freetype/ftoutln.h>
 
 #include "ftsmerrs.h"
-
-#define Smooth_Err_Invalid_Mode     Smooth_Err_Cannot_Render_Glyph
-#define Smooth_Err_Memory_Overflow  Smooth_Err_Out_Of_Memory
-#define ErrRaster_Memory_Overflow   Smooth_Err_Out_Of_Memory
 
 
 #endif /* !STANDALONE_ */
@@ -482,19 +479,24 @@ typedef ptrdiff_t  FT_PtrDist;
   {
     ft_jmp_buf  jump_buffer;
 
-    TCoord  min_ex, max_ex;
+    TCoord  min_ex, max_ex;  /* min and max integer pixel coordinates */
     TCoord  min_ey, max_ey;
+    TCoord  count_ey;        /* same as (max_ey - min_ey) */
 
-    PCell       cell;
-    PCell*      ycells;
-    PCell       cells;
-    FT_PtrDist  max_cells;
-    FT_PtrDist  num_cells;
+    PCell       cell;        /* current cell                             */
+    PCell       cell_free;   /* call allocation next free slot           */
+    PCell       cell_limit;  /* cell allocation limit                    */
 
-    TPos    x,  y;
+    PCell*      ycells;      /* array of cell linked-lists, one per      */
+							 /* vertical coordinate in the current band. */
 
-    FT_Outline  outline;
-    TPixmap     target;
+    PCell       cells;       /* cell storage area     */
+    FT_PtrDist  max_cells;   /* cell storage capacity */
+
+    TPos        x,  y;       /* last point position */
+
+    FT_Outline  outline;     /* input outline */
+    TPixmap     target;      /* target pixmap */
 
     FT_Raster_Span_Func  render_span;
     void*                render_span_data;
@@ -505,21 +507,34 @@ typedef ptrdiff_t  FT_PtrDist;
 #pragma warning( pop )
 #endif
 
-
 #ifndef FT_STATIC_RASTER
 #define ras  (*worker)
 #else
   static gray_TWorker  ras;
 #endif
 
-#define FT_INTEGRATE( ras, a, b )                                       \
-           if ( ras.cell )                                              \
-             ras.cell->cover += (a), ras.cell->area += (a) * (TArea)(b)
+/* Return a pointer to the "null cell", used as a sentinel at the end   */
+/* of all ycells[] linked lists. Its x coordinate should be maximal     */
+/* to ensure no NULL checks are necessary when looking for an insertion */
+/* point in gray_set_cell(). Other loops should check the cell pointer  */
+/* with CELL_IS_NULL() to detect the end of the list.                   */
+#define NULL_CELL_PTR(ras)  (ras).cells
+
+/* The |x| value of the null cell. Must be the largest possible */
+/* integer value stored in a TCell.x field.                     */
+#define CELL_MAX_X_VALUE    INT_MAX
+
+/* Return true iff |cell| points to the null cell. */
+#define CELL_IS_NULL(cell)  ((cell)->x == CELL_MAX_X_VALUE)
+
+
+#define FT_INTEGRATE( ras, a, b )                                     \
+           ras.cell->cover += (a), ras.cell->area += (a) * (TArea)(b)
 
 
   typedef struct gray_TRaster_
   {
-    void*         memory;
+    void*  memory;
 
   } gray_TRaster, *gray_PRaster;
 
@@ -541,7 +556,7 @@ typedef ptrdiff_t  FT_PtrDist;
 
       printf( "%3d:", y );
 
-      for ( ; cell != NULL; cell = cell->next )
+      for ( ; !CELL_IS_NULL(cell); cell = cell->next )
         printf( " (%3d, c:%4d, a:%6d)",
                 cell->x, cell->cover, cell->area );
       printf( "\n" );
@@ -569,11 +584,12 @@ typedef ptrdiff_t  FT_PtrDist;
     /* Note that if a cell is to the left of the clipping region, it is    */
     /* actually set to the (min_ex-1) horizontal position.                 */
 
-    if ( ey >= ras.max_ey || ey < ras.min_ey || ex >= ras.max_ex )
-      ras.cell = NULL;
+    TCoord ey_index = ey - ras.min_ey;
+    if ( ey_index < 0 || ey_index >= ras.count_ey || ex >= ras.max_ex )
+      ras.cell = NULL_CELL_PTR(ras);
     else
     {
-      PCell*  pcell = ras.ycells + ey - ras.min_ey;
+      PCell*  pcell = ras.ycells + ey_index;
       PCell   cell;
 
 
@@ -583,7 +599,7 @@ typedef ptrdiff_t  FT_PtrDist;
       {
         cell = *pcell;
 
-        if ( !cell || cell->x > ex )
+        if ( cell->x > ex )
           break;
 
         if ( cell->x == ex )
@@ -592,11 +608,11 @@ typedef ptrdiff_t  FT_PtrDist;
         pcell = &cell->next;
       }
 
-      if ( ras.num_cells >= ras.max_cells )
+      /* insert new cell */
+      cell = ras.cell_free++;
+      if (cell >= ras.cell_limit)
         ft_longjmp( ras.jump_buffer, 1 );
 
-      /* insert new cell */
-      cell        = ras.cells + ras.num_cells++;
       cell->x     = ex;
       cell->area  = 0;
       cell->cover = 0;
@@ -1221,7 +1237,7 @@ typedef ptrdiff_t  FT_PtrDist;
       unsigned char*  line = ras.target.origin - ras.target.pitch * y;
 
 
-      for ( ; cell != NULL; cell = cell->next )
+      for ( ; !CELL_IS_NULL(cell); cell = cell->next )
       {
         if ( cover != 0 && cell->x > x )
         {
@@ -1269,7 +1285,7 @@ typedef ptrdiff_t  FT_PtrDist;
       TArea   area;
 
 
-      for ( ; cell != NULL; cell = cell->next )
+      for ( ; !CELL_IS_NULL(cell); cell = cell->next )
       {
         if ( cover != 0 && cell->x > x )
         {
@@ -1605,7 +1621,7 @@ typedef ptrdiff_t  FT_PtrDist;
     }
 
     FT_TRACE5(( "FT_Outline_Decompose: Done\n", n ));
-    return 0;
+    return Smooth_Err_Ok;
 
   Exit:
     FT_TRACE5(( "FT_Outline_Decompose: Error 0x%x\n", error ));
@@ -1649,12 +1665,12 @@ typedef ptrdiff_t  FT_PtrDist;
       FT_TRACE7(( "band [%d..%d]: %ld cell%s\n",
                   ras.min_ey,
                   ras.max_ey,
-                  ras.num_cells,
-                  ras.num_cells == 1 ? "" : "s" ));
+                  ras.cell_free - ras.cells.,
+                  ras.cell_free - ras.cells == 1 ? "" : "s" ));
     }
     else
     {
-      error = FT_THROW( Memory_Overflow );
+      error = FT_THROW( Raster_Overflow );
 
       FT_TRACE7(( "band [%d..%d]: to be bisected\n",
                   ras.min_ey, ras.max_ey ));
@@ -1693,7 +1709,17 @@ typedef ptrdiff_t  FT_PtrDist;
 
     ras.cells     = buffer + n;
     ras.max_cells = (FT_PtrDist)( FT_MAX_GRAY_POOL - n );
+    ras.cell_limit = ras.cells + ras.max_cells;
     ras.ycells    = (PCell*)buffer;
+
+	/* Initialize the null cell is at the start of the 'cells' array. */
+	/* Note that this requires ras.cell_free initialization to skip   */
+	/* over the first entry in the array.                             */
+	PCell null_cell  = NULL_CELL_PTR(ras);
+	null_cell->x     = CELL_MAX_X_VALUE;
+	null_cell->area  = 0;
+	null_cell->cover = 0;
+	null_cell->next  = NULL;;
 
     for ( y = yMin; y < yMax; )
     {
@@ -1708,15 +1734,17 @@ typedef ptrdiff_t  FT_PtrDist;
       do
       {
         TCoord  width = band[0] - band[1];
+        TCoord  w;
         int     error;
 
+        for (w = 0; w < width; ++w)
+          ras.ycells[w] = null_cell;
 
-        FT_MEM_ZERO( ras.ycells, height * sizeof ( PCell ) );
-
-        ras.num_cells = 0;
-        ras.cell      = NULL;
+        ras.cell_free = ras.cells + 1;  /* NOTE: Skip over the null cell. */
+        ras.cell      = null_cell;
         ras.min_ey    = band[1];
         ras.max_ey    = band[0];
+        ras.count_ey  = width;
 
         error     = gray_convert_glyph_inner( RAS_VAR, continued );
         continued = 1;
@@ -1730,8 +1758,8 @@ typedef ptrdiff_t  FT_PtrDist;
           band--;
           continue;
         }
-        else if ( error != ErrRaster_Memory_Overflow )
-          return 1;
+        else if ( error != Smooth_Err_Raster_Overflow )
+          return error;
 
         /* render pool overflow; we will reduce the render band by half */
         width >>= 1;
@@ -1740,7 +1768,7 @@ typedef ptrdiff_t  FT_PtrDist;
         if ( width == 0 )
         {
           FT_TRACE7(( "gray_convert_glyph: rotten glyph\n" ));
-          return 1;
+          return FT_THROW( Raster_Overflow );
         }
 
         band++;
@@ -1749,7 +1777,7 @@ typedef ptrdiff_t  FT_PtrDist;
       } while ( band >= bands );
     }
 
-    return 0;
+    return Smooth_Err_Ok;
   }
 
 
@@ -1770,14 +1798,14 @@ typedef ptrdiff_t  FT_PtrDist;
 
     /* this version does not support monochrome rendering */
     if ( !( params->flags & FT_RASTER_FLAG_AA ) )
-      return FT_THROW( Invalid_Mode );
+      return FT_THROW( Cannot_Render_Glyph );
 
     if ( !outline )
       return FT_THROW( Invalid_Outline );
 
     /* return immediately if the outline is empty */
     if ( outline->n_points == 0 || outline->n_contours <= 0 )
-      return 0;
+      return Smooth_Err_Ok;
 
     if ( !outline->contours || !outline->points )
       return FT_THROW( Invalid_Outline );
@@ -1791,7 +1819,7 @@ typedef ptrdiff_t  FT_PtrDist;
     if ( params->flags & FT_RASTER_FLAG_DIRECT )
     {
       if ( !params->gray_spans )
-        return 0;
+        return Smooth_Err_Ok;
 
       ras.render_span      = (FT_Raster_Span_Func)params->gray_spans;
       ras.render_span_data = params->user;
@@ -1809,7 +1837,7 @@ typedef ptrdiff_t  FT_PtrDist;
 
       /* nothing to do */
       if ( !target_map->width || !target_map->rows )
-        return 0;
+        return Smooth_Err_Ok;
 
       if ( !target_map->buffer )
         return FT_THROW( Invalid_Argument );
@@ -1833,7 +1861,7 @@ typedef ptrdiff_t  FT_PtrDist;
 
     /* exit if nothing to do */
     if ( ras.max_ex <= ras.min_ex || ras.max_ey <= ras.min_ey )
-      return 0;
+      return Smooth_Err_Ok;
 
     return gray_convert_glyph( RAS_VAR );
   }

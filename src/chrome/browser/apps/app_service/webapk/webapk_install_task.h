@@ -11,9 +11,12 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
+#include "chrome/browser/apps/app_service/webapk/webapk_metrics.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "components/arc/arc_features_parser.h"
-#include "components/arc/mojom/webapk.mojom-forward.h"
+#include "components/arc/mojom/webapk.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
@@ -27,11 +30,12 @@ class WebApk;
 }
 
 namespace web_app {
-class WebAppProviderBase;
+class WebAppProvider;
 }
 
 namespace apps {
 
+// Installs or updates (as appropriate) the WebAPK for a specific app.
 class WebApkInstallTask {
   using ResultCallback = base::OnceCallback<void(bool success)>;
 
@@ -46,26 +50,48 @@ class WebApkInstallTask {
 
   const std::string& app_id() { return app_id_; }
 
+  void SetTimeoutForTesting(base::TimeDelta timeout) {
+    minter_timeout_ = timeout;
+  }
+
  private:
+  void LoadWebApkInfo(std::unique_ptr<webapk::WebApk> webapk);
+  void OnWebApkInfoLoaded(std::unique_ptr<webapk::WebApk> webapk,
+                          arc::mojom::WebApkInfoPtr result);
   void OnArcFeaturesLoaded(std::unique_ptr<webapk::WebApk> webapk,
-                           ResultCallback callback,
                            absl::optional<arc::ArcFeatures> arc_features);
   void OnLoadedIcon(std::unique_ptr<webapk::WebApk> webapk,
-                    ResultCallback callback,
                     IconPurpose purpose,
                     std::vector<uint8_t> data);
-  void OnProtoSerialized(ResultCallback callback, std::string serialized_proto);
-  void OnUrlLoaderComplete(ResultCallback callback,
-                           std::unique_ptr<std::string> response_body);
+  void OnProtoSerialized(absl::optional<std::string> serialized_proto);
+  void OnUrlLoaderComplete(std::unique_ptr<std::string> response_body);
   void OnInstallComplete(const std::string& package_name,
-                         ResultCallback callback,
                          arc::mojom::WebApkInstallResult result);
 
-  Profile* const profile_;
-  web_app::WebAppProviderBase* web_app_provider_;
+  // Delivers a result to the callback. The callback can delete this task, so no
+  // further work should be done after calling this method.
+  void DeliverResult(WebApkInstallStatus status);
 
+  Profile* const profile_;
+  web_app::WebAppProvider* web_app_provider_;
+
+  arc::mojom::WebApkInfoPtr web_apk_info_;
   const std::string app_id_;
+
+  // If we are updating an existing WebAPK, contains the package name of the
+  // existing WebAPK. Empty if this is an installation for a new WebAPK.
+  absl::optional<std::string> package_name_to_update_;
+
+  // Timeout for a response to arrive from the WebAPK minter.
+  base::TimeDelta minter_timeout_;
+
+  ResultCallback result_callback_;
+
+  // Loader used to request a WebAPK from the minter.
   std::unique_ptr<network::SimpleURLLoader> url_loader_;
+
+  // Fails the installation if the request to the WebAPK minter takes too long.
+  base::OneShotTimer timer_;
 
   base::WeakPtrFactory<WebApkInstallTask> weak_ptr_factory_{this};
 };

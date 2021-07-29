@@ -77,7 +77,7 @@ CPWL_Wnd::CreateParams CFFL_TextField::GetCreateParam() {
       cp.dwFlags |= PES_RIGHT;
       break;
   }
-  cp.pFontMap = MaybeCreateFontMap();
+  cp.pFontMap = GetOrCreateFontMap();
   cp.pFocusHandler = this;
   return cp;
 }
@@ -119,7 +119,7 @@ bool CFFL_TextField::OnChar(CPDFSDK_Annot* pAnnot,
                                  pAnnot->GetRect().GetOuterRect());
 
       if (m_bValid) {
-        if (CPWL_Wnd* pWnd = GetPWLWindow(pPageView, true))
+        if (CPWL_Wnd* pWnd = CreateOrUpdatePWLWindow(pPageView))
           pWnd->SetFocus();
         break;
       }
@@ -141,13 +141,13 @@ bool CFFL_TextField::OnChar(CPDFSDK_Annot* pAnnot,
   return CFFL_TextObject::OnChar(pAnnot, nChar, nFlags);
 }
 
-bool CFFL_TextField::IsDataChanged(CPDFSDK_PageView* pPageView) {
-  CPWL_Edit* pEdit = GetEdit(pPageView, false);
+bool CFFL_TextField::IsDataChanged(const CPDFSDK_PageView* pPageView) {
+  CPWL_Edit* pEdit = GetEdit(pPageView);
   return pEdit && pEdit->GetText() != m_pWidget->GetValue();
 }
 
-void CFFL_TextField::SaveData(CPDFSDK_PageView* pPageView) {
-  CPWL_Edit* pWnd = GetEdit(pPageView, false);
+void CFFL_TextField::SaveData(const CPDFSDK_PageView* pPageView) {
+  CPWL_Edit* pWnd = GetEdit(pPageView);
   if (!pWnd)
     return;
 
@@ -170,12 +170,12 @@ void CFFL_TextField::SaveData(CPDFSDK_PageView* pPageView) {
   SetChangeMark();
 }
 
-void CFFL_TextField::GetActionData(CPDFSDK_PageView* pPageView,
+void CFFL_TextField::GetActionData(const CPDFSDK_PageView* pPageView,
                                    CPDF_AAction::AActionType type,
                                    CPDFSDK_FieldAction& fa) {
   switch (type) {
     case CPDF_AAction::kKeyStroke:
-      if (CPWL_Edit* pWnd = GetEdit(pPageView, false)) {
+      if (CPWL_Edit* pWnd = GetEdit(pPageView)) {
         fa.bFieldFull = pWnd->IsTextFull();
 
         fa.sValue = pWnd->GetText();
@@ -187,7 +187,7 @@ void CFFL_TextField::GetActionData(CPDFSDK_PageView* pPageView,
       }
       break;
     case CPDF_AAction::kValidate:
-      if (CPWL_Edit* pWnd = GetEdit(pPageView, false)) {
+      if (CPWL_Edit* pWnd = GetEdit(pPageView)) {
         fa.sValue = pWnd->GetText();
       }
       break;
@@ -200,12 +200,12 @@ void CFFL_TextField::GetActionData(CPDFSDK_PageView* pPageView,
   }
 }
 
-void CFFL_TextField::SetActionData(CPDFSDK_PageView* pPageView,
+void CFFL_TextField::SetActionData(const CPDFSDK_PageView* pPageView,
                                    CPDF_AAction::AActionType type,
                                    const CPDFSDK_FieldAction& fa) {
   switch (type) {
     case CPDF_AAction::kKeyStroke:
-      if (CPWL_Edit* pEdit = GetEdit(pPageView, false)) {
+      if (CPWL_Edit* pEdit = GetEdit(pPageView)) {
         pEdit->SetFocus();
         pEdit->SetSelection(fa.nSelStart, fa.nSelEnd);
         pEdit->ReplaceSelection(fa.sChange);
@@ -216,8 +216,8 @@ void CFFL_TextField::SetActionData(CPDFSDK_PageView* pPageView,
   }
 }
 
-void CFFL_TextField::SaveState(CPDFSDK_PageView* pPageView) {
-  CPWL_Edit* pWnd = GetEdit(pPageView, false);
+void CFFL_TextField::SavePWLWindowState(const CPDFSDK_PageView* pPageView) {
+  CPWL_Edit* pWnd = GetEdit(pPageView);
   if (!pWnd)
     return;
 
@@ -225,8 +225,9 @@ void CFFL_TextField::SaveState(CPDFSDK_PageView* pPageView) {
   m_State.sValue = pWnd->GetText();
 }
 
-void CFFL_TextField::RestoreState(CPDFSDK_PageView* pPageView) {
-  CPWL_Edit* pWnd = GetEdit(pPageView, true);
+void CFFL_TextField::RecreatePWLWindowFromSavedState(
+    const CPDFSDK_PageView* pPageView) {
+  CPWL_Edit* pWnd = CreateOrUpdateEdit(pPageView);
   if (!pWnd)
     return;
 
@@ -235,8 +236,8 @@ void CFFL_TextField::RestoreState(CPDFSDK_PageView* pPageView) {
 }
 
 #ifdef PDF_ENABLE_XFA
-bool CFFL_TextField::IsFieldFull(CPDFSDK_PageView* pPageView) {
-  CPWL_Edit* pWnd = GetEdit(pPageView, false);
+bool CFFL_TextField::IsFieldFull(const CPDFSDK_PageView* pPageView) {
+  CPWL_Edit* pWnd = GetEdit(pPageView);
   return pWnd && pWnd->IsTextFull();
 }
 #endif  // PDF_ENABLE_XFA
@@ -252,6 +253,11 @@ void CFFL_TextField::OnSetFocus(CPWL_Edit* pEdit) {
   m_pFormFillEnv->OnSetFieldInputFocus(pBuffer, nCharacters, true);
 }
 
-CPWL_Edit* CFFL_TextField::GetEdit(CPDFSDK_PageView* pPageView, bool bNew) {
-  return static_cast<CPWL_Edit*>(GetPWLWindow(pPageView, bNew));
+CPWL_Edit* CFFL_TextField::GetEdit(const CPDFSDK_PageView* pPageView) const {
+  return static_cast<CPWL_Edit*>(GetPWLWindow(pPageView));
+}
+
+CPWL_Edit* CFFL_TextField::CreateOrUpdateEdit(
+    const CPDFSDK_PageView* pPageView) {
+  return static_cast<CPWL_Edit*>(CreateOrUpdatePWLWindow(pPageView));
 }

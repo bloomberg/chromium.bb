@@ -11,24 +11,24 @@
 #include <utility>
 
 #include "base/base64.h"
-#include "base/bind.h"
+#include "base/callback.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/no_destructor.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "components/crash/core/common/crash_key.h"
 #import "components/remote_cocoa/app_shim/bridged_content_view.h"
 #import "components/remote_cocoa/app_shim/native_widget_mac_nswindow.h"
 #import "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
 #import "components/remote_cocoa/app_shim/views_nswindow_delegate.h"
-#import "ui/base/cocoa/constrained_window/constrained_window_animation.h"
 #import "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/ime/init/input_method_factory.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/events/gestures/gesture_recognizer_impl_mac.h"
+#include "ui/events/gestures/gesture_types.h"
 #include "ui/gfx/font_list.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 #include "ui/native_theme/native_theme.h"
@@ -37,6 +37,7 @@
 #import "ui/views/cocoa/native_widget_mac_ns_window_host.h"
 #include "ui/views/cocoa/text_input_host.h"
 #include "ui/views/widget/drop_helper.h"
+#include "ui/views/widget/native_widget_delegate.h"
 #include "ui/views/widget/widget_aura_utils.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/native_frame_view.h"
@@ -412,6 +413,15 @@ void NativeWidgetMac::InitModalType(ui::ModalType modal_type) {
   // Everything happens upon show.
 }
 
+const gfx::ImageSkia* NativeWidgetMac::GetWindowIcon() {
+  NOTIMPLEMENTED_LOG_ONCE();
+  return nullptr;
+}
+const gfx::ImageSkia* NativeWidgetMac::GetWindowAppIcon() {
+  NOTIMPLEMENTED_LOG_ONCE();
+  return nullptr;
+}
+
 gfx::Rect NativeWidgetMac::GetWindowBoundsInScreen() const {
   return ns_window_host_ ? ns_window_host_->GetWindowBoundsInScreen()
                          : gfx::Rect();
@@ -644,10 +654,10 @@ void NativeWidgetMac::Restore() {
   GetNSWindowMojo()->SetMiniaturized(false);
 }
 
-void NativeWidgetMac::SetFullscreen(bool fullscreen) {
+void NativeWidgetMac::SetFullscreen(bool fullscreen, bool delay) {
   if (!ns_window_host_)
     return;
-  ns_window_host_->SetFullscreen(fullscreen);
+  ns_window_host_->SetFullscreen(fullscreen, delay);
 }
 
 bool NativeWidgetMac::IsFullscreen() const {
@@ -899,9 +909,10 @@ void NativeWidgetMac::OnDidChangeFocus(View* focused_before,
 
   ui::TextInputClient* new_text_input_client =
       input_method->GetTextInputClient();
-  // Sanity check: When focus moves away from the widget (i.e. |focused_now|
-  // is nil), then the textInputClient will be cleared.
-  DCHECK(!!focused_now || !new_text_input_client);
+  // Sanity check: For a top level widget, when focus moves away from the widget
+  // (i.e. |focused_now| is nil), then the textInputClient will be cleared.
+  DCHECK(!!focused_now || !new_text_input_client ||
+         !GetWidget()->is_top_level());
   if (ns_window_host_) {
     ns_window_host_->text_input_host()->SetTextInputClient(
         new_text_input_client);

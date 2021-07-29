@@ -384,13 +384,10 @@ bool SubmenuView::IsShowing() const {
   return host_ && host_->IsMenuHostVisible();
 }
 
-void SubmenuView::ShowAt(Widget* parent,
-                         const gfx::Rect& bounds,
-                         bool do_capture,
-                         gfx::NativeView native_view_for_gestures) {
+void SubmenuView::ShowAt(const MenuHost::InitParams& init_params) {
   if (host_) {
-    host_->SetMenuHostBounds(bounds);
-    host_->ShowMenuHost(do_capture);
+    host_->SetMenuHostBounds(init_params.bounds);
+    host_->ShowMenuHost(init_params.do_capture);
   } else {
     host_ = new MenuHost(this);
     // Force construction of the scroll view container.
@@ -398,11 +395,16 @@ void SubmenuView::ShowAt(Widget* parent,
     // Force a layout since our preferred size may not have changed but our
     // content may have.
     InvalidateLayout();
-    host_->InitMenuHost(parent, bounds, scroll_view_container_, do_capture,
-                        native_view_for_gestures);
+
+    MenuHost::InitParams new_init_params = init_params;
+    new_init_params.contents_view = scroll_view_container_;
+    host_->InitMenuHost(new_init_params);
   }
 
-  // Only fire kMenuStart for the top level menu, not for each submenu.
+  // Only fire kMenuStart when a top level menu is being shown to notify that
+  // menu interaction is about to begin. Note that the ScrollViewContainer
+  // is not exposed as a kMenu, but as a kMenuBar for most platforms and a
+  // kNone on the Mac. See MenuScrollViewContainer::GetAccessibleNodeData.
   if (!GetMenuItem()->GetParentMenuItem()) {
     GetScrollViewContainer()->NotifyAccessibilityEvent(
         ax::mojom::Event::kMenuStart, true);
@@ -427,7 +429,7 @@ void SubmenuView::Hide() {
   if (host_) {
     /// -- Fire accessibility events ----
     // Both of these must be fired before HideMenuHost().
-    // Only fire kMenuStart for as top levels menu closes, not for each submenu.
+    // Only fire kMenuEnd when a top level menu closes, not for each submenu.
     // This is sent before kMenuPopupEnd to allow ViewAXPlatformNodeDelegate to
     // remove its focus override before AXPlatformNodeAuraLinux needs to access
     // the previously-focused node while handling kMenuPopupEnd.

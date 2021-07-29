@@ -5,9 +5,9 @@ include_rules = [
   "+cc/paint",
   "+chromeos/cryptohome",
   "+components/account_id",
-  "+components/live_caption",
   "+components/discardable_memory/public",
   "+components/discardable_memory/service/discardable_shared_memory_manager.h",
+  "+components/full_restore",
   "+components/live_caption",
   "+components/media_message_center",
   "+components/pref_registry",
@@ -15,6 +15,7 @@ include_rules = [
   "+components/quirks",
   "+components/services/app_service/public",
   "+components/session_manager",
+  "+components/soda",
   "+components/strings",
   "+components/sync",
   "+components/ui_devtools",
@@ -45,12 +46,13 @@ include_rules = [
   "+ui",
   "-ash/host",
 
-  # Ash sits above content. Exceptions live in //ash/content.
+  # Ash sits above content. Exceptions live in //ash/webui.
   "-content",
 
   # Only allow Chrome OS services and D-Bus clients accessible to the mustash
   # ash process.
   "-chromeos",
+  "+chromeos/components/feature_usage/feature_usage_metrics.h",
   "+chromeos/components/multidevice/logging/logging.h",
   "+chromeos/components/phonehub",
   "+chromeos/components/proximity_auth/public/mojom",
@@ -61,10 +63,12 @@ include_rules = [
   "+chromeos/crosapi/mojom",
   "+chromeos/dbus/initialize_dbus_client.h",
   "+chromeos/dbus/audio",
+  "+chromeos/dbus/init",
   "+chromeos/dbus/hammerd",
   "+chromeos/dbus/hermes",
   "+chromeos/dbus/power",
   "+chromeos/dbus/power_manager",
+  "+chromeos/dbus/rmad",
   "+chromeos/dbus/shill",
   "+chromeos/dbus/system_clock",
   "+chromeos/dbus/usb",

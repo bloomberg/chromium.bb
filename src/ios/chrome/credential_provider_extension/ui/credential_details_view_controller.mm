@@ -13,6 +13,7 @@
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/elements/highlight_button.h"
 #import "ios/chrome/credential_provider_extension/metrics_util.h"
+#import "ios/chrome/credential_provider_extension/ui/feature_flags.h"
 #import "ios/chrome/credential_provider_extension/ui/tooltip_view.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -49,13 +50,26 @@ typedef NS_ENUM(NSInteger, RowIdentifier) {
 
 @synthesize delegate;
 
+- (instancetype)init {
+  UITableViewStyle style = IsPasswordCreationEnabled()
+                               ? UITableViewStyleInsetGrouped
+                               : UITableViewStylePlain;
+  self = [super initWithStyle:style];
+  return self;
+}
+
 - (void)viewDidLoad {
   [super viewDidLoad];
-  self.view.backgroundColor = [UIColor colorNamed:kBackgroundColor];
+  UIColor* backgroundColor =
+      IsPasswordCreationEnabled()
+          ? [UIColor colorNamed:kGroupedPrimaryBackgroundColor]
+          : [UIColor colorNamed:kBackgroundColor];
+  self.view.backgroundColor = backgroundColor;
   self.navigationController.navigationBar.translucent = NO;
-  self.navigationController.navigationBar.backgroundColor =
-      [UIColor colorNamed:kBackgroundColor];
-  self.navigationItem.rightBarButtonItem = [self navigationCancelButton];
+  self.navigationController.navigationBar.backgroundColor = backgroundColor;
+  self.navigationItem.rightBarButtonItem = IsPasswordCreationEnabled()
+                                               ? [self navigationEnterButton]
+                                               : [self navigationCancelButton];
   self.tableView.tableFooterView = [[UIView alloc] initWithFrame:CGRectZero];
 
   NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
@@ -200,6 +214,11 @@ typedef NS_ENUM(NSInteger, RowIdentifier) {
   [self passwordIconButtonTapped:nil event:nil];
 }
 
+// Alert the delegate that the user wants to enter this password.
+- (void)enterPassword {
+  [self.delegate userSelectedCredential:self.credential];
+}
+
 // Creates a cancel button for the navigation item.
 - (UIBarButtonItem*)navigationCancelButton {
   UIBarButtonItem* cancelButton = [[UIBarButtonItem alloc]
@@ -208,6 +227,18 @@ typedef NS_ENUM(NSInteger, RowIdentifier) {
                            action:@selector(navigationCancelButtonWasPressed:)];
   cancelButton.tintColor = [UIColor colorNamed:kBlueColor];
   return cancelButton;
+}
+
+// Creates an enter button for the navigation item
+- (UIBarButtonItem*)navigationEnterButton {
+  UIBarButtonItem* enterButton = [[UIBarButtonItem alloc]
+      initWithTitle:NSLocalizedString(@"IDS_IOS_CREDENTIAL_PROVIDER_ENTER",
+                                      @"Enter")
+              style:UIBarButtonItemStyleDone
+             target:self
+             action:@selector(enterPassword)];
+  enterButton.tintColor = [UIColor colorNamed:kBlueColor];
+  return enterButton;
 }
 
 // Returns the string to display as password.

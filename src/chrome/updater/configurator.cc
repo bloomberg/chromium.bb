@@ -4,8 +4,6 @@
 
 #include "chrome/updater/configurator.h"
 
-#include <utility>
-
 #include "base/numerics/ranges.h"
 #include "base/rand_util.h"
 #include "base/version.h"
@@ -14,6 +12,7 @@
 #include "chrome/updater/constants.h"
 #include "chrome/updater/crx_downloader_factory.h"
 #include "chrome/updater/external_constants.h"
+#include "chrome/updater/policy/service.h"
 #include "chrome/updater/prefs.h"
 #include "chrome/updater/updater_scope.h"
 #include "components/prefs/pref_service.h"
@@ -44,11 +43,12 @@ const int kDelayOneHour = kDelayOneMinute * 60;
 
 namespace updater {
 
-Configurator::Configurator(std::unique_ptr<UpdaterPrefs> prefs)
-    : prefs_(std::move(prefs)),
+Configurator::Configurator(scoped_refptr<UpdaterPrefs> prefs)
+    : prefs_(prefs),
+      policy_service_(PolicyService::Create()),
       external_constants_(CreateExternalConstants()),
       activity_data_service_(
-          std::make_unique<ActivityDataService>(GetProcessScope())),
+          std::make_unique<ActivityDataService>(GetUpdaterScope())),
       unzip_factory_(
           base::MakeRefCounted<update_client::InProcessUnzipperFactory>()),
       patch_factory_(
@@ -120,7 +120,8 @@ std::string Configurator::GetDownloadPreference() const {
 scoped_refptr<update_client::NetworkFetcherFactory>
 Configurator::GetNetworkFetcherFactory() {
   if (!network_fetcher_factory_)
-    network_fetcher_factory_ = base::MakeRefCounted<NetworkFetcherFactory>();
+    network_fetcher_factory_ =
+        base::MakeRefCounted<NetworkFetcherFactory>(GetPolicyService());
   return network_fetcher_factory_;
 }
 
@@ -174,6 +175,10 @@ bool Configurator::IsPerUserInstall() const {
 std::unique_ptr<update_client::ProtocolHandlerFactory>
 Configurator::GetProtocolHandlerFactory() const {
   return std::make_unique<update_client::ProtocolHandlerFactoryJSON>();
+}
+
+scoped_refptr<PolicyService> Configurator::GetPolicyService() const {
+  return policy_service_;
 }
 
 }  // namespace updater

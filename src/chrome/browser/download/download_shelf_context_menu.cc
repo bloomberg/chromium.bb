@@ -34,8 +34,9 @@ DownloadShelfContextMenu::~DownloadShelfContextMenu() {
   DetachFromDownloadItem();
 }
 
-DownloadShelfContextMenu::DownloadShelfContextMenu(DownloadUIModel* download)
-    : download_(download), download_commands_(new DownloadCommands(download_)) {
+DownloadShelfContextMenu::DownloadShelfContextMenu(
+    base::WeakPtr<DownloadUIModel> download)
+    : download_(download), download_commands_(new DownloadCommands(download)) {
   DCHECK(download_);
   download_->AddObserver(this);
 }
@@ -46,7 +47,7 @@ ui::SimpleMenuModel* DownloadShelfContextMenu::GetMenuModel() {
   if (!download_)
     return nullptr;
 
-  DCHECK(WantsContextMenu(download_));
+  DCHECK(WantsContextMenu(download_.get()));
 
   bool is_download = download_->download() != nullptr;
 
@@ -415,6 +416,9 @@ DownloadShelfContextMenu::GetMixedContentDownloadMenuModel() {
 }
 
 void DownloadShelfContextMenu::AddAutoOpenToMenu(ui::SimpleMenuModel* menu) {
+  if (!download_)
+    return;
+
   if (download_->IsOpenWhenCompleteByPolicy()) {
     menu->AddItemWithIcon(
         DownloadCommands::ALWAYS_OPEN_TYPE,

@@ -8,14 +8,9 @@
 #include "content/public/browser/overlay_window.h"
 
 #include "base/timer/timer.h"
-#include "build/chromeos_buildflags.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/widget/widget.h"
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/public/cpp/rounded_corner_decorator.h"
-#endif
 
 namespace views {
 class BackToTabImageButton;
@@ -167,6 +162,12 @@ class OverlayWindowViews : public content::OverlayWindow,
   gfx::Rect CalculateControlsBounds(int x, const gfx::Size& size);
   void UpdateControlsPositions();
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Updates the bounds of |resize_handle_view_| based on what |quadrant| the
+  // PIP window is in.
+  void UpdateResizeHandleBounds(WindowQuadrant quadrant);
+#endif
+
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
   enum class OverlayWindowControl {
@@ -213,9 +214,6 @@ class OverlayWindowViews : public content::OverlayWindow,
   gfx::Size min_size_;
   gfx::Size max_size_;
 
-  // Current bounds of the Picture-in-Picture window.
-  gfx::Rect window_bounds_;
-
   // Bounds of |video_view_|.
   gfx::Rect video_bounds_;
 
@@ -244,9 +242,6 @@ class OverlayWindowViews : public content::OverlayWindow,
   ToggleMicrophoneButton* toggle_microphone_button_ = nullptr;
   ToggleCameraButton* toggle_camera_button_ = nullptr;
   HangUpButton* hang_up_button_ = nullptr;
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  std::unique_ptr<ash::RoundedCornerDecorator> decorator_;
-#endif
 
   // Automatically hides the controls a few seconds after user tap gesture.
   base::RetainingOneShotTimer hide_controls_timer_;

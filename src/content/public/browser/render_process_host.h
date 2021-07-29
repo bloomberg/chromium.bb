@@ -61,6 +61,10 @@ class TimeDelta;
 class Token;
 }
 
+namespace blink {
+class StorageKey;
+}  // namespace blink
+
 namespace network {
 struct CrossOriginEmbedderPolicy;
 }
@@ -192,6 +196,10 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // as indicated by BrowserPluginGuest::IsGuest, may coexist with other
   // non-guest RenderFrames in the same process if IsForGuestsOnly() is false.
   virtual bool IsForGuestsOnly() = 0;
+
+  // Indicates whether the current RenderProcessHost is running with JavaScript
+  // JIT disabled.
+  virtual bool IsJitDisabled() = 0;
 
   // Returns the storage partition associated with this process.
   virtual StoragePartition* GetStoragePartition() = 0;
@@ -361,11 +369,11 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual std::unique_ptr<base::PersistentMemoryAllocator>
   TakeMetricsAllocator() = 0;
 
-  // Returns the time the first call to Init completed successfully (after a new
-  // renderer process was created); further calls to Init won't change this
-  // value.
-  // Note: Do not use! Will disappear after PlzNavitate is completed.
-  virtual const base::TimeTicks& GetInitTimeForNavigationMetrics() = 0;
+  // Returns the time of the last call to Init that was completed successfully
+  // (after a new renderer process was created); further calls to Init would
+  // change this value only when they caused the new process to be created after
+  // a crash.
+  virtual const base::TimeTicks& GetLastInitTime() = 0;
 
   // Returns true if this process currently has backgrounded priority.
   virtual bool IsProcessBackgrounded() = 0;
@@ -470,7 +478,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
       const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
       mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
           coep_reporter_remote,
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) = 0;
   virtual void BindFileSystemManager(
       const url::Origin& origin,
@@ -483,7 +491,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // |render_frame_id| is the frame associated with |receiver|, or
   // MSG_ROUTING_NONE if |receiver| is associated with a worker.
   virtual void BindIndexedDB(
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) = 0;
   virtual void BindBucketManagerHost(
       const url::Origin& origin,

@@ -208,6 +208,11 @@ public:
         return this->maxWindowRectangles() > 0 && this->onIsWindowRectanglesSupportedForRT(rt);
     }
 
+    // Hardware tessellation seems to have a fixed upfront cost. If there is a somewhat small number
+    // of verbs, we seem to be faster emulating tessellation with instanced draws instead.
+    int minPathVerbsForHwTessellation() const { return fMinPathVerbsForHwTessellation; }
+    int minStrokeVerbsForHwTessellation() const { return fMinStrokeVerbsForHwTessellation; }
+
     uint32_t maxPushConstantsSize() const { return fMaxPushConstantsSize; }
 
     size_t transferBufferAlignment() const { return fTransferBufferAlignment; }
@@ -309,10 +314,16 @@ public:
                                                GrColorType dstColorType) const;
 
     /**
-     * Do GrGpu::writePixels() and GrGpu::transferPixelsTo() support a src buffer where the row
-     * bytes is not equal to bpp * w?
+     * Does GrGpu::writePixels() support a src buffer where the row bytes is not equal to bpp * w?
      */
     bool writePixelsRowBytesSupport() const { return fWritePixelsRowBytesSupport; }
+
+    /**
+     * Does GrGpu::transferPixelsTo() support a src buffer where the row bytes is not equal to
+     * bpp * w?
+     */
+    bool transferPixelsToRowBytesSupport() const { return fTransferPixelsToRowBytesSupport; }
+
     /**
      * Does GrGpu::readPixels() support a dst buffer where the row bytes is not equal to bpp * w?
      */
@@ -386,7 +397,7 @@ public:
     bool disableTessellationPathRenderer() const { return fDisableTessellationPathRenderer; }
 
     // Returns how to sample the dst values for the passed in GrRenderTargetProxy.
-    GrDstSampleType getDstSampleTypeForProxy(const GrRenderTargetProxy*) const;
+    GrDstSampleFlags getDstSampleFlagsForProxy(const GrRenderTargetProxy*, bool drawUsesMSAA) const;
 
     /**
      * This is used to try to ensure a successful copy a dst in order to perform shader-based
@@ -482,6 +493,15 @@ public:
         return fAvoidReorderingRenderTasks;
     }
 
+    /**
+     * Checks whether the passed color type is renderable. If so, the same color type is passed
+     * back along with the default format used for the color type. If not, provides an alternative
+     * (perhaps lower bit depth and/or unorm instead of float) color type that is supported
+     * along with it's default format or kUnknown if there no renderable fallback format.
+     */
+    std::tuple<GrColorType, GrBackendFormat> getFallbackColorTypeAndFormat(GrColorType,
+                                                                           int sampleCount) const;
+
 #if GR_TEST_UTILS
     struct TestFormatColorTypeCombination {
         GrColorType fColorType;
@@ -532,6 +552,7 @@ protected:
     bool fTransferFromBufferToTextureSupport         : 1;
     bool fTransferFromSurfaceToBufferSupport         : 1;
     bool fWritePixelsRowBytesSupport                 : 1;
+    bool fTransferPixelsToRowBytesSupport            : 1;
     bool fReadPixelsRowBytesSupport                  : 1;
     bool fShouldCollapseSrcOverToSrcWhenAble         : 1;
     bool fMustSyncGpuDuringAbandon                   : 1;
@@ -570,6 +591,8 @@ protected:
     int fMaxTextureSize;
     int fMaxWindowRectangles;
     int fInternalMultisampleCount;
+    int fMinPathVerbsForHwTessellation = 25;
+    int fMinStrokeVerbsForHwTessellation = 50;
     uint32_t fMaxPushConstantsSize = 0;
     size_t fTransferBufferAlignment = 1;
 
@@ -599,8 +622,8 @@ private:
 
     virtual GrSwizzle onGetReadSwizzle(const GrBackendFormat&, GrColorType) const = 0;
 
-    virtual GrDstSampleType onGetDstSampleTypeForProxy(const GrRenderTargetProxy*) const {
-        return GrDstSampleType::kAsTextureCopy;
+    virtual GrDstSampleFlags onGetDstSampleFlagsForProxy(const GrRenderTargetProxy*) const {
+        return GrDstSampleFlags::kNone;
     }
 
     bool fSuppressPrints : 1;
@@ -609,6 +632,6 @@ private:
     using INHERITED = SkRefCnt;
 };
 
-GR_MAKE_BITFIELD_CLASS_OPS(GrCaps::ProgramDescOverrideFlags);
+GR_MAKE_BITFIELD_CLASS_OPS(GrCaps::ProgramDescOverrideFlags)
 
 #endif

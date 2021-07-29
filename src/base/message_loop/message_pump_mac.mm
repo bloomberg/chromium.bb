@@ -11,13 +11,13 @@
 
 #include "base/auto_reset.h"
 #include "base/check_op.h"
+#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/mac/call_with_eh_frame.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/message_loop/timer_slack.h"
 #include "base/notreached.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 
@@ -182,6 +182,16 @@ void MessagePumpCFRunLoopBase::ScheduleDelayedWork(
   ScheduleDelayedWorkImpl(delayed_work_time - TimeTicks::Now());
 }
 
+MessagePumpCFRunLoopBase::LudicrousSlackSetting
+MessagePumpCFRunLoopBase::GetLudicrousSlackState() const {
+  if (ludicrous_slack_setting_ == LudicrousSlackSetting::kLudicrousSlackOn &&
+      IsLudicrousTimerSlackSuspended()) {
+    return LudicrousSlackSetting::kLudicrousSlackSuspended;
+  }
+
+  return ludicrous_slack_setting_;
+}
+
 void MessagePumpCFRunLoopBase::ScheduleDelayedWorkImpl(TimeDelta delta) {
   // The tolerance needs to be set before the fire date or it may be ignored.
 
@@ -198,8 +208,8 @@ void MessagePumpCFRunLoopBase::ScheduleDelayedWorkImpl(TimeDelta delta) {
   DCHECK_NE(ludicrous_slack_setting_,
             LudicrousSlackSetting::kLudicrousSlackUninitialized);
 
-  if (ludicrous_slack_setting_ == LudicrousSlackSetting::kLudicrousSlackOn) {
-    // Specify ludicrous slack when the experiment is enabled.
+  if (GetLudicrousSlackState() == LudicrousSlackSetting::kLudicrousSlackOn) {
+    // Specify ludicrous slack when the experiment is enabled and not suspended.
     CFRunLoopTimerSetTolerance(delayed_work_timer_,
                                GetLudicrousTimerSlack().InSecondsF());
   } else if (timer_slack_ == TIMER_SLACK_MAXIMUM) {

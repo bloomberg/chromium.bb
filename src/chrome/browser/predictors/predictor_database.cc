@@ -73,16 +73,19 @@ PredictorDatabaseInternal::PredictorDatabaseInternal(
     Profile* profile,
     scoped_refptr<base::SequencedTaskRunner> db_task_runner)
     : db_path_(profile->GetPath().Append(kPredictorDatabaseName)),
-      db_(std::make_unique<sql::Database>()),
+      db_(std::make_unique<sql::Database>(sql::DatabaseOptions{
+          .exclusive_locking = true,
+          .page_size = 4096,
+          .cache_size = 500,
+          // TODO(pwnall): Add a meta table and remove this option.
+          .mmap_alt_status_discouraged = true,
+      })),
       db_task_runner_(db_task_runner),
       autocomplete_table_(
           new AutocompleteActionPredictorTable(db_task_runner_)),
       resource_prefetch_tables_(
           new ResourcePrefetchPredictorTables(db_task_runner_)) {
   db_->set_histogram_tag("Predictor");
-
-  // This db does not use [meta] table, store mmap status data elsewhere.
-  db_->set_mmap_alt_status();
 
   is_loading_predictor_enabled_ = IsLoadingPredictorEnabled(profile);
 }

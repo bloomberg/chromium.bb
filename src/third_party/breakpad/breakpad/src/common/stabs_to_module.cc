@@ -192,7 +192,8 @@ void StabsToModule::Finalize() {
   }
   // Now that everything has a size, add our functions to the module, and
   // dispose of our private list.
-  module_->AddFunctions(functions_.begin(), functions_.end());
+  for (Module::Function* func: functions_)
+    module_->AddFunction(func);
   functions_.clear();
 }
 

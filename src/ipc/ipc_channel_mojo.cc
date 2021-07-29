@@ -29,6 +29,7 @@
 #include "ipc/trace_ipc_message.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/generic_pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/lib/message_quota_checker.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/thread_safe_proxy.h"
@@ -186,19 +187,30 @@ ChannelMojo::~ChannelMojo() {
 }
 
 bool ChannelMojo::Connect() {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
-
   WillConnect();
 
-  mojo::AssociatedRemote<mojom::Channel> sender;
+  mojo::PendingAssociatedRemote<mojom::Channel> sender;
   mojo::PendingAssociatedReceiver<mojom::Channel> receiver;
   bootstrap_->Connect(&sender, &receiver);
 
   DCHECK(!message_reader_);
-  sender->SetPeerPid(GetSelfPID());
   message_reader_ = std::make_unique<internal::MessagePipeReader>(
-      pipe_, std::move(sender), std::move(receiver), this);
+      pipe_, std::move(sender), std::move(receiver), task_runner_, this);
+
+  if (task_runner_->RunsTasksInCurrentSequence()) {
+    FinishConnectOnIOThread();
+  } else {
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&ChannelMojo::FinishConnectOnIOThread, weak_ptr_));
+  }
   return true;
+}
+
+void ChannelMojo::FinishConnectOnIOThread() {
+  DCHECK(message_reader_);
+  message_reader_->FinishInitializationOnIOThread(GetSelfPID());
+  bootstrap_->StartReceiving();
 }
 
 void ChannelMojo::Pause() {
@@ -237,20 +249,22 @@ void ChannelMojo::OnPipeError() {
 }
 
 void ChannelMojo::OnAssociatedInterfaceRequest(
-    const std::string& name,
-    mojo::ScopedInterfaceEndpointHandle handle) {
+    mojo::GenericPendingAssociatedReceiver receiver) {
   GenericAssociatedInterfaceFactory factory;
   {
     base::AutoLock locker(associated_interface_lock_);
-    auto iter = associated_interfaces_.find(name);
+    auto iter = associated_interfaces_.find(*receiver.interface_name());
     if (iter != associated_interfaces_.end())
       factory = iter->second;
   }
 
-  if (!factory.is_null())
-    factory.Run(std::move(handle));
-  else
-    listener_->OnAssociatedInterfaceRequest(name, std::move(handle));
+  if (!factory.is_null()) {
+    factory.Run(receiver.PassHandle());
+  } else {
+    const std::string interface_name = *receiver.interface_name();
+    listener_->OnAssociatedInterfaceRequest(interface_name,
+                                            receiver.PassHandle());
+  }
 }
 
 bool ChannelMojo::Send(Message* message) {
@@ -371,16 +385,20 @@ void ChannelMojo::AddGenericAssociatedInterface(
   DCHECK(result.second);
 }
 
-void ChannelMojo::GetGenericRemoteAssociatedInterface(
-    const std::string& name,
-    mojo::ScopedInterfaceEndpointHandle handle) {
+void ChannelMojo::GetRemoteAssociatedInterface(
+    mojo::GenericPendingAssociatedReceiver receiver) {
   if (message_reader_) {
-    message_reader_->GetRemoteInterface(name, std::move(handle));
+    if (!task_runner_->RunsTasksInCurrentSequence()) {
+      message_reader_->thread_safe_sender().GetAssociatedInterface(
+          std::move(receiver));
+      return;
+    }
+    message_reader_->GetRemoteInterface(std::move(receiver));
   } else {
     // Attach the associated interface to a disconnected pipe, so that the
     // associated interface pointer can be used to make calls (which are
     // dropped).
-    mojo::AssociateWithDisconnectedPipe(std::move(handle));
+    mojo::AssociateWithDisconnectedPipe(receiver.PassHandle());
   }
 }
 

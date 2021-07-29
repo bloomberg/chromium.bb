@@ -86,12 +86,20 @@ bool Type::is_integer_scalar() const {
   return IsAnyOf<U32, I32>();
 }
 
-bool Type::is_unsigned_integer_vector() const {
-  return Is<Vector>([](const Vector* v) { return v->type()->Is<U32>(); });
+bool Type::is_signed_integer_scalar() const {
+  return Is<I32>();
+}
+
+bool Type::is_unsigned_integer_scalar() const {
+  return Is<U32>();
 }
 
 bool Type::is_signed_integer_vector() const {
   return Is<Vector>([](const Vector* v) { return v->type()->Is<I32>(); });
+}
+
+bool Type::is_unsigned_integer_vector() const {
+  return Is<Vector>([](const Vector* v) { return v->type()->Is<U32>(); });
 }
 
 bool Type::is_unsigned_scalar_or_vector() const {
@@ -117,6 +125,10 @@ bool Type::is_bool_scalar_or_vector() const {
 bool Type::is_numeric_vector() const {
   return Is<Vector>(
       [](const Vector* v) { return v->type()->is_numeric_scalar(); });
+}
+
+bool Type::is_scalar_vector() const {
+  return Is<Vector>([](const Vector* v) { return v->type()->is_scalar(); });
 }
 
 bool Type::is_numeric_scalar_or_vector() const {

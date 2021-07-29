@@ -5,11 +5,13 @@
 #include "ash/projector/ui/projector_bar_view.h"
 
 #include "ash/projector/projector_controller_impl.h"
+#include "ash/projector/projector_metrics.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/wm/work_area_insets.h"
+#include "base/bind.h"
 #include "components/vector_icons/vector_icons.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -32,7 +34,7 @@ constexpr float kBarRadius = 20.f;
 constexpr int kBarAlpha_ = 230;  // 90% opacity
 constexpr int kBarHeight = 68;
 constexpr int kSeparatorHeight = 16;
-constexpr int kBarMargin = 12;
+constexpr int kBarMargin = 15;
 
 constexpr float kInnerBarRadius = 50.f;
 
@@ -136,6 +138,7 @@ void ProjectorBarView::OnLaserPointerStateChanged(bool enabled) {
 
 void ProjectorBarView::OnMarkerStateChanged(bool enabled) {
   marker_button_->SetToggled(enabled);
+  undo_button_->SetEnabled(enabled);
   clear_all_markers_button_->SetEnabled(enabled);
 
   marker_bar_state_ =
@@ -204,7 +207,8 @@ void ProjectorBarView::InitLayout() {
   marker_button_ = AddChildView(std::make_unique<ProjectorImageButton>(
       base::BindRepeating(&ProjectorBarView::OnMarkerPressed,
                           base::Unretained(this)),
-      kProjectorMarkerIcon, l10n_util::GetStringUTF16(IDS_MARKER_BUTTON)));
+      kProjectorMarkerIcon,
+      l10n_util::GetStringUTF16(IDS_MARKER_TOOLS_BUTTON)));
 
   CreateMarkerOptionsBar();
 
@@ -257,6 +261,9 @@ void ProjectorBarView::CreateMarkerOptionsBar() {
           base::BindRepeating(&ProjectorBarView::OnUndoButtonPressed,
                               base::Unretained(this)),
           kUndoIcon, l10n_util::GetStringUTF16(IDS_UNDO_BUTTON)));
+
+  // This button is disabled by default until marker mode activated.
+  undo_button_->SetEnabled(marker_button_->GetToggled());
 
   // Add clear all markers button.
   clear_all_markers_button_ =
@@ -353,8 +360,8 @@ void ProjectorBarView::CreateTrailingButtonsBar() {
           base::BindRepeating(
               &ProjectorBarView::OnChangeBarLocationButtonPressed,
               base::Unretained(this)),
-          kAutoclickPositionBottomLeftIcon,
-          l10n_util::GetStringUTF16(IDS_BAR_LOCATION_BUTTON)));
+          kToolbarPositionBottomCenterIcon,
+          l10n_util::GetStringUTF16(IDS_TOOLBAR_LOCATION_BUTTON)));
   bar_location_button_->SetVisible(true);
   tools_bar_ = AddChildView(std::move(box_layout));
 }
@@ -387,22 +394,37 @@ void ProjectorBarView::OnMagnifierButtonPressed(bool enabled) {
 void ProjectorBarView::OnChangeBarLocationButtonPressed() {
   switch (bar_location_) {
     case BarLocation::kUpperLeft:
+      bar_location_ = BarLocation::kUpperCenter;
+      bar_location_button_->SetVectorIcon(kToolbarPositionTopCenterIcon);
+      RecordToolbarMetrics(ProjectorToolbar::kToolbarLocationTopCenter);
+      break;
+    case BarLocation::kUpperCenter:
       bar_location_ = BarLocation::kUpperRight;
       bar_location_button_->SetVectorIcon(kAutoclickPositionTopRightIcon);
+      RecordToolbarMetrics(ProjectorToolbar::kToolbarLocationTopRight);
       break;
     case BarLocation::kUpperRight:
       bar_location_ = BarLocation::kLowerRight;
       bar_location_button_->SetVectorIcon(kAutoclickPositionBottomRightIcon);
+      RecordToolbarMetrics(ProjectorToolbar::kToolbarLocationBottomRight);
       break;
     case BarLocation::kLowerRight:
+      bar_location_ = BarLocation::kLowerCenter;
+      bar_location_button_->SetVectorIcon(kToolbarPositionBottomCenterIcon);
+      RecordToolbarMetrics(ProjectorToolbar::kToolbarLocationBottomCenter);
+      break;
+    case BarLocation::kLowerCenter:
       bar_location_ = BarLocation::kLowerLeft;
       bar_location_button_->SetVectorIcon(kAutoclickPositionBottomLeftIcon);
+      RecordToolbarMetrics(ProjectorToolbar::kToolbarLocationBottomLeft);
       break;
     case BarLocation::kLowerLeft:
       bar_location_ = BarLocation::kUpperLeft;
       bar_location_button_->SetVectorIcon(kAutoclickPositionTopLeftIcon);
+      RecordToolbarMetrics(ProjectorToolbar::kToolbarLocationTopLeft);
       break;
   }
+
   GetWidget()->SetBounds(CalculateBoundsInScreen());
 }
 
@@ -410,10 +432,12 @@ void ProjectorBarView::OnCaretButtonPressed(bool expand) {
   marker_bar_state_ =
       expand ? MarkerBarState::kExpanded : MarkerBarState::kHighlighted;
   UpdateToolbarButtonsVisibility();
+  RecordToolbarMetrics(expand ? ProjectorToolbar::kExpandMarkerTools
+                              : ProjectorToolbar::kCollapseMarkerTools);
 }
 
 void ProjectorBarView::OnUndoButtonPressed() {
-  // TODO(crbug/1203444) Implement undo for marker.
+  projector_controller_->OnUndoPressed();
 }
 
 void ProjectorBarView::OnChangeMarkerColorPressed(SkColor new_color) {
@@ -443,7 +467,8 @@ void ProjectorBarView::UpdateToolbarButtonsVisibility() {
       marker_bar_->SetVisible(true);
       ink_pen_button_->SetVisible(false);
       marker_pen_button_->SetVisible(false);
-      undo_button_->SetVisible(false);
+      undo_button_->SetVisible(true);
+      clear_all_markers_button_->SetVisible(false);
       caret_left_->SetVisible(false);
       caret_right_->SetVisible(true);
       for (auto* color_button : marker_color_buttons_)
@@ -455,6 +480,7 @@ void ProjectorBarView::UpdateToolbarButtonsVisibility() {
       ink_pen_button_->SetVisible(true);
       marker_pen_button_->SetVisible(true);
       undo_button_->SetVisible(true);
+      clear_all_markers_button_->SetVisible(true);
       caret_left_->SetVisible(true);
       caret_right_->SetVisible(false);
       for (auto* color_button : marker_color_buttons_)
@@ -476,6 +502,11 @@ gfx::Rect ProjectorBarView::CalculateBoundsInScreen() const {
       origin =
           gfx::Point(work_area.x() + kBarMargin, work_area.y() + kBarMargin);
       break;
+    case BarLocation::kUpperCenter:
+      origin = gfx::Point(
+          work_area.x() + (work_area.width() - preferred_size.width()) / 2,
+          work_area.y() + kBarMargin);
+      break;
     case BarLocation::kUpperRight:
       origin =
           gfx::Point(work_area.right() - preferred_size.width() - kBarMargin,
@@ -486,6 +517,11 @@ gfx::Rect ProjectorBarView::CalculateBoundsInScreen() const {
       origin =
           gfx::Point(work_area.right() - preferred_size.width() - kBarMargin,
                      work_area.bottom() - preferred_size.height() - kBarMargin);
+      break;
+    case BarLocation::kLowerCenter:
+      origin = gfx::Point(
+          work_area.x() + (work_area.width() - preferred_size.width()) / 2,
+          work_area.bottom() - preferred_size.height() - kBarMargin);
       break;
     case BarLocation::kLowerLeft:
       origin =

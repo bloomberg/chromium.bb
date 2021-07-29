@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/containers/circular_deque.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -37,7 +38,7 @@ namespace content {
 extern CONTENT_EXPORT const base::TimeDelta
     kConversionManagerQueueReportsInterval;
 
-class StoragePartition;
+class StoragePartitionImpl;
 
 // Provides access to the manager owned by the default StoragePartition.
 class ConversionManagerProviderImpl : public ConversionManager::Provider {
@@ -83,10 +84,10 @@ class CONTENT_EXPORT ConversionManagerImpl : public ConversionManager {
       const base::Clock* clock,
       const base::FilePath& user_data_directory,
       scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy,
-      size_t max_sent_reports_to_store);
+      size_t max_sent_reports_to_store) WARN_UNUSED_RESULT;
 
   ConversionManagerImpl(
-      StoragePartition* storage_partition,
+      StoragePartitionImpl* storage_partition,
       const base::FilePath& user_data_directory,
       scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy);
   ConversionManagerImpl(const ConversionManagerImpl& other) = delete;
@@ -94,15 +95,16 @@ class CONTENT_EXPORT ConversionManagerImpl : public ConversionManager {
   ~ConversionManagerImpl() override;
 
   // ConversionManager:
-  void HandleImpression(const StorableImpression& impression) override;
-  void HandleConversion(const StorableConversion& conversion) override;
+  void HandleImpression(StorableImpression impression) override;
+  void HandleConversion(StorableConversion conversion) override;
   void GetActiveImpressionsForWebUI(
       base::OnceCallback<void(std::vector<StorableImpression>)> callback)
       override;
   void GetPendingReportsForWebUI(
       base::OnceCallback<void(std::vector<ConversionReport>)> callback,
       base::Time max_report_time) override;
-  const base::circular_deque<SentReportInfo>& GetSentReportsForWebUI() override;
+  const base::circular_deque<SentReportInfo>& GetSentReportsForWebUI()
+      const override;
   void SendReportsForWebUI(base::OnceClosure done) override;
   const ConversionPolicy& GetConversionPolicy() const override;
   void ClearData(base::Time delete_begin,

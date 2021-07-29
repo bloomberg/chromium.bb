@@ -6,6 +6,8 @@
 <translation id="1430915738399379752">인쇄</translation>
 <translation id="1467231725790366244"><ph name="CAMERA" /> 카메라의 연결이 해제되었습니다.</translation>
 <translation id="1473110567575736769">3초 타이머</translation>
+<translation id="1478594628797167447">스캐너</translation>
+<translation id="1545749641540134597">QR 코드 스캔</translation>
 <translation id="1620510694547887537">카메라</translation>
 <translation id="1627744224761163218">4x4</translation>
 <translation id="1664224225747386870">녹화된 동영상이 없습니다.</translation>
@@ -19,6 +21,8 @@
 <translation id="2050339315714019657">세로 방향</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> 사용 중</translation>
 <translation id="2144806332417375165">맞춤 동영상 매개변수</translation>
+<translation id="2175927920773552910">QR 코드</translation>
+<translation id="2268107369530950373">스캐너 모드로 전환</translation>
 <translation id="229579744168541441">디스크로 내보내기</translation>
 <translation id="2320741269052147773">왼쪽으로 화면 이동</translation>
 <translation id="2501278716633472235">뒤로 이동</translation>
@@ -38,6 +42,7 @@
 <translation id="3227137524299004712">마이크</translation>
 <translation id="3240426699337459095">링크 복사됨</translation>
 <translation id="3259149966178251584">카메라 해상도</translation>
+<translation id="3448774564454087943">동영상이 너무 짧아 저장할 수 없습니다.</translation>
 <translation id="3517926952904427380">세로 모드 사진을 찍을 수 없습니다.</translation>
 <translation id="3569311554794739032"><ph name="FILE" /> 파일을 삭제하시겠습니까?</translation>
 <translation id="3733597664308256288">추가 카메라 제어 기능을 사용할 수 있습니다. 검색 키와 오른쪽 화살표 키를 사용하여 액세스하세요.</translation>
@@ -56,11 +61,14 @@
 <translation id="4628948037717959914">사진</translation>
 <translation id="4649291346448517080">파일을 저장할 수 없습니다.</translation>
 <translation id="4890010094662541459">3x3</translation>
+<translation id="491895758387112773">멀티스트림 동영상 녹화</translation>
 <translation id="5057360777601936059">현재 카메라를 사용할 수 없습니다.
         카메라가 제대로 연결되어 있는지 확인하세요.</translation>
 <translation id="5152121255775685072">갤러리로 이동</translation>
+<translation id="5268823927180092501">모든 카메라에서 문서 모드 사용 설정</translation>
 <translation id="5422455049771430511">사진과 동영상이 새로운 폴더에 저장됩니다</translation>
 <translation id="5671277269877808209">정사각형</translation>
+<translation id="5753488212459587150">전문가 모드 사용 설정</translation>
 <translation id="5775960006311140197">전문가 모드</translation>
 <translation id="5869546221129391014">격자</translation>
 <translation id="5975083100439434680">축소</translation>

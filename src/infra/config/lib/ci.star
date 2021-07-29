@@ -89,6 +89,25 @@ def ci_builder(
                 test_id_regexp = "ninja://(chrome/test:|content/test:fuchsia_)telemetry_gpu_integration_test/.+",
             ),
         ),
+        resultdb.export_test_results(
+            bq_table = "chrome-luci-data.chromium.gpu_ci_test_results",
+            predicate = resultdb.test_result_predicate(
+                # Only match the telemetry_gpu_integration_test and
+                # fuchsia_telemetry_gpu_integration_test targets.
+                # Android Telemetry targets also have a suffix added to the end
+                # denoting the binary that's included, so also catch those with
+                # [^/]*.
+                test_id_regexp = "ninja://(chrome/test:|content/test:fuchsia_)telemetry_gpu_integration_test[^/]*/.+",
+            ),
+        ),
+        resultdb.export_test_results(
+            bq_table = "chrome-luci-data.chromium.blink_web_tests_ci_test_results",
+            predicate = resultdb.test_result_predicate(
+                # Match the "blink_web_tests" target and all of its
+                # flag-specific versions, e.g. "vulkan_swiftshader_blink_web_tests".
+                test_id_regexp = "ninja://[^/]*blink_web_tests/.+",
+            ),
+        ),
     ]
     merged_resultdb_bigquery_exports.extend(resultdb_bigquery_exports or [])
 
@@ -597,6 +616,20 @@ def gpu_windows_builder(*, name, **kwargs):
         **kwargs
     )
 
+def infra_builder(
+        *,
+        name,
+        goma_backend = builders.goma.backend.RBE_PROD,
+        os = builders.os.LINUX_BIONIC_REMOVE,
+        **kwargs):
+    return ci.builder(
+        name = name,
+        builder_group = "infra",
+        goma_backend = goma_backend,
+        os = os,
+        **kwargs
+    )
+
 def linux_builder(
         *,
         name,
@@ -819,6 +852,7 @@ ci = struct(
     gpu_mac_builder = gpu_mac_builder,
     gpu_thin_tester = gpu_thin_tester,
     gpu_windows_builder = gpu_windows_builder,
+    infra_builder = infra_builder,
     linux_builder = linux_builder,
     mac_builder = mac_builder,
     mac_ios_builder = mac_ios_builder,
@@ -830,4 +864,9 @@ ci = struct(
     thin_tester = thin_tester,
     updater_builder = updater_builder,
     win_builder = win_builder,
+)
+
+rbe_instance = struct(
+    DEFAULT = "rbe-chromium-trusted",
+    GVISOR_SHADOW = "rbe-chromium-gvisor-shadow",
 )

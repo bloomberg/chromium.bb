@@ -40,8 +40,11 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.DummyUiChromeActivityTestCase;
+import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.ui.test.util.DummyUiActivityTestCase;
+import org.chromium.ui.modaldialog.ModalDialogManager;
+import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
 
 /**
  * This class regroups the integration tests for {@link ConfirmSyncDataStateMachine}.
@@ -56,7 +59,7 @@ import org.chromium.ui.test.util.DummyUiActivityTestCase;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @Batch(ConfirmSyncDataIntegrationTest.CONFIRM_SYNC_DATA_BATCH_NAME)
-public class ConfirmSyncDataIntegrationTest extends DummyUiActivityTestCase {
+public class ConfirmSyncDataIntegrationTest extends DummyUiChromeActivityTestCase {
     public static final String CONFIRM_SYNC_DATA_BATCH_NAME = "confirm_sync_data";
 
     private static final String OLD_ACCOUNT_NAME = "test.account.old@gmail.com";
@@ -85,8 +88,9 @@ public class ConfirmSyncDataIntegrationTest extends DummyUiActivityTestCase {
         IdentityServicesProvider.setInstanceForTests(mIdentityServicesProviderMock);
         Profile.setLastUsedProfileForTesting(mProfile);
         when(IdentityServicesProvider.get().getSigninManager(any())).thenReturn(mSigninManagerMock);
-        mDelegate =
-                new ConfirmSyncDataStateMachineDelegate(getActivity().getSupportFragmentManager());
+        mDelegate = new ConfirmSyncDataStateMachineDelegate(getActivity(),
+                getActivity().getSupportFragmentManager(),
+                new ModalDialogManager(new AppModalPresenter(getActivity()), ModalDialogType.APP));
     }
 
     @Test

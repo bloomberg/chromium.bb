@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <string>
 
+#include "cast/standalone_sender/connection_settings.h"
 #include "cast/standalone_sender/constants.h"
 #include "cast/standalone_sender/simulated_capturer.h"
 #include "cast/standalone_sender/streaming_opus_encoder.h"
@@ -22,11 +23,13 @@ namespace cast {
 class LoopingFileSender final : public SimulatedAudioCapturer::Client,
                                 public SimulatedVideoCapturer::Client {
  public:
+  using ShutdownCallback = std::function<void()>;
+
   LoopingFileSender(Environment* environment,
-                    const char* path,
+                    ConnectionSettings settings,
                     const SenderSession* session,
                     SenderSession::ConfiguredSenders senders,
-                    int max_bitrate);
+                    ShutdownCallback shutdown_callback);
 
   ~LoopingFileSender() final;
 
@@ -57,14 +60,14 @@ class LoopingFileSender final : public SimulatedAudioCapturer::Client,
   // the remote's Receivers.
   Environment* const env_;
 
-  // The path to the media file to stream over and over.
-  const char* const path_;
+  // The connection settings used for this session.
+  const ConnectionSettings settings_;
 
   // Session to query for bandwidth information.
   const SenderSession* session_;
 
-  // User provided maximum bitrate (from command line argument).
-  const int max_bitrate_;
+  // Callback for tearing down the sender process.
+  ShutdownCallback shutdown_callback_;
 
   int bandwidth_estimate_ = 0;
   int bandwidth_being_utilized_;

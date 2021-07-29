@@ -159,8 +159,6 @@ class GaiaAuthFetcherIOSNSURLSessionBridgeTest : public ChromeWebTest {
 
   friend TestGaiaAuthFetcherIOSNSURLSessionBridge;
 
-  // Browser state for the tests.
-  std::unique_ptr<ChromeBrowserState> browser_state_;
   // Instance used for the tests.
   std::unique_ptr<TestGaiaAuthFetcherIOSNSURLSessionBridge>
       ns_url_session_bridge_;
@@ -196,10 +194,11 @@ NSURLSession* TestGaiaAuthFetcherIOSNSURLSessionBridge::CreateNSURLSession(
 #pragma mark - GaiaAuthFetcherIOSNSURLSessionBridgeTest
 
 void GaiaAuthFetcherIOSNSURLSessionBridgeTest::SetUp() {
+  ChromeWebTest::SetUp();
+
   delegate_.reset(new FakeGaiaAuthFetcherIOSBridgeDelegate());
-  browser_state_ = TestChromeBrowserState::Builder().Build();
   ns_url_session_bridge_.reset(new TestGaiaAuthFetcherIOSNSURLSessionBridge(
-      delegate_.get(), browser_state_.get(), this));
+      delegate_.get(), GetBrowserState(), this));
   url_session_configuration_ =
       NSURLSessionConfiguration.ephemeralSessionConfiguration;
   url_session_configuration_.HTTPShouldSetCookies = YES;
@@ -220,6 +219,7 @@ void GaiaAuthFetcherIOSNSURLSessionBridgeTest::SetUp() {
 
 void GaiaAuthFetcherIOSNSURLSessionBridgeTest::TearDown() {
   ASSERT_OCMOCK_VERIFY((id)url_session_mock_);
+  ChromeWebTest::TearDown();
 }
 
 NSURLSession* GaiaAuthFetcherIOSNSURLSessionBridgeTest::CreateNSURLSession(
@@ -242,7 +242,7 @@ GaiaAuthFetcherIOSNSURLSessionBridgeTest::GetCookiesInCookieJar() {
   std::vector<net::CanonicalCookie> cookies_out;
   base::RunLoop run_loop;
   network::mojom::CookieManager* cookie_manager =
-      browser_state_->GetCookieManager();
+      GetBrowserState()->GetCookieManager();
   cookie_manager->GetAllCookies(base::BindOnce(base::BindLambdaForTesting(
       [&run_loop,
        &cookies_out](const std::vector<net::CanonicalCookie>& cookies) {
@@ -301,7 +301,7 @@ bool GaiaAuthFetcherIOSNSURLSessionBridgeTest::AddAllCookiesInCookieManager(
 bool GaiaAuthFetcherIOSNSURLSessionBridgeTest::SetCookiesInCookieManager(
     NSArray<NSHTTPCookie*>* cookies) {
   network::mojom::CookieManager* cookie_manager =
-      browser_state_->GetCookieManager();
+      GetBrowserState()->GetCookieManager();
   for (NSHTTPCookie* cookie in cookies) {
     std::unique_ptr<net::CanonicalCookie> canonical_cookie =
         net::CanonicalCookieFromSystemCookie(cookie, base::Time::Now());
@@ -376,11 +376,6 @@ bool GaiaAuthFetcherIOSNSURLSessionBridgeTest::FetchURL(const GURL& url) {
 // Tests to send a request with no cookies set in the cookie store and receive
 // multiples cookies from the request.
 TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, FetchWithEmptyCookieStore) {
-  // TODO(crbug.com/1106030): expected_cookies_set is failing on iOS12.
-  if (!base::ios::IsRunningOnIOS13OrLater()) {
-    return;
-  }
-
   ASSERT_FALSE(url_session_configuration_.HTTPCookieStorage.cookies.count);
   ASSERT_TRUE(FetchURL(GetFetchGURL()));
   ASSERT_TRUE(completion_handler_);
@@ -400,11 +395,6 @@ TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, FetchWithEmptyCookieStore) {
 // Tests to send a request with one cookie set in the cookie store and receive
 // another cookies from the request.
 TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, FetchWithCookieStore) {
-  // TODO(crbug.com/1106030): expected_cookies_set is failing on iOS12.
-  if (!base::ios::IsRunningOnIOS13OrLater()) {
-    return;
-  }
-
   NSArray* cookies_to_send = @[ GetCookie1() ];
   ASSERT_TRUE(SetCookiesInCookieManager(cookies_to_send));
 
@@ -427,11 +417,6 @@ TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, FetchWithCookieStore) {
 // Tests to a request with a redirect. One cookie is received by the first
 // request, and a second one by the redirected request.
 TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, FetchWithRedirect) {
-  // TODO(crbug.com/1106030): expected_cookies_set is failing on iOS12.
-  if (!base::ios::IsRunningOnIOS13OrLater()) {
-    return;
-  }
-
   ASSERT_TRUE(FetchURL(GetFetchGURL()));
   ASSERT_FALSE(url_session_configuration_.HTTPCookieStorage.cookies.count);
   ASSERT_TRUE(completion_handler_);

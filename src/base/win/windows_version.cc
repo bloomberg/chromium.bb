@@ -57,12 +57,12 @@ std::pair<int, std::string> GetVersionData() {
 }
 
 const _SYSTEM_INFO& GetSystemInfoStorage() {
-  static const NoDestructor<_SYSTEM_INFO> system_info([] {
+  static const _SYSTEM_INFO system_info = [] {
     _SYSTEM_INFO info = {};
     ::GetNativeSystemInfo(&info);
     return info;
-  }());
-  return *system_info;
+  }();
+  return system_info;
 }
 
 }  // namespace
@@ -156,6 +156,10 @@ OSInfo::OSInfo(const _OSVERSIONINFOEXW& version_info,
       case PRODUCT_BUSINESS:
       case PRODUCT_BUSINESS_N:
         version_type_ = SUITE_ENTERPRISE;
+        break;
+      case PRODUCT_PRO_FOR_EDUCATION:
+      case PRODUCT_PRO_FOR_EDUCATION_N:
+        version_type_ = SUITE_EDUCATION_PRO;
         break;
       case PRODUCT_EDUCATION:
       case PRODUCT_EDUCATION_N:
@@ -254,7 +258,9 @@ OSInfo::WOW64Status OSInfo::GetWOW64StatusForProcess(HANDLE process_handle) {
 // With the exception of Server 2003, server variants are treated the same as
 // the corresponding workstation release.
 // static
-Version OSInfo::MajorMinorBuildToVersion(int major, int minor, int build) {
+Version OSInfo::MajorMinorBuildToVersion(uint32_t major,
+                                         uint32_t minor,
+                                         uint32_t build) {
   if (major == 10) {
     if (build >= 19043)
       return Version::WIN10_21H1;
@@ -296,7 +302,7 @@ Version OSInfo::MajorMinorBuildToVersion(int major, int minor, int build) {
       case 2:
         return Version::WIN8;
       default:
-        DCHECK_EQ(minor, 3);
+        DCHECK_EQ(minor, 3u);
         return Version::WIN8_1;
     }
   }

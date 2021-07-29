@@ -134,6 +134,9 @@ public class BrowserControlsManager
             // since drawing caches etc. won't be destroyed, and the layout may be less expensive.
             mControlContainer.getView().setVisibility(visibility);
             mControlContainer.getView().requestLayout();
+            for (BrowserControlsStateProvider.Observer observer : mControlsObservers) {
+                observer.onAndroidVisibilityChanged(visibility);
+            }
         }
     };
 
@@ -611,10 +614,8 @@ public class BrowserControlsManager
         }
     }
 
-    /**
-     * Restores the controls positions to the cached positions of the active Tab.
-     */
-    private void restoreControlsPositions() {
+    @Override
+    public void restoreControlsPositions() {
         resetControlsOffsetOverridden();
 
         // Make sure the dominant control offsets have been set.

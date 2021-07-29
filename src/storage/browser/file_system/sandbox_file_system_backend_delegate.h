@@ -16,7 +16,6 @@
 
 #include "base/component_export.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -25,6 +24,7 @@
 #include "storage/browser/file_system/file_system_options.h"
 #include "storage/browser/file_system/file_system_quota_util.h"
 #include "storage/browser/file_system/task_runner_bound_observer_list.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -73,7 +73,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) SandboxFileSystemBackendDelegate
   // An instance of this interface is assumed to be called on the file thread.
   class OriginEnumerator {
    public:
-    virtual ~OriginEnumerator() {}
+    OriginEnumerator(const OriginEnumerator&) = delete;
+    OriginEnumerator& operator=(const OriginEnumerator&) = delete;
+    virtual ~OriginEnumerator() = default;
 
     // Returns the next origin.  Returns absl::nullopt if there are no more
     // origins.
@@ -81,18 +83,26 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) SandboxFileSystemBackendDelegate
 
     // Returns the current origin's information.
     virtual bool HasFileSystemType(FileSystemType type) const = 0;
+
+   protected:
+    OriginEnumerator() = default;
   };
 
   // Returns the type directory name in sandbox directory for given |type|.
   static std::string GetTypeString(FileSystemType type);
 
-  SandboxFileSystemBackendDelegate(QuotaManagerProxy* quota_manager_proxy,
-                                   base::SequencedTaskRunner* file_task_runner,
-                                   const base::FilePath& profile_path,
-                                   SpecialStoragePolicy* special_storage_policy,
-                                   const FileSystemOptions& file_system_options,
-                                   leveldb::Env* env_override);
+  SandboxFileSystemBackendDelegate(
+      scoped_refptr<QuotaManagerProxy> quota_manager_proxy,
+      scoped_refptr<base::SequencedTaskRunner> file_task_runner,
+      const base::FilePath& profile_path,
+      scoped_refptr<SpecialStoragePolicy> special_storage_policy,
+      const FileSystemOptions& file_system_options,
+      leveldb::Env* env_override);
 
+  SandboxFileSystemBackendDelegate(const SandboxFileSystemBackendDelegate&) =
+      delete;
+  SandboxFileSystemBackendDelegate& operator=(
+      const SandboxFileSystemBackendDelegate&) = delete;
   ~SandboxFileSystemBackendDelegate() override;
 
   // Returns an origin enumerator of sandbox filesystem.
@@ -237,15 +247,15 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) SandboxFileSystemBackendDelegate
 
   ObfuscatedFileUtil* obfuscated_file_util();
 
-  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
-  scoped_refptr<QuotaManagerProxy> quota_manager_proxy_;
+  const scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
+  const scoped_refptr<QuotaManagerProxy> quota_manager_proxy_;
 
   std::unique_ptr<AsyncFileUtil> sandbox_file_util_;
   std::unique_ptr<FileSystemUsageCache> file_system_usage_cache_;
   std::unique_ptr<SandboxQuotaObserver> quota_observer_;
   std::unique_ptr<QuotaReservationManager> quota_reservation_manager_;
 
-  scoped_refptr<SpecialStoragePolicy> special_storage_policy_;
+  const scoped_refptr<SpecialStoragePolicy> special_storage_policy_;
 
   FileSystemOptions file_system_options_;
 
@@ -264,8 +274,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) SandboxFileSystemBackendDelegate
   base::Time next_release_time_for_open_filesystem_stat_;
 
   base::WeakPtrFactory<SandboxFileSystemBackendDelegate> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(SandboxFileSystemBackendDelegate);
 };
 
 }  // namespace storage

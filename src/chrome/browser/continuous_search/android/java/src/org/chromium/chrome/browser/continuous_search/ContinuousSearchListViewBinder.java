@@ -4,72 +4,94 @@
 
 package org.chromium.chrome.browser.continuous_search;
 
-import android.graphics.drawable.GradientDrawable;
+import android.text.TextUtils;
+import android.text.TextUtils.TruncateAt;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.recyclerview.widget.RecyclerView;
+
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.components.embedder_support.util.UrlUtilities;
+import org.chromium.chrome.browser.continuous_search.ContinuousSearchListProperties.ListItemProperties;
+import org.chromium.components.url_formatter.SchemeDisplay;
+import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.widget.ChipView;
 import org.chromium.url.GURL;
 
 /**
  * Responsible for binding the {@link PropertyModel} for a search result item to a View.
  */
 class ContinuousSearchListViewBinder {
-    private static final int BORDER_WIDTH = 5;
-
     /**
      * Binds properties related to an individual item within the RecyclerView.
      */
     static void bindListItem(PropertyModel model, View view, PropertyKey propertyKey) {
-        if (ContinuousSearchListProperties.LABEL == propertyKey) {
-            TextView textView = view.findViewById(R.id.continuous_search_list_item_text);
-            textView.setText(model.get(ContinuousSearchListProperties.LABEL));
-        } else if (ContinuousSearchListProperties.URL == propertyKey) {
-            GURL url = model.get(ContinuousSearchListProperties.URL);
-            TextView textView = view.findViewById(R.id.continuous_search_list_item_description);
-            if (textView == null) return;
+        ContinuousSearchChipView chipView = view.findViewById(R.id.csn_chip);
+        boolean isTwoLineChipView = chipView.isTwoLineChipView();
 
-            String domain = "";
+        if (ListItemProperties.LABEL == propertyKey && isTwoLineChipView) {
+            setupTextView(chipView.getPrimaryTextView(), model.get(ListItemProperties.LABEL),
+                    view.getResources().getDimensionPixelSize(R.dimen.csn_chip_text_max_width),
+                    TruncateAt.END);
+        } else if (ListItemProperties.URL == propertyKey) {
+            GURL url = model.get(ListItemProperties.URL);
+            TextView textView = isTwoLineChipView ? chipView.getSecondaryTextView()
+                                                  : chipView.getPrimaryTextView();
+
+            String safeUrl = "";
             if (url != null) {
-                domain = UrlUtilities.getDomainAndRegistry(url.getSpec(), true);
+                // Schemes are omitted as these are pre-navigation URLs and we have very limited UI
+                // surface.
+                //
+                // NOTE: the Google SRP does show schemes so consider revisiting this in future.
+                safeUrl = UrlFormatter.formatUrlForSecurityDisplay(
+                        url, SchemeDisplay.OMIT_HTTP_AND_HTTPS);
             }
-            textView.setText(domain);
-        } else if (ContinuousSearchListProperties.IS_SELECTED == propertyKey) {
-            setBorder(model, view);
-        } else if (ContinuousSearchListProperties.BORDER_COLOR == propertyKey) {
-            setBorder(model, view);
-        } else if (ContinuousSearchListProperties.CLICK_LISTENER == propertyKey) {
-            view.setOnClickListener(model.get(ContinuousSearchListProperties.CLICK_LISTENER));
-        } else if (ContinuousSearchListProperties.BACKGROUND_COLOR == propertyKey) {
-            if (view.getBackground() != null) {
-                GradientDrawable drawable = (GradientDrawable) view.getBackground();
-                drawable.mutate();
-                drawable.setColor(model.get(ContinuousSearchListProperties.BACKGROUND_COLOR));
-            }
-        } else if (ContinuousSearchListProperties.TITLE_TEXT_STYLE == propertyKey) {
-            TextView textTitle = view.findViewById(R.id.continuous_search_list_item_text);
-            if (textTitle != null) {
-                ApiCompatibilityUtils.setTextAppearance(
-                        textTitle, model.get(ContinuousSearchListProperties.TITLE_TEXT_STYLE));
-            }
-        } else if (ContinuousSearchListProperties.DESCRIPTION_TEXT_STYLE == propertyKey) {
-            TextView textDescription =
-                    view.findViewById(R.id.continuous_search_list_item_description);
-            if (textDescription != null) {
-                ApiCompatibilityUtils.setTextAppearance(textDescription,
-                        model.get(ContinuousSearchListProperties.DESCRIPTION_TEXT_STYLE));
-            }
+            setupTextView(textView, safeUrl,
+                    view.getResources().getDimensionPixelSize(R.dimen.csn_chip_text_max_width),
+                    TruncateAt.START);
+        } else if (ListItemProperties.IS_SELECTED == propertyKey) {
+            setBorder(chipView, model);
+        } else if (ListItemProperties.BORDER_COLOR == propertyKey) {
+            setBorder(chipView, model);
+        } else if (ListItemProperties.CLICK_LISTENER == propertyKey) {
+            view.setOnClickListener(model.get(ListItemProperties.CLICK_LISTENER));
+        } else if (ListItemProperties.BACKGROUND_COLOR == propertyKey) {
+            chipView.setBackgroundColor(model.get(ListItemProperties.BACKGROUND_COLOR));
+        } else if (ListItemProperties.PRIMARY_TEXT_STYLE == propertyKey) {
+            ApiCompatibilityUtils.setTextAppearance(chipView.getPrimaryTextView(),
+                    model.get(ListItemProperties.PRIMARY_TEXT_STYLE));
+        } else if (ListItemProperties.SECONDARY_TEXT_STYLE == propertyKey) {
+            ApiCompatibilityUtils.setTextAppearance(chipView.getSecondaryTextView(),
+                    model.get(ListItemProperties.SECONDARY_TEXT_STYLE));
         }
+    }
+
+    private static void setupTextView(
+            TextView textView, String text, int maxWidth, TextUtils.TruncateAt truncateAt) {
+        textView.setEllipsize(truncateAt);
+        textView.setMaxLines(1);
+        textView.setTextDirection(View.TEXT_DIRECTION_LTR);
+        textView.setMaxWidth(maxWidth);
+        textView.setText(text);
+    }
+
+    private static void setBorder(ChipView chipView, PropertyModel model) {
+        chipView.setBorder(chipView.getResources().getDimensionPixelSize(R.dimen.chip_border_width),
+                model.get(ListItemProperties.IS_SELECTED)
+                        ? model.get(ListItemProperties.BORDER_COLOR)
+                        : model.get(ListItemProperties.BACKGROUND_COLOR));
     }
 
     /**
      * Binds properties related to the root view, that includes the RecyclerView.
      */
     static void bindRootView(PropertyModel model, View view, PropertyKey propertyKey) {
+        TextView providerView = view.findViewById(R.id.continuous_search_provider_label);
+
         if (ContinuousSearchListProperties.BACKGROUND_COLOR == propertyKey) {
             view.setBackgroundColor(model.get(ContinuousSearchListProperties.BACKGROUND_COLOR));
         } else if (ContinuousSearchListProperties.FOREGROUND_COLOR == propertyKey) {
@@ -80,15 +102,22 @@ class ContinuousSearchListViewBinder {
             ImageView buttonDismiss = view.findViewById(R.id.button_dismiss);
             buttonDismiss.setOnClickListener(
                     model.get(ContinuousSearchListProperties.DISMISS_CLICK_CALLBACK));
+        } else if (ContinuousSearchListProperties.SELECTED_ITEM_POSITION == propertyKey) {
+            RecyclerView recyclerView = view.findViewById(R.id.recycler_view);
+            recyclerView.smoothScrollToPosition(
+                    model.get(ContinuousSearchListProperties.SELECTED_ITEM_POSITION));
+        } else if (ContinuousSearchListProperties.PROVIDER_LABEL == propertyKey) {
+            providerView.setText(model.get(ContinuousSearchListProperties.PROVIDER_LABEL));
+        } else if (ContinuousSearchListProperties.PROVIDER_ICON_RESOURCE == propertyKey) {
+            // Add the icon at the start of the provider label
+            providerView.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                    model.get(ContinuousSearchListProperties.PROVIDER_ICON_RESOURCE), 0, 0, 0);
+        } else if (ContinuousSearchListProperties.PROVIDER_CLICK_LISTENER == propertyKey) {
+            providerView.setOnClickListener(
+                    model.get(ContinuousSearchListProperties.PROVIDER_CLICK_LISTENER));
+        } else if (ContinuousSearchListProperties.PROVIDER_TEXT_STYLE == propertyKey) {
+            ApiCompatibilityUtils.setTextAppearance(
+                    providerView, model.get(ContinuousSearchListProperties.PROVIDER_TEXT_STYLE));
         }
-    }
-
-    private static void setBorder(PropertyModel model, View view) {
-        if (view.getBackground() == null) return;
-
-        GradientDrawable drawable = (GradientDrawable) view.getBackground();
-        drawable.mutate();
-        drawable.setStroke(model.get(ContinuousSearchListProperties.IS_SELECTED) ? BORDER_WIDTH : 0,
-                model.get(ContinuousSearchListProperties.BORDER_COLOR));
     }
 }

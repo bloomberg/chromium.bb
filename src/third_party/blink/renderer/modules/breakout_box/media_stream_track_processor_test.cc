@@ -13,6 +13,7 @@
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_tester.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_traits.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_stream_track_generator_init.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_stream_track_signal.h"
@@ -45,13 +46,14 @@ namespace {
 std::unique_ptr<PushableMediaStreamAudioSource> CreatePushableAudioSource() {
   // Use the IO thread for testing purposes.
   return std::make_unique<PushableMediaStreamAudioSource>(
-      Thread::MainThread()->GetTaskRunner(),
+      scheduler::GetSingleThreadTaskRunnerForTesting(),
       Platform::Current()->GetIOTaskRunner());
 }
 
 PushableMediaStreamVideoSource* CreatePushableVideoSource() {
   PushableMediaStreamVideoSource* pushable_video_source =
-      new PushableMediaStreamVideoSource();
+      new PushableMediaStreamVideoSource(
+          scheduler::GetSingleThreadTaskRunnerForTesting());
   MediaStreamSource* media_stream_source =
       MakeGarbageCollected<MediaStreamSource>(
           "source_id", MediaStreamSource::kTypeVideo, "source_name",
@@ -83,9 +85,9 @@ MediaStreamTrack* CreateAudioMediaStreamTrack(
 ScriptValue CreateRequestFrameChunk(ScriptState* script_state) {
   MediaStreamTrackSignal* signal = MediaStreamTrackSignal::Create();
   signal->setSignalType("request-frame");
-  return ScriptValue(script_state->GetIsolate(),
-                     ToV8(signal, script_state->GetContext()->Global(),
-                          script_state->GetIsolate()));
+  return ScriptValue(
+      script_state->GetIsolate(),
+      ToV8Traits<MediaStreamTrackSignal>::ToV8(script_state, signal));
 }
 
 ScriptValue CreateSetMinFrameRateChunk(ScriptState* script_state,
@@ -93,17 +95,17 @@ ScriptValue CreateSetMinFrameRateChunk(ScriptState* script_state,
   MediaStreamTrackSignal* signal = MediaStreamTrackSignal::Create();
   signal->setSignalType("set-min-frame-rate");
   signal->setFrameRate(frame_rate);
-  return ScriptValue(script_state->GetIsolate(),
-                     ToV8(signal, script_state->GetContext()->Global(),
-                          script_state->GetIsolate()));
+  return ScriptValue(
+      script_state->GetIsolate(),
+      ToV8Traits<MediaStreamTrackSignal>::ToV8(script_state, signal));
 }
 
 ScriptValue CreateInvalidSignalChunk(ScriptState* script_state) {
   MediaStreamTrackSignal* signal = MediaStreamTrackSignal::Create();
   signal->setSignalType("set-min-frame-rate");
-  return ScriptValue(script_state->GetIsolate(),
-                     ToV8(signal, script_state->GetContext()->Global(),
-                          script_state->GetIsolate()));
+  return ScriptValue(
+      script_state->GetIsolate(),
+      ToV8Traits<MediaStreamTrackSignal>::ToV8(script_state, signal));
 }
 
 }  // namespace

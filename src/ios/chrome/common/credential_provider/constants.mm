@@ -29,6 +29,11 @@ NSString* const kCredentialProviderContainer = @"credential_provider";
 NSString* const kUserDefaultsCredentialProviderManagedUserID =
     @"kUserDefaultsCredentialProviderManagedUserID";
 
+// Used to generate the key for the app group user defaults containing the
+// the metadata for credentials created in the extension.
+NSString* const kUserDefaultsCredentialProviderNewCredentials =
+    @"kUserDefaultsCredentialProviderNewCredentials";
+
 // Used to generate a unique AppGroupPrefix to differentiate between different
 // versions of Chrome running in the same device.
 NSString* AppGroupPrefix() {
@@ -45,6 +50,14 @@ NSString* AppGroupPrefix() {
 NSURL* CredentialProviderSharedArchivableStoreURL() {
   NSURL* groupURL = [[NSFileManager defaultManager]
       containerURLForSecurityApplicationGroupIdentifier:ApplicationGroup()];
+
+  // As of 2021Q4, Earl Grey build don't support security groups in their
+  // entitlements.
+  if (!groupURL &&
+      [[[NSBundle mainBundle] bundleIdentifier] containsString:@".gtest."]) {
+    groupURL = [NSURL fileURLWithPath:NSTemporaryDirectory()];
+  }
+
   NSURL* credentialProviderURL =
       [groupURL URLByAppendingPathComponent:kCredentialProviderContainer];
   NSString* filename =
@@ -55,6 +68,11 @@ NSURL* CredentialProviderSharedArchivableStoreURL() {
 NSString* AppGroupUserDefaultsCredentialProviderManagedUserID() {
   return [AppGroupPrefix()
       stringByAppendingString:kUserDefaultsCredentialProviderManagedUserID];
+}
+
+NSString* AppGroupUserDefaultsCredentialProviderNewCredentials() {
+  return [AppGroupPrefix()
+      stringByAppendingString:kUserDefaultsCredentialProviderNewCredentials];
 }
 
 NSArray<NSString*>* UnusedUserDefaultsCredentialProviderKeys() {

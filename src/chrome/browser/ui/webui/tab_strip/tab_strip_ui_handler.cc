@@ -197,8 +197,7 @@ TabStripUIHandler::TabStripUIHandler(Browser* browser,
 TabStripUIHandler::~TabStripUIHandler() = default;
 
 void TabStripUIHandler::NotifyLayoutChanged() {
-  TRACE_EVENT0("browser",
-               "custom_metric:TabStripUIHandler:NotifyLayoutChanged");
+  TRACE_EVENT0("browser", "TabStripUIHandler:NotifyLayoutChanged");
   if (!IsJavascriptAllowed())
     return;
   FireWebUIListener("layout-changed", embedder_->GetLayout().AsDictionary());
@@ -224,7 +223,7 @@ void TabStripUIHandler::OnJavascriptAllowed() {
 
 // TabStripModelObserver:
 void TabStripUIHandler::OnTabGroupChanged(const TabGroupChange& change) {
-  TRACE_EVENT0("browser", "custom_metric:TabStripUIHandler:OnTabGroupChanged");
+  TRACE_EVENT0("browser", "TabStripUIHandler:OnTabGroupChanged");
   switch (change.type) {
     case TabGroupChange::kCreated:
     case TabGroupChange::kEditorOpened:
@@ -268,8 +267,7 @@ void TabStripUIHandler::TabGroupedStateChanged(
     absl::optional<tab_groups::TabGroupId> group,
     content::WebContents* contents,
     int index) {
-  TRACE_EVENT0("browser",
-               "custom_metric:TabStripUIHandler:TabGroupedStateChanged");
+  TRACE_EVENT0("browser", "TabStripUIHandler:TabGroupedStateChanged");
   int tab_id = extensions::ExtensionTabUtil::GetTabId(contents);
   if (group.has_value()) {
     FireWebUIListener("tab-group-state-changed", base::Value(tab_id),
@@ -285,8 +283,7 @@ void TabStripUIHandler::OnTabStripModelChanged(
     TabStripModel* tab_strip_model,
     const TabStripModelChange& change,
     const TabStripSelectionChange& selection) {
-  TRACE_EVENT0("browser",
-               "custom_metric:TabStripUIHandler:OnTabStripModelChanged");
+  TRACE_EVENT0("browser", "TabStripUIHandler:OnTabStripModelChanged");
   if (tab_strip_model->empty())
     return;
 
@@ -369,7 +366,7 @@ void TabStripUIHandler::OnTabStripModelChanged(
 void TabStripUIHandler::TabChangedAt(content::WebContents* contents,
                                      int index,
                                      TabChangeType change_type) {
-  TRACE_EVENT0("browser", "custom_metric:TabStripUIHandler:TabChangedAt");
+  TRACE_EVENT0("browser", "TabStripUIHandler:TabChangedAt");
   FireWebUIListener("tab-updated", GetTabData(contents, index));
 }
 
@@ -394,7 +391,7 @@ bool TabStripUIHandler::PreHandleGestureEvent(
 #if defined(USE_AURA)
       // If we are passed the `kTouchLongpressDelay` threshold since the initial
       // tap down initiate a drag on scroll start.
-      if (!long_press_timer_->IsRunning()) {
+      if (should_drag_on_gesture_scroll_ && !long_press_timer_->IsRunning()) {
         handling_gesture_scroll_ = true;
 
         // If we are about to start a drag ensure the context menu is closed.
@@ -425,23 +422,37 @@ bool TabStripUIHandler::PreHandleGestureEvent(
         return true;
       }
       long_press_timer_->Stop();
-      return false;
 #endif  // defined(USE_AURA)
       return false;
     case blink::WebInputEvent::Type::kGestureScrollEnd:
+      should_drag_on_gesture_scroll_ = false;
       handling_gesture_scroll_ = false;
       return false;
     case blink::WebInputEvent::Type::kGestureTapDown:
+      // We should only trigger a drag as part of the gesture event stream if
+      // the stream begins with a tap down gesture event.
+      should_drag_on_gesture_scroll_ = true;
       touch_drag_start_point_ =
           gfx::ToRoundedPoint(event.PositionInRootFrame());
       long_press_timer_->Reset();
       return false;
     case blink::WebInputEvent::Type::kGestureLongPress:
-      // Do not block the long press if handling a scroll gesture.
-      if (handling_gesture_scroll_)
+      // Do not block the long press if handling a scroll gesture. This ensures
+      // the long press gesture event emitted during a scroll begin event
+      // reaches the WebContents and triggers a drag session.
+      if (handling_gesture_scroll_) {
+        should_drag_on_gesture_scroll_ = false;
         return false;
+      }
       FireWebUIListener("show-context-menu");
       return true;
+    case blink::WebInputEvent::Type::kGestureTap:
+    case blink::WebInputEvent::Type::kGestureLongTap:
+      // Ensure that we reset `should_drag_on_gesture_scroll_` when we encounter
+      // a gesture tap event (i.e. an event triggered after the user lifts their
+      // finger following a press or long press).
+      should_drag_on_gesture_scroll_ = false;
+      return false;
     default:
       break;
   }
@@ -554,9 +565,12 @@ base::DictionaryValue TabStripUIHandler::GetTabData(
   tab_data.SetString("url", tab_renderer_data.visible_url.GetContent());
 
   if (!tab_renderer_data.favicon.isNull()) {
-    tab_data.SetString("favIconUrl", webui::EncodePNGAndMakeDataURI(
-                                         tab_renderer_data.favicon,
-                                         web_ui()->GetDeviceScaleFactor()));
+    tab_data.SetString("favIconUrl",
+                       webui::EncodePNGAndMakeDataURI(
+                           tab_renderer_data.should_themify_favicon
+                               ? ThemeFavicon(tab_renderer_data.favicon)
+                               : tab_renderer_data.favicon,
+                           web_ui()->GetDeviceScaleFactor()));
     tab_data.SetBoolean("isDefaultFavicon",
                         tab_renderer_data.favicon.BackedBySameObjectAs(
                             favicon::GetDefaultFavicon().AsImageSkia()));
@@ -603,7 +617,7 @@ base::DictionaryValue TabStripUIHandler::GetTabGroupData(TabGroup* group) {
 }
 
 void TabStripUIHandler::HandleGetTabs(const base::ListValue* args) {
-  TRACE_EVENT0("browser", "custom_metric:TabStripUIHandler:HandleGetTabs");
+  TRACE_EVENT0("browser", "TabStripUIHandler:HandleGetTabs");
   AllowJavascript();
   const base::Value& callback_id = args->GetList()[0];
 
@@ -616,8 +630,7 @@ void TabStripUIHandler::HandleGetTabs(const base::ListValue* args) {
 }
 
 void TabStripUIHandler::HandleGetGroupVisualData(const base::ListValue* args) {
-  TRACE_EVENT0("browser",
-               "custom_metric:TabStripUIHandler:HandleGetGroupVisualData");
+  TRACE_EVENT0("browser", "TabStripUIHandler:HandleGetGroupVisualData");
   AllowJavascript();
   const base::Value& callback_id = args->GetList()[0];
 
@@ -634,8 +647,7 @@ void TabStripUIHandler::HandleGetGroupVisualData(const base::ListValue* args) {
 }
 
 void TabStripUIHandler::HandleGetThemeColors(const base::ListValue* args) {
-  TRACE_EVENT0("browser",
-               "custom_metric:TabStripUIHandler:HandleGetThemeColors");
+  TRACE_EVENT0("browser", "TabStripUIHandler:HandleGetThemeColors");
   AllowJavascript();
   const base::Value& callback_id = args->GetList()[0];
 
@@ -911,10 +923,13 @@ void TabStripUIHandler::HandleShowTabContextMenu(const base::ListValue* args) {
           browser, embedder_->GetAcceleratorProvider(), tab_index),
       base::BindRepeating(&TabStripUIHandler::NotifyContextMenuClosed,
                           weak_ptr_factory_.GetWeakPtr()));
+  base::UmaHistogramEnumeration(
+      "TabStrip.Tab.WebUI.ActivationAction",
+      TabStripModel::TabActivationTypes::kContextMenu);
 }
 
 void TabStripUIHandler::HandleGetLayout(const base::ListValue* args) {
-  TRACE_EVENT0("browser", "custom_metric:TabStripUIHandler:HandleGetLayout");
+  TRACE_EVENT0("browser", "TabStripUIHandler:HandleGetLayout");
   AllowJavascript();
   const base::Value& callback_id = args->GetList()[0];
 
@@ -923,8 +938,7 @@ void TabStripUIHandler::HandleGetLayout(const base::ListValue* args) {
 }
 
 void TabStripUIHandler::HandleSetThumbnailTracked(const base::ListValue* args) {
-  TRACE_EVENT0("browser",
-               "custom_metric:TabStripUIHandler:HandleSetThumbnailTracked");
+  TRACE_EVENT0("browser", "TabStripUIHandler:HandleSetThumbnailTracked");
   AllowJavascript();
 
   int tab_id = args->GetList()[0].GetInt();
@@ -949,6 +963,8 @@ void TabStripUIHandler::HandleReportTabActivationDuration(
   int duration_ms = args->GetList()[0].GetInt();
   UMA_HISTOGRAM_TIMES("WebUITabStrip.TabActivation",
                       base::TimeDelta::FromMilliseconds(duration_ms));
+  base::UmaHistogramEnumeration("TabStrip.Tab.WebUI.ActivationAction",
+                                TabStripModel::TabActivationTypes::kTab);
 }
 
 void TabStripUIHandler::HandleReportTabDataReceivedDuration(
@@ -974,8 +990,7 @@ void TabStripUIHandler::HandleThumbnailUpdate(
     ThumbnailTracker::CompressedThumbnailData image) {
   // Send base-64 encoded image to JS side. If |image| is blank (i.e.
   // there is no data), send a blank URI.
-  TRACE_EVENT0("browser",
-               "custom_metric:TabStripUIHandler:HandleThumbnailUpdate");
+  TRACE_EVENT0("browser", "TabStripUIHandler:HandleThumbnailUpdate");
   std::string data_uri;
   if (image)
     data_uri = webui::MakeDataURIForImage(base::make_span(image->data), "jpeg");
@@ -1013,4 +1028,13 @@ void TabStripUIHandler::ReportTabDurationHistogram(
   std::string histogram_name = base::JoinString(
       {"WebUITabStrip", histogram_fragment, tab_count_bucket}, ".");
   base::UmaHistogramTimes(histogram_name, duration);
+}
+
+gfx::ImageSkia TabStripUIHandler::ThemeFavicon(const gfx::ImageSkia& source) {
+  return favicon::ThemeFavicon(
+      source, embedder_->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON),
+      embedder_->GetColor(
+          ThemeProperties::COLOR_TAB_BACKGROUND_ACTIVE_FRAME_ACTIVE),
+      embedder_->GetColor(
+          ThemeProperties::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_ACTIVE));
 }

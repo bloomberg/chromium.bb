@@ -44,12 +44,11 @@
 using std::make_pair;
 using std::vector;
 
-using dwarf2reader::DIEHandler;
-using dwarf2reader::DwarfTag;
-using dwarf2reader::DwarfAttribute;
-using dwarf2reader::DwarfForm;
-using dwarf2reader::DwarfInline;
-using dwarf2reader::RootDIEHandler;
+using google_breakpad::DIEHandler;
+using google_breakpad::DwarfTag;
+using google_breakpad::DwarfAttribute;
+using google_breakpad::DwarfForm;
+using google_breakpad::DwarfInline;
 using google_breakpad::DwarfCUToModule;
 using google_breakpad::Module;
 
@@ -133,7 +132,7 @@ class CUFixtureBase {
   CUFixtureBase()
       : module_("module-name", "module-os", "module-arch", "module-id"),
         file_context_("dwarf-filename", &module_, true),
-        language_(dwarf2reader::DW_LANG_none),
+        language_(google_breakpad::DW_LANG_none),
         language_signed_(false),
         appender_(&lines_),
         reporter_("dwarf-filename", 0xcf8f9bb6443d29b5LL),
@@ -175,7 +174,7 @@ class CUFixtureBase {
   // Use LANGUAGE for the compilation unit. More precisely, arrange
   // for StartCU to pass the compilation unit's root DIE a
   // DW_AT_language attribute whose value is LANGUAGE.
-  void SetLanguage(dwarf2reader::DwarfLanguage language) {
+  void SetLanguage(google_breakpad::DwarfLanguage language) {
     language_ = language;
   }
 
@@ -191,7 +190,7 @@ class CUFixtureBase {
   void StartCU();
 
   // Have HANDLER process some strange attribute/form/value triples.
-  void ProcessStrangeAttributes(dwarf2reader::DIEHandler* handler);
+  void ProcessStrangeAttributes(google_breakpad::DIEHandler* handler);
 
   // Start a child DIE of PARENT with the given tag and name. Leave
   // the handler ready to hear about children: call EndAttributes, but
@@ -215,7 +214,7 @@ class CUFixtureBase {
   void DefineFunction(DIEHandler* parent, const string& name,
                       Module::Address address, Module::Address size,
                       const char* mangled_name,
-                      DwarfForm high_pc_form = dwarf2reader::DW_FORM_addr);
+                      DwarfForm high_pc_form = google_breakpad::DW_FORM_addr);
 
   // Create a declaration DIE as a child of PARENT with the given
   // offset, tag and name. If NAME is the empty string, don't provide
@@ -240,7 +239,7 @@ class CUFixtureBase {
   void AbstractInstanceDIE(DIEHandler* parent, uint64_t offset,
                            DwarfInline type, uint64_t specification,
                            const string& name,
-                           DwarfForm form = dwarf2reader::DW_FORM_data1);
+                           DwarfForm form = google_breakpad::DW_FORM_data1);
 
   // Create a DW_TAG_subprogram DIE as a child of PARENT that refers to
   // ORIGIN in its DW_AT_abstract_origin attribute.  If NAME is the empty
@@ -279,7 +278,7 @@ class CUFixtureBase {
 
   // If this is not DW_LANG_none, we'll pass it as a DW_AT_language
   // attribute to the compilation unit. This defaults to DW_LANG_none.
-  dwarf2reader::DwarfLanguage language_;
+  google_breakpad::DwarfLanguage language_;
 
   // If this is true, report DW_AT_language as a signed value; if false,
   // report it as an unsigned value.
@@ -350,34 +349,34 @@ void CUFixtureBase::StartCU() {
                                     0x4241b4f33720dd5cULL, 3));
   {
     ASSERT_TRUE(root_handler_.StartRootDIE(0x02e56bfbda9e7337ULL,
-                                           dwarf2reader::DW_TAG_compile_unit));
+                                           google_breakpad::DW_TAG_compile_unit));
   }
-  root_handler_.ProcessAttributeString(dwarf2reader::DW_AT_name,
-                                       dwarf2reader::DW_FORM_strp,
+  root_handler_.ProcessAttributeString(google_breakpad::DW_AT_name,
+                                       google_breakpad::DW_FORM_strp,
                                        "compilation-unit-name");
   if (!compilation_dir_.empty())
-    root_handler_.ProcessAttributeString(dwarf2reader::DW_AT_comp_dir,
-                                         dwarf2reader::DW_FORM_strp,
+    root_handler_.ProcessAttributeString(google_breakpad::DW_AT_comp_dir,
+                                         google_breakpad::DW_FORM_strp,
                                          compilation_dir_);
   if (!lines_.empty())
-    root_handler_.ProcessAttributeUnsigned(dwarf2reader::DW_AT_stmt_list,
-                                           dwarf2reader::DW_FORM_ref4,
+    root_handler_.ProcessAttributeUnsigned(google_breakpad::DW_AT_stmt_list,
+                                           google_breakpad::DW_FORM_ref4,
                                            0);
-  if (language_ != dwarf2reader::DW_LANG_none) {
+  if (language_ != google_breakpad::DW_LANG_none) {
     if (language_signed_)
-      root_handler_.ProcessAttributeSigned(dwarf2reader::DW_AT_language,
-                                           dwarf2reader::DW_FORM_sdata,
+      root_handler_.ProcessAttributeSigned(google_breakpad::DW_AT_language,
+                                           google_breakpad::DW_FORM_sdata,
                                            language_);
     else
-      root_handler_.ProcessAttributeUnsigned(dwarf2reader::DW_AT_language,
-                                             dwarf2reader::DW_FORM_udata,
+      root_handler_.ProcessAttributeUnsigned(google_breakpad::DW_AT_language,
+                                             google_breakpad::DW_FORM_udata,
                                              language_);
   }
   ASSERT_TRUE(root_handler_.EndAttributes());
 }
 
 void CUFixtureBase::ProcessStrangeAttributes(
-    dwarf2reader::DIEHandler* handler) {
+    google_breakpad::DIEHandler* handler) {
   handler->ProcessAttributeUnsigned((DwarfAttribute) 0xf560dead,
                                     (DwarfForm) 0x4106e4db,
                                     0xa592571997facda1ULL);
@@ -399,12 +398,12 @@ void CUFixtureBase::ProcessStrangeAttributes(
 DIEHandler* CUFixtureBase::StartNamedDIE(DIEHandler* parent,
                                          DwarfTag tag,
                                          const string& name) {
-  dwarf2reader::DIEHandler* handler
+  google_breakpad::DIEHandler* handler
     = parent->FindChildHandler(0x8f4c783c0467c989ULL, tag);
   if (!handler)
     return NULL;
-  handler->ProcessAttributeString(dwarf2reader::DW_AT_name,
-                                  dwarf2reader::DW_FORM_strp,
+  handler->ProcessAttributeString(google_breakpad::DW_AT_name,
+                                  google_breakpad::DW_FORM_strp,
                                   name);
   ProcessStrangeAttributes(handler);
   if (!handler->EndAttributes()) {
@@ -420,16 +419,16 @@ DIEHandler* CUFixtureBase::StartSpecifiedDIE(DIEHandler* parent,
                                              DwarfTag tag,
                                              uint64_t specification,
                                              const char* name) {
-  dwarf2reader::DIEHandler* handler
+  google_breakpad::DIEHandler* handler
     = parent->FindChildHandler(0x8f4c783c0467c989ULL, tag);
   if (!handler)
     return NULL;
   if (name)
-    handler->ProcessAttributeString(dwarf2reader::DW_AT_name,
-                                    dwarf2reader::DW_FORM_strp,
+    handler->ProcessAttributeString(google_breakpad::DW_AT_name,
+                                    google_breakpad::DW_FORM_strp,
                                     name);
-  handler->ProcessAttributeReference(dwarf2reader::DW_AT_specification,
-                                     dwarf2reader::DW_FORM_ref4,
+  handler->ProcessAttributeReference(google_breakpad::DW_AT_specification,
+                                     google_breakpad::DW_FORM_ref4,
                                      specification);
   if (!handler->EndAttributes()) {
     handler->Finish();
@@ -440,33 +439,33 @@ DIEHandler* CUFixtureBase::StartSpecifiedDIE(DIEHandler* parent,
   return handler;
 }
 
-void CUFixtureBase::DefineFunction(dwarf2reader::DIEHandler* parent,
+void CUFixtureBase::DefineFunction(google_breakpad::DIEHandler* parent,
                                    const string& name, Module::Address address,
                                    Module::Address size,
                                    const char* mangled_name,
                                    DwarfForm high_pc_form) {
-  dwarf2reader::DIEHandler* func
+  google_breakpad::DIEHandler* func
       = parent->FindChildHandler(0xe34797c7e68590a8LL,
-                                 dwarf2reader::DW_TAG_subprogram);
+                                 google_breakpad::DW_TAG_subprogram);
   ASSERT_TRUE(func != NULL);
-  func->ProcessAttributeString(dwarf2reader::DW_AT_name,
-                               dwarf2reader::DW_FORM_strp,
+  func->ProcessAttributeString(google_breakpad::DW_AT_name,
+                               google_breakpad::DW_FORM_strp,
                                name);
-  func->ProcessAttributeUnsigned(dwarf2reader::DW_AT_low_pc,
-                                 dwarf2reader::DW_FORM_addr,
+  func->ProcessAttributeUnsigned(google_breakpad::DW_AT_low_pc,
+                                 google_breakpad::DW_FORM_addr,
                                  address);
 
   Module::Address high_pc = size;
-  if (high_pc_form == dwarf2reader::DW_FORM_addr) {
+  if (high_pc_form == google_breakpad::DW_FORM_addr) {
     high_pc += address;
   }
-  func->ProcessAttributeUnsigned(dwarf2reader::DW_AT_high_pc,
+  func->ProcessAttributeUnsigned(google_breakpad::DW_AT_high_pc,
                                  high_pc_form,
                                  high_pc);
 
   if (mangled_name)
-    func->ProcessAttributeString(dwarf2reader::DW_AT_MIPS_linkage_name,
-                                 dwarf2reader::DW_FORM_strp,
+    func->ProcessAttributeString(google_breakpad::DW_AT_MIPS_linkage_name,
+                                 google_breakpad::DW_FORM_strp,
                                  mangled_name);
 
   ProcessStrangeAttributes(func);
@@ -479,19 +478,19 @@ void CUFixtureBase::DeclarationDIE(DIEHandler* parent, uint64_t offset,
                                    DwarfTag tag,
                                    const string& name,
                                    const string& mangled_name) {
-  dwarf2reader::DIEHandler* die = parent->FindChildHandler(offset, tag);
+  google_breakpad::DIEHandler* die = parent->FindChildHandler(offset, tag);
   ASSERT_TRUE(die != NULL);
   if (!name.empty())
-    die->ProcessAttributeString(dwarf2reader::DW_AT_name,
-                                dwarf2reader::DW_FORM_strp,
+    die->ProcessAttributeString(google_breakpad::DW_AT_name,
+                                google_breakpad::DW_FORM_strp,
                                 name);
   if (!mangled_name.empty())
-    die->ProcessAttributeString(dwarf2reader::DW_AT_MIPS_linkage_name,
-                                dwarf2reader::DW_FORM_strp,
+    die->ProcessAttributeString(google_breakpad::DW_AT_MIPS_linkage_name,
+                                google_breakpad::DW_FORM_strp,
                                 mangled_name);
 
-  die->ProcessAttributeUnsigned(dwarf2reader::DW_AT_declaration,
-                                dwarf2reader::DW_FORM_flag,
+  die->ProcessAttributeUnsigned(google_breakpad::DW_AT_declaration,
+                                google_breakpad::DW_FORM_flag,
                                 1);
   EXPECT_TRUE(die->EndAttributes());
   die->Finish();
@@ -504,22 +503,22 @@ void CUFixtureBase::DefinitionDIE(DIEHandler* parent,
                                   const string& name,
                                   Module::Address address,
                                   Module::Address size) {
-  dwarf2reader::DIEHandler* die
+  google_breakpad::DIEHandler* die
     = parent->FindChildHandler(0x6ccfea031a9e6cc9ULL, tag);
   ASSERT_TRUE(die != NULL);
-  die->ProcessAttributeReference(dwarf2reader::DW_AT_specification,
-                                 dwarf2reader::DW_FORM_ref4,
+  die->ProcessAttributeReference(google_breakpad::DW_AT_specification,
+                                 google_breakpad::DW_FORM_ref4,
                                  specification);
   if (!name.empty())
-    die->ProcessAttributeString(dwarf2reader::DW_AT_name,
-                                dwarf2reader::DW_FORM_strp,
+    die->ProcessAttributeString(google_breakpad::DW_AT_name,
+                                google_breakpad::DW_FORM_strp,
                                 name);
   if (size) {
-    die->ProcessAttributeUnsigned(dwarf2reader::DW_AT_low_pc,
-                                  dwarf2reader::DW_FORM_addr,
+    die->ProcessAttributeUnsigned(google_breakpad::DW_AT_low_pc,
+                                  google_breakpad::DW_FORM_addr,
                                   address);
-    die->ProcessAttributeUnsigned(dwarf2reader::DW_AT_high_pc,
-                                  dwarf2reader::DW_FORM_addr,
+    die->ProcessAttributeUnsigned(google_breakpad::DW_AT_high_pc,
+                                  google_breakpad::DW_FORM_addr,
                                   address + size);
   }
   EXPECT_TRUE(die->EndAttributes());
@@ -533,21 +532,21 @@ void CUFixtureBase::AbstractInstanceDIE(DIEHandler* parent,
                                         uint64_t specification,
                                         const string& name,
                                         DwarfForm form) {
-  dwarf2reader::DIEHandler* die
-    = parent->FindChildHandler(offset, dwarf2reader::DW_TAG_subprogram);
+  google_breakpad::DIEHandler* die
+    = parent->FindChildHandler(offset, google_breakpad::DW_TAG_subprogram);
   ASSERT_TRUE(die != NULL);
   if (specification != 0ULL)
-    die->ProcessAttributeReference(dwarf2reader::DW_AT_specification,
-                                   dwarf2reader::DW_FORM_ref4,
+    die->ProcessAttributeReference(google_breakpad::DW_AT_specification,
+                                   google_breakpad::DW_FORM_ref4,
                                    specification);
-  if (form == dwarf2reader::DW_FORM_sdata) {
-    die->ProcessAttributeSigned(dwarf2reader::DW_AT_inline, form, type);
+  if (form == google_breakpad::DW_FORM_sdata) {
+    die->ProcessAttributeSigned(google_breakpad::DW_AT_inline, form, type);
   } else {
-    die->ProcessAttributeUnsigned(dwarf2reader::DW_AT_inline, form, type);
+    die->ProcessAttributeUnsigned(google_breakpad::DW_AT_inline, form, type);
   }
   if (!name.empty())
-    die->ProcessAttributeString(dwarf2reader::DW_AT_name,
-                                dwarf2reader::DW_FORM_strp,
+    die->ProcessAttributeString(google_breakpad::DW_AT_name,
+                                google_breakpad::DW_FORM_strp,
                                 name);
 
   EXPECT_TRUE(die->EndAttributes());
@@ -560,23 +559,23 @@ void CUFixtureBase::DefineInlineInstanceDIE(DIEHandler* parent,
                                             uint64_t origin,
                                             Module::Address address,
                                             Module::Address size) {
-  dwarf2reader::DIEHandler* func
+  google_breakpad::DIEHandler* func
       = parent->FindChildHandler(0x11c70f94c6e87ccdLL,
-                                 dwarf2reader::DW_TAG_subprogram);
+                                 google_breakpad::DW_TAG_subprogram);
   ASSERT_TRUE(func != NULL);
   if (!name.empty()) {
-    func->ProcessAttributeString(dwarf2reader::DW_AT_name,
-                                 dwarf2reader::DW_FORM_strp,
+    func->ProcessAttributeString(google_breakpad::DW_AT_name,
+                                 google_breakpad::DW_FORM_strp,
                                  name);
   }
-  func->ProcessAttributeUnsigned(dwarf2reader::DW_AT_low_pc,
-                                 dwarf2reader::DW_FORM_addr,
+  func->ProcessAttributeUnsigned(google_breakpad::DW_AT_low_pc,
+                                 google_breakpad::DW_FORM_addr,
                                  address);
-  func->ProcessAttributeUnsigned(dwarf2reader::DW_AT_high_pc,
-                                 dwarf2reader::DW_FORM_addr,
+  func->ProcessAttributeUnsigned(google_breakpad::DW_AT_high_pc,
+                                 google_breakpad::DW_FORM_addr,
                                  address + size);
-  func->ProcessAttributeReference(dwarf2reader::DW_AT_abstract_origin,
-                                 dwarf2reader::DW_FORM_ref4,
+  func->ProcessAttributeReference(google_breakpad::DW_AT_abstract_origin,
+                                 google_breakpad::DW_FORM_ref4,
                                  origin);
   ProcessStrangeAttributes(func);
   EXPECT_TRUE(func->EndAttributes());
@@ -681,7 +680,7 @@ TEST_F(SimpleCU, OneFuncHighPcIsLength) {
   StartCU();
   DefineFunction6(&root_handler_, "function1",
                   0x938cf8c07def4d34ULL, 0x55592d727f6cd01fLL, NULL,
-                  dwarf2reader::DW_FORM_udata);
+                  google_breakpad::DW_FORM_udata);
   root_handler_.Finish();
 
   TestFunctionCount(1);
@@ -707,17 +706,17 @@ TEST_F(SimpleCU, IrrelevantRootChildren) {
   StartCU();
   EXPECT_FALSE(root_handler_
                .FindChildHandler(0x7db32bff4e2dcfb1ULL,
-                                 dwarf2reader::DW_TAG_lexical_block));
+                                 google_breakpad::DW_TAG_lexical_block));
 }
 
 TEST_F(SimpleCU, IrrelevantNamedScopeChildren) {
   StartCU();
   DIEHandler* class_A_handler
-    = StartNamedDIE(&root_handler_, dwarf2reader::DW_TAG_class_type, "class_A");
+    = StartNamedDIE(&root_handler_, google_breakpad::DW_TAG_class_type, "class_A");
   EXPECT_TRUE(class_A_handler != NULL);
   EXPECT_FALSE(class_A_handler
                ->FindChildHandler(0x02e55999b865e4e9ULL,
-                                  dwarf2reader::DW_TAG_lexical_block));
+                                  google_breakpad::DW_TAG_lexical_block));
   delete class_A_handler;
 }
 
@@ -735,7 +734,7 @@ TEST_F(SimpleCU, InlineFunction) {
 
   StartCU();
   AbstractInstanceDIE(&root_handler_, 0x1e8dac5d507ed7abULL,
-                      dwarf2reader::DW_INL_inlined, 0, "inline-name");
+                      google_breakpad::DW_INL_inlined, 0, "inline-name");
   DefineInlineInstanceDIE(&root_handler_, "", 0x1e8dac5d507ed7abULL,
                        0x1758a0f941b71efbULL, 0x1cf154f1f545e146ULL);
   root_handler_.Finish();
@@ -750,8 +749,8 @@ TEST_F(SimpleCU, InlineFunctionSignedAttribute) {
 
   StartCU();
   AbstractInstanceDIE(&root_handler_, 0x1e8dac5d507ed7abULL,
-                      dwarf2reader::DW_INL_inlined, 0, "inline-name",
-                      dwarf2reader::DW_FORM_sdata);
+                      google_breakpad::DW_INL_inlined, 0, "inline-name",
+                      google_breakpad::DW_FORM_sdata);
   DefineInlineInstanceDIE(&root_handler_, "", 0x1e8dac5d507ed7abULL,
                        0x1758a0f941b71efbULL, 0x1cf154f1f545e146ULL);
   root_handler_.Finish();
@@ -769,7 +768,7 @@ TEST_F(SimpleCU, AbstractOriginNotInlined) {
 
   StartCU();
   AbstractInstanceDIE(&root_handler_, 0x93e9cdad52826b39ULL,
-                      dwarf2reader::DW_INL_not_inlined, 0, "abstract-instance");
+                      google_breakpad::DW_INL_not_inlined, 0, "abstract-instance");
   DefineInlineInstanceDIE(&root_handler_, "", 0x93e9cdad52826b39ULL,
                           0x2805c4531be6ca0eULL, 0x686b52155a8d4d2cULL);
   root_handler_.Finish();
@@ -787,7 +786,7 @@ TEST_F(SimpleCU, UnknownAbstractOrigin) {
 
   StartCU();
   AbstractInstanceDIE(&root_handler_, 0x1e8dac5d507ed7abULL,
-                      dwarf2reader::DW_INL_inlined, 0, "inline-name");
+                      google_breakpad::DW_INL_inlined, 0, "inline-name");
   DefineInlineInstanceDIE(&root_handler_, "", 1ULL,
                        0x1758a0f941b71efbULL, 0x1cf154f1f545e146ULL);
   root_handler_.Finish();
@@ -1045,15 +1044,15 @@ class CXXQualifiedNames: public CUFixtureBase,
                          public TestWithParam<DwarfTag> { };
 
 INSTANTIATE_TEST_SUITE_P(VersusEnclosures, CXXQualifiedNames,
-                         Values(dwarf2reader::DW_TAG_class_type,
-                                dwarf2reader::DW_TAG_structure_type,
-                                dwarf2reader::DW_TAG_union_type,
-                                dwarf2reader::DW_TAG_namespace));
+                         Values(google_breakpad::DW_TAG_class_type,
+                                google_breakpad::DW_TAG_structure_type,
+                                google_breakpad::DW_TAG_union_type,
+                                google_breakpad::DW_TAG_namespace));
 
 TEST_P(CXXQualifiedNames, TwoFunctions) {
   DwarfTag tag = GetParam();
 
-  SetLanguage(dwarf2reader::DW_LANG_C_plus_plus);
+  SetLanguage(google_breakpad::DW_LANG_C_plus_plus);
   PushLine(10, 1, "filename1", 69819327);
   PushLine(20, 1, "filename2", 95115701);
 
@@ -1075,12 +1074,12 @@ TEST_P(CXXQualifiedNames, TwoFunctions) {
 TEST_P(CXXQualifiedNames, FuncInEnclosureInNamespace) {
   DwarfTag tag = GetParam();
 
-  SetLanguage(dwarf2reader::DW_LANG_C_plus_plus);
+  SetLanguage(google_breakpad::DW_LANG_C_plus_plus);
   PushLine(10, 1, "line-file", 69819327);
 
   StartCU();
   DIEHandler* namespace_handler
-      = StartNamedDIE(&root_handler_, dwarf2reader::DW_TAG_namespace,
+      = StartNamedDIE(&root_handler_, google_breakpad::DW_TAG_namespace,
                       "Namespace");
   EXPECT_TRUE(namespace_handler != NULL);
   DIEHandler* enclosure_handler = StartNamedDIE(namespace_handler, tag,
@@ -1098,20 +1097,20 @@ TEST_P(CXXQualifiedNames, FuncInEnclosureInNamespace) {
 }
 
 TEST_F(CXXQualifiedNames, FunctionInClassInStructInNamespace) {
-  SetLanguage(dwarf2reader::DW_LANG_C_plus_plus);
+  SetLanguage(google_breakpad::DW_LANG_C_plus_plus);
   PushLine(10, 1, "filename1", 69819327);
 
   StartCU();
   DIEHandler* namespace_handler
-      = StartNamedDIE(&root_handler_, dwarf2reader::DW_TAG_namespace,
+      = StartNamedDIE(&root_handler_, google_breakpad::DW_TAG_namespace,
                       "namespace_A");
   EXPECT_TRUE(namespace_handler != NULL);
   DIEHandler* struct_handler
-      = StartNamedDIE(namespace_handler, dwarf2reader::DW_TAG_structure_type,
+      = StartNamedDIE(namespace_handler, google_breakpad::DW_TAG_structure_type,
                       "struct_B");
   EXPECT_TRUE(struct_handler != NULL);
   DIEHandler* class_handler
-      = StartNamedDIE(struct_handler, dwarf2reader::DW_TAG_class_type,
+      = StartNamedDIE(struct_handler, google_breakpad::DW_TAG_class_type,
                       "class_C");
   DefineFunction(class_handler, "function_D", 10, 1, NULL);
   class_handler->Finish();
@@ -1127,19 +1126,19 @@ TEST_F(CXXQualifiedNames, FunctionInClassInStructInNamespace) {
 }
 
 struct LanguageAndQualifiedName {
-  dwarf2reader::DwarfLanguage language;
+  google_breakpad::DwarfLanguage language;
   const char* name;
 };
 
 const LanguageAndQualifiedName LanguageAndQualifiedNameCases[] = {
-  { dwarf2reader::DW_LANG_none,           "class_A::function_B" },
-  { dwarf2reader::DW_LANG_C,              "class_A::function_B" },
-  { dwarf2reader::DW_LANG_C89,            "class_A::function_B" },
-  { dwarf2reader::DW_LANG_C99,            "class_A::function_B" },
-  { dwarf2reader::DW_LANG_C_plus_plus,    "class_A::function_B" },
-  { dwarf2reader::DW_LANG_Java,           "class_A.function_B" },
-  { dwarf2reader::DW_LANG_Cobol74,        "class_A::function_B" },
-  { dwarf2reader::DW_LANG_Mips_Assembler, NULL }
+  { google_breakpad::DW_LANG_none,           "class_A::function_B" },
+  { google_breakpad::DW_LANG_C,              "class_A::function_B" },
+  { google_breakpad::DW_LANG_C89,            "class_A::function_B" },
+  { google_breakpad::DW_LANG_C99,            "class_A::function_B" },
+  { google_breakpad::DW_LANG_C_plus_plus,    "class_A::function_B" },
+  { google_breakpad::DW_LANG_Java,           "class_A.function_B" },
+  { google_breakpad::DW_LANG_Cobol74,        "class_A::function_B" },
+  { google_breakpad::DW_LANG_Mips_Assembler, NULL }
 };
 
 class QualifiedForLanguage
@@ -1157,7 +1156,7 @@ TEST_P(QualifiedForLanguage, MemberFunction) {
 
   StartCU();
   DIEHandler* class_handler
-      = StartNamedDIE(&root_handler_, dwarf2reader::DW_TAG_class_type,
+      = StartNamedDIE(&root_handler_, google_breakpad::DW_TAG_class_type,
                       "class_A");
   DefineFunction(class_handler, "function_B", 10, 1, NULL);
   class_handler->Finish();
@@ -1181,7 +1180,7 @@ TEST_P(QualifiedForLanguage, MemberFunctionSignedLanguage) {
 
   StartCU();
   DIEHandler* class_handler
-      = StartNamedDIE(&root_handler_, dwarf2reader::DW_TAG_class_type,
+      = StartNamedDIE(&root_handler_, google_breakpad::DW_TAG_class_type,
                       "class_A");
   DefineFunction(class_handler, "function_B", 10, 1, NULL);
   class_handler->Finish();
@@ -1203,8 +1202,8 @@ TEST_F(Specifications, Function) {
 
   StartCU();
   DeclarationDIE(&root_handler_, 0xcd3c51b946fb1eeeLL,
-                 dwarf2reader::DW_TAG_subprogram, "declaration-name", "");
-  DefinitionDIE(&root_handler_, dwarf2reader::DW_TAG_subprogram,
+                 google_breakpad::DW_TAG_subprogram, "declaration-name", "");
+  DefinitionDIE(&root_handler_, google_breakpad::DW_TAG_subprogram,
                 0xcd3c51b946fb1eeeLL, "",
                 0x93cd3dfc1aa10097ULL, 0x0397d47a0b4ca0d4ULL);
   root_handler_.Finish();
@@ -1220,9 +1219,9 @@ TEST_F(Specifications, MangledName) {
 
   StartCU();
   DeclarationDIE(&root_handler_, 0xcd3c51b946fb1eeeLL,
-                 dwarf2reader::DW_TAG_subprogram, "declaration-name",
+                 google_breakpad::DW_TAG_subprogram, "declaration-name",
                  "_ZN1C1fEi");
-  DefinitionDIE(&root_handler_, dwarf2reader::DW_TAG_subprogram,
+  DefinitionDIE(&root_handler_, google_breakpad::DW_TAG_subprogram,
                 0xcd3c51b946fb1eeeLL, "",
                 0x93cd3dfc1aa10097ULL, 0x0397d47a0b4ca0d4ULL);
   root_handler_.Finish();
@@ -1234,14 +1233,14 @@ TEST_F(Specifications, MangledName) {
 
 TEST_F(Specifications, MangledNameSwift) {
   // Swift mangled names should pass through untouched.
-  SetLanguage(dwarf2reader::DW_LANG_Swift);
+  SetLanguage(google_breakpad::DW_LANG_Swift);
   PushLine(0x93cd3dfc1aa10097ULL, 0x0397d47a0b4ca0d4ULL, "line-file", 54883661);
   StartCU();
   const string kName = "_TFC9swifttest5Shape17simpleDescriptionfS0_FT_Si";
   DeclarationDIE(&root_handler_, 0xcd3c51b946fb1eeeLL,
-                 dwarf2reader::DW_TAG_subprogram, "declaration-name",
+                 google_breakpad::DW_TAG_subprogram, "declaration-name",
                  kName);
-  DefinitionDIE(&root_handler_, dwarf2reader::DW_TAG_subprogram,
+  DefinitionDIE(&root_handler_, google_breakpad::DW_TAG_subprogram,
                 0xcd3c51b946fb1eeeLL, "",
                 0x93cd3dfc1aa10097ULL, 0x0397d47a0b4ca0d4ULL);
   root_handler_.Finish();
@@ -1252,15 +1251,15 @@ TEST_F(Specifications, MangledNameSwift) {
 }
 
 TEST_F(Specifications, MangledNameRust) {
-  SetLanguage(dwarf2reader::DW_LANG_Rust);
+  SetLanguage(google_breakpad::DW_LANG_Rust);
   PushLine(0x93cd3dfc1aa10097ULL, 0x0397d47a0b4ca0d4ULL, "line-file", 54883661);
 
   StartCU();
   const string kName = "_ZN14rustc_demangle8demangle17h373defa94bffacdeE";
   DeclarationDIE(&root_handler_, 0xcd3c51b946fb1eeeLL,
-                 dwarf2reader::DW_TAG_subprogram, "declaration-name",
+                 google_breakpad::DW_TAG_subprogram, "declaration-name",
                  kName);
-  DefinitionDIE(&root_handler_, dwarf2reader::DW_TAG_subprogram,
+  DefinitionDIE(&root_handler_, google_breakpad::DW_TAG_subprogram,
                 0xcd3c51b946fb1eeeLL, "",
                 0x93cd3dfc1aa10097ULL, 0x0397d47a0b4ca0d4ULL);
   root_handler_.Finish();
@@ -1284,12 +1283,12 @@ TEST_F(Specifications, MemberFunction) {
 
   StartCU();
   DIEHandler* class_handler
-    = StartNamedDIE(&root_handler_, dwarf2reader::DW_TAG_class_type, "class_A");
+    = StartNamedDIE(&root_handler_, google_breakpad::DW_TAG_class_type, "class_A");
   DeclarationDIE(class_handler, 0x7d83028c431406e8ULL,
-                 dwarf2reader::DW_TAG_subprogram, "declaration-name", "");
+                 google_breakpad::DW_TAG_subprogram, "declaration-name", "");
   class_handler->Finish();
   delete class_handler;
-  DefinitionDIE(&root_handler_, dwarf2reader::DW_TAG_subprogram,
+  DefinitionDIE(&root_handler_, google_breakpad::DW_TAG_subprogram,
                 0x7d83028c431406e8ULL, "",
                 0x3341a248634e7170ULL, 0x5f6938ee5553b953ULL);
   root_handler_.Finish();
@@ -1307,16 +1306,16 @@ TEST_F(Specifications, FunctionDeclarationParent) {
   StartCU();
   {
     DIEHandler* class_handler
-      = StartNamedDIE(&root_handler_, dwarf2reader::DW_TAG_class_type,
+      = StartNamedDIE(&root_handler_, google_breakpad::DW_TAG_class_type,
                       "class_A");
     ASSERT_TRUE(class_handler != NULL);
     DeclarationDIE(class_handler, 0x0e0e877c8404544aULL,
-                   dwarf2reader::DW_TAG_subprogram, "declaration-name", "");
+                   google_breakpad::DW_TAG_subprogram, "declaration-name", "");
     class_handler->Finish();
     delete class_handler;
   }
 
-  DefinitionDIE(&root_handler_, dwarf2reader::DW_TAG_subprogram,
+  DefinitionDIE(&root_handler_, google_breakpad::DW_TAG_subprogram,
                 0x0e0e877c8404544aULL, "definition-name",
                 0x463c9ddf405be227ULL, 0x6a47774af5049680ULL);
 
@@ -1335,11 +1334,11 @@ TEST_F(Specifications, NamedScopeDeclarationParent) {
   StartCU();
   {
     DIEHandler* space_handler
-      = StartNamedDIE(&root_handler_, dwarf2reader::DW_TAG_namespace,
+      = StartNamedDIE(&root_handler_, google_breakpad::DW_TAG_namespace,
                       "space_A");
     ASSERT_TRUE(space_handler != NULL);
     DeclarationDIE(space_handler, 0x419bb1d12f9a73a2ULL,
-                   dwarf2reader::DW_TAG_class_type, "class-declaration-name",
+                   google_breakpad::DW_TAG_class_type, "class-declaration-name",
                    "");
     space_handler->Finish();
     delete space_handler;
@@ -1347,7 +1346,7 @@ TEST_F(Specifications, NamedScopeDeclarationParent) {
 
   {
     DIEHandler* class_handler
-      = StartSpecifiedDIE(&root_handler_, dwarf2reader::DW_TAG_class_type,
+      = StartSpecifiedDIE(&root_handler_, google_breakpad::DW_TAG_class_type,
                           0x419bb1d12f9a73a2ULL, "class-definition-name");
     ASSERT_TRUE(class_handler != NULL);
     DefineFunction(class_handler, "function",
@@ -1369,9 +1368,9 @@ TEST_F(Specifications, InlineFunction) {
 
   StartCU();
   DeclarationDIE(&root_handler_, 0xcd3c51b946fb1eeeLL,
-                 dwarf2reader::DW_TAG_subprogram, "inline-name", "");
+                 google_breakpad::DW_TAG_subprogram, "inline-name", "");
   AbstractInstanceDIE(&root_handler_, 0x1e8dac5d507ed7abULL,
-                      dwarf2reader::DW_INL_inlined, 0xcd3c51b946fb1eeeLL, "");
+                      google_breakpad::DW_INL_inlined, 0xcd3c51b946fb1eeeLL, "");
   DefineInlineInstanceDIE(&root_handler_, "", 0x1e8dac5d507ed7abULL,
                        0x1758a0f941b71efbULL, 0x1cf154f1f545e146ULL);
   root_handler_.Finish();
@@ -1388,11 +1387,11 @@ TEST_F(Specifications, InlineFunctionInNamespace) {
 
   StartCU();
   DIEHandler* space_handler
-      = StartNamedDIE(&root_handler_, dwarf2reader::DW_TAG_namespace,
+      = StartNamedDIE(&root_handler_, google_breakpad::DW_TAG_namespace,
                       "Namespace");
   ASSERT_TRUE(space_handler != NULL);
   AbstractInstanceDIE(space_handler, 0x1e8dac5d507ed7abULL,
-                      dwarf2reader::DW_INL_inlined, 0LL, "func-name");
+                      google_breakpad::DW_INL_inlined, 0LL, "func-name");
   DefineInlineInstanceDIE(space_handler, "", 0x1e8dac5d507ed7abULL,
                        0x1758a0f941b71efbULL, 0x1cf154f1f545e146ULL);
   space_handler->Finish();
@@ -1409,7 +1408,7 @@ TEST_F(Specifications, InlineFunctionInNamespace) {
 // - direct and definition
 TEST_F(Specifications, LongChain) {
   PushLine(0x5a0dd6bb85db754cULL, 0x3bccb213d08c7fd3ULL, "line-file", 21192926);
-  SetLanguage(dwarf2reader::DW_LANG_C_plus_plus);
+  SetLanguage(google_breakpad::DW_LANG_C_plus_plus);
 
   StartCU();
   // The structure we're building here is:
@@ -1439,23 +1438,23 @@ TEST_F(Specifications, LongChain) {
   //   class_G::class_H::func_I
   {
     DIEHandler* space_A_handler
-      = StartNamedDIE(&root_handler_, dwarf2reader::DW_TAG_namespace,
+      = StartNamedDIE(&root_handler_, google_breakpad::DW_TAG_namespace,
                       "space_A");
     DeclarationDIE(space_A_handler, 0x2e111126496596e2ULL,
-                   dwarf2reader::DW_TAG_namespace, "space_B", "");
+                   google_breakpad::DW_TAG_namespace, "space_B", "");
     space_A_handler->Finish();
     delete space_A_handler;
   }
 
   {
     DIEHandler* space_B_handler
-      = StartSpecifiedDIE(&root_handler_, dwarf2reader::DW_TAG_namespace,
+      = StartSpecifiedDIE(&root_handler_, google_breakpad::DW_TAG_namespace,
                           0x2e111126496596e2ULL);
     DIEHandler* struct_C_handler
-      = StartNamedDIE(space_B_handler, dwarf2reader::DW_TAG_structure_type,
+      = StartNamedDIE(space_B_handler, google_breakpad::DW_TAG_structure_type,
                       "struct_C");
     DeclarationDIE(struct_C_handler, 0x20cd423bf2a25a4cULL,
-                   dwarf2reader::DW_TAG_structure_type, "struct_D", "");
+                   google_breakpad::DW_TAG_structure_type, "struct_D", "");
     struct_C_handler->Finish();
     delete struct_C_handler;
     space_B_handler->Finish();
@@ -1464,13 +1463,13 @@ TEST_F(Specifications, LongChain) {
 
   {
     DIEHandler* struct_D_handler
-      = StartSpecifiedDIE(&root_handler_, dwarf2reader::DW_TAG_structure_type,
+      = StartSpecifiedDIE(&root_handler_, google_breakpad::DW_TAG_structure_type,
                           0x20cd423bf2a25a4cULL);
     DIEHandler* union_E_handler
-      = StartNamedDIE(struct_D_handler, dwarf2reader::DW_TAG_union_type,
+      = StartNamedDIE(struct_D_handler, google_breakpad::DW_TAG_union_type,
                       "union_E");
     DeclarationDIE(union_E_handler, 0xe25c84805aa58c32ULL,
-                   dwarf2reader::DW_TAG_union_type, "union_F", "");
+                   google_breakpad::DW_TAG_union_type, "union_F", "");
     union_E_handler->Finish();
     delete union_E_handler;
     struct_D_handler->Finish();
@@ -1479,13 +1478,13 @@ TEST_F(Specifications, LongChain) {
 
   {
     DIEHandler* union_F_handler
-      = StartSpecifiedDIE(&root_handler_, dwarf2reader::DW_TAG_union_type,
+      = StartSpecifiedDIE(&root_handler_, google_breakpad::DW_TAG_union_type,
                           0xe25c84805aa58c32ULL);
     DIEHandler* class_G_handler
-      = StartNamedDIE(union_F_handler, dwarf2reader::DW_TAG_class_type,
+      = StartNamedDIE(union_F_handler, google_breakpad::DW_TAG_class_type,
                       "class_G");
     DeclarationDIE(class_G_handler, 0xb70d960dcc173b6eULL,
-                   dwarf2reader::DW_TAG_class_type, "class_H", "");
+                   google_breakpad::DW_TAG_class_type, "class_H", "");
     class_G_handler->Finish();
     delete class_G_handler;
     union_F_handler->Finish();
@@ -1494,15 +1493,15 @@ TEST_F(Specifications, LongChain) {
 
   {
     DIEHandler* class_H_handler
-      = StartSpecifiedDIE(&root_handler_, dwarf2reader::DW_TAG_class_type,
+      = StartSpecifiedDIE(&root_handler_, google_breakpad::DW_TAG_class_type,
                           0xb70d960dcc173b6eULL);
     DeclarationDIE(class_H_handler, 0x27ff829e3bf69f37ULL,
-                   dwarf2reader::DW_TAG_subprogram, "func_I", "");
+                   google_breakpad::DW_TAG_subprogram, "func_I", "");
     class_H_handler->Finish();
     delete class_H_handler;
   }
 
-  DefinitionDIE(&root_handler_, dwarf2reader::DW_TAG_subprogram,
+  DefinitionDIE(&root_handler_, google_breakpad::DW_TAG_subprogram,
                 0x27ff829e3bf69f37ULL, "",
                 0x5a0dd6bb85db754cULL, 0x3bccb213d08c7fd3ULL);
   root_handler_.Finish();
@@ -1528,11 +1527,11 @@ TEST_F(Specifications, InterCU) {
     DwarfCUToModule root1_handler(&fc, &lr, nullptr, &reporter_);
     ASSERT_TRUE(root1_handler.StartCompilationUnit(0, 1, 2, 3, 3));
     ASSERT_TRUE(root1_handler.StartRootDIE(1,
-                                           dwarf2reader::DW_TAG_compile_unit));
+                                           google_breakpad::DW_TAG_compile_unit));
     ProcessStrangeAttributes(&root1_handler);
     ASSERT_TRUE(root1_handler.EndAttributes());
     DeclarationDIE(&root1_handler, 0xb8fbfdd5f0b26fceULL,
-                   dwarf2reader::DW_TAG_class_type, "class_A", "");
+                   google_breakpad::DW_TAG_class_type, "class_A", "");
     root1_handler.Finish();
   }
 
@@ -1541,13 +1540,13 @@ TEST_F(Specifications, InterCU) {
     DwarfCUToModule root2_handler(&fc, &lr, nullptr, &reporter_);
     ASSERT_TRUE(root2_handler.StartCompilationUnit(0, 1, 2, 3, 3));
     ASSERT_TRUE(root2_handler.StartRootDIE(1,
-                                           dwarf2reader::DW_TAG_compile_unit));
+                                           google_breakpad::DW_TAG_compile_unit));
     ASSERT_TRUE(root2_handler.EndAttributes());
     DIEHandler* class_A_handler
-      = StartSpecifiedDIE(&root2_handler, dwarf2reader::DW_TAG_class_type,
+      = StartSpecifiedDIE(&root2_handler, google_breakpad::DW_TAG_class_type,
                           0xb8fbfdd5f0b26fceULL);
     DeclarationDIE(class_A_handler, 0xb01fef8b380bd1a2ULL,
-                   dwarf2reader::DW_TAG_subprogram, "member_func_B", "");
+                   google_breakpad::DW_TAG_subprogram, "member_func_B", "");
     class_A_handler->Finish();
     delete class_A_handler;
     root2_handler.Finish();
@@ -1558,9 +1557,9 @@ TEST_F(Specifications, InterCU) {
     DwarfCUToModule root3_handler(&fc, &lr, nullptr, &reporter_);
     ASSERT_TRUE(root3_handler.StartCompilationUnit(0, 1, 2, 3, 3));
     ASSERT_TRUE(root3_handler.StartRootDIE(1,
-                                           dwarf2reader::DW_TAG_compile_unit));
+                                           google_breakpad::DW_TAG_compile_unit));
     ASSERT_TRUE(root3_handler.EndAttributes());
-    DefinitionDIE(&root3_handler, dwarf2reader::DW_TAG_subprogram,
+    DefinitionDIE(&root3_handler, google_breakpad::DW_TAG_subprogram,
                   0xb01fef8b380bd1a2ULL, "",
                   0x2618f00a1a711e53ULL, 0x4fd94b76d7c2caf5ULL);
     root3_handler.Finish();
@@ -1587,11 +1586,11 @@ TEST_F(Specifications, UnhandledInterCU) {
     DwarfCUToModule root1_handler(&fc, &lr, nullptr, &reporter_);
     ASSERT_TRUE(root1_handler.StartCompilationUnit(0, 1, 2, 3, 3));
     ASSERT_TRUE(root1_handler.StartRootDIE(1,
-                                           dwarf2reader::DW_TAG_compile_unit));
+                                           google_breakpad::DW_TAG_compile_unit));
     ProcessStrangeAttributes(&root1_handler);
     ASSERT_TRUE(root1_handler.EndAttributes());
     DeclarationDIE(&root1_handler, 0xb8fbfdd5f0b26fceULL,
-                   dwarf2reader::DW_TAG_class_type, "class_A", "");
+                   google_breakpad::DW_TAG_class_type, "class_A", "");
     root1_handler.Finish();
   }
 
@@ -1600,14 +1599,14 @@ TEST_F(Specifications, UnhandledInterCU) {
     DwarfCUToModule root2_handler(&fc, &lr, nullptr, &reporter_);
     ASSERT_TRUE(root2_handler.StartCompilationUnit(0, 1, 2, 3, 3));
     ASSERT_TRUE(root2_handler.StartRootDIE(1,
-                                           dwarf2reader::DW_TAG_compile_unit));
+                                           google_breakpad::DW_TAG_compile_unit));
     ASSERT_TRUE(root2_handler.EndAttributes());
     EXPECT_CALL(reporter_, UnhandledInterCUReference(_, _)).Times(1);
     DIEHandler* class_A_handler
-      = StartSpecifiedDIE(&root2_handler, dwarf2reader::DW_TAG_class_type,
+      = StartSpecifiedDIE(&root2_handler, google_breakpad::DW_TAG_class_type,
                           0xb8fbfdd5f0b26fceULL);
     DeclarationDIE(class_A_handler, 0xb01fef8b380bd1a2ULL,
-                   dwarf2reader::DW_TAG_subprogram, "member_func_B", "");
+                   google_breakpad::DW_TAG_subprogram, "member_func_B", "");
     class_A_handler->Finish();
     delete class_A_handler;
     root2_handler.Finish();
@@ -1618,11 +1617,11 @@ TEST_F(Specifications, UnhandledInterCU) {
     DwarfCUToModule root3_handler(&fc, &lr, nullptr, &reporter_);
     ASSERT_TRUE(root3_handler.StartCompilationUnit(0, 1, 2, 3, 3));
     ASSERT_TRUE(root3_handler.StartRootDIE(1,
-                                           dwarf2reader::DW_TAG_compile_unit));
+                                           google_breakpad::DW_TAG_compile_unit));
     ASSERT_TRUE(root3_handler.EndAttributes());
     EXPECT_CALL(reporter_, UnhandledInterCUReference(_, _)).Times(1);
     EXPECT_CALL(reporter_, UnnamedFunction(_)).Times(1);
-    DefinitionDIE(&root3_handler, dwarf2reader::DW_TAG_subprogram,
+    DefinitionDIE(&root3_handler, google_breakpad::DW_TAG_subprogram,
                   0xb01fef8b380bd1a2ULL, "",
                   0x2618f00a1a711e53ULL, 0x4fd94b76d7c2caf5ULL);
     root3_handler.Finish();
@@ -1636,8 +1635,8 @@ TEST_F(Specifications, BadOffset) {
 
   StartCU();
   DeclarationDIE(&root_handler_, 0xefd7f7752c27b7e4ULL,
-                 dwarf2reader::DW_TAG_subprogram, "", "");
-  DefinitionDIE(&root_handler_, dwarf2reader::DW_TAG_subprogram,
+                 google_breakpad::DW_TAG_subprogram, "", "");
+  DefinitionDIE(&root_handler_, google_breakpad::DW_TAG_subprogram,
                 0x2be953efa6f9a996ULL, "function",
                 0xa0277efd7ce83771ULL, 0x149554a184c730c1ULL);
   root_handler_.Finish();
@@ -1648,8 +1647,8 @@ TEST_F(Specifications, FunctionDefinitionHasOwnName) {
 
   StartCU();
   DeclarationDIE(&root_handler_, 0xc34ff4786cae78bdULL,
-                 dwarf2reader::DW_TAG_subprogram, "declaration-name", "");
-  DefinitionDIE(&root_handler_, dwarf2reader::DW_TAG_subprogram,
+                 google_breakpad::DW_TAG_subprogram, "declaration-name", "");
+  DefinitionDIE(&root_handler_, google_breakpad::DW_TAG_subprogram,
                 0xc34ff4786cae78bdULL, "definition-name",
                 0xced50b3eea81022cULL, 0x08dd4d301cc7a7d2ULL);
   root_handler_.Finish();
@@ -1664,19 +1663,19 @@ TEST_F(Specifications, ClassDefinitionHasOwnName) {
 
   StartCU();
   DeclarationDIE(&root_handler_, 0xd0fe467ec2f1a58cULL,
-                 dwarf2reader::DW_TAG_class_type, "class-declaration-name", "");
+                 google_breakpad::DW_TAG_class_type, "class-declaration-name", "");
 
-  dwarf2reader::DIEHandler* class_definition
-    = StartSpecifiedDIE(&root_handler_, dwarf2reader::DW_TAG_class_type,
+  google_breakpad::DIEHandler* class_definition
+    = StartSpecifiedDIE(&root_handler_, google_breakpad::DW_TAG_class_type,
                         0xd0fe467ec2f1a58cULL, "class-definition-name");
   ASSERT_TRUE(class_definition);
   DeclarationDIE(class_definition, 0x6d028229c15623dbULL,
-                 dwarf2reader::DW_TAG_subprogram,
+                 google_breakpad::DW_TAG_subprogram,
                  "function-declaration-name", "");
   class_definition->Finish();
   delete class_definition;
 
-  DefinitionDIE(&root_handler_, dwarf2reader::DW_TAG_subprogram,
+  DefinitionDIE(&root_handler_, google_breakpad::DW_TAG_subprogram,
                 0x6d028229c15623dbULL, "function-definition-name",
                 0x1d0f5e0f6ce309bdULL, 0x654e1852ec3599e7ULL);
 
@@ -1697,20 +1696,20 @@ TEST_F(Specifications, PreferSpecificationParents) {
 
   StartCU();
   {
-    dwarf2reader::DIEHandler* declaration_class_handler =
-      StartNamedDIE(&root_handler_, dwarf2reader::DW_TAG_class_type,
+    google_breakpad::DIEHandler* declaration_class_handler =
+      StartNamedDIE(&root_handler_, google_breakpad::DW_TAG_class_type,
                     "declaration-class");
     DeclarationDIE(declaration_class_handler, 0x9ddb35517455ef7aULL,
-                   dwarf2reader::DW_TAG_subprogram, "function-declaration",
+                   google_breakpad::DW_TAG_subprogram, "function-declaration",
                    "");
     declaration_class_handler->Finish();
     delete declaration_class_handler;
   }
   {
-    dwarf2reader::DIEHandler* definition_class_handler
-      = StartNamedDIE(&root_handler_, dwarf2reader::DW_TAG_class_type,
+    google_breakpad::DIEHandler* definition_class_handler
+      = StartNamedDIE(&root_handler_, google_breakpad::DW_TAG_class_type,
                       "definition-class");
-    DefinitionDIE(definition_class_handler, dwarf2reader::DW_TAG_subprogram,
+    DefinitionDIE(definition_class_handler, google_breakpad::DW_TAG_subprogram,
                   0x9ddb35517455ef7aULL, "function-definition",
                   0xbbd9d54dce3b95b7ULL, 0x39188b7b52b0899fULL);
     definition_class_handler->Finish();
@@ -1732,12 +1731,12 @@ TEST_F(CUErrors, BadStmtList) {
               .StartCompilationUnit(0xc591d5b037543d7cULL, 0x11, 0xcd,
                                     0x2d7d19546cf6590cULL, 3));
   ASSERT_TRUE(root_handler_.StartRootDIE(0xae789dc102cfca54ULL,
-                                         dwarf2reader::DW_TAG_compile_unit));
-  root_handler_.ProcessAttributeString(dwarf2reader::DW_AT_name,
-                                       dwarf2reader::DW_FORM_strp,
+                                         google_breakpad::DW_TAG_compile_unit));
+  root_handler_.ProcessAttributeString(google_breakpad::DW_AT_name,
+                                       google_breakpad::DW_FORM_strp,
                                        "compilation-unit-name");
-  root_handler_.ProcessAttributeUnsigned(dwarf2reader::DW_AT_stmt_list,
-                                         dwarf2reader::DW_FORM_ref4,
+  root_handler_.ProcessAttributeUnsigned(google_breakpad::DW_AT_stmt_list,
+                                         google_breakpad::DW_FORM_ref4,
                                          dummy_line_size_ + 10);
   root_handler_.EndAttributes();
   root_handler_.Finish();
@@ -1789,7 +1788,7 @@ TEST_F(CUErrors, BadCURootDIETag) {
                                      0xc9de224ccb99ac3eULL, 3));
 
   ASSERT_FALSE(root_handler_.StartRootDIE(0x02e56bfbda9e7337ULL,
-                                          dwarf2reader::DW_TAG_subprogram));
+                                          google_breakpad::DW_TAG_subprogram));
 }
 
 // Tests for DwarfCUToModule::Reporter. These just produce (or fail to

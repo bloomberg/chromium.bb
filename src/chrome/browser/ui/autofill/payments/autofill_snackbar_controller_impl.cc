@@ -5,7 +5,10 @@
 
 #include <string>
 #include "base/macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "build/build_config.h"
+#include "chrome/browser/autofill/manual_filling_controller.h"
+#include "chrome/browser/autofill/manual_filling_controller_impl.h"
 #include "chrome/browser/ui/android/autofill/snackbar/autofill_snackbar_view_android.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -26,6 +29,7 @@ void AutofillSnackbarControllerImpl::Show() {
     autofill_snackbar_view_ = AutofillSnackbarView::Create(this);
   }
   autofill_snackbar_view_->Show();
+  base::UmaHistogramBoolean("Autofill.Snackbar.VirtualCard.Shown", true);
 }
 
 void AutofillSnackbarControllerImpl::Dismiss() {
@@ -40,12 +44,14 @@ void AutofillSnackbarControllerImpl::SetViewForTesting(
 }
 
 void AutofillSnackbarControllerImpl::OnActionClicked() {
-  // TODO(crbug.com/1196021): Trigger manual fallback and log the action.
+  ManualFillingControllerImpl::GetOrCreate(web_contents_)
+      ->ShowAccessorySheetTab(autofill::AccessoryTabType::CREDIT_CARDS);
+  base::UmaHistogramBoolean("Autofill.Snackbar.VirtualCard.ActionClicked",
+                            true);
 }
 
 void AutofillSnackbarControllerImpl::OnDismissed() {
   autofill_snackbar_view_ = nullptr;
-  // TODO(crbug.com/1196021): Log that no user action was taken.
 }
 
 std::u16string AutofillSnackbarControllerImpl::GetMessageText() const {

@@ -11,10 +11,11 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/download/download_ui_model.h"
 #include "components/download/public/common/download_item.h"
 #include "components/safe_browsing/buildflags.h"
-#include "components/safe_browsing/core/proto/download_file_types.pb.h"
+#include "components/safe_browsing/content/common/proto/download_file_types.pb.h"
 
 // Implementation of DownloadUIModel that wrappers around a |DownloadItem*|. As
 // such, the caller is expected to ensure that the |download| passed into the
@@ -60,6 +61,8 @@ class DownloadItemModel : public DownloadUIModel,
   bool IsBeingRevived() const override;
   void SetIsBeingRevived(bool is_being_revived) override;
   download::DownloadItem* download() override;
+  std::u16string GetWebDriveName() const override;
+  std::u16string GetWebDriveMessage(bool verbose) const override;
   base::FilePath GetFileNameToReportUser() const override;
   base::FilePath GetTargetFilePath() const override;
   void OpenDownload() override;

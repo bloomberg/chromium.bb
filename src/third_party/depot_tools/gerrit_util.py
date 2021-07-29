@@ -315,7 +315,8 @@ class GceAuthenticator(Authenticator):
             "Don't know how to work with protocol '%s'" % protocol)
       try:
         resp, contents = httplib2.Http().request(url, 'GET', **kwargs)
-      except (socket.error, httplib2.HttpLib2Error) as e:
+      except (socket.error, httplib2.HttpLib2Error,
+              httplib2.socks.ProxyError) as e:
         LOGGER.debug('GET [%s] raised %s', url, e)
         return None, None
       LOGGER.debug('GET [%s] #%d/%d (%d)', url, i+1, TRY_LIMIT, resp.status)
@@ -700,6 +701,12 @@ def GetChangeComments(host, change):
 def GetChangeRobotComments(host, change):
   """Gets the line- and file-level robot comments on a change."""
   path = 'changes/%s/robotcomments' % change
+  return ReadHttpJsonResponse(CreateHttpConn(host, path))
+
+
+def GetRelatedChanges(host, change, revision='current'):
+  """Gets the related changes for a given change and revision."""
+  path = 'changes/%s/revisions/%s/related' % (change, revision)
   return ReadHttpJsonResponse(CreateHttpConn(host, path))
 
 

@@ -16,7 +16,6 @@
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -514,7 +513,7 @@ TEST_F(SearchResultRankerTest, ZeroStateStaleResultIgnored) {
                                        HasId("Z2"), HasId("Z3"), HasId("Z4"),
                                        HasId("D1"), HasId("Z5"))));
     // D1 should increment its cache counter.
-    ranker->ZeroStateResultsDisplayed({{"D1", 0.0f}});
+    ranker->ZeroStateResultsDisplayed({{"D1", 0}});
   }
 
   auto results_copy = results;
@@ -575,7 +574,7 @@ TEST_F(SearchResultRankerTest, ZeroStateCacheResetWhenTopResultChanges) {
                                        HasId("Z2"), HasId("Z3"), HasId("Z4"),
                                        HasId("D1"), HasId("Z5"), HasId("D2"))));
     // D1 should increment its cache counter.
-    ranker->ZeroStateResultsDisplayed({{"D1", 0.0f}});
+    ranker->ZeroStateResultsDisplayed({{"D1", 0}});
   }
 
   {

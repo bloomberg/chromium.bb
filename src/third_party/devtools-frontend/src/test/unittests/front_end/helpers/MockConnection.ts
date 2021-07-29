@@ -4,6 +4,7 @@
 
 import * as ProtocolClient from '../../../../front_end/core/protocol_client/protocol_client.js';
 import type {ProtocolMapping} from '../../../../front_end/generated/protocol-mapping.js'; // eslint-disable-line rulesdir/es_modules_import
+import type * as ProtocolProxyApi from '../../../../front_end/generated/protocol-proxy-api.js';
 
 import {deinitializeGlobalVars, initializeGlobalVars} from './EnvironmentHelpers.js';
 
@@ -41,18 +42,20 @@ export function clearAllMockConnectionResponseHandlers() {
 }
 
 export function dispatchEvent<E extends keyof ProtocolMapping.Events>(
-    target: SDK.SDKModel.Target, event: E, ...payload: ProtocolMapping.Events[E]) {
-  const [domain, method] = event.split('.');
-  if (!target._dispatchers[domain]) {
-    throw new Error(`No dispatcher for domain "${domain}" on provided target`);
+    target: SDK.Target.Target, eventName: E, ...payload: ProtocolMapping.Events[E]) {
+  const event = eventName as ProtocolClient.InspectorBackend.QualifiedName;
+  const [domain] = ProtocolClient.InspectorBackend.splitQualifiedName(event);
+
+  const registeredEvents =
+      ProtocolClient.InspectorBackend.inspectorBackend.getOrCreateEventParameterNamesForDomainForTesting(
+          domain as keyof ProtocolProxyApi.ProtocolDispatchers);
+  const eventParameterNames = registeredEvents.get(event);
+  if (!eventParameterNames) {
+    // The event is not registered, fake-register with empty parameters.
+    registeredEvents.set(event, []);
   }
 
-  // Register the event if it doesn't exist already.
-  if (!(method in target._dispatchers[domain]._eventArgs)) {
-    target._dispatchers[domain].registerEvent(method, {});
-  }
-
-  target._dispatchers[domain].dispatch(method, {method, params: payload[0]});
+  target.dispatch({method: event, params: payload[0]});
 }
 
 function enable({reset = true} = {}) {

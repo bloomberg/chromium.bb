@@ -11,6 +11,8 @@
 #include "ash/public/cpp/holding_space/holding_space_item.h"
 #include "ash/public/cpp/holding_space/holding_space_model.h"
 #include "ash/public/cpp/holding_space/holding_space_model_observer.h"
+#include "ash/public/cpp/holding_space/holding_space_util.h"
+#include "ash/public/cpp/holding_space/mock_holding_space_model_observer.h"
 #include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
@@ -28,9 +30,9 @@
 #include "chrome/browser/ash/crosapi/download_controller_ash.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
 #include "chrome/browser/ash/drive/drivefs_test_support.h"
+#include "chrome/browser/ash/file_manager/path_util.h"
+#include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/file_manager/path_util.h"
-#include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service_factory.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_util.h"
@@ -51,25 +53,6 @@ namespace {
 // HoldingSpaceKeyedServiceBrowserTest. The tests are parameterized by this
 // enum.
 enum class FileSystemType { kDownloads, kDriveFs };
-
-// Mocks -----------------------------------------------------------------------
-
-// Mock observer which can be used to set expectations about model behavior.
-class MockHoldingSpaceModelObserver : public HoldingSpaceModelObserver {
- public:
-  MOCK_METHOD(void,
-              OnHoldingSpaceItemsAdded,
-              (const std::vector<const HoldingSpaceItem*>& items),
-              (override));
-  MOCK_METHOD(void,
-              OnHoldingSpaceItemsRemoved,
-              (const std::vector<const HoldingSpaceItem*>& items),
-              (override));
-  MOCK_METHOD(void,
-              OnHoldingSpaceItemInitialized,
-              (const HoldingSpaceItem* item),
-              (override));
-};
 
 // Helpers ---------------------------------------------------------------------
 
@@ -254,10 +237,12 @@ void WaitForItemInitialization(const std::string& item_id) {
       }));
 }
 
-// Adds a holding space item backed by a txt file at `item_path`.
-// Returns a pointer to the added item.
-const HoldingSpaceItem* AddHoldingSpaceItem(Profile* profile,
-                                            const base::FilePath& item_path) {
+// Adds a holding space item backed by the file at `item_path` with optional
+// `progress`. Returns a pointer to the added item.
+const HoldingSpaceItem* AddHoldingSpaceItem(
+    Profile* profile,
+    const base::FilePath& item_path,
+    const HoldingSpaceProgress& progress = HoldingSpaceProgress()) {
   EXPECT_TRUE(ash::HoldingSpaceController::Get());
 
   auto* holding_space_model = ash::HoldingSpaceController::Get()->model();
@@ -267,10 +252,11 @@ const HoldingSpaceItem* AddHoldingSpaceItem(Profile* profile,
       HoldingSpaceItem::CreateFileBackedItem(
           HoldingSpaceItem::Type::kDownload, item_path,
           holding_space_util::ResolveFileSystemUrl(profile, item_path),
+          progress,
           base::BindLambdaForTesting([&](HoldingSpaceItem::Type type,
                                          const base::FilePath& file_path) {
             return std::make_unique<HoldingSpaceImage>(
-                HoldingSpaceImage::GetMaxSizeForType(type), file_path,
+                holding_space_util::GetMaxImageSizeForType(type), file_path,
                 /*async_bitmap_resolver=*/base::DoNothing());
           }));
 
@@ -412,20 +398,35 @@ INSTANTIATE_TEST_SUITE_P(FileSystem,
 
 // Tests -----------------------------------------------------------------------
 
-// Verifies that holding space items are removed when their backing files
-// "disappear". Note that a "disappearance" could be due to file move or delete.
+// Verifies that completed holding space items are removed when their backing
+// files "disappear". Note that a "disappearance" could be due to a file move or
+// delete. In-progress holding space items are not subject to the same backing
+// file path validity checks and may outlive their backing files.
 IN_PROC_BROWSER_TEST_P(HoldingSpaceKeyedServiceBrowserTest,
                        RemovesItemsWhenBackingFileDisappears) {
-  // Verify that items are removed when their backing files are deleted.
+  // Create an `in_progress_holding_space_item_to_delete`.
+  const auto* in_progress_holding_space_item_to_delete = AddHoldingSpaceItem(
+      browser()->profile(),
+      CreateTextFile(GetTestMountPoint(),
+                     /*relative_path=*/absl::nullopt),
+      HoldingSpaceProgress(/*received_bytes=*/0, /*total_bytes=*/100));
+
+  {
+    // Delete its backing file. Later we will confirm that the associated
+    // holding space item still exists after we are sure that scheduled validity
+    // checks have run.
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    EXPECT_TRUE(base::DeleteFile(
+        in_progress_holding_space_item_to_delete->file_path()));
+  }
+
+  // Create a completed `holding_space_item_to_delete`.
   const auto* holding_space_item_to_delete = AddHoldingSpaceItem(
       browser()->profile(), CreateTextFile(GetTestMountPoint(),
                                            /*relative_path=*/absl::nullopt));
 
-  // Verify that items are removed when their backing files are moved.
-  const auto* holding_space_item_to_move = AddHoldingSpaceItem(
-      browser()->profile(), CreateTextFile(GetTestMountPoint(),
-                                           /*relative_path=*/absl::nullopt));
-
+  // Delete its backing file and verify that it is removed from holding space.
+  // Note that this guarantees that scheduled validity checks will have run.
   RemoveHoldingSpaceItemViaClosure(
       holding_space_item_to_delete, base::BindLambdaForTesting([&]() {
         base::ScopedAllowBlockingForTesting allow_blocking;
@@ -433,6 +434,35 @@ IN_PROC_BROWSER_TEST_P(HoldingSpaceKeyedServiceBrowserTest,
             base::DeleteFile(holding_space_item_to_delete->file_path()));
       }));
 
+  // Now that scheduled validity checks have run, verify that the in-progress
+  // item whose backing file was deleted still exists in the model.
+  auto* model = HoldingSpaceController::Get()->model();
+  EXPECT_TRUE(model->GetItem(in_progress_holding_space_item_to_delete->id()));
+
+  // Create an `in_progress_holding_space_item_to_move`.
+  const auto* in_progress_holding_space_item_to_move = AddHoldingSpaceItem(
+      browser()->profile(),
+      CreateTextFile(GetTestMountPoint(),
+                     /*relative_path=*/absl::nullopt),
+      HoldingSpaceProgress(/*received_bytes=*/0, /*total_bytes=*/100));
+
+  {
+    // Move its backing file. Later we will confirm that the associated holding
+    // space item still exists after we are sure that scheduled validity checks
+    // have run.
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    EXPECT_TRUE(base::Move(in_progress_holding_space_item_to_move->file_path(),
+                           GetTestMountPoint().Append(
+                               base::UnguessableToken::Create().ToString())));
+  }
+
+  // Create a completed `holding_space_item_to_move`.
+  const auto* holding_space_item_to_move = AddHoldingSpaceItem(
+      browser()->profile(), CreateTextFile(GetTestMountPoint(),
+                                           /*relative_path=*/absl::nullopt));
+
+  // Move its backing file and verify that it is removed from holding space.
+  // Note that this guarantees that scheduled validity checks will have run.
   RemoveHoldingSpaceItemViaClosure(
       holding_space_item_to_move, base::BindLambdaForTesting([&]() {
         base::ScopedAllowBlockingForTesting allow_blocking;
@@ -440,6 +470,38 @@ IN_PROC_BROWSER_TEST_P(HoldingSpaceKeyedServiceBrowserTest,
             base::Move(holding_space_item_to_move->file_path(),
                        GetTestMountPoint().Append(
                            base::UnguessableToken::Create().ToString())));
+      }));
+
+  // Now that scheduled validity checks have run, verify that the in-progress
+  // item whose backing file was moved still exists in the model.
+  EXPECT_TRUE(model->GetItem(in_progress_holding_space_item_to_move->id()));
+
+  // Remove all holding space items. This will clear all file system watches.
+  model->RemoveAll();
+  EXPECT_EQ(model->items().size(), 0u);
+
+  // Add an `in_progress_holding_space_item_to_complete`. Because the item is
+  // in-progress, no file system watch should have been registered.
+  const auto* in_progress_holding_space_item_to_complete = AddHoldingSpaceItem(
+      browser()->profile(),
+      CreateTextFile(GetTestMountPoint(),
+                     /*relative_path=*/absl::nullopt),
+      HoldingSpaceProgress(/*received_bytes=*/0, /*total_bytes=*/100));
+
+  // Complete the item. This should result in a file system watch being
+  // registered for the backing file's parent directory.
+  model->UpdateItem(in_progress_holding_space_item_to_complete->id())
+      ->SetProgress(
+          HoldingSpaceProgress(/*received_bytes=*/100, /*total_bytes=*/100));
+
+  // Delete its backing file and verify that it is removed from holding space
+  // since the now completed item will be subject to validity checks.
+  RemoveHoldingSpaceItemViaClosure(
+      in_progress_holding_space_item_to_complete,
+      base::BindLambdaForTesting([&]() {
+        base::ScopedAllowBlockingForTesting allow_blocking;
+        EXPECT_TRUE(base::DeleteFile(
+            in_progress_holding_space_item_to_complete->file_path()));
       }));
 }
 

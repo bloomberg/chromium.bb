@@ -52,14 +52,18 @@ bool IsSupportedHdrMetadata(const gfx::HdrMetadataType& hdr_metadata_type) {
   return false;
 }
 
-#if BUILDFLAG(ENABLE_PLATFORM_HEVC) && BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
+#if BUILDFLAG(ENABLE_PLATFORM_ENCRYPTED_HEVC)
 bool IsHevcProfileSupported(VideoCodecProfile profile) {
+  // Only encrypted HEVC content is supported, and normally MSE.isTypeSupported
+  // returns false for HEVC. The kEnableClearHevcForTesting flag allows it to
+  // return true to enable a wider array of test scenarios to function properly.
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableClearHevcForTesting)) {
     return false;
   }
   switch (profile) {
-    case HEVCPROFILE_MAIN:  // fallthrough
+    case HEVCPROFILE_MAIN:
+      FALLTHROUGH;
     case HEVCPROFILE_MAIN10:
       return true;
     case HEVCPROFILE_MAIN_STILL_PICTURE:
@@ -69,7 +73,7 @@ bool IsHevcProfileSupported(VideoCodecProfile profile) {
   }
   return false;
 }
-#endif  // ENABLE_PLATFORM_HEVC && USE_CHROMEOS_PROTECTED_MEDIA
+#endif  // BUILDFLAG(ENABLE_PLATFORM_ENCRYPTED_HEVC)
 
 }  // namespace
 
@@ -339,12 +343,12 @@ bool IsDefaultSupportedVideoType(const VideoType& type) {
       return true;
 
     case kCodecHEVC:
-#if BUILDFLAG(ENABLE_PLATFORM_HEVC) && BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
+#if BUILDFLAG(ENABLE_PLATFORM_ENCRYPTED_HEVC)
       return IsColorSpaceSupported(type.color_space) &&
              IsHevcProfileSupported(type.profile);
 #else
       return false;
-#endif
+#endif  // BUILDFLAG(ENABLE_PLATFORM_ENCRYPTED_HEVC)
     case kUnknownVideoCodec:
     case kCodecVC1:
     case kCodecMPEG2:

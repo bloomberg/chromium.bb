@@ -15,8 +15,10 @@ import type {DOMNode} from './DOMModel.js';
 import {DeferredDOMNode, DOMModel, Events as DOMModelEvents} from './DOMModel.js';  // eslint-disable-line no-unused-vars
 import {OverlayPersistentHighlighter} from './OverlayPersistentHighlighter.js';
 import type {RemoteObject} from './RemoteObject.js'; // eslint-disable-line no-unused-vars
-import type {Target} from './SDKModel.js';
-import {Capability, SDKModel, TargetManager} from './SDKModel.js';  // eslint-disable-line no-unused-vars
+import type {Target} from './Target.js';
+import {Capability} from './Target.js';
+import {SDKModel} from './SDKModel.js';
+import {TargetManager} from './TargetManager.js';
 
 const UIStrings = {
   /**
@@ -250,7 +252,7 @@ export class OverlayModel extends SDKModel implements ProtocolProxyApi.OverlayDi
   }
 
   async suspendModel(): Promise<void> {
-    Common.EventTarget.EventTarget.removeEventListeners(this._registeredListeners);
+    Common.EventTarget.removeEventListeners(this._registeredListeners);
     await this._overlayAgent.invoke_disable();
   }
 
@@ -478,7 +480,7 @@ export class OverlayModel extends SDKModel implements ProtocolProxyApi.OverlayDi
     const colorFormat = Common.Settings.Settings.instance().moduleSetting('colorFormat').get();
 
     const highlightConfig: Protocol.Overlay.HighlightConfig = {
-      showInfo: mode === 'all',
+      showInfo: mode === 'all' || mode === 'container-outline',
       showRulers: showRulers,
       showStyles: showDetailedToolip,
       showAccessibilityInfo: showDetailedToolip,
@@ -683,6 +685,15 @@ export class OverlayModel extends SDKModel implements ProtocolProxyApi.OverlayDi
         },
         flexibilityArrow: {
           color: Common.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+        },
+      };
+    }
+
+    if (mode === 'container-outline') {
+      highlightConfig.containerQueryContainerHighlightConfig = {
+        containerBorder: {
+          color: Common.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+          pattern: Protocol.Overlay.LineStylePattern.Dashed,
         },
       };
     }

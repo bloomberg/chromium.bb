@@ -343,12 +343,6 @@ struct FeaturesGL : FeatureSetBase
         "Issues with blitFramebuffer when the parameters don't match the framebuffer size.",
         &members, "http://crbug.com/830046"};
 
-    // Calling glTexImage2D with zero size generates GL errors
-    Feature resettingTexturesGeneratesErrors = {
-        "reset_texture_generates_errors", FeatureCategory::OpenGLWorkarounds,
-        "Calling glTexImage2D with zero size generates errors.", &members,
-        "http://anglebug.com/3859"};
-
     // Mac Intel samples transparent black from GL_COMPRESSED_RGB_S3TC_DXT1_EXT
     Feature rgbDXT1TexturesSampleZeroAlpha = {
         "rgb_dxt1_textures_sample_zero_alpha", FeatureCategory::OpenGLWorkarounds,
@@ -555,6 +549,19 @@ struct FeaturesGL : FeatureSetBase
                                         "Switching framebuffers without a flush can lead to "
                                         "crashes on Intel 9th Generation GPU Macs.",
                                         &members, "http://crbug.com/1181068"};
+
+    Feature disableMultisampledRenderToTexture = {
+        "disable_mutlisampled_render_to_texture", FeatureCategory::OpenGLWorkarounds,
+        "Many drivers have bugs when using GL_EXT_multisampled_render_to_texture", &members,
+        "http://anglebug.com/2894"};
+
+    // Mac OpenGL drivers often hang when calling glTexSubImage with >120kb of data. Instead, upload
+    // the data in <120kb chunks.
+    static constexpr const size_t kUploadTextureDataInChunksUploadSize = (120 * 1024) - 1;
+    Feature uploadTextureDataInChunks                                  = {
+        "chunked_texture_upload", FeatureCategory::OpenGLWorkarounds,
+        "Upload texture data in <120kb chunks to work around Mac driver hangs and crashes.",
+        &members, "http://crbug.com/1181068"};
 };
 
 inline FeaturesGL::FeaturesGL()  = default;

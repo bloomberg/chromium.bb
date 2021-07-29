@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
@@ -111,6 +110,8 @@ class ArcIntentHelperBridge : public KeyedService,
                               std::vector<IntentFilter> deleted) override;
   void OnDownloadAdded(const std::string& relative_path,
                        const std::string& owner_package_name) override;
+  void OnOpenAppWithIntent(const GURL& start_url,
+                           arc::mojom::LaunchIntentPtr intent) override;
 
   // Retrieves icons for the |activities| and calls |callback|.
   // See ActivityIconLoader::GetActivityIcons() for more details.

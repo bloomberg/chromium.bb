@@ -96,6 +96,7 @@ typedef struct AV1TplRowMultiThreadInfo {
 typedef struct TplTxfmStats {
   double abs_coeff_sum[256];  // Assume we are using 16x16 transform block
   int txfm_block_count;
+  int coeff_num;
 } TplTxfmStats;
 
 typedef struct TplDepStats {
@@ -106,6 +107,7 @@ typedef struct TplDepStats {
   int64_t cmp_recrf_dist[2];
   int64_t srcrf_rate;
   int64_t recrf_rate;
+  int64_t srcrf_sse;
   int64_t cmp_recrf_rate[2];
   int64_t mc_dep_rate;
   int64_t mc_dep_dist;
@@ -127,10 +129,6 @@ typedef struct TplDepFrame {
   int mi_cols;
   int base_rdmult;
   uint32_t frame_display_index;
-  double abs_coeff_sum[256];  // Assume we are using 16x16 transform block
-  double abs_coeff_mean[256];
-  int coeff_num;  // number of coefficients in a transform block
-  int txfm_block_count;
 } TplDepFrame;
 
 /*!\endcond */
@@ -138,6 +136,11 @@ typedef struct TplDepFrame {
  * \brief Params related to temporal dependency model.
  */
 typedef struct TplParams {
+  /*!
+   * Whether the tpl stats is ready.
+   */
+  int ready;
+
   /*!
    * Block granularity of tpl score storage.
    */
@@ -161,6 +164,12 @@ typedef struct TplParams {
    * group.
    */
   TplDepStats *tpl_stats_pool[MAX_LAG_BUFFERS];
+
+  /*!
+   * Buffer to store tpl transform stats per frame.
+   * txfm_stats_list[i] stores the TplTxfmStats of the ith frame in a gf group.
+   */
+  TplTxfmStats txfm_stats_list[MAX_LENGTH_TPL_FRAME_STATS];
 
   /*!
    * Buffer to store tpl reconstructed frame.
@@ -207,7 +216,33 @@ typedef struct TplParams {
    * Frame border for tpl frame.
    */
   int border_in_pixels;
+
+#if CONFIG_BITRATE_ACCURACY
+  /*
+   * Estimated and actual GOP bitrate.
+   */
+  double estimated_gop_bitrate;
+  double actual_gop_bitrate;
+#endif
 } TplParams;
+
+#if CONFIG_RD_COMMAND
+typedef enum {
+  RD_OPTION_NONE,
+  RD_OPTION_SET_Q,
+  RD_OPTION_SET_Q_RDMULT
+} RD_OPTION;
+
+typedef struct RD_COMMAND {
+  RD_OPTION option_ls[MAX_LENGTH_TPL_FRAME_STATS];
+  int q_index_ls[MAX_LENGTH_TPL_FRAME_STATS];
+  int rdmult_ls[MAX_LENGTH_TPL_FRAME_STATS];
+  int frame_count;
+  int frame_index;
+} RD_COMMAND;
+
+void av1_read_rd_command(const char *filepath, RD_COMMAND *rd_command);
+#endif  // CONFIG_RD_COMMAND
 
 /*!\brief Allocate buffers used by tpl model
  *
@@ -239,9 +274,14 @@ int av1_tpl_setup_stats(struct AV1_COMP *cpi, int gop_eval,
 
 /*!\cond */
 
+void av1_tpl_preload_rc_estimate(
+    struct AV1_COMP *cpi, const struct EncodeFrameParams *const frame_params);
+
 int av1_tpl_ptr_pos(int mi_row, int mi_col, int stride, uint8_t right_shift);
 
 void av1_init_tpl_stats(TplParams *const tpl_data);
+
+int av1_tpl_stats_ready(const TplParams *tpl_data, int gf_frame_index);
 
 void av1_tpl_rdmult_setup(struct AV1_COMP *cpi);
 
@@ -302,15 +342,48 @@ double av1_laplace_estimate_frame_rate(int q_index, int block_count,
                                        const double *abs_coeff_mean,
                                        int coeff_num);
 
-/*!\brief  Init data structure storing transform stats
+/*
+ *!\brief Compute the number of bits needed to encode a GOP
  *
- *\ingroup tpl_modelling
- *
- * \param[in]    tpl_frame       pointer of tpl frame data structure
- * \param[in]    tpl_bsize_1d    length of the side of a square transform block
+ * \param[in]    q_index_list    array of q_index, one per frame
+ * \param[in]    frame_count     number of frames in the GOP
+ * \param[in]    stats           array of transform stats, one per frame
  *
  */
-void av1_tpl_stats_init_txfm_stats(TplDepFrame *tpl_frame, int tpl_bsize_1d);
+double av1_estimate_gop_bitrate(const unsigned char *q_index_list,
+                                const int frame_count,
+                                const TplTxfmStats *stats);
+
+/*
+ *!\brief Init TplTxfmStats
+ *
+ * \param[in]    tpl_txfm_stats  a structure for storing transform stats
+ *
+ *
+ */
+void av1_init_tpl_txfm_stats(TplTxfmStats *tpl_txfm_stats);
+
+/*
+ *!\brief Accumulate TplTxfmStats
+ *
+ * \param[in]  sub_stats          a structure for storing sub transform stats
+ * \param[out] accumulated_stats  a structure for storing accumulated transform
+ *stats
+ *
+ */
+void av1_accumulate_tpl_txfm_stats(const TplTxfmStats *sub_stats,
+                                   TplTxfmStats *accumulated_stats);
+
+/*
+ *!\brief Record a transform block into  TplTxfmStats
+ *
+ * \param[in]  tpl_txfm_stats     A structure for storing transform stats
+ * \param[out] coeff              An array of transform coefficients. Its size
+ *                                should equal to tpl_txfm_stats.coeff_num.
+ *
+ */
+void av1_record_tpl_txfm_block(TplTxfmStats *tpl_txfm_stats,
+                               const tran_low_t *coeff);
 
 /*!\brief  Estimate coefficient entropy using Laplace dsitribution
  *

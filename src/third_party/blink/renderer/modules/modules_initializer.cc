@@ -17,6 +17,7 @@
 #include "third_party/blink/public/web/web_view_client.h"
 #include "third_party/blink/renderer/bindings/modules/v8/module_bindings_initializer.h"
 #include "third_party/blink/renderer/core/css/background_color_paint_image_generator.h"
+#include "third_party/blink/renderer/core/css/clip_path_paint_image_generator.h"
 #include "third_party/blink/renderer/core/css/css_paint_image_generator.h"
 #include "third_party/blink/renderer/core/dom/context_features_client_impl.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -43,6 +44,7 @@
 #include "third_party/blink/renderer/modules/canvas/imagebitmap/image_bitmap_rendering_context.h"
 #include "third_party/blink/renderer/modules/canvas/offscreencanvas2d/offscreen_canvas_rendering_context_2d.h"
 #include "third_party/blink/renderer/modules/csspaint/background_color_paint_image_generator_impl.h"
+#include "third_party/blink/renderer/modules/csspaint/clip_path_paint_image_generator_impl.h"
 #include "third_party/blink/renderer/modules/csspaint/css_paint_image_generator_impl.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_motion_controller.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_orientation_absolute_controller.h"
@@ -176,6 +178,7 @@ void ModulesInitializer::Initialize() {
   CSSPaintImageGenerator::Init(CSSPaintImageGeneratorImpl::Create);
   BackgroundColorPaintImageGenerator::Init(
       BackgroundColorPaintImageGeneratorImpl::Create);
+  ClipPathPaintImageGenerator::Init(ClipPathPaintImageGeneratorImpl::Create);
   WebDatabaseHost::GetInstance().Init();
   MediaSourceRegistryImpl::Init();
 
@@ -363,6 +366,12 @@ void ModulesInitializer::CloneSessionStorage(
     storage_namespace->CloneTo(WebString::FromLatin1(clone_to_namespace));
 }
 
+void ModulesInitializer::EvictSessionStorageCachedData(Page* page) {
+  StorageNamespace* storage_namespace = StorageNamespace::From(page);
+  if (storage_namespace)
+    storage_namespace->EvictSessionStorageCachedData();
+}
+
 void ModulesInitializer::DidChangeManifest(LocalFrame& frame) {
   ManifestManager::From(*frame.DomWindow())->DidChangeManifest();
 }
@@ -372,8 +381,9 @@ void ModulesInitializer::NotifyOrientationChanged(LocalFrame& frame) {
       ->NotifyOrientationChanged();
 }
 
-void ModulesInitializer::DidUpdateScreens(LocalFrame& frame,
-                                          const ScreenInfos& screen_infos) {
+void ModulesInitializer::DidUpdateScreens(
+    LocalFrame& frame,
+    const display::ScreenInfos& screen_infos) {
   auto* window = frame.DomWindow();
   if (auto* supplement =
           Supplement<LocalDOMWindow>::From<WindowScreens>(window)) {

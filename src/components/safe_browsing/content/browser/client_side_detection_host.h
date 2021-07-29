@@ -10,15 +10,16 @@
 #include <memory>
 #include <string>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "components/safe_browsing/content/base_ui_manager.h"
+#include "components/safe_browsing/content/browser/base_ui_manager.h"
 #include "components/safe_browsing/content/browser/client_side_model_loader.h"
 #include "components/safe_browsing/content/common/safe_browsing.mojom-shared.h"
 #include "components/safe_browsing/content/common/safe_browsing.mojom.h"
+#include "components/safe_browsing/core/browser/db/database_manager.h"
 #include "components/safe_browsing/core/browser/safe_browsing_token_fetcher.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
-#include "components/safe_browsing/core/db/database_manager.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -100,6 +101,7 @@ class ClientSideDetectionHost : public content::WebContentsObserver {
   // From content::WebContentsObserver.
   void WebContentsDestroyed() override;
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
+  void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
 
   // Used for testing.
   void set_ui_manager(BaseUIManager* ui_manager);
@@ -111,13 +113,17 @@ class ClientSideDetectionHost : public content::WebContentsObserver {
   friend class ShouldClassifyUrlRequest;
   FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionHostBrowserTest,
                            VerifyVisualFeatureCollection);
+  FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionHostPrerenderBrowserTest,
+                           PrerenderShouldNotAffectClientSideDetection);
+  FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionHostPrerenderBrowserTest,
+                           ClassifyPrerenderedPageAfterActivation);
 
   // Called when pre-classification checks are done for the phishing
   // classifiers.
   void OnPhishingPreClassificationDone(bool should_classify);
 
-  // |verdict| is an encoded ClientPhishingRequest protocol message, |result| is
-  // the outcome of the renderer classification.
+  // |verdict| is an encoded ClientPhishingRequest protocol message, |result|
+  // is the outcome of the renderer classification.
   void PhishingDetectionDone(mojom::PhishingDetectorResult result,
                              const std::string& verdict);
 
@@ -156,12 +162,13 @@ class ClientSideDetectionHost : public content::WebContentsObserver {
     account_signed_in_callback_ = account_signed_in_callback;
   }
 
-  // Check if CSD can get an access Token. Should be enabled only for ESB users,
-  // who are signed in and not in incognito mode.
+  // Check if CSD can get an access Token. Should be enabled only for ESB
+  // users, who are signed in and not in incognito mode.
   bool CanGetAccessToken();
 
   // Set phishing model in PhishingDetector in renderers.
-  void SetPhishingModel();
+  void SetPhishingModel(
+      const mojo::Remote<mojom::PhishingDetector>& phishing_detector);
 
   // Send the client report to CSD server.
   void SendRequest(std::unique_ptr<ClientPhishingRequest> verdict,
@@ -171,7 +178,11 @@ class ClientSideDetectionHost : public content::WebContentsObserver {
   void OnGotAccessToken(std::unique_ptr<ClientPhishingRequest> verdict,
                         const std::string& access_token);
 
-  // This pointer may be nullptr if client-side phishing detection is disabled.
+  // Setup a PhishingDetector Mojo connection for the given render frame.
+  void InitializePhishingDetector(content::RenderFrameHost* render_frame_host);
+
+  // This pointer may be nullptr if client-side phishing detection is
+  // disabled.
   ClientSideDetectionService* csd_service_;
   // The WebContents that the class is observing.
   content::WebContents* tab_;
@@ -183,8 +194,12 @@ class ClientSideDetectionHost : public content::WebContentsObserver {
   scoped_refptr<ShouldClassifyUrlRequest> classification_request_;
   // The current URL
   GURL current_url_;
-  // The currently active message pipe to the renderer PhishingDetector.
-  mojo::Remote<mojom::PhishingDetector> phishing_detector_;
+  // A map from the live RenderFrameHosts to their PhishingDetector. These
+  // correspond to the `phishing_detector_receiver_` in the
+  // PhishingClassifierDelegate.
+  base::flat_map<content::RenderFrameHost*,
+                 mojo::Remote<mojom::PhishingDetector>>
+      phishing_detectors_;
 
   // Records the start time of when phishing detection started.
   base::TimeTicks phishing_detection_start_time_;

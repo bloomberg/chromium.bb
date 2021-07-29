@@ -10,6 +10,7 @@
 
 #include "include/core/SkPaint.h"
 #include "include/gpu/GrRecordingContext.h"
+#include "src/gpu/BaseDevice.h"
 #include "src/gpu/text/GrSDFTControl.h"
 
 class SkDeferredDisplayList;
@@ -72,7 +73,7 @@ public:
      */
     void addOnFlushCallbackObject(GrOnFlushCallbackObject*);
 
-    GrAuditTrail* auditTrail() { return fContext->auditTrail(); }
+    GrAuditTrail* auditTrail() { return fContext->fAuditTrail.get(); }
 
 #if GR_TEST_UTILS
     // Used by tests that intentionally exercise codepaths that print warning messages, in order to
@@ -98,7 +99,7 @@ public:
             return;
         }
 #endif
-        SkDebugf(msg);
+        SkDebugf("%s", msg);
     }
 
     GrRecordingContext::Stats* stats() {
@@ -116,6 +117,22 @@ public:
      * Create a GrRecordingContext without a resource cache
      */
     static sk_sp<GrRecordingContext> MakeDDL(sk_sp<GrContextThreadSafeProxy>);
+
+    sk_sp<skgpu::BaseDevice> createDevice(GrColorType,
+                                          sk_sp<GrSurfaceProxy>,
+                                          sk_sp<SkColorSpace>,
+                                          GrSurfaceOrigin,
+                                          const SkSurfaceProps&,
+                                          skgpu::BaseDevice::InitContents);
+    sk_sp<skgpu::BaseDevice> createDevice(SkBudgeted,
+                                          const SkImageInfo&,
+                                          SkBackingFit,
+                                          int sampleCount,
+                                          GrMipmapped,
+                                          GrProtected,
+                                          GrSurfaceOrigin,
+                                          const SkSurfaceProps&,
+                                          skgpu::BaseDevice::InitContents);
 
 private:
     explicit GrRecordingContextPriv(GrRecordingContext* context) : fContext(context) {}

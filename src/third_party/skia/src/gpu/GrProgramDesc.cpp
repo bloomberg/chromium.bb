@@ -16,6 +16,7 @@
 #include "src/gpu/GrRenderTarget.h"
 #include "src/gpu/GrShaderCaps.h"
 #include "src/gpu/GrTexture.h"
+#include "src/gpu/effects/GrTextureEffect.h"
 #include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 
@@ -104,7 +105,9 @@ static void gen_xp_key(const GrXferProcessor& xp,
         origin = pipeline.dstProxyView().origin();
         originIfDstTexture = &origin;
     }
-    xp.getGLSLProcessorKey(*caps.shaderCaps(), b, originIfDstTexture, pipeline.dstSampleType());
+
+    xp.getGLSLProcessorKey(*caps.shaderCaps(), b, originIfDstTexture,
+                           pipeline.dstSampleFlags() & GrDstSampleFlags::kAsInputAttachment);
 }
 
 static void gen_fp_key(const GrFragmentProcessor& fp,
@@ -151,9 +154,6 @@ static void gen_key(GrProcessorKeyBuilder* b,
     gen_xp_key(pipeline.getXferProcessor(), caps, pipeline, b);
 
     b->addBits(16, pipeline.writeSwizzle().asKey(), "writeSwizzle");
-    // If we knew the shader won't depend on origin, we could skip this (and use the same program
-    // for both origins). Instrumenting all fragment processors would be difficult and error prone.
-    b->addBits(2, GrGLSLFragmentShaderBuilder::KeyForSurfaceOrigin(programInfo.origin()), "origin");
     b->addBits(1, static_cast<uint32_t>(programInfo.requestedFeatures()), "requestedFeatures");
     b->addBool(pipeline.snapVerticesToPixelCenters(), "snapVertices");
     // The base descriptor only stores whether or not the primitiveType is kPoints. Backend-

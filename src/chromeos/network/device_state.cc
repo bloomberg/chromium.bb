@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "ash/constants/ash_features.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/values.h"
@@ -35,7 +37,12 @@ bool DeviceState::PropertyChanged(const std::string& key,
     return GetBooleanValue(key, value, &scanning_);
   } else if (key == shill::kSupportNetworkScanProperty) {
     return GetBooleanValue(key, value, &support_network_scan_);
-  } else if (key == shill::kCellularAllowRoamingProperty) {
+  } else if ((base::FeatureList::IsEnabled(
+                  ash::features::kCellularAllowPerNetworkRoaming) &&
+              key == shill::kCellularPolicyAllowRoamingProperty) ||
+             (!base::FeatureList::IsEnabled(
+                  ash::features::kCellularAllowPerNetworkRoaming) &&
+              key == shill::kCellularAllowRoamingProperty)) {
     return GetBooleanValue(key, value, &allow_roaming_);
   } else if (key == shill::kProviderRequiresRoamingProperty) {
     return GetBooleanValue(key, value, &provider_requires_roaming_);
@@ -86,17 +93,17 @@ bool DeviceState::PropertyChanged(const std::string& key,
     sim_lock_enabled_ = false;
 
     const base::Value* out_value = nullptr;
-    if (dict->GetWithoutPathExpansion(shill::kSIMLockTypeProperty,
-                                      &out_value)) {
+    out_value = dict->FindKey(shill::kSIMLockTypeProperty);
+    if (out_value) {
       GetStringValue(shill::kSIMLockTypeProperty, *out_value, &sim_lock_type_);
     }
-    if (dict->GetWithoutPathExpansion(shill::kSIMLockRetriesLeftProperty,
-                                      &out_value)) {
+    out_value = dict->FindKey(shill::kSIMLockRetriesLeftProperty);
+    if (out_value) {
       GetIntegerValue(shill::kSIMLockRetriesLeftProperty, *out_value,
                       &sim_retries_left_);
     }
-    if (dict->GetWithoutPathExpansion(shill::kSIMLockEnabledProperty,
-                                      &out_value)) {
+    out_value = dict->FindKey(shill::kSIMLockEnabledProperty);
+    if (out_value) {
       GetBooleanValue(shill::kSIMLockEnabledProperty, *out_value,
                       &sim_lock_enabled_);
     }

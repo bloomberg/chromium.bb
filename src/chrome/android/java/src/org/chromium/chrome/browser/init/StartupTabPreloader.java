@@ -9,7 +9,6 @@ import android.text.TextUtils;
 
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.Callback;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.metrics.RecordHistogram;
@@ -32,9 +31,6 @@ import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.common.Referrer;
-import org.chromium.network.mojom.ReferrerPolicy;
-import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.url.GURL;
 
@@ -43,7 +39,7 @@ import org.chromium.url.GURL;
  * is created. This is done to improve startup latency.
  */
 public class StartupTabPreloader implements ProfileManager.Observer, DestroyObserver {
-    private static final String EXTRA_DISABLE_STARTUP_TAB_PRELOADER =
+    public static final String EXTRA_DISABLE_STARTUP_TAB_PRELOADER =
             "org.chromium.chrome.browser.init.DISABLE_STARTUP_TAB_PRELOADER";
 
     private final Supplier<Intent> mIntentSupplier;
@@ -54,7 +50,6 @@ public class StartupTabPreloader implements ProfileManager.Observer, DestroyObse
     private LoadUrlParams mLoadUrlParams;
     private Tab mTab;
     private StartupTabObserver mObserver;
-    private Callback<Tab> mTabCreatedCallback;
 
     public StartupTabPreloader(Supplier<Intent> intentSupplier,
             ActivityLifecycleDispatcher activityLifecycleDispatcher, WindowAndroid windowAndroid,
@@ -76,10 +71,6 @@ public class StartupTabPreloader implements ProfileManager.Observer, DestroyObse
 
         ProfileManager.removeObserver(this);
         mActivityLifecycleDispatcher.unregister(this);
-    }
-
-    public void setTabCreatedCallback(Callback<Tab> callback) {
-        mTabCreatedCallback = callback;
     }
 
     /**
@@ -109,7 +100,6 @@ public class StartupTabPreloader implements ProfileManager.Observer, DestroyObse
         Tab tab = mTab;
         mTab = null;
         mLoadUrlParams = null;
-        mTabCreatedCallback = null;
         tab.removeObserver(mObserver);
         return tab;
     }
@@ -200,14 +190,7 @@ public class StartupTabPreloader implements ProfileManager.Observer, DestroyObse
         WebContents webContents =
                 WebContentsFactory.createWebContents(Profile.getLastUsedRegularProfile(), false);
 
-        mLoadUrlParams = new LoadUrlParams(url.getValidSpecOrEmpty());
-        String referrer = IntentHandler.getReferrerUrlIncludingExtraHeaders(intent);
-        if (referrer != null && !referrer.isEmpty()) {
-            mLoadUrlParams.setReferrer(new Referrer(referrer, ReferrerPolicy.DEFAULT));
-        }
-        int transition = IntentHandler.getTransitionTypeFromIntent(
-                intent, PageTransition.LINK | PageTransition.FROM_API);
-        mLoadUrlParams.setTransitionType(transition);
+        mLoadUrlParams = mIntentHandler.createLoadUrlParamsForIntent(url.getSpec(), intent);
 
         // Create a detached tab, but don't add it to the tab model yet. We'll do that
         // later if the loadUrlParams etc... match.
@@ -218,7 +201,6 @@ public class StartupTabPreloader implements ProfileManager.Observer, DestroyObse
                        .setWebContents(webContents)
                        .setDelegateFactory(chromeTabCreator.createDefaultTabDelegateFactory())
                        .build();
-        if (mTabCreatedCallback != null) mTabCreatedCallback.onResult(mTab);
 
         mObserver = new StartupTabObserver();
         mTab.addObserver(mObserver);

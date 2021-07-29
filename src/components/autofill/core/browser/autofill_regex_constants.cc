@@ -42,7 +42,7 @@ const char16_t kStreetNameRe[] =
     u"|calle";                  // es-MX
 const char16_t kHouseNumberRe[] =
     u"(house.?|street.?|^)number"              // en
-    u"|(haus|^)nummer"                         // de
+    u"|(haus|^)(nummer|nr\\.?)"                // de
     u"|^\\*?.?número(.?\\*?$| da residência)"  // pt-BR, pt-PT
     u"|дом|номер.?дома"                        // ru
     u"|exterior";                              // es-MX
@@ -121,7 +121,8 @@ const char16_t kCountryRe[] =
     u"|negara";                           // id
 const char16_t kCountryLocationRe[] = u"location";
 const char16_t kZipCodeRe[] =
-    u"zip|postal|post.*code|pcode"
+    u"((?<!\\.))zip"  // .zip indicates a file extension
+    u"|postal|post.*code|pcode"
     u"|pin.?code"                    // en-IN
     u"|postleitzahl"                 // de-DE
     u"|\\bcp\\b"                     // es
@@ -138,7 +139,8 @@ const char16_t kZipCodeRe[] =
     u"|우편.?번호"                   // ko-KR
     u"|kode.?pos";                   // id
 const char16_t kZip4Re[] =
-    u"zip|^-$|post2"
+    u"((?<!\\.))zip"  // .zip indicates a file extension
+    u"|^-$|post2"
     u"|codpos2";  // pt-BR, pt-PT
 const char16_t kDependentLocalityRe[] =
     u"neighbo(u)?rhood"  // en

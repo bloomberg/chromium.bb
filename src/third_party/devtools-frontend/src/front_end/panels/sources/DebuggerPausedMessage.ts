@@ -48,6 +48,7 @@ const UIStrings = {
   *@description We pause exactly when the promise rejection is happening, so that the user can see where in the code it comes from.
   * A Promise is a Web API object (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise),
   * that will either be 'fulfilled' or 'rejected' at some unknown time in the future.
+  * The subject of the term is omited but it is "Execution", that is, "Execution was paused on <event>".
   */
   pausedOnPromiseRejection: 'Paused on `promise` rejection',
   /**
@@ -107,8 +108,7 @@ export class DebuggerPausedMessage {
     this._element.classList.add('paused-message');
     this._element.classList.add('flex-none');
     const root = UI.Utils.createShadowRootWithCoreStyles(
-        this._element,
-        {cssFile: 'panels/sources/debuggerPausedMessage.css', enableLegacyPatching: true, delegatesFocus: undefined});
+        this._element, {cssFile: 'panels/sources/debuggerPausedMessage.css', delegatesFocus: undefined});
     this._contentElement = (root.createChild('div') as HTMLElement);
     UI.ARIAUtils.markAsPoliteLiveRegion(this._element, false);
   }
@@ -142,8 +142,8 @@ export class DebuggerPausedMessage {
     const mainElement = messageWrapper.createChild('div', 'status-main');
     mainElement.appendChild(UI.Icon.Icon.create('smallicon-info', 'status-icon'));
     const breakpointType = BreakpointTypeNouns.get(data.type);
-    mainElement.appendChild(
-        document.createTextNode(i18nString(UIStrings.pausedOnS, {PH1: breakpointType ? breakpointType() : null})));
+    mainElement.appendChild(document.createTextNode(
+        i18nString(UIStrings.pausedOnS, {PH1: breakpointType ? breakpointType() : String(null)})));
 
     const subElement = messageWrapper.createChild('div', 'status-sub monospace');
     const linkifiedNode = await Common.Linkifier.Linkifier.linkify(data.node);

@@ -16,6 +16,7 @@
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/common/ui/util/pointer_interaction_util.h"
 #import "ios/chrome/grit/ios_strings.h"
+#include "ui/base/device_form_factor.h"
 #import "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -43,10 +44,9 @@ struct AuthenticationViewConstants {
   CGFloat ButtonTitleContentVerticalInset;
 };
 
-typedef NS_ENUM(NSUInteger, ButtonVisualWeight) {
-  PRIMARY,
-  SECONDARY,
-  EQUAL_DISTRIBUTION,
+typedef NS_ENUM(NSUInteger, ActionButtonStyle) {
+  PRIMARY_ACTION_STYLE,
+  SECONDARY_ACTION_STYLE,
 };
 
 const AuthenticationViewConstants kCompactConstants = {
@@ -182,13 +182,20 @@ enum AuthenticationButtonType {
         kConfirmationAccessibilityIdentifier;
   }
 
-  [self updateButtonStyleWithButton:self.primaryActionButton
-                 buttonVisualWeight:self.primaryActionButtonVisualWeight];
+  // Apply SECONDARY_ACTION_STYLE if the user has accounts on their device and
+  // have not scrolled to the bottom of the consent screen.
+  ActionButtonStyle style =
+      [self.delegate unifiedConsentCoordinatorHasIdentity] &&
+              !self.hasUnifiedConsentScreenReachedBottom
+          ? SECONDARY_ACTION_STYLE
+          : PRIMARY_ACTION_STYLE;
+  [self updateButtonStyleWithButton:self.primaryActionButton style:style];
 }
 
 - (NSUInteger)supportedInterfaceOrientations {
-  return IsIPadIdiom() ? [super supportedInterfaceOrientations]
-                       : UIInterfaceOrientationMaskPortrait;
+  return (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET)
+             ? [super supportedInterfaceOrientations]
+             : UIInterfaceOrientationMaskPortrait;
 }
 
 - (void)signinWillStart {
@@ -253,10 +260,7 @@ enum AuthenticationButtonType {
   self.actionButtonsView = [[UIStackView alloc] initWithArrangedSubviews:@[
     self.secondaryActionButton, self.primaryActionButton
   ]];
-  self.actionButtonsView.distribution =
-      self.forceEqualVisualWeightDistribution
-          ? UIStackViewDistributionFillEqually
-          : UIStackViewDistributionEqualCentering;
+  self.actionButtonsView.distribution = UIStackViewDistributionEqualCentering;
   self.actionButtonsView.translatesAutoresizingMaskIntoConstraints = NO;
   [self.view addSubview:self.actionButtonsView];
 
@@ -343,12 +347,8 @@ enum AuthenticationButtonType {
   if (UIContentSizeCategoryIsAccessibilityCategory(
           self.traitCollection.preferredContentSizeCategory)) {
     self.actionButtonsView.axis = UILayoutConstraintAxisVertical;
-    self.actionButtonsView.spacing =
-        self.authenticationViewConstants.ButtonVerticalPadding;
   } else {
     self.actionButtonsView.axis = UILayoutConstraintAxisHorizontal;
-    self.actionButtonsView.spacing =
-        self.authenticationViewConstants.ButtonHorizontalPadding;
   }
 }
 
@@ -356,24 +356,6 @@ enum AuthenticationButtonType {
 
 - (UIColor*)systemBackgroundColor {
   return [UIColor colorNamed:kPrimaryBackgroundColor];
-}
-
-- (ButtonVisualWeight)primaryActionButtonVisualWeight {
-  if (self.forceEqualVisualWeightDistribution) {
-    return EQUAL_DISTRIBUTION;
-  }
-
-  // Apply SECONDARY button visual weight if the user has accounts on their
-  // device and have not scrolled to the bottom of the consent screen.
-  return [self.delegate unifiedConsentCoordinatorHasIdentity] &&
-                 !self.hasUnifiedConsentScreenReachedBottom
-             ? SECONDARY
-             : PRIMARY;
-}
-
-- (ButtonVisualWeight)secondaryActionButtonVisualWeight {
-  return self.forceEqualVisualWeightDistribution ? EQUAL_DISTRIBUTION
-                                                 : SECONDARY;
 }
 
 - (NSString*)secondaryActionButtonTitle {
@@ -499,36 +481,29 @@ enum AuthenticationButtonType {
                               forState:UIControlStateNormal];
 
   [self updateButtonStyleWithButton:self.secondaryActionButton
-                 buttonVisualWeight:self.secondaryActionButtonVisualWeight];
+                              style:SECONDARY_ACTION_STYLE];
 }
 
 #pragma mark - Styling
 
 - (void)updateButtonStyleWithButton:(UIButton*)button
-                 buttonVisualWeight:(ButtonVisualWeight)buttonVisualWeight {
-  switch (buttonVisualWeight) {
-    case PRIMARY: {
-      // White text on a blue background.
+                              style:(ActionButtonStyle)style {
+  switch (style) {
+    case PRIMARY_ACTION_STYLE: {
+      // Set the blue background button styling.
       button.backgroundColor = [UIColor colorNamed:kBlueColor];
+      button.layer.cornerRadius = kButtonCornerRadius;
       [button setTitleColor:[UIColor colorNamed:kSolidButtonTextColor]
                    forState:UIControlStateNormal];
       break;
     }
-    case SECONDARY: {
-      // Blue text on a white background.
+    case SECONDARY_ACTION_STYLE: {
+      // Set the blue text button styling.
       [button setTitleColor:[UIColor colorNamed:kBlueColor]
                    forState:UIControlStateNormal];
       break;
     }
-    case EQUAL_DISTRIBUTION: {
-      // Blue text on a lighter blue background.
-      button.backgroundColor = [UIColor colorNamed:kBlueHaloColor];
-      [button setTitleColor:[UIColor colorNamed:kBlueColor]
-                   forState:UIControlStateNormal];
-    }
   }
-
-  button.layer.cornerRadius = kButtonCornerRadius;
 
   if (@available(iOS 13.4, *)) {
     button.pointerInteractionEnabled = YES;

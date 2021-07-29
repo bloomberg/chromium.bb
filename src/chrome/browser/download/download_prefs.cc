@@ -12,12 +12,12 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/check.h"
+#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/path_service.h"
-#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -42,7 +42,7 @@
 #include "components/policy/core/browser/url_blocklist_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing/core/file_type_policies.h"
+#include "components/safe_browsing/content/common/file_type_policies.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/save_page_type.h"
@@ -50,9 +50,11 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/drive/drive_integration_service.h"
 #include "chrome/browser/ash/drive/file_system_util.h"
-#include "chrome/browser/chromeos/file_manager/path_util.h"
-#include "chromeos/dbus/cros_disks_client.h"
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/file_manager/path_util.h"
+#include "chromeos/dbus/cros_disks/cros_disks_client.h"
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/common/chrome_paths_lacros.h"
+#endif
 
 #if defined(OS_WIN)
 #include "chrome/browser/ui/pdf/adobe_reader_info_win.h"
@@ -208,15 +210,6 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
         static_cast<DownloadLaterPromptStatus>(*prompt_for_download_later_));
   }
 
-  // If |kDownloadsLocationChange| is not enabled, always uses the default
-  // download location, in case that the feature is enabled and then disabled
-  // from finch config and the user may stuck at other download locations.
-  if (!base::FeatureList::IsEnabled(features::kDownloadsLocationChange)) {
-    prefs->SetFilePath(prefs::kDownloadDefaultDirectory,
-                       GetDefaultDownloadDirectoryForProfile());
-    prefs->SetFilePath(prefs::kSaveFileDefaultDirectory,
-                       GetDefaultDownloadDirectoryForProfile());
-  }
 #endif
   download_path_.Init(prefs::kDownloadDefaultDirectory, prefs);
   save_file_path_.Init(prefs::kSaveFileDefaultDirectory, prefs);
@@ -307,9 +300,8 @@ void DownloadPrefs::RegisterProfilePrefs(
 #endif
 #if defined(OS_ANDROID)
   DownloadPromptStatus download_prompt_status =
-      base::FeatureList::IsEnabled(features::kDownloadsLocationChange)
-          ? DownloadPromptStatus::SHOW_INITIAL
-          : DownloadPromptStatus::DONT_SHOW;
+      DownloadPromptStatus::SHOW_INITIAL;
+
   registry->RegisterIntegerPref(
       prefs::kPromptForDownloadAndroid,
       static_cast<int>(download_prompt_status),
@@ -322,9 +314,7 @@ void DownloadPrefs::RegisterProfilePrefs(
         user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   }
 
-  registry->RegisterBooleanPref(
-      prefs::kShowMissingSdCardErrorAndroid,
-      base::FeatureList::IsEnabled(features::kDownloadsLocationChange));
+  registry->RegisterBooleanPref(prefs::kShowMissingSdCardErrorAndroid, true);
 #endif
 }
 
@@ -473,8 +463,12 @@ bool DownloadPrefs::IsAutoOpenByPolicy(const GURL& url,
   DCHECK(extension[0] == base::FilePath::kExtensionSeparator);
   extension.erase(0, 1);
 
+  // if |url| is a blob scheme, use the originating URL for policy evaluation.
+  const GURL fixed_url =
+      url.SchemeIsBlob() ? url::Origin::Create(url).GetURL() : url;
+
   return auto_open_by_policy_.find(extension) != auto_open_by_policy_.end() &&
-         !auto_open_allowed_by_urls_->IsURLBlocked(url);
+         !auto_open_allowed_by_urls_->IsURLBlocked(fixed_url);
 }
 
 bool DownloadPrefs::EnableAutoOpenByUserBasedOnExtension(
@@ -563,6 +557,12 @@ base::FilePath DownloadPrefs::SanitizeDownloadTargetPath(
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   // TODO(https://crbug.com/1148848): Sort out path sanitization for Lacros.
   // This will require refactoring the ash-only code below so it can be shared.
+  base::FilePath migrated_drive_path;
+  if (download_dir_util::ExpandDrivePolicyVariable(profile_, path,
+                                                   &migrated_drive_path)) {
+    return SanitizeDownloadTargetPath(migrated_drive_path);
+  }
+
   const base::FilePath default_downloads_path =
       GetDefaultDownloadDirectoryForProfile();
   // Relative paths might be unsafe, so use the default path.
@@ -579,6 +579,12 @@ base::FilePath DownloadPrefs::SanitizeDownloadTargetPath(
   base::FilePath documents_path =
       base::PathService::CheckedGet(chrome::DIR_USER_DOCUMENTS);
   if (documents_path == path || documents_path.IsParent(path))
+    return path;
+
+  // Allow paths under the drive mount point.
+  base::FilePath drivefs;
+  bool drivefs_mounted = chrome::GetDriveFsMountPointPath(&drivefs);
+  if (drivefs_mounted && drivefs.IsParent(path))
     return path;
 
   // Otherwise, return the safe default.

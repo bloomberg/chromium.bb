@@ -6,6 +6,8 @@
 <translation id="1430915738399379752">ప్రింట్</translation>
 <translation id="1467231725790366244"><ph name="CAMERA" /> అన్‌ప్లగ్ చేశారు.</translation>
 <translation id="1473110567575736769">3 సెకన్ల టైమర్</translation>
+<translation id="1478594628797167447">స్కానర్</translation>
+<translation id="1545749641540134597">QR కోడ్‌ను స్కాన్ చేయండి</translation>
 <translation id="1620510694547887537">కెమెరా</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">ఏదీ రికార్డ్ చేయలేదు</translation>
@@ -19,6 +21,8 @@
 <translation id="2050339315714019657">పోర్ట్రెయిట్</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> యాక్టివ్‌గా ఉంది</translation>
 <translation id="2144806332417375165">అనుకూల వీడియో పారామీటర్‌లు</translation>
+<translation id="2175927920773552910">QR కోడ్</translation>
+<translation id="2268107369530950373">స్కానర్ మోడ్‌కు మారండి</translation>
 <translation id="229579744168541441">డిస్క్‌కు ఎగుమతి చేయి</translation>
 <translation id="2320741269052147773">ఎడమ వైపునకు ప్యాన్ చేయి</translation>
 <translation id="2501278716633472235">వెనుకకు వెళ్ళు</translation>
@@ -38,6 +42,7 @@
 <translation id="3227137524299004712">మైక్రోఫోన్</translation>
 <translation id="3240426699337459095">లింక్ కాపీ చేయబడింది</translation>
 <translation id="3259149966178251584">కెమెరా రిజల్యూషన్</translation>
+<translation id="3448774564454087943">వీడియో చాలా చిన్నగా ఉన్నందున అది సేవ్ కాలేదు</translation>
 <translation id="3517926952904427380">పోర్ట్రెయిట్ ఫోటోను తీయలేకపోయింది</translation>
 <translation id="3569311554794739032">మీరు <ph name="FILE" />ను ఖచ్చితంగా తీసివేయాలనుకుంటున్నారా?</translation>
 <translation id="3733597664308256288">అదనపు కెమెరా కంట్రోల్‌లు అందుబాటులో ఉన్నాయి. యాక్సెస్ చేయడానికి Search + కుడి వైపు బాణం కీలు.</translation>
@@ -56,11 +61,14 @@
 <translation id="4628948037717959914">ఫోటో</translation>
 <translation id="4649291346448517080">ఫైల్‌ను సేవ్ చేయడం సాధ్యం కాలేదు</translation>
 <translation id="4890010094662541459">3 x 3</translation>
+<translation id="491895758387112773">మల్టీస్ట్రీమ్ వీడియో రికార్డింగ్</translation>
 <translation id="5057360777601936059">మీ కెమెరా ప్రస్తుతం అందుబాటులో లేదు.
         కెమెరా సరిగ్గా కనెక్ట్ అయ్యిందో లేదో, దయచేసి సరిచూడండి.</translation>
 <translation id="5152121255775685072">గ్యాలరీకి వెళ్లు</translation>
+<translation id="5268823927180092501">అన్ని కెమెరాలలో డాక్యుమెంట్ మోడ్‌ను ఎనేబుల్ చేయండి</translation>
 <translation id="5422455049771430511">మీ ఫోటోలు, వీడియోలు ఇప్పుడు ఒక కొత్త చోట సేవ్ చేయబడతాయి</translation>
 <translation id="5671277269877808209">చతురస్రం</translation>
+<translation id="5753488212459587150">నిపుణుల మోడ్‌ను ఎనేబుల్ చేయండి</translation>
 <translation id="5775960006311140197">నిపుణుల మోడ్</translation>
 <translation id="5869546221129391014">గ్రిడ్</translation>
 <translation id="5975083100439434680">దూరంగా జూమ్ చేయి</translation>

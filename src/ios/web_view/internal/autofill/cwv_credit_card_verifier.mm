@@ -30,6 +30,9 @@ CWVCreditCardVerificationError CWVConvertPaymentsRPCResult(
   switch (result) {
     case autofill::AutofillClient::NONE:
     case autofill::AutofillClient::SUCCESS:
+    // The following two errors are not expected on iOS.
+    case autofill::AutofillClient::VCN_RETRIEVAL_TRY_AGAIN_FAILURE:
+    case autofill::AutofillClient::VCN_RETRIEVAL_PERMANENT_FAILURE:
       NOTREACHED();
       return CWVCreditCardVerificationErrorNone;
     case autofill::AutofillClient::TRY_AGAIN_FAILURE:
@@ -182,8 +185,7 @@ class WebViewCardUnmaskPromptView : public autofill::CardUnmaskPromptView {
 
   _unmaskingController->OnUnmaskPromptAccepted(
       base::SysNSStringToUTF16(CVC), base::SysNSStringToUTF16(expirationMonth),
-      base::SysNSStringToUTF16(expirationYear), /*should_store_pan=*/false,
-      /*enable_fido_auth=*/false);
+      base::SysNSStringToUTF16(expirationYear), /*enable_fido_auth=*/false);
 }
 
 - (BOOL)isCVCValid:(NSString*)CVC {

@@ -110,7 +110,7 @@ export class Action extends Common.ObjectWrapper.ObjectWrapper {
     return this.actionRegistration.options;
   }
 
-  contextTypes(): undefined|Array<unknown> {
+  contextTypes(): undefined|Array<Function> {
     if (this.actionRegistration.contextTypes) {
       return this.actionRegistration.contextTypes();
     }
@@ -206,7 +206,6 @@ export const ActionCategory = {
   BACKGROUND_SERVICES: 'Background Services',
   SETTINGS: 'Settings',
   DEBUGGER: 'Debugger',
-  RECORDER: 'Recorder',
   SOURCES: 'Sources',
 };
 
@@ -352,7 +351,7 @@ export interface ActionRegistration {
    * });
    * ```
    */
-  contextTypes?: () => Array<unknown>;
+  contextTypes?: () => Array<Function>;
   /**
    * The descriptions for each of the two states in which a toggleable action can be.
    */

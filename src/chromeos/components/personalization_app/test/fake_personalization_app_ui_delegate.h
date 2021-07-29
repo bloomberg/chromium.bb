@@ -9,6 +9,7 @@
 
 #include <stdint.h>
 
+#include "base/unguessable_token.h"
 #include "chromeos/components/personalization_app/mojom/personalization_app.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -39,8 +40,20 @@ class FakePersonalizationAppUiDelegate : public PersonalizationAppUiDelegate {
       const std::string& collection_id,
       FetchImagesForCollectionCallback callback) override;
 
+  void GetLocalImages(GetLocalImagesCallback callback) override;
+
+  void GetLocalImageThumbnail(const base::UnguessableToken& id,
+                              GetLocalImageThumbnailCallback callback) override;
+
+  void GetCurrentWallpaper(GetCurrentWallpaperCallback callback) override;
+
   void SelectWallpaper(uint64_t image_asset_id,
                        SelectWallpaperCallback callback) override;
+
+  void SelectLocalImage(const base::UnguessableToken& token,
+                        SelectLocalImageCallback callback) override;
+
+  void SetCustomWallpaperLayout(ash::WallpaperLayout layout) override;
 
  private:
   mojo::Receiver<chromeos::personalization_app::mojom::WallpaperProvider>

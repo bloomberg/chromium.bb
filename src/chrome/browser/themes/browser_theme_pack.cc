@@ -1222,8 +1222,7 @@ void BrowserThemePack::SetTintsFromJSON(
   }
 }
 
-void BrowserThemePack::SetColorsFromJSON(
-    const base::DictionaryValue* colors_value) {
+void BrowserThemePack::SetColorsFromJSON(const base::Value* colors_value) {
   DCHECK(colors_);
 
   std::map<int, SkColor> temp_colors;
@@ -1240,50 +1239,62 @@ void BrowserThemePack::SetColorsFromJSON(
   }
 }
 
-void BrowserThemePack::ReadColorsFromJSON(
-    const base::DictionaryValue* colors_value,
-    std::map<int, SkColor>* temp_colors) {
+void BrowserThemePack::ReadColorsFromJSON(const base::Value* colors_value,
+                                          std::map<int, SkColor>* temp_colors) {
+  DCHECK(colors_value);
+  DCHECK(colors_value->is_dict());
   // Parse the incoming data from |colors_value| into an intermediary structure.
-  for (base::DictionaryValue::Iterator iter(*colors_value); !iter.IsAtEnd();
-       iter.Advance()) {
-    const base::ListValue* color_list;
-    if (iter.value().GetAsList(&color_list) &&
-        ((color_list->GetSize() == 3) || (color_list->GetSize() == 4))) {
-      SkColor color = SK_ColorWHITE;
-      int r, g, b;
-      if (color_list->GetInteger(0, &r) && r >= 0 && r <= 255 &&
-          color_list->GetInteger(1, &g) && g >= 0 && g <= 255 &&
-          color_list->GetInteger(2, &b) && b >= 0 && b <= 255) {
-        if (color_list->GetSize() == 4) {
-          double alpha;
-          int alpha_int;
-          if (color_list->GetDouble(3, &alpha) && alpha >= 0 && alpha <= 1) {
-            color =
-                SkColorSetARGB(base::ClampRound<U8CPU>(alpha * 255), r, g, b);
-          } else if (color_list->GetInteger(3, &alpha_int) &&
-                     (alpha_int == 0 || alpha_int == 1)) {
-            color = SkColorSetARGB(alpha_int ? 255 : 0, r, g, b);
-          } else {
-            // Invalid entry for part 4.
-            continue;
-          }
-        } else {
-          color = SkColorSetRGB(r, g, b);
-        }
+  for (const auto& iter : colors_value->DictItems()) {
+    if (!iter.second.is_list())
+      continue;
+    base::Value::ConstListView color_list = iter.second.GetList();
+    if (!(color_list.size() == 3 || color_list.size() == 4))
+      continue;
 
-        if (iter.key() == "ntp_section") {
-          // We no longer use ntp_section, but to support legacy
-          // themes we still need to use it as a fallback for
-          // ntp_header.
-          if (!temp_colors->count(TP::COLOR_NTP_HEADER))
-            (*temp_colors)[TP::COLOR_NTP_HEADER] = color;
-        } else {
-          int id = GetIntForString(iter.key(), kOverwritableColorTable,
-                                   kOverwritableColorTableLength);
-          if (id != -1)
-            (*temp_colors)[id] = color;
+    SkColor color = SK_ColorWHITE;
+    absl::optional<int> r = color_list[0].GetIfInt();
+    absl::optional<int> g = color_list[1].GetIfInt();
+    absl::optional<int> b = color_list[2].GetIfInt();
+    if (!(r.has_value() && r.value() >= 0 && r.value() <= 255 &&
+          g.has_value() && g.value() >= 0 && g.value() <= 255 &&
+          b.has_value() && b.value() >= 0 && b.value() <= 255)) {
+      continue;
+    }
+
+    if (color_list.size() == 4) {
+      bool alpha_valid = false;
+      if (color_list[3].is_int()) {
+        int alpha_int = color_list[3].GetInt();
+        if (alpha_int == 0 || alpha_int == 1) {
+          color = SkColorSetARGB(alpha_int ? 255 : 0, *r, *g, *b);
+          alpha_valid = true;
+        }
+      } else if (color_list[3].is_double()) {
+        double alpha = color_list[3].GetDouble();
+        if (alpha >= 0 && alpha <= 1) {
+          color =
+              SkColorSetARGB(base::ClampRound<U8CPU>(alpha * 255), *r, *g, *b);
+          alpha_valid = true;
         }
       }
+
+      if (!alpha_valid)
+        continue;
+    } else {
+      color = SkColorSetRGB(*r, *g, *b);
+    }
+
+    if (iter.first == "ntp_section") {
+      // We no longer use ntp_section, but to support legacy
+      // themes we still need to use it as a fallback for
+      // ntp_header.
+      if (!temp_colors->count(TP::COLOR_NTP_HEADER))
+        (*temp_colors)[TP::COLOR_NTP_HEADER] = color;
+    } else {
+      int id = GetIntForString(iter.first, kOverwritableColorTable,
+                               kOverwritableColorTableLength);
+      if (id != -1)
+        (*temp_colors)[id] = color;
     }
   }
 }

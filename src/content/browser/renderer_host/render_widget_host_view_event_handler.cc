@@ -38,12 +38,6 @@
 #include "ui/gfx/delegated_ink_point.h"
 #include "ui/touch_selection/touch_selection_controller.h"
 
-#if defined(OS_WIN)
-#include "content/browser/renderer_host/render_frame_host_impl.h"
-#include "ui/aura/window_tree_host.h"
-#include "ui/display/screen.h"
-#endif  // defined(OS_WIN)
-
 namespace {
 
 // In mouse lock mode, we need to prevent the (invisible) cursor from hitting
@@ -54,16 +48,6 @@ namespace {
 // if it approaches the border. |kMouseLockBorderPercentage| specifies the width
 // of the border area, in percentage of the corresponding dimension.
 const int kMouseLockBorderPercentage = 15;
-
-// While the mouse is locked we want the invisible mouse to stay within the
-// confines of the screen so we keep it in a capture region the size of the
-// screen.  However, on windows when the mouse hits the edge of the screen some
-// events trigger and cause strange issues to occur. To stop those events from
-// occuring we add a small border around the edge of the capture region.
-// This constant controls how many pixels wide that border is.
-#if defined(OS_WIN)
-const int KMouseCaptureRegionBorder = 5;
-#endif
 
 #if defined(OS_WIN)
 // A callback function for EnumThreadWindows to enumerate and dismiss
@@ -91,8 +75,9 @@ bool IsFractionalScaleFactor(float scale_factor) {
 bool ShouldGenerateAppCommand(const ui::MouseEvent* event) {
 #if defined(OS_WIN)
   return (event->native_event().message == WM_NCXBUTTONUP);
-#endif
+#else
   return false;
+#endif
 }
 
 // Reset unchanged touch points to StateStationary for touchmove and
@@ -148,20 +133,6 @@ void RenderWidgetHostViewEventHandler::SetPopupChild(
   popup_child_event_handler_ = popup_child_event_handler;
 }
 
-#if defined(OS_WIN)
-void RenderWidgetHostViewEventHandler::UpdateMouseLockRegion() {
-  RECT window_rect =
-      display::Screen::GetScreen()
-          ->DIPToScreenRectInWindow(window_, window_->GetBoundsInScreen())
-          .ToRECT();
-  window_rect.left += KMouseCaptureRegionBorder;
-  window_rect.right -= KMouseCaptureRegionBorder;
-  window_rect.top += KMouseCaptureRegionBorder;
-  window_rect.bottom -= KMouseCaptureRegionBorder;
-  ::ClipCursor(&window_rect);
-}
-#endif
-
 blink::mojom::PointerLockResult RenderWidgetHostViewEventHandler::LockMouse(
     bool request_unadjusted_movement) {
   aura::Window* root_window = window_->GetRootWindow();
@@ -179,17 +150,7 @@ blink::mojom::PointerLockResult RenderWidgetHostViewEventHandler::LockMouse(
   }
   mouse_locked_ = true;
 
-#if !defined(OS_WIN)
-  window_->SetCapture();
-#else
-  UpdateMouseLockRegion();
-#endif
-  aura::client::CursorClient* cursor_client =
-      aura::client::GetCursorClient(root_window);
-  if (cursor_client) {
-    cursor_client->HideCursor();
-    cursor_client->LockCursor();
-  }
+  window_->GetHost()->LockMouse(window_);
 
   if (ShouldMoveToCenter(unlocked_global_mouse_position_))
     MoveCursorToCenter(nullptr);
@@ -240,12 +201,7 @@ void RenderWidgetHostViewEventHandler::UnlockMouse() {
   mouse_locked_ = false;
   mouse_locked_unadjusted_movement_.reset();
 
-  if (window_->HasCapture())
-    window_->ReleaseCapture();
-
-#if defined(OS_WIN)
-  ::ClipCursor(NULL);
-#endif
+  window_->GetHost()->UnlockMouse(window_);
 
   // Ensure that the global mouse position is updated here to its original
   // value. If we don't do this then the synthesized mouse move which is posted
@@ -257,12 +213,6 @@ void RenderWidgetHostViewEventHandler::UnlockMouse() {
   synthetic_move_position_ =
       gfx::ToFlooredPoint(unlocked_global_mouse_position_);
 
-  aura::client::CursorClient* cursor_client =
-      aura::client::GetCursorClient(root_window);
-  if (cursor_client) {
-    cursor_client->UnlockCursor();
-    cursor_client->ShowCursor();
-  }
   host_->LostMouseLock();
 }
 
@@ -364,69 +314,6 @@ void RenderWidgetHostViewEventHandler::HandleMouseWheelEvent(
   }
 }
 
-bool IsMoveEvent(ui::EventType type) {
-  return type == ui::ET_MOUSE_MOVED || type == ui::ET_MOUSE_DRAGGED ||
-         type == ui::ET_TOUCH_MOVED;
-}
-
-void RenderWidgetHostViewEventHandler::ForwardDelegatedInkPoint(
-    ui::LocatedEvent* event,
-    bool hovering,
-    int32_t pointer_id) {
-  const cc::RenderFrameMetadata& last_metadata =
-      host_->render_frame_metadata_provider()->LastRenderFrameMetadata();
-  if (IsMoveEvent(event->type()) &&
-      last_metadata.delegated_ink_metadata.has_value() &&
-      hovering == last_metadata.delegated_ink_metadata.value()
-                      .delegated_ink_is_hovering) {
-    if (!delegated_ink_point_renderer_.is_bound()) {
-      ui::Compositor* compositor = window_ && window_->layer()
-                                       ? window_->layer()->GetCompositor()
-                                       : nullptr;
-
-      // The remote can't be bound if the compositor is null, so bail if that
-      // is the case so we don't crash by trying to use an unbound remote.
-      if (!compositor)
-        return;
-
-      TRACE_EVENT_INSTANT0("input",
-                           "Binding mojo interface for delegated ink points.",
-                           TRACE_EVENT_SCOPE_THREAD);
-      compositor->SetDelegatedInkPointRenderer(
-          delegated_ink_point_renderer_.BindNewPipeAndPassReceiver());
-      delegated_ink_point_renderer_.reset_on_disconnect();
-    }
-
-    gfx::PointF point = event->root_location_f();
-    point.Scale(host_view_->GetDeviceScaleFactor());
-    gfx::DelegatedInkPoint delegated_ink_point(point, event->time_stamp(),
-                                               pointer_id);
-    TRACE_EVENT_INSTANT1("input",
-                         "Forwarding delegated ink point from browser.",
-                         TRACE_EVENT_SCOPE_THREAD, "delegated point",
-                         delegated_ink_point.ToString());
-
-    // Calling this will result in IPC calls to get |delegated_ink_point| to
-    // viz. The decision to do this here was made with the understanding that
-    // the IPC overhead will result in a minor increase in latency for getting
-    // this event to the renderer. However, by sending it here, the event is
-    // given the greatest possible chance to make it to viz before
-    // DrawAndSwap() is called, allowing more points to be drawn as part of
-    // the delegated ink trail, and thus reducing user perceived latency.
-    delegated_ink_point_renderer_->StoreDelegatedInkPoint(delegated_ink_point);
-    ended_delegated_ink_trail_ = false;
-  } else if (delegated_ink_point_renderer_.is_bound() &&
-             !ended_delegated_ink_trail_) {
-    // Let viz know that the most recent point it received from us is probably
-    // the last point the user is inking, so it shouldn't predict anything
-    // beyond it.
-    TRACE_EVENT_INSTANT0("input", "Delegated ink trail ended",
-                         TRACE_EVENT_SCOPE_THREAD);
-    delegated_ink_point_renderer_->ResetPrediction();
-    ended_delegated_ink_trail_ = true;
-  }
-}
-
 void RenderWidgetHostViewEventHandler::OnMouseEvent(ui::MouseEvent* event) {
   TRACE_EVENT0("input", "RenderWidgetHostViewBase::OnMouseEvent");
 
@@ -440,7 +327,7 @@ void RenderWidgetHostViewEventHandler::OnMouseEvent(ui::MouseEvent* event) {
   // breaks drop-down lists which means something is incorrectly setting
   // event->handled to true (http://crbug.com/577983).
 
-  if (mouse_locked_) {
+  if (mouse_locked_ && !window_->GetHost()->SupportsMouseLock()) {
     HandleMouseEventWhileLocked(event);
     return;
   }
@@ -470,9 +357,6 @@ void RenderWidgetHostViewEventHandler::OnMouseEvent(ui::MouseEvent* event) {
     bool is_selection_popup = NeedsInputGrab(popup_child_host_view_);
     if (CanRendererHandleEvent(event, mouse_locked_, is_selection_popup) &&
         !(event->flags() & ui::EF_FROM_TOUCH)) {
-      bool hovering = (event->type() ^ ui::ET_MOUSE_DRAGGED) &&
-                      (event->type() ^ ui::ET_MOUSE_PRESSED);
-      ForwardDelegatedInkPoint(event, hovering, event->pointer_details().id);
 
       // Confirm existing composition text on mouse press, to make sure
       // the input caret won't be moved with an ongoing composition text.
@@ -596,9 +480,6 @@ void RenderWidgetHostViewEventHandler::OnTouchEvent(ui::TouchEvent* event) {
 
   if (handled)
     return;
-
-  ForwardDelegatedInkPoint(event, event->hovering(),
-                           event->pointer_details().id);
 
   if (had_no_pointer)
     delegate_->selection_controller_client()->OnTouchDown();
@@ -927,6 +808,8 @@ void RenderWidgetHostViewEventHandler::ModifyEventMovementAndCoords(
 
 void RenderWidgetHostViewEventHandler::MoveCursorToCenter(
     ui::MouseEvent* event) {
+  DCHECK(!window_->GetHost()->SupportsMouseLock());
+
   gfx::Point center(gfx::Rect(window_->bounds().size()).CenterPoint());
   gfx::Point center_in_screen(window_->GetBoundsInScreen().CenterPoint());
   window_->MoveCursorTo(center);
@@ -995,6 +878,9 @@ bool RenderWidgetHostViewEventHandler::ShouldMoveToCenter(
   if (mouse_locked_unadjusted_movement_)
     return false;
 #endif
+
+  if (window_->GetHost()->SupportsMouseLock())
+    return false;
 
   gfx::Rect rect = window_->bounds();
   rect = delegate_->ConvertRectToScreen(rect);

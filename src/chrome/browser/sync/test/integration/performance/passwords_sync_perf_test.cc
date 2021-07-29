@@ -8,17 +8,14 @@
 #include "build/build_config.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
 #include "chrome/browser/sync/test/integration/performance/sync_timing_helper.h"
-#include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
-#include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/password_store_interface.h"
 #include "content/public/test/browser_test.h"
 #include "testing/perf/perf_result_reporter.h"
 
-using passwords_helper::AddLogin;
 using passwords_helper::CreateTestPasswordForm;
 using passwords_helper::GetPasswordCount;
-using passwords_helper::GetPasswordStore;
-using passwords_helper::UpdateLogin;
+using passwords_helper::GetProfilePasswordStoreInterface;
 using sync_timing_helper::TimeUntilQuiescence;
 
 static const int kNumPasswords = 150;
@@ -66,21 +63,30 @@ class PasswordsSyncPerfTest : public SyncTest {
 
 void PasswordsSyncPerfTest::AddLogins(int profile, int num_logins) {
   for (int i = 0; i < num_logins; ++i) {
-    AddLogin(GetPasswordStore(profile), NextLogin());
+    GetProfilePasswordStoreInterface(profile)->AddLogin(NextLogin());
   }
+  // Don't proceed before all additions happen on the background thread.
+  // Call GetPasswordCount() because it blocks on the background thread.
+  GetPasswordCount(profile);
 }
 
 void PasswordsSyncPerfTest::UpdateLogins(int profile) {
   std::vector<std::unique_ptr<password_manager::PasswordForm>> logins =
-      passwords_helper::GetLogins(GetPasswordStore(profile));
+      passwords_helper::GetLogins(GetProfilePasswordStoreInterface(profile));
   for (auto& login : logins) {
     login->password_value = base::ASCIIToUTF16(NextPassword());
-    UpdateLogin(GetPasswordStore(profile), *login);
+    GetProfilePasswordStoreInterface(profile)->UpdateLogin(*login);
   }
+  // Don't proceed before all updates happen on the background thread.
+  // Call GetPasswordCount() because it blocks on the background thread.
+  GetPasswordCount(profile);
 }
 
 void PasswordsSyncPerfTest::RemoveLogins(int profile) {
-  passwords_helper::RemoveLogins(GetPasswordStore(profile));
+  passwords_helper::RemoveLogins(GetProfilePasswordStoreInterface(profile));
+  // Don't proceed before all removals happen on the background thread.
+  // Call GetPasswordCount() because it blocks on the background thread.
+  GetPasswordCount(profile);
 }
 
 password_manager::PasswordForm PasswordsSyncPerfTest::NextLogin() {

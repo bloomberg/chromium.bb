@@ -21,8 +21,6 @@
 #include "common/string_utils.h"
 #include "common/system_utils.h"
 #include "platform/PlatformMethods.h"
-#include "tests/test_expectations/GPUTestConfig.h"
-#include "tests/test_expectations/GPUTestExpectationsParser.h"
 #include "tests/test_utils/runner/TestSuite.h"
 #include "util/OSWindow.h"
 #include "util/test_utils.h"
@@ -105,6 +103,7 @@ using APIInfo = std::pair<const char *, GPUTestConfig::API>;
 constexpr APIInfo kEGLDisplayAPIs[] = {
     {"angle-d3d9", GPUTestConfig::kAPID3D9},
     {"angle-d3d11", GPUTestConfig::kAPID3D11},
+    {"angle-d3d11-ref", GPUTestConfig::kAPID3D11},
     {"angle-gl", GPUTestConfig::kAPIGLDesktop},
     {"angle-gles", GPUTestConfig::kAPIGLES},
     {"angle-metal", GPUTestConfig::kAPIMetal},
@@ -118,6 +117,7 @@ constexpr char kANGLEEGLString[]   = "--use-angle=";
 constexpr char kANGLEPreRotation[] = "--emulated-pre-rotation=";
 constexpr char kdEQPCaseString[]   = "--deqp-case=";
 constexpr char kVerboseString[]    = "--verbose";
+constexpr char kRenderDocString[]  = "--renderdoc";
 
 std::array<char, 500> gCaseStringBuffer;
 
@@ -134,6 +134,8 @@ constexpr uint32_t kDefaultPreRotation = 0;
 
 const APIInfo *gInitAPI = nullptr;
 uint32_t gPreRotation   = kDefaultPreRotation;
+
+bool gEnableRenderDocCapture = false;
 
 constexpr const char gdEQPEGLConfigNameString[] = "--deqp-gl-config-name=";
 constexpr const char gdEQPLogImagesString[]     = "--deqp-log-images=";
@@ -244,7 +246,6 @@ class dEQPCaseList
 
   private:
     std::vector<CaseInfo> mCaseInfoList;
-    GPUTestExpectationsParser mTestExpectationsParser;
     size_t mTestModuleIndex;
     bool mInitialized = false;
 };
@@ -296,16 +297,11 @@ void dEQPCaseList::initialize()
     }
 #endif
 
-    if (!mTestExpectationsParser.loadTestExpectationsFromFile(testConfig,
-                                                              testExpectationsPath.value()))
-    {
-        std::stringstream errorMsgStream;
-        for (const auto &message : mTestExpectationsParser.getErrorMessages())
-        {
-            errorMsgStream << std::endl << " " << message;
-        }
+    TestSuite *testSuite = TestSuite::GetInstance();
 
-        std::cerr << "Failed to load test expectations." << errorMsgStream.str() << std::endl;
+    if (!testSuite->loadTestExpectationsFromFileWithConfig(testConfig,
+                                                           testExpectationsPath.value()))
+    {
         Die();
     }
 
@@ -328,20 +324,12 @@ void dEQPCaseList::initialize()
         if (gTestName.empty())
             continue;
 
-        int expectation = mTestExpectationsParser.getTestExpectation(dEQPName);
+        int expectation = testSuite->getTestExpectation(dEQPName);
         mCaseInfoList.push_back(CaseInfo(dEQPName, gTestName, expectation));
     }
 
-    std::stringstream unusedMsgStream;
-    bool anyUnused = false;
-    for (const auto &message : mTestExpectationsParser.getUnusedExpectationsMessages())
+    if (testSuite->logAnyUnusedTestExpectations())
     {
-        anyUnused = true;
-        unusedMsgStream << std::endl << " " << message;
-    }
-    if (anyUnused)
-    {
-        std::cerr << "Failed to validate test expectations." << unusedMsgStream.str() << std::endl;
         Die();
     }
 }
@@ -571,7 +559,8 @@ void dEQPTest<TestModuleIndex>::SetUpTestCase()
 
     // Init the platform.
     if (!deqp_libtester_init_platform(static_cast<int>(argv.size()), argv.data(),
-                                      reinterpret_cast<void *>(&HandlePlatformError), gPreRotation))
+                                      reinterpret_cast<void *>(&HandlePlatformError), gPreRotation,
+                                      gEnableRenderDocCapture))
     {
         std::cout << "Aborting test due to dEQP initialization error." << std::endl;
         exit(1);
@@ -773,6 +762,10 @@ void InitTestHarness(int *argc, char **argv)
         else if (strncmp(argv[argIndex], gdEQPLogImagesString, strlen(gdEQPLogImagesString)) == 0)
         {
             HandleLogImages(argv[argIndex] + strlen(gdEQPLogImagesString));
+        }
+        else if (strncmp(argv[argIndex], kRenderDocString, strlen(kRenderDocString)) == 0)
+        {
+            gEnableRenderDocCapture = true;
         }
         argIndex++;
     }

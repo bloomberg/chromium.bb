@@ -26,9 +26,9 @@
 #include "net/base/io_buffer.h"
 #include "net/disk_cache/disk_cache.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
-#include "url/origin.h"
 
 namespace storage {
 class QuotaManagerProxy;
@@ -59,7 +59,7 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
   using SizePaddingCallback = base::OnceCallback<void(int64_t, int64_t)>;
 
   static std::unique_ptr<LegacyCacheStorageCache> CreateMemoryCache(
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       storage::mojom::CacheStorageOwner owner,
       const std::string& cache_name,
       LegacyCacheStorage* cache_storage,
@@ -67,7 +67,7 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
       scoped_refptr<BlobStorageContextWrapper> blob_storage_context);
   static std::unique_ptr<LegacyCacheStorageCache> CreatePersistentCache(
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       storage::mojom::CacheStorageOwner owner,
       const std::string& cache_name,
       LegacyCacheStorage* cache_storage,
@@ -114,19 +114,6 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
       blink::mojom::QuotaStatusCode status_code,
       int64_t usage,
       int64_t quota);
-  // Callback passed to operations. If |error| is a real error, invokes
-  // |error_callback|. Always invokes |completion_closure| to signal
-  // completion.
-  void BatchDidOneOperation(base::OnceClosure completion_closure,
-                            VerboseErrorCallback error_callback,
-                            absl::optional<std::string> message,
-                            int64_t trace_id,
-                            blink::mojom::CacheStorageError error);
-  // Callback invoked once all BatchDidOneOperation() calls have run.
-  // Invokes |error_callback|.
-  void BatchDidAllOperations(VerboseErrorCallback error_callback,
-                             absl::optional<std::string> message,
-                             int64_t trace_id);
 
   void Keys(blink::mojom::FetchAPIRequestPtr request,
             blink::mojom::CacheQueryOptionsPtr options,
@@ -221,6 +208,7 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
 
   struct QueryCacheContext;
   struct QueryCacheResult;
+  struct BatchInfo;
 
   using QueryTypes = int32_t;
   using QueryCacheResults = std::vector<QueryCacheResult>;
@@ -233,7 +221,7 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
       base::IDMap<std::unique_ptr<CacheStorageBlobToDiskCache>>;
 
   LegacyCacheStorageCache(
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       storage::mojom::CacheStorageOwner owner,
       const std::string& cache_name,
       const base::FilePath& path,
@@ -243,6 +231,12 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
       scoped_refptr<BlobStorageContextWrapper> blob_storage_context,
       int64_t cache_size,
       int64_t cache_padding);
+
+  // Callback passed to operations. If |error| is a real error, invokes
+  // |error_callback|. Always invokes |completion_closure| to signal
+  // completion.
+  void BatchDidOneOperation(BatchInfo& batch_status,
+                            blink::mojom::CacheStorageError error);
 
   // Runs |callback| with matching requests/response data. The data provided
   // in the QueryCacheResults depends on the |query_type|. If |query_type| is
@@ -518,7 +512,7 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
   // Be sure to check |backend_state_| before use.
   std::unique_ptr<disk_cache::Backend> backend_;
 
-  url::Origin origin_;
+  blink::StorageKey storage_key_;
   storage::mojom::CacheStorageOwner owner_;
   const std::string cache_name_;
   base::FilePath path_;

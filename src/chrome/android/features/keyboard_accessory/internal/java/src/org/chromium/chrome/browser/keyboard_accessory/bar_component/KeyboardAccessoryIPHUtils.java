@@ -43,6 +43,7 @@ class KeyboardAccessoryIPHUtils {
                 return;
             case FeatureConstants.KEYBOARD_ACCESSORY_PAYMENT_FILLING_FEATURE:
             case FeatureConstants.KEYBOARD_ACCESSORY_PAYMENT_OFFER_FEATURE:
+            case FeatureConstants.KEYBOARD_ACCESSORY_PAYMENT_VIRTUAL_CARD_FEATURE:
                 tracker.notifyEvent(EventConstants.KEYBOARD_ACCESSORY_PAYMENT_AUTOFILLED);
                 return;
         }
@@ -173,6 +174,8 @@ class KeyboardAccessoryIPHUtils {
                 return R.string.iph_keyboard_accessory_fill_with_chrome;
             case FeatureConstants.KEYBOARD_ACCESSORY_BAR_SWIPING_FEATURE:
                 return R.string.iph_keyboard_accessory_swipe_for_more;
+            case FeatureConstants.KEYBOARD_ACCESSORY_PAYMENT_VIRTUAL_CARD_FEATURE:
+                return R.string.iph_keyboard_accessory_payment_virtual_cards;
         }
         assert false : "Unknown help text for feature: " + feature;
         return 0;

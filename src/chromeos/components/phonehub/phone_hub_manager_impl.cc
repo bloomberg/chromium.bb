@@ -8,6 +8,7 @@
 #include "chromeos/components/phonehub/browser_tabs_metadata_fetcher.h"
 #include "chromeos/components/phonehub/browser_tabs_model_controller.h"
 #include "chromeos/components/phonehub/browser_tabs_model_provider.h"
+#include "chromeos/components/phonehub/camera_roll_manager.h"
 #include "chromeos/components/phonehub/connection_scheduler_impl.h"
 #include "chromeos/components/phonehub/cros_state_sender.h"
 #include "chromeos/components/phonehub/do_not_disturb_controller_impl.h"
@@ -25,6 +26,7 @@
 #include "chromeos/components/phonehub/onboarding_ui_tracker_impl.h"
 #include "chromeos/components/phonehub/phone_model.h"
 #include "chromeos/components/phonehub/phone_status_processor.h"
+#include "chromeos/components/phonehub/recent_apps_interaction_handler.h"
 #include "chromeos/components/phonehub/tether_controller_impl.h"
 #include "chromeos/components/phonehub/user_action_recorder_impl.h"
 #include "chromeos/dbus/power/power_manager_client.h"
@@ -113,6 +115,10 @@ PhoneHubManagerImpl::PhoneHubManagerImpl(
           notification_processor_.get(),
           multidevice_setup_client,
           phone_model_.get())),
+      recent_apps_interaction_handler_(
+          features::IsPhoneHubRecentAppsEnabled()
+              ? std::make_unique<RecentAppsInteractionHandler>()
+              : nullptr),
       tether_controller_(
           std::make_unique<TetherControllerImpl>(phone_model_.get(),
                                                  user_action_recorder_.get(),
@@ -131,7 +137,12 @@ PhoneHubManagerImpl::PhoneHubManagerImpl(
       invalid_connection_disconnector_(
           std::make_unique<InvalidConnectionDisconnector>(
               connection_manager_.get(),
-              phone_model_.get())) {}
+              phone_model_.get())),
+      camera_roll_manager_(
+          features::IsPhoneHubCameraRollEnabled()
+              ? std::make_unique<CameraRollManager>(message_receiver_.get(),
+                                                    message_sender_.get())
+              : nullptr) {}
 
 PhoneHubManagerImpl::~PhoneHubManagerImpl() = default;
 
@@ -176,6 +187,11 @@ PhoneModel* PhoneHubManagerImpl::GetPhoneModel() {
   return phone_model_.get();
 }
 
+RecentAppsInteractionHandler*
+PhoneHubManagerImpl::GetRecentAppsInteractionHandler() {
+  return recent_apps_interaction_handler_.get();
+}
+
 TetherController* PhoneHubManagerImpl::GetTetherController() {
   return tether_controller_.get();
 }
@@ -184,14 +200,16 @@ UserActionRecorder* PhoneHubManagerImpl::GetUserActionRecorder() {
   return user_action_recorder_.get();
 }
 
-// These should be destroyed in the opposite order of how these objects are
-// initialized in the constructor.
+// NOTE: These should be destroyed in the opposite order of how these objects
+// are initialized in the constructor.
 void PhoneHubManagerImpl::Shutdown() {
+  camera_roll_manager_.reset();
   invalid_connection_disconnector_.reset();
   multidevice_setup_state_updater_.reset();
   browser_tabs_model_controller_.reset();
   browser_tabs_model_provider_.reset();
   tether_controller_.reset();
+  recent_apps_interaction_handler_.reset();
   phone_status_processor_.reset();
   notification_processor_.reset();
   onboarding_ui_tracker_.reset();

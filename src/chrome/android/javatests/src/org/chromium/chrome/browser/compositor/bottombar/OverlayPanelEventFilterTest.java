@@ -30,15 +30,16 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutManagerImpl;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.OverlayPanelEventFilter;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.DummyUiChromeActivityTestCase;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.base.ActivityWindowAndroid;
+import org.chromium.ui.base.IntentRequestTracker;
 import org.chromium.ui.base.WindowAndroid;
-import org.chromium.ui.test.util.DummyUiActivityTestCase;
 /**
  * Class responsible for testing the OverlayPanelEventFilter.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-public class OverlayPanelEventFilterTest extends DummyUiActivityTestCase {
+public class OverlayPanelEventFilterTest extends DummyUiChromeActivityTestCase {
     private static final float PANEL_ALMOST_MAXIMIZED_OFFSET_Y_DP = 50.f;
     private static final float BAR_HEIGHT_DP = 100.f;
 
@@ -248,7 +249,9 @@ public class OverlayPanelEventFilterTest extends DummyUiActivityTestCase {
         mTouchSlopDp = ViewConfiguration.get(context).getScaledTouchSlop() / mDpToPx;
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mWindowAndroid = new ActivityWindowAndroid(getActivity());
+            mWindowAndroid =
+                    new ActivityWindowAndroid(getActivity(), /* listenToActivityState= */ true,
+                            IntentRequestTracker.createFromActivity(getActivity()));
             mActivity = getActivity();
 
             mPanel = new MockOverlayPanel(context, mLayoutManager, new OverlayPanelManager(),

@@ -28,7 +28,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -124,14 +123,13 @@ struct DeferredFrameData {
  public:
   DeferredFrameData()
       : orientation_(ImageOrientationEnum::kDefault), is_received_(false) {}
+  DeferredFrameData(const DeferredFrameData&) = delete;
+  DeferredFrameData& operator=(const DeferredFrameData&) = delete;
 
   ImageOrientation orientation_;
   IntSize density_corrected_size_;
   base::TimeDelta duration_;
   bool is_received_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DeferredFrameData);
 };
 
 std::unique_ptr<DeferredImageDecoder> DeferredImageDecoder::Create(
@@ -252,6 +250,15 @@ sk_sp<PaintImageGenerator> DeferredImageDecoder::CreateGenerator() {
 
 scoped_refptr<SharedBuffer> DeferredImageDecoder::Data() {
   return parkable_image_ ? parkable_image_->Data() : nullptr;
+}
+
+bool DeferredImageDecoder::HasData() const {
+  return parkable_image_ != nullptr;
+}
+
+size_t DeferredImageDecoder::DataSize() const {
+  DCHECK(parkable_image_);
+  return parkable_image_->size();
 }
 
 void DeferredImageDecoder::SetData(scoped_refptr<SharedBuffer> data,

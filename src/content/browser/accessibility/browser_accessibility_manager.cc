@@ -225,9 +225,9 @@ bool BrowserAccessibilityManager::Unserialize(
   LOG(ERROR) << ax_tree()->error();
   LOG(ERROR) << tree_update.ToString();
 
-  static auto* ax_tree_error = base::debug::AllocateCrashKeyString(
+  static auto* const ax_tree_error = base::debug::AllocateCrashKeyString(
       "ax_tree_error", base::debug::CrashKeySize::Size256);
-  static auto* ax_tree_update = base::debug::AllocateCrashKeyString(
+  static auto* const ax_tree_update = base::debug::AllocateCrashKeyString(
       "ax_tree_update", base::debug::CrashKeySize::Size256);
   // Temporarily log some additional crash keys so we can try to
   // figure out why we're getting bad accessibility trees here.
@@ -463,7 +463,7 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
     // means a node just got repeated or something harmless like that,
     // but it should still be investigated and could be the sign of a
     // performance issue.
-    DCHECK_LE(int{tree_update.nodes.size()}, ax_tree()->size());
+    DCHECK_LE(static_cast<int>(tree_update.nodes.size()), ax_tree()->size());
   }
 
   // If this page is hidden by an interstitial, suppress all events.
@@ -606,6 +606,8 @@ void BrowserAccessibilityManager::OnLocationChanges(
                       change->new_location.transform.get());
   }
   SendLocationChangeEvents(changes);
+  if (!location_change_callback_for_testing_.is_null())
+    location_change_callback_for_testing_.Run();
 }
 
 void BrowserAccessibilityManager::SendLocationChangeEvents(
@@ -665,16 +667,10 @@ BrowserAccessibility* BrowserAccessibilityManager::GetActiveDescendant(
     active_descendant = node->manager()->GetFromID(active_descendant_id);
   }
 
-  // When getting the active descendant, we avoid calling
-  // BrowserAccessibility::IsInvisibleOrIgnored on the node because
-  // IsInvisibleOrIgnored takes the focused object into account by retrieving
-  // it. We already have the focused object, thus there is no need to
-  // re-retrieve it. Furthermore, doing so can lead to an infinite loop.
-  // Therefore just check the AXNodeData.
   if (node->GetRole() == ax::mojom::Role::kPopUpButton) {
     BrowserAccessibility* child = node->InternalGetFirstChild();
     if (child && child->GetRole() == ax::mojom::Role::kMenuListPopup &&
-        !child->GetData().IsInvisibleOrIgnored()) {
+        !child->IsInvisibleOrIgnored()) {
       // The active descendant is found on the menu list popup, i.e. on the
       // actual list and not on the button that opens it.
       // If there is no active descendant, focus should stay on the button so
@@ -690,7 +686,7 @@ BrowserAccessibility* BrowserAccessibilityManager::GetActiveDescendant(
     }
   }
 
-  if (active_descendant && !active_descendant->GetData().IsInvisibleOrIgnored())
+  if (active_descendant && !active_descendant->IsInvisibleOrIgnored())
     return active_descendant;
 
   return node;
@@ -792,13 +788,6 @@ void BrowserAccessibilityManager::SetSequentialFocusNavigationStartingPoint(
   BrowserAccessibilityStateImpl::GetInstance()->OnAccessibilityApiUsage();
 }
 
-void BrowserAccessibilityManager::SetFocusLocallyForTesting(
-    BrowserAccessibility* node) {
-  ui::AXTreeData data = GetTreeData();
-  data.focus_id = node->GetId();
-  ax_tree()->UpdateData(data);
-}
-
 // static
 void BrowserAccessibilityManager::SetFocusChangeCallbackForTesting(
     base::RepeatingClosure callback) {
@@ -808,6 +797,11 @@ void BrowserAccessibilityManager::SetFocusChangeCallbackForTesting(
 void BrowserAccessibilityManager::SetGeneratedEventCallbackForTesting(
     const GeneratedEventCallbackForTesting& callback) {
   generated_event_callback_for_testing_ = callback;
+}
+
+void BrowserAccessibilityManager::SetLocationChangeCallbackForTesting(
+    const base::RepeatingClosure& callback) {
+  location_change_callback_for_testing_ = callback;
 }
 
 // static
@@ -1378,6 +1372,33 @@ gfx::Rect BrowserAccessibilityManager::GetRootFrameInnerTextRangeBoundsRect(
   return result;
 }
 
+void BrowserAccessibilityManager::OnTreeDataChanged(
+    ui::AXTree* tree,
+    const ui::AXTreeData& old_data,
+    const ui::AXTreeData& new_data) {
+  DCHECK_EQ(ax_tree(), tree);
+  if (new_data.tree_id == ui::AXTreeIDUnknown() ||
+      new_data.tree_id == ax_tree_id_) {
+    return;  // Tree ID hasn't changed.
+  }
+
+  // Either the tree that is being managed by this manager has just been
+  // created, or it has been destroyed and re-created.
+  connected_to_parent_tree_node_ = false;
+
+  // If the current focus is in the tree that has just been destroyed, then
+  // reset the focus to nullptr. It will be set to the current focus again the
+  // next time there is a focus event.
+  if (ax_tree_id_ != ui::AXTreeIDUnknown() &&
+      ax_tree_id_ == last_focused_node_tree_id_) {
+    SetLastFocusedNode(nullptr);
+  }
+
+  ui::AXTreeManagerMap::GetInstance().RemoveTreeManager(ax_tree_id_);
+  ax_tree_id_ = new_data.tree_id;
+  ui::AXTreeManagerMap::GetInstance().AddTreeManager(ax_tree_id_, this);
+}
+
 void BrowserAccessibilityManager::OnNodeWillBeDeleted(ui::AXTree* tree,
                                                       ui::AXNode* node) {
   DCHECK(node);
@@ -1449,25 +1470,9 @@ void BrowserAccessibilityManager::OnAtomicUpdateFinished(
     ui::AXTree* tree,
     bool root_changed,
     const std::vector<ui::AXTreeObserver::Change>& changes) {
-  const bool ax_tree_id_changed =
-      GetTreeData().tree_id != ui::AXTreeIDUnknown() &&
-      GetTreeData().tree_id != ax_tree_id_;
-  // When the tree that contains the focus is destroyed and re-created, we
-  // should fire a new focus event. Also, whenever the tree ID or the root of
-  // this tree changes we may need to fire an event on our parent node in the
-  // parent tree to ensure that we're properly connected.
-  if (ax_tree_id_changed && last_focused_node_tree_id_ &&
-      ax_tree_id_ == *last_focused_node_tree_id_) {
-    SetLastFocusedNode(nullptr);
-  }
-  if (ax_tree_id_changed || root_changed)
+  DCHECK_EQ(ax_tree(), tree);
+  if (root_changed)
     connected_to_parent_tree_node_ = false;
-
-  if (ax_tree_id_changed) {
-    ui::AXTreeManagerMap::GetInstance().RemoveTreeManager(ax_tree_id_);
-    ax_tree_id_ = GetTreeData().tree_id;
-    ui::AXTreeManagerMap::GetInstance().AddTreeManager(ax_tree_id_, this);
-  }
 
   // Calls OnDataChanged on newly created, reparented or changed nodes.
   for (const auto& change : changes) {

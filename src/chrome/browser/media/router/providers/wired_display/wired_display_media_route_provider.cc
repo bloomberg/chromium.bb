@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/i18n/number_formatting.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media/router/media_router_feature.h"
@@ -37,7 +38,7 @@ MediaSinkInternal CreateSinkForDisplay(const Display& display,
       l10n_util::GetStringFUTF8(IDS_MEDIA_ROUTER_WIRED_DISPLAY_SINK_NAME,
                                 base::FormatNumber(display_index));
   MediaSink sink(sink_id, sink_name, SinkIconType::WIRED_DISPLAY,
-                 MediaRouteProviderId::WIRED_DISPLAY);
+                 mojom::MediaRouteProviderId::WIRED_DISPLAY);
   MediaSinkInternal sink_internal;
   sink_internal.set_sink(sink);
   return sink_internal;
@@ -61,8 +62,8 @@ bool CompareDisplays(int64_t primary_id,
 }  // namespace
 
 // static
-const MediaRouteProviderId WiredDisplayMediaRouteProvider::kProviderId =
-    MediaRouteProviderId::WIRED_DISPLAY;
+const mojom::MediaRouteProviderId WiredDisplayMediaRouteProvider::kProviderId =
+    mojom::MediaRouteProviderId::WIRED_DISPLAY;
 
 // static
 std::string WiredDisplayMediaRouteProvider::GetSinkIdForDisplay(
@@ -89,12 +90,7 @@ WiredDisplayMediaRouteProvider::WiredDisplayMediaRouteProvider(
       kProviderId, mojom::MediaRouter::SinkAvailability::PER_SOURCE);
 }
 
-WiredDisplayMediaRouteProvider::~WiredDisplayMediaRouteProvider() {
-  if (is_observing_displays_) {
-    display::Screen::GetScreen()->RemoveObserver(this);
-    is_observing_displays_ = false;
-  }
-}
+WiredDisplayMediaRouteProvider::~WiredDisplayMediaRouteProvider() = default;
 
 void WiredDisplayMediaRouteProvider::CreateRoute(
     const std::string& media_source,
@@ -199,10 +195,8 @@ void WiredDisplayMediaRouteProvider::StartObservingMediaSinks(
     return;
 
   // Start observing displays if |this| isn't already observing.
-  if (!is_observing_displays_) {
-    display::Screen::GetScreen()->AddObserver(this);
-    is_observing_displays_ = true;
-  }
+  if (!display_observer_)
+    display_observer_.emplace(this);
   sink_queries_.insert(media_source);
   UpdateMediaSinks(media_source);
 }

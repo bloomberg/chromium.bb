@@ -4,10 +4,10 @@
 
 #include "components/exo/keyboard.h"
 
+#include "ash/constants/app_types.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/public/cpp/accelerators.h"
-#include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/keyboard/keyboard_controller.h"
 #include "ash/shell.h"
 #include "base/bind.h"
@@ -35,11 +35,16 @@
 namespace exo {
 namespace {
 
+// This value must be bigger than the priority for DataDevice.
+constexpr int kKeyboardSeatObserverPriority = 1;
+static_assert(Seat::IsValidObserverPriority(kKeyboardSeatObserverPriority),
+              "kKeyboardSeatObserverPriority is not in the valid range.");
+
 // Delay until a key state change expected to be acknowledged is expired.
-const int kExpirationDelayForPendingKeyAcksMs = 1000;
+constexpr int kExpirationDelayForPendingKeyAcksMs = 1000;
 
 // The accelerator keys reserved to be processed by chrome.
-const struct {
+constexpr struct {
   ui::KeyboardCode keycode;
   int modifiers;
 } kReservedAccelerators[] = {
@@ -96,6 +101,12 @@ bool IsImeSupportedSurface(Surface* surface) {
         // Do nothing.
         break;
     }
+    // For notifications, billing surfaces, etc. AppType::ARC_APP is not set
+    // despite them being from ARC. Ideally AppType should be added to them, but
+    // there is a risk that breaks other features e.g. full restore.
+    // TODO(tetsui): find a way to remove this.
+    if (window->GetProperty(aura::client::kSkipImeProcessing))
+      return true;
   }
   return false;
 }
@@ -157,7 +168,7 @@ Keyboard::Keyboard(std::unique_ptr<KeyboardDelegate> delegate, Seat* seat)
       expiration_delay_for_pending_key_acks_(base::TimeDelta::FromMilliseconds(
           kExpirationDelayForPendingKeyAcksMs)) {
   AddEventHandler();
-  seat_->AddObserver(this);
+  seat_->AddObserver(this, kKeyboardSeatObserverPriority);
   ash::KeyboardController::Get()->AddObserver(this);
   ash::ImeControllerImpl* ime_controller = ash::Shell::Get()->ime_controller();
   ime_controller->AddObserver(this);
@@ -375,8 +386,6 @@ void Keyboard::OnSurfaceDestroying(Surface* surface) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // SeatObserver overrides:
-
-void Keyboard::OnSurfaceFocusing(Surface* gaining_focus) {}
 
 void Keyboard::OnSurfaceFocused(Surface* gained_focus) {
   Surface* gained_focus_surface =

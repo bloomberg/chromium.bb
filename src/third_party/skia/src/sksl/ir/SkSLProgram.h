@@ -27,8 +27,8 @@
 #include "src/gpu/vk/GrVkCaps.h"
 #endif
 
-// name of the render target height uniform
-#define SKSL_RTHEIGHT_NAME "u_skRTHeight"
+// name of the uniform used to handle features that are sensitive to whether Y is flipped.
+#define SKSL_RTFLIP_NAME "u_skRTFlip"
 
 namespace SkSL {
 
@@ -67,21 +67,11 @@ struct Program {
     using Settings = ProgramSettings;
 
     struct Inputs {
-        // if true, this program requires the render target height uniform to be defined
-        bool fRTHeight;
-
-        // if true, this program must be recompiled if the flipY setting changes. If false, the
-        // program will compile to the same code regardless of the flipY setting.
-        bool fFlipY;
-
-        void reset() {
-            fRTHeight = false;
-            fFlipY = false;
+        bool fUseFlipRTUniform = false;
+        bool operator==(const Inputs& that) const {
+            return fUseFlipRTUniform == that.fUseFlipRTUniform;
         }
-
-        bool isEmpty() {
-            return !fRTHeight && !fFlipY;
-        }
+        bool operator!=(const Inputs& that) const { return !(*this == that); }
     };
 
     Program(std::unique_ptr<String> source,
@@ -193,7 +183,7 @@ struct Program {
 
     String description() const {
         String result;
-        for (const auto& e : this->elements()) {
+        for (const ProgramElement* e : this->elements()) {
             result += e->description();
         }
         return result;

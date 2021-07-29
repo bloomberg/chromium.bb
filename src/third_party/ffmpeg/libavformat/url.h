@@ -308,6 +308,16 @@ int ff_url_join(char *str, int size, const char *proto,
  * @param size the size of buf
  * @param base the base url, may be equal to buf.
  * @param rel the new url, which is interpreted relative to base
+ * @param handle_dos_paths handle DOS paths for file or unspecified protocol
+ */
+int ff_make_absolute_url2(char *buf, int size, const char *base,
+                         const char *rel, int handle_dos_paths);
+
+/**
+ * Convert a relative url into an absolute url, given a base url.
+ *
+ * Same as ff_make_absolute_url2 with handle_dos_paths being equal to
+ * HAVE_DOS_PATHS config variable.
  */
 int ff_make_absolute_url(char *buf, int size, const char *base,
                          const char *rel);
@@ -318,10 +328,6 @@ int ff_make_absolute_url(char *buf, int size, const char *base,
  * @return entry or NULL on error
  */
 AVIODirEntry *ff_alloc_dir_entry(void);
-
-#if FF_API_CHILD_CLASS_NEXT
-const AVClass *ff_urlcontext_child_class_next(const AVClass *prev);
-#endif
 
 const AVClass *ff_urlcontext_child_class_iterate(void **iter);
 

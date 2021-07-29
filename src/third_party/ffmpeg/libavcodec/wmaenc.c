@@ -408,7 +408,7 @@ static int encode_superframe(AVCodecContext *avctx, AVPacket *avpkt,
         return AVERROR(EINVAL);
     }
     av_assert0((put_bits_count(&s->pb) & 7) == 0);
-    i= avctx->block_align - (put_bits_count(&s->pb)+7)/8;
+    i = avctx->block_align - put_bytes_count(&s->pb, 0);
     av_assert0(i>=0);
     while(i--)
         put_bits(&s->pb, 8, 'N');
@@ -425,7 +425,7 @@ static int encode_superframe(AVCodecContext *avctx, AVPacket *avpkt,
 }
 
 #if CONFIG_WMAV1_ENCODER
-AVCodec ff_wmav1_encoder = {
+const AVCodec ff_wmav1_encoder = {
     .name           = "wmav1",
     .long_name      = NULL_IF_CONFIG_SMALL("Windows Media Audio 1"),
     .type           = AVMEDIA_TYPE_AUDIO,
@@ -439,7 +439,7 @@ AVCodec ff_wmav1_encoder = {
 };
 #endif
 #if CONFIG_WMAV2_ENCODER
-AVCodec ff_wmav2_encoder = {
+const AVCodec ff_wmav2_encoder = {
     .name           = "wmav2",
     .long_name      = NULL_IF_CONFIG_SMALL("Windows Media Audio 2"),
     .type           = AVMEDIA_TYPE_AUDIO,

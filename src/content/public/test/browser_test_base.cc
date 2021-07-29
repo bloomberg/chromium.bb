@@ -41,6 +41,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/tracing/common/tracing_switches.h"
+#include "components/variations/variations_ids_provider.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/network_service_instance_impl.h"
@@ -430,30 +431,43 @@ void BrowserTestBase::SetUp() {
       if (size < 0)
         PLOG(ERROR) << "Error receiving message from the socket";
       ASSERT_EQ(1, size);
-      EXPECT_EQ(0u, buf[0]);
-      // We have three variation of ash-chrome behaviors depending on the age.
-      // Older ash-chrome gives us one FD, which will become a Mojo connection.
-      // Next ash-chrome gives us another FD, too, which contains startup
-      // data.
-      // The newest ash-chrome gives us yet another FD, which will become a
-      // crosapi Mojo connection.
+
       // TODO(crbug.com/1156033): Clean up when both ash-chrome and
       // lacros-chrome become new enough.
-      ASSERT_LE(descriptors.size(), 3u);
-      // It's OK to release the FD because lacros-chrome's code will consume it.
-      command_line->AppendSwitchASCII(
-          mojo::PlatformChannel::kHandleSwitch,
-          base::NumberToString(descriptors[0].release()));
-      if (descriptors.size() >= 2) {
+      if (buf[0] == 0u) {
+        // We have three variation of ash-chrome behaviors depending on the age.
+        // Older ash-chrome gives us one FD, which will become a Mojo
+        // connection. Next ash-chrome gives us another FD, too, which contains
+        // startup data. The newest ash-chrome gives us yet another FD, which
+        // will become a crosapi Mojo connection.
+        ASSERT_LE(descriptors.size(), 3u);
+        // It's OK to release the FD because lacros-chrome's code will consume
+        // it.
+        command_line->AppendSwitchASCII(
+            mojo::PlatformChannel::kHandleSwitch,
+            base::NumberToString(descriptors[0].release()));
+        if (descriptors.size() >= 2) {
+          // Ok to release the FD here, too.
+          command_line->AppendSwitchASCII(
+              chromeos::switches::kCrosStartupDataFD,
+              base::NumberToString(descriptors[1].release()));
+        }
+        if (descriptors.size() == 3) {
+          command_line->AppendSwitchASCII(
+              crosapi::kCrosapiMojoPlatformChannelHandle,
+              base::NumberToString(descriptors[2].release()));
+        }
+      } else if (buf[0] == 1u) {
+        ASSERT_EQ(descriptors.size(), 2u);
         // Ok to release the FD here, too.
         command_line->AppendSwitchASCII(
             chromeos::switches::kCrosStartupDataFD,
-            base::NumberToString(descriptors[1].release()));
-      }
-      if (descriptors.size() >= 3) {
+            base::NumberToString(descriptors[0].release()));
         command_line->AppendSwitchASCII(
             crosapi::kCrosapiMojoPlatformChannelHandle,
-            base::NumberToString(descriptors[2].release()));
+            base::NumberToString(descriptors[1].release()));
+      } else {
+        FAIL() << "Unexpected version";
       }
     }
   }
@@ -607,6 +621,13 @@ void BrowserTestBase::SetUp() {
 
     delegate->PreBrowserMain();
     BrowserTaskExecutor::Create();
+
+    auto* provider = delegate->CreateVariationsIdsProvider();
+    if (!provider) {
+      variations::VariationsIdsProvider::Create(
+          variations::VariationsIdsProvider::Mode::kUseSignedInState);
+    }
+
     delegate->PostEarlyInitialization(/*is_running_tests=*/true);
 
     StartBrowserThreadPool();

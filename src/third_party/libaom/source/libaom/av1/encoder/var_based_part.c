@@ -671,7 +671,14 @@ static AOM_INLINE void chroma_check(AV1_COMP *cpi, MACROBLOCK *x,
       uv_sad = cpi->ppi->fn_ptr[bs].sdf(p->src.buf, p->src.stride, pd->dst.buf,
                                         pd->dst.stride);
 
-    x->color_sensitivity[i - 1] = uv_sad > (y_sad >> 2);
+    if (uv_sad > (y_sad >> 1))
+      x->color_sensitivity_sb[i - 1] = 1;
+    else if (uv_sad < (y_sad >> 3))
+      x->color_sensitivity_sb[i - 1] = 0;
+    // Borderline case: to be refined at coding block level in nonrd_pickmode,
+    // for coding block size < sb_size.
+    else
+      x->color_sensitivity_sb[i - 1] = 2;
   }
 }
 

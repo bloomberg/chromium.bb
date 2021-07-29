@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 
+#include "base/trace_event/trace_event.h"
 #include "third_party/blink/renderer/core/clipboard/clipboard_mime_types.h"
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
 #include "third_party/blink/renderer/core/clipboard/data_transfer.h"
@@ -300,9 +301,9 @@ int16_t ComparePositions(const Position& a, const Position& b) {
   int16_t bias = 0;
   if (node_a == node_b) {
     if (has_descendent_a)
-      bias = -1;
-    else if (has_descendent_b)
       bias = 1;
+    else if (has_descendent_b)
+      bias = -1;
   }
 
   int16_t result =
@@ -786,6 +787,14 @@ int FindNextBoundaryOffset(const String& str, int current) {
   }
   return current + machine.FinalizeAndGetBoundaryOffset();
 }
+
+// Explicit instantiation to avoid link error for the usage in EditContext.
+template int FindNextBoundaryOffset<BackwardGraphemeBoundaryStateMachine>(
+    const String& str,
+    int current);
+template int FindNextBoundaryOffset<ForwardGraphemeBoundaryStateMachine>(
+    const String& str,
+    int current);
 
 int PreviousGraphemeBoundaryOf(const Node& node, int current) {
   // TODO(yosin): Need to support grapheme crossing |Node| boundary.

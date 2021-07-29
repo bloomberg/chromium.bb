@@ -46,7 +46,11 @@ const char kAuthenticationToken[] = "authentication_token";
 const char kRawAuthenticationToken[] = {0x00, 0x05, 0x04, 0x03, 0x02};
 const int64_t kPayloadId = 612721831;
 const char kPayload[] = {0x0f, 0x0a, 0x0c, 0x0e};
-const char kBluetoothMacAddress[] = {0x00, 0x00, 0xe6, 0x88, 0x64, 0x13};
+const uint8_t kBluetoothMacAddress[] = {0x00, 0x00, 0xe6, 0x88, 0x64, 0x13};
+const base::TimeDelta kKeepAliveInterval =
+    base::TimeDelta::FromMilliseconds(5123);
+const base::TimeDelta kKeepAliveTimeout =
+    base::TimeDelta::FromMilliseconds(31234);
 
 mojom::AdvertisingOptionsPtr CreateAdvertisingOptions() {
   bool use_ble = false;
@@ -65,13 +69,16 @@ mojom::AdvertisingOptionsPtr CreateAdvertisingOptions() {
 }
 
 mojom::ConnectionOptionsPtr CreateConnectionOptions(
-    absl::optional<std::vector<uint8_t>> bluetooth_mac_address) {
+    absl::optional<std::vector<uint8_t>> bluetooth_mac_address,
+    base::TimeDelta keep_alive_interval,
+    base::TimeDelta keep_alive_timeout) {
   auto allowed_mediums = mojom::MediumSelection::New(/*bluetooth=*/true,
                                                      /*ble=*/false,
                                                      /*web_rtc=*/false,
                                                      /*wifi_lan=*/true);
   return mojom::ConnectionOptions::New(std::move(allowed_mediums),
-                                       std::move(bluetooth_mac_address));
+                                       std::move(bluetooth_mac_address),
+                                       keep_alive_interval, keep_alive_timeout);
 }
 
 struct EndpointData {
@@ -324,6 +331,10 @@ class NearbyConnectionsTest : public testing::Test {
           EXPECT_TRUE(options.allowed.bluetooth);
           EXPECT_FALSE(options.allowed.web_rtc);
           EXPECT_TRUE(options.allowed.wifi_lan);
+          EXPECT_EQ(kKeepAliveInterval.InMilliseconds(),
+                    options.keep_alive_interval_millis);
+          EXPECT_EQ(kKeepAliveTimeout.InMilliseconds(),
+                    options.keep_alive_timeout_millis);
           if (bluetooth_mac_address) {
             EXPECT_EQ(bluetooth_mac_address,
                       ByteArrayToMojom(options.remote_bluetooth_mac_address));
@@ -345,7 +356,8 @@ class NearbyConnectionsTest : public testing::Test {
     base::RunLoop request_connection_run_loop;
     nearby_connections_->RequestConnection(
         kServiceId, endpoint_info, endpoint_data.remote_endpoint_id,
-        CreateConnectionOptions(bluetooth_mac_address),
+        CreateConnectionOptions(bluetooth_mac_address, kKeepAliveInterval,
+                                kKeepAliveTimeout),
         fake_connection_life_cycle_listener.receiver.BindNewPipeAndPassRemote(),
         base::BindLambdaForTesting([&](mojom::Status status) {
           EXPECT_EQ(mojom::Status::kSuccess, status);
@@ -1329,18 +1341,19 @@ TEST_F(NearbyConnectionsTest, ReceiveStreamPayload) {
       endpoint_data.remote_endpoint_id,
       Payload(kPayloadId,
               [&input_stream]() -> InputStream& { return input_stream; }));
+  int64_t expected_payload_size = expected_payload.size();
   client_proxy->OnPayloadProgress(
       endpoint_data.remote_endpoint_id,
       {.payload_id = kPayloadId,
        .status = PayloadProgressInfo::Status::kInProgress,
-       .total_bytes = expected_payload.size(),
-       .bytes_transferred = expected_payload.size()});
+       .total_bytes = expected_payload_size,
+       .bytes_transferred = expected_payload_size});
   client_proxy->OnPayloadProgress(
       endpoint_data.remote_endpoint_id,
       {.payload_id = kPayloadId,
        .status = PayloadProgressInfo::Status::kSuccess,
-       .total_bytes = expected_payload.size(),
-       .bytes_transferred = expected_payload.size()});
+       .total_bytes = expected_payload_size,
+       .bytes_transferred = expected_payload_size});
 
   payload_run_loop.Run();
 }

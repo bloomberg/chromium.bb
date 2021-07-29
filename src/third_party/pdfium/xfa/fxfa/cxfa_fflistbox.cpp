@@ -10,8 +10,8 @@
 #include <utility>
 #include <vector>
 
+#include "core/fxcrt/stl_util.h"
 #include "third_party/base/check.h"
-#include "third_party/base/stl_util.h"
 #include "v8/include/cppgc/visitor.h"
 #include "xfa/fwl/cfwl_listbox.h"
 #include "xfa/fwl/cfwl_notedriver.h"
@@ -104,7 +104,7 @@ bool CXFA_FFListBox::CommitData() {
 
 bool CXFA_FFListBox::IsDataChanged() {
   std::vector<int32_t> iSelArray = m_pNode->GetSelectedItems();
-  int32_t iOldSels = pdfium::CollectionSize<int32_t>(iSelArray);
+  int32_t iOldSels = fxcrt::CollectionSize<int32_t>(iSelArray);
   auto* pListBox = ToListBox(GetNormalWidget());
   int32_t iSels = pListBox->CountSelItems();
   if (iOldSels != iSels)
@@ -166,7 +166,7 @@ void CXFA_FFListBox::OnSelectChanged(CFWL_Widget* pWidget) {
   CXFA_EventParam eParam;
   eParam.m_eType = XFA_EVENT_Change;
   eParam.m_pTarget = m_pNode.Get();
-  eParam.m_wsPrevText = m_pNode->GetValue(XFA_VALUEPICTURE_Raw);
+  eParam.m_wsPrevText = m_pNode->GetValue(XFA_ValuePicture::kRaw);
   m_pNode->ProcessEvent(GetDocView(), XFA_AttributeValue::Change, &eParam);
 }
 

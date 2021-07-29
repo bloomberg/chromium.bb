@@ -77,7 +77,7 @@ void AXVirtualView::AddChildView(std::unique_ptr<AXVirtualView> view) {
   DCHECK(view);
   if (view->virtual_parent_view_ == this)
     return;  // Already a child of this virtual view.
-  AddChildViewAt(std::move(view), int{children_.size()});
+  AddChildViewAt(std::move(view), static_cast<int>(children_.size()));
 }
 
 void AXVirtualView::AddChildViewAt(std::unique_ptr<AXVirtualView> view,
@@ -91,7 +91,7 @@ void AXVirtualView::AddChildViewAt(std::unique_ptr<AXVirtualView> view,
                                          "AXVirtualView parent. Call "
                                          "RemoveChildView first.";
   DCHECK_GE(index, 0);
-  DCHECK_LE(index, int{children_.size()});
+  DCHECK_LE(index, static_cast<int>(children_.size()));
 
   view->virtual_parent_view_ = this;
   children_.insert(children_.begin() + index, std::move(view));
@@ -103,10 +103,10 @@ void AXVirtualView::AddChildViewAt(std::unique_ptr<AXVirtualView> view,
 
 void AXVirtualView::ReorderChildView(AXVirtualView* view, int index) {
   DCHECK(view);
-  if (index >= int{children_.size()})
+  if (index >= static_cast<int>(children_.size()))
     return;
   if (index < 0)
-    index = int{children_.size()} - 1;
+    index = static_cast<int>(children_.size()) - 1;
 
   DCHECK_EQ(view->virtual_parent_view_, this);
   if (children_[index].get() == view)
@@ -358,8 +358,7 @@ gfx::Rect AXVirtualView::GetBoundsRect(
 gfx::NativeViewAccessible AXVirtualView::HitTestSync(
     int screen_physical_pixel_x,
     int screen_physical_pixel_y) const {
-  const ui::AXNodeData& node_data = GetData();
-  if (node_data.HasState(ax::mojom::State::kInvisible))
+  if (GetData().IsInvisible())
     return nullptr;
 
   // Check if the point is within any of the virtual children of this view.
@@ -382,7 +381,7 @@ gfx::NativeViewAccessible AXVirtualView::HitTestSync(
   if (bounds_in_screen_physical_pixels.Contains(
           static_cast<float>(screen_physical_pixel_x),
           static_cast<float>(screen_physical_pixel_y)) &&
-      !node_data.IsIgnored()) {
+      !IsIgnored()) {
     return GetNativeObject();
   }
 
@@ -458,10 +457,6 @@ std::vector<int32_t> AXVirtualView::GetColHeaderNodeIds(int col_index) const {
 absl::optional<int32_t> AXVirtualView::GetCellId(int row_index,
                                                  int col_index) const {
   return GetDelegate()->GetCellId(row_index, col_index);
-}
-
-bool AXVirtualView::IsIgnored() const {
-  return GetData().IsIgnored();
 }
 
 bool AXVirtualView::HandleAccessibleAction(

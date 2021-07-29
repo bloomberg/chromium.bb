@@ -484,7 +484,7 @@ static int ffat_decode(AVCodecContext *avctx, void *data,
     if (avctx->codec_id == AV_CODEC_ID_AAC) {
         if (!at->extradata_size) {
             uint8_t *side_data;
-            buffer_size_t side_data_size;
+            size_t side_data_size;
 
             side_data = av_packet_get_side_data(avpkt, AV_PKT_DATA_NEW_EXTRADATA,
                                                 &side_data_size);
@@ -540,11 +540,6 @@ static int ffat_decode(AVCodecContext *avctx, void *data,
         *got_frame_ptr = 1;
         if (at->last_pts != AV_NOPTS_VALUE) {
             frame->pts = at->last_pts;
-#if FF_API_PKT_PTS
-FF_DISABLE_DEPRECATION_WARNINGS
-            frame->pkt_pts = at->last_pts;
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
             at->last_pts = avpkt->pts;
         }
     } else if (ret && ret != 1) {
@@ -584,7 +579,7 @@ static av_cold int ffat_close_decoder(AVCodecContext *avctx)
 
 #define FFAT_DEC(NAME, ID, bsf_name) \
     FFAT_DEC_CLASS(NAME) \
-    AVCodec ff_##NAME##_at_decoder = { \
+    const AVCodec ff_##NAME##_at_decoder = { \
         .name           = #NAME "_at", \
         .long_name      = NULL_IF_CONFIG_SMALL(#NAME " (AudioToolbox)"), \
         .type           = AVMEDIA_TYPE_AUDIO, \

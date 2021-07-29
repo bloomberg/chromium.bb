@@ -71,6 +71,11 @@ class BASE_EXPORT PCScan final {
   // quarantined objects.
   static void RegisterNonScannableRoot(Root* root);
 
+  // Registers a newly allocated super page for |root|.
+  static void RegisterNewSuperPage(Root* root, uintptr_t super_page_base);
+  static void RegisterNewSuperPage(PartitionRoot<NotThreadSafe>* root,
+                                   uintptr_t super_page_base) {}
+
   ALWAYS_INLINE static void MoveToQuarantine(void* ptr,
                                              size_t usable_size,
                                              size_t slot_size);
@@ -94,6 +99,8 @@ class BASE_EXPORT PCScan final {
   static void DisableStackScanning();
   static bool IsStackScanningEnabled();
 
+  static void EnableImmediateFreeing();
+
   // Notify PCScan that a new thread was created/destroyed. Can be called for
   // uninitialized PCScan (before Initialize()).
   static void NotifyThreadCreated(void* stack_top);
@@ -109,7 +116,7 @@ class BASE_EXPORT PCScan final {
  private:
   class PCScanThread;
   friend class PCScanTask;
-  friend class PCScanTest;
+  friend class PartitionAllocPCScanTest;
   friend class PCScanInternal;
 
   enum class State : uint8_t {

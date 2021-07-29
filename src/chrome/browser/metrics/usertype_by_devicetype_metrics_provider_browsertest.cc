@@ -14,18 +14,16 @@
 #include "chrome/browser/ash/login/test/logged_in_user_mixin.h"
 #include "chrome/browser/ash/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
+#include "chrome/browser/ash/policy/core/device_local_account.h"
+#include "chrome/browser/ash/policy/core/device_policy_cros_browser_test.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_local_account.h"
-#include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/common/chrome_features.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "components/metrics/metrics_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
-#include "components/policy/core/common/cloud/policy_builder.h"
+#include "components/policy/core/common/cloud/test/policy_builder.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "content/public/test/browser_test.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -303,8 +301,7 @@ class UserTypeByDeviceTypeMetricsProviderTest
 
   void StartPublicSessionLogin() {
     // Start login into the device-local account.
-    chromeos::LoginDisplayHost* host =
-        chromeos::LoginDisplayHost::default_host();
+    auto* host = ash::LoginDisplayHost::default_host();
     ASSERT_TRUE(host);
     host->StartSignInScreen();
     chromeos::ExistingUserController* controller =
@@ -321,7 +318,7 @@ class UserTypeByDeviceTypeMetricsProviderTest
   void WaitForSessionStart() {
     if (IsSessionStarted())
       return;
-    chromeos::WizardController::SkipPostLoginScreensForTesting();
+    ash::WizardController::SkipPostLoginScreensForTesting();
     chromeos::test::WaitForPrimaryUserSessionStart();
   }
 

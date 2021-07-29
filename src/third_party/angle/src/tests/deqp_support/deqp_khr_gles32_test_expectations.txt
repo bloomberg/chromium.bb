@@ -10,8 +10,6 @@
 // tests)
 // Translator's lack of support for redefining gl_PerVertex
 5579 VULKAN WIN : KHR-GLES32.core.geometry_shader.api.getProgramiv3 = FAIL
-// Failure in translator validation regarding varying arrayness
-5579 VULKAN WIN : KHR-GLES32.core.geometry_shader.nonarray_input.* = FAIL
 // Crash gathering transform feedback varyings on GS-only separable program
 5579 VULKAN WIN : KHR-GLES32.core.geometry_shader.api.program_pipeline_vs_gs_capture = SKIP
 5579 VULKAN WIN : KHR-GLES32.core.separable_programs_tf.geometry_active = SKIP
@@ -26,7 +24,6 @@
 // Layered rendering (only fail when run in sequence, reproduced with --bot-mode)
 5579 VULKAN WIN : KHR-GLES32.core.geometry_shader.layered_fbo.fb_texture_invalid_level_number = FAIL
 5579 VULKAN WIN : KHR-GLES32.core.geometry_shader.layered_fbo.fb_texture_argument_refers_to_buffer_texture = FAIL
-5579 VULKAN WIN : KHR-GLES32.core.geometry_shader.layered_rendering.layered_rendering = FAIL
 // Crashes on ASSERT due to mismatch between shader resources and pipeline layout
 5579 VULKAN WIN : KHR-GLES32.core.geometry_shader.api.max_image_uniforms = SKIP
 // Failures on windows nvidia
@@ -98,6 +95,8 @@
 5557 VULKAN LINUX : KHR-GLES32.core.shader_macros.fragment_precision_high_tess_* = SKIP
 5557 VULKAN LINUX : KHR-GLES32.core.texture_cube_map_array.sampling = SKIP
 
+6008 VULKAN NVIDIA LINUX :  KHR-GLES32.core.framebuffer_completeness.cube_map_layered_attachment_valid_size_and_format = SKIP
+
 // Texture border clamp support
 3577 VULKAN : KHR-GLES32.core.texture_border_clamp.* = SKIP
 3577 VULKAN : KHR-GLES32.core.gpu_shader5.*clamp*_border = SKIP
@@ -161,3 +160,9 @@
 5393 VULKAN ANDROID : KHR-GLES32.core.texture_cube_map_array.texture_size_compute_sh = FAIL
 5393 VULKAN ANDROID : KHR-GLES32.core.texture_cube_map_array.texture_size_fragment_sh = FAIL
 5393 VULKAN ANDROID : KHR-GLES32.core.texture_cube_map_array.texture_size_vertex_sh = FAIL
+
+// Pixel 2 expectations
+6008 PIXEL2ORXL VULKAN : KHR-GLES32.core.framebuffer_completeness.cube_map_layered_attachment_valid_size_and_format = FAIL
+
+// Pixel 4 expectations.
+5990 PIXEL4ORXL VULKAN : KHR-GLES32.core.draw_buffers_indexed.color_masks = SKIP

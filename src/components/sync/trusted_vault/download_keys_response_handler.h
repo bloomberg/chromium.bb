@@ -38,12 +38,10 @@ class DownloadKeysResponseHandler {
     int last_key_version;
   };
 
-  // |device_key_pair| must not be null. If |last_trusted_vault_key_and_version|
-  // is provided, then it will be verified that the new keys are result of
-  // rotating the provided key.
+  // |device_key_pair| must not be null. It will be verified that the new keys
+  // are result of rotating |last_trusted_vault_key_and_version|.
   DownloadKeysResponseHandler(
-      const absl::optional<TrustedVaultKeyAndVersion>&
-          last_trusted_vault_key_and_version,
+      const TrustedVaultKeyAndVersion& last_trusted_vault_key_and_version,
       std::unique_ptr<SecureBoxKeyPair> device_key_pair);
   DownloadKeysResponseHandler(const DownloadKeysResponseHandler& other) =
       delete;
@@ -55,8 +53,7 @@ class DownloadKeysResponseHandler {
                                     const std::string& response_body) const;
 
  private:
-  const absl::optional<TrustedVaultKeyAndVersion>
-      last_trusted_vault_key_and_version_;
+  const TrustedVaultKeyAndVersion last_trusted_vault_key_and_version_;
   const std::unique_ptr<SecureBoxKeyPair> device_key_pair_;
 };
 

@@ -166,8 +166,10 @@ bool NearbyProcessManagerImpl::AttemptToBindToUtilityProcess() {
       connections_receiver = connections.InitWithNewPipeAndPassReceiver();
   connections_.Bind(std::move(connections), /*bind_task_runner=*/nullptr);
   connections_.set_disconnect_handler(
-      base::BindOnce(&NearbyProcessManagerImpl::OnMojoPipeDisconnect,
-                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(
+          &NearbyProcessManagerImpl::OnMojoPipeDisconnect,
+          weak_ptr_factory_.GetWeakPtr(),
+          NearbyProcessShutdownReason::kConnectionsMojoPipeDisconnection),
       base::SequencedTaskRunnerHandle::Get());
 
   mojo::PendingRemote<sharing::mojom::NearbySharingDecoder> decoder;
@@ -175,8 +177,10 @@ bool NearbyProcessManagerImpl::AttemptToBindToUtilityProcess() {
       decoder.InitWithNewPipeAndPassReceiver();
   decoder_.Bind(std::move(decoder), /*bind_task_runner=*/nullptr);
   decoder_.set_disconnect_handler(
-      base::BindOnce(&NearbyProcessManagerImpl::OnMojoPipeDisconnect,
-                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(
+          &NearbyProcessManagerImpl::OnMojoPipeDisconnect,
+          weak_ptr_factory_.GetWeakPtr(),
+          NearbyProcessShutdownReason::kDecoderMojoPipeDisconnection),
       base::SequencedTaskRunnerHandle::Get());
 
   // Pass these references to Connect() to start up the process.
@@ -196,11 +200,11 @@ void NearbyProcessManagerImpl::OnSharingProcessCrash() {
   NotifyProcessStopped(shutdown_reason);
 }
 
-void NearbyProcessManagerImpl::OnMojoPipeDisconnect() {
-  NS_LOG(ERROR) << "A utility process Mojo pipe has disconnected.";
-
-  NearbyProcessShutdownReason shutdown_reason =
-      NearbyProcessShutdownReason::kMojoPipeDisconnection;
+void NearbyProcessManagerImpl::OnMojoPipeDisconnect(
+    NearbyProcessShutdownReason shutdown_reason) {
+  NS_LOG(ERROR) << "The browser process has detected that the utility process "
+                   "disconnected from a mojo pipe. ["
+                << shutdown_reason << "]";
 
   ShutDownProcess(shutdown_reason);
   NotifyProcessStopped(shutdown_reason);
@@ -251,21 +255,22 @@ void NearbyProcessManagerImpl::ShutDownProcess(
   // Prevent the Remotes' disconnect handler callbacks from firing.
   weak_ptr_factory_.InvalidateWeakPtrs();
 
-  if (sharing_) {
-    // Start the asynchronous shutdown flow, and pass ownership of the existing
-    // Remote and SharedRemotes to the callback. These instance fields will stay
-    // alive until ShutDown() is complete, at which time they will go out of
-    // scope and become disconnected in OnSharingShutDownComplete().
-    sharing::mojom::Sharing* sharing = sharing_.get();
-    sharing->ShutDown(
-        base::BindOnce(&OnSharingShutDownComplete, std::move(sharing_),
-                       std::move(connections_), std::move(decoder_)));
+  if (!sharing_) {
+    sharing_.reset();
+    connections_.reset();
+    decoder_.reset();
+    return;
   }
 
+  // Start the asynchronous shutdown flow, and pass ownership of the existing
+  // Remote and SharedRemotes to the callback. These instance fields will stay
+  // alive until ShutDown() is complete, at which time they will go out of
+  // scope and become disconnected in OnSharingShutDownComplete().
+  sharing::mojom::Sharing* sharing = sharing_.get();
+  sharing->ShutDown(base::BindOnce(&OnSharingShutDownComplete,
+                                   std::move(sharing_), std::move(connections_),
+                                   std::move(decoder_)));
   nearby_connections_dependencies_provider_->PrepareForShutdown();
-  sharing_.reset();
-  connections_.reset();
-  decoder_.reset();
 }
 
 void NearbyProcessManagerImpl::NotifyProcessStopped(

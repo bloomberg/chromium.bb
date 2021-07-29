@@ -20,7 +20,7 @@
 #include "services/device/public/mojom/wake_lock.mojom.h"
 
 namespace download {
-class DownloadService;
+class BackgroundDownloadService;
 struct CompletionInfo;
 }  // namespace download
 
@@ -155,11 +155,12 @@ class PluginVmInstaller : public KeyedService,
   // Returns free disk space required to install Plugin VM in bytes.
   int64_t RequiredFreeDiskSpace();
 
+  void SkipLicenseCheckForTesting() { skip_license_check_for_testing_ = true; }
   void SetFreeDiskSpaceForTesting(int64_t bytes) {
     free_disk_space_for_testing_ = bytes;
   }
   void SetDownloadServiceForTesting(
-      download::DownloadService* download_service);
+      download::BackgroundDownloadService* download_service);
   void SetDownloadedImageForTesting(const base::FilePath& downloaded_image);
   void SetDriveDownloadServiceForTesting(
       std::unique_ptr<PluginVmDriveImageDownloadService>
@@ -264,7 +265,7 @@ class PluginVmInstaller : public KeyedService,
 
   Profile* profile_ = nullptr;
   Observer* observer_ = nullptr;
-  download::DownloadService* download_service_ = nullptr;
+  download::BackgroundDownloadService* download_service_ = nullptr;
   State state_ = State::kIdle;
   InstallingState installing_state_ = InstallingState::kInactive;
   base::TimeTicks setup_start_tick_;
@@ -280,6 +281,7 @@ class PluginVmInstaller : public KeyedService,
   std::unique_ptr<PluginVmLicenseChecker> license_checker_;
   bool using_drive_download_service_ = false;
 
+  bool skip_license_check_for_testing_ = false;
   // -1 indicates not set
   int64_t free_disk_space_for_testing_ = -1;
   absl::optional<base::FilePath> downloaded_image_for_testing_;

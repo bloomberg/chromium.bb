@@ -5,12 +5,13 @@
 #include "third_party/blink/renderer/core/layout/list_marker.h"
 
 #include "third_party/blink/renderer/core/css/counter_style.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/layout/layout_image_resource_style_image.h"
 #include "third_party/blink/renderer/core/layout/layout_inside_list_marker.h"
 #include "third_party/blink/renderer/core/layout/layout_list_item.h"
 #include "third_party/blink/renderer/core/layout/layout_list_marker_image.h"
 #include "third_party/blink/renderer/core/layout/layout_outside_list_marker.h"
-#include "third_party/blink/renderer/core/layout/list_marker_text.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text_combine.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_inside_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_outside_list_marker.h"
@@ -106,7 +107,6 @@ void ListMarker::ListStyleTypeChanged(LayoutObject& marker) {
 
 // If the @counter-style in use has changed, we need to update the marker text.
 void ListMarker::CounterStyleChanged(LayoutObject& marker) {
-  DCHECK(RuntimeEnabledFeatures::CSSAtRuleCounterStyleEnabled());
   DCHECK_EQ(Get(&marker), this);
   if (marker_text_type_ == kNotText || marker_text_type_ == kUnresolved)
     return;
@@ -125,14 +125,29 @@ void ListMarker::OrdinalValueChanged(LayoutObject& marker) {
   }
 }
 
+LayoutObject* ListMarker::GetContentChild(const LayoutObject& marker) const {
+  DCHECK_EQ(Get(&marker), this);
+  LayoutObject* const first_child = marker.SlowFirstChild();
+  if (IsA<LayoutNGTextCombine>(first_child))
+    return first_child->SlowFirstChild();
+  return first_child;
+}
+
+LayoutText& ListMarker::GetTextChild(const LayoutObject& marker) const {
+  auto& text = *To<LayoutText>(GetContentChild(marker));
+  // There should be a single text child
+  DCHECK(!text.NextSibling());
+  return text;
+}
+
 void ListMarker::UpdateMarkerText(LayoutObject& marker) {
   DCHECK_EQ(Get(&marker), this);
+  auto& text = GetTextChild(marker);
   DCHECK_EQ(marker_text_type_, kUnresolved);
-  LayoutText* const text = To<LayoutText>(marker.SlowFirstChild());
   StringBuilder marker_text_builder;
   marker_text_type_ =
       MarkerText(marker, &marker_text_builder, kWithPrefixSuffix);
-  text->SetTextIfNeeded(marker_text_builder.ToString().ReleaseImpl());
+  text.SetTextIfNeeded(marker_text_builder.ToString().ReleaseImpl());
   DCHECK_NE(marker_text_type_, kNotText);
   DCHECK_NE(marker_text_type_, kUnresolved);
 }
@@ -158,38 +173,25 @@ ListMarker::MarkerTextType ListMarker::MarkerText(
     case ListStyleCategory::kStaticString:
       text->Append(style.ListStyleStringValue());
       return kStatic;
-    case ListStyleCategory::kSymbol:
-      if (RuntimeEnabledFeatures::CSSAtRuleCounterStyleEnabled()) {
-        const CounterStyle& counter_style =
-            GetCounterStyle(marker.GetDocument(), style);
-        if (format == kWithPrefixSuffix)
-          text->Append(counter_style.GetPrefix());
-        text->Append(counter_style.GenerateRepresentation(0));
-        if (format == kWithPrefixSuffix)
-          text->Append(counter_style.GetSuffix());
-      } else {
-        text->Append(list_marker_text::GetText(style.ListStyleType(), 0));
-        if (format == kWithPrefixSuffix)
-          text->Append(' ');
-      }
+    case ListStyleCategory::kSymbol: {
+      const CounterStyle& counter_style =
+          GetCounterStyle(marker.GetDocument(), style);
+      if (format == kWithPrefixSuffix)
+        text->Append(counter_style.GetPrefix());
+      text->Append(counter_style.GenerateRepresentation(0));
+      if (format == kWithPrefixSuffix)
+        text->Append(counter_style.GetSuffix());
       return kSymbolValue;
+    }
     case ListStyleCategory::kLanguage: {
       int value = ListItemValue(*list_item);
-      if (RuntimeEnabledFeatures::CSSAtRuleCounterStyleEnabled()) {
-        const CounterStyle& counter_style =
-            GetCounterStyle(marker.GetDocument(), style);
-        if (format == kWithPrefixSuffix)
-          text->Append(counter_style.GetPrefix());
-        text->Append(counter_style.GenerateRepresentation(value));
-        if (format == kWithPrefixSuffix)
-          text->Append(counter_style.GetSuffix());
-      } else {
-        text->Append(list_marker_text::GetText(style.ListStyleType(), value));
-        if (format == kWithPrefixSuffix) {
-          text->Append(list_marker_text::Suffix(style.ListStyleType(), value));
-          text->Append(' ');
-        }
-      }
+      const CounterStyle& counter_style =
+          GetCounterStyle(marker.GetDocument(), style);
+      if (format == kWithPrefixSuffix)
+        text->Append(counter_style.GetPrefix());
+      text->Append(counter_style.GenerateRepresentation(value));
+      if (format == kWithPrefixSuffix)
+        text->Append(counter_style.GetSuffix());
       return kOrdinalValue;
     }
   }
@@ -219,14 +221,7 @@ String ListMarker::TextAlternative(const LayoutObject& marker) const {
     // RTL, reflecting speech order.
     return MarkerTextWithSuffix(marker);
   }
-
-  LayoutObject* child = marker.SlowFirstChild();
-
-  // There should be a single text child
-  DCHECK(child);
-  DCHECK(!child->NextSibling());
-
-  return To<LayoutText>(child)->PlainText();
+  return GetTextChild(marker).PlainText();
 }
 
 void ListMarker::UpdateMarkerContentIfNeeded(LayoutObject& marker) {
@@ -237,8 +232,7 @@ void ListMarker::UpdateMarkerContentIfNeeded(LayoutObject& marker) {
   }
 
   // There should be at most one child.
-  LayoutObject* child = marker.SlowFirstChild();
-  DCHECK(!child || !child->NextSibling());
+  LayoutObject* child = GetContentChild(marker);
 
   const ComputedStyle& style = ListItem(marker)->StyleRef();
   if (IsMarkerImage(marker)) {
@@ -248,7 +242,10 @@ void ListMarker::UpdateMarkerContentIfNeeded(LayoutObject& marker) {
       if (!child->IsLayoutImage() ||
           To<LayoutImage>(child)->ImageResource()->ImagePtr() !=
               list_style_image->Data()) {
-        child->Destroy();
+        if (UNLIKELY(IsA<LayoutNGTextCombine>(child->Parent())))
+          child->Parent()->Destroy();
+        else
+          child->Destroy();
         child = nullptr;
       }
     }
@@ -273,7 +270,7 @@ void ListMarker::UpdateMarkerContentIfNeeded(LayoutObject& marker) {
     return;
   }
 
-  if (!style.GetListStyleType()) {
+  if (!style.ListStyleType()) {
     marker_text_type_ = kNotText;
     return;
   }
@@ -281,9 +278,10 @@ void ListMarker::UpdateMarkerContentIfNeeded(LayoutObject& marker) {
   // |text_style| should be as same as style propagated in
   // |LayoutObject::PropagateStyleToAnonymousChildren()| to avoid unexpected
   // full layout due by style difference. See http://crbug.com/980399
+  const auto& style_parent = child ? *child->Parent() : marker;
   scoped_refptr<ComputedStyle> text_style =
       marker.GetDocument().GetStyleResolver().CreateAnonymousStyleWithDisplay(
-          marker.StyleRef(), marker.StyleRef().Display());
+          style_parent.StyleRef(), marker.StyleRef().Display());
   if (IsA<LayoutText>(child))
     return child->SetStyle(text_style);
   if (child)
@@ -300,7 +298,7 @@ LayoutObject* ListMarker::SymbolMarkerLayoutText(
   DCHECK_EQ(Get(&marker), this);
   if (marker_text_type_ != kSymbolValue)
     return nullptr;
-  return marker.SlowFirstChild();
+  return GetContentChild(marker);
 }
 
 bool ListMarker::IsMarkerImage(const LayoutObject& marker) const {
@@ -315,7 +313,11 @@ LayoutUnit ListMarker::WidthOfSymbol(const ComputedStyle& style) {
   DCHECK(font_data);
   if (!font_data)
     return LayoutUnit();
-  const AtomicString& name = style.GetListStyleType()->GetCounterStyleName();
+  if (UNLIKELY(style.SpecifiedFontSize() == 0)) {
+    // See http://crbug.com/1228157
+    return LayoutUnit();
+  }
+  const AtomicString& name = style.ListStyleType()->GetCounterStyleName();
   if (name == "disclosure-open" || name == "disclosure-closed")
     return DisclosureSymbolSize(style);
   return LayoutUnit((font_data->GetFontMetrics().Ascent() * 2 / 3 + 1) / 2 + 2);
@@ -332,7 +334,7 @@ std::pair<LayoutUnit, LayoutUnit> ListMarker::InlineMarginsForInside(
   switch (GetListStyleCategory(document, list_item_style)) {
     case ListStyleCategory::kSymbol: {
       const AtomicString& name =
-          list_item_style.GetListStyleType()->GetCounterStyleName();
+          list_item_style.ListStyleType()->GetCounterStyleName();
       if (name == "disclosure-open" || name == "disclosure-closed") {
         return {LayoutUnit(), LayoutUnit(kClosureMarkerMarginEm *
                                          marker_style.SpecifiedFontSize())};
@@ -369,7 +371,7 @@ std::pair<LayoutUnit, LayoutUnit> ListMarker::InlineMarginsForOutside(
           return {};
         const FontMetrics& font_metrics = font_data->GetFontMetrics();
         const AtomicString& name =
-            list_item_style.GetListStyleType()->GetCounterStyleName();
+            list_item_style.ListStyleType()->GetCounterStyleName();
         LayoutUnit offset =
             (name == "disclosure-open" || name == "disclosure-closed")
                 ? DisclosureSymbolSize(marker_style)
@@ -398,7 +400,7 @@ LayoutRect ListMarker::RelativeSymbolMarkerRect(const ComputedStyle& style,
   // http://crbug.com/543193
   const FontMetrics& font_metrics = font_data->GetFontMetrics();
   const int ascent = font_metrics.Ascent();
-  const AtomicString& name = style.GetListStyleType()->GetCounterStyleName();
+  const AtomicString& name = style.ListStyleType()->GetCounterStyleName();
   if (name == "disclosure-open" || name == "disclosure-closed") {
     LayoutUnit marker_size = DisclosureSymbolSize(style);
     relative_rect = LayoutRect(LayoutUnit(), ascent - marker_size, marker_size,
@@ -417,96 +419,23 @@ LayoutRect ListMarker::RelativeSymbolMarkerRect(const ComputedStyle& style,
 
 const CounterStyle& ListMarker::GetCounterStyle(Document& document,
                                                 const ComputedStyle& style) {
-  DCHECK(RuntimeEnabledFeatures::CSSAtRuleCounterStyleEnabled());
-  DCHECK(style.GetListStyleType());
-  DCHECK(style.GetListStyleType()->IsCounterStyle());
-  return style.GetListStyleType()->GetCounterStyle(document);
+  DCHECK(style.ListStyleType());
+  DCHECK(style.ListStyleType()->IsCounterStyle());
+  return style.ListStyleType()->GetCounterStyle(document);
 }
 
 ListMarker::ListStyleCategory ListMarker::GetListStyleCategory(
     Document& document,
     const ComputedStyle& style) {
-  if (RuntimeEnabledFeatures::CSSAtRuleCounterStyleEnabled()) {
-    const ListStyleTypeData* list_style = style.GetListStyleType();
-    if (!list_style)
-      return ListStyleCategory::kNone;
-    if (list_style->IsString())
-      return ListStyleCategory::kStaticString;
-    DCHECK(list_style->IsCounterStyle());
-    return GetCounterStyle(document, style).IsPredefinedSymbolMarker()
-               ? ListStyleCategory::kSymbol
-               : ListStyleCategory::kLanguage;
-  }
-
-  EListStyleType type = style.ListStyleType();
-  switch (type) {
-    case EListStyleType::kNone:
-      return ListStyleCategory::kNone;
-    case EListStyleType::kString:
-      return ListStyleCategory::kStaticString;
-    case EListStyleType::kDisc:
-    case EListStyleType::kCircle:
-    case EListStyleType::kSquare:
-    case EListStyleType::kDisclosureOpen:
-    case EListStyleType::kDisclosureClosed:
-      return ListStyleCategory::kSymbol;
-    case EListStyleType::kArabicIndic:
-    case EListStyleType::kArmenian:
-    case EListStyleType::kBengali:
-    case EListStyleType::kCambodian:
-    case EListStyleType::kCjkIdeographic:
-    case EListStyleType::kCjkEarthlyBranch:
-    case EListStyleType::kCjkHeavenlyStem:
-    case EListStyleType::kDecimalLeadingZero:
-    case EListStyleType::kDecimal:
-    case EListStyleType::kDevanagari:
-    case EListStyleType::kEthiopicHalehame:
-    case EListStyleType::kEthiopicHalehameAm:
-    case EListStyleType::kEthiopicHalehameTiEr:
-    case EListStyleType::kEthiopicHalehameTiEt:
-    case EListStyleType::kGeorgian:
-    case EListStyleType::kGujarati:
-    case EListStyleType::kGurmukhi:
-    case EListStyleType::kHangul:
-    case EListStyleType::kHangulConsonant:
-    case EListStyleType::kHebrew:
-    case EListStyleType::kHiragana:
-    case EListStyleType::kHiraganaIroha:
-    case EListStyleType::kKannada:
-    case EListStyleType::kKatakana:
-    case EListStyleType::kKatakanaIroha:
-    case EListStyleType::kKhmer:
-    case EListStyleType::kKoreanHangulFormal:
-    case EListStyleType::kKoreanHanjaFormal:
-    case EListStyleType::kKoreanHanjaInformal:
-    case EListStyleType::kLao:
-    case EListStyleType::kLowerAlpha:
-    case EListStyleType::kLowerArmenian:
-    case EListStyleType::kLowerGreek:
-    case EListStyleType::kLowerLatin:
-    case EListStyleType::kLowerRoman:
-    case EListStyleType::kMalayalam:
-    case EListStyleType::kMongolian:
-    case EListStyleType::kMyanmar:
-    case EListStyleType::kOriya:
-    case EListStyleType::kPersian:
-    case EListStyleType::kSimpChineseFormal:
-    case EListStyleType::kSimpChineseInformal:
-    case EListStyleType::kTelugu:
-    case EListStyleType::kThai:
-    case EListStyleType::kTibetan:
-    case EListStyleType::kTradChineseFormal:
-    case EListStyleType::kTradChineseInformal:
-    case EListStyleType::kUpperAlpha:
-    case EListStyleType::kUpperArmenian:
-    case EListStyleType::kUpperLatin:
-    case EListStyleType::kUpperRoman:
-    case EListStyleType::kUrdu:
-      return ListStyleCategory::kLanguage;
-    default:
-      NOTREACHED();
-      return ListStyleCategory::kLanguage;
-  }
+  const ListStyleTypeData* list_style = style.ListStyleType();
+  if (!list_style)
+    return ListStyleCategory::kNone;
+  if (list_style->IsString())
+    return ListStyleCategory::kStaticString;
+  DCHECK(list_style->IsCounterStyle());
+  return GetCounterStyle(document, style).IsPredefinedSymbolMarker()
+             ? ListStyleCategory::kSymbol
+             : ListStyleCategory::kLanguage;
 }
 
 }  // namespace blink

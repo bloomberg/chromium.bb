@@ -61,6 +61,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/delegated_ink_metadata.h"
 #include "ui/gfx/delegated_ink_point.h"
+#include "ui/gfx/mojom/delegated_ink_point_renderer.mojom.h"
 #include "ui/gfx/overlay_transform.h"
 #include "ui/gfx/presentation_feedback.h"
 
@@ -84,7 +85,7 @@ class TestDisplayScheduler : public DisplayScheduler {
  public:
   explicit TestDisplayScheduler(BeginFrameSource* begin_frame_source,
                                 base::SingleThreadTaskRunner* task_runner)
-      : DisplayScheduler(begin_frame_source, task_runner, 1) {}
+      : DisplayScheduler(begin_frame_source, task_runner, 1, 1) {}
 
   ~TestDisplayScheduler() override = default;
 
@@ -744,11 +745,11 @@ TEST_F(DisplayTest, BackdropFilterTest) {
       auto bd_pass = CompositorRenderPass::Create();
       cc::FilterOperations backdrop_filters;
       backdrop_filters.Append(cc::FilterOperation::CreateBlurFilter(5.0));
-      bd_pass->SetAll(render_pass_id_generator.GenerateNextId(),
-                      sub_surface_rect, no_damage, gfx::Transform(),
-                      cc::FilterOperations(), backdrop_filters,
-                      gfx::RRectF(gfx::RectF(sub_surface_rect), 0),
-                      SubtreeCaptureId(), false, false, false, false);
+      bd_pass->SetAll(
+          render_pass_id_generator.GenerateNextId(), sub_surface_rect,
+          no_damage, gfx::Transform(), cc::FilterOperations(), backdrop_filters,
+          gfx::RRectF(gfx::RectF(sub_surface_rect), 0), SubtreeCaptureId(),
+          sub_surface_rect.size(), false, false, false, false, false);
       pass_list.push_back(std::move(bd_pass));
 
       CompositorFrame frame = CompositorFrameBuilder()
@@ -4953,6 +4954,50 @@ TEST_F(SkiaDelegatedInkRendererTest, LatencyHistograms) {
                                  base::TimeDelta::Min());
 }
 
+// Confirm that a delegated ink trail will still be drawn if the point and
+// metadata are close enough.
+TEST_F(SkiaDelegatedInkRendererTest, DrawTrailWhenMetadataIsCloseEnough) {
+  SetUpRenderers();
+
+  // Insert 3 points, then create a metadata that is not exactly the same as
+  // the first point, but within DelegatedInkPointRendererBase::kEpsilon of
+  // the point so that a trail is drawn.
+  base::TimeTicks timestamp = base::TimeTicks::Now();
+  base::TimeTicks timestamp2 = timestamp + base::TimeDelta::FromMilliseconds(8);
+  gfx::PointF point(45.f, 78.f);
+  gfx::PointF point2(68.f, 89.f);
+  const int32_t kPointerId = 17;
+  CreateAndStoreDelegatedInkPoint(point, timestamp, kPointerId);
+  CreateAndStoreDelegatedInkPoint(point2, timestamp2, kPointerId);
+  CreateAndStoreDelegatedInkPoint(
+      gfx::PointF(80.f, 70.f),
+      timestamp2 + base::TimeDelta::FromMilliseconds(8), kPointerId);
+
+  gfx::DelegatedInkMetadata metadata(
+      gfx::PointF(point.x() - 0.03f, point.y() + 0.03f), 45.f, SK_ColorBLACK,
+      timestamp, gfx::RectF(0, 0, 100, 100), base::TimeTicks::Now(),
+      /*hovering*/ false);
+  SendMetadata(metadata);
+
+  // If the metadata was close enough, then a trail should be drawn with all
+  // three points.
+  ink_renderer()->FinalizePathForDraw();
+  EXPECT_EQ(GetPathPointCount(), 3);
+
+  // Now send a metadata with a point that is slightly further away from the
+  // second point, such that the distance between them is greater than the
+  // kEpsilon value to confirm that if it gets too far away we won't use it for
+  // drawing.
+  metadata = gfx::DelegatedInkMetadata(
+      gfx::PointF(point2.x() - 0.03f, point2.y() + 0.04f), 45.f, SK_ColorBLACK,
+      timestamp2, gfx::RectF(0, 0, 100, 100), base::TimeTicks::Now(),
+      /*hovering*/ false);
+  SendMetadata(metadata);
+
+  ink_renderer()->FinalizePathForDraw();
+  EXPECT_EQ(GetPathPointCount(), 0);
+}
+
 enum class DelegatedInkType { kPlatformInk, kSkiaInk };
 
 class DelegatedInkDisplayTest
@@ -5094,6 +5139,44 @@ TEST_P(DelegatedInkDisplayTest,
     EXPECT_TRUE(ink_renderer());
     EXPECT_TRUE(ink_renderer_remote.is_bound());
   }
+}
+
+enum class UnsupportedRendererType { kSoftware, kGL };
+
+class UnsupportedRendererDelegatedInkTest
+    : public DisplayTest,
+      public testing::WithParamInterface<UnsupportedRendererType> {};
+
+struct UnsupportedRendererDelegatedInkTestPassToString {
+  std::string operator()(
+      const testing::TestParamInfo<UnsupportedRendererType> type) const {
+    return type.param == UnsupportedRendererType::kSoftware ? "SoftwareRenderer"
+                                                            : "GLRenderer";
+  }
+};
+
+INSTANTIATE_TEST_SUITE_P(DelegatedInkTrails,
+                         UnsupportedRendererDelegatedInkTest,
+                         testing::Values(UnsupportedRendererType::kSoftware,
+                                         UnsupportedRendererType::kGL),
+                         UnsupportedRendererDelegatedInkTestPassToString());
+
+// Confirm that trying to use delegated ink trails on an unsupported renderer
+// (anything other than SkiaRenderer) silently fails.
+TEST_P(UnsupportedRendererDelegatedInkTest,
+       DelegatedInkSilentlyFailsOnUnsupportedRenderers) {
+  if (GetParam() == UnsupportedRendererType::kSoftware)
+    SetUpSoftwareDisplay(RendererSettings());
+  else
+    SetUpGpuDisplay(RendererSettings());
+  StubDisplayClient client;
+  display_->Initialize(&client, manager_.surface_manager());
+
+  // Should silently bail early from here. Test will crash if we actually try to
+  // initialize the delegated ink point renderer.
+  mojo::Remote<gfx::mojom::DelegatedInkPointRenderer> ink_renderer_remote;
+  display_->InitDelegatedInkPointRendererReceiver(
+      ink_renderer_remote.BindNewPipeAndPassReceiver());
 }
 
 }  // namespace viz

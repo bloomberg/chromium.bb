@@ -76,6 +76,10 @@ GURL GetWebUINewTabPage() {
   return GURL(chrome::kChromeUINewTabPageURL);
 }
 
+GURL GetWebUINewTabPageThirdParty() {
+  return GURL(chrome::kChromeUINewTabPageThirdPartyURL);
+}
+
 GURL GetContentSettingsURL() {
   return GetSettingsURL().Resolve(chrome::kContentSettingsSubPage);
 }
@@ -1283,6 +1287,16 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
       GetWebUINewTabPage(), ui::PageTransition::PAGE_TRANSITION_AUTO_BOOKMARK);
 }
 
+// This test verifies that chrome://new-tab-page-third-party isn't opened in the
+// incognito window.
+IN_PROC_BROWSER_TEST_F(
+    BrowserNavigatorTest,
+    Disposition_WebUINewTabPageThirdParty_UseNonIncognitoWindow) {
+  RunUseNonIncognitoWindowTest(
+      GetWebUINewTabPageThirdParty(),
+      ui::PageTransition::PAGE_TRANSITION_AUTO_BOOKMARK);
+}
+
 // This test verifies that the view-source settings page isn't opened in the
 // incognito window.
 IN_PROC_BROWSER_TEST_F(
@@ -1813,7 +1827,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, MAYBE_ReuseRVHWithWebUI) {
   content::NavigationController* controller =
       content::Source<content::NavigationController>(windowed_observer.source())
           .ptr();
-  WebContents* popup = controller->GetWebContents();
+  WebContents* popup = controller->DeprecatedGetWebContents();
   ASSERT_TRUE(popup);
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   content::RenderViewHost* webui_rvh =

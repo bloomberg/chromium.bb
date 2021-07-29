@@ -37,6 +37,7 @@ ScanningAppBrowserTest.prototype = {
   featureList: {
     enabled: [
       'chromeos::features::kScanAppMediaLink',
+      'chromeos::features::kScanAppMultiPageScan',
       'chromeos::features::kScanAppSearchablePdf',
       'chromeos::features::kScanAppStickySettings',
     ]
@@ -47,9 +48,10 @@ ScanningAppBrowserTest.prototype = {
 // You must register all suites in unified test here as well for consistency,
 // although technically is not necessary.
 const debug_suites_list = [
-  'ColorModeSelect', 'FileTypeSelect', 'LoadingPage', 'PageSizeSelect',
-  'ResolutionSelect', 'ScanApp', 'ScanDoneSection', 'ScannerSelect',
-  'ScanPreview', 'ScanToSelect', 'SourceSelect'
+  'ActionToolbar', 'ColorModeSelect', 'FileTypeSelect', 'LoadingPage',
+  'MultiPageCheckbox', 'MultiPageScan', 'PageSizeSelect', 'ResolutionSelect',
+  'ScanApp', 'ScanDoneSection', 'ScannerSelect', 'ScanPreview', 'ScanToSelect',
+  'SourceSelect'
 ];
 
 TEST_F('ScanningAppBrowserTest', 'All', function() {

@@ -84,9 +84,8 @@ PepperWebPluginImpl::PepperWebPluginImpl(PluginModule* plugin_module,
   init_data_->url = params.url;
 
   // Set subresource URL for crash reporting.
-  static base::debug::CrashKeyString* subresource_url =
-      base::debug::AllocateCrashKeyString("subresource_url",
-                                          base::debug::CrashKeySize::Size256);
+  static auto* const subresource_url = base::debug::AllocateCrashKeyString(
+      "subresource_url", base::debug::CrashKeySize::Size256);
   base::debug::SetCrashKeyString(subresource_url, init_data_->url.spec());
 }
 
@@ -454,14 +453,6 @@ bool PepperWebPluginImpl::GetPrintPresetOptionsFromDocument(
   return instance_->GetPrintPresetOptionsFromDocument(preset_options);
 }
 
-bool PepperWebPluginImpl::IsPdfPlugin() {
-  // Re-entrancy may cause JS to try to execute script on the plugin before it
-  // is fully initialized. See: crbug.com/715747.
-  if (!instance_)
-    return false;
-  return instance_->IsPdfPlugin();
-}
-
 bool PepperWebPluginImpl::CanRotateView() {
   // Re-entrancy may cause JS to try to execute script on the plugin before it
   // is fully initialized. See: crbug.com/715747.
@@ -470,7 +461,7 @@ bool PepperWebPluginImpl::CanRotateView() {
   return instance_->CanRotateView();
 }
 
-void PepperWebPluginImpl::RotateView(RotationType type) {
+void PepperWebPluginImpl::RotateView(blink::WebPlugin::RotationType type) {
   // Re-entrancy may cause JS to try to execute script on the plugin before it
   // is fully initialized. See: crbug.com/715747.
   if (instance_)

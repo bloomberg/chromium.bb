@@ -13,11 +13,11 @@
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/memory_usage_estimator.h"
@@ -451,7 +451,8 @@ void AutocompleteResult::AttachPedalsToMatches(
   for (auto& match : matches_) {
     // Skip matches that have already detected their Pedal, and avoid attaching
     // to matches with types that don't mix well with Pedals (e.g. entities).
-    if (match.pedal || !AutocompleteMatch::IsPedalCompatibleType(match.type)) {
+    if (match.action ||
+        !AutocompleteMatch::IsActionCompatibleType(match.type)) {
       continue;
     }
 
@@ -460,7 +461,7 @@ void AutocompleteResult::AttachPedalsToMatches(
     if (pedal) {
       const auto result = pedals_found.insert(pedal);
       if (result.second)
-        match.pedal = pedal;
+        match.action = pedal;
     }
   }
 }
@@ -646,7 +647,7 @@ size_t AutocompleteResult::CalculateNumMatchesPerUrlCount(
 
   size_t num_matches = 0;
   size_t num_url_matches = 0;
-  for (auto match : matches) {
+  for (const auto& match : matches) {
     // Matches scored less than 0 won't be shown anyways, so we can break early.
     if (comparing_object.GetDemotedRelevance(matches[num_matches]) <= 0)
       break;

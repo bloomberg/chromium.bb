@@ -8,8 +8,8 @@
 #include <iterator>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shelf/gradient_layer_delegate.h"
@@ -22,6 +22,7 @@
 #include "ash/wm/desks/desk_preview_view.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/desks/expanded_state_new_desk_button.h"
+#include "ash/wm/desks/persistent_desks_bar_button.h"
 #include "ash/wm/desks/scroll_arrow_button.h"
 #include "ash/wm/desks/zero_state_button.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -29,6 +30,7 @@
 #include "ash/wm/overview/overview_highlight_controller.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/bind.h"
 #include "base/containers/contains.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/window.h"
@@ -69,6 +71,9 @@ constexpr int kScrollViewMinimumHorizontalPadding = 32;
 constexpr int kScrollButtonWidth = 36;
 
 constexpr int kGradientZoneLength = 40;
+
+constexpr int kVerticalDotsButtonVerticalPadding = 8;
+constexpr int kVerticalDotsButtonRightPadding = 8;
 
 // The duration of scrolling one page.
 constexpr base::TimeDelta kBarScrollDuration =
@@ -294,6 +299,13 @@ DesksBarView::DesksBarView(OverviewGrid* overview_grid)
       base::BindRepeating(&DesksBarView::ScrollToNextPage,
                           base::Unretained(this)),
       /*is_left_arrow=*/false, this));
+
+  if (features::IsBentoBarEnabled()) {
+    vertical_dots_button_ =
+        AddChildView(std::make_unique<PersistentDesksBarVerticalDotsButton>());
+    vertical_dots_button_->SetPaintToLayer();
+    vertical_dots_button_->layer()->SetFillsBoundsOpaquely(false);
+  }
 
   scroll_view_contents_ =
       scroll_view_->SetContents(std::make_unique<views::View>());
@@ -601,6 +613,16 @@ void DesksBarView::Layout() {
           (kScrollButtonWidth - kScrollViewMinimumHorizontalPadding),
       bounds().y(), kScrollButtonWidth, bounds().height());
 
+  if (vertical_dots_button_) {
+    const gfx::Size vertical_dots_button_size =
+        vertical_dots_button_->GetPreferredSize();
+    vertical_dots_button_->SetBoundsRect(gfx::Rect(
+        gfx::Point(bounds().right() - vertical_dots_button_size.width() -
+                       kVerticalDotsButtonRightPadding,
+                   bounds().y() + kVerticalDotsButtonVerticalPadding),
+        vertical_dots_button_size));
+  }
+
   gfx::Rect scroll_bounds = bounds();
   // Align with the overview grid in horizontal, so only horizontal insets are
   // needed here.
@@ -673,6 +695,10 @@ void DesksBarView::OnDeskRemoved(const Desk* desk) {
   DeskMiniView* removed_mini_view = *iter;
   auto partition_iter = mini_views_.erase(iter);
 
+  // End dragging desk if remove a dragged desk.
+  if (drag_view_ == removed_mini_view)
+    EndDragDesk(removed_mini_view, /*end_by_user=*/false);
+
   expanded_state_new_desk_button_->UpdateButtonState();
 
   for (auto* mini_view : mini_views_)
@@ -680,10 +706,22 @@ void DesksBarView::OnDeskRemoved(const Desk* desk) {
 
   // Switch to zero state if there is a single desk after removing.
   if (mini_views_.size() == 1) {
+    // Hiding the button immediately instead of the ends of the animation while
+    // switching from expanded state to zero state.
+    if (vertical_dots_button_)
+      vertical_dots_button_->SetVisible(false);
     std::vector<DeskMiniView*> removed_mini_views;
     removed_mini_views.push_back(removed_mini_view);
     removed_mini_views.push_back(mini_views_[0]);
     mini_views_.clear();
+
+    // In zero state, if the only desk is being dragged, we should end dragging.
+    // Because the dragged desk's mini view is removed, the mouse released or
+    // gesture ended events cannot be received. |drag_view_| will keep the stale
+    // reference of removed mini view and |drag_proxy_| will not be reset.
+    if (drag_view_)
+      EndDragDesk(drag_view_, /*end_by_user=*/false);
+
     // Keep current layout until the animation is completed since the animation
     // for going back to zero state is based on the expanded bar's current
     // layout.
@@ -824,14 +862,6 @@ void DesksBarView::ScrollToShowMiniViewIfNecessary(
   }
 }
 
-bool DesksBarView::IsLeftGradientVisibleForTesting() const {
-  return !gradient_layer_delegate_->start_fade_zone_bounds().IsEmpty();
-}
-
-bool DesksBarView::IsRightGradientVisibleForTesting() const {
-  return !gradient_layer_delegate_->end_fade_zone_bounds().IsEmpty();
-}
-
 int DesksBarView::DetermineMoveIndex(int location_screen_x) const {
   const int views_size = static_cast<int>(mini_views_.size());
 
@@ -902,6 +932,8 @@ void DesksBarView::UpdateDeskButtonsVisibility() {
   zero_state_default_desk_button_->SetVisible(is_zero_state);
   zero_state_new_desk_button_->SetVisible(is_zero_state);
   expanded_state_new_desk_button_->SetVisible(!is_zero_state);
+  if (vertical_dots_button_)
+    vertical_dots_button_->SetVisible(!is_zero_state);
 }
 
 void DesksBarView::UpdateScrollButtonsVisibility() {

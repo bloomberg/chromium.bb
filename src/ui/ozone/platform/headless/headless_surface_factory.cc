@@ -73,7 +73,7 @@ class FileSurface : public SurfaceOzoneCanvas {
   ~FileSurface() override {}
 
   // SurfaceOzoneCanvas overrides:
-  void ResizeCanvas(const gfx::Size& viewport_size) override {
+  void ResizeCanvas(const gfx::Size& viewport_size, float scale) override {
     SkSurfaceProps props = skia::LegacyDisplayGlobals::GetSkSurfaceProps();
     surface_ = SkSurface::MakeRaster(
         SkImageInfo::MakeN32Premul(viewport_size.width(),
@@ -235,7 +235,6 @@ GLOzone* HeadlessSurfaceFactory::GetGLOzone(
     case gl::kGLImplementationEGLGLES2:
     case gl::kGLImplementationSwiftShaderGL:
       return swiftshader_implementation_.get();
-
     default:
       return nullptr;
   }

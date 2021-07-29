@@ -11,7 +11,6 @@
 #include <utility>
 
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
@@ -78,6 +77,8 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
                      FrameScheduler::Delegate* delegate,
                      base::trace_event::BlameContext* blame_context,
                      FrameScheduler::FrameType frame_type);
+  FrameSchedulerImpl(const FrameSchedulerImpl&) = delete;
+  FrameSchedulerImpl& operator=(const FrameSchedulerImpl&) = delete;
   ~FrameSchedulerImpl() override;
 
   // FrameOrWorkerScheduler implementation:
@@ -122,6 +123,7 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
       WebScopedVirtualTimePauser::VirtualTaskDuration duration) override;
 
   void OnFirstContentfulPaintInMainFrame() override;
+  void OnDomContentLoaded() override;
   void OnFirstMeaningfulPaint() override;
   void OnLoad() override;
   bool IsWaitingForContentfulPaint() const;
@@ -242,12 +244,14 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
     // loading in the frame until the reference is released during destruction.
     explicit PauseSubresourceLoadingHandleImpl(
         base::WeakPtr<FrameSchedulerImpl> frame_scheduler);
+    PauseSubresourceLoadingHandleImpl(
+        const PauseSubresourceLoadingHandleImpl&) = delete;
+    PauseSubresourceLoadingHandleImpl& operator=(
+        const PauseSubresourceLoadingHandleImpl&) = delete;
     ~PauseSubresourceLoadingHandleImpl() override;
 
    private:
     base::WeakPtr<FrameSchedulerImpl> frame_scheduler_;
-
-    DISALLOW_COPY_AND_ASSIGN(PauseSubresourceLoadingHandleImpl);
   };
 
   void DetachFromPageScheduler();
@@ -291,6 +295,8 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   base::WeakPtr<FrameOrWorkerScheduler> GetDocumentBoundWeakPtr() override;
 
   void NotifyDelegateAboutFeaturesAfterCurrentTask();
+
+  void MoveTaskQueuesToCorrectWakeUpBudgetPool();
 
   // Create QueueTraits for the default (non-finch) task queues.
   static MainThreadTaskQueue::QueueTraits ThrottleableTaskQueueTraits();
@@ -373,9 +379,12 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
       page_keep_active_for_tracing_;
 
   TraceableState<bool, TracingCategoryName::kInfo>
+      waiting_for_dom_content_loaded_;
+  TraceableState<bool, TracingCategoryName::kInfo>
       waiting_for_contentful_paint_;
   TraceableState<bool, TracingCategoryName::kInfo>
       waiting_for_meaningful_paint_;
+  TraceableState<bool, TracingCategoryName::kInfo> waiting_for_load_;
 
   std::unique_ptr<power_scheduler::PowerModeVoter> loading_power_mode_voter_;
 
@@ -390,8 +399,6 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
       invalidating_on_bfcache_restore_weak_factory_{this};
 
   mutable base::WeakPtrFactory<FrameSchedulerImpl> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(FrameSchedulerImpl);
 };
 
 }  // namespace scheduler

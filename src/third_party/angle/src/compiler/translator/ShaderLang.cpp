@@ -199,6 +199,7 @@ void InitBuiltInResources(ShBuiltInResources *resources)
     resources->OVR_multiview2                              = 0;
     resources->EXT_YUV_target                              = 0;
     resources->EXT_geometry_shader                         = 0;
+    resources->OES_geometry_shader                         = 0;
     resources->EXT_gpu_shader5                             = 0;
     resources->OES_shader_io_blocks                        = 0;
     resources->EXT_shader_io_blocks                        = 0;
@@ -243,8 +244,6 @@ void InitBuiltInResources(ShBuiltInResources *resources)
 
     // Disable name hashing by default.
     resources->HashFunction = nullptr;
-
-    resources->ArrayIndexClampingStrategy = SH_CLAMP_WITH_CLAMP_INTRINSIC;
 
     resources->MaxExpressionComplexity = 256;
     resources->MaxCallStackDepth       = 256;

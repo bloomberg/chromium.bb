@@ -283,7 +283,7 @@ static int ism_write_header(AVFormatContext *s)
 {
     SmoothStreamingContext *c = s->priv_data;
     int ret = 0, i;
-    ff_const59 AVOutputFormat *oformat;
+    const AVOutputFormat *oformat;
 
     if (mkdir(s->url, 0777) == -1 && errno != EEXIST) {
         av_log(s, AV_LOG_ERROR, "mkdir failed\n");
@@ -637,7 +637,7 @@ static const AVClass ism_class = {
 };
 
 
-AVOutputFormat ff_smoothstreaming_muxer = {
+const AVOutputFormat ff_smoothstreaming_muxer = {
     .name           = "smoothstreaming",
     .long_name      = NULL_IF_CONFIG_SMALL("Smooth Streaming Muxer"),
     .priv_data_size = sizeof(SmoothStreamingContext),

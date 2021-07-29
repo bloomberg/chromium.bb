@@ -35,6 +35,7 @@
 #include "components/subresource_filter/core/common/test_ruleset_utils.h"
 #include "components/subresource_filter/core/mojom/subresource_filter.mojom.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
@@ -168,8 +169,9 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
 }
 
 // Test that an empty embedded ad isn't reported at all.
+// TODO(crbug.com/1226500): This test is flaky.
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
-                       OriginStatusMetricEmbeddedEmpty) {
+                       DISABLED_OriginStatusMetricEmbeddedEmpty) {
   base::HistogramTester histogram_tester;
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(
@@ -710,11 +712,21 @@ IN_PROC_BROWSER_TEST_F(CreativeOriginAdsPageLoadMetricsObserverBrowserTest,
       OriginStatus::kUnknown, OriginStatusWithThrottling::kUnknownAndThrottled);
 }
 
+// Disabled due to flakiness on Linux https://crbug.com/1229601
+#if defined(OS_LINUX)
+#define MAYBE_CreativeOriginStatusWithThrottlingNestedThrottled \
+  DISABLED_CreativeOriginStatusWithThrottlingNestedThrottled
+#else
+#define MAYBE_CreativeOriginStatusWithThrottlingNestedThrottled \
+  CreativeOriginStatusWithThrottlingNestedThrottled
+#endif
+
 // Test that an ad creative with the same origin as the main page,
 // but nested in a throttled cross-origin root ad frame, is marked as
 // throttled, with indeterminate creative origin status.
-IN_PROC_BROWSER_TEST_F(CreativeOriginAdsPageLoadMetricsObserverBrowserTest,
-                       CreativeOriginStatusWithThrottlingNestedThrottled) {
+IN_PROC_BROWSER_TEST_F(
+    CreativeOriginAdsPageLoadMetricsObserverBrowserTest,
+    MAYBE_CreativeOriginStatusWithThrottlingNestedThrottled) {
   TestCreativeOriginStatus(
       MakeFrame(
           "a",
@@ -840,6 +852,16 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
 // if it continues to load resources.
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
                        DocOverwritesNavigation) {
+  // Ensure that the previous page won't be stored in the back/forward cache, so
+  // that the histogram will be recorded when the previous page is unloaded.
+  // TODO(https://crbug.com/1229122): Investigate if this needs further fix.
+  browser()
+      ->tab_strip_model()
+      ->GetActiveWebContents()
+      ->GetController()
+      .GetBackForwardCache()
+      .DisableForTesting(content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
+
   content::DOMMessageQueue msg_queue;
 
   ukm::TestAutoSetUkmRecorder ukm_recorder;
@@ -2263,16 +2285,14 @@ class AdsMemoryMeasurementBrowserTest
   std::unordered_set<int> GetFrameRoutingIds() {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
-    std::unordered_set<int> frame_routing_ids = {web_contents->GetMainFrame()
-                                                     ->GetGlobalFrameRoutingId()
-                                                     .frame_routing_id};
+    std::unordered_set<int> frame_routing_ids = {
+        web_contents->GetMainFrame()->GetGlobalId().frame_routing_id};
 
     std::vector<content::RenderFrameHost*> children =
         web_contents->GetMainFrame()->GetFramesInSubtree();
 
     for (auto* child : children) {
-      frame_routing_ids.insert(
-          child->GetGlobalFrameRoutingId().frame_routing_id);
+      frame_routing_ids.insert(child->GetGlobalId().frame_routing_id);
     }
 
     return frame_routing_ids;
@@ -2315,7 +2335,7 @@ IN_PROC_BROWSER_TEST_F(AdsMemoryMeasurementBrowserTest,
                                   ->tab_strip_model()
                                   ->GetActiveWebContents()
                                   ->GetMainFrame()
-                                  ->GetGlobalFrameRoutingId()
+                                  ->GetGlobalId()
                                   .frame_routing_id;
   waiter->AddMemoryUpdateExpectation(main_frame_routing_id);
 

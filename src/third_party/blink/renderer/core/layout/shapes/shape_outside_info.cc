@@ -148,21 +148,14 @@ void ShapeOutsideInfo::SetPercentageResolutionInlineSize(
 
 static bool CheckShapeImageOrigin(Document& document,
                                   const StyleImage& style_image) {
-  if (style_image.IsGeneratedImage())
+  String failing_url;
+  if (style_image.IsAccessAllowed(failing_url))
     return true;
-
-  DCHECK(style_image.CachedImage());
-  ImageResourceContent& image_content = *(style_image.CachedImage());
-  if (image_content.IsAccessAllowed())
-    return true;
-
-  const KURL& url = image_content.Url();
-  String url_string = url.IsNull() ? "''" : url.ElidedString();
+  String url_string = failing_url.IsNull() ? "''" : failing_url;
   document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
       mojom::ConsoleMessageSource::kSecurity,
       mojom::ConsoleMessageLevel::kError,
       "Unsafe attempt to load URL " + url_string + "."));
-
   return false;
 }
 
@@ -196,7 +189,7 @@ std::unique_ptr<Shape> ShapeOutsideInfo::CreateShapeForImage(
           LayoutObject::ShouldRespectImageOrientation(layout_box_));
 
   const LayoutSize& image_size = RoundedLayoutSize(style_image->ImageSize(
-      layout_box_->GetDocument(), layout_box_->StyleRef().EffectiveZoom(),
+      layout_box_->StyleRef().EffectiveZoom(),
       FloatSize(reference_box_logical_size_), respect_orientation));
 
   const LayoutRect& margin_rect =
@@ -252,6 +245,7 @@ const Shape& ShapeOutsideInfo::ComputedShape() const {
       break;
     case ShapeValue::kImage:
       DCHECK(shape_value.GetImage());
+      DCHECK(shape_value.GetImage()->IsLoaded());
       DCHECK(shape_value.GetImage()->CanRender());
       shape_ = CreateShapeForImage(shape_value.GetImage(),
                                    shape_image_threshold, writing_mode, margin);
@@ -391,7 +385,7 @@ bool ShapeOutsideInfo::IsEnabledFor(const LayoutBox& box) {
     case ShapeValue::kImage: {
       StyleImage* image = shape_value->GetImage();
       DCHECK(image);
-      return image->CanRender() &&
+      return image->IsLoaded() && image->CanRender() &&
              CheckShapeImageOrigin(box.GetDocument(), *image);
     }
     case ShapeValue::kBox:

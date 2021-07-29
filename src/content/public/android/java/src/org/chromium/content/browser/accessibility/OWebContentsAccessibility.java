@@ -13,11 +13,9 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Build;
 import android.os.Bundle;
-import android.view.ViewStructure;
 import android.view.accessibility.AccessibilityNodeInfo;
 
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.content_public.browser.AccessibilitySnapshotNode;
 
 import java.util.Arrays;
 
@@ -65,24 +63,10 @@ public class OWebContentsAccessibility extends WebContentsAccessibilityImpl {
         for (int i = 0; i < positionInfoLength; i++) {
             Rect rect = new Rect(
                     coords[4 * i + 0], coords[4 * i + 1], coords[4 * i + 2], coords[4 * i + 3]);
-            convertWebRectToAndroidCoordinates(rect);
+            convertWebRectToAndroidCoordinates(rect, info.getExtras());
             boundingRects[i] = new RectF(rect);
         }
 
         info.getExtras().putParcelableArray(extraDataKey, boundingRects);
-    }
-
-    @Override
-    protected void createVirtualStructure(ViewStructure viewNode, AccessibilitySnapshotNode node,
-            final boolean ignoreScrollOffset) {
-        // Store the tag name in HtmlInfo.
-        ViewStructure.HtmlInfo.Builder htmlBuilder = viewNode.newHtmlInfoBuilder(node.htmlTag);
-        if (htmlBuilder != null) {
-            htmlBuilder.addAttribute("display", node.cssDisplay);
-            for (String[] attr : node.htmlAttributes) htmlBuilder.addAttribute(attr[0], attr[1]);
-            viewNode.setHtmlInfo(htmlBuilder.build());
-        }
-
-        super.createVirtualStructure(viewNode, node, ignoreScrollOffset);
     }
 }

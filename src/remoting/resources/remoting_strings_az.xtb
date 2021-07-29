@@ -24,6 +24,7 @@ Bu icazəni vermək üçün aşağıda "<ph name="BUTTON_NAME" />" düyməsinə 
 "<ph name="SERVICE_SCRIPT_NAME" />" artıq işarələnibsə, işarəni götürün və yenidən işarələyin.</translation>
 <translation id="225614027745146050">Xoş gəlmisiniz</translation>
 <translation id="2320166752086256636">Klaviaturanı gizlədin.</translation>
+<translation id="2329392777730037872"><ph name="URL" /> keçidini müştəri cihazında açmaq alınmadı</translation>
 <translation id="2333212046079545895">Müəllif hüququ: 2021 Google LLC. Bütün hüquqlar qorunur.</translation>
 <translation id="2359808026110333948">Davam edin</translation>
 <translation id="2366718077645204424">Hosta çatmaq olmur. İşlətdiyiniz şəbəkənin sazlanmasına görə ola bilər.</translation>
@@ -67,6 +68,7 @@ Bu icazəni vermək üçün aşağıda "<ph name="BUTTON_NAME" />" düyməsinə 
 <translation id="4176825807642096119">Giriş kodu</translation>
 <translation id="4227991223508142681">Host Təchizetmə Proqramı</translation>
 <translation id="4240294130679914010">Chromoting Host Sistemdən Silən</translation>
+<translation id="4257751272692708833"><ph name="PRODUCT_NAME" /> Keçid Yönləndiricisi</translation>
 <translation id="4277736576214464567">Giriş kodu etibarsızdır. Yenidən cəhd edin.</translation>
 <translation id="4281844954008187215">Xidmət Şərtləri</translation>
 <translation id="4405930547258349619">Kök Kitabxana</translation>
@@ -87,6 +89,7 @@ Bu icazəni vermək üçün aşağıda "<ph name="BUTTON_NAME" />" düyməsinə 
 <translation id="4867841927763172006">PrtScn göndərin</translation>
 <translation id="4974476491460646149"><ph name="HOSTNAME" /> bağlantısı bitdi</translation>
 <translation id="4985296110227979402">Uzaqdan giriş üçün ilk olaraq kompüterinizi quraşdırmalısınız</translation>
+<translation id="4987330545941822761">Chrome Remote Desktop keçidləri lokal olaraq açacaq brauzeri təyin edə bilmir. Aşağıdakı siyahıdan onu seçin.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (oflayn)</translation>
 <translation id="507204348399810022"><ph name="HOSTNAME" /> ilə uzaqdan bağlantıları deaktiv etmək istədiyinizə əminsiniz?</translation>
 <translation id="5170982930780719864">Yanlış host kimliyi.</translation>
@@ -121,6 +124,7 @@ Bu icazəni vermək üçün aşağıda "<ph name="BUTTON_NAME" />" düyməsinə 
 <translation id="6612717000975622067">Ctrl-Alt-Del göndərin</translation>
 <translation id="6654753848497929428">Paylaşın</translation>
 <translation id="677755392401385740">Host istifadəçi üçün başladı: <ph name="HOST_USERNAME" /> .</translation>
+<translation id="6902524959760471898"><ph name="PRODUCT_NAME" /> müştəri cihazında keçidi açmaq üçün yardımçı tətbiq</translation>
 <translation id="6939719207673461467">Klaviaturanı göstərin/gizlədin.</translation>
 <translation id="6963936880795878952">Kimsə yanlış PIN kod ilə qoşulmağa cəhd etdiyi üçün uzaqdan idarə edilən kompüterə qoşulma müvəqqəti olaraq blok edilib. Yenidən cəhd edin.</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -133,6 +137,7 @@ Bu icazəni vermək üçün aşağıda "<ph name="BUTTON_NAME" />" düyməsinə 
 <translation id="7144878232160441200">Yenidən cəhd edin</translation>
 <translation id="7312846573060934304">Host oflayndır.</translation>
 <translation id="7319983568955948908">Paylaşmanı dayandırın</translation>
+<translation id="7359298090707901886">Seçilmiş brauzer yerli maşında keçidləri açmaq üçün istifadə edilə bilməz.</translation>
 <translation id="7401733114166276557">Chrome Kənar Desktop</translation>
 <translation id="7434397035092923453">Klientə giriş icazəsi verilmədi: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Müştəri qoşuldu: <ph name="CLIENT_USERNAME" /> .</translation>

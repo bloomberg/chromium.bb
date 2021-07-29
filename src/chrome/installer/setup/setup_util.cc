@@ -24,6 +24,7 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/cpu.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
@@ -32,7 +33,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
@@ -726,7 +726,7 @@ base::Time GetConsoleSessionStartTime() {
 
   wts_info = reinterpret_cast<WTSINFO*>(buffer);
   FILETIME filetime = {wts_info->LogonTime.u.LowPart,
-                       wts_info->LogonTime.u.HighPart};
+                       static_cast<DWORD>(wts_info->LogonTime.u.HighPart)};
   return base::Time::FromFileTime(filetime);
 }
 

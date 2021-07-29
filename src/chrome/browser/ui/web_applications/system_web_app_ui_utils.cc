@@ -24,13 +24,14 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_manager.h"
-#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/os_integration_manager.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_launch/web_launch_files_helper.h"
 #include "chrome/common/webui_url_constants.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -78,7 +79,7 @@ namespace web_app {
 
 absl::optional<SystemAppType> GetSystemWebAppTypeForAppId(Profile* profile,
                                                           AppId app_id) {
-  auto* provider = WebAppProvider::Get(profile);
+  auto* provider = WebAppProvider::GetForSystemWebApps(profile);
   return provider ? provider->system_web_app_manager().GetSystemAppTypeForAppId(
                         app_id)
                   : absl::optional<SystemAppType>();
@@ -86,7 +87,7 @@ absl::optional<SystemAppType> GetSystemWebAppTypeForAppId(Profile* profile,
 
 absl::optional<AppId> GetAppIdForSystemWebApp(Profile* profile,
                                               SystemAppType app_type) {
-  auto* provider = WebAppProvider::Get(profile);
+  auto* provider = WebAppProvider::GetForSystemWebApps(profile);
   return provider
              ? provider->system_web_app_manager().GetAppIdForSystemApp(app_type)
              : absl::optional<AppId>();
@@ -101,7 +102,7 @@ absl::optional<apps::AppLaunchParams> CreateSystemWebAppLaunchParams(
   if (!app_id)
     return absl::nullopt;
 
-  auto* provider = WebAppProvider::Get(profile);
+  auto* provider = WebAppProvider::GetForSystemWebApps(profile);
   DCHECK(provider);
 
   DisplayMode display_mode =
@@ -215,7 +216,7 @@ Browser* LaunchSystemWebAppImpl(Profile* profile,
     return nullptr;
   }
 
-  auto* provider = WebAppProvider::Get(profile);
+  auto* provider = WebAppProvider::GetForSystemWebApps(profile);
   if (!provider)
     return nullptr;
 
@@ -240,10 +241,16 @@ Browser* LaunchSystemWebAppImpl(Profile* profile,
   bool can_maximize =
       provider->system_web_app_manager().IsMaximizableWindow(app_type);
 
+  // System Web App windows can't be properly restored without storing the app
+  // type. Until that is implemented, skip them for session restore.
+  // TODO(crbug.com/1003170): Enable session restore for System Web Apps by
+  // passing through the underlying value of params.omit_from_session_restore.
+  const bool omit_from_session_restore = true;
+
   if (!browser) {
-    browser =
-        CreateWebApplicationWindow(profile, params.app_id, params.disposition,
-                                   params.restore_id, can_resize, can_maximize);
+    browser = CreateWebApplicationWindow(
+        profile, params.app_id, params.disposition, params.restore_id,
+        omit_from_session_restore, can_resize, can_maximize);
   }
 
   // Navigate application window to application's |url| if necessary.
@@ -305,7 +312,7 @@ Browser* FindSystemWebAppBrowser(Profile* profile,
   if (!app_id)
     return nullptr;
 
-  auto* provider = WebAppProvider::Get(profile);
+  auto* provider = WebAppProvider::GetForSystemWebApps(profile);
   DCHECK(provider);
 
   if (!provider->registrar().IsInstalled(app_id.value()))
@@ -336,7 +343,7 @@ bool IsBrowserForSystemWebApp(Browser* browser, SystemAppType type) {
 
 absl::optional<SystemAppType> GetCapturingSystemAppForURL(Profile* profile,
                                                           const GURL& url) {
-  auto* provider = WebAppProvider::Get(profile);
+  auto* provider = WebAppProvider::GetForSystemWebApps(profile);
 
   if (!provider)
     return absl::nullopt;
@@ -353,7 +360,7 @@ gfx::Size GetSystemWebAppMinimumWindowSize(Browser* browser) {
   if (!app_controller->HasAppId())
     return gfx::Size();
 
-  auto* provider = WebAppProvider::Get(browser->profile());
+  auto* provider = WebAppProvider::GetForSystemWebApps(browser->profile());
   if (!provider)
     return gfx::Size();
 

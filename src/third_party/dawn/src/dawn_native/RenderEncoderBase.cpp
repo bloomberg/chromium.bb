@@ -127,7 +127,7 @@ namespace dawn_native {
                 }
 
                 if (indirectOffset >= indirectBuffer->GetSize() ||
-                    indirectOffset + kDrawIndirectSize > indirectBuffer->GetSize()) {
+                    kDrawIndirectSize > indirectBuffer->GetSize() - indirectOffset) {
                     return DAWN_VALIDATION_ERROR("Indirect offset out of bounds");
                 }
             }
@@ -165,7 +165,7 @@ namespace dawn_native {
                 }
 
                 if ((indirectOffset >= indirectBuffer->GetSize() ||
-                     indirectOffset + kDrawIndexedIndirectSize > indirectBuffer->GetSize())) {
+                     kDrawIndexedIndirectSize > indirectBuffer->GetSize() - indirectOffset)) {
                     return DAWN_VALIDATION_ERROR("Indirect offset out of bounds");
                 }
             }
@@ -217,6 +217,11 @@ namespace dawn_native {
                     return DAWN_VALIDATION_ERROR("Index format must be specified");
                 }
 
+                if (offset % uint64_t(IndexFormatSize(format)) != 0) {
+                    return DAWN_VALIDATION_ERROR(
+                        "Offset must be a multiple of the index format size");
+                }
+
                 uint64_t bufferSize = buffer->GetSize();
                 if (offset > bufferSize) {
                     return DAWN_VALIDATION_ERROR("Offset larger than the buffer size");
@@ -262,6 +267,10 @@ namespace dawn_native {
 
                 if (slot >= kMaxVertexBuffers) {
                     return DAWN_VALIDATION_ERROR("Vertex buffer slot out of bounds");
+                }
+
+                if (offset % 4 != 0) {
+                    return DAWN_VALIDATION_ERROR("Offset must be a multiple of 4");
                 }
 
                 uint64_t bufferSize = buffer->GetSize();

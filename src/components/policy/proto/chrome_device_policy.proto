@@ -111,6 +111,11 @@ message NetworkHostnameProto {
   optional string device_hostname_template = 1;
 }
 
+message HostnameUserConfigurableProto {
+  // Determines if user is allowed to configure the device hostname
+  optional bool device_hostname_user_configurable = 1 [default = false];
+}
+
 // Policies to turn on portions of the device status reports.
 // If changed, the default values have to be updated in
 // chrome/browser/chromeos/policy/status_collector/device_status_collector.cc
@@ -142,10 +147,14 @@ message DeviceReportingProto {
   optional bool report_vpd_info = 24 [default = false];
   optional bool report_system_info = 25 [default = false];
   optional bool report_print_jobs = 26 [default = false];
+  optional bool report_login_logout = 27 [default = false];
+  optional bool report_audio_status = 28 [default = true];
+  optional bool report_network_configuration = 29 [default = true];
+  optional bool report_network_status = 30 [default = true];
 
   // Frequency to report device status, default to 3 hours.
   // If changed, the default value has to be updated in
-  // chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.cc.
+  // chrome/browser/ash/policy/core/device_cloud_policy_manager_chromeos.cc.
   optional int64 device_status_frequency = 9 [default = 10800000];
 }
 
@@ -1758,9 +1767,17 @@ message DeviceSystemWideTracingEnabledProto {
 }
 
 // Setting that controls whether data access is enabled for Thunderbolt/USB4
-// peripherals.
+// peripherals. This proto is no longer being used, please use
+// DevicePciPeripheralDataAccessEnabledProtoV2.
 message DevicePciPeripheralDataAccessEnabledProto {
   optional bool enabled = 1 [default = false];
+}
+
+// Setting that controls whether data access is enabled for Thunderbolt/USB4
+// peripherals. This replaces DevicePciPeripheralDataAccessEnabledProto. Used
+// only for the associated CrosSetting.
+message DevicePciPeripheralDataAccessEnabledProtoV2 {
+  optional bool enabled = 1;
 }
 
 // Setting that controls whether Borealis will be allowed on the device.
@@ -1776,6 +1793,24 @@ message DeviceAllowedBluetoothServicesProto {
 // Policy that controls whether packet captures will be allowed on the device.
 message DeviceDebugPacketCaptureAllowedProto {
   optional bool allowed = 1;
+}
+
+// Settings that control when a device will reboot. The reboots are
+// recurring. In order to disable scheduled reboots the policy must be
+// removed.
+message DeviceScheduledRebootProto {
+  // This is a JSON string, for details see "DeviceScheduledReboot" in
+  // policy_templates.json.
+  optional string device_scheduled_reboot_settings = 1;
+}
+
+// Setting that controls whether restricted managed guest session is enabled on
+// the device.
+message DeviceRestrictedManagedGuestSessionEnabledProto {
+  // If this policy is set to true, it will forcefully override certain
+  // policies. If it's set to false or not set, then no policies will be
+  // overridden.
+  optional bool enabled = 1 [default = false];
 }
 
 message ChromeDeviceSettingsProto {
@@ -1935,4 +1970,10 @@ message ChromeDeviceSettingsProto {
       device_allowed_bluetooth_services = 120;
   optional DeviceDebugPacketCaptureAllowedProto
       device_debug_packet_capture_allowed = 121;
+  optional DeviceScheduledRebootProto device_scheduled_reboot = 122;
+  optional DevicePciPeripheralDataAccessEnabledProtoV2
+      device_pci_peripheral_data_access_enabled_v2 = 123;
+  optional DeviceRestrictedManagedGuestSessionEnabledProto
+      device_restricted_managed_guest_session_enabled = 124;
+  optional HostnameUserConfigurableProto hostname_user_configurable = 125;
 }

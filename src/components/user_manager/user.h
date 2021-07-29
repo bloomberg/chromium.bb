@@ -63,6 +63,7 @@ class USER_MANAGER_EXPORT User : public UserInfo {
     OAUTH2_TOKEN_STATUS_VALID = 4,
   } OAuthTokenStatus;
 
+  // TODO(jasontt): Explore adding a new value for image taken from camera.
   // These special values are used instead of actual default image indices.
   typedef enum {
     USER_IMAGE_INVALID = -3,
@@ -100,10 +101,6 @@ class USER_MANAGER_EXPORT User : public UserInfo {
 
   // Returns true if it's Active Directory user.
   virtual bool IsActiveDirectoryUser() const;
-
-  // Returns true if user is child or deprecated legacy supervised.
-  // TODO(crbug/1155729): Remove and replace with IsChild().
-  virtual bool IsChildOrDeprecatedSupervised() const;
 
   // Returns true if user is child.
   virtual bool IsChild() const;

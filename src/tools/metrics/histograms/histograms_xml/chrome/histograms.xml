@@ -145,7 +145,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Chrome.Tabs.AnimationSmoothness.TabLoading" units="%"
-    expires_after="2021-10-10">
+    expires_after="2021-12-12">
   <owner>yichenz@chromium.org</owner>
   <owner>chromeos-wmp@google.com</owner>
   <summary>
@@ -166,7 +166,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeColors.ColorOnLoad" enum="ChromeColorsInfo"
-    expires_after="2021-09-19">
+    expires_after="2021-11-21">
   <owner>gayane@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <summary>
@@ -205,6 +205,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     setup code, taking into account the safety beacon. Used to determine how
     often the third-party DLL blocking is disabled because it failed to
     initialize properly twice in a row. Only recorded on Windows.
+  </summary>
+</histogram>
+
+<histogram name="ChromeElf.ExtensionPoint.EnableState"
+    enum="ExtensionPointEnableState" expires_after="M93">
+  <owner>wfh@chromium.org</owner>
+  <owner>ssmole@microsoft.com</owner>
+  <summary>
+    Records the outcome of the heuristic to selectively enable or disable the
+    ProcessExtensionPointDisablePolicy. Used to determine how often the policy
+    will be enabled in practice, as the heuristic detects the presence of third
+    party software. Only recorded on Windows.
   </summary>
 </histogram>
 

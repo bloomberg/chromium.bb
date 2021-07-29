@@ -61,6 +61,8 @@ func (b *taskBuilder) nanobenchFlags(doUpload bool) {
 			if b.os("iOS") || b.model("Nexus7", "Pixel3a", "Pixel5") {
 				sampleCount = 0
 			}
+		} else if b.matchGpu("AppleM1") {
+			sampleCount = 4
 		} else if b.matchGpu("Intel") {
 			// MSAA doesn't work well on Intel GPUs chromium:527565, chromium:983926
 			sampleCount = 0
@@ -90,6 +92,9 @@ func (b *taskBuilder) nanobenchFlags(doUpload bool) {
 
 		if sampleCount > 0 {
 			configs = append(configs, fmt.Sprintf("%smsaa%d", glPrefix, sampleCount))
+			if b.gpu("QuadroP400", "MaliG77", "AppleM1") {
+				configs = append(configs, fmt.Sprintf("%sdmsaa", glPrefix))
+			}
 		}
 
 		// We want to test both the OpenGL config and the GLES config on Linux Intel:
@@ -99,7 +104,10 @@ func (b *taskBuilder) nanobenchFlags(doUpload bool) {
 		}
 
 		if b.extraConfig("CommandBuffer") {
-			configs = []string{"commandbuffer"}
+			configs = []string{"cmdbuffer_es2"}
+			if !b.matchGpu("Intel") {
+				configs = append(configs, "cmdbuffer_es2_dmsaa")
+			}
 		}
 
 		if b.extraConfig("Vulkan") {
@@ -259,7 +267,7 @@ func (b *taskBuilder) nanobenchFlags(doUpload bool) {
 			"--dmsaaStatsDump")
 		// Don't collect stats on the skps generated from vector content. We want these to actually
 		// trigger dmsaa.
-		match = append(match, "~svg", "~chalkboard", "~motionmark", "~ccpr")
+		match = append(match, "~svg", "~chalkboard", "~motionmark")
 	}
 
 	// We do not need or want to benchmark the decodes of incomplete images.

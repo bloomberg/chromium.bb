@@ -4,8 +4,8 @@
 
 #include "ash/wm/overview/overview_highlight_controller.h"
 
-#include "ash/accessibility/magnifier/docked_magnifier_controller_impl.h"
-#include "ash/accessibility/magnifier/magnification_controller.h"
+#include "ash/accessibility/magnifier/docked_magnifier_controller.h"
+#include "ash/accessibility/magnifier/fullscreen_magnifier_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desk_name_view.h"
@@ -75,7 +75,7 @@ OverviewHighlightController::~OverviewHighlightController() = default;
 void OverviewHighlightController::MoveHighlight(bool reverse) {
   const std::vector<OverviewHighlightableView*> traversable_views =
       GetTraversableViews();
-  const int count = int{traversable_views.size()};
+  const int count = static_cast<int>(traversable_views.size());
 
   // |count| can be zero when there are no overview items and no desk views (eg.
   // "No recent items" or PIP windows are shown but they aren't traversable).
@@ -269,10 +269,10 @@ void OverviewHighlightController::UpdateHighlight(
   // Note that both magnifiers are mutually exclusive. The overview "focus"
   // works differently from regular focusing so we need to update the magnifier
   // manually here.
-  DockedMagnifierControllerImpl* docked_magnifier =
+  DockedMagnifierController* docked_magnifier =
       Shell::Get()->docked_magnifier_controller();
-  MagnificationController* fullscreen_magnifier =
-      Shell::Get()->magnification_controller();
+  FullscreenMagnifierController* fullscreen_magnifier =
+      Shell::Get()->fullscreen_magnifier_controller();
   const gfx::Point point_of_interest =
       highlighted_view_->GetMagnifierFocusPointInScreen();
   if (docked_magnifier->GetEnabled())

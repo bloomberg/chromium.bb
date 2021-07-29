@@ -10,8 +10,8 @@
 #include <utility>
 
 #include "base/check.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/ranges/algorithm.h"
-#include "base/stl_util.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_list_sorter.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
@@ -52,8 +52,8 @@ constexpr bool ShareSameStore(const password_manager::PasswordForm& lhs,
 namespace password_manager {
 
 SavedPasswordsPresenter::SavedPasswordsPresenter(
-    scoped_refptr<PasswordStore> profile_store,
-    scoped_refptr<PasswordStore> account_store)
+    scoped_refptr<PasswordStoreInterface> profile_store,
+    scoped_refptr<PasswordStoreInterface> account_store)
     : profile_store_(std::move(profile_store)),
       account_store_(std::move(account_store)) {
   DCHECK(profile_store_);
@@ -100,7 +100,7 @@ bool SavedPasswordsPresenter::EditPassword(const PasswordForm& form,
     return false;
 
   found->password_value = std::move(new_password);
-  PasswordStore& store =
+  PasswordStoreInterface& store =
       form.IsUsingAccountStore() ? *account_store_ : *profile_store_;
   store.UpdateLogin(*found);
   NotifyEdited(*found);
@@ -142,7 +142,7 @@ bool SavedPasswordsPresenter::EditSavedPasswords(
   // class.
   if (username_changed || password_changed) {
     for (const auto& old_form : forms) {
-      PasswordStore& store = GetStoreFor(old_form);
+      PasswordStoreInterface& store = GetStoreFor(old_form);
       PasswordForm new_form = old_form;
       new_form.username_value = new_username;
       new_form.password_value = new_password;
@@ -220,16 +220,14 @@ void SavedPasswordsPresenter::NotifySavedPasswordsChanged() {
 }
 
 void SavedPasswordsPresenter::OnLoginsChanged(
+    PasswordStoreInterface* store,
     const PasswordStoreChangeList& changes) {
-  // This class overrides OnLoginsChangedIn() (the version of this
-  // method that also receives the originating store), so the store-less version
-  // never gets called.
-  NOTREACHED();
+  store->GetAllLoginsWithAffiliationAndBrandingInformation(this);
 }
 
-void SavedPasswordsPresenter::OnLoginsChangedIn(
-    PasswordStore* store,
-    const PasswordStoreChangeList& changes) {
+void SavedPasswordsPresenter::OnLoginsRetained(
+    PasswordStoreInterface* store,
+    const std::vector<PasswordForm>& retained_passwords) {
   store->GetAllLoginsWithAffiliationAndBrandingInformation(this);
 }
 
@@ -242,7 +240,7 @@ void SavedPasswordsPresenter::OnGetPasswordStoreResults(
 }
 
 void SavedPasswordsPresenter::OnGetPasswordStoreResultsFrom(
-    PasswordStore* store,
+    PasswordStoreInterface* store,
     std::vector<std::unique_ptr<PasswordForm>> results) {
   // Profile store passwords are always stored first in `passwords_`.
   auto account_passwords_it = base::ranges::partition_point(
@@ -284,7 +282,8 @@ void SavedPasswordsPresenter::OnGetPasswordStoreResultsFrom(
   NotifySavedPasswordsChanged();
 }
 
-PasswordStore& SavedPasswordsPresenter::GetStoreFor(const PasswordForm& form) {
+PasswordStoreInterface& SavedPasswordsPresenter::GetStoreFor(
+    const PasswordForm& form) {
   DCHECK_NE(form.IsUsingAccountStore(), form.IsUsingProfileStore());
   return form.IsUsingAccountStore() ? *account_store_ : *profile_store_;
 }

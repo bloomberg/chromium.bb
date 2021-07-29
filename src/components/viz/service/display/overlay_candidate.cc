@@ -8,6 +8,7 @@
 #include <cmath>
 #include <limits>
 
+#include "base/containers/contains.h"
 #include "build/build_config.h"
 #include "cc/base/math_util.h"
 #include "components/viz/common/quads/aggregated_render_pass_draw_quad.h"
@@ -17,10 +18,12 @@
 #include "components/viz/common/quads/tile_draw_quad.h"
 #include "components/viz/common/quads/video_hole_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
+#include "components/viz/service/debugger/viz_debugger.h"
 #include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/display/overlay_processor_interface.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 #include "ui/gfx/video_types.h"
 
@@ -129,10 +132,11 @@ OverlayCandidate::~OverlayCandidate() = default;
 bool OverlayCandidate::FromDrawQuad(
     DisplayResourceProvider* resource_provider,
     SurfaceDamageRectList* surface_damage_rect_list,
-    const SkMatrix44& output_color_matrix,
+    const skia::Matrix44& output_color_matrix,
     const DrawQuad* quad,
     const gfx::RectF& primary_rect,
-    OverlayCandidate* candidate) {
+    OverlayCandidate* candidate,
+    bool is_delegated_context) {
   // It is currently not possible to set a color conversion matrix on an HW
   // overlay plane.
   // TODO(https://crbug.com/792757): Remove this check once the bug is resolved.
@@ -142,8 +146,12 @@ bool OverlayCandidate::FromDrawQuad(
   const SharedQuadState* sqs = quad->shared_quad_state;
 
   // We don't support an opacity value different than one for an overlay plane.
-  if (sqs->opacity != 1.f)
+  // Render pass quads should have their |sqs| opacity integrated directly into
+  // their final output buffers.
+  if (!cc::MathUtil::IsWithinEpsilon(sqs->opacity, 1.0f) &&
+      quad->material != DrawQuad::Material::kAggregatedRenderPass) {
     return false;
+  }
 
   // We support only kSrc (no blending) and kSrcOver (blending with premul).
   if (!(sqs->blend_mode == SkBlendMode::kSrc ||
@@ -154,7 +162,6 @@ bool OverlayCandidate::FromDrawQuad(
   candidate->requires_overlay = OverlayCandidate::RequiresOverlay(quad);
   candidate->overlay_damage_index =
       sqs->overlay_damage_index.value_or(kInvalidDamageIndex);
-  candidate->assume_damaged = !sqs->no_damage;
 
   switch (quad->material) {
     case DrawQuad::Material::kTextureContent:
@@ -169,6 +176,25 @@ bool OverlayCandidate::FromDrawQuad(
       return FromStreamVideoQuad(resource_provider, surface_damage_rect_list,
                                  StreamVideoDrawQuad::MaterialCast(quad),
                                  candidate);
+    case DrawQuad::Material::kSolidColor:
+      if (!is_delegated_context)
+        return false;
+      return candidate->FromSolidColorQuad(
+          resource_provider, surface_damage_rect_list,
+          SolidColorDrawQuad::MaterialCast(quad), primary_rect, candidate);
+    case DrawQuad::Material::kAggregatedRenderPass:
+      if (!is_delegated_context)
+        return false;
+      return candidate->FromAggregateQuad(
+          resource_provider, surface_damage_rect_list,
+          AggregatedRenderPassDrawQuad::MaterialCast(quad), primary_rect,
+          candidate);
+    case DrawQuad::Material::kTiledContent:
+      if (!is_delegated_context)
+        return false;
+      return candidate->FromTileQuad(
+          resource_provider, surface_damage_rect_list,
+          TileDrawQuad::MaterialCast(quad), primary_rect, candidate);
     default:
       break;
   }
@@ -290,21 +316,27 @@ bool OverlayCandidate::FromDrawQuadResource(
     ResourceId resource_id,
     bool y_flipped,
     OverlayCandidate* candidate) {
-  if (!resource_provider->IsOverlayCandidate(resource_id))
+  if (resource_id != kInvalidResourceId &&
+      !resource_provider->IsOverlayCandidate(resource_id))
     return false;
+
   if (quad->visible_rect.IsEmpty())
     return false;
 
-  candidate->format = resource_provider->GetBufferFormat(resource_id);
-  candidate->color_space = resource_provider->GetColorSpace(resource_id);
-  if (!base::Contains(kOverlayFormats, candidate->format))
-    return false;
+  if (resource_id != kInvalidResourceId) {
+    candidate->format = resource_provider->GetBufferFormat(resource_id);
+    candidate->color_space = resource_provider->GetColorSpace(resource_id);
+    if (!base::Contains(kOverlayFormats, candidate->format))
+      return false;
+  }
 
   const SharedQuadState* sqs = quad->shared_quad_state;
+
   gfx::OverlayTransform overlay_transform =
       GetOverlayTransform(sqs->quad_to_target_transform, y_flipped);
   if (overlay_transform == gfx::OVERLAY_TRANSFORM_INVALID)
     return false;
+  candidate->transform = overlay_transform;
 
   auto& transform = sqs->quad_to_target_transform;
   candidate->display_rect = gfx::RectF(quad->rect);
@@ -320,9 +352,41 @@ bool OverlayCandidate::FromDrawQuadResource(
   candidate->damage_area_estimate =
       GetDamageRect(quad, surface_damage_rect_list).size().GetArea();
   candidate->resource_id = resource_id;
-  candidate->transform = overlay_transform;
-  candidate->mailbox = resource_provider->GetMailbox(resource_id);
 
+  if (resource_id != kInvalidResourceId) {
+    candidate->mailbox = resource_provider->GetMailbox(resource_id);
+  }
+
+  return true;
+}
+
+// static
+bool OverlayCandidate::FromAggregateQuad(
+    DisplayResourceProvider* resource_provider,
+    SurfaceDamageRectList* surface_damage_rect_list,
+    const AggregatedRenderPassDrawQuad* quad,
+    const gfx::RectF& primary_rect,
+    OverlayCandidate* candidate) {
+  if (!FromDrawQuadResource(resource_provider, surface_damage_rect_list, quad,
+                            kInvalidResourceId, false, candidate)) {
+    return false;
+  }
+  candidate->rpdq = quad;
+  return true;
+}
+
+// static
+bool OverlayCandidate::FromSolidColorQuad(
+    DisplayResourceProvider* resource_provider,
+    SurfaceDamageRectList* surface_damage_rect_list,
+    const SolidColorDrawQuad* quad,
+    const gfx::RectF& primary_rect,
+    OverlayCandidate* candidate) {
+  if (!FromDrawQuadResource(resource_provider, surface_damage_rect_list, quad,
+                            kInvalidResourceId, false, candidate)) {
+    return false;
+  }
+  candidate->solid_color = quad->color;
   return true;
 }
 
@@ -352,6 +416,36 @@ bool OverlayCandidate::FromVideoHoleQuad(
   // damage.
   candidate->damage_area_estimate =
       GetDamageRect(quad, surface_damage_rect_list).size().GetArea();
+  return true;
+}
+
+bool OverlayCandidate::FromTileQuad(
+    DisplayResourceProvider* resource_provider,
+    SurfaceDamageRectList* surface_damage_rect_list,
+    const TileDrawQuad* quad,
+    const gfx::RectF& primary_rect,
+    OverlayCandidate* candidate) {
+  if (quad->nearest_neighbor)
+    return false;
+
+  if (!FromDrawQuadResource(resource_provider, surface_damage_rect_list, quad,
+                            quad->resource_id(), false, candidate)) {
+    return false;
+  }
+
+  candidate->resource_size_in_pixels =
+      resource_provider->GetResourceBackedSize(quad->resource_id());
+
+  float x = quad->tex_coord_rect.origin().x() /
+            candidate->resource_size_in_pixels.width();
+  float xw = quad->tex_coord_rect.size().width() /
+             candidate->resource_size_in_pixels.width();
+  float y = quad->tex_coord_rect.origin().y() /
+            candidate->resource_size_in_pixels.height();
+  float yh = quad->tex_coord_rect.size().height() /
+             candidate->resource_size_in_pixels.height();
+  candidate->uv_rect = gfx::RectF(x, y, xw, yh);
+
   return true;
 }
 

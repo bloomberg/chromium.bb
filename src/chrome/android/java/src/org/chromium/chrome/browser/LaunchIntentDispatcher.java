@@ -52,8 +52,8 @@ import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
 import org.chromium.components.browser_ui.media.MediaNotificationUma;
 import org.chromium.components.embedder_support.util.UrlConstants;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.widget.Toast;
-import org.chromium.url.Origin;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -80,9 +80,6 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
 
     private final Activity mActivity;
     private Intent mIntent;
-    private final boolean mIsCustomTabIntent;
-    private final boolean mIsVrIntent;
-    private final AttributionIntentHandler mAttributionIntentHandler;
 
     @IntDef({Action.CONTINUE, Action.FINISH_ACTIVITY, Action.FINISH_ACTIVITY_REMOVE_TASK})
     @Retention(RetentionPolicy.SOURCE)
@@ -125,7 +122,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
      */
     public static @Action int dispatchToCustomTabActivity(Activity currentActivity, Intent intent) {
         LaunchIntentDispatcher dispatcher = new LaunchIntentDispatcher(currentActivity, intent);
-        if (!dispatcher.mIsCustomTabIntent) return Action.CONTINUE;
+        if (!isCustomTabIntent(dispatcher.mIntent)) return Action.CONTINUE;
         dispatcher.launchCustomTabActivity();
         return Action.FINISH_ACTIVITY;
     }
@@ -133,7 +130,6 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
     private LaunchIntentDispatcher(Activity activity, Intent intent) {
         mActivity = activity;
         mIntent = IntentUtils.sanitizeIntent(intent);
-        mAttributionIntentHandler = AttributionIntentHandlerFactory.create();
 
         // Needs to be called as early as possible, to accurately capture the
         // time at which the intent was received.
@@ -142,9 +138,6 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         }
 
         recordIntentMetrics();
-
-        mIsVrIntent = VrModuleProvider.getIntentDelegate().isVrIntent(mIntent);
-        mIsCustomTabIntent = isCustomTabIntent(mIntent);
     }
 
     /**
@@ -162,6 +155,8 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         // Must come before processing other intents, as we may un-wrap |mIntent| to another type of
         // Intent.
         if (handleAppAttributionIntent()) return Action.FINISH_ACTIVITY;
+
+        boolean isCustomTabIntent = isCustomTabIntent(mIntent);
 
         int tabId = IntentHandler.getBringTabToFrontId(mIntent);
         boolean incognito =
@@ -198,7 +193,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
 
         // Check if we should launch an Instant App to handle the intent.
         if (InstantAppsHandler.getInstance().handleIncomingIntent(
-                    mActivity, mIntent, mIsCustomTabIntent, false)) {
+                    mActivity, mIntent, isCustomTabIntent, false)) {
             return Action.FINISH_ACTIVITY;
         }
 
@@ -209,7 +204,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         }
 
         // Check if we should launch a Custom Tab.
-        if (mIsCustomTabIntent) {
+        if (isCustomTabIntent) {
             launchCustomTabActivity();
             return Action.FINISH_ACTIVITY;
         }
@@ -248,11 +243,15 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
     }
 
     @Override
-    public void processUrlViewIntent(String url, String referer, String headers,
-            @IntentHandler.TabOpenType int tabOpenType, String externalAppId,
-            int tabIdToBringToFront, boolean hasUserGesture, boolean isRendererInitiated,
-            @Nullable Origin initiatorOrigin, Intent intent) {
+    public void processUrlViewIntent(LoadUrlParams loadUrlParams, int tabOpenType,
+            String externalAppId, int tabIdToBringToFront, Intent intent) {
         assert false;
+    }
+
+    @Override
+    public long getIntentHandlingTimeMs() {
+        assert false;
+        return 0;
     }
 
     /** When started with an intent, maybe pre-resolve the domain. */
@@ -277,7 +276,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         if (intent != null && TranslateIntentHandler.ACTION_TRANSLATE_TAB.equals(intent.getAction())
                 && TranslateIntentHandler.COMPONENT_TRANSLATE_DISPATCHER.equals(
                         intent.getComponent().getClassName())) {
-            IntentHandler.addTrustedIntentExtras(intent);
+            IntentUtils.addTrustedIntentExtras(intent);
         }
     }
 
@@ -305,6 +304,11 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         newIntent.setData(uri);
         newIntent.setClassName(context, CustomTabActivity.class.getName());
 
+        // Since configureIntentForResizableCustomTab() might change the componenet/class
+        // associated with the passed intent, it needs to be called after #setClassName(context,
+        // CustomTabActivity.class.getName());
+        CustomTabIntentDataProvider.configureIntentForResizableCustomTab(context, newIntent);
+
         if (clearTopIntentsForCustomTabsEnabled(intent)) {
             // Ensure the new intent is routed into the instance of CustomTabActivity in this task.
             // If the existing CustomTabActivity can't handle the intent, it will re-launch
@@ -321,8 +325,6 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
                         Intent.FLAG_ACTIVITY_CLEAR_TOP);
             }
         }
-
-        boolean isIntentSenderChrome = IntentHandler.wasIntentSenderChrome(intent);
 
         // If |uri| is a content:// URI, we want to propagate the URI permissions. This can't be
         // achieved by simply adding the FLAG_GRANT_READ_URI_PERMISSION to the Intent, since the
@@ -351,14 +353,6 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
             newIntent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
             // Force a new document to ensure the proper task/stack creation.
             newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-        }
-
-        // If the previous caller was not Chrome, but added EXTRA_IS_OPENED_BY_CHROME
-        // for malicious purpose, remove it. The new intent will be sent by Chrome, but was not
-        // sent by Chrome initially.
-        if (!isIntentSenderChrome) {
-            IntentUtils.safeRemoveExtra(
-                    newIntent, CustomTabIntentDataProvider.EXTRA_IS_OPENED_BY_CHROME);
         }
 
         return newIntent;
@@ -404,7 +398,8 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
     @SuppressLint("InlinedApi")
     @SuppressWarnings("checkstyle:SystemExitCheck") // Allowed due to https://crbug.com/847921#c17.
     private @Action int dispatchToTabbedActivity() {
-        if (mIsVrIntent) {
+        boolean isVrIntent = VrModuleProvider.getIntentDelegate().isVrIntent(mIntent);
+        if (isVrIntent) {
             for (Activity activity : ApplicationStatus.getRunningActivities()) {
                 if (activity instanceof ChromeTabbedActivity) {
                     if (VrModuleProvider.getDelegate().willChangeDensityInVr(
@@ -467,7 +462,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
 
         // This system call is often modified by OEMs and not actionable. http://crbug.com/619646.
         try {
-            Bundle options = mIsVrIntent
+            Bundle options = isVrIntent
                     ? VrModuleProvider.getIntentDelegate().getVrIntentOptions(mActivity)
                     : null;
             mActivity.startActivity(newIntent, options);
@@ -544,9 +539,10 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
     }
 
     private boolean handleAppAttributionIntent() {
-        if (mAttributionIntentHandler.handleOuterAttributionIntent(mIntent)) return true;
+        AttributionIntentHandler intentHandler = AttributionIntentHandlerFactory.getInstance();
+        if (intentHandler.handleOuterAttributionIntent(mIntent)) return true;
 
-        Intent launchIntent = mAttributionIntentHandler.handleInnerAttributionIntent(mIntent);
+        Intent launchIntent = intentHandler.handleInnerAttributionIntent(mIntent);
         if (launchIntent != null) mIntent = IntentUtils.sanitizeIntent(launchIntent);
         return false;
     }

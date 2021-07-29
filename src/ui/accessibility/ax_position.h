@@ -19,6 +19,7 @@
 #include "base/containers/contains.h"
 #include "base/containers/stack.h"
 #include "base/i18n/break_iterator.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -345,12 +346,12 @@ class AXPosition {
     if (!IsTextPosition() || text_offset_ > MaxTextOffset())
       return str;
 
-    const std::u16string text = GetText();
+    const std::u16string& text = GetText();
     DCHECK_GE(text_offset_, 0);
     const size_t max_text_offset = text.size();
-    DCHECK_LE(text_offset_, int{max_text_offset}) << text;
+    DCHECK_LE(text_offset_, static_cast<int>(max_text_offset)) << text;
     std::u16string annotated_text;
-    if (text_offset_ == int{max_text_offset}) {
+    if (text_offset_ == static_cast<int>(max_text_offset)) {
       annotated_text = text + u"<>";
     } else {
       annotated_text = text.substr(0, text_offset_) + u"<" +
@@ -2010,7 +2011,7 @@ class AXPosition {
     AXTreeID tree_id = AXTreeIDUnknown();
     AXNodeID child_id = kInvalidAXNodeID;
     const AXNode* child_anchor =
-        GetAnchor()->GetChildAtCrossingTreeBoundary(child_index);
+        GetAnchor()->GetChildAtIndexCrossingTreeBoundary(child_index);
     if (!child_anchor)
       return CreateNullPosition();
     tree_id = child_anchor->tree()->GetAXTreeID();
@@ -2339,14 +2340,14 @@ class AXPosition {
       std::unique_ptr<base::i18n::BreakIterator> grapheme_iterator =
           text_position->GetGraphemeIterator();
       DCHECK_GE(text_position->text_offset_, 0);
-      DCHECK_LE(text_position->text_offset_,
-                int{text_position->name_.length()});
-      while (
-          !text_position->AtStartOfAnchor() &&
-          (!gfx::IsValidCodePointIndex(text_position->name_,
-                                       size_t{text_position->text_offset_}) ||
-           (grapheme_iterator && !grapheme_iterator->IsGraphemeBoundary(
-                                     size_t{text_position->text_offset_})))) {
+      DCHECK_LE(text_position->text_offset_, text_position->MaxTextOffset());
+      while (!text_position->AtStartOfAnchor() &&
+             (!gfx::IsValidCodePointIndex(
+                  text_position->GetText(),
+                  static_cast<size_t>(text_position->text_offset_)) ||
+              (grapheme_iterator &&
+               !grapheme_iterator->IsGraphemeBoundary(
+                   static_cast<size_t>(text_position->text_offset_))))) {
         --text_position->text_offset_;
       }
       return text_position;
@@ -2390,18 +2391,18 @@ class AXPosition {
       //
       // TODO(nektar): Remove this workaround as soon as the source of the bug
       // is identified.
-      if (text_position->text_offset_ > int{text_position->name_.length()})
+      if (text_position->text_offset_ > text_position->MaxTextOffset())
         return CreateNullPosition();
 
       DCHECK_GE(text_position->text_offset_, 0);
-      DCHECK_LE(text_position->text_offset_,
-                int{text_position->name_.length()});
-      while (
-          !text_position->AtEndOfAnchor() &&
-          (!gfx::IsValidCodePointIndex(text_position->name_,
-                                       size_t{text_position->text_offset_}) ||
-           (grapheme_iterator && !grapheme_iterator->IsGraphemeBoundary(
-                                     size_t{text_position->text_offset_})))) {
+      DCHECK_LE(text_position->text_offset_, text_position->MaxTextOffset());
+      while (!text_position->AtEndOfAnchor() &&
+             (!gfx::IsValidCodePointIndex(
+                  text_position->GetText(),
+                  static_cast<size_t>(text_position->text_offset_)) ||
+              (grapheme_iterator &&
+               !grapheme_iterator->IsGraphemeBoundary(
+                   static_cast<size_t>(text_position->text_offset_))))) {
         ++text_position->text_offset_;
       }
 
@@ -2470,7 +2471,7 @@ class AXPosition {
     } while (text_position->text_offset_ < max_text_offset &&
              grapheme_iterator &&
              !grapheme_iterator->IsGraphemeBoundary(
-                 size_t{text_position->text_offset_}));
+                 static_cast<size_t>(text_position->text_offset_)));
     DCHECK_GT(text_position->text_offset_, 0);
     DCHECK_LE(text_position->text_offset_, text_position->MaxTextOffset());
 
@@ -2544,7 +2545,7 @@ class AXPosition {
       --text_position->text_offset_;
     } while (!text_position->AtStartOfAnchor() && grapheme_iterator &&
              !grapheme_iterator->IsGraphemeBoundary(
-                 size_t{text_position->text_offset_}));
+                 static_cast<size_t>(text_position->text_offset_)));
     DCHECK_GE(text_position->text_offset_, 0);
     DCHECK_LT(text_position->text_offset_, text_position->MaxTextOffset());
 
@@ -3825,9 +3826,13 @@ class AXPosition {
   // including any text found in descendant text nodes, based on the platform's
   // text representation. Some platforms use an embedded object replacement
   // character that replaces the text coming from most child nodes.
-  std::u16string GetText() const {
+  const std::u16string& GetText() const {
+    // Note that the use of `base::EmptyString16()` is a special case here. For
+    // performance reasons `base::EmptyString16()` should only be used when
+    // returning a const reference to a string and there is an error condition,
+    // not in any other case when an empty string16 is required.
     if (IsNullPosition())
-      return std::u16string();
+      return base::EmptyString16();
 
     // Special case, if a position's anchor node has only ignored descendants,
     // i.e., it appears to be empty to assistive software, on some platforms we
@@ -3835,12 +3840,14 @@ class AXPosition {
     // this by adding an embedded object character in the text representation
     // used by this class, but we don't expose that character to assistive
     // software that tries to retrieve the node's inner text.
+    static const base::NoDestructor<std::u16string> embedded_character_str(
+        AXNode::kEmbeddedCharacter);
     if (IsEmptyObjectReplacedByCharacter())
-      return AXNode::kEmbeddedCharacter;
+      return *embedded_character_str;
 
     switch (g_ax_embedded_object_behavior) {
       case AXEmbeddedObjectBehavior::kSuppressCharacter:
-        return base::UTF8ToUTF16(GetAnchor()->GetInnerText());
+        return GetAnchor()->GetInnerTextUTF16();
       case AXEmbeddedObjectBehavior::kExposeCharacter:
         return GetAnchor()->GetHypertext();
     }
@@ -3893,11 +3900,11 @@ class AXPosition {
 
     switch (g_ax_embedded_object_behavior) {
       case AXEmbeddedObjectBehavior::kSuppressCharacter:
-        // TODO(nektar): Switch to anchor->GetInnerTextLength() after AXPosition
-        // switches to using UTF8.
-        return int{base::UTF8ToUTF16(GetAnchor()->GetInnerText()).length()};
+        // TODO(nektar): Switch to anchor->GetInnerTextLengthUTF8() after
+        // AXPosition switches to using UTF8.
+        return GetAnchor()->GetInnerTextLengthUTF16();
       case AXEmbeddedObjectBehavior::kExposeCharacter:
-        return int{GetAnchor()->GetHypertext().length()};
+        return static_cast<int>(GetAnchor()->GetHypertext().length());
     }
   }
 
@@ -3973,6 +3980,10 @@ class AXPosition {
     if (!IsLeafTextPosition())
       return {};
 
+    // TODO(nektar): Remove member variable `name_` once hypertext has been
+    // migrated to AXNode. Currently, hypertext in AXNode gets updated every
+    // time the `AXNode::GetHypertext()` method is called which erroniously
+    // invalidates this AXPosition.
     name_ = GetText();
     auto grapheme_iterator = std::make_unique<base::i18n::BreakIterator>(
         name_, base::i18n::BreakIterator::BREAK_CHARACTER);
@@ -4008,7 +4019,7 @@ class AXPosition {
   int AnchorChildCount() const {
     if (!GetAnchor())
       return 0;
-    return int{GetAnchor()->GetChildCountCrossingTreeBoundary()};
+    return static_cast<int>(GetAnchor()->GetChildCountCrossingTreeBoundary());
   }
 
   // When a child is ignored, it looks for unignored nodes of that child's
@@ -4022,12 +4033,14 @@ class AXPosition {
   int AnchorUnignoredChildCount() const {
     if (!GetAnchor())
       return 0;
-    return int{GetAnchor()->GetUnignoredChildCountCrossingTreeBoundary()};
+    return static_cast<int>(
+        GetAnchor()->GetUnignoredChildCountCrossingTreeBoundary());
   }
 
   int AnchorIndexInParent() const {
     // If this is the root tree, the index in parent will be 0.
-    return GetAnchor() ? int{GetAnchor()->index_in_parent()} : INVALID_INDEX;
+    return GetAnchor() ? static_cast<int>(GetAnchor()->GetIndexInParent())
+                       : INVALID_INDEX;
   }
 
   base::stack<AXNode*> GetAncestorAnchors() const {
@@ -4038,9 +4051,6 @@ class AXPosition {
     AXNode* current_anchor = GetAnchor();
     while (current_anchor) {
       anchors.push(current_anchor);
-      // TODO(nektar): Introduce `AXNode::GetParent()` in order to be able to
-      // cross tree boundaries and remove
-      // `AXNode::GetUnignoredParentCrossingTreeBoundaries`.
       current_anchor = current_anchor->GetParentCrossingTreeBoundary();
     }
 
@@ -4122,7 +4132,7 @@ class AXPosition {
   bool IsInLineBreakingObject() const {
     if (IsNullPosition())
       return false;
-    return GetAnchor()->data().GetBoolAttribute(
+    return GetAnchor()->GetBoolAttribute(
                ax::mojom::BoolAttribute::kIsLineBreakingObject) &&
            !GetAnchor()->IsInListMarker();
   }
@@ -4160,7 +4170,7 @@ class AXPosition {
     if (IsEmptyObjectReplacedByCharacter())
       return {0};
 
-    return GetAnchor()->data().GetIntListAttribute(
+    return GetAnchor()->GetIntListAttribute(
         ax::mojom::IntListAttribute::kWordStarts);
   }
 
@@ -4180,7 +4190,7 @@ class AXPosition {
     if (IsEmptyObjectReplacedByCharacter())
       return {1};
 
-    return GetAnchor()->data().GetIntListAttribute(
+    return GetAnchor()->GetIntListAttribute(
         ax::mojom::IntListAttribute::kWordEnds);
   }
 
@@ -4190,8 +4200,8 @@ class AXPosition {
     DCHECK(GetAnchor());
 
     int next_on_line_id;
-    if (GetAnchor()->data().GetIntAttribute(
-            ax::mojom::IntAttribute::kNextOnLineId, &next_on_line_id)) {
+    if (GetAnchor()->GetIntAttribute(ax::mojom::IntAttribute::kNextOnLineId,
+                                     &next_on_line_id)) {
       return static_cast<AXNodeID>(next_on_line_id);
     }
     return kInvalidAXNodeID;
@@ -4203,8 +4213,8 @@ class AXPosition {
     DCHECK(GetAnchor());
 
     int previous_on_line_id;
-    if (GetAnchor()->data().GetIntAttribute(
-            ax::mojom::IntAttribute::kPreviousOnLineId, &previous_on_line_id)) {
+    if (GetAnchor()->GetIntAttribute(ax::mojom::IntAttribute::kPreviousOnLineId,
+                                     &previous_on_line_id)) {
       return static_cast<AXNodeID>(previous_on_line_id);
     }
     return kInvalidAXNodeID;
@@ -4248,7 +4258,8 @@ class AXPosition {
 
     DCHECK(GetAnchor());
     return is_last_child &&
-           GetRole(GetAnchor()->parent()) == ax::mojom::Role::kStaticText;
+           GetRole(GetAnchor()->GetParentCrossingTreeBoundary()) ==
+               ax::mojom::Role::kStaticText;
   }
 
   // Uses depth-first pre-order traversal.

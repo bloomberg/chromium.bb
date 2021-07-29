@@ -250,7 +250,8 @@ ElementsTestRunner.firstMatchedStyleSection = function() {
 };
 
 ElementsTestRunner.firstMediaTextElementInSection = function(section) {
-  return section.element.querySelector('.media-text');
+  const cssQueryElement = section.element.querySelector('devtools-css-query');
+  return cssQueryElement.shadowRoot.querySelector('.query-text');
 };
 
 ElementsTestRunner.querySelector = async function(selector, callback) {
@@ -499,11 +500,15 @@ async function printStyleSection(section, omitLonghands, includeSelectorGroupMar
 
   TestRunner.addResult(
       '[expanded] ' + ((section.propertiesTreeOutline.element.classList.contains('no-affect') ? '[no-affect] ' : '')));
-  const medias = section._titleElement.querySelectorAll('.media-list .media');
+  const queries = section._titleElement.querySelectorAll('devtools-css-query');
 
-  for (let i = 0; i < medias.length; ++i) {
-    const media = medias[i];
-    TestRunner.addResult(text(media));
+  for (const query of queries) {
+    const queryElement = query.shadowRoot.querySelector('.query');
+    // InnerText is used here to ensure test output consistency
+    // between debug and release blink tests, since textContent
+    // will preserve more DOM structural information, which would
+    // be easy to flake later.
+    TestRunner.addResult(queryElement.innerText);
   }
 
   const selector =
@@ -1175,7 +1180,7 @@ ElementsTestRunner.dumpBreadcrumb = function(message) {
 
 ElementsTestRunner.matchingSelectors = function(matchedStyles, rule) {
   const selectors = [];
-  const matchingSelectors = matchedStyles.matchingSelectors(rule);
+  const matchingSelectors = matchedStyles.getMatchingSelectors(rule);
 
   for (let i = 0; i < matchingSelectors.length; ++i) {
     selectors.push(rule.selectors[matchingSelectors[i]].text);

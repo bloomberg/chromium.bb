@@ -12,6 +12,8 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
+#include "base/unguessable_token.h"
+#include "build/build_config.h"
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/shared_image_manager.h"
@@ -20,6 +22,8 @@
 #include "gpu/ipc/service/gpu_channel.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "ui/gl/init/gl_factory.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 #include "url/gurl.h"
@@ -110,10 +114,10 @@ GpuChannel* GpuChannelTestCommon::CreateChannel(int32_t client_id,
                                                 bool is_gpu_host) {
   uint64_t kClientTracingId = 1;
   GpuChannel* channel = channel_manager()->EstablishChannel(
-      client_id, kClientTracingId, is_gpu_host, true);
-  channel->InitForTesting(&sink_);
+      base::UnguessableToken::Create(), client_id, kClientTracingId,
+      is_gpu_host, true);
   base::ProcessId kProcessId = 1;
-  channel->OnChannelConnected(kProcessId);
+  channel->set_client_pid(kProcessId);
   return channel;
 }
 
@@ -126,8 +130,13 @@ void GpuChannelTestCommon::CreateCommandBuffer(
     Capabilities* out_capabilities) {
   base::RunLoop loop;
   auto quit = loop.QuitClosure();
+  mojo::PendingAssociatedRemote<mojom::CommandBuffer> remote;
+  mojo::PendingAssociatedRemote<mojom::CommandBufferClient> client;
+  ignore_result(client.InitWithNewEndpointAndPassReceiver());
+  client.EnableUnassociatedUsage();
   channel.CreateCommandBuffer(
       std::move(init_params), routing_id, std::move(shared_state),
+      remote.InitWithNewEndpointAndPassReceiver(), std::move(client),
       base::BindLambdaForTesting(
           [&](ContextResult result, const Capabilities& capabilities) {
             *out_result = result;
@@ -135,43 +144,6 @@ void GpuChannelTestCommon::CreateCommandBuffer(
             quit.Run();
           }));
   loop.Run();
-}
-
-void GpuChannelTestCommon::HandleMessage(GpuChannel* channel,
-                                         IPC::Message* msg) {
-  // Some IPCs (such as GpuCommandBufferMsg_Initialize) will generate more
-  // delayed responses, drop those if they exist.
-  sink_.ClearMessages();
-
-  // Needed to appease DCHECKs.
-  msg->set_unblock(false);
-
-  // Message filter gets message first on IO thread.
-  channel->HandleMessageForTesting(*msg);
-
-  // Run the HandleMessage task posted to the main thread.
-  task_environment_.RunUntilIdle();
-
-  // Replies are sent to the sink.
-  if (msg->is_sync()) {
-    const IPC::Message* reply_msg = sink_.GetMessageAt(0);
-    ASSERT_TRUE(reply_msg);
-    EXPECT_TRUE(!reply_msg->is_reply_error());
-
-    EXPECT_TRUE(IPC::SyncMessage::IsMessageReplyTo(
-        *reply_msg, IPC::SyncMessage::GetMessageId(*msg)));
-
-    IPC::MessageReplyDeserializer* deserializer =
-        static_cast<IPC::SyncMessage*>(msg)->GetReplyDeserializer();
-    ASSERT_TRUE(deserializer);
-    deserializer->SerializeOutputParameters(*reply_msg);
-
-    delete deserializer;
-  }
-
-  sink_.ClearMessages();
-
-  delete msg;
 }
 
 base::UnsafeSharedMemoryRegion GpuChannelTestCommon::GetSharedMemoryRegion() {

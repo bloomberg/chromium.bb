@@ -4,33 +4,25 @@
 
 """Module containing base test results classes."""
 
-from __future__ import absolute_import
+
+import functools
 import threading
-import six
+
+from lib.results import result_types  # pylint: disable=import-error
 
 
 class ResultType(object):
-  """Class enumerating test types."""
-  # The test passed.
-  PASS = 'SUCCESS'
+  """Class enumerating test types.
 
-  # The test was intentionally skipped.
-  SKIP = 'SKIPPED'
-
-  # The test failed.
-  FAIL = 'FAILURE'
-
-  # The test caused the containing process to crash.
-  CRASH = 'CRASH'
-
-  # The test timed out.
-  TIMEOUT = 'TIMEOUT'
-
-  # The test ran, but we couldn't determine what happened.
-  UNKNOWN = 'UNKNOWN'
-
-  # The test did not run.
-  NOTRUN = 'NOTRUN'
+  Wraps the results defined in //build/util/lib/results/.
+  """
+  PASS = result_types.PASS
+  SKIP = result_types.SKIP
+  FAIL = result_types.FAIL
+  CRASH = result_types.CRASH
+  TIMEOUT = result_types.TIMEOUT
+  UNKNOWN = result_types.UNKNOWN
+  NOTRUN = result_types.NOTRUN
 
   @staticmethod
   def GetTypes():
@@ -40,6 +32,7 @@ class ResultType(object):
             ResultType.NOTRUN]
 
 
+@functools.total_ordering
 class BaseTestResult(object):
   """Base class for a single test result."""
 
@@ -66,9 +59,11 @@ class BaseTestResult(object):
   def __repr__(self):
     return self._name
 
-  def __cmp__(self, other):
-    # pylint: disable=W0212
-    return cmp(self._name, other._name)
+  def __eq__(self, other):
+    return self.GetName() == other.GetName()
+
+  def __lt__(self, other):
+    return self.GetName() == other.GetName()
 
   def __hash__(self):
     return hash(self._name)
@@ -141,7 +136,7 @@ class TestRunResults(object):
             log = t.GetLog()
             if log:
               s.append('[%s] %s:' % (test_type, t))
-              s.append(six.text_type(log, 'utf-8'))
+              s.append(log)
       return '\n'.join(s)
 
   def GetGtestForm(self):

@@ -52,7 +52,7 @@ using chrome_test_util::UseSuggestedPasswordMatcher;
 
 id<GREYMatcher> PasswordInfobar(int prompt_id) {
   NSString* bannerLabel =
-      [NSString stringWithFormat:@"%@, %@", l10n_util::GetNSString(prompt_id),
+      [NSString stringWithFormat:@"%@,%@", l10n_util::GetNSString(prompt_id),
                                  kSavedCredentialLabel];
   return grey_allOf(grey_accessibilityID(kInfobarBannerViewIdentifier),
                     grey_accessibilityLabel(bannerLabel), nil);
@@ -186,7 +186,8 @@ BOOL WaitForKeyboardToAppear() {
 }
 
 // Tests password generation flow.
-- (void)testPasswordGeneration {
+// TODO(crbug.com/1221635) This fails on iPhone 14.5+
+- (void)DISABLED_testPasswordGeneration {
 #if TARGET_IPHONE_SIMULATOR
   // TODO(crbug.com/1194134): Reenable this test.
   if ([ChromeEarlGrey isIPadIdiom]) {

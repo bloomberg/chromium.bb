@@ -18,7 +18,10 @@ group("all") {
 
   deps = [ ":host" ]
   if (enable_me2me_host) {
-    deps += [ "//remoting/host:remoting_me2me_host" ]
+    deps += [
+      ":remote_auth",
+      "//remoting/host:remoting_me2me_host",
+    ]
   }
 
   if (is_chrome_branded) {
@@ -33,7 +36,7 @@ group("all") {
       "//remoting/host/it2me:remote_assistance_host",
     ]
 
-    if (enable_me2me_host && !is_win) {
+    if (enable_me2me_host && is_linux) {
       deps += [ "//remoting/host:remote_open_url" ]
     }
   }
@@ -163,6 +166,13 @@ source_set("host_settings") {
     deps += [ "//remoting/host/mac:constants" ]
   }
 }
+source_set("host_extension") {
+  sources = [
+    "client_session_details.h",
+    "host_extension.h",
+    "host_extension_session.h",
+  ]
+}
 
 # This must be a static library instead of a source set because
 # remoting_unittests requires that remoting_me2me_host.cc not be pulled in,
@@ -200,7 +210,6 @@ static_library("common") {
     "chromoting_param_traits_impl.h",
     "client_session.cc",
     "client_session.h",
-    "client_session_details.h",
     "config_file_watcher.cc",
     "config_file_watcher.h",
     "config_watcher.h",
@@ -256,8 +265,6 @@ static_library("common") {
     "host_experiment_session_plugin.cc",
     "host_experiment_session_plugin.h",
     "host_export.h",
-    "host_extension.h",
-    "host_extension_session.h",
     "host_extension_session_manager.cc",
     "host_extension_session_manager.h",
     "host_power_save_blocker.cc",
@@ -324,8 +331,6 @@ static_library("common") {
     "resizing_host_observer.h",
     "resources.h",
     "sas_injector.h",
-    "scoped_url_forwarder.cc",
-    "scoped_url_forwarder.h",
     "screen_controls.h",
     "screen_resolution.cc",
     "screen_resolution.h",
@@ -343,6 +348,10 @@ static_library("common") {
     "token_validator_base.h",
     "token_validator_factory_impl.cc",
     "token_validator_factory_impl.h",
+    "url_forwarder_configurator.cc",
+    "url_forwarder_configurator.h",
+    "url_forwarder_control_message_handler.cc",
+    "url_forwarder_control_message_handler.h",
     "usage_stats_consent.h",
     "xmpp_register_support_host_request.cc",
     "xmpp_register_support_host_request.h",
@@ -399,6 +408,7 @@ static_library("common") {
   ]
 
   public_deps = [
+    ":host_extension",
     "//ipc",
     "//remoting/proto",
     "//remoting/proto/remoting/v1:directory_proto",
@@ -457,13 +467,6 @@ static_library("common") {
     ]
   }
 
-  if (is_linux && !is_chromeos_lacros) {
-    sources += [
-      "pairing_registry_delegate_linux.cc",
-      "pairing_registry_delegate_linux.h",
-    ]
-  }
-
   if (is_linux || is_chromeos) {
     sources += [ "resources_linux.cc" ]
   }
@@ -476,8 +479,12 @@ static_library("common") {
       "curtain_mode_linux.cc",
       "disconnect_window_linux.cc",
       "keyboard_layout_monitor_linux.cc",
-      "scoped_url_forwarder_linux.cc",
-      "scoped_url_forwarder_linux.h",
+      "pairing_registry_delegate_linux.cc",
+      "pairing_registry_delegate_linux.h",
+      "remote_open_url_client.cc",
+      "remote_open_url_client.h",
+      "url_forwarder_configurator_linux.cc",
+      "url_forwarder_configurator_linux.h",
       "xsession_chooser_linux.cc",
     ]
   }
@@ -1036,21 +1043,38 @@ if (enable_me2me_host) {
   }
 }
 
-if (enable_me2me_host && !is_win) {
+if (enable_me2me_host && is_linux) {
   executable("remote_open_url") {
-    sources = [
-      "remote_open_url_client.cc",
-      "remote_open_url_client.h",
-      "remote_open_url_main.cc",
-    ]
+    sources = [ "remote_open_url_main.cc" ]
     deps = [
+      ":common",
       ":host_settings",
       ":logging",
-      ":remote_open_url_support",
+      ":remoting_me2me_host_static",
       "//base",
+      "//base:i18n",
       "//mojo/core/embedder:embedder",
       "//remoting/host/mojom",
+      "//ui/base",
       "//url",
+    ]
+  }
+}
+
+if (enable_me2me_host) {
+  executable("remote_auth") {
+    sources = [
+      "remote_auth_main.cc",
+      "remote_auth_native_messaging_host.cc",
+      "remote_auth_native_messaging_host.h",
+    ]
+
+    deps = [
+      ":logging",
+      "//base",
+      "//extensions/browser/api/messaging:native_messaging",
+      "//mojo/core/embedder:embedder",
+      "//remoting/host/native_messaging",
     ]
   }
 }

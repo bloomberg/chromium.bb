@@ -7,8 +7,8 @@
 #include <memory>
 
 #include "ash/accelerators/accelerator_controller_impl.h"
-#include "ash/accessibility/magnifier/docked_magnifier_controller_impl.h"
-#include "ash/accessibility/magnifier/magnification_controller.h"
+#include "ash/accessibility/magnifier/docked_magnifier_controller.h"
+#include "ash/accessibility/magnifier/fullscreen_magnifier_controller.h"
 #include "ash/shell.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/views/focus/focus_manager.h"
@@ -52,10 +52,10 @@ void PostTargetAcceleratorHandler::OnDidChangeFocus(views::View* focused_before,
     return;
 
   // Note that both magnifiers are mutually exclusive.
-  DockedMagnifierControllerImpl* docked_magnifier =
+  DockedMagnifierController* docked_magnifier =
       Shell::Get()->docked_magnifier_controller();
-  MagnificationController* fullscreen_magnifier =
-      Shell::Get()->magnification_controller();
+  FullscreenMagnifierController* fullscreen_magnifier =
+      Shell::Get()->fullscreen_magnifier_controller();
 
   gfx::Point point_of_interest = bounds_in_screen.CenterPoint();
   const ui::InputMethod* input_method = focused_now->GetInputMethod();

@@ -9,6 +9,8 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -67,7 +69,7 @@ PaymentRequestState::PaymentRequestState(
     autofill::PersonalDataManager* personal_data_manager,
     ContentPaymentRequestDelegate* payment_request_delegate,
     JourneyLogger* journey_logger)
-    : frame_routing_id_(content::GlobalFrameRoutingId(
+    : frame_routing_id_(content::GlobalRenderFrameHostId(
           initiator_render_frame_host->GetProcess()->GetID(),
           initiator_render_frame_host->GetRoutingID())),
       top_origin_(top_level_origin),
@@ -96,9 +98,8 @@ PaymentRequestState::~PaymentRequestState() {}
 
 content::WebContents* PaymentRequestState::GetWebContents() {
   auto* rfh = content::RenderFrameHost::FromID(frame_routing_id_);
-  return rfh && rfh->IsCurrent()
-             ? content::WebContents::FromRenderFrameHost(rfh)
-             : nullptr;
+  return rfh && rfh->IsActive() ? content::WebContents::FromRenderFrameHost(rfh)
+                                : nullptr;
 }
 
 ContentPaymentRequestDelegate* PaymentRequestState::GetPaymentRequestDelegate()
@@ -133,6 +134,11 @@ const url::Origin& PaymentRequestState::GetFrameSecurityOrigin() {
 content::RenderFrameHost* PaymentRequestState::GetInitiatorRenderFrameHost()
     const {
   return content::RenderFrameHost::FromID(frame_routing_id_);
+}
+
+content::GlobalRenderFrameHostId
+PaymentRequestState::GetInitiatorRenderFrameHostId() const {
+  return frame_routing_id_;
 }
 
 const std::vector<mojom::PaymentMethodDataPtr>&

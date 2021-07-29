@@ -278,9 +278,14 @@ CupsPrintersHandler::~CupsPrintersHandler() = default;
 
 void CupsPrintersHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "getCupsPrintersList",
-      base::BindRepeating(&CupsPrintersHandler::HandleGetCupsPrintersList,
+      "getCupsSavedPrintersList",
+      base::BindRepeating(&CupsPrintersHandler::HandleGetCupsSavedPrintersList,
                           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getCupsEnterprisePrintersList",
+      base::BindRepeating(
+          &CupsPrintersHandler::HandleGetCupsEnterprisePrintersList,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "updateCupsPrinter",
       base::BindRepeating(&CupsPrintersHandler::HandleUpdateCupsPrinter,
@@ -365,7 +370,7 @@ void CupsPrintersHandler::SetWebUIForTest(content::WebUI* web_ui) {
   set_web_ui(web_ui);
 }
 
-void CupsPrintersHandler::HandleGetCupsPrintersList(
+void CupsPrintersHandler::HandleGetCupsSavedPrintersList(
     const base::ListValue* args) {
   AllowJavascript();
 
@@ -375,6 +380,20 @@ void CupsPrintersHandler::HandleGetCupsPrintersList(
 
   std::vector<Printer> printers =
       printers_manager_->GetPrinters(PrinterClass::kSaved);
+
+  auto response = BuildCupsPrintersList(printers);
+  ResolveJavascriptCallback(base::Value(callback_id), response);
+}
+
+void CupsPrintersHandler::HandleGetCupsEnterprisePrintersList(
+    const base::ListValue* args) {
+  AllowJavascript();
+
+  CHECK_EQ(1U, args->GetSize());
+  std::string callback_id = args->GetList()[0].GetString();
+
+  std::vector<Printer> printers =
+      printers_manager_->GetPrinters(PrinterClass::kEnterprise);
 
   auto response = BuildCupsPrintersList(printers);
   ResolveJavascriptCallback(base::Value(callback_id), response);
@@ -840,7 +859,7 @@ void CupsPrintersHandler::HandleGetCupsPrinterModels(
   if (manufacturer.empty()) {
     base::DictionaryValue response;
     response.SetBoolean("success", true);
-    response.Set("models", std::make_unique<base::ListValue>());
+    response.SetKey("models", base::ListValue());
     ResolveJavascriptCallback(base::Value(callback_id), response);
     return;
   }
@@ -881,15 +900,15 @@ void CupsPrintersHandler::ResolveManufacturersDone(
     const std::string& callback_id,
     PpdProvider::CallbackResultCode result_code,
     const std::vector<std::string>& manufacturers) {
-  auto manufacturers_value = std::make_unique<base::ListValue>();
+  base::ListValue manufacturers_value;
   if (result_code == PpdProvider::SUCCESS) {
     for (const std::string& manufacturer : manufacturers) {
-      manufacturers_value->Append(manufacturer);
+      manufacturers_value.Append(manufacturer);
     }
   }
   base::DictionaryValue response;
   response.SetBoolean("success", result_code == PpdProvider::SUCCESS);
-  response.Set("manufacturers", std::move(manufacturers_value));
+  response.SetKey("manufacturers", std::move(manufacturers_value));
   ResolveJavascriptCallback(base::Value(callback_id), response);
 }
 
@@ -898,16 +917,16 @@ void CupsPrintersHandler::ResolvePrintersDone(
     const std::string& callback_id,
     PpdProvider::CallbackResultCode result_code,
     const PpdProvider::ResolvedPrintersList& printers) {
-  auto printers_value = std::make_unique<base::ListValue>();
+  base::ListValue printers_value;
   if (result_code == PpdProvider::SUCCESS) {
     resolved_printers_[manufacturer] = printers;
     for (const auto& printer : printers) {
-      printers_value->AppendString(printer.name);
+      printers_value.Append(printer.name);
     }
   }
   base::DictionaryValue response;
   response.SetBoolean("success", result_code == PpdProvider::SUCCESS);
-  response.Set("models", std::move(printers_value));
+  response.SetKey("models", std::move(printers_value));
   ResolveJavascriptCallback(base::Value(callback_id), response);
 }
 
@@ -990,12 +1009,13 @@ void CupsPrintersHandler::OnPrintersChanged(
       break;
     case PrinterClass::kSaved: {
       auto printers_list = BuildCupsPrintersList(printers);
-      FireWebUIListener("on-printers-changed", printers_list);
+      FireWebUIListener("on-saved-printers-changed", printers_list);
       break;
     }
     case PrinterClass::kEnterprise:
-      // These classes are not shown.
-      return;
+      auto enterprise_printers_list = BuildCupsPrintersList(printers);
+      FireWebUIListener("on-enterprise-printers-changed",
+                        enterprise_printers_list);
   }
 }
 

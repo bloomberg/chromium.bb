@@ -4,21 +4,27 @@
 
 #include "chrome/common/privacy_budget/scoped_privacy_budget_config.h"
 
+#include "base/check.h"
+#include "base/metrics/field_trial_params.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/common/privacy_budget/field_trial_param_conversions.h"
 #include "chrome/common/privacy_budget/privacy_budget_features.h"
+#include "chrome/common/privacy_budget/types.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
 #include "third_party/blink/public/common/privacy_budget/identifiable_surface.h"
 
 namespace test {
 
-ScopedPrivacyBudgetConfig::Parameters::Parameters()
-    : per_type_sampling_rate(
-          {{blink::IdentifiableSurface::Type::kCanvasReadback, 1}}) {}
+ScopedPrivacyBudgetConfig::Parameters::Parameters() = default;
 ScopedPrivacyBudgetConfig::Parameters::Parameters(const Parameters&) = default;
 ScopedPrivacyBudgetConfig::Parameters::Parameters(Parameters&&) = default;
 ScopedPrivacyBudgetConfig::Parameters::~Parameters() = default;
 
-ScopedPrivacyBudgetConfig::~ScopedPrivacyBudgetConfig() = default;
+ScopedPrivacyBudgetConfig::~ScopedPrivacyBudgetConfig() {
+  DCHECK(applied_) << "ScopedPrivacyBudgetConfig instance created but not "
+                      "applied. Did you forget to call Apply()?";
+}
+
 ScopedPrivacyBudgetConfig::ScopedPrivacyBudgetConfig() = default;
 
 ScopedPrivacyBudgetConfig::ScopedPrivacyBudgetConfig(
@@ -43,6 +49,8 @@ ScopedPrivacyBudgetConfig::ScopedPrivacyBudgetConfig(Presets presets) {
 
 void ScopedPrivacyBudgetConfig::Apply(const Parameters& parameters) {
   blink::IdentifiabilityStudySettings::ResetStateForTesting();
+  DCHECK(!applied_);
+  applied_ = true;
 
   if (!parameters.enabled) {
     scoped_feature_list_.InitAndDisableFeature(features::kIdentifiabilityStudy);
@@ -74,25 +82,30 @@ void ScopedPrivacyBudgetConfig::Apply(const Parameters& parameters) {
     ftp.insert({features::kIdentifiabilityStudyMaxSurfaces.name,
                 base::NumberToString(parameters.max_surfaces)});
   }
-  if (!parameters.per_surface_selection_rate.empty()) {
-    ftp.insert({features::kIdentifiabilityStudyPerSurfaceSettings.name,
-                EncodeIdentifiabilityFieldTrialParam(
-                    parameters.per_surface_selection_rate)});
-  }
-  if (!parameters.per_type_selection_rate.empty()) {
-    ftp.insert({features::kIdentifiabilityStudyPerTypeSettings.name,
-                EncodeIdentifiabilityFieldTrialParam(
-                    parameters.per_type_selection_rate)});
-  }
   if (!parameters.per_surface_sampling_rate.empty()) {
-    ftp.insert({features::kIdentifiabilityStudyPerSurfaceSampleRates.name,
+    ftp.insert({features::kIdentifiabilityStudyPerSurfaceSettings.name,
                 EncodeIdentifiabilityFieldTrialParam(
                     parameters.per_surface_sampling_rate)});
   }
   if (!parameters.per_type_sampling_rate.empty()) {
-    ftp.insert({features::kIdentifiabilityStudyPerTypeSampleRates.name,
+    ftp.insert({features::kIdentifiabilityStudyPerTypeSettings.name,
                 EncodeIdentifiabilityFieldTrialParam(
                     parameters.per_type_sampling_rate)});
+  }
+  if (!parameters.per_surface_cost.empty()) {
+    ftp.insert(
+        {features::kIdentifiabilityStudyPerHashCost.name,
+         EncodeIdentifiabilityFieldTrialParam(parameters.per_surface_cost)});
+  }
+  if (!parameters.per_type_cost.empty()) {
+    ftp.insert(
+        {features::kIdentifiabilityStudyPerTypeCost.name,
+         EncodeIdentifiabilityFieldTrialParam(parameters.per_type_cost)});
+  }
+  if (!parameters.equivalence_classes.empty()) {
+    ftp.insert(
+        {features::kIdentifiabilityStudySurfaceEquivalenceClasses.name,
+         EncodeIdentifiabilityFieldTrialParam(parameters.equivalence_classes)});
   }
 
   scoped_feature_list_.InitAndEnableFeatureWithParameters(

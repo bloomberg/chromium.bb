@@ -32,6 +32,8 @@ class CONTENT_EXPORT BackForwardCache {
  public:
   // Returns true if BackForwardCache is enabled.
   static bool IsBackForwardCacheFeatureEnabled();
+  // Returns true if BackForwardCache is enabled for same-site navigations.
+  static bool IsSameSiteBackForwardCacheFeatureEnabled();
 
   // Back/forward cache can be disabled from within content and also from
   // embedders. This means we cannot have a unified enum that covers reasons
@@ -85,8 +87,11 @@ class CONTENT_EXPORT BackForwardCache {
   // Helper function to be used when it is not always possible to guarantee the
   // |render_frame_host| to be still alive when this is called. In this case,
   // its |id| can be used.
-  static void DisableForRenderFrameHost(GlobalFrameRoutingId id,
+  static void DisableForRenderFrameHost(GlobalRenderFrameHostId id,
                                         DisabledReason reason);
+  // Clear a previously set `reason` for a `render_frame_host`.
+  static void ClearDisableReasonForRenderFrameHost(GlobalRenderFrameHostId id,
+                                                   DisabledReason reason);
 
   // List of reasons the BackForwardCache was disabled for a specific test. If a
   // test needs to be disabled for a reason not covered below, please add to
@@ -124,6 +129,14 @@ class CONTENT_EXPORT BackForwardCache {
     // load a page that is ineligible for caching (e.g. due to an unsupported
     // feature).
     TEST_USES_UNLOAD_EVENT,
+
+    // This test expects that same-site navigations won't result in a
+    // RenderFrameHost / RenderFrame / RenderView / RenderWidget change.
+    // But when same-site BackForwardCache is enabled, the change usually does
+    // happen. Even so, there will still be valid navigations that don't result
+    // in those objects changing, so we should keep the test as is, just with
+    // BackForwardCache disabled.
+    TEST_ASSUMES_NO_RENDER_FRAME_CHANGE,
   };
 
   // Evict all entries from the BackForwardCache.

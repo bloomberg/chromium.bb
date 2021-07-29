@@ -4,7 +4,11 @@
 
 package org.chromium.components.signin;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
@@ -19,6 +23,7 @@ import android.os.UserManager;
 
 import androidx.test.rule.GrantPermissionRule;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -29,6 +34,7 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.mockito.quality.Strictness;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.util.concurrent.RoboExecutorService;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowAccountManager;
 import org.robolectric.shadows.ShadowUserManager;
@@ -36,9 +42,11 @@ import org.robolectric.shadows.ShadowUserManager;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.UmaRecorder;
 import org.chromium.base.metrics.UmaRecorderHolder;
+import org.chromium.base.task.PostTask;
 import org.chromium.base.task.test.CustomShadowAsyncTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.components.externalauth.ExternalAuthUtils;
+import org.chromium.components.signin.AccountManagerDelegate.CapabilityResponse;
 import org.chromium.components.signin.AccountManagerFacade.ChildAccountStatusListener;
 import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
@@ -85,6 +93,7 @@ public class AccountManagerFacadeImplTest {
 
     @Before
     public void setUp() {
+        PostTask.setPrenativeThreadPoolExecutorForTesting(new RoboExecutorService());
         UmaRecorderHolder.setNonNativeDelegate(mUmaRecorderMock);
         when(mExternalAuthUtilsMock.canUseGooglePlayServices()).thenReturn(true);
         ExternalAuthUtils.setInstanceForTesting(mExternalAuthUtilsMock);
@@ -93,11 +102,16 @@ public class AccountManagerFacadeImplTest {
                 shadowOf((UserManager) mContext.getSystemService(Context.USER_SERVICE));
         mShadowAccountManager = shadowOf(AccountManager.get(mContext));
         ThreadUtils.setThreadAssertsDisabledForTesting(true);
-        mDelegate = new FakeAccountManagerDelegate();
+        mDelegate = spy(new FakeAccountManagerDelegate());
         mFacade = new AccountManagerFacadeImpl(mDelegate);
 
         mFacadeWithSystemDelegate =
                 new AccountManagerFacadeImpl(new SystemAccountManagerDelegate());
+    }
+
+    @After
+    public void tearDown() {
+        PostTask.resetPrenativeThreadPoolExecutorForTesting();
     }
 
     @Test
@@ -123,7 +137,7 @@ public class AccountManagerFacadeImplTest {
     @Test
     public void testCanonicalAccount() {
         addTestAccount("test@gmail.com");
-        List<Account> accounts = mFacade.getGoogleAccounts().get();
+        List<Account> accounts = mFacade.getAccounts().getResult();
 
         Assert.assertNotNull(AccountUtils.findAccountByName(accounts, "test@gmail.com"));
         Assert.assertNotNull(AccountUtils.findAccountByName(accounts, "Test@gmail.com"));
@@ -136,7 +150,7 @@ public class AccountManagerFacadeImplTest {
     @Test
     public void testNonCanonicalAccount() {
         addTestAccount("test.me@gmail.com");
-        List<Account> accounts = mFacade.getGoogleAccounts().get();
+        List<Account> accounts = mFacade.getAccounts().getResult();
 
         Assert.assertNotNull(AccountUtils.findAccountByName(accounts, "test.me@gmail.com"));
         Assert.assertNotNull(AccountUtils.findAccountByName(accounts, "testme@gmail.com"));
@@ -146,39 +160,39 @@ public class AccountManagerFacadeImplTest {
 
     @Test
     public void testGetAccounts() {
-        Assert.assertEquals(List.of(), mFacade.getGoogleAccounts().get());
+        Assert.assertEquals(List.of(), mFacade.getAccounts().getResult());
 
         Account account = addTestAccount("test@gmail.com");
-        Assert.assertEquals(List.of(account), mFacade.getGoogleAccounts().get());
+        Assert.assertEquals(List.of(account), mFacade.getAccounts().getResult());
 
         Account account2 = addTestAccount("test2@gmail.com");
-        Assert.assertEquals(List.of(account, account2), mFacade.getGoogleAccounts().get());
+        Assert.assertEquals(List.of(account, account2), mFacade.getAccounts().getResult());
 
         Account account3 = addTestAccount("test3@gmail.com");
         Assert.assertEquals(
-                List.of(account, account2, account3), mFacade.getGoogleAccounts().get());
+                List.of(account, account2, account3), mFacade.getAccounts().getResult());
 
         removeTestAccount(account2);
-        Assert.assertEquals(List.of(account, account3), mFacade.getGoogleAccounts().get());
+        Assert.assertEquals(List.of(account, account3), mFacade.getAccounts().getResult());
     }
 
     @Test
     public void testGetAccountsWithAccountPattern() {
         setAccountRestrictionPatterns("*@example.com");
         Account account = addTestAccount("test@example.com");
-        Assert.assertEquals(List.of(account), mFacade.getGoogleAccounts().get());
+        Assert.assertEquals(List.of(account), mFacade.getAccounts().getResult());
 
         addTestAccount("test@gmail.com"); // Doesn't match the pattern.
-        Assert.assertEquals(List.of(account), mFacade.getGoogleAccounts().get());
+        Assert.assertEquals(List.of(account), mFacade.getAccounts().getResult());
 
         Account account2 = addTestAccount("test2@example.com");
-        Assert.assertEquals(List.of(account, account2), mFacade.getGoogleAccounts().get());
+        Assert.assertEquals(List.of(account, account2), mFacade.getAccounts().getResult());
 
         addTestAccount("test2@gmail.com"); // Doesn't match the pattern.
-        Assert.assertEquals(List.of(account, account2), mFacade.getGoogleAccounts().get());
+        Assert.assertEquals(List.of(account, account2), mFacade.getAccounts().getResult());
 
         removeTestAccount(account);
-        Assert.assertEquals(List.of(account2), mFacade.getGoogleAccounts().get());
+        Assert.assertEquals(List.of(account2), mFacade.getAccounts().getResult());
     }
 
     @Test
@@ -186,40 +200,40 @@ public class AccountManagerFacadeImplTest {
         setAccountRestrictionPatterns("test1@example.com", "test2@gmail.com");
         addTestAccount("test@gmail.com"); // Doesn't match the pattern.
         addTestAccount("test@example.com"); // Doesn't match the pattern.
-        Assert.assertEquals(List.of(), mFacade.getGoogleAccounts().get());
+        Assert.assertEquals(List.of(), mFacade.getAccounts().getResult());
 
         Account account = addTestAccount("test1@example.com");
-        Assert.assertEquals(List.of(account), mFacade.getGoogleAccounts().get());
+        Assert.assertEquals(List.of(account), mFacade.getAccounts().getResult());
 
         addTestAccount("test2@example.com"); // Doesn't match the pattern.
-        Assert.assertEquals(List.of(account), mFacade.getGoogleAccounts().get());
+        Assert.assertEquals(List.of(account), mFacade.getAccounts().getResult());
 
         Account account2 = addTestAccount("test2@gmail.com");
-        Assert.assertEquals(List.of(account, account2), mFacade.getGoogleAccounts().get());
+        Assert.assertEquals(List.of(account, account2), mFacade.getAccounts().getResult());
     }
 
     @Test
     public void testGetAccountsWithAccountPatternsChange() {
-        Assert.assertEquals(List.of(), mFacade.getGoogleAccounts().get());
+        Assert.assertEquals(List.of(), mFacade.getAccounts().getResult());
 
         Account account = addTestAccount("test@gmail.com");
-        Assert.assertEquals(List.of(account), mFacade.getGoogleAccounts().get());
+        Assert.assertEquals(List.of(account), mFacade.getAccounts().getResult());
 
         Account account2 = addTestAccount("test2@example.com");
-        Assert.assertEquals(List.of(account, account2), mFacade.getGoogleAccounts().get());
+        Assert.assertEquals(List.of(account, account2), mFacade.getAccounts().getResult());
 
         Account account3 = addTestAccount("test3@gmail.com");
         Assert.assertEquals(
-                List.of(account, account2, account3), mFacade.getGoogleAccounts().get());
+                List.of(account, account2, account3), mFacade.getAccounts().getResult());
 
         setAccountRestrictionPatterns("test@gmail.com");
-        Assert.assertEquals(List.of(account), mFacade.getGoogleAccounts().get());
+        Assert.assertEquals(List.of(account), mFacade.getAccounts().getResult());
 
         setAccountRestrictionPatterns("*@example.com", "test3@gmail.com");
-        Assert.assertEquals(List.of(account2, account3), mFacade.getGoogleAccounts().get());
+        Assert.assertEquals(List.of(account2, account3), mFacade.getAccounts().getResult());
 
         removeTestAccount(account3);
-        Assert.assertEquals(List.of(account2), mFacade.getGoogleAccounts().get());
+        Assert.assertEquals(List.of(account2), mFacade.getAccounts().getResult());
     }
 
     @Test
@@ -227,19 +241,19 @@ public class AccountManagerFacadeImplTest {
         final Account account1 = addTestAccount("test1@gmail.com");
         final Account account2 = addTestAccount("testexample2@example.com");
         setAccountRestrictionPatterns("*@example.com");
-        Assert.assertEquals(List.of(account2), mFacade.getGoogleAccounts().get());
+        Assert.assertEquals(List.of(account2), mFacade.getAccounts().getResult());
 
         mShadowUserManager.setApplicationRestrictions(mContext.getPackageName(), new Bundle());
         mContext.sendBroadcast(new Intent(Intent.ACTION_APPLICATION_RESTRICTIONS_CHANGED));
 
-        Assert.assertEquals(List.of(account1, account2), mFacade.getGoogleAccounts().get());
+        Assert.assertEquals(List.of(account1, account2), mFacade.getAccounts().getResult());
     }
 
     @Test
     public void testGetAccountsMultipleMatchingPatterns() {
         setAccountRestrictionPatterns("*@gmail.com", "test@gmail.com");
         Account account = addTestAccount("test@gmail.com"); // Matches both patterns
-        Assert.assertEquals(List.of(account), mFacade.getGoogleAccounts().get());
+        Assert.assertEquals(List.of(account), mFacade.getAccounts().getResult());
     }
 
     @Test
@@ -280,6 +294,44 @@ public class AccountManagerFacadeImplTest {
         mFacadeWithSystemDelegate.checkChildAccountStatus(account, mChildAccountStatusListenerMock);
 
         verify(mChildAccountStatusListenerMock).onStatusReady(ChildAccountStatus.NOT_CHILD);
+    }
+
+    @Test
+    public void testCanOfferExtendedSyncPromosForUnknownAccount() {
+        final Account account = AccountUtils.createAccountFromName("test@gmail.com");
+
+        Assert.assertFalse(mFacade.canOfferExtendedSyncPromos(account).isPresent());
+    }
+
+    @Test
+    public void testAccountCanNotOfferExtendedSyncPromos() {
+        final AccountHolder accountHolder = AccountHolder.createFromEmail("test@gmail.com");
+        mDelegate.addAccount(accountHolder);
+
+        Assert.assertFalse(mFacade.canOfferExtendedSyncPromos(accountHolder.getAccount()).get());
+    }
+
+    @Test
+    public void testAccountCanNotOfferExtendedSyncPromosWhenExceptionCodeReturns() {
+        final AccountHolder accountHolder = AccountHolder.createFromEmail("test@gmail.com");
+        doReturn(CapabilityResponse.EXCEPTION)
+                .when(mDelegate)
+                .hasCapability(eq(accountHolder.getAccount()), any());
+        mDelegate.addAccount(accountHolder);
+
+        Assert.assertFalse(mFacade.canOfferExtendedSyncPromos(accountHolder.getAccount()).get());
+    }
+
+    @Test
+    public void testAccountCanOfferExtendedSyncPromos() {
+        final AccountHolder accountHolder1 = AccountHolder.createFromEmail("test1@gmail.com");
+        mDelegate.addAccount(accountHolder1);
+        final AccountHolder accountHolder2 = AccountHolder.createFromEmailAndFeatures(
+                "test2@gmail.com", AccountManagerFacadeImpl.CAN_OFFER_EXTENDED_CHROME_SYNC_PROMOS);
+        mDelegate.addAccount(accountHolder2);
+
+        Assert.assertFalse(mFacade.canOfferExtendedSyncPromos(accountHolder1.getAccount()).get());
+        Assert.assertTrue(mFacade.canOfferExtendedSyncPromos(accountHolder2.getAccount()).get());
     }
 
     @Test

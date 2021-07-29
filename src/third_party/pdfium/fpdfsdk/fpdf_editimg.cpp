@@ -135,28 +135,6 @@ FPDFImageObj_LoadJpegFileInline(FPDF_PAGE* pages,
 }
 
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
-FPDFImageObj_GetMatrix(FPDF_PAGEOBJECT image_object,
-                       double* a,
-                       double* b,
-                       double* c,
-                       double* d,
-                       double* e,
-                       double* f) {
-  CPDF_ImageObject* pImgObj = CPDFImageObjectFromFPDFPageObject(image_object);
-  if (!pImgObj || !a || !b || !c || !d || !e || !f)
-    return false;
-
-  const CFX_Matrix& matrix = pImgObj->matrix();
-  *a = matrix.a;
-  *b = matrix.b;
-  *c = matrix.c;
-  *d = matrix.d;
-  *e = matrix.e;
-  *f = matrix.f;
-  return true;
-}
-
-FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
 FPDFImageObj_SetMatrix(FPDF_PAGEOBJECT image_object,
                        double a,
                        double b,
@@ -168,10 +146,9 @@ FPDFImageObj_SetMatrix(FPDF_PAGEOBJECT image_object,
   if (!pImgObj)
     return false;
 
-  pImgObj->set_matrix(CFX_Matrix(static_cast<float>(a), static_cast<float>(b),
-                                 static_cast<float>(c), static_cast<float>(d),
-                                 static_cast<float>(e), static_cast<float>(f)));
-  pImgObj->CalcBoundingBox();
+  pImgObj->SetImageMatrix(CFX_Matrix(
+      static_cast<float>(a), static_cast<float>(b), static_cast<float>(c),
+      static_cast<float>(d), static_cast<float>(e), static_cast<float>(f)));
   pImgObj->SetDirty(true);
   return true;
 }

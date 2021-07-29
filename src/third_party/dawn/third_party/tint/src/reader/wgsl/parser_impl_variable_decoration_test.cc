@@ -108,12 +108,9 @@ INSTANTIATE_TEST_SUITE_P(
     BuiltinTest,
     testing::Values(
         BuiltinData{"position", ast::Builtin::kPosition},
-        BuiltinData{"vertex_idx", ast::Builtin::kVertexIndex},
         BuiltinData{"vertex_index", ast::Builtin::kVertexIndex},
-        BuiltinData{"instance_idx", ast::Builtin::kInstanceIndex},
         BuiltinData{"instance_index", ast::Builtin::kInstanceIndex},
         BuiltinData{"front_facing", ast::Builtin::kFrontFacing},
-        BuiltinData{"frag_coord", ast::Builtin::kFragCoord},
         BuiltinData{"frag_depth", ast::Builtin::kFragDepth},
         BuiltinData{"local_invocation_id", ast::Builtin::kLocalInvocationId},
         BuiltinData{"local_invocation_idx",
@@ -123,9 +120,7 @@ INSTANTIATE_TEST_SUITE_P(
         BuiltinData{"global_invocation_id", ast::Builtin::kGlobalInvocationId},
         BuiltinData{"workgroup_id", ast::Builtin::kWorkgroupId},
         BuiltinData{"sample_index", ast::Builtin::kSampleIndex},
-        BuiltinData{"sample_mask", ast::Builtin::kSampleMask},
-        BuiltinData{"sample_mask_in", ast::Builtin::kSampleMaskIn},
-        BuiltinData{"sample_mask_out", ast::Builtin::kSampleMaskOut}));
+        BuiltinData{"sample_mask", ast::Builtin::kSampleMask}));
 
 TEST_F(ParserImplTest, Decoration_Builtin_MissingLeftParen) {
   auto p = parser("builtin position)");
@@ -175,6 +170,130 @@ TEST_F(ParserImplTest, Decoration_Builtin_MissingInvalid) {
   EXPECT_EQ(deco.value, nullptr);
   EXPECT_TRUE(p->has_error());
   EXPECT_EQ(p->error(), "1:9: expected identifier for builtin");
+}
+
+TEST_F(ParserImplTest, Decoration_Interpolate_Flat) {
+  auto p = parser("interpolate(flat)");
+  auto deco = p->decoration();
+  EXPECT_TRUE(deco.matched);
+  EXPECT_FALSE(deco.errored);
+  ASSERT_NE(deco.value, nullptr);
+  auto* var_deco = deco.value->As<ast::Decoration>();
+  ASSERT_NE(var_deco, nullptr);
+  ASSERT_FALSE(p->has_error());
+  ASSERT_TRUE(var_deco->Is<ast::InterpolateDecoration>());
+
+  auto* interp = var_deco->As<ast::InterpolateDecoration>();
+  EXPECT_EQ(interp->type(), ast::InterpolationType::kFlat);
+  EXPECT_EQ(interp->sampling(), ast::InterpolationSampling::kNone);
+}
+
+TEST_F(ParserImplTest, Decoration_Interpolate_Perspective_Center) {
+  auto p = parser("interpolate(perspective, center)");
+  auto deco = p->decoration();
+  EXPECT_TRUE(deco.matched);
+  EXPECT_FALSE(deco.errored);
+  ASSERT_NE(deco.value, nullptr);
+  auto* var_deco = deco.value->As<ast::Decoration>();
+  ASSERT_NE(var_deco, nullptr);
+  ASSERT_FALSE(p->has_error());
+  ASSERT_TRUE(var_deco->Is<ast::InterpolateDecoration>());
+
+  auto* interp = var_deco->As<ast::InterpolateDecoration>();
+  EXPECT_EQ(interp->type(), ast::InterpolationType::kPerspective);
+  EXPECT_EQ(interp->sampling(), ast::InterpolationSampling::kCenter);
+}
+
+TEST_F(ParserImplTest, Decoration_Interpolate_Perspective_Centroid) {
+  auto p = parser("interpolate(perspective, centroid)");
+  auto deco = p->decoration();
+  EXPECT_TRUE(deco.matched);
+  EXPECT_FALSE(deco.errored);
+  ASSERT_NE(deco.value, nullptr);
+  auto* var_deco = deco.value->As<ast::Decoration>();
+  ASSERT_NE(var_deco, nullptr);
+  ASSERT_FALSE(p->has_error());
+  ASSERT_TRUE(var_deco->Is<ast::InterpolateDecoration>());
+
+  auto* interp = var_deco->As<ast::InterpolateDecoration>();
+  EXPECT_EQ(interp->type(), ast::InterpolationType::kPerspective);
+  EXPECT_EQ(interp->sampling(), ast::InterpolationSampling::kCentroid);
+}
+
+TEST_F(ParserImplTest, Decoration_Interpolate_Linear_Sample) {
+  auto p = parser("interpolate(linear, sample)");
+  auto deco = p->decoration();
+  EXPECT_TRUE(deco.matched);
+  EXPECT_FALSE(deco.errored);
+  ASSERT_NE(deco.value, nullptr);
+  auto* var_deco = deco.value->As<ast::Decoration>();
+  ASSERT_NE(var_deco, nullptr);
+  ASSERT_FALSE(p->has_error());
+  ASSERT_TRUE(var_deco->Is<ast::InterpolateDecoration>());
+
+  auto* interp = var_deco->As<ast::InterpolateDecoration>();
+  EXPECT_EQ(interp->type(), ast::InterpolationType::kLinear);
+  EXPECT_EQ(interp->sampling(), ast::InterpolationSampling::kSample);
+}
+
+TEST_F(ParserImplTest, Decoration_Interpolate_MissingLeftParen) {
+  auto p = parser("interpolate flat)");
+  auto deco = p->decoration();
+  EXPECT_FALSE(deco.matched);
+  EXPECT_TRUE(deco.errored);
+  EXPECT_EQ(deco.value, nullptr);
+  EXPECT_TRUE(p->has_error());
+  EXPECT_EQ(p->error(), "1:13: expected '(' for interpolate decoration");
+}
+
+TEST_F(ParserImplTest, Decoration_Interpolate_MissingRightParen) {
+  auto p = parser("interpolate(flat");
+  auto deco = p->decoration();
+  EXPECT_FALSE(deco.matched);
+  EXPECT_TRUE(deco.errored);
+  EXPECT_EQ(deco.value, nullptr);
+  EXPECT_TRUE(p->has_error());
+  EXPECT_EQ(p->error(), "1:17: expected ')' for interpolate decoration");
+}
+
+TEST_F(ParserImplTest, Decoration_Interpolate_MissingFirstValue) {
+  auto p = parser("interpolate()");
+  auto deco = p->decoration();
+  EXPECT_FALSE(deco.matched);
+  EXPECT_TRUE(deco.errored);
+  EXPECT_EQ(deco.value, nullptr);
+  EXPECT_TRUE(p->has_error());
+  EXPECT_EQ(p->error(), "1:13: invalid interpolation type");
+}
+
+TEST_F(ParserImplTest, Decoration_Interpolate_InvalidFirstValue) {
+  auto p = parser("interpolate(other_thingy)");
+  auto deco = p->decoration();
+  EXPECT_FALSE(deco.matched);
+  EXPECT_TRUE(deco.errored);
+  EXPECT_EQ(deco.value, nullptr);
+  EXPECT_TRUE(p->has_error());
+  EXPECT_EQ(p->error(), "1:13: invalid interpolation type");
+}
+
+TEST_F(ParserImplTest, Decoration_Interpolate_MissingSecondValue) {
+  auto p = parser("interpolate(perspective,)");
+  auto deco = p->decoration();
+  EXPECT_FALSE(deco.matched);
+  EXPECT_TRUE(deco.errored);
+  EXPECT_EQ(deco.value, nullptr);
+  EXPECT_TRUE(p->has_error());
+  EXPECT_EQ(p->error(), "1:25: invalid interpolation sampling");
+}
+
+TEST_F(ParserImplTest, Decoration_Interpolate_InvalidSecondValue) {
+  auto p = parser("interpolate(perspective, nope)");
+  auto deco = p->decoration();
+  EXPECT_FALSE(deco.matched);
+  EXPECT_TRUE(deco.errored);
+  EXPECT_EQ(deco.value, nullptr);
+  EXPECT_TRUE(p->has_error());
+  EXPECT_EQ(p->error(), "1:26: invalid interpolation sampling");
 }
 
 TEST_F(ParserImplTest, Decoration_Binding) {
@@ -234,22 +353,6 @@ TEST_F(ParserImplTest, Decoration_Binding_MissingInvalid) {
             "1:9: expected signed integer literal for binding decoration");
 }
 
-// DEPRECATED
-TEST_F(ParserImplTest, Decoration_set) {
-  auto p = parser("set(4)");
-  auto deco = p->decoration();
-  EXPECT_TRUE(deco.matched);
-  EXPECT_FALSE(deco.errored);
-  ASSERT_NE(deco.value, nullptr);
-  auto* var_deco = deco.value->As<ast::Decoration>();
-  ASSERT_FALSE(p->has_error());
-  ASSERT_NE(var_deco, nullptr);
-  ASSERT_TRUE(var_deco->Is<ast::GroupDecoration>());
-
-  auto* group = var_deco->As<ast::GroupDecoration>();
-  EXPECT_EQ(group->value(), 4u);
-}
-
 TEST_F(ParserImplTest, Decoration_group) {
   auto p = parser("group(4)");
   auto deco = p->decoration();
@@ -305,72 +408,6 @@ TEST_F(ParserImplTest, Decoration_Group_MissingInvalid) {
   EXPECT_TRUE(p->has_error());
   EXPECT_EQ(p->error(),
             "1:7: expected signed integer literal for group decoration");
-}
-
-TEST_F(ParserImplTest, Decoration_FragCoord_Deprecated) {
-  auto p = parser("builtin(frag_coord)");
-  auto deco = p->decoration();
-  EXPECT_TRUE(deco.matched);
-  EXPECT_FALSE(deco.errored);
-  ASSERT_NE(deco.value, nullptr);
-  auto* var_deco = deco.value->As<ast::Decoration>();
-  ASSERT_NE(var_deco, nullptr);
-  ASSERT_FALSE(p->has_error());
-  ASSERT_TRUE(var_deco->Is<ast::BuiltinDecoration>());
-
-  auto* builtin = var_deco->As<ast::BuiltinDecoration>();
-  EXPECT_EQ(builtin->value(), ast::Builtin::kFragCoord);
-
-  EXPECT_EQ(
-      p->builder().Diagnostics().str(),
-      R"(test.wgsl:1:9 warning: use of deprecated language feature: use 'position' instead of 'frag_coord'
-builtin(frag_coord)
-        ^^^^^^^^^^
-)");
-}
-
-TEST_F(ParserImplTest, Decoration_SampleMaskIn_Deprecated) {
-  auto p = parser("builtin(sample_mask_in)");
-  auto deco = p->decoration();
-  EXPECT_TRUE(deco.matched);
-  EXPECT_FALSE(deco.errored);
-  ASSERT_NE(deco.value, nullptr);
-  auto* var_deco = deco.value->As<ast::Decoration>();
-  ASSERT_NE(var_deco, nullptr);
-  ASSERT_FALSE(p->has_error());
-  ASSERT_TRUE(var_deco->Is<ast::BuiltinDecoration>());
-
-  auto* builtin = var_deco->As<ast::BuiltinDecoration>();
-  EXPECT_EQ(builtin->value(), ast::Builtin::kSampleMaskIn);
-
-  EXPECT_EQ(
-      p->builder().Diagnostics().str(),
-      R"(test.wgsl:1:9 warning: use of deprecated language feature: use 'sample_mask' instead of 'sample_mask_in'
-builtin(sample_mask_in)
-        ^^^^^^^^^^^^^^
-)");
-}
-
-TEST_F(ParserImplTest, Decoration_SampleMaskOut_Deprecated) {
-  auto p = parser("builtin(sample_mask_out)");
-  auto deco = p->decoration();
-  EXPECT_TRUE(deco.matched);
-  EXPECT_FALSE(deco.errored);
-  ASSERT_NE(deco.value, nullptr);
-  auto* var_deco = deco.value->As<ast::Decoration>();
-  ASSERT_NE(var_deco, nullptr);
-  ASSERT_FALSE(p->has_error());
-  ASSERT_TRUE(var_deco->Is<ast::BuiltinDecoration>());
-
-  auto* builtin = var_deco->As<ast::BuiltinDecoration>();
-  EXPECT_EQ(builtin->value(), ast::Builtin::kSampleMaskOut);
-
-  EXPECT_EQ(
-      p->builder().Diagnostics().str(),
-      R"(test.wgsl:1:9 warning: use of deprecated language feature: use 'sample_mask' instead of 'sample_mask_out'
-builtin(sample_mask_out)
-        ^^^^^^^^^^^^^^^
-)");
 }
 
 }  // namespace

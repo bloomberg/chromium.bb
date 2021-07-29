@@ -38,7 +38,7 @@
 #include "base/system/sys_info.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
-#include "chrome/browser/ash/crosapi/browser_data_migrator.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/ash/crosapi/browser_loader.h"
 #include "chrome/browser/ash/crosapi/browser_service_host_ash.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
@@ -89,6 +89,15 @@ constexpr uint32_t kGetActiveTabUrlMinVersion = 8;
 const char kLacrosCannotLaunchNotificationID[] =
     "lacros_cannot_launch_notification_id";
 const char kLacrosLauncherNotifierID[] = "lacros_launcher";
+
+// To be sure the lacros is running with neutral priority
+class ThreadPriorityDelegate : public base::LaunchOptions::PreExecDelegate {
+ public:
+  void RunAsyncSafe() override {
+    base::PlatformThread::SetCurrentThreadPriority(
+        base::ThreadPriority::NORMAL);
+  }
+};
 
 base::FilePath LacrosLogPath() {
   return browser_util::GetUserDataDir().Append("lacros.log");
@@ -189,6 +198,18 @@ bool GetLaunchOnLoginPref() {
 
 }  // namespace
 
+// To be sure the lacros is running with neutral priority.
+class LacrosThreadPriorityDelegate
+    : public base::LaunchOptions::PreExecDelegate {
+ public:
+  void RunAsyncSafe() override {
+    // SetCurrentThreadPriority() needs file I/O on /proc and /sys.
+    base::ScopedAllowBlocking allow_blocking;
+    base::PlatformThread::SetCurrentThreadPriority(
+        base::ThreadPriority::NORMAL);
+  }
+};
+
 // static
 BrowserManager* BrowserManager::Get() {
   return g_instance;
@@ -247,7 +268,7 @@ BrowserManager::~BrowserManager() {
 }
 
 bool BrowserManager::IsReady() const {
-  return state_ != State::NOT_INITIALIZED && state_ != State::LOADING &&
+  return state_ != State::NOT_INITIALIZED && state_ != State::MOUNTING &&
          state_ != State::UNAVAILABLE;
 }
 
@@ -450,6 +471,8 @@ void BrowserManager::Start(mojom::InitialBrowserAction initial_browser_action) {
   // Ensure we're not trying to open a window before the shelf is initialized.
   DCHECK(ChromeShelfController::instance());
 
+  // Always reset |relaunch_requested_| when launching Lacros.
+  relaunch_requested_ = false;
   SetState(State::CREATING_LOG_FILE);
 
   // TODO(ythjkt): After M92 cherry-pick, clean up the following code by moving
@@ -459,14 +482,7 @@ void BrowserManager::Start(mojom::InitialBrowserAction initial_browser_action) {
           ProfileManager::GetPrimaryUserProfile());
   // Check if user data directory needs to be wiped for a backward incompatible
   // update.
-  base::Version data_version = crosapi::browser_util::GetDataVer(
-      g_browser_process->local_state(), user_id_hash);
-  base::Version current_version = version_info::GetVersion();
-  base::Version required_version =
-      base::Version(base::StringPiece(ash::kRequiredDataVersion));
-
-  bool cleared_user_data_dir = !ash::BrowserDataMigrator::IsDataWipeRequired(
-      data_version, current_version, required_version);
+  bool cleared_user_data_dir = !browser_util::IsDataWipeRequired(user_id_hash);
 
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock()},
@@ -590,15 +606,11 @@ void BrowserManager::StartWithLogFile(
   LOG(WARNING) << "Launching lacros with command: "
                << command_line.GetCommandLineString();
 
-  // Prepare to invite lacros-chrome to the Mojo universe of Crosapi.
-  mojo::PlatformChannel legacy_channel;
-  legacy_channel.PrepareToPassRemoteEndpoint(&options, &command_line);
-  DCHECK(!legacy_crosapi_id_.has_value());
-  legacy_crosapi_id_ = CrosapiManager::Get()->SendLegacyInvitation(
-      legacy_channel.TakeLocalEndpoint(), base::BindOnce([]() {
-        LOG(WARNING) << "Legacy Crosapi Channel disconnected";
-      }));
+  // Lacros-chrome starts with NORMAL priority
+  LacrosThreadPriorityDelegate thread_priority_delegate;
+  options.pre_exec_delegate = &thread_priority_delegate;
 
+  // Prepare to invite lacros-chrome to the Mojo universe of Crosapi.
   mojo::PlatformChannel channel;
   std::string channel_flag_value;
   channel.PrepareToPassRemoteEndpoint(&options.fds_to_remap,
@@ -608,16 +620,14 @@ void BrowserManager::StartWithLogFile(
                                  channel_flag_value);
   DCHECK(!crosapi_id_.has_value());
   // Use new Crosapi mojo connection to detect process termination always.
-  // If lacros-chrome is old, the channel will be left and unused,
-  // but on process termination, the socket will be closed, so the
-  // disconnect_handler should be called. Note that, in that case, we should
-  // carefully NOT send any messages via new Crosapi intefaces and its sub
-  // interfaces, but instead, we should use the ones initiated by
-  // SendLegacyInvitation just above.
   crosapi_id_ = CrosapiManager::Get()->SendInvitation(
       channel.TakeLocalEndpoint(),
       base::BindOnce(&BrowserManager::OnMojoDisconnected,
                      weak_factory_.GetWeakPtr()));
+
+  // Append a fake switch for backward compatibility.
+  // TODO(crbug.com/1188020): Remove this after M93 Lacros is spread enough.
+  command_line.AppendSwitchASCII(mojo::PlatformChannel::kHandleSwitch, "-1");
 
   // Create the lacros-chrome subprocess.
   base::RecordAction(base::UserMetricsAction("Lacros.Launch"));
@@ -632,7 +642,6 @@ void BrowserManager::StartWithLogFile(
   }
   SetState(State::STARTING);
   LOG(WARNING) << "Launched lacros-chrome with pid " << lacros_process_.Pid();
-  legacy_channel.RemoteProcessLaunchAttempted();
   channel.RemoteProcessLaunchAttempted();
 }
 
@@ -670,6 +679,12 @@ void BrowserManager::OnBrowserServiceDisconnected(
     browser_service_.reset();
 }
 
+void BrowserManager::OnBrowserRelaunchRequested(CrosapiId id) {
+  if (id != crosapi_id_)
+    return;
+  relaunch_requested_ = true;
+}
+
 void BrowserManager::OnMojoDisconnected() {
   DCHECK(state_ == State::STARTING || state_ == State::RUNNING);
   LOG(WARNING)
@@ -694,6 +709,9 @@ void BrowserManager::OnLacrosChromeTerminated() {
   // TODO(https://crbug.com/1109366): Restart lacros-chrome if it exits
   // abnormally (e.g. crashes). For now, assume the user meant to close it.
   SetLaunchOnLoginPref(false);
+
+  if (relaunch_requested_)
+    Start(mojom::InitialBrowserAction::kRestoreLastSession);
 }
 
 void BrowserManager::OnSessionStateChanged() {
@@ -720,7 +738,7 @@ void BrowserManager::OnSessionStateChanged() {
 
   // Must be checked after user session start because it depends on user type.
   if (browser_util::IsLacrosEnabled()) {
-    SetState(State::LOADING);
+    SetState(State::MOUNTING);
     browser_loader_->Load(base::BindOnce(&BrowserManager::OnLoadComplete,
                                          weak_factory_.GetWeakPtr()));
   } else {
@@ -730,7 +748,7 @@ void BrowserManager::OnSessionStateChanged() {
 }
 
 void BrowserManager::OnLoadComplete(const base::FilePath& path) {
-  DCHECK_EQ(state_, State::LOADING);
+  DCHECK_EQ(state_, State::MOUNTING);
 
   lacros_path_ = path;
   SetState(path.empty() ? State::UNAVAILABLE : State::STOPPED);

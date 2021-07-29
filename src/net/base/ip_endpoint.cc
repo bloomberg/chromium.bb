@@ -4,6 +4,8 @@
 
 #include "net/base/ip_endpoint.h"
 
+#include <ostream>
+
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
@@ -22,6 +24,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_byteorder.h"
 #include "net/base/ip_address.h"
+#include "net/base/sys_addrinfo.h"
 
 #if defined(OS_WIN)
 #include "net/base/winsock_util.h"

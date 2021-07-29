@@ -432,7 +432,6 @@ static av_cold int libopus_encode_init(AVCodecContext *avctx)
 
 fail:
     opus_multistream_encoder_destroy(enc);
-    av_freep(&avctx->extradata);
     return ret;
 }
 
@@ -538,7 +537,6 @@ static av_cold int libopus_encode_close(AVCodecContext *avctx)
     ff_af_queue_close(&opus->afq);
 
     av_freep(&opus->samples);
-    av_freep(&avctx->extradata);
 
     return 0;
 }
@@ -581,7 +579,7 @@ static const int libopus_sample_rates[] = {
     48000, 24000, 16000, 12000, 8000, 0,
 };
 
-AVCodec ff_libopus_encoder = {
+const AVCodec ff_libopus_encoder = {
     .name            = "libopus",
     .long_name       = NULL_IF_CONFIG_SMALL("libopus Opus"),
     .type            = AVMEDIA_TYPE_AUDIO,

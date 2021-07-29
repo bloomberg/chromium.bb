@@ -6,6 +6,7 @@
 #define GPU_COMMAND_BUFFER_SERVICE_SHARED_IMAGE_FACTORY_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/containers/flat_set.h"
 #include "base/memory/scoped_refptr.h"
@@ -26,24 +27,19 @@ class VulkanContextProvider;
 }  // namespace viz
 
 namespace gpu {
-class ExternalVkImageFactory;
 class GpuDriverBugWorkarounds;
 class ImageFactory;
 class MailboxManager;
 class MemoryTracker;
 class SharedContextState;
 class SharedImageBackingFactory;
-class SharedImageBackingFactoryGLTexture;
+class SharedImageBackingFactoryD3D;
 struct GpuFeatureInfo;
 struct GpuPreferences;
 
 #if defined(OS_FUCHSIA)
 class SysmemBufferCollection;
 #endif  // OS_FUCHSIA
-
-namespace raster {
-class WrappedSkImageFactory;
-}  // namespace raster
 
 // TODO(ericrk): Make this a very thin wrapper around SharedImageManager like
 // SharedImageRepresentationFactory.
@@ -58,7 +54,8 @@ class GPU_GLES2_EXPORT SharedImageFactory {
                      SharedImageManager* manager,
                      ImageFactory* image_factory,
                      MemoryTracker* tracker,
-                     bool enable_wrapped_sk_image);
+                     bool enable_wrapped_sk_image,
+                     bool is_for_display_compositor);
   ~SharedImageFactory();
 
   bool CreateSharedImage(const Mailbox& mailbox,
@@ -149,17 +146,21 @@ class GPU_GLES2_EXPORT SharedImageFactory {
 
  private:
   bool IsSharedBetweenThreads(uint32_t usage);
-  bool CanUseWrappedSkImage(uint32_t usage) const;
   SharedImageBackingFactory* GetFactoryByUsage(
       uint32_t usage,
       viz::ResourceFormat format,
       bool* allow_legacy_mailbox,
+      bool is_pixel_used,
       gfx::GpuMemoryBufferType gmb_type = gfx::EMPTY_BUFFER);
 
   MailboxManager* mailbox_manager_;
   SharedImageManager* shared_image_manager_;
   SharedContextState* shared_context_state_;
   std::unique_ptr<MemoryTypeTracker> memory_tracker_;
+
+  // This is used if the factory is created on display compositor to check for
+  // sharing between threads.
+  const bool is_for_display_compositor_;
 
   // This is |shared_context_state_|'s context type. Some tests leave
   // |shared_context_state_| as nullptr, in which case this is set to a default
@@ -171,23 +172,14 @@ class GPU_GLES2_EXPORT SharedImageFactory {
   base::flat_set<std::unique_ptr<SharedImageRepresentationFactoryRef>>
       shared_images_;
 
-  // TODO(ericrk): This should be some sort of map from usage to factory
-  // eventually.
-  std::unique_ptr<SharedImageBackingFactoryGLTexture> gl_backing_factory_;
+  // Array of all the backing factories to choose from for creating shared
+  // images.
+  std::vector<std::unique_ptr<SharedImageBackingFactory>> factories_;
 
-  // Used for creating shared image which can be shared between GL, Vulkan and
-  // D3D12.
-  std::unique_ptr<SharedImageBackingFactory> interop_backing_factory_;
-
-#if defined(OS_ANDROID)
-  // On android we have two interop factory which is |interop_backing_factory_|
-  // and |external_vk_image_factory_| and we choose one of those
-  // based on the format it supports.
-  std::unique_ptr<ExternalVkImageFactory> external_vk_image_factory_;
+#if defined(OS_WIN)
+  // Used for creating swap chains
+  SharedImageBackingFactoryD3D* d3d_backing_factory_ = nullptr;
 #endif
-
-  // Non-null if compositing with SkiaRenderer.
-  std::unique_ptr<raster::WrappedSkImageFactory> wrapped_sk_image_factory_;
 
 #if defined(OS_FUCHSIA)
   viz::VulkanContextProvider* vulkan_context_provider_;
@@ -218,7 +210,8 @@ class GPU_GLES2_EXPORT SharedImageRepresentationFactory {
       scoped_refptr<SharedContextState> context_State);
   std::unique_ptr<SharedImageRepresentationDawn> ProduceDawn(
       const Mailbox& mailbox,
-      WGPUDevice device);
+      WGPUDevice device,
+      WGPUBackendType backend_type);
   std::unique_ptr<SharedImageRepresentationOverlay> ProduceOverlay(
       const Mailbox& mailbox);
   std::unique_ptr<SharedImageRepresentationMemory> ProduceMemory(

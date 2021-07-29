@@ -1,6 +1,5 @@
 export const description = `vertexState validation tests.`;
 
-import { params, pbool, poptions } from '../../../common/framework/params_builder.js';
 import { makeTestGroup } from '../../../common/framework/test_group.js';
 import {
   kMaxVertexAttributes,
@@ -145,10 +144,10 @@ g.test('max_vertex_buffer_limit')
    - Tests with the last buffer having an attribute or not.
   This also happens to test that vertex buffers with no attributes are allowed and that a vertex state with no buffers is allowed.`
   )
-  .subcases(() =>
-    params()
-      .combine(poptions('count', [0, 1, kMaxVertexBuffers, kMaxVertexBuffers + 1]))
-      .combine(pbool('lastEmpty'))
+  .paramsSubcasesOnly(u =>
+    u //
+      .combine('count', [0, 1, kMaxVertexBuffers, kMaxVertexBuffers + 1])
+      .combine('lastEmpty', [false, true])
   )
   .fn(t => {
     const { count, lastEmpty } = t.params;
@@ -175,10 +174,10 @@ g.test('max_vertex_attribute_limit')
    - Tests with 0, 1, limit, limits + 1 vertex attribute.
    - Tests with 0, 1, 4 attributes per buffer (with remaining attributes in the last buffer).`
   )
-  .subcases(() =>
-    params()
-      .combine(poptions('attribCount', [0, 1, kMaxVertexAttributes, kMaxVertexAttributes + 1]))
-      .combine(poptions('attribsPerBuffer', [0, 1, 4]))
+  .paramsSubcasesOnly(u =>
+    u //
+      .combine('attribCount', [0, 1, kMaxVertexAttributes, kMaxVertexAttributes + 1])
+      .combine('attribsPerBuffer', [0, 1, 4])
   )
   .fn(t => {
     const { attribCount, attribsPerBuffer } = t.params;
@@ -212,19 +211,17 @@ g.test('max_vertex_buffer_array_stride_limit')
    - Test for various vertex buffer indices
    - Test for array strides 0, 4, 256, limit - 4, limit, limit + 4`
   )
-  .subcases(() =>
-    params()
-      .combine(poptions('vertexBufferIndex', [0, 1, kMaxVertexBuffers - 1]))
-      .combine(
-        poptions('arrayStride', [
-          0,
-          4,
-          256,
-          kMaxVertexBufferArrayStride - 4,
-          kMaxVertexBufferArrayStride,
-          kMaxVertexBufferArrayStride + 4,
-        ])
-      )
+  .paramsSubcasesOnly(u =>
+    u //
+      .combine('vertexBufferIndex', [0, 1, kMaxVertexBuffers - 1])
+      .combine('arrayStride', [
+        0,
+        4,
+        256,
+        kMaxVertexBufferArrayStride - 4,
+        kMaxVertexBufferArrayStride,
+        kMaxVertexBufferArrayStride + 4,
+      ])
   )
   .fn(t => {
     const { vertexBufferIndex, arrayStride } = t.params;
@@ -242,20 +239,18 @@ g.test('vertex_buffer_array_stride_limit_alignment')
    - Test for various vertex buffer indices
    - Test for array strides 0, 1, 2, 4, limit - 4, limit - 2, limit`
   )
-  .subcases(() =>
-    params()
-      .combine(poptions('vertexBufferIndex', [0, 1, kMaxVertexBuffers - 1]))
-      .combine(
-        poptions('arrayStride', [
-          0,
-          1,
-          2,
-          4,
-          kMaxVertexBufferArrayStride - 4,
-          kMaxVertexBufferArrayStride - 2,
-          kMaxVertexBufferArrayStride,
-        ])
-      )
+  .paramsSubcasesOnly(u =>
+    u //
+      .combine('vertexBufferIndex', [0, 1, kMaxVertexBuffers - 1])
+      .combine('arrayStride', [
+        0,
+        1,
+        2,
+        4,
+        kMaxVertexBufferArrayStride - 4,
+        kMaxVertexBufferArrayStride - 2,
+        kMaxVertexBufferArrayStride,
+      ])
   )
   .fn(t => {
     const { vertexBufferIndex, arrayStride } = t.params;
@@ -274,14 +269,12 @@ g.test('vertex_attribute_shaderLocation_limit')
    - Test for various amounts of attributes in that vertex buffer
    - Test for shaderLocation 0, 1, limit - 1, limit`
   )
-  .subcases(() =>
-    params()
-      .combine(poptions('vertexBufferIndex', [0, 1, kMaxVertexBuffers - 1]))
-      .combine(poptions('extraAttributeCount', [0, 1, kMaxVertexAttributes - 1]))
-      .combine(pbool('testAttributeAtStart'))
-      .combine(
-        poptions('testShaderLocation', [0, 1, kMaxVertexAttributes - 1, kMaxVertexAttributes])
-      )
+  .paramsSubcasesOnly(u =>
+    u //
+      .combine('vertexBufferIndex', [0, 1, kMaxVertexBuffers - 1])
+      .combine('extraAttributeCount', [0, 1, kMaxVertexAttributes - 1])
+      .combine('testAttributeAtStart', [false, true])
+      .combine('testShaderLocation', [0, 1, kMaxVertexAttributes - 1, kMaxVertexAttributes])
   )
   .fn(t => {
     const {
@@ -313,15 +306,15 @@ g.test('vertex_attribute_shaderLocation_unique')
    - Test for the potentially conflicting attributes in various places in the buffers (with dummy attributes)
    - Test for various shaderLocations that conflict or not`
   )
-  .subcases(() =>
-    params()
-      .combine(poptions('vertexBufferIndexA', [0, 1, kMaxVertexBuffers - 1]))
-      .combine(poptions('vertexBufferIndexB', [0, 1, kMaxVertexBuffers - 1]))
-      .combine(pbool('testAttributeAtStartA'))
-      .combine(pbool('testAttributeAtStartB'))
-      .combine(poptions('shaderLocationA', [0, 1, 7, kMaxVertexAttributes - 1]))
-      .combine(poptions('shaderLocationB', [0, 1, 7, kMaxVertexAttributes - 1]))
-      .combine(poptions('extraAttributeCount', [0, 4]))
+  .paramsSubcasesOnly(u =>
+    u //
+      .combine('vertexBufferIndexA', [0, 1, kMaxVertexBuffers - 1])
+      .combine('vertexBufferIndexB', [0, 1, kMaxVertexBuffers - 1])
+      .combine('testAttributeAtStartA', [false, true])
+      .combine('testAttributeAtStartB', [false, true])
+      .combine('shaderLocationA', [0, 1, 7, kMaxVertexAttributes - 1])
+      .combine('shaderLocationB', [0, 1, 7, kMaxVertexAttributes - 1])
+      .combine('extraAttributeCount', [0, 4])
   )
   .fn(t => {
     const {
@@ -376,10 +369,9 @@ g.test('vertex_shader_input_location_limit')
     `Test that vertex shader's input's location decoration must be less than maxVertexAttributes.
    - Test for shaderLocation 0, 1, limit - 1, limit`
   )
-  .subcases(() =>
-    params().combine(
-      poptions('testLocation', [0, 1, kMaxVertexAttributes - 1, kMaxVertexAttributes, -1, 2 ** 32])
-    )
+  .paramsSubcasesOnly(u =>
+    u //
+      .combine('testLocation', [0, 1, kMaxVertexAttributes - 1, kMaxVertexAttributes, -1, 2 ** 32])
   )
   .fn(t => {
     const { testLocation } = t.params;
@@ -414,12 +406,12 @@ g.test('vertex_shader_input_location_in_vertex_state')
        - Test for various input locations.
        - Test for the attribute in various places in the list of vertex buffer and various places inside the vertex buffer descriptor`
   )
-  .subcases(() =>
-    params()
-      .combine(poptions('vertexBufferIndex', [0, 1, kMaxVertexBuffers - 1]))
-      .combine(poptions('extraAttributeCount', [0, 1, kMaxVertexAttributes - 1]))
-      .combine(pbool('testAttributeAtStart'))
-      .combine(poptions('testShaderLocation', [0, 1, 4, 7, kMaxVertexAttributes - 1]))
+  .paramsSubcasesOnly(u =>
+    u //
+      .combine('vertexBufferIndex', [0, 1, kMaxVertexBuffers - 1])
+      .combine('extraAttributeCount', [0, 1, kMaxVertexAttributes - 1])
+      .combine('testAttributeAtStart', [false, true])
+      .combine('testShaderLocation', [0, 1, 4, 7, kMaxVertexAttributes - 1])
   )
   .fn(t => {
     const {
@@ -463,18 +455,17 @@ g.test('vertex_shader_type_matches_attribute_format')
      - Test for all formats.
      - Test for all combinations of u/i/f32 with and without vectors.`
   )
-  .cases(poptions('format', kVertexFormats))
-  .subcases(() =>
-    params()
-      .combine(poptions('shaderBaseType', ['u32', 'i32', 'f32']))
-      .expand(p => {
-        return poptions('shaderType', [
-          p.shaderBaseType,
-          `vec2<${p.shaderBaseType}>`,
-          `vec3<${p.shaderBaseType}>`,
-          `vec4<${p.shaderBaseType}>`,
-        ]);
-      })
+  .params(u =>
+    u
+      .combine('format', kVertexFormats)
+      .beginSubcases()
+      .combine('shaderBaseType', ['u32', 'i32', 'f32'])
+      .expand('shaderType', p => [
+        p.shaderBaseType,
+        `vec2<${p.shaderBaseType}>`,
+        `vec3<${p.shaderBaseType}>`,
+        `vec4<${p.shaderBaseType}>`,
+      ])
   )
   .fn(t => {
     const { format, shaderBaseType, shaderType } = t.params;
@@ -515,32 +506,27 @@ g.test('vertex_attribute_offset_alignment')
     - Test for various vertex buffer indices
     - Test for various amounts of attributes in that vertex buffer`
   )
-  .cases(
-    params()
-      .combine(poptions('format', kVertexFormats))
-      .combine(poptions('arrayStride', [256, kMaxVertexBufferArrayStride]))
-      .expand(p => {
+  .params(u =>
+    u
+      .combine('format', kVertexFormats)
+      .combine('arrayStride', [256, kMaxVertexBufferArrayStride])
+      .expand('offset', p => {
         const { bytesPerComponent, componentCount } = kVertexFormatInfo[p.format];
         const formatSize = bytesPerComponent * componentCount;
         const halfAlignment = Math.floor(bytesPerComponent / 2);
 
-        return poptions(
-          'offset',
-          new Set([
-            0,
-            halfAlignment,
-            bytesPerComponent,
-            p.arrayStride - formatSize,
-            p.arrayStride - formatSize - halfAlignment,
-          ])
-        );
+        return new Set([
+          0,
+          halfAlignment,
+          bytesPerComponent,
+          p.arrayStride - formatSize,
+          p.arrayStride - formatSize - halfAlignment,
+        ]);
       })
-  )
-  .subcases(() =>
-    params()
-      .combine(poptions('vertexBufferIndex', [0, 1, kMaxVertexBuffers - 1]))
-      .combine(poptions('extraAttributeCount', [0, 1, kMaxVertexAttributes - 1]))
-      .combine(pbool('testAttributeAtStart'))
+      .beginSubcases()
+      .combine('vertexBufferIndex', [0, 1, kMaxVertexBuffers - 1])
+      .combine('extraAttributeCount', [0, 1, kMaxVertexAttributes - 1])
+      .combine('testAttributeAtStart', [false, true])
   )
   .fn(t => {
     const {
@@ -576,39 +562,37 @@ g.test('vertex_attribute_contained_in_stride')
     - Test for various vertex buffer indices
     - Test for various amounts of attributes in that vertex buffer`
   )
-  .cases(poptions('format', kVertexFormats))
-  .subcases(({ format }) =>
-    params()
-      .combine(
-        poptions('arrayStride', [
-          0,
-          256,
-          kMaxVertexBufferArrayStride - 4,
-          kMaxVertexBufferArrayStride,
-        ])
-      )
-      .expand(p => {
+  .params(u =>
+    u
+      .combine('format', kVertexFormats)
+      .beginSubcases()
+      .combine('arrayStride', [
+        0,
+        256,
+        kMaxVertexBufferArrayStride - 4,
+        kMaxVertexBufferArrayStride,
+      ])
+      .expand('offset', function* (p) {
         // Compute a bunch of test offsets to test.
-        const { bytesPerComponent, componentCount } = kVertexFormatInfo[format];
+        const { bytesPerComponent, componentCount } = kVertexFormatInfo[p.format];
         const formatSize = bytesPerComponent * componentCount;
-        const offsetsToTest = [0, bytesPerComponent];
+        yield 0;
+        yield bytesPerComponent;
 
         // arrayStride = 0 is a special case because for the offset validation it acts the same
         // as arrayStride = kMaxVertexBufferArrayStride. We branch so as to avoid adding negative
         // offsets that would cause an IDL exception to be thrown instead of a validation error.
         if (p.arrayStride === 0) {
-          offsetsToTest.push(kMaxVertexBufferArrayStride - formatSize);
-          offsetsToTest.push(kMaxVertexBufferArrayStride - formatSize + bytesPerComponent);
+          yield kMaxVertexBufferArrayStride - formatSize;
+          yield kMaxVertexBufferArrayStride - formatSize + bytesPerComponent;
         } else {
-          offsetsToTest.push(p.arrayStride - formatSize);
-          offsetsToTest.push(p.arrayStride - formatSize + bytesPerComponent);
+          yield p.arrayStride - formatSize;
+          yield p.arrayStride - formatSize + bytesPerComponent;
         }
-
-        return poptions('offset', offsetsToTest);
       })
-      .combine(poptions('vertexBufferIndex', [0, 1, kMaxVertexBuffers - 1]))
-      .combine(poptions('extraAttributeCount', [0, 1, kMaxVertexAttributes - 1]))
-      .combine(pbool('testAttributeAtStart'))
+      .combine('vertexBufferIndex', [0, 1, kMaxVertexBuffers - 1])
+      .combine('extraAttributeCount', [0, 1, kMaxVertexAttributes - 1])
+      .combine('testAttributeAtStart', [false, true])
   )
   .fn(t => {
     const {

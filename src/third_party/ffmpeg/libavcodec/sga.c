@@ -232,7 +232,7 @@ static int lzss_decompress(AVCodecContext *avctx,
 
                 if (offset <= 0)
                     offset = 1;
-                if (oi < offset)
+                if (oi < offset || oi + count * 2 > dst_size)
                     return AVERROR_INVALIDDATA;
                 for (int j = 0; j < count * 2; j++) {
                     dst[oi] = dst[oi - offset];
@@ -520,7 +520,7 @@ static av_cold int sga_decode_end(AVCodecContext *avctx)
     return 0;
 }
 
-AVCodec ff_sga_decoder = {
+const AVCodec ff_sga_decoder = {
     .name           = "sga",
     .long_name      = NULL_IF_CONFIG_SMALL("Digital Pictures SGA Video"),
     .type           = AVMEDIA_TYPE_VIDEO,

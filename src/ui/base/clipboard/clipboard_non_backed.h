@@ -10,7 +10,6 @@
 
 #include "base/component_export.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "ui/base/clipboard/clipboard.h"
 
 namespace ui {
@@ -31,6 +30,9 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardNonBacked
   // method must *only* be used when the caller is sure that the clipboard for
   // the current thread is in fact an instance of ClipboardNonBacked.
   static ClipboardNonBacked* GetForCurrentThread();
+
+  ClipboardNonBacked(const ClipboardNonBacked&) = delete;
+  ClipboardNonBacked& operator=(const ClipboardNonBacked&) = delete;
 
   // Returns the current ClipboardData.
   const ClipboardData* GetClipboardData(DataTransferEndpoint* data_dst) const;
@@ -103,12 +105,9 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardNonBacked
 #if defined(USE_OZONE)
   bool IsSelectionBufferAvailable() const override;
 #endif  // defined(USE_OZONE)
-  void WritePortableRepresentations(
+  void WritePortableAndPlatformRepresentations(
       ClipboardBuffer buffer,
       const ObjectMap& objects,
-      std::unique_ptr<DataTransferEndpoint> data_src) override;
-  void WritePlatformRepresentations(
-      ClipboardBuffer buffer,
       std::vector<Clipboard::PlatformRepresentation> platform_representations,
       std::unique_ptr<DataTransferEndpoint> data_src) override;
   void WriteText(const char* text_data, size_t text_len) override;
@@ -130,8 +129,6 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardNonBacked
                  size_t data_len) override;
 
   const std::unique_ptr<ClipboardInternal> clipboard_internal_;
-
-  DISALLOW_COPY_AND_ASSIGN(ClipboardNonBacked);
 };
 
 }  // namespace ui

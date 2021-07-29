@@ -50,7 +50,7 @@
 #include "chrome/browser/ui/views/media_router/cast_toolbar_button.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_container.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_controller.h"
-#include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_toolbar_button_view.h"
+#include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_toolbar_icon_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
 #include "chrome/browser/ui/views/toolbar/back_forward_button.h"
@@ -91,6 +91,7 @@
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/native_theme/native_theme_aura.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/cascading_property.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/view_class_properties.h"
@@ -176,6 +177,8 @@ ToolbarView::ToolbarView(Browser* browser, BrowserView* browser_view)
     for (const auto& view_and_command : GetViewCommandMap())
       chrome::AddCommandObserver(browser_, view_and_command.second, this);
   }
+  views::SetCascadingThemeProviderColor(this, views::kCascadingBackgroundColor,
+                                        ThemeProperties::COLOR_TOOLBAR);
 }
 
 ToolbarView::~ToolbarView() {
@@ -253,11 +256,12 @@ void ToolbarView::Init() {
     media_button = std::make_unique<MediaToolbarButtonView>(browser_view_);
   }
 
-  std::unique_ptr<send_tab_to_self::SendTabToSelfToolbarButtonView>
+  std::unique_ptr<send_tab_to_self::SendTabToSelfToolbarIconView>
       send_tab_to_self_button;
-  if (base::FeatureList::IsEnabled(send_tab_to_self::kSendTabToSelfV2)) {
+  if (base::FeatureList::IsEnabled(send_tab_to_self::kSendTabToSelfV2) &&
+      !browser_->profile()->IsOffTheRecord()) {
     send_tab_to_self_button =
-        std::make_unique<send_tab_to_self::SendTabToSelfToolbarButtonView>(
+        std::make_unique<send_tab_to_self::SendTabToSelfToolbarIconView>(
             browser_view_);
   }
 
@@ -282,7 +286,7 @@ void ToolbarView::Init() {
 
   std::unique_ptr<ReadLaterToolbarButton> read_later_button;
   if (browser_view_->right_aligned_side_panel() &&
-      base::FeatureList::IsEnabled(reading_list::switches::kReadLater)) {
+      reading_list::switches::IsReadingListEnabled()) {
     read_later_button = std::make_unique<ReadLaterToolbarButton>(browser_);
   }
 
@@ -298,9 +302,6 @@ void ToolbarView::Init() {
   home_ = AddChildView(std::move(home));
   location_bar_ = AddChildView(std::move(location_bar));
 
-  if (read_later_button)
-    read_later_button_ = AddChildView(std::move(read_later_button));
-
   if (extensions_container)
     extensions_container_ = AddChildView(std::move(extensions_container));
 
@@ -309,7 +310,7 @@ void ToolbarView::Init() {
     if (ChromeLabsButton::ShouldShowButton(chrome_labs_model_.get(),
                                            browser_->profile())) {
       chrome_labs_button_ = AddChildView(std::make_unique<ChromeLabsButton>(
-          browser_, chrome_labs_model_.get()));
+          browser_view_, chrome_labs_model_.get()));
 
       show_chrome_labs_button_.Init(
           chrome_labs_prefs::kBrowserLabsEnabled,
@@ -331,6 +332,9 @@ void ToolbarView::Init() {
 
   if (send_tab_to_self_button)
     send_tab_to_self_button_ = AddChildView(std::move(send_tab_to_self_button));
+
+  if (read_later_button)
+    read_later_button_ = AddChildView(std::move(read_later_button));
 
   if (toolbar_account_icon_container) {
     toolbar_account_icon_container_ =

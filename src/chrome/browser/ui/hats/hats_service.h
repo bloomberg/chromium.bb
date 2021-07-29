@@ -19,6 +19,10 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
+namespace base {
+struct Feature;
+}
+
 namespace content {
 class WebContents;
 }
@@ -41,6 +45,9 @@ extern const char kHatsSurveyTriggerDevToolsIssuesMixedContent[];
 extern const char kHatsSurveyTriggerDevToolsIssuesCookiesSameSite[];
 extern const char kHatsSurveyTriggerDevToolsIssuesHeavyAd[];
 extern const char kHatsSurveyTriggerDevToolsIssuesCSP[];
+extern const char kHatsSurveyTriggerTrustSafetyPrivacySettings[];
+extern const char kHatsSurveyTriggerTrustSafetyTrustedSurface[];
+extern const char kHatsSurveyTriggerTrustSafetyTransactions[];
 
 // The Trigger ID for a test HaTS Next survey which is available for testing
 // and demo purposes when the migration feature flag is enabled.
@@ -221,6 +228,13 @@ class HatsService : public KeyedService {
   // still return a false positive due to client-side rate limiting, a change
   // in network conditions, or intervening calls to this API.
   bool CanShowSurvey(const std::string& trigger) const;
+
+  // Whether the user is eligible for any survey (of the type |user_prompted|
+  // or not) to be shown. A return value of false is always a true-negative, and
+  // means the user is currently ineligible for all surveys. A return value of
+  // true should not be interpreted as a guarantee that requests to show a
+  // survey will succeed. Virtual to allow mocking in tests.
+  virtual bool CanShowAnySurvey(bool user_prompted) const;
 
   // Returns whether a HaTS Next dialog currently exists, regardless of whether
   // it is being shown or not.

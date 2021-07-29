@@ -24,6 +24,7 @@
 אם האפשרות '<ph name="SERVICE_SCRIPT_NAME" />' כבר מסומנת, יש להסיר את הסימון ואז לסמן מחדש.</translation>
 <translation id="225614027745146050">ברוכים הבאים</translation>
 <translation id="2320166752086256636">הסתרת מקלדת</translation>
+<translation id="2329392777730037872">לא ניתן היה לפתוח את <ph name="URL" /> במכשיר הלקוח.</translation>
 <translation id="2333212046079545895">‏Copyright 2021 Google LLC. כל הזכויות שמורות.</translation>
 <translation id="2359808026110333948">המשך</translation>
 <translation id="2366718077645204424">לא ניתן להשיג את המארח. הסיבה לכך יכולה להיות תצורת הרשת שבה נעשה שימוש.</translation>
@@ -67,6 +68,7 @@
 <translation id="4176825807642096119">קוד גישה</translation>
 <translation id="4227991223508142681">Host Provisioning Utility</translation>
 <translation id="4240294130679914010">‏הסרת ההתקנה של מארח Chromoting מתבצעת</translation>
+<translation id="4257751272692708833">‏כתובת URL להעברה אל <ph name="PRODUCT_NAME" /></translation>
 <translation id="4277736576214464567">קוד הגישה אינו חוקי. יש לנסות שוב.</translation>
 <translation id="4281844954008187215">תנאי שירות</translation>
 <translation id="4405930547258349619">ספריית ליבה</translation>
@@ -87,6 +89,7 @@
 <translation id="4867841927763172006">‏שליחת PrtScn</translation>
 <translation id="4974476491460646149">ההתחברות אל <ph name="HOSTNAME" /> סגורה</translation>
 <translation id="4985296110227979402">תחילה עליך להגדיר את המחשב שלך לגישה מרחוק</translation>
+<translation id="4987330545941822761">‏ל-Chrome Remote Desktop אין אפשרות לקבוע באיזה דפדפן לפתוח כתובות URL במחשב. עליך לבחור דפדפן מהרשימה שלמטה.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (לא מקוון)</translation>
 <translation id="507204348399810022">בטוח שברצונך להשבית את החיבורים המרוחקים אל <ph name="HOSTNAME" />?</translation>
 <translation id="5170982930780719864">מזהה מארח לא חוקי.</translation>
@@ -121,6 +124,7 @@
 <translation id="6612717000975622067">‏שליחת Ctrl-Alt-Del</translation>
 <translation id="6654753848497929428">שיתוף</translation>
 <translation id="677755392401385740">המארח הופעל עבור המשתמש: <ph name="HOST_USERNAME" />.</translation>
+<translation id="6902524959760471898">‏אפליקציה לעזרה בפתיחת כתובת URL בלקוח של <ph name="PRODUCT_NAME" /></translation>
 <translation id="6939719207673461467">הצגה/הסתרה של המקלדת.</translation>
 <translation id="6963936880795878952">החיבורים למחשב המרוחק חסומים באופן זמני משום שמישהו ניסה להתחבר אליו עם קוד אימות לא חוקי. יש לנסות שוב מאוחר יותר.</translation>
 <translation id="6965382102122355670">אישור</translation>
@@ -133,6 +137,7 @@
 <translation id="7144878232160441200">יש לנסות שוב</translation>
 <translation id="7312846573060934304">המארח במצב אופליין.</translation>
 <translation id="7319983568955948908">הפסקת השיתוף</translation>
+<translation id="7359298090707901886">‏לא ניתן להשתמש בדפדפן שנבחר לפתיחת כתובות URL במחשב המקומי.</translation>
 <translation id="7401733114166276557">Chrome Remote Desktop</translation>
 <translation id="7434397035092923453">נדחתה גישה עבור לקוח: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">לקוח שהתחבר: <ph name="CLIENT_USERNAME" />.</translation>

@@ -75,25 +75,42 @@ void PageInfoDelegateImpl::ShowSiteSettings(const GURL& site_url) {
 }
 
 void PageInfoDelegateImpl::OpenCookiesDialog() {
-  // TODO(crbug.com/1189159): Add support for cookies dialog.
-  NOTIMPLEMENTED();
+  // Used for desktop only. Doesn't need implementation for WebLayer.
+  NOTREACHED();
 }
 
 void PageInfoDelegateImpl::OpenCertificateDialog(
     net::X509Certificate* certificate) {
-  // TODO(crbug.com/1189159): Add support for certificate dialog.
-  NOTIMPLEMENTED();
+  // Used for desktop only. Doesn't need implementation for WebLayer.
+  NOTREACHED();
 }
 
 void PageInfoDelegateImpl::OpenConnectionHelpCenterPage(
     const ui::Event& event) {
-  // TODO(crbug.com/1189159): Add support for help pages.
-  NOTIMPLEMENTED();
+  // Used for desktop only. Doesn't need implementation for WebLayer.
+  NOTREACHED();
 }
 
 void PageInfoDelegateImpl::OpenSafetyTipHelpCenterPage() {
-  // TODO(crbug.com/1189159): Add support for help pages.
-  NOTIMPLEMENTED();
+  // Used for desktop only. Doesn't need implementation for WebLayer.
+  NOTREACHED();
+}
+
+void PageInfoDelegateImpl::OpenContentSettingsExceptions(
+    ContentSettingsType content_settings_type) {
+  // Used for desktop only. Doesn't need implementation for WebLayer.
+  NOTREACHED();
+}
+
+void PageInfoDelegateImpl::OnPageInfoActionOccurred(
+    PageInfo::PageInfoAction action) {
+  // Used for desktop only. Doesn't need implementation for WebLayer.
+  NOTREACHED();
+}
+
+void PageInfoDelegateImpl::OnUIClosing() {
+  // Used for desktop only. Doesn't need implementation for WebLayer.
+  NOTREACHED();
 }
 #endif
 

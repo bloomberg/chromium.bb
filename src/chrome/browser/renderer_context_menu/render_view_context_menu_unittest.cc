@@ -7,7 +7,9 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/extensions/menu_manager.h"
@@ -17,14 +19,21 @@
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
+#include "chrome/test/base/search_test_utils.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
+#include "components/lens/lens_features.h"
+#include "components/policy/core/common/policy_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
+#include "components/search_engines/template_url_service.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -41,6 +50,13 @@
 #include "third_party/blink/public/mojom/context_menu/context_menu.mojom.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "url/gurl.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/policy/dlp/dlp_policy_constants.h"
+#include "chrome/browser/ash/policy/dlp/dlp_rules_manager.h"
+#include "chrome/browser/ash/policy/dlp/dlp_rules_manager_impl.h"
+#include "chrome/browser/ash/policy/dlp/dlp_rules_manager_test_utils.h"
+#endif
 
 using extensions::Extension;
 using extensions::MenuItem;
@@ -120,6 +136,14 @@ class TestNavigationDelegate : public content::WebContentsDelegate {
  private:
   absl::optional<content::OpenURLParams> last_navigation_params_;
 };
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+class MockDlpRulesManager : public policy::DlpRulesManagerImpl {
+ public:
+  explicit MockDlpRulesManager(PrefService* local_state)
+      : DlpRulesManagerImpl(local_state) {}
+};
+#endif
 
 }  // namespace
 
@@ -408,6 +432,12 @@ class RenderViewContextMenuPrefsTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     registry_ = std::make_unique<ProtocolHandlerRegistry>(profile(), nullptr);
+
+    TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+        profile(),
+        base::BindRepeating(&TemplateURLServiceFactory::BuildInstanceFor));
+    template_url_service_ = TemplateURLServiceFactory::GetForProfile(profile());
+    search_test_utils::WaitForTemplateURLServiceToLoad(template_url_service_);
   }
 
   void TearDown() override {
@@ -436,8 +466,18 @@ class RenderViewContextMenuPrefsTest : public ChromeRenderViewHostTestHarness {
     menu->AppendImageItems();
   }
 
+  void SetUserSelectedDefaultSearchProvider(const std::string& base_url) {
+    TemplateURLData data;
+    data.SetShortName(u"t");
+    data.SetURL(base_url + "?q={searchTerms}");
+    TemplateURL* template_url =
+        template_url_service_->Add(std::make_unique<TemplateURL>(data));
+    template_url_service_->SetUserSelectedDefaultSearchProvider(template_url);
+  }
+
  private:
   std::unique_ptr<ProtocolHandlerRegistry> registry_;
+  TemplateURLService* template_url_service_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewContextMenuPrefsTest);
 };
@@ -462,6 +502,46 @@ TEST_F(RenderViewContextMenuPrefsTest,
   EXPECT_FALSE(
       menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD));
 }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// Verifies that SearchWebFor field is enabled/disabled based on DLP rules.
+TEST_F(RenderViewContextMenuPrefsTest,
+       DisableSearchWebForWhenClipboardIsBlocked) {
+  ScopedTestingLocalState testing_local_state(
+      TestingBrowserProcess::GetGlobal());
+  content::ContextMenuParams params = CreateParams(MenuItem::SELECTION);
+  params.page_url = GURL("http://www.foo.com/");
+  auto menu = std::make_unique<TestRenderViewContextMenu>(
+      web_contents()->GetMainFrame(), params);
+  menu->set_dlp_rules_manager(nullptr);
+  menu->set_selection_navigation_url(GURL("http://www.bar.com/"));
+
+  EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_SEARCHWEBFOR));
+
+  MockDlpRulesManager mock_dlp_rules_manager(testing_local_state.Get());
+  menu->set_dlp_rules_manager(&mock_dlp_rules_manager);
+  EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_SEARCHWEBFOR));
+
+  base::Value rules(base::Value::Type::LIST);
+  base::Value src_urls(base::Value::Type::LIST);
+  src_urls.Append("http://www.foo.com/");
+
+  base::Value dst_urls(base::Value::Type::LIST);
+  dst_urls.Append("http://www.bar.com/");
+
+  base::Value restrictions(base::Value::Type::LIST);
+  restrictions.Append(policy::dlp_test_util::CreateRestrictionWithLevel(
+      policy::dlp::kClipboardRestriction, policy::dlp::kBlockLevel));
+
+  rules.Append(policy::dlp_test_util::CreateRule(
+      "rule #1", "Block", std::move(src_urls), std::move(dst_urls),
+      /*dst_components=*/base::Value(base::Value::Type::LIST),
+      std::move(restrictions)));
+  testing_local_state.Get()->Set(policy::policy_prefs::kDlpRulesList,
+                                 std::move(rules));
+  EXPECT_FALSE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_SEARCHWEBFOR));
+}
+#endif
 
 // Verifies Incognito Mode is not enabled for links disallowed in Incognito.
 TEST_F(RenderViewContextMenuPrefsTest,
@@ -627,6 +707,43 @@ TEST_F(RenderViewContextMenuPrefsTest, ShowAllPasswordsIncognito) {
 
   EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_SHOWALLSAVEDPASSWORDS));
 }
+
+// TODO(crbug/1229334): Add Mac support for Lens Region Search feature.
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+// Verify that the Lens Region Search menu item is displayed when the feature
+// is enabled.
+TEST_F(RenderViewContextMenuPrefsTest, LensRegionSearch) {
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(lens::features::kLensRegionSearch);
+  SetUserSelectedDefaultSearchProvider("https://www.google.com");
+  std::unique_ptr<TestRenderViewContextMenu> menu(CreateContextMenu());
+
+  EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH));
+}
+
+// Verify that the Lens Region Search menu item is disabled when the user's
+// default browser is not Google.
+TEST_F(RenderViewContextMenuPrefsTest,
+       LensRegionSearchNonGoogleDefaultSearchEngine) {
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(lens::features::kLensRegionSearch);
+  SetUserSelectedDefaultSearchProvider("https://www.search.com");
+  std::unique_ptr<TestRenderViewContextMenu> menu(CreateContextMenu());
+
+  EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH));
+}
+
+// Verify that the Lens Region Search menu item is disabled when the feature
+// is disabled.
+TEST_F(RenderViewContextMenuPrefsTest, LensRegionSearchExperimentDisabled) {
+  base::test::ScopedFeatureList features;
+  features.InitAndDisableFeature(lens::features::kLensRegionSearch);
+  SetUserSelectedDefaultSearchProvider("https://www.google.com");
+  std::unique_ptr<TestRenderViewContextMenu> menu(CreateContextMenu());
+
+  EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH));
+}
+#endif
 
 // Test FormatUrlForClipboard behavior
 // -------------------------------------------

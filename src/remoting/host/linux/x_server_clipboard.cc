@@ -7,9 +7,9 @@
 #include <limits>
 
 #include "base/callback.h"
+#include "base/cxx17_backports.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/stl_util.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/logging.h"
 #include "remoting/base/util.h"
@@ -299,7 +299,7 @@ void XServerClipboard::SendStringResponse(x11::Window requestor,
         .property = property,
         .type = target,
         .format = 8,
-        .data_len = data_.size(),
+        .data_len = static_cast<uint32_t>(data_.size()),
         .data = base::MakeRefCounted<base::RefCountedStaticMemory>(
             data_.data(), data_.size()),
     });

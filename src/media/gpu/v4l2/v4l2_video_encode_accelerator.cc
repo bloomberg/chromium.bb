@@ -23,7 +23,6 @@
 #include "base/command_line.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -341,8 +340,8 @@ void V4L2VideoEncodeAccelerator::InitializeTask(const Config& config,
 
   encoder_state_ = kInitialized;
   RequestEncodingParametersChangeTask(
-      config.initial_bitrate, config.initial_framerate.value_or(
-                                  VideoEncodeAccelerator::kDefaultFramerate));
+      config.bitrate, config.initial_framerate.value_or(
+                          VideoEncodeAccelerator::kDefaultFramerate));
 
   // input_frame_size_ is the size of input_config of |image_processor_|.
   // On native_input_mode_, since the passed size in RequireBitstreamBuffers()
@@ -545,7 +544,7 @@ void V4L2VideoEncodeAccelerator::UseOutputBitstreamBuffer(
 }
 
 void V4L2VideoEncodeAccelerator::RequestEncodingParametersChange(
-    uint32_t bitrate,
+    const Bitrate& bitrate,
     uint32_t framerate) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(child_sequence_checker_);
 
@@ -1469,21 +1468,26 @@ void V4L2VideoEncodeAccelerator::SetErrorState(Error error) {
 }
 
 void V4L2VideoEncodeAccelerator::RequestEncodingParametersChangeTask(
-    uint32_t bitrate,
+    const Bitrate& bitrate,
     uint32_t framerate) {
-  if (current_bitrate_ == bitrate && current_framerate_ == framerate)
-    return;
-  if (bitrate == 0 || framerate == 0)
+  // If this is changed to use variable bitrate encoding, change this to check
+  // that the mode matches the current mode.
+  if (bitrate.mode() != Bitrate::Mode::kConstant)
     return;
 
-  VLOGF(2) << "bitrate=" << bitrate << ", framerate=" << framerate;
+  if (current_bitrate_ == bitrate.target() && current_framerate_ == framerate)
+    return;
+  if (bitrate.target() == 0 || framerate == 0)
+    return;
+
+  VLOGF(2) << "bitrate=" << bitrate.ToString() << ", framerate=" << framerate;
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
   TRACE_EVENT2("media,gpu", "V4L2VEA::RequestEncodingParametersChangeTask",
-               "bitrate", bitrate, "framerate", framerate);
-  if (current_bitrate_ != bitrate &&
+               "bitrate", bitrate.ToString(), "framerate", framerate);
+  if (current_bitrate_ != bitrate.target() &&
       !device_->SetExtCtrls(
           V4L2_CTRL_CLASS_MPEG,
-          {V4L2ExtCtrl(V4L2_CID_MPEG_VIDEO_BITRATE, bitrate)})) {
+          {V4L2ExtCtrl(V4L2_CID_MPEG_VIDEO_BITRATE, bitrate.target())})) {
     VLOGF(1) << "Failed changing bitrate";
     NOTIFY_ERROR(kPlatformFailureError);
     return;
@@ -1500,7 +1504,7 @@ void V4L2VideoEncodeAccelerator::RequestEncodingParametersChangeTask(
     IOCTL_OR_ERROR_RETURN(VIDIOC_S_PARM, &parms);
   }
 
-  current_bitrate_ = bitrate;
+  current_bitrate_ = bitrate.target();
   current_framerate_ = framerate;
 }
 
@@ -1755,26 +1759,27 @@ bool V4L2VideoEncodeAccelerator::InitControlsH264(const Config& config) {
   constexpr size_t kH264MacroblockSizeInPixels = 16;
   const uint32_t framerate = config.initial_framerate.value_or(
       VideoEncodeAccelerator::kDefaultFramerate);
-  const uint32_t mb_width = base::bits::Align(config.input_visible_size.width(),
-                                              kH264MacroblockSizeInPixels) /
-                            kH264MacroblockSizeInPixels;
+  const uint32_t mb_width =
+      base::bits::AlignUp(config.input_visible_size.width(),
+                          kH264MacroblockSizeInPixels) /
+      kH264MacroblockSizeInPixels;
   const uint32_t mb_height =
-      base::bits::Align(config.input_visible_size.height(),
-                        kH264MacroblockSizeInPixels) /
+      base::bits::AlignUp(config.input_visible_size.height(),
+                          kH264MacroblockSizeInPixels) /
       kH264MacroblockSizeInPixels;
   const uint32_t framesize_in_mbs = mb_width * mb_height;
 
   // Check whether the h264 level is valid.
   if (!CheckH264LevelLimits(config.output_profile, h264_level,
-                            config.initial_bitrate, framerate,
+                            config.bitrate.target(), framerate,
                             framesize_in_mbs)) {
     absl::optional<uint8_t> valid_level =
-        FindValidH264Level(config.output_profile, config.initial_bitrate,
+        FindValidH264Level(config.output_profile, config.bitrate.target(),
                            framerate, framesize_in_mbs);
     if (!valid_level) {
       VLOGF(1) << "Could not find a valid h264 level for"
                << " profile=" << config.output_profile
-               << " bitrate=" << config.initial_bitrate
+               << " bitrate=" << config.bitrate.target()
                << " framerate=" << framerate
                << " size=" << config.input_visible_size.ToString();
       NOTIFY_ERROR(kInvalidArgumentError);

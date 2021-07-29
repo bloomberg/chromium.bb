@@ -31,11 +31,6 @@ const int64_t kExpiryTime = 30;
 
 }  // namespace
 
-bool ConversionDisallowingContentBrowserClient::IsConversionMeasurementAllowed(
-    content::BrowserContext* browser_context) {
-  return false;
-}
-
 bool ConversionDisallowingContentBrowserClient::
     IsConversionMeasurementOperationAllowed(
         content::BrowserContext* browser_context,
@@ -89,21 +84,10 @@ void ConfigurableConversionTestBrowserClient::
 ConfigurableStorageDelegate::ConfigurableStorageDelegate() = default;
 ConfigurableStorageDelegate::~ConfigurableStorageDelegate() = default;
 
-const StorableImpression& ConfigurableStorageDelegate::GetImpressionToAttribute(
-    const std::vector<StorableImpression>& impressions) {
-  DCHECK(!impressions.empty());
-
-  return *std::max_element(
-      impressions.begin(), impressions.end(),
-      [](const StorableImpression& a, const StorableImpression& b) {
-        return a.impression_time() < b.impression_time();
-      });
-}
-
-void ConfigurableStorageDelegate::ProcessNewConversionReport(
-    ConversionReport& report) {
-  report.report_time = report.impression.impression_time() +
-                       base::TimeDelta::FromMilliseconds(report_time_ms_);
+base::Time ConfigurableStorageDelegate::GetReportTime(
+    const ConversionReport& report) const {
+  return report.impression.impression_time() +
+         base::TimeDelta::FromMilliseconds(report_time_ms_);
 }
 int ConfigurableStorageDelegate::GetMaxConversionsPerImpression(
     StorableImpression::SourceType source_type) const {
@@ -115,9 +99,21 @@ int ConfigurableStorageDelegate::GetMaxImpressionsPerOrigin() const {
 int ConfigurableStorageDelegate::GetMaxConversionsPerOrigin() const {
   return max_conversions_per_origin_;
 }
+int ConfigurableStorageDelegate::GetMaxAttributionDestinationsPerEventSource()
+    const {
+  return max_attribution_destinations_per_event_source_;
+}
 ConversionStorage::Delegate::RateLimitConfig
 ConfigurableStorageDelegate::GetRateLimits() const {
   return rate_limits_;
+}
+StorableImpression::AttributionLogic
+ConfigurableStorageDelegate::SelectAttributionLogic(
+    const StorableImpression& impression) const {
+  return attribution_logic_;
+}
+uint64_t ConfigurableStorageDelegate::GetFakeEventSourceTriggerData() const {
+  return fake_event_source_trigger_data_;
 }
 
 ConversionManager* TestManagerProvider::GetManager(
@@ -129,16 +125,14 @@ TestConversionManager::TestConversionManager() = default;
 
 TestConversionManager::~TestConversionManager() = default;
 
-void TestConversionManager::HandleImpression(
-    const StorableImpression& impression) {
+void TestConversionManager::HandleImpression(StorableImpression impression) {
   num_impressions_++;
   last_impression_source_type_ = impression.source_type();
   last_impression_origin_ = impression.impression_origin();
   last_attribution_source_priority_ = impression.priority();
 }
 
-void TestConversionManager::HandleConversion(
-    const StorableConversion& conversion) {
+void TestConversionManager::HandleConversion(StorableConversion conversion) {
   num_conversions_++;
 
   last_conversion_destination_ = conversion.conversion_destination();
@@ -156,7 +150,7 @@ void TestConversionManager::GetPendingReportsForWebUI(
 }
 
 const base::circular_deque<SentReportInfo>&
-TestConversionManager::GetSentReportsForWebUI() {
+TestConversionManager::GetSentReportsForWebUI() const {
   return sent_reports_;
 }
 
@@ -202,7 +196,7 @@ void TestConversionManager::Reset() {
 // Builds an impression with default values. This is done as a builder because
 // all values needed to be provided at construction time.
 ImpressionBuilder::ImpressionBuilder(base::Time time)
-    : impression_data_("123"),
+    : impression_data_(123),
       impression_time_(time),
       expiry_(base::TimeDelta::FromMilliseconds(kExpiryTime)),
       impression_origin_(url::Origin::Create(GURL(kDefaultImpressionOrigin))),
@@ -218,7 +212,7 @@ ImpressionBuilder& ImpressionBuilder::SetExpiry(base::TimeDelta delta) {
   return *this;
 }
 
-ImpressionBuilder& ImpressionBuilder::SetData(const std::string& data) {
+ImpressionBuilder& ImpressionBuilder::SetData(uint64_t data) {
   impression_data_ = data;
   return *this;
 }
@@ -262,90 +256,85 @@ StorableImpression ImpressionBuilder::Build() const {
   return StorableImpression(impression_data_, impression_origin_,
                             conversion_origin_, reporting_origin_,
                             impression_time_,
-                            impression_time_ + expiry_ /* expiry_time */,
+                            /*expiry_time=*/impression_time_ + expiry_,
                             source_type_, priority_, impression_id_);
 }
 
 StorableConversion DefaultConversion() {
-  StorableConversion conversion(
-      "111" /* conversion_data */,
-      net::SchemefulSite(
-          GURL(kDefaultConversionDestination)) /* conversion_destination */,
-      url::Origin::Create(GURL(kDefaultReportOrigin)) /* reporting_origin */);
-  return conversion;
+  return ConversionBuilder().Build();
 }
 
-// Custom comparator for StorableImpressions that does not take impression id's
+ConversionBuilder::ConversionBuilder()
+    : conversion_destination_(
+          net::SchemefulSite(GURL(kDefaultConversionDestination))),
+      reporting_origin_(url::Origin::Create(GURL(kDefaultReportOrigin))) {}
+
+ConversionBuilder& ConversionBuilder::SetConversionData(
+    uint64_t conversion_data) {
+  conversion_data_ = conversion_data;
+  return *this;
+}
+
+ConversionBuilder& ConversionBuilder::SetEventSourceTriggerData(
+    uint64_t event_source_trigger_data) {
+  event_source_trigger_data_ = event_source_trigger_data;
+  return *this;
+}
+
+ConversionBuilder& ConversionBuilder::SetConversionDestination(
+    const net::SchemefulSite& conversion_destination) {
+  conversion_destination_ = conversion_destination;
+  return *this;
+}
+
+ConversionBuilder& ConversionBuilder::SetReportingOrigin(
+    const url::Origin& reporting_origin) {
+  reporting_origin_ = reporting_origin;
+  return *this;
+}
+
+ConversionBuilder& ConversionBuilder::SetPriority(int64_t priority) {
+  priority_ = priority;
+  return *this;
+}
+
+StorableConversion ConversionBuilder::Build() const {
+  return StorableConversion(conversion_data_, conversion_destination_,
+                            reporting_origin_, event_source_trigger_data_,
+                            priority_);
+}
+
+// Custom comparator for StorableImpressions that does not take impression IDs
 // into account.
-testing::AssertionResult ImpressionsEqual(const StorableImpression& expected,
-                                          const StorableImpression& actual) {
+bool operator==(const StorableImpression& a, const StorableImpression& b) {
   const auto tie = [](const StorableImpression& impression) {
     return std::make_tuple(
         impression.impression_data(), impression.impression_origin(),
         impression.conversion_origin(), impression.reporting_origin(),
         impression.impression_time(), impression.expiry_time(),
-        impression.priority());
+        impression.source_type(), impression.priority());
   };
-
-  if (tie(expected) != tie(actual)) {
-    return testing::AssertionFailure();
-  }
-  return testing::AssertionSuccess();
+  return tie(a) == tie(b);
 }
 
 // Custom comparator for comparing two vectors of conversion reports. Does not
-// compare impression and conversion id's as they are set by the underlying
+// compare impression and conversion IDs as they are set by the underlying
 // sqlite db and should not be tested.
-testing::AssertionResult ReportsEqual(
-    const std::vector<ConversionReport>& expected,
-    const std::vector<ConversionReport>& actual) {
+bool operator==(const ConversionReport& a, const ConversionReport& b) {
   const auto tie = [](const ConversionReport& conversion) {
-    return std::make_tuple(conversion.impression.impression_data(),
-                           conversion.impression.impression_origin(),
-                           conversion.impression.conversion_origin(),
-                           conversion.impression.reporting_origin(),
-                           conversion.impression.impression_time(),
-                           conversion.impression.expiry_time(),
-                           conversion.impression.priority(),
-                           conversion.conversion_data, conversion.report_time);
+    return std::make_tuple(conversion.impression, conversion.conversion_data,
+                           conversion.conversion_time, conversion.report_time,
+                           conversion.extra_delay);
   };
-
-  if (expected.size() != actual.size())
-    return testing::AssertionFailure() << "Expected length " << expected.size()
-                                       << ", actual: " << actual.size();
-
-  for (size_t i = 0; i < expected.size(); i++) {
-    if (tie(expected[i]) != tie(actual[i])) {
-      return testing::AssertionFailure()
-             << "Expected " << expected[i] << " at index " << i
-             << ", actual: " << actual[i];
-    }
-  }
-
-  return testing::AssertionSuccess();
+  return tie(a) == tie(b);
 }
 
-testing::AssertionResult SentReportInfosEqual(
-    const base::circular_deque<SentReportInfo>& expected,
-    const base::circular_deque<SentReportInfo>& actual) {
+bool operator==(const SentReportInfo& a, const SentReportInfo& b) {
   const auto tie = [](const SentReportInfo& info) {
     return std::make_tuple(info.report_url, info.report_body,
                            info.http_response_code);
   };
-
-  if (expected.size() != actual.size())
-    return testing::AssertionFailure() << "Expected length " << expected.size()
-                                       << ", actual: " << actual.size();
-
-  for (size_t i = 0; i < expected.size(); i++) {
-    if (tie(expected[i]) != tie(actual[i])) {
-      return testing::AssertionFailure()
-             << "Expected " << expected[i] << " at index " << i
-             << ", actual: " << actual[i];
-    }
-  }
-
-  return testing::AssertionSuccess();
+  return tie(a) == tie(b);
 }
 
 std::vector<ConversionReport> GetConversionsToReportForTesting(

@@ -624,6 +624,7 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
       const int coeff_ctx = coeff_contexts[pos];
       const tran_low_t v = qcoeff[pos];
       const tran_low_t level = abs(v);
+      td->abs_sum_level += level;
 
       if (allow_update_cdf) {
         if (c == eob - 1) {

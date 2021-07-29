@@ -47,7 +47,6 @@
 #include "quic/platform/api/quic_flag_utils.h"
 #include "quic/platform/api/quic_flags.h"
 #include "quic/platform/api/quic_logging.h"
-#include "quic/platform/api/quic_map_util.h"
 #include "quic/platform/api/quic_stack_trace.h"
 #include "common/quiche_text_utils.h"
 
@@ -1503,6 +1502,7 @@ QuicFramer::BuildIetfVersionNegotiationPacket(
 }
 
 bool QuicFramer::ProcessPacket(const QuicEncryptedPacket& packet) {
+  QUICHE_DCHECK(!is_processing_packet_) << ENDPOINT << "Nested ProcessPacket";
   is_processing_packet_ = true;
   bool result = ProcessPacketInternal(packet);
   is_processing_packet_ = false;

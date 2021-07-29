@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "ash/display/mouse_cursor_event_filter.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
@@ -28,6 +27,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_util.h"
+#include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/numerics/ranges.h"
 #include "base/numerics/safe_conversions.h"
@@ -98,7 +98,7 @@ gfx::SizeF GetItemSizeWhenOnDesksBar(OverviewGrid* overview_grid,
   const DesksBarView* desks_bar_view = overview_grid->desks_bar_view();
   DCHECK(desks_bar_view);
 
-  const float scale_factor = float{desks_bar_view->height()} /
+  const float scale_factor = static_cast<float>(desks_bar_view->height()) /
                              overview_grid->root_window()->bounds().height();
   gfx::SizeF scaled_size = gfx::ScaleSize(window_original_size, scale_factor);
   // Add the margins overview mode adds around the window's contents.

@@ -12,15 +12,17 @@
 #include "chrome/browser/ash/login/enrollment/enterprise_enrollment_helper.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
 #include "chrome/browser/ash/login/enrollment/enterprise_enrollment_helper_mock.h"
-#include "chrome/browser/chromeos/policy/enrollment_config.h"
+#include "chrome/browser/ash/policy/enrollment/enrollment_config.h"
 #include "chrome/browser/policy/enrollment_status.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace chromeos {
+namespace policy {
 class ActiveDirectoryJoinDelegate;
+}
 
+namespace chromeos {
 namespace test {
 
 // This test mixin covers mocking backend interaction during enterprise
@@ -72,7 +74,7 @@ class EnrollmentHelperMixin : public InProcessBrowserTestMixin {
                                    const std::string& location);
 
   // Forces the Active Directory domain join flow during enterprise enrollment.
-  void SetupActiveDirectoryJoin(ActiveDirectoryJoinDelegate* delegate,
+  void SetupActiveDirectoryJoin(policy::ActiveDirectoryJoinDelegate* delegate,
                                 const std::string& expected_domain,
                                 const std::string& domain_join_config,
                                 const std::string& dm_token);
@@ -82,10 +84,6 @@ class EnrollmentHelperMixin : public InProcessBrowserTestMixin {
   // InProcessBrowserTestMixin:
   void SetUpInProcessBrowserTestFixture() override;
   void TearDownInProcessBrowserTestFixture() override;
-
-  // Sets expectation of a RestoreAfterRollback call and initiates the
-  // corresponding callback.
-  void ExpectRestoreAfterRollback();
 
  private:
   // Unowned reference to last created mock.

@@ -34,18 +34,6 @@ FeatureNames FeatureToNames(WebSchedulerTrackedFeature feature) {
     case WebSchedulerTrackedFeature::kSubresourceHasCacheControlNoStore:
       return {"SubresourceHasCacheControlNoStore",
               "subresource has Cache-Control: No-Store"};
-    case WebSchedulerTrackedFeature::kPageShowEventListener:
-      return {"PageShowEventListener", "onpageshow() event listener"};
-    case WebSchedulerTrackedFeature::kPageHideEventListener:
-      return {"PageHideEventListener", "onpagehide() event listener"};
-    case WebSchedulerTrackedFeature::kBeforeUnloadEventListener:
-      return {"BeforeUnloadEventListener", "onbeforeunload() event listener"};
-    case WebSchedulerTrackedFeature::kUnloadEventListener:
-      return {"UnloadEventListener", "onunload() event listener"};
-    case WebSchedulerTrackedFeature::kFreezeEventListener:
-      return {"FreezeEventListener", "onfreeze() event listener"};
-    case WebSchedulerTrackedFeature::kResumeEventListener:
-      return {"ResumeEventListener", "onresume() event listener"};
     case WebSchedulerTrackedFeature::kContainsPlugins:
       return {"ContainsPlugins", "page contains plugins"};
     case WebSchedulerTrackedFeature::kDocumentLoaded:
@@ -67,9 +55,6 @@ FeatureNames FeatureToNames(WebSchedulerTrackedFeature feature) {
     case WebSchedulerTrackedFeature::kOutstandingIndexedDBTransaction:
       return {"OutstandingIndexedDBTransaction",
               "outstanding IndexedDB transaction"};
-    case WebSchedulerTrackedFeature::kRequestedGeolocationPermission:
-      return {"RequestedGeolocationPermission",
-              "requested geolocation permission"};
     case WebSchedulerTrackedFeature::kRequestedNotificationsPermission:
       return {"RequestedNotificationsPermission",
               "requested notifications permission"};
@@ -91,8 +76,6 @@ FeatureNames FeatureToNames(WebSchedulerTrackedFeature feature) {
       return {"BroadcastChannel", "requested broadcast channel permission"};
     case WebSchedulerTrackedFeature::kIndexedDBConnection:
       return {"IndexedDBConnection", "IndexedDB connection present"};
-    case WebSchedulerTrackedFeature::kWebVR:
-      return {"WebVR", "WebVR"};
     case WebSchedulerTrackedFeature::kWebXR:
       return {"WebXR", "WebXR"};
     case WebSchedulerTrackedFeature::kWebLocks:
@@ -181,53 +164,37 @@ absl::optional<WebSchedulerTrackedFeature> StringToFeature(
 }
 
 bool IsFeatureSticky(WebSchedulerTrackedFeature feature) {
-  return (FeatureToBit(feature) & StickyFeaturesBitmask()) > 0;
+  return StickyFeatures().Has(feature);
 }
 
-uint64_t StickyFeaturesBitmask() {
-  return FeatureToBit(
-             WebSchedulerTrackedFeature::kMainResourceHasCacheControlNoStore) |
-         FeatureToBit(
-             WebSchedulerTrackedFeature::kMainResourceHasCacheControlNoCache) |
-         FeatureToBit(
-             WebSchedulerTrackedFeature::kSubresourceHasCacheControlNoStore) |
-         FeatureToBit(
-             WebSchedulerTrackedFeature::kSubresourceHasCacheControlNoCache) |
-         FeatureToBit(WebSchedulerTrackedFeature::kPageShowEventListener) |
-         FeatureToBit(WebSchedulerTrackedFeature::kPageHideEventListener) |
-         FeatureToBit(WebSchedulerTrackedFeature::kBeforeUnloadEventListener) |
-         FeatureToBit(WebSchedulerTrackedFeature::kUnloadEventListener) |
-         FeatureToBit(WebSchedulerTrackedFeature::kFreezeEventListener) |
-         FeatureToBit(WebSchedulerTrackedFeature::kResumeEventListener) |
-         FeatureToBit(WebSchedulerTrackedFeature::kContainsPlugins) |
-         FeatureToBit(WebSchedulerTrackedFeature::kDocumentLoaded) |
-         FeatureToBit(
-             WebSchedulerTrackedFeature::kRequestedGeolocationPermission) |
-         FeatureToBit(
-             WebSchedulerTrackedFeature::kRequestedNotificationsPermission) |
-         FeatureToBit(WebSchedulerTrackedFeature::kRequestedMIDIPermission) |
-         FeatureToBit(
-             WebSchedulerTrackedFeature::kRequestedAudioCapturePermission) |
-         FeatureToBit(
-             WebSchedulerTrackedFeature::kRequestedVideoCapturePermission) |
-         FeatureToBit(WebSchedulerTrackedFeature::
-                          kRequestedBackForwardCacheBlockedSensors) |
-         FeatureToBit(
-             WebSchedulerTrackedFeature::kRequestedBackgroundWorkPermission) |
-         FeatureToBit(WebSchedulerTrackedFeature::kWebLocks) |
-         FeatureToBit(
-             WebSchedulerTrackedFeature::kRequestedStorageAccessGrant) |
-         FeatureToBit(WebSchedulerTrackedFeature::kWebNfc) |
-         FeatureToBit(WebSchedulerTrackedFeature::kWebFileSystem) |
-         FeatureToBit(WebSchedulerTrackedFeature::kAppBanner) |
-         FeatureToBit(WebSchedulerTrackedFeature::kPrinting) |
-         FeatureToBit(WebSchedulerTrackedFeature::kPictureInPicture) |
-         FeatureToBit(WebSchedulerTrackedFeature::kIdleManager) |
-         FeatureToBit(WebSchedulerTrackedFeature::kPaymentManager) |
-         FeatureToBit(WebSchedulerTrackedFeature::kKeyboardLock) |
-         FeatureToBit(WebSchedulerTrackedFeature::kWebOTPService) |
-         FeatureToBit(WebSchedulerTrackedFeature::kIsolatedWorldScript) |
-         FeatureToBit(WebSchedulerTrackedFeature::kInjectedStyleSheet);
+WebSchedulerTrackedFeatures StickyFeatures() {
+  constexpr WebSchedulerTrackedFeatures features = WebSchedulerTrackedFeatures(
+      WebSchedulerTrackedFeature::kMainResourceHasCacheControlNoStore,
+      WebSchedulerTrackedFeature::kMainResourceHasCacheControlNoCache,
+      WebSchedulerTrackedFeature::kSubresourceHasCacheControlNoStore,
+      WebSchedulerTrackedFeature::kSubresourceHasCacheControlNoCache,
+      WebSchedulerTrackedFeature::kContainsPlugins,
+      WebSchedulerTrackedFeature::kDocumentLoaded,
+      WebSchedulerTrackedFeature::kRequestedNotificationsPermission,
+      WebSchedulerTrackedFeature::kRequestedMIDIPermission,
+      WebSchedulerTrackedFeature::kRequestedAudioCapturePermission,
+      WebSchedulerTrackedFeature::kRequestedVideoCapturePermission,
+      WebSchedulerTrackedFeature::kRequestedBackForwardCacheBlockedSensors,
+      WebSchedulerTrackedFeature::kRequestedBackgroundWorkPermission,
+      WebSchedulerTrackedFeature::kWebLocks,
+      WebSchedulerTrackedFeature::kRequestedStorageAccessGrant,
+      WebSchedulerTrackedFeature::kWebNfc,
+      WebSchedulerTrackedFeature::kWebFileSystem,
+      WebSchedulerTrackedFeature::kAppBanner,
+      WebSchedulerTrackedFeature::kPrinting,
+      WebSchedulerTrackedFeature::kPictureInPicture,
+      WebSchedulerTrackedFeature::kIdleManager,
+      WebSchedulerTrackedFeature::kPaymentManager,
+      WebSchedulerTrackedFeature::kKeyboardLock,
+      WebSchedulerTrackedFeature::kWebOTPService,
+      WebSchedulerTrackedFeature::kIsolatedWorldScript,
+      WebSchedulerTrackedFeature::kInjectedStyleSheet);
+  return features;
 }
 
 }  // namespace scheduler

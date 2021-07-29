@@ -5,6 +5,7 @@
 #ifndef CAST_RECEIVER_PUBLIC_RECEIVER_SOCKET_FACTORY_H_
 #define CAST_RECEIVER_PUBLIC_RECEIVER_SOCKET_FACTORY_H_
 
+#include <memory>
 #include <vector>
 
 #include "cast/common/public/cast_socket.h"
@@ -22,6 +23,9 @@ class ReceiverSocketFactory final : public TlsConnectionFactory::Client {
                              const IPEndpoint& endpoint,
                              std::unique_ptr<CastSocket> socket) = 0;
     virtual void OnError(ReceiverSocketFactory* factory, Error error) = 0;
+
+   protected:
+    virtual ~Client();
   };
 
   // |client| and |socket_client| must outlive |this|.

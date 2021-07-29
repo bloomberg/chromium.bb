@@ -34,7 +34,6 @@ import org.chromium.chrome.browser.app.feedmanagement.FeedManagementActivity;
 import org.chromium.chrome.browser.feed.shared.FeedFeatures;
 import org.chromium.chrome.browser.feed.shared.stream.Stream;
 import org.chromium.chrome.browser.feed.shared.stream.Stream.ContentChangedListener;
-import org.chromium.chrome.browser.feed.webfeed.WebFeedBridge;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
@@ -56,11 +55,12 @@ import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.signin.ui.PersonalizedSigninPromoView;
 import org.chromium.chrome.browser.signin.ui.SigninPromoController;
-import org.chromium.chrome.browser.signin.ui.SigninPromoUtil;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
+import org.chromium.chrome.browser.xsurface.FeedLaunchReliabilityLogger;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.components.browser_ui.widget.listmenu.ListMenu;
 import org.chromium.components.browser_ui.widget.listmenu.ListMenuItemProperties;
+import org.chromium.components.feed.proto.wire.ReliabilityLoggingEnums.DiscoverLaunchResult;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
 import org.chromium.components.signin.identitymanager.IdentityManager;
@@ -190,13 +190,11 @@ public class FeedSurfaceMediator
             // Only call #setupPromoViewFromCache() if SignInPromo is visible to avoid potentially
             // blocking the UI thread for several seconds if the accounts cache is not populated
             // yet.
-            if (!isVisible()) return;
-            if (isUserSignedInButNotSyncing()) {
-                SigninPromoUtil.setupSyncPromoViewFromCache(mSigninPromoController,
-                        mProfileDataCache, mCoordinator.getSigninPromoView(), null);
-            } else {
-                SigninPromoUtil.setupSigninPromoViewFromCache(mSigninPromoController,
-                        mProfileDataCache, mCoordinator.getSigninPromoView(), null);
+            if (isVisible()) {
+                mSigninPromoController.setUpSyncPromoView(mProfileDataCache,
+                        mCoordinator.getSigninPromoView().findViewById(
+                                R.id.signin_promo_view_container),
+                        null);
             }
         }
     }
@@ -330,7 +328,7 @@ public class FeedSurfaceMediator
     /** Update the content based on supervised user or enterprise policy. */
     void updateContent() {
         mFeedEnabled = FeedFeatures.isFeedEnabled();
-        if ((mFeedEnabled && mCoordinator.getStream() != null)
+        if ((mFeedEnabled && !mTabToStreamMap.isEmpty())
                 || (!mFeedEnabled && mCoordinator.getScrollViewForPolicy() != null)) {
             return;
         }
@@ -521,8 +519,7 @@ public class FeedSurfaceMediator
         }
         int tabId = getTabIdForSection(SectionType.WEB_FEED);
         boolean hasWebFeedTab = tabId != -1;
-        boolean shouldHaveWebFeedTab = mHasHeader && WebFeedBridge.isWebFeedSubscriber()
-                && FeedFeatures.isWebFeedUIEnabled();
+        boolean shouldHaveWebFeedTab = mHasHeader && FeedFeatures.isWebFeedUIEnabled();
         if (hasWebFeedTab == shouldHaveWebFeedTab) return;
         if (shouldHaveWebFeedTab) {
             addHeaderAndStream(mContext.getResources().getString(R.string.ntp_following),
@@ -530,14 +527,6 @@ public class FeedSurfaceMediator
                             R.string.accessibility_ntp_following_unread_content),
 
                     mCoordinator.createFeedStream(/* isInterestFeed = */ false));
-        } else {
-            if (mCurrentStream != null && mCurrentStream.getSectionType() == SectionType.WEB_FEED) {
-                unbindStream();
-            }
-            mTabToStreamMap.remove(tabId);
-            mSectionHeaderModel.get(SectionHeaderListProperties.SECTION_HEADERS_KEY)
-                    .removeAt(tabId);
-            mSectionHeaderModel.set(SectionHeaderListProperties.CURRENT_TAB_INDEX_KEY, 0);
         }
     }
 
@@ -545,7 +534,8 @@ public class FeedSurfaceMediator
      * Binds a stream to the {@link NtpListContentManager}. Unbinds currently active stream if
      * different from new stream. Once bound, the stream can add/remove contents.
      */
-    private void bindStream(Stream stream) {
+    @VisibleForTesting
+    void bindStream(Stream stream) {
         if (mCurrentStream == stream) return;
         if (mCurrentStream != null) {
             unbindStream();
@@ -559,7 +549,7 @@ public class FeedSurfaceMediator
 
         mCurrentStream.bind(mCoordinator.getRecyclerView(), mCoordinator.getContentManager(),
                 mRestoreScrollState, mCoordinator.getSurfaceScope(),
-                mCoordinator.getHybridListRenderer());
+                mCoordinator.getHybridListRenderer(), mCoordinator.getLaunchReliabilityLogger());
         mRestoreScrollState = null;
         mCoordinator.getHybridListRenderer().onSurfaceOpened();
     }
@@ -584,15 +574,33 @@ public class FeedSurfaceMediator
         mCurrentStream.unbind();
         mCurrentStream.removeOnContentChangedListener(mStreamContentChangedListener);
         mCurrentStream = null;
+
+        FeedLaunchReliabilityLogger launchLogger = mCoordinator.getLaunchReliabilityLogger();
+        if (launchLogger.isLaunchInProgress()) {
+            // This is the catch-all feed launch end event to ensure a complete flow is logged
+            // even if we don't know a more specific reason for the stream unbinding.
+            launchLogger.logLaunchFinished(
+                    System.nanoTime(), DiscoverLaunchResult.FRAGMENT_STOPPED.getNumber());
+        }
     }
 
     void onSurfaceOpened() {
-        setUpWebFeedTab();
         rebindStream();
     }
 
     void onSurfaceClosed() {
         unbindStream();
+    }
+
+    /** @return The stream that represents the 1st tab. */
+    Stream getFirstStream() {
+        if (mTabToStreamMap.isEmpty()) return null;
+        return mTabToStreamMap.get(0);
+    }
+
+    @VisibleForTesting
+    Stream getCurrentStreamForTesting() {
+        return mCurrentStream;
     }
 
     private void rebindStream() {
@@ -636,6 +644,8 @@ public class FeedSurfaceMediator
     private boolean createSignInPromoIfNeeded() {
         if (!SignInPromo.shouldCreatePromo()
                 || !SigninPromoController.hasNotReachedImpressionLimit(
+                        SigninAccessPoint.NTP_CONTENT_SUGGESTIONS)
+                || SigninPromoController.shouldHideSyncPromoForNTP(
                         SigninAccessPoint.NTP_CONTENT_SUGGESTIONS)) {
             return false;
         }
@@ -662,16 +672,12 @@ public class FeedSurfaceMediator
 
     /** Clear any dependencies related to the {@link Stream}. */
     private void destroyPropertiesForStream() {
-        Stream stream = mCoordinator.getStream();
-        if (stream == null) return;
+        if (mTabToStreamMap.isEmpty()) return;
 
         if (mStreamScrollListener != null) {
             mCoordinator.getRecyclerView().removeOnScrollListener(mStreamScrollListener);
             mStreamScrollListener = null;
         }
-
-        stream.removeOnContentChangedListener(mStreamContentChangedListener);
-        mStreamContentChangedListener = null;
 
         MemoryPressureListener.removeCallback(mMemoryPressureCallback);
         mMemoryPressureCallback = null;
@@ -683,9 +689,11 @@ public class FeedSurfaceMediator
 
         unbindStream();
         for (Stream s : mTabToStreamMap.values()) {
+            s.removeOnContentChangedListener(mStreamContentChangedListener);
             s.destroy();
         }
         mTabToStreamMap.clear();
+        mStreamContentChangedListener = null;
 
         mPrefChangeRegistrar.removeObserver(Pref.ARTICLES_LIST_VISIBLE);
         TemplateUrlServiceFactory.get().removeObserver(this);
@@ -695,6 +703,10 @@ public class FeedSurfaceMediator
                 mSectionHeaderModel.get(SectionHeaderListProperties.SECTION_HEADERS_KEY);
         if (headerList.size() > 0) {
             headerList.removeRange(0, headerList.size());
+        }
+
+        if (mCoordinator.getSurfaceScope() != null) {
+            mCoordinator.getSurfaceScope().getFeedLaunchReliabilityLogger().cancelPendingEvents();
         }
     }
 

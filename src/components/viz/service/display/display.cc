@@ -12,6 +12,7 @@
 #include "base/containers/contains.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -28,6 +29,7 @@
 #include "components/viz/service/debugger/viz_debugger.h"
 #include "components/viz/service/display/aggregated_frame.h"
 #include "components/viz/service/display/damage_frame_annotator.h"
+#include "components/viz/service/display/delegated_ink_point_renderer_base.h"
 #include "components/viz/service/display/direct_renderer.h"
 #include "components/viz/service/display/display_client.h"
 #include "components/viz/service/display/display_resource_provider_gl.h"
@@ -233,7 +235,7 @@ bool ReduceComplexity(const cc::Region& region,
   DCHECK(reduced_region);
 
   reduced_region->clear();
-  for (const gfx::Rect& r : region) {
+  for (gfx::Rect r : region) {
     auto it =
         std::find_if(reduced_region->begin(), reduced_region->end(),
                      [&r](const gfx::Rect& a) { return a.SharesEdgeWith(r); });
@@ -256,8 +258,9 @@ bool SupportsSetFrameRate(const OutputSurface* output_surface) {
 #elif defined(OS_WIN)
   return output_surface->capabilities().supports_dc_layers &&
          features::ShouldUseSetPresentDuration();
-#endif
+#else
   return false;
+#endif
 }
 
 }  // namespace
@@ -499,7 +502,7 @@ void Display::DisableSwapUntilResize(
     std::move(no_pending_swaps_callback).Run();
 }
 
-void Display::SetColorMatrix(const SkMatrix44& matrix) {
+void Display::SetColorMatrix(const skia::Matrix44& matrix) {
   if (output_surface_)
     output_surface_->set_color_matrix(matrix);
 
@@ -608,11 +611,18 @@ void DebugDrawFrame(const AggregatedFrame& frame) {
     return;
 
   auto& root_render_pass = *frame.render_pass_list.back();
+  DBG_LOG_OPT("frame.root.numquads", DBG_OPT_BLUE, "Num root quads=%d",
+              static_cast<int>(root_render_pass.quad_list.size()));
+  DBG_DRAW_RECT_OPT("frame.root.damage", DBG_OPT_RED,
+                    root_render_pass.damage_rect);
+
   for (auto* quad : root_render_pass.quad_list) {
     auto& transform = quad->shared_quad_state->quad_to_target_transform;
     auto display_rect = gfx::RectF(quad->rect);
     transform.TransformRect(&display_rect);
-
+    DBG_DRAW_TEXT_OPT("frame.root.material", DBG_OPT_GREEN,
+                      display_rect.origin(),
+                      base::NumberToString(static_cast<int>(quad->material)));
     DBG_DRAW_RECT("frame.root.quad", display_rect);
   }
 }
@@ -707,6 +717,12 @@ bool Display::DrawAndSwap(base::TimeTicks expected_display_time) {
     frame = aggregator_->Aggregate(
         current_surface_id_, expected_display_time, current_display_transform,
         target_damage_bounding_rect, ++swapped_trace_id_);
+
+    // Dump aggregated frame (will dump render passes and draw quads) if run
+    // with: --vmodule=display=3
+    if (VLOG_IS_ON(3)) {
+      VLOG(3) << "Post-aggregation\n" << frame.ToString();
+    }
   }
   DebugDrawFrame(frame);
 
@@ -856,7 +872,8 @@ bool Display::DrawAndSwap(base::TimeTicks expected_display_time) {
 
   bool should_swap = !disable_swap_until_resize_ && should_draw && size_matches;
   if (should_swap) {
-    PresentationGroupTiming presentation_group_timing;
+    PresentationGroupTiming& presentation_group_timing =
+        pending_presentation_group_timings_.emplace_back();
     presentation_group_timing.OnDraw(draw_timer->Begin());
 
     for (const auto& id_entry : aggregator_->previous_contained_surfaces()) {
@@ -869,8 +886,6 @@ bool Display::DrawAndSwap(base::TimeTicks expected_display_time) {
         }
       }
     }
-    pending_presentation_group_timings_.emplace_back(
-        std::move(presentation_group_timing));
 
     TRACE_EVENT_ASYNC_STEP_INTO0("viz,benchmark",
                                  "Graphics.Pipeline.DrawAndSwap",
@@ -943,7 +958,6 @@ bool Display::DrawAndSwap(base::TimeTicks expected_display_time) {
 
 void Display::DidReceiveSwapBuffersAck(const gfx::SwapTimings& timings,
                                        gfx::GpuFenceHandle release_fence) {
-  DCHECK(release_fence.is_null());
   // Adding to |pending_presentation_group_timings_| must
   // have been done in DrawAndSwap(), and should not be popped until
   // DidReceiveSwapBuffersAck.
@@ -1051,13 +1065,13 @@ void Display::DidReceivePresentationFeedback(
     DLOG(ERROR) << "Received unexpected PresentationFeedback";
     return;
   }
-  ++last_presented_trace_id_;
-  TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP0(
-      "viz,benchmark", "Graphics.Pipeline.DrawAndSwap",
-      last_presented_trace_id_, feedback.timestamp);
   auto& presentation_group_timing = pending_presentation_group_timings_.front();
   auto copy_feedback = SanitizePresentationFeedback(
       feedback, presentation_group_timing.draw_start_timestamp());
+  ++last_presented_trace_id_;
+  TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP0(
+      "viz,benchmark", "Graphics.Pipeline.DrawAndSwap",
+      last_presented_trace_id_, copy_feedback.timestamp);
   TRACE_EVENT_INSTANT_WITH_TIMESTAMP0(
       "benchmark,viz", "Display::FrameDisplayed", TRACE_EVENT_SCOPE_THREAD,
       copy_feedback.timestamp);
@@ -1220,7 +1234,7 @@ void Display::RemoveOverdrawQuads(AggregatedFrame* frame) {
           while (occlusion_in_target_space.GetRegionComplexity() >
                  settings_.kMaximumOccluderComplexity) {
             gfx::Rect smallest_rect = *occlusion_in_target_space.begin();
-            for (const auto& occluding_rect : occlusion_in_target_space) {
+            for (auto occluding_rect : occlusion_in_target_space) {
               if (occluding_rect.size().GetCheckedArea().ValueOrDefault(
                       INT_MAX) <
                   smallest_rect.size().GetCheckedArea().ValueOrDefault(
@@ -1262,8 +1276,7 @@ void Display::RemoveOverdrawQuads(AggregatedFrame* frame) {
           // safe to use function MapEnclosedRectWith2dAxisAlignedTransform to
           // define occluded region in the quad content space with inverted
           // transform.
-          for (const gfx::Rect& rect_in_target_space :
-               occlusion_in_target_space) {
+          for (gfx::Rect rect_in_target_space : occlusion_in_target_space) {
             if (current_sqs_in_target_space.Intersects(rect_in_target_space)) {
               auto rect_in_content =
                   cc::MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
@@ -1278,8 +1291,7 @@ void Display::RemoveOverdrawQuads(AggregatedFrame* frame) {
           // render pass quad.
           if (current_sqs_in_target_space.Intersects(
                   backdrop_filters_in_target_space.bounds())) {
-            for (const auto& rect_in_target_space :
-                 backdrop_filters_in_target_space) {
+            for (auto rect_in_target_space : backdrop_filters_in_target_space) {
               auto rect_in_content =
                   cc::MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
                       reverse_transform, rect_in_target_space);
@@ -1388,12 +1400,13 @@ void Display::InitDelegatedInkPointRendererReceiver(
     mojo::PendingReceiver<gfx::mojom::DelegatedInkPointRenderer>
         pending_receiver) {
   if (DoesPlatformSupportDelegatedInk() &&
-      features::ShouldUsePlatformDelegatedInk()) {
+      features::ShouldUsePlatformDelegatedInk() && output_surface_) {
     output_surface_->InitDelegatedInkPointRendererReceiver(
         std::move(pending_receiver));
-  } else {
-    renderer_->GetDelegatedInkPointRenderer(/*create_if_necessary=*/true)
-        ->InitMessagePipeline(std::move(pending_receiver));
+  } else if (DelegatedInkPointRendererBase* ink_renderer =
+                 renderer_->GetDelegatedInkPointRenderer(
+                     /*create_if_necessary=*/true)) {
+    ink_renderer->InitMessagePipeline(std::move(pending_receiver));
   }
 }
 

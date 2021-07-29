@@ -1,56 +1,23 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_TEST_TEST_EXTERNALLY_MANAGED_APP_MANAGER_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_TEST_TEST_EXTERNALLY_MANAGED_APP_MANAGER_H_
 
-#include <map>
 #include <vector>
 
-#include "chrome/browser/web_applications/components/externally_managed_app_manager.h"
-#include "chrome/browser/web_applications/test/test_app_registrar.h"
-#include "url/gurl.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/externally_managed_app_manager_impl.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace web_app {
 
-class TestAppRegistrar;
-
-// Deprecated. Please use TestExternallyManagedAppManagerImpl instead.
-class TestExternallyManagedAppManager : public ExternallyManagedAppManager {
+class TestExternallyManagedAppManager : public ExternallyManagedAppManagerImpl {
  public:
-  explicit TestExternallyManagedAppManager(TestAppRegistrar* registrar);
-  TestExternallyManagedAppManager(const TestExternallyManagedAppManager&) =
-      delete;
-  TestExternallyManagedAppManager& operator=(
-      const TestExternallyManagedAppManager&) = delete;
+  explicit TestExternallyManagedAppManager(Profile* profile);
   ~TestExternallyManagedAppManager() override;
 
-  // The foo_requests methods may return duplicates, if the underlying
-  // InstallApps or UninstallApps arguments do. The deduped_foo_count methods
-  // only count new installs or new uninstalls.
-
-  const std::vector<ExternalInstallOptions>& install_requests() const {
-    return install_requests_;
-  }
-  const std::vector<GURL>& uninstall_requests() const {
-    return uninstall_requests_;
-  }
-
-  int deduped_install_count() const { return deduped_install_count_; }
-  int deduped_uninstall_count() const { return deduped_uninstall_count_; }
-
-  void ResetCounts() {
-    deduped_install_count_ = 0;
-    deduped_uninstall_count_ = 0;
-  }
-
-  void SimulatePreviouslyInstalledApp(const GURL& url,
-                                      ExternalInstallSource install_source);
-
-  void SetInstallResultCode(InstallResultCode result_code);
-
-  // ExternallyManagedAppManager:
   void InstallNow(ExternalInstallOptions install_options,
                   OnceInstallCallback callback) override;
   void Install(ExternalInstallOptions install_options,
@@ -60,24 +27,42 @@ class TestExternallyManagedAppManager : public ExternallyManagedAppManager {
   void UninstallApps(std::vector<GURL> uninstall_urls,
                      ExternalInstallSource install_source,
                      const UninstallCallback& callback) override;
-  void Shutdown() override {}
+
+  const std::vector<ExternalInstallOptions>& install_requests() const {
+    return install_requests_;
+  }
+  const std::vector<GURL>& uninstall_requests() const {
+    return uninstall_requests_;
+  }
+
+  void SetDropRequestsForTesting(bool drop_requests_for_testing) {
+    drop_requests_for_testing_ = drop_requests_for_testing;
+  }
+
+  using HandleInstallRequestCallback =
+      base::RepeatingCallback<ExternallyManagedAppManager::InstallResult(
+          const ExternalInstallOptions&)>;
+
+  using HandleUninstallRequestCallback =
+      base::RepeatingCallback<bool(const GURL&, ExternalInstallSource)>;
+
+  // Set a callback to handle install requests. If set, this callback will be
+  // used in place of the real installation process. The callback takes a const
+  // ExternalInstallOptions& and should return a InstallResultCode.
+  void SetHandleInstallRequestCallback(HandleInstallRequestCallback callback);
+
+  // Set a callback to handle uninstall requests. If set, this callback will be
+  // used in place of the real uninstallation process. The callback takes a
+  // const ExternalInstallOptions& and should return a bool.
+  void SetHandleUninstallRequestCallback(
+      HandleUninstallRequestCallback callback);
 
  private:
-  void DoInstall(ExternalInstallOptions install_options,
-                 OnceInstallCallback callback);
   std::vector<ExternalInstallOptions> install_requests_;
   std::vector<GURL> uninstall_requests_;
-
-  // TODO(calamity): Remove and replace with TestAppRegistrar methods.
-  int deduped_install_count_;
-  int deduped_uninstall_count_;
-
-  InstallResultCode install_result_code_ =
-      InstallResultCode::kSuccessNewInstall;
-
-  TestAppRegistrar* registrar_;
-
-  base::WeakPtrFactory<TestExternallyManagedAppManager> weak_ptr_factory_{this};
+  bool drop_requests_for_testing_ = false;
+  HandleInstallRequestCallback handle_install_request_callback_;
+  HandleUninstallRequestCallback handle_uninstall_request_callback_;
 };
 
 }  // namespace web_app

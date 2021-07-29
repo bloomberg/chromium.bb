@@ -170,6 +170,42 @@ class GerritApi(recipe_api.RecipeApi):
         **kwargs
     ).json.output
 
+  def get_related_changes(self, host, change, revision='current', step_test_data=None):
+    """Queries related changes for a given host, change, and revision.
+
+    Args:
+      * host: URL of Gerrit host to query.
+      * change: The change-id of the change to get related changes for as
+          documented here:
+          https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#change-id
+      * revision: The revision-id of the revision to get related changes for as
+          documented here:
+          https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#revision-id
+          This defaults to current, which names the most recent patch set.
+      * step_test_data: Optional mock test data for the underlying gerrit client.
+
+    Returns:
+      A related changes dictionary as documented here:
+          https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#related-changes-info
+
+    """
+    args = [
+        'relatedchanges',
+        '--host',
+        host,
+        '--change',
+        change,
+        '--revision',
+        revision,
+        '--json_file',
+        self.m.json.output(),
+    ]
+    if not step_test_data:
+      step_test_data = lambda: self.test_api.get_related_changes_response_data()
+
+    return self('relatedchanges', args,
+                step_test_data=step_test_data).json.output
+
   def abandon_change(self, host, change, message=None, name=None,
                      step_test_data=None):
     args = [

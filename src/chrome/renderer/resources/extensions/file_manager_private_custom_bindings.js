@@ -188,20 +188,20 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
   });
 
   apiFunctions.setHandleRequest('executeTask',
-      function(taskId, entries, callback) {
+      function(descriptor, entries, callback) {
         var urls = entries.map(function(entry) {
           return getEntryURL(entry);
         });
-        fileManagerPrivateInternal.executeTask(taskId, urls, callback);
+        fileManagerPrivateInternal.executeTask(descriptor, urls, callback);
       });
 
   apiFunctions.setHandleRequest('setDefaultTask',
-      function(taskId, entries, mimeTypes, callback) {
+      function(descriptor, entries, mimeTypes, callback) {
         var urls = entries.map(function(entry) {
           return getEntryURL(entry);
         });
         fileManagerPrivateInternal.setDefaultTask(
-            taskId, urls, mimeTypes, callback);
+            descriptor, urls, mimeTypes, callback);
       });
 
   apiFunctions.setHandleRequest('getFileTasks', function(entries, callback) {
@@ -216,12 +216,6 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
     fileManagerPrivateInternal.getDownloadUrl(url, callback);
   });
 
-  apiFunctions.setHandleRequest('copyImageToClipboard', function(
-        entry, callback) {
-    var url = getEntryURL(entry);
-    fileManagerPrivateInternal.copyImageToClipboard(url, callback);
-  });
-
   apiFunctions.setHandleRequest('startCopy', function(
         entry, parentEntry, newName, callback) {
     var url = getEntryURL(entry);
@@ -230,15 +224,17 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
         url, parentUrl, newName, callback);
   });
 
-  apiFunctions.setHandleRequest('zipSelection', function(
-        entries, parentEntry, destName, callback) {
-    var parentUrl = getEntryURL(parentEntry);
-    var urls = entries.map(function(entry) {
-      return getEntryURL(entry);
-    });
-    fileManagerPrivateInternal.zipSelection(
-        parentUrl, urls, destName, callback);
-  });
+  apiFunctions.setHandleRequest(
+      'zipSelection',
+      (entries, parentEntry, destName, callback) =>
+          fileManagerPrivateInternal.zipSelection(
+              getEntryURL(parentEntry), entries.map(getEntryURL), destName,
+              callback));
+
+  apiFunctions.setHandleRequest(
+      'cancelZip',
+      (parentEntry, destName) => fileManagerPrivateInternal.cancelZip(
+          getEntryURL(parentEntry), destName));
 
   apiFunctions.setHandleRequest('validatePathNameLength', function(
         entry, name, callback) {

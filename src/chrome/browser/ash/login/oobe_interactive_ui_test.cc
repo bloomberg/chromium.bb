@@ -5,10 +5,8 @@
 #include <memory>
 
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
-#include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/ash_pref_names.h"
-#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/login_screen_test_api.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "base/bind.h"
@@ -61,8 +59,8 @@
 #include "chromeos/dbus/update_engine_client.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/arc/arc_util.h"
 #include "components/arc/session/arc_session_runner.h"
+#include "components/arc/test/arc_util_test_support.h"
 #include "components/arc/test/fake_arc_session.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -197,7 +195,7 @@ void RunSyncConsentScreenChecks() {
   const std::string button_name =
       chromeos::features::IsSplitSettingsSyncEnabled()
           ? "acceptButton"
-          : "settingsSaveAndContinueButton";
+          : "nonSplitSettingsAcceptButton";
   test::OobeJS().ExpectEnabledPath({"sync-consent", button_name});
   test::OobeJS().CreateFocusWaiter({"sync-consent", button_name})->Wait();
 
@@ -477,7 +475,7 @@ class NativeWindowVisibilityObserver : public aura::WindowObserver {
 class NativeWindowVisibilityBrowserMainExtraParts
     : public ChromeBrowserMainExtraParts {
  public:
-  NativeWindowVisibilityBrowserMainExtraParts(
+  explicit NativeWindowVisibilityBrowserMainExtraParts(
       NativeWindowVisibilityObserver* observer)
       : observer_(observer) {}
   ~NativeWindowVisibilityBrowserMainExtraParts() override = default;
@@ -546,9 +544,6 @@ class OobeEndToEndTestSetupMixin : public InProcessBrowserTestMixin {
 
     if (params_.arc_state != ArcState::kNotAvailable) {
       arc::SetArcAvailableCommandLineForTesting(command_line);
-      // Prevent encryption migration screen from showing up after user login
-      // with ARC available.
-      command_line->AppendSwitch(switches::kDisableEncryptionMigration);
       command_line->AppendSwitchASCII(
           switches::kArcTosHostForTests,
           arc_tos_server_->GetURL("/arc-tos").spec());
@@ -830,9 +825,8 @@ void OobeZeroTouchInteractiveUITest::ZeroTouchEndToEnd() {
 
 // crbug.com/997987. Disabled on MSAN since they time out.
 // crbug.com/1055853: EndToEnd is flaky on Linux Chromium OS ASan LSan
-// crbug.com/1214917: EndToEnd is flaky on linux-chromeos-dbg
 #if defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER) || \
-    defined(LEAK_SANITIZER) || !defined(NDEBUG)
+    defined(LEAK_SANITIZER) || (defined(OS_CHROMEOS) && !defined(NDEBUG))
 #define MAYBE_EndToEnd DISABLED_EndToEnd
 #else
 #define MAYBE_EndToEnd EndToEnd

@@ -9,13 +9,14 @@
 #include <string>
 #include <vector>
 
-#include "ash/content/scanning/mojom/scanning.mojom.h"
+#include "ash/webui/scanning/mojom/scanning.mojom.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
+#include "chrome/browser/ash/scanning/scanning_file_path_helper.h"
 #include "chromeos/dbus/lorgnette/lorgnette_service.pb.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -28,6 +29,10 @@ namespace base {
 class SequencedTaskRunner;
 }  // namespace base
 
+namespace content {
+class BrowserContext;
+}  // namespace content
+
 namespace ash {
 
 class LorgnetteScannerManager;
@@ -39,7 +44,8 @@ class ScanService : public scanning::mojom::ScanService, public KeyedService {
  public:
   ScanService(LorgnetteScannerManager* lorgnette_scanner_manager,
               base::FilePath my_files_path,
-              base::FilePath google_drive_path);
+              base::FilePath google_drive_path,
+              content::BrowserContext* context);
   ~ScanService() override;
 
   ScanService(const ScanService&) = delete;
@@ -58,12 +64,6 @@ class ScanService : public scanning::mojom::ScanService, public KeyedService {
   // Binds receiver_ by consuming |pending_receiver|.
   void BindInterface(
       mojo::PendingReceiver<scanning::mojom::ScanService> pending_receiver);
-
-  // Sets |google_drive_path_| for tests.
-  void SetGoogleDrivePathForTesting(const base::FilePath& google_drive_path);
-
-  // Sets |my_files_path_| for tests.
-  void SetMyFilesPathForTesting(const base::FilePath& my_files_path);
 
  private:
   // KeyedService:
@@ -137,10 +137,8 @@ class ScanService : public scanning::mojom::ScanService, public KeyedService {
   // Unowned. Used to get scanner information and perform scans.
   LorgnetteScannerManager* lorgnette_scanner_manager_;
 
-  // The paths to the user's My files and Google Drive directories. Used to
-  // determine if a selected file path is supported.
-  base::FilePath my_files_path_;
-  base::FilePath google_drive_path_;
+  // The browser context from which scans are initiated.
+  content::BrowserContext* const context_;
 
   // Indicates whether there was a failure to save scanned images.
   bool page_save_failed_;
@@ -167,6 +165,9 @@ class ScanService : public scanning::mojom::ScanService, public KeyedService {
   // The time at which GetScanners() is called. Used to record the time between
   // a user launching the Scan app and being able to interact with it.
   base::TimeTicks get_scanners_time_;
+
+  // Helper class for for file path manipulation and verification.
+  ScanningFilePathHelper file_path_helper_;
 
   base::WeakPtrFactory<ScanService> weak_ptr_factory_{this};
 };

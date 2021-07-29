@@ -35,6 +35,10 @@ ContentId MakeContentContentId(int id_number) {
   return MakeContentId(ContentId::FEATURE, "stories", id_number);
 }
 
+ContentId MakeNoticeCardContentContentId(int id_number) {
+  return MakeContentId(ContentId::FEATURE, "privacynoticecard.f", id_number);
+}
+
 ContentId MakeSharedStateContentId(int id_number) {
   return MakeContentId(ContentId::TYPE_UNDEFINED, "shared", id_number);
 }
@@ -65,11 +69,31 @@ feedstore::StreamStructure MakeCluster(int id_number, ContentId parent) {
   return result;
 }
 
+feedstore::StreamStructure MakeNoticeCardCluster(int id_number,
+                                                 ContentId parent) {
+  feedstore::StreamStructure result;
+  result.set_type(feedstore::StreamStructure::CLUSTER);
+  result.set_operation(feedstore::StreamStructure::UPDATE_OR_APPEND);
+  *result.mutable_content_id() = MakeClusterId(id_number);
+  *result.mutable_parent_id() = parent;
+  return result;
+}
+
 feedstore::StreamStructure MakeContentNode(int id_number, ContentId parent) {
   feedstore::StreamStructure result;
   result.set_type(feedstore::StreamStructure::CONTENT);
   result.set_operation(feedstore::StreamStructure::UPDATE_OR_APPEND);
   *result.mutable_content_id() = MakeContentContentId(id_number);
+  *result.mutable_parent_id() = parent;
+  return result;
+}
+
+feedstore::StreamStructure MakeNoticeCardContentNode(int id_number,
+                                                     ContentId parent) {
+  feedstore::StreamStructure result;
+  result.set_type(feedstore::StreamStructure::CONTENT);
+  result.set_operation(feedstore::StreamStructure::UPDATE_OR_APPEND);
+  *result.mutable_content_id() = MakeNoticeCardContentContentId(id_number);
   *result.mutable_parent_id() = parent;
   return result;
 }
@@ -109,6 +133,13 @@ feedstore::Content MakeContent(int id_number) {
   prefetch_metadata.set_image_url("http://image" + suffix);
   prefetch_metadata.set_favicon_url("http://favicon" + suffix);
   prefetch_metadata.set_badge_id("app/badge" + suffix);
+  return result;
+}
+
+feedstore::Content MakeNoticeCardContent(int id_number) {
+  feedstore::Content result;
+  *result.mutable_content_id() = MakeNoticeCardContentContentId(id_number);
+  result.set_frame("f:" + base::NumberToString(0));
   return result;
 }
 
@@ -167,31 +198,45 @@ StreamModelUpdateRequestGenerator::~StreamModelUpdateRequestGenerator() =
     default;
 
 std::unique_ptr<StreamModelUpdateRequest>
-StreamModelUpdateRequestGenerator::MakeFirstPage(int first_cluster_id) const {
+StreamModelUpdateRequestGenerator::MakeFirstPage(int first_cluster_id,
+                                                 int num_cards) const {
+  bool include_notice_card =
+      (privacy_notice_fulfilled && first_cluster_id == 0);
+
   auto initial_update = std::make_unique<StreamModelUpdateRequest>();
-  const int i = first_cluster_id;
-  const int j = first_cluster_id + 1;
   initial_update->source =
       StreamModelUpdateRequest::Source::kInitialLoadFromStore;
-  initial_update->content.push_back(MakeContent(i));
-  initial_update->content.push_back(MakeContent(j));
-  initial_update->stream_structures = {MakeClearAll(),
-                                       MakeStream(),
-                                       MakeCluster(i, MakeRootId()),
-                                       MakeContentNode(i, MakeClusterId(i)),
-                                       MakeCluster(j, MakeRootId()),
-                                       MakeContentNode(j, MakeClusterId(j))};
+  initial_update->stream_structures = {MakeClearAll(), MakeStream()};
 
-  initial_update->shared_states.push_back(MakeSharedState(i));
+  for (int i = first_cluster_id; i < first_cluster_id + num_cards; ++i) {
+    if (include_notice_card && i == first_cluster_id) {
+      initial_update->content.push_back(MakeNoticeCardContent(i));
+      initial_update->stream_structures.push_back(
+          MakeNoticeCardCluster(i, MakeRootId()));
+      initial_update->stream_structures.push_back(
+          MakeNoticeCardContentNode(i, MakeClusterId(i)));
+    } else {
+      initial_update->content.push_back(MakeContent(i));
+      initial_update->stream_structures.push_back(MakeCluster(i, MakeRootId()));
+      initial_update->stream_structures.push_back(
+          MakeContentNode(i, MakeClusterId(i)));
+    }
+  }
+
+  initial_update->shared_states.push_back(MakeSharedState(first_cluster_id));
   *initial_update->stream_data.mutable_content_id() = MakeRootId();
-  *initial_update->stream_data.add_shared_state_ids() = MakeSharedStateId(i);
+  *initial_update->stream_data.add_shared_state_ids() =
+      MakeSharedStateId(first_cluster_id);
   initial_update->stream_data.set_next_page_token("page-2");
   initial_update->stream_data.set_signed_in(signed_in);
   initial_update->stream_data.set_logging_enabled(logging_enabled);
   initial_update->stream_data.set_privacy_notice_fulfilled(
       privacy_notice_fulfilled);
-  initial_update->stream_data.add_content_ids(MakeContent(i).content_id().id());
-  initial_update->stream_data.add_content_ids(MakeContent(j).content_id().id());
+
+  for (int i = 0; i < num_cards; ++i) {
+    initial_update->stream_data.add_content_ids(
+        initial_update->content[i].content_id().id());
+  }
   feedstore::SetLastAddedTime(last_added_time, initial_update->stream_data);
 
   return initial_update;
@@ -245,6 +290,19 @@ std::unique_ptr<StreamModelUpdateRequest> MakeTypicalInitialModelState(
   return generator.MakeFirstPage(first_cluster_id);
 }
 
+std::unique_ptr<StreamModelUpdateRequest> MakeTypicalRefreshModelState(
+    int first_cluster_id,
+    base::Time last_added_time,
+    bool signed_in,
+    bool logging_enabled) {
+  StreamModelUpdateRequestGenerator generator;
+  generator.last_added_time = last_added_time;
+  generator.signed_in = signed_in;
+  generator.logging_enabled = logging_enabled;
+  generator.privacy_notice_fulfilled = false;
+  return generator.MakeFirstPage(first_cluster_id, /*num_cards=*/3);
+}
+
 std::unique_ptr<StreamModelUpdateRequest> MakeTypicalNextPageState(
     int page_number,
     base::Time last_added_time,
@@ -274,7 +332,46 @@ feedstore::WebFeedInfo MakeWebFeedInfo(const std::string& name) {
       feedwire::webfeed::WebFeedMatcher::Criteria::PAGE_URL_HOST_SUFFIX);
   criteria->set_text(name + ".com");
   return result;
+}
 
+feedwire::webfeed::WebFeed MakeWireWebFeed(const std::string& name) {
+  feedwire::webfeed::WebFeed result;
+  result.set_name("id_" + name);
+  result.set_title("Title " + name);
+  result.set_subtitle("Subtitle " + name);
+  result.set_detail_text("details...");
+  result.set_visit_uri("https://" + name + ".com");
+  result.set_follower_count(kFollowerCount);
+  *result.add_web_feed_matchers() = MakeDomainMatcher(name + ".com");
+  return result;
+}
+
+feedwire::webfeed::FollowWebFeedResponse SuccessfulFollowResponse(
+    const std::string& follow_name) {
+  feedwire::webfeed::FollowWebFeedResponse response;
+  *response.mutable_web_feed() = MakeWireWebFeed(follow_name);
+  SetConsistencyToken(response, "follow-ct");
+  return response;
+}
+
+feedwire::webfeed::UnfollowWebFeedResponse SuccessfulUnfollowResponse() {
+  feedwire::webfeed::UnfollowWebFeedResponse response;
+  SetConsistencyToken(response, "unfollow-ct");
+  return response;
+}
+
+WebFeedPageInformation MakeWebFeedPageInformation(const std::string& url) {
+  WebFeedPageInformation info;
+  info.SetUrl(GURL(url));
+  return info;
+}
+
+feedwire::webfeed::WebFeedMatcher MakeDomainMatcher(const std::string& domain) {
+  feedwire::webfeed::WebFeedMatcher result;
+  feedwire::webfeed::WebFeedMatcher::Criteria* criteria = result.add_criteria();
+  criteria->set_criteria_type(
+      feedwire::webfeed::WebFeedMatcher::Criteria::PAGE_URL_HOST_SUFFIX);
+  criteria->set_text(domain);
   return result;
 }
 

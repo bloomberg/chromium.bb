@@ -111,7 +111,7 @@ export class CountersGraph extends UI.Widget.VBox {
     this._createCurrentValuesBar();
     this._canvasContainer = canvasWidget.element;
     this._canvasContainer.id = 'memory-graphs-canvas-container';
-    this._canvas = (document.createElement('canvas') as HTMLCanvasElement);
+    this._canvas = document.createElement('canvas');
     this._canvasContainer.appendChild(this._canvas);
     this._canvas.id = 'memory-counters-graph';
 
@@ -590,7 +590,7 @@ export class Calculator implements PerfUI.TimelineGrid.Calculator {
   }
 
   formatValue(value: number, precision?: number): string {
-    return Number.preciseMillisToString(value - this.zeroTime(), precision);
+    return i18n.i18n.preciseMillisToString(value - this.zeroTime(), precision);
   }
 
   maximumBoundary(): number {

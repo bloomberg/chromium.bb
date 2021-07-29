@@ -133,7 +133,14 @@ type ThreadMap = Map<number, ThreadDesc>;
 function getRoot() {
   // Works out the root directory where the content should be served from
   // e.g. `http://origin/v1.2.3/`.
-  let root = (document.currentScript as HTMLScriptElement).src;
+  const script = document.currentScript as HTMLScriptElement;
+
+  // Needed for DOM tests, that do not have script element.
+  if (script === null) {
+    return '';
+  }
+
+  let root = script.src;
   root = root.substr(0, root.lastIndexOf('/') + 1);
   return root;
 }
@@ -144,8 +151,8 @@ function getRoot() {
 class Globals {
   readonly root = getRoot();
 
+  private _testing = false;
   private _dispatch?: Dispatch = undefined;
-  private _controllerWorker?: Worker = undefined;
   private _state?: State = undefined;
   private _frontendLocalState?: FrontendLocalState = undefined;
   private _rafScheduler?: RafScheduler = undefined;
@@ -191,13 +198,14 @@ class Globals {
     count: new Uint8Array(0),
   };
 
-  initialize(dispatch: Dispatch, controllerWorker: Worker) {
+  initialize(dispatch: Dispatch) {
     this._dispatch = dispatch;
-    this._controllerWorker = controllerWorker;
     this._state = createEmptyState();
     this._frontendLocalState = new FrontendLocalState();
     this._rafScheduler = new RafScheduler();
     this._serviceWorkerController = new ServiceWorkerController();
+    this._testing =
+        self.location && self.location.hash.indexOf('testing=1') >= 0;
     this._logging = initAnalytics();
 
     // TODO(hjd): Unify trackDataStore, queryResults, overviewStore, threads.
@@ -512,12 +520,15 @@ class Globals {
     return this._channel;
   }
 
+  get testing() {
+    return this._testing;
+  }
+
   // Used when switching to the legacy TraceViewer UI.
   // Most resources are cleaned up by replacing the current |window| object,
   // however pending RAFs and workers seem to outlive the |window| and need to
   // be cleaned up explicitly.
   shutdown() {
-    this._controllerWorker!.terminate();
     this._rafScheduler!.shutdown();
   }
 }

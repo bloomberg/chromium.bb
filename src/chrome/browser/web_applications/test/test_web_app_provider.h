@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "chrome/browser/web_applications/components/app_registry_controller.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 class Profile;
@@ -20,13 +21,14 @@ class BrowserContext;
 
 namespace web_app {
 
-class AppRegistrar;
+class WebAppRegistrar;
 class OsIntegrationManager;
 class InstallFinalizer;
 class ExternallyManagedAppManager;
 class SystemWebAppManager;
 class WebAppInstallManager;
 class WebAppPolicyManager;
+class WebAppIconManager;
 
 class TestWebAppProvider : public WebAppProvider {
  public:
@@ -52,7 +54,7 @@ class TestWebAppProvider : public WebAppProvider {
   // if it's a part of TestingProfile (see BuildDefault() method above).
   void SetRunSubsystemStartupTasks(bool run_subsystem_startup_tasks);
 
-  void SetRegistrar(std::unique_ptr<AppRegistrar> registrar);
+  void SetRegistrar(std::unique_ptr<WebAppRegistrar> registrar);
   void SetRegistryController(std::unique_ptr<AppRegistryController> controller);
   void SetOsIntegrationManager(
       std::unique_ptr<OsIntegrationManager> os_integration_manager);
@@ -67,6 +69,14 @@ class TestWebAppProvider : public WebAppProvider {
   void SetWebAppPolicyManager(
       std::unique_ptr<WebAppPolicyManager> web_app_policy_manager);
   void SkipAwaitingExtensionSystem();
+
+  // These getters can be called at any time: no
+  // WebAppProvider::CheckIsConnected() check performed. See
+  // WebAppProvider::ConnectSubsystems().
+  //
+  // A mutable view must be accessible only in tests.
+  WebAppRegistrarMutable& GetRegistrarMutable() const;
+  WebAppIconManager& GetIconManager() const;
 
  private:
   void CheckNotStarted() const;

@@ -4,8 +4,10 @@
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_box_state.h"
 
+#include "base/containers/adapters.h"
 #include "third_party/blink/renderer/core/layout/geometry/logical_offset.h"
 #include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text_combine.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_result.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
@@ -13,6 +15,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_relative_utils.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_inline_text.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/svg/svg_length_context.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 
 namespace blink {
@@ -34,31 +37,95 @@ FontHeight ComputeEmphasisMarkOutsets(const ComputedStyle& style,
 
 }  // namespace
 
-void NGInlineBoxState::InitializeFont(bool is_svg_text,
-                                      const LayoutObject& layout_object) {
+NGInlineBoxState::NGInlineBoxState(const NGInlineBoxState&& state)
+    : fragment_start(state.fragment_start),
+      item(state.item),
+      style(state.style),
+      scaled_font(state.scaled_font),
+      scaling_factor(state.scaling_factor),
+      metrics(state.metrics),
+      text_metrics(state.text_metrics),
+      text_top(state.text_top),
+      text_height(state.text_height),
+      alignment_type(state.alignment_type),
+      has_start_edge(state.has_start_edge),
+      has_end_edge(state.has_end_edge),
+      margin_inline_start(state.margin_inline_start),
+      margin_inline_end(state.margin_inline_end),
+      borders(state.borders),
+      padding(state.padding),
+      pending_descendants(std::move(state.pending_descendants)),
+      include_used_fonts(state.include_used_fonts),
+      has_box_placeholder(state.has_box_placeholder),
+      needs_box_fragment(state.needs_box_fragment),
+      is_svg_text(state.is_svg_text) {
+  if (state.scaled_font)
+    font = &*scaled_font;
+  else
+    font = state.font;
+}
+
+void NGInlineBoxState::ResetStyle(const ComputedStyle& style_ref,
+                                  bool is_svg,
+                                  const LayoutObject& layout_object) {
+  style = &style_ref;
+  is_svg_text = is_svg;
   if (!is_svg_text) {
+    scaling_factor = 1.0f;
     font = &style->GetFont();
     return;
   }
   scaled_font.emplace();
-  float scaling_factor;
   LayoutSVGInlineText::ComputeNewScaledFontForStyle(
       layout_object, scaling_factor, *scaled_font);
-  if (scaling_factor == 1.0f) {
-    scaled_font = absl::nullopt;
-    font = &style->GetFont();
-  } else {
-    font = &*scaled_font;
+  font = &*scaled_font;
+  switch (style_ref.AlignmentBaseline()) {
+    case EAlignmentBaseline::kAuto:
+    case EAlignmentBaseline::kBaseline:
+      alignment_type = style_ref.GetFontBaseline();
+      break;
+    case EAlignmentBaseline::kBeforeEdge:
+    case EAlignmentBaseline::kTextBeforeEdge:
+      alignment_type = FontBaseline::kTextOverBaseline;
+      break;
+    case EAlignmentBaseline::kMiddle:
+      alignment_type = FontBaseline::kXMiddleBaseline;
+      break;
+    case EAlignmentBaseline::kCentral:
+      alignment_type = FontBaseline::kCentralBaseline;
+      break;
+    case EAlignmentBaseline::kAfterEdge:
+    case EAlignmentBaseline::kTextAfterEdge:
+      alignment_type = FontBaseline::kTextUnderBaseline;
+      break;
+    case EAlignmentBaseline::kIdeographic:
+      alignment_type = FontBaseline::kIdeographicUnderBaseline;
+      break;
+    case EAlignmentBaseline::kAlphabetic:
+      alignment_type = FontBaseline::kAlphabeticBaseline;
+      break;
+    case EAlignmentBaseline::kHanging:
+      alignment_type = FontBaseline::kHangingBaseline;
+      break;
+    case EAlignmentBaseline::kMathematical:
+      alignment_type = FontBaseline::kMathBaseline;
+      break;
   }
 }
 
 void NGInlineBoxState::ComputeTextMetrics(const ComputedStyle& styleref,
-                                          const Font& fontref,
-                                          FontBaseline baseline_type) {
-  if (const SimpleFontData* font_data = fontref.PrimaryFont())
-    text_metrics = font_data->GetFontMetrics().GetFontHeight(baseline_type);
-  else
+                                          const Font& fontref) {
+  const auto baseline_type = styleref.GetFontBaseline();
+  if (const SimpleFontData* font_data = fontref.PrimaryFont()) {
+    if (is_svg_text) {
+      text_metrics =
+          font_data->GetFontMetrics().GetFloatFontHeight(baseline_type);
+    } else {
+      text_metrics = font_data->GetFontMetrics().GetFontHeight(baseline_type);
+    }
+  } else {
     text_metrics = FontHeight();
+  }
   text_top = -text_metrics.ascent;
   text_height = text_metrics.LineHeight();
 
@@ -86,14 +153,14 @@ void NGInlineBoxState::ResetTextMetrics() {
 }
 
 void NGInlineBoxState::EnsureTextMetrics(const ComputedStyle& styleref,
-                                         const Font& fontref,
-                                         FontBaseline baseline_type) {
+                                         const Font& fontref) {
   if (text_metrics.IsEmpty())
-    ComputeTextMetrics(styleref, fontref, baseline_type);
+    ComputeTextMetrics(styleref, fontref);
 }
 
-void NGInlineBoxState::AccumulateUsedFonts(const ShapeResultView* shape_result,
-                                           FontBaseline baseline_type) {
+void NGInlineBoxState::AccumulateUsedFonts(
+    const ShapeResultView* shape_result) {
+  const auto baseline_type = style->GetFontBaseline();
   HashSet<const SimpleFontData*> fallback_fonts;
   shape_result->FallbackFonts(&fallback_fonts);
   for (const SimpleFontData* const fallback_font : fallback_fonts) {
@@ -131,7 +198,7 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnBeginPlaceItems(
     FontBaseline baseline_type,
     bool line_height_quirk,
     NGLogicalLineItems* line_box) {
-  is_svg_text_ = node.IsSVGText();
+  is_svg_text_ = node.IsSvgText();
   if (stack_.IsEmpty()) {
     // For the first line, push a box state for the line itself.
     stack_.resize(1);
@@ -165,15 +232,14 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnBeginPlaceItems(
   // Initialize the box state for the line box.
   NGInlineBoxState& line_box_state = LineBoxState();
   if (line_box_state.style != &line_style) {
-    line_box_state.style = &line_style;
-    line_box_state.InitializeFont(node.IsSVGText(), *node.GetLayoutBox());
+    line_box_state.ResetStyle(line_style, node.IsSvgText(),
+                              *node.GetLayoutBox());
 
     // Use a "strut" (a zero-width inline box with the element's font and
     // line height properties) as the initial metrics for the line box.
     // https://drafts.csswg.org/css2/visudet.html#strut
     if (!line_height_quirk) {
-      line_box_state.ComputeTextMetrics(line_style, *line_box_state.font,
-                                        baseline_type);
+      line_box_state.ComputeTextMetrics(line_style, *line_box_state.font);
     }
   }
 
@@ -203,8 +269,7 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnOpenTag(
   stack_.resize(stack_.size() + 1);
   NGInlineBoxState* box = &stack_.back();
   box->fragment_start = line_box.size();
-  box->style = &style;
-  box->InitializeFont(is_svg_text_, *item.GetLayoutObject());
+  box->ResetStyle(style, is_svg_text_, *item.GetLayoutObject());
   box->item = &item;
   box->has_start_edge = item_result.has_edge;
   box->margin_inline_start = item_result.margins.inline_start;
@@ -233,12 +298,11 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnCloseTag(
 void NGInlineLayoutStateStack::OnEndPlaceItems(const NGConstraintSpace& space,
                                                NGLogicalLineItems* line_box,
                                                FontBaseline baseline_type) {
-  for (auto it = stack_.rbegin(); it != stack_.rend(); ++it) {
-    NGInlineBoxState* box = &(*it);
-    if (!box->has_end_edge && box->needs_box_fragment &&
-        box->style->BoxDecorationBreak() == EBoxDecorationBreak::kClone)
-      box->has_end_edge = true;
-    EndBoxState(space, box, line_box, baseline_type);
+  for (auto& box : base::Reversed(stack_)) {
+    if (!box.has_end_edge && box.needs_box_fragment &&
+        box.style->BoxDecorationBreak() == EBoxDecorationBreak::kClone)
+      box.has_end_edge = true;
+    EndBoxState(space, &box, line_box, baseline_type);
   }
 
   // Up to this point, the offset of inline boxes are stored in placeholder so
@@ -282,8 +346,6 @@ void NGInlineLayoutStateStack::AddBoxFragmentPlaceholder(
   DCHECK(box != stack_.begin() &&
          box->item->Type() != NGInlineItem::kAtomicInline);
   box->has_box_placeholder = true;
-  DCHECK(box->style);
-  const ComputedStyle& style = *box->style;
 
   LayoutUnit block_offset;
   LayoutUnit block_size;
@@ -291,7 +353,13 @@ void NGInlineLayoutStateStack::AddBoxFragmentPlaceholder(
     // The inline box should have the height of the font metrics without the
     // line-height property. Compute from style because |box->metrics| includes
     // the line-height property.
-    FontHeight metrics = style.GetFontHeight(baseline_type);
+    FontHeight metrics;
+    if (const auto* font_data = box->font->PrimaryFont()) {
+      metrics =
+          is_svg_text_
+              ? font_data->GetFontMetrics().GetFloatFontHeight(baseline_type)
+              : font_data->GetFontMetrics().GetFontHeight(baseline_type);
+    }
 
     // Extend the block direction of the box by borders and paddings. Inline
     // direction is already included into positions in NGLineBreaker.
@@ -348,15 +416,13 @@ void NGInlineLayoutStateStack::AddBoxData(const NGConstraintSpace& space,
   // An empty box fragment is still flat that we do not have to defer.
   // Also, placeholders cannot be reordred if empty.
   placeholder.rect.offset.inline_offset += box_data.margin_line_left;
-  // TODO(almaher): Handle inline relative positioning correctly for OOF
-  // fragmentation.
   placeholder.rect.offset +=
       ComputeRelativeOffsetForInline(space, *box_data.item->Style());
   LayoutUnit advance = box_data.margin_border_padding_line_left +
                        box_data.margin_border_padding_line_right;
   box_data.rect.size.inline_size =
       advance - box_data.margin_line_left - box_data.margin_line_right;
-  placeholder.layout_result = box_data.CreateBoxFragment(line_box);
+  placeholder.layout_result = box_data.CreateBoxFragment(space, line_box);
   placeholder.inline_size = advance;
   DCHECK(!placeholder.children_count);
   box_data_list_.pop_back();
@@ -420,13 +486,14 @@ void NGInlineLayoutStateStack::UpdateAfterReorder(
     box_data.fragment_start = box_data.fragment_end = 0;
 
   // Scan children and update start/end from their box_data_index.
-  unsigned box_count = box_data_list_.size();
+  Vector<BoxData> fragmented_boxes;
   for (unsigned index = 0; index < line_box->size();)
-    index = UpdateBoxDataFragmentRange(line_box, index);
+    index = UpdateBoxDataFragmentRange(line_box, index, &fragmented_boxes);
 
-  // If any inline fragmentation due to BiDi reorder, adjust box edges.
-  if (box_count != box_data_list_.size())
-    UpdateFragmentedBoxDataEdges();
+  // If any inline fragmentation occurred due to BiDi reorder, append them and
+  // adjust box edges.
+  if (UNLIKELY(!fragmented_boxes.IsEmpty()))
+    UpdateFragmentedBoxDataEdges(&fragmented_boxes);
 
 #if DCHECK_IS_ON()
   // Check all BoxData have ranges.
@@ -443,7 +510,8 @@ void NGInlineLayoutStateStack::UpdateAfterReorder(
 
 unsigned NGInlineLayoutStateStack::UpdateBoxDataFragmentRange(
     NGLogicalLineItems* line_box,
-    unsigned index) {
+    unsigned index,
+    Vector<BoxData>* fragmented_boxes) {
   // Find the first line box item that should create a box fragment.
   for (; index < line_box->size(); index++) {
     NGLogicalLineItem* start = &(*line_box)[index];
@@ -471,7 +539,7 @@ unsigned NGInlineLayoutStateStack::UpdateBoxDataFragmentRange(
       // It also changes other BoxData, but not the one we're dealing with here
       // because the update is limited only when its |box_data_index| is lower.
       while (end->box_data_index && end->box_data_index < box_data_index) {
-        UpdateBoxDataFragmentRange(line_box, index);
+        UpdateBoxDataFragmentRange(line_box, index, fragmented_boxes);
       }
 
       if (box_data_index != end->box_data_index)
@@ -486,14 +554,9 @@ unsigned NGInlineLayoutStateStack::UpdateBoxDataFragmentRange(
     } else {
       // This box is fragmented by BiDi reordering. Add a new BoxData for the
       // fragmented range.
-      box_data_list_[box_data_index - 1].fragmented_box_data_index =
-          box_data_list_.size();
-      // Do not use `emplace_back()` here because adding to |box_data_list_| may
-      // reallocate the buffer, but the `BoxData` ctor must run before the
-      // reallocation. Create a new instance and |push_back()| instead.
-      BoxData fragmented_box_data(box_data_list_[box_data_index - 1],
-                                  start_index, index);
-      box_data_list_.push_back(fragmented_box_data);
+      BoxData& fragmented_box = fragmented_boxes->emplace_back(
+          box_data_list_[box_data_index - 1], start_index, index);
+      fragmented_box.fragmented_box_data_index = box_data_index;
     }
     // If this box has parent boxes, we need to process it again.
     if (box_data_list_[box_data_index - 1].parent_box_data_index)
@@ -503,7 +566,43 @@ unsigned NGInlineLayoutStateStack::UpdateBoxDataFragmentRange(
   return index;
 }
 
-void NGInlineLayoutStateStack::UpdateFragmentedBoxDataEdges() {
+void NGInlineLayoutStateStack::UpdateFragmentedBoxDataEdges(
+    Vector<BoxData>* fragmented_boxes) {
+  DCHECK(!fragmented_boxes->IsEmpty());
+  // Append in the descending order of |fragmented_box_data_index| because the
+  // indices will change as boxes are inserted into |box_data_list_|.
+  std::sort(fragmented_boxes->begin(), fragmented_boxes->end(),
+            [](const BoxData& a, const BoxData& b) {
+              if (a.fragmented_box_data_index != b.fragmented_box_data_index) {
+                return a.fragmented_box_data_index <
+                       b.fragmented_box_data_index;
+              }
+              DCHECK_NE(a.fragment_start, b.fragment_start);
+              return a.fragment_start < b.fragment_start;
+            });
+  for (BoxData& fragmented_box : base::Reversed(*fragmented_boxes)) {
+    // Insert the fragmented box to right after the box it was fragmented from.
+    // The order in the |box_data_list_| is critical when propagating child
+    // fragment data such as OOF to ancestors.
+    const unsigned insert_at = fragmented_box.fragmented_box_data_index;
+    DCHECK_GT(insert_at, 0u);
+    fragmented_box.fragmented_box_data_index = 0;
+    box_data_list_.insert(insert_at, fragmented_box);
+
+    // Adjust box data indices by the insertion.
+    for (BoxData& box_data : box_data_list_) {
+      if (box_data.fragmented_box_data_index >= insert_at)
+        ++box_data.fragmented_box_data_index;
+    }
+
+    // Set the index of the last fragment to the original box. This is needed to
+    // update fragment edges.
+    const unsigned fragmented_from = insert_at - 1;
+    if (!box_data_list_[fragmented_from].fragmented_box_data_index)
+      box_data_list_[fragmented_from].fragmented_box_data_index = insert_at;
+  }
+
+  // Move the line-right edge to the last fragment.
   for (BoxData& box_data : box_data_list_) {
     if (box_data.fragmented_box_data_index)
       box_data.UpdateFragmentEdges(box_data_list_);
@@ -618,8 +717,6 @@ void NGInlineLayoutStateStack::ApplyRelativePositioning(
   for (BoxData& box_data : box_data_list_) {
     unsigned start = box_data.fragment_start;
     unsigned end = box_data.fragment_end;
-    // TODO(almaher): Handle inline relative positioning correctly for OOF
-    // fragmentation.
     const LogicalOffset relative_offset =
         ComputeRelativeOffsetForInline(space, *box_data.item->Style());
 
@@ -637,6 +734,7 @@ void NGInlineLayoutStateStack::ApplyRelativePositioning(
 }
 
 void NGInlineLayoutStateStack::CreateBoxFragments(
+    const NGConstraintSpace& space,
     NGLogicalLineItems* line_box) {
   DCHECK(!box_data_list_.IsEmpty());
 
@@ -647,7 +745,7 @@ void NGInlineLayoutStateStack::CreateBoxFragments(
     NGLogicalLineItem* child = &(*line_box)[start];
     DCHECK(box_data.item->ShouldCreateBoxFragment());
     scoped_refptr<const NGLayoutResult> box_fragment =
-        box_data.CreateBoxFragment(line_box);
+        box_data.CreateBoxFragment(space, line_box);
     if (child->IsPlaceholder()) {
       child->layout_result = std::move(box_fragment);
       child->rect = box_data.rect;
@@ -667,6 +765,7 @@ void NGInlineLayoutStateStack::CreateBoxFragments(
 
 scoped_refptr<const NGLayoutResult>
 NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
+    const NGConstraintSpace& space,
     NGLogicalLineItems* line_box) {
   DCHECK(item);
   DCHECK(item->Style());
@@ -690,6 +789,11 @@ NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
   // was fragmented. Fragmenting a line box in block direction is not
   // supported today.
   box.SetSidesToInclude({true, has_line_right_edge, true, has_line_left_edge});
+
+  // We don't use ComputeRelativeOffsetForInline() when storing the relative
+  // offset for OOF descendants to avoid any line-logical conversions.
+  const LogicalOffset relative_offset = ComputeRelativeOffset(
+      style, space.GetWritingDirection(), space.AvailableSize());
 
   for (unsigned i = fragment_start; i < fragment_end; i++) {
     NGLogicalLineItem& child = (*line_box)[i];
@@ -716,11 +820,8 @@ NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
 
     // Propagate any OOF-positioned descendants from any atomic-inlines, etc.
     if (child.layout_result) {
-      // TODO(almaher): Handle the inline case correctly for OOF fragmentation.
-      // The relative offset should not always be set to LogicalOffset() here.
       box.PropagateChildData(child.layout_result->PhysicalFragment(),
-                             child.rect.offset - rect.offset,
-                             /* relative_offset */ LogicalOffset());
+                             child.rect.offset - rect.offset, relative_offset);
     }
 
     // |NGFragmentItems| has a flat list of all descendants, except
@@ -732,7 +833,7 @@ NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
   // invalidations.
   item->GetLayoutObject()->SetShouldDoFullPaintInvalidation();
 
-  box.MoveOutOfFlowDescendantCandidatesToDescendants();
+  box.MoveOutOfFlowDescendantCandidatesToDescendants(relative_offset);
   return box.ToInlineBoxFragment();
 }
 
@@ -807,8 +908,60 @@ NGInlineLayoutStateStack::ApplyBaselineShift(NGInlineBoxState* box,
 
   const ComputedStyle& style = *box->style;
   EVerticalAlign vertical_align = style.VerticalAlign();
-  if (vertical_align == EVerticalAlign::kBaseline)
+  if (!is_svg_text_ && vertical_align == EVerticalAlign::kBaseline)
     return kPositionNotPending;
+
+  if (UNLIKELY(box->item &&
+               IsA<LayoutNGTextCombine>(box->item->GetLayoutObject()))) {
+    // Text content in text-combine-upright:all is layout in horizontally, so
+    // we don't need to move text combine box.
+    // See "text-combine-shrink-to-fit.html".
+    return kPositionNotPending;
+  }
+
+  // Check if there are any fragments to move.
+  unsigned fragment_end = line_box->size();
+  if (box->fragment_start == fragment_end)
+    return kPositionNotPending;
+
+  // SVG <text> supports not |vertical-align| but |baseline-shift|.
+  // https://drafts.csswg.org/css-inline/#propdef-vertical-align says
+  // |vertical-align| is a shorthand property of |baseline-shift| and
+  // |alignment-baseline|. However major browsers have never supported
+  // |vertical-align| in SVG <text>. Also, the shift amount computation
+  // for |baseline-shift| is not same as one for |vertical-align|.
+  // For now we follow the legacy behavior. If we'd like to follow the
+  // standard, first we should add a UseCounter for non-zero
+  // |baseline-shift|.
+  if (is_svg_text_) {
+    switch (style.BaselineShiftType()) {
+      case EBaselineShiftType::kLength: {
+        const Length& length = style.BaselineShift();
+        // ValueForLength() should be called with unscaled values.
+        baseline_shift =
+            LayoutUnit(-SVGLengthContext::ValueForLength(
+                           length, style,
+                           box->font->GetFontDescription().ComputedPixelSize() /
+                               box->scaling_factor) *
+                       box->scaling_factor);
+        break;
+      }
+      case EBaselineShiftType::kSub:
+        baseline_shift = LayoutUnit(
+            box->font->PrimaryFont()->GetFontMetrics().FloatHeight() / 2);
+        break;
+      case EBaselineShiftType::kSuper:
+        baseline_shift = LayoutUnit(
+            -box->font->PrimaryFont()->GetFontMetrics().FloatHeight() / 2);
+        break;
+    }
+    baseline_shift += ComputeAlignmentBaselineShift(box);
+    if (!box->metrics.IsEmpty())
+      box->metrics.Move(baseline_shift);
+    line_box->MoveInBlockDirection(baseline_shift, box->fragment_start,
+                                   fragment_end);
+    return kPositionNotPending;
+  }
 
   // 'vertical-align' aligns boxes relative to themselves, to their parent
   // boxes, or to the line box, depends on the value.
@@ -819,11 +972,6 @@ NGInlineLayoutStateStack::ApplyBaselineShift(NGInlineBoxState* box,
   if (box == stack_.begin())
     return kPositionNotPending;
   NGInlineBoxState& parent_box = box[-1];
-
-  // Check if there are any fragments to move.
-  unsigned fragment_end = line_box->size();
-  if (box->fragment_start == fragment_end)
-    return kPositionNotPending;
 
   switch (vertical_align) {
     case EVerticalAlign::kSub:
@@ -878,6 +1026,22 @@ NGInlineLayoutStateStack::ApplyBaselineShift(NGInlineBoxState* box,
   line_box->MoveInBlockDirection(baseline_shift, box->fragment_start,
                                  fragment_end);
   return kPositionNotPending;
+}
+
+LayoutUnit NGInlineLayoutStateStack::ComputeAlignmentBaselineShift(
+    const NGInlineBoxState* box) {
+  const FontMetrics& metrics = box->font->PrimaryFont()->GetFontMetrics();
+  LayoutUnit result = metrics.FixedAscent(box->style->GetFontBaseline()) -
+                      metrics.FixedAscent(box->alignment_type);
+
+  if (box != stack_.begin()) {
+    const FontMetrics& parent_metrics =
+        box[-1].font->PrimaryFont()->GetFontMetrics();
+    result -= parent_metrics.FixedAscent(box[-1].style->GetFontBaseline()) -
+              parent_metrics.FixedAscent(box[-1].alignment_type);
+  }
+
+  return result;
 }
 
 FontHeight NGInlineLayoutStateStack::MetricsForTopAndBottomAlign(

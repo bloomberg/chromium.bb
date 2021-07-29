@@ -457,6 +457,11 @@ TEST_F(ModelExecutorWithModelLoadingTest, LoadModelFileForEachExecution) {
           optimization_guide::GetStringNameForOptimizationTarget(
               proto::OptimizationTarget::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD),
       1);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.ModelExecutor.ExecutionLatency." +
+          optimization_guide::GetStringNameForOptimizationTarget(
+              proto::OptimizationTarget::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD),
+      1);
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.ModelExecutor.ModelAvailableToLoad." +
           optimization_guide::GetStringNameForOptimizationTarget(
@@ -482,6 +487,11 @@ TEST_F(ModelExecutorWithModelLoadingTest, LoadModelFileForEachExecution) {
 
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.ModelExecutor.TaskSchedulingLatency." +
+          optimization_guide::GetStringNameForOptimizationTarget(
+              proto::OptimizationTarget::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD),
+      2);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.ModelExecutor.ExecutionLatency." +
           optimization_guide::GetStringNameForOptimizationTarget(
               proto::OptimizationTarget::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD),
       2);

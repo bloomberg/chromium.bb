@@ -39,7 +39,7 @@ class ZWPTextInputWrapperV1 : public ZWPTextInputWrapper {
   void HideInputPanel() override;
 
   void SetCursorRect(const gfx::Rect& rect) override;
-  void SetSurroundingText(const std::u16string& text,
+  void SetSurroundingText(const std::string& text,
                           const gfx::Range& selection_range) override;
 
  private:
@@ -103,6 +103,10 @@ class ZWPTextInputWrapperV1 : public ZWPTextInputWrapper {
 
   std::vector<ZWPTextInputWrapperClient::SpanStyle> spans_;
   int32_t preedit_cursor_ = -1;
+
+  // Stores the string in SetSurroundingText. This string is used in
+  // OnDeleteSurroundingText.
+  std::string text_for_surrounding_text_;
 };
 
 }  // namespace ui

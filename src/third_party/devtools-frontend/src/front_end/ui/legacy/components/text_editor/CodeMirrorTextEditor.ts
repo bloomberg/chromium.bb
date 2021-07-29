@@ -92,9 +92,8 @@ export class CodeMirrorTextEditor extends UI.Widget.VBox implements UI.TextEdito
     super();
     this._options = options;
 
-    this.registerRequiredCSS('third_party/codemirror/codemirror.css', {enableLegacyPatching: true});
-    this.registerRequiredCSS('ui/legacy/components/text_editor/cmdevtools.css', {enableLegacyPatching: false});
-    this.registerRequiredCSS('ui/legacy/components/text_editor/cmdevtools.darkmode.css', {enableLegacyPatching: false});
+    this.registerRequiredCSS('third_party/codemirror/codemirror.css');
+    this.registerRequiredCSS('ui/legacy/components/text_editor/cmdevtools.css');
 
     const {indentWithTabs, indentUnit} = CodeMirrorTextEditor._getIndentation(
         Common.Settings.Settings.instance().moduleSetting('textEditorIndent').get());
@@ -109,8 +108,8 @@ export class CodeMirrorTextEditor extends UI.Widget.VBox implements UI.TextEdito
       lineWrapping: options.lineWrapping,
       lineWiseCopyCut: options.lineWiseCopyCut || false,
       pollInterval: Math.pow(2, 31) - 1,
-      inputStyle: options.inputStyle || 'devToolsAccessibleTextArea',
       matchBrackets: true,
+      inputStyle: (options.inputStyle || 'devToolsAccessibleTextArea') as unknown as undefined,
       styleSelectedText: true,
       styleActiveLine: true,
       tabIndex: 0,

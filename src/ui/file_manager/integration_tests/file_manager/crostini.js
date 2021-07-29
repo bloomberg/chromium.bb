@@ -1,7 +1,11 @@
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-'use strict';
+
+import {ENTRIES, RootPath, sendTestMessage} from '../test_util.js';
+import {testcase} from '../testcase.js';
+
+import {mountCrostini, remoteCall, setupAndWaitUntilReady} from './background.js';
 
 const FAKE_LINUX_FILES = '#directory-tree [root-type-icon="crostini"]';
 const REAL_LINUX_FILES = '#directory-tree [volume-type-icon="crostini"]';
@@ -81,18 +85,27 @@ testcase.sharePathWithCrostini = async () => {
 
 testcase.pluginVmDirectoryNotSharedErrorDialog = async () => {
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
+  const pluginVmAppDescriptor = {
+    appId: 'plugin-vm-app-id',
+    taskType: 'pluginvm',
+    actionId: 'open-with',
+  };
 
   // Override the tasks so the "Open with Plugin VM App" button becomes a
   // dropdown option.
   chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(
       'overrideTasks', appId, [[
         {
-          taskId: 'text-app-id|app|text',
+          descriptor: {
+            appId: 'text-app-id',
+            taskType: 'app',
+            actionId: 'text',
+          },
           title: 'Text',
           verb: 'open_with',
         },
         {
-          taskId: 'plugin-vm-app-id|pluginvm|open-with',
+          descriptor: pluginVmAppDescriptor,
           title: 'App (Windows)',
           verb: 'open_with',
         }
@@ -122,8 +135,7 @@ testcase.pluginVmDirectoryNotSharedErrorDialog = async () => {
         appOptions.map(el => el.text).indexOf('Open with App (Windows)') + 1})`
   ]);
   await remoteCall.waitUntilTaskExecutes(
-      appId, 'plugin-vm-app-id|pluginvm|open-with',
-      ['failed_plugin_vm_directory_not_shared']);
+      appId, pluginVmAppDescriptor, ['failed_plugin_vm_directory_not_shared']);
   await remoteCall.waitForElement(
       appId, '.cr-dialog-frame:not(#default-task-dialog):not([hidden])');
 
@@ -148,18 +160,27 @@ testcase.pluginVmDirectoryNotSharedErrorDialog = async () => {
 testcase.pluginVmFileOnExternalDriveErrorDialog = async () => {
   // Use files outside of MyFiles to show 'copy' rather than 'move'.
   const appId = await setupAndWaitUntilReady(RootPath.DRIVE);
+  const pluginVmAppDescriptor = {
+    appId: 'plugin-vm-app-id',
+    taskType: 'pluginvm',
+    actionId: 'open-with',
+  };
 
   // Override the tasks so the "Open with Plugin VM App" button becomes a
   // dropdown option.
   chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(
       'overrideTasks', appId, [[
         {
-          taskId: 'text-app-id|app|text',
+          descriptor: {
+            appId: 'text-app-id',
+            taskType: 'app',
+            actionId: 'text',
+          },
           title: 'Text',
           verb: 'open_with',
         },
         {
-          taskId: 'plugin-vm-app-id|pluginvm|open-with',
+          descriptor: pluginVmAppDescriptor,
           title: 'App (Windows)',
           verb: 'open_with',
         }
@@ -189,8 +210,7 @@ testcase.pluginVmFileOnExternalDriveErrorDialog = async () => {
         appOptions.map(el => el.text).indexOf('Open with App (Windows)') + 1})`
   ]);
   await remoteCall.waitUntilTaskExecutes(
-      appId, 'plugin-vm-app-id|pluginvm|open-with',
-      ['failed_plugin_vm_directory_not_shared']);
+      appId, pluginVmAppDescriptor, ['failed_plugin_vm_directory_not_shared']);
   await remoteCall.waitForElement(
       appId, '.cr-dialog-frame:not(#default-task-dialog):not([hidden])');
 

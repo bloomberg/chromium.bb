@@ -310,6 +310,7 @@ namespace http://www.w3.org/1999/xhtml
     property setAttributeNS
     property setAttributeNode
     property setAttributeNodeNS
+    property setHTML
     property setPointerCapture
     property shadowRoot
     property slot
@@ -658,7 +659,6 @@ html element iframe
     property contentDocument
     property contentWindow
     property csp
-    property disallowDocumentAccess
     property featurePolicy
     property frameBorder
     property getSVGDocument
@@ -674,7 +674,6 @@ html element iframe
     property scrolling
     property src
     property srcdoc
-    property trustToken
     property width
 html element img
     property align
@@ -824,6 +823,7 @@ html element menu
 html element meta
     property content
     property httpEquiv
+    property media
     property name
     property scheme
 html element meter
@@ -969,6 +969,7 @@ html element select
     property value
     property willValidate
 html element selectmenu
+    property open
     property value
 html element slot
     property assign
@@ -1511,6 +1512,7 @@ namespace http://www.w3.org/2000/svg
     property setAttributeNS
     property setAttributeNode
     property setAttributeNodeNS
+    property setHTML
     property setPointerCapture
     property shadowRoot
     property slot

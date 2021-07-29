@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/feature_list.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -55,13 +55,8 @@ class EmptyTrustedVaultClient : public TrustedVaultClient {
     NOTREACHED();
   }
 
-  void RemoveAllStoredKeys() override {
-    // Never invoked by SyncServiceCrypto.
-    NOTREACHED();
-  }
-
-  void MarkKeysAsStale(const CoreAccountInfo& account_info,
-                       base::OnceCallback<void(bool)> cb) override {
+  void MarkLocalKeysAsStale(const CoreAccountInfo& account_info,
+                            base::OnceCallback<void(bool)> cb) override {
     std::move(cb).Run(false);
   }
 
@@ -267,7 +262,7 @@ bool SyncServiceCrypto::IsTrustedVaultRecoverabilityDegraded() const {
 bool SyncServiceCrypto::IsEncryptEverythingEnabled() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(state_.engine);
-  return state_.encrypt_everything || state_.encryption_pending;
+  return state_.encrypt_everything;
 }
 
 void SyncServiceCrypto::SetEncryptionPassphrase(const std::string& passphrase) {
@@ -375,6 +370,7 @@ void SyncServiceCrypto::SetSyncEngine(const CoreAccountInfo& account_info,
   if (state_.required_user_action ==
       RequiredUserAction::kUnknownDuringInitialization) {
     UpdateRequiredUserActionAndNotify(RequiredUserAction::kNone);
+    RefreshIsRecoverabilityDegraded();
   }
 
   // This indicates OnTrustedVaultKeyRequired() was called as part of the
@@ -500,6 +496,7 @@ void SyncServiceCrypto::OnTrustedVaultKeyAccepted() {
   }
 
   UpdateRequiredUserActionAndNotify(RequiredUserAction::kNone);
+  RefreshIsRecoverabilityDegraded();
 
   // Make sure the data types that depend on the decryption key are started at
   // this time.
@@ -596,7 +593,7 @@ void SyncServiceCrypto::FetchTrustedVaultKeys(bool is_second_fetch_attempt) {
          state_.required_user_action ==
              RequiredUserAction::kTrustedVaultKeyRequiredButFetching);
 
-  UMA_HISTOGRAM_ENUMERATION(
+  base::UmaHistogramEnumeration(
       "Sync.TrustedVaultFetchKeysAttempt",
       is_second_fetch_attempt
           ? TrustedVaultFetchKeysAttemptForUMA::kSecondAttempt
@@ -624,7 +621,7 @@ void SyncServiceCrypto::TrustedVaultKeysFetchedFromClient(
 
   DCHECK(state_.engine);
 
-  UMA_HISTOGRAM_COUNTS_100("Sync.TrustedVaultFetchedKeysCount", keys.size());
+  base::UmaHistogramCounts100("Sync.TrustedVaultFetchedKeysCount", keys.size());
 
   if (keys.empty()) {
     // Nothing to do if no keys have been fetched from the client (e.g. user
@@ -649,14 +646,15 @@ void SyncServiceCrypto::TrustedVaultKeysAdded(bool is_second_fetch_attempt) {
                  state_.required_user_action !=
                      RequiredUserAction::kTrustedVaultKeyRequiredButFetching;
 
-  UMA_HISTOGRAM_BOOLEAN("Sync.TrustedVaultAddKeysAttemptIsSuccessful", success);
+  base::UmaHistogramBoolean("Sync.TrustedVaultAddKeysAttemptIsSuccessful",
+                            success);
 
   if (success) {
     return;
   }
 
   // Let trusted vault client know, that fetched keys were insufficient.
-  trusted_vault_client_->MarkKeysAsStale(
+  trusted_vault_client_->MarkLocalKeysAsStale(
       state_.account_info,
       base::BindOnce(&SyncServiceCrypto::TrustedVaultKeysMarkedAsStale,
                      weak_factory_.GetWeakPtr(), is_second_fetch_attempt));
@@ -717,11 +715,14 @@ void SyncServiceCrypto::UpdateRequiredUserActionAndNotify(
 
   state_.required_user_action = new_required_user_action;
   delegate_->CryptoRequiredUserActionChanged();
-
-  RefreshIsRecoverabilityDegraded();
 }
 
 void SyncServiceCrypto::RefreshIsRecoverabilityDegraded() {
+  if (state_.cached_passphrase_type !=
+      PassphraseType::kTrustedVaultPassphrase) {
+    return;
+  }
+
   switch (state_.required_user_action) {
     case RequiredUserAction::kUnknownDuringInitialization:
     case RequiredUserAction::kFetchingTrustedVaultKeys:
@@ -735,7 +736,7 @@ void SyncServiceCrypto::RefreshIsRecoverabilityDegraded() {
   }
 
   if (!base::FeatureList::IsEnabled(
-          switches::kSyncSupportTrustedVaultPassphraseRecovery)) {
+          switches::kSyncTrustedVaultPassphraseRecovery)) {
     return;
   }
 
@@ -769,6 +770,13 @@ void SyncServiceCrypto::GetIsRecoverabilityDegradedCompleted(
           RequiredUserAction::kTrustedVaultRecoverabilityDegraded) {
     UpdateRequiredUserActionAndNotify(RequiredUserAction::kNone);
     delegate_->CryptoStateChanged();
+  }
+
+  if (!initial_trusted_vault_recoverability_logged_to_uma_) {
+    initial_trusted_vault_recoverability_logged_to_uma_ = true;
+    base::UmaHistogramBoolean(
+        "Sync.TrustedVaultRecoverabilityDegradedOnStartup",
+        is_recoverability_degraded);
   }
 }
 

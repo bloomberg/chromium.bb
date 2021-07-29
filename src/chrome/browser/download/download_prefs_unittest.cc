@@ -14,7 +14,7 @@
 #include "components/download/public/common/download_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/safe_browsing/core/file_type_policies.h"
+#include "components/safe_browsing/content/common/file_type_policies.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,8 +27,11 @@
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "base/hash/md5.h"
 #include "base/path_service.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_paths_lacros.h"
+#include "components/account_id/account_id.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 using safe_browsing::FileTypePolicies;
@@ -323,6 +326,44 @@ TEST(DownloadPrefsTest, AutoOpenSetByPolicyAllowedURLsDynamicUpdates) {
   EXPECT_TRUE(prefs.IsAutoOpenByPolicy(kDisallowedURL, kFilePath));
 }
 
+TEST(DownloadPrefsTest, AutoOpenSetByPolicyBlobURL) {
+  const base::FilePath kFilePath(FILE_PATH_LITERAL("/good/basic-path.txt"));
+  const GURL kAllowedURL("http://basic.com");
+  const GURL kDisallowedURL("http://disallowed.com");
+  const GURL kBlobAllowedURL("blob:" + kAllowedURL.spec());
+  const GURL kBlobDisallowedURL("blob:" + kDisallowedURL.spec());
+
+  ASSERT_TRUE(kBlobAllowedURL.SchemeIsBlob());
+  ASSERT_TRUE(kBlobDisallowedURL.SchemeIsBlob());
+
+  content::BrowserTaskEnvironment task_environment_;
+  TestingProfile profile;
+  ListPrefUpdate update_type(profile.GetPrefs(),
+                             prefs::kDownloadExtensionsToOpenByPolicy);
+  update_type->AppendString("txt");
+  DownloadPrefs prefs(&profile);
+
+  // Ensure both urls work in either form when no URL restrictions are present.
+  EXPECT_TRUE(prefs.IsAutoOpenByPolicy(kAllowedURL, kFilePath));
+  EXPECT_TRUE(prefs.IsAutoOpenByPolicy(kDisallowedURL, kFilePath));
+  EXPECT_TRUE(prefs.IsAutoOpenByPolicy(kBlobAllowedURL, kFilePath));
+  EXPECT_TRUE(prefs.IsAutoOpenByPolicy(kBlobDisallowedURL, kFilePath));
+
+  // Update the policy preference to only allow |kAllowedURL|.
+  {
+    ListPrefUpdate update_url(profile.GetPrefs(),
+                              prefs::kDownloadAllowedURLsForOpenByPolicy);
+    update_url->AppendString("basic.com");
+  }
+
+  // Ensure |kAllowedURL| continutes to work and |kDisallowedURL| is blocked,
+  // even in blob form.
+  EXPECT_TRUE(prefs.IsAutoOpenByPolicy(kAllowedURL, kFilePath));
+  EXPECT_FALSE(prefs.IsAutoOpenByPolicy(kDisallowedURL, kFilePath));
+  EXPECT_TRUE(prefs.IsAutoOpenByPolicy(kBlobAllowedURL, kFilePath));
+  EXPECT_FALSE(prefs.IsAutoOpenByPolicy(kBlobDisallowedURL, kFilePath));
+}
+
 TEST(DownloadPrefsTest, MissingDefaultPathCorrected) {
   content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile;
@@ -369,7 +410,7 @@ TEST(DownloadPrefsTest, DefaultPathChangedToInvalidValue) {
             download_prefs.GetDefaultDownloadDirectory());
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if defined(OS_CHROMEOS)
 void ExpectValidDownloadDir(Profile* profile,
                             DownloadPrefs* prefs,
                             base::FilePath path) {
@@ -399,7 +440,7 @@ TEST(DownloadPrefsTest, DownloadDirSanitization) {
                          documents_path.AppendASCII("testdir"));
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
-  // Test with an invalid path outside the download directory.
+  // Test with an invalid path outside the download directory or drivefs.
   profile.GetPrefs()->SetString(prefs::kDownloadDefaultDirectory,
                                 "/home/chronos");
   EXPECT_EQ(prefs.DownloadPath(), default_dir);
@@ -427,24 +468,38 @@ TEST(DownloadPrefsTest, DownloadDirSanitization) {
       &profile, &prefs,
       base::FilePath(
           "/media/fuse/crostini_0123456789abcdef_termina_penguin/testdir"));
-
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   // DriveFS
   {
     // Create new profile for enabled feature to work.
     TestingProfile profile2(base::FilePath("/home/chronos/u-0123456789abcdef"));
-    ash::FakeChromeUserManager user_manager;
     DownloadPrefs prefs2(&profile2);
     AccountId account_id =
         AccountId::FromUserEmailGaiaId(profile2.GetProfileUserName(), "12345");
+    const std::string drivefs_profile_salt = "a";
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    ash::FakeChromeUserManager user_manager;
     const auto* user = user_manager.AddUser(account_id);
     chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(
         user, &profile2);
     chromeos::ProfileHelper::Get()->SetProfileToUserMappingForTesting(
         const_cast<user_manager::User*>(user));
-    profile2.GetPrefs()->SetString(drive::prefs::kDriveFsProfileSalt, "a");
+    profile2.GetPrefs()->SetString(drive::prefs::kDriveFsProfileSalt,
+                                   drivefs_profile_salt);
     auto* integration_service =
         drive::DriveIntegrationServiceFactory::GetForProfile(&profile2);
     integration_service->SetEnabled(true);
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+    base::FilePath documents_dir;
+    base::PathService::Get(chrome::DIR_USER_DOCUMENTS, &documents_dir);
+    base::FilePath downloads_dir;
+    base::PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &downloads_dir);
+    const base::FilePath drivefs = base::FilePath(
+        "/media/fuse/drivefs-" + base::MD5String(drivefs_profile_salt + "-" +
+                                                 account_id.GetAccountIdKey()));
+    chrome::SetLacrosDefaultPaths(/*documents_dir=*/documents_dir,
+                                  /*downloads_dir=*/downloads_dir, drivefs);
+#endif
 
     // My Drive root.
     ExpectValidDownloadDir(
@@ -467,9 +522,8 @@ TEST(DownloadPrefsTest, DownloadDirSanitization) {
                                    "/media/fuse/drivefs-something-else/root");
     EXPECT_EQ(prefs2.DownloadPath(), default_dir2);
   }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#endif  // defined(OS_CHROMEOS)
 
 #ifdef OS_ANDROID
 TEST(DownloadPrefsTest, DownloadLaterPrefs) {

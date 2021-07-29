@@ -54,6 +54,7 @@ class WebMouseWheelEvent;
 }
 
 namespace ui {
+class Compositor;
 enum class DomCode;
 class LatencyInfo;
 class TouchEvent;
@@ -72,14 +73,6 @@ class TouchSelectionControllerClientManager;
 class WebCursor;
 class WebContentsAccessibility;
 class DelegatedFrameHost;
-
-// The TooltipObserver is used in browser tests only.
-class CONTENT_EXPORT TooltipObserver {
- public:
-  virtual ~TooltipObserver() = default;
-
-  virtual void OnTooltipTextUpdated(const std::u16string& tooltip_text) = 0;
-};
 
 // Basic implementation shared by concrete RenderWidgetHostView subclasses.
 class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
@@ -131,7 +124,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
       base::OnceCallback<void(const SkBitmap&)> callback) override;
   std::unique_ptr<viz::ClientFrameSinkVideoCapturer> CreateVideoCapturer()
       override;
-  void GetScreenInfo(blink::ScreenInfo* screen_info) override;
+  void GetScreenInfo(display::ScreenInfo* screen_info) override;
   void EnableAutoResize(const gfx::Size& min_size,
                         const gfx::Size& max_size) override;
   void DisableAutoResize(const gfx::Size& new_size) override;
@@ -144,6 +137,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
       bool show_reason_tab_switching,
       bool show_reason_unoccluded,
       bool show_reason_bfcache_restore) final;
+  bool ShouldVirtualKeyboardOverlayContent() override;
 
   // This only needs to be overridden by RenderWidgetHostViewBase subclasses
   // that handle content embedded within other RenderWidgetHostViews.
@@ -463,6 +457,13 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
   // An empty string will clear a visible tooltip.
   virtual void UpdateTooltip(const std::u16string& tooltip_text) {}
 
+  // Updates the tooltip text and its position and displays the requested
+  // tooltip on the screen. The |bounds| parameter corresponds to the bounds of
+  // the renderer-side element (in widget-relative DIPS) on which the tooltip
+  // should appear to be anchored.
+  virtual void UpdateTooltipFromKeyboard(const std::u16string& tooltip_text,
+                                         const gfx::Rect& bounds) {}
+
   // Transforms |point| to be in the coordinate space of browser compositor's
   // surface. This is in DIP.
   virtual void TransformPointToRootSurface(gfx::PointF* point);
@@ -544,6 +545,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
   }
 
   void SetTooltipObserverForTesting(TooltipObserver* observer);
+
+  virtual ui::Compositor* GetCompositor();
 
  protected:
   explicit RenderWidgetHostViewBase(RenderWidgetHost* host);

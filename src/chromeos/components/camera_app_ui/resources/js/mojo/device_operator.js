@@ -15,7 +15,8 @@ import {
 } from '../type.js';
 import {WaitableEvent} from '../waitable_event.js';
 
-import {closeWhenUnload} from './util.js';
+import {MockDocumentScanner} from './mock_document_scanner.js';
+import {wrapEndpoint} from './util.js';
 
 /**
  * Parse the entry data according to its type.
@@ -40,7 +41,9 @@ export function parseMetadata(entry) {
       return Array.from(new BigInt64Array(buffer), (bigIntVal) => {
         const numVal = Number(bigIntVal);
         if (!Number.isSafeInteger(numVal)) {
-          console.warn('The int64 value is not a safe integer');
+          reportError(
+              ErrorType.UNSAFE_INTEGER, ErrorLevel.WARNING,
+              new Error('The int64 value is not a safe integer'));
         }
         return numVal;
       });
@@ -110,7 +113,8 @@ export class DeviceOperator {
      * @type {!cros.mojom.CameraAppDeviceProviderRemote}
      * @private
      */
-    this.deviceProvider_ = cros.mojom.CameraAppDeviceProvider.getRemote();
+    this.deviceProvider_ =
+        wrapEndpoint(cros.mojom.CameraAppDeviceProvider.getRemote());
 
     /**
      * Flag that indicates if the direct communication between camera app and
@@ -118,10 +122,10 @@ export class DeviceOperator {
      * @type {!Promise<boolean>}
      * @private
      */
-    this.isSupported_ =
-        this.deviceProvider_.isSupported().then(({isSupported}) => {
-          return isSupported;
-        });
+    this.isSupported_ = (async () => {
+      const {isSupported} = await this.deviceProvider_.isSupported();
+      return isSupported;
+    })();
 
     /**
      * Map which maps from device id to the remote of devices. We want to have
@@ -131,8 +135,6 @@ export class DeviceOperator {
      * @private
      */
     this.devices_ = new Map();
-
-    closeWhenUnload(this.deviceProvider_);
   }
 
   /**
@@ -159,8 +161,9 @@ export class DeviceOperator {
     device.onConnectionError.addListener(() => {
       this.dropConnection(deviceId);
     });
-    this.devices_.set(deviceId, device);
-    return device;
+    const deviceProxy = wrapEndpoint(device);
+    this.devices_.set(deviceId, deviceProxy);
+    return deviceProxy;
   }
 
   /**
@@ -474,14 +477,13 @@ export class DeviceOperator {
    *     handles the metadata.
    * @param {!cros.mojom.StreamType} streamType Stream type which the observer
    *     gets the metadata from.
-   * @return {!Promise<number>} id for the added observer. Can be used later
-   *     to identify and remove the inserted observer.
+   * @return {!Promise<number>} id for the added observer. Can be used later to
+   *     identify and remove the inserted observer.
    * @throws {!Error} if fails to construct device connection.
    */
   async addMetadataObserver(deviceId, callback, streamType) {
     const observerCallbackRouter =
-        new cros.mojom.ResultMetadataObserverCallbackRouter();
-    closeWhenUnload(observerCallbackRouter);
+        wrapEndpoint(new cros.mojom.ResultMetadataObserverCallbackRouter());
     observerCallbackRouter.onMetadataAvailable.addListener(callback);
 
     const device = await this.getDevice_(deviceId);
@@ -519,8 +521,7 @@ export class DeviceOperator {
    */
   async addShutterObserver(deviceId, callback) {
     const observerCallbackRouter =
-        new cros.mojom.CameraEventObserverCallbackRouter();
-    closeWhenUnload(observerCallbackRouter);
+        wrapEndpoint(new cros.mojom.CameraEventObserverCallbackRouter());
     observerCallbackRouter.onShutterDone.addListener(callback);
 
     const device = await this.getDevice_(deviceId);
@@ -549,8 +550,8 @@ export class DeviceOperator {
    *     which could be retrieved from MediaDeviceInfo.deviceId.
    * @param {!cros.mojom.Effect} effect The target reprocess option (effect)
    *     that would be applied on the result.
-   * @return {!Promise<!media.mojom.Blob>} The captured
-   *     result with given effect.
+   * @return {!Promise<!media.mojom.Blob>} The captured result with given
+   *     effect.
    * @throws {!Error} Thrown when the reprocess is failed or the device
    *     operation is not supported.
    */
@@ -609,6 +610,35 @@ export class DeviceOperator {
     if (deviceId) {
       await this.deviceProvider_.setMultipleStreamsEnabled(deviceId, enabled);
     }
+  }
+
+  /**
+   * Registers a document corners detector and triggers |callback| if the
+   * detected corners are updated.
+   * @param {string} deviceId The id of target camera device.
+   * @param {function(!Array<gfx.mojom.PointF>): void} callback Callback to
+   *     trigger when the detected corners are updated.
+   * @return {!Promise<number>} Id for the added detector.
+   */
+  async registerDocumentCornersDetector(deviceId, callback) {
+    // TODO(b/180564352): Switch to the actual implementation once it is ready.
+    const {id} =
+        await MockDocumentScanner.getInstance().registerDocumentCornersDetector(
+            callback);
+    return id;
+  }
+
+  /**
+   * Unregisters the document corners detector given by its id.
+   * @param {string} deviceId The id of target camera device.
+   * @param {number} detectorId The id of the detector.
+   * @return {!Promise<boolean>} True if it succeed.
+   */
+  async unregisterDocumentCornersDetector(deviceId, detectorId) {
+    // TODO(b/180564352): Switch to the actual implementation once it is ready.
+    const {isSuccess} = await MockDocumentScanner.getInstance()
+                            .unregisterDocumentCornersDetector(detectorId);
+    return isSuccess;
   }
 
   /**

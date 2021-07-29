@@ -20,9 +20,12 @@ namespace {
 // this array may either refer to features defined in the header of this file or
 // in other locations in the code base (e.g. content_features.h).
 const base::Feature* const kFeaturesExposedToJava[] = {
+    &features::kAccessibilityPageZoom,
+    &features::kAccessibilityPageZoomUpdatedUI,
     &features::kBackgroundMediaRendererHasModerateBinding,
     &features::kBindingManagementWaiveCpu,
     &features::kExperimentalAccessibilityLabels,
+    &features::kOnDemandAccessibilityEvents,
     &features::kProcessSharingWithStrictSiteInstances,
     &features::kWebAuth,
     &features::kWebBluetoothNewPermissionsBackend,

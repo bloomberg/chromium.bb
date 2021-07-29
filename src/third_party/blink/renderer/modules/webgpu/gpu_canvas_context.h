@@ -15,8 +15,10 @@
 namespace blink {
 
 class GPUAdapter;
+class GPUCanvasConfiguration;
 class GPUSwapChain;
-class GPUSwapChainDescriptor;
+class GPUTexture;
+class V8UnionHTMLCanvasElementOrOffscreenCanvas;
 
 // A GPUCanvasContext does little by itself and basically just binds a canvas
 // and a GPUSwapChain together and forwards calls from one to the other.
@@ -46,21 +48,18 @@ class GPUCanvasContext : public CanvasRenderingContext {
 
   // CanvasRenderingContext implementation
   ContextType GetContextType() const override;
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   V8RenderingContext* AsV8RenderingContext() final;
   V8OffscreenRenderingContext* AsV8OffscreenRenderingContext() final;
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  void SetCanvasGetContextResult(RenderingContext&) final;
-  void SetOffscreenCanvasGetContextResult(OffscreenRenderingContext&) final;
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  scoped_refptr<StaticBitmapImage> GetImage() final { return nullptr; }
+  scoped_refptr<StaticBitmapImage> GetImage() final;
+  bool PaintRenderingResultsToCanvas(SourceDrawingBuffer) final;
+  bool CopyRenderingResultsFromDrawingBuffer(CanvasResourceProvider*,
+                                             SourceDrawingBuffer) final;
   void SetIsInHiddenPage(bool) override {}
   void SetIsBeingDisplayed(bool) override {}
   bool isContextLost() const override { return false; }
   bool IsComposited() const final { return true; }
   bool IsAccelerated() const final { return true; }
   bool IsOriginTopLeft() const final { return true; }
-  bool Is3d() const final { return true; }
   void SetFilterQuality(SkFilterQuality) override;
   bool IsPaintable() const final { return true; }
   int ExternallyAllocatedBufferCountPerPixel() final { return 1; }
@@ -77,15 +76,30 @@ class GPUCanvasContext : public CanvasRenderingContext {
     return false;
   }
 
-  // gpu_canvas_context.idl
-  GPUSwapChain* configureSwapChain(const GPUSwapChainDescriptor* descriptor,
+  // gpu_presentation_context.idl
+  V8UnionHTMLCanvasElementOrOffscreenCanvas* getHTMLOrOffscreenCanvas() const;
+
+  void configure(const GPUCanvasConfiguration* descriptor, ExceptionState&);
+  void unconfigure();
+  String getPreferredFormat(const GPUAdapter* adapter);
+  GPUTexture* getCurrentTexture(ExceptionState&);
+
+  // gpu_canvas_context.idl (Deprecated)
+  GPUSwapChain* configureSwapChain(const GPUCanvasConfiguration* descriptor,
                                    ExceptionState&);
-  String getSwapChainPreferredFormat(const GPUAdapter* adapter);
+  String getSwapChainPreferredFormat(ExecutionContext* execution_context,
+                                     GPUAdapter* adapter);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GPUCanvasContext);
+
+  void ConfigureInternal(const GPUCanvasConfiguration* descriptor,
+                         ExceptionState&,
+                         bool deprecated_resize_behavior = false);
+
   SkFilterQuality filter_quality_ = kLow_SkFilterQuality;
   Member<GPUSwapChain> swapchain_;
+  Member<GPUDevice> configured_device_;
   bool stopped_ = false;
 };
 

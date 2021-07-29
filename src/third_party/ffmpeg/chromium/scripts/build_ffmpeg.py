@@ -39,8 +39,7 @@ BRANDINGS = [
 ARCH_MAP = {
     'android': ['ia32', 'x64', 'arm-neon', 'arm64'],
     'linux': [
-        'ia32', 'x64', 'mipsel', 'mips64el', 'noasm-x64', 'arm', 'arm-neon',
-        'arm64'
+        'ia32', 'x64', 'noasm-x64', 'arm', 'arm-neon', 'arm64'
     ],
     'mac': ['x64', 'arm64'],
     'win': ['ia32', 'x64', 'arm64'],
@@ -558,9 +557,9 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
   if target_os in (host_os, host_os + '-noasm', 'android',
                    'win', 'mac') and not config_only:
     libraries = [
-        os.path.join('libavcodec', GetDsoName(target_os, 'avcodec', 58)),
-        os.path.join('libavformat', GetDsoName(target_os, 'avformat', 58)),
-        os.path.join('libavutil', GetDsoName(target_os, 'avutil', 56)),
+        os.path.join('libavcodec', GetDsoName(target_os, 'avcodec', 59)),
+        os.path.join('libavformat', GetDsoName(target_os, 'avformat', 59)),
+        os.path.join('libavutil', GetDsoName(target_os, 'avutil', 57)),
     ]
     PrintAndCheckCall(
         ['make', '-j%d' % parallel_jobs] + libraries, cwd=config_dir)

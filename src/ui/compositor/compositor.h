@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
-#include <string>
+#include <unordered_set>
 
 #include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
@@ -25,14 +25,15 @@
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
+#include "cc/trees/paint_holding_reason.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/subtree_capture_id.h"
 #include "components/viz/host/host_frame_sink_client.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/viz/privileged/mojom/compositing/vsync_parameter_observer.mojom-forward.h"
+#include "skia/ext/skia_matrix_44.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/compositor/compositor_animation_observer.h"
 #include "ui/compositor/compositor_export.h"
 #include "ui/compositor/compositor_lock.h"
@@ -188,10 +189,10 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
 
   // Gets and sets the color matrix used to transform the output colors of what
   // this compositor renders.
-  const SkMatrix44& display_color_matrix() const {
+  const skia::Matrix44& display_color_matrix() const {
     return display_color_matrix_;
   }
-  void SetDisplayColorMatrix(const SkMatrix44& matrix);
+  void SetDisplayColorMatrix(const skia::Matrix44& matrix);
 
   // Where possible, draws are scissored to a damage region calculated from
   // changes to layer properties.  This bypasses that and indicates that
@@ -321,7 +322,7 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   void WillBeginMainFrame() override {}
   void DidBeginMainFrame() override {}
   void OnDeferMainFrameUpdatesChanged(bool) override {}
-  void OnDeferCommitsChanged(bool) override {}
+  void OnDeferCommitsChanged(bool, cc::PaintHoldingReason) override {}
   void WillUpdateLayers() override {}
   void DidUpdateLayers() override;
   void BeginMainFrame(const viz::BeginFrameArgs& args) override;
@@ -484,7 +485,7 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   scoped_refptr<cc::AnimationTimeline> animation_timeline_;
   std::unique_ptr<ScopedAnimationDurationScaleMode> slow_animations_;
 
-  SkMatrix44 display_color_matrix_;
+  skia::Matrix44 display_color_matrix_;
   gfx::DisplayColorSpaces display_color_spaces_;
 
   bool output_is_secure_ = false;

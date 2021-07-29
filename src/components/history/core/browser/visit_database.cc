@@ -14,12 +14,10 @@
 #include <string>
 #include <utility>
 
-#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "components/google/core/common/google_util.h"
-#include "components/history/core/browser/features.h"
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/url_database.h"
 #include "sql/statement.h"
@@ -30,15 +28,6 @@
 namespace history {
 
 namespace {
-
-// This is called from functions that are testing for the absence of
-// PAGE_TRANSITION_FROM_API_3 in transitions. It is expected this is used
-// with a database query of '& FromApi3QualifierForQuery() == 0'.
-int32_t FromApi3QualifierForQuery() {
-  return base::FeatureList::IsEnabled(kHideFromApi3Transitions)
-             ? ui::PAGE_TRANSITION_FROM_API_3
-             : 0;
-}
 
 // Returns [lower, upper) bounds for matching a URL against `host`.
 std::pair<std::string, std::string> GetHostSearchBounds(const GURL& host) {
@@ -65,7 +54,6 @@ std::pair<std::string, std::string> GetHostSearchBounds(const GURL& host) {
 bool TransitionIsVisible(int32_t transition) {
   ui::PageTransition page_transition = ui::PageTransitionFromInt(transition);
   return (ui::PAGE_TRANSITION_CHAIN_END & transition) != 0 &&
-         (transition & FromApi3QualifierForQuery()) == 0 &&
          ui::PageTransitionIsMainFrame(page_transition) &&
          !ui::PageTransitionCoreTypeIs(page_transition,
                                        ui::PAGE_TRANSITION_KEYWORD_GENERATED);
@@ -138,8 +126,7 @@ bool VisitDatabase::DropVisitTable() {
 
 // Must be in sync with HISTORY_VISIT_ROW_FIELDS.
 // static
-void VisitDatabase::FillVisitRow(const sql::Statement& statement,
-                                 VisitRow* visit) {
+void VisitDatabase::FillVisitRow(sql::Statement& statement, VisitRow* visit) {
   visit->visit_id = statement.ColumnInt64(0);
   visit->url_id = statement.ColumnInt64(1);
   visit->visit_time = base::Time::FromInternalValue(statement.ColumnInt64(2));
@@ -790,17 +777,13 @@ VisitDatabase::GetGoogleDomainVisitsFromSearchesInRange(base::Time begin_time,
       "  visit_time >= ? AND "
       // Restrict to visits that are older than the specified end time.
       "  visit_time < ? "));
-  statement.BindInt64(0,
-                      begin_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
-  statement.BindInt64(1, end_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
+  statement.BindTime(0, begin_time);
+  statement.BindTime(1, end_time);
   std::vector<DomainVisit> domain_visits;
   while (statement.Step()) {
     const GURL url(statement.ColumnString(1));
     if (google_util::IsGoogleSearchUrl(url)) {
-      domain_visits.emplace_back(
-          url.host(),
-          base::Time::FromDeltaSinceWindowsEpoch(
-              base::TimeDelta::FromMicroseconds(statement.ColumnInt64(0))));
+      domain_visits.emplace_back(url.host(), statement.ColumnTime(0));
     }
   }
   return domain_visits;

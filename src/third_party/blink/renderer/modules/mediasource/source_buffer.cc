@@ -41,8 +41,6 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_source_buffer.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/bindings/modules/v8/encoded_audio_chunk_or_encoded_video_chunk.h"
-#include "third_party/blink/renderer/bindings/modules/v8/encoded_av_chunk_sequence_or_encoded_av_chunk.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_audio_decoder_config.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_encoded_audio_chunk.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_encoded_video_chunk.h"
@@ -142,22 +140,19 @@ scoped_refptr<media::StreamParserBuffer> MakeAudioStreamParserBuffer(
     const EncodedAudioChunk& audio_chunk) {
   // TODO(crbug.com/1144908): DecoderBuffer takes size_t size, but
   // StreamParserBuffer takes int. Fix this. For now, checked_cast is used.
+  // TODO(crbug.com/1144908): Add a way for StreamParserBuffer to share the
+  // same underlying DecoderBuffer.
   auto stream_parser_buffer = media::StreamParserBuffer::CopyFrom(
-      static_cast<uint8_t*>(audio_chunk.data()->Data()),
-      base::checked_cast<int>(audio_chunk.data()->ByteLength()),
-      audio_chunk.type() == "key", media::DemuxerStream::AUDIO,
+      audio_chunk.buffer()->data(),
+      base::checked_cast<int>(audio_chunk.buffer()->data_size()),
+      audio_chunk.buffer()->is_key_frame(), media::DemuxerStream::AUDIO,
       kWebCodecsAudioTrackId);
-
-  // TODO(crbug.com/1144908): Remove or change the following to DCHECK once
-  // StreamParserBuffer::CopyFrom takes size_t, not int.
-  CHECK_EQ(audio_chunk.data()->ByteLength(), stream_parser_buffer->data_size());
 
   // Currently, we do not populate any side_data in these converters.
   DCHECK_EQ(0U, stream_parser_buffer->side_data_size());
   DCHECK_EQ(nullptr, stream_parser_buffer->side_data());
 
-  stream_parser_buffer->set_timestamp(
-      base::TimeDelta::FromMicroseconds(audio_chunk.timestamp()));
+  stream_parser_buffer->set_timestamp(audio_chunk.buffer()->timestamp());
   // TODO(crbug.com/1144908): Get EncodedAudioChunk to have an optional duration
   // attribute, and require it to be populated for use by MSE-for-WebCodecs,
   // here. For initial prototype, hard-coded 22ms is used as estimated duration.
@@ -171,30 +166,26 @@ scoped_refptr<media::StreamParserBuffer> MakeVideoStreamParserBuffer(
     const EncodedVideoChunk& video_chunk) {
   // TODO(crbug.com/1144908): DecoderBuffer takes size_t size, but
   // StreamParserBuffer takes int. Fix this. For now, checked_cast is used.
+  // TODO(crbug.com/1144908): Add a way for StreamParserBuffer to share the
+  // same underlying DecoderBuffer.
   auto stream_parser_buffer = media::StreamParserBuffer::CopyFrom(
-      static_cast<uint8_t*>(video_chunk.data()->Data()),
-      base::checked_cast<int>(video_chunk.data()->ByteLength()),
-      video_chunk.type() == "key", media::DemuxerStream::VIDEO,
+      video_chunk.buffer()->data(),
+      base::checked_cast<int>(video_chunk.buffer()->data_size()),
+      video_chunk.buffer()->is_key_frame(), media::DemuxerStream::VIDEO,
       kWebCodecsVideoTrackId);
-
-  // TODO(crbug.com/1144908): Remove or change the following to DCHECK once
-  // StreamParserBuffer::CopyFrom takes size_t, not int.
-  CHECK_EQ(video_chunk.data()->ByteLength(), stream_parser_buffer->data_size());
 
   // Currently, we do not populate any side_data in these converters.
   DCHECK_EQ(0U, stream_parser_buffer->side_data_size());
   DCHECK_EQ(nullptr, stream_parser_buffer->side_data());
 
-  stream_parser_buffer->set_timestamp(
-      base::TimeDelta::FromMicroseconds(video_chunk.timestamp()));
+  stream_parser_buffer->set_timestamp(video_chunk.buffer()->timestamp());
   // TODO(crbug.com/1144908): Get EncodedVideoChunk to have an optional decode
   // timestamp attribute. If it is populated, use it for the DTS of the
   // StreamParserBuffer, here. For initial prototype, only in-order PTS==DTS
   // chunks are supported. Out-of-order chunks may result in buffered range gaps
   // or decode errors.
   DCHECK(video_chunk.duration().has_value());
-  stream_parser_buffer->set_duration(
-      base::TimeDelta::FromMicroseconds(video_chunk.duration().value()));
+  stream_parser_buffer->set_duration(video_chunk.buffer()->duration());
   return stream_parser_buffer;
 }
 
@@ -633,11 +624,7 @@ void SourceBuffer::appendBuffer(NotShared<DOMArrayBufferView> data,
 // append use-cases.
 ScriptPromise SourceBuffer::appendEncodedChunks(
     ScriptState* script_state,
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     const V8EncodedChunks* chunks,
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-    const EncodedChunks& chunks,
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     ExceptionState& exception_state) {
   DVLOG(2) << __func__ << " this=" << this;
 
@@ -661,7 +648,6 @@ ScriptPromise SourceBuffer::appendEncodedChunks(
   auto buffer_queue = std::make_unique<media::StreamParser::BufferQueue>();
   size_t size = 0;
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   switch (chunks->GetContentType()) {
     case V8EncodedChunks::ContentType::kEncodedAudioChunk:
       buffer_queue->emplace_back(
@@ -716,55 +702,6 @@ ScriptPromise SourceBuffer::appendEncodedChunks(
       }
       break;
   }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  if (chunks.IsEncodedAudioChunk()) {
-    buffer_queue->emplace_back(
-        MakeAudioStreamParserBuffer(*(chunks.GetAsEncodedAudioChunk())));
-    size += buffer_queue->back()->data_size() +
-            buffer_queue->back()->side_data_size();
-  } else if (chunks.IsEncodedVideoChunk()) {
-    const auto& video_chunk = *(chunks.GetAsEncodedVideoChunk());
-    if (!video_chunk.duration().has_value()) {
-      MediaSource::LogAndThrowTypeError(
-          exception_state,
-          "EncodedVideoChunk is missing duration, required for use with "
-          "SourceBuffer.");
-      return ScriptPromise();
-      ;
-    }
-    buffer_queue->emplace_back(MakeVideoStreamParserBuffer(video_chunk));
-    size += buffer_queue->back()->data_size() +
-            buffer_queue->back()->side_data_size();
-  } else if (chunks.IsEncodedAudioChunkOrEncodedVideoChunkSequence()) {
-    for (const auto& av_chunk :
-         chunks.GetAsEncodedAudioChunkOrEncodedVideoChunkSequence()) {
-      // TODO(crbug.com/1144908): Can null entries occur in the sequence, and
-      // should they be ignored or should they cause exception? Ignoring for
-      // now, if they occur.
-      if (av_chunk.IsNull())
-        continue;
-      if (av_chunk.IsEncodedAudioChunk()) {
-        buffer_queue->emplace_back(
-            MakeAudioStreamParserBuffer(*(av_chunk.GetAsEncodedAudioChunk())));
-        size += buffer_queue->back()->data_size() +
-                buffer_queue->back()->side_data_size();
-      } else if (av_chunk.IsEncodedVideoChunk()) {
-        const auto& video_chunk = *(av_chunk.GetAsEncodedVideoChunk());
-        if (!video_chunk.duration().has_value()) {
-          MediaSource::LogAndThrowTypeError(
-              exception_state,
-              "EncodedVideoChunk is missing duration, required for use with "
-              "SourceBuffer.");
-          return ScriptPromise();
-          ;
-        }
-        buffer_queue->emplace_back(MakeVideoStreamParserBuffer(video_chunk));
-        size += buffer_queue->back()->data_size() +
-                buffer_queue->back()->side_data_size();
-      }
-    }
-  }
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   DCHECK(!append_encoded_chunks_resolver_);
   append_encoded_chunks_resolver_ =
@@ -951,7 +888,7 @@ void SourceBuffer::Remove_Locked(
     double start,
     double end,
     ExceptionState* exception_state,
-    MediaSourceAttachmentSupplement::ExclusiveKey /* passkey */) {
+    MediaSourceAttachmentSupplement::ExclusiveKey pass_key) {
   DCHECK(source_);
   DCHECK(!updating_);
   source_->AssertAttachmentsMutexHeldIfCrossThreadForDebugging();
@@ -960,7 +897,7 @@ void SourceBuffer::Remove_Locked(
   //    steps.
   // 4. If start is negative or greater than duration, then throw a TypeError
   //    exception and abort these steps.
-  double duration = source_->duration();
+  double duration = source_->GetDuration_Locked(pass_key);
   if (start < 0 || std::isnan(duration) || start > duration) {
     MediaSource::LogAndThrowTypeError(
         *exception_state,

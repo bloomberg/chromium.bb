@@ -14,6 +14,7 @@
 #include "base/auto_reset.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
+#include "base/trace_event/trace_event.h"
 #include "base/types/pass_key.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -419,11 +420,11 @@ const String XRSession::visibilityState() const {
 XRAnchorSet* XRSession::TrackedAnchors() const {
   DVLOG(3) << __func__;
 
+  if (!IsFeatureEnabled(device::mojom::XRSessionFeature::ANCHORS)) {
+    return MakeGarbageCollected<XRAnchorSet>(HeapHashSet<Member<XRAnchor>>{});
+  }
+
   HeapHashSet<Member<XRAnchor>> result;
-
-  if (is_tracked_anchors_null_)
-    return nullptr;
-
   for (auto& anchor_id_and_anchor : anchor_ids_to_anchors_) {
     result.insert(anchor_id_and_anchor.value);
   }
@@ -882,11 +883,12 @@ ScriptPromise XRSession::requestHitTestSourceForTransientInput(
                          : MakeGarbageCollected<XRRay>();
 
   device::mojom::blink::XRRayPtr ray_mojo = device::mojom::blink::XRRay::New();
-  ray_mojo->origin = {offsetRay->origin()->x(), offsetRay->origin()->y(),
-                      offsetRay->origin()->z()};
-  ray_mojo->direction = {offsetRay->direction()->x(),
-                         offsetRay->direction()->y(),
-                         offsetRay->direction()->z()};
+  ray_mojo->origin = {static_cast<float>(offsetRay->origin()->x()),
+                      static_cast<float>(offsetRay->origin()->y()),
+                      static_cast<float>(offsetRay->origin()->z())};
+  ray_mojo->direction = {static_cast<float>(offsetRay->direction()->x()),
+                         static_cast<float>(offsetRay->direction()->y()),
+                         static_cast<float>(offsetRay->direction()->z())};
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
@@ -1017,9 +1019,9 @@ void XRSession::ProcessAnchorsData(
   if (!tracked_anchors_data) {
     DVLOG(3) << __func__ << ": tracked_anchors_data is null";
 
-    // We have received a null ptr. Mark tracked_anchors as null & clear stored
-    // anchors.
-    is_tracked_anchors_null_ = true;
+    // We have received a nullptr. Clear stored anchors.
+    // The device can send either null or empty data - in both cases, it means
+    // that there are no anchors available.
     anchor_ids_to_anchors_.clear();
     return;
   }
@@ -1033,8 +1035,6 @@ void XRSession::ProcessAnchorsData(
            << tracked_anchors_data->updated_anchors_data.size()
            << ", all anchors size="
            << tracked_anchors_data->all_anchors_ids.size();
-
-  is_tracked_anchors_null_ = false;
 
   HeapHashMap<uint64_t, Member<XRAnchor>> updated_anchors;
 

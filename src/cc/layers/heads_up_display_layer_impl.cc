@@ -55,6 +55,7 @@
 #include "third_party/skia/include/core/SkFont.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
+#include "third_party/skia/include/core/SkTextBlob.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "ui/gfx/geometry/point.h"
@@ -379,7 +380,8 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
       constexpr GLuint msaa_sample_count = -1;
       constexpr bool can_use_lcd_text = true;
       ri->BeginRasterCHROMIUM(background_color, needs_clear, msaa_sample_count,
-                              can_use_lcd_text, gfx::ColorSpace::CreateSRGB(),
+                              gpu::raster::kNoMSAA, can_use_lcd_text,
+                              gfx::ColorSpace::CreateSRGB(),
                               backing->mailbox.name);
       gfx::Vector2dF post_translate(0.f, 0.f);
       gfx::Vector2dF post_scale(1.f, 1.f);
@@ -510,11 +512,23 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
           render_pass->quad_list.ReplaceExistingElement<viz::TextureDrawQuad>(
               it);
 
+      // The acquired resource's size could be bigger than actually needed due
+      // to reuse. In this case, only use the part of the texture that is within
+      // the bounds.
+      gfx::PointF uv_bottom_right(1.f, 1.f);
+      if (in_flight_resource_.size() != bounds()) {
+        uv_bottom_right.set_x(
+            static_cast<double>(bounds().width()) /
+            static_cast<double>(in_flight_resource_.size().width()));
+        uv_bottom_right.set_y(
+            static_cast<double>(bounds().height()) /
+            static_cast<double>(in_flight_resource_.size().height()));
+      }
       const float vertex_opacity[] = {1.f, 1.f, 1.f, 1.f};
       quad->SetNew(sqs, quad_rect, visible_rect, /*needs_blending=*/true,
                    resource_id, /*premultiplied_alpha=*/true,
                    /*uv_top_left=*/gfx::PointF(),
-                   /*uv_bottom_right=*/gfx::PointF(1.f, 1.f),
+                   /*uv_bottom_right=*/uv_bottom_right,
                    /*background_color=*/SK_ColorTRANSPARENT, vertex_opacity,
                    /*flipped=*/false,
                    /*nearest_neighbor=*/false, /*secure_output_only=*/false,

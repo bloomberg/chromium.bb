@@ -131,7 +131,7 @@ namespace dawn_native { namespace vulkan {
         return QuerySet::Create(this, descriptor);
     }
     ResultOrError<Ref<RenderPipelineBase>> Device::CreateRenderPipelineImpl(
-        const RenderPipelineDescriptor2* descriptor) {
+        const RenderPipelineDescriptor* descriptor) {
         return RenderPipeline::Create(this, descriptor);
     }
     ResultOrError<Ref<SamplerBase>> Device::CreateSamplerImpl(const SamplerDescriptor* descriptor) {
@@ -159,6 +159,12 @@ namespace dawn_native { namespace vulkan {
         TextureBase* texture,
         const TextureViewDescriptor* descriptor) {
         return TextureView::Create(texture, descriptor);
+    }
+    void Device::CreateComputePipelineAsyncImpl(const ComputePipelineDescriptor* descriptor,
+                                                size_t blueprintHash,
+                                                WGPUCreateComputePipelineAsyncCallback callback,
+                                                void* userdata) {
+        ComputePipeline::CreateAsync(this, descriptor, blueprintHash, callback, userdata);
     }
 
     MaybeError Device::TickImpl() {
@@ -213,6 +219,10 @@ namespace dawn_native { namespace vulkan {
         return mRenderPassCache.get();
     }
 
+    ResourceMemoryAllocator* Device::GetResourceMemoryAllocator() const {
+        return mResourceMemoryAllocator.get();
+    }
+
     void Device::EnqueueDeferredDeallocation(BindGroupLayout* bindGroupLayout) {
         mBindGroupLayoutsPendingDeallocation.Enqueue(bindGroupLayout, GetPendingCommandSerial());
     }
@@ -249,7 +259,13 @@ namespace dawn_native { namespace vulkan {
 
         VkFence fence = VK_NULL_HANDLE;
         DAWN_TRY_ASSIGN(fence, GetUnusedFence());
-        DAWN_TRY(CheckVkSuccess(fn.QueueSubmit(mQueue, 1, &submitInfo, fence), "vkQueueSubmit"));
+        DAWN_TRY_WITH_CLEANUP(
+            CheckVkSuccess(fn.QueueSubmit(mQueue, 1, &submitInfo, fence), "vkQueueSubmit"), {
+                // If submitting to the queue fails, move the fence back into the unused fence
+                // list, as if it were never acquired. Not doing so would leak the fence since
+                // it would be neither in the unused list nor in the in-flight list.
+                mUnusedFences.push_back(fence);
+            });
 
         // Enqueue the semaphores before incrementing the serial, so that they can be deleted as
         // soon as the current submission is finished.
@@ -299,14 +315,12 @@ namespace dawn_native { namespace vulkan {
         features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
         PNextChainBuilder featuresChain(&features2);
 
-        // Always require independentBlend because it is a core Dawn feature
-        usedKnobs.features.independentBlend = VK_TRUE;
-        // Always require imageCubeArray because it is a core Dawn feature
-        usedKnobs.features.imageCubeArray = VK_TRUE;
-        // Always require fragmentStoresAndAtomics because it is required by end2end tests.
-        usedKnobs.features.fragmentStoresAndAtomics = VK_TRUE;
-        // Always require depthBiasClamp because it is a core Dawn feature
+        // Required for core WebGPU features.
         usedKnobs.features.depthBiasClamp = VK_TRUE;
+        usedKnobs.features.fragmentStoresAndAtomics = VK_TRUE;
+        usedKnobs.features.fullDrawIndexUint32 = VK_TRUE;
+        usedKnobs.features.imageCubeArray = VK_TRUE;
+        usedKnobs.features.independentBlend = VK_TRUE;
 
         if (IsRobustnessEnabled()) {
             usedKnobs.features.robustBufferAccess = VK_TRUE;
@@ -449,7 +463,7 @@ namespace dawn_native { namespace vulkan {
     }
 
     void Device::InitTogglesFromDriver() {
-        // TODO(jiawei.shao@intel.com): tighten this workaround when this issue is fixed in both
+        // TODO(crbug.com/dawn/857): tighten this workaround when this issue is fixed in both
         // Vulkan SPEC and drivers.
         SetToggle(Toggle::UseTemporaryBufferInCompressedTextureToTextureCopy, true);
 
@@ -798,24 +812,6 @@ namespace dawn_native { namespace vulkan {
         return result;
     }
 
-    ResultOrError<ResourceMemoryAllocation> Device::AllocateMemory(
-        VkMemoryRequirements requirements,
-        bool mappable) {
-        return mResourceMemoryAllocator->Allocate(requirements, mappable);
-    }
-
-    void Device::DeallocateMemory(ResourceMemoryAllocation* allocation) {
-        mResourceMemoryAllocator->Deallocate(allocation);
-    }
-
-    int Device::FindBestMemoryTypeIndex(VkMemoryRequirements requirements, bool mappable) {
-        return mResourceMemoryAllocator->FindBestTypeIndex(requirements, mappable);
-    }
-
-    ResourceMemoryAllocator* Device::GetResourceMemoryAllocatorForTesting() const {
-        return mResourceMemoryAllocator.get();
-    }
-
     uint32_t Device::GetComputeSubgroupSize() const {
         return mComputeSubgroupSize;
     }
@@ -919,10 +915,17 @@ namespace dawn_native { namespace vulkan {
         }
         mUnusedFences.clear();
 
+        ExecutionSerial completedSerial = GetCompletedCommandSerial();
+        for (Ref<BindGroupLayout>& bgl :
+             mBindGroupLayoutsPendingDeallocation.IterateUpTo(completedSerial)) {
+            bgl->FinishDeallocation(completedSerial);
+        }
+        mBindGroupLayoutsPendingDeallocation.ClearUpTo(completedSerial);
+
         // Releasing the uploader enqueues buffers to be released.
         // Call Tick() again to clear them before releasing the deleter.
-        mResourceMemoryAllocator->Tick(GetCompletedCommandSerial());
-        mDeleter->Tick(GetCompletedCommandSerial());
+        mResourceMemoryAllocator->Tick(completedSerial);
+        mDeleter->Tick(completedSerial);
 
         // Allow recycled memory to be deleted.
         mResourceMemoryAllocator->DestroyPool();

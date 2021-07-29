@@ -50,6 +50,7 @@
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/ssl/stateful_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/transition_manager/full_browser_transition_manager.h"
+#include "chrome/browser/ui/read_later/reading_list_model_factory.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/buildflags.h"
@@ -127,12 +128,12 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/components/account_manager/account_manager.h"
 #include "ash/components/account_manager/account_manager_factory.h"
 #include "chrome/browser/ash/arc/session/arc_service_launcher.h"
+#include "chrome/browser/ash/policy/core/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/chromeos/net/delay_network_call.h"
-#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
+#include "components/account_manager_core/chromeos/account_manager.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -189,28 +190,6 @@ const char TestingProfile::kTestUserProfileDir[] = "test-user";
 #else
 const char TestingProfile::kTestUserProfileDir[] = "Default";
 #endif
-
-// static
-bool TestingProfile::SetScopedFeatureListForEphemeralGuestProfiles(
-    base::test::ScopedFeatureList& scoped_feature_list,
-    bool enabled) {
-// This feature is now only supported on Windows, Linux, and Mac.
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
-// of lacros-chrome is complete.
-#if defined(OS_WIN) || defined(OS_MAC) || \
-    (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
-  if (enabled)
-    scoped_feature_list.InitAndEnableFeature(
-        features::kEnableEphemeralGuestProfilesOnDesktop);
-  else
-    scoped_feature_list.InitAndDisableFeature(
-        features::kEnableEphemeralGuestProfilesOnDesktop);
-  return true;
-#else
-  return false;
-#endif  // defined(OS_WIN) || defined(OS_MAC) || (defined(OS_LINUX) ||
-        // BUILDFLAG(IS_CHROMEOS_LACROS))
-}
 
 TestingProfile::TestingProfile() : TestingProfile(base::FilePath()) {}
 
@@ -365,9 +344,6 @@ void TestingProfile::Init() {
   else
     CreateTestingPrefService();
 
-  if (guest_session_ && IsEphemeralGuestProfileEnabled())
-    GetPrefs()->SetBoolean(prefs::kForceEphemeralProfiles, true);
-
   key_->SetPrefs(prefs_.get());
   SimpleKeyMap::GetInstance()->Associate(this, key_.get());
 
@@ -375,12 +351,12 @@ void TestingProfile::Init() {
     base::CreateDirectory(profile_path_);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  // Initialize |ash::AccountManager|.
+  // Initialize |account_manager::AccountManager|.
   auto* factory =
       g_browser_process->platform_part()->GetAccountManagerFactory();
   auto* account_manager = factory->GetAccountManager(profile_path_.value());
-  ash::AccountManager::DelayNetworkCallRunner immediate_callback_runner =
-      base::BindRepeating(
+  account_manager::AccountManager::DelayNetworkCallRunner
+      immediate_callback_runner = base::BindRepeating(
           [](base::OnceClosure closure) -> void { std::move(closure).Run(); });
   account_manager->Initialize(profile_path_, GetURLLoaderFactory(),
                               immediate_callback_runner);
@@ -396,6 +372,9 @@ void TestingProfile::Init() {
 
   autofill::PersonalDataManagerFactory::GetInstance()->SetTestingFactory(
       this, base::BindRepeating(&BuildPersonalDataManagerInstanceFor));
+
+  ReadingListModelFactory::GetInstance()->SetTestingFactory(
+      this, ReadingListModelFactory::GetDefaultFactoryForTesting());
 
   // TODO(joaodasilva): remove this once this PKS isn't created in ProfileImpl
   // anymore, after converting the PrefService to a PKS. Until then it must
@@ -452,13 +431,8 @@ void TestingProfile::Init() {
 
 void TestingProfile::InitializeProfileType() {
   if (guest_session_) {
-    if (IsEphemeralGuestProfileEnabled()) {
-      profile_metrics::SetBrowserProfileType(
-          this, profile_metrics::BrowserProfileType::kEphemeralGuest);
-    } else {
-      profile_metrics::SetBrowserProfileType(
-          this, profile_metrics::BrowserProfileType::kGuest);
-    }
+    profile_metrics::SetBrowserProfileType(
+        this, profile_metrics::BrowserProfileType::kGuest);
     return;
   }
 
@@ -495,8 +469,15 @@ void TestingProfile::FinishInit() {
   if (profile_manager)
     profile_manager->InitProfileUserPrefs(this);
 
+  if (original_profile_) {
+    DCHECK(!delegate_) << "Not expecting a delegate for an OTR profile";
+    original_profile_->NotifyOffTheRecordProfileCreated(this);
+    return;
+  }
+
   if (delegate_) {
-    delegate_->OnProfileCreated(this, true, false);
+    delegate_->OnProfileCreationFinished(this, CREATE_MODE_ASYNCHRONOUS, true,
+                                         false);
   } else {
     // It is the role of the delegate to ensure that the signout allowed is
     // properly updated after the profile is create is initialized.
@@ -505,9 +486,6 @@ void TestingProfile::FinishInit() {
     // initialization.
     signin_util::EnsureUserSignoutAllowedIsInitializedForProfile(this);
   }
-
-  if (original_profile_)
-    original_profile_->NotifyOffTheRecordProfileCreated(this);
 }
 
 TestingProfile::~TestingProfile() {
@@ -668,13 +646,10 @@ void TestingProfile::SetOffTheRecordProfile(
 Profile* TestingProfile::GetOffTheRecordProfile(
     const OTRProfileID& otr_profile_id,
     bool create_if_needed) {
-  if (IsOffTheRecord())
+  if (IsOffTheRecord()) {
     return original_profile_->GetOffTheRecordProfile(otr_profile_id,
                                                      create_if_needed);
-
-  // Ephemeral Guest profiles do not support Incognito.
-  if (IsEphemeralGuestProfile() && otr_profile_id == OTRProfileID::PrimaryID())
-    return nullptr;
+  }
 
   if (!HasOffTheRecordProfile(otr_profile_id)) {
     if (!create_if_needed)
@@ -1123,11 +1098,6 @@ TestingProfile* TestingProfile::Builder::BuildOffTheRecord(
   DCHECK(!build_called_);
   DCHECK(original_profile);
   build_called_ = true;
-
-  // Ephemeral guest profiles do not support Incognito.
-  if (original_profile->IsEphemeralGuestProfile() &&
-      otr_profile_id == OTRProfileID::PrimaryID())
-    return nullptr;
 
   // Note: Owned by |original_profile|.
   return new TestingProfile(

@@ -14,7 +14,7 @@
 #include "src/core/SkAutoPixmapStorage.h"
 #include "src/core/SkMipmap.h"
 #include "src/core/SkYUVMath.h"
-#include "src/gpu/GrAuditTrail.h"
+#include "src/gpu/GrClientMappedBufferManager.h"
 #include "src/gpu/GrColorSpaceXform.h"
 #include "src/gpu/GrDataUtils.h"
 #include "src/gpu/GrDirectContextPriv.h"
@@ -23,11 +23,12 @@
 #include "src/gpu/GrImageInfo.h"
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrRecordingContextPriv.h"
+#include "src/gpu/GrResourceProvider.h"
 #include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/GrSurfaceFillContext.h"
 #include "src/gpu/SkGr.h"
 #include "src/gpu/effects/GrBicubicEffect.h"
-#include "src/gpu/effects/generated/GrColorMatrixFragmentProcessor.h"
+#include "src/gpu/effects/GrTextureEffect.h"
 
 #define ASSERT_SINGLE_OWNER         GR_ASSERT_SINGLE_OWNER(this->singleOwner())
 #define RETURN_FALSE_IF_ABANDONED   if (this->fContext->abandoned()) { return false;   }
@@ -145,10 +146,6 @@ GrSurfaceContext::GrSurfaceContext(GrRecordingContext* context,
 
 const GrCaps* GrSurfaceContext::caps() const { return fContext->priv().caps(); }
 
-GrAuditTrail* GrSurfaceContext::auditTrail() {
-    return fContext->priv().auditTrail();
-}
-
 GrDrawingManager* GrSurfaceContext::drawingManager() {
     return fContext->priv().drawingManager();
 }
@@ -170,7 +167,8 @@ bool GrSurfaceContext::readPixels(GrDirectContext* dContext, GrPixmap dst, SkIPo
     ASSERT_SINGLE_OWNER
     RETURN_FALSE_IF_ABANDONED
     SkDEBUGCODE(this->validate();)
-    GR_AUDIT_TRAIL_AUTO_FRAME(this->auditTrail(), "GrSurfaceContext::readPixels");
+    GR_CREATE_TRACE_MARKER_CONTEXT("GrSurfaceContext", "readPixels", fContext);
+
     if (!fContext->priv().matches(dContext)) {
         return false;
     }
@@ -343,9 +341,12 @@ bool GrSurfaceContext::readPixels(GrDirectContext* dContext, GrPixmap dst, SkIPo
 
     dContext->priv().flushSurface(srcProxy.get());
     dContext->submit();
-    if (!dContext->priv().getGpu()->readPixels(srcSurface, pt.fX, pt.fY, dst.width(), dst.height(),
+    if (!dContext->priv().getGpu()->readPixels(srcSurface,
+                                               SkIRect::MakePtSize(pt, dst.dimensions()),
                                                this->colorInfo().colorType(),
-                                               supportedRead.fColorType, readDst, readRB)) {
+                                               supportedRead.fColorType,
+                                               readDst,
+                                               readRB)) {
         return false;
     }
 
@@ -416,7 +417,7 @@ bool GrSurfaceContext::internalWritePixels(GrDirectContext* dContext,
                                            const GrCPixmap src[],
                                            int numLevels,
                                            SkIPoint pt) {
-    GR_AUDIT_TRAIL_AUTO_FRAME(this->auditTrail(), "GrSurfaceContext::internalWritePixels");
+    GR_CREATE_TRACE_MARKER_CONTEXT("GrSurfaceContext", "internalWritePixels", fContext);
 
     SkASSERT(numLevels >= 1);
     SkASSERT(src);
@@ -965,7 +966,16 @@ void GrSurfaceContext::asyncRescaleAndReadPixelsYUV420(GrDirectContext* dContext
 
     auto texMatrix = SkMatrix::Translate(x, y);
 
-    bool doSynchronousRead = !this->caps()->transferFromSurfaceToBufferSupport();
+    auto [readCT, offsetAlignment] =
+            this->caps()->supportedReadPixelsColorType(yFC->colorInfo().colorType(),
+                                                       yFC->asSurfaceProxy()->backendFormat(),
+                                                       GrColorType::kAlpha_8);
+    if (readCT == GrColorType::kUnknown) {
+        callback(callbackContext, nullptr);
+        return;
+    }
+    bool doSynchronousRead = !this->caps()->transferFromSurfaceToBufferSupport() ||
+                             !offsetAlignment;
     PixelTransferResult yTransfer, uTransfer, vTransfer;
 
     // This matrix generates (r,g,b,a) = (0, 0, 0, y)
@@ -974,11 +984,11 @@ void GrSurfaceContext::asyncRescaleAndReadPixelsYUV420(GrDirectContext* dContext
     std::copy_n(baseM + 0, 5, yM + 15);
 
     auto yFP = GrTextureEffect::Make(srcView, this->colorInfo().alphaType(), texMatrix);
-    yFP = GrColorMatrixFragmentProcessor::Make(std::move(yFP),
-                                               yM,
-                                               /*unpremulInput=*/false,
-                                               /*clampRGBOutput=*/true,
-                                               /*premulOutput=*/false);
+    yFP = GrFragmentProcessor::ColorMatrix(std::move(yFP),
+                                           yM,
+                                           /*unpremulInput=*/false,
+                                           /*clampRGBOutput=*/true,
+                                           /*premulOutput=*/false);
     yFC->fillWithFP(std::move(yFP));
     if (!doSynchronousRead) {
         yTransfer = yFC->transferPixels(GrColorType::kAlpha_8,
@@ -999,11 +1009,11 @@ void GrSurfaceContext::asyncRescaleAndReadPixelsYUV420(GrDirectContext* dContext
                                      this->colorInfo().alphaType(),
                                      texMatrix,
                                      GrSamplerState::Filter::kLinear);
-    uFP = GrColorMatrixFragmentProcessor::Make(std::move(uFP),
-                                               uM,
-                                               /*unpremulInput=*/false,
-                                               /*clampRGBOutput=*/true,
-                                               /*premulOutput=*/false);
+    uFP = GrFragmentProcessor::ColorMatrix(std::move(uFP),
+                                           uM,
+                                           /*unpremulInput=*/false,
+                                           /*clampRGBOutput=*/true,
+                                           /*premulOutput=*/false);
     uFC->fillWithFP(std::move(uFP));
     if (!doSynchronousRead) {
         uTransfer = uFC->transferPixels(GrColorType::kAlpha_8,
@@ -1022,11 +1032,11 @@ void GrSurfaceContext::asyncRescaleAndReadPixelsYUV420(GrDirectContext* dContext
                                      this->colorInfo().alphaType(),
                                      texMatrix,
                                      GrSamplerState::Filter::kLinear);
-    vFP = GrColorMatrixFragmentProcessor::Make(std::move(vFP),
-                                               vM,
-                                               /*unpremulInput=*/false,
-                                               /*clampRGBOutput=*/true,
-                                               /*premulOutput=*/false);
+    vFP = GrFragmentProcessor::ColorMatrix(std::move(vFP),
+                                           vM,
+                                           /*unpremulInput=*/false,
+                                           /*clampRGBOutput=*/true,
+                                           /*premulOutput=*/false);
     vFC->fillWithFP(std::move(vFP));
 
     if (!doSynchronousRead) {
@@ -1118,7 +1128,7 @@ sk_sp<GrRenderTask> GrSurfaceContext::copy(sk_sp<GrSurfaceProxy> src,
     ASSERT_SINGLE_OWNER
     RETURN_NULLPTR_IF_ABANDONED
     SkDEBUGCODE(this->validate();)
-    GR_AUDIT_TRAIL_AUTO_FRAME(this->auditTrail(), "GrSurfaceContextPriv::copy");
+    GR_CREATE_TRACE_MARKER_CONTEXT("GrSurfaceContext", "copy", fContext);
 
     const GrCaps* caps = fContext->priv().caps();
 

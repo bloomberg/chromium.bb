@@ -32,7 +32,6 @@
 #include "chrome/browser/sharing_hub/sharing_hub_features.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/signin/signin_promo.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/apps/app_info_dialog.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
@@ -49,6 +48,7 @@
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/ui/webui/inspect_ui.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/content_restriction.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -639,6 +639,9 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_FOCUS_INACTIVE_POPUP_FOR_ACCESSIBILITY:
       FocusInactivePopupForAccessibility(browser_);
       break;
+    case IDC_FOCUS_HELP_BUBBLE:
+      FocusHelpBubble(browser_);
+      break;
     case IDC_FOCUS_NEXT_PANE:
       FocusNextPane(browser_);
       break;
@@ -733,9 +736,16 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_VIEW_PASSWORDS:
       ShowPasswordManager(browser_);
       break;
-    case IDC_CLEAR_BROWSING_DATA:
-      ShowClearBrowsingDataDialog(browser_);
+    case IDC_CLEAR_BROWSING_DATA: {
+      if (profile()->IsIncognitoProfile() &&
+          base::FeatureList::IsEnabled(
+              features::kIncognitoClearBrowsingDataDialogForDesktop)) {
+        ShowIncognitoClearBrowsingDataDialog(browser_);
+      } else {
+        ShowClearBrowsingDataDialog(browser_);
+      }
       break;
+    }
     case IDC_IMPORT_SETTINGS:
       ShowImportDialog(browser_);
       break;
@@ -757,6 +767,13 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_CHROME_TIPS:
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
       ShowChromeTips(browser_);
+#else
+      NOTREACHED();
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+      break;
+    case IDC_CHROME_WHATS_NEW:
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+      ShowChromeWhatsNew(browser_);
 #else
       NOTREACHED();
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -997,8 +1014,8 @@ void BrowserCommandController::InitCommandState() {
 #if defined(USE_OZONE)
   if (features::IsUsingOzonePlatform()) {
     use_system_title_bar = ui::OzonePlatform::GetInstance()
-                               ->GetPlatformProperties()
-                               .use_system_title_bar;
+                               ->GetPlatformRuntimeProperties()
+                               .supports_server_side_window_decorations;
   }
 #endif
   command_updater_.UpdateCommandEnabled(IDC_USE_SYSTEM_TITLE_BAR,
@@ -1032,16 +1049,23 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_SHOW_BETA_FORUM, true);
   command_updater_.UpdateCommandEnabled(
       IDC_BOOKMARKS_MENU,
-      (!profile()->IsGuestSession() && !profile()->IsSystemProfile() &&
-       !profile()->IsEphemeralGuestProfile()));
+      (!profile()->IsGuestSession() && !profile()->IsSystemProfile()));
   command_updater_.UpdateCommandEnabled(
       IDC_RECENT_TABS_MENU,
       (!profile()->IsGuestSession() && !profile()->IsSystemProfile() &&
        !profile()->IsIncognitoProfile()));
-  command_updater_.UpdateCommandEnabled(
-      IDC_CLEAR_BROWSING_DATA,
-      (!profile()->IsGuestSession() && !profile()->IsSystemProfile() &&
-       !profile()->IsIncognitoProfile()));
+
+  if (profile()->IsIncognitoProfile()) {
+    command_updater_.UpdateCommandEnabled(
+        IDC_CLEAR_BROWSING_DATA,
+        base::FeatureList::IsEnabled(
+            features::kIncognitoClearBrowsingDataDialogForDesktop));
+  } else {
+    command_updater_.UpdateCommandEnabled(
+        IDC_CLEAR_BROWSING_DATA,
+        (!profile()->IsGuestSession() && !profile()->IsSystemProfile()));
+  }
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   command_updater_.UpdateCommandEnabled(IDC_TAKE_SCREENSHOT, true);
   // Chrome OS uses the system tray menu to handle multi-profiles. Avatar menu
@@ -1062,7 +1086,8 @@ void BrowserCommandController::InitCommandState() {
 
   // Navigation commands
   command_updater_.UpdateCommandEnabled(
-      IDC_HOME, normal_window || browser_->deprecated_is_app());
+      IDC_HOME, normal_window || browser_->is_type_app() ||
+                    browser_->is_type_app_popup());
 
   const bool is_web_app_or_custom_tab =
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -1148,12 +1173,11 @@ void BrowserCommandController::UpdateSharedCommandsForIncognitoAvailability(
   command_updater->UpdateCommandEnabled(
       IDC_NEW_INCOGNITO_WINDOW,
       incognito_availability != IncognitoModePrefs::DISABLED &&
-          !profile->IsGuestSession() && !profile->IsEphemeralGuestProfile());
+          !profile->IsGuestSession());
 
   const bool forced_incognito =
       incognito_availability == IncognitoModePrefs::FORCED;
-  const bool is_guest =
-      profile->IsGuestSession() || profile->IsEphemeralGuestProfile();
+  const bool is_guest = profile->IsGuestSession();
 
   command_updater->UpdateCommandEnabled(
       IDC_SHOW_BOOKMARK_MANAGER,
@@ -1210,15 +1234,12 @@ void BrowserCommandController::UpdateCommandsForTabState() {
                                         CanReload(browser_));
 
   // Window management commands
-  command_updater_.UpdateCommandEnabled(
-      IDC_DUPLICATE_TAB,
-      !browser_->deprecated_is_app() && CanDuplicateTab(browser_));
-  command_updater_.UpdateCommandEnabled(IDC_WINDOW_MUTE_SITE,
-                                        !browser_->deprecated_is_app());
-  command_updater_.UpdateCommandEnabled(IDC_WINDOW_PIN_TAB,
-                                        !browser_->deprecated_is_app());
-  command_updater_.UpdateCommandEnabled(IDC_WINDOW_GROUP_TAB,
-                                        !browser_->deprecated_is_app());
+  bool is_app = browser_->is_type_app() || browser_->is_type_app_popup();
+  command_updater_.UpdateCommandEnabled(IDC_DUPLICATE_TAB,
+                                        !is_app && CanDuplicateTab(browser_));
+  command_updater_.UpdateCommandEnabled(IDC_WINDOW_MUTE_SITE, !is_app);
+  command_updater_.UpdateCommandEnabled(IDC_WINDOW_PIN_TAB, !is_app);
+  command_updater_.UpdateCommandEnabled(IDC_WINDOW_GROUP_TAB, !is_app);
   command_updater_.UpdateCommandEnabled(IDC_WINDOW_CLOSE_TABS_TO_RIGHT,
                                         CanCloseTabsToRight(browser_));
   command_updater_.UpdateCommandEnabled(IDC_WINDOW_CLOSE_OTHER_TABS,
@@ -1321,7 +1342,6 @@ void BrowserCommandController::UpdateCommandsForBookmarkBar() {
   command_updater_.UpdateCommandEnabled(
       IDC_SHOW_BOOKMARK_BAR, browser_defaults::bookmarks_enabled &&
                                  !profile()->IsGuestSession() &&
-                                 !profile()->IsEphemeralGuestProfile() &&
                                  !profile()->IsSystemProfile() &&
                                  !profile()->GetPrefs()->IsManagedPreference(
                                      bookmarks::prefs::kShowBookmarkBar) &&
@@ -1381,6 +1401,7 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
   command_updater_.UpdateCommandEnabled(IDC_ABOUT, show_main_ui);
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   command_updater_.UpdateCommandEnabled(IDC_CHROME_TIPS, show_main_ui);
+  command_updater_.UpdateCommandEnabled(IDC_CHROME_WHATS_NEW, show_main_ui);
 #endif
   command_updater_.UpdateCommandEnabled(IDC_QRCODE_GENERATOR, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_SHARING_HUB, show_main_ui);
@@ -1535,7 +1556,10 @@ void BrowserCommandController::UpdateTabRestoreCommandState() {
 
 void BrowserCommandController::UpdateCommandsForFind() {
   TabStripModel* model = browser_->tab_strip_model();
-  bool enabled = !model->IsTabBlocked(model->active_index()) &&
+  int active_index = model->active_index();
+
+  bool enabled = active_index != TabStripModel::kNoTab &&
+                 !model->IsTabBlocked(active_index) &&
                  !browser_->is_type_devtools();
 
   command_updater_.UpdateCommandEnabled(IDC_FIND, enabled);
@@ -1559,7 +1583,8 @@ void BrowserCommandController::UpdateCommandsForMediaRouter() {
 void BrowserCommandController::UpdateCommandsForTabKeyboardFocus(
     absl::optional<int> target_index) {
   command_updater_.UpdateCommandEnabled(
-      IDC_DUPLICATE_TARGET_TAB, !browser_->deprecated_is_app() &&
+      IDC_DUPLICATE_TARGET_TAB, !browser_->is_type_app() &&
+                                    !browser_->is_type_app_popup() &&
                                     target_index.has_value() &&
                                     CanDuplicateTabAt(browser_, *target_index));
   const bool normal_window = browser_->is_type_normal();

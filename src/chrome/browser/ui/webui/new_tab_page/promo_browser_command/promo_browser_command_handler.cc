@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/webui_url_constants.h"
-#include "components/safe_browsing/content/web_ui/safe_browsing_ui.h"
+#include "components/safe_browsing/content/browser/web_ui/safe_browsing_ui.h"
 #include "components/safe_browsing/core/common/safe_browsing_policy_handler.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "ui/base/page_transition_types.h"
@@ -52,7 +52,7 @@ void PromoBrowserCommandHandler::CanShowPromoWithCommand(
       // Nothing to do.
       break;
     case Command::kOpenSafetyCheck:
-      can_show = chrome::enterprise_util::HasBrowserPoliciesApplied(profile_);
+      can_show = !chrome::enterprise_util::HasBrowserPoliciesApplied(profile_);
       break;
     case Command::kOpenSafeBrowsingEnhancedProtectionSettings: {
       bool managed = safe_browsing::SafeBrowsingPolicyHandler::

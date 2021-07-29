@@ -81,6 +81,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "url/url_constants.h"
@@ -88,6 +89,8 @@
 namespace extensions {
 
 namespace {
+
+using ::testing::HasSubstr;
 
 class WebContentsLoadStopObserver : content::WebContentsObserver {
  public:
@@ -381,23 +384,12 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, Basic) {
   EXPECT_TRUE(newtab_listener.WaitUntilSatisfied());
 }
 
-// Tests that an error is generated if the service worker script is
-// saved in non-root directory.
+// Tests that an extension with a service worker script registered in non-root
+// directory can successfully be registered.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, NonRootDirectory) {
-  ErrorConsole* error_console = ErrorConsole::Get(profile());
-  profile()->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode, true);
-  constexpr size_t kErrorsExpected = 1u;
-  ErrorObserver observer(kErrorsExpected, error_console);
-
-  const Extension* extension = LoadExtension(test_data_dir_.AppendASCII(
-      "service_worker/worker_based_background/non_root_directory"));
-
-  observer.WaitForErrors();
-  const ErrorList& error_list =
-      error_console->GetErrorsForExtension(extension->id());
-  ASSERT_EQ(kErrorsExpected, error_list.size());
-  ASSERT_EQ(error_list[0]->message(),
-            std::u16string(u"Service worker registration failed"));
+  ASSERT_TRUE(RunExtensionTest(
+      "service_worker/worker_based_background/non_root_directory"))
+      << message_;
 }
 
 // Tests that a module service worker with static import can successfully be
@@ -426,8 +418,87 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
   const ErrorList& error_list =
       error_console->GetErrorsForExtension(extension->id());
   ASSERT_EQ(kErrorsExpected, error_list.size());
-  ASSERT_EQ(error_list[0]->message(),
-            std::u16string(u"Service worker registration failed"));
+  ASSERT_EQ(
+      error_list[0]->message(),
+      std::u16string(u"Uncaught (in promise) TypeError: import() is disallowed "
+                     u"on ServiceWorkerGlobalScope by the HTML specification. "
+                     u"See https://github.com/w3c/ServiceWorker/issues/1356."));
+}
+
+// Tests that an error is generated if there is a syntax error in the service
+// worker script.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, SyntaxError) {
+  ErrorConsole* error_console = ErrorConsole::Get(profile());
+  // Error is observed on extension UI for developer mode only.
+  profile()->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode, true);
+  const size_t kErrorsExpected = 1u;
+  ErrorObserver observer(kErrorsExpected, error_console);
+
+  ExtensionTestMessageListener test_listener("ready", true);
+  const Extension* extension = LoadExtension(test_data_dir_.AppendASCII(
+      "service_worker/worker_based_background/syntax_error"));
+  ASSERT_TRUE(extension);
+
+  ASSERT_TRUE(test_listener.WaitUntilSatisfied());
+  test_listener.Reply("");
+  observer.WaitForErrors();
+
+  const ErrorList& error_list =
+      error_console->GetErrorsForExtension(extension->id());
+  ASSERT_EQ(kErrorsExpected, error_list.size());
+  EXPECT_EQ(ExtensionError::RUNTIME_ERROR, error_list[0]->type());
+  EXPECT_THAT(base::UTF16ToUTF8(error_list[0]->message()),
+              HasSubstr("Error handling response: TypeError: "
+                        "console.lg is not a function"));
+}
+
+// Tests that an error is generated if there is an undefined variable in the
+// service worker script.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, UndefinedVariable) {
+  ErrorConsole* error_console = ErrorConsole::Get(profile());
+  // Error is observed on extension UI for developer mode only.
+  profile()->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode, true);
+  const size_t kErrorsExpected = 1u;
+  ErrorObserver observer(kErrorsExpected, error_console);
+
+  ExtensionTestMessageListener test_listener("ready", true);
+  const Extension* extension = LoadExtension(test_data_dir_.AppendASCII(
+      "service_worker/worker_based_background/undefined_variable"));
+  ASSERT_TRUE(extension);
+
+  ASSERT_TRUE(test_listener.WaitUntilSatisfied());
+  test_listener.Reply("");
+  observer.WaitForErrors();
+
+  const ErrorList& error_list =
+      error_console->GetErrorsForExtension(extension->id());
+  ASSERT_EQ(kErrorsExpected, error_list.size());
+  EXPECT_EQ(ExtensionError::RUNTIME_ERROR, error_list[0]->type());
+  EXPECT_THAT(base::UTF16ToUTF8(error_list[0]->message()),
+              HasSubstr("Error handling response: ReferenceError: "
+                        "undefined_variable is not defined"));
+}
+
+// Tests that an error is generated if console.error() is called from an
+// extension's service worker.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, ConsoleError) {
+  ErrorConsole* error_console = ErrorConsole::Get(profile());
+  // Error is observed on extension UI for developer mode only.
+  profile()->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode, true);
+  const size_t kErrorsExpected = 1u;
+  ErrorObserver observer(kErrorsExpected, error_console);
+
+  ASSERT_TRUE(
+      RunExtensionTest("service_worker/worker_based_background/console_error"))
+      << message_;
+
+  observer.WaitForErrors();
+  const ErrorList& error_list = error_console->GetErrorsForExtension(
+      ExtensionBrowserTest::last_loaded_extension_id());
+  ASSERT_EQ(kErrorsExpected, error_list.size());
+  EXPECT_EQ(ExtensionError::RUNTIME_ERROR, error_list[0]->type());
+  EXPECT_THAT(base::UTF16ToUTF8(error_list[0]->message()),
+              HasSubstr("Logged from MV3 service worker"));
 }
 
 // Tests chrome.runtime.onInstalled fires for extension service workers.
@@ -714,8 +785,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerRegistrationAtStartupTest,
   EXPECT_TRUE(WillRegisterServiceWorker());
 }
 
+// Flaky on all platforms (https://crbug.com/1169238).
 IN_PROC_BROWSER_TEST_F(ServiceWorkerRegistrationAtStartupTest,
-                       ExtensionActivationDoesNotReregister) {
+                       DISABLED_ExtensionActivationDoesNotReregister) {
   // Since the extension has onStartup listener, the Service Worker will run on
   // browser start and we'll see "WORKER_RUNNING" message from the worker.
   EXPECT_TRUE(WaitForMessage());
@@ -1330,20 +1402,18 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest,
   // The service worker it registers tries to call getBackgroundClient() and
   // should fail.
   // Note that this also tests that service workers can be registered from tabs.
-  EXPECT_TRUE(RunExtensionTest(
-      {.name = "service_worker/no_background", .page_url = "page.html"}));
+  EXPECT_TRUE(RunExtensionTest("service_worker/no_background",
+                               {.page_url = "page.html"}));
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, NotificationAPI) {
-  EXPECT_TRUE(
-      RunExtensionTest({.name = "service_worker/notifications/has_permission",
-                        .page_url = "page.html"}));
+  EXPECT_TRUE(RunExtensionTest("service_worker/notifications/has_permission",
+                               {.page_url = "page.html"}));
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, WebAccessibleResourcesFetch) {
-  EXPECT_TRUE(RunExtensionTest(
-      {.name = "service_worker/web_accessible_resources/fetch/",
-       .page_url = "page.html"}));
+  EXPECT_TRUE(RunExtensionTest("service_worker/web_accessible_resources/fetch/",
+                               {.page_url = "page.html"}));
 }
 
 // Tests that updating a packed extension with modified scripts works
@@ -2292,7 +2362,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, EventsAfterRestart) {
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, TabsOnCreated) {
-  ASSERT_TRUE(RunExtensionTest({.name = "tabs/lazy_background_on_created"},
+  ASSERT_TRUE(RunExtensionTest("tabs/lazy_background_on_created", {},
                                {.load_as_service_worker = true}))
       << message_;
 }
@@ -2443,6 +2513,56 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, PermissionsAPI) {
   // Expect the permission ("storage") to be available now.
   EXPECT_TRUE(extension->permissions_data()->HasAPIPermission(
       mojom::APIPermissionID::kStorage));
+}
+
+// Tests that a Manifest V3 extension's service worker can't be used to relax
+// the extension CSP.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
+                       ExtensionCSPModification_MV3) {
+  ExtensionTestMessageListener worker_listener("ready", false);
+  const Extension* extension = LoadExtension(test_data_dir_.AppendASCII(
+      "service_worker/worker_based_background/extension_csp_modification"));
+  ASSERT_TRUE(extension);
+  const ExtensionId extension_id = extension->id();
+  ASSERT_TRUE(worker_listener.WaitUntilSatisfied());
+
+  ExtensionTestMessageListener csp_modified_listener(
+      "script-src 'self'; object-src 'self';", false);
+  csp_modified_listener.set_extension_id(extension_id);
+  ui_test_utils::NavigateToURL(
+      browser(), extension->GetResourceURL("extension_page.html"));
+  EXPECT_TRUE(csp_modified_listener.WaitUntilSatisfied());
+
+  // Ensure the inline script is not executed because we ensure that the
+  // extension's CSP is applied in the renderer (even though the service worker
+  // removed it).
+  constexpr char kScript[] = R"(
+    (() => {
+      try {
+        scriptExecuted;
+        window.domAutomationController.send('FAIL');
+      } catch (e) {
+        const result = e.message.includes('scriptExecuted is not defined')
+          ? 'PASS' : 'FAIL: ' + e.message;
+        window.domAutomationController.send(result);
+      }
+    })();
+  )";
+  std::string result;
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(
+      content::ExecuteScriptAndExtractString(web_contents, kScript, &result));
+  EXPECT_EQ("PASS", result);
+
+  // Also ensure that a local scheme subframe in the extension page correctly
+  // inherits the extension CSP.
+  result = "";
+  content::RenderFrameHost* iframe =
+      content::ChildFrameAt(web_contents->GetMainFrame(), 0);
+  ASSERT_TRUE(iframe);
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(iframe, kScript, &result));
+  EXPECT_EQ("PASS", result);
 }
 
 // Tests that console messages logged by extension service workers, both via

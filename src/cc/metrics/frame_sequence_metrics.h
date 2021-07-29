@@ -147,7 +147,7 @@ class CC_EXPORT FrameSequenceMetrics {
   struct CustomReportData {
     uint32_t frames_expected = 0;
     uint32_t frames_produced = 0;
-    uint32_t jank_count = 0;
+    int jank_count = 0;
   };
   using CustomReporter = base::OnceCallback<void(const CustomReportData& data)>;
   // Sets reporter callback for kCustom typed sequence.
@@ -229,6 +229,14 @@ class CC_EXPORT FrameSequenceMetrics {
 
   std::unique_ptr<JankMetrics> jank_reporter_;
 };
+
+bool ShouldReportForAnimation(FrameSequenceTrackerType sequence_type,
+                              FrameSequenceMetrics::ThreadType thread_type);
+
+bool ShouldReportForInteraction(
+    FrameSequenceTrackerType sequence_type,
+    FrameSequenceMetrics::ThreadType reporting_thread_type,
+    FrameSequenceMetrics::ThreadType metrics_effective_thread_type);
 
 }  // namespace cc
 

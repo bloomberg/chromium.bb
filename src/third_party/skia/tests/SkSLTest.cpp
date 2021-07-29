@@ -19,6 +19,7 @@
 #include "include/effects/SkRuntimeEffect.h"
 #include "include/private/SkSLDefines.h"  // for kDefaultInlineThreshold
 #include "include/utils/SkRandom.h"
+#include "src/core/SkRuntimeEffectPriv.h"
 #include "src/gpu/GrCaps.h"
 #include "src/gpu/GrDirectContextPriv.h"
 #include "tests/Test.h"
@@ -98,8 +99,8 @@ static void test_permutations(skiatest::Reporter* r,
                               SkSurface* surface,
                               const char* testFile,
                               bool worksInES2) {
-    SkRuntimeEffect::Options options;
-    options.enforceES2Restrictions = worksInES2;
+    SkRuntimeEffect::Options options =
+            worksInES2 ? SkRuntimeEffect::Options{} : SkRuntimeEffectPriv::ES3Options();
     options.forceNoInline = false;
     test_one_permutation(r, surface, testFile, "", options);
 
@@ -211,12 +212,14 @@ SKSL_TEST_CPU(SkSLInlinerHonorsGLSLOutParamSemantics,
 
 SKSL_TEST(SkSLIntrinsicAbsFloat,               "intrinsics/AbsFloat.sksl")
 SKSL_TEST(SkSLIntrinsicCeil,                   "intrinsics/Ceil.sksl")
-SKSL_TEST(SkSLIntrinsicClampFloat,             "intrinsics/ClampFloat.sksl")
+// TODO(johnstiles): test broken on Adreno 6xx + Vulkan
+//SKSL_TEST(SkSLIntrinsicClampFloat,             "intrinsics/ClampFloat.sksl")
 SKSL_TEST(SkSLIntrinsicMaxFloat,               "intrinsics/MaxFloat.sksl")
 SKSL_TEST(SkSLIntrinsicMinFloat,               "intrinsics/MinFloat.sksl")
 // skbug.com/11919: Fails on Adreno + Vulkan
 SKSL_TEST_CPU(SkSLIntrinsicMixFloat,           "intrinsics/MixFloat.sksl")
 SKSL_TEST(SkSLIntrinsicSignFloat,              "intrinsics/SignFloat.sksl")
+SKSL_TEST(SkSLIntrinsicStep,                   "intrinsics/Step.sksl")
 
 SKSL_TEST_ES3(SkSLArrayComparison,             "shared/ArrayComparison.sksl")
 SKSL_TEST_ES3(SkSLArrayConstructors,           "shared/ArrayConstructors.sksl")
@@ -249,6 +252,7 @@ SKSL_TEST(SkSLMatrices,                        "shared/Matrices.sksl")
 SKSL_TEST_ES3(SkSLMatricesNonsquare,           "shared/MatricesNonsquare.sksl")
 SKSL_TEST(SkSLMatrixEquality,                  "shared/MatrixEquality.sksl")
 SKSL_TEST(SkSLMatrixScalarSplat,               "shared/MatrixScalarSplat.sksl")
+SKSL_TEST(SkSLMatrixToVectorCast,              "shared/MatrixToVectorCast.sksl")
 SKSL_TEST(SkSLMultipleAssignments,             "shared/MultipleAssignments.sksl")
 SKSL_TEST(SkSLNegatedVectorLiteral,            "shared/NegatedVectorLiteral.sksl")
 SKSL_TEST(SkSLNumberCasts,                     "shared/NumberCasts.sksl")
@@ -274,12 +278,15 @@ SKSL_TEST(SkSLSwizzleConstants,                "shared/SwizzleConstants.sksl")
 SKSL_TEST(SkSLSwizzleLTRB,                     "shared/SwizzleLTRB.sksl")
 SKSL_TEST(SkSLSwizzleOpt,                      "shared/SwizzleOpt.sksl")
 SKSL_TEST(SkSLSwizzleScalar,                   "shared/SwizzleScalar.sksl")
+SKSL_TEST(SkSLSwizzleScalarBool,               "shared/SwizzleScalarBool.sksl")
+SKSL_TEST(SkSLSwizzleScalarInt,                "shared/SwizzleScalarInt.sksl")
 SKSL_TEST(SkSLTernaryAsLValueEntirelyFoldable, "shared/TernaryAsLValueEntirelyFoldable.sksl")
 SKSL_TEST(SkSLTernaryAsLValueFoldableTest,     "shared/TernaryAsLValueFoldableTest.sksl")
 SKSL_TEST(SkSLTernaryExpression,               "shared/TernaryExpression.sksl")
 SKSL_TEST(SkSLUnaryPositiveNegative,           "shared/UnaryPositiveNegative.sksl")
 SKSL_TEST(SkSLUnusedVariables,                 "shared/UnusedVariables.sksl")
 SKSL_TEST(SkSLVectorConstructors,              "shared/VectorConstructors.sksl")
+SKSL_TEST(SkSLVectorToMatrixCast,              "shared/VectorToMatrixCast.sksl")
 // skbug.com/11919: Fails on Nexus5/7, and Intel GPUs
 SKSL_TEST_CPU(SkSLVectorScalarMath,            "shared/VectorScalarMath.sksl")
 SKSL_TEST_ES3(SkSLWhileLoopControlFlow,        "shared/WhileLoopControlFlow.sksl")

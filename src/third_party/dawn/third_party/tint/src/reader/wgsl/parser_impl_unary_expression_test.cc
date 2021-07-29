@@ -157,6 +157,50 @@ TEST_F(ParserImplTest, UnaryExpression_Bang_InvalidRHS) {
   EXPECT_EQ(p->error(), "1:2: unable to parse right side of ! expression");
 }
 
+TEST_F(ParserImplTest, UnaryExpression_Tilde) {
+  auto p = parser("~1");
+  auto e = p->unary_expression();
+  EXPECT_TRUE(e.matched);
+  EXPECT_FALSE(e.errored);
+  EXPECT_FALSE(p->has_error()) << p->error();
+  ASSERT_NE(e.value, nullptr);
+  ASSERT_TRUE(e->Is<ast::UnaryOpExpression>());
+
+  auto* u = e->As<ast::UnaryOpExpression>();
+  ASSERT_EQ(u->op(), ast::UnaryOp::kComplement);
+
+  ASSERT_TRUE(u->expr()->Is<ast::ConstructorExpression>());
+  ASSERT_TRUE(u->expr()->Is<ast::ScalarConstructorExpression>());
+
+  auto* init = u->expr()->As<ast::ScalarConstructorExpression>();
+  ASSERT_TRUE(init->literal()->Is<ast::SintLiteral>());
+  EXPECT_EQ(init->literal()->As<ast::SintLiteral>()->value(), 1);
+}
+
+TEST_F(ParserImplTest, UnaryExpression_PrefixPlusPlus) {
+  auto p = parser("++a");
+  auto e = p->unary_expression();
+  EXPECT_FALSE(e.matched);
+  EXPECT_TRUE(e.errored);
+  EXPECT_EQ(e.value, nullptr);
+  EXPECT_TRUE(p->has_error());
+  EXPECT_EQ(p->error(),
+            "1:1: prefix increment and decrement operators are reserved for a "
+            "future WGSL version");
+}
+
+TEST_F(ParserImplTest, UnaryExpression_PrefixMinusMinus) {
+  auto p = parser("--a");
+  auto e = p->unary_expression();
+  EXPECT_FALSE(e.matched);
+  EXPECT_TRUE(e.errored);
+  EXPECT_EQ(e.value, nullptr);
+  EXPECT_TRUE(p->has_error());
+  EXPECT_EQ(p->error(),
+            "1:1: prefix increment and decrement operators are reserved for a "
+            "future WGSL version");
+}
+
 }  // namespace
 }  // namespace wgsl
 }  // namespace reader

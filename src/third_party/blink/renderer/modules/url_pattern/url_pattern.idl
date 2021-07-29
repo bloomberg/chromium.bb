@@ -6,17 +6,17 @@ typedef (USVString or URLPatternInit) URLPatternInput;
 
 // https://wicg.github.io/urlpattern/
 [
-  SecureContext,
   Exposed=(Window,Worker),
   RuntimeEnabled=URLPattern
 ] interface URLPattern {
-  [RaisesException] constructor(URLPatternInit init);
+  [RaisesException, Measure]
+  constructor(URLPatternInput input, optional USVString baseURL);
 
-  [RaisesException]
+  [RaisesException, Measure]
   boolean test(URLPatternInput input, optional USVString baseURL);
 
-  [RaisesException]
-  URLPatternResult exec(URLPatternInput input, optional USVString baseURL);
+  [RaisesException, Measure]
+  URLPatternResult? exec(URLPatternInput input, optional USVString baseURL);
 
   readonly attribute USVString protocol;
   readonly attribute USVString username;

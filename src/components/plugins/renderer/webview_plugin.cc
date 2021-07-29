@@ -269,12 +269,14 @@ WebViewPlugin::WebViewHelper::WebViewHelper(
   web_view_ =
       WebView::Create(/*client=*/this,
                       /*is_hidden=*/false,
+                      /*is_prerendering=*/false,
                       /*is_inside_portal=*/false,
                       /*compositing_enabled=*/false,
                       /*widgets_never_composited=*/false,
                       /*opener=*/nullptr, mojo::NullAssociatedReceiver(),
                       *agent_group_scheduler_,
-                      /*session_storage_namespace_id=*/base::EmptyString());
+                      /*session_storage_namespace_id=*/base::EmptyString(),
+                      /*page_base_background_color=*/absl::nullopt);
   // ApplyWebPreferences before making a WebLocalFrame so that the frame sees a
   // consistent view of our preferences.
   blink::WebView::ApplyWebPreferences(parent_web_preferences, web_view_);
@@ -310,6 +312,18 @@ WebViewPlugin::WebViewHelper::~WebViewHelper() {
 void WebViewPlugin::WebViewHelper::UpdateTooltipUnderCursor(
     const std::u16string& tooltip_text,
     base::i18n::TextDirection hint) {
+  UpdateTooltip(tooltip_text);
+}
+
+void WebViewPlugin::WebViewHelper::UpdateTooltipFromKeyboard(
+    const std::u16string& tooltip_text,
+    base::i18n::TextDirection hint,
+    const gfx::Rect& bounds) {
+  UpdateTooltip(tooltip_text);
+}
+
+void WebViewPlugin::WebViewHelper::UpdateTooltip(
+    const std::u16string& tooltip_text) {
   if (plugin_->container_) {
     plugin_->container_->GetElement().SetAttribute(
         "title", WebString::FromUTF16(tooltip_text));

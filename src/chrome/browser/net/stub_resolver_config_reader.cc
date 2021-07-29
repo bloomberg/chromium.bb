@@ -238,11 +238,14 @@ bool StubResolverConfigReader::ShouldDisableDohForManaged() {
 }
 
 bool StubResolverConfigReader::ShouldDisableDohForParentalControls() {
+  if (parental_controls_testing_override_.has_value())
+    return parental_controls_testing_override_.value();
+
 #if defined(OS_WIN)
   return ShouldDisableDohForWindowsParentalControls();
-#endif
-
+#else
   return false;
+#endif
 }
 
 void StubResolverConfigReader::OnParentalControlsDelayTimer() {

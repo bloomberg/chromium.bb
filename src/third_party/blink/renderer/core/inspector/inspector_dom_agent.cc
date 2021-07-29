@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
@@ -183,6 +184,8 @@ protocol::DOM::PseudoType InspectorDOMAgent::ProtocolPseudoElementType(
       return protocol::DOM::PseudoTypeEnum::SpellingError;
     case kPseudoIdGrammarError:
       return protocol::DOM::PseudoTypeEnum::GrammarError;
+    case kPseudoIdHighlight:
+      return protocol::DOM::PseudoTypeEnum::Highlight;
     case kPseudoIdFirstLineInherited:
       return protocol::DOM::PseudoTypeEnum::FirstLineInherited;
     case kPseudoIdScrollbar:
@@ -202,8 +205,6 @@ protocol::DOM::PseudoType InspectorDOMAgent::ProtocolPseudoElementType(
     case kPseudoIdInputListButton:
       return protocol::DOM::PseudoTypeEnum::InputListButton;
     case kAfterLastInternalPseudoId:
-    case kPseudoIdHighlight:
-      // TODO(http://crbug.com/1195196)
     case kPseudoIdNone:
       CHECK(false);
       return "";
@@ -833,27 +834,46 @@ Response InspectorDOMAgent::setAttributesAsText(int element_id,
   if (!response.IsSuccess())
     return response;
 
-  String markup = "<span " + text + "></span>";
-  DocumentFragment* fragment = element->GetDocument().createDocumentFragment();
+  bool is_html_document = IsA<HTMLDocument>(element->GetDocument());
 
-  bool should_ignore_case =
-      IsA<HTMLDocument>(element->GetDocument()) && element->IsHTMLElement();
-  // Not all elements can represent the context (i.e. IFRAME), hence using
-  // document.body.
-  if (should_ignore_case && element->GetDocument().body()) {
-    fragment->ParseHTML(markup, element->GetDocument().body(),
-                        kAllowScriptingContent);
-  } else {
-    Element* contextElement = nullptr;
-    if (auto* svg_element = DynamicTo<SVGElement>(element))
-      contextElement = svg_element->ownerSVGElement();
-    fragment->ParseXML(markup, contextElement, kAllowScriptingContent);
-  }
+  auto getContextElement = [](Element* element,
+                              bool is_html_document) -> Element* {
+    // Not all elements can represent the context (e.g. <iframe>). Use
+    // the owner <svg> element if there is any, falling back to <body>,
+    // falling back to nullptr (in the case of non-SVG XML documents).
+    if (auto* svg_element = DynamicTo<SVGElement>(element)) {
+      SVGSVGElement* owner = svg_element->ownerSVGElement();
+      if (owner)
+        return owner;
+    }
 
-  Element* parsed_element = DynamicTo<Element>(fragment->firstChild());
+    if (is_html_document)
+      return element->GetDocument().body();
+
+    return nullptr;
+  };
+
+  Element* contextElement = getContextElement(element, is_html_document);
+
+  auto getParsedElement = [](Element* element, Element* contextElement,
+                             const String& text, bool is_html_document) {
+    String markup = element->IsSVGElement() ? "<svg " + text + "></svg>"
+                                            : "<span " + text + "></span>";
+    DocumentFragment* fragment =
+        element->GetDocument().createDocumentFragment();
+    if (is_html_document && contextElement)
+      fragment->ParseHTML(markup, contextElement, kAllowScriptingContent);
+    else
+      fragment->ParseXML(markup, contextElement, kAllowScriptingContent);
+    return DynamicTo<Element>(fragment->firstChild());
+  };
+
+  Element* parsed_element =
+      getParsedElement(element, contextElement, text, is_html_document);
   if (!parsed_element)
     return Response::ServerError("Could not parse value as attributes");
 
+  bool should_ignore_case = is_html_document && element->IsHTMLElement();
   String case_adjusted_name = should_ignore_case
                                   ? name.fromMaybe("").DeprecatedLower()
                                   : name.fromMaybe("");
@@ -1517,6 +1537,24 @@ Response InspectorDOMAgent::requestNode(const String& object_id, int* node_id) {
   if (!response.IsSuccess())
     return response;
   *node_id = PushNodePathToFrontend(node);
+  return Response::Success();
+}
+
+Response InspectorDOMAgent::getContainerForNode(
+    int node_id,
+    protocol::Maybe<String> container_name,
+    Maybe<int>* container_node_id) {
+  Element* element = nullptr;
+  Response response = AssertElement(node_id, element);
+  if (!response.IsSuccess())
+    return response;
+
+  element->GetDocument().UpdateStyleAndLayoutTreeForNode(element);
+  StyleResolver& style_resolver = element->GetDocument().GetStyleResolver();
+  Element* container = style_resolver.FindContainerForElement(
+      element, AtomicString(container_name.fromMaybe(g_null_atom)));
+  if (container)
+    *container_node_id = PushNodePathToFrontend(container);
   return Response::Success();
 }
 

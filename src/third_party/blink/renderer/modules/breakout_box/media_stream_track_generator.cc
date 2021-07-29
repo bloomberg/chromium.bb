@@ -102,7 +102,8 @@ MediaStreamTrackGenerator* MediaStreamTrackGenerator::Create(
 
   return MakeGarbageCollected<MediaStreamTrackGenerator>(
       script_state, type,
-      /*track_id=*/WTF::CreateCanonicalUUIDString(), init->signalTarget(),
+      /*track_id=*/WTF::CreateCanonicalUUIDString(),
+      init->getSignalTargetOr(nullptr),
       max_signal_buffer_size);
 }
 
@@ -159,6 +160,7 @@ PushableMediaStreamVideoSource* MediaStreamTrackGenerator::PushableVideoSource()
     const {
   DCHECK_EQ(Component()->Source()->GetType(), MediaStreamSource::kTypeVideo);
   return static_cast<PushableMediaStreamVideoSource*>(
+      GetExecutionContext()->GetTaskRunner(TaskType::kInternalMediaRealTime),
       MediaStreamVideoSource::GetVideoSource(Component()->Source()));
 }
 
@@ -174,6 +176,8 @@ void MediaStreamTrackGenerator::CreateVideoOutputPlatformTrack(
 
   std::unique_ptr<PushableMediaStreamVideoSource> platform_source =
       std::make_unique<PushableMediaStreamVideoSource>(
+          GetExecutionContext()->GetTaskRunner(
+              TaskType::kInternalMediaRealTime),
           signal_target_upstream_source);
   PushableMediaStreamVideoSource* platform_source_ptr = platform_source.get();
   Component()->Source()->SetPlatformSource(std::move(platform_source));
@@ -218,7 +222,8 @@ void MediaStreamTrackGenerator::CreateAudioStream(ScriptState* script_state) {
       static_cast<PushableMediaStreamAudioSource*>(
           Component()->Source()->GetPlatformSource());
   audio_underlying_sink_ =
-      MakeGarbageCollected<MediaStreamAudioTrackUnderlyingSink>(source);
+      MakeGarbageCollected<MediaStreamAudioTrackUnderlyingSink>(
+          source->GetBroker());
   writable_ = WritableStream::CreateWithCountQueueingStrategy(
       script_state, audio_underlying_sink_, /*high_water_mark=*/1,
       audio_underlying_sink_->GetTransferringOptimizer());

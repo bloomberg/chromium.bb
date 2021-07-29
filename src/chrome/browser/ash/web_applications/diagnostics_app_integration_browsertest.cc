@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "ash/constants/ash_features.h"
+#include "ash/webui/diagnostics_ui/url_constants.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ash/web_applications/system_web_app_integration_test.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
-#include "chromeos/components/diagnostics_ui/url_constants.h"
 #include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -26,7 +26,7 @@ class DiagnosticsAppIntegrationTest : public SystemWebAppIntegrationTest {
 // spot checks on the manifest.
 IN_PROC_BROWSER_TEST_P(DiagnosticsAppIntegrationTest,
                        DiagnosticsAppInLauncher) {
-  const GURL url(chromeos::kChromeUIDiagnosticsAppUrl);
+  const GURL url(ash::kChromeUIDiagnosticsAppUrl);
   EXPECT_NO_FATAL_FAILURE(ExpectSystemWebAppValid(
       web_app::SystemAppType::DIAGNOSTICS, url, "Diagnostics"));
 }

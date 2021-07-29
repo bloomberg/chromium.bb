@@ -5,8 +5,8 @@
 #include "ash/shelf/swipe_home_to_overview_controller.h"
 
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/contextual_tooltip.h"
@@ -15,6 +15,7 @@
 #include "ash/shell.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_session.h"
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
@@ -195,7 +196,8 @@ void SwipeHomeToOverviewController::FinalizeDragAndShowOverview() {
   // NOTE: No need to update the home launcher opacity and scale here - the
   // AppListControllerImpl will update the home launcher state when it detects
   // that the overview is starting.
-  Shell::Get()->overview_controller()->StartOverview();
+  Shell::Get()->overview_controller()->StartOverview(
+      OverviewStartAction::kExitHomeLauncher);
 
   // No need to keep blur disabled for the drag - note that blur might remain
   // disabled at this point due to the started overview transition (which

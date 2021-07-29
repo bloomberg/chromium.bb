@@ -6,7 +6,6 @@
 #define UI_VIEWS_CONTROLS_SCROLL_VIEW_H_
 
 #include <memory>
-#include <string>
 #include <utility>
 
 #include "base/compiler_specific.h"
@@ -365,9 +364,6 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
 
   // Set to true if the scroll with layers feature is enabled.
   const bool scroll_with_layers_enabled_;
-
-  // The focus ring for this ScrollView.
-  FocusRing* focus_ring_ = nullptr;
 
   base::ObserverList<Observer>::Unchecked observers_;
 

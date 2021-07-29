@@ -32,6 +32,7 @@ class WaylandProxy;
 namespace ui {
 
 class DeviceHotplugEventObserver;
+class OrgKdeKwinIdle;
 class WaylandBufferManagerHost;
 class WaylandCursor;
 class WaylandCursorBufferListener;
@@ -44,13 +45,16 @@ class WaylandShm;
 class WaylandTouch;
 class WaylandZAuraShell;
 class WaylandZcrCursorShapes;
+class WaylandZwpPointerConstraints;
 class WaylandZwpPointerGestures;
+class WaylandZwpRelativePointerManager;
 class WaylandZwpLinuxDmabuf;
 class WaylandDataDeviceManager;
 class WaylandCursorPosition;
 class WaylandWindowDragController;
 class GtkPrimarySelectionDeviceManager;
 class GtkShell1;
+class ZwpIdleInhibitManager;
 class ZwpPrimarySelectionDeviceManager;
 class XdgForeignWrapper;
 
@@ -187,6 +191,8 @@ class WaylandConnection {
 
   GtkShell1* gtk_shell1() { return gtk_shell1_.get(); }
 
+  OrgKdeKwinIdle* org_kde_kwin_idle() { return org_kde_kwin_idle_.get(); }
+
   ZwpPrimarySelectionDeviceManager* zwp_primary_selection_device_manager()
       const {
     return zwp_primary_selection_device_manager_.get();
@@ -200,7 +206,20 @@ class WaylandConnection {
     return window_drag_controller_.get();
   }
 
+  WaylandZwpPointerConstraints* wayland_zwp_pointer_constraints() const {
+    return wayland_zwp_pointer_constraints_.get();
+  }
+
+  WaylandZwpRelativePointerManager* wayland_zwp_relative_pointer_manager()
+      const {
+    return wayland_zwp_relative_pointer_manager_.get();
+  }
+
   XdgForeignWrapper* xdg_foreign() const { return xdg_foreign_.get(); }
+
+  ZwpIdleInhibitManager* zwp_idle_inhibit_manager() const {
+    return zwp_idle_inhibit_manager_.get();
+  }
 
   // Returns true when dragging is entered or started.
   bool IsDragInProgress() const;
@@ -218,6 +237,11 @@ class WaylandConnection {
   base::TimeTicks ConvertPresentationTime(uint32_t tv_sec_hi,
                                           uint32_t tv_sec_lo,
                                           uint32_t tv_nsec);
+
+  const std::vector<std::pair<std::string, uint32_t>>& available_globals()
+      const {
+    return available_globals_;
+  }
 
  private:
   friend class WaylandConnectionTestApi;
@@ -290,12 +314,17 @@ class WaylandConnection {
   std::unique_ptr<WaylandCursorPosition> wayland_cursor_position_;
   std::unique_ptr<WaylandZAuraShell> zaura_shell_;
   std::unique_ptr<WaylandZcrCursorShapes> zcr_cursor_shapes_;
+  std::unique_ptr<WaylandZwpPointerConstraints>
+      wayland_zwp_pointer_constraints_;
+  std::unique_ptr<WaylandZwpRelativePointerManager>
+      wayland_zwp_relative_pointer_manager_;
   std::unique_ptr<WaylandZwpPointerGestures> wayland_zwp_pointer_gestures_;
   std::unique_ptr<WaylandZwpLinuxDmabuf> zwp_dmabuf_;
   std::unique_ptr<WaylandDrm> drm_;
   std::unique_ptr<WaylandShm> shm_;
   std::unique_ptr<WaylandBufferManagerHost> buffer_manager_host_;
   std::unique_ptr<XdgForeignWrapper> xdg_foreign_;
+  std::unique_ptr<ZwpIdleInhibitManager> zwp_idle_inhibit_manager_;
 
   // Clipboard-related objects. |clipboard_| must be declared after all
   // DeviceManager instances it depends on, otherwise tests may crash with
@@ -307,6 +336,9 @@ class WaylandConnection {
   std::unique_ptr<WaylandClipboard> clipboard_;
 
   std::unique_ptr<GtkShell1> gtk_shell1_;
+
+  // Objects specific to KDE Plasma desktop environment.
+  std::unique_ptr<OrgKdeKwinIdle> org_kde_kwin_idle_;
 
   std::unique_ptr<WaylandDataDragController> data_drag_controller_;
   std::unique_ptr<WaylandWindowDragController> window_drag_controller_;
@@ -329,6 +361,10 @@ class WaylandConnection {
   EventSerial serial_;
 
   uint32_t pointer_enter_serial_ = 0;
+
+  // Global Wayland interfaces available in the current session, with their
+  // versions.
+  std::vector<std::pair<std::string, uint32_t>> available_globals_;
 };
 
 }  // namespace ui

@@ -8,7 +8,7 @@
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/common/extensions/api/settings_private.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -20,7 +20,7 @@ namespace {
 
 // Returns whether a primary account is present and syncing successfully.
 bool IsUserSignedInAndSyncing(Profile* profile) {
-  if (profile->IsGuestSession() || profile->IsEphemeralGuestProfile())
+  if (profile->IsGuestSession())
     return false;
 
   auto* identity_manager =
@@ -28,11 +28,11 @@ bool IsUserSignedInAndSyncing(Profile* profile) {
   if (!identity_manager)
     return false;
 
-  const sync_ui_util::StatusLabels status_labels =
-      sync_ui_util::GetStatusLabels(profile);
+  const SyncStatusLabels status_labels = GetSyncStatusLabels(profile);
   bool sync_error =
-      status_labels.message_type == sync_ui_util::SYNC_ERROR ||
-      status_labels.message_type == sync_ui_util::PASSWORDS_ONLY_SYNC_ERROR;
+      status_labels.message_type == SyncStatusMessageType::kSyncError ||
+      status_labels.message_type ==
+          SyncStatusMessageType::kPasswordsOnlySyncError;
 
   // Password leak detection only requires a signed in account and a functioning
   // sync service, it does not require sync consent.
@@ -77,7 +77,7 @@ GeneratedPasswordLeakDetectionPref::GeneratedPasswordLeakDetectionPref(
   if (auto* identity_manager = IdentityManagerFactory::GetForProfile(profile))
     identity_manager_observer_.Observe(identity_manager);
 
-  if (auto* sync_service = ProfileSyncServiceFactory::GetForProfile(profile))
+  if (auto* sync_service = SyncServiceFactory::GetForProfile(profile))
     sync_service_observer_.Observe(sync_service);
 }
 

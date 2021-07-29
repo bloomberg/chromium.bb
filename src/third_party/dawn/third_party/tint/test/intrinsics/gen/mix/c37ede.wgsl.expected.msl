@@ -1,0 +1,27 @@
+#include <metal_stdlib>
+
+using namespace metal;
+struct tint_symbol {
+  float4 value [[position]];
+};
+
+void mix_c37ede() {
+  float4 res = mix(float4(), float4(), float4());
+}
+
+vertex tint_symbol vertex_main() {
+  mix_c37ede();
+  tint_symbol const tint_symbol_1 = {.value=float4()};
+  return tint_symbol_1;
+}
+
+fragment void fragment_main() {
+  mix_c37ede();
+  return;
+}
+
+kernel void compute_main() {
+  mix_c37ede();
+  return;
+}
+

@@ -24,10 +24,10 @@ class FilePath;
 
 namespace ash {
 
-// Loader for file-backed holding space items' thumbnails. It opens a native
-// connection to the image loader extension (also used to generate thumbnails
-// for the file manager), and sends it an image request for a file path.
-// It decodes data returned by the extension into a bitmap.
+// Loader for file-backed thumbnails. It opens a native connection to the image
+// loader extension (also used to generate thumbnails for the file manager), and
+// sends it an image request for a file path. It decodes data returned by the
+// extension into a bitmap.
 class ThumbnailLoader {
  public:
   explicit ThumbnailLoader(Profile* profile);
@@ -55,6 +55,10 @@ class ThumbnailLoader {
   // Starts a request for a thumbnail. `callback` called with the generated
   // bitmap. On error, the bitmap will be null.
   void Load(const ThumbnailRequest& request, ImageCallback callback);
+
+  // Sets the `request_finished_callback_for_testing_` which is run whenever
+  // any request has finished, both in the case of success and failure.
+  void SetRequestFinishedCallbackForTesting(base::RepeatingClosure callback);
 
  private:
   class ThumbnailDecoder;
@@ -93,6 +97,10 @@ class ThumbnailLoader {
   // received from the image loder into a bitmap.
   std::map<base::UnguessableToken, std::unique_ptr<ThumbnailDecoder>>
       thumbnail_decoders_;
+
+  // An optional callback to be run whenever any request has finished, both in
+  // the case of success and failure.
+  base::RepeatingClosure request_finished_callback_for_testing_;
 
   base::WeakPtrFactory<ThumbnailLoader> weak_factory_{this};
 };

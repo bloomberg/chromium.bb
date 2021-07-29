@@ -14,11 +14,11 @@
 #include "include/core/SkPath.h"
 #include "include/core/SkRefCnt.h"
 #include "include/gpu/GrTypes.h"
-#include "include/private/GrSharedEnums.h"
 #include "include/private/SkImageInfoPriv.h"
 
 class GrBackendFormat;
 class GrCaps;
+class GrSurfaceProxy;
 
 // The old libstdc++ uses the draft name "monotonic_clock" rather than "steady_clock". This might
 // not actually be monotonic, depending on how libstdc++ was built. However, this is only currently
@@ -147,14 +147,6 @@ enum class GrBudgetedType : uint8_t {
     kUnbudgetedCacheable,
 };
 
-/**
- * Clips are composed from these objects.
- */
-enum GrClipType {
-    kRect_ClipType,
-    kPath_ClipType
-};
-
 enum class GrScissorTest : bool {
     kDisabled = false,
     kEnabled = true
@@ -165,6 +157,11 @@ struct GrMipLevel {
     size_t fRowBytes = 0;
     // This may be used to keep fPixels from being freed while a GrMipLevel exists.
     sk_sp<SkData> fOptionalStorage;
+};
+
+enum class GrSemaphoreWrapType {
+    kWillSignal,
+    kWillWait,
 };
 
 /**
@@ -697,23 +694,36 @@ static const int kGrVertexAttribTypeCount = kLast_GrVertexAttribType + 1;
 
 //////////////////////////////////////////////////////////////////////////////
 
+/**
+ * We have coverage effects that clip rendering to the edge of some geometric primitive.
+ * This enum specifies how that clipping is performed. Not all factories that take a
+ * GrClipEdgeType will succeed with all values and it is up to the caller to verify success.
+ */
+enum class GrClipEdgeType {
+    kFillBW,
+    kFillAA,
+    kInverseFillBW,
+    kInverseFillAA,
+
+    kLast = kInverseFillAA
+};
 static const int kGrClipEdgeTypeCnt = (int) GrClipEdgeType::kLast + 1;
 
-static constexpr bool GrProcessorEdgeTypeIsFill(const GrClipEdgeType edgeType) {
+static constexpr bool GrClipEdgeTypeIsFill(const GrClipEdgeType edgeType) {
     return (GrClipEdgeType::kFillAA == edgeType || GrClipEdgeType::kFillBW == edgeType);
 }
 
-static constexpr bool GrProcessorEdgeTypeIsInverseFill(const GrClipEdgeType edgeType) {
+static constexpr bool GrClipEdgeTypeIsInverseFill(const GrClipEdgeType edgeType) {
     return (GrClipEdgeType::kInverseFillAA == edgeType ||
             GrClipEdgeType::kInverseFillBW == edgeType);
 }
 
-static constexpr bool GrProcessorEdgeTypeIsAA(const GrClipEdgeType edgeType) {
+static constexpr bool GrClipEdgeTypeIsAA(const GrClipEdgeType edgeType) {
     return (GrClipEdgeType::kFillBW != edgeType &&
             GrClipEdgeType::kInverseFillBW != edgeType);
 }
 
-static inline GrClipEdgeType GrInvertProcessorEdgeType(const GrClipEdgeType edgeType) {
+static inline GrClipEdgeType GrInvertClipEdgeType(const GrClipEdgeType edgeType) {
     switch (edgeType) {
         case GrClipEdgeType::kFillBW:
             return GrClipEdgeType::kInverseFillBW;
@@ -1307,39 +1317,14 @@ private:
     Context fReleaseCtx;
 };
 
-enum class GrDstSampleType {
-    kNone, // The dst value will not be sampled in the shader
-    kAsTextureCopy, // The dst value will be sampled from a copy of the dst
-    // The types below require a texture barrier
-    kAsSelfTexture, // The dst value is sampled directly from the dst itself as a texture.
-    kAsInputAttachment, // The dst value is sampled directly from the dst as an input attachment.
+enum class GrDstSampleFlags {
+    kNone = 0,
+    kRequiresTextureBarrier =   1 << 0,
+    kAsInputAttachment = 1 << 1,
 };
+GR_MAKE_BITFIELD_CLASS_OPS(GrDstSampleFlags)
 
-// Returns true if the sampling of the dst color in the shader is done by reading the dst directly.
-// Anything that directly reads the dst will need a barrier between draws.
-static constexpr bool GrDstSampleTypeDirectlySamplesDst(GrDstSampleType type) {
-    switch (type) {
-        case GrDstSampleType::kAsSelfTexture:  // fall through
-        case GrDstSampleType::kAsInputAttachment:
-            return true;
-        case GrDstSampleType::kNone:  // fall through
-        case GrDstSampleType::kAsTextureCopy:
-            return false;
-    }
-    SkUNREACHABLE;
-}
-
-static constexpr bool GrDstSampleTypeUsesTexture(GrDstSampleType type) {
-    switch (type) {
-        case GrDstSampleType::kAsSelfTexture:  // fall through
-        case GrDstSampleType::kAsTextureCopy:
-            return true;
-        case GrDstSampleType::kNone:  // fall through
-        case GrDstSampleType::kAsInputAttachment:
-            return false;
-    }
-    SkUNREACHABLE;
-}
+using GrVisitProxyFunc = std::function<void(GrSurfaceProxy*, GrMipmapped)>;
 
 #if defined(SK_DEBUG) || GR_TEST_UTILS || defined(SK_ENABLE_DUMP_GPU)
 static constexpr const char* GrBackendApiToStr(GrBackendApi api) {

@@ -663,16 +663,16 @@ const CreateBoundFunctionParameters& CreateBoundFunctionParametersOf(
 class CreateClosureParameters final {
  public:
   CreateClosureParameters(Handle<SharedFunctionInfo> shared_info,
-                          Handle<Code> code, AllocationType allocation)
+                          Handle<CodeT> code, AllocationType allocation)
       : shared_info_(shared_info), code_(code), allocation_(allocation) {}
 
   Handle<SharedFunctionInfo> shared_info() const { return shared_info_; }
-  Handle<Code> code() const { return code_; }
+  Handle<CodeT> code() const { return code_; }
   AllocationType allocation() const { return allocation_; }
 
  private:
   Handle<SharedFunctionInfo> const shared_info_;
-  Handle<Code> const code_;
+  Handle<CodeT> const code_;
   AllocationType const allocation_;
 };
 
@@ -910,7 +910,7 @@ class V8_EXPORT_PRIVATE JSOperatorBuilder final
   const Operator* CreateCollectionIterator(CollectionKind, IterationKind);
   const Operator* CreateBoundFunction(size_t arity, Handle<Map> map);
   const Operator* CreateClosure(
-      Handle<SharedFunctionInfo> shared_info, Handle<Code> code,
+      Handle<SharedFunctionInfo> shared_info, Handle<CodeT> code,
       AllocationType allocation = AllocationType::kYoung);
   const Operator* CreateIterResultObject();
   const Operator* CreateStringIterator();
@@ -1284,16 +1284,7 @@ class JSCallOrConstructNode : public JSNodeWrapperBase {
  public:
   explicit constexpr JSCallOrConstructNode(Node* node)
       : JSNodeWrapperBase(node) {
-    DCHECK(node->opcode() == IrOpcode::kJSCall ||
-           node->opcode() == IrOpcode::kJSCallWithArrayLike ||
-           node->opcode() == IrOpcode::kJSCallWithSpread ||
-           node->opcode() == IrOpcode::kJSConstruct ||
-           node->opcode() == IrOpcode::kJSConstructWithArrayLike ||
-           node->opcode() == IrOpcode::kJSConstructWithSpread
-#if V8_ENABLE_WEBASSEMBLY
-           || node->opcode() == IrOpcode::kJSWasmCall
-#endif  // V8_ENABLE_WEBASSEMBLY
-    );  // NOLINT(whitespace/parens)
+    DCHECK(IsValidNode(node));
   }
 
 #define INPUTS(V)              \
@@ -1367,13 +1358,37 @@ class JSCallOrConstructNode : public JSNodeWrapperBase {
     return TNode<HeapObject>::UncheckedCast(
         NodeProperties::GetValueInput(node(), FeedbackVectorIndex()));
   }
+
+ private:
+  static constexpr bool IsValidNode(Node* node) {
+    return node->opcode() == IrOpcode::kJSCall ||
+           node->opcode() == IrOpcode::kJSCallWithArrayLike ||
+           node->opcode() == IrOpcode::kJSCallWithSpread ||
+           node->opcode() == IrOpcode::kJSConstruct ||
+           node->opcode() == IrOpcode::kJSConstructWithArrayLike ||
+           node->opcode() == IrOpcode::kJSConstructWithSpread
+#if V8_ENABLE_WEBASSEMBLY
+           || node->opcode() == IrOpcode::kJSWasmCall
+#endif     // V8_ENABLE_WEBASSEMBLY
+        ;  // NOLINT(whitespace/semicolon)
+  }
 };
 
 template <int kOpcode>
+bool IsExpectedOpcode(int opcode) {
+  return opcode == kOpcode;
+}
+
+template <int kOpcode1, int kOpcode2, int... kOpcodes>
+bool IsExpectedOpcode(int opcode) {
+  return opcode == kOpcode1 || IsExpectedOpcode<kOpcode2, kOpcodes...>(opcode);
+}
+
+template <int... kOpcodes>
 class JSCallNodeBase final : public JSCallOrConstructNode {
  public:
   explicit constexpr JSCallNodeBase(Node* node) : JSCallOrConstructNode(node) {
-    DCHECK_EQ(kOpcode, node->opcode());
+    DCHECK(IsExpectedOpcode<kOpcodes...>(node->opcode()));
   }
 
   const CallParameters& Parameters() const {
@@ -1400,6 +1415,8 @@ class JSCallNodeBase final : public JSCallOrConstructNode {
 using JSCallNode = JSCallNodeBase<IrOpcode::kJSCall>;
 using JSCallWithSpreadNode = JSCallNodeBase<IrOpcode::kJSCallWithSpread>;
 using JSCallWithArrayLikeNode = JSCallNodeBase<IrOpcode::kJSCallWithArrayLike>;
+using JSCallWithArrayLikeOrSpreadNode =
+    JSCallNodeBase<IrOpcode::kJSCallWithArrayLike, IrOpcode::kJSCallWithSpread>;
 
 #if V8_ENABLE_WEBASSEMBLY
 class JSWasmCallNode final : public JSCallOrConstructNode {

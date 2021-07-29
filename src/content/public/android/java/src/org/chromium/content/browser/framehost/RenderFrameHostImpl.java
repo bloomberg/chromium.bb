@@ -12,7 +12,8 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.blink.mojom.AuthenticatorStatus;
-import org.chromium.content_public.browser.GlobalFrameRoutingId;
+import org.chromium.content_public.browser.GlobalRenderFrameHostId;
+import org.chromium.content_public.browser.LifecycleState;
 import org.chromium.content_public.browser.PermissionsPolicyFeature;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.mojo.bindings.Interface;
@@ -32,14 +33,14 @@ public class RenderFrameHostImpl implements RenderFrameHost {
     // mDelegate can be null.
     private final RenderFrameHostDelegate mDelegate;
     private final boolean mIncognito;
-    private final GlobalFrameRoutingId mRenderFrameHostId;
+    private final GlobalRenderFrameHostId mRenderFrameHostId;
 
     private RenderFrameHostImpl(long nativeRenderFrameHostAndroid, RenderFrameHostDelegate delegate,
             boolean isIncognito, int renderProcessId, int renderFrameId) {
         mNativeRenderFrameHostAndroid = nativeRenderFrameHostAndroid;
         mDelegate = delegate;
         mIncognito = isIncognito;
-        mRenderFrameHostId = new GlobalFrameRoutingId(renderProcessId, renderFrameId);
+        mRenderFrameHostId = new GlobalRenderFrameHostId(renderProcessId, renderFrameId);
 
         mDelegate.renderFrameCreated(this);
     }
@@ -175,26 +176,43 @@ public class RenderFrameHostImpl implements RenderFrameHost {
     }
 
     @Override
-    public int performGetAssertionWebAuthSecurityChecks(
+    public WebAuthSecurityChecksResults performGetAssertionWebAuthSecurityChecks(
             String relyingPartyId, Origin effectiveOrigin) {
-        if (mNativeRenderFrameHostAndroid == 0) return AuthenticatorStatus.UNKNOWN_ERROR;
+        if (mNativeRenderFrameHostAndroid == 0) {
+            return new WebAuthSecurityChecksResults(
+                    AuthenticatorStatus.UNKNOWN_ERROR, false /*unused*/);
+        }
         return RenderFrameHostImplJni.get().performGetAssertionWebAuthSecurityChecks(
                 mNativeRenderFrameHostAndroid, RenderFrameHostImpl.this, relyingPartyId,
                 effectiveOrigin);
     }
 
-    @Override
-    public int performMakeCredentialWebAuthSecurityChecks(
-            String relyingPartyId, Origin effectiveOrigin) {
-        if (mNativeRenderFrameHostAndroid == 0) return AuthenticatorStatus.UNKNOWN_ERROR;
-        return RenderFrameHostImplJni.get().performMakeCredentialWebAuthSecurityChecks(
-                mNativeRenderFrameHostAndroid, RenderFrameHostImpl.this, relyingPartyId,
-                effectiveOrigin);
+    @CalledByNative
+    private static RenderFrameHost.WebAuthSecurityChecksResults createWebAuthSecurityChecksResults(
+            @AuthenticatorStatus.EnumType int securityCheckResult, boolean isCrossOrigin) {
+        return new WebAuthSecurityChecksResults(securityCheckResult, isCrossOrigin);
     }
 
     @Override
-    public GlobalFrameRoutingId getGlobalFrameRoutingId() {
+    public int performMakeCredentialWebAuthSecurityChecks(
+            String relyingPartyId, Origin effectiveOrigin, boolean isPaymentCredentialCreation) {
+        if (mNativeRenderFrameHostAndroid == 0) return AuthenticatorStatus.UNKNOWN_ERROR;
+        return RenderFrameHostImplJni.get().performMakeCredentialWebAuthSecurityChecks(
+                mNativeRenderFrameHostAndroid, RenderFrameHostImpl.this, relyingPartyId,
+                effectiveOrigin, isPaymentCredentialCreation);
+    }
+
+    @Override
+    public GlobalRenderFrameHostId getGlobalRenderFrameHostId() {
         return mRenderFrameHostId;
+    }
+
+    @Override
+    @LifecycleState
+    public int getLifecycleState() {
+        if (mNativeRenderFrameHostAndroid == 0) return LifecycleState.PENDING_DELETION;
+        return RenderFrameHostImplJni.get().getLifecycleState(
+                mNativeRenderFrameHostAndroid, RenderFrameHostImpl.this);
     }
 
     @NativeMethods
@@ -217,9 +235,12 @@ public class RenderFrameHostImpl implements RenderFrameHost {
         void terminateRendererDueToBadMessage(
                 long nativeRenderFrameHostAndroid, RenderFrameHostImpl caller, int reason);
         boolean isProcessBlocked(long nativeRenderFrameHostAndroid, RenderFrameHostImpl caller);
-        int performGetAssertionWebAuthSecurityChecks(long nativeRenderFrameHostAndroid,
-                RenderFrameHostImpl caller, String relyingPartyId, Origin effectiveOrigin);
+        RenderFrameHost.WebAuthSecurityChecksResults performGetAssertionWebAuthSecurityChecks(
+                long nativeRenderFrameHostAndroid, RenderFrameHostImpl caller,
+                String relyingPartyId, Origin effectiveOrigin);
         int performMakeCredentialWebAuthSecurityChecks(long nativeRenderFrameHostAndroid,
-                RenderFrameHostImpl caller, String relyingPartyId, Origin effectiveOrigin);
+                RenderFrameHostImpl caller, String relyingPartyId, Origin effectiveOrigin,
+                boolean isPaymentCredentialCreation);
+        int getLifecycleState(long nativeRenderFrameHostAndroid, RenderFrameHostImpl caller);
     }
 }

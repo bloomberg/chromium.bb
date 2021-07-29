@@ -9,13 +9,28 @@
 
 namespace ui {
 
-void RecordUkmNonCompliantApi(ukm::SourceId source, const int64_t operation) {
+void RecordUkmNonCompliantApi(
+    ukm::SourceId source,
+    const chromeos::ime::mojom::InputMethodApiOperation operation) {
+  if (source == ukm::kInvalidSourceId ||
+      operation == chromeos::ime::mojom::InputMethodApiOperation::kUnknown) {
+    return;
+  }
+
+  // After this metric was added, a default value of zero was added to
+  // chromeos.ime.mojom.InputMethodApiOperation, which shifted all the values by
+  // one. So subtract one to ensure the metric is still correct.
+  ukm::builders::InputMethod_NonCompliantApi(source)
+      .SetNonCompliantOperation(static_cast<int>(operation) - 1)
+      .Record(ukm::UkmRecorder::Get());
+}
+
+void RecordUkmAssistiveMatch(ukm::SourceId source, const int64_t type) {
   if (source == ukm::kInvalidSourceId)
     return;
 
-  ukm::builders::InputMethod_NonCompliantApi(source)
-      .SetNonCompliantOperation(operation)
-      .Record(ukm::UkmRecorder::Get());
+  ukm::builders::InputMethod_Assistive_Match(source).SetType(type).Record(
+      ukm::UkmRecorder::Get());
 }
 
 }  // namespace ui

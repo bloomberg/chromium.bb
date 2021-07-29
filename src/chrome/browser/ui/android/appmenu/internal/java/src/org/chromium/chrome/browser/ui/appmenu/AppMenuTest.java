@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.ui.appmenu;
 
+import static org.mockito.ArgumentMatchers.eq;
+
+import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -23,7 +26,9 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CallbackHelper;
@@ -36,11 +41,12 @@ import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.LifecycleObserver;
 import org.chromium.chrome.browser.ui.appmenu.test.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.DummyUiChromeActivityTestCase;
 import org.chromium.components.browser_ui.widget.highlight.ViewHighlighterTestUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.DummyUiActivity;
-import org.chromium.ui.test.util.DummyUiActivityTestCase;
 import org.chromium.ui.test.util.UiDisableIf;
+import org.chromium.ui.widget.ChipView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +60,7 @@ import java.util.concurrent.TimeoutException;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @Batch(Batch.PER_CLASS)
-public class AppMenuTest extends DummyUiActivityTestCase {
+public class AppMenuTest extends DummyUiChromeActivityTestCase {
     private AppMenuCoordinatorImpl mAppMenuCoordinator;
     private AppMenuHandlerImpl mAppMenuHandler;
     private TestAppMenuPropertiesDelegate mPropertiesDelegate;
@@ -62,6 +68,9 @@ public class AppMenuTest extends DummyUiActivityTestCase {
     private TestAppMenuObserver mMenuObserver;
     private TestActivityLifecycleDispatcher mLifecycleDispatcher;
     private TestMenuButtonDelegate mTestMenuButtonDelegate;
+
+    @Mock
+    private Canvas mCanvas;
 
     @BeforeClass
     public static void setUpBeforeActivityLaunched() {
@@ -71,6 +80,7 @@ public class AppMenuTest extends DummyUiActivityTestCase {
     @Override
     public void setUpTest() throws Exception {
         super.setUpTest();
+        MockitoAnnotations.initMocks(this);
         TestThreadUtils.runOnUiThreadBlocking(this::setUpTestOnUiThread);
         mLifecycleDispatcher.observerRegisteredCallbackHelper.waitForCallback(0);
     }
@@ -305,12 +315,39 @@ public class AppMenuTest extends DummyUiActivityTestCase {
         showMenuAndAssert();
 
         View itemView = getViewAtPosition(0);
-        ViewHighlighterTestUtils.checkHighlightOn(itemView);
+        checkHighlightOn(itemView);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> mAppMenuHandler.clearMenuHighlight());
         mMenuObserver.menuHighlightChangedCallback.waitForCallback(1);
         Assert.assertFalse(mMenuObserver.menuHighlighting);
-        ViewHighlighterTestUtils.checkHighlightOff(itemView);
+    }
+
+    @Test
+    @MediumTest
+    public void testSetMenuHighlight_ChipItem() throws TimeoutException {
+        mPropertiesDelegate.footerResourceId = R.layout.test_menu_footer;
+        Assert.assertFalse(mMenuObserver.menuHighlighting);
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mAppMenuHandler.setMenuHighlight(R.id.menu_footer_chip_view));
+        mMenuObserver.menuHighlightChangedCallback.waitForCallback(0);
+        Assert.assertTrue(mMenuObserver.menuHighlighting);
+
+        showMenuAndAssert();
+        mPropertiesDelegate.footerInflatedCallback.waitForCallback(0);
+
+        ChipView chipView =
+                (ChipView) mAppMenuHandler.getAppMenu().getListView().getRootView().findViewById(
+                        R.id.menu_footer_chip_view);
+        checkHighlightOn(chipView);
+
+        ViewHighlighterTestUtils.drawPulseDrawable(chipView, mCanvas);
+        Mockito.verify(mCanvas).drawRoundRect(Mockito.any(), eq((float) chipView.getCornerRadius()),
+                eq((float) chipView.getCornerRadius()), Mockito.any());
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> mAppMenuHandler.clearMenuHighlight());
+        mMenuObserver.menuHighlightChangedCallback.waitForCallback(1);
+        Assert.assertFalse(mMenuObserver.menuHighlighting);
     }
 
     @Test
@@ -328,12 +365,11 @@ public class AppMenuTest extends DummyUiActivityTestCase {
         showMenuAndAssert();
 
         View itemView = ((LinearLayout) getViewAtPosition(3)).getChildAt(0);
-        ViewHighlighterTestUtils.checkHighlightOn(itemView);
+        checkHighlightOn(itemView);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> mAppMenuHandler.clearMenuHighlight());
         mMenuObserver.menuHighlightChangedCallback.waitForCallback(1);
         Assert.assertFalse(mMenuObserver.menuHighlighting);
-        ViewHighlighterTestUtils.checkHighlightOff(itemView);
     }
 
     @Test
@@ -867,5 +903,9 @@ public class AppMenuTest extends DummyUiActivityTestCase {
     private void sendMotionEventToButtonHelper(AppMenuButtonHelperImpl helper, View view,
             MotionEvent event) throws ExecutionException {
         TestThreadUtils.runOnUiThreadBlocking(() -> helper.onTouch(view, event));
+    }
+
+    private void checkHighlightOn(View view) {
+        Assert.assertTrue(ViewHighlighterTestUtils.checkHighlightOn(view));
     }
 }

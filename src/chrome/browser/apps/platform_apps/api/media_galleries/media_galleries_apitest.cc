@@ -130,15 +130,15 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
 
     const char* custom_arg = NULL;
     std::string json_string;
-    if (!custom_arg_value.empty()) {
+    if (!custom_arg_value.GetList().empty()) {
       base::JSONWriter::Write(custom_arg_value, &json_string);
       custom_arg = json_string.c_str();
     }
 
     base::AutoReset<base::FilePath> reset(&test_data_dir_, temp_dir.GetPath());
-    bool result = RunExtensionTest({.name = extension_name.c_str(),
-                                    .custom_arg = custom_arg,
-                                    .launch_as_platform_app = true});
+    bool result = RunExtensionTest(
+        extension_name.c_str(),
+        {.custom_arg = custom_arg, .launch_as_platform_app = true});
     content::RunAllPendingInMessageLoop();  // avoid race on exit in registry.
     return result;
   }

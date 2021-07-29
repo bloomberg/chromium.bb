@@ -53,6 +53,7 @@
 #include "content/public/common/content_descriptor_keys.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "device/base/features.h"
 #include "gin/public/isolate_holder.h"
 #include "gin/v8_initializer.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
@@ -244,7 +245,7 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
 
     features.DisableIfNotSet(::features::kWebXrArModule);
 
-    features.DisableIfNotSet(::features::kWebXrHitTest);
+    features.DisableIfNotSet(device::features::kWebXrHitTest);
 
     features.DisableIfNotSet(::features::kDynamicColorGamut);
 
@@ -268,6 +269,9 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
 
     // Disabled until viz scheduling can be improved.
     features.DisableIfNotSet(::features::kUseSurfaceLayerForVideoDefault);
+
+    // Disable dr-dc on webview.
+    features.DisableIfNotSet(::features::kEnableDrDc);
   }
 
   android_webview::RegisterPathProvider();
@@ -390,17 +394,8 @@ void AwMainDelegate::PostFieldTrialInitialization() {
   // are enabled, but only for child processes, as the browser process is shared
   // with the hosting app.
   if (!is_browser_process) {
-    if (base::FeatureList::IsEnabled(
-            android_webview::features::
-                kWebViewCpuAffinityRestrictToLittleCores)) {
-      power_scheduler::PowerScheduler::GetInstance()->SetPolicy(
-          power_scheduler::SchedulingPolicy::kLittleCoresOnly);
-    } else if (base::FeatureList::IsEnabled(
-                   android_webview::features::
-                       kWebViewPowerSchedulerThrottleIdle)) {
-      power_scheduler::PowerScheduler::GetInstance()->SetPolicy(
-          power_scheduler::SchedulingPolicy::kThrottleIdle);
-    }
+    power_scheduler::PowerScheduler::GetInstance()
+        ->InitializePolicyFromFeatureList();
   }
 
 #if BUILDFLAG(ENABLE_GWP_ASAN_MALLOC)

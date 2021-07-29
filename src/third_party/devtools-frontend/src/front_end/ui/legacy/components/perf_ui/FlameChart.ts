@@ -158,7 +158,7 @@ export class FlameChart extends UI.Widget.VBox implements Calculator, ChartViewp
       dataProvider: FlameChartDataProvider, flameChartDelegate: FlameChartDelegate,
       groupExpansionSetting?: Common.Settings.Setting<GroupExpansionState>) {
     super(true);
-    this.registerRequiredCSS('ui/legacy/components/perf_ui/flameChart.css', {enableLegacyPatching: false});
+    this.registerRequiredCSS('ui/legacy/components/perf_ui/flameChart.css');
     this.contentElement.classList.add('flame-chart-main-pane');
     this._groupExpansionSetting = groupExpansionSetting;
     this._groupExpansionState = groupExpansionSetting && groupExpansionSetting.get() || {};
@@ -169,7 +169,7 @@ export class FlameChart extends UI.Widget.VBox implements Calculator, ChartViewp
     this._chartViewport.show(this.contentElement);
 
     this._dataProvider = dataProvider;
-    this._candyStripeCanvas = (document.createElement('canvas') as HTMLCanvasElement);
+    this._candyStripeCanvas = document.createElement('canvas');
     this._createCandyStripePattern();
 
     this._viewportElement = this._chartViewport.viewportElement;

@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "cast/common/public/service_info.h"
+#include "cast/common/public/receiver_info.h"
 #include "cast/receiver/application_agent.h"
 #include "cast/receiver/channel/static_credentials.h"
 #include "cast/receiver/public/receiver_socket_factory.h"
@@ -41,19 +41,33 @@ namespace cast {
 //   * Publishes over mDNS to be discoverable to all senders on the same LAN.
 class CastService final : public discovery::ReportingClient {
  public:
-  CastService(TaskRunner* task_runner,
-              const InterfaceInfo& interface,
-              GeneratedCredentials credentials,
-              const std::string& friendly_name,
-              const std::string& model_name,
-              bool enable_discovery = true);
+  struct Configuration {
+    // The task runner to be used for async calls.
+    TaskRunner* task_runner;
 
+    // The interface the cast service is running on.
+    InterfaceInfo interface;
+
+    // The credentials that the cast service should use for TLS.
+    GeneratedCredentials credentials;
+
+    // The friendly name to be used for broadcasting.
+    std::string friendly_name;
+
+    // The model name to be used for broadcasting.
+    std::string model_name;
+
+    // Whether we should broadcast over mDNS/DNS-SD.
+    bool enable_discovery = true;
+  };
+
+  explicit CastService(Configuration config);
   ~CastService() final;
 
  private:
   using LazyDeletedDiscoveryService = SerialDeletePtr<discovery::DnsSdService>;
   using LazyDeletedDiscoveryPublisher =
-      SerialDeletePtr<discovery::DnsSdServicePublisher<ServiceInfo>>;
+      SerialDeletePtr<discovery::DnsSdServicePublisher<ReceiverInfo>>;
 
   // discovery::ReportingClient overrides.
   void OnFatalError(Error error) final;

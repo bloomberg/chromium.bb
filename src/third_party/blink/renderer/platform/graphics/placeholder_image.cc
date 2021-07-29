@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "third_party/blink/public/resources/grit/blink_image_resources.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
@@ -219,7 +219,7 @@ PlaceholderImage::PlaceholderImage(ImageObserver* observer,
 
 PlaceholderImage::~PlaceholderImage() = default;
 
-IntSize PlaceholderImage::Size() const {
+IntSize PlaceholderImage::SizeWithConfig(SizeConfig) const {
   return size_;
 }
 
@@ -356,22 +356,15 @@ void PlaceholderImage::Draw(cc::PaintCanvas* canvas,
 
 void PlaceholderImage::DrawPattern(
     GraphicsContext& context,
-    const FloatRect& src_rect,
-    const FloatSize& scale,
-    const FloatPoint& phase,
-    SkBlendMode mode,
+    const PaintFlags& base_flags,
     const FloatRect& dest_rect,
-    const FloatSize& repeat_spacing,
+    const ImageTilingInfo& tiling_info,
     RespectImageOrientationEnum respect_orientation) {
   DCHECK(context.Canvas());
-
-  PaintFlags flags = context.FillFlags();
-  flags.setBlendMode(mode);
-
   // Ignore the pattern specifications and just draw a single placeholder image
   // over the whole |dest_rect|. This is done in order to prevent repeated icons
   // from cluttering tiled background images.
-  Draw(context.Canvas(), flags, dest_rect, src_rect,
+  Draw(context.Canvas(), base_flags, dest_rect, tiling_info.image_rect,
        context.ImageSamplingOptions(), respect_orientation,
        kClampImageToSourceRect, kUnspecifiedDecode);
 }

@@ -12,6 +12,18 @@ Example:
   - my_activity.py -b 4/24/19  for stats since April 24th 2019.
   - my_activity.py -b 4/24/19 -e 6/16/19 stats between April 24th and June 16th.
   - my_activity.py -jd to output stats for the week to json with deltas data.
+
+To add additional gerrit instances, one can pass a JSON file as parameter:
+  - my_activity.py -F config.json
+{
+  "gerrit_instances": {
+    "team-internal-review.googlesource.com": {
+      "shorturl": "go/teamcl",
+      "short_url_protocol": "http"
+    },
+    "team-external-review.googlesource.com": {}
+  }
+}
 """
 
 # These services typically only provide a created time and a last modified time
@@ -745,6 +757,10 @@ def main():
       help='Skips listing own issues without changes when showing changes '
            'grouped by referenced issue(s). See --changes-by-issue for more '
            'details.')
+  parser.add_option(
+      '-F', '--config_file', metavar='<config_file>',
+      help='Configuration file in JSON format, used to add additional gerrit '
+           'instances (see source code for an example).')
 
   activity_types_group = optparse.OptionGroup(parser, 'Activity Types',
                                'By default, all activity will be looked up and '
@@ -899,6 +915,22 @@ def main():
     options.output_format_no_url = '  * {title}'
   logging.info('Searching for activity by %s', options.user)
   logging.info('Using range %s to %s', options.begin, options.end)
+
+  if options.config_file:
+    with open(options.config_file) as f:
+      config = json.load(f)
+
+      for item, entries in config.items():
+          if item == 'gerrit_instances':
+            for repo, dic in entries.items():
+              # Use property name as URL
+              dic['url'] = repo
+              gerrit_instances.append(dic)
+          elif item == 'monorail_projects':
+            monorail_projects.append(entries)
+          else:
+            logging.error('Invalid entry in config file.')
+            return 1
 
   my_activity = MyActivity(options)
   my_activity.show_progress('Loading data')

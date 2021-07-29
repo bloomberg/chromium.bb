@@ -339,42 +339,6 @@ static av_cold int flac_encode_init(AVCodecContext *avctx)
     if (s->options.max_partition_order < 0)
         s->options.max_partition_order = ((int[]){  2,  2,  3,  3,  3,  8,  8,  8,  8,  8,  8,  8,  8})[level];
 
-#if FF_API_PRIVATE_OPT
-FF_DISABLE_DEPRECATION_WARNINGS
-    if (avctx->min_prediction_order >= 0) {
-        if (s->options.lpc_type == FF_LPC_TYPE_FIXED) {
-            if (avctx->min_prediction_order > MAX_FIXED_ORDER) {
-                av_log(avctx, AV_LOG_WARNING,
-                       "invalid min prediction order %d, clamped to %d\n",
-                       avctx->min_prediction_order, MAX_FIXED_ORDER);
-                avctx->min_prediction_order = MAX_FIXED_ORDER;
-            }
-        } else if (avctx->min_prediction_order < MIN_LPC_ORDER ||
-                   avctx->min_prediction_order > MAX_LPC_ORDER) {
-            av_log(avctx, AV_LOG_ERROR, "invalid min prediction order: %d\n",
-                   avctx->min_prediction_order);
-            return AVERROR(EINVAL);
-        }
-        s->options.min_prediction_order = avctx->min_prediction_order;
-    }
-    if (avctx->max_prediction_order >= 0) {
-        if (s->options.lpc_type == FF_LPC_TYPE_FIXED) {
-            if (avctx->max_prediction_order > MAX_FIXED_ORDER) {
-                av_log(avctx, AV_LOG_WARNING,
-                       "invalid max prediction order %d, clamped to %d\n",
-                       avctx->max_prediction_order, MAX_FIXED_ORDER);
-                avctx->max_prediction_order = MAX_FIXED_ORDER;
-            }
-        } else if (avctx->max_prediction_order < MIN_LPC_ORDER ||
-                   avctx->max_prediction_order > MAX_LPC_ORDER) {
-            av_log(avctx, AV_LOG_ERROR, "invalid max prediction order: %d\n",
-                   avctx->max_prediction_order);
-            return AVERROR(EINVAL);
-        }
-        s->options.max_prediction_order = avctx->max_prediction_order;
-    }
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
     if (s->options.lpc_type == FF_LPC_TYPE_NONE) {
         s->options.min_prediction_order = 0;
         s->options.max_prediction_order = 0;
@@ -1234,7 +1198,7 @@ static void write_frame_header(FlacEncodeContext *s)
 
     flush_put_bits(&s->pb);
     crc = av_crc(av_crc_get_table(AV_CRC_8_ATM), 0, s->pb.buf,
-                 put_bits_count(&s->pb) >> 3);
+                 put_bytes_output(&s->pb));
     put_bits(&s->pb, 8, crc);
 }
 
@@ -1304,7 +1268,7 @@ static void write_frame_footer(FlacEncodeContext *s)
     int crc;
     flush_put_bits(&s->pb);
     crc = av_bswap16(av_crc(av_crc_get_table(AV_CRC_16_ANSI), 0, s->pb.buf,
-                            put_bits_count(&s->pb)>>3));
+                            put_bytes_output(&s->pb)));
     put_bits(&s->pb, 16, crc);
     flush_put_bits(&s->pb);
 }
@@ -1316,7 +1280,7 @@ static int write_frame(FlacEncodeContext *s, AVPacket *avpkt)
     write_frame_header(s);
     write_subframes(s);
     write_frame_footer(s);
-    return put_bits_count(&s->pb) >> 3;
+    return put_bytes_output(&s->pb);
 }
 
 
@@ -1370,13 +1334,7 @@ static int flac_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
         av_md5_final(s->md5ctx, s->md5sum);
         write_streaminfo(s, avctx->extradata);
 
-#if FF_API_SIDEDATA_ONLY_PKT
-FF_DISABLE_DEPRECATION_WARNINGS
-        if (avctx->side_data_only_packets && !s->flushed) {
-FF_ENABLE_DEPRECATION_WARNINGS
-#else
         if (!s->flushed) {
-#endif
             uint8_t *side_data = av_packet_new_side_data(avpkt, AV_PKT_DATA_NEW_EXTRADATA,
                                                          avctx->extradata_size);
             if (!side_data)
@@ -1449,14 +1407,11 @@ FF_ENABLE_DEPRECATION_WARNINGS
 
 static av_cold int flac_encode_close(AVCodecContext *avctx)
 {
-    if (avctx->priv_data) {
-        FlacEncodeContext *s = avctx->priv_data;
-        av_freep(&s->md5ctx);
-        av_freep(&s->md5_buffer);
-        ff_lpc_end(&s->lpc_ctx);
-    }
-    av_freep(&avctx->extradata);
-    avctx->extradata_size = 0;
+    FlacEncodeContext *s = avctx->priv_data;
+
+    av_freep(&s->md5ctx);
+    av_freep(&s->md5_buffer);
+    ff_lpc_end(&s->lpc_ctx);
     return 0;
 }
 
@@ -1499,7 +1454,7 @@ static const AVClass flac_encoder_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVCodec ff_flac_encoder = {
+const AVCodec ff_flac_encoder = {
     .name           = "flac",
     .long_name      = NULL_IF_CONFIG_SMALL("FLAC (Free Lossless Audio Codec)"),
     .type           = AVMEDIA_TYPE_AUDIO,
@@ -1513,4 +1468,5 @@ AVCodec ff_flac_encoder = {
                                                      AV_SAMPLE_FMT_S32,
                                                      AV_SAMPLE_FMT_NONE },
     .priv_class     = &flac_encoder_class,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
 };

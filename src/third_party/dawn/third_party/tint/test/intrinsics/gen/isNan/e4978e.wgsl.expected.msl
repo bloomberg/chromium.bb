@@ -1,0 +1,27 @@
+#include <metal_stdlib>
+
+using namespace metal;
+struct tint_symbol {
+  float4 value [[position]];
+};
+
+void isNan_e4978e() {
+  bool res = isnan(1.0f);
+}
+
+vertex tint_symbol vertex_main() {
+  isNan_e4978e();
+  tint_symbol const tint_symbol_1 = {.value=float4()};
+  return tint_symbol_1;
+}
+
+fragment void fragment_main() {
+  isNan_e4978e();
+  return;
+}
+
+kernel void compute_main() {
+  isNan_e4978e();
+  return;
+}
+

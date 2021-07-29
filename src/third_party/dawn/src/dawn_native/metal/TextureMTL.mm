@@ -34,7 +34,9 @@ namespace dawn_native { namespace metal {
             return usage & kUsageNeedsTextureView;
         }
 
-        MTLTextureUsage MetalTextureUsage(const Format& format, wgpu::TextureUsage usage) {
+        MTLTextureUsage MetalTextureUsage(const Format& format,
+                                          wgpu::TextureUsage usage,
+                                          uint32_t sampleCount) {
             MTLTextureUsage result = MTLTextureUsageUnknown;  // This is 0
 
             if (usage & (wgpu::TextureUsage::Storage)) {
@@ -53,7 +55,8 @@ namespace dawn_native { namespace metal {
                 }
             }
 
-            if (usage & (wgpu::TextureUsage::RenderAttachment)) {
+            // MTLTextureUsageRenderTarget is needed to clear multisample textures.
+            if (usage & (wgpu::TextureUsage::RenderAttachment) || sampleCount > 1) {
                 result |= MTLTextureUsageRenderTarget;
             }
 
@@ -310,7 +313,7 @@ namespace dawn_native { namespace metal {
         // TODO: add MTLTextureUsagePixelFormatView when needed when we support format
         // reinterpretation.
         mtlDesc.usage = MetalTextureUsage(device->GetValidInternalFormat(descriptor->format),
-                                          descriptor->usage);
+                                          descriptor->usage, descriptor->sampleCount);
         mtlDesc.pixelFormat = MetalPixelFormat(descriptor->format);
         mtlDesc.mipmapLevelCount = descriptor->mipLevelCount;
         mtlDesc.storageMode = MTLStorageModePrivate;
@@ -357,6 +360,7 @@ namespace dawn_native { namespace metal {
         NSRef<MTLTextureDescriptor> mtlDesc = CreateMetalTextureDescriptor(device, descriptor);
         mMtlTexture =
             AcquireNSPRef([device->GetMTLDevice() newTextureWithDescriptor:mtlDesc.Get()]);
+        mMtlUsage = [*mtlDesc usage];
 
         if (device->IsToggleEnabled(Toggle::NonzeroClearResourcesOnCreationForTesting)) {
             device->ConsumedError(ClearTexture(device->GetPendingCommandContext(),
@@ -370,6 +374,8 @@ namespace dawn_native { namespace metal {
                      NSPRef<id<MTLTexture>> mtlTexture)
         : TextureBase(device, descriptor, TextureState::OwnedInternal),
           mMtlTexture(std::move(mtlTexture)) {
+        NSRef<MTLTextureDescriptor> mtlDesc = CreateMetalTextureDescriptor(device, descriptor);
+        mMtlUsage = [*mtlDesc usage];
     }
 
     Texture::Texture(Device* device,
@@ -386,6 +392,7 @@ namespace dawn_native { namespace metal {
         mMtlTexture = AcquireNSPRef([device->GetMTLDevice() newTextureWithDescriptor:mtlDesc.Get()
                                                                            iosurface:ioSurface
                                                                                plane:plane]);
+        mMtlUsage = [*mtlDesc usage];
 
         SetIsSubresourceContentInitialized(descriptor->isInitialized, GetAllSubresources());
     }
@@ -410,7 +417,7 @@ namespace dawn_native { namespace metal {
         const uint8_t clearColor = (clearValue == TextureBase::ClearValue::Zero) ? 0 : 1;
         const double dClearColor = (clearValue == TextureBase::ClearValue::Zero) ? 0.0 : 1.0;
 
-        if ((GetUsage() & wgpu::TextureUsage::RenderAttachment) != 0) {
+        if ((mMtlUsage & MTLTextureUsageRenderTarget) != 0) {
             ASSERT(GetFormat().isRenderable);
 
             // End the blit encoder if it is open.
@@ -531,39 +538,39 @@ namespace dawn_native { namespace metal {
                 }
             }
         } else {
-            // Compute the buffer size big enough to fill the largest mip.
             Extent3D largestMipSize = GetMipLevelVirtualSize(range.baseMipLevel);
-            const TexelBlockInfo& blockInfo =
-                GetFormat().GetAspectInfo(wgpu::TextureAspect::All).block;
-
-            // Metal validation layers: sourceBytesPerRow must be at least 64.
-            uint32_t largestMipBytesPerRow =
-                std::max((largestMipSize.width / blockInfo.width) * blockInfo.byteSize, 64u);
-
-            // Metal validation layers: sourceBytesPerImage must be at least 512.
-            uint64_t largestMipBytesPerImage =
-                std::max(static_cast<uint64_t>(largestMipBytesPerRow) *
-                             (largestMipSize.height / blockInfo.height),
-                         512llu);
-
-            uint64_t bufferSize = largestMipBytesPerImage * largestMipSize.depthOrArrayLayers;
-
-            if (bufferSize > std::numeric_limits<NSUInteger>::max()) {
-                return DAWN_OUT_OF_MEMORY_ERROR("Unable to allocate buffer.");
-            }
-
-            DynamicUploader* uploader = device->GetDynamicUploader();
-            UploadHandle uploadHandle;
-            DAWN_TRY_ASSIGN(uploadHandle,
-                            uploader->Allocate(bufferSize, device->GetPendingCommandSerial(),
-                                               blockInfo.byteSize));
-            memset(uploadHandle.mappedBuffer, clearColor, bufferSize);
-
-            id<MTLBlitCommandEncoder> encoder = commandContext->EnsureBlit();
-            id<MTLBuffer> uploadBuffer = ToBackend(uploadHandle.stagingBuffer)->GetBufferHandle();
 
             // Encode a buffer to texture copy to clear each subresource.
             for (Aspect aspect : IterateEnumMask(range.aspects)) {
+                // Compute the buffer size big enough to fill the largest mip.
+                const TexelBlockInfo& blockInfo = GetFormat().GetAspectInfo(aspect).block;
+
+                // Metal validation layers: sourceBytesPerRow must be at least 64.
+                uint32_t largestMipBytesPerRow =
+                    std::max((largestMipSize.width / blockInfo.width) * blockInfo.byteSize, 64u);
+
+                // Metal validation layers: sourceBytesPerImage must be at least 512.
+                uint64_t largestMipBytesPerImage =
+                    std::max(static_cast<uint64_t>(largestMipBytesPerRow) *
+                                 (largestMipSize.height / blockInfo.height),
+                             512llu);
+
+                uint64_t bufferSize = largestMipBytesPerImage * largestMipSize.depthOrArrayLayers;
+
+                if (bufferSize > std::numeric_limits<NSUInteger>::max()) {
+                    return DAWN_OUT_OF_MEMORY_ERROR("Unable to allocate buffer.");
+                }
+
+                DynamicUploader* uploader = device->GetDynamicUploader();
+                UploadHandle uploadHandle;
+                DAWN_TRY_ASSIGN(uploadHandle,
+                                uploader->Allocate(bufferSize, device->GetPendingCommandSerial(),
+                                                   blockInfo.byteSize));
+                memset(uploadHandle.mappedBuffer, clearColor, bufferSize);
+
+                id<MTLBuffer> uploadBuffer =
+                    ToBackend(uploadHandle.stagingBuffer)->GetBufferHandle();
+
                 for (uint32_t level = range.baseMipLevel;
                      level < range.baseMipLevel + range.levelCount; ++level) {
                     Extent3D virtualSize = GetMipLevelVirtualSize(level);
@@ -578,7 +585,8 @@ namespace dawn_native { namespace metal {
                         }
 
                         MTLBlitOption blitOption = ComputeMTLBlitOption(GetFormat(), aspect);
-                        [encoder copyFromBuffer:uploadBuffer
+                        [commandContext->EnsureBlit()
+                                 copyFromBuffer:uploadBuffer
                                    sourceOffset:uploadHandle.startOffset
                               sourceBytesPerRow:largestMipBytesPerRow
                             sourceBytesPerImage:largestMipBytesPerImage

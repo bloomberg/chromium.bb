@@ -11,6 +11,7 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/memory/weak_ptr.h"
+#include "content/browser/devtools/devtools_throttle_handle.h"
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/target.h"
 #include "content/browser/devtools/protocol/target_auto_attacher.h"
@@ -21,7 +22,6 @@
 namespace content {
 
 class DevToolsAgentHostImpl;
-class DevToolsRendererChannel;
 class DevToolsSession;
 class NavigationHandle;
 class NavigationThrottle;
@@ -46,7 +46,7 @@ class TargetHandler : public DevToolsDomainHandler,
   };
   TargetHandler(AccessMode access_mode,
                 const std::string& owner_target_id,
-                DevToolsRendererChannel* renderer_channel,
+                std::unique_ptr<TargetAutoAttacher> auto_attacher,
                 DevToolsSession* root_session);
   ~TargetHandler() override;
 
@@ -60,6 +60,7 @@ class TargetHandler : public DevToolsDomainHandler,
   void DidFinishNavigation(NavigationHandle* navigation_handle);
   std::unique_ptr<NavigationThrottle> CreateThrottleForNavigation(
       NavigationHandle* navigation_handle);
+
   void UpdatePortals();
   bool ShouldThrottlePopups() const;
 
@@ -114,6 +115,12 @@ class TargetHandler : public DevToolsDomainHandler,
       BrowserContext* browser_context,
       network::mojom::NetworkContextParams* network_context_params);
 
+  // Adds a ServiceWorker throttle for an auto attaching session. If none is
+  // known for this `agent_host`, is a no-op.
+  void AddServiceWorkerThrottle(
+      DevToolsAgentHost* agent_host,
+      scoped_refptr<DevToolsThrottleHandle> throttle_handle);
+
  private:
   class Session;
   class Throttle;
@@ -121,8 +128,11 @@ class TargetHandler : public DevToolsDomainHandler,
   class ResponseThrottle;
 
   // TargetAutoAttacher::Delegate implementation.
-  void AutoAttach(DevToolsAgentHost* host, bool waiting_for_debugger) override;
+  bool AutoAttach(DevToolsAgentHost* host, bool waiting_for_debugger) override;
   void AutoDetach(DevToolsAgentHost* host) override;
+  void SetAttachedTargetsOfType(
+      const base::flat_set<scoped_refptr<DevToolsAgentHost>>& new_hosts,
+      const std::string& type) override;
 
   Response FindSession(Maybe<std::string> session_id,
                        Maybe<std::string> target_id,
@@ -145,7 +155,7 @@ class TargetHandler : public DevToolsDomainHandler,
                                 base::TerminationStatus status) override;
 
   std::unique_ptr<Target::Frontend> frontend_;
-  TargetAutoAttacher auto_attacher_;
+  std::unique_ptr<TargetAutoAttacher> auto_attacher_;
   bool flatten_auto_attach_ = false;
   bool discover_;
   bool observing_agent_hosts_ = false;

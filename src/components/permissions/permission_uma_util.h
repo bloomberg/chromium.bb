@@ -14,6 +14,7 @@
 #include "components/permissions/permission_result.h"
 #include "components/permissions/permission_util.h"
 #include "components/permissions/prediction_service/prediction_service_messages.pb.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
 class BrowserContext;
@@ -153,6 +154,10 @@ enum class PermissionPromptDisposition {
 
   // Other custom modal dialogs.
   CUSTOM_MODAL_DIALOG = 8,
+
+  // Only used on desktop, a less prominent version of chip on the left-hand
+  // side of the location bar that shows a bubble when clicked.
+  LOCATION_BAR_LEFT_QUIET_CHIP = 9,
 };
 
 // The reason why the permission prompt disposition was used. Enum used in UKMs,

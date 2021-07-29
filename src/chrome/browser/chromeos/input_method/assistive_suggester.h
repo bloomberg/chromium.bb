@@ -81,6 +81,8 @@ class AssistiveSuggester : public SuggestionsSource {
 
   bool IsMultiWordSuggestEnabled();
 
+  bool IsExpandedMultiWordSuggestEnabled();
+
   void RecordAssistiveMatchMetricsForAction(AssistiveType action);
 
   // Only the first applicable reason in DisabledReason enum is returned.
@@ -89,7 +91,12 @@ class AssistiveSuggester : public SuggestionsSource {
   // Only the first applicable reason in DisabledReason enum is returned.
   DisabledReason GetDisabledReasonForPersonalInfo();
 
+  // Only the first applicable reason in DisabledReason enum is returned.
+  DisabledReason GetDisabledReasonForMultiWord();
+
   bool IsActionEnabled(AssistiveType action);
+
+  bool WithinGrammarFragment(int cursor_pos, int anchor_pos);
 
   Profile* profile_;
   PersonalInfoSuggester personal_info_suggester_;

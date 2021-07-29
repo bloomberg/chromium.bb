@@ -4,7 +4,7 @@
 
 #include "ash/system/unified/unified_system_info_view.h"
 
-#include "ash/public/cpp/ash_features.h"
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/public/cpp/session/session_observer.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -31,10 +31,12 @@
 #include "ui/chromeos/devicetype_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
@@ -99,7 +101,7 @@ DateView::DateView(UnifiedSystemTrayController* controller)
   Shell::Get()->system_tray_model()->clock()->AddObserver(this);
   SetEnabled(Shell::Get()->system_tray_model()->clock()->IsSettingsAvailable());
   SetInstallFocusRingOnFocus(true);
-  ink_drop()->SetMode(views::InkDropHost::InkDropMode::OFF);
+  views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::OFF);
 }
 
 DateView::~DateView() {
@@ -111,7 +113,7 @@ void DateView::OnThemeChanged() {
   auto* color_provider = AshColorProvider::Get();
   label_->SetEnabledColor(color_provider->GetContentLayerColor(
       ContentLayerType::kTextColorPrimary));
-  focus_ring()->SetColor(color_provider->GetControlsLayerColor(
+  views::FocusRing::Get(this)->SetColor(color_provider->GetControlsLayerColor(
       AshColorProvider::ControlsLayerType::kFocusRingColor));
 }
 
@@ -265,7 +267,7 @@ void ManagedStateView::OnThemeChanged() {
   image_->SetImage(
       gfx::CreateVectorIcon(icon_, color_provider->GetContentLayerColor(
                                        ContentLayerType::kIconColorSecondary)));
-  focus_ring()->SetColor(color_provider->GetControlsLayerColor(
+  views::FocusRing::Get(this)->SetColor(color_provider->GetControlsLayerColor(
       AshColorProvider::ControlsLayerType::kFocusRingColor));
 }
 
@@ -287,7 +289,7 @@ ManagedStateView::ManagedStateView(PressedCallback callback,
       gfx::Size(kUnifiedSystemInfoHeight, kUnifiedSystemInfoHeight));
 
   SetInstallFocusRingOnFocus(true);
-  ink_drop()->SetMode(views::InkDropHost::InkDropMode::OFF);
+  views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::OFF);
 }
 
 // A view that shows whether the device is enterprise managed or not. It updates
@@ -419,8 +421,7 @@ SupervisedUserView::SupervisedUserView()
     : ManagedStateView(PressedCallback(),
                        IDS_ASH_STATUS_TRAY_SUPERVISED_LABEL,
                        GetSupervisedUserIcon()) {
-  bool visible =
-      Shell::Get()->session_controller()->IsUserChildOrDeprecatedSupervised();
+  bool visible = Shell::Get()->session_controller()->IsUserChild();
   SetVisible(visible);
   if (visible)
     SetTooltipText(GetSupervisedUserMessage());

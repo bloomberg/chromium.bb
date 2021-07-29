@@ -6,7 +6,6 @@
 
 #include "base/check_op.h"
 #include "base/files/file_path.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -133,7 +132,7 @@ std::vector<std::string> PersistedData::GetAppIds() const {
   if (!apps || !apps->is_dict())
     return {};
   std::vector<std::string> app_ids;
-  for (const auto& kv : apps->DictItems()) {
+  for (auto kv : apps->DictItems()) {
     const auto& app_id = kv.first;
     const auto pv = GetProductVersion(app_id);
     if (pv.IsValid())

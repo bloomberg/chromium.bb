@@ -6,7 +6,6 @@ package org.chromium.content.browser.accessibility;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
-import android.app.assist.AssistStructure.ViewNode;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -41,6 +40,7 @@ import org.chromium.base.UserData;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.content.browser.WindowEventObserver;
 import org.chromium.content.browser.WindowEventObserverManager;
 import org.chromium.content.browser.accessibility.AccessibilityDelegate.AccessibilityCoordinates;
@@ -48,8 +48,7 @@ import org.chromium.content.browser.accessibility.captioning.CaptioningControlle
 import org.chromium.content.browser.input.ImeAdapterImpl;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content.browser.webcontents.WebContentsImpl.UserDataFactory;
-import org.chromium.content_public.browser.AccessibilitySnapshotCallback;
-import org.chromium.content_public.browser.AccessibilitySnapshotNode;
+import org.chromium.content_public.browser.ContentFeatureList;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsAccessibility;
 import org.chromium.ui.base.WindowAndroid;
@@ -129,6 +128,15 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     // once per this time interval in milliseconds for a given focused node.
     private static final int CONTENT_INVALID_THROTTLE_DELAY = 4500;
 
+    // These are constant names of UMA histograms, and values for custom count histogram.
+    private static final String PERCENTAGE_DROPPED_HISTOGRAM =
+            "Accessibility.Android.OnDemand.PercentageDropped";
+    private static final String EVENTS_DROPPED_HISTOGRAM =
+            "Accessibility.Android.OnDemand.EventsDropped";
+    private static final int EVENTS_DROPPED_HISTOGRAM_MIN_BUCKET = 1;
+    private static final int EVENTS_DROPPED_HISTOGRAM_MAX_BUCKET = 10000;
+    private static final int EVENTS_DROPPED_HISTOGRAM_BUCKET_COUNT = 100;
+
     private static SparseArray<AccessibilityAction> sAccessibilityActionMap =
             new SparseArray<AccessibilityAction>();
 
@@ -194,6 +202,11 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     // invalid for that node. Used to ensure we report content invalid on a node once per interval.
     private int mLastContentInvalidViewId;
     private long mLastContentInvalidUtteranceTime;
+
+    // These track the total number of enqueued events, and the total number of dispatched events,
+    // so we can report the percentage/number of dropped events.
+    private int mTotalEnqueuedEvents;
+    private int mTotalDispatchedEvents;
 
     /**
      * Create a WebContentsAccessibilityImpl object.
@@ -301,7 +314,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
 
                         return true;
                     }
-                }, eventThrottleDelays, viewIndependentEvents);
+                }, eventThrottleDelays, viewIndependentEvents, new HashSet<Integer>(), false);
 
         if (mDelegate.getNativeAXTree() != 0) {
             initializeNativeWithAXTreeUpdate(mDelegate.getNativeAXTree());
@@ -332,6 +345,13 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
 
         // Register a broadcast receiver for locale change.
         if (mView.isAttachedToWindow()) registerLocaleChangeReceiver();
+
+        // Define an initial set of relevant events if OnDemand feature is enabled.
+        if (ContentFeatureList.isEnabled(ContentFeatureList.ON_DEMAND_ACCESSIBILITY_EVENTS)) {
+            int serviceEventMask = BrowserAccessibilityState.getAccessibilityServiceEventTypeMask();
+            mEventDispatcher.updateRelevantEventTypes(convertMaskToEventTypes(serviceEventMask));
+            mEventDispatcher.setOnDemandEnabled(true);
+        }
     }
 
     @CalledByNative
@@ -384,6 +404,11 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         WebContentsAccessibilityImplJni.get().signalEndOfTestForTesting(mNativeObj);
     }
 
+    @VisibleForTesting
+    public void forceRecordUMAHistogramsForTesting() {
+        recordUMAHistograms();
+    }
+
     @CalledByNative
     public void handleEndOfTestSignal() {
         // We have received a signal that we have reached the end of a unit test. If we have a
@@ -401,6 +426,31 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         mCaptioningController.stopListening();
         if (!isNativeInitialized()) return;
         ContextUtils.getApplicationContext().unregisterReceiver(mBroadcastReceiver);
+
+        // If the OnDemand feature is enabled, log UMA metrics and reset counters.
+        if (ContentFeatureList.isEnabled(ContentFeatureList.ON_DEMAND_ACCESSIBILITY_EVENTS)) {
+            recordUMAHistograms();
+        }
+    }
+
+    // Helper method to record UMA histograms for OnDemand feature and reset counters.
+    private void recordUMAHistograms() {
+        // If we did not enqueue any events, we can ignore the data as a trivial case.
+        if (mTotalEnqueuedEvents > 0) {
+            // Log the percentage dropped (dispatching 0 events should be 100% dropped).
+            RecordHistogram.recordPercentageHistogram(PERCENTAGE_DROPPED_HISTOGRAM,
+                    100 - (int) (mTotalDispatchedEvents * 1.0 / mTotalEnqueuedEvents * 100.0));
+
+            // Log the total number of dropped events.
+            RecordHistogram.recordCustomCountHistogram(EVENTS_DROPPED_HISTOGRAM,
+                    mTotalEnqueuedEvents - mTotalDispatchedEvents,
+                    EVENTS_DROPPED_HISTOGRAM_MIN_BUCKET, EVENTS_DROPPED_HISTOGRAM_MAX_BUCKET,
+                    EVENTS_DROPPED_HISTOGRAM_BUCKET_COUNT);
+        }
+
+        // Reset counters.
+        mTotalEnqueuedEvents = 0;
+        mTotalDispatchedEvents = 0;
     }
 
     @Override
@@ -521,7 +571,20 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
 
             if (WebContentsAccessibilityImplJni.get().updateCachedAccessibilityNodeInfo(
                         mNativeObj, WebContentsAccessibilityImpl.this, cachedNode, virtualViewId)) {
-                // After successfully re-populating this cached node, return result.
+                // After successfully re-populating this cached node, update the accessibility
+                // focus since this would not be included in the update call, and set the
+                // available actions accordingly, then return result.
+                cachedNode.setAccessibilityFocused(mAccessibilityFocusId == virtualViewId);
+
+                if (mAccessibilityFocusId == virtualViewId) {
+                    addAction(cachedNode, AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS);
+                    removeAction(cachedNode, AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS);
+                } else {
+                    removeAction(
+                            cachedNode, AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS);
+                    addAction(cachedNode, AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS);
+                }
+
                 return cachedNode;
             } else {
                 // If the node is no longer valid, wipe it from the cache and return null
@@ -580,12 +643,31 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     // BrowserAccessibilityStateListener
 
     @Override
-    public void onBrowserAccessibilityStateChanged() {
+    public void onBrowserAccessibilityStateChanged(boolean newScreenReaderEnabledState) {
         if (!isAccessibilityEnabled()) return;
 
-        boolean screenReaderMode = BrowserAccessibilityState.screenReaderMode();
+        // Update the AXMode based on screen reader status.
         WebContentsAccessibilityImplJni.get().setAXMode(
-                mNativeObj, WebContentsAccessibilityImpl.this, screenReaderMode);
+                mNativeObj, WebContentsAccessibilityImpl.this, newScreenReaderEnabledState);
+
+        // Update the list of events we dispatch to enabled services.
+        if (ContentFeatureList.isEnabled(ContentFeatureList.ON_DEMAND_ACCESSIBILITY_EVENTS)) {
+            int serviceEventMask = BrowserAccessibilityState.getAccessibilityServiceEventTypeMask();
+            mEventDispatcher.updateRelevantEventTypes(convertMaskToEventTypes(serviceEventMask));
+        }
+    }
+
+    public Set<Integer> convertMaskToEventTypes(int serviceEventTypes) {
+        Set<Integer> relevantEventTypes = new HashSet<Integer>();
+        int eventTypeBit;
+
+        while (serviceEventTypes != 0) {
+            eventTypeBit = (1 << Integer.numberOfTrailingZeros(serviceEventTypes));
+            relevantEventTypes.add(eventTypeBit);
+            serviceEventTypes &= ~eventTypeBit;
+        }
+
+        return relevantEventTypes;
     }
 
     // WebContentsAccessibility
@@ -642,77 +724,21 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         }
         structure.setChildCount(1);
         final ViewStructure viewRoot = structure.asyncNewChild(0);
-        mDelegate.requestAccessibilitySnapshot(new AccessibilitySnapshotCallback() {
+        viewRoot.setClassName("");
+        viewRoot.setHint(mProductVersion);
+
+        WebContents webContents = mDelegate.getWebContents();
+        if (webContents != null && !webContents.isDestroyed()) {
+            Bundle extras = viewRoot.getExtras();
+            extras.putCharSequence("url", webContents.getVisibleUrl().getSpec());
+        }
+
+        mDelegate.requestAccessibilitySnapshot(viewRoot, new Runnable() {
             @Override
-            public void onAccessibilitySnapshot(AccessibilitySnapshotNode root) {
-                viewRoot.setClassName("");
-                viewRoot.setHint(mProductVersion);
-
-                WebContents webContents = mDelegate.getWebContents();
-                if (webContents != null && !webContents.isDestroyed()) {
-                    Bundle extras = viewRoot.getExtras();
-                    extras.putCharSequence("url", webContents.getVisibleUrl().getSpec());
-                }
-
-                if (root == null) {
-                    viewRoot.asyncCommit();
-                    return;
-                }
-                createVirtualStructure(viewRoot, root, ignoreScrollOffset);
+            public void run() {
+                viewRoot.asyncCommit();
             }
         });
-    }
-
-    // When creating the View structure, the left and top are relative to the parent node.
-    @TargetApi(Build.VERSION_CODES.M)
-    protected void createVirtualStructure(ViewStructure viewNode, AccessibilitySnapshotNode node,
-            final boolean ignoreScrollOffset) {
-        viewNode.setClassName(node.className);
-        if (node.hasSelection) {
-            viewNode.setText(node.text, node.startSelection, node.endSelection);
-        } else {
-            viewNode.setText(node.text);
-        }
-        AccessibilityCoordinates coordinates = mDelegate.getAccessibilityCoordinates();
-        int left = (int) coordinates.fromLocalCssToPix(node.x);
-        int top = (int) coordinates.fromLocalCssToPix(node.y);
-        int width = (int) coordinates.fromLocalCssToPix(node.width);
-        int height = (int) coordinates.fromLocalCssToPix(node.height);
-
-        Rect boundsInParent = new Rect(left, top, left + width, top + height);
-        if (node.isRootNode) {
-            // Offset of the web content relative to the View.
-            boundsInParent.offset(0, (int) coordinates.getContentOffsetYPix());
-            if (!ignoreScrollOffset) {
-                boundsInParent.offset(
-                        -(int) coordinates.getScrollXPix(), -(int) coordinates.getScrollYPix());
-            }
-        }
-
-        viewNode.setDimens(boundsInParent.left, boundsInParent.top, 0, 0, width, height);
-        viewNode.setChildCount(node.children.size());
-        if (node.hasStyle) {
-            // The text size should be in physical pixels, not CSS pixels.
-            float textSize = coordinates.fromLocalCssToPix(node.textSize);
-
-            int style = (node.bold ? ViewNode.TEXT_STYLE_BOLD : 0)
-                    | (node.italic ? ViewNode.TEXT_STYLE_ITALIC : 0)
-                    | (node.underline ? ViewNode.TEXT_STYLE_UNDERLINE : 0)
-                    | (node.lineThrough ? ViewNode.TEXT_STYLE_STRIKE_THRU : 0);
-            viewNode.setTextStyle(textSize, node.color, node.bgcolor, style);
-        }
-
-        // Note: OWebContentsAccessibility.createVirtualStructure also stores this in
-        // HtmlInfo, but putting it in the extras bundle is useful for earlier API
-        // versions, and for scenarios where HtmlInfo is stripped.
-        Bundle extras = viewNode.getExtras();
-        extras.putCharSequence("htmlTag", node.htmlTag);
-        for (String[] attr : node.htmlAttributes) extras.putCharSequence(attr[0], attr[1]);
-
-        for (int i = 0; i < node.children.size(); i++) {
-            createVirtualStructure(viewNode.asyncNewChild(i), node.children.get(i), true);
-        }
-        viewNode.asyncCommit();
     }
 
     @Override
@@ -1287,6 +1313,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
             return;
         }
 
+        mTotalEnqueuedEvents++;
         mEventDispatcher.enqueueEvent(virtualViewId, eventType);
     }
 
@@ -1489,6 +1516,11 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     }
 
     @CalledByNative
+    protected void handleDialogModalOpened(int virtualViewId) {
+        // Requires P or higher.
+    }
+
+    @CalledByNative
     private void announceLiveRegionText(String text) {
         if (isAccessibilityEnabled()) {
             AccessibilityEvent event =
@@ -1563,23 +1595,28 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
                 | AccessibilityNodeInfo.MOVEMENT_GRANULARITY_WORD
                 | AccessibilityNodeInfo.MOVEMENT_GRANULARITY_LINE);
 
-        if (mAccessibilityFocusId == virtualViewId) {
-            node.setAccessibilityFocused(true);
-        } else {
-            node.setAccessibilityFocused(false);
-        }
+        node.setAccessibilityFocused(mAccessibilityFocusId == virtualViewId);
     }
 
+    // The Android SDK requires us to call AccessibilityNodeInfo.addAction and
+    // AccessibilityNodeInfo.removeAction with an AccessibilityAction argument, but to simplify
+    // things, we just cache a set of AccessibilityActions mapped by their ID.
     protected void addAction(AccessibilityNodeInfo node, int actionId) {
-        // The Android SDK requires us to call AccessibilityNodeInfo.addAction with an
-        // AccessibilityAction argument, but to simplify things, we just cache a set of
-        // AccessibilityActions mapped by their ID.
         AccessibilityAction action = sAccessibilityActionMap.get(actionId);
         if (action == null) {
             action = new AccessibilityAction(actionId, null);
             sAccessibilityActionMap.put(actionId, action);
         }
         node.addAction(action);
+    }
+
+    protected void removeAction(AccessibilityNodeInfo node, int actionId) {
+        AccessibilityAction action = sAccessibilityActionMap.get(actionId);
+        if (action == null) {
+            action = new AccessibilityAction(actionId, null);
+            sAccessibilityActionMap.put(actionId, action);
+        }
+        node.removeAction(action);
     }
 
     @CalledByNative
@@ -1806,7 +1843,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         return charSequence;
     }
 
-    protected void convertWebRectToAndroidCoordinates(Rect rect) {
+    protected void convertWebRectToAndroidCoordinates(Rect rect, Bundle extras) {
         // Offset by the scroll position.
         AccessibilityCoordinates ac = mDelegate.getAccessibilityCoordinates();
         rect.offset(-(int) ac.getScrollX(), -(int) ac.getScrollY());
@@ -1825,18 +1862,25 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         mView.getLocationOnScreen(viewLocation);
         rect.offset(viewLocation[0], viewLocation[1]);
 
-        // Clip to the viewport bounds.
+        // Clip to the viewport bounds, and add unclipped values to the Bundle.
         int viewportRectTop = viewLocation[1] + (int) ac.getContentOffsetYPix();
         int viewportRectBottom = viewportRectTop + ac.getLastFrameViewportHeightPixInt();
-        if (rect.top < viewportRectTop) rect.top = viewportRectTop;
-        if (rect.bottom > viewportRectBottom) rect.bottom = viewportRectBottom;
+        if (rect.top < viewportRectTop) {
+            extras.putInt("AccessibilityNodeInfo.unclippedTop", rect.top);
+            rect.top = viewportRectTop;
+        }
+        if (rect.bottom > viewportRectBottom) {
+            extras.putInt("AccessibilityNodeInfo.unclippedBottom", rect.bottom);
+            rect.bottom = viewportRectBottom;
+        }
     }
 
-    private void requestSendAccessibilityEvent(AccessibilityEvent event) {
+    protected void requestSendAccessibilityEvent(AccessibilityEvent event) {
         // If there is no parent, then the event can be ignored. In general the parent is only
         // transiently null (such as during teardown, switching tabs...). Also ensure that
         // accessibility is still enabled, throttling may result in events sent late.
         if (mView.getParent() != null && isAccessibilityEnabled()) {
+            mTotalDispatchedEvents++;
             if (mTracker != null) mTracker.addEvent(event);
             try {
                 mView.getParent().requestSendAccessibilityEvent(mView, event);
@@ -1871,7 +1915,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         node.setBoundsInParent(boundsInParent);
 
         Rect rect = new Rect(absoluteLeft, absoluteTop, absoluteLeft + width, absoluteTop + height);
-        convertWebRectToAndroidCoordinates(rect);
+        convertWebRectToAndroidCoordinates(rect, node.getExtras());
 
         node.setBoundsInScreen(rect);
 

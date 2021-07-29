@@ -125,8 +125,6 @@ VideoProcessorWrapper* DCLayerTree::InitializeVideoProcessor(
   HRESULT hr =
       video_processor_wrapper.video_device->CreateVideoProcessorEnumerator(
           &desc, &video_processor_wrapper.video_processor_enumerator);
-  base::UmaHistogramSparse(
-      "GPU.DirectComposition.CreateVideoProcessorEnumerator", hr);
   if (FAILED(hr)) {
     DLOG(ERROR) << "CreateVideoProcessorEnumerator failed with error 0x"
                 << std::hex << hr;
@@ -138,8 +136,6 @@ VideoProcessorWrapper* DCLayerTree::InitializeVideoProcessor(
   hr = video_processor_wrapper.video_device->CreateVideoProcessor(
       video_processor_wrapper.video_processor_enumerator.Get(), 0,
       &video_processor_wrapper.video_processor);
-  base::UmaHistogramSparse(
-      "GPU.DirectComposition.VideoDeviceCreateVideoProcessor", hr);
   if (FAILED(hr)) {
     DLOG(ERROR) << "CreateVideoProcessor failed with error 0x" << std::hex
                 << hr;
@@ -308,9 +304,9 @@ bool DCLayerTree::CommitAndClearPendingOverlays(
   return true;
 }
 
-bool DCLayerTree::ScheduleDCLayer(const ui::DCRendererLayerParams& params) {
-  pending_overlays_.push_back(
-      std::make_unique<ui::DCRendererLayerParams>(params));
+bool DCLayerTree::ScheduleDCLayer(
+    std::unique_ptr<ui::DCRendererLayerParams> params) {
+  pending_overlays_.push_back(std::move(params));
   return true;
 }
 

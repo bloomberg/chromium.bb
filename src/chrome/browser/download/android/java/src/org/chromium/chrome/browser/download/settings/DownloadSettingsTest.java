@@ -25,7 +25,6 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
-import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
@@ -98,24 +97,27 @@ public class DownloadSettingsTest {
 
     @Test
     @MediumTest
-    @EnableFeatures(ChromeFeatureList.DOWNLOAD_LATER)
+    @EnableFeatures({ChromeFeatureList.DOWNLOAD_LATER, ChromeFeatureList.OFFLINE_PAGES_PREFETCHING})
     public void testGeneralSettings() throws Exception {
         mSettingsActivityTestRule.startSettingsActivity();
         assertPreference(DownloadSettings.PREF_LOCATION_CHANGE);
         assertPreference(DownloadSettings.PREF_LOCATION_PROMPT_ENABLED);
         assertPreference(DownloadSettings.PREF_DOWNLOAD_LATER_PROMPT_ENABLED);
         assertPreference(DownloadSettings.PREF_PREFETCHING_ENABLED);
+        mSettingsActivityTestRule.getActivity().finish();
     }
 
     @Test
     @MediumTest
     @DisableFeatures(ChromeFeatureList.DOWNLOAD_LATER)
+    @EnableFeatures(ChromeFeatureList.OFFLINE_PAGES_PREFETCHING)
     public void testWithoutDownloadLater() throws Exception {
         mSettingsActivityTestRule.startSettingsActivity();
         assertPreference(DownloadSettings.PREF_LOCATION_CHANGE);
         assertPreference(DownloadSettings.PREF_LOCATION_PROMPT_ENABLED);
         assertPreference(DownloadSettings.PREF_DOWNLOAD_LATER_PROMPT_ENABLED, Matchers.nullValue());
         assertPreference(DownloadSettings.PREF_PREFETCHING_ENABLED);
+        mSettingsActivityTestRule.getActivity().finish();
     }
 
     @Test
@@ -125,6 +127,7 @@ public class DownloadSettingsTest {
         waitForPolicyReady();
         mSettingsActivityTestRule.startSettingsActivity();
         verifyLocationPromptPolicy(true);
+        mSettingsActivityTestRule.getActivity().finish();
     }
 
     @Test
@@ -134,5 +137,6 @@ public class DownloadSettingsTest {
         waitForPolicyReady();
         mSettingsActivityTestRule.startSettingsActivity();
         verifyLocationPromptPolicy(false);
+        mSettingsActivityTestRule.getActivity().finish();
     }
 }

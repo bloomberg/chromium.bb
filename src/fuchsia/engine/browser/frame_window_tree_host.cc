@@ -7,6 +7,7 @@
 #include "base/fuchsia/fuchsia_logging.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "fuchsia/engine/features.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/base/ime/input_method.h"
@@ -61,6 +62,10 @@ FrameWindowTreeHost::FrameWindowTreeHost(
   ui::PlatformWindowInitProperties properties;
   properties.view_token = std::move(view_token);
   properties.view_ref_pair = std::move(view_ref_pair);
+  properties.enable_keyboard =
+      base::FeatureList::IsEnabled(features::kKeyboardInput);
+  properties.enable_virtual_keyboard =
+      base::FeatureList::IsEnabled(features::kVirtualKeyboard);
   CreateAndSetPlatformWindow(std::move(properties));
 
   window_parenting_client_ =
@@ -86,6 +91,7 @@ void FrameWindowTreeHost::OnActivationChanged(bool active) {
 }
 
 void FrameWindowTreeHost::OnWindowStateChanged(
+    ui::PlatformWindowState old_state,
     ui::PlatformWindowState new_state) {
   // Tell the root aura::Window whether it is shown or hidden.
   if (new_state == ui::PlatformWindowState::kMinimized) {

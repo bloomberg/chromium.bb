@@ -17,7 +17,7 @@
 
 #include <vector>
 
-#include "src/ast/access_control.h"
+#include "src/ast/access.h"
 #include "src/program_builder.h"
 #include "src/sem/storage_texture_type.h"
 
@@ -128,6 +128,12 @@ enum class ValidTextureOverload {
   kSampleCompareDepth2dArrayOffsetF32,
   kSampleCompareDepthCubeF32,
   kSampleCompareDepthCubeArrayF32,
+  kSampleCompareLevelDepth2dF32,
+  kSampleCompareLevelDepth2dOffsetF32,
+  kSampleCompareLevelDepth2dArrayF32,
+  kSampleCompareLevelDepth2dArrayOffsetF32,
+  kSampleCompareLevelDepthCubeF32,
+  kSampleCompareLevelDepthCubeArrayF32,
   kLoad1dLevelF32,
   kLoad1dLevelU32,
   kLoad1dLevelI32,
@@ -192,7 +198,7 @@ struct TextureOverloadCase {
   /// Constructor for textureLoad() with storage textures
   TextureOverloadCase(ValidTextureOverload,
                       const char*,
-                      AccessControl::Access,
+                      Access,
                       ast::ImageFormat,
                       ast::TextureDimension,
                       TextureDataType,
@@ -230,7 +236,7 @@ struct TextureOverloadCase {
   ast::SamplerKind const sampler_kind = ast::SamplerKind::kSampler;
   /// The access control for the storage texture
   /// Used only when texture_kind is kStorage
-  AccessControl::Access const access_control = AccessControl::kReadWrite;
+  Access const access = Access::kReadWrite;
   /// The image format for the storage texture
   /// Used only when texture_kind is kStorage
   ast::ImageFormat const image_format = ast::ImageFormat::kNone;

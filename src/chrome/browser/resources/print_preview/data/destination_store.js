@@ -202,9 +202,8 @@ export class DestinationStore extends EventTarget {
       ],
       [PrinterType.LOCAL_PRINTER, DestinationStorePrinterSearchStatus.START],
     ]);
-
-    // TODO (rbpotter): Remove the code below once this flag and policy are no
-    // longer supported. Remove the privet flag in M90.
+    // TODO (https://crbug.com/1223593): Remove the code below once this policy
+    // is no longer supported.
     if (loadTimeData.getBoolean('forceEnablePrivetPrinting')) {
       this.destinationSearchStatus_.set(
           PrinterType.PRIVET_PRINTER,
@@ -398,27 +397,48 @@ export class DestinationStore extends EventTarget {
       return;
     }
 
-    // Load all possible printers.
-    for (const printerType of this.typesToSearch_) {
-      if (printerType === PrinterType.CLOUD_PRINTER) {
+    // Check for Cloud Print printers and remove them if the interface is not
+    // present. This indicates that Cloud Print is unavailable for this user.
+    if (this.typesToSearch_.has(PrinterType.CLOUD_PRINTER)) {
+      if (this.cloudPrintInterface_ === null) {
+        this.typesToSearch_.delete(PrinterType.CLOUD_PRINTER);
+      } else {
         // Accounts are not known on startup. Send an initial search query to
         // get tokens and user accounts.
         this.cloudPrintInterface_.search();
-      } else if (
-          printerType !== PrinterType.PRIVET_PRINTER ||
-          loadTimeData.getBoolean('forceEnablePrivetPrinting')) {
+      }
+    }
+
+    // Load all possible printers except for Cloud Print printers since they're
+    // fetched by Javascript instead of through the native layer (which
+    // startLoadDestinations_ invokes).
+    for (const printerType of this.typesToSearch_) {
+      // TODO (https://crbug.com/1223593): Remove the code below once this
+      // policy is no longer supported.
+      if (printerType !== PrinterType.CLOUD_PRINTER &&
+          (printerType !== PrinterType.PRIVET_PRINTER ||
+           loadTimeData.getBoolean('forceEnablePrivetPrinting'))) {
         this.startLoadDestinations_(printerType);
       }
     }
+
+    // Start a 10s timeout so that we never hang forever.
+    window.setTimeout(() => {
+      this.tryToSelectInitialDestination_(true);
+    }, 10000);
   }
 
-  /** @private */
-  tryToSelectInitialDestination_() {
+  /**
+   * @param {boolean=} timeoutExpired Whether the select timeout is expired.
+   *     Defaults to false.
+   * @private
+   */
+  tryToSelectInitialDestination_(timeoutExpired = false) {
     if (this.initialDestinationSelected_) {
       return;
     }
 
-    const success = this.selectInitialDestination_();
+    const success = this.selectInitialDestination_(timeoutExpired);
     if (!success && !this.isPrintDestinationSearchInProgress &&
         this.typesToSearch_.size === 0) {
       // No destinations
@@ -441,11 +461,12 @@ export class DestinationStore extends EventTarget {
    * Called when destinations are added to the store when the initial
    * destination has not yet been set. Selects the initial destination based on
    * relevant policies, recent printers, and system default.
+   * @param {boolean} timeoutExpired Whether the initial timeout has expired.
    * @return {boolean} Whether an initial destination was successfully selected.
    * @private
    */
-  selectInitialDestination_() {
-    const searchInProgress = this.typesToSearch_.size !== 0;
+  selectInitialDestination_(timeoutExpired) {
+    const searchInProgress = this.typesToSearch_.size !== 0 && !timeoutExpired;
 
     // System default printer policy takes priority.
     if (this.useSystemDefaultAsDefault_) {
@@ -596,7 +617,11 @@ export class DestinationStore extends EventTarget {
     const origins = [];
     if (isLocal) {
       origins.push(DestinationOrigin.LOCAL);
-      origins.push(DestinationOrigin.PRIVET);
+      // TODO (https://crbug.com/1223593): Remove the code below once this
+      // policy is no longer supported.
+      if (loadTimeData.getBoolean('forceEnablePrivetPrinting')) {
+        origins.push(DestinationOrigin.PRIVET);
+      }
       origins.push(DestinationOrigin.EXTENSION);
       origins.push(DestinationOrigin.CROS);
     }
@@ -839,8 +864,8 @@ export class DestinationStore extends EventTarget {
       PrinterType.LOCAL_PRINTER,
     ];
 
-    // TODO (rbpotter): Remove the code below once this flag and policy are no
-    // longer supported. Remove the privet flag in M90.
+    // TODO (https://crbug.com/1223593): Remove the code below once this policy
+    // is no longer supported.
     if (loadTimeData.getBoolean('forceEnablePrivetPrinting')) {
       types.push(PrinterType.PRIVET_PRINTER);
     }

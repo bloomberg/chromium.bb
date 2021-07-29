@@ -30,9 +30,9 @@
 #include "chrome/browser/ash/arc/arc_web_contents_data.h"
 #include "chrome/browser/ash/child_accounts/time_limits/app_time_limit_interface.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
+#include "chrome/browser/ash/policy/handlers/system_features_disable_list_policy_handler.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/extensions/gfx_utils.h"
-#include "chrome/browser/chromeos/policy/system_features_disable_list_policy_handler.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -220,7 +220,7 @@ void ExtensionAppsChromeOs::PauseApp(const std::string& app_id) {
   app_limit->PauseWebActivity(app_id);
 }
 
-void ExtensionAppsChromeOs::UnpauseApps(const std::string& app_id) {
+void ExtensionAppsChromeOs::UnpauseApp(const std::string& app_id) {
   if (paused_apps_.MaybeRemoveApp(app_id)) {
     SetIconEffect(app_id);
   }
@@ -404,6 +404,12 @@ void ExtensionAppsChromeOs::OnRequestUpdate(
           content::RenderFrameHost::FromID(render_process_id, render_frame_id));
 
   if (!web_contents) {
+    return;
+  }
+
+  Profile* web_profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  if (web_profile != profile()) {
     return;
   }
 

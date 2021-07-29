@@ -84,7 +84,14 @@ class CodeGenContext(object):
             "named_property_deleter": None,
             "stringifier": None,
 
-            # Contents of union.
+            # Cache of a tuple of dictionary._DictionaryMember for the own
+            # members of the dictionary of which the Blink class is being
+            # generated.  The cache is used in dictionary.py to save code
+            # generation time.
+            "dictionary_own_members": (),
+            # Cache of a tuple of union._UnionMember for the flattened member
+            # types of the union of which the Blink class is being generated.
+            # The cache is used in union.py to save code generation time.
             "union_members": (),
 
             # The names of the class being generated and its base class.
@@ -115,7 +122,6 @@ class CodeGenContext(object):
             "idl_location",
             "idl_location_and_name",
             "idl_name",
-            "is_return_by_argument",
             "may_throw_exception",
             "member_like",
             "property_",
@@ -244,11 +250,6 @@ class CodeGenContext(object):
         if self.idl_definition:
             return self.idl_definition.identifier
         return "<<unknown name>>"
-
-    @property
-    def is_return_by_argument(self):
-        # TODO(yukishiino): Remove `is_return_by_argument`.
-        return False
 
     @property
     def is_return_type_promise_type(self):

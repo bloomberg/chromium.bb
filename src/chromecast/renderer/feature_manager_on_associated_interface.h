@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/values.h"
 #include "chromecast/common/mojom/feature_manager.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
@@ -34,6 +33,7 @@ class FeatureManagerOnAssociatedInterface
       const FeatureManagerOnAssociatedInterface&) = delete;
   ~FeatureManagerOnAssociatedInterface() override;
 
+  bool configured() const { return configured_; }
   bool FeatureEnabled(const std::string& feature) const;
   const chromecast::shell::mojom::FeaturePtr& GetFeature(
       const std::string& feature) const;

@@ -35,7 +35,7 @@
 namespace blink {
 
 class Navigator;
-class UnsignedLongOrUnsignedLongSequence;
+class V8UnionUnsignedLongOrUnsignedLongSequence;
 
 class MODULES_EXPORT VibrationController final
     : public GarbageCollected<VibrationController>,
@@ -55,7 +55,7 @@ class MODULES_EXPORT VibrationController final
   ~VibrationController() override;
 
   static VibrationPattern SanitizeVibrationPattern(
-      const UnsignedLongOrUnsignedLongSequence&);
+      const V8UnionUnsignedLongOrUnsignedLongSequence* input);
 
   void DoVibrate(TimerBase*);
   void DidVibrate();

@@ -12,7 +12,6 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
 #include "content/common/content_switches_internal.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
@@ -62,7 +61,7 @@ RenderFrameProxy* RenderFrameProxy::CreateProxyToReplaceFrame(
     AgentSchedulingGroup& agent_scheduling_group,
     RenderFrameImpl* frame_to_replace,
     int routing_id,
-    blink::mojom::TreeScopeType scope,
+    blink::mojom::TreeScopeType tree_scope_type,
     const blink::RemoteFrameToken& proxy_frame_token) {
   CHECK_NE(routing_id, MSG_ROUTING_NONE);
 
@@ -73,7 +72,7 @@ RenderFrameProxy* RenderFrameProxy::CreateProxyToReplaceFrame(
   // always come from WebRemoteFrame::create and a call to WebFrame::swap must
   // follow later.
   blink::WebRemoteFrame* web_frame = blink::WebRemoteFrame::Create(
-      scope, proxy.get(), proxy->blink_interface_registry_.get(),
+      tree_scope_type, proxy.get(), proxy->blink_interface_registry_.get(),
       proxy->GetRemoteAssociatedInterfaces(), proxy_frame_token);
 
   proxy->Init(web_frame, frame_to_replace->render_view());
@@ -88,6 +87,7 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
     const absl::optional<blink::FrameToken>& opener_frame_token,
     int render_view_routing_id,
     int parent_routing_id,
+    blink::mojom::TreeScopeType tree_scope_type,
     blink::mojom::FrameReplicationStatePtr replicated_state,
     const base::UnguessableToken& devtools_frame_token,
     mojom::RemoteMainFrameInterfacesPtr remote_main_frame_interfaces) {
@@ -129,8 +129,7 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
     // to be a RenderFrameProxy, because navigations initiated by local frames
     // should not wind up here.
     web_frame = parent->web_frame()->CreateRemoteChild(
-        replicated_state->scope,
-        blink::WebString::FromUTF8(replicated_state->name),
+        tree_scope_type, blink::WebString::FromUTF8(replicated_state->name),
         replicated_state->frame_policy, proxy.get(),
         proxy->blink_interface_registry_.get(),
         proxy->GetRemoteAssociatedInterfaces(), frame_token,
@@ -152,20 +151,21 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
   return proxy.release();
 }
 
-RenderFrameProxy* RenderFrameProxy::CreateProxyForPortal(
+RenderFrameProxy* RenderFrameProxy::CreateProxyForPortalOrFencedFrame(
     AgentSchedulingGroup& agent_scheduling_group,
     RenderFrameImpl* parent,
     int proxy_routing_id,
     const blink::RemoteFrameToken& frame_token,
     const base::UnguessableToken& devtools_frame_token,
-    const blink::WebElement& portal_element) {
+    const blink::WebElement& frame_owner) {
   auto proxy = base::WrapUnique(
       new RenderFrameProxy(agent_scheduling_group, proxy_routing_id));
-  blink::WebRemoteFrame* web_frame = blink::WebRemoteFrame::CreateForPortal(
-      blink::mojom::TreeScopeType::kDocument, proxy.get(),
-      proxy->blink_interface_registry_.get(),
-      proxy->GetRemoteAssociatedInterfaces(), frame_token, devtools_frame_token,
-      portal_element);
+  blink::WebRemoteFrame* web_frame =
+      blink::WebRemoteFrame::CreateForPortalOrFencedFrame(
+          blink::mojom::TreeScopeType::kDocument, proxy.get(),
+          proxy->blink_interface_registry_.get(),
+          proxy->GetRemoteAssociatedInterfaces(), frame_token,
+          devtools_frame_token, frame_owner);
   proxy->Init(web_frame, parent->render_view());
   return proxy.release();
 }
@@ -260,7 +260,7 @@ void RenderFrameProxy::SetReplicatedState(
       state->insecure_request_policy);
   web_frame_->SetReplicatedInsecureNavigationsSet(
       state->insecure_navigations_set);
-  web_frame_->SetReplicatedAdFrameType(state->ad_frame_type);
+  web_frame_->SetReplicatedIsAdSubframe(state->is_ad_subframe);
   web_frame_->SetReplicatedPermissionsPolicyHeader(
       state->permissions_policy_header);
   if (state->has_active_user_gesture) {

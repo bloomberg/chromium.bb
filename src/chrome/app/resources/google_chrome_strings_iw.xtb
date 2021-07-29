@@ -10,6 +10,7 @@
 <translation id="1125124144982679672">‏מי משתמש/ת ב-Chrome?</translation>
 <translation id="1142745911746664600">‏לא ניתן לעדכן את Chrome</translation>
 <translation id="1154147086299354128">‏&amp;פתיחה ב-Chrome</translation>
+<translation id="1182414570724401860">‏ההמלצה של Chrome היא שלא להוריד או לפתוח את הקובץ הזה</translation>
 <translation id="1278833599417554002">‏הפעלה מחדש לצורך עדכון &amp;Chrome</translation>
 <translation id="1293325835983155583">‏<ph name="MANAGER" /> דורש לקרוא את התנאים וההגבלות הבאים ולהסכים להם לפני השימוש במכשיר הזה. תנאים אלה לא מרחיבים, משנים או מגבילים את התנאים לשימוש ב-Google Chrome OS</translation>
 <translation id="1302523850133262269">‏יש להמתין בזמן ש-Chrome מתקין את עדכוני המערכת האחרונים.</translation>
@@ -35,7 +36,7 @@
 <translation id="174539241580958092">‏Google Chrome לא הצליח לסנכרן את הנתונים שלך בשל שגיאת כניסה.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1786003790898721085">‏יש לוודא שנכנסת ל-Chrome ב-<ph name="TARGET_DEVICE_NAME" /> ולשלוח שוב.</translation>
-<translation id="1807517590912578995">‏להפריד את פרופיל Chrome?</translation>
+<translation id="1810203443153428607">‏התקנת Chrome OS תוביל להחלפת כל הנתונים שבמכשיר שלך.</translation>
 <translation id="1812689907177901597">‏כיבוי הגדרה זו יאפשר לך להיכנס לאתרי Google, כמו Gmail, בלי להיכנס אל Chrome</translation>
 <translation id="1860536484129686729">‏Chrome זקוק להרשאת גישה למצלמה בשביל האתר הזה</translation>
 <translation id="1873233029667955273">‏Google Chrome‏ אינו דפדפן ברירת המחדל שלך</translation>
@@ -56,6 +57,16 @@
 <translation id="2348335408836342058">‏Chrome זקוק להרשאת גישה אל המצלמה והמיקרופון בשביל האתר הזה</translation>
 <translation id="234869673307233423">‏Chrome לא יכול לבדוק את הסיסמאות שלך. כדאי לנסות שוב מאוחר יותר.</translation>
 <translation id="235650106824528204">‏המנהל של פרופיל העבודה יכול להסיר נתוני Chrome שמופקים בזמן השימוש בפרופיל (כמו יצירת סימניות, היסטוריה, סיסמאות והגדרות נוספות). <ph name="LEARN_MORE" /></translation>
+<translation id="2409866122341731384">‏מחיקת הכונן הקשיח והתקנת Chrome OS</translation>
+<translation id="2417565246123344595">‏<ph name="BEGIN_PARAGRAPH1" />הכל מוכן להתקנת Chrome OS! לאחר ההתקדמות בתהליך ההתקנה:
+          <ph name="BEGIN_LIST" />
+          <ph name="LIST_ITEM" />הקבצים, הנתונים ומערכת ההפעלה שלך יימחקו.
+          <ph name="LIST_ITEM" />תושלם ההתקנה של Chrome OS.
+          <ph name="LIST_ITEM" />המכשיר ייכבה לאחר השלמת ההתקנה.
+          <ph name="END_LIST" />
+          <ph name="END_PARAGRAPH1" />
+          <ph name="BEGIN_PARAGRAPH2" />תזכורת בפעם האחרונה: ההתקנה תוביל למחיקת הכונן הקשיח במלואו. חשוב לוודא שגיבית את הנתונים שחשובים לך.<ph name="END_PARAGRAPH2" />
+          <ph name="BEGIN_PARAGRAPH3" />אין אפשרות לבטל את ההתקנה לאחר שהחלה.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="2429317896000329049">‏Google Chrome לא הצליח לסנכרן את הנתונים שלך מפני שהסנכרון אינו זמין עבור הדומיין שלך.</translation>
 <translation id="2467438592969358367">‏Google Chrome רוצה לייצא את הסיסמאות שלך. יש להקליד את הסיסמה שלך ל-Windows כדי לאפשר זאת.</translation>
 <translation id="2485422356828889247">הסרת התקנה</translation>
@@ -63,7 +74,6 @@
 <translation id="2574930892358684005">‏המשתמש <ph name="EXISTING_USER" /> כבר מחובר לפרופיל Chrome הזה. כדי להפריד בין פעילויות גלישה, Chrome יכול ליצור עבורך פרופיל משלך.</translation>
 <translation id="2580411288591421699">‏אין אפשרות להתקין את אותה גרסת Google Chrome הפועלת כעת. יש לסגור את Google Chrome ולנסות שוב.</translation>
 <translation id="2586406160782125153">‏הפעולה תמחק את נתוני הגלישה מהמכשיר. כדי לאחזר את הנתונים מאוחר יותר, יש להיכנס אל Chrome עם <ph name="USER_EMAIL" />.</translation>
-<translation id="2588634262982826227">‏Chrome OS יכולה לשחזר את האפליקציות והדפים שלך לאחר כל הפעלה מחדש בלי לשאול בכל פעם.</translation>
 <translation id="2622559029861875898">‏Chrome לא יכול לחפש עדכונים. יש לבדוק את החיבור לאינטרנט.</translation>
 <translation id="2644798301485385923">‏מערכת Chrome OS</translation>
 <translation id="2652691236519827073">‏פתיחת הקישור ב&amp;כרטיסיית Chrome חדשה</translation>
@@ -127,6 +137,7 @@
 <translation id="4251615635259297716">‏האם לקשר את הנתונים שלך ב-Chrome לחשבון זה?</translation>
 <translation id="4281844954008187215">תנאי שירות</translation>
 <translation id="4293420128516039005">‏כניסה לחשבון תסנכרן ותתאים אישית את Chrome בכל המכשירים שברשותך</translation>
+<translation id="429583012151745428">ההתקנה מתבצעת. אין לכבות את המכשיר. ההתקנה לא אמורה להימשך יותר מ-20 דקות. המחשב ייכבה באופן אוטומטי לאחר ההתקנה.</translation>
 <translation id="4325083532956419387">‏גרסת Chrome OS</translation>
 <translation id="4328355335528187361">‏גרסת הפיתוח של Google Chrome ‏(mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -167,6 +178,10 @@
 <translation id="5394833366792865639">‏שיתוף כרטיסיית Chrome</translation>
 <translation id="5430073640787465221">‏קובץ ההעדפות שלך פגום או לא חוקי. Google Chrome לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="5434383153637353914">‏הדף הזה מאפשר לך לנהל את חשבונות Google שאליהם נכנסת. החשבונות האלה יהיו זמינים בדפדפן Chrome ובאפליקציות מחנות Play, בנוסף לשירותים כמו Gmail, ‏Drive ו-YouTube‏. <ph name="LINK_BEGIN" />מידע נוסף<ph name="LINK_END" /></translation>
+<translation id="5449497480926255862">‏<ph name="BEGIN_PARAGRAPH1" />לפני שנתחיל, חשוב לוודא שיש לך גיבוי עדכני של הנתונים שלך. התקנת Chrome OS תוביל להחלפת כל הנתונים שבכונן הקשיח.<ph name="END_PARAGRAPH1" />
+          <ph name="BEGIN_PARAGRAPH2" />‏Google לא נושאת באחריות לאובדן נתונים כלשהו. בנוסף, היא לא מבטיחה שמערכת Chrome OS תפעל בדגמים שאינם מאושרים. מידע נוסף לגבי דגמים מאושרים זמין ב-[TBD].<ph name="END_PARAGRAPH2" />
+          <ph name="BEGIN_PARAGRAPH3" />פרטים נוספים על התקנת Chrome OS ומחיקת נתונים: [TBD URL]<ph name="END_PARAGRAPH3" />
+          <ph name="BEGIN_PARAGRAPH4" />אם ברצונך להמשיך, עליך ללחוץ על "התקנת Chrome OS" ומשם נדריך אותך לאורך תהליך ההתקנה במספר שלבים פשוטים. תהיה לך אפשרות לאשר פעם נוספת לפני שנבצע שינויים במחשב.<ph name="END_PARAGRAPH4" /></translation>
 <translation id="5486618155264784386">‏להתקנת Chrome OS</translation>
 <translation id="556024056938947818">‏Google Chrome מנסה להציג סיסמאות.</translation>
 <translation id="5566025111015594046">‏Google Chrome‏ (mDNS-In)</translation>
@@ -202,11 +217,11 @@
 <translation id="6515495397637126556">‏<ph name="PAGE_TITLE" /> - Google Chrome בגרסת פיתוח</translation>
 <translation id="6566149418543181476">‏מעדכן את Google Chrome‏ (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6568793831116033768">‏מערכת Chrome OS</translation>
+<translation id="664235759707825982">‏הכל מוכן להתקנת Chrome OS</translation>
 <translation id="6676384891291319759">גישה אל האינטרנט</translation>
 <translation id="6679975945624592337">‏Google Chrome יכול לפעול ברקע</translation>
 <translation id="6739177684496155661">‏להמשיך בפרופיל Chrome חדש?</translation>
 <translation id="6750954913813541382">‏כדי לתקן שגיאות כתיב, הטקסט שהוקלד על ידך בדפדפן נשלח אל Google על ידי Chrome</translation>
-<translation id="6755885556185485672">‏כיבוי Chrome OS לא בוצע כהלכה.</translation>
 <translation id="677276454032249905">‏לסגור את Chrome בכל זאת?</translation>
 <translation id="683440813066116847">‏כלל נכנס עבור הגרסה הניסיונית של Google Chrome על מנת לאפשר תנועת mDNS.</translation>
 <translation id="6885412569789873916">‏אפליקציות לגרסת הבטא של Chrome</translation>
@@ -221,9 +236,9 @@
 <translation id="7155997830309522122">‏אם שינית את הסיסמה הזו, יש לערוך את הסיסמה השמורה ב-Chrome כך שהיא תתאים לסיסמה החדשה שלך.</translation>
 <translation id="7161904924553537242">‏ברוך הבא ל-Google Chrome</translation>
 <translation id="7242029209006116544">‏בחרת להיכנס לחשבון מנוהל, ויינתן למנהל המערכת שלו שליטה על הפרופיל שלך ב-Google Chrome. הנתונים שלך ב-Chrome, כגון אפליקציות, סימניות, היסטוריה, סיסמאות והגדרות אחרות ייקשרו באופן קבוע ל-<ph name="USER_NAME" />. ניתן למחוק את הנתונים האלה באמצעות מרכז השליטה של חשבונות Google, אבל לא ניתן יהיה לשייך את הנתונים האלה לחשבון אחר. <ph name="LEARN_MORE" /></translation>
+<translation id="7275165473619697274">‏ההתקנה של Chrome OS מתבצעת</translation>
 <translation id="7295052994004373688">‏זו השפה שבה מוצג ממשק המשתמש של Google Chrome</translation>
 <translation id="7296210096911315575">מידע חשוב על בטיחות ועל אופן השימוש</translation>
-<translation id="7303916856901595720">‏להעביר את החשבון לפרופיל Chrome חדש?</translation>
 <translation id="7308322188646931570">‏Chrome זקוק לגישה לאחסון כדי להוריד קבצים</translation>
 <translation id="7339898014177206373">חלון חדש</translation>
 <translation id="7398801000654795464">‏התחברת ל-Chrome כ-<ph name="USER_EMAIL_ADDRESS" />. יש להשתמש באותו חשבון כדי להיכנס שוב.</translation>
@@ -250,7 +265,6 @@
 <translation id="7890208801193284374">‏כשמשתפים מחשב, חברים ובני משפחה יכולים לגלוש בנפרד ולהגדיר את Chrome בדיוק כפי שהם רוצים.</translation>
 <translation id="7896673875602241923">‏מישהו נכנס בעבר ל-Chrome מהמחשב הזה כ-<ph name="ACCOUNT_EMAIL_LAST" />. יש ליצור משתמש חדש ל-Chrome כדי לשמור על הפרדת המידע שלך.</translation>
 <translation id="7930071585467473040">‏Google Chrome מנסה להעתיק את הסיסמאות.</translation>
-<translation id="7951988079884443914">‏ההמלצה של Chrome היא שלא להוריד או לפתוח את הקובץ הזה.</translation>
 <translation id="7962410387636238736">‏המחשב הזה כבר לא יקבל עדכונים ל-Google Chrome, מאחר שכבר אין תמיכה במערכות Windows XP ו-Windows Vista</translation>
 <translation id="79947657522496226">‏השימוש ב-Chrome OS מתאפשר בזכות <ph name="BEGIN_LINK_CROS_OSS" />תוכנות קוד פתוח<ph name="END_LINK_CROS_OSS" /> נוספות כמו <ph name="BEGIN_LINK_LINUX_OSS" />סביבת הפיתוח של Linux<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="8008534537613507642">‏התקנת Chrome מחדש</translation>

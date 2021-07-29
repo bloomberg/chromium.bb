@@ -19,9 +19,9 @@
 #include "chrome/browser/ash/app_mode/kiosk_mode_idle_app_name_notification.h"
 #include "chrome/browser/ash/app_mode/kiosk_session_plugin_handler.h"
 #include "chrome/browser/ash/app_mode/kiosk_settings_navigation_throttle.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -267,7 +267,7 @@ void AppSession::Init(Profile* profile, const std::string& app_id) {
   // name and author after some idle timeout.
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  if (!connector->IsEnterpriseManaged()) {
+  if (!connector->IsDeviceEnterpriseManaged()) {
     PrefService* local_state = g_browser_process->local_state();
     local_state->SetBoolean(prefs::kRebootAfterUpdate, true);
     KioskModeIdleAppNameNotification::Initialize();

@@ -22,6 +22,7 @@
 #include "base/notreached.h"
 #include "base/trace_event/base_tracing.h"
 #include "base/trace_event/trace_event.h"
+#include "base/trace_event/typed_macros.h"
 #include "build/build_config.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
@@ -43,6 +44,8 @@
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/content_navigation_policy.h"
@@ -66,6 +69,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
+#include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom.h"
 
@@ -222,8 +226,49 @@ ShouldSwapBrowsingInstanceToProto(ShouldSwapBrowsingInstance result) {
     case ShouldSwapBrowsingInstance::kYes_SameSiteProactiveSwap:
       return ProtoLevel::
           SHOULD_SWAP_BROWSING_INSTANCE_YES_SAME_SITE_PROACTIVE_SWAP;
-    default:
-      return ProtoLevel::SHOULD_SWAP_BROWSING_INSTANCE_NO;
+    case ShouldSwapBrowsingInstance::kNo_ProactiveSwapDisabled:
+      return ProtoLevel::
+          SHOULD_SWAP_BROWSING_INSTANCE_NO_PROACTIVE_SWAP_DISABLED;
+    case ShouldSwapBrowsingInstance::kNo_NotMainFrame:
+      return ProtoLevel::SHOULD_SWAP_BROWSING_INSTANCE_NO_NOT_MAIN_FRAME;
+    case ShouldSwapBrowsingInstance::kNo_HasRelatedActiveContents:
+      return ProtoLevel::
+          SHOULD_SWAP_BROWSING_INSTANCE_NO_HAS_RELATED_ACTIVE_CONTENTS;
+    case ShouldSwapBrowsingInstance::kNo_DoesNotHaveSite:
+      return ProtoLevel::SHOULD_SWAP_BROWSING_INSTANCE_NO_DOES_NOT_HAVE_SITE;
+    case ShouldSwapBrowsingInstance::kNo_SourceURLSchemeIsNotHTTPOrHTTPS:
+      return ProtoLevel::
+          SHOULD_SWAP_BROWSING_INSTANCE_NO_SOURCE_URL_SCHEME_NOT_HTTP_OR_HTTPS;
+    case ShouldSwapBrowsingInstance::kNo_SameSiteNavigation:
+      return ProtoLevel::SHOULD_SWAP_BROWSING_INSTANCE_NO_SAME_SITE_NAVIGATION;
+    case ShouldSwapBrowsingInstance::kNo_ReloadingErrorPage:
+      return ProtoLevel::SHOULD_SWAP_BROWSING_INSTANCE_NO_RELOADING_ERROR_PAGE;
+    case ShouldSwapBrowsingInstance::kNo_AlreadyHasMatchingBrowsingInstance:
+      return ProtoLevel::
+          SHOULD_SWAP_BROWSING_INSTANCE_NO_ALREADY_HAS_MATCHING_BROWSING_INSTANCE;
+    case ShouldSwapBrowsingInstance::kNo_RendererDebugURL:
+      return ProtoLevel::SHOULD_SWAP_BROWSING_INSTANCE_NO_RENDERER_DEBUG_URL;
+    case ShouldSwapBrowsingInstance::kNo_NotNeededForBackForwardCache:
+      return ProtoLevel::
+          SHOULD_SWAP_BROWSING_INSTANCE_NO_NOT_NEEDED_FOR_BACK_FORWARD_CACHE;
+    case ShouldSwapBrowsingInstance::kNo_SameDocumentNavigation:
+      return ProtoLevel::
+          SHOULD_SWAP_BROWSING_INSTANCE_NO_SAME_DOCUMENT_NAVIGATION;
+    case ShouldSwapBrowsingInstance::kNo_SameUrlNavigation:
+      return ProtoLevel::SHOULD_SWAP_BROWSING_INSTANCE_NO_SAME_URL_NAVIGATION;
+    case ShouldSwapBrowsingInstance::kNo_WillReplaceEntry:
+      return ProtoLevel::SHOULD_SWAP_BROWSING_INSTANCE_NO_WILL_REPLACE_ENTRY;
+    case ShouldSwapBrowsingInstance::kNo_Reload:
+      return ProtoLevel::SHOULD_SWAP_BROWSING_INSTANCE_NO_RELOAD;
+    case ShouldSwapBrowsingInstance::kNo_Guest:
+      return ProtoLevel::SHOULD_SWAP_BROWSING_INSTANCE_NO_GUEST;
+    case ShouldSwapBrowsingInstance::kNo_HasNotComittedAnyNavigation:
+      return ProtoLevel::
+          SHOULD_SWAP_BROWSING_INSTANCE_NO_HAS_NOT_COMMITTED_ANY_NAVIGATION;
+    case ShouldSwapBrowsingInstance::
+        kNo_UnloadHandlerExistsOnSameSiteNavigation:
+      return ProtoLevel::
+          SHOULD_SWAP_BROWSING_INSTANCE_NO_UNLOAD_HANDLER_EXISTS_ON_SAME_SITE_NAVIGATION;
   }
 }
 
@@ -269,6 +314,11 @@ void RenderFrameHostManager::InitRoot(SiteInstance* site_instance,
       /*frame_routing_id=*/MSG_ROUTING_NONE,
       mojo::PendingAssociatedRemote<mojom::Frame>(), blink::LocalFrameToken(),
       renderer_initiated_creation));
+
+  // Creating a main RenderFrameHost also creates a new Page, so notify the
+  // delegate about this.
+  frame_tree_node_->frame_tree()->delegate()->NotifyPageChanged(
+      render_frame_host_->GetPage());
 }
 
 void RenderFrameHostManager::InitChild(
@@ -282,9 +332,11 @@ void RenderFrameHostManager::InitChild(
       /*renderer_initiated_creation=*/false));
 }
 
-RenderWidgetHostView* RenderFrameHostManager::GetRenderWidgetHostView() const {
+RenderWidgetHostViewBase* RenderFrameHostManager::GetRenderWidgetHostView()
+    const {
   if (render_frame_host_)
-    return render_frame_host_->GetView();
+    return static_cast<RenderWidgetHostViewBase*>(
+        render_frame_host_->GetView());
   return nullptr;
 }
 
@@ -612,8 +664,9 @@ void RenderFrameHostManager::UnloadOldFrame(
 
     auto can_store =
         back_forward_cache.CanStorePageNow(old_render_frame_host.get());
-    TRACE_EVENT1("navigation", "BackForwardCache_MaybeStorePage", "can_store",
-                 can_store.ToString());
+    TRACE_EVENT("navigation", "BackForwardCache_MaybeStorePage",
+                "old_render_frame_host", old_render_frame_host, "can_store",
+                can_store.ToString());
     if (can_store) {
       auto entry = CollectPage(std::move(old_render_frame_host));
       // Ensures RenderViewHosts are not reused while they are in the cache.
@@ -959,7 +1012,7 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
         render_frame_host_->CreateWebUI(request->common_params().url,
                                         request->bindings());
         if (render_frame_host_->IsRenderFrameLive()) {
-          render_frame_host_->web_ui()->RenderFrameCreated(
+          render_frame_host_->web_ui()->WebUIRenderFrameCreated(
               render_frame_host_.get());
         }
       }
@@ -1079,9 +1132,9 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
 
   // If a WebUI was created in a speculative RenderFrameHost or a new
   // RenderFrame was created then the WebUI never interacted with the
-  // RenderFrame. Notify using RenderFrameCreated.
+  // RenderFrame. Notify using WebUIRenderFrameCreated.
   if (notify_webui_of_rf_creation && navigation_rfh->web_ui()) {
-    navigation_rfh->web_ui()->RenderFrameCreated(navigation_rfh);
+    navigation_rfh->web_ui()->WebUIRenderFrameCreated(navigation_rfh);
   }
 
   // If this function picked an incompatible process for the URL, capture a
@@ -1099,22 +1152,14 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
           navigation_rfh->GetProcess()->GetID(),
           url::Origin::Create(request->common_params().url)) &&
       !request->IsForMhtmlSubframe()) {
-    base::debug::SetCrashKeyString(
-        base::debug::AllocateCrashKeyString("lock_url",
-                                            base::debug::CrashKeySize::Size256),
-        process_lock.ToString());
-    base::debug::SetCrashKeyString(
-        base::debug::AllocateCrashKeyString("commit_origin",
-                                            base::debug::CrashKeySize::Size64),
-        request->common_params().url.GetOrigin().spec());
-    base::debug::SetCrashKeyString(
-        base::debug::AllocateCrashKeyString("is_main_frame",
-                                            base::debug::CrashKeySize::Size32),
-        frame_tree_node_->IsMainFrame() ? "true" : "false");
-    base::debug::SetCrashKeyString(
-        base::debug::AllocateCrashKeyString("use_current_rfh",
-                                            base::debug::CrashKeySize::Size32),
-        use_current_rfh ? "true" : "false");
+    SCOPED_CRASH_KEY_STRING256("GetFrameHostForNav", "lock_url",
+                               process_lock.ToString());
+    SCOPED_CRASH_KEY_STRING64("GetFrameHostForNav", "commit_origin",
+                              request->common_params().url.GetOrigin().spec());
+    SCOPED_CRASH_KEY_BOOL("GetFrameHostForNav", "is_main_frame",
+                          frame_tree_node_->IsMainFrame());
+    SCOPED_CRASH_KEY_BOOL("GetFrameHostForNav", "use_current_rfh",
+                          use_current_rfh);
     NOTREACHED() << "Picked an incompatible process for URL: "
                  << process_lock.ToString() << " lock vs "
                  << request->common_params().url.GetOrigin();
@@ -1329,11 +1374,10 @@ void RenderFrameHostManager::OnDidUpdateOrigin(
   }
 }
 
-void RenderFrameHostManager::OnDidSetAdFrameType(
-    blink::mojom::AdFrameType ad_frame_type) {
+void RenderFrameHostManager::OnDidSetIsAdSubframe(bool is_ad_subframe) {
   for (const auto& pair : proxy_hosts_) {
-    pair.second->GetAssociatedRemoteFrame()->SetReplicatedAdFrameType(
-        ad_frame_type);
+    pair.second->GetAssociatedRemoteFrame()->SetReplicatedIsAdSubframe(
+        is_ad_subframe);
   }
 }
 
@@ -1651,16 +1695,12 @@ RenderFrameHostManager::ShouldProactivelySwapBrowsingInstance(
   if (!current_instance->HasSite())
     return ShouldSwapBrowsingInstance::kNo_DoesNotHaveSite;
 
-  // Exclude non http(s) schemes. Some tests don't expect navigations to
-  // data-URL or to about:blank to switch to a different BrowsingInstance.
+  // Do not do a proactive BrowsingInstance swap when the previous document's
+  // scheme is not HTTP/HTTPS, since only HTTP/HTTPS documents are eligible for
+  // back-forward cache.
   const GURL& current_url = render_frame_host_->GetLastCommittedURL();
   if (!current_url.SchemeIsHTTPOrHTTPS())
     return ShouldSwapBrowsingInstance::kNo_SourceURLSchemeIsNotHTTPOrHTTPS;
-
-  const GURL& destination_effective_url = SiteInstanceImpl::GetEffectiveURL(
-      current_instance->GetBrowserContext(), destination_url_info.url);
-  if (!destination_effective_url.SchemeIsHTTPOrHTTPS())
-    return ShouldSwapBrowsingInstance::kNo_DestinationURLSchemeIsNotHTTPOrHTTPS;
 
   // WebView guests currently need to stay in the same SiteInstance and
   // BrowsingInstance.
@@ -1886,11 +1926,12 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
   if (!frame_tree_node_->IsMainFrame() &&
       !new_instance_impl->HasProcess() &&
       new_instance_impl->RequiresDedicatedProcess()) {
-    // Also give the embedder a chance to override this decision.  Certain
-    // frames have different enough workloads so that it's better to avoid
-    // placing a subframe into an existing process for better performance
-    // isolation.  See https://crbug.com/899418.
-    if (GetContentClient()->browser()->ShouldSubframesTryToReuseExistingProcess(
+    // Also give the embedder and user-specifiable feature a chance to override
+    // this decision. Certain frames have different enough workloads so that
+    // it's better to avoid placing a subframe into an existing process for
+    // better performance isolation.  See https://crbug.com/899418.
+    if (!base::FeatureList::IsEnabled(features::kDisableProcessReuse) &&
+        GetContentClient()->browser()->ShouldSubframesTryToReuseExistingProcess(
             frame_tree_node_->frame_tree()->GetMainFrame())) {
       new_instance_impl->set_process_reuse_policy(
           SiteInstanceImpl::ProcessReusePolicy::
@@ -2852,8 +2893,9 @@ void RenderFrameHostManager::SwapOuterDelegateFrame(
 }
 
 void RenderFrameHostManager::SetRWHViewForInnerContents(
-    RenderWidgetHostView* child_rwhv) {
+    RenderWidgetHostViewChildFrame* child_rwhv) {
   DCHECK(IsMainFrameForInnerDelegate());
+  DCHECK(GetProxyToOuterDelegate());
   GetProxyToOuterDelegate()->SetChildRWHView(child_rwhv, nullptr);
 }
 
@@ -2890,41 +2932,37 @@ bool RenderFrameHostManager::InitRenderView(
 
 WebExposedIsolationInfo RenderFrameHostManager::GetWebExposedIsolationInfo(
     NavigationRequest* navigation_request) {
-  if (base::FeatureList::IsEnabled(network::features::kCrossOriginIsolated)) {
-    if (frame_tree_node_->IsMainFrame()) {
-      bool is_cross_origin_isolated =
-          navigation_request->coop_status().current_coop().value ==
-          network::mojom::CrossOriginOpenerPolicyValue::kSameOriginPlusCoep;
-
-      if (is_cross_origin_isolated) {
-        url::Origin origin =
-            url::Origin::Create(navigation_request->common_params().url);
-
-        // For short-term testing, we'll treat COI as "good enough" to treat as
-        // an isolated application iff the kDirectSockets feature is also
-        // enabled.
-        //
-        // TODO(mkwst): Build a better distinction: https://crbug.com/1206150.
-        if (base::FeatureList::IsEnabled(features::kDirectSockets))
-          return WebExposedIsolationInfo::CreateIsolatedApplication(origin);
-
-        return WebExposedIsolationInfo::CreateIsolated(origin);
-      }
-    } else {
-      // If we are in an iframe, we inherit the isolation state of
-      // the top level frame. This can be inferred from the main frame
-      // SiteInstance. Note that Iframes have to pass COEP tests in
-      // |OnResponseStarted| before being loaded and inheriting this
-      // cross-origin isolated state.
-      //
-      // TODO(crbug.com/1206150): This may change as we work out the model for
-      // isolation mechanisms beyond "cross-origin isolation".
-      SiteInstanceImpl* main_frame_site_instance =
-          render_frame_host_->GetMainFrame()->GetSiteInstance();
-      return main_frame_site_instance->GetWebExposedIsolationInfo();
-    }
+  // If we are in an iframe, we inherit the isolation state of the top level
+  // frame. This can be inferred from the main frame SiteInstance. Note that
+  // Iframes have to pass COEP tests in |OnResponseStarted| before being loaded
+  // and inheriting this cross-origin isolated state.
+  //
+  // TODO(crbug.com/1206150): This may change as we work out the model for
+  // isolation mechanisms beyond "cross-origin isolation".
+  if (!frame_tree_node_->IsMainFrame()) {
+    return render_frame_host_->GetMainFrame()
+        ->GetSiteInstance()
+        ->GetWebExposedIsolationInfo();
   }
-  return WebExposedIsolationInfo::CreateNonIsolated();
+
+  // We consider navigations to be cross-origin isolated if the response
+  // asserts proper COOP and COEP headers.
+  if (navigation_request->coop_status().current_coop().value !=
+      network::mojom::CrossOriginOpenerPolicyValue::kSameOriginPlusCoep) {
+    return WebExposedIsolationInfo::CreateNonIsolated();
+  }
+
+  url::Origin origin =
+      url::Origin::Create(navigation_request->common_params().url);
+
+  // For short-term testing, we'll treat COI as "good enough" to treat as
+  // an isolated application iff the kDirectSockets feature is also
+  // enabled.
+  //
+  // TODO(mkwst): Build a better distinction: https://crbug.com/1206150.
+  return base::FeatureList::IsEnabled(features::kDirectSockets)
+             ? WebExposedIsolationInfo::CreateIsolatedApplication(origin)
+             : WebExposedIsolationInfo::CreateIsolated(origin);
 }
 
 scoped_refptr<SiteInstance>
@@ -2975,11 +3013,12 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
   scoped_refptr<SiteInstance> dest_site_instance = GetSiteInstanceForNavigation(
       request->GetUrlInfo(), web_exposed_isolation_info,
       request->GetSourceSiteInstance(), request->dest_site_instance(),
-      candidate_site_instance, request->common_params().transition,
+      candidate_site_instance,
+      ui::PageTransitionFromInt(request->common_params().transition),
       request->state() >= NavigationRequest::CANCELING, is_reload,
       request->IsSameDocument(),
       request->GetRestoreType() == RestoreType::kRestored,
-      request->is_view_source(), request->WasServerRedirect(),
+      request->commit_params().is_view_source, request->WasServerRedirect(),
       request->coop_status().require_browsing_instance_swap(),
       request->common_params().should_replace_current_entry,
       request->state() < NavigationRequest::NavigationState::
@@ -3253,11 +3292,14 @@ void RenderFrameHostManager::CommitPending(
     } else {
       DCHECK_EQ(prev_state,
                 RenderFrameHostImpl::LifecycleStateImpl::kPrerendering);
+      for (RenderViewHostImpl* rvh : render_view_hosts_to_restore) {
+        rvh->ActivatePrerenderedPage();
+      }
       current_frame_host()->ActivateForPrerendering();
     }
   }
 
-  // For top-level frames, the RenderWidgetHost will not be destroyed when the
+  // For all main frames, the RenderWidgetHost will not be destroyed when the
   // local frame is detached. https://crbug.com/419087
   //
   // The RenderWidget in the renderer process is destroyed, but the
@@ -3410,8 +3452,11 @@ void RenderFrameHostManager::CommitPending(
   // Note: We do this after unloading the old RFH because that may create
   // the proxy we're looking for.
   RenderFrameProxyHost* proxy_to_parent = GetProxyToParent();
-  if (proxy_to_parent)
-    proxy_to_parent->SetChildRWHView(new_view, old_size ? &*old_size : nullptr);
+  if (proxy_to_parent) {
+    proxy_to_parent->SetChildRWHView(
+        static_cast<RenderWidgetHostViewChildFrame*>(new_view),
+        old_size ? &*old_size : nullptr);
+  }
 
   if (render_frame_host_->is_local_root()) {
     // RenderFrames are created with a hidden RenderWidgetHost. When navigation

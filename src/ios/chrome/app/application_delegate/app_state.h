@@ -74,10 +74,6 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 // startup.
 @property(nonatomic) BOOL shouldShowPolicySignoutPrompt;
 
-// When multiwindow is unavailable, this is the only scene state. It is created
-// by the app delegate.
-@property(nonatomic, strong) SceneState* mainSceneState;
-
 // Indicates that this app launch is one after a crash.
 @property(nonatomic, assign) BOOL postCrashLaunch;
 
@@ -96,6 +92,14 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 
 // The initialization stage the app is currently at.
 @property(nonatomic, readonly) InitStage initStage;
+
+// This flag is set when the first scene has initialized its UI and never
+// resets.
+@property(nonatomic, readonly) BOOL firstSceneHasInitializedUI;
+
+// YES if the views being presented should only support the portrait
+// orientation.
+@property(nonatomic, readonly) BOOL portraitOnly;
 
 // Saves the launchOptions to be used from -newTabFromLaunchOptions. If the
 // application is in background, initialize the browser to basic. If not, launch
@@ -117,17 +121,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 // Called when the application discards set of scene sessions, these sessions
 // can no longer be accessed and all their associated data should be destroyed.
 - (void)application:(UIApplication*)application
-    didDiscardSceneSessions:(NSSet<UISceneSession*>*)sceneSessions
-    API_AVAILABLE(ios(13));
-
-// Resumes the session: reinitializing metrics and opening new tab if necessary.
-// User sessions are defined in terms of BecomeActive/ResignActive so that
-// session boundaries include things like turning the screen off or getting a
-// phone call, not just switching apps.
-- (void)resumeSessionWithTabOpener:(id<TabOpening>)tabOpener
-                       tabSwitcher:(id<TabSwitching>)tabSwitcher
-             connectionInformation:
-                 (id<ConnectionInformation>)connectionInformation;
+    didDiscardSceneSessions:(NSSet<UISceneSession*>*)sceneSessions;
 
 // Called when going into the background. iOS already broadcasts, so
 // stakeholders can register for it directly.
@@ -139,11 +133,6 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 - (void)applicationWillEnterForeground:(UIApplication*)application
                        metricsMediator:(MetricsMediator*)metricsMediator
                           memoryHelper:(MemoryWarningHelper*)memoryHelper;
-
-// Sets the return value for -didFinishLaunchingWithOptions that determines if
-// UIKit should make followup delegate calls such as
-// -performActionForShortcutItem or -openURL.
-- (void)launchFromURLHandled:(BOOL)URLHandled;
 
 // Returns the foreground and active scene, if there is one.
 - (SceneState*)foregroundActiveScene;
@@ -157,6 +146,9 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 
 // Adds an observer to this app state. The observers will be notified about
 // app state changes per AppStateObserver protocol.
+// The observer will be *immediately* notified about the latest init stage
+// transition, if any such transitions happened (didTransitionFromInitStage),
+// before this method returns.
 - (void)addObserver:(id<AppStateObserver>)observer;
 // Removes the observer. It's safe to call this at any time, including from
 // AppStateObserver callbacks.
@@ -165,6 +157,8 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 // Adds a new agent. Agents are owned by the app state.
 // This automatically sets the app state on the |agent|.
 - (void)addAgent:(id<AppStateAgent>)agent;
+// Removes an agent.
+- (void)removeAgent:(id<AppStateAgent>)agent;
 
 // Queue the transition to the next app initialization stage. Will stop
 // transitioning when the Final stage is reached.

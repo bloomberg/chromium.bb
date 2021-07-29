@@ -87,11 +87,10 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   // call this function when the button is clicked and if the bubble isn't
   // showing it will appear while if it is showing, nothing will happen here and
   // the existing bubble will auto-close due to focus loss.
-  static void ShowBubble(
-      profiles::BubbleViewMode view_mode,
-      views::Button* anchor_button,
-      Browser* browser,
-      bool is_source_keyboard);
+  static void ShowBubble(profiles::BubbleViewMode view_mode,
+                         views::Button* anchor_button,
+                         Browser* browser,
+                         bool is_source_accelerator);
 
   static bool IsShowing();
   static void Hide();
@@ -127,7 +126,7 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
       const std::u16string& button_text,
       ui::NativeTheme::ColorId background_color_id,
       const base::RepeatingClosure& action,
-      bool show_badge);
+      bool show_sync_badge);
   // Displays the sync info section as a rectangle with text. Clicking the
   // rectangle triggers |action|.
   void BuildSyncInfoWithoutCallToAction(const std::u16string& text,
@@ -177,8 +176,9 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   void Reset();
   void OnWindowClosing();
 
-  // Requests focus for a button when opened by keyboard.
-  void FocusButtonOnKeyboardOpen();
+  // Requests focus for the first profile in the 'Other profiles' section (if it
+  // exists).
+  void FocusFirstProfileButton();
 
   void BuildSyncInfoCallToActionBackground(
       ui::NativeTheme::ColorId background_color_id,

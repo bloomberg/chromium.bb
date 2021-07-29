@@ -16,7 +16,7 @@ namespace password_manager {
 // method accordingly.
 class MultiStoreFormFetcher : public FormFetcherImpl {
  public:
-  MultiStoreFormFetcher(PasswordStore::FormDigest form_digest,
+  MultiStoreFormFetcher(PasswordFormDigest form_digest,
                         const PasswordManagerClient* client,
                         bool should_migrate_http_passwords);
   ~MultiStoreFormFetcher() override;
@@ -32,7 +32,7 @@ class MultiStoreFormFetcher : public FormFetcherImpl {
   void OnGetPasswordStoreResults(
       std::vector<std::unique_ptr<PasswordForm>> results) override;
   void OnGetPasswordStoreResultsFrom(
-      PasswordStore* store,
+      PasswordStoreInterface* store,
       std::vector<std::unique_ptr<PasswordForm>> results) override;
 
   // HttpPasswordStoreMigrator::Consumer:
@@ -60,7 +60,8 @@ class MultiStoreFormFetcher : public FormFetcherImpl {
   int wait_counter_ = 0;
   std::vector<std::unique_ptr<PasswordForm>> partial_results_;
 
-  base::flat_map<PasswordStore*, std::unique_ptr<HttpPasswordStoreMigrator>>
+  base::flat_map<PasswordStoreInterface*,
+                 std::unique_ptr<HttpPasswordStoreMigrator>>
       http_migrators_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiStoreFormFetcher);

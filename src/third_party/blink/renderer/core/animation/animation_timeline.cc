@@ -41,20 +41,12 @@ bool CompareAnimations(const Member<Animation>& left,
       Animation::CompareAnimationsOrdering::kPointerOrder);
 }
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 V8CSSNumberish* AnimationTimeline::currentTime() {
   const absl::optional<base::TimeDelta>& result = CurrentPhaseAndTime().time;
   if (result)
     return MakeGarbageCollected<V8CSSNumberish>(result->InMillisecondsF());
   return nullptr;
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-void AnimationTimeline::currentTime(CSSNumberish& currentTime) {
-  absl::optional<base::TimeDelta> result = CurrentPhaseAndTime().time;
-  currentTime = result ? CSSNumberish::FromDouble(result->InMillisecondsF())
-                       : CSSNumberish();
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 absl::optional<AnimationTimeDelta> AnimationTimeline::CurrentTime() {
   absl::optional<base::TimeDelta> result = CurrentPhaseAndTime().time;
@@ -73,15 +65,9 @@ absl::optional<double> AnimationTimeline::CurrentTimeSeconds() {
   return result ? absl::make_optional(result->InSecondsF()) : absl::nullopt;
 }
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 V8CSSNumberish* AnimationTimeline::duration() {
   return nullptr;
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-void AnimationTimeline::duration(CSSNumberish& duration) {
-  duration = CSSNumberish();
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 String AnimationTimeline::phase() {
   switch (CurrentPhaseAndTime().phase) {
@@ -99,6 +85,17 @@ String AnimationTimeline::phase() {
 void AnimationTimeline::ClearOutdatedAnimation(Animation* animation) {
   DCHECK(!animation->Outdated());
   outdated_animation_count_--;
+}
+
+wtf_size_t AnimationTimeline::AnimationsNeedingUpdateCount() const {
+  wtf_size_t count = 0;
+  for (const auto& animation : animations_needing_update_) {
+    // This function is for frame sequence tracking for animations. Exclude
+    // no-effect animations which don't generate frames.
+    if (!animation->AnimationHasNoEffect())
+      count++;
+  }
+  return count;
 }
 
 bool AnimationTimeline::NeedsAnimationTimingUpdate() {
@@ -202,6 +199,14 @@ Animation* AnimationTimeline::Play(AnimationEffect* child) {
 void AnimationTimeline::MarkAnimationsCompositorPending(bool source_changed) {
   for (const auto& animation : animations_) {
     animation->SetCompositorPending(source_changed);
+  }
+}
+
+void AnimationTimeline::MarkPendingIfCompositorPropertyAnimationChanges(
+    const PaintArtifactCompositor* paint_artifact_compositor) {
+  for (const auto& animation : animations_) {
+    animation->MarkPendingIfCompositorPropertyAnimationChanges(
+        paint_artifact_compositor);
   }
 }
 

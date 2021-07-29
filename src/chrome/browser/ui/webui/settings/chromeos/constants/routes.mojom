@@ -60,7 +60,8 @@ enum Subpage {
   kSecurityAndSignIn = 304,
   kFingerprint = 305,
   kManageOtherPeople = 306,
-  kKerberosAccounts = 307,
+  // Note: Value 307 was for Kerberos Accounts Subpage, which has been migrated
+  // to a separate section - see https://crbug.com/1186190. Do not reuse.
 
   // Device section.
   kPointers = 400,
@@ -81,6 +82,7 @@ enum Subpage {
   kAmbientModeArtGalleryAlbum = 504,
   // 505 was used for kWallpaper. Do not reuse.
   // 506 was used for kWallpaperImages. Do not reuse.
+  kDarkMode = 507,
 
   // Search and Assistant section.
   kAssistant = 600,
@@ -92,7 +94,8 @@ enum Subpage {
   kGooglePlayStore = 702,
   kPluginVmSharedPaths = 703,
   kPluginVmUsbPreferences = 704,
-  kOnStartup = 705,
+  // Note: Value 705 was for deprecated kOnStartup. Do not reuse.
+  kAppNotifications = 706,
 
   // Crostini section.
   kCrostiniDetails = 800,
@@ -174,7 +177,6 @@ const string kSyncDeprecatedAdvancedSubpagePath = "syncSetup/advanced";
 const string kSecurityAndSignInSubpagePath = "lockScreen";
 const string kFingerprintSubpagePath = "lockScreen/fingerprint";
 const string kManageOtherPeopleSubpagePath = "accounts";
-const string kKerberosAccountsSubpagePath = "kerberosAccounts";
 
 // Device section.
 const string kDeviceSectionPath = "device";
@@ -194,6 +196,7 @@ const string kAmbientModeGooglePhotosAlbumSubpagePath =
     "ambientMode/photos?topicSource=0";
 const string kAmbientModeArtGalleryAlbumSubpagePath =
     "ambientMode/photos?topicSource=1";
+const string kDarkModeSubpagePath = "darkMode";
 
 // Search and Assistant section.
 const string kSearchAndAssistantSectionPath = "osSearch";
@@ -203,13 +206,13 @@ const string kSearchSubpagePath = "osSearch/search";
 // Apps section.
 const string kAppsSectionPath = "apps";
 const string kAppManagementSubpagePath = "app-management";
+const string kAppNotificationsSubpagePath = "app-notifications";
 const string kAppDetailsSubpagePath = "app-management/detail";
 const string kGooglePlayStoreSubpagePath = "androidAppsDetails";
 const string kPluginVmSharedPathsSubpagePath =
     "app-management/pluginVm/sharedPaths";
 const string kPluginVmUsbPreferencesSubpagePath =
     "app-management/pluginVm/sharedUsbDevices";
-const string kOnStartupSubpagePath = "onstartup";
 
 // Crostini section.
 const string kCrostiniSectionPath = "crostini";

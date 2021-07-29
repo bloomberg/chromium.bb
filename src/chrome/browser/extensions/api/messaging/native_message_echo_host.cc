@@ -6,10 +6,10 @@
 
 #include <utility>
 
+#include "base/cxx17_backports.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "content/public/browser/browser_context.h"
@@ -28,7 +28,7 @@ const char* const NativeMessageEchoHost::kOrigins[] = {
     "chrome-extension://knldjmfmopnpolahpmmgbagdohdnhkik/"};
 
 // static
-const int NativeMessageEchoHost::kOriginCount = base::size(kOrigins);
+const size_t NativeMessageEchoHost::kOriginCount = base::size(kOrigins);
 
 // static
 std::unique_ptr<NativeMessageHost> NativeMessageEchoHost::Create(
@@ -65,7 +65,7 @@ scoped_refptr<base::SingleThreadTaskRunner> NativeMessageEchoHost::task_runner()
 void NativeMessageEchoHost::ProcessEcho(const base::DictionaryValue& request) {
   base::DictionaryValue response;
   response.SetInteger("id", ++message_number_);
-  response.Set("echo", request.CreateDeepCopy());
+  response.SetKey("echo", request.Clone());
   response.SetString("caller_url", kOrigins[0]);
   std::string response_string;
   base::JSONWriter::Write(response, &response_string);

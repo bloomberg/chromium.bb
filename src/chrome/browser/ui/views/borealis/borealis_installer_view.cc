@@ -12,8 +12,10 @@
 #include "base/callback_helpers.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ash/borealis/borealis_app_launcher.h"
 #include "chrome/browser/ash/borealis/borealis_context_manager.h"
 #include "chrome/browser/ash/borealis/borealis_installer.h"
+#include "chrome/browser/ash/borealis/borealis_metrics.h"
 #include "chrome/browser/ash/borealis/borealis_service.h"
 #include "chrome/browser/ash/borealis/borealis_util.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -72,8 +74,8 @@ class BorealisInstallerView::TitleLabel : public views::Label {
 
   METADATA_HEADER(TitleLabel);
 
-  TitleLabel() {}
-  ~TitleLabel() override {}
+  TitleLabel() = default;
+  ~TitleLabel() override = default;
 
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
     node_data->SetName(GetText());
@@ -202,9 +204,14 @@ bool BorealisInstallerView::Accept() {
 
   if (state_ == State::kCompleted) {
     // Launch button has been clicked.
-    borealis::BorealisService::GetForProfile(profile_)
-        ->ContextManager()
-        .StartBorealis(base::DoNothing());
+    borealis::BorealisService::GetForProfile(profile_)->AppLauncher().Launch(
+        borealis::kBorealisMainAppId,
+        base::BindOnce([](borealis::BorealisAppLauncher::LaunchResult result) {
+          if (result == borealis::BorealisAppLauncher::LaunchResult::kSuccess)
+            return;
+          LOG(ERROR) << "Failed to launch borealis after install: code="
+                     << static_cast<int>(result);
+        }));
     return true;
   }
 
@@ -216,6 +223,17 @@ bool BorealisInstallerView::Accept() {
 }
 
 bool BorealisInstallerView::Cancel() {
+  if (state_ == State::kCompleted) {
+    borealis::BorealisService::GetForProfile(profile_)
+        ->ContextManager()
+        .ShutDownBorealis(
+            base::BindOnce([](borealis::BorealisShutdownResult result) {
+              if (result == borealis::BorealisShutdownResult::kSuccess)
+                return;
+              LOG(ERROR) << "Failed to shutdown borealis after install: code="
+                         << static_cast<int>(result);
+            }));
+  }
   return true;
 }
 
@@ -350,6 +368,8 @@ int BorealisInstallerView::GetCurrentDialogButtons() const {
         case borealis::BorealisInstallResult::kBorealisNotAllowed:
         case borealis::BorealisInstallResult::kDlcUnsupportedError:
         case borealis::BorealisInstallResult::kDlcNeedUpdateError:
+        case borealis::BorealisInstallResult::kStartupFailed:
+        case borealis::BorealisInstallResult::kMainAppNotPresent:
           return ui::DIALOG_BUTTON_CANCEL;
         case borealis::BorealisInstallResult::kBorealisInstallInProgress:
         case borealis::BorealisInstallResult::kDlcInternalError:

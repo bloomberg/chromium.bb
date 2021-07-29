@@ -921,12 +921,6 @@ static av_cold int vpx_init(AVCodecContext *avctx,
         }
     }
 
-#if FF_API_PRIVATE_OPT
-FF_DISABLE_DEPRECATION_WARNINGS
-    if (avctx->frame_skip_threshold)
-        ctx->drop_threshold = avctx->frame_skip_threshold;
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
     enccfg.rc_dropframe_thresh = ctx->drop_threshold;
 
     //0-100 (0 => CBR, 100 => VBR)
@@ -1066,12 +1060,6 @@ FF_ENABLE_DEPRECATION_WARNINGS
         codecctl_int(avctx, VP8E_SET_SHARPNESS, ctx->sharpness);
 
     if (CONFIG_LIBVPX_VP8_ENCODER && avctx->codec_id == AV_CODEC_ID_VP8) {
-#if FF_API_PRIVATE_OPT
-FF_DISABLE_DEPRECATION_WARNINGS
-        if (avctx->noise_reduction)
-            ctx->noise_sensitivity = avctx->noise_reduction;
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
         codecctl_int(avctx, VP8E_SET_NOISE_SENSITIVITY, ctx->noise_sensitivity);
         codecctl_int(avctx, VP8E_SET_TOKEN_PARTITIONS,  av_log2(avctx->slices));
     }
@@ -1191,28 +1179,12 @@ static int storeframe(AVCodecContext *avctx, struct FrameListData *cx_frame,
         int pict_type;
         memcpy(pkt->data, cx_frame->buf, pkt->size);
         pkt->pts = pkt->dts = cx_frame->pts;
-#if FF_API_CODED_FRAME
-FF_DISABLE_DEPRECATION_WARNINGS
-        avctx->coded_frame->pts       = cx_frame->pts;
-        avctx->coded_frame->key_frame = !!(cx_frame->flags & VPX_FRAME_IS_KEY);
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
 
         if (!!(cx_frame->flags & VPX_FRAME_IS_KEY)) {
             pict_type = AV_PICTURE_TYPE_I;
-#if FF_API_CODED_FRAME
-FF_DISABLE_DEPRECATION_WARNINGS
-            avctx->coded_frame->pict_type = pict_type;
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
             pkt->flags |= AV_PKT_FLAG_KEY;
         } else {
             pict_type = AV_PICTURE_TYPE_P;
-#if FF_API_CODED_FRAME
-FF_DISABLE_DEPRECATION_WARNINGS
-            avctx->coded_frame->pict_type = pict_type;
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
         }
 
         ff_side_data_set_encoder_stats(pkt, 0, cx_frame->sse + 1,
@@ -1221,14 +1193,6 @@ FF_ENABLE_DEPRECATION_WARNINGS
         if (cx_frame->have_sse) {
             int i;
             /* Beware of the Y/U/V/all order! */
-#if FF_API_CODED_FRAME && FF_API_ERROR_FRAME
-FF_DISABLE_DEPRECATION_WARNINGS
-            avctx->coded_frame->error[0] = cx_frame->sse[1];
-            avctx->coded_frame->error[1] = cx_frame->sse[2];
-            avctx->coded_frame->error[2] = cx_frame->sse[3];
-            avctx->coded_frame->error[3] = 0;    // alpha
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
             for (i = 0; i < 3; ++i) {
                 avctx->error[i] += cx_frame->sse[i + 1];
             }
@@ -1861,7 +1825,7 @@ static const AVClass class_vp8 = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVCodec ff_libvpx_vp8_encoder = {
+const AVCodec ff_libvpx_vp8_encoder = {
     .name           = "libvpx",
     .long_name      = NULL_IF_CONFIG_SMALL("libvpx VP8"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -1870,7 +1834,8 @@ AVCodec ff_libvpx_vp8_encoder = {
     .init           = vp8_init,
     .encode2        = vpx_encode,
     .close          = vpx_free,
-    .capabilities   = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_AUTO_THREADS,
+    .capabilities   = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_OTHER_THREADS,
+    .caps_internal  = FF_CODEC_CAP_AUTO_THREADS,
     .pix_fmts       = (const enum AVPixelFormat[]){ AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUVA420P, AV_PIX_FMT_NONE },
     .priv_class     = &class_vp8,
     .defaults       = defaults,
@@ -1900,7 +1865,8 @@ AVCodec ff_libvpx_vp9_encoder = {
     .init           = vp9_init,
     .encode2        = vpx_encode,
     .close          = vpx_free,
-    .capabilities   = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_AUTO_THREADS,
+    .capabilities   = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_OTHER_THREADS,
+    .caps_internal  = FF_CODEC_CAP_AUTO_THREADS,
     .profiles       = NULL_IF_CONFIG_SMALL(ff_vp9_profiles),
     .priv_class     = &class_vp9,
     .defaults       = defaults,

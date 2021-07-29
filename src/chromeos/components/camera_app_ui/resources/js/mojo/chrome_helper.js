@@ -2,9 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {assert} from '../chrome_util.js';
+import {reportError} from '../error.js';
+import {
+  ErrorLevel,
+  ErrorType,
+  MimeType,  // eslint-disable-line no-unused-vars
+} from '../type.js';
 import {windowController} from '../window_controller.js';
 
-import {closeWhenUnload} from './util.js';
+import {MockDocumentScanner} from './mock_document_scanner.js';
+import {wrapEndpoint} from './util.js';
 
 /**
  * The singleton instance of ChromeHelper. Initialized by the first
@@ -12,6 +20,17 @@ import {closeWhenUnload} from './util.js';
  * @type {?ChromeHelper}
  */
 let instance = null;
+
+/**
+ * Forces casting type from Uint8Array to !Array<number>.
+ * @param {!Uint8Array} data
+ * @return {!Array<number>}
+ * @suppress {checkTypes}
+ * @private
+ */
+function castToNumberArray(data) {
+  return data;
+}
 
 /**
  * Communicates with Chrome.
@@ -25,9 +44,8 @@ export class ChromeHelper {
      * An interface remote that is used to communicate with Chrome.
      * @type {!chromeosCamera.mojom.CameraAppHelperRemote}
      */
-    this.remote_ = chromeosCamera.mojom.CameraAppHelper.getRemote();
-
-    closeWhenUnload(this.remote_);
+    this.remote_ =
+        wrapEndpoint(chromeosCamera.mojom.CameraAppHelper.getRemote());
   }
 
   /**
@@ -39,14 +57,13 @@ export class ChromeHelper {
    *     is in tablet mode.
    */
   async initTabletModeMonitor(onChange) {
-    const monitorCallbackRouter =
-        new chromeosCamera.mojom.TabletModeMonitorCallbackRouter();
-    closeWhenUnload(monitorCallbackRouter);
+    const monitorCallbackRouter = wrapEndpoint(
+        new chromeosCamera.mojom.TabletModeMonitorCallbackRouter());
     monitorCallbackRouter.update.addListener(onChange);
 
-    return (await this.remote_.setTabletMonitor(
-                monitorCallbackRouter.$.bindNewPipeAndPassRemote()))
-        .isTabletMode;
+    const {isTabletMode} = await this.remote_.setTabletMonitor(
+        monitorCallbackRouter.$.bindNewPipeAndPassRemote());
+    return isTabletMode;
   }
 
   /**
@@ -58,14 +75,13 @@ export class ChromeHelper {
    *     system screen state.
    */
   async initScreenStateMonitor(onChange) {
-    const monitorCallbackRouter =
-        new chromeosCamera.mojom.ScreenStateMonitorCallbackRouter();
-    closeWhenUnload(monitorCallbackRouter);
+    const monitorCallbackRouter = wrapEndpoint(
+        new chromeosCamera.mojom.ScreenStateMonitorCallbackRouter());
     monitorCallbackRouter.update.addListener(onChange);
 
-    return (await this.remote_.setScreenStateMonitor(
-                monitorCallbackRouter.$.bindNewPipeAndPassRemote()))
-        .initialState;
+    const {initialState} = await this.remote_.setScreenStateMonitor(
+        monitorCallbackRouter.$.bindNewPipeAndPassRemote());
+    return initialState;
   }
 
   /**
@@ -75,14 +91,13 @@ export class ChromeHelper {
    * @return {!Promise<boolean>} Resolved to the initial state.
    */
   async initExternalScreenMonitor(onChange) {
-    const monitorCallbackRouter =
-        new chromeosCamera.mojom.ExternalScreenMonitorCallbackRouter();
-    closeWhenUnload(monitorCallbackRouter);
+    const monitorCallbackRouter = wrapEndpoint(
+        new chromeosCamera.mojom.ExternalScreenMonitorCallbackRouter());
     monitorCallbackRouter.update.addListener(onChange);
 
-    return (await this.remote_.setExternalScreenMonitor(
-                monitorCallbackRouter.$.bindNewPipeAndPassRemote()))
-        .hasExternalScreen;
+    const {hasExternalScreen} = await this.remote_.setExternalScreenMonitor(
+        monitorCallbackRouter.$.bindNewPipeAndPassRemote());
+    return hasExternalScreen;
   }
 
   /**
@@ -101,9 +116,8 @@ export class ChromeHelper {
    * @return {!Promise}
    */
   async initCameraUsageMonitor(exploitUsage, releaseUsage) {
-    const usageCallbackRouter =
-        new chromeosCamera.mojom.CameraUsageOwnershipMonitorCallbackRouter();
-    closeWhenUnload(usageCallbackRouter);
+    const usageCallbackRouter = wrapEndpoint(
+        new chromeosCamera.mojom.CameraUsageOwnershipMonitorCallbackRouter());
 
     usageCallbackRouter.onCameraUsageOwnershipChanged.addListener(
         async (hasUsage) => {
@@ -117,7 +131,8 @@ export class ChromeHelper {
     await this.remote_.setCameraUsageMonitor(
         usageCallbackRouter.$.bindNewPipeAndPassRemote());
 
-    const {controller} = await this.remote_.getWindowStateController();
+    let {controller} = await this.remote_.getWindowStateController();
+    controller = wrapEndpoint(controller);
     await windowController.bind(controller);
   }
 
@@ -157,17 +172,15 @@ export class ChromeHelper {
   /**
    * Checks return value from |handleCameraResult|.
    * @param {string} caller Caller identifier.
-   * @param {!Promise<{isSuccess: boolean}>|null} value
+   * @param {!Promise<{isSuccess: boolean}>} value
    * @return {!Promise}
    */
   async checkReturn_(caller, value) {
-    const ret = await value;
-    if (ret === null) {
-      console.error(`Return null from calling intent ${caller}.`);
-      return;
-    }
-    if (!ret.isSuccess) {
-      console.error(`Return not isSuccess from calling intent ${caller}.`);
+    const {isSuccess} = await value;
+    if (!isSuccess) {
+      reportError(
+          ErrorType.HANDLE_CAMERA_RESULT_FAILURE, ErrorLevel.ERROR,
+          new Error(`Return not isSuccess from calling intent ${caller}.`));
     }
   }
 
@@ -183,28 +196,6 @@ export class ChromeHelper {
   }
 
   /**
-   * Notifies ARC++ to cancel the intent.
-   * @param {number} intentId Intent id of the intent to be canceled.
-   * @return {!Promise}
-   */
-  async cancel(intentId) {
-    const ret = this.remote_.handleCameraResult(
-        intentId, arc.mojom.CameraIntentAction.CANCEL, []);
-    await this.checkReturn_('cancel()', ret);
-  }
-
-  /**
-   * Forces casting type from Uint8Array to !Array<number>.
-   * @param {!Uint8Array} data
-   * @return {!Array<number>}
-   * @suppress {checkTypes}
-   * @private
-   */
-  static castResultType_(data) {
-    return data;
-  }
-
-  /**
    * Notifies ARC++ to append data to intent result.
    * @param {number} intentId Intent id of the intent to be appended data to.
    * @param {!Uint8Array} data The data to be appended to intent result.
@@ -213,7 +204,7 @@ export class ChromeHelper {
   async appendData(intentId, data) {
     const ret = this.remote_.handleCameraResult(
         intentId, arc.mojom.CameraIntentAction.APPEND_DATA,
-        this.constructor.castResultType_(data));
+        castToNumberArray(data));
     await this.checkReturn_('appendData()', ret);
   }
 
@@ -244,6 +235,76 @@ export class ChromeHelper {
    */
   async sendNewCaptureBroadcast({isVideo, name}) {
     this.remote_.sendNewCaptureBroadcast(isVideo, name);
+  }
+
+  /**
+   * Monitors for the file deletion of the file given by its |name| and triggers
+   * |callback| when the file is deleted. Note that a previous monitor request
+   * will be canceled once another monitor request is sent.
+   * @param {string} name The name of the file to monitor.
+   * @param {function(): void} callback Function to trigger when deletion.
+   * @return {!Promise} Resolved when the file is deleted or the current monitor
+   *     is canceled by future monitor call.
+   * @throws {!Error} When error occurs during monitor.
+   */
+  async monitorFileDeletion(name, callback) {
+    const {result} = await this.remote_.monitorFileDeletion(name);
+    switch (result) {
+      case chromeosCamera.mojom.FileMonitorResult.DELETED:
+        callback();
+        return;
+      case chromeosCamera.mojom.FileMonitorResult.CANCELED:
+        // Do nothing if it is canceled by another monitor call.
+        return;
+      case chromeosCamera.mojom.FileMonitorResult.ERROR:
+        throw new Error('Error happens when monitoring file deletion');
+    }
+  }
+
+  /**
+   * Returns true if the document mode is supported on the device.
+   * @return {!Promise<boolean>}
+   */
+  async isDocumentModeSupported() {
+    // TODO(b/180564352): Switch to the actual implementation once it is ready.
+    const {isSupported} =
+        await MockDocumentScanner.getInstance().isDocumentModeSupported();
+    return isSupported;
+  }
+
+  /**
+   * Scans the blob data and returns the detected document corners.
+   * @param {!Blob} blob
+   * @return {!Promise<!Array<!gfx.mojom.PointF>>}
+   */
+  async scanDocumentCorners(blob) {
+    const buffer = new Uint8Array(await blob.arrayBuffer());
+
+    // TODO(b/180564352): Switch to the actual implementation once it is ready.
+    const {corners} =
+        await MockDocumentScanner.getInstance().scanDocumentCorners(
+            castToNumberArray(buffer));
+    return corners;
+  }
+
+  /**
+   * Converts the blob to document given by its |blob| data, |resolution| and
+   * target |corners| to crop. The output will be converted according to given
+   * |mimeType|.
+   * @param {!Blob} blob
+   * @param {!Array<!gfx.mojom.PointF>} corners
+   * @param {!MimeType} mimeType
+   * @return {!Promise<!Blob>}
+   */
+  async convertToDocument(blob, corners, mimeType) {
+    assert(corners.length === 4, 'Unexpected amount of corners');
+    const buffer = new Uint8Array(await blob.arrayBuffer());
+
+    // TODO(b/180564352): Switch to the actual implementation once it is ready.
+    const {processedData} =
+        await MockDocumentScanner.getInstance().convertToDocument(
+            castToNumberArray(buffer), corners, mimeType);
+    return new Blob([new Uint8Array(processedData)], {type: mimeType});
   }
 
   /**

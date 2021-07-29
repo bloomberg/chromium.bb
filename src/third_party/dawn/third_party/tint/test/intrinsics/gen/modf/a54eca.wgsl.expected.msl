@@ -1,0 +1,28 @@
+#include <metal_stdlib>
+
+using namespace metal;
+struct tint_symbol {
+  float4 value [[position]];
+};
+
+void modf_a54eca() {
+  float2 arg_1 = 0.0f;
+  float2 res = modf(float2(), *(&(arg_1)));
+}
+
+vertex tint_symbol vertex_main() {
+  modf_a54eca();
+  tint_symbol const tint_symbol_1 = {.value=float4()};
+  return tint_symbol_1;
+}
+
+fragment void fragment_main() {
+  modf_a54eca();
+  return;
+}
+
+kernel void compute_main() {
+  modf_a54eca();
+  return;
+}
+

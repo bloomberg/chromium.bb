@@ -9,7 +9,7 @@ This file is used to generate a comprehensive list of Chrome UKM metrics
 along with a detailed description for each metric.
 
 See the following doc for details on how to add entries to this file:
-https://chromium.googlesource.com/chromium/src.git/+/master/services/metrics/ukm_api.md
+https://chromium.googlesource.com/chromium/src.git/+/main/services/metrics/ukm_api.md
 
 Events may be marked with the attribute singular="True" to indicate that
 the event will only occur once per source, and multiple entries will just
@@ -428,6 +428,9 @@ be describing additional metrics about the same event.
   </metric>
   <metric
       name="SubFrame.LayoutInstability.AverageCumulativeShiftScore.SessionWindow.Gap5000ms">
+    <obsolete>
+      Deprecated 06/2021.
+    </obsolete>
     <summary>
       Measures the average cumulative layout shift (bit.ly/cls-explainer) that
       has occurred in a session window, in the AMP subframe. The gap between two
@@ -455,6 +458,9 @@ be describing additional metrics about the same event.
   </metric>
   <metric
       name="SubFrame.LayoutInstability.MaxCumulativeShiftScore.SessionWindow.Gap1000ms">
+    <obsolete>
+      Deprecated 06/2021.
+    </obsolete>
     <summary>
       Measures the maximum cumulative layout shift (bit.ly/cls-explainer) that
       has occurred in a session window, in the AMP subframe. The gap between two
@@ -475,6 +481,9 @@ be describing additional metrics about the same event.
   </metric>
   <metric
       name="SubFrame.LayoutInstability.MaxCumulativeShiftScore.SessionWindowByInputs.Gap1000ms.Max5000ms">
+    <obsolete>
+      Deprecated 06/2021.
+    </obsolete>
     <summary>
       Measures the maximum cumulative layout shift (bit.ly/cls-explainer) that
       has occurred in a session window, in the AMP subframe. The gap between two
@@ -486,6 +495,9 @@ be describing additional metrics about the same event.
   </metric>
   <metric
       name="SubFrame.LayoutInstability.MaxCumulativeShiftScore.SlidingWindow.Duration1000ms">
+    <obsolete>
+      Deprecated 06/2021.
+    </obsolete>
     <summary>
       Measures the maximum cumulative layout shift (bit.ly/cls-explainer) that
       has occurred in a 1000ms sliding window, in the AMP subframe. This
@@ -495,6 +507,9 @@ be describing additional metrics about the same event.
   </metric>
   <metric
       name="SubFrame.LayoutInstability.MaxCumulativeShiftScore.SlidingWindow.Duration300ms">
+    <obsolete>
+      Deprecated 06/2021.
+    </obsolete>
     <summary>
       Measures the maximum cumulative layout shift (bit.ly/cls-explainer) that
       has occurred in a 300ms sliding window, in the AMP subframe. This metric's
@@ -521,6 +536,49 @@ be describing additional metrics about the same event.
       frame was a non-same-document navigation. Should be near-zero when the
       main frame navigation is a same-document navigation and the AMP subframe
       was not prerendered.
+    </summary>
+  </metric>
+  <metric name="SubFrame.MobileFriendliness.AllowUserZoom" enum="Boolean">
+    <summary>
+      Whether the page allows the user to zoom in/out, in the AMP subframe.
+    </summary>
+  </metric>
+  <metric name="SubFrame.MobileFriendliness.BadTapTargetsRatio">
+    <summary>
+      Percentage of tap targets whose center position is within another tap
+      target (expanded by a margin), in the AMP subframe. The detail of the
+      algorithm is go/bad-tap-target-ukm. If evaluation time budget exceeded,
+      this will be is -2.
+    </summary>
+  </metric>
+  <metric name="SubFrame.MobileFriendliness.SmallTextRatio">
+    <summary>
+      Percentage of small font text area in total text area, in the AMP
+      subframe.
+    </summary>
+  </metric>
+  <metric
+      name="SubFrame.MobileFriendliness.TextContentOutsideViewportPercentage">
+    <summary>
+      Percentage of pixels of text and images horizontally outside the viewport,
+      relative to the frame width, in the AMP subframe.
+    </summary>
+  </metric>
+  <metric name="SubFrame.MobileFriendliness.ViewportDeviceWidth" enum="Boolean">
+    <summary>
+      Whether the width of the viewport is specified as device-width or not, in
+      the AMP subframe.
+    </summary>
+  </metric>
+  <metric name="SubFrame.MobileFriendliness.ViewportHardcodedWidth">
+    <summary>
+      Specified hardcoded viewport width in CSS pixels, in the AMP subframe.
+    </summary>
+  </metric>
+  <metric name="SubFrame.MobileFriendliness.ViewportInitialScaleX10">
+    <summary>
+      Specified initial viewport scaling, in the AMP subframe, multiplied by 10.
+      1 means 0.1, 100 means 10. [1-100].
     </summary>
   </metric>
   <metric
@@ -2204,6 +2262,11 @@ be describing additional metrics about the same event.
       The minimum number of tokens parsed as a chunk.
     </summary>
   </metric>
+  <metric name="TokensParsedTotal">
+    <summary>
+      The total number of tokens parsed across all chunks.
+    </summary>
+  </metric>
   <metric name="YieldedTimeAverage">
     <summary>
       The average time between parsing of two chunks, in microseconds. Will be
@@ -3798,6 +3861,132 @@ be describing additional metrics about the same event.
       An enum that specifies how the near V8 heap limit event was handled. See
       blink::NearV8HeapLimitHandling for the enum elements.
     </summary>
+  </metric>
+</event>
+
+<event name="ChromeOSApp.InstalledApp">
+  <owner>nancylingwang@chromium.org</owner>
+  <owner>dominickn@chromium.org</owner>
+  <summary>
+    Records the installed app in Chrome OS, only when the user allows app
+    syncing or allows sync of everything, and the user does not set up a sync
+    passphrase. Only ARC apps, Chrome apps and web apps(PWA), system web apps,
+    buildin apps are recorded. This is logged when the user installs a new app.
+  </summary>
+  <metric name="AppType" enum="AppType">
+    <summary>
+      An enum that records the app type.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="InstallSource" enum="InstallSource">
+    <summary>
+      An enum that records how the app was installed.
+    </summary>
+  </metric>
+  <metric name="InstallTime" enum="InstallTime">
+    <summary>
+      An enum that records when the app was installed.
+    </summary>
+  </metric>
+  <metric name="UserDeviceMatrix" enum="UserDeviceMatrix">
+    <summary>
+      An enum that records the user type and the device type.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
+<event name="ChromeOSApp.Launch">
+  <owner>nancylingwang@chromium.org</owner>
+  <owner>dominickn@chromium.org</owner>
+  <summary>
+    Records a launched app in Chrome OS, only when the user allows app syncing
+    or allows sync of everything, and the user does not set up a sync
+    passphrase. Only ARC apps, Chrome apps and web apps(PWA), system web apps,
+    buildin apps are recorded. This is logged when an app is launched.
+  </summary>
+  <metric name="AppType" enum="AppType">
+    <summary>
+      An enum that records the app type.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="LaunchSource" enum="LaunchSource">
+    <summary>
+      An enum that records where the app was launched.
+    </summary>
+  </metric>
+  <metric name="UserDeviceMatrix" enum="UserDeviceMatrix">
+    <summary>
+      An enum that records the user type and the device type.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
+<event name="ChromeOSApp.UsageTime">
+  <owner>nancylingwang@chromium.org</owner>
+  <owner>dominickn@chromium.org</owner>
+  <summary>
+    Records the amount of time that the app were used in the last five minutes
+    on Chrome OS, only when the user allows app syncing or allows sync of
+    everything, and the user does not set up a sync passphrase. Only ARC apps,
+    Chrome apps and web apps(PWA), system web apps, buildin apps are recorded.
+    This is logged every five minutes.
+  </summary>
+  <metric name="AppType" enum="AppType">
+    <summary>
+      An enum that records the app type.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Duration">
+    <summary>
+      The milliseconds that the app was used.
+    </summary>
+  </metric>
+  <metric name="UserDeviceMatrix" enum="UserDeviceMatrix">
+    <summary>
+      An enum that records the user type and the device type.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 
@@ -7080,6 +7269,9 @@ be describing additional metrics about the same event.
   </summary>
   <metric
       name="AverageCumulativeShiftScoreAfterBackForwardCacheRestore.SessionWindow.Gap5000ms">
+    <obsolete>
+      Deprecated 06/2021.
+    </obsolete>
     <summary>
       Measures the average cumulative layout shift (bit.ly/cls-explainer) that
       has occurred in a session window, after the page is restored from the
@@ -7180,6 +7372,9 @@ be describing additional metrics about the same event.
   </metric>
   <metric
       name="MaxCumulativeShiftScoreAfterBackForwardCacheRestore.SessionWindow.Gap1000ms">
+    <obsolete>
+      Deprecated 06/2021.
+    </obsolete>
     <summary>
       Measures the maximum cumulative layout shift (bit.ly/cls-explainer) that
       has occurred in a session window, after the page is restored from the
@@ -7201,6 +7396,9 @@ be describing additional metrics about the same event.
   </metric>
   <metric
       name="MaxCumulativeShiftScoreAfterBackForwardCacheRestore.SessionWindowByInputs.Gap1000ms.Max5000ms">
+    <obsolete>
+      Deprecated 06/2021.
+    </obsolete>
     <summary>
       Measures the maximum cumulative layout shift (bit.ly/cls-explainer) that
       has occurred in a session window, after the page is restored from the
@@ -7213,6 +7411,9 @@ be describing additional metrics about the same event.
   </metric>
   <metric
       name="MaxCumulativeShiftScoreAfterBackForwardCacheRestore.SlidingWindow.Duration1000ms">
+    <obsolete>
+      Deprecated 06/2021.
+    </obsolete>
     <summary>
       Measures the maximum cumulative layout shift (bit.ly/cls-explainer) that
       has occurred in a 1000ms sliding window, after the page is restored from
@@ -7222,6 +7423,9 @@ be describing additional metrics about the same event.
   </metric>
   <metric
       name="MaxCumulativeShiftScoreAfterBackForwardCacheRestore.SlidingWindow.Duration300ms">
+    <obsolete>
+      Deprecated 06/2021.
+    </obsolete>
     <summary>
       Measures the maximum cumulative layout shift (bit.ly/cls-explainer) that
       has occurred in a 300ms sliding window, after the page is restored from
@@ -7397,6 +7601,19 @@ be describing additional metrics about the same event.
         </statistics>
       </history>
     </aggregation>
+  </metric>
+</event>
+
+<event name="InputMethod.Assistive.Match">
+  <owner>jiwan@chromium.org</owner>
+  <summary>
+    Recorded when an assistive action could be triggered according to the
+    surrounding text.
+  </summary>
+  <metric name="Type" enum="IMEAssistiveAction">
+    <summary>
+      The type of the assistive suggestion which is triggered.
+    </summary>
   </metric>
 </event>
 
@@ -7611,9 +7828,43 @@ be describing additional metrics about the same event.
 
 <event name="JavascriptFrameworkPageLoad" singular="True">
   <owner>houssein@chromium.org</owner>
-  <metric name="NextJSPageLoad">
+  <owner>npm@chromium.org</owner>
+  <summary>
+    Metrics stating whether the main frame of a page uses certain JavaScript
+    frameworks. This event is recorded when the page is going to be unloaded or
+    when the app enters the background on Android. The framework detection is
+    done when the document is loaded (similar to when load event is fired). If a
+    framework is used after this then it would not be detected. Note that a page
+    can use multiple frameworks at the same time, hence why this reports each
+    framework individually instead of a single enum.
+  </summary>
+  <metric name="GatsbyPageLoad" enum="Boolean">
+    <summary>
+      True if the page loaded in the main frame uses the Gatsby JavaScript
+      framework.
+    </summary>
+  </metric>
+  <metric name="NextJSPageLoad" enum="Boolean">
     <summary>
       True if the page loaded in the main frame uses the Next.js JavaScript
+      framework.
+    </summary>
+  </metric>
+  <metric name="NuxtJSPageLoad" enum="Boolean">
+    <summary>
+      True if the page loaded in the main frame uses the Nuxt.js JavaScript
+      framework.
+    </summary>
+  </metric>
+  <metric name="SapperPageLoad" enum="Boolean">
+    <summary>
+      True if the page loaded in the main frame uses the Sapper JavaScript
+      framework.
+    </summary>
+  </metric>
+  <metric name="VuePressPageLoad" enum="Boolean">
+    <summary>
+      True if the page loaded in the main frame uses the VuePress JavaScript
       framework.
     </summary>
   </metric>
@@ -8668,6 +8919,9 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="Media.Kaleidoscope.Navigation">
+  <obsolete>
+    Deprecated as of 2020/12.
+  </obsolete>
   <owner>beccahughes@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
@@ -8828,7 +9082,7 @@ be describing additional metrics about the same event.
       we don't know the video codec.
     </summary>
   </metric>
-  <metric name="Video.EME.KeySystem">
+  <metric name="Video.EME.KeySystem" enum="MediaKeySystem">
     <summary>
       Name of the KeySystem used during for an encrypted (EME) playback. Will be
       unset when EME is not used.
@@ -8951,6 +9205,12 @@ be describing additional metrics about the same event.
     Final state of WebMediaPlayerImpl instance. Records only immutable playback
     properties. Contains a PlaybackID which links to Media.BasicPlayback events.
   </summary>
+  <metric name="AudioEncryptionType" enum="MediaEncryptionType">
+    <summary>
+      Encryption type of the audio stream such as whether audio is encrypted and
+      if so whether it has clear lead.
+    </summary>
+  </metric>
   <metric name="ContainerName">
     <summary>
       media::container_names::MediaContainerName enum value. Only recorded for
@@ -8958,7 +9218,7 @@ be describing additional metrics about the same event.
       back; E.g., mp4, avi, mp3, etc.
     </summary>
   </metric>
-  <metric name="FinalPipelineStatus">
+  <metric name="FinalPipelineStatus" enum="PipelineStatus">
     <summary>
       media::PipelineStatus enum value. Always 0 if the playback succeeded; all
       other values indicate the playback ended in an error.
@@ -8969,6 +9229,12 @@ be describing additional metrics about the same event.
       Boolean value indicating if this event is for an EME playback. Note: EME
       can be attached anytime during the lifecycle of a WebMediaPlayerImpl, but
       once attached can't be removed.
+    </summary>
+  </metric>
+  <metric name="IsHardwareSecure" enum="Boolean">
+    <summary>
+      Boolean value indicating whether the EME playback is using hardware secure
+      pipeline. For clear playback, this will always be false.
     </summary>
   </metric>
   <metric name="IsMSE">
@@ -8985,10 +9251,22 @@ be describing additional metrics about the same event.
       playbacks.
     </summary>
   </metric>
+  <metric name="KeySystem" enum="MediaKeySystem">
+    <summary>
+      For EME playback, this is the key system used. For clear playback, this
+      will always be the default value 0 (kUnknownKeySystemForUkm).
+    </summary>
+  </metric>
   <metric name="PlayerID">
     <summary>
       ID which corresponds to a given WebMediaPlayerImpl instance. May be linked
       with Media.BasicPlayback events to understand a playback more deeply.
+    </summary>
+  </metric>
+  <metric name="RendererType" enum="MediaRendererType">
+    <summary>
+      Type of media::Renderer used for the playback. In most cases we do not
+      support dynamically changing RendererType during one playback.
     </summary>
   </metric>
   <metric name="TimeToFirstFrame">
@@ -9014,6 +9292,12 @@ be describing additional metrics about the same event.
       media::mojom::MediaURLScheme enum value. Only recorded for !IsMSE src=URL
       playbacks, this is the scheme of that URL; E.g., http, https, filesystem,
       etc.
+    </summary>
+  </metric>
+  <metric name="VideoEncryptionType" enum="MediaEncryptionType">
+    <summary>
+      Encryption type of the video stream such as whether video is encrypted and
+      if so whether it has clear lead.
     </summary>
   </metric>
 </event>
@@ -9804,7 +10088,7 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
-<event name="MobileFriendliness">
+<event name="MobileFriendliness" singular="True">
   <owner>kumagi@google.com</owner>
   <owner>gaul@google.com</owner>
   <metric name="AllowUserZoom" enum="Boolean">
@@ -10334,6 +10618,53 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="OfflineMeasurements">
+  <owner>curranmax@chromium.org</owner>
+  <summary>
+    Data collected by the OfflineMeasurementsBackgroundTask. At a regular
+    interval the background task checks the state of the system including how
+    the user is interacting with the system and whether the system is online or
+    offline. The data for each run of the background task is persisted to prefs.
+    Upon a sucessful navigation in Chrome, all data in prefs are logged to UKM
+    and then cleared. This means that the first page load of a session will have
+    a burst of events being recorded, but subsequent page loads will likely have
+    no events. The background task is scheduled when Chrome opens, and it will
+    continue to run even if Chrome is not running.
+  </summary>
+  <metric name="DurationMillis">
+    <summary>
+      The time, in milliseconds, since the last background task ran. This value
+      is bucketed using ukm::GetExponentialBucketMinForUserTiming.
+    </summary>
+  </metric>
+  <metric name="IsAirplaneModeEnabled" enum="BooleanEnabled">
+    <summary>
+      Whether airplane mode was enabled when the background task ran.
+    </summary>
+  </metric>
+  <metric name="IsRoaming" enum="Boolean">
+    <summary>
+      Whether the device was roaming when the background task ran.
+    </summary>
+  </metric>
+  <metric name="LocalHourOfDayStart">
+    <summary>
+      The local hour when the background task ran. In the range of 0 to 23
+      inclusive.
+    </summary>
+  </metric>
+  <metric name="ProbeResult" enum="OfflineMeasurementsHttpProbeResult">
+    <summary>
+      The result of the HTTP probe when the background task ran.
+    </summary>
+  </metric>
+  <metric name="UserState" enum="OfflineMeasurementsUserState">
+    <summary>
+      How the user is interacting with the device when the background task ran.
+    </summary>
+  </metric>
+</event>
+
 <event name="OfflinePages.SavePageRequested">
   <obsolete>
     Deprecated 03/2019
@@ -10344,6 +10675,19 @@ be describing additional metrics about the same event.
       Metrics that measure which URLs the user is requesting offline page copies
       of, and whether they were requested from the foreground or background UI.
       The value is 1 if requested from the foreground, 0 from background.
+    </summary>
+  </metric>
+</event>
+
+<event name="OmniboxSecurityIndicator.FormSubmission">
+  <owner>meacer@chromium.org</owner>
+  <summary>
+    Recorded when a form is submitted on an HTTPS page. Used to understand any
+    regression introduced by updated omnibox security indicators.
+  </summary>
+  <metric name="Submitted">
+    <summary>
+      Placeholder metric, always true.
     </summary>
   </metric>
 </event>
@@ -11014,6 +11358,13 @@ be describing additional metrics about the same event.
       </history>
     </aggregation>
   </metric>
+  <metric name="InteractiveTiming.FirstScrollTimestamp">
+    <summary>
+      The duration between navigation start and the timestamp of the first
+      scroll per navigation. In ms. This is rounded down to the nearest
+      exponential bucket.
+    </summary>
+  </metric>
   <metric name="InteractiveTiming.LongestInputDelay">
     <obsolete>
       Deprecated on January 2019 in favor of
@@ -11215,6 +11566,9 @@ be describing additional metrics about the same event.
   </metric>
   <metric
       name="LayoutInstability.AverageCumulativeShiftScore.SessionWindow.Gap5000ms">
+    <obsolete>
+      Deprecated 06/2021.
+    </obsolete>
     <summary>
       Measures the average cumulative layout shift (bit.ly/cls-explainer) that
       has occurred in a session window. The gap between two consecutive shifts
@@ -11273,6 +11627,9 @@ be describing additional metrics about the same event.
   </metric>
   <metric
       name="LayoutInstability.MaxCumulativeShiftScore.SessionWindow.Gap1000ms">
+    <obsolete>
+      Deprecated 06/2021.
+    </obsolete>
     <summary>
       Measures the maximum cumulative layout shift (bit.ly/cls-explainer) that
       has occurred in a session window. The gap between two consecutive shifts
@@ -11300,6 +11657,9 @@ be describing additional metrics about the same event.
   </metric>
   <metric
       name="LayoutInstability.MaxCumulativeShiftScore.SessionWindowByInputs.Gap1000ms.Max5000ms">
+    <obsolete>
+      Deprecated 06/2021.
+    </obsolete>
     <summary>
       Measures the maximum cumulative layout shift (bit.ly/cls-explainer) that
       has occurred in a session window. The gap between two consecutive shifts
@@ -11317,6 +11677,9 @@ be describing additional metrics about the same event.
   </metric>
   <metric
       name="LayoutInstability.MaxCumulativeShiftScore.SlidingWindow.Duration1000ms">
+    <obsolete>
+      Deprecated 06/2021.
+    </obsolete>
     <summary>
       Measures the maximum cumulative layout shift (bit.ly/cls-explainer) that
       has occurred in a 1000ms sliding window. This metric's integral value is
@@ -11326,6 +11689,9 @@ be describing additional metrics about the same event.
   </metric>
   <metric
       name="LayoutInstability.MaxCumulativeShiftScore.SlidingWindow.Duration300ms">
+    <obsolete>
+      Deprecated 06/2021.
+    </obsolete>
     <summary>
       Measures the maximum cumulative layout shift (bit.ly/cls-explainer) that
       has occurred in a 300ms sliding window. This metric's integral value is
@@ -12033,7 +12399,7 @@ be describing additional metrics about the same event.
       is seen by Password Manager. Recorded once per a form when the form is
       removed from DOM. Bit 0 - changes in number of fields, bit 1 - changes in
       fields renderer ids, bit 2 - changes in autocomplete attributes, bit 3 -
-      changes in form control types.
+      changes in form control types, bit 4 - changes in field names.
     </summary>
   </metric>
   <metric name="Fill.FirstFillingResultInRenderer"
@@ -13043,6 +13409,12 @@ be describing additional metrics about the same event.
       multi-core systems.
     </summary>
   </metric>
+  <metric name="DeviceSleptDuringInterval" enum="Boolean">
+    <summary>
+      Whether or not the device has been sleeping at any point during the
+      interval.
+    </summary>
+  </metric>
   <metric name="EnergyImpactScore">
     <summary>
       Sum of the energy impact score for all Chrome processes (Mac-only).
@@ -13062,6 +13434,12 @@ be describing additional metrics about the same event.
   <metric name="IntervalDurationSeconds">
     <summary>
       The interval duration, in seconds.
+    </summary>
+  </metric>
+  <metric name="MainScreenBrightnessPercent">
+    <summary>
+      The brightness of the main screen in percent or -1 if not available.
+      Samples have a 20% granularity, e.g. 65% will report as 60%.
     </summary>
   </metric>
   <metric name="MaxTabCount">
@@ -13329,6 +13707,50 @@ be describing additional metrics about the same event.
       prefetch the resource and reuse it. See |PrefetchProxyPrefetchStatus| for
       a mapping of enum values and their meanings. Always set when the event is
       recorded.
+    </summary>
+  </metric>
+</event>
+
+<event name="PrerenderPageLoad" singular="True">
+  <owner>ksakamoto@chromium.org</owner>
+  <owner>falken@chromium.org</owner>
+  <summary>
+    Metrics related to Prerender2
+    (https://docs.google.com/document/d/1P2VKCLpmnNm_cRAjUeE-bqLL0bslL_zKqiNeCzNom_w/edit?usp=sharing).
+  </summary>
+  <metric name="Timing.ActivationToFirstContentfulPaint">
+    <summary>
+      The duration in milliseconds from time of activation navigation start to
+      the time when the page first paints content. A contentful paint includes a
+      paint of text, image, SVG, or canvas.
+    </summary>
+  </metric>
+  <metric name="Timing.ActivationToLargestContentfulPaint">
+    <summary>
+      The duration in milliseconds from time of activation navigation start to
+      the time when the page first paints the largest content (text or image)
+      within viewport, across all frames.
+    </summary>
+  </metric>
+  <metric name="Timing.NavigationToActivation">
+    <summary>
+      The duration in milliseconds from the start of initial prerendering
+      navigation to the start of activation navigation. This corresponds to the
+      activationStart attribute of PerformanceNavigationTiming.
+    </summary>
+  </metric>
+  <metric name="TriggeredPrerender" enum="Boolean">
+    <summary>
+      A boolean that is set to true if the page triggered prerendering.
+
+      Unlike other PrerenderPageLoad metrics, this is recorded not for
+      prerendered page loads, but for page loads that initiated prerender.
+    </summary>
+  </metric>
+  <metric name="WasPrerendered" enum="Boolean">
+    <summary>
+      A boolean that is set to true if the page was prerendered and later
+      activated. Cancelled prerender page loads are not logged.
     </summary>
   </metric>
 </event>
@@ -13928,6 +14350,40 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Responsiveness.UserInteraction">
+  <owner>hbsong@chromium.org</owner>
+  <summary>
+    Metrics that are associated with user interactions and recorded when users
+    interact with web pages. Currently we are interested in keyboard, tap, click
+    and drag. A user interaction often encompasses multiple input events. For
+    keyboard interactions, we only care about keydown and keyup. For tap, click
+    and drag, we only measure pointerdown, pointerup and click.
+  </summary>
+  <metric name="InteractionType" enum="UserInteractionType">
+    <summary>
+      The type of the user interaction that triggered input event sequence, not
+      the input event type. It can be keyboard, tap, click or drag.
+    </summary>
+  </metric>
+  <metric name="MaxEventDuration">
+    <summary>
+      The longest input event duration within the user interaction. The unit of
+      duration is ms. For example, if a user pressed a key, we can get a keydown
+      and a keyup. If the duration(keydown) &gt; duration(keyup), the value of
+      this metric will be duration(keydown).
+    </summary>
+  </metric>
+  <metric name="TotalEventDuration">
+    <summary>
+      The sum of input event durations within the user interaction without
+      double counting the overlap. The unit of duration is ms. For example, if a
+      user pressed a key, we can get a keydown and a keyup. The value of this
+      metric will be duration(keydown) + duration(keyup) -
+      duration(intersection(keydown, keyup)).
+    </summary>
+  </metric>
+</event>
+
 <event name="ResponsivenessMeasurement">
   <owner>npm@chromium.org</owner>
   <owner>tdresser@chromium.org</owner>
@@ -14022,14 +14478,14 @@ be describing additional metrics about the same event.
   <metric name="DayOfWeek">
     <summary>
       An enum representing the of the week that the data was logged, defined in
-      |chromeos::power::ml::ScreenBrightness::Features::ActivityData::
+      |ash::power::ml::ScreenBrightnessEvent::Features::ActivityData::
       DayOfWeek|.
     </summary>
   </metric>
   <metric name="DeviceMode">
     <summary>
       An enum representing the mode of the device, defined in
-      |chromeos::power::ml::ScreenBrightness::Feature::EnvData:DeviceMode|
+      |ash::power::ml::ScreenBrightnessEvent::Features::EnvData:DeviceMode|
     </summary>
   </metric>
   <metric name="HourOfDay">
@@ -14162,7 +14618,7 @@ be describing additional metrics about the same event.
   <metric name="Reason">
     <summary>
       The reason that the event is logged. Values are enumerated in
-      |chromeos::power::ml::ScreenBrightness::Event::Reason|.
+      |ash::power::ml::ScreenBrightnessEvent::Event::Reason|.
     </summary>
   </metric>
   <metric name="RecentTimeActiveSec">
@@ -14376,6 +14832,20 @@ be describing additional metrics about the same event.
     <summary>
       Always true. Recorded when users have visited cart page from Chrome cart
       module.
+    </summary>
+  </metric>
+</event>
+
+<event name="Shopping.FormSubmitted">
+  <owner>wychen@chromium.org</owner>
+  <owner>yuezhanggg@chromium.org</owner>
+  <summary>
+    Recorded when user submits a form.
+  </summary>
+  <metric name="IsTransaction" enum="Boolean">
+    <summary>
+      Whether the form submission is a shopping transaction. This has 50% chance
+      randomized.
     </summary>
   </metric>
 </event>
@@ -15990,19 +16460,19 @@ be describing additional metrics about the same event.
   <metric name="DeviceManagement">
     <summary>
       An enum representing whether the device is managed, defined in
-      |chromeos::power::ml::UserActivityEvent::Features::ManagementType|.
+      |ash::power::ml::UserActivityEvent::Features::ManagementType|.
     </summary>
   </metric>
   <metric name="DeviceMode">
     <summary>
       An enum representing the mode of the device, defined in
-      |chromeos::power::ml::UserActivityEvent::Feature::DeviceMode|
+      |ash::power::ml::UserActivityEvent::Features::DeviceMode|
     </summary>
   </metric>
   <metric name="DeviceType">
     <summary>
       An enum representing the type of the device, defined in
-      |chromeos::power::ml::UserActivityEvent::Feature::DeviceType|
+      |ash::power::ml::UserActivityEvent::Features::DeviceType|
     </summary>
   </metric>
   <metric name="EventLogDuration">
@@ -16015,13 +16485,13 @@ be describing additional metrics about the same event.
   <metric name="EventReason">
     <summary>
       An enum representing the reason of the event, defined in
-      |chromeos::power::ml::UserActivityEvent::Event::Reason|.
+      |ash::power::ml::UserActivityEvent::Event::Reason|.
     </summary>
   </metric>
   <metric name="EventType">
     <summary>
       An enum representing the type of the event, defined in
-      |chromeos::power::ml::UserActivityEvent::Event::Type|.
+      |ash::power::ml::UserActivityEvent::Event::Type|.
     </summary>
   </metric>
   <metric name="KeyEventsInLastHour">
@@ -16035,7 +16505,7 @@ be describing additional metrics about the same event.
   <metric name="LastActivityDay">
     <summary>
       An enum representing the last activity day of the week, defined in
-      |chromeos::power::ml::UserActivityEvent::Feature::DayOfWeek|.
+      |ash::power::ml::UserActivityEvent::Features::DayOfWeek|.
     </summary>
   </metric>
   <metric name="LastActivityTime">

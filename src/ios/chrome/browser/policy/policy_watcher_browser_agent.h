@@ -5,9 +5,12 @@
 #ifndef IOS_CHROME_BROWSER_POLICY_POLICY_WATCHER_BROWSER_AGENT_H_
 #define IOS_CHROME_BROWSER_POLICY_POLICY_WATCHER_BROWSER_AGENT_H_
 
+#include <CoreFoundation/CoreFoundation.h>
+
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #import "ios/chrome/browser/main/browser_user_data.h"
 
@@ -45,6 +48,9 @@ class PolicyWatcherBrowserAgent
   // UI.
   void ForceSignOutIfSigninDisabled();
 
+  // Callback called when the sign out is complete.
+  void OnSignOutComplete();
+
   // The owning Browser.
   Browser* browser_;
 
@@ -59,6 +65,9 @@ class PolicyWatcherBrowserAgent
 
   // Handler to send commands.
   id<PolicySignoutPromptCommands> handler_ = nil;
+
+  // WeakPtrFactory should be last.
+  base::WeakPtrFactory<PolicyWatcherBrowserAgent> weak_factory_{this};
 };
 
 #endif  // IOS_CHROME_BROWSER_POLICY_POLICY_WATCHER_BROWSER_AGENT_H_

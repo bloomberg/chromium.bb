@@ -17,9 +17,9 @@
 #include "components/policy/core/common/policy_service_impl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/policy/active_directory/active_directory_policy_manager.h"
+#include "chrome/browser/ash/policy/core/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/policy/active_directory_policy_manager.h"
-#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #else  // Non-ChromeOS.
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #endif
@@ -39,11 +39,11 @@ std::unique_ptr<ProfilePolicyConnector>
 CreateProfilePolicyConnectorForBrowserContext(
     SchemaRegistry* schema_registry,
     UserCloudPolicyManager* user_cloud_policy_manager,
+    ConfigurationPolicyProvider* policy_provider,
     policy::ChromeBrowserPolicyConnector* browser_policy_connector,
     bool force_immediate_load,
     content::BrowserContext* context) {
   const user_manager::User* user = nullptr;
-  ConfigurationPolicyProvider* policy_provider = nullptr;
   const CloudPolicyStore* policy_store = nullptr;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -62,15 +62,12 @@ CreateProfilePolicyConnectorForBrowserContext(
   ActiveDirectoryPolicyManager* active_directory_manager =
       profile->GetActiveDirectoryPolicyManager();
   if (cloud_policy_manager) {
-    policy_provider = cloud_policy_manager;
     policy_store = cloud_policy_manager->core()->store();
   } else if (active_directory_manager) {
-    policy_provider = active_directory_manager;
     policy_store = active_directory_manager->store();
   }
 #else
   if (user_cloud_policy_manager) {
-    policy_provider = user_cloud_policy_manager;
     policy_store = user_cloud_policy_manager->core()->store();
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)

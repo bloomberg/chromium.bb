@@ -15,7 +15,6 @@
 #include "base/component_export.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
-#include "base/observer_list.h"
 #include "chromeos/dbus/audio/audio_node.h"
 #include "chromeos/dbus/audio/volume_state.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
@@ -239,5 +238,11 @@ class COMPONENT_EXPORT(DBUS_AUDIO) CrasAudioClient {
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace ash {
+using ::chromeos::CrasAudioClient;
+}
 
 #endif  // CHROMEOS_DBUS_AUDIO_CRAS_AUDIO_CLIENT_H_

@@ -2,32 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
+import {ElementObject, KeyModifiers} from 'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/background/js/runtime_loaded_test_util.js';
+import {VolumeManagerCommon} from 'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/volume_manager_types.js';
+
+import {getCaller, pending, repeatUntil, sendTestMessage} from './test_util.js';
 
 /**
  * When step by step tests are enabled, turns on automatic step() calls. Note
  * that if step() is defined at the time of this call, invoke it to start the
  * test auto-stepping ball rolling.
  */
-function autoStep() {
+window.autoStep = () => {
   window.autostep = window.autostep || false;
   if (!window.autostep) {
     window.autostep = true;
   }
-  if (window.autostep && typeof window.step == 'function') {
+  if (window.autostep && typeof window.step === 'function') {
     window.step();
   }
-}
+};
 
 /**
  * Class to manipulate the window in the remote extension.
  */
-class RemoteCall {
+export class RemoteCall {
   /**
-   * @param {string} extensionId ID of extension to be manipulated.
+   * @param {string} origin ID of the app to be manipulated.
    */
-  constructor(extensionId) {
-    this.extensionId_ = extensionId;
+  constructor(origin) {
+    this.origin_ = origin;
 
     /**
      * Tristate holding the cached result of isStepByStepEnabled_().
@@ -49,6 +52,18 @@ class RemoteCall {
       });
     }
     return this.cachedStepByStepEnabled_;
+  }
+
+  /**
+   * Sends a test |message| to the test code running in the File Manager.
+   * @param {!Object} message
+   * @return {!Promise<*>} A promise which when fulfilled returns the
+   *     result of executing test code with the given message.
+   */
+  sendMessage(message) {
+    return new Promise((fulfill) => {
+      chrome.runtime.sendMessage(this.origin_, message, {}, fulfill);
+    });
   }
 
   /**
@@ -91,11 +106,7 @@ class RemoteCall {
         console.info('Auto calling step() ...');
       }
     }
-    const response = await new Promise((onFulfilled) => {
-      chrome.runtime.sendMessage(
-          this.extensionId_, {func: func, appId: appId, args: args}, {},
-          onFulfilled);
-    });
+    const response = await this.sendMessage({func, appId, args});
 
     if (stepByStep) {
       console.info('Returned value:');
@@ -317,6 +328,18 @@ class RemoteCall {
   }
 
   /**
+   * Sets the given input text on the element identified by the query.
+   * @param {string} appId App window ID.
+   * @param {string|!Array<string>} selector The query selector to locate
+   *     the element
+   * @param {string} text The text to be set on the element.
+   */
+  async inputText(appId, selector, text) {
+    chrome.test.assertTrue(
+        await this.callRemoteTestUtil('inputText', appId, [selector, text]));
+  }
+
+  /**
    * Gets file entries just under the volume.
    *
    * @param {VolumeManagerCommon.VolumeType} volumeType Volume type.
@@ -419,7 +442,42 @@ class RemoteCall {
 /**
  * Class to manipulate the window in the remote extension.
  */
-class RemoteCallFilesApp extends RemoteCall {
+export class RemoteCallFilesApp extends RemoteCall {
+  /**
+   * @return {boolean} Returns whether the code is running in SWA mode.
+   */
+  isSwaMode() {
+    return this.origin_.startsWith('chrome://');
+  }
+
+  /**
+   * Sends a test |message| to the test code running in the File Manager.
+   * @param {!Object} message
+   * @return {!Promise<*>}
+   * @override
+   */
+  sendMessage(message) {
+    if (!this.isSwaMode()) {
+      return super.sendMessage(message);
+    }
+
+    const command = {
+      name: 'callSwaTestMessageListener',
+      appId: message.appId,
+      data: JSON.stringify(message),
+    };
+
+    return new Promise((fulfill) => {
+      chrome.test.sendMessage(JSON.stringify(command), (response) => {
+        if (response === '"@undefined@"') {
+          fulfill(undefined);
+        } else {
+          fulfill(JSON.parse(response));
+        }
+      });
+    });
+  }
+
   /**
    * Waits for the file list turns to the given contents.
    * @param {string} appId App window Id.
@@ -494,22 +552,27 @@ class RemoteCallFilesApp extends RemoteCall {
   /**
    * Waits until the given taskId appears in the executed task list.
    * @param {string} appId App window Id.
-   * @param {string} taskId Task ID to watch.
+   * @param {!chrome.fileManagerPrivate.FileTaskDescriptor} descriptor Task to
+   *     watch.
    * @param {Array<Object>=} opt_replyArgs arguments to reply to executed task.
    * @return {Promise} Promise to be fulfilled when the task appears in the
    *     executed task list.
    */
-  waitUntilTaskExecutes(appId, taskId, opt_replyArgs) {
+  waitUntilTaskExecutes(appId, descriptor, opt_replyArgs) {
     const caller = getCaller();
     return repeatUntil(async () => {
-      const executedTasks =
-          await this.callRemoteTestUtil('getExecutedTasks', appId, []);
-      if (executedTasks.indexOf(taskId) === -1) {
+      if (!await this.callRemoteTestUtil(
+              'taskWasExecuted', appId, [descriptor])) {
+        const executedTasks =
+            (await this.callRemoteTestUtil('getExecutedTasks', appId, []))
+                .map(
+                    ({appId, taskType, actionId}) =>
+                        `${appId}|${taskType}|${actionId}`);
         return pending(caller, 'Executed task is %j', executedTasks);
       }
       if (opt_replyArgs) {
         await this.callRemoteTestUtil(
-            'replyExecutedTask', appId, [taskId, opt_replyArgs]);
+            'replyExecutedTask', appId, [descriptor, opt_replyArgs]);
       }
     });
   }
@@ -666,88 +729,5 @@ class RemoteCallFilesApp extends RemoteCall {
     // Wait until the Files app is navigated to the path.
     return this.waitUntilCurrentDirectoryIsChanged(
         appId, `/${rootLabel}${path}`);
-  }
-}
-
-/**
- * Class to manipulate the window in the remote extension.
- */
-class RemoteCallGallery extends RemoteCall {
-  /**
-   * Waits until the expected image is shown.
-   *
-   * @param {string} appId App window Id.
-   * @param {number} width Expected width of the image.
-   * @param {number} height Expected height of the image.
-   * @param {string|null} name Expected name of the image.
-   * @return {Promise} Promsie to be fulfilled when the check is passed.
-   */
-  waitForSlideImage(appId, width, height, name) {
-    const expected = {};
-    if (width) {
-      expected.width = width;
-    }
-    if (height) {
-      expected.height = height;
-    }
-    if (name) {
-      expected.name = name;
-    }
-
-    const caller = getCaller();
-    return repeatUntil(async () => {
-      const query = '.gallery[mode="slide"] .image-container > .image';
-      const [nameBox, image] = await Promise.all([
-        this.waitForElement(appId, '#rename-input'),
-        this.waitForElementStyles(appId, query, ['any'])
-      ]);
-      const actual = {};
-      if (width && image) {
-        actual.width = image.imageWidth;
-      }
-      if (height && image) {
-        actual.height = image.imageHeight;
-      }
-      if (name && nameBox) {
-        actual.name = nameBox.value;
-      }
-
-      if (!chrome.test.checkDeepEq(expected, actual)) {
-        return pending(
-            caller, 'Slide mode state, expected is %j, actual is %j.', expected,
-            actual);
-      }
-      return actual;
-    });
-  }
-
-  async changeNameAndWait(appId, newName) {
-    await this.callRemoteTestUtil('changeName', appId, [newName]);
-    return this.waitForSlideImage(appId, 0, 0, newName);
-  }
-
-  /**
-   * Waits for the "Press Enter" message.
-   *
-   * @param {string} appId App window Id.
-   * @return {Promise} Promise to be fulfilled when the element appears.
-   */
-  async waitForPressEnterMessage(appId) {
-    const element = await this.waitForElement(appId, '.prompt-wrapper .prompt');
-    chrome.test.assertEq('Press Enter when done', element.text.trim());
-  }
-
-  /**
-   * Shorthand for selecting an image in thumbnail mode.
-   * @param {string} appId App window Id.
-   * @param {string} name File name to be selected.
-   * @return {!Promise<boolean>} A promise which will be resolved with true if
-   *     the thumbnail has clicked. This method does not guarantee whether the
-   *     thumbnail has actually selected or not.
-   */
-  selectImageInThumbnailMode(appId, name) {
-    return this.callRemoteTestUtil(
-        'fakeMouseClick', appId,
-        ['.thumbnail-view > ul > li[title="' + name + '"] > .selection.frame']);
   }
 }

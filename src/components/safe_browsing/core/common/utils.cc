@@ -5,6 +5,7 @@
 #include "components/safe_browsing/core/common/utils.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -42,7 +43,7 @@ ChromeUserPopulation::ProfileManagementStatus GetProfileManagementStatus(
   else
     return ChromeUserPopulation::NOT_MANAGED;
 #elif BUILDFLAG(IS_CHROMEOS_ASH)
-  if (!bpc || !bpc->IsEnterpriseManaged())
+  if (!bpc || !bpc->IsDeviceEnterpriseManaged())
     return ChromeUserPopulation::NOT_MANAGED;
   return ChromeUserPopulation::ENTERPRISE_MANAGED;
 #else

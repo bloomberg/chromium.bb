@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -23,6 +22,20 @@
 #include "mojo/public/cpp/bindings/sync_event_watcher.h"
 
 namespace mojo {
+
+namespace internal {
+
+template <typename RemoteType>
+struct SharedRemoteTraits;
+
+template <typename Interface>
+struct SharedRemoteTraits<Remote<Interface>> {
+  static void BindDisconnected(Remote<Interface>& remote) {
+    ignore_result(remote.BindNewPipeAndPassReceiver());
+  }
+};
+
+}  // namespace internal
 
 // Helper that may be used from any sequence to serialize |Interface| messages
 // and forward them elsewhere. In general, prefer `SharedRemote`, but this type
@@ -71,6 +84,8 @@ class SharedRemoteBase
     wrapper_->set_disconnect_handler(std::move(handler),
                                      std::move(handler_task_runner));
   }
+
+  void Disconnect() { wrapper_->Disconnect(); }
 
  private:
   friend class base::RefCountedThreadSafe<SharedRemoteBase<RemoteType>>;
@@ -124,6 +139,19 @@ class SharedRemoteBase
         return;
       }
       remote_.set_disconnect_handler(std::move(wrapped_handler));
+    }
+
+    void Disconnect() {
+      if (!task_runner_->RunsTasksInCurrentSequence()) {
+        task_runner_->PostTask(
+            FROM_HERE, base::BindOnce(&RemoteWrapper::Disconnect, this));
+        return;
+      }
+
+      // Reset the remote and rebind it in a disconnected state, so that it's
+      // usable but discards all messages.
+      remote_.reset();
+      internal::SharedRemoteTraits<RemoteType>::BindDisconnected(remote_);
     }
 
    private:
@@ -253,6 +281,14 @@ class SharedRemote {
   // underlying endpoint.
   void reset() { remote_.reset(); }
 
+  // Disconnects the SharedRemote. This leaves the object in a usable state --
+  // i.e. it's still safe to dereference and make calls -- but severs the
+  // underlying connection so that no new replies will be received and all
+  // outgoing messages will be discarded. This is useful when you want to force
+  // a disconnection like with reset(), but you don't want the SharedRemote to
+  // become unbound.
+  void Disconnect() { remote_->Disconnect(); }
+
   // Binds this SharedRemote to `pending_remote` on the sequence given by
   // `bind_task_runner`, or the calling sequence if `bind_task_runner` is null.
   // Once bound, the SharedRemote may be used to send messages on the underlying
@@ -279,6 +315,16 @@ class SharedRemote {
       remote_ = SharedRemoteBase<Remote<Interface>>::Create(
           std::move(pending_remote), base::SequencedTaskRunnerHandle::Get());
     }
+  }
+
+  // Creates a new pipe, binding this SharedRemote to one end on
+  // `bind_task_runner` and returning the other end as a PendingReceiver.
+  PendingReceiver<Interface> BindNewPipeAndPassReceiver(
+      scoped_refptr<base::SequencedTaskRunner> bind_task_runner = nullptr) {
+    PendingRemote<Interface> remote;
+    auto receiver = remote.InitWithNewPipeAndPassReceiver();
+    Bind(std::move(remote), std::move(bind_task_runner));
+    return receiver;
   }
 
  private:

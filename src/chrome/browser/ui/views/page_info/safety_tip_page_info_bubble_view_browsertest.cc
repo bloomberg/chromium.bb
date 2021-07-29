@@ -26,9 +26,11 @@
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view_base.h"
+#include "chrome/browser/ui/views/page_info/page_info_view_factory.h"
 #include "chrome/browser/ui/views/page_info/safety_tip_page_info_bubble_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/lookalikes/core/features.h"
@@ -36,7 +38,7 @@
 #include "components/reputation/core/safety_tip_test_utils.h"
 #include "components/reputation/core/safety_tips.pb.h"
 #include "components/reputation/core/safety_tips_config.h"
-#include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
+#include "components/safe_browsing/core/browser/db/v4_protocol_manager_util.h"
 #include "components/security_interstitials/core/common_string_util.h"
 #include "components/security_state/core/features.h"
 #include "components/security_state/core/security_state.h"
@@ -401,8 +403,13 @@ class SafetyTipPageInfoBubbleViewBrowserTest
         NOTREACHED();
         break;
     }
-    EXPECT_EQ(page_info->GetSecurityDescriptionType(),
-              PageInfoUI::SecurityDescriptionType::SAFETY_TIP);
+    content::WebContentsAddedObserver new_tab_observer;
+    static_cast<views::StyledLabel*>(
+        page_info->GetViewByID(
+            PageInfoViewFactory::VIEW_ID_PAGE_INFO_SECURITY_DETAILS_LABEL))
+        ->ClickLinkForTesting();
+    EXPECT_EQ(chrome::kSafetyTipHelpCenterURL,
+              new_tab_observer.GetWebContents()->GetURL());
   }
 
   void CheckPageInfoDoesNotShowSafetyTipInfo(Browser* browser) {
@@ -417,9 +424,13 @@ class SafetyTipPageInfoBubbleViewBrowserTest
             l10n_util::GetStringUTF16(IDS_PAGE_INFO_INTERNAL_PAGE));
     if (PageInfoBubbleViewBase::GetShownBubbleType() ==
         PageInfoBubbleViewBase::BubbleType::BUBBLE_PAGE_INFO) {
-      EXPECT_NE(static_cast<PageInfoBubbleView*>(page_info)
-                    ->GetSecurityDescriptionType(),
-                PageInfoUI::SecurityDescriptionType::SAFETY_TIP);
+      content::WebContentsAddedObserver new_tab_observer;
+      static_cast<views::StyledLabel*>(
+          page_info->GetViewByID(
+              PageInfoViewFactory::VIEW_ID_PAGE_INFO_SECURITY_DETAILS_LABEL))
+          ->ClickLinkForTesting();
+      EXPECT_EQ(chrome::kPageInfoHelpCenterURL,
+                new_tab_observer.GetWebContents()->GetURL());
     }
   }
 
@@ -1632,7 +1643,7 @@ class SafetyTipPageInfoBubbleViewPrerenderBrowserTest
 IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewPrerenderBrowserTest,
                        SafetyTipOnPrerender) {
   // Start test server.
-  GURL url = embedded_test_server()->GetURL("/prerender/add_prerender.html");
+  GURL url = embedded_test_server()->GetURL("/empty.html");
   ui_test_utils::NavigateToURL(browser(), url);
 
   base::RunLoop run_loop_for_prerenderer;

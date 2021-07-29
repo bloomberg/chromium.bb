@@ -15,7 +15,6 @@
 #include "base/strings/strcat.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_checkup.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
@@ -28,6 +27,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -138,10 +138,6 @@ PromoService::PromoService(
 PromoService::~PromoService() = default;
 
 void PromoService::Refresh() {
-  if (extensions::ShouldShowExtensionsCheckupPromo(profile_)) {
-    ServeExtensionCheckupPromo();
-    return;
-  }
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("promo_service", R"(
         semantics {
@@ -177,35 +173,6 @@ void PromoService::Refresh() {
       url_loader_factory_.get(),
       base::BindOnce(&PromoService::OnLoadDone, base::Unretained(this)),
       1024 * 1024);
-}
-
-void PromoService::ServeExtensionCheckupPromo() {
-  const extensions::CheckupMessage checkup_message =
-      static_cast<extensions::CheckupMessage>(
-          base::GetFieldTrialParamByFeatureAsInt(
-              extensions_features::kExtensionsCheckup,
-              extensions_features::kExtensionsCheckupBannerMessageParameter,
-              static_cast<int>(extensions::CheckupMessage::NEUTRAL)));
-  UMA_HISTOGRAM_ENUMERATION("Extensions.Checkup.NtpPromoShown",
-                            checkup_message);
-  PromoData checkup_promo;
-  int promo_idr = -1;
-  switch (checkup_message) {
-    case extensions::CheckupMessage::PERFORMANCE:
-      promo_idr = IDS_EXTENSIONS_PROMO_PERFORMANCE;
-      break;
-    case extensions::CheckupMessage::PRIVACY:
-      promo_idr = IDS_EXTENSIONS_PROMO_PRIVACY;
-      break;
-    case extensions::CheckupMessage::NEUTRAL:
-      promo_idr = IDS_EXTENSIONS_PROMO_NEUTRAL;
-      break;
-  }
-  std::string promo_message = l10n_util::GetStringUTF8(promo_idr);
-  std::string promo_html = base::StrCat({"<div>", promo_message, "</div>"});
-  checkup_promo.promo_html = promo_html;
-  checkup_promo.can_open_extensions_page = true;
-  PromoDataLoaded(Status::OK_WITH_PROMO, checkup_promo);
 }
 
 void PromoService::OnLoadDone(std::unique_ptr<std::string> response_body) {
@@ -323,9 +290,9 @@ bool PromoService::IsBlockedAfterClearingExpired(
 
   std::vector<std::string> expired_ids;
 
-  for (const auto& blocked : profile_->GetPrefs()
-                                 ->GetDictionary(prefs::kNtpPromoBlocklist)
-                                 ->DictItems()) {
+  for (auto blocked : profile_->GetPrefs()
+                          ->GetDictionary(prefs::kNtpPromoBlocklist)
+                          ->DictItems()) {
     if (!blocked.second.is_double() || blocked.second.GetDouble() < expired)
       expired_ids.emplace_back(blocked.first);
     else if (!found && blocked.first == promo_id)

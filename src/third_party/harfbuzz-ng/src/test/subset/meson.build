@@ -28,6 +28,8 @@ tests = [
   'cmap14',
   'sbix',
   'colr',
+  'colrv1.notoemoji',
+  'colr_with_components',
   'cbdt',
   'variable',
 ]

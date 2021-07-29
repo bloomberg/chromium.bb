@@ -5,45 +5,68 @@
 #ifndef COMPONENTS_ARC_COMPAT_MODE_ARC_SPLASH_SCREEN_DIALOG_VIEW_H_
 #define COMPONENTS_ARC_COMPAT_MODE_ARC_SPLASH_SCREEN_DIALOG_VIEW_H_
 
-#include "ui/views/controls/button/button.h"
+#include "base/callback_forward.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
+
+namespace aura {
+class Window;
+}  // namespace aura
+
+namespace views {
+class View;
+class MdTextButton;
+}  // namespace views
 
 namespace arc {
 
-// This class creates a splash screen view looks like a dialog. The view has a
+// This class creates a splash screen view as a bubble dialog. The view has a
 // transparent background color, with a content box inserted in the middle. It
 // also has a close button on the top right corner. This view is intended to be
 // inserted into a window. The content container contains a logo, a heading
 // text, a message box in vertical alignment.
-class ArcSplashScreenDialogView : public views::View {
+class ArcSplashScreenDialogView : public views::BubbleDialogDelegateView {
  public:
   // TestApi is used for tests to get internal implementation details.
   class TestApi {
    public:
-    explicit TestApi(ArcSplashScreenDialogView* view);
-    ~TestApi();
+    explicit TestApi(ArcSplashScreenDialogView* view) : view_(view) {}
+    ~TestApi() = default;
 
-    views::Button* close_button() const;
+    views::MdTextButton* close_button() const { return view_->close_button_; }
+    views::View* highlight_border() const { return view_->highlight_border_; }
 
    private:
     ArcSplashScreenDialogView* const view_;
   };
 
-  explicit ArcSplashScreenDialogView(
-      views::Button::PressedCallback close_callback);
+  ArcSplashScreenDialogView(base::OnceClosure close_callback,
+                            aura::Window* parent,
+                            views::View* anchor,
+                            bool is_for_unresizable);
   ArcSplashScreenDialogView(const ArcSplashScreenDialogView&) = delete;
   ArcSplashScreenDialogView& operator=(const ArcSplashScreenDialogView&) =
       delete;
   ~ArcSplashScreenDialogView() override;
 
+  // Show a splash screen dialog to advertise resize lock feature
+  static void Show(aura::Window* parent, bool is_for_unresizable);
+
+  // views::View:
+  gfx::Size CalculatePreferredSize() const override;
+  void AddedToWidget() override;
+
  private:
-  void OnLinkClicked();
+  class ArcSplashScreenWindowObserver;
 
-  views::Button* close_button_ = nullptr;
+  void OnCloseButtonClicked();
+
+  views::View* const anchor_;
+  views::View* highlight_border_{nullptr};
+
+  base::OnceClosure close_callback_;
+  views::MdTextButton* close_button_ = nullptr;
+  std::unique_ptr<ArcSplashScreenWindowObserver> window_observer_;
 };
-
-// Build a splash screen dialog view to advertise resize lock feature
-std::unique_ptr<ArcSplashScreenDialogView> BuildSplashScreenDialogView(
-    views::Button::PressedCallback close_callback);
 
 }  // namespace arc
 

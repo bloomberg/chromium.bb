@@ -17,6 +17,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <limits>
 #include <list>
 #include <map>
 #include <memory>
@@ -37,7 +38,6 @@
 #include "api/media_stream_interface.h"
 #include "api/media_types.h"
 #include "api/peer_connection_interface.h"
-#include "api/peer_connection_proxy.h"
 #include "api/rtc_error.h"
 #include "api/rtc_event_log/rtc_event_log_factory.h"
 #include "api/rtc_event_log/rtc_event_log_factory_interface.h"
@@ -84,6 +84,7 @@
 #include "pc/media_session.h"
 #include "pc/peer_connection.h"
 #include "pc/peer_connection_factory.h"
+#include "pc/peer_connection_proxy.h"
 #include "pc/rtp_media_utils.h"
 #include "pc/session_description.h"
 #include "pc/test/fake_audio_capture_module.h"
@@ -704,6 +705,11 @@ class PeerConnectionIntegrationWrapper : public webrtc::PeerConnectionObserver,
     audio_concealed_stat_ = *track_stats->concealed_samples;
   }
 
+  // Sets number of candidates expected
+  void ExpectCandidates(int candidate_count) {
+    candidates_expected_ = candidate_count;
+  }
+
  private:
   explicit PeerConnectionIntegrationWrapper(const std::string& debug_name)
       : debug_name_(debug_name) {}
@@ -1089,6 +1095,9 @@ class PeerConnectionIntegrationWrapper : public webrtc::PeerConnectionObserver,
       }
     }
 
+    // Check if we expected to have a candidate.
+    EXPECT_GT(candidates_expected_, 1);
+    candidates_expected_--;
     std::string ice_sdp;
     EXPECT_TRUE(candidate->ToString(&ice_sdp));
     if (signaling_message_receiver_ == nullptr || !signal_ice_candidates_) {
@@ -1171,6 +1180,9 @@ class PeerConnectionIntegrationWrapper : public webrtc::PeerConnectionObserver,
   std::vector<PeerConnectionInterface::SignalingState>
       peer_connection_signaling_state_history_;
   webrtc::FakeRtcEventLogFactory* event_log_factory_;
+
+  // Number of ICE candidates expected. The default is no limit.
+  int candidates_expected_ = std::numeric_limits<int>::max();
 
   // Variables for tracking delay stats on an audio track
   int audio_packets_stat_ = 0;

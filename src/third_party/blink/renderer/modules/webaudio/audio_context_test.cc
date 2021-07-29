@@ -10,6 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_audio_device.h"
 #include "third_party/blink/public/platform/web_audio_latency_hint.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_union_audiocontextlatencycategory_double.h"
 #include "third_party/blink/renderer/core/core_initializer.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -115,15 +116,17 @@ class AudioContextTest : public PageTestBase {
 TEST_F(AudioContextTest, AudioContextOptions_WebAudioLatencyHint) {
   AudioContextOptions* interactive_options = AudioContextOptions::Create();
   interactive_options->setLatencyHint(
-      AudioContextLatencyCategoryOrDouble::FromAudioContextLatencyCategory(
-          "interactive"));
+      MakeGarbageCollected<V8UnionAudioContextLatencyCategoryOrDouble>(
+          V8AudioContextLatencyCategory(
+              V8AudioContextLatencyCategory::Enum::kInteractive)));
   AudioContext* interactive_context = AudioContext::Create(
       GetDocument(), interactive_options, ASSERT_NO_EXCEPTION);
 
   AudioContextOptions* balanced_options = AudioContextOptions::Create();
   balanced_options->setLatencyHint(
-      AudioContextLatencyCategoryOrDouble::FromAudioContextLatencyCategory(
-          "balanced"));
+      MakeGarbageCollected<V8UnionAudioContextLatencyCategoryOrDouble>(
+          V8AudioContextLatencyCategory(
+              V8AudioContextLatencyCategory::Enum::kBalanced)));
   AudioContext* balanced_context = AudioContext::Create(
       GetDocument(), balanced_options, ASSERT_NO_EXCEPTION);
   EXPECT_GT(balanced_context->baseLatency(),
@@ -131,15 +134,16 @@ TEST_F(AudioContextTest, AudioContextOptions_WebAudioLatencyHint) {
 
   AudioContextOptions* playback_options = AudioContextOptions::Create();
   playback_options->setLatencyHint(
-      AudioContextLatencyCategoryOrDouble::FromAudioContextLatencyCategory(
-          "playback"));
+      MakeGarbageCollected<V8UnionAudioContextLatencyCategoryOrDouble>(
+          V8AudioContextLatencyCategory(
+              V8AudioContextLatencyCategory::Enum::kPlayback)));
   AudioContext* playback_context = AudioContext::Create(
       GetDocument(), playback_options, ASSERT_NO_EXCEPTION);
   EXPECT_GT(playback_context->baseLatency(), balanced_context->baseLatency());
 
   AudioContextOptions* exact_too_small_options = AudioContextOptions::Create();
   exact_too_small_options->setLatencyHint(
-      AudioContextLatencyCategoryOrDouble::FromDouble(
+      MakeGarbageCollected<V8UnionAudioContextLatencyCategoryOrDouble>(
           interactive_context->baseLatency() / 2));
   AudioContext* exact_too_small_context = AudioContext::Create(
       GetDocument(), exact_too_small_options, ASSERT_NO_EXCEPTION);
@@ -151,14 +155,15 @@ TEST_F(AudioContextTest, AudioContextOptions_WebAudioLatencyHint) {
       2;
   AudioContextOptions* exact_ok_options = AudioContextOptions::Create();
   exact_ok_options->setLatencyHint(
-      AudioContextLatencyCategoryOrDouble::FromDouble(exact_latency_sec));
+      MakeGarbageCollected<V8UnionAudioContextLatencyCategoryOrDouble>(
+          exact_latency_sec));
   AudioContext* exact_ok_context = AudioContext::Create(
       GetDocument(), exact_ok_options, ASSERT_NO_EXCEPTION);
   EXPECT_EQ(exact_ok_context->baseLatency(), exact_latency_sec);
 
   AudioContextOptions* exact_too_big_options = AudioContextOptions::Create();
   exact_too_big_options->setLatencyHint(
-      AudioContextLatencyCategoryOrDouble::FromDouble(
+      MakeGarbageCollected<V8UnionAudioContextLatencyCategoryOrDouble>(
           playback_context->baseLatency() * 2));
   AudioContext* exact_too_big_context = AudioContext::Create(
       GetDocument(), exact_too_big_options, ASSERT_NO_EXCEPTION);

@@ -10,13 +10,13 @@
 #include <utility>
 #include <vector>
 
+#include "core/fxcrt/stl_util.h"
 #include "fxjs/gc/container_trace.h"
 #include "fxjs/xfa/cjx_object.h"
 #include "third_party/base/check.h"
 #include "third_party/base/compiler_specific.h"
 #include "third_party/base/containers/adapters.h"
 #include "third_party/base/notreached.h"
-#include "third_party/base/stl_util.h"
 #include "xfa/fxfa/cxfa_ffdoc.h"
 #include "xfa/fxfa/cxfa_ffnotify.h"
 #include "xfa/fxfa/cxfa_ffwidget.h"
@@ -95,14 +95,14 @@ CFX_SizeF CalculateContainerSpecifiedSize(CXFA_Node* pFormNode,
   if (eType == XFA_Element::Subform || eType == XFA_Element::ExclGroup) {
     Optional<CXFA_Measurement> wValue =
         pFormNode->JSObject()->TryMeasure(XFA_Attribute::W, false);
-    if (wValue && wValue->GetValue() > kXFALayoutPrecision) {
+    if (wValue.has_value() && wValue->GetValue() > kXFALayoutPrecision) {
       containerSize.width = wValue->ToUnit(XFA_Unit::Pt);
       *bContainerWidthAutoSize = false;
     }
 
     Optional<CXFA_Measurement> hValue =
         pFormNode->JSObject()->TryMeasure(XFA_Attribute::H, false);
-    if (hValue && hValue->GetValue() > kXFALayoutPrecision) {
+    if (hValue.has_value() && hValue->GetValue() > kXFALayoutPrecision) {
       containerSize.height = hValue->ToUnit(XFA_Unit::Pt);
       *bContainerHeightAutoSize = false;
     }
@@ -111,14 +111,14 @@ CFX_SizeF CalculateContainerSpecifiedSize(CXFA_Node* pFormNode,
   if (*bContainerWidthAutoSize && eType == XFA_Element::Subform) {
     Optional<CXFA_Measurement> maxW =
         pFormNode->JSObject()->TryMeasure(XFA_Attribute::MaxW, false);
-    if (maxW && maxW->GetValue() > kXFALayoutPrecision) {
+    if (maxW.has_value() && maxW->GetValue() > kXFALayoutPrecision) {
       containerSize.width = maxW->ToUnit(XFA_Unit::Pt);
       *bContainerWidthAutoSize = false;
     }
 
     Optional<CXFA_Measurement> maxH =
         pFormNode->JSObject()->TryMeasure(XFA_Attribute::MaxH, false);
-    if (maxH && maxH->GetValue() > kXFALayoutPrecision) {
+    if (maxH.has_value() && maxH->GetValue() > kXFALayoutPrecision) {
       containerSize.height = maxH->ToUnit(XFA_Unit::Pt);
       *bContainerHeightAutoSize = false;
     }
@@ -141,12 +141,12 @@ CFX_SizeF CalculateContainerComponentSizeFromContentSize(
     if (pMarginNode) {
       Optional<CXFA_Measurement> leftInset =
           pMarginNode->JSObject()->TryMeasure(XFA_Attribute::LeftInset, false);
-      if (leftInset)
+      if (leftInset.has_value())
         componentSize.width += leftInset->ToUnit(XFA_Unit::Pt);
 
       Optional<CXFA_Measurement> rightInset =
           pMarginNode->JSObject()->TryMeasure(XFA_Attribute::RightInset, false);
-      if (rightInset)
+      if (rightInset.has_value())
         componentSize.width += rightInset->ToUnit(XFA_Unit::Pt);
     }
   }
@@ -156,13 +156,13 @@ CFX_SizeF CalculateContainerComponentSizeFromContentSize(
     if (pMarginNode) {
       Optional<CXFA_Measurement> topInset =
           pMarginNode->JSObject()->TryMeasure(XFA_Attribute::TopInset, false);
-      if (topInset)
+      if (topInset.has_value())
         componentSize.height += topInset->ToUnit(XFA_Unit::Pt);
 
       Optional<CXFA_Measurement> bottomInset =
           pMarginNode->JSObject()->TryMeasure(XFA_Attribute::BottomInset,
                                               false);
-      if (bottomInset)
+      if (bottomInset.has_value())
         componentSize.height += bottomInset->ToUnit(XFA_Unit::Pt);
     }
   }
@@ -340,8 +340,8 @@ XFA_AttributeValue GetLayout(CXFA_Node* pFormNode, bool* bRootForceTb) {
   *bRootForceTb = false;
   Optional<XFA_AttributeValue> layoutMode =
       pFormNode->JSObject()->TryEnum(XFA_Attribute::Layout, false);
-  if (layoutMode)
-    return *layoutMode;
+  if (layoutMode.has_value())
+    return layoutMode.value();
 
   CXFA_Node* pParentNode = pFormNode->GetParent();
   if (pParentNode && pParentNode->GetElementType() == XFA_Element::Form) {
@@ -369,11 +369,9 @@ bool ExistContainerKeep(CXFA_Node* pCurNode, bool bPreFind) {
 
     Optional<XFA_AttributeValue> previous =
         pKeep->JSObject()->TryEnum(eKeepType, false);
-    if (previous) {
-      if (*previous == XFA_AttributeValue::ContentArea ||
-          *previous == XFA_AttributeValue::PageArea) {
-        return true;
-      }
+    if (previous == XFA_AttributeValue::ContentArea ||
+        previous == XFA_AttributeValue::PageArea) {
+      return true;
     }
   }
 
@@ -387,10 +385,8 @@ bool ExistContainerKeep(CXFA_Node* pCurNode, bool bPreFind) {
 
   Optional<XFA_AttributeValue> next =
       pKeep->JSObject()->TryEnum(eKeepType, false);
-  if (!next)
-    return false;
-  if (*next == XFA_AttributeValue::ContentArea ||
-      *next == XFA_AttributeValue::PageArea) {
+  if (next == XFA_AttributeValue::ContentArea ||
+      next == XFA_AttributeValue::PageArea) {
     return true;
   }
   return false;
@@ -433,7 +429,7 @@ Optional<CXFA_ContentLayoutProcessor::Stage> FindBreakNode(
         break;
     }
   }
-  return {};
+  return pdfium::nullopt;
 }
 
 void DeleteLayoutGeneratedNode(CXFA_Node* pGenerateNode) {
@@ -948,21 +944,21 @@ CXFA_ContentLayoutProcessor::ProcessKeepNodesForCheckNext(
       m_pKeepHeadNode = *pNextContainer;
       m_bIsProcessKeep = true;
     }
-    return {};
+    return pdfium::nullopt;
   }
 
   if (!m_bIsProcessKeep || !m_pKeepHeadNode) {
     if (m_bKeepBreakFinish)
       *pLastKeepNode = true;
     m_bKeepBreakFinish = false;
-    return {};
+    return pdfium::nullopt;
   }
 
   m_pKeepTailNode = *pNextContainer;
   if (m_bKeepBreakFinish) {
     *pNextContainer = m_pKeepHeadNode;
     ProcessKeepNodesEnd();
-    return {};
+    return pdfium::nullopt;
   }
 
   Optional<Stage> ret =
@@ -970,7 +966,7 @@ CXFA_ContentLayoutProcessor::ProcessKeepNodesForCheckNext(
   if (!ret.has_value()) {
     *pNextContainer = m_pKeepHeadNode;
     ProcessKeepNodesEnd();
-    return {};
+    return pdfium::nullopt;
   }
 
   return ret;
@@ -1082,12 +1078,12 @@ void CXFA_ContentLayoutProcessor::DoLayoutPositionedContainer(
     if (pContext && pContext->m_prgSpecifiedColumnWidths) {
       int32_t iColSpan =
           m_pCurChildNode->JSObject()->GetInteger(XFA_Attribute::ColSpan);
-      if (iColSpan <= pdfium::CollectionSize<int32_t>(
+      if (iColSpan <= fxcrt::CollectionSize<int32_t>(
                           *pContext->m_prgSpecifiedColumnWidths) -
                           iColIndex) {
         pContext->m_fCurColumnWidth = 0.0f;
         if (iColSpan == -1) {
-          iColSpan = pdfium::CollectionSize<int32_t>(
+          iColSpan = fxcrt::CollectionSize<int32_t>(
               *pContext->m_prgSpecifiedColumnWidths);
         }
         for (int32_t i = 0; iColIndex + i < iColSpan; ++i) {
@@ -1199,7 +1195,7 @@ void CXFA_ContentLayoutProcessor::DoLayoutTableContainer(
   }
 
   int32_t iSpecifiedColumnCount =
-      pdfium::CollectionSize<int32_t>(m_rgSpecifiedColumnWidths);
+      fxcrt::CollectionSize<int32_t>(m_rgSpecifiedColumnWidths);
   Context layoutContext;
   layoutContext.m_prgSpecifiedColumnWidths = &m_rgSpecifiedColumnWidths;
   Context* pLayoutContext =
@@ -1258,7 +1254,7 @@ void CXFA_ContentLayoutProcessor::DoLayoutTableContainer(
       }
     }
 
-    iRowCount = pdfium::CollectionSize<int32_t>(rgRowItems);
+    iRowCount = fxcrt::CollectionSize<int32_t>(rgRowItems);
     iColCount = 0;
     bool bMoreColumns = true;
     while (bMoreColumns) {
@@ -1290,9 +1286,8 @@ void CXFA_ContentLayoutProcessor::DoLayoutTableContainer(
           continue;
 
         if (iColCount >= iSpecifiedColumnCount) {
-          int32_t c =
-              iColCount + 1 -
-              pdfium::CollectionSize<int32_t>(m_rgSpecifiedColumnWidths);
+          int32_t c = iColCount + 1 -
+                      fxcrt::CollectionSize<int32_t>(m_rgSpecifiedColumnWidths);
           for (int32_t j = 0; j < c; j++)
             m_rgSpecifiedColumnWidths.push_back(0);
         }
@@ -1308,7 +1303,7 @@ void CXFA_ContentLayoutProcessor::DoLayoutTableContainer(
         continue;
 
       float fFinalColumnWidth = 0.0f;
-      if (pdfium::IndexInBounds(m_rgSpecifiedColumnWidths, iColCount))
+      if (fxcrt::IndexInBounds(m_rgSpecifiedColumnWidths, iColCount))
         fFinalColumnWidth = m_rgSpecifiedColumnWidths[iColCount];
 
       for (int32_t i = 0; i < iRowCount; ++i) {
@@ -1928,7 +1923,7 @@ bool CXFA_ContentLayoutProcessor::CalculateRowChildPosition(
   float fGroupWidths[3] = {0, 0, 0};
   int32_t nTotalLength = 0;
   for (int32_t i = 0; i < 3; i++) {
-    nGroupLengths[i] = pdfium::CollectionSize<int32_t>(rgCurLineLayoutItems[i]);
+    nGroupLengths[i] = fxcrt::CollectionSize<int32_t>(rgCurLineLayoutItems[i]);
     for (int32_t c = nGroupLengths[i], j = 0; j < c; j++) {
       nTotalLength++;
       if (rgCurLineLayoutItems[i][j]->GetFormNode()->PresenceRequiresSpace())
@@ -2677,7 +2672,7 @@ Optional<CXFA_ContentLayoutProcessor::Stage>
 CXFA_ContentLayoutProcessor::HandleKeep(CXFA_Node* pBreakAfterNode,
                                         CXFA_Node** pCurActionNode) {
   if (m_bKeepBreakFinish)
-    return {};
+    return pdfium::nullopt;
   return FindBreakNode(pBreakAfterNode, false, pCurActionNode);
 }
 
@@ -2697,14 +2692,14 @@ CXFA_ContentLayoutProcessor::HandleBookendLeader(CXFA_Node* pParentContainer,
         break;
     }
   }
-  return {};
+  return pdfium::nullopt;
 }
 
 Optional<CXFA_ContentLayoutProcessor::Stage>
 CXFA_ContentLayoutProcessor::HandleBreakBefore(CXFA_Node* pChildContainer,
                                                CXFA_Node** pCurActionNode) {
   if (!*pCurActionNode)
-    return {};
+    return pdfium::nullopt;
 
   CXFA_Node* pBreakBeforeNode = (*pCurActionNode)->GetNextSibling();
   if (!m_bKeepBreakFinish) {
@@ -2746,7 +2741,7 @@ CXFA_ContentLayoutProcessor::HandleCheckNextChildContainer(
       DeleteLayoutGeneratedNode(pSaveNode);
   }
   if (!pNextChildContainer)
-    return {};
+    return pdfium::nullopt;
 
   bool bLastKeep = false;
   Optional<Stage> ret = ProcessKeepNodesForCheckNext(
@@ -2780,7 +2775,7 @@ CXFA_ContentLayoutProcessor::HandleBookendTrailer(CXFA_Node* pParentContainer,
         break;
     }
   }
-  return {};
+  return pdfium::nullopt;
 }
 
 void CXFA_ContentLayoutProcessor::ProcessKeepNodesEnd() {

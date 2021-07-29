@@ -13,6 +13,7 @@
 import check_merge
 from datetime import datetime
 import find_patches
+import config_flag_changes
 import os
 import re
 from robo_lib.errors import UserInstructions
@@ -112,7 +113,7 @@ def FindUpstreamMergeParent(cfg):
   for sha1 in sha1s:
     # 'not' is correct -- it returns zero if it is an ancestor => upstream.
     cmd = ["git", "merge-base", "--is-ancestor", sha1, "upstream/master"]
-    if not shell.stdout_fail_ok(cmd):
+    if not shell.run(cmd).returncode:
       return sha1
   raise Exception("No upstream merge parent found.  Is the merge committed?")
 
@@ -148,12 +149,10 @@ def WritePatchesReadme(cfg):
 def WriteConfigChangesFile(cfg):
   """Write a file that summarizes the config changes, for easier reviewing."""
   cfg.chdir_to_ffmpeg_home();
-  # This looks for things that were added / deleted that look like #define or
-  # %define (for asm) ending in 0 or 1, that have changed in any of the configs.
-  os.system("git diff %s --unified=0 -- chromium/config/* |"
-            "grep '^[+-].*[01]$' | sed -e 's/[%%#]define//g' |sort |"
-            "uniq -s 1 >chromium/patches/config_flag_changes.txt" %
-            cfg.origin_merge_base())
+  deltas = config_flag_changes.get_config_flag_changes(cfg)
+  with open('chromium/patches/config_flag_changes.txt', 'w') as f:
+    for delta in deltas:
+      f.write(f'{delta}\n')
 
 def AddAndCommit(cfg, commit_title):
   """Add everything, and commit locally with |commit_title|"""
@@ -247,7 +246,7 @@ def UpdateChromiumReadmeWithUpstream(robo_configuration):
   merge_date = shell.output_or_error(["git", "log", "-1","--date=format:%b %d %Y",
                             "--format=%cd", merge_sha1])
   readme = re.sub(r"(Last Upstream Merge:).*\n",
-                  r"\1 %s, %s" % (merge_sha1, merge_date),
+                  r"\1 %s, %s\n" % (merge_sha1, merge_date),
                   readme)
   with open("README.chromium", "w") as f:
     f.write(readme)

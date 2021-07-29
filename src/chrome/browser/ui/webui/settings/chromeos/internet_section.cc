@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/webui/settings/chromeos/internet_section.h"
 
 #include "ash/constants/ash_features.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/network_config_service.h"
 #include "base/bind.h"
 #include "base/containers/contains.h"
@@ -13,7 +12,6 @@
 #include "base/no_destructor.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/ui/webui/chromeos/cellular_setup/cellular_setup_localized_strings_provider.h"
-#include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/internet_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
@@ -29,6 +27,8 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
+#include "ui/chromeos/strings/network_element_localized_strings_provider.h"
 
 namespace chromeos {
 namespace settings {
@@ -819,16 +819,19 @@ void InternetSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
-  network_element::AddLocalizedStrings(html_source);
-  network_element::AddOncLocalizedStrings(html_source);
-  network_element::AddDetailsLocalizedStrings(html_source);
-  network_element::AddConfigLocalizedStrings(html_source);
-  network_element::AddErrorLocalizedStrings(html_source);
+  ui::network_element::AddLocalizedStrings(html_source);
+  ui::network_element::AddOncLocalizedStrings(html_source);
+  ui::network_element::AddDetailsLocalizedStrings(html_source);
+  ui::network_element::AddConfigLocalizedStrings(html_source);
+  ui::network_element::AddErrorLocalizedStrings(html_source);
   cellular_setup::AddNonStringLoadTimeData(html_source);
   if (features::IsCellularActivationUiEnabled()) {
     cellular_setup::AddLocalizedStrings(html_source);
   }
 
+  html_source->AddBoolean("allowPerNetworkRoaming",
+                          base::FeatureList::IsEnabled(
+                              ash::features::kCellularAllowPerNetworkRoaming));
   html_source->AddBoolean("showTechnologyBadge",
                           !ash::features::IsSeparateNetworkIconsEnabled());
   html_source->AddBoolean(

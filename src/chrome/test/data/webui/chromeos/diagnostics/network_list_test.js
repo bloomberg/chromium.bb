@@ -5,12 +5,13 @@
 import 'chrome://diagnostics/network_list.js';
 
 import {NetworkGuidInfo} from 'chrome://diagnostics/diagnostics_types.js';
-import {fakeCellularNetwork, fakeEthernetNetwork, fakeNetworkGuidInfoList, fakeWifiNetwork} from 'chrome://diagnostics/fake_data.js';
+import {fakeCellularNetwork, fakeEthernetNetwork, fakeNetworkGuidInfoList, fakePowerRoutineResults, fakeRoutineResults, fakeWifiNetwork} from 'chrome://diagnostics/fake_data.js';
 import {FakeNetworkHealthProvider} from 'chrome://diagnostics/fake_network_health_provider.js';
-import {setNetworkHealthProviderForTesting} from 'chrome://diagnostics/mojo_interface_provider.js';
+import {FakeSystemRoutineController} from 'chrome://diagnostics/fake_system_routine_controller.js';
+import {setNetworkHealthProviderForTesting, setSystemRoutineControllerForTesting} from 'chrome://diagnostics/mojo_interface_provider.js';
 
 import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
-import {flushTasks} from '../../test_util.m.js';
+import {flushTasks, isVisible} from '../../test_util.m.js';
 
 import * as dx_utils from './diagnostics_test_utils.js';
 
@@ -21,13 +22,22 @@ export function networkListTestSuite() {
   /** @type {?FakeNetworkHealthProvider} */
   let provider = null;
 
+  /** @type {!FakeSystemRoutineController} */
+  let routineController;
+
   suiteSetup(() => {
     provider = new FakeNetworkHealthProvider();
     setNetworkHealthProviderForTesting(provider);
-  });
 
-  setup(() => {
-    document.body.innerHTML = '';
+    // Setup a fake routine controller.
+    routineController = new FakeSystemRoutineController();
+    routineController.setDelayTimeInMillisecondsForTesting(-1);
+
+    // Enable all routines by default.
+    routineController.setFakeSupportedRoutines(
+        [...fakeRoutineResults.keys(), ...fakePowerRoutineResults.keys()]);
+
+    setSystemRoutineControllerForTesting(routineController);
   });
 
   teardown(() => {
@@ -81,6 +91,16 @@ export function networkListTestSuite() {
    */
   function getNetworkCardElements() {
     return networkListElement.shadowRoot.querySelectorAll('network-card');
+  }
+
+  /**
+   * @param {string} guid
+   * @suppress {visibility} // access private member
+   * @return {!Promise}
+   */
+  function changeActiveGuid(guid) {
+    networkListElement.activeGuid_ = guid;
+    return flushTasks();
   }
 
   /**
@@ -146,8 +166,10 @@ export function networkListTestSuite() {
   test('NetworkCardElementsPopulated', () => {
     let networkCardElements;
     return initializeNetworkList(fakeNetworkGuidInfoList)
-        .then(async () => {
+        .then(() => flushTasks())
+        .then(() => {
           networkCardElements = getNetworkCardElements();
+
           // The first network list observation provides guids for Cellular
           // and WiFi. The connectivity-card is responsbile for the Ethernet
           // guid as it's the currently active guid.
@@ -156,9 +178,9 @@ export function networkListTestSuite() {
           const cellularInfoElement = dx_utils.getCellularInfoElement(
               networkCardElements[1].$$('network-info'));
           dx_utils.assertTextContains(
-              wifiInfoElement.$$('#guid').value, fakeWifiNetwork.guid);
+              wifiInfoElement.$$('#name').value, fakeWifiNetwork.name);
           dx_utils.assertTextContains(
-              cellularInfoElement.$$('#guid').value, fakeCellularNetwork.guid);
+              cellularInfoElement.$$('#name').value, fakeCellularNetwork.name);
 
           assertEquals(
               getConnectivityCard().activeGuid,
@@ -166,14 +188,22 @@ export function networkListTestSuite() {
 
           return triggerNetworkListObserver();
         })
+        .then(() => flushTasks())
         .then(() => {
+          networkCardElements = getNetworkCardElements();
           const cellularInfoElement = dx_utils.getCellularInfoElement(
               networkCardElements[0].$$('network-info'));
           dx_utils.assertTextContains(
-              cellularInfoElement.$$('#guid').value, fakeCellularNetwork.guid);
+              cellularInfoElement.$$('#name').value, fakeCellularNetwork.name);
           assertEquals(
               getConnectivityCard().activeGuid,
               fakeNetworkGuidInfoList[1].activeGuid);
         });
+  });
+
+  test('ConnectivityCardHiddenWithNoActiveGuid', () => {
+    return initializeNetworkList(fakeNetworkGuidInfoList)
+        .then(() => changeActiveGuid(''))
+        .then(() => assertFalse(isVisible(getConnectivityCard())));
   });
 }

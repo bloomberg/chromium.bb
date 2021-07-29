@@ -9,7 +9,7 @@
 #include <memory>
 #include <vector>
 
-#include "cast/common/public/service_info.h"
+#include "cast/common/public/receiver_info.h"
 #include "discovery/common/reporting_client.h"
 #include "discovery/public/dns_sd_service_factory.h"
 #include "discovery/public/dns_sd_service_watcher.h"
@@ -40,10 +40,10 @@ class ReceiverChooser final : public discovery::ReportingClient {
   void OnFatalError(Error error) final;
   void OnRecoverableError(Error error) final;
 
-  // Called from the DnsWatcher with |all| ServiceInfos any time there is a
+  // Called from the DnsWatcher with |all| ReceiverInfos any time there is a
   // change in the set of discovered devices.
   void OnDnsWatcherUpdate(
-      std::vector<std::reference_wrapper<const ServiceInfo>> all);
+      std::vector<std::reference_wrapper<const ReceiverInfo>> all);
 
   // Called from |menu_alarm_| when it is a good time for the user to choose
   // from the discovered-so-far set of Cast Receivers.
@@ -51,8 +51,8 @@ class ReceiverChooser final : public discovery::ReportingClient {
 
   ResultCallback result_callback_;
   SerialDeletePtr<discovery::DnsSdService> service_;
-  std::unique_ptr<discovery::DnsSdServiceWatcher<ServiceInfo>> watcher_;
-  std::vector<ServiceInfo> discovered_receivers_;
+  std::unique_ptr<discovery::DnsSdServiceWatcher<ReceiverInfo>> watcher_;
+  std::vector<ReceiverInfo> discovered_receivers_;
   Alarm menu_alarm_;
 
   // After there is another Cast Receiver discovered, ready to show to the user

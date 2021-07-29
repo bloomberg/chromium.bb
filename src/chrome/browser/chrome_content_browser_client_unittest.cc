@@ -63,11 +63,11 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/content/scanning/url_constants.h"
+#include "ash/webui/scanning/url_constants.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/policy/policy_cert_service.h"
-#include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
-#include "chrome/browser/chromeos/policy/system_features_disable_list_policy_handler.h"
+#include "chrome/browser/ash/policy/handlers/system_features_disable_list_policy_handler.h"
+#include "chrome/browser/ash/policy/networking/policy_cert_service.h"
+#include "chrome/browser/ash/policy/networking/policy_cert_service_factory.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/policy/core/common/policy_pref_names.h"
@@ -174,7 +174,7 @@ TEST_F(ChromeContentBrowserClientWindowTest, OverrideNavigationParams) {
   // The origin is a placeholder to test that |initiator_origin| is set to
   // absl::nullopt and is not meant to represent what would happen in practice.
   initiator_origin = url::Origin::Create(GURL("https://www.example.com"));
-  client.OverrideNavigationParams(nullptr, site_instance.get(), &transition,
+  client.OverrideNavigationParams(site_instance.get(), &transition,
                                   &is_renderer_initiated, &referrer,
                                   &initiator_origin);
   EXPECT_TRUE(ui::PageTransitionCoreTypeIs(ui::PAGE_TRANSITION_AUTO_BOOKMARK,
@@ -187,7 +187,7 @@ TEST_F(ChromeContentBrowserClientWindowTest, OverrideNavigationParams) {
   transition = ui::PAGE_TRANSITION_LINK;
   is_renderer_initiated = true;
   initiator_origin = url::Origin::Create(GURL("https://www.example.com"));
-  client.OverrideNavigationParams(nullptr, site_instance.get(), &transition,
+  client.OverrideNavigationParams(site_instance.get(), &transition,
                                   &is_renderer_initiated, &referrer,
                                   &initiator_origin);
   EXPECT_TRUE(ui::PageTransitionCoreTypeIs(ui::PAGE_TRANSITION_AUTO_BOOKMARK,
@@ -199,7 +199,7 @@ TEST_F(ChromeContentBrowserClientWindowTest, OverrideNavigationParams) {
   site_instance = content::SiteInstance::CreateForURL(
       browser()->profile(), GURL("chrome://new-tab-page"));
   transition = ui::PAGE_TRANSITION_TYPED;
-  client.OverrideNavigationParams(nullptr, site_instance.get(), &transition,
+  client.OverrideNavigationParams(site_instance.get(), &transition,
                                   &is_renderer_initiated, &referrer,
                                   &initiator_origin);
   EXPECT_TRUE(
@@ -209,7 +209,7 @@ TEST_F(ChromeContentBrowserClientWindowTest, OverrideNavigationParams) {
   site_instance = content::SiteInstance::CreateForURL(
       browser()->profile(), GURL("https://www.example.com"));
   transition = ui::PAGE_TRANSITION_LINK;
-  client.OverrideNavigationParams(nullptr, site_instance.get(), &transition,
+  client.OverrideNavigationParams(site_instance.get(), &transition,
                                   &is_renderer_initiated, &referrer,
                                   &initiator_origin);
   EXPECT_TRUE(

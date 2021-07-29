@@ -53,6 +53,16 @@ struct ContextVkPerfCounters
     ContextVkDescriptorSetList descriptorSetsAllocated;
 };
 
+enum class GraphicsEventCmdBuf
+{
+    NotInQueryCmd              = 0,
+    InOutsideCmdBufQueryCmd    = 1,
+    InRenderPassCmdBufQueryCmd = 2,
+
+    InvalidEnum = 3,
+    EnumCount   = 3,
+};
+
 class ContextVk : public ContextImpl, public vk::Context, public MultisampleTextureInitializer
 {
   public:
@@ -208,7 +218,8 @@ class ContextVk : public ContextImpl, public vk::Context, public MultisampleText
 
     // Record GL API calls for debuggers
     void logEvent(const char *eventString);
-    void endEventLog(angle::EntryPoint entryPoint);
+    void endEventLog(angle::EntryPoint entryPoint, PipelineType pipelineType);
+    void endEventLogForClearOrQuery();
 
     bool isViewportFlipEnabledForDrawFBO() const;
     bool isViewportFlipEnabledForReadFBO() const;
@@ -357,6 +368,7 @@ class ContextVk : public ContextImpl, public vk::Context, public MultisampleText
     void invalidateComputePipelineBinding();
     void invalidateGraphicsDescriptorSet(DescriptorSetIndex usedDescriptorSet);
     void invalidateComputeDescriptorSet(DescriptorSetIndex usedDescriptorSet);
+    void invalidateViewportAndScissor();
 
     void optimizeRenderPassForPresent(VkFramebuffer framebufferHandle);
 
@@ -365,6 +377,7 @@ class ContextVk : public ContextImpl, public vk::Context, public MultisampleText
     const VkClearValue &getClearColorValue() const;
     const VkClearValue &getClearDepthStencilValue() const;
     gl::BlendStateExt::ColorMaskStorage::Type getClearColorMasks() const;
+    const VkRect2D &getScissor() const { return mScissor; }
     angle::Result getIncompleteTexture(const gl::Context *context,
                                        gl::TextureType type,
                                        gl::SamplerFormat format,
@@ -441,6 +454,8 @@ class ContextVk : public ContextImpl, public vk::Context, public MultisampleText
         VkShaderStageFlags shaderStages) const;
 
     void updateScissor(const gl::State &glState);
+
+    void updateDepthStencil(const gl::State &glState);
 
     bool emulateSeamfulCubeMapSampling() const { return mEmulateSeamfulCubeMapSampling; }
 
@@ -545,6 +560,7 @@ class ContextVk : public ContextImpl, public vk::Context, public MultisampleText
     void restoreFinishedRenderPass(vk::Framebuffer *framebuffer);
 
     uint32_t getCurrentSubpassIndex() const;
+    uint32_t getCurrentViewCount() const;
 
     egl::ContextPriority getContextPriority() const override { return mContextPriority; }
     angle::Result startRenderPass(gl::Rectangle renderArea,
@@ -573,9 +589,12 @@ class ContextVk : public ContextImpl, public vk::Context, public MultisampleText
 
     // Queries that begin and end automatically with render pass start and end
     angle::Result beginRenderPassQuery(QueryVk *queryVk);
-    void endRenderPassQuery(QueryVk *queryVk);
+    angle::Result endRenderPassQuery(QueryVk *queryVk);
     void pauseRenderPassQueriesIfActive();
     angle::Result resumeRenderPassQueriesIfActive();
+    bool doesPrimitivesGeneratedQuerySupportRasterizerDiscard() const;
+    bool isEmulatingRasterizerDiscardDuringPrimitivesGeneratedQuery(
+        bool isPrimitivesGeneratedQueryActive) const;
 
     // Used by QueryVk to share query helpers between transform feedback queries.
     QueryVk *getActiveRenderPassQuery(gl::QueryType queryType) const;
@@ -616,6 +635,8 @@ class ContextVk : public ContextImpl, public vk::Context, public MultisampleText
 
     void onProgramExecutableReset(ProgramExecutableVk *executableVk);
 
+    angle::Result handleGraphicsEventLog(GraphicsEventCmdBuf queryEventType);
+
   private:
     // Dirty bits.
     enum DirtyBitType : size_t
@@ -649,6 +670,9 @@ class ContextVk : public ContextImpl, public vk::Context, public MultisampleText
         DIRTY_BIT_TRANSFORM_FEEDBACK_RESUME,
         DIRTY_BIT_DESCRIPTOR_SETS,
         DIRTY_BIT_FRAMEBUFFER_FETCH_BARRIER,
+        // Dynamic viewport/scissor
+        DIRTY_BIT_VIEWPORT,
+        DIRTY_BIT_SCISSOR,
         DIRTY_BIT_MAX,
     };
 
@@ -791,6 +815,8 @@ class ContextVk : public ContextImpl, public vk::Context, public MultisampleText
     void invalidateGraphicsDriverUniforms();
     void invalidateDriverUniforms();
 
+    angle::Result handleNoopDrawEvent() override;
+
     // Handlers for graphics pipeline dirty bits.
     angle::Result handleDirtyGraphicsMemoryBarrier(DirtyBits::Iterator *dirtyBitsIterator,
                                                    DirtyBits dirtyBitMask);
@@ -828,6 +854,10 @@ class ContextVk : public ContextImpl, public vk::Context, public MultisampleText
                                                              DirtyBits dirtyBitMask);
     angle::Result handleDirtyGraphicsDescriptorSets(DirtyBits::Iterator *dirtyBitsIterator,
                                                     DirtyBits dirtyBitMask);
+    angle::Result handleDirtyGraphicsViewport(DirtyBits::Iterator *dirtyBitsIterator,
+                                              DirtyBits dirtyBitMask);
+    angle::Result handleDirtyGraphicsScissor(DirtyBits::Iterator *dirtyBitsIterator,
+                                             DirtyBits dirtyBitMask);
 
     // Handlers for compute pipeline dirty bits.
     angle::Result handleDirtyComputeMemoryBarrier();
@@ -850,6 +880,8 @@ class ContextVk : public ContextImpl, public vk::Context, public MultisampleText
                                               VkPipelineBindPoint bindPoint,
                                               DriverUniformsDescriptorSet *driverUniforms);
     angle::Result handleDirtyDescriptorSetsImpl(vk::CommandBuffer *commandBuffer);
+    void handleDirtyGraphicsScissorImpl(bool isPrimitivesGeneratedQueryActive);
+
     angle::Result allocateDriverUniforms(size_t driverUniformsSize,
                                          DriverUniformsDescriptorSet *driverUniforms,
                                          uint8_t **ptrOut,
@@ -926,6 +958,7 @@ class ContextVk : public ContextImpl, public vk::Context, public MultisampleText
 
     void updateSampleShadingWithRasterizationSamples(const uint32_t rasterizationSamples);
     void updateRasterizationSamples(const uint32_t rasterizationSamples);
+    void updateRasterizerDiscardEnabled(bool isPrimitivesGeneratedQueryActive);
 
     SpecConstUsageBits getCurrentProgramSpecConstUsageBits() const;
     void updateGraphicsPipelineDescWithSpecConstUsageBits(SpecConstUsageBits usageBits);
@@ -1056,6 +1089,17 @@ class ContextVk : public ContextImpl, public vk::Context, public MultisampleText
     vk::CommandBufferHelper *mOutsideRenderPassCommands;
     vk::CommandBufferHelper *mRenderPassCommands;
 
+    // The following is used when creating debug-util markers for graphics debuggers (e.g. AGI).  A
+    // given gl{Begin|End}Query command may result in commands being submitted to the outside or
+    // render-pass command buffer.  The ContextVk::handleGraphicsEventLog() method records the
+    // appropriate command buffer for use by ContextVk::endEventLogForQuery().  The knowledge of
+    // which command buffer to use depends on the particular type of query (e.g. samples
+    // vs. timestamp), and is only known by the query code, which is what calls
+    // ContextVk::handleGraphicsEventLog().  After all back-end processing of the gl*Query command
+    // is complete, the front-end calls ContextVk::endEventLogForQuery(), which needs to know which
+    // command buffer to call endDebugUtilsLabelEXT() for.
+    GraphicsEventCmdBuf mQueryEventType;
+
     // Transform feedback buffers.
     angle::FastUnorderedSet<const vk::BufferHelper *,
                             gl::IMPLEMENTATION_MAX_TRANSFORM_FEEDBACK_BUFFERS>
@@ -1128,6 +1172,10 @@ class ContextVk : public ContextImpl, public vk::Context, public MultisampleText
 
     // Record GL API calls for debuggers
     std::vector<std::string> mEventLog;
+
+    // Viewport and scissor are handled as dynamic state.
+    VkViewport mViewport;
+    VkRect2D mScissor;
 };
 
 ANGLE_INLINE angle::Result ContextVk::endRenderPassIfTransformFeedbackBuffer(

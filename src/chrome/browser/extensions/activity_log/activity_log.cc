@@ -12,11 +12,11 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/one_shot_event.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_checker.h"
@@ -304,7 +304,7 @@ void ExtractUrls(scoped_refptr<Action> action, Profile* profile) {
       // cases to consider: either a single integer or a list of integers (when
       // multiple tabs are manipulated).
       int tab_id;
-      base::ListValue* tab_list = NULL;
+
       if (action->args()->GetInteger(url_index, &tab_id)) {
         // Single tab ID to translate.
         GetUrlForTabId(tab_id, profile, &arg_url, &arg_incognito);
@@ -312,22 +312,24 @@ void ExtractUrls(scoped_refptr<Action> action, Profile* profile) {
           action->mutable_args()->Set(
               url_index, std::make_unique<base::Value>(kArgUrlPlaceholder));
         }
-      } else if (action->mutable_args()->GetList(url_index, &tab_list)) {
+      } else if (action->args()->GetList()[url_index].is_list()) {
+        base::Value::ListView tab_list =
+            action->mutable_args()->GetList()[url_index].GetList();
         // A list of possible IDs to translate.  Work through in reverse order
         // so the last one translated is left in arg_url.
         int extracted_index = -1;  // Which list item is copied to arg_url?
-        for (int i = tab_list->GetSize() - 1; i >= 0; --i) {
-          if (tab_list->GetInteger(i, &tab_id) &&
-              GetUrlForTabId(tab_id, profile, &arg_url, &arg_incognito)) {
-            if (!arg_incognito)
-              tab_list->Set(i, std::make_unique<base::Value>(arg_url.spec()));
-            extracted_index = i;
-          }
+        for (int i = tab_list.size() - 1; i >= 0; --i) {
+          if (!tab_list[i].is_int())
+            continue;
+          tab_id = tab_list[i].GetInt();
+          if (!GetUrlForTabId(tab_id, profile, &arg_url, &arg_incognito))
+            continue;
+          if (!arg_incognito)
+            tab_list[i] = base::Value(arg_url.spec());
+          extracted_index = i;
         }
-        if (extracted_index >= 0) {
-          tab_list->Set(extracted_index,
-                        std::make_unique<base::Value>(kArgUrlPlaceholder));
-        }
+        if (extracted_index >= 0)
+          tab_list[extracted_index] = base::Value(kArgUrlPlaceholder);
       }
       break;
     }
@@ -413,8 +415,9 @@ void LogWebRequestActivity(content::BrowserContext* browser_context,
       extension_id, base::Time::Now(), Action::ACTION_WEB_REQUEST, api_call);
   action->set_page_url(url);
   action->set_page_incognito(is_incognito);
-  action->mutable_other()->Set(activity_log_constants::kActionWebRequest,
-                               std::move(details));
+  action->mutable_other()->SetKey(
+      activity_log_constants::kActionWebRequest,
+      base::Value::FromUniquePtrValue(std::move(details)));
   activity_log->LogAction(action);
 }
 

@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/platform/peerconnection/audio_codec_factory.h"
 #include "third_party/blink/renderer/platform/peerconnection/video_codec_factory.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -34,7 +34,7 @@ class PLATFORM_EXPORT WebrtcDecodingInfoHandler {
   ~WebrtcDecodingInfoHandler();
 
   // Queries the capabilities of the given decoding configuration and passes
-  // WebMediaCapabilitiesInfo result via callbacks.
+  // the result via callbacks.
   // It implements WICG Media Capabilities decodingInfo() call for webrtc
   // encoding.
   // https://wicg.github.io/media-capabilities/#media-capabilities-interface

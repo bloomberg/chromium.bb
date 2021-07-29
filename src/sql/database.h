@@ -19,9 +19,9 @@
 #include "base/containers/flat_map.h"
 #include "base/feature_list.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
+#include "base/strings/string_piece.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "sql/internal_api_token.h"
 #include "sql/sql_features.h"
@@ -33,7 +33,6 @@ struct sqlite3_stmt;
 
 namespace base {
 class FilePath;
-class HistogramBase;
 namespace trace_event {
 class ProcessMemoryDump;
 }  // namespace trace_event
@@ -93,41 +92,89 @@ struct COMPONENT_EXPORT(SQL) DatabaseOptions {
 
   // Database page size.
   //
+  // New Chrome features should set an explicit page size in their
+  // DatabaseOptions initializers, even if they use the default page size. This
+  // makes it easier to track the page size used by the databases on the users'
+  // devices.
+  //
+  // The value in this option is only applied to newly created databases. In
+  // other words, changing the value doesn't impact the databases that have
+  // already been created on the users' devices. So, changing the value in the
+  // code without a lot of work (re-creating existing databases) will result in
+  // inconsistent page sizes across the fleet of user devices, which will make
+  // it (even) more difficult to reason about database performance.
+  //
   // Larger page sizes result in shallower B-trees, because they allow an inner
   // page to hold more keys. On the flip side, larger page sizes may result in
   // more I/O when making small changes to existing records.
   //
   // Must be a power of two between 512 and 65536 inclusive.
+  //
+  // TODO(pwnall): Replace the default with an invalid value after all
+  //               sql::Database users explicitly initialize page_size.
   int page_size = kDefaultPageSize;
 
   // The size of in-memory cache, in pages.
+  //
+  // New Chrome features should set an explicit cache size in their
+  // DatabaseOptions initializers, even if they use the default cache size. This
+  // makes it easier to track the cache size used by the databases on the users'
+  // devices. The default page size of 4,096 bytes results in a cache size of
+  // 500 pages.
   //
   // SQLite's database cache will take up at most (`page_size` * `cache_size`)
   // bytes of RAM.
   //
   // 0 invokes SQLite's default, which is currently to size up the cache to use
   // exactly 2,048,000 bytes of RAM.
+  //
+  // TODO(pwnall): Replace the default with an invalid value after all
+  //               sql::Database users explicitly initialize page_size.
   int cache_size = 0;
+
+  // Stores mmap failures in the SQL schema, instead of the meta table.
+  //
+  // This option is strongly discouraged for new databases, and will eventually
+  // be removed.
+  //
+  // If this option is true, the mmap status is stored in the database schema.
+  // Like any other schema change, changing the mmap status invalidates all
+  // pre-compiled SQL statements.
+  bool mmap_alt_status_discouraged = false;
 };
 
 // Handle to an open SQLite database.
 //
 // Instances of this class are thread-unsafe and DCHECK that they are accessed
 // on the same sequence.
+//
+// When a Database instance goes out of scope, any uncommitted transactions are
+// rolled back.
 class COMPONENT_EXPORT(SQL) Database {
  private:
   class StatementRef;  // Forward declaration, see real one below.
 
  public:
-  // The database is opened by calling Open[InMemory](). Any uncommitted
-  // transactions will be rolled back when this object is deleted.
+  // Creates an instance that can receive Open() / OpenInMemory() calls.
   //
+  // Some `options` members are only applied to newly created databases.
+  //
+  // Most operations on the new instance will fail until Open() / OpenInMemory()
+  // is called.
+  explicit Database(DatabaseOptions options);
+
   // This constructor is deprecated.
+  //
+  // When transitioning away from this default constructor, consider setting
+  // DatabaseOptions::explicit_locking to true. For historical reasons, this
+  // constructor results in DatabaseOptions::explicit_locking set to false.
+  //
   // TODO(crbug.com/1126968): Remove this constructor after migrating all
   //                          uses to the explicit constructor below.
   Database();
-  // |options| only affects newly created databases.
-  explicit Database(DatabaseOptions options);
+
+  Database(const Database&) = delete;
+  Database& operator=(const Database&) = delete;
   ~Database();
 
   // Allows mmapping to be disabled globally by default in the calling process.
@@ -144,11 +191,6 @@ class COMPONENT_EXPORT(SQL) Database {
   // Returns whether a database will be opened in WAL mode.
   bool UseWALMode() const;
 
-  // Call to use alternative status-tracking for mmap.  Usually this is tracked
-  // in the meta table, but some databases have no meta table.
-  // TODO(shess): Maybe just have all databases use the alt option?
-  void set_mmap_alt_status() { mmap_alt_status_ = true; }
-
   // Opt out of memory-mapped file I/O.
   void set_mmap_disabled() { mmap_disabled_ = true; }
 
@@ -164,65 +206,8 @@ class COMPONENT_EXPORT(SQL) Database {
   bool has_error_callback() const { return !error_callback_.is_null(); }
   void reset_error_callback() { error_callback_.Reset(); }
 
-  // Set this to enable additional per-database histogramming.  Must be called
-  // before Open().
+  // Developer-friendly database ID used in logging output and memory dumps.
   void set_histogram_tag(const std::string& tag);
-
-  // Record a sparse UMA histogram sample under
-  // |name|+"."+|histogram_tag_|.  If |histogram_tag_| is empty, no
-  // histogram is recorded.
-  void AddTaggedHistogram(const std::string& name, int sample) const;
-
-  // Track various API calls and results.  Values correspond to UMA
-  // histograms, do not modify, or add or delete other than directly
-  // before EVENT_MAX_VALUE.
-  enum Events {
-    // Number of statements run, either with sql::Statement or Execute*().
-    EVENT_STATEMENT_RUN_DEPRECATED = 0,
-
-    // Number of rows returned by statements run.
-    EVENT_STATEMENT_ROWS_DEPRECATED,
-
-    // Number of statements successfully run (all steps returned SQLITE_DONE or
-    // SQLITE_ROW).
-    EVENT_STATEMENT_SUCCESS_DEPRECATED,
-
-    // Number of statements run by Execute() or ExecuteAndReturnErrorCode().
-    EVENT_EXECUTE_DEPRECATED,
-
-    // Number of rows changed by autocommit statements.
-    EVENT_CHANGES_AUTOCOMMIT_DEPRECATED,
-
-    // Number of rows changed by statements in transactions.
-    EVENT_CHANGES_DEPRECATED,
-
-    // Count actual SQLite transaction statements (not including nesting).
-    EVENT_BEGIN_DEPRECATED,
-    EVENT_COMMIT_DEPRECATED,
-    EVENT_ROLLBACK_DEPRECATED,
-
-    // Track success and failure in GetAppropriateMmapSize().
-    // GetAppropriateMmapSize() should record at most one of these per run.  The
-    // case of mapping everything is not recorded.
-    EVENT_MMAP_META_MISSING,                    // No meta table present.
-    EVENT_MMAP_META_FAILURE_READ,               // Failed reading meta table.
-    EVENT_MMAP_META_FAILURE_UPDATE,             // Failed updating meta table.
-    EVENT_MMAP_VFS_FAILURE,                     // Failed to access VFS.
-    EVENT_MMAP_FAILED,                          // Failure from past run.
-    EVENT_MMAP_FAILED_NEW,                      // Read error in this run.
-    EVENT_MMAP_SUCCESS_NEW_DEPRECATED,          // Read to EOF in this run.
-    EVENT_MMAP_SUCCESS_PARTIAL_DEPRECATED,      // Read but did not reach EOF.
-    EVENT_MMAP_SUCCESS_NO_PROGRESS_DEPRECATED,  // Read quota exhausted.
-
-    EVENT_MMAP_STATUS_FAILURE_READ,    // Failure reading MmapStatus view.
-    EVENT_MMAP_STATUS_FAILURE_UPDATE,  // Failure updating MmapStatus view.
-
-    // Leave this at the end.
-    // TODO(shess): |EVENT_MAX| causes compile fail on Windows.
-    EVENT_MAX_VALUE,
-  };
-  void RecordEvent(Events event, size_t count);
-  void RecordOneEvent(Events event) { RecordEvent(event, 1); }
 
   // Run "PRAGMA integrity_check" and post each line of
   // results into |messages|.  Returns the success of running the
@@ -367,22 +352,28 @@ class COMPONENT_EXPORT(SQL) Database {
 
   // Attached databases---------------------------------------------------------
 
-  // SQLite supports attaching multiple database files to a single connection.
+  // Attaches an existing database to this connection.
   //
-  // Attach the database in |other_db_path| to the current connection under
-  // |attachment_point|. |attachment_point| must only contain characters from
-  // [a-zA-Z0-9_].
+  // `attachment_point` must only contain lowercase letters.
+  //
+  // Attachment APIs are only exposed for use in recovery. General use is
+  // discouraged in Chrome. The README has more details.
   //
   // On the SQLite version shipped with Chrome (3.21+, Oct 2017), databases can
   // be attached while a transaction is opened. However, these databases cannot
   // be detached until the transaction is committed or aborted.
-  //
-  // These APIs are only exposed for use in recovery. They are extremely subtle
-  // and are not useful for features built on top of //sql.
   bool AttachDatabase(const base::FilePath& other_db_path,
-                      const char* attachment_point,
+                      base::StringPiece attachment_point,
                       InternalApiToken);
-  bool DetachDatabase(const char* attachment_point, InternalApiToken);
+
+  // Detaches a database that was previously attached with AttachDatabase().
+  //
+  // `attachment_point` must match the argument of a previously successsful
+  // AttachDatabase() call.
+  //
+  // Attachment APIs are only exposed for use in recovery. General use is
+  // discouraged in Chrome. The README has more details.
+  bool DetachDatabase(base::StringPiece attachment_point, InternalApiToken);
 
   // Statements ----------------------------------------------------------------
 
@@ -453,9 +444,9 @@ class COMPONENT_EXPORT(SQL) Database {
   // Returns true if the given structure exists.  Instead of test-then-create,
   // callers should almost always prefer the "IF NOT EXISTS" version of the
   // CREATE statement.
-  bool DoesIndexExist(const char* index_name) const;
-  bool DoesTableExist(const char* table_name) const;
-  bool DoesViewExist(const char* table_name) const;
+  bool DoesIndexExist(base::StringPiece index_name) const;
+  bool DoesTableExist(base::StringPiece table_name) const;
+  bool DoesViewExist(base::StringPiece table_name) const;
 
   // Returns true if a column with the given name exists in the given table.
   //
@@ -586,7 +577,8 @@ class COMPONENT_EXPORT(SQL) Database {
   }
 
   // Internal helper for Does*Exist() functions.
-  bool DoesSchemaItemExist(const char* name, const char* type) const;
+  bool DoesSchemaItemExist(base::StringPiece name,
+                           base::StringPiece type) const;
 
   // Accessors for global error-expecter, for injecting behavior during tests.
   // See test/scoped_error_expecter.h.
@@ -620,6 +612,9 @@ class COMPONENT_EXPORT(SQL) Database {
     // |was_valid| can be true for a null |stmt| if the Database has
     // been forcibly closed by an error handler.
     StatementRef(Database* database, sqlite3_stmt* stmt, bool was_valid);
+
+    StatementRef(const StatementRef&) = delete;
+    StatementRef& operator=(const StatementRef&) = delete;
 
     // When true, the statement can be used.
     bool is_valid() const { return !!stmt_; }
@@ -663,8 +658,6 @@ class COMPONENT_EXPORT(SQL) Database {
     Database* database_;
     sqlite3_stmt* stmt_;
     bool was_valid_;
-
-    DISALLOW_COPY_AND_ASSIGN(StatementRef);
   };
   friend class StatementRef;
 
@@ -779,9 +772,6 @@ class COMPONENT_EXPORT(SQL) Database {
   // databases.
   bool poisoned_ = false;
 
-  // |true| to use alternate storage for tracking mmap status.
-  bool mmap_alt_status_ = false;
-
   // |true| if SQLite memory-mapped I/O is not desired for this database.
   bool mmap_disabled_;
 
@@ -795,16 +785,11 @@ class COMPONENT_EXPORT(SQL) Database {
 
   ErrorCallback error_callback_;
 
-  // Tag for auxiliary histograms.
+  // Developer-friendly database ID used in logging output and memory dumps.
   std::string histogram_tag_;
-
-  // Linear histogram for RecordEvent().
-  base::HistogramBase* stats_histogram_ = nullptr;
 
   // Stores the dump provider object when db is open.
   std::unique_ptr<DatabaseMemoryDumpProvider> memory_dump_provider_;
-
-  DISALLOW_COPY_AND_ASSIGN(Database);
 };
 
 }  // namespace sql

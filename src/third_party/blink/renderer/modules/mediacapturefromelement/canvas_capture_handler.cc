@@ -9,9 +9,12 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
+#include "build/build_config.h"
+#include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "media/base/limits.h"
 #include "media/base/video_util.h"
@@ -23,6 +26,7 @@
 #include "third_party/blink/renderer/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/web_graphics_context_3d_provider_wrapper.h"
+#include "third_party/blink/renderer/platform/graphics/web_graphics_context_3d_video_frame_pool.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/mediastream/webrtc_uma_histograms.h"
@@ -37,6 +41,15 @@
 namespace blink {
 
 namespace {
+
+const base::Feature kOneCopyCanvasCapture {
+  "OneCopyCanvasCapture",
+#if defined(OS_MAC)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Return the gfx::ColorSpace that the pixels resulting from calling
 // ConvertToYUVFrame on |image| will be in.
@@ -216,7 +229,36 @@ void CanvasCaptureHandler::SendNewFrame(
   }
 
   // Try async reading if image is texture backed.
-  if (image->CurrentFrameKnownToBeOpaque()) {
+  if (image->CurrentFrameKnownToBeOpaque() || can_discard_alpha_) {
+    if (base::FeatureList::IsEnabled(kOneCopyCanvasCapture)) {
+      if (!accelerated_frame_pool_) {
+        accelerated_frame_pool_ =
+            std::make_unique<WebGraphicsContext3DVideoFramePool>(
+                context_provider);
+      }
+      auto blit_done_lambda = [](base::WeakPtr<CanvasCaptureHandler> handler,
+                                 base::TimeTicks timestamp,
+                                 scoped_refptr<media::VideoFrame> video_frame) {
+        if (handler)
+          handler->OnYUVPixelsReadAsync(video_frame, timestamp, true);
+      };
+      auto blit_done_callback =
+          WTF::Bind(blit_done_lambda, weak_ptr_factory_.GetWeakPtr(),
+                    base::TimeTicks::Now());
+      // TODO(https://crbug.com/1224279): This assumes that all
+      // StaticBitmapImages are 8-bit sRGB. Expose the color space and pixel
+      // format that is backing `image->GetMailboxHolder()`, or, alternatively,
+      // expose an accelerated SkImage.
+      if (accelerated_frame_pool_->CopyRGBATextureToVideoFrame(
+              viz::SkColorTypeToResourceFormat(kRGBA_8888_SkColorType),
+              gfx::Size(image->width(), image->height()),
+              gfx::ColorSpace::CreateSRGB(),
+              image->IsOriginTopLeft() ? kTopLeft_GrSurfaceOrigin
+                                       : kBottomLeft_GrSurfaceOrigin,
+              image->GetMailboxHolder(), std::move(blit_done_callback))) {
+        return;
+      }
+    }
     ReadYUVPixelsAsync(image, context_provider);
   } else {
     ReadARGBPixelsAsync(image, context_provider->ContextProvider());
@@ -305,11 +347,12 @@ void CanvasCaptureHandler::ReadARGBPixelsAsync(
     blink::WebGraphicsContext3DProvider* context_provider) {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   DCHECK(context_provider);
+  DCHECK(!image->CurrentFrameKnownToBeOpaque());
 
   const base::TimeTicks timestamp = base::TimeTicks::Now();
-  const bool is_opaque = image->CurrentFrameKnownToBeOpaque();
   const media::VideoPixelFormat temp_argb_pixel_format =
-      media::VideoPixelFormatFromSkColorType(kN32_SkColorType, is_opaque);
+      media::VideoPixelFormatFromSkColorType(kN32_SkColorType,
+                                             /*is_opaque = */ false);
   const gfx::Size image_size(image->width(), image->height());
   scoped_refptr<media::VideoFrame> temp_argb_frame = frame_pool_.CreateFrame(
       temp_argb_pixel_format, image_size, gfx::Rect(image_size), image_size,
@@ -324,8 +367,7 @@ void CanvasCaptureHandler::ReadARGBPixelsAsync(
                 "CanvasCaptureHandler::ReadARGBPixelsAsync supports only "
                 "kRGBA_8888_SkColorType and kBGRA_8888_SkColorType.");
   SkImageInfo info = SkImageInfo::MakeN32(
-      image_size.width(), image_size.height(),
-      is_opaque ? kOpaque_SkAlphaType : kUnpremul_SkAlphaType);
+      image_size.width(), image_size.height(), kUnpremul_SkAlphaType);
   GLuint row_bytes;
   if (!base::CheckedNumeric<size_t>(info.minRowBytes())
            .AssignIfValid(&row_bytes)) {
@@ -440,17 +482,15 @@ scoped_refptr<media::VideoFrame> CanvasCaptureHandler::ConvertToYUVFrame(
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   TRACE_EVENT0("webrtc", "CanvasCaptureHandler::ConvertToYUVFrame");
 
-  const bool is_opaque = media::IsOpaque(temp_argb_frame->format());
+  const bool skip_alpha =
+      media::IsOpaque(temp_argb_frame->format()) || can_discard_alpha_;
   const uint8_t* source_ptr =
       temp_argb_frame->visible_data(media::VideoFrame::kARGBPlane);
   const gfx::Size image_size = temp_argb_frame->coded_size();
   const int stride = temp_argb_frame->stride(media::VideoFrame::kARGBPlane);
 
-  // TODO(https://crbug.com/1191932): Use |is_opaque || can_discard_alpha_|
-  // instead of just |is_opaque| to determine if the format should be
-  // I420 versus I420A.
   scoped_refptr<media::VideoFrame> video_frame = frame_pool_.CreateFrame(
-      is_opaque ? media::PIXEL_FORMAT_I420 : media::PIXEL_FORMAT_I420A,
+      skip_alpha ? media::PIXEL_FORMAT_I420 : media::PIXEL_FORMAT_I420A,
       image_size, gfx::Rect(image_size), image_size, base::TimeDelta());
   if (!video_frame) {
     DLOG(ERROR) << "Couldn't allocate video frame";
@@ -487,7 +527,7 @@ scoped_refptr<media::VideoFrame> CanvasCaptureHandler::ConvertToYUVFrame(
     DLOG(ERROR) << "Couldn't convert to I420";
     return nullptr;
   }
-  if (!is_opaque) {
+  if (!skip_alpha) {
     // It is ok to use ARGB function because alpha has the same alignment for
     // both ABGR and ARGB.
     libyuv::ARGBExtractAlpha(

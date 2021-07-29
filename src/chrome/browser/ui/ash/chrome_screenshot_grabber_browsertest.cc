@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/holding_space/holding_space_controller.h"
 #include "ash/public/cpp/holding_space/holding_space_item.h"
 #include "ash/public/cpp/holding_space/holding_space_model.h"
@@ -10,8 +9,8 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/ash/policy/dlp/mock_dlp_content_manager.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/policy/dlp/mock_dlp_content_manager.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"

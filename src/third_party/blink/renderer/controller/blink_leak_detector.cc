@@ -50,6 +50,10 @@ void BlinkLeakDetector::PerformLeakDetection(
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
 
+  // Instruct V8 to drop its non-essential internal caches. In contrast to
+  // a memory pressure notification, this method does its work synchronously.
+  isolate->ClearCachesForTesting();
+
   // For example, calling isValidEmailAddress in EmailInputType.cpp with a
   // non-empty string creates a static ScriptRegexp value which holds a
   // V8PerContextData indirectly. This affects the number of V8PerContextData.
@@ -57,7 +61,6 @@ void BlinkLeakDetector::PerformLeakDetection(
   // here.
   V8PerIsolateData::From(isolate)->EnsureScriptRegexpContext();
 
-  WorkerThread::TerminateAllWorkersForTesting();
   GetMemoryCache()->EvictResources();
 
   // FIXME: HTML5 Notification should be closed because notification affects
@@ -72,6 +75,13 @@ void BlinkLeakDetector::PerformLeakDetection(
     resource_fetcher->PrepareForLeakDetection();
 
   Page::PrepareForLeakDetection();
+
+  // Bail out if any worker threads are still running at this point as
+  // synchronous destruction is not supported. See https://crbug.com/1221158.
+  if (WorkerThread::WorkerThreadCount() > 0) {
+    ReportInvalidResult();
+    return;
+  }
 
   // Task queue may contain delayed object destruction tasks.
   // This method is called from navigation hook inside FrameLoader,
@@ -108,6 +118,10 @@ void BlinkLeakDetector::TimerFiredGC(TimerBase*) {
   } else {
     ReportResult();
   }
+}
+
+void BlinkLeakDetector::ReportInvalidResult() {
+  std::move(callback_).Run(nullptr);
 }
 
 void BlinkLeakDetector::ReportResult() {

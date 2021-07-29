@@ -2,15 +2,15 @@ export const description = `
 Tests for TestQuery comparison
 `;
 
-import { compareQueries, Ordering } from '../common/framework/query/compare.js';
+import { makeTestGroup } from '../common/framework/test_group.js';
+import { compareQueries, Ordering } from '../common/internal/query/compare.js';
 import {
   TestQuery,
   TestQuerySingleCase,
   TestQueryMultiFile,
   TestQueryMultiTest,
   TestQueryMultiCase,
-} from '../common/framework/query/query.js';
-import { makeTestGroup } from '../common/framework/test_group.js';
+} from '../common/internal/query/query.js';
 
 import { UnitTest } from './unit_test.js';
 

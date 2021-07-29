@@ -9,11 +9,13 @@
 #include <vector>
 
 #include "extensions/common/constants.h"
+#include "extensions/common/mojom/code_injection.mojom.h"
 #include "extensions/common/mojom/css_origin.mojom-shared.h"
 #include "extensions/common/mojom/injection_type.mojom-shared.h"
 #include "extensions/common/mojom/run_location.mojom-shared.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/user_script.h"
+#include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_script_source.h"
 
 class InjectionHost;
@@ -37,6 +39,11 @@ class ScriptInjector {
                         // (or just did not accept) the injection.
   };
 
+  struct CSSSource {
+    blink::WebString code;
+    blink::WebStyleSheetKey key;
+  };
+
   virtual ~ScriptInjector() {}
 
   // Returns the script type of this particular injection.
@@ -48,16 +55,9 @@ class ScriptInjector {
   // Returns the CSS origin of this injection.
   virtual mojom::CSSOrigin GetCssOrigin() const = 0;
 
-  // Returns true is CSS is being removed or added respectively.
-  //
-  // TODO(https://crrev.com/608854): Consider using a GetActionType()-like
-  // method that returns a bitmask or enum item with the operations being
+  // Returns the type of CSS operation (addition or removal) that should be
   // performed.
-  virtual bool IsRemovingCSS() const = 0;
-  virtual bool IsAddingCSS() const = 0;
-
-  // Returns the key for this injection, if it's a CSS injection.
-  virtual const absl::optional<std::string> GetInjectionKey() const = 0;
+  virtual mojom::CSSInjection::Operation GetCSSInjectionOperation() const = 0;
 
   // Returns true if the script expects results.
   virtual bool ExpectsResults() const = 0;
@@ -89,7 +89,7 @@ class ScriptInjector {
 
   // Returns the css to inject at the given |run_location|.
   // Only called if ShouldInjectOrRemoveCss() is true.
-  virtual std::vector<blink::WebString> GetCssSources(
+  virtual std::vector<CSSSource> GetCssSources(
       mojom::RunLocation run_location,
       std::set<std::string>* injected_stylesheets,
       size_t* num_injected_stylesheets) const = 0;

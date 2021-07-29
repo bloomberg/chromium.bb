@@ -475,7 +475,8 @@ void CrasAudioHandler::RequestNoiseCancellationSupported(
 void CrasAudioHandler::HandleGetNoiseCancellationSupported(
     absl::optional<bool> noise_cancellation_supported) {
   if (!noise_cancellation_supported.has_value()) {
-    LOG(ERROR) << "Failed to retrieve noise cancellation supported";
+    LOG(ERROR)
+        << "cras_audio_handler: Failed to retrieve noise cancellation support";
     return;
   }
   noise_cancellation_supported_ = noise_cancellation_supported.value();
@@ -1959,7 +1960,6 @@ void CrasAudioHandler::HandleGetDefaultOutputBufferSize(
 }
 
 bool CrasAudioHandler::noise_cancellation_supported() const {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
   return noise_cancellation_supported_;
 }
 

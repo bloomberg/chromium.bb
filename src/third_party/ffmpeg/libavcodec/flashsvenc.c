@@ -245,21 +245,8 @@ static int flashsv_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
 
     //mark the frame type so the muxer can mux it correctly
     if (I_frame) {
-#if FF_API_CODED_FRAME
-FF_DISABLE_DEPRECATION_WARNINGS
-        avctx->coded_frame->pict_type      = AV_PICTURE_TYPE_I;
-        avctx->coded_frame->key_frame      = 1;
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
         s->last_key_frame = avctx->frame_number;
         ff_dlog(avctx, "Inserting keyframe at frame %d\n", avctx->frame_number);
-    } else {
-#if FF_API_CODED_FRAME
-FF_DISABLE_DEPRECATION_WARNINGS
-        avctx->coded_frame->pict_type = AV_PICTURE_TYPE_P;
-        avctx->coded_frame->key_frame = 0;
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
     }
 
     if (I_frame)
@@ -269,7 +256,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
     return 0;
 }
 
-AVCodec ff_flashsv_encoder = {
+const AVCodec ff_flashsv_encoder = {
     .name           = "flashsv",
     .long_name      = NULL_IF_CONFIG_SMALL("Flash Screen Video"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -279,4 +266,5 @@ AVCodec ff_flashsv_encoder = {
     .encode2        = flashsv_encode_frame,
     .close          = flashsv_encode_end,
     .pix_fmts       = (const enum AVPixelFormat[]){ AV_PIX_FMT_BGR24, AV_PIX_FMT_NONE },
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_APP_REGISTRAR_OBSERVER_H_
 
 #include "base/observer_list_types.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 
 namespace base {
@@ -36,19 +37,15 @@ class AppRegistrarObserver : public base::CheckedObserver {
       const std::vector<const WebApp*>& new_apps_state) {}
 
   // Called before a web app is uninstalled, before the uninstallation process
-  // begins. |app_id| is still registered in the AppRegistrar, and OS hooks have
-  // not yet been uninstalled. For bookmark apps, use
-  // BookmarkAppRegistrar::FindExtension to convert this |app_id| to Extension
-  // pointer.
+  // begins. |app_id| is still registered in the WebAppRegistrar, and OS hooks
+  // have not yet been uninstalled.
   virtual void OnWebAppWillBeUninstalled(const AppId& app_id) {}
 
   // Called after a web app is uninstalled. |app_id| is no longer registered in
-  // the AppRegistrar, all OS hooks are uninstalled, and icons have been
+  // the WebAppRegistrar, all OS hooks are uninstalled, and icons have been
   // deleted.
   virtual void OnWebAppUninstalled(const AppId& app_id) {}
 
-  // For bookmark apps, use BookmarkAppRegistrar::FindExtension to convert this
-  // |app_id| to Extension pointer.
   virtual void OnWebAppProfileWillBeDeleted(const AppId& app_id) {}
 
   virtual void OnAppRegistrarShutdown() {}
@@ -68,6 +65,10 @@ class AppRegistrarObserver : public base::CheckedObserver {
                                              const base::Time& time) {}
   virtual void OnWebAppInstallTimeChanged(const AppId& app_id,
                                           const base::Time& time) {}
+  virtual void OnWebAppUserDisplayModeChanged(const AppId& app_id,
+                                              DisplayMode user_display_mode) {}
+  virtual void OnWebAppExperimentalTabbedWindowModeChanged(const AppId& app_id,
+                                                           bool enabled) {}
 };
 
 }  // namespace web_app

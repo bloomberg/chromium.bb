@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_shader.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 
 namespace blink {
@@ -413,10 +414,9 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
               ? absl::optional<AppliedTextDecoration>(
                     selection_style.selection_text_decoration)
               : absl::nullopt;
-      decoration_info.emplace(box_origin, local_origin, width,
-                              inline_text_box_.Root().BaselineType(),
-                              style_to_use, selection_text_decoration,
-                              decorating_box_style);
+      decoration_info.emplace(
+          local_origin, width, inline_text_box_.Root().BaselineType(),
+          style_to_use, selection_text_decoration, decorating_box_style);
       TextDecorationOffset decoration_offset(decoration_info->Style(),
                                              &inline_text_box_, decorating_box);
       text_painter.PaintDecorationsExceptLineThrough(
@@ -661,6 +661,10 @@ void InlineTextBoxPainter::PaintDocumentMarkers(
                                         styleable_marker, style, font);
         }
       } break;
+      case DocumentMarker::kHighlight:
+        inline_text_box_.PaintDocumentMarker(paint_info, box_origin, marker,
+                                             style, font, false);
+        break;
       default:
         // Marker is not painted, or painting code has not been added yet
         break;
@@ -833,8 +837,11 @@ PhysicalRect InlineTextBoxPainter::PaintSelection(
 
   // If the text color ends up being the same as the selection background,
   // invert the selection background.
-  if (text_color == c)
+  if (text_color == c) {
+    UseCounter::Count(layout_item.GetDocument(),
+                      WebFeature::kSelectionBackgroundColorInversion);
     c = Color(0xff - c.Red(), 0xff - c.Green(), 0xff - c.Blue());
+  }
 
   GraphicsContextStateSaver state_saver(context);
 
@@ -935,9 +942,7 @@ void InlineTextBoxPainter::PaintTextMarkerBackground(
   TextRun run = inline_text_box_.ConstructTextRun(style);
 
   Color color = LayoutTheme::GetTheme().PlatformTextSearchHighlightColor(
-      marker.IsActiveMatch(),
-      inline_text_box_.GetLineLayoutItem().GetDocument().InForcedColorsMode(),
-      style.UsedColorScheme());
+      marker.IsActiveMatch(), style.UsedColorScheme());
   GraphicsContext& context = paint_info.context;
   GraphicsContextStateSaver state_saver(context);
 

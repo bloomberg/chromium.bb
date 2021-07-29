@@ -206,6 +206,7 @@ class DownloadItemView : public views::View,
   void OpenButtonPressed();
   void SaveOrDiscardButtonPressed(DownloadCommands::Command command);
   void DropdownButtonPressed(const ui::Event& event);
+  void ReviewButtonPressed();
 
   // Shows an appropriate prompt dialog when the user hits the "open" button
   // when not in normal mode.
@@ -231,7 +232,7 @@ class DownloadItemView : public views::View,
   const DownloadUIModel::DownloadUIModelPtr model_;
 
   // A utility object to help execute commands on the model.
-  DownloadCommands commands_{model()};
+  DownloadCommands commands_{model()->GetWeakPtr()};
 
   // The download shelf that owns us.
   DownloadShelfView* const shelf_;
@@ -271,6 +272,7 @@ class DownloadItemView : public views::View,
   views::MdTextButton* save_button_;
   views::MdTextButton* discard_button_;
   views::MdTextButton* scan_button_;
+  views::MdTextButton* review_button_;
   views::ImageButton* dropdown_button_;
 
   // Whether the dropdown is currently pressed.

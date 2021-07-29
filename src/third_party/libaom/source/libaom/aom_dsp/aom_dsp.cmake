@@ -187,8 +187,10 @@ if(CONFIG_AV1_ENCODER)
               "${AOM_ROOT}/aom_dsp/quantize.c"
               "${AOM_ROOT}/aom_dsp/quantize.h"
               "${AOM_ROOT}/aom_dsp/sad.c"
-              "${AOM_ROOT}/aom_dsp/sse.c"
               "${AOM_ROOT}/aom_dsp/sad_av1.c"
+              "${AOM_ROOT}/aom_dsp/sse.c"
+              "${AOM_ROOT}/aom_dsp/ssim.c"
+              "${AOM_ROOT}/aom_dsp/ssim.h"
               "${AOM_ROOT}/aom_dsp/sum_squares.c"
               "${AOM_ROOT}/aom_dsp/variance.c"
               "${AOM_ROOT}/aom_dsp/variance.h")
@@ -311,8 +313,7 @@ if(CONFIG_AV1_ENCODER)
 
   if(CONFIG_INTERNAL_STATS)
     list(APPEND AOM_DSP_ENCODER_SOURCES "${AOM_ROOT}/aom_dsp/fastssim.c"
-                "${AOM_ROOT}/aom_dsp/psnrhvs.c" "${AOM_ROOT}/aom_dsp/ssim.c"
-                "${AOM_ROOT}/aom_dsp/ssim.h")
+                "${AOM_ROOT}/aom_dsp/psnrhvs.c")
   endif()
 
   if(CONFIG_TUNE_VMAF)

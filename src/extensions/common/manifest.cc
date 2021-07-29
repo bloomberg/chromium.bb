@@ -123,7 +123,7 @@ class AvailableValuesFilter {
     DCHECK(input_dict.is_dict());
     DCHECK(CanAccessFeature(manifest, current_path));
 
-    for (const auto& it : input_dict.DictItems()) {
+    for (auto it : input_dict.DictItems()) {
       std::string child_path = CombineKeys(current_path, it.first);
 
       // Unavailable key, skip it.
@@ -218,6 +218,8 @@ Manifest::Type Manifest::GetTypeFromManifestValue(
     } else {
       type = TYPE_LEGACY_PACKAGED_APP;
     }
+  } else if (value.HasKey(keys::kChromeOSSystemExtension)) {
+    type = TYPE_CHROMEOS_SYSTEM_EXTENSION;
   } else if (for_login_screen) {
     type = TYPE_LOGIN_SCREEN_EXTENSION;
   } else {

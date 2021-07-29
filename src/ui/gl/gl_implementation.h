@@ -134,7 +134,6 @@ GL_EXPORT ANGLEImplementation GetANGLEImplementation();
 // Get the software GL implementation
 GL_EXPORT GLImplementationParts GetLegacySoftwareGLImplementation();
 GL_EXPORT GLImplementationParts GetSoftwareGLImplementation();
-GL_EXPORT GLImplementationParts GetSoftwareGLForTestsImplementation();
 
 // Set the software GL implementation on the provided command line
 GL_EXPORT void SetSoftwareGLCommandLineSwitches(base::CommandLine* command_line,

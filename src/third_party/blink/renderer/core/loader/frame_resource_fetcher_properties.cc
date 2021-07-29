@@ -84,16 +84,10 @@ bool FrameResourceFetcherProperties::IsPaused() const {
   return frame->GetPage()->Paused();
 }
 
-WebURLLoader::DeferType FrameResourceFetcherProperties::DeferType() const {
+LoaderFreezeMode FrameResourceFetcherProperties::FreezeMode() const {
   LocalFrame* frame = document_->GetFrame();
   DCHECK(frame);
-  return frame->GetLoadDeferType();
-}
-
-bool FrameResourceFetcherProperties::IsLoadDeferred() const {
-  LocalFrame* frame = document_->GetFrame();
-  DCHECK(frame);
-  return frame->IsLoadDeferred();
+  return frame->GetLoaderFreezeMode();
 }
 
 bool FrameResourceFetcherProperties::IsLoadComplete() const {
@@ -152,6 +146,12 @@ int FrameResourceFetcherProperties::GetOutstandingThrottledLimit() const {
       kOutstandingLimitForBackgroundSubFrame.Get();
 
   return IsMainFrame() ? main_frame_limit : sub_frame_limit;
+}
+
+scoped_refptr<SecurityOrigin>
+FrameResourceFetcherProperties::GetLitePageSubresourceRedirectOrigin() const {
+  return SecurityOrigin::CreateFromString(
+      document_->GetSettings()->GetLitePageSubresourceRedirectOrigin());
 }
 
 }  // namespace blink

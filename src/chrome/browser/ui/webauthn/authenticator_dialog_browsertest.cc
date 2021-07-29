@@ -54,9 +54,9 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
                      /*use_location_bar_bubble=*/false);
 
     // The dialog should immediately close as soon as it is displayed.
-    if (name == "transports") {
+    if (name == "mechanisms") {
       model->SetCurrentStepForTesting(
-          AuthenticatorRequestDialogModel::Step::kTransportSelection);
+          AuthenticatorRequestDialogModel::Step::kMechanismSelection);
     } else if (name == "activate_usb") {
       model->SetCurrentStepForTesting(
           AuthenticatorRequestDialogModel::Step::kUsbInsertAndActivate);
@@ -80,8 +80,7 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
           AuthenticatorRequestDialogModel::Step::kBlePowerOnManual);
     } else if (name == "touchid_incognito") {
       model->SetCurrentStepForTesting(
-          AuthenticatorRequestDialogModel::Step::
-              kPlatformAuthenticatorOffTheRecordInterstitial);
+          AuthenticatorRequestDialogModel::Step::kOffTheRecordInterstitial);
     } else if (name == "cable_activate" ||
                name == "cable_server_link_activate") {
       model->set_cable_transport_info(
@@ -264,7 +263,7 @@ IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest,
   ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_transports) {
+IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_mechanisms) {
   ShowAndVerifyUi();
 }
 

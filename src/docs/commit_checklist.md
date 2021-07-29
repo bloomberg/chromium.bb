@@ -212,11 +212,20 @@ to your reviewers.
 ## 18. Implement feedback from your reviewers
 
 Then go through this commit checklist again. Reply to all comments from the
-reviewers on Gerrit and mark all resolved issues as resolved (clicking `Done` or
-`Ack` will do this automatically). Click `Reply` to ensure that your reviewers
-receive a notification. Doing this signals that your CL is ready for review
-again, since the assumption is that your CL is not ready for review until you
-hit reply.
+reviewers on Gerrit and mark all resolved issues as resolved. To see all
+unresolved comments, click on the "Comments" tab in Gerrit. Other than freeform
+interaction on the comments (using `Reply` or `Quote`), here are common
+conventions:
+* Clicking `Done` on the comment will comment "Done" and resolve this comment.
+  This usually is used in response to a requested change by the reviewer, and
+  tells the reviewer that you have made the change that they requested.
+* Clicking `Ack` on the comment will comment "Ack" (short for "Acknowledged")
+  and resolve this comment. This usually is used in response to a non-actionable
+  comment by the reviewer, and tells the reviewer that you understand.
+
+Finally, click `Reply` on the CL to ensure that your reviewers receive a
+notification. Doing this signals that your CL is ready for review again, since
+the assumption is that your CL is not ready for review until you hit reply.
 
 If your change is simple and you feel confident that your reviewer will approve
 your CL on the next iteration, you can set Auto-Submit +1. The CL will proceed
@@ -248,7 +257,7 @@ clean up your local branches. These commands will automatically delete merged
 branches. Mark the associated crbug as "fixed".
 
 [//]: # (the reference link section should be alphabetically sorted)
-[build-instructions]: https://chromium.googlesource.com/chromium/src.git/+/master/docs/#Checking-Out-and-Building
+[build-instructions]: https://chromium.googlesource.com/chromium/src.git/+/main/docs/#Checking-Out-and-Building
 [chromium-tree]: https://ci.chromium.org/p/chromium/g/main/console
 [contributing]: contributing.md
 [simple-chrome]: https://chromium.googlesource.com/chromiumos/docs/+/HEAD/simple_chrome_workflow.md

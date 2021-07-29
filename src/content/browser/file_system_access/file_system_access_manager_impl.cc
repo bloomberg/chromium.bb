@@ -11,6 +11,7 @@
 #include "base/bind_post_task.h"
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
+#include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_functions.h"
@@ -64,7 +65,7 @@ using PathInfo = FileSystemAccessPermissionContext::PathInfo;
 namespace {
 
 void ShowFilePickerOnUIThread(const url::Origin& requesting_origin,
-                              GlobalFrameRoutingId frame_id,
+                              GlobalRenderFrameHostId frame_id,
                               const FileSystemChooser::Options& options,
                               FileSystemChooser::ResultCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -181,10 +182,11 @@ void HandleTransferTokenAsDefaultDirectory(
   auto token_url_type = token->url().type();
   auto token_url_mount_type = token->url().mount_type();
 
-  // Ignore sandboxed file system URLs
+  // Ignore sandboxed file system URLs.
   if (token_url_type == storage::kFileSystemTypeTemporary ||
-      token_url_type == storage::kFileSystemTypePersistent)
+      token_url_type == storage::kFileSystemTypePersistent) {
     return;
+  }
 
   if (token_url_mount_type == storage::kFileSystemTypeExternal) {
     info.type = FileSystemAccessPermissionContext::PathType::kExternal;
@@ -348,8 +350,12 @@ void FileSystemAccessManagerImpl::ChooseEntries(
 
   if (permission_context_) {
     // When site setting is block, it's better not to show file chooser.
+    // Write permission will be requested for either a save file picker or
+    // a directory picker with `request_writable` true.
     if (!permission_context_->CanObtainReadPermission(context.origin) ||
-        (options->is_save_file_picker_options() &&
+        ((options->is_save_file_picker_options() ||
+          (options->is_directory_picker_options() &&
+           options->get_directory_picker_options()->request_writable)) &&
          !permission_context_->CanObtainWritePermission(context.origin))) {
       std::move(callback).Run(
           file_system_access_error::FromStatus(
@@ -464,6 +470,10 @@ void FileSystemAccessManagerImpl::SetDefaultPathAndShowPicker(
           blink::mojom::WellKnownDirectory::kDefault);
   }
 
+  auto request_directory_write_access =
+      options->is_directory_picker_options() &&
+      options->get_directory_picker_options()->request_writable;
+
   auto suggested_name =
       options->is_save_file_picker_options()
           ? options->get_save_file_picker_options()->suggested_name
@@ -481,7 +491,8 @@ void FileSystemAccessManagerImpl::SetDefaultPathAndShowPicker(
 
   if (auto_file_picker_result_for_test_) {
     DidChooseEntries(context, file_system_chooser_options,
-                     common_options->starting_directory_id, std::move(callback),
+                     common_options->starting_directory_id,
+                     request_directory_write_access, std::move(callback),
                      file_system_access_error::Ok(),
                      {*auto_file_picker_result_for_test_});
     return;
@@ -489,10 +500,11 @@ void FileSystemAccessManagerImpl::SetDefaultPathAndShowPicker(
 
   ShowFilePickerOnUIThread(
       context.origin, context.frame_id, file_system_chooser_options,
-      base::BindOnce(
-          &FileSystemAccessManagerImpl::DidChooseEntries,
-          weak_factory_.GetWeakPtr(), context, file_system_chooser_options,
-          common_options->starting_directory_id, std::move(callback)));
+      base::BindOnce(&FileSystemAccessManagerImpl::DidChooseEntries,
+                     weak_factory_.GetWeakPtr(), context,
+                     file_system_chooser_options,
+                     common_options->starting_directory_id,
+                     request_directory_write_access, std::move(callback)));
 }
 
 void FileSystemAccessManagerImpl::CreateFileSystemAccessDataTransferToken(
@@ -1033,6 +1045,7 @@ void FileSystemAccessManagerImpl::DidChooseEntries(
     const BindingContext& binding_context,
     const FileSystemChooser::Options& options,
     const std::string& starting_directory_id,
+    const bool request_directory_write_access,
     ChooseEntriesCallback callback,
     blink::mojom::FileSystemAccessErrorPtr result,
     std::vector<FileSystemChooser::ResultEntry> entries) {
@@ -1047,8 +1060,9 @@ void FileSystemAccessManagerImpl::DidChooseEntries(
 
   if (!permission_context_) {
     DidVerifySensitiveDirectoryAccess(
-        binding_context, options, starting_directory_id, std::move(callback),
-        std::move(entries), SensitiveDirectoryResult::kAllowed);
+        binding_context, options, starting_directory_id,
+        request_directory_write_access, std::move(callback), std::move(entries),
+        SensitiveDirectoryResult::kAllowed);
     return;
   }
 
@@ -1065,13 +1079,15 @@ void FileSystemAccessManagerImpl::DidChooseEntries(
       base::BindOnce(
           &FileSystemAccessManagerImpl::DidVerifySensitiveDirectoryAccess,
           weak_factory_.GetWeakPtr(), binding_context, options,
-          starting_directory_id, std::move(callback), std::move(entries)));
+          starting_directory_id, request_directory_write_access,
+          std::move(callback), std::move(entries)));
 }
 
 void FileSystemAccessManagerImpl::DidVerifySensitiveDirectoryAccess(
     const BindingContext& binding_context,
     const FileSystemChooser::Options& options,
     const std::string& starting_directory_id,
+    const bool request_directory_write_access,
     ChooseEntriesCallback callback,
     std::vector<FileSystemChooser::ResultEntry> entries,
     SensitiveDirectoryResult result) {
@@ -1091,7 +1107,8 @@ void FileSystemAccessManagerImpl::DidVerifySensitiveDirectoryAccess(
         binding_context.origin, binding_context.frame_id, options,
         base::BindOnce(&FileSystemAccessManagerImpl::DidChooseEntries,
                        weak_factory_.GetWeakPtr(), binding_context, options,
-                       starting_directory_id, std::move(callback)));
+                       starting_directory_id, request_directory_write_access,
+                       std::move(callback)));
     return;
   }
 
@@ -1111,6 +1128,14 @@ void FileSystemAccessManagerImpl::DidVerifySensitiveDirectoryAccess(
         entries.front().path, binding_context.origin, {},
         HandleType::kDirectory,
         FileSystemAccessPermissionContext::UserAction::kOpen);
+    // Ask for both read and write permission at the same time. The permission
+    // context should coalesce these into one prompt.
+    if (request_directory_write_access) {
+      shared_handle_state.write_grant->RequestPermission(
+          binding_context.frame_id,
+          FileSystemAccessPermissionGrant::UserActivationState::kNotRequired,
+          base::DoNothing());
+    }
     shared_handle_state.read_grant->RequestPermission(
         binding_context.frame_id,
         FileSystemAccessPermissionGrant::UserActivationState::kNotRequired,

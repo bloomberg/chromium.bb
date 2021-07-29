@@ -26,13 +26,13 @@ class SwapChainValidationTests : public DawnTest {
   public:
     void SetUp() override {
         DawnTest::SetUp();
-        DAWN_SKIP_TEST_IF(UsesWire());
-        DAWN_SKIP_TEST_IF(HasToggleEnabled("skip_validation"));
+        DAWN_TEST_UNSUPPORTED_IF(UsesWire());
+        DAWN_TEST_UNSUPPORTED_IF(HasToggleEnabled("skip_validation"));
 
         glfwSetErrorCallback([](int code, const char* message) {
             dawn::ErrorLog() << "GLFW error " << code << " " << message;
         });
-        DAWN_SKIP_TEST_IF(!glfwInit());
+        DAWN_TEST_UNSUPPORTED_IF(!glfwInit());
 
         // The SwapChainValidationTests don't create devices so we don't need to call
         // SetupGLFWWindowHintsForBackend. Set GLFW_NO_API anyway to avoid GLFW bringing up a GL
@@ -220,7 +220,7 @@ TEST_P(SwapChainValidationTests, ViewDestroyedAfterPresent) {
 
 // Check that returned view is of the current format / usage / dimension / size / sample count
 TEST_P(SwapChainValidationTests, ReturnedViewCharacteristics) {
-    utils::ComboRenderPipelineDescriptor2 pipelineDesc;
+    utils::ComboRenderPipelineDescriptor pipelineDesc;
     pipelineDesc.vertex.module = utils::CreateShaderModule(device, R"(
         [[stage(vertex)]] fn main() -> [[builtin(position)]] vec4<f32> {
             return vec4<f32>(0.0, 0.0, 0.0, 1.0);
@@ -235,7 +235,7 @@ TEST_P(SwapChainValidationTests, ReturnedViewCharacteristics) {
     // Validation will check that the format of the view matches this format.
     pipelineDesc.cTargets[0].format = wgpu::TextureFormat::BGRA8Unorm;
     pipelineDesc.cTargets[1].format = wgpu::TextureFormat::R8Unorm;
-    device.CreateRenderPipeline2(&pipelineDesc);
+    device.CreateRenderPipeline(&pipelineDesc);
 
     // Create a second texture to be used as render pass attachment. Validation will check that the
     // size of the view matches the size of this texture.

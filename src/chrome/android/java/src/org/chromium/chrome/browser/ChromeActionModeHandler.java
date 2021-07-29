@@ -26,6 +26,7 @@ import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.share.ChromeShareExtras;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.share.ShareDelegate.ShareOrigin;
@@ -203,7 +204,7 @@ public class ChromeActionModeHandler {
                 Callback<Boolean> callback = result -> {
                     if (result != null && result) search(selectedText);
                 };
-                AppHooks.get().getLocaleManager().showSearchEnginePromoIfNeeded(
+                LocaleManager.getInstance().showSearchEnginePromoIfNeeded(
                         TabUtils.getActivity(mTab), callback);
                 mHelper.finishActionMode();
             } else if (mShareDelegateSupplier.get().isSharingHubEnabled()
@@ -218,6 +219,7 @@ public class ChromeActionModeHandler {
                         new ChromeShareExtras.Builder()
                                 .setSaveLastUsed(true)
                                 .setIsUserHighlightedText(true)
+                                .setRenderFrameHost(mHelper.getRenderFrameHost())
                                 .build(),
                         ShareOrigin.MOBILE_ACTION_MODE);
             } else {

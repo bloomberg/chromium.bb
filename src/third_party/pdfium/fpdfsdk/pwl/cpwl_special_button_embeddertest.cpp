@@ -6,7 +6,7 @@
 #include "fpdfsdk/cpdfsdk_annotiterator.h"
 #include "fpdfsdk/cpdfsdk_formfillenvironment.h"
 #include "fpdfsdk/cpdfsdk_helpers.h"
-#include "fpdfsdk/formfiller/cffl_formfiller.h"
+#include "fpdfsdk/formfiller/cffl_formfield.h"
 #include "fpdfsdk/pwl/cpwl_special_button.h"
 #include "fpdfsdk/pwl/cpwl_wnd.h"
 #include "testing/embedder_test.h"
@@ -31,7 +31,7 @@ class CPWLSpecialButtonEmbedderTest : public EmbedderTest {
 
     formfill_env_ = CPDFSDKFormFillEnvironmentFromFPDFFormHandle(form_handle());
     CPDFSDK_AnnotIterator it(formfill_env_->GetPageViewAtIndex(0),
-                             CPDF_Annot::Subtype::WIDGET);
+                             {CPDF_Annot::Subtype::WIDGET});
 
     // Read only check box.
     annot_readonly_checkbox_ = it.GetFirstAnnot();
@@ -71,11 +71,11 @@ class CPWLSpecialButtonEmbedderTest : public EmbedderTest {
       EXPECT_TRUE(interactive_formfiller->OnSetFocus(&observed, 0));
     }
 
-    form_filler_ = interactive_formfiller->GetFormFillerForTesting(annot);
+    form_filler_ = interactive_formfiller->GetFormFieldForTesting(annot);
     ASSERT_TRUE(form_filler_);
 
-    window_ =
-        form_filler_->GetPWLWindow(formfill_env_->GetPageViewAtIndex(0), true);
+    window_ = form_filler_->CreateOrUpdatePWLWindow(
+        formfill_env_->GetPageViewAtIndex(0));
     ASSERT_TRUE(window_);
   }
 
@@ -96,7 +96,7 @@ class CPWLSpecialButtonEmbedderTest : public EmbedderTest {
 
  private:
   FPDF_PAGE page_;
-  CFFL_FormFiller* form_filler_;
+  CFFL_FormField* form_filler_;
   CPDFSDK_Annot* annot_checkbox_;
   CPDFSDK_Annot* annot_readonly_checkbox_;
   CPDFSDK_Annot* annot_radiobutton_;

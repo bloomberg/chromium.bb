@@ -85,8 +85,7 @@ bool SaveAndDeleteImage(scoped_refptr<base::RefCountedBytes> image_bytes,
 }
 
 // Returns the codec enum for the given image path's extension.
-ImageDecoder::ImageCodec ChooseCodecFromPath(
-    const base::FilePath& image_path) {
+ImageDecoder::ImageCodec ChooseCodecFromPath(const base::FilePath& image_path) {
   if (image_path.Extension() == FILE_PATH_LITERAL(".png"))
     return ImageDecoder::PNG_CODEC;
 
@@ -122,11 +121,7 @@ int UserImageManager::ImageIndexToHistogramIndex(int image_index) {
     case user_manager::User::USER_IMAGE_PROFILE:
       return default_user_image::kHistogramImageFromProfile;
     default:
-      // Create a gap in histogram values for
-      // [kHistogramImageExternal and kHistogramImageFromProfile] block to fit.
-      if (image_index < default_user_image::kHistogramImageExternal)
-        return image_index;
-      return image_index + default_user_image::kHistogramSpecialImagesCount;
+      return image_index + default_user_image::kHistogramSpecialImagesMaxCount;
   }
 }
 
@@ -351,7 +346,6 @@ void UserImageManagerImpl::Job::UpdateUser(
   user_manager::User* user = parent_->GetUserAndModify();
   if (!user)
     return;
-
   if (!user_image->image().isNull()) {
     user->SetImage(std::move(user_image), image_index_);
   } else {
@@ -453,17 +447,25 @@ void UserImageManagerImpl::Job::UpdateLocalState() {
   if (parent_->user_manager_->IsUserNonCryptohomeDataEphemeral(account_id()))
     return;
 
-  std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
-  entry->Set(kImagePathNodeName,
-             std::make_unique<base::Value>(image_path_.value()));
-  entry->Set(kImageIndexNodeName, std::make_unique<base::Value>(image_index_));
+  PrefService* local_state = g_browser_process->local_state();
+
+  base::DictionaryValue entry;
+  entry.SetKey(kImagePathNodeName, base::Value(image_path_.value()));
+  entry.SetKey(kImageIndexNodeName, base::Value(image_index_));
   if (!image_url_.is_empty())
-    entry->Set(kImageURLNodeName,
-               std::make_unique<base::Value>(image_url_.spec()));
-  DictionaryPrefUpdate update(g_browser_process->local_state(),
-                              kUserImageProperties);
-  update->SetKey(account_id().GetUserEmail(),
-                 base::Value::FromUniquePtrValue(std::move(entry)));
+    entry.SetKey(kImageURLNodeName, base::Value(image_url_.spec()));
+
+  const base::Value* existing_value =
+      local_state->GetDictionary(kUserImageProperties)
+          ->FindDictKey(account_id().GetUserEmail());
+
+  if (existing_value && *existing_value == entry) {
+    return;
+  }
+
+  DictionaryPrefUpdate update(local_state, kUserImageProperties);
+
+  update->SetKey(account_id().GetUserEmail(), std::move(entry));
 
   parent_->user_manager_->NotifyLocalStateChanged();
 }
@@ -564,8 +566,13 @@ void UserImageManagerImpl::UserLoggedIn(bool user_is_new, bool user_is_local) {
       DownloadProfileImage();
     }
   } else {
+    // Although UserImage.LoggedIn3 is an enumerated histogram, we intentionally
+    // use UmaHistogramExactLinear() to emit the metric rather than
+    // UmaHistogramEnumeration(). This is because the enums.xml values
+    // correspond to (a) special constants and (b) indexes of an array
+    // containing resource IDs.
     base::UmaHistogramExactLinear(
-        "UserImage.LoggedIn2", ImageIndexToHistogramIndex(user->image_index()),
+        "UserImage.LoggedIn3", ImageIndexToHistogramIndex(user->image_index()),
         default_user_image::kHistogramImagesCount + 1);
   }
 

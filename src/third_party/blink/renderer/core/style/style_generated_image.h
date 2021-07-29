@@ -35,8 +35,8 @@ class CSSImageGeneratorValue;
 class Document;
 class ImageResourceObserver;
 
-// This class represents a generated <image> such as a gradient, cross-fade or
-// paint(...) function.
+// This class represents a generated <image> such as a gradient or paint(...)
+// function. Use only for images that have no intrinsic dimensions.
 class CORE_EXPORT StyleGeneratedImage final : public StyleImage {
  public:
   explicit StyleGeneratedImage(const CSSImageGeneratorValue&);
@@ -47,11 +47,12 @@ class CORE_EXPORT StyleGeneratedImage final : public StyleImage {
   CSSValue* ComputedCSSValue(const ComputedStyle&,
                              bool allow_visited_style) const override;
 
-  FloatSize ImageSize(const Document&,
-                      float multiplier,
+  bool IsAccessAllowed(String&) const override { return true; }
+
+  FloatSize ImageSize(float multiplier,
                       const FloatSize& default_object_size,
                       RespectImageOrientationEnum) const override;
-  bool HasIntrinsicSize() const override { return fixed_size_; }
+  bool HasIntrinsicSize() const override { return false; }
   void AddClient(ImageResourceObserver*) override;
   void RemoveClient(ImageResourceObserver*) override;
   // The |target_size| is the desired image size
@@ -72,7 +73,6 @@ class CORE_EXPORT StyleGeneratedImage final : public StyleImage {
   // TODO(sashab): Replace this with <const CSSImageGeneratorValue> once
   // Member<> supports const types.
   Member<CSSImageGeneratorValue> image_generator_value_;
-  const bool fixed_size_;
 };
 
 template <>

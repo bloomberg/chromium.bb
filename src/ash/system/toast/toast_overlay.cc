@@ -27,6 +27,7 @@
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -107,13 +108,9 @@ class ToastOverlayLabel : public views::Label {
 //  ToastDisplayObserver
 class ToastOverlay::ToastDisplayObserver : public display::DisplayObserver {
  public:
-  ToastDisplayObserver(ToastOverlay* overlay) : overlay_(overlay) {
-    display::Screen::GetScreen()->AddObserver(this);
-  }
+  ToastDisplayObserver(ToastOverlay* overlay) : overlay_(overlay) {}
 
-  ~ToastDisplayObserver() override {
-    display::Screen::GetScreen()->RemoveObserver(this);
-  }
+  ~ToastDisplayObserver() override {}
 
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override {
@@ -122,6 +119,9 @@ class ToastOverlay::ToastDisplayObserver : public display::DisplayObserver {
 
  private:
   ToastOverlay* const overlay_;
+
+  display::ScopedDisplayObserver display_observer_{this};
+
   DISALLOW_COPY_AND_ASSIGN(ToastDisplayObserver);
 };
 
@@ -131,13 +131,13 @@ class ToastOverlayButton : public views::LabelButton {
  public:
   ToastOverlayButton(PressedCallback callback, const std::u16string& text)
       : views::LabelButton(std::move(callback), text, CONTEXT_TOAST_OVERLAY) {
-    ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
+    views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
     SetHasInkDropActionOnClick(true);
-    ink_drop()->SetCreateHighlightCallback(base::BindRepeating(
+    views::InkDrop::Get(this)->SetCreateHighlightCallback(base::BindRepeating(
         [](Button* host) {
           return std::make_unique<views::InkDropHighlight>(
               gfx::SizeF(host->GetLocalBounds().size()),
-              host->ink_drop()->GetBaseColor());
+              views::InkDrop::Get(host)->GetBaseColor());
         },
         this));
 
@@ -163,7 +163,8 @@ class ToastOverlayButton : public views::LabelButton {
   void OnThemeChanged() override {
     views::LabelButton::OnThemeChanged();
     const auto* color_provider = AshColorProvider::Get();
-    ink_drop()->SetBaseColor(color_provider->GetRippleAttributes().base_color);
+    views::InkDrop::Get(this)->SetBaseColor(
+        color_provider->GetRippleAttributes().base_color);
     SetEnabledTextColors(color_provider->GetContentLayerColor(
         AshColorProvider::ContentLayerType::kButtonLabelColorBlue));
   }

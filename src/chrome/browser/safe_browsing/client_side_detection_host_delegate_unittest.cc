@@ -5,11 +5,14 @@
 #include "chrome/browser/safe_browsing/client_side_detection_host_delegate.h"
 
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/safe_browsing/safe_browsing_navigation_observer.h"
-#include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
-#include "components/safe_browsing/core/features.h"
+#include "components/safe_browsing/content/browser/safe_browsing_navigation_observer.h"
+#include "components/safe_browsing/content/browser/safe_browsing_navigation_observer_manager.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "content/public/test/navigation_simulator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,9 +25,14 @@ class ClientSideDetectionDelegateTest : public BrowserWithTestWindowTest {
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
     AddTab(browser(), GURL("http://foo/0"));
-    navigation_observer_manager_ = new SafeBrowsingNavigationObserverManager();
+    Profile* profile = Profile::FromBrowserContext(
+        browser()->tab_strip_model()->GetWebContentsAt(0)->GetBrowserContext());
+    navigation_observer_manager_ =
+        SafeBrowsingNavigationObserverManagerFactory::GetForBrowserContext(
+            profile);
     navigation_observer_ = new SafeBrowsingNavigationObserver(
         browser()->tab_strip_model()->GetWebContentsAt(0),
+        HostContentSettingsMapFactory::GetForProfile(profile),
         navigation_observer_manager_);
     scoped_feature_list_.InitAndEnableFeature(
         kClientSideDetectionReferrerChain);
@@ -73,7 +81,7 @@ TEST_F(ClientSideDetectionDelegateTest, GetReferrerChain) {
   std::unique_ptr<ClientSideDetectionHostDelegate> csd_host_delegate =
       std::make_unique<ClientSideDetectionHostDelegate>(
           browser()->tab_strip_model()->GetWebContentsAt(0));
-  csd_host_delegate->SetNavigationObserverManagerForTest(
+  csd_host_delegate->SetNavigationObserverManagerForTesting(
       navigation_observer_manager_);
   std::unique_ptr<ClientPhishingRequest> verdict(new ClientPhishingRequest);
   csd_host_delegate->AddReferrerChain(verdict.get(), GURL("http://b.com/"));

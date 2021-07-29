@@ -280,7 +280,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, SaveFile_NonExistingFile) {
                    "  self.entry = e;"
                    "  return e.name; })()"));
   EXPECT_EQ(ui::SelectFileDialog::SELECT_SAVEAS_FILE, dialog_params.type);
-  EXPECT_EQ(int{file_contents.size()},
+  EXPECT_EQ(static_cast<int>(file_contents.size()),
             EvalJs(shell(),
                    JsReplace("(async () => {"
                              "  const w = await self.entry.createWritable();"
@@ -491,7 +491,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, OpenDirectory_DenyAccess) {
 
   auto origin =
       url::Origin::Create(embedded_test_server()->GetURL("/title1.html"));
-  auto frame_id = GlobalFrameRoutingId(
+  auto frame_id = GlobalRenderFrameHostId(
       shell()->web_contents()->GetMainFrame()->GetProcess()->GetID(),
       shell()->web_contents()->GetMainFrame()->GetRoutingID());
 
@@ -547,6 +547,185 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, OpenDirectory_DenyAccess) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
+                       OpenDirectoryWithReadAccess) {
+  base::FilePath test_dir = CreateTestDir();
+  SelectFileDialogParams dialog_params;
+  ui::SelectFileDialog::SetFactory(
+      new FakeSelectFileDialogFactory({test_dir}, &dialog_params));
+
+  testing::StrictMock<MockFileSystemAccessPermissionContext> permission_context;
+  static_cast<FileSystemAccessManagerImpl*>(
+      shell()
+          ->web_contents()
+          ->GetBrowserContext()
+          ->GetStoragePartition(shell()->web_contents()->GetSiteInstance())
+          ->GetFileSystemAccessEntryFactory())
+      ->SetPermissionContextForTesting(&permission_context);
+
+  auto read_grant = base::MakeRefCounted<
+      testing::StrictMock<MockFileSystemAccessPermissionGrant>>();
+  auto write_grant = base::MakeRefCounted<
+      testing::StrictMock<MockFileSystemAccessPermissionGrant>>();
+
+  auto origin =
+      url::Origin::Create(embedded_test_server()->GetURL("/title1.html"));
+  auto frame_id = GlobalRenderFrameHostId(
+      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID(),
+      shell()->web_contents()->GetMainFrame()->GetRoutingID());
+
+  EXPECT_CALL(permission_context, CanObtainReadPermission(origin))
+      .WillOnce(testing::Return(true));
+
+  EXPECT_CALL(
+      permission_context,
+      GetWellKnownDirectoryPath(blink::mojom::WellKnownDirectory::kDefault))
+      .WillOnce(testing::Return(base::FilePath()));
+  EXPECT_CALL(permission_context, GetLastPickedDirectory(origin, std::string()))
+      .WillOnce(testing::Return(PathInfo()));
+  EXPECT_CALL(permission_context,
+              SetLastPickedDirectory(origin, std::string(), test_dir,
+                                     PathType::kLocal));
+
+  EXPECT_CALL(permission_context,
+              ConfirmSensitiveDirectoryAccess_(
+                  origin, PathType::kLocal, test_dir,
+                  FileSystemAccessPermissionContext::HandleType::kDirectory,
+                  frame_id, testing::_))
+      .WillOnce(RunOnceCallback<5>(SensitiveDirectoryResult::kAllowed));
+
+  EXPECT_CALL(permission_context,
+              GetReadPermissionGrant(
+                  origin, test_dir,
+                  FileSystemAccessPermissionContext::HandleType::kDirectory,
+                  FileSystemAccessPermissionContext::UserAction::kOpen))
+      .WillOnce(testing::Return(read_grant));
+  EXPECT_CALL(permission_context,
+              GetWritePermissionGrant(
+                  origin, test_dir,
+                  FileSystemAccessPermissionContext::HandleType::kDirectory,
+                  FileSystemAccessPermissionContext::UserAction::kOpen))
+      .WillOnce(testing::Return(write_grant));
+
+  EXPECT_CALL(
+      *read_grant,
+      RequestPermission_(
+          frame_id,
+          FileSystemAccessPermissionGrant::UserActivationState::kNotRequired,
+          testing::_))
+      .WillOnce(RunOnceCallback<2>(FileSystemAccessPermissionGrant::
+                                       PermissionRequestOutcome::kUserGranted));
+  EXPECT_CALL(*read_grant, GetStatus())
+      .WillRepeatedly(testing::Return(PermissionStatus::GRANTED));
+
+  ASSERT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
+  EXPECT_EQ(test_dir.BaseName().AsUTF8Unsafe(),
+            EvalJs(shell(),
+                   "(async () => {"
+                   "  let e = await self.showDirectoryPicker({mode: 'read'});"
+                   "  self.selected_entry = e;"
+                   "  return e.name; })()"));
+  EXPECT_EQ(ui::SelectFileDialog::SELECT_FOLDER, dialog_params.type);
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
+                       OpenDirectoryWithReadWriteAccess) {
+  base::FilePath test_dir = CreateTestDir();
+  SelectFileDialogParams dialog_params;
+  ui::SelectFileDialog::SetFactory(
+      new FakeSelectFileDialogFactory({test_dir}, &dialog_params));
+
+  testing::StrictMock<MockFileSystemAccessPermissionContext> permission_context;
+  static_cast<FileSystemAccessManagerImpl*>(
+      shell()
+          ->web_contents()
+          ->GetBrowserContext()
+          ->GetStoragePartition(shell()->web_contents()->GetSiteInstance())
+          ->GetFileSystemAccessEntryFactory())
+      ->SetPermissionContextForTesting(&permission_context);
+
+  auto read_grant = base::MakeRefCounted<
+      testing::StrictMock<MockFileSystemAccessPermissionGrant>>();
+  auto write_grant = base::MakeRefCounted<
+      testing::StrictMock<MockFileSystemAccessPermissionGrant>>();
+
+  auto origin =
+      url::Origin::Create(embedded_test_server()->GetURL("/title1.html"));
+  auto frame_id = GlobalRenderFrameHostId(
+      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID(),
+      shell()->web_contents()->GetMainFrame()->GetRoutingID());
+
+  EXPECT_CALL(permission_context, CanObtainReadPermission(origin))
+      .WillOnce(testing::Return(true));
+  // Write permission should be requested alongside read permission.
+  EXPECT_CALL(permission_context, CanObtainWritePermission(origin))
+      .WillOnce(testing::Return(true));
+
+  EXPECT_CALL(
+      permission_context,
+      GetWellKnownDirectoryPath(blink::mojom::WellKnownDirectory::kDefault))
+      .WillOnce(testing::Return(base::FilePath()));
+  EXPECT_CALL(permission_context, GetLastPickedDirectory(origin, std::string()))
+      .WillOnce(testing::Return(PathInfo()));
+  EXPECT_CALL(permission_context,
+              SetLastPickedDirectory(origin, std::string(), test_dir,
+                                     PathType::kLocal));
+
+  EXPECT_CALL(permission_context,
+              ConfirmSensitiveDirectoryAccess_(
+                  origin, PathType::kLocal, test_dir,
+                  FileSystemAccessPermissionContext::HandleType::kDirectory,
+                  frame_id, testing::_))
+      .WillOnce(RunOnceCallback<5>(SensitiveDirectoryResult::kAllowed));
+
+  EXPECT_CALL(permission_context,
+              GetReadPermissionGrant(
+                  origin, test_dir,
+                  FileSystemAccessPermissionContext::HandleType::kDirectory,
+                  FileSystemAccessPermissionContext::UserAction::kOpen))
+      .WillOnce(testing::Return(read_grant));
+  EXPECT_CALL(permission_context,
+              GetWritePermissionGrant(
+                  origin, test_dir,
+                  FileSystemAccessPermissionContext::HandleType::kDirectory,
+                  FileSystemAccessPermissionContext::UserAction::kOpen))
+      .WillOnce(testing::Return(write_grant));
+
+  EXPECT_CALL(
+      *read_grant,
+      RequestPermission_(
+          frame_id,
+          FileSystemAccessPermissionGrant::UserActivationState::kNotRequired,
+          testing::_))
+      .WillOnce(RunOnceCallback<2>(FileSystemAccessPermissionGrant::
+                                       PermissionRequestOutcome::kUserGranted));
+  EXPECT_CALL(*read_grant, GetStatus())
+      .WillRepeatedly(testing::Return(PermissionStatus::GRANTED));
+  // Write permission should be requested alongside read permission.
+  EXPECT_CALL(
+      *write_grant,
+      RequestPermission_(
+          frame_id,
+          FileSystemAccessPermissionGrant::UserActivationState::kNotRequired,
+          testing::_))
+      .WillOnce(RunOnceCallback<2>(FileSystemAccessPermissionGrant::
+                                       PermissionRequestOutcome::kUserGranted));
+  EXPECT_CALL(*write_grant, GetStatus())
+      .WillRepeatedly(testing::Return(PermissionStatus::GRANTED));
+
+  ASSERT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
+  EXPECT_EQ(
+      test_dir.BaseName().AsUTF8Unsafe(),
+      EvalJs(shell(),
+             "(async () => {"
+             "  let e = await self.showDirectoryPicker({mode: 'readwrite'});"
+             "  self.selected_entry = e;"
+             "  return e.name; })()"));
+  EXPECT_EQ(ui::SelectFileDialog::SELECT_FOLDER, dialog_params.type);
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
                        SaveFile_SensitiveDirectory_ExistingFile) {
   const std::string file_contents = "Hello World";
   const base::FilePath test_file = CreateTestFile(file_contents);
@@ -566,7 +745,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
 
   auto origin =
       url::Origin::Create(embedded_test_server()->GetURL("/title1.html"));
-  auto frame_id = GlobalFrameRoutingId(
+  auto frame_id = GlobalRenderFrameHostId(
       shell()->web_contents()->GetMainFrame()->GetProcess()->GetID(),
       shell()->web_contents()->GetMainFrame()->GetRoutingID());
 
@@ -629,7 +808,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
 
   auto origin =
       url::Origin::Create(embedded_test_server()->GetURL("/title1.html"));
-  auto frame_id = GlobalFrameRoutingId(
+  auto frame_id = GlobalRenderFrameHostId(
       shell()->web_contents()->GetMainFrame()->GetProcess()->GetID(),
       shell()->web_contents()->GetMainFrame()->GetRoutingID());
 
@@ -750,7 +929,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
 
   auto origin =
       url::Origin::Create(embedded_test_server()->GetURL("/title1.html"));
-  auto frame_id = GlobalFrameRoutingId(
+  auto frame_id = GlobalRenderFrameHostId(
       shell()->web_contents()->GetMainFrame()->GetProcess()->GetID(),
       shell()->web_contents()->GetMainFrame()->GetRoutingID());
   EXPECT_CALL(permission_context, CanObtainReadPermission(origin))
@@ -833,7 +1012,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
 
   auto origin =
       url::Origin::Create(embedded_test_server()->GetURL("/title1.html"));
-  auto frame_id = GlobalFrameRoutingId(
+  auto frame_id = GlobalRenderFrameHostId(
       shell()->web_contents()->GetMainFrame()->GetProcess()->GetID(),
       shell()->web_contents()->GetMainFrame()->GetRoutingID());
   EXPECT_CALL(permission_context, CanObtainReadPermission(origin))
@@ -923,7 +1102,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
 
   auto origin =
       url::Origin::Create(embedded_test_server()->GetURL("/title1.html"));
-  auto frame_id = GlobalFrameRoutingId(
+  auto frame_id = GlobalRenderFrameHostId(
       shell()->web_contents()->GetMainFrame()->GetProcess()->GetID(),
       shell()->web_contents()->GetMainFrame()->GetRoutingID());
   EXPECT_CALL(permission_context, CanObtainReadPermission(origin))
@@ -1008,7 +1187,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
 
   auto origin =
       url::Origin::Create(embedded_test_server()->GetURL("/title1.html"));
-  auto frame_id = GlobalFrameRoutingId(
+  auto frame_id = GlobalRenderFrameHostId(
       shell()->web_contents()->GetMainFrame()->GetProcess()->GetID(),
       shell()->web_contents()->GetMainFrame()->GetRoutingID());
   EXPECT_CALL(permission_context, CanObtainReadPermission(origin))
@@ -1099,7 +1278,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
 
   auto origin =
       url::Origin::Create(embedded_test_server()->GetURL("/title1.html"));
-  auto frame_id = GlobalFrameRoutingId(
+  auto frame_id = GlobalRenderFrameHostId(
       shell()->web_contents()->GetMainFrame()->GetProcess()->GetID(),
       shell()->web_contents()->GetMainFrame()->GetRoutingID());
   EXPECT_CALL(permission_context, CanObtainReadPermission(origin))

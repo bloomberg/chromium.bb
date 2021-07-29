@@ -24,10 +24,12 @@
 #include "components/strings/grit/components_strings.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/border.h"
+#include "ui/views/cascading_property.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/layout/box_layout.h"
@@ -124,12 +126,12 @@ class PaymentMethodListItem : public PaymentRequestItemList::Item {
     std::u16string missing_info;
     if (!app_->IsCompleteForPayment()) {
       missing_info = app_->GetMissingInfoLabel();
-      auto missing_info_label = std::make_unique<views::Label>(
-          missing_info, CONTEXT_DIALOG_BODY_TEXT_SMALL);
-      missing_info_label->SetEnabledColor(
-          missing_info_label->GetNativeTheme()->GetSystemColor(
-              ui::NativeTheme::kColorId_LinkEnabled));
-      card_info_container->AddChildView(missing_info_label.release());
+      views::Label* const label =
+          card_info_container->AddChildView(std::make_unique<views::Label>(
+              missing_info, CONTEXT_DIALOG_BODY_TEXT_SMALL));
+      views::SetCascadingNativeThemeColor(
+          label, views::kCascadingLabelEnabledColor,
+          ui::NativeTheme::kColorId_LinkEnabled);
     }
 
     *accessible_content = l10n_util::GetStringFUTF16(

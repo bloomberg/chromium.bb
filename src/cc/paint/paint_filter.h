@@ -5,6 +5,8 @@
 #ifndef CC_PAINT_PAINT_FILTER_H_
 #define CC_PAINT_PAINT_FILTER_H_
 
+#include <string>
+
 #include "base/check_op.h"
 #include "base/containers/stack_container.h"
 #include "base/stl_util.h"
@@ -56,8 +58,9 @@ class CC_PAINT_EXPORT PaintFilter : public SkRefCnt {
     kLightingDistant,
     kLightingPoint,
     kLightingSpot,
-    // Update the following if kLightingSpot is not the max anymore.
-    kMaxValue = kLightingSpot
+    kStretch,
+    // Update the following if kStretch is not the max anymore.
+    kMaxValue = kStretch
   };
   enum class LightingType {
     kDiffuse,
@@ -499,11 +502,27 @@ class CC_PAINT_EXPORT ImagePaintFilter final : public PaintFilter {
 class CC_PAINT_EXPORT RecordPaintFilter final : public PaintFilter {
  public:
   static constexpr Type kType = Type::kPaintRecord;
-  RecordPaintFilter(sk_sp<PaintRecord> record, const SkRect& record_bounds);
+
+  using ScalingBehavior = PaintShader::ScalingBehavior;
+
+  RecordPaintFilter(
+      sk_sp<PaintRecord> record,
+      const SkRect& record_bounds,
+      const gfx::SizeF& raster_scale = {1.f, 1.f},
+      ScalingBehavior scaling_behavior = ScalingBehavior::kRasterAtScale);
   ~RecordPaintFilter() override;
+
+  // Creates a fixed scale RecordPaintFilter for rasterization at the given
+  // |ctm|. |raster_scale| is set to the scale at which the underlying record
+  // should be rasterized when the paint filter is used.
+  // See PaintShader::CreateScaledPaintRecord.
+  sk_sp<RecordPaintFilter> CreateScaledPaintRecord(const SkMatrix& ctm,
+                                                   int max_texture_size) const;
 
   const sk_sp<PaintRecord>& record() const { return record_; }
   SkRect record_bounds() const { return record_bounds_; }
+  gfx::SizeF raster_scale() const { return raster_scale_; }
+  ScalingBehavior scaling_behavior() const { return scaling_behavior_; }
 
   size_t SerializedSize() const override;
   bool operator==(const RecordPaintFilter& other) const;
@@ -515,10 +534,14 @@ class CC_PAINT_EXPORT RecordPaintFilter final : public PaintFilter {
  private:
   RecordPaintFilter(sk_sp<PaintRecord> record,
                     const SkRect& record_bounds,
+                    const gfx::SizeF& raster_scale,
+                    ScalingBehavior scaling_behavior,
                     ImageProvider* image_provider);
 
   sk_sp<PaintRecord> record_;
   SkRect record_bounds_;
+  gfx::SizeF raster_scale_;  // ignored if scaling_behavior is kRasterAtScale
+  ScalingBehavior scaling_behavior_;
 };
 
 class CC_PAINT_EXPORT MergePaintFilter final : public PaintFilter {
@@ -858,6 +881,39 @@ class CC_PAINT_EXPORT LightingSpotPaintFilter final : public PaintFilter {
   SkScalar surface_scale_;
   SkScalar kconstant_;
   SkScalar shininess_;
+  sk_sp<PaintFilter> input_;
+};
+
+class CC_PAINT_EXPORT StretchPaintFilter final : public PaintFilter {
+ public:
+  static constexpr Type kType = Type::kStretch;
+  StretchPaintFilter(SkScalar stretch_x,
+                     SkScalar stretch_y,
+                     SkScalar width,
+                     SkScalar height,
+                     sk_sp<PaintFilter> input,
+                     const CropRect* crop_rect = nullptr);
+  ~StretchPaintFilter() override;
+
+  const sk_sp<PaintFilter>& input() const { return input_; }
+
+  SkScalar stretch_x() const { return stretch_x_; }
+  SkScalar stretch_y() const { return stretch_y_; }
+  SkScalar width() const { return width_; }
+  SkScalar height() const { return height_; }
+
+  size_t SerializedSize() const override;
+  bool operator==(const StretchPaintFilter& other) const;
+
+ protected:
+  sk_sp<PaintFilter> SnapshotWithImagesInternal(
+      ImageProvider* image_provider) const override;
+
+ private:
+  SkScalar stretch_x_;
+  SkScalar stretch_y_;
+  SkScalar width_;
+  SkScalar height_;
   sk_sp<PaintFilter> input_;
 };
 

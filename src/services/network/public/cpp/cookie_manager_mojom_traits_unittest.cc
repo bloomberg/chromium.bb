@@ -282,34 +282,94 @@ TEST(CookieManagerTraitsTest, Roundtrips_CookieChangeCause) {
   }
 }
 
+TEST(CookieManagerTraitsTest,
+     Roundtrips_CookieSameSiteContextMetadataDowngradeType) {
+  for (auto type : {net::CookieOptions::SameSiteCookieContext::ContextMetadata::
+                        ContextDowngradeType::kNoDowngrade,
+                    net::CookieOptions::SameSiteCookieContext::ContextMetadata::
+                        ContextDowngradeType::kStrictToLax,
+                    net::CookieOptions::SameSiteCookieContext::ContextMetadata::
+                        ContextDowngradeType::kStrictToCross,
+                    net::CookieOptions::SameSiteCookieContext::ContextMetadata::
+                        ContextDowngradeType::kLaxToCross}) {
+    net::CookieOptions::SameSiteCookieContext::ContextMetadata::
+        ContextDowngradeType roundtrip;
+    ASSERT_TRUE(mojo::test::SerializeAndDeserialize<
+                mojom::CookieSameSiteContextMetadataDowngradeType>(type,
+                                                                   roundtrip));
+    EXPECT_EQ(type, roundtrip);
+  }
+}
+
+TEST(CookieManagerTraitsTest, Roundtrips_CookieSameSiteContextMetadata) {
+  net::CookieOptions::SameSiteCookieContext::ContextMetadata metadata,
+      roundtrip;
+
+  // Default values.
+  ASSERT_TRUE(
+      mojo::test::SerializeAndDeserialize<mojom::CookieSameSiteContextMetadata>(
+          metadata, roundtrip));
+  EXPECT_EQ(metadata, roundtrip);
+
+  metadata.affected_by_bugfix_1166211 = true;
+  metadata.cross_site_redirect_downgrade =
+      net::CookieOptions::SameSiteCookieContext::ContextMetadata::
+          ContextDowngradeType::kStrictToLax;
+  ASSERT_TRUE(
+      mojo::test::SerializeAndDeserialize<mojom::CookieSameSiteContextMetadata>(
+          metadata, roundtrip));
+  EXPECT_EQ(metadata, roundtrip);
+}
+
 TEST(CookieManagerTraitsTest, Roundtrips_CookieSameSiteContext) {
   using ContextType = net::CookieOptions::SameSiteCookieContext::ContextType;
+  using ContextMetadata =
+      net::CookieOptions::SameSiteCookieContext::ContextMetadata;
 
   const ContextType all_context_types[]{
       ContextType::CROSS_SITE, ContextType::SAME_SITE_LAX_METHOD_UNSAFE,
       ContextType::SAME_SITE_LAX, ContextType::SAME_SITE_STRICT};
 
+  ContextMetadata metadata1;
+  metadata1.affected_by_bugfix_1166211 = true;
+  ContextMetadata metadata2;
+  metadata2.cross_site_redirect_downgrade =
+      ContextMetadata::ContextDowngradeType::kStrictToLax;
+  ContextMetadata metadata3;
+  metadata3.affected_by_bugfix_1166211 = true;
+  metadata3.cross_site_redirect_downgrade =
+      ContextMetadata::ContextDowngradeType::kLaxToCross;
+
+  const ContextMetadata metadatas[]{ContextMetadata(), metadata1, metadata2,
+                                    metadata3};
+
   for (ContextType context_type : all_context_types) {
     for (ContextType schemeful_context_type : all_context_types) {
-      net::CookieOptions::SameSiteCookieContext context_in, copy;
-      // We want to test malformed SameSiteCookieContexts. Since the constructor
-      // will DCHECK for these use the setters to bypass it.
-      context_in.set_context(context_type);
-      context_in.set_schemeful_context(schemeful_context_type);
+      for (const ContextMetadata& metadata : metadatas) {
+        for (const ContextMetadata& schemeful_metadata : metadatas) {
+          net::CookieOptions::SameSiteCookieContext copy;
+          net::CookieOptions::SameSiteCookieContext context_in(
+              context_type, context_type, metadata, schemeful_metadata);
+          // We want to test malformed SameSiteCookieContexts. Since the
+          // constructor will DCHECK for these use this setter to bypass it.
+          context_in.SetContextTypesForTesting(context_type,
+                                               schemeful_context_type);
 
-      EXPECT_EQ(
-          mojo::test::SerializeAndDeserialize<mojom::CookieSameSiteContext>(
-              context_in, copy),
-          schemeful_context_type <= context_type);
+          EXPECT_EQ(
+              mojo::test::SerializeAndDeserialize<mojom::CookieSameSiteContext>(
+                  context_in, copy),
+              schemeful_context_type <= context_type);
 
-      if (schemeful_context_type <= context_type)
-        EXPECT_EQ(context_in, copy);
+          if (schemeful_context_type <= context_type)
+            EXPECT_TRUE(context_in.CompleteEquivalenceForTesting(copy));
+        }
+      }
     }
   }
 }
 
 TEST(CookieManagerTraitsTest, Roundtrips_SamePartyCookieContextType) {
-  using ContextType = net::CookieOptions::SamePartyCookieContextType;
+  using ContextType = net::SamePartyContext::Type;
   for (ContextType context_type :
        {ContextType::kCrossParty, ContextType::kSameParty}) {
     ContextType roundtrip;
@@ -337,8 +397,12 @@ TEST(CookieManagerTraitsTest, Roundtrips_CookieOptions) {
             net::CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE),
         copy.same_site_cookie_context());
     EXPECT_TRUE(copy.return_excluded_cookies());
-    EXPECT_EQ(net::CookieOptions::SamePartyCookieContextType::kCrossParty,
-              copy.same_party_cookie_context_type());
+    EXPECT_EQ(net::SamePartyContext::Type::kCrossParty,
+              copy.same_party_context().context_type());
+    EXPECT_EQ(net::SamePartyContext::Type::kCrossParty,
+              copy.same_party_context().ancestors_for_metrics_only());
+    EXPECT_EQ(net::SamePartyContext::Type::kCrossParty,
+              copy.same_party_context().top_resource_for_metrics_only());
     EXPECT_EQ(10u, copy.full_party_context_size());
     EXPECT_TRUE(copy.is_in_nontrivial_first_party_set());
   }
@@ -348,8 +412,8 @@ TEST(CookieManagerTraitsTest, Roundtrips_CookieOptions) {
     very_trusted.set_include_httponly();
     very_trusted.set_same_site_cookie_context(
         net::CookieOptions::SameSiteCookieContext::MakeInclusive());
-    very_trusted.set_same_party_cookie_context_type(
-        net::CookieOptions::SamePartyCookieContextType::kSameParty);
+    very_trusted.set_same_party_context(
+        net::SamePartyContext(net::SamePartyContext::Type::kSameParty));
     very_trusted.set_full_party_context_size(1u);
     very_trusted.set_is_in_nontrivial_first_party_set(true);
 
@@ -359,8 +423,12 @@ TEST(CookieManagerTraitsTest, Roundtrips_CookieOptions) {
     EXPECT_EQ(net::CookieOptions::SameSiteCookieContext::MakeInclusive(),
               copy.same_site_cookie_context());
     EXPECT_FALSE(copy.return_excluded_cookies());
-    EXPECT_EQ(net::CookieOptions::SamePartyCookieContextType::kSameParty,
-              copy.same_party_cookie_context_type());
+    EXPECT_EQ(net::SamePartyContext::Type::kSameParty,
+              copy.same_party_context().context_type());
+    EXPECT_EQ(net::SamePartyContext::Type::kSameParty,
+              copy.same_party_context().ancestors_for_metrics_only());
+    EXPECT_EQ(net::SamePartyContext::Type::kSameParty,
+              copy.same_party_context().top_resource_for_metrics_only());
     EXPECT_EQ(1u, copy.full_party_context_size());
     EXPECT_TRUE(copy.is_in_nontrivial_first_party_set());
   }

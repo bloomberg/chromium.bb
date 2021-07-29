@@ -48,13 +48,6 @@ static void *ff_avio_child_next(void *obj, void *prev)
     return prev ? NULL : s->opaque;
 }
 
-#if FF_API_CHILD_CLASS_NEXT
-static const AVClass *ff_avio_child_class_next(const AVClass *prev)
-{
-    return prev ? NULL : &ffurl_context_class;
-}
-#endif
-
 static const AVClass *child_class_iterate(void **iter)
 {
     const AVClass *c = *iter ? NULL : &ffurl_context_class;
@@ -76,9 +69,6 @@ const AVClass ff_avio_class = {
     .version    = LIBAVUTIL_VERSION_INT,
     .option     = ff_avio_options,
     .child_next = ff_avio_child_next,
-#if FF_API_CHILD_CLASS_NEXT
-    .child_class_next = ff_avio_child_class_next,
-#endif
     .child_class_iterate = child_class_iterate,
 };
 
@@ -283,13 +273,9 @@ int64_t avio_seek(AVIOContext *s, int64_t offset, int whence)
     if (offset < 0)
         return AVERROR(EINVAL);
 
-    if (s->short_seek_get) {
-        short_seek = s->short_seek_get(s->opaque);
-        /* fallback to default short seek */
-        if (short_seek <= 0)
-            short_seek = s->short_seek_threshold;
-    } else
-        short_seek = s->short_seek_threshold;
+    short_seek = s->short_seek_threshold;
+    if (s->short_seek_get)
+        short_seek = FFMAX(s->short_seek_get(s->opaque), short_seek);
 
     offset1 = offset - pos; // "offset1" is the relative offset from the beginning of s->buffer
     s->buf_ptr_max = FFMAX(s->buf_ptr_max, s->buf_ptr);
@@ -523,14 +509,7 @@ static int read_packet_wrapper(AVIOContext *s, uint8_t *buf, int size)
     if (!s->read_packet)
         return AVERROR(EINVAL);
     ret = s->read_packet(s->opaque, buf, size);
-#if FF_API_OLD_AVIO_EOF_0
-    if (!ret && !s->max_packet_size) {
-        av_log(NULL, AV_LOG_WARNING, "Invalid return value 0 for stream protocol\n");
-        ret = AVERROR_EOF;
-    }
-#else
     av_assert2(ret || s->max_packet_size);
-#endif
     return ret;
 }
 

@@ -60,6 +60,7 @@
 #include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
+#include "ui/accessibility/ax_mode.h"
 
 #include <string>
 
@@ -1963,7 +1964,7 @@ TEST_P(VisualViewportTest, AccessibilityHitTestWhileZoomedIn) {
   WebDocument web_doc = WebView()->MainFrameImpl()->GetDocument();
   LocalFrameView& frame_view = *WebView()->MainFrameImpl()->GetFrameView();
 
-  WebAXContext ax_context(web_doc);
+  WebAXContext ax_context(web_doc, ui::kAXModeComplete);
 
   WebView()->SetPageScaleFactor(2);
   WebView()->SetVisualViewportOffset(gfx::PointF(200, 230));
@@ -2799,8 +2800,6 @@ TEST_P(VisualViewportTest, InSubtreeOfPageScale) {
 }
 
 TEST_F(VisualViewportSimTest, UsedColorSchemeFromRootElement) {
-  ScopedCSSColorSchemeUARenderingForTest color_scheme_ua_enabled(true);
-
   ColorSchemeHelper color_scheme_helper(*(WebView().GetPage()));
   color_scheme_helper.SetPreferredColorScheme(
       mojom::blink::PreferredColorScheme::kDark);

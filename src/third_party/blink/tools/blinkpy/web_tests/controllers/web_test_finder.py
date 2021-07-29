@@ -28,6 +28,7 @@
 
 import errno
 import fnmatch
+import hashlib
 import json
 import logging
 import math
@@ -125,9 +126,8 @@ class WebTestFinder(object):
         times = convert_times_trie_to_flat_paths(times_trie)
 
         # Ignore tests with a time==0 because those are skipped tests.
-        sorted_times = sorted(
-            [test for (test, time) in times.iteritems() if time],
-            key=lambda t: (times[t], t))
+        sorted_times = sorted([test for (test, time) in times.items() if time],
+                              key=lambda t: (times[t], t))
         clamped_percentile = max(0, min(100, fastest_percentile))
         number_of_tests_to_return = int(
             len(sorted_times) * clamped_percentile / 100)
@@ -203,7 +203,7 @@ class WebTestFinder(object):
     @staticmethod
     def _strip_comments(line):
         commentIndex = line.find('//')
-        if commentIndex is -1:
+        if commentIndex == -1:
             commentIndex = len(line)
 
         line = re.sub(r'\s+', ' ', line[:commentIndex].strip())
@@ -299,8 +299,11 @@ class WebTestFinder(object):
 
     @staticmethod
     def _split_into_chunks(test_names, index, count):
-        tests_and_indices = [(test_name, hash(test_name) % count)
-                             for test_name in test_names]
+        tests_and_indices = [
+            (test_name,
+             int(hashlib.sha256(test_name.encode('utf-8')).hexdigest(), 16) %
+             count) for test_name in test_names
+        ]
 
         tests_to_run = [
             test_name for test_name, test_index in tests_and_indices

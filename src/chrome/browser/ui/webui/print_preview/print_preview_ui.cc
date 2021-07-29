@@ -33,6 +33,7 @@
 #include "chrome/browser/pdf/pdf_extension_util.h"
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/printing/pdf_nup_converter_client.h"
+#include "chrome/browser/printing/print_backend_service_manager.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/print_preview_data_service.h"
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
@@ -69,6 +70,7 @@
 #include "printing/mojom/print.mojom.h"
 #include "printing/nup_parameters.h"
 #include "printing/print_job_constants.h"
+#include "printing/printing_features.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -412,22 +414,6 @@ void AddPrintPreviewFlags(content::WebUIDataSource* source, Profile* profile) {
       "forceEnablePrivetPrinting",
       profile->GetPrefs()->GetBoolean(prefs::kForceEnablePrivetPrinting));
 #endif
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  source->AddBoolean(
-      "showPrinterStatus",
-      base::FeatureList::IsEnabled(chromeos::features::kPrinterStatus));
-  source->AddBoolean(
-      "showPrinterStatusInDialog",
-      base::FeatureList::IsEnabled(chromeos::features::kPrinterStatusDialog));
-  source->AddBoolean(
-      "printServerScaling",
-      base::FeatureList::IsEnabled(chromeos::features::kPrintServerScaling));
-#elif BUILDFLAG(IS_CHROMEOS_LACROS)
-  source->AddBoolean("showPrinterStatus", true);
-  source->AddBoolean("showPrinterStatusInDialog", true);
-  source->AddBoolean("printServerScaling", true);
-#endif
 }
 
 void SetupPrintPreviewPlugin(content::WebUIDataSource* source) {
@@ -485,6 +471,14 @@ PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui,
       initial_preview_start_time_(base::TimeTicks::Now()),
       handler_(handler.get()) {
   web_ui->AddMessageHandler(std::move(handler));
+
+  // Register with print backend service manager; it is beneficial to have a
+  // the print backend service be present and ready for at least as long as
+  // this UI is around.
+  if (base::FeatureList::IsEnabled(features::kEnableOopPrintDrivers)) {
+    service_manager_client_id_ =
+        PrintBackendServiceManager::GetInstance().RegisterClient();
+  }
 }
 
 PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui)
@@ -502,9 +496,21 @@ PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui)
 
   // Set up the chrome://theme/ source.
   content::URLDataSource::Add(profile, std::make_unique<ThemeSource>(profile));
+
+  // Register with print backend service manager; it is beneficial to have a
+  // the print backend service be present and ready for at least as long as
+  // this UI is around.
+  if (base::FeatureList::IsEnabled(features::kEnableOopPrintDrivers)) {
+    service_manager_client_id_ =
+        PrintBackendServiceManager::GetInstance().RegisterClient();
+  }
 }
 
 PrintPreviewUI::~PrintPreviewUI() {
+  if (base::FeatureList::IsEnabled(features::kEnableOopPrintDrivers)) {
+    PrintBackendServiceManager::GetInstance().UnregisterClient(
+        service_manager_client_id_);
+  }
   ClearPreviewUIId();
 }
 
@@ -805,7 +811,6 @@ void PrintPreviewUI::SetInitialParams(
       print_preview_dialog->GetWebUI()->GetController());
   print_preview_ui->source_is_arc_ = params.is_from_arc;
   print_preview_ui->source_is_modifiable_ = params.is_modifiable;
-  print_preview_ui->source_is_pdf_ = params.is_pdf;
   print_preview_ui->source_has_selection_ = params.has_selection;
   print_preview_ui->print_selection_only_ = params.selection_only;
 }
@@ -922,13 +927,15 @@ void PrintPreviewUI::DidGetDefaultPageLayout(
   }
 
   base::DictionaryValue layout;
-  layout.SetDouble(kSettingMarginTop, page_layout_in_points->margin_top);
-  layout.SetDouble(kSettingMarginLeft, page_layout_in_points->margin_left);
-  layout.SetDouble(kSettingMarginBottom, page_layout_in_points->margin_bottom);
-  layout.SetDouble(kSettingMarginRight, page_layout_in_points->margin_right);
-  layout.SetDouble(kSettingContentWidth, page_layout_in_points->content_width);
-  layout.SetDouble(kSettingContentHeight,
-                   page_layout_in_points->content_height);
+  layout.SetDoubleKey(kSettingMarginTop, page_layout_in_points->margin_top);
+  layout.SetDoubleKey(kSettingMarginLeft, page_layout_in_points->margin_left);
+  layout.SetDoubleKey(kSettingMarginBottom,
+                      page_layout_in_points->margin_bottom);
+  layout.SetDoubleKey(kSettingMarginRight, page_layout_in_points->margin_right);
+  layout.SetDoubleKey(kSettingContentWidth,
+                      page_layout_in_points->content_width);
+  layout.SetDoubleKey(kSettingContentHeight,
+                      page_layout_in_points->content_height);
   layout.SetInteger(kSettingPrintableAreaX, printable_area_in_points.x());
   layout.SetInteger(kSettingPrintableAreaY, printable_area_in_points.y());
   layout.SetInteger(kSettingPrintableAreaWidth,

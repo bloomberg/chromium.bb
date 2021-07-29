@@ -125,11 +125,11 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   };
 
   // This is enum associated with VASurfaceAttribUsageHint.
-  enum class SurfaceUsageHint : uint8_t {
-    kVideoDecoder,
-    kVideoEncoder,
-    kVideoProcessWrite,
-    kGeneric,
+  enum class SurfaceUsageHint : int32_t {
+    kGeneric = VA_SURFACE_ATTRIB_USAGE_HINT_GENERIC,
+    kVideoDecoder = VA_SURFACE_ATTRIB_USAGE_HINT_DECODER,
+    kVideoEncoder = VA_SURFACE_ATTRIB_USAGE_HINT_ENCODER,
+    kVideoProcessWrite = VA_SURFACE_ATTRIB_USAGE_HINT_VPP_WRITE,
   };
 
   using InternalFormats = struct {
@@ -244,17 +244,17 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   static uint32_t GetProtectedInstanceID();
 
   // Creates |num_surfaces| VASurfaceIDs of |va_format|, |size| and
-  // |surface_usage_hint| and, if successful, creates a |va_context_id_| of the
-  // same size. |surface_usage_hint| may affect an alignment and tiling of the
+  // |surface_usage_hints| and, if successful, creates a |va_context_id_| of the
+  // same size. |surface_usage_hints| may affect an alignment and tiling of the
   // created surface. Returns true if successful, with the created IDs in
   // |va_surfaces|. The client is responsible for destroying |va_surfaces| via
   // DestroyContextAndSurfaces() to free the allocated surfaces.
-  virtual bool CreateContextAndSurfaces(unsigned int va_format,
-                                        const gfx::Size& size,
-                                        SurfaceUsageHint surface_usage_hint,
-                                        size_t num_surfaces,
-                                        std::vector<VASurfaceID>* va_surfaces)
-      WARN_UNUSED_RESULT;
+  virtual bool CreateContextAndSurfaces(
+      unsigned int va_format,
+      const gfx::Size& size,
+      const std::vector<SurfaceUsageHint>& surface_usage_hints,
+      size_t num_surfaces,
+      std::vector<VASurfaceID>* va_surfaces) WARN_UNUSED_RESULT;
 
   // Creates a single ScopedVASurface of |va_format| and |size| and, if
   // successful, creates a |va_context_id_| of the same size. Returns nullptr if
@@ -264,6 +264,7 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   std::unique_ptr<ScopedVASurface> CreateContextAndScopedVASurface(
       unsigned int va_format,
       const gfx::Size& size,
+      const std::vector<SurfaceUsageHint>& usage_hints,
       const absl::optional<gfx::Size>& visible_size = absl::nullopt);
 
   // Attempts to create a protected session that will be attached to the
@@ -310,6 +311,7 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   std::unique_ptr<ScopedVASurface> CreateScopedVASurface(
       unsigned int va_rt_format,
       const gfx::Size& size,
+      const std::vector<SurfaceUsageHint>& usage_hints,
       const absl::optional<gfx::Size>& visible_size = absl::nullopt,
       uint32_t va_fourcc = 0);
 
@@ -317,9 +319,11 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // shares the ownership of the underlying buffer represented by |pixmap|. The
   // ownership of the surface is transferred to the caller. A caller can destroy
   // |pixmap| after this method returns and the underlying buffer will be kept
-  // alive by the VASurface.
-  scoped_refptr<VASurface> CreateVASurfaceForPixmap(
-      scoped_refptr<gfx::NativePixmap> pixmap);
+  // alive by the VASurface. |protected_content| should only be true if the
+  // format needs VA_RT_FORMAT_PROTECTED (currently only true for AMD).
+  virtual scoped_refptr<VASurface> CreateVASurfaceForPixmap(
+      scoped_refptr<gfx::NativePixmap> pixmap,
+      bool protected_content = false);
 
   // Creates a self-releasing VASurface from |buffers|. The ownership of the
   // surface is transferred to the caller.  |buffers| should be a pointer array
@@ -462,15 +466,26 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // |va_surface_dest| applying pixel format conversion, rotation, cropping
   // and scaling if needed. |src_rect| and |dest_rect| are optional. They can
   // be used to specify the area used in the blit.
-  bool BlitSurface(const VASurface& va_surface_src,
-                   const VASurface& va_surface_dest,
-                   absl::optional<gfx::Rect> src_rect = absl::nullopt,
-                   absl::optional<gfx::Rect> dest_rect = absl::nullopt,
-                   VideoRotation rotation = VIDEO_ROTATION_0)
+  virtual bool BlitSurface(const VASurface& va_surface_src,
+                           const VASurface& va_surface_dest,
+                           absl::optional<gfx::Rect> src_rect = absl::nullopt,
+                           absl::optional<gfx::Rect> dest_rect = absl::nullopt,
+                           VideoRotation rotation = VIDEO_ROTATION_0)
       WARN_UNUSED_RESULT;
 
   // Initialize static data before sandbox is enabled.
   static void PreSandboxInitialization();
+
+  // TODO(crbug.com/1186051): Back to private in favor of using
+  // CreateScopedVASurface().
+  // Tries to allocate |num_surfaces| VASurfaceIDs of |size| and |va_format|.
+  // Fills |va_surfaces| and returns true if successful, or returns false.
+  virtual bool CreateSurfaces(unsigned int va_format,
+                              const gfx::Size& size,
+                              const std::vector<SurfaceUsageHint>& usage_hints,
+                              size_t num_surfaces,
+                              std::vector<VASurfaceID>* va_surfaces)
+      WARN_UNUSED_RESULT;
 
   // vaDestroySurfaces() a vector or a single VASurfaceID.
   virtual void DestroySurfaces(std::vector<VASurfaceID> va_surfaces);
@@ -489,20 +504,11 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   FRIEND_TEST_ALL_PREFIXES(VaapiUtilsTest, BadScopedVAImage);
   FRIEND_TEST_ALL_PREFIXES(VaapiUtilsTest, BadScopedVABufferMapping);
 
-  bool Initialize(CodecMode mode,
-                  VAProfile va_profile,
+  bool Initialize(VAProfile va_profile,
                   EncryptionScheme encryption_scheme) WARN_UNUSED_RESULT;
   void Deinitialize();
   bool VaInitialize(const ReportErrorToUMACB& report_error_to_uma_cb)
       WARN_UNUSED_RESULT;
-
-  // Tries to allocate |num_surfaces| VASurfaceIDs of |size| and |va_format|.
-  // Fills |va_surfaces| and returns true if successful, or returns false.
-  bool CreateSurfaces(unsigned int va_format,
-                      const gfx::Size& size,
-                      SurfaceUsageHint usage_hint,
-                      size_t num_surfaces,
-                      std::vector<VASurfaceID>* va_surfaces) WARN_UNUSED_RESULT;
 
   // Carries out the vaBeginPicture()-vaRenderPicture()-vaEndPicture() on target
   // |va_surface_id|. Returns false if any of these calls fails.

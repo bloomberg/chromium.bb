@@ -33,6 +33,7 @@ using ContextType = ExtensionBrowserTest::ContextType;
 class ExtensionContextMenuApiTest : public ExtensionApiTest {
  public:
   ExtensionContextMenuApiTest() = default;
+  ~ExtensionContextMenuApiTest() override = default;
   ExtensionContextMenuApiTest(const ExtensionContextMenuApiTest&) = delete;
   ExtensionContextMenuApiTest& operator=(const ExtensionContextMenuApiTest&) =
       delete;
@@ -43,6 +44,7 @@ class ExtensionContextMenuApiTestWithContextType
       public testing::WithParamInterface<ContextType> {
  public:
   ExtensionContextMenuApiTestWithContextType() = default;
+  ~ExtensionContextMenuApiTestWithContextType() override = default;
   ExtensionContextMenuApiTestWithContextType(
       const ExtensionContextMenuApiTestWithContextType&) = delete;
   ExtensionContextMenuApiTestWithContextType& operator=(
@@ -51,7 +53,7 @@ class ExtensionContextMenuApiTestWithContextType
  protected:
   bool RunTest(const char* path) {
     return RunExtensionTest(
-        {.name = path},
+        path, {},
         {.load_as_service_worker = GetParam() == ContextType::kServiceWorker});
   }
 };

@@ -94,7 +94,8 @@ step](https://codereview.chromium.org/2517203002)). You should use asserts in
 the [same
 scenarios](https://chromium.googlesource.com/chromium/src/+/main/styleguide/c++/c++.md#CHECK_DCHECK_and-NOTREACHED)
 where C++ DCHECK()s make sense. For multi-statement asserts, use
-`org.chromium.base.BuildConfig.DCHECK_IS_ON` to guard your code.
+`org.chromium.build.BuildConfig.ENABLE_ASSERTS` to guard your code (similar to
+`#if DCHECK_IS_ON()` in C++).
 
 Example assert:
 
@@ -102,10 +103,14 @@ Example assert:
 assert someCallWithoutSideEffects() : "assert description";
 ```
 
-Example use of `DCHECK_IS_ON`:
+Example use of `BuildConfig.ENABLE_ASSERTS`:
 
 ```java
-if (org.chromium.base.BuildConfig.DCHECK_IS_ON) {
+import org.chromium.build.BuildConfig;
+
+...
+
+if (BuildConfig.ENABLE_ASSERTS) {
   // Any code here will be stripped in Release by ProGuard.
   ...
 }
@@ -131,6 +136,36 @@ to ensure in debug builds and tests that `destroy()` is called.
 * `javax.annotation.Nullable` vs `androidx.annotation.Nullable`
   * Always prefer `androidx.annotation.Nullable`.
   * It uses `@Retention(SOURCE)` rather than `@Retention(RUNTIME)`.
+
+### IntDef Instead of Enum
+
+Java enums generate far more bytecode than integer constants. When integers are
+sufficient, prefer using an [@IntDef annotation], which will have usage checked
+by [Android lint].
+
+Values can be declared outside or inside the `@interface`. We recommend the
+latter, with constants nested within it as follows:
+
+```java
+@IntDef({ContactsPickerAction.CANCEL, ContactsPickerAction.CONTACTS_SELECTED,
+        ContactsPickerAction.SELECT_ALL, ContactsPickerAction.UNDO_SELECT_ALL})
+@Retention(RetentionPolicy.SOURCE)
+public @interface ContactsPickerAction {
+    int CANCEL = 0;
+    int CONTACTS_SELECTED = 1;
+    int SELECT_ALL = 2;
+    int UNDO_SELECT_ALL = 3;
+    int NUM_ENTRIES = 4;
+}
+// ...
+void onContactsPickerUserAction(@ContactsPickerAction int action, ...);
+```
+
+Values of `Integer` type are also supported, which allows using a sentinel
+`null` if needed.
+
+[@IntDef annotation]: https://developer.android.com/studio/write/annotations#enum-annotations
+[Android lint]: https://chromium.googlesource.com/chromium/src/+/HEAD/build/android/docs/lint.md
 
 ## Tools
 

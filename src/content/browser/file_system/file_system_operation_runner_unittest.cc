@@ -23,6 +23,7 @@
 #include "storage/browser/file_system/file_system_backend.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_operation_runner.h"
+#include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "storage/browser/test/test_file_system_context.h"
 #include "storage/browser/test/test_file_system_options.h"
@@ -63,9 +64,12 @@ void DidOpenFile(base::File file, base::OnceClosure on_close_callback) {}
 }  // namespace
 
 class FileSystemOperationRunnerTest : public testing::Test {
- protected:
-  FileSystemOperationRunnerTest() {}
-  ~FileSystemOperationRunnerTest() override {}
+ public:
+  FileSystemOperationRunnerTest() = default;
+  FileSystemOperationRunnerTest(const FileSystemOperationRunnerTest&) = delete;
+  FileSystemOperationRunnerTest& operator=(
+      const FileSystemOperationRunnerTest&) = delete;
+  ~FileSystemOperationRunnerTest() override = default;
 
   void SetUp() override {
     ASSERT_TRUE(base_.CreateUniqueTempDir());
@@ -94,8 +98,6 @@ class FileSystemOperationRunnerTest : public testing::Test {
   base::ScopedTempDir base_;
   base::test::SingleThreadTaskEnvironment task_environment_;
   scoped_refptr<FileSystemContext> file_system_context_;
-
-  DISALLOW_COPY_AND_ASSIGN(FileSystemOperationRunnerTest);
 };
 
 TEST_F(FileSystemOperationRunnerTest, NotFoundError) {
@@ -194,12 +196,13 @@ class MultiThreadFileSystemOperationRunnerTest : public testing::Test {
     ASSERT_TRUE(base_.CreateUniqueTempDir());
 
     base::FilePath base_dir = base_.GetPath();
-    file_system_context_ = base::MakeRefCounted<FileSystemContext>(
-        base::ThreadTaskRunnerHandle::Get().get(),
-        base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()}).get(),
-        storage::ExternalMountPoints::CreateRefCounted().get(),
-        base::MakeRefCounted<storage::MockSpecialStoragePolicy>().get(),
-        nullptr, std::vector<std::unique_ptr<storage::FileSystemBackend>>(),
+    file_system_context_ = FileSystemContext::Create(
+        base::ThreadTaskRunnerHandle::Get(),
+        base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()}),
+        storage::ExternalMountPoints::CreateRefCounted(),
+        base::MakeRefCounted<storage::MockSpecialStoragePolicy>(),
+        /*quota_manager_proxy=*/nullptr,
+        std::vector<std::unique_ptr<storage::FileSystemBackend>>(),
         std::vector<storage::URLRequestAutoMountHandler>(), base_dir,
         storage::CreateAllowFileAccessOptions());
 

@@ -9,9 +9,9 @@ import {Menu} from 'chrome://resources/js/cr/ui/menu.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://test/chai_assert.js';
 
-import {util} from '../../../common/js/util.m.js';
+import {util} from '../../../common/js/util.js';
 
-import {MultiMenuButton} from './multi_menu_button.m.js';
+import {MultiMenuButton} from './multi_menu_button.js';
 
 /** @type {MultiMenuButton} */
 let menubutton;
@@ -32,8 +32,7 @@ let initialWindowHeight;
 export function setUp() {
   // Internals of WebUI reference this property when processing
   // keyboard events, so we need to prepare it to stop asserts.
-  loadTimeData.resetForTesting();
-  loadTimeData.overrideValues({'SHORTCUT_ENTER': 'Enter'});
+  loadTimeData.resetForTesting({'SHORTCUT_ENTER': 'Enter'});
 
   // Multiple tests rely on the window height, reset between tests to avoid
   // interference.

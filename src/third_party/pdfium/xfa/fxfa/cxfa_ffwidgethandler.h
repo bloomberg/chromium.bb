@@ -7,16 +7,17 @@
 #ifndef XFA_FXFA_CXFA_FFWIDGETHANDLER_H_
 #define XFA_FXFA_CXFA_FFWIDGETHANDLER_H_
 
+#include "core/fxcrt/fx_coordinates.h"
 #include "fxjs/gc/heap.h"
 #include "v8/include/cppgc/garbage-collected.h"
 #include "v8/include/cppgc/member.h"
 #include "v8/include/cppgc/visitor.h"
 #include "xfa/fxfa/cxfa_eventparam.h"
-#include "xfa/fxfa/fxfa.h"
 #include "xfa/fxfa/parser/cxfa_document.h"
 
 class CFGAS_GEGraphics;
 class CXFA_FFDocView;
+class CXFA_FFWidget;
 enum class FWL_WidgetHit;
 
 class CXFA_FFWidgetHandler final

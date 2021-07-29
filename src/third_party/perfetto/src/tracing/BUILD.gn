@@ -50,14 +50,17 @@ if (perfetto_build_standalone) {
   }
 }
 
-# Separate target because the embedder might not want this (e.g. on Windows).
+# Separate target because the embedder might not want this.
 source_set("platform_impl") {
   deps = [
     "../../gn:default_deps",
     "../../include/perfetto/tracing",
     "../base",
   ]
-  sources = [ "platform_posix.cc" ]
+  sources = [
+    "platform_posix.cc",
+    "platform_windows.cc",
+  ]
 }
 
 # Fake platform that allows buiding the client lib on all OSes. You can only use
@@ -156,6 +159,7 @@ perfetto_unittest_source_set("unittests") {
       ":client_api_without_backends",
       ":platform_impl",
     ]
+
     sources += [
       "traced_proto_unittest.cc",
       "traced_value_unittest.cc",

@@ -942,7 +942,8 @@ bool DrawingBuffer::Initialize(const IntSize& size, bool use_multisampling) {
       gl_->FramebufferParameteri(GL_FRAMEBUFFER, GL_FRAMEBUFFER_FLIP_Y_MESA, 1);
   }
   if (!ResizeFramebufferInternal(size)) {
-    DLOG(ERROR) << "Initialization failed to allocate backbuffer.";
+    DLOG(ERROR) << "Initialization failed to allocate backbuffer of size "
+                << size.Width() << " x " << size.Height() << ".";
     return false;
   }
 
@@ -1532,7 +1533,7 @@ sk_sp<SkData> DrawingBuffer::PaintRenderingResultsToDataArray(
   // Readback in native GL byte order (RGBA).
   SkColorType color_type = kRGBA_8888_SkColorType;
   base::CheckedNumeric<size_t> row_bytes = 4;
-  if (RuntimeEnabledFeatures::CanvasColorManagementEnabled() &&
+  if (RuntimeEnabledFeatures::CanvasColorManagementV2Enabled() &&
       back_color_buffer_->format == viz::RGBA_F16) {
     color_type = kRGBA_F16_SkColorType;
     row_bytes *= 2;
@@ -1596,7 +1597,7 @@ void DrawingBuffer::ReadBackFramebuffer(base::span<uint8_t> pixels,
   expected_data_size *= Size().Width();
   expected_data_size *= Size().Height();
 
-  if (RuntimeEnabledFeatures::CanvasColorManagementEnabled() &&
+  if (RuntimeEnabledFeatures::CanvasColorManagementV2Enabled() &&
       color_type == kRGBA_F16_SkColorType) {
     data_type = (webgl_version_ > kWebGL1) ? GL_HALF_FLOAT : GL_HALF_FLOAT_OES;
     expected_data_size *= 2;
@@ -1735,15 +1736,22 @@ scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
       // the non-GMB CreateSharedImage with gpu::SHARED_IMAGE_USAGE_SCANOUT in
       // order to allocate the GMB service-side and avoid a synchronous
       // round-trip to the browser process here.
+      gfx::BufferUsage buffer_usage = gfx::BufferUsage::SCANOUT;
+      uint32_t additional_usage_flags = gpu::SHARED_IMAGE_USAGE_SCANOUT;
+      if (low_latency_enabled()) {
+        buffer_usage = gfx::BufferUsage::SCANOUT_FRONT_RENDERING;
+        additional_usage_flags = gpu::SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE;
+      }
+
       gpu_memory_buffer = gpu_memory_buffer_manager->CreateGpuMemoryBuffer(
-          gfx::Size(size), buffer_format, gfx::BufferUsage::SCANOUT,
-          gpu::kNullSurfaceHandle, nullptr);
+          gfx::Size(size), buffer_format, buffer_usage, gpu::kNullSurfaceHandle,
+          nullptr);
 
       if (gpu_memory_buffer) {
         back_buffer_mailbox = sii->CreateSharedImage(
             gpu_memory_buffer.get(), gpu_memory_buffer_manager,
             storage_color_space_, origin, kPremul_SkAlphaType,
-            usage | gpu::SHARED_IMAGE_USAGE_SCANOUT);
+            usage | additional_usage_flags);
       }
     }
 

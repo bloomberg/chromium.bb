@@ -56,9 +56,10 @@ AwRenderViewHostExt::AwRenderViewHostExt(AwRenderViewHostExtClient* client,
                                          content::WebContents* contents)
     : content::WebContentsObserver(contents),
       client_(client),
-      background_color_(SK_ColorWHITE),
       has_new_hit_test_data_(false),
-      frame_host_receivers_(contents, this) {
+      frame_host_receivers_(contents,
+                            this,
+                            content::WebContentsFrameReceiverSetPassKey()) {
   DCHECK(client_);
 }
 
@@ -122,15 +123,6 @@ void AwRenderViewHostExt::SetInitialPageScale(double page_scale_factor) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (auto* local_main_frame_remote = GetLocalMainFrameRemote())
     local_main_frame_remote->SetInitialPageScale(page_scale_factor);
-}
-
-void AwRenderViewHostExt::SetBackgroundColor(SkColor c) {
-  if (background_color_ == c)
-    return;
-  background_color_ = c;
-  if (auto* local_main_frame_remote = GetLocalMainFrameRemote()) {
-    local_main_frame_remote->SetBackgroundColor(background_color_);
-  }
 }
 
 void AwRenderViewHostExt::SetWillSuppressErrorPage(bool suppress) {
@@ -214,7 +206,7 @@ mojom::LocalMainFrame* AwRenderViewHostExt::GetLocalMainFrameRemote() {
   // this class gets called vs others using this class might cause a TOU
   // problem, so we validate it each time before use.
   content::RenderFrameHost* main_frame = web_contents()->GetMainFrame();
-  content::GlobalFrameRoutingId main_frame_id = main_frame->GetGlobalFrameRoutingId();
+  content::GlobalRenderFrameHostId main_frame_id = main_frame->GetGlobalId();
   if (main_frame_global_id_ == main_frame_id) {
     return local_main_frame_remote_.get();
   }
@@ -224,14 +216,13 @@ mojom::LocalMainFrame* AwRenderViewHostExt::GetLocalMainFrameRemote() {
   // Avoid accessing GetRemoteAssociatedInterfaces until the renderer is
   // created.
   if (!main_frame->IsRenderFrameCreated()) {
-    main_frame_global_id_ = content::GlobalFrameRoutingId();
+    main_frame_global_id_ = content::GlobalRenderFrameHostId();
     return nullptr;
   }
 
   main_frame_global_id_ = main_frame_id;
   main_frame->GetRemoteAssociatedInterfaces()->GetInterface(
       local_main_frame_remote_.BindNewEndpointAndPassReceiver());
-  local_main_frame_remote_->SetBackgroundColor(background_color_);
   return local_main_frame_remote_.get();
 }
 

@@ -166,6 +166,8 @@ void GetSuggestions(const autofill::PasswordFormFillData& fill_data,
                              fill_data.password_field.value.size(),
                              suggestions);
 
+  int prefered_match = suggestions->size();
+
   for (const auto& login : fill_data.additional_logins) {
     AppendSuggestionIfMatching(login.username, current_username, custom_icon,
                                login.realm, show_all, is_password_field,
@@ -173,12 +175,19 @@ void GetSuggestions(const autofill::PasswordFormFillData& fill_data,
                                suggestions);
   }
 
+  std::sort(suggestions->begin() + prefered_match, suggestions->end(),
+            [](const autofill::Suggestion& a, const autofill::Suggestion& b) {
+              return a.value < b.value;
+            });
+
   // Prefix matches should precede other token matches.
   if (!show_all && autofill::IsFeatureSubstringMatchEnabled()) {
-    std::sort(suggestions->begin(), suggestions->end(),
-              [](const autofill::Suggestion& a, const autofill::Suggestion& b) {
-                return a.match < b.match;
-              });
+    // Using stable sort in order to preserve sorting by 'value'
+    std::stable_sort(
+        suggestions->begin(), suggestions->end(),
+        [](const autofill::Suggestion& a, const autofill::Suggestion& b) {
+          return a.match < b.match;
+        });
   }
 }
 
@@ -339,19 +348,19 @@ void PasswordAutofillManager::OnPopupHidden() {}
 void PasswordAutofillManager::OnPopupSuppressed() {}
 
 void PasswordAutofillManager::DidSelectSuggestion(const std::u16string& value,
-                                                  int identifier) {
+                                                  int frontend_id) {
   ClearPreviewedForm();
-  if (identifier == autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY ||
-      identifier == autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_EMPTY ||
-      identifier == autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY ||
-      identifier == autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN ||
-      identifier ==
+  if (frontend_id == autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY ||
+      frontend_id == autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_EMPTY ||
+      frontend_id == autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY ||
+      frontend_id == autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN ||
+      frontend_id ==
           autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_RE_SIGNIN ||
-      identifier ==
+      frontend_id ==
           autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE)
     return;
   bool success =
-      PreviewSuggestion(GetUsernameFromSuggestion(value), identifier);
+      PreviewSuggestion(GetUsernameFromSuggestion(value), frontend_id);
   DCHECK(success);
 }
 
@@ -377,17 +386,17 @@ void PasswordAutofillManager::OnUnlockItemAccepted(
 }
 
 void PasswordAutofillManager::DidAcceptSuggestion(const std::u16string& value,
-                                                  int identifier,
+                                                  int frontend_id,
+                                                  const std::string& backend_id,
                                                   int position) {
   using metrics_util::PasswordDropdownSelectedOption;
-
-  if (identifier == autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY) {
+  if (frontend_id == autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY) {
     password_client_->GeneratePassword(PasswordGenerationType::kAutomatic);
     metrics_util::LogPasswordDropdownItemSelected(
         PasswordDropdownSelectedOption::kGenerate,
         password_client_->IsIncognito());
-  } else if (identifier == autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY ||
-             identifier ==
+  } else if (frontend_id == autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY ||
+             frontend_id ==
                  autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_EMPTY) {
     password_client_->NavigateToManagePasswordsPage(
         ManagePasswordsReferrer::kPasswordDropdown);
@@ -401,7 +410,7 @@ void PasswordAutofillManager::DidAcceptSuggestion(const std::u16string& value,
       password_client_->GetMetricsRecorder()->RecordPageLevelUserAction(
           UserAction::kShowAllPasswordsWhileSomeAreSuggested);
     }
-  } else if (identifier ==
+  } else if (frontend_id ==
              autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_RE_SIGNIN) {
     password_client_->TriggerSignIn(
         signin_metrics::AccessPoint::ACCESS_POINT_AUTOFILL_DROPDOWN);
@@ -409,13 +418,13 @@ void PasswordAutofillManager::DidAcceptSuggestion(const std::u16string& value,
         PasswordDropdownSelectedOption::kResigninToUnlockAccountStore,
         password_client_->IsIncognito());
   } else if (
-      identifier == autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN ||
-      identifier ==
+      frontend_id == autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN ||
+      frontend_id ==
           autofill::
               POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE) {
-    OnUnlockItemAccepted(static_cast<autofill::PopupItemId>(identifier));
+    OnUnlockItemAccepted(static_cast<autofill::PopupItemId>(frontend_id));
     metrics_util::LogPasswordDropdownItemSelected(
-        identifier == autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN
+        frontend_id == autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN
             ? PasswordDropdownSelectedOption::kUnlockAccountStorePasswords
             : PasswordDropdownSelectedOption::kUnlockAccountStoreGeneration,
         password_client_->IsIncognito());
@@ -428,10 +437,9 @@ void PasswordAutofillManager::DidAcceptSuggestion(const std::u16string& value,
         password_client_->GetBiometricAuthenticator();
     // Note: this is currently only implemented on Android. For desktop,
     // the `authenticator` will be null.
-    if (!authenticator || authenticator->CanAuthenticate() !=
-                              BiometricsAvailability::kAvailable) {
+    if (!password_manager_util::CanUseBiometricAuth(authenticator.get())) {
       bool success =
-          FillSuggestion(GetUsernameFromSuggestion(value), identifier);
+          FillSuggestion(GetUsernameFromSuggestion(value), frontend_id);
       DCHECK(success);
     } else {
       // `this` cancels the authentication when it is destructed, which
@@ -440,7 +448,7 @@ void PasswordAutofillManager::DidAcceptSuggestion(const std::u16string& value,
       authenticator_->Authenticate(
           BiometricAuthRequester::kAutofillSuggestion,
           base::BindOnce(&PasswordAutofillManager::OnBiometricReauthCompleted,
-                         base::Unretained(this), value, identifier));
+                         base::Unretained(this), value, frontend_id));
     }
   }
   autofill_client_->HideAutofillPopup(
@@ -449,14 +457,14 @@ void PasswordAutofillManager::DidAcceptSuggestion(const std::u16string& value,
 
 bool PasswordAutofillManager::GetDeletionConfirmationText(
     const std::u16string& value,
-    int identifier,
+    int frontend_id,
     std::u16string* title,
     std::u16string* body) {
   return false;
 }
 
 bool PasswordAutofillManager::RemoveSuggestion(const std::u16string& value,
-                                               int identifier) {
+                                               int frontend_id) {
   // Password suggestions cannot be deleted this way.
   // See http://crbug.com/329038#c15
   return false;
@@ -470,8 +478,9 @@ autofill::PopupType PasswordAutofillManager::GetPopupType() const {
   return autofill::PopupType::kPasswords;
 }
 
-autofill::AutofillDriver* PasswordAutofillManager::GetAutofillDriver() {
-  return password_manager_driver_->GetAutofillDriver();
+absl::variant<autofill::AutofillDriver*, PasswordManagerDriver*>
+PasswordAutofillManager::GetDriver() {
+  return password_manager_driver_;
 }
 
 int32_t PasswordAutofillManager::GetWebContentsPopupControllerAxId() const {
@@ -795,12 +804,12 @@ void PasswordAutofillManager::OnUnlockReauthCompleted(
 
 void PasswordAutofillManager::OnBiometricReauthCompleted(
     const std::u16string& value,
-    int identifier,
+    int frontend_id,
     bool auth_succeeded) {
   authenticator_.reset();
   if (!auth_succeeded)
     return;
-  bool success = FillSuggestion(GetUsernameFromSuggestion(value), identifier);
+  bool success = FillSuggestion(GetUsernameFromSuggestion(value), frontend_id);
   DCHECK(success);
 }
 

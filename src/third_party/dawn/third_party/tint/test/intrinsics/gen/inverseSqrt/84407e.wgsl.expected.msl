@@ -1,0 +1,27 @@
+#include <metal_stdlib>
+
+using namespace metal;
+struct tint_symbol {
+  float4 value [[position]];
+};
+
+void inverseSqrt_84407e() {
+  float res = rsqrt(1.0f);
+}
+
+vertex tint_symbol vertex_main() {
+  inverseSqrt_84407e();
+  tint_symbol const tint_symbol_1 = {.value=float4()};
+  return tint_symbol_1;
+}
+
+fragment void fragment_main() {
+  inverseSqrt_84407e();
+  return;
+}
+
+kernel void compute_main() {
+  inverseSqrt_84407e();
+  return;
+}
+

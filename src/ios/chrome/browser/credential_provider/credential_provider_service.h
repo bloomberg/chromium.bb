@@ -13,8 +13,7 @@
 #include "components/sync/driver/sync_service_observer.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 
-@class ArchivableCredential;
-@class ArchivableCredentialStore;
+@protocol MutableCredentialStore;
 
 namespace syncer {
 class SyncService;
@@ -25,7 +24,7 @@ class SyncService;
 class CredentialProviderService
     : public KeyedService,
       public password_manager::PasswordStoreConsumer,
-      public password_manager::PasswordStore::Observer,
+      public password_manager::PasswordStoreInterface::Observer,
       public signin::IdentityManager::Observer,
       public syncer::SyncServiceObserver {
  public:
@@ -33,7 +32,7 @@ class CredentialProviderService
   CredentialProviderService(
       scoped_refptr<password_manager::PasswordStore> password_store,
       AuthenticationService* authentication_service,
-      ArchivableCredentialStore* credential_store,
+      id<MutableCredentialStore> credential_store,
       signin::IdentityManager* identity_manager,
       syncer::SyncService* sync_service);
   ~CredentialProviderService() override;
@@ -78,9 +77,13 @@ class CredentialProviderService
       std::vector<std::unique_ptr<password_manager::PasswordForm>> results)
       override;
 
-  // PasswordStore::Observer:
+  // PasswordStoreInterface::Observer:
   void OnLoginsChanged(
+      password_manager::PasswordStoreInterface* store,
       const password_manager::PasswordStoreChangeList& changes) override;
+  void OnLoginsRetained(password_manager::PasswordStoreInterface* store,
+                        const std::vector<password_manager::PasswordForm>&
+                            retained_passwords) override;
 
   // Completion called after the affiliations are injected in the added forms.
   // If no affiliation matcher is available, it is called right away.
@@ -103,7 +106,7 @@ class CredentialProviderService
   syncer::SyncService* sync_service_ = nullptr;
 
   // The interface for saving and updating credentials.
-  ArchivableCredentialStore* archivable_credential_store_ = nil;
+  id<MutableCredentialStore> credential_store_ = nil;
 
   // The current validation ID or nil.
   NSString* account_validation_id_ = nil;

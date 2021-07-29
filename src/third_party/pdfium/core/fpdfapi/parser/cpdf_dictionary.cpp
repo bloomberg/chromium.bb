@@ -20,7 +20,7 @@
 #include "core/fpdfapi/parser/fpdf_parser_utility.h"
 #include "core/fxcrt/fx_stream.h"
 #include "third_party/base/check.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/containers/contains.h"
 
 CPDF_Dictionary::CPDF_Dictionary()
     : CPDF_Dictionary(WeakPtr<ByteStringPool>()) {}
@@ -80,6 +80,11 @@ RetainPtr<CPDF_Object> CPDF_Dictionary::CloneNonCyclic(
     }
   }
   return pCopy;
+}
+
+// static
+bool CPDF_Dictionary::IsValidKey(const ByteString& key) {
+  return !key.IsEmpty() && key.AsStringView().IsASCII();
 }
 
 const CPDF_Object* CPDF_Dictionary::GetObjectFor(const ByteString& key) const {
@@ -210,6 +215,7 @@ std::vector<ByteString> CPDF_Dictionary::GetKeys() const {
 
 CPDF_Object* CPDF_Dictionary::SetFor(const ByteString& key,
                                      RetainPtr<CPDF_Object> pObj) {
+  CHECK(IsValidKey(key));
   CHECK(!IsLocked());
   if (!pObj) {
     m_Map.erase(key);

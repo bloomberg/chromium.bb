@@ -118,6 +118,8 @@ void ExpectNotActive(UpdaterScope scope, const std::string& app_id);
 void SetExistenceCheckerPath(const std::string& app_id,
                              const base::FilePath& path);
 
+void SetServerStarts(int value);
+
 void ExpectAppUnregisteredExistenceCheckerPath(const std::string& app_id);
 
 void RegisterApp(const std::string& app_id);
@@ -125,8 +127,12 @@ void RegisterApp(const std::string& app_id);
 void WaitForServerExit(UpdaterScope scope);
 
 #if defined(OS_WIN)
-void ExpectInterfacesRegistered();
-#endif
+void ExpectInterfacesRegistered(UpdaterScope scope);
+#endif  // OS_WIN
+
+// Returns the number of files in the directory, not including directories,
+// links, or dot dot.
+int CountDirectoryFiles(const base::FilePath& dir);
 
 }  // namespace test
 }  // namespace updater

@@ -5,6 +5,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "cc/layers/picture_layer.h"
+#include "cc/layers/recording_source.h"
+#include "cc/layers/surface_layer.h"
 #include "cc/trees/compositor_commit_data.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host.h"
@@ -25,6 +27,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/svg_names.h"
+#include "third_party/blink/renderer/core/testing/fake_remote_frame_host.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
@@ -245,7 +248,6 @@ TEST_P(CompositingTest, WillChangeTransformHint) {
 }
 
 TEST_P(CompositingTest, WillChangeTransformHintInSVG) {
-  ScopedCompositeSVGForTest enable_feature(true);
   InitializeWithHTML(*WebView()->MainFrameImpl()->GetFrame(), R"HTML(
     <!doctype html>
     <style>
@@ -268,7 +270,6 @@ TEST_P(CompositingTest, WillChangeTransformHintInSVG) {
 }
 
 TEST_P(CompositingTest, Compositing3DTransformOnSVGModelObject) {
-  ScopedCompositeSVGForTest enable_feature(true);
   InitializeWithHTML(*WebView()->MainFrameImpl()->GetFrame(), R"HTML(
     <!doctype html>
     <svg width="200" height="200">
@@ -310,7 +311,6 @@ TEST_P(CompositingTest, Compositing3DTransformOnSVGModelObject) {
 }
 
 TEST_P(CompositingTest, Compositing3DTransformOnSVGBlock) {
-  ScopedCompositeSVGForTest enable_feature(true);
   InitializeWithHTML(*WebView()->MainFrameImpl()->GetFrame(), R"HTML(
     <!doctype html>
     <svg width="200" height="200">
@@ -354,7 +354,6 @@ TEST_P(CompositingTest, Compositing3DTransformOnSVGBlock) {
 // Inlines do not support the transform property and should not be composited
 // due to 3D transforms.
 TEST_P(CompositingTest, NotCompositing3DTransformOnSVGInline) {
-  ScopedCompositeSVGForTest enable_feature(true);
   InitializeWithHTML(*WebView()->MainFrameImpl()->GetFrame(), R"HTML(
     <!doctype html>
     <svg width="200" height="200">
@@ -379,7 +378,6 @@ TEST_P(CompositingTest, NotCompositing3DTransformOnSVGInline) {
 }
 
 TEST_P(CompositingTest, PaintPropertiesWhenCompositingSVG) {
-  ScopedCompositeSVGForTest enable_feature(true);
   InitializeWithHTML(*WebView()->MainFrameImpl()->GetFrame(), R"HTML(
     <!doctype html>
     <style>
@@ -886,7 +884,6 @@ TEST_P(CompositingSimTest, DirectTransformPropertyUpdate) {
 }
 
 TEST_P(CompositingSimTest, DirectSVGTransformPropertyUpdate) {
-  ScopedCompositeSVGForTest enable_feature(true);
   InitializeWithHTML(R"HTML(
     <!doctype html>
     <style>
@@ -1002,11 +999,6 @@ TEST_P(CompositingSimTest, DirectTransformPropertyUpdateCausesChange) {
 // so that the browser controls movement adjustments needed by bottom-fixed
 // elements will work.
 TEST_P(CompositingSimTest, AffectedByOuterViewportBoundsDelta) {
-  // TODO(bokan): This test will have to be reevaluated for CAP. It looks like
-  // the fixed layer isn't composited in CAP.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   InitializeWithHTML(R"HTML(
       <!DOCTYPE html>
       <style>
@@ -1024,10 +1016,6 @@ TEST_P(CompositingSimTest, AffectedByOuterViewportBoundsDelta) {
 
   auto* fixed_element = GetElementById("fixed");
   auto* fixed_element_layer = CcLayerByDOMElementId("fixed");
-  DCHECK_EQ(fixed_element_layer->element_id(),
-            CompositorElementIdFromUniqueObjectId(
-                fixed_element->GetLayoutObject()->UniqueId(),
-                CompositorElementIdNamespace::kPrimary));
 
   // Fix the DIV to the bottom of the viewport. Since the viewport height will
   // expand/contract, the fixed element will need to be moved as the bounds
@@ -1108,12 +1096,6 @@ TEST_P(CompositingSimTest, DirectTransformOriginPropertyUpdate) {
 // This test is similar to |LayerSubtreeTransformPropertyChanged| but for
 // effect property node changes.
 TEST_P(CompositingSimTest, LayerSubtreeEffectPropertyChanged) {
-  // TODO(crbug.com/765003): CAP may make different layerization decisions and
-  // we cannot guarantee that both divs will be composited in this test. When
-  // CAP gets closer to launch, this test should be updated to pass.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   InitializeWithHTML(R"HTML(
       <!DOCTYPE html>
       <style>
@@ -1140,16 +1122,7 @@ TEST_P(CompositingSimTest, LayerSubtreeEffectPropertyChanged) {
 
   auto* outer_element = GetElementById("outer");
   auto* outer_element_layer = CcLayerByDOMElementId("outer");
-  DCHECK_EQ(outer_element_layer->element_id(),
-            CompositorElementIdFromUniqueObjectId(
-                outer_element->GetLayoutObject()->UniqueId(),
-                CompositorElementIdNamespace::kPrimary));
-  auto* inner_element = GetElementById("inner");
   auto* inner_element_layer = CcLayerByDOMElementId("inner");
-  DCHECK_EQ(inner_element_layer->element_id(),
-            CompositorElementIdFromUniqueObjectId(
-                inner_element->GetLayoutObject()->UniqueId(),
-                CompositorElementIdNamespace::kPrimary));
 
   // Initially, no layer should have |subtree_property_changed| set.
   EXPECT_FALSE(outer_element_layer->subtree_property_changed());
@@ -1161,11 +1134,9 @@ TEST_P(CompositingSimTest, LayerSubtreeEffectPropertyChanged) {
   // both layers.
   outer_element->setAttribute(html_names::kStyleAttr, "filter: blur(20px)");
   UpdateAllLifecyclePhases();
-  // TODO(wangxianzhu): Probably avoid setting this flag on transform change.
   EXPECT_TRUE(outer_element_layer->subtree_property_changed());
   // Set by blink::PropertyTreeManager.
   EXPECT_TRUE(GetEffectNode(outer_element_layer)->effect_changed);
-  // TODO(wangxianzhu): Probably avoid setting this flag on transform change.
   EXPECT_TRUE(inner_element_layer->subtree_property_changed());
   EXPECT_FALSE(GetEffectNode(inner_element_layer)->effect_changed);
 
@@ -1229,12 +1200,6 @@ TEST_P(CompositingSimTest, LayerSubtreeClipPropertyChanged) {
 }
 
 TEST_P(CompositingSimTest, LayerSubtreeOverflowClipPropertyChanged) {
-  // TODO(crbug.com/765003): CAP may make different layerization decisions and
-  // we cannot guarantee that both divs will be composited in this test. When
-  // CAP gets closer to launch, this test should be updated to pass.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   InitializeWithHTML(R"HTML(
       <!DOCTYPE html>
       <style>
@@ -1262,12 +1227,7 @@ TEST_P(CompositingSimTest, LayerSubtreeOverflowClipPropertyChanged) {
 
   auto* outer_element = GetElementById("outer");
   auto* outer_element_layer = CcLayerByDOMElementId("outer");
-  auto* inner_element = GetElementById("inner");
   auto* inner_element_layer = CcLayerByDOMElementId("inner");
-  DCHECK_EQ(inner_element_layer->element_id(),
-            CompositorElementIdFromUniqueObjectId(
-                inner_element->GetLayoutObject()->UniqueId(),
-                CompositorElementIdNamespace::kPrimary));
 
   // Initially, no layer should have |subtree_property_changed| set.
   EXPECT_FALSE(outer_element_layer->subtree_property_changed());
@@ -1482,11 +1442,6 @@ TEST_P(CompositingSimTest, RootScrollingContentsSafeOpaqueBackgroundColor) {
 }
 
 TEST_P(CompositingSimTest, NonDrawableLayersIgnoredForRenderSurfaces) {
-  // TODO(crbug.com/765003): CAP may make different layerization decisions. When
-  // CAP gets closer to launch, this test should be updated to pass.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   InitializeWithHTML(R"HTML(
       <!DOCTYPE html>
       <style>
@@ -1746,13 +1701,6 @@ TEST_P(CompositingTest, EffectNodesShouldHaveStableIds) {
 }
 
 TEST_P(CompositingSimTest, ImplSideScrollSkipsCommit) {
-  // TODO(crbug.com/1046544): This test fails with CompositeAfterPaint because
-  // PaintArtifactCompositor::Update is run for scroll offset changes. When we
-  // have an early-out to avoid SetNeedsCommit for non-changing interest-rects,
-  // this test will pass.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   InitializeWithHTML(R"HTML(
     <div id='scroller' style='will-change: transform; overflow: scroll;
         width: 100px; height: 100px'>
@@ -2006,11 +1954,10 @@ TEST_P(CompositingSimTest, MultipleChunkBackgroundColorChangeRepaintUpdate) {
   EXPECT_EQ(scrolling_contents->background_color(), SK_ColorWHITE);
 }
 
-// Similar to |BackgroundColorChangeUsesRepaintUpdate| but with CompositeSVG.
-// This test changes paint for a composited SVG element, as well as a regular
-// HTML element in the presence of composited SVG.
+// Similar to |BackgroundColorChangeUsesRepaintUpdate| but with post-paint
+// composited SVG. This test changes paint for a composited SVG element, as well
+// as a regular HTML element in the presence of composited SVG.
 TEST_P(CompositingSimTest, SVGColorChangeUsesRepaintUpdate) {
-  ScopedCompositeSVGForTest enable_feature(true);
   InitializeWithHTML(R"HTML(
       <!DOCTYPE html>
       <style>
@@ -2218,9 +2165,9 @@ TEST_P(CompositingSimTest, FullCompositingUpdateReasons) {
             PaintArtifactCompositor::PreviousUpdateType::kFull);
 }
 
-// Similar to |FullCompositingUpdateReasons| but for changes in CompositeSVG.
-TEST_P(CompositingSimTest, FullCompositingUpdateReasonInCompositeSVG) {
-  ScopedCompositeSVGForTest enable_feature(true);
+// Similar to |FullCompositingUpdateReasons| but for changes in post-paint
+// composited SVG.
+TEST_P(CompositingSimTest, FullCompositingUpdateReasonWithCompositedSVG) {
   InitializeWithHTML(R"HTML(
       <!DOCTYPE html>
       <style>
@@ -2252,7 +2199,6 @@ TEST_P(CompositingSimTest, FullCompositingUpdateReasonInCompositeSVG) {
 }
 
 TEST_P(CompositingSimTest, FullCompositingUpdateForJustCreatedChunks) {
-  ScopedCompositeSVGForTest enable_feature(true);
   InitializeWithHTML(R"HTML(
       <!DOCTYPE html>
       <style>
@@ -2290,7 +2236,6 @@ TEST_P(CompositingSimTest, FullCompositingUpdateForJustCreatedChunks) {
 }
 
 TEST_P(CompositingSimTest, FullCompositingUpdateForUncachableChunks) {
-  ScopedCompositeSVGForTest enable_feature(true);
   InitializeWithHTML(R"HTML(
       <!DOCTYPE html>
       <style>
@@ -2374,6 +2319,109 @@ TEST_P(CompositingSimTest, DecompositeScrollerInHiddenIframe) {
       CSSPropertyID::kVisibility, CSSValueID::kHidden);
   Compositor().BeginFrame();
   EXPECT_FALSE(scroller->GetScrollableArea()->NeedsCompositedScrolling());
+}
+
+TEST_P(CompositingSimTest, ForeignLayersInMovedSubsequence) {
+  SimRequest main_resource("https://origin-a.com/a.html", "text/html");
+  LoadURL("https://origin-a.com/a.html");
+  main_resource.Complete(R"HTML(
+      <!DOCTYPE html>
+      <style> iframe { isolation: isolate; } </style>
+      <iframe sandbox src="https://origin-b.com/b.html"></iframe>
+      <div id="target" style="background: blue;">a</div>
+  )HTML");
+
+  frame_test_helpers::TestWebRemoteFrameClient remote_frame_client;
+  FakeRemoteFrameHost remote_frame_host;
+  remote_frame_host.Init(remote_frame_client.GetRemoteAssociatedInterfaces());
+  WebRemoteFrameImpl* remote_frame =
+      frame_test_helpers::CreateRemote(&remote_frame_client);
+  MainFrame().FirstChild()->Swap(remote_frame);
+
+  Compositor().BeginFrame();
+
+  auto remote_surface_layer = cc::SurfaceLayer::Create();
+  remote_frame->GetFrame()->SetCcLayerForTesting(remote_surface_layer, true);
+  Compositor().BeginFrame();
+
+  // Initially, no update is needed.
+  EXPECT_FALSE(paint_artifact_compositor()->NeedsUpdate());
+
+  // Clear the previous update to ensure we record a new one in the next update.
+  paint_artifact_compositor()->ClearPreviousUpdateForTesting();
+
+  // Modifying paint in a simple way only requires a repaint update.
+  auto* target_element = GetElementById("target");
+  target_element->setAttribute(html_names::kStyleAttr, "background: green;");
+  Compositor().BeginFrame();
+  EXPECT_EQ(paint_artifact_compositor()->PreviousUpdateForTesting(),
+            PaintArtifactCompositor::PreviousUpdateType::kRepaint);
+
+  remote_frame->Detach();
+}
+
+// While not required for correctness, it is important for performance that
+// snapped backgrounds use solid color layers which avoid tiling.
+TEST_P(CompositingSimTest, SolidColorLayersWithSnapping) {
+  InitializeWithHTML(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        #snapDown {
+          width: 60.1px;
+          height: 100px;
+          will-change: opacity;
+          background: blue;
+        }
+        #snapUp {
+          width: 60.9px;
+          height: 100px;
+          will-change: opacity;
+          background: blue;
+        }
+      </style>
+      <div id="snapDown"></div>
+      <div id="snapUp"></div>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  auto* snap_down =
+      static_cast<const cc::PictureLayer*>(CcLayerByDOMElementId("snapDown"));
+  EXPECT_TRUE(snap_down->GetRecordingSourceForTesting()->is_solid_color());
+  auto* snap_up =
+      static_cast<const cc::PictureLayer*>(CcLayerByDOMElementId("snapUp"));
+  EXPECT_TRUE(snap_up->GetRecordingSourceForTesting()->is_solid_color());
+}
+
+// While not required for correctness, it is important for performance (e.g.,
+// the MotionMark Focus benchmark) that we do not decomposite effect nodes (see:
+// |PaintArtifactCompositor::DecompositeEffect|) when the author has specified
+// 3D transforms which are frequently used as a generic compositing trigger.
+TEST_P(CompositingSimTest, EffectCompositedWith3DTransform) {
+  InitializeWithHTML(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        div {
+          width: 100px;
+          height: 100px;
+          background: rebeccapurple;
+          transform: translate3d(1px, 1px, 0);
+        }
+      </style>
+      <div id="opacity" style="opacity: 0.5;"></div>
+      <div id="filter" style="filter: blur(1px);"></div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  auto* opacity_effect = GetEffectNode(CcLayerByDOMElementId("opacity"));
+  EXPECT_TRUE(opacity_effect);
+  EXPECT_EQ(opacity_effect->opacity, 0.5f);
+  EXPECT_TRUE(opacity_effect->filters.IsEmpty());
+
+  auto* filter_effect = GetEffectNode(CcLayerByDOMElementId("filter"));
+  EXPECT_TRUE(filter_effect);
+  EXPECT_EQ(filter_effect->opacity, 1.f);
+  EXPECT_FALSE(filter_effect->filters.IsEmpty());
 }
 
 }  // namespace blink

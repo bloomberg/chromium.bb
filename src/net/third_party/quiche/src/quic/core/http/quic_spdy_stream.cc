@@ -50,11 +50,6 @@ class QuicSpdyStream::HttpDecoderVisitor : public HttpDecoder::Visitor {
     stream_->OnUnrecoverableError(decoder->error(), decoder->error_detail());
   }
 
-  bool OnCancelPushFrame(const CancelPushFrame& /*frame*/) override {
-    CloseConnectionOnWrongFrame("Cancel Push");
-    return false;
-  }
-
   bool OnMaxPushIdFrame(const MaxPushIdFrame& /*frame*/) override {
     CloseConnectionOnWrongFrame("Max Push Id");
     return false;
@@ -111,42 +106,6 @@ class QuicSpdyStream::HttpDecoderVisitor : public HttpDecoder::Visitor {
       return false;
     }
     return stream_->OnHeadersFrameEnd();
-  }
-
-  bool OnPushPromiseFrameStart(QuicByteCount header_length) override {
-    if (!VersionUsesHttp3(stream_->transport_version())) {
-      CloseConnectionOnWrongFrame("Push Promise");
-      return false;
-    }
-    return stream_->OnPushPromiseFrameStart(header_length);
-  }
-
-  bool OnPushPromiseFramePushId(PushId push_id,
-                                QuicByteCount push_id_length,
-                                QuicByteCount header_block_length) override {
-    if (!VersionUsesHttp3(stream_->transport_version())) {
-      CloseConnectionOnWrongFrame("Push Promise");
-      return false;
-    }
-    return stream_->OnPushPromiseFramePushId(push_id, push_id_length,
-                                             header_block_length);
-  }
-
-  bool OnPushPromiseFramePayload(absl::string_view payload) override {
-    QUICHE_DCHECK(!payload.empty());
-    if (!VersionUsesHttp3(stream_->transport_version())) {
-      CloseConnectionOnWrongFrame("Push Promise");
-      return false;
-    }
-    return stream_->OnPushPromiseFramePayload(payload);
-  }
-
-  bool OnPushPromiseFrameEnd() override {
-    if (!VersionUsesHttp3(stream_->transport_version())) {
-      CloseConnectionOnWrongFrame("Push Promise");
-      return false;
-    }
-    return stream_->OnPushPromiseFrameEnd();
   }
 
   bool OnPriorityUpdateFrameStart(QuicByteCount /*header_length*/) override {
@@ -213,8 +172,7 @@ HttpDecoder::Options HttpDecoderOptionsForBidiStream(
 }
 }  // namespace
 
-QuicSpdyStream::QuicSpdyStream(QuicStreamId id,
-                               QuicSpdySession* spdy_session,
+QuicSpdyStream::QuicSpdyStream(QuicStreamId id, QuicSpdySession* spdy_session,
                                StreamType type)
     : QuicStream(id, spdy_session, /*is_static=*/false, type),
       spdy_session_(spdy_session),
@@ -232,7 +190,11 @@ QuicSpdyStream::QuicSpdyStream(QuicStreamId id,
       sequencer_offset_(0),
       is_decoder_processing_input_(false),
       ack_listener_(nullptr),
-      last_sent_urgency_(kDefaultUrgency) {
+      last_sent_urgency_(kDefaultUrgency),
+      datagram_next_available_context_id_(spdy_session->perspective() ==
+                                                  Perspective::IS_SERVER
+                                              ? kFirstDatagramContextIdServer
+                                              : kFirstDatagramContextIdClient) {
   QUICHE_DCHECK_EQ(session()->connection(), spdy_session->connection());
   QUICHE_DCHECK_EQ(transport_version(), spdy_session->transport_version());
   QUICHE_DCHECK(!QuicUtils::IsCryptoStreamId(transport_version(), id));
@@ -342,18 +304,9 @@ void QuicSpdyStream::WriteOrBufferBody(absl::string_view data, bool fin) {
     spdy_session_->debug_visitor()->OnDataFrameSent(id(), data.length());
   }
 
-  // Write frame header.
-  std::unique_ptr<char[]> buffer;
-  QuicByteCount header_length =
-      HttpEncoder::SerializeDataFrameHeader(data.length(), &buffer);
-  unacked_frame_headers_offsets_.Add(
-      send_buffer().stream_offset(),
-      send_buffer().stream_offset() + header_length);
-  QUIC_DLOG(INFO) << ENDPOINT << "Stream " << id()
-                  << " is writing DATA frame header of length "
-                  << header_length;
-  WriteOrBufferData(absl::string_view(buffer.get(), header_length), false,
-                    nullptr);
+  const bool success =
+      WriteDataFrameHeader(data.length(), /*force_write=*/true);
+  QUICHE_DCHECK(success);
 
   // Write body.
   QUIC_DLOG(INFO) << ENDPOINT << "Stream " << id()
@@ -413,49 +366,71 @@ QuicConsumedData QuicSpdyStream::WritevBody(const struct iovec* iov,
   return WriteBodySlices(storage.ToSpan(), fin);
 }
 
+bool QuicSpdyStream::WriteDataFrameHeader(QuicByteCount data_length,
+                                          bool force_write) {
+  QUICHE_DCHECK(VersionUsesHttp3(transport_version()));
+  QUICHE_DCHECK_GT(data_length, 0u);
+  QuicBuffer header = HttpEncoder::SerializeDataFrameHeader(
+      data_length,
+      spdy_session_->connection()->helper()->GetStreamSendBufferAllocator());
+  const bool can_write = CanWriteNewDataAfterData(header.size());
+  if (!can_write && !force_write) {
+    return false;
+  }
+
+  if (spdy_session_->debug_visitor()) {
+    spdy_session_->debug_visitor()->OnDataFrameSent(id(), data_length);
+  }
+
+  unacked_frame_headers_offsets_.Add(
+      send_buffer().stream_offset(),
+      send_buffer().stream_offset() + header.size());
+  QUIC_DLOG(INFO) << ENDPOINT << "Stream " << id()
+                  << " is writing DATA frame header of length "
+                  << header.size();
+  if (can_write) {
+    // Save one copy and allocation if send buffer can accomodate the header.
+    QuicMemSlice header_slice(std::move(header));
+    WriteMemSlices(QuicMemSliceSpan(&header_slice), false);
+  } else {
+    QUICHE_DCHECK(force_write);
+    WriteOrBufferData(header.AsStringView(), false, nullptr);
+  }
+  return true;
+}
+
 QuicConsumedData QuicSpdyStream::WriteBodySlices(QuicMemSliceSpan slices,
                                                  bool fin) {
   if (!VersionUsesHttp3(transport_version()) || slices.empty()) {
     return WriteMemSlices(slices, fin);
   }
 
-  std::unique_ptr<char[]> buffer;
-  QuicByteCount header_length =
-      HttpEncoder::SerializeDataFrameHeader(slices.total_length(), &buffer);
-  if (!CanWriteNewDataAfterData(header_length)) {
+  QuicConnection::ScopedPacketFlusher flusher(spdy_session_->connection());
+  if (!WriteDataFrameHeader(slices.total_length(), /*force_write=*/false)) {
     return {0, false};
   }
 
-  if (spdy_session_->debug_visitor()) {
-    spdy_session_->debug_visitor()->OnDataFrameSent(id(),
-                                                    slices.total_length());
-  }
-
-  QuicConnection::ScopedPacketFlusher flusher(spdy_session_->connection());
-
-  // Write frame header.
-#if !defined(__ANDROID__)
-  struct iovec header_iov = {static_cast<void*>(buffer.get()), header_length};
-#else
-  struct iovec header_iov = {static_cast<void*>(buffer.get()),
-                             static_cast<__kernel_size_t>(header_length)};
-#endif
-  QuicMemSliceStorage storage(
-      &header_iov, 1,
-      spdy_session_->connection()->helper()->GetStreamSendBufferAllocator(),
-      GetQuicFlag(FLAGS_quic_send_buffer_max_data_slice_size));
-  unacked_frame_headers_offsets_.Add(
-      send_buffer().stream_offset(),
-      send_buffer().stream_offset() + header_length);
-  QUIC_DLOG(INFO) << ENDPOINT << "Stream " << id()
-                  << " is writing DATA frame header of length "
-                  << header_length;
-  WriteMemSlices(storage.ToSpan(), false);
-
-  // Write body.
   QUIC_DLOG(INFO) << ENDPOINT << "Stream " << id()
                   << " is writing DATA frame payload of length "
                   << slices.total_length();
+  return WriteMemSlices(slices, fin);
+}
+
+QuicConsumedData QuicSpdyStream::WriteBodySlices(
+    absl::Span<QuicMemSlice> slices,
+    bool fin) {
+  if (!VersionUsesHttp3(transport_version()) || slices.empty()) {
+    return WriteMemSlices(slices, fin);
+  }
+
+  QuicConnection::ScopedPacketFlusher flusher(spdy_session_->connection());
+  const QuicByteCount data_size = MemSliceSpanTotalSize(slices);
+  if (!WriteDataFrameHeader(data_size, /*force_write=*/false)) {
+    return {0, false};
+  }
+
+  QUIC_DLOG(INFO) << ENDPOINT << "Stream " << id()
+                  << " is writing DATA frame payload of length " << data_size;
   return WriteMemSlices(slices, fin);
 }
 
@@ -598,10 +573,6 @@ void QuicSpdyStream::OnHeadersDecoded(QuicHeaderList headers,
 
     OnStreamHeaderList(/* fin = */ false, headers_payload_length_, headers);
   } else {
-    if (debug_visitor) {
-      debug_visitor->OnPushPromiseDecoded(id(), promised_stream_id, headers);
-    }
-
     spdy_session_->OnHeaderList(headers);
   }
 
@@ -873,6 +844,10 @@ void QuicSpdyStream::OnClose() {
     visitor->OnClose(this);
   }
 
+  if (datagram_flow_id_.has_value()) {
+    spdy_session_->UnregisterHttp3DatagramFlowId(datagram_flow_id_.value());
+  }
+
   if (web_transport_ != nullptr) {
     web_transport_->CloseAllAssociatedStreams();
   }
@@ -1085,50 +1060,6 @@ bool QuicSpdyStream::OnHeadersFrameEnd() {
   return !sequencer()->IsClosed() && !reading_stopped();
 }
 
-bool QuicSpdyStream::OnPushPromiseFrameStart(QuicByteCount header_length) {
-  QUICHE_DCHECK(VersionUsesHttp3(transport_version()));
-  QUICHE_DCHECK(!qpack_decoded_headers_accumulator_);
-
-  sequencer()->MarkConsumed(body_manager_.OnNonBody(header_length));
-
-  return true;
-}
-
-bool QuicSpdyStream::OnPushPromiseFramePushId(
-    PushId push_id,
-    QuicByteCount push_id_length,
-    QuicByteCount header_block_length) {
-  QUICHE_DCHECK(VersionUsesHttp3(transport_version()));
-  QUICHE_DCHECK(!qpack_decoded_headers_accumulator_);
-
-  if (spdy_session_->debug_visitor()) {
-    spdy_session_->debug_visitor()->OnPushPromiseFrameReceived(
-        id(), push_id, header_block_length);
-  }
-
-  // TODO(b/151749109): Check max push id and handle errors.
-  spdy_session_->OnPushPromise(id(), push_id);
-  sequencer()->MarkConsumed(body_manager_.OnNonBody(push_id_length));
-
-  qpack_decoded_headers_accumulator_ =
-      std::make_unique<QpackDecodedHeadersAccumulator>(
-          id(), spdy_session_->qpack_decoder(), this,
-          spdy_session_->max_inbound_header_list_size());
-
-  return true;
-}
-
-bool QuicSpdyStream::OnPushPromiseFramePayload(absl::string_view payload) {
-  spdy_session_->OnCompressedFrameSize(payload.length());
-  return OnHeadersFramePayload(payload);
-}
-
-bool QuicSpdyStream::OnPushPromiseFrameEnd() {
-  QUICHE_DCHECK(VersionUsesHttp3(transport_version()));
-
-  return OnHeadersFrameEnd();
-}
-
 void QuicSpdyStream::OnWebTransportStreamFrameType(
     QuicByteCount header_length,
     WebTransportSessionId session_id) {
@@ -1237,6 +1168,16 @@ size_t QuicSpdyStream::WriteHeadersImpl(
   return encoded_headers.size();
 }
 
+bool QuicSpdyStream::CanWriteNewBodyData(QuicByteCount write_size) const {
+  QUICHE_DCHECK_NE(0u, write_size);
+  if (!VersionUsesHttp3(transport_version())) {
+    return CanWriteNewData();
+  }
+
+  return CanWriteNewDataAfterData(
+      HttpEncoder::GetDataFrameHeaderLength(write_size));
+}
+
 void QuicSpdyStream::MaybeProcessReceivedWebTransportHeaders() {
   if (!spdy_session_->SupportsWebTransport()) {
     return;
@@ -1248,7 +1189,7 @@ void QuicSpdyStream::MaybeProcessReceivedWebTransportHeaders() {
 
   std::string method;
   std::string protocol;
-  absl::optional<QuicDatagramFlowId> flow_id;
+  absl::optional<QuicDatagramStreamId> flow_id;
   for (const auto& header : header_list_) {
     const std::string& header_name = header.first;
     const std::string& header_value = header.second;
@@ -1268,7 +1209,7 @@ void QuicSpdyStream::MaybeProcessReceivedWebTransportHeaders() {
       if (flow_id.has_value() || header_value.empty()) {
         return;
       }
-      QuicDatagramFlowId flow_id_out;
+      QuicDatagramStreamId flow_id_out;
       if (!absl::SimpleAtoi(header_value, &flow_id_out)) {
         return;
       }
@@ -1281,8 +1222,18 @@ void QuicSpdyStream::MaybeProcessReceivedWebTransportHeaders() {
     return;
   }
 
+  RegisterHttp3DatagramFlowId(*flow_id);
+
   web_transport_ =
-      std::make_unique<WebTransportHttp3>(spdy_session_, this, id(), *flow_id);
+      std::make_unique<WebTransportHttp3>(spdy_session_, this, id());
+
+  // If we're in draft-ietf-masque-h3-datagram-00 mode, pretend we also received
+  // a REGISTER_DATAGRAM_NO_CONTEXT capsule with no extensions.
+  // TODO(b/181256914) remove this when we remove support for
+  // draft-ietf-masque-h3-datagram-00 in favor of later drafts.
+  RegisterHttp3DatagramContextId(/*context_id=*/absl::nullopt,
+                                 Http3DatagramContextExtensions(),
+                                 web_transport_.get());
 }
 
 void QuicSpdyStream::MaybeProcessSentWebTransportHeaders(
@@ -1304,11 +1255,14 @@ void QuicSpdyStream::MaybeProcessSentWebTransportHeaders(
     return;
   }
 
-  QuicDatagramFlowId flow_id = spdy_session_->GetNextDatagramFlowId();
-  headers["datagram-flow-id"] = absl::StrCat(flow_id);
+  QuicDatagramStreamId stream_id = id();
+  headers["datagram-flow-id"] = absl::StrCat(stream_id);
 
   web_transport_ =
-      std::make_unique<WebTransportHttp3>(spdy_session_, this, id(), flow_id);
+      std::make_unique<WebTransportHttp3>(spdy_session_, this, id());
+  RegisterHttp3DatagramContextId(web_transport_->context_id(),
+                                 Http3DatagramContextExtensions(),
+                                 web_transport_.get());
 }
 
 void QuicSpdyStream::OnCanWriteNewData() {
@@ -1368,6 +1322,207 @@ QuicSpdyStream::WebTransportDataStream::WebTransportDataStream(
     WebTransportSessionId session_id)
     : session_id(session_id),
       adapter(stream->spdy_session_, stream, stream->sequencer()) {}
+
+MessageStatus QuicSpdyStream::SendHttp3Datagram(
+    absl::optional<QuicDatagramContextId> context_id,
+    absl::string_view payload) {
+  QuicDatagramStreamId stream_id =
+      datagram_flow_id_.has_value() ? datagram_flow_id_.value() : id();
+  return spdy_session_->SendHttp3Datagram(stream_id, context_id, payload);
+}
+
+void QuicSpdyStream::RegisterHttp3DatagramRegistrationVisitor(
+    Http3DatagramRegistrationVisitor* visitor) {
+  if (visitor == nullptr) {
+    QUIC_BUG(null datagram registration visitor)
+        << ENDPOINT << "Null datagram registration visitor for" << id();
+    return;
+  }
+  QUIC_DLOG(INFO) << ENDPOINT << "Registering datagram stream ID " << id();
+  datagram_registration_visitor_ = visitor;
+}
+
+void QuicSpdyStream::UnregisterHttp3DatagramRegistrationVisitor() {
+  QUIC_BUG_IF(h3 datagram unregister unknown stream ID,
+              datagram_registration_visitor_ == nullptr)
+      << ENDPOINT
+      << "Attempted to unregister unknown HTTP/3 datagram stream ID " << id();
+  QUIC_DLOG(INFO) << ENDPOINT << "Unregistering datagram stream ID " << id();
+  datagram_registration_visitor_ = nullptr;
+}
+
+void QuicSpdyStream::MoveHttp3DatagramRegistration(
+    Http3DatagramRegistrationVisitor* visitor) {
+  QUIC_BUG_IF(h3 datagram move unknown stream ID,
+              datagram_registration_visitor_ == nullptr)
+      << ENDPOINT << "Attempted to move unknown HTTP/3 datagram stream ID "
+      << id();
+  QUIC_DLOG(INFO) << ENDPOINT << "Moving datagram stream ID " << id();
+  datagram_registration_visitor_ = visitor;
+}
+
+void QuicSpdyStream::RegisterHttp3DatagramContextId(
+    absl::optional<QuicDatagramContextId> context_id,
+    const Http3DatagramContextExtensions& /*extensions*/,
+    Http3DatagramVisitor* visitor) {
+  if (visitor == nullptr) {
+    QUIC_BUG(null datagram visitor)
+        << ENDPOINT << "Null datagram visitor for stream ID " << id()
+        << " context ID " << (context_id.has_value() ? context_id.value() : 0);
+    return;
+  }
+  if (datagram_registration_visitor_ == nullptr) {
+    QUIC_BUG(context registration without registration visitor)
+        << ENDPOINT << "Cannot register context ID "
+        << (context_id.has_value() ? context_id.value() : 0)
+        << " without registration visitor for stream ID " << id();
+    return;
+  }
+  QUIC_DLOG(INFO) << ENDPOINT << "Registering datagram context ID "
+                  << (context_id.has_value() ? context_id.value() : 0)
+                  << " with stream ID " << id();
+  if (context_id.has_value()) {
+    if (datagram_no_context_visitor_ != nullptr) {
+      QUIC_BUG(h3 datagram context ID mix1)
+          << ENDPOINT
+          << "Attempted to mix registrations without and with context IDs "
+             "for stream ID "
+          << id();
+      return;
+    }
+    auto insertion_result =
+        datagram_context_visitors_.insert({context_id.value(), visitor});
+    QUIC_BUG_IF(h3 datagram double context registration,
+                !insertion_result.second)
+        << ENDPOINT << "Attempted to doubly register HTTP/3 stream ID " << id()
+        << " context ID " << context_id.value();
+    return;
+  }
+  // Registration without a context ID.
+  if (!datagram_context_visitors_.empty()) {
+    QUIC_BUG(h3 datagram context ID mix2)
+        << ENDPOINT
+        << "Attempted to mix registrations with and without context IDs "
+           "for stream ID "
+        << id();
+    return;
+  }
+  if (datagram_no_context_visitor_ != nullptr) {
+    QUIC_BUG(h3 datagram double no context registration)
+        << ENDPOINT << "Attempted to doubly register HTTP/3 stream ID " << id()
+        << " with no context ID";
+    return;
+  }
+  datagram_no_context_visitor_ = visitor;
+}
+
+void QuicSpdyStream::UnregisterHttp3DatagramContextId(
+    absl::optional<QuicDatagramContextId> context_id) {
+  if (datagram_registration_visitor_ == nullptr) {
+    QUIC_BUG(context unregistration without registration visitor)
+        << ENDPOINT << "Cannot unregister context ID "
+        << (context_id.has_value() ? context_id.value() : 0)
+        << " without registration visitor for stream ID " << id();
+    return;
+  }
+  QUIC_DLOG(INFO) << ENDPOINT << "Unregistering datagram context ID "
+                  << (context_id.has_value() ? context_id.value() : 0)
+                  << " with stream ID " << id();
+  if (context_id.has_value()) {
+    size_t num_erased = datagram_context_visitors_.erase(context_id.value());
+    QUIC_BUG_IF(h3 datagram unregister unknown context, num_erased != 1)
+        << "Attempted to unregister unknown HTTP/3 context ID "
+        << context_id.value() << " on stream ID " << id();
+    return;
+  }
+  // Unregistration without a context ID.
+  QUIC_BUG_IF(h3 datagram unknown context unregistration,
+              datagram_no_context_visitor_ == nullptr)
+      << "Attempted to unregister unknown no context on HTTP/3 stream ID "
+      << id();
+  datagram_no_context_visitor_ = nullptr;
+}
+
+void QuicSpdyStream::MoveHttp3DatagramContextIdRegistration(
+    absl::optional<QuicDatagramContextId> context_id,
+    Http3DatagramVisitor* visitor) {
+  if (datagram_registration_visitor_ == nullptr) {
+    QUIC_BUG(context move without registration visitor)
+        << ENDPOINT << "Cannot move context ID "
+        << (context_id.has_value() ? context_id.value() : 0)
+        << " without registration visitor for stream ID " << id();
+    return;
+  }
+  QUIC_DLOG(INFO) << ENDPOINT << "Moving datagram context ID "
+                  << (context_id.has_value() ? context_id.value() : 0)
+                  << " with stream ID " << id();
+  if (context_id.has_value()) {
+    QUIC_BUG_IF(h3 datagram move unknown context,
+                !datagram_context_visitors_.contains(context_id.value()))
+        << ENDPOINT << "Attempted to move unknown context ID "
+        << context_id.value() << " on stream ID " << id();
+    datagram_context_visitors_[context_id.value()] = visitor;
+    return;
+  }
+  // Move without a context ID.
+  QUIC_BUG_IF(h3 datagram unknown context move,
+              datagram_no_context_visitor_ == nullptr)
+      << "Attempted to move unknown no context on HTTP/3 stream ID " << id();
+  datagram_no_context_visitor_ = visitor;
+}
+
+void QuicSpdyStream::SetMaxDatagramTimeInQueue(
+    QuicTime::Delta max_time_in_queue) {
+  spdy_session_->SetMaxDatagramTimeInQueueForStreamId(id(), max_time_in_queue);
+}
+
+QuicDatagramContextId QuicSpdyStream::GetNextDatagramContextId() {
+  QuicDatagramContextId result = datagram_next_available_context_id_;
+  datagram_next_available_context_id_ += kDatagramContextIdIncrement;
+  return result;
+}
+
+void QuicSpdyStream::OnDatagramReceived(QuicDataReader* reader) {
+  absl::optional<QuicDatagramContextId> context_id;
+  const bool context_id_present = !datagram_context_visitors_.empty();
+  Http3DatagramVisitor* visitor;
+  if (context_id_present) {
+    QuicDatagramContextId parsed_context_id;
+    if (!reader->ReadVarInt62(&parsed_context_id)) {
+      QUIC_DLOG(ERROR) << "Failed to parse context ID in received HTTP/3 "
+                          "datagram on stream ID "
+                       << id();
+      return;
+    }
+    context_id = parsed_context_id;
+    auto it = datagram_context_visitors_.find(parsed_context_id);
+    if (it == datagram_context_visitors_.end()) {
+      // TODO(b/181256914) buffer unknown HTTP/3 datagrams for a short
+      // period of time in case they were reordered.
+      QUIC_DLOG(ERROR) << "Received unknown HTTP/3 datagram context ID "
+                       << parsed_context_id << " on stream ID " << id();
+      return;
+    }
+    visitor = it->second;
+  } else {
+    if (datagram_no_context_visitor_ == nullptr) {
+      // TODO(b/181256914) buffer unknown HTTP/3 datagrams for a short
+      // period of time in case they were reordered.
+      QUIC_DLOG(ERROR)
+          << "Received HTTP/3 datagram without any registrations on stream ID "
+          << id();
+      return;
+    }
+    visitor = datagram_no_context_visitor_;
+  }
+  absl::string_view payload = reader->ReadRemainingPayload();
+  visitor->OnHttp3Datagram(id(), context_id, payload);
+}
+
+void QuicSpdyStream::RegisterHttp3DatagramFlowId(QuicDatagramStreamId flow_id) {
+  datagram_flow_id_ = flow_id;
+  spdy_session_->RegisterHttp3DatagramFlowId(datagram_flow_id_.value(), id());
+}
 
 #undef ENDPOINT  // undef for jumbo builds
 }  // namespace quic

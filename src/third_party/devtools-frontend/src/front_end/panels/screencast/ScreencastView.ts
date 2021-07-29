@@ -130,7 +130,7 @@ export class ScreencastView extends UI.Widget.VBox implements SDK.OverlayModel.H
     this._inputModel = screenCaptureModel.target().model(InputModel);
 
     this.setMinimumSize(150, 150);
-    this.registerRequiredCSS('panels/screencast/screencastView.css', {enableLegacyPatching: true});
+    this.registerRequiredCSS('panels/screencast/screencastView.css');
     this._shortcuts = {} as {
       [x: number]: (arg0?: Event|undefined) => boolean,
     };
@@ -164,8 +164,8 @@ export class ScreencastView extends UI.Widget.VBox implements SDK.OverlayModel.H
     this._canvasElement.addEventListener('keyup', this._handleKeyEvent.bind(this), false);
     this._canvasElement.addEventListener('keypress', this._handleKeyEvent.bind(this), false);
     this._canvasElement.addEventListener('blur', this._handleBlurEvent.bind(this), false);
-    this._titleElement = this._canvasContainerElement.createChild(
-                             'div', 'screencast-element-title monospace hidden -theme-not-patched') as HTMLElement;
+    this._titleElement =
+        this._canvasContainerElement.createChild('div', 'screencast-element-title monospace hidden') as HTMLElement;
     this._tagNameElement = this._titleElement.createChild('span', 'screencast-tag-name') as HTMLElement;
     this._attributeElement = this._titleElement.createChild('span', 'screencast-attribute') as HTMLElement;
     UI.UIUtils.createTextChild(this._titleElement, ' ');
@@ -184,8 +184,8 @@ export class ScreencastView extends UI.Widget.VBox implements SDK.OverlayModel.H
     this._shortcuts[UI.KeyboardShortcut.KeyboardShortcut.makeKey('l', UI.KeyboardShortcut.Modifiers.Ctrl)] =
         this._focusNavigationBar.bind(this);
 
-    SDK.SDKModel.TargetManager.instance().addEventListener(
-        SDK.SDKModel.Events.SuspendStateChanged, this._onSuspendStateChange, this);
+    SDK.TargetManager.TargetManager.instance().addEventListener(
+        SDK.TargetManager.Events.SuspendStateChanged, this._onSuspendStateChange, this);
     this._updateGlasspane();
   }
 
@@ -198,7 +198,7 @@ export class ScreencastView extends UI.Widget.VBox implements SDK.OverlayModel.H
   }
 
   _startCasting(): void {
-    if (SDK.SDKModel.TargetManager.instance().allTargetsSuspended()) {
+    if (SDK.TargetManager.TargetManager.instance().allTargetsSuspended()) {
       return;
     }
     if (this._isCasting) {
@@ -219,7 +219,7 @@ export class ScreencastView extends UI.Widget.VBox implements SDK.OverlayModel.H
         Protocol.Page.StartScreencastRequestFormat.Jpeg, 80, Math.floor(Math.min(maxImageDimension, dimensions.width)),
         Math.floor(Math.min(maxImageDimension, dimensions.height)), undefined, this._screencastFrame.bind(this),
         this._screencastVisibilityChanged.bind(this));
-    for (const emulationModel of SDK.SDKModel.TargetManager.instance().models(SDK.EmulationModel.EmulationModel)) {
+    for (const emulationModel of SDK.TargetManager.TargetManager.instance().models(SDK.EmulationModel.EmulationModel)) {
       emulationModel.overrideEmulateTouch(true);
     }
     if (this._overlayModel) {
@@ -233,7 +233,7 @@ export class ScreencastView extends UI.Widget.VBox implements SDK.OverlayModel.H
     }
     this._isCasting = false;
     this._screenCaptureModel.stopScreencast();
-    for (const emulationModel of SDK.SDKModel.TargetManager.instance().models(SDK.EmulationModel.EmulationModel)) {
+    for (const emulationModel of SDK.TargetManager.TargetManager.instance().models(SDK.EmulationModel.EmulationModel)) {
       emulationModel.overrideEmulateTouch(false);
     }
     if (this._overlayModel) {
@@ -279,7 +279,7 @@ export class ScreencastView extends UI.Widget.VBox implements SDK.OverlayModel.H
   }
 
   _onSuspendStateChange(_event: Common.EventTarget.EventTargetEvent): void {
-    if (SDK.SDKModel.TargetManager.instance().allTargetsSuspended()) {
+    if (SDK.TargetManager.TargetManager.instance().allTargetsSuspended()) {
       this._stopCasting();
     } else {
       this._startCasting();
@@ -291,7 +291,7 @@ export class ScreencastView extends UI.Widget.VBox implements SDK.OverlayModel.H
     if (this._targetInactive) {
       this._glassPaneElement.textContent = i18nString(UIStrings.theTabIsInactive);
       this._glassPaneElement.classList.remove('hidden');
-    } else if (SDK.SDKModel.TargetManager.instance().allTargetsSuspended()) {
+    } else if (SDK.TargetManager.TargetManager.instance().allTargetsSuspended()) {
       this._glassPaneElement.textContent = i18nString(UIStrings.profilingInProgress);
       this._glassPaneElement.classList.remove('hidden');
     } else {
@@ -333,7 +333,7 @@ export class ScreencastView extends UI.Widget.VBox implements SDK.OverlayModel.H
 
     if (event.type === 'mousemove') {
       this._updateHighlightInOverlayAndRepaint({node, selectorList: undefined}, this._inspectModeConfig);
-      this._domModel.overlayModel().nodeHighlightRequested({nodeId: node.id as number});
+      this._domModel.overlayModel().nodeHighlightRequested({nodeId: node.id});
     } else if (event.type === 'click') {
       this._domModel.overlayModel().inspectNodeRequested({backendNodeId: node.backendNodeId()});
     }

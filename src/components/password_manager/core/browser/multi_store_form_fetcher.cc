@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/multi_store_form_fetcher.h"
 
 #include "base/check_op.h"
+#include "base/containers/contains.h"
 #include "base/ranges/algorithm.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/save_password_progress_logger.h"
@@ -17,7 +18,7 @@ using Logger = autofill::SavePasswordProgressLogger;
 namespace password_manager {
 
 MultiStoreFormFetcher::MultiStoreFormFetcher(
-    PasswordStore::FormDigest form_digest,
+    PasswordFormDigest form_digest,
     const PasswordManagerClient* client,
     bool should_migrate_http_passwords)
     : FormFetcherImpl(form_digest, client, should_migrate_http_passwords) {}
@@ -112,7 +113,7 @@ void MultiStoreFormFetcher::OnGetPasswordStoreResults(
 }
 
 void MultiStoreFormFetcher::OnGetPasswordStoreResultsFrom(
-    PasswordStore* store,
+    PasswordStoreInterface* store,
     std::vector<std::unique_ptr<PasswordForm>> results) {
   DCHECK_EQ(State::WAITING, state_);
   DCHECK_GT(wait_counter_, 0);

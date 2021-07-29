@@ -32,11 +32,12 @@ namespace chromeos {
 
 namespace {
 
-using TextSuggestion = ::chromeos::ime::TextSuggestion;
-using TextSuggestionMode = ::chromeos::ime::TextSuggestionMode;
-using TextSuggestionType = ::chromeos::ime::TextSuggestionType;
+using ::chromeos::ime::TextSuggestion;
+using ::chromeos::ime::TextSuggestionMode;
+using ::chromeos::ime::TextSuggestionType;
 
 const size_t kMaxConfirmedTextLength = 10;
+constexpr size_t kMaxTextBeforeCursorLength = 50;
 
 const char kSingleSubjectRegex[] = "my ";
 const char kSingleOrPluralSubjectRegex[] = "(my|our) ";
@@ -113,15 +114,15 @@ TextSuggestion MapToTextSuggestion(std::u16string candidate_string) {
 AssistiveType ProposePersonalInfoAssistiveAction(const std::u16string& text) {
   std::string lower_case_utf8_text =
       base::ToLowerASCII(base::UTF16ToUTF8(text));
-  if (!(RE2::FullMatch(lower_case_utf8_text, ".* $"))) {
+  if (!(RE2::PartialMatch(lower_case_utf8_text, " $"))) {
     return AssistiveType::kGenericAction;
   }
 
   if (base::FeatureList::IsEnabled(
           chromeos::features::kAssistPersonalInfoAddress)) {
-    if (RE2::FullMatch(
+    if (RE2::PartialMatch(
             lower_case_utf8_text,
-            base::StringPrintf(".*%s%s%s", kSingleOrPluralSubjectRegex,
+            base::StringPrintf("%s%s%s$", kSingleOrPluralSubjectRegex,
                                kAddressRegex, kTriggersRegex))) {
       return AssistiveType::kPersonalAddress;
     }
@@ -129,37 +130,39 @@ AssistiveType ProposePersonalInfoAssistiveAction(const std::u16string& text) {
 
   if (base::FeatureList::IsEnabled(
           chromeos::features::kAssistPersonalInfoEmail)) {
-    if (RE2::FullMatch(lower_case_utf8_text,
-                       base::StringPrintf(".*%s%s%s", kSingleSubjectRegex,
-                                          kEmailRegex, kTriggersRegex))) {
+    if (RE2::PartialMatch(lower_case_utf8_text,
+                          base::StringPrintf("%s%s%s$", kSingleSubjectRegex,
+                                             kEmailRegex, kTriggersRegex))) {
       return AssistiveType::kPersonalEmail;
     }
   }
 
   if (base::FeatureList::IsEnabled(
           chromeos::features::kAssistPersonalInfoName)) {
-    if (RE2::FullMatch(lower_case_utf8_text,
-                       base::StringPrintf(".*%s%s%s", kSingleSubjectRegex,
-                                          kNameRegex, kTriggersRegex))) {
+    if (RE2::PartialMatch(lower_case_utf8_text,
+                          base::StringPrintf("%s%s%s$", kSingleSubjectRegex,
+                                             kNameRegex, kTriggersRegex))) {
       return AssistiveType::kPersonalName;
     }
-    if (RE2::FullMatch(lower_case_utf8_text,
-                       base::StringPrintf(".*%s%s%s", kSingleSubjectRegex,
-                                          kFirstNameRegex, kTriggersRegex))) {
+    if (RE2::PartialMatch(
+            lower_case_utf8_text,
+            base::StringPrintf("%s%s%s$", kSingleSubjectRegex, kFirstNameRegex,
+                               kTriggersRegex))) {
       return AssistiveType::kPersonalFirstName;
     }
-    if (RE2::FullMatch(lower_case_utf8_text,
-                       base::StringPrintf(".*%s%s%s", kSingleSubjectRegex,
-                                          kLastNameRegex, kTriggersRegex))) {
+    if (RE2::PartialMatch(lower_case_utf8_text,
+                          base::StringPrintf("%s%s%s$", kSingleSubjectRegex,
+                                             kLastNameRegex, kTriggersRegex))) {
       return AssistiveType::kPersonalLastName;
     }
   }
 
   if (base::FeatureList::IsEnabled(
           chromeos::features::kAssistPersonalInfoPhoneNumber)) {
-    if (RE2::FullMatch(lower_case_utf8_text,
-                       base::StringPrintf(".*%s%s%s", kSingleSubjectRegex,
-                                          kPhoneNumberRegex, kTriggersRegex))) {
+    if (RE2::PartialMatch(
+            lower_case_utf8_text,
+            base::StringPrintf("%s%s%s$", kSingleSubjectRegex,
+                               kPhoneNumberRegex, kTriggersRegex))) {
       return AssistiveType::kPersonalPhoneNumber;
     }
   }
@@ -253,16 +256,28 @@ SuggestionStatus PersonalInfoSuggester::HandleKeyEvent(
   return SuggestionStatus::kNotHandled;
 }
 
-bool PersonalInfoSuggester::Suggest(const std::u16string& text) {
+bool PersonalInfoSuggester::Suggest(const std::u16string& text,
+                                    size_t cursor_pos,
+                                    size_t anchor_pos) {
+  // |text| could be very long, we get at most |kMaxTextBeforeCursorLength|
+  // characters before cursor.
+  int start_pos = cursor_pos >= kMaxTextBeforeCursorLength
+                      ? cursor_pos - kMaxTextBeforeCursorLength
+                      : 0;
+  std::u16string text_before_cursor =
+      text.substr(start_pos, cursor_pos - start_pos);
+
   if (suggestion_shown_) {
-    size_t text_length = text.length();
+    size_t text_length = text_before_cursor.length();
     bool matched = false;
     for (size_t offset = 0;
          offset < suggestion_.length() && offset < text_length &&
          offset < kMaxConfirmedTextLength;
          offset++) {
-      std::u16string text_before = text.substr(0, text_length - offset);
-      std::u16string confirmed_text = text.substr(text_length - offset);
+      std::u16string text_before =
+          text_before_cursor.substr(0, text_length - offset);
+      std::u16string confirmed_text =
+          text_before_cursor.substr(text_length - offset);
       if (base::StartsWith(suggestion_, confirmed_text,
                            base::CompareCase::INSENSITIVE_ASCII) &&
           suggestion_ == GetSuggestion(text_before)) {
@@ -273,7 +288,7 @@ bool PersonalInfoSuggester::Suggest(const std::u16string& text) {
     }
     return matched;
   } else {
-    suggestion_ = GetSuggestion(text);
+    suggestion_ = GetSuggestion(text_before_cursor);
     if (suggestion_.empty()) {
       if (proposed_action_type_ != AssistiveType::kGenericAction)
         RecordAssistiveInsufficientData(proposed_action_type_);
@@ -347,12 +362,12 @@ void PersonalInfoSuggester::ShowSuggestion(const std::u16string& text,
   }
 
   std::string error;
-  bool show_annotation =
+  bool show_accept_annotation =
       GetPrefValue(kPersonalInfoSuggesterAcceptanceCount) < kMaxAcceptanceCount;
   ui::ime::SuggestionDetails details;
   details.text = text;
   details.confirmed_length = confirmed_length;
-  details.show_annotation = show_annotation;
+  details.show_accept_annotation = show_accept_annotation;
   details.show_setting_link =
       GetPrefValue(kPersonalInfoSuggesterAcceptanceCount) == 0 &&
       GetPrefValue(kPersonalInfoSuggesterShowSettingCount) <

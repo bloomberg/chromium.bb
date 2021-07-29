@@ -10,8 +10,9 @@
 
 #include "core/fpdfdoc/cpvt_variabletext.h"
 #include "core/fpdfdoc/cpvt_wordinfo.h"
+#include "core/fxcrt/stl_util.h"
 #include "third_party/base/check.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/numerics/ranges.h"
 
 namespace {
 
@@ -223,7 +224,7 @@ void CPVT_Section::ResetLinePlace() {
 CPVT_WordPlace CPVT_Section::AddWord(const CPVT_WordPlace& place,
                                      const CPVT_WordInfo& wordinfo) {
   int32_t nWordIndex = pdfium::clamp(
-      place.nWordIndex, 0, pdfium::CollectionSize<int32_t>(m_WordArray));
+      place.nWordIndex, 0, fxcrt::CollectionSize<int32_t>(m_WordArray));
   m_WordArray.insert(m_WordArray.begin() + nWordIndex,
                      std::make_unique<CPVT_WordInfo>(wordinfo));
   return place;
@@ -262,7 +263,7 @@ CPVT_WordPlace CPVT_Section::GetPrevWordPlace(
   if (place.nLineIndex < 0)
     return GetBeginWordPlace();
 
-  if (place.nLineIndex >= pdfium::CollectionSize<int32_t>(m_LineArray))
+  if (place.nLineIndex >= fxcrt::CollectionSize<int32_t>(m_LineArray))
     return GetEndWordPlace();
 
   Line* pLine = m_LineArray[place.nLineIndex].get();
@@ -272,7 +273,7 @@ CPVT_WordPlace CPVT_Section::GetPrevWordPlace(
   if (place.nWordIndex >= pLine->m_LineInfo.nBeginWordIndex)
     return pLine->GetPrevWordPlace(place);
 
-  if (!pdfium::IndexInBounds(m_LineArray, place.nLineIndex - 1))
+  if (!fxcrt::IndexInBounds(m_LineArray, place.nLineIndex - 1))
     return place;
 
   return m_LineArray[place.nLineIndex - 1]->GetEndWordPlace();
@@ -283,14 +284,14 @@ CPVT_WordPlace CPVT_Section::GetNextWordPlace(
   if (place.nLineIndex < 0)
     return GetBeginWordPlace();
 
-  if (place.nLineIndex >= pdfium::CollectionSize<int32_t>(m_LineArray))
+  if (place.nLineIndex >= fxcrt::CollectionSize<int32_t>(m_LineArray))
     return GetEndWordPlace();
 
   Line* pLine = m_LineArray[place.nLineIndex].get();
   if (place.nWordIndex < pLine->m_LineInfo.nEndWordIndex)
     return pLine->GetNextWordPlace(place);
 
-  if (!pdfium::IndexInBounds(m_LineArray, place.nLineIndex + 1))
+  if (!fxcrt::IndexInBounds(m_LineArray, place.nLineIndex + 1))
     return place;
 
   return m_LineArray[place.nLineIndex + 1]->GetBeginWordPlace();
@@ -298,7 +299,7 @@ CPVT_WordPlace CPVT_Section::GetNextWordPlace(
 
 void CPVT_Section::UpdateWordPlace(CPVT_WordPlace& place) const {
   int32_t nLeft = 0;
-  int32_t nRight = pdfium::CollectionSize<int32_t>(m_LineArray) - 1;
+  int32_t nRight = fxcrt::CollectionSize<int32_t>(m_LineArray) - 1;
   int32_t nMid = (nLeft + nRight) / 2;
   while (nLeft <= nRight) {
     Line* pLine = m_LineArray[nMid].get();
@@ -320,23 +321,23 @@ CPVT_WordPlace CPVT_Section::SearchWordPlace(const CFX_PointF& point) const {
   bool bUp = true;
   bool bDown = true;
   int32_t nLeft = 0;
-  int32_t nRight = pdfium::CollectionSize<int32_t>(m_LineArray) - 1;
-  int32_t nMid = pdfium::CollectionSize<int32_t>(m_LineArray) / 2;
+  int32_t nRight = fxcrt::CollectionSize<int32_t>(m_LineArray) - 1;
+  int32_t nMid = fxcrt::CollectionSize<int32_t>(m_LineArray) / 2;
   while (nLeft <= nRight) {
     Line* pLine = m_LineArray[nMid].get();
     float fTop = pLine->m_LineInfo.fLineY - pLine->m_LineInfo.fLineAscent -
                  m_pVT->GetLineLeading();
     float fBottom = pLine->m_LineInfo.fLineY - pLine->m_LineInfo.fLineDescent;
-    if (IsFloatBigger(point.y, fTop))
+    if (FXSYS_IsFloatBigger(point.y, fTop))
       bUp = false;
-    if (IsFloatSmaller(point.y, fBottom))
+    if (FXSYS_IsFloatSmaller(point.y, fBottom))
       bDown = false;
-    if (IsFloatSmaller(point.y, fTop)) {
+    if (FXSYS_IsFloatSmaller(point.y, fTop)) {
       nRight = nMid - 1;
       nMid = (nLeft + nRight) / 2;
       continue;
     }
-    if (IsFloatBigger(point.y, fBottom)) {
+    if (FXSYS_IsFloatBigger(point.y, fBottom)) {
       nLeft = nMid + 1;
       nMid = (nLeft + nRight) / 2;
       continue;
@@ -358,7 +359,7 @@ CPVT_WordPlace CPVT_Section::SearchWordPlace(const CFX_PointF& point) const {
 CPVT_WordPlace CPVT_Section::SearchWordPlace(
     float fx,
     const CPVT_WordPlace& lineplace) const {
-  if (!pdfium::IndexInBounds(m_LineArray, lineplace.nLineIndex))
+  if (!fxcrt::IndexInBounds(m_LineArray, lineplace.nLineIndex))
     return GetBeginWordPlace();
 
   Line* pLine = m_LineArray[lineplace.nLineIndex].get();
@@ -384,10 +385,10 @@ CPVT_WordPlace CPVT_Section::SearchWordPlace(
       nMid--;
       break;
     }
-    if (!pdfium::IndexInBounds(m_WordArray, nMid))
+    if (!fxcrt::IndexInBounds(m_WordArray, nMid))
       break;
     CPVT_WordInfo* pWord = m_WordArray[nMid].get();
-    if (fx > pWord->fWordX + m_pVT->GetWordWidth(*pWord) * VARIABLETEXT_HALF) {
+    if (fx > pWord->fWordX + m_pVT->GetWordWidth(*pWord) * 0.5f) {
       nLeft = nMid;
       nMid = (nLeft + nRight) / 2;
       continue;
@@ -395,38 +396,38 @@ CPVT_WordPlace CPVT_Section::SearchWordPlace(
     nRight = nMid;
     nMid = (nLeft + nRight) / 2;
   }
-  if (pdfium::IndexInBounds(m_WordArray, nMid)) {
+  if (fxcrt::IndexInBounds(m_WordArray, nMid)) {
     CPVT_WordInfo* pWord = m_WordArray[nMid].get();
-    if (fx > pWord->fWordX + m_pVT->GetWordWidth(*pWord) * VARIABLETEXT_HALF)
+    if (fx > pWord->fWordX + m_pVT->GetWordWidth(*pWord) * 0.5f)
       wordplace.nWordIndex = nMid;
   }
   return wordplace;
 }
 
 int32_t CPVT_Section::GetLineArraySize() const {
-  return pdfium::CollectionSize<int32_t>(m_LineArray);
+  return fxcrt::CollectionSize<int32_t>(m_LineArray);
 }
 
 const CPVT_Section::Line* CPVT_Section::GetLineFromArray(int32_t index) const {
-  if (!pdfium::IndexInBounds(m_LineArray, index))
+  if (!fxcrt::IndexInBounds(m_LineArray, index))
     return nullptr;
 
   return m_LineArray[index].get();
 }
 
 int32_t CPVT_Section::GetWordArraySize() const {
-  return pdfium::CollectionSize<int32_t>(m_WordArray);
+  return fxcrt::CollectionSize<int32_t>(m_WordArray);
 }
 
 const CPVT_WordInfo* CPVT_Section::GetWordFromArray(int32_t index) const {
-  if (!pdfium::IndexInBounds(m_WordArray, index))
+  if (!fxcrt::IndexInBounds(m_WordArray, index))
     return nullptr;
 
   return m_WordArray[index].get();
 }
 
 void CPVT_Section::EraseWordsFrom(int32_t index) {
-  if (!pdfium::IndexInBounds(m_WordArray, index))
+  if (!fxcrt::IndexInBounds(m_WordArray, index))
     return;
 
   m_WordArray.erase(m_WordArray.begin() + index, m_WordArray.end());
@@ -448,29 +449,27 @@ CPVT_FloatRect CPVT_Section::RearrangeCharArray() const {
   CPVT_Section::Line* pLine = m_LineArray.front().get();
   switch (m_pVT->GetAlignment()) {
     case 0:
-      pLine->m_LineInfo.fLineX = fNodeWidth * VARIABLETEXT_HALF;
+      pLine->m_LineInfo.fLineX = fNodeWidth * 0.5f;
       break;
     case 1:
       nStart = (m_pVT->GetCharArray() -
-                pdfium::CollectionSize<int32_t>(m_WordArray)) /
+                fxcrt::CollectionSize<int32_t>(m_WordArray)) /
                2;
-      pLine->m_LineInfo.fLineX =
-          fNodeWidth * nStart - fNodeWidth * VARIABLETEXT_HALF;
+      pLine->m_LineInfo.fLineX = fNodeWidth * nStart - fNodeWidth * 0.5f;
       break;
     case 2:
       nStart =
-          m_pVT->GetCharArray() - pdfium::CollectionSize<int32_t>(m_WordArray);
-      pLine->m_LineInfo.fLineX =
-          fNodeWidth * nStart - fNodeWidth * VARIABLETEXT_HALF;
+          m_pVT->GetCharArray() - fxcrt::CollectionSize<int32_t>(m_WordArray);
+      pLine->m_LineInfo.fLineX = fNodeWidth * nStart - fNodeWidth * 0.5f;
       break;
   }
-  for (int32_t w = 0, sz = pdfium::CollectionSize<int32_t>(m_WordArray); w < sz;
+  for (int32_t w = 0, sz = fxcrt::CollectionSize<int32_t>(m_WordArray); w < sz;
        w++) {
     if (w >= m_pVT->GetCharArray())
       break;
 
     float fNextWidth = 0;
-    if (pdfium::IndexInBounds(m_WordArray, w + 1)) {
+    if (fxcrt::IndexInBounds(m_WordArray, w + 1)) {
       CPVT_WordInfo* pNextWord = m_WordArray[w + 1].get();
       pNextWord->fWordTail = 0;
       fNextWidth = m_pVT->GetWordWidth(*pNextWord);
@@ -480,18 +479,16 @@ CPVT_FloatRect CPVT_Section::RearrangeCharArray() const {
     float fWordWidth = m_pVT->GetWordWidth(*pWord);
     float fWordAscent = m_pVT->GetWordAscent(*pWord);
     float fWordDescent = m_pVT->GetWordDescent(*pWord);
-    x = (float)(fNodeWidth * (w + nStart + 0.5) -
-                fWordWidth * VARIABLETEXT_HALF);
+    x = (float)(fNodeWidth * (w + nStart + 0.5) - fWordWidth * 0.5f);
     pWord->fWordX = x;
     pWord->fWordY = y;
     if (w == 0) {
       pLine->m_LineInfo.fLineX = x;
     }
-    if (w != pdfium::CollectionSize<int32_t>(m_WordArray) - 1) {
-      pWord->fWordTail =
-          (fNodeWidth - (fWordWidth + fNextWidth) * VARIABLETEXT_HALF > 0
-               ? fNodeWidth - (fWordWidth + fNextWidth) * VARIABLETEXT_HALF
-               : 0);
+    if (w != fxcrt::CollectionSize<int32_t>(m_WordArray) - 1) {
+      pWord->fWordTail = (fNodeWidth - (fWordWidth + fNextWidth) * 0.5f > 0
+                              ? fNodeWidth - (fWordWidth + fNextWidth) * 0.5f
+                              : 0);
     } else {
       pWord->fWordTail = 0;
     }
@@ -501,7 +498,7 @@ CPVT_FloatRect CPVT_Section::RearrangeCharArray() const {
   }
   pLine->m_LineInfo.nBeginWordIndex = 0;
   pLine->m_LineInfo.nEndWordIndex =
-      pdfium::CollectionSize<int32_t>(m_WordArray) - 1;
+      fxcrt::CollectionSize<int32_t>(m_WordArray) - 1;
   pLine->m_LineInfo.fLineY = y;
   pLine->m_LineInfo.fLineWidth = x - pLine->m_LineInfo.fLineX;
   pLine->m_LineInfo.fLineAscent = fLineAscent;
@@ -522,13 +519,6 @@ CPVT_FloatRect CPVT_Section::SplitLines(bool bTypeset, float fFontSize) {
     if (bTypeset) {
       fLineAscent = m_pVT->GetLineAscent();
       fLineDescent = m_pVT->GetLineDescent();
-    } else {
-      fLineAscent =
-          m_pVT->GetFontAscent(m_pVT->GetDefaultFontIndex(), fFontSize);
-      fLineDescent =
-          m_pVT->GetFontDescent(m_pVT->GetDefaultFontIndex(), fFontSize);
-    }
-    if (bTypeset) {
       line.nBeginWordIndex = -1;
       line.nEndWordIndex = -1;
       line.nTotalWord = 0;
@@ -536,6 +526,11 @@ CPVT_FloatRect CPVT_Section::SplitLines(bool bTypeset, float fFontSize) {
       line.fLineAscent = fLineAscent;
       line.fLineDescent = fLineDescent;
       AddLine(line);
+    } else {
+      fLineAscent =
+          m_pVT->GetFontAscent(m_pVT->GetDefaultFontIndex(), fFontSize);
+      fLineDescent =
+          m_pVT->GetFontDescent(m_pVT->GetDefaultFontIndex(), fFontSize);
     }
     float fMaxY = m_pVT->GetLineLeading() + fLineAscent - fLineDescent;
     return CPVT_FloatRect(0, 0, 0, fMaxY);
@@ -558,7 +553,7 @@ CPVT_FloatRect CPVT_Section::SplitLines(bool bTypeset, float fFontSize) {
   float fWordWidth = 0;
   float fTypesetWidth =
       std::max(m_pVT->GetPlateWidth() - m_pVT->GetLineIndent(), 0.0f);
-  int32_t nTotalWords = pdfium::CollectionSize<int32_t>(m_WordArray);
+  int32_t nTotalWords = fxcrt::CollectionSize<int32_t>(m_WordArray);
   bool bOpened = false;
   int32_t i = 0;
   while (i < nTotalWords) {
@@ -672,7 +667,7 @@ CPVT_FloatRect CPVT_Section::OutputLines(const CPVT_FloatRect& rect) const {
       fMinX = 0.0f;
       break;
     case 1:
-      fMinX = (fTypesetWidth - rect.Width()) * VARIABLETEXT_HALF;
+      fMinX = (fTypesetWidth - rect.Width()) * 0.5f;
       break;
     case 2:
       fMinX = fTypesetWidth - rect.Width();
@@ -681,7 +676,7 @@ CPVT_FloatRect CPVT_Section::OutputLines(const CPVT_FloatRect& rect) const {
   float fMaxX = fMinX + rect.Width();
   float fMinY = 0.0f;
   float fMaxY = rect.Height();
-  int32_t nTotalLines = pdfium::CollectionSize<int32_t>(m_LineArray);
+  int32_t nTotalLines = fxcrt::CollectionSize<int32_t>(m_LineArray);
   if (nTotalLines > 0) {
     float fPosX = 0.0f;
     float fPosY = 0.0f;
@@ -693,8 +688,7 @@ CPVT_FloatRect CPVT_Section::OutputLines(const CPVT_FloatRect& rect) const {
           fPosX = 0;
           break;
         case 1:
-          fPosX = (fTypesetWidth - pLine->m_LineInfo.fLineWidth) *
-                  VARIABLETEXT_HALF;
+          fPosX = (fTypesetWidth - pLine->m_LineInfo.fLineWidth) * 0.5f;
           break;
         case 2:
           fPosX = fTypesetWidth - pLine->m_LineInfo.fLineWidth;
@@ -707,7 +701,7 @@ CPVT_FloatRect CPVT_Section::OutputLines(const CPVT_FloatRect& rect) const {
       pLine->m_LineInfo.fLineY = fPosY - fMinY;
       for (int32_t w = pLine->m_LineInfo.nBeginWordIndex;
            w <= pLine->m_LineInfo.nEndWordIndex; w++) {
-        if (pdfium::IndexInBounds(m_WordArray, w)) {
+        if (fxcrt::IndexInBounds(m_WordArray, w)) {
           CPVT_WordInfo* pWord = m_WordArray[w].get();
           pWord->fWordX = fPosX - fMinX;
           pWord->fWordY = fPosY - fMinY;
@@ -723,22 +717,22 @@ CPVT_FloatRect CPVT_Section::OutputLines(const CPVT_FloatRect& rect) const {
 
 void CPVT_Section::ClearLeftWords(int32_t nWordIndex) {
   for (int32_t i = nWordIndex; i >= 0; i--) {
-    if (pdfium::IndexInBounds(m_WordArray, i))
+    if (fxcrt::IndexInBounds(m_WordArray, i))
       m_WordArray.erase(m_WordArray.begin() + i);
   }
 }
 
 void CPVT_Section::ClearRightWords(int32_t nWordIndex) {
-  int32_t sz = pdfium::CollectionSize<int32_t>(m_WordArray);
+  int32_t sz = fxcrt::CollectionSize<int32_t>(m_WordArray);
   for (int32_t i = sz - 1; i > nWordIndex; i--) {
-    if (pdfium::IndexInBounds(m_WordArray, i))
+    if (fxcrt::IndexInBounds(m_WordArray, i))
       m_WordArray.erase(m_WordArray.begin() + i);
   }
 }
 
 void CPVT_Section::ClearMidWords(int32_t nBeginIndex, int32_t nEndIndex) {
   for (int32_t i = nEndIndex; i > nBeginIndex; i--) {
-    if (pdfium::IndexInBounds(m_WordArray, i))
+    if (fxcrt::IndexInBounds(m_WordArray, i))
       m_WordArray.erase(m_WordArray.begin() + i);
   }
 }
@@ -761,6 +755,6 @@ void CPVT_Section::ClearWords(const CPVT_WordRange& PlaceRange) {
 }
 
 void CPVT_Section::ClearWord(const CPVT_WordPlace& place) {
-  if (pdfium::IndexInBounds(m_WordArray, place.nWordIndex))
+  if (fxcrt::IndexInBounds(m_WordArray, place.nWordIndex))
     m_WordArray.erase(m_WordArray.begin() + place.nWordIndex);
 }

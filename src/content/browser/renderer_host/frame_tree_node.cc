@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/renderer_host/navigation_controller_impl.h"
@@ -23,7 +22,6 @@
 #include "content/browser/renderer_host/navigator_delegate.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/common/navigation_params.h"
 #include "content/common/navigation_params_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
@@ -109,26 +107,27 @@ FrameTreeNode* FrameTreeNode::From(RenderFrameHost* rfh) {
 FrameTreeNode::FrameTreeNode(
     FrameTree* frame_tree,
     RenderFrameHostImpl* parent,
-    blink::mojom::TreeScopeType scope,
+    blink::mojom::TreeScopeType tree_scope_type,
     const std::string& name,
     const std::string& unique_name,
     bool is_created_by_script,
     const base::UnguessableToken& devtools_frame_token,
     const blink::mojom::FrameOwnerProperties& frame_owner_properties,
-    blink::mojom::FrameOwnerElementType owner_type)
+    blink::mojom::FrameOwnerElementType owner_type,
+    const blink::FramePolicy& frame_policy)
     : frame_tree_(frame_tree),
       frame_tree_node_id_(next_frame_tree_node_id_++),
       parent_(parent),
       depth_(parent ? parent->frame_tree_node()->depth_ + 1 : 0u),
       frame_owner_element_type_(owner_type),
+      tree_scope_type_(tree_scope_type),
       replication_state_(blink::mojom::FrameReplicationState::New(
           url::Origin(),
           name,
           unique_name,
           blink::ParsedPermissionsPolicy(),
           network::mojom::WebSandboxFlags::kNone,
-          blink::FramePolicy(),
-          scope,
+          frame_policy,
           // should enforce strict mixed content checking
           blink::mojom::InsecureRequestPolicy::kLeaveInsecureRequestsAlone,
           // hashes of hosts for insecure request upgrades
@@ -136,7 +135,8 @@ FrameTreeNode::FrameTreeNode(
           false /* is a potentially trustworthy unique origin */,
           false /* has an active user gesture */,
           false /* has received a user gesture before nav */,
-          blink::mojom::AdFrameType::kNonAd)),
+          false /* is_ad_subframe */)),
+      pending_frame_policy_(frame_policy),
       is_created_by_script_(is_created_by_script),
       devtools_frame_token_(devtools_frame_token),
       frame_owner_properties_(frame_owner_properties),
@@ -325,8 +325,10 @@ void FrameTreeNode::SetOriginalOpener(FrameTreeNode* opener) {
 }
 
 void FrameTreeNode::SetCurrentURL(const GURL& url) {
-  if (!has_committed_real_load_ && !url.IsAboutBlank())
+  if (!has_committed_real_load_ && !url.IsAboutBlank()) {
     has_committed_real_load_ = true;
+    is_on_initial_empty_document_or_subsequent_empty_documents_ = false;
+  }
   current_frame_host()->SetLastCommittedUrl(url);
   blame_context_.TakeSnapshot();
 }
@@ -401,9 +403,17 @@ void FrameTreeNode::SetInsecureNavigationsSet(
 }
 
 void FrameTreeNode::SetPendingFramePolicy(blink::FramePolicy frame_policy) {
+  // The |is_fenced| bit should never be able to transition from what its
+  // initial value was. Since we never expect to be in a position where it can
+  // even be updated to new value, if we catch this happening we have to kill
+  // the renderer and refuse to accept any other frame policy changes here.
+  if (pending_frame_policy_.is_fenced != frame_policy.is_fenced) {
+    mojo::ReportBadMessage(
+        "The `is_fenced` FramePolicy bit is const and should never be changed");
+    return;
+  }
+
   pending_frame_policy_.sandbox_flags = frame_policy.sandbox_flags;
-  pending_frame_policy_.disallow_document_access =
-      frame_policy.disallow_document_access;
 
   if (parent()) {
     // Subframes should always inherit their parent's sandbox flags.
@@ -470,9 +480,8 @@ bool FrameTreeNode::CommitFramePolicy(
   bool did_change_required_document_policy =
       pending_frame_policy_.required_document_policy !=
       replication_state_->frame_policy.required_document_policy;
-  bool did_change_document_access =
-      new_frame_policy.disallow_document_access !=
-      replication_state_->frame_policy.disallow_document_access;
+  DCHECK_EQ(new_frame_policy.is_fenced,
+            replication_state_->frame_policy.is_fenced);
   if (did_change_flags) {
     replication_state_->frame_policy.sandbox_flags =
         new_frame_policy.sandbox_flags;
@@ -485,15 +494,11 @@ bool FrameTreeNode::CommitFramePolicy(
     replication_state_->frame_policy.required_document_policy =
         new_frame_policy.required_document_policy;
   }
-  if (did_change_document_access) {
-    replication_state_->frame_policy.disallow_document_access =
-        new_frame_policy.disallow_document_access;
-  }
 
   UpdateFramePolicyHeaders(new_frame_policy.sandbox_flags,
                            replication_state_->permissions_policy_header);
   return did_change_flags || did_change_container_policy ||
-         did_change_required_document_policy || did_change_document_access;
+         did_change_required_document_policy;
 }
 
 void FrameTreeNode::TransferNavigationRequestOwnership(
@@ -782,12 +787,12 @@ void FrameTreeNode::PruneChildFrameNavigationEntries(
   }
 }
 
-void FrameTreeNode::SetAdFrameType(blink::mojom::AdFrameType ad_frame_type) {
-  if (ad_frame_type == replication_state_->ad_frame_type)
+void FrameTreeNode::SetIsAdSubframe(bool is_ad_subframe) {
+  if (is_ad_subframe == replication_state_->is_ad_subframe)
     return;
 
-  replication_state_->ad_frame_type = ad_frame_type;
-  render_manager()->OnDidSetAdFrameType(ad_frame_type);
+  replication_state_->is_ad_subframe = is_ad_subframe;
+  render_manager()->OnDidSetIsAdSubframe(is_ad_subframe);
 }
 
 void FrameTreeNode::SetInitialPopupURL(const GURL& initial_popup_url) {
@@ -821,6 +826,52 @@ bool FrameTreeNode::HasNavigation() {
     return true;
 
   return false;
+}
+
+bool FrameTreeNode::IsFencedFrame() const {
+  if (!blink::features::IsFencedFramesEnabled())
+    return false;
+
+  switch (blink::features::kFencedFramesImplementationTypeParam.Get()) {
+    case blink::features::FencedFramesImplementationType::kMPArch: {
+      // TODO(crbug.com/1123606): Once the MPArch code lands, this can be
+      // simplified to frame_tree()->IsFencedFrameTree() and IsMainFrame()
+      // instead of checking the frame_owner_element_type().
+      if (frame_owner_element_type() ==
+          blink::mojom::FrameOwnerElementType::kFencedframe) {
+        DCHECK(frame_tree()->IsFencedFrameTree());
+        return true;
+      }
+      return false;
+    }
+    case blink::features::FencedFramesImplementationType::kShadowDOM: {
+      return effective_frame_policy().is_fenced;
+    }
+    default:
+      return false;
+  }
+}
+
+bool FrameTreeNode::IsInFencedFrameTree() const {
+  if (!blink::features::IsFencedFramesEnabled())
+    return false;
+
+  switch (blink::features::kFencedFramesImplementationTypeParam.Get()) {
+    case blink::features::FencedFramesImplementationType::kMPArch:
+      return frame_tree()->IsFencedFrameTree();
+    case blink::features::FencedFramesImplementationType::kShadowDOM: {
+      auto* node = this;
+      while (node) {
+        if (node->effective_frame_policy().is_fenced) {
+          return true;
+        }
+        node = node->parent() ? node->parent()->frame_tree_node() : nullptr;
+      }
+      return false;
+    }
+    default:
+      return false;
+  }
 }
 
 }  // namespace content

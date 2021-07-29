@@ -9,12 +9,13 @@
 #include <algorithm>
 #include <limits>
 #include <utility>
+#include <vector>
 
 #include "core/fxcodec/jpx/jpx_decode_utils.h"
 #include "core/fxcrt/fx_safe_types.h"
+#include "third_party/base/numerics/ranges.h"
 #include "third_party/base/optional.h"
 #include "third_party/base/ptr_util.h"
-#include "third_party/base/stl_util.h"
 
 #if !defined(USE_SYSTEM_LIBOPENJPEG2)
 #include "third_party/libopenjpeg20/opj_malloc.h"
@@ -60,15 +61,15 @@ Optional<OpjImageRgbData> alloc_rgb(size_t size) {
   OpjImageRgbData data;
   data.r.reset(static_cast<int*>(opj_image_data_alloc(size)));
   if (!data.r)
-    return {};
+    return pdfium::nullopt;
 
   data.g.reset(static_cast<int*>(opj_image_data_alloc(size)));
   if (!data.g)
-    return {};
+    return pdfium::nullopt;
 
   data.b.reset(static_cast<int*>(opj_image_data_alloc(size)));
   if (!data.b)
-    return {};
+    return pdfium::nullopt;
 
   return data;
 }
@@ -533,23 +534,30 @@ bool CJPX_Decoder::Decode(uint8_t* dest_buf, uint32_t pitch, bool swap_rgb) {
   uint32_t height = m_Image->comps[0].h;
   for (uint32_t channel = 0; channel < m_Image->numcomps; ++channel) {
     uint8_t* pChannel = channel_bufs[channel];
-    if (adjust_comps[channel] < 0) {
+    const int adjust = adjust_comps[channel];
+    const opj_image_comp_t& comps = m_Image->comps[channel];
+    if (!comps.data)
+      continue;
+
+    // Perfomance-sensitive code below. Combining these 3 for-loops below will
+    // cause a slowdown.
+    const uint32_t src_offset = comps.sgnd ? 1 << (comps.prec - 1) : 0;
+    if (adjust < 0) {
       for (uint32_t row = 0; row < height; ++row) {
         uint8_t* pScanline = pChannel + row * pitch;
         for (uint32_t col = 0; col < width; ++col) {
           uint8_t* pPixel = pScanline + col * m_Image->numcomps;
-          if (!m_Image->comps[channel].data)
-            continue;
-
-          int src = m_Image->comps[channel].data[row * width + col];
-          src += m_Image->comps[channel].sgnd
-                     ? 1 << (m_Image->comps[channel].prec - 1)
-                     : 0;
-          if (adjust_comps[channel] > 0) {
-            *pPixel = 0;
-          } else {
-            *pPixel = static_cast<uint8_t>(src << -adjust_comps[channel]);
-          }
+          int src = comps.data[row * width + col] + src_offset;
+          *pPixel = static_cast<uint8_t>(src << -adjust);
+        }
+      }
+    } else if (adjust == 0) {
+      for (uint32_t row = 0; row < height; ++row) {
+        uint8_t* pScanline = pChannel + row * pitch;
+        for (uint32_t col = 0; col < width; ++col) {
+          uint8_t* pPixel = pScanline + col * m_Image->numcomps;
+          int src = comps.data[row * width + col] + src_offset;
+          *pPixel = static_cast<uint8_t>(src);
         }
       }
     } else {
@@ -557,21 +565,10 @@ bool CJPX_Decoder::Decode(uint8_t* dest_buf, uint32_t pitch, bool swap_rgb) {
         uint8_t* pScanline = pChannel + row * pitch;
         for (uint32_t col = 0; col < width; ++col) {
           uint8_t* pPixel = pScanline + col * m_Image->numcomps;
-          if (!m_Image->comps[channel].data)
-            continue;
-
-          int src = m_Image->comps[channel].data[row * width + col];
-          src += m_Image->comps[channel].sgnd
-                     ? 1 << (m_Image->comps[channel].prec - 1)
-                     : 0;
-          if (adjust_comps[channel] - 1 < 0) {
-            *pPixel = static_cast<uint8_t>((src >> adjust_comps[channel]));
-          } else {
-            int tmpPixel = (src >> adjust_comps[channel]) +
-                           ((src >> (adjust_comps[channel] - 1)) % 2);
-            tmpPixel = pdfium::clamp(tmpPixel, 0, 255);
-            *pPixel = static_cast<uint8_t>(tmpPixel);
-          }
+          int src = comps.data[row * width + col] + src_offset;
+          int pixel = (src >> adjust) + ((src >> (adjust - 1)) % 2);
+          pixel = pdfium::clamp(pixel, 0, 255);
+          *pPixel = static_cast<uint8_t>(pixel);
         }
       }
     }

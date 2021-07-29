@@ -20,6 +20,10 @@
 
 #include "src/core/lib/channel/channelz.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "absl/strings/escaping.h"
 #include "absl/strings/strip.h"
 
@@ -27,10 +31,8 @@
 #include <grpc/support/alloc.h>
 #include <grpc/support/log.h>
 #include <grpc/support/string_util.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
+#include "src/core/lib/address_utils/sockaddr_utils.h"
 #include "src/core/lib/channel/channelz_registry.h"
 #include "src/core/lib/channel/status_util.h"
 #include "src/core/lib/gpr/string.h"
@@ -40,6 +42,7 @@
 #include "src/core/lib/gprpp/memory.h"
 #include "src/core/lib/iomgr/error.h"
 #include "src/core/lib/iomgr/exec_ctx.h"
+#include "src/core/lib/iomgr/resolve_address.h"
 #include "src/core/lib/slice/b64.h"
 #include "src/core/lib/slice/slice_internal.h"
 #include "src/core/lib/surface/channel.h"
@@ -373,7 +376,7 @@ Json SocketNode::Security::RenderJson() {
       break;
     case ModelType::kOther:
       if (other) {
-        data["other"] = tls->RenderJson();
+        data["other"] = *other;
       }
       break;
   }
@@ -434,13 +437,22 @@ void PopulateSocketAddressJson(Json::Object* json, const char* name,
     if (!port.empty()) {
       port_num = atoi(port.data());
     }
-    char* b64_host = grpc_base64_encode(host.data(), host.size(), false, false);
-    data["tcpip_address"] = Json::Object{
-        {"port", port_num},
-        {"ip_address", b64_host},
-    };
-    gpr_free(b64_host);
-  } else if (uri.ok() && uri->scheme() == "unix") {
+    grpc_resolved_address resolved_host;
+    grpc_error_handle error =
+        grpc_string_to_sockaddr(&resolved_host, host.c_str(), port_num);
+    if (error == GRPC_ERROR_NONE) {
+      std::string packed_host = grpc_sockaddr_get_packed_host(&resolved_host);
+      std::string b64_host = absl::Base64Escape(packed_host);
+      data["tcpip_address"] = Json::Object{
+          {"port", port_num},
+          {"ip_address", b64_host},
+      };
+      (*json)[name] = std::move(data);
+      return;
+    }
+    GRPC_ERROR_UNREF(error);
+  }
+  if (uri.ok() && uri->scheme() == "unix") {
     data["uds_address"] = Json::Object{
         {"filename", uri->path()},
     };

@@ -2438,7 +2438,7 @@ class DeviceUtils(object):
       return self._ReadFileWithPull(device_path)
 
   def _WriteFileWithPush(self, device_path, contents):
-    with tempfile.NamedTemporaryFile() as host_temp:
+    with tempfile.NamedTemporaryFile(mode='w+') as host_temp:
       host_temp.write(contents)
       host_temp.flush()
       self.adb.Push(host_temp.name, device_path)
@@ -3031,6 +3031,27 @@ class DeviceUtils(object):
     return self.GetProp('ro.product.cpu.abi', cache=True)
 
   @decorators.WithTimeoutAndRetriesFromInstance()
+  def GetSupportedABIs(self, timeout=None, retries=None):
+    """Gets all ABIs supported by the device.
+
+    Args:
+      timeout: timeout in seconds
+      retries: number of retries
+
+    Returns:
+      The device's supported ABIs list. For supported ABIs, the returned list
+      will consist of the values defined in devil.android.ndk.abis.
+
+    Raises:
+      CommandTimeoutError on timeout.
+    """
+    supported_abis = self.GetProp('ro.product.cpu.abilist', cache=True)
+    return [
+        supported_abi for supported_abi in supported_abis.split(',')
+        if supported_abi
+    ]
+
+  @decorators.WithTimeoutAndRetriesFromInstance()
   def GetFeatures(self, timeout=None, retries=None):
     """Returns the features supported on the device."""
     lines = self.RunShellCommand(['pm', 'list', 'features'], check_return=True)
@@ -3452,6 +3473,9 @@ class DeviceUtils(object):
 
     def _FindFocusedWindow():
       match = None
+      # Note: This will fail to find system dialogs on Android Q+. System
+      # dialogs should not be shown on Android Q+ because we set
+      # hide_error_dialogs=1. http://crbug.com/1107896#c26
       # TODO(jbudorick): Try to grep the output on the device instead of using
       # large_output if/when DeviceUtils exposes a public interface for piped
       # shell command handling.
@@ -3468,9 +3492,18 @@ class DeviceUtils(object):
       return None
     package = match.group(2)
     logger.warning('Trying to dismiss %s dialog for %s', *match.groups())
-    self.SendKeyEvent(keyevent.KEYCODE_DPAD_RIGHT)
-    self.SendKeyEvent(keyevent.KEYCODE_DPAD_RIGHT)
-    self.SendKeyEvent(keyevent.KEYCODE_ENTER)
+
+    if self.build_version_sdk >= version_codes.NOUGAT:
+      # Broadcast does not work pre-N. Send broadcast because Android N+
+      # sometimes displays system dialog where only option is "Open app Again"
+      # when app crashes.
+      self.BroadcastIntent(
+          intent.Intent(action='android.intent.action.CLOSE_SYSTEM_DIALOGS'))
+    else:
+      self.SendKeyEvent(keyevent.KEYCODE_DPAD_RIGHT)
+      self.SendKeyEvent(keyevent.KEYCODE_DPAD_RIGHT)
+      self.SendKeyEvent(keyevent.KEYCODE_ENTER)
+
     match = _FindFocusedWindow()
     if match:
       logger.error('Still showing a %s dialog for %s', *match.groups())
@@ -3672,7 +3705,6 @@ class DeviceUtils(object):
 
     def supports_abi(abi, serial):
       if abis and abi not in abis:
-        logger.warning("Device %s doesn't support required ABIs.", serial)
         return False
       return True
 
@@ -3685,8 +3717,18 @@ class DeviceUtils(object):
           serial = adb.GetDeviceSerial()
           if not denylisted(serial):
             device = cls(_CreateAdbWrapper(adb), **kwargs)
-            if supports_abi(device.GetABI(), serial):
-              devices.append(device)
+            supported_abis = device.GetSupportedABIs()
+            if not supported_abis:
+              supported_abis = [device.GetABI()]
+            for supported_abi in supported_abis:
+              if supports_abi(supported_abi, serial):
+                devices.append(device)
+                break
+            else:
+              logger.warning(
+                  "Device %s doesn't support required ABIs "
+                  "(supported: %s, required: %s)", serial,
+                  ','.join(supported_abis), ','.join(abis))
 
       if len(devices) == 0 and not allow_no_devices:
         raise device_errors.NoDevicesError()

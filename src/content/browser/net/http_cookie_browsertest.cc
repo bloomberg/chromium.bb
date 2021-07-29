@@ -15,6 +15,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
 #include "net/base/features.h"
+#include "net/cookies/canonical_cookie_test_helpers.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/network/public/cpp/network_switches.h"
@@ -29,28 +30,6 @@ using ::testing::IsEmpty;
 using ::testing::Key;
 using ::testing::UnorderedElementsAre;
 
-// Matches a CanonicalCookie with the given name.
-MATCHER_P(CookieWithName, name, "") {
-  return testing::ExplainMatchResult(testing::Eq(name), arg.Name(),
-                                     result_listener);
-}
-
-// Splits a string into key-value pairs, and executes the provided matcher on
-// the result.
-MATCHER_P3(WhenKVSplit, pair_delim, kv_delim, inner_matcher, "") {
-  std::vector<std::pair<std::string, std::string>> pairs;
-  // Ignore the return value of SplitStringIntoKeyValuePairs, to allow pairs
-  // with no associated value.
-  base::SplitStringIntoKeyValuePairs(arg, kv_delim, pair_delim, &pairs);
-  return testing::ExplainMatchResult(inner_matcher, pairs, result_listener);
-}
-
-// Splits a ';'-delimited string of Cookie 'name=value' or 'name' pairs, and
-// executes the provided matcher on the result.
-MATCHER_P(CookieString, inner_matcher, "") {
-  return testing::ExplainMatchResult(WhenKVSplit(';', '=', inner_matcher), arg,
-                                     result_listener);
-}
 
 // This file contains tests for cookie access via HTTP requests.
 // See also (tests for cookie access via JavaScript):
@@ -261,7 +240,7 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SendSameSiteCookies) {
       NavigateToURL(web_contents, EchoCookiesUrl(https_server(), kHostA)));
   EXPECT_THAT(
       ExtractFrameContent(web_contents->GetMainFrame()),
-      CookieString(UnorderedElementsAre(
+      net::CookieStringIs(UnorderedElementsAre(
           Key(kSameSiteStrictCookieName), Key(kSameSiteLaxCookieName),
           Key(kSameSiteNoneCookieName), Key(kSameSiteUnspecifiedCookieName))));
 
@@ -270,7 +249,7 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SendSameSiteCookies) {
       web_contents->GetMainFrame(), EchoCookiesUrl(https_server(), kHostA)));
   EXPECT_THAT(
       ExtractFrameContent(web_contents->GetMainFrame()),
-      CookieString(UnorderedElementsAre(
+      net::CookieStringIs(UnorderedElementsAre(
           Key(kSameSiteStrictCookieName), Key(kSameSiteLaxCookieName),
           Key(kSameSiteNoneCookieName), Key(kSameSiteUnspecifiedCookieName))));
 
@@ -278,7 +257,7 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SendSameSiteCookies) {
   ASSERT_TRUE(NavigateToURLFromRenderer(
       web_contents->GetMainFrame(), EchoCookiesUrl(https_server(), kHostB)));
   EXPECT_THAT(ExtractFrameContent(web_contents->GetMainFrame()),
-              CookieString(UnorderedElementsAre(
+              net::CookieStringIs(UnorderedElementsAre(
                   Key(kSameSiteLaxCookieName), Key(kSameSiteNoneCookieName),
                   Key(kSameSiteUnspecifiedCookieName))));
 
@@ -286,14 +265,15 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SendSameSiteCookies) {
   EXPECT_THAT(
       ArrangeFramesAndGetContentFromLeaf(
           "a.test(%s)", {0}, EchoCookiesUrl(https_server(), kHostA)),
-      CookieString(UnorderedElementsAre(
+      net::CookieStringIs(UnorderedElementsAre(
           Key(kSameSiteStrictCookieName), Key(kSameSiteLaxCookieName),
           Key(kSameSiteNoneCookieName), Key(kSameSiteUnspecifiedCookieName))));
 
   // Cross-site iframe (B embedded in A) sends only None cookies.
-  EXPECT_THAT(ArrangeFramesAndGetContentFromLeaf(
-                  "a.test(%s)", {0}, EchoCookiesUrl(https_server(), kHostB)),
-              CookieString(UnorderedElementsAre(Key(kSameSiteNoneCookieName))));
+  EXPECT_THAT(
+      ArrangeFramesAndGetContentFromLeaf(
+          "a.test(%s)", {0}, EchoCookiesUrl(https_server(), kHostB)),
+      net::CookieStringIs(UnorderedElementsAre(Key(kSameSiteNoneCookieName))));
 }
 
 IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SendSameSiteCookies_Redirect) {
@@ -310,7 +290,7 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SendSameSiteCookies_Redirect) {
       /*expected_commit_url=*/EchoCookiesUrl(https_server(), kHostA)));
   EXPECT_THAT(
       ExtractFrameContent(web_contents->GetMainFrame()),
-      CookieString(UnorderedElementsAre(
+      net::CookieStringIs(UnorderedElementsAre(
           Key(kSameSiteStrictCookieName), Key(kSameSiteLaxCookieName),
           Key(kSameSiteNoneCookieName), Key(kSameSiteUnspecifiedCookieName))));
 
@@ -323,7 +303,7 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SendSameSiteCookies_Redirect) {
                     EchoCookiesUrl(https_server(), kHostA)),
         /*expected_commit_url=*/EchoCookiesUrl(https_server(), kHostA)));
     EXPECT_THAT(ExtractFrameContent(web_contents->GetMainFrame()),
-                CookieString(UnorderedElementsAre(
+                net::CookieStringIs(UnorderedElementsAre(
                     Key(kSameSiteLaxCookieName), Key(kSameSiteNoneCookieName),
                     Key(kSameSiteUnspecifiedCookieName))));
 
@@ -335,7 +315,7 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SendSameSiteCookies_Redirect) {
                                 EchoCookiesUrl(https_server(), kHostA))),
         /*expected_commit_url=*/EchoCookiesUrl(https_server(), kHostA)));
     EXPECT_THAT(ExtractFrameContent(web_contents->GetMainFrame()),
-                CookieString(UnorderedElementsAre(
+                net::CookieStringIs(UnorderedElementsAre(
                     Key(kSameSiteLaxCookieName), Key(kSameSiteNoneCookieName),
                     Key(kSameSiteUnspecifiedCookieName))));
   } else {
@@ -347,7 +327,7 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SendSameSiteCookies_Redirect) {
                     EchoCookiesUrl(https_server(), kHostA)),
         /*expected_commit_url=*/EchoCookiesUrl(https_server(), kHostA)));
     EXPECT_THAT(ExtractFrameContent(web_contents->GetMainFrame()),
-                CookieString(UnorderedElementsAre(
+                net::CookieStringIs(UnorderedElementsAre(
                     Key(kSameSiteStrictCookieName), Key(kSameSiteLaxCookieName),
                     Key(kSameSiteNoneCookieName),
                     Key(kSameSiteUnspecifiedCookieName))));
@@ -359,7 +339,7 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SendSameSiteCookies_Redirect) {
                                 EchoCookiesUrl(https_server(), kHostA))),
         /*expected_commit_url=*/EchoCookiesUrl(https_server(), kHostA)));
     EXPECT_THAT(ExtractFrameContent(web_contents->GetMainFrame()),
-                CookieString(UnorderedElementsAre(
+                net::CookieStringIs(UnorderedElementsAre(
                     Key(kSameSiteStrictCookieName), Key(kSameSiteLaxCookieName),
                     Key(kSameSiteNoneCookieName),
                     Key(kSameSiteUnspecifiedCookieName))));
@@ -372,19 +352,19 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SendSameSiteCookies_Redirect) {
           "a.test(%s)", {0},
           RedirectUrl(https_server(), kHostA,
                       EchoCookiesUrl(https_server(), kHostA))),
-      CookieString(UnorderedElementsAre(
+      net::CookieStringIs(UnorderedElementsAre(
           Key(kSameSiteStrictCookieName), Key(kSameSiteLaxCookieName),
           Key(kSameSiteNoneCookieName), Key(kSameSiteUnspecifiedCookieName))));
 
   if (DoesSameSiteConsiderRedirectChain()) {
     // A cross-site redirected iframe in a same-site context (B->A embedded in
     // A) does not send SameSite cookies...
-    EXPECT_THAT(
-        ArrangeFramesAndGetContentFromLeaf(
-            "a.test(%s)", {0},
-            RedirectUrl(https_server(), kHostB,
-                        EchoCookiesUrl(https_server(), kHostA))),
-        CookieString(UnorderedElementsAre(Key(kSameSiteNoneCookieName))));
+    EXPECT_THAT(ArrangeFramesAndGetContentFromLeaf(
+                    "a.test(%s)", {0},
+                    RedirectUrl(https_server(), kHostB,
+                                EchoCookiesUrl(https_server(), kHostA))),
+                net::CookieStringIs(
+                    UnorderedElementsAre(Key(kSameSiteNoneCookieName))));
 
     // ... even if the first URL is same-site. (A->B->A embedded in A)
     EXPECT_THAT(
@@ -393,7 +373,8 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SendSameSiteCookies_Redirect) {
             RedirectUrl(https_server(), kHostA,
                         RedirectUrl(https_server(), kHostB,
                                     EchoCookiesUrl(https_server(), kHostA)))),
-        CookieString(UnorderedElementsAre(Key(kSameSiteNoneCookieName))));
+        net::CookieStringIs(
+            UnorderedElementsAre(Key(kSameSiteNoneCookieName))));
   } else {
     // If redirect chains are not considered, then cross-site redirects do not
     // make the request cross-site.
@@ -401,7 +382,7 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SendSameSiteCookies_Redirect) {
                     "a.test(%s)", {0},
                     RedirectUrl(https_server(), kHostB,
                                 EchoCookiesUrl(https_server(), kHostA))),
-                CookieString(UnorderedElementsAre(
+                net::CookieStringIs(UnorderedElementsAre(
                     Key(kSameSiteStrictCookieName), Key(kSameSiteLaxCookieName),
                     Key(kSameSiteNoneCookieName),
                     Key(kSameSiteUnspecifiedCookieName))));
@@ -412,7 +393,7 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SendSameSiteCookies_Redirect) {
             RedirectUrl(https_server(), kHostA,
                         RedirectUrl(https_server(), kHostB,
                                     EchoCookiesUrl(https_server(), kHostA)))),
-        CookieString(UnorderedElementsAre(
+        net::CookieStringIs(UnorderedElementsAre(
             Key(kSameSiteStrictCookieName), Key(kSameSiteLaxCookieName),
             Key(kSameSiteNoneCookieName),
             Key(kSameSiteUnspecifiedCookieName))));
@@ -426,29 +407,30 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SetSameSiteCookies) {
   // Main frame can set all SameSite cookies.
   ASSERT_TRUE(NavigateToURL(
       web_contents, https_server()->GetURL(kHostA, kSetSameSiteCookiesURL)));
-  EXPECT_THAT(
-      GetCanonicalCookies(web_contents->GetBrowserContext(),
-                          https_server()->GetURL(kHostA, "/")),
-      UnorderedElementsAre(CookieWithName(kSameSiteStrictCookieName),
-                           CookieWithName(kSameSiteLaxCookieName),
-                           CookieWithName(kSameSiteNoneCookieName),
-                           CookieWithName(kSameSiteUnspecifiedCookieName)));
+  EXPECT_THAT(GetCanonicalCookies(web_contents->GetBrowserContext(),
+                                  https_server()->GetURL(kHostA, "/")),
+              UnorderedElementsAre(
+                  net::MatchesCookieWithName(kSameSiteStrictCookieName),
+                  net::MatchesCookieWithName(kSameSiteLaxCookieName),
+                  net::MatchesCookieWithName(kSameSiteNoneCookieName),
+                  net::MatchesCookieWithName(kSameSiteUnspecifiedCookieName)));
   ASSERT_EQ(4U, ClearCookies());
 
   // Same-site iframe (A embedded in A) sets all SameSite cookies.
-  EXPECT_THAT(
-      ArrangeFramesAndGetCanonicalCookiesForLeaf(
-          "a.test(%s)", SetSameSiteCookiesUrl(https_server(), kHostA)),
-      UnorderedElementsAre(CookieWithName(kSameSiteStrictCookieName),
-                           CookieWithName(kSameSiteLaxCookieName),
-                           CookieWithName(kSameSiteNoneCookieName),
-                           CookieWithName(kSameSiteUnspecifiedCookieName)));
+  EXPECT_THAT(ArrangeFramesAndGetCanonicalCookiesForLeaf(
+                  "a.test(%s)", SetSameSiteCookiesUrl(https_server(), kHostA)),
+              UnorderedElementsAre(
+                  net::MatchesCookieWithName(kSameSiteStrictCookieName),
+                  net::MatchesCookieWithName(kSameSiteLaxCookieName),
+                  net::MatchesCookieWithName(kSameSiteNoneCookieName),
+                  net::MatchesCookieWithName(kSameSiteUnspecifiedCookieName)));
   ASSERT_EQ(4U, ClearCookies());
 
   // Cross-site iframe (B embedded in A) sets only None cookies.
   EXPECT_THAT(ArrangeFramesAndGetCanonicalCookiesForLeaf(
                   "a.test(%s)", SetSameSiteCookiesUrl(https_server(), kHostB)),
-              UnorderedElementsAre(CookieWithName(kSameSiteNoneCookieName)));
+              UnorderedElementsAre(
+                  net::MatchesCookieWithName(kSameSiteNoneCookieName)));
   ASSERT_EQ(1U, ClearCookies());
 }
 
@@ -462,13 +444,13 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SetSameSiteCookies_Redirect) {
       RedirectUrl(https_server(), kHostA,
                   SetSameSiteCookiesUrl(https_server(), kHostA)),
       /*expected_commit_url=*/SetSameSiteCookiesUrl(https_server(), kHostA)));
-  EXPECT_THAT(
-      GetCanonicalCookies(web_contents->GetBrowserContext(),
-                          https_server()->GetURL(kHostA, "/")),
-      UnorderedElementsAre(CookieWithName(kSameSiteStrictCookieName),
-                           CookieWithName(kSameSiteLaxCookieName),
-                           CookieWithName(kSameSiteNoneCookieName),
-                           CookieWithName(kSameSiteUnspecifiedCookieName)));
+  EXPECT_THAT(GetCanonicalCookies(web_contents->GetBrowserContext(),
+                                  https_server()->GetURL(kHostA, "/")),
+              UnorderedElementsAre(
+                  net::MatchesCookieWithName(kSameSiteStrictCookieName),
+                  net::MatchesCookieWithName(kSameSiteLaxCookieName),
+                  net::MatchesCookieWithName(kSameSiteNoneCookieName),
+                  net::MatchesCookieWithName(kSameSiteUnspecifiedCookieName)));
   ASSERT_EQ(4U, ClearCookies());
 
   // Cross-site redirected main frame navigation can set all SameSite cookies.
@@ -477,26 +459,26 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SetSameSiteCookies_Redirect) {
       RedirectUrl(https_server(), kHostB,
                   SetSameSiteCookiesUrl(https_server(), kHostA)),
       /*expected_commit_url=*/SetSameSiteCookiesUrl(https_server(), kHostA)));
-  EXPECT_THAT(
-      GetCanonicalCookies(web_contents->GetBrowserContext(),
-                          https_server()->GetURL(kHostA, "/")),
-      UnorderedElementsAre(CookieWithName(kSameSiteStrictCookieName),
-                           CookieWithName(kSameSiteLaxCookieName),
-                           CookieWithName(kSameSiteNoneCookieName),
-                           CookieWithName(kSameSiteUnspecifiedCookieName)));
+  EXPECT_THAT(GetCanonicalCookies(web_contents->GetBrowserContext(),
+                                  https_server()->GetURL(kHostA, "/")),
+              UnorderedElementsAre(
+                  net::MatchesCookieWithName(kSameSiteStrictCookieName),
+                  net::MatchesCookieWithName(kSameSiteLaxCookieName),
+                  net::MatchesCookieWithName(kSameSiteNoneCookieName),
+                  net::MatchesCookieWithName(kSameSiteUnspecifiedCookieName)));
   ASSERT_EQ(4U, ClearCookies());
 
   // A same-site redirected iframe sets all SameSite cookies.
-  EXPECT_THAT(
-      ArrangeFramesAndGetCanonicalCookiesForLeaf(
-          "a.test(%s)",
-          RedirectUrl(https_server(), kHostA,
-                      SetSameSiteCookiesUrl(https_server(), kHostA)),
-          https_server()->GetURL(kHostA, "/")),
-      UnorderedElementsAre(CookieWithName(kSameSiteStrictCookieName),
-                           CookieWithName(kSameSiteLaxCookieName),
-                           CookieWithName(kSameSiteNoneCookieName),
-                           CookieWithName(kSameSiteUnspecifiedCookieName)));
+  EXPECT_THAT(ArrangeFramesAndGetCanonicalCookiesForLeaf(
+                  "a.test(%s)",
+                  RedirectUrl(https_server(), kHostA,
+                              SetSameSiteCookiesUrl(https_server(), kHostA)),
+                  https_server()->GetURL(kHostA, "/")),
+              UnorderedElementsAre(
+                  net::MatchesCookieWithName(kSameSiteStrictCookieName),
+                  net::MatchesCookieWithName(kSameSiteLaxCookieName),
+                  net::MatchesCookieWithName(kSameSiteNoneCookieName),
+                  net::MatchesCookieWithName(kSameSiteUnspecifiedCookieName)));
   ASSERT_EQ(4U, ClearCookies());
 
   if (DoesSameSiteConsiderRedirectChain()) {
@@ -506,7 +488,8 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SetSameSiteCookies_Redirect) {
                     RedirectUrl(https_server(), kHostB,
                                 SetSameSiteCookiesUrl(https_server(), kHostA)),
                     https_server()->GetURL(kHostA, "/")),
-                UnorderedElementsAre(CookieWithName(kSameSiteNoneCookieName)));
+                UnorderedElementsAre(
+                    net::MatchesCookieWithName(kSameSiteNoneCookieName)));
     ASSERT_EQ(1U, ClearCookies());
   } else {
     EXPECT_THAT(
@@ -515,10 +498,11 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SetSameSiteCookies_Redirect) {
             RedirectUrl(https_server(), kHostB,
                         SetSameSiteCookiesUrl(https_server(), kHostA)),
             https_server()->GetURL(kHostA, "/")),
-        UnorderedElementsAre(CookieWithName(kSameSiteStrictCookieName),
-                             CookieWithName(kSameSiteLaxCookieName),
-                             CookieWithName(kSameSiteNoneCookieName),
-                             CookieWithName(kSameSiteUnspecifiedCookieName)));
+        UnorderedElementsAre(
+            net::MatchesCookieWithName(kSameSiteStrictCookieName),
+            net::MatchesCookieWithName(kSameSiteLaxCookieName),
+            net::MatchesCookieWithName(kSameSiteNoneCookieName),
+            net::MatchesCookieWithName(kSameSiteUnspecifiedCookieName)));
     ASSERT_EQ(4U, ClearCookies());
   }
 }
@@ -534,14 +518,14 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SendSamePartyCookies) {
   ASSERT_TRUE(NavigateToURL(
       web_contents, https_server()->GetURL(kHostA, "/echoheader?Cookie")));
   EXPECT_THAT(ExtractFrameContent(web_contents->GetMainFrame()),
-              CookieString(UnorderedElementsAre(
+              net::CookieStringIs(UnorderedElementsAre(
                   Key(kSamePartyLaxCookieName), Key(kSamePartyNoneCookieName),
                   Key(kSamePartyUnspecifiedCookieName))));
 
   // Same-site FPS-member iframe (A embedded in A) sends A's SameParty cookies.
   EXPECT_THAT(ArrangeFramesAndGetContentFromLeaf(
                   "a.test(%s)", {0}, EchoCookiesUrl(https_server(), kHostA)),
-              CookieString(UnorderedElementsAre(
+              net::CookieStringIs(UnorderedElementsAre(
                   Key(kSamePartyLaxCookieName), Key(kSamePartyNoneCookieName),
                   Key(kSamePartyUnspecifiedCookieName))));
 
@@ -555,7 +539,7 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SendSamePartyCookies) {
   // cookies.
   EXPECT_THAT(ArrangeFramesAndGetContentFromLeaf(
                   "b.test(%s)", {0}, EchoCookiesUrl(https_server(), kHostA)),
-              CookieString(UnorderedElementsAre(
+              net::CookieStringIs(UnorderedElementsAre(
                   Key(kSamePartyLaxCookieName), Key(kSamePartyNoneCookieName),
                   Key(kSamePartyUnspecifiedCookieName))));
 
@@ -564,16 +548,16 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SendSamePartyCookies) {
   EXPECT_THAT(
       ArrangeFramesAndGetContentFromLeaf(
           "a.test(b.test(%s))", {0, 0}, EchoCookiesUrl(https_server(), kHostA)),
-      CookieString(UnorderedElementsAre(Key(kSamePartyLaxCookieName),
-                                        Key(kSamePartyNoneCookieName),
-                                        Key(kSamePartyUnspecifiedCookieName))));
+      net::CookieStringIs(UnorderedElementsAre(
+          Key(kSamePartyLaxCookieName), Key(kSamePartyNoneCookieName),
+          Key(kSamePartyUnspecifiedCookieName))));
 
   // Cross-site, same-party nested iframe (A embedded in B embedded in C
   // embedded in A) sends A's SameParty cookies.
   EXPECT_THAT(ArrangeFramesAndGetContentFromLeaf(
                   "a.test(c.test(b.test(%s)))", {0, 0, 0},
                   EchoCookiesUrl(https_server(), kHostA)),
-              CookieString(UnorderedElementsAre(
+              net::CookieStringIs(UnorderedElementsAre(
                   Key(kSamePartyLaxCookieName), Key(kSamePartyNoneCookieName),
                   Key(kSamePartyUnspecifiedCookieName))));
 
@@ -582,7 +566,7 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SendSamePartyCookies) {
   EXPECT_THAT(
       ArrangeFramesAndGetContentFromLeaf(
           "a.test(%s)", {0}, EchoCookiesUrl(https_server(), kHostD)),
-      CookieString(UnorderedElementsAre(Key(kSamePartyNoneCookieName))));
+      net::CookieStringIs(UnorderedElementsAre(Key(kSamePartyNoneCookieName))));
 
   // Cross-site, cross-party iframe (A embedded in D) doesn't send A's SameParty
   // cookies.
@@ -602,7 +586,7 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SendSamePartyCookies) {
   ASSERT_TRUE(NavigateToURL(
       web_contents, https_server()->GetURL(kHostD, "/echoheader?Cookie")));
   EXPECT_THAT(ExtractFrameContent(web_contents->GetMainFrame()),
-              CookieString(UnorderedElementsAre(
+              net::CookieStringIs(UnorderedElementsAre(
                   Key(kSamePartyLaxCookieName), Key(kSamePartyNoneCookieName),
                   Key(kSamePartyUnspecifiedCookieName))));
 }
@@ -614,31 +598,31 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SetSamePartyCookies) {
   // No embedded frame, FPS member. The top-level FPS site can set its cookies.
   ASSERT_TRUE(NavigateToURL(
       web_contents, https_server()->GetURL(kHostA, kSetSamePartyCookiesURL)));
-  EXPECT_THAT(
-      GetCanonicalCookies(web_contents->GetBrowserContext(),
-                          https_server()->GetURL(kHostA, "/")),
-      UnorderedElementsAre(CookieWithName(kSamePartyLaxCookieName),
-                           CookieWithName(kSamePartyNoneCookieName),
-                           CookieWithName(kSamePartyUnspecifiedCookieName)));
+  EXPECT_THAT(GetCanonicalCookies(web_contents->GetBrowserContext(),
+                                  https_server()->GetURL(kHostA, "/")),
+              UnorderedElementsAre(
+                  net::MatchesCookieWithName(kSamePartyLaxCookieName),
+                  net::MatchesCookieWithName(kSamePartyNoneCookieName),
+                  net::MatchesCookieWithName(kSamePartyUnspecifiedCookieName)));
   ASSERT_EQ(3U, ClearCookies());
 
   // Same-site FPS-member iframe (A embedded in A) sets A's SameParty cookies.
-  EXPECT_THAT(
-      ArrangeFramesAndGetCanonicalCookiesForLeaf(
-          "a.test(%s)", SetSamePartyCookiesUrl(https_server(), kHostA)),
-      UnorderedElementsAre(CookieWithName(kSamePartyLaxCookieName),
-                           CookieWithName(kSamePartyNoneCookieName),
-                           CookieWithName(kSamePartyUnspecifiedCookieName)));
+  EXPECT_THAT(ArrangeFramesAndGetCanonicalCookiesForLeaf(
+                  "a.test(%s)", SetSamePartyCookiesUrl(https_server(), kHostA)),
+              UnorderedElementsAre(
+                  net::MatchesCookieWithName(kSamePartyLaxCookieName),
+                  net::MatchesCookieWithName(kSamePartyNoneCookieName),
+                  net::MatchesCookieWithName(kSamePartyUnspecifiedCookieName)));
   ASSERT_EQ(3U, ClearCookies());
 
   // Cross-site, same-party iframe (A embedded in B) sets A's SameParty
   // cookies.
-  EXPECT_THAT(
-      ArrangeFramesAndGetCanonicalCookiesForLeaf(
-          "b.test(%s)", SetSamePartyCookiesUrl(https_server(), kHostA)),
-      UnorderedElementsAre(CookieWithName(kSamePartyLaxCookieName),
-                           CookieWithName(kSamePartyNoneCookieName),
-                           CookieWithName(kSamePartyUnspecifiedCookieName)));
+  EXPECT_THAT(ArrangeFramesAndGetCanonicalCookiesForLeaf(
+                  "b.test(%s)", SetSamePartyCookiesUrl(https_server(), kHostA)),
+              UnorderedElementsAre(
+                  net::MatchesCookieWithName(kSamePartyLaxCookieName),
+                  net::MatchesCookieWithName(kSamePartyNoneCookieName),
+                  net::MatchesCookieWithName(kSamePartyUnspecifiedCookieName)));
   ASSERT_EQ(3U, ClearCookies());
 
   // Cross-site, same-party nested iframe (A embedded in B embedded in A) sets
@@ -646,27 +630,29 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SetSamePartyCookies) {
   EXPECT_THAT(
       ArrangeFramesAndGetCanonicalCookiesForLeaf(
           "a.test(b.test(%s))", SetSamePartyCookiesUrl(https_server(), kHostA)),
-      UnorderedElementsAre(CookieWithName(kSamePartyLaxCookieName),
-                           CookieWithName(kSamePartyNoneCookieName),
-                           CookieWithName(kSamePartyUnspecifiedCookieName)));
+      UnorderedElementsAre(
+          net::MatchesCookieWithName(kSamePartyLaxCookieName),
+          net::MatchesCookieWithName(kSamePartyNoneCookieName),
+          net::MatchesCookieWithName(kSamePartyUnspecifiedCookieName)));
   ASSERT_EQ(3U, ClearCookies());
 
   // Cross-site, same-party nested iframe (A embedded in B embedded in C
   // embedded in A) sets A's SameParty cookies.
-  EXPECT_THAT(
-      ArrangeFramesAndGetCanonicalCookiesForLeaf(
-          "a.test(c.test(b.test(%s)))",
-          SetSamePartyCookiesUrl(https_server(), kHostA)),
-      UnorderedElementsAre(CookieWithName(kSamePartyLaxCookieName),
-                           CookieWithName(kSamePartyNoneCookieName),
-                           CookieWithName(kSamePartyUnspecifiedCookieName)));
+  EXPECT_THAT(ArrangeFramesAndGetCanonicalCookiesForLeaf(
+                  "a.test(c.test(b.test(%s)))",
+                  SetSamePartyCookiesUrl(https_server(), kHostA)),
+              UnorderedElementsAre(
+                  net::MatchesCookieWithName(kSamePartyLaxCookieName),
+                  net::MatchesCookieWithName(kSamePartyNoneCookieName),
+                  net::MatchesCookieWithName(kSamePartyUnspecifiedCookieName)));
   ASSERT_EQ(3U, ClearCookies());
 
   // Cross-site, cross-party iframe (D embedded in A) sets D's SameSite=None
   // cookie, since it's not an FPS member (and SameParty is ignored).
   EXPECT_THAT(ArrangeFramesAndGetCanonicalCookiesForLeaf(
                   "a.test(%s)", SetSamePartyCookiesUrl(https_server(), kHostD)),
-              UnorderedElementsAre(CookieWithName(kSamePartyNoneCookieName)));
+              UnorderedElementsAre(
+                  net::MatchesCookieWithName(kSamePartyNoneCookieName)));
   ASSERT_EQ(1U, ClearCookies());
 
   // Cross-site, cross-party iframe (A embedded in D) doesn't set A's SameParty
@@ -687,12 +673,12 @@ IN_PROC_BROWSER_TEST_P(HttpCookieBrowserTest, SetSamePartyCookies) {
   // No embedded frame, non-FPS member. The top-level site can set its cookies.
   ASSERT_TRUE(NavigateToURL(
       web_contents, https_server()->GetURL(kHostD, kSetSamePartyCookiesURL)));
-  EXPECT_THAT(
-      GetCanonicalCookies(web_contents->GetBrowserContext(),
-                          https_server()->GetURL(kHostD, "/")),
-      UnorderedElementsAre(CookieWithName(kSamePartyLaxCookieName),
-                           CookieWithName(kSamePartyNoneCookieName),
-                           CookieWithName(kSamePartyUnspecifiedCookieName)));
+  EXPECT_THAT(GetCanonicalCookies(web_contents->GetBrowserContext(),
+                                  https_server()->GetURL(kHostD, "/")),
+              UnorderedElementsAre(
+                  net::MatchesCookieWithName(kSamePartyLaxCookieName),
+                  net::MatchesCookieWithName(kSamePartyNoneCookieName),
+                  net::MatchesCookieWithName(kSamePartyUnspecifiedCookieName)));
   ASSERT_EQ(3U, ClearCookies());
 }
 

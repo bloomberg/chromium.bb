@@ -26,6 +26,7 @@ import "services/network/public/mojom/network_param.mojom";
 import "services/network/public/mojom/network_quality_estimator_manager.mojom";
 import "services/network/public/mojom/network_service_test.mojom";
 import "services/network/public/mojom/trust_tokens.mojom";
+import "services/network/public/mojom/parsed_headers.mojom";
 import "services/network/public/mojom/url_loader.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
 import "services/network/public/mojom/url_loader_network_service_observer.mojom";
@@ -37,6 +38,9 @@ import "url/mojom/url.mojom";
 
 [EnableIf=is_android]
 import "mojo/public/mojom/base/application_state.mojom";
+
+[EnableIf=is_ct_supported]
+import "services/network/public/mojom/ct_log_info.mojom";
 
 // Values for configuring HTTP authentication that can only be set once.
 struct HttpAuthStaticParams {
@@ -338,6 +342,18 @@ interface NetworkService {
                        MutableNetworkTrafficAnnotationTag traffic_annotation,
                        pending_remote<network.mojom.URLLoaderFactory> factory);
 
+
+  // Updates the log list used for CT verification. `update_time` should
+  // contain the timestamp that the log list was considered fresh/current, in
+  // order to ensure that CT is not enforced if the log list is too out of
+  // date.
+  [EnableIf=is_ct_supported]
+  UpdateCtLogList(array<CTLogInfo> log_list, mojo_base.mojom.Time update_time);
+
+  // Disables or enables CT Enforcement.
+  [EnableIf=is_ct_supported]
+  SetCtEnforcementEnabled(bool enabled);
+
   // Calls base::debug::DumpWithoutCrashing for the network process.
   // TODO(http://crbug.com/934317): Remove this once done debugging renderer
   // hangs.
@@ -360,4 +376,15 @@ interface NetworkService {
   // Sets the list of ports which will be permitted even if they normally would
   // be restricted.
   SetExplicitlyAllowedPorts(array<uint16> ports);
+
+  // Parses response headers and returns a structured version to the caller.
+  // This call originates from the browser process. Used for navigations when
+  // the URLLoader didn't provide ParsedHeader in the first place. This happens
+  // when the raw headers represent untrustworthy input and the URLLoader used
+  // lives in a non-sandboxed process. It can also happen from some exotic
+  // URLLoader where parsing hasn't been implemented.
+  // In particular, this is used for request served from AppCache, WebBundle,
+  // Extensions, etc.
+  ParseHeaders(url.mojom.Url url, HttpResponseHeaders headers)
+      => (ParsedHeaders parsed_headers);
 };

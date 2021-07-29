@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/cancelable_callback.h"
+#include "base/containers/span.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
@@ -20,11 +21,11 @@
 #include "chrome/browser/safe_browsing/download_protection/ppapi_download_request.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing/content/web_ui/safe_browsing_ui.h"
+#include "components/safe_browsing/content/browser/web_ui/safe_browsing_ui.h"
+#include "components/safe_browsing/content/common/file_type_policies.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/common/utils.h"
-#include "components/safe_browsing/core/features.h"
-#include "components/safe_browsing/core/file_type_policies.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -32,6 +33,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace safe_browsing {
 
@@ -70,8 +72,7 @@ bool IsCertificateChainAllowlisted(
   }
   scoped_refptr<net::X509Certificate> cert =
       net::X509Certificate::CreateFromBytes(
-          chain.element(0).certificate().data(),
-          chain.element(0).certificate().size());
+          base::as_bytes(base::make_span(chain.element(0).certificate())));
   if (!cert.get()) {
     return false;
   }
@@ -79,8 +80,7 @@ bool IsCertificateChainAllowlisted(
   for (int i = 1; i < chain.element_size(); ++i) {
     scoped_refptr<net::X509Certificate> issuer =
         net::X509Certificate::CreateFromBytes(
-            chain.element(i).certificate().data(),
-            chain.element(i).certificate().size());
+            base::as_bytes(base::make_span(chain.element(i).certificate())));
     if (!issuer.get()) {
       return false;
     }
@@ -388,8 +388,7 @@ void CheckClientDownloadRequestBase::OnCertificateAllowlistCheckDone(
     return;
   }
 
-  if (is_enhanced_protection_ && token_fetcher_ &&
-      base::FeatureList::IsEnabled(kDownloadRequestWithToken)) {
+  if (is_enhanced_protection_ && token_fetcher_) {
     token_fetcher_->Start(base::BindOnce(
         &CheckClientDownloadRequestBase::OnGotAccessToken, GetWeakPtr()));
     return;
@@ -531,7 +530,6 @@ void CheckClientDownloadRequestBase::OnURLLoaderComplete(
   DownloadCheckResultReason reason = REASON_SERVER_PING_FAILED;
   DownloadCheckResult result = DownloadCheckResult::UNKNOWN;
   std::string token;
-  bool server_requests_prompt = false;
   if (success && net::HTTP_OK == response_code) {
     ClientDownloadResponse response;
     if (!response.ParseFromString(*response_body.get())) {
@@ -598,9 +596,9 @@ void CheckClientDownloadRequestBase::OnURLLoaderComplete(
     MaybeStorePingsForDownload(result, upload_requested,
                                client_download_request_data_,
                                *response_body.get());
-    if (base::FeatureList::IsEnabled(
-            safe_browsing::kPromptEsbForDeepScanning)) {
-      server_requests_prompt = response.request_deep_scan();
+    if (ShouldPromptForDeepScanning(response.request_deep_scan())) {
+      result = DownloadCheckResult::PROMPT_FOR_SCANNING;
+      reason = DownloadCheckResultReason::REASON_ADVANCED_PROTECTION_PROMPT;
     }
   }
 
@@ -611,10 +609,6 @@ void CheckClientDownloadRequestBase::OnURLLoaderComplete(
   UMA_HISTOGRAM_TIMES("SBClientDownload.DownloadRequestNetworkDuration",
                       base::TimeTicks::Now() - request_start_time_);
 
-  if (ShouldPromptForDeepScanning(reason, server_requests_prompt)) {
-    result = DownloadCheckResult::PROMPT_FOR_SCANNING;
-    reason = DownloadCheckResultReason::REASON_ADVANCED_PROTECTION_PROMPT;
-  }
   FinishRequest(result, reason);
 }
 

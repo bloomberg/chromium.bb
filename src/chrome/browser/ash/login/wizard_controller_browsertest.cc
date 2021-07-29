@@ -57,13 +57,13 @@
 #include "chrome/browser/ash/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/ui/webui_login_view.h"
+#include "chrome/browser/ash/policy/enrollment/auto_enrollment_client.h"
+#include "chrome/browser/ash/policy/enrollment/enrollment_config.h"
+#include "chrome/browser/ash/policy/enrollment/fake_auto_enrollment_client.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
-#include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
-#include "chrome/browser/chromeos/policy/enrollment_config.h"
-#include "chrome/browser/chromeos/policy/fake_auto_enrollment_client.h"
-#include "chrome/browser/chromeos/policy/server_backed_device_state.h"
+#include "chrome/browser/chromeos/policy/server_backed_state/server_backed_device_state.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
@@ -98,9 +98,11 @@
 #include "components/prefs/testing_pref_store.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/session_manager_types.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/mock_notification_observer.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -112,19 +114,13 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace ash {
+namespace {
+
 using ::testing::_;
-using ::testing::AtLeast;
-using ::testing::Exactly;
-using ::testing::Invoke;
 using ::testing::IsNull;
 using ::testing::Mock;
-using ::testing::Not;
 using ::testing::NotNull;
-using ::testing::Return;
-
-namespace chromeos {
-
-namespace {
 
 const char kGeolocationResponseBody[] =
     "{\n"
@@ -679,7 +675,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
           }
         }));
 
-    ASSERT_TRUE(ash::LoginScreenTestApi::IsLoginShelfShown());
+    ASSERT_TRUE(LoginScreenTestApi::IsLoginShelfShown());
 
     EXPECT_CALL(*mock_welcome_screen_, HideImpl()).Times(1);
     EXPECT_CALL(*mock_eula_screen_, ShowImpl()).Times(1);
@@ -692,7 +688,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
 
     CheckCurrentScreen(EulaView::kScreenId);
     // Login shelf should still be visible.
-    EXPECT_TRUE(ash::LoginScreenTestApi::IsLoginShelfShown());
+    EXPECT_TRUE(LoginScreenTestApi::IsLoginShelfShown());
 
     EXPECT_CALL(*mock_eula_screen_, HideImpl()).Times(1);
     EXPECT_CALL(*mock_update_screen_, ShowImpl()).Times(1);
@@ -875,7 +871,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowSkipUpdateEnroll) {
       ->wizard_context_->enrollment_triggered_early = true;
   EXPECT_CALL(*mock_enrollment_screen_view_,
               SetEnrollmentConfig(
-                  mock_enrollment_screen_,
                   EnrollmentModeMatches(policy::EnrollmentConfig::MODE_MANUAL)))
       .Times(1);
   EXPECT_CALL(*mock_auto_enrollment_check_screen_, ShowImpl()).Times(1);
@@ -922,7 +917,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
   EXPECT_CALL(*mock_update_screen_, ShowImpl()).Times(0);
   EXPECT_CALL(*mock_enrollment_screen_view_,
               SetEnrollmentConfig(
-                  mock_enrollment_screen_,
                   EnrollmentModeMatches(policy::EnrollmentConfig::MODE_MANUAL)))
       .Times(1);
   EXPECT_CALL(*mock_enrollment_screen_, ShowImpl()).Times(1);
@@ -1312,7 +1306,6 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
   EXPECT_CALL(
       *mock_enrollment_screen_view_,
       SetEnrollmentConfig(
-          mock_enrollment_screen_,
           EnrollmentModeMatches(policy::EnrollmentConfig::MODE_SERVER_FORCED)))
       .Times(1);
   mock_auto_enrollment_check_screen_->ExitScreen();
@@ -1395,11 +1388,9 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
     g_browser_process->local_state()->Set(prefs::kServerBackedDeviceState,
                                           device_state);
     EXPECT_CALL(*mock_enrollment_screen_, ShowImpl()).Times(1);
-    EXPECT_CALL(
-        *mock_enrollment_screen_view_,
-        SetEnrollmentConfig(mock_enrollment_screen_,
-                            EnrollmentModeMatches(
-                                policy::EnrollmentConfig::MODE_SERVER_FORCED)))
+    EXPECT_CALL(*mock_enrollment_screen_view_,
+                SetEnrollmentConfig(EnrollmentModeMatches(
+                    policy::EnrollmentConfig::MODE_SERVER_FORCED)))
         .Times(1);
     fake_auto_enrollment_client->SetState(
         policy::AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT);
@@ -1506,11 +1497,9 @@ class WizardControllerDeviceStateWithInitialEnrollmentTest
     g_browser_process->local_state()->Set(prefs::kServerBackedDeviceState,
                                           device_state);
     EXPECT_CALL(*mock_enrollment_screen_, ShowImpl()).Times(1);
-    EXPECT_CALL(
-        *mock_enrollment_screen_view_,
-        SetEnrollmentConfig(mock_enrollment_screen_,
-                            EnrollmentModeMatches(
-                                policy::EnrollmentConfig::MODE_SERVER_FORCED)))
+    EXPECT_CALL(*mock_enrollment_screen_view_,
+                SetEnrollmentConfig(EnrollmentModeMatches(
+                    policy::EnrollmentConfig::MODE_SERVER_FORCED)))
         .Times(1);
     mock_auto_enrollment_check_screen_->ExitScreen();
 
@@ -1621,7 +1610,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
   EXPECT_CALL(
       *mock_enrollment_screen_view_,
       SetEnrollmentConfig(
-          mock_enrollment_screen_,
           EnrollmentModeMatches(policy::EnrollmentConfig::MODE_SERVER_FORCED)))
       .Times(1);
   fake_auto_enrollment_client->SetState(
@@ -1842,7 +1830,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
   EXPECT_CALL(
       *mock_enrollment_screen_view_,
       SetEnrollmentConfig(
-          mock_enrollment_screen_,
           EnrollmentModeMatches(policy::EnrollmentConfig::MODE_SERVER_FORCED)))
       .Times(1);
   mock_auto_enrollment_check_screen_->ExitScreen();
@@ -1920,11 +1907,11 @@ IN_PROC_BROWSER_TEST_F(WizardControllerScreenPriorityTest, CanNavigateToTest) {
   WizardController* const wizard_controller =
       WizardController::default_controller();
   ASSERT_TRUE(wizard_controller != nullptr);
-  EXPECT_EQ(1, ash::LoginScreenTestApi::GetUsersCount());
+  EXPECT_EQ(1, LoginScreenTestApi::GetUsersCount());
 
   // Check reset screen is visible on startup.
   OobeScreenWaiter(ResetView::kScreenId).Wait();
-  EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
+  EXPECT_TRUE(LoginScreenTestApi::IsOobeDialogVisible());
 
   // Showing update required screen should fail due to lower priority than reset
   // screen.
@@ -2060,7 +2047,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerKioskFlowTest,
   EXPECT_CALL(
       *mock_enrollment_screen_view_,
       SetEnrollmentConfig(
-          mock_enrollment_screen_,
           EnrollmentModeMatches(policy::EnrollmentConfig::MODE_LOCAL_FORCED)))
       .Times(1);
   CheckCurrentScreen(WelcomeView::kScreenId);
@@ -2106,7 +2092,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerKioskFlowTest,
   EXPECT_CALL(
       *mock_enrollment_screen_view_,
       SetEnrollmentConfig(
-          mock_enrollment_screen_,
           EnrollmentModeMatches(policy::EnrollmentConfig::MODE_LOCAL_FORCED)))
       .Times(1);
 
@@ -2719,7 +2704,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerOobeResumeTest,
   CheckCurrentScreen(WelcomeView::kScreenId);
   EXPECT_CALL(*mock_enrollment_screen_view_,
               SetEnrollmentConfig(
-                  mock_enrollment_screen_,
                   EnrollmentModeMatches(policy::EnrollmentConfig::MODE_MANUAL)))
       .Times(1);
   EXPECT_CALL(*mock_enrollment_screen_, ShowImpl()).Times(1);
@@ -2791,6 +2775,44 @@ IN_PROC_BROWSER_TEST_F(WizardControllerOobeConfigurationTest,
   EXPECT_FALSE(configuration->DictEmpty());
 }
 
+class WizardControllerRollbackFlowTest : public WizardControllerFlowTest {
+ protected:
+  WizardControllerRollbackFlowTest() {}
+
+  // WizardControllerTest:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    WizardControllerFlowTest::SetUpCommandLine(command_line);
+
+    base::FilePath configuration_file;
+    ASSERT_TRUE(chromeos::test_utils::GetTestDataPath(
+        "oobe_configuration", "TestEnterpriseRollbackRecover.json",
+        &configuration_file));
+    command_line->AppendSwitchPath(chromeos::switches::kFakeOobeConfiguration,
+                                   configuration_file);
+  }
+
+  content::MockNotificationObserver observer_;
+  content::NotificationRegistrar registrar_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WizardControllerRollbackFlowTest);
+};
+
+IN_PROC_BROWSER_TEST_F(WizardControllerRollbackFlowTest,
+                       RestartChromeAfterRollback) {
+  registrar_.Add(&observer_, chrome::NOTIFICATION_APP_TERMINATING,
+                 content::NotificationService::AllSources());
+  EXPECT_CALL(observer_, Observe(chrome::NOTIFICATION_APP_TERMINATING, _, _));
+
+  CheckCurrentScreen(WelcomeView::kScreenId);
+  EXPECT_CALL(*mock_enrollment_screen_, ShowImpl()).Times(1);
+  EXPECT_CALL(*mock_welcome_screen_, HideImpl()).Times(1);
+  WizardController::default_controller()->AdvanceToScreen(
+      EnrollmentScreenView::kScreenId);
+  CheckCurrentScreen(EnrollmentScreenView::kScreenId);
+  mock_enrollment_screen_->ExitScreen(EnrollmentScreen::Result::COMPLETED);
+}
+
 // TODO(nkostylev): Add test for WebUI accelerators http://crosbug.com/22571
 
 // TODO(merkulova): Add tests for bluetooth HID detection screen variations when
@@ -2810,4 +2832,4 @@ IN_PROC_BROWSER_TEST_F(WizardControllerOobeConfigurationTest,
 
 // TODO(khorimoto): Add tests for MultiDevice Setup UI.
 
-}  // namespace chromeos
+}  // namespace ash

@@ -6,6 +6,8 @@
 <translation id="1430915738399379752">ພິມ</translation>
 <translation id="1467231725790366244">ຖອດສາຍ <ph name="CAMERA" /> ແລ້ວ.</translation>
 <translation id="1473110567575736769">ໂມງນັບຖອຍຫຼັງ 3 ວິນາທີ</translation>
+<translation id="1478594628797167447">ເຄື່ອງສະແກນ</translation>
+<translation id="1545749641540134597">ສະແກນລະຫັດ QR</translation>
 <translation id="1620510694547887537">ກ້ອງ​ຖ່າຍ​ຮູບ</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">ບໍ່ໄດ້ບັນທຶກຫຍັງໄວ້</translation>
@@ -19,6 +21,8 @@
 <translation id="2050339315714019657">ລວງຕັ້ງ</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> ເປີດໃຊ້ຢູ່</translation>
 <translation id="2144806332417375165">ຄ່າພາຣາມີເຕີວິດີໂອແບບກຳນົດເອງ</translation>
+<translation id="2175927920773552910">ລະຫັດ QR</translation>
+<translation id="2268107369530950373">ສະຫຼັບໄປໃຊ້ໂໝດຕົວສະແກນ</translation>
 <translation id="229579744168541441">ສົ່ງອອກໄປໃສ່ດິສກ໌</translation>
 <translation id="2320741269052147773">ເລືອນໄປຊ້າຍ</translation>
 <translation id="2501278716633472235">ກັບ​ຄືນ​ໄປ</translation>
@@ -38,6 +42,7 @@
 <translation id="3227137524299004712">ໄມໂຄຣໂຟນ</translation>
 <translation id="3240426699337459095">ອັດ​ສຳ​ເນົາ​ລິ້ງ​ແລ້ວ</translation>
 <translation id="3259149966178251584">ຄວາມລະອຽດກ້ອງຖ່າຍຮູບ</translation>
+<translation id="3448774564454087943">ບໍ່ໄດ້ບັນທຶກວິດີໂອເນື່ອງຈາກມັນສັ້ນເກີນໄປ</translation>
 <translation id="3517926952904427380">ບໍ່ສາມາດຖ່າຍຮູບບຸກຄົນໄດ້</translation>
 <translation id="3569311554794739032">ທ່ານຕ້ອງການລຶບ <ph name="FILE" /> ອອກແທ້ບໍ?</translation>
 <translation id="3733597664308256288">ສາມາດໃຊ້ການຄວບຄຸມກ້ອງຖ່າຍຮູບເພີ່ມເຕີມໄດ້. ຊອກຫາ + ລູກຂວາ ເພື່ອເຂົ້າເຖິງ.</translation>
@@ -56,11 +61,14 @@
 <translation id="4628948037717959914">ຮູບຖ່າຍ</translation>
 <translation id="4649291346448517080">ບໍ່ສາມາດບັນທຶກໄຟລ໌ໄດ້</translation>
 <translation id="4890010094662541459">3 x 3</translation>
+<translation id="491895758387112773">ການບັນທຶກວິດີໂອແບບຫຼາຍສະຕຣີມ</translation>
 <translation id="5057360777601936059">ກ້ອງຖ່າຍຮູບຂອງທ່ານບໍ່ສາມາດໃຊ້ໄດ້ໃນຂະນະນີ້.
         ກະລຸນາກວດເບິ່ງວ່າໄດ້ເຊື່ອມຕໍ່ກ້ອງຖ່າຍຮູບຢ່າງຖືກຕ້ອງຫຼືບໍ່.</translation>
 <translation id="5152121255775685072">ໄປທີ່ຄັງຮູບພາບ</translation>
+<translation id="5268823927180092501">ເປີດການນຳໃຊ້ໂໝດເອກະສານຢູ່ກ້ອງຖ່າຍຮູບທັງໝົດ</translation>
 <translation id="5422455049771430511">ຮູບພາບ ແລະ ວິດີໂອຂອງທ່ານມີໂຟນເດີໃໝ່</translation>
 <translation id="5671277269877808209">ສີ່ຫຼ່ຽມ</translation>
+<translation id="5753488212459587150">ເປີດການນຳໃຊ້ໂໝດຜູ້ຊ່ຽວຊານ</translation>
 <translation id="5775960006311140197">ໂໝດຜູ້ຊ່ຽວຊານ</translation>
 <translation id="5869546221129391014">ຕາຂ່າຍ</translation>
 <translation id="5975083100439434680">ຊູມອອກ</translation>

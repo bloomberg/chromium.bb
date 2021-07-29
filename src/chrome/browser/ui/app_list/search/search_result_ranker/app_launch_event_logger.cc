@@ -12,13 +12,12 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/power/ml/recent_events_counter.h"
-#include "chrome/browser/chromeos/power/ml/user_activity_ukm_logger_helpers.h"
+#include "chrome/browser/ash/power/ml/recent_events_counter.h"
+#include "chrome/browser/ash/power/ml/user_activity_ukm_logger_helpers.h"
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -79,11 +78,11 @@ std::vector<std::string> Sample(const std::vector<std::string>& population,
 AppLaunchEventLogger::AppLaunchEventLogger()
     : start_time_(base::Time::Now()),
       all_clicks_last_hour_(
-          std::make_unique<chromeos::power::ml::RecentEventsCounter>(
+          std::make_unique<ash::power::ml::RecentEventsCounter>(
               kHourDuration,
               kMinutesInAnHour)),
       all_clicks_last_24_hours_(
-          std::make_unique<chromeos::power::ml::RecentEventsCounter>(
+          std::make_unique<ash::power::ml::RecentEventsCounter>(
               kDayDuration,
               kQuarterHoursInADay)),
       weak_factory_(this) {
@@ -188,7 +187,7 @@ void AppLaunchEventLogger::EnforceLoggingPolicy() {
   // Store all Arc apps.
   // arc_apps_ and arc_packages_ can be nullptr in tests.
   if (arc_apps_ && arc_packages_) {
-    for (const auto& app : arc_apps_->DictItems()) {
+    for (const auto app : arc_apps_->DictItems()) {
       const base::Value* package_name_value = app.second.FindKey(kPackageName);
       if (!package_name_value) {
         continue;
@@ -286,10 +285,10 @@ void AppLaunchEventLogger::ProcessClick(const AppLaunchEvent& event,
   if (!app_launch_features->has_most_recently_used_index()) {
     // Handle first click on an id.
     app_clicks_last_hour_[event.app_id()] =
-        std::make_unique<chromeos::power::ml::RecentEventsCounter>(
-            kHourDuration, kMinutesInAnHour);
+        std::make_unique<ash::power::ml::RecentEventsCounter>(kHourDuration,
+                                                              kMinutesInAnHour);
     app_clicks_last_24_hours_[event.app_id()] =
-        std::make_unique<chromeos::power::ml::RecentEventsCounter>(
+        std::make_unique<ash::power::ml::RecentEventsCounter>(
             kDayDuration, kQuarterHoursInADay);
     for (int hour = 0; hour < 24; hour++) {
       app_launch_features->add_clicks_each_hour(0);

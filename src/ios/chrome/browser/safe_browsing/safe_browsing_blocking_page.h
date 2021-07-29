@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
+#include "components/safe_browsing/core/browser/db/v4_protocol_manager_util.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
 #include "ios/components/security_interstitials/ios_blocking_page_controller_client.h"
 #include "ios/components/security_interstitials/ios_security_interstitial_page.h"
@@ -60,13 +60,13 @@ class SafeBrowsingBlockingPage
 
   // security_interstitials::IOSSecurityInterstitialPage:
   std::string GetHtmlContents() const override;
-  void HandleScriptCommand(const base::DictionaryValue& message,
-                           const GURL& origin_url,
-                           bool user_is_interacting,
-                           web::WebFrame* sender_frame) override;
+  void HandleCommand(
+      security_interstitials::SecurityInterstitialCommand command,
+      const GURL& origin_url,
+      bool user_is_interacting,
+      web::WebFrame* sender_frame) override;
   bool ShouldCreateNewNavigation() const override;
-  void PopulateInterstitialStrings(
-      base::DictionaryValue* load_time_data) const override;
+  void PopulateInterstitialStrings(base::Value* load_time_data) const override;
 
   // The unsafe resource triggering the blocking page.
   security_interstitials::UnsafeResource resource_;

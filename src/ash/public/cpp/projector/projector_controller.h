@@ -5,10 +5,9 @@
 #ifndef ASH_PUBLIC_CPP_PROJECTOR_PROJECTOR_CONTROLLER_H_
 #define ASH_PUBLIC_CPP_PROJECTOR_PROJECTOR_CONTROLLER_H_
 
-#include <vector>
-
 #include "ash/public/cpp/ash_public_export.h"
 #include "base/time/time.h"
+#include "media/mojo/mojom/speech_recognition_service.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
@@ -18,6 +17,19 @@ class ProjectorClient;
 // Interface to control projector in ash.
 class ASH_PUBLIC_EXPORT ProjectorController {
  public:
+  class ScopedInstanceResetterForTest {
+   public:
+    ScopedInstanceResetterForTest();
+    ScopedInstanceResetterForTest(const ScopedInstanceResetterForTest&) =
+        delete;
+    ScopedInstanceResetterForTest& operator=(
+        const ScopedInstanceResetterForTest&) = delete;
+    ~ScopedInstanceResetterForTest();
+
+   private:
+    ProjectorController* const controller_;
+  };
+
   ProjectorController();
   ProjectorController(const ProjectorController&) = delete;
   ProjectorController& operator=(const ProjectorController&) = delete;
@@ -34,16 +46,17 @@ class ASH_PUBLIC_EXPORT ProjectorController {
 
   // Called when transcription result from mic input is ready.
   virtual void OnTranscription(
-      const std::u16string& text,
-      absl::optional<base::TimeDelta> start_time,
-      absl::optional<base::TimeDelta> end_time,
-      const absl::optional<std::vector<base::TimeDelta>>& word_offsets,
-      bool is_final) = 0;
+      const media::SpeechRecognitionResult& result) = 0;
 
-  // Sets projector toolbar visibility.
+  // Called when there is an error in transcription.
+  virtual void OnTranscriptionError() = 0;
+
+  // Sets Projector toolbar visibility.
   virtual void SetProjectorToolsVisible(bool is_visible) = 0;
+  virtual bool AreProjectorToolsVisible() const = 0;
 
   // Returns true if Projector is eligible to start a new session.
+  // TODO(yilkal): Rename to something more descriptive, like CanStart().
   virtual bool IsEligible() const = 0;
 };
 

@@ -44,10 +44,12 @@ public:
     PipelineStageCodeGenerator(const Program& program,
                                const char* sampleCoords,
                                const char* inputColor,
+                               const char* destColor,
                                Callbacks* callbacks)
             : fProgram(program)
             , fSampleCoords(sampleCoords)
             , fInputColor(inputColor)
+            , fDestColor(destColor)
             , fCallbacks(callbacks) {}
 
     void generateCode();
@@ -55,10 +57,8 @@ public:
 private:
     using Precedence = Operator::Precedence;
 
-    void write(const char* s);
-    void writeLine(const char* s = nullptr);
-    void write(const String& s);
-    void write(StringFragment s);
+    void write(skstd::string_view s);
+    void writeLine(skstd::string_view s = skstd::string_view());
 
     String typeName(const Type& type);
     void writeType(const Type& type);
@@ -68,7 +68,7 @@ private:
     String modifierString(const Modifiers& modifiers);
 
     // Handles arrays correctly, eg: `float x[2]`
-    String typedVariable(const Type& type, StringFragment name);
+    String typedVariable(const Type& type, skstd::string_view name);
 
     void writeVarDeclaration(const VarDeclaration& var);
     void writeGlobalVarDeclaration(const GlobalVarDeclaration& g);
@@ -113,6 +113,7 @@ private:
     const Program& fProgram;
     const char*    fSampleCoords;
     const char*    fInputColor;
+    const char*    fDestColor;
     Callbacks*     fCallbacks;
 
     std::unordered_map<const Variable*, String>            fVariableNames;
@@ -123,23 +124,14 @@ private:
     bool          fCastReturnsToHalf = false;
 };
 
-void PipelineStageCodeGenerator::write(const char* s) {
-    fBuffer->writeText(s);
-}
 
-void PipelineStageCodeGenerator::writeLine(const char* s) {
-    if (s) {
-        fBuffer->writeText(s);
-    }
-    fBuffer->writeText("\n");
-}
-
-void PipelineStageCodeGenerator::write(const String& s) {
+void PipelineStageCodeGenerator::write(skstd::string_view s) {
     fBuffer->write(s.data(), s.length());
 }
 
-void PipelineStageCodeGenerator::write(StringFragment s) {
-    fBuffer->write(s.fChars, s.fLength);
+void PipelineStageCodeGenerator::writeLine(skstd::string_view s) {
+    fBuffer->write(s.data(), s.length());
+    fBuffer->writeText("\n");
 }
 
 void PipelineStageCodeGenerator::writeFunctionCall(const FunctionCall& c) {
@@ -218,6 +210,9 @@ void PipelineStageCodeGenerator::writeVariableReference(const VariableReference&
     } else if (modifiers.fLayout.fBuiltin == SK_INPUT_COLOR_BUILTIN) {
         this->write(fInputColor);
         return;
+    } else if (modifiers.fLayout.fBuiltin == SK_DEST_COLOR_BUILTIN) {
+        this->write(fDestColor);
+        return;
     }
 
     auto it = fVariableNames.find(var);
@@ -279,7 +274,7 @@ void PipelineStageCodeGenerator::writeFunction(const FunctionDefinition& f) {
         fCastReturnsToHalf = false;
     }
 
-    String fnName = decl.isMain() ? decl.name()
+    String fnName = decl.isMain() ? String(decl.name())
                                   : fCallbacks->getMangledName(String(decl.name()).c_str());
 
     // This is similar to decl.description(), but substitutes a mangled name, and handles modifiers
@@ -318,7 +313,8 @@ void PipelineStageCodeGenerator::writeGlobalVarDeclaration(const GlobalVarDeclar
     } else {
         String mangledName = fCallbacks->getMangledName(String(var.name()).c_str());
         String declaration = this->modifierString(var.modifiers()) +
-                             this->typedVariable(var.type(), StringFragment(mangledName.c_str()));
+                             this->typedVariable(var.type(),
+                                                 skstd::string_view(mangledName.c_str()));
         if (decl.value()) {
             AutoOutputBuffer outputToBuffer(this);
             this->writeExpression(*decl.value(), Precedence::kTopLevel);
@@ -358,14 +354,10 @@ void PipelineStageCodeGenerator::writeProgramElement(const ProgramElement& e) {
         case ProgramElement::Kind::kStructDefinition:
             this->writeStructDefinition(e.as<StructDefinition>());
             break;
-        // Enums are ignored (so they don't yet work in runtime effects).
-        // We need to emit their declarations (via callback), with name mangling support.
-        case ProgramElement::Kind::kEnum:              // skbug.com/11296
 
         case ProgramElement::Kind::kExtension:
         case ProgramElement::Kind::kInterfaceBlock:
         case ProgramElement::Kind::kModifiers:
-        case ProgramElement::Kind::kSection:
         default:
             SkDEBUGFAILF("unsupported program element %s\n", e.description().c_str());
             break;
@@ -385,7 +377,7 @@ String PipelineStageCodeGenerator::typeName(const Type& type) {
     }
 
     auto it = fStructNames.find(&type);
-    return it != fStructNames.end() ? it->second : type.name();
+    return it != fStructNames.end() ? it->second : String(type.name());
 }
 
 void PipelineStageCodeGenerator::writeType(const Type& type) {
@@ -558,7 +550,7 @@ String PipelineStageCodeGenerator::modifierString(const Modifiers& modifiers) {
     return result;
 }
 
-String PipelineStageCodeGenerator::typedVariable(const Type& type, StringFragment name) {
+String PipelineStageCodeGenerator::typedVariable(const Type& type, skstd::string_view name) {
     const Type& baseType = type.isArray() ? type.componentType() : type;
 
     String decl = this->typeName(baseType) + " " + name;
@@ -697,8 +689,9 @@ void PipelineStageCodeGenerator::generateCode() {
 void ConvertProgram(const Program& program,
                     const char* sampleCoords,
                     const char* inputColor,
+                    const char* destColor,
                     Callbacks* callbacks) {
-    PipelineStageCodeGenerator generator(program, sampleCoords, inputColor, callbacks);
+    PipelineStageCodeGenerator generator(program, sampleCoords, inputColor, destColor, callbacks);
     generator.generateCode();
 }
 

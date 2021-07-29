@@ -27,6 +27,7 @@
     #include "include/effects/SkRuntimeEffect.h"
     #include "include/effects/SkShaderMaskFilter.h"
     #include "include/effects/SkTableColorFilter.h"
+    #include "src/core/SkBlendModeBlender.h"
     #include "src/core/SkColorFilter_Matrix.h"
     #include "src/core/SkImageFilter_Base.h"
     #include "src/core/SkRecordedDrawable.h"
@@ -52,7 +53,7 @@
     #include "include/effects/SkLayerDrawLooper.h"
 #endif
 
-    /*
+    /**
      *  Register most effects for deserialization.
      *
      *  None of these are strictly required for Skia to operate, so if you're
@@ -77,7 +78,10 @@
         SkColorFilterBase::RegisterFlattenables();
         SkTableColorFilter::RegisterFlattenables();
 
-        // Shader & color filter.
+        // Blenders.
+        SK_REGISTER_FLATTENABLE(SkBlendModeBlender);
+
+        // Runtime shaders, color filters, and blenders.
         SkRuntimeEffect::RegisterFlattenables();
 
         // Mask filters.
@@ -86,18 +90,18 @@
         SkShaderMaskFilter::RegisterFlattenables();
 
         // Path effects.
-        SK_REGISTER_FLATTENABLE(SkCornerPathEffect);
+        SkCornerPathEffect::RegisterFlattenables();
         SK_REGISTER_FLATTENABLE(SkDashImpl);
-        SK_REGISTER_FLATTENABLE(SkDiscretePathEffect);
-        SK_REGISTER_FLATTENABLE(SkLine2DPathEffect);
+        SkDiscretePathEffect::RegisterFlattenables();
+        SkLine2DPathEffect::RegisterFlattenables();
+        SkPath2DPathEffect::RegisterFlattenables();
         SK_REGISTER_FLATTENABLE(SkMatrixPE);
         SK_REGISTER_FLATTENABLE(SkOpPE);
-        SK_REGISTER_FLATTENABLE(SkPath1DPathEffect);
-        SK_REGISTER_FLATTENABLE(SkPath2DPathEffect);
+        SkPath1DPathEffect::RegisterFlattenables();
         SK_REGISTER_FLATTENABLE(SkStrokePE);
         SK_REGISTER_FLATTENABLE(SkStrokeAndFillPE);
         SK_REGISTER_FLATTENABLE(SkTrimPE);
-        SkPathEffect::RegisterFlattenables();
+        SkPathEffectBase::RegisterFlattenables();
 
         // Misc.
 #ifdef SK_SUPPORT_LEGACY_DRAWLOOPER
@@ -130,6 +134,7 @@
         SkRegisterMorphologyImageFilterFlattenables();
         SkRegisterOffsetImageFilterFlattenable();
         SkRegisterPictureImageFilterFlattenable();
+        SkRegisterRuntimeImageFilterFlattenable();
         SkRegisterShaderImageFilterFlattenable();
         SkRegisterTileImageFilterFlattenable();
         SK_REGISTER_FLATTENABLE(SkLocalMatrixImageFilter);

@@ -4,21 +4,37 @@
 
 import * as Common from '../../../../../front_end/core/common/common.js';
 import * as IssuesManager from '../../../../../front_end/models/issues_manager/issues_manager.js';
+import type {StubIssue} from './StubIssue.js';
+import type * as SDK from '../../../../../front_end/core/sdk/sdk.js';
+import {MockIssuesModel} from './MockIssuesModel.js';
 
 export class MockIssuesManager extends Common.ObjectWrapper.ObjectWrapper {
-  private mockIssues: Iterable<IssuesManager.Issue.Issue>;
+  private mockIssues: IssuesManager.Issue.Issue[];
   private issueCounts = new Map<IssuesManager.Issue.IssueKind, number>([
     [IssuesManager.Issue.IssueKind.Improvement, 0],
     [IssuesManager.Issue.IssueKind.BreakingChange, 1],
     [IssuesManager.Issue.IssueKind.PageError, 2],
   ]);
 
+  // An empty model to pass along for the IssuesManager.Events.IssueAdded event.
+  private mockModel = new MockIssuesModel([]) as unknown as SDK.IssuesModel.IssuesModel;
+
   constructor(issues: Iterable<IssuesManager.Issue.Issue>) {
     super();
-    this.mockIssues = issues;
+    this.mockIssues = Array.from(issues);
   }
+
   issues() {
     return this.mockIssues;
+  }
+
+  getIssueById(id: string): IssuesManager.Issue.Issue|null {
+    for (const issue of this.mockIssues) {
+      if (issue.getIssueId() === id) {
+        return issue;
+      }
+    }
+    return null;
   }
 
   numberOfIssues(kind?: IssuesManager.Issue.IssueKind): number {
@@ -33,5 +49,11 @@ export class MockIssuesManager extends Common.ObjectWrapper.ObjectWrapper {
       this.issueCounts.set(key, value + 1);
     }
     this.dispatchEventToListeners(IssuesManager.IssuesManager.Events.IssuesCountUpdated);
+  }
+
+  addIssue(mockIssue: StubIssue) {
+    this.mockIssues.push(mockIssue as IssuesManager.Issue.Issue);
+    this.dispatchEventToListeners(
+        IssuesManager.IssuesManager.Events.IssueAdded, {issue: mockIssue, issuesModel: this.mockModel});
   }
 }

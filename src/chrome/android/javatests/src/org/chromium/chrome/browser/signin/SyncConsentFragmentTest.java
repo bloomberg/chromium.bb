@@ -41,7 +41,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
-import org.chromium.base.test.BaseActivityTestRule;
 import org.chromium.base.test.util.ApplicationTestUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
@@ -54,7 +53,7 @@ import org.chromium.chrome.browser.firstrun.SyncConsentFirstRunFragment;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
-import org.chromium.chrome.browser.sync.ProfileSyncService;
+import org.chromium.chrome.browser.sync.SyncService;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ActivityTestUtils;
@@ -65,19 +64,22 @@ import org.chromium.components.externalauth.ExternalAuthUtils;
 import org.chromium.components.signin.ChildAccountStatus;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
-import org.chromium.components.signin.test.util.FakeProfileDataSource;
+import org.chromium.components.signin.test.util.FakeAccountInfoService;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
 import org.chromium.ui.test.util.DummyUiActivity;
+import org.chromium.ui.test.util.ThemedDummyUiActivityTestRule;
 
 import java.io.IOException;
 
 /**
- * Render tests for signin fragment.
+ * Render tests for sync consent fragment.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class SyncConsentFragmentTest {
+    private static final int RENDER_REVISION = 1;
+    private static final String RENDER_DESCRIPTION = "Change button style";
     /**
      * This class is used to test {@link SyncConsentFirstRunFragment}.
      */
@@ -102,19 +104,23 @@ public class SyncConsentFragmentTest {
 
     @Rule
     public final AccountManagerTestRule mAccountManagerTestRule =
-            new AccountManagerTestRule(new FakeProfileDataSource());
+            new AccountManagerTestRule(new FakeAccountInfoService());
 
     @Rule
     public final ChromeTabbedActivityTestRule mChromeActivityTestRule =
             new ChromeTabbedActivityTestRule();
 
     @Rule
-    public final BaseActivityTestRule<DummyUiActivity> mActivityTestRule =
-            new BaseActivityTestRule<>(DummyUiActivity.class);
+    public final ThemedDummyUiActivityTestRule<DummyUiActivity> mActivityTestRule =
+            new ThemedDummyUiActivityTestRule<>(
+                    DummyUiActivity.class, R.style.ColorOverlay_ChromiumAndroid);
 
     @Rule
     public final ChromeRenderTestRule mRenderTestRule =
-            ChromeRenderTestRule.Builder.withPublicCorpus().build();
+            ChromeRenderTestRule.Builder.withPublicCorpus()
+                    .setRevision(RENDER_REVISION)
+                    .setDescription(RENDER_DESCRIPTION)
+                    .build();
 
     @Mock
     private FirstRunPageDelegate mFirstRunPageDelegateMock;
@@ -134,7 +140,7 @@ public class SyncConsentFragmentTest {
 
     @After
     public void tearDown() throws Exception {
-        // Since SigninActivity is launched inside this test class, we need to
+        // Since {@link SyncConsentActivity} is launched inside this test class, we need to
         // tear it down inside the class as well.
         if (mSyncConsentActivity != null) {
             ApplicationTestUtils.finishActivity(mSyncConsentActivity);
@@ -318,7 +324,7 @@ public class SyncConsentFragmentTest {
         }, CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
         Assert.assertTrue(SyncTestUtil.isSyncRequested());
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> { Assert.assertFalse(ProfileSyncService.get().isFirstSetupComplete()); });
+                () -> { Assert.assertFalse(SyncService.get().isFirstSetupComplete()); });
         // Close the SettingsActivity.
         onView(withId(R.id.cancel_button)).perform(click());
     }

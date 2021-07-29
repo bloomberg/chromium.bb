@@ -210,7 +210,7 @@ TEST_F(FormJsTest, AddForm) {
   // Wait for |SetUpForUniqueIDsWithInitialState| to complete.
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool {
     return [ExecuteJavaScript(@"document[__gCrWeb.fill.ID_SYMBOL]") intValue] ==
-           int{next_available_id};
+           static_cast<int>(next_available_id);
   }));
 
   TrackFormMutations(main_frame);
@@ -312,7 +312,7 @@ TEST_F(FormJsTest, RemoveForm) {
   // Wait for |SetUpForUniqueIDsWithInitialState| to complete.
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool {
     return [ExecuteJavaScript(@"document[__gCrWeb.fill.ID_SYMBOL]") intValue] ==
-           int{next_available_id};
+           static_cast<int>(next_available_id);
   }));
 
   TrackFormMutations(main_frame);
@@ -327,4 +327,24 @@ TEST_F(FormJsTest, RemoveForm) {
   }));
   EXPECT_EQ("password_form_removed", info->form_activity.type);
   EXPECT_FALSE(info->form_activity.input_missing);
+}
+
+// Tests that a new element that contains 'form' in the tag name does not
+// trigger a form_changed event.
+TEST_F(FormJsTest, AddCustomElement) {
+  LoadHtml(@"<body></body>");
+  web::WebFrame* main_frame = WaitForMainFrame();
+  ASSERT_TRUE(main_frame);
+  TrackFormMutations(main_frame);
+
+  ExecuteJavaScript(@"var form = document.createElement('my-form');"
+                    @"document.body.appendChild(form);");
+
+  // Check that no activity is observed upon JS completion.
+  autofill::TestFormActivityObserver* block_observer = observer_.get();
+  __block autofill::TestFormActivityInfo* info = nil;
+  EXPECT_FALSE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    info = block_observer->form_activity_info();
+    return info != nil;
+  }));
 }

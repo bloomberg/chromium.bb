@@ -16,12 +16,13 @@
 #include "base/bind.h"
 #include "base/bits.h"
 #include "base/containers/flat_map.h"
+#include "base/cxx17_backports.h"
 #include "base/debug/crash_logging.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/numerics/checked_math.h"
-#include "base/stl_util.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_cache.h"
@@ -302,6 +303,107 @@ class SharedImageProviderImpl final : public cc::SharedImageProvider {
     sk_sp<SkImage> read_access_sk_image;
   };
   base::flat_map<gpu::Mailbox, SharedImageReadAccess> read_accessors_;
+};
+
+class RasterCommandsCompletedQuery : public QueryManager::Query {
+ public:
+  RasterCommandsCompletedQuery(
+      scoped_refptr<SharedContextState> shared_context_state,
+      QueryManager* manager,
+      GLenum target,
+      scoped_refptr<gpu::Buffer> buffer,
+      QuerySync* sync)
+      : Query(manager, target, std::move(buffer), sync),
+        shared_context_state_(std::move(shared_context_state)) {}
+
+  // Overridden from QueryManager::Query:
+  void Begin() override {
+    DCHECK(!begin_time_);
+    MarkAsActive();
+    begin_time_.emplace(base::TimeTicks::Now());
+  }
+
+  void End(base::subtle::Atomic32 submit_count) override {
+    DCHECK(begin_time_);
+
+    AddToPendingQueue(submit_count);
+    finished_ = false;
+
+    auto* gr_context = shared_context_state_->gr_context();
+    GrFlushInfo info;
+    info.fFinishedProc = RasterCommandsCompletedQuery::FinishedProc;
+    auto weak_ptr = weak_ptr_factory_.GetWeakPtr();
+    info.fFinishedContext =
+        new base::WeakPtr<RasterCommandsCompletedQuery>(weak_ptr);
+    gr_context->flush(info);
+  }
+
+  void QueryCounter(base::subtle::Atomic32 submit_count) override {
+    NOTREACHED();
+  }
+
+  void Pause() override { MarkAsPaused(); }
+
+  void Resume() override { MarkAsActive(); }
+
+  void Process(bool did_finish) override {
+    DCHECK(begin_time_);
+    if (did_finish || finished_) {
+      const base::TimeDelta elapsed = base::TimeTicks::Now() - *begin_time_;
+      MarkAsCompleted(elapsed.InMicroseconds());
+      begin_time_.reset();
+    }
+  }
+
+  void Destroy(bool have_context) override {
+    if (!IsDeleted())
+      MarkAsDeleted();
+  }
+
+ protected:
+  ~RasterCommandsCompletedQuery() override = default;
+
+ private:
+  static void FinishedProc(void* context) {
+    auto* weak_ptr =
+        reinterpret_cast<base::WeakPtr<RasterCommandsCompletedQuery>*>(context);
+    if (*weak_ptr)
+      (*weak_ptr)->finished_ = true;
+    delete weak_ptr;
+  }
+
+  const scoped_refptr<SharedContextState> shared_context_state_;
+  absl::optional<base::TimeTicks> begin_time_;
+  bool finished_ = false;
+  base::WeakPtrFactory<RasterCommandsCompletedQuery> weak_ptr_factory_{this};
+};
+
+class RasterQueryManager : public QueryManager {
+ public:
+  explicit RasterQueryManager(
+      scoped_refptr<SharedContextState> shared_context_state)
+      : shared_context_state_(std::move(shared_context_state)) {}
+  ~RasterQueryManager() override = default;
+
+  Query* CreateQuery(GLenum target,
+                     GLuint client_id,
+                     scoped_refptr<gpu::Buffer> buffer,
+                     QuerySync* sync) override {
+    if (target == GL_COMMANDS_COMPLETED_CHROMIUM &&
+        shared_context_state_->gr_context()) {
+      auto query = base::MakeRefCounted<RasterCommandsCompletedQuery>(
+          shared_context_state_, this, target, std::move(buffer), sync);
+      std::pair<QueryMap::iterator, bool> result =
+          queries_.insert(std::make_pair(client_id, query));
+      DCHECK(result.second);
+      return query.get();
+    }
+    return QueryManager::CreateQuery(target, client_id, std::move(buffer),
+                                     sync);
+  }
+
+ private:
+  const scoped_refptr<SharedContextState> shared_context_state_;
 };
 
 }  // namespace
@@ -641,6 +743,7 @@ class RasterDecoderImpl final : public RasterDecoder,
   void DoBeginRasterCHROMIUM(GLuint sk_color,
                              GLboolean needs_clear,
                              GLuint msaa_sample_count,
+                             MsaaMode msaa_mode,
                              GLboolean can_use_lcd_text,
                              const volatile GLbyte* key);
   void DoRasterCHROMIUM(GLuint raster_shm_id,
@@ -761,6 +864,7 @@ class RasterDecoderImpl final : public RasterDecoder,
   static const CommandInfo command_info[kNumCommands - kFirstRasterCommand];
 
   const int raster_decoder_id_;
+  const bool disable_legacy_mailbox_;
 
   // Number of commands remaining to be processed in DoCommands().
   int commands_to_process_ = 0;
@@ -769,6 +873,7 @@ class RasterDecoderImpl final : public RasterDecoder,
   bool supports_oop_raster_ = false;
   bool use_passthrough_ = false;
   bool use_ddl_ = false;
+  bool use_ddl_in_current_raster_session_ = false;
 
   // The current decoder error communicates the decoder error through command
   // processing functions that do not return the error value. Should be set
@@ -786,7 +891,7 @@ class RasterDecoderImpl final : public RasterDecoder,
   std::unique_ptr<Validators> validators_;
 
   SharedImageRepresentationFactory shared_image_representation_factory_;
-  std::unique_ptr<QueryManager> query_manager_;
+  std::unique_ptr<RasterQueryManager> query_manager_;
 
   gles2::GLES2Util util_;
 
@@ -921,6 +1026,9 @@ RasterDecoderImpl::RasterDecoderImpl(
     bool is_privileged)
     : RasterDecoder(client, command_buffer_service, outputter),
       raster_decoder_id_(g_raster_decoder_id.GetNext() + 1),
+      disable_legacy_mailbox_(
+          shared_image_manager &&
+          shared_image_manager->display_context_on_another_thread()),
       supports_gpu_raster_(
           gpu_feature_info.status_values[GPU_FEATURE_TYPE_GPU_RASTERIZATION] ==
           kGpuFeatureStatusEnabled),
@@ -991,7 +1099,7 @@ ContextResult RasterDecoderImpl::Initialize(
 
   CHECK_GL_ERROR();
 
-  query_manager_ = std::make_unique<QueryManager>();
+  query_manager_ = std::make_unique<RasterQueryManager>(shared_context_state_);
 
   if (attrib_helper.enable_oop_rasterization) {
     if (!features().chromium_raster_transport) {
@@ -1172,6 +1280,7 @@ Capabilities RasterDecoderImpl::GetCapabilities() {
   caps.shared_image_swap_chain =
       SharedImageBackingFactoryD3D::IsSwapChainSupported();
 #endif  // OS_WIN
+  caps.disable_legacy_mailbox = disable_legacy_mailbox_;
   return caps;
 }
 
@@ -1821,15 +1930,17 @@ error::Error RasterDecoderImpl::HandleQueryCounterEXT(
 }
 
 void RasterDecoderImpl::DoFinish() {
-  if (shared_context_state_->GrContextIsGL())
-    api()->glFinishFn();
-  ProcessPendingQueries(true);
+  if (auto* gr_context = shared_context_state_->gr_context()) {
+    gr_context->flushAndSubmit(/*syncCpu=*/true);
+  }
+  ProcessPendingQueries(/*did_finish=*/true);
 }
 
 void RasterDecoderImpl::DoFlush() {
-  if (shared_context_state_->GrContextIsGL())
-    api()->glFlushFn();
-  ProcessPendingQueries(false);
+  if (auto* gr_context = shared_context_state_->gr_context()) {
+    gr_context->flushAndSubmit(/*syncCpu=*/false);
+  }
+  ProcessPendingQueries(/*did_finish=*/false);
 }
 
 bool RasterDecoderImpl::GenQueriesEXTHelper(GLsizei n,
@@ -2715,33 +2826,6 @@ void RasterDecoderImpl::DoReadbackARGBImagePixelsINTERNAL(
     return;
   }
 
-  std::vector<GrBackendSemaphore> begin_semaphores;
-
-  std::unique_ptr<SharedImageRepresentationSkia::ScopedReadAccess>
-      source_scoped_access = source_shared_image->BeginScopedReadAccess(
-          &begin_semaphores, nullptr);
-
-  if (!begin_semaphores.empty()) {
-    bool result = shared_context_state_->gr_context()->wait(
-        begin_semaphores.size(), begin_semaphores.data(),
-        /*deleteSemaphoresAfterWait=*/false);
-    DCHECK(result);
-  }
-
-  if (!source_scoped_access) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glReadbackImagePixels",
-                       "Source shared image is not accessible");
-    return;
-  }
-
-  auto sk_image =
-      source_scoped_access->CreateSkImage(shared_context_state_->gr_context());
-  if (!sk_image) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glReadbackImagePixels",
-                       "Couldn't create SkImage for reading.");
-    return;
-  }
-
   size_t byte_size = dst_info.computeByteSize(row_bytes);
   if (byte_size > UINT32_MAX) {
     LOCAL_SET_GL_ERROR(
@@ -2764,6 +2848,47 @@ void RasterDecoderImpl::DoReadbackARGBImagePixelsINTERNAL(
   if (!result) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glReadbackImagePixels",
                        "Failed to retrieve memory for readPixels result");
+    return;
+  }
+
+  std::vector<GrBackendSemaphore> begin_semaphores;
+  std::vector<GrBackendSemaphore> end_semaphores;
+
+  std::unique_ptr<SharedImageRepresentationSkia::ScopedReadAccess>
+      source_scoped_access = source_shared_image->BeginScopedReadAccess(
+          &begin_semaphores, &end_semaphores);
+
+  if (!source_scoped_access) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glReadbackImagePixels",
+                       "Source shared image is not accessible");
+    return;
+  }
+
+  if (!begin_semaphores.empty()) {
+    bool wait_result = shared_context_state_->gr_context()->wait(
+        begin_semaphores.size(), begin_semaphores.data(),
+        /*deleteSemaphoresAfterWait=*/false);
+    DCHECK(wait_result);
+  }
+
+  if (!end_semaphores.empty()) {
+    // Ask skia to signal |end_semaphores| here, since we will synchronized
+    // read pixels from the shared image.
+    GrFlushInfo flush_info = {
+        .fNumSemaphores = end_semaphores.size(),
+        .fSignalSemaphores = end_semaphores.data(),
+    };
+    AddVulkanCleanupTaskForSkiaFlush(
+        shared_context_state_->vk_context_provider(), &flush_info);
+    auto flush_result = shared_context_state_->gr_context()->flush(flush_info);
+    DCHECK(flush_result == GrSemaphoresSubmitted::kYes);
+  }
+
+  auto sk_image =
+      source_scoped_access->CreateSkImage(shared_context_state_->gr_context());
+  if (!sk_image) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glReadbackImagePixels",
+                       "Couldn't create SkImage for reading.");
     return;
   }
 
@@ -3204,6 +3329,7 @@ void RasterDecoderImpl::DoClearPaintCacheINTERNAL() {
 void RasterDecoderImpl::DoBeginRasterCHROMIUM(GLuint sk_color,
                                               GLboolean needs_clear,
                                               GLuint msaa_sample_count,
+                                              MsaaMode msaa_mode,
                                               GLboolean can_use_lcd_text,
                                               const volatile GLbyte* key) {
   // Workaround for https://crbug.com/906453: Flush before BeginRaster (the
@@ -3236,24 +3362,54 @@ void RasterDecoderImpl::DoBeginRasterCHROMIUM(GLuint sk_color,
     return;
   }
 
+  // This check only fails on validating decoder since clear tracking for
+  // passthrough textures is done by ANGLE. Nonetheless the check is important
+  // so that clients cannot use uninitialized textures with validating decoder.
+  if (!needs_clear && !shared_image_->IsCleared()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
+                       "SharedImage not cleared before use.");
+    shared_image_.reset();
+    return;
+  }
+
   DCHECK(locked_handles_.empty());
   DCHECK(!raster_canvas_);
   shared_context_state_->set_need_context_state_reset(true);
 
+  SkColorType sk_color_type = viz::ResourceFormatToClosestSkColorType(
+      /*gpu_compositing=*/true, shared_image_->format());
+
+  int final_msaa_count;
+  uint32_t flags;
+  switch (msaa_mode) {
+    default:
+    case kNoMSAA:
+      final_msaa_count = 0;
+      flags = 0;
+      use_ddl_in_current_raster_session_ = use_ddl_;
+      break;
+    case kMSAA:
+      // If we can't match requested MSAA samples, don't use MSAA.
+      final_msaa_count = std::max(static_cast<int>(msaa_sample_count), 0);
+      if (final_msaa_count >
+          gr_context()->maxSurfaceSampleCountForColorType(sk_color_type))
+        final_msaa_count = 0;
+      flags = 0;
+      use_ddl_in_current_raster_session_ = use_ddl_;
+      break;
+    case kDMSAA:
+      final_msaa_count = 1;
+      flags = SkSurfaceProps::kDynamicMSAA_Flag;
+      // DMSAA is not compatible with DDL
+      use_ddl_in_current_raster_session_ = false;
+      break;
+  }
+
   // Use unknown pixel geometry to disable LCD text.
-  uint32_t flags = 0;
   SkSurfaceProps surface_props(flags, kUnknown_SkPixelGeometry);
   if (can_use_lcd_text) {
     surface_props = skia::LegacyDisplayGlobals::GetSkSurfaceProps(flags);
   }
-
-  SkColorType sk_color_type = viz::ResourceFormatToClosestSkColorType(
-      /*gpu_compositing=*/true, shared_image_->format());
-  // If we can't match requested MSAA samples, don't use MSAA.
-  int final_msaa_count = std::max(static_cast<int>(msaa_sample_count), 0);
-  if (final_msaa_count >
-      gr_context()->maxSurfaceSampleCountForColorType(sk_color_type))
-    final_msaa_count = 0;
 
   std::vector<GrBackendSemaphore> begin_semaphores;
   DCHECK(end_semaphores_.empty());
@@ -3279,7 +3435,7 @@ void RasterDecoderImpl::DoBeginRasterCHROMIUM(GLuint sk_color,
     DCHECK(result);
   }
 
-  if (use_ddl_) {
+  if (use_ddl_in_current_raster_session_) {
     SkSurfaceCharacterization characterization;
     bool result = sk_surface_->characterize(&characterization);
     DCHECK(result) << "Failed to characterize raster SkSurface.";
@@ -3399,7 +3555,7 @@ void RasterDecoderImpl::DoRasterCHROMIUM(GLuint raster_shm_id,
 }
 
 bool RasterDecoderImpl::EnsureDDLReadyForRaster() {
-  DCHECK(use_ddl_);
+  DCHECK(use_ddl_in_current_raster_session_);
   DCHECK_EQ(current_decoder_error_, error::kNoError);
 
   if (!ddl_) {
@@ -3436,7 +3592,7 @@ void RasterDecoderImpl::DoEndRasterCHROMIUM() {
   shared_context_state_->set_need_context_state_reset(true);
   raster_canvas_ = nullptr;
 
-  if (use_ddl_) {
+  if (use_ddl_in_current_raster_session_) {
     if (!EnsureDDLReadyForRaster()) {
       // This decoder error indicates that this command has not finished
       // executing. The decoder will yield and re-execute this command when it

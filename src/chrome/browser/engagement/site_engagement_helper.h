@@ -140,7 +140,7 @@ class SiteEngagementService::Helper
     void TrackingStarted() override;
 
     // content::WebContentsObserver overrides.
-    void DidFinishNavigation(content::NavigationHandle* handle) override;
+    void PrimaryPageChanged(content::Page& page) override;
     void MediaStartedPlaying(const MediaPlayerInfo& media_info,
                              const content::MediaPlayerId& id) override;
     void MediaStoppedPlaying(
@@ -156,6 +156,7 @@ class SiteEngagementService::Helper
   explicit Helper(content::WebContents* web_contents);
   friend class content::WebContentsUserData<SiteEngagementService::Helper>;
   friend class SiteEngagementHelperTest;
+  friend class SiteEngagementHelperBrowserTest;
 
   // Ask the SiteEngagementService to record engagement via user input at the
   // current WebContents URL.

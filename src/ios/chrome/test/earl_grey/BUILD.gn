@@ -26,11 +26,17 @@ source_set("hooks") {
   testonly = true
   sources = [ "eg_tests_hook.mm" ]
   deps = [
+    ":switches",
     "//base",
     "//components/policy/core/common:test_support",
     "//ios/chrome/app:tests_hook",
     "//ios/chrome/browser",
     "//ios/chrome/browser/policy:test_support",
+    "//ios/chrome/browser/ui/authentication:eg_app_support+eg2",
+    "//ios/chrome/test/app:test_support",
+    "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/signin:fake_chrome_identity",
+    "//ios/public/provider/chrome/browser/signin:test_support",
   ]
 }
 
@@ -57,6 +63,7 @@ source_set("eg_app_support+eg2") {
   ]
 
   deps = [
+    ":switches",
     "//base",
     "//base/test:test_support",
     "//components/autofill/core/browser",
@@ -67,7 +74,6 @@ source_set("eg_app_support+eg2") {
     "//components/strings",
     "//components/sync/base",
     "//components/translate/core/browser",
-    "//components/ukm/ios:features",
     "//components/unified_consent",
     "//components/variations",
     "//ios/chrome/app:app_internal",
@@ -152,6 +158,7 @@ source_set("eg_app_support+eg2") {
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/ui/util:eg_app_support+eg2",
     "//ios/chrome/browser/unified_consent",
+    "//ios/chrome/browser/variations:eg_app_support+eg2",
     "//ios/chrome/browser/web",
     "//ios/chrome/browser/web:eg_app_support+eg2",
     "//ios/chrome/browser/web:tab_id_tab_helper",
@@ -160,6 +167,7 @@ source_set("eg_app_support+eg2") {
     "//ios/testing:block_swizzler",
     "//ios/testing:hardware_keyboarr_support",
     "//ios/testing:nserror_support",
+    "//ios/testing:open_url_context",
     "//ios/testing:verify_custom_webkit",
     "//ios/testing/earl_grey:eg_app_support+eg2",
     "//ios/third_party/earl_grey2:app_framework+link",
@@ -270,5 +278,14 @@ source_set("chrome_egtest_bundle_main+eg2") {
     "//base",
     "//base:i18n",
     "//ui/base",
+  ]
+}
+
+source_set("switches") {
+  testonly = true
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "test_switches.h",
+    "test_switches.mm",
   ]
 }

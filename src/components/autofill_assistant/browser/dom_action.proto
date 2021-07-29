@@ -22,16 +22,63 @@ message ClientIdProto {
 // Scroll the element into the view center.
 message ScrollIntoViewProto {
   optional ClientIdProto client_id = 1;
+  // Defines the transition animation. One of "auto" or "smooth". Defaults to
+  // "auto".
+  optional string animation = 2;
+  // Defines vertical alignment. One of "start", "center", "end" or "nearest".
+  // Defaults to "center".
+  optional string vertical_alignment = 3;
+  // Defines horizontal alignment. One of "start", "center", "end" or "nearest".
+  // Defaults to "center".
+  optional string horizontal_alignment = 4;
+}
+
+// Scroll the element into view only if necessary. Do not do anything otherwise.
+message ScrollIntoViewIfNeededProto {
+  optional ClientIdProto client_id = 1;
+  // Defines whether to center or scroll to the nearest edge. Defaults to true.
+  optional bool center = 2;
+}
+
+message ScrollDistance {
+  oneof value {
+    // Padding in CSS pixels.
+    int32 pixels = 1;
+    // Ratio in relation to the window in direction of the scrolling. E.g.
+    // |window.innerHeight|.
+    float window_ratio = 2;
+  }
+}
+
+message ScrollWindowProto {
+  // Optional frame. If not specified, will scroll the main window.
+  optional ClientIdProto optional_frame_id = 1;
+  optional ScrollDistance scroll_distance = 2;
+  // Defines the transition animation. One of "auto" or "smooth". Defaults to
+  // "auto".
+  optional string animation = 3;
+}
+
+message ScrollContainerProto {
+  optional ClientIdProto client_id = 1;
+  optional ScrollDistance scroll_distance = 2;
+  // Defines the transition animation. One of "auto" or "smooth". Defaults to
+  // "auto".
+  optional string animation = 3;
 }
 
 // Wait for the document ready status to be at least "interactive".
 message WaitForDocumentToBecomeInteractiveProto {
+  // Optional frame. If not specified, will wait for the state of the main
+  // frame.
   optional ClientIdProto client_id = 1;
   optional int32 timeout_in_ms = 2;
 }
 
 // Wait for the document ready status to be "complete".
 message WaitForDocumentToBecomeCompleteProto {
+  // Optional frame. If not specified, will wait for the state of the main
+  // frame.
   optional ClientIdProto client_id = 1;
   optional int32 timeout_in_ms = 2;
 }
@@ -111,7 +158,7 @@ message FocusFieldProto {
 // combination with |SendChangeEventProto|. If the element in |option| is
 // not an option of the element in |select|, an |OPTION_VALUE_NOT_FOUND| error
 // is returned. If the element in |select| is not an HTML <select> element, an
-// |OPTION_VALUE_NOT_FOUND| error is returned.
+// |INVALID_TARGET| error is returned.
 message SelectOptionElementProto {
   optional ClientIdProto select_id = 1;
   optional ClientIdProto option_id = 2;
@@ -125,7 +172,7 @@ message CheckElementTagProto {
   repeated string any_of_tag = 2;
 }
 
-// Check whether the element in |option_d| is selected in the element in
+// Check whether the element in |option_id| is selected in the element in
 // |select_id|.
 message CheckOptionElementProto {
   optional ClientIdProto select_id = 1;

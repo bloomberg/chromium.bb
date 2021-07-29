@@ -35,6 +35,12 @@ using ContextType = ExtensionBrowserTest::ContextType;
 
 class PageActionApiTest : public ExtensionApiTest,
                           public testing::WithParamInterface<ContextType> {
+ public:
+  PageActionApiTest() = default;
+  ~PageActionApiTest() override = default;
+  PageActionApiTest(const PageActionApiTest&) = delete;
+  PageActionApiTest& operator=(const PageActionApiTest&) = delete;
+
  protected:
   ExtensionAction* GetPageAction(const Extension& extension) {
     ExtensionAction* extension_action =
@@ -47,7 +53,7 @@ class PageActionApiTest : public ExtensionApiTest,
 
   bool RunTest(const char* name) {
     return RunExtensionTest(
-        {.name = name},
+        name, {},
         {.load_as_service_worker = GetParam() == ContextType::kServiceWorker});
   }
 };

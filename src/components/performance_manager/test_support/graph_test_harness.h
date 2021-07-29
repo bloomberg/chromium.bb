@@ -112,10 +112,11 @@ struct TestNodeWrapper<PageNodeImpl>::Factory {
       const GURL& url = GURL(),
       bool is_visible = false,
       bool is_audible = false,
-      base::TimeTicks visibility_change_time = base::TimeTicks::Now()) {
+      base::TimeTicks visibility_change_time = base::TimeTicks::Now(),
+      PageNode::PageState page_state = PageNode::PageState::kActive) {
     return std::make_unique<PageNodeImpl>(wc_proxy, browser_context_id, url,
                                           is_visible, is_audible,
-                                          visibility_change_time);
+                                          visibility_change_time, page_state);
   }
 };
 
@@ -152,7 +153,7 @@ template <>
 class TestNodeWrapper<SystemNodeImpl> {
  public:
   static TestNodeWrapper<SystemNodeImpl> Create(GraphImpl* graph) {
-    return TestNodeWrapper<SystemNodeImpl>(graph->FindOrCreateSystemNodeImpl());
+    return TestNodeWrapper<SystemNodeImpl>(graph->GetSystemNodeImpl());
   }
 
   explicit TestNodeWrapper(SystemNodeImpl* impl) : impl_(impl) {}
@@ -232,8 +233,7 @@ class GraphTestHarness : public ::testing::Test {
   }
 
   TestNodeWrapper<SystemNodeImpl> GetSystemNode() {
-    return TestNodeWrapper<SystemNodeImpl>(
-        graph()->FindOrCreateSystemNodeImpl());
+    return TestNodeWrapper<SystemNodeImpl>(graph()->GetSystemNodeImpl());
   }
 
   // testing::Test:

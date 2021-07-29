@@ -90,6 +90,7 @@ group("gn_all") {
     "//third_party/angle/src/tests:angle_end2end_tests",
     "//third_party/angle/src/tests:angle_unittests",
     "//third_party/angle/src/tests:angle_white_box_tests",
+    "//third_party/distributed_point_functions",
     "//third_party/flatbuffers:flatbuffers_unittests",
     "//third_party/liburlpattern:liburlpattern_unittests",
     "//tools/binary_size:binary_size_trybot_py",
@@ -167,6 +168,7 @@ group("gn_all") {
       "//ppapi/examples/video_encode",
       "//third_party/vulkan-deps/spirv-tools/src:SPIRV-Tools",
       "//third_party/vulkan-deps/spirv-tools/src/test/fuzzers",
+      "//tools/aggregation_service:aggregation_service_tool",
       "//tools/perf/clear_system_cache",
       "//tools/polymer:polymer_tools_python_unittests",
       "//tools/privacy_budget:privacy_budget_tools",
@@ -196,7 +198,6 @@ group("gn_all") {
       "//gpu:gpu_unittests",
       "//ipc:ipc_tests",
       "//media:media_unittests",
-      "//media/blink:media_blink_unittests",
       "//media/midi:midi_unittests",
       "//media/mojo:media_mojo_unittests",
       "//mojo",
@@ -257,6 +258,12 @@ group("gn_all") {
       "//media/cast:cast_unittests",
       "//third_party/catapult/telemetry:bitmaptools($host_toolchain)",
     ]
+    if (is_android) {
+      import("//tools/perf/chrome_telemetry_build/android_browser_types.gni")
+      foreach(_target_suffix, telemetry_android_browser_target_suffixes) {
+        deps += [ "//chrome/test:telemetry_perf_unittests${_target_suffix}" ]
+      }
+    }
   } else if (is_ios) {
     deps += [
       "//ios:all",
@@ -286,7 +293,10 @@ group("gn_all") {
   }
 
   if (enable_pdf) {
-    deps += [ "//third_party/pdfium/samples:pdfium_test" ]
+    deps += [
+      "//pdf/pdfium/fuzzers",
+      "//third_party/pdfium/samples:pdfium_test",
+    ]
   }
 
   if (enable_remoting) {
@@ -358,7 +368,7 @@ group("gn_all") {
       "//base/android/linker:chromium_android_linker",
       "//build/android/gyp/test:hello_world",
       "//build/android/stacktrace:java_deobfuscate",
-      "//build/android/test:android_lint_test",
+      "//build/android/test:android_nocompile_tests",
       "//build/config/android/test/proto:test_build_protos",
       "//chrome/android/monochrome:monochrome_public_apk_checker",
       "//chrome/android/webapk/shell_apk:maps_go_webapk",
@@ -375,7 +385,6 @@ group("gn_all") {
       "//testing/android/junit:junit_unit_tests",
       "//third_party/catapult/devil",
       "//third_party/r8:custom_d8_java",
-      "//third_party/smhasher:murmurhash3",
       "//tools/android:android_tools",
       "//tools/android:memconsumer",
       "//tools/android:push_apps_to_background",
@@ -456,8 +465,8 @@ group("gn_all") {
   if (is_chromeos_ash) {
     deps += [
       "//ash:ash_unittests",
-      "//ash/content:ash_content_unittests",
       "//ash/keyboard/ui:keyboard_unittests",
+      "//ash/webui:ash_webui_unittests",
       "//chrome/browser/metrics/perf:profile_provider_unittest",
       "//chrome/test:usage_time_limit_unittests",
       "//chromeos/components:chromeos_components_unittests",
@@ -823,6 +832,12 @@ group("gn_all") {
     ]
     if (is_android) {
       deps += [ "//chrome/browser/android/vr:vr_android_unittests" ]
+      import("//tools/perf/chrome_telemetry_build/android_browser_types.gni")
+      foreach(_target_suffix, telemetry_android_browser_target_suffixes) {
+        deps += [
+          "//tools/perf/contrib/vr_benchmarks:vr_perf_tests${_target_suffix}",
+        ]
+      }
     }
   }
 
@@ -984,6 +999,7 @@ if (is_chromeos_ash) {
         "//media/gpu:video_decode_accelerator_tests",
         "//media/gpu:video_encode_accelerator_perf_tests",
         "//media/gpu:video_encode_accelerator_tests",
+        "//media/gpu/chromeos:image_processor_test",
       ]
       if (use_vaapi) {
         data_deps += [
@@ -1195,6 +1211,7 @@ if (!is_ios) {
   _common_web_test_args += [
     "--seed",
     "4",
+    "--debug-rwt-logging",
     "--no-show-results",
     "--zero-tests-executed-ok",
     "--clobber-old-results",
@@ -1204,7 +1221,7 @@ if (!is_ios) {
     "100",
   ]
 
-  # https://chromium.googlesource.com/chromium/src/+/master/docs/testing/web_tests.md
+  # https://chromium.googlesource.com/chromium/src/+/main/docs/testing/web_tests.md
   script_test("blink_web_tests") {
     run_under_python2 = true
     script = _common_web_test_script
@@ -1451,7 +1468,7 @@ if (enable_js_type_check) {
     ]
     if (is_chromeos_ash) {
       data_deps += [
-        "ash/content:closure_compile",
+        "ash/webui:closure_compile",
         "chromeos/components:closure_compile",
         "ui/file_manager:closure_compile",
       ]

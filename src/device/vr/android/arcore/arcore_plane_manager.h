@@ -7,19 +7,20 @@
 
 #include <map>
 
+#include "base/types/id_type.h"
 #include "base/types/pass_key.h"
-#include "base/util/type_safety/id_type.h"
 #include "device/vr/android/arcore/address_to_id_map.h"
 #include "device/vr/android/arcore/arcore_sdk.h"
 #include "device/vr/android/arcore/scoped_arcore_objects.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace device {
 
 class ArCoreImpl;
 class ArCoreAnchorManager;
 
-using PlaneId = util::IdTypeU64<class PlaneTag>;
+using PlaneId = base::IdTypeU64<class PlaneTag>;
 
 std::pair<gfx::Quaternion, gfx::Point3F> GetPositionAndOrientationFromArPose(
     const ArSession* session,
@@ -102,6 +103,17 @@ class ArCorePlaneManager {
   // Set containing IDs of planes updated in the last frame. It should be
   // modified only during calls to |Update()|.
   std::set<PlaneId> updated_plane_ids_;
+
+#if DCHECK_IS_ON()
+  // True if |GetDetectedPlanesData()| was called after |Update()|. It is used
+  // to track if |Update()| was called twice in a row w/o a call to
+  // |GetDetectedPlanesData()| in between. Initially true since we expect the
+  // call to |Update()| to happen next.
+  // TODO(https://crbug.com/1192844): remove the assumption that the calls to
+  // |Update()| will always be followed by at least one call to
+  // |GetDetectedPlanesData()| before the next call to |Update()| happens.
+  mutable bool was_plane_data_retrieved_in_current_frame_ = true;
+#endif
 };
 
 }  // namespace device

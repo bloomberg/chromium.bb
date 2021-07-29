@@ -141,7 +141,7 @@ private:
 
 static_assert(4 == sizeof(BlendFormula));
 
-GR_MAKE_BITFIELD_OPS(BlendFormula::Properties);
+GR_MAKE_BITFIELD_OPS(BlendFormula::Properties)
 
 constexpr BlendFormula::Properties BlendFormula::GetProperties(OutputType PrimaryOut,
                                                                OutputType SecondaryOut,
@@ -374,7 +374,7 @@ static BlendFormula get_lcd_blend_formula(SkBlendMode xfermode) {
 class PorterDuffXferProcessor : public GrXferProcessor {
 public:
     PorterDuffXferProcessor(BlendFormula blendFormula, GrProcessorAnalysisCoverage coverage)
-            : INHERITED(kPorterDuffXferProcessor_ClassID, false, coverage)
+            : INHERITED(kPorterDuffXferProcessor_ClassID, /*willReadDstColor=*/false, coverage)
             , fBlendFormula(blendFormula) {
     }
 
@@ -462,8 +462,6 @@ private:
                             args.fInputColor, args.fInputCoverage);
     }
 
-    void onSetData(const GrGLSLProgramDataManager&, const GrXferProcessor&) override {}
-
     using INHERITED = GrGLSLXferProcessor;
 };
 
@@ -483,7 +481,7 @@ GrGLSLXferProcessor* PorterDuffXferProcessor::createGLSLInstance() const {
 class ShaderPDXferProcessor : public GrXferProcessor {
 public:
     ShaderPDXferProcessor(SkBlendMode xfermode, GrProcessorAnalysisCoverage coverage)
-            : INHERITED(kShaderPDXferProcessor_ClassID, true, coverage)
+            : INHERITED(kShaderPDXferProcessor_ClassID, /*willReadDstColor=*/true, coverage)
             , fXfermode(xfermode) {
     }
 
@@ -532,8 +530,6 @@ private:
         INHERITED::DefaultCoverageModulation(fragBuilder, srcCoverage, dstColor, outColor,
                                              outColorSecondary, xp);
     }
-
-    void onSetData(const GrGLSLProgramDataManager&, const GrXferProcessor&) override {}
 
     using INHERITED = GrGLSLXferProcessor;
 };
@@ -630,7 +626,8 @@ private:
 ///////////////////////////////////////////////////////////////////////////////
 
 PDLCDXferProcessor::PDLCDXferProcessor(const SkPMColor4f& blendConstant, float alpha)
-    : INHERITED(kPDLCDXferProcessor_ClassID, false, GrProcessorAnalysisCoverage::kLCD)
+    : INHERITED(kPDLCDXferProcessor_ClassID, /*willReadDstColor=*/false,
+                GrProcessorAnalysisCoverage::kLCD)
     , fBlendConstant(blendConstant)
     , fAlpha(alpha) {
 }

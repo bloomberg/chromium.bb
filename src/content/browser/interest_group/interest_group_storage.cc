@@ -1,4 +1,4 @@
-// Copyright (c) 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,7 @@
 #include "base/time/time.h"
 #include "base/util/values/values_util.h"
 #include "content/services/auction_worklet/public/mojom/auction_worklet_service.mojom-forward.h"
+#include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "sql/database.h"
 #include "sql/error_delegate_util.h"
@@ -27,6 +28,7 @@
 #include "sql/statement.h"
 #include "sql/transaction.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom.h"
 #include "url/origin.h"
 
 namespace content {
@@ -41,8 +43,6 @@ using blink::mojom::InterestGroupPtr;
 
 const base::FilePath::CharType kDatabasePath[] =
     FILE_PATH_LITERAL("InterestGroups");
-
-constexpr base::TimeDelta kIdlePeriod = base::TimeDelta::FromSeconds(30);
 
 // Version number of the database.
 //
@@ -68,23 +68,16 @@ namespace {
 std::string Serialize(const base::Value& value) {
   std::string json_output;
   JSONStringValueSerializer serializer(&json_output);
-  if (!serializer.Serialize(value))
-    LOG(ERROR) << "Could not serialize value:   " << value.DebugString();
-
+  serializer.Serialize(value);
   return json_output;
 }
-std::unique_ptr<base::Value> DeserializeValue(std::string serialized_value) {
+std::unique_ptr<base::Value> DeserializeValue(
+    const std::string& serialized_value) {
   if (serialized_value.empty())
     return {};
-  JSONStringValueDeserializer deserializer{base::StringPiece(serialized_value)};
-  std::string error_message;
-  std::unique_ptr<base::Value> result =
-      deserializer.Deserialize(nullptr, &error_message);
-  if (!result) {
-    LOG(ERROR) << "Could not deserialize value `" << serialized_value
-               << "`:   " << error_message;
-  }
-  return result;
+  JSONStringValueDeserializer deserializer(serialized_value);
+  return deserializer.Deserialize(/*error_code=*/nullptr,
+                                  /*error_message=*/nullptr);
 }
 
 std::string Serialize(const url::Origin& origin) {
@@ -96,7 +89,7 @@ url::Origin DeserializeOrigin(const std::string& serialized_origin) {
 
 std::string Serialize(const absl::optional<GURL>& url) {
   if (!url)
-    return "";
+    return std::string();
   return url->spec();
 }
 absl::optional<GURL> DeserializeURL(const std::string& serialized_url) {
@@ -113,17 +106,12 @@ base::Value ToValue(const ::blink::mojom::InterestGroupAd& ad) {
     dict.SetStringKey("metadata", ad.metadata.value());
   return dict;
 }
-InterestGroupAdPtr FromInterestGroupAdPtrValue(const base::Value* value) {
+InterestGroupAdPtr FromInterestGroupAdPtrValue(const base::Value& value) {
   InterestGroupAdPtr result = blink::mojom::InterestGroupAd::New();
-  if (!value) {
-    LOG(ERROR) << "converting InterestGroupAd from value";
-    return result;
-  }
-  const std::string* maybe_url = value->FindStringKey("url");
-  if (!maybe_url)
-    LOG(ERROR) << "url field not found in serialized InterestGroupAdPtrValue";
-  result->render_url = GURL(*maybe_url);
-  const std::string* maybe_metadata = value->FindStringKey("metadata");
+  const std::string* maybe_url = value.FindStringKey("url");
+  if (maybe_url)
+    result->render_url = GURL(*maybe_url);
+  const std::string* maybe_metadata = value.FindStringKey("metadata");
   if (maybe_metadata)
     result->metadata = *maybe_metadata;
   return result;
@@ -132,7 +120,7 @@ InterestGroupAdPtr FromInterestGroupAdPtrValue(const base::Value* value) {
 std::string Serialize(
     const absl::optional<std::vector<InterestGroupAdPtr>>& ads) {
   if (!ads)
-    return "";
+    return std::string();
   base::Value list(base::Value::Type::LIST);
   for (const auto& ad : ads.value()) {
     list.Append(ToValue(*ad));
@@ -140,29 +128,29 @@ std::string Serialize(
   return Serialize(list);
 }
 absl::optional<std::vector<InterestGroupAdPtr>>
-DeserializeInterestGroupAdPtrVector(std::string serialized_ads) {
+DeserializeInterestGroupAdPtrVector(const std::string& serialized_ads) {
   std::vector<InterestGroupAdPtr> result;
   std::unique_ptr<base::Value> ads_value = DeserializeValue(serialized_ads);
-  if (!ads_value) {
+  if (!ads_value || !ads_value->is_list())
     return absl::nullopt;
+  for (const auto& ad_value : ads_value->GetList()) {
+    result.push_back(FromInterestGroupAdPtrValue(ad_value));
   }
-  for (const auto& ad_value : ads_value->GetList())
-    result.push_back(FromInterestGroupAdPtrValue(&ad_value));
   return result;
 }
 
-std::string Serialize(const absl::optional<std::vector<std::string>> strings) {
+std::string Serialize(const absl::optional<std::vector<std::string>>& strings) {
   if (!strings)
-    return "";
+    return std::string();
   base::Value list(base::Value::Type::LIST);
   for (const auto& s : strings.value())
     list.Append(s);
   return Serialize(list);
 }
 absl::optional<std::vector<std::string>> DeserializeStringVector(
-    std::string serialized_vector) {
+    const std::string& serialized_vector) {
   std::unique_ptr<base::Value> list = DeserializeValue(serialized_vector);
-  if (!list)
+  if (!list || !list->is_list())
     return absl::nullopt;
   std::vector<std::string> result;
   for (const auto& value : list->GetList())
@@ -817,7 +805,7 @@ bool ClearExpiredInterestGroups(sql::Database& db,
 }
 
 bool DoPerformDatabaseMaintenance(sql::Database& db, base::Time now) {
-  SCOPED_UMA_HISTOGRAM_SHORT_TIMER("Storage.InterestGroup.DBMaintenanceTime");
+  SCOPED_UMA_HISTOGRAM_TIMER_MICROS("Storage.InterestGroup.DBMaintenanceTime");
   sql::Transaction transaction(&db);
   if (!transaction.Begin())
     return false;
@@ -842,10 +830,15 @@ base::FilePath DBPath(const base::FilePath& base) {
 
 constexpr base::TimeDelta InterestGroupStorage::kHistoryLength;
 constexpr base::TimeDelta InterestGroupStorage::kMaintenanceInterval;
+constexpr base::TimeDelta InterestGroupStorage::kIdlePeriod;
 
 InterestGroupStorage::InterestGroupStorage(const base::FilePath& path)
-    : db_(std::make_unique<sql::Database>(sql::DatabaseOptions{})),
-      path_to_database_(DBPath(path)) {
+    : path_to_database_(DBPath(path)),
+      db_(std::make_unique<sql::Database>(sql::DatabaseOptions{})),
+      db_maintenance_timer_(FROM_HERE,
+                            kIdlePeriod,
+                            this,
+                            &InterestGroupStorage::PerformDBMaintenance) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -855,7 +848,14 @@ InterestGroupStorage::~InterestGroupStorage() {
 
 bool InterestGroupStorage::EnsureDBInitialized() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  last_access_time_ = base::Time::Now();
+  base::Time now = base::Time::Now();
+  if (now > last_maintenance_time_ + kMaintenanceInterval) {
+    // Schedule maintenance for next idle period. If maintenance already
+    // scheduled this delays it further (we're not idle).
+    db_maintenance_timer_.Reset();
+  }
+
+  last_access_time_ = now;
   if (db_ && db_->is_open())
     return true;
   return InitializeDB();
@@ -893,7 +893,6 @@ bool InterestGroupStorage::InitializeDB() {
     return false;
   }
 
-  PerformDBMaintenance();
   return true;
 }
 
@@ -1043,27 +1042,9 @@ void InterestGroupStorage::DeleteInterestGroupData(
 
 void InterestGroupStorage::PerformDBMaintenance() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // We can use base::Unretained(this) in the timer's closure because the timer
-  // takes ownership of the callback we create here. The timer is guaranteed to
-  // last the lifetime of this.
-  base::Time now = base::Time::Now();
-  if (now - last_access_time_ < kIdlePeriod) {
-    // We're probably still in use. Let's try again in a bit.
-    db_maintenance_timer_.Start(
-        FROM_HERE, kIdlePeriod,
-        base::BindOnce(&InterestGroupStorage::PerformDBMaintenance,
-                       base::Unretained(this)));
-    return;
-  }
-
-  // Schedule next run
-  db_maintenance_timer_.Start(
-      FROM_HERE, kMaintenanceInterval,
-      base::BindOnce(&InterestGroupStorage::PerformDBMaintenance,
-                     base::Unretained(this)));
-
+  last_maintenance_time_ = base::Time::Now();
   if (EnsureDBInitialized()) {
-    DoPerformDatabaseMaintenance(*db_, now);
+    DoPerformDatabaseMaintenance(*db_, last_maintenance_time_);
   }
 }
 
@@ -1084,6 +1065,11 @@ InterestGroupStorage::GetAllInterestGroupsUnfilteredForTesting() {
               std::back_inserter(result));
   }
   return result;
+}
+
+base::Time InterestGroupStorage::GetLastMaintenanceTimeForTesting() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return last_maintenance_time_;
 }
 
 void InterestGroupStorage::DatabaseErrorCallback(int extended_error,

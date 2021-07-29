@@ -54,6 +54,8 @@ class ConnectorsService : public KeyedService {
   absl::optional<AnalysisSettings> GetAnalysisSettings(
       const GURL& url,
       AnalysisConnector connector);
+  absl::optional<FileSystemSettings> GetFileSystemGlobalSettings(
+      FileSystemConnector connector);
   absl::optional<FileSystemSettings> GetFileSystemSettings(
       const GURL& url,
       FileSystemConnector connector);
@@ -63,6 +65,12 @@ class ConnectorsService : public KeyedService {
   bool IsConnectorEnabled(FileSystemConnector connector) const;
 
   bool DelayUntilVerdict(AnalysisConnector connector);
+  absl::optional<std::u16string> GetCustomMessage(AnalysisConnector connector,
+                                                  const std::string& tag);
+  absl::optional<GURL> GetLearnMoreUrl(AnalysisConnector connector,
+                                       const std::string& tag);
+  bool HasCustomInfoToDisplay(AnalysisConnector connector,
+                              const std::string& tag);
 
   std::vector<std::string> GetAnalysisServiceProviderNames(
       AnalysisConnector connector);
@@ -79,6 +87,13 @@ class ConnectorsService : public KeyedService {
   // affiliation.
   safe_browsing::EnterpriseRealTimeUrlCheckMode GetAppliedRealTimeUrlCheck()
       const;
+
+  // Returns the CBCM domain or profile domain that enables connector policies.
+  // If both set Connector policies, the CBCM domain is returned as it has
+  // precedence.
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+  std::string GetManagementDomain();
+#endif
 
   // Testing functions.
   ConnectorsManager* ConnectorsManagerForTesting();

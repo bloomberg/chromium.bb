@@ -142,6 +142,10 @@ component("bluetooth") {
     "bluetooth_local_gatt_descriptor.h",
     "bluetooth_local_gatt_service.cc",
     "bluetooth_local_gatt_service.h",
+    "bluetooth_low_energy_scan_filter.cc",
+    "bluetooth_low_energy_scan_filter.h",
+    "bluetooth_low_energy_scan_session.cc",
+    "bluetooth_low_energy_scan_session.h",
     "bluetooth_remote_gatt_characteristic.cc",
     "bluetooth_remote_gatt_characteristic.h",
     "bluetooth_remote_gatt_descriptor.cc",
@@ -306,6 +310,7 @@ component("bluetooth") {
   if (is_chromeos || is_linux) {
     if (use_dbus) {
       sources += [
+        "bluetooth_adapter_chromeos.cc",
         "bluez/bluetooth_adapter_bluez.cc",
         "bluez/bluetooth_adapter_bluez.h",
         "bluez/bluetooth_adapter_profile_bluez.cc",
@@ -328,6 +333,8 @@ component("bluetooth") {
         "bluez/bluetooth_local_gatt_descriptor_bluez.h",
         "bluez/bluetooth_local_gatt_service_bluez.cc",
         "bluez/bluetooth_local_gatt_service_bluez.h",
+        "bluez/bluetooth_low_energy_scan_session_bluez.cc",
+        "bluez/bluetooth_low_energy_scan_session_bluez.h",
         "bluez/bluetooth_pairing_bluez.cc",
         "bluez/bluetooth_pairing_bluez.h",
         "bluez/bluetooth_remote_gatt_characteristic_bluez.cc",
@@ -346,6 +353,16 @@ component("bluetooth") {
         "dbus/bluetooth_adapter_client.h",
         "dbus/bluetooth_admin_policy_client.cc",
         "dbus/bluetooth_admin_policy_client.h",
+        "dbus/bluetooth_advertisement_monitor_application_service_provider.cc",
+        "dbus/bluetooth_advertisement_monitor_application_service_provider.h",
+        "dbus/bluetooth_advertisement_monitor_application_service_provider_impl.cc",
+        "dbus/bluetooth_advertisement_monitor_application_service_provider_impl.h",
+        "dbus/bluetooth_advertisement_monitor_manager_client.cc",
+        "dbus/bluetooth_advertisement_monitor_manager_client.h",
+        "dbus/bluetooth_advertisement_monitor_service_provider.cc",
+        "dbus/bluetooth_advertisement_monitor_service_provider.h",
+        "dbus/bluetooth_advertisement_monitor_service_provider_impl.cc",
+        "dbus/bluetooth_advertisement_monitor_service_provider_impl.h",
         "dbus/bluetooth_agent_manager_client.cc",
         "dbus/bluetooth_agent_manager_client.h",
         "dbus/bluetooth_agent_service_provider.cc",
@@ -407,6 +424,10 @@ component("bluetooth") {
         "dbus/bluez_dbus_thread_manager.h",
         "dbus/dbus_bluez_manager_wrapper_linux.cc",
         "dbus/dbus_bluez_manager_wrapper_linux.h",
+        "floss/bluetooth_adapter_floss.cc",
+        "floss/bluetooth_adapter_floss.h",
+        "floss/floss_features.cc",
+        "floss/floss_features.h",
       ]
       if (is_chromeos_ash) {
         configs += [ "//chromeos/dbus:use_real_dbus_clients_config" ]
@@ -519,6 +540,13 @@ static_library("mocks") {
     "test/mock_bluetooth_socket.cc",
     "test/mock_bluetooth_socket.h",
   ]
+
+  if (is_chromeos_ash) {
+    sources += [
+      "test/mock_bluetooth_low_energy_scan_session.cc",
+      "test/mock_bluetooth_low_energy_scan_session.h",
+    ]
+  }
 
   public_deps = [
     ":bluetooth",

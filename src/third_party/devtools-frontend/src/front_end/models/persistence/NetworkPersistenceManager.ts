@@ -128,7 +128,7 @@ export class NetworkPersistenceManager extends Common.ObjectWrapper.ObjectWrappe
       ];
       await this._updateActiveProject();
     } else {
-      Common.EventTarget.EventTarget.removeEventListeners(this._eventDescriptors);
+      Common.EventTarget.removeEventListeners(this._eventDescriptors);
       await this._updateActiveProject();
     }
   }
@@ -150,7 +150,7 @@ export class NetworkPersistenceManager extends Common.ObjectWrapper.ObjectWrappe
   async _updateActiveProject(): Promise<void> {
     const wasActive = this._active;
     this._active =
-        Boolean(this._enabledSetting.get() && SDK.SDKModel.TargetManager.instance().mainTarget() && this._project);
+        Boolean(this._enabledSetting.get() && SDK.TargetManager.TargetManager.instance().mainTarget() && this._project);
     if (this._active === wasActive) {
       return;
     }

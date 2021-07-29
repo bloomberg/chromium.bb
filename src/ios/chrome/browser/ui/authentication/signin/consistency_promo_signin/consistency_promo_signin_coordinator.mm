@@ -5,24 +5,32 @@
 #import "ios/chrome/browser/ui/authentication/signin/consistency_promo_signin/consistency_promo_signin_coordinator.h"
 
 #import "base/mac/foundation_util.h"
+#import "base/metrics/histogram_functions.h"
+#import "base/metrics/histogram_macros.h"
+#import "components/prefs/pref_service.h"
 #import "components/signin/public/base/account_consistency_method.h"
+#import "components/signin/public/base/signin_metrics.h"
 #import "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/chrome_account_manager_service.h"
+#import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/constants.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
-#import "ios/chrome/browser/ui/authentication/signin/consistency_promo_signin/bottom_sheet/bottom_sheet_navigation_controller.h"
-#import "ios/chrome/browser/ui/authentication/signin/consistency_promo_signin/bottom_sheet/bottom_sheet_presentation_controller.h"
-#import "ios/chrome/browser/ui/authentication/signin/consistency_promo_signin/bottom_sheet/bottom_sheet_slide_transition_animator.h"
 #import "ios/chrome/browser/ui/authentication/signin/consistency_promo_signin/consistency_account_chooser/consistency_account_chooser_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/signin/consistency_promo_signin/consistency_default_account/consistency_default_account_coordinator.h"
+#import "ios/chrome/browser/ui/authentication/signin/consistency_promo_signin/consistency_sheet/consistency_sheet_navigation_controller.h"
+#import "ios/chrome/browser/ui/authentication/signin/consistency_promo_signin/consistency_sheet/consistency_sheet_presentation_controller.h"
+#import "ios/chrome/browser/ui/authentication/signin/consistency_promo_signin/consistency_sheet/consistency_sheet_slide_transition_animator.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_coordinator+protected.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/grit/ios_strings.h"
+#import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #import "ui/base/l10n/l10n_util.h"
 
@@ -30,17 +38,31 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+
+// Metrics to record the number of times the web sign-in is displayed.
+const char* kSigninAccountConsistencyPromoActionShownCount =
+    "Signin.AccountConsistencyPromoAction.Shown.Count";
+// Metrics to record how many times the web sign-in has been displayed before
+// the user signs in.
+const char* kSigninAccountConsistencyPromoActionSignedInCount =
+    "Signin.AccountConsistencyPromoAction.SignedIn.Count";
+
+}  // namespace
+
 @interface ConsistencyPromoSigninCoordinator () <
-    BottomSheetPresentationControllerPresentationDelegate,
     ConsistencyAccountChooserCoordinatorDelegate,
     ConsistencyDefaultAccountCoordinatorDelegate,
     IdentityManagerObserverBridgeDelegate,
     UINavigationControllerDelegate,
     UIViewControllerTransitioningDelegate>
 
-// Navigation controller presented from the bottom.
+// List of gaia IDs added by the user with the consistency view.
+// This set is used for metrics reasons.
+@property(nonatomic, strong) NSMutableSet* addedGaiaIDs;
+// Navigation controller for the consistency promo.
 @property(nonatomic, strong)
-    BottomSheetNavigationController* navigationController;
+    ConsistencySheetNavigationController* navigationController;
 // Interaction transition to swipe from left to right to pop a view controller
 // from |self.navigationController|.
 @property(nonatomic, strong)
@@ -70,12 +92,18 @@
       _identityManagerObserverBridge;
 }
 
+// Returns the number of times the web sign-in has been displayed.
++ (int)displayCountWithPrefService:(PrefService*)prefService {
+  return prefService->GetInteger(prefs::kSigninBottomSheetShownCount);
+}
+
 #pragma mark - SigninCoordinator
 
 - (void)interruptWithAction:(SigninCoordinatorInterruptAction)action
                  completion:(ProceduralBlock)completion {
   [self.alertCoordinator stop];
   self.alertCoordinator = nil;
+  _identityManagerObserverBridge.reset();
   __weak __typeof(self) weakSelf = self;
   ProceduralBlock consistencyCompletion = ^() {
     [weakSelf finalizeInterruptWithAction:action completion:completion];
@@ -90,20 +118,22 @@
 
 - (void)start {
   [super start];
+  self.addedGaiaIDs = [[NSMutableSet alloc] init];
   self.defaultAccountCoordinator = [[ConsistencyDefaultAccountCoordinator alloc]
       initWithBaseViewController:self.navigationController
                          browser:self.browser];
   self.defaultAccountCoordinator.delegate = self;
   [self.defaultAccountCoordinator start];
 
-  self.authenticationService = AuthenticationServiceFactory::GetForBrowserState(
-      self.browser->GetBrowserState());
-  self.identityManager = IdentityManagerFactory::GetForBrowserState(
-      self.browser->GetBrowserState());
+  ChromeBrowserState* browserState = self.browser->GetBrowserState();
+  self.authenticationService =
+      AuthenticationServiceFactory::GetForBrowserState(browserState);
+  self.identityManager =
+      IdentityManagerFactory::GetForBrowserState(browserState);
   _identityManagerObserverBridge.reset(
       new signin::IdentityManagerObserverBridge(self.identityManager, self));
 
-  self.navigationController = [[BottomSheetNavigationController alloc]
+  self.navigationController = [[ConsistencySheetNavigationController alloc]
       initWithRootViewController:self.defaultAccountCoordinator.viewController];
   self.navigationController.delegate = self;
   UIScreenEdgePanGestureRecognizer* edgeSwipeGesture =
@@ -117,6 +147,13 @@
   [self.baseViewController presentViewController:self.navigationController
                                         animated:YES
                                       completion:nil];
+  RecordConsistencyPromoUserAction(
+      signin_metrics::AccountConsistencyPromoAction::SHOWN);
+  PrefService* prefService = browserState->GetPrefs();
+  int displayCount = [self.class displayCountWithPrefService:prefService] + 1;
+  prefService->SetInteger(prefs::kSigninBottomSheetShownCount, displayCount);
+  base::UmaHistogramExactLinear(kSigninAccountConsistencyPromoActionShownCount,
+                                displayCount, 100);
 }
 
 - (void)stop {
@@ -133,28 +170,10 @@
 
 #pragma mark - Private
 
-// Displays the sign-in coordinator to add an account to the device.
-- (void)displayAddAccount {
-  DCHECK(!self.addAccountCoordinator);
-  self.addAccountCoordinator = [SigninCoordinator
-      addAccountCoordinatorWithBaseViewController:self.navigationController
-                                          browser:self.browser
-                                      accessPoint:signin_metrics::AccessPoint::
-                                                      ACCESS_POINT_WEB_SIGNIN];
-  __weak ConsistencyPromoSigninCoordinator* weakSelf = self;
-  self.addAccountCoordinator.signinCompletion =
-      ^(SigninCoordinatorResult signinResult,
-        SigninCompletionInfo* signinCompletionInfo) {
-        [weakSelf.addAccountCoordinator stop];
-        weakSelf.addAccountCoordinator = nil;
-      };
-  [self.addAccountCoordinator start];
-}
-
-// Dismisses the bottom sheet view controller.
+// Dismisses the consistency sheet view controller.
 - (void)dismissNavigationViewController {
   __weak __typeof(self) weakSelf = self;
-  [self.navigationController
+  [self.navigationController.presentingViewController
       dismissViewControllerAnimated:YES
                          completion:^() {
                            [weakSelf finishedWithResult:
@@ -167,6 +186,18 @@
 // Calls the sign-in completion block.
 - (void)finishedWithResult:(SigninCoordinatorResult)signinResult
                   identity:(ChromeIdentity*)identity {
+  switch (signinResult) {
+    case SigninCoordinatorResultSuccess: {
+      PrefService* prefService = self.browser->GetBrowserState()->GetPrefs();
+      int displayCount = [self.class displayCountWithPrefService:prefService];
+      base::UmaHistogramExactLinear(
+          kSigninAccountConsistencyPromoActionSignedInCount, displayCount, 100);
+      break;
+    }
+    case SigninCoordinatorResultCanceledByUser:
+    case SigninCoordinatorResultInterrupted:
+      break;
+  }
   DCHECK(!self.alertCoordinator);
   [self.defaultAccountCoordinator stop];
   self.defaultAccountCoordinator = nil;
@@ -175,20 +206,67 @@
   self.navigationController = nil;
   SigninCompletionInfo* completionInfo =
       [SigninCompletionInfo signinCompletionInfoWithIdentity:identity];
+  [self recordHistogramWithResult:signinResult identity:identity];
   [self runCompletionCallbackWithSigninResult:signinResult
                                completionInfo:completionInfo];
 }
 
+// Records histogram at the end of the consistency promo.
+- (void)recordHistogramWithResult:(SigninCoordinatorResult)signinResult
+                         identity:(ChromeIdentity*)identity {
+  switch (signinResult) {
+    case SigninCoordinatorResultSuccess: {
+      DCHECK(identity);
+      ChromeAccountManagerService* accountManagerService =
+          ChromeAccountManagerServiceFactory::GetForBrowserState(
+              self.browser->GetBrowserState());
+      ChromeIdentity* defaultIdentity =
+          accountManagerService->GetDefaultIdentity();
+      DCHECK(defaultIdentity);
+      if ([self.addedGaiaIDs containsObject:identity.gaiaID]) {
+        // Added identity.
+        RecordConsistencyPromoUserAction(
+            signin_metrics::AccountConsistencyPromoAction::
+                SIGNED_IN_WITH_ADDED_ACCOUNT);
+      } else if ([defaultIdentity isEqual:identity]) {
+        // Default identity.
+        RecordConsistencyPromoUserAction(
+            signin_metrics::AccountConsistencyPromoAction::
+                SIGNED_IN_WITH_DEFAULT_ACCOUNT);
+      } else {
+        // Other identity.
+        RecordConsistencyPromoUserAction(
+            signin_metrics::AccountConsistencyPromoAction::
+                SIGNED_IN_WITH_NON_DEFAULT_ACCOUNT);
+      }
+      break;
+    }
+    case SigninCoordinatorResultCanceledByUser: {
+      RecordConsistencyPromoUserAction(
+          signin_metrics::AccountConsistencyPromoAction::DISMISSED_BUTTON);
+      break;
+    }
+    case SigninCoordinatorResultInterrupted: {
+      RecordConsistencyPromoUserAction(
+          signin_metrics::AccountConsistencyPromoAction::DISMISSED_OTHER);
+      break;
+    }
+  }
+}
+
 // Displays the error panel.
-- (void)displayCookieErrorWithState:(GoogleServiceAuthError::State)errorState {
+- (void)displayGenericCookieErrorWithError:
+    (const GoogleServiceAuthError&)error {
   DCHECK(!self.alertCoordinator);
   [self.defaultAccountCoordinator stopSigninSpinner];
-  NSString* errorMessage;
-  if (errorState == GoogleServiceAuthError::State::INVALID_GAIA_CREDENTIALS) {
-    errorMessage = l10n_util::GetNSString(IDS_IOS_SIGN_IN_WRONG_CREDENTIALS);
+  if (error.state() == GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS) {
+    RecordConsistencyPromoUserAction(
+        signin_metrics::AccountConsistencyPromoAction::AUTH_ERROR_SHOWN);
   } else {
-    errorMessage = l10n_util::GetNSString(IDS_IOS_SIGN_IN_AUTH_FAILURE);
+    RecordConsistencyPromoUserAction(
+        signin_metrics::AccountConsistencyPromoAction::GENERIC_ERROR_SHOWN);
   }
+  NSString* errorMessage = l10n_util::GetNSString(IDS_IOS_SIGN_IN_AUTH_FAILURE);
   self.alertCoordinator = [[AlertCoordinator alloc]
       initWithBaseViewController:self.navigationController
                          browser:self.browser
@@ -196,22 +274,13 @@
                                      IDS_IOS_SIGN_IN_FAILURE_TITLE)
                          message:errorMessage];
 
-  __weak ConsistencyPromoSigninCoordinator* weakSelf = self;
+  __weak __typeof(self) weakSelf = self;
   [self.alertCoordinator
       addItemWithTitle:l10n_util::GetNSString(IDS_IOS_SIGN_IN_DISMISS)
-                action:^{
-                  [weakSelf dismissNavigationViewController];
+                action:^() {
+                  weakSelf.alertCoordinator = nil;
                 }
                  style:UIAlertActionStyleCancel];
-
-  if (errorState == GoogleServiceAuthError::State::INVALID_GAIA_CREDENTIALS) {
-    [self.alertCoordinator
-        addItemWithTitle:l10n_util::GetNSString(IDS_IOS_SIGN_IN_AGAIN)
-                  action:^{
-                    [weakSelf displayAddAccount];
-                  }
-                   style:UIAlertActionStyleDefault];
-  }
   [self.alertCoordinator start];
 }
 
@@ -238,11 +307,26 @@
     case SigninCoordinatorInterruptActionDismissWithAnimation: {
       BOOL animated =
           action == SigninCoordinatorInterruptActionDismissWithAnimation;
-      [self.navigationController
+      [self.navigationController.presentingViewController
           dismissViewControllerAnimated:animated
                              completion:finishCompletionBlock];
     }
   }
+}
+
+// Does cleanup (metrics and remove coordinator) once the add account is
+// finished.
+- (void)
+    addAccountCompletionWithSigninResult:(SigninCoordinatorResult)signinResult
+                          completionInfo:(SigninCompletionInfo*)completionInfo {
+  if (signinResult == SigninCoordinatorResultSuccess) {
+    DCHECK(completionInfo);
+    [self.addedGaiaIDs addObject:completionInfo.identity.gaiaID];
+  }
+  RecordConsistencyPromoUserAction(
+      signin_metrics::AccountConsistencyPromoAction::ADD_ACCOUNT_COMPLETED);
+  [self.addAccountCoordinator stop];
+  self.addAccountCoordinator = nil;
 }
 
 #pragma mark - SwipeGesture
@@ -287,14 +371,8 @@
   DCHECK([self.selectedIdentity isEqual:identity]);
   [self.defaultAccountCoordinator startSigninSpinner];
   self.authenticationService->SignIn(self.selectedIdentity);
-  DCHECK(self.authenticationService->IsAuthenticated());
-}
-
-#pragma mark - BottomSheetPresentationControllerPresentationDelegate
-
-- (void)bottomSheetPresentationControllerDismissViewController:
-    (BottomSheetPresentationController*)controller {
-  [self dismissNavigationViewController];
+  DCHECK(self.authenticationService->HasPrimaryIdentity(
+      signin::ConsentLevel::kSignin));
 }
 
 #pragma mark - ConsistencyAccountChooserCoordinatorDelegate
@@ -310,13 +388,39 @@
 
 - (void)consistencyAccountChooserCoordinatorOpenAddAccount:
     (ConsistencyAccountChooserCoordinator*)coordinator {
-  [self displayAddAccount];
+  RecordConsistencyPromoUserAction(
+      signin_metrics::AccountConsistencyPromoAction::ADD_ACCOUNT_STARTED);
+  DCHECK(!self.addAccountCoordinator);
+  self.addAccountCoordinator = [SigninCoordinator
+      addAccountCoordinatorWithBaseViewController:self.navigationController
+                                          browser:self.browser
+                                      accessPoint:signin_metrics::AccessPoint::
+                                                      ACCESS_POINT_WEB_SIGNIN];
+  __weak ConsistencyPromoSigninCoordinator* weakSelf = self;
+  self.addAccountCoordinator.signinCompletion =
+      ^(SigninCoordinatorResult signinResult,
+        SigninCompletionInfo* signinCompletionInfo) {
+        [weakSelf addAccountCompletionWithSigninResult:signinResult
+                                        completionInfo:signinCompletionInfo];
+      };
+  [self.addAccountCoordinator start];
 }
 
 #pragma mark - ConsistencyDefaultAccountCoordinatorDelegate
 
+- (void)consistencyDefaultAccountCoordinatorAllIdentityRemoved:
+    (ConsistencyDefaultAccountCoordinator*)coordinator {
+  [self interruptWithAction:SigninCoordinatorInterruptActionDismissWithAnimation
+                 completion:nil];
+}
+
 - (void)consistencyDefaultAccountCoordinatorSkip:
     (ConsistencyDefaultAccountCoordinator*)coordinator {
+  ChromeBrowserState* browserState = self.browser->GetBrowserState();
+  PrefService* userPrefService = browserState->GetPrefs();
+  const int skipCounter =
+      userPrefService->GetInteger(prefs::kSigninWebSignDismissalCount) + 1;
+  userPrefService->SetInteger(prefs::kSigninWebSignDismissalCount, skipCounter);
   [self dismissNavigationViewController];
 }
 
@@ -347,10 +451,11 @@
   switch (event.GetEventTypeFor(signin::ConsentLevel::kSignin)) {
     case signin::PrimaryAccountChangeEvent::Type::kSet: {
       // Since sign-in UI blocks all other Chrome screens until it is dismissed
-      // an account change event must come from the bottomsheet.
+      // an account change event must come from the consistency sheet.
       // TODO(crbug.com/1081764): Update if sign-in UI becomes non-blocking.
       ChromeIdentity* signedInIdentity =
-          self.authenticationService->GetAuthenticatedIdentity();
+          self.authenticationService->GetPrimaryIdentity(
+              signin::ConsentLevel::kSignin);
       DCHECK([signedInIdentity isEqual:self.selectedIdentity]);
       break;
     }
@@ -376,10 +481,12 @@
   }
   __weak __typeof(self) weakSelf = self;
   if (error.state() == GoogleServiceAuthError::State::NONE &&
-      self.authenticationService->GetAuthenticatedIdentity() &&
+      self.authenticationService->GetPrimaryIdentity(
+          signin::ConsentLevel::kSignin) &&
       accountsInCookieJarInfo.signed_in_accounts.size() > 0) {
     [self.defaultAccountCoordinator stopSigninSpinner];
-    [self.navigationController
+    _identityManagerObserverBridge.reset();
+    [self.navigationController.presentingViewController
         dismissViewControllerAnimated:YES
                            completion:^() {
                              [weakSelf
@@ -390,7 +497,7 @@
     return;
   }
   self.authenticationService->SignOut(signin_metrics::ABORT_SIGNIN, false, ^() {
-    [weakSelf displayCookieErrorWithState:error.state()];
+    [weakSelf displayGenericCookieErrorWithError:error];
   });
 }
 
@@ -407,12 +514,12 @@
     case UINavigationControllerOperationNone:
       return nil;
     case UINavigationControllerOperationPush:
-      return [[BottomSheetSlideTransitionAnimator alloc]
-             initWithAnimation:BottomSheetSlideAnimationPushing
+      return [[ConsistencySheetSlideTransitionAnimator alloc]
+             initWithAnimation:ConsistencySheetSlideAnimationPushing
           navigationController:self.navigationController];
     case UINavigationControllerOperationPop:
-      return [[BottomSheetSlideTransitionAnimator alloc]
-             initWithAnimation:BottomSheetSlideAnimationPopping
+      return [[ConsistencySheetSlideTransitionAnimator alloc]
+             initWithAnimation:ConsistencySheetSlideAnimationPopping
           navigationController:self.navigationController];
   }
   NOTREACHED();
@@ -451,12 +558,9 @@
                                 (UIViewController*)presentingViewController
                                 sourceViewController:(UIViewController*)source {
   DCHECK_EQ(self.navigationController, presentedViewController);
-  BottomSheetPresentationController* controller =
-      [[BottomSheetPresentationController alloc]
-          initWithBottomSheetNavigationController:self.navigationController
-                         presentingViewController:presentingViewController];
-  controller.presentationDelegate = self;
-  return controller;
+  return [[ConsistencySheetPresentationController alloc]
+      initWithConsistencySheetNavigationController:self.navigationController
+                          presentingViewController:presentingViewController];
 }
 
 @end

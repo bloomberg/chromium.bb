@@ -20,6 +20,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
+#include "components/media_router/common/mojom/media_router.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -32,6 +33,7 @@
 using testing::_;
 using testing::Invoke;
 using testing::Mock;
+using testing::NiceMock;
 using testing::WithArg;
 
 namespace media_router {
@@ -39,7 +41,7 @@ namespace media_router {
 namespace {
 
 UIMediaSink CreateAvailableSink() {
-  UIMediaSink sink;
+  UIMediaSink sink{mojom::MediaRouteProviderId::CAST};
   sink.id = "sink_available";
   sink.state = UIMediaSinkState::AVAILABLE;
   sink.cast_modes = {TAB_MIRROR};
@@ -47,7 +49,7 @@ UIMediaSink CreateAvailableSink() {
 }
 
 UIMediaSink CreateConnectedSink() {
-  UIMediaSink sink;
+  UIMediaSink sink{mojom::MediaRouteProviderId::CAST};
   sink.id = "sink_connected";
   sink.state = UIMediaSinkState::CONNECTED;
   sink.cast_modes = {TAB_MIRROR};
@@ -141,7 +143,7 @@ class CastDialogViewTest : public ChromeViewsTestBase {
   }
 
   std::unique_ptr<views::Widget> anchor_widget_;
-  MockCastDialogController controller_;
+  NiceMock<MockCastDialogController> controller_;
   CastDialogView* dialog_ = nullptr;
   TestingProfile profile_;
 };

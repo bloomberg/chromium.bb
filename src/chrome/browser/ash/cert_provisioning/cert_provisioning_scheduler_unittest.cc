@@ -14,8 +14,8 @@
 #include "chrome/browser/ash/cert_provisioning/cert_provisioning_worker.h"
 #include "chrome/browser/ash/cert_provisioning/mock_cert_provisioning_worker.h"
 #include "chrome/browser/chromeos/platform_keys/mock_platform_keys_service.h"
-#include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
+#include "chrome/browser/platform_keys/platform_keys.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/attestation/fake_attestation_client.h"
 #include "chromeos/dbus/attestation/interface.pb.h"
@@ -907,7 +907,7 @@ TEST_F(CertProvisioningSchedulerTest, CertRenewal) {
   const Time t1 = Time::Now() - TimeDelta::FromDays(1);
   const Time t2 = Time::Now() + TimeDelta::FromDays(7);
   certificate_helper_->AddCert(kCertScope, kCertProfileId,
-                               platform_keys::Status::kSuccess,
+                               chromeos::platform_keys::Status::kSuccess,
                                /*nat_valid_before=*/t1, /*not_valid_after=*/t2);
 
   // Add 1 certificate profile to the policy (the values are the same as

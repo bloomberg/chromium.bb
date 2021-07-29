@@ -130,7 +130,7 @@ void PublisherBase::PauseApp(const std::string& app_id) {
   NOTIMPLEMENTED();
 }
 
-void PublisherBase::UnpauseApps(const std::string& app_id) {
+void PublisherBase::UnpauseApp(const std::string& app_id) {
   NOTIMPLEMENTED();
 }
 
@@ -166,6 +166,11 @@ void PublisherBase::OnPreferredAppSet(
 
 void PublisherBase::SetResizeLocked(const std::string& app_id,
                                     apps::mojom::OptionalBool locked) {
+  NOTIMPLEMENTED();
+}
+
+void PublisherBase::SetWindowMode(const std::string& app_id,
+                                  apps::mojom::WindowMode window_mode) {
   NOTIMPLEMENTED();
 }
 

@@ -8,13 +8,12 @@
 #include "apps/test/app_window_waiter.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
-#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/keyboard/keyboard_controller.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/login_screen_test_api.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_test_api.h"
-#include "ash/public/cpp/wallpaper_controller_observer.h"
+#include "ash/public/cpp/wallpaper/wallpaper_controller_observer.h"
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -29,7 +28,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/system/sys_info.h"
+#include "base/test/scoped_chromeos_version_info.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ash/accessibility/speech_monitor.h"
 #include "chrome/browser/ash/app_mode/app_session.h"
@@ -38,6 +37,7 @@
 #include "chrome/browser/ash/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_settings_navigation_throttle.h"
+#include "chrome/browser/ash/file_manager/fake_disk_mount_manager.h"
 #include "chrome/browser/ash/login/app_mode/kiosk_launch_controller.h"
 #include "chrome/browser/ash/login/startup_utils.h"
 #include "chrome/browser/ash/login/test/device_state_mixin.h"
@@ -56,14 +56,12 @@
 #include "chrome/browser/ash/login/ui/login_display_host_webui.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ash/ownership/fake_owner_settings_service.h"
+#include "chrome/browser/ash/policy/core/device_local_account.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/file_manager/fake_disk_mount_manager.h"
-#include "chrome/browser/chromeos/policy/device_local_account.h"
-#include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/device_identity/device_oauth2_token_service.h"
 #include "chrome/browser/device_identity/device_oauth2_token_service_factory.h"
 #include "chrome/browser/extensions/browsertest_util.h"
@@ -129,13 +127,12 @@
 #include "ui/base/page_transition_types.h"
 #include "ui/events/test/event_generator.h"
 
-using extensions::mojom::ManifestLocation;
-
-namespace em = enterprise_management;
-
-namespace chromeos {
-
+namespace ash {
 namespace {
+
+using ::extensions::mojom::ManifestLocation;
+
+namespace em = ::enterprise_management;
 
 const test::UIPath kConfigNetwork = {"app-launch-splash", "configNetwork"};
 const test::UIPath kAutolaunchConfirmButton = {"autolaunch", "confirmButton"};
@@ -295,12 +292,6 @@ extensions::Manifest::Type GetAppType(const std::string& app_id) {
   return app->GetType();
 }
 
-void SetPlatformVersion(const std::string& platform_version) {
-  const std::string lsb_release = base::StringPrintf(
-      "CHROMEOS_RELEASE_VERSION=%s", platform_version.c_str());
-  base::SysInfo::SetChromeOSVersionInfoForTest(lsb_release, base::Time::Now());
-}
-
 class KioskFakeDiskMountManager : public file_manager::FakeDiskMountManager {
  public:
   KioskFakeDiskMountManager() {}
@@ -438,7 +429,7 @@ class AppDataLoadWaiter : public KioskAppManagerObserver {
 // Replaces settings urls for KioskSettingsNavigationThrottle.
 class ScopedSettingsPages {
  public:
-  ScopedSettingsPages(
+  explicit ScopedSettingsPages(
       std::vector<KioskSettingsNavigationThrottle::SettingsPage>* pages) {
     KioskSettingsNavigationThrottle::SetSettingPagesForTesting(pages);
   }
@@ -554,7 +545,7 @@ class KioskTest : public OobeBaseTest {
   }
 
   bool LaunchApp(const std::string& app_id) {
-    return ash::LoginScreenTestApi::LaunchApp(app_id);
+    return LoginScreenTestApi::LaunchApp(app_id);
   }
 
   void ReloadKioskApps() {
@@ -587,9 +578,9 @@ class KioskTest : public OobeBaseTest {
 
   void PrepareAppLaunch() {
     // Wait for the Kiosk App configuration to reload.
-    int ui_update_count = ash::LoginScreenTestApi::GetUiUpdateCount();
+    int ui_update_count = LoginScreenTestApi::GetUiUpdateCount();
     ReloadKioskApps();
-    ash::LoginScreenTestApi::WaitForUiUpdate(ui_update_count);
+    LoginScreenTestApi::WaitForUiUpdate(ui_update_count);
   }
 
   void StartAppLaunchFromLoginScreen(
@@ -631,8 +622,7 @@ class KioskTest : public OobeBaseTest {
     EXPECT_TRUE(static_cast<ProfileImpl*>(app_profile)->chromeos_preferences_);
 
     // Check installer status.
-    EXPECT_EQ(chromeos::KioskAppLaunchError::Error::kNone,
-              chromeos::KioskAppLaunchError::Get());
+    EXPECT_EQ(KioskAppLaunchError::Error::kNone, KioskAppLaunchError::Get());
 
     // Check if the kiosk webapp is really installed for the default profile.
     const extensions::Extension* app =
@@ -660,8 +650,9 @@ class KioskTest : public OobeBaseTest {
 
     // Check that the app had been informed that it is running in a kiosk
     // session.
-    if (check_launch_data)
-      EXPECT_TRUE(launch_data_check_listener.was_satisfied());
+    if (check_launch_data) {
+      EXPECT_TRUE(launch_data_check_listener.WaitUntilSatisfied());
+    }
   }
 
   void WaitForAppLaunchSuccess() {
@@ -726,16 +717,16 @@ class KioskTest : public OobeBaseTest {
     static_cast<AppLaunchSplashScreenView::Delegate*>(
         GetKioskLaunchController())
         ->OnConfigureNetwork();
-    EXPECT_FALSE(ash::LoginScreenTestApi::IsOobeDialogVisible());
+    EXPECT_FALSE(LoginScreenTestApi::IsOobeDialogVisible());
     // There should be only one owner pod on this screen.
-    EXPECT_EQ(ash::LoginScreenTestApi::GetUsersCount(), 1);
+    EXPECT_EQ(LoginScreenTestApi::GetUsersCount(), 1);
 
     // A network error screen should be shown after authenticating.
     OobeScreenWaiter error_screen_waiter(ErrorScreenView::kScreenId);
-    ash::LoginScreenTestApi::SubmitPassword(test_owner_account_id_, "password",
-                                            /*check_if_submittable=*/true);
+    LoginScreenTestApi::SubmitPassword(test_owner_account_id_, "password",
+                                       /*check_if_submittable=*/true);
     error_screen_waiter.Wait();
-    EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
+    EXPECT_TRUE(LoginScreenTestApi::IsOobeDialogVisible());
 
     ASSERT_TRUE(GetKioskLaunchController()->showing_network_dialog());
 
@@ -884,7 +875,7 @@ IN_PROC_BROWSER_TEST_F(KioskDeviceOwnedTest,
   EXPECT_TRUE(user_manager->IsLoggedInAsKioskApp());
 
   keyboard::KeyboardConfig config =
-      ash::KeyboardController::Get()->GetKeyboardConfig();
+      KeyboardController::Get()->GetKeyboardConfig();
   EXPECT_TRUE(config.auto_capitalize);
   EXPECT_TRUE(config.auto_complete);
   EXPECT_TRUE(config.auto_correct);
@@ -901,7 +892,7 @@ IN_PROC_BROWSER_TEST_F(KioskDeviceOwnedTest, HiddenShelf) {
   EXPECT_TRUE(app_window_loaded_listener.WaitUntilSatisfied());
 
   // The shelf should be hidden at the beginning.
-  EXPECT_FALSE(ash::ShelfTestApi().IsVisible());
+  EXPECT_FALSE(ShelfTestApi().IsVisible());
 
   // Simulate the swipe-up gesture.
   Profile* app_profile = ProfileManager::GetPrimaryUserProfile();
@@ -917,14 +908,14 @@ IN_PROC_BROWSER_TEST_F(KioskDeviceOwnedTest, HiddenShelf) {
   const gfx::Rect display_bounds = window->bounds();
   const gfx::Point start_point = gfx::Point(
       display_bounds.width() / 4,
-      display_bounds.bottom() - ash::ShelfConfig::Get()->shelf_size() / 2);
+      display_bounds.bottom() - ShelfConfig::Get()->shelf_size() / 2);
   gfx::Point end_point(start_point.x(), start_point.y() - 80);
   ui::test::EventGenerator event_generator(window);
   event_generator.GestureScrollSequence(
       start_point, end_point, base::TimeDelta::FromMilliseconds(500), 4);
 
   // The shelf should be still hidden after the gesture.
-  EXPECT_FALSE(ash::ShelfTestApi().IsVisible());
+  EXPECT_FALSE(ShelfTestApi().IsVisible());
 }
 
 IN_PROC_BROWSER_TEST_F(KioskDeviceOwnedTest, ZoomSupport) {
@@ -1037,7 +1028,7 @@ IN_PROC_BROWSER_TEST_F(KioskDeviceOwnedTest,
   // Simulate Ctrl+Alt+N accelerator.
 
   LoginDisplayHost::default_host()->HandleAccelerator(
-      ash::LoginAcceleratorAction::kAppLaunchNetworkConfig);
+      LoginAcceleratorAction::kAppLaunchNetworkConfig);
   error_screen_waiter.Wait();
   ASSERT_TRUE(GetKioskLaunchController()->showing_network_dialog());
 
@@ -1111,18 +1102,17 @@ IN_PROC_BROWSER_TEST_F(KioskDeviceOwnedTest, DISABLED_LaunchAppUserCancel) {
       chrome::NOTIFICATION_APP_TERMINATING,
       content::NotificationService::AllSources());
   LoginDisplayHost::default_host()->HandleAccelerator(
-      ash::LoginAcceleratorAction::kAppLaunchBailout);
+      LoginAcceleratorAction::kAppLaunchBailout);
   signal.Wait();
-  EXPECT_EQ(chromeos::KioskAppLaunchError::Error::kUserCancel,
-            chromeos::KioskAppLaunchError::Get());
+  EXPECT_EQ(KioskAppLaunchError::Error::kUserCancel,
+            KioskAppLaunchError::Get());
 }
 
 IN_PROC_BROWSER_TEST_F(KioskTest, AutolaunchWarningCancel) {
   EnableConsumerKioskMode();
 
-  chromeos::WizardController::SkipPostLoginScreensForTesting();
-  chromeos::WizardController* wizard_controller =
-      chromeos::WizardController::default_controller();
+  WizardController::SkipPostLoginScreensForTesting();
+  auto* wizard_controller = WizardController::default_controller();
   ASSERT_TRUE(wizard_controller);
 
   // Start login screen after configuring auto launch app since the warning
@@ -1143,13 +1133,11 @@ IN_PROC_BROWSER_TEST_F(KioskTest, AutolaunchWarningCancel) {
   EXPECT_FALSE(KioskAppManager::Get()->IsAutoLaunchEnabled());
 }
 
-// TODO(crbug.com/1201207): Fix flakiness.
-IN_PROC_BROWSER_TEST_F(KioskTest, DISABLED_AutolaunchWarningConfirm) {
+IN_PROC_BROWSER_TEST_F(KioskTest, AutolaunchWarningConfirm) {
   EnableConsumerKioskMode();
 
-  chromeos::WizardController::SkipPostLoginScreensForTesting();
-  chromeos::WizardController* wizard_controller =
-      chromeos::WizardController::default_controller();
+  WizardController::SkipPostLoginScreensForTesting();
+  auto* wizard_controller = WizardController::default_controller();
   ASSERT_TRUE(wizard_controller);
 
   // Start login screen after configuring auto launch app since the warning
@@ -1180,9 +1168,8 @@ IN_PROC_BROWSER_TEST_F(KioskTest, DISABLED_AutolaunchWarningConfirm) {
 }
 
 IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableCancel) {
-  chromeos::WizardController::SkipPostLoginScreensForTesting();
-  chromeos::WizardController* wizard_controller =
-      chromeos::WizardController::default_controller();
+  WizardController::SkipPostLoginScreensForTesting();
+  auto* wizard_controller = WizardController::default_controller();
   ASSERT_TRUE(wizard_controller);
 
   // Check Kiosk mode status.
@@ -1193,7 +1180,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableCancel) {
   wizard_controller->SkipToLoginForTesting();
   OobeScreenWaiter(GaiaView::kScreenId).Wait();
   LoginDisplayHost::default_host()->HandleAccelerator(
-      ash::LoginAcceleratorAction::kEnableConsumerKiosk);
+      LoginAcceleratorAction::kEnableConsumerKiosk);
 
   // Wait for the kiosk_enable screen to show and cancel the screen.
   OobeScreenWaiter(KioskEnableScreenView::kScreenId).Wait();
@@ -1209,9 +1196,8 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableCancel) {
 
 IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableConfirmed) {
   // Start UI, find menu entry for this app and launch it.
-  chromeos::WizardController::SkipPostLoginScreensForTesting();
-  chromeos::WizardController* wizard_controller =
-      chromeos::WizardController::default_controller();
+  WizardController::SkipPostLoginScreensForTesting();
+  auto* wizard_controller = WizardController::default_controller();
   ASSERT_TRUE(wizard_controller);
 
   // Check Kiosk mode status.
@@ -1222,7 +1208,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableConfirmed) {
   wizard_controller->SkipToLoginForTesting();
   OobeScreenWaiter(GaiaView::kScreenId).Wait();
   LoginDisplayHost::default_host()->HandleAccelerator(
-      ash::LoginAcceleratorAction::kEnableConsumerKiosk);
+      LoginAcceleratorAction::kEnableConsumerKiosk);
 
   // Wait for the kiosk_enable screen to show and enable kiosk.
   OobeScreenWaiter(KioskEnableScreenView::kScreenId).Wait();
@@ -1239,9 +1225,8 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableConfirmed) {
 }
 
 IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableAfter2ndSigninScreen) {
-  chromeos::WizardController::SkipPostLoginScreensForTesting();
-  chromeos::WizardController* wizard_controller =
-      chromeos::WizardController::default_controller();
+  WizardController::SkipPostLoginScreensForTesting();
+  auto* wizard_controller = WizardController::default_controller();
   ASSERT_TRUE(wizard_controller);
 
   // Check Kiosk mode status.
@@ -1252,7 +1237,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableAfter2ndSigninScreen) {
   wizard_controller->SkipToLoginForTesting();
   OobeScreenWaiter(GaiaView::kScreenId).Wait();
   LoginDisplayHost::default_host()->HandleAccelerator(
-      ash::LoginAcceleratorAction::kEnableConsumerKiosk);
+      LoginAcceleratorAction::kEnableConsumerKiosk);
 
   // Wait for the kiosk_enable screen to show and cancel the screen.
   OobeScreenWaiter(KioskEnableScreenView::kScreenId).Wait();
@@ -1267,7 +1252,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableAfter2ndSigninScreen) {
 
   // Show kiosk enable screen again.
   LoginDisplayHost::default_host()->HandleAccelerator(
-      ash::LoginAcceleratorAction::kEnableConsumerKiosk);
+      LoginAcceleratorAction::kEnableConsumerKiosk);
 
   // And it should show up.
   OobeScreenWaiter(KioskEnableScreenView::kScreenId).Wait();
@@ -1309,9 +1294,8 @@ IN_PROC_BROWSER_TEST_F(KioskTest, NoConsumerAutoLaunchWhenUntrusted) {
   EnableConsumerKioskMode();
 
   // Wait for and confirm the auto-launch warning.
-  chromeos::WizardController::SkipPostLoginScreensForTesting();
-  chromeos::WizardController* wizard_controller =
-      chromeos::WizardController::default_controller();
+  WizardController::SkipPostLoginScreensForTesting();
+  auto* wizard_controller = WizardController::default_controller();
   ASSERT_TRUE(wizard_controller);
   wizard_controller->AdvanceToScreen(WelcomeView::kScreenId);
   ReloadAutolaunchKioskApps();
@@ -2245,7 +2229,8 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
 }
 
 IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_IncompliantPlatformDelayInstall) {
-  SetPlatformVersion("1233.0.0");
+  base::test::ScopedChromeOSVersionInfo version(
+      "CHROMEOS_RELEASE_VERSION=1234.0.0", base::Time::Now());
 
   set_test_app_id(kTestOfflineEnabledKioskApp);
   set_test_app_version("2.0.0");
@@ -2266,7 +2251,8 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_IncompliantPlatformDelayInstall) {
 }
 
 IN_PROC_BROWSER_TEST_F(KioskUpdateTest, IncompliantPlatformDelayInstall) {
-  SetPlatformVersion("1234.0.0");
+  base::test::ScopedChromeOSVersionInfo version(
+      "CHROMEOS_RELEASE_VERSION=1234.0.0", base::Time::Now());
 
   set_test_app_id(kTestOfflineEnabledKioskApp);
   set_test_app_version("2.0.0");
@@ -2290,7 +2276,8 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, IncompliantPlatformDelayInstall) {
 // Tests that app is installed for the first time even on an incompliant
 // platform.
 IN_PROC_BROWSER_TEST_F(KioskUpdateTest, IncompliantPlatformFirstInstall) {
-  SetPlatformVersion("1233.0.0");
+  base::test::ScopedChromeOSVersionInfo version(
+      "CHROMEOS_RELEASE_VERSION=1234.0.0", base::Time::Now());
 
   set_test_app_id(kTestOfflineEnabledKioskApp);
   set_test_app_version("2.0.0");
@@ -2545,8 +2532,7 @@ IN_PROC_BROWSER_TEST_F(KioskEnterpriseTest, EnterpriseKioskApp) {
   KioskSessionInitializedWaiter().Wait();
 
   // Check installer status.
-  EXPECT_EQ(chromeos::KioskAppLaunchError::Error::kNone,
-            chromeos::KioskAppLaunchError::Get());
+  EXPECT_EQ(KioskAppLaunchError::Error::kNone, KioskAppLaunchError::Get());
   EXPECT_EQ(ManifestLocation::kExternalPolicy, GetInstalledAppLocation());
 
   // Wait for the window to appear.
@@ -2728,7 +2714,7 @@ IN_PROC_BROWSER_TEST_F(KioskVirtualKeyboardTest, MAYBE_RestrictFeatures) {
   EXPECT_TRUE(config.handwriting);
   EXPECT_TRUE(config.spell_check);
   EXPECT_TRUE(config.voice_input);
-  ash::KeyboardController::Get()->SetKeyboardConfig(config);
+  KeyboardController::Get()->SetKeyboardConfig(config);
 
   extensions::ResultCatcher catcher;
   StartAppLaunchFromLoginScreen(
@@ -2739,7 +2725,7 @@ IN_PROC_BROWSER_TEST_F(KioskVirtualKeyboardTest, MAYBE_RestrictFeatures) {
 // Specialized test fixture for testing kiosk mode on the
 // hidden WebUI initialization flow for slow hardware.
 class KioskHiddenWebUITest : public KioskTest,
-                             public ash::WallpaperControllerObserver {
+                             public WallpaperControllerObserver {
  public:
   KioskHiddenWebUITest() = default;
 
@@ -2764,7 +2750,7 @@ class KioskHiddenWebUITest : public KioskTest,
 
   bool wallpaper_loaded() const { return wallpaper_loaded_; }
 
-  // ash::WallpaperControllerObserver:
+  // WallpaperControllerObserver:
   void OnWallpaperChanged() override {
     wallpaper_loaded_ = true;
     if (runner_.get())
@@ -2782,7 +2768,7 @@ IN_PROC_BROWSER_TEST_F(KioskHiddenWebUITest, AutolaunchWarning) {
   // Set kiosk app to autolaunch.
   EnableConsumerKioskMode();
   WizardController::SkipPostLoginScreensForTesting();
-  WizardController* wizard_controller = WizardController::default_controller();
+  auto* wizard_controller = WizardController::default_controller();
   ASSERT_TRUE(wizard_controller);
 
   // Start login screen after configuring auto launch app since the warning
@@ -2857,7 +2843,7 @@ class KioskAutoLaunchViewsTest : public OobeBaseTest,
 
 IN_PROC_BROWSER_TEST_F(KioskAutoLaunchViewsTest, ShowAutoLaunchScreen) {
   OobeScreenWaiter(KioskAutolaunchScreenView::kScreenId).Wait();
-  EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
+  EXPECT_TRUE(LoginScreenTestApi::IsOobeDialogVisible());
 }
 
-}  // namespace chromeos
+}  // namespace ash

@@ -48,12 +48,7 @@ namespace dawn_native {
     // TODO(enga): Figure out a good number for this.
     static constexpr uint32_t kMaxOptimalBindingsPerGroup = 32;
 
-    enum class BindingInfoType {
-        Buffer,
-        Sampler,
-        Texture,
-        StorageTexture,
-    };
+    enum class BindingInfoType { Buffer, Sampler, Texture, StorageTexture, ExternalTexture };
 
     struct BindingInfo {
         BindingNumber binding;
@@ -68,12 +63,18 @@ namespace dawn_native {
         StorageTextureBindingLayout storageTexture;
     };
 
+    struct BindingSlot {
+        BindGroupIndex group;
+        BindingNumber binding;
+    };
+
     struct PerStageBindingCounts {
         uint32_t sampledTextureCount;
         uint32_t samplerCount;
         uint32_t storageBufferCount;
         uint32_t storageTextureCount;
         uint32_t uniformBufferCount;
+        uint32_t externalTextureCount;
     };
 
     struct BindingCounts {

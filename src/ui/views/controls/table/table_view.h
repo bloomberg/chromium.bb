@@ -42,7 +42,6 @@ struct AXNodeData;
 namespace views {
 
 class AXVirtualView;
-class FocusRing;
 struct GroupRange;
 class ScrollView;
 class TableGrouper;
@@ -227,6 +226,8 @@ class VIEWS_EXPORT TableView : public views::View,
   // |visible_column_index| indexes into |visible_columns_|.
   AXVirtualView* GetVirtualAccessibilityCell(int row, int visible_column_index);
 
+  bool header_row_is_active() const { return header_row_is_active_; }
+
   // View overrides:
   void Layout() override;
   gfx::Size CalculatePreferredSize() const override;
@@ -405,8 +406,20 @@ class VIEWS_EXPORT TableView : public views::View,
   void UpdateAccessibilityFocus(UpdateAccessibilityFocusPassKey pass_key);
 
   // Returns the virtual accessibility view corresponding to the specified row.
-  // |row| should be a view index, not a model index.
-  AXVirtualView* GetVirtualAccessibilityRow(int row);
+  // |row| should be a view index into the TableView's body elements, not a
+  // model index.
+  AXVirtualView* GetVirtualAccessibilityBodyRow(int row);
+
+  // Returns the virtual accessibility view corresponding to the header row, if
+  // it exists.
+  AXVirtualView* GetVirtualAccessibilityHeaderRow();
+
+  // Returns the virtual accessibility view corresponding to the cell in the
+  // given row at the specified column index.
+  // `ax_row` should be the virtual view of either a header or body row.
+  // `visible_column_index` indexes into `visible_columns_`.
+  AXVirtualView* GetVirtualAccessibilityCellImpl(AXVirtualView* ax_row,
+                                                 int visible_column_index);
 
   // Creates a virtual accessibility view that is used to expose information
   // about the row at |view_index| to assistive software.
@@ -439,6 +452,9 @@ class VIEWS_EXPORT TableView : public views::View,
   void PopulateAccessibilityCellData(AXVirtualView* ax_cell,
                                      ui::AXNodeData* data);
 
+  // Updates the focus rings of the TableView and the TableHeader if necessary.
+  void UpdateFocusRings();
+
   ui::TableModel* model_ = nullptr;
 
   std::vector<ui::TableColumn> columns_;
@@ -451,12 +467,14 @@ class VIEWS_EXPORT TableView : public views::View,
   // as sorting and resizing. -1 if no visible column is active.
   int active_visible_column_index_ = -1;
 
-  // Used to draw a focus indicator around the active cell.
-  FocusRing* focus_ring_ = nullptr;
-
   // The header. This is only created if more than one column is specified or
   // the first column has a non-empty title.
   TableHeader* header_ = nullptr;
+
+  // TableView allows using the keyboard to activate a cell or row, including
+  // optionally the header row. This bool keeps track of whether the active row
+  // is the header row, since the selection model doesn't support that.
+  bool header_row_is_active_ = false;
 
   TableTypes table_type_ = TableTypes::TEXT_ONLY;
 

@@ -12,7 +12,8 @@
 #include "include/private/SkTArray.h"
 #include "src/gpu/GrBuffer.h"
 #include "src/gpu/GrVertexWriter.h"
-#include "src/gpu/ops/GrMeshDrawOp.h"
+
+class GrMeshDrawTarget;
 
 // Represents a chunk of vertex data. Use with GrVertexChunkArray and GrVertexChunkBuilder. We write
 // the data out in chunks when we don't start out knowing exactly how many vertices (or instances)
@@ -33,7 +34,7 @@ using GrVertexChunkArray = SkSTArray<1, GrVertexChunk>;
 // entire lifetime of this object.
 class GrVertexChunkBuilder : SkNoncopyable {
 public:
-    GrVertexChunkBuilder(GrMeshDrawOp::Target* target, GrVertexChunkArray* chunks, size_t stride,
+    GrVertexChunkBuilder(GrMeshDrawTarget* target, GrVertexChunkArray* chunks, size_t stride,
                          int minVerticesPerChunk)
             : fTarget(target)
             , fChunks(chunks)
@@ -42,53 +43,40 @@ public:
         SkASSERT(fMinVerticesPerChunk > 0);
     }
 
-    ~GrVertexChunkBuilder() {
-        if (!fChunks->empty()) {
-            fTarget->putBackVertices(fCurrChunkVertexCapacity - fCurrChunkVertexCount, fStride);
-            fChunks->back().fCount = fCurrChunkVertexCount;
-        }
-    }
+    ~GrVertexChunkBuilder();
 
     // Appends 'count' contiguous vertices. These vertices are not guaranteed to be contiguous with
     // previous or future calls to appendVertices.
     SK_ALWAYS_INLINE GrVertexWriter appendVertices(int count) {
         SkASSERT(count > 0);
         if (fCurrChunkVertexCount + count > fCurrChunkVertexCapacity && !this->allocChunk(count)) {
+            SkDEBUGCODE(fLastAppendAmount = 0;)
             return {nullptr};
         }
         SkASSERT(fCurrChunkVertexCount + count <= fCurrChunkVertexCapacity);
         fCurrChunkVertexCount += count;
+        SkDEBUGCODE(fLastAppendAmount = count;)
         return std::exchange(fCurrChunkVertexWriter,
                              fCurrChunkVertexWriter.makeOffset(fStride * count));
     }
 
     SK_ALWAYS_INLINE GrVertexWriter appendVertex() { return this->appendVertices(1); }
 
-private:
-    bool allocChunk(int minCount) {
-        if (!fChunks->empty()) {
-            // No need to put back vertices; the buffer is full.
-            fChunks->back().fCount = fCurrChunkVertexCount;
-        }
-        fCurrChunkVertexCount = 0;
-        GrVertexChunk* chunk = &fChunks->push_back();
-        int minAllocCount = std::max(minCount, fMinVerticesPerChunk);
-        fCurrChunkVertexWriter = {fTarget->makeVertexSpaceAtLeast(fStride, minAllocCount,
-                                                                  minAllocCount, &chunk->fBuffer,
-                                                                  &chunk->fBase,
-                                                                  &fCurrChunkVertexCapacity)};
-        if (!fCurrChunkVertexWriter || !chunk->fBuffer || fCurrChunkVertexCapacity < minCount) {
-            SkDebugf("WARNING: Failed to allocate vertex buffer for GrVertexChunk.\n");
-            fChunks->pop_back();
-            SkASSERT(fCurrChunkVertexCount == 0);
-            fCurrChunkVertexCapacity = 0;
-            return false;
-        }
-        fMinVerticesPerChunk *= 2;
-        return true;
+    // Pops the most recent 'count' contiguous vertices. Since there is no guarantee of contiguity
+    // between appends, 'count' may be no larger than the most recent call to appendVertices().
+    void popVertices(int count) {
+        SkASSERT(count <= fLastAppendAmount);
+        SkASSERT(fLastAppendAmount <= fCurrChunkVertexCount);
+        SkASSERT(count >= 0);
+        fCurrChunkVertexCount -= count;
+        fCurrChunkVertexWriter = fCurrChunkVertexWriter.makeOffset(fStride * -count);
+        SkDEBUGCODE(fLastAppendAmount -= count;)
     }
 
-    GrMeshDrawOp::Target* const fTarget;
+private:
+    bool allocChunk(int minCount);
+
+    GrMeshDrawTarget* const fTarget;
     GrVertexChunkArray* const fChunks;
     const size_t fStride;
     int fMinVerticesPerChunk;
@@ -96,6 +84,8 @@ private:
     GrVertexWriter fCurrChunkVertexWriter;
     int fCurrChunkVertexCount = 0;
     int fCurrChunkVertexCapacity = 0;
+
+    SkDEBUGCODE(int fLastAppendAmount = 0;)
 };
 
 #endif

@@ -436,7 +436,7 @@ export class DeviceModeToolbar {
   _appendScaleMenuItems(contextMenu: UI.ContextMenu.ContextMenu): void {
     if (this._model.type() === Type.Device) {
       contextMenu.footerSection().appendItem(
-          i18nString(UIStrings.fitToWindowF, {PH1: this._model.fitScale() * 100}),
+          i18nString(UIStrings.fitToWindowF, {PH1: this._getPrettyZoomPercentage()}),
           this._onScaleMenuChanged.bind(this, this._model.fitScale()), false);
     }
     contextMenu.footerSection().appendCheckboxItem(
@@ -540,8 +540,7 @@ export class DeviceModeToolbar {
   _wrapToolbarItem(element: Element): UI.Toolbar.ToolbarItem {
     const container = document.createElement('div');
     const shadowRoot = UI.Utils.createShadowRootWithCoreStyles(
-        container,
-        {cssFile: 'panels/emulation/deviceModeToolbar.css', enableLegacyPatching: false, delegatesFocus: undefined});
+        container, {cssFile: 'panels/emulation/deviceModeToolbar.css', delegatesFocus: undefined});
     shadowRoot.appendChild(element);
     return new UI.Toolbar.ToolbarItem(container);
   }
@@ -727,6 +726,10 @@ export class DeviceModeToolbar {
     }
   }
 
+  _getPrettyZoomPercentage(): string {
+    return `${(this._model.scale() * 100).toFixed(0)}`;
+  }
+
   element(): Element {
     return this._element;
   }
@@ -757,7 +760,7 @@ export class DeviceModeToolbar {
     this._heightInput.placeholder = String(size.height);
 
     if (this._model.scale() !== this._cachedScale) {
-      this._scaleItem.setText(`${(this._model.scale() * 100).toFixed(0)}%`);
+      this._scaleItem.setText(`${this._getPrettyZoomPercentage()}%`);
       this._cachedScale = this._model.scale();
     }
 

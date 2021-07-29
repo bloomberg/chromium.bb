@@ -6,8 +6,8 @@
 
 #include "xfa/fwl/theme/cfwl_checkboxtp.h"
 
-#include "core/fxge/cfx_pathdata.h"
-#include "third_party/base/stl_util.h"
+#include "core/fxge/cfx_path.h"
+#include "third_party/base/cxx17_backports.h"
 #include "xfa/fde/cfde_textout.h"
 #include "xfa/fgas/graphics/cfgas_gecolor.h"
 #include "xfa/fgas/graphics/cfgas_gepath.h"
@@ -22,8 +22,8 @@ constexpr int kSignPath = 100;
 
 CFX_PointF ScaleBezierPoint(const CFX_PointF& point) {
   CFX_PointF scaled_point(point);
-  scaled_point.x *= FX_BEZIER;
-  scaled_point.y *= FX_BEZIER;
+  scaled_point.x *= FXSYS_BEZIER;
+  scaled_point.y *= FXSYS_BEZIER;
   return scaled_point;
 }
 
@@ -126,16 +126,16 @@ void CFWL_CheckBoxTP::DrawSignStar(CFGAS_GEGraphics* pGraphics,
                                    const CFX_Matrix& matrix) {
   CFGAS_GEPath path;
   float fBottom = rtSign.bottom();
-  float fRadius = (rtSign.top - fBottom) / (1 + cosf(FX_PI / 5.0f));
+  float fRadius = (rtSign.top - fBottom) / (1 + cosf(FXSYS_PI / 5.0f));
   CFX_PointF ptCenter((rtSign.left + rtSign.right()) / 2.0f,
                       (rtSign.top + fBottom) / 2.0f);
 
   CFX_PointF points[5];
-  float fAngle = FX_PI / 10.0f;
+  float fAngle = FXSYS_PI / 10.0f;
   for (auto& point : points) {
     point =
         ptCenter + CFX_PointF(fRadius * cosf(fAngle), fRadius * sinf(fAngle));
-    fAngle += FX_PI * 2 / 5.0f;
+    fAngle += FXSYS_PI * 2 / 5.0f;
   }
 
   path.MoveTo(points[0]);
@@ -205,7 +205,7 @@ void CFWL_CheckBoxTP::EnsureCheckPathInitialized(float fCheckLen) {
 }
 
 void CFWL_CheckBoxTP::DrawBackground(const CFWL_ThemeBackground& pParams) {
-  if (pParams.m_iPart != CFWL_Part::CheckBox)
+  if (pParams.m_iPart != CFWL_ThemePart::Part::kCheckBox)
     return;
 
   if ((pParams.m_dwStates & CFWL_PartState_Checked) ||

@@ -58,6 +58,7 @@
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="2353636109065292463">आपके इंटरनेट कनेक्शन की जाँच की जा रही है</translation>
 <translation id="2388990488038464401">अपने फ़ोन से इस नंबर पर कॉल करना चाहते हैं?</translation>
+<translation id="2435457462613246316">पासवर्ड दिखाएं</translation>
 <translation id="24452542372838207">पूरी सूचना दिखाएं</translation>
 <translation id="2445449901874883781">ज़्यादा सघनता का इस्तेमाल करें</translation>
 <translation id="2482878487686419369">सूचनाएं</translation>
@@ -79,6 +80,7 @@
 <translation id="2824719307700604149">{YEARS,plural, =1{1 वर्ष पहले}one{# वर्ष पहले}other{# वर्ष पहले}}</translation>
 <translation id="2878511608894704031">सभी आइटम मिटाएं</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{1 दिन में}one{# दिन में}other{# दिन में}}</translation>
+<translation id="2922712708897119705"><ph name="COLUMN_NAME" /> कॉलम को घटते क्रम में लगाया गया.</translation>
 <translation id="2931838996092594335">क्लिक करें</translation>
 <translation id="2981684127883932071">सुझाव दिखाए जा रहे हैं</translation>
 <translation id="3036649622769666520">फ़ाइलें खोलें</translation>
@@ -114,6 +116,7 @@
 <translation id="3897092660631435901">मेन्यू</translation>
 <translation id="3909791450649380159">&amp;काटें</translation>
 <translation id="3990502903496589789">दायां सिरा</translation>
+<translation id="3994749195054421561"><ph name="COLUMN_NAME" /> कॉलम को बढ़ते क्रम में लगाया गया.</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 न पढ़ी गई सूचना}one{# न पढ़ी गई सूचनाएं}other{# न पढ़ी गई सूचनाएं}}</translation>
 <translation id="4202807286478387388">जाएं</translation>
 <translation id="4250229828105606438">स्क्रीनशॉट</translation>
@@ -123,6 +126,7 @@
 <translation id="4306392492252714209">क्लिपबोर्ड से हटाएं.</translation>
 <translation id="4316910396681052118">सभी ऐप्लिकेशन</translation>
 <translation id="4491109536499578614">इमेज</translation>
+<translation id="4565377596337484307">पासवर्ड छिपाएं</translation>
 <translation id="4588090240171750605">दाएं स्क्रोल करें</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, <ph name="RATING_SCORE" /> स्टार रेटिंग</translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, ऐप्लिकेशन का सुझाव</translation>
@@ -165,6 +169,7 @@
 <translation id="6012623610530968780"><ph name="TOTAL_PAGE_NUM" /> में से <ph name="SELECTED_PAGE" /> पेज</translation>
 <translation id="6022924867608035986">खोज बॉक्स का लेख मिटाएं</translation>
 <translation id="6040143037577758943">बंद करें</translation>
+<translation id="6117103120090651229">सेंटर बटन</translation>
 <translation id="6119846243427417423">सक्रिय करें</translation>
 <translation id="6129953537138746214">Space</translation>
 <translation id="6134259848159370930">अपने डिवाइस, ऐप्लिकेशन, सेटिंग, के साथ-साथ वेब पर भी खोजें.</translation>
@@ -173,6 +178,7 @@
 <translation id="6156262341071374681">सभी ऐप्लिकेशन दिखाएं</translation>
 <translation id="6165508094623778733">ज़्यादा जानें</translation>
 <translation id="6166852626429024716">अपने डिवाइस, ऐप्लिकेशन, सेटिंग के साथ-साथ वेब पर भी खोजें...</translation>
+<translation id="6237461503717005873"><ph name="ROW_NAME" /> को चुना गया है.</translation>
 <translation id="6264365405983206840">&amp;सभी को चुनें</translation>
 <translation id="6351032674660237738">ऐप्लिकेशन सुझाव</translation>
 <translation id="6364916375976753737">बाएं स्क्रोल करें</translation>
@@ -213,6 +219,7 @@
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 मिनट शेष}one{# मिनट शेष}other{# मिनट शेष}}</translation>
 <translation id="7430878839542012341">अपने इतिहास से यह खोज मिटाना चाहते हैं?</translation>
+<translation id="7437971918971306061"><ph name="COLUMN_NAME" /> कॉलम किसी क्रम में नहीं है.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">इमोजी</translation>
 <translation id="7620655452534002301">हटाया गया.</translation>

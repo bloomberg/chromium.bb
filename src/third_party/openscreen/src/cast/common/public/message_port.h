@@ -20,11 +20,13 @@ class MessagePort {
  public:
   class Client {
    public:
-    virtual ~Client() = default;
     virtual void OnMessage(const std::string& source_sender_id,
                            const std::string& message_namespace,
                            const std::string& message) = 0;
     virtual void OnError(Error error) = 0;
+
+   protected:
+    virtual ~Client() = default;
   };
 
   virtual ~MessagePort() = default;

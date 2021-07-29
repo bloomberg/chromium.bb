@@ -6,7 +6,7 @@
 #define CHROMEOS_SERVICES_LIBASSISTANT_CONVERSATION_STATE_LISTENER_IMPL_H_
 
 #include "base/sequence_checker.h"
-#include "chromeos/services/libassistant/assistant_manager_observer.h"
+#include "chromeos/services/libassistant/assistant_client_observer.h"
 #include "chromeos/services/libassistant/public/mojom/display_controller.mojom.h"
 #include "libassistant/shared/public/conversation_state_listener.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -28,7 +28,7 @@ class AudioInputController;
 
 class ConversationStateListenerImpl
     : public assistant_client::ConversationStateListener,
-      public AssistantManagerObserver {
+      public AssistantClientObserver {
  public:
   ConversationStateListenerImpl(
       mojo::RemoteSet<mojom::SpeechRecognitionObserver>*
@@ -42,11 +42,8 @@ class ConversationStateListenerImpl
   ~ConversationStateListenerImpl() override;
 
  private:
-  // AssistantManagerObserver implementation:
-  void OnAssistantManagerCreated(
-      assistant_client::AssistantManager* assistant_manager,
-      assistant_client::AssistantManagerInternal* assistant_manager_internal)
-      override;
+  // AssistantClientObserver implementation:
+  void OnAssistantClientCreated(AssistantClient* assistant_client) override;
 
   // assistant_client::ConversationStateListener implementation:
   void OnRecognitionStateChanged(

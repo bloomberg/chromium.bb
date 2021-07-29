@@ -11,6 +11,8 @@ component("views_examples_lib") {
   testonly = true
 
   sources = [
+    "animation_builder.cc",
+    "animation_builder.h",
     "animation_example.cc",
     "animation_example.h",
     "ax_example.cc",
@@ -39,6 +41,8 @@ component("views_examples_lib") {
     "example_combobox_model.h",
     "examples_window.cc",
     "examples_window.h",
+    "fade_animation.cc",
+    "fade_animation.h",
     "flex_layout_example.cc",
     "flex_layout_example.h",
     "label_example.cc",

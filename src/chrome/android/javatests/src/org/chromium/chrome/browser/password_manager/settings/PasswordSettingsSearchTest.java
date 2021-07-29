@@ -33,11 +33,11 @@ import static org.chromium.chrome.browser.password_manager.settings.PasswordSett
 import static org.chromium.chrome.browser.password_manager.settings.PasswordSettingsTestHelper.HADES_AT_UNDERWORLD;
 import static org.chromium.chrome.browser.password_manager.settings.PasswordSettingsTestHelper.PHOBOS_AT_OLYMP;
 import static org.chromium.chrome.browser.password_manager.settings.PasswordSettingsTestHelper.ZEUS_ON_EARTH;
-import static org.chromium.chrome.test.util.ViewUtils.VIEW_GONE;
-import static org.chromium.chrome.test.util.ViewUtils.VIEW_INVISIBLE;
-import static org.chromium.chrome.test.util.ViewUtils.VIEW_NULL;
-import static org.chromium.chrome.test.util.ViewUtils.onViewWaiting;
-import static org.chromium.chrome.test.util.ViewUtils.waitForView;
+import static org.chromium.ui.test.util.ViewUtils.VIEW_GONE;
+import static org.chromium.ui.test.util.ViewUtils.VIEW_INVISIBLE;
+import static org.chromium.ui.test.util.ViewUtils.VIEW_NULL;
+import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
+import static org.chromium.ui.test.util.ViewUtils.waitForView;
 
 import android.app.Instrumentation;
 import android.content.Intent;
@@ -70,11 +70,12 @@ import org.mockito.MockitoAnnotations;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RequiresRestart;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.history.HistoryActivity;
-import org.chromium.chrome.browser.history.HistoryManager;
+import org.chromium.chrome.browser.history.HistoryContentManager;
 import org.chromium.chrome.browser.history.StubbedHistoryProvider;
 import org.chromium.chrome.browser.password_check.PasswordCheck;
 import org.chromium.chrome.browser.password_check.PasswordCheckFactory;
@@ -421,7 +422,7 @@ public class PasswordSettingsSearchTest {
         StubbedHistoryProvider mHistoryProvider = new StubbedHistoryProvider();
         mHistoryProvider.addItem(StubbedHistoryProvider.createHistoryItem(0, new Date().getTime()));
         mHistoryProvider.addItem(StubbedHistoryProvider.createHistoryItem(1, new Date().getTime()));
-        HistoryManager.setProviderForTests(mHistoryProvider);
+        HistoryContentManager.setProviderForTests(mHistoryProvider);
         mHistoryActivityTestRule.launchActivity(null);
 
         // Find the search view to ensure that the set color filter is different from the saved one.
@@ -456,6 +457,7 @@ public class PasswordSettingsSearchTest {
     @SmallTest
     @Feature({"Preferences"})
     @DisableFeatures({ChromeFeatureList.EDIT_PASSWORDS_IN_SETTINGS})
+    @RequiresRestart("crbug/1137002 - Figure out why this flakes as a batched test.")
     public void testSearchResultsPersistAfterEntryInspection() {
         mTestHelper.setPasswordSourceWithMultipleEntries(GREEK_GODS);
         mTestHelper.setPasswordExceptions(new String[] {"http://exclu.de", "http://not-inclu.de"});

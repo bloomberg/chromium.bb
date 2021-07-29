@@ -30,6 +30,7 @@
 
 #include "base/auto_reset.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/stl_util.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
@@ -399,7 +400,6 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document,
                                        ParserPrefetchPolicy prefetch_policy)
     : ScriptableDocumentParser(document, content_policy),
       options_(&document),
-      reentry_permit_(HTMLParserReentryPermit::Create()),
       token_(sync_policy != kAllowAsynchronousParsing
                  ? std::make_unique<HTMLToken>()
                  : nullptr),
@@ -478,6 +478,7 @@ void HTMLDocumentParser::Dispose() {
 }
 
 void HTMLDocumentParser::Trace(Visitor* visitor) const {
+  visitor->Trace(reentry_permit_);
   visitor->Trace(tree_builder_);
   visitor->Trace(parser_scheduler_);
   visitor->Trace(script_runner_);

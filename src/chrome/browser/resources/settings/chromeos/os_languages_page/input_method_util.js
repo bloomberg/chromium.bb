@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 // #import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
+// #import {routes} from '../os_route.m.js';
+import {inputMethodSettings, SettingsType} from './input_method_settings.js';
+// #import {Route} from '../../router.js';
 
 /**
  * @fileoverview constants related to input method options.
@@ -16,7 +19,7 @@ cr.define('settings.input_method_util', function() {
       '_comp_ime_jkghodnilhceideoidjikpgommlajknk';
 
   /**
-   * All possible keyboard layouts.
+   * All possible keyboard layouts. Should match Google3.
    *
    * @enum {string}
    */
@@ -42,7 +45,7 @@ cr.define('settings.input_method_util', function() {
   };
 
   /**
-   * All possible options on options pages.
+   * All possible options on options pages. Should match Gooogle3.
    *
    * @enum {string}
    */
@@ -74,6 +77,18 @@ cr.define('settings.input_method_util', function() {
     PINYIN_ENABLE_UPPER_PAGING: 'pinyinEnableUpperPaging',
     PINYIN_FULL_WIDTH_CHARACTER: 'pinyinFullWidthCharacter',
     PINYIN_FUZZY_CONFIG: 'pinyinFuzzyConfig',
+    PINYIN_EN_ENG: 'en:eng',
+    PINYIN_AN_ANG: 'an:ang',
+    PINYIN_IAN_IANG: 'ian:iang',
+    PINYIN_K_G: 'k:g',
+    PINYIN_R_L: 'r:l',
+    PINYIN_UAN_UANG: 'uan:uang',
+    PINYIN_C_CH: 'c:ch',
+    PINYIN_F_H: 'f:h',
+    PINYIN_IN_ING: 'in:ing',
+    PINYIN_L_N: 'l:n',
+    PINYIN_S_SH: 's:sh',
+    PINYIN_Z_ZH: 'z:zh',
     // Options for zhuyin input method.
     ZHUYIN_KEYBOARD_LAYOUT: 'zhuyinKeyboardLayout',
     ZHUYIN_PAGE_SIZE: 'zhuyinPageSize',
@@ -83,19 +98,21 @@ cr.define('settings.input_method_util', function() {
   /**
    * Default values for each option type.
    *
+   * WARNING: Keep this in sync with corresponding Google3 file for extension.
+   *
    * @type {Object<settings.input_method_util.OptionType, *>}
    * @const
    */
   /* #export */ const OPTION_DEFAULT = {
     [OptionType.ENABLE_COMPLETION]: false,
-    [OptionType.ENABLE_DOUBLE_SPACE_PERIOD]: false,
+    [OptionType.ENABLE_DOUBLE_SPACE_PERIOD]: true,
     [OptionType.ENABLE_GESTURE_TYPING]: true,
     [OptionType.ENABLE_PREDICTION]: false,
     [OptionType.ENABLE_SOUND_ON_KEYPRESS]: false,
     [OptionType.PHYSICAL_KEYBOARD_AUTO_CORRECTION_LEVEL]: 0,
     [OptionType.PHYSICAL_KEYBOARD_ENABLE_CAPITALIZATION]: true,
     [OptionType.VIRTUAL_KEYBOARD_AUTO_CORRECTION_LEVEL]: 1,
-    [OptionType.VIRTUAL_KEYBOARD_ENABLE_CAPITALIZATION]: false,
+    [OptionType.VIRTUAL_KEYBOARD_ENABLE_CAPITALIZATION]: true,
     [OptionType.XKB_LAYOUT]: 'US',
     // Options for Korean input method.
     [OptionType.KOREAN_ENABLE_SYLLABLE_INPUT]: true,
@@ -139,17 +156,96 @@ cr.define('settings.input_method_util', function() {
     LINK: 'link',
   };
 
-  /**
-   * Enumeration for input tool codes.
-   *
-   * @enum {string}
-   */
-  /* #export */ const InputToolCode = {
-    PINYIN_CHINESE_SIMPLIFIED: 'zh-t-i0-pinyin',
-    ZHUYIN_CHINESE_TRADITIONAL: 'zh-hant-t-i0-und',
-    XKB_US_ENG: 'xkb:us::eng',
+  const Settings = {
+    [SettingsType.LATIN_SETTINGS]: {
+      physicalKeyboard: [{
+        name: OptionType.PHYSICAL_KEYBOARD_AUTO_CORRECTION_LEVEL,
+        dependentOptions: [
+          OptionType.PHYSICAL_KEYBOARD_ENABLE_CAPITALIZATION,
+          OptionType.ENABLE_PREDICTION
+        ]
+      }],
+      virtualKeyboard: [
+        {name: OptionType.ENABLE_SOUND_ON_KEYPRESS}, {
+          name: OptionType.VIRTUAL_KEYBOARD_AUTO_CORRECTION_LEVEL,
+          dependentOptions: [
+            OptionType.VIRTUAL_KEYBOARD_ENABLE_CAPITALIZATION,
+          ]
+        },
+        {name: OptionType.ENABLE_GESTURE_TYPING},
+        {name: OptionType.ENABLE_DOUBLE_SPACE_PERIOD},
+        {name: OptionType.EDIT_USER_DICT}
+      ],
+      basic: [],
+      advanced: [],
+    },
+    [SettingsType.ZHUYIN_SETTINGS]: {
+      physicalKeyboard: [
+        {name: OptionType.ZHUYIN_KEYBOARD_LAYOUT},
+        {name: OptionType.ZHUYIN_SELECT_KEYS},
+        {name: OptionType.ZHUYIN_PAGE_SIZE},
+      ],
+      virtualKeyboard: [],
+      basic: [],
+      advanced: [],
+    },
+    [SettingsType.KOREAN_SETTINGS]: {
+      basic: [
+        {name: OptionType.KOREAN_KEYBOARD_LAYOUT}, {
+          name: OptionType.KOREAN_ENABLE_SYLLABLE_INPUT,
+          dependentOptions: [
+            OptionType.KOREAN_SHOW_HANGUL_CANDIDATE,
+          ]
+        }
+      ],
+      virtualKeyboard: [],
+      advanced: [],
+      physicalKeyboard: [],
+    },
+    [SettingsType.PINYIN_FUZZY_SETTINGS]: {
+      advanced: [{
+        name: OptionType.PINYIN_ENABLE_FUZZY,
+        dependentOptions: [
+          OptionType.PINYIN_AN_ANG,
+          OptionType.PINYIN_EN_ENG,
+          OptionType.PINYIN_IAN_IANG,
+          OptionType.PINYIN_K_G,
+          OptionType.PINYIN_R_L,
+          OptionType.PINYIN_UAN_UANG,
+          OptionType.PINYIN_C_CH,
+          OptionType.PINYIN_F_H,
+          OptionType.PINYIN_IN_ING,
+          OptionType.PINYIN_L_N,
+          OptionType.PINYIN_S_SH,
+          OptionType.PINYIN_Z_ZH,
+        ]
+      }],
+      virtualKeyboard: [],
+      basic: [],
+      physicalKeyboard: [],
+    },
+    [SettingsType.PINYIN_SETTINGS]: {
+      physicalKeyboard: [
+        {name: OptionType.XKB_LAYOUT},
+        {name: OptionType.PINYIN_ENABLE_UPPER_PAGING},
+        {name: OptionType.PINYIN_ENABLE_LOWER_PAGING},
+        {name: OptionType.PINYIN_DEFAULT_CHINESE},
+        {name: OptionType.PINYIN_FULL_WIDTH_CHARACTER},
+        {name: OptionType.PINYIN_CHINESE_PUNCTUATION},
+      ],
+      advanced: [{name: OptionType.EDIT_USER_DICT}],
+      basic: [],
+      virtualKeyboard: [],
+    },
+    [SettingsType.BASIC_SETTINGS]: {
+      physicalKeyboard: [],
+      virtualKeyboard: [
+        {name: OptionType.ENABLE_SOUND_ON_KEYPRESS},
+      ],
+      basic: [],
+      advanced: [],
+    }
   };
-
   /**
    * @param {string} id Input method ID.
    * @return {string} The corresponding engind ID of the input method.
@@ -168,8 +264,8 @@ cr.define('settings.input_method_util', function() {
       return false;
     }
     const engineId = getFirstPartyInputMethodEngineId(id);
-    return engineId === InputToolCode.PINYIN_CHINESE_SIMPLIFIED ||
-        engineId === InputToolCode.XKB_US_ENG;
+
+    return !!inputMethodSettings[engineId];
   }
 
   /**
@@ -182,27 +278,15 @@ cr.define('settings.input_method_util', function() {
   /* #export */ function generateOptions(engineId) {
     const options =
         {basic: [], advanced: [], physicalKeyboard: [], virtualKeyboard: []};
-    if (engineId === InputToolCode.PINYIN_CHINESE_SIMPLIFIED) {
-      options.basic.push(
-          OptionType.XKB_LAYOUT, OptionType.PINYIN_ENABLE_UPPER_PAGING,
-          OptionType.PINYIN_ENABLE_LOWER_PAGING,
-          OptionType.PINYIN_DEFAULT_CHINESE,
-          OptionType.PINYIN_FULL_WIDTH_CHARACTER,
-          OptionType.PINYIN_CHINESE_PUNCTUATION);
-      options.advanced.push(
-          OptionType.PINYIN_ENABLE_FUZZY, OptionType.EDIT_USER_DICT);
-    }
-    if (engineId === InputToolCode.XKB_US_ENG) {
-      options.physicalKeyboard.push(
-          OptionType.PHYSICAL_KEYBOARD_AUTO_CORRECTION_LEVEL,
-          OptionType.PHYSICAL_KEYBOARD_ENABLE_CAPITALIZATION,
-          OptionType.ENABLE_PREDICTION);
-      options.virtualKeyboard.push(
-          OptionType.ENABLE_SOUND_ON_KEYPRESS,
-          OptionType.VIRTUAL_KEYBOARD_AUTO_CORRECTION_LEVEL,
-          OptionType.VIRTUAL_KEYBOARD_ENABLE_CAPITALIZATION,
-          OptionType.ENABLE_DOUBLE_SPACE_PERIOD,
-          OptionType.ENABLE_GESTURE_TYPING, OptionType.EDIT_USER_DICT);
+      const engineSettings = inputMethodSettings[engineId];
+      if (engineSettings) {
+        engineSettings.forEach((settingType) => {
+          const settings = Settings[settingType];
+          options.basic.push(...settings.basic);
+          options.advanced.push(...settings.advanced);
+          options.physicalKeyboard.push(...settings.physicalKeyboard);
+          options.virtualKeyboard.push(...settings.virtualKeyboard);
+        });
     }
 
     return [
@@ -231,6 +315,7 @@ cr.define('settings.input_method_util', function() {
    */
   /* #export */ function getOptionUiType(option) {
     switch (option) {
+      // TODO(b/191608723): Clean up switch statements.
       case OptionType.ENABLE_COMPLETION:
       case OptionType.ENABLE_DOUBLE_SPACE_PERIOD:
       case OptionType.ENABLE_GESTURE_TYPING:
@@ -246,6 +331,18 @@ cr.define('settings.input_method_util', function() {
       case OptionType.PINYIN_ENABLE_LOWER_PAGING:
       case OptionType.PINYIN_ENABLE_UPPER_PAGING:
       case OptionType.PINYIN_FULL_WIDTH_CHARACTER:
+      case OptionType.PINYIN_AN_ANG:
+      case OptionType.PINYIN_EN_ENG:
+      case OptionType.PINYIN_IAN_IANG:
+      case OptionType.PINYIN_K_G:
+      case OptionType.PINYIN_R_L:
+      case OptionType.PINYIN_UAN_UANG:
+      case OptionType.PINYIN_C_CH:
+      case OptionType.PINYIN_F_H:
+      case OptionType.PINYIN_IN_ING:
+      case OptionType.PINYIN_L_N:
+      case OptionType.PINYIN_S_SH:
+      case OptionType.PINYIN_Z_ZH:
         return UiType.TOGGLE_BUTTON;
       case OptionType.PHYSICAL_KEYBOARD_AUTO_CORRECTION_LEVEL:
       case OptionType.VIRTUAL_KEYBOARD_AUTO_CORRECTION_LEVEL:
@@ -259,6 +356,26 @@ cr.define('settings.input_method_util', function() {
         return UiType.LINK;
       default:
         assertNotReached();
+    }
+  }
+  /* #export */ function isOptionLabelTranslated(option) {
+    switch (option) {
+      // TODO(b/191608723): Clean up switch statements.
+      case OptionType.PINYIN_AN_ANG:
+      case OptionType.PINYIN_EN_ENG:
+      case OptionType.PINYIN_IAN_IANG:
+      case OptionType.PINYIN_K_G:
+      case OptionType.PINYIN_R_L:
+      case OptionType.PINYIN_UAN_UANG:
+      case OptionType.PINYIN_C_CH:
+      case OptionType.PINYIN_F_H:
+      case OptionType.PINYIN_IN_ING:
+      case OptionType.PINYIN_L_N:
+      case OptionType.PINYIN_S_SH:
+      case OptionType.PINYIN_Z_ZH:
+        return false;
+      default:
+        return true;
     }
   }
 
@@ -298,6 +415,48 @@ cr.define('settings.input_method_util', function() {
         return 'inputMethodOptionsXkbLayout';
       case OptionType.EDIT_USER_DICT:
         return 'inputMethodOptionsEditUserDict';
+      case OptionType.ZHUYIN_KEYBOARD_LAYOUT:
+        return 'inputMethodOptionsZhuyinKeyboardLayout';
+      case OptionType.ZHUYIN_SELECT_KEYS:
+        return 'inputMethodOptionsZhuyinSelectKeys';
+      case OptionType.ZHUYIN_PAGE_SIZE:
+        return 'inputMethodOptionsZhuyinPageSize';
+      case OptionType.KOREAN_KEYBOARD_LAYOUT:
+        return 'inputMethodOptionsKoreanLayout';
+      case OptionType.KOREAN_ENABLE_SYLLABLE_INPUT:
+        return 'inputMethodOptionsKoreanSyllableInput';
+      case OptionType.KOREAN_SHOW_HANGUL_CANDIDATE:
+        return 'inputMethodOptionsKoreanShowHangulCandidate';
+      default:
+        assertNotReached();
+    }
+  }
+  /* #export */ function getUntranslatedOptionLabelName(option) {
+    switch (option) {
+      case OptionType.PINYIN_AN_ANG:
+        return 'an_ang';
+      case OptionType.PINYIN_EN_ENG:
+        return 'en_eng';
+      case OptionType.PINYIN_IAN_IANG:
+        return 'ian_iang';
+      case OptionType.PINYIN_K_G:
+        return 'k_g';
+      case OptionType.PINYIN_R_L:
+        return 'r_l';
+      case OptionType.PINYIN_UAN_UANG:
+        return 'uan_uang';
+      case OptionType.PINYIN_C_CH:
+        return 'c_ch';
+      case OptionType.PINYIN_F_H:
+        return 'f_h';
+      case OptionType.PINYIN_IN_ING:
+        return 'in_ing';
+      case OptionType.PINYIN_L_N:
+        return 'l_n';
+      case OptionType.PINYIN_S_SH:
+        return 's_sh';
+      case OptionType.PINYIN_Z_ZH:
+        return 'z_zh';
       default:
         assertNotReached();
     }
@@ -323,6 +482,43 @@ cr.define('settings.input_method_util', function() {
           {value: 'Dvorak', name: 'inputMethodOptionsDvorakKeyboard'},
           {value: 'Colemak', name: 'inputMethodOptionsColemakKeyboard'}
         ];
+      case OptionType.ZHUYIN_KEYBOARD_LAYOUT:
+        return [
+          {value: 'Default', name: 'inputMethodOptionsZhuyinLayoutDefault'},
+          {value: 'IBM', name: 'inputMethodOptionsZhuyinLayoutIBM'},
+          {value: 'Eten', name: 'inputMethodOptionsZhuyinLayoutEten'},
+        ];
+      case OptionType.ZHUYIN_SELECT_KEYS:
+        // Zhuyin select keys correspond to physical keys so are not
+        // translated.
+        return [
+          {value: '1234567890'},
+          {value: 'asdfghjkl;'},
+          {value: 'asdfzxcv89'},
+          {value: 'asdfjkl789'},
+          {value: '1234qweras'},
+        ];
+      case OptionType.ZHUYIN_PAGE_SIZE:
+        // Zhuyin page size is just a number, so is not translated.
+        return [
+          {value: '10'},
+          {value: '9'},
+          {value: '8'},
+        ];
+      case OptionType.KOREAN_KEYBOARD_LAYOUT:
+        // Korean layout strings are already Korean / English, so not
+        // translated. The literal values of these strings are critical.
+        return [
+          {value: '2 Set / 두벌식'},
+          {value: '3 Set (390) / 세벌식 (390)'},
+          {value: '3 Set (Final) / 세벌식 (최종)'},
+          {value: '3 Set (No Shift) / 세벌식 (순아래)'},
+          {value: 'Romaja / 로마자'},
+          {value: 'Ahnmatae / 안마태'},
+          {value: '2 Set (Old Hangul) / 두벌식 (옛글)'},
+          {value: '3 Set (Old Hangul) / 세벌식 (옛글)'},
+          {value: '3 Set (2 set) / 세벌식 (두벌)'},
+        ];
       default:
         return [];
     }
@@ -339,12 +535,12 @@ cr.define('settings.input_method_util', function() {
 
   /**
    * @param {!settings.input_method_util.OptionType} option The option type.
-   * @return {string|undefined} The url to open for |option|, returns undefined
-   *     if |option| does not have a url.
+   * @return {settings.Route|undefined} The url to open for |option|, returns
+   *     undefined if |option| does not have a url.
    */
   /* #export */ function getOptionUrl(option) {
     if (option === OptionType.EDIT_USER_DICT) {
-      return 'chrome://settings/editDictionary';
+      return settings.routes.OS_LANGUAGES_EDIT_DICTIONARY;
     }
     return undefined;
   }
@@ -363,7 +559,6 @@ cr.define('settings.input_method_util', function() {
     OptionType,
     OPTION_DEFAULT,
     UiType,
-    InputToolCode,
     getFirstPartyInputMethodEngineId,
     hasOptionsPageInSettings,
     generateOptions,
@@ -372,5 +567,7 @@ cr.define('settings.input_method_util', function() {
     getOptionMenuItems,
     getOptionUrl,
     isNumberValue,
+    isOptionLabelTranslated,
+    getUntranslatedOptionLabelName,
   };
 });

@@ -26,14 +26,6 @@ config("swiftshader_llvm_reactor_private_config") {
     ]
   } else {
     cflags = [ "-Wno-unused-local-typedef" ]
-    defines = [
-      "__STDC_CONSTANT_MACROS",
-      "__STDC_LIMIT_MACROS",
-    ]
-
-    if (current_cpu == "x86" || current_cpu == "x64") {
-      cflags += [ "-msse2" ]
-    }
   }
 }
 
@@ -49,6 +41,7 @@ swiftshader_source_set("swiftshader_reactor_base") {
     "EmulatedIntrinsics.cpp",
     "ExecutableMemory.cpp",
     "OptimalIntrinsics.cpp",
+    "Pragma.cpp",
     "Reactor.cpp",
   ]
 
@@ -70,10 +63,6 @@ if (supports_subzero) {
       "ALLOW_WASM=0",
       "ICE_THREAD_LOCAL_HACK=0",
     ]
-
-    if (is_win) {
-      defines += [ "SUBZERO_USE_MICROSOFT_ABI" ]
-    }
 
     if (current_cpu == "x64") {
       defines += [
@@ -159,10 +148,6 @@ if (supports_subzero) {
         "-Wno-unused-function",
       ]
     }
-
-    if (is_fuchsia) {
-      cflags += [ "-Wno-error" ]
-    }
   }
 
   config("swiftshader_reactor_with_subzero_private_config") {
@@ -194,10 +179,6 @@ if (supports_subzero) {
 
     if (is_clang) {
       cflags += [ "-Wno-header-hygiene" ]
-    }
-
-    if (is_fuchsia) {
-      cflags += [ "-Wno-error" ]
     }
   }
 

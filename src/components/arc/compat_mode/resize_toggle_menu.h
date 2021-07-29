@@ -5,28 +5,61 @@
 #ifndef COMPONENTS_ARC_COMPAT_MODE_RESIZE_TOGGLE_MENU_H_
 #define COMPONENTS_ARC_COMPAT_MODE_RESIZE_TOGGLE_MENU_H_
 
-#include "ui/base/models/menu_model_delegate.h"
-#include "ui/base/models/simple_menu_model.h"
-#include "ui/views/controls/menu/menu_model_adapter.h"
+#include <memory>
+
+#include "base/callback_forward.h"
+#include "base/cancelable_callback.h"
+#include "base/scoped_multi_source_observation.h"
+#include "components/arc/compat_mode/resize_util.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_observer.h"
+#include "ui/views/controls/button/button.h"
+#include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_observer.h"
+
+namespace gfx {
+class Rect;
+struct VectorIcon;
+}  // namespace gfx
 
 namespace views {
-class Widget;
-class MenuItemView;
+class BubbleDialogDelegateView;
+class ImageView;
+class Label;
 }  // namespace views
 
 namespace arc {
 
 class ArcResizeLockPrefDelegate;
 
-class ResizeToggleMenu : public ui::SimpleMenuModel::Delegate {
+class ResizeToggleMenu : public views::WidgetObserver,
+                         public aura::WindowObserver {
  public:
-  enum CommandId {
-    kResizePhone = 1,  // Starting from 1 to avoid the conflict with "separator
-                       // item" because its command id is 0.
-    kResizeTablet = 2,
-    kResizeDesktop = 3,
-    kOpenSettings = 4,
-    kMaxValue = kOpenSettings,
+  class MenuButtonView : public views::Button {
+   public:
+    MenuButtonView(PressedCallback callback,
+                   const gfx::VectorIcon& icon,
+                   int title_string_id);
+    MenuButtonView(const MenuButtonView&) = delete;
+    MenuButtonView& operator=(const MenuButtonView&) = delete;
+    ~MenuButtonView() override;
+
+    void SetSelected(bool is_selected);
+
+   private:
+    // views::View:
+    void OnThemeChanged() override;
+    gfx::Size CalculatePreferredSize() const override;
+
+    void UpdateColors();
+    void UpdateState();
+
+    // Owned by views hierarchy.
+    views::ImageView* icon_view_{nullptr};
+    views::Label* title_{nullptr};
+
+    const gfx::VectorIcon& icon_;
+    bool is_selected_{false};
   };
 
   ResizeToggleMenu(views::Widget* widget,
@@ -35,24 +68,51 @@ class ResizeToggleMenu : public ui::SimpleMenuModel::Delegate {
   ResizeToggleMenu& operator=(const ResizeToggleMenu&) = delete;
   ~ResizeToggleMenu() override;
 
-  // ui::SimpleMenuModel::Delegate:
-  void ExecuteCommand(int command_id, int event_flags) override;
+  // views::WidgetObserver:
+  void OnWidgetClosing(views::Widget* widget) override;
+  void OnWidgetBoundsChanged(views::Widget* widget,
+                             const gfx::Rect& new_bounds) override;
+
+  // aura::WindowObserver:
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override;
+  void OnWindowDestroying(aura::Window* window) override;
 
  private:
   friend class ResizeToggleMenuTest;
 
-  std::unique_ptr<ui::SimpleMenuModel> MakeMenuModel();
+  void UpdateSelectedButton();
+
+  void ApplyResizeCompatMode(ResizeCompatMode mode);
+
+  gfx::Rect GetAnchorRect() const;
+
+  std::unique_ptr<views::BubbleDialogDelegateView> MakeBubbleDelegateView(
+      views::Widget* parent,
+      gfx::Rect anchor_rect,
+      base::RepeatingCallback<void(ResizeCompatMode)> command_handler);
+
+  void CloseBubble();
 
   views::Widget* widget_;
 
   ArcResizeLockPrefDelegate* pref_delegate_;
 
-  // Owned by |menu_runner_|. Store this here only for testing.
-  views::MenuItemView* root_view_ = nullptr;
+  base::ScopedMultiSourceObservation<views::Widget, views::WidgetObserver>
+      widget_observations_{this};
+  base::ScopedObservation<aura::Window, aura::WindowObserver>
+      window_observation_{this};
 
-  std::unique_ptr<ui::SimpleMenuModel> model_;
-  std::unique_ptr<views::MenuModelAdapter> adapter_;
-  std::unique_ptr<views::MenuRunner> menu_runner_;
+  base::CancelableOnceClosure auto_close_closure_;
+
+  // Store only for testing.
+  views::Widget* bubble_widget_{nullptr};
+  MenuButtonView* phone_button_{nullptr};
+  MenuButtonView* tablet_button_{nullptr};
+  MenuButtonView* resizable_button_{nullptr};
+
+  base::WeakPtrFactory<ResizeToggleMenu> weak_ptr_factory_{this};
 };
 
 }  // namespace arc

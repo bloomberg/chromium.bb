@@ -1,0 +1,27 @@
+#include <metal_stdlib>
+
+using namespace metal;
+struct tint_symbol {
+  float4 value [[position]];
+};
+
+void sin_4e3979() {
+  float4 res = sin(float4());
+}
+
+vertex tint_symbol vertex_main() {
+  sin_4e3979();
+  tint_symbol const tint_symbol_1 = {.value=float4()};
+  return tint_symbol_1;
+}
+
+fragment void fragment_main() {
+  sin_4e3979();
+  return;
+}
+
+kernel void compute_main() {
+  sin_4e3979();
+  return;
+}
+

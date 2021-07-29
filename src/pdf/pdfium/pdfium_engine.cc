@@ -31,7 +31,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "gin/array_buffer.h"
-#include "gin/public/cppgc.h"
 #include "gin/public/gin_embedders.h"
 #include "gin/public/isolate_holder.h"
 #include "gin/public/v8_platform.h"
@@ -52,8 +51,7 @@
 #include "pdf/ppapi_migration/geometry_conversions.h"
 #include "pdf/ppapi_migration/url_loader.h"
 #include "pdf/url_loader_wrapper_impl.h"
-#include "ppapi/cpp/instance.h"
-#include "ppapi/cpp/private/pdf.h"
+#include "printing/mojom/print.mojom-shared.h"
 #include "printing/units.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
@@ -61,6 +59,7 @@
 #include "third_party/blink/public/common/input/web_pointer_properties.h"
 #include "third_party/blink/public/common/input/web_touch_event.h"
 #include "third_party/blink/public/common/input/web_touch_point.h"
+#include "third_party/blink/public/web/web_print_params.h"
 #include "third_party/pdfium/public/cpp/fpdf_scopers.h"
 #include "third_party/pdfium/public/fpdf_annot.h"
 #include "third_party/pdfium/public/fpdf_attachment.h"
@@ -81,7 +80,7 @@
 #include "v8/include/v8.h"
 
 #if defined(PDF_ENABLE_XFA)
-#include "v8/include/cppgc/platform.h"
+#include "gin/public/cppgc.h"
 #endif
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
@@ -138,6 +137,8 @@ constexpr base::TimeDelta kMaxProgressivePaintTime =
 // process.
 constexpr base::TimeDelta kMaxInitialProgressivePaintTime =
     base::TimeDelta::FromMilliseconds(250);
+
+FontMappingMode g_font_mapping_mode = FontMappingMode::kNoMapping;
 
 template <class S>
 bool IsAboveOrDirectlyLeftOf(const S& lhs, const S& rhs) {
@@ -246,17 +247,25 @@ bool IsV8Initialized() {
 }
 
 void SetUpV8() {
-  const char* recommended = FPDF_GetRecommendedV8Flags();
-  v8::V8::SetFlagsFromString(recommended, strlen(recommended));
-  gin::IsolateHolder::Initialize(
-      gin::IsolateHolder::kNonStrictMode,
-      static_cast<v8::ArrayBuffer::Allocator*>(
-          FPDF_GetArrayBufferAllocatorSharedInstance()));
+  if (!base::FeatureList::IsEnabled(features::kPdfUnseasoned)) {
+    // TODO(crbug.com/1111024): V8 flags for the Unseasoned Viewer need to be
+    // set up as soon as the renderer process is created in the constructor of
+    // `content::RenderProcessImpl`.
+    const char* recommended = FPDF_GetRecommendedV8Flags();
+    v8::V8::SetFlagsFromString(recommended, strlen(recommended));
+
+    // The isolate holder is already initialized in the renderer process.
+    gin::IsolateHolder::Initialize(
+        gin::IsolateHolder::kNonStrictMode,
+        static_cast<v8::ArrayBuffer::Allocator*>(
+            FPDF_GetArrayBufferAllocatorSharedInstance()));
+  }
+
   DCHECK(!g_isolate_holder);
   g_isolate_holder = new gin::IsolateHolder(
       base::ThreadTaskRunnerHandle::Get(), gin::IsolateHolder::kSingleThread,
       gin::IsolateHolder::IsolateType::kUtility);
-  g_isolate_holder->isolate()->Enter();
+
 #if defined(PDF_ENABLE_XFA)
   gin::InitializeCppgcFromV8Platform();
 #endif
@@ -264,9 +273,9 @@ void SetUpV8() {
 
 void TearDownV8() {
 #if defined(PDF_ENABLE_XFA)
-  cppgc::ShutdownProcess();
+  gin::MaybeShutdownCppgc();
 #endif
-  g_isolate_holder->isolate()->Exit();
+
   delete g_isolate_holder;
   g_isolate_holder = nullptr;
 }
@@ -368,17 +377,16 @@ wchar_t SimplifyForSearch(wchar_t c) {
   }
 }
 
-PP_PrivateFocusObjectType GetAnnotationFocusType(
-    FPDF_ANNOTATION_SUBTYPE annot_type) {
+FocusObjectType GetAnnotationFocusType(FPDF_ANNOTATION_SUBTYPE annot_type) {
   switch (annot_type) {
     case FPDF_ANNOT_LINK:
-      return PP_PrivateFocusObjectType::PP_PRIVATEFOCUSOBJECT_LINK;
+      return FocusObjectType::kLink;
     case FPDF_ANNOT_HIGHLIGHT:
-      return PP_PrivateFocusObjectType::PP_PRIVATEFOCUSOBJECT_HIGHLIGHT;
+      return FocusObjectType::kHighlight;
     case FPDF_ANNOT_WIDGET:
-      return PP_PrivateFocusObjectType::PP_PRIVATEFOCUSOBJECT_TEXT_FIELD;
+      return FocusObjectType::kTextField;
     default:
-      return PP_PrivateFocusObjectType::PP_PRIVATEFOCUSOBJECT_NONE;
+      return FocusObjectType::kNone;
   }
 }
 
@@ -493,7 +501,7 @@ void ParamsTransformPageToScreen(unsigned long view_fit_type,
 
 }  // namespace
 
-void InitializeSDK(bool enable_v8) {
+void InitializeSDK(bool enable_v8, FontMappingMode font_mapping_mode) {
   FPDF_LIBRARY_CONFIG config;
   config.version = 3;
   config.m_pUserFontPaths = nullptr;
@@ -504,7 +512,7 @@ void InitializeSDK(bool enable_v8) {
 #if defined(PDF_ENABLE_V8)
   if (enable_v8) {
     SetUpV8();
-    config.m_pIsolate = v8::Isolate::GetCurrent();
+    config.m_pIsolate = g_isolate_holder->isolate();
     // NOTE: static_cast<> prior to assigning to (void*) is safer since it
     // will manipulate the pointer value should gin::V8Platform someday have
     // multiple base classes.
@@ -515,6 +523,7 @@ void InitializeSDK(bool enable_v8) {
   FPDF_InitLibraryWithConfig(&config);
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
+  g_font_mapping_mode = font_mapping_mode;
   InitializeLinuxFontMapper();
 #endif
 
@@ -545,10 +554,8 @@ PDFiumEngine::PDFiumEngine(PDFEngine::Client* client,
   IFSDK_PAUSE::user = nullptr;
   IFSDK_PAUSE::NeedToPauseNow = Pause_NeedToPauseNow;
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   // PreviewModeClient does not know its pp::Instance.
-  SetLastInstance(client_->GetPluginInstance());
-#endif
+  SetLastInstance();
 }
 
 PDFiumEngine::~PDFiumEngine() {
@@ -565,6 +572,11 @@ void PDFiumEngine::SetDocumentLoaderForTesting(
   DCHECK(!doc_loader_);
   doc_loader_ = std::move(loader);
   doc_loader_set_for_testing_ = true;
+}
+
+// static
+FontMappingMode PDFiumEngine::GetFontMappingMode() {
+  return g_font_mapping_mode;
 }
 
 bool PDFiumEngine::New(const char* url, const char* headers) {
@@ -719,10 +731,6 @@ bool PDFiumEngine::HandleDocumentLoad(std::unique_ptr<UrlLoader> loader) {
   // request initial data.
   doc_loader_->RequestData(0, 1);
   return true;
-}
-
-pp::Instance* PDFiumEngine::GetPluginInstance() {
-  return client_->GetPluginInstance();
 }
 
 std::unique_ptr<URLLoaderWrapper> PDFiumEngine::CreateURLLoader() {
@@ -958,93 +966,52 @@ bool PDFiumEngine::HandleInputEvent(const blink::WebInputEvent& event) {
   return rv;
 }
 
-uint32_t PDFiumEngine::QuerySupportedPrintOutputFormats() {
-  if (HasPermission(PERMISSION_PRINT_HIGH_QUALITY))
-    return PP_PRINTOUTPUTFORMAT_PDF | PP_PRINTOUTPUTFORMAT_RASTER;
-  if (HasPermission(PERMISSION_PRINT_LOW_QUALITY))
-    return PP_PRINTOUTPUTFORMAT_RASTER;
-  return 0;
-}
-
 void PDFiumEngine::PrintBegin() {
   FORM_DoDocumentAAction(form(), FPDFDOC_AACTION_WP);
 }
 
-pp::Resource PDFiumEngine::PrintPages(
-    const PP_PrintPageNumberRange_Dev* page_ranges,
-    uint32_t page_range_count,
-    const PP_PrintSettings_Dev& print_settings,
-    const PP_PdfPrintSettings_Dev& pdf_print_settings) {
-  if (!page_range_count)
-    return pp::Resource();
+std::vector<uint8_t> PDFiumEngine::PrintPages(
+    const std::vector<int>& page_numbers,
+    const blink::WebPrintParams& print_params) {
+  if (page_numbers.empty())
+    return std::vector<uint8_t>();
 
-  if ((print_settings.format & PP_PRINTOUTPUTFORMAT_PDF) &&
-      HasPermission(PERMISSION_PRINT_HIGH_QUALITY)) {
-    return PrintPagesAsPdf(page_ranges, page_range_count, print_settings,
-                           pdf_print_settings);
-  }
-  if (HasPermission(PERMISSION_PRINT_LOW_QUALITY)) {
-    return PrintPagesAsRasterPdf(page_ranges, page_range_count, print_settings,
-                                 pdf_print_settings);
-  }
-  return pp::Resource();
+  return print_params.rasterize_pdf
+             ? PrintPagesAsRasterPdf(page_numbers, print_params)
+             : PrintPagesAsPdf(page_numbers, print_params);
 }
 
-pp::Buffer_Dev PDFiumEngine::PrintPagesAsRasterPdf(
-    const PP_PrintPageNumberRange_Dev* page_ranges,
-    uint32_t page_range_count,
-    const PP_PrintSettings_Dev& print_settings,
-    const PP_PdfPrintSettings_Dev& pdf_print_settings) {
-  DCHECK(page_range_count);
+std::vector<uint8_t> PDFiumEngine::PrintPagesAsRasterPdf(
+    const std::vector<int>& page_numbers,
+    const blink::WebPrintParams& print_params) {
+  DCHECK(HasPermission(PERMISSION_PRINT_LOW_QUALITY));
 
   // If document is not downloaded yet, disable printing.
   if (doc() && !doc_loader_->IsDocumentComplete())
-    return pp::Buffer_Dev();
+    return std::vector<uint8_t>();
 
   KillFormFocus();
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
-  SetLastInstance(client_->GetPluginInstance());
-#endif
+  SetLastInstance();
 
-  return ConvertPdfToBufferDev(
-      print_.PrintPagesAsPdf(page_ranges, page_range_count, print_settings,
-                             pdf_print_settings, /*raster=*/true));
+  return print_.PrintPagesAsPdf(page_numbers, print_params);
 }
 
-pp::Buffer_Dev PDFiumEngine::PrintPagesAsPdf(
-    const PP_PrintPageNumberRange_Dev* page_ranges,
-    uint32_t page_range_count,
-    const PP_PrintSettings_Dev& print_settings,
-    const PP_PdfPrintSettings_Dev& pdf_print_settings) {
-  DCHECK(page_range_count);
+std::vector<uint8_t> PDFiumEngine::PrintPagesAsPdf(
+    const std::vector<int>& page_numbers,
+    const blink::WebPrintParams& print_params) {
+  DCHECK(HasPermission(PERMISSION_PRINT_HIGH_QUALITY));
   DCHECK(doc());
 
   KillFormFocus();
 
-  std::vector<uint32_t> page_numbers =
-      PDFiumPrint::GetPageNumbersFromPrintPageNumberRange(page_ranges,
-                                                          page_range_count);
-  for (uint32_t page_number : page_numbers) {
+  for (int page_number : page_numbers) {
     pages_[page_number]->GetPage();
     if (!IsPageVisible(page_number))
       pages_[page_number]->Unload();
   }
 
-  return ConvertPdfToBufferDev(
-      print_.PrintPagesAsPdf(page_ranges, page_range_count, print_settings,
-                             pdf_print_settings, /*raster=*/false));
-}
-
-pp::Buffer_Dev PDFiumEngine::ConvertPdfToBufferDev(
-    const std::vector<uint8_t>& pdf_data) {
-  pp::Buffer_Dev buffer;
-  if (!pdf_data.empty()) {
-    buffer = pp::Buffer_Dev(GetPluginInstance(), pdf_data.size());
-    if (!buffer.is_null())
-      memcpy(buffer.data(), pdf_data.data(), pdf_data.size());
-  }
-  return buffer;
+  return print_.PrintPagesAsPdf(page_numbers, print_params);
 }
 
 void PDFiumEngine::KillFormFocus() {
@@ -1086,9 +1053,8 @@ void PDFiumEngine::UpdateFocus(bool has_focus) {
   }
 }
 
-PP_PrivateAccessibilityFocusInfo PDFiumEngine::GetFocusInfo() {
-  PP_PrivateAccessibilityFocusInfo focus_info = {
-      PP_PrivateFocusObjectType::PP_PRIVATEFOCUSOBJECT_NONE, 0, 0};
+AccessibilityFocusInfo PDFiumEngine::GetFocusInfo() {
+  AccessibilityFocusInfo focus_info = {FocusObjectType::kNone, 0, 0};
 
   switch (focus_item_type_) {
     case FocusElementType::kNone: {
@@ -1101,12 +1067,11 @@ PP_PrivateAccessibilityFocusInfo PDFiumEngine::GetFocusInfo() {
       DCHECK(ret);
 
       if (PageIndexInBounds(page_index) && focused_annot) {
-        PP_PrivateFocusObjectType type =
+        FocusObjectType type =
             GetAnnotationFocusType(FPDFAnnot_GetSubtype(focused_annot));
         int annot_index = FPDFPage_GetAnnotIndex(pages_[page_index]->GetPage(),
                                                  focused_annot);
-        if (type != PP_PrivateFocusObjectType::PP_PRIVATEFOCUSOBJECT_NONE &&
-            annot_index >= 0) {
+        if (type != FocusObjectType::kNone && annot_index >= 0) {
           focus_info.focused_object_type = type;
           focus_info.focused_object_page_index = page_index;
           focus_info.focused_annotation_index_in_page = annot_index;
@@ -1116,8 +1081,7 @@ PP_PrivateAccessibilityFocusInfo PDFiumEngine::GetFocusInfo() {
       break;
     }
     case FocusElementType::kDocument: {
-      focus_info.focused_object_type =
-          PP_PrivateFocusObjectType::PP_PRIVATEFOCUSOBJECT_DOCUMENT;
+      focus_info.focused_object_type = FocusObjectType::kDocument;
       break;
     }
   }
@@ -2647,8 +2611,17 @@ int PDFiumEngine::GetCopiesToPrint() {
   return FPDF_VIEWERREF_GetNumCopies(doc());
 }
 
-int PDFiumEngine::GetDuplexType() {
-  return static_cast<int>(FPDF_VIEWERREF_GetDuplex(doc()));
+printing::mojom::DuplexMode PDFiumEngine::GetDuplexMode() {
+  switch (FPDF_VIEWERREF_GetDuplex(doc())) {
+    case Simplex:
+      return printing::mojom::DuplexMode::kSimplex;
+    case DuplexFlipShortEdge:
+      return printing::mojom::DuplexMode::kShortEdge;
+    case DuplexFlipLongEdge:
+      return printing::mojom::DuplexMode::kLongEdge;
+    default:
+      return printing::mojom::DuplexMode::kUnknownDuplexMode;
+  }
 }
 
 absl::optional<gfx::Size> PDFiumEngine::GetUniformPageSizePoints() {
@@ -3154,9 +3127,7 @@ bool PDFiumEngine::ContinuePaint(int progressive_index, SkBitmap& image_data) {
   DCHECK_LT(static_cast<size_t>(progressive_index), progressive_paints_.size());
 
   last_progressive_start_time_ = base::Time::Now();
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
-  SetLastInstance(client_->GetPluginInstance());
-#endif
+  SetLastInstance();
 
   int page_index = progressive_paints_[progressive_index].page_index();
   DCHECK(PageIndexInBounds(page_index));
@@ -3643,9 +3614,7 @@ void PDFiumEngine::SetCurrentPage(int index) {
     FORM_DoPageAAction(old_page, form(), FPDFPAGE_AACTION_CLOSE);
   }
   most_visible_page_ = index;
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
-  SetLastInstance(client_->GetPluginInstance());
-#endif
+  SetLastInstance();
   if (most_visible_page_ != -1 && called_do_document_action_) {
     FPDF_PAGE new_page = pages_[most_visible_page_]->GetPage();
     FORM_DoPageAAction(new_page, form(), FPDFPAGE_AACTION_OPEN);
@@ -4237,11 +4206,7 @@ void PDFiumEngine::UpdatePageCount() {
 #endif  // defined(PDF_ENABLE_XFA)
 
 void PDFiumEngine::UpdateLinkUnderCursor(const std::string& target_url) {
-  if (link_under_cursor_ == target_url)
-    return;
-
-  link_under_cursor_ = target_url;
-  client_->SetLinkUnderCursor(link_under_cursor_);
+  client_->SetLinkUnderCursor(target_url);
 }
 
 void PDFiumEngine::SetLinkUnderCursorForAnnotation(FPDF_ANNOTATION annot,
@@ -4262,6 +4227,10 @@ void PDFiumEngine::RequestThumbnail(int page_index,
   DCHECK(PageIndexInBounds(page_index));
   pages_[page_index]->RequestThumbnail(device_pixel_ratio,
                                        std::move(send_callback));
+}
+
+void PDFiumEngine::SetLastInstance() {
+  client_->SetLastPluginInstance();
 }
 
 PDFiumEngine::ProgressivePaint::ProgressivePaint(int index,

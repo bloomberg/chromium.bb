@@ -8,22 +8,24 @@
 #include <utility>
 
 #include "ash/public/cpp/new_window_delegate.h"
-#include "ash/public/cpp/wallpaper_controller.h"
+#include "ash/public/cpp/wallpaper/wallpaper_controller.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
+#include "components/arc/arc_features.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/audio/arc_audio_bridge.h"
 #include "components/arc/intent_helper/control_camera_app_delegate.h"
+#include "components/arc/intent_helper/intent_constants.h"
 #include "components/arc/intent_helper/open_url_delegate.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/url_formatter/url_fixer.h"
+#include "net/base/url_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/layout.h"
 #include "url/url_constants.h"
@@ -76,6 +78,37 @@ enum class ArcIntentHelperOpenType {
 // Records Arc.IntentHelper.OpenType UMA histogram.
 void RecordOpenType(ArcIntentHelperOpenType type) {
   UMA_HISTOGRAM_ENUMERATION("Arc.IntentHelper.OpenType", type);
+}
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class OpenIntentAction {
+  kUnknown = 0,
+  kView = 1,
+  kSend = 2,
+  kSendMultiple = 3,
+  kMaxValue = kSendMultiple,
+};
+
+void RecordOpenAppIntentAction(const mojom::LaunchIntentPtr& intent) {
+  OpenIntentAction action = OpenIntentAction::kUnknown;
+  if (intent->action == kIntentActionView) {
+    action = OpenIntentAction::kView;
+  } else if (intent->action == kIntentActionSend) {
+    action = OpenIntentAction::kSend;
+  } else if (intent->action == kIntentActionSendMultiple) {
+    action = OpenIntentAction::kSendMultiple;
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("Arc.IntentHelper.OpenAppWithIntentAction", action);
+}
+
+// Returns true if a Web App is allowed to be opened for the given URL.
+bool CanOpenWebAppForUrl(const GURL& url) {
+  bool is_http_localhost =
+      url.SchemeIs(url::kHttpScheme) && net::IsLocalhost(url);
+  return url.is_valid() &&
+         (url.SchemeIs(url::kHttpsScheme) || is_http_localhost);
 }
 
 }  // namespace
@@ -231,11 +264,9 @@ void ArcIntentHelperBridge::OnOpenWebApp(const std::string& url) {
   RecordOpenType(ArcIntentHelperOpenType::WEB_APP);
   // Converts |url| to a fixed-up one and checks validity.
   const GURL gurl(url_formatter::FixupURL(url, /*desired_tld=*/std::string()));
-  if (!gurl.is_valid())
-    return;
 
   // Web app launches should only be invoked on HTTPS URLs.
-  if (gurl.SchemeIs(url::kHttpsScheme))
+  if (CanOpenWebAppForUrl(gurl))
     g_open_url_delegate->OpenWebAppFromArc(gurl);
 }
 
@@ -325,6 +356,26 @@ void ArcIntentHelperBridge::OnDownloadAdded(
 
   for (auto& observer : observer_list_)
     observer.OnArcDownloadAdded(relative_path, owner_package_name);
+}
+
+void ArcIntentHelperBridge::OnOpenAppWithIntent(
+    const GURL& start_url,
+    arc::mojom::LaunchIntentPtr intent) {
+  // Fall-back to the previous behavior where the web app opens without any
+  // share data.
+  if (!base::FeatureList::IsEnabled(arc::kEnableWebAppShareFeature)) {
+    if (intent->data)
+      OnOpenWebApp(intent->data->spec());
+    return;
+  }
+
+  // Web app launches should only be invoked on HTTPS URLs.
+  if (CanOpenWebAppForUrl(start_url)) {
+    RecordOpenType(ArcIntentHelperOpenType::WEB_APP);
+    RecordOpenAppIntentAction(intent);
+
+    g_open_url_delegate->OpenAppWithIntent(start_url, std::move(intent));
+  }
 }
 
 ArcIntentHelperBridge::GetResult ArcIntentHelperBridge::GetActivityIcons(

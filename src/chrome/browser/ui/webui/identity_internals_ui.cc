@@ -24,6 +24,7 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "extensions/browser/extension_registry.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace {
 
@@ -214,7 +215,8 @@ IdentityInternalsUIMessageHandler::GetInfoForToken(
   token_data->SetString("extensionId", access_tokens_key.extension_id);
   token_data->SetString("accountId", access_tokens_key.account_id.ToString());
   token_data->SetString("extensionName", GetExtensionName(access_tokens_key));
-  token_data->Set("scopes", GetScopes(token_cache_value));
+  token_data->SetKey(
+      "scopes", base::Value::FromUniquePtrValue(GetScopes(token_cache_value)));
   token_data->SetString("status", GetStatus(token_cache_value));
   token_data->SetString("accessToken", token_cache_value.token());
   token_data->SetString("expirationTime", GetExpirationTime(token_cache_value));

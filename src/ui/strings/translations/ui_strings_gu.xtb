@@ -58,6 +58,7 @@
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="2353636109065292463">તમારું ઇન્ટરનેટ કનેક્શન તપાસી રહ્યાં છીએ</translation>
 <translation id="2388990488038464401">તમારા ફોન વડે આ નંબર પર કૉલ કરીએ?</translation>
+<translation id="2435457462613246316">પાસવર્ડ બતાવો</translation>
 <translation id="24452542372838207">નોટિફિકેશન વિસ્તૃત કરો</translation>
 <translation id="2445449901874883781">વધારે ઘનતાનો ઉપયોગ કરો</translation>
 <translation id="2482878487686419369">નોટિફિકેશનો</translation>
@@ -79,6 +80,7 @@
 <translation id="2824719307700604149">{YEARS,plural, =1{1 વર્ષ પહેલાં}one{# વર્ષ પહેલાં}other{# વર્ષ પહેલાં}}</translation>
 <translation id="2878511608894704031">બધું ડિલીટ કરો</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{1દિ. માં}one{#દિ. માં}other{#દિ. માં}}</translation>
+<translation id="2922712708897119705"><ph name="COLUMN_NAME" /> કૉલમને ઉતરતા ક્રમમાં સૉર્ટ કરી છે.</translation>
 <translation id="2931838996092594335">ક્લિક કરો</translation>
 <translation id="2981684127883932071">સૂચનો બતાવી રહ્યાં છીએ</translation>
 <translation id="3036649622769666520">ફાઇલો ખોલો</translation>
@@ -114,6 +116,7 @@
 <translation id="3897092660631435901">મેનૂ</translation>
 <translation id="3909791450649380159">કા&amp;પો</translation>
 <translation id="3990502903496589789">જમણી કિનારી</translation>
+<translation id="3994749195054421561"><ph name="COLUMN_NAME" /> કૉલમને ચઢતા ક્રમમાં સૉર્ટ કરી છે.</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{વાંચ્યા વગરનું 1 નોટિફિકેશન}one{# વાંચ્યા વગરના નોટિફિકેશન}other{# વાંચ્યા વગરના નોટિફિકેશન}}</translation>
 <translation id="4202807286478387388">જંપ કરો</translation>
 <translation id="4250229828105606438">સ્ક્રીનશૉટ</translation>
@@ -123,6 +126,7 @@
 <translation id="4306392492252714209">ક્લિપબોર્ડમાંથી કાઢી નાખો.</translation>
 <translation id="4316910396681052118">બધી ઍપ્લિકેશનો</translation>
 <translation id="4491109536499578614">છબી</translation>
+<translation id="4565377596337484307">પાસવર્ડ છુપાવો</translation>
 <translation id="4588090240171750605">જમણે સ્ક્રોલ કરો</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, સ્ટાર રેટિંગ <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, ઍપ માટે સુઝાવ</translation>
@@ -165,6 +169,7 @@
 <translation id="6012623610530968780"><ph name="SELECTED_PAGE" /> પેજમાંનું <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">શોધબૉક્સમાંથી બધી ટેક્સ્ટ સાફ કરો</translation>
 <translation id="6040143037577758943">બંધ કરો</translation>
+<translation id="6117103120090651229">વચ્ચેનું બટન</translation>
 <translation id="6119846243427417423">સક્રિય કરો</translation>
 <translation id="6129953537138746214">જગ્યા</translation>
 <translation id="6134259848159370930">તમારા ડિવાઇસ, ઍપ, સેટિંગ અને વેબ પર શોધો.</translation>
@@ -173,6 +178,7 @@
 <translation id="6156262341071374681">બધી ઍપ માટે વિસ્તૃત કરો</translation>
 <translation id="6165508094623778733">વધુ જાણો</translation>
 <translation id="6166852626429024716">તમારા ડિવાઇસ, ઍપ, સેટિંગ અને વેબ પર શોધો...</translation>
+<translation id="6237461503717005873"><ph name="ROW_NAME" />ને પસંદ કરી.</translation>
 <translation id="6264365405983206840">&amp;બધા પસંદ કરો</translation>
 <translation id="6351032674660237738">ઍપ સૂચનો</translation>
 <translation id="6364916375976753737">ડાબે સ્ક્રોલ કરો</translation>
@@ -213,6 +219,7 @@
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 મિનિટ બાકી}one{# મિનિટ બાકી}other{# મિનિટ બાકી}}</translation>
 <translation id="7430878839542012341">તમારા ઇતિહાસમાંથી આ શોધ ડિલીટ કરીએ?</translation>
+<translation id="7437971918971306061"><ph name="COLUMN_NAME" /> કૉલમને અનસૉર્ટ કરી.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">ઇમોજી</translation>
 <translation id="7620655452534002301">કાઢી નાખી.</translation>

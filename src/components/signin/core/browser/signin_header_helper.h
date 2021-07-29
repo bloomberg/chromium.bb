@@ -26,6 +26,8 @@ class HttpRequestHeaders;
 
 namespace signin {
 
+enum class Tribool;
+
 // Profile mode flags.
 enum ProfileMode {
   PROFILE_MODE_DEFAULT = 0,
@@ -245,7 +247,7 @@ void AppendOrRemoveMirrorRequestHeader(
     RequestAdapter* request,
     const GURL& redirect_url,
     const std::string& gaia_id,
-    const absl::optional<bool>& is_child_account,
+    Tribool is_child_account,
     AccountConsistencyMethod account_consistency,
     const content_settings::CookieSettings* cookie_settings,
     int profile_mode_mask,

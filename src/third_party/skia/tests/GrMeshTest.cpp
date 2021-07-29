@@ -64,7 +64,7 @@ public:
     }
     template<typename T> sk_sp<const GrBuffer> makeVertexBuffer(const T* data, int count);
 
-    GrMeshDrawOp::Target* target() { return fState; }
+    GrMeshDrawTarget* target() { return fState; }
 
     sk_sp<const GrBuffer> fIndexBuffer;
     sk_sp<const GrBuffer> fIndexBuffer2;
@@ -328,22 +328,22 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrMeshTest, reporter, ctxInfo) {
                      GrDrawIndexedIndirectWriter indexedIndirectWriter;
                      if (indexed) {
                          // Make helper->fDrawIndirectBufferOffset nonzero.
-                         sk_sp<const GrBuffer> dummyBuff;
-                         size_t dummyOffset;
+                         sk_sp<const GrBuffer> ignoredBuff;
+                         size_t ignoredOffset;
                          // Make a superfluous call to makeDrawIndirectSpace in order to test
                          // "offsetInBytes!=0" for the actual call to makeDrawIndexedIndirectSpace.
-                         helper->target()->makeDrawIndirectSpace(29, &dummyBuff, &dummyOffset);
+                         helper->target()->makeDrawIndirectSpace(29, &ignoredBuff, &ignoredOffset);
                          indexedIndirectWriter = helper->target()->makeDrawIndexedIndirectSpace(
                                  kBoxCountY, &helper->fDrawIndirectBuffer,
                                  &helper->fDrawIndirectBufferOffset);
                      } else {
                          // Make helper->fDrawIndirectBufferOffset nonzero.
-                         sk_sp<const GrBuffer> dummyBuff;
-                         size_t dummyOffset;
+                         sk_sp<const GrBuffer> ignoredBuff;
+                         size_t ignoredOffset;
                          // Make a superfluous call to makeDrawIndexedIndirectSpace in order to test
                          // "offsetInBytes!=0" for the actual call to makeDrawIndirectSpace.
-                         helper->target()->makeDrawIndexedIndirectSpace(7, &dummyBuff,
-                                                                        &dummyOffset);
+                         helper->target()->makeDrawIndexedIndirectSpace(7, &ignoredBuff,
+                                                                        &ignoredOffset);
                          indirectWriter = helper->target()->makeDrawIndirectSpace(
                                  kBoxCountY, &helper->fDrawIndirectBuffer,
                                  &helper->fDrawIndirectBufferOffset);
@@ -424,7 +424,7 @@ private:
     void onPrePrepare(GrRecordingContext*,
                       const GrSurfaceProxyView& writeView,
                       GrAppliedClip*,
-                      const GrXferProcessor::DstProxyView&,
+                      const GrDstProxyView&,
                       GrXferBarrierFlags renderPassXferBarriers,
                       GrLoadOp colorLoadOp) override {}
     void onPrepare(GrOpFlushState* state) override {

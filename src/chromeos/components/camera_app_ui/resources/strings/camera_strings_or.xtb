@@ -6,6 +6,8 @@
 <translation id="1430915738399379752">ପ୍ରିଣ୍ଟ କରନ୍ତୁ</translation>
 <translation id="1467231725790366244"><ph name="CAMERA" />କୁ ଅନପ୍ଲଗ୍ କରାଯାଇଛି।</translation>
 <translation id="1473110567575736769">3 ସେକେଣ୍ଡର ଟାଇମର୍</translation>
+<translation id="1478594628797167447">ସ୍କାନର୍</translation>
+<translation id="1545749641540134597">QR କୋଡ୍ ସ୍କାନ୍ କରନ୍ତୁ</translation>
 <translation id="1620510694547887537">କ୍ୟାମେରା</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">କିଛି ରେକର୍ଡ କରାଯାଇ ନାହିଁ</translation>
@@ -19,6 +21,8 @@
 <translation id="2050339315714019657">ପୋଟ୍ରେଟ୍‌</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> ସକ୍ରିୟ ଅଛି</translation>
 <translation id="2144806332417375165">କଷ୍ଟମ୍ ଭିଡିଓ ପାରାମିଟରଗୁଡ଼ିକ</translation>
+<translation id="2175927920773552910">QR କୋଡ୍</translation>
+<translation id="2268107369530950373">ସ୍କାନର୍ ମୋଡକୁ ସ୍ୱିଚ୍ କରନ୍ତୁ</translation>
 <translation id="229579744168541441">ଡିସ୍କକୁ ଏକ୍ସପୋର୍ଟ କରନ୍ତୁ</translation>
 <translation id="2320741269052147773">ବାମକୁ ପ୍ୟାନ୍ କରନ୍ତୁ</translation>
 <translation id="2501278716633472235">ଫେରନ୍ତୁ</translation>
@@ -38,6 +42,7 @@
 <translation id="3227137524299004712">ମାଇକ୍ରୋଫୋନ୍</translation>
 <translation id="3240426699337459095">ଲିଙ୍କ୍ କପି ହୋଇଛି</translation>
 <translation id="3259149966178251584">କ୍ୟାମେରା ରିଜୋଲ୍ୟୁଶନ୍</translation>
+<translation id="3448774564454087943">ଭିଡିଓଟି ବହୁତ ଛୋଟ ହୋଇଥିବା ଯୋଗୁଁ ଏହା ସେଭ୍ ହୋଇନାହିଁ</translation>
 <translation id="3517926952904427380">ପୋଟ୍ରେଟ୍ ଫଟୋ ଉଠାଇବା ପାଇଁ ଅକ୍ଷମ</translation>
 <translation id="3569311554794739032">ଆପଣ କ'ଣ ପ୍ରକୃତରେ <ph name="FILE" />କୁ କାଢ଼ି ଦେବାକୁ ଚାହୁଁଛନ୍ତି?</translation>
 <translation id="3733597664308256288">ଅତିରିକ୍ତ କ୍ୟାମେରା ନିୟନ୍ତ୍ରଣଗୁଡ଼ିକ ଉପଲବ୍ଧ ଅଛି। ଆକ୍ସେସ୍ କରିବା ପାଇଁ ସନ୍ଧାନ + ଡାହାଣ ତୀର କୀ ଦବାନ୍ତୁ।</translation>
@@ -56,11 +61,14 @@
 <translation id="4628948037717959914">ଫଟୋ</translation>
 <translation id="4649291346448517080">ଫାଇଲ୍ ସେଭ୍ କରିବାରେ ଅକ୍ଷମ</translation>
 <translation id="4890010094662541459">3 x 3</translation>
+<translation id="491895758387112773">ମଲ୍ଟିଷ୍ଟ୍ରିମ୍ ଭିଡିଓ ରେକର୍ଡିଂ</translation>
 <translation id="5057360777601936059">ସମ୍ପ୍ରତି, ଆପଣଙ୍କର କ୍ୟାମେରା ଉପଲବ୍ଧ ନାହିଁ।
         କ୍ୟାମେରା ଠିକ୍ ଭାବରେ ସଂଯୁକ୍ତ ଅଛି କି ନାହିଁ ଦୟାକରି ଯାଞ୍ଚ କରନ୍ତୁ।</translation>
 <translation id="5152121255775685072">ଗ୍ୟାଲେରୀକୁ ଯାଆନ୍ତୁ</translation>
+<translation id="5268823927180092501">ସବୁ କ୍ୟାମେରାରେ ଡକ୍ୟୁମେଣ୍ଟ ମୋଡ୍ ସକ୍ଷମ କରନ୍ତୁ</translation>
 <translation id="5422455049771430511">ବର୍ତ୍ତମାନ ଆପଣଙ୍କ ଫଟୋ ଏବଂ ଭିଡିଓଗୁଡ଼ିକ ପାଇଁ ଏକ ନୂଆ ସ୍ଥାନ ଉପଲବ୍ଧ ଅଛି</translation>
 <translation id="5671277269877808209">ବର୍ଗାକାର</translation>
+<translation id="5753488212459587150">ଏକ୍ସପର୍ଟ ମୋଡ୍ ସକ୍ଷମ କରନ୍ତୁ</translation>
 <translation id="5775960006311140197">ଏକ୍ସପାର୍ଟ ମୋଡ୍</translation>
 <translation id="5869546221129391014">ଗ୍ରିଡ୍</translation>
 <translation id="5975083100439434680">ଜୁମ୍ କମାନ୍ତୁ</translation>

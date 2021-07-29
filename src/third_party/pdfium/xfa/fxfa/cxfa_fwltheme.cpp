@@ -7,7 +7,6 @@
 #include "xfa/fxfa/cxfa_fwltheme.h"
 
 #include "core/fxcrt/fx_codepage.h"
-#include "third_party/base/stl_util.h"
 #include "xfa/fde/cfde_textout.h"
 #include "xfa/fgas/font/cfgas_fontmgr.h"
 #include "xfa/fgas/font/cfgas_gefont.h"
@@ -101,13 +100,13 @@ void CXFA_FWLTheme::DrawText(const CFWL_ThemeText& pParams) {
     m_pTextOut->SetFont(m_pCalendarFont);
     m_pTextOut->SetFontSize(FWLTHEME_CAPACITY_FontSize);
     m_pTextOut->SetTextColor(FWLTHEME_CAPACITY_TextColor);
-    if ((pParams.m_iPart == CFWL_Part::DatesIn) &&
+    if ((pParams.m_iPart == CFWL_ThemePart::Part::kDatesIn) &&
         !(pParams.m_dwStates & FWL_ITEMSTATE_MCD_Flag) &&
         (pParams.m_dwStates &
          (CFWL_PartState_Hovered | CFWL_PartState_Selected))) {
       m_pTextOut->SetTextColor(0xFF888888);
     }
-    if (pParams.m_iPart == CFWL_Part::Caption)
+    if (pParams.m_iPart == CFWL_ThemePart::Part::kCaption)
       m_pTextOut->SetTextColor(ArgbEncode(0xff, 0, 153, 255));
 
     CFGAS_GEGraphics* pGraphics = pParams.GetGraphics();

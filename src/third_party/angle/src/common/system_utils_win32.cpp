@@ -50,6 +50,9 @@ class Win32Library : public Library
             case SearchType::SystemDir:
                 mModule = LoadLibraryExA(libraryName, nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
                 break;
+            case SearchType::AlreadyLoaded:
+                mModule = GetModuleHandleA(libraryName);
+                break;
         }
     }
 
@@ -93,8 +96,8 @@ Library *OpenSharedLibrary(const char *libraryName, SearchType searchType)
     }
 }
 
-Library *OpenSharedLibraryWithExtension(const char *libraryName)
+Library *OpenSharedLibraryWithExtension(const char *libraryName, SearchType searchType)
 {
-    return new Win32Library(libraryName, SearchType::SystemDir);
+    return new Win32Library(libraryName, searchType);
 }
 }  // namespace angle

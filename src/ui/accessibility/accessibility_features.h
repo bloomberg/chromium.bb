@@ -75,6 +75,13 @@ AX_BASE_EXPORT extern const base::Feature kIChromeAccessible;
 // Returns true if the IChromeAccessible COM API is enabled.
 AX_BASE_EXPORT bool IsIChromeAccessibleEnabled();
 
+AX_BASE_EXPORT extern const base::Feature kSelectiveUIAEnablement;
+
+// Returns true if accessibility will be selectively enabled depending on the
+// UIA APIs that are called, allowing non-screenreader usage to enable less of
+// the accessibility system.
+AX_BASE_EXPORT bool IsSelectiveUIAEnablementEnabled();
+
 #endif  // defined(OS_WIN)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -94,6 +101,14 @@ AX_BASE_EXPORT extern const base::Feature
 // following mode in Magnifier settings is enabled.
 AX_BASE_EXPORT bool IsMagnifierContinuousMouseFollowingModeSettingEnabled();
 
+// Enables new caret following behavior from Javascript.
+AX_BASE_EXPORT extern const base::Feature
+    kMagnifierCaretFollowingFromJavascript;
+
+// Returns true if the feature to allow new caret following from Javascript is
+// enabled.
+AX_BASE_EXPORT bool IsMagnifierCaretFollowingFromJavascriptEnabled();
+
 // Enables ability to choose point scanning mode in switch access.
 AX_BASE_EXPORT extern const base::Feature kEnableSwitchAccessPointScanning;
 
@@ -110,6 +125,20 @@ AX_BASE_EXPORT extern const base::Feature
 // Returns true if the feature to allow experimental listening features for
 // Dictation is enabled.
 AX_BASE_EXPORT bool IsExperimentalAccessibilityDictationListeningEnabled();
+
+// Enables dictation to use on-device speech recognition when available.
+AX_BASE_EXPORT extern const base::Feature
+    kExperimentalAccessibilityDictationOffline;
+
+// Returns true if experimental accessibility offline dictation is enabled.
+AX_BASE_EXPORT bool IsExperimentalAccessibilityDictationOfflineEnabled();
+
+// Enables high-quality, network-based voices in Select-to-speak.
+AX_BASE_EXPORT extern const base::Feature kEnhancedNetworkVoices;
+
+// Returns true if network-based voices are enabled in Select-to-speak.
+AX_BASE_EXPORT bool IsEnhancedNetworkVoicesEnabled();
+
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Enables Get Image Descriptions to augment existing images labels,

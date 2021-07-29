@@ -754,8 +754,17 @@ static void tf_normalize_filtered_frame(
 int av1_get_q(const AV1_COMP *cpi) {
   const GF_GROUP *gf_group = &cpi->ppi->gf_group;
   const FRAME_TYPE frame_type = gf_group->frame_type[cpi->gf_frame_index];
-  const int q = (int)av1_convert_qindex_to_q(
-      cpi->rc.avg_frame_qindex[frame_type], cpi->common.seq_params->bit_depth);
+  int avg_frame_qindex;
+#if CONFIG_FRAME_PARALLEL_ENCODE
+  avg_frame_qindex =
+      (cpi->ppi->gf_group.frame_parallel_level[cpi->gf_frame_index] > 0)
+          ? cpi->ppi->temp_avg_frame_qindex[frame_type]
+          : cpi->rc.avg_frame_qindex[frame_type];
+#else
+  avg_frame_qindex = cpi->rc.avg_frame_qindex[frame_type];
+#endif  // CONFIG_FRAME_PARALLEL_ENCODE
+  const int q = (int)av1_convert_qindex_to_q(avg_frame_qindex,
+                                             cpi->common.seq_params->bit_depth);
   return q;
 }
 

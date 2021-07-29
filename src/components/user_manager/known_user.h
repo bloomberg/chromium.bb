@@ -43,7 +43,7 @@ class USER_MANAGER_EXPORT KnownUser final {
   // |local_state| may not be nullptr. This is different from the legacy
   // accessors (user_manager::known_user::) which will return a default value if
   // local_state is not available.
-  KnownUser(PrefService* local_state);
+  explicit KnownUser(PrefService* local_state);
   ~KnownUser();
 
   KnownUser(const KnownUser& other) = delete;
@@ -133,11 +133,6 @@ class USER_MANAGER_EXPORT KnownUser final {
   // Chrome crashes shortly after starting a session. Cryptohome should be able
   // to find known account_id on Chrome restart.
   void SaveKnownUser(const AccountId& account_id);
-
-  // Updates |gaia_id| for user with |account_id|.
-  // TODO(alemate): Update this once AccountId contains GAIA ID
-  // (crbug.com/548926).
-  void UpdateGaiaID(const AccountId& account_id, const std::string& gaia_id);
 
   // Updates |account_id.account_type_| and |account_id.GetGaiaId()| or
   // |account_id.GetObjGuid()| for user with |account_id|.
@@ -259,6 +254,7 @@ class USER_MANAGER_EXPORT KnownUser final {
   FRIEND_TEST_ALL_PREFIXES(KnownUserTest,
                            CleanEphemeralUsersRemovesEphemeralAdOnly);
   FRIEND_TEST_ALL_PREFIXES(KnownUserTest, CleanObsoletePrefs);
+  FRIEND_TEST_ALL_PREFIXES(KnownUserTest, MigrateOfflineSigninLimit);
 
   // Removes |path| from account_id's known user dictionary.
   void ClearPref(const AccountId& account_id, const std::string& path);
@@ -398,14 +394,6 @@ SetGaiaIdMigrationStatusDone(const AccountId& account_id,
 // TODO(https://crbug.com/1150434): Deprecated, use KnownUser::SaveKnownUser
 // instead.
 void USER_MANAGER_EXPORT SaveKnownUser(const AccountId& account_id);
-
-// Updates |gaia_id| for user with |account_id|.
-// TODO(alemate): Update this once AccountId contains GAIA ID
-// (crbug.com/548926).
-// TODO(https://crbug.com/1150434): Deprecated, use KnownUser::UpdateGaiaID
-// instead.
-void USER_MANAGER_EXPORT UpdateGaiaID(const AccountId& account_id,
-                                      const std::string& gaia_id);
 
 // Updates |account_id.account_type_| and |account_id.GetGaiaId()| or
 // |account_id.GetObjGuid()| for user with |account_id|.

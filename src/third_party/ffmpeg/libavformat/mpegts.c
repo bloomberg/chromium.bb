@@ -266,7 +266,7 @@ typedef struct PESContext {
     int merged_st;
 } PESContext;
 
-extern AVInputFormat ff_mpegts_demuxer;
+extern const AVInputFormat ff_mpegts_demuxer;
 
 static struct Program * get_program(MpegTSContext *ts, unsigned int programid)
 {
@@ -904,7 +904,7 @@ static int mpegts_set_stream_info(AVStream *st, PESContext *pes,
     st->priv_data         = pes;
     st->codecpar->codec_type = AVMEDIA_TYPE_DATA;
     st->codecpar->codec_id   = AV_CODEC_ID_NONE;
-    st->need_parsing      = AVSTREAM_PARSE_FULL;
+    st->internal->need_parsing      = AVSTREAM_PARSE_FULL;
     pes->st          = st;
     pes->stream_type = stream_type;
 
@@ -942,7 +942,7 @@ static int mpegts_set_stream_info(AVStream *st, PESContext *pes,
             sub_st->priv_data         = sub_pes;
             sub_st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
             sub_st->codecpar->codec_id   = AV_CODEC_ID_AC3;
-            sub_st->need_parsing      = AVSTREAM_PARSE_FULL;
+            sub_st->internal->need_parsing      = AVSTREAM_PARSE_FULL;
             sub_pes->sub_st           = pes->sub_st = sub_st;
         }
     }
@@ -954,7 +954,7 @@ static int mpegts_set_stream_info(AVStream *st, PESContext *pes,
     }
     if ((st->codecpar->codec_id == AV_CODEC_ID_NONE ||
             (st->internal->request_probe > 0 && st->internal->request_probe < AVPROBE_SCORE_STREAM_RETRY / 5)) &&
-        st->probe_packets > 0 &&
+        st->internal->probe_packets > 0 &&
         stream_type == STREAM_TYPE_PRIVATE_DATA) {
         st->codecpar->codec_type = AVMEDIA_TYPE_DATA;
         st->codecpar->codec_id   = AV_CODEC_ID_BIN_DATA;
@@ -981,7 +981,7 @@ static void reset_pes_packet_state(PESContext *pes)
 
 static void new_data_packet(const uint8_t *buffer, int len, AVPacket *pkt)
 {
-    av_init_packet(pkt);
+    av_packet_unref(pkt);
     pkt->data = (uint8_t *)buffer;
     pkt->size = len;
 }
@@ -990,7 +990,7 @@ static int new_pes_packet(PESContext *pes, AVPacket *pkt)
 {
     uint8_t *sd;
 
-    av_init_packet(pkt);
+    av_packet_unref(pkt);
 
     pkt->buf  = pes->buffer;
     pkt->data = pes->buffer->data;
@@ -1717,10 +1717,10 @@ static void m4sl_cb(MpegTSFilter *filter, const uint8_t *section,
             ff_mp4_read_dec_config_descr(s, st, &pb);
             if (st->codecpar->codec_id == AV_CODEC_ID_AAC &&
                 st->codecpar->extradata_size > 0)
-                st->need_parsing = 0;
+                st->internal->need_parsing = 0;
             if (st->codecpar->codec_id == AV_CODEC_ID_H264 &&
                 st->codecpar->extradata_size > 0)
-                st->need_parsing = 0;
+                st->internal->need_parsing = 0;
 
             st->codecpar->codec_type = avcodec_get_type(st->codecpar->codec_id);
             st->internal->need_context_update = 1;
@@ -1826,7 +1826,7 @@ int ff_parse_mpeg2_descriptor(AVFormatContext *fc, AVStream *st, int stream_type
                 ff_mp4_read_dec_config_descr(fc, st, &pb);
                 if (st->codecpar->codec_id == AV_CODEC_ID_AAC &&
                     st->codecpar->extradata_size > 0) {
-                    st->need_parsing = 0;
+                    st->internal->need_parsing = 0;
                     st->internal->need_context_update = 1;
                 }
                 if (st->codecpar->codec_id == AV_CODEC_ID_MPEG4SYSTEMS)
@@ -1848,7 +1848,7 @@ int ff_parse_mpeg2_descriptor(AVFormatContext *fc, AVStream *st, int stream_type
             ff_mp4_read_dec_config_descr(fc, st, &pb);
             if (st->codecpar->codec_id == AV_CODEC_ID_AAC &&
                 st->codecpar->extradata_size > 0) {
-                st->internal->request_probe = st->need_parsing = 0;
+                st->internal->request_probe = st->internal->need_parsing = 0;
                 st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
                 st->internal->need_context_update = 1;
             }
@@ -1995,7 +1995,7 @@ int ff_parse_mpeg2_descriptor(AVFormatContext *fc, AVStream *st, int stream_type
         }
         break;
     case 0x52: /* stream identifier descriptor */
-        st->stream_identifier = 1 + get8(pp, desc_end);
+        st->internal->stream_identifier = 1 + get8(pp, desc_end);
         break;
     case METADATA_DESCRIPTOR:
         if (get16(pp, desc_end) == 0xFFFF)
@@ -2026,14 +2026,16 @@ int ff_parse_mpeg2_descriptor(AVFormatContext *fc, AVStream *st, int stream_type
                     return AVERROR_INVALIDDATA;
                 if (channel_config_code <= 0x8) {
                     st->codecpar->extradata[9]  = channels = channel_config_code ? channel_config_code : 2;
+                    AV_WL32(&st->codecpar->extradata[12], 48000);
                     st->codecpar->extradata[18] = channel_config_code ? (channels > 2) : /* Dual Mono */ 255;
                     st->codecpar->extradata[19] = opus_stream_cnt[channel_config_code];
                     st->codecpar->extradata[20] = opus_coupled_stream_cnt[channel_config_code];
                     memcpy(&st->codecpar->extradata[21], opus_channel_map[channels - 1], channels);
+                    st->codecpar->extradata_size = st->codecpar->extradata[18] ? 21 + channels : 19;
                 } else {
                     avpriv_request_sample(fc, "Opus in MPEG-TS - channel_config_code > 0x8");
                 }
-                st->need_parsing = AVSTREAM_PARSE_FULL;
+                st->internal->need_parsing = AVSTREAM_PARSE_FULL;
                 st->internal->need_context_update = 1;
             }
         }
@@ -2112,7 +2114,7 @@ int ff_parse_mpeg2_descriptor(AVFormatContext *fc, AVStream *st, int stream_type
             // Listing of data_component_ids is in STD-B10, part 2, Annex J.
             // Component tag limits are documented in TR-B14, fascicle 2,
             // Vol. 3, Section 2, 4.2.8.1
-            int actual_component_tag = st->stream_identifier - 1;
+            int actual_component_tag = st->internal->stream_identifier - 1;
             int picked_profile = FF_PROFILE_UNKNOWN;
             int data_component_id = get16(pp, desc_end);
             if (data_component_id < 0)
@@ -3298,33 +3300,37 @@ static int64_t mpegts_get_dts(AVFormatContext *s, int stream_index,
                               int64_t *ppos, int64_t pos_limit)
 {
     MpegTSContext *ts = s->priv_data;
+    AVPacket *pkt;
     int64_t pos;
     int pos47 = ts->pos47_full % ts->raw_packet_size;
     pos = ((*ppos  + ts->raw_packet_size - 1 - pos47) / ts->raw_packet_size) * ts->raw_packet_size + pos47;
     ff_read_frame_flush(s);
     if (avio_seek(s->pb, pos, SEEK_SET) < 0)
         return AV_NOPTS_VALUE;
+    pkt = av_packet_alloc();
+    if (!pkt)
+        return AV_NOPTS_VALUE;
     while(pos < pos_limit) {
-        int ret;
-        AVPacket pkt;
-        av_init_packet(&pkt);
-        ret = av_read_frame(s, &pkt);
-        if (ret < 0)
+        int ret = av_read_frame(s, pkt);
+        if (ret < 0) {
+            av_packet_free(&pkt);
             return AV_NOPTS_VALUE;
-        if (pkt.dts != AV_NOPTS_VALUE && pkt.pos >= 0) {
-            ff_reduce_index(s, pkt.stream_index);
-            av_add_index_entry(s->streams[pkt.stream_index], pkt.pos, pkt.dts, 0, 0, AVINDEX_KEYFRAME /* FIXME keyframe? */);
-            if (pkt.stream_index == stream_index && pkt.pos >= *ppos) {
-                int64_t dts = pkt.dts;
-                *ppos = pkt.pos;
-                av_packet_unref(&pkt);
+        }
+        if (pkt->dts != AV_NOPTS_VALUE && pkt->pos >= 0) {
+            ff_reduce_index(s, pkt->stream_index);
+            av_add_index_entry(s->streams[pkt->stream_index], pkt->pos, pkt->dts, 0, 0, AVINDEX_KEYFRAME /* FIXME keyframe? */);
+            if (pkt->stream_index == stream_index && pkt->pos >= *ppos) {
+                int64_t dts = pkt->dts;
+                *ppos = pkt->pos;
+                av_packet_free(&pkt);
                 return dts;
             }
         }
-        pos = pkt.pos;
-        av_packet_unref(&pkt);
+        pos = pkt->pos;
+        av_packet_unref(pkt);
     }
 
+    av_packet_free(&pkt);
     return AV_NOPTS_VALUE;
 }
 
@@ -3383,7 +3389,7 @@ void avpriv_mpegts_parse_close(MpegTSContext *ts)
     av_free(ts);
 }
 
-AVInputFormat ff_mpegts_demuxer = {
+const AVInputFormat ff_mpegts_demuxer = {
     .name           = "mpegts",
     .long_name      = NULL_IF_CONFIG_SMALL("MPEG-TS (MPEG-2 Transport Stream)"),
     .priv_data_size = sizeof(MpegTSContext),
@@ -3396,7 +3402,7 @@ AVInputFormat ff_mpegts_demuxer = {
     .priv_class     = &mpegts_class,
 };
 
-AVInputFormat ff_mpegtsraw_demuxer = {
+const AVInputFormat ff_mpegtsraw_demuxer = {
     .name           = "mpegtsraw",
     .long_name      = NULL_IF_CONFIG_SMALL("raw MPEG-TS (MPEG-2 Transport Stream)"),
     .priv_data_size = sizeof(MpegTSContext),

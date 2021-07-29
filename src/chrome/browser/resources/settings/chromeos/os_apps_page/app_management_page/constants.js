@@ -48,6 +48,9 @@
 
 /* #export */ const ArcPermissionType = appManagement.mojom.ArcPermissionType;
 
+/* #export */ const BorealisPermissionType =
+    appManagement.mojom.BorealisPermissionType;
+
 /* #export */ const AppType = apps.mojom.AppType;
 
 /* #export */ const PermissionValueType = apps.mojom.PermissionValueType;
@@ -57,6 +60,8 @@
 /* #export */ const OptionalBool = apps.mojom.OptionalBool;
 
 /* #export */ const InstallSource = apps.mojom.InstallSource;
+
+/* #export */ const WindowMode = apps.mojom.WindowMode;
 
 // This histogram is also declared and used at chrome/browser/ui/webui/settings/
 // chromeos/app_management/app_management_uma.h.
@@ -81,6 +86,7 @@
   OsSettingsMainPage: 9,
   MainViewPluginVm: 10,
   DBusServicePluginVm: 11,
+  MainViewBorealis: 12,
 };
 
 /**
@@ -108,4 +114,8 @@
   StorageTurnedOff: 16,
   PrintingTurnedOn: 17,
   PrintingTurnedOff: 18,
+  ResizeLockTurnedOn: 19,
+  ResizeLockTurnedOff: 20,
+  PreferredAppTurnedOn: 21,
+  PreferredAppTurnedOff: 22,
 };

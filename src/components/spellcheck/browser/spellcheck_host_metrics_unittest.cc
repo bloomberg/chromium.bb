@@ -8,8 +8,8 @@
 
 #include <memory>
 
+#include "base/cxx17_backports.h"
 #include "base/metrics/histogram_samples.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
@@ -112,7 +112,7 @@ TEST_F(SpellcheckHostMetricsTest, RecordAcceptLanguageStats) {
       "Spellcheck.Windows.ChromeLocalesSupport.HunspellOnly",
       "Spellcheck.Windows.ChromeLocalesSupport.NativeOnly",
       "Spellcheck.Windows.ChromeLocalesSupport.NoSupport"};
-  const int expected_counts[] = {1, 2, 3, 4};
+  const size_t expected_counts[] = {1, 2, 3, 4};
   base::HistogramTester histogram_tester;
 
   metrics()->RecordAcceptLanguageStats({expected_counts[0], expected_counts[1],
@@ -121,8 +121,8 @@ TEST_F(SpellcheckHostMetricsTest, RecordAcceptLanguageStats) {
 
   for (size_t i = 0; i < base::size(histogram_names); ++i) {
     histogram_tester.ExpectTotalCount(histogram_names[i], 1);
-    histogram_tester.ExpectBucketCount(histogram_names[i], expected_counts[i],
-                                       1);
+    histogram_tester.ExpectBucketCount(histogram_names[i],
+                                       static_cast<int>(expected_counts[i]), 1);
   }
 }
 
@@ -131,7 +131,7 @@ TEST_F(SpellcheckHostMetricsTest, RecordSpellcheckLanguageStats) {
       "Spellcheck.Windows.SpellcheckLocalesSupport.Both",
       "Spellcheck.Windows.SpellcheckLocalesSupport.HunspellOnly",
       "Spellcheck.Windows.SpellcheckLocalesSupport.NativeOnly"};
-  const int expected_counts[] = {1, 2, 3};
+  const size_t expected_counts[] = {1, 2, 3};
   base::HistogramTester histogram_tester;
 
   metrics()->RecordSpellcheckLanguageStats(
@@ -139,8 +139,8 @@ TEST_F(SpellcheckHostMetricsTest, RecordSpellcheckLanguageStats) {
 
   for (size_t i = 0; i < base::size(histogram_names); ++i) {
     histogram_tester.ExpectTotalCount(histogram_names[i], 1);
-    histogram_tester.ExpectBucketCount(histogram_names[i], expected_counts[i],
-                                       1);
+    histogram_tester.ExpectBucketCount(histogram_names[i],
+                                       static_cast<int>(expected_counts[i]), 1);
   }
 }
 #endif  // defined(OS_WIN)

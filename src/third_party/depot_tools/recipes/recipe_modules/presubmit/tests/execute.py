@@ -123,6 +123,56 @@ def GenTests(api):
 
           #### To see notifications and warnings, look at the stdout of the presubmit step.
         ''').strip()) + api.post_process(post_process.DropExpectation))
+  yield (
+      api.test('failure py3') + api.runtime(is_experimental=False) +
+      api.buildbucket.try_build(project='infra') + api.step_data(
+          'presubmit py3',
+          api.json.output(
+              {
+                  'errors': [{
+                      'message': 'Missing LGTM',
+                      'long_text': 'Here are some suggested OWNERS: fake@',
+                      'items': [],
+                      'fatal': True
+                  }, {
+                      'message': 'Syntax error in fake.py',
+                      'long_text': 'Expected "," after item in list',
+                      'items': [],
+                      'fatal': True
+                  }],
+                  'notifications': [{
+                      'message': 'If there is a bug associated please add it.',
+                      'long_text': '',
+                      'items': [],
+                      'fatal': False
+                  }],
+                  'warnings': [{
+                      'message': 'Line 100 has more than 80 characters',
+                      'long_text': '',
+                      'items': [],
+                      'fatal': False
+                  }]
+              },
+              retcode=1)) + api.post_process(post_process.StatusFailure) +
+      api.post_process(
+          post_process.ResultReason,
+          textwrap.dedent(u'''
+          #### There are 2 error(s), 1 warning(s), and 1 notifications(s). Here are the errors:
+
+          **ERROR**
+          ```
+          Missing LGTM
+          Here are some suggested OWNERS: fake@
+          ```
+
+          **ERROR**
+          ```
+          Syntax error in fake.py
+          Expected "," after item in list
+          ```
+
+          #### To see notifications and warnings, look at the stdout of the presubmit step.
+        ''').strip()) + api.post_process(post_process.DropExpectation))
 
   long_message = (u'Here are some suggested OWNERS:' +
     u'\nreallyLongFakeAccountNameEmail@chromium.org' * 10)
@@ -212,4 +262,26 @@ def GenTests(api):
          api.step_data('presubmit', api.json.output(None, retcode=2)) +
          api.post_process(post_process.StatusException) +
          api.post_process(post_process.ResultReason, bug_msg) +
+         api.post_process(post_process.DropExpectation))
+
+  yield (api.test('warnings-merged') + api.runtime(is_experimental=False) +
+         api.buildbucket.try_build(project='infra') + api.step_data(
+             'presubmit',
+             api.json.output({
+                 'errors': [],
+                 'notifications': [],
+                 'warnings': [{
+                     'message': 'warning py2'
+                 }]
+             }),
+         ) + api.step_data(
+             'presubmit py3',
+             api.json.output({
+                 'errors': [],
+                 'extra': [],
+                 'warnings': [{
+                     'message': 'warning py3'
+                 }]
+             }),
+         ) + api.post_process(post_process.StatusSuccess) +
          api.post_process(post_process.DropExpectation))

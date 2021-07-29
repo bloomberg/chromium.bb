@@ -12,6 +12,7 @@
 #include "printing/mojom/print.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
+#include "third_party/skia/include/core/SkTextBlob.h"
 
 namespace printing {
 
@@ -144,15 +145,18 @@ TEST(MetafileSkiaTest, TestMultiPictureDocumentTypefaces) {
     // Mark the page with some text using multiple fonts.
     // Use the first font.
     sk_sp<SkTextBlob> text_blob1 = SkTextBlob::MakeFromString("foo", font1);
-    record->push<cc::DrawTextBlobOp>(text_blob1, 0, 0, ++node_id, flags_text);
+    record->push<cc::DrawTextBlobOp>(text_blob1, 0.0f, 0.0f, ++node_id,
+                                     flags_text);
 
     // Use the second font.
     sk_sp<SkTextBlob> text_blob2 = SkTextBlob::MakeFromString("bar", font2);
-    record->push<cc::DrawTextBlobOp>(text_blob2, 0, 0, ++node_id, flags_text);
+    record->push<cc::DrawTextBlobOp>(text_blob2, 0.0f, 0.0f, ++node_id,
+                                     flags_text);
 
     // Reuse the first font again on same page.
     sk_sp<SkTextBlob> text_blob3 = SkTextBlob::MakeFromString("bar", font2);
-    record->push<cc::DrawTextBlobOp>(text_blob3, 0, 0, ++node_id, flags_text);
+    record->push<cc::DrawTextBlobOp>(text_blob3, 0.0f, 0.0f, ++node_id,
+                                     flags_text);
 
     metafile.AppendPage(page_size, std::move(record));
     metafile.AppendSubframeInfo(content_id, base::UnguessableToken::Create(),

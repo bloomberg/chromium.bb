@@ -83,7 +83,7 @@ namespace safeBrowsingPrivate {
     DOMString? url;
   };
 
-  // From ReferrerChainEntry in //src/components/safe_browsing/core/proto/csd.proto
+  // From ReferrerChainEntry in //src/components/safe_browsing/core/common/proto/csd.proto
   dictionary ReferrerChainEntry {
     // URL of this entry.
     DOMString url;
@@ -123,6 +123,10 @@ namespace safeBrowsingPrivate {
     // Whether subframe referrer URLs are removed due to user consent
     // restriction.
     boolean? isSubframeReferrerUrlRemoved;
+
+    // Whether any of the URLs are removed because the URL matches the
+    // SafeBrowsingAllowlistDomains enterprise policy in Chrome.
+    boolean isUrlRemovedByPolicy;
   };
 
   callback GetReferrerChainCallback = void(ReferrerChainEntry[] entries);

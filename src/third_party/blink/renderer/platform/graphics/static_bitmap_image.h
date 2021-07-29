@@ -21,6 +21,7 @@ class GLES2Interface;
 }  // namespace gpu
 
 namespace blink {
+class CanvasResourceProvider;
 
 class PLATFORM_EXPORT StaticBitmapImage : public Image {
  public:
@@ -40,7 +41,7 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
   // Methods overridden by all sub-classes
   ~StaticBitmapImage() override = default;
 
-  IntSize PreferredDisplaySize() const override;
+  IntSize SizeWithConfig(SizeConfig) const final;
 
   virtual scoped_refptr<StaticBitmapImage> ConvertToColorSpace(
       sk_sp<SkColorSpace>,
@@ -74,6 +75,11 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
     return false;
   }
 
+  virtual bool CopyToResourceProvider(CanvasResourceProvider*) {
+    NOTREACHED();
+    return false;
+  }
+
   virtual void EnsureSyncTokenVerified() { NOTREACHED(); }
   virtual gpu::MailboxHolder GetMailboxHolder() const {
     NOTREACHED();
@@ -92,9 +98,6 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
   ImageOrientation CurrentFrameOrientation() const override {
     return orientation_;
   }
-  bool HasDefaultOrientation() const override {
-    return orientation_ == ImageOrientationEnum::kDefault;
-  }
 
   void SetOrientation(ImageOrientation orientation) {
     orientation_ = orientation;
@@ -110,6 +113,8 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
                   ImageClampingMode,
                   RespectImageOrientationEnum,
                   const PaintImage&);
+
+  virtual IntSize SizeInternal() const = 0;
 
   // The image orientation is stored here because it is only available when the
   // static image is created and the underlying representations do not store

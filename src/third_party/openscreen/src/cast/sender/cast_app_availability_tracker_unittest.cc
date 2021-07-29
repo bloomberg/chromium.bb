@@ -97,62 +97,63 @@ TEST_F(CastAppAvailabilityTrackerTest, UpdateAppAvailability) {
   // |source3| not affected.
   EXPECT_THAT(
       tracker_.UpdateAppAvailability(
-          "deviceId1", "AAA", {AppAvailabilityResult::kAvailable, Now()}),
+          "receiverId1", "AAA", {AppAvailabilityResult::kAvailable, Now()}),
       CastMediaSourcesEqual(std::vector<CastMediaSource>()));
 
-  std::vector<std::string> devices_1 = {"deviceId1"};
-  std::vector<std::string> devices_1_2 = {"deviceId1", "deviceId2"};
+  std::vector<std::string> receivers_1 = {"receiverId1"};
+  std::vector<std::string> receivers_1_2 = {"receiverId1", "receiverId2"};
   std::vector<CastMediaSource> sources_1 = {source1};
   std::vector<CastMediaSource> sources_1_2 = {source1, source2};
 
-  // Tracker returns available devices even though sources aren't registered.
-  EXPECT_EQ(devices_1, tracker_.GetAvailableDevices(source1));
-  EXPECT_EQ(devices_1, tracker_.GetAvailableDevices(source2));
-  EXPECT_TRUE(tracker_.GetAvailableDevices(source3).empty());
+  // Tracker returns available receivers even though sources aren't registered.
+  EXPECT_EQ(receivers_1, tracker_.GetAvailableReceivers(source1));
+  EXPECT_EQ(receivers_1, tracker_.GetAvailableReceivers(source2));
+  EXPECT_TRUE(tracker_.GetAvailableReceivers(source3).empty());
 
   tracker_.RegisterSource(source1);
   // Only |source1| is registered for this app.
   EXPECT_THAT(
       tracker_.UpdateAppAvailability(
-          "deviceId2", "AAA", {AppAvailabilityResult::kAvailable, Now()}),
+          "receiverId2", "AAA", {AppAvailabilityResult::kAvailable, Now()}),
       CastMediaSourcesEqual(sources_1));
-  EXPECT_THAT(tracker_.GetAvailableDevices(source1),
-              UnorderedElementsAreArray(devices_1_2));
-  EXPECT_THAT(tracker_.GetAvailableDevices(source2),
-              UnorderedElementsAreArray(devices_1_2));
-  EXPECT_TRUE(tracker_.GetAvailableDevices(source3).empty());
+  EXPECT_THAT(tracker_.GetAvailableReceivers(source1),
+              UnorderedElementsAreArray(receivers_1_2));
+  EXPECT_THAT(tracker_.GetAvailableReceivers(source2),
+              UnorderedElementsAreArray(receivers_1_2));
+  EXPECT_TRUE(tracker_.GetAvailableReceivers(source3).empty());
 
   tracker_.RegisterSource(source2);
   EXPECT_THAT(
       tracker_.UpdateAppAvailability(
-          "deviceId2", "AAA", {AppAvailabilityResult::kUnavailable, Now()}),
+          "receiverId2", "AAA", {AppAvailabilityResult::kUnavailable, Now()}),
       CastMediaSourcesEqual(sources_1_2));
-  EXPECT_EQ(devices_1, tracker_.GetAvailableDevices(source1));
-  EXPECT_EQ(devices_1, tracker_.GetAvailableDevices(source2));
-  EXPECT_TRUE(tracker_.GetAvailableDevices(source3).empty());
+  EXPECT_EQ(receivers_1, tracker_.GetAvailableReceivers(source1));
+  EXPECT_EQ(receivers_1, tracker_.GetAvailableReceivers(source2));
+  EXPECT_TRUE(tracker_.GetAvailableReceivers(source3).empty());
 }
 
-TEST_F(CastAppAvailabilityTrackerTest, RemoveResultsForDevice) {
+TEST_F(CastAppAvailabilityTrackerTest, RemoveResultsForReceiver) {
   CastMediaSource source1("cast:AAA?clientId=1", {"AAA"});
 
-  tracker_.UpdateAppAvailability("deviceId1", "AAA",
+  tracker_.UpdateAppAvailability("receiverId1", "AAA",
                                  {AppAvailabilityResult::kAvailable, Now()});
   EXPECT_EQ(AppAvailabilityResult::kAvailable,
-            tracker_.GetAvailability("deviceId1", "AAA").availability);
+            tracker_.GetAvailability("receiverId1", "AAA").availability);
 
-  std::vector<std::string> expected_device_ids = {"deviceId1"};
-  EXPECT_EQ(expected_device_ids, tracker_.GetAvailableDevices(source1));
+  std::vector<std::string> expected_receiver_ids = {"receiverId1"};
+  EXPECT_EQ(expected_receiver_ids, tracker_.GetAvailableReceivers(source1));
 
-  // Unrelated device ID.
-  tracker_.RemoveResultsForDevice("deviceId2");
+  // Unrelated receiver ID.
+  tracker_.RemoveResultsForReceiver("receiverId2");
   EXPECT_EQ(AppAvailabilityResult::kAvailable,
-            tracker_.GetAvailability("deviceId1", "AAA").availability);
-  EXPECT_EQ(expected_device_ids, tracker_.GetAvailableDevices(source1));
+            tracker_.GetAvailability("receiverId1", "AAA").availability);
+  EXPECT_EQ(expected_receiver_ids, tracker_.GetAvailableReceivers(source1));
 
-  tracker_.RemoveResultsForDevice("deviceId1");
+  tracker_.RemoveResultsForReceiver("receiverId1");
   EXPECT_EQ(AppAvailabilityResult::kUnknown,
-            tracker_.GetAvailability("deviceId1", "AAA").availability);
-  EXPECT_EQ(std::vector<std::string>{}, tracker_.GetAvailableDevices(source1));
+            tracker_.GetAvailability("receiverId1", "AAA").availability);
+  EXPECT_EQ(std::vector<std::string>{},
+            tracker_.GetAvailableReceivers(source1));
 }
 
 }  // namespace cast

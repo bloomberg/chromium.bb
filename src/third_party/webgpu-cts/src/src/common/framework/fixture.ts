@@ -1,41 +1,59 @@
-import { TestCaseRecorder } from './logging/test_case_recorder.js';
-import { CaseParams } from './params_utils.js';
-import { assert } from './util/util.js';
+import { TestCaseRecorder } from '../internal/logging/test_case_recorder.js';
+import { JSONWithUndefined } from '../internal/params_utils.js';
+import { assert, unreachable } from '../util/util.js';
 
 export class SkipTestCase extends Error {}
 export class UnexpectedPassError extends Error {}
 
-// A Fixture is a class used to instantiate each test case at run time.
-// A new instance of the Fixture is created for every single test case
-// (i.e. every time the test function is run).
+export { TestCaseRecorder } from '../internal/logging/test_case_recorder.js';
+
+/** The fully-general type for params passed to a test function invocation. */
+export type TestParams = {
+  readonly [k: string]: JSONWithUndefined;
+};
+
+/**
+ * A Fixture is a class used to instantiate each test sub/case at run time.
+ * A new instance of the Fixture is created for every single test subcase
+ * (i.e. every time the test function is run).
+ */
 export class Fixture {
   private _params: unknown;
+  /**
+   * Interface for recording logs and test status.
+   *
+   * @internal
+   */
   protected rec: TestCaseRecorder;
   private eventualExpectations: Array<Promise<unknown>> = [];
   private numOutstandingAsyncExpectations = 0;
 
-  constructor(rec: TestCaseRecorder, params: CaseParams) {
+  /** @internal */
+  constructor(rec: TestCaseRecorder, params: TestParams) {
     this.rec = rec;
     this._params = params;
   }
 
+  /**
+   * Returns the (case+subcase) parameters for this test function invocation.
+   */
   get params(): unknown {
     return this._params;
   }
 
   // This has to be a member function instead of an async `createFixture` function, because
   // we need to be able to ergonomically override it in subclasses.
-  async init(): Promise<void> {}
+  /**
+   * Override this to do additional pre-test-function work in a derived fixture.
+   */
+  protected async init(): Promise<void> {}
 
-  debug(msg: string): void {
-    this.rec.debug(new Error(msg));
-  }
-
-  skip(msg: string): never {
-    throw new SkipTestCase(msg);
-  }
-
-  async finalize(): Promise<void> {
+  /**
+   * Override this to do additional post-test-function work in a derived fixture.
+   *
+   * Called even if init was unsuccessful.
+   */
+  protected async finalize(): Promise<void> {
     assert(
       this.numOutstandingAsyncExpectations === 0,
       'there were outstanding immediateAsyncExpectations (e.g. expectUncapturedError) at the end of the test'
@@ -52,14 +70,40 @@ export class Fixture {
     }
   }
 
+  /** @internal */
+  doInit(): Promise<void> {
+    return this.init();
+  }
+
+  /** @internal */
+  doFinalize(): Promise<void> {
+    return this.finalize();
+  }
+
+  /** Log a debug message. */
+  debug(msg: string): void {
+    this.rec.debug(new Error(msg));
+  }
+
+  /** Throws an exception marking the subcase as skipped. */
+  skip(msg: string): never {
+    throw new SkipTestCase(msg);
+  }
+
+  /** Log a warning and increase the result status to "Warn". */
   warn(msg?: string): void {
     this.rec.warn(new Error(msg));
   }
 
+  /** Log an error and increase the result status to "ExpectFailed". */
   fail(msg?: string): void {
     this.rec.expectationFailed(new Error(msg));
   }
 
+  /**
+   * Wraps an async function. Tracks its status to fail if the test tries to report a test status
+   * before the async work has finished.
+   */
   protected async immediateAsyncExpectation<T>(fn: () => Promise<T>): Promise<T> {
     this.numOutstandingAsyncExpectations++;
     const ret = await fn();
@@ -67,6 +111,10 @@ export class Fixture {
     return ret;
   }
 
+  /**
+   * Wraps an async function, passing it an `Error` object recording the original stack trace.
+   * The async work will be implicitly waited upon before reporting a test status.
+   */
   protected eventualAsyncExpectation<T>(fn: (niceStack: Error) => Promise<T>): Promise<T> {
     const promise = fn(new Error());
     this.eventualExpectations.push(promise);
@@ -89,6 +137,7 @@ export class Fixture {
     }
   }
 
+  /** Expect that the provided promise resolves (fulfills). */
   shouldResolve(p: Promise<unknown>, msg?: string): void {
     this.eventualAsyncExpectation(async niceStack => {
       const m = msg ? ': ' + msg : '';
@@ -102,6 +151,7 @@ export class Fixture {
     });
   }
 
+  /** Expect that the provided promise rejects, with the provided exception name. */
   shouldReject(expectedName: string, p: Promise<unknown>, msg?: string): void {
     this.eventualAsyncExpectation(async niceStack => {
       const m = msg ? ': ' + msg : '';
@@ -116,6 +166,7 @@ export class Fixture {
     });
   }
 
+  /** Expect that the provided function throws, with the provided exception name. */
   shouldThrow(expectedName: string, fn: () => void, msg?: string): void {
     const m = msg ? ': ' + msg : '';
     try {
@@ -126,6 +177,7 @@ export class Fixture {
     }
   }
 
+  /** Expect that a condition is true. */
   expect(cond: boolean, msg?: string): boolean {
     if (cond) {
       const m = msg ? ': ' + msg : '';
@@ -134,5 +186,24 @@ export class Fixture {
       this.rec.expectationFailed(new Error(msg));
     }
     return cond;
+  }
+
+  /** If the argument is an Error, fail (or warn). Otherwise, no-op. */
+  expectOK(
+    error: Error | unknown,
+    { mode = 'fail', niceStack }: { mode?: 'fail' | 'warn'; niceStack?: Error } = {}
+  ): void {
+    if (error instanceof Error) {
+      if (niceStack) {
+        error.stack = niceStack.stack;
+      }
+      if (mode === 'fail') {
+        this.rec.expectationFailed(error);
+      } else if (mode === 'warn') {
+        this.rec.warn(error);
+      } else {
+        unreachable();
+      }
+    }
   }
 }

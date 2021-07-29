@@ -44,7 +44,6 @@
 #include "media/base/audio_latency.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/media_log.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/security/protocol_handler_security_level.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
@@ -61,7 +60,6 @@
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_dedicated_worker_host_factory_client.h"
 #include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/public/platform/web_url_loader_factory.h"
 #include "third_party/blink/public/platform/web_v8_value_converter.h"
 #include "third_party/blink/public/platform/websocket_handshake_throttle_provider.h"
 #include "third_party/webrtc/api/video/video_codec_type.h"
@@ -102,8 +100,10 @@ class BigBuffer;
 
 namespace network {
 namespace mojom {
+class URLLoaderFactory;
 class URLLoaderFactoryInterfaceBase;
 }
+class PendingSharedURLLoaderFactory;
 class SharedURLLoaderFactory;
 }
 
@@ -142,7 +142,9 @@ class WebResourceRequestSenderDelegate;
 class WebSandboxSupport;
 class WebSecurityOrigin;
 class WebThemeEngine;
+class WebURLLoaderFactory;
 class WebVideoCaptureImplManager;
+struct WebContentSecurityPolicyHeader;
 
 namespace scheduler {
 class WebThreadScheduler;
@@ -287,20 +289,11 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Network -------------------------------------------------------------
 
-  // Returns the WebCodeCacheLoader that is used to fetch data from code caches.
-  // It is OK to return a nullptr. When a nullptr is returned, data would not
-  // be fetched from code cache.
-  virtual std::unique_ptr<WebCodeCacheLoader> CreateCodeCacheLoader() {
-    return nullptr;
-  }
-
   // Returns a new WebURLLoaderFactory that wraps the given
   // network::mojom::URLLoaderFactory.
   virtual std::unique_ptr<WebURLLoaderFactory> WrapURLLoaderFactory(
       CrossVariantMojoRemote<network::mojom::URLLoaderFactoryInterfaceBase>
-          url_loader_factory) {
-    return nullptr;
-  }
+          url_loader_factory);
 
   // Returns a new WebURLLoaderFactory that wraps the given
   // network::SharedURLLoaderFactory.
@@ -328,6 +321,7 @@ class BLINK_PLATFORM_EXPORT Platform {
                              const uint8_t* data,
                              size_t data_size) {}
 
+  // A request to fetch contents associated with this URL from metadata cache.
   using FetchCachedCodeCallback =
       base::OnceCallback<void(base::Time, mojo_base::BigBuffer)>;
   // A request to fetch previously cached code for the resource fetched from the
@@ -336,9 +330,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual void FetchCachedCode(blink::mojom::CodeCacheType cache_type,
                                const WebURL&,
                                FetchCachedCodeCallback) {}
-  // A request to clear cached code from storage. This can be called by the
-  // Renderer after fetching cached code that has become stale due to changes
-  // in the Renderer or runtime environment.
   virtual void ClearCodeCacheEntry(blink::mojom::CodeCacheType cache_type,
                                    const GURL&) {}
 
@@ -449,7 +440,7 @@ class BLINK_PLATFORM_EXPORT Platform {
   // used for resources which have compress="gzip" in *.grd.
   virtual WebData GetDataResource(
       int resource_id,
-      ui::ScaleFactor scale_factor = ui::SCALE_FACTOR_NONE) {
+      ui::ResourceScaleFactor scale_factor = ui::SCALE_FACTOR_NONE) {
     return WebData();
   }
 
@@ -609,7 +600,7 @@ class BLINK_PLATFORM_EXPORT Platform {
   // Whether zoom for dsf is enabled. When true, inputs to blink would all be
   // scaled by the device scale factor so that layout is done in device pixel
   // space.
-  virtual bool IsUseZoomForDSFEnabled() { return false; }
+  virtual bool IsUseZoomForDSFEnabled() { return true; }
 
   // Whether LCD text is enabled.
   virtual bool IsLcdTextEnabled() { return false; }
@@ -785,7 +776,7 @@ class BLINK_PLATFORM_EXPORT Platform {
           worker_timing_callback_task_runner,
       base::RepeatingCallback<
           void(int, mojo::PendingReceiver<blink::mojom::WorkerTimingContainer>)>
-          worker_timing_callback) {}
+          worker_timing_callback);
 
   // WebCrypto ----------------------------------------------------------
 
@@ -822,11 +813,14 @@ class BLINK_PLATFORM_EXPORT Platform {
   // MediaLog from any thread, but it must be destroyed on |owner_task_runner|.
   // MediaLog owners should destroy the MediaLog if the ExecutionContext is
   // destroyed, since |inspector_context| may no longer be valid at that point.
+  // |is_on_worker| is used to avoid logging to the chrome://media-internal
+  // page, which can only be logged to from the window main thread.
   // Note: |inspector_context| is only used on |owner_task_runner|, so
   // destroying the MediaLog on |owner_task_runner| should avoid races.
   virtual std::unique_ptr<media::MediaLog> GetMediaLog(
       MediaInspectorContext* inspector_context,
-      scoped_refptr<base::SingleThreadTaskRunner> owner_task_runner) {
+      scoped_refptr<base::SingleThreadTaskRunner> owner_task_runner,
+      bool is_on_worker) {
     return nullptr;
   }
 
@@ -872,6 +866,14 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual std::unique_ptr<WebV8ValueConverter> CreateWebV8ValueConverter() {
     return nullptr;
   }
+
+  // Content Security Policy --------------------------------------
+
+  // Appends to `csp`, the default CSP which should be applied to the given
+  // `url`. This allows the embedder to customize the applied CSP.
+  virtual void AppendContentSecurityPolicy(
+      const WebURL& url,
+      blink::WebVector<blink::WebContentSecurityPolicyHeader>* csp) {}
 
  private:
   static void InitializeMainThreadCommon(Platform* platform,

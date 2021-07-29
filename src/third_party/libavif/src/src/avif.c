@@ -101,6 +101,20 @@ const char * avifResultToString(avifResult result)
     return "Unknown Error";
 }
 
+const char * avifProgressiveStateToString(avifProgressiveState progressiveState)
+{
+    // clang-format off
+    switch (progressiveState) {
+        case AVIF_PROGRESSIVE_STATE_UNAVAILABLE: return "Unavailable";
+        case AVIF_PROGRESSIVE_STATE_AVAILABLE:   return "Available";
+        case AVIF_PROGRESSIVE_STATE_ACTIVE:      return "Active";
+        default:
+            break;
+    }
+    // clang-format on
+    return "Unknown";
+}
+
 // This function assumes nothing in this struct needs to be freed; use avifImageClear() externally
 static void avifImageSetDefaults(avifImage * image)
 {
@@ -543,6 +557,8 @@ avifBool avifCropRectConvertCleanApertureBox(avifCropRect * cropRect,
                                              avifPixelFormat yuvFormat,
                                              avifDiagnostics * diag)
 {
+    avifDiagnosticsClearError(diag);
+
     // ISO/IEC 14496-12:2020, Section 12.1.4.1:
     //   For horizOff and vertOff, D shall be strictly positive and N may be
     //   positive or negative. For cleanApertureWidth and cleanApertureHeight,
@@ -646,6 +662,8 @@ avifBool avifCleanApertureBoxConvertCropRect(avifCleanApertureBox * clap,
                                              avifPixelFormat yuvFormat,
                                              avifDiagnostics * diag)
 {
+    avifDiagnosticsClearError(diag);
+
     if (!avifCropRectIsValid(cropRect, imageW, imageH, yuvFormat, diag)) {
         return AVIF_FALSE;
     }

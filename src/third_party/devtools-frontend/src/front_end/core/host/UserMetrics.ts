@@ -578,7 +578,6 @@ export const DevtoolsExperiments: {
   'showOptionToNotTreatGlobalObjectsAsRoots': 18,
   'sourceDiff': 19,
   'sourceOrderViewer': 20,
-  'spotlight': 21,
   'webauthnPane': 22,
   'timelineEventInitiators': 24,
   'timelineInvalidationTracking': 26,
@@ -589,7 +588,6 @@ export const DevtoolsExperiments: {
   'wasmDWARFDebugging': 31,
   'dualScreenSupport': 32,
   'keyboardShortcutEditor': 35,
-  'recorder': 38,
   'APCA': 39,
   'cspViolationsView': 40,
   'fontEditor': 41,
@@ -597,7 +595,9 @@ export const DevtoolsExperiments: {
   'ignoreListJSFramesOnTimeline': 43,
   'contrastIssues': 44,
   'experimentalCookieFeatures': 45,
-  '__lastValidEnumPosition': 45,
+  'localizedDevTools': 46,
+  'bfcacheDebugging': 47,
+  '__lastValidEnumPosition': 47,
 };
 
 export const IssueExpanded: {

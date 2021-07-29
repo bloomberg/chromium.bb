@@ -32,6 +32,7 @@
 <translation id="1499900233129743732"><ph name="MANAGER" /> gerencia o usuário. Esse administrador pode controlar as configurações e monitorar a atividade do usuário remotamente.</translation>
 <translation id="150962533380566081">PUK inválida.</translation>
 <translation id="1510238584712386396">Iniciador</translation>
+<translation id="1600964289716072707">Coloque outra página no scanner e selecione "Digitalizar" para adicioná-la.</translation>
 <translation id="1621067168122174824">Executar teste de carregamento</translation>
 <translation id="1641857168437328880">Alimentador de documentos (unilateral)</translation>
 <translation id="1644574205037202324">Histórico</translation>
@@ -41,6 +42,7 @@
 <translation id="1715359911173058521">Ocorreu um problema na comunicação com o scanner. Verifique a rede ou a conexão USB e tente novamente.</translation>
 <translation id="1717874160321062422">Gerenciado por <ph name="FIRST_MANAGER" /> e <ph name="SECOND_MANAGER" /></translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
+<translation id="1759842336958782510">Chrome</translation>
 <translation id="1792647875738159689">Cancelando digitalização</translation>
 <translation id="1851218745569890714">Videoconferência</translation>
 <translation id="1887850431809612466">Revisão do hardware</translation>
@@ -50,6 +52,7 @@
 <translation id="1947737735496445907">Impresso</translation>
 <translation id="1979103255016296513">O prazo para a alteração de senha foi ultrapassado</translation>
 <translation id="1999615961760456652">Portal cativo</translation>
+<translation id="2006864819935886708">Conectividade</translation>
 <translation id="2008685064673031089">Pesquisa de números primos</translation>
 <translation id="2080070583977670716">Mais definições</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, versão <ph name="MILESTONE_VERSION" /></translation>
@@ -57,10 +60,12 @@
 <translation id="2141644705054017895"><ph name="PERCENTAGE_VALUE" />%</translation>
 <translation id="2157959690810728433">EM FILA</translation>
 <translation id="2161394479394250669">Cancelar trabalho de impressão</translation>
+<translation id="2209788852729124853">Redefinir contadores de tráfego</translation>
 <translation id="2217935453350629363">Velocidade atual</translation>
 <translation id="2224337661447660594">Sem Internet</translation>
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="225692081236532131">Status da ativação</translation>
+<translation id="2294675138977897428">Nenhuma conexão Ethernet detectada</translation>
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> dpi</translation>
 <translation id="2338501278241028356">Ativar o Bluetooth para descobrir dispositivos nas proximidades</translation>
 <translation id="2364498172489649528">Aprovado</translation>
@@ -76,6 +81,7 @@
 <translation id="2620436844016719705">Sistema</translation>
 <translation id="2740531572673183784">Ok</translation>
 <translation id="2751739896257479635">Autenticação EAP Fase 2</translation>
+<translation id="2783010256799387990">APROVADO</translation>
 <translation id="2789486458103222910">Ok</translation>
 <translation id="2805756323405976993">Apps</translation>
 <translation id="2862104018715411648">Para começar, coloque o documento no scanner e selecione "Digitalizar"</translation>
@@ -115,6 +121,7 @@
 <translation id="3595596368722241419">Bateria carregada</translation>
 <translation id="360565022852130722">A rede Wi-Fi é protegida pelo protocolo fraco WEP 802.1x</translation>
 <translation id="3689839747745352263">Teste de <ph name="TEST_NAME" /></translation>
+<translation id="373232531963562220">{PAGE_NUMBER,plural, =0{Verificar novamente a página}=1{Verificar novamente a página {PAGE_NUMBER}}one{Verificar novamente a página {PAGE_NUMBER}}other{Verificar novamente a página {PAGE_NUMBER}}}</translation>
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (<ph name="AGGREGATED_COUNT" /> avaliações)</translation>
 <translation id="3748026146096797577">Não conectado</translation>
 <translation id="3749289110408117711">Nome do arquivo</translation>
@@ -125,6 +132,7 @@
 <translation id="387301095347517405">O número de vezes que a bateria passou por um ciclo completo de carregamento</translation>
 <translation id="3941014780699102620">Falha na resolução do host</translation>
 <translation id="3942420633017001071">Diagnóstico</translation>
+<translation id="3966286471246132217">Para resultados mais precisos, feche todos os apps até que o teste seja concluído.</translation>
 <translation id="3967822245660637423">Download concluído</translation>
 <translation id="397105322502079400">Calculando...</translation>
 <translation id="39823212440917567">Trabalhos de impressão enviados há mais de <ph name="NUMBER_OF_DAYS" /> dias serão removidos</translation>
@@ -137,12 +145,17 @@
 <translation id="4176463684765177261">Desativado</translation>
 <translation id="4227825898293920515">A senha expirará em <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Nenhum trabalho de impressão em andamento</translation>
+<translation id="4244962993387259361">É necessário ter pelo menos 500 MB livres para executar um teste de memória. Para liberar espaço, acesse Configurações &gt; Gerenciador de armazenamento.</translation>
+<translation id="4289540628985791613">Visão geral</translation>
 <translation id="4297501883039923494">Parado (erro desconhecido)</translation>
+<translation id="4300073214558989"><ph name="IMAGE_COUNT" /> imagens</translation>
 <translation id="4378373042927530923">Não executada</translation>
+<translation id="4378551569595875038">Conectando...</translation>
 <translation id="4382484599443659549">PDF</translation>
 <translation id="4425149324548788773">Meu Drive</translation>
 <translation id="4429881212383817840">O tíquete do Kerberos expirará em breve</translation>
 <translation id="4431821876790500265">Ver relatório</translation>
+<translation id="4439309966561990606">{PAGE_NUMBER,plural, =0{Remover página}=1{Remover página {PAGE_NUMBER}}one{Remover página {PAGE_NUMBER}}other{Remover página {PAGE_NUMBER}}}</translation>
 <translation id="445059817448385655">Senha antiga</translation>
 <translation id="4453205916657964690">Máscara de sub-rede</translation>
 <translation id="4454245904991689773">Salvar em</translation>
@@ -164,9 +177,11 @@
 <translation id="469379815867856270">Intensidade do sinal</translation>
 <translation id="4707579418881001319">L2TP/IPsec + certificado de usuário</translation>
 <translation id="4731797938093519117">Acesso de pai/mãe</translation>
+<translation id="475869545581454722">Senha do Chrome OS atualizada</translation>
 <translation id="4773299976671772492">Interrompida</translation>
 <translation id="4794140124556169553">Um teste de CPU pode afetar o desempenho do sistema</translation>
 <translation id="4808449224298348341">Trabalho de impressão cancelado: <ph name="DOCUMENT_TITLE" /></translation>
+<translation id="4813136279048157860">Minhas imagens</translation>
 <translation id="4813345808229079766">Conexão</translation>
 <translation id="4832079907277790330">Selecionar a pasta no app Arquivos…</translation>
 <translation id="4835901797422965222">Não há redes ativas</translation>
@@ -208,6 +223,7 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="5317780077021120954">Salvar</translation>
 <translation id="5318334351163689047">Falhas de solicitação TCP</translation>
 <translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
+<translation id="5327248766486351172">Nome</translation>
 <translation id="5332948983412042822">Escolha uma nova imediatamente</translation>
 <translation id="5333530671332546086">Estado de portal desconhecido</translation>
 <translation id="5372659122375744710">A rede Wi-Fi não é segura</translation>
@@ -225,9 +241,10 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="5669267381087807207">Ativando</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">Família</translation>
+<translation id="5701381305118179107">Centralizar</translation>
+<translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> de <ph name="TOTAL_PAGES" /></translation>
 <translation id="5752751666635965375">Faça seu próprio jogo</translation>
 <translation id="5760715441271661976">Estado do portal</translation>
-<translation id="5797428682393400134">SUCESSO</translation>
 <translation id="5832805196449965646">Adicionar pessoa</translation>
 <translation id="583281660410589416">Desconhecido</translation>
 <translation id="5849570051105887917">Código do provedor doméstico</translation>
@@ -236,6 +253,7 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="5916084858004523819">Proibido</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{O arquivo foi digitalizado e salvo em <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}one{O arquivo foi digitalizado e salvo em <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}other{Os arquivos foram digitalizados e salvos em <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}}</translation>
 <translation id="5931523347251946569">Arquivo não encontrado</translation>
+<translation id="5972388717451707488">Mecanismo de atualização</translation>
 <translation id="6037291330010597344">O alimentador de documentos do scanner está vazio. Adicione documentos e tente novamente.</translation>
 <translation id="6040143037577758943">Fechar</translation>
 <translation id="6040852767465482106">Identidade anônima</translation>
@@ -256,6 +274,8 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="6191293864534840972">Servidores de nomes incorretos</translation>
 <translation id="6223752125779001553">Nenhum scanner disponível</translation>
 <translation id="6232017090690406397">Bateria</translation>
+<translation id="6243280677745499710">Definido no momento</translation>
+<translation id="6280912520669706465">ARC</translation>
 <translation id="6302401976930124515">O teste de <ph name="TEST_NAME" /> foi cancelado</translation>
 <translation id="6325525973963619867">Falha</translation>
 <translation id="636850387210749493">Registro da empresa</translation>
@@ -271,6 +291,8 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="6527081081771465939">Protocolo de segurança de Wi-Fi desconhecido</translation>
 <translation id="65587193855025101">Scanner de mesa</translation>
 <translation id="6564646048574748301">Falha - Impressora inacessível</translation>
+<translation id="6574762126505704998">Preencher</translation>
+<translation id="6603230386432466813">Problemas com a conexão?</translation>
 <translation id="6618744767048954150">Em execução</translation>
 <translation id="6620487321149975369">Os trabalhos de impressão aparecerão no histórico, a menos que sejam removidos manualmente</translation>
 <translation id="6643016212128521049">Limpar</translation>
@@ -281,10 +303,12 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="6766275201586212568">Falha em resoluções de DNS</translation>
 <translation id="6768237774506518020">Taxa elevada de erro de resolução de DNS</translation>
 <translation id="6853312040151791195">Taxa de descarregamento</translation>
+<translation id="6905724422583748843">Voltar para <ph name="PAGE_NAME" /></translation>
 <translation id="6910312834584889076">A tampa do scanner está aberta. Feche-a e tente novamente.</translation>
 <translation id="6911383237894364323">Não foi possível se conectar aos servidores de mídia</translation>
 <translation id="6957231940976260713">Nome do serviço</translation>
 <translation id="6977381486153291903">Revisão do firmware</translation>
+<translation id="6982876849933694860">Para definir uma nova conexão, acesse as <ph name="BEGIN_LINK" />Configurações<ph name="END_LINK" />.</translation>
 <translation id="7028979494427204405"><ph name="MANAGER" /> gerencia este dispositivo e tem acesso a todas as atividades do usuário, incluindo páginas visitadas, senhas e e-mail.</translation>
 <translation id="7040230719604914234">Operador</translation>
 <translation id="7059230779847288458">Carregando. <ph name="TIME_VALUE" /> até a carga completa</translation>
@@ -294,10 +318,12 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="7144878232160441200">Tentar novamente</translation>
 <translation id="714876143603641390">Conectividade LAN</translation>
 <translation id="7162487448488904999">Galeria</translation>
+<translation id="7172721935181587524">1 imagem</translation>
 <translation id="7177485034254901881">Este <ph name="DEVICE_TYPE" /> é gerenciado por <ph name="MANAGER" />. Os administradores podem configurar o dispositivo remotamente.</translation>
 <translation id="7216409898977639127">Operadora de celular</translation>
 <translation id="7271040990581020067">O scanner está em uso. Tente novamente mais tarde.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7287310195820267359">Coleções de plano de fundo</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7343649194310845056">Dispositivos de rede</translation>
 <translation id="7359657277149375382">Tipo de arquivo</translation>
@@ -314,15 +340,18 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="7569444139234840525"><ph name="QUERY_TEXT" /> · /<ph name="PHONETICS" />/</translation>
 <translation id="7595982850646262331">Tempo restante: <ph name="TIME_VALUE" /></translation>
 <translation id="7620771111601174153">Saiba mais na Central de Ajuda</translation>
+<translation id="763165478673169849">Horário da última redefinição</translation>
 <translation id="7648838807254605802">Latência de HTTPS alta</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7690294790491645610">Confirmar nova senha</translation>
 <translation id="7701040980221191251">Nenhuma</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="773153675489693198">Contagem de ciclos</translation>
+<translation id="7762130827864645708">Senha modificada. De agora em diante, use a nova senha.</translation>
 <translation id="7769672763586021400">Código do modelo</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7819857487979277519">Pre-shared key (PSK): WPA ou RSN</translation>
+<translation id="7835501727204647447">Instalar CloudReady</translation>
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">Tipo de provedor</translation>
 <translation id="7936303884198020182">Nenhum servidor de nomes encontrado</translation>
@@ -333,14 +362,17 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="8075838845814659848">Carga restante</translation>
 <translation id="808894953321890993">Alterar senha</translation>
 <translation id="8129620843620772246"><ph name="TEMPERATURE_C" /> °C</translation>
+<translation id="8132480444149501833">Solicitar contadores de tráfego</translation>
 <translation id="8206859287963243715">Celular</translation>
 <translation id="8208861521865154048">Benefícios</translation>
+<translation id="8214184102975786227">Digitalizar várias páginas em um PDF</translation>
 <translation id="8230672074305416752">Falha no ping do gateway de rede padrão</translation>
 <translation id="8246209727385807362">Operadora desconhecida</translation>
 <translation id="8291967909914612644">País do provedor doméstico</translation>
 <translation id="8294431847097064396">Origem</translation>
 <translation id="8297006494302853456">Fraco</translation>
 <translation id="8302368968391049045">Firewall HTTPS</translation>
+<translation id="8318753676953949627">Sem imagens</translation>
 <translation id="8347227221149377169">Trabalhos de impressão</translation>
 <translation id="8352772353338965963">Adicione uma conta de login múltiplo. Todas as contas conectadas podem ser acessadas sem uma senha; portanto esse recurso só deve ser usado com contas confiáveis.</translation>
 <translation id="8364946094152050673">Servidores de nomes vazios</translation>
@@ -352,8 +384,11 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="8475690821716466388">A rede Wi-Fi é protegida pelo protocolo fraco WEP PSK</translation>
 <translation id="8477551185774834963">Latência do DNS um pouco acima do limite permitido</translation>
 <translation id="8483248364096924578">Endereço IP</translation>
+<translation id="8498220429738806196">Contadores de tráfego</translation>
 <translation id="8503813439785031346">Nome de usuário</translation>
 <translation id="8503836310948963452">Só mais alguns minutos…</translation>
+<translation id="8521021929829989041">Usar como dispositivo pessoal</translation>
+<translation id="8528615187455571738">Crosvm</translation>
 <translation id="8575298406870537639">Pode ser necessário ativar esta opção para se conectar à rede da sua operadora. Entre em contato com a operadora para mais informações.</translation>
 <translation id="8576249514688522074">Não inicializado</translation>
 <translation id="8620617069779373398">Status do roaming</translation>
@@ -370,6 +405,7 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8818152010000655963">Plano de fundo</translation>
 <translation id="8845001906332463065">Ajuda</translation>
+<translation id="8868741746785112895">GUID</translation>
 <translation id="8881098542468797602">Teste bem sucedido</translation>
 <translation id="8898840733695078011">Intensidade do sinal</translation>
 <translation id="8910721771319628100">Rede padrão acima do limite de latência</translation>
@@ -379,11 +415,13 @@ Tente tocar no microfone para me pedir algo.</translation>
 <translation id="8930622219860340959">Rede sem fio</translation>
 <translation id="8968751544471797276">Taxa de carregamento</translation>
 <translation id="8970109610781093811">Executar novamente</translation>
+<translation id="8987565828374052507">{NUMBER_OF_PAGES,plural, =0{Digitalizar}=1{Digitalizar {NUMBER_OF_PAGES} página}one{Digitalizar {NUMBER_OF_PAGES} página}other{Digitalizar {NUMBER_OF_PAGES} páginas}}</translation>
 <translation id="9003704114456258138">Frequência</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9088306295921699330">Uso atual</translation>
+<translation id="9095775724867566971">Pluginvm</translation>
 <translation id="910415269708673980">Atualizar tíquete para <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9106415115617144481">Digitalizando página <ph name="PAGE_NUMBER" /></translation>
 <translation id="9111102763498581341">Desbloquear</translation>

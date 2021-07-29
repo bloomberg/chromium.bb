@@ -26,6 +26,22 @@ const base::Feature kChromeTipsInMainMenuNewBadge{
     "ChromeTipsInMainMenuNewBadge", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+// Enables "Chrome What's New" UI.
+const base::Feature kChromeWhatsNewUI{"ChromeWhatsNewUI",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+// Enables "new" badge for "Chrome What's New" in Main Chrome Menu | Help.
+const base::Feature kChromeWhatsNewInMainMenuNewBadge{
+    "ChromeWhatsNewInMainMenuNewBadge", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+// Enables "Enterprise Casting" UI.
+const base::Feature kEnterpriseCastingUI{"EnterpriseCastingUI",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // Enables showing the EV certificate details in the Page Info bubble.
 const base::Feature kEvDetailsInPageInfo{"EvDetailsInPageInfo",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
@@ -43,11 +59,6 @@ const base::FeatureParam<std::string> kExtensionsSidePanelId{
 const base::Feature kForceSignInReauth{"ForceSignInReauth",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables the new profile picker.
-// https:://crbug.com/1063856
-const base::Feature kNewProfilePicker{"NewProfilePicker",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables updated tabstrip animations, required for a scrollable tabstrip.
 // https://crbug.com/958173
 const base::Feature kNewTabstripAnimation{"NewTabstripAnimation",
@@ -61,6 +72,9 @@ const base::Feature kProminentDarkModeActiveTabTitle{
 // Enables a 'new' badge on the option to add to the reading list in the tab
 // context menu.
 const base::Feature kReadLaterNewBadgePromo{"ReadLaterNewBadgePromo",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kReadLaterAddFromDialog{"ReadLaterAddFromDialog",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables tabs to scroll in the tabstrip. https://crbug.com/951078
@@ -80,21 +94,18 @@ const base::Feature kSettingsLandingPageRedesign{
     "SettingsLandingPageRedesign", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-// Hosts some content in a side panel. https://crbug.com/1149995
-const base::Feature kSidePanel{"SidePanel", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Updated managed profile sign-in popup. https://crbug.com/1141224
 const base::Feature kSyncConfirmationUpdatedText{
     "SyncConfirmationUpdatedText", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Sign-in functionality in the profile creation flow. https://crbug.com/1126913
 const base::Feature kSignInProfileCreation{"SignInProfileCreation",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Smoother enterprise experience in the sign-in profile creation flow.
 // https://crbug.com/1178494
 const base::Feature kSignInProfileCreationEnterprise{
-    "SignInProfileCreationEnterprise", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SignInProfileCreationEnterprise", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Automatically create groups for users based on domain.
 // https://crbug.com/1128703
@@ -117,16 +128,12 @@ const base::Feature kTabGroupsFeedback{"TabGroupsFeedback",
 const base::Feature kTabGroupsNewBadgePromo{"TabGroupsNewBadgePromo",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables popup cards containing tab information when hovering over a tab.
-// https://crbug.com/910739
-const base::Feature kTabHoverCards{"TabHoverCards",
-                                   base::FEATURE_ENABLED_BY_DEFAULT};
+// Enables users to explicitly save and recall tab groups.
+// https://crbug.com/1223929
+const base::Feature kTabGroupsSave{"TabGroupsSave",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Parameter name used for tab hover cards user study.
-// TODO(corising): Removed this after tab hover cards user study.
-const char kTabHoverCardsFeatureParameterName[] = "setting";
-
-// Enables preview images in hover cards. See kTabHoverCards.
+// Enables preview images in tab-hover cards.
 // https://crbug.com/928954
 const base::Feature kTabHoverCardImages{"TabHoverCardImages",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
@@ -135,10 +142,19 @@ const char kTabHoverCardImagesNotReadyDelayParameterName[] =
 const char kTabHoverCardImagesLoadingDelayParameterName[] =
     "page_loading_delay";
 const char kTabHoverCardImagesLoadedDelayParameterName[] = "page_loaded_delay";
+const char kTabHoverCardImagesCrossfadePreviewAtParameterName[] =
+    "crossfade_preview_at";
 
 // Enables tab outlines in additional situations for accessibility.
 const base::Feature kTabOutlinesInLowContrastThemes{
     "TabOutlinesInLowContrastThemes", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables submenus under each tab group or window within the app menu history.
+const base::Feature kTabRestoreSubMenus{"TabRestoreSubMenus",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kTabSearchChevronIcon{"TabSearchChevronIcon",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether or not feature parameters should be used for Tab Search's
 // fuzzy search or if default values should be used.
@@ -162,8 +178,14 @@ const base::FeatureParam<int> kTabSearchSearchDistance{
 const base::FeatureParam<double> kTabSearchSearchThreshold{
     &kTabSearchFuzzySearch, "TabSearchSearchThreshold", 0.0};
 
-const base::FeatureParam<double> kTabSearchTitleToHostnameWeightRatio{
-    &kTabSearchFuzzySearch, "TabSearchTitleToHostnameWeightRatio", 2.0};
+const base::FeatureParam<double> kTabSearchTitleWeight{
+    &kTabSearchFuzzySearch, "TabSearchTitleWeight", 2.0};
+
+const base::FeatureParam<double> kTabSearchHostnameWeight{
+    &kTabSearchFuzzySearch, "TabSearchHostnameWeight", 1.0};
+
+const base::FeatureParam<double> kTabSearchGroupTitleWeight{
+    &kTabSearchFuzzySearch, "TabSearchGroupTitleWeight", 1.5};
 
 const base::FeatureParam<bool> kTabSearchMoveActiveTabToBottom{
     &kTabSearchFuzzySearch, "TabSearchMoveActiveTabToBottom", true};
@@ -172,8 +194,8 @@ const base::FeatureParam<int> kTabSearchRecentlyClosedDefaultItemDisplayCount{
     &kTabSearchRecentlyClosed, "TabSearchRecentlyClosedDefaultItemDisplayCount",
     8};
 
-const base::FeatureParam<int> kTabSearchRecentlyClosedMaxEntries{
-    &kTabSearchRecentlyClosed, "TabSearchRecentlyClosedMaxEntries", 100};
+const base::FeatureParam<int> kTabSearchRecentlyClosedTabCountThreshold{
+    &kTabSearchRecentlyClosed, "TabSearchRecentlyClosedTabCountThreshold", 100};
 
 const base::Feature kToolbarUseHardwareBitmapDraw{
     "ToolbarUseHardwareBitmapDraw", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -185,6 +207,11 @@ const base::Feature kUseRelaunchToUpdateString{
 // with the current Profile for WebUI bubbles. See https://crbug.com/1177048.
 const base::Feature kWebUIBubblePerProfilePersistence{
     "WebUIBubblePerProfilePersistence", base::FEATURE_DISABLED_BY_DEFAULT};
+
+#if !defined(ANDROID)
+const base::Feature kWebUIBrandingUpdate{"WebUIBrandingUpdate",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 // Enables the WebUI Download Shelf instead of the Views framework Download
 // Shelf. See https://crbug.com/1180372.
@@ -206,19 +233,43 @@ const base::Feature kWebUITabStripNewTabButtonInTabStrip{
 const base::Feature kWebUIFeedback{"WebUIFeedback",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-// Enables a warning about connecting to hidden WiFi networks.
-// https://crbug.com/903908
-const base::Feature kHiddenNetworkWarning{"HiddenNetworkWarning",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
 #if defined(OS_MAC)
+// Enabled an experiment which increases the prominence to grant MacOS system
+// location permission to Chrome when location permissions have already been
+// approved. https://crbug.com/1211052
+const base::Feature kLocationPermissionsExperiment{
+    "LocationPermissionsExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
+constexpr base::FeatureParam<int>
+    kLocationPermissionsExperimentBubblePromptLimit{
+        &kLocationPermissionsExperiment, "bubble_prompt_count", 3};
+constexpr base::FeatureParam<int>
+    kLocationPermissionsExperimentLabelPromptLimit{
+        &kLocationPermissionsExperiment, "label_prompt_count", 5};
+
 const base::Feature kViewsFirstRunDialog{"ViewsFirstRunDialog",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kViewsTaskManager{"ViewsTaskManager",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kViewsJSAppModalDialog{"ViewsJSAppModalDialog",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
+int GetLocationPermissionsExperimentBubblePromptLimit() {
+  return kLocationPermissionsExperimentBubblePromptLimit.Get();
+}
+int GetLocationPermissionsExperimentLabelPromptLimit() {
+  return kLocationPermissionsExperimentLabelPromptLimit.Get();
+}
+#endif
+
+#if defined(OS_WIN)
+
+// Moves the Tab Search button into the browser frame's caption button area on
+// Windows 10 (crbug.com/1223847).
+const base::Feature kWin10TabSearchCaptionButton{
+    "Win10TabSearchCaptionButton", base::FEATURE_DISABLED_BY_DEFAULT};
+
 #endif
 
 }  // namespace features

@@ -5,7 +5,6 @@
 """An interactive console for looking analyzing .size files."""
 
 import argparse
-import atexit
 import code
 import contextlib
 import itertools
@@ -26,12 +25,12 @@ import html_report
 import match_util
 import models
 import path_util
+import readelf
 import string_extract
 
 
 # Number of lines before using less for Print().
 _THRESHOLD_FOR_PAGER = 50
-
 
 @contextlib.contextmanager
 def _LessPipe():
@@ -70,8 +69,19 @@ def _WriteToStream(lines, use_pager=None, to_file=None):
     describe.WriteLines(lines, sys.stdout.write)
 
 
+@contextlib.contextmanager
+def _ReadlineSession():
+  history_file = os.path.join(os.path.expanduser('~'),
+                              '.binary_size_query_history')
+  # Without initializing readline, arrow keys don't even work!
+  readline.parse_and_bind('tab: complete')
+  if os.path.exists(history_file):
+    readline.read_history_file(history_file)
+  yield
+  readline.write_history_file(history_file)
+
+
 class _Session(object):
-  _readline_initialized = False
 
   def __init__(self, size_infos, output_directory_finder, tool_prefix_finder):
     self._printed_variables = []
@@ -274,7 +284,7 @@ class _Session(object):
 
   def _ElfPathForSymbol(self, size_info, container, tool_prefix, elf_path):
     def build_id_matches(elf_path):
-      found_build_id = archive.BuildIdFromElf(elf_path, tool_prefix)
+      found_build_id = readelf.BuildIdFromElf(elf_path, tool_prefix)
       expected_build_id = container.metadata.get(models.METADATA_ELF_BUILD_ID)
       return found_build_id == expected_build_id
 
@@ -347,6 +357,9 @@ class _Session(object):
       tool_prefix = path_util.ToolPrefixFinder(
           output_directory=output_directory_finder.Finalized(),
           linker_name='ld').Finalized()
+      # Running objdump from an output directory means that objdump can
+      # interleave source file lines in the disassembly.
+      objdump_pwd = output_directory_finder.Finalized()
     else:
       # Output directory is not set, so we cannot load tool_prefix from
       # build_vars.json, nor resolve the output directory-relative path stored
@@ -360,20 +373,29 @@ class _Session(object):
       # Hardcode path for arm32.
       if is_android and arch == 'arm':
         tool_prefix = path_util.ANDROID_ARM_NDK_TOOL_PREFIX
+      # If we do not know/guess the output directory, run from any directory 2
+      # levels below src since it is better than a random cwd (because usually
+      # source file paths are relative to an output directory two levels below
+      # src and start with ../../).
+      objdump_pwd = os.path.join(path_util.TOOLS_SRC_ROOT, 'tools',
+                                 'binary_size')
 
     args = [
-        path_util.GetObjDumpPath(tool_prefix),
+        os.path.relpath(path_util.GetObjDumpPath(tool_prefix), objdump_pwd),
         '--disassemble',
         '--source',
         '--line-numbers',
         '--demangle',
         '--start-address=0x%x' % symbol.address,
         '--stop-address=0x%x' % symbol.end_address,
-        elf_path,
+        os.path.relpath(elf_path, objdump_pwd),
     ]
 
     # pylint: disable=unexpected-keyword-arg
-    proc = subprocess.Popen(args, stdout=subprocess.PIPE, encoding='utf-8')
+    proc = subprocess.Popen(args,
+                            stdout=subprocess.PIPE,
+                            encoding='utf-8',
+                            cwd=objdump_pwd)
     lines = itertools.chain(('Showing disassembly for %r' % symbol,
                              'Command: %s' % ' '.join(args)),
                             (l.rstrip() for l in proc.stdout))
@@ -473,26 +495,12 @@ class _Session(object):
     lines.append('*' * 80)
     return '\n'.join(lines)
 
-
-  @classmethod
-  def _InitReadline(cls):
-    if cls._readline_initialized:
-      return
-    cls._readline_initialized = True
-    # Without initializing readline, arrow keys don't even work!
-    readline.parse_and_bind('tab: complete')
-    history_file = os.path.join(os.path.expanduser('~'),
-                                '.binary_size_query_history')
-    if os.path.exists(history_file):
-      readline.read_history_file(history_file)
-    atexit.register(lambda: readline.write_history_file(history_file))
-
   def Eval(self, query):
     exec (query, self._variables)
 
   def GoInteractive(self):
-    _Session._InitReadline()
-    code.InteractiveConsole(self._variables).interact(self._CreateBanner())
+    with _ReadlineSession():
+      code.InteractiveConsole(self._variables).interact(self._CreateBanner())
 
 
 def AddArguments(parser):
@@ -540,3 +548,10 @@ def Run(args, on_config_error):
   else:
     logging.info('Entering interactive console.')
     session.GoInteractive()
+
+  # Exit without running GC, which can save multiple seconds due the large
+  # number of objects created. It meants atexit and __del__ calls are not
+  # made, but this shouldn't matter for console.
+  sys.stdout.flush()
+  sys.stderr.flush()
+  os._exit(0)

@@ -18,6 +18,7 @@
       "depot_tools@HEAD"
     ],
     "env": {
+      "DEPOT_TOOLS_COLLECT_METRICS": "0",
       "GIT_HTTP_LOW_SPEED_LIMIT": "102400",
       "GIT_HTTP_LOW_SPEED_TIME": "1800"
     },

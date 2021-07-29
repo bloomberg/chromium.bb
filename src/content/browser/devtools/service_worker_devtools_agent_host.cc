@@ -117,6 +117,11 @@ void ServiceWorkerDevToolsAgentHost::WorkerVersionDoomed() {
   version_doomed_time_ = base::Time::Now();
 }
 
+void ServiceWorkerDevToolsAgentHost::WorkerMainScriptFetchingFailed() {
+  for (DevToolsSession* session : sessions())
+    session->ClearPendingMessages(/*did_crash=*/false);
+}
+
 ServiceWorkerDevToolsAgentHost::~ServiceWorkerDevToolsAgentHost() {
   ServiceWorkerDevToolsManager::GetInstance()->AgentHostDestroyed(this);
 }
@@ -135,7 +140,9 @@ bool ServiceWorkerDevToolsAgentHost::AttachSession(DevToolsSession* session,
   session->AddHandler(std::make_unique<protocol::SchemaHandler>());
   session->AddHandler(std::make_unique<protocol::TargetHandler>(
       protocol::TargetHandler::AccessMode::kAutoAttachOnly, GetId(),
-      GetRendererChannel(), session->GetRootSession()));
+      protocol::TargetAutoAttacher::CreateForServiceWorker(
+          GetRendererChannel()),
+      session->GetRootSession()));
   if (state_ == WORKER_READY && sessions().empty())
     UpdateIsAttached(true);
   return true;
@@ -168,9 +175,9 @@ void ServiceWorkerDevToolsAgentHost::UpdateCrossOriginEmbedderPolicy(
   coep_reporter_.Bind(std::move(coep_reporter));
 }
 
-void ServiceWorkerDevToolsAgentHost::WorkerRestarted(int worker_process_id,
-                                                     int worker_route_id) {
-  DCHECK_EQ(WORKER_TERMINATED, state_);
+void ServiceWorkerDevToolsAgentHost::WorkerStarted(int worker_process_id,
+                                                   int worker_route_id) {
+  DCHECK(state_ == WORKER_NOT_READY || state_ == WORKER_TERMINATED);
   state_ = WORKER_NOT_READY;
   worker_process_id_ = worker_process_id;
   worker_route_id_ = worker_route_id;
@@ -287,6 +294,12 @@ absl::optional<network::CrossOriginEmbedderPolicy>
 ServiceWorkerDevToolsAgentHost::cross_origin_embedder_policy(
     const std::string&) {
   return cross_origin_embedder_policy_;
+}
+
+void ServiceWorkerDevToolsAgentHost::set_should_pause_on_start(
+    bool should_pause_on_start) {
+  DCHECK(base::FeatureList::IsEnabled(features::kPlzServiceWorker));
+  should_pause_on_start_ = should_pause_on_start;
 }
 
 }  // namespace content

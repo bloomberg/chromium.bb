@@ -26,7 +26,7 @@
 #include "synchronization_validation.h"
 #include "sync_utils.h"
 
-static bool SimpleBinding(const BINDABLE &bindable) { return !bindable.sparse && bindable.binding.mem_state; }
+static bool SimpleBinding(const BINDABLE &bindable) { return !bindable.sparse && bindable.Binding(); }
 
 static bool SimpleBinding(const IMAGE_STATE &image_state) {
     bool simple = SimpleBinding(static_cast<const BINDABLE &>(image_state)) || image_state.is_swapchain_image ||
@@ -226,7 +226,8 @@ static const ResourceUsageTag kCurrentCommandTag(ResourceUsageTag::kMaxIndex, Re
                                                  ResourceUsageTag::kMaxCount, CMD_NONE);
 
 static VkDeviceSize ResourceBaseAddress(const BINDABLE &bindable) {
-    return bindable.binding.offset + bindable.binding.mem_state->fake_base_address;
+    const auto *binding = bindable.Binding();
+    return binding ? binding->offset + binding->mem_state->fake_base_address : 0;
 }
 static VkDeviceSize ResourceBaseAddress(const IMAGE_STATE &image_state) {
     VkDeviceSize base_address;
@@ -1759,7 +1760,7 @@ bool CommandBufferAccessContext::ValidateDispatchDrawDescriptorSet(VkPipelineBin
     bool skip = false;
     const PIPELINE_STATE *pipe = nullptr;
     const std::vector<LAST_BOUND_STATE::PER_SET> *per_sets = nullptr;
-    GetCurrentPipelineAndDesriptorSetsFromCommandBuffer(*cb_state_.get(), pipelineBindPoint, &pipe, &per_sets);
+    cb_state_->GetCurrentPipelineAndDesriptorSets(pipelineBindPoint, &pipe, &per_sets);
     if (!pipe || !per_sets) {
         return skip;
     }
@@ -1891,7 +1892,7 @@ void CommandBufferAccessContext::RecordDispatchDrawDescriptorSet(VkPipelineBindP
                                                                  const ResourceUsageTag &tag) {
     const PIPELINE_STATE *pipe = nullptr;
     const std::vector<LAST_BOUND_STATE::PER_SET> *per_sets = nullptr;
-    GetCurrentPipelineAndDesriptorSetsFromCommandBuffer(*cb_state_.get(), pipelineBindPoint, &pipe, &per_sets);
+    cb_state_->GetCurrentPipelineAndDesriptorSets(pipelineBindPoint, &pipe, &per_sets);
     if (!pipe || !per_sets) {
         return;
     }
@@ -1973,7 +1974,7 @@ void CommandBufferAccessContext::RecordDispatchDrawDescriptorSet(VkPipelineBindP
 
 bool CommandBufferAccessContext::ValidateDrawVertex(uint32_t vertexCount, uint32_t firstVertex, const char *func_name) const {
     bool skip = false;
-    const auto *pipe = GetCurrentPipelineFromCommandBuffer(*cb_state_.get(), VK_PIPELINE_BIND_POINT_GRAPHICS);
+    const auto *pipe = cb_state_->GetCurrentPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS);
     if (!pipe) {
         return skip;
     }
@@ -2004,7 +2005,7 @@ bool CommandBufferAccessContext::ValidateDrawVertex(uint32_t vertexCount, uint32
 }
 
 void CommandBufferAccessContext::RecordDrawVertex(uint32_t vertexCount, uint32_t firstVertex, const ResourceUsageTag &tag) {
-    const auto *pipe = GetCurrentPipelineFromCommandBuffer(*cb_state_.get(), VK_PIPELINE_BIND_POINT_GRAPHICS);
+    const auto *pipe = cb_state_->GetCurrentPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS);
     if (!pipe) {
         return;
     }
@@ -2117,7 +2118,7 @@ bool RenderPassAccessContext::ValidateDrawSubpassAttachment(const CommandExecuti
                                                             const char *func_name) const {
     bool skip = false;
     const auto &sync_state = ex_context.GetSyncState();
-    const auto *pipe = GetCurrentPipelineFromCommandBuffer(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS);
+    const auto *pipe = cmd.GetCurrentPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS);
     if (!pipe ||
         (pipe->graphicsPipelineCI.pRasterizationState && pipe->graphicsPipelineCI.pRasterizationState->rasterizerDiscardEnable)) {
         return skip;
@@ -2209,7 +2210,7 @@ bool RenderPassAccessContext::ValidateDrawSubpassAttachment(const CommandExecuti
 }
 
 void RenderPassAccessContext::RecordDrawSubpassAttachment(const CMD_BUFFER_STATE &cmd, const ResourceUsageTag &tag) {
-    const auto *pipe = GetCurrentPipelineFromCommandBuffer(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS);
+    const auto *pipe = cmd.GetCurrentPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS);
     if (!pipe ||
         (pipe->graphicsPipelineCI.pRasterizationState && pipe->graphicsPipelineCI.pRasterizationState->rasterizerDiscardEnable)) {
         return;
@@ -3703,7 +3704,7 @@ bool SyncValidator::ValidateCmdCopyImageToBuffer(VkCommandBuffer commandBuffer, 
 
     const auto *src_image = Get<IMAGE_STATE>(srcImage);
     const auto *dst_buffer = Get<BUFFER_STATE>(dstBuffer);
-    const auto dst_mem = (dst_buffer && !dst_buffer->sparse) ? dst_buffer->binding.mem_state->mem() : VK_NULL_HANDLE;
+    const auto dst_mem = (dst_buffer && !dst_buffer->sparse) ? dst_buffer->MemState()->mem() : VK_NULL_HANDLE;
     for (uint32_t region = 0; region < regionCount; region++) {
         const auto &copy_region = pRegions[region];
         if (src_image) {
@@ -3762,7 +3763,7 @@ void SyncValidator::RecordCmdCopyImageToBuffer(VkCommandBuffer commandBuffer, Vk
 
     const auto *src_image = Get<IMAGE_STATE>(srcImage);
     auto *dst_buffer = Get<BUFFER_STATE>(dstBuffer);
-    const auto dst_mem = (dst_buffer && !dst_buffer->sparse) ? dst_buffer->binding.mem_state->mem() : VK_NULL_HANDLE;
+    const auto dst_mem = (dst_buffer && !dst_buffer->sparse) ? dst_buffer->MemState()->mem() : VK_NULL_HANDLE;
     const VulkanTypedHandle dst_handle(dst_mem, kVulkanObjectTypeDeviceMemory);
 
     for (uint32_t region = 0; region < regionCount; region++) {

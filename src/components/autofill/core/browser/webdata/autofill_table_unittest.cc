@@ -11,10 +11,10 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -130,7 +130,8 @@ int GetAutofillEntryCount(const std::u16string& name,
       "SELECT count FROM autofill WHERE name = ? AND value = ?"));
   s.BindString16(0, name);
   s.BindString16(1, value);
-  s.Step();
+  if (!s.Step())
+    return 0;
   return s.ColumnInt(0);
 }
 
@@ -1214,7 +1215,7 @@ TEST_F(AutofillTableTest,
   s1.BindString(0, profile.guid());
   ASSERT_TRUE(s1.is_valid());
   ASSERT_TRUE(s1.Step());
-  EXPECT_EQ(0, s1.ColumnInt(1));
+  EXPECT_EQ(1, s1.ColumnInt(0));
 
   // Enable the feature again and load the profile.
   scoped_feature_list_.Reset();
@@ -3678,19 +3679,19 @@ TEST_F(AutofillTableTest, SetAndGetCreditCardOfferData) {
       GURL("https://www.offer_3_example.com/");
 
   // Set merchant domains for offer 1.
-  credit_card_offer_1.merchant_domain.emplace_back(
+  credit_card_offer_1.merchant_origins.emplace_back(
       "http://www.merchant_domain_1_1.com/");
-  credit_card_offer_1.merchant_domain.emplace_back(
+  credit_card_offer_1.merchant_origins.emplace_back(
       "http://www.merchant_domain_1_2.com/");
-  credit_card_offer_1.merchant_domain.emplace_back(
+  credit_card_offer_1.merchant_origins.emplace_back(
       "http://www.merchant_domain_1_3.com/");
   // Set merchant domains for offer 2.
-  credit_card_offer_2.merchant_domain.emplace_back(
+  credit_card_offer_2.merchant_origins.emplace_back(
       "http://www.merchant_domain_2_1.com/");
   // Set merchant domains for offer 3.
-  credit_card_offer_3.merchant_domain.emplace_back(
+  credit_card_offer_3.merchant_origins.emplace_back(
       "http://www.merchant_domain_3_1.com/");
-  credit_card_offer_3.merchant_domain.emplace_back(
+  credit_card_offer_3.merchant_origins.emplace_back(
       "http://www.merchant_domain_3_2.com/");
 
   // Set display strings for all 3 offers.
@@ -3758,9 +3759,9 @@ TEST_F(AutofillTableTest, SetAndGetCreditCardOfferData) {
     EXPECT_EQ(data.display_strings.usage_instructions_text,
               output_offer_data[output_index]
                   ->display_strings.usage_instructions_text);
-    ASSERT_THAT(data.merchant_domain,
+    ASSERT_THAT(data.merchant_origins,
                 testing::UnorderedElementsAreArray(
-                    output_offer_data[output_index]->merchant_domain));
+                    output_offer_data[output_index]->merchant_origins));
     ASSERT_THAT(data.eligible_instrument_id,
                 testing::UnorderedElementsAreArray(
                     output_offer_data[output_index]->eligible_instrument_id));

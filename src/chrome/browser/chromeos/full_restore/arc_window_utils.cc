@@ -4,9 +4,9 @@
 
 #include "chrome/browser/chromeos/full_restore/arc_window_utils.h"
 
-#include "ash/public/cpp/ash_features.h"
 #include "components/arc/arc_util.h"
 #include "components/exo/wm_helper.h"
+#include "components/full_restore/features.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -31,9 +31,8 @@ namespace chromeos {
 namespace full_restore {
 
 bool IsArcGhostWindowEnabled() {
-  return ash::features::IsFullRestoreEnabled() &&
-         ash::features::IsArcGhostWindowEnabled() && arc::IsArcVmEnabled() &&
-         exo::WMHelper::HasInstance();
+  return ::full_restore::features::IsArcGhostWindowEnabled() &&
+         arc::IsArcVmEnabled() && exo::WMHelper::HasInstance();
 }
 
 absl::optional<double> GetDisplayScaleFactor(int64_t display_id) {
@@ -68,6 +67,11 @@ apps::mojom::WindowInfoPtr HandleArcWindowInfo(
 
 bool IsValidThemeColor(uint32_t theme_color) {
   return SkColorGetA(theme_color) == SK_AlphaOPAQUE;
+}
+
+const std::string WindowIdToAppId(int window_id) {
+  return std::string("org.chromium.arc.session.") +
+         base::NumberToString(window_id);
 }
 
 }  // namespace full_restore

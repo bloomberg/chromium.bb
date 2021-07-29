@@ -54,6 +54,8 @@
 #include "components/permissions/contexts/geolocation_permission_context_android.h"
 #include "components/unified_consent/pref_names.h"
 #elif defined(OS_WIN)
+#include <windows.h>
+
 #include <KnownFolders.h>
 #include <shlobj.h>
 #include "base/win/scoped_co_mem.h"
@@ -316,19 +318,17 @@ class BrowserContextImpl::WebLayerVariationsClient
 
   variations::mojom::VariationsHeadersPtr GetVariationsHeaders()
       const override {
+    // As the embedder supplies the set of ids, the signed-in state should be
+    // ignored. The value supplied (`is_signed_in`) doesn't matter as
+    // VariationsIdsProvider is configured to ignore the signed in state.
+    const bool is_signed_in = true;
+    DCHECK_EQ(variations::VariationsIdsProvider::Mode::kIgnoreSignedInState,
+              variations::VariationsIdsProvider::GetInstance()->mode());
     return variations::VariationsIdsProvider::GetInstance()
-        ->GetClientDataHeaders(IsSignedIn());
+        ->GetClientDataHeaders(is_signed_in);
   }
 
  private:
-  // Signed-in state shouldn't control the set of variations for WebLayer,
-  // so this always returns true. This is particularly experiment for
-  // registering external experiment ids, which are registered assuming
-  // signed-in.
-  // TODO(sky): this is rather misleading, and needs to be resolved. Figure
-  // out right long term solution.
-  bool IsSignedIn() const { return true; }
-
   content::BrowserContext* browser_context_;
 };
 

@@ -59,28 +59,40 @@ std::string CommonTypes() {
     %uint_0 = OpConstant %uint 0
     %uint_1 = OpConstant %uint 1
     %int_m1 = OpConstant %int -1
+    %int_0 = OpConstant %int 0
+    %int_1 = OpConstant %int 1
+    %int_3 = OpConstant %int 3
     %uint_2 = OpConstant %uint 2
     %uint_3 = OpConstant %uint 3
     %uint_4 = OpConstant %uint 4
     %uint_5 = OpConstant %uint 5
 
+    %v2int = OpTypeVector %int 2
     %v2float = OpTypeVector %float 2
     %m3v2float = OpTypeMatrix %v2float 3
+
+    %v2int_null = OpConstantNull %v2int
 
     %arr2uint = OpTypeArray %uint %uint_2
     %strct = OpTypeStruct %uint %float %arr2uint
   )";
 }
 
-// Returns the SPIR-V assembly for a vertex shader, optionally
-// with OpName decorations for certain SPIR-V IDs
-std::string PreambleNames(std::vector<std::string> ids) {
+// Returns the SPIR-V assembly for capabilities, the memory model,
+// a vertex shader entry point declaration, and name declarations
+// for specified IDs.
+std::string Caps(std::vector<std::string> ids = {}) {
   return R"(
     OpCapability Shader
     OpMemoryModel Logical Simple
     OpEntryPoint Vertex %100 "main"
-)" + Names(ids) +
-         CommonTypes();
+)" + Names(ids);
+}
+
+// Returns the SPIR-V assembly for a vertex shader, optionally
+// with OpName decorations for certain SPIR-V IDs
+std::string PreambleNames(std::vector<std::string> ids) {
+  return Caps(ids) + CommonTypes();
 }
 
 std::string Preamble() {
@@ -108,6 +120,7 @@ TEST_F(SpvParserFunctionVarTest, EmitFunctionVariables_AnonymousVars) {
   Variable{
     x_1
     none
+    undefined
     __u32
   }
 }
@@ -115,6 +128,7 @@ VariableDeclStatement{
   Variable{
     x_2
     none
+    undefined
     __u32
   }
 }
@@ -122,6 +136,7 @@ VariableDeclStatement{
   Variable{
     x_3
     none
+    undefined
     __u32
   }
 }
@@ -147,6 +162,7 @@ TEST_F(SpvParserFunctionVarTest, EmitFunctionVariables_NamedVars) {
   Variable{
     a
     none
+    undefined
     __u32
   }
 }
@@ -154,6 +170,7 @@ VariableDeclStatement{
   Variable{
     b
     none
+    undefined
     __u32
   }
 }
@@ -161,6 +178,7 @@ VariableDeclStatement{
   Variable{
     c
     none
+    undefined
     __u32
   }
 }
@@ -186,6 +204,7 @@ TEST_F(SpvParserFunctionVarTest, EmitFunctionVariables_MixedTypes) {
   Variable{
     a
     none
+    undefined
     __u32
   }
 }
@@ -193,6 +212,7 @@ VariableDeclStatement{
   Variable{
     b
     none
+    undefined
     __i32
   }
 }
@@ -200,6 +220,7 @@ VariableDeclStatement{
   Variable{
     c
     none
+    undefined
     __f32
   }
 }
@@ -227,6 +248,7 @@ TEST_F(SpvParserFunctionVarTest, EmitFunctionVariables_ScalarInitializers) {
   Variable{
     a
     none
+    undefined
     __bool
     {
       ScalarConstructor[not set]{true}
@@ -237,6 +259,7 @@ VariableDeclStatement{
   Variable{
     b
     none
+    undefined
     __bool
     {
       ScalarConstructor[not set]{false}
@@ -247,6 +270,7 @@ VariableDeclStatement{
   Variable{
     c
     none
+    undefined
     __i32
     {
       ScalarConstructor[not set]{-1}
@@ -257,6 +281,7 @@ VariableDeclStatement{
   Variable{
     d
     none
+    undefined
     __u32
     {
       ScalarConstructor[not set]{1u}
@@ -267,6 +292,7 @@ VariableDeclStatement{
   Variable{
     e
     none
+    undefined
     __f32
     {
       ScalarConstructor[not set]{1.500000}
@@ -301,6 +327,7 @@ TEST_F(SpvParserFunctionVarTest, EmitFunctionVariables_ScalarNullInitializers) {
   Variable{
     a
     none
+    undefined
     __bool
     {
       ScalarConstructor[not set]{false}
@@ -311,6 +338,7 @@ VariableDeclStatement{
   Variable{
     b
     none
+    undefined
     __i32
     {
       ScalarConstructor[not set]{0}
@@ -321,6 +349,7 @@ VariableDeclStatement{
   Variable{
     c
     none
+    undefined
     __u32
     {
       ScalarConstructor[not set]{0u}
@@ -331,6 +360,7 @@ VariableDeclStatement{
   Variable{
     d
     none
+    undefined
     __f32
     {
       ScalarConstructor[not set]{0.000000}
@@ -361,6 +391,7 @@ TEST_F(SpvParserFunctionVarTest, EmitFunctionVariables_VectorInitializer) {
   Variable{
     x_200
     none
+    undefined
     __vec_2__f32
     {
       TypeConstructor[not set]{
@@ -400,6 +431,7 @@ TEST_F(SpvParserFunctionVarTest, EmitFunctionVariables_MatrixInitializer) {
   Variable{
     x_200
     none
+    undefined
     __mat_2_3__f32
     {
       TypeConstructor[not set]{
@@ -447,6 +479,7 @@ TEST_F(SpvParserFunctionVarTest, EmitFunctionVariables_ArrayInitializer) {
   Variable{
     x_200
     none
+    undefined
     __array__u32_2
     {
       TypeConstructor[not set]{
@@ -486,6 +519,7 @@ TEST_F(SpvParserFunctionVarTest, EmitFunctionVariables_ArrayInitializer_Alias) {
   Variable{
     x_200
     none
+    undefined
     __type_name_Arr
     {
       TypeConstructor[not set]{
@@ -521,6 +555,7 @@ TEST_F(SpvParserFunctionVarTest, EmitFunctionVariables_ArrayInitializer_Null) {
   Variable{
     x_200
     none
+    undefined
     __array__u32_2
     {
       TypeConstructor[not set]{
@@ -561,6 +596,7 @@ TEST_F(SpvParserFunctionVarTest,
   Variable{
     x_200
     none
+    undefined
     __type_name_Arr
     {
       TypeConstructor[not set]{
@@ -596,6 +632,7 @@ TEST_F(SpvParserFunctionVarTest, EmitFunctionVariables_StructInitializer) {
   Variable{
     x_200
     none
+    undefined
     __type_name_S
     {
       TypeConstructor[not set]{
@@ -636,6 +673,7 @@ TEST_F(SpvParserFunctionVarTest, EmitFunctionVariables_StructInitializer_Null) {
   Variable{
     x_200
     none
+    undefined
     __type_name_S
     {
       TypeConstructor[not set]{
@@ -649,6 +687,127 @@ TEST_F(SpvParserFunctionVarTest, EmitFunctionVariables_StructInitializer_Null) {
         }
       }
     }
+  }
+}
+)"));
+}
+
+TEST_F(SpvParserFunctionVarTest,
+       EmitFunctionVariables_Decorate_RelaxedPrecision) {
+  // RelaxedPrecisionis dropped
+  const auto assembly = Caps({"myvar"}) + R"(
+     OpDecorate %myvar RelaxedPrecision
+
+     %float = OpTypeFloat 32
+     %ptr = OpTypePointer Function %float
+
+     %void = OpTypeVoid
+     %voidfn = OpTypeFunction %void
+
+     %100 = OpFunction %void None %voidfn
+     %entry = OpLabel
+     %myvar = OpVariable %ptr Function
+     OpReturn
+     OpFunctionEnd
+  )";
+  auto p = parser(test::Assemble(assembly));
+  ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
+  auto fe = p->function_emitter(100);
+  EXPECT_TRUE(fe.EmitFunctionVariables());
+
+  const auto got = ToString(p->builder(), fe.ast_body());
+  EXPECT_EQ(got, R"(VariableDeclStatement{
+  Variable{
+    myvar
+    none
+    undefined
+    __f32
+  }
+}
+)") << got;
+}
+
+TEST_F(SpvParserFunctionVarTest,
+       EmitFunctionVariables_MemberDecorate_RelaxedPrecision) {
+  // RelaxedPrecisionis dropped
+  const auto assembly = Caps({"myvar", "strct"}) + R"(
+     OpMemberDecorate %strct 0 RelaxedPrecision
+
+     %float = OpTypeFloat 32
+     %strct = OpTypeStruct %float
+     %ptr = OpTypePointer Function %strct
+
+     %void = OpTypeVoid
+     %voidfn = OpTypeFunction %void
+
+     %100 = OpFunction %void None %voidfn
+     %entry = OpLabel
+     %myvar = OpVariable %ptr Function
+     OpReturn
+     OpFunctionEnd
+  )";
+  auto p = parser(test::Assemble(assembly));
+  ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions())
+      << assembly << p->error() << std::endl;
+  auto fe = p->function_emitter(100);
+  EXPECT_TRUE(fe.EmitFunctionVariables());
+
+  const auto got = ToString(p->builder(), fe.ast_body());
+  EXPECT_EQ(got, R"(VariableDeclStatement{
+  Variable{
+    myvar
+    none
+    undefined
+    __type_name_strct
+  }
+}
+)") << got;
+}
+
+TEST_F(SpvParserFunctionVarTest,
+       EmitFunctionVariables_StructDifferOnlyInMemberName) {
+  auto p = parser(test::Assemble(R"(
+      OpCapability Shader
+      OpMemoryModel Logical Simple
+      OpEntryPoint Vertex %100 "main"
+      OpName %_struct_5 "S"
+      OpName %_struct_6 "S"
+      OpMemberName %_struct_5 0 "algo"
+      OpMemberName %_struct_6 0 "rithm"
+
+      %void = OpTypeVoid
+      %voidfn = OpTypeFunction %void
+      %uint = OpTypeInt 32 0
+
+      %_struct_5 = OpTypeStruct %uint
+      %_struct_6 = OpTypeStruct %uint
+      %_ptr_Function__struct_5 = OpTypePointer Function %_struct_5
+      %_ptr_Function__struct_6 = OpTypePointer Function %_struct_6
+      %100 = OpFunction %void None %voidfn
+      %39 = OpLabel
+      %40 = OpVariable %_ptr_Function__struct_5 Function
+      %41 = OpVariable %_ptr_Function__struct_6 Function
+      OpReturn
+      OpFunctionEnd)"));
+  ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
+  auto fe = p->function_emitter(100);
+  EXPECT_TRUE(fe.EmitFunctionVariables());
+
+  const auto got = ToString(p->builder(), fe.ast_body());
+  EXPECT_THAT(got, HasSubstr(R"(VariableDeclStatement{
+  Variable{
+    x_40
+    none
+    undefined
+    __type_name_S
+  }
+}
+VariableDeclStatement{
+  Variable{
+    x_41
+    none
+    undefined
+    __type_name_S_1
   }
 }
 )"));
@@ -682,6 +841,7 @@ TEST_F(SpvParserFunctionVarTest,
   Variable{
     x_25
     none
+    undefined
     __u32
   }
 }
@@ -730,6 +890,7 @@ TEST_F(SpvParserFunctionVarTest,
   Variable{
     x_25
     none
+    undefined
     __u32
   }
 }
@@ -737,6 +898,7 @@ VariableDeclStatement{
   VariableConst{
     x_2
     none
+    undefined
     __u32
     {
       Binary[not set]{
@@ -802,6 +964,7 @@ TEST_F(SpvParserFunctionVarTest,
   Variable{
     x_25
     none
+    undefined
     __u32
   }
 }
@@ -809,6 +972,7 @@ VariableDeclStatement{
   VariableConst{
     x_2
     none
+    undefined
     __u32
     {
       Binary[not set]{
@@ -906,6 +1070,7 @@ Loop{
     Variable{
       x_2
       none
+      undefined
       __u32
     }
   }
@@ -1019,6 +1184,7 @@ TEST_F(
   VariableConst{
     x_1
     none
+    undefined
     __u32
     {
       ScalarConstructor[not set]{1u}
@@ -1036,6 +1202,7 @@ VariableDeclStatement{
   VariableConst{
     x_3
     none
+    undefined
     __u32
     {
       Identifier[not set]{x_1}
@@ -1109,6 +1276,7 @@ TEST_F(SpvParserFunctionVarTest,
       VariableConst{
         x_1
         none
+        undefined
         __u32
         {
           ScalarConstructor[not set]{1u}
@@ -1126,6 +1294,7 @@ TEST_F(SpvParserFunctionVarTest,
       VariableConst{
         x_3
         none
+        undefined
         __u32
         {
           Identifier[not set]{x_1}
@@ -1196,6 +1365,7 @@ TEST_F(
       VariableConst{
         x_1
         none
+        undefined
         __u32
         {
           ScalarConstructor[not set]{1u}
@@ -1215,6 +1385,7 @@ TEST_F(
       VariableConst{
         x_3
         none
+        undefined
         __u32
         {
           Identifier[not set]{x_1}
@@ -1274,6 +1445,7 @@ TEST_F(SpvParserFunctionVarTest,
   VariableConst{
     x_1
     none
+    undefined
     __u32
     {
       ScalarConstructor[not set]{1u}
@@ -1284,6 +1456,7 @@ VariableDeclStatement{
   VariableConst{
     x_2
     none
+    undefined
     __u32
     {
       Identifier[not set]{x_1}
@@ -1352,6 +1525,7 @@ TEST_F(SpvParserFunctionVarTest, EmitStatement_Phi_SingleBlockLoopIndex) {
     Variable{
       x_2_phi
       none
+      undefined
       __u32
     }
   }
@@ -1359,6 +1533,7 @@ TEST_F(SpvParserFunctionVarTest, EmitStatement_Phi_SingleBlockLoopIndex) {
     Variable{
       x_3_phi
       none
+      undefined
       __u32
     }
   }
@@ -1366,6 +1541,7 @@ TEST_F(SpvParserFunctionVarTest, EmitStatement_Phi_SingleBlockLoopIndex) {
     VariableConst{
       x_101
       none
+      undefined
       __bool
       {
         Identifier[not set]{x_7}
@@ -1376,6 +1552,7 @@ TEST_F(SpvParserFunctionVarTest, EmitStatement_Phi_SingleBlockLoopIndex) {
     VariableConst{
       x_102
       none
+      undefined
       __bool
       {
         Identifier[not set]{x_8}
@@ -1403,6 +1580,7 @@ TEST_F(SpvParserFunctionVarTest, EmitStatement_Phi_SingleBlockLoopIndex) {
       VariableConst{
         x_2
         none
+        undefined
         __u32
         {
           Identifier[not set]{x_2_phi}
@@ -1413,6 +1591,7 @@ TEST_F(SpvParserFunctionVarTest, EmitStatement_Phi_SingleBlockLoopIndex) {
       VariableConst{
         x_3
         none
+        undefined
         __u32
         {
           Identifier[not set]{x_3_phi}
@@ -1499,6 +1678,7 @@ TEST_F(SpvParserFunctionVarTest, EmitStatement_Phi_MultiBlockLoopIndex) {
     Variable{
       x_2_phi
       none
+      undefined
       __u32
     }
   }
@@ -1506,6 +1686,7 @@ TEST_F(SpvParserFunctionVarTest, EmitStatement_Phi_MultiBlockLoopIndex) {
     Variable{
       x_3_phi
       none
+      undefined
       __u32
     }
   }
@@ -1513,6 +1694,7 @@ TEST_F(SpvParserFunctionVarTest, EmitStatement_Phi_MultiBlockLoopIndex) {
     VariableConst{
       x_101
       none
+      undefined
       __bool
       {
         Identifier[not set]{x_7}
@@ -1523,6 +1705,7 @@ TEST_F(SpvParserFunctionVarTest, EmitStatement_Phi_MultiBlockLoopIndex) {
     VariableConst{
       x_102
       none
+      undefined
       __bool
       {
         Identifier[not set]{x_8}
@@ -1550,6 +1733,7 @@ TEST_F(SpvParserFunctionVarTest, EmitStatement_Phi_MultiBlockLoopIndex) {
       Variable{
         x_4
         none
+        undefined
         __u32
       }
     }
@@ -1557,6 +1741,7 @@ TEST_F(SpvParserFunctionVarTest, EmitStatement_Phi_MultiBlockLoopIndex) {
       VariableConst{
         x_2
         none
+        undefined
         __u32
         {
           Identifier[not set]{x_2_phi}
@@ -1567,6 +1752,7 @@ TEST_F(SpvParserFunctionVarTest, EmitStatement_Phi_MultiBlockLoopIndex) {
       VariableConst{
         x_3
         none
+        undefined
         __u32
         {
           Identifier[not set]{x_3_phi}
@@ -1660,6 +1846,7 @@ TEST_F(SpvParserFunctionVarTest,
   VariableConst{
     x_101
     none
+    undefined
     __bool
     {
       Identifier[not set]{x_17}
@@ -1671,6 +1858,7 @@ Loop{
     Variable{
       x_2_phi
       none
+      undefined
       __u32
     }
   }
@@ -1678,6 +1866,7 @@ Loop{
     Variable{
       x_5_phi
       none
+      undefined
       __u32
     }
   }
@@ -1694,6 +1883,7 @@ Loop{
       Variable{
         x_7
         none
+        undefined
         __u32
       }
     }
@@ -1701,6 +1891,7 @@ Loop{
       VariableConst{
         x_2
         none
+        undefined
         __u32
         {
           Identifier[not set]{x_2_phi}
@@ -1711,6 +1902,7 @@ Loop{
       VariableConst{
         x_5
         none
+        undefined
         __u32
         {
           Identifier[not set]{x_5_phi}
@@ -1721,6 +1913,7 @@ Loop{
       VariableConst{
         x_4
         none
+        undefined
         __u32
         {
           Binary[not set]{
@@ -1735,6 +1928,7 @@ Loop{
       VariableConst{
         x_6
         none
+        undefined
         __u32
         {
           Binary[not set]{
@@ -1813,7 +2007,7 @@ TEST_F(SpvParserFunctionVarTest, EmitStatement_Phi_FromElseAndThen) {
      OpBranch %89
 
      %89 = OpLabel
-     %2 = OpPhi %uint %uint_0 %30 %uint_1 %40
+     %2 = OpPhi %uint %uint_0 %30 %uint_1 %40 %uint_0 %79
      OpStore %1 %2
      OpBranch %10
 
@@ -1832,6 +2026,7 @@ TEST_F(SpvParserFunctionVarTest, EmitStatement_Phi_FromElseAndThen) {
   VariableConst{
     x_101
     none
+    undefined
     __bool
     {
       Identifier[not set]{x_7}
@@ -1842,6 +2037,7 @@ VariableDeclStatement{
   VariableConst{
     x_102
     none
+    undefined
     __bool
     {
       Identifier[not set]{x_8}
@@ -1853,6 +2049,7 @@ Loop{
     Variable{
       x_2_phi
       none
+      undefined
       __u32
     }
   }
@@ -1885,11 +2082,16 @@ Loop{
       Continue{}
     }
   }
+  Assignment{
+    Identifier[not set]{x_2_phi}
+    ScalarConstructor[not set]{0u}
+  }
   continuing {
     VariableDeclStatement{
       VariableConst{
         x_2
         none
+        undefined
         __u32
         {
           Identifier[not set]{x_2_phi}
@@ -1958,6 +2160,7 @@ TEST_F(SpvParserFunctionVarTest, EmitStatement_Phi_FromHeaderAndThen) {
   VariableConst{
     x_101
     none
+    undefined
     __bool
     {
       Identifier[not set]{x_7}
@@ -1968,6 +2171,7 @@ VariableDeclStatement{
   VariableConst{
     x_102
     none
+    undefined
     __bool
     {
       Identifier[not set]{x_8}
@@ -1979,6 +2183,7 @@ Loop{
     Variable{
       x_2_phi
       none
+      undefined
       __u32
     }
   }
@@ -2017,6 +2222,7 @@ Loop{
       VariableConst{
         x_2
         none
+        undefined
         __u32
         {
           Identifier[not set]{x_2_phi}
@@ -2082,8 +2288,9 @@ TEST_F(SpvParserFunctionVarTest,
   auto got = ToString(p->builder(), fe.ast_body());
   auto* expect = R"(VariableDeclStatement{
   Variable{
-    x_35_phi
+    x_41_phi
     none
+    undefined
     __u32
   }
 }
@@ -2107,14 +2314,14 @@ Switch{
       Else{
         {
           Assignment{
-            Identifier[not set]{x_35_phi}
+            Identifier[not set]{x_41_phi}
             ScalarConstructor[not set]{0u}
           }
           Break{}
         }
       }
       Assignment{
-        Identifier[not set]{x_35_phi}
+        Identifier[not set]{x_41_phi}
         ScalarConstructor[not set]{1u}
       }
     }
@@ -2122,11 +2329,12 @@ Switch{
 }
 VariableDeclStatement{
   VariableConst{
-    x_35
+    x_41
     none
+    undefined
     __u32
     {
-      Identifier[not set]{x_35_phi}
+      Identifier[not set]{x_41_phi}
     }
   }
 }
@@ -2174,6 +2382,7 @@ TEST_F(SpvParserFunctionVarTest, EmitStatement_UseInPhiCountsAsUse) {
   Variable{
     x_101_phi
     none
+    undefined
     __bool
   }
 }
@@ -2181,6 +2390,7 @@ VariableDeclStatement{
   VariableConst{
     x_11
     none
+    undefined
     __bool
     {
       Binary[not set]{
@@ -2195,6 +2405,7 @@ VariableDeclStatement{
   VariableConst{
     x_12
     none
+    undefined
     __bool
     {
       UnaryOp[not set]{
@@ -2223,6 +2434,7 @@ VariableDeclStatement{
   VariableConst{
     x_101
     none
+    undefined
     __bool
     {
       Identifier[not set]{x_101_phi}
@@ -2232,6 +2444,391 @@ VariableDeclStatement{
 Return{}
 )";
   EXPECT_EQ(expect, got);
+}
+
+TEST_F(SpvParserFunctionVarTest,
+       EmitStatement_Phi_ValueFromBlockNotInBlockOrderIgnored) {
+  // From crbug.com/tint/804
+  const auto assembly = Preamble() + R"(
+     %float_42 = OpConstant %float 42.0
+     %cond = OpUndef %bool
+
+     %100 = OpFunction %void None %voidfn
+     %10 = OpLabel
+     OpBranch %30
+
+     ; unreachable
+     %20 = OpLabel
+     %499 = OpFAdd %float %float_42 %float_42
+     %500 = OpFAdd %float %499 %float_42
+     OpBranch %25
+
+     %25 = OpLabel
+     OpBranch %80
+
+
+     %30 = OpLabel
+     OpLoopMerge %90 %80 None
+     OpBranchConditional %cond %90 %40
+
+     %40 = OpLabel
+     OpBranch %90
+
+     %80 = OpLabel ; unreachable continue target
+                ; but "dominated" by %20 and %25
+     %81 = OpPhi %float %500 %25
+     OpBranch %30 ; backedge
+
+     %90 = OpLabel
+     OpReturn
+     OpFunctionEnd
+)";
+  auto p = parser(test::Assemble(assembly));
+  ASSERT_TRUE(p->BuildAndParseInternalModule()) << p->error() << assembly;
+  auto fe = p->function_emitter(100);
+  EXPECT_TRUE(fe.EmitBody()) << p->error();
+
+  const auto* expected = R"(Loop{
+  If{
+    (
+      ScalarConstructor[not set]{false}
+    )
+    {
+      Break{}
+    }
+  }
+  Break{}
+  continuing {
+    VariableDeclStatement{
+      Variable{
+        x_81_phi_1
+        none
+        undefined
+        __f32
+      }
+    }
+    VariableDeclStatement{
+      VariableConst{
+        x_81
+        none
+        undefined
+        __f32
+        {
+          Identifier[not set]{x_81_phi_1}
+        }
+      }
+    }
+  }
+}
+Return{}
+)";
+  const auto got = ToString(p->builder(), fe.ast_body());
+  EXPECT_EQ(got, expected);
+}
+
+TEST_F(SpvParserFunctionVarTest, EmitStatement_Hoist_CompositeInsert) {
+  // From crbug.com/tint/804
+  const auto assembly = Preamble() + R"(
+    %100 = OpFunction %void None %voidfn
+
+    %10 = OpLabel
+    OpSelectionMerge %50 None
+    OpBranchConditional %true %20 %30
+
+      %20 = OpLabel
+      %200 = OpCompositeInsert %v2int %int_0 %v2int_null 0
+      OpBranch %50
+
+      %30 = OpLabel
+      OpReturn
+
+    %50 = OpLabel   ; dominated by %20, but %200 needs to be hoisted
+    %201 = OpCopyObject %v2int %200
+    OpReturn
+    OpFunctionEnd
+)";
+  auto p = parser(test::Assemble(assembly));
+  ASSERT_TRUE(p->BuildAndParseInternalModule()) << p->error() << assembly;
+  auto fe = p->function_emitter(100);
+  EXPECT_TRUE(fe.EmitBody()) << p->error();
+
+  const auto* expected = R"(VariableDeclStatement{
+  Variable{
+    x_200
+    none
+    undefined
+    __vec_2__i32
+  }
+}
+If{
+  (
+    ScalarConstructor[not set]{true}
+  )
+  {
+    Assignment{
+      Identifier[not set]{x_200}
+      TypeConstructor[not set]{
+        __vec_2__i32
+        ScalarConstructor[not set]{0}
+        ScalarConstructor[not set]{0}
+      }
+    }
+    Assignment{
+      MemberAccessor[not set]{
+        Identifier[not set]{x_200}
+        Identifier[not set]{x}
+      }
+      ScalarConstructor[not set]{0}
+    }
+  }
+}
+Else{
+  {
+    Return{}
+  }
+}
+VariableDeclStatement{
+  VariableConst{
+    x_201
+    none
+    undefined
+    __vec_2__i32
+    {
+      Identifier[not set]{x_200}
+    }
+  }
+}
+Return{}
+)";
+  const auto got = ToString(p->builder(), fe.ast_body());
+  EXPECT_EQ(got, expected);
+}
+
+TEST_F(SpvParserFunctionVarTest, EmitStatement_Hoist_VectorInsertDynamic) {
+  // Spawned from crbug.com/tint/804
+  const auto assembly = Preamble() + R"(
+    %100 = OpFunction %void None %voidfn
+
+    %10 = OpLabel
+    OpSelectionMerge %50 None
+    OpBranchConditional %true %20 %30
+
+      %20 = OpLabel
+      %200 = OpVectorInsertDynamic %v2int %v2int_null %int_3 %int_1
+      OpBranch %50
+
+      %30 = OpLabel
+      OpReturn
+
+    %50 = OpLabel   ; dominated by %20, but %200 needs to be hoisted
+    %201 = OpCopyObject %v2int %200
+    OpReturn
+    OpFunctionEnd
+)";
+  auto p = parser(test::Assemble(assembly));
+  ASSERT_TRUE(p->BuildAndParseInternalModule()) << p->error() << assembly;
+  auto fe = p->function_emitter(100);
+  EXPECT_TRUE(fe.EmitBody()) << p->error();
+
+  const auto got = ToString(p->builder(), fe.ast_body());
+  const auto* expected = R"(VariableDeclStatement{
+  Variable{
+    x_200
+    none
+    undefined
+    __vec_2__i32
+  }
+}
+If{
+  (
+    ScalarConstructor[not set]{true}
+  )
+  {
+    Assignment{
+      Identifier[not set]{x_200}
+      TypeConstructor[not set]{
+        __vec_2__i32
+        ScalarConstructor[not set]{0}
+        ScalarConstructor[not set]{0}
+      }
+    }
+    Assignment{
+      ArrayAccessor[not set]{
+        Identifier[not set]{x_200}
+        ScalarConstructor[not set]{1}
+      }
+      ScalarConstructor[not set]{3}
+    }
+  }
+}
+Else{
+  {
+    Return{}
+  }
+}
+VariableDeclStatement{
+  VariableConst{
+    x_201
+    none
+    undefined
+    __vec_2__i32
+    {
+      Identifier[not set]{x_200}
+    }
+  }
+}
+Return{}
+)";
+  EXPECT_EQ(got, expected) << got;
+}
+
+TEST_F(SpvParserFunctionVarTest, EmitStatement_Hoist_UsedAsNonPtrArg) {
+  // Spawned from crbug.com/tint/804
+  const auto assembly = Preamble() + R"(
+    %fn_int = OpTypeFunction %void %int
+
+    %500 = OpFunction %void None %fn_int
+    %501 = OpFunctionParameter %int
+    %502 = OpLabel
+    OpReturn
+    OpFunctionEnd
+
+    %100 = OpFunction %void None %voidfn
+
+    %10 = OpLabel
+    OpSelectionMerge %50 None
+    OpBranchConditional %true %20 %30
+
+      %20 = OpLabel
+      %200 = OpCopyObject %int %int_1
+      OpBranch %50
+
+      %30 = OpLabel
+      OpReturn
+
+    %50 = OpLabel   ; dominated by %20, but %200 needs to be hoisted
+    %201 = OpFunctionCall %void %500 %200
+    OpReturn
+    OpFunctionEnd
+)";
+  auto p = parser(test::Assemble(assembly));
+  ASSERT_TRUE(p->BuildAndParseInternalModule()) << p->error() << assembly;
+  auto fe = p->function_emitter(100);
+  EXPECT_TRUE(fe.EmitBody()) << p->error();
+
+  const auto got = ToString(p->builder(), fe.ast_body());
+  const auto* expected = R"(VariableDeclStatement{
+  Variable{
+    x_200
+    none
+    undefined
+    __i32
+  }
+}
+If{
+  (
+    ScalarConstructor[not set]{true}
+  )
+  {
+    Assignment{
+      Identifier[not set]{x_200}
+      ScalarConstructor[not set]{1}
+    }
+  }
+}
+Else{
+  {
+    Return{}
+  }
+}
+Call[not set]{
+  Identifier[not set]{x_500}
+  (
+    Identifier[not set]{x_200}
+  )
+}
+Return{}
+)";
+  EXPECT_EQ(got, expected) << got;
+}
+
+TEST_F(SpvParserFunctionVarTest, DISABLED_EmitStatement_Hoist_UsedAsPtrArg) {
+  // Spawned from crbug.com/tint/804
+  // Blocked by crbug.com/tint/98: hoisting pointer types
+  const auto assembly = Preamble() + R"(
+
+    %fn_int = OpTypeFunction %void %ptr_int
+
+    %500 = OpFunction %void None %fn_int
+    %501 = OpFunctionParameter %ptr_int
+    %502 = OpLabel
+    OpReturn
+    OpFunctionEnd
+
+    %100 = OpFunction %void None %voidfn
+
+    %10 = OpLabel
+    %199 = OpVariable %ptr_int Function
+    OpSelectionMerge %50 None
+    OpBranchConditional %true %20 %30
+
+      %20 = OpLabel
+      %200 = OpCopyObject %ptr_int %199
+      OpBranch %50
+
+      %30 = OpLabel
+      OpReturn
+
+    %50 = OpLabel   ; dominated by %20, but %200 needs to be hoisted
+    %201 = OpFunctionCall %void %500 %200
+    OpReturn
+    OpFunctionEnd
+)";
+  auto p = parser(test::Assemble(assembly));
+  ASSERT_TRUE(p->BuildAndParseInternalModule()) << p->error() << assembly;
+  auto fe = p->function_emitter(100);
+  EXPECT_TRUE(fe.EmitBody()) << p->error();
+
+  const auto got = ToString(p->builder(), fe.ast_body());
+  const auto* expected = R"(VariableDeclStatement{
+  Variable{
+    x_200
+    none
+    undefined
+    __i32
+  }
+  Variable{
+    x_199
+    none
+    undefined
+    __i32
+  }
+}
+If{
+  (
+    ScalarConstructor[not set]{true}
+  )
+  {
+    Assignment{
+      Identifier[not set]{x_200}
+      ScalarConstructor[not set]{1}
+    }
+  }
+}
+Else{
+  {
+    Return{}
+  }
+}
+Call[not set]{
+  Identifier[not set]{x_500}
+  (
+    Identifier[not set]{x_200}
+  )
+}
+Return{}
+)";
+  EXPECT_EQ(got, expected) << got;
 }
 
 }  // namespace

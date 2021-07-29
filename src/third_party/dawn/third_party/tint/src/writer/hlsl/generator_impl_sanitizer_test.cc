@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "src/ast/call_statement.h"
 #include "src/ast/stage_decoration.h"
 #include "src/ast/struct_block_decoration.h"
 #include "src/ast/variable_decl_statement.h"
@@ -24,49 +25,122 @@ namespace {
 
 using HlslSanitizerTest = TestHelper;
 
-TEST_F(HlslSanitizerTest, ArrayLength) {
-  auto* sb_ty = Structure("SB",
-                          {
-                              Member("x", ty.f32()),
-                              Member("arr", ty.array(ty.vec4<f32>())),
-                          },
-                          {
-                              create<ast::StructBlockDecoration>(),
-                          });
-  auto* ac_ty = ty.access(ast::AccessControl::kReadOnly, sb_ty);
-
-  Global("sb", ac_ty, ast::StorageClass::kStorage, nullptr,
-         {
-             create<ast::BindingDecoration>(0),
-             create<ast::GroupDecoration>(1),
+TEST_F(HlslSanitizerTest, Call_ArrayLength) {
+  auto* s = Structure("my_struct", {Member(0, "a", ty.array<f32>(4))},
+                      {create<ast::StructBlockDecoration>()});
+  Global("b", ty.Of(s), ast::StorageClass::kStorage, ast::Access::kRead,
+         ast::DecorationList{
+             create<ast::BindingDecoration>(1),
+             create<ast::GroupDecoration>(2),
          });
 
-  Func("main", ast::VariableList{}, ty.void_(),
-       {
+  Func("a_func", ast::VariableList{}, ty.void_(),
+       ast::StatementList{
            Decl(Var("len", ty.u32(), ast::StorageClass::kNone,
-                    Call("arrayLength", MemberAccessor("sb", "arr")))),
+                    Call("arrayLength", AddressOf(MemberAccessor("b", "a"))))),
        },
-       {
+       ast::DecorationList{
            Stage(ast::PipelineStage::kFragment),
        });
 
   GeneratorImpl& gen = SanitizeAndBuild();
 
-  ASSERT_TRUE(gen.Generate(out)) << gen.error();
+  ASSERT_TRUE(gen.Generate()) << gen.error();
 
-  auto got = result();
-  auto* expect = R"(
-ByteAddressBuffer sb : register(t0, space1);
+  auto got = gen.result();
+  auto* expect = R"(ByteAddressBuffer b : register(t1, space2);
 
-void main() {
+void a_func() {
   uint tint_symbol_1 = 0u;
-  sb.GetDimensions(tint_symbol_1);
-  const uint tint_symbol_2 = ((tint_symbol_1 - 16u) / 16u);
+  b.GetDimensions(tint_symbol_1);
+  const uint tint_symbol_2 = ((tint_symbol_1 - 0u) / 4u);
   uint len = tint_symbol_2;
   return;
 }
-
 )";
+  EXPECT_EQ(expect, got);
+}
+
+TEST_F(HlslSanitizerTest, Call_ArrayLength_OtherMembersInStruct) {
+  auto* s = Structure("my_struct",
+                      {
+                          Member(0, "z", ty.f32()),
+                          Member(4, "a", ty.array<f32>(4)),
+                      },
+                      {create<ast::StructBlockDecoration>()});
+  Global("b", ty.Of(s), ast::StorageClass::kStorage, ast::Access::kRead,
+         ast::DecorationList{
+             create<ast::BindingDecoration>(1),
+             create<ast::GroupDecoration>(2),
+         });
+
+  Func("a_func", ast::VariableList{}, ty.void_(),
+       ast::StatementList{
+           Decl(Var("len", ty.u32(), ast::StorageClass::kNone,
+                    Call("arrayLength", AddressOf(MemberAccessor("b", "a"))))),
+       },
+       ast::DecorationList{
+           Stage(ast::PipelineStage::kFragment),
+       });
+
+  GeneratorImpl& gen = SanitizeAndBuild();
+
+  ASSERT_TRUE(gen.Generate()) << gen.error();
+
+  auto got = gen.result();
+  auto* expect = R"(ByteAddressBuffer b : register(t1, space2);
+
+void a_func() {
+  uint tint_symbol_1 = 0u;
+  b.GetDimensions(tint_symbol_1);
+  const uint tint_symbol_2 = ((tint_symbol_1 - 4u) / 4u);
+  uint len = tint_symbol_2;
+  return;
+}
+)";
+
+  EXPECT_EQ(expect, got);
+}
+
+TEST_F(HlslSanitizerTest, Call_ArrayLength_ViaLets) {
+  auto* s = Structure("my_struct", {Member(0, "a", ty.array<f32>(4))},
+                      {create<ast::StructBlockDecoration>()});
+  Global("b", ty.Of(s), ast::StorageClass::kStorage, ast::Access::kRead,
+         ast::DecorationList{
+             create<ast::BindingDecoration>(1),
+             create<ast::GroupDecoration>(2),
+         });
+
+  auto* p = Const("p", nullptr, AddressOf("b"));
+  auto* p2 = Const("p2", nullptr, AddressOf(MemberAccessor(Deref(p), "a")));
+
+  Func("a_func", ast::VariableList{}, ty.void_(),
+       ast::StatementList{
+           Decl(p),
+           Decl(p2),
+           Decl(Var("len", ty.u32(), ast::StorageClass::kNone,
+                    Call("arrayLength", p2))),
+       },
+       ast::DecorationList{
+           Stage(ast::PipelineStage::kFragment),
+       });
+
+  GeneratorImpl& gen = SanitizeAndBuild();
+
+  ASSERT_TRUE(gen.Generate()) << gen.error();
+
+  auto got = gen.result();
+  auto* expect = R"(ByteAddressBuffer b : register(t1, space2);
+
+void a_func() {
+  uint tint_symbol_1 = 0u;
+  b.GetDimensions(tint_symbol_1);
+  const uint tint_symbol_2 = ((tint_symbol_1 - 0u) / 4u);
+  uint len = tint_symbol_2;
+  return;
+}
+)";
+
   EXPECT_EQ(expect, got);
 }
 
@@ -85,15 +159,14 @@ TEST_F(HlslSanitizerTest, PromoteArrayInitializerToConstVar) {
 
   GeneratorImpl& gen = SanitizeAndBuild();
 
-  ASSERT_TRUE(gen.Generate(out)) << gen.error();
+  ASSERT_TRUE(gen.Generate()) << gen.error();
 
-  auto got = result();
+  auto got = gen.result();
   auto* expect = R"(void main() {
   const int tint_symbol[4] = {1, 2, 3, 4};
   int pos = tint_symbol[3];
   return;
 }
-
 )";
   EXPECT_EQ(expect, got);
 }
@@ -104,7 +177,7 @@ TEST_F(HlslSanitizerTest, PromoteStructInitializerToConstVar) {
                                  Member("b", ty.vec3<f32>()),
                                  Member("c", ty.i32()),
                              });
-  auto* struct_init = Construct(str, 1, vec3<f32>(2.f, 3.f, 4.f), 4);
+  auto* struct_init = Construct(ty.Of(str), 1, vec3<f32>(2.f, 3.f, 4.f), 4);
   auto* struct_access = MemberAccessor(struct_init, "b");
   auto* pos =
       Var("pos", ty.vec3<f32>(), ast::StorageClass::kNone, struct_access);
@@ -119,9 +192,9 @@ TEST_F(HlslSanitizerTest, PromoteStructInitializerToConstVar) {
 
   GeneratorImpl& gen = SanitizeAndBuild();
 
-  ASSERT_TRUE(gen.Generate(out)) << gen.error();
+  ASSERT_TRUE(gen.Generate()) << gen.error();
 
-  auto got = result();
+  auto got = gen.result();
   auto* expect = R"(struct S {
   int a;
   float3 b;
@@ -133,7 +206,6 @@ void main() {
   float3 pos = tint_symbol.b;
   return;
 }
-
 )";
   EXPECT_EQ(expect, got);
 }
@@ -159,15 +231,14 @@ TEST_F(HlslSanitizerTest, InlinePtrLetsBasic) {
 
   GeneratorImpl& gen = SanitizeAndBuild();
 
-  ASSERT_TRUE(gen.Generate(out)) << gen.error();
+  ASSERT_TRUE(gen.Generate()) << gen.error();
 
-  auto got = result();
+  auto got = gen.result();
   auto* expect = R"(void main() {
   int v = 0;
   int x = v;
   return;
 }
-
 )";
   EXPECT_EQ(expect, got);
 }
@@ -203,15 +274,14 @@ TEST_F(HlslSanitizerTest, InlinePtrLetsComplexChain) {
 
   GeneratorImpl& gen = SanitizeAndBuild();
 
-  ASSERT_TRUE(gen.Generate(out)) << gen.error();
+  ASSERT_TRUE(gen.Generate()) << gen.error();
 
-  auto got = result();
+  auto got = gen.result();
   auto* expect = R"(void main() {
   float4x4 m = float4x4(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
   float f = m[2][1];
   return;
 }
-
 )";
   EXPECT_EQ(expect, got);
 }
@@ -248,9 +318,9 @@ TEST_F(HlslSanitizerTest, InlineParam) {
 
   GeneratorImpl& gen = SanitizeAndBuild();
 
-  ASSERT_TRUE(gen.Generate(out)) << gen.error();
+  ASSERT_TRUE(gen.Generate()) << gen.error();
 
-  auto got = result();
+  auto got = gen.result();
   auto* expect = R"(int x(inout int p) {
   return p;
 }
@@ -260,7 +330,6 @@ void main() {
   int r = x(v);
   return;
 }
-
 )";
   EXPECT_EQ(expect, got);
 }

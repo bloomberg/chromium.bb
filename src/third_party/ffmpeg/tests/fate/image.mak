@@ -338,6 +338,22 @@ FATE_JPG-$(call DEMDEC, IMAGE2, MJPEG) += $(FATE_JPG)
 FATE_IMAGE += $(FATE_JPG-yes)
 fate-jpg: $(FATE_JPG-yes)
 
+FATE_JPEGLS += fate-jpegls-2bpc
+fate-jpegls-2bpc: CMD = framecrc -idct simple -i $(TARGET_SAMPLES)/jpegls/4.jls
+
+FATE_JPEGLS += fate-jpegls-3bpc
+fate-jpegls-3bpc: CMD = framecrc -idct simple -i $(TARGET_SAMPLES)/jpegls/8.jls
+
+FATE_JPEGLS += fate-jpegls-5bpc
+fate-jpegls-5bpc: CMD = framecrc -idct simple -i $(TARGET_SAMPLES)/jpegls/32.jls
+
+FATE_JPEGLS += fate-jpegls-7bpc
+fate-jpegls-7bpc: CMD = framecrc -idct simple -i $(TARGET_SAMPLES)/jpegls/128.jls
+
+FATE_JPEGLS-$(call DEMDEC, IMAGE2, JPEGLS) += $(FATE_JPEGLS)
+FATE_IMAGE += $(FATE_JPEGLS-yes)
+fate-jpegls: $(FATE_JPEGLS-yes)
+
 FATE_IMAGE-$(call DEMDEC, IMAGE2, QDRAW) += fate-pict
 fate-pict: CMD = framecrc -i $(TARGET_SAMPLES)/quickdraw/TRU256.PCT -pix_fmt rgb24
 
@@ -357,6 +373,14 @@ $(foreach CLSP,$(PNG_COLORSPACES),$(eval $(call FATE_IMGSUITE_PNG,$(CLSP))))
 
 FATE_PNG += fate-png-int-rgb24
 fate-png-int-rgb24: CMD = framecrc -i $(TARGET_SAMPLES)/png1/lena-int_rgb24.png -sws_flags +accurate_rnd+bitexact
+
+FATE_PNG += fate-png-frame-metadata
+fate-png-frame-metadata: CMD = run ffprobe$(PROGSSUF)$(EXESUF) -show_entries frame_tags \
+    -i $(TARGET_SAMPLES)/filter/pixelart0.png
+
+FATE_PNG += fate-png-side-data
+fate-png-side-data: CMD = run ffprobe$(PROGSSUF)$(EXESUF) -show_frames \
+    -i $(TARGET_SAMPLES)/png1/lena-int_rgb24.png
 
 FATE_PNG-$(call DEMDEC, IMAGE2, PNG) += $(FATE_PNG)
 FATE_IMAGE += $(FATE_PNG-yes)

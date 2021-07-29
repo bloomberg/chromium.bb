@@ -9,9 +9,9 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/cxx17_backports.h"
 #include "base/json/string_escape.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
@@ -159,7 +159,6 @@ Status ParseMobileEmulation(const base::Value& option,
 
     int width = 0;
     int height = 0;
-    double device_scale_factor = 0;
     bool touch = true;
     bool mobile = true;
 
@@ -169,8 +168,10 @@ Status ParseMobileEmulation(const base::Value& option,
     if (metrics->FindKey("height") && !metrics->GetInteger("height", &height))
       return Status(kInvalidArgument, "'height' must be an integer");
 
+    absl::optional<double> maybe_device_scale_factor =
+        metrics->FindDoubleKey("pixelRatio");
     if (metrics->FindKey("pixelRatio") &&
-        !metrics->GetDouble("pixelRatio", &device_scale_factor))
+        !maybe_device_scale_factor.has_value())
       return Status(kInvalidArgument, "'pixelRatio' must be a double");
 
     if (metrics->FindKey("touch") && !metrics->GetBoolean("touch", &touch))
@@ -179,8 +180,8 @@ Status ParseMobileEmulation(const base::Value& option,
     if (metrics->FindKey("mobile") && !metrics->GetBoolean("mobile", &mobile))
       return Status(kInvalidArgument, "'mobile' must be a boolean");
 
-    DeviceMetrics* device_metrics =
-        new DeviceMetrics(width, height, device_scale_factor, touch, mobile);
+    DeviceMetrics* device_metrics = new DeviceMetrics(
+        width, height, maybe_device_scale_factor.value_or(0), touch, mobile);
     capabilities->device_metrics =
         std::unique_ptr<DeviceMetrics>(device_metrics);
   }
@@ -225,7 +226,7 @@ Status ParseTimeouts(const base::Value& option, Capabilities* capabilities) {
   const base::DictionaryValue* timeouts;
   if (!option.GetAsDictionary(&timeouts))
     return Status(kInvalidArgument, "'timeouts' must be a JSON object");
-  for (const auto& it : timeouts->DictItems()) {
+  for (auto it : timeouts->DictItems()) {
     int64_t timeout_ms_int64 = -1;
     base::TimeDelta timeout;
     const std::string& type = it.first;
@@ -519,13 +520,11 @@ Status ParsePerfLoggingPrefs(const base::Value& option,
 
 Status ParseDevToolsEventsLoggingPrefs(const base::Value& option,
                                        Capabilities* capabilities) {
-  const base::ListValue* devtools_events_logging_prefs = nullptr;
-  if (!option.GetAsList(&devtools_events_logging_prefs))
+  if (!option.is_list())
     return Status(kInvalidArgument, "must be a list");
-  if (devtools_events_logging_prefs->empty())
+  if (option.GetList().empty())
     return Status(kInvalidArgument, "list must contain values");
-  capabilities->devtools_events_logging_prefs.reset(
-      devtools_events_logging_prefs->DeepCopy());
+  capabilities->devtools_events_logging_prefs = option.Clone();
   return Status(kOk);
 }
 

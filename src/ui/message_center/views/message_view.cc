@@ -25,6 +25,7 @@
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/focus/focus_manager.h"
@@ -85,9 +86,11 @@ SkPath MessageView::HighlightPathGenerator::GetHighlightPath(
 }
 
 MessageView::MessageView(const Notification& notification)
-    : notification_id_(notification.id()), slide_out_controller_(this, this) {
+    : notification_id_(notification.id()),
+      notifier_id_(notification.notifier_id()),
+      slide_out_controller_(this, this) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
-  focus_ring_ = views::FocusRing::Install(this);
+  views::FocusRing::Install(this);
   views::HighlightPathGenerator::Install(
       this, std::make_unique<HighlightPathGenerator>());
 
@@ -114,6 +117,10 @@ MessageView::~MessageView() {
   RemovedFromWidget();
 }
 
+void MessageView::AddGroupedNotification(const Notification& notification) {
+  // Stub
+}
+
 void MessageView::UpdateWithNotification(const Notification& notification) {
   pinned_ = notification.pinned();
   std::u16string new_accessible_name = CreateAccessibleName(notification);
@@ -132,10 +139,7 @@ void MessageView::SetIsNested() {
   slide_out_controller_.set_slide_mode(CalculateSlideMode());
   slide_out_controller_.set_update_opacity(false);
 
-  SkColor border_color = GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_UnfocusedBorderColor);
-  SetBorder(views::CreateRoundedRectBorder(
-      kNotificationBorderThickness, kNotificationCornerRadius, border_color));
+  UpdateNestedBorder();
 
   if (GetControlButtonsView())
     GetControlButtonsView()->ShowCloseButton(GetMode() != Mode::PINNED);
@@ -193,8 +197,8 @@ SkPath MessageView::GetHighlightPath() const {
   int inset = -views::PlatformStyle::kFocusHaloInset;
   rect.Inset(gfx::Insets(inset));
 
-  int top_radius = std::max(0, top_radius_ - inset);
-  int bottom_radius = std::max(0, bottom_radius_ - inset);
+  SkScalar top_radius = std::max(0, top_radius_ - inset);
+  SkScalar bottom_radius = std::max(0, bottom_radius_ - inset);
   SkScalar radii[8] = {top_radius,    top_radius,      // top-left
                        top_radius,    top_radius,      // top-right
                        bottom_radius, bottom_radius,   // bottom-right
@@ -332,6 +336,7 @@ void MessageView::AddedToWidget() {
 
 void MessageView::OnThemeChanged() {
   View::OnThemeChanged();
+  UpdateNestedBorder();
   UpdateBackgroundPainter();
 }
 
@@ -483,6 +488,15 @@ void MessageView::UpdateBackgroundPainter() {
   SetBackground(views::CreateBackgroundFromPainter(
       std::make_unique<NotificationBackgroundPainter>(
           top_radius_, bottom_radius_, background_color)));
+}
+
+void MessageView::UpdateNestedBorder() {
+  if (!is_nested_ || !GetWidget())
+    return;
+  SkColor border_color = GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_UnfocusedBorderColor);
+  SetBorder(views::CreateRoundedRectBorder(
+      kNotificationBorderThickness, kNotificationCornerRadius, border_color));
 }
 
 void MessageView::UpdateControlButtonsVisibility() {

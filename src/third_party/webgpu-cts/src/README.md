@@ -13,7 +13,7 @@ This test suite can be embedded inside [WPT](https://github.com/web-platform-tes
 ## Contributing
 
 Please read the [introductory guidelines](docs/intro/README.md) before contributing.
-Other documentation may be found in [`docs/`](docs/).
+Other documentation may be found in [`docs/`](docs/) and in the [helper index](docs/tsdoc/).
 
 Read [CONTRIBUTING.md](CONTRIBUTING.md) on licensing.
 

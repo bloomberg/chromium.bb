@@ -11,7 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing/core/features.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -173,7 +173,10 @@ void SafeBrowsingUserInteractionObserver::DidFinishNavigation(
     content::NavigationHandle* handle) {
   // Remove the observer on a top frame navigation to another page. The user is
   // now on another page so we don't need to wait for an interaction.
-  if (!handle->IsInMainFrame() || handle->IsSameDocument()) {
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
+  if (!handle->IsInPrimaryMainFrame() || handle->IsSameDocument()) {
     return;
   }
   // If this is the first navigation we are seeing, it must be the

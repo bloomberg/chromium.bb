@@ -10,8 +10,8 @@
 #include <set>
 #include <utility>
 
+#include "base/containers/cxx20_erase.h"
 #include "base/no_destructor.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -425,12 +425,12 @@ bool AXNodeData::GetStringListAttribute(
   return false;
 }
 
-bool AXNodeData::GetHtmlAttribute(const char* html_attr,
+bool AXNodeData::GetHtmlAttribute(const char* attribute,
                                   std::string* value) const {
   for (const std::pair<std::string, std::string>& html_attribute :
        html_attributes) {
     const std::string& attr = html_attribute.first;
-    if (base::LowerCaseEqualsASCII(attr, html_attr)) {
+    if (base::LowerCaseEqualsASCII(attr, attribute)) {
       *value = html_attribute.second;
       return true;
     }
@@ -439,23 +439,13 @@ bool AXNodeData::GetHtmlAttribute(const char* html_attr,
   return false;
 }
 
-bool AXNodeData::GetHtmlAttribute(const char* html_attr,
+bool AXNodeData::GetHtmlAttribute(const char* attribute,
                                   std::u16string* value) const {
   std::string value_utf8;
-  if (!GetHtmlAttribute(html_attr, &value_utf8))
+  if (!GetHtmlAttribute(attribute, &value_utf8))
     return false;
   *value = base::UTF8ToUTF16(value_utf8);
   return true;
-}
-
-void AXNodeData::AddStringAttribute(ax::mojom::StringAttribute attribute,
-                                    const std::string& value) {
-  DCHECK_NE(attribute, ax::mojom::StringAttribute::kNone);
-  DCHECK_NE(attribute, ax::mojom::StringAttribute::kChildTreeId)
-      << "Use AddChildTreeId";
-  if (HasStringAttribute(attribute))
-    RemoveStringAttribute(attribute);
-  string_attributes.push_back(std::make_pair(attribute, value));
 }
 
 void AXNodeData::AddChildTreeId(const AXTreeID& tree_id) {
@@ -463,22 +453,7 @@ void AXNodeData::AddChildTreeId(const AXTreeID& tree_id) {
       ax::mojom::StringAttribute::kChildTreeId;
   if (HasStringAttribute(attribute))
     RemoveStringAttribute(attribute);
-  string_attributes.push_back(std::make_pair(attribute, tree_id.ToString()));
-}
-
-void AXNodeData::AddIntAttribute(ax::mojom::IntAttribute attribute, int value) {
-  DCHECK_NE(attribute, ax::mojom::IntAttribute::kNone);
-  if (HasIntAttribute(attribute))
-    RemoveIntAttribute(attribute);
-  int_attributes.push_back(std::make_pair(attribute, value));
-}
-
-void AXNodeData::AddFloatAttribute(ax::mojom::FloatAttribute attribute,
-                                   float value) {
-  DCHECK_NE(attribute, ax::mojom::FloatAttribute::kNone);
-  if (HasFloatAttribute(attribute))
-    RemoveFloatAttribute(attribute);
-  float_attributes.push_back(std::make_pair(attribute, value));
+  string_attributes.emplace_back(attribute, tree_id.ToString());
 }
 
 void AXNodeData::AddBoolAttribute(ax::mojom::BoolAttribute attribute,
@@ -486,7 +461,32 @@ void AXNodeData::AddBoolAttribute(ax::mojom::BoolAttribute attribute,
   DCHECK_NE(attribute, ax::mojom::BoolAttribute::kNone);
   if (HasBoolAttribute(attribute))
     RemoveBoolAttribute(attribute);
-  bool_attributes.push_back(std::make_pair(attribute, value));
+  bool_attributes.emplace_back(attribute, value);
+}
+
+void AXNodeData::AddIntAttribute(ax::mojom::IntAttribute attribute, int value) {
+  DCHECK_NE(attribute, ax::mojom::IntAttribute::kNone);
+  if (HasIntAttribute(attribute))
+    RemoveIntAttribute(attribute);
+  int_attributes.emplace_back(attribute, value);
+}
+
+void AXNodeData::AddFloatAttribute(ax::mojom::FloatAttribute attribute,
+                                   float value) {
+  DCHECK_NE(attribute, ax::mojom::FloatAttribute::kNone);
+  if (HasFloatAttribute(attribute))
+    RemoveFloatAttribute(attribute);
+  float_attributes.emplace_back(attribute, value);
+}
+
+void AXNodeData::AddStringAttribute(ax::mojom::StringAttribute attribute,
+                                    const std::string& value) {
+  DCHECK_NE(attribute, ax::mojom::StringAttribute::kNone);
+  DCHECK_NE(attribute, ax::mojom::StringAttribute::kChildTreeId)
+      << "Use AddChildTreeId.";
+  if (HasStringAttribute(attribute))
+    RemoveStringAttribute(attribute);
+  string_attributes.emplace_back(attribute, value);
 }
 
 void AXNodeData::AddIntListAttribute(ax::mojom::IntListAttribute attribute,
@@ -494,7 +494,7 @@ void AXNodeData::AddIntListAttribute(ax::mojom::IntListAttribute attribute,
   DCHECK_NE(attribute, ax::mojom::IntListAttribute::kNone);
   if (HasIntListAttribute(attribute))
     RemoveIntListAttribute(attribute);
-  intlist_attributes.push_back(std::make_pair(attribute, value));
+  intlist_attributes.emplace_back(attribute, value);
 }
 
 void AXNodeData::AddStringListAttribute(
@@ -503,13 +503,13 @@ void AXNodeData::AddStringListAttribute(
   DCHECK_NE(attribute, ax::mojom::StringListAttribute::kNone);
   if (HasStringListAttribute(attribute))
     RemoveStringListAttribute(attribute);
-  stringlist_attributes.push_back(std::make_pair(attribute, value));
+  stringlist_attributes.emplace_back(attribute, value);
 }
 
-void AXNodeData::RemoveStringAttribute(ax::mojom::StringAttribute attribute) {
-  DCHECK_NE(attribute, ax::mojom::StringAttribute::kNone);
-  base::EraseIf(string_attributes, [attribute](const auto& string_attribute) {
-    return string_attribute.first == attribute;
+void AXNodeData::RemoveBoolAttribute(ax::mojom::BoolAttribute attribute) {
+  DCHECK_NE(attribute, ax::mojom::BoolAttribute::kNone);
+  base::EraseIf(bool_attributes, [attribute](const auto& bool_attribute) {
+    return bool_attribute.first == attribute;
   });
 }
 
@@ -527,10 +527,10 @@ void AXNodeData::RemoveFloatAttribute(ax::mojom::FloatAttribute attribute) {
   });
 }
 
-void AXNodeData::RemoveBoolAttribute(ax::mojom::BoolAttribute attribute) {
-  DCHECK_NE(attribute, ax::mojom::BoolAttribute::kNone);
-  base::EraseIf(bool_attributes, [attribute](const auto& bool_attribute) {
-    return bool_attribute.first == attribute;
+void AXNodeData::RemoveStringAttribute(ax::mojom::StringAttribute attribute) {
+  DCHECK_NE(attribute, ax::mojom::StringAttribute::kNone);
+  base::EraseIf(string_attributes, [attribute](const auto& string_attribute) {
+    return string_attribute.first == attribute;
   });
 }
 
@@ -592,8 +592,7 @@ void AXNodeData::SetName(const std::string& name) {
                            });
 
   if (iter == string_attributes.end()) {
-    string_attributes.push_back(
-        std::make_pair(ax::mojom::StringAttribute::kName, name));
+    string_attributes.emplace_back(ax::mojom::StringAttribute::kName, name);
   } else {
     iter->second = name;
   }
@@ -729,6 +728,10 @@ void AXNodeData::AddAction(ax::mojom::Action action_enum) {
     case ax::mojom::Action::kSignalEndOfTest:
     case ax::mojom::Action::kHideTooltip:
     case ax::mojom::Action::kShowTooltip:
+    case ax::mojom::Action::kResumeMedia:
+    case ax::mojom::Action::kStartDuckingMedia:
+    case ax::mojom::Action::kStopDuckingMedia:
+    case ax::mojom::Action::kSuspendMedia:
       break;
   }
 
@@ -1029,17 +1032,20 @@ bool AXNodeData::IsPasswordField() const {
 }
 
 bool AXNodeData::IsAtomicTextField() const {
-  // ARIA-based textboxes or searchboxes could mistakenly be identified as
-  // atomic text fields, i.e. be identified as an <input> or a <textarea>. This
-  // can only occur when the web author hasn't specified the "contenteditable"
-  // attribute. Since these kinds of text fields are not really usable, we
-  // decide not to support them.
+  // The ARIA spec suggests a textbox is a simple text field, like an <input> or
+  // <textarea> depending on aria-multiline. However there is nothing to stop
+  // an author from adding the textbox role to a non-contenteditable element,
+  // or from adding or removing non-plain-text nodes. If we treat the textbox
+  // role as atomic when contenteditable is not set, it can break accessibility
+  // by pruning interactive elements from the accessibility tree. Therefore,
+  // until we have a reliable means to identify truly atomic ARIA textboxes,
+  // treat them as non-atomic.
   return ui::IsTextField(role) &&
-         !HasBoolAttribute(ax::mojom::BoolAttribute::kContentEditableRoot);
+         !GetBoolAttribute(ax::mojom::BoolAttribute::kNonAtomicTextFieldRoot);
 }
 
 bool AXNodeData::IsNonAtomicTextField() const {
-  return HasBoolAttribute(ax::mojom::BoolAttribute::kContentEditableRoot);
+  return GetBoolAttribute(ax::mojom::BoolAttribute::kNonAtomicTextFieldRoot);
 }
 
 bool AXNodeData::IsReadOnlyOrDisabled() const {
@@ -1587,8 +1593,8 @@ std::string AXNodeData::ToString() const {
        bool_attributes) {
     std::string value = bool_attribute.second ? "true" : "false";
     switch (bool_attribute.first) {
-      case ax::mojom::BoolAttribute::kContentEditableRoot:
-        result += " contentEditable_root=" + value;
+      case ax::mojom::BoolAttribute::kNonAtomicTextFieldRoot:
+        result += " non_atomic_text_field_root=" + value;
         break;
       case ax::mojom::BoolAttribute::kLiveAtomic:
         result += " atomic=" + value;

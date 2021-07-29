@@ -34,6 +34,8 @@ namespace content {
 
 namespace {
 
+using ::testing::ElementsAre;
+
 constexpr base::TimeDelta kExpiredReportOffset =
     base::TimeDelta::FromMinutes(2);
 
@@ -103,7 +105,7 @@ class TestConversionReporter
   absl::optional<SentReportInfo> sent_report_info_ = absl::nullopt;
   size_t expected_num_reports_ = 0u;
   size_t num_reports_ = 0u;
-  int64_t last_conversion_id_ = 0UL;
+  int64_t last_conversion_id_ = 0;
   base::Time last_report_time_;
   base::OnceClosure quit_closure_;
 };
@@ -176,15 +178,14 @@ class ConversionManagerImplTest : public testing::Test {
 TEST_F(ConversionManagerImplTest, ImpressionRegistered_ReturnedToWebUI) {
   auto impression = ImpressionBuilder(clock().Now())
                         .SetExpiry(kImpressionExpiry)
-                        .SetData("100")
+                        .SetData(100)
                         .Build();
   conversion_manager_->HandleImpression(impression);
 
   base::RunLoop run_loop;
   auto get_impressions_callback = base::BindLambdaForTesting(
       [&](std::vector<StorableImpression> impressions) {
-        EXPECT_EQ(1u, impressions.size());
-        EXPECT_TRUE(ImpressionsEqual(impression, impressions.back()));
+        EXPECT_THAT(impressions, ElementsAre(impression));
         run_loop.Quit();
       });
   conversion_manager_->GetActiveImpressionsForWebUI(
@@ -195,7 +196,7 @@ TEST_F(ConversionManagerImplTest, ImpressionRegistered_ReturnedToWebUI) {
 TEST_F(ConversionManagerImplTest, ExpiredImpression_NotReturnedToWebUI) {
   conversion_manager_->HandleImpression(ImpressionBuilder(clock().Now())
                                             .SetExpiry(kImpressionExpiry)
-                                            .SetData("100")
+                                            .SetData(100)
                                             .Build());
   task_environment_.FastForwardBy(2 * kImpressionExpiry);
 
@@ -213,7 +214,7 @@ TEST_F(ConversionManagerImplTest, ExpiredImpression_NotReturnedToWebUI) {
 TEST_F(ConversionManagerImplTest, ImpressionConverted_ReportReturnedToWebUI) {
   auto impression = ImpressionBuilder(clock().Now())
                         .SetExpiry(kImpressionExpiry)
-                        .SetData("100")
+                        .SetData(100)
                         .Build();
   conversion_manager_->HandleImpression(impression);
 
@@ -224,13 +225,12 @@ TEST_F(ConversionManagerImplTest, ImpressionConverted_ReportReturnedToWebUI) {
       impression, conversion.conversion_data(),
       /*conversion_time=*/clock().Now(),
       /*report_time=*/clock().Now() + kFirstReportingWindow,
-      absl::nullopt /* conversion_id */);
+      /*conversion_id=*/absl::nullopt);
 
   base::RunLoop run_loop;
   auto reports_callback =
       base::BindLambdaForTesting([&](std::vector<ConversionReport> reports) {
-        EXPECT_EQ(1u, reports.size());
-        EXPECT_TRUE(ReportsEqual({expected_report}, reports));
+        EXPECT_THAT(reports, ElementsAre(expected_report));
         run_loop.Quit();
       });
   conversion_manager_->GetPendingReportsForWebUI(std::move(reports_callback),
@@ -314,9 +314,8 @@ TEST_F(ConversionManagerImplTest, QueuedReportSent_SentReportInfoUpdated) {
   task_environment_.FastForwardBy(kFirstReportingWindow -
                                   kConversionManagerQueueReportsInterval);
 
-  EXPECT_TRUE(
-      SentReportInfosEqual({sent_report_info_1, sent_report_info_2},
-                           conversion_manager_->GetSentReportsForWebUI()));
+  EXPECT_THAT(conversion_manager_->GetSentReportsForWebUI(),
+              ElementsAre(sent_report_info_1, sent_report_info_2));
 }
 
 TEST_F(ConversionManagerImplTest, QueuedReportSent_StoresLastN) {
@@ -333,13 +332,10 @@ TEST_F(ConversionManagerImplTest, QueuedReportSent_StoresLastN) {
   }
 
   // Only the last |kMaxSentReportsToStore| should be stored.
-  EXPECT_TRUE(SentReportInfosEqual(
-      {
-          {.http_response_code = 2},
-          {.http_response_code = 3},
-          {.http_response_code = 4},
-      },
-      conversion_manager_->GetSentReportsForWebUI()));
+  EXPECT_THAT(conversion_manager_->GetSentReportsForWebUI(),
+              ElementsAre(SentReportInfo{.http_response_code = 2},
+                          SentReportInfo{.http_response_code = 3},
+                          SentReportInfo{.http_response_code = 4}));
 }
 
 // Add a conversion to storage and reset the manager to mimic a report being
@@ -527,6 +523,39 @@ TEST_F(ConversionManagerImplTest,
 
   // All session-only impressions should be deleted.
   ExpectNumStoredImpressions(1u);
+}
+
+// Tests that trigger priority cannot result in more than the maximum number of
+// reports being sent. A report will never be queued for the expiry window while
+// the source is active given we only queue reports which are reported within
+// the next 30 minutes, and the expiry window is one hour after expiry time.
+// This ensures that a queued report cannot be overwritten by a new, higher
+// priority trigger.
+TEST_F(ConversionManagerImplTest, ConversionPrioritization_OneReportSent) {
+  test_reporter_->ShouldRunReportSentCallbacks(true);
+  conversion_manager_->HandleImpression(
+      ImpressionBuilder(clock().Now())
+          .SetExpiry(base::TimeDelta::FromDays(7))
+          .Build());
+  ExpectNumStoredImpressions(1u);
+
+  conversion_manager_->HandleConversion(
+      ConversionBuilder().SetPriority(1).Build());
+  conversion_manager_->HandleConversion(
+      ConversionBuilder().SetPriority(1).Build());
+  conversion_manager_->HandleConversion(
+      ConversionBuilder().SetPriority(1).Build());
+  ExpectNumStoredReports(3u);
+
+  task_environment_.FastForwardBy(base::TimeDelta::FromDays(7) -
+                                  base::TimeDelta::FromMinutes(30));
+  EXPECT_EQ(3u, test_reporter_->num_reports());
+
+  task_environment_.FastForwardBy(base::TimeDelta::FromMinutes(5));
+  conversion_manager_->HandleConversion(
+      ConversionBuilder().SetPriority(2).Build());
+  task_environment_.FastForwardBy(base::TimeDelta::FromHours(1));
+  EXPECT_EQ(3u, test_reporter_->num_reports());
 }
 
 }  // namespace content

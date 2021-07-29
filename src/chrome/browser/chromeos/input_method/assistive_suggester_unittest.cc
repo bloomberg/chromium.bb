@@ -13,6 +13,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/ime/chromeos/ime_bridge.h"
 
 namespace chromeos {
 
@@ -32,6 +33,9 @@ class AssistiveSuggesterTest : public testing::Test {
         "InputMethod.Assistive.UserPref.PersonalInfo", true, 1);
     histogram_tester_.ExpectUniqueSample("InputMethod.Assistive.UserPref.Emoji",
                                          true, 1);
+    histogram_tester_.ExpectUniqueSample(
+        "InputMethod.Assistive.UserPref.MultiWord", true, 1);
+    ui::IMEBridge::Initialize();
   }
 
   content::BrowserTaskEnvironment task_environment_;
@@ -163,26 +167,41 @@ TEST_F(AssistiveSuggesterTest,
   EXPECT_FALSE(assistive_suggester_->IsAssistiveFeatureEnabled());
 }
 
-TEST_F(AssistiveSuggesterTest, RecordsCoverageForMultiWordCompletion) {
+TEST_F(AssistiveSuggesterTest,
+       MultiWordDisabledWhenFeatureFlagEnabledButImeServiceDisabled) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
       /*enabled_features=*/{chromeos::features::kAssistMultiWord},
       /*disabled_features=*/{chromeos::features::kEmojiSuggestAddition,
+                             chromeos::features::kAssistPersonalInfo,
+                             chromeos::features::kImeMojoDecoder});
+
+  EXPECT_FALSE(assistive_suggester_->IsAssistiveFeatureEnabled());
+}
+
+TEST_F(AssistiveSuggesterTest,
+       MultiWordDisabledWhenFeatureFlagAndImeServiceEnableButSystemPkDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{chromeos::features::kAssistMultiWord,
+                            chromeos::features::kImeMojoDecoder},
+      /*disabled_features=*/{chromeos::features::kEmojiSuggestAddition,
+                             chromeos::features::kAssistPersonalInfo,
+                             chromeos::features::kSystemLatinPhysicalTyping});
+
+  EXPECT_FALSE(assistive_suggester_->IsAssistiveFeatureEnabled());
+}
+
+TEST_F(AssistiveSuggesterTest, MultiWordEnabledWhenFeatureFlagAndDepsEnabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{chromeos::features::kAssistMultiWord,
+                            chromeos::features::kImeMojoDecoder,
+                            chromeos::features::kSystemLatinPhysicalTyping},
+      /*disabled_features=*/{chromeos::features::kEmojiSuggestAddition,
                              chromeos::features::kAssistPersonalInfo});
 
-  // TODO(crbug/1146266): Add prediction case once prediction is supported
-  std::vector<TextSuggestion> suggestions = {
-      TextSuggestion{.mode = TextSuggestionMode::kCompletion,
-                     .type = TextSuggestionType::kMultiWord,
-                     .text = "some text"},
-  };
-
-  assistive_suggester_->OnExternalSuggestionsUpdated(suggestions);
-
-  histogram_tester_.ExpectUniqueSample("InputMethod.Assistive.Match",
-                                       AssistiveType::kMultiWordCompletion, 1);
-  histogram_tester_.ExpectUniqueSample("InputMethod.Assistive.Coverage",
-                                       AssistiveType::kMultiWordCompletion, 1);
+  EXPECT_TRUE(assistive_suggester_->IsAssistiveFeatureEnabled());
 }
 
 }  // namespace chromeos

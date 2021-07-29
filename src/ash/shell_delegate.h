@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "ash/ash_export.h"
 #include "base/callback.h"
@@ -24,6 +25,10 @@ class Window;
 
 namespace ui {
 class OSExchangeData;
+}
+
+namespace full_restore {
+struct AppLaunchInfo;
 }
 
 namespace ash {
@@ -83,6 +88,10 @@ class ASH_EXPORT ShellDelegate {
   // Checks whether a drag-drop operation is a tab drag.
   virtual bool IsTabDrag(const ui::OSExchangeData& drop_data);
 
+  // Return the height of WebUI tab strip used to determine if a tab has
+  // dragged out of it.
+  virtual int GetBrowserWebUITabStripHeight() = 0;
+
   // Drops tab in a new browser window. |drop_data| must be from a tab
   // drag as determined by IsTabDrag() above.
   virtual aura::Window* CreateBrowserForTabDrop(
@@ -120,9 +129,22 @@ class ASH_EXPORT ShellDelegate {
   // Returns true if Chrome was started with --disable-logging-redirect option.
   virtual bool IsLoggingRedirectDisabled() const = 0;
 
-  // Returns empty path is user session has not started yet, or path to the
+  // Returns empty path if user session has not started yet, or path to the
   // primary user Downloads folder if user has already logged in.
   virtual base::FilePath GetPrimaryUserDownloadsFolder() const = 0;
+
+  // Opens the feedback page with pre-populated description #BentoBar for
+  // persistent desks bar. Note, this will be removed once the feature is fully
+  // launched or removed.
+  virtual void OpenFeedbackPageForPersistentDesksBar() = 0;
+
+  // Returns the app launch data that's associated with a particular |window| in
+  // order to construct a desk template. Return nullptr if no such app launch
+  // data can be constructed, which can happen if the |window| does not have
+  // an app id associated with it, or we're not in the primary active user
+  // session.
+  virtual std::unique_ptr<full_restore::AppLaunchInfo>
+  GetAppLaunchDataForDeskTemplate(aura::Window* window) const = 0;
 };
 
 }  // namespace ash

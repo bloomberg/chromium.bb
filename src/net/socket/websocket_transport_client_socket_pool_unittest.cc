@@ -4,15 +4,16 @@
 
 #include "net/socket/websocket_transport_client_socket_pool.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/cxx17_backports.h"
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -46,6 +47,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
+#include "url/scheme_host_port.h"
+#include "url/url_constants.h"
 
 using net::test::IsError;
 using net::test::IsOk;
@@ -70,8 +73,7 @@ void RunLoopForTimePeriod(base::TimeDelta period) {
 class WebSocketTransportClientSocketPoolTest : public TestWithTaskEnvironment {
  protected:
   WebSocketTransportClientSocketPoolTest()
-      : group_id_(HostPortPair("www.google.com", 80),
-                  ClientSocketPool::SocketType::kHttp,
+      : group_id_(url::SchemeHostPort(url::kHttpScheme, "www.google.com", 80),
                   PrivacyMode::PRIVACY_MODE_DISABLED,
                   NetworkIsolationKey(),
                   SecureDnsPolicy::kAllow),
@@ -188,16 +190,15 @@ TEST_F(WebSocketTransportClientSocketPoolTest, SetResolvePriorityOnInit) {
 }
 
 TEST_F(WebSocketTransportClientSocketPoolTest, InitHostResolutionFailure) {
-  HostPortPair host_port_pair("unresolvable.host.name", 80);
-  host_resolver_->rules()->AddSimulatedTimeoutFailure(host_port_pair.host());
+  url::SchemeHostPort endpoint(url::kHttpScheme, "unresolvable.host.name", 80);
+  host_resolver_->rules()->AddSimulatedTimeoutFailure(endpoint.host());
   TestCompletionCallback callback;
   ClientSocketHandle handle;
   EXPECT_EQ(
       ERR_IO_PENDING,
       handle.Init(ClientSocketPool::GroupId(
-                      host_port_pair, ClientSocketPool::SocketType::kHttp,
-                      PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
-                      SecureDnsPolicy::kAllow),
+                      std::move(endpoint), PRIVACY_MODE_DISABLED,
+                      NetworkIsolationKey(), SecureDnsPolicy::kAllow),
                   ClientSocketPool::SocketParams::CreateForHttpForTesting(),
                   absl::nullopt /* proxy_annotation_tag */, kDefaultPriority,
                   SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
@@ -1151,7 +1152,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest, NetworkIsolationKey) {
   TestCompletionCallback callback;
   ClientSocketHandle handle;
   ClientSocketPool::GroupId group_id(
-      HostPortPair("www.google.com", 80), ClientSocketPool::SocketType::kHttp,
+      url::SchemeHostPort(url::kHttpScheme, "www.google.com", 80),
       PrivacyMode::PRIVACY_MODE_DISABLED, kNetworkIsolationKey,
       SecureDnsPolicy::kAllow);
   EXPECT_THAT(

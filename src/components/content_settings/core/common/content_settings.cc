@@ -9,8 +9,8 @@
 #include <utility>
 
 #include "base/check_op.h"
+#include "base/cxx17_backports.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
 
@@ -97,6 +97,7 @@ constexpr HistogramValue kHistogramValue[] = {
     {ContentSettingsType::FILE_SYSTEM_ACCESS_CHOOSER_DATA, 76},
     {ContentSettingsType::FEDERATED_IDENTITY_SHARING, 77},
     {ContentSettingsType::FEDERATED_IDENTITY_REQUEST, 78},
+    {ContentSettingsType::JAVASCRIPT_JIT, 79},
 };
 
 }  // namespace

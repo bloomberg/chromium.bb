@@ -19,6 +19,8 @@
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "components/sync/engine/cancelation_signal.h"
+#include "components/variations/scoped_variations_ids_provider.h"
+#include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -90,9 +92,7 @@ class MAYBE_SyncHttpBridgeTest : public testing::Test {
   class CustomHttpBridge : public HttpBridge {
    public:
     CustomHttpBridge()
-        : HttpBridge(kUserAgent,
-                     nullptr /*PendingSharedURLLoaderFactory*/,
-                     NetworkTimeUpdateCallback()) {}
+        : HttpBridge(kUserAgent, nullptr /*PendingSharedURLLoaderFactory*/) {}
 
    protected:
     ~CustomHttpBridge() override {}
@@ -111,6 +111,8 @@ class MAYBE_SyncHttpBridgeTest : public testing::Test {
   HttpBridge* bridge_for_race_test_;
 
   base::test::TaskEnvironment task_environment_;
+  variations::ScopedVariationsIdsProvider scoped_variations_ids_provider_{
+      variations::VariationsIdsProvider::Mode::kUseSignedInState};
   // Separate thread for IO used by the HttpBridge.
   base::Thread io_thread_;
 };
@@ -124,11 +126,7 @@ class ShuntedHttpBridge : public HttpBridge {
   // If |never_finishes| is true, the simulated request never actually
   // returns.
   ShuntedHttpBridge(MAYBE_SyncHttpBridgeTest* test, bool never_finishes)
-      : HttpBridge(
-            kUserAgent,
-            nullptr /*PendingSharedURLLoaderFactory, unneeded as we mock stuff*/
-            ,
-            NetworkTimeUpdateCallback()),
+      : HttpBridge(kUserAgent, /*pending_url_loader_factory=*/nullptr),
         test_(test),
         never_finishes_(never_finishes) {}
 

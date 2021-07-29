@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_MESSAGING_BLINK_TRANSFERABLE_MESSAGE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_MESSAGING_BLINK_TRANSFERABLE_MESSAGE_H_
 
-#include "base/macros.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/mojom/messaging/user_activation_snapshot.mojom-blink.h"
@@ -30,19 +30,15 @@ struct CORE_EXPORT BlinkTransferableMessage : BlinkCloneableMessage {
   static BlinkTransferableMessage FromTransferableMessage(TransferableMessage);
 
   BlinkTransferableMessage();
-  ~BlinkTransferableMessage();
-
   BlinkTransferableMessage(BlinkTransferableMessage&&);
   BlinkTransferableMessage& operator=(BlinkTransferableMessage&&);
+  ~BlinkTransferableMessage();
 
   Vector<MessagePortChannel> ports;
 
   mojom::blink::UserActivationSnapshotPtr user_activation;
 
   bool delegate_payment_request = false;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BlinkTransferableMessage);
 };
 
 CORE_EXPORT scoped_refptr<blink::StaticBitmapImage> ToStaticBitmapImage(

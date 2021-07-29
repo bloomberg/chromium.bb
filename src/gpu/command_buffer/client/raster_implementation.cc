@@ -570,7 +570,8 @@ void RasterImplementation::OnGpuControlErrorMessage(const char* message,
 }
 
 void RasterImplementation::OnGpuControlSwapBuffersCompleted(
-    const SwapBuffersCompleteParams& params) {
+    const SwapBuffersCompleteParams& params,
+    gfx::GpuFenceHandle release_fence) {
   NOTREACHED();
 }
 
@@ -1210,6 +1211,23 @@ void RasterImplementation::CopySubTexture(const gpu::Mailbox& source_mailbox,
                      << dest_mailbox.ToDebugString() << ", " << xoffset << ", "
                      << yoffset << ", " << x << ", " << y << ", " << width
                      << ", " << height << ")");
+  if (!source_mailbox.IsSharedImage()) {
+    SetGLError(GL_INVALID_VALUE, "glCopySubTexture",
+               "source_mailbox is not a shared image.");
+    // TODO(crbug.com/1229479): This call to NOTREACHED is temporary while we
+    // investigate crbug.com/1229479. The failure with test
+    // WebRtcVideoCaptureServiceBrowserTest.
+    // FramesSentThroughTextureVirtualDeviceGetDisplayedOnPage when OOP-R
+    // Canvas is enabled does not repro on trybots, only on CI bots.
+    // Crashing here will allow us to get a client-side stack trace.
+    NOTREACHED();
+    return;
+  }
+  if (!dest_mailbox.IsSharedImage()) {
+    SetGLError(GL_INVALID_VALUE, "glCopySubTexture",
+               "dest_mailbox is not a shared image.");
+    return;
+  }
   if (width < 0) {
     SetGLError(GL_INVALID_VALUE, "glCopySubTexture", "width < 0");
     return;
@@ -1239,13 +1257,13 @@ void RasterImplementation::WritePixels(const gpu::Mailbox& dest_mailbox,
   // Get the size of the SkColorSpace while maintaining 8-byte alignment.
   GLuint pixels_offset = 0;
   if (src_info.colorSpace()) {
-    pixels_offset = base::bits::Align(
+    pixels_offset = base::bits::AlignUp(
         src_info.colorSpace()->writeToMemory(nullptr), sizeof(uint64_t));
   }
 
   GLuint src_size = src_info.computeByteSize(row_bytes);
   GLuint total_size =
-      pixels_offset + base::bits::Align(src_size, sizeof(uint64_t));
+      pixels_offset + base::bits::AlignUp(src_size, sizeof(uint64_t));
 
   std::unique_ptr<ScopedSharedMemoryPtr> scoped_shared_memory =
       std::make_unique<ScopedSharedMemoryPtr>(total_size, transfer_buffer_,
@@ -1290,13 +1308,15 @@ void RasterImplementation::BeginRasterCHROMIUM(
     GLuint sk_color,
     GLboolean needs_clear,
     GLuint msaa_sample_count,
+    MsaaMode msaa_mode,
     GLboolean can_use_lcd_text,
     const gfx::ColorSpace& color_space,
     const GLbyte* mailbox) {
   DCHECK(!raster_properties_);
 
-  helper_->BeginRasterCHROMIUMImmediate(
-      sk_color, needs_clear, msaa_sample_count, can_use_lcd_text, mailbox);
+  helper_->BeginRasterCHROMIUMImmediate(sk_color, needs_clear,
+                                        msaa_sample_count, msaa_mode,
+                                        can_use_lcd_text, mailbox);
 
   raster_properties_.emplace(sk_color, can_use_lcd_text,
                              color_space.ToSkColorSpace());
@@ -1427,7 +1447,7 @@ void RasterImplementation::ReadbackImagePixelsINTERNAL(
 
   GLuint dst_size = dst_info.computeByteSize(dst_row_bytes);
   GLuint total_size =
-      pixels_offset + base::bits::Align(dst_size, sizeof(uint64_t));
+      pixels_offset + base::bits::AlignUp(dst_size, sizeof(uint64_t));
 
   std::unique_ptr<ScopedMappedMemoryPtr> scoped_shared_memory =
       std::make_unique<ScopedMappedMemoryPtr>(total_size, helper(),

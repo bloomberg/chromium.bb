@@ -86,7 +86,6 @@ def _CheckChangesAreExclusiveToDirectory(input_api, output_api):
         ],
         [
             'node_modules',
-            'package.json',
             'package-lock.json',
             input_api.os_path.join('scripts', 'deps', 'manage_node_deps.py'),
         ],
@@ -157,13 +156,13 @@ def _CheckBuildGN(input_api, output_api):
 def _CheckExperimentTelemetry(input_api, output_api):
     experiment_telemetry_files = [
         input_api.os_path.join(input_api.PresubmitLocalPath(), 'front_end',
-                               'main', 'MainImpl.ts'),
+                               'entrypoints', 'main', 'MainImpl.ts'),
         input_api.os_path.join(input_api.PresubmitLocalPath(), 'front_end',
                                'core', 'host', 'UserMetrics.ts')
     ]
     affected_main_files = _getAffectedFiles(input_api,
                                             experiment_telemetry_files, [],
-                                            ['.js'])
+                                            ['.ts'])
     if len(affected_main_files) == 0:
         return [
             output_api.PresubmitNotifyResult(
@@ -325,63 +324,50 @@ def _CheckDevToolsStyleCSS(input_api, output_api):
     return results
 
 
-def _CheckDarkModeStyleSheetsUpToDate(input_api, output_api):
-    devtools_root = input_api.PresubmitLocalPath()
-    devtools_front_end = input_api.os_path.join(devtools_root, 'front_end')
-    dark_mode_scripts_folder = input_api.os_path.join(devtools_root, 'scripts',
-                                                      'dark_mode')
-    dark_mode_script_files = _getAffectedFiles(input_api,
-                                               dark_mode_scripts_folder, [],
-                                               ['.js'])
-    script_arguments = []
-    if len(dark_mode_script_files) > 0:
-        # If the scripts have changed, we should check all darkmode files as they may need to be updated.
-        script_arguments += ['--check-all-files']
-    else:
-        affected_css_files = _getAffectedFiles(input_api, [devtools_front_end],
-                                               [], ['.css'])
-        script_arguments += affected_css_files
-
-    results = [output_api.PresubmitNotifyResult('Dark Mode CSS check:')]
-    script_path = input_api.os_path.join(input_api.PresubmitLocalPath(),
-                                         'scripts', 'dark_mode',
-                                         'check_darkmode_css_up_to_date.js')
-    results.extend(
-        _checkWithNodeScript(input_api, output_api, script_path,
-                             script_arguments))
-    return results
-
-
-def _CheckOptimizeSVGHashes(input_api, output_api):
-    if not input_api.platform.startswith('linux'):
-        return [output_api.PresubmitNotifyResult('Skipping SVG hash check')]
-
+def _CheckDevToolsNonJSFileLicenseHeaders(input_api, output_api):
     results = [
-        output_api.PresubmitNotifyResult('Running SVG optimization check:')
+        output_api.PresubmitNotifyResult(
+            'Python-like file license header check:')
+    ]
+    lint_path = input_api.os_path.join(input_api.PresubmitLocalPath(),
+                                       'scripts', 'test',
+                                       'run_header_check_non_js_files.js')
+
+    front_end_directory = input_api.os_path.join(
+        input_api.PresubmitLocalPath(), 'front_end')
+    inspector_overlay_directory = input_api.os_path.join(
+        input_api.PresubmitLocalPath(), 'inspector_overlay')
+    test_directory = input_api.os_path.join(input_api.PresubmitLocalPath(),
+                                            'test')
+    scripts_directory = input_api.os_path.join(input_api.PresubmitLocalPath(),
+                                               'scripts')
+    config_directory = input_api.os_path.join(input_api.PresubmitLocalPath(),
+                                              'config')
+
+    default_linted_directories = [
+        front_end_directory, test_directory, scripts_directory,
+        inspector_overlay_directory, config_directory
     ]
 
-    original_sys_path = sys.path
-    try:
-        sys.path = sys.path + [input_api.os_path.join(input_api.PresubmitLocalPath(), 'scripts', 'build')]
-        import devtools_file_hashes
-    finally:
-        sys.path = original_sys_path
+    check_related_files = [lint_path]
 
-    absolute_local_paths = [af.AbsoluteLocalPath() for af in input_api.AffectedFiles(include_deletes=False)]
-    images_src_path = input_api.os_path.join('devtools', 'front_end', 'Images', 'src')
-    image_source_file_paths = [path for path in absolute_local_paths if images_src_path in path and path.endswith('.svg')]
-    image_sources_path = input_api.os_path.join(input_api.PresubmitLocalPath(), 'front_end', 'Images', 'src')
-    hashes_file_name = 'optimize_svg.hashes'
-    hashes_file_path = input_api.os_path.join(image_sources_path, hashes_file_name)
-    invalid_hash_file_paths = devtools_file_hashes.files_with_invalid_hashes(hashes_file_path, image_source_file_paths)
-    if len(invalid_hash_file_paths) == 0:
+    lint_config_files = _getAffectedFiles(input_api, check_related_files, [],
+                                          ['.js'])
+
+    should_bail_out, files_to_lint = _getFilesToLint(
+        input_api, output_api, lint_config_files, default_linted_directories,
+        ['BUILD.gn', '.gni', '.css'], results)
+    if should_bail_out:
         return results
-    invalid_hash_file_names = [input_api.os_path.basename(file_path) for file_path in invalid_hash_file_paths]
-    file_paths_str = ', '.join(invalid_hash_file_names)
-    error_message = 'The following SVG files should be optimized using optimize_svg_images script before uploading: \n  - %s' % file_paths_str
-    results.append(output_api.PresubmitError(error_message))
-    return results
 
+    # If there are more than 50 files to check, don't bother and check
+    # everything, so as to not run into command line length limits on Windows.
+    if len(files_to_lint) > 50:
+        files_to_lint = []
+
+    results.extend(
+        _checkWithNodeScript(input_api, output_api, lint_path, files_to_lint))
+    return results
 
 
 def _CheckGeneratedFiles(input_api, output_api):
@@ -428,9 +414,10 @@ def _CheckGeneratedFiles(input_api, output_api):
 def _CollectStrings(input_api, output_api):
     devtools_root = input_api.PresubmitLocalPath()
     devtools_front_end = input_api.os_path.join(devtools_root, 'front_end')
-    affected_front_end_files = _getAffectedFiles(input_api,
-                                                 [devtools_front_end], [],
-                                                 ['.js', '.ts'])
+    script_path = input_api.os_path.join(devtools_root, 'third_party', 'i18n',
+                                         'collect-strings.js')
+    affected_front_end_files = _getAffectedFiles(
+        input_api, [devtools_front_end, script_path], [], ['.js', '.ts'])
     if len(affected_front_end_files) == 0:
         return [
             output_api.PresubmitNotifyResult(
@@ -440,9 +427,9 @@ def _CollectStrings(input_api, output_api):
     results = [
         output_api.PresubmitNotifyResult('Collecting strings from front_end:')
     ]
-    script_path = input_api.os_path.join(devtools_root, 'third_party', 'i18n',
-                                         'collect-strings.js')
-    results.extend(_checkWithNodeScript(input_api, output_api, script_path))
+    results.extend(
+        _checkWithNodeScript(input_api, output_api, script_path,
+                             [devtools_front_end]))
     results.append(
         output_api.PresubmitNotifyResult(
             'Please commit en-US.json/en-XL.json if changes are generated.'))
@@ -457,7 +444,7 @@ def _CheckNoUncheckedFiles(input_api, output_api):
     out, _ = process.communicate()
     if process.returncode != 0:
         files_changed_process = input_api.subprocess.Popen(
-            ['git', 'diff', '--name-only'],
+            ['git', 'diff'],
             stdout=input_api.subprocess.PIPE,
             stderr=input_api.subprocess.STDOUT)
         files_changed, _ = files_changed_process.communicate()
@@ -508,7 +495,10 @@ def _RunCannedChecks(input_api, output_api):
             input_api, output_api))
     results.extend(
         input_api.canned_checks.CheckChangeHasNoStrayWhitespace(
-            input_api, output_api))
+            input_api,
+            output_api,
+            source_file_filter=lambda file: not file.LocalPath().startswith(
+                'node_modules')))
     results.extend(
         input_api.canned_checks.CheckGenderNeutral(input_api, output_api))
     return results
@@ -526,10 +516,10 @@ def _CommonChecks(input_api, output_api):
     results.extend(_CheckJSON(input_api, output_api))
     results.extend(_CheckDevToolsStyleJS(input_api, output_api))
     results.extend(_CheckDevToolsStyleCSS(input_api, output_api))
+    results.extend(_CheckDevToolsNonJSFileLicenseHeaders(
+        input_api, output_api))
 
-    results.extend(_CheckDarkModeStyleSheetsUpToDate(input_api, output_api))
     results.extend(_CheckFormat(input_api, output_api))
-    results.extend(_CheckOptimizeSVGHashes(input_api, output_api))
     results.extend(_CheckChangesAreExclusiveToDirectory(input_api, output_api))
     results.extend(_CheckI18nWasBundled(input_api, output_api))
     # Run the canned checks from `depot_tools` after the custom DevTools checks.

@@ -13,7 +13,6 @@
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/views/app_list_menu_model_adapter.h"
-#include "ash/app_list/views/apps_grid_view.h"
 #include "ash/public/cpp/app_list/app_list_color_provider.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
@@ -21,8 +20,8 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/strings/utf_string_conversions.h"
-#include "build/build_config.h"
 #include "cc/paint/paint_flags.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -256,17 +255,21 @@ class AppListItemView::IconImageView : public views::ImageView {
   DISALLOW_COPY_AND_ASSIGN(IconImageView);
 };
 
-AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
+AppListItemView::AppListItemView(GridDelegate* grid_delegate,
                                  AppListItem* item,
-                                 AppListViewDelegate* delegate,
-                                 bool is_in_folder)
-    : Button(),
+                                 AppListViewDelegate* view_delegate)
+    : views::Button(
+          base::BindRepeating(&GridDelegate::OnAppListItemViewActivated,
+                              base::Unretained(grid_delegate),
+                              base::Unretained(this))),
       is_folder_(item->GetItemType() == AppListFolderItem::kItemType),
       item_weak_(item),
-      delegate_(delegate),
-      apps_grid_view_(apps_grid_view),
+      grid_delegate_(grid_delegate),
+      view_delegate_(view_delegate),
       is_notification_indicator_enabled_(
           features::IsNotificationIndicatorEnabled()) {
+  DCHECK(grid_delegate_);
+  DCHECK(view_delegate_);
   SetFocusBehavior(FocusBehavior::ALWAYS);
 
   auto title = std::make_unique<views::Label>();
@@ -275,7 +278,7 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
   title->SetFontList(GetAppListConfig().app_title_font());
   title->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   title->SetEnabledColor(AppListColorProvider::Get()->GetAppListItemTextColor(
-      apps_grid_view_->is_in_folder()));
+      grid_delegate_->IsInFolder()));
 
   icon_ = AddChildView(std::make_unique<IconImageView>());
 
@@ -283,7 +286,7 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
     // Set background blur for folder icon and use mask layer to clip it into
     // circle. Note that blur is only enabled in tablet mode to improve dragging
     // smoothness.
-    if (apps_grid_view_->IsTabletMode())
+    if (view_delegate_->IsInTabletMode())
       SetBackgroundBlurEnabled(true);
     icon_->SetExtendedState(GetAppListConfig(), false /*extended*/,
                             false /*animate*/);
@@ -393,7 +396,7 @@ void AppListItemView::ScaleAppIcon(bool scale_up) {
       SetIcon(icon_image_);
       layer()->SetTransform(gfx::GetScaleTransform(
           GetContentsBounds().CenterPoint(), 1 / kDragDropAppIconScale));
-    } else if (apps_grid_view_->IsDraggedView(this)) {
+    } else if (grid_delegate_->IsDraggedView(this)) {
       // If a drag view has been created for this icon, the item transition to
       // target bounds is handled by the apps grid view bounds animator. At the
       // end of that animation, the layer will be destroyed, causing the
@@ -419,7 +422,7 @@ void AppListItemView::ScaleAppIcon(bool scale_up) {
   } else {
     if (is_folder_) {
       layer()->SetTransform(gfx::Transform());
-    } else if (!apps_grid_view_->IsDraggedView(this)) {
+    } else if (!grid_delegate_->IsDraggedView(this)) {
       // To avoid poor quality icons, update icon image with the correct scale
       // after the transform animation is completed.
       settings.AddObserver(this);
@@ -444,7 +447,7 @@ void AppListItemView::SetTouchDragging(bool touch_dragging) {
 
   // EndDrag may delete |this|.
   if (!touch_dragging)
-    apps_grid_view_->EndDrag(/*cancel=*/false);
+    grid_delegate_->EndDrag(/*cancel=*/false);
 }
 
 void AppListItemView::SetMouseDragging(bool mouse_dragging) {
@@ -463,8 +466,7 @@ void AppListItemView::OnTouchDragTimer(
     const gfx::Point& tap_down_location,
     const gfx::Point& tap_down_root_location) {
   // Show scaled up app icon to indicate draggable state.
-  apps_grid_view_->InitiateDrag(this, AppsGridView::TOUCH, tap_down_location,
-                                tap_down_root_location);
+  grid_delegate_->InitiateDrag(this, tap_down_location, tap_down_root_location);
   SetTouchDragging(true);
 }
 
@@ -501,7 +503,7 @@ void AppListItemView::SilentlyRequestFocus() {
 }
 
 const AppListConfig& AppListItemView::GetAppListConfig() const {
-  return apps_grid_view_->GetAppListConfig();
+  return grid_delegate_->GetAppListConfig();
 }
 
 void AppListItemView::SetItemName(const std::u16string& display_name,
@@ -558,16 +560,16 @@ void AppListItemView::OnContextMenuModelReceived(
     return;
 
   // GetContextMenuModel is asynchronous and takes a nontrivial amount of time
-  // to complete. If a menu is shown after the icon has moved, |apps_grid_view_|
+  // to complete. If a menu is shown after the icon has moved, |grid_delegate_|
   // gets put in a bad state because the context menu begins to receive drag
   // events, interrupting the app icon drag.
-  if (apps_grid_view_->IsDragViewMoved(*this))
+  if (grid_delegate_->IsDragViewMoved(*this))
     return;
 
   menu_show_initiated_from_key_ = source_type == ui::MENU_SOURCE_KEYBOARD;
 
-  if (!apps_grid_view_->IsSelectedView(this))
-    apps_grid_view_->ClearAnySelectedView();
+  if (!grid_delegate_->IsSelectedView(this))
+    grid_delegate_->ClearSelectedView();
 
   int run_types = views::MenuRunner::HAS_MNEMONICS |
                   views::MenuRunner::USE_TOUCHABLE_LAYOUT |
@@ -577,25 +579,24 @@ void AppListItemView::OnContextMenuModelReceived(
   if (source_type == ui::MENU_SOURCE_TOUCH && touch_dragging_)
     run_types |= views::MenuRunner::SEND_GESTURE_EVENTS_TO_OWNER;
 
-  gfx::Rect anchor_rect =
-      parent()->GetMirroredRect(apps_grid_view_->GetIdealBounds(this));
+  // Screen bounds don't need RTL flipping.
+  gfx::Rect anchor_rect = GetBoundsInScreen();
   // Anchor the menu to the same rect that is used for selection highlight.
   AdaptBoundsForSelectionHighlight(&anchor_rect);
-  views::View::ConvertRectToScreen(parent(), &anchor_rect);
 
   AppLaunchedMetricParams metric_params = {
       AppListLaunchedFrom::kLaunchedFromGrid};
-  delegate_->GetAppLaunchedMetricParams(&metric_params);
+  view_delegate_->GetAppLaunchedMetricParams(&metric_params);
 
   context_menu_ = std::make_unique<AppListMenuModelAdapter>(
       item_weak_->GetMetadata()->id, std::move(menu_model), GetWidget(),
       source_type, metric_params, AppListMenuModelAdapter::FULLSCREEN_APP_GRID,
       base::BindOnce(&AppListItemView::OnMenuClosed,
                      weak_ptr_factory_.GetWeakPtr()),
-      apps_grid_view_->IsTabletMode());
+      view_delegate_->IsInTabletMode());
   context_menu_->Run(anchor_rect, views::MenuAnchorPosition::kBubbleRight,
                      run_types);
-  apps_grid_view_->SetSelectedView(this);
+  grid_delegate_->SetSelectedView(this);
 }
 
 void AppListItemView::ShowContextMenuForViewImpl(
@@ -611,7 +612,7 @@ void AppListItemView::ShowContextMenuForViewImpl(
   if (waiting_for_context_menu_options_)
     return;
   waiting_for_context_menu_options_ = true;
-  delegate_->GetContextMenuModel(
+  view_delegate_->GetContextMenuModel(
       item_weak_->id(),
       base::BindOnce(&AppListItemView::OnContextMenuModelReceived,
                      weak_ptr_factory_.GetWeakPtr(), point, source_type));
@@ -627,27 +628,27 @@ bool AppListItemView::ShouldEnterPushedState(const ui::Event& event) {
 }
 
 void AppListItemView::PaintButtonContents(gfx::Canvas* canvas) {
-  if (apps_grid_view_->IsDraggedView(this))
+  if (grid_delegate_->IsDraggedView(this))
     return;
 
   // TODO(ginko) focus and selection should be unified.
-  if ((apps_grid_view_->IsSelectedView(this) || HasFocus()) &&
-      (delegate_->KeyboardTraversalEngaged() ||
+  if ((grid_delegate_->IsSelectedView(this) || HasFocus()) &&
+      (view_delegate_->KeyboardTraversalEngaged() ||
        waiting_for_context_menu_options_ ||
        (context_menu_ && context_menu_->IsShowingMenu()))) {
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
-    if (delegate_->KeyboardTraversalEngaged()) {
+    if (view_delegate_->KeyboardTraversalEngaged()) {
       flags.setColor(AppListColorProvider::Get()->GetFocusRingColor());
       flags.setStyle(cc::PaintFlags::kStroke_Style);
       flags.setStrokeWidth(kFocusRingWidth);
     } else {
       const AppListColorProvider* color_provider = AppListColorProvider::Get();
-      const SkColor bg_color = apps_grid_view_->is_in_folder()
-                                   ? color_provider->GetFolderBackgroundColor(
-                                         apps_grid_view_->GetAppListConfig()
-                                             .folder_background_color())
-                                   : gfx::kPlaceholderColor;
+      const SkColor bg_color =
+          grid_delegate_->IsInFolder()
+              ? color_provider->GetFolderBackgroundColor(
+                    GetAppListConfig().folder_background_color())
+              : gfx::kPlaceholderColor;
       flags.setColor(SkColorSetA(
           color_provider->GetRippleAttributesBaseColor(bg_color),
           color_provider->GetRippleAttributesHighlightOpacity(bg_color) * 255));
@@ -679,10 +680,9 @@ bool AppListItemView::OnMousePressed(const ui::MouseEvent& event) {
   if (!ShouldEnterPushedState(event))
     return true;
 
-  apps_grid_view_->InitiateDrag(this, AppsGridView::MOUSE, event.location(),
-                                event.root_location());
+  grid_delegate_->InitiateDrag(this, event.location(), event.root_location());
 
-  if (apps_grid_view_->IsDraggedView(this)) {
+  if (grid_delegate_->IsDraggedView(this)) {
     mouse_drag_timer_.Start(
         FROM_HERE, base::TimeDelta::FromMilliseconds(kMouseDragUIDelayInMs),
         this, &AppListItemView::OnMouseDragTimer);
@@ -696,12 +696,12 @@ void AppListItemView::Layout() {
     return;
 
   const gfx::Rect icon_bounds = GetIconBoundsForTargetViewBounds(
-      GetAppListConfig(), rect, icon_->GetImage().size(), icon_scale_);
+      GetAppListConfig(), rect, icon_->GetImageBounds().size(), icon_scale_);
   icon_->SetBoundsRect(icon_bounds);
 
   gfx::Rect title_bounds = GetTitleBoundsForTargetViewBounds(
       GetAppListConfig(), rect, title_->GetPreferredSize(), icon_scale_);
-  if (!apps_grid_view_->is_in_folder())
+  if (!grid_delegate_->IsInFolder())
     title_bounds.Inset(title_shadow_margins_);
   title_->SetBoundsRect(title_bounds);
 
@@ -726,11 +726,16 @@ bool AppListItemView::OnKeyPressed(const ui::KeyEvent& event) {
 }
 
 void AppListItemView::OnMouseReleased(const ui::MouseEvent& event) {
+  auto weak_this = weak_ptr_factory_.GetWeakPtr();
+  // Triggers the button's click handler callback, which might delete `this`.
   Button::OnMouseReleased(event);
+  if (!weak_this)
+    return;
+
   SetMouseDragging(false);
 
   // EndDrag may delete |this|.
-  apps_grid_view_->EndDrag(false /*cancel*/);
+  grid_delegate_->EndDrag(false /*cancel*/);
 }
 
 void AppListItemView::OnMouseCaptureLost() {
@@ -738,27 +743,27 @@ void AppListItemView::OnMouseCaptureLost() {
   SetMouseDragging(false);
 
   // EndDrag may delete |this|.
-  apps_grid_view_->EndDrag(true /*cancel*/);
+  grid_delegate_->EndDrag(true /*cancel*/);
 }
 
 bool AppListItemView::OnMouseDragged(const ui::MouseEvent& event) {
   Button::OnMouseDragged(event);
-  if (apps_grid_view_->IsDraggedView(this) && mouse_dragging_) {
+  if (grid_delegate_->IsDraggedView(this) && mouse_dragging_) {
     // Update the drag location of the drag proxy if it has been created.
     // If the drag is no longer happening, it could be because this item
     // got removed, in which case this item has been destroyed. So, bail out
     // now as there will be nothing else to do anyway as
-    // apps_grid_view_->dragging() will be false.
-    if (!apps_grid_view_->UpdateDragFromItem(AppsGridView::MOUSE, event))
+    // grid_delegate_->IsDragging() will be false.
+    if (!grid_delegate_->UpdateDragFromItem(/*is_touch=*/false, event))
       return true;
   }
 
-  if (!apps_grid_view_->IsSelectedView(this))
-    apps_grid_view_->ClearAnySelectedView();
+  if (!grid_delegate_->IsSelectedView(this))
+    grid_delegate_->ClearSelectedView();
 
   // Show dragging UI when it's confirmed without waiting for the timer.
-  if (ui_state_ != UI_STATE_DRAGGING && apps_grid_view_->dragging() &&
-      apps_grid_view_->IsDraggedView(this)) {
+  if (ui_state_ != UI_STATE_DRAGGING && grid_delegate_->IsDragging() &&
+      grid_delegate_->IsDraggedView(this)) {
     mouse_drag_timer_.Stop();
     SetUIState(UI_STATE_DRAGGING);
   }
@@ -774,12 +779,13 @@ bool AppListItemView::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
 void AppListItemView::OnFocus() {
   if (focus_silently_)
     return;
-  apps_grid_view_->SetSelectedView(this);
+  grid_delegate_->SetSelectedView(this);
 }
 
 void AppListItemView::OnBlur() {
   SchedulePaint();
-  apps_grid_view_->ClearSelectedView(this);
+  if (grid_delegate_->IsSelectedView(this))
+    grid_delegate_->ClearSelectedView();
 }
 
 void AppListItemView::OnGestureEvent(ui::GestureEvent* event) {
@@ -787,16 +793,15 @@ void AppListItemView::OnGestureEvent(ui::GestureEvent* event) {
     case ui::ET_GESTURE_SCROLL_BEGIN:
       if (touch_dragging_) {
         CancelContextMenu();
-        apps_grid_view_->StartDragAndDropHostDragAfterLongPress(
-            AppsGridView::TOUCH);
+        grid_delegate_->StartDragAndDropHostDragAfterLongPress();
         event->SetHandled();
       } else {
         touch_drag_timer_.Stop();
       }
       break;
     case ui::ET_GESTURE_SCROLL_UPDATE:
-      if (touch_dragging_ && apps_grid_view_->IsDraggedView(this)) {
-        apps_grid_view_->UpdateDragFromItem(AppsGridView::TOUCH, *event);
+      if (touch_dragging_ && grid_delegate_->IsDraggedView(this)) {
+        grid_delegate_->UpdateDragFromItem(/*is_touch=*/true, *event);
         event->SetHandled();
       }
       break;
@@ -831,7 +836,7 @@ void AppListItemView::OnGestureEvent(ui::GestureEvent* event) {
       touch_drag_timer_.Stop();
       SetTouchDragging(false);
       if (context_menu_ && context_menu_->IsShowingMenu())
-        apps_grid_view_->SetSelectedView(this);
+        grid_delegate_->SetSelectedView(this);
       break;
     case ui::ET_GESTURE_TWO_FINGER_TAP:
       if (touch_dragging_) {
@@ -850,7 +855,7 @@ void AppListItemView::OnGestureEvent(ui::GestureEvent* event) {
 void AppListItemView::OnThemeChanged() {
   views::Button::OnThemeChanged();
   title_->SetEnabledColor(AppListColorProvider::Get()->GetAppListItemTextColor(
-      apps_grid_view_->is_in_folder()));
+      grid_delegate_->IsInFolder()));
   SchedulePaint();
 }
 

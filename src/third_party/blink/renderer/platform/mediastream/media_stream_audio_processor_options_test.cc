@@ -47,7 +47,8 @@ constexpr WebRtcAnalogAgcClippingControlParams kClippingControlParams{
     .crest_factor_margin = 5.55f,
     .clipped_level_step = 666,
     .clipped_ratio_threshold = 0.777f,
-    .clipped_wait_frames = 300};
+    .clipped_wait_frames = 300,
+    .use_predicted_step = true};
 }  // namespace
 
 TEST(ConfigAutomaticGainControlTest, DoNotChangeApmConfig) {
@@ -187,6 +188,8 @@ TEST(ConfigAutomaticGainControlTest, EnableClippingControl) {
                   kClippingControlParams.clipping_threshold);
   EXPECT_FLOAT_EQ(clipping_predictor.crest_factor_margin,
                   kClippingControlParams.crest_factor_margin);
+  EXPECT_EQ(clipping_predictor.use_predicted_step,
+            kClippingControlParams.use_predicted_step);
 }
 
 TEST(PopulateApmConfigTest, DefaultWithoutConfigJson) {
@@ -287,6 +290,40 @@ TEST(PopulateApmConfigTest, SystemNsDeactivatesBrowserNs) {
                     /*audio_processing_platform_config_json=*/absl::nullopt,
                     &gain_control_compression_gain_db);
   EXPECT_FALSE(apm_config_with_system_ns.noise_suppression.enabled);
+}
+
+// Verify that some basic settings have the expected default values.
+TEST(CreateWebRtcAudioProcessingModuleTest, VerifyDefaultSettings) {
+  AudioProcessingProperties properties;
+
+  std::unique_ptr<webrtc::AudioProcessing> apm =
+      CreateWebRtcAudioProcessingModule(
+          properties, /*use_capture_multi_channel_processing=*/true,
+          /*audio_processing_platform_config_json=*/absl::nullopt,
+          /*agc_startup_min_volume=*/absl::nullopt);
+  ASSERT_TRUE(!!apm);
+
+  webrtc::AudioProcessing::Config config = apm->GetConfig();
+
+  EXPECT_TRUE(config.pipeline.multi_channel_render);
+  EXPECT_TRUE(config.pipeline.multi_channel_capture);
+  EXPECT_TRUE(config.high_pass_filter.enabled);
+  EXPECT_TRUE(config.echo_canceller.enabled);
+  EXPECT_TRUE(config.gain_controller1.enabled);
+  EXPECT_TRUE(config.gain_controller1.analog_gain_controller.enabled);
+  EXPECT_FALSE(config.gain_controller2.enabled);
+  EXPECT_TRUE(config.noise_suppression.enabled);
+  EXPECT_FALSE(config.voice_detection.enabled);
+
+#if defined(OS_ANDROID)
+  // Android uses echo cancellation optimized for mobiles, and does not support
+  // keytap suppression.
+  EXPECT_TRUE(config.echo_canceller.mobile_mode);
+  EXPECT_FALSE(config.transient_suppression.enabled);
+#else
+  EXPECT_FALSE(config.echo_canceller.mobile_mode);
+  EXPECT_TRUE(config.transient_suppression.enabled);
+#endif
 }
 
 }  // namespace blink

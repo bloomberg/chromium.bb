@@ -7,7 +7,6 @@
 #include "chrome/browser/optimization_guide/optimization_guide_hints_manager.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
-#include "chrome/browser/optimization_guide/optimization_guide_top_host_provider.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/optimization_guide/core/hints_fetcher.h"
 #include "components/optimization_guide/core/hints_processing_util.h"
@@ -22,7 +21,10 @@ namespace {
 
 bool IsValidOptimizationGuideNavigation(
     content::NavigationHandle* navigation_handle) {
-  return navigation_handle->IsInMainFrame() &&
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
+  return navigation_handle->IsInPrimaryMainFrame() &&
          navigation_handle->GetURL().SchemeIsHTTPOrHTTPS();
 }
 
@@ -65,15 +67,15 @@ void OptimizationGuideWebContentsObserver::DidStartNavigation(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Clear any leftover hint requests from a previous navigation.
-  if (navigation_handle->IsInMainFrame()) {
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
+  if (navigation_handle->IsInPrimaryMainFrame()) {
     ClearHintsToFetchBasedOnPredictions(navigation_handle);
   }
 
   if (!IsValidOptimizationGuideNavigation(navigation_handle))
     return;
-
-  OptimizationGuideTopHostProvider::MaybeUpdateTopHostBlocklist(
-      navigation_handle);
 
   if (!optimization_guide_keyed_service_)
     return;
@@ -107,7 +109,10 @@ void OptimizationGuideWebContentsObserver::DidFinishNavigation(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Clear any leftover hint requests from a previous navigation.
-  if (navigation_handle->IsInMainFrame()) {
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
+  if (navigation_handle->IsInPrimaryMainFrame()) {
     ClearHintsToFetchBasedOnPredictions(navigation_handle);
   }
 

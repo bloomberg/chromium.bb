@@ -14,7 +14,6 @@
 #include "media/base/media_util.h"
 #include "media/gpu/gpu_video_accelerator_util.h"
 #include "media/gpu/ipc/client/gpu_video_decode_accelerator_host.h"
-#include "media/gpu/ipc/common/media_messages.h"
 #include "media/mojo/clients/mojo_video_decoder.h"
 #include "media/mojo/clients/mojo_video_encode_accelerator.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
@@ -102,7 +101,6 @@ std::unique_ptr<::media::VideoDecoder>
 CastGpuFactoryImpl::CreateVideoDecoder() {
   DCHECK(mojo_task_runner_->BelongsToCurrentThread());
   return CreateVideoDecoder(media_log_.get(),
-                            ::media::VideoDecoderImplementation::kDefault,
                             base::BindRepeating(&OnRequestOverlayInfo));
 }
 
@@ -137,10 +135,9 @@ int32_t CastGpuFactoryImpl::GetCommandBufferRouteId() {
 }
 
 // Return true if |config| is potentially supported by a decoder created with
-// CreateVideoDecoder() using |implementation|.
+// CreateVideoDecoder().
 ::media::GpuVideoAcceleratorFactories::Supported
 CastGpuFactoryImpl::IsDecoderConfigSupported(
-    ::media::VideoDecoderImplementation implementation,
     const ::media::VideoDecoderConfig& config) {
   if (config.codec() == ::media::VideoCodec::kCodecH264) {
     return Supported::kTrue;
@@ -159,7 +156,6 @@ void CastGpuFactoryImpl::NotifyDecoderSupportKnown(base::OnceClosure callback) {
 
 std::unique_ptr<::media::VideoDecoder> CastGpuFactoryImpl::CreateVideoDecoder(
     ::media::MediaLog* media_log,
-    ::media::VideoDecoderImplementation implementation,
     ::media::RequestOverlayInfoCB request_overlay_info_cb) {
   DCHECK(mojo_task_runner_->BelongsToCurrentThread());
   DCHECK(media_interface_factory_.is_bound());
@@ -173,7 +169,7 @@ std::unique_ptr<::media::VideoDecoder> CastGpuFactoryImpl::CreateVideoDecoder(
       video_decoder.InitWithNewPipeAndPassReceiver());
   return std::make_unique<::media::MojoVideoDecoder>(
       mojo_task_runner_, this, media_log, std::move(video_decoder),
-      implementation, request_overlay_info_cb, gfx::ColorSpace::CreateSRGB());
+      request_overlay_info_cb, gfx::ColorSpace::CreateSRGB());
 }
 
 absl::optional<::media::VideoEncodeAccelerator::SupportedProfiles>
@@ -298,8 +294,8 @@ void CastGpuFactoryImpl::SetupContext() {
   }
 
   // Get the channel token for the current connection.
-  context_provider_->GetCommandBufferProxy()->channel()->Send(
-      new GpuCommandBufferMsg_GetChannelToken(&channel_token_));
+  context_provider_->GetCommandBufferProxy()->GetGpuChannel().GetChannelToken(
+      &channel_token_);
 
   gpu_->CreateVideoEncodeAcceleratorProvider(
       vea_provider_.BindNewPipeAndPassReceiver());

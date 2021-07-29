@@ -10,8 +10,9 @@ import type * as Protocol from '../../generated/protocol.js';
 import type {Resource} from './Resource.js'; // eslint-disable-line no-unused-vars
 import type {ResourceTreeFrame} from './ResourceTreeModel.js';
 import {Events as ResourceTreeModelEvents, ResourceTreeModel} from './ResourceTreeModel.js';  // eslint-disable-line no-unused-vars
-import type {SDKModelObserver, Target} from './SDKModel.js';
-import {TargetManager} from './SDKModel.js';  // eslint-disable-line no-unused-vars
+import type {Target} from './Target.js';
+import type {SDKModelObserver} from './TargetManager.js';
+import {TargetManager} from './TargetManager.js';
 
 let frameManagerInstance: FrameManager|null = null;
 
@@ -30,6 +31,7 @@ export class FrameManager extends Common.ObjectWrapper.ObjectWrapper implements 
   _topFrame: ResourceTreeFrame|null;
   private creationStackTraceDataForTransferringFrame:
       Map<string, {creationStackTrace: Protocol.Runtime.StackTrace | null, creationStackTraceTarget: Target}>;
+  private awaitedFrames: Map<string, {notInTarget?: Target, resolve: (frame: ResourceTreeFrame) => void}[]> = new Map();
 
   constructor() {
     super();
@@ -73,7 +75,7 @@ export class FrameManager extends Common.ObjectWrapper.ObjectWrapper implements 
   modelRemoved(resourceTreeModel: ResourceTreeModel): void {
     const listeners = this._eventListeners.get(resourceTreeModel);
     if (listeners) {
-      Common.EventTarget.EventTarget.removeEventListeners(listeners);
+      Common.EventTarget.removeEventListeners(listeners);
     }
 
     // Iterate over this model's frames and decrease their count or remove them.
@@ -116,6 +118,7 @@ export class FrameManager extends Common.ObjectWrapper.ObjectWrapper implements 
     }
 
     this.dispatchEventToListeners(Events.FrameAddedToTarget, {frame});
+    this.resolveAwaitedFrame(frame);
   }
 
   _frameDetached(event: Common.EventTarget.EventTargetEvent): void {
@@ -198,6 +201,40 @@ export class FrameManager extends Common.ObjectWrapper.ObjectWrapper implements 
 
   getTopFrame(): ResourceTreeFrame|null {
     return this._topFrame;
+  }
+
+  async getOrWaitForFrame(frameId: string, notInTarget?: Target): Promise<ResourceTreeFrame> {
+    const frame = this.getFrame(frameId);
+    if (frame && (!notInTarget || notInTarget !== frame.resourceTreeModel().target())) {
+      return frame;
+    }
+    return new Promise<ResourceTreeFrame>(resolve => {
+      const waiting = this.awaitedFrames.get(frameId);
+      if (waiting) {
+        waiting.push({notInTarget, resolve});
+      } else {
+        this.awaitedFrames.set(frameId, [{notInTarget, resolve}]);
+      }
+    });
+  }
+
+  private resolveAwaitedFrame(frame: ResourceTreeFrame): void {
+    const waiting = this.awaitedFrames.get(frame.id);
+    if (!waiting) {
+      return;
+    }
+    const newWaiting = waiting.filter(({notInTarget, resolve}) => {
+      if (!notInTarget || notInTarget !== frame.resourceTreeModel().target()) {
+        resolve(frame);
+        return false;
+      }
+      return true;
+    });
+    if (newWaiting.length > 0) {
+      this.awaitedFrames.set(frame.id, newWaiting);
+    } else {
+      this.awaitedFrames.delete(frame.id);
+    }
   }
 }
 

@@ -26,8 +26,22 @@ export enum IssueCategory {
 
 // eslint-disable-next-line rulesdir/const_enum
 export enum IssueKind {
-  BreakingChange = 'BreakingChange',
+  /**
+   * Something is not working in the page right now. Issues of this kind need
+   * usually be fixed right away. They usually indicate that a Web API is being
+   * used in a wrong way, or that a network request was misconfigured.
+   */
   PageError = 'PageError',
+  /**
+   * The page is using a Web API or relying on browser behavior that is going
+   * to change in the future. If possible, the message associated with issues
+   * of this kind should include a time when the behavior is going to change.
+   */
+  BreakingChange = 'BreakingChange',
+  /**
+   * Anything that can be improved about the page, but isn't urgent and doesn't
+   * impair functionality in a major way.
+   */
   Improvement = 'Improvement',
 }
 
@@ -50,20 +64,23 @@ export function getShowThirdPartyIssuesSetting(): Common.Settings.Setting<boolea
 }
 
 export interface AffectedElement {
-  backendNodeId: number;
+  backendNodeId: Protocol.DOM.BackendNodeId;
   nodeName: string;
-  target: SDK.SDKModel.Target|null;
+  target: SDK.Target.Target|null;
 }
 
 export abstract class Issue<IssueCode extends string = string> extends Common.ObjectWrapper.ObjectWrapper {
   private issueCode: IssueCode;
   private issuesModel: SDK.IssuesModel.IssuesModel|null;
+  protected issueId: string|undefined = undefined;
 
   constructor(
-      code: IssueCode|{code: IssueCode, umaCode: string}, issuesModel: SDK.IssuesModel.IssuesModel|null = null) {
+      code: IssueCode|{code: IssueCode, umaCode: string}, issuesModel: SDK.IssuesModel.IssuesModel|null = null,
+      issueId?: string) {
     super();
     this.issueCode = typeof code === 'object' ? code.code : code;
     this.issuesModel = issuesModel;
+    this.issueId = issueId;
     Host.userMetrics.issueCreated(typeof code === 'string' ? code : code.umaCode);
   }
 
@@ -114,6 +131,10 @@ export abstract class Issue<IssueCode extends string = string> extends Common.Ob
 
   isCausedByThirdParty(): boolean {
     return false;
+  }
+
+  getIssueId(): string|undefined {
+    return this.issueId;
   }
 }
 

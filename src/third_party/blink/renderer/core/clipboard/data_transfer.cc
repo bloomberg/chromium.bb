@@ -29,7 +29,6 @@
 
 #include "build/build_config.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/blink/public/common/widget/screen_info.h"
 #include "third_party/blink/renderer/core/clipboard/clipboard_mime_types.h"
 #include "third_party/blink/renderer/core/clipboard/clipboard_utilities.h"
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
@@ -51,6 +50,7 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/drag_image.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/paint/cull_rect_updater.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_painter.h"
@@ -61,6 +61,7 @@
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-blink.h"
+#include "ui/display/screen_info.h"
 
 namespace blink {
 
@@ -124,15 +125,22 @@ class DraggedNodeImageBuilder {
         layer->GetLayoutObject()
             .AbsoluteToLocalQuad(FloatQuad(absolute_bounding_box))
             .BoundingBox();
+    absl::optional<OverriddenCullRectScope> cull_rect_scope;
+    if (RuntimeEnabledFeatures::CullRectUpdateEnabled()) {
+      FloatRect cull_rect = bounding_box;
+      cull_rect.Move(
+          FloatSize(layer->GetLayoutObject().FirstFragment().PaintOffset()));
+      cull_rect_scope.emplace(*layer, CullRect(EnclosingIntRect(cull_rect)));
+    }
     PaintLayerPaintingInfo painting_info(
         layer, CullRect(EnclosingIntRect(bounding_box)),
         kGlobalPaintFlattenCompositingLayers, PhysicalOffset());
-    PaintLayerFlags flags = kPaintLayerHaveTransparency;
     PaintRecordBuilder builder;
 
     dragged_layout_object->GetDocument().Lifecycle().AdvanceTo(
         DocumentLifecycle::kInPaint);
-    PaintLayerPainter(*layer).Paint(builder.Context(), painting_info, flags);
+    PaintLayerPainter(*layer).Paint(builder.Context(), painting_info,
+                                    kPaintLayerNoFlag);
     dragged_layout_object->GetDocument().Lifecycle().AdvanceTo(
         DocumentLifecycle::kPaintClean);
 

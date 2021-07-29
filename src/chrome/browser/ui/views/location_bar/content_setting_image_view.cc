@@ -6,8 +6,11 @@
 
 #include <utility>
 
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/token.h"
+#include "build/build_config.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
@@ -132,8 +135,21 @@ void ContentSettingImageView::Update() {
   // the user.  If this becomes a problem, we could design some sort of queueing
   // mechanism to show one after the other, but it doesn't seem important now.
   int string_id = content_setting_image_model_->explanatory_string_id();
-  if (string_id)
-    AnimateIn(string_id);
+  if (string_id) {
+    // If this is part of the mac location permissions experiment, show a
+    // persistent label.
+    if (content_setting_image_model_
+            ->IsMacRestoreLocationPermissionExperimentActive()) {
+      SetLabel(l10n_util::GetStringUTF16(string_id));
+      // Reset the slide animation so that the label is persistent and won't
+      // animate out.
+      ResetSlideAnimation(true);
+    } else {
+      // Reset the slide animation so that the label's show/hide animation runs.
+      ResetSlideAnimation(false);
+      AnimateIn(string_id);
+    }
+  }
 
   content_setting_image_model_->SetAnimationHasRun(web_contents);
 }
@@ -214,6 +230,16 @@ ContentSettingImageModel::ImageType ContentSettingImageView::GetTypeForTesting()
 void ContentSettingImageView::OnWidgetDestroying(views::Widget* widget) {
   if (!bubble_view_ || bubble_view_->GetWidget() != widget)
     return;
+
+#if defined(OS_MAC)
+  if (content_setting_image_model_->image_type() ==
+          ContentSettingImageModel::ImageType::GEOLOCATION &&
+      content_setting_image_model_->explanatory_string_id() ==
+          IDS_GEOLOCATION_TURNED_OFF) {
+    base::RecordAction(
+        base::UserMetricsAction("ContentSettings.GeolocationDialog.Closed"));
+  }
+#endif  // defined(OS_MAC)
 
   DCHECK(observation_.IsObservingSource(widget));
   observation_.Reset();

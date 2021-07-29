@@ -7,6 +7,7 @@
 #include "core/fxcrt/widestring.h"
 
 #include <stddef.h>
+#include <string.h>
 
 #include <algorithm>
 #include <cctype>
@@ -15,11 +16,12 @@
 #include "core/fxcrt/fx_codepage.h"
 #include "core/fxcrt/fx_extension.h"
 #include "core/fxcrt/fx_safe_types.h"
+#include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/string_pool_template.h"
 #include "third_party/base/check.h"
 #include "third_party/base/check_op.h"
+#include "third_party/base/numerics/ranges.h"
 #include "third_party/base/numerics/safe_math.h"
-#include "third_party/base/stl_util.h"
 
 template class fxcrt::StringDataTemplate<wchar_t>;
 template class fxcrt::StringViewTemplate<wchar_t>;
@@ -254,7 +256,7 @@ Optional<WideString> TryVSWPrintf(size_t size,
                                   const wchar_t* pFormat,
                                   va_list argList) {
   if (!size)
-    return {};
+    return pdfium::nullopt;
 
   WideString str;
   {
@@ -272,10 +274,10 @@ Optional<WideString> TryVSWPrintf(size_t size,
 
     bool bSufficientBuffer = ret >= 0 || buffer[size - 1] == 0;
     if (!bSufficientBuffer)
-      return {};
+      return pdfium::nullopt;
   }
   str.ReleaseBuffer(str.GetStringLength());
-  return {str};
+  return str;
 }
 
 }  // namespace
@@ -307,9 +309,9 @@ WideString WideString::FormatV(const wchar_t* format, va_list argList) {
     Optional<WideString> ret =
         TryVSWPrintf(static_cast<size_t>(maxLen), format, argListCopy);
     va_end(argListCopy);
+    if (ret.has_value())
+      return ret.value();
 
-    if (ret)
-      return *ret;
     maxLen *= 2;
   }
   return WideString();
@@ -728,14 +730,11 @@ WideString WideString::Substr(size_t first, size_t count) const {
 }
 
 WideString WideString::First(size_t count) const {
-  if (count == 0 || !IsValidLength(count))
-    return WideString();
   return Substr(0, count);
 }
 
 WideString WideString::Last(size_t count) const {
-  if (count == 0 || !IsValidLength(count))
-    return WideString();
+  // Unsigned underflow is well-defined and out-of-range is handled by Substr().
   return Substr(GetLength() - count, count);
 }
 
@@ -1122,14 +1121,16 @@ std::ostream& operator<<(std::ostream& os, WideStringView str) {
 
 }  // namespace fxcrt
 
-uint32_t FX_HashCode_GetW(WideStringView str, bool bIgnoreCase) {
+uint32_t FX_HashCode_GetW(WideStringView str) {
   uint32_t dwHashCode = 0;
-  if (bIgnoreCase) {
-    for (wchar_t c : str)  // match FXSYS_towlower() arg type.
-      dwHashCode = 1313 * dwHashCode + FXSYS_towlower(c);
-  } else {
-    for (WideStringView::UnsignedType c : str)
-      dwHashCode = 1313 * dwHashCode + c;
-  }
+  for (WideStringView::UnsignedType c : str)
+    dwHashCode = 1313 * dwHashCode + c;
+  return dwHashCode;
+}
+
+uint32_t FX_HashCode_GetLoweredW(WideStringView str) {
+  uint32_t dwHashCode = 0;
+  for (wchar_t c : str)  // match FXSYS_towlower() arg type.
+    dwHashCode = 1313 * dwHashCode + FXSYS_towlower(c);
   return dwHashCode;
 }

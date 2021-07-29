@@ -4,6 +4,7 @@
 
 import("//media/media_options.gni")
 import("//third_party/blink/renderer/modules/modules.gni")
+import("//third_party/libaom/options.gni")
 import("//third_party/libprotobuf-mutator/fuzzable_proto_library.gni")
 import("//third_party/protobuf/proto_library.gni")
 
@@ -25,10 +26,14 @@ blink_modules_sources("webcodecs") {
     "codec_state_helper.cc",
     "codec_state_helper.h",
     "codec_trace_names.h",
+    "decoder_buffer_attachment.cc",
+    "decoder_buffer_attachment.h",
     "decoder_selector.cc",
     "decoder_selector.h",
     "decoder_template.cc",
     "decoder_template.h",
+    "dom_rect_util.cc",
+    "dom_rect_util.h",
     "encoded_audio_chunk.cc",
     "encoded_audio_chunk.h",
     "encoded_video_chunk.cc",
@@ -47,10 +52,10 @@ blink_modules_sources("webcodecs") {
     "image_track.h",
     "image_track_list.cc",
     "image_track_list.h",
-    "parsed_read_into_options.cc",
-    "parsed_read_into_options.h",
-    "plane.cc",
-    "plane.h",
+    "parsed_copy_to_options.cc",
+    "parsed_copy_to_options.h",
+    "video_color_space.cc",
+    "video_color_space.h",
     "video_decoder.cc",
     "video_decoder.h",
     "video_decoder_broker.cc",
@@ -63,6 +68,8 @@ blink_modules_sources("webcodecs") {
     "video_frame_attachment.h",
     "video_frame_handle.cc",
     "video_frame_handle.h",
+    "video_frame_monitor.cc",
+    "video_frame_monitor.h",
     "video_frame_transfer_list.cc",
     "video_frame_transfer_list.h",
     "webcodecs_logger.cc",
@@ -73,9 +80,16 @@ blink_modules_sources("webcodecs") {
     "//media/mojo:buildflags",
     "//media/mojo/clients",
     "//media/mojo/mojom",
+    "//third_party/libaom:libaom_buildflags",
     "//third_party/libyuv:libyuv",
     "//third_party/opus",
   ]
+  if (enable_libaom) {
+    deps += [ "//third_party/libaom" ]
+  }
+  if (media_use_libvpx) {
+    deps += [ "//third_party/libvpx" ]
+  }
   if (media_use_openh264) {
     deps += [ "//third_party/openh264:encoder" ]
   }
@@ -93,6 +107,7 @@ source_set("unit_tests") {
     "image_decoder_external_test.cc",
     "video_decoder_broker_test.cc",
     "video_encoder_test.cc",
+    "video_frame_monitor_test.cc",
     "video_frame_test.cc",
   ]
 

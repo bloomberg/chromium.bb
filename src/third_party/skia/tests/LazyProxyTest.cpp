@@ -15,12 +15,14 @@
 #include "src/gpu/GrOnFlushResourceProvider.h"
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrRecordingContextPriv.h"
+#include "src/gpu/GrResourceProvider.h"
 #include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/GrSurfaceProxy.h"
 #include "src/gpu/GrSurfaceProxyPriv.h"
 #include "src/gpu/GrTexture.h"
 #include "src/gpu/GrTextureProxy.h"
 #include "src/gpu/GrTextureProxyPriv.h"
+#include "src/gpu/effects/GrTextureEffect.h"
 #include "src/gpu/mock/GrMockGpu.h"
 
 // This test verifies that lazy proxy callbacks get invoked during flush, after onFlush callbacks,
@@ -60,7 +62,7 @@ public:
             return GrOp::Make<Op>(context, context, proxyProvider, test, nullTexture);
         }
 
-        void visitProxies(const VisitProxyFunc& func) const override {
+        void visitProxies(const GrVisitProxyFunc& func) const override {
             func(fProxy.get(), GrMipmapped::kNo);
         }
 
@@ -111,7 +113,7 @@ public:
         void onPrePrepare(GrRecordingContext*,
                           const GrSurfaceProxyView& writeView,
                           GrAppliedClip*,
-                          const GrXferProcessor::DstProxyView&,
+                          const GrDstProxyView&,
                           GrXferBarrierFlags renderPassXferBarriers,
                           GrLoadOp colorLoadOp) override {}
 
@@ -179,9 +181,8 @@ public:
         SkIRect getConservativeBounds() const final {
             return SkIRect::MakeSize(fAtlas->dimensions());
         }
-        Effect apply(GrRecordingContext* context, GrSurfaceDrawContext*, GrAAType,
-                         bool hasUserStencilSettings, GrAppliedClip* out,
-                         SkRect* bounds) const override {
+        Effect apply(GrRecordingContext* context, GrSurfaceDrawContext*, GrDrawOp*, GrAAType,
+                     GrAppliedClip* out, SkRect* bounds) const override {
             GrProxyProvider* proxyProvider = context->priv().proxyProvider();
             out->addCoverageFP(std::make_unique<ClipFP>(context, proxyProvider, fTest, fAtlas));
             return Effect::kClipped;
@@ -316,7 +317,7 @@ public:
                                                          shouldFailInstantiation);
     }
 
-    void visitProxies(const VisitProxyFunc& func) const override {
+    void visitProxies(const GrVisitProxyFunc& func) const override {
         func(fLazyProxy.get(), GrMipmapped::kNo);
     }
 
@@ -361,7 +362,7 @@ private:
     void onPrePrepare(GrRecordingContext*,
                       const GrSurfaceProxyView& writeView,
                       GrAppliedClip*,
-                      const GrXferProcessor::DstProxyView&,
+                      const GrDstProxyView&,
                       GrXferBarrierFlags renderPassXferBarriers,
                       GrLoadOp colorLoadOp) override {}
     void onPrepare(GrOpFlushState*) override {}

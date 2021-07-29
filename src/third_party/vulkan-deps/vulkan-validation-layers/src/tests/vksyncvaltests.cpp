@@ -1250,19 +1250,20 @@ TEST_F(VkSyncValTest, SyncCmdDispatchDrawHazards) {
     descriptor_set.UpdateDescriptorSets();
 
     // Dispatch
-    std::string csSource =
-        "#version 450\n"
-        "layout(set=0, binding=0) uniform foo { float x; } ub0;\n"
-        "layout(set=0, binding=1) uniform sampler2D cis1;\n"
-        "layout(set=0, binding=2, rgba8) uniform readonly image2D si2;\n"
-        "layout(set=0, binding=3, r32f) uniform readonly imageBuffer stb3;\n"
-        "void main(){\n"
-        "    vec4 vColor4;\n"
-        "    vColor4.x = ub0.x;\n"
-        "    vColor4 = texture(cis1, vec2(0));\n"
-        "    vColor4 = imageLoad(si2, ivec2(0));\n"
-        "    vColor4 = imageLoad(stb3, 0);\n"
-        "}\n";
+    std::string csSource = R"glsl(
+        #version 450
+        layout(set=0, binding=0) uniform foo { float x; } ub0;
+        layout(set=0, binding=1) uniform sampler2D cis1;
+        layout(set=0, binding=2, rgba8) uniform readonly image2D si2;
+        layout(set=0, binding=3, r32f) uniform readonly imageBuffer stb3;
+        void main(){
+            vec4 vColor4;
+            vColor4.x = ub0.x;
+            vColor4 = texture(cis1, vec2(0));
+            vColor4 = imageLoad(si2, ivec2(0));
+            vColor4 = imageLoad(stb3, 0);
+        }
+    )glsl";
 
     VkEventObj event;
     event.init(*m_device, VkEventObj::create_info(0));
@@ -2193,6 +2194,10 @@ TEST_F(VkSyncValTest, SyncRenderPassWithWrongDepthStencilInitialLayout) {
     ASSERT_VK_SUCCESS(g_pipe.CreateGraphicsPipeline());
 
     m_commandBuffer->begin();
+    VkClearValue clear = {};
+    std::array<VkClearValue, 2> clear_values = { {clear, clear} };
+    m_renderPassBeginInfo.pClearValues = clear_values.data();
+    m_renderPassBeginInfo.clearValueCount = clear_values.size();
     m_renderPassBeginInfo.renderArea = {{0, 0}, {32, 32}};
     m_renderPassBeginInfo.renderPass = rp;
 
@@ -2312,12 +2317,13 @@ TEST_F(VkSyncValTest, SyncLayoutTransition) {
     VkSamplerCreateInfo sampler_info = SafeSaneSamplerCreateInfo();
     vk::CreateSampler(m_device->device(), &sampler_info, NULL, &sampler);
 
-    char const *fsSource =
-        "#version 450\n"
-        "layout(input_attachment_index=0, set=0, binding=0) uniform subpassInput x;\n"
-        "void main() {\n"
-        "   vec4 color = subpassLoad(x);\n"
-        "}\n";
+    char const *fsSource = R"glsl(
+        #version 450
+        layout(input_attachment_index=0, set=0, binding=0) uniform subpassInput x;
+        void main() {
+           vec4 color = subpassLoad(x);
+        }
+    )glsl";
 
     VkShaderObj vs(m_device, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT, this);
     VkShaderObj fs(m_device, fsSource, VK_SHADER_STAGE_FRAGMENT_BIT, this);
@@ -2527,12 +2533,13 @@ TEST_F(VkSyncValTest, SyncSubpassMultiDep) {
     VkSamplerCreateInfo sampler_info = SafeSaneSamplerCreateInfo();
     vk::CreateSampler(m_device->device(), &sampler_info, NULL, &sampler);
 
-    char const *fsSource =
-        "#version 450\n"
-        "layout(input_attachment_index=0, set=0, binding=0) uniform subpassInput x;\n"
-        "void main() {\n"
-        "   vec4 color = subpassLoad(x);\n"
-        "}\n";
+    char const *fsSource = R"glsl(
+        #version 450
+        layout(input_attachment_index=0, set=0, binding=0) uniform subpassInput x;
+        void main() {
+           vec4 color = subpassLoad(x);
+        }
+    )glsl";
 
     VkShaderObj vs(m_device, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT, this);
     VkShaderObj fs(m_device, fsSource, VK_SHADER_STAGE_FRAGMENT_BIT, this);
@@ -2775,19 +2782,20 @@ TEST_F(VkSyncValTest, RenderPassAsyncHazard) {
     VkSamplerCreateInfo sampler_info = SafeSaneSamplerCreateInfo();
     vk::CreateSampler(m_device->device(), &sampler_info, NULL, &sampler);
 
-    char const *fsSource =
-        "#version 450\n"
-        "layout(input_attachment_index=0, set=0, binding=0) uniform subpassInput x;\n"
-        "void main() {\n"
-        "   vec4 color = subpassLoad(x);\n"
-        "}\n";
+    char const *fsSource = R"glsl(
+        #version 450
+        layout(input_attachment_index=0, set=0, binding=0) uniform subpassInput x;
+        void main() {
+           vec4 color = subpassLoad(x);
+        }
+    )glsl";
 
     VkShaderObj vs(m_device, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT, this);
     VkShaderObj fs(m_device, fsSource, VK_SHADER_STAGE_FRAGMENT_BIT, this);
 
     VkClearValue clear = {};
     clear.color = m_clear_color;
-    std::array<VkClearValue, 3> clear_values = {{clear, clear, clear}};
+    std::array<VkClearValue, 4> clear_values = {{clear, clear, clear, clear}};
 
     // run the renderpass with no dependencies
     {

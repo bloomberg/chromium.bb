@@ -8,7 +8,7 @@
 #include "fpdfsdk/cpdfsdk_annotiterator.h"
 #include "fpdfsdk/cpdfsdk_formfillenvironment.h"
 #include "fpdfsdk/cpdfsdk_helpers.h"
-#include "fpdfsdk/formfiller/cffl_formfiller.h"
+#include "fpdfsdk/formfiller/cffl_formfield.h"
 #include "fpdfsdk/formfiller/cffl_interactiveformfiller.h"
 #include "public/fpdf_fwlevent.h"
 #include "testing/embedder_test.h"
@@ -34,7 +34,7 @@ class CPWLEditEmbedderTest : public EmbedderTest {
     m_pFormFillEnv =
         CPDFSDKFormFillEnvironmentFromFPDFFormHandle(form_handle());
     CPDFSDK_AnnotIterator iter(m_pFormFillEnv->GetPageViewAtIndex(0),
-                               CPDF_Annot::Subtype::WIDGET);
+                               {CPDF_Annot::Subtype::WIDGET});
     // Normal text field.
     m_pAnnot = iter.GetFirstAnnot();
     ASSERT_TRUE(m_pAnnot);
@@ -67,11 +67,11 @@ class CPWLEditEmbedderTest : public EmbedderTest {
     }
 
     m_pFormFiller =
-        pInteractiveFormFiller->GetFormFillerForTesting(pAnnotTextField);
+        pInteractiveFormFiller->GetFormFieldForTesting(pAnnotTextField);
     ASSERT_TRUE(m_pFormFiller);
 
-    CPWL_Wnd* pWindow = m_pFormFiller->GetPWLWindow(
-        m_pFormFillEnv->GetPageViewAtIndex(0), false);
+    CPWL_Wnd* pWindow =
+        m_pFormFiller->GetPWLWindow(m_pFormFillEnv->GetPageViewAtIndex(0));
     ASSERT_TRUE(pWindow);
     m_pEdit = static_cast<CPWL_Edit*>(pWindow);
   }
@@ -85,14 +85,14 @@ class CPWLEditEmbedderTest : public EmbedderTest {
 
   FPDF_PAGE GetPage() { return m_page; }
   CPWL_Edit* GetCPWLEdit() { return m_pEdit; }
-  CFFL_FormFiller* GetCFFLFormFiller() { return m_pFormFiller; }
+  CFFL_FormField* GetCFFLFormFiller() { return m_pFormFiller; }
   CPDFSDK_Annot* GetCPDFSDKAnnot() { return m_pAnnot; }
   CPDFSDK_Annot* GetCPDFSDKAnnotCharLimit() { return m_pAnnotCharLimit; }
 
  private:
   FPDF_PAGE m_page;
   CPWL_Edit* m_pEdit;
-  CFFL_FormFiller* m_pFormFiller;
+  CFFL_FormField* m_pFormFiller;
   CPDFSDK_Annot* m_pAnnot;
   CPDFSDK_Annot* m_pAnnotCharLimit;
   CPDFSDK_FormFillEnvironment* m_pFormFillEnv;

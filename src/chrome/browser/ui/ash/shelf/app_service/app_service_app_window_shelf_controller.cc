@@ -6,9 +6,10 @@
 
 #include <memory>
 
+#include "ash/constants/app_types.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
-#include "ash/public/cpp/app_types.h"
+#include "ash/public/cpp/app_types_util.h"
 #include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/window_properties.h"
@@ -89,18 +90,6 @@ AppServiceAppWindowShelfController::AppServiceAppWindowShelfController(
   for (auto* browser : *BrowserList::GetInstance()) {
     if (browser && browser->window() && browser->window()->GetNativeWindow()) {
       observed_windows_.AddObservation(browser->window()->GetNativeWindow());
-
-      // Observe the browser tabs
-      TabStripModel* tab_strip = browser->tab_strip_model();
-      for (int i = 0; i < tab_strip->count(); ++i) {
-        auto* tab = tab_strip->GetWebContentsAt(i);
-        if (!tab)
-          continue;
-        aura::Window* window = tab->GetNativeView();
-        if (window) {
-          observed_windows_.AddObservation(window);
-        }
-      }
     }
   }
 }
@@ -181,6 +170,28 @@ void AppServiceAppWindowShelfController::OnWindowInitialized(
   observed_windows_.AddObservation(window);
   if (arc_tracker_)
     arc_tracker_->AddCandidateWindow(window);
+
+  // When the visibility of the window changes and if it is not already on a
+  // shelf then it is added to a shelf by `ASAWSC::OnWindowVisibilityChanged()`
+  // but when the window is created as a minimized window there is no change in
+  // visible state and it is not added to the shelf. Hence, when a widget has a
+  // `initial_show_state_` as ui::SHOW_STATE_MINIMIZED, it should add itself to
+  // a shelf during initialization. The below code is applicable only for Lacros
+  // browser app.
+  auto shelf_id = GetShelfId(window);
+  if (!shelf_id.IsNull() &&
+      GetAppType(shelf_id.app_id) == apps::mojom::AppType::kStandaloneBrowser &&
+      widget->IsMinimized()) {
+    // Update |state|. The app must be started, and running state. If visible,
+    // set it as |kVisible|, otherwise, clear the visible bit.
+    apps::InstanceState state =
+        app_service_instance_helper_->CalculateVisibilityState(
+            window, /*visible=*/false);
+    app_service_instance_helper_->OnInstances(GetAppId(shelf_id.app_id), window,
+                                              shelf_id.launch_id, state);
+
+    RegisterWindow(window, shelf_id);
+  }
 }
 
 void AppServiceAppWindowShelfController::OnWindowPropertyChanged(
@@ -291,7 +302,7 @@ void AppServiceAppWindowShelfController::OnWindowDestroying(
   // Note, for ARC apps, window may be recreated in some cases, so do not close
   // controller on window destroying. Controller will be closed onTaskDestroyed
   // event which is generated when actual task is destroyed.
-  if (arc_tracker_ && arc::GetWindowTaskId(window) != arc::kNoTaskId) {
+  if (arc_tracker_ && arc::GetWindowTaskOrSessionId(window).has_value()) {
     arc_tracker_->HandleWindowDestroying(window);
     aura_window_to_app_window_.erase(window);
     return;
@@ -313,7 +324,7 @@ void AppServiceAppWindowShelfController::OnWindowActivated(
   AppWindowShelfController::OnWindowActivated(reason, new_active, old_active);
 
   if (arc_tracker_)
-    arc_tracker_->OnTaskSetActive(arc_tracker_->active_task_id());
+    arc_tracker_->HandleWindowActivatedChanged(new_active);
 
   SetWindowActivated(new_active, /*active*/ true);
   SetWindowActivated(old_active, /*active*/ false);
@@ -401,6 +412,12 @@ int AppServiceAppWindowShelfController::GetActiveTaskId() const {
   return arc::kNoTaskId;
 }
 
+int AppServiceAppWindowShelfController::GetActiveSessionId() const {
+  if (arc_tracker_)
+    return arc_tracker_->active_session_id();
+  return arc::kNoTaskId;
+}
+
 void AppServiceAppWindowShelfController::UnregisterWindow(
     aura::Window* window) {
   auto app_window_it = aura_window_to_app_window_.find(window);
@@ -417,10 +434,9 @@ void AppServiceAppWindowShelfController::AddWindowToShelf(
 
   // TODO(jamescook): Clean up this block. The code is repetitive.
   AppWindowBase* app_window;
-  if (arc::GetWindowTaskId(window) != arc::kNoTaskId) {
+  if (arc::GetWindowTaskOrSessionId(window).has_value()) {
     std::unique_ptr<ArcAppWindow> app_window_ptr =
         std::make_unique<ArcAppWindow>(
-            arc::GetWindowTaskId(window),
             arc::ArcAppShelfId::FromString(shelf_id.app_id),
             views::Widget::GetWidgetForNativeWindow(window), this,
             owner()->profile());
@@ -452,18 +468,6 @@ AppWindowBase* AppServiceAppWindowShelfController::GetAppWindow(
   if (!base::Contains(aura_window_to_app_window_, window))
     return nullptr;
   return aura_window_to_app_window_[window].get();
-}
-
-void AppServiceAppWindowShelfController::ObserveWindow(aura::Window* window) {
-  if (!window || observed_windows_.IsObservingSource(window))
-    return;
-  observed_windows_.AddObservation(window);
-}
-
-bool AppServiceAppWindowShelfController::IsObservingWindow(
-    aura::Window* window) {
-  DCHECK(window);
-  return observed_windows_.IsObservingSource(window);
 }
 
 std::vector<aura::Window*> AppServiceAppWindowShelfController::GetArcWindows() {
@@ -508,7 +512,7 @@ void AppServiceAppWindowShelfController::RegisterWindow(
 
   // For the ARC apps window, AttachControllerToWindow calls AddWindowToShelf,
   // so we don't need to call AddWindowToShelf again.
-  if (arc_tracker_ && arc::GetWindowTaskId(window) != arc::kNoTaskId) {
+  if (arc_tracker_ && arc::GetWindowTaskOrSessionId(window).has_value()) {
     arc_tracker_->AttachControllerToWindow(window);
     return;
   }
@@ -647,7 +651,7 @@ ash::ShelfID AppServiceAppWindowShelfController::GetShelfId(
 
   ash::ShelfID shelf_id;
   if (arc_tracker_)
-    shelf_id = arc_tracker_->GetShelfId(arc::GetWindowTaskId(window));
+    shelf_id = arc_tracker_->GetShelfId(window);
 
   if (!shelf_id.IsNull())
     return shelf_id;

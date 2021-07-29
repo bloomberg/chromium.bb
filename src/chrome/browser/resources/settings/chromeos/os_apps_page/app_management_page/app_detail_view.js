@@ -89,11 +89,16 @@ Polymer({
         return 'pwa-detail-view';
       case (AppType.kExtension):
       case (AppType.kStandaloneBrowser):
+      case (AppType.kStandaloneBrowserExtension):
+        // TODO(https://crbug.com/1225848): Figure out appropriate behavior for
+        // Lacros-hosted chrome-apps.
         return 'chrome-app-detail-view';
       case (AppType.kArc):
         return 'arc-detail-view';
       case (AppType.kPluginVm):
         return 'plugin-vm-detail-view';
+      case (AppType.kBorealis):
+        return 'borealis-detail-view';
       default:
         assertNotReached();
     }

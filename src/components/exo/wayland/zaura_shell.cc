@@ -86,6 +86,21 @@ SurfaceFrameType AuraSurfaceFrameType(uint32_t frame_type) {
   }
 }
 
+zaura_surface_occlusion_state WaylandOcclusionState(
+    const aura::Window::OcclusionState occlusion_state) {
+  switch (occlusion_state) {
+    case aura::Window::OcclusionState::UNKNOWN:
+      return ZAURA_SURFACE_OCCLUSION_STATE_UNKNOWN;
+    case aura::Window::OcclusionState::VISIBLE:
+      return ZAURA_SURFACE_OCCLUSION_STATE_VISIBLE;
+    case aura::Window::OcclusionState::OCCLUDED:
+      return ZAURA_SURFACE_OCCLUSION_STATE_OCCLUDED;
+    case aura::Window::OcclusionState::HIDDEN:
+      return ZAURA_SURFACE_OCCLUSION_STATE_HIDDEN;
+  }
+  return ZAURA_SURFACE_OCCLUSION_STATE_UNKNOWN;
+}
+
 void aura_surface_set_frame(wl_client* client,
                             wl_resource* resource,
                             uint32_t type) {
@@ -198,6 +213,22 @@ void aura_surface_unset_can_go_back(wl_client* client, wl_resource* resource) {
   GetUserDataAs<AuraSurface>(resource)->UnsetCanGoBack();
 }
 
+void aura_surface_set_pip(wl_client* client, wl_resource* resource) {
+  GetUserDataAs<AuraSurface>(resource)->SetPip();
+}
+
+void aura_surface_unset_pip(wl_client* client, wl_resource* resource) {
+  GetUserDataAs<AuraSurface>(resource)->UnsetPip();
+}
+
+void aura_surface_set_aspect_ratio(wl_client* client,
+                                   wl_resource* resource,
+                                   int32_t width,
+                                   int32_t height) {
+  GetUserDataAs<AuraSurface>(resource)->SetAspectRatio(
+      gfx::SizeF(width, height));
+}
+
 const struct zaura_surface_interface aura_surface_implementation = {
     aura_surface_set_frame,
     aura_surface_set_parent,
@@ -218,7 +249,10 @@ const struct zaura_surface_interface aura_surface_implementation = {
     aura_surface_unset_snap,
     aura_surface_set_window_session_id,
     aura_surface_set_can_go_back,
-    aura_surface_unset_can_go_back};
+    aura_surface_unset_can_go_back,
+    aura_surface_set_pip,
+    aura_surface_unset_pip,
+    aura_surface_set_aspect_ratio};
 
 }  // namespace
 
@@ -349,6 +383,18 @@ void AuraSurface::UnsetCanGoBack() {
   surface_->UnsetCanGoBack();
 }
 
+void AuraSurface::SetPip() {
+  surface_->SetPip();
+}
+
+void AuraSurface::UnsetPip() {
+  surface_->UnsetPip();
+}
+
+void AuraSurface::SetAspectRatio(const gfx::SizeF& aspect_ratio) {
+  surface_->SetAspectRatio(aspect_ratio);
+}
+
 // Overridden from SurfaceObserver:
 void AuraSurface::OnSurfaceDestroying(Surface* surface) {
   surface->RemoveSurfaceObserver(this);
@@ -359,8 +405,8 @@ void AuraSurface::OnWindowOcclusionChanged(Surface* surface) {
   if (!surface_ || !surface_->IsTrackingOcclusion())
     return;
   auto* window = surface_->window();
-  ComputeAndSendOcclusionFraction(window->GetOcclusionState(),
-                                  window->occluded_region_in_root());
+  ComputeAndSendOcclusion(window->GetOcclusionState(),
+                          window->occluded_region_in_root());
 }
 
 void AuraSurface::OnFrameLockingChanged(Surface* surface, bool lock) {
@@ -410,8 +456,8 @@ void AuraSurface::OnWindowActivating(ActivationReason reason,
   if (occlusion_tracker->HasIgnoredAnimatingWindows()) {
     const auto& occlusion_data =
         occlusion_tracker->ComputeTargetOcclusionForWindow(window);
-    ComputeAndSendOcclusionFraction(occlusion_data.occlusion_state,
-                                    occlusion_data.occluded_region);
+    ComputeAndSendOcclusion(occlusion_data.occlusion_state,
+                            occlusion_data.occluded_region);
   }
 }
 
@@ -426,20 +472,30 @@ void AuraSurface::SendOcclusionFraction(float occlusion_fraction) {
   wl_client_flush(wl_resource_get_client(resource_));
 }
 
-void AuraSurface::ComputeAndSendOcclusionFraction(
+void AuraSurface::SendOcclusionState(
+    const aura::Window::OcclusionState occlusion_state) {
+  if (wl_resource_get_version(resource_) < 21)
+    return;
+  zaura_surface_send_occlusion_state_changed(
+      resource_, WaylandOcclusionState(occlusion_state));
+  wl_client_flush(wl_resource_get_client(resource_));
+}
+
+void AuraSurface::ComputeAndSendOcclusion(
     const aura::Window::OcclusionState occlusion_state,
     const SkRegion& occluded_region) {
+  SendOcclusionState(occlusion_state);
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Should re-write in locked case - we don't want to trigger PIP upon
   // locking the screen.
-  // TODO(afakhry): We may also want to have special behaviour here for virtual
-  // desktops.
   if (ash::Shell::Get()->session_controller()->IsScreenLocked()) {
     SendOcclusionFraction(0.0f);
     return;
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+  // Send the occlusion fraction.
   auto* window = surface_->window();
   float fraction_occluded = 0.0f;
   switch (occlusion_state) {

@@ -160,7 +160,7 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
       incoming_frame.video_frame_buffer();
   scoped_refptr<media::VideoFrame> video_frame;
   if (buffer->type() == webrtc::VideoFrameBuffer::Type::kNative) {
-    video_frame = static_cast<WebRtcVideoFrameAdapterInterface*>(buffer.get())
+    video_frame = static_cast<WebRtcVideoFrameAdapter*>(buffer.get())
                       ->getMediaVideoFrame();
     video_frame->set_timestamp(elapsed_timestamp);
   } else {
@@ -290,8 +290,10 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::
 }
 
 MediaStreamRemoteVideoSource::MediaStreamRemoteVideoSource(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     std::unique_ptr<TrackObserver> observer)
-    : observer_(std::move(observer)) {
+    : MediaStreamVideoSource(std::move(task_runner)),
+      observer_(std::move(observer)) {
   // The callback will be automatically cleared when 'observer_' goes out of
   // scope and no further callbacks will occur.
   observer_->SetCallback(WTF::BindRepeating(

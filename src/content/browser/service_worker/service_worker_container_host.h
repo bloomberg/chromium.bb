@@ -23,16 +23,14 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/site_for_cookies.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "services/network/public/mojom/cross_origin_embedder_policy.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_container.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_container_type.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
-
-namespace network {
-struct CrossOriginEmbedderPolicy;
-}
 
 namespace content {
 
@@ -40,6 +38,7 @@ namespace service_worker_object_host_unittest {
 class ServiceWorkerObjectHostTest;
 }
 
+struct GlobalRenderFrameHostId;
 class ServiceWorkerContextCore;
 class ServiceWorkerHost;
 class ServiceWorkerObjectHost;
@@ -262,9 +261,11 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   // commit. Updates this host with information about the frame committed to.
   // After this is called, is_response_committed() and is_execution_ready()
   // return true.
+  //
+  // TODO(falken): Pass in an RenderFrameHostImpl instead of an ID. Some
+  // tests use a fake id.
   void OnBeginNavigationCommit(
-      int container_process_id,
-      int container_frame_id,
+      const GlobalRenderFrameHostId& rfh_id,
       const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
       mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
           coep_reporter,
@@ -372,6 +373,14 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
     return top_frame_origin_;
   }
 
+  // The StorageKey for this context. Any service worker registrations/versions
+  // that are persisted from this context (e.x., via `register()`) are
+  // associated with this particular StorageKey. Note: This doesn't hold true
+  // when "disable-web-security" is active, see
+  // `GetCorrectStorageKeyForWebSecurityState()` and its usages for more
+  // details.
+  const blink::StorageKey& key() const { return key_; }
+
   // Calls ContentBrowserClient::AllowServiceWorker(). Returns true if content
   // settings allows service workers to run at |scope|. If this container is for
   // a window client, the check involves the topmost frame url as well as
@@ -409,8 +418,14 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   }
 
   base::TimeTicks create_time() const { return create_time_; }
+
   int process_id() const { return process_id_; }
-  int frame_id() const { return frame_id_; }
+
+  // For service worker window clients. The RFH ID is set only after
+  // navigation commit.
+  GlobalRenderFrameHostId GetRenderFrameHostId() const;
+
+  // For service worker window clients.
   int frame_tree_node_id() const { return client_info_->GetFrameTreeNodeId(); }
 
   // For service worker clients.
@@ -568,6 +583,16 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
                                     const char* error_prefix,
                                     Args... args);
 
+  // This function returns the correct StorageKey depending on the state of the
+  // "disable-web-security" flag.
+  //
+  // If web security is disabled then it's possible for the `url` to be
+  // cross-origin from `this`'s origin. In that case we need to make a new key
+  // with the `url`'s origin, otherwise we might access the wrong storage
+  // partition.
+  blink::StorageKey GetCorrectStorageKeyForWebSecurityState(
+      const GURL& url) const;
+
   base::WeakPtr<ServiceWorkerContextCore> context_;
 
   // The time when the container host is created.
@@ -577,6 +602,7 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   GURL url_;
   net::SiteForCookies site_for_cookies_;
   absl::optional<url::Origin> top_frame_origin_;
+  blink::StorageKey key_;
 
   // Contains all ServiceWorkerRegistrationObjectHost instances corresponding to
   // the service worker registration JavaScript objects for the hosted execution
@@ -692,9 +718,9 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   // on the GUID format.
   base::UnguessableToken fetch_request_window_id_;
 
-  // The ID of the RenderFrameHost used for the navigation. Set on response
-  // commit.
-  int frame_id_ = MSG_ROUTING_NONE;
+  // The routing ID of the RenderFrameHost that hosts this client. Set on
+  // navigation commit.
+  int frame_routing_id_ = MSG_ROUTING_NONE;
 
   // The embedder policy of the client. Set on response commit.
   absl::optional<network::CrossOriginEmbedderPolicy>

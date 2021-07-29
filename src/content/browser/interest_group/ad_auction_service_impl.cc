@@ -13,13 +13,11 @@
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/interest_group/auction_runner.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
-#include "content/browser/service_sandbox_type.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/service_process_host.h"
 #include "content/public/common/content_client.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -28,7 +26,6 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
-#include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -130,9 +127,18 @@ bool IsAuctionValid(const blink::mojom::AuctionAdConfig& config) {
 AdAuctionServiceImpl::AdAuctionServiceImpl(
     RenderFrameHost* render_frame_host,
     mojo::PendingReceiver<blink::mojom::AdAuctionService> receiver)
-    : FrameServiceBase(render_frame_host, std::move(receiver)) {}
+    : DocumentServiceBase(render_frame_host, std::move(receiver)) {}
 
-AdAuctionServiceImpl::~AdAuctionServiceImpl() = default;
+AdAuctionServiceImpl::~AdAuctionServiceImpl() {
+  while (!auctions_.empty()) {
+    // Need to fail all auctions rather than just deleting them, to ensure Mojo
+    // callbacks from the renderers are invoked. Uninvoked Mojo callbacks may
+    // not be destroyed before the Mojo pipe is, and the parent
+    // DocumentServiceBase class owns the pipe, so it may still be open at this
+    // point.
+    (*auctions_.begin())->FailAuction(AuctionRunner::AuctionResult::kAborted);
+  }
+}
 
 // static
 void AdAuctionServiceImpl::CreateMojoService(
@@ -141,7 +147,7 @@ void AdAuctionServiceImpl::CreateMojoService(
   DCHECK(render_frame_host);
 
   // The object is bound to the lifetime of `render_frame_host` and the mojo
-  // connection. See FrameServiceBase for details.
+  // connection. See DocumentServiceBase for details.
   new AdAuctionServiceImpl(render_frame_host, std::move(receiver));
 }
 
@@ -178,15 +184,22 @@ void AdAuctionServiceImpl::RunAdAuction(blink::mojom::AuctionAdConfigPtr config,
     return;
   }
 
-  // TODO(mmenke): This should be top frame origin, not frame origin.
-  auto browser_signals =
-      auction_worklet::mojom::BrowserSignals::New(frame_origin, config->seller);
+  url::Origin top_frame_origin;
+  if (!render_frame_host()->GetParent()) {
+    top_frame_origin = frame_origin;
+  } else {
+    top_frame_origin =
+        render_frame_host()->GetMainFrame()->GetLastCommittedOrigin();
+  }
+
+  auto browser_signals = auction_worklet::mojom::BrowserSignals::New(
+      std::move(top_frame_origin), config->seller);
 
   std::unique_ptr<AuctionRunner> auction = AuctionRunner::CreateAndStart(
       this,
       static_cast<StoragePartitionImpl*>(
           render_frame_host()->GetStoragePartition())
-          ->GetInterestGroupStorage(),
+          ->GetInterestGroupManager(),
       std::move(config), std::move(filtered_buyers), std::move(browser_signals),
       frame_origin,
       base::BindOnce(&AdAuctionServiceImpl::OnAuctionComplete,
@@ -234,22 +247,6 @@ AdAuctionServiceImpl::GetTrustedURLLoaderFactory() {
   return trusted_url_loader_factory_.get();
 }
 
-auction_worklet::mojom::AuctionWorkletService*
-AdAuctionServiceImpl::GetWorkletService() {
-  // If there are no live auctions, what's requesting the service?
-  DCHECK(!auctions_.empty());
-
-  if (!auction_worklet_service_ || !auction_worklet_service_.is_connected()) {
-    auction_worklet_service_.reset();
-    content::ServiceProcessHost::Launch(
-        auction_worklet_service_.BindNewPipeAndPassReceiver(),
-        ServiceProcessHost::Options()
-            .WithDisplayName("Auction Worklet Service")
-            .Pass());
-  }
-  return auction_worklet_service_.get();
-}
-
 void AdAuctionServiceImpl::OnAuctionComplete(
     RunAdAuctionCallback callback,
     AuctionRunner* auction,
@@ -262,9 +259,6 @@ void AdAuctionServiceImpl::OnAuctionComplete(
   auto auction_it = auctions_.find(auction);
   DCHECK(auction_it != auctions_.end());
   auctions_.erase(auction_it);
-
-  if (auctions_.empty())
-    auction_worklet_service_.reset();
 
   // Forward debug information to devtools.
   for (const std::string& error : errors) {

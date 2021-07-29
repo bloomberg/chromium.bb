@@ -58,6 +58,7 @@
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="2353636109065292463">Inaangalia muunganisho wako wa intaneti</translation>
 <translation id="2388990488038464401">Je, ungependa kutumia simu yako kupigia nambari hii?</translation>
+<translation id="2435457462613246316">Onyesha nenosiri</translation>
 <translation id="24452542372838207">Panua arifa</translation>
 <translation id="2445449901874883781">Tumia uzito wa juu</translation>
 <translation id="2482878487686419369">Arifa</translation>
@@ -79,6 +80,7 @@
 <translation id="2824719307700604149">{YEARS,plural, =1{Mwaka 1 uliopita}other{Miaka # iliyopita}}</translation>
 <translation id="2878511608894704031">Futa Vyote</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{siku 1}other{siku #}}</translation>
+<translation id="2922712708897119705">Safu wima ya <ph name="COLUMN_NAME" /> imepangwa katika mpangilio wa kushuka.</translation>
 <translation id="2931838996092594335">bofya</translation>
 <translation id="2981684127883932071">Inaonyesha mapendekezo</translation>
 <translation id="3036649622769666520">Fungua Mafaili</translation>
@@ -114,6 +116,7 @@
 <translation id="3897092660631435901">Menyu</translation>
 <translation id="3909791450649380159">&amp;Kata</translation>
 <translation id="3990502903496589789">Ncha ya Kulia</translation>
+<translation id="3994749195054421561">Safu wima ya <ph name="COLUMN_NAME" /> imepangwa kwa mpangilio wa kupanda.</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{Arifa 1 Haijasomwa}other{Arifa # Hazijasomwa}}</translation>
 <translation id="4202807286478387388">ruka</translation>
 <translation id="4250229828105606438">Picha ya skrini</translation>
@@ -123,6 +126,7 @@
 <translation id="4306392492252714209">Ondoa kwenye ubao wa kunakili.</translation>
 <translation id="4316910396681052118">PROGRAMU ZOTE</translation>
 <translation id="4491109536499578614">Picha</translation>
+<translation id="4565377596337484307">Ficha nenosiri</translation>
 <translation id="4588090240171750605">Sogeza Kulia</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, Ukadiriaji wa nyota <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, Pendekezo la programu</translation>
@@ -165,6 +169,7 @@
 <translation id="6012623610530968780">Ukurasa wa <ph name="SELECTED_PAGE" /> kati ya <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Futa maandishi ya kisanduku cha utafutaji</translation>
 <translation id="6040143037577758943">Funga</translation>
+<translation id="6117103120090651229">Kitufe cha katikati</translation>
 <translation id="6119846243427417423">wezesha</translation>
 <translation id="6129953537138746214">Nafasi</translation>
 <translation id="6134259848159370930">Tafuta kwenye wavuti, programu, mipangilio na kifaa chako.</translation>
@@ -173,6 +178,7 @@
 <translation id="6156262341071374681">Ziangalie programu zote</translation>
 <translation id="6165508094623778733">Pata maelezo zaidi</translation>
 <translation id="6166852626429024716">Tafuta kwenye programu, mipangilio, wavuti, kifaa chako...</translation>
+<translation id="6237461503717005873">Umechagua <ph name="ROW_NAME" />.</translation>
 <translation id="6264365405983206840">Chagua &amp;Zote</translation>
 <translation id="6351032674660237738">MAPENDEKEZO YA PROGRAMU</translation>
 <translation id="6364916375976753737">Sogeza Kushoto</translation>
@@ -213,6 +219,7 @@
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Imesalia dakika 1}other{Zimesalia dakika #}}</translation>
 <translation id="7430878839542012341">Ungependa kufuta utafutaji huu kwenye historia yako?</translation>
+<translation id="7437971918971306061">Safu wima ya <ph name="COLUMN_NAME" /> imepanguliwa.</translation>
 <translation id="7460907917090416791">TB <ph name="QUANTITY" /></translation>
 <translation id="7507604095951736240">Emoji</translation>
 <translation id="7620655452534002301">Imeondolewa.</translation>

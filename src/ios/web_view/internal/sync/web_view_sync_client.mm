@@ -14,7 +14,6 @@
 #include "base/task/post_task.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_sync_bridge.h"
 #include "components/autofill/core/common/autofill_features.h"
-#include "components/history/core/common/pref_names.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/metrics/demographics/user_demographics.h"
@@ -27,7 +26,6 @@
 #include "ios/web/public/thread/web_thread.h"
 #import "ios/web_view/internal/passwords/web_view_account_password_store_factory.h"
 #include "ios/web_view/internal/passwords/web_view_password_store_factory.h"
-#include "ios/web_view/internal/pref_names.h"
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
 #import "ios/web_view/internal/sync/web_view_device_info_sync_service_factory.h"
 #import "ios/web_view/internal/sync/web_view_model_type_store_service_factory.h"
@@ -104,7 +102,6 @@ WebViewSyncClient::WebViewSyncClient(
   component_factory_ =
       std::make_unique<browser_sync::ProfileSyncComponentsFactoryImpl>(
           this, version_info::Channel::STABLE,
-          prefs::kSavingBrowserHistoryDisabled,
           base::CreateSingleThreadTaskRunner({web::WebThread::UI}),
           profile_web_data_service_->GetDBTaskRunner(),
           profile_web_data_service_, account_web_data_service_,

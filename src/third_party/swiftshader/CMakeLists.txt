@@ -426,7 +426,13 @@ else()
         "-Wmissing-braces"
     )
 
-    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+        if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 9)
+            list(APPEND SWIFTSHADER_COMPILE_OPTIONS
+                "-Wdeprecated-copy"  # implicit copy constructor for 'X' is deprecated because of user-declared copy assignment operator.
+            )  
+        endif()
+    elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         list(APPEND SWIFTSHADER_COMPILE_OPTIONS
             "-Wextra"
             "-Wunreachable-code-loop-increment"
@@ -434,6 +440,7 @@ else()
             "-Wstring-conversion"
             "-Wextra-semi"
             "-Wignored-qualifiers"
+            "-Wdeprecated-copy"  # implicit copy constructor for 'X' is deprecated because of user-declared copy assignment operator.
         )
     endif()
 
@@ -449,7 +456,7 @@ else()
         endif()
     endif()
 
-    # Disable pedanitc warnings
+    # Disable pedantic warnings
     if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
         list(APPEND SWIFTSHADER_COMPILE_OPTIONS
             "-Wno-ignored-attributes"   # ignoring attributes on template argument 'X'
@@ -467,10 +474,8 @@ else()
             "-Wno-unneeded-internal-declaration"  # function 'X' is not needed and will not be emitted
             "-Wno-unused-private-field"           # private field 'offset' is not used - TODO: Consider enabling this once Vulkan is further implemented.
             "-Wno-comment"                        # multi-line comment
-            "-Wno-undefined-var-template"         # instantiation of variable 'X' required here, but no definition is available
             "-Wno-extra-semi"                     # extra ';' after member function definition
             "-Wno-unused-parameter"               # unused parameter 'X'
-            "-Wno-deprecated-copy"                # implicit copy constructor for 'X' is deprecated because of user-declared copy assignment operator.
 
             # Silence errors caused by unknown warnings when building with older
             # versions of Clang. This demands checking that warnings added above
@@ -478,12 +483,6 @@ else()
             "-Wno-unknown-warning-option"
         )
     endif()
-
-    # Remove xor, and, or and friends from the list of keywords, they are used
-    # by Reactor
-    list(APPEND SWIFTSHADER_COMPILE_OPTIONS
-        "-fno-operator-names"
-    )
 
     if(ARCH STREQUAL "x86")
         set_cpp_flag("-m32")

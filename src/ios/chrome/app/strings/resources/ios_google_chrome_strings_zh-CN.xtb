@@ -4,6 +4,7 @@
 <translation id="1096883626080133124">借助比以前更简单、更安全、更快速的 Google Chrome 提高工作效率</translation>
 <translation id="1282031177488366470">帮助我们改进 Chrome 的功能和性能</translation>
 <translation id="1314663809820920746">您仍可在此设备上查看自己的所有书签、历史记录、密码及其他设置。如果您做出更改，这些更改将不会同步到您的 Google 帐号。</translation>
+<translation id="139135165841384604">Chrome 助您事半功倍</translation>
 <translation id="1479202195792305274">您需要先登录 Google 帐号才能使用 Chrome 的密码检查功能。</translation>
 <translation id="1493827051843127077">将 Chrome 设为默认同步您所有设备上的标签页、密码和付款信息</translation>
 <translation id="1504372625950710826">Chrome 无法检查是否有更新。请尝试检查您的互联网连接。</translation>
@@ -14,6 +15,7 @@
 <translation id="2009224836393115614">Chrome 无法检查您的密码。请尝试检查您的互联网连接。</translation>
 <translation id="2147651015520127414">Chrome 已证实此网站的证书是由 <ph name="ISSUER" /> 签发的。</translation>
 <translation id="2199719347983604670">Chrome 同步的数据</translation>
+<translation id="2313070403598893276">Google Chrome 不仅简便安全，而且速度更胜从前</translation>
 <translation id="2342919707875585281">Chrome 会将您的位置信息分享给您允许的网站。</translation>
 <translation id="2347208864470321755">启用此功能后，Chrome 将使用 Google 翻译对其他语言的网页进行翻译。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="2415682770504543561">将 Chrome 设为默认浏览器</translation>
@@ -32,9 +34,9 @@
 <translation id="3196546062792660320">为节省您的时间，Chrome 已将您的 Google 帐号同步到网络上。您可在“设置”中添加或移除帐号。</translation>
 <translation id="3282568296779691940">登录 Chrome</translation>
 <translation id="3345341804167540816">随时随地使用 Chrome</translation>
-<translation id="3455456143708465450">若要充分利用 Chrome，请使用您的 Google 帐号登录</translation>
 <translation id="3522659714780527202">要查看您在其他设备上用 Chrome 打开的标签页，请开启同步功能</translation>
 <translation id="3533694711092285624">尚未保存任何密码。您需要先保存密码才能使用 Chrome 的密码检查功能。</translation>
+<translation id="3634910711516114487">若要充分利用 Chrome，请使用您的 Google 帐号登录 Chrome</translation>
 <translation id="3706101708757577809">当您点按消息、文档和其他应用中的链接时，可以使用 Chrome 打开链接啦。</translation>
 <translation id="3720541637541300822">在您关闭 Chrome 时锁定无痕式标签页</translation>
 <translation id="384394811301901750">Google Chrome 目前无法使用您的相机</translation>
@@ -64,7 +66,7 @@
 <translation id="6063091872902370735">允许登录 Chrome</translation>
 <translation id="6181930887571472871">改用 Chrome</translation>
 <translation id="6238746320622508509">让 Chrome 锁定您的无痕式标签页。</translation>
-<translation id="6573431926118603307">您在其他设备上的 Chrome 中打开的标签页将列在此处。</translation>
+<translation id="6427126399757991875">贵组织正在设置 Chrome…</translation>
 <translation id="6600954340915313787">已复制到 Chrome</translation>
 <translation id="6634107063912726160">当您退出登录后，Chrome 不会将任何新数据同步到您的 Google 帐号。先前已同步的数据将会保留在帐号中。</translation>
 <translation id="6648150602980899529">您正要登录由 <ph name="DOMAIN" /> 管理的帐号，并要授权其管理员控制您的 Chrome 数据。您的数据将与此帐号永久关联。退出 Chrome 后，您的数据将从这台设备上删除，但仍会保留在您的 Google 帐号中。</translation>
@@ -78,7 +80,6 @@
 <translation id="7172660552945675509">提示：<ph name="BEGIN_LINK" />将 Chrome 移到 Dock 中<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">Chrome 会使用 Face ID 来确保对您密码的访问均已获授权。</translation>
 <translation id="7261678641327190792">Chrome 无法检查您的密码</translation>
-<translation id="7265369419224458312">您可直接在此处使用您在计算机上打开的标签页。只需在计算机上打开 Chrome，转到菜单，然后选择“登录 Chrome…”即可</translation>
 <translation id="7272930098487145294">若要保存图片，请点按“设置”并允许 Chrome 添加照片</translation>
 <translation id="7275945473750112644">您的帐号是由 <ph name="HOSTED_DOMAIN" /> 管理，所以您在此设备上存储的 Chrome 数据将会被清除</translation>
 <translation id="7400722733683201933">关于Google Chrome</translation>

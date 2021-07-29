@@ -11,7 +11,6 @@ GEN('#include "base/command_line.h"');
 GEN('#include "build/branding_buildflags.h"');
 GEN('#include "content/public/test/browser_test.h"');
 GEN('#include "chrome/browser/ui/ui_features.h"');
-GEN('#include "chrome/common/chrome_features.h"');
 
 class SigninBrowserTest extends PolymerTest {
   /** @override */
@@ -66,15 +65,6 @@ var DiceWebSigninInterceptTest = class extends SigninBrowserTest {
   get browsePreload() {
     return 'chrome://signin-dice-web-intercept/test_loader.html?module=signin/dice_web_signin_intercept_test.js';
   }
-
-  /** @override */
-  get featureList() {
-    return {
-      enabled: [
-        'features::kEnableEphemeralGuestProfilesOnDesktop',
-      ]
-    };
-  }
 };
 
 TEST_F('DiceWebSigninInterceptTest', 'Bubble', function() {
@@ -98,7 +88,6 @@ var ProfileTypeChoiceTest = class extends SigninBrowserTest {
     return {
       enabled: [
         'features::kSignInProfileCreation',
-        'features::kNewProfilePicker',
       ]
     };
   }
@@ -119,15 +108,6 @@ var LocalProfileCustomizationTest = class extends SigninBrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://profile-picker/test_loader.html?module=signin/local_profile_customization_test.js';
-  }
-
-  /** @override */
-  get featureList() {
-    return {
-      enabled: [
-        'features::kNewProfilePicker',
-      ]
-    };
   }
 };
 
@@ -152,7 +132,6 @@ var ProfilePickerAppTest = class extends SigninBrowserTest {
     return {
       enabled: [
         'features::kSignInProfileCreation',
-        'features::kNewProfilePicker',
       ]
     };
   }
@@ -179,7 +158,6 @@ var ProfilePickerMainViewTest = class extends SigninBrowserTest {
     return {
       enabled: [
         'features::kSignInProfileCreation',
-        'features::kNewProfilePicker',
       ]
     };
   }
@@ -199,15 +177,6 @@ var ProfileCardMenuTest = class extends SigninBrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://profile-picker/test_loader.html?module=signin/profile_card_menu_test.js';
-  }
-
-  /** @override */
-  get featureList() {
-    return {
-      enabled: [
-        'features::kNewProfilePicker',
-      ]
-    };
   }
 };
 

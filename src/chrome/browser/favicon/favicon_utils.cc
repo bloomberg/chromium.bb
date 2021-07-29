@@ -19,6 +19,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/image/image.h"
@@ -139,6 +140,12 @@ gfx::Image TabFaviconFromWebContents(content::WebContents* contents) {
 
   favicon::FaviconDriver* favicon_driver =
       favicon::ContentFaviconDriver::FromWebContents(contents);
+  // TODO(crbug.com/3041580): Investigate why some WebContents do not have
+  // an attached ContentFaviconDriver.
+  if (!favicon_driver) {
+    return gfx::Image();
+  }
+
   gfx::Image favicon = favicon_driver->GetFavicon();
 
   // Desaturate the favicon if the navigation entry contains a network error.
@@ -158,9 +165,13 @@ gfx::Image TabFaviconFromWebContents(content::WebContents* contents) {
 }
 
 gfx::Image GetDefaultFavicon() {
+  bool is_dark = false;
+#if !defined(OS_ANDROID)
+  // Android doesn't currently implement NativeTheme::GetInstanceForNativeUi.
   const ui::NativeTheme* native_theme =
       ui::NativeTheme::GetInstanceForNativeUi();
-  bool is_dark = native_theme && native_theme->ShouldUseDarkColors();
+  is_dark = native_theme && native_theme->ShouldUseDarkColors();
+#endif
   int resource_id = is_dark ? IDR_DEFAULT_FAVICON_DARK : IDR_DEFAULT_FAVICON;
   return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       resource_id);
@@ -195,6 +206,32 @@ void SaveFaviconEvenIfInIncognito(content::WebContents* contents) {
   favicon_service->SetFavicons({page_url}, favicon_status.url,
                                favicon_base::IconType::kFavicon,
                                favicon_status.image);
+}
+
+gfx::ImageSkia ThemeFavicon(const gfx::ImageSkia& source,
+                            SkColor alternate_color,
+                            SkColor active_tab_background,
+                            SkColor inactive_tab_background) {
+  // Choose between leaving the image as-is or masking with |alternate_color|.
+  const SkColor original_color =
+      color_utils::CalculateKMeanColorOfBitmap(*source.bitmap());
+
+  // Compute the minimum contrast of each color against foreground and
+  // background tabs (for active windows).
+  const float original_contrast = std::min(
+      color_utils::GetContrastRatio(original_color, active_tab_background),
+      color_utils::GetContrastRatio(original_color, inactive_tab_background));
+  const float alternate_contrast = std::min(
+      color_utils::GetContrastRatio(alternate_color, active_tab_background),
+      color_utils::GetContrastRatio(alternate_color, inactive_tab_background));
+
+  // Recolor the image if the original has low minimum contrast and recoloring
+  // will improve it.
+  return ((original_contrast < color_utils::kMinimumVisibleContrastRatio) &&
+          (alternate_contrast > original_contrast))
+             ? gfx::ImageSkiaOperations::CreateColorMask(source,
+                                                         alternate_color)
+             : source;
 }
 
 }  // namespace favicon

@@ -2,41 +2,41 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
-// #import {Menu} from 'chrome://resources/js/cr/ui/menu.m.js';
-// #import {MultiMenuButton} from './ui/multi_menu_button.m.js';
-// #import {VolumeInfo} from '../../externs/volume_info.m.js';
-// #import {ProgressCenter} from '../../externs/background/progress_center.m.js';
-// #import {Crostini} from '../../externs/background/crostini.m.js';
-// #import {NamingController} from './naming_controller.m.js';
-// #import {TaskHistory} from './task_history.m.js';
-// #import {FileManagerUI} from './ui/file_manager_ui.m.js';
-// #import {DirectoryModel} from './directory_model.m.js';
-// #import {MetadataModel} from './metadata/metadata_model.m.js';
-// #import {VolumeManager} from '../../externs/volume_manager.m.js';
-// #import {FilesMenuItem} from './ui/files_menu.m.js';
-// #import {decorate} from 'chrome://resources/js/cr/ui.m.js';
-// #import {FilesPasswordDialog} from '../elements/files_password_dialog.m.js';
-// #import {ProgressCenterItem, ProgressItemType, ProgressItemState} from '../../common/js/progress_center_common.m.js';
-// #import {FileTransferController} from './file_transfer_controller.m.js';
-// #import {FilesConfirmDialog} from './ui/files_confirm_dialog.m.js';
-// #import {VolumeManagerCommon} from '../../common/js/volume_manager_types.m.js';
-// #import {FileType} from '../../common/js/file_type.m.js';
-// #import {constants} from './constants.m.js';
-// #import {util, strf, str} from '../../common/js/util.m.js';
-// #import {AsyncUtil} from '../../common/js/async_util.m.js'
-// #import {metrics} from '../../common/js/metrics.m.js';
-// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-// #import {assert} from 'chrome://resources/js/assert.m.js';
-// #import {DefaultTaskDialog} from './ui/default_task_dialog.m.js';
-// #import {ComboButton} from './ui/combobutton.m.js';
-// clang-format on
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {decorate} from 'chrome://resources/js/cr/ui.m.js';
+import {Menu} from 'chrome://resources/js/cr/ui/menu.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+
+import {AsyncUtil} from '../../common/js/async_util.js';
+import {FileType} from '../../common/js/file_type.js';
+import {metrics} from '../../common/js/metrics.js';
+import {ProgressCenterItem, ProgressItemState, ProgressItemType} from '../../common/js/progress_center_common.js';
+import {str, strf, util} from '../../common/js/util.js';
+import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
+import {Crostini} from '../../externs/background/crostini.js';
+import {ProgressCenter} from '../../externs/background/progress_center.js';
+import {VolumeInfo} from '../../externs/volume_info.js';
+import {VolumeManager} from '../../externs/volume_manager.js';
+import {FilesPasswordDialog} from '../elements/files_password_dialog.js';
+
+import {constants} from './constants.js';
+import {DirectoryModel} from './directory_model.js';
+import {FileTransferController} from './file_transfer_controller.js';
+import {MetadataModel} from './metadata/metadata_model.js';
+import {NamingController} from './naming_controller.js';
+import {TaskHistory} from './task_history.js';
+import {ComboButton} from './ui/combobutton.js';
+import {DefaultTaskDialog} from './ui/default_task_dialog.js';
+import {FileManagerUI} from './ui/file_manager_ui.js';
+import {FilesConfirmDialog} from './ui/files_confirm_dialog.js';
+import {FilesMenuItem} from './ui/files_menu.js';
+import {MultiMenuButton} from './ui/multi_menu_button.js';
 
 /**
  * Represents a collection of available tasks to execute for a specific list
  * of entries.
  */
-/* #export */ class FileTasks {
+export class FileTasks {
   /**
    * @param {!VolumeManager} volumeManager
    * @param {!MetadataModel} metadataModel
@@ -130,6 +130,7 @@
       volumeManager, metadataModel, directoryModel, ui, fileTransferController,
       entries, mimeTypes, taskHistory, namingController, crostini,
       progressCenter) {
+    /** @type {!Array<!chrome.fileManagerPrivate.FileTask>} */
     let tasks = [];
 
     // Cannot use fake entries with getFileTasks.
@@ -154,22 +155,29 @@
               constants.DEFAULT_CROSTINI_VM, entries[0],
               false /* persist */))) {
       tasks = tasks.filter(
-          task => task.taskId !== FileTasks.INSTALL_LINUX_PACKAGE_TASK_ID);
+          task => !util.descriptorEqual(
+              task.descriptor,
+              FileTasks.INSTALL_LINUX_PACKAGE_TASK_DESCRIPTOR));
     }
 
     // Filters out Pack with Zip Archiver task because it will be accessible via
     // 'Zip selection' context menu button
     tasks = tasks.filter(
-        task => task.taskId !== FileTasks.ZIP_ARCHIVER_ZIP_TASK_ID &&
-            task.taskId !== FileTasks.ZIP_ARCHIVER_ZIP_USING_TMP_TASK_ID);
+        task =>
+            !util.descriptorEqual(
+                task.descriptor, FileTasks.ZIP_ARCHIVER_ZIP_TASK_DESCRIPTOR) &&
+            !util.descriptorEqual(
+                task.descriptor,
+                FileTasks.ZIP_ARCHIVER_ZIP_USING_TMP_TASK_DESCRIPTOR));
 
     // The Files App and the Zip Archiver are two extensions that can handle ZIP
     // files. Depending on the state of the FilesZipMount feature, we want to
     // filter out one of these extensions.
     const toExclude = util.isZipMountEnabled() ?
-        FileTasks.ZIP_ARCHIVER_UNZIP_TASK_ID :
-        FileTasks.FILES_OPEN_ZIP_TASK_ID;
-    tasks = tasks.filter(task => task.taskId !== toExclude);
+        FileTasks.ZIP_ARCHIVER_UNZIP_TASK_DESCRIPTOR :
+        FileTasks.FILES_OPEN_ZIP_TASK_DESCRIPTOR;
+    tasks =
+        tasks.filter(task => !util.descriptorEqual(task.descriptor, toExclude));
 
     tasks = FileTasks.annotateTasks_(tasks, entries);
 
@@ -298,23 +306,29 @@
     }
   }
 
-  static recordZipHandlerUMA_(taskId) {
-    if (FileTasks.UMA_ZIP_HANDLER_TASK_IDS_.indexOf(taskId) != -1) {
+  /**
+   * @param {!chrome.fileManagerPrivate.FileTaskDescriptor} descriptor
+   */
+  static recordZipHandlerUMA_(descriptor) {
+    if (FileTasks.UMA_ZIP_HANDLER_TASK_DESCRIPTORS_.some(
+            zipDescriptor => util.descriptorEqual(zipDescriptor, descriptor))) {
       metrics.recordEnum(
-          'ZipFileTask', taskId, FileTasks.UMA_ZIP_HANDLER_TASK_IDS_);
+          'ZipFileTask', util.makeTaskID(descriptor),
+          FileTasks.UMA_ZIP_HANDLER_TASK_DESCRIPTORS_.map(
+              desc => util.makeTaskID(desc)));
     }
   }
 
   /**
-   * Returns true if the taskId is for an internal task.
+   * Returns true if the descriptor is for an internal task.
    *
-   * @param {string} taskId Task identifier.
-   * @return {boolean} True if the task ID is for an internal task.
+   * @param {!chrome.fileManagerPrivate.FileTaskDescriptor} descriptor
+   * @return {boolean} True if the task descriptor is for an internal task.
    * @private
    */
-  static isInternalTask_(taskId) {
-    const [appId, taskType, actionId] = taskId.split('|');
-    if (appId !== chrome.runtime.id || taskType !== 'app') {
+  static isInternalTask_(descriptor) {
+    const {appId, taskType, actionId} = descriptor;
+    if (appId !== constants.FILES_APP_EXTENSION_ID || taskType !== 'app') {
       return false;
     }
     switch (actionId) {
@@ -360,9 +374,9 @@
    */
   static annotateTasks_(tasks, entries) {
     const result = [];
-    const id = chrome.runtime.id;
+    const id = constants.FILES_APP_EXTENSION_ID;
     for (const task of tasks) {
-      const [appId, taskType, actionId] = task.taskId.split('|');
+      const {appId, taskType, actionId} = task.descriptor;
 
       // Skip internal Files app's handlers.
       if (appId === id && (actionId === 'select' || actionId === 'open')) {
@@ -631,8 +645,13 @@
     };
 
     this.checkAvailability_(() => {
-      const taskId = chrome.runtime.id + '|file|view-in-browser';
-      chrome.fileManagerPrivate.executeTask(taskId, this.entries_, onViewFiles);
+      const descriptor = {
+        appId: constants.FILES_APP_EXTENSION_ID,
+        taskType: 'file',
+        actionId: 'view-in-browser'
+      };
+      chrome.fileManagerPrivate.executeTask(
+          descriptor, this.entries_, onViewFiles);
     });
   }
 
@@ -690,7 +709,7 @@
     };
 
     this.checkAvailability_(() => {
-      this.taskHistory_.recordTaskExecuted(task.taskId);
+      this.taskHistory_.recordTaskExecuted(task.descriptor);
       let msg;
       if (this.entries_.length === 1) {
         msg = strf('OPEN_A11Y', this.entries_[0].name);
@@ -698,12 +717,12 @@
         msg = strf('OPEN_A11Y_PLURAL', this.entries_.length);
       }
       this.ui_.speakA11yMessage(msg);
-      if (FileTasks.isInternalTask_(task.taskId)) {
-        this.executeInternalTask_(task.taskId);
+      if (FileTasks.isInternalTask_(task.descriptor)) {
+        this.executeInternalTask_(task.descriptor);
       } else {
-        FileTasks.recordZipHandlerUMA_(task.taskId);
+        FileTasks.recordZipHandlerUMA_(task.descriptor);
         chrome.fileManagerPrivate.executeTask(
-            task.taskId, this.entries_, onFileManagerPrivateExecuteTask);
+            task.descriptor, this.entries_, onFileManagerPrivateExecuteTask);
       }
     });
   }
@@ -804,13 +823,14 @@
   }
 
   /**
-   * Executes an internal task.
+   * Executes an internal task, which is a task Files app handles internally
+   * without calling into fileManagerPrivate to execute it.
    *
-   * @param {string} taskId The task id.
+   * @param {!chrome.fileManagerPrivate.FileTaskDescriptor} descriptor
    * @private
    */
-  executeInternalTask_(taskId) {
-    const actionId = taskId.split('|')[2];
+  executeInternalTask_(descriptor) {
+    const {actionId} = descriptor;
     if (actionId === 'mount-archive' || actionId === 'open-zip') {
       this.mountArchives_();
       return;
@@ -824,7 +844,9 @@
       return;
     }
 
-    console.error('The specified task is not a valid internal task: ' + taskId);
+    console.error(
+        'The specified task is not a valid internal task: ' +
+        util.makeTaskID(descriptor));
   }
 
   /**
@@ -985,9 +1007,9 @@
    * Displays the list of tasks in a open task picker combobutton and a share
    * options menu.
    *
-   * @param {!cr.ui.ComboButton} openCombobutton The open task picker
+   * @param {!ComboButton} openCombobutton The open task picker
    *     combobutton.
-   * @param {!cr.ui.MultiMenuButton} shareMenuButton Button for share options.
+   * @param {!MultiMenuButton} shareMenuButton Button for share options.
    * @public
    */
   display(openCombobutton, shareMenuButton) {
@@ -1008,7 +1030,7 @@
    * Setup a task picker combobutton based on the given tasks. The combobutton
    * is not shown if there are no tasks, or if any entry is a directory.
    *
-   * @param {!cr.ui.ComboButton} combobutton
+   * @param {!ComboButton} combobutton
    * @param {!Array<!chrome.fileManagerPrivate.FileTask>} tasks
    */
   updateOpenComboButton_(combobutton, tasks) {
@@ -1056,7 +1078,7 @@
 
   /**
    * Setup a menu button for sharing options based on the given tasks.
-   * @param {!cr.ui.MultiMenuButton} shareMenuButton
+   * @param {!MultiMenuButton} shareMenuButton
    * @param {!Array<!chrome.fileManagerPrivate.FileTask>} tasks
    */
   updateShareMenuButton_(shareMenuButton, tasks) {
@@ -1112,7 +1134,7 @@
 
     // Add menu items for the new tasks.
     const items = this.createItems_(tasks);
-    let menu = /** @type {!cr.ui.Menu} */ (shareMenuButton.menu);
+    let menu = /** @type {!Menu} */ (shareMenuButton.menu);
     for (let i = 0; i < items.length; i++) {
       // If we have at least 10 entries, split off into a sub-menu
       if (i == NUM_TOP_LEVEL_ENTRIES && MAX_NON_SPLIT_ENTRIES <= items.length) {
@@ -1121,7 +1143,7 @@
         menu = shareMenuButton.overflow;
       }
       const menuitem = menu.addMenuItem(items[i]);
-      cr.ui.decorate(menuitem, cr.ui.FilesMenuItem);
+      decorate(menuitem, FilesMenuItem);
       menuitem.data = items[i];
       if (items[i].iconType) {
         menuitem.style.backgroundImage = '';
@@ -1165,8 +1187,8 @@
       }
 
       // Sort by last-executed time.
-      const aTime = this.taskHistory_.getLastExecutedTime(a.task.taskId);
-      const bTime = this.taskHistory_.getLastExecutedTime(b.task.taskId);
+      const aTime = this.taskHistory_.getLastExecutedTime(a.task.descriptor);
+      const bTime = this.taskHistory_.getLastExecutedTime(b.task.descriptor);
       if (aTime != bTime) {
         return bTime - aTime;
       }
@@ -1205,7 +1227,7 @@
   /**
    * Shows modal task picker dialog with currently available list of tasks.
    *
-   * @param {cr.filebrowser.DefaultTaskDialog} taskDialog Task dialog to show
+   * @param {DefaultTaskDialog} taskDialog Task dialog to show
    *     and update.
    * @param {string} title Title to use.
    * @param {string} message Message to use.
@@ -1225,7 +1247,8 @@
     let defaultIdx = 0;
     if (this.defaultTask_) {
       for (let j = 0; j < items.length; j++) {
-        if (items[j].task.taskId === this.defaultTask_.taskId) {
+        if (util.descriptorEqual(
+                items[j].task.descriptor, this.defaultTask_.descriptor)) {
           defaultIdx = j;
         }
       }
@@ -1263,7 +1286,7 @@
     // 2. Most recently executed or sole non-generic task.
     const latest = nonGenericTasks[0];
     if (nonGenericTasks.length == 1 ||
-        taskHistory.getLastExecutedTime(latest.taskId)) {
+        taskHistory.getLastExecutedTime(latest.descriptor)) {
       return latest;
     }
 
@@ -1290,17 +1313,24 @@
 }
 
 /**
- * The task ID of 'Install Linux package'.
- * @const {string}
+ * The task descriptor of 'Install Linux package'.
+ * @const {!chrome.fileManagerPrivate.FileTaskDescriptor}
  */
-FileTasks.INSTALL_LINUX_PACKAGE_TASK_ID =
-    chrome.runtime.id + '|app|install-linux-package';
+FileTasks.INSTALL_LINUX_PACKAGE_TASK_DESCRIPTOR = {
+  appId: constants.FILES_APP_EXTENSION_ID,
+  taskType: 'app',
+  actionId: 'install-linux-package'
+};
 
 /**
- * The task ID of Files App's 'Open ZIP'.
- * @const {string}
+ * The task descriptor of Files App's 'Open ZIP'.
+ * @const {!chrome.fileManagerPrivate.FileTaskDescriptor}
  */
-FileTasks.FILES_OPEN_ZIP_TASK_ID = chrome.runtime.id + '|app|open-zip';
+FileTasks.FILES_OPEN_ZIP_TASK_DESCRIPTOR = {
+  appId: constants.FILES_APP_EXTENSION_ID,
+  taskType: 'app',
+  actionId: 'open-zip'
+};
 
 /**
  * The app ID of the video player app.
@@ -1309,32 +1339,45 @@ FileTasks.FILES_OPEN_ZIP_TASK_ID = chrome.runtime.id + '|app|open-zip';
 FileTasks.VIDEO_PLAYER_ID = 'jcgeabjmjgoblfofpppfkcoakmfobdko';
 
 /**
- * The task id of the zip unpacker app.
- * @const {string}
+ * The task descriptor of the zip unpacker app.
+ * @const {!chrome.fileManagerPrivate.FileTaskDescriptor}
  */
-FileTasks.ZIP_UNPACKER_TASK_ID = 'oedeeodfidgoollimchfdnbmhcpnklnd|app|zip';
+FileTasks.ZIP_UNPACKER_TASK_DESCRIPTOR = {
+  appId: 'oedeeodfidgoollimchfdnbmhcpnklnd',
+  taskType: 'app',
+  actionId: 'zip'
+};
 
 /**
- * The task id of unzip action of Zip Archiver app.
- * @const {string}
+ * The task descriptor of unzip action of Zip Archiver app.
+ * @const {!chrome.fileManagerPrivate.FileTaskDescriptor}
  */
-FileTasks.ZIP_ARCHIVER_UNZIP_TASK_ID =
-    'dmboannefpncccogfdikhmhpmdnddgoe|app|open';
+FileTasks.ZIP_ARCHIVER_UNZIP_TASK_DESCRIPTOR = {
+  appId: 'dmboannefpncccogfdikhmhpmdnddgoe',
+  taskType: 'app',
+  actionId: 'open'
+};
 
 /**
- * The task id of zip action of Zip Archiver app.
- * @const {string}
+ * The task descriptor of zip action of Zip Archiver app.
+ * @const {!chrome.fileManagerPrivate.FileTaskDescriptor}
  */
-FileTasks.ZIP_ARCHIVER_ZIP_TASK_ID =
-    'dmboannefpncccogfdikhmhpmdnddgoe|app|pack';
+FileTasks.ZIP_ARCHIVER_ZIP_TASK_DESCRIPTOR = {
+  appId: 'dmboannefpncccogfdikhmhpmdnddgoe',
+  taskType: 'app',
+  actionId: 'pack'
+};
 
 /**
- * The task id of zip action of Zip Archiver app, using temporary dir as workdir
- * @const {string}
+ * The task descriptor of zip action of Zip Archiver app, using temporary dir as
+ * workdir.
+ * @const {!chrome.fileManagerPrivate.FileTaskDescriptor}
  */
-FileTasks.ZIP_ARCHIVER_ZIP_USING_TMP_TASK_ID =
-    'dmboannefpncccogfdikhmhpmdnddgoe|app|pack_using_tmp';
-
+FileTasks.ZIP_ARCHIVER_ZIP_USING_TMP_TASK_DESCRIPTOR = {
+  appId: 'dmboannefpncccogfdikhmhpmdnddgoe',
+  taskType: 'app',
+  actionId: 'pack_using_tmp'
+};
 
 /**
  * Available tasks in task menu button.
@@ -1399,10 +1442,12 @@ FileTasks.UMA_INDEX_KNOWN_EXTENSIONS = Object.freeze([
  * Task IDs of the zip file handlers to be recorded.
  * The indexes of the IDs must match with the values of
  * FileManagerZipHandlerType in enums.xml, and should not change.
+ * @const {Array<!chrome.fileManagerPrivate.FileTaskDescriptor>}
  */
-FileTasks.UMA_ZIP_HANDLER_TASK_IDS_ = Object.freeze([
-  FileTasks.ZIP_UNPACKER_TASK_ID, FileTasks.ZIP_ARCHIVER_UNZIP_TASK_ID,
-  FileTasks.ZIP_ARCHIVER_ZIP_TASK_ID
+FileTasks.UMA_ZIP_HANDLER_TASK_DESCRIPTORS_ = Object.freeze([
+  FileTasks.ZIP_UNPACKER_TASK_DESCRIPTOR,
+  FileTasks.ZIP_ARCHIVER_UNZIP_TASK_DESCRIPTOR,
+  FileTasks.ZIP_ARCHIVER_ZIP_TASK_DESCRIPTOR
 ]);
 
 /**

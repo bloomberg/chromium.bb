@@ -58,6 +58,7 @@
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="2353636109065292463">Je internetverbinding controleren…</translation>
 <translation id="2388990488038464401">Dit nummer bellen vanaf je telefoon?</translation>
+<translation id="2435457462613246316">Wachtwoord tonen</translation>
 <translation id="24452542372838207">Melding uitvouwen</translation>
 <translation id="2445449901874883781">Hoge dichtheid gebruiken</translation>
 <translation id="2482878487686419369">Meldingen</translation>
@@ -79,6 +80,7 @@
 <translation id="2824719307700604149">{YEARS,plural, =1{1 jaar geleden}other{# jaar geleden}}</translation>
 <translation id="2878511608894704031">Alles verwijderen</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{over 1 d}other{over # d}}</translation>
+<translation id="2922712708897119705">Kolom <ph name="COLUMN_NAME" /> in aflopende volgorde gesorteerd.</translation>
 <translation id="2931838996092594335">klikken</translation>
 <translation id="2981684127883932071">Suggesties weergeven</translation>
 <translation id="3036649622769666520">Bestanden openen</translation>
@@ -114,6 +116,7 @@
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3909791450649380159">&amp;Knippen</translation>
 <translation id="3990502903496589789">Rechterzijde</translation>
+<translation id="3994749195054421561">Kolom <ph name="COLUMN_NAME" /> in oplopende volgorde gesorteerd.</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 ongelezen melding}other{# ongelezen meldingen}}</translation>
 <translation id="4202807286478387388">Gaan naar</translation>
 <translation id="4250229828105606438">Screenshot</translation>
@@ -123,6 +126,7 @@
 <translation id="4306392492252714209">Verwijderen van het klembord.</translation>
 <translation id="4316910396681052118">ALLE APPS</translation>
 <translation id="4491109536499578614">Afbeelding</translation>
+<translation id="4565377596337484307">Wachtwoord verbergen</translation>
 <translation id="4588090240171750605">Naar rechts bladeren</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, sterbeoordeling <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, app-aanbeveling</translation>
@@ -165,6 +169,7 @@
 <translation id="6012623610530968780">Pagina <ph name="SELECTED_PAGE" /> van <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Tekst in zoekvak wissen</translation>
 <translation id="6040143037577758943">Sluiten</translation>
+<translation id="6117103120090651229">Middelste knop</translation>
 <translation id="6119846243427417423">Activeren</translation>
 <translation id="6129953537138746214">Spatie</translation>
 <translation id="6134259848159370930">Zoek op je apparaat, in apps en instellingen en op internet.</translation>
@@ -173,6 +178,7 @@
 <translation id="6156262341071374681">Uitbreiden naar alle apps</translation>
 <translation id="6165508094623778733">Meer informatie</translation>
 <translation id="6166852626429024716">Zoek op je apparaat, in apps en instellingen en op internet...</translation>
+<translation id="6237461503717005873"><ph name="ROW_NAME" /> is geselecteerd.</translation>
 <translation id="6264365405983206840">&amp;Alles selecteren</translation>
 <translation id="6351032674660237738">APP-SUGGESTIES</translation>
 <translation id="6364916375976753737">Naar links bladeren</translation>
@@ -213,6 +219,7 @@
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minuut resterend}other{# minuten resterend}}</translation>
 <translation id="7430878839542012341">Deze zoekopdracht uit je geschiedenis verwijderen?</translation>
+<translation id="7437971918971306061">Kolom <ph name="COLUMN_NAME" /> niet gesorteerd.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emoji's</translation>
 <translation id="7620655452534002301">Verwijderd.</translation>

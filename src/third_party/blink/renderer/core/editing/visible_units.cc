@@ -26,6 +26,7 @@
 
 #include "third_party/blink/renderer/core/editing/visible_units.h"
 
+#include "base/trace_event/trace_event.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -643,6 +644,7 @@ static PositionTemplate<Strategy> MostBackwardCaretPosition(
   const bool start_editable = HasEditableStyle(*start_node);
   Node* last_node = start_node;
   bool boundary_crossed = false;
+  absl::optional<WritingMode> writing_mode;
   for (PositionIteratorAlgorithm<Strategy> current_pos = last_visible;
        !current_pos.AtStart(); current_pos.Decrement()) {
     Node* current_node = current_pos.GetNode();
@@ -680,6 +682,12 @@ static PositionTemplate<Strategy> MostBackwardCaretPosition(
 
     if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*layout_object))
       continue;
+
+    if (!writing_mode.has_value()) {
+      writing_mode.emplace(layout_object->Style()->GetWritingMode());
+    } else if (*writing_mode != layout_object->Style()->GetWritingMode()) {
+      return last_visible.ComputePosition();
+    }
 
     if (rule == kCanCrossEditingBoundary && boundary_crossed) {
       last_visible = current_pos;
@@ -786,6 +794,7 @@ PositionTemplate<Strategy> MostForwardCaretPosition(
   const bool start_editable = HasEditableStyle(*start_node);
   Node* last_node = start_node;
   bool boundary_crossed = false;
+  absl::optional<WritingMode> writing_mode;
   for (PositionIteratorAlgorithm<Strategy> current_pos = last_visible;
        !current_pos.AtEnd(); current_pos.Increment()) {
     Node* current_node = current_pos.GetNode();
@@ -832,6 +841,12 @@ PositionTemplate<Strategy> MostForwardCaretPosition(
 
     if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*layout_object))
       continue;
+
+    if (!writing_mode.has_value()) {
+      writing_mode.emplace(layout_object->Style()->GetWritingMode());
+    } else if (*writing_mode != layout_object->Style()->GetWritingMode()) {
+      return last_visible.ComputePosition();
+    }
 
     if (rule == kCanCrossEditingBoundary && boundary_crossed)
       return current_pos.DeprecatedComputePosition();
@@ -1090,6 +1105,13 @@ static VisiblePositionTemplate<Strategy> NextPositionOfAlgorithm(
   }
   NOTREACHED();
   return next;
+}
+
+VisiblePosition NextPositionOf(const Position& position,
+                               EditingBoundaryCrossingRule rule) {
+  DCHECK(position.IsValidFor(*position.GetDocument())) << position;
+  return NextPositionOfAlgorithm<EditingStrategy>(
+      PositionWithAffinityTemplate<EditingStrategy>(position), rule);
 }
 
 VisiblePosition NextPositionOf(const VisiblePosition& visible_position,

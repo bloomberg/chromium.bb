@@ -5,8 +5,8 @@
 #include "ios/chrome/browser/safe_browsing/url_checker_delegate_impl.h"
 
 #include "base/task/post_task.h"
-#include "components/safe_browsing/core/db/database_manager.h"
-#include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
+#include "components/safe_browsing/core/browser/db/database_manager.h"
+#include "components/safe_browsing/core/browser/db/v4_protocol_manager_util.h"
 #import "components/safe_browsing/ios/browser/safe_browsing_url_allow_list.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -118,7 +118,6 @@ bool UrlCheckerDelegateImpl::IsUrlAllowlisted(const GURL& url) {
 void UrlCheckerDelegateImpl::SetPolicyAllowlistDomains(
     const std::vector<std::string>& allowlist_domains) {
   // The SafeBrowsingAllowlistDomains policy is not supported on iOS.
-  return;
 }
 
 bool UrlCheckerDelegateImpl::ShouldSkipRequestCheck(

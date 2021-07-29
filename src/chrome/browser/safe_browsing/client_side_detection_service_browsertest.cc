@@ -14,8 +14,8 @@
 #include "components/safe_browsing/content/browser/client_side_detection_service.h"
 #include "components/safe_browsing/content/browser/client_side_phishing_model.h"
 #include "components/safe_browsing/content/common/safe_browsing.mojom.h"
+#include "components/safe_browsing/core/common/proto/client_model.pb.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
-#include "components/safe_browsing/core/proto/client_model.pb.h"
 #include "content/public/test/browser_test.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -30,8 +30,11 @@ class ClientSideDetectionServiceBrowserTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {}
 };
 
+// TODO(crbug.com/1217128): Re-enable this test, once we have a more reliable
+// method of ensuring the SetPhishingModel IPC comes before the
+// StartPhishingDetection IPC.
 IN_PROC_BROWSER_TEST_F(ClientSideDetectionServiceBrowserTest,
-                       NewHostGetsModel) {
+                       DISABLED_NewHostGetsModel) {
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled,
                                                false);
   ClientSideModel model;

@@ -16,7 +16,6 @@ import static org.junit.Assert.assertTrue;
 import static org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule.LONG_TIMEOUT_MS;
 import static org.chromium.chrome.browser.customtabs.CustomTabsTestUtils.addActionButtonToIntent;
 import static org.chromium.chrome.browser.customtabs.CustomTabsTestUtils.createTestBitmap;
-import static org.chromium.chrome.browser.customtabs.IncognitoCustomTabIntentDataProvider.EXTRA_FORCE_ENABLE_FOR_EXPERIMENT;
 
 import android.annotation.TargetApi;
 import android.app.NotificationManager;
@@ -60,6 +59,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils.OnFinishedForTest;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbar;
+import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.incognito.IncognitoDataTestUtils;
@@ -80,7 +80,7 @@ import java.util.concurrent.TimeoutException;
  * in the first place. Screenshot of the Custom tab menu item is broken.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.FORCE_FIRST_RUN_FLOW_COMPLETE_FOR_TESTING})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class CustomTabActivityIncognitoTest {
     private static final String TEST_PAGE = "/chrome/test/data/android/google.html";
     private static final String TEST_MENU_TITLE = "testMenuTitle";
@@ -100,6 +100,7 @@ public class CustomTabActivityIncognitoTest {
 
     @Before
     public void setUp() throws TimeoutException {
+        FirstRunStatus.setFirstRunFlowComplete(true);
         mTestPage = mEmbeddedTestServerRule.getServer().getURL(TEST_PAGE);
         // Ensuring native is initialized before we access the CCT_INCOGNITO feature flag.
         IncognitoDataTestUtils.fireAndWaitForCctWarmup();
@@ -161,11 +162,11 @@ public class CustomTabActivityIncognitoTest {
         Menu menu = mCustomTabActivityTestRule.getMenu();
         MenuItem iconRow = menu.findItem(R.id.icon_row_menu_id);
 
-        assertEquals(4, CustomTabsTestUtils.getVisibleMenuSize(iconRow.getSubMenu()));
         assertTrue(iconRow.getSubMenu().findItem(R.id.forward_menu_id).isVisible());
         assertTrue(iconRow.getSubMenu().findItem(R.id.reload_menu_id).isVisible());
         assertTrue(iconRow.getSubMenu().findItem(R.id.bookmark_this_page_id).isVisible());
         assertTrue(iconRow.getSubMenu().findItem(R.id.info_menu_id).isVisible());
+        assertEquals(4, CustomTabsTestUtils.getVisibleMenuSize(iconRow.getSubMenu()));
     }
 
     private CustomTabActivity launchIncognitoCustomTab(Intent intent) throws InterruptedException {
@@ -257,41 +258,6 @@ public class CustomTabActivityIncognitoTest {
             Profile profile = customTabToolbar.getToolbarDataProvider().getProfile();
             assertFalse(profile.isOffTheRecord());
         });
-    }
-
-    @Test
-    @MediumTest
-    @Features.DisableFeatures({ChromeFeatureList.CCT_INCOGNITO})
-    public void canLaunchFirstPartyIncognitoWithExtraWhenDisabled() throws Exception {
-        Intent intent = createMinimalIncognitoCustomTabIntent();
-        intent.putExtra(EXTRA_FORCE_ENABLE_FOR_EXPERIMENT, true);
-        CustomTabActivity activity = launchIncognitoCustomTab(intent);
-        assertTrue(activity.getActivityTab().isIncognito());
-        assertProfileUsedIsNonPrimary();
-    }
-
-    @Test
-    @MediumTest
-    @Features.EnableFeatures({ChromeFeatureList.CCT_INCOGNITO})
-    public void canHideToolbarIncognitoLogo() throws Exception {
-        Intent intent = createMinimalIncognitoCustomTabIntent();
-        // The icon is only hidden if an extra is supplied.
-        intent.putExtra(IncognitoCustomTabIntentDataProvider.EXTRA_HIDE_INCOGNITO_ICON, true);
-        launchIncognitoCustomTab(intent);
-        Espresso.onView(withId(R.id.incognito_cct_logo_image_view))
-                .check(matches(not(isDisplayed())));
-    }
-
-    @Test
-    @MediumTest
-    @Features.EnableFeatures({ChromeFeatureList.CCT_INCOGNITO})
-    public void canCustomizeToolbarColor() throws Exception {
-        Intent intent = createMinimalIncognitoCustomTabIntent();
-        // The color is only allowed if an extra is supplied.
-        intent.putExtra(IncognitoCustomTabIntentDataProvider.EXTRA_USE_NORMAL_PROFILE_STYLE, true);
-        intent.putExtra(CustomTabsIntent.EXTRA_TOOLBAR_COLOR, Color.RED);
-        CustomTabActivity activity = launchIncognitoCustomTab(intent);
-        assertEquals(Color.RED, getToolbarColor(activity));
     }
 
     @Test
@@ -409,7 +375,7 @@ public class CustomTabActivityIncognitoTest {
     public void ensureAddCustomMenuItemIsEnabledForReaderMode() throws Exception {
         Intent intent = createMinimalIncognitoCustomTabIntent();
         CustomTabIntentDataProvider.addReaderModeUIExtras(intent);
-        IncognitoCustomTabIntentDataProvider.addIncongitoExtrasForChromeFeatures(
+        IncognitoCustomTabIntentDataProvider.addIncognitoExtrasForChromeFeatures(
                 intent, IntentHandler.IncognitoCCTCallerId.READER_MODE);
         CustomTabActivity activity = launchIncognitoCustomTab(intent);
         CustomTabsTestUtils.openAppMenuAndAssertMenuShown(activity);

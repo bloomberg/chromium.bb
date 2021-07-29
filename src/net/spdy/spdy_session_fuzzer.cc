@@ -4,9 +4,9 @@
 
 #include <fuzzer/FuzzedDataProvider.h>
 
+#include "base/cxx17_backports.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
@@ -24,7 +24,7 @@
 
 namespace {
 
-const char kCertData[] = {
+const uint8_t kCertData[] = {
 #include "net/data/ssl/certificates/spdy_pooling.inc"
 };
 
@@ -110,8 +110,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   socket_factory.set_fuzz_connect_result(false);
 
   net::SSLSocketDataProvider ssl_provider(net::ASYNC, net::OK);
-  ssl_provider.ssl_info.cert =
-      net::X509Certificate::CreateFromBytes(kCertData, base::size(kCertData));
+  ssl_provider.ssl_info.cert = net::X509Certificate::CreateFromBytes(kCertData);
   CHECK(ssl_provider.ssl_info.cert);
   socket_factory.AddSSLSocketDataProvider(&ssl_provider);
 

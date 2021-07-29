@@ -6,8 +6,11 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_scroll_timeline_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_csskeywordvalue_cssnumericvalue_scrolltimelineelementbasedoffset_string.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_double_scrolltimelineautokeyword.h"
 #include "third_party/blink/renderer/core/animation/animation_test_helpers.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/html/html_div_element.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -61,7 +64,8 @@ TEST_F(ScrollTimelineUtilTest, ToCompositorScrollTimeline) {
   options->setScrollSource(scroller);
   const double time_range = 100;
   options->setTimeRange(
-      DoubleOrScrollTimelineAutoKeyword::FromDouble(time_range));
+      MakeGarbageCollected<V8UnionDoubleOrScrollTimelineAutoKeyword>(
+          time_range));
   options->setOrientation("block");
   options->setScrollOffsets({OffsetFromString(GetDocument(), "50px"),
                              OffsetFromString(GetDocument(), "auto")});
@@ -115,8 +119,8 @@ TEST_F(ScrollTimelineUtilTest, ToCompositorScrollTimelineNullLayoutBox) {
   ASSERT_FALSE(div->GetLayoutBox());
 
   ScrollTimelineOptions* options = ScrollTimelineOptions::Create();
-  DoubleOrScrollTimelineAutoKeyword time_range =
-      DoubleOrScrollTimelineAutoKeyword::FromDouble(100);
+  auto* time_range =
+      MakeGarbageCollected<V8UnionDoubleOrScrollTimelineAutoKeyword>(100);
   options->setTimeRange(time_range);
   options->setScrollSource(div);
   ScrollTimeline* timeline =

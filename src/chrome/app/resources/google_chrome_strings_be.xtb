@@ -12,6 +12,7 @@
 <translation id="1125124144982679672">Хто выкарыстоўвае Chrome?</translation>
 <translation id="1142745911746664600">Не ўдаецца абнавіць Chrome</translation>
 <translation id="1154147086299354128">&amp;Адкрыць у браўзеры Chrome</translation>
+<translation id="1182414570724401860">Chrome рэкамендуе не спампоўваць і не адкрываць гэты файл</translation>
 <translation id="1278833599417554002">Перазапусціць, каб абнавіць &amp;Chrome</translation>
 <translation id="1293325835983155583"><ph name="MANAGER" /> патрабуе ад вас прачытаць і прыняць наступныя Умовы выкарыстання, перш чым пачаць карыстацца прыладай. Гэтыя ўмовы не пашыраюць, не змяняюць і не абмяжоўваюць Умовы выкарыстання Google Chrome OS.</translation>
 <translation id="1302523850133262269">Пачакайце, пакуль Chrome усталюе апошнія абнаўленні сістэмы.</translation>
@@ -38,7 +39,7 @@
 <translation id="174539241580958092">Google Chrome не змог сінхранізаваць даныя з-за памылкі ўваходу.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1786003790898721085">Упэўніцеся, што вы ўвайшлі ў Chrome на прыладзе "<ph name="TARGET_DEVICE_NAME" />", а затым паспрабуйце ажыццявіць адпраўку яшчэ раз.</translation>
-<translation id="1807517590912578995">Стварыць асобны профіль Chrome?</translation>
+<translation id="1810203443153428607">Пры ўсталяванні Chrome OS усе даныя на прыладзе будуць перазапісаны.</translation>
 <translation id="1812689907177901597">Выключыўшы гэта, вы зможаце ўваходзіць на сайты Google, такія як Gmail, не ўваходзячы ў Chrome</translation>
 <translation id="1860536484129686729">Chrome запытвае дазвол на доступ да вашай камеры для гэтага сайта</translation>
 <translation id="1873233029667955273">Google Chrome не з'яўляецца стандартным браўзерам</translation>
@@ -59,6 +60,16 @@
 <translation id="2348335408836342058">Chrome запытвае дазвол на доступ да вашай камеры і мікрафона для гэтага сайта</translation>
 <translation id="234869673307233423">Браўзеру Chrome не ўдаецца праверыць паролі. Паўтарыце спробу пазней.</translation>
 <translation id="235650106824528204">Любыя даныя Chrome, створаныя пры выкарыстанні гэтага профілю (напрыклад, закладкі, гісторыя, паролі і іншыя налады), могуць быць выдалены адміністратарам працоўнага профілю. <ph name="LEARN_MORE" /></translation>
+<translation id="2409866122341731384">Сцерці даныя на цвёрдым дыску і ўсталяваць Chrome OS</translation>
+<translation id="2417565246123344595"><ph name="BEGIN_PARAGRAPH1" />Цяпер можна ўсталёўваць Chrome OS! Пасля запуску ўсталявання адбудзецца наступнае:
+<ph name="BEGIN_LIST" />
+<ph name="LIST_ITEM" />Файлы, даныя і бягучая аперацыйная сістэма будуць сцёрты.
+          <ph name="LIST_ITEM" />Будзе ўсталявана аперацыйная сістэма Chrome OS.
+          <ph name="LIST_ITEM" />Пасля заканчэння працэсу ўсталявання прылада завершыць працу.
+          <ph name="END_LIST" />
+<ph name="END_PARAGRAPH1" />
+<ph name="BEGIN_PARAGRAPH2" />Яшчэ раз напамінаем, што пры ўсталяванні ўсе даныя на цвёрдым дыску будуць сцёрты. Упэўніцеся, што вы маеце іх рэзервовую копію.<ph name="END_PARAGRAPH2" />
+          <ph name="BEGIN_PARAGRAPH3" />Пасля таго як усталяванне пачнецца, працэс нельга будзе скасаваць.<ph name="END_PARAGRAPH3" /></translation>
 <translation id="2429317896000329049">Браўзеру Google Chrome не ўдалося сінхранізаваць даныя: для вашага дамена сінхранізацыя недаступная.</translation>
 <translation id="2467438592969358367">Google Chrome запытвае дазвол на экспартаванне вашых пароляў. Каб дазволіць гэта, увядзіце пароль Windows.</translation>
 <translation id="2485422356828889247">Выдаліць</translation>
@@ -66,7 +77,6 @@
 <translation id="2574930892358684005">Уваход у гэты профіль Chrome ужо выкананы карыстальнікам <ph name="EXISTING_USER" />. Каб аддзяліць вашу працу ў інтэрнэце ад працы іншых карыстальнікаў, Chrome можа стварыць для вас ваш уласны профіль.</translation>
 <translation id="2580411288591421699">Немагчыма ўсталяваць тую ж версію Google Chrome, што зараз працуе. Закрыйце Google Chrome і паўтарыце спробу.</translation>
 <translation id="2586406160782125153">Гэта дзеянне выдаліць з прылады даныя прагляду старонак у інтэрнэце. Каб потым атрымаць свае даныя, увайдзіце ва ўліковы запіс Chrome як <ph name="USER_EMAIL" />.</translation>
-<translation id="2588634262982826227">Chrome OS can можа заўсёды аднаўляць вашы праграмы і старонкі пасля перазагрузкі, не пытаючыся аб гэтым у вас.</translation>
 <translation id="2622559029861875898">Браўзеру Chrome не ўдаецца праверыць наяўнасць абнаўленняў. Паспрабуйце праверыць падключэнне да інтэрнэту.</translation>
 <translation id="2644798301485385923">Сістэма Chrome OS</translation>
 <translation id="2652691236519827073">Адкрыць спасылку ў новай &amp;укладцы Chrome</translation>
@@ -130,6 +140,7 @@
 <translation id="4251615635259297716">Звязаць вашы даныя Chrome з гэтым уліковым запісам?</translation>
 <translation id="4281844954008187215">Умовы выкарыстання</translation>
 <translation id="4293420128516039005">Увайдзіце ў Chrome, каб сінхранізаваць і персаналізаваць яго на сваіх прыладах</translation>
+<translation id="429583012151745428">Выконваецца ўсталяванне. Не выключайце прыладу. Усталяванне зойме не больш за дваццаць хвілін. Пасля ўсталявання машына аўтаматычна завершыць працу.</translation>
 <translation id="4325083532956419387">Версія Chrome OS</translation>
 <translation id="4328355335528187361">Google Chrome для распрацоўшчыкаў (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -174,6 +185,10 @@
 
 Не ўдалося аднавіць налады ў браўзеры Google Chrome.</translation>
 <translation id="5434383153637353914">На гэтай старонцы можна кіраваць Уліковымі запісамі Google, у якія вы ўвайшлі. Іх можна будзе выкарыстоўваць у браўзеры Chrome і праграмах з Крамы Play, а таксама ў такіх сэрвісах, як Gmail, Дыск і YouTube. <ph name="LINK_BEGIN" />Даведацца больш<ph name="LINK_END" /></translation>
+<translation id="5449497480926255862"><ph name="BEGIN_PARAGRAPH1" />Перад усталяваннем упэўніцеся, што вы маеце актуальную рэзервовую копію сваіх даных. Пры ўсталяванні Chrome OS усе даныя на цвёрдым дыску будуць перазапісаны.<ph name="END_PARAGRAPH1" />
+          <ph name="BEGIN_PARAGRAPH2" />Кампанія Google не нясе адказнасці за страту даных пры ўсталяванні і не гарантуе, што Chrome OS будзе працаваць на несертыфікаваных мадэлях прылад. Каб даведацца больш пра сертыфікаваныя мадэлі, наведайце старонку [TBD].<ph name="END_PARAGRAPH2" />
+          <ph name="BEGIN_PARAGRAPH3" />Даведацца больш пра ўсталяванне Chrome OS і выдаленне даных можна на старонцы [TBD URL].<ph name="END_PARAGRAPH3" />
+<ph name="BEGIN_PARAGRAPH4" />Калі вы гатовыя працягнуць, націсніце "Усталяваць Chrome OS" і выконвайце інструкцыі на экране. Перш чым уносіць змяненні на вашым камп'ютары, мы запытаем у вас пацвярджэнне.<ph name="END_PARAGRAPH4" /></translation>
 <translation id="5486618155264784386">Усталяваць Chrome OS</translation>
 <translation id="556024056938947818">Google Chrome спрабуе паказаць паролі.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
@@ -209,11 +224,11 @@
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" />: Google Chrome для распрацоўшчыкаў</translation>
 <translation id="6566149418543181476">Google Chrome абнаўляецца (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6568793831116033768">Сістэма Chrome OS</translation>
+<translation id="664235759707825982">Вы гатовыя да ўсталявання Chrome OS?</translation>
 <translation id="6676384891291319759">Доступ у інтэрнэт</translation>
 <translation id="6679975945624592337">Дазволіць браўзеру Google Chrome працаваць у фонавым рэжыме</translation>
 <translation id="6739177684496155661">Працягнуць працу ў новым профілі Chrome?</translation>
 <translation id="6750954913813541382">Для выпраўлення арфаграфічных памылак Chrome адпраўляе ў Google тэкст, які вы набіраеце ў браўзеры</translation>
-<translation id="6755885556185485672">Аперацыйная сістэма Chrome OS завяршыла працу некарэктна.</translation>
 <translation id="677276454032249905">Усё роўна выйсці з Chrome?</translation>
 <translation id="683440813066116847">Уваходнае правіла для Google Chrome Canary, якое дазваляе трафік mDNS.</translation>
 <translation id="6885412569789873916">Праграмы бэта-версіі Chrome</translation>
@@ -228,9 +243,9 @@
 <translation id="7155997830309522122">Калі так, змяніце пароль, захаваны ў Chrome, каб ён супадаў з новым.</translation>
 <translation id="7161904924553537242">Вас вітае Google Chrome</translation>
 <translation id="7242029209006116544">Вы ўваходзіце праз уліковы запіс пад кіраваннем, таму адміністратар зможа кантраляваць ваш профіль Google Chrome. Даныя Chrome (праграмы, закладкі, гісторыя, паролі і іншыя налады) будуць назаўсёды прывязаны да ўліковага запісу <ph name="USER_NAME" />. Вы зможаце выдаліць гэтыя даныя праз панэль кіравання Уліковымі запісамі Google, але іх нельга будзе звязаць з іншым уліковым запісам. Каб захаваць існуючыя даныя Chrome асобна, стварыце новы профіль. <ph name="LEARN_MORE" /></translation>
+<translation id="7275165473619697274">Ідзе ўсталяванне Chrome OS</translation>
 <translation id="7295052994004373688">На гэтай мове паказваецца карыстальніцкі інтэрфейс Google Chrome</translation>
 <translation id="7296210096911315575">Важныя звесткі пра выкарыстанне і бяспеку</translation>
-<translation id="7303916856901595720">Перамясціць уліковы запіс у новы профіль Chrome?</translation>
 <translation id="7308322188646931570">Для спампоўвання файлаў браўзеру Chrome патрабуецца доступ да сховішча</translation>
 <translation id="7339898014177206373">Новае акно</translation>
 <translation id="7398801000654795464">Раней вы ўваходзілі ў Chrome як <ph name="USER_EMAIL_ADDRESS" />. Для паўторнага ўваходу скарыстайце той жа ўліковы запіс.</translation>
@@ -257,7 +272,6 @@
 <translation id="7890208801193284374">Калі камп'ютар выкарыстоўваюць некалькі чалавек, кожны з іх можа наладзіць Chrome для сябе і праглядаць старонкі асобна ад іншых.</translation>
 <translation id="7896673875602241923">Нехта раней увайшоў у Chrome на гэтым камп'ютары як <ph name="ACCOUNT_EMAIL_LAST" />. Стварыце новага карыстальніка Chrome, каб трымаць сваю інфармацыю асобна.</translation>
 <translation id="7930071585467473040">Google Chrome спрабуе скапіраваць паролі.</translation>
-<translation id="7951988079884443914">Chrome рэкамендуе не спампоўваць і не адкрываць гэты файл.</translation>
 <translation id="7962410387636238736">Гэты камп'ютар больш не будзе атрымліваць абнаўленні Google Chrome: Windows XP і Windows Vista цяпер не падтрымліваюцца</translation>
 <translation id="79947657522496226">Chrome OS, як і <ph name="BEGIN_LINK_LINUX_OSS" />Асяроддзе распрацоўкі Linux<ph name="END_LINK_LINUX_OSS" />, працуе дзякуючы дадатковаму <ph name="BEGIN_LINK_CROS_OSS" />праграмнаму забеспячэнню з адкрытым зыходным кодам<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="8008534537613507642">Пераўсталяваць Chrome</translation>

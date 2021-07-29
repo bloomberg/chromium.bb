@@ -40,8 +40,8 @@
 #include "fxbarcode/qrcode/BC_QRCoderVersion.h"
 #include "third_party/base/check.h"
 #include "third_party/base/check_op.h"
+#include "third_party/base/cxx17_backports.h"
 #include "third_party/base/optional.h"
-#include "third_party/base/stl_util.h"
 
 using ModeStringPair = std::pair<CBC_QRCoderMode*, ByteString>;
 
@@ -263,7 +263,7 @@ Optional<int32_t> ChooseMaskPattern(
        maskPattern++) {
     if (!CBC_QRCoderMatrixUtil::BuildMatrix(bits, ecLevel, version, maskPattern,
                                             matrix)) {
-      return {};
+      return pdfium::nullopt;
     }
     int32_t penalty = CalculateMaskPenalty(matrix);
     if (penalty < minPenalty) {
@@ -455,10 +455,10 @@ bool CBC_QRCoderEncoder::Encode(WideStringView content,
       qrCode->GetMatrixWidth(), qrCode->GetMatrixWidth());
   Optional<int32_t> maskPattern = ChooseMaskPattern(
       &finalBits, qrCode->GetECLevel(), qrCode->GetVersion(), matrix.get());
-  if (!maskPattern)
+  if (!maskPattern.has_value())
     return false;
 
-  qrCode->SetMaskPattern(*maskPattern);
+  qrCode->SetMaskPattern(maskPattern.value());
   if (!CBC_QRCoderMatrixUtil::BuildMatrix(
           &finalBits, qrCode->GetECLevel(), qrCode->GetVersion(),
           qrCode->GetMaskPattern(), matrix.get())) {

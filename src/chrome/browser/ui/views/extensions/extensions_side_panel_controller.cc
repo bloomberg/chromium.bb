@@ -22,7 +22,9 @@
 #include "extensions/common/api/extension_action/action_info.h"
 #include "extensions/common/extension_id.h"
 #include "net/base/url_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/webview/webview.h"
 
 namespace {
@@ -36,6 +38,31 @@ const char kPanelActivatableKey[] = "activatable";
 const char kPanelWidth[] = "width";
 const char kPanelTrueValue[] = "true";
 
+class ExtensionsSidePanelButton : public ToolbarButton {
+ public:
+  METADATA_HEADER(ExtensionsSidePanelButton);
+
+ protected:
+  SkColor GetForegroundColor(ButtonState state) const override {
+    const ui::NativeTheme* native_theme = GetNativeTheme();
+    DCHECK(native_theme);
+    // Highlight the activatable state of extension button to increase
+    // visibility.
+    switch (state) {
+      case ButtonState::STATE_HOVERED:
+      case ButtonState::STATE_PRESSED:
+      case ButtonState::STATE_NORMAL:
+        return native_theme->GetSystemColor(
+            ui::NativeTheme::kColorId_ProminentButtonColor);
+      default:
+        return ToolbarButton::GetForegroundColor(state);
+    }
+  }
+};
+
+BEGIN_METADATA(ExtensionsSidePanelButton, ToolbarButton)
+END_METADATA
+
 }  // namespace
 
 ExtensionsSidePanelController::ExtensionsSidePanelController(
@@ -47,6 +74,9 @@ ExtensionsSidePanelController::ExtensionsSidePanelController(
       web_view_(side_panel_->AddChildView(
           std::make_unique<views::WebView>(browser_view_->GetProfile()))) {
   DCHECK(base::FeatureList::IsEnabled(features::kExtensionsSidePanel));
+  // Allow the embedder to handle accelerators not handled by the WebContents.
+  web_view_->set_allow_accelerators(true);
+
   extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(browser_view->GetProfile());
   registry_observation_.Observe(registry);
@@ -65,7 +95,7 @@ ExtensionsSidePanelController::~ExtensionsSidePanelController() = default;
 
 std::unique_ptr<ToolbarButton>
 ExtensionsSidePanelController::CreateToolbarButton() {
-  auto toolbar_button = std::make_unique<ToolbarButton>();
+  auto toolbar_button = std::make_unique<ExtensionsSidePanelButton>();
   toolbar_button->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ACCNAME_LEFT_ALIGNED_SIDE_PANEL_BUTTON));
   toolbar_button->SetTooltipText(
@@ -119,6 +149,13 @@ content::WebContents* ExtensionsSidePanelController::OpenURLFromTab(
     content::WebContents* source,
     const content::OpenURLParams& params) {
   return browser_view_->browser()->OpenURL(params);
+}
+
+bool ExtensionsSidePanelController::HandleKeyboardEvent(
+    content::WebContents* source,
+    const content::NativeWebKeyboardEvent& event) {
+  return unhandled_keyboard_event_handler_.HandleKeyboardEvent(
+      event, web_view_->GetFocusManager());
 }
 
 void ExtensionsSidePanelController::OnExtensionLoaded(

@@ -10,14 +10,10 @@ import("//ui/webui/resources/tools/js_modulizer.gni")
 group("closure_compile") {
   deps = [
     ":closure_compile_local",
-    "hd_iron_icon:closure_compile",
-    "oobe_adaptive_dialog:closure_compile",
+    "buttons:closure_compile",
+    "dialogs:closure_compile",
     "oobe_carousel:closure_compile",
-    "oobe_content_dialog:closure_compile",
-    "oobe_dialog_host_behavior:closure_compile",
-    "oobe_focus_behavior:closure_compile",
-    "oobe_i18n_behavior:closure_compile",
-    "oobe_scrollable_behavior:closure_compile",
+    "behaviors:closure_compile",
     "oobe_slide:closure_compile",
     "progress_list_item:closure_compile",
     "throbber_notice:closure_compile",
@@ -28,13 +24,10 @@ js_type_check("closure_compile_local") {
   uses_legacy_modules = true
   deps = [
     ":fake_oobe",
+    ":hd_iron_icon",
     ":html-echo",
-    ":login_screen_behavior",
-    ":multi_step_behavior",
     ":network_select_login",
-    ":oobe_buttons",
     ":oobe_i18n_dropdown",
-    ":oobe_modal_dialog",
     ":oobe_select",
     ":oobe_types",
   ]
@@ -42,7 +35,29 @@ js_type_check("closure_compile_local") {
 
 group("closure_compile_module") {
   deps = [
+    "behaviors:closure_compile_module",
+    "buttons:closure_compile_module",
+    "common_styles:closure_compile_module",
+    "dialogs:closure_compile_module",
+    "oobe_vars:closure_compile_module",
+
+    # Local targets
+    ":hd_iron_icon.m",
     ":oobe_icons.m",
+  ]
+}
+
+group("polymer3_elements") {
+  public_deps = [
+    "behaviors:modulize",
+    "buttons:polymer3_elements",
+    "common_styles:polymer3_elements",
+    "dialogs:polymer3_elements",
+    "oobe_vars:polymer3_elements",
+
+    # Local targets
+    ":hd_iron_icon_module",
+    ":oobe_icons_module"
   ]
 }
 
@@ -77,25 +92,11 @@ js_library("fake_authenticator") {
   ]
 }
 
-js_library("login_screen_behavior") {
-  deps = [
-    ":display_manager_types",
-    ":fake_oobe",
-  ]
-}
-
-js_library("multi_step_behavior") {
-}
-
 js_library("network_select_login") {
   deps = [
     "//ui/webui/resources/cr_components/chromeos/network:network_select",
     "//ui/webui/resources/cr_components/chromeos/network:onc_mojo",
   ]
-}
-
-js_library("oobe_buttons") {
-  deps = [ "oobe_i18n_behavior:oobe_i18n_behavior" ]
 }
 
 js_library("oobe_i18n_dropdown") {
@@ -105,22 +106,35 @@ js_library("oobe_i18n_dropdown") {
   ]
 }
 
-js_library("oobe_modal_dialog") {
-  deps = [ "oobe_i18n_behavior:oobe_i18n_behavior" ]
-}
-
 js_library("oobe_select") {
 }
 
 js_library("html-echo") {
 }
 
+js_library("hd_iron_icon") {
+}
+
 #### Polymer3 / JS Modules
+
+js_library("hd_iron_icon.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/components/hd_iron_icon.m.js" ]
+  deps = [
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+  extra_deps = [ ":hd_iron_icon_module" ]
+}
 
 js_library("oobe_icons.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/components/oobe_icons.m.js" ]
   deps = []
   extra_deps = [ ":oobe_icons_module" ]
+}
+
+polymer_modulizer("hd_iron_icon") {
+  js_file = "hd_iron_icon.js"
+  html_file = "hd_iron_icon.html"
+  html_type = "dom-module"
 }
 
 polymer_modulizer("oobe_icons") {

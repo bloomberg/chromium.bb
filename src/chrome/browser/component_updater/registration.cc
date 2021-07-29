@@ -4,6 +4,7 @@
 
 #include "chrome/browser/component_updater/registration.h"
 
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
@@ -17,13 +18,12 @@
 #include "chrome/browser/component_updater/client_side_phishing_component_installer.h"
 #include "chrome/browser/component_updater/crl_set_component_installer.h"
 #include "chrome/browser/component_updater/crowd_deny_component_installer.h"
-#include "chrome/browser/component_updater/desktop_sharing_hub_component_installer.h"
 #include "chrome/browser/component_updater/file_type_policies_component_installer.h"
 #include "chrome/browser/component_updater/first_party_sets_component_installer.h"
 #include "chrome/browser/component_updater/floc_component_installer.h"
 #include "chrome/browser/component_updater/hyphenation_component_installer.h"
 #include "chrome/browser/component_updater/mei_preload_component_installer.h"
-#include "chrome/browser/component_updater/pepper_flash_component_installer.h"
+#include "chrome/browser/component_updater/pki_metadata_component_installer.h"
 #include "chrome/browser/component_updater/ssl_error_assistant_component_installer.h"
 #include "chrome/browser/component_updater/sth_set_component_remover.h"
 #include "chrome/browser/component_updater/subresource_filter_component_installer.h"
@@ -39,6 +39,7 @@
 #include "components/component_updater/installer_policies/safety_tips_component_installer.h"
 #include "components/nacl/common/buildflags.h"
 #include "device/vr/buildflags/buildflags.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "third_party/widevine/cdm/buildflags.h"
 
 #if defined(OS_WIN)
@@ -54,12 +55,17 @@
 #include "chrome/browser/component_updater/recovery_component_installer.h"
 #endif  // defined(OS_WIN)
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/component_updater/desktop_sharing_hub_component_remover.h"
+#endif  // defined(OS_ANDROID)
+
 #if !defined(OS_ANDROID)
+#include "chrome/browser/component_updater/desktop_sharing_hub_component_installer.h"
 #include "chrome/browser/component_updater/soda_component_installer.h"
 #include "chrome/browser/component_updater/zxcvbn_data_component_installer.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "media/base/media_switches.h"
-#endif
+#endif  // !defined(OS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/component_updater/smart_dim_component_installer.h"
@@ -69,8 +75,16 @@
 #include "chrome/browser/component_updater/pnacl_component_installer.h"
 #endif  // BUILDFLAG(ENABLE_NACL)
 
+#if BUILDFLAG(ENABLE_PLUGINS)
+#include "chrome/browser/component_updater/pepper_flash_component_installer.h"
+#endif
+
 #if BUILDFLAG(ENABLE_VR)
 #include "chrome/browser/component_updater/vr_assets_component_installer.h"
+#endif
+
+#if BUILDFLAG(ENABLE_MEDIA_FOUNDATION_WIDEVINE_CDM)
+#include "chrome/browser/component_updater/media_foundation_widevine_cdm_component_installer.h"
 #endif
 
 #if BUILDFLAG(ENABLE_WIDEVINE_CDM_COMPONENT)
@@ -95,8 +109,14 @@ void RegisterComponentsForUpdate(bool is_off_the_record_profile,
   RegisterRecoveryComponent(cus, g_browser_process->local_state());
 #endif  // defined(OS_WIN)
 
+#if BUILDFLAG(ENABLE_PLUGINS)
   // TODO(crbug.com/1069814): Remove after 2021-10-01.
   CleanUpPepperFlashComponent(profile_path);
+#endif
+
+#if BUILDFLAG(ENABLE_MEDIA_FOUNDATION_WIDEVINE_CDM)
+  RegisterMediaFoundationWidevineCdmComponent(cus);
+#endif
 
 #if BUILDFLAG(ENABLE_WIDEVINE_CDM_COMPONENT)
   RegisterWidevineCdmComponent(cus);
@@ -137,10 +157,19 @@ void RegisterComponentsForUpdate(bool is_off_the_record_profile,
     // Chrome OS: On Chrome OS, this cleanup is delayed until user login.
     component_updater::DeleteLegacySTHSet(path);
 #endif
+#if defined(OS_ANDROID)
+    // Clean up any desktop sharing hubs that were installed on Android.
+    component_updater::DeleteDesktopSharingHub(path);
+#endif  // defined(OS_ANDROID)
   }
   RegisterSSLErrorAssistantComponent(cus);
+
+  // Since file type policies are per-platform, and we don't support
+  // Fuchsia-specific component versions, we don't dynamically update file type
+  // policies on Fuchsia.
+#if !defined(OS_FUCHSIA)
   RegisterFileTypePoliciesComponent(cus);
-  RegisterDesktopSharingHubComponent(cus);
+#endif
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
   // CRLSetFetcher attempts to load a CRL set from either the local disk or
@@ -169,6 +198,8 @@ void RegisterComponentsForUpdate(bool is_off_the_record_profile,
   }
 #endif
 
+  MaybeRegisterPKIMetadataComponent(cus);
+
   RegisterSafetyTipsComponent(cus);
   RegisterCrowdDenyComponent(cus);
 
@@ -181,6 +212,7 @@ void RegisterComponentsForUpdate(bool is_off_the_record_profile,
 #endif
 
 #if !defined(OS_ANDROID)
+  RegisterDesktopSharingHubComponent(cus);
   RegisterZxcvbnDataComponent(cus);
 #endif  // !defined(OS_ANDROID)
 

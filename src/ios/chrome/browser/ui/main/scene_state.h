@@ -67,10 +67,12 @@ typedef NS_ENUM(NSUInteger, SceneActivationLevel) {
 // Window for the associated scene, if any.
 @property(nonatomic, strong) UIWindow* window;
 
-@property(nonatomic, weak) UIWindowScene* scene API_AVAILABLE(ios(13));
+// The scene object backing this scene state. It's in a 1-to-1 relationship and
+// the window scene owns this object (indirectly through scene delegate).
+@property(nonatomic, weak) UIWindowScene* scene;
 
-@property(nonatomic, strong)
-    UISceneConnectionOptions* connectionOptions API_AVAILABLE(ios(13));
+// Connection options of |scene|, if any, from when the scene was connected.
+@property(nonatomic, strong) UISceneConnectionOptions* connectionOptions;
 
 // The interface provider associated with this scene.
 @property(nonatomic, strong, readonly) id<BrowserInterfaceProvider>
@@ -79,10 +81,6 @@ typedef NS_ENUM(NSUInteger, SceneActivationLevel) {
 // The persistent identifier for the scene session. This should be used instead
 // of -[UISceneSession persistentIdentifier].
 @property(nonatomic, readonly) NSString* sceneSessionID;
-
-// True if First Run UI (terms of service & sync sign-in) is being presented
-// in a modal dialog.
-@property(nonatomic, assign) BOOL presentingFirstRunUI;
 
 // The controller for this scene.
 @property(nonatomic, weak) SceneController* controller;
@@ -98,15 +96,15 @@ typedef NS_ENUM(NSUInteger, SceneActivationLevel) {
 // be open next time the scene is activated.
 // Setting the property to not nil will add the new URL contexts to the set.
 // Setting the property to nil will clear the set.
-@property(nonatomic)
-    NSSet<UIOpenURLContext*>* URLContextsToOpen API_AVAILABLE(ios(13));
+@property(nonatomic) NSSet<UIOpenURLContext*>* URLContextsToOpen;
 
 // A NSUserActivity that has been passed to
 // |UISceneDelegate scene:continueUserActivity:| and needs to be opened.
 @property(nonatomic) NSUserActivity* pendingUserActivity;
 
-// A flag that keeps track of the UI initialization for the controlled scene.
-@property(nonatomic, assign) BOOL hasInitializedUI;
+// YES if the UI is enabled. The browser UI objects are available when this is
+// YES.
+@property(nonatomic, assign) BOOL UIEnabled;
 
 // YES if the QR scanner is visible.
 @property(nonatomic, assign) BOOL QRScannerVisible;

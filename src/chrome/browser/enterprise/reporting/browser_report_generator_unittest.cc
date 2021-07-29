@@ -12,6 +12,7 @@
 #include "base/test/bind.h"
 #include "base/time/time.h"
 #include "base/version.h"
+#include "build/branding_buildflags.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise/reporting/extension_request/extension_request_report_throttler_test.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/profiles/profile_attributes_init_params.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/upgrade_detector/build_state.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/account_id/account_id.h"
@@ -33,6 +35,10 @@
 #include "chrome/common/chrome_constants.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && !defined(OS_CHROMEOS)
+#include "chrome/test/base/scoped_channel_override.h"
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING) && !defined(OS_CHROMEOS)
+
 namespace em = enterprise_management;
 
 namespace enterprise_reporting {
@@ -42,34 +48,34 @@ const char kProfileId[] = "profile_id";
 const char kProfileName[] = "profile_name";
 const char16_t kProfileName16[] = u"profile_name";
 
+#if BUILDFLAG(ENABLE_PLUGINS)
 const char16_t kPluginName16[] = u"plugin_name";
 const char16_t kPluginVersion16[] = u"plugin_version";
 const char16_t kPluginDescription16[] = u"plugin_description";
 const char kPluginFolderPath[] = "plugin_folder_path";
 const char kPluginFileName[] = "plugin_file_name";
-
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 const char kPluginName[] = "plugin_name";
 const char kPluginVersion[] = "plugin_version";
 const char kPluginDescription[] = "plugin_description";
-#endif
+#endif  //  !BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 }  // namespace
 
-class BrowserReportGeneratorTest : public ::testing::Test,
-                                   public ::testing::WithParamInterface<bool> {
+class BrowserReportGeneratorTest : public ::testing::Test {
  public:
   BrowserReportGeneratorTest()
       : profile_manager_(TestingBrowserProcess::GetGlobal()),
         generator_(&delegate_factory_) {
-    TestingProfile::SetScopedFeatureListForEphemeralGuestProfiles(
-        scoped_feature_list_, GetParam());
   }
   ~BrowserReportGeneratorTest() override = default;
 
   void SetUp() override {
     ASSERT_TRUE(profile_manager_.SetUp());
+#if BUILDFLAG(ENABLE_PLUGINS)
     content::PluginService::GetInstance()->Init();
+#endif
   }
 
   void InitializeUpdate() {
@@ -98,6 +104,7 @@ class BrowserReportGeneratorTest : public ::testing::Test,
   }
 
   void InitializePlugin() {
+#if BUILDFLAG(ENABLE_PLUGINS)
     content::WebPluginInfo info;
     info.name = kPluginName16;
     info.version = kPluginVersion16;
@@ -110,6 +117,7 @@ class BrowserReportGeneratorTest : public ::testing::Test,
         content::PluginService::GetInstance();
     plugin_service->RegisterInternalPlugin(info, true);
     plugin_service->RefreshPlugins();
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
   }
 
   void InitializeExtensionRequest() {
@@ -131,7 +139,7 @@ class BrowserReportGeneratorTest : public ::testing::Test,
               EXPECT_FALSE(report->has_browser_version());
               EXPECT_FALSE(report->has_channel());
               EXPECT_FALSE(report->has_installed_browser_version());
-#else
+#else  // BUILDFLAG(IS_CHROMEOS_ASH)
               EXPECT_NE(std::string(), report->browser_version());
               EXPECT_TRUE(report->has_channel());
               const auto* build_state = g_browser_process->GetBuildState();
@@ -142,7 +150,20 @@ class BrowserReportGeneratorTest : public ::testing::Test,
                 EXPECT_EQ(report->installed_browser_version(),
                           build_state->installed_version()->GetString());
               }
-#endif
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+              if (chrome::IsExtendedStableChannel()) {
+                EXPECT_TRUE(report->has_is_extended_stable_channel());
+                EXPECT_TRUE(report->is_extended_stable_channel());
+                EXPECT_EQ(report->channel(), em::Channel::CHANNEL_STABLE);
+              } else {
+                EXPECT_FALSE(report->has_is_extended_stable_channel());
+                EXPECT_NE(report->channel(), em::Channel::CHANNEL_UNKNOWN);
+              }
+#else   // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+              EXPECT_FALSE(report->has_is_extended_stable_channel());
+              EXPECT_EQ(report->channel(), em::Channel::CHANNEL_UNKNOWN);
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
               EXPECT_NE(std::string(), report->executable_path());
 
@@ -155,7 +176,7 @@ class BrowserReportGeneratorTest : public ::testing::Test,
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
               EXPECT_EQ(0, report->plugins_size());
-#else
+#elif BUILDFLAG(ENABLE_PLUGINS)
               EXPECT_LE(1, report->plugins_size());
               em::Plugin plugin = report->plugins(0);
               EXPECT_EQ(kPluginName, plugin.name());
@@ -206,12 +227,11 @@ class BrowserReportGeneratorTest : public ::testing::Test,
   TestingProfileManager profile_manager_;
   BrowserReportGenerator generator_;
   ScopedExtensionRequestReportThrottler throttler_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserReportGeneratorTest);
 };
 
-TEST_P(BrowserReportGeneratorTest, GenerateBasicReport) {
+TEST_F(BrowserReportGeneratorTest, GenerateBasicReport) {
   InitializeProfile();
   InitializeIrregularProfiles();
   InitializePlugin();
@@ -219,7 +239,7 @@ TEST_P(BrowserReportGeneratorTest, GenerateBasicReport) {
 }
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-TEST_P(BrowserReportGeneratorTest, GenerateBasicReportWithUpdate) {
+TEST_F(BrowserReportGeneratorTest, GenerateBasicReportWithUpdate) {
   InitializeUpdate();
   InitializeProfile();
   InitializeIrregularProfiles();
@@ -228,7 +248,7 @@ TEST_P(BrowserReportGeneratorTest, GenerateBasicReportWithUpdate) {
 }
 #endif
 
-TEST_P(BrowserReportGeneratorTest, ExtensionRequestOnly) {
+TEST_F(BrowserReportGeneratorTest, ExtensionRequestOnly) {
   InitializeUpdate();
   InitializeProfile();
   InitializeIrregularProfiles();
@@ -242,7 +262,7 @@ TEST_P(BrowserReportGeneratorTest, ExtensionRequestOnly) {
 
 // It's possible that the extension request report is delayed and by the time
 // report is generated, the extension request report throttler is disabled.
-TEST_P(BrowserReportGeneratorTest, ExtensionRequestOnlyWithoutThrottler) {
+TEST_F(BrowserReportGeneratorTest, ExtensionRequestOnlyWithoutThrottler) {
   InitializeUpdate();
   InitializeProfile();
   InitializeIrregularProfiles();
@@ -252,8 +272,17 @@ TEST_P(BrowserReportGeneratorTest, ExtensionRequestOnlyWithoutThrottler) {
   GenerateExtensinRequestReportAndVerify({});
 }
 
-INSTANTIATE_TEST_SUITE_P(AllGuestTypes,
-                         BrowserReportGeneratorTest,
-                         /*is_ephemeral=*/testing::Bool());
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && !defined(OS_CHROMEOS)
+TEST_F(BrowserReportGeneratorTest, ExtendedStableChannel) {
+  chrome::ScopedChannelOverride channel_override(
+      chrome::ScopedChannelOverride::Channel::kExtendedStable);
+
+  ASSERT_TRUE(chrome::IsExtendedStableChannel());
+  InitializeProfile();
+  InitializeIrregularProfiles();
+  InitializePlugin();
+  GenerateAndVerify();
+}
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING) && !defined(OS_CHROMEOS)
 
 }  // namespace enterprise_reporting

@@ -67,7 +67,7 @@ export class LiveHeapProfileView extends UI.Widget.VBox {
   private constructor() {
     super(true);
     this._gridNodeByUrl = new Map();
-    this.registerRequiredCSS('panels/profiler/liveHeapProfile.css', {enableLegacyPatching: false});
+    this.registerRequiredCSS('panels/profiler/liveHeapProfile.css');
 
     this._setting = Common.Settings.Settings.instance().moduleSetting('memoryLiveHeapProfile');
     const toolbar = new UI.Toolbar.Toolbar('live-heap-profile-toolbar', this.contentElement);
@@ -79,7 +79,7 @@ export class LiveHeapProfileView extends UI.Widget.VBox {
     this._toggleRecordButton.setToggled(this._setting.get());
     toolbar.appendToolbarItem(this._toggleRecordButton);
 
-    const mainTarget = SDK.SDKModel.TargetManager.instance().mainTarget();
+    const mainTarget = SDK.TargetManager.TargetManager.instance().mainTarget();
     if (mainTarget && mainTarget.model(SDK.ResourceTreeModel.ResourceTreeModel)) {
       const startWithReloadAction =
           (UI.ActionRegistry.ActionRegistry.instance().action('live-heap-profile.start-with-reload') as
@@ -332,7 +332,7 @@ export class LiveHeapProfileView extends UI.Widget.VBox {
     if (!reload) {
       return;
     }
-    const mainTarget = SDK.SDKModel.TargetManager.instance().mainTarget();
+    const mainTarget = SDK.TargetManager.TargetManager.instance().mainTarget();
     if (!mainTarget) {
       return;
     }

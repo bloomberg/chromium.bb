@@ -83,8 +83,10 @@ using TestGetCallbackReceiver = ::device::test::StatusAndValueCallbackReceiver<
 constexpr char kOkMessage[] = "webauth: OK";
 
 constexpr char kPublicKeyErrorMessage[] =
-    "webauth: NotSupportedError: Required parameters missing in "
-    "`options.publicKey`.";
+    "webauth: TypeError: Failed to execute 'create' on 'CredentialsContainer': "
+    "Failed to read the 'publicKey' property from 'CredentialCreationOptions': "
+    "Failed to read the 'rp' property from 'PublicKeyCredentialCreationOptions'"
+    ": The provided value is not of type 'PublicKeyCredentialRpEntity'.";
 
 constexpr char kNotAllowedErrorMessage[] =
     "webauth: NotAllowedError: The operation either timed out or was not "
@@ -534,7 +536,8 @@ class WebAuthLocalClientBrowserTest : public WebAuthBrowserTestBase {
         blink::mojom::ProtectionPolicy::UNSPECIFIED,
         /*enforce_protection_policy=*/false, /*appid_exclude=*/absl::nullopt,
         /*cred_props=*/false, device::LargeBlobSupport::kNotRequested,
-        /*is_payment_credential_creation=*/false, /*cred_blob=*/absl::nullopt);
+        /*is_payment_credential_creation=*/false, /*cred_blob=*/absl::nullopt,
+        /*google_legacy_app_id_support=*/false);
 
     return mojo_options;
   }
@@ -559,7 +562,7 @@ class WebAuthLocalClientBrowserTest : public WebAuthBrowserTestBase {
         std::vector<device::CableDiscoveryData>(), /*prf=*/false,
         /*prf_inputs=*/std::vector<blink::mojom::PRFValuesPtr>(),
         /*large_blob_read=*/false, /*large_blob_write=*/absl::nullopt,
-        /*get_cred_blob=*/false);
+        /*get_cred_blob=*/false, /*payment=*/nullptr);
     return mojo_options;
   }
 

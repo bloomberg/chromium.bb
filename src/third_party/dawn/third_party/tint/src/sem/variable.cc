@@ -14,6 +14,8 @@
 
 #include "src/sem/variable.h"
 
+#include <utility>
+
 #include "src/ast/identifier_expression.h"
 #include "src/ast/variable.h"
 
@@ -26,11 +28,13 @@ namespace sem {
 Variable::Variable(const ast::Variable* declaration,
                    const sem::Type* type,
                    ast::StorageClass storage_class,
-                   ast::AccessControl::Access access_control)
+                   ast::Access access,
+                   sem::BindingPoint binding_point)
     : declaration_(declaration),
       type_(type),
       storage_class_(storage_class),
-      access_control_(access_control),
+      access_(access),
+      binding_point_(binding_point),
       is_pipeline_constant_(false) {}
 
 Variable::Variable(const ast::Variable* declaration,
@@ -39,7 +43,7 @@ Variable::Variable(const ast::Variable* declaration,
     : declaration_(declaration),
       type_(type),
       storage_class_(ast::StorageClass::kNone),
-      access_control_(ast::AccessControl::kInvalid),
+      access_(ast::Access::kReadWrite),
       is_pipeline_constant_(true),
       constant_id_(constant_id) {}
 
@@ -48,8 +52,10 @@ Variable::~Variable() = default;
 VariableUser::VariableUser(ast::IdentifierExpression* declaration,
                            const sem::Type* type,
                            Statement* statement,
-                           sem::Variable* variable)
-    : Base(declaration, type, statement), variable_(variable) {}
+                           sem::Variable* variable,
+                           Constant constant_value)
+    : Base(declaration, type, statement, std::move(constant_value)),
+      variable_(variable) {}
 
 }  // namespace sem
 }  // namespace tint

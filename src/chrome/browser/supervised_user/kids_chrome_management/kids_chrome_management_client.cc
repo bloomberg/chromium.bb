@@ -21,6 +21,7 @@
 #include "components/signin/public/identity_manager/scope_set.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
@@ -30,6 +31,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
@@ -49,8 +51,6 @@ constexpr char kClassifyUrlDataContentType[] =
 constexpr char kClassifyUrlRequestApiPath[] =
     "https://kidsmanagement-pa.googleapis.com/kidsmanagement/v1/people/"
     "me:classifyUrl";
-constexpr char kClassifyUrlKidPermissionScope[] =
-    "https://www.googleapis.com/auth/kid.permission";
 constexpr char kClassifyUrlOauthConsumerName[] = "kids_url_classifier";
 constexpr char kClassifyUrlDataFormat[] = "url=%s&region_code=%s";
 constexpr char kClassifyUrlAllowed[] = "allowed";
@@ -206,7 +206,8 @@ void KidsChromeManagementClient::ClassifyURL(
   auto kids_chrome_request = std::make_unique<KidsChromeManagementRequest>(
       std::move(request_proto), std::move(callback),
       CreateResourceRequestForUrlClassifier(), traffic_annotation,
-      kClassifyUrlOauthConsumerName, kClassifyUrlKidPermissionScope,
+      kClassifyUrlOauthConsumerName,
+      GaiaConstants::kClassifyUrlKidPermissionOAuth2Scope,
       RequestMethod::kClassifyUrl);
 
   MakeHTTPRequest(std::move(kids_chrome_request));

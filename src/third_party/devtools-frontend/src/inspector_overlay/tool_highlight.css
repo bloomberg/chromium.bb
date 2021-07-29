@@ -1,3 +1,9 @@
+/*
+ * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
 body {
   --arrow-width: 15px;
   --arrow-height: 8px;
@@ -196,7 +202,7 @@ body {
 }
 
 .material-tag-name {
-  /* Keep this in sync with inspectorSyntaxHighlight.css (--dom-tag-name-color) */
+  /* Keep this in sync with inspectorSyntaxHighlight.css (--override-dom-tag-name-color) */
   color: rgb(136 18 128);
 }
 

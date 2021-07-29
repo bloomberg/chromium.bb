@@ -7,16 +7,21 @@
 #ifndef CORE_FXCRT_BYTESTRING_H_
 #define CORE_FXCRT_BYTESTRING_H_
 
+#include <stdarg.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
 #include <functional>
 #include <iosfwd>
 #include <iterator>
 #include <utility>
 
-#include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/string_data_template.h"
 #include "core/fxcrt/string_view_template.h"
 #include "third_party/base/check.h"
+#include "third_party/base/compiler_specific.h"
 #include "third_party/base/optional.h"
 #include "third_party/base/span.h"
 
@@ -276,15 +281,17 @@ std::ostream& operator<<(std::ostream& os, ByteStringView str);
 
 using ByteString = fxcrt::ByteString;
 
-uint32_t FX_HashCode_GetA(ByteStringView str, bool bIgnoreCase);
-uint32_t FX_HashCode_GetAsIfW(ByteStringView str, bool bIgnoreCase);
+uint32_t FX_HashCode_GetA(ByteStringView str);
+uint32_t FX_HashCode_GetLoweredA(ByteStringView str);
+uint32_t FX_HashCode_GetAsIfW(ByteStringView str);
+uint32_t FX_HashCode_GetLoweredAsIfW(ByteStringView str);
 
 namespace std {
 
 template <>
 struct hash<ByteString> {
-  std::size_t operator()(const ByteString& str) const {
-    return FX_HashCode_GetA(str.AsStringView(), false);
+  size_t operator()(const ByteString& str) const {
+    return FX_HashCode_GetA(str.AsStringView());
   }
 };
 

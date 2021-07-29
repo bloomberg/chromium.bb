@@ -58,6 +58,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "url/scheme_host_port.h"
 
 using ::testing::_;
 using ::testing::Contains;
@@ -199,6 +200,7 @@ class HttpStreamFactoryJobControllerTest : public TestWithTaskEnvironment {
   HttpStreamFactoryJobControllerTest()
       : TestWithTaskEnvironment(
             base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
+    FLAGS_quic_enable_http3_grease_randomness = false;
     session_deps_.enable_quic = true;
     session_deps_.host_resolver->set_synchronous_mode(true);
   }
@@ -2449,16 +2451,13 @@ TEST_F(JobControllerLimitMultipleH2Requests,
       reinterpret_cast<TransportClientSocketPool*>(session_->GetSocketPool(
           HttpNetworkSession::NORMAL_SOCKET_POOL, ProxyServer::Direct()));
   ClientSocketPool::GroupId group_id0(
-      HostPortPair::FromURL(request_info.url),
-      ClientSocketPool::SocketType::kSsl, request_info.privacy_mode,
+      url::SchemeHostPort(request_info.url), request_info.privacy_mode,
       NetworkIsolationKey(), SecureDnsPolicy::kAllow);
   ClientSocketPool::GroupId group_id1(
-      HostPortPair::FromURL(request_info.url),
-      ClientSocketPool::SocketType::kSsl, request_info.privacy_mode,
+      url::SchemeHostPort(request_info.url), request_info.privacy_mode,
       kNetworkIsolationKey1, SecureDnsPolicy::kAllow);
   ClientSocketPool::GroupId group_id2(
-      HostPortPair::FromURL(request_info.url),
-      ClientSocketPool::SocketType::kSsl, request_info.privacy_mode,
+      url::SchemeHostPort(request_info.url), request_info.privacy_mode,
       kNetworkIsolationKey2, SecureDnsPolicy::kAllow);
   EXPECT_EQ(static_cast<uint32_t>(kNumRequests),
             socket_pool->NumConnectJobsInGroupForTesting(group_id0));
@@ -2936,7 +2935,14 @@ TEST_F(HttpStreamFactoryJobControllerTest, GetAlternativeServiceInfoFor) {
       [](const quic::ParsedQuicVersion& a, const quic::ParsedQuicVersion& b) {
         return a.transport_version < b.transport_version;
       });
-  EXPECT_EQ(supported_versions, alt_svc_info.advertised_versions());
+  quic::ParsedQuicVersionVector advertised_versions =
+      alt_svc_info.advertised_versions();
+  std::sort(
+      advertised_versions.begin(), advertised_versions.end(),
+      [](const quic::ParsedQuicVersion& a, const quic::ParsedQuicVersion& b) {
+        return a.transport_version < b.transport_version;
+      });
+  EXPECT_EQ(supported_versions, advertised_versions);
 
   quic::ParsedQuicVersion unsupported_version_1 =
       quic::ParsedQuicVersion::Unsupported();
@@ -3109,8 +3115,15 @@ TEST_F(HttpStreamFactoryJobControllerTest, QuicHostAllowlist) {
       [](const quic::ParsedQuicVersion& a, const quic::ParsedQuicVersion& b) {
         return a.transport_version < b.transport_version;
       });
+  quic::ParsedQuicVersionVector advertised_versions =
+      alt_svc_info.advertised_versions();
+  std::sort(
+      advertised_versions.begin(), advertised_versions.end(),
+      [](const quic::ParsedQuicVersion& a, const quic::ParsedQuicVersion& b) {
+        return a.transport_version < b.transport_version;
+      });
   EXPECT_EQ(kProtoQUIC, alt_svc_info.alternative_service().protocol);
-  EXPECT_EQ(supported_versions, alt_svc_info.advertised_versions());
+  EXPECT_EQ(supported_versions, advertised_versions);
 
   session_->http_server_properties()->SetQuicAlternativeService(
       server, NetworkIsolationKey(),

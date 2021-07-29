@@ -49,7 +49,9 @@ class OmniboxPedal : public OmniboxAction {
     // Don't use copies. They were necessary with old algorithm,
     // but this structure is amenable to efficient resets on kept instances.
     TokenSequence(const TokenSequence&) = delete;
+    TokenSequence& operator=(const TokenSequence&) = delete;
     TokenSequence(TokenSequence&&);
+    TokenSequence& operator=(TokenSequence&&);
     ~TokenSequence();
 
     // Returns true if all tokens are consumed (true for empty sequences).
@@ -101,6 +103,12 @@ class OmniboxPedal : public OmniboxAction {
     std::vector<Token> tokens_;
   };
 
+  struct SynonymGroupSpec {
+    bool required;
+    bool match_once;
+    int message_id;
+  };
+
   class SynonymGroup {
    public:
     // Note: synonyms must be specified in decreasing order by length
@@ -130,6 +138,13 @@ class OmniboxPedal : public OmniboxAction {
     // Estimates RAM usage in bytes for this synonym group.
     size_t EstimateMemoryUsage() const;
 
+    // Erases sequences in ignore group from all synonyms in this group.
+    void EraseIgnoreGroup(const SynonymGroup& ignore_group);
+
+    // Returns true if this synonym group contains nontrivial data that can
+    // be used by the matching algorithm.
+    bool IsValid() const;
+
    protected:
     // If this is true, a synonym of the group must be present for triggering.
     // If false, then presence is simply allowed and does not inhibit triggering
@@ -151,7 +166,6 @@ class OmniboxPedal : public OmniboxAction {
   };
 
   OmniboxPedal(OmniboxPedalId id, LabelStrings strings, GURL url);
-  ~OmniboxPedal() override;
 
   // Writes labels associated with this Pedal by taking named
   //  values from provided dictionary value |ui_strings|.
@@ -167,6 +181,9 @@ class OmniboxPedal : public OmniboxAction {
 
   // Move a synonym group into this Pedal's collection.
   void AddSynonymGroup(SynonymGroup&& group);
+
+  // Specify synonym groups to load from localization strings.
+  virtual std::vector<SynonymGroupSpec> SpecifySynonymGroups() const;
 
   OmniboxPedalId id() const { return id_; }
 
@@ -184,12 +201,15 @@ class OmniboxPedal : public OmniboxAction {
   const gfx::VectorIcon& GetVectorIcon() const override;
 #endif
   size_t EstimateMemoryUsage() const override;
+  int32_t GetID() const override;
 
  protected:
   FRIEND_TEST_ALL_PREFIXES(OmniboxPedalTest, SynonymGroupErasesFirstMatchOnly);
   FRIEND_TEST_ALL_PREFIXES(OmniboxPedalTest, SynonymGroupsDriveConceptMatches);
   FRIEND_TEST_ALL_PREFIXES(OmniboxPedalImplementationsTest,
                            UnorderedSynonymExpressionsAreConceptMatches);
+
+  ~OmniboxPedal() override;
 
   OmniboxPedalId id_;
 

@@ -80,7 +80,13 @@ enum class ProfileKeepAliveOrigin {
   // Waiting for the provider to be ready in protocol handler web app launch.
   kWebAppProtocolHandlerLaunch = 17,
 
-  kMaxValue = kWebAppProtocolHandlerLaunch,
+  // An extension is being updated.
+  kExtensionUpdater = 18,
+
+  // This profile is being created (and is used to render GAIA sign-in flow).
+  kProfileCreationFlow = 19,
+
+  kMaxValue = kProfileCreationFlow,
 };
 
 std::ostream& operator<<(std::ostream& out,

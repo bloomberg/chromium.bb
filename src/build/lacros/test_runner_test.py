@@ -76,12 +76,11 @@ class TestRunnerTest(unittest.TestCase):
 
       ash_chrome_args = mock_popen.call_args_list[0][0][0]
       self.assertTrue(ash_chrome_args[0].endswith(
-          'build/lacros/prebuilt_ash_chrome/793554/chrome'))
+          'build/lacros/prebuilt_ash_chrome/793554/test_ash_chrome'))
       expected_ash_chrome_args = [
           '--user-data-dir=/tmp/ash-data',
           '--enable-wayland-server',
           '--no-startup-window',
-          '--use-fake-ml-service-for-test',
       ]
       if command == 'lacros_chrome_browsertests':
         expected_ash_chrome_args.append(
@@ -94,8 +93,7 @@ class TestRunnerTest(unittest.TestCase):
       if command == 'lacros_chrome_browsertests':
         self.assertListEqual([
             command,
-            '--lacros-mojo-socket-for-testing=/tmp/ash-data/lacros.sock',
-            '--test-launcher-jobs=1'
+            '--lacros-mojo-socket-for-testing=/tmp/ash-data/lacros.sock'
         ], test_args)
       else:
         self.assertListEqual([command], test_args)
@@ -166,7 +164,7 @@ class TestRunnerTest(unittest.TestCase):
         'test',
         'browser_tests',
         '--ash-chrome-path',
-        '/ash/chrome',
+        '/ash/test_ash_chrome',
     ]
     with mock.patch.object(sys, 'argv', args):
       test_runner.Main()

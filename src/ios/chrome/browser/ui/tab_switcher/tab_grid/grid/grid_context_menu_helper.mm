@@ -5,6 +5,8 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_context_menu_helper.h"
 
 #include "base/metrics/histogram_functions.h"
+#import "components/bookmarks/common/bookmark_pref_names.h"
+#import "components/prefs/pref_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/menu/action_factory.h"
@@ -46,7 +48,7 @@
 }
 
 - (UIContextMenuConfiguration*)contextMenuConfigurationForGridCell:
-    (GridCell*)gridCell API_AVAILABLE(ios(13.0)) {
+    (GridCell*)gridCell {
   __weak __typeof(self) weakSelf = self;
 
   UIContextMenuActionProvider actionProvider =
@@ -72,11 +74,17 @@
             [[NSMutableArray alloc] init];
 
         if (!IsURLNewTabPage(item.URL)) {
-          [menuElements addObject:[actionFactory actionToShareWithBlock:^{
-                          [weakSelf.contextMenuDelegate shareURL:item.URL
-                                                           title:item.title
-                                                        fromView:gridCell];
-                        }]];
+          if ([weakSelf.contextMenuDelegate
+                  respondsToSelector:@selector(shareURL:
+                                                  title:scenario:fromView:)]) {
+            [menuElements addObject:[actionFactory actionToShareWithBlock:^{
+                            [weakSelf.contextMenuDelegate
+                                shareURL:item.URL
+                                   title:item.title
+                                scenario:ActivityScenario::TabGridItem
+                                fromView:gridCell];
+                          }]];
+          }
 
           if (item.URL.SchemeIsHTTPOrHTTPS() &&
               [weakSelf.contextMenuDelegate
@@ -88,26 +96,34 @@
                 }]];
           }
 
+          UIAction* bookmarkAction;
           bool currentlyBookmarked =
               [weakSelf.actionsDataSource isGridItemBookmarked:item];
           if (currentlyBookmarked) {
             if ([weakSelf.contextMenuDelegate
                     respondsToSelector:@selector(editBookmarkWithURL:)]) {
-              [menuElements
-                  addObject:[actionFactory actionToEditBookmarkWithBlock:^{
-                    [weakSelf.contextMenuDelegate editBookmarkWithURL:item.URL];
-                  }]];
+              bookmarkAction = [actionFactory actionToEditBookmarkWithBlock:^{
+                [weakSelf.contextMenuDelegate editBookmarkWithURL:item.URL];
+              }];
             }
           } else {
             if ([weakSelf.contextMenuDelegate
                     respondsToSelector:@selector(bookmarkURL:title:)]) {
-              [menuElements
-                  addObject:[actionFactory actionToBookmarkWithBlock:^{
-                    [weakSelf.contextMenuDelegate bookmarkURL:item.URL
-                                                        title:item.title];
-                  }]];
+              bookmarkAction = [actionFactory actionToBookmarkWithBlock:^{
+                [weakSelf.contextMenuDelegate bookmarkURL:item.URL
+                                                    title:item.title];
+              }];
             }
           }
+          // Bookmarking can be disabled from prefs (from an enterprise policy),
+          // if that's the case grey out the option in the menu.
+          BOOL isEditBookmarksEnabled =
+              strongSelf.browser->GetBrowserState()->GetPrefs()->GetBoolean(
+                  bookmarks::prefs::kEditBookmarksEnabled);
+          if (!isEditBookmarksEnabled && bookmarkAction)
+            bookmarkAction.attributes = UIMenuElementAttributesDisabled;
+          if (bookmarkAction)
+            [menuElements addObject:bookmarkAction];
         }
 
         if ([weakSelf.contextMenuDelegate

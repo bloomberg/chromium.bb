@@ -15,6 +15,7 @@
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/deferred_sequenced_task_runner.h"
 #include "base/feature_list.h"
 #include "base/location.h"
@@ -33,7 +34,6 @@
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/synchronization/waitable_event.h"
@@ -362,11 +362,8 @@ std::unique_ptr<base::MemoryPressureMonitor> CreateMemoryPressureMonitor(
 
   std::unique_ptr<util::MultiSourceMemoryPressureMonitor> monitor;
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (chromeos::switches::MemoryPressureHandlingEnabled())
-    monitor = std::make_unique<util::MultiSourceMemoryPressureMonitor>();
-#elif defined(OS_MAC) || defined(OS_WIN) || defined(OS_FUCHSIA) || \
-    BUILDFLAG(IS_CHROMEOS_LACROS)
+#if defined(OS_MAC) || defined(OS_WIN) || defined(OS_FUCHSIA) || \
+    defined(OS_CHROMEOS)
   monitor = std::make_unique<util::MultiSourceMemoryPressureMonitor>();
 #endif
   // No memory monitor on other platforms...

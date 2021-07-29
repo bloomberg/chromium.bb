@@ -32,6 +32,7 @@
 <translation id="1499900233129743732"><ph name="MANAGER" /> මෙම පරිශීලකයා කළමනාකරණය කරන අතර දුරස්ථව සැකසීම් කළමනාකරණය කිරීමට සහ පරිශීලක ක්‍රියාකාරකම් නිරීක්ෂණය කිරීමට හැකිය.</translation>
 <translation id="150962533380566081">වලංගු නොවන PUK.</translation>
 <translation id="1510238584712386396">දියත්කරණය</translation>
+<translation id="1600964289716072707">ස්කෑනරයේ තවත් පිටුවක් තබා පිටුව එක් කිරීමට ස්කෑන් කරන්න තෝරන්න.</translation>
 <translation id="1621067168122174824">ආරෝපණ පරීක්ෂණය ධාවනය කරන්න</translation>
 <translation id="1641857168437328880">ලේඛන සංග්‍රාහකය (තනි-පැත්තක)</translation>
 <translation id="1644574205037202324">ඉතිහාසය</translation>
@@ -41,6 +42,7 @@
 <translation id="1715359911173058521">ස්කෑනරය සමඟ සන්නිවේදනය කිරීමේ ගැටලුවක් තිබේ. ජාලය හෝ USB සම්බන්ධතාව පරීක්ෂා කර නැවත උත්සාහ කරන්න.</translation>
 <translation id="1717874160321062422"><ph name="FIRST_MANAGER" /> සහ <ph name="SECOND_MANAGER" /> විසින් කළමනාකරණය කෙරේ</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
+<translation id="1759842336958782510">Chrome</translation>
 <translation id="1792647875738159689">ස්කෑන් කිරීම අවලංගු කරමින්</translation>
 <translation id="1851218745569890714">වීඩියෝ සම්මන්ත්‍රණය</translation>
 <translation id="1887850431809612466">දෘඨාංග සංශෝධනය</translation>
@@ -50,6 +52,7 @@
 <translation id="1947737735496445907">මුද්‍රණය කරන ලදි</translation>
 <translation id="1979103255016296513">මුරපදය වෙනස් කිරීම කල් ගොස් ඇත</translation>
 <translation id="1999615961760456652">පිවිසුම් දොරටුව</translation>
+<translation id="2006864819935886708">සබැඳුම</translation>
 <translation id="2008685064673031089">ප්‍රයිම් සෙවීම</translation>
 <translation id="2080070583977670716">තවත් සැකසුම්</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, අනුවාදය <ph name="MILESTONE_VERSION" /></translation>
@@ -57,10 +60,12 @@
 <translation id="2141644705054017895"><ph name="PERCENTAGE_VALUE" />%</translation>
 <translation id="2157959690810728433">පෙළ ගස්වන ලදි</translation>
 <translation id="2161394479394250669">මුද්‍රණ කාර්යය අවලංගු කරන්න</translation>
+<translation id="2209788852729124853">තදබදය ගණනය කිරීම් යළි සකසන්න</translation>
 <translation id="2217935453350629363">වත්මන් වේගය</translation>
 <translation id="2224337661447660594">අන්තර්ජාලය නැත</translation>
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="225692081236532131">සක්‍රිය කිරීමේ තත්ත්වය</translation>
+<translation id="2294675138977897428">ඊතර්නෙට් සම්බන්ධතාවක් අනාවරණය කර නොගන්නා ලදී</translation>
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> dpi</translation>
 <translation id="2338501278241028356">අවට උපාංග සොයා ගැනීමට බ්ලූටූත් ක්‍රියාත්මක කරන්න</translation>
 <translation id="2364498172489649528">සමත් විය</translation>
@@ -76,6 +81,7 @@
 <translation id="2620436844016719705">පද්ධතිය</translation>
 <translation id="2740531572673183784">හරි</translation>
 <translation id="2751739896257479635">EAP අදියර 2 සත්‍යාපනය</translation>
+<translation id="2783010256799387990">සමත් විය</translation>
 <translation id="2789486458103222910">හරි</translation>
 <translation id="2805756323405976993">යෙදුම්</translation>
 <translation id="2862104018715411648">ආරම්භ කිරීමට ඔබගේ ලේඛනය ස්කෑනරය මත තබා ස්කෑන් කරන්න තෝරන්න</translation>
@@ -115,6 +121,7 @@
 <translation id="3595596368722241419">බැටරිය ආරෝපිතයි</translation>
 <translation id="360565022852130722">WiFi ජාලය දුර්වල ප්‍රොටොකෝලයකින් ආරක්ෂිතයි WEP 802.1x</translation>
 <translation id="3689839747745352263"><ph name="TEST_NAME" /> පරීක්ෂණය</translation>
+<translation id="373232531963562220">{PAGE_NUMBER,plural, =0{පිටුව යළි ස්කෑන් කරන්න}=1{{PAGE_NUMBER} පිටුව යළි ස්කෑන් කරන්න}one{{PAGE_NUMBER} පිටුව යළි ස්කෑන් කරන්න}other{{PAGE_NUMBER} පිටුව යළි ස්කෑන් කරන්න}}</translation>
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (සමාලෝචන <ph name="AGGREGATED_COUNT" />)</translation>
 <translation id="3748026146096797577">සබැඳී නැත</translation>
 <translation id="3749289110408117711">ගොනුවේ නම</translation>
@@ -125,6 +132,7 @@
 <translation id="387301095347517405">ඔබගේ බැටරිය පූර්ණ ආරෝපණ චක්‍රයක් හරහා ගිය වාර ගණන</translation>
 <translation id="3941014780699102620">සත්කාරක විසඳීම අසාර්ථක විය</translation>
 <translation id="3942420633017001071">දෝෂ විනිශ්චය</translation>
+<translation id="3966286471246132217">වඩාත් නිවැරදි ප්‍රතිඵල සඳහා, පරීක්ෂණය අවසන් වන තුරු සියලු යෙදුම් වසන්න.</translation>
 <translation id="3967822245660637423">බාගැනීම සම්පූර්ණයි</translation>
 <translation id="397105322502079400">ගණනය කරමින්...</translation>
 <translation id="39823212440917567">දින <ph name="NUMBER_OF_DAYS" />කට වඩා පැරණි මුද්‍රණ කාර්ය ඉවත් කරනු ඇත</translation>
@@ -137,12 +145,17 @@
 <translation id="4176463684765177261">අබල කරන ලද</translation>
 <translation id="4227825898293920515">මුරපදය <ph name="TIME" /> තුළ කල් ඉකුත් වෙයි</translation>
 <translation id="4238516577297848345">කෙරෙමින් පවතින මුද්‍රණ කාර්යයක් නැත</translation>
+<translation id="4244962993387259361">මතක පරීක්ෂණයක් ධාවනය කිරීමට ඔබට අවම වශයෙන් 500 MB ඉඩ අවශ්‍ය වේ. ඉඩ නිදහස් කිරීමට, සැකසීම් &gt; ගබඩාව කළමනාකරණය වෙත යන්න.</translation>
+<translation id="4289540628985791613">දළ විශ්ලේෂණය</translation>
 <translation id="4297501883039923494">නැවතිණි - නොදන්නා දෝෂයකි</translation>
+<translation id="4300073214558989">රූප <ph name="IMAGE_COUNT" /></translation>
 <translation id="4378373042927530923">ධාවනය නොවේ</translation>
+<translation id="4378551569595875038">සම්බන්ධ වෙමින්...</translation>
 <translation id="4382484599443659549">PDF</translation>
 <translation id="4425149324548788773">මගේ Drive</translation>
 <translation id="4429881212383817840">Kerberos ප්‍රවේශපත්‍රය ඉක්මනින් කල් ඉකුත් වෙයි</translation>
 <translation id="4431821876790500265">වාර්තාව බලන්න</translation>
+<translation id="4439309966561990606">{PAGE_NUMBER,plural, =0{පිටුව ඉවත් කරන්න}=1{{PAGE_NUMBER} පිටුව ඉවත් කරන්න}one{{PAGE_NUMBER} පිටුව ඉවත් කරන්න}other{{PAGE_NUMBER} පිටුව ඉවත් කරන්න}}</translation>
 <translation id="445059817448385655">පැරණි මුරපදය</translation>
 <translation id="4453205916657964690">අනුජාල ආවරණය</translation>
 <translation id="4454245904991689773">ස්කෑන් කරන්න</translation>
@@ -164,9 +177,11 @@
 <translation id="469379815867856270">සංඥා ප්‍රබලතාව</translation>
 <translation id="4707579418881001319">L2TP/IPsec + භාවිත සහතිකය</translation>
 <translation id="4731797938093519117">මාපිය ප්‍රවේශය</translation>
+<translation id="475869545581454722">Chrome OS මුරපදය යාවත්කාලීන කරන ලදි</translation>
 <translation id="4773299976671772492">නවත්වන ලදි</translation>
 <translation id="4794140124556169553">CPU පරීක්ෂණයක් ධාවනය කිරීම ඔබගේ පද්ධතියේ කාර්ය සාධනයට බලපායි</translation>
 <translation id="4808449224298348341">මුද්‍රණ කාර්යය <ph name="DOCUMENT_TITLE" /> අවලංගු කරන ලදී</translation>
+<translation id="4813136279048157860">මගේ රූප</translation>
 <translation id="4813345808229079766">සබඳතාව</translation>
 <translation id="4832079907277790330">ගොනු යෙදුම තුළ ෆෝල්ඩරයක් තෝරන්න...</translation>
 <translation id="4835901797422965222">සක්‍රිය ජාල නැත</translation>
@@ -208,6 +223,7 @@
 <translation id="5317780077021120954">සුරකින්න</translation>
 <translation id="5318334351163689047">TCP ඉල්ලීම් අසාර්ථක වීම්</translation>
 <translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
+<translation id="5327248766486351172">නම</translation>
 <translation id="5332948983412042822">දැන් අලුත් එකක් තෝරන්න</translation>
 <translation id="5333530671332546086">නොදන්නා ද්වාර තත්ත්වය</translation>
 <translation id="5372659122375744710">WiFi ජාලය ආරක්ෂිත නැත</translation>
@@ -225,9 +241,10 @@
 <translation id="5669267381087807207">සක්‍රීය වෙමින්...</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">පවුල</translation>
+<translation id="5701381305118179107">මධ්‍ය</translation>
+<translation id="5707900041990977207"><ph name="CURRENT_PAGE" />න් <ph name="TOTAL_PAGES" /></translation>
 <translation id="5752751666635965375">ඔබේම ක්‍රීඩාව සාදන්න</translation>
 <translation id="5760715441271661976">ද්වාර තත්වය</translation>
-<translation id="5797428682393400134">සාර්ථකයි</translation>
 <translation id="5832805196449965646">පුද්ගලයා එක් කරන්න</translation>
 <translation id="583281660410589416">නොදනී</translation>
 <translation id="5849570051105887917">නිවෙස් සපයන්නාගේ කේතය</translation>
@@ -236,6 +253,7 @@
 <translation id="5916084858004523819">තහනම්</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{ඔබගේ ගොනුව සාර්ථකව ස්කෑන් කර <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" /> වෙත සුරැක ඇත.}one{ඔබගේ ගොනු සාර්ථකව ස්කෑන් කර <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" /> වෙත සුරැක ඇත.}other{ඔබගේ ගොනු සාර්ථකව ස්කෑන් කර <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" /> වෙත සුරැක ඇත.}}</translation>
 <translation id="5931523347251946569">ගොනුව හමු නොවිණි</translation>
+<translation id="5972388717451707488">යන්ත්‍රය යාවත්කාලීන කරන්න</translation>
 <translation id="6037291330010597344">ස්කෑනරයේ ලේඛන සංග්‍රහය හිස්ය. ලේඛන එක් කර නැවත උත්සාහ කරන්න.</translation>
 <translation id="6040143037577758943">වසන්න</translation>
 <translation id="6040852767465482106">නිර්නාමික අනන්‍යතාව</translation>
@@ -256,6 +274,8 @@
 <translation id="6191293864534840972">විකෘති වූ නම් සේවාදායක</translation>
 <translation id="6223752125779001553">ස්කෑනර ලබා ගත නොහැකිය</translation>
 <translation id="6232017090690406397">බැටරිය</translation>
+<translation id="6243280677745499710">දැනට සකසා ඇත</translation>
+<translation id="6280912520669706465">ARC</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" /> පරීක්ෂණය අවලංගු කර ඇත</translation>
 <translation id="6325525973963619867">අසාර්ථක විය</translation>
 <translation id="636850387210749493">ව්‍යාපාරික බඳවාගැනීම</translation>
@@ -271,6 +291,8 @@
 <translation id="6527081081771465939">නොදන්නා Wi-Fi ආරක්ෂක ප්‍රොටොකෝලය</translation>
 <translation id="65587193855025101">Flatbed</translation>
 <translation id="6564646048574748301">අසාර්ථක විය - මුද්‍රණ යන්ත්‍රය වෙත ළඟා විය නොහැකිය</translation>
+<translation id="6574762126505704998">පුරවන්න</translation>
+<translation id="6603230386432466813">සම්බන්ධ වීමේ ගැටලුවක් තිබේද?</translation>
 <translation id="6618744767048954150">ධාවන වේ</translation>
 <translation id="6620487321149975369">මුද්‍රණ කාර්ය අතින් ඉවත් නොකළහොත් ඉතිහාසයේ දිස්වනු ඇත</translation>
 <translation id="6643016212128521049">මකන්න</translation>
@@ -281,10 +303,12 @@
 <translation id="6766275201586212568">අසාර්ථක වූ DNS විභේදන</translation>
 <translation id="6768237774506518020">ඉහළ DNS විභේදන අසාර්ථක වීම් අනුපාතය</translation>
 <translation id="6853312040151791195">විසර්ජන වේගය</translation>
+<translation id="6905724422583748843"><ph name="PAGE_NAME" /> වෙත ආපසු</translation>
 <translation id="6910312834584889076">ස්කෑනරයේ ආවරණය විවෘතයි. කවරය වසා නැවත උත්සාහ කරන්න.</translation>
 <translation id="6911383237894364323">මාධ්‍ය සේවාදායක වෙත සබැඳීමට නොහැකිය</translation>
 <translation id="6957231940976260713">සේවා නාමය</translation>
 <translation id="6977381486153291903">නිත්‍ය මෘදුකාංග සංශෝධනය</translation>
+<translation id="6982876849933694860">නව සබැඳුමක් පිහිටුවීමට <ph name="BEGIN_LINK" />සැකසීම්<ph name="END_LINK" /> වෙත යන්න.</translation>
 <translation id="7028979494427204405"><ph name="MANAGER" /> මෙම උපාංගය කළමනාකරණය කරන අතර, එයට පිවිසි වෙබ් පිටු, මුරපද සහ ඉ-තැපෑල ඇතුළුව සියලු පරිශීලක ක්‍රියාකාරකම් වෙත ප්‍රවේශය තිබේ.</translation>
 <translation id="7040230719604914234">මෙහෙයවනය</translation>
 <translation id="7059230779847288458">ආරෝපණය වෙමින්, සම්පූර්ණ වන තෙක් <ph name="TIME_VALUE" /></translation>
@@ -294,10 +318,12 @@
 <translation id="7144878232160441200">නැවත උත්සහ කරන්න</translation>
 <translation id="714876143603641390">LAN සබැඳුම් හැකියාව</translation>
 <translation id="7162487448488904999">ගැලරිය</translation>
+<translation id="7172721935181587524">රූප 1</translation>
 <translation id="7177485034254901881">මෙම <ph name="DEVICE_TYPE" /> කළමනාකරණය කරනු ලබන්නේ <ph name="MANAGER" /> මගිනි. පරිපාලකයින්ට උපාංගය දුරස්ථව වින්‍යාස කිරීමට හැකිය.</translation>
 <translation id="7216409898977639127">සෙලියුලර් සපයන්නා</translation>
 <translation id="7271040990581020067">ස්කෑනරය දැනට භාවිතයේ ඇත. පසුව නැවත උත්සාහ කරන්න.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7287310195820267359">වෝල්පේපර එකතු</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7343649194310845056">ජාල උපාංග</translation>
 <translation id="7359657277149375382">ගොනු වර්ගය</translation>
@@ -314,15 +340,18 @@
 <translation id="7569444139234840525"><ph name="QUERY_TEXT" /> · /<ph name="PHONETICS" />/</translation>
 <translation id="7595982850646262331"><ph name="TIME_VALUE" /> ඉතිරිය</translation>
 <translation id="7620771111601174153">උදවු මධ්‍යස්ථානය තුළ තව දැන ගන්න</translation>
+<translation id="763165478673169849">අවසන් යළි සැකසීමේ වේලාව</translation>
 <translation id="7648838807254605802">ඉහළ HTTPS පමාව</translation>
 <translation id="7658239707568436148">අවලංගු කරන්න</translation>
 <translation id="7690294790491645610">නව මුරපදය තහවුරු කරන්න</translation>
 <translation id="7701040980221191251">නොමැත</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="773153675489693198">චක්‍ර ගණන</translation>
+<translation id="7762130827864645708">ඔබගේ මුරපදය වෙනස් කිරීම සාර්ථක විය. කරුණාකර මෙතැන් සිට නව මුරපදය භාවිත කරන්න.</translation>
 <translation id="7769672763586021400">ආදර්ශ ID</translation>
 <translation id="7805768142964895445">තත්වය</translation>
 <translation id="7819857487979277519">PSK (WPA හෝ RSN)</translation>
+<translation id="7835501727204647447">CloudReady ස්ථාපනය කරන්න</translation>
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">සැපයුම්කරු වර්ගය</translation>
 <translation id="7936303884198020182">නම් සේවාදායක හමු නොවීය</translation>
@@ -333,14 +362,17 @@
 <translation id="8075838845814659848">ඉතිරි ආරෝපණය</translation>
 <translation id="808894953321890993">මුරපදය වෙනස් කරන්න</translation>
 <translation id="8129620843620772246"><ph name="TEMPERATURE_C" />° C</translation>
+<translation id="8132480444149501833">තදබදය ගණනය කිරීම් ඉල්ලන්න</translation>
 <translation id="8206859287963243715">සෙලියුලර්</translation>
 <translation id="8208861521865154048">අමතර වාසි</translation>
+<translation id="8214184102975786227">එක් PDF එකකට පිටු කිහිපයක් ස්කෑන් කරන්න</translation>
 <translation id="8230672074305416752">පෙරනිමි ජාල වාහල පින්ග් කිරීම අසාර්ථක විය</translation>
 <translation id="8246209727385807362">නොදන්නා වාහකයෙකි</translation>
 <translation id="8291967909914612644">නිවෙස් සපයන්නාගේ රට</translation>
 <translation id="8294431847097064396">මූලාශ්‍රය</translation>
 <translation id="8297006494302853456">දුර්වලයි</translation>
 <translation id="8302368968391049045">HTTPS ෆයර්වෝලය</translation>
+<translation id="8318753676953949627">රූප නැත</translation>
 <translation id="8347227221149377169">මුද්‍රණ වැඩ</translation>
 <translation id="8352772353338965963">බහු පිවිසුම් සඳහා ගිනුමක් එක් කරන්න. සියළු පිවිසි ගිනුම් වෙත මුරපදයක් නොමැතිව පිවිසිය හැක. එම නිසා මෙම විශේෂාංගය භාවිත කළ යුත්තේ විශ්වාසී ගිනුම් සමඟ පමණි.</translation>
 <translation id="8364946094152050673">හිස් නම් සේවාදායක</translation>
@@ -352,8 +384,11 @@
 <translation id="8475690821716466388">WiFi ජාලය දුර්වල ප්‍රොටොකෝලයකින් ආරක්ෂිතයි WEP PSK</translation>
 <translation id="8477551185774834963">DNS පමාව ඉඩ දිය හැකි මායිමෙන් මදක් ඉහළය</translation>
 <translation id="8483248364096924578">IP ලිපිනය</translation>
+<translation id="8498220429738806196">තදබදය ගණනය කිරීම්</translation>
 <translation id="8503813439785031346">පරිශීලක නාමය</translation>
 <translation id="8503836310948963452">හුදෙක් තව මිනිත්තු කීපයකි...</translation>
+<translation id="8521021929829989041">පුද්ගලික උපාංගයක් භාවිත කරන්න</translation>
+<translation id="8528615187455571738">Crosvm</translation>
 <translation id="8575298406870537639">ඔබගේ වාහකයට ඔවුන්ගේ ජාලයට සම්බන්ධ වීමට මෙම විකල්පය අවශ්‍ය විය හැකිය. විස්තර සඳහා ඔබගේ වාහකය අමතන්න.</translation>
 <translation id="8576249514688522074">දියත් නොකළ</translation>
 <translation id="8620617069779373398">රෝමිං තත්ත්වය</translation>
@@ -370,6 +405,7 @@
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8818152010000655963">වෝල්පේපරය</translation>
 <translation id="8845001906332463065">උදවු ලබා ගන්න</translation>
+<translation id="8868741746785112895">GUID</translation>
 <translation id="8881098542468797602">පරීක්ෂණය සාර්ථක විය</translation>
 <translation id="8898840733695078011">සංඥා ප්‍රබලතාව</translation>
 <translation id="8910721771319628100">පමාවේ මායිමට ඉහළ පෙරනිමි ජාලය</translation>
@@ -379,11 +415,13 @@
 <translation id="8930622219860340959">නොරැහැන්</translation>
 <translation id="8968751544471797276">ආරෝපණ වේගය</translation>
 <translation id="8970109610781093811">නැවත ධාවනය කරන්න</translation>
+<translation id="8987565828374052507">{NUMBER_OF_PAGES,plural, =0{ස්කෑන් කරන්න}=1{පිටු {NUMBER_OF_PAGES}ක් ස්කෑන් කරන්න}one{පිටු {NUMBER_OF_PAGES}ක් ස්කෑන් කරන්න}other{පිටු {NUMBER_OF_PAGES}ක් ස්කෑන් කරන්න}}</translation>
 <translation id="9003704114456258138">සංඛ්‍යාතය</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9088306295921699330">වත්මන් භාවිතය</translation>
+<translation id="9095775724867566971">Pluginvm</translation>
 <translation id="910415269708673980"><ph name="PRINCIPAL_NAME" /> සඳහා ප්‍රවේශපත්‍රය නැවුම් කරන්න</translation>
 <translation id="9106415115617144481"><ph name="PAGE_NUMBER" /> පිටුව ස්කෑන් කරමින්</translation>
 <translation id="9111102763498581341">අගුලු හරන්න</translation>

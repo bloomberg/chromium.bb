@@ -16,11 +16,15 @@
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/search/ntp_features.h"
-#include "content/public/browser/frame_service_base.h"
+#include "components/ukm/content/source_url_recorder.h"
+#include "content/public/browser/document_service_base.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "crypto/random.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/re2/src/re2/re2.h"
 
 namespace cart {
@@ -82,13 +86,13 @@ void ConstructCartProto(cart_db::ChromeCartContentProto* proto,
 // Implementation of the Mojo CommerceHintObserver. This is called by the
 // renderer to notify the browser that a commerce hint happens.
 class CommerceHintObserverImpl
-    : public content::FrameServiceBase<mojom::CommerceHintObserver> {
+    : public content::DocumentServiceBase<mojom::CommerceHintObserver> {
  public:
   explicit CommerceHintObserverImpl(
       content::RenderFrameHost* render_frame_host,
       mojo::PendingReceiver<mojom::CommerceHintObserver> receiver,
       base::WeakPtr<CommerceHintService> service)
-      : FrameServiceBase(render_frame_host, std::move(receiver)),
+      : DocumentServiceBase(render_frame_host, std::move(receiver)),
         binding_url_(render_frame_host->GetLastCommittedURL()),
         service_(std::move(service)) {}
 
@@ -137,6 +141,13 @@ class CommerceHintObserverImpl
     service_->OnRemoveCart(binding_url_);
   }
 
+  void OnFormSubmit(bool is_purchase) override {
+    DVLOG(1) << "Received OnFormSubmit in the browser process";
+    if (!service_ || !binding_url_.SchemeIsHTTPOrHTTPS())
+      return;
+    service_->OnFormSubmit(is_purchase);
+  }
+
  private:
   GURL binding_url_;
   base::WeakPtr<CommerceHintService> service_;
@@ -166,7 +177,7 @@ void CommerceHintService::BindCommerceHintObserver(
     content::RenderFrameHost* host,
     mojo::PendingReceiver<mojom::CommerceHintObserver> receiver) {
   // The object is bound to the lifetime of |host| and the mojo
-  // connection. See FrameServiceBase for details.
+  // connection. See DocumentServiceBase for details.
   new CommerceHintObserverImpl(host, std::move(receiver),
                                weak_factory_.GetWeakPtr());
 }
@@ -229,6 +240,18 @@ void CommerceHintService::OnCartUpdated(
   cart_db::ChromeCartContentProto proto;
   ConstructCartProto(&proto, cart_url, std::move(products));
   service_->AddCart(proto.key(), validated_cart, std::move(proto));
+}
+
+void CommerceHintService::OnFormSubmit(bool is_purchase) {
+  uint8_t bytes[1];
+  crypto::RandBytes(bytes);
+  bool report_truth = bytes[0] & 0x1;
+  bool random = (bytes[0] >> 1) & 0x1;
+  bool reported = report_truth ? is_purchase : random;
+  ukm::builders::Shopping_FormSubmitted(
+      ukm::GetSourceIdForWebContentsDocument(web_contents_))
+      .SetIsTransaction(reported)
+      .Record(ukm::UkmRecorder::Get());
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(CommerceHintService)

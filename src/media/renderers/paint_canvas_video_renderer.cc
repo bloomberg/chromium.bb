@@ -10,6 +10,7 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/checked_math.h"
@@ -145,6 +146,7 @@ const gpu::MailboxHolder& GetVideoFrameMailboxHolder(VideoFrame* video_frame) {
          PIXEL_FORMAT_XRGB == video_frame->format() ||
          PIXEL_FORMAT_RGB24 == video_frame->format() ||
          PIXEL_FORMAT_ABGR == video_frame->format() ||
+         PIXEL_FORMAT_XBGR == video_frame->format() ||
          PIXEL_FORMAT_XB30 == video_frame->format() ||
          PIXEL_FORMAT_XR30 == video_frame->format() ||
          PIXEL_FORMAT_NV12 == video_frame->format())
@@ -184,7 +186,8 @@ sk_sp<SkImage> WrapGLTexture(
     GLenum target,
     GLuint texture_id,
     const gfx::Size& size,
-    viz::RasterContextProvider* raster_context_provider) {
+    viz::RasterContextProvider* raster_context_provider,
+    bool texture_origin_is_top_left) {
   GrGLTextureInfo texture_info;
   texture_info.fID = texture_id;
   texture_info.fTarget = target;
@@ -196,7 +199,9 @@ sk_sp<SkImage> WrapGLTexture(
                                    GrMipMapped::kNo, texture_info);
   return SkImage::MakeFromAdoptedTexture(
       raster_context_provider->GrContext(), backend_texture,
-      kTopLeft_GrSurfaceOrigin, kRGBA_8888_SkColorType, kPremul_SkAlphaType);
+      texture_origin_is_top_left ? kTopLeft_GrSurfaceOrigin
+                                 : kBottomLeft_GrSurfaceOrigin,
+      kRGBA_8888_SkColorType, kPremul_SkAlphaType);
 }
 
 void VideoFrameCopyTextureOrSubTexture(gpu::gles2::GLES2Interface* gl,
@@ -782,6 +787,20 @@ void PaintCanvasVideoRenderer::Paint(
     return;
   }
 
+  if (video_frame && video_frame->HasTextures()) {
+    if (!raster_context_provider) {
+      DLOG(ERROR)
+          << "Can't render textured frames w/o viz::RasterContextProvider";
+      return;  // Unable to get/create a shared main thread context.
+    }
+    if (!raster_context_provider->GrContext() &&
+        !raster_context_provider->ContextCapabilities().supports_oop_raster) {
+      DLOG(ERROR)
+          << "Can't render textured frames w/o valid GrContext or OOP raster.";
+      return;  // The context has been lost.
+    }
+  }
+
   SkRect dest;
   dest.setLTRB(dest_rect.x(), dest_rect.y(), dest_rect.right(),
                dest_rect.bottom());
@@ -806,8 +825,9 @@ void PaintCanvasVideoRenderer::Paint(
   // Don't allow wrapping the VideoFrame texture, as we want to be able to cache
   // the PaintImage, to avoid redundant readbacks if the canvas is software.
   if (!UpdateLastImage(video_frame, raster_context_provider,
-                       false /* allow_wrap_texture */))
+                       false /* allow_wrap_texture */)) {
     return;
+  }
   DCHECK(cache_);
   cc::PaintImage image = cache_->paint_image;
   DCHECK(image);
@@ -828,9 +848,9 @@ void PaintCanvasVideoRenderer::Paint(
   const bool need_scaling =
       dest_rect.size() != gfx::SizeF(video_frame->visible_rect().size());
   const bool need_translation = !dest_rect.origin().IsOrigin();
-  const bool needs_y_flip = video_transformation.mirrored;
+  const bool needs_mirror = video_transformation.mirrored;
   bool need_transform =
-      need_rotation || need_scaling || need_translation || needs_y_flip;
+      need_rotation || need_scaling || need_translation || needs_mirror;
   if (need_transform) {
     canvas->save();
     canvas->translate(
@@ -865,7 +885,7 @@ void PaintCanvasVideoRenderer::Paint(
                               video_frame->visible_rect().width());
     auto sy = SkFloatToScalar(rotated_dest_size.height() /
                               video_frame->visible_rect().height());
-    if (needs_y_flip) {
+    if (needs_mirror) {
       if (has_flipped_size)
         sy *= -1;
       else
@@ -973,7 +993,7 @@ scoped_refptr<VideoFrame> DownShiftHighbitVideoFrame(
       NOTREACHED();
       return nullptr;
   }
-  const int shift = video_frame->BitDepth() - 8;
+  const int scale = 1 << (24 - video_frame->BitDepth());
   scoped_refptr<VideoFrame> ret = VideoFrame::CreateFrame(
       format, video_frame->coded_size(), video_frame->visible_rect(),
       video_frame->natural_size(), video_frame->timestamp());
@@ -984,24 +1004,22 @@ scoped_refptr<VideoFrame> DownShiftHighbitVideoFrame(
   ret->metadata().MergeMetadataFrom(video_frame->metadata());
 
   for (int plane = VideoFrame::kYPlane; plane <= VideoFrame::kVPlane; ++plane) {
-    int width = ret->row_bytes(plane);
+    int width = VideoFrame::Columns(plane, video_frame->format(),
+                                    video_frame->visible_rect().width());
+    int height = VideoFrame::Rows(plane, video_frame->format(),
+                                  video_frame->visible_rect().height());
     const uint16_t* src =
-        reinterpret_cast<const uint16_t*>(video_frame->data(plane));
-    uint8_t* dst = ret->data(plane);
+        reinterpret_cast<const uint16_t*>(video_frame->visible_data(plane));
+    uint8_t* dst = ret->visible_data(plane);
     if (!src) {
       // An AV1 monochrome (grayscale) frame has no U and V planes. Set all U
       // and V samples to the neutral value (128).
       DCHECK_NE(plane, VideoFrame::kYPlane);
-      memset(dst, 128, ret->rows(plane) * ret->stride(plane));
+      memset(dst, 128, height * ret->stride(plane));
       continue;
     }
-    for (int row = 0; row < video_frame->rows(plane); row++) {
-      for (int x = 0; x < width; x++) {
-        dst[x] = src[x] >> shift;
-      }
-      src += video_frame->stride(plane) / 2;
-      dst += ret->stride(plane);
-    }
+    libyuv::Convert16To8Plane(src, video_frame->stride(plane) / 2, dst,
+                              ret->stride(plane), scale, width, height);
   }
   return ret;
 }
@@ -1221,6 +1239,12 @@ void PaintCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
   DCHECK(video_frame);
   DCHECK(video_frame->HasTextures());
 
+  // Correct Y-flip. flip_y should take precedent when
+  // texture_origin_is_top_left is true, and invert the setting when
+  // texture_origin_is_top_left is false.
+  if (!video_frame->metadata().texture_origin_is_top_left)
+    flip_y = !flip_y;
+
   gpu::Mailbox mailbox;
   uint32_t source_texture =
       ImportVideoFrameSingleMailbox(gl, video_frame, &mailbox);
@@ -1252,8 +1276,10 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(video_frame);
   DCHECK(video_frame->HasTextures());
+
   if (video_frame->NumTextures() > 1 ||
       video_frame->metadata().read_lock_fences_enabled) {
+    DCHECK(video_frame->metadata().texture_origin_is_top_left);
     if (!raster_context_provider)
       return false;
     GrDirectContext* gr_context = raster_context_provider->GrContext();
@@ -1363,6 +1389,11 @@ bool PaintCanvasVideoRenderer::UploadVideoFrameToGLTexture(
   if (!raster_context_provider || !raster_context_provider->GrContext())
     return false;
 
+  if (raster_context_provider->ContextCapabilities().disable_legacy_mailbox)
+    return false;
+
+  DCHECK(video_frame->metadata().texture_origin_is_top_left);
+
   // Trigger resource allocation for dst texture to back SkSurface.
   // Dst texture size should equal to video frame visible rect.
   destination_gl->BindTexture(target, texture);
@@ -1424,6 +1455,8 @@ bool PaintCanvasVideoRenderer::PrepareVideoFrameForWebGL(
   // TODO(nazabris): Support OOP-R code path here that does not have GrContext.
   if (!raster_context_provider || !raster_context_provider->GrContext())
     return false;
+
+  DCHECK(video_frame->metadata().texture_origin_is_top_left);
 
   // Take webgl video texture as 2D texture. Setting it as external render
   // target backend for skia.
@@ -1495,6 +1528,8 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameYUVDataToGLTexture(
     return false;
   }
   // Could handle NV12 here as well. See NewSkImageFromVideoFrameYUV.
+
+  DCHECK(video_frame->metadata().texture_origin_is_top_left);
 
   // Since skia always produces premultiply alpha outputs,
   // trying direct uploading path when video format is opaque or premultiply
@@ -1592,6 +1627,7 @@ bool PaintCanvasVideoRenderer::TexImage2D(
     bool premultiply_alpha) {
   DCHECK(frame);
   DCHECK(!frame->HasTextures());
+  DCHECK(frame->metadata().texture_origin_is_top_left);
 
   // Note: CopyTextureCHROMIUM uses mediump for color computation. Don't use
   // it if the precision would lead to data loss when converting 16-bit
@@ -1639,6 +1675,7 @@ bool PaintCanvasVideoRenderer::TexSubImage2D(unsigned target,
                                              bool premultiply_alpha) {
   DCHECK(frame);
   DCHECK(!frame->HasTextures());
+  DCHECK(frame->metadata().texture_origin_is_top_left);
 
   scoped_refptr<DataBuffer> temp_buffer;
   if (!TexImageHelper(frame, format, type, flip_y, &temp_buffer))
@@ -1712,7 +1749,9 @@ bool PaintCanvasVideoRenderer::UpdateLastImage(
             cache_->texture_backing->raster_context_provider() ==
                 raster_context_provider &&
             cache_->coded_size == video_frame->coded_size() &&
-            cache_->Recycle()) {
+            // We always convert to top left origin when copying, so if the
+            // cache was previously for a wrapped texture it can't be used.
+            cache_->texture_origin_is_top_left && cache_->Recycle()) {
           // We can reuse the shared image from the previous cache.
           cache_->frame_id = video_frame->unique_id();
           mailbox = cache_->texture_backing->GetMailbox();
@@ -1736,11 +1775,13 @@ bool PaintCanvasVideoRenderer::UpdateLastImage(
         if (video_frame->NumTextures() == 1) {
           auto frame_mailbox =
               SynchronizeVideoFrameSingleMailbox(ri, video_frame.get());
-          ri->CopySubTexture(frame_mailbox, mailbox, GL_TEXTURE_2D, 0, 0, 0, 0,
-                             video_frame->coded_size().width(),
-                             video_frame->coded_size().height(), GL_FALSE,
-                             GL_FALSE);
+          ri->CopySubTexture(
+              frame_mailbox, mailbox, GL_TEXTURE_2D, 0, 0, 0, 0,
+              video_frame->coded_size().width(),
+              video_frame->coded_size().height(),
+              !video_frame->metadata().texture_origin_is_top_left, GL_FALSE);
         } else {
+          DCHECK(video_frame->metadata().texture_origin_is_top_left);
           gpu::MailboxHolder dest_holder{mailbox, gpu::SyncToken(),
                                          GL_TEXTURE_2D};
           VideoFrameYUVConverter::ConvertYUVVideoFrameNoCaching(
@@ -1752,6 +1793,10 @@ bool PaintCanvasVideoRenderer::UpdateLastImage(
 
       cache_->coded_size = video_frame->coded_size();
       cache_->visible_rect = video_frame->visible_rect();
+      cache_->texture_origin_is_top_left =
+          wraps_video_frame_texture
+              ? video_frame->metadata().texture_origin_is_top_left
+              : true;
 
       // In OOPR mode, we can keep the entire TextureBacking. In non-OOPR,
       // we can recycle the mailbox/texture, but have to replace the SkImage.
@@ -1762,12 +1807,12 @@ bool PaintCanvasVideoRenderer::UpdateLastImage(
         // current pattern but is most likely bugged. Access should last for
         // the lifetime of the SkImage.
         ScopedSharedImageAccess(ri, cache_->source_texture, mailbox);
-        auto source_image =
-            WrapGLTexture(wraps_video_frame_texture
-                              ? video_frame->mailbox_holder(0).texture_target
-                              : GL_TEXTURE_2D,
-                          cache_->source_texture, video_frame->coded_size(),
-                          raster_context_provider);
+        auto source_image = WrapGLTexture(
+            wraps_video_frame_texture
+                ? video_frame->mailbox_holder(0).texture_target
+                : GL_TEXTURE_2D,
+            cache_->source_texture, video_frame->coded_size(),
+            raster_context_provider, cache_->texture_origin_is_top_left);
         if (!source_image) {
           // Couldn't create the SkImage.
           cache_.reset();

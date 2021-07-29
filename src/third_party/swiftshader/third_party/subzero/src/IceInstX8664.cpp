@@ -104,7 +104,6 @@ void TargetX8664Traits::X86OperandMem::emit(const Cfg *Func) const {
       static_cast<const ::Ice::X8664::TargetX8664 *>(Func->getTarget());
   // If the base is rematerializable, we need to replace it with the correct
   // physical register (stack or base pointer), and update the Offset.
-  const bool NeedSandboxing = Target->needSandboxing();
   int32_t Disp = 0;
   if (getBase() && getBase()->isRematerializable()) {
     Disp += getRematerializableOffset(getBase(), Target);
@@ -129,16 +128,10 @@ void TargetX8664Traits::X86OperandMem::emit(const Cfg *Func) const {
     // TODO(sehr): ConstantRelocatable still needs updating for
     // rematerializable base/index and Disp.
     assert(Disp == 0);
-    const bool UseNonsfi = getFlags().getUseNonsfi();
-    CR->emitWithoutPrefix(Target, UseNonsfi ? "@GOTOFF" : "");
-    assert(!UseNonsfi);
+    CR->emitWithoutPrefix(Target);
     if (Base == nullptr && Index == nullptr) {
       // rip-relative addressing.
-      if (NeedSandboxing) {
-        Str << "(%rip)";
-      } else {
-        Str << "(%eip)";
-      }
+      Str << "(%rip)";
     }
   } else {
     llvm_unreachable("Invalid offset type for x86 mem operand");
@@ -150,25 +143,7 @@ void TargetX8664Traits::X86OperandMem::emit(const Cfg *Func) const {
 
   Str << "(";
   if (Base != nullptr) {
-    const Variable *B = Base;
-    if (!NeedSandboxing) {
-      // TODO(jpp): stop abusing the operand's type to identify LEAs.
-      const Type MemType = getType();
-      if (Base->getType() != IceType_i32 && MemType != IceType_void &&
-          !isVectorType(MemType)) {
-        // X86-64 is ILP32, but %rsp and %rbp are accessed as 64-bit registers.
-        // For filetype=asm, they need to be emitted as their 32-bit siblings.
-        assert(Base->getType() == IceType_i64);
-        assert(getEncodedGPR(Base->getRegNum()) == RegX8664::Encoded_Reg_rsp ||
-               getEncodedGPR(Base->getRegNum()) == RegX8664::Encoded_Reg_rbp ||
-               getType() == IceType_void);
-        B = B->asType(
-            Func, IceType_i32,
-            X8664::Traits::getGprForType(IceType_i32, Base->getRegNum()));
-      }
-    }
-
-    B->emit(Func);
+    Base->emit(Func);
   }
 
   if (Index != nullptr) {
@@ -276,12 +251,6 @@ TargetX8664Traits::Address TargetX8664Traits::X86OperandMem::toAsmAddress(
 
   // Now convert to the various possible forms.
   if (getBase() && getIndex()) {
-    const bool NeedSandboxing = Target->needSandboxing();
-    (void)NeedSandboxing;
-    assert(!NeedSandboxing || IsLeaAddr ||
-           (getBase()->getRegNum() == Traits::RegisterSet::Reg_r15) ||
-           (getBase()->getRegNum() == Traits::RegisterSet::Reg_rsp) ||
-           (getBase()->getRegNum() == Traits::RegisterSet::Reg_rbp));
     return X8664::Traits::Address(getEncodedGPR(getBase()->getRegNum()),
                                   getEncodedGPR(getIndex()->getRegNum()),
                                   X8664::Traits::ScaleFactor(getShift()), Disp,
@@ -300,10 +269,6 @@ TargetX8664Traits::Address TargetX8664Traits::X86OperandMem::toAsmAddress(
   }
 
   if (Fixup == nullptr) {
-    // Absolute addresses are not allowed in Nexes -- they must be rebased
-    // w.r.t. %r15.
-    // Exception: LEAs are fine because they do not touch memory.
-    assert(!Target->needSandboxing() || IsLeaAddr);
     return X8664::Traits::Address::Absolute(Disp);
   }
 
@@ -355,5 +320,3 @@ void TargetX8664Traits::VariableSplit::dump(const Cfg *Func,
 
 } // namespace X8664
 } // end of namespace Ice
-
-X86INSTS_DEFINE_STATIC_DATA(X8664, X8664::Traits)

@@ -11,13 +11,28 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
+#include "ui/ozone/platform/wayland/host/wayland_output.h"
 #include "ui/ozone/platform/wayland/host/wayland_subsurface.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 
 namespace ui {
+
+WaylandSurface::ExplicitReleaseInfo::ExplicitReleaseInfo(
+    wl::Object<zwp_linux_buffer_release_v1>&& linux_buffer_release,
+    wl_buffer* buffer)
+    : linux_buffer_release(std::move(linux_buffer_release)), buffer(buffer) {}
+
+WaylandSurface::ExplicitReleaseInfo::~ExplicitReleaseInfo() = default;
+
+WaylandSurface::ExplicitReleaseInfo::ExplicitReleaseInfo(
+    ExplicitReleaseInfo&&) = default;
+
+WaylandSurface::ExplicitReleaseInfo&
+WaylandSurface::ExplicitReleaseInfo::operator=(ExplicitReleaseInfo&&) = default;
 
 WaylandSurface::WaylandSurface(WaylandConnection* connection,
                                WaylandWindow* root_window)
@@ -58,16 +73,6 @@ bool WaylandSurface::Initialize() {
     LOG(WARNING) << "Server doesn't support wp_viewporter.";
   }
 
-  // The server needs to support the linux_explicit_synchronization protocol.
-  if (!connection_->linux_explicit_synchronization_v1()) {
-    LOG(WARNING)
-        << "Server doesn't support zwp_linux_explicit_synchronization_v1.";
-    return true;
-  }
-  surface_sync_.reset(zwp_linux_explicit_synchronization_v1_get_synchronization(
-      connection_->linux_explicit_synchronization_v1(), surface_.get()));
-  DCHECK(surface_sync());
-
   return true;
 }
 
@@ -77,8 +82,11 @@ void WaylandSurface::UnsetRootWindow() {
 }
 
 void WaylandSurface::SetAcquireFence(const gfx::GpuFenceHandle& acquire_fence) {
+  // WaylandBufferManagerGPU knows if the synchronization is not available and
+  // must disallow clients to use explicit synchronization.
+  DCHECK(connection_->linux_explicit_synchronization_v1());
   zwp_linux_surface_synchronization_v1_set_acquire_fence(
-      surface_sync(), acquire_fence.owned_fd.get());
+      GetSurfaceSync(), acquire_fence.owned_fd.get());
 }
 
 void WaylandSurface::AttachBuffer(wl_buffer* buffer) {
@@ -86,6 +94,7 @@ void WaylandSurface::AttachBuffer(wl_buffer* buffer) {
   // (0, 0). If this changes, then the calculation in DamageBuffer will also
   // need to be updated.
   wl_surface_attach(surface_.get(), buffer, 0, 0);
+  buffer_attached_since_last_commit_ = buffer;
   connection_->ScheduleFlush();
 }
 
@@ -101,8 +110,18 @@ void WaylandSurface::UpdateBufferDamageRegion(
   // Apply buffer_transform (wl_surface.set_buffer_transform).
   gfx::Size bounds = wl::ApplyWaylandTransform(
       buffer_size, wl::ToWaylandTransform(buffer_transform_));
-  // Apply buffer_scale (wl_surface.set_buffer_scale).
-  bounds = gfx::ScaleToCeiledSize(bounds, 1.f / buffer_scale_);
+
+  // When crop_rect is set, wp_viewport will crop and scale the surface
+  // accordingly. Thus, there is no need to downscale bounds as Wayland
+  // compositor understands that.
+  // TODO(msisov): it'd be better to decide to set source, destination or buffer
+  // scale at commit time and avoid these kind of conditions.
+  if (crop_rect_.IsEmpty()) {
+    bounds = gfx::ScaleToCeiledSize(bounds, 1.f / buffer_scale_);
+  } else {
+    // Unset buffer scale if wp_viewport is set.
+    SetSurfaceBufferScale(1);
+  }
   // Apply crop (wp_viewport.set_source).
   gfx::Rect viewport_src = gfx::Rect(bounds);
   if (!crop_rect_.IsEmpty()) {
@@ -117,9 +136,8 @@ void WaylandSurface::UpdateBufferDamageRegion(
   }
   // Apply viewport scale (wp_viewport.set_destination).
   gfx::Size viewport_dst = bounds;
-  if (!display_size_px_.IsEmpty()) {
-    viewport_dst =
-        gfx::ScaleToCeiledSize(display_size_px_, 1.f / buffer_scale_);
+  if (!display_size_dip_.IsEmpty()) {
+    viewport_dst = display_size_dip_;
   }
 
   if (connection_->compositor_version() >=
@@ -159,7 +177,26 @@ void WaylandSurface::UpdateBufferDamageRegion(
 }
 
 void WaylandSurface::Commit() {
+  auto* surface_sync = GetSurfaceSync();
+  if (surface_sync && buffer_attached_since_last_commit_) {
+    auto* linux_buffer_release =
+        zwp_linux_surface_synchronization_v1_get_release(surface_sync);
+
+    static struct zwp_linux_buffer_release_v1_listener release_listener = {
+        &WaylandSurface::FencedRelease,
+        &WaylandSurface::ImmediateRelease,
+    };
+    zwp_linux_buffer_release_v1_add_listener(linux_buffer_release,
+                                             &release_listener, this);
+
+    linux_buffer_releases_.emplace(
+        linux_buffer_release,
+        ExplicitReleaseInfo(
+            wl::Object<zwp_linux_buffer_release_v1>(linux_buffer_release),
+            buffer_attached_since_last_commit_));
+  }
   wl_surface_commit(surface_.get());
+  buffer_attached_since_last_commit_ = nullptr;
   connection_->ScheduleFlush();
 }
 
@@ -173,24 +210,9 @@ void WaylandSurface::SetBufferTransform(gfx::OverlayTransform transform) {
   wl_surface_set_buffer_transform(surface_.get(), wl_transform);
 }
 
-void WaylandSurface::SetBufferScale(int32_t new_scale, bool update_bounds) {
-  DCHECK_GT(new_scale, 0);
-
-  if (new_scale == buffer_scale_)
-    return;
-
-  buffer_scale_ = new_scale;
-  wl_surface_set_buffer_scale(surface_.get(), buffer_scale_);
-
-  if (!display_size_px_.IsEmpty()) {
-    gfx::Size viewport_dst =
-        gfx::ScaleToCeiledSize(display_size_px_, 1.f / buffer_scale_);
-    if (viewport()) {
-      wp_viewport_set_destination(viewport(), viewport_dst.width(),
-                                  viewport_dst.height());
-    }
-  }
-
+void WaylandSurface::SetSurfaceBufferScale(int32_t scale) {
+  wl_surface_set_buffer_scale(surface_.get(), scale);
+  buffer_scale_ = scale;
   connection_->ScheduleFlush();
 }
 
@@ -242,12 +264,27 @@ wl::Object<wl_region> WaylandSurface::CreateAndAddRegion(
       wl_region_add(region.get(), rect.x(), rect.y(), rect.width(),
                     rect.height());
   } else {
-    gfx::Rect region_dip =
-        gfx::ScaleToEnclosingRect(region_px, 1.f / buffer_scale_);
+    gfx::Rect region_dip = gfx::ScaleToEnclosingRect(
+        region_px, 1.f / root_window_->window_scale());
     wl_region_add(region.get(), region_dip.x(), region_dip.y(),
                   region_dip.width(), region_dip.height());
   }
   return region;
+}
+
+zwp_linux_surface_synchronization_v1* WaylandSurface::GetSurfaceSync() {
+  // The server needs to support the linux_explicit_synchronization protocol.
+  if (!connection_->linux_explicit_synchronization_v1()) {
+    NOTIMPLEMENTED_LOG_ONCE();
+    return nullptr;
+  }
+
+  if (!surface_sync_) {
+    surface_sync_.reset(
+        zwp_linux_explicit_synchronization_v1_get_synchronization(
+            connection_->linux_explicit_synchronization_v1(), surface_.get()));
+  }
+  return surface_sync_.get();
 }
 
 void WaylandSurface::SetViewportSource(const gfx::RectF& src_rect) {
@@ -270,21 +307,20 @@ void WaylandSurface::SetViewportSource(const gfx::RectF& src_rect) {
 }
 
 void WaylandSurface::SetViewportDestination(const gfx::Size& dest_size_px) {
-  if (dest_size_px == display_size_px_)
+  if (dest_size_px == gfx::ScaleToRoundedSize(display_size_dip_, buffer_scale_))
     return;
+
   if (dest_size_px.IsEmpty()) {
-    display_size_px_ = gfx::Size();
+    display_size_dip_ = gfx::Size();
     if (viewport()) {
       wp_viewport_set_destination(viewport(), -1, -1);
     }
     return;
   }
-  display_size_px_ = dest_size_px;
-  gfx::Size viewport_dst =
-      gfx::ScaleToCeiledSize(display_size_px_, 1.f / buffer_scale_);
+  display_size_dip_ = gfx::ScaleToCeiledSize(dest_size_px, 1.f / buffer_scale_);
   if (viewport()) {
-    wp_viewport_set_destination(viewport(), viewport_dst.width(),
-                                viewport_dst.height());
+    wp_viewport_set_destination(viewport(), display_size_dip_.width(),
+                                display_size_dip_.height());
   }
 }
 
@@ -298,20 +334,69 @@ wl::Object<wl_subsurface> WaylandSurface::CreateSubsurface(
   return subsurface;
 }
 
+void WaylandSurface::ExplicitRelease(
+    struct zwp_linux_buffer_release_v1* linux_buffer_release,
+    absl::optional<int32_t> fence) {
+  auto iter = linux_buffer_releases_.find(linux_buffer_release);
+  DCHECK(iter != linux_buffer_releases_.end());
+  DCHECK(iter->second.buffer);
+  if (!explicit_release_callback_.is_null())
+    explicit_release_callback_.Run(iter->second.buffer, fence);
+  linux_buffer_releases_.erase(iter);
+}
+
 // static
 void WaylandSurface::Enter(void* data,
                            struct wl_surface* wl_surface,
                            struct wl_output* output) {
-  if (auto* root_window = static_cast<WaylandSurface*>(data)->root_window_)
-    root_window->AddEnteredOutputId(output);
+  auto* const surface = static_cast<WaylandSurface*>(data);
+  DCHECK(surface);
+
+  surface->entered_outputs_.emplace_back(
+      static_cast<WaylandOutput*>(wl_output_get_user_data(output)));
+
+  if (surface->root_window_)
+    surface->root_window_->OnEnteredOutputIdAdded();
 }
 
 // static
 void WaylandSurface::Leave(void* data,
                            struct wl_surface* wl_surface,
                            struct wl_output* output) {
-  if (auto* root_window = static_cast<WaylandSurface*>(data)->root_window_)
-    root_window->RemoveEnteredOutputId(output);
+  auto* const surface = static_cast<WaylandSurface*>(data);
+  DCHECK(surface);
+
+  auto entered_outputs_it_ = std::find(
+      surface->entered_outputs_.begin(), surface->entered_outputs_.end(),
+      static_cast<WaylandOutput*>(wl_output_get_user_data(output)));
+  // Workaround: when a user switches physical output between two displays,
+  // a surface does not necessarily receive enter events immediately or until
+  // a user resizes/moves it.  This means that switching output between
+  // displays in a single output mode results in leave events, but the surface
+  // might not have received enter event before.  Thus, remove the id of the
+  // output that the surface leaves only if it was stored before.
+  if (entered_outputs_it_ != surface->entered_outputs_.end())
+    surface->entered_outputs_.erase(entered_outputs_it_);
+
+  if (surface->root_window_)
+    surface->root_window_->OnEnteredOutputIdRemoved();
+}
+
+// static
+void WaylandSurface::FencedRelease(
+    void* data,
+    struct zwp_linux_buffer_release_v1* linux_buffer_release,
+    int32_t fence) {
+  static_cast<WaylandSurface*>(data)->ExplicitRelease(linux_buffer_release,
+                                                      fence);
+}
+
+// static
+void WaylandSurface::ImmediateRelease(
+    void* data,
+    struct zwp_linux_buffer_release_v1* linux_buffer_release) {
+  static_cast<WaylandSurface*>(data)->ExplicitRelease(linux_buffer_release,
+                                                      absl::nullopt);
 }
 
 }  // namespace ui

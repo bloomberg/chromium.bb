@@ -1341,7 +1341,7 @@ int av1_compound_type_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
         if (have_newmv_in_inter_mode(this_mode)) {
           InterPredParams inter_pred_params;
           av1_dist_wtd_comp_weight_assign(
-              &cpi->common, mbmi, 0, &inter_pred_params.conv_params.fwd_offset,
+              &cpi->common, mbmi, &inter_pred_params.conv_params.fwd_offset,
               &inter_pred_params.conv_params.bck_offset,
               &inter_pred_params.conv_params.use_dist_wtd_comp_avg, 1);
           int mask_value = inter_pred_params.conv_params.fwd_offset * 4;

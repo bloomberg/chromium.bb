@@ -24,7 +24,6 @@
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "gpu/config/gpu_crash_keys.h"
-#include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/service/gpu_channel.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
@@ -102,17 +101,7 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
     return result;
   }
 
-  if (!shared_context_state->IsGLInitialized()) {
-    if (!shared_context_state->MakeCurrent(nullptr, true /* needs_gl */) ||
-        !shared_context_state->InitializeGL(
-            manager->gpu_preferences(),
-            base::MakeRefCounted<gles2::FeatureInfo>(
-                manager->gpu_driver_bug_workarounds(),
-                manager->gpu_feature_info()))) {
-      LOG(ERROR) << "Failed to Initialize GL for SharedContextState";
-      return ContextResult::kFatalFailure;
-    }
-  }
+  DCHECK(shared_context_state->IsGLInitialized());
 
   surface_ = shared_context_state->surface();
   share_group_ = shared_context_state->share_group();
@@ -179,10 +168,6 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
 
 MemoryTracker* RasterCommandBufferStub::GetContextGroupMemoryTracker() const {
   return nullptr;
-}
-
-bool RasterCommandBufferStub::HandleMessage(const IPC::Message& message) {
-  return false;
 }
 
 void RasterCommandBufferStub::OnSwapBuffers(uint64_t swap_id, uint32_t flags) {}

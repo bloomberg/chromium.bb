@@ -12,7 +12,7 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=validating"
         ],
-        "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_name": "telemetry_gpu_integration_test_android_chrome",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -43,7 +43,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test_android_chrome/"
       },
       {
         "args": [
@@ -54,7 +54,7 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
-        "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_name": "telemetry_gpu_integration_test_android_chrome",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -85,7 +85,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test_android_chrome/"
       },
       {
         "args": [
@@ -96,7 +96,7 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
-        "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_name": "telemetry_gpu_integration_test_android_chrome",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -127,7 +127,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test_android_chrome/"
       },
       {
         "args": [
@@ -138,7 +138,7 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
-        "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_name": "telemetry_gpu_integration_test_android_chrome",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -169,7 +169,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test_android_chrome/"
       },
       {
         "args": [
@@ -184,7 +184,7 @@
           "--expected-device-id",
           "0"
         ],
-        "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_name": "telemetry_gpu_integration_test_android_chrome",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -215,7 +215,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test_android_chrome/"
       },
       {
         "args": [
@@ -230,7 +230,7 @@
           "${buildername}",
           "--git-revision=${got_revision}"
         ],
-        "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_name": "telemetry_gpu_integration_test_android_chrome",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -266,7 +266,7 @@
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test_android_chrome/"
       },
       {
         "args": [
@@ -281,7 +281,7 @@
           "${buildername}",
           "--git-revision=${got_revision}"
         ],
-        "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_name": "telemetry_gpu_integration_test_android_chrome",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -317,7 +317,7 @@
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test_android_chrome/"
       },
       {
         "args": [
@@ -326,7 +326,7 @@
           "--browser=android-chromium"
         ],
         "experiment_percentage": 10,
-        "isolate_name": "rendering_representative_perf_tests",
+        "isolate_name": "rendering_representative_perf_tests_android_chrome",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -352,7 +352,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:rendering_representative_perf_tests/"
+        "test_id_prefix": "ninja://chrome/test:rendering_representative_perf_tests_android_chrome/"
       },
       {
         "args": [
@@ -364,7 +364,7 @@
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=validating --force-online-connection-state-for-indicator",
           "--dont-restore-color-profile-after-test"
         ],
-        "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_name": "telemetry_gpu_integration_test_android_chrome",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -395,7 +395,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test_android_chrome/"
       },
       {
         "args": [
@@ -406,7 +406,7 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
-        "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_name": "telemetry_gpu_integration_test_android_chrome",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -437,7 +437,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test_android_chrome/"
       },
       {
         "args": [
@@ -449,7 +449,7 @@
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
         ],
-        "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_name": "telemetry_gpu_integration_test_android_chrome",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -481,7 +481,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test_android_chrome/"
       }
     ]
   },
@@ -1471,7 +1471,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1499,7 +1499,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
@@ -1526,7 +1526,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1550,7 +1550,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1587,7 +1587,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "idempotent": false,
@@ -1622,7 +1622,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "idempotent": false,
@@ -1657,7 +1657,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "idempotent": false,
@@ -1692,7 +1692,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "idempotent": false,
@@ -1731,7 +1731,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "idempotent": false,
@@ -1775,7 +1775,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "idempotent": false,
@@ -1819,7 +1819,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "idempotent": false,
@@ -1855,7 +1855,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "idempotent": false,
@@ -1890,7 +1890,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "idempotent": false,
@@ -1926,7 +1926,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "idempotent": false,
@@ -1955,7 +1955,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1984,7 +1984,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -2011,7 +2011,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
@@ -2038,7 +2038,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -2062,7 +2062,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -2099,7 +2099,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "idempotent": false,
@@ -2134,7 +2134,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "idempotent": false,
@@ -2169,7 +2169,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "idempotent": false,
@@ -2204,7 +2204,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "idempotent": false,
@@ -2243,7 +2243,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "idempotent": false,
@@ -2287,7 +2287,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "idempotent": false,
@@ -2331,7 +2331,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "idempotent": false,
@@ -2358,7 +2358,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -2393,7 +2393,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "idempotent": false,
@@ -2428,7 +2428,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "idempotent": false,
@@ -2464,7 +2464,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:0a2e",
-              "os": "Mac-10.15.5|Mac-10.15.7"
+              "os": "Mac-10.15.7"
             }
           ],
           "idempotent": false,

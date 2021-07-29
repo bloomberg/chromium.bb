@@ -24,7 +24,7 @@ class DepthClampingTest : public DawnTest {
   protected:
     void SetUp() override {
         DawnTest::SetUp();
-        DAWN_SKIP_TEST_IF(!SupportsExtensions({"depth_clamping"}));
+        DAWN_TEST_UNSUPPORTED_IF(!SupportsExtensions({"depth_clamping"}));
 
         wgpu::TextureDescriptor renderTargetDescriptor;
         renderTargetDescriptor.size = {kRTSize, kRTSize};
@@ -109,7 +109,7 @@ class DepthClampingTest : public DawnTest {
                                                               wgpu::BufferUsage::Uniform);
 
             // Create a pipeline for the triangles with the test spec's params.
-            utils::ComboRenderPipelineDescriptor2 descriptor;
+            utils::ComboRenderPipelineDescriptor descriptor;
             descriptor.primitive.nextInChain = test.depthClampingState;
             descriptor.primitive.topology = wgpu::PrimitiveTopology::PointList;
             descriptor.vertex.module = vsModule;
@@ -119,7 +119,7 @@ class DepthClampingTest : public DawnTest {
             depthStencil->depthCompare = test.depthCompareFunction;
             depthStencil->format = wgpu::TextureFormat::Depth24PlusStencil8;
 
-            wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&descriptor);
+            wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&descriptor);
 
             // Create a bind group for the data
             wgpu::BindGroup bindGroup = utils::MakeBindGroup(

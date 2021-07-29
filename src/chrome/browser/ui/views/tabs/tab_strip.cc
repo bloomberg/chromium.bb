@@ -30,6 +30,7 @@
 #include "base/numerics/ranges.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/scoped_observation.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -88,6 +89,7 @@
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/cascading_property.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/masked_targeter_delegate.h"
@@ -442,6 +444,8 @@ class TabStrip::TabDragContextImpl : public TabDragContext {
     drag_controller_->Init(this, source, dragging_views, gfx::Point(x, y),
                            event.x(), std::move(selection_model), move_behavior,
                            EventSourceFromEvent(event));
+    if (drag_controller_set_callback_)
+      std::move(drag_controller_set_callback_).Run(drag_controller_.get());
   }
 
   void ContinueDrag(views::View* view, const ui::LocatedEvent& event) {
@@ -519,6 +523,8 @@ class TabStrip::TabDragContextImpl : public TabDragContext {
     DCHECK(controller);
     DCHECK(!drag_controller_);
     drag_controller_ = std::move(controller);
+    if (drag_controller_set_callback_)
+      std::move(drag_controller_set_callback_).Run(drag_controller_.get());
   }
 
   void DestroyDragController() override {
@@ -527,6 +533,11 @@ class TabStrip::TabDragContextImpl : public TabDragContext {
 
   std::unique_ptr<TabDragController> ReleaseDragController() override {
     return std::move(drag_controller_);
+  }
+
+  void SetDragControllerCallbackForTesting(
+      base::OnceCallback<void(TabDragController*)> callback) override {
+    drag_controller_set_callback_ = std::move(callback);
   }
 
   bool IsDragSessionActive() const override {
@@ -583,7 +594,7 @@ class TabStrip::TabDragContextImpl : public TabDragContext {
     if (tab_strip_->touch_layout_)
       return kHorizontalMoveThreshold;
 
-    double ratio = double{tab_strip_->GetInactiveTabWidth()} /
+    double ratio = static_cast<double>(tab_strip_->GetInactiveTabWidth()) /
                    TabStyle::GetStandardWidth();
     return base::ClampRound(ratio * kHorizontalMoveThreshold);
   }
@@ -687,7 +698,7 @@ class TabStrip::TabDragContextImpl : public TabDragContext {
 
   void DragActiveTabStacked(const std::vector<int>& initial_positions,
                             int delta) override {
-    DCHECK_EQ(GetTabCount(), int{initial_positions.size()});
+    DCHECK_EQ(GetTabCount(), static_cast<int>(initial_positions.size()));
     SetIdealBoundsFromPositions(initial_positions);
     tab_strip_->touch_layout_->DragActiveTab(delta);
     tab_strip_->CompleteAnimationAndLayout();
@@ -1101,6 +1112,9 @@ class TabStrip::TabDragContextImpl : public TabDragContext {
   // the drag session.
   std::unique_ptr<TabDragController> drag_controller_;
 
+  // Only used in tests.
+  base::OnceCallback<void(TabDragController*)> drag_controller_set_callback_;
+
   base::WeakPtrFactory<TabDragContext> weak_factory_{this};
 };
 
@@ -1114,6 +1128,11 @@ TabStrip::TabStrip(std::unique_ptr<TabStripController> controller)
           base::BindRepeating(&TabStrip::tabs_view_model,
                               base::Unretained(this)))),
       drag_context_(std::make_unique<TabDragContextImpl>(this)) {
+  // TODO(pbos): This is probably incorrect, the background of individual tabs
+  // depend on their selected state. This should probably be pushed down into
+  // tabs.
+  views::SetCascadingThemeProviderColor(this, views::kCascadingBackgroundColor,
+                                        ThemeProperties::COLOR_TOOLBAR);
   Init();
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
 }
@@ -1320,7 +1339,7 @@ void TabStrip::AddTabAt(int model_index, TabRendererData data, bool is_active) {
 
   Profile* profile = controller()->GetProfile();
   if (profile) {
-    if (profile->IsGuestSession() || profile->IsEphemeralGuestProfile())
+    if (profile->IsGuestSession())
       base::UmaHistogramCounts100("Tab.Count.Guest", GetTabCount());
     else if (profile->IsIncognitoProfile())
       base::UmaHistogramCounts100("Tab.Count.Incognito", GetTabCount());
@@ -1902,6 +1921,8 @@ void TabStrip::SelectTab(Tab* tab, const ui::Event& event) {
                                model_index);
       base::UmaHistogramSparse("Tabs.DesktopTabOffsetFromRightOfSwitch",
                                GetModelCount() - model_index - 1);
+      base::UmaHistogramEnumeration("TabStrip.Tab.Views.ActivationAction",
+                                    TabStripModel::TabActivationTypes::kTab);
 
       if (tab->group().has_value()) {
         base::RecordAction(
@@ -2352,9 +2373,6 @@ void TabStrip::Layout() {
 }
 
 void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
-  // This is used to log to UMA. NO EARLY RETURNS!
-  base::ElapsedTimer paint_timer;
-
   // The view order doesn't match the paint order (layout_helper_ contains the
   // view ordering).
   bool is_dragging = false;
@@ -2471,11 +2489,6 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
   // If the active tab is being dragged, it goes last.
   if (active_tab && is_dragging)
     active_tab->Paint(paint_info);
-
-  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-      "TabStrip.PaintChildrenDuration", paint_timer.Elapsed(),
-      base::TimeDelta::FromMicroseconds(1),
-      base::TimeDelta::FromMicroseconds(10000), 50);
 }
 
 gfx::Size TabStrip::GetMinimumSize() const {
@@ -2924,8 +2937,11 @@ void TabStrip::SetTabSlotVisibility() {
   for (std::vector<Tab*>::reverse_iterator tab = tabs.rbegin();
        tab != tabs.rend(); ++tab) {
     absl::optional<tab_groups::TabGroupId> current_group = (*tab)->group();
-    if (current_group != last_tab_group && last_tab_group.has_value())
-      group_header(last_tab_group.value())->SetVisible(last_tab_visible);
+    if (current_group != last_tab_group && last_tab_group.has_value()) {
+      TabGroupViews* group_view = group_views_.at(last_tab_group.value()).get();
+      group_view->header()->SetVisible(last_tab_visible);
+      group_view->underline()->SetVisible(last_tab_visible);
+    }
     last_tab_visible = ShouldTabBeVisible(*tab);
     last_tab_group = (*tab)->closing() ? absl::nullopt : current_group;
 
@@ -3398,6 +3414,12 @@ gfx::Rect TabStrip::GetDropBounds(int drop_index,
   // The X location the indicator points to.
   int center_x = -1;
 
+  if (GetTabCount() == 0) {
+    // If the tabstrip is empty, it doesn't matter where the drop arrow goes.
+    // The tabstrip can only be transiently empty, e.g. during shutdown.
+    return gfx::Rect();
+  }
+
   Tab* tab = tab_at(std::min(drop_index, GetTabCount() - 1));
   const bool first_in_group =
       drop_index < GetTabCount() && tab->group().has_value() &&
@@ -3579,7 +3601,9 @@ int TabStrip::CalculateAvailableWidthForTabs() const {
 }
 
 int TabStrip::GetAvailableWidthForTabStrip() const {
-  return available_width_callback_ ? available_width_callback_.Run() : width();
+  return available_width_callback_
+             ? available_width_callback_.Run()
+             : parent()->GetAvailableSize(this).width().value();
 }
 
 void TabStrip::StartResizeLayoutAnimation() {

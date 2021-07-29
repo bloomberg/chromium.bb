@@ -86,7 +86,8 @@ class SubresourceRedirectSimTest
       // Scroll down until the image is visible.
       GetDocument().View()->LayoutViewport()->SetScrollOffset(
           ScrollOffset(0, 10000), mojom::blink::ScrollType::kProgrammatic);
-      Compositor().BeginFrame();
+      if (Compositor().NeedsBeginFrame())
+        Compositor().BeginFrame();
       test::RunPendingTasks();
       image_resource.Complete(ReadTestImage());
     }
@@ -302,6 +303,12 @@ class SubresourceRedirectCSPSimTest : public ::testing::WithParamInterface<
     scoped_feature_list_.InitWithFeaturesAndParameters(
         {{features::kSubresourceRedirect, params}}, {});
     GetNetworkStateNotifier().SetSaveDataEnabled(true);
+  }
+
+  void SetUp() override {
+    SimTest::SetUp();
+    WebView().GetPage()->GetSettings().SetLitePageSubresourceRedirectOrigin(
+        "https://litepages.googlezip.net");
   }
 
   bool allow_csp_restricted_images() const { return GetParam(); }

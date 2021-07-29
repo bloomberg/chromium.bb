@@ -5,8 +5,9 @@
 #include "ash/system/unified/unified_system_tray.h"
 
 #include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/constants/ash_features.h"
 #include "ash/focus_cycler.h"
-#include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -44,6 +45,13 @@
 #include "ui/message_center/message_center.h"
 
 namespace ash {
+
+namespace {
+// The UMA histogram that records presentation time for opening QuickSettings
+// and Notification Center through Status Area button.
+constexpr char kStatusAreaShowBubbleHistogram[] =
+    "Ash.StatusAreaShowBubble.PresentationTime";
+}  // namespace
 
 class UnifiedSystemTray::UiDelegate : public MessageCenterUiDelegate {
  public:
@@ -177,9 +185,6 @@ UnifiedSystemTray::~UnifiedSystemTray() {
   ShelfConfig::Get()->RemoveObserver(this);
 
   message_center_bubble_.reset();
-  // Close bubble immediately when the bubble is closed on dtor.
-  if (bubble_)
-    bubble_->CloseNow();
   bubble_.reset();
 
   // Reset the view to remove its dependency from |model_|, since this view is
@@ -453,6 +458,13 @@ void UnifiedSystemTray::ShowBubbleInternal() {
     return;
 
   CloseSecondaryBubbles();
+
+  // Presentation time recorder for opening QuickSettings and Notification
+  // Center through Status Area button.
+  auto presentation_time_recorder = CreatePresentationTimeHistogramRecorder(
+      shelf()->GetStatusAreaWidget()->GetCompositor(),
+      kStatusAreaShowBubbleHistogram);
+  presentation_time_recorder->RequestNext();
 
   bubble_ = std::make_unique<UnifiedSystemTrayBubble>(this);
 

@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_METRICS_POWER_POWER_METRICS_REPORTER_H_
 
 #include <stdint.h>
-
 #include <utility>
 
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/metrics/power/battery_level_provider.h"
+#include "chrome/browser/metrics/power/power_details_provider.h"
 #include "chrome/browser/metrics/usage_scenario/usage_scenario_data_store.h"
 #include "chrome/browser/performance_monitor/process_monitor.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -50,6 +50,11 @@ class PowerMetricsReporter
   static std::vector<const char*> GetSuffixesForTesting(
       const UsageScenarioDataStore::IntervalData& interval_data);
 
+  void set_power_details_provider_for_testing(
+      std::unique_ptr<PowerDetailsProvider> provider) {
+    power_details_provider_ = std::move(provider);
+  }
+
  protected:
   // Any change to this enum should be reflected in the corresponding enums.xml
   // and ukm.xml
@@ -64,21 +69,24 @@ class PowerMetricsReporter
     kMaxValue = kInvalidInterval
   };
 
-  // Report the histograms for the past interval, with |sampling_interval| the
-  // expected sampling interval, and |interval_duration| the actual duration
-  // since the beginning of the interval.
-  static void ReportBatteryHistograms(
+  // Report battery and CPU metrics to generic histograms and histograms with a
+  // scenario suffix derived from |interval_data|.
+  static void ReportHistograms(
       const UsageScenarioDataStore::IntervalData& interval_data,
-      base::TimeDelta sampling_interval,
+      const performance_monitor::ProcessMonitor::Metrics& metrics,
+      base::TimeDelta interval_duration,
+      BatteryDischargeMode discharge_mode,
+      absl::optional<int64_t> discharge_rate_during_interval);
+
+  // Report battery metrics to histograms with |suffixes|.
+  static void ReportBatteryHistograms(
       base::TimeDelta interval_duration,
       BatteryDischargeMode discharge_mode,
       absl::optional<int64_t> discharge_rate_during_interval,
       const std::vector<const char*>& suffixes);
 
-  // Report CPU histograms based on data in |metrics| and suffixed based on
-  // scenarios inferred from |interval_data|.
+  // Report CPU histograms to histograms with |suffixes|.
   static void ReportCPUHistograms(
-      const UsageScenarioDataStore::IntervalData& interval_data,
       const performance_monitor::ProcessMonitor::Metrics& metrics,
       const std::vector<const char*>& suffixes);
 
@@ -99,7 +107,8 @@ class PowerMetricsReporter
                   const performance_monitor::ProcessMonitor::Metrics& metrics,
                   base::TimeDelta interval_duration,
                   BatteryDischargeMode discharge_mode,
-                  absl::optional<int64_t> discharge_rate_during_interval) const;
+                  absl::optional<int64_t> discharge_rate_during_interval,
+                  absl::optional<int64_t> main_screen_brightness) const;
 
   void ReportUKMsAndHistograms(
       const performance_monitor::ProcessMonitor::Metrics& metrics,
@@ -121,6 +130,8 @@ class PowerMetricsReporter
   base::WeakPtr<UsageScenarioDataStore> data_store_;
 
   std::unique_ptr<BatteryLevelProvider> battery_level_provider_;
+
+  std::unique_ptr<PowerDetailsProvider> power_details_provider_;
 
   // Time that should elapse between calls to OnAggregatedMetricsSampled.
   base::TimeDelta desired_reporting_interval_;

@@ -107,7 +107,7 @@ class Profile : public content::BrowserContext {
   class OTRProfileID {
    public:
     // ID used by the Incognito and Guest profiles.
-    // TODO(https://crbug.com/1125474): To be replaced with |IncognitoID| when
+    // TODO(https://crbug.com/1225171): To be replaced with |IncognitoID| if
     // OTR Guest profiles are deprecated.
     static const OTRProfileID PrimaryID();
 
@@ -186,10 +186,15 @@ class Profile : public content::BrowserContext {
    public:
     virtual ~Delegate();
 
+    // Called when creation of the profile is started.
+    virtual void OnProfileCreationStarted(Profile* profile,
+                                          CreateMode create_mode) = 0;
+
     // Called when creation of the profile is finished.
-    virtual void OnProfileCreated(Profile* profile,
-                                  bool success,
-                                  bool is_new_profile) = 0;
+    virtual void OnProfileCreationFinished(Profile* profile,
+                                           CreateMode create_mode,
+                                           bool success,
+                                           bool is_new_profile) = 0;
   };
 
   // Key used to bind profile to the widget with which it is associated.
@@ -413,8 +418,8 @@ class Profile : public content::BrowserContext {
   // more recent (or equal to) the one specified.
   virtual bool WasCreatedByVersionOrLater(const std::string& version) = 0;
 
-  // IsRegularProfile(), IsSystemProfile(), IsIncognitoProfile(),
-  // IsGuestSession(), and IsEphemeralGuestProfile are mutually exclusive.
+  // IsRegularProfile(), IsSystemProfile(), IsIncognitoProfile(), and
+  // IsGuestSession() are mutually exclusive.
   //
   // IsSystemProfile() returns true for both regular and off-the-record profile
   //   of the system profile.
@@ -432,33 +437,22 @@ class Profile : public content::BrowserContext {
   // OffTheRecord profile used for incognito mode and guest sessions.
   bool IsPrimaryOTRProfile() const;
 
-  // Returns whether ephemeral Guest profiles are enabled.
-  static bool IsEphemeralGuestProfileEnabled();
-
   // Returns whether it is a Guest session. This covers both regular and
   // off-the-record profiles of a Guest session.
-  // This function only returns true for non-ephemeral Guest sessions.
-  // TODO(https://crbug.com/1125474): Audit all use cases and consider adding
-  // |IsEphemeralGuestProfile|. Remove after audit is done on all relevant
-  // platforms and non-ephemeral Guest profiles are deprecated.
   virtual bool IsGuestSession() const;
-
-  // Returns whether it is an ephemeral Guest profile. This covers both regular
-  // and off-the-record profiles of a Guest session.
-  // TODO(https://crbug.com/1125474): After auditing all use cases of
-  // |IsGuestSession| on all platforms and removal of all calls to
-  // |IsGuestSession|, rename to |IsGuestProfile|.
-  bool IsEphemeralGuestProfile() const;
 
   // Returns whether it is a system profile.
   bool IsSystemProfile() const;
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  // Returns `true` if this is the first/initial Profile in Lacros, and - for
-  // regular sessions, if this Profile has the Device Account logged in.
+  // Returns `true` if this is the first/initial Profile path in Lacros, and -
+  // for regular sessions, if this Profile has the Device Account logged in.
   // For non-regular sessions (Guest Sessions, Managed Guest Sessions) which do
   // not have the concept of a Device Account, the latter condition is not
   // checked.
+  static bool IsMainProfilePath(base::FilePath profile_path);
+
+  // Returns true if this is the main profile as defined above.
   virtual bool IsMainProfile() const = 0;
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 

@@ -35,20 +35,12 @@ class CORE_EXPORT AnimationTimeline : public ScriptWrappable {
   AnimationTimeline(Document*);
   ~AnimationTimeline() override = default;
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   virtual V8CSSNumberish* currentTime();
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  virtual void currentTime(CSSNumberish&);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   absl::optional<AnimationTimeDelta> CurrentTime();
   absl::optional<double> CurrentTimeMilliseconds();
   absl::optional<double> CurrentTimeSeconds();
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   virtual V8CSSNumberish* duration();
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  virtual void duration(CSSNumberish&);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   String phase();
   TimelinePhase Phase() { return CurrentPhaseAndTime().phase; }
@@ -56,6 +48,7 @@ class CORE_EXPORT AnimationTimeline : public ScriptWrappable {
   virtual bool IsDocumentTimeline() const { return false; }
   virtual bool IsScrollTimeline() const { return false; }
   virtual bool IsCSSScrollTimeline() const { return false; }
+  virtual bool IsProgressBasedTimeline() const { return false; }
   virtual bool IsActive() const = 0;
   virtual AnimationTimeDelta ZeroTime() = 0;
   // https://drafts.csswg.org/web-animations/#monotonically-increasing-timeline
@@ -71,6 +64,10 @@ class CORE_EXPORT AnimationTimeline : public ScriptWrappable {
   // Changing scroll-linked animation start_time initialization is under
   // consideration here: https://github.com/w3c/csswg-drafts/issues/2075.
   virtual absl::optional<base::TimeDelta> InitialStartTimeForAnimations() = 0;
+  virtual AnimationTimeDelta CalculateIntrinsicIterationDuration(
+      const Timing&) {
+    return AnimationTimeDelta();
+  }
   Document* GetDocument() { return document_; }
   virtual void AnimationAttached(Animation*);
   virtual void AnimationDetached(Animation*);
@@ -92,9 +89,7 @@ class CORE_EXPORT AnimationTimeline : public ScriptWrappable {
   void SetOutdatedAnimation(Animation*);
   void ClearOutdatedAnimation(Animation*);
 
-  virtual wtf_size_t AnimationsNeedingUpdateCount() const {
-    return animations_needing_update_.size();
-  }
+  virtual wtf_size_t AnimationsNeedingUpdateCount() const;
   const HeapHashSet<WeakMember<Animation>>& GetAnimations() const {
     return animations_;
   }
@@ -107,12 +102,21 @@ class CORE_EXPORT AnimationTimeline : public ScriptWrappable {
 
   void MarkAnimationsCompositorPending(bool source_changed = false);
 
+  // Checks for animations of composited properties that would have no effect
+  // and marks them as pending if this changes.
+  void MarkPendingIfCompositorPropertyAnimationChanges(
+      const PaintArtifactCompositor*);
+
   using ReplaceableAnimationsMap =
       HeapHashMap<Member<Element>, Member<HeapVector<Member<Animation>>>>;
   void getReplaceableAnimations(
       ReplaceableAnimationsMap* replaceable_animation_set);
 
   void Trace(Visitor*) const override;
+
+  virtual absl::optional<AnimationTimeDelta> GetDuration() const {
+    return absl::nullopt;
+  }
 
  protected:
   virtual PhaseAndTime CurrentPhaseAndTime() = 0;

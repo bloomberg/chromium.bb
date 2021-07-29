@@ -21,6 +21,7 @@
 #include "chrome/browser/net_benchmarking.h"
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
+#include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/content_capture/browser/onscreen_content_provider.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
@@ -30,6 +31,7 @@
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/content/browser/mojo_safe_browsing_impl.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
+#include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -57,10 +59,13 @@
 #include "extensions/browser/extensions_browser_client.h"
 #endif
 
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS) || defined(OS_WIN)
+#include "chrome/browser/media/cdm_document_service_impl.h"
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS) || defined(OS_WIN)
+
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "chrome/browser/media/output_protection_impl.h"
-#include "chrome/browser/media/platform_verification_impl.h"
-#endif
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 #if BUILDFLAG(ENABLE_MOJO_CDM) && defined(OS_ANDROID)
 #include "chrome/browser/media/android/cdm/media_drm_storage_factory.h"
@@ -252,12 +257,14 @@ void ChromeContentBrowserClient::BindMediaServiceReceiver(
     OutputProtectionImpl::Create(render_frame_host, std::move(r));
     return;
   }
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
-  if (auto r = receiver.As<media::mojom::PlatformVerification>()) {
-    PlatformVerificationImpl::Create(render_frame_host, std::move(r));
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS) || defined(OS_WIN)
+  if (auto r = receiver.As<media::mojom::CdmDocumentService>()) {
+    CdmDocumentServiceImpl::Create(render_frame_host, std::move(r));
     return;
   }
-#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS) || defined(OS_WIN)
 
 #if BUILDFLAG(ENABLE_MOJO_CDM) && defined(OS_ANDROID)
   if (auto r = receiver.As<media::mojom::MediaDrmStorage>()) {
@@ -320,10 +327,29 @@ bool ChromeContentBrowserClient::BindAssociatedReceiverFromFrame(
             render_frame_host);
     return true;
   }
+  if (interface_name ==
+      chrome::mojom::OpenSearchDescriptionDocumentHandler::Name_) {
+    SearchEngineTabHelper::BindOpenSearchDescriptionDocumentHandler(
+        mojo::PendingAssociatedReceiver<
+            chrome::mojom::OpenSearchDescriptionDocumentHandler>(
+            std::move(*handle)),
+        render_frame_host);
+    return true;
+  }
   if (interface_name == content_capture::mojom::ContentCaptureReceiver::Name_) {
     content_capture::OnscreenContentProvider::BindContentCaptureReceiver(
         mojo::PendingAssociatedReceiver<
             content_capture::mojom::ContentCaptureReceiver>(std::move(*handle)),
+        render_frame_host);
+    return true;
+  }
+
+  if (interface_name ==
+      subresource_filter::mojom::SubresourceFilterHost::Name_) {
+    subresource_filter::ContentSubresourceFilterThrottleManager::BindReceiver(
+        mojo::PendingAssociatedReceiver<
+            subresource_filter::mojom::SubresourceFilterHost>(
+            std::move(*handle)),
         render_frame_host);
     return true;
   }

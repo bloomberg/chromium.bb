@@ -13,11 +13,13 @@
 #include "include/core/SkRefCnt.h"
 #include "include/gpu/GrTypes.h"
 #include "src/gpu/GrBuffer.h"
+#include "src/gpu/mtl/GrMtlRenderCommandEncoder.h"
 #include "src/gpu/mtl/GrMtlUtil.h"
 
 class GrMtlGpu;
 class GrMtlPipelineState;
 class GrMtlOpsRenderPass;
+class GrMtlRenderCommandEncoder;
 
 GR_NORETAIN_BEGIN
 
@@ -34,9 +36,9 @@ public:
     }
 
     id<MTLBlitCommandEncoder> getBlitCommandEncoder();
-    id<MTLRenderCommandEncoder> getRenderCommandEncoder(MTLRenderPassDescriptor*,
-                                                        const GrMtlPipelineState*,
-                                                        GrMtlOpsRenderPass* opsRenderPass);
+    GrMtlRenderCommandEncoder* getRenderCommandEncoder(MTLRenderPassDescriptor*,
+                                                       const GrMtlPipelineState*,
+                                                       GrMtlOpsRenderPass* opsRenderPass);
 
     void addCompletedHandler(MTLCommandBufferHandler block) {
         [fCmdBuffer addCompletedHandler:block];
@@ -58,6 +60,18 @@ public:
     }
     void callFinishedCallbacks() { fFinishedCallbacks.reset(); }
 
+    void pushDebugGroup(NSString* string) {
+        if (@available(macOS 10.13, iOS 11.0, *)) {
+            [fCmdBuffer pushDebugGroup:string];
+        }
+    }
+
+    void popDebugGroup() {
+        if (@available(macOS 10.13, iOS 11.0, *)) {
+            [fCmdBuffer popDebugGroup];
+        }
+    }
+
 private:
     static const int kInitialTrackedResourcesCount = 32;
 
@@ -72,7 +86,7 @@ private:
 
     id<MTLCommandBuffer>        fCmdBuffer;
     id<MTLBlitCommandEncoder>   fActiveBlitCommandEncoder;
-    id<MTLRenderCommandEncoder> fActiveRenderCommandEncoder;
+    std::unique_ptr<GrMtlRenderCommandEncoder> fActiveRenderCommandEncoder;
     MTLRenderPassDescriptor*    fPreviousRenderPassDescriptor;
     bool                        fHasWork;
 

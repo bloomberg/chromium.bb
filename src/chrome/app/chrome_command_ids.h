@@ -125,6 +125,7 @@
 #define IDC_SHARING_HUB                 35028
 #define IDC_SHARING_HUB_MENU            35029
 #define IDC_VIRTUAL_CARD_MANUAL_FALLBACK 35030
+#define IDC_SHARING_HUB_SCREENSHOT      35031
 
 // Page-manipulation commands that target a specified tab, which may not be the
 // active one.
@@ -162,6 +163,7 @@
 #define IDC_FOCUS_PREVIOUS_PANE         39005
 #define IDC_FOCUS_BOOKMARKS             39006
 #define IDC_FOCUS_INACTIVE_POPUP_FOR_ACCESSIBILITY 39007
+#define IDC_FOCUS_HELP_BUBBLE 39008
 
 // Show various bits of UI
 #define IDC_OPEN_FILE                   40000
@@ -224,6 +226,7 @@
 #define IDC_TOGGLE_COMMANDER     40261
 #define IDC_SHOW_KALEIDOSCOPE          40262
 #define IDC_CHROME_TIPS                40263
+#define IDC_CHROME_WHATS_NEW           40264
 
 // Spell-check
 // Insert any additional suggestions before _LAST; these have to be consecutive.
@@ -328,6 +331,7 @@
 #define IDC_CONTENT_CONTEXT_INSPECTBACKGROUNDPAGE 50161
 #define IDC_CONTENT_CONTEXT_RELOAD_PACKAGED_APP 50162
 #define IDC_CONTENT_CONTEXT_RESTART_PACKAGED_APP 50163
+#define IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH 50164
 // A gap here. Feel free to insert new IDs.
 #define IDC_CONTENT_CONTEXT_GENERATEPASSWORD 50166
 #define IDC_CONTENT_CONTEXT_EXIT_FULLSCREEN 50167
@@ -446,11 +450,15 @@
 // NOTE: The last valid command value is 57343 (0xDFFF)
 // See http://msdn.microsoft.com/en-us/library/t2zechd4(VS.71).aspx
 
-// Starting command id for menus showing bookmarks (such as the wrench menu).
-// While command ids passed to Windows functions must not be higher than 0xDFFF,
-// these IDs are not exposed to the native system and thus can be in this
-// otherwise-reserved range. No command used in a menu (such as the wrench menu)
-// should be higher than this, otherwise it'll conflict.
-#define IDC_FIRST_BOOKMARK_MENU 0xE000
+// Starting command id for menus showing an arbitrarily high (variable) number
+// of menu items. Currently, this includes the recent tabs and bookmarks menus.
+// While command ids passed to Windows functions must not be higher than
+// 0xDFFF, these IDs are not exposed to the native system and thus can be in
+// this otherwise-reserved range.
+// WARNING: No command used in a bounded menu should be higher than this,
+// otherwise it'll conflict. Unbounded menus must also avoid conflicting with
+// each other, by only using every Nth id (where N is the number of unbounded
+// menus).
+#define IDC_FIRST_UNBOUNDED_MENU 0xE000
 
 #endif  // CHROME_APP_CHROME_COMMAND_IDS_H_

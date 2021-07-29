@@ -7,6 +7,7 @@
 
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "base/bind.h"
+#include "content/browser/permissions/permission_util.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/permission_controller_delegate.h"
@@ -24,9 +25,6 @@ namespace {
 absl::optional<blink::scheduler::WebSchedulerTrackedFeature>
 PermissionToSchedulingFeature(PermissionType permission_name) {
   switch (permission_name) {
-    case PermissionType::GEOLOCATION:
-      return blink::scheduler::WebSchedulerTrackedFeature::
-          kRequestedGeolocationPermission;
     case PermissionType::NOTIFICATIONS:
       return blink::scheduler::WebSchedulerTrackedFeature::
           kRequestedNotificationsPermission;
@@ -67,6 +65,7 @@ PermissionToSchedulingFeature(PermissionType permission_name) {
     case PermissionType::FONT_ACCESS:
     case PermissionType::DISPLAY_CAPTURE:
     case PermissionType::FILE_HANDLING:
+    case PermissionType::GEOLOCATION:
       return absl::nullopt;
   }
 }
@@ -379,8 +378,15 @@ void PermissionControllerImpl::ResetPermission(PermissionType permission,
 }
 
 void PermissionControllerImpl::OnDelegatePermissionStatusChange(
-    Subscription* subscription,
+    SubscriptionId subscription_id,
     blink::mojom::PermissionStatus status) {
+  Subscription* subscription = subscriptions_.Lookup(subscription_id);
+  DCHECK(subscription);
+  // TODO(crbug.com/1223407) Adding this block to prevent crashes while we
+  // investigate the root cause of the crash. This block will be removed as the
+  // CHECK() above should be enough.
+  if (!subscription)
+    return;
   absl::optional<blink::mojom::PermissionStatus> status_override =
       devtools_permission_overrides_.Get(
           url::Origin::Create(subscription->requesting_origin),
@@ -406,7 +412,7 @@ PermissionControllerImpl::SubscribePermissionStatusChange(
     content::WebContents* web_contents =
         content::WebContents::FromRenderFrameHost(render_frame_host);
     subscription->embedding_origin =
-        web_contents->GetLastCommittedURL().GetOrigin();
+        PermissionUtil::GetLastCommittedOriginAsURL(web_contents);
     subscription->render_frame_id = render_frame_host->GetRoutingID();
     subscription->render_process_id = render_frame_host->GetProcess()->GetID();
   } else {
@@ -415,6 +421,7 @@ PermissionControllerImpl::SubscribePermissionStatusChange(
     subscription->render_process_id = -1;
   }
 
+  auto id = subscription_id_generator_.GenerateNextId();
   PermissionControllerDelegate* delegate =
       browser_context_->GetPermissionControllerDelegate();
   if (delegate) {
@@ -423,10 +430,8 @@ PermissionControllerImpl::SubscribePermissionStatusChange(
             permission, render_frame_host, requesting_origin,
             base::BindRepeating(
                 &PermissionControllerImpl::OnDelegatePermissionStatusChange,
-                base::Unretained(this), subscription.get()));
+                base::Unretained(this), id));
   }
-
-  auto id = subscription_id_generator_.GenerateNextId();
   subscriptions_.AddWithID(std::move(subscription), id);
   return id;
 }

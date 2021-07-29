@@ -16,10 +16,10 @@ class CredentialManagerPendingPreventSilentAccessTaskDelegate {
  public:
   virtual ~CredentialManagerPendingPreventSilentAccessTaskDelegate() = default;
 
-  // Retrieves the profile PasswordStore.
-  virtual PasswordStore* GetProfilePasswordStore() = 0;
-  // Retrieves the account PasswordStore.
-  virtual PasswordStore* GetAccountPasswordStore() = 0;
+  // Retrieves the profile PasswordStoreInterface.
+  virtual PasswordStoreInterface* GetProfilePasswordStore() = 0;
+  // Retrieves the account PasswordStoreInterface.
+  virtual PasswordStoreInterface* GetAccountPasswordStore() = 0;
 
   // Finishes mediation tasks.
   virtual void DoneRequiringUserMediation() = 0;
@@ -34,13 +34,13 @@ class CredentialManagerPendingPreventSilentAccessTask
   ~CredentialManagerPendingPreventSilentAccessTask() override;
 
   // Adds an origin to require user mediation.
-  void AddOrigin(const PasswordStore::FormDigest& form_digest);
+  void AddOrigin(const PasswordFormDigest& form_digest);
 
   // PasswordStoreConsumer implementation.
   void OnGetPasswordStoreResults(
       std::vector<std::unique_ptr<PasswordForm>> results) override;
   void OnGetPasswordStoreResultsFrom(
-      PasswordStore* store,
+      PasswordStoreInterface* store,
       std::vector<std::unique_ptr<PasswordForm>> results) override;
 
  private:

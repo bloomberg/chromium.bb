@@ -8,7 +8,6 @@
 
 #include <vector>
 
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/ash/file_system_provider/provided_file_system.h"
 #include "chrome/browser/ash/file_system_provider/provided_file_system_info.h"
@@ -23,7 +22,7 @@
 
 using content::BrowserThread;
 
-namespace chromeos {
+namespace ash {
 namespace file_system_provider {
 namespace util {
 
@@ -55,7 +54,7 @@ base::FilePath GetMountPath(Profile* profile,
                             const std::string& file_system_id) {
   const user_manager::User* const user =
       user_manager::UserManager::IsInitialized()
-          ? chromeos::ProfileHelper::Get()->GetUserByProfile(
+          ? ProfileHelper::Get()->GetUserByProfile(
                 profile->GetOriginalProfile())
           : NULL;
   const std::string safe_file_system_id = EscapeFileSystemId(file_system_id);
@@ -102,7 +101,7 @@ bool FileSystemURLParser::Parse() {
     Profile* original_profile = profiles[i]->GetOriginalProfile();
 
     if (original_profile != profiles[i] ||
-        !chromeos::ProfileHelper::IsRegularProfile(original_profile)) {
+        !ProfileHelper::IsRegularProfile(original_profile)) {
       continue;
     }
 
@@ -180,4 +179,4 @@ bool LocalPathParser::Parse() {
 
 }  // namespace util
 }  // namespace file_system_provider
-}  // namespace chromeos
+}  // namespace ash

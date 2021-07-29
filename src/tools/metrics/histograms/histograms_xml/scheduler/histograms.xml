@@ -47,7 +47,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram base="true"
     name="Scheduler.DOMScheduler.QueueingDurationPerPriority" units="ms"
-    expires_after="2020-12-01">
+    expires_after="2022-12-01">
 <!-- Name completed by histogram_suffixes name="Scheduler.DOMScheduler.Priority" -->
 
   <owner>kdillon@chromium.org</owner>
@@ -60,7 +60,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Scheduler.DOMScheduler.TaskSignalPriorityWasChanged"
-    enum="PriorityChangeStatus" expires_after="2020-12-01">
+    enum="PriorityChangeStatus" expires_after="2022-12-01">
   <owner>kdillon@chromium.org</owner>
   <owner>shaseley@chromium.org</owner>
   <summary>
@@ -134,6 +134,24 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     The bucket value is the sum of thread durations of all tasks in this thread
     across all browsing instances. This metric is reported each time we execute
     a task which has wall time measurement.
+  </summary>
+</histogram>
+
+<histogram name="Scheduler.TimerBase.ScheduledTaskInvokedReason"
+    enum="ScheduledTaskInvokedReason" expires_after="M95">
+  <owner>pmonette@chromium.org</owner>
+  <owner>chrome-catan@google.com</owner>
+  <summary>
+    Records the reason that a timer's scheduled task was invoked.
+
+    To avoid a degenerate case where a timer could flood the task queue by
+    repeatedly stopping and starting, the scheduled task is kept active in the
+    task queue even if the timer is not running anymore. The issue with this is
+    that the scheduled task can now cause unnecessary wake-ups just to do
+    nothing. This histogram records how many times the timer's task was run
+    unnecessarily.
+
+    Not recorded on Fuchsia.
   </summary>
 </histogram>
 

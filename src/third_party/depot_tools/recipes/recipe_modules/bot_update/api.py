@@ -32,7 +32,9 @@ class BotUpdateApi(recipe_api.RecipeApi):
         'GIT_HTTP_LOW_SPEED_LIMIT': '102400',  # in bytes
         'GIT_HTTP_LOW_SPEED_TIME': 1800,  # in seconds
     }
-    if self.m.buildbucket.build.id != 0:
+    if self.m.buildbucket.build.id == 0:
+      env['DEPOT_TOOLS_COLLECT_METRICS'] = '0'
+    else:
       env['DEPOT_TOOLS_REPORT_BUILD'] = '%s/%s/%s/%s' % (
           self.m.buildbucket.build.builder.project,
           self.m.buildbucket.build.builder.bucket,

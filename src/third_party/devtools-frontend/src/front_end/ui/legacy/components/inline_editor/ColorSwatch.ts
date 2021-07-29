@@ -32,6 +32,7 @@ export class FormatChangedEvent extends Event {
 }
 
 export class ColorSwatch extends HTMLElement {
+  static readonly litTagName = LitHtml.literal`devtools-color-swatch`;
   private readonly shadow = this.attachShadow({mode: 'open'});
   private tooltip: string = i18nString(UIStrings.shiftclickToChangeColorFormat);
   private text: string|null = null;
@@ -41,7 +42,7 @@ export class ColorSwatch extends HTMLElement {
   constructor() {
     super();
     this.shadow.adoptedStyleSheets = [
-      ...getStyleSheets('ui/legacy/components/inline_editor/colorSwatch.css', {enableLegacyPatching: false}),
+      ...getStyleSheets('ui/legacy/components/inline_editor/colorSwatch.css'),
     ];
   }
 

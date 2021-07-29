@@ -107,8 +107,15 @@ bool StyleFetchedImage::ErrorOccurred() const {
   return image_->ErrorOccurred();
 }
 
+bool StyleFetchedImage::IsAccessAllowed(String& failing_url) const {
+  DCHECK(image_->IsLoaded());
+  if (image_->IsAccessAllowed())
+    return true;
+  failing_url = image_->Url().ElidedString();
+  return false;
+}
+
 FloatSize StyleFetchedImage::ImageSize(
-    const Document&,
     float multiplier,
     const FloatSize& default_object_size,
     RespectImageOrientationEnum respect_orientation) const {

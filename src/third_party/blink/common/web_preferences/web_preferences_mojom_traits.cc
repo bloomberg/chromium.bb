@@ -7,7 +7,6 @@
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/base/string16_mojom_traits.h"
-#include "third_party/blink/public/mojom/widget/screen_info.mojom.h"
 #include "url/mojom/url_gurl_mojom_traits.h"
 
 namespace mojo {
@@ -48,7 +47,9 @@ bool StructTraits<blink::mojom::WebPreferencesDataView,
           &out->low_priority_iframes_threshold) ||
       !data.ReadNetworkQualityEstimatorWebHoldback(
           &out->network_quality_estimator_web_holdback) ||
-      !data.ReadWebAppScope(&out->web_app_scope)
+      !data.ReadWebAppScope(&out->web_app_scope) ||
+      !data.ReadLitepageSubresourceRedirectOrigin(
+          &out->litepage_subresource_redirect_origin)
 #if defined(OS_ANDROID)
       || !data.ReadDefaultVideoPosterUrl(&out->default_video_poster_url)
 #endif
@@ -99,6 +100,7 @@ bool StructTraits<blink::mojom::WebPreferencesDataView,
   out->hide_scrollbars = data.hide_scrollbars();
   out->accelerated_2d_canvas_enabled = data.accelerated_2d_canvas_enabled();
   out->new_canvas_2d_api_enabled = data.new_canvas_2d_api_enabled();
+  out->canvas_2d_layers_enabled = data.canvas_2d_layers_enabled();
   out->antialiased_2d_canvas_disabled = data.antialiased_2d_canvas_disabled();
   out->antialiased_clips_2d_canvas_enabled =
       data.antialiased_clips_2d_canvas_enabled();

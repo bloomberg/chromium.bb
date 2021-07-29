@@ -24,7 +24,7 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/user_interaction_observer.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/content/common/mojom/autofill_agent.mojom.h"
@@ -51,7 +51,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/safe_browsing/buildflags.h"
-#include "components/safe_browsing/core/features.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "components/sessions/content/content_record_password_state.h"
 #include "components/sync/driver/test_sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -78,7 +78,7 @@
 #endif
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
-#include "components/safe_browsing/content/password_protection/mock_password_protection_service.h"
+#include "components/safe_browsing/content/browser/password_protection/mock_password_protection_service.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -216,7 +216,7 @@ class ChromePasswordManagerClientTest : public ChromeRenderViewHostTestHarness {
   syncer::TestSyncService* SetupBasicTestSync() {
     syncer::TestSyncService* sync_service =
         static_cast<syncer::TestSyncService*>(
-            ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+            SyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
                 profile(), base::BindRepeating(&CreateTestSyncService)));
     return sync_service;
   }
@@ -424,38 +424,11 @@ TEST_F(ChromePasswordManagerClientTest,
 
   // In guest mode saving is disabled, filling is enabled but there is in fact
   // nothing to fill, manual filling is disabled.
-  base::test::ScopedFeatureList scoped_feature_list;
-  TestingProfile::SetScopedFeatureListForEphemeralGuestProfiles(
-      scoped_feature_list, /*enabled=*/false);
   profile()->SetGuestSession(true);
   profile()
       ->GetPrimaryOTRProfile(/*create_if_needed=*/true)
       ->AsTestingProfile()
       ->SetGuestSession(true);
-  EXPECT_FALSE(client->IsSavingAndFillingEnabled(kUrlOn));
-  EXPECT_TRUE(client->IsFillingEnabled(kUrlOn));
-  EXPECT_FALSE(client->IsFillingFallbackEnabled(kUrlOn));
-}
-
-TEST_F(ChromePasswordManagerClientTest,
-       SavingAndFillingDisabledConditionsInEphemeralGuest) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  if (!TestingProfile::SetScopedFeatureListForEphemeralGuestProfiles(
-          scoped_feature_list, /*enabled=*/true)) {
-    return;
-  }
-
-  std::unique_ptr<WebContents> web_contents =
-      content::WebContentsTester::CreateTestWebContents(profile(), nullptr);
-  auto client =
-      std::make_unique<MockChromePasswordManagerClient>(web_contents.get());
-  EXPECT_CALL(*client, GetMainFrameCertStatus()).WillRepeatedly(Return(0));
-
-  // In guest mode saving is disabled, filling is enabled but there is in fact
-  // nothing to fill, manual filling is disabled.
-  const GURL kUrlOn("https://accounts.google.com");
-  profile()->SetGuestSession(true);
-  profile()->AsTestingProfile()->SetGuestSession(true);
   EXPECT_FALSE(client->IsSavingAndFillingEnabled(kUrlOn));
   EXPECT_TRUE(client->IsFillingEnabled(kUrlOn));
   EXPECT_FALSE(client->IsFillingFallbackEnabled(kUrlOn));

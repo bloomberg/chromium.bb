@@ -34,17 +34,24 @@
 
 namespace quic {
 
+namespace {
+
+// Default port for HTTP/3.
+uint16_t kDefaultPort = 443;
+
+}  // namespace
+
 TlsServerHandshaker::DefaultProofSourceHandle::DefaultProofSourceHandle(
     TlsServerHandshaker* handshaker,
     ProofSource* proof_source)
     : handshaker_(handshaker), proof_source_(proof_source) {}
 
 TlsServerHandshaker::DefaultProofSourceHandle::~DefaultProofSourceHandle() {
-  CancelPendingOperation();
+  CloseHandle();
 }
 
-void TlsServerHandshaker::DefaultProofSourceHandle::CancelPendingOperation() {
-  QUIC_DVLOG(1) << "CancelPendingOperation. is_signature_pending="
+void TlsServerHandshaker::DefaultProofSourceHandle::CloseHandle() {
+  QUIC_DVLOG(1) << "CloseHandle. is_signature_pending="
                 << (signature_callback_ != nullptr);
   if (signature_callback_) {
     signature_callback_->Cancel();
@@ -62,7 +69,8 @@ TlsServerHandshaker::DefaultProofSourceHandle::SelectCertificate(
     const std::string& /*alpn*/,
     absl::optional<std::string> /*alps*/,
     const std::vector<uint8_t>& /*quic_transport_params*/,
-    const absl::optional<std::vector<uint8_t>>& /*early_data_context*/) {
+    const absl::optional<std::vector<uint8_t>>& /*early_data_context*/,
+    const QuicSSLConfig& /*ssl_config*/) {
   if (!handshaker_ || !proof_source_) {
     QUIC_BUG(quic_bug_10341_1)
         << "SelectCertificate called on a detached handle";
@@ -74,7 +82,8 @@ TlsServerHandshaker::DefaultProofSourceHandle::SelectCertificate(
 
   handshaker_->OnSelectCertificateDone(
       /*ok=*/true, /*is_sync=*/true, chain.get(),
-      /*handshake_hints=*/absl::string_view());
+      /*handshake_hints=*/absl::string_view(),
+      /*ticket_encryption_key=*/absl::string_view());
   if (!handshaker_->select_cert_status().has_value()) {
     QUIC_BUG(quic_bug_12423_1)
         << "select_cert_status() has no value after a synchronous select cert";
@@ -164,7 +173,7 @@ TlsServerHandshaker::TlsServerHandshaker(
       proof_source_(crypto_config->proof_source()),
       pre_shared_key_(crypto_config->pre_shared_key()),
       crypto_negotiated_params_(new QuicCryptoNegotiatedParameters),
-      tls_connection_(crypto_config->ssl_ctx(), this),
+      tls_connection_(crypto_config->ssl_ctx(), this, session->GetSSLConfig()),
       crypto_config_(crypto_config) {
   QUICHE_DCHECK_EQ(PROTOCOL_TLS1_3,
                    session->connection()->version().handshake_protocol);
@@ -190,7 +199,7 @@ TlsServerHandshaker::~TlsServerHandshaker() {
 
 void TlsServerHandshaker::CancelOutstandingCallbacks() {
   if (proof_source_handle_) {
-    proof_source_handle_->CancelPendingOperation();
+    proof_source_handle_->CloseHandle();
   }
   if (ticket_decryption_callback_) {
     ticket_decryption_callback_->Cancel();
@@ -351,18 +360,7 @@ TlsServerHandshaker::CreateCurrentOneRttEncrypter() {
 void TlsServerHandshaker::OverrideQuicConfigDefaults(QuicConfig* /*config*/) {}
 
 void TlsServerHandshaker::AdvanceHandshakeFromCallback() {
-  std::unique_ptr<QuicConnection::ScopedPacketFlusher> flusher;
-  if (add_packet_flusher_on_async_op_done_) {
-    if (session()->PacketFlusherAttached()) {
-      QUIC_RELOADABLE_FLAG_COUNT_N(quic_add_packet_flusher_on_async_op_done, 1,
-                                   2);
-    } else {
-      QUIC_RELOADABLE_FLAG_COUNT_N(quic_add_packet_flusher_on_async_op_done, 2,
-                                   2);
-    }
-    flusher = std::make_unique<QuicConnection::ScopedPacketFlusher>(
-        session()->connection());
-  }
+  QuicConnection::ScopedPacketFlusher flusher(session()->connection());
 
   AdvanceHandshake();
   if (!is_connection_closed()) {
@@ -514,27 +512,14 @@ void TlsServerHandshaker::SetWriteSecret(
   TlsHandshaker::SetWriteSecret(level, cipher, write_secret);
 }
 
-std::string TlsServerHandshaker::GetAcceptChValueForOrigin(
-    const std::string& /*origin*/) const {
+std::string TlsServerHandshaker::GetAcceptChValueForHostname(
+    const std::string& /*hostname*/) const {
   return {};
 }
 
 void TlsServerHandshaker::FinishHandshake() {
-  if (retry_handshake_on_early_data_) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(quic_tls_retry_handshake_on_early_data, 2, 2);
-    QUICHE_DCHECK(!SSL_in_early_data(ssl()));
-  } else {
-    if (SSL_in_early_data(ssl())) {
-      // If the server accepts early data, SSL_do_handshake returns success
-      // twice: once after processing the ClientHello and sending the server's
-      // first flight, and then again after the handshake is complete. This
-      // results in FinishHandshake getting called twice. On the first call to
-      // FinishHandshake, we don't have any confirmation that the client is
-      // live, so all end of handshake processing is deferred until the
-      // handshake is actually complete.
-      return;
-    }
-  }
+  QUICHE_DCHECK(!SSL_in_early_data(ssl()));
+
   if (!valid_alpn_received_) {
     QUIC_DLOG(ERROR)
         << "Server: handshake finished without receiving a known ALPN";
@@ -668,7 +653,8 @@ int TlsServerHandshaker::SessionTicketSeal(uint8_t* out,
                                            size_t max_out_len,
                                            absl::string_view in) {
   QUICHE_DCHECK(proof_source_->GetTicketCrypter());
-  std::vector<uint8_t> ticket = proof_source_->GetTicketCrypter()->Encrypt(in);
+  std::vector<uint8_t> ticket =
+      proof_source_->GetTicketCrypter()->Encrypt(in, ticket_encryption_key_);
   if (max_out_len < ticket.size()) {
     QUIC_BUG(quic_bug_12423_2)
         << "TicketCrypter returned " << ticket.size()
@@ -689,8 +675,18 @@ ssl_ticket_aead_result_t TlsServerHandshaker::SessionTicketOpen(
     absl::string_view in) {
   QUICHE_DCHECK(proof_source_->GetTicketCrypter());
 
+  if (allow_ignore_ticket_open_ && ignore_ticket_open_) {
+    // SetIgnoreTicketOpen has been called. Typically this means the caller is
+    // using handshake hints and expect the hints to contain ticket decryption
+    // results.
+    QUIC_CODE_COUNT(quic_tls_server_handshaker_tickets_ignored_1);
+    return ssl_ticket_aead_ignore_ticket;
+  }
+
   if (!ticket_decryption_callback_) {
-    ticket_received_ = true;
+    if (!allow_ignore_ticket_open_) {
+      ticket_received_ = true;
+    }
     ticket_decryption_callback_ = new DecryptCallback(this);
     proof_source_->GetTicketCrypter()->Decrypt(
         in, std::unique_ptr<DecryptCallback>(ticket_decryption_callback_));
@@ -742,7 +738,7 @@ ssl_ticket_aead_result_t TlsServerHandshaker::FinalizeSessionTicketOpen(
   if (decrypted_session_ticket_.empty()) {
     QUIC_DLOG(ERROR) << "Session ticket decryption failed; ignoring ticket";
     // Ticket decryption failed. Ignore the ticket.
-    QUIC_CODE_COUNT(quic_tls_server_handshaker_tickets_ignored);
+    QUIC_CODE_COUNT(quic_tls_server_handshaker_tickets_ignored_2);
     return ssl_ticket_aead_ignore_ticket;
   }
   if (max_out_len < decrypted_session_ticket_.size()) {
@@ -781,6 +777,15 @@ ssl_select_cert_result_t TlsServerHandshaker::EarlySelectCertCallback(
     QUIC_BUG(quic_bug_10341_6)
         << "QUIC server pre-shared keys not yet supported with TLS";
     return ssl_select_cert_error;
+  }
+
+  if (allow_ignore_ticket_open_) {
+    QUIC_RELOADABLE_FLAG_COUNT(quic_tls_allow_ignore_ticket_open);
+    const uint8_t* unused_extension_bytes;
+    size_t unused_extension_len;
+    ticket_received_ = SSL_early_callback_ctx_extension_get(
+        client_hello, TLSEXT_TYPE_pre_shared_key, &unused_extension_bytes,
+        &unused_extension_len);
   }
 
   // This callback is called very early by Boring SSL, most of the SSL_get_foo
@@ -824,26 +829,24 @@ ssl_select_cert_result_t TlsServerHandshaker::EarlySelectCertCallback(
   absl::string_view ssl_capabilities_view;
 
   absl::optional<std::string> alps;
-  if (use_handshake_hints_) {
-    QUIC_RELOADABLE_FLAG_COUNT(quic_tls_server_use_handshake_hints);
-    if (CryptoUtils::GetSSLCapabilities(ssl(), &ssl_capabilities,
-                                        &ssl_capabilities_len)) {
-      ssl_capabilities_view = absl::string_view(
-          reinterpret_cast<const char*>(ssl_capabilities.get()),
-          ssl_capabilities_len);
-    }
 
-    // Enable ALPS for the session's ALPN.
-    SetApplicationSettingsResult alps_result =
-        SetApplicationSettings(AlpnForVersion(session()->version()));
-    if (!alps_result.success) {
-      return ssl_select_cert_error;
-    }
-    alps = alps_result.alps_length > 0
-               ? std::string(alps_result.alps_buffer.get(),
-                             alps_result.alps_length)
-               : std::string();
+  if (CryptoUtils::GetSSLCapabilities(ssl(), &ssl_capabilities,
+                                      &ssl_capabilities_len)) {
+    ssl_capabilities_view =
+        absl::string_view(reinterpret_cast<const char*>(ssl_capabilities.get()),
+                          ssl_capabilities_len);
   }
+
+  // Enable ALPS for the session's ALPN.
+  SetApplicationSettingsResult alps_result =
+      SetApplicationSettings(AlpnForVersion(session()->version()));
+  if (!alps_result.success) {
+    return ssl_select_cert_error;
+  }
+  alps =
+      alps_result.alps_length > 0
+          ? std::string(alps_result.alps_buffer.get(), alps_result.alps_length)
+          : std::string();
 
   const QuicAsyncStatus status = proof_source_handle_->SelectCertificate(
       session()->connection()->self_address(),
@@ -854,7 +857,8 @@ ssl_select_cert_result_t TlsServerHandshaker::EarlySelectCertCallback(
           client_hello->client_hello_len),
       AlpnForVersion(session()->version()), std::move(alps),
       set_transport_params_result.quic_transport_params,
-      set_transport_params_result.early_data_context);
+      set_transport_params_result.early_data_context,
+      tls_connection_.ssl_config());
 
   QUICHE_DCHECK_EQ(status, select_cert_status().value());
 
@@ -876,28 +880,28 @@ ssl_select_cert_result_t TlsServerHandshaker::EarlySelectCertCallback(
 }
 
 void TlsServerHandshaker::OnSelectCertificateDone(
-    bool ok,
-    bool is_sync,
-    const ProofSource::Chain* chain,
-    absl::string_view handshake_hints) {
+    bool ok, bool is_sync, const ProofSource::Chain* chain,
+    absl::string_view handshake_hints,
+    absl::string_view ticket_encryption_key) {
   QUIC_DVLOG(1) << "OnSelectCertificateDone. ok:" << ok
                 << ", is_sync:" << is_sync
-                << ", len(handshake_hints):" << handshake_hints.size();
+                << ", len(handshake_hints):" << handshake_hints.size()
+                << ", len(ticket_encryption_key):"
+                << ticket_encryption_key.size();
+  ticket_encryption_key_ = std::string(ticket_encryption_key);
   select_cert_status_ = QUIC_FAILURE;
   if (ok) {
     if (chain && !chain->certs.empty()) {
       tls_connection_.SetCertChain(chain->ToCryptoBuffers().value);
-      if (use_handshake_hints_) {
-        if (!handshake_hints.empty() &&
-            !SSL_set_handshake_hints(
-                ssl(), reinterpret_cast<const uint8_t*>(handshake_hints.data()),
-                handshake_hints.size())) {
-          // If |SSL_set_handshake_hints| fails, the ssl() object will remain
-          // intact, it is as if we didn't call it. The handshaker will
-          // continue to compute signature/decrypt ticket as normal.
-          QUIC_CODE_COUNT(quic_tls_server_set_handshake_hints_failed);
-          QUIC_DVLOG(1) << "SSL_set_handshake_hints failed";
-        }
+      if (!handshake_hints.empty() &&
+          !SSL_set_handshake_hints(
+              ssl(), reinterpret_cast<const uint8_t*>(handshake_hints.data()),
+              handshake_hints.size())) {
+        // If |SSL_set_handshake_hints| fails, the ssl() object will remain
+        // intact, it is as if we didn't call it. The handshaker will
+        // continue to compute signature/decrypt ticket as normal.
+        QUIC_CODE_COUNT(quic_tls_server_set_handshake_hints_failed);
+        QUIC_DVLOG(1) << "SSL_set_handshake_hints failed";
       }
       select_cert_status_ = QUIC_SUCCESS;
     } else {
@@ -927,6 +931,10 @@ void TlsServerHandshaker::OnSelectCertificateDone(
     QUICHE_DCHECK_EQ(last_expected_ssl_error, SSL_ERROR_PENDING_CERTIFICATE);
     AdvanceHandshakeFromCallback();
   }
+}
+
+bool TlsServerHandshaker::WillNotCallComputeSignature() const {
+  return SSL_can_release_private_key(ssl());
 }
 
 bool TlsServerHandshaker::ValidateHostname(const std::string& hostname) const {
@@ -986,13 +994,6 @@ int TlsServerHandshaker::SelectAlpn(const uint8_t** out,
     return SSL_TLSEXT_ERR_NOACK;
   }
 
-  if (!use_handshake_hints_) {
-    // Enable ALPS for the selected ALPN protocol.
-    if (!SetApplicationSettings(*selected_alpn).success) {
-      return SSL_TLSEXT_ERR_NOACK;
-    }
-  }
-
   session()->OnAlpnSelected(*selected_alpn);
   valid_alpn_received_ = true;
   *out_len = selected_alpn->size();
@@ -1006,8 +1007,17 @@ TlsServerHandshaker::SetApplicationSettings(absl::string_view alpn) {
   const uint8_t* alps_data = nullptr;
 
   const std::string& hostname = crypto_negotiated_params_->sni;
-  std::string accept_ch_value = GetAcceptChValueForOrigin(hostname);
+  std::string accept_ch_value = GetAcceptChValueForHostname(hostname);
   std::string origin = absl::StrCat("https://", hostname);
+  if (GetQuicReloadableFlag(quic_include_port_in_alps_origin)) {
+    QUIC_RELOADABLE_FLAG_COUNT(quic_include_port_in_alps_origin);
+    uint16_t port = session()->self_address().port();
+    if (port != kDefaultPort) {
+      // This should be rare in production, but useful for test servers.
+      QUIC_CODE_COUNT(quic_server_alps_non_default_port);
+      absl::StrAppend(&origin, ":", port);
+    }
+  }
 
   if (!accept_ch_value.empty()) {
     AcceptChFrame frame{{{std::move(origin), std::move(accept_ch_value)}}};

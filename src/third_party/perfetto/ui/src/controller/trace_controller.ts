@@ -19,18 +19,14 @@ import {
   Actions,
   DeferredAction,
 } from '../common/actions';
+import {cacheTrace} from '../common/cache_manager';
 import {TRACE_MARGIN_TIME_S} from '../common/constants';
 import {Engine, QueryError} from '../common/engine';
 import {HttpRpcEngine} from '../common/http_rpc_engine';
-import {slowlyCountRows} from '../common/query_iterator';
+import {iter, NUM, slowlyCountRows, STR} from '../common/query_iterator';
 import {EngineMode} from '../common/state';
-import {toNs, toNsCeil, toNsFloor} from '../common/time';
-import {TimeSpan} from '../common/time';
-import {
-  createWasmEngine,
-  destroyWasmEngine,
-  WasmEngineProxy
-} from '../common/wasm_engine_proxy';
+import {TimeSpan, toNs, toNsCeil, toNsFloor} from '../common/time';
+import {WasmEngineProxy} from '../common/wasm_engine_proxy';
 import {QuantizedLoad, ThreadDesc} from '../frontend/globals';
 
 import {
@@ -96,12 +92,6 @@ export class TraceController extends Controller<States> {
   constructor(engineId: string) {
     super('init');
     this.engineId = engineId;
-  }
-
-  onDestroy() {
-    if (this.engine instanceof WasmEngineProxy) {
-      destroyWasmEngine(this.engine.id);
-    }
   }
 
   run() {
@@ -231,10 +221,9 @@ export class TraceController extends Controller<States> {
     } else {
       console.log('Opening trace using built-in WASM engine');
       engineMode = 'WASM';
+      const enginePort = globals.resetEngineWorker();
       this.engine = new WasmEngineProxy(
-          this.engineId,
-          createWasmEngine(this.engineId),
-          LoadingManager.getInstance);
+          this.engineId, enginePort, LoadingManager.getInstance);
     }
 
     globals.dispatch(Actions.setEngineReady({
@@ -336,12 +325,23 @@ export class TraceController extends Controller<States> {
     await this.loadTimelineOverview(traceTime);
 
     {
-      const query = 'select to_ftrace(id) from raw limit 1';
+      // A quick heuristic to check if the trace has ftrace events. This is
+      // based on the assumption that most traces that have ftrace either:
+      // - Are proto traces captured via perfetto, in which case traced_probes
+      //   emits ftrace per-cpu stats that end up in the stats table.
+      // - Have a raw event with non-zero cpu or utid.
+      // Notes:
+      // - The "+1 > 1" is to avoid pushing down the constraints to the "raw"
+      //   table, which would compute a full column filter without being aware
+      //   of the limit 1, and instead delegate the filtering to the iterator.
+      const query = `select '_' as _ from raw
+          where cpu + 1 > 1 or utid + 1 > 1 limit 1`;
       const result = await assertExists(this.engine).query(query);
       const hasFtrace = !!slowlyCountRows(result);
       globals.publish('HasFtrace', hasFtrace);
     }
 
+    await this.cacheCurrentTrace();
     globals.dispatch(Actions.sortThreadTracks({}));
     await this.selectFirstHeapProfile();
 
@@ -465,13 +465,27 @@ export class TraceController extends Controller<States> {
     globals.publish('OverviewData', slicesData);
   }
 
+  private async cacheCurrentTrace() {
+    const engine = assertExists(this.engine);
+    const query = await engine.query(`select str_value from metadata
+                  where name = 'trace_uuid'`);
+    const it = iter({'str_value': STR}, query);
+    if (!it.valid()) {
+      throw new Error('metadata.trace_uuid could not be found.');
+    }
+    const traceUuid = it.row.str_value;
+    const engineConfig = assertExists(Object.values(globals.state.engines)[0]);
+    cacheTrace(engineConfig.source, traceUuid);
+    globals.dispatch(Actions.setTraceUuid({traceUuid}));
+  }
+
   async initialiseHelperViews() {
     const engine = assertExists<Engine>(this.engine);
 
     this.updateStatus('Creating annotation counter track table');
     // Create the helper tables for all the annotations related data.
     // NULL in min/max means "figure it out per track in the usual way".
-    await engine.query(`
+    await engine.queryV2(`
       CREATE TABLE annotation_counter_track(
         id INTEGER PRIMARY KEY,
         name STRING,
@@ -482,7 +496,7 @@ export class TraceController extends Controller<States> {
       );
     `);
     this.updateStatus('Creating annotation slice track table');
-    await engine.query(`
+    await engine.queryV2(`
       CREATE TABLE annotation_slice_track(
         id INTEGER PRIMARY KEY,
         name STRING,
@@ -492,7 +506,7 @@ export class TraceController extends Controller<States> {
     `);
 
     this.updateStatus('Creating annotation counter table');
-    await engine.query(`
+    await engine.queryV2(`
       CREATE TABLE annotation_counter(
         id BIG INT,
         track_id INT,
@@ -502,7 +516,7 @@ export class TraceController extends Controller<States> {
       ) WITHOUT ROWID;
     `);
     this.updateStatus('Creating annotation slice table');
-    await engine.query(`
+    await engine.queryV2(`
       CREATE TABLE annotation_slice(
         id INTEGER PRIMARY KEY,
         track_id INT,
@@ -523,7 +537,8 @@ export class TraceController extends Controller<States> {
                  'android_surfaceflinger',
                  'android_batt',
                  'android_sysui_cuj',
-                 'android_jank']) {
+                 'android_jank',
+                 'trace_metadata']) {
       this.updateStatus(`Computing ${metric} metric`);
       try {
         // We don't care about the actual result of metric here as we are just
@@ -544,17 +559,19 @@ export class TraceController extends Controller<States> {
         let hasSliceName = false;
         let hasDur = false;
         let hasUpid = false;
+        let hasValue = false;
         for (let i = 0; i < slowlyCountRows(result); i++) {
           const name = result.columns[1].stringValues![i];
           hasSliceName = hasSliceName || name === 'slice_name';
           hasDur = hasDur || name === 'dur';
           hasUpid = hasUpid || name === 'upid';
+          hasValue = hasValue || name === 'value';
         }
 
         const upidColumnSelect = hasUpid ? 'upid' : '0 AS upid';
         const upidColumnWhere = hasUpid ? 'upid' : '0';
         if (hasSliceName && hasDur) {
-          await engine.query(`
+          await engine.queryV2(`
             INSERT INTO annotation_slice_track(name, __metric_name, upid)
             SELECT DISTINCT
               track_name,
@@ -563,7 +580,7 @@ export class TraceController extends Controller<States> {
             FROM ${metric}_event
             WHERE track_type = 'slice'
           `);
-          await engine.query(`
+          await engine.queryV2(`
             INSERT INTO annotation_slice(track_id, ts, dur, depth, cat, name)
             SELECT
               t.id AS track_id,
@@ -579,38 +596,38 @@ export class TraceController extends Controller<States> {
           `);
         }
 
-        const hasValue = result.columnDescriptors.some(x => x.name === 'value');
         if (hasValue) {
-          const minMax = await engine.query(`
-          SELECT MIN(value) as min_value, MAX(value) as max_value
-          FROM ${metric}_event
-          WHERE ${upidColumnWhere} != 0`);
-          const min = minMax.columns[0].longValues![0];
-          const max = minMax.columns[1].longValues![0];
-          await engine.query(`
-          INSERT INTO annotation_counter_track(
-            name, __metric_name, min_value, max_value, upid)
-          SELECT DISTINCT
-            track_name,
-            '${metric}' as metric_name,
-            CASE ${upidColumnWhere} WHEN 0 THEN NULL ELSE ${min} END,
-            CASE ${upidColumnWhere} WHEN 0 THEN NULL ELSE ${max} END,
-            ${upidColumnSelect}
-          FROM ${metric}_event
-          WHERE track_type = 'counter'
-        `);
-          await engine.query(`
-          INSERT INTO annotation_counter(id, track_id, ts, value)
-          SELECT
-            -1 as id,
-            t.id AS track_id,
-            ts,
-            value
-          FROM ${metric}_event a
-          JOIN annotation_counter_track t
-          ON a.track_name = t.name AND t.__metric_name = '${metric}'
-          ORDER BY t.id, ts
-        `);
+          const minMax = await engine.queryV2(`
+            SELECT
+              IFNULL(MIN(value), 0) as minValue,
+              IFNULL(MAX(value), 0) as maxValue
+            FROM ${metric}_event
+            WHERE ${upidColumnWhere} != 0`);
+          const row = minMax.firstRow({minValue: NUM, maxValue: NUM});
+          await engine.queryV2(`
+            INSERT INTO annotation_counter_track(
+              name, __metric_name, min_value, max_value, upid)
+            SELECT DISTINCT
+              track_name,
+              '${metric}' as metric_name,
+              CASE ${upidColumnWhere} WHEN 0 THEN NULL ELSE ${row.minValue} END,
+              CASE ${upidColumnWhere} WHEN 0 THEN NULL ELSE ${row.maxValue} END,
+              ${upidColumnSelect}
+            FROM ${metric}_event
+            WHERE track_type = 'counter'
+          `);
+          await engine.queryV2(`
+            INSERT INTO annotation_counter(id, track_id, ts, value)
+            SELECT
+              -1 as id,
+              t.id AS track_id,
+              ts,
+              value
+            FROM ${metric}_event a
+            JOIN annotation_counter_track t
+            ON a.track_name = t.name AND t.__metric_name = '${metric}'
+            ORDER BY t.id, ts
+          `);
         }
       } catch (e) {
         if (e instanceof QueryError) {

@@ -12,15 +12,15 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/chromeos/platform_keys/extension_platform_keys_service.h"
-#include "chrome/browser/chromeos/platform_keys/extension_platform_keys_service_factory.h"
-#include "chrome/browser/chromeos/platform_keys/key_permissions/extension_key_permissions_service.h"
-#include "chrome/browser/chromeos/platform_keys/key_permissions/extension_key_permissions_service_factory.h"
 #include "chrome/browser/chromeos/platform_keys/key_permissions/key_permissions_service.h"
 #include "chrome/browser/chromeos/platform_keys/key_permissions/key_permissions_service_factory.h"
-#include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "chrome/browser/extensions/api/platform_keys/platform_keys_test_base.h"
 #include "chrome/browser/net/nss_context.h"
+#include "chrome/browser/platform_keys/extension_key_permissions_service.h"
+#include "chrome/browser/platform_keys/extension_key_permissions_service_factory.h"
+#include "chrome/browser/platform_keys/extension_platform_keys_service.h"
+#include "chrome/browser/platform_keys/extension_platform_keys_service_factory.h"
+#include "chrome/browser/platform_keys/platform_keys.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/policy/policy_constants.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -135,18 +135,12 @@ class PlatformKeysTest : public PlatformKeysTestBase {
     const extensions::Extension* const fake_gen_extension =
         LoadExtension(test_data_dir_.AppendASCII("platform_keys_genkey"));
 
-    chromeos::platform_keys::KeyPermissionsService* const
-        key_permissions_service = chromeos::platform_keys::
-            KeyPermissionsServiceFactory::GetForBrowserContext(profile());
-
-    ASSERT_TRUE(key_permissions_service);
-
     base::RunLoop run_loop;
     chromeos::platform_keys::ExtensionKeyPermissionsServiceFactory::
         GetForBrowserContextAndExtension(
             base::BindOnce(&PlatformKeysTest::GotPermissionsForExtension,
                            base::Unretained(this), run_loop.QuitClosure()),
-            profile(), fake_gen_extension->id(), key_permissions_service);
+            profile(), fake_gen_extension->id());
     run_loop.Run();
   }
 
@@ -156,6 +150,9 @@ class PlatformKeysTest : public PlatformKeysTestBase {
   scoped_refptr<net::X509Certificate> client_cert1_;
   // Imported into system slot.
   scoped_refptr<net::X509Certificate> client_cert2_;
+  // Signed using an elliptic curve (ECDSA) algorithm.
+  // Imported in the same slot as |client_cert1_|.
+  scoped_refptr<net::X509Certificate> client_cert3_;
   const extensions::Extension* extension_;
 
  private:
@@ -171,8 +168,9 @@ class PlatformKeysTest : public PlatformKeysTestBase {
       std::unique_ptr<chromeos::platform_keys::ExtensionKeyPermissionsService>
           extension_key_permissions_service,
       base::OnceClosure done_callback,
-      chromeos::platform_keys::Status status) {
-    ASSERT_EQ(status, chromeos::platform_keys::Status::kSuccess);
+      bool is_error,
+      crosapi::mojom::KeystoreError error) {
+    ASSERT_FALSE(is_error) << static_cast<int>(error);
     std::move(done_callback).Run();
   }
 
@@ -219,6 +217,10 @@ class PlatformKeysTest : public PlatformKeysTestBase {
         extension_path(), "client_2.pem", "client_2.pk8",
         test_system_slot()->slot());
     ASSERT_TRUE(client_cert2_.get());
+
+    client_cert3_ = net::ImportClientCertAndKeyFromFile(
+        extension_path(), "client_3.pem", "client_3.pk8", slot.get());
+    ASSERT_TRUE(client_cert3_.get());
   }
 
   void SetupTestCACerts() {
@@ -336,13 +338,14 @@ IN_PROC_BROWSER_TEST_P(UnmanagedPlatformKeysTest, PRE_Basic) {
   RunPreTest();
 }
 
-// At first interactively selects |client_cert1_| and |client_cert2_| to grant
-// permissions and afterwards runs more basic tests.
+// At first interactively selects |client_cert1_|, |client_cert2_| and
+// |client_cert3_| to grant permissions and afterwards runs more basic tests.
 // After the initial two interactive calls, the simulated user does not select
 // any cert.
 IN_PROC_BROWSER_TEST_P(UnmanagedPlatformKeysTest, Basic) {
   net::CertificateList certs;
   certs.push_back(nullptr);
+  certs.push_back(client_cert3_);
   certs.push_back(client_cert2_);
   certs.push_back(client_cert1_);
 

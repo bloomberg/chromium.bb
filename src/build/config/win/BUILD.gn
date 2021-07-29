@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/c++/c++.gni")
 import("//build/config/chrome_build.gni")
 import("//build/config/clang/clang.gni")
 import("//build/config/compiler/compiler.gni")
@@ -126,7 +127,8 @@ config("compiler") {
     }
   }
 
-  if (use_lld && !use_thin_lto && (is_clang || !use_goma)) {
+  # Disabled with cc_wrapper because of https://github.com/mozilla/sccache/issues/264
+  if (use_lld && !use_thin_lto && (is_clang || !use_goma) && cc_wrapper == "") {
     # /Brepro lets the compiler not write the mtime field in the .obj output.
     # link.exe /incremental relies on this field to work correctly, but lld
     # never looks at this timestamp, so it's safe to pass this flag with
@@ -489,8 +491,17 @@ config("default_crt") {
 config("release_crt") {
   if (is_component_build) {
     cflags = [ "/MD" ]
+
+    if (use_custom_libcxx) {
+      # On Windows, including libcpmt[d]/msvcprt[d] explicitly links the C++
+      # standard library, which libc++ needs for exception_ptr internals.
+      ldflags = [ "/DEFAULTLIB:msvcprt.lib" ]
+    }
   } else {
     cflags = [ "/MT" ]
+    if (use_custom_libcxx) {
+      ldflags = [ "/DEFAULTLIB:libcpmt.lib" ]
+    }
   }
 }
 
@@ -498,8 +509,14 @@ config("dynamic_crt") {
   if (is_debug) {
     # This pulls in the DLL debug CRT and defines _DEBUG
     cflags = [ "/MDd" ]
+    if (use_custom_libcxx) {
+      ldflags = [ "/DEFAULTLIB:msvcprtd.lib" ]
+    }
   } else {
     cflags = [ "/MD" ]
+    if (use_custom_libcxx) {
+      ldflags = [ "/DEFAULTLIB:msvcprt.lib" ]
+    }
   }
 }
 
@@ -507,8 +524,14 @@ config("static_crt") {
   if (is_debug) {
     # This pulls in the static debug CRT and defines _DEBUG
     cflags = [ "/MTd" ]
+    if (use_custom_libcxx) {
+      ldflags = [ "/DEFAULTLIB:libcpmtd.lib" ]
+    }
   } else {
     cflags = [ "/MT" ]
+    if (use_custom_libcxx) {
+      ldflags = [ "/DEFAULTLIB:libcpmt.lib" ]
+    }
   }
 }
 

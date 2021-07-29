@@ -11,6 +11,7 @@
 #include "include/core/SkSpan.h"
 #include "include/core/SkSurface.h"
 #include "include/gpu/GrDirectContext.h"
+#include "src/gpu/BaseDevice.h"
 
 class GrAtlasManager;
 class GrBackendFormat;
@@ -69,7 +70,7 @@ public:
      */
     void addOnFlushCallbackObject(GrOnFlushCallbackObject*);
 
-    GrAuditTrail* auditTrail() { return fContext->auditTrail(); }
+    GrAuditTrail* auditTrail() { return fContext->fAuditTrail.get(); }
 
     /**
      * Finalizes all pending reads and writes to the surfaces and also performs an MSAA resolves
@@ -104,8 +105,7 @@ public:
     bool validPMUPMConversionExists();
 
     /**
-     * These functions create premul <-> unpremul effects, using the specialized round-trip effects
-     * from GrConfigConversionEffect.
+     * These functions create premul <-> unpremul effects, using specialized round-trip effects.
      */
     std::unique_ptr<GrFragmentProcessor> createPMToUPMEffect(std::unique_ptr<GrFragmentProcessor>);
     std::unique_ptr<GrFragmentProcessor> createUPMToPMEffect(std::unique_ptr<GrFragmentProcessor>);
@@ -145,6 +145,22 @@ public:
         return fContext->fMappedBufferManager.get();
     }
 
+    sk_sp<skgpu::BaseDevice> createDevice(GrColorType,
+                                          sk_sp<GrSurfaceProxy>,
+                                          sk_sp<SkColorSpace>,
+                                          GrSurfaceOrigin,
+                                          const SkSurfaceProps&,
+                                          skgpu::BaseDevice::InitContents);
+    sk_sp<skgpu::BaseDevice> createDevice(SkBudgeted,
+                                          const SkImageInfo&,
+                                          SkBackingFit,
+                                          int sampleCount,
+                                          GrMipmapped,
+                                          GrProtected,
+                                          GrSurfaceOrigin,
+                                          const SkSurfaceProps&,
+                                          skgpu::BaseDevice::InitContents);
+
 #if GR_TEST_UTILS
     /** Reset GPU stats */
     void resetGpuStats() const;
@@ -169,13 +185,6 @@ public:
         actively mutating texture in an SkImage. This could yield unexpected results
         if it gets cached or used more generally. */
     sk_sp<SkImage> testingOnly_getFontAtlasImage(GrMaskFormat format, unsigned int index = 0);
-
-    /**
-     * Purge all the unlocked resources from the cache.
-     * This entry point is mainly meant for timing texture uploads
-     * and is not defined in normal builds of Skia.
-     */
-    void testingOnly_purgeAllUnlockedResources();
 
     void testingOnly_flushAndRemoveOnFlushCallbackObject(GrOnFlushCallbackObject*);
 #endif

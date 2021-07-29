@@ -59,6 +59,7 @@ namespace dawn_native { namespace vulkan {
 
         FencedDeleter* GetFencedDeleter() const;
         RenderPassCache* GetRenderPassCache() const;
+        ResourceMemoryAllocator* GetResourceMemoryAllocator() const;
 
         CommandRecordingContext* GetPendingRecordingContext();
         MaybeError SubmitPendingCommands();
@@ -93,14 +94,6 @@ namespace dawn_native { namespace vulkan {
                                             TextureCopy* dst,
                                             const Extent3D& copySizePixels) override;
 
-        ResultOrError<ResourceMemoryAllocation> AllocateMemory(VkMemoryRequirements requirements,
-                                                               bool mappable);
-        void DeallocateMemory(ResourceMemoryAllocation* allocation);
-
-        int FindBestMemoryTypeIndex(VkMemoryRequirements requirements, bool mappable);
-
-        ResourceMemoryAllocator* GetResourceMemoryAllocatorForTesting() const;
-
         // Return the fixed subgroup size to use for compute shaders on this device or 0 if none
         // needs to be set.
         uint32_t GetComputeSubgroupSize() const;
@@ -126,7 +119,7 @@ namespace dawn_native { namespace vulkan {
         ResultOrError<Ref<QuerySetBase>> CreateQuerySetImpl(
             const QuerySetDescriptor* descriptor) override;
         ResultOrError<Ref<RenderPipelineBase>> CreateRenderPipelineImpl(
-            const RenderPipelineDescriptor2* descriptor) override;
+            const RenderPipelineDescriptor* descriptor) override;
         ResultOrError<Ref<SamplerBase>> CreateSamplerImpl(
             const SamplerDescriptor* descriptor) override;
         ResultOrError<Ref<ShaderModuleBase>> CreateShaderModuleImpl(
@@ -143,6 +136,10 @@ namespace dawn_native { namespace vulkan {
         ResultOrError<Ref<TextureViewBase>> CreateTextureViewImpl(
             TextureBase* texture,
             const TextureViewDescriptor* descriptor) override;
+        void CreateComputePipelineAsyncImpl(const ComputePipelineDescriptor* descriptor,
+                                            size_t blueprintHash,
+                                            WGPUCreateComputePipelineAsyncCallback callback,
+                                            void* userdata) override;
 
         ResultOrError<VulkanDeviceKnobs> CreateDevice(VkPhysicalDevice physicalDevice);
         void GatherQueueFromDevice();

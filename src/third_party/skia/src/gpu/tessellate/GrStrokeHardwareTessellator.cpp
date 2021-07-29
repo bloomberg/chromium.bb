@@ -7,6 +7,7 @@
 
 #include "src/gpu/tessellate/GrStrokeHardwareTessellator.h"
 
+#include "src/core/SkMathPriv.h"
 #include "src/core/SkPathPriv.h"
 #include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/GrVx.h"
@@ -51,7 +52,7 @@ public:
         kBowtie = SkPaint::kLast_Join + 1  // Double sided round join.
     };
 
-    PatchWriter(ShaderFlags shaderFlags, GrMeshDrawOp::Target* target,
+    PatchWriter(ShaderFlags shaderFlags, GrMeshDrawTarget* target,
                 const SkRect& strokeCullBounds, const SkMatrix& viewMatrix, float matrixMaxScale,
                 GrVertexChunkArray* patchChunks, size_t patchStride, int minPatchesPerChunk)
             : fShaderFlags(shaderFlags)
@@ -369,10 +370,16 @@ private:
         if (w == 1) {
             GrPathUtils::convertQuadToCubic(p, asPatch);
         } else {
-            GrPathShader::WriteConicPatch(p, w, asPatch);
+            GrTessellationShader::WriteConicPatch(p, w, asPatch);
         }
 
-        float numParametricSegments_pow4 = GrWangsFormula::quadratic_pow4(fParametricPrecision, p);
+        float numParametricSegments_pow4;
+        if (w == 1) {
+            numParametricSegments_pow4 = GrWangsFormula::quadratic_pow4(fParametricPrecision, p);
+        } else {
+            float n = GrWangsFormula::conic_pow2(fParametricPrecision, p, w);
+            numParametricSegments_pow4 = n*n;
+        }
         if (this->stroke180FitsInPatch(numParametricSegments_pow4) || maxDepth == 0) {
             this->internalPatchTo(prevJoinType,
                                   this->stroke180FitsInPatch_withJoin(numParametricSegments_pow4),
@@ -656,7 +663,7 @@ private:
     SkPoint fLastControlPoint;
 
     // Values for the current dynamic state (if any) that will get written out with each patch.
-    GrStrokeShader::DynamicStroke fDynamicStroke;
+    GrStrokeTessellationShader::DynamicStroke fDynamicStroke;
     GrVertexColor fDynamicColor;
 };
 
@@ -696,7 +703,18 @@ SK_ALWAYS_INLINE static bool cubic_has_cusp(const SkPoint p[4]) {
 
 }  // namespace
 
-void GrStrokeHardwareTessellator::prepare(GrMeshDrawOp::Target* target, int totalCombinedVerbCnt) {
+GrStrokeHardwareTessellator::GrStrokeHardwareTessellator(const GrShaderCaps& shaderCaps,
+                                                         ShaderFlags shaderFlags,
+                                                         const SkMatrix& viewMatrix,
+                                                         PathStrokeList* pathStrokeList,
+                                                         std::array<float,2> matrixMinMaxScales,
+                                                         const SkRect& strokeCullBounds)
+        : GrStrokeTessellator(shaderCaps, GrStrokeTessellationShader::Mode::kHardwareTessellation,
+                              shaderFlags, SkNextLog2(shaderCaps.maxTessellationSegments()),
+                              viewMatrix, pathStrokeList, matrixMinMaxScales, strokeCullBounds) {
+}
+
+void GrStrokeHardwareTessellator::prepare(GrMeshDrawTarget* target, int totalCombinedVerbCnt) {
     using JoinType = PatchWriter::JoinType;
 
     // Over-allocate enough patches for 1 in 4 strokes to chop and for 8 extra caps.
@@ -823,8 +841,8 @@ void GrStrokeHardwareTessellator::prepare(GrMeshDrawOp::Target* target, int tota
                     // For now, the tessellation shader still uses Wang's quadratic formula when it
                     // draws conics.
                     // TODO: Update here when the shader starts using the real conic formula.
-                    float numParametricSegments_pow4 =
-                            GrWangsFormula::quadratic_pow4(patchWriter.parametricPrecision(), p);
+                    float n = GrWangsFormula::conic_pow2(patchWriter.parametricPrecision(), p, *w);
+                    float numParametricSegments_pow4 = n*n;
                     if (!patchWriter.stroke180FitsInPatch(numParametricSegments_pow4)) {
                         // The curve requires more tessellation segments than the hardware can
                         // support. This is rare. Recursively chop until each sub-curve fits.
@@ -835,7 +853,7 @@ void GrStrokeHardwareTessellator::prepare(GrMeshDrawOp::Target* target, int tota
                     // case. Write it out directly.
                     prevJoinFitsInPatch = patchWriter.stroke180FitsInPatch_withJoin(
                             numParametricSegments_pow4);
-                    GrPathShader::WriteConicPatch(p, *w, scratchPts);
+                    GrTessellationShader::WriteConicPatch(p, *w, scratchPts);
                     patchPts = scratchPts;
                     endControlPoint = p[1];
                     break;

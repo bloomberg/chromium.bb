@@ -71,7 +71,10 @@ base::FilePath GetWebAppsTempDirectory(
 std::string GetProfileCategoryForLogging(Profile* profile);
 
 // Returns true if the WebApp should have `web_app::WebAppChromeOsData()`.
-bool IsChromeOs();
+bool IsChromeOsDataMandatory();
+
+// Returns true if sync should install web apps locally by default.
+bool AreAppsLocallyInstalledBySync();
 
 // Returns true if `new_handlers` are effectively the same or less broad than
 // the file handlers for PWAs installed under the same origin as `url` in
@@ -96,10 +99,13 @@ apps::FileHandlers GetFileHandlersForAllWebAppsWithOrigin(Profile* profile,
 // associated via MIME types, this will return MIME types like "text/plain,
 // image/png". On all other platforms, where files are associated via file
 // extensions, this will return capitalized file extensions with the period
-// truncated, like "TXT, PNG".
+// truncated, like "TXT, PNG". `found_multiple`, when non-null, will be set to
+// indicate whether the returned string is a list (false indicates it's a single
+// object).
 std::u16string GetFileTypeAssociationsHandledByWebAppsForDisplay(
     Profile* profile,
-    const GURL& url);
+    const GURL& url,
+    bool* found_multiple = nullptr);
 
 }  // namespace web_app
 

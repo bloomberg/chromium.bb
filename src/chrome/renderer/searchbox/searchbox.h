@@ -35,8 +35,8 @@ class SearchBox : public content::RenderFrameObserver,
    public:
     IconURLHelper();
     virtual ~IconURLHelper();
-    // Retruns view id for validating icon URL.
-    virtual int GetViewID() const = 0;
+    // Returns main frame id for validating icon URL.
+    virtual int GetMainFrameID() const = 0;
     // Returns the page URL string for |rid|, or empty string for invalid |rid|.
     virtual std::string GetURLStringFromRestrictedID(InstantRestrictedID rid)
         const = 0;
@@ -106,45 +106,8 @@ class SearchBox : public content::RenderFrameObserver,
   // Sends UndoMostVisitedDeletion to the browser.
   void UndoMostVisitedDeletion(InstantRestrictedID most_visited_item_id);
 
-  // Returns true if the most visited items are custom links.
-  bool IsCustomLinks() const;
-
-  // Returns true if most visited is enabled instead of custom links.
-  bool IsUsingMostVisited() const;
-
-  // Returns true if the shortcuts are visible and not hidden by the user.
-  bool AreShortcutsVisible() const;
-
-  // Sends AddCustomLink to the browser.
-  void AddCustomLink(const GURL& url, const std::string& title);
-
-  // Sends UpdateCustomLink to the browser.
-  void UpdateCustomLink(InstantRestrictedID link_id,
-                        const GURL& new_url,
-                        const std::string& new_title);
-
-  // Sends ReorderCustomLink to the browser.
-  void ReorderCustomLink(InstantRestrictedID link_id, int new_pos);
-
-  // Sends DeleteCustomLink to the browser.
-  void DeleteCustomLink(InstantRestrictedID most_visited_item_id);
-
-  // Sends UndoCustomLinkAction to the browser.
-  void UndoCustomLinkAction();
-
-  // Sends ResetCustomLinks to the browser.
-  void ResetCustomLinks();
-
-  // Sends ToggleMostVisitedOrCustomLinks to the browser.
-  void ToggleMostVisitedOrCustomLinks();
-
   // Sends ToggleShortcutsVisibility to the browser.
   void ToggleShortcutsVisibility(bool do_notify);
-
-  // Attempts to fix obviously invalid URLs. Uses the "https" scheme unless
-  // otherwise specified. Returns the fixed URL if valid, otherwise returns an
-  // empty string.
-  std::string FixupAndValidateUrl(const std::string& url) const;
 
   // Updates the NTP custom background preferences, sometimes this includes
   // image attributions.
@@ -188,14 +151,6 @@ class SearchBox : public content::RenderFrameObserver,
 
   // Called when a user dismisses a promo.
   void BlocklistPromo(const std::string& promo_id);
-
-  // Handles navigation to the chrome://extensions page by calling the browser
-  // to do the navigation.
-  void OpenExtensionsPage(double button,
-                          bool alt_key,
-                          bool ctrl_key,
-                          bool meta_key,
-                          bool shift_key);
 
   bool is_focused() const { return is_focused_; }
   bool is_input_in_progress() const { return is_input_in_progress_; }

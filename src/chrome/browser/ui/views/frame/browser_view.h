@@ -70,7 +70,7 @@ class InfoBarContainerView;
 class LocationBarView;
 class SidePanel;
 class StatusBubbleViews;
-class TabSearchButton;
+class TabSearchBubbleHost;
 class TabStrip;
 class TabStripRegionView;
 class ToolbarButtonProvider;
@@ -228,8 +228,12 @@ class BrowserView : public BrowserWindow,
   // Accessor for the contents WebView.
   views::WebView* contents_web_view() { return contents_web_view_; }
 
-  // Accessor for the BrowserView's TabSearchButton instance.
-  TabSearchButton* GetTabSearchButton();
+  base::WeakPtr<BrowserView> GetAsWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
+  // Accessor for the BrowserView's TabSearchBubbleHost instance.
+  TabSearchBubbleHost* GetTabSearchBubbleHost();
 
   // Returns true if various window components are visible.
   bool GetTabStripVisible() const;
@@ -338,9 +342,17 @@ class BrowserView : public BrowserWindow,
   base::CallbackListSubscription AddOnLinkOpeningFromGestureCallback(
       OnLinkOpeningFromGestureCallback callback);
 
+  // Returns true when an app's effective display mode is
+  // window-controls-overlay.
+  bool AppUsesWindowControlsOverlay() const;
+
   // Returns true when the window controls overlay should be displayed instead
   // of a full titlebar. This is only supported for desktop web apps.
   bool IsWindowControlsOverlayEnabled() const;
+
+  // Enable or disable the window controls overlay and notify the browser frame
+  // view of the update.
+  void ToggleWindowControlsOverlayEnabled();
 
   // BrowserWindow:
   void Show() override;
@@ -420,6 +432,7 @@ class BrowserView : public BrowserWindow,
   void FocusAppMenu() override;
   void FocusBookmarksToolbar() override;
   void FocusInactivePopupForAccessibility() override;
+  void FocusHelpBubble() override;
   void RotatePaneFocus(bool forwards) override;
   void DestroyBrowser() override;
   bool IsBookmarkBarVisible() const override;
@@ -446,10 +459,14 @@ class BrowserView : public BrowserWindow,
       content::WebContents* contents,
       send_tab_to_self::SendTabToSelfBubbleController* controller,
       bool is_user_gesture) override;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  views::Button* GetSharingHubIconButton() override;
+#else
   sharing_hub::SharingHubBubbleView* ShowSharingHubBubble(
       content::WebContents* contents,
       sharing_hub::SharingHubBubbleController* controller,
       bool is_user_gesture) override;
+#endif
   ShowTranslateBubbleResult ShowTranslateBubble(
       content::WebContents* contents,
       translate::TranslateStep step,
@@ -483,7 +500,7 @@ class BrowserView : public BrowserWindow,
   void ShowAvatarBubbleFromAvatarButton(
       AvatarBubbleMode mode,
       signin_metrics::AccessPoint access_point,
-      bool is_source_keyboard) override;
+      bool is_source_accelerator) override;
   void MaybeShowProfileSwitchIPH() override;
   void ShowHatsDialog(
       const std::string& site_id,
@@ -509,6 +526,8 @@ class BrowserView : public BrowserWindow,
   void ShowInProductHelpPromo(InProductHelpFeature iph_feature) override;
   FeaturePromoController* GetFeaturePromoController() override;
 
+  void ShowIncognitoClearBrowsingDataDialog() override;
+
   // TabStripModelObserver:
   void OnTabStripModelChanged(
       TabStripModel* tab_strip_model,
@@ -529,8 +548,8 @@ class BrowserView : public BrowserWindow,
   std::u16string GetAccessibleWindowTitle() const override;
   views::View* GetInitiallyFocusedView() override;
   bool ShouldShowWindowTitle() const override;
-  gfx::ImageSkia GetWindowAppIcon() override;
-  gfx::ImageSkia GetWindowIcon() override;
+  ui::ImageModel GetWindowAppIcon() override;
+  ui::ImageModel GetWindowIcon() override;
   bool ExecuteWindowsCommand(int command_id) override;
   std::string GetWindowName() const override;
   void SaveWindowPlacement(const gfx::Rect& bounds,

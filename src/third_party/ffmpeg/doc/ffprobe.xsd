@@ -29,22 +29,18 @@
     </xsd:complexType>
 
     <xsd:complexType name="framesType">
-        <xsd:sequence>
-            <xsd:choice minOccurs="0" maxOccurs="unbounded">
-                <xsd:element name="frame" type="ffprobe:frameType" minOccurs="0" maxOccurs="unbounded"/>
-                <xsd:element name="subtitle" type="ffprobe:subtitleType" minOccurs="0" maxOccurs="unbounded"/>
-            </xsd:choice>
-        </xsd:sequence>
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="frame"    type="ffprobe:frameType"/>
+            <xsd:element name="subtitle" type="ffprobe:subtitleType"/>
+        </xsd:choice>
     </xsd:complexType>
 
     <xsd:complexType name="packetsAndFramesType">
-        <xsd:sequence>
-            <xsd:choice minOccurs="0" maxOccurs="unbounded">
-                <xsd:element name="packet" type="ffprobe:packetType" minOccurs="0" maxOccurs="unbounded"/>
-                <xsd:element name="frame" type="ffprobe:frameType" minOccurs="0" maxOccurs="unbounded"/>
-                <xsd:element name="subtitle" type="ffprobe:subtitleType" minOccurs="0" maxOccurs="unbounded"/>
-            </xsd:choice>
-        </xsd:sequence>
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="packet"   type="ffprobe:packetType"/>
+            <xsd:element name="frame"    type="ffprobe:frameType"/>
+            <xsd:element name="subtitle" type="ffprobe:subtitleType"/>
+        </xsd:choice>
     </xsd:complexType>
 
     <xsd:complexType name="packetType">
@@ -199,6 +195,11 @@
       <xsd:attribute name="clean_effects"    type="xsd:int" use="required" />
       <xsd:attribute name="attached_pic"     type="xsd:int" use="required" />
       <xsd:attribute name="timed_thumbnails" type="xsd:int" use="required" />
+      <xsd:attribute name="captions"         type="xsd:int" use="required" />
+      <xsd:attribute name="descriptions"     type="xsd:int" use="required" />
+      <xsd:attribute name="metadata"         type="xsd:int" use="required" />
+      <xsd:attribute name="dependent"        type="xsd:int" use="required" />
+      <xsd:attribute name="still_image"      type="xsd:int" use="required" />
     </xsd:complexType>
 
     <xsd:complexType name="streamType">

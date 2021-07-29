@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_VARIATIONS_METRICS_H_
 #define COMPONENTS_VARIATIONS_METRICS_H_
 
+#include "base/component_export.h"
 #include "build/build_config.h"
 
 namespace variations {
@@ -22,21 +23,24 @@ enum class FirstRunSeedImportResult {
 };
 #endif  // OS_ANDROID
 
-// The result of attempting to load a variations seed on startup.
-// Note: UMA histogram enum - don't re-order or remove entries.
+// The result of attempting to load a variations seed during startup.
+//
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+//
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.variations
 enum class LoadSeedResult {
-  SUCCESS,
-  EMPTY,
-  CORRUPT,
-  INVALID_SIGNATURE,
-  CORRUPT_BASE64,
-  CORRUPT_PROTOBUF,
-  CORRUPT_GZIP,
-  LOAD_TIMED_OUT,
-  LOAD_INTERRUPTED,
-  LOAD_OTHER_FAILURE,
-  ENUM_SIZE
+  kSuccess = 0,
+  kEmpty = 1,
+  // kCorrupt = 2,  // Deprecated.
+  kInvalidSignature = 3,
+  kCorruptBase64 = 4,
+  kCorruptProtobuf = 5,
+  kCorruptGzip = 6,
+  kLoadTimedOut = 7,
+  kLoadInterrupted = 8,
+  kLoadOtherFailure = 9,
+  kMaxValue = kLoadOtherFailure,
 };
 
 // The result of attempting to store a variations seed received from the server.
@@ -89,19 +93,21 @@ enum class VerifySignatureResult {
 
 #if defined(OS_ANDROID)
 // Records the result of importing a seed during Android first run.
+COMPONENT_EXPORT(VARIATIONS)
 void RecordFirstRunSeedImportResult(FirstRunSeedImportResult result);
 #endif  // OS_ANDROID
 
 // Records the result of attempting to load the latest variations seed on
 // startup.
-void RecordLoadSeedResult(LoadSeedResult state);
+COMPONENT_EXPORT(VARIATIONS) void RecordLoadSeedResult(LoadSeedResult state);
 
 // Records the result of attempting to load the safe variations seed on startup.
+COMPONENT_EXPORT(VARIATIONS)
 void RecordLoadSafeSeedResult(LoadSeedResult state);
 
 // Records the result of attempting to store a variations seed received from the
 // server.
-void RecordStoreSeedResult(StoreSeedResult result);
+COMPONENT_EXPORT(VARIATIONS) void RecordStoreSeedResult(StoreSeedResult result);
 
 }  // namespace variations
 

@@ -11,7 +11,6 @@
 #include "base/compiler_specific.h"
 #include "base/i18n/time_formatting.h"
 #include "base/json/json_reader.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -26,7 +25,7 @@
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/signin/signin_util.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -51,6 +50,7 @@
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/base/user_selectable_type.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/driver/sync_service_utils.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "components/unified_consent/unified_consent_metrics.h"
 #include "content/public/browser/render_view_host.h"
@@ -146,21 +146,21 @@ void ParseConfigurationArguments(const base::ListValue* args,
     NOTREACHED();
 }
 
-std::string GetSyncErrorAction(sync_ui_util::ActionType action_type) {
+std::string GetSyncErrorAction(SyncStatusActionType action_type) {
   switch (action_type) {
-    case sync_ui_util::REAUTHENTICATE:
+    case SyncStatusActionType::kReauthenticate:
       return "reauthenticate";
-    case sync_ui_util::SIGNOUT_AND_SIGNIN:
+    case SyncStatusActionType::kSignoutAndSignin:
       return "signOutAndSignIn";
-    case sync_ui_util::UPGRADE_CLIENT:
+    case SyncStatusActionType::kUpgradeClient:
       return "upgradeClient";
-    case sync_ui_util::ENTER_PASSPHRASE:
+    case SyncStatusActionType::kEnterPassphrase:
       return "enterPassphrase";
-    case sync_ui_util::RETRIEVE_TRUSTED_VAULT_KEYS:
+    case SyncStatusActionType::kRetrieveTrustedVaultKeys:
       return "retrieveTrustedVaultKeys";
-    case sync_ui_util::CONFIRM_SYNC_SETTINGS:
+    case SyncStatusActionType::kConfirmSyncSettings:
       return "confirmSyncSettings";
-    case sync_ui_util::NO_ACTION:
+    case SyncStatusActionType::kNoAction:
       return "noAction";
   }
 
@@ -182,47 +182,6 @@ base::Value GetAccountValue(const AccountInfo& account) {
         base::Value(webui::GetBitmapDataUrl(account.account_image.AsBitmap())));
   }
   return dictionary;
-}
-
-std::u16string GetEnterPassphraseBody(syncer::PassphraseType passphrase_type,
-                                      base::Time passphrase_time) {
-  DCHECK(syncer::IsExplicitPassphrase(passphrase_type));
-  switch (passphrase_type) {
-    case syncer::PassphraseType::kFrozenImplicitPassphrase:
-    case syncer::PassphraseType::kCustomPassphrase:
-      if (passphrase_time.is_null()) {
-        return GetStringUTF16(IDS_SYNC_ENTER_PASSPHRASE_BODY);
-      }
-      return GetStringFUTF16(IDS_SYNC_ENTER_PASSPHRASE_BODY_WITH_DATE,
-                             base::ASCIIToUTF16(chrome::kSyncErrorsHelpURL),
-                             base::TimeFormatShortDate(passphrase_time));
-    case syncer::PassphraseType::kImplicitPassphrase:
-    case syncer::PassphraseType::kKeystorePassphrase:
-    case syncer::PassphraseType::kTrustedVaultPassphrase:
-      break;
-  }
-  NOTREACHED();
-  return std::u16string();
-}
-
-std::u16string GetFullEncryptionBody(syncer::PassphraseType passphrase_type,
-                                     base::Time passphrase_time) {
-  DCHECK(syncer::IsExplicitPassphrase(passphrase_type));
-  if (passphrase_time.is_null()) {
-    return GetStringUTF16(IDS_SYNC_FULL_ENCRYPTION_BODY_CUSTOM);
-  }
-  switch (passphrase_type) {
-    case syncer::PassphraseType::kFrozenImplicitPassphrase:
-    case syncer::PassphraseType::kCustomPassphrase:
-      return GetStringFUTF16(IDS_SYNC_FULL_ENCRYPTION_BODY_CUSTOM_WITH_DATE,
-                             base::TimeFormatShortDate(passphrase_time));
-    case syncer::PassphraseType::kImplicitPassphrase:
-    case syncer::PassphraseType::kKeystorePassphrase:
-    case syncer::PassphraseType::kTrustedVaultPassphrase:
-      break;
-  }
-  NOTREACHED();
-  return std::u16string();
 }
 
 }  // namespace
@@ -341,7 +300,7 @@ void PeopleHandler::OnJavascriptAllowed() {
   // This is intentionally not using GetSyncService(), to go around the
   // Profile::IsSyncAllowed() check.
   syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
+      SyncServiceFactory::GetForProfile(profile_);
   if (sync_service)
     sync_service_observation_.Observe(sync_service);
 }
@@ -385,10 +344,6 @@ void PeopleHandler::DisplayGaiaLoginInNewTabOrWindow(
   // re-auth scenario, and we need to ensure that the user signs in with the
   // same email address.
   if (identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync)) {
-    UMA_HISTOGRAM_ENUMERATION("Signin.Reauth",
-                              signin_metrics::HISTOGRAM_REAUTH_SHOWN,
-                              signin_metrics::HISTOGRAM_REAUTH_MAX);
-
     SigninErrorController* error_controller =
         SigninErrorControllerFactory::GetForProfile(browser->profile());
     DCHECK(error_controller->HasError());
@@ -412,8 +367,8 @@ void PeopleHandler::OnDidClosePage(const base::ListValue* args) {
 }
 
 syncer::SyncService* PeopleHandler::GetSyncService() const {
-  return ProfileSyncServiceFactory::IsSyncAllowed(profile_)
-             ? ProfileSyncServiceFactory::GetForProfile(profile_)
+  return SyncServiceFactory::IsSyncAllowed(profile_)
+             ? SyncServiceFactory::GetForProfile(profile_)
              : nullptr;
 }
 
@@ -489,11 +444,10 @@ base::Value PeopleHandler::GetStoredAccountsList() {
   // Chrome OS), then show only the primary account, whether or not that account
   // has consented to sync.
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile_);
-  absl::optional<AccountInfo> primary_account_info =
-      identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
-          identity_manager->GetPrimaryAccountInfo(ConsentLevel::kSignin));
-  if (primary_account_info.has_value())
-    accounts.Append(GetAccountValue(primary_account_info.value()));
+  AccountInfo primary_account_info = identity_manager->FindExtendedAccountInfo(
+      identity_manager->GetPrimaryAccountInfo(ConsentLevel::kSignin));
+  if (!primary_account_info.IsEmpty())
+    accounts.Append(GetAccountValue(primary_account_info));
   return accounts;
 }
 
@@ -508,14 +462,12 @@ void PeopleHandler::HandleStartSyncingWithEmail(const base::ListValue* args) {
   Browser* browser =
       chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
 
-  absl::optional<AccountInfo> maybe_account =
+  AccountInfo maybe_account =
       IdentityManagerFactory::GetForProfile(profile_)
-          ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
-              email->GetString());
+          ->FindExtendedAccountInfoByEmailAddress(email->GetString());
 
   signin_ui_util::EnableSyncFromMultiAccountPromo(
-      browser,
-      maybe_account.has_value() ? maybe_account.value() : AccountInfo(),
+      browser, maybe_account,
       signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS,
       is_default_promo_account->GetBool());
 #else
@@ -722,8 +674,8 @@ void PeopleHandler::HandleStartKeyRetrieval(const base::ListValue* args) {
   if (!browser)
     return;
 
-  sync_ui_util::OpenTabForSyncKeyRetrieval(
-      browser, syncer::KeyRetrievalTriggerForUMA::kSettings);
+  OpenTabForSyncKeyRetrieval(
+      browser, syncer::TrustedVaultUserActionTriggerForUMA::kSettings);
 }
 
 void PeopleHandler::HandleGetSyncStatus(const base::ListValue* args) {
@@ -744,8 +696,9 @@ void PeopleHandler::HandleSyncPrefsDispatch(const base::ListValue* args) {
 void PeopleHandler::HandleOfferTrustedVaultOptInDispatch(
     const base::ListValue* args) {
   AllowJavascript();
-  FireWebUIListener(kOfferTrustedVaultOptInChangedEvent,
-                    base::Value(ShouldOfferTrustedVaultOptIn()));
+  FireWebUIListener(
+      kOfferTrustedVaultOptInChangedEvent,
+      base::Value(syncer::ShouldOfferTrustedVaultOptIn(GetSyncService())));
 }
 
 void PeopleHandler::CloseSyncSetup() {
@@ -823,39 +776,6 @@ void PeopleHandler::InitializeSyncBlocker() {
   }
 }
 
-bool PeopleHandler::ShouldOfferTrustedVaultOptIn() const {
-  syncer::SyncService* sync_service = GetSyncService();
-  if (!sync_service) {
-    return false;
-  }
-
-  if (sync_service->GetTransportState() !=
-      syncer::SyncService::TransportState::ACTIVE) {
-    // Transport state must be active so SyncUserSettings::GetPassphraseType()
-    // changes once the opt-in completes, and the UI is notified.
-    return false;
-  }
-
-  switch (sync_service->GetUserSettings()->GetPassphraseType()) {
-    case syncer::PassphraseType::kImplicitPassphrase:
-    case syncer::PassphraseType::kFrozenImplicitPassphrase:
-    case syncer::PassphraseType::kCustomPassphrase:
-    case syncer::PassphraseType::kTrustedVaultPassphrase:
-      // Either trusted vault is already set or a transition from this
-      // passphrase type to trusted vault is disallowed.
-      return false;
-    case syncer::PassphraseType::kKeystorePassphrase:
-      if (sync_service->GetUserSettings()->IsPassphraseRequired()) {
-        // This should be extremely rare.
-        return false;
-      }
-      return base::FeatureList::IsEnabled(
-                 switches::kSyncSupportTrustedVaultPassphraseRecovery) &&
-             base::FeatureList::IsEnabled(
-                 switches::kSyncOfferTrustedVaultOptIn);
-  }
-}
-
 void PeopleHandler::FocusUI() {
   WebContents* web_contents = web_ui()->GetWebContents();
   web_contents->GetDelegate()->ActivateContents(web_contents);
@@ -883,15 +803,15 @@ void PeopleHandler::OnPrimaryAccountChanged(
   }
 }
 
-void PeopleHandler::OnStateChanged(syncer::SyncService* sync) {
+void PeopleHandler::OnStateChanged(syncer::SyncService* sync_service) {
   UpdateSyncStatus();
   // TODO(crbug.com/1106764): Re-evaluate marking sync as configuring here,
-  // since this gets called whenever ProfileSyncService changes state. Inline
+  // since this gets called whenever SyncService changes state. Inline
   // MaybeMarkSyncConfiguring() then.
   MaybeMarkSyncConfiguring();
   PushSyncPrefs();
   FireWebUIListener(kOfferTrustedVaultOptInChangedEvent,
-                    base::Value(ShouldOfferTrustedVaultOptIn()));
+                    base::Value(ShouldOfferTrustedVaultOptIn(sync_service)));
 }
 
 void PeopleHandler::BeforeUnloadDialogCancelled() {
@@ -936,8 +856,7 @@ std::unique_ptr<base::DictionaryValue> PeopleHandler::GetSyncStatusDictionary()
   // This is intentionally not using GetSyncService(), in order to access more
   // nuanced information, since GetSyncService() returns nullptr if anything
   // makes Profile::IsSyncAllowed() false.
-  syncer::SyncService* service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
+  syncer::SyncService* service = SyncServiceFactory::GetForProfile(profile_);
   bool disallowed_by_policy =
       service && service->HasDisableReason(
                      syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY);
@@ -948,8 +867,7 @@ std::unique_ptr<base::DictionaryValue> PeopleHandler::GetSyncStatusDictionary()
           !service->GetUserSettings()->IsFirstSetupComplete() &&
           identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync));
 
-  const sync_ui_util::StatusLabels status_labels =
-      sync_ui_util::GetStatusLabels(profile_);
+  const SyncStatusLabels status_labels = GetSyncStatusLabels(profile_);
   // TODO(crbug.com/1027467): Consider unifying some of the fields below to
   // avoid redundancy.
   sync_status->SetString("statusText",
@@ -957,12 +875,13 @@ std::unique_ptr<base::DictionaryValue> PeopleHandler::GetSyncStatusDictionary()
   sync_status->SetString("statusActionText",
                          GetStringUTF16(status_labels.button_string_id));
   sync_status->SetBoolean(
-      "hasError", status_labels.message_type == sync_ui_util::SYNC_ERROR ||
-                      status_labels.message_type ==
-                          sync_ui_util::PASSWORDS_ONLY_SYNC_ERROR);
-  sync_status->SetBoolean(
-      "hasPasswordsOnlyError",
-      status_labels.message_type == sync_ui_util::PASSWORDS_ONLY_SYNC_ERROR);
+      "hasError",
+      status_labels.message_type == SyncStatusMessageType::kSyncError ||
+          status_labels.message_type ==
+              SyncStatusMessageType::kPasswordsOnlySyncError);
+  sync_status->SetBoolean("hasPasswordsOnlyError",
+                          status_labels.message_type ==
+                              SyncStatusMessageType::kPasswordsOnlySyncError);
   sync_status->SetString("statusAction",
                          GetSyncErrorAction(status_labels.action_type));
 
@@ -994,12 +913,17 @@ void PeopleHandler::PushSyncPrefs() {
   //   <data_type>Registered: true if the associated data type is supported
   //   <data_type>Synced: true if the user wants to sync that specific data type
   //   paymentsIntegrationEnabled: true if the user wants Payments integration
-  //   encryptionEnabled: true if sync supports encryption
+  //   customPassphraseAllowed: true if sync allows setting a custom passphrase
+  //                            to encrypt data.
   //   encryptAllData: true if user wants to encrypt all data (not just
   //       passwords)
   //   passphraseRequired: true if a passphrase is needed to start sync
   //   trustedVaultKeysRequired: true if trusted vault keys are needed to start
   //                             sync.
+  //   explicitPassphraseTime: the stringified time when the current explicit
+  //                   passphrase was set (in milliseconds since the Unix
+  //                   epoch); undefined if the time is unknown or no explicit
+  //                   passphrase is set.
   //
   base::DictionaryValue args;
 
@@ -1035,15 +959,10 @@ void PeopleHandler::PushSyncPrefs() {
   args.SetBoolean("trustedVaultKeysRequired",
                   sync_user_settings->IsTrustedVaultKeyRequired());
 
-  syncer::PassphraseType passphrase_type =
-      sync_user_settings->GetPassphraseType();
-  if (syncer::IsExplicitPassphrase(passphrase_type)) {
-    base::Time passphrase_time =
-        sync_user_settings->GetExplicitPassphraseTime();
-    args.SetString("enterPassphraseBody",
-                   GetEnterPassphraseBody(passphrase_type, passphrase_time));
-    args.SetString("fullEncryptionBody",
-                   GetFullEncryptionBody(passphrase_type, passphrase_time));
+  base::Time passphrase_time = sync_user_settings->GetExplicitPassphraseTime();
+  if (!passphrase_time.is_null()) {
+    args.SetString("explicitPassphraseTime",
+                   base::TimeFormatShortDate(passphrase_time));
   }
 
   FireWebUIListener("sync-prefs-changed", args);

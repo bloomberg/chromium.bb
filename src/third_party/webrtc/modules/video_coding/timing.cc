@@ -34,9 +34,13 @@ VCMTiming::VCMTiming(Clock* clock)
       prev_frame_timestamp_(0),
       timing_frame_info_(),
       num_decoded_frames_(0),
-      low_latency_renderer_enabled_("enabled", true) {
+      low_latency_renderer_enabled_("enabled", true),
+      zero_playout_delay_min_pacing_("min_pacing", TimeDelta::Millis(0)),
+      earliest_next_decode_start_time_(0) {
   ParseFieldTrial({&low_latency_renderer_enabled_},
                   field_trial::FindFullName("WebRTC-LowLatencyRenderer"));
+  ParseFieldTrial({&zero_playout_delay_min_pacing_},
+                  field_trial::FindFullName("WebRTC-ZeroPlayoutDelay"));
 }
 
 void VCMTiming::Reset() {
@@ -153,7 +157,7 @@ void VCMTiming::StopDecodeTimer(uint32_t /*time_stamp*/,
 void VCMTiming::StopDecodeTimer(int32_t decode_time_ms, int64_t now_ms) {
   MutexLock lock(&mutex_);
   codec_timer_->AddTiming(decode_time_ms, now_ms);
-  assert(decode_time_ms >= 0);
+  RTC_DCHECK_GE(decode_time_ms, 0);
   ++num_decoded_frames_;
 }
 
@@ -195,18 +199,26 @@ int64_t VCMTiming::RenderTimeMsInternal(uint32_t frame_timestamp,
 
 int VCMTiming::RequiredDecodeTimeMs() const {
   const int decode_time_ms = codec_timer_->RequiredDecodeTimeMs();
-  assert(decode_time_ms >= 0);
+  RTC_DCHECK_GE(decode_time_ms, 0);
   return decode_time_ms;
 }
 
-int64_t VCMTiming::MaxWaitingTime(int64_t render_time_ms,
-                                  int64_t now_ms) const {
+int64_t VCMTiming::MaxWaitingTime(int64_t render_time_ms, int64_t now_ms) {
   MutexLock lock(&mutex_);
 
-  const int64_t max_wait_time_ms =
-      render_time_ms - now_ms - RequiredDecodeTimeMs() - render_delay_ms_;
-
-  return max_wait_time_ms;
+  if (render_time_ms == 0 && zero_playout_delay_min_pacing_->us() > 0) {
+    // |render_time_ms| == 0 indicates that the frame should be decoded and
+    // rendered as soon as possible. However, the decoder can be choked if too
+    // many frames are sent at ones. Therefore, limit the interframe delay to
+    // |zero_playout_delay_min_pacing_|.
+    int64_t max_wait_time_ms = now_ms >= earliest_next_decode_start_time_
+                                   ? 0
+                                   : earliest_next_decode_start_time_ - now_ms;
+    earliest_next_decode_start_time_ =
+        now_ms + max_wait_time_ms + zero_playout_delay_min_pacing_->ms();
+    return max_wait_time_ms;
+  }
+  return render_time_ms - now_ms - RequiredDecodeTimeMs() - render_delay_ms_;
 }
 
 int VCMTiming::TargetVideoDelay() const {

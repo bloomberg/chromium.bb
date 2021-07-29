@@ -31,6 +31,15 @@ struct StreamModelUpdateRequest;
 // An in-memory stream model.
 class StreamModel {
  public:
+  // Information about the context to pass to this model.
+  struct Context {
+    Context();
+    ~Context();
+    Context(const Context&) = delete;
+    Context& operator=(const Context&) = delete;
+    ContentRevision::Generator revision_generator;
+  };
+
   // Information about an update to the model.
   struct UiUpdate {
     struct SharedStateInfo {
@@ -80,7 +89,7 @@ class StreamModel {
     virtual void OnStoreChange(StoreUpdate update) = 0;
   };
 
-  StreamModel();
+  explicit StreamModel(Context* context);
   ~StreamModel();
 
   StreamModel(const StreamModel& src) = delete;
@@ -117,6 +126,9 @@ class StreamModel {
   // Returns the content identified by |ContentRevision|.
   const feedstore::Content* FindContent(ContentRevision revision) const;
 
+  // Returns the ContentId of the content.
+  feedwire::ContentId FindContentId(ContentRevision revision) const;
+
   // Returns the shared state data identified by |id|.
   const std::string* FindSharedStateData(const std::string& id) const;
 
@@ -141,6 +153,9 @@ class StreamModel {
 
   // Outputs a string representing the model state for debugging or testing.
   std::string DumpStateForTesting();
+
+  // Returns true if one or more "cards" can be rendered from the content.
+  bool HasVisibleContent();
 
  private:
   struct SharedState {

@@ -236,10 +236,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
     return hidden_by_interstitial_page_;
   }
 
-  // Pretend that the given node has focus, for testing only. Doesn't
-  // communicate with the renderer and doesn't fire any events.
-  void SetFocusLocallyForTesting(BrowserAccessibility* node);
-
   // For testing only, register a function to be called when focus changes
   // in any BrowserAccessibilityManager.
   static void SetFocusChangeCallbackForTesting(base::RepeatingClosure callback);
@@ -248,6 +244,11 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   // a generated event is fired from this BrowserAccessibilityManager.
   void SetGeneratedEventCallbackForTesting(
       const GeneratedEventCallbackForTesting& callback);
+
+  // For testing only, register a function to be called when nodes
+  // change location / bounding box in this BrowserAccessibilityManager.
+  void SetLocationChangeCallbackForTesting(
+      const base::RepeatingClosure& callback);
 
   // Normally we avoid firing accessibility focus events when the containing
   // native window isn't focused, and we also delay some other events like
@@ -440,6 +441,9 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   ui::AXTree* ax_tree() const { return tree_.get(); }
 
   // AXTreeObserver implementation.
+  void OnTreeDataChanged(ui::AXTree* tree,
+                         const ui::AXTreeData& old_data,
+                         const ui::AXTreeData& new_data) override;
   void OnNodeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
   void OnSubtreeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
   void OnNodeCreated(ui::AXTree* tree, ui::AXNode* node) override;
@@ -580,6 +584,9 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
 
   // For testing only: A function to call when a generated event is fired.
   GeneratedEventCallbackForTesting generated_event_callback_for_testing_;
+
+  // For testing only; A function to call when locations change.
+  base::RepeatingClosure location_change_callback_for_testing_;
 
   // Keeps track of the nested popup root's id, if it exists. See GetPopupRoot()
   // for details.

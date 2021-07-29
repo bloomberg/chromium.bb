@@ -9,7 +9,6 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_menu_constants.h"
-#include "ash/public/cpp/ash_features.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
@@ -30,7 +29,7 @@
 #include "chrome/browser/apps/app_service/webapk/webapk_manager.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
-#include "chrome/browser/chromeos/file_manager/path_util.h"
+#include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
@@ -47,6 +46,7 @@
 #include "components/arc/mojom/file_system.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/full_restore/app_launch_info.h"
+#include "components/full_restore/features.h"
 #include "components/full_restore/full_restore_save_handler.h"
 #include "components/full_restore/full_restore_utils.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
@@ -281,8 +281,9 @@ void AddPreferredApp(const std::string& app_id,
 
   instance->AddPreferredApp(
       package_name,
-      apps_util::CreateArcIntentFilter(package_name, intent_filter),
-      apps_util::CreateArcIntent(std::move(intent)));
+      apps_util::ConvertAppServiceToArcIntentFilter(package_name,
+                                                    intent_filter),
+      apps_util::ConvertAppServiceToArcIntent(std::move(intent)));
 }
 
 void ResetVerifiedLinks(
@@ -439,7 +440,8 @@ apps::mojom::WindowInfoPtr SetSessionId(
     window_info->display_id = display::kInvalidDisplayId;
   }
 
-  if (!ash::features::IsFullRestoreEnabled() || window_info->window_id != -1) {
+  if (!full_restore::features::IsFullRestoreEnabled() ||
+      window_info->window_id != -1) {
     return window_info;
   }
 
@@ -483,6 +485,9 @@ apps::mojom::OptionalBool IsResizeLocked(ArcAppListPrefs* prefs,
       return apps::mojom::OptionalBool::kFalse;
     case arc::mojom::ArcResizeLockState::UNDEFINED:
     case arc::mojom::ArcResizeLockState::READY:
+    // FULLY_LOCKED means the resize-lock-related features are not available
+    // including the resizability toggle in the app management page.
+    case arc::mojom::ArcResizeLockState::FULLY_LOCKED:
       return apps::mojom::OptionalBool::kUnknown;
   }
 }
@@ -713,8 +718,11 @@ void ArcApps::LaunchAppWithIntent(const std::string& app_id,
     int32_t session_id = new_window_info->window_id;
     int64_t display_id = new_window_info->display_id;
 
-    if (intent->mime_type.has_value() && intent->file_urls.has_value()) {
-      const auto file_urls = intent->file_urls.value();
+    if (intent->mime_type.has_value() && intent->files.has_value()) {
+      std::vector<GURL> file_urls;
+      for (const auto& file : intent->files.value()) {
+        file_urls.push_back(file->url);
+      }
       arc::ConvertToContentUrlsAndShare(
           profile_, apps::GetFileSystemURL(profile_, file_urls),
           base::BindOnce(&OnContentUrlResolved, profile_->GetPath(), app_id,
@@ -739,7 +747,8 @@ void ArcApps::LaunchAppWithIntent(const std::string& app_id,
     } else {
       // If |intent| can't be converted to a string, call the HandleIntent
       // interface.
-      auto arc_intent = apps_util::CreateArcIntent(std::move(intent));
+      auto arc_intent =
+          apps_util::ConvertAppServiceToArcIntent(std::move(intent));
 
       if (!arc_intent) {
         LOG(ERROR) << "Launch App failed, launch intent is not valid";
@@ -894,7 +903,7 @@ void ArcApps::PauseApp(const std::string& app_id) {
   CloseTasks(app_id);
 }
 
-void ArcApps::UnpauseApps(const std::string& app_id) {
+void ArcApps::UnpauseApp(const std::string& app_id) {
   if (paused_apps_.MaybeRemoveApp(app_id)) {
     SetIconEffect(app_id);
   }
@@ -1194,7 +1203,7 @@ void ArcApps::OnPreferredAppsChanged() {
     }
     app_service->AddPreferredApp(
         apps::mojom::AppType::kArc, app_id,
-        apps_util::ConvertArcIntentFilter(added_preferred_app),
+        apps_util::ConvertArcToAppServiceIntentFilter(added_preferred_app),
         /*intent=*/nullptr, kFromPublisher);
   }
 
@@ -1223,7 +1232,7 @@ void ArcApps::OnPreferredAppsChanged() {
     }
     app_service->RemovePreferredAppForFilter(
         apps::mojom::AppType::kArc, app_id,
-        apps_util::ConvertArcIntentFilter(deleted_preferred_app));
+        apps_util::ConvertArcToAppServiceIntentFilter(deleted_preferred_app));
   }
 }
 
@@ -1480,7 +1489,7 @@ void ArcApps::UpdateAppIntentFilters(
       continue;
     }
     intent_filters->push_back(
-        apps_util::ConvertArcIntentFilter(arc_intent_filter));
+        apps_util::ConvertArcToAppServiceIntentFilter(arc_intent_filter));
   }
 }
 

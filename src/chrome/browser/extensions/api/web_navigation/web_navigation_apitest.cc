@@ -199,7 +199,9 @@ class WebNavigationApiTest : public ExtensionApiTest {
     embedded_test_server()->RegisterRequestHandler(
         base::BindRepeating(&HandleTestRequest));
   }
-  ~WebNavigationApiTest() override {}
+  ~WebNavigationApiTest() override = default;
+  WebNavigationApiTest(const WebNavigationApiTest&) = delete;
+  WebNavigationApiTest& operator=(const WebNavigationApiTest&) = delete;
 
   void SetUpInProcessBrowserTestFixture() override {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
@@ -215,9 +217,6 @@ class WebNavigationApiTest : public ExtensionApiTest {
     // with deferred commits.
     command_line->AppendSwitch(blink::switches::kAllowPreCommitInput);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebNavigationApiTest);
 };
 
 class WebNavigationApiBackForwardCacheTest : public WebNavigationApiTest {
@@ -240,11 +239,19 @@ using ContextType = extensions::ExtensionBrowserTest::ContextType;
 class WebNavigationApiTestWithContextType
     : public WebNavigationApiTest,
       public testing::WithParamInterface<ContextType> {
+ public:
+  WebNavigationApiTestWithContextType() = default;
+  ~WebNavigationApiTestWithContextType() override = default;
+  WebNavigationApiTestWithContextType(
+      const WebNavigationApiTestWithContextType&) = delete;
+  WebNavigationApiTestWithContextType& operator=(
+      const WebNavigationApiTestWithContextType&) = delete;
+
  protected:
   bool RunTest(const char* name,
                bool allow_in_incognito = false) WARN_UNUSED_RESULT {
     return RunExtensionTest(
-        {.name = name},
+        name, {},
         {.allow_in_incognito = allow_in_incognito,
          .load_as_service_worker = GetParam() == ContextType::kServiceWorker});
   }
@@ -330,7 +337,13 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiBackForwardCacheTest, ForwardBack) {
   ASSERT_TRUE(RunExtensionTest("webnavigation/backForwardCache")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, IFrame) {
+#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+// https://crbug.com/1223028
+#define MAYBE_IFrame DISABLED_IFrame
+#else
+#define MAYBE_IFrame IFrame
+#endif
+IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, MAYBE_IFrame) {
   ASSERT_TRUE(RunTest("webnavigation/iframe")) << message_;
 }
 
@@ -602,7 +615,13 @@ IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, Crash) {
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, Xslt) {
+#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+// https://crbug.com/1223055
+#define MAYBE_Xslt DISABLED_Xslt
+#else
+#define MAYBE_Xslt Xslt
+#endif
+IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, MAYBE_Xslt) {
   content::IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunTest("webnavigation/xslt")) << message_;

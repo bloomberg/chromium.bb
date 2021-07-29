@@ -164,6 +164,7 @@ class RenderThreadImplBrowserTest : public testing::Test,
         ChildProcessHost::Create(this, ChildProcessHost::IpcMode::kNormal);
     process_host_->CreateChannelMojo();
 
+    CHECK(!process_.get());
     process_ = std::make_unique<RenderProcess>();
     test_task_counter_ = base::MakeRefCounted<TestTaskCounter>();
 
@@ -205,14 +206,30 @@ class RenderThreadImplBrowserTest : public testing::Test,
   }
 
   void TearDown() override {
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kSingleProcessTests)) {
-      // In a single-process mode, we need to avoid destructing process_
-      // because it will call _exit(0) and kill the process before the browser
-      // side is ready to exit.
-      ANNOTATE_LEAKING_OBJECT_PTR(process_.get());
-      process_.release();
-    }
+    CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kSingleProcessTests));
+    // In a single-process mode, we need to avoid destructing `process_`
+    // because it will call _exit(0) and kill the process before the browser
+    // side is ready to exit.
+    ANNOTATE_LEAKING_OBJECT_PTR(process_.get());
+    // TODO(crbug.com/1219038): `StopIOThreadForTesting()` is a stop-gap
+    // solution to fix flaky tests (see crbug.com/1126157). The underlying
+    // reason for this issue is that the `RenderThreadImpl` created in `SetUp()`
+    // above actually shares its main thread with the browser's, which is
+    // inconsistent with how in-process renderers work in production and other
+    // tests. Despite sharing its main thread with the browser, it still has its
+    // own IO thread (owned and created by `ChildProcess`). In these tests, the
+    // `BrowserTaskEnvironment` has no idea about this separate renderer IO
+    // thread, which can post tasks back to the browser's main thread. During
+    // `BrowserTaskEnvironment` shutdown, it CHECK()s that after the threads are
+    // stopped and flushed, no other tasks exist on its SequenceManager's task
+    // queues. However if we don't stop the IO thread here, then it may continue
+    // to post tasks to the `BrowserTaskEnvironment`'s main thread, causing the
+    // CHECK() to get hit. We should really fix the above tests to create a
+    // `RenderThreadImpl` on its own thread the traditional route, but this fix
+    // will work until we have the time to explore that option.
+    process_->StopIOThreadForTesting();
+    process_.release();
   }
 
   // ChildProcessHostDelegate implementation:

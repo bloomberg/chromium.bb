@@ -44,10 +44,6 @@ class QUIC_EXPORT_PRIVATE HttpDecoder {
     // On*FrameStart() methods are called after the frame header is completely
     // processed.  At that point it is safe to consume |header_length| bytes.
 
-    // Called when a CANCEL_PUSH frame has been successfully parsed.
-    // TODO(b/171463363): Remove.
-    virtual bool OnCancelPushFrame(const CancelPushFrame& frame) = 0;
-
     // Called when a MAX_PUSH_ID frame has been successfully parsed.
     virtual bool OnMaxPushIdFrame(const MaxPushIdFrame& frame) = 0;
 
@@ -83,24 +79,6 @@ class QUIC_EXPORT_PRIVATE HttpDecoder {
     virtual bool OnHeadersFramePayload(absl::string_view payload) = 0;
     // Called when a HEADERS frame has been completely processed.
     virtual bool OnHeadersFrameEnd() = 0;
-
-    // TODO(b/171463363): Remove all.
-    // Called when a PUSH_PROMISE frame has been received.
-    virtual bool OnPushPromiseFrameStart(QuicByteCount header_length) = 0;
-    // Called when the Push ID field of a PUSH_PROMISE frame has been parsed.
-    // Called exactly once for a valid PUSH_PROMISE frame.
-    // |push_id_length| is the length of the push ID field.
-    // |header_block_length| is the length of the compressed header block.
-    virtual bool OnPushPromiseFramePushId(
-        PushId push_id,
-        QuicByteCount push_id_length,
-        QuicByteCount header_block_length) = 0;
-    // Called when part of the header block of a PUSH_PROMISE frame has been
-    // read. May be called multiple times for a single frame.  |payload| is
-    // guaranteed to be non-empty.
-    virtual bool OnPushPromiseFramePayload(absl::string_view payload) = 0;
-    // Called when a PUSH_PROMISE frame has been completely processed.
-    virtual bool OnPushPromiseFrameEnd() = 0;
 
     // Called when a PRIORITY_UPDATE frame has been received.
     // |header_length| contains PRIORITY_UPDATE frame length and payload length.
@@ -231,10 +209,6 @@ class QUIC_EXPORT_PRIVATE HttpDecoder {
   // Buffers any remaining frame type field from |reader| into |type_buffer_|.
   void BufferFrameType(QuicDataReader* reader);
 
-  // Buffers at most |remaining_push_id_length_| from |reader| to
-  // |push_id_buffer_|.  TODO(b/171463363): Remove.
-  void BufferPushId(QuicDataReader* reader);
-
   // Sets |error_| and |error_detail_| accordingly.
   void RaiseError(QuicErrorCode error, std::string error_detail);
 
@@ -279,12 +253,6 @@ class QUIC_EXPORT_PRIVATE HttpDecoder {
   QuicByteCount current_type_field_length_;
   // Remaining length that's needed for the frame's type field.
   QuicByteCount remaining_type_field_length_;
-  // Length of PUSH_PROMISE frame's push id.
-  // TODO(b/171463363): Remove.
-  QuicByteCount current_push_id_length_;
-  // Remaining length that's needed for PUSH_PROMISE frame's push id field.
-  // TODO(b/171463363): Remove.
-  QuicByteCount remaining_push_id_length_;
   // Last error.
   QuicErrorCode error_;
   // The issue which caused |error_|
@@ -295,17 +263,6 @@ class QUIC_EXPORT_PRIVATE HttpDecoder {
   std::array<char, sizeof(uint64_t)> length_buffer_;
   // Remaining unparsed type field data.
   std::array<char, sizeof(uint64_t)> type_buffer_;
-  // Remaining unparsed push id data.
-  // TODO(b/171463363): Remove.
-  std::array<char, sizeof(uint64_t)> push_id_buffer_;
-
-  // Latched value of
-  // gfe2_reloadable_flag_quic_ignore_old_priority_update_frame.
-  const bool ignore_old_priority_update_;
-
-  // Latched value of
-  // gfe2_reloadable_flag_quic_error_on_http3_push.
-  const bool error_on_http3_push_;
 };
 
 }  // namespace quic

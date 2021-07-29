@@ -24,6 +24,7 @@ Als je rechten wilt verlenen, ga je hieronder naar <ph name="BUTTON_NAME" /> om 
 Als <ph name="SERVICE_SCRIPT_NAME" /> al is aangevinkt, vink je dit eerst uit en daarna weer opnieuw aan.</translation>
 <translation id="225614027745146050">Welkom</translation>
 <translation id="2320166752086256636">Toetsenbord verbergen</translation>
+<translation id="2329392777730037872">Kan <ph name="URL" /> niet openen op de client.</translation>
 <translation id="2333212046079545895">Copyright 2021 Google LLC. Alle rechten voorbehouden.</translation>
 <translation id="2359808026110333948">Doorgaan</translation>
 <translation id="2366718077645204424">Kan de host niet bereiken. Dit komt waarschijnlijk door de configuratie van het netwerk dat je gebruikt.</translation>
@@ -67,6 +68,7 @@ Als <ph name="SERVICE_SCRIPT_NAME" /> al is aangevinkt, vink je dit eerst uit en
 <translation id="4176825807642096119">Toegangscode</translation>
 <translation id="4227991223508142681">Hulpprogramma voor hostprovisioning</translation>
 <translation id="4240294130679914010">Verwijderprogramma voor Chromoting-host</translation>
+<translation id="4257751272692708833"><ph name="PRODUCT_NAME" /> URL Forwarder</translation>
 <translation id="4277736576214464567">De toegangscode is ongeldig. Probeer het opnieuw.</translation>
 <translation id="4281844954008187215">Servicevoorwaarden</translation>
 <translation id="4405930547258349619">Basisbibliotheek</translation>
@@ -87,6 +89,7 @@ Als <ph name="SERVICE_SCRIPT_NAME" /> al is aangevinkt, vink je dit eerst uit en
 <translation id="4867841927763172006">PrtScn verzenden</translation>
 <translation id="4974476491460646149">Verbinding verbroken voor <ph name="HOSTNAME" /></translation>
 <translation id="4985296110227979402">Je moet eerst je computer instellen voor externe toegang</translation>
+<translation id="4987330545941822761">Chrome Remote Desktop kan niet vaststellen met welke browser URL's lokaal moeten worden geopend. Maak een keuze in de onderstaande lijst.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="507204348399810022">Weet je zeker dat je externe verbindingen met <ph name="HOSTNAME" /> wilt uitzetten?</translation>
 <translation id="5170982930780719864">Ongeldige host-ID.</translation>
@@ -121,6 +124,7 @@ Als <ph name="SERVICE_SCRIPT_NAME" /> al is aangevinkt, vink je dit eerst uit en
 <translation id="6612717000975622067">Ctrl-Alt-Del verzenden</translation>
 <translation id="6654753848497929428">Delen</translation>
 <translation id="677755392401385740">Host gestart voor gebruiker: <ph name="HOST_USERNAME" />.</translation>
+<translation id="6902524959760471898">Helper-app waarmee je een URL kunt openen in de <ph name="PRODUCT_NAME" />-client</translation>
 <translation id="6939719207673461467">Toetsenbord tonen/verbergen.</translation>
 <translation id="6963936880795878952">Verbindingen met de externe computer zijn tijdelijk geblokkeerd omdat iemand heeft geprobeerd met een ongeldige pincode verbinding te maken met de computer. Probeer het later opnieuw.</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -133,6 +137,7 @@ Als <ph name="SERVICE_SCRIPT_NAME" /> al is aangevinkt, vink je dit eerst uit en
 <translation id="7144878232160441200">Opnieuw proberen</translation>
 <translation id="7312846573060934304">Host is offline.</translation>
 <translation id="7319983568955948908">Delen stoppen</translation>
+<translation id="7359298090707901886">De gekozen browser kan niet worden gebruikt om URL's op de lokale machine te openen.</translation>
 <translation id="7401733114166276557">Chrome Remote Desktop</translation>
 <translation id="7434397035092923453">Toegang geweigerd voor client: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Client verbonden: <ph name="CLIENT_USERNAME" />.</translation>

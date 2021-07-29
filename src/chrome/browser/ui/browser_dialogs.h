@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/bookmarks/bookmark_editor.h"
+#include "chrome/browser/web_applications/components/web_app_callback_app_identity.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/common/buildflags.h"
 #include "content/public/browser/content_browser_client.h"
@@ -21,6 +22,11 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/native_widget_types.h"
+
+#if defined(OS_WIN) || defined(OS_MAC) || \
+    (defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS))
+#include "chrome/browser/web_applications/components/web_app_id.h"
+#endif
 
 class Browser;
 class GURL;
@@ -69,6 +75,13 @@ namespace ui {
 class WebDialogDelegate;
 struct SelectedFileInfo;
 }  // namespace ui
+
+#if defined(OS_WIN) || defined(OS_MAC) || \
+    (defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS))
+namespace web_app {
+struct UrlHandlerLaunchParams;
+}
+#endif
 
 namespace chrome {
 
@@ -121,7 +134,30 @@ void ShowWebAppInstallDialog(content::WebContents* web_contents,
                              std::unique_ptr<WebApplicationInfo> web_app_info,
                              AppInstallationAcceptanceCallback callback);
 
-#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
+// When an app changes its icon or name, that is considered an app identity
+// change which (for some types of apps) needs confirmation from the user.
+// This function shows that confirmation dialog. |app_id| is the unique id of
+// the app that is updating and |title_change| and |icon_change| specify which
+// piece of information is changing. Can be one or the other, or both (but
+// both cannot be |false|). |old_title| and |new_title|, as well as |old_icon|
+// and |new_icon| show the 'before' and 'after' values. A response is sent
+// back via the |callback|.
+void ShowWebAppIdentityUpdateDialog(
+    const std::string& app_id,
+    bool title_change,
+    bool icon_change,
+    const std::u16string& old_title,
+    const std::u16string& new_title,
+    const SkBitmap& old_icon,
+    const SkBitmap& new_icon,
+    content::WebContents* web_contents,
+    web_app::AppIdentityDialogCallback callback);
+
+// Sets whether |ShowWebAppIdentityUpdateDialog| should accept immediately
+// without any user interaction.
+void SetAutoAcceptAppIdentityUpdateForTesting(bool auto_accept);
+
+#if !defined(OS_ANDROID)
 // Callback used to indicate whether a user has accepted the launch of a
 // web app. The boolean parameter is true when the user accepts the dialog.
 using WebAppProtocolHandlerAcceptanceCallback =
@@ -135,6 +171,27 @@ void ShowWebAppProtocolHandlerIntentPicker(
     Profile* profile,
     const web_app::AppId& app_id,
     WebAppProtocolHandlerAcceptanceCallback close_callback);
+#endif  // !defined(OS_ANDROID)
+
+#if defined(OS_WIN) || defined(OS_MAC) || \
+    (defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS))
+// Callback that runs when the Web App URL Handler Intent Picker dialog is
+// closed. `accepted` is true when the dialog is accepted, false otherwise.
+// `launch_params` contains information of the app that is selected to open by
+// the user. It is null when the user selects to open the browser.
+using WebAppUrlHandlerAcceptanceCallback = base::OnceCallback<void(
+    bool accepted,
+    absl::optional<web_app::UrlHandlerLaunchParams> launch_params)>;
+
+// Shows the Web App URL Handler Intent Picker dialog and runs
+// `dialog_close_callback` on closure with the dialog acceptance status and
+// information of the user-selected app. `launch_params_list` contains
+// information of all the apps to show. `url` is the URL to launch if the
+// dialog is accepted by the user.
+void ShowWebAppUrlHandlerIntentPickerDialog(
+    const GURL& url,
+    std::vector<web_app::UrlHandlerLaunchParams> launch_params_list,
+    WebAppUrlHandlerAcceptanceCallback dialog_close_callback);
 #endif
 
 // Sets whether |ShowWebAppDialog| should accept immediately without any
@@ -317,6 +374,9 @@ enum class DialogIdentifier {
   CURRENT_BROWSING_CONTEXT_CONFIRMATION_BOX = 106,
   PROFILE_PICKER_FORCE_SIGNIN = 107,
   EXTENSION_INSTALL_FRICTION = 108,
+  FILE_HANDLING_PERMISSION_REQUEST = 109,
+  SIGNIN_ENTERPRISE_INTERCEPTION = 110,
+  APP_IDENTITY_UPDATE_CONFIRMATION = 111,
   // Add values above this line with a corresponding label in
   // tools/metrics/histograms/enums.xml
   MAX_VALUE
@@ -411,6 +471,19 @@ bool IsDeviceChooserShowingForTesting(Browser* browser);
 void ShowWindowNamePrompt(Browser* browser);
 void ShowWindowNamePromptForTesting(Browser* browser,
                                     gfx::NativeWindow context);
+
+// Callback used to indicate whether Direct Sockets connection dialog is
+// accepted or not. If accepted, the remote address and port number are
+// provided.
+using OnProceedCallback = base::OnceCallback<
+    void(bool accepted, const std::string& address, const std::string& port)>;
+
+// Show dialog to accept remote address and port number information, which will
+// be used to make a socket connection. The window is automatically destroyed
+// when it is closed.
+void ShowDirectSocketsConnectionDialog(Browser* browser,
+                                       const std::string& address,
+                                       OnProceedCallback callback);
 
 }  // namespace chrome
 

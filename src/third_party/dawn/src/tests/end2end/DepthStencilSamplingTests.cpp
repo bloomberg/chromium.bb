@@ -70,7 +70,7 @@ class DepthStencilSamplingTest : public DawnTest {
                 return vec4<f32>(0.0, 0.0, 0.0, 1.0);
             })");
 
-        utils::ComboRenderPipelineDescriptor2 pipelineDescriptor;
+        utils::ComboRenderPipelineDescriptor pipelineDescriptor;
 
         std::ostringstream shaderSource;
         std::ostringstream shaderOutputStruct;
@@ -117,7 +117,7 @@ class DepthStencilSamplingTest : public DawnTest {
         pipelineDescriptor.primitive.topology = wgpu::PrimitiveTopology::PointList;
         pipelineDescriptor.cFragment.targetCount = static_cast<uint32_t>(aspects.size());
 
-        return device.CreateRenderPipeline2(&pipelineDescriptor);
+        return device.CreateRenderPipeline(&pipelineDescriptor);
     }
 
     wgpu::ComputePipeline CreateSamplingComputePipeline(std::vector<TestAspect> aspects,
@@ -141,8 +141,8 @@ class DepthStencilSamplingTest : public DawnTest {
                                  << " : texture_2d<f32>;\n";
 
                     shaderSource << "[[group(0), binding(" << 2 * index + 1
-                                 << ")]] var<storage> result" << index
-                                 << " : [[access(read_write)]] DepthResult;\n";
+                                 << ")]] var<storage, read_write> result" << index
+                                 << " : DepthResult;\n";
 
                     shaderBody << "\nresult" << index << ".value = textureLoad(tex" << index
                                << ", vec2<i32>(0, 0), 0)[" << componentIndex << "];";
@@ -152,8 +152,8 @@ class DepthStencilSamplingTest : public DawnTest {
                                  << " : texture_2d<u32>;\n";
 
                     shaderSource << "[[group(0), binding(" << 2 * index + 1
-                                 << ")]] var<storage> result" << index
-                                 << " : [[access(read_write)]] StencilResult;\n";
+                                 << ")]] var<storage, read_write> result" << index
+                                 << " : StencilResult;\n";
 
                     shaderBody << "\nresult" << index << ".value = textureLoad(tex" << index
                                << ", vec2<i32>(0, 0), 0)[" << componentIndex << "];";
@@ -163,13 +163,14 @@ class DepthStencilSamplingTest : public DawnTest {
             index++;
         }
 
-        shaderSource << "[[stage(compute)]] fn main() { " << shaderBody.str() << "\n}";
+        shaderSource << "[[stage(compute), workgroup_size(1)]] fn main() { " << shaderBody.str()
+                     << "\n}";
 
         wgpu::ShaderModule csModule = utils::CreateShaderModule(device, shaderSource.str().c_str());
 
         wgpu::ComputePipelineDescriptor pipelineDescriptor;
-        pipelineDescriptor.computeStage.module = csModule;
-        pipelineDescriptor.computeStage.entryPoint = "main";
+        pipelineDescriptor.compute.module = csModule;
+        pipelineDescriptor.compute.entryPoint = "main";
 
         return device.CreateComputePipeline(&pipelineDescriptor);
     }
@@ -192,21 +193,13 @@ class DepthStencilSamplingTest : public DawnTest {
                 return textureSampleCompare(tex, samp, vec2<f32>(0.5, 0.5), uniforms.compareRef);
             })");
 
-        // TODO(dawn:367): Cannot use GetBindGroupLayout for comparison samplers without shader
-        // reflection data.
-        wgpu::BindGroupLayout bgl = utils::MakeBindGroupLayout(
-            device, {{0, wgpu::ShaderStage::Fragment, wgpu::SamplerBindingType::Comparison},
-                     {1, wgpu::ShaderStage::Fragment, wgpu::TextureSampleType::Depth},
-                     {2, wgpu::ShaderStage::Fragment, wgpu::BufferBindingType::Uniform}});
-
-        utils::ComboRenderPipelineDescriptor2 pipelineDescriptor;
+        utils::ComboRenderPipelineDescriptor pipelineDescriptor;
         pipelineDescriptor.vertex.module = vsModule;
         pipelineDescriptor.cFragment.module = fsModule;
-        pipelineDescriptor.layout = utils::MakeBasicPipelineLayout(device, &bgl);
         pipelineDescriptor.primitive.topology = wgpu::PrimitiveTopology::PointList;
         pipelineDescriptor.cTargets[0].format = wgpu::TextureFormat::R32Float;
 
-        return device.CreateRenderPipeline2(&pipelineDescriptor);
+        return device.CreateRenderPipeline(&pipelineDescriptor);
     }
 
     wgpu::ComputePipeline CreateComparisonComputePipeline() {
@@ -221,23 +214,15 @@ class DepthStencilSamplingTest : public DawnTest {
             [[block]] struct SamplerResult {
                 value : f32;
             };
-            [[group(0), binding(3)]] var<storage> samplerResult : [[access(read_write)]] SamplerResult;
+            [[group(0), binding(3)]] var<storage, read_write> samplerResult : SamplerResult;
 
-            [[stage(compute)]] fn main() {
+            [[stage(compute), workgroup_size(1)]] fn main() {
                 samplerResult.value = textureSampleCompare(tex, samp, vec2<f32>(0.5, 0.5), uniforms.compareRef);
             })");
 
-        // TODO(dawn:367): Cannot use GetBindGroupLayout without shader reflection data.
-        wgpu::BindGroupLayout bgl = utils::MakeBindGroupLayout(
-            device, {{0, wgpu::ShaderStage::Compute, wgpu::SamplerBindingType::Comparison},
-                     {1, wgpu::ShaderStage::Compute, wgpu::TextureSampleType::Depth},
-                     {2, wgpu::ShaderStage::Compute, wgpu::BufferBindingType::Uniform},
-                     {3, wgpu::ShaderStage::Compute, wgpu::BufferBindingType::Storage}});
-
         wgpu::ComputePipelineDescriptor pipelineDescriptor;
-        pipelineDescriptor.layout = utils::MakeBasicPipelineLayout(device, &bgl);
-        pipelineDescriptor.computeStage.module = csModule;
-        pipelineDescriptor.computeStage.entryPoint = "main";
+        pipelineDescriptor.compute.module = csModule;
+        pipelineDescriptor.compute.entryPoint = "main";
 
         return device.CreateComputePipeline(&pipelineDescriptor);
     }
@@ -552,7 +537,7 @@ TEST_P(DepthStencilSamplingTest, SampleDepth) {
 // Test that sampling a stencil texture with a render/compute pipeline works
 TEST_P(DepthStencilSamplingTest, SampleStencil) {
     // TODO(crbug.com/dawn/593): This test requires glTextureView, which is unsupported on GLES.
-    DAWN_SKIP_TEST_IF(IsOpenGLES());
+    DAWN_TEST_UNSUPPORTED_IF(IsOpenGLES());
     for (wgpu::TextureFormat format : kStencilFormats) {
         DoSamplingTest(TestAspect::Stencil, CreateSamplingRenderPipeline({TestAspect::Stencil}, 0),
                        format, kStencilValues);
@@ -566,12 +551,12 @@ TEST_P(DepthStencilSamplingTest, SampleStencil) {
 // respectively
 TEST_P(DepthStencilSamplingTest, SampleExtraComponents) {
     // TODO(crbug.com/dawn/593): This test requires glTextureView, which is unsupported on GLES.
-    DAWN_SKIP_TEST_IF(IsOpenGLES());
+    DAWN_TEST_UNSUPPORTED_IF(IsOpenGLES());
     // TODO(enga): In Metal, color textures' unspecified default components values
     // are (0, 0, 0, 1). Depth/stencil textures are undefined! Figure out what
     // to do here.
     // See Section 6.10 of the Metal Shading Language Specification
-    DAWN_SKIP_TEST_IF(IsMetal());
+    DAWN_SUPPRESS_TEST_IF(IsMetal());
 
     float expectedDepth[4] = {0, 0, 0, 1};
     uint8_t expectedStencil[4] = {0, 0, 0, 1};
@@ -598,7 +583,7 @@ TEST_P(DepthStencilSamplingTest, SampleExtraComponents) {
 // Test sampling both depth and stencil with a render/compute pipeline works.
 TEST_P(DepthStencilSamplingTest, SampleDepthAndStencilRender) {
     // TODO(crbug.com/dawn/593): This test requires glTextureView, which is unsupported on GLES.
-    DAWN_SKIP_TEST_IF(IsOpenGLES());
+    DAWN_TEST_UNSUPPORTED_IF(IsOpenGLES());
     wgpu::SamplerDescriptor samplerDesc;
     wgpu::Sampler sampler = device.CreateSampler(&samplerDesc);
 
@@ -706,7 +691,10 @@ TEST_P(DepthStencilSamplingTest, SampleDepthAndStencilRender) {
 // Test that sampling in a render pipeline with all of the compare functions works.
 TEST_P(DepthStencilSamplingTest, CompareFunctionsRender) {
     // Initialization via renderPass loadOp doesn't work on Mac Intel.
-    DAWN_SKIP_TEST_IF(IsMetal() && IsIntel());
+    DAWN_SUPPRESS_TEST_IF(IsMetal() && IsIntel());
+
+    // Depends on Tint's shader reflection
+    DAWN_TEST_UNSUPPORTED_IF(!HasToggleEnabled("use_tint_generator"));
 
     wgpu::RenderPipeline pipeline = CreateComparisonRenderPipeline();
 
@@ -722,9 +710,13 @@ TEST_P(DepthStencilSamplingTest, CompareFunctionsRender) {
 }
 
 // Test that sampling in a render pipeline with all of the compare functions works.
-TEST_P(DepthStencilSamplingTest, CompareFunctionsCompute) {
+// WGSL disallows |textureSampleCompare| in compute stages.
+TEST_P(DepthStencilSamplingTest, DISABLED_CompareFunctionsCompute) {
     // Initialization via renderPass loadOp doesn't work on Mac Intel.
-    DAWN_SKIP_TEST_IF(IsMetal() && IsIntel());
+    DAWN_SUPPRESS_TEST_IF(IsMetal() && IsIntel());
+
+    // Depends on Tint's shader reflection
+    DAWN_TEST_UNSUPPORTED_IF(!HasToggleEnabled("use_tint_generator"));
 
     wgpu::ComputePipeline pipeline = CreateComparisonComputePipeline();
 

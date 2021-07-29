@@ -5,10 +5,10 @@
 #include "ash/system/power/power_button_controller.h"
 
 #include "ash/accessibility/test_accessibility_controller_client.h"
+#include "ash/constants/ash_switches.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/media/media_controller_impl.h"
-#include "ash/public/cpp/ash_switches.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/power/power_button_controller_test_api.h"
@@ -1103,8 +1103,8 @@ class PowerButtonControllerWithPositionTest
       default:
         return;
     }
-    position_info.SetDouble(PowerButtonController::kPositionField,
-                            kPowerButtonPercentage);
+    position_info.SetDoubleKey(PowerButtonController::kPositionField,
+                               kPowerButtonPercentage);
 
     std::string json_position_info;
     base::JSONWriter::Write(position_info, &json_position_info);

@@ -173,6 +173,18 @@ bool AppServiceAppWindowShelfItemController::HasAnyTasks() const {
   return !task_ids_.empty();
 }
 
+void AppServiceAppWindowShelfItemController::AddSessionId(int session_id) {
+  session_ids_.insert(session_id);
+}
+
+void AppServiceAppWindowShelfItemController::RemoveSessionId(int session_id) {
+  session_ids_.erase(session_id);
+}
+
+bool AppServiceAppWindowShelfItemController::HasAnySessions() const {
+  return !session_ids_.empty();
+}
+
 bool AppServiceAppWindowShelfItemController::IsChromeApp() {
   Profile* const profile = ChromeShelfController::instance()->profile();
   return apps::AppServiceProxyFactory::GetForProfile(profile)

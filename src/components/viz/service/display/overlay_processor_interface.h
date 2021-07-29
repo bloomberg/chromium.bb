@@ -44,6 +44,15 @@ class RendererSettings;
 class VIZ_SERVICE_EXPORT OverlayProcessorInterface {
  public:
 #if defined(OS_APPLE)
+  using PlatformOverlayCandidate = CALayerOverlay;
+#elif defined(OS_WIN)
+  using PlatformOverlayCandidate = DCLayerOverlay;
+#else
+  // Default.
+  using PlatformOverlayCandidate = OverlayCandidate;
+#endif
+
+#if defined(OS_APPLE)
   using CandidateList = CALayerOverlayList;
 #elif defined(OS_WIN)
   using CandidateList = DCLayerOverlayList;
@@ -129,7 +138,7 @@ class VIZ_SERVICE_EXPORT OverlayProcessorInterface {
   virtual void ProcessForOverlays(
       DisplayResourceProvider* resource_provider,
       AggregatedRenderPassList* render_passes,
-      const SkMatrix44& output_color_matrix,
+      const skia::Matrix44& output_color_matrix,
       const FilterOperationsMap& render_pass_filters,
       const FilterOperationsMap& render_pass_backdrop_filters,
       SurfaceDamageRectList surface_damage_rect_list,

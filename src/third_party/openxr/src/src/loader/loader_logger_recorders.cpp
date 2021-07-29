@@ -1,22 +1,10 @@
-// Copyright (c) 2017-2020 The Khronos Group Inc.
+// Copyright (c) 2017-2021, The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: Apache-2.0 OR MIT
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-// Author: Mark Young <marky@lunarg.com>
+// Initial Author: Mark Young <marky@lunarg.com>
 //
 
 #include "loader_logger_recorders.hpp"
@@ -31,6 +19,10 @@
 #include <vector>
 #include <iostream>
 #include <sstream>
+
+#ifdef __ANDROID__
+#include "android/log.h"
+#endif
 
 #ifdef _WIN32
 #include <windows.h>
@@ -104,6 +96,16 @@ class DebugUtilsLogRecorder : public LoaderLogRecorder {
    private:
     PFN_xrDebugUtilsMessengerCallbackEXT _user_callback;
 };
+#ifdef __ANDROID__
+
+class LogcatLoaderLogRecorder : public LoaderLogRecorder {
+   public:
+    LogcatLoaderLogRecorder();
+
+    bool LogMessage(XrLoaderLogMessageSeverityFlagBits message_severity, XrLoaderLogMessageTypeFlags message_type,
+                    const XrLoaderLogMessengerCallbackData* callback_data) override;
+};
+#endif
 
 #ifdef _WIN32
 // Output to debugger
@@ -193,6 +195,45 @@ bool DebugUtilsLogRecorder::LogDebugUtilsMessage(XrDebugUtilsMessageSeverityFlag
     return (_user_callback(message_severity, message_type, callback_data, _user_data) == XR_TRUE);
 }
 
+#ifdef __ANDROID__
+
+static inline android_LogPriority LoaderToAndroidLogPriority(XrLoaderLogMessageSeverityFlags message_severity) {
+    if (0 != (message_severity & XR_LOADER_LOG_MESSAGE_SEVERITY_ERROR_BIT)) {
+        return ANDROID_LOG_ERROR;
+    }
+    if (0 != (message_severity & XR_LOADER_LOG_MESSAGE_SEVERITY_WARNING_BIT)) {
+        return ANDROID_LOG_WARN;
+    }
+    if (0 != (message_severity & XR_LOADER_LOG_MESSAGE_SEVERITY_INFO_BIT)) {
+        return ANDROID_LOG_INFO;
+    }
+    return ANDROID_LOG_VERBOSE;
+}
+
+LogcatLoaderLogRecorder::LogcatLoaderLogRecorder()
+    : LoaderLogRecorder(XR_LOADER_LOG_LOGCAT, nullptr,
+                        XR_LOADER_LOG_MESSAGE_SEVERITY_VERBOSE_BIT | XR_LOADER_LOG_MESSAGE_SEVERITY_INFO_BIT |
+                            XR_LOADER_LOG_MESSAGE_SEVERITY_WARNING_BIT | XR_LOADER_LOG_MESSAGE_SEVERITY_ERROR_BIT,
+                        0xFFFFFFFFUL) {
+    // Automatically start
+    Start();
+}
+
+bool LogcatLoaderLogRecorder::LogMessage(XrLoaderLogMessageSeverityFlagBits message_severity,
+                                         XrLoaderLogMessageTypeFlags message_type,
+                                         const XrLoaderLogMessengerCallbackData* callback_data) {
+    if (_active && 0 != (_message_severities & message_severity) && 0 != (_message_types & message_type)) {
+        std::stringstream ss;
+        OutputMessageToStream(ss, message_severity, message_type, callback_data);
+        __android_log_write(LoaderToAndroidLogPriority(message_severity), "OpenXR-Loader", ss.str().c_str());
+    }
+
+    // Return of "true" means that we should exit the application after the logged message.  We
+    // don't want to do that for our internal logging.  Only let a user return true.
+    return false;
+}
+#endif  // __ANDROID__
+
 #ifdef _WIN32
 // Unified stdout/stderr logger
 DebuggerLoaderLogRecorder::DebuggerLoaderLogRecorder(void* user_data, XrLoaderLogMessageSeverityFlags flags)
@@ -234,6 +275,13 @@ std::unique_ptr<LoaderLogRecorder> MakeDebugUtilsLoaderLogRecorder(const XrDebug
     std::unique_ptr<LoaderLogRecorder> recorder(new DebugUtilsLogRecorder(create_info, debug_messenger));
     return recorder;
 }
+
+#ifdef __ANDROID__
+std::unique_ptr<LoaderLogRecorder> MakeLogcatLoaderLogRecorder() {
+    std::unique_ptr<LoaderLogRecorder> recorder(new LogcatLoaderLogRecorder());
+    return recorder;
+}
+#endif
 
 #ifdef _WIN32
 std::unique_ptr<LoaderLogRecorder> MakeDebuggerLoaderLogRecorder(void* user_data) {

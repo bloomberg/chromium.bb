@@ -58,6 +58,7 @@
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/sn</translation>
 <translation id="2353636109065292463">İnternet bağlantınızı kontrol etme</translation>
 <translation id="2388990488038464401">Bu numara telefonunuzdan aransın mı?</translation>
+<translation id="2435457462613246316">Şifreyi göster</translation>
 <translation id="24452542372838207">Bildirimi genişlet</translation>
 <translation id="2445449901874883781">Yüksek yoğunluk kullan</translation>
 <translation id="2482878487686419369">Bildirimler</translation>
@@ -79,6 +80,7 @@
 <translation id="2824719307700604149">{YEARS,plural, =1{1 yıl önce}other{# yıl önce}}</translation>
 <translation id="2878511608894704031">Tümünü Sil</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{1 gün içinde}other{# gün içinde}}</translation>
+<translation id="2922712708897119705"><ph name="COLUMN_NAME" /> sütunu azalan düzende sıralandı.</translation>
 <translation id="2931838996092594335">tıklama</translation>
 <translation id="2981684127883932071">Öneriler gösteriliyor</translation>
 <translation id="3036649622769666520">Dosya Aç</translation>
@@ -114,6 +116,7 @@
 <translation id="3897092660631435901">Menü</translation>
 <translation id="3909791450649380159">&amp;Kes</translation>
 <translation id="3990502903496589789">Sağ Kenar</translation>
+<translation id="3994749195054421561"><ph name="COLUMN_NAME" /> sütunu artan düzende sıralandı.</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 Okunmamış Bildirim}other{# Okunmamış Bildirim}}</translation>
 <translation id="4202807286478387388">git</translation>
 <translation id="4250229828105606438">Ekran görüntüsü</translation>
@@ -123,6 +126,7 @@
 <translation id="4306392492252714209">Panodan kaldır.</translation>
 <translation id="4316910396681052118">TÜM UYGULAMALAR</translation>
 <translation id="4491109536499578614">Resim</translation>
+<translation id="4565377596337484307">Şifreyi gizle</translation>
 <translation id="4588090240171750605">Sağa Kaydır</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, <ph name="RATING_SCORE" /> Yıldız puanı</translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, Uygulama önerisi</translation>
@@ -165,6 +169,7 @@
 <translation id="6012623610530968780">Sayfa <ph name="SELECTED_PAGE" />/<ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Arama kutusu metnini temizle</translation>
 <translation id="6040143037577758943">Kapat</translation>
+<translation id="6117103120090651229">Orta düğme</translation>
 <translation id="6119846243427417423">etkinleştir</translation>
 <translation id="6129953537138746214">Boşluk</translation>
 <translation id="6134259848159370930">Cihazınızda, uygulamalarda, ayarlarda ve web'de arama yapın.</translation>
@@ -173,6 +178,7 @@
 <translation id="6156262341071374681">Tüm uygulamalara genişlet</translation>
 <translation id="6165508094623778733">Daha fazla bilgi</translation>
 <translation id="6166852626429024716">Cihazınızda, uygulamalarda, ayarlarda, web'de arama yapın</translation>
+<translation id="6237461503717005873"><ph name="ROW_NAME" /> seçildi.</translation>
 <translation id="6264365405983206840">&amp;Tümünü Seç</translation>
 <translation id="6351032674660237738">UYGULAMA ÖNERİLERİ</translation>
 <translation id="6364916375976753737">Sola Kaydır</translation>
@@ -213,6 +219,7 @@
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 dakika kaldı}other{# dakika kaldı}}</translation>
 <translation id="7430878839542012341">Bu arama, geçmişinizden silinsin mi?</translation>
+<translation id="7437971918971306061"><ph name="COLUMN_NAME" /> sütunu sıralı değil.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emoji</translation>
 <translation id="7620655452534002301">Kaldırıldı.</translation>

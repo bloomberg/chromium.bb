@@ -11,6 +11,7 @@
 #include "components/media_router/common/issue.h"
 #include "components/media_router/common/media_route_provider_helper.h"
 #include "components/media_router/common/media_sink.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace media_router {
@@ -33,7 +34,7 @@ enum class UIMediaSinkState {
 
 struct UIMediaSink {
  public:
-  UIMediaSink();
+  explicit UIMediaSink(mojom::MediaRouteProviderId provider);
   UIMediaSink(const UIMediaSink& other);
   ~UIMediaSink();
 
@@ -60,7 +61,7 @@ struct UIMediaSink {
   SinkIconType icon_type = SinkIconType::GENERIC;
 
   // The provider of the sink.
-  MediaRouteProviderId provider = MediaRouteProviderId::UNKNOWN;
+  mojom::MediaRouteProviderId provider;
 
   // The current state of the media sink.
   UIMediaSinkState state = UIMediaSinkState::AVAILABLE;

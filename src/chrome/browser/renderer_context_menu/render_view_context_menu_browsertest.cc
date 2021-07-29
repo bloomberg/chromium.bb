@@ -33,6 +33,7 @@
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_browsertest_util.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
@@ -40,9 +41,9 @@
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/os_integration_manager.h"
-#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
 #include "chrome/common/pref_names.h"
@@ -115,7 +116,7 @@ using content::WebContents;
 using extensions::MimeHandlerViewGuest;
 using extensions::TestMimeHandlerViewGuest;
 using web_app::AppId;
-using web_app::WebAppProviderBase;
+using web_app::WebAppProvider;
 
 namespace {
 
@@ -136,7 +137,6 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
     // Tests in this suite make use of documents with no significant
     // rendered content, and such documents do not accept input for 500ms
     // unless we allow it.
-    InProcessBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(blink::switches::kAllowPreCommitInput);
   }
 
@@ -566,8 +566,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
   const AppId app_id = InstallTestWebApp(GURL(kAppUrl1));
 
   {
-    WebAppProviderBase* const provider =
-        WebAppProviderBase::GetProviderBase(browser()->profile());
+    WebAppProvider* const provider = WebAppProvider::Get(browser()->profile());
     base::RunLoop run_loop;
 
     ASSERT_TRUE(provider->install_finalizer().CanUserUninstallWebApp(app_id));
@@ -1379,6 +1378,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, DISABLED_OpenLinkInProfileEntryPr
 #define MAYBE_OpenLinkInProfile OpenLinkInProfile
 #endif
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, MAYBE_OpenLinkInProfile) {
+  signin_util::ScopedForceSigninSetterForTesting force_signin_setter(true);
   // Create |num_profiles| extra profiles for testing.
   const int num_profiles = 8;
   // The following are the profile numbers that are omitted and need signin.
@@ -1401,6 +1401,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, MAYBE_OpenLinkInProfile) {
     ProfileAttributesEntry* entry =
         storage.GetProfileAttributesWithPath(profile->GetPath());
     ASSERT_NE(entry, nullptr);
+    entry->LockForceSigninProfile(false);
     // Open a browser window for the profile if and only if the profile is not
     // omitted nor needing signin.
     if (std::binary_search(profiles_omit.begin(), profiles_omit.end(), i)) {
@@ -1408,7 +1409,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, MAYBE_OpenLinkInProfile) {
       entry->SetIsOmitted(true);
     } else if (std::binary_search(profiles_signin_required.begin(),
                                   profiles_signin_required.end(), i)) {
-      entry->SetIsSigninRequired(true);
+      entry->LockForceSigninProfile(true);
     } else {
       profiles::FindOrCreateNewWindowForProfile(
           profile, chrome::startup::IS_NOT_PROCESS_STARTUP,
@@ -1575,9 +1576,8 @@ IN_PROC_BROWSER_TEST_F(SearchByImageBrowserTest, ImageSearchWithCorruptImage) {
   ASSERT_TRUE(response_received);
 }
 
-// TODO(http://crbug.com/1177587): Resolve flake and re-enable test.
 IN_PROC_BROWSER_TEST_F(SearchByImageBrowserTest,
-                       DISABLED_LensImageSearchWithValidImage) {
+                       LensImageSearchWithValidImage) {
   static const char kValidImage[] = "/image_search/valid.png";
   SetupAndLoadImagePage(kValidImage);
 
@@ -1664,7 +1664,6 @@ class LoadImageBrowserTest : public InProcessBrowserTest {
   // Some platforms are flaky due to slower loading interacting with deferred
   // commits.
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(blink::switches::kAllowPreCommitInput);
   }
 

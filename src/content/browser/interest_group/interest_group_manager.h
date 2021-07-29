@@ -1,33 +1,37 @@
-// Copyright (c) 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CONTENT_BROWSER_INTEREST_GROUP_INTEREST_GROUP_MANAGER_H_
 #define CONTENT_BROWSER_INTEREST_GROUP_INTEREST_GROUP_MANAGER_H_
 
+#include <memory>
+
 #include "base/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/threading/sequence_bound.h"
+#include "content/browser/interest_group/auction_process_manager.h"
 #include "content/browser/interest_group/interest_group_storage.h"
 #include "content/common/content_export.h"
-#include "content/services/auction_worklet/public/mojom/auction_worklet_service.mojom.h"
 
 namespace content {
 
-// InterestGroupManager acts as a proxy to access the InterestGroupStorage.
-// Calls to the proxy functions can be called concurrently from multiple
-// sequences as they are executed serially on a separate (blocking) sequence.
+// InterestGroupManager is a per-StoragePartition class that owns shared
+// state needed to run FLEDGE auctions. It lives on the UI thread.
+//
+// It acts as a proxy to access an InterestGroupStorage, which lives off-thread
+// as it performs blocking file IO when backed by on-disk storage.
 class CONTENT_EXPORT InterestGroupManager {
  public:
   // Creates an interest group manager using the provided directory path for
-  // storage. If in_memory is true the path is ignored and an in-memory
-  // database is used instead.
+  // persistent storage. If `in_memory` is true the path is ignored and only
+  // in-memory storage is used.
   explicit InterestGroupManager(const base::FilePath& path, bool in_memory);
   ~InterestGroupManager();
   InterestGroupManager(const InterestGroupManager& other) = delete;
   InterestGroupManager& operator=(const InterestGroupManager& other) = delete;
 
-  /******** Proxy function calls to InterestGroupsStorageSqlImpl **********/
+  /******** Proxy function calls to InterestGroupsStorage **********/
 
   // Joins an interest group. If the interest group does not exist, a new one
   // is created based on the provided group information. If the interest group
@@ -60,15 +64,30 @@ class CONTENT_EXPORT InterestGroupManager {
       base::OnceCallback<
           void(std::vector<auction_worklet::mojom::BiddingInterestGroupPtr>)>
           callback);
-
   // Clear out storage for the matching owning origin. If the callback is empty
   // then apply to all origins.
   void DeleteInterestGroupData(
       base::RepeatingCallback<bool(const url::Origin&)> origin_matcher);
 
+  AuctionProcessManager& auction_process_manager() {
+    return *auction_process_manager_;
+  }
+
+  // Allows the AuctionProcessManager to be overridden in unit tests, both to
+  // allow not creating a new process, and mocking out the Mojo service
+  // interface.
+  void set_auction_process_manager_for_testing(
+      std::unique_ptr<AuctionProcessManager> auction_process_manager) {
+    auction_process_manager_ = std::move(auction_process_manager);
+  }
+
  private:
-  // Remote for accessing the interest group storage from the browser UI thread.
+  // Owns and manages access to the InterestGroupStorage living on a different
+  // thread.
   base::SequenceBound<InterestGroupStorage> impl_;
+
+  // Stored as pointer so that tests can override it.
+  std::unique_ptr<AuctionProcessManager> auction_process_manager_;
 };
 
 }  // namespace content

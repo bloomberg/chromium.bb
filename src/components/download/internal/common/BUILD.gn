@@ -72,6 +72,7 @@ source_set("internal") {
     "//base",
     "//components/download/database",
     "//components/download/public/common:interfaces",
+    "//components/enterprise/common/proto:download_item_reroute_info_proto",
     "//components/filename_generation",
     "//components/leveldb_proto",
     "//components/safe_browsing:buildflags",
@@ -86,7 +87,7 @@ source_set("internal") {
 
   # TODO(crbug/1056278): Enable this on Fuchsia
   if (safe_browsing_mode > 0 && !is_fuchsia) {
-    deps += [ "//components/safe_browsing/core:file_type_policies" ]
+    deps += [ "//components/safe_browsing/content/common:file_type_policies" ]
   }
 
   if (is_win) {
@@ -170,6 +171,7 @@ source_set("unit_tests") {
     "//build:chromeos_buildflags",
     "//components/download/database",
     "//components/download/public/common:test_support",
+    "//components/enterprise/common/proto:download_item_reroute_info_proto",
     "//components/leveldb_proto",
     "//components/leveldb_proto:test_support",
     "//components/ukm:test_support",

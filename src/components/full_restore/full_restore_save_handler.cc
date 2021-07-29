@@ -4,8 +4,9 @@
 
 #include "components/full_restore/full_restore_save_handler.h"
 
-#include "ash/public/cpp/app_types.h"
+#include "ash/constants/app_types.h"
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/no_destructor.h"
 #include "base/sequenced_task_runner.h"
@@ -13,9 +14,11 @@
 #include "components/full_restore/app_launch_info.h"
 #include "components/full_restore/full_restore_file_handler.h"
 #include "components/full_restore/full_restore_info.h"
+#include "components/full_restore/full_restore_read_handler.h"
 #include "components/full_restore/full_restore_utils.h"
 #include "components/full_restore/restore_data.h"
 #include "components/full_restore/window_info.h"
+#include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/sessions/core/session_id.h"
 #include "extensions/common/constants.h"
 #include "ui/aura/client/aura_constants.h"
@@ -28,6 +31,15 @@ namespace {
 // Delay between when an update is received, and when we save it to the
 // full restore file.
 constexpr base::TimeDelta kSaveDelay = base::TimeDelta::FromMilliseconds(2500);
+
+const char kCrxAppPrefix[] = "_crx_";
+
+std::string GetAppIdFromAppName(const std::string& app_name) {
+  std::string prefix(kCrxAppPrefix);
+  if (app_name.substr(0, prefix.length()) != prefix)
+    return std::string();
+  return app_name.substr(prefix.length());
+}
 
 }  // namespace
 
@@ -54,6 +66,19 @@ void FullRestoreSaveHandler::SetActiveProfilePath(
   active_profile_path_ = profile_path;
 }
 
+void FullRestoreSaveHandler::SetAppRegistryCache(
+    const base::FilePath& profile_path,
+    apps::AppRegistryCache* app_registry_cache) {
+  if (app_registry_cache)
+    profile_path_to_app_registry_cache_[profile_path] = app_registry_cache;
+  else
+    profile_path_to_app_registry_cache_.erase(profile_path);
+}
+
+void FullRestoreSaveHandler::SetShutDown() {
+  is_shut_down_ = true;
+}
+
 void FullRestoreSaveHandler::OnWindowInitialized(aura::Window* window) {
   if (window->GetProperty(aura::client::kAppType) ==
       static_cast<int>(ash::AppType::ARC_APP)) {
@@ -62,6 +87,7 @@ void FullRestoreSaveHandler::OnWindowInitialized(aura::Window* window) {
     if (arc_save_handler_)
       arc_save_handler_->OnWindowInitialized(window);
 
+    ++window_count_;
     return;
   }
 
@@ -69,6 +95,7 @@ void FullRestoreSaveHandler::OnWindowInitialized(aura::Window* window) {
   if (!SessionID::IsValidValue(window_id))
     return;
 
+  ++window_count_;
   observed_windows_.AddObservation(window);
 
   std::string* app_id_str = window->GetProperty(::full_restore::kAppIdKey);
@@ -96,6 +123,28 @@ void FullRestoreSaveHandler::OnWindowInitialized(aura::Window* window) {
   } else {
     app_launch_info = std::make_unique<AppLaunchInfo>(
         extension_misc::kChromeAppId, window_id);
+
+    // If the window is an app type browser window, set `app_type_browser` as
+    // true, to call the browser session restore to restore apps for the next
+    // system startup.
+    if (window->GetProperty(full_restore::kAppTypeBrowser)) {
+      app_launch_info->app_type_browser = true;
+
+      std::string* browser_app_name =
+          window->GetProperty(full_restore::kBrowserAppNameKey);
+      if (browser_app_name) {
+        std::string app_id = GetAppIdFromAppName(*browser_app_name);
+        auto it =
+            profile_path_to_app_registry_cache_.find(active_profile_path_);
+        if (it != profile_path_to_app_registry_cache_.end() && it->second &&
+            it->second->GetAppType(app_id) == apps::mojom::AppType::kUnknown) {
+          // If the app doesn't exist in AppRegistryCache, this window is an
+          // extension window, and we don't need to save the launch info for the
+          // extension.
+          return;
+        }
+      }
+    }
   }
 
   AddAppLaunchInfo(active_profile_path_, std::move(app_launch_info));
@@ -175,15 +224,15 @@ void FullRestoreSaveHandler::SaveWindowInfo(const WindowInfo& window_info) {
   if (!window_info.window)
     return;
 
-  int32_t window_id =
-      window_info.window->GetProperty(::full_restore::kWindowIdKey);
-
   if (window_info.window->GetProperty(aura::client::kAppType) ==
       static_cast<int>(ash::AppType::ARC_APP)) {
     if (arc_save_handler_)
-      arc_save_handler_->ModifyWindowInfo(window_id, window_info);
+      arc_save_handler_->ModifyWindowInfo(window_info);
     return;
   }
+
+  int32_t window_id =
+      window_info.window->GetProperty(::full_restore::kWindowIdKey);
 
   if (!SessionID::IsValidValue(window_id))
     return;
@@ -229,6 +278,17 @@ void FullRestoreSaveHandler::Flush(const base::FilePath& profile_path) {
                          weak_factory_.GetWeakPtr(), profile_path));
 }
 
+bool FullRestoreSaveHandler::HasAppRestoreData(
+    const base::FilePath& profile_path,
+    const std::string& app_id,
+    int32_t window_id) {
+  auto it = profile_path_to_restore_data_.find(profile_path);
+  if (it == profile_path_to_restore_data_.end())
+    return false;
+
+  return it->second.HasAppRestoreData(app_id, window_id);
+}
+
 void FullRestoreSaveHandler::AddAppLaunchInfo(
     const base::FilePath& profile_path,
     AppLaunchInfoPtr app_launch_info) {
@@ -252,7 +312,23 @@ void FullRestoreSaveHandler::AddAppLaunchInfo(
 
   pending_save_profile_paths_.insert(profile_path);
 
-  MaybeStartSaveTimer();
+  MaybeStartSaveTimer(profile_path);
+}
+
+void FullRestoreSaveHandler::ModifyWindowId(const base::FilePath& profile_path,
+                                            const std::string& app_id,
+                                            int32_t old_window_id,
+                                            int32_t new_window_id) {
+  auto it = profile_path_to_restore_data_.find(profile_path);
+  if (it == profile_path_to_restore_data_.end())
+    return;
+
+  profile_path_to_restore_data_[profile_path].ModifyWindowId(
+      app_id, old_window_id, new_window_id);
+
+  pending_save_profile_paths_.insert(profile_path);
+
+  MaybeStartSaveTimer(profile_path);
 }
 
 void FullRestoreSaveHandler::ModifyWindowInfo(
@@ -269,7 +345,7 @@ void FullRestoreSaveHandler::ModifyWindowInfo(
 
   pending_save_profile_paths_.insert(profile_path);
 
-  MaybeStartSaveTimer();
+  MaybeStartSaveTimer(profile_path);
 }
 
 void FullRestoreSaveHandler::ModifyThemeColor(
@@ -287,7 +363,7 @@ void FullRestoreSaveHandler::ModifyThemeColor(
 
   pending_save_profile_paths_.insert(profile_path);
 
-  MaybeStartSaveTimer();
+  MaybeStartSaveTimer(profile_path);
 }
 
 void FullRestoreSaveHandler::RemoveApp(const base::FilePath& profile_path,
@@ -300,7 +376,7 @@ void FullRestoreSaveHandler::RemoveApp(const base::FilePath& profile_path,
 
   pending_save_profile_paths_.insert(profile_path);
 
-  MaybeStartSaveTimer();
+  MaybeStartSaveTimer(profile_path);
 }
 
 void FullRestoreSaveHandler::RemoveAppRestoreData(
@@ -315,7 +391,7 @@ void FullRestoreSaveHandler::RemoveAppRestoreData(
 
   pending_save_profile_paths_.insert(profile_path);
 
-  MaybeStartSaveTimer();
+  MaybeStartSaveTimer(profile_path);
 }
 
 void FullRestoreSaveHandler::RemoveWindowInfo(
@@ -330,7 +406,14 @@ void FullRestoreSaveHandler::RemoveWindowInfo(
 
   pending_save_profile_paths_.insert(profile_path);
 
-  MaybeStartSaveTimer();
+  MaybeStartSaveTimer(profile_path);
+}
+
+void FullRestoreSaveHandler::ClearRestoreData(
+    const base::FilePath& profile_path) {
+  pending_save_profile_paths_.insert(profile_path);
+
+  MaybeStartSaveTimer(profile_path);
 }
 
 int32_t FullRestoreSaveHandler::GetArcSessionId() {
@@ -339,7 +422,39 @@ int32_t FullRestoreSaveHandler::GetArcSessionId() {
   return arc_save_handler_->GetArcSessionId();
 }
 
-void FullRestoreSaveHandler::MaybeStartSaveTimer() {
+const RestoreData* FullRestoreSaveHandler::GetRestoreData(
+    const base::FilePath& profile_path) {
+  auto it = profile_path_to_restore_data_.find(profile_path);
+  if (it == profile_path_to_restore_data_.end())
+    return nullptr;
+  return &(profile_path_to_restore_data_[profile_path]);
+}
+
+void FullRestoreSaveHandler::ClearForTesting() {
+  profile_path_to_file_handler_.clear();
+  profile_path_to_restore_data_.clear();
+  app_id_to_app_launch_infos_.clear();
+  active_profile_path_.clear();
+  primary_profile_path_.clear();
+  save_running_.clear();
+  pending_save_profile_paths_.clear();
+  window_id_to_app_restore_info_.clear();
+  app_id_to_app_launch_infos_.clear();
+}
+
+void FullRestoreSaveHandler::MaybeStartSaveTimer(
+    const base::FilePath& profile_path) {
+  if (!base::Contains(been_read_profile_paths_, profile_path)) {
+    // FullRestoreSaveHandler might be called to save the help app before
+    // FullRestoreAppLaunchHandler reads the full restore data from the full
+    // restore file during the system startup phase, e.g. when a new user login.
+    // So call FullRestoreReadHandler to read the file before saving the new
+    // data.
+    FullRestoreReadHandler::GetInstance()->ReadFromFile(profile_path,
+                                                        base::DoNothing());
+    been_read_profile_paths_.insert(profile_path);
+  }
+
   if (!save_timer_.IsRunning() && save_running_.empty()) {
     save_timer_.Start(FROM_HERE, kSaveDelay,
                       base::BindOnce(&FullRestoreSaveHandler::Save,
@@ -348,7 +463,7 @@ void FullRestoreSaveHandler::MaybeStartSaveTimer() {
 }
 
 void FullRestoreSaveHandler::Save() {
-  if (pending_save_profile_paths_.empty())
+  if (pending_save_profile_paths_.empty() || is_shut_down_)
     return;
 
   for (const auto& file_path : pending_save_profile_paths_)

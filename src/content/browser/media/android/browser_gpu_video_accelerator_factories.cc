@@ -14,7 +14,6 @@
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "media/gpu/gpu_video_accelerator_util.h"
-#include "media/gpu/ipc/common/media_messages.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 
 namespace content {
@@ -88,8 +87,8 @@ bool BrowserGpuVideoAcceleratorFactories::IsGpuVideoAcceleratorEnabled() {
 
 base::UnguessableToken BrowserGpuVideoAcceleratorFactories::GetChannelToken() {
   if (channel_token_.is_empty()) {
-    context_provider_->GetCommandBufferProxy()->channel()->Send(
-        new GpuCommandBufferMsg_GetChannelToken(&channel_token_));
+    context_provider_->GetCommandBufferProxy()->GetGpuChannel().GetChannelToken(
+        &channel_token_);
   }
 
   return channel_token_;
@@ -101,11 +100,14 @@ int32_t BrowserGpuVideoAcceleratorFactories::GetCommandBufferRouteId() {
 
 media::GpuVideoAcceleratorFactories::Supported
 BrowserGpuVideoAcceleratorFactories::IsDecoderConfigSupported(
-    media::VideoDecoderImplementation implementation,
     const media::VideoDecoderConfig& config) {
   // Tell the caller to just try it, there are no other decoders to fall back on
   // anyway.
   return media::GpuVideoAcceleratorFactories::Supported::kTrue;
+}
+
+media::VideoDecoderType BrowserGpuVideoAcceleratorFactories::GetDecoderType() {
+  return media::VideoDecoderType::kMediaCodec;
 }
 
 bool BrowserGpuVideoAcceleratorFactories::IsDecoderSupportKnown() {
@@ -121,7 +123,6 @@ void BrowserGpuVideoAcceleratorFactories::NotifyDecoderSupportKnown(
 std::unique_ptr<media::VideoDecoder>
 BrowserGpuVideoAcceleratorFactories::CreateVideoDecoder(
     media::MediaLog* media_log,
-    media::VideoDecoderImplementation implementation,
     media::RequestOverlayInfoCB request_overlay_info_cb) {
   return nullptr;
 }

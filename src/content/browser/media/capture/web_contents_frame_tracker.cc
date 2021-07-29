@@ -47,7 +47,7 @@ class WebContentsContext : public WebContentsFrameTracker::Context {
     if (auto* view = GetCurrentView()) {
       // If we know the available size of the screen, we don't want to exceed
       // it as it may result in strange capture behavior in some cases.
-      blink::ScreenInfo info;
+      display::ScreenInfo info;
       view->GetScreenInfo(&info);
       return info.rect;
     }
@@ -200,7 +200,7 @@ void WebContentsFrameTracker::CaptureTargetChanged() {
 }
 
 void WebContentsFrameTracker::SetWebContentsAndContextFromRoutingId(
-    const GlobalFrameRoutingId& id) {
+    const GlobalRenderFrameHostId& id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   Observe(WebContents::FromRenderFrameHost(RenderFrameHost::FromID(id)));
   context_ = std::make_unique<WebContentsContext>(web_contents());
@@ -234,8 +234,9 @@ void WebContentsFrameTracker::OnPossibleTargetChange() {
     target_frame_sink_id_ = frame_sink_id;
     device_task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(&WebContentsVideoCaptureDevice::OnTargetChanged, device_,
-                       frame_sink_id));
+        base::BindOnce(
+            &WebContentsVideoCaptureDevice::OnTargetChanged, device_,
+            FrameSinkVideoCaptureDevice::VideoCaptureTarget{frame_sink_id}));
   }
 
   SetTargetView(web_contents()->GetNativeView());

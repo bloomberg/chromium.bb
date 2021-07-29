@@ -12,8 +12,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/test/base/chrome_test_utils.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
@@ -21,18 +21,20 @@
 #include "components/policy/core/common/policy_switches.h"
 #include "components/policy/core/common/policy_test_utils.h"
 #include "components/policy/proto/device_management_backend.pb.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_test.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/ash/policy/core/user_cloud_policy_manager_chromeos.h"
 #else
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -143,7 +145,7 @@ void RespondToRegisterWithSuccess(em::DeviceRegisterRequest::Type expected_type,
 
 // Tests the cloud policy stack using a URLRequestJobFactory::ProtocolHandler
 // to intercept requests and produce canned responses.
-class CloudPolicyManagerTest : public InProcessBrowserTest {
+class CloudPolicyManagerTest : public PlatformBrowserTest {
  protected:
   CloudPolicyManagerTest() {}
   ~CloudPolicyManagerTest() override {}
@@ -159,11 +161,21 @@ class CloudPolicyManagerTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
+    PlatformBrowserTest::SetUpOnMainThread();
+
     ASSERT_TRUE(PolicyServiceIsEmpty(g_browser_process->policy_service()))
         << "Pre-existing policies in this machine will make this test fail.";
 
     test_url_loader_factory_ =
         std::make_unique<network::TestURLLoaderFactory>();
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    base::FilePath dest_path =
+        g_browser_process->profile_manager()->user_data_dir();
+    profile_ = Profile::CreateProfile(
+        dest_path.Append(FILE_PATH_LITERAL("New Profile 1")), nullptr,
+        Profile::CreateMode::CREATE_MODE_SYNCHRONOUS);
+#endif
 
     BrowserPolicyConnector* connector =
         g_browser_process->browser_policy_connector();
@@ -175,10 +187,9 @@ class CloudPolicyManagerTest : public InProcessBrowserTest {
 #else
     // Mock a signed-in user. This is used by the UserCloudPolicyStore to pass
     // the username to the UserCloudPolicyValidator.
-    auto* identity_manager =
-        IdentityManagerFactory::GetForProfile(browser()->profile());
-    signin::SetPrimaryAccount(identity_manager, "user@example.com",
-                              signin::ConsentLevel::kSync);
+    identity_test_env_ = std::make_unique<signin::IdentityTestEnvironment>();
+    identity_test_env_->MakePrimaryAccountAvailable(
+        "user@example.com", signin::ConsentLevel::kSync);
 
     ASSERT_TRUE(policy_manager());
     policy_manager()->Connect(
@@ -192,15 +203,24 @@ class CloudPolicyManagerTest : public InProcessBrowserTest {
   void TearDownOnMainThread() override {
     // Verify that all the expected requests were handled.
     EXPECT_EQ(0, test_url_loader_factory_->NumPending());
+    identity_test_env_.reset();
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    profile_.reset();
+#endif
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   UserCloudPolicyManagerChromeOS* policy_manager() {
-    return browser()->profile()->GetUserCloudPolicyManagerChromeOS();
+    return chrome_test_utils::GetProfile(this)
+        ->GetUserCloudPolicyManagerChromeOS();
+  }
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  UserCloudPolicyManager* policy_manager() {
+    return profile_->GetUserCloudPolicyManager();
   }
 #else
   UserCloudPolicyManager* policy_manager() {
-    return browser()->profile()->GetUserCloudPolicyManager();
+    return chrome_test_utils::GetProfile(this)->GetUserCloudPolicyManager();
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -237,16 +257,21 @@ class CloudPolicyManagerTest : public InProcessBrowserTest {
     policy_manager()->core()->client()->RemoveObserver(&observer);
   }
 
+  std::unique_ptr<signin::IdentityTestEnvironment> identity_test_env_;
   std::unique_ptr<network::TestURLLoaderFactory> test_url_loader_factory_;
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // For Lacros use non-main profile in these tests.
+  std::unique_ptr<Profile> profile_;
+#endif
 };
 
-// https://crbug.com/1224321
+// https://crbug.com/1224321, crbug.com/1224925
 #if defined(OS_WIN)
 #define MAYBE_Register DISABLED_Register
 #else
 #define MAYBE_Register Register
 #endif
-IN_PROC_BROWSER_TEST_F(CloudPolicyManagerTest, Register) {
+IN_PROC_BROWSER_TEST_F(CloudPolicyManagerTest, MAYBE_Register) {
   test_url_loader_factory_->SetInterceptor(
       base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
         // Accept one register request. The initial request should not include
@@ -266,13 +291,13 @@ IN_PROC_BROWSER_TEST_F(CloudPolicyManagerTest, Register) {
   EXPECT_TRUE(policy_manager()->core()->client()->is_registered());
 }
 
-// https://crbug.com/1224321
+// https://crbug.com/1224925
 #if defined(OS_WIN)
-#define MAYBE_RegisterWithFails DISABLED_RegisterWithFails
+#define MAYBE_RegisterFails DISABLED_RegisterFails
 #else
-#define MAYBE_RegisterWithFails RegisterWithFails
+#define MAYBE_RegisterFails RegisterFails
 #endif
-IN_PROC_BROWSER_TEST_F(CloudPolicyManagerTest, RegisterFails) {
+IN_PROC_BROWSER_TEST_F(CloudPolicyManagerTest, MAYBE_RegisterFails) {
   test_url_loader_factory_->SetInterceptor(
       base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
         test_url_loader_factory_->AddResponse(request.url.spec(), std::string(),
@@ -284,13 +309,13 @@ IN_PROC_BROWSER_TEST_F(CloudPolicyManagerTest, RegisterFails) {
   EXPECT_FALSE(policy_manager()->core()->client()->is_registered());
 }
 
-// https://crbug.com/1224321
+// https://crbug.com/1224321, crbug.com/1224925
 #if defined(OS_WIN)
 #define MAYBE_RegisterFailsWithRetries DISABLED_RegisterFailsWithRetries
 #else
 #define MAYBE_RegisterFailsWithRetries RegisterFailsWithRetries
 #endif
-IN_PROC_BROWSER_TEST_F(CloudPolicyManagerTest, RegisterFailsWithRetries) {
+IN_PROC_BROWSER_TEST_F(CloudPolicyManagerTest, MAYBE_RegisterFailsWithRetries) {
   // Fail 4 times with ERR_NETWORK_CHANGED; the first 3 will trigger a retry,
   // the last one will forward the error to the client and unblock the
   // register process.
@@ -310,13 +335,13 @@ IN_PROC_BROWSER_TEST_F(CloudPolicyManagerTest, RegisterFailsWithRetries) {
   EXPECT_EQ(4, count);
 }
 
-// https://crbug.com/1224321
+// https://crbug.com/1224321, crbug.com/1224925
 #if defined(OS_WIN)
 #define MAYBE_RegisterWithRetry DISABLED_RegisterWithRetry
 #else
 #define MAYBE_RegisterWithRetry RegisterWithRetry
 #endif
-IN_PROC_BROWSER_TEST_F(CloudPolicyManagerTest, RegisterWithRetry) {
+IN_PROC_BROWSER_TEST_F(CloudPolicyManagerTest, MAYBE_RegisterWithRetry) {
   test_url_loader_factory_->SetInterceptor(
       base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
         em::DeviceRegisterRequest::Type expected_type =

@@ -166,7 +166,7 @@
 #include "common/dwarf/dwarf2reader.h"
 #include "common/using_std_string.h"
 
-namespace dwarf2reader {
+namespace google_breakpad {
 
 // A base class for handlers for specific DIE types.  The series of
 // calls made on a DIE handler is as follows:
@@ -361,5 +361,5 @@ class DIEDispatcher: public Dwarf2Handler {
   RootDIEHandler* root_handler_;
 };
 
-} // namespace dwarf2reader
+} // namespace google_breakpad
 #endif  // COMMON_DWARF_DWARF2DIEHANDLER_H__

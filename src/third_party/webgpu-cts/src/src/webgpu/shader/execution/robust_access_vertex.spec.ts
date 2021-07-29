@@ -44,7 +44,6 @@ Vertex buffer contents could be randomized to prevent the case where a previous 
 a similar buffer to ours and the OOB-read seems valid. This should be deterministic, which adds
 more complexity that we may not need.`;
 
-import { params, pbool, poptions } from '../../../common/framework/params_builder.js';
 import { makeTestGroup } from '../../../common/framework/test_group.js';
 import { GPUTest } from '../../gpu_test.js';
 
@@ -252,29 +251,21 @@ const typeInfoMap: { [k: string]: VertexInfo } = {
 };
 
 g.test('vertexAccess')
-  .params(
-    params()
-      .combine(pbool('indexed'))
-      .combine(pbool('indirect'))
-      .expand(p =>
-        poptions(
-          'drawCallTestParameter',
-          p.indexed
-            ? ([
-                'indexCount',
-                'instanceCount',
-                'firstIndex',
-                'baseVertex',
-                'firstInstance',
-              ] as const)
-            : (['vertexCount', 'instanceCount', 'firstVertex', 'firstInstance'] as const)
-        )
+  .params(u =>
+    u
+      .combine('indexed', [false, true])
+      .combine('indirect', [false, true])
+      .expand('drawCallTestParameter', p =>
+        p.indexed
+          ? (['indexCount', 'instanceCount', 'firstIndex', 'baseVertex', 'firstInstance'] as const)
+          : (['vertexCount', 'instanceCount', 'firstVertex', 'firstInstance'] as const)
       )
-      .combine(poptions('type', Object.keys(typeInfoMap)))
-      .combine(poptions('additionalBuffers', [0, 4]))
-      .combine(pbool('partialLastNumber'))
-      .combine(pbool('offsetVertexBuffer'))
-      .combine(poptions('errorScale', [1, 4, 10 ** 2, 10 ** 4, 10 ** 6]))
+      .beginSubcases()
+      .combine('type', Object.keys(typeInfoMap))
+      .combine('additionalBuffers', [0, 4])
+      .combine('partialLastNumber', [false, true])
+      .combine('offsetVertexBuffer', [false, true])
+      .combine('errorScale', [1, 4, 10 ** 2, 10 ** 4, 10 ** 6])
   )
   .fn(async t => {
     const p = t.params;

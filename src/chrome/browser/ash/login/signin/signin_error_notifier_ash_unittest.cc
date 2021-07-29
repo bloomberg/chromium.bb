@@ -9,8 +9,8 @@
 #include <memory>
 #include <string>
 
+#include "base/cxx17_backports.h"
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/ash/login/signin/signin_error_notifier_factory_ash.h"
 #include "chrome/browser/ash/login/users/mock_user_manager.h"
@@ -104,7 +104,8 @@ TEST_F(SigninErrorNotifierTest, NoNotification) {
 TEST_F(SigninErrorNotifierTest, NoNotificationAfterAddSupervisionEnabled) {
   CoreAccountId account_id =
       identity_test_env()->MakeAccountAvailable(kTestEmail).account_id;
-  identity_test_env()->SetPrimaryAccount(kTestEmail);
+  identity_test_env()->SetPrimaryAccount(kTestEmail,
+                                         signin::ConsentLevel::kSync);
 
   // Mark signout required.
   SupervisedUserService* service =
@@ -125,7 +126,9 @@ TEST_F(SigninErrorNotifierTest, ErrorResetForPrimaryAccount) {
       display_service_->GetNotification(kPrimaryAccountErrorNotificationId));
 
   CoreAccountId account_id =
-      identity_test_env()->MakePrimaryAccountAvailable(kTestEmail).account_id;
+      identity_test_env()
+          ->MakePrimaryAccountAvailable(kTestEmail, signin::ConsentLevel::kSync)
+          .account_id;
   SetAuthError(
       account_id,
       GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
@@ -141,10 +144,10 @@ TEST_F(SigninErrorNotifierTest, ErrorShownForUnconsentedPrimaryAccount) {
   EXPECT_FALSE(
       display_service_->GetNotification(kPrimaryAccountErrorNotificationId));
 
-  CoreAccountId account_id =
-      identity_test_env()
-          ->MakeUnconsentedPrimaryAccountAvailable(kTestEmail)
-          .account_id;
+  CoreAccountId account_id = identity_test_env()
+                                 ->MakePrimaryAccountAvailable(
+                                     kTestEmail, signin::ConsentLevel::kSignin)
+                                 .account_id;
   SetAuthError(
       account_id,
       GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
@@ -177,7 +180,9 @@ TEST_F(SigninErrorNotifierTest, ErrorResetForSecondaryAccount) {
 
 TEST_F(SigninErrorNotifierTest, ErrorTransitionForPrimaryAccount) {
   CoreAccountId account_id =
-      identity_test_env()->MakePrimaryAccountAvailable(kTestEmail).account_id;
+      identity_test_env()
+          ->MakePrimaryAccountAvailable(kTestEmail, signin::ConsentLevel::kSync)
+          .account_id;
   SetAuthError(
       account_id,
       GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
@@ -224,7 +229,9 @@ TEST_F(SigninErrorNotifierTest, AuthStatusEnumerateAllErrors) {
                                GoogleServiceAuthError::kDeprecatedStateCount,
       "table size should match number of auth error types");
   CoreAccountId account_id =
-      identity_test_env()->MakePrimaryAccountAvailable(kTestEmail).account_id;
+      identity_test_env()
+          ->MakePrimaryAccountAvailable(kTestEmail, signin::ConsentLevel::kSync)
+          .account_id;
 
   for (size_t i = 0; i < base::size(table); ++i) {
     SetAuthError(account_id, GoogleServiceAuthError(table[i].error_state));
@@ -242,7 +249,9 @@ TEST_F(SigninErrorNotifierTest, AuthStatusEnumerateAllErrors) {
 
 TEST_F(SigninErrorNotifierTest, ChildSecondaryAccountMigrationTest) {
   CoreAccountId primary_account =
-      identity_test_env()->MakePrimaryAccountAvailable(kTestEmail).account_id;
+      identity_test_env()
+          ->MakePrimaryAccountAvailable(kTestEmail, signin::ConsentLevel::kSync)
+          .account_id;
   CoreAccountId secondary_account =
       identity_test_env()->MakeAccountAvailable(kTestSecondaryEmail).account_id;
 

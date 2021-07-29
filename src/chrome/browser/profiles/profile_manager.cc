@@ -61,7 +61,6 @@
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_destroyer.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_keep_alive_types.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/profiles/profile_manager_observer.h"
@@ -70,7 +69,7 @@
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_util.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/unified_consent/unified_consent_service_factory.h"
@@ -148,10 +147,9 @@
 #include "chrome/browser/ash/arc/policy/arc_policy_util.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_prefs.h"
-#include "components/arc/session/arc_supervision_transition.h"
+#include "components/arc/session/arc_management_transition.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
@@ -165,10 +163,6 @@
 #if defined(OS_WIN) && BUILDFLAG(ENABLE_DICE_SUPPORT)
 #include "chrome/browser/signin/signin_util_win.h"
 #endif  // defined(OS_WIN) && BUILDFLAG(ENABLE_DICE_SUPPORT)
-
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-#include "chrome/browser/signin/dice_signed_in_profile_creator.h"
-#endif  // #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 using base::UserMetricsAction;
 using content::BrowserThread;
@@ -365,7 +359,7 @@ void NukeProfileFromDisk(const base::FilePath& profile_path,
 void ProfileCleanedUp(base::Value profile_path_value) {
   ListPrefUpdate deleted_profiles(g_browser_process->local_state(),
                                   prefs::kProfilesDeleted);
-  deleted_profiles->Remove(profile_path_value, nullptr);
+  deleted_profiles->EraseListValue(profile_path_value);
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -396,7 +390,7 @@ size_t GetEnabledAppCount(Profile* profile) {
 // It might get called more than once with different values of
 // |status| but only once the profile is fully initialized will
 // |client_callback| be run.
-void OnProfileLoaded(ProfileManager::ProfileLoadedCallback* client_callback,
+void OnProfileLoaded(ProfileManager::ProfileLoadedCallback& client_callback,
                      bool incognito,
                      Profile* profile,
                      Profile::CreateStatus status) {
@@ -407,11 +401,11 @@ void OnProfileLoaded(ProfileManager::ProfileLoadedCallback* client_callback,
   }
   if (status != Profile::CREATE_STATUS_INITIALIZED) {
     LOG(WARNING) << "Profile not loaded correctly";
-    std::move(*client_callback).Run(nullptr);
+    std::move(client_callback).Run(nullptr);
     return;
   }
   DCHECK(profile);
-  std::move(*client_callback)
+  std::move(client_callback)
       .Run(incognito ? profile->GetPrimaryOTRProfile(/*create_if_needed=*/true)
                      : profile);
 }
@@ -445,18 +439,8 @@ bool IsLoggedIn() {
 #endif
 
 bool IsEphemeral(Profile* profile) {
-  return profile->GetPrefs()->GetBoolean(prefs::kForceEphemeralProfiles) ||
-         profile->IsEphemeralGuestProfile();
+  return profile->GetPrefs()->GetBoolean(prefs::kForceEphemeralProfiles);
 }
-
-#if !defined(OS_ANDROID)
-void RecordGuestProfileLifetime(const std::string& histogram_name,
-                                base::TimeDelta duration) {
-  base::UmaHistogramCustomCounts(histogram_name, duration.InMinutes(), 1,
-                                 base::TimeDelta::FromDays(28).InMinutes(),
-                                 100);
-}
-#endif  // !defined(OS_ANDROID)
 
 int GetTotalRefCount(const std::map<ProfileKeepAliveOrigin, int>& keep_alives) {
   return std::accumulate(
@@ -517,11 +501,19 @@ ProfileManager::ProfileManager(const base::FilePath& user_data_dir)
 
 ProfileManager::~ProfileManager() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  for (auto& observer : observers_) {
+    observer.OnProfileManagerDestroying();
+  }
   if (base::FeatureList::IsEnabled(features::kDestroyProfileOnBrowserClose)) {
     // Ideally, all the keepalives should've been cleared already. Report
     // metrics for incorrect usage of ScopedProfileKeepAlive.
     for (const auto& path_and_profile_info : profiles_info_) {
       const ProfileInfo* profile_info = path_and_profile_info.second.get();
+
+      Profile* profile = profile_info->GetRawProfile();
+      if (profile && profile->IsSystemProfile())
+        continue;
+
       for (const auto& origin_and_count : profile_info->keep_alives) {
         ProfileKeepAliveOrigin origin = origin_and_count.first;
         int count = origin_and_count.second;
@@ -639,22 +631,22 @@ std::vector<Profile*> ProfileManager::GetLastOpenedProfiles() {
   if (local_state->HasPrefPath(prefs::kProfilesLastActive) &&
       local_state->GetList(prefs::kProfilesLastActive)) {
     // Make a copy because the list might change in the calls to GetProfile.
-    std::unique_ptr<base::ListValue> profile_list(
-        local_state->GetList(prefs::kProfilesLastActive)->DeepCopy());
-    for (const auto& entry : profile_list->GetList()) {
-      std::string profile_base_name;
-      if (!entry.GetAsString(&profile_base_name) || profile_base_name.empty() ||
-          profile_base_name ==
+    const base::Value profile_list =
+        local_state->GetList(prefs::kProfilesLastActive)->Clone();
+    for (const auto& entry : profile_list.GetList()) {
+      const std::string* profile_base_name = entry.GetIfString();
+      if (!profile_base_name || profile_base_name->empty() ||
+          *profile_base_name ==
               base::FilePath(chrome::kSystemProfileDir).AsUTF8Unsafe()) {
         LOG(WARNING) << "Invalid entry in " << prefs::kProfilesLastActive;
         continue;
       }
       Profile* profile = profile_manager->GetProfile(
-          profile_manager->user_data_dir().AppendASCII(profile_base_name));
+          profile_manager->user_data_dir().AppendASCII(*profile_base_name));
       if (profile) {
         // crbug.com/823338 -> CHECK that the profiles aren't guest or
         // incognito, causing a crash during session restore.
-        CHECK(!profile->IsGuestSession() && !profile->IsEphemeralGuestProfile())
+        CHECK(!profile->IsGuestSession())
             << "Guest profiles shouldn't have been saved as active profiles";
         CHECK(!profile->IsOffTheRecord())
             << "OTR profiles shouldn't have been saved as active profiles";
@@ -737,17 +729,6 @@ void ProfileManager::RemoveObserver(ProfileManagerObserver* observer) {
 Profile* ProfileManager::GetProfile(const base::FilePath& profile_dir) {
   TRACE_EVENT0("browser", "ProfileManager::GetProfile");
 
-  // If Epehemral Guest profile is enabled and OTR Guest profile is requested,
-  // deny it.
-  // This can specifically happen if user is browsing in OTR Guest mode and
-  // either enable Ephemeral Guest profile through flags and relaunches the
-  // browser, or restarts browser and finch enables Ephemeral Guest profile.
-  // crbug.com/1183755.
-  if (Profile::IsEphemeralGuestProfileEnabled() &&
-      profile_dir == user_data_dir().Append(chrome::kGuestProfileDir)) {
-    return nullptr;
-  }
-
   // If the profile is already loaded (e.g., chrome.exe launched twice), just
   // return it.
   Profile* profile = GetProfileByPath(profile_dir);
@@ -757,8 +738,7 @@ Profile* ProfileManager::GetProfile(const base::FilePath& profile_dir) {
 }
 
 size_t ProfileManager::GetNumberOfProfiles() {
-  return GetProfileAttributesStorage().GetNumberOfProfiles(
-      /*include_guest_profile=*/false);
+  return GetProfileAttributesStorage().GetNumberOfProfiles();
 }
 
 bool ProfileManager::LoadProfile(const std::string& profile_base_name,
@@ -784,9 +764,7 @@ bool ProfileManager::LoadProfileByPath(const base::FilePath& profile_path,
       base::BindRepeating(&OnProfileLoaded,
                           // OnProfileLoaded may be called multiple times, but
                           // |callback| will be called only once.
-                          base::Owned(std::make_unique<ProfileLoadedCallback>(
-                              std::move(callback))),
-                          incognito));
+                          base::OwnedRef(std::move(callback)), incognito));
   return true;
 }
 
@@ -812,23 +790,20 @@ void ProfileManager::CreateProfileAsync(const base::FilePath& profile_path,
     info = iter->second.get();
   } else {
     // Initiate asynchronous creation process.
-    info = RegisterProfile(CreateProfileAsyncHelper(profile_path), false);
+    info = RegisterOwnedProfile(CreateProfileAsyncHelper(profile_path));
   }
 
   // Call or enqueue the callback.
   if (!callback.is_null()) {
-    if (iter != profiles_info_.end() && info->created) {
-      Profile* profile = info->profile.get();
-      // If this was the non-ephemeral Guest profile, apply settings and go
-      // OffTheRecord.
+    if (iter != profiles_info_.end() && info->GetCreatedProfile()) {
+      Profile* profile = info->GetCreatedProfile();
+      // If this was the Guest profile, apply settings and go OffTheRecord.
       // The system profile also needs characteristics of being off the record,
       // such as having no extensions, not writing to disk, etc.
-      if (profile->IsGuestSession() || profile->IsEphemeralGuestProfile() ||
-          profile->IsSystemProfile()) {
+      if (profile->IsGuestSession() || profile->IsSystemProfile()) {
         SetNonPersonalProfilePrefs(profile);
-      }
-      if (profile->IsGuestSession() || profile->IsSystemProfile())
         profile = profile->GetPrimaryOTRProfile(/*create_if_needed=*/true);
+      }
 
       // Profile has already been created. Run callback immediately.
       callback.Run(profile, Profile::CREATE_STATUS_INITIALIZED);
@@ -843,15 +818,15 @@ void ProfileManager::CreateProfileAsync(const base::FilePath& profile_path,
 bool ProfileManager::IsValidProfile(const void* profile) {
   for (auto iter = profiles_info_.begin(); iter != profiles_info_.end();
        ++iter) {
-    if (iter->second->created) {
-      Profile* candidate = iter->second->profile.get();
-      if (candidate == profile)
-        return true;
-      std::vector<Profile*> otr_profiles =
-          candidate->GetAllOffTheRecordProfiles();
-      if (base::Contains(otr_profiles, profile))
-        return true;
-    }
+    Profile* candidate = iter->second->GetCreatedProfile();
+    if (!candidate)
+      continue;
+    if (candidate == profile)
+      return true;
+    std::vector<Profile*> otr_profiles =
+        candidate->GetAllOffTheRecordProfiles();
+    if (base::Contains(otr_profiles, profile))
+      return true;
   }
   return false;
 }
@@ -874,8 +849,9 @@ std::vector<Profile*> ProfileManager::GetLoadedProfiles() const {
   std::vector<Profile*> profiles;
   for (auto iter = profiles_info_.begin(); iter != profiles_info_.end();
        ++iter) {
-    if (iter->second->created)
-      profiles.push_back(iter->second->profile.get());
+    Profile* profile = iter->second->GetCreatedProfile();
+    if (profile)
+      profiles.push_back(profile);
   }
   return profiles;
 }
@@ -884,7 +860,7 @@ Profile* ProfileManager::GetProfileByPathInternal(
     const base::FilePath& path) const {
   TRACE_EVENT0("browser", "ProfileManager::GetProfileByPathInternal");
   ProfileInfo* profile_info = GetProfileInfoByPath(path);
-  return profile_info ? profile_info->profile.get() : nullptr;
+  return profile_info ? profile_info->GetRawProfile() : nullptr;
 }
 
 bool ProfileManager::IsAllowedProfilePath(const base::FilePath& path) const {
@@ -910,8 +886,7 @@ bool ProfileManager::CanCreateProfileAtPath(const base::FilePath& path) const {
 Profile* ProfileManager::GetProfileByPath(const base::FilePath& path) const {
   TRACE_EVENT0("browser", "ProfileManager::GetProfileByPath");
   ProfileInfo* profile_info = GetProfileInfoByPath(path);
-  return (profile_info && profile_info->created) ? profile_info->profile.get()
-                                                 : nullptr;
+  return profile_info ? profile_info->GetCreatedProfile() : nullptr;
 }
 
 // static
@@ -981,32 +956,8 @@ base::FilePath ProfileManager::GetGuestProfilePath() {
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
 
-  if (profile_manager->guest_profile_path_.empty()) {
-    if (Profile::IsEphemeralGuestProfileEnabled()) {
-      PrefService* local_state = g_browser_process->local_state();
-      DCHECK(local_state);
-
-      // Create the next Guest profile in the next available directory slot.
-      int next_directory =
-          local_state->GetInteger(prefs::kGuestProfilesNumCreated);
-      std::string profile_name = chrome::kEphemeralGuestProfileDirPrefix;
-      profile_name.append(base::NumberToString(next_directory));
-      base::FilePath new_path = profile_manager->user_data_dir();
-#if defined(OS_WIN)
-      new_path = new_path.Append(base::ASCIIToWide(profile_name));
-#else
-      new_path = new_path.Append(profile_name);
-#endif
-      local_state->SetInteger(prefs::kGuestProfilesNumCreated,
-                              ++next_directory);
-      profile_manager->guest_profile_path_ = new_path;
-    } else {
-      profile_manager->guest_profile_path_ =
-          profile_manager->user_data_dir().Append(chrome::kGuestProfileDir);
-    }
-  }
-
-  return profile_manager->guest_profile_path_;
+  base::FilePath guest_path = profile_manager->user_data_dir();
+  return guest_path.Append(chrome::kGuestProfileDir);
 }
 
 // static
@@ -1039,17 +990,13 @@ base::FilePath ProfileManager::GenerateNextProfileDirectoryPath() {
   return new_path;
 }
 
-ProfileInfoCache& ProfileManager::GetProfileInfoCache() {
-  TRACE_EVENT0("browser", "ProfileManager::GetProfileInfoCache");
-  if (!profile_info_cache_) {
-    profile_info_cache_ = std::make_unique<ProfileInfoCache>(
+ProfileAttributesStorage& ProfileManager::GetProfileAttributesStorage() {
+  TRACE_EVENT0("browser", "ProfileManager::GetProfileAttributesStorage");
+  if (!profile_attributes_storage_) {
+    profile_attributes_storage_ = std::make_unique<ProfileAttributesStorage>(
         g_browser_process->local_state(), user_data_dir_);
   }
-  return *profile_info_cache_.get();
-}
-
-ProfileAttributesStorage& ProfileManager::GetProfileAttributesStorage() {
-  return GetProfileInfoCache();
+  return *profile_attributes_storage_.get();
 }
 
 ProfileShortcutManager* ProfileManager::profile_shortcut_manager() {
@@ -1135,7 +1082,7 @@ void ProfileManager::CleanUpEphemeralProfiles() {
   std::vector<base::FilePath> profiles_to_delete;
   ProfileAttributesStorage& storage = GetProfileAttributesStorage();
   std::vector<ProfileAttributesEntry*> entries =
-      storage.GetAllProfilesAttributes(/*include_guest_profile=*/true);
+      storage.GetAllProfilesAttributes();
   for (ProfileAttributesEntry* entry : entries) {
     base::FilePath profile_path = entry->GetPath();
     if (entry->IsEphemeral()) {
@@ -1159,8 +1106,6 @@ void ProfileManager::CleanUpEphemeralProfiles() {
     profiles::SetLastUsedProfile(new_profile_path.BaseName().MaybeAsASCII());
   }
 
-  // This uses a separate loop, because deleting the profile from the
-  // ProfileInfoCache will modify indices.
   for (const base::FilePath& profile_path : profiles_to_delete) {
     base::ThreadPool::PostTask(
         FROM_HERE,
@@ -1220,8 +1165,8 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // User object may already have changed user type, so we apply that
   // type to profile.
-  // If profile type has changed, remove ProfileInfoCache entry for it to
-  // make sure it is fully re-initialized later.
+  // If profile type has changed, remove ProfileAttributesEntry for it to make
+  // sure it is fully re-initialized later.
   const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
   if (user) {
@@ -1254,22 +1199,22 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
       const bool arc_signed_in =
           profile->GetPrefs()->GetBoolean(arc::prefs::kArcSignedIn);
 
-      arc::ArcSupervisionTransition transition;
+      arc::ArcManagementTransition transition;
       if (!arc_signed_in) {
         // No transition is necessary if user never enabled ARC.
-        transition = arc::ArcSupervisionTransition::NO_TRANSITION;
+        transition = arc::ArcManagementTransition::NO_TRANSITION;
       } else if (profile_is_child != user_is_child) {
         transition = user_is_child
-                         ? arc::ArcSupervisionTransition::REGULAR_TO_CHILD
-                         : arc::ArcSupervisionTransition::CHILD_TO_REGULAR;
+                         ? arc::ArcManagementTransition::REGULAR_TO_CHILD
+                         : arc::ArcManagementTransition::CHILD_TO_REGULAR;
       } else if (profile_is_managed && !arc_is_managed) {
-        transition = arc::ArcSupervisionTransition::UNMANAGED_TO_MANAGED;
+        transition = arc::ArcManagementTransition::UNMANAGED_TO_MANAGED;
       } else {
         // User state has not changed.
-        transition = arc::ArcSupervisionTransition::NO_TRANSITION;
+        transition = arc::ArcManagementTransition::NO_TRANSITION;
       }
 
-      profile->GetPrefs()->SetInteger(arc::prefs::kArcSupervisionTransition,
+      profile->GetPrefs()->SetInteger(arc::prefs::kArcManagementTransition,
                                       static_cast<int>(transition));
     }
 
@@ -1285,7 +1230,7 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
   size_t avatar_index;
   std::string profile_name;
   std::string supervised_user_id;
-  if (profile->IsGuestSession() || profile->IsEphemeralGuestProfile()) {
+  if (profile->IsGuestSession()) {
     profile_name = l10n_util::GetStringUTF8(IDS_PROFILES_GUEST_PROFILE_NAME);
     avatar_index = 0;
   } else {
@@ -1351,66 +1296,19 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
 
 void ProfileManager::RegisterTestingProfile(std::unique_ptr<Profile> profile,
                                             bool add_to_storage) {
-  Profile* profile_ptr = profile.get();
-  RegisterProfile(std::move(profile), true);
+  ProfileInfo* profile_info = RegisterOwnedProfile(std::move(profile));
+  profile_info->MarkProfileAsCreated(profile_info->GetRawProfile());
   if (add_to_storage) {
-    InitProfileUserPrefs(profile_ptr);
-    AddProfileToStorage(profile_ptr);
+    InitProfileUserPrefs(profile_info->GetCreatedProfile());
+    AddProfileToStorage(profile_info->GetCreatedProfile());
   }
-}
-
-void ProfileManager::OnProfileCreated(Profile* profile,
-                                      bool success,
-                                      bool is_new_profile) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  auto iter = profiles_info_.find(profile->GetPath());
-  DCHECK(iter != profiles_info_.end());
-  ProfileInfo* info = iter->second.get();
-
-  std::vector<CreateCallback> callbacks;
-  info->callbacks.swap(callbacks);
-
-  // Invoke CREATED callback for normal profiles.
-  bool go_off_the_record = ShouldGoOffTheRecord(profile);
-  if (success && !go_off_the_record)
-    RunCallbacks(callbacks, profile, Profile::CREATE_STATUS_CREATED);
-
-  // Perform initialization.
-  if (success) {
-    DoFinalInit(info, go_off_the_record);
-    if (go_off_the_record)
-      profile = profile->GetPrimaryOTRProfile(/*create_if_needed=*/true);
-  } else {
-    profile = nullptr;
-    profiles_info_.erase(iter);
-  }
-
-  if (profile) {
-    // If this was the guest or system profile, finish setting its special
-    // status.
-    if (profile->IsGuestSession() || profile->IsSystemProfile() ||
-        profile->IsEphemeralGuestProfile()) {
-      SetNonPersonalProfilePrefs(profile);
-    }
-
-    // Invoke CREATED callback for incognito profiles.
-    if (go_off_the_record)
-      RunCallbacks(callbacks, profile, Profile::CREATE_STATUS_CREATED);
-  }
-
-  // Invoke INITIALIZED or FAIL for all profiles.
-  RunCallbacks(callbacks, profile,
-               profile ? Profile::CREATE_STATUS_INITIALIZED :
-                         Profile::CREATE_STATUS_LOCAL_FAIL);
 }
 
 std::unique_ptr<Profile> ProfileManager::CreateProfileHelper(
     const base::FilePath& path) {
   TRACE_EVENT0("browser", "ProfileManager::CreateProfileHelper");
 
-  return Profile::CreateProfile(path, nullptr,
-                                Profile::CREATE_MODE_SYNCHRONOUS);
+  return Profile::CreateProfile(path, this, Profile::CREATE_MODE_SYNCHRONOUS);
 }
 
 std::unique_ptr<Profile> ProfileManager::CreateProfileAsyncHelper(
@@ -1518,8 +1416,14 @@ void ProfileManager::DeleteProfileIfNoKeepAlive(const ProfileInfo* info) {
   if (GetTotalRefCount(info->keep_alives) != 0)
     return;
 
-  VLOG(1) << "Deleting profile " << info->profile->GetDebugName();
-  RemoveProfile(info->profile->GetPath());
+  if (!info->GetCreatedProfile()) {
+    NOTREACHED() << "Attempted to delete profile "
+                 << info->GetRawProfile()->GetDebugName()
+                 << " before it was created. This is not valid.";
+  }
+
+  VLOG(1) << "Deleting profile " << info->GetCreatedProfile()->GetDebugName();
+  RemoveProfile(info->GetCreatedProfile()->GetPath());
 #endif  // !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
@@ -1527,14 +1431,17 @@ void ProfileManager::DoFinalInit(ProfileInfo* profile_info,
                                  bool go_off_the_record) {
   TRACE_EVENT0("browser", "ProfileManager::DoFinalInit");
 
-  Profile* profile = profile_info->profile.get();
+  Profile* profile = profile_info->GetRawProfile();
   DoFinalInitForServices(profile, go_off_the_record);
   AddProfileToStorage(profile);
   DoFinalInitLogging(profile);
 
   // Set the |created| flag now so that PROFILE_ADDED handlers can use
   // GetProfileByPath().
-  profile_info->created = true;
+  //
+  // TODO(nicolaso): De-spaghettify MarkProfileAsCreated() by only calling it
+  // here, and nowhere else.
+  profile_info->MarkProfileAsCreated(profile);
 
   for (auto& observer : observers_)
     observer.OnProfileAdded(profile);
@@ -1623,7 +1530,7 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
   AccountReconcilorFactory::GetForProfile(profile);
 
   // Initialization needs to happen after the browser context is available
-  // because ProfileSyncService needs the URL context getter.
+  // because SyncService needs the URL context getter.
   UnifiedConsentServiceFactory::GetForProfile(profile);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -1675,16 +1582,50 @@ void ProfileManager::DoFinalInitLogging(Profile* profile) {
       base::TimeDelta::FromSeconds(112));
 }
 
-ProfileManager::ProfileInfo::ProfileInfo(std::unique_ptr<Profile> profile,
-                                         bool created)
-    : profile(std::move(profile)), created(created) {
+ProfileManager::ProfileInfo::ProfileInfo() {
   // The profile should have a refcount >=1 until AddKeepAlive() is called.
   if (base::FeatureList::IsEnabled(features::kDestroyProfileOnBrowserClose))
     keep_alives[ProfileKeepAliveOrigin::kWaitingForFirstBrowserWindow] = 1;
 }
 
 ProfileManager::ProfileInfo::~ProfileInfo() {
-  ProfileDestroyer::DestroyProfileWhenAppropriate(profile.release());
+  // Regardless of sync or async creation, we always take ownership right after
+  // Profile::CreateProfile(). So we should always own the Profile by this
+  // point.
+  DCHECK(owned_profile_);
+  DCHECK_EQ(owned_profile_.get(), unowned_profile_);
+  unowned_profile_ = nullptr;
+  ProfileDestroyer::DestroyProfileWhenAppropriate(owned_profile_.release());
+}
+
+// static
+std::unique_ptr<ProfileManager::ProfileInfo>
+ProfileManager::ProfileInfo::FromUnownedProfile(Profile* profile) {
+  // ProfileInfo's constructor is private, can't make_unique().
+  std::unique_ptr<ProfileInfo> info(new ProfileInfo());
+  info->unowned_profile_ = profile;
+  return info;
+}
+
+void ProfileManager::ProfileInfo::TakeOwnershipOfProfile(
+    std::unique_ptr<Profile> profile) {
+  DCHECK_EQ(unowned_profile_, profile.get());
+  DCHECK(!owned_profile_);
+  owned_profile_ = std::move(profile);
+}
+
+void ProfileManager::ProfileInfo::MarkProfileAsCreated(Profile* profile) {
+  DCHECK_EQ(GetRawProfile(), profile);
+  created_ = true;
+}
+
+Profile* ProfileManager::ProfileInfo::GetCreatedProfile() const {
+  return created_ ? GetRawProfile() : nullptr;
+}
+
+Profile* ProfileManager::ProfileInfo::GetRawProfile() const {
+  DCHECK(owned_profile_ == nullptr || owned_profile_.get() == unowned_profile_);
+  return unowned_profile_;
 }
 
 Profile* ProfileManager::GetActiveUserOrOffTheRecordProfile() {
@@ -1708,7 +1649,7 @@ Profile* ProfileManager::GetActiveUserOrOffTheRecordProfile() {
   ProfileInfo* profile_info = GetProfileInfoByPath(default_profile_dir);
   // Fallback to default off-the-record profile, if user profile has not started
   // loading or has not fully loaded yet.
-  if (!profile_info || !profile_info->created)
+  if (!profile_info || !profile_info->GetCreatedProfile())
     default_profile_dir = profiles::GetDefaultProfileDir(user_data_dir_);
 
   Profile* profile = GetProfile(default_profile_dir);
@@ -1738,9 +1679,12 @@ bool ProfileManager::AddProfile(std::unique_ptr<Profile> profile) {
     return false;
   }
 
-  ProfileInfo* profile_info = RegisterProfile(std::move(profile), true);
-  InitProfileUserPrefs(profile_info->profile.get());
-  DoFinalInit(profile_info, ShouldGoOffTheRecord(profile_info->profile.get()));
+  ProfileInfo* profile_info = RegisterOwnedProfile(std::move(profile));
+  profile_info->MarkProfileAsCreated(profile_info->GetRawProfile());
+
+  InitProfileUserPrefs(profile_info->GetCreatedProfile());
+  DoFinalInit(profile_info,
+              ShouldGoOffTheRecord(profile_info->GetCreatedProfile()));
   return true;
 }
 
@@ -1798,15 +1742,87 @@ Profile* ProfileManager::CreateAndInitializeProfile(
   if (!profile)
     return nullptr;
 
-  if (profile->IsGuestSession() || profile->IsEphemeralGuestProfile() ||
-      profile->IsSystemProfile()) {
-    SetNonPersonalProfilePrefs(profile.get());
+  // Place the unique_ptr inside ProfileInfo, which was added by
+  // OnProfileCreationStarted().
+  ProfileInfo* info = GetProfileInfoByPath(profile->GetPath());
+  DCHECK(info);
+  info->TakeOwnershipOfProfile(std::move(profile));
+  info->MarkProfileAsCreated(info->GetRawProfile());
+  Profile* profile_ptr = info->GetCreatedProfile();
+
+  if (profile_ptr->IsGuestSession() || profile_ptr->IsSystemProfile())
+    SetNonPersonalProfilePrefs(profile_ptr);
+
+  bool go_off_the_record = ShouldGoOffTheRecord(profile_ptr);
+  DoFinalInit(info, go_off_the_record);
+  return profile_ptr;
+}
+
+void ProfileManager::OnProfileCreationFinished(Profile* profile,
+                                               Profile::CreateMode create_mode,
+                                               bool success,
+                                               bool is_new_profile) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  auto iter = profiles_info_.find(profile->GetPath());
+  DCHECK(iter != profiles_info_.end());
+  ProfileInfo* info = iter->second.get();
+
+  if (create_mode == Profile::CREATE_MODE_SYNCHRONOUS) {
+    // Already initialized in OnProfileCreationStarted().
+    // TODO(nicolaso): Figure out why this would break browser tests:
+    //     DCHECK_EQ(profile, profiles_info_->GetCreatedProfile());
+    return;
   }
 
-  Profile* profile_ptr = profile.get();
-  bool result = AddProfile(std::move(profile));
-  DCHECK(result);
-  return profile_ptr;
+  std::vector<CreateCallback> callbacks;
+  info->callbacks.swap(callbacks);
+
+  // Invoke CREATED callback for normal profiles.
+  bool go_off_the_record = ShouldGoOffTheRecord(profile);
+  if (success && !go_off_the_record)
+    RunCallbacks(callbacks, profile, Profile::CREATE_STATUS_CREATED);
+
+  // Perform initialization.
+  if (success) {
+    DoFinalInit(info, go_off_the_record);
+    if (go_off_the_record)
+      profile = profile->GetPrimaryOTRProfile(/*create_if_needed=*/true);
+  } else {
+    profile = nullptr;
+    profiles_info_.erase(iter);
+  }
+
+  if (profile) {
+    // If this was the guest or system profile, finish setting its special
+    // status.
+    if (profile->IsGuestSession() || profile->IsSystemProfile())
+      SetNonPersonalProfilePrefs(profile);
+
+    // Invoke CREATED callback for incognito profiles.
+    if (go_off_the_record)
+      RunCallbacks(callbacks, profile, Profile::CREATE_STATUS_CREATED);
+  }
+
+  // Invoke INITIALIZED or FAIL for all profiles.
+  RunCallbacks(callbacks, profile,
+               profile ? Profile::CREATE_STATUS_INITIALIZED
+                       : Profile::CREATE_STATUS_LOCAL_FAIL);
+}
+
+void ProfileManager::OnProfileCreationStarted(Profile* profile,
+                                              Profile::CreateMode create_mode) {
+  if (create_mode == Profile::CREATE_MODE_ASYNCHRONOUS) {
+    // Profile will be registered later, in CreateProfileAsync().
+    return;
+  }
+
+  if (profiles_info_.find(profile->GetPath()) != profiles_info_.end())
+    return;
+
+  // Make sure the Profile is in |profiles_info_| early enough during Profile
+  // initialization.
+  RegisterUnownedProfile(profile);
 }
 
 #if !defined(OS_ANDROID)
@@ -1890,9 +1906,9 @@ void ProfileManager::OnLoadProfileForProfileDeletion(
       observer.OnProfileMarkedForPermanentDeletion(profile);
 
     // Disable sync for doomed profile.
-    if (ProfileSyncServiceFactory::HasSyncService(profile)) {
+    if (SyncServiceFactory::HasSyncService(profile)) {
       syncer::SyncService* sync_service =
-          ProfileSyncServiceFactory::GetForProfile(profile);
+          SyncServiceFactory::GetForProfile(profile);
       // Ensure data is cleared even if sync was already off.
       sync_service->StopAndClear();
     }
@@ -1908,7 +1924,7 @@ void ProfileManager::OnLoadProfileForProfileDeletion(
             .get();
     if (password_store.get()) {
       password_store->RemoveLoginsCreatedBetween(
-          base::Time(), base::Time::Max(), base::OnceClosure());
+          base::Time(), base::Time::Max(), base::DoNothing());
     }
 
     // The Profile Data doesn't get wiped until Chrome closes. Since we promised
@@ -1999,18 +2015,28 @@ void ProfileManager::CleanUpGuestProfile() {
     // can't delete it properly.
     profiles::RemoveBrowsingDataForProfile(GetGuestProfilePath());
   }
-  profile_manager->guest_profile_path_.clear();
 #endif  //! BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 #endif  // !defined(OS_ANDROID)
 
-ProfileManager::ProfileInfo* ProfileManager::RegisterProfile(
-    std::unique_ptr<Profile> profile,
-    bool created) {
-  TRACE_EVENT0("browser", "ProfileManager::RegisterProfile");
+ProfileManager::ProfileInfo* ProfileManager::RegisterOwnedProfile(
+    std::unique_ptr<Profile> profile) {
+  TRACE_EVENT0("browser", "ProfileManager::RegisterOwnedProfile");
+  Profile* profile_ptr = profile.get();
+  auto info = ProfileInfo::FromUnownedProfile(profile_ptr);
+  info->TakeOwnershipOfProfile(std::move(profile));
+  ProfileInfo* info_raw = info.get();
+  profiles_info_.insert(
+      std::make_pair(profile_ptr->GetPath(), std::move(info)));
+  return info_raw;
+}
+
+ProfileManager::ProfileInfo* ProfileManager::RegisterUnownedProfile(
+    Profile* profile) {
+  TRACE_EVENT0("browser", "ProfileManager::RegisterUnownedProfile");
   base::FilePath path = profile->GetPath();
-  auto info = std::make_unique<ProfileInfo>(std::move(profile), created);
+  auto info = ProfileInfo::FromUnownedProfile(profile);
   ProfileInfo* info_raw = info.get();
   profiles_info_.insert(std::make_pair(path, std::move(info)));
   return info_raw;
@@ -2110,11 +2136,6 @@ void ProfileManager::AddProfileToStorage(Profile* profile) {
   init_params.is_consented_primary_account = is_consented_primary_account;
 
   init_params.is_ephemeral = IsEphemeral(profile);
-  if (profile->IsEphemeralGuestProfile()) {
-    init_params.is_guest = true;
-    init_params.is_omitted = true;
-  }
-
   init_params.is_signed_in_with_credential_provider =
       profile->GetPrefs()->GetBoolean(prefs::kSignedInWithCredentialProvider);
 
@@ -2123,8 +2144,7 @@ void ProfileManager::AddProfileToStorage(Profile* profile) {
 
 void ProfileManager::SetNonPersonalProfilePrefs(Profile* profile) {
   PrefService* prefs = profile->GetPrefs();
-  if (!profile->IsEphemeralGuestProfile())
-    prefs->SetBoolean(prefs::kSigninAllowed, false);
+  prefs->SetBoolean(prefs::kSigninAllowed, false);
   prefs->SetBoolean(bookmarks::prefs::kEditBookmarksEnabled, false);
   prefs->SetBoolean(bookmarks::prefs::kShowBookmarkBar, false);
   prefs->ClearPref(DefaultSearchManager::kDefaultSearchProviderDataPrefName);
@@ -2152,7 +2172,7 @@ void ProfileManager::SaveActiveProfiles() {
   ListPrefUpdate update(local_state, prefs::kProfilesLastActive);
   base::ListValue* profile_list = update.Get();
 
-  profile_list->Clear();
+  profile_list->ClearList();
 
   // crbug.com/120112 -> several non-off-the-record profiles might have the same
   // GetBaseName(). In that case, we cannot restore both
@@ -2163,7 +2183,7 @@ void ProfileManager::SaveActiveProfiles() {
   for (it = active_profiles_.begin(); it != active_profiles_.end(); ++it) {
     // crbug.com/823338 -> CHECK that the profiles aren't guest or incognito,
     // causing a crash during session restore.
-    CHECK((!(*it)->IsGuestSession()) && (!(*it)->IsEphemeralGuestProfile()))
+    CHECK((!(*it)->IsGuestSession()))
         << "Guest profiles shouldn't be saved as active profiles";
     CHECK(!(*it)->IsOffTheRecord())
         << "OTR profiles shouldn't be saved as active profiles";
@@ -2216,23 +2236,11 @@ void ProfileManager::OnBrowserClosed(Browser* browser) {
       return;
   }
 
-  if (profile->IsGuestSession() || profile->IsEphemeralGuestProfile()) {
+  if (profile->IsGuestSession()) {
     auto duration = base::Time::Now() - profile->GetCreationTime();
-    if (profile->IsEphemeralGuestProfile()) {
-      RecordGuestProfileLifetime("Profile.Guest.Ephemeral.Lifetime", duration);
-    } else {
-      RecordGuestProfileLifetime("Profile.Guest.OTR.Lifetime", duration);
-    }
-
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-    if (DiceSignedInProfileCreator::GuestSigninTokenTransferredUserData::Get(
-            profile)) {
-      RecordGuestProfileLifetime("Profile.Guest.SigninTransferred.Lifetime",
-                                 duration);
-    } else {
-      RecordGuestProfileLifetime("Profile.Guest.BlankState.Lifetime", duration);
-    }
-#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
+    base::UmaHistogramCustomCounts(
+        "Profile.Guest.OTR.Lifetime", duration.InMinutes(), 1,
+        base::TimeDelta::FromDays(28).InMinutes(), 100);
 
     CleanUpGuestProfile();
   }

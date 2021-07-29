@@ -4,6 +4,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "content/browser/picture_in_picture/picture_in_picture_service_impl.h"
 #include "content/browser/picture_in_picture/picture_in_picture_window_controller_impl.h"
 #include "content/public/browser/content_browser_client.h"
@@ -14,7 +15,6 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
-#include "content/public/test/media_start_stop_observer.h"
 #include "content/shell/browser/shell.h"
 #include "net/dns/mock_host_resolver.h"
 #include "services/media_session/public/cpp/features.h"
@@ -42,10 +42,22 @@ class TestOverlayWindow : public OverlayWindow {
   }
   void SetPlaybackState(PlaybackState playback_state) override {
     playback_state_ = playback_state;
+
+    if (expected_playback_state_) {
+      CHECK(playback_state_changed_callback_);
+      if (playback_state == expected_playback_state_) {
+        expected_playback_state_.reset();
+        std::move(playback_state_changed_callback_).Run();
+      }
+    }
   }
-  void SetPlayPauseButtonVisibility(bool is_visible) override {}
+  void SetPlayPauseButtonVisibility(bool is_visible) override {
+    play_pause_button_visible_ = is_visible;
+  }
   void SetSkipAdButtonVisibility(bool is_visible) override {}
-  void SetNextTrackButtonVisibility(bool is_visible) override {}
+  void SetNextTrackButtonVisibility(bool is_visible) override {
+    next_track_button_visible_ = is_visible;
+  }
   void SetPreviousTrackButtonVisibility(bool is_visible) override {}
   void SetMicrophoneMuted(bool muted) override {}
   void SetCameraState(bool turned_on) override {}
@@ -59,6 +71,20 @@ class TestOverlayWindow : public OverlayWindow {
     return playback_state_;
   }
 
+  void SetPlaybackStateChangedCallback(PlaybackState state,
+                                       base::OnceClosure callback) {
+    expected_playback_state_ = state;
+    playback_state_changed_callback_ = std::move(callback);
+  }
+
+  const absl::optional<bool>& play_pause_button_visible() const {
+    return play_pause_button_visible_;
+  }
+
+  const absl::optional<bool>& next_track_button_visible() const {
+    return next_track_button_visible_;
+  }
+
  private:
   // We maintain the visibility state so that
   // PictureInPictureWindowControllerImpl::Close() sees that the window is
@@ -67,6 +93,12 @@ class TestOverlayWindow : public OverlayWindow {
 
   gfx::Size size_;
   absl::optional<PlaybackState> playback_state_;
+
+  absl::optional<PlaybackState> expected_playback_state_;
+  base::OnceClosure playback_state_changed_callback_;
+
+  absl::optional<bool> play_pause_button_visible_;
+  absl::optional<bool> next_track_button_visible_;
 
   DISALLOW_COPY_AND_ASSIGN(TestOverlayWindow);
 };
@@ -137,16 +169,26 @@ class PictureInPictureContentBrowserTest : public ContentBrowserTest {
     ContentBrowserTest::TearDownOnMainThread();
   }
 
-  void WaitForPlaybackState(OverlayWindow::PlaybackState playback_state) {
-    // Make sure to wait if not yet in the |playback_state| state.
-    if (overlay_window()->playback_state() != playback_state) {
-      MediaStartStopObserver observer(
-          shell()->web_contents(),
-          playback_state == OverlayWindow::PlaybackState::kPlaying
-              ? MediaStartStopObserver::Type::kStart
-              : MediaStartStopObserver::Type::kStop);
-      observer.Wait();
-    }
+  void WaitForPlaybackState(OverlayWindow::PlaybackState playback_state,
+                            const base::Location& location = FROM_HERE) {
+    if (overlay_window()->playback_state() == playback_state)
+      return;
+
+    base::RunLoop run_loop;
+    overlay_window()->SetPlaybackStateChangedCallback(playback_state,
+                                                      run_loop.QuitClosure());
+    run_loop.Run();
+    EXPECT_EQ(overlay_window()->playback_state(), playback_state)
+        << "The wait was started here: " << location.ToString();
+  }
+
+  // Waits until the Shell's WebContents has the expected title.
+  void WaitForTitle(const std::u16string& expected_title,
+                    const base::Location& location = FROM_HERE) {
+    EXPECT_EQ(
+        expected_title,
+        TitleWatcher(shell()->web_contents(), expected_title).WaitAndGetTitle())
+        << "The wait was started here: " << location.ToString();
   }
 
   TestWebContentsDelegate* web_contents_delegate() {
@@ -179,37 +221,25 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureContentBrowserTest,
   // Play first video.
   ASSERT_TRUE(ExecJs(shell(), "videos[0].play();"));
 
-  std::u16string expected_title = u"videos[0] playing";
-  EXPECT_EQ(
-      expected_title,
-      TitleWatcher(shell()->web_contents(), expected_title).WaitAndGetTitle());
+  WaitForTitle(u"videos[0] playing");
 
   // Play second video.
   ASSERT_TRUE(ExecJs(shell(), "videos[1].play();"));
 
-  expected_title = u"videos[1] playing";
-  EXPECT_EQ(
-      expected_title,
-      TitleWatcher(shell()->web_contents(), expected_title).WaitAndGetTitle());
+  WaitForTitle(u"videos[1] playing");
 
   ASSERT_FALSE(web_contents_delegate()->is_in_picture_in_picture());
 
   // Send first video in Picture-in-Picture.
   ASSERT_TRUE(ExecJs(shell(), "videos[0].requestPictureInPicture();"));
 
-  expected_title = u"videos[0] entered picture-in-picture";
-  EXPECT_EQ(
-      expected_title,
-      TitleWatcher(shell()->web_contents(), expected_title).WaitAndGetTitle());
+  WaitForTitle(u"videos[0] entered picture-in-picture");
   EXPECT_TRUE(web_contents_delegate()->is_in_picture_in_picture());
 
   // Send second video in Picture-in-Picture.
   ASSERT_TRUE(ExecJs(shell(), "videos[1].requestPictureInPicture();"));
 
-  expected_title = u"videos[1] entered picture-in-picture";
-  EXPECT_EQ(
-      expected_title,
-      TitleWatcher(shell()->web_contents(), expected_title).WaitAndGetTitle());
+  WaitForTitle(u"videos[1] entered picture-in-picture");
 
   // The session should still be active and ExitPictureInPicture() never called.
   EXPECT_NE(nullptr, window_controller()->active_session_for_testing());
@@ -225,45 +255,30 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureContentBrowserTest,
       embedded_test_server()->GetURL(
           "example.com", "/media/picture_in_picture/two-videos.html")));
 
-  std::u16string expected_title = u"iframe loaded";
-  EXPECT_EQ(
-      expected_title,
-      TitleWatcher(shell()->web_contents(), expected_title).WaitAndGetTitle());
+  WaitForTitle(u"iframe loaded");
 
   // Play first video.
   ASSERT_TRUE(ExecJs(shell(), "videos[0].play();"));
 
-  expected_title = u"videos[0] playing";
-  EXPECT_EQ(
-      expected_title,
-      TitleWatcher(shell()->web_contents(), expected_title).WaitAndGetTitle());
+  WaitForTitle(u"videos[0] playing");
 
   // Play second video (in iframe).
   ASSERT_TRUE(ExecJs(shell(), "iframeVideos[0].play();"));
 
-  expected_title = u"iframeVideos[0] playing";
-  EXPECT_EQ(
-      expected_title,
-      TitleWatcher(shell()->web_contents(), expected_title).WaitAndGetTitle());
+  WaitForTitle(u"iframeVideos[0] playing");
 
   ASSERT_FALSE(web_contents_delegate()->is_in_picture_in_picture());
 
   // Send first video in Picture-in-Picture.
   ASSERT_TRUE(ExecJs(shell(), "videos[0].requestPictureInPicture();"));
 
-  expected_title = u"videos[0] entered picture-in-picture";
-  EXPECT_EQ(
-      expected_title,
-      TitleWatcher(shell()->web_contents(), expected_title).WaitAndGetTitle());
+  WaitForTitle(u"videos[0] entered picture-in-picture");
   EXPECT_TRUE(web_contents_delegate()->is_in_picture_in_picture());
 
   // Send second video in Picture-in-Picture.
   ASSERT_TRUE(ExecJs(shell(), "iframeVideos[0].requestPictureInPicture();"));
 
-  expected_title = u"iframeVideos[0] entered picture-in-picture";
-  EXPECT_EQ(
-      expected_title,
-      TitleWatcher(shell()->web_contents(), expected_title).WaitAndGetTitle());
+  WaitForTitle(u"iframeVideos[0] entered picture-in-picture");
 
   // The session should still be active and ExitPictureInPicture() never called.
   EXPECT_NE(nullptr, window_controller()->active_session_for_testing());
@@ -285,8 +300,16 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureContentBrowserTest,
   EXPECT_FALSE(web_contents_delegate()->is_in_picture_in_picture());
 }
 
+// Flaky on Linux TSAN: https://crbug.com/1210955.
+#if defined(OS_LINUX) && defined(THREAD_SANITIZER)
+#define MAYBE_EnterFullscreenThenPictureInPicture \
+  DISABLED_EnterFullscreenThenPictureInPicture
+#else
+#define MAYBE_EnterFullscreenThenPictureInPicture \
+  EnterFullscreenThenPictureInPicture
+#endif
 IN_PROC_BROWSER_TEST_F(PictureInPictureContentBrowserTest,
-                       EnterFullscreenThenPictureInPicture) {
+                       MAYBE_EnterFullscreenThenPictureInPicture) {
   ASSERT_TRUE(NavigateToURL(
       shell(), GetTestUrl("media/picture_in_picture", "one-video.html")));
 
@@ -319,20 +342,14 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureContentBrowserTest,
   ASSERT_TRUE(ExecJs(shell(), "addPlayEventListener();"));
   window_controller()->TogglePlayPause();
 
-  std::u16string expected_title = u"play";
-  EXPECT_EQ(
-      expected_title,
-      TitleWatcher(shell()->web_contents(), expected_title).WaitAndGetTitle());
+  WaitForTitle(u"play");
   WaitForPlaybackState(OverlayWindow::PlaybackState::kPlaying);
 
   // Simulate pausing playback by interacting with the PiP window.
   ASSERT_TRUE(ExecJs(shell(), "addPauseEventListener();"));
   window_controller()->TogglePlayPause();
 
-  expected_title = u"pause";
-  EXPECT_EQ(
-      expected_title,
-      TitleWatcher(shell()->web_contents(), expected_title).WaitAndGetTitle());
+  WaitForTitle(u"pause");
   WaitForPlaybackState(OverlayWindow::PlaybackState::kPaused);
 }
 
@@ -359,6 +376,81 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureContentBrowserTest,
   ASSERT_EQ(true, EvalJs(shell(), "updateVideoSrcAndPlay();"));
 
   window_controller()->TogglePlayPause();
+  WaitForPlaybackState(OverlayWindow::PlaybackState::kPaused);
+}
+
+// Tests that when closing the window after the player was reset, the <video>
+// element is still notified.
+IN_PROC_BROWSER_TEST_F(PictureInPictureContentBrowserTest,
+                       ClosingWindowWithPlayerResetNotifiesElement) {
+  ASSERT_TRUE(NavigateToURL(
+      shell(), GetTestUrl("media/picture_in_picture", "one-video.html")));
+  ASSERT_EQ(true, EvalJs(shell(), "enterPictureInPicture();"));
+
+  ASSERT_TRUE(ExecJs(shell(), "addPictureInPictureEventListeners();"));
+
+  ASSERT_EQ(true, EvalJs(shell(), "resetVideo();"));
+
+  window_controller()->Close(/*should_pause_video=*/true);
+
+  WaitForTitle(u"leavepictureinpicture");
+}
+
+// When the player object associated with a video element is destroyed, closing
+// the Picture-in-Picture window is the only interaction possible. Thus the
+// play/pause/replay button should be hidden.
+IN_PROC_BROWSER_TEST_F(PictureInPictureContentBrowserTest,
+                       ResettingPlayerHidesPlayPause) {
+  ASSERT_TRUE(NavigateToURL(
+      shell(), GetTestUrl("media/picture_in_picture", "one-video.html")));
+  ASSERT_EQ(true, EvalJs(shell(), "enterPictureInPicture();"));
+
+  ASSERT_EQ(true, EvalJs(shell(), "resetVideo();"));
+
+  EXPECT_EQ(overlay_window()->play_pause_button_visible().value_or(true),
+            false);
+
+  // Load new media on the video element. This creates a new player.
+  ASSERT_EQ(true, EvalJs(shell(), "updateVideoSrcAndPlay();"));
+
+  // The play/pause/replay button should be functional again.
+  EXPECT_EQ(overlay_window()->play_pause_button_visible().value_or(false),
+            true);
+  window_controller()->TogglePlayPause();
+  WaitForPlaybackState(OverlayWindow::PlaybackState::kPaused);
+}
+
+IN_PROC_BROWSER_TEST_F(PictureInPictureContentBrowserTest,
+                       PlaybackStateWhenReopenedAfterEndOfStream) {
+  ASSERT_TRUE(NavigateToURL(
+      shell(), GetTestUrl("media/picture_in_picture", "one-video.html")));
+
+  ASSERT_TRUE(ExecJs(shell(), "addPictureInPictureEventListeners();"));
+  ASSERT_EQ(true, EvalJs(shell(), "enterPictureInPicture();"));
+
+  ASSERT_EQ(true, EvalJs(shell(), "playToEnd();"));
+  WaitForPlaybackState(OverlayWindow::PlaybackState::kEndOfVideo);
+
+  window_controller()->Close(/*should_pause_video=*/false);
+  WaitForTitle(u"leavepictureinpicture");
+
+  ASSERT_EQ(true, EvalJs(shell(), "enterPictureInPicture();"));
+
+  WaitForPlaybackState(OverlayWindow::PlaybackState::kEndOfVideo);
+}
+
+IN_PROC_BROWSER_TEST_F(PictureInPictureContentBrowserTest,
+                       PlaybackStateWhenSeekingWhilePausedAfterEndOfStream) {
+  ASSERT_TRUE(NavigateToURL(
+      shell(), GetTestUrl("media/picture_in_picture", "one-video.html")));
+
+  ASSERT_EQ(true, EvalJs(shell(), "enterPictureInPicture();"));
+
+  ASSERT_EQ(true, EvalJs(shell(), "playToEnd();"));
+  WaitForPlaybackState(OverlayWindow::PlaybackState::kEndOfVideo);
+
+  ASSERT_TRUE(ExecJs(shell(), "video.currentTime = 0;"));
+
   WaitForPlaybackState(OverlayWindow::PlaybackState::kPaused);
 }
 
@@ -399,10 +491,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureContentBrowserTest,
   ASSERT_TRUE(ExecJs(shell(), "addPlayEventListener();"));
   window_controller()->TogglePlayPause();
 
-  std::u16string expected_title = u"play";
-  EXPECT_EQ(
-      expected_title,
-      TitleWatcher(shell()->web_contents(), expected_title).WaitAndGetTitle());
+  WaitForTitle(u"play");
   WaitForPlaybackState(OverlayWindow::PlaybackState::kPlaying);
 
   // Simulate pausing playback by invoking the Media Session "pause" action
@@ -411,10 +500,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureContentBrowserTest,
   ASSERT_TRUE(ExecJs(shell(), "addPauseEventListener();"));
   window_controller()->TogglePlayPause();
 
-  expected_title = u"pause";
-  EXPECT_EQ(
-      expected_title,
-      TitleWatcher(shell()->web_contents(), expected_title).WaitAndGetTitle());
+  WaitForTitle(u"pause");
   WaitForPlaybackState(OverlayWindow::PlaybackState::kPaused);
 }
 
@@ -434,10 +520,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureContentBrowserTest,
   // window should be in the "playing" state.
   ASSERT_TRUE(ExecJs(shell(), "addPlayEventListener();"));
   ASSERT_EQ(true, EvalJs(shell(), "start();"));
-  std::u16string expected_title = u"play";
-  ASSERT_EQ(
-      expected_title,
-      TitleWatcher(shell()->web_contents(), expected_title).WaitAndGetTitle());
+  WaitForTitle(u"play");
   ASSERT_EQ(overlay_window()->playback_state(),
             OverlayWindow::PlaybackState::kPlaying);
 
@@ -445,10 +528,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureContentBrowserTest,
   // through interaction with the PiP window.
   ASSERT_TRUE(ExecJs(shell(), "addPauseEventListener();"));
   window_controller()->TogglePlayPause();
-  expected_title = u"pause";
-  ASSERT_EQ(
-      expected_title,
-      TitleWatcher(shell()->web_contents(), expected_title).WaitAndGetTitle());
+  WaitForTitle(u"pause");
   ASSERT_EQ(overlay_window()->playback_state(),
             OverlayWindow::PlaybackState::kPaused);
 
@@ -456,10 +536,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureContentBrowserTest,
   // through interaction with the PiP window.
   ASSERT_TRUE(ExecJs(shell(), "addPlayEventListener();"));
   window_controller()->TogglePlayPause();
-  expected_title = u"play";
-  ASSERT_EQ(
-      expected_title,
-      TitleWatcher(shell()->web_contents(), expected_title).WaitAndGetTitle());
+  WaitForTitle(u"play");
   ASSERT_EQ(overlay_window()->playback_state(),
             OverlayWindow::PlaybackState::kPlaying);
 }
@@ -495,13 +572,45 @@ IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureContentBrowserTest,
   WaitForPlaybackState(OverlayWindow::PlaybackState::kEndOfVideo);
 
   window_controller()->Close(/*should_pause_video=*/false);
-  const std::u16string expected_title = u"leavepictureinpicture";
-  EXPECT_EQ(
-      expected_title,
-      TitleWatcher(shell()->web_contents(), expected_title).WaitAndGetTitle());
+  WaitForTitle(u"leavepictureinpicture");
 
   ASSERT_EQ(true, EvalJs(shell(), "enterPictureInPicture();"));
 
+  window_controller()->NextTrack();
+  WaitForPlaybackState(OverlayWindow::PlaybackState::kPlaying);
+}
+
+// When the player object associated with a video element is destroyed, any
+// Media Session actions that were set are no longer available.
+IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureContentBrowserTest,
+                       ResettingPlayerDisablesActions) {
+  ASSERT_TRUE(NavigateToURL(
+      shell(), GetTestUrl("media/picture_in_picture", "one-video.html")));
+  ASSERT_EQ(true, EvalJs(shell(), "enterPictureInPicture();"));
+
+  ASSERT_TRUE(ExecJs(shell(), "setMediaSessionPlayActionHandler();"));
+  ASSERT_TRUE(ExecJs(shell(), "setMediaSessionPauseActionHandler();"));
+  ASSERT_TRUE(ExecJs(shell(), "setMediaSessionNextTrackActionHandler();"));
+
+  ASSERT_EQ(true, EvalJs(shell(), "resetVideo();"));
+
+  // Media Session actions are unavailable with the player removed.
+  EXPECT_EQ(overlay_window()->play_pause_button_visible().value_or(true),
+            false);
+  EXPECT_EQ(overlay_window()->next_track_button_visible().value_or(true),
+            false);
+
+  // Load new media on the video element. This creates a new player.
+  ASSERT_EQ(true, EvalJs(shell(), "updateVideoSrcAndPlay();"));
+
+  // The play/pause/replay and next buttons should be functional again.
+  EXPECT_EQ(overlay_window()->play_pause_button_visible().value_or(false),
+            true);
+  window_controller()->TogglePlayPause();
+  WaitForPlaybackState(OverlayWindow::PlaybackState::kPaused);
+
+  EXPECT_EQ(overlay_window()->next_track_button_visible().value_or(false),
+            true);
   window_controller()->NextTrack();
   WaitForPlaybackState(OverlayWindow::PlaybackState::kPlaying);
 }
@@ -533,17 +642,11 @@ IN_PROC_BROWSER_TEST_F(AutoPictureInPictureContentBrowserTest,
 
   // Hide page and check that video entered Picture-in-Picture automatically.
   shell()->web_contents()->WasHidden();
-  std::u16string expected_title = u"enterpictureinpicture";
-  EXPECT_EQ(
-      expected_title,
-      TitleWatcher(shell()->web_contents(), expected_title).WaitAndGetTitle());
+  WaitForTitle(u"enterpictureinpicture");
 
   // Show page and check that video left Picture-in-Picture automatically.
   shell()->web_contents()->WasShown();
-  expected_title = u"leavepictureinpicture";
-  EXPECT_EQ(
-      expected_title,
-      TitleWatcher(shell()->web_contents(), expected_title).WaitAndGetTitle());
+  WaitForTitle(u"leavepictureinpicture");
 }
 
 }  // namespace content

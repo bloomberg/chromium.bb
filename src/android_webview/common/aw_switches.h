@@ -15,9 +15,11 @@ extern const char kHighlightAllWebViews[];
 extern const char kWebViewVerboseLogging[];
 extern const char kFinchSeedExpirationAge[];
 extern const char kFinchSeedIgnorePendingDownload[];
+extern const char kFinchSeedNoChargingRequirement[];
 extern const char kFinchSeedMinDownloadPeriod[];
 extern const char kFinchSeedMinUpdatePeriod[];
 extern const char kWebViewEnableModernCookieSameSite[];
+extern const char kWebViewDisableAppsPackageNamesAllowlistComponent[];
 
 }  // namespace switches
 

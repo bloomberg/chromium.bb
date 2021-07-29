@@ -32,6 +32,8 @@ std::string GetStringNameForOptimizationTarget(
       return "SegmentationShare";
     case proto::OPTIMIZATION_TARGET_SEGMENTATION_VOICE:
       return "SegmentationVoice";
+    case proto::OPTIMIZATION_TARGET_MODEL_VALIDATION:
+      return "ModelValidation";
   }
   NOTREACHED();
   return std::string();
@@ -103,6 +105,10 @@ void SetFilePathInPredictionModel(const base::FilePath& file_path,
 #else
   model->mutable_model()->set_download_url(file_path.value());
 #endif
+}
+
+base::FilePath GetBaseFileNameForModels() {
+  return base::FilePath(FILE_PATH_LITERAL("model.tflite"));
 }
 
 }  // namespace optimization_guide

@@ -186,7 +186,8 @@ class PrintBackendWin : public PrintBackend {
 
   // PrintBackend implementation.
   mojom::ResultCode EnumeratePrinters(PrinterList* printer_list) override;
-  std::string GetDefaultPrinterName() override;
+  mojom::ResultCode GetDefaultPrinterName(
+      std::string& default_printer) override;
   mojom::ResultCode GetPrinterBasicInfo(
       const std::string& printer_name,
       PrinterBasicInfo* printer_info) override;
@@ -215,7 +216,12 @@ mojom::ResultCode PrintBackendWin::EnumeratePrinters(
     // No bytes needed could mean the operation failed or that there are simply
     // no printer drivers installed.  Rely upon system error code to
     // distinguish between these.
-    return GetResultCodeFromSystemErrorCode(logging::GetLastSystemErrorCode());
+    logging::SystemErrorCode code = logging::GetLastSystemErrorCode();
+    if (code != ERROR_SUCCESS) {
+      LOG(ERROR) << "Error enumerating printers: "
+                 << logging::SystemErrorCodeToString(code);
+    }
+    return GetResultCodeFromSystemErrorCode(code);
   }
 
   auto printer_info_buffer = std::make_unique<BYTE[]>(bytes_needed);
@@ -226,7 +232,11 @@ mojom::ResultCode PrintBackendWin::EnumeratePrinters(
     return GetResultCodeFromSystemErrorCode(logging::GetLastSystemErrorCode());
   }
 
-  std::string default_printer = GetDefaultPrinterName();
+  // No need to worry about a query failure for `GetDefaultPrinterName()` here,
+  // that would mean we can just treat it as there being no default printer.
+  std::string default_printer;
+  GetDefaultPrinterName(default_printer);
+
   PRINTER_INFO_4* printer_info =
       reinterpret_cast<PRINTER_INFO_4*>(printer_info_buffer.get());
   for (DWORD index = 0; index < count_returned; index++) {
@@ -241,15 +251,20 @@ mojom::ResultCode PrintBackendWin::EnumeratePrinters(
   return mojom::ResultCode::kSuccess;
 }
 
-std::string PrintBackendWin::GetDefaultPrinterName() {
+mojom::ResultCode PrintBackendWin::GetDefaultPrinterName(
+    std::string& default_printer) {
   DWORD size = MAX_PATH;
   TCHAR default_printer_name[MAX_PATH];
-  std::string ret;
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
-  if (::GetDefaultPrinter(default_printer_name, &size))
-    ret = base::WideToUTF8(default_printer_name);
-  return ret;
+  if (!::GetDefaultPrinter(default_printer_name, &size)) {
+    LOG(ERROR) << "Error getting default printer: "
+               << logging::SystemErrorCodeToString(
+                      logging::GetLastSystemErrorCode());
+    return mojom::ResultCode::kFailed;
+  }
+  default_printer = base::WideToUTF8(default_printer_name);
+  return mojom::ResultCode::kSuccess;
 }
 
 mojom::ResultCode PrintBackendWin::GetPrinterBasicInfo(
@@ -265,8 +280,14 @@ mojom::ResultCode PrintBackendWin::GetPrinterBasicInfo(
     return mojom::ResultCode::kFailed;
   }
 
-  std::string default_printer = GetDefaultPrinterName();
-  printer_info->is_default = (printer_info->printer_name == default_printer);
+  std::string default_printer;
+  mojom::ResultCode result = GetDefaultPrinterName(default_printer);
+  if (result != mojom::ResultCode::kSuccess) {
+    // Query failure means we can treat this printer as not the default.
+    printer_info->is_default = false;
+  } else {
+    printer_info->is_default = (printer_info->printer_name == default_printer);
+  }
   return mojom::ResultCode::kSuccess;
 }
 

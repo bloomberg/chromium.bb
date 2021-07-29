@@ -75,7 +75,7 @@ void CFWL_ComboList::OnProcessMessage(CFWL_Message* pMessage) {
   } else if (type == CFWL_Message::Type::kMouse) {
     CFWL_MessageMouse* pMsg = static_cast<CFWL_MessageMouse*>(pMessage);
     CFWL_ScrollBar* vertSB = GetVertScrollBar();
-    if (IsShowScrollBar(true) && vertSB) {
+    if (IsShowVertScrollBar() && vertSB) {
       CFX_RectF rect = vertSB->GetWidgetRect();
       if (rect.Contains(pMsg->m_pos)) {
         pMsg->m_pos -= rect.TopLeft();
@@ -117,7 +117,7 @@ void CFWL_ComboList::OnDropListFocusChanged(CFWL_Message* pMsg, bool bSet) {
   CFWL_ComboBox* pOuter = static_cast<CFWL_ComboBox*>(GetOuter());
   if (pKill->IsFocusedOnWidget(pOuter) ||
       pKill->IsFocusedOnWidget(pOuter->GetComboEdit())) {
-    pOuter->ShowDropList(false);
+    pOuter->HideDropDownList();
   }
 }
 
@@ -127,7 +127,7 @@ void CFWL_ComboList::OnDropListMouseMove(CFWL_MessageMouse* pMsg) {
       m_bNotifyOwner = false;
 
     CFWL_ScrollBar* vertSB = GetVertScrollBar();
-    if (IsShowScrollBar(true) && vertSB) {
+    if (IsShowVertScrollBar() && vertSB) {
       CFX_RectF rect = vertSB->GetWidgetRect();
       if (rect.Contains(pMsg->m_pos))
         return;
@@ -151,7 +151,7 @@ void CFWL_ComboList::OnDropListLButtonDown(CFWL_MessageMouse* pMsg) {
     return;
 
   CFWL_ComboBox* pOuter = static_cast<CFWL_ComboBox*>(GetOuter());
-  pOuter->ShowDropList(false);
+  pOuter->HideDropDownList();
 }
 
 void CFWL_ComboList::OnDropListLButtonUp(CFWL_MessageMouse* pMsg) {
@@ -163,12 +163,12 @@ void CFWL_ComboList::OnDropListLButtonUp(CFWL_MessageMouse* pMsg) {
   }
 
   CFWL_ScrollBar* vertSB = GetVertScrollBar();
-  if (IsShowScrollBar(true) && vertSB) {
+  if (IsShowVertScrollBar() && vertSB) {
     CFX_RectF rect = vertSB->GetWidgetRect();
     if (rect.Contains(pMsg->m_pos))
       return;
   }
-  pOuter->ShowDropList(false);
+  pOuter->HideDropDownList();
 
   CFWL_ListBox::Item* hItem = GetItemAtPoint(pMsg->m_pos);
   if (hItem)
@@ -183,7 +183,7 @@ bool CFWL_ComboList::OnDropListKey(CFWL_MessageKey* pKey) {
     switch (dwKeyCode) {
       case XFA_FWL_VKEY_Return:
       case XFA_FWL_VKEY_Escape: {
-        pOuter->ShowDropList(false);
+        pOuter->HideDropDownList();
         return true;
       }
       case XFA_FWL_VKEY_Up:

@@ -17,7 +17,7 @@
 #include "core/fxcrt/fx_safe_types.h"
 #include "core/fxge/cfx_fillrenderoptions.h"
 #include "core/fxge/cfx_graphstatedata.h"
-#include "core/fxge/cfx_pathdata.h"
+#include "core/fxge/cfx_path.h"
 #include "core/fxge/cfx_renderdevice.h"
 #include "core/fxge/fx_font.h"
 #include "fpdfsdk/pwl/cpwl_caret.h"
@@ -42,6 +42,7 @@ CPWL_Edit::~CPWL_Edit() {
 
 void CPWL_Edit::SetText(const WideString& csText) {
   m_pEditImpl->SetText(csText);
+  m_pEditImpl->Paint();
 }
 
 bool CPWL_Edit::RePosChildWnd() {
@@ -68,6 +69,7 @@ bool CPWL_Edit::RePosChildWnd() {
   }
 
   m_pEditImpl->SetPlateRect(GetClientRect());
+  m_pEditImpl->Paint();
   return true;
 }
 
@@ -84,7 +86,8 @@ CFX_FloatRect CPWL_Edit::GetClientRect() const {
 }
 
 void CPWL_Edit::SetAlignFormatVerticalCenter() {
-  m_pEditImpl->SetAlignmentV(static_cast<int32_t>(PEAV_CENTER), true);
+  m_pEditImpl->SetAlignmentV(static_cast<int32_t>(PEAV_CENTER));
+  m_pEditImpl->Paint();
 }
 
 bool CPWL_Edit::CanSelectAll() const {
@@ -122,32 +125,32 @@ void CPWL_Edit::OnCreated() {
 
 void CPWL_Edit::SetParamByFlag() {
   if (HasFlag(PES_RIGHT)) {
-    m_pEditImpl->SetAlignmentH(2, false);
+    m_pEditImpl->SetAlignmentH(2);
   } else if (HasFlag(PES_MIDDLE)) {
-    m_pEditImpl->SetAlignmentH(1, false);
+    m_pEditImpl->SetAlignmentH(1);
   } else {
-    m_pEditImpl->SetAlignmentH(0, false);
+    m_pEditImpl->SetAlignmentH(0);
   }
 
   if (HasFlag(PES_CENTER)) {
-    m_pEditImpl->SetAlignmentV(1, false);
+    m_pEditImpl->SetAlignmentV(1);
   } else {
-    m_pEditImpl->SetAlignmentV(0, false);
+    m_pEditImpl->SetAlignmentV(0);
   }
 
   if (HasFlag(PES_PASSWORD)) {
-    m_pEditImpl->SetPasswordChar('*', false);
+    m_pEditImpl->SetPasswordChar('*');
   }
 
-  m_pEditImpl->SetMultiLine(HasFlag(PES_MULTILINE), false);
-  m_pEditImpl->SetAutoReturn(HasFlag(PES_AUTORETURN), false);
-  m_pEditImpl->SetAutoFontSize(HasFlag(PWS_AUTOFONTSIZE), false);
-  m_pEditImpl->SetAutoScroll(HasFlag(PES_AUTOSCROLL), false);
+  m_pEditImpl->SetMultiLine(HasFlag(PES_MULTILINE));
+  m_pEditImpl->SetAutoReturn(HasFlag(PES_AUTORETURN));
+  m_pEditImpl->SetAutoFontSize(HasFlag(PWS_AUTOFONTSIZE));
+  m_pEditImpl->SetAutoScroll(HasFlag(PES_AUTOSCROLL));
   m_pEditImpl->EnableUndo(HasFlag(PES_UNDO));
 
   if (HasFlag(PES_TEXTOVERFLOW)) {
     SetClipRect(CFX_FloatRect());
-    m_pEditImpl->SetTextOverflow(true, false);
+    m_pEditImpl->SetTextOverflow(true);
   } else {
     if (m_pCaret) {
       CFX_FloatRect rect = GetClientRect();
@@ -187,14 +190,14 @@ void CPWL_Edit::DrawThisAppearance(CFX_RenderDevice* pDevice,
     }
 
     const float width = (rcClient.right - rcClient.left) / nCharArray;
-    CFX_PathData path;
+    CFX_Path path;
     CFX_PointF bottom(0, rcClient.bottom);
     CFX_PointF top(0, rcClient.top);
     for (int32_t i = 0; i < nCharArray - 1; ++i) {
       bottom.x = rcClient.left + width * (i + 1);
       top.x = bottom.x;
-      path.AppendPoint(bottom, FXPT_TYPE::MoveTo);
-      path.AppendPoint(top, FXPT_TYPE::LineTo);
+      path.AppendPoint(bottom, CFX_Path::Point::Type::kMove);
+      path.AppendPoint(top, CFX_Path::Point::Type::kLine);
     }
     if (!path.GetPoints().empty()) {
       pDevice->DrawPath(&path, &mtUser2Device, &gsd, 0,
@@ -259,6 +262,7 @@ void CPWL_Edit::OnKillFocus() {
 
 void CPWL_Edit::SetCharSpace(float fCharSpace) {
   m_pEditImpl->SetCharSpace(fCharSpace);
+  m_pEditImpl->Paint();
 }
 
 CPVT_WordRange CPWL_Edit::GetSelectWordRange() const {
@@ -298,7 +302,8 @@ void CPWL_Edit::SetCharArray(int32_t nCharArray) {
     return;
 
   m_pEditImpl->SetCharArray(nCharArray);
-  m_pEditImpl->SetTextOverflow(true, true);
+  m_pEditImpl->SetTextOverflow(true);
+  m_pEditImpl->Paint();
 
   if (!HasFlag(PWS_AUTOFONTSIZE))
     return;
@@ -312,12 +317,14 @@ void CPWL_Edit::SetCharArray(int32_t nCharArray) {
   if (fFontSize <= 0.0f)
     return;
 
-  m_pEditImpl->SetAutoFontSize(false, true);
+  m_pEditImpl->SetAutoFontSize(false);
   m_pEditImpl->SetFontSize(fFontSize);
+  m_pEditImpl->Paint();
 }
 
 void CPWL_Edit::SetLimitChar(int32_t nLimitChar) {
   m_pEditImpl->SetLimitChar(nLimitChar);
+  m_pEditImpl->Paint();
 }
 
 CFX_FloatRect CPWL_Edit::GetFocusRect() const {
@@ -540,6 +547,7 @@ void CPWL_Edit::CreateEditCaret(const CreateParams& cp) {
 
 void CPWL_Edit::SetFontSize(float fFontSize) {
   m_pEditImpl->SetFontSize(fFontSize);
+  m_pEditImpl->Paint();
 }
 
 float CPWL_Edit::GetFontSize() const {

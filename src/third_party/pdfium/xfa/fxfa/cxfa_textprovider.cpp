@@ -143,13 +143,13 @@ CXFA_Font* CXFA_TextProvider::GetFontIfExists() {
 bool CXFA_TextProvider::IsCheckButtonAndAutoWidth() const {
   if (m_pNode->GetFFWidgetType() != XFA_FFWidgetType::kCheckButton)
     return false;
-  return !m_pNode->TryWidth();
+  return !m_pNode->TryWidth().has_value();
 }
 
 Optional<WideString> CXFA_TextProvider::GetEmbeddedObj(
     const WideString& wsAttr) const {
   if (m_eType != XFA_TEXTPROVIDERTYPE_Text)
-    return {};
+    return pdfium::nullopt;
 
   CXFA_Node* pParent = m_pNode->GetParent();
   CXFA_Document* pDocument = m_pNode->GetDocument();
@@ -163,7 +163,7 @@ Optional<WideString> CXFA_TextProvider::GetEmbeddedObj(
         wsAttr.AsStringView());
   }
   if (!pIDNode || !pIDNode->IsWidgetReady())
-    return {};
+    return pdfium::nullopt;
 
-  return pIDNode->GetValue(XFA_VALUEPICTURE_Display);
+  return pIDNode->GetValue(XFA_ValuePicture::kDisplay);
 }

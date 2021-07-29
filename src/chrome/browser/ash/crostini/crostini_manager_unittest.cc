@@ -24,8 +24,8 @@
 #include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/crostini/fake_crostini_features.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/ash/policy/handlers/powerwash_requirements_checker.h"
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
-#include "chrome/browser/chromeos/policy/powerwash_requirements_checker.h"
 #include "chrome/browser/component_updater/fake_cros_component_manager.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/notifications/system_notification_helper.h"
@@ -34,6 +34,7 @@
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/dbus/anomaly_detector/fake_anomaly_detector_client.h"
 #include "chromeos/dbus/cicerone/cicerone_client.h"
 #include "chromeos/dbus/cicerone/cicerone_service.pb.h"
 #include "chromeos/dbus/cicerone/fake_cicerone_client.h"
@@ -42,7 +43,6 @@
 #include "chromeos/dbus/concierge/fake_concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/dlcservice/dlcservice_client.h"
-#include "chromeos/dbus/fake_anomaly_detector_client.h"
 #include "chromeos/dbus/seneschal/seneschal_client.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/userdataauth/fake_cryptohome_misc_client.h"
@@ -512,7 +512,8 @@ TEST_F(CrostiniManagerTest, StartTerminaVmLowDiskNotification) {
   const base::FilePath& disk_path = base::FilePath(kVmName);
   NotificationDisplayServiceTester notification_service(nullptr);
   vm_tools::concierge::StartVmResponse response;
-  response.set_free_bytes(1);
+  response.set_free_bytes(0);
+  response.set_free_bytes_has_value(true);
   response.set_success(true);
   response.set_status(::vm_tools::concierge::VmStatus::VM_STATUS_RUNNING);
   fake_concierge_client_->set_start_vm_response(response);
@@ -526,6 +527,28 @@ TEST_F(CrostiniManagerTest, StartTerminaVmLowDiskNotification) {
   EXPECT_GE(fake_concierge_client_->start_termina_vm_call_count(), 1);
   auto notification = notification_service.GetNotification("crostini_low_disk");
   EXPECT_NE(absl::nullopt, notification);
+}
+
+TEST_F(CrostiniManagerTest,
+       StartTerminaVmLowDiskNotificationNotShownIfNoValue) {
+  const base::FilePath& disk_path = base::FilePath(kVmName);
+  NotificationDisplayServiceTester notification_service(nullptr);
+  vm_tools::concierge::StartVmResponse response;
+  response.set_free_bytes(1234);
+  response.set_free_bytes_has_value(false);
+  response.set_success(true);
+  response.set_status(::vm_tools::concierge::VmStatus::VM_STATUS_RUNNING);
+  fake_concierge_client_->set_start_vm_response(response);
+
+  EnsureTerminaInstalled();
+  crostini_manager()->StartTerminaVm(
+      ContainerId::GetDefault().vm_name, disk_path, 0,
+      base::BindOnce(&ExpectSuccess, run_loop()->QuitClosure()));
+  run_loop()->Run();
+
+  EXPECT_GE(fake_concierge_client_->start_termina_vm_call_count(), 1);
+  auto notification = notification_service.GetNotification("crostini_low_disk");
+  EXPECT_EQ(absl::nullopt, notification);
 }
 
 TEST_F(CrostiniManagerTest, OnStartTremplinRecordsRunningVm) {
@@ -806,8 +829,11 @@ TEST_F(CrostiniManagerRestartTest, RestartSuccess) {
   EXPECT_EQ(container_info.value().username,
             DefaultContainerUserNameForProfile(profile()));
   ExpectRestarterUmaCount(1);
+  histogram_tester_.ExpectTotalCount("Crostini.RestarterTimeInState2.Start", 1);
   histogram_tester_.ExpectTotalCount(
-      "Crostini.RestarterTimeInState.StartTerminaVm", 1);
+      "Crostini.RestarterTimeInState2.StartContainer", 1);
+  histogram_tester_.ExpectBucketCount(
+      "Crostini.SetUpLxdContainerUser.UnknownResult", false, 1);
 }
 
 TEST_F(CrostiniManagerRestartTest, UncleanRestartReportsMetricToUncleanBucket) {
@@ -909,6 +935,10 @@ TEST_F(CrostiniManagerRestartTest, TimeoutDuringComponentLoaded) {
   EXPECT_EQ(fake_concierge_client_->create_disk_image_call_count(), 0);
   ExpectCrostiniRestartResult(CrostiniResult::INSTALL_IMAGE_LOADER_TIMED_OUT);
   ExpectRestarterUmaCount(1);
+  histogram_tester_.ExpectTotalCount(
+      "Crostini.RestarterTimeInState2.InstallImageLoader", 1);
+  histogram_tester_.ExpectTotalCount(
+      "Crostini.RestarterTimeInState2.CreateDiskImage", 0);
 }
 
 TEST_F(CrostiniManagerRestartTest, AbortOnDiskImageCreated) {
@@ -923,6 +953,10 @@ TEST_F(CrostiniManagerRestartTest, AbortOnDiskImageCreated) {
   EXPECT_EQ(fake_concierge_client_->start_termina_vm_call_count(), 0);
   ExpectCrostiniRestartResult(CrostiniResult::RESTART_ABORTED);
   ExpectRestarterUmaCount(1);
+  histogram_tester_.ExpectTotalCount(
+      "Crostini.RestarterTimeInState2.InstallImageLoader", 1);
+  histogram_tester_.ExpectTotalCount(
+      "Crostini.RestarterTimeInState2.CreateDiskImage", 0);
 }
 
 TEST_F(CrostiniManagerRestartTest, TimeoutDuringCreateDiskImage) {

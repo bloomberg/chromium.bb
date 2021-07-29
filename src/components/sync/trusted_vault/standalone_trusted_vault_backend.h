@@ -18,10 +18,15 @@
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/sync/protocol/local_trusted_vault.pb.h"
 #include "components/sync/trusted_vault/trusted_vault_connection.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 class Clock;
 }  // namespace base
+
+namespace signin {
+struct AccountsInCookieJarInfo;
+}  // namespace signin
 
 namespace syncer {
 
@@ -78,14 +83,19 @@ class StandaloneTrustedVaultBackend
 
   // Marks vault keys as stale.  Afterwards, the next FetchKeys() call for this
   // |account_info| will trigger a key download attempt.
-  bool MarkKeysAsStale(const CoreAccountInfo& account_info);
-
-  // Removes all keys for all accounts from both memory and |file_path_|.
-  void RemoveAllStoredKeys();
+  bool MarkLocalKeysAsStale(const CoreAccountInfo& account_info);
 
   // Sets/resets |primary_account_|.
   void SetPrimaryAccount(
       const absl::optional<CoreAccountInfo>& primary_account);
+
+  // Handles changes of accounts in cookie jar and removes keys for some
+  // accounts:
+  // 1. Non-primary account keys are removed if account isn't in cookie jar.
+  // 2. Primary account keys marked for deferred deletion if account isn't in
+  // cookie jar.
+  void UpdateAccountsInCookieJarInfo(
+      const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info);
 
   // Returns whether recoverability of the keys is degraded and user action is
   // required to add a new method.
@@ -103,11 +113,21 @@ class StandaloneTrustedVaultBackend
   sync_pb::LocalDeviceRegistrationInfo GetDeviceRegistrationInfoForTesting(
       const std::string& gaia_id);
 
-  void SetRecoverabilityDegradedForTesting();
-
   std::vector<uint8_t> GetLastAddedRecoveryMethodPublicKeyForTesting() const;
 
   void SetClockForTesting(base::Clock* clock);
+
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  // Exposed publicly for testing.
+  enum class DeviceRegistrationStateForUMA {
+    kAlreadyRegistered = 0,
+    kLocalKeysAreStale = 1,
+    kThrottledClientSide = 2,
+    kAttemptingRegistrationWithNewKeyPair = 3,
+    kAttemptingRegistrationWithExistingKeyPair = 4,
+    kMaxValue = kAttemptingRegistrationWithExistingKeyPair,
+  };
 
  private:
   friend class base::RefCountedThreadSafe<StandaloneTrustedVaultBackend>;
@@ -119,19 +139,26 @@ class StandaloneTrustedVaultBackend
   sync_pb::LocalTrustedVaultPerUser* FindUserVault(const std::string& gaia_id);
 
   // Attempts to register device in case it's not yet registered and currently
-  // available local data is sufficient to do it.
-  void MaybeRegisterDevice(const std::string& gaia_id);
+  // available local data is sufficient to do it. For the cases where
+  // registration is desirable (i.e. feature toggle enabled and user signed in),
+  // it returns an enum representing the registration state, intended to be used
+  // for metric recording. Otherwise it returns nullopt.
+  absl::optional<DeviceRegistrationStateForUMA> MaybeRegisterDevice();
 
   // Called when device registration for |gaia_id| is completed (either
   // successfully or not). |data_| must contain LocalTrustedVaultPerUser for
   // given |gaia_id|.
-  void OnDeviceRegistered(const std::string& gaia_id,
-                          TrustedVaultRegistrationStatus status);
+  void OnDeviceRegistered(TrustedVaultRegistrationStatus status);
+  void OnDeviceRegisteredWithoutKeys(
+      TrustedVaultRegistrationStatus status,
+      const TrustedVaultKeyAndVersion& vault_key_and_version);
 
-  void OnKeysDownloaded(const std::string& gaia_id,
-                        TrustedVaultDownloadKeysStatus status,
+  void OnKeysDownloaded(TrustedVaultDownloadKeysStatus status,
                         const std::vector<std::vector<uint8_t>>& vault_keys,
                         int last_vault_key_version);
+
+  void OnTrustedRecoveryMethodAdded(base::OnceClosure cb,
+                                    TrustedVaultRegistrationStatus status);
 
   void AbandonConnectionRequest();
 
@@ -141,11 +168,15 @@ class StandaloneTrustedVaultBackend
   // should be throttled now (certain amount of time should pass since the last
   // failed request). Handles the situation, when last failed request time is
   // set to the future.
-  bool AreConnectionRequestsThrottled(const std::string& gaia_id);
+  bool AreConnectionRequestsThrottled();
 
   // Records request failure time, that will be used to determine whether new
   // requests should be throttled.
-  void RecordFailedConnectionRequestForThrottling(const std::string& gaia_id);
+  void RecordFailedConnectionRequestForThrottling();
+
+  // Removes all data for non-primary accounts if they were previously marked
+  // for deletion due to accounts in cookie jar changes.
+  void RemoveNonPrimaryAccountKeysIfMarkedForDeletion();
 
   const base::FilePath file_path_;
 
@@ -191,12 +222,20 @@ class StandaloneTrustedVaultBackend
   // Destroying this will cancel the ongoing request.
   std::unique_ptr<TrustedVaultConnection::Request> ongoing_connection_request_;
 
+  // Same as above, but specifically used for recoverability-related requests.
+  // TODO(crbug.com/1201659): Move elsewhere.
+  std::unique_ptr<TrustedVaultConnection::Request>
+      ongoing_get_recoverability_request_;
+  std::unique_ptr<TrustedVaultConnection::Request>
+      ongoing_add_recovery_method_request_;
+
   // Used to determine current time, set to base::DefaultClock in prod and can
   // be overridden in tests.
   base::Clock* clock_;
 
-  bool is_recoverability_degraded_for_testing_ = false;
   std::vector<uint8_t> last_added_recovery_method_public_key_for_testing_;
+
+  bool device_registration_state_recorded_to_uma_ = false;
 };
 
 }  // namespace syncer

@@ -22,10 +22,14 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 
+namespace apps {
+class AppRegistryCache;
+}
+
 namespace base {
 class FilePath;
 class SequencedTaskRunner;
-}
+}  // namespace base
 
 namespace full_restore {
 
@@ -58,6 +62,11 @@ class COMPONENT_EXPORT(FULL_RESTORE) FullRestoreSaveHandler
 
   void SetActiveProfilePath(const base::FilePath& profile_path);
 
+  void SetAppRegistryCache(const base::FilePath& profile_path,
+                           apps::AppRegistryCache* app_registry_cache);
+
+  void SetShutDown();
+
   // aura::EnvObserver:
   void OnWindowInitialized(aura::Window* window) override;
 
@@ -88,11 +97,23 @@ class COMPONENT_EXPORT(FULL_RESTORE) FullRestoreSaveHandler
   // data.
   void Flush(const base::FilePath& profile_path);
 
+  // Returns true if there is a AppRestoreData for the given `profile_path`,
+  // `app_id` and `window_id`. Otherwise, returns false.
+  bool HasAppRestoreData(const base::FilePath& profile_path,
+                         const std::string& app_id,
+                         int32_t window_id);
+
   // Saves |app_launch_info| to |profile_path_to_file_handler_| for
   // |profile_path| which will be written to the full restore file, if
   // |app_launch_info| has a window_id.
   void AddAppLaunchInfo(const base::FilePath& profile_path,
                         AppLaunchInfoPtr app_launch_info);
+
+  // Modify the window id for `app_id` from `old_window_id` to `new_window_id`.
+  void ModifyWindowId(const base::FilePath& profile_path,
+                      const std::string& app_id,
+                      int32_t old_window_id,
+                      int32_t new_window_id);
 
   // Saves |window_info| to |profile_path| for |app_id| and |window_id|.
   void ModifyWindowInfo(const base::FilePath& profile_path,
@@ -122,10 +143,22 @@ class COMPONENT_EXPORT(FULL_RESTORE) FullRestoreSaveHandler
                         const std::string& app_id,
                         int window_id);
 
+  // Starts the timer, and when timeout, clears restore data for |profile_path|.
+  void ClearRestoreData(const base::FilePath& profile_path);
+
   // Generates the ARC session id (0 - 1,000,000,000) for ARC apps.
   int32_t GetArcSessionId();
 
+  // Returns the RestoreData that associates with |profile_path|. Returns
+  // nullptr if there is no such RestoreData.
+  const RestoreData* GetRestoreData(const base::FilePath& profile_path);
+
+  int window_count() const { return window_count_; }
+
   base::OneShotTimer* GetTimerForTesting() { return &save_timer_; }
+
+  // Since this is a singleton, tests may need to clear it between tests.
+  void ClearForTesting();
 
  private:
   friend class FullRestoreSaveHandlerTestApi;
@@ -134,7 +167,7 @@ class COMPONENT_EXPORT(FULL_RESTORE) FullRestoreSaveHandler
   using AppLaunchInfos = std::map<base::FilePath, std::list<AppLaunchInfoPtr>>;
 
   // Starts the timer that invokes Save (if timer isn't already running).
-  void MaybeStartSaveTimer();
+  void MaybeStartSaveTimer(const base::FilePath& profile_path);
 
   // Passes |profile_path_to_restore_data_| to the backend for saving.
   void Save();
@@ -153,6 +186,14 @@ class COMPONENT_EXPORT(FULL_RESTORE) FullRestoreSaveHandler
   // Removes AppRestoreData for |window_id|.
   void RemoveAppRestoreData(int window_id);
 
+  // FullRestoreSaveHandler might be called to save the help app before
+  // FullRestoreAppLaunchHandler reads the full restore data from the full
+  // restore file during the system startup phase, e.g. when a new user login.
+  // So call FullRestoreReadHandler to read the file before saving the new data.
+  // `been_read_profile_paths_` is used to save the profile paths, whose full
+  // restore file has been read by FullRestoreReadHandler.
+  std::set<base::FilePath> been_read_profile_paths_;
+
   // Records whether there are new updates for saving between each saving delay.
   // |pending_save_profile_paths_| is cleared when Save is invoked.
   std::set<base::FilePath> pending_save_profile_paths_;
@@ -164,6 +205,10 @@ class COMPONENT_EXPORT(FULL_RESTORE) FullRestoreSaveHandler
   // full restore file for each user. The key is the profile path.
   std::map<base::FilePath, scoped_refptr<FullRestoreFileHandler>>
       profile_path_to_file_handler_;
+
+  // The AppRegistryCache for each user's profile. The key is the profile path.
+  std::map<base::FilePath, apps::AppRegistryCache*>
+      profile_path_to_app_registry_cache_;
 
   // The map from the window id to the full restore file path and the app id.
   // The window id is saved in the window property. This map is used to find the
@@ -189,6 +234,11 @@ class COMPONENT_EXPORT(FULL_RESTORE) FullRestoreSaveHandler
   std::set<base::FilePath> save_running_;
 
   std::unique_ptr<ArcSaveHandler> arc_save_handler_;
+
+  bool is_shut_down_ = false;
+
+  // The number of window created. This is used for metrics only.
+  int window_count_ = 0;
 
   base::ScopedObservation<aura::Env, aura::EnvObserver> env_observer_{this};
 

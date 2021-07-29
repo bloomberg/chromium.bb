@@ -133,6 +133,14 @@
       ],
     },
     'swarming': {
+      # soft affinity so that bots with caches will be picked first
+      'optional_dimensions': {
+        '60': [
+          {
+            'caches': 'avd_generic_android29',
+          }
+        ],
+      },
       'named_caches': [
         {
           'name': 'avd_generic_android29',
@@ -152,6 +160,14 @@
       ],
     },
     'swarming': {
+      # soft affinity so that bots with caches will be picked first
+      'optional_dimensions': {
+        '60': [
+          {
+            'caches': 'avd_generic_android30',
+          }
+        ],
+      },
       'named_caches': [
         {
           'name': 'avd_generic_android30',
@@ -164,11 +180,34 @@
       ]
     },
   },
-  'android_q': {
+  # TODO(crbug.com/1225851): Update "S" and "_s" to the right value once S is
+  # released. Using "_s" in stead of "S" in swarming as it does not accept
+  # uppercase character.
+  '12-x64-emulator': {
+    '$mixin_append': {
+      'args': [
+        '--avd-config=../../tools/android/avd/proto/generic_androidS.textpb',
+      ],
+    },
     'swarming': {
-      'dimensions': {
-        'device_os': 'Q',
+      # soft affinity so that bots with caches will be picked first
+      'optional_dimensions': {
+        '60': [
+          {
+            'caches': 'avd_generic_android_s',
+          }
+        ],
       },
+      'named_caches': [
+        {
+          'name': 'avd_generic_android_s',
+          'path': '.android',
+        },
+        {
+          'name': 'system_images_android_s_google_apis_x64',
+          'path': '.emulator_sdk',
+        },
+      ]
     },
   },
   'android_r': {
@@ -177,23 +216,6 @@
         'device_os': 'R',
       },
     },
-  },
-  'angle_skia_gold_test': {
-    '$mixin_append': {
-      'args': [
-        '--git-revision=${got_angle_revision}',
-        # BREAK GLASS IN CASE OF EMERGENCY
-        # Uncommenting this argument will bypass all interactions with Skia
-        # Gold in any tests that use it. This is meant as a temporary
-        # emergency stop in case of a Gold outage that's affecting the bots.
-        # '--bypass-skia-gold-functionality',
-      ],
-      'precommit_args': [
-        '--gerrit-issue=${patch_issue}',
-        '--gerrit-patchset=${patch_set}',
-        '--buildbucket-id=${buildbucket_build_id}',
-      ],
-    }
   },
   'arm64': {
     'swarming': {
@@ -343,6 +365,16 @@
       },
     },
   },
+  'emulator-e2-4-cores': {
+    'swarming': {
+      'dimensions': {
+        'device_os': None,
+        'device_type': None,
+        'pool': 'chromium.tests.avd',
+        'machine_type': 'e2-standard-4',
+      },
+    },
+  },
   'enable_resultdb': {
     'resultdb': {
       'enable': True,
@@ -388,6 +420,13 @@
       'args': [
         '--code-coverage',
         '--code-coverage-dir=${ISOLATED_OUTDIR}'
+      ],
+    },
+  },
+  'fuchsia-femu': {
+    '$mixin_append': {
+      'args': [
+        '--device=aemu',
       ],
     },
   },
@@ -444,30 +483,6 @@
       ],
     },
   },
-  'ios_runtime_cache_12_4': {
-    '$mixin_append': {
-      'swarming': {
-        'named_caches': [
-          {
-            'name': 'runtime_ios_12_4',
-            'path': 'Runtime-ios-12.4',
-          },
-        ],
-      },
-    },
-  },
-  'ios_runtime_cache_13_5': {
-    '$mixin_append': {
-      'swarming': {
-        'named_caches': [
-          {
-            'name': 'runtime_ios_13_5',
-            'path': 'Runtime-ios-13.5',
-          },
-        ],
-      },
-    },
-  },
   'ios_runtime_cache_13_6': {
     '$mixin_append': {
       'swarming': {
@@ -504,6 +519,30 @@
       },
     },
   },
+  'ios_runtime_cache_14_5': {
+    '$mixin_append': {
+      'swarming': {
+        'named_caches': [
+          {
+            'name': 'runtime_ios_14_5',
+            'path': 'Runtime-ios-14.5',
+          },
+        ],
+      },
+    },
+  },
+  'ios_runtime_cache_15_0': {
+    '$mixin_append': {
+      'swarming': {
+        'named_caches': [
+          {
+            'name': 'runtime_ios_15_0',
+            'path': 'Runtime-ios-15.0',
+          },
+        ],
+      },
+    },
+  },
   'isolate_profile_data': {
     'isolate_profile_data': True,
   },
@@ -531,6 +570,13 @@
     'swarming': {
       'dimensions': {
         'os': 'Ubuntu-18.04',
+      },
+    },
+  },
+  'linux-focal': {
+    'swarming': {
+      'dimensions': {
+        'os': 'Ubuntu-20.04',
       },
     },
   },
@@ -668,6 +714,14 @@
       },
     },
   },
+  'mac_11_arm64': {
+    'swarming': {
+      'dimensions': {
+        'cpu': 'arm64',
+        'os': 'Mac-11',
+      },
+    },
+  },
   'mac_11_beta_x64': {
     'swarming': {
       'dimensions': {
@@ -684,21 +738,12 @@
       },
     },
   },
-  'mac_arm64_apple_dtk_experimental': {
+  'mac_arm64_apple_m1_gpu': {
     'swarming': {
       'dimensions': {
         'cpu': 'arm64',
         'os': 'Mac-11',
-        'pool': 'chromium.tests.mac-arm64',
-      },
-    },
-  },
-  'mac_arm64_apple_dtk_gpu_experimental': {
-    'swarming': {
-      'dimensions': {
-        'cpu': 'arm64',
-        'os': 'Mac-11',
-        'pool': 'chromium.tests.mac-arm64',
+        'pool': 'chromium.tests',
         'display_attached': '1',
       },
     },
@@ -726,7 +771,7 @@
       'dimensions': {
         'cpu': 'x86-64',
         'gpu': '8086:0a2e',
-        'os': 'Mac-10.15.5|Mac-10.15.7',
+        'os': 'Mac-10.15.7',
         'display_attached': '1',
       },
     },
@@ -736,7 +781,7 @@
       'dimensions': {
         'cpu': 'x86-64',
         'gpu': '8086:0a2e',
-        'os': 'Mac-10.15.5|Mac-10.15.7',
+        'os': 'Mac-10.15.7',
         'display_attached': '1',
       },
     },
@@ -750,7 +795,7 @@
         {
           'cpu': 'x86-64',
           'gpu': '8086:0a2e',
-          'os': 'Mac-10.15.5|Mac-10.15.7',
+          'os': 'Mac-10.15.7',
           'display_attached': '1',
         },
       ],
@@ -778,13 +823,12 @@
     },
   },
   'mac_retina_amd_gpu_experimental': {
-    # Currently same configuration as stable version below.
     'swarming': {
       'dimensions': {
         'cpu': 'x86-64',
         'gpu': '1002:6821',
         'hidpi': '1',
-        'os': 'Mac-10.14.6',
+        'os': 'Mac-11.4',
         'pool': 'chromium.tests.gpu',
         'display_attached': '1',
       },
@@ -881,6 +925,14 @@
       ],
     },
     'swarming': {
+      # soft affinity so that bots with caches will be picked first
+      'optional_dimensions': {
+        '60': [
+          {
+            'caches': 'avd_generic_android23',
+          }
+        ],
+      },
       'named_caches': [
         {
           'name': 'avd_generic_android23',
@@ -928,6 +980,14 @@
       ],
     },
     'swarming': {
+      # soft affinity so that bots with caches will be picked first
+      'optional_dimensions': {
+        '60': [
+          {
+            'caches': 'avd_generic_android27',
+          }
+        ],
+      },
       'named_caches': [
         {
           'name': 'avd_generic_android27',
@@ -963,6 +1023,14 @@
       ],
     },
     'swarming': {
+      # soft affinity so that bots with caches will be picked first
+      'optional_dimensions': {
+        '60': [
+          {
+            'caches': 'avd_generic_android28',
+          }
+        ],
+      },
       'named_caches': [
         {
           'name': 'avd_generic_android28',
@@ -980,13 +1048,6 @@
       'dimensions': {
         'device_os': 'PQ3A.190801.002',
         'device_os_flavor': 'google',
-      },
-    },
-  },
-  'robocrop-swarming-pool': {
-    'swarming': {
-      'dimensions': {
-        'pool': 'chromium.tests.robocrop',
       },
     },
   },
@@ -1205,23 +1266,6 @@
       },
     },
   },
-  # in use by ios-webkit-tot
-  'xcode_11e608c': {
-    '$mixin_append': {
-      'args': [
-        '--xcode-build-version',
-        '11e608c'
-      ],
-     'swarming': {
-        'named_caches': [
-          {
-            'name': 'xcode_ios_11e608c',
-            'path': 'Xcode.app',
-          },
-        ],
-      },
-    },
-  },
   # (default in Chromium iOS) xcode 12.4 gm seed
   'xcode_12d4e': {
     '$mixin_append': {
@@ -1238,6 +1282,39 @@
         ],
       },
 
+    },
+  },
+  # Xcode 12.5 RC
+  'xcode_12e262': {
+    '$mixin_append': {
+      'args': [
+        '--xcode-build-version',
+        '12e262'
+      ],
+      'swarming': {
+        'named_caches': [
+          {
+            'name': 'xcode_ios_12e262',
+            'path': 'Xcode.app',
+          },
+        ],
+      },
+    },
+  },
+  'xcode_13_latest_beta': {
+    '$mixin_append': {
+      'args': [
+        '--xcode-build-version',
+        '13a5155e'
+      ],
+    },
+    'swarming': {
+      'named_caches': [
+        {
+          'name': 'xcode_ios_13a5155e',
+          'path': 'Xcode.app',
+        },
+      ],
     },
   },
   'xcode_parallelization': {

@@ -7,9 +7,10 @@
 #ifndef CORE_FXCRT_FX_COORDINATES_H_
 #define CORE_FXCRT_FX_COORDINATES_H_
 
-#include <algorithm>
+#include <math.h>
+#include <stdint.h>
 
-#include "core/fxcrt/fx_system.h"
+#include <algorithm>
 
 #ifndef NDEBUG
 #include <iosfwd>
@@ -227,6 +228,7 @@ class CFX_FloatRect {
       : CFX_FloatRect(pArray[0], pArray[1], pArray[2], pArray[3]) {}
 
   explicit CFX_FloatRect(const FX_RECT& rect);
+  explicit CFX_FloatRect(const CFX_PointF& point);
 
   static CFX_FloatRect GetBBox(const CFX_PointF* pPoints, int nPoints);
 
@@ -255,12 +257,6 @@ class CFX_FloatRect {
 
   CFX_FloatRect GetCenterSquare() const;
 
-  void InitRect(const CFX_PointF& point) {
-    left = point.x;
-    right = point.x;
-    bottom = point.y;
-    top = point.y;
-  }
   void UpdateRect(const CFX_PointF& point);
 
   float Width() const { return right - left; }
@@ -302,6 +298,11 @@ class CFX_FloatRect {
   // Rounds LBRT values.
   FX_RECT ToRoundedFxRect() const;
 
+  bool operator==(const CFX_FloatRect& other) const {
+    return left == other.left && right == other.right && top == other.top &&
+           bottom == other.bottom;
+  }
+
   float left = 0.0f;
   float bottom = 0.0f;
   float right = 0.0f;
@@ -338,6 +339,8 @@ class CFX_RectF {
 
   // NOLINTNEXTLINE(runtime/explicit)
   CFX_RectF(const CFX_RectF& other) = default;
+
+  CFX_RectF& operator=(const CFX_RectF& other) = default;
 
   CFX_RectF& operator+=(const PointType& p) {
     left += p.x;

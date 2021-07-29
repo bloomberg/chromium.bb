@@ -179,7 +179,6 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 	glPrefix := ""
 	if b.extraConfig("SwiftShader") {
 		configs = append(configs, "gles", "glesdft")
-		args = append(args, "--disableDriverCorrectnessWorkarounds")
 	} else if b.cpu() {
 		args = append(args, "--nogpu")
 
@@ -234,6 +233,10 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 			configs = append(configs, glPrefix, glPrefix+"dft", glPrefix+"srgb")
 			if sampleCount > 0 {
 				configs = append(configs, fmt.Sprintf("%smsaa%d", glPrefix, sampleCount))
+				// Temporarily limit the bots we test dynamic MSAA on.
+				if b.gpu("QuadroP400", "MaliG77", "AppleM1") {
+					configs = append(configs, fmt.Sprintf("%sdmsaa", glPrefix))
+				}
 			}
 		}
 
@@ -272,9 +275,12 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 			skip("gltestthreading gm _ draw_image_set")
 		}
 
-		// CommandBuffer bot *only* runs the command_buffer config.
+		// CommandBuffer bot *only* runs the cmdbuffer_es2 configs.
 		if b.extraConfig("CommandBuffer") {
-			configs = []string{"commandbuffer"}
+			configs = []string{"cmdbuffer_es2"}
+			if sampleCount > 0 {
+				configs = append(configs, "cmdbuffer_es2_dmsaa")
+			}
 		}
 
 		// Dawn bot *only* runs the dawn config
@@ -323,6 +329,11 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 
 		if b.extraConfig("CommandBuffer") && b.model("MacBook10.1") {
 			// skbug.com/9235
+			skip("_ test _ Programs")
+		}
+
+		if b.model("Spin513") {
+			// skbug.com/11876
 			skip("_ test _ Programs")
 		}
 
@@ -448,16 +459,10 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 		// Test GPU tessellation path renderer.
 		if b.extraConfig("GpuTess") {
 			configs = []string{glPrefix + "msaa4"}
-			args = append(args, "--hwtess", "--pr", "tess")
-		}
-
-		// Test dynamic MSAA.
-		if b.extraConfig("DMSAA") {
-			configs = []string{glPrefix + "dmsaa"}
-			if !b.os("Android") {
-				// Also enable hardware tessellation if not on android.
-				args = append(args, "--hwtess")
-			}
+			// Use hardware tessellation as much as possible for testing. Use 16 segments max to
+			// verify the chopping logic.
+			args = append(args,
+				"--pr", "tess", "--hwtess", "--alwaysHwTess", "--maxTessellationSegments", "16")
 		}
 
 		// DDL is a GPU-only feature
@@ -735,6 +740,7 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 	badSerializeGMs = append(badSerializeGMs, "compositor_quads_shader")
 	badSerializeGMs = append(badSerializeGMs, "wacky_yuv_formats_qtr")
 	badSerializeGMs = append(badSerializeGMs, "runtime_effect_image")
+	badSerializeGMs = append(badSerializeGMs, "ctmpatheffect")
 
 	// This GM forces a path to be convex. That property doesn't survive
 	// serialization.
@@ -843,12 +849,13 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 	}
 
 	if b.matchGpu("Adreno[3456][0-9][0-9]") { // disable broken tests on Adreno 3/4/5/6xx
-		skip("_", "tests", "_", "SkSLMatrices_GPU")           // skia:11308
-		skip("_", "tests", "_", "SkSLMatrixEquality_GPU")     // skia:11308
-		skip("_", "tests", "_", "SkSLMatrixScalarSplat_GPU")  // skia:11308
 		skip("_", "tests", "_", "DSLFPTest_SwitchStatement")  // skia:11891
+		skip("_", "tests", "_", "SkSLMatrixToVectorCast_GPU") // skia:12192
 		skip("_", "tests", "_", "SkSLStructsInFunctions_GPU") // skia:11929
-		skip("_", "tests", "_", "SkSLStaticSwitchInline_GPU") // skia:12012
+	}
+
+	if b.gpu("IntelIris6100", "IntelHD4400") && b.matchOs("Win") && !b.extraConfig("Vulkan") {
+		skip("_", "tests", "_", "SkSLVectorToMatrixCast_GPU") // skia:12179
 	}
 
 	match := []string{}

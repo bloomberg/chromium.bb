@@ -34,10 +34,6 @@ class Extension;
 class ExtensionApiTest : public ExtensionBrowserTest {
  public:
   struct RunOptions {
-    // Load the specified extension for the test. This is a subdirectory
-    // in "chrome/test/data/extensions/api_test".
-    const char* name = nullptr;
-
     // Start the test by opening the specified page URL. This must be an
     // absolute URL.
     const char* page_url = nullptr;
@@ -67,13 +63,6 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   // InProcessBrowserTest:
   void SetUpOnMainThread() override;
   void TearDownOnMainThread() override;
-
-  // TODO(https://crbug.com/1171429): Remove these two member functions
-  // once all the call sites of been migrated.
-  bool RunExtensionTest(const RunOptions& run_options,
-                        const LoadOptions& load_options) WARN_UNUSED_RESULT;
-
-  bool RunExtensionTest(const RunOptions& run_options) WARN_UNUSED_RESULT;
 
   // Loads the extension with |extension_name| and default RunOptions and
   // LoadOptions.

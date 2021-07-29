@@ -571,7 +571,7 @@ bool Histogram::AddSamplesFromPickle(PickleIterator* iter) {
   return unlogged_samples_->AddFromPickle(iter);
 }
 
-base::DictionaryValue Histogram::ToGraphDict() const {
+base::Value Histogram::ToGraphDict() const {
   std::unique_ptr<SampleVector> snapshot = SnapshotAllSamples();
   return snapshot->ToGraphDict(histogram_name(), flags());
 }
@@ -672,11 +672,13 @@ std::unique_ptr<SampleVector> Histogram::SnapshotUnloggedSamples() const {
   return samples;
 }
 
-void Histogram::GetParameters(DictionaryValue* params) const {
-  params->SetString("type", HistogramTypeToString(GetHistogramType()));
-  params->SetIntKey("min", declared_min());
-  params->SetIntKey("max", declared_max());
-  params->SetIntKey("bucket_count", static_cast<int>(bucket_count()));
+Value Histogram::GetParameters() const {
+  Value params(Value::Type::DICTIONARY);
+  params.SetStringKey("type", HistogramTypeToString(GetHistogramType()));
+  params.SetIntKey("min", declared_min());
+  params.SetIntKey("max", declared_max());
+  params.SetIntKey("bucket_count", static_cast<int>(bucket_count()));
+  return params;
 }
 
 //------------------------------------------------------------------------------

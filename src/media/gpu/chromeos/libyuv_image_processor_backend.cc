@@ -22,25 +22,25 @@ namespace {
 
 // TODO(https://bugs.chromium.org/p/libyuv/issues/detail?id=840): Remove
 // this once libyuv implements NV12Rotate() and use the libyuv::NV12Rotate().
-bool NV12Rotate(uint8_t* tmp_buffer,
-                const uint8_t* src_y,
-                int src_stride_y,
-                const uint8_t* src_uv,
-                int src_stride_uv,
-                int src_width,
-                int src_height,
-                uint8_t* dst_y,
-                int dst_stride_y,
-                uint8_t* dst_uv,
-                int dst_stride_uv,
-                int dst_width,
-                int dst_height,
-                VideoRotation relative_rotation) {
+int NV12Rotate(uint8_t* tmp_buffer,
+               const uint8_t* src_y,
+               int src_stride_y,
+               const uint8_t* src_uv,
+               int src_stride_uv,
+               int src_width,
+               int src_height,
+               uint8_t* dst_y,
+               int dst_stride_y,
+               uint8_t* dst_uv,
+               int dst_stride_uv,
+               int dst_width,
+               int dst_height,
+               VideoRotation relative_rotation) {
   libyuv::RotationModeEnum rotation = libyuv::kRotate0;
   switch (relative_rotation) {
     case VIDEO_ROTATION_0:
       NOTREACHED() << "Unexpected rotation: " << rotation;
-      return false;
+      return -1;
     case VIDEO_ROTATION_90:
       rotation = libyuv::kRotate90;
       break;
@@ -63,12 +63,12 @@ bool NV12Rotate(uint8_t* tmp_buffer,
       src_y, src_stride_y, src_uv, src_stride_uv, dst_y, dst_stride_y, tmp_u,
       tmp_uv_width, tmp_v, tmp_uv_width, src_width, src_height, rotation);
   if (ret != 0)
-    return false;
+    return ret;
 
   // Merge the UV planes into the destination.
   libyuv::MergeUVPlane(tmp_u, tmp_uv_width, tmp_v, tmp_uv_width, dst_uv,
                        dst_stride_uv, tmp_uv_width, tmp_uv_height);
-  return true;
+  return 0;
 }
 
 enum class SupportResult {
@@ -288,7 +288,7 @@ void LibYUVImageProcessorBackend::Process(
   }
   int res = DoConversion(input_frame.get(), mapped_frame.get());
   if (res != 0) {
-    VLOGF(1) << "libyuv::I420ToNV12 returns non-zero code: " << res;
+    VLOGF(1) << "libyuv returns non-zero code: " << res;
     error_cb_.Run();
     return;
   }
@@ -301,22 +301,22 @@ int LibYUVImageProcessorBackend::DoConversion(const VideoFrame* const input,
                                               VideoFrame* const output) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(backend_sequence_checker_);
 
-#define Y_U_V_DATA(fr)                                                \
-  fr->data(VideoFrame::kYPlane), fr->stride(VideoFrame::kYPlane),     \
-      fr->data(VideoFrame::kUPlane), fr->stride(VideoFrame::kUPlane), \
-      fr->data(VideoFrame::kVPlane), fr->stride(VideoFrame::kVPlane)
+#define Y_U_V_DATA(fr)                                                        \
+  fr->visible_data(VideoFrame::kYPlane), fr->stride(VideoFrame::kYPlane),     \
+      fr->visible_data(VideoFrame::kUPlane), fr->stride(VideoFrame::kUPlane), \
+      fr->visible_data(VideoFrame::kVPlane), fr->stride(VideoFrame::kVPlane)
 
-#define Y_V_U_DATA(fr)                                                \
-  fr->data(VideoFrame::kYPlane), fr->stride(VideoFrame::kYPlane),     \
-      fr->data(VideoFrame::kVPlane), fr->stride(VideoFrame::kVPlane), \
-      fr->data(VideoFrame::kUPlane), fr->stride(VideoFrame::kUPlane)
+#define Y_V_U_DATA(fr)                                                        \
+  fr->visible_data(VideoFrame::kYPlane), fr->stride(VideoFrame::kYPlane),     \
+      fr->visible_data(VideoFrame::kVPlane), fr->stride(VideoFrame::kVPlane), \
+      fr->visible_data(VideoFrame::kUPlane), fr->stride(VideoFrame::kUPlane)
 
-#define Y_UV_DATA(fr)                                             \
-  fr->data(VideoFrame::kYPlane), fr->stride(VideoFrame::kYPlane), \
-      fr->data(VideoFrame::kUVPlane), fr->stride(VideoFrame::kUVPlane)
+#define Y_UV_DATA(fr)                                                     \
+  fr->visible_data(VideoFrame::kYPlane), fr->stride(VideoFrame::kYPlane), \
+      fr->visible_data(VideoFrame::kUVPlane), fr->stride(VideoFrame::kUVPlane)
 
 #define RGB_DATA(fr) \
-  fr->data(VideoFrame::kARGBPlane), fr->stride(VideoFrame::kARGBPlane)
+  fr->visible_data(VideoFrame::kARGBPlane), fr->stride(VideoFrame::kARGBPlane)
 
 #define LIBYUV_FUNC(func, i, o)                      \
   libyuv::func(i, o, output->visible_rect().width(), \
@@ -334,14 +334,17 @@ int LibYUVImageProcessorBackend::DoConversion(const VideoFrame* const input,
       case PIXEL_FORMAT_ARGB:
         return LIBYUV_FUNC(ARGBToNV12, RGB_DATA(input), Y_UV_DATA(output));
       case PIXEL_FORMAT_XBGR:
-      case PIXEL_FORMAT_ABGR:
+      case PIXEL_FORMAT_ABGR: {
         // There is no libyuv function to convert to RGBA to NV12. Therefore, we
         // convert RGBA to I420 tentatively and thereafter convert the tentative
         // one to NV12.
-        LIBYUV_FUNC(ABGRToI420, RGB_DATA(input),
-                    Y_U_V_DATA(intermediate_frame_));
+        int ret = LIBYUV_FUNC(ABGRToI420, RGB_DATA(input),
+                              Y_U_V_DATA(intermediate_frame_));
+        if (ret != 0)
+          return ret;
         return LIBYUV_FUNC(I420ToNV12, Y_U_V_DATA(intermediate_frame_),
                            Y_UV_DATA(output));
+      }
       case PIXEL_FORMAT_NV12:
         // Rotation mode.
         if (relative_rotation_ != VIDEO_ROTATION_0) {
@@ -350,33 +353,18 @@ int LibYUVImageProcessorBackend::DoConversion(const VideoFrame* const input,
           // U and V planes for I420 data. Although
           // |intermediate_frame_->data(0)| is much larger than the required
           // size, we use the frame to simplify the code.
-          NV12Rotate(intermediate_frame_->data(0),
-                     input->visible_data(VideoFrame::kYPlane),
-                     input->stride(VideoFrame::kYPlane),
-                     input->visible_data(VideoFrame::kUPlane),
-                     input->stride(VideoFrame::kUPlane),
-                     input->visible_rect().width(),
-                     input->visible_rect().height(), Y_UV_DATA(output),
-                     output->visible_rect().width(),
-                     output->visible_rect().height(), relative_rotation_);
-          return 0;
+          return NV12Rotate(
+              intermediate_frame_->data(0), Y_UV_DATA(input),
+              input->visible_rect().width(), input->visible_rect().height(),
+              Y_UV_DATA(output), output->visible_rect().width(),
+              output->visible_rect().height(), relative_rotation_);
         }
-
         // Scaling mode.
-        libyuv::NV12Scale(input->visible_data(VideoFrame::kYPlane),
-                          input->stride(VideoFrame::kYPlane),
-                          input->visible_data(VideoFrame::kUVPlane),
-                          input->stride(VideoFrame::kUVPlane),
-                          input->visible_rect().width(),
-                          input->visible_rect().height(),
-                          output->visible_data(VideoFrame::kYPlane),
-                          output->stride(VideoFrame::kYPlane),
-                          output->visible_data(VideoFrame::kUVPlane),
-                          output->stride(VideoFrame::kUVPlane),
-                          output->visible_rect().width(),
-                          output->visible_rect().height(),
-                          libyuv::kFilterBilinear);
-        return 0;
+        return libyuv::NV12Scale(
+            Y_UV_DATA(input), input->visible_rect().width(),
+            input->visible_rect().height(), Y_UV_DATA(output),
+            output->visible_rect().width(), output->visible_rect().height(),
+            libyuv::kFilterBilinear);
       default:
         VLOGF(1) << "Unexpected input format: " << input->format();
         return -1;

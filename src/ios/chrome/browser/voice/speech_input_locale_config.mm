@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/voice/speech_input_locale_config.h"
 
+#include "base/no_destructor.h"
 #include "ios/chrome/browser/voice/speech_input_locale_config_impl.h"
 #include "ios/chrome/browser/voice/speech_input_locale_match.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -19,7 +20,7 @@ namespace voice {
 SpeechInputLocaleConfig* SpeechInputLocaleConfig::GetInstance() {
   static base::NoDestructor<SpeechInputLocaleConfigImpl> instance(
       ios::GetChromeBrowserProvider()
-          ->GetVoiceSearchProvider()
+          .GetVoiceSearchProvider()
           ->GetAvailableLanguages(),
       LoadSpeechInputLocaleMatches());
   return instance.get();

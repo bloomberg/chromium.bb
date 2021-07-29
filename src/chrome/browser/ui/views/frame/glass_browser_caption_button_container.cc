@@ -8,6 +8,8 @@
 
 #include "chrome/browser/ui/views/frame/glass_browser_frame_view.h"
 #include "chrome/browser/ui/views/frame/windows_10_caption_button.h"
+#include "chrome/browser/ui/views/frame/windows_10_tab_search_caption_button.h"
+#include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -61,6 +63,14 @@ GlassBrowserCaptionButtonContainer::GlassBrowserCaptionButtonContainer(
           frame_view_,
           VIEW_ID_CLOSE_BUTTON,
           IDS_APP_ACCNAME_CLOSE))) {
+  if (Windows10TabSearchCaptionButton::IsTabSearchCaptionButtonEnabled(
+          frame_view_)) {
+    tab_search_button_ =
+        AddChildViewAt(std::make_unique<Windows10TabSearchCaptionButton>(
+                           frame_view_, VIEW_ID_TAB_SEARCH_BUTTON,
+                           l10n_util::GetStringUTF16(IDS_ACCNAME_TAB_SEARCH)),
+                       0);
+  }
   // Layout is horizontal, with buttons placed at the trailing end of the view.
   // This allows the container to expand to become a faux titlebar/drag handle.
   auto* const layout = SetLayoutManager(std::make_unique<views::FlexLayout>());
@@ -82,6 +92,8 @@ int GlassBrowserCaptionButtonContainer::NonClientHitTest(
     const gfx::Point& point) const {
   DCHECK(HitTestPoint(point))
       << "should only be called with a point inside this view's bounds";
+  if (tab_search_button_ && HitTestCaptionButton(tab_search_button_, point))
+    return HTCLIENT;
   if (HitTestCaptionButton(minimize_button_, point))
     return HTMINBUTTON;
   if (HitTestCaptionButton(maximize_button_, point))
@@ -93,7 +105,38 @@ int GlassBrowserCaptionButtonContainer::NonClientHitTest(
   return HTCAPTION;
 }
 
+void GlassBrowserCaptionButtonContainer::
+    OnWindowControlsOverlayEnabledChanged() {
+  if (frame_view_->browser_view()->IsWindowControlsOverlayEnabled()) {
+    SetBackground(
+        views::CreateSolidBackground(frame_view_->GetTitlebarColor()));
+
+    // BrowserView paints to a layer, so this view must do the same to ensure
+    // that it paints on top of the BrowserView.
+    SetPaintToLayer();
+  } else {
+    SetBackground(nullptr);
+    DestroyLayer();
+  }
+}
+
+TabSearchBubbleHost*
+GlassBrowserCaptionButtonContainer::GetTabSearchBubbleHost() {
+  return tab_search_button_ ? tab_search_button_->tab_search_bubble_host()
+                            : nullptr;
+}
+
+void GlassBrowserCaptionButtonContainer::OnThemeChanged() {
+  if (frame_view_->browser_view()->IsWindowControlsOverlayEnabled()) {
+    SetBackground(
+        views::CreateSolidBackground(frame_view_->GetTitlebarColor()));
+  }
+  views::View::OnThemeChanged();
+}
+
 void GlassBrowserCaptionButtonContainer::ResetWindowControls() {
+  if (tab_search_button_)
+    tab_search_button_->SetState(views::Button::STATE_NORMAL);
   minimize_button_->SetState(views::Button::STATE_NORMAL);
   maximize_button_->SetState(views::Button::STATE_NORMAL);
   restore_button_->SetState(views::Button::STATE_NORMAL);

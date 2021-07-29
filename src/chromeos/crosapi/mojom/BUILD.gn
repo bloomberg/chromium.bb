@@ -23,13 +23,19 @@ mojom("mojom") {
     "file_manager.mojom",
     "holding_space_service.mojom",
     "idle_service.mojom",
+    "image_writer.mojom",
     "keystore_error.mojom",
     "keystore_service.mojom",
     "local_printer.mojom",
     "message_center.mojom",
     "metrics_reporting.mojom",
+    "native_theme.mojom",
+    "networking_attributes.mojom",
     "notification.mojom",
+    "power.mojom",
     "prefs.mojom",
+    "remoting.mojom",
+    "resource_manager.mojom",
     "screen_manager.mojom",
     "select_file.mojom",
     "system_display.mojom",
@@ -37,6 +43,7 @@ mojom("mojom") {
     "test_controller.mojom",
     "url_handler.mojom",
     "video_capture.mojom",
+    "web_page_info.mojom",
   ]
   disable_variants = true
 
@@ -49,6 +56,7 @@ mojom("mojom") {
     "//mojo/public/mojom/base",
     "//printing/backend/mojom",
     "//printing/mojom",
+    "//remoting/host/mojom:mojom",
     "//services/device/public/mojom:mojom",
     "//services/media_session/public/mojom:mojom",
     "//ui/accessibility:ax_enums_mojo",
@@ -78,6 +86,20 @@ mojom("mojom") {
           cpp = "::apps::mojom::CapabilityAccessPtr"
           move_only = true
         },
+        {
+          mojom = "crosapi.mojom.IconType"
+          cpp = "::apps::mojom::IconType"
+        },
+        {
+          mojom = "crosapi.mojom.IconValue"
+          cpp = "::apps::mojom::IconValuePtr"
+          move_only = true
+        },
+        {
+          mojom = "crosapi.mojom.IconKey"
+          cpp = "::apps::mojom::IconKeyPtr"
+          move_only = true
+        },
       ]
       traits_headers = [
         "//chromeos/crosapi/mojom/app_service_types_mojom_traits.h",
@@ -102,5 +124,6 @@ source_set("unit_tests") {
     "//components/services/app_service/public/mojom:mojom",
     "//mojo/public/cpp/test_support:test_utils",
     "//testing/gtest",
+    "//ui/gfx:test_support",
   ]
 }

@@ -16,8 +16,8 @@
 #include "chrome/browser/ash/cert_provisioning/cert_provisioning_common.h"
 #include "chrome/browser/ash/cert_provisioning/cert_provisioning_invalidator.h"
 #include "chrome/browser/ash/cert_provisioning/cert_provisioning_platform_keys_helpers.h"
-#include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
+#include "chrome/browser/platform_keys/platform_keys.h"
 // TODO(https://crbug.com/1164001): forward declare NetworkStateHandler
 // after //chromeos/network is moved to ash.
 #include "chromeos/network/network_state_handler.h"
@@ -156,7 +156,7 @@ class CertProvisioningSchedulerImpl
 
   void InitialUpdateCerts();
   void DeleteCertsWithoutPolicy();
-  void OnDeleteCertsWithoutPolicyDone(platform_keys::Status status);
+  void OnDeleteCertsWithoutPolicyDone(chromeos::platform_keys::Status status);
   void CancelWorkersWithoutPolicy(const std::vector<CertProfile>& profiles);
   void CleanVaKeysIfIdle();
   void OnCleanVaKeysIfIdleDone(bool delete_result);
@@ -169,7 +169,7 @@ class CertProvisioningSchedulerImpl
       std::vector<CertProfile> profiles,
       base::flat_map<CertProfileId, scoped_refptr<net::X509Certificate>>
           existing_certs_with_ids,
-      platform_keys::Status status);
+      chromeos::platform_keys::Status status);
 
   void OnPrefsChange();
   void DailyUpdateCerts();

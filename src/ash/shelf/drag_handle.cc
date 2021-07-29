@@ -5,7 +5,7 @@
 #include "ash/shelf/drag_handle.h"
 
 #include "ash/accessibility/accessibility_controller_impl.h"
-#include "ash/public/cpp/ash_features.h"
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/contextual_tooltip.h"
@@ -85,7 +85,7 @@ class HideNudgeObserver : public ui::ImplicitAnimationObserver {
 
 }  // namespace
 
-DragHandle::DragHandle(int drag_handle_corner_radius, Shelf* shelf)
+DragHandle::DragHandle(float drag_handle_corner_radius, Shelf* shelf)
     : views::Button(base::BindRepeating(&DragHandle::ButtonPressed,
                                         base::Unretained(this))),
       shelf_(shelf) {

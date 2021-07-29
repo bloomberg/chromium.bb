@@ -65,13 +65,13 @@ public:
         }
     }
 
-    const CapsLookupMethod* lookup(const String& name) const {
+    const CapsLookupMethod* lookup(skstd::string_view name) const {
         auto iter = fMap.find(name);
         return (iter != fMap.end()) ? iter->second.get() : nullptr;
     }
 
 private:
-    std::unordered_map<String, std::unique_ptr<CapsLookupMethod>> fMap;
+    std::unordered_map<skstd::string_view, std::unique_ptr<CapsLookupMethod>> fMap;
 };
 
 static const CapsLookupTable& caps_lookup_table() {
@@ -102,7 +102,7 @@ static const CapsLookupTable& caps_lookup_table() {
 
 }  // namespace
 
-static const Type* get_type(const Context& context, int offset, const String& name) {
+static const Type* get_type(const Context& context, int offset, skstd::string_view name) {
     if (const CapsLookupMethod* caps = caps_lookup_table().lookup(name)) {
         return caps->type(context);
     }
@@ -112,7 +112,7 @@ static const Type* get_type(const Context& context, int offset, const String& na
 }
 
 static std::unique_ptr<Expression> get_value(const Context& context, int offset,
-                                             const String& name) {
+                                             const skstd::string_view& name) {
     if (const CapsLookupMethod* caps = caps_lookup_table().lookup(name)) {
         return caps->value(context);
     }
@@ -122,7 +122,7 @@ static std::unique_ptr<Expression> get_value(const Context& context, int offset,
 }
 
 std::unique_ptr<Expression> Setting::Convert(const Context& context, int offset,
-                                             const String& name) {
+                                             const skstd::string_view& name) {
     SkASSERT(context.fConfig);
 
     if (context.fConfig->fSettings.fReplaceSettings) {

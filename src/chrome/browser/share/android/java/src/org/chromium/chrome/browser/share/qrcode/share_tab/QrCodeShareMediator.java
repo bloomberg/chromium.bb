@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.share.qrcode.share_tab;
 
 import android.Manifest.permission;
-import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -20,15 +19,12 @@ import android.view.View;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.download.DownloadController;
+import org.chromium.chrome.browser.download.FileAccessPermissionHelper;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.share.BitmapDownloadRequest;
 import org.chromium.chrome.browser.share.qrcode.QRCodeGenerationRequest;
-import org.chromium.ui.base.ActivityAndroidPermissionDelegate;
 import org.chromium.ui.base.AndroidPermissionDelegate;
 import org.chromium.ui.modelutil.PropertyModel;
-
-import java.lang.ref.WeakReference;
 
 /**
  * QrCodeShareMediator is in charge of calculating and setting values for QrCodeShareViewProperties.
@@ -38,7 +34,7 @@ class QrCodeShareMediator {
 
     private final Context mContext;
     private final PropertyModel mPropertyModel;
-    private final AndroidPermissionDelegate mPermissionDelegate;
+    private AndroidPermissionDelegate mPermissionDelegate;
 
     // The number of times the user has attempted to download the QR code in this dialog.
     private int mNumDownloads;
@@ -53,17 +49,17 @@ class QrCodeShareMediator {
      * @param propertyModel The property model to use to communicate with views.
      * @param closeDialog The {@link Runnable} to close the dialog.
      * @param url The url to create the QRCode.
+     * @param permissionDelegate The delegate to help with downloading QRCode.
      */
-    QrCodeShareMediator(
-            Context context, PropertyModel propertyModel, Runnable closeDialog, String url) {
+    QrCodeShareMediator(Context context, PropertyModel propertyModel, Runnable closeDialog,
+            String url, AndroidPermissionDelegate permissionDelegate) {
         mContext = context;
         mPropertyModel = propertyModel;
         mCloseDialog = closeDialog;
         mUrl = url;
         ChromeBrowserInitializer.getInstance().runNowOrAfterFullBrowserStarted(
                 () -> refreshQrCode(mUrl));
-        mPermissionDelegate = new ActivityAndroidPermissionDelegate(
-                new WeakReference<Activity>((Activity) mContext));
+        mPermissionDelegate = permissionDelegate;
         updatePermissionSettings();
     }
 
@@ -104,10 +100,9 @@ class QrCodeShareMediator {
     protected void downloadQrCode(View view) {
         logDownload();
         Bitmap qrcodeBitmap = mPropertyModel.get(QrCodeShareViewProperties.QRCODE_BITMAP);
-        if (qrcodeBitmap != null && !mIsDownloadInProgress) {
-            // TODO(crbug/1209228): Pass the window android.
-            DownloadController.requestFileAccessPermission(
-                    null, this::finishDownloadWithPermission);
+        if (qrcodeBitmap != null && !mIsDownloadInProgress && mPermissionDelegate != null) {
+            FileAccessPermissionHelper.requestFileAccessPermission(
+                    mPermissionDelegate, this::finishDownloadWithPermission);
             return;
         }
     }
@@ -133,6 +128,7 @@ class QrCodeShareMediator {
 
     /** Returns whether the user can be prompted for storage permissions. */
     private Boolean canPromptForPermission() {
+        if (mPermissionDelegate == null) return false;
         return mPermissionDelegate.canRequestPermission(permission.WRITE_EXTERNAL_STORAGE);
     }
 
@@ -144,6 +140,10 @@ class QrCodeShareMediator {
                 QrCodeShareViewProperties.HAS_STORAGE_PERMISSION, hasStoragePermission());
     }
 
+    public void updatePermissions(AndroidPermissionDelegate windowAndroid) {
+        mPermissionDelegate = windowAndroid;
+        updatePermissionSettings();
+    }
     /**
      * Sets whether QrCode UI is on foreground.
      *

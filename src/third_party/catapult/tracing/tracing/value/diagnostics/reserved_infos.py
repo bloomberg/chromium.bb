@@ -71,7 +71,16 @@ TRACE_URLS = _Info('traceUrls', 'GenericSet', str)
 V8_COMMIT_POSITIONS = _Info('v8CommitPositions', 'DateRange')
 V8_REVISIONS = _Info('v8Revisions', 'GenericSet', str)
 WEBRTC_REVISIONS = _Info('webrtcRevisions', 'GenericSet', str)
-WEBRTC_INTERNAL_REVISIONS = _Info('webrtcInternalRevisions', 'GenericSet', str)
+WEBRTC_INTERNAL_SIRIUS_REVISIONS = _Info(
+    'webrtcInternalSiriusRevisions', 'GenericSet', str)
+WEBRTC_INTERNAL_VEGA_REVISIONS = _Info(
+    'webrtcInternalVegaRevisions', 'GenericSet', str)
+WEBRTC_INTERNAL_CANOPUS_REVISIONS = _Info(
+    'webrtcInternalCanopusRevisions', 'GenericSet', str)
+WEBRTC_INTERNAL_ARCTURUS_REVISIONS = _Info(
+    'webrtcInternalArcturusRevisions', 'GenericSet', str)
+WEBRTC_INTERNAL_CAPELLA_REVISIONS = _Info(
+    'webrtcInternalCapellaRevisions', 'GenericSet', str)
 
 
 def _CreateCachedInfoTypes():

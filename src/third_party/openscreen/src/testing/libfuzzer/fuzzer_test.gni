@@ -154,7 +154,7 @@ template("openscreen_fuzzer_test") {
       }
 
       if (is_mac) {
-        sources += [ "//testing/libfuzzer/libfuzzer_exports.h" ]
+        sources += [ "//testing/libfuzzer/libfuzzer_exports_mac.h" ]
       }
     }
   } else {

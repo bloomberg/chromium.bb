@@ -33,7 +33,6 @@
 #include "content/common/frame_messages.mojom-forward.h"
 #include "content/common/navigation_client.mojom-forward.h"
 #include "content/common/navigation_client.mojom.h"
-#include "content/common/navigation_params.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -50,6 +49,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/network_service_util.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -4026,6 +4026,11 @@ IN_PROC_BROWSER_TEST_F(DocumentPolicyBrowserTest,
   GURL url(embedded_test_server()->GetURL("/target.html"));
   RenderFrameSubmissionObserver frame_observer(web_contents());
   TestNavigationManager navigation_manager(web_contents(), url);
+  // This test expects the document is freshly loaded on the back navigation
+  // so that the document policy to force-load-at-top will run. This will not
+  // happen if the document is back-forward cached, so we need to disable it.
+  DisableBackForwardCacheForTesting(web_contents(),
+                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
 
   // Load the document with document policy force-load-at-top
   shell()->LoadURL(url);
@@ -4218,7 +4223,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, OriginToCommitBasic) {
   shell()->LoadURL(url);
   EXPECT_TRUE(manager.WaitForResponse());
   NavigationRequest* navigation = main_frame()->navigation_request();
-  url::Origin origin_to_commit = navigation->GetOriginForURLLoaderFactory();
+  url::Origin origin_to_commit = navigation->GetOriginToCommit();
   manager.WaitForNavigationFinished();
   url::Origin origin_committed = current_frame_host()->GetLastCommittedOrigin();
 
@@ -4236,7 +4241,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
   shell()->LoadURL(url);
   EXPECT_TRUE(manager.WaitForResponse());
   NavigationRequest* navigation = main_frame()->navigation_request();
-  url::Origin origin_to_commit = navigation->GetOriginForURLLoaderFactory();
+  url::Origin origin_to_commit = navigation->GetOriginToCommit();
   manager.WaitForNavigationFinished();
   url::Origin origin_committed = current_frame_host()->GetLastCommittedOrigin();
 
@@ -4261,7 +4266,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
   EXPECT_TRUE(manager.WaitForResponse());
   FrameTreeNode* iframe = current_frame_host()->child_at(0);
   NavigationRequest* navigation = iframe->navigation_request();
-  url::Origin origin_to_commit = navigation->GetOriginForURLLoaderFactory();
+  url::Origin origin_to_commit = navigation->GetOriginToCommit();
   manager.WaitForNavigationFinished();
   url::Origin origin_committed =
       iframe->current_frame_host()->GetLastCommittedOrigin();
@@ -4451,7 +4456,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, OriginToCommitSandboxFromFrame) {
   EXPECT_TRUE(manager.WaitForResponse());
   FrameTreeNode* iframe = current_frame_host()->child_at(0);
   NavigationRequest* navigation = iframe->navigation_request();
-  url::Origin origin_to_commit = navigation->GetOriginForURLLoaderFactory();
+  url::Origin origin_to_commit = navigation->GetOriginToCommit();
   manager.WaitForNavigationFinished();
   url::Origin origin_committed =
       iframe->current_frame_host()->GetLastCommittedOrigin();
@@ -4946,9 +4951,17 @@ IN_PROC_BROWSER_TEST_F(SubresourceLoadingTest,
 
 // See the doc comment for the
 // URLLoaderFactoryInInitialEmptyDoc_NewFrameWithoutSrc test case.
+// crbug.com/1224893: Test flaky on Mac.
+#if defined(OS_MAC)
+#define MAYBE_URLLoaderFactoryInInitialEmptyDoc_NewFrameWithAboutBlank \
+  DISABLED_URLLoaderFactoryInInitialEmptyDoc_NewFrameWithAboutBlank
+#else
+#define MAYBE_URLLoaderFactoryInInitialEmptyDoc_NewFrameWithAboutBlank \
+  URLLoaderFactoryInInitialEmptyDoc_NewFrameWithAboutBlank
+#endif
 IN_PROC_BROWSER_TEST_F(
     SubresourceLoadingTest,
-    URLLoaderFactoryInInitialEmptyDoc_NewFrameWithAboutBlank) {
+    MAYBE_URLLoaderFactoryInInitialEmptyDoc_NewFrameWithAboutBlank) {
   GURL opener_url(embedded_test_server()->GetURL("/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), opener_url));
 
@@ -5629,7 +5642,13 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTestWithPerformanceManager,
 // new NavigationRequest, because it was trying to access the current
 // RenderFrameHost's PolicyContainerHost, which had not been set up yet by
 // RenderFrameHostImpl::DidNavigate.
-IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, Bug1210234) {
+#if defined(OS_ANDROID)
+// Flaky on Android: https://crbug.com/1222320.
+#define MAYBE_Bug1210234 DISABLED_Bug1210234
+#else
+#define MAYBE_Bug1210234 Bug1210234
+#endif  // defined(OS_ANDROID)
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, MAYBE_Bug1210234) {
   class NavigationWebContentsDelegate : public WebContentsDelegate {
    public:
     NavigationWebContentsDelegate(const GURL& url_to_intercept,
@@ -5665,11 +5684,129 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, Bug1210234) {
   // Since we committed a navigation, the next cross-origin navigation will
   // create a speculative RenderFrameHost.
 
-  // We use ASSERT_FALSE here since this will be redirected to "c.com".
-  ASSERT_FALSE(NavigateToURL(
-      shell(), embedded_test_server()->GetURL("b.com", "/title1.html")));
-
+  NavigateToURLBlockUntilNavigationsComplete(
+      web_contents(), initial_url, /*number_of_navigations=*/1,
+      /*ignore_uncommitted_navigations=*/true);
+  EXPECT_TRUE(IsLastCommittedEntryOfPageType(web_contents(), PAGE_TYPE_NORMAL));
   EXPECT_EQ(redirection_url, web_contents()->GetLastCommittedURL());
+}
+
+class NavigationBrowserTestAnonymousIframe : public NavigationBrowserTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    NavigationBrowserTest::SetUpCommandLine(command_line);
+
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
+                                    "AnonymousIframe");
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTestAnonymousIframe,
+                       AnonymousAttributeIsHonoredByNavigation) {
+  GURL main_url = embedded_test_server()->GetURL("/page_with_iframe.html");
+  GURL iframe_url_1 = embedded_test_server()->GetURL("/title1.html");
+  GURL iframe_url_2 = embedded_test_server()->GetURL("/title2.html");
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // The main page has a child iframe with url `iframe_url_1`.
+  EXPECT_EQ(1U, main_frame()->child_count());
+  FrameTreeNode* child = main_frame()->child_at(0);
+  EXPECT_EQ(iframe_url_1, child->current_url());
+  EXPECT_FALSE(child->anonymous());
+  EXPECT_FALSE(child->current_frame_host()->anonymous());
+
+  // Changes to the iframe 'anonymous' attribute are propagated to the
+  // FrameTreeNode. The RenderFrameHost, however, is updated only on navigation.
+  EXPECT_TRUE(
+      ExecJs(main_frame(),
+             "document.getElementById('test_iframe').anonymous = true;"));
+  EXPECT_TRUE(child->anonymous());
+  EXPECT_FALSE(child->current_frame_host()->anonymous());
+
+  // Create a grandchild iframe.
+  EXPECT_TRUE(ExecJs(
+      child, JsReplace("let grandchild = document.createElement('iframe');"
+                       "grandchild.src = $1;"
+                       "document.body.appendChild(grandchild);",
+                       iframe_url_2)));
+  WaitForLoadStop(web_contents());
+  EXPECT_EQ(1U, child->child_count());
+  FrameTreeNode* grandchild = child->child_at(0);
+
+  // The grandchild FrameTreeNode does not set the 'anonymous' attribute. The
+  // grandchild RenderFrameHost is not anonymous, since its parent
+  // RenderFrameHost is not anonymous.
+  EXPECT_FALSE(grandchild->anonymous());
+  EXPECT_FALSE(grandchild->current_frame_host()->anonymous());
+
+  // Navigate the child iframe same-document. This does not change anything.
+  EXPECT_TRUE(ExecJs(main_frame(),
+                     JsReplace("document.getElementById('test_iframe')"
+                               "        .contentWindow.location.href = $1;",
+                               iframe_url_1.Resolve("#here").spec())));
+  WaitForLoadStop(web_contents());
+  EXPECT_TRUE(child->anonymous());
+  EXPECT_FALSE(child->current_frame_host()->anonymous());
+
+  // Now navigate the child iframe cross-document.
+  EXPECT_TRUE(ExecJs(
+      main_frame(), JsReplace("document.getElementById('test_iframe').src = $1",
+                              iframe_url_2)));
+  WaitForLoadStop(web_contents());
+  EXPECT_TRUE(child->anonymous());
+  EXPECT_TRUE(child->current_frame_host()->anonymous());
+
+  // Create a grandchild iframe.
+  EXPECT_TRUE(ExecJs(
+      child, JsReplace("let grandchild = document.createElement('iframe');"
+                       "grandchild.id = 'grandchild_iframe';"
+                       "document.body.appendChild(grandchild);",
+                       iframe_url_1)));
+  EXPECT_EQ(1U, child->child_count());
+  grandchild = child->child_at(0);
+
+  // The grandchild does not set the 'anonymous' attribute, but the grandchild
+  // document is anonymous.
+  EXPECT_FALSE(grandchild->anonymous());
+  EXPECT_TRUE(grandchild->current_frame_host()->anonymous());
+
+  // Now navigate the grandchild iframe.
+  EXPECT_TRUE(ExecJs(
+      child, JsReplace("document.getElementById('grandchild_iframe').src = $1",
+                       iframe_url_2)));
+  WaitForLoadStop(web_contents());
+  EXPECT_TRUE(grandchild->current_frame_host()->anonymous());
+
+  // Remove the 'anonymous' attribute from the iframe. This propagates to the
+  // FrameTreeNode. The RenderFrameHost, however, is updated only on navigation.
+  EXPECT_TRUE(
+      ExecJs(main_frame(),
+             "document.getElementById('test_iframe').anonymous = false;"));
+  EXPECT_FALSE(child->anonymous());
+  EXPECT_TRUE(child->current_frame_host()->anonymous());
+
+  // Create another grandchild iframe. Even if the parent iframe element does
+  // not have the 'anonymous' attribute anymore, the grandchild document is
+  // still loaded inside of an anonymous RenderFrameHost, so it will be
+  // anonymous.
+  EXPECT_TRUE(ExecJs(
+      child, JsReplace("let grandchild2 = document.createElement('iframe');"
+                       "document.body.appendChild(grandchild2);",
+                       iframe_url_1)));
+  EXPECT_EQ(2U, child->child_count());
+  FrameTreeNode* grandchild2 = child->child_at(1);
+  EXPECT_FALSE(grandchild2->anonymous());
+  EXPECT_TRUE(grandchild2->current_frame_host()->anonymous());
+
+  // Navigate the child iframe. Since the iframe element does not set the
+  // 'anonymous' attribute, the resulting RenderFrameHost will not be anonymous.
+  EXPECT_TRUE(
+      ExecJs(main_frame(),
+             JsReplace("document.getElementById('test_iframe').src = $1;",
+                       iframe_url_2)));
+  WaitForLoadStop(web_contents());
+  EXPECT_FALSE(child->anonymous());
+  EXPECT_FALSE(child->current_frame_host()->anonymous());
 }
 
 }  // namespace content

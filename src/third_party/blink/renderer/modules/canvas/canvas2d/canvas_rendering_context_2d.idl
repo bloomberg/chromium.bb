@@ -45,14 +45,19 @@ typedef (CSSImageValue or
 enum CanvasFillRule { "nonzero", "evenodd" };
 enum ImageSmoothingQuality {"low", "medium", "high"};
 
-[Exposed=Window]
+[
+    ActiveScriptWrappable,
+    Exposed=Window
+]
 interface CanvasRenderingContext2D {
     // back-reference to the canvas
     readonly attribute HTMLCanvasElement canvas;
 
     // state
     void save(); // push state on state stack
-    [NoAllocDirectCall] void restore(); // pop state stack and restore state
+    [NoAllocDirectCall] void restore(); // pop state stack if top state was pushed by save, and restore state
+    [RuntimeEnabled=Canvas2dLayers] void beginLayer(); // push state on state stack and creates bitmap for subsequent draw ops
+    [RuntimeEnabled=Canvas2dLayers] void endLayer(); // pop state stack if top state was pushed by beginLayer, restore state and draw the bitmap
     // Clear the canvas and reset the path
     [RuntimeEnabled=NewCanvas2DAPI] void reset();
 
@@ -143,8 +148,10 @@ interface CanvasRenderingContext2D {
 
     // pixel manipulation
     [RaisesException] ImageData createImageData(ImageData imagedata);
-    [RaisesException] ImageData createImageData([EnforceRange] long sw, [EnforceRange] long sh, optional ImageDataSettings imageDataSettings = {});
-    [RaisesException] ImageData getImageData([EnforceRange] long sx, [EnforceRange] long sy, [EnforceRange] long sw, [EnforceRange] long sh, optional ImageDataSettings imageDataSettings = {});
+    [RaisesException] ImageData createImageData([EnforceRange] long sw, [EnforceRange] long sh);
+    [RaisesException, RuntimeEnabled=CanvasColorManagement] ImageData createImageData([EnforceRange] long sw, [EnforceRange] long sh, ImageDataSettings imageDataSettings);
+    [RaisesException] ImageData getImageData([EnforceRange] long sx, [EnforceRange] long sy, [EnforceRange] long sw, [EnforceRange] long sh);
+    [RaisesException, RuntimeEnabled=CanvasColorManagement] ImageData getImageData([EnforceRange] long sx, [EnforceRange] long sy, [EnforceRange] long sw, [EnforceRange] long sh, ImageDataSettings imageDataSettings);
     [RaisesException] void putImageData(ImageData imagedata, [EnforceRange] long dx, [EnforceRange] long dy);
     [RaisesException] void putImageData(ImageData imagedata, [EnforceRange] long dx, [EnforceRange] long dy, [EnforceRange] long dirtyX, [EnforceRange] long dirtyY, [EnforceRange] long dirtyWidth, [EnforceRange] long dirtyHeight);
 

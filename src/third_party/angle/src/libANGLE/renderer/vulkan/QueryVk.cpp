@@ -50,9 +50,20 @@ bool IsEmulatedTransformFeedbackQuery(ContextVk *contextVk, gl::QueryType type)
            contextVk->getFeatures().emulateTransformFeedback.enabled;
 }
 
+bool IsPrimitivesGeneratedQueryShared(ContextVk *contextVk)
+{
+    return !contextVk->getFeatures().supportsPipelineStatisticsQuery.enabled;
+}
+
 QueryVk *GetShareQuery(ContextVk *contextVk, gl::QueryType type)
 {
     QueryVk *shareQuery = nullptr;
+
+    // If the primitives generated query has its own dedicated Vulkan query, there's no sharing.
+    if (!IsPrimitivesGeneratedQueryShared(contextVk))
+    {
+        return nullptr;
+    }
 
     switch (type)
     {
@@ -80,7 +91,8 @@ QueryVk *GetOnRenderPassStartEndShareQuery(ContextVk *contextVk, gl::QueryType t
         gl::QueryType::PrimitivesGenerated < gl::QueryType::TransformFeedbackPrimitivesWritten,
         "incorrect assumption about the order in which queries are started in a render pass");
 
-    if (type != gl::QueryType::TransformFeedbackPrimitivesWritten)
+    if (type != gl::QueryType::TransformFeedbackPrimitivesWritten ||
+        !IsPrimitivesGeneratedQueryShared(contextVk))
     {
         return nullptr;
     }
@@ -105,7 +117,18 @@ angle::Result QueryVk::allocateQuery(ContextVk *contextVk)
     ASSERT(!mQueryHelper.isReferenced());
     mQueryHelper.setUnreferenced(new vk::RefCounted<vk::QueryHelper>);
 
-    return contextVk->getQueryPool(mType)->allocateQuery(contextVk, &mQueryHelper.get());
+    // When used with multiview, render pass queries write as many queries as the number of views.
+    // Render pass queries are always allocated at the beginning of the render pass, so the number
+    // of views is known at this time.
+    uint32_t queryCount = 1;
+    if (IsRenderPassQuery(contextVk, mType))
+    {
+        ASSERT(contextVk->hasStartedRenderPass());
+        queryCount = std::max(contextVk->getCurrentViewCount(), 1u);
+    }
+
+    return contextVk->getQueryPool(mType)->allocateQuery(contextVk, &mQueryHelper.get(),
+                                                         queryCount);
 }
 
 void QueryVk::assignSharedQuery(QueryVk *shareQuery)
@@ -206,7 +229,7 @@ angle::Result QueryVk::accumulateStashedQueryResult(ContextVk *contextVk, vk::Qu
 {
     for (vk::Shared<vk::QueryHelper> &query : mStashedQueryHelpers)
     {
-        vk::QueryResult v(getQueryResultCount());
+        vk::QueryResult v(getQueryResultCount(contextVk));
         ANGLE_TRY(query.get().getUint64Result(contextVk, &v));
         *result += v;
     }
@@ -306,8 +329,10 @@ angle::Result QueryVk::begin(const gl::Context *context)
             // Note: TimeElapsed is implemented by using two Timestamp queries and taking the diff.
             if (!mQueryHelperTimeElapsedBegin.valid())
             {
+                // Note that timestamp queries are not allowed with multiview, so query count is
+                // always 1.
                 ANGLE_TRY(contextVk->getQueryPool(mType)->allocateQuery(
-                    contextVk, &mQueryHelperTimeElapsedBegin));
+                    contextVk, &mQueryHelperTimeElapsedBegin, 1));
             }
 
             ANGLE_TRY(mQueryHelperTimeElapsedBegin.flushAndWriteTimestamp(contextVk));
@@ -353,7 +378,7 @@ angle::Result QueryVk::end(const gl::Context *context)
             QueryVk *shareQuery = GetShareQuery(contextVk, mType);
             ASSERT(shareQuery == nullptr || &mQueryHelper.get() == &shareQuery->mQueryHelper.get());
 
-            contextVk->endRenderPassQuery(this);
+            ANGLE_TRY(contextVk->endRenderPassQuery(this));
 
             // If another query shares its query helper with this one, its query has just ended!
             // Make it stash its query and create a new one so it can continue.
@@ -528,7 +553,7 @@ angle::Result QueryVk::getResult(const gl::Context *context, bool wait)
     // stashed queries will incur a wait that is not desired by the application.
     ASSERT(!IsRenderPassQuery(contextVk, mType) || mQueryHelper.get().hasSubmittedCommands());
 
-    vk::QueryResult result(getQueryResultCount());
+    vk::QueryResult result(getQueryResultCount(contextVk));
 
     if (wait)
     {
@@ -576,10 +601,14 @@ angle::Result QueryVk::getResult(const gl::Context *context, bool wait)
         }
         case gl::QueryType::TransformFeedbackPrimitivesWritten:
             mCachedResult =
-                result.getResult(vk::QueryResult::kTransformFeedbackPrimitivesWrittenIndex);
+                result.getResult(IsPrimitivesGeneratedQueryShared(contextVk)
+                                     ? vk::QueryResult::kTransformFeedbackPrimitivesWrittenIndex
+                                     : vk::QueryResult::kDefaultResultIndex);
             break;
         case gl::QueryType::PrimitivesGenerated:
-            mCachedResult = result.getResult(vk::QueryResult::kPrimitivesGeneratedIndex);
+            mCachedResult = result.getResult(IsPrimitivesGeneratedQueryShared(contextVk)
+                                                 ? vk::QueryResult::kPrimitivesGeneratedIndex
+                                                 : vk::QueryResult::kDefaultResultIndex);
             break;
         default:
             UNREACHABLE();
@@ -630,11 +659,12 @@ void QueryVk::onTransformFeedbackEnd(GLsizeiptr primitivesDrawn)
     mTransformFeedbackPrimitivesDrawn += primitivesDrawn;
 }
 
-uint32_t QueryVk::getQueryResultCount() const
+uint32_t QueryVk::getQueryResultCount(ContextVk *contextVk) const
 {
     switch (mType)
     {
         case gl::QueryType::PrimitivesGenerated:
+            return IsPrimitivesGeneratedQueryShared(contextVk) ? 2 : 1;
         case gl::QueryType::TransformFeedbackPrimitivesWritten:
             return 2;
         default:

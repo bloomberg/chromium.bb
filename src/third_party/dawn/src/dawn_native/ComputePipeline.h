@@ -32,8 +32,6 @@ namespace dawn_native {
 
         static ComputePipelineBase* MakeError(DeviceBase* device);
 
-        const EntryPointMetadata& GetMetadata() const;
-
         // Functors necessary for the unordered_set<ComputePipelineBase*>-based cache.
         struct EqualityFunc {
             bool operator()(const ComputePipelineBase* a, const ComputePipelineBase* b) const;
@@ -41,6 +39,11 @@ namespace dawn_native {
 
       private:
         ComputePipelineBase(DeviceBase* device, ObjectBase::ErrorTag tag);
+
+        // CreateComputePipelineAsyncTask is declared as a friend of ComputePipelineBase as it
+        // needs to call the private member function ComputePipelineBase::Initialize().
+        friend class CreateComputePipelineAsyncTask;
+        virtual MaybeError Initialize(const ComputePipelineDescriptor* descriptor);
     };
 
 }  // namespace dawn_native

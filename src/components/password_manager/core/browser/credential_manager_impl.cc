@@ -61,8 +61,8 @@ void CredentialManagerImpl::Store(const CredentialInfo& credential,
     leak_delegate_.StartLeakCheck(*form);
 
   std::string signon_realm = origin.GetURL().spec();
-  PasswordStore::FormDigest observed_digest(PasswordForm::Scheme::kHtml,
-                                            signon_realm, origin.GetURL());
+  PasswordFormDigest observed_digest(PasswordForm::Scheme::kHtml, signon_realm,
+                                     origin.GetURL());
 
   // Create a custom form fetcher without HTTP->HTTPS migration as the API is
   // only available on HTTPS origins.
@@ -82,7 +82,7 @@ void CredentialManagerImpl::PreventSilentAccess(
   // Send acknowledge response back.
   std::move(callback).Run();
 
-  PasswordStore* store = GetProfilePasswordStore();
+  PasswordStoreInterface* store = GetProfilePasswordStore();
   if (!store || !client_->IsSavingAndFillingEnabled(GetOrigin().GetURL()))
     return;
 
@@ -99,7 +99,7 @@ void CredentialManagerImpl::Get(CredentialMediationRequirement mediation,
                                 GetCallback callback) {
   using metrics_util::LogCredentialManagerGetResult;
 
-  PasswordStore* store = GetProfilePasswordStore();
+  PasswordStoreInterface* store = GetProfilePasswordStore();
   if (password_manager_util::IsLoggingActive(client_)) {
     CredentialManagerLogger(client_->GetLogManager())
         .LogRequestCredential(GetOrigin(), mediation, federations);
@@ -169,10 +169,9 @@ bool CredentialManagerImpl::IsZeroClickAllowed() const {
   return *auto_signin_enabled_ && !client_->IsIncognito();
 }
 
-PasswordStore::FormDigest CredentialManagerImpl::GetSynthesizedFormForOrigin()
-    const {
-  PasswordStore::FormDigest digest = {PasswordForm::Scheme::kHtml,
-                                      std::string(), GetOrigin().GetURL()};
+PasswordFormDigest CredentialManagerImpl::GetSynthesizedFormForOrigin() const {
+  PasswordFormDigest digest = {PasswordForm::Scheme::kHtml, std::string(),
+                               GetOrigin().GetURL()};
   digest.signon_realm = digest.url.spec();
   return digest;
 }
@@ -200,9 +199,9 @@ void CredentialManagerImpl::SendPasswordForm(
   CredentialInfo info;
   if (form) {
     info = PasswordFormToCredentialInfo(*form);
-    PasswordStore* store = form->IsUsingAccountStore()
-                               ? GetAccountPasswordStore()
-                               : GetProfilePasswordStore();
+    PasswordStoreInterface* store = form->IsUsingAccountStore()
+                                        ? GetAccountPasswordStore()
+                                        : GetProfilePasswordStore();
     if (store) {
       if (form->skip_zero_click && IsZeroClickAllowed()) {
         PasswordForm update_form = *form;
@@ -227,11 +226,11 @@ PasswordManagerClient* CredentialManagerImpl::client() const {
   return client_;
 }
 
-PasswordStore* CredentialManagerImpl::GetProfilePasswordStore() {
+PasswordStoreInterface* CredentialManagerImpl::GetProfilePasswordStore() {
   return client_ ? client_->GetProfilePasswordStore() : nullptr;
 }
 
-PasswordStore* CredentialManagerImpl::GetAccountPasswordStore() {
+PasswordStoreInterface* CredentialManagerImpl::GetAccountPasswordStore() {
   return client_ ? client_->GetAccountPasswordStore() : nullptr;
 }
 

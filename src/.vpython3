@@ -9,7 +9,7 @@
 # CIPD (the "Chrome Infrastructure Package Deployer" service). Unlike `pip`,
 # this never requires the end-user machine to have a working python extension
 # compilation environment. All of these packages are built using:
-#   https://chromium.googlesource.com/infra/infra/+/master/infra/tools/dockerbuild/
+#   https://chromium.googlesource.com/infra/infra/+/main/infra/tools/dockerbuild/
 #
 # All python scripts in the repo share this same spec, to avoid dependency
 # fragmentation.
@@ -20,7 +20,7 @@
 #   vpython path/to/script.py some --arguments
 #
 # Read more about `vpython` and how to modify this file here:
-#   https://chromium.googlesource.com/infra/infra/+/master/doc/users/vpython.md
+#   https://chromium.googlesource.com/infra/infra/+/main/doc/users/vpython.md
 
 python_version: "3.8"
 # Used by:
@@ -28,7 +28,7 @@ python_version: "3.8"
 #   components/policy/test_support/policy_testserver.py
 wheel: <
   name: "infra/python/wheels/protobuf-py2_py3"
-  version: "version:3.6.1"
+  version: "version:3.15.8"
 >
 
 # TODO(https://crbug.com/898348): Add in necessary wheels as Python3 versions
@@ -227,4 +227,27 @@ wheel: <
 wheel: <
   name: "infra/python/wheels/coverage/${vpython_platform}"
   version: "version:5.5"
+>
+
+# Used by:
+#   //content/test/gpu
+wheel: <
+  name: "infra/python/wheels/pathos/${vpython_platform}"
+  version: "version:0.2.7.chromium.4"
+  not_match_tag <
+    abi: "cp27mu"
+    platform: "manylinux1_i686"
+  >
+  not_match_tag <
+    abi: "cp27mu"
+    platform: "linux_mips64"
+  >
+  not_match_tag <
+    abi: "cp27mu"
+    platform: "linux_armv6l"
+  >
+  not_match_tag <
+    abi: "cp27mu"
+    platform: "linux_armv7l"
+  >
 >

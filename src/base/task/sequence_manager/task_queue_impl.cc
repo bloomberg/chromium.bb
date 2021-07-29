@@ -9,6 +9,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/containers/stack_container.h"
 #include "base/logging.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/stringprintf.h"
@@ -512,7 +513,7 @@ size_t TaskQueueImpl::GetNumberOfPendingTasks() const {
   return task_count;
 }
 
-bool TaskQueueImpl::HasTaskToRunImmediately() const {
+bool TaskQueueImpl::HasTaskToRunImmediatelyOrReadyDelayedTask() const {
   // Any work queue tasks count as immediate work.
   if (!main_thread_only().delayed_work_queue->Empty() ||
       !main_thread_only().immediate_work_queue->Empty()) {
@@ -547,8 +548,7 @@ absl::optional<DelayedWakeUp> TaskQueueImpl::GetNextScheduledWakeUpImpl() {
           : WakeUpResolution::kLow;
 
   const auto& top_task = main_thread_only().delayed_incoming_queue.top();
-  return DelayedWakeUp{top_task.delayed_run_time, top_task.sequence_num,
-                       resolution};
+  return DelayedWakeUp{top_task.delayed_run_time, resolution};
 }
 
 absl::optional<TimeTicks> TaskQueueImpl::GetNextScheduledWakeUp() {
@@ -964,7 +964,7 @@ void TaskQueueImpl::SetQueueEnabled(bool enabled) {
   {
     base::internal::CheckedAutoLock lock(any_thread_lock_);
     UpdateCrossThreadQueueStateLocked();
-    has_pending_immediate_work = HasPendingImmediateWorkLocked();
+    has_pending_immediate_work = HasTaskToRunImmediatelyLocked();
 
     // Copy over the task-reporting related state.
     any_thread_.tracing_only.is_enabled = enabled;
@@ -1048,6 +1048,12 @@ void TaskQueueImpl::ReclaimMemory(TimeTicks now) {
   main_thread_only().delayed_incoming_queue.SweepCancelledTasks(
       sequence_manager_);
 
+  // If deleting one of the cancelled tasks shut down this queue, bail out. Note
+  // that in this scenario |this| is still valid, but some fields of the queue
+  // have been cleared out by |UnregisterTaskQueue|.
+  if (!main_thread_only().delayed_work_queue)
+    return;
+
   // Also consider shrinking the work queue if it's wasting memory.
   main_thread_only().delayed_work_queue->MaybeShrinkQueue();
   main_thread_only().immediate_work_queue->MaybeShrinkQueue();
@@ -1122,7 +1128,7 @@ void TaskQueueImpl::UpdateDelayedWakeUpImpl(
   main_thread_only().scheduled_wake_up = wake_up;
 
   if (wake_up && main_thread_only().task_queue_observer &&
-      !HasPendingImmediateWork()) {
+      !HasTaskToRunImmediately()) {
     main_thread_only().task_queue_observer->OnQueueNextWakeUpChanged(
         wake_up->time);
   }
@@ -1137,7 +1143,7 @@ void TaskQueueImpl::SetDelayedWakeUpForTesting(
   UpdateDelayedWakeUpImpl(&lazy_now, wake_up);
 }
 
-bool TaskQueueImpl::HasPendingImmediateWork() {
+bool TaskQueueImpl::HasTaskToRunImmediately() const {
   // Any work queue tasks count as immediate work.
   if (!main_thread_only().delayed_work_queue->Empty() ||
       !main_thread_only().immediate_work_queue->Empty()) {
@@ -1149,7 +1155,7 @@ bool TaskQueueImpl::HasPendingImmediateWork() {
   return !any_thread_.immediate_incoming_queue.empty();
 }
 
-bool TaskQueueImpl::HasPendingImmediateWorkLocked() {
+bool TaskQueueImpl::HasTaskToRunImmediatelyLocked() const {
   return !main_thread_only().delayed_work_queue->Empty() ||
          !main_thread_only().immediate_work_queue->Empty() ||
          !any_thread_.immediate_incoming_queue.empty();
@@ -1385,15 +1391,16 @@ size_t TaskQueueImpl::DelayedIncomingQueue::PQueue::SweepCancelledTasks(
   // move all the cancelled tasks into a temporary container before deleting
   // them. This is to avoid |c| from changing while c.erase() is running.
   auto delete_start = std::stable_partition(c.begin(), c.end(), keep_task);
-  std::vector<Task> tasks_to_delete;
-  std::move(delete_start, c.end(), std::back_inserter(tasks_to_delete));
+  StackVector<Task, 8> tasks_to_delete;
+  std::move(delete_start, c.end(),
+            std::back_inserter(tasks_to_delete.container()));
   c.erase(delete_start, c.end());
 
   // stable_partition ensures order was not changed if there was nothing to
   // delete.
-  if (!tasks_to_delete.empty()) {
+  if (!tasks_to_delete->empty()) {
     ranges::make_heap(c, comp);
-    tasks_to_delete.clear();
+    tasks_to_delete->clear();
   }
   return num_high_res_tasks_swept;
 }

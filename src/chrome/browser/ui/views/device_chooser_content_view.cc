@@ -7,8 +7,8 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/grit/chromium_strings.h"
@@ -157,7 +157,8 @@ int DeviceChooserContentView::RowCount() {
 std::u16string DeviceChooserContentView::GetText(int row, int column_id) {
   DCHECK_GE(row, 0);
   DCHECK_LT(row, RowCount());
-  std::u16string text = chooser_controller_->GetOption(size_t{row});
+  std::u16string text =
+      chooser_controller_->GetOption(static_cast<size_t>(row));
   return chooser_controller_->IsPaired(row)
              ? l10n_util::GetStringFUTF16(
                    IDS_DEVICE_CHOOSER_DEVICE_NAME_AND_PAIRED_STATUS_TEXT, text)
@@ -166,27 +167,30 @@ std::u16string DeviceChooserContentView::GetText(int row, int column_id) {
 
 void DeviceChooserContentView::SetObserver(ui::TableModelObserver* observer) {}
 
-gfx::ImageSkia DeviceChooserContentView::GetIcon(int row) {
+ui::ImageModel DeviceChooserContentView::GetIcon(int row) {
   DCHECK(chooser_controller_->ShouldShowIconBeforeText());
   DCHECK_GE(row, 0);
   DCHECK_LT(row, RowCount());
 
   if (chooser_controller_->IsConnected(row)) {
-    return gfx::CreateVectorIcon(vector_icons::kBluetoothConnectedIcon,
-                                 TableModel::kIconSize, gfx::kChromeIconGrey);
+    return ui::ImageModel::FromVectorIcon(vector_icons::kBluetoothConnectedIcon,
+                                          gfx::kChromeIconGrey,
+                                          TableModel::kIconSize);
   }
 
   int level = chooser_controller_->GetSignalStrengthLevel(row);
   if (level == -1)
-    return gfx::ImageSkia();
+    return ui::ImageModel();
 
   constexpr int kSignalStrengthLevelImageIds[5] = {
       IDR_SIGNAL_0_BAR, IDR_SIGNAL_1_BAR, IDR_SIGNAL_2_BAR, IDR_SIGNAL_3_BAR,
       IDR_SIGNAL_4_BAR};
   DCHECK_GE(level, 0);
-  DCHECK_LT(size_t{level}, base::size(kSignalStrengthLevelImageIds));
-  return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-      kSignalStrengthLevelImageIds[level]);
+  DCHECK_LT(static_cast<size_t>(level),
+            base::size(kSignalStrengthLevelImageIds));
+  return ui::ImageModel::FromImageSkia(
+      *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+          kSignalStrengthLevelImageIds[level]));
 }
 
 void DeviceChooserContentView::OnOptionsInitialized() {

@@ -12,19 +12,10 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
-#include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/ash/settings/device_settings_test_helper.h"
-#include "chrome/browser/device_identity/device_oauth2_token_service_factory.h"
-#include "chrome/browser/prefs/browser_prefs.h"
-#include "chrome/test/base/testing_profile.h"
-#include "chromeos/cryptohome/system_salt_getter.h"
-#include "components/prefs/testing_pref_service.h"
-#include "content/public/test/browser_task_environment.h"
+#include "chrome/browser/chromeos/policy/remote_commands/future_value.h"
 #include "remoting/host/it2me/it2me_constants.h"
-#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
-#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -33,6 +24,7 @@ namespace policy {
 namespace {
 
 using ::testing::HasSubstr;
+using SessionParameters = CRDHostDelegate::SessionParameters;
 
 std::string FindStringKey(const base::Value& dictionary,
                           const std::string& key) {
@@ -43,15 +35,19 @@ std::string FindStringKey(const base::Value& dictionary,
   return base::StringPrintf("Key '%s' not found", key.c_str());
 }
 
-#define EXPECT_STRING_KEY(dictionary, key, value)  \
-  EXPECT_EQ(FindStringKey(dictionary, key), value) \
-      << "Wrong value for key '" << key << "'";
+#define EXPECT_STRING_KEY(dictionary, key, value)    \
+  ({                                                 \
+    EXPECT_EQ(FindStringKey(dictionary, key), value) \
+        << "Wrong value for key '" << key << "'";    \
+  })
 
-#define EXPECT_BOOL_KEY(dictionary, key, value)                          \
-  absl::optional<bool> value_maybe = dictionary.FindBoolKey(key);        \
-  EXPECT_TRUE(value_maybe.has_value()) << "Missing key '" << key << "'"; \
-  EXPECT_EQ(value_maybe.value_or(false), value)                          \
-      << "Wrong value for key '" << key << "'";
+#define EXPECT_BOOL_KEY(dictionary, key, value)                            \
+  ({                                                                       \
+    absl::optional<bool> value_maybe = dictionary.FindBoolKey(key);        \
+    EXPECT_TRUE(value_maybe.has_value()) << "Missing key '" << key << "'"; \
+    EXPECT_EQ(value_maybe.value_or(false), value)                          \
+        << "Wrong value for key '" << key << "'";                          \
+  })
 
 #define EXPECT_TYPE(dictionary, value) \
   EXPECT_STRING_KEY(dictionary, remoting::kMessageType, value)
@@ -85,67 +81,6 @@ class Message {
 
  private:
   base::Value result{base::Value::Type::DICTIONARY};
-};
-
-// Representation of a value that will be populated asynchronously.
-// Provides accessors to wait for the value to arrive.
-template <typename Type>
-class FutureValue {
- public:
-  FutureValue() = default;
-  FutureValue(const FutureValue&) = delete;
-  FutureValue& operator=(const FutureValue&) = delete;
-  ~FutureValue() = default;
-
-  // Wait for the value to arrive, and return the result.
-  // Will time out if no value arrives.
-  Type& GetWithTimeout(
-      const std::string& error_message = "Timeout waiting for value") {
-    WaitForValueWithTimeout(error_message);
-    return value_.value();
-  }
-
-  // Wait for the value to arrive.
-  // Will time out if no value arrives.
-  void WaitForValueWithTimeout(const std::string& error_message = "Timeout") {
-    if (!value_) {
-      base::test::ScopedRunLoopTimeout timeout(
-          FROM_HERE, base::TimeDelta::FromSeconds(5),
-          base::BindLambdaForTesting(
-              [error_message]() { return error_message; }));
-
-      run_loop_ = std::make_unique<base::RunLoop>();
-      run_loop_->Run();
-    }
-  }
-
-  void SetValue(Type value) {
-    value_ = std::move(value);
-    if (run_loop_)
-      run_loop_->Quit();
-  }
-
-  // Get the current value, or DCHECK if no value is set.
-  Type& value() {
-    DCHECK(has_value());
-    return value_.value();
-  }
-  const Type& value() const {
-    DCHECK(has_value());
-    return value_.value();
-  }
-
-  bool has_value() const { return value_.has_value(); }
-
-  // Unset the current value, so this object can be used again for a new value.
-  void Reset() {
-    value_.reset();
-    run_loop_.reset();
-  }
-
- private:
-  std::unique_ptr<base::RunLoop> run_loop_;
-  absl::optional<Type> value_;
 };
 
 // Stub implementation of the |NativeMessageHost| which allows the test to wait
@@ -183,8 +118,7 @@ class NativeMessageHostStub : public extensions::NativeMessageHost {
     if (client_)
       return;  // Start has already been called
 
-    is_started_.WaitForValueWithTimeout(
-        "Timeout waiting for NativeMessageHost::Start");
+    is_started_.WaitWithTimeout("Timeout waiting for start");
   }
 
   void WaitForHello() { WaitForMessageOfType("hello"); }
@@ -347,38 +281,16 @@ class Response {
 
 }  // namespace
 
-class CRDHostDelegateTest : public ash::DeviceSettingsTestBase {
+class CRDHostDelegateTest : public ::testing::Test {
  public:
   CRDHostDelegateTest() = default;
   CRDHostDelegateTest(const CRDHostDelegateTest&) = delete;
   CRDHostDelegateTest& operator=(const CRDHostDelegateTest&) = delete;
   ~CRDHostDelegateTest() override = default;
 
-  void SetUp() override {
-    DeviceSettingsTestBase::SetUp();
-
-    // SystemSaltGetter is used by the token service.
-    chromeos::SystemSaltGetter::Initialize();
-    DeviceOAuth2TokenServiceFactory::Initialize(
-        test_url_loader_factory_.GetSafeWeakWrapper(), &local_state_);
-    RegisterLocalState(local_state_.registry());
-
-    // We can only create the delegate after the
-    // OAuth2TokenServiceFactory has been set up.
-    delegate_ = std::make_unique<CRDHostDelegate>(
-        std::make_unique<NativeMessageHostFactoryStub>(&host_));
-  }
-
-  void TearDown() override {
-    DeviceOAuth2TokenServiceFactory::Shutdown();
-    chromeos::SystemSaltGetter::Shutdown();
-
-    DeviceSettingsTestBase::TearDown();
-  }
-
-  void StartCRDHostAndGetCode(const std::string& auth_token = "auth-token",
-                              bool terminate_upon_input = false) {
-    delegate().StartCRDHostAndGetCode(auth_token, terminate_upon_input,
+  void StartCRDHostAndGetCode(
+      const SessionParameters& parameters = SessionParameters()) {
+    delegate().StartCRDHostAndGetCode(parameters,
                                       response_.GetSuccessCallback(),
                                       response_.GetErrorCallback());
   }
@@ -389,15 +301,15 @@ class CRDHostDelegateTest : public ash::DeviceSettingsTestBase {
 
   void RunUntilIdle() { base::RunLoop().RunUntilIdle(); }
 
-  CRDHostDelegate& delegate() { return *delegate_; }
+  CRDHostDelegate& delegate() { return delegate_; }
   NativeMessageHostStub& host() { return host_; }
 
  private:
-  NativeMessageHostStub host_;
-  std::unique_ptr<CRDHostDelegate> delegate_;
+  base::test::SingleThreadTaskEnvironment environment_;
 
-  network::TestURLLoaderFactory test_url_loader_factory_;
-  TestingPrefServiceSimple local_state_;
+  NativeMessageHostStub host_;
+  CRDHostDelegate delegate_{
+      std::make_unique<NativeMessageHostFactoryStub>(&host_)};
 
   Response response_;
 };
@@ -450,15 +362,88 @@ TEST_F(CRDHostDelegateTest, ShouldErrorOutIfNativeHostResponseHasNoType) {
 }
 
 TEST_F(CRDHostDelegateTest, ShouldSendConnectMessageOnHelloResponse) {
-  StartCRDHostAndGetCode(/*auth_token=*/"the-auth-token",
-                         /*terminate_upon_input=*/true);
+  StartCRDHostAndGetCode();
+  host().WaitForHello();
+  host().PostMessageOfType("helloResponse");
+
+  host().WaitForMessageOfType(remoting::kConnectMessage);
+}
+
+TEST_F(CRDHostDelegateTest, ShouldSendAuthTokenInConnectMessage) {
+  SessionParameters parameters;
+  parameters.oauth_token = "the-oauth-token";
+  StartCRDHostAndGetCode(parameters);
+
   host().WaitForHello();
   host().PostMessageOfType("helloResponse");
 
   base::Value response = host().WaitForMessageOfType(remoting::kConnectMessage);
   EXPECT_STRING_KEY(response, remoting::kAuthServiceWithToken,
-                    "oauth2:the-auth-token");
+                    "oauth2:the-oauth-token");
+}
+
+TEST_F(CRDHostDelegateTest, ShouldSendUserNameInConnectMessage) {
+  SessionParameters parameters;
+  parameters.user_name = "the-user-name";
+  StartCRDHostAndGetCode(parameters);
+
+  host().WaitForHello();
+  host().PostMessageOfType("helloResponse");
+
+  base::Value response = host().WaitForMessageOfType(remoting::kConnectMessage);
+  EXPECT_STRING_KEY(response, remoting::kUserName, "the-user-name");
+}
+
+TEST_F(CRDHostDelegateTest, ShouldSendTerminateUponInputTrueInConnectMessage) {
+  SessionParameters parameters;
+  parameters.terminate_upon_input = true;
+  StartCRDHostAndGetCode(parameters);
+
+  host().WaitForHello();
+  host().PostMessageOfType("helloResponse");
+
+  base::Value response = host().WaitForMessageOfType(remoting::kConnectMessage);
   EXPECT_BOOL_KEY(response, remoting::kTerminateUponInput, true);
+}
+
+TEST_F(CRDHostDelegateTest, ShouldSendTerminateUponInputFalseInConnectMessage) {
+  SessionParameters parameters;
+  parameters.terminate_upon_input = false;
+  StartCRDHostAndGetCode(parameters);
+
+  host().WaitForHello();
+  host().PostMessageOfType("helloResponse");
+
+  base::Value response = host().WaitForMessageOfType(remoting::kConnectMessage);
+  EXPECT_BOOL_KEY(response, remoting::kTerminateUponInput, false);
+}
+
+TEST_F(CRDHostDelegateTest,
+       ShouldSendShowConfirmationDialogTrueInConnectMessage) {
+  SessionParameters parameters;
+  parameters.show_confirmation_dialog = true;
+  StartCRDHostAndGetCode(parameters);
+
+  host().WaitForHello();
+  host().PostMessageOfType("helloResponse");
+
+  base::Value response = host().WaitForMessageOfType(remoting::kConnectMessage);
+  EXPECT_BOOL_KEY(response, remoting::kSuppressNotifications, false);
+  EXPECT_BOOL_KEY(response, remoting::kSuppressUserDialogs, false);
+}
+
+TEST_F(CRDHostDelegateTest,
+       ShouldSendShowConfirmationDialogFalseInConnectMessage) {
+  SessionParameters parameters;
+  parameters.show_confirmation_dialog = false;
+  StartCRDHostAndGetCode(parameters);
+
+  host().WaitForHello();
+  host().PostMessageOfType("helloResponse");
+
+  base::Value response = host().WaitForMessageOfType(remoting::kConnectMessage);
+  EXPECT_BOOL_KEY(response, remoting::kSuppressNotifications, true);
+  EXPECT_BOOL_KEY(response, remoting::kSuppressUserDialogs, true);
 }
 
 TEST_F(CRDHostDelegateTest, ShouldSendAccessCodeToCallback) {

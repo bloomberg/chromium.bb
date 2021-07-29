@@ -8,9 +8,11 @@
 #include <memory>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "base/thread_annotations.h"
 #include "base/time/clock.h"
 #include "content/browser/conversions/conversion_report.h"
 #include "content/browser/conversions/conversion_storage.h"
@@ -55,8 +57,6 @@ class CONTENT_EXPORT ConversionStorageSql : public ConversionStorage {
   };
 
  private:
-  friend class ConversionStorageSqlMigrations;
-
   enum class DbStatus {
     // The database has never been created, i.e. there is no database file at
     // all.
@@ -83,7 +83,6 @@ class CONTENT_EXPORT ConversionStorageSql : public ConversionStorage {
   std::vector<ConversionReport> GetConversionsToReport(base::Time expiry_time,
                                                        int limit = -1) override;
   std::vector<StorableImpression> GetActiveImpressions(int limit = -1) override;
-  int DeleteExpiredImpressions() override;
   bool DeleteConversion(int64_t conversion_id) override;
   void ClearData(
       base::Time delete_begin,
@@ -91,19 +90,67 @@ class CONTENT_EXPORT ConversionStorageSql : public ConversionStorage {
       base::RepeatingCallback<bool(const url::Origin&)> filter) override;
 
   // Variants of ClearData that assume all Origins match the filter.
-  void ClearAllDataInRange(base::Time delete_begin, base::Time delete_end);
-  void ClearAllDataAllTime();
+  void ClearAllDataInRange(base::Time delete_begin, base::Time delete_end)
+      VALID_CONTEXT_REQUIRED(sequence_checker_);
+  void ClearAllDataAllTime() VALID_CONTEXT_REQUIRED(sequence_checker_);
 
-  bool HasCapacityForStoringImpression(const std::string& serialized_origin);
-  int GetCapacityForStoringConversion(const std::string& serialized_origin);
+  // Returns false on failure.
+  bool DeleteImpressions(const std::vector<int64_t>& impression_ids)
+      VALID_CONTEXT_REQUIRED(sequence_checker_) WARN_UNUSED_RESULT;
+
+  // Deletes all impressions that have expired and have no pending conversion
+  // reports.
+  void DeleteExpiredImpressions() VALID_CONTEXT_REQUIRED(sequence_checker_);
+
+  // Deletes the conversion with `conversion_id` without checking the the DB
+  // initialization status or the number of deleted rows. Returns false on
+  // failure.
+  bool DeleteConversionInternal(int64_t conversion_id)
+      VALID_CONTEXT_REQUIRED(sequence_checker_) WARN_UNUSED_RESULT;
+
+  bool HasCapacityForStoringImpression(const std::string& serialized_origin)
+      VALID_CONTEXT_REQUIRED(sequence_checker_) WARN_UNUSED_RESULT;
+  int GetCapacityForStoringConversion(const std::string& serialized_origin)
+      VALID_CONTEXT_REQUIRED(sequence_checker_) WARN_UNUSED_RESULT;
+
+  enum class MaybeReplaceLowerPriorityReportResult {
+    kError,
+    kAddNewReport,
+    kDropNewReport,
+    kReplaceOldReport,
+  };
+  MaybeReplaceLowerPriorityReportResult MaybeReplaceLowerPriorityReport(
+      const StorableImpression& impression,
+      int num_conversions,
+      int64_t conversion_priority,
+      base::Time report_time)
+      VALID_CONTEXT_REQUIRED(sequence_checker_) WARN_UNUSED_RESULT;
+
+  // When storing an event-source impression, deletes active event-source
+  // impressions in order by |impression_time| until there are sufficiently few
+  // unique conversion destinations for the same |impression_site|.
+  bool EnsureCapacityForPendingDestinationLimit(
+      const StorableImpression& impression)
+      VALID_CONTEXT_REQUIRED(sequence_checker_) WARN_UNUSED_RESULT;
+
+  // Stores |report| in the database, but uses |impression_id| rather than
+  // |ConversionReport::impression::impression_id()|, which may be null.
+  bool StoreConversionReport(const ConversionReport& report,
+                             int64_t impression_id,
+                             int64_t priority)
+      VALID_CONTEXT_REQUIRED(sequence_checker_) WARN_UNUSED_RESULT;
 
   // Initializes the database if necessary, and returns whether the database is
   // open. |should_create| indicates whether the database should be created if
   // it is not already.
-  bool LazyInit(DbCreationPolicy creation_policy);
-  bool InitializeSchema(bool db_empty);
-  bool CreateSchema();
-  void HandleInitializationFailure(const InitStatus status);
+  bool LazyInit(DbCreationPolicy creation_policy)
+      VALID_CONTEXT_REQUIRED(sequence_checker_) WARN_UNUSED_RESULT;
+  bool InitializeSchema(bool db_empty)
+      VALID_CONTEXT_REQUIRED(sequence_checker_) WARN_UNUSED_RESULT;
+  bool CreateSchema()
+      VALID_CONTEXT_REQUIRED(sequence_checker_) WARN_UNUSED_RESULT;
+  void HandleInitializationFailure(const InitStatus status)
+      VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   void DatabaseErrorCallback(int extended_error, sql::Statement* stmt);
 
@@ -118,24 +165,25 @@ class CONTENT_EXPORT ConversionStorageSql : public ConversionStorage {
   // at for lazy initialization, and used as a signal for if the database is
   // closed. This is initialized in the first call to LazyInit() to avoid doing
   // additional work in the constructor, see https://crbug.com/1121307.
-  absl::optional<DbStatus> db_init_status_;
+  absl::optional<DbStatus> db_init_status_
+      GUARDED_BY_CONTEXT(sequence_checker_);
 
   // May be null if the database:
   //  - could not be opened
   //  - table/index initialization failed
-  std::unique_ptr<sql::Database> db_;
+  std::unique_ptr<sql::Database> db_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   // Table which stores timestamps of sent reports, and checks if new reports
   // can be created given API rate limits. The underlying table is created in
   // |db_|, but only accessed within |RateLimitTable|.
-  RateLimitTable rate_limit_table_;
+  RateLimitTable rate_limit_table_ GUARDED_BY_CONTEXT(sequence_checker_);
 
-  sql::MetaTable meta_table_;
+  sql::MetaTable meta_table_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   // Must outlive |this|.
   const base::Clock* clock_;
 
-  std::unique_ptr<Delegate> delegate_;
+  std::unique_ptr<Delegate> delegate_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<ConversionStorageSql> weak_factory_;

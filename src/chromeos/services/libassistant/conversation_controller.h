@@ -12,7 +12,7 @@
 #include "base/sequence_checker.h"
 #include "chromeos/assistant/internal/action/assistant_action_observer.h"
 #include "chromeos/services/assistant/public/cpp/conversation_observer.h"
-#include "chromeos/services/libassistant/assistant_manager_observer.h"
+#include "chromeos/services/libassistant/assistant_client_observer.h"
 #include "chromeos/services/libassistant/public/cpp/assistant_notification.h"
 #include "chromeos/services/libassistant/public/mojom/authentication_state_observer.mojom.h"
 #include "chromeos/services/libassistant/public/mojom/conversation_controller.mojom.h"
@@ -21,6 +21,11 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+namespace assistant_client {
+class AssistantManager;
+class AssistantManagerInternal;
+}  // namespace assistant_client
 
 namespace chromeos {
 namespace assistant {
@@ -33,7 +38,7 @@ namespace libassistant {
 
 class COMPONENT_EXPORT(LIBASSISTANT_SERVICE) ConversationController
     : public mojom::ConversationController,
-      public AssistantManagerObserver,
+      public AssistantClientObserver,
       public chromeos::assistant::action::AssistantActionObserver,
       public chromeos::assistant::ConversationObserver {
  public:
@@ -56,19 +61,10 @@ class COMPONENT_EXPORT(LIBASSISTANT_SERVICE) ConversationController
       mojo::PendingRemote<
           chromeos::libassistant::mojom::AuthenticationStateObserver> observer);
 
-  // AssistantManagerObserver:
-  void OnAssistantManagerCreated(
-      assistant_client::AssistantManager* assistant_manager,
-      assistant_client::AssistantManagerInternal* assistant_manager_internal)
-      override;
-  void OnAssistantManagerRunning(
-      assistant_client::AssistantManager* assistant_manager,
-      assistant_client::AssistantManagerInternal* assistant_manager_internal)
-      override;
-  void OnDestroyingAssistantManager(
-      assistant_client::AssistantManager* assistant_manager,
-      assistant_client::AssistantManagerInternal* assistant_manager_internal)
-      override;
+  // AssistantClientObserver:
+  void OnAssistantClientCreated(AssistantClient* assistant_client) override;
+  void OnAssistantClientRunning(AssistantClient* assistant_client) override;
+  void OnDestroyingAssistantClient(AssistantClient* assistant_client) override;
 
   // mojom::ConversationController implementation:
   void SendTextQuery(const std::string& query,

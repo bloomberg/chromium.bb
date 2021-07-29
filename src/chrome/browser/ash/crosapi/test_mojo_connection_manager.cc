@@ -26,32 +26,6 @@ namespace crosapi {
 
 namespace {
 
-constexpr char kFakeGaiaId[] = "fake-gaia-id";
-constexpr char kFakeEmail[] = "fake-email@example.com";
-
-class FakeEnvironmentProvider : public EnvironmentProvider {
-  crosapi::mojom::SessionType GetSessionType() override {
-    return crosapi::mojom::SessionType::kRegularSession;
-  }
-  mojom::DeviceMode GetDeviceMode() override {
-    return crosapi::mojom::DeviceMode::kConsumer;
-  }
-  mojom::DefaultPathsPtr GetDefaultPaths() override {
-    mojom::DefaultPathsPtr paths = mojom::DefaultPaths::New();
-    base::PathService::Get(chrome::DIR_USER_DOCUMENTS, &paths->documents);
-    base::PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &paths->downloads);
-    return paths;
-  }
-  std::string GetDeviceAccountGaiaId() override { return kFakeGaiaId; }
-  absl::optional<account_manager::Account> GetDeviceAccount() override {
-    return absl::make_optional(account_manager::Account{
-        account_manager::AccountKey{kFakeGaiaId,
-                                    account_manager::AccountType::kGaia},
-        kFakeEmail});
-  }
-  bool GetUseNewAccountManager() override { return true; }
-};
-
 // TODO(crbug.com/1124494): Refactor the code to share with ARC.
 base::ScopedFD CreateSocketForTesting(const base::FilePath& socket_path) {
   auto endpoint = mojo::NamedPlatformChannel({socket_path.value()});
@@ -74,7 +48,7 @@ base::ScopedFD CreateSocketForTesting(const base::FilePath& socket_path) {
 
 TestMojoConnectionManager::TestMojoConnectionManager(
     const base::FilePath& socket_path)
-    : environment_provider_(std::make_unique<FakeEnvironmentProvider>()) {
+    : environment_provider_(std::make_unique<EnvironmentProvider>()) {
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock()},
       base::BindOnce(&CreateSocketForTesting, socket_path),
@@ -105,14 +79,6 @@ void TestMojoConnectionManager::OnTestingSocketAvailable() {
     return;
   }
 
-  mojo::PlatformChannel legacy_channel;
-  CrosapiManager::Get()->SendLegacyInvitation(
-      legacy_channel.TakeLocalEndpoint(), base::BindOnce([]() {
-        // Called when the Mojo connection to lacros-chrome is disconnected.
-        // It may be "just a Mojo error" or "test is finished".
-        LOG(WARNING) << "Legacy Mojo to lacros-chrome is disconnected.";
-      }));
-
   mojo::PlatformChannel channel;
   CrosapiManager::Get()->SendInvitation(
       channel.TakeLocalEndpoint(), base::BindOnce([]() {
@@ -128,13 +94,11 @@ void TestMojoConnectionManager::OnTestingSocketAvailable() {
   }
 
   std::vector<base::ScopedFD> fds;
-  fds.push_back(
-      legacy_channel.TakeRemoteEndpoint().TakePlatformHandle().TakeFD());
   fds.push_back(std::move(startup_fd));
   fds.push_back(channel.TakeRemoteEndpoint().TakePlatformHandle().TakeFD());
 
   // Version of protocol Chrome is using.
-  uint8_t protocol_version = 0;
+  uint8_t protocol_version = 1;
   struct iovec iov[] = {{&protocol_version, sizeof(protocol_version)}};
   ssize_t result = mojo::SendmsgWithHandles(connection_fd.get(), iov,
                                             sizeof(iov) / sizeof(iov[0]), fds);

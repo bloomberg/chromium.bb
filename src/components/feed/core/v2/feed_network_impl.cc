@@ -93,9 +93,11 @@ void ParseAndForwardQueryResponse(
     base::OnceCallback<void(FeedNetwork::QueryRequestResult)> result_callback,
     RawResponse raw_response) {
   MetricsReporter::NetworkRequestComplete(
-      request_type, raw_response.response_info.status_code);
+      request_type, raw_response.response_info.status_code,
+      raw_response.response_info.fetch_duration);
   FeedNetwork::QueryRequestResult result;
   result.response_info = raw_response.response_info;
+  result.response_info.fetch_time_ticks = base::TimeTicks::Now();
   if (result.response_info.status_code == 200) {
     ::google::protobuf::io::CodedInputStream input_stream(
         reinterpret_cast<const uint8_t*>(raw_response.response_bytes.data()),
@@ -339,6 +341,7 @@ class FeedNetworkImpl::NetworkFetch {
     response_info.fetch_time = base::Time::Now();
     response_info.base_request_url = GetUrlWithoutQuery(url_);
     response_info.was_signed_in = !access_token_.empty();
+    response_info.loader_start_time_ticks = loader_only_start_ticks_;
 
     // If overriding the feed host, try to grab the Bless nonce. This is
     // strictly informational, and only displayed in snippets-internals.

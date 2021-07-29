@@ -76,17 +76,16 @@ namespace fileManagerPrivateInternal {
     static void pinDriveFile(DOMString url,
                              boolean pin,
                              SimpleCallback callback);
-    static void executeTask(DOMString taskId,
+    static void executeTask(fileManagerPrivate.FileTaskDescriptor descriptor,
                             DOMString[] urls,
                             ExecuteTaskCallback callback);
-    static void setDefaultTask(DOMString taskId,
+    static void setDefaultTask(fileManagerPrivate.FileTaskDescriptor descriptor,
                                DOMString[] urls,
                                DOMString[] mimeTypes,
                                SimpleCallback callback);
     static void getFileTasks(DOMString[] urls,
                              GetFileTasksCallback callback);
     static void getDownloadUrl(DOMString url, GetUrlCallback callback);
-    static void copyImageToClipboard(DOMString url, BooleanCallback callback);
     static void startCopy(DOMString url,
                           DOMString parentUrl,
                           DOMString newName,
@@ -95,6 +94,7 @@ namespace fileManagerPrivateInternal {
                              DOMString[] urls,
                              DOMString destName,
                              ZipSelectionCallback callback);
+    static void cancelZip(DOMString parentUrl, DOMString destName);
     static void validatePathNameLength(
         DOMString parentUrl,
         DOMString name,

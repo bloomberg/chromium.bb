@@ -17,6 +17,8 @@
 #include "build/build_config.h"
 #include "content/browser/file_system_access/fixed_file_system_access_permission_grant.h"
 #include "content/public/test/browser_task_environment.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/test/test_file_system_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -65,6 +67,22 @@ class FileSystemAccessDirectoryHandleImplTest : public testing::Test {
   }
 
   void TearDown() override { task_environment_.RunUntilIdle(); }
+
+  std::unique_ptr<FileSystemAccessDirectoryHandleImpl>
+  GetHandleWithPermissions(const base::FilePath& path, bool read, bool write) {
+    auto url_and_fs = manager_->CreateFileSystemURLFromPath(
+        test_src_origin_, FileSystemAccessEntryFactory::PathType::kLocal, path);
+    auto handle = std::make_unique<FileSystemAccessDirectoryHandleImpl>(
+        manager_.get(),
+        FileSystemAccessManagerImpl::BindingContext(
+            test_src_origin_, test_src_url_, /*worker_process_id=*/1),
+        url_and_fs.url,
+        FileSystemAccessManagerImpl::SharedHandleState(
+            /*read_grant=*/read ? allow_grant_ : deny_grant_,
+            /*write_grant=*/write ? allow_grant_ : deny_grant_,
+            url_and_fs.file_system));
+    return handle;
+  }
 
  protected:
   const GURL test_src_url_ = GURL("http://example.com/foo");
@@ -266,6 +284,41 @@ TEST_F(FileSystemAccessDirectoryHandleImplTest, GetEntries_NoReadAccess) {
   EXPECT_EQ(result->status,
             blink::mojom::FileSystemAccessStatus::kPermissionDenied);
   EXPECT_TRUE(entries.empty());
+}
+
+TEST_F(FileSystemAccessDirectoryHandleImplTest, Remove_NoWriteAccess) {
+  base::FilePath dir = dir_.GetPath().AppendASCII("dirname");
+  ASSERT_TRUE(base::CreateDirectory(dir));
+
+  auto handle = GetHandleWithPermissions(dir, /*read=*/true, /*write=*/false);
+
+  base::RunLoop loop;
+  handle->Remove(
+      /*recurse=*/false,
+      base::BindLambdaForTesting([&dir](blink::mojom::FileSystemAccessErrorPtr
+                                            result) {
+        EXPECT_EQ(result->status,
+                  blink::mojom::FileSystemAccessStatus::kPermissionDenied);
+        EXPECT_TRUE(base::DirectoryExists(dir));
+      }).Then(loop.QuitClosure()));
+  loop.Run();
+}
+
+TEST_F(FileSystemAccessDirectoryHandleImplTest, Remove_HasWriteAccess) {
+  base::FilePath dir = dir_.GetPath().AppendASCII("dirname");
+  ASSERT_TRUE(base::CreateDirectory(dir));
+
+  auto handle = GetHandleWithPermissions(dir, /*read=*/true, /*write=*/true);
+
+  base::RunLoop loop;
+  handle->Remove(
+      /*recurse=*/false,
+      base::BindLambdaForTesting([&dir](blink::mojom::FileSystemAccessErrorPtr
+                                            result) {
+        EXPECT_EQ(result->status, blink::mojom::FileSystemAccessStatus::kOk);
+        EXPECT_FALSE(base::DirectoryExists(dir));
+      }).Then(loop.QuitClosure()));
+  loop.Run();
 }
 
 }  // namespace content

@@ -221,7 +221,7 @@ static const AVClass wmv2_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVCodec ff_wmv2_encoder = {
+const AVCodec ff_wmv2_encoder = {
     .name           = "wmv2",
     .long_name      = NULL_IF_CONFIG_SMALL("Windows Media Video 8"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -231,7 +231,7 @@ AVCodec ff_wmv2_encoder = {
     .init           = wmv2_encode_init,
     .encode2        = ff_mpv_encode_picture,
     .close          = ff_mpv_encode_end,
-    .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
     .pix_fmts       = (const enum AVPixelFormat[]) { AV_PIX_FMT_YUV420P,
                                                      AV_PIX_FMT_NONE },
 };

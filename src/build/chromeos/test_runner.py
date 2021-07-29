@@ -31,8 +31,10 @@ CHROMIUM_SRC_PATH = os.path.abspath(
 # output json ourselves.
 sys.path.insert(0, os.path.join(CHROMIUM_SRC_PATH, 'build', 'android'))
 from pylib.base import base_test_result  # pylint: disable=import-error
-from pylib.base import result_sink  # pylint: disable=import-error
 from pylib.results import json_results  # pylint: disable=import-error
+
+sys.path.insert(0, os.path.join(CHROMIUM_SRC_PATH, 'build', 'util'))
+from lib.results import result_sink  # pylint: disable=import-error
 
 if six.PY2:
   import subprocess32 as subprocess  # pylint: disable=import-error
@@ -239,6 +241,8 @@ class RemoteTest(object):
       run_results.AddResult(suite_result)
       with open(self._test_launcher_summary_output, 'w') as f:
         json.dump(json_results.GenerateResultsDict([run_results]), f)
+      if self._rdb_client:
+        self._rdb_client.Post(self.suite_name, result, None, None, None)
 
   @staticmethod
   def get_artifacts(path):
@@ -450,8 +454,13 @@ class TastTest(RemoteTest):
         # inside as an RDB 'artifact'. (This could include system logs, screen
         # shots, etc.)
         artifacts = self.get_artifacts(test['outDir'])
-        self._rdb_client.Post(test['name'], result, duration_ms, error_log,
-                              artifacts)
+        self._rdb_client.Post(
+            test['name'],
+            result,
+            duration_ms,
+            error_log,
+            None,
+            artifacts=artifacts)
 
     if self._rdb_client and self._logs_dir:
       # Attach artifacts from the device that don't apply to a single test.
@@ -961,7 +970,7 @@ def main():
       '-t',
       action='append',
       dest='tests',
-      help='A Tast test to run in the device (eg: "ui.ChromeLogin").')
+      help='A Tast test to run in the device (eg: "login.Chrome").')
   tast_test_parser.add_argument(
       '--gtest_filter',
       type=str,

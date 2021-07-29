@@ -26,7 +26,7 @@ namespace payments {
 // static
 bool PaymentCredential::IsFrameAllowedToUseSecurePaymentConfirmation(
     content::RenderFrameHost* rfh) {
-  return rfh && rfh->IsCurrent() &&
+  return rfh && rfh->IsActive() &&
          rfh->IsFeatureEnabled(
              blink::mojom::PermissionsPolicyFeature::kPayment) &&
          base::FeatureList::IsEnabled(features::kSecurePaymentConfirmation);
@@ -34,7 +34,7 @@ bool PaymentCredential::IsFrameAllowedToUseSecurePaymentConfirmation(
 
 PaymentCredential::PaymentCredential(
     content::WebContents* web_contents,
-    content::GlobalFrameRoutingId initiator_frame_routing_id,
+    content::GlobalRenderFrameHostId initiator_frame_routing_id,
     scoped_refptr<PaymentManifestWebDataService> web_data_service,
     mojo::PendingReceiver<mojom::PaymentCredential> receiver)
     : WebContentsObserver(web_contents),

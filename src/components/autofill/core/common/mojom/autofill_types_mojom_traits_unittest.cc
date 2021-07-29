@@ -35,8 +35,9 @@ bool EquivalentData(const T& a, const T& b) {
 
 void CreateTestFieldDataPredictions(const std::string& signature,
                                     FormFieldDataPredictions* field_predict) {
+  field_predict->host_form_signature = "TestHostFormSignature";
   field_predict->signature = signature;
-  field_predict->heuristic_type = "TestSignature";
+  field_predict->heuristic_type = "TestHeuristicType";
   field_predict->server_type = "TestServerType";
   field_predict->overall_type = "TestOverallType";
   field_predict->parseable_name = "TestParseableName";
@@ -86,8 +87,12 @@ void CheckEqualPasswordFormFillData(const PasswordFormFillData& expected,
   EXPECT_EQ(expected.form_renderer_id, actual.form_renderer_id);
   EXPECT_EQ(expected.url, actual.url);
   EXPECT_EQ(expected.action, actual.action);
-  EXPECT_TRUE(EquivalentData(expected.username_field, actual.username_field));
-  EXPECT_TRUE(EquivalentData(expected.password_field, actual.password_field));
+  EXPECT_TRUE(
+      EquivalentData(test::WithoutUnserializedData(expected.username_field),
+                     actual.username_field));
+  EXPECT_TRUE(
+      EquivalentData(test::WithoutUnserializedData(expected.password_field),
+                     actual.password_field));
   EXPECT_EQ(expected.preferred_realm, actual.preferred_realm);
   EXPECT_EQ(expected.uses_account_store, actual.uses_account_store);
 
@@ -120,7 +125,8 @@ void CheckEqualPassPasswordGenerationUIData(
   EXPECT_EQ(expected.is_generation_element_password_type,
             actual.is_generation_element_password_type);
   EXPECT_EQ(expected.text_direction, actual.text_direction);
-  EXPECT_TRUE(expected.form_data.SameFormAs(actual.form_data));
+  EXPECT_TRUE(test::WithoutUnserializedData(expected.form_data)
+                  .SameFormAs(actual.form_data));
 }
 
 }  // namespace
@@ -185,7 +191,8 @@ class AutofillTypeTraitsTestImpl : public testing::Test,
 void ExpectFormFieldData(const FormFieldData& expected,
                          base::OnceClosure closure,
                          const FormFieldData& passed) {
-  EXPECT_TRUE(EquivalentData(expected, passed));
+  EXPECT_TRUE(passed.host_frame.is_empty());
+  EXPECT_TRUE(EquivalentData(test::WithoutUnserializedData(expected), passed));
   EXPECT_EQ(expected.value, passed.value);
   EXPECT_EQ(expected.user_input, passed.user_input);
   std::move(closure).Run();
@@ -194,7 +201,8 @@ void ExpectFormFieldData(const FormFieldData& expected,
 void ExpectFormData(const FormData& expected,
                     base::OnceClosure closure,
                     const FormData& passed) {
-  EXPECT_TRUE(EquivalentData(expected, passed));
+  EXPECT_TRUE(passed.host_frame.is_empty());
+  EXPECT_TRUE(EquivalentData(test::WithoutUnserializedData(expected), passed));
   std::move(closure).Run();
 }
 
@@ -205,9 +213,10 @@ void ExpectFormFieldDataPredictions(const FormFieldDataPredictions& expected,
   std::move(closure).Run();
 }
 
-void ExpectFormDataPredictions(const FormDataPredictions& expected,
+void ExpectFormDataPredictions(FormDataPredictions expected,
                                base::OnceClosure closure,
                                const FormDataPredictions& passed) {
+  expected.data = test::WithoutUnserializedData(expected.data);
   EXPECT_EQ(expected, passed);
   std::move(closure).Run();
 }
@@ -242,7 +251,7 @@ TEST_F(AutofillTypeTraitsTestImpl, PassFormFieldData) {
   test::CreateTestSelectField("TestLabel", "TestName", "TestValue", kOptions,
                               kOptions, 4, &input);
   // Set other attributes to check if they are passed correctly.
-  input.host_frame = LocalFrameToken(base::UnguessableToken::Create());
+  input.host_frame = test::GetLocalFrameToken();
   input.unique_renderer_id = FieldRendererId(1234);
   input.id_attribute = u"id";
   input.name_attribute = u"name";
@@ -261,6 +270,7 @@ TEST_F(AutofillTypeTraitsTestImpl, PassFormFieldData) {
   input.user_input = u"TestTypedValue";
   input.bounds = gfx::RectF(1, 2, 10, 100);
 
+  EXPECT_FALSE(input.host_frame.is_empty());
   base::RunLoop loop;
   mojo::Remote<mojom::TypeTraitsTest> remote(GetTypeTraitsTestRemote());
   remote->PassFormFieldData(
@@ -274,7 +284,7 @@ TEST_F(AutofillTypeTraitsTestImpl, PassDataListFormFieldData) {
   test::CreateTestDatalistField("DatalistLabel", "DatalistName",
                                 "DatalistValue", kOptions, kOptions, &input);
   // Set other attributes to check if they are passed correctly.
-  input.host_frame = LocalFrameToken(base::UnguessableToken::Create());
+  input.host_frame = test::GetLocalFrameToken();
   input.unique_renderer_id = FieldRendererId(1234);
   input.id_attribute = u"id";
   input.name_attribute = u"name";
@@ -293,6 +303,7 @@ TEST_F(AutofillTypeTraitsTestImpl, PassDataListFormFieldData) {
   input.user_input = u"TestTypedValue";
   input.bounds = gfx::RectF(1, 2, 10, 100);
 
+  EXPECT_FALSE(input.host_frame.is_empty());
   base::RunLoop loop;
   mojo::Remote<mojom::TypeTraitsTest> remote(GetTypeTraitsTestRemote());
   remote->PassFormFieldData(
@@ -309,6 +320,7 @@ TEST_F(AutofillTypeTraitsTestImpl, PassFormData) {
   input.button_titles.push_back(std::make_pair(
       u"Sign-up", mojom::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE));
 
+  EXPECT_FALSE(input.host_frame.is_empty());
   base::RunLoop loop;
   mojo::Remote<mojom::TypeTraitsTest> remote(GetTypeTraitsTestRemote());
   remote->PassFormData(

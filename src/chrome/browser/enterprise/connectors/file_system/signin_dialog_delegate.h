@@ -38,16 +38,11 @@ class FileSystemSigninDialogDelegate
   using AuthorizationCompletedCallback = AccessTokenFetcher::TokenCallback;
 
   ~FileSystemSigninDialogDelegate() override;
-
-  static void ShowDialog(content::WebContents* web_contents,
-                         const FileSystemSettings& settings,
-                         AuthorizationCompletedCallback callback);
-
- private:
   FileSystemSigninDialogDelegate(content::BrowserContext* browser_context,
                                  const FileSystemSettings& settings,
                                  AuthorizationCompletedCallback callback);
 
+ private:
   // ChromeWebModalDialogManagerDelegate:
   web_modal::WebContentsModalDialogHost* GetWebContentsModalDialogHost()
       override;
@@ -62,7 +57,6 @@ class FileSystemSigninDialogDelegate
   // views::DialogDelegate:
   gfx::Size CalculatePreferredSize() const override;
   ui::ModalType GetModalType() const override;
-  void DeleteDelegate() override;
   views::View* GetInitiallyFocusedView() override;
 
   void OnCancellation();
@@ -74,6 +68,13 @@ class FileSystemSigninDialogDelegate
   void OnGotOAuthTokens(const GoogleServiceAuthError& status,
                         const std::string& access_token,
                         const std::string& refresh_token);
+
+  // Return extra URL parameters that are specific to a given service provider.
+  // May return the empty string if there are none.
+  std::string GetProviderSpecificUrlParameters();
+
+  // Return display name for the service provider.
+  std::u16string GetProviderName() const;
 
   const FileSystemSettings settings_;
   std::unique_ptr<views::WebView> web_view_;

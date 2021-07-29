@@ -66,10 +66,11 @@ SigninNotificationInfoBarDelegate::SigninNotificationInfoBarDelegate(
   AuthenticationService* auth_service =
       AuthenticationServiceFactory::GetForBrowserState(browser_state);
   DCHECK(auth_service);
-  ChromeIdentity* identity = auth_service->GetAuthenticatedIdentity();
+  ChromeIdentity* identity =
+      auth_service->GetPrimaryIdentity(signin::ConsentLevel::kSignin);
 
   UIImage* image = ios::GetChromeBrowserProvider()
-                       ->GetChromeIdentityService()
+                       .GetChromeIdentityService()
                        ->GetCachedAvatarForIdentity(identity);
   if (!image) {
     image = [UIImage imageNamed:@"ios_default_avatar"];

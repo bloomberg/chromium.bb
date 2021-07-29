@@ -217,11 +217,14 @@ void AppServiceProxyBase::LaunchAppWithFiles(
 
           RecordAppPlatformMetrics(profile_, update, launch_source, container);
 
-          // TODO(crbug/1117655): Presently, app launch metrics are recorded in
-          // the caller. We should record them here, with the same SWA logic as
-          // AppServiceProxy::Launch. There is an if statement to detect
-          // launches from the file manager in LaunchSystemWebApp that should be
-          // removed at the same time.
+          // TODO(crbug/1117655): File manager records metrics for apps it
+          // launched. So we only record launches from other places. We should
+          // eventually move those metrics here, after AppService supports all
+          // app types launched by file manager.
+          if (launch_source != apps::mojom::LaunchSource::kFromFileManager) {
+            RecordAppLaunch(update.AppId(), launch_source);
+          }
+
           app_service_->LaunchAppWithFiles(
               update.AppType(), update.AppId(), container, event_flags,
               launch_source, std::move(file_paths));
@@ -247,6 +250,7 @@ void AppServiceProxyBase::LaunchAppWithIntent(
     apps::mojom::IntentPtr intent,
     apps::mojom::LaunchSource launch_source,
     apps::mojom::WindowInfoPtr window_info) {
+  CHECK(intent);
   if (app_service_.is_connected()) {
     app_registry_cache_.ForOneApp(
         app_id, [this, event_flags, &intent, launch_source,
@@ -353,9 +357,11 @@ apps::IconLoader* AppServiceProxyBase::OverrideInnerIconLoaderForTesting(
 
 std::vector<std::string> AppServiceProxyBase::GetAppIdsForUrl(
     const GURL& url,
-    bool exclude_browsers) {
+    bool exclude_browsers,
+    bool exclude_browser_tab_apps) {
   auto intent_launch_info =
-      GetAppsForIntent(apps_util::CreateIntentFromUrl(url), exclude_browsers);
+      GetAppsForIntent(apps_util::CreateIntentFromUrl(url), exclude_browsers,
+                       exclude_browser_tab_apps);
   std::vector<std::string> app_ids;
   for (auto& entry : intent_launch_info) {
     app_ids.push_back(std::move(entry.app_id));
@@ -365,7 +371,8 @@ std::vector<std::string> AppServiceProxyBase::GetAppIdsForUrl(
 
 std::vector<IntentLaunchInfo> AppServiceProxyBase::GetAppsForIntent(
     const apps::mojom::IntentPtr& intent,
-    bool exclude_browsers) {
+    bool exclude_browsers,
+    bool exclude_browser_tab_apps) {
   std::vector<IntentLaunchInfo> intent_launch_info;
   if (apps_util::OnlyShareToDrive(intent) ||
       !apps_util::IsIntentValid(intent)) {
@@ -374,9 +381,15 @@ std::vector<IntentLaunchInfo> AppServiceProxyBase::GetAppsForIntent(
 
   if (app_service_.is_bound()) {
     app_registry_cache_.ForEachApp([&intent_launch_info, &intent,
-                                    &exclude_browsers](
+                                    &exclude_browsers,
+                                    &exclude_browser_tab_apps](
                                        const apps::AppUpdate& update) {
-      if (!apps_util::IsInstalled(update.Readiness())) {
+      if (!apps_util::IsInstalled(update.Readiness()) ||
+          update.ShowInLauncher() != apps::mojom::OptionalBool::kTrue) {
+        return;
+      }
+      if (exclude_browser_tab_apps &&
+          update.WindowMode() == mojom::WindowMode::kBrowser) {
         return;
       }
       std::set<std::string> existing_activities;
@@ -439,6 +452,14 @@ void AppServiceProxyBase::AddPreferredApp(
     app_service_->AddPreferredApp(app_registry_cache_.GetAppType(app_id),
                                   app_id, std::move(intent_filter),
                                   intent->Clone(), kFromPublisher);
+  }
+}
+
+void AppServiceProxyBase::SetWindowMode(const std::string& app_id,
+                                        apps::mojom::WindowMode window_mode) {
+  if (app_service_.is_connected()) {
+    app_service_->SetWindowMode(app_registry_cache_.GetAppType(app_id), app_id,
+                                window_mode);
   }
 }
 

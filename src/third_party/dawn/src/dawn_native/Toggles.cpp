@@ -176,19 +176,52 @@ namespace dawn_native {
               "GPUs which have a driver bug in the execution of CopyTextureRegion() when we copy "
               "with the formats whose texel block sizes are less than 4 bytes from a greater mip "
               "level to a smaller mip level on D3D12 backends.",
-              "https://crbug.com/1161355"}}
+              "https://crbug.com/1161355"}},
+            {Toggle::EmitHLSLDebugSymbols,
+             {"emit_hlsl_debug_symbols",
+              "Sets the D3DCOMPILE_SKIP_OPTIMIZATION and D3DCOMPILE_DEBUG compilation flags when "
+              "compiling HLSL code. Enables better shader debugging with external graphics "
+              "debugging tools.",
+              "https://crbug.com/dawn/776"}},
+            {Toggle::DisallowSpirv,
+             {"disallow_spirv",
+              "Disallow usage of SPIR-V completely so that only WGSL is used for shader modules."
+              "This is useful to prevent a Chromium renderer process from successfully sending"
+              "SPIR-V code to be compiled in the GPU process.",
+              "https://crbug.com/1214923"}},
+            {Toggle::DumpShaders,
+             {"dump_shaders",
+              "Dump shaders for debugging purposes. Dumped shaders will be log via "
+              "EmitLog, thus printed in Chrome console or consumed by user-defined callback "
+              "function.",
+              "https://crbug.com/dawn/792"}},
+            {Toggle::DEPRECATED_DumpTranslatedShaders,
+             {"dump_translated_shaders", "Deprecated. Use dump_shaders",
+              "https://crbug.com/dawn/792"}},
+            {Toggle::ForceWGSLStep,
+             {"force_wgsl_step",
+              "When ingesting SPIR-V shaders, force a first conversion to WGSL. This allows "
+              "testing Tint's SPIRV->WGSL translation on real content to be sure that it will "
+              "work when the same translation runs in a WASM module in the page.",
+              "https://crbug.com/dawn/960"}},
             // Dummy comment to separate the }} so it is clearer what to copy-paste to add a toggle.
         }};
-
     }  // anonymous namespace
 
     void TogglesSet::Set(Toggle toggle, bool enabled) {
+        if (toggle == Toggle::DEPRECATED_DumpTranslatedShaders) {
+            Set(Toggle::DumpShaders, enabled);
+            return;
+        }
         ASSERT(toggle != Toggle::InvalidEnum);
         const size_t toggleIndex = static_cast<size_t>(toggle);
         toggleBitset.set(toggleIndex, enabled);
     }
 
     bool TogglesSet::Has(Toggle toggle) const {
+        if (toggle == Toggle::DEPRECATED_DumpTranslatedShaders) {
+            return Has(Toggle::DumpShaders);
+        }
         ASSERT(toggle != Toggle::InvalidEnum);
         const size_t toggleIndex = static_cast<size_t>(toggle);
         return toggleBitset.test(toggleIndex);

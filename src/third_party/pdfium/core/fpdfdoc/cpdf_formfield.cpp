@@ -27,8 +27,9 @@
 #include "core/fpdfdoc/cpdf_formcontrol.h"
 #include "core/fpdfdoc/cpdf_generateap.h"
 #include "core/fpdfdoc/cpdf_interactiveform.h"
+#include "core/fxcrt/stl_util.h"
 #include "third_party/base/check.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/containers/contains.h"
 
 namespace {
 
@@ -53,9 +54,9 @@ const CPDF_Object* GetFieldAttrRecursive(const CPDF_Dictionary* pFieldDict,
 Optional<FormFieldType> CPDF_FormField::IntToFormFieldType(int value) {
   if (value >= static_cast<int>(FormFieldType::kUnknown) &&
       value < static_cast<int>(kFormFieldTypeCount)) {
-    return {static_cast<FormFieldType>(value)};
+    return static_cast<FormFieldType>(value);
   }
-  return {};
+  return pdfium::nullopt;
 }
 
 // static
@@ -219,7 +220,7 @@ bool CPDF_FormField::ResetField() {
 }
 
 int CPDF_FormField::CountControls() const {
-  return pdfium::CollectionSize<int>(GetControls());
+  return fxcrt::CollectionSize<int>(GetControls());
 }
 
 CPDF_FormControl* CPDF_FormField::GetControl(int index) const {
@@ -279,6 +280,11 @@ uint32_t CPDF_FormField::GetFieldFlags() const {
   const CPDF_Object* pObj =
       GetFieldAttr(m_pDict.Get(), pdfium::form_fields::kFf);
   return pObj ? pObj->GetInteger() : 0;
+}
+
+void CPDF_FormField::SetFieldFlags(uint32_t dwFlags) {
+  m_pDict->SetNewFor<CPDF_Number>(pdfium::form_fields::kFf,
+                                  static_cast<int>(dwFlags));
 }
 
 ByteString CPDF_FormField::GetDefaultStyle() const {
@@ -512,7 +518,7 @@ void CPDF_FormField::SetItemSelectionSelected(int index,
     return;
   }
 
-  SelectOption(index, true, NotificationOption::kDoNotNotify);
+  SelectOption(index);
   if (!m_bIsMultiSelectListBox) {
     m_pDict->SetNewFor<CPDF_String>(pdfium::form_fields::kV, opt_value);
     return;
@@ -732,58 +738,22 @@ bool CPDF_FormField::IsSelectedIndex(int iOptIndex) const {
          pSelectedIndicesObject->GetInteger() == iOptIndex;
 }
 
-bool CPDF_FormField::SelectOption(int iOptIndex,
-                                  bool bSelected,
-                                  NotificationOption notify) {
+void CPDF_FormField::SelectOption(int iOptIndex) {
   CPDF_Array* pArray = m_pDict->GetArrayFor("I");
-  if (!pArray) {
-    if (!bSelected)
-      return true;
-
+  if (!pArray)
     pArray = m_pDict->SetNewFor<CPDF_Array>("I");
-  }
 
-  bool bReturn = false;
   for (size_t i = 0; i < pArray->size(); i++) {
     int iFind = pArray->GetIntegerAt(i);
-    if (iFind == iOptIndex) {
-      if (bSelected)
-        return true;
-
-      if (notify == NotificationOption::kNotify && m_pForm->GetFormNotify()) {
-        WideString csValue = GetOptionLabel(iOptIndex);
-        if (!NotifyListOrComboBoxBeforeChange(csValue))
-          return false;
-      }
-      pArray->RemoveAt(i);
-      bReturn = true;
-      break;
-    }
+    if (iFind == iOptIndex)
+      return;
 
     if (iFind > iOptIndex) {
-      if (!bSelected)
-        continue;
-
-      if (notify == NotificationOption::kNotify && m_pForm->GetFormNotify()) {
-        WideString csValue = GetOptionLabel(iOptIndex);
-        if (!NotifyListOrComboBoxBeforeChange(csValue))
-          return false;
-      }
       pArray->InsertNewAt<CPDF_Number>(i, iOptIndex);
-      bReturn = true;
-      break;
+      return;
     }
   }
-  if (!bReturn) {
-    if (bSelected)
-      pArray->AppendNew<CPDF_Number>(iOptIndex);
-    if (pArray->IsEmpty())
-      m_pDict->RemoveFor("I");
-  }
-  if (notify == NotificationOption::kNotify)
-    NotifyListOrComboBoxAfterChange();
-
-  return true;
+  pArray->AppendNew<CPDF_Number>(iOptIndex);
 }
 
 bool CPDF_FormField::UseSelectedIndicesObject() const {
@@ -888,10 +858,10 @@ void CPDF_FormField::LoadDA() {
 
   CPDF_DefaultAppearance appearance(DA);
   Optional<ByteString> font_name = appearance.GetFont(&m_FontSize);
-  if (!font_name)
+  if (!font_name.has_value())
     return;
 
-  CPDF_Dictionary* pFontDict = pFont->GetDictFor(*font_name);
+  CPDF_Dictionary* pFontDict = pFont->GetDictFor(font_name.value());
   if (!pFontDict)
     return;
 

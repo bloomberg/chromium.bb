@@ -105,7 +105,7 @@ void PaintOpReader::ReadSimple(T* val) {
 
   // Align everything to 4 bytes, as the writer does.
   static constexpr size_t kAlign = 4;
-  size_t size = base::bits::Align(sizeof(T), kAlign);
+  size_t size = base::bits::AlignUp(sizeof(T), kAlign);
 
   if (remaining_bytes_ < size)
     SetInvalid();
@@ -133,7 +133,7 @@ uint8_t* PaintOpReader::CopyScratchSpace(size_t bytes) {
 }
 
 template <typename T>
-void PaintOpReader::ReadFlattenable(sk_sp<T>* val) {
+void PaintOpReader::ReadFlattenable(sk_sp<T>* val, Factory<T> factory) {
   size_t bytes = 0;
   ReadSize(&bytes);
   if (remaining_bytes_ < bytes)
@@ -144,9 +144,7 @@ void PaintOpReader::ReadFlattenable(sk_sp<T>* val) {
     return;
 
   auto* scratch = CopyScratchSpace(bytes);
-  val->reset(static_cast<T*>(
-      SkFlattenable::Deserialize(T::GetFlattenableType(), scratch, bytes)
-          .release()));
+  val->reset(factory(scratch, bytes, nullptr).release());
   if (!val)
     SetInvalid();
 
@@ -227,7 +225,8 @@ void PaintOpReader::Read(SkPath* path) {
       if (!options_.paint_cache->GetPath(path_id, path))
         SetInvalid();
       return;
-    case PaintCacheEntryState::kInlined: {
+    case PaintCacheEntryState::kInlined:
+    case PaintCacheEntryState::kInlinedDoNotCache: {
       size_t path_bytes = 0u;
       ReadSize(&path_bytes);
       if (path_bytes > remaining_bytes_)
@@ -243,7 +242,9 @@ void PaintOpReader::Read(SkPath* path) {
         SetInvalid();
         return;
       }
-      options_.paint_cache->PutPath(path_id, *path);
+      if (entry_state == PaintCacheEntryState::kInlined) {
+        options_.paint_cache->PutPath(path_id, *path);
+      }
       memory_ += path_bytes;
       remaining_bytes_ -= path_bytes;
       return;
@@ -260,9 +261,9 @@ void PaintOpReader::Read(PaintFlags* flags) {
 
   ReadSimple(&flags->bitfields_uint_);
 
-  ReadFlattenable(&flags->path_effect_);
-  ReadFlattenable(&flags->mask_filter_);
-  ReadFlattenable(&flags->color_filter_);
+  ReadFlattenable(&flags->path_effect_, SkPathEffect::Deserialize);
+  ReadFlattenable(&flags->mask_filter_, SkMaskFilter::Deserialize);
+  ReadFlattenable(&flags->color_filter_, SkColorFilter::Deserialize);
 
   if (enable_security_constraints_) {
     size_t bytes = 0;
@@ -272,7 +273,7 @@ void PaintOpReader::Read(PaintFlags* flags) {
       return;
     }
   } else {
-    ReadFlattenable(&flags->draw_looper_);
+    ReadFlattenable(&flags->draw_looper_, SkDrawLooper::Deserialize);
   }
 
   Read(&flags->image_filter_);
@@ -725,7 +726,7 @@ void PaintOpReader::Read(scoped_refptr<SkottieWrapper>* skottie) {
 #endif  // !defined(OS_ANDROID)
 
 void PaintOpReader::AlignMemory(size_t alignment) {
-  size_t padding = base::bits::Align(memory_, alignment) - memory_;
+  size_t padding = base::bits::AlignUp(memory_, alignment) - memory_;
   if (padding > remaining_bytes_)
     SetInvalid();
 
@@ -847,6 +848,9 @@ void PaintOpReader::Read(sk_sp<PaintFilter>* filter) {
     case PaintFilter::Type::kLightingSpot:
       ReadLightingSpotPaintFilter(filter, crop_rect);
       break;
+    case PaintFilter::Type::kStretch:
+      ReadStretchPaintFilter(filter, crop_rect);
+      break;
   }
 }
 
@@ -856,7 +860,7 @@ void PaintOpReader::ReadColorFilterPaintFilter(
   sk_sp<SkColorFilter> color_filter;
   sk_sp<PaintFilter> input;
 
-  ReadFlattenable(&color_filter);
+  ReadFlattenable(&color_filter, SkColorFilter::Deserialize);
   Read(&input);
   if (!color_filter)
     SetInvalid();
@@ -1086,13 +1090,37 @@ void PaintOpReader::ReadImagePaintFilter(
 void PaintOpReader::ReadRecordPaintFilter(
     sk_sp<PaintFilter>* filter,
     const absl::optional<PaintFilter::CropRect>& crop_rect) {
-  SkRect record_bounds;
+  bool has_filter = false;
+  ReadSimple(&has_filter);
+  if (!has_filter) {
+    *filter = nullptr;
+    return;
+  }
+
+  SkRect record_bounds = SkRect::MakeEmpty();
+  gfx::SizeF raster_scale = {0.f, 0.f};
+  PaintShader::ScalingBehavior scaling_behavior =
+      PaintShader::ScalingBehavior::kRasterAtScale;
   sk_sp<PaintRecord> record;
-  Read(&record_bounds);
+
+  ReadSimple(&record_bounds);
+  ReadSimple(&raster_scale);
+  if (raster_scale.width() <= 0.f || raster_scale.height() <= 0.f) {
+    SetInvalid();
+    return;
+  }
+
+  ReadSimple(&scaling_behavior);
+  if (!IsValidPaintShaderScalingBehavior(scaling_behavior)) {
+    SetInvalid();
+    return;
+  }
+
   Read(&record);
   if (!valid_)
     return;
-  filter->reset(new RecordPaintFilter(std::move(record), record_bounds));
+  filter->reset(new RecordPaintFilter(std::move(record), record_bounds,
+                                      raster_scale, scaling_behavior));
 }
 
 void PaintOpReader::ReadMergePaintFilter(
@@ -1310,6 +1338,28 @@ void PaintOpReader::ReadLightingSpotPaintFilter(
       lighting_type, location, target, specular_exponent, cutoff_angle,
       light_color, surface_scale, kconstant, shininess, std::move(input),
       base::OptionalOrNullptr(crop_rect)));
+}
+
+void PaintOpReader::ReadStretchPaintFilter(
+    sk_sp<PaintFilter>* filter,
+    const absl::optional<PaintFilter::CropRect>& crop_rect) {
+  SkScalar stretch_x = 0.f;
+  SkScalar stretch_y = 0.f;
+  SkScalar width = 0.f;
+  SkScalar height = 0.f;
+  sk_sp<PaintFilter> input;
+
+  Read(&stretch_x);
+  Read(&stretch_y);
+  Read(&width);
+  Read(&height);
+  Read(&input);
+
+  if (!valid_)
+    return;
+  filter->reset(new StretchPaintFilter(stretch_x, stretch_y, width, height,
+                                       std::move(input),
+                                       base::OptionalOrNullptr(crop_rect)));
 }
 
 size_t PaintOpReader::Read(sk_sp<PaintRecord>* record) {

@@ -96,6 +96,19 @@ const char kLookalikeInNewTabContent[] = "New tab";
       l10n_util::GetStringUTF8(IDS_LOOKALIKE_URL_PRIMARY_PARAGRAPH);
   _lookalikeBlockingPageNoSuggestionContent = l10n_util::GetStringUTF8(
       IDS_LOOKALIKE_URL_PRIMARY_PARAGRAPH_NO_SUGGESTED_URL);
+
+  if (@available(iOS 15.1, *)) {
+  } else {
+    if (@available(iOS 14.5, *)) {
+      // Workaround https://bugs.webkit.org/show_bug.cgi?id=226323, which breaks
+      // some back/forward navigations between pages that share a renderer
+      // process. Use 'localhost' instead of '127.0.0.1' for the safe URL to
+      // prevent sharing renderer processes with unsafe URLs.
+      GURL::Replacements replacements;
+      replacements.SetHostStr("localhost");
+      _safeURL = _safeURL.ReplaceComponents(replacements);
+    }
+  }
 }
 
 - (void)tearDown {
@@ -329,10 +342,14 @@ const char kLookalikeInNewTabContent[] = "New tab";
 
   // Do a session restoration and verify that all navigation history is
   // preserved. For this test, the policy decider doesn't get installed for
-  // the first page load, so expect the page content instead of the warning.
+  // the first page load, so goForward first and install the policy decider
+  // after a load.
+  [[EarlGrey selectElementWithMatcher:ForwardButton()]
+      performAction:grey_tap()];
   [ChromeEarlGrey triggerRestoreViaTabGridRemoveAllUndo];
-  [ChromeEarlGrey waitForWebStateContainingText:kLookalikeContent];
   [LookalikeUrlAppInterface setUpLookalikeUrlDeciderForWebState];
+  [ChromeEarlGrey goBack];
+  [ChromeEarlGrey waitForWebStateContainingText:_lookalikeBlockingPageContent];
 
   [ChromeEarlGrey goBack];
   [ChromeEarlGrey waitForWebStateContainingText:safeContent2];

@@ -69,10 +69,6 @@ public:
         kElements_Command,
         // no arguments--indicates end of Elements list
         kElementsComplete_Command,
-        // String typeName, SymbolTable symbols, int32[] values
-        kEnum_Command,
-        // uint16 id, String name
-        kEnumType_Command,
         // Expression expression
         kExpressionStatement_Command,
         // uint16 ownerId, uint8 index
@@ -190,11 +186,11 @@ private:
         return this->readS32();
     }
 
-    StringFragment readString() {
+    skstd::string_view readString() {
         uint16_t offset = this->readU16();
         uint8_t length = *(uint8_t*) (fStart + offset);
         const char* chars = (const char*) fStart + offset + 1;
-        return StringFragment(chars, length);
+        return skstd::string_view(chars, length);
     }
 
     void addSymbol(int id, const Symbol* symbol) {

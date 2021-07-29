@@ -8,6 +8,8 @@
 #include "include/sksl/DSLCore.h"
 
 #include "include/private/SkSLDefines.h"
+#include "include/sksl/DSLSymbols.h"
+#include "include/sksl/DSLVar.h"
 #include "src/sksl/SkSLCompiler.h"
 #include "src/sksl/SkSLIRGenerator.h"
 #include "src/sksl/dsl/priv/DSLWriter.h"
@@ -18,6 +20,7 @@
 #include "src/sksl/ir/SkSLForStatement.h"
 #include "src/sksl/ir/SkSLIfStatement.h"
 #include "src/sksl/ir/SkSLReturnStatement.h"
+#include "src/sksl/ir/SkSLStructDefinition.h"
 #include "src/sksl/ir/SkSLSwizzle.h"
 #include "src/sksl/ir/SkSLTernaryExpression.h"
 
@@ -53,12 +56,51 @@ void SetErrorHandler(ErrorHandler* errorHandler) {
 
 class DSLCore {
 public:
-    static DSLVar sk_FragColor() {
-        return DSLVar("sk_FragColor");
+    static std::unique_ptr<SkSL::Program> ReleaseProgram() {
+        DSLWriter& instance = DSLWriter::Instance();
+        SkSL::IRGenerator& ir = DSLWriter::IRGenerator();
+        IRGenerator::IRBundle bundle = ir.finish();
+        Pool* pool = DSLWriter::Instance().fPool.get();
+        auto result = std::make_unique<SkSL::Program>(/*source=*/nullptr,
+                                                      std::move(instance.fConfig),
+                                                      DSLWriter::Instance().fCompiler->fContext,
+                                                      std::move(bundle.fElements),
+                                                      std::move(bundle.fSharedElements),
+                                                      std::move(instance.fModifiersPool),
+                                                      std::move(bundle.fSymbolTable),
+                                                      std::move(instance.fPool),
+                                                      bundle.fInputs);
+        bool success = false;
+        if (DSLWriter::Compiler().errorCount() || DSLWriter::Instance().fEncounteredErrors) {
+            // Make sure that if we encountered any compiler errors, we reported them through the
+            // DSL error handling side of things.
+            SkASSERT(!DSLWriter::Compiler().errorCount() ||
+                     DSLWriter::Instance().fEncounteredErrors);
+            // Do not return programs that failed to compile.
+        } else if (!DSLWriter::Compiler().optimize(*result)) {
+            // Do not return programs that failed to optimize.
+        } else {
+            // We have a successful program!
+            success = true;
+        }
+        if (pool) {
+            pool->detachFromThread();
+        }
+        SkASSERT(DSLWriter::ProgramElements().empty());
+        SkASSERT(!DSLWriter::SymbolTable());
+        return success ? std::move(result) : nullptr;
     }
 
-    static DSLVar sk_FragCoord() {
-        return DSLVar("sk_FragCoord");
+    static DSLGlobalVar sk_FragColor() {
+        return DSLGlobalVar("sk_FragColor");
+    }
+
+    static DSLGlobalVar sk_FragCoord() {
+        return DSLGlobalVar("sk_FragCoord");
+    }
+
+    static DSLExpression sk_Position() {
+        return DSLExpression(Symbol("sk_Position"));
     }
 
     template <typename... Args>
@@ -87,24 +129,27 @@ public:
         if (var.fDeclared) {
             DSLWriter::ReportError("error: variable has already been declared\n", &pos);
         }
-        if (var.fStorage == SkSL::Variable::Storage::kGlobal) {
-            DSLWriter::ReportError("error: this variable must be declared with DeclareGlobal\n",
-                                   &pos);
-        }
         var.fDeclared = true;
         return DSLWriter::Declaration(var);
     }
 
-    static void DeclareGlobal(DSLVar& var, PositionInfo pos) {
+    static void Declare(DSLGlobalVar& var, PositionInfo pos) {
         if (var.fDeclared) {
             DSLWriter::ReportError("error: variable has already been declared\n", &pos);
         }
         var.fDeclared = true;
-        var.fStorage = SkSL::Variable::Storage::kGlobal;
         std::unique_ptr<SkSL::Statement> stmt = DSLWriter::Declaration(var);
         if (stmt) {
             DSLWriter::ProgramElements().push_back(std::make_unique<SkSL::GlobalVarDeclaration>(
                     std::move(stmt)));
+        } else if (var.fName == SkSL::Compiler::FRAGCOLOR_NAME) {
+            // sk_FragColor can end up with a null declaration despite no error occurring due to
+            // specific treatment in the compiler. Ignore the null and just grab the existing
+            // variable from the symbol table.
+            const SkSL::Symbol* alreadyDeclared = (*DSLWriter::SymbolTable())[var.fName];
+            if (alreadyDeclared && alreadyDeclared->is<Variable>()) {
+                var.fVar = &alreadyDeclared->as<Variable>();
+            }
         }
     }
 
@@ -118,15 +163,38 @@ public:
 
     static DSLPossibleStatement For(DSLStatement initializer, DSLExpression test,
                                     DSLExpression next, DSLStatement stmt, PositionInfo pos) {
-        return ForStatement::Convert(DSLWriter::Context(), /*offset=*/-1, initializer.release(),
-                                     test.release(), next.release(), stmt.release(),
+        return ForStatement::Convert(DSLWriter::Context(), /*offset=*/-1,
+                                     initializer.releaseIfValid(), test.releaseIfValid(),
+                                     next.releaseIfValid(), stmt.release(),
                                      DSLWriter::SymbolTable());
     }
 
     static DSLPossibleStatement If(DSLExpression test, DSLStatement ifTrue, DSLStatement ifFalse,
                                    bool isStatic) {
         return IfStatement::Convert(DSLWriter::Context(), /*offset=*/-1, isStatic, test.release(),
-                                    ifTrue.release(), ifFalse.release());
+                                    ifTrue.release(), ifFalse.releaseIfValid());
+    }
+
+    static DSLGlobalVar InterfaceBlock(DSLModifiers modifiers, skstd::string_view typeName,
+                                 SkTArray<DSLField> fields, skstd::string_view varName,
+                                 int arraySize, PositionInfo pos) {
+        // We need to create a new struct type for the interface block, but we don't want it in the
+        // symbol table. Since dsl::Struct automatically sticks it in the symbol table, we create it
+        // the old fashioned way with MakeStructType.
+        std::vector<SkSL::Type::Field> skslFields;
+        skslFields.reserve(fields.count());
+        for (const DSLField& field : fields) {
+            skslFields.push_back(SkSL::Type::Field(SkSL::Modifiers(), field.fName,
+                                                   &field.fType.skslType()));
+        }
+        const SkSL::Type* structType = DSLWriter::SymbolTable()->takeOwnershipOfSymbol(
+                SkSL::Type::MakeStructType(/*offset=*/-1, String(typeName), std::move(skslFields)));
+        DSLType varType = arraySize > 0 ? Array(structType, arraySize) : DSLType(structType);
+        DSLGlobalVar var(modifiers, varType, !varName.empty() ? varName : typeName);
+        DSLWriter::ProgramElements().push_back(std::make_unique<SkSL::InterfaceBlock>(/*offset=*/-1,
+                DSLWriter::Var(var), String(typeName), String(varName), arraySize,
+                DSLWriter::SymbolTable()));
+        return var;
     }
 
     static DSLPossibleStatement Return(DSLExpression value, PositionInfo pos) {
@@ -134,7 +202,7 @@ public:
         // this point we do not know the function's return type. We therefore do not check for
         // errors, or coerce the value to the correct type, until the return statement is actually
         // added to a function. (This is done in IRGenerator::finalizeFunction.)
-        return SkSL::ReturnStatement::Make(/*offset=*/-1, value.release());
+        return SkSL::ReturnStatement::Make(/*offset=*/-1, value.releaseIfValid());
     }
 
     static DSLExpression Swizzle(DSLExpression base, SkSL::SwizzleComponent::Type a,
@@ -187,7 +255,7 @@ public:
         SkTArray<StatementArray> statements;
         statements.reserve_back(cases.count());
         for (DSLCase& c : cases) {
-            values.push_back(c.fValue.release());
+            values.push_back(c.fValue.releaseIfValid());
             statements.push_back(std::move(c.fStatements));
         }
         return DSLWriter::ConvertSwitch(value.release(), std::move(values), std::move(statements),
@@ -200,12 +268,20 @@ public:
     }
 };
 
-DSLVar sk_FragColor() {
+std::unique_ptr<SkSL::Program> ReleaseProgram() {
+    return DSLCore::ReleaseProgram();
+}
+
+DSLGlobalVar sk_FragColor() {
     return DSLCore::sk_FragColor();
 }
 
-DSLVar sk_FragCoord() {
+DSLGlobalVar sk_FragCoord() {
     return DSLCore::sk_FragCoord();
+}
+
+DSLExpression sk_Position() {
+    return DSLCore::sk_Position();
 }
 
 DSLStatement Break() {
@@ -232,8 +308,8 @@ DSLStatement Declare(DSLVar& var, PositionInfo pos) {
     return DSLCore::Declare(var, pos);
 }
 
-void DeclareGlobal(DSLVar& var, PositionInfo pos) {
-    return DSLCore::DeclareGlobal(var, pos);
+void Declare(DSLGlobalVar& var, PositionInfo pos) {
+    return DSLCore::Declare(var, pos);
 }
 
 DSLStatement Discard() {
@@ -254,6 +330,12 @@ DSLStatement If(DSLExpression test, DSLStatement ifTrue, DSLStatement ifFalse, P
     return DSLStatement(DSLCore::If(std::move(test), std::move(ifTrue), std::move(ifFalse),
                                     /*isStatic=*/false),
                         pos);
+}
+
+DSLGlobalVar InterfaceBlock(DSLModifiers modifiers,  skstd::string_view typeName,
+                            SkTArray<DSLField> fields, skstd::string_view varName, int arraySize,
+                            PositionInfo pos) {
+    return DSLCore::InterfaceBlock(modifiers, typeName, std::move(fields), varName, arraySize, pos);
 }
 
 DSLStatement Return(DSLExpression expr, PositionInfo pos) {

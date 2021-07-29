@@ -141,6 +141,15 @@ _NAMED_TYPE_INFO = {
       'viz::ResourceFormat::ETC1',
     ],
   },
+  'gpu::raster::MsaaMode': {
+    'type': 'gpu::raster::MsaaMode',
+    'is_complete': True,
+    'valid': [
+      'gpu::raster::MsaaMode::kNoMSAA',
+      'gpu::raster::MsaaMode::kMSAA',
+      'gpu::raster::MsaaMode::kDMSAA',
+    ],
+  },
 }
 
 # A function info object specifies the type and other special data for the
@@ -227,11 +236,13 @@ _FUNCTION_INFO = {
     'impl_func': False,
     'client_test': False,
     'decoder_func': 'DoFinish',
+    'unit_test': False,
     'trace_level': 1,
   },
   'Flush': {
     'impl_func': False,
     'decoder_func': 'DoFlush',
+    'unit_test': False,
     'trace_level': 1,
   },
   'GetError': {

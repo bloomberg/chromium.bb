@@ -45,13 +45,14 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <variant name="NearbyShare" summary="Items backed by a nearby shared file."/>
   <variant name="PinnedFile" summary="Items pinned explicitly by the user."/>
   <variant name="PrintedPdf" summary="Items backed by a printed PDF file."/>
+  <variant name="Scan" summary="Items backed by a scanned file."/>
   <variant name="ScreenRecording"
       summary="Items backed by a screen recording file."/>
   <variant name="Screenshot" summary="Items backed by a screenshot file."/>
 </variants>
 
 <histogram name="HoldingSpace.Animation.BubbleResize.Smoothness" units="%"
-    expires_after="2021-09-24">
+    expires_after="2021-11-28">
   <owner>dmblack@google.com</owner>
   <owner>gzadina@google.com</owner>
   <summary>
@@ -75,7 +76,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="HoldingSpace.Downloads.Action.All"
-    enum="HoldingSpaceDownloadsAction" expires_after="2021-09-24">
+    enum="HoldingSpaceDownloadsAction" expires_after="2021-11-28">
   <owner>dmblack@google.com</owner>
   <owner>gzadina@google.com</owner>
   <summary>
@@ -85,7 +86,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="HoldingSpace.FilesAppChip.Action.All"
-    enum="HoldingSpaceFilesAppChipAction" expires_after="2021-09-24">
+    enum="HoldingSpaceFilesAppChipAction" expires_after="2021-11-28">
   <owner>dmblack@google.com</owner>
   <owner>gzadina@google.com</owner>
   <summary>
@@ -95,7 +96,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="HoldingSpace.Item.Action.All" enum="HoldingSpaceItemAction"
-    expires_after="2021-09-24">
+    expires_after="2021-11-28">
   <owner>dmblack@google.com</owner>
   <owner>gzadina@google.com</owner>
   <summary>
@@ -158,7 +159,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="HoldingSpace.Pod.Action.All" enum="HoldingSpacePodAction"
-    expires_after="2021-09-24">
+    expires_after="2021-11-28">
   <owner>dmblack@google.com</owner>
   <owner>gzadina@google.com</owner>
   <summary>
@@ -178,7 +179,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="HoldingSpace.TimeFromFirstAvailabilityToFirstEntry" units="ms"
-    expires_after="2021-09-24">
+    expires_after="2021-11-28">
   <owner>dmblack@google.com</owner>
   <owner>gzadina@google.com</owner>
   <summary>
@@ -188,7 +189,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="HoldingSpace.TimeFromFirstEntryToFirstPin" units="ms"
-    expires_after="2021-09-24">
+    expires_after="2021-11-28">
   <owner>dmblack@google.com</owner>
   <owner>gzadina@google.com</owner>
   <summary>

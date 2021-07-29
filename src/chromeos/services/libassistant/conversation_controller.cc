@@ -12,6 +12,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chromeos/assistant/internal/internal_util.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
+#include "chromeos/services/libassistant/grpc/assistant_client.h"
 #include "chromeos/services/libassistant/public/mojom/conversation_controller.mojom.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "libassistant/shared/internal_api/assistant_manager_delegate.h"
@@ -244,29 +245,27 @@ void ConversationController::AddAuthenticationStateObserver(
   authentication_state_observers_.Add(std::move(observer));
 }
 
-void ConversationController::OnAssistantManagerCreated(
-    assistant_client::AssistantManager* assistant_manager,
-    assistant_client::AssistantManagerInternal* assistant_manager_internal) {
+void ConversationController::OnAssistantClientCreated(
+    AssistantClient* assistant_client) {
   // Registers ActionModule when AssistantManagerInternal has been created
   // but not yet started.
-  assistant_manager_internal->RegisterActionModule(action_module_.get());
+  assistant_client->assistant_manager_internal()->RegisterActionModule(
+      action_module_.get());
 
-  assistant_manager_internal->SetAssistantManagerDelegate(
+  assistant_client->assistant_manager_internal()->SetAssistantManagerDelegate(
       assistant_manager_delegate_.get());
 }
 
-void ConversationController::OnAssistantManagerRunning(
-    assistant_client::AssistantManager* assistant_manager,
-    assistant_client::AssistantManagerInternal* assistant_manager_internal) {
+void ConversationController::OnAssistantClientRunning(
+    AssistantClient* assistant_client) {
   // Only when Libassistant is running we can start sending queries.
-  assistant_manager_ = assistant_manager;
-  assistant_manager_internal_ = assistant_manager_internal;
+  assistant_manager_ = assistant_client->assistant_manager();
+  assistant_manager_internal_ = assistant_client->assistant_manager_internal();
   requests_are_allowed_ = true;
 }
 
-void ConversationController::OnDestroyingAssistantManager(
-    assistant_client::AssistantManager* assistant_manager,
-    assistant_client::AssistantManagerInternal* assistant_manager_internal) {
+void ConversationController::OnDestroyingAssistantClient(
+    AssistantClient* assistant_client) {
   assistant_manager_ = nullptr;
   assistant_manager_internal_ = nullptr;
 }
@@ -323,6 +322,13 @@ void ConversationController::StartEditReminderInteraction(
       << "Should not receive requests before Libassistant is running";
   if (!assistant_manager_internal_)
     return;
+
+  // Cancels any ongoing StopInteraction posted by StopActiveInteraction()
+  // before we move forward to start an EditReminderInteraction. Failing to
+  // do this could expose a race condition and potentially result in the
+  // following EditReminderInteraction getting barged in and cancelled.
+  // See b/182948180.
+  MaybeStopPreviousInteraction();
 
   SendVoicelessInteraction(assistant::CreateEditReminderInteraction(client_id),
                            /*description=*/std::string(),

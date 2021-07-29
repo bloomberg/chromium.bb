@@ -48,22 +48,10 @@ public:
         TRIANGLES_ADJACENCY,
         MAX_VERTICES,
         INVOCATIONS,
-        WHEN,
-        KEY,
         SRGB_UNPREMUL,
-        CTYPE,
-        SKPMCOLOR4F,
-        SKV4,
-        SKRECT,
-        SKIRECT,
-        SKPMCOLOR,
-        SKM44,
-        BOOL,
-        INT,
-        FLOAT,
     };
 
-    Parser(const char* text, size_t length, SymbolTable& symbols, ErrorReporter& errors);
+    Parser(skstd::string_view text, SymbolTable& symbols, ErrorReporter& errors);
 
     /**
      * Consumes a complete .sksl file and returns the parse tree. Errors are reported via the
@@ -71,7 +59,7 @@ public:
      */
     std::unique_ptr<ASTFile> compilationUnit();
 
-    StringFragment text(Token token);
+    skstd::string_view text(Token token);
 
     Position position(Token token);
 
@@ -132,7 +120,7 @@ private:
      * Returns true if the 'name' identifier refers to a type name. For instance, isType("int") will
      * always return true.
      */
-    bool isType(StringFragment name);
+    bool isType(skstd::string_view name);
 
     /**
      * Returns true if the passed-in ASTNode is an array type, or false if it is a non-arrayed type.
@@ -153,11 +141,9 @@ private:
 
     ASTNode::ID directive();
 
-    ASTNode::ID section();
-
-    ASTNode::ID enumDeclaration();
-
     ASTNode::ID declaration();
+
+    ASTNode::ID functionDeclarationEnd(Modifiers modifiers, ASTNode::ID type, const Token& name);
 
     struct VarDeclarationsPrefix {
         Modifiers modifiers;
@@ -175,17 +161,13 @@ private:
 
     ASTNode::ID structVarDeclaration(Modifiers modifiers);
 
-    ASTNode::ID varDeclarationEnd(Modifiers modifiers, ASTNode::ID type, StringFragment name);
+    ASTNode::ID varDeclarationEnd(Modifiers modifiers, ASTNode::ID type, skstd::string_view name);
 
     ASTNode::ID parameter();
 
     int layoutInt();
 
-    StringFragment layoutIdentifier();
-
-    StringFragment layoutCode();
-
-    Layout::CType layoutCType();
+    skstd::string_view layoutIdentifier();
 
     Layout layout();
 
@@ -265,7 +247,7 @@ private:
 
     bool boolLiteral(bool* dest);
 
-    bool identifier(StringFragment* dest);
+    bool identifier(skstd::string_view* dest);
 
     template <typename... Args> ASTNode::ID createNode(Args&&... args);
 
@@ -299,7 +281,7 @@ private:
 
     static std::unordered_map<String, LayoutToken>* layoutTokens;
 
-    StringFragment fText;
+    skstd::string_view fText;
     Lexer fLexer;
     // current parse depth, used to enforce a recursion limit to try to keep us from overflowing the
     // stack on pathological inputs

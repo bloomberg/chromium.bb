@@ -19,6 +19,8 @@ libangle_common_sources = [
   "src/common/PackedGLEnums_autogen.h",
   "src/common/PoolAlloc.cpp",
   "src/common/PoolAlloc.h",
+  "src/common/Spinlock.h",
+  "src/common/SynchronizedValue.h",
   "src/common/aligned_memory.cpp",
   "src/common/aligned_memory.h",
   "src/common/android_util.cpp",
@@ -115,6 +117,7 @@ libangle_image_util_headers = [
   "src/image_util/imageformats.h",
   "src/image_util/loadimage.h",
   "src/image_util/loadimage.inc",
+  "src/image_util/loadtextureborder.h",
 ]
 
 libangle_image_util_sources = [
@@ -122,6 +125,7 @@ libangle_image_util_sources = [
   "src/image_util/imageformats.cpp",
   "src/image_util/loadimage.cpp",
   "src/image_util/loadimage_etc.cpp",
+  "src/image_util/loadtextureborder.cpp",
 ]
 
 libangle_gpu_info_util_sources = [
@@ -316,6 +320,7 @@ libangle_headers = [
   "src/libANGLE/renderer/copyvertex.h",
   "src/libANGLE/renderer/copyvertex.inc.h",
   "src/libANGLE/renderer/load_functions_table.h",
+  "src/libANGLE/renderer/load_texture_border_functions_table.h",
   "src/libANGLE/renderer/renderer_utils.h",
   "src/libANGLE/renderer/serial_utils.h",
   "src/libANGLE/validationEGL.h",
@@ -415,6 +420,7 @@ libangle_sources = [
   "src/libANGLE/renderer/TextureImpl.cpp",
   "src/libANGLE/renderer/driver_utils.cpp",
   "src/libANGLE/renderer/load_functions_table_autogen.cpp",
+  "src/libANGLE/renderer/load_texture_border_functions_table_autogen.cpp",
   "src/libANGLE/renderer/renderer_utils.cpp",
   "src/libANGLE/validationEGL.cpp",
   "src/libANGLE/validationES.cpp",
@@ -453,10 +459,13 @@ cl_includes = [
 ]
 
 libangle_cl_headers = [
+  "src/libANGLE/CLBitField.h",
+  "src/libANGLE/CLBuffer.h",
   "src/libANGLE/CLCommandQueue.h",
   "src/libANGLE/CLContext.h",
   "src/libANGLE/CLDevice.h",
   "src/libANGLE/CLEvent.h",
+  "src/libANGLE/CLImage.h",
   "src/libANGLE/CLKernel.h",
   "src/libANGLE/CLMemory.h",
   "src/libANGLE/CLObject.h",
@@ -465,27 +474,46 @@ libangle_cl_headers = [
   "src/libANGLE/CLRefPointer.h",
   "src/libANGLE/CLSampler.h",
   "src/libANGLE/CLtypes.h",
+  "src/libANGLE/cl_utils.h",
+  "src/libANGLE/renderer/CLCommandQueueImpl.h",
   "src/libANGLE/renderer/CLContextImpl.h",
   "src/libANGLE/renderer/CLDeviceImpl.h",
+  "src/libANGLE/renderer/CLEventImpl.h",
+  "src/libANGLE/renderer/CLExtensions.h",
+  "src/libANGLE/renderer/CLKernelImpl.h",
+  "src/libANGLE/renderer/CLMemoryImpl.h",
   "src/libANGLE/renderer/CLPlatformImpl.h",
+  "src/libANGLE/renderer/CLProgramImpl.h",
+  "src/libANGLE/renderer/CLSamplerImpl.h",
   "src/libANGLE/renderer/CLtypes.h",
   "src/libANGLE/validationCL.h",
   "src/libANGLE/validationCL_autogen.h",
 ]
 
 libangle_cl_sources = [
+  "src/libANGLE/CLBuffer.cpp",
   "src/libANGLE/CLCommandQueue.cpp",
   "src/libANGLE/CLContext.cpp",
   "src/libANGLE/CLDevice.cpp",
   "src/libANGLE/CLEvent.cpp",
+  "src/libANGLE/CLImage.cpp",
   "src/libANGLE/CLKernel.cpp",
   "src/libANGLE/CLMemory.cpp",
+  "src/libANGLE/CLObject.cpp",
   "src/libANGLE/CLPlatform.cpp",
   "src/libANGLE/CLProgram.cpp",
   "src/libANGLE/CLSampler.cpp",
+  "src/libANGLE/cl_utils.cpp",
+  "src/libANGLE/renderer/CLCommandQueueImpl.cpp",
   "src/libANGLE/renderer/CLContextImpl.cpp",
   "src/libANGLE/renderer/CLDeviceImpl.cpp",
+  "src/libANGLE/renderer/CLEventImpl.cpp",
+  "src/libANGLE/renderer/CLExtensions.cpp",
+  "src/libANGLE/renderer/CLKernelImpl.cpp",
+  "src/libANGLE/renderer/CLMemoryImpl.cpp",
   "src/libANGLE/renderer/CLPlatformImpl.cpp",
+  "src/libANGLE/renderer/CLProgramImpl.cpp",
+  "src/libANGLE/renderer/CLSamplerImpl.cpp",
   "src/libANGLE/validationCL.cpp",
 ]
 
@@ -592,6 +620,7 @@ libglesv2_cl_sources = [
   "src/libGLESv2/cl_stubs_autogen.h",
   "src/libGLESv2/entry_points_cl_autogen.cpp",
   "src/libGLESv2/entry_points_cl_autogen.h",
+  "src/libGLESv2/entry_points_cl_utils.cpp",
   "src/libGLESv2/entry_points_cl_utils.h",
   "src/libGLESv2/proc_table_cl.h",
   "src/libGLESv2/proc_table_cl_autogen.cpp",

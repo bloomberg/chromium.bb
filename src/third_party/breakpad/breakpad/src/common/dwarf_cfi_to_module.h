@@ -52,7 +52,6 @@
 
 namespace google_breakpad {
 
-using dwarf2reader::CallFrameInfo;
 using google_breakpad::Module;
 using std::set;
 using std::vector;
@@ -121,7 +120,7 @@ class DwarfCFIToModule: public CallFrameInfo::Handler {
     static vector<string> MakeVector(const char* const* strings, size_t size);
   };
 
-  // Create a handler for the dwarf2reader::CallFrameInfo parser that
+  // Create a handler for the CallFrameInfo parser that
   // records the stack unwinding information it receives in MODULE.
   //
   // Use REGISTER_NAMES[I] as the name of register number I; *this

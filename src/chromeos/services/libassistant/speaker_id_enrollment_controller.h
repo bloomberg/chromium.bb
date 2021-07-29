@@ -7,17 +7,21 @@
 
 #include "chromeos/assistant/libassistant/src/third_party/chromium/base/memory/weak_ptr.h"
 #include "chromeos/services/libassistant/abortable_task_list.h"
-#include "chromeos/services/libassistant/assistant_manager_observer.h"
+#include "chromeos/services/libassistant/assistant_client_observer.h"
 #include "chromeos/services/libassistant/public/mojom/audio_input_controller.mojom-forward.h"
 #include "chromeos/services/libassistant/public/mojom/speaker_id_enrollment_controller.mojom.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+
+namespace assistant_client {
+class AssistantManagerInternal;
+}  // namespace assistant_client
 
 namespace chromeos {
 namespace libassistant {
 
 class SpeakerIdEnrollmentController
     : public mojom::SpeakerIdEnrollmentController,
-      public AssistantManagerObserver {
+      public AssistantClientObserver {
  public:
   explicit SpeakerIdEnrollmentController(
       mojom::AudioInputController* audio_input);
@@ -39,15 +43,9 @@ class SpeakerIdEnrollmentController
       const std::string& user_gaia_id,
       GetSpeakerIdEnrollmentStatusCallback callback) override;
 
-  // AssistantManagerObserver implementation:
-  void OnAssistantManagerStarted(
-      assistant_client::AssistantManager* assistant_manager,
-      assistant_client::AssistantManagerInternal* assistant_manager_internal)
-      override;
-  void OnDestroyingAssistantManager(
-      assistant_client::AssistantManager* assistant_manager,
-      assistant_client::AssistantManagerInternal* assistant_manager_internal)
-      override;
+  // AssistantClientObserver implementation:
+  void OnAssistantClientStarted(AssistantClient* assistant_client) override;
+  void OnDestroyingAssistantClient(AssistantClient* assistant_client) override;
 
  private:
   class EnrollmentSession;

@@ -182,7 +182,7 @@ void TabDataAccess::SetUsedInBgFromSiteDataDB(
             },
             base::Unretained(reader), std::move(reply_cb), reply_task_runner));
       },
-      performance_manager::PerformanceManager::GetPageNodeForWebContents(
+      performance_manager::PerformanceManager::GetPrimaryPageNodeForWebContents(
           contents),
       tab_data->used_in_bg_setter_cancel_callback.callback(),
       base::SequencedTaskRunnerHandle::Get());
@@ -205,12 +205,13 @@ void TabDataAccess::SetUsedInBgFromSiteData(
   if (!tab_data->is_pinned && reader_data.updates_title_in_bg)
     used_in_bg = true;
 
+  const GURL last_committed_origin =
+      permissions::PermissionUtil::GetLastCommittedOriginAsURL(contents);
   auto notif_permission =
       PermissionManagerFactory::GetForProfile(
           Profile::FromBrowserContext(contents->GetBrowserContext()))
           ->GetPermissionStatus(ContentSettingsType::NOTIFICATIONS,
-                                contents->GetLastCommittedURL(),
-                                contents->GetLastCommittedURL());
+                                last_committed_origin, last_committed_origin);
   if (notif_permission.content_setting == CONTENT_SETTING_ALLOW)
     used_in_bg = true;
 

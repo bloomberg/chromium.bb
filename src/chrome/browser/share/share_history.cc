@@ -4,21 +4,31 @@
 
 #include "chrome/browser/share/share_history.h"
 
+#include "base/android/jni_string.h"
 #include "base/containers/flat_map.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/share/proto/share_history_message.pb.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
 #include "content/public/browser/storage_partition.h"
+
+#include "chrome/browser/share/jni_headers/ShareHistoryBridge_jni.h"
+
+using base::android::JavaParamRef;
 
 namespace sharing {
 
 namespace {
 
 const char* const kShareHistoryFolder = "share_history";
-static const char kShareHistoryKey[1] = "";
+
+// This is the key used for the single entry in the backing LevelDB. The fact
+// that it is the same string as the above folder name is a coincidence; please
+// do not fold these constants together.
+const char* const kShareHistoryKey = "share_history";
 
 int TodaysDay() {
   return (base::Time::Now() - base::Time::UnixEpoch()).InDays();
@@ -39,20 +49,28 @@ std::unique_ptr<ShareHistory::BackingDb> MakeDefaultDbForProfile(
 
 // static
 void ShareHistory::CreateForProfile(Profile* profile) {
+  CHECK(!profile->IsOffTheRecord());
   auto instance = std::make_unique<ShareHistory>(profile);
   profile->SetUserData(kShareHistoryKey, base::WrapUnique(instance.release()));
 }
 
 // static
 ShareHistory* ShareHistory::Get(Profile* profile) {
+  if (profile->IsOffTheRecord())
+    return nullptr;
+
   base::SupportsUserData::Data* instance =
       profile->GetUserData(kShareHistoryKey);
-  DCHECK(instance);
+  if (!instance) {
+    CreateForProfile(profile);
+    instance = profile->GetUserData(kShareHistoryKey);
+  }
   return static_cast<ShareHistory*>(instance);
 }
 
 ShareHistory::~ShareHistory() = default;
 
+ShareHistory::ShareHistory() = default;
 ShareHistory::ShareHistory(Profile* profile,
                            std::unique_ptr<BackingDb> backing_db)
     : db_(backing_db ? std::move(backing_db)
@@ -76,8 +94,7 @@ void ShareHistory::AddShareEntry(const std::string& component_name) {
 
   target_history->set_count(target_history->count() + 1);
 
-  // TODO(ellyjones): Start a write back to the backing database. Once that's
-  // done, un-disable the AddsWrittenToBackingDb test.
+  FlushToBackingDb();
 }
 
 void ShareHistory::GetFlatShareHistory(GetFlatHistoryCallback callback,
@@ -126,11 +143,42 @@ void ShareHistory::Init() {
 }
 
 void ShareHistory::OnInitDone(leveldb_proto::Enums::InitStatus status) {
-  init_finished_ = true;
   db_init_status_ = status;
+  if (status != leveldb_proto::Enums::kOK) {
+    // If the LevelDB initialization failed, follow the same state transitions
+    // as in the happy case, but without going through LevelDB; i.e., act as
+    // though the initial read failed, instead of the LevelDB initialization, so
+    // that control always ends up in OnInitialReadDone.
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&ShareHistory::OnInitialReadDone,
+                                  weak_factory_.GetWeakPtr(), false,
+                                  std::make_unique<mojom::ShareHistory>()));
+    return;
+  }
+
+  db_->GetEntry(kShareHistoryKey,
+                base::BindOnce(&ShareHistory::OnInitialReadDone,
+                               weak_factory_.GetWeakPtr()));
+}
+
+void ShareHistory::OnInitialReadDone(
+    bool ok,
+    std::unique_ptr<mojom::ShareHistory> history) {
+  if (ok && history)
+    history_ = *history;
+  init_finished_ = true;
   post_init_callbacks_.Notify();
 
   // TODO(ellyjones): Expire entries older than WINDOW days.
+}
+
+void ShareHistory::FlushToBackingDb() {
+  auto keyvals = std::make_unique<BackingDb::KeyEntryVector>();
+  keyvals->push_back({kShareHistoryKey, history_});
+
+  db_->UpdateEntries(std::move(keyvals),
+                     std::make_unique<std::vector<std::string>>(),
+                     base::DoNothing());
 }
 
 mojom::DayShareHistory* ShareHistory::DayShareHistoryForToday() {
@@ -160,3 +208,12 @@ mojom::TargetShareHistory* ShareHistory::TargetShareHistoryByName(
 }
 
 }  // namespace sharing
+
+void JNI_ShareHistoryBridge_AddShareEntry(JNIEnv* env,
+                                          const JavaParamRef<jobject>& jprofile,
+                                          const JavaParamRef<jstring>& name) {
+  Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
+  auto* instance = sharing::ShareHistory::Get(profile);
+  if (instance)
+    instance->AddShareEntry(base::android::ConvertJavaStringToUTF8(env, name));
+}

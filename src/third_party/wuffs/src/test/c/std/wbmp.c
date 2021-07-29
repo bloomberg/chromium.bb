@@ -37,7 +37,7 @@ the first "./a.out" with "./a.out -bench". Combine these changes with the
 "wuffs mimic cflags" to run the mimic benchmarks.
 */
 
-// !! wuffs mimic cflags: -DWUFFS_MIMIC
+// ¿ wuffs mimic cflags: -DWUFFS_MIMIC
 
 // Wuffs ships as a "single file C library" or "header file library" as per
 // https://github.com/nothings/stb/blob/master/docs/stb_howto.txt
@@ -226,6 +226,8 @@ test_wuffs_pixel_swizzler_swizzle() {
     wuffs_base__color_u32_argb_premul color;
     uint32_t pixfmt_repr;
   } srcs[] = {
+      // When updating this list, also consider updating the pixel formats that
+      // fuzz/c/std/pixel_swizzler_fuzzer.c exercises.
       {
           .color = 0xFF444444,
           .pixfmt_repr = WUFFS_BASE__PIXEL_FORMAT__Y,
@@ -243,6 +245,10 @@ test_wuffs_pixel_swizzler_swizzle() {
           .pixfmt_repr = WUFFS_BASE__PIXEL_FORMAT__INDEXED__BGRA_BINARY,
       },
       {
+          .color = 0xFF102031,
+          .pixfmt_repr = WUFFS_BASE__PIXEL_FORMAT__BGR_565,
+      },
+      {
           .color = 0xFF443300,
           .pixfmt_repr = WUFFS_BASE__PIXEL_FORMAT__BGR,
       },
@@ -253,6 +259,10 @@ test_wuffs_pixel_swizzler_swizzle() {
       {
           .color = 0x55443300,
           .pixfmt_repr = WUFFS_BASE__PIXEL_FORMAT__BGRA_NONPREMUL_4X16LE,
+      },
+      {
+          .color = 0x55443300,
+          .pixfmt_repr = WUFFS_BASE__PIXEL_FORMAT__BGRA_PREMUL,
       },
       {
           .color = 0xFF443300,
@@ -266,12 +276,19 @@ test_wuffs_pixel_swizzler_swizzle() {
           .color = 0x55443300,
           .pixfmt_repr = WUFFS_BASE__PIXEL_FORMAT__RGBA_NONPREMUL,
       },
+      {
+          .color = 0x55443300,
+          .pixfmt_repr = WUFFS_BASE__PIXEL_FORMAT__RGBA_PREMUL,
+      },
   };
 
   const struct {
     wuffs_base__color_u32_argb_premul color;
     uint32_t pixfmt_repr;
   } dsts[] = {
+      // When updating this list, also consider updating the pixel formats that
+      // fuzz/c/std/pixel_swizzler_fuzzer.c exercises and those that
+      // wuffs_aux::DecodeImageCallbacks::SelectPixfmt accepts.
       {
           .color = 0xFF000010,
           .pixfmt_repr = WUFFS_BASE__PIXEL_FORMAT__BGR_565,
@@ -285,8 +302,20 @@ test_wuffs_pixel_swizzler_swizzle() {
           .pixfmt_repr = WUFFS_BASE__PIXEL_FORMAT__BGRA_NONPREMUL,
       },
       {
+          .color = 0x80123456,
+          .pixfmt_repr = WUFFS_BASE__PIXEL_FORMAT__BGRA_NONPREMUL_4X16LE,
+      },
+      {
           .color = 0x80000040,
           .pixfmt_repr = WUFFS_BASE__PIXEL_FORMAT__BGRA_PREMUL,
+      },
+      {
+          .color = 0x33002233,
+          .pixfmt_repr = WUFFS_BASE__PIXEL_FORMAT__RGBA_NONPREMUL,
+      },
+      {
+          .color = 0x33002233,
+          .pixfmt_repr = WUFFS_BASE__PIXEL_FORMAT__RGBA_PREMUL,
       },
   };
 

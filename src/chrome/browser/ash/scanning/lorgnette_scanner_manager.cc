@@ -30,6 +30,53 @@ namespace ash {
 
 namespace {
 
+// A list of Epson models that do not rotate alternating ADF scanned pages
+// to be excluded in IsRotateAlternate().
+constexpr char kEpsonNoFlipModels[] =
+    "\\b("
+    "DS-790WN"
+    "|LP-M8180A"
+    "|LP-M8180F"
+    "|LX-10020M"
+    "|LX-10050KF"
+    "|LX-10050MF"
+    "|LX-6050MF"
+    "|LX-7550MF"
+    "|PX-M7070FX"
+    "|PX-M7080FX"
+    "|PX-M7090FX"
+    "|PX-M7110F"
+    "|PX-M7110FP"
+    "|PX-M860F"
+    "|PX-M880FX"
+    "|WF-6530"
+    "|WF-6590"
+    "|WF-6593"
+    "|WF-C20600"
+    "|WF-C20600a"
+    "|WF-C20600c"
+    "|WF-C20750"
+    "|WF-C20750a"
+    "|WF-C20750c"
+    "|WF-C21000"
+    "|WF-C21000a"
+    "|WF-C21000c"
+    "|WF-C579R"
+    "|WF-C579Ra"
+    "|WF-C8610"
+    "|WF-C8690"
+    "|WF-C8690a"
+    "|WF-C869R"
+    "|WF-C869Ra"
+    "|WF-C878R"
+    "|WF-C878Ra"
+    "|WF-C879R"
+    "|WF-C879Ra"
+    "|WF-M21000"
+    "|WF-M21000a"
+    "|WF-M21000c"
+    ")\\b";
+
 // A prioritized list of scan protocols. Protocols that appear earlier in the
 // list are preferred over those that appear later in the list when
 // communicating with a connected scanner.
@@ -105,6 +152,30 @@ class LorgnetteScannerManagerImpl final : public LorgnetteScannerManager {
             &LorgnetteScannerManagerImpl::OnScannerCapabilitiesResponse,
             weak_ptr_factory_.GetWeakPtr(), std::move(callback), scanner_name,
             device_name, protocol));
+  }
+
+  // LorgnetteScannerManager:
+  bool IsRotateAlternate(const std::string& scanner_name,
+                         const std::string& source_name) override {
+    if (!RE2::PartialMatch(source_name, RE2("(?i)adf duplex"))) {
+      return false;
+    }
+
+    std::string device_name;
+    chromeos::ScanProtocol protocol;
+    if (!GetUsableDeviceNameAndProtocol(scanner_name, device_name, protocol)) {
+      LOG(ERROR) << "Failed to get device name for " << scanner_name;
+      return false;
+    }
+
+    std::string exclude_regex = std::string("^(airscan|ippusb).*(EPSON\\s+)?") +
+                                std::string(kEpsonNoFlipModels);
+    if (RE2::PartialMatch(device_name, RE2("^(epsonds|epson2)")) ||
+        RE2::PartialMatch(device_name, RE2(exclude_regex))) {
+      return false;
+    }
+
+    return RE2::PartialMatch(device_name, RE2("(?i)epson"));
   }
 
   // LorgnetteScannerManager:
@@ -185,7 +256,7 @@ class LorgnetteScannerManagerImpl final : public LorgnetteScannerManager {
     // Iterate through each lorgnette scanner and add its info to an existing
     // Scanner if it has a matching IP address. Otherwise, create a new Scanner
     // for the lorgnette scanner.
-    base::flat_map<net::IPAddress, chromeos::Scanner*> known_ip_addresses =
+    base::flat_map<net::IPAddress, std::string> known_ip_addresses =
         GetKnownIpAddresses();
     for (const auto& lorgnette_scanner : response->scanners()) {
       std::string ip_address_str;
@@ -196,7 +267,9 @@ class LorgnetteScannerManagerImpl final : public LorgnetteScannerManager {
         if (ip_address.AssignFromIPLiteral(ip_address_str)) {
           const auto it = known_ip_addresses.find(ip_address);
           if (it != known_ip_addresses.end()) {
-            it->second->device_names[protocol].emplace(
+            const auto existing = deduped_scanners_.find(it->second);
+            DCHECK(existing != deduped_scanners_.end());
+            existing->second.device_names[protocol].emplace(
                 lorgnette_scanner.name());
             continue;
           }
@@ -225,14 +298,15 @@ class LorgnetteScannerManagerImpl final : public LorgnetteScannerManager {
       deduped_scanners_[scanner.display_name] = scanner;
   }
 
-  // Returns a map of IP addresses to the scanners they correspond to in
-  // deduped_scanners_. This enables deduplication of network scanners by making
-  // it easy to check for and modify them using their IP addresses.
-  base::flat_map<net::IPAddress, chromeos::Scanner*> GetKnownIpAddresses() {
-    base::flat_map<net::IPAddress, chromeos::Scanner*> known_ip_addresses;
+  // Returns a map of IP addresses to the display names (lookup keys) of
+  // scanners they correspond to in deduped_scanners_. This enables
+  // deduplication of network scanners by making it easy to check for and modify
+  // them using their IP addresses.
+  base::flat_map<net::IPAddress, std::string> GetKnownIpAddresses() {
+    base::flat_map<net::IPAddress, std::string> known_ip_addresses;
     for (auto& entry : deduped_scanners_) {
       for (const auto& ip_address : entry.second.ip_addresses)
-        known_ip_addresses[ip_address] = &entry.second;
+        known_ip_addresses[ip_address] = entry.second.display_name;
     }
 
     return known_ip_addresses;

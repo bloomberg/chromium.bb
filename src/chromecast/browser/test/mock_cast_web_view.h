@@ -30,6 +30,14 @@ class MockCastWebContents : public CastWebContents {
               (override));
   MOCK_METHOD(void, AllowWebAndMojoWebUiBindings, (), (override));
   MOCK_METHOD(void, ClearRenderWidgetHostView, (), (override));
+  MOCK_METHOD(void,
+              SetAppProperties,
+              (const std::string& session_id, bool is_audio_app),
+              (override));
+  MOCK_METHOD(void,
+              SetCastPermissionUserData,
+              (const std::string& app_id),
+              (override));
   MOCK_METHOD(void, LoadUrl, (const GURL&), (override));
   MOCK_METHOD(void, ClosePage, (), (override));
   MOCK_METHOD(void, Stop, (int), (override));
@@ -37,9 +45,9 @@ class MockCastWebContents : public CastWebContents {
   MOCK_METHOD(void, BlockMediaLoading, (bool), (override));
   MOCK_METHOD(void, BlockMediaStarting, (bool), (override));
   MOCK_METHOD(void, EnableBackgroundVideoPlayback, (bool), (override));
-  MOCK_METHOD(on_load_script_injector::OnLoadScriptInjectorHost<std::string>*,
-              script_injector,
-              (),
+  MOCK_METHOD(void,
+              AddBeforeLoadJavaScript,
+              (uint64_t, base::StringPiece),
               (override));
   MOCK_METHOD(void,
               PostMessageToMainFrame,
@@ -50,6 +58,10 @@ class MockCastWebContents : public CastWebContents {
   MOCK_METHOD(void,
               ExecuteJavaScript,
               (const std::u16string&, base::OnceCallback<void(base::Value)>),
+              (override));
+  MOCK_METHOD(void,
+              ConnectToBindingsService,
+              (mojo::PendingRemote<mojom::ApiBindings> api_bindings_remote),
               (override));
   MOCK_METHOD(void, AddObserver, (Observer*), (override));
   MOCK_METHOD(void, RemoveObserver, (Observer*), (override));
@@ -79,13 +91,6 @@ class MockCastWebView : public CastWebView {
   content::WebContents* web_contents() const override;
   CastWebContents* cast_web_contents() override;
   base::TimeDelta shutdown_delay() const override;
-  void ForceClose() override;
-  void InitializeWindow(mojom::ZOrder z_order,
-                        VisibilityPriority initial_priority) override;
-  void GrantScreenAccess() override;
-  void RevokeScreenAccess() override;
-  void AddObserver(Observer* observer) override;
-  void RemoveObserver(Observer* observer) override;
 
   MockCastWebContents* mock_cast_web_contents() {
     return mock_cast_web_contents_.get();

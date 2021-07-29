@@ -35,6 +35,7 @@ import org.chromium.components.signin.ProfileDataSource;
 import org.chromium.components.signin.ProfileDataSource.ProfileData;
 import org.chromium.components.signin.base.AccountInfo;
 import org.chromium.components.signin.identitymanager.AccountInfoService;
+import org.chromium.components.signin.identitymanager.AccountInfoServiceProvider;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -112,7 +113,7 @@ public class ProfileDataCache implements ProfileDataSource.Observer, AccountInfo
         mProfileDataSource = ChromeFeatureList.isEnabled(ChromeFeatureList.DEPRECATE_MENAGERIE_API)
                 ? null
                 : AccountManagerFacadeProvider.getInstance().getProfileDataSource();
-        mAccountInfoService = AccountInfoService.get();
+        mAccountInfoService = AccountInfoServiceProvider.get();
         if (mProfileDataSource == null) {
             populateCache();
         }
@@ -203,7 +204,7 @@ public class ProfileDataCache implements ProfileDataSource.Observer, AccountInfo
         Bitmap avatar = profileData.getAvatar();
         if (avatar == null) {
             // If the avatar is null, try to fetch the monogram from IdentityManager
-            mAccountInfoService.getAccountInfoByEmailAsync(email).then(accountInfo -> {
+            mAccountInfoService.getAccountInfoByEmail(email).then(accountInfo -> {
                 updateCacheAndNotifyObservers(email,
                         accountInfo != null ? accountInfo.getAccountImage() : null,
                         profileData.getFullName(), profileData.getGivenName());
@@ -231,9 +232,9 @@ public class ProfileDataCache implements ProfileDataSource.Observer, AccountInfo
     }
 
     private void populateCache() {
-        AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts(accounts -> {
+        AccountManagerFacadeProvider.getInstance().getAccounts().then(accounts -> {
             for (Account account : accounts) {
-                mAccountInfoService.getAccountInfoByEmailAsync(account.name)
+                mAccountInfoService.getAccountInfoByEmail(account.name)
                         .then(this::onAccountInfoUpdated);
             }
         });
@@ -242,7 +243,7 @@ public class ProfileDataCache implements ProfileDataSource.Observer, AccountInfo
     private void populateCacheLegacy() {
         assert mProfileDataSource
                 != null : "This only populates cache with the Legacy profile data source.";
-        AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts(accounts -> {
+        AccountManagerFacadeProvider.getInstance().getAccounts().then(accounts -> {
             for (Account account : accounts) {
                 ProfileData profileData = mProfileDataSource.getProfileDataForAccount(account.name);
                 if (profileData != null) {

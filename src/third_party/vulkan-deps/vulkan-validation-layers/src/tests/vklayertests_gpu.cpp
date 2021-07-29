@@ -542,8 +542,12 @@ TEST_F(VkGpuAssistedLayerTest, GpuBufferOOB) {
     }
 
     m_device_extension_names.push_back(VK_EXT_ROBUSTNESS_2_EXTENSION_NAME);
+    if (DeviceExtensionSupported(gpu(), nullptr, VK_EXT_MULTI_DRAW_EXTENSION_NAME)) {
+        m_device_extension_names.push_back(VK_EXT_MULTI_DRAW_EXTENSION_NAME);
+    }
 
-    auto robustness2_features = LvlInitStruct<VkPhysicalDeviceRobustness2FeaturesEXT>();
+    auto multi_draw_features = LvlInitStruct<VkPhysicalDeviceMultiDrawFeaturesEXT>();
+    auto robustness2_features = LvlInitStruct<VkPhysicalDeviceRobustness2FeaturesEXT>(&multi_draw_features);
     auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>(&robustness2_features);
 
     PFN_vkGetPhysicalDeviceFeatures2KHR vkGetPhysicalDeviceFeatures2KHR =
@@ -685,6 +689,57 @@ TEST_F(VkGpuAssistedLayerTest, GpuBufferOOB) {
             m_errorMonitor->VerifyFound();
         }
         vk::QueueWaitIdle(m_device->m_queue);
+    }
+
+    if (multi_draw_features.multiDraw) {
+        auto vkCmdDrawMultiEXT = (PFN_vkCmdDrawMultiEXT)vk::GetDeviceProcAddr(m_device->device(), "vkCmdDrawMultiEXT");
+        auto vkCmdDrawMultiIndexedEXT =
+            (PFN_vkCmdDrawMultiIndexedEXT)vk::GetDeviceProcAddr(m_device->device(), "vkCmdDrawMultiIndexedEXT");
+        assert(vkCmdDrawMultiEXT != nullptr && vkCmdDrawMultiIndexedEXT != nullptr);
+
+        VkMultiDrawInfoEXT multi_draws[3] = {};
+        multi_draws[0].vertexCount = multi_draws[1].vertexCount = multi_draws[2].vertexCount = 3;
+        VkMultiDrawIndexedInfoEXT multi_draw_indices[3] = {};
+        multi_draw_indices[0].indexCount = multi_draw_indices[1].indexCount = multi_draw_indices[2].indexCount = 3;
+
+        VkBufferObj buffer;
+        buffer.init(*m_device, 1024, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+        m_commandBuffer->begin(&begin_info);
+        vk::CmdBindPipeline(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe.handle());
+        m_commandBuffer->BeginRenderPass(m_renderPassBeginInfo);
+        vk::CmdBindDescriptorSets(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_layout.handle(), 0, 1,
+            &descriptor_set.set_, 0, nullptr);
+        vk::CmdSetViewport(m_commandBuffer->handle(), 0, 1, &viewport);
+        vk::CmdSetScissor(m_commandBuffer->handle(), 0, 1, &scissor);
+        m_commandBuffer->BindIndexBuffer(&buffer, 0, VK_INDEX_TYPE_UINT16);
+        vkCmdDrawMultiIndexedEXT(m_commandBuffer->handle(), 3, multi_draw_indices, 1, 0, sizeof(VkMultiDrawIndexedInfoEXT), 0);
+        vk::CmdEndRenderPass(m_commandBuffer->handle());
+        m_commandBuffer->end();
+
+        uint32_t *data = (uint32_t *)offset_buffer.memory().map();
+        *data = 8;
+        offset_buffer.memory().unmap();
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDrawMultiIndexedEXT-None-02706");
+        m_commandBuffer->QueueCommandBuffer();
+        m_errorMonitor->VerifyFound();
+
+        m_commandBuffer->begin(&begin_info);
+        vk::CmdBindPipeline(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe.handle());
+        m_commandBuffer->BeginRenderPass(m_renderPassBeginInfo);
+        vk::CmdBindDescriptorSets(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_layout.handle(), 0, 1,
+            &descriptor_set.set_, 0, nullptr);
+        vk::CmdSetViewport(m_commandBuffer->handle(), 0, 1, &viewport);
+        vk::CmdSetScissor(m_commandBuffer->handle(), 0, 1, &scissor);
+        vkCmdDrawMultiEXT(m_commandBuffer->handle(), 3, multi_draws, 1, 0, sizeof(VkMultiDrawInfoEXT));
+        vk::CmdEndRenderPass(m_commandBuffer->handle());
+        m_commandBuffer->end();
+
+        data = (uint32_t *)offset_buffer.memory().map();
+        *data = 0;
+        offset_buffer.memory().unmap();
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDrawMultiEXT-None-02705");
+        m_commandBuffer->QueueCommandBuffer();
+        m_errorMonitor->VerifyFound();
     }
 
     vk::DestroyBufferView(m_device->handle(), uniform_buffer_view, nullptr);
@@ -870,13 +925,21 @@ TEST_F(VkGpuAssistedLayerTest, DrawTimeShaderUniformBufferTooSmallNestedStruct) 
 }
 
 TEST_F(VkGpuAssistedLayerTest, GpuBufferDeviceAddressOOB) {
-    SetTargetApiVersion(VK_API_VERSION_1_1);
+    SetTargetApiVersion(VK_API_VERSION_1_2);
     bool supported = InstanceExtensionSupported(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
     m_instance_extension_names.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
 
     InitGpuAssistedFramework(false);
     if (IsPlatform(kMockICD) || DeviceSimulation()) {
         printf("%s GPU-Assisted validation test requires a driver that can draw.\n", kSkipPrefix);
+        return;
+    }
+    if (DeviceValidationVersion() < VK_API_VERSION_1_2) {
+        printf("%s This GPU-Assisted validation test requires Vulkan 1.2+.\n", kSkipPrefix);
+        return;
+    }
+    if (IsDriver(VK_DRIVER_ID_MESA_RADV)) {
+        printf("%s This test should not be run on the RADV driver\n", kSkipPrefix);
         return;
     }
 
@@ -905,10 +968,6 @@ TEST_F(VkGpuAssistedLayerTest, GpuBufferDeviceAddressOOB) {
 
     VkCommandPoolCreateFlags pool_flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2, pool_flags));
-    if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
-        printf("%s GPU-Assisted validation test requires Vulkan 1.1+.\n", kSkipPrefix);
-        return;
-    }
     ASSERT_NO_FATAL_FAILURE(InitViewport());
     ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
 
@@ -1533,7 +1592,8 @@ TEST_F(VkGpuAssistedLayerTest, GpuBuildAccelerationStructureValidationRestoresSt
                                   VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                                   VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
 
-    const std::string cs_source = R"glsl(#version 450
+    const std::string cs_source = R"glsl(
+        #version 450
         layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
         layout(push_constant) uniform PushConstants { uint value; } push_constant;
@@ -2114,8 +2174,8 @@ TEST_F(VkGpuAssistedLayerTest, GpuValidationInlineUniformBlockAndMiscGpu) {
     OneOffDescriptorSet descriptor_set(m_device,
                                        {
                                            {0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_ALL, nullptr},
-                                           {1, VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK_EXT, 20, VK_SHADER_STAGE_ALL,
-                                            nullptr},  // 16 bytes for ivec4, 4 more for int
+                                           {1, VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK_EXT, 32, VK_SHADER_STAGE_ALL,
+                                            nullptr},
                                        },
                                        0, layout_createinfo_binding_flags, 0);
     const VkPipelineLayoutObj pipeline_layout(m_device, {&descriptor_set.layout_});
@@ -2209,12 +2269,12 @@ TEST_F(VkGpuAssistedLayerTest, GpuValidationInlineUniformBlockAndMiscGpu) {
     inst_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     vk::CreateInstance(&inst_info, NULL, &test_inst);
     uint32_t gpu_count;
-    VkPhysicalDevice objs[4];
-    vk::EnumeratePhysicalDevices(test_inst, &gpu_count, NULL);
-    if (gpu_count > 4) gpu_count = 4;
-    vk::EnumeratePhysicalDevices(test_inst, &gpu_count, objs);
+    vk::EnumeratePhysicalDevices(test_inst, &gpu_count, nullptr);
+    std::vector<VkPhysicalDevice> phys_devices(gpu_count);
+    vk::EnumeratePhysicalDevices(test_inst, &gpu_count, phys_devices.data());
+
     VkPhysicalDeviceProperties properties;
-    vk::GetPhysicalDeviceProperties(objs[0], &properties);
+    vk::GetPhysicalDeviceProperties(phys_devices[m_gpu_index], &properties);
     if (m_device->props.limits.maxBoundDescriptorSets != properties.limits.maxBoundDescriptorSets - 1)
         m_errorMonitor->SetError("VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_RESERVE_BINDING_SLOT_EXT not functioning as expected");
     vk::DestroyInstance(test_inst, NULL);
@@ -2349,11 +2409,18 @@ TEST_F(VkDebugPrintfTest, GpuDebugPrintf) {
                VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME);
         return;
     }
-    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, nullptr, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT));
+    if (DeviceExtensionSupported(gpu(), nullptr, VK_EXT_MULTI_DRAW_EXTENSION_NAME)) {
+        m_device_extension_names.push_back(VK_EXT_MULTI_DRAW_EXTENSION_NAME);
+    }
+    auto multi_draw_features = LvlInitStruct<VkPhysicalDeviceMultiDrawFeaturesEXT>();
+    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>(&multi_draw_features);
+    vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT));
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
         printf("%s GPU-Assisted printf test requires Vulkan 1.1+.\n", kSkipPrefix);
         return;
     }
+
     auto features = m_device->phy().features();
     if (!features.vertexPipelineStoresAndAtomics || !features.fragmentStoresAndAtomics) {
         printf("%s GPU-Assisted printf test requires vertexPipelineStoresAndAtomics and fragmentStoresAndAtomics.\n", kSkipPrefix);
@@ -2500,6 +2567,65 @@ TEST_F(VkDebugPrintfTest, GpuDebugPrintf) {
         if (10 == i) {
             m_errorMonitor->SetDesiredFailureMsg(kInformationBit, messages[i + 1]);
             i++;
+        }
+        err = vk::QueueSubmit(m_device->m_queue, 1, &submit_info, VK_NULL_HANDLE);
+        ASSERT_VK_SUCCESS(err);
+        err = vk::QueueWaitIdle(m_device->m_queue);
+        ASSERT_VK_SUCCESS(err);
+        m_errorMonitor->VerifyFound();
+    }
+
+    if (multi_draw_features.multiDraw) {
+        auto vkCmdDrawMultiEXT = (PFN_vkCmdDrawMultiEXT)vk::GetDeviceProcAddr(m_device->device(), "vkCmdDrawMultiEXT");
+        auto vkCmdDrawMultiIndexedEXT =
+            (PFN_vkCmdDrawMultiIndexedEXT)vk::GetDeviceProcAddr(m_device->device(), "vkCmdDrawMultiIndexedEXT");
+        assert(vkCmdDrawMultiEXT != nullptr && vkCmdDrawMultiIndexedEXT != nullptr);
+        VkMultiDrawInfoEXT multi_draws[3] = {};
+        multi_draws[0].vertexCount = multi_draws[1].vertexCount = multi_draws[2].vertexCount = 3;
+        VkMultiDrawIndexedInfoEXT multi_draw_indices[3] = {};
+        multi_draw_indices[0].indexCount = multi_draw_indices[1].indexCount = multi_draw_indices[2].indexCount = 3;
+        m_commandBuffer->begin(&begin_info);
+        m_commandBuffer->BeginRenderPass(m_renderPassBeginInfo);
+        vk::CmdBindPipeline(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe.handle());
+        vk::CmdBindDescriptorSets(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_layout.handle(), 0, 1,
+            &descriptor_set.set_, 0, nullptr);
+        vk::CmdSetViewport(m_commandBuffer->handle(), 0, 1, &viewport);
+        vk::CmdSetScissor(m_commandBuffer->handle(), 0, 1, &scissors);
+        vkCmdDrawMultiEXT(m_commandBuffer->handle(), 3, multi_draws, 1, 0, sizeof(VkMultiDrawInfoEXT));
+        vk::CmdEndRenderPass(m_commandBuffer->handle());
+        m_commandBuffer->end();
+
+        VkDeviceAddress *data = (VkDeviceAddress *)buffer0.memory().map();
+        data[0] = 0;
+        buffer0.memory().unmap();
+        for (auto i = 0; i < 3; i++) {
+            m_errorMonitor->SetDesiredFailureMsg(kInformationBit, messages[0]);
+        }
+        err = vk::QueueSubmit(m_device->m_queue, 1, &submit_info, VK_NULL_HANDLE);
+        ASSERT_VK_SUCCESS(err);
+        err = vk::QueueWaitIdle(m_device->m_queue);
+        ASSERT_VK_SUCCESS(err);
+        m_errorMonitor->VerifyFound();
+
+        VkBufferObj buffer;
+        buffer.init(*m_device, 1024, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+        m_commandBuffer->begin(&begin_info);
+        m_commandBuffer->BeginRenderPass(m_renderPassBeginInfo);
+        vk::CmdBindPipeline(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipe.handle());
+        vk::CmdBindDescriptorSets(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_layout.handle(), 0, 1,
+            &descriptor_set.set_, 0, nullptr);
+        vk::CmdSetViewport(m_commandBuffer->handle(), 0, 1, &viewport);
+        vk::CmdSetScissor(m_commandBuffer->handle(), 0, 1, &scissors);
+        m_commandBuffer->BindIndexBuffer(&buffer, 0, VK_INDEX_TYPE_UINT16);
+        vkCmdDrawMultiIndexedEXT(m_commandBuffer->handle(), 3, multi_draw_indices, 1, 0, sizeof(VkMultiDrawIndexedInfoEXT), 0);
+        vk::CmdEndRenderPass(m_commandBuffer->handle());
+        m_commandBuffer->end();
+
+        data = (VkDeviceAddress *)buffer0.memory().map();
+        data[0] = 1;
+        buffer0.memory().unmap();
+        for (auto i = 0; i < 3; i++) {
+            m_errorMonitor->SetDesiredFailureMsg(kInformationBit, messages[1]);
         }
         err = vk::QueueSubmit(m_device->m_queue, 1, &submit_info, VK_NULL_HANDLE);
         ASSERT_VK_SUCCESS(err);

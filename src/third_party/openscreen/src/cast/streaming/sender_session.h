@@ -16,11 +16,11 @@
 #include "cast/streaming/capture_recommendations.h"
 #include "cast/streaming/offer_messages.h"
 #include "cast/streaming/remoting_capabilities.h"
-#include "cast/streaming/rpc_broker.h"
+#include "cast/streaming/rpc_messenger.h"
 #include "cast/streaming/sender.h"
 #include "cast/streaming/sender_packet_router.h"
 #include "cast/streaming/session_config.h"
-#include "cast/streaming/session_messager.h"
+#include "cast/streaming/session_messenger.h"
 #include "json/value.h"
 #include "util/json/json_serialization.h"
 
@@ -50,8 +50,6 @@ class SenderSession final {
 
   // This struct contains all of the information necessary to begin remoting
   // after we receive the capabilities from the receiver.
-  // TODO(issuetracker.google.com/184189241): capture recommendations should be
-  // exposed as part of the remoting negotiation.
   struct RemotingNegotiation {
     ConfiguredSenders senders;
 
@@ -60,9 +58,6 @@ class SenderSession final {
     // about legacy devices, such as pre-1.27 Earth receivers should do
     // a version check when using these capabilities to offer remoting.
     RemotingCapabilities capabilities;
-
-    // The RPC broker to be used for subscribing to remoting proto messages.
-    RpcBroker* broker;
   };
 
   // The embedder should provide a client for handling negotiation events.
@@ -121,7 +116,7 @@ class SenderSession final {
     std::string message_destination_id;
 
     // Whether or not the android RTP value hack should be used (for legacy
-    // android devices).
+    // android devices). For more information, see https://crbug.com/631828.
     bool use_android_rtp_hack = true;
   };
 
@@ -160,6 +155,11 @@ class SenderSession final {
   // feedback. Embedders may use this information to throttle capture devices.
   int GetEstimatedNetworkBandwidth() const;
 
+  // The RPC messenger for this session. NOTE: RPC messages may come at
+  // any time from the receiver, so subscriptions to RPC remoting messages
+  // should be done before calling |NegotiateRemoting|.
+  RpcMessenger* rpc_messenger() { return &rpc_messenger_; }
+
  private:
   // We store the current negotiation, so that when we get an answer from the
   // receiver we can line up the selected streams with the original
@@ -185,7 +185,7 @@ class SenderSession final {
     kIdle,
 
     // Currently mirroring content to a receiver.
-    kMirroring,
+    kStreaming,
 
     // Currently remoting content to a receiver.
     kRemoting
@@ -227,13 +227,20 @@ class SenderSession final {
   // Spawn a set of configured senders from the currently stored negotiation.
   ConfiguredSenders SpawnSenders(const Answer& answer);
 
+  // Used by the RPC messenger to send outbound messages.
+  void SendRpcMessage(std::vector<uint8_t> message_body);
+
   // This session's configuration.
   Configuration config_;
 
-  // The session messager, which uses the message port for sending control
+  // The session messenger, which uses the message port for sending control
   // messages. For message formats, see
   // cast/protocol/castv2/streaming_schema.json.
-  SenderSessionMessager messager_;
+  SenderSessionMessenger messenger_;
+
+  // The RPC messenger, which uses the session messager for sending RPC messages
+  // and handles subscriptions to RPC messages.
+  RpcMessenger rpc_messenger_;
 
   // The packet router used for RTP/RTCP messaging across all senders.
   SenderPacketRouter packet_router_;
@@ -248,7 +255,7 @@ class SenderSession final {
   std::unique_ptr<InProcessNegotiation> current_negotiation_;
 
   // The current state of the session. Note that the state is intentionally
-  // limited. |kMirroring| or |kRemoting| means that we are either starting
+  // limited. |kStreaming| or |kRemoting| means that we are either starting
   // a negotiation or actively sending to a receiver.
   State state_ = State::kIdle;
 
@@ -256,11 +263,6 @@ class SenderSession final {
   // senders used for this session. Either or both may be nullptr.
   std::unique_ptr<Sender> current_audio_sender_;
   std::unique_ptr<Sender> current_video_sender_;
-
-  // If remoting, we store the RpcBroker used by the embedder to send RPC
-  // messages from the remoting protobuf specification. For more information,
-  // see //cast/streaming/remoting.proto.
-  std::unique_ptr<RpcBroker> broker_;
 };  // namespace cast
 
 }  // namespace cast

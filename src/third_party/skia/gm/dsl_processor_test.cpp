@@ -6,15 +6,12 @@
  */
 
 #include "gm/gm.h"
-#include "include/core/SkFont.h"
 #include "include/effects/SkRuntimeEffect.h"
-#include "src/gpu/GrDirectContextPriv.h"
+#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
-#include "src/gpu/ops/GrFillRectOp.h"
 #include "src/sksl/dsl/priv/DSLFPs.h"
 #include "src/sksl/dsl/priv/DSLWriter.h"
 #include "src/sksl/ir/SkSLVariable.h"
-#include "tools/ToolUtils.h"
 
 class SimpleDSLEffect : public GrFragmentProcessor {
 public:
@@ -37,10 +34,10 @@ public:
                 // Test for skbug.com/11384
                 Var x(kInt_Type, 1);
                 Declare(x);
-                SkASSERT(DSLWriter::Var(x).initialValue()->description() == "1");
+                SkASSERT(DSLWriter::Var(x)->initialValue()->description() == "1");
 
-                Var blueAlpha(kUniform_Modifier, kHalf2_Type, "blueAlpha");
-                DeclareGlobal(blueAlpha);
+                GlobalVar blueAlpha(kUniform_Modifier, kHalf2_Type, "blueAlpha");
+                Declare(blueAlpha);
                 fBlueAlphaUniform = VarUniformHandle(blueAlpha);
                 Var coords(kFloat4_Type, sk_FragCoord());
                 Declare(coords);
@@ -59,10 +56,6 @@ public:
     }
 };
 
-DEF_SIMPLE_GPU_GM(simple_dsl_test, ctx, rtCtx, canvas, 100, 100) {
-    auto fp = std::make_unique<SimpleDSLEffect>();
-    GrPaint paint;
-    paint.setColorFragmentProcessor(std::move(fp));
-    rtCtx->drawRect(nullptr, std::move(paint), GrAA::kNo, SkMatrix::I(),
-                    SkRect::MakeIWH(100, 100));
+DEF_SIMPLE_GPU_GM(simple_dsl_test, rContext, sdc, canvas, 100, 100) {
+    sdc->fillWithFP(std::make_unique<SimpleDSLEffect>());
 }

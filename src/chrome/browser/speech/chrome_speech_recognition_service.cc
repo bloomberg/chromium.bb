@@ -4,6 +4,7 @@
 
 #include "chrome/browser/speech/chrome_speech_recognition_service.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/soda_language_pack_component_installer.h"
 #include "chrome/browser/service_sandbox_type.h"
@@ -106,14 +107,21 @@ void ChromeSpeechRecognitionService::LaunchIfNotRunning() {
 
 base::FilePath ChromeSpeechRecognitionService::GetSodaConfigPath(
     PrefService* prefs) {
+  // TODO(crbug.com/1161569): Language pack path should be configurable per
+  // SpeechRecognitionRecognizer to allow multiple features to use Speech
+  // recognition. For now, only Live Caption uses SpeechRecognitionService on
+  // non-Chrome OS Chrome, so hard-coding to the Live Caption language code.
   absl::optional<speech::SodaLanguagePackComponentConfig> language_config =
       speech::GetLanguageComponentConfig(
           prefs->GetString(prefs::kLiveCaptionLanguageCode));
 
   if (language_config) {
+    base::UmaHistogramEnumeration("Accessibility.LiveCaption.SodaLanguage",
+                                  language_config.value().language_code);
     return g_browser_process->local_state()->GetFilePath(
         language_config.value().config_path_pref);
   }
+
   return base::FilePath();
 }
 }  // namespace speech

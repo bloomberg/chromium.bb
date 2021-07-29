@@ -184,7 +184,11 @@ llvm::Value *lowerRCP(llvm::Value *x)
 	if(llvm::FixedVectorType *vectorTy = llvm::dyn_cast<llvm::FixedVectorType>(ty))
 	{
 		one = llvm::ConstantVector::getSplat(
+#	if LLVM_VERSION_MAJOR >= 11
+		    vectorTy->getElementCount(),
+#	else
 		    vectorTy->getNumElements(),
+#	endif
 		    llvm::ConstantFP::get(vectorTy->getElementType(), 1));
 	}
 	else
@@ -203,7 +207,11 @@ llvm::Value *lowerVectorShl(llvm::Value *x, uint64_t scalarY)
 {
 	llvm::FixedVectorType *ty = llvm::cast<llvm::FixedVectorType>(x->getType());
 	llvm::Value *y = llvm::ConstantVector::getSplat(
+#	if LLVM_VERSION_MAJOR >= 11
+	    ty->getElementCount(),
+#	else
 	    ty->getNumElements(),
+#	endif
 	    llvm::ConstantInt::get(ty->getElementType(), scalarY));
 	return jit->builder->CreateShl(x, y);
 }
@@ -212,7 +220,11 @@ llvm::Value *lowerVectorAShr(llvm::Value *x, uint64_t scalarY)
 {
 	llvm::FixedVectorType *ty = llvm::cast<llvm::FixedVectorType>(x->getType());
 	llvm::Value *y = llvm::ConstantVector::getSplat(
+#	if LLVM_VERSION_MAJOR >= 11
+	    ty->getElementCount(),
+#	else
 	    ty->getNumElements(),
+#	endif
 	    llvm::ConstantInt::get(ty->getElementType(), scalarY));
 	return jit->builder->CreateAShr(x, y);
 }
@@ -221,7 +233,11 @@ llvm::Value *lowerVectorLShr(llvm::Value *x, uint64_t scalarY)
 {
 	llvm::FixedVectorType *ty = llvm::cast<llvm::FixedVectorType>(x->getType());
 	llvm::Value *y = llvm::ConstantVector::getSplat(
+#	if LLVM_VERSION_MAJOR >= 11
+	    ty->getElementCount(),
+#	else
 	    ty->getNumElements(),
+#	endif
 	    llvm::ConstantInt::get(ty->getElementType(), scalarY));
 	return jit->builder->CreateLShr(x, y);
 }
@@ -983,7 +999,7 @@ Value *Nucleus::createStore(Value *value, Value *ptr, Type *type, bool isVolatil
 			auto elTy = T(type);
 			ASSERT(V(ptr)->getType()->getContainedType(0) == elTy);
 
-			if(__has_feature(memory_sanitizer) && !REACTOR_ENABLE_MEMORY_SANITIZER_INSTRUMENTATION)
+			if(__has_feature(memory_sanitizer) && !jit->msanInstrumentation)
 			{
 				// Mark all memory writes as initialized by calling __msan_unpoison
 				// void __msan_unpoison(const volatile void *a, size_t size)
@@ -1089,7 +1105,7 @@ void Nucleus::createMaskedStore(Value *ptr, Value *val, Value *mask, unsigned in
 	auto func = llvm::Intrinsic::getDeclaration(jit->module.get(), llvm::Intrinsic::masked_store, { elVecTy, elVecPtrTy });
 	jit->builder->CreateCall(func, { V(val), V(ptr), align, i1Mask });
 
-	if(__has_feature(memory_sanitizer) && !REACTOR_ENABLE_MEMORY_SANITIZER_INSTRUMENTATION)
+	if(__has_feature(memory_sanitizer) && !jit->msanInstrumentation)
 	{
 		// Mark memory writes as initialized by calling __msan_unpoison
 		// void __msan_unpoison(const volatile void *a, size_t size)
@@ -3597,7 +3613,7 @@ Value *Call(RValue<Pointer<Byte>> fptr, Type *retTy, std::initializer_list<Value
 {
 	// If this is a MemorySanitizer build, but Reactor routine instrumentation is not enabled,
 	// mark all call arguments as initialized by calling __msan_unpoison_param().
-	if(__has_feature(memory_sanitizer) && !REACTOR_ENABLE_MEMORY_SANITIZER_INSTRUMENTATION)
+	if(__has_feature(memory_sanitizer) && !jit->msanInstrumentation)
 	{
 		// void __msan_unpoison_param(size_t n)
 		auto voidTy = llvm::Type::getVoidTy(*jit->context);

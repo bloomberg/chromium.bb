@@ -109,7 +109,9 @@ constexpr int kSupportedRemotingVersion = 2;
 // remoted and is not specified as part of the OFFER message (indicated as
 // "REMOTE_AUDIO" or "REMOTE_VIDEO").
 enum class AudioCodec { kAac, kOpus, kNotSpecified };
-enum class VideoCodec { kH264, kVp8, kHevc, kVp9, kNotSpecified };
+enum class VideoCodec { kH264, kVp8, kHevc, kNotSpecified, kVp9, kAv1 };
+
+enum class CastMode : uint8_t { kMirroring, kRemoting };
 
 }  // namespace cast
 }  // namespace openscreen

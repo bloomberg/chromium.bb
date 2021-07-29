@@ -10,8 +10,9 @@ import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
 import type * as Protocol from '../../generated/protocol.js';
 
 import type {NameValue} from './NetworkRequest.js'; // eslint-disable-line no-unused-vars
-import type {Target} from './SDKModel.js';
-import {Capability, SDKModel} from './SDKModel.js';  // eslint-disable-line no-unused-vars
+import type {Target} from './Target.js';
+import {Capability} from './Target.js';
+import {SDKModel} from './SDKModel.js';
 import {Events as SecurityOriginManagerEvents, SecurityOriginManager} from './SecurityOriginManager.js';
 
 const UIStrings = {
@@ -98,8 +99,8 @@ export class ServiceWorkerCacheModel extends SDKModel implements ProtocolProxyAp
   async deleteCacheEntry(cache: Cache, request: string): Promise<void> {
     const response = await this._cacheAgent.invoke_deleteEntry({cacheId: cache.cacheId, request});
     if (response.getError()) {
-      Common.Console.Console.instance().error(
-          i18nString(UIStrings.serviceworkercacheagentError, {PH1: cache.toString(), PH2: response.getError()}));
+      Common.Console.Console.instance().error(i18nString(
+          UIStrings.serviceworkercacheagentError, {PH1: cache.toString(), PH2: String(response.getError())}));
       return;
     }
   }
@@ -270,9 +271,11 @@ export class Cache {
   _model: ServiceWorkerCacheModel;
   securityOrigin: string;
   cacheName: string;
-  cacheId: string;
+  cacheId: Protocol.CacheStorage.CacheId;
 
-  constructor(model: ServiceWorkerCacheModel, securityOrigin: string, cacheName: string, cacheId: string) {
+  constructor(
+      model: ServiceWorkerCacheModel, securityOrigin: string, cacheName: string,
+      cacheId: Protocol.CacheStorage.CacheId) {
     this._model = model;
     this.securityOrigin = securityOrigin;
     this.cacheName = cacheName;

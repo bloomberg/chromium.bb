@@ -10,10 +10,12 @@
 #include "build/chromeos_buildflags.h"
 #include "components/signin/public/base/device_id_helper.h"
 #include "components/signin/public/base/signin_metrics.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/signin/public/identity_manager/test_identity_manager_observer.h"
+#include "components/signin/public/identity_manager/tribool.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -139,30 +141,26 @@ TEST_F(AccountsMutatorTest, UpdateAccountInfo) {
       run_loop.QuitClosure());
 
   CoreAccountId account_id =
-      identity_test_env()->MakePrimaryAccountAvailable(kTestEmail).account_id;
+      identity_test_env()
+          ->MakePrimaryAccountAvailable(kTestEmail, signin::ConsentLevel::kSync)
+          .account_id;
   run_loop.Run();
 
   EXPECT_EQ(identity_manager()->GetAccountsWithRefreshTokens().size(), 1U);
 
   AccountInfo original_account_info =
-      identity_manager()
-          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
-              account_id)
-          .value();
+      identity_manager()->FindExtendedAccountInfoByAccountId(account_id);
   EXPECT_EQ(original_account_info.account_id, account_id);
   EXPECT_EQ(original_account_info.email, kTestEmail);
-  EXPECT_FALSE(original_account_info.is_child_account);
+  EXPECT_EQ(Tribool::kUnknown, original_account_info.is_child_account);
   EXPECT_FALSE(original_account_info.is_under_advanced_protection);
 
   accounts_mutator()->UpdateAccountInfo(
       account_id,
-      /*is_child_account=*/true,
-      /*is_under_advanced_protection=*/absl::nullopt);
+      /*is_child_account=*/Tribool::kTrue,
+      /*is_under_advanced_protection=*/Tribool::kUnknown);
   AccountInfo updated_account_info_1 =
-      identity_manager()
-          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
-              account_id)
-          .value();
+      identity_manager()->FindExtendedAccountInfoByAccountId(account_id);
 
   // Only |is_child_account| changed so far, everything else remains the same.
   EXPECT_EQ(identity_manager()->GetAccountsWithRefreshTokens().size(), 1U);
@@ -174,14 +172,11 @@ TEST_F(AccountsMutatorTest, UpdateAccountInfo) {
   EXPECT_EQ(updated_account_info_1.is_under_advanced_protection,
             original_account_info.is_under_advanced_protection);
 
-  accounts_mutator()->UpdateAccountInfo(account_id,
-                                        /*is_child_account=*/absl::nullopt,
-                                        /*is_under_advanced_protection=*/true);
+  accounts_mutator()->UpdateAccountInfo(
+      account_id, /*is_child_account=*/Tribool::kUnknown,
+      /*is_under_advanced_protection=*/Tribool::kTrue);
   AccountInfo updated_account_info_2 =
-      identity_manager()
-          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
-              account_id)
-          .value();
+      identity_manager()->FindExtendedAccountInfoByAccountId(account_id);
 
   // |is_under_advanced_protection| has changed now, but |is_child_account|
   // remains the same since we previously set it to |true| in the previous step.
@@ -192,25 +187,22 @@ TEST_F(AccountsMutatorTest, UpdateAccountInfo) {
 
   // Last, reset |is_child_account| and |is_under_advanced_protection| together
   // to its initial |false| value, which is no longer the case.
-  EXPECT_TRUE(updated_account_info_2.is_child_account);
+  EXPECT_EQ(Tribool::kTrue, updated_account_info_2.is_child_account);
   EXPECT_TRUE(updated_account_info_2.is_under_advanced_protection);
 
-  accounts_mutator()->UpdateAccountInfo(account_id,
-                                        /*is_child_account=*/false,
-                                        /*is_under_advanced_protection=*/false);
+  accounts_mutator()->UpdateAccountInfo(
+      account_id, /*is_child_account=*/Tribool::kFalse,
+      /*is_under_advanced_protection=*/Tribool::kFalse);
   AccountInfo reset_account_info =
-      identity_manager()
-          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
-              account_id)
-          .value();
+      identity_manager()->FindExtendedAccountInfoByAccountId(account_id);
 
-  // Everything is back to its original state now.
-  EXPECT_EQ(reset_account_info.is_child_account,
-            original_account_info.is_child_account);
+  // is_under_advanced_protection is back to its original state now.
   EXPECT_EQ(reset_account_info.is_under_advanced_protection,
             original_account_info.is_under_advanced_protection);
-  EXPECT_FALSE(reset_account_info.is_child_account);
   EXPECT_FALSE(reset_account_info.is_under_advanced_protection);
+  // It is not possible to reset is_child_account to unknown, it is reset to
+  // false instead.
+  EXPECT_EQ(Tribool::kFalse, reset_account_info.is_child_account);
 }
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -238,10 +230,7 @@ TEST_F(AccountsMutatorTest, AddOrUpdateAccount_AddNewAccount) {
           account_id));
 
   AccountInfo account_info =
-      identity_manager()
-          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
-              account_id)
-          .value();
+      identity_manager()->FindExtendedAccountInfoByAccountId(account_id);
   EXPECT_EQ(account_info.account_id, account_id);
   EXPECT_EQ(account_info.email, kTestEmail);
   EXPECT_EQ(identity_manager()->GetAccountsWithRefreshTokens().size(), 1U);
@@ -271,10 +260,7 @@ TEST_F(AccountsMutatorTest, AddOrUpdateAccount_UpdateExistingAccount) {
       identity_manager()->HasAccountWithRefreshTokenInPersistentErrorState(
           account_id));
   AccountInfo account_info =
-      identity_manager()
-          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
-              account_id)
-          .value();
+      identity_manager()->FindExtendedAccountInfoByAccountId(account_id);
   EXPECT_EQ(account_info.account_id, account_id);
   EXPECT_EQ(account_info.email, kTestEmail);
   EXPECT_EQ(identity_manager()->GetAccountsWithRefreshTokens().size(), 1U);
@@ -311,10 +297,7 @@ TEST_F(AccountsMutatorTest, AddOrUpdateAccount_UpdateExistingAccount) {
   // No new accounts should be created, just the information should be updated.
   EXPECT_EQ(identity_manager()->GetAccountsWithRefreshTokens().size(), 1U);
   AccountInfo updated_account_info =
-      identity_manager()
-          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
-              account_id)
-          .value();
+      identity_manager()->FindExtendedAccountInfoByAccountId(account_id);
   EXPECT_EQ(account_info.account_id, updated_account_info.account_id);
   EXPECT_EQ(account_info.gaia, updated_account_info.gaia);
   EXPECT_EQ(updated_account_info.email, maybe_updated_email);
@@ -387,10 +370,7 @@ TEST_F(
   run_loop.Run();
 
   AccountInfo secondary_account_info =
-      identity_manager()
-          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
-              account_id)
-          .value();
+      identity_manager()->FindExtendedAccountInfoByAccountId(account_id);
   EXPECT_EQ(identity_manager()->GetAccountsWithRefreshTokens().size(), 2U);
 
   // Now try invalidating the primary account, and check that it gets updated.

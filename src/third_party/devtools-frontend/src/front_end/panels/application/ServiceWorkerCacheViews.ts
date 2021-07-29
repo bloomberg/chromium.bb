@@ -91,7 +91,7 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
   }>|null;
   constructor(model: SDK.ServiceWorkerCacheModel.ServiceWorkerCacheModel, cache: SDK.ServiceWorkerCacheModel.Cache) {
     super(i18nString(UIStrings.cache));
-    this.registerRequiredCSS('panels/application/serviceWorkerCacheViews.css', {enableLegacyPatching: false});
+    this.registerRequiredCSS('panels/application/serviceWorkerCacheViews.css');
 
     this._model = model;
     this._entriesForTest = null;
@@ -279,9 +279,9 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
 
     const span = this._summaryBarElement.createChild('span');
     if (this._entryPathFilter) {
-      span.textContent = i18nString(UIStrings.matchingEntriesS, {PH1: this._returnCount});
+      span.textContent = i18nString(UIStrings.matchingEntriesS, {PH1: String(this._returnCount)});
     } else {
-      span.textContent = i18nString(UIStrings.totalEntriesS, {PH1: this._returnCount});
+      span.textContent = i18nString(UIStrings.totalEntriesS, {PH1: String(this._returnCount)});
     }
   }
 
@@ -378,8 +378,8 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
   }
 
   _createRequest(entry: Protocol.CacheStorage.DataEntry): SDK.NetworkRequest.NetworkRequest {
-    const request =
-        new SDK.NetworkRequest.NetworkRequest('cache-storage-' + entry.requestURL, entry.requestURL, '', '', '', null);
+    const request = SDK.NetworkRequest.NetworkRequest.createWithoutBackendRequest(
+        'cache-storage-' + entry.requestURL, entry.requestURL, '', null);
     request.requestMethod = entry.requestMethod;
     request.setRequestHeaders(entry.requestHeaders);
     request.statusCode = entry.responseStatus;

@@ -6,6 +6,7 @@
 
 #include "base/check.h"
 #include "base/i18n/rtl.h"
+#import "ios/chrome/browser/ui/first_run/highlighted_button.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/button_util.h"
 #import "ios/chrome/common/ui/util/pointer_interaction_util.h"
@@ -33,12 +34,10 @@ constexpr CGFloat kDefaultMargin = 16;
 constexpr CGFloat kActionsBottomMargin = 10;
 constexpr CGFloat kTallBannerMultiplier = 0.35;
 constexpr CGFloat kDefaultBannerMultiplier = 0.25;
-constexpr CGFloat kSubtitleBottomMarginViewHeight = 0.05;
 constexpr CGFloat kContentWidthMultiplier = 0.65;
 constexpr CGFloat kContentMaxWidth = 327;
 constexpr CGFloat kMoreArrowMargin = 4;
 constexpr CGFloat kPreviousContentVisibleOnScroll = 0.15;
-constexpr CGFloat kVerticalButtonSpacing = 10;
 
 }  // namespace
 
@@ -50,7 +49,7 @@ constexpr CGFloat kVerticalButtonSpacing = 10;
 @property(nonatomic, strong) UIView* scrollContentView;
 @property(nonatomic, strong) UILabel* titleLabel;
 @property(nonatomic, strong) UILabel* subtitleLabel;
-@property(nonatomic, strong) UIButton* primaryActionButton;
+@property(nonatomic, strong) HighlightedButton* primaryActionButton;
 @property(nonatomic, strong) UIButton* secondaryActionButton;
 @property(nonatomic, strong) UIButton* tertiaryActionButton;
 
@@ -65,7 +64,7 @@ constexpr CGFloat kVerticalButtonSpacing = 10;
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  self.view.backgroundColor = [UIColor colorNamed:kBackgroundColor];
+  self.view.backgroundColor = [UIColor colorNamed:kPrimaryBackgroundColor];
 
   // Create a layout guide for the margin between the subtitle and the screen-
   // specific content. A layout guide is needed because the margin scales with
@@ -189,8 +188,7 @@ constexpr CGFloat kVerticalButtonSpacing = 10;
     [subtitleMarginLayoutGuide.topAnchor
         constraintEqualToAnchor:self.subtitleLabel.bottomAnchor],
     [subtitleMarginLayoutGuide.heightAnchor
-        constraintEqualToAnchor:self.view.heightAnchor
-                     multiplier:kSubtitleBottomMarginViewHeight],
+        constraintEqualToConstant:kDefaultMargin],
     [self.specificContentView.topAnchor
         constraintEqualToAnchor:subtitleMarginLayoutGuide.bottomAnchor],
     [self.specificContentView.leadingAnchor
@@ -217,11 +215,6 @@ constexpr CGFloat kVerticalButtonSpacing = 10;
                                  constant:-extraBottomMargin],
   ]];
 
-  // Add vertical spacing to buttons if they are applying the same style.
-  if (self.unifiedButtonStyle) {
-    actionStackView.spacing = kVerticalButtonSpacing;
-  }
-
   // Also constrain the width layout guide to a maximum constant, but at a lower
   // priority so that it only applies in compact screens.
   NSLayoutConstraint* contentLayoutGuideWidthConstraint =
@@ -241,6 +234,12 @@ constexpr CGFloat kVerticalButtonSpacing = 10;
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
 
+  // Reset |didReachBottom| to make sure that its value is correctly updated
+  // to reflect the scrolling state when the view reappears and is refreshed
+  // (e.g., when getting back from a full screen view that was hidding this
+  // view controller underneath).
+  self.didReachBottom = NO;
+
   // Only add the scroll view delegate after all the view layouts are fully
   // done.
   dispatch_async(dispatch_get_main_queue(), ^{
@@ -255,9 +254,8 @@ constexpr CGFloat kVerticalButtonSpacing = 10;
         self.didReachBottom = YES;
       } else {
         NSDictionary* textAttributes = @{
-          NSForegroundColorAttributeName : self.unifiedButtonStyle
-              ? [UIColor colorNamed:kBlueColor]
-              : [UIColor colorNamed:kSolidButtonTextColor],
+          NSForegroundColorAttributeName :
+              [UIColor colorNamed:kSolidButtonTextColor],
           NSFontAttributeName :
               [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
         };
@@ -364,7 +362,7 @@ constexpr CGFloat kVerticalButtonSpacing = 10;
     _subtitleLabel.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
     _subtitleLabel.numberOfLines = 0;
-    _subtitleLabel.textColor = [UIColor colorNamed:kTextSecondaryColor];
+    _subtitleLabel.textColor = [UIColor colorNamed:kGrey800Color];
     _subtitleLabel.text = self.subtitleText;
     _subtitleLabel.textAlignment = NSTextAlignmentCenter;
     _subtitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
@@ -385,7 +383,24 @@ constexpr CGFloat kVerticalButtonSpacing = 10;
 
 - (UIButton*)primaryActionButton {
   if (!_primaryActionButton) {
-    _primaryActionButton = PrimaryActionButton(YES);
+    _primaryActionButton = [[HighlightedButton alloc] initWithFrame:CGRectZero];
+    _primaryActionButton.contentEdgeInsets =
+        UIEdgeInsetsMake(kButtonVerticalInsets, 0, kButtonVerticalInsets, 0);
+    [_primaryActionButton setBackgroundColor:[UIColor colorNamed:kBlueColor]];
+    UIColor* titleColor = [UIColor colorNamed:kSolidButtonTextColor];
+    [_primaryActionButton setTitleColor:titleColor
+                               forState:UIControlStateNormal];
+    _primaryActionButton.titleLabel.font =
+        [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
+    _primaryActionButton.layer.cornerRadius = kPrimaryButtonCornerRadius;
+    _primaryActionButton.translatesAutoresizingMaskIntoConstraints = NO;
+
+    if (@available(iOS 13.4, *)) {
+      _primaryActionButton.pointerInteractionEnabled = YES;
+      _primaryActionButton.pointerStyleProvider =
+          CreateOpaqueButtonPointerStyleProvider();
+    }
+
     // Use |primaryActionString| even if scrolling to the end is mandatory
     // because at the viewDidLoad stage, the scroll view hasn't computed its
     // content height, so there is no way to know if scrolling is needed. This
@@ -398,13 +413,6 @@ constexpr CGFloat kVerticalButtonSpacing = 10;
     _primaryActionButton.titleEdgeInsets =
         UIEdgeInsetsMake(0, kMoreArrowMargin, 0, kMoreArrowMargin);
     _primaryActionButton.titleLabel.lineBreakMode = NSLineBreakByTruncatingTail;
-
-    if (self.unifiedButtonStyle) {
-      [_primaryActionButton
-          setBackgroundColor:[UIColor colorNamed:kBlueHaloColor]];
-      [_primaryActionButton setTitleColor:[UIColor colorNamed:kBlueColor]
-                                 forState:UIControlStateNormal];
-    }
     [_primaryActionButton addTarget:self
                              action:@selector(didTapPrimaryActionButton)
                    forControlEvents:UIControlEventTouchUpInside];
@@ -445,25 +453,17 @@ constexpr CGFloat kVerticalButtonSpacing = 10;
           accessibilityIdentifier:(NSString*)accessibilityIdentifier {
   UIButton* button = [UIButton buttonWithType:UIButtonTypeSystem];
   [button setTitle:buttonText forState:UIControlStateNormal];
-  [button setTitleColor:[UIColor colorNamed:kBlueColor]
-               forState:UIControlStateNormal];
   button.contentEdgeInsets =
       UIEdgeInsetsMake(kButtonVerticalInsets, 0, kButtonVerticalInsets, 0);
+  [button setBackgroundColor:[UIColor clearColor]];
+  UIColor* titleColor = [UIColor colorNamed:kBlueColor];
+  [button setTitleColor:titleColor forState:UIControlStateNormal];
+  button.titleLabel.font =
+      [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
   button.translatesAutoresizingMaskIntoConstraints = NO;
   button.titleLabel.adjustsFontForContentSizeCategory = YES;
   button.accessibilityIdentifier = accessibilityIdentifier;
   button.titleLabel.lineBreakMode = NSLineBreakByTruncatingTail;
-
-  if (self.unifiedButtonStyle) {
-    [button setBackgroundColor:[UIColor colorNamed:kBlueHaloColor]];
-    button.titleLabel.font =
-        [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
-    button.layer.cornerRadius = kPrimaryButtonCornerRadius;
-  } else {
-    [button setBackgroundColor:[UIColor clearColor]];
-    button.titleLabel.font =
-        [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
-  }
 
   if (@available(iOS 13.4, *)) {
     button.pointerInteractionEnabled = YES;

@@ -31,6 +31,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/wm/core/wm_core_switches.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -45,10 +46,38 @@
 namespace {
 const char* test_app_name1 = "TestApp1";
 const char* test_app_name2 = "TestApp2";
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// Activates the desk at |index| and waits for its async operations to complete.
+void SwitchToDesk(int index) {
+  base::RunLoop run_loop;
+  ASSERT_TRUE(ash::AutotestDesksApi().ActivateDeskAtIndex(
+      index, run_loop.QuitClosure()));
+  run_loop.Run();
+}
+
+// Removes all the inactive desks and waits for their async operations to
+// complete.
+void RemoveInactiveDesks() {
+  const int kMaxDeskRemovalTries = 100;
+  for (int i = 0; i < kMaxDeskRemovalTries; ++i) {
+    base::RunLoop run_loop;
+    if (!ash::AutotestDesksApi().RemoveActiveDesk(run_loop.QuitClosure()))
+      return;
+    run_loop.Run();
+  }
+  // This should not be reached.
+  ADD_FAILURE();
+}
+#endif
+
 }  // namespace
 
 class SessionRestoreTestChromeOS : public InProcessBrowserTest {
  public:
+  SessionRestoreTestChromeOS()
+      : faster_animations_(
+            ui::ScopedAnimationDurationScaleMode::ZERO_DURATION) {}
   ~SessionRestoreTestChromeOS() override {}
 
  protected:
@@ -89,6 +118,9 @@ class SessionRestoreTestChromeOS : public InProcessBrowserTest {
   }
 
   Profile* profile() { return browser()->profile(); }
+
+ private:
+  ui::ScopedAnimationDurationScaleMode faster_animations_;
 };
 
 // Thse tests are in pairs. The PRE_ test creates some browser windows and
@@ -134,6 +166,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS,
 
   // Create a second normal browser window in the second desk by
   // setting window workspace property.
+  SwitchToDesk(1);
   Browser* browser_desk1 =
       CreateBrowserWithParams(Browser::CreateParams(profile(), true));
   browser_desk1->SetWindowUserTitle("1");
@@ -142,6 +175,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS,
 
   // Create a third normal browser window in the third desk
   // specified with params.initial_workspace.
+  SwitchToDesk(2);
   Browser::CreateParams browser_desk2_params =
       Browser::CreateParams(profile(), true);
   browser_desk2_params.initial_workspace = "2";
@@ -177,6 +211,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS,
     ASSERT_EQ(desk_index,
               workspace == aura::client::kUnassignedWorkspace ? 0 : workspace);
   }
+
+  RemoveInactiveDesks();
 }
 
 // Assigns a browser window to all desks.
@@ -228,6 +264,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS,
   // even if there is a desk switch.
   ASSERT_TRUE(ash::DesksHelper::Get()->BelongsToActiveDesk(
       visible_on_all_desks_window));
+
+  RemoveInactiveDesks();
 }
 #endif
 
@@ -388,28 +426,6 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, RestoreMinimized) {
   // users they have a browser running instead of just showing them an empty
   // desktop.
   EXPECT_NE(2u, minimized_count);
-}
-
-IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, PRE_OmitTerminalApp) {
-  const std::string terminal_app_name =
-      web_app::GenerateApplicationNameFromAppId(
-          crostini::kCrostiniTerminalSystemAppId);
-  CreateBrowserWithParams(CreateParamsForApp(test_app_name1, true));
-  CreateBrowserWithParams(CreateParamsForApp(terminal_app_name, true));
-  TurnOnSessionRestore();
-}
-
-IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, OmitTerminalApp) {
-  const std::string terminal_app_name =
-      web_app::GenerateApplicationNameFromAppId(
-          crostini::kCrostiniTerminalSystemAppId);
-  size_t total_count = 0;
-  for (auto* browser : *BrowserList::GetInstance()) {
-    ++total_count;
-    EXPECT_NE(terminal_app_name, browser->app_name());
-  }
-  // We should only count browser() and test_app_name1.
-  EXPECT_EQ(2u, total_count);
 }
 
 class SystemWebAppSessionRestoreTestChromeOS

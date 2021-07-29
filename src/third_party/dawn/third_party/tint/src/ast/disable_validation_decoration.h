@@ -31,6 +31,15 @@ enum class DisabledValidation {
   /// When applied to a module-scoped variable, the validator will not complain
   /// if two resource variables have the same binding points.
   kBindingPointCollision,
+  /// When applied to a variable, the validator will not complain about the
+  /// declared storage class.
+  kIgnoreStorageClass,
+  /// When applied to an entry-point function parameter, the validator will not
+  /// check for entry IO decorations.
+  kEntryPointParameter,
+  /// When applied to a function parameter, the validator will not
+  /// check if parameter type is constructible
+  kIgnoreConstructibleFunctionParameter,
 };
 
 /// An internal decoration used to tell the validator to ignore specific
@@ -53,7 +62,7 @@ class DisableValidationDecoration
 
   /// @return a short description of the internal decoration which will be
   /// displayed in WGSL as `[[internal(<name>)]]` (but is not parsable).
-  std::string Name() const override;
+  std::string InternalName() const override;
 
   /// Performs a deep clone of this object using the CloneContext `ctx`.
   /// @param ctx the clone context

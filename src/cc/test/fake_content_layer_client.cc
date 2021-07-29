@@ -8,6 +8,7 @@
 #include <cstddef>
 
 #include "cc/paint/paint_op_buffer.h"
+#include "third_party/skia/include/core/SkTextBlob.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
 
@@ -120,7 +121,7 @@ FakeContentLayerClient::PaintContentsToDisplayList() {
   if (has_draw_text_op_) {
     display_list->StartPaint();
     display_list->push<DrawTextBlobOp>(
-        SkTextBlob::MakeFromString("any", SkFont()), 0, 0, PaintFlags());
+        SkTextBlob::MakeFromString("any", SkFont()), 0.0f, 0.0f, PaintFlags());
     display_list->EndPaintOfUnpaired(PaintableRegion());
   }
 

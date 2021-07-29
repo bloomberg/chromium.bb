@@ -67,7 +67,6 @@
 #include "chrome/browser/media/history/media_history_store.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
-#include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
 #include "chrome/browser/policy/developer_tools_policy_handler.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -180,7 +179,6 @@
 #include "components/paint_preview/buildflags/buildflags.h"
 #include "components/permissions/permission_request_manager.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing/content/triggers/ad_redirect_trigger.h"
 #include "components/search/search.h"
 #include "components/security_state/content/content_utils.h"
 #include "components/security_state/core/security_state.h"
@@ -193,6 +191,7 @@
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/zoom/zoom_controller.h"
+#include "content/public/browser/color_chooser.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/invalidate_type.h"
@@ -456,15 +455,15 @@ Browser::Browser(const CreateParams& params)
                                           params.profile)),
       app_name_(params.app_name),
       is_trusted_source_(params.trusted_source),
-      is_focus_mode_(params.is_focus_mode),
       session_id_(SessionID::NewUnique()),
+      omit_from_session_restore_(params.omit_from_session_restore),
       cancel_download_confirmation_state_(NOT_PROMPTED),
       override_bounds_(params.initial_bounds),
       initial_show_state_(params.initial_show_state),
       initial_workspace_(params.initial_workspace),
       initial_visible_on_all_workspaces_state_(
           params.initial_visible_on_all_workspaces_state),
-      is_session_restore_(params.is_session_restore),
+      creation_source_(params.creation_source),
       unload_controller_(this),
       content_setting_bubble_model_delegate_(
           new BrowserContentSettingBubbleModelDelegate(this)),
@@ -549,9 +548,6 @@ Browser::Browser(const CreateParams& params)
       window_->GetExclusiveAccessContext());
 
   BrowserList::AddBrowser(this);
-
-  if (is_focus_mode_)
-    focus_mode_start_time_ = base::TimeTicks::Now();
 }
 
 Browser::~Browser() {
@@ -640,13 +636,6 @@ Browser::~Browser() {
   // away so they don't try and call back to us.
   if (select_file_dialog_.get())
     select_file_dialog_->ListenerDestroyed();
-
-  if (is_focus_mode_) {
-    auto duration = base::TimeTicks::Now() - focus_mode_start_time_;
-    UMA_HISTOGRAM_CUSTOM_COUNTS("Session.TimeSpentInFocusMode",
-                                duration.InSeconds(), 1,
-                                base::TimeDelta::FromHours(24).InSeconds(), 50);
-  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -983,15 +972,14 @@ Browser::DownloadCloseType Browser::OkToCloseWithInProgressDownloads(
   // those downloads would be cancelled by our window (-> profile) close.
   DownloadCoreService* download_core_service =
       DownloadCoreServiceFactory::GetForBrowserContext(profile());
-  bool is_guest =
-      (profile()->IsGuestSession() || profile()->IsEphemeralGuestProfile());
   if ((profile_window_count == 0) &&
       (download_core_service->NonMaliciousDownloadCount() > 0) &&
-      (profile()->IsIncognitoProfile() || is_guest)) {
+      (profile()->IsIncognitoProfile() || profile()->IsGuestSession())) {
     *num_downloads_blocking =
         download_core_service->NonMaliciousDownloadCount();
-    return is_guest ? DownloadCloseType::kLastWindowInGuestSession
-                    : DownloadCloseType::kLastWindowInIncognitoProfile;
+    return profile()->IsGuestSession()
+               ? DownloadCloseType::kLastWindowInGuestSession
+               : DownloadCloseType::kLastWindowInIncognitoProfile;
   }
 
   // Those are the only conditions under which we will block shutdown.
@@ -1160,7 +1148,8 @@ void Browser::OnTabStripModelChanged(TabStripModel* tab_strip_model,
     }
     case TabStripModelChange::kRemoved: {
       for (const auto& contents : change.GetRemove()->contents) {
-        if (contents.will_be_deleted)
+        if (contents.remove_reason ==
+            TabStripModelChange::RemoveReason::kDeleted)
           OnTabClosing(contents.contents);
         OnTabDetached(contents.contents,
                       contents.contents == selection.old_contents);
@@ -1439,10 +1428,6 @@ void Browser::OnDidBlockNavigation(
       framebust_helper->AddBlockedUrl(blocked_url, base::BindOnce(on_click));
     }
   }
-  if (auto* trigger =
-          safe_browsing::AdRedirectTrigger::FromWebContents(web_contents)) {
-    trigger->OnDidBlockNavigation(initiator_url);
-  }
 }
 
 content::PictureInPictureResult Browser::EnterPictureInPicture(
@@ -1458,6 +1443,10 @@ void Browser::ExitPictureInPicture() {
 }
 
 bool Browser::IsBackForwardCacheSupported() {
+  return true;
+}
+
+bool Browser::IsPrerender2Supported() {
   return true;
 }
 
@@ -1885,7 +1874,7 @@ bool Browser::GuestSaveFrame(content::WebContents* guest_web_contents) {
   return guest_view && guest_view->PluginDoSave();
 }
 
-content::ColorChooser* Browser::OpenColorChooser(
+std::unique_ptr<content::ColorChooser> Browser::OpenColorChooser(
     WebContents* web_contents,
     SkColor initial_color,
     const std::vector<blink::mojom::ColorSuggestionPtr>& suggestions) {
@@ -2684,7 +2673,7 @@ bool Browser::CanCloseWithInProgressDownloads() {
 #if defined(OS_MAC) || BUILDFLAG(IS_CHROMEOS_ASH)
   // On Mac and ChromeOS, non-incognito and non-Guest downloads can still
   // continue after window is closed.
-  if (!profile_->IsOffTheRecord() && !profile_->IsEphemeralGuestProfile())
+  if (!profile_->IsOffTheRecord())
     return true;
 #endif
 
@@ -2949,7 +2938,7 @@ void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {
 }
 
 bool Browser::ShouldShowBookmarkBar() const {
-  if (profile_->IsGuestSession() || profile()->IsEphemeralGuestProfile())
+  if (profile_->IsGuestSession())
     return false;
 
   if (browser_defaults::bookmarks_enabled &&

@@ -11,7 +11,7 @@
 #include "ash/accessibility/accessibility_delegate.h"
 #include "ash/animation/animation_change_type.h"
 #include "ash/components/audio/sounds.h"
-#include "ash/public/cpp/app_types.h"
+#include "ash/constants/app_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_animation_types.h"
 #include "ash/public/cpp/window_properties.h"
@@ -27,6 +27,7 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/compositor/layer.h"
@@ -548,9 +549,10 @@ void BackdropController::Show() {
     return;
 
   ScopedWindowVisibilityAnimationTypeResetter resetter{
-      backdrop_window_, WindowState::Get(window_having_backdrop_)->CanMaximize()
-                            ? WINDOW_VISIBILITY_ANIMATION_TYPE_STEP_END
-                            : ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE};
+      backdrop_window_,
+      WindowState::Get(window_having_backdrop_)->CanMaximize()
+          ? static_cast<int>(WINDOW_VISIBILITY_ANIMATION_TYPE_STEP_END)
+          : static_cast<int>(::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE)};
   backdrop_->Show();
 }
 

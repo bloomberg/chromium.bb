@@ -11,13 +11,13 @@
 #include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/components/audio/sounds.h"
+#include "ash/constants/app_types.h"
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/keyboard/ui/keyboard_ui.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
-#include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -569,9 +569,9 @@ TEST_F(WorkspaceLayoutManagerTest,
   WindowState* window_state = WindowState::Get(window.get());
   gfx::Insets insets(0, 0, 56, 0);
   Shell::Get()->SetDisplayWorkAreaInsets(window.get(), insets);
-  const WMEvent snap_left(WM_EVENT_SNAP_LEFT);
+  const WMEvent snap_left(WM_EVENT_SNAP_PRIMARY);
   window_state->OnWMEvent(&snap_left);
-  EXPECT_EQ(WindowStateType::kLeftSnapped, window_state->GetStateType());
+  EXPECT_EQ(WindowStateType::kPrimarySnapped, window_state->GetStateType());
   const gfx::Rect kWorkAreaBounds = GetPrimaryDisplay().work_area();
   gfx::Rect expected_bounds =
       gfx::Rect(kWorkAreaBounds.x(), kWorkAreaBounds.y(),
@@ -601,7 +601,7 @@ TEST_F(WorkspaceLayoutManagerTest, AdjustSnappedBoundsWidth) {
   std::unique_ptr<aura::Window> window1(
       CreateTestWindow(gfx::Rect(10, 20, 100, 200)));
   WindowState* window1_state = WindowState::Get(window1.get());
-  const WMEvent snap_left(WM_EVENT_SNAP_LEFT);
+  const WMEvent snap_left(WM_EVENT_SNAP_PRIMARY);
   window1_state->OnWMEvent(&snap_left);
   const gfx::Rect work_area =
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
@@ -612,7 +612,7 @@ TEST_F(WorkspaceLayoutManagerTest, AdjustSnappedBoundsWidth) {
   std::unique_ptr<aura::Window> window2(
       CreateTestWindow(gfx::Rect(10, 20, 100, 200)));
   WindowState* window2_state = WindowState::Get(window2.get());
-  const WMEvent snap_right(WM_EVENT_SNAP_RIGHT);
+  const WMEvent snap_right(WM_EVENT_SNAP_SECONDARY);
   window2_state->OnWMEvent(&snap_right);
   const gfx::Rect expected_right_snapped_bounds =
       gfx::Rect(work_area.right() - work_area.width() / 2, work_area.y(),
@@ -1379,13 +1379,13 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropTest) {
   }
 
   // Toggle overview.
-  Shell::Get()->overview_controller()->StartOverview();
+  EnterOverview();
   base::RunLoop().RunUntilIdle();
   backdrop = test_helper.GetBackdropWindow();
   ASSERT_TRUE(backdrop);
   EXPECT_FALSE(backdrop->IsVisible());
 
-  Shell::Get()->overview_controller()->EndOverview();
+  ExitOverview();
   base::RunLoop().RunUntilIdle();
   backdrop = test_helper.GetBackdropWindow();
   ASSERT_TRUE(backdrop);
@@ -1423,12 +1423,12 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropTest) {
   }
 
   // Toggle overview with the delegate.
-  Shell::Get()->overview_controller()->StartOverview();
+  EnterOverview();
   base::RunLoop().RunUntilIdle();
   backdrop = test_helper.GetBackdropWindow();
   ASSERT_TRUE(backdrop);
   EXPECT_FALSE(backdrop->IsVisible());
-  Shell::Get()->overview_controller()->EndOverview();
+  ExitOverview();
   base::RunLoop().RunUntilIdle();
   backdrop = test_helper.GetBackdropWindow();
   ASSERT_TRUE(backdrop);

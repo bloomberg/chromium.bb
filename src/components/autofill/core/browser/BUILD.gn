@@ -91,6 +91,8 @@ static_library("browser") {
     "autofill_regexes.h",
     "autofill_subject.cc",
     "autofill_subject.h",
+    "autofill_suggestion_generator.cc",
+    "autofill_suggestion_generator.h",
     "autofill_type.cc",
     "autofill_type.h",
     "browser_autofill_manager.cc",
@@ -120,6 +122,8 @@ static_library("browser") {
     "data_model/autofill_structured_address_regex_provider.h",
     "data_model/autofill_structured_address_utils.cc",
     "data_model/autofill_structured_address_utils.h",
+    "data_model/autofillable_data.cc",
+    "data_model/autofillable_data.h",
     "data_model/borrowed_transliterator.cc",
     "data_model/borrowed_transliterator.h",
     "data_model/contact_info.cc",
@@ -192,6 +196,8 @@ static_library("browser") {
     "geo/country_names.h",
     "geo/country_names_for_locale.cc",
     "geo/country_names_for_locale.h",
+    "geo/mock_alternative_state_name_map_updater.cc",
+    "geo/mock_alternative_state_name_map_updater.h",
     "geo/phone_number_i18n.cc",
     "geo/phone_number_i18n.h",
     "geo/region_data_loader.h",
@@ -283,6 +289,8 @@ static_library("browser") {
     "ui/address_form_label_formatter.h",
     "ui/address_phone_form_label_formatter.cc",
     "ui/address_phone_form_label_formatter.h",
+    "ui/autofill_image_fetcher.cc",
+    "ui/autofill_image_fetcher.h",
     "ui/autofill_popup_delegate.h",
     "ui/contact_form_label_formatter.cc",
     "ui/contact_form_label_formatter.h",
@@ -392,7 +400,6 @@ static_library("browser") {
       "payments/credit_card_fido_authenticator.h",
       "payments/fido_authentication_strike_database.cc",
       "payments/fido_authentication_strike_database.h",
-      "payments/internal_authenticator.h",
     ]
   }
 
@@ -404,11 +411,18 @@ static_library("browser") {
     "//components/autofill/core/browser/proto",
     "//components/autofill/core/common",
     "//components/autofill/core/common/mojom:mojo_types",
+    "//components/leveldb_proto",
     "//components/resources",
     "//components/security_interstitials/core",
     "//components/security_state/core",
+    "//components/translate/core/browser",
     "//skia",
+    "//third_party/abseil-cpp:absl",
     "//third_party/libaddressinput",
+    "//ui/base",
+    "//ui/gfx/geometry",
+    "//ui/gfx/range",
+    "//url",
   ]
   deps = [
     ":autofill_address_rewriter_resources",
@@ -417,12 +431,13 @@ static_library("browser") {
     "//base:i18n",
     "//build:branding_buildflags",
     "//build:chromeos_buildflags",
+    "//components/feature_engagement",
     "//components/google/core/common",
     "//components/history/core/browser",
+    "//components/image_fetcher/core",
     "//components/infobars/core",
     "//components/keyed_service/core",
     "//components/language/core/browser",
-    "//components/leveldb_proto",
     "//components/os_crypt",
     "//components/policy/core/browser",
     "//components/policy/core/common",
@@ -433,8 +448,8 @@ static_library("browser") {
     "//components/signin/public/identity_manager",
     "//components/strings",
     "//components/sync",
-    "//components/translate/core/browser",
     "//components/translate/core/common",
+    "//components/variations",
     "//components/variations/net",
     "//components/variations/service:service",
     "//components/version_info",
@@ -453,15 +468,13 @@ static_library("browser") {
     "//third_party/re2",
     "//third_party/zlib/google:compression_utils",
     "//ui/accessibility:accessibility",
-    "//ui/base",
-    "//ui/gfx",
-    "//ui/gfx/geometry",
-    "//ui/gfx/range",
-    "//url",
   ]
 
   if (!is_ios) {
-    deps += [ "//third_party/blink/public/common" ]
+    deps += [
+      "//components/webauthn/core/browser",
+      "//third_party/blink/public/common",
+    ]
   }
 
   if (!is_android && !is_ios) {
@@ -560,6 +573,7 @@ static_library("test_support") {
     "//base/test:test_support",
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
+    "//components/feature_engagement",
     "//components/leveldb_proto",
     "//components/os_crypt",
     "//components/os_crypt:test_support",
@@ -595,7 +609,10 @@ static_library("test_support") {
 
     public_deps += [ "//components/autofill/content/browser" ]
 
-    deps += [ "//third_party/blink/public/common" ]
+    deps += [
+      "//components/webauthn/core/browser",
+      "//third_party/blink/public/common",
+    ]
   }
 
   if (!is_ios && !is_android) {
@@ -668,6 +685,7 @@ source_set("unit_tests") {
     "autofill_profile_validator_unittest.cc",
     "autofill_regexes_unittest.cc",
     "autofill_subject_unittest.cc",
+    "autofill_suggestion_generator_unittest.cc",
     "autofill_type_unittest.cc",
     "browser_autofill_manager_unittest.cc",
     "data_model/address_unittest.cc",
@@ -712,6 +730,7 @@ source_set("unit_tests") {
     "logging/log_buffer_submitter_unittest.cc",
     "logging/log_manager_unittest.cc",
     "logging/log_router_unittest.cc",
+    "pattern_provider/default_regex_patterns_unittest.cc",
     "pattern_provider/pattern_configuration_parser_unittest.cc",
     "pattern_provider/pattern_provider_unittest.cc",
     "payments/autofill_offer_manager_unittest.cc",
@@ -732,6 +751,7 @@ source_set("unit_tests") {
     "test_utils/test_profiles.cc",
     "test_utils/test_profiles.h",
     "ui/address_combobox_model_unittest.cc",
+    "ui/autofill_image_fetcher_unittest.cc",
     "ui/country_combobox_model_unittest.cc",
     "ui/payments/card_unmask_prompt_controller_impl_unittest.cc",
     "ui/region_combobox_model_unittest.cc",
@@ -796,6 +816,9 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//build:chromeos_buildflags",
     "//components/autofill/core/common",
+    "//components/feature_engagement",
+    "//components/image_fetcher/core:core",
+    "//components/image_fetcher/core:test_support",
     "//components/leveldb_proto",
     "//components/os_crypt",
     "//components/os_crypt:test_support",
@@ -833,6 +856,8 @@ source_set("unit_tests") {
     "//third_party/libphonenumber",
     "//third_party/re2:re2",
     "//ui/base",
+    "//ui/gfx:test_support",
+    "//ui/resources",
     "//url",
   ]
 

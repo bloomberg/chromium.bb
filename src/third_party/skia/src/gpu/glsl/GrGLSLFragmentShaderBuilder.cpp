@@ -13,16 +13,6 @@
 #include "src/gpu/glsl/GrGLSLUniformHandler.h"
 #include "src/gpu/glsl/GrGLSLVarying.h"
 
-const char* GrGLSLFragmentShaderBuilder::kDstColorName = "_dstColor";
-
-uint8_t GrGLSLFragmentShaderBuilder::KeyForSurfaceOrigin(GrSurfaceOrigin origin) {
-    SkASSERT(kTopLeft_GrSurfaceOrigin == origin || kBottomLeft_GrSurfaceOrigin == origin);
-    return origin + 1;
-
-    static_assert(0 == kTopLeft_GrSurfaceOrigin);
-    static_assert(1 == kBottomLeft_GrSurfaceOrigin);
-}
-
 GrGLSLFragmentShaderBuilder::GrGLSLFragmentShaderBuilder(GrGLSLProgramBuilder* program)
         : GrGLSLShaderBuilder(program) {
     fSubstageIndices.push_back(0);
@@ -52,7 +42,7 @@ SkString GrGLSLFPFragmentBuilder::writeProcessorFunction(GrGLSLFragmentProcessor
         paramCount = 1;
 
         if (args.fFp.referencesSampleCoords()) {
-            const GrShaderVar& varying = args.fTransformedCoords[0];
+            GrShaderVar varying = fProgramBuilder->varyingCoordsForFragmentProcessor(&args.fFp);
             switch(varying.getType()) {
                 case kFloat2_GrSLType:
                     // Just point the local coords to the varying
@@ -144,7 +134,7 @@ void GrGLSLFragmentShaderBuilder::enableSecondaryOutput() {
 }
 
 const char* GrGLSLFragmentShaderBuilder::getPrimaryColorOutputName() const {
-    return this->hasCustomColorOutput() ? DeclaredColorOutputName() : "sk_FragColor";
+    return DeclaredColorOutputName();
 }
 
 bool GrGLSLFragmentShaderBuilder::primaryColorOutputIsInOut() const {

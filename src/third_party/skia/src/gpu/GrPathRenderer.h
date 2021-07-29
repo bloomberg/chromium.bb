@@ -116,7 +116,7 @@ public:
         GrRecordingContext*          fContext;
         GrPaint&&                    fPaint;
         const GrUserStencilSettings* fUserStencilSettings;
-        GrSurfaceDrawContext*        fRenderTargetContext;
+        GrSurfaceDrawContext*        fSurfaceDrawContext;
         const GrClip*                fClip;
         const SkIRect*               fClipConservativeBounds;
         const SkMatrix*              fViewMatrix;
@@ -127,7 +127,7 @@ public:
         void validate() const {
             SkASSERT(fContext);
             SkASSERT(fUserStencilSettings);
-            SkASSERT(fRenderTargetContext);
+            SkASSERT(fSurfaceDrawContext);
             SkASSERT(fClipConservativeBounds);
             SkASSERT(fViewMatrix);
             SkASSERT(fShape);
@@ -147,7 +147,7 @@ public:
         SkDEBUGCODE(StencilPathArgs() { memset(this, 0, sizeof(*this)); }) // For validation.
 
         GrRecordingContext*    fContext;
-        GrSurfaceDrawContext*  fRenderTargetContext;
+        GrSurfaceDrawContext*  fSurfaceDrawContext;
         const GrHardClip*      fClip;
         const SkIRect*         fClipConservativeBounds;
         const SkMatrix*        fViewMatrix;
@@ -166,11 +166,6 @@ public:
         SkASSERT(kNoSupport_StencilSupport != this->getStencilSupport(*args.fShape));
         this->onStencilPath(args);
     }
-
-    // Helper for determining if we can treat a thin stroke as a hairline w/ coverage.
-    // If we can, we draw lots faster (raster device does this same test).
-    static bool IsStrokeHairlineOrEquivalent(const GrStyle&, const SkMatrix&,
-                                             SkScalar* outCoverage);
 
 protected:
     // Helper for getting the device bounds of a path. Inverse filled paths will have bounds set

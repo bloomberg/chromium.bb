@@ -59,9 +59,9 @@ void DownloadDirPolicyHandler::ApplyPolicySettingsWithParameters(
     const policy::PolicyHandlerParameters& parameters,
     PrefValueMap* prefs) {
   const base::Value* value = policies.GetValue(policy_name());
-  std::string str_value;
-  if (!value || !value->GetAsString(&str_value))
+  if (!value || !value->is_string())
     return;
+  std::string str_value = value->GetString();
   base::FilePath::StringType string_value =
 #if defined(OS_WIN)
       base::UTF8ToWide(str_value);
@@ -92,8 +92,8 @@ void DownloadDirPolicyHandler::ApplyPolicySettingsWithParameters(
   if (policies.Get(policy_name())->level == policy::POLICY_LEVEL_MANDATORY) {
     prefs->SetBoolean(prefs::kPromptForDownload, false);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    // TODO(https://crbug.com/1148846): Sort out download directory policy for
-    // lacros.
+    // Drive is disabled only in Ash and not Lacros, because Lacros respects
+    // Drive availability status in Ash automatically.
     if (download_dir_util::DownloadToDrive(string_value, parameters)) {
       prefs->SetBoolean(drive::prefs::kDisableDrive, false);
     }

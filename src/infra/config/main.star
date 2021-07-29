@@ -21,8 +21,11 @@ lucicfg.enable_experiment("crbug.com/1085650")
 lucicfg.config(
     config_dir = "generated",
     tracked_files = [
+        "builders/*/*/*",
         "commit-queue.cfg",
         "cq-builders.md",
+        "cq-usage/default.cfg",
+        "cq-usage/full.cfg",
         "cr-buildbucket.cfg",
         "luci-logdog.cfg",
         "luci-milo.cfg",
@@ -154,6 +157,7 @@ branches.exec("//subprojects/goma/subproject.star")
 branches.exec("//subprojects/reclient/subproject.star")
 branches.exec("//subprojects/webrtc/subproject.star")
 
+exec("//generators/cq-usage.star")
 branches.exec("//generators/cq-builders-md.star")
 
 exec("//generators/scheduler-noop-jobs.star")

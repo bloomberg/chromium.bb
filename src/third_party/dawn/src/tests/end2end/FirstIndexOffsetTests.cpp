@@ -48,11 +48,12 @@ class FirstIndexOffsetTests : public DawnTest {
   protected:
     void SetUp() override {
         DawnTest::SetUp();
+        DAWN_TEST_UNSUPPORTED_IF(IsD3D12() && !HasToggleEnabled("use_tint_generator"));
 
         // WGSL doesn't have the ability to tag attributes as "flat". "flat" is required on u32
         // attributes for correct runtime behavior under Vulkan and codegen under OpenGL(ES).
         // TODO(tint:451): Remove once resolved by spec/tint
-        DAWN_SKIP_TEST_IF(IsVulkan() || IsOpenGL() || IsOpenGLES());
+        DAWN_SUPPRESS_TEST_IF(IsVulkan() || IsOpenGL() || IsOpenGLES());
     }
 
   private:
@@ -132,7 +133,7 @@ struct VertexOutputs {
   vertex_index : u32;
   instance_index : u32;
 };
-[[group(0), binding(0)]] var<storage> idx_vals : [[access(read_write)]] IndexVals;
+[[group(0), binding(0)]] var<storage, read_write> idx_vals : IndexVals;
 
 struct FragInputs {
 )" + fragmentInputs.str() + R"(
@@ -145,7 +146,7 @@ struct FragInputs {
 
     constexpr uint32_t kComponentsPerVertex = 4;
 
-    utils::ComboRenderPipelineDescriptor2 pipelineDesc;
+    utils::ComboRenderPipelineDescriptor pipelineDesc;
     pipelineDesc.vertex.module = utils::CreateShaderModule(device, vertexShader.c_str());
     pipelineDesc.cFragment.module = utils::CreateShaderModule(device, fragmentShader.c_str());
     pipelineDesc.primitive.topology = wgpu::PrimitiveTopology::PointList;
@@ -155,7 +156,7 @@ struct FragInputs {
     pipelineDesc.cAttributes[0].format = wgpu::VertexFormat::Float32x4;
     pipelineDesc.cTargets[0].format = renderPass.colorFormat;
 
-    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&pipelineDesc);
+    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&pipelineDesc);
 
     std::vector<float> vertexData(firstVertex * kComponentsPerVertex);
     vertexData.insert(vertexData.end(), {0, 0, 0, 1});
@@ -219,7 +220,7 @@ TEST_P(FirstIndexOffsetTests, IndexedBothOffset) {
 }
 
 DAWN_INSTANTIATE_TEST(FirstIndexOffsetTests,
-                      D3D12Backend({"use_tint_generator"}),
+                      D3D12Backend(),
                       MetalBackend(),
                       OpenGLBackend(),
                       OpenGLESBackend(),

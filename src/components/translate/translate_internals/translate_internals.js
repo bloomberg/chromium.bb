@@ -10,7 +10,7 @@ import './strings.m.js';
 
 import {addWebUIListener} from 'chrome://resources/js/cr.m.js';
 import {decorate} from 'chrome://resources/js/cr/ui.m.js';
-import {TabBox} from 'chrome://resources/js/cr/ui/tabs.m.js';
+import {TabBox} from 'chrome://resources/js/cr/ui/tabs.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {$} from 'chrome://resources/js/util.m.js';
 
@@ -178,41 +178,25 @@ function onPrefsUpdated(detail) {
     });
   }
 
-  ul = document.querySelector('#prefs-language-blacklist ul');
+  ul = document.querySelector('#prefs-site-blocklist ul');
   ul.innerHTML = emptyHTML();
 
-  if ('translate_language_blacklist' in detail) {
-    const langs = detail['translate_language_blacklist'];
-
-    langs.forEach(function(langCode) {
-      const text = formatLanguageCode(langCode);
-
-      const li = createLIWithDismissingButton(text, function() {
-        chrome.send('removePrefItem', ['language_blacklist', langCode]);
-      });
-      ul.appendChild(li);
-    });
-  }
-
-  ul = document.querySelector('#prefs-site-blacklist ul');
-  ul.innerHTML = emptyHTML();
-
-  if ('translate_site_blacklist' in detail) {
-    const sites = detail['translate_site_blacklist'];
+  if ('translate_site_blocklist' in detail) {
+    const sites = detail['translate_site_blocklist'];
 
     sites.forEach(function(site) {
       const li = createLIWithDismissingButton(site, function() {
-        chrome.send('removePrefItem', ['site_blacklist', site]);
+        chrome.send('removePrefItem', ['site_blocklist', site]);
       });
       ul.appendChild(li);
     });
   }
 
-  ul = document.querySelector('#prefs-whitelists ul');
+  ul = document.querySelector('#prefs-allowlists ul');
   ul.innerHTML = emptyHTML();
 
-  if ('translate_whitelists' in detail) {
-    const pairs = detail['translate_whitelists'];
+  if ('translate_allowlists' in detail) {
+    const pairs = detail['translate_allowlists'];
 
     Object.keys(pairs).forEach(function(fromLangCode) {
       const toLangCode = pairs[fromLangCode];
@@ -220,7 +204,7 @@ function onPrefsUpdated(detail) {
           formatLanguageCode(toLangCode);
 
       const li = createLIWithDismissingButton(text, function() {
-        chrome.send('removePrefItem', ['whitelists', fromLangCode, toLangCode]);
+        chrome.send('removePrefItem', ['allowlists', fromLangCode, toLangCode]);
       });
       ul.appendChild(li);
     });

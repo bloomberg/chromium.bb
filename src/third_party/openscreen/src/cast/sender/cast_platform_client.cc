@@ -11,7 +11,7 @@
 #include "absl/strings/str_cat.h"
 #include "cast/common/channel/virtual_connection_router.h"
 #include "cast/common/public/cast_socket.h"
-#include "cast/common/public/service_info.h"
+#include "cast/common/public/receiver_info.h"
 #include "util/json/json_serialization.h"
 #include "util/osp_logging.h"
 #include "util/stringprintf.h"
@@ -38,7 +38,7 @@ CastPlatformClient::~CastPlatformClient() {
   virtual_conn_router_->RemoveConnectionsByLocalId(sender_id_);
   virtual_conn_router_->RemoveHandlerForLocalId(sender_id_);
 
-  for (auto& pending_requests : pending_requests_by_device_id_) {
+  for (auto& pending_requests : pending_requests_by_receiver_id_) {
     for (auto& avail_request : pending_requests.second.availability) {
       avail_request.callback(avail_request.app_id,
                              AppAvailabilityResult::kUnknown);
@@ -47,11 +47,11 @@ CastPlatformClient::~CastPlatformClient() {
 }
 
 absl::optional<int> CastPlatformClient::RequestAppAvailability(
-    const std::string& device_id,
+    const std::string& receiver_id,
     const std::string& app_id,
     AppAvailabilityCallback callback) {
-  auto entry = socket_id_by_device_id_.find(device_id);
-  if (entry == socket_id_by_device_id_.end()) {
+  auto entry = socket_id_by_receiver_id_.find(receiver_id);
+  if (entry == socket_id_by_receiver_id_.end()) {
     callback(app_id, AppAvailabilityResult::kUnknown);
     return absl::nullopt;
   }
@@ -62,7 +62,8 @@ absl::optional<int> CastPlatformClient::RequestAppAvailability(
       CreateAppAvailabilityRequest(sender_id_, request_id, app_id);
   OSP_DCHECK(message);
 
-  PendingRequests& pending_requests = pending_requests_by_device_id_[device_id];
+  PendingRequests& pending_requests =
+      pending_requests_by_receiver_id_[receiver_id];
   auto timeout = std::make_unique<Alarm>(clock_, task_runner_);
   timeout->ScheduleFromNow(
       [this, request_id]() { CancelAppAvailabilityRequest(request_id); },
@@ -82,28 +83,28 @@ absl::optional<int> CastPlatformClient::RequestAppAvailability(
   return request_id;
 }
 
-void CastPlatformClient::AddOrUpdateReceiver(const ServiceInfo& device,
+void CastPlatformClient::AddOrUpdateReceiver(const ReceiverInfo& receiver,
                                              int socket_id) {
-  socket_id_by_device_id_[device.unique_id] = socket_id;
+  socket_id_by_receiver_id_[receiver.unique_id] = socket_id;
 }
 
-void CastPlatformClient::RemoveReceiver(const ServiceInfo& device) {
+void CastPlatformClient::RemoveReceiver(const ReceiverInfo& receiver) {
   auto pending_requests_it =
-      pending_requests_by_device_id_.find(device.unique_id);
-  if (pending_requests_it != pending_requests_by_device_id_.end()) {
+      pending_requests_by_receiver_id_.find(receiver.unique_id);
+  if (pending_requests_it != pending_requests_by_receiver_id_.end()) {
     for (const AvailabilityRequest& availability :
          pending_requests_it->second.availability) {
       availability.callback(availability.app_id,
                             AppAvailabilityResult::kUnknown);
     }
-    pending_requests_by_device_id_.erase(pending_requests_it);
+    pending_requests_by_receiver_id_.erase(pending_requests_it);
   }
-  socket_id_by_device_id_.erase(device.unique_id);
+  socket_id_by_receiver_id_.erase(receiver.unique_id);
 }
 
 void CastPlatformClient::CancelRequest(int request_id) {
-  for (auto entry = pending_requests_by_device_id_.begin();
-       entry != pending_requests_by_device_id_.end(); ++entry) {
+  for (auto entry = pending_requests_by_receiver_id_.begin();
+       entry != pending_requests_by_receiver_id_.end(); ++entry) {
     auto& pending_requests = entry->second;
     auto it = std::find_if(pending_requests.availability.begin(),
                            pending_requests.availability.end(),
@@ -128,7 +129,6 @@ void CastPlatformClient::OnMessage(VirtualConnectionRouter* router,
   }
   ErrorOr<Json::Value> dict_or_error = json::Parse(message.payload_utf8());
   if (dict_or_error.is_error()) {
-    OSP_DVLOG << "Failed to deserialize CastMessage payload.";
     return;
   }
 
@@ -137,22 +137,22 @@ void CastPlatformClient::OnMessage(VirtualConnectionRouter* router,
       MaybeGetInt(dict, JSON_EXPAND_FIND_CONSTANT_ARGS(kMessageKeyRequestId));
   if (request_id) {
     auto entry = std::find_if(
-        socket_id_by_device_id_.begin(), socket_id_by_device_id_.end(),
+        socket_id_by_receiver_id_.begin(), socket_id_by_receiver_id_.end(),
         [socket_id =
              ToCastSocketId(socket)](const std::pair<std::string, int>& entry) {
           return entry.second == socket_id;
         });
-    if (entry != socket_id_by_device_id_.end()) {
+    if (entry != socket_id_by_receiver_id_.end()) {
       HandleResponse(entry->first, request_id.value(), dict);
     }
   }
 }
 
-void CastPlatformClient::HandleResponse(const std::string& device_id,
+void CastPlatformClient::HandleResponse(const std::string& receiver_id,
                                         int request_id,
                                         const Json::Value& message) {
-  auto entry = pending_requests_by_device_id_.find(device_id);
-  if (entry == pending_requests_by_device_id_.end()) {
+  auto entry = pending_requests_by_receiver_id_.find(receiver_id);
+  if (entry == pending_requests_by_receiver_id_.end()) {
     return;
   }
   PendingRequests& pending_requests = entry->second;
@@ -178,7 +178,7 @@ void CastPlatformClient::HandleResponse(const std::string& device_id,
         } else if (result.value() == kMessageValueAppUnavailable) {
           availability_result = AppAvailabilityResult::kUnavailable;
         } else {
-          OSP_DVLOG << "Invalid availability result: " << result.value();
+          OSP_VLOG << "Invalid availability result: " << result.value();
         }
         it->callback(it->app_id, availability_result);
       }
@@ -188,7 +188,7 @@ void CastPlatformClient::HandleResponse(const std::string& device_id,
 }
 
 void CastPlatformClient::CancelAppAvailabilityRequest(int request_id) {
-  for (auto& entry : pending_requests_by_device_id_) {
+  for (auto& entry : pending_requests_by_receiver_id_) {
     PendingRequests& pending_requests = entry.second;
     auto it = std::find_if(pending_requests.availability.begin(),
                            pending_requests.availability.end(),

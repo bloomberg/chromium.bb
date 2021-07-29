@@ -5,14 +5,14 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
-#include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/session_hierarchy_match_checker.h"
 #include "chrome/browser/sync/test/integration/sessions_helper.h"
+#include "chrome/browser/sync/test/integration/sync_service_impl_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/autofill/core/common/autofill_prefs.h"
-#include "components/sync/base/sync_prefs.h"
-#include "components/sync/driver/profile_sync_service.h"
+#include "components/sync/driver/glue/sync_transport_data_prefs.h"
+#include "components/sync/driver/sync_service_impl.h"
 #include "components/sync/engine/polling_constants.h"
 #include "components/sync/protocol/client_commands.pb.h"
 #include "components/sync/test/fake_server/sessions_hierarchy.h"
@@ -40,7 +40,7 @@ class TwoClientPollingSyncTest : public SyncTest {
 class SessionCountMatchChecker : public SingleClientStatusChangeChecker {
  public:
   SessionCountMatchChecker(int expected_count,
-                           syncer::ProfileSyncService* service,
+                           syncer::SyncServiceImpl* service,
                            fake_server::FakeServer* fake_server)
       : SingleClientStatusChangeChecker(service),
         expected_count_(expected_count),

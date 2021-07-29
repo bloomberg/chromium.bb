@@ -14,6 +14,7 @@ from dashboard.api import api_request_handler
 from dashboard.common import bot_configurations
 from dashboard.common import utils
 from dashboard.pinpoint.models import change
+from dashboard.pinpoint.models import errors
 from dashboard.pinpoint.models import job as job_module
 from dashboard.pinpoint.models import job_state
 from dashboard.pinpoint.models import quest as quest_module
@@ -26,6 +27,36 @@ _ERROR_BUG_ID = 'Bug ID must be an integer.'
 _ERROR_TAGS_DICT = 'Tags must be a dict of key/value string pairs.'
 _ERROR_UNSUPPORTED = 'This benchmark (%s) is unsupported.'
 _ERROR_PRIORITY = 'Priority must be an integer.'
+
+REGULAR_TELEMETRY_TESTS = {
+    'performance_webview_test_suite',
+}
+SUFFIXED_REGULAR_TELEMETRY_TESTS = {
+    'performance_test_suite',
+    'telemetry_perf_tests',
+}
+SUFFIXES = {
+    '',
+    '_android_chrome',
+    '_android_monochrome',
+    '_android_monochrome_bundle',
+    '_android_weblayer',
+    '_android_webview',
+    '_android_clank_chrome',
+    '_android_clank_monochrome',
+    '_android_clank_monochrome_64_32_bundle',
+    '_android_clank_monochrome_bundle',
+    '_android_clank_trichrome_bundle',
+    '_android_clank_trichrome_webview',
+    '_android_clank_trichrome_webview_bundle',
+    '_android_clank_webview',
+    '_android_clank_webview_bundle',
+}
+# Map from target to fallback target.
+REGULAR_TELEMETRY_TESTS_WITH_FALLBACKS = {}
+for test in SUFFIXED_REGULAR_TELEMETRY_TESTS:
+  for suffix in SUFFIXES:
+    REGULAR_TELEMETRY_TESTS_WITH_FALLBACKS[test + suffix] = test
 
 
 class New(api_request_handler.ApiRequestHandler):
@@ -173,6 +204,16 @@ def _CreateJob(request):
   return job
 
 
+def _ParseExtraArgs(args):
+  extra_args = []
+  if args:
+    try:
+      extra_args = json.loads(args)
+    except ValueError:
+      extra_args = shlex.split(args)
+  return extra_args
+
+
 def _ArgumentsWithConfiguration(original_arguments):
   # "configuration" is a special argument that maps to a list of preset
   # arguments. Pull any arguments from the specified "configuration", if any.
@@ -197,19 +238,13 @@ def _ArgumentsWithConfiguration(original_arguments):
           # inputs as a JSON list of strings.
           provided_args = new_arguments.get('extra_test_args', '')
           extra_test_args = []
+
           if provided_args:
-            try:
-              extra_test_args = json.loads(provided_args)
-            except ValueError:
-              extra_test_args = shlex.split(provided_args)
+            extra_test_args = _ParseExtraArgs(provided_args)
 
-          try:
-            configured_args = json.loads(v)
-          except ValueError:
-            configured_args = shlex.split(v)
-
-          new_arguments['extra_test_args'] = json.dumps(extra_test_args +
-                                                        configured_args)
+          configured_args = _ParseExtraArgs(v)
+          new_arguments['extra_test_args'] = json.dumps(
+              extra_test_args + configured_args,)
         else:
           new_arguments.setdefault(k, v)
 
@@ -282,57 +317,77 @@ def _ValidateChangesForTry(arguments):
   if not exp_patch:
     exp_patch = patch
 
-  change_1 = change.Change(commits=(commit_1,), patch=base_patch)
-  change_2 = change.Change(commits=(commit_2,), patch=exp_patch)
+  base_extra_args = _ParseExtraArgs(arguments.get('base_extra_args', ''))
+  logging.debug('Base extra args: %s', base_extra_args)
+  change_1 = change.Change(
+      commits=(commit_1,),
+      patch=base_patch,
+      label='base',
+      args=base_extra_args or None,
+  )
+  exp_extra_args = _ParseExtraArgs(arguments.get('experiment_extra_args', ''))
+  logging.debug('Experiment extra args: %s', exp_extra_args)
+  change_2 = change.Change(
+      commits=(commit_2,),
+      patch=exp_patch,
+      label='exp',
+      args=exp_extra_args or None,
+  )
   return change_1, change_2
 
 
 def _ValidateChanges(comparison_mode, arguments):
-  changes = arguments.get('changes')
-  if changes:
-    # FromData() performs input validation.
-    return [change.Change.FromData(c) for c in json.loads(changes)]
+  try:
+    changes = arguments.get('changes')
+    if changes:
+      # FromData() performs input validation.
+      return [change.Change.FromData(c) for c in json.loads(changes)]
 
-  # There are valid cases where a tryjob requests a base_git_hash and an
-  # end_git_hash without a patch. Let's check first whether we're finding the
-  # right combination of inputs here.
-  if comparison_mode == job_state.TRY:
-    return _ValidateChangesForTry(arguments)
+    # There are valid cases where a tryjob requests a base_git_hash and an
+    # end_git_hash without a patch. Let's check first whether we're finding the
+    # right combination of inputs here.
+    if comparison_mode == job_state.TRY:
+      return _ValidateChangesForTry(arguments)
 
-  # Everything else that follows only applies to bisections.
-  assert (comparison_mode == job_state.FUNCTIONAL
-          or comparison_mode == job_state.PERFORMANCE)
+    # Everything else that follows only applies to bisections.
+    assert (comparison_mode == job_state.FUNCTIONAL
+            or comparison_mode == job_state.PERFORMANCE)
 
-  if 'start_git_hash' not in arguments or 'end_git_hash' not in arguments:
-    raise ValueError(
-        'bisections require both a start_git_hash and an end_git_hash')
+    if 'start_git_hash' not in arguments or 'end_git_hash' not in arguments:
+      raise ValueError(
+          'bisections require both a start_git_hash and an end_git_hash')
 
-  commit_1 = change.Commit.FromDict({
-      'repository': arguments.get('repository'),
-      'git_hash': arguments.get('start_git_hash'),
-  })
+    commit_1 = change.Commit.FromDict({
+        'repository': arguments.get('repository'),
+        'git_hash': arguments.get('start_git_hash'),
+    })
 
-  commit_2 = change.Commit.FromDict({
-      'repository': arguments.get('repository'),
-      'git_hash': arguments.get('end_git_hash'),
-  })
+    commit_2 = change.Commit.FromDict({
+        'repository': arguments.get('repository'),
+        'git_hash': arguments.get('end_git_hash'),
+    })
 
-  if 'patch' in arguments:
-    patch = change.GerritPatch.FromUrl(arguments['patch'])
-  else:
-    patch = None
+    if 'patch' in arguments:
+      patch = change.GerritPatch.FromUrl(arguments['patch'])
+    else:
+      patch = None
 
-  # If we find a patch in the request, this means we want to apply it even to
-  # the start commit.
-  change_1 = change.Change(commits=(commit_1,), patch=patch)
-  change_2 = change.Change(commits=(commit_2,), patch=patch)
+    # If we find a patch in the request, this means we want to apply it even to
+    # the start commit.
+    change_1 = change.Change(commits=(commit_1,), patch=patch)
+    change_2 = change.Change(commits=(commit_2,), patch=patch)
 
-  return change_1, change_2
+    return change_1, change_2
+  except errors.BuildGerritURLInvalid as e:
+    raise ValueError(str(e))
 
 
 def _ValidatePatch(patch_data):
   if patch_data:
-    patch_details = change.GerritPatch.FromData(patch_data)
+    try:
+      patch_details = change.GerritPatch.FromData(patch_data)
+    except errors.BuildGerritURLInvalid as e:
+      raise ValueError(str(e))
     return patch_details.server, patch_details.change
   return None, None
 
@@ -378,13 +433,24 @@ def _GenerateQuests(arguments):
     target = arguments.get('target')
     logging.debug('Target: %s', target)
 
-    if target in ('performance_test_suite', 'performance_webview_test_suite',
-                  'telemetry_perf_tests', 'telemetry_perf_webview_tests'):
+    if target in REGULAR_TELEMETRY_TESTS:
+      quest_classes = (quest_module.FindIsolate, quest_module.RunTelemetryTest,
+                       quest_module.ReadValue)
+    elif target in REGULAR_TELEMETRY_TESTS_WITH_FALLBACKS:
+      if 'fallback_target' not in arguments:
+        fallback_target = REGULAR_TELEMETRY_TESTS_WITH_FALLBACKS[target]
+        logging.debug('Adding "fallback_target" to params with value %s',
+                      fallback_target)
+        arguments['fallback_target'] = fallback_target
       quest_classes = (quest_module.FindIsolate, quest_module.RunTelemetryTest,
                        quest_module.ReadValue)
     elif 'performance_test_suite_eve' in target:
       quest_classes = (quest_module.FindIsolate,
                        quest_module.RunLacrosTelemetryTest,
+                       quest_module.ReadValue)
+    elif 'performance_web_engine_test_suite' in target:
+      quest_classes = (quest_module.FindIsolate,
+                       quest_module.RunWebEngineTelemetryTest,
                        quest_module.ReadValue)
     elif target == 'vr_perf_tests':
       quest_classes = (quest_module.FindIsolate,

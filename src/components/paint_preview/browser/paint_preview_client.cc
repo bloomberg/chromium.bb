@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_functions.h"
@@ -429,7 +430,7 @@ void PaintPreviewClient::CapturePaintPreviewInternal(
       params,
       base::BindOnce(&PaintPreviewClient::RequestCaptureOnUIThread,
                      weak_ptr_factory_.GetWeakPtr(), frame_guid, params,
-                     content::GlobalFrameRoutingId(
+                     content::GlobalRenderFrameHostId(
                          render_frame_host->GetProcess()->GetID(),
                          render_frame_host->GetRoutingID())));
 }
@@ -437,7 +438,7 @@ void PaintPreviewClient::CapturePaintPreviewInternal(
 void PaintPreviewClient::RequestCaptureOnUIThread(
     const base::UnguessableToken& frame_guid,
     const RecordingParams& params,
-    const content::GlobalFrameRoutingId& render_frame_id,
+    const content::GlobalRenderFrameHostId& render_frame_id,
     mojom::PaintPreviewStatus status,
     mojom::PaintPreviewCaptureParamsPtr capture_params) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -498,7 +499,7 @@ void PaintPreviewClient::RequestCaptureOnUIThread(
 void PaintPreviewClient::OnPaintPreviewCapturedCallback(
     const base::UnguessableToken& frame_guid,
     const RecordingParams& params,
-    const content::GlobalFrameRoutingId& render_frame_id,
+    const content::GlobalRenderFrameHostId& render_frame_id,
     mojom::PaintPreviewStatus status,
     mojom::PaintPreviewCaptureResponsePtr response) {
   // There is no retry logic so always treat a frame as processed regardless of

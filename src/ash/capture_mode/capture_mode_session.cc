@@ -26,7 +26,6 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_dimmer.h"
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "cc/paint/paint_flags.h"
 #include "ui/aura/client/capture_client.h"
@@ -568,7 +567,7 @@ void CaptureModeSession::Initialize() {
 
   TabletModeController::Get()->AddObserver(this);
   current_root_->AddObserver(this);
-  display::Screen::GetScreen()->AddObserver(this);
+  display_observer_.emplace(this);
   // Our event handling code assumes the capture bar widget has been initialized
   // already. So we start handling events after everything has been setup.
   aura::Env::GetInstance()->AddPreTargetHandler(
@@ -589,7 +588,7 @@ void CaptureModeSession::Shutdown() {
   is_shutting_down_ = true;
 
   aura::Env::GetInstance()->RemovePreTargetHandler(this);
-  display::Screen::GetScreen()->RemoveObserver(this);
+  display_observer_.reset();
   current_root_->RemoveObserver(this);
   TabletModeController::Get()->RemoveObserver(this);
   if (input_capture_window_) {

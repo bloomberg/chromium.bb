@@ -4,12 +4,16 @@
 
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 
+#include <algorithm>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/command_line.h"
+#include "base/location.h"
+#include "base/memory/weak_ptr.h"
 #include "base/rand_util.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/clock.h"
 #include "base/time/tick_clock.h"
 #include "base/values.h"
@@ -21,7 +25,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/idle/idle.h"
 
 namespace {
@@ -36,6 +39,10 @@ constexpr int kIdleAmount = 2;  // Hours (or seconds, if testing).
 // Maximum duration for a relaunch window.
 constexpr base::TimeDelta kRelaunchWindowMaxDuration =
     base::TimeDelta::FromHours(24);
+
+// The default amount of time between the detector's annoyance level change
+// from UPGRADE_ANNOYANCE_GRACE to UPGRADE_ANNOYANCE_HIGH.
+constexpr auto kDefaultGracePeriod = base::TimeDelta::FromHours(1);
 
 bool UseTestingIntervals() {
   // If a command line parameter specifying how long the upgrade check should
@@ -94,23 +101,49 @@ void UpgradeDetector::Init() {
   PrefService* local_state = g_browser_process->local_state();
   if (local_state) {
     pref_change_registrar_.Init(local_state);
-    // base::Unretained is safe here because |this| outlives the registrar.
-    pref_change_registrar_.Add(
-        prefs::kRelaunchNotificationPeriod,
-        base::BindRepeating(
-            &UpgradeDetector::OnRelaunchNotificationPeriodPrefChanged,
-            base::Unretained(this)));
+    MonitorPrefChanges(prefs::kRelaunchNotificationPeriod);
+    MonitorPrefChanges(prefs::kRelaunchWindow);
   }
 }
 
 void UpgradeDetector::Shutdown() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  weak_factory_.InvalidateWeakPtrs();
+  pref_change_task_pending_ = false;
   idle_check_timer_.Stop();
   pref_change_registrar_.RemoveAll();
 }
 
-void UpgradeDetector::OverrideRelaunchNotificationToRequired(bool override) {
-  NotifyRelaunchOverriddenToRequired(override);
+void UpgradeDetector::OverrideRelaunchNotificationToRequired(bool overridden) {
+  NotifyRelaunchOverriddenToRequired(overridden);
+}
+
+void UpgradeDetector::AddObserver(UpgradeObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  observer_list_.AddObserver(observer);
+}
+
+void UpgradeDetector::RemoveObserver(UpgradeObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  observer_list_.RemoveObserver(observer);
+}
+
+void UpgradeDetector::NotifyOutdatedInstall() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (observer_list_.empty())
+    return;
+
+  for (auto& observer : observer_list_)
+    observer.OnOutdatedInstall();
+}
+
+void UpgradeDetector::NotifyOutdatedInstallNoAutoUpdate() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (observer_list_.empty())
+    return;
+
+  for (auto& observer : observer_list_)
+    observer.OnOutdatedInstallNoAutoUpdate();
 }
 
 UpgradeDetector::UpgradeDetector(const base::Clock* clock,
@@ -131,22 +164,15 @@ UpgradeDetector::~UpgradeDetector() {
   DCHECK(pref_change_registrar_.IsEmpty());
 }
 
-void UpgradeDetector::NotifyOutdatedInstall() {
+void UpgradeDetector::MonitorPrefChanges(const std::string& pref) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (observer_list_.empty())
-    return;
-
-  for (auto& observer : observer_list_)
-    observer.OnOutdatedInstall();
-}
-
-void UpgradeDetector::NotifyOutdatedInstallNoAutoUpdate() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (observer_list_.empty())
-    return;
-
-  for (auto& observer : observer_list_)
-    observer.OnOutdatedInstallNoAutoUpdate();
+  // Not all tests provide a PrefService to be monitored.
+  if (pref_change_registrar_.prefs()) {
+    // base::Unretained is safe here because |this| outlives the registrar.
+    pref_change_registrar_.Add(
+        pref, base::BindRepeating(&UpgradeDetector::OnRelaunchPrefChanged,
+                                  base::Unretained(this)));
+  }
 }
 
 // static
@@ -179,8 +205,8 @@ bool UpgradeDetector::IsRelaunchNotificationPolicyEnabled() {
 }
 
 // static
-base::Time UpgradeDetector::AdjustDeadline(base::Time deadline) {
-  const RelaunchWindow window = GetRelaunchWindow();
+base::Time UpgradeDetector::AdjustDeadline(base::Time deadline,
+                                           const RelaunchWindow& window) {
   DCHECK(window.IsValid());
   const base::TimeDelta duration = window.duration;
 
@@ -245,23 +271,24 @@ base::Time UpgradeDetector::AdjustDeadline(base::Time deadline) {
 }
 
 // static
-UpgradeDetector::RelaunchWindow UpgradeDetector::GetRelaunchWindow() {
+absl::optional<UpgradeDetector::RelaunchWindow>
+UpgradeDetector::GetRelaunchWindowPolicyValue() {
   // Not all tests provide a PrefService for local_state().
   auto* local_state = g_browser_process->local_state();
   if (!local_state)
-    return GetDefaultRelaunchWindow();
+    return absl::nullopt;
 
   const auto* preference = local_state->FindPreference(prefs::kRelaunchWindow);
   DCHECK(preference);
   if (preference->IsDefaultValue())
-    return GetDefaultRelaunchWindow();
+    return absl::nullopt;
 
   const base::Value* policy_value = preference->GetValue();
   DCHECK(policy_value->is_dict());
 
   const base::Value* entries = policy_value->FindListKey("entries");
   if (!entries || entries->GetList().empty())
-    return GetDefaultRelaunchWindow();
+    return absl::nullopt;
 
   // Currently only single daily window is supported.
   const auto& window = entries->GetList().front();
@@ -270,10 +297,16 @@ UpgradeDetector::RelaunchWindow UpgradeDetector::GetRelaunchWindow() {
   const absl::optional<int> duration_mins = window.FindIntKey("duration_mins");
 
   if (!hour || !minute || !duration_mins)
-    return GetDefaultRelaunchWindow();
+    return absl::nullopt;
 
   return RelaunchWindow(hour.value(), minute.value(),
                         base::TimeDelta::FromMinutes(duration_mins.value()));
+}
+
+// static
+base::TimeDelta UpgradeDetector::GetGracePeriod(
+    base::TimeDelta elevated_to_high_delta) {
+  return std::min(kDefaultGracePeriod, elevated_to_high_delta / 2);
 }
 
 void UpgradeDetector::NotifyUpgrade() {
@@ -334,13 +367,13 @@ void UpgradeDetector::NotifyUpdateOverCellularOneTimePermissionGranted() {
     observer.OnUpdateOverCellularOneTimePermissionGranted();
 }
 
-void UpgradeDetector::NotifyRelaunchOverriddenToRequired(bool override) {
+void UpgradeDetector::NotifyRelaunchOverriddenToRequired(bool overridden) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (observer_list_.empty())
     return;
 
   for (auto& observer : observer_list_)
-    observer.OnRelaunchOverriddenToRequired(override);
+    observer.OnRelaunchOverriddenToRequired(overridden);
 }
 
 void UpgradeDetector::TriggerCriticalUpdate() {
@@ -386,12 +419,21 @@ void UpgradeDetector::CheckIdle() {
   }
 }
 
-void UpgradeDetector::AddObserver(UpgradeObserver* observer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  observer_list_.AddObserver(observer);
-}
+void UpgradeDetector::OnRelaunchPrefChanged() {
+  // Coalesce simultaneous changes to multiple prefs into a single call to the
+  // implementation's OnMonitoredPrefsChanged method by making the call in a
+  // task that will run after processing returns to the main event loop.
+  if (pref_change_task_pending_)
+    return;
 
-void UpgradeDetector::RemoveObserver(UpgradeObserver* observer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  observer_list_.RemoveObserver(observer);
+  pref_change_task_pending_ = true;
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(
+                     [](base::WeakPtr<UpgradeDetector> weak_this) {
+                       if (weak_this) {
+                         weak_this->pref_change_task_pending_ = false;
+                         weak_this->OnMonitoredPrefsChanged();
+                       }
+                     },
+                     weak_factory_.GetWeakPtr()));
 }

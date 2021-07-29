@@ -102,7 +102,8 @@ _TARGETS_REQUIRE_MOJO_CROSAPI = [
     # are allowed. For now we only enable crosapi in targets that run tests
     # serially.
     'interactive_ui_tests',
-    'lacros_chrome_browsertests'
+    'lacros_chrome_browsertests',
+    'lacros_chrome_browsertests_run_in_series'
 ]
 
 
@@ -135,7 +136,7 @@ def _remove_unused_ash_chrome_versions(version_to_skip):
       # them to keep the directory clean.
       os.remove(p)
       continue
-    chrome_path = os.path.join(p, 'chrome')
+    chrome_path = os.path.join(p, 'test_ash_chrome')
     if not os.path.exists(chrome_path):
       chrome_path = p
     age = time.time() - os.path.getatime(chrome_path)
@@ -186,7 +187,7 @@ def _DownloadAshChromeIfNecessary(version):
     # runner process gets killed in the middle of unzipping (~2 seconds), but
     # it's unlikely for the assumption to break in practice.
     return os.path.isdir(ash_chrome_dir) and os.path.isfile(
-        os.path.join(ash_chrome_dir, 'chrome'))
+        os.path.join(ash_chrome_dir, 'test_ash_chrome'))
 
   ash_chrome_dir = _GetAshChromeDirPath(version)
   if IsAshChromeDirValid(ash_chrome_dir):
@@ -282,7 +283,7 @@ def _RunTestWithAshChrome(args, forward_args):
     logging.info('Ash-chrome version: %s', ash_chrome_version)
 
     ash_chrome_file = os.path.join(_GetAshChromeDirPath(ash_chrome_version),
-                                   'chrome')
+                                   'test_ash_chrome')
   try:
     # Starts Ash-Chrome.
     tmp_xdg_dir_name = tempfile.mkdtemp()
@@ -304,7 +305,6 @@ def _RunTestWithAshChrome(args, forward_args):
         '--user-data-dir=%s' % tmp_ash_data_dir_name,
         '--enable-wayland-server',
         '--no-startup-window',
-        '--use-fake-ml-service-for-test',
     ]
     if enable_mojo_crosapi:
       ash_cmd.append(lacros_mojo_socket_arg)
@@ -333,22 +333,6 @@ def _RunTestWithAshChrome(args, forward_args):
     # Starts tests.
     if enable_mojo_crosapi:
       forward_args.append(lacros_mojo_socket_arg)
-
-      reason_of_jobs_1 = (
-          'multiple clients crosapi is not supported yet (crbug.com/1124490), '
-          'lacros_chrome_browsertests has to run tests serially')
-
-      if any('--test-launcher-jobs' in arg for arg in forward_args):
-        raise RuntimeError(
-            'Specifying "--test-launcher-jobs" is not allowed because %s. '
-            'Please remove it and this script will automatically append '
-            '"--test-launcher-jobs=1"' % reason_of_jobs_1)
-
-      # TODO(crbug.com/1124490): Run lacros_chrome_browsertests in parallel once
-      # the bug is fixed.
-      logging.warning('Appending "--test-launcher-jobs=1" because %s',
-                      reason_of_jobs_1)
-      forward_args.append('--test-launcher-jobs=1')
 
     test_env = os.environ.copy()
     test_env['EGL_PLATFORM'] = 'surfaceless'
@@ -458,7 +442,8 @@ def Main():
   version_group.add_argument(
       '--ash-chrome-path',
       type=str,
-      help='Path to an locally built ash-chrome to use for testing.')
+      help='Path to an locally built ash-chrome to use for testing. '
+      'In general you should build //chrome/test:test_ash_chrome.')
 
   # This is for version skew testing. The current CI/CQ builder builds
   # an ash chrome and pass it using --ash-chrome-path. In order to use the same

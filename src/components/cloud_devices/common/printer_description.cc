@@ -12,10 +12,10 @@
 #include <vector>
 
 #include "base/check.h"
+#include "base/cxx17_backports.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -960,6 +960,8 @@ Media::Media(const std::string& custom_display_name,
       vendor_id(vendor_id) {}
 
 Media::Media(const Media& other) = default;
+
+Media& Media::operator=(const Media& other) = default;
 
 bool Media::MatchBySize() {
   const MediaDefinition* media = FindMediaBySize(width_um, height_um);

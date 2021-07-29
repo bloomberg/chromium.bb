@@ -9,9 +9,9 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
 #include "platform/base/error.h"
+#include "util/enum_name_table.h"
 #include "util/json/json_helpers.h"
 #include "util/osp_logging.h"
-
 namespace openscreen {
 namespace cast {
 
@@ -110,35 +110,29 @@ static constexpr char kReceiverRtcpDscp[] = "receiverRtcpDscp";
 // RTP extensions (such as adaptive playout delay).
 static constexpr char kRtpExtensions[] = "rtpExtensions";
 
+EnumNameTable<AspectRatioConstraint, 2> kAspectRatioConstraintNames{
+    {{kScalingReceiver, AspectRatioConstraint::kVariable},
+     {kScalingSender, AspectRatioConstraint::kFixed}}};
+
 Json::Value AspectRatioConstraintToJson(AspectRatioConstraint aspect_ratio) {
-  switch (aspect_ratio) {
-    case AspectRatioConstraint::kVariable:
-      return Json::Value(kScalingReceiver);
-    case AspectRatioConstraint::kFixed:
-    default:
-      return Json::Value(kScalingSender);
-  }
+  return Json::Value(GetEnumName(kAspectRatioConstraintNames, aspect_ratio)
+                         .value(kScalingSender));
 }
 
-bool AspectRatioConstraintParseAndValidate(const Json::Value& value,
-                                           AspectRatioConstraint* out) {
-  // the aspect ratio constraint is an optional field.
-  if (!value) {
-    return true;
-  }
-
+bool TryParseAspectRatioConstraint(const Json::Value& value,
+                                   AspectRatioConstraint* out) {
   std::string aspect_ratio;
-  if (!json::ParseAndValidateString(value, &aspect_ratio)) {
+  if (!json::TryParseString(value, &aspect_ratio)) {
     return false;
   }
-  if (aspect_ratio == kScalingReceiver) {
-    *out = AspectRatioConstraint::kVariable;
-    return true;
-  } else if (aspect_ratio == kScalingSender) {
-    *out = AspectRatioConstraint::kFixed;
-    return true;
+
+  ErrorOr<AspectRatioConstraint> constraint =
+      GetEnum(kAspectRatioConstraintNames, aspect_ratio);
+  if (constraint.is_error()) {
+    return false;
   }
-  return false;
+  *out = constraint.value();
+  return true;
 }
 
 template <typename T>
@@ -160,7 +154,7 @@ bool ParseOptional(const Json::Value& value, absl::optional<T>* out) {
     return true;
   }
   T tentative_out;
-  if (!T::ParseAndValidate(value, &tentative_out)) {
+  if (!T::TryParse(value, &tentative_out)) {
     return false;
   }
   *out = tentative_out;
@@ -170,9 +164,9 @@ bool ParseOptional(const Json::Value& value, absl::optional<T>* out) {
 }  // namespace
 
 // static
-bool AspectRatio::ParseAndValidate(const Json::Value& value, AspectRatio* out) {
+bool AspectRatio::TryParse(const Json::Value& value, AspectRatio* out) {
   std::string parsed_value;
-  if (!json::ParseAndValidateString(value, &parsed_value)) {
+  if (!json::TryParseString(value, &parsed_value)) {
     return false;
   }
 
@@ -194,21 +188,20 @@ bool AspectRatio::IsValid() const {
 }
 
 // static
-bool AudioConstraints::ParseAndValidate(const Json::Value& root,
-                                        AudioConstraints* out) {
-  if (!json::ParseAndValidateInt(root[kMaxSampleRate],
-                                 &(out->max_sample_rate)) ||
-      !json::ParseAndValidateInt(root[kMaxChannels], &(out->max_channels)) ||
-      !json::ParseAndValidateInt(root[kMaxBitRate], &(out->max_bit_rate))) {
+bool AudioConstraints::TryParse(const Json::Value& root,
+                                AudioConstraints* out) {
+  if (!json::TryParseInt(root[kMaxSampleRate], &(out->max_sample_rate)) ||
+      !json::TryParseInt(root[kMaxChannels], &(out->max_channels)) ||
+      !json::TryParseInt(root[kMaxBitRate], &(out->max_bit_rate))) {
     return false;
   }
 
   std::chrono::milliseconds max_delay;
-  if (json::ParseAndValidateMilliseconds(root[kMaxDelay], &max_delay)) {
+  if (json::TryParseMilliseconds(root[kMaxDelay], &max_delay)) {
     out->max_delay = max_delay;
   }
 
-  if (!json::ParseAndValidateInt(root[kMinBitRate], &(out->min_bit_rate))) {
+  if (!json::TryParseInt(root[kMinBitRate], &(out->min_bit_rate))) {
     out->min_bit_rate = kDefaultAudioMinBitRate;
   }
   return out->IsValid();
@@ -233,28 +226,26 @@ bool AudioConstraints::IsValid() const {
 }
 
 // static
-bool VideoConstraints::ParseAndValidate(const Json::Value& root,
-                                        VideoConstraints* out) {
-  if (!Dimensions::ParseAndValidate(root[kMaxDimensions],
-                                    &(out->max_dimensions)) ||
-      !json::ParseAndValidateInt(root[kMaxBitRate], &(out->max_bit_rate)) ||
+bool VideoConstraints::TryParse(const Json::Value& root,
+                                VideoConstraints* out) {
+  if (!Dimensions::TryParse(root[kMaxDimensions], &(out->max_dimensions)) ||
+      !json::TryParseInt(root[kMaxBitRate], &(out->max_bit_rate)) ||
       !ParseOptional<Dimensions>(root[kMinResolution],
                                  &(out->min_resolution))) {
     return false;
   }
 
   std::chrono::milliseconds max_delay;
-  if (json::ParseAndValidateMilliseconds(root[kMaxDelay], &max_delay)) {
+  if (json::TryParseMilliseconds(root[kMaxDelay], &max_delay)) {
     out->max_delay = max_delay;
   }
 
   double max_pixels_per_second;
-  if (json::ParseAndValidateDouble(root[kMaxPixelsPerSecond],
-                                   &max_pixels_per_second)) {
+  if (json::TryParseDouble(root[kMaxPixelsPerSecond], &max_pixels_per_second)) {
     out->max_pixels_per_second = max_pixels_per_second;
   }
 
-  if (!json::ParseAndValidateInt(root[kMinBitRate], &(out->min_bit_rate))) {
+  if (!json::TryParseInt(root[kMinBitRate], &(out->min_bit_rate))) {
     out->min_bit_rate = kDefaultVideoMinBitRate;
   }
   return out->IsValid();
@@ -290,9 +281,9 @@ Json::Value VideoConstraints::ToJson() const {
 }
 
 // static
-bool Constraints::ParseAndValidate(const Json::Value& root, Constraints* out) {
-  if (!AudioConstraints::ParseAndValidate(root[kAudio], &(out->audio)) ||
-      !VideoConstraints::ParseAndValidate(root[kVideo], &(out->video))) {
+bool Constraints::TryParse(const Json::Value& root, Constraints* out) {
+  if (!AudioConstraints::TryParse(root[kAudio], &(out->audio)) ||
+      !VideoConstraints::TryParse(root[kVideo], &(out->video))) {
     return false;
   }
   return out->IsValid();
@@ -311,15 +302,15 @@ Json::Value Constraints::ToJson() const {
 }
 
 // static
-bool DisplayDescription::ParseAndValidate(const Json::Value& root,
-                                          DisplayDescription* out) {
+bool DisplayDescription::TryParse(const Json::Value& root,
+                                  DisplayDescription* out) {
   if (!ParseOptional<Dimensions>(root[kDimensions], &(out->dimensions)) ||
       !ParseOptional<AspectRatio>(root[kAspectRatio], &(out->aspect_ratio))) {
     return false;
   }
 
   AspectRatioConstraint constraint;
-  if (AspectRatioConstraintParseAndValidate(root[kScaling], &constraint)) {
+  if (TryParseAspectRatioConstraint(root[kScaling], &constraint)) {
     out->aspect_ratio_constraint =
         absl::optional<AspectRatioConstraint>(std::move(constraint));
   } else {
@@ -368,11 +359,14 @@ Json::Value DisplayDescription::ToJson() const {
   return root;
 }
 
-bool Answer::ParseAndValidate(const Json::Value& root, Answer* out) {
-  if (!json::ParseAndValidateInt(root[kUdpPort], &(out->udp_port)) ||
-      !json::ParseAndValidateIntArray(root[kSendIndexes],
-                                      &(out->send_indexes)) ||
-      !json::ParseAndValidateUintArray(root[kSsrcs], &(out->ssrcs)) ||
+bool Answer::ParseAndValidate(const Json::Value& value, Answer* out) {
+  return TryParse(value, out);
+}
+
+bool Answer::TryParse(const Json::Value& root, Answer* out) {
+  if (!json::TryParseInt(root[kUdpPort], &(out->udp_port)) ||
+      !json::TryParseIntArray(root[kSendIndexes], &(out->send_indexes)) ||
+      !json::TryParseUintArray(root[kSsrcs], &(out->ssrcs)) ||
       !ParseOptional<Constraints>(root[kConstraints], &(out->constraints)) ||
       !ParseOptional<DisplayDescription>(root[kDisplay], &(out->display))) {
     return false;
@@ -380,12 +374,10 @@ bool Answer::ParseAndValidate(const Json::Value& root, Answer* out) {
 
   // These function set to empty array if not present, so we can ignore
   // the return value for optional values.
-  json::ParseAndValidateIntArray(root[kReceiverRtcpEventLog],
-                                 &(out->receiver_rtcp_event_log));
-  json::ParseAndValidateIntArray(root[kReceiverRtcpDscp],
-                                 &(out->receiver_rtcp_dscp));
-  json::ParseAndValidateStringArray(root[kRtpExtensions],
-                                    &(out->rtp_extensions));
+  json::TryParseIntArray(root[kReceiverRtcpEventLog],
+                         &(out->receiver_rtcp_event_log));
+  json::TryParseIntArray(root[kReceiverRtcpDscp], &(out->receiver_rtcp_dscp));
+  json::TryParseStringArray(root[kRtpExtensions], &(out->rtp_extensions));
 
   return out->IsValid();
 }

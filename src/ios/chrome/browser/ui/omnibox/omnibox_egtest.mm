@@ -298,13 +298,6 @@ id<GREYMatcher> SearchCopiedTextButton() {
 }
 
 - (void)testFocusingOmniboxDismissesEditMenu {
-// TODO(crbug.com/1129095): Re-enable test for iOS 12 device.
-#if !TARGET_IPHONE_SIMULATOR
-  if (!base::ios::IsRunningOnIOS13OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Fails on iOS 12 devices.");
-  }
-#endif
-
   [self openPage1];
 
   // Long pressing should open edit menu.
@@ -738,9 +731,7 @@ id<GREYMatcher> SearchCopiedTextButton() {
   // Returns the popup row containing the |url| as suggestion.
   id<GREYMatcher> textYouCopiedMatch =
       grey_allOf(grey_kindOfClassName(@"OmniboxPopupRowCell"),
-                 grey_descendant(grey_accessibilityLabel(
-                     [NSString stringWithFormat:@"\"%@\"", copiedText])),
-                 nil);
+                 grey_descendant(grey_accessibilityLabel(copiedText)), nil);
   [[EarlGrey selectElementWithMatcher:textYouCopiedMatch]
       assertWithMatcher:grey_notNil()];
 }

@@ -19,13 +19,16 @@
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_non_backed.h"
+#include "ui/events/event_constants.h"
 #include "ui/ozone/platform/wayland/common/data_util.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_device_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_offer.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_source.h"
+#include "ui/ozone/platform/wayland/host/wayland_event_source.h"
 #include "ui/ozone/platform/wayland/host/wayland_shm_buffer.h"
+#include "ui/ozone/platform/wayland/host/wayland_surface.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 #include "ui/ozone/platform/wayland/host/wayland_window_manager.h"
 
@@ -90,7 +93,7 @@ WaylandDataDragController::WaylandDataDragController(
 
 WaylandDataDragController::~WaylandDataDragController() = default;
 
-void WaylandDataDragController::StartSession(const OSExchangeData& data,
+bool WaylandDataDragController::StartSession(const OSExchangeData& data,
                                              int operation) {
   DCHECK_EQ(state_, State::kIdle);
   DCHECK(!origin_window_);
@@ -98,7 +101,20 @@ void WaylandDataDragController::StartSession(const OSExchangeData& data,
   origin_window_ = window_manager_->GetCurrentFocusedWindow();
   if (!origin_window_) {
     LOG(ERROR) << "Failed to get focused window.";
-    return;
+    return false;
+  }
+
+  // Drag start may be triggered asynchronously. Due this, it is possible that
+  // by the time "start drag" gets processed by Ozone/Wayland, the origin
+  // pointer event (touch or mouse) has already been released. In this case,
+  // make sure the flow bails earlier, otherwise the drag loop keeps running,
+  // causing hangs as observerd in crbug.com/1209269.
+  //
+  // TODO(crbug.com/1211874): Improve serial tracking so that it can be used for
+  // this validatation, covering both mouse and touch-triggered drags.
+  if (!connection_->event_source()->IsPointerButtonPressed(
+          EF_LEFT_MOUSE_BUTTON)) {
+    return false;
   }
 
   // Create new new data source and offers |data|.
@@ -109,18 +125,25 @@ void WaylandDataDragController::StartSession(const OSExchangeData& data,
   // Create drag icon surface (if any) and store the data to be exchanged.
   icon_bitmap_ = GetDragImage(data);
   if (icon_bitmap_) {
-    icon_surface_ = connection_->CreateSurface();
-    wl_surface_set_buffer_scale(icon_surface_.get(),
-                                origin_window_->buffer_scale());
+    icon_surface_ = std::make_unique<WaylandSurface>(connection_, nullptr);
+    if (icon_surface_->Initialize()) {
+      // Corresponds to actual scale factor of the origin surface.
+      icon_surface_->SetSurfaceBufferScale(origin_window_->window_scale());
+    } else {
+      LOG(ERROR) << "Failed to create wl_surface";
+      icon_surface_.reset();
+    }
   }
   data_ = std::make_unique<OSExchangeData>(data.provider().Clone());
 
   // Starts the wayland drag session setting |this| object as delegate.
   state_ = State::kStarted;
-  data_device_->StartDrag(*data_source_, *origin_window_, icon_surface_.get(),
+  data_device_->StartDrag(*data_source_, *origin_window_,
+                          icon_surface_ ? icon_surface_->surface() : nullptr,
                           this);
 
   window_manager_->AddObserver(this);
+  return true;
 }
 
 // Sessions initiated from Chromium, will have |data_source_| set. In which
@@ -145,9 +168,10 @@ void WaylandDataDragController::DrawIcon() {
     }
   }
   wl::DrawBitmap(*icon_bitmap_, shm_buffer_.get());
-  wl_surface_attach(icon_surface_.get(), shm_buffer_->get(), 0, 0);
-  wl_surface_damage(icon_surface_.get(), 0, 0, size.width(), size.height());
-  wl_surface_commit(icon_surface_.get());
+  auto* const surface = icon_surface_->surface();
+  wl_surface_attach(surface, shm_buffer_->get(), 0, 0);
+  wl_surface_damage(surface, 0, 0, size.width(), size.height());
+  wl_surface_commit(surface);
 }
 
 void WaylandDataDragController::OnDragOffer(

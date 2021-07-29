@@ -20,28 +20,21 @@ WebGLDrawElementsTest.DrawElementsTypeAlignment/*
 WebGLGLSLTest.*
 WebGLReadOutsideFramebufferTest.*
 
-# http://anglebug.com/5974 New tests, need triage
-IndexBufferOffsetTest.UInt16Index/*
-IndexBufferOffsetTest.UInt16IndexSmallUpdates/*
-IndexBufferOffsetTest.UInt32Index/*
-IndexBufferOffsetTest.UInt32IndexSmallUpdates/*
-IndexBufferOffsetTest.UInt8Index/*
-IndexBufferOffsetTest.UInt8IndexSmallUpdates/*
-
-# Has undefined framebuffer pixels. This fails comparison checks.
-SimpleOperationTest.ClearAndSwap/*
-SimpleOperationTest.DrawQuadAndSwap/*
+# http://anglebug.com/6006 Failing on bots
+GLSLTest.InactiveVaryingInVertexActiveInFragment/*
+# Flanky tests, pass standalone, but fail in a group
+ColorMaskTest.AMDZeroColorMaskBug/ES3_OpenGL
+WebGLCompatibilityTest.DrawArraysBufferOutOfBoundsNonInstanced/ES2_Vulkan_SwiftShader
+WebGLCompatibilityTest.DrawElementsBufferOutOfBoundsInIndexBuffer/ES2_Vulkan_SwiftShader
+WebGLCompatibilityTest.DrawElementsBufferOutOfBoundsInVertexBuffer/ES2_Vulkan_SwiftShader
 
 # Crashed tests
-BlitFramebufferANGLETest.*
-BufferDataTest.*
+BlitFramebufferANGLETest.Reverse*/*
+BlitFramebufferANGLETest.Scissored*/*
 ClipDistanceTest.*
-ColorMaskTest.*
 CopyCompressedTextureTest.InternalFormat/*
 DebugMarkerTest.*
 DebugTest.*
-DepthStencilTest.*
-DrawBuffersTest.*
 EGLPrintEGLinfoTest.PrintGLESCapabilities/*
 EGLStreamTest.*
 ExternalWrapTest.*
@@ -52,35 +45,12 @@ GLSLTest.InactiveSamplersInStruct/*
 GLSLTest.MixedShaderLengths/*
 GLSLTest.ZeroShaderLength/*
 GPUTestConfigTest.GPUTestConfigConditions_D3D11/*
-ImageTest.*
-IndexedPointsTestUByte.*
-IndexedPointsTestUInt.*
-IndexedPointsTestUShort.*
-OcclusionQueriesTest.*
+ImageTest.SourceCubeTargetExternal/*
 PBOExtensionTest.*
-PixmapTest.Clearing/*
-RobustClientMemoryTest.*
-SemaphoreTest.*
-SRGBFramebufferTest.Validation/*
-StateChangeRenderTest.GenerateMipmap/*
-SyncQueriesTest.*
-TextureLimitsTest.MaxCombinedTextures/*
-TimerQueriesTest.*
-UniformTest.Sampler/*
-UnpackAlignmentTest.*
-UnpackRowLengthTest.*
-VertexAttributeCachingTest.*
-VertexAttributeOORTest.*
 VertexAttributeTest.*
-ViewportTest.*
-VulkanExternalImageTest.ShouldClearMutableNoStorageUsageOpaqueFdRGBA8/*
-VulkanExternalImageTest.ShouldClearOpaqueFdWithSemaphores/*
-VulkanExternalImageTest.ShouldClearZirconVmoRGBA8/*
-VulkanExternalImageTest.ShouldClearZirconWithFlagsVmoRGBA8/*
-VulkanExternalImageTest.ShouldImportSemaphoreOpaqueFd/*
-VulkanExternalImageTest.TextureFormatCompatChromiumMutableNoStorageZirconVmo/*
-VulkanExternalImageTest.TextureFormatCompatChromiumZirconVmo/*
-WebGLCompatibilityTest.*
+VulkanExternalImageTest.*
+
+WebGLCompatibilityTest.MultiContextNoRenderingFeedbackLoops/*
 WebGLFramebufferTest.*
 
 # Skipped tests
@@ -90,35 +60,6 @@ LineLoopTest.DISABLED_DrawArraysWithLargeCount/*
 MipmapTest.DISABLED_ThreeLevelsInitData/*
 
 # Compile failed tests
-RobustResourceInitTest.*
-
-# ES1 crashed tests
-FramebufferObjectTest.FramebufferObject/*
-FramebufferObjectTest.RenderbufferObject/*
-FramebufferObjectTest.TextureObjectDifferentFormats/*
 
 # ES1 comparison failed tests
 BootAnimationTest.DefaultBootAnimation/*
-
-# ES1 compile failed tests
-ClipPlaneTest.InitialState/*
-ClipPlaneTest.Negative/*
-ClipPlaneTest.Set/*
-CurrentColorTest.Set/*
-FogTest.NegativeParameter/*
-FogTest.NegativeValues/*
-FogTest.Set/*
-LightsTest.InitialState/*
-LightsTest.NegativeInvalidEnum/*
-LightsTest.NegativeInvalidValue/*
-LightsTest.Set/*
-MaterialsTest.InitialState/*
-MaterialsTest.InvalidParameter/*
-MaterialsTest.SetParameters/*
-MatrixModeTest.InitialState/*
-PointParameterTest.NegativeEnum/*
-PointParameterTest.NegativeValue/*
-PointParameterTest.Set/*
-TextureEnvTest.InitialState/*
-TextureEnvTest.Set/*
-TextureParameterTest.SetFixedPoint/*

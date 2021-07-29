@@ -6,8 +6,8 @@
 
 #include "ash/public/cpp/shelf_model.h"
 #include "base/containers/contains.h"
+#include "chrome/browser/ash/file_manager/app_id.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
-#include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
@@ -96,7 +96,6 @@ AppListControllerDelegate::Pinnable GetPinnableForAppID(
   // context when launching. Pinning these creates an item that does nothing.
   const char* kNoPinAppIds[] = {
       file_manager::kVideoPlayerAppId,
-      file_manager::kGalleryAppId,
       file_manager::kAudioPlayerAppId,
       extension_misc::kFeedbackExtensionId,
   };

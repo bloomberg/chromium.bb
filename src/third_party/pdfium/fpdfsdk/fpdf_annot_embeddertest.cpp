@@ -30,8 +30,9 @@
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/utils/hash.h"
+#include "third_party/base/containers/contains.h"
+#include "third_party/base/cxx17_backports.h"
 #include "third_party/base/span.h"
-#include "third_party/base/stl_util.h"
 
 using pdfium::kAnnotationStampWithApChecksum;
 
@@ -1395,8 +1396,9 @@ TEST_F(FPDFAnnotEmbedderTest, MAYBE_AddAndModifyImage) {
     EXPECT_EQ(kBitmapSize, FPDFBitmap_GetHeight(image_bitmap));
     FPDF_PAGEOBJECT image_object = FPDFPageObj_NewImageObj(document());
     ASSERT_TRUE(FPDFImageObj_SetBitmap(&page, 0, image_object, image_bitmap));
-    ASSERT_TRUE(FPDFImageObj_SetMatrix(image_object, kBitmapSize, 0, 0,
-                                       kBitmapSize, 0, 0));
+    static constexpr FS_MATRIX kBitmapScaleMatrix{kBitmapSize, 0, 0,
+                                                  kBitmapSize, 0, 0};
+    ASSERT_TRUE(FPDFPageObj_SetMatrix(image_object, &kBitmapScaleMatrix));
     FPDFPageObj_Transform(image_object, 1, 0, 0, 1, 200, 600);
     EXPECT_TRUE(FPDFAnnot_AppendObject(annot.get(), image_object));
   }

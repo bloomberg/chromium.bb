@@ -19,7 +19,7 @@
 #include "third_party/blink/public/common/security/security_style.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
-#include "third_party/blink/public/mojom/page_state/page_state.mojom.h"
+#include "third_party/blink/public/mojom/page_state/page_state.mojom-shared.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 #include "third_party/blink/public/mojom/v8_cache_options.mojom.h"
 #include "third_party/blink/public/mojom/window_features/window_features.mojom.h"
@@ -88,6 +88,7 @@ IPC_STRUCT_TRAITS_BEGIN(blink::UserAgentMetadata)
   IPC_STRUCT_TRAITS_MEMBER(architecture)
   IPC_STRUCT_TRAITS_MEMBER(model)
   IPC_STRUCT_TRAITS_MEMBER(mobile)
+  IPC_STRUCT_TRAITS_MEMBER(bitness)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(blink::UserAgentOverride)

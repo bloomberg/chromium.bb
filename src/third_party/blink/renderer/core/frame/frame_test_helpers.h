@@ -37,7 +37,6 @@
 #include <string>
 
 #include "base/callback_helpers.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_host.h"
@@ -188,6 +187,9 @@ class TestWebFrameWidgetHost : public mojom::blink::WidgetHost,
   void UpdateTooltipUnderCursor(
       const String& tooltip_text,
       base::i18n::TextDirection text_direction_hint) override;
+  void UpdateTooltipFromKeyboard(const String& tooltip_text,
+                                 base::i18n::TextDirection text_direction_hint,
+                                 const gfx::Rect& bounds) override;
   void TextInputStateChanged(
       ui::mojom::blink::TextInputStatePtr state) override;
   void SelectionBoundsChanged(const gfx::Rect& anchor_rect,
@@ -218,7 +220,6 @@ class TestWebFrameWidgetHost : public mojom::blink::WidgetHost,
   void AutoscrollStart(const gfx::PointF& position) override;
   void AutoscrollFling(const gfx::Vector2dF& position) override;
   void AutoscrollEnd() override;
-  void DidFirstVisuallyNonEmptyPaint() override;
   void StartDragging(const blink::WebDragData& drag_data,
                      blink::DragOperationsMask operations_allowed,
                      const SkBitmap& bitmap,
@@ -267,7 +268,7 @@ class TestWebFrameWidget : public WebFrameWidgetImpl {
   // threaded compositor, such as SimCompositor tests.
   cc::FakeLayerTreeFrameSink* LastCreatedFrameSink();
 
-  virtual ScreenInfo GetInitialScreenInfo();
+  virtual display::ScreenInfo GetInitialScreenInfo();
   virtual std::unique_ptr<TestWebFrameWidgetHost> CreateWidgetHost();
 
   void BindWidgetChannels(
@@ -348,6 +349,8 @@ class WebViewHelper : public ScopedMockOverlayScrollbars {
  public:
   explicit WebViewHelper(CreateTestWebFrameWidgetCallback
                              create_web_frame_callback = base::NullCallback());
+  WebViewHelper(const WebViewHelper&) = delete;
+  WebViewHelper& operator=(const WebViewHelper&) = delete;
   ~WebViewHelper();
 
   // Helpers for creating the main frame. All methods that accept raw
@@ -483,8 +486,6 @@ class WebViewHelper : public ScopedMockOverlayScrollbars {
 
   // The Platform should not change during the lifetime of the test!
   Platform* const platform_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebViewHelper);
 };
 
 // Minimal implementation of WebLocalFrameClient needed for unit tests that load

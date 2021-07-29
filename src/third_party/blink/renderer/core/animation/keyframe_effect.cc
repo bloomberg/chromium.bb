@@ -30,7 +30,7 @@
 
 #include "third_party/blink/renderer/core/animation/keyframe_effect.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/unrestricted_double_or_keyframe_effect_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_keyframe_effect_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_keyframeeffectoptions_unrestricteddouble.h"
 #include "third_party/blink/renderer/core/animation/animation_input_helpers.h"
@@ -88,11 +88,7 @@ KeyframeEffect* KeyframeEffect::Create(
     ScriptState* script_state,
     Element* element,
     const ScriptValue& keyframes,
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     const V8UnionKeyframeEffectOptionsOrUnrestrictedDouble* options,
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-    const UnrestrictedDoubleOrKeyframeEffectOptions& options,
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     ExceptionState& exception_state) {
   Document* document = element ? &element->GetDocument() : nullptr;
   Timing timing = TimingInput::Convert(options, document, exception_state);
@@ -101,18 +97,8 @@ KeyframeEffect* KeyframeEffect::Create(
 
   EffectModel::CompositeOperation composite = EffectModel::kCompositeReplace;
   String pseudo = String();
-  if (
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-      options->IsKeyframeEffectOptions()
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-      options.IsKeyframeEffectOptions()
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  ) {
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  if (options->IsKeyframeEffectOptions()) {
     auto* effect_options = options->GetAsKeyframeEffectOptions();
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-    auto* effect_options = options.GetAsKeyframeEffectOptions();
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     composite =
         EffectModel::StringToCompositeOperation(effect_options->composite())
             .value();
@@ -585,12 +571,12 @@ void KeyframeEffect::ApplyEffects() {
   if (sampled_effect_) {
     changed =
         model_->Sample(clampTo<int>(iteration.value(), 0), Progress().value(),
-                       SpecifiedTiming().IterationDuration(),
+                       NormalizedTiming().iteration_duration,
                        sampled_effect_->MutableInterpolations());
   } else {
     HeapVector<Member<Interpolation>> interpolations;
     model_->Sample(clampTo<int>(iteration.value(), 0), Progress().value(),
-                   SpecifiedTiming().IterationDuration(), interpolations);
+                   NormalizedTiming().iteration_duration, interpolations);
     if (!interpolations.IsEmpty()) {
       auto* sampled_effect =
           MakeGarbageCollected<SampledEffect>(this, owner_->SequenceNumber());
@@ -672,11 +658,14 @@ AnimationTimeDelta KeyframeEffect::CalculateTimeToEffectChange(
     bool forwards,
     absl::optional<AnimationTimeDelta> local_time,
     AnimationTimeDelta time_to_next_iteration) const {
-  const AnimationTimeDelta start_time = SpecifiedTiming().start_delay;
+  const AnimationTimeDelta start_time = NormalizedTiming().start_delay;
+
   const AnimationTimeDelta end_time_minus_end_delay =
-      start_time + SpecifiedTiming().ActiveDuration();
+      start_time + NormalizedTiming().active_duration;
+
   const AnimationTimeDelta end_time =
-      end_time_minus_end_delay + SpecifiedTiming().end_delay;
+      end_time_minus_end_delay + NormalizedTiming().end_delay;
+
   const AnimationTimeDelta after_time =
       std::min(end_time_minus_end_delay, end_time);
 

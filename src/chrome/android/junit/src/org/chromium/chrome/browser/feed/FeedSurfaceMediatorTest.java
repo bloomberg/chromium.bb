@@ -8,6 +8,12 @@ import static junit.framework.Assert.assertEquals;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.app.Activity;
@@ -42,7 +48,10 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.SigninManager;
+import org.chromium.chrome.browser.xsurface.FeedLaunchReliabilityLogger;
+import org.chromium.chrome.browser.xsurface.HybridListRenderer;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.components.feed.proto.wire.ReliabilityLoggingEnums.DiscoverLaunchResult;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.components.signin.identitymanager.IdentityManager;
@@ -53,7 +62,7 @@ import org.chromium.ui.modelutil.PropertyModel;
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-@Features.EnableFeatures({ChromeFeatureList.WEB_FEED})
+@Features.EnableFeatures({ChromeFeatureList.WEB_FEED, ChromeFeatureList.INTEREST_FEED_V2_HEARTS})
 public class FeedSurfaceMediatorTest {
     @Rule
     public final MockitoRule mMockitoRule = MockitoJUnit.rule();
@@ -88,6 +97,12 @@ public class FeedSurfaceMediatorTest {
     private TemplateUrlService mUrlService;
     @Mock
     private FeedStream mStream;
+    @Mock
+    private FeedLaunchReliabilityLogger mLaunchReliabilityLogger;
+    @Mock
+    private HybridListRenderer mHybridListRenderer;
+    @Mock
+    private FeedSurfaceLifecycleManager mFeedSurfaceLifecycleManager;
 
     private Activity mActivity;
     private FeedSurfaceMediator mFeedSurfaceMediator;
@@ -100,12 +115,17 @@ public class FeedSurfaceMediatorTest {
 
         when(mPrefService.getBoolean(Pref.ENABLE_SNIPPETS)).thenReturn(true);
         when(mPrefService.getBoolean(Pref.ENABLE_WEB_FEED_UI)).thenReturn(true);
-        when(mWebFeedBridgeJniMock.isWebFeedSubscriber()).thenReturn(true);
         when(mIdentityService.getSigninManager(any(Profile.class))).thenReturn(mSigninManager);
         when(mSigninManager.getIdentityManager()).thenReturn(mIdentityManager);
+        when(mIdentityManager.hasPrimaryAccount()).thenReturn(true);
         when(mFeedSurfaceCoordinator.getRecyclerView()).thenReturn(new RecyclerView(mActivity));
-        when(mFeedSurfaceCoordinator.getStream()).thenReturn(null, mStream);
+        when(mFeedSurfaceCoordinator.getStream()).thenReturn(mStream);
         when(mFeedSurfaceCoordinator.createFeedStream(anyBoolean())).thenReturn(mStream);
+        when(mFeedSurfaceCoordinator.getLaunchReliabilityLogger())
+                .thenReturn(mLaunchReliabilityLogger);
+        when(mFeedSurfaceCoordinator.getHybridListRenderer()).thenReturn(mHybridListRenderer);
+        when(mFeedSurfaceCoordinator.getSurfaceLifecycleManager())
+                .thenReturn(mFeedSurfaceLifecycleManager);
         ObservableSupplierImpl<Boolean> hasUnreadContent = new ObservableSupplierImpl<>();
         hasUnreadContent.set(false);
         when(mStream.hasUnreadContent()).thenReturn(hasUnreadContent);
@@ -155,9 +175,8 @@ public class FeedSurfaceMediatorTest {
     @Test
     public void updateContent_openingTabIdFollowing() {
         PropertyModel sectionHeaderModel = SectionHeaderListProperties.create();
-        mFeedSurfaceMediator = new FeedSurfaceMediator(mFeedSurfaceCoordinator, mActivity, null,
-                mPageNavigationDelegate, sectionHeaderModel,
-                FeedSurfaceCoordinator.StreamTabId.FOLLOWING);
+        mFeedSurfaceMediator =
+                createMediator(FeedSurfaceCoordinator.StreamTabId.FOLLOWING, sectionHeaderModel);
         mFeedSurfaceMediator.updateContent();
 
         assertEquals(FeedSurfaceCoordinator.StreamTabId.FOLLOWING,
@@ -167,12 +186,44 @@ public class FeedSurfaceMediatorTest {
     @Test
     public void updateContent_openingTabIdForYou() {
         PropertyModel sectionHeaderModel = SectionHeaderListProperties.create();
-        mFeedSurfaceMediator = new FeedSurfaceMediator(mFeedSurfaceCoordinator, mActivity, null,
-                mPageNavigationDelegate, sectionHeaderModel,
-                FeedSurfaceCoordinator.StreamTabId.FOR_YOU);
+        mFeedSurfaceMediator =
+                createMediator(FeedSurfaceCoordinator.StreamTabId.FOR_YOU, sectionHeaderModel);
         mFeedSurfaceMediator.updateContent();
 
         assertEquals(FeedSurfaceCoordinator.StreamTabId.FOR_YOU,
                 sectionHeaderModel.get(SectionHeaderListProperties.CURRENT_TAB_INDEX_KEY));
+    }
+
+    @Test
+    public void testOnSurfaceClosed_launchInProgress() {
+        mFeedSurfaceMediator = createMediator();
+        mFeedSurfaceMediator.bindStream(mStream);
+
+        when(mLaunchReliabilityLogger.isLaunchInProgress()).thenReturn(true);
+        mFeedSurfaceMediator.onSurfaceClosed();
+        verify(mLaunchReliabilityLogger, times(1))
+                .logLaunchFinished(
+                        anyLong(), eq(DiscoverLaunchResult.FRAGMENT_STOPPED.getNumber()));
+    }
+
+    @Test
+    public void testOnSurfaceClosed_nolaunchInProgress() {
+        mFeedSurfaceMediator = createMediator();
+        mFeedSurfaceMediator.bindStream(mStream);
+
+        when(mLaunchReliabilityLogger.isLaunchInProgress()).thenReturn(false);
+        mFeedSurfaceMediator.onSurfaceClosed();
+        verify(mLaunchReliabilityLogger, never()).logLaunchFinished(anyLong(), anyInt());
+    }
+
+    private FeedSurfaceMediator createMediator() {
+        return createMediator(
+                FeedSurfaceCoordinator.StreamTabId.FOR_YOU, SectionHeaderListProperties.create());
+    }
+
+    private FeedSurfaceMediator createMediator(
+            @FeedSurfaceCoordinator.StreamTabId int tabId, PropertyModel sectionHeaderModel) {
+        return new FeedSurfaceMediator(mFeedSurfaceCoordinator, mActivity, null,
+                mPageNavigationDelegate, sectionHeaderModel, tabId);
     }
 }

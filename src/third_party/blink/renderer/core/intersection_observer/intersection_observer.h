@@ -156,7 +156,7 @@ class CORE_EXPORT IntersectionObserver final
     return trackVisibility() && !observations_.IsEmpty();
   }
 
-  DOMHighResTimeStamp GetTimeStamp() const;
+  DOMHighResTimeStamp GetTimeStamp(base::TimeTicks monotonic_time) const;
   DOMHighResTimeStamp GetEffectiveDelay() const;
   Vector<Length> RootMargin() const {
     return margin_target_ == kApplyMarginToRoot ? margin_ : Vector<Length>();
@@ -165,11 +165,12 @@ class CORE_EXPORT IntersectionObserver final
     return margin_target_ == kApplyMarginToTarget ? margin_ : Vector<Length>();
   }
 
-  bool ComputeIntersections(unsigned flags);
+  bool ComputeIntersections(unsigned flags,
+                            absl::optional<base::TimeTicks>& monotonic_time);
 
   LocalFrameUkmAggregator::MetricId GetUkmMetricId() const;
 
-  void SetNeedsDelivery();
+  void ReportUpdates(IntersectionObservation&);
   DeliveryBehavior GetDeliveryBehavior() const;
   void Deliver();
 
@@ -191,6 +192,7 @@ class CORE_EXPORT IntersectionObserver final
   static void SetThrottleDelayEnabledForTesting(bool);
 
  private:
+  bool NeedsDelivery() const { return !active_observations_.IsEmpty(); }
   void ProcessCustomWeakness(const LivenessBroker&);
 
   const Member<IntersectionObserverDelegate> delegate_;
@@ -199,6 +201,8 @@ class CORE_EXPORT IntersectionObserver final
   UntracedMember<Node> root_;
 
   HeapLinkedHashSet<WeakMember<IntersectionObservation>> observations_;
+  // Observations that have updates waiting to be delivered
+  HeapHashSet<Member<IntersectionObservation>> active_observations_;
   Vector<float> thresholds_;
   DOMHighResTimeStamp delay_;
   Vector<Length> margin_;
@@ -207,7 +211,6 @@ class CORE_EXPORT IntersectionObserver final
   unsigned track_visibility_ : 1;
   unsigned track_fraction_of_root_ : 1;
   unsigned always_report_root_bounds_ : 1;
-  unsigned needs_delivery_ : 1;
   unsigned can_use_cached_rects_ : 1;
   unsigned use_overflow_clip_edge_ : 1;
 };

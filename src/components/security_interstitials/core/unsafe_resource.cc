@@ -4,7 +4,7 @@
 
 #include "components/security_interstitials/core/unsafe_resource.h"
 
-#include "components/safe_browsing/core/db/util.h"
+#include "components/safe_browsing/core/browser/db/util.h"
 
 namespace security_interstitials {
 
@@ -64,8 +64,8 @@ void UnsafeResource::DispatchCallback(const base::Location& from_here,
   if (callback.is_null())
     return;
 
-  DCHECK(callback_thread);
-  callback_thread->PostTask(
+  DCHECK(callback_sequence);
+  callback_sequence->PostTask(
       from_here, base::BindOnce(callback, proceed, showed_interstitial));
 }
 

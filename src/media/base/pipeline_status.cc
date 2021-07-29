@@ -46,6 +46,8 @@ absl::optional<PipelineStatus> StatusCodeToPipelineStatus(StatusCode status) {
       return PIPELINE_ERROR_EXTERNAL_RENDERER_FAILED;
     case StatusCode::kPipelineErrorDemuxerErrorDetectedHLS:
       return DEMUXER_ERROR_DETECTED_HLS;
+    case StatusCode::kPipelineErrorHardwareContextReset:
+      return PIPELINE_ERROR_HARDWARE_CONTEXT_RESET;
     default:
       NOTREACHED();
       return absl::nullopt;
@@ -90,6 +92,8 @@ StatusCode PipelineStatusToStatusCode(PipelineStatus status) {
       return StatusCode::kPipelineErrorExternalRendererFailed;
     case DEMUXER_ERROR_DETECTED_HLS:
       return StatusCode::kPipelineErrorDemuxerErrorDetectedHLS;
+    case PIPELINE_ERROR_HARDWARE_CONTEXT_RESET:
+      return StatusCode::kPipelineErrorHardwareContextReset;
   }
 
   NOTREACHED();
@@ -113,6 +117,7 @@ std::string PipelineStatusToString(PipelineStatus status) {
     STRINGIFY_STATUS_CASE(PIPELINE_ERROR_EXTERNAL_RENDERER_FAILED);
     STRINGIFY_STATUS_CASE(PIPELINE_ERROR_READ);
     STRINGIFY_STATUS_CASE(PIPELINE_ERROR_INVALID_STATE);
+    STRINGIFY_STATUS_CASE(PIPELINE_ERROR_HARDWARE_CONTEXT_RESET);
     STRINGIFY_STATUS_CASE(DEMUXER_ERROR_COULD_NOT_OPEN);
     STRINGIFY_STATUS_CASE(DEMUXER_ERROR_COULD_NOT_PARSE);
     STRINGIFY_STATUS_CASE(DEMUXER_ERROR_NO_SUPPORTED_STREAMS);
@@ -153,8 +158,8 @@ bool operator==(const PipelineStatistics& first,
              second.video_keyframe_distance_average &&
          first.video_frame_duration_average ==
              second.video_frame_duration_average &&
-         first.video_decoder_info == second.video_decoder_info &&
-         first.audio_decoder_info == second.audio_decoder_info;
+         first.video_pipeline_info == second.video_pipeline_info &&
+         first.audio_pipeline_info == second.audio_pipeline_info;
 }
 
 bool operator!=(const PipelineStatistics& first,

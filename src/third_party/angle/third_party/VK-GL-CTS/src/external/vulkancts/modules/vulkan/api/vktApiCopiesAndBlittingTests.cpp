@@ -707,11 +707,17 @@ void CopiesAndBlittingTestInstance::uploadImageAspect (const tcu::ConstPixelBuff
 			imageExtent.depth
 		};
 
+		const bool		isCompressed	= isCompressedFormat(parms.format);
+		const deUint32	blockWidth		= (isCompressed) ? getBlockWidth(parms.format) : 1u;
+		const deUint32	blockHeight		= (isCompressed) ? getBlockHeight(parms.format) : 1u;
+		deUint32 rowLength		= ((copyExtent.width + blockWidth-1) / blockWidth) * blockWidth;
+		deUint32 imageHeight	= ((copyExtent.height + blockHeight-1) / blockHeight) * blockHeight;
+
 		const VkBufferImageCopy	copyRegion	=
 		{
 			0u,												// VkDeviceSize				bufferOffset;
-			copyExtent.width,								// deUint32					bufferRowLength;
-			copyExtent.height,								// deUint32					bufferImageHeight;
+			rowLength,										// deUint32					bufferRowLength;
+			imageHeight,									// deUint32					bufferImageHeight;
 			{
 				getAspectFlags(imageAccess.getFormat()),		// VkImageAspectFlags	aspect;
 				mipLevelNdx,									// deUint32				mipLevel;
@@ -910,12 +916,18 @@ void CopiesAndBlittingTestInstance::readImageAspect (vk::VkImage					image,
 	};
 
 	// Copy image to buffer
+	const bool		isCompressed	= isCompressedFormat(imageParms.format);
+	const deUint32	blockWidth		= (isCompressed) ? getBlockWidth(imageParms.format) : 1u;
+	const deUint32	blockHeight		= (isCompressed) ? getBlockHeight(imageParms.format) : 1u;
+	deUint32 rowLength		= ((imageExtent.width + blockWidth-1) / blockWidth) * blockWidth;
+	deUint32 imageHeight	= ((imageExtent.height + blockHeight-1) / blockHeight) * blockHeight;
+
 	const VkImageAspectFlags	aspect			= getAspectFlags(dst.getFormat());
 	const VkBufferImageCopy		copyRegion		=
 	{
 		0u,								// VkDeviceSize				bufferOffset;
-		imageExtent.width,				// deUint32					bufferRowLength;
-		imageExtent.height,				// deUint32					bufferImageHeight;
+		rowLength,						// deUint32					bufferRowLength;
+		imageHeight,					// deUint32					bufferImageHeight;
 		{
 			aspect,							// VkImageAspectFlags		aspect;
 			mipLevel,						// deUint32					mipLevel;
@@ -1256,31 +1268,6 @@ tcu::TestStatus CopyImageToImage::checkTestResult (tcu::ConstPixelBufferAccess r
 		if (isFloatFormat(result.getFormat()))
 		{
 			if (!tcu::floatThresholdCompare(m_context.getTestContext().getLog(), "Compare", "Result comparison", m_expectedTextureLevel[0]->getAccess(), result, fThreshold, tcu::COMPARE_LOG_RESULT))
-				return tcu::TestStatus::fail("CopiesAndBlitting test");
-		}
-		else if (isSnormFormat(mapTextureFormat(result.getFormat())))
-		{
-			// There may be an ambiguity between two possible binary representations of 1.0.
-			// Get rid of that by expanding the data to floats and re-normalizing again.
-
-			tcu::TextureLevel resultSnorm	(result.getFormat(), result.getWidth(), result.getHeight(), result.getDepth());
-			{
-				tcu::TextureLevel resultFloat	(tcu::TextureFormat(resultSnorm.getFormat().order, tcu::TextureFormat::FLOAT), resultSnorm.getWidth(), resultSnorm.getHeight(), resultSnorm.getDepth());
-
-				tcu::copy(resultFloat.getAccess(), result);
-				tcu::copy(resultSnorm, resultFloat.getAccess());
-			}
-
-			tcu::TextureLevel expectedSnorm	(m_expectedTextureLevel[0]->getFormat(), m_expectedTextureLevel[0]->getWidth(), m_expectedTextureLevel[0]->getHeight(), m_expectedTextureLevel[0]->getDepth());
-
-			{
-				tcu::TextureLevel expectedFloat	(tcu::TextureFormat(expectedSnorm.getFormat().order, tcu::TextureFormat::FLOAT), expectedSnorm.getWidth(), expectedSnorm.getHeight(), expectedSnorm.getDepth());
-
-				tcu::copy(expectedFloat.getAccess(), m_expectedTextureLevel[0]->getAccess());
-				tcu::copy(expectedSnorm, expectedFloat.getAccess());
-			}
-
-			if (!tcu::intThresholdCompare(m_context.getTestContext().getLog(), "Compare", "Result comparison", expectedSnorm.getAccess(), resultSnorm.getAccess(), uThreshold, tcu::COMPARE_LOG_RESULT))
 				return tcu::TestStatus::fail("CopiesAndBlitting test");
 		}
 		else
@@ -5621,41 +5608,83 @@ void addImageToImageSimpleTests (tcu::TestCaseGroup* group, AllocationKind alloc
 		group->addChild(new CopyImageToImageTestCase(testCtx, "partial_image", "Partial image", params));
 	}
 
+	static const struct
 	{
-		VkExtent3D	extent					= { 65u, 63u, 1u };
+		std::string		name;
+		vk::VkFormat	format1;
+		vk::VkFormat	format2;
+	} formats [] =
+	{
+		{ "diff_format",	vk::VK_FORMAT_R32_UINT,			vk::VK_FORMAT_R8G8B8A8_UNORM	},
+		{ "same_format",	vk::VK_FORMAT_R8G8B8A8_UNORM,	vk::VK_FORMAT_R8G8B8A8_UNORM	}
+	};
+	static const struct
+	{
+		std::string		name;
+		vk::VkBool32	clear;
+	} clears [] =
+	{
+		{ "clear",		VK_TRUE		},
+		{ "noclear",	VK_FALSE	}
+	};
+	static const struct
+	{
+		std::string		name;
+		VkExtent3D		extent;
+	} extents [] =
+	{
+		{ "npot",	{65u, 63u, 1u}	},
+		{ "pot",	{64u, 64u, 1u}	}
+	};
 
-		TestParams	params;
-		params.src.image.imageType			= VK_IMAGE_TYPE_2D;
-		params.src.image.format				= VK_FORMAT_R32_UINT;
-		params.src.image.extent				= extent;
-		params.src.image.tiling				= VK_IMAGE_TILING_OPTIMAL;
-		params.src.image.operationLayout	= VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-		params.dst.image.imageType			= VK_IMAGE_TYPE_2D;
-		params.dst.image.format				= VK_FORMAT_R8G8B8A8_UNORM;
-		params.dst.image.extent				= extent;
-		params.dst.image.tiling				= VK_IMAGE_TILING_OPTIMAL;
-		params.dst.image.operationLayout	= VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-		params.allocationKind				= allocationKind;
-		params.extensionUse					= extensionUse;
-		params.clearDestination				= VK_TRUE;
-
+	for (const auto& format : formats)
+	{
+		for (const auto& clear : clears)
 		{
-			const VkImageCopy	testCopy	=
+			for (const auto& extent : extents)
 			{
-				defaultSourceLayer,	// VkImageSubresourceLayers	srcSubresource;
-				{34, 34, 0},		// VkOffset3D				srcOffset;
-				defaultSourceLayer,	// VkImageSubresourceLayers	dstSubresource;
-				{0, 0, 0},			// VkOffset3D				dstOffset;
-				{31, 29, 1}			// VkExtent3D				extent;
-			};
+				TestParams	params;
+				params.src.image.imageType			= VK_IMAGE_TYPE_2D;
+				params.src.image.format				= format.format1;
+				params.src.image.extent				= extent.extent;
+				params.src.image.tiling				= VK_IMAGE_TILING_OPTIMAL;
+				params.src.image.operationLayout	= VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+				params.dst.image.imageType			= VK_IMAGE_TYPE_2D;
+				params.dst.image.format				= format.format2;
+				params.dst.image.extent				= extent.extent;
+				params.dst.image.tiling				= VK_IMAGE_TILING_OPTIMAL;
+				params.dst.image.operationLayout	= VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+				params.allocationKind				= allocationKind;
+				params.extensionUse					= extensionUse;
+				params.clearDestination				= clear.clear;
 
-			CopyRegion			imageCopy;
+				{
+					VkImageCopy	testCopy	=
+					{
+						defaultSourceLayer,	// VkImageSubresourceLayers	srcSubresource;
+						{34, 34, 0},		// VkOffset3D				srcOffset;
+						defaultSourceLayer,	// VkImageSubresourceLayers	dstSubresource;
+						{0, 0, 0},			// VkOffset3D				dstOffset;
+						{31, 29, 1}			// VkExtent3D				extent;
+					};
 
-			imageCopy.imageCopy = testCopy;
-			params.regions.push_back(imageCopy);
+					if (extent.name == "pot")
+					{
+						testCopy.srcOffset	= { 16, 16, 0 };
+						testCopy.extent		= { 32, 32, 1 };
+					}
+
+					CopyRegion	imageCopy;
+					imageCopy.imageCopy = testCopy;
+					params.regions.push_back(imageCopy);
+				}
+
+				// Example test case name: "partial_image_npot_diff_format_clear"
+				const std::string testCaseName = "partial_image_" + extent.name + "_" + format.name + "_" + clear.name;
+
+				group->addChild(new CopyImageToImageTestCase(testCtx, testCaseName, "", params));
+			}
 		}
-
-		group->addChild(new CopyImageToImageTestCase(testCtx, "partial_image_npot_diff_format_clear", "Partial image with npot dimensions, different format, and clearing of the destination image", params));
 	}
 
 	{
@@ -6554,6 +6583,7 @@ void addImageToImageAllFormatsDepthStencilTests (tcu::TestCaseGroup* group, Allo
 
 			const VkImageSubresourceLayers		defaultDepthSourceLayer		= { VK_IMAGE_ASPECT_DEPTH_BIT, 0u, 0u, 1u };
 			const VkImageSubresourceLayers		defaultStencilSourceLayer	= { VK_IMAGE_ASPECT_STENCIL_BIT, 0u, 0u, 1u };
+			const VkImageSubresourceLayers		defaultDSSourceLayer		= { VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT, 0u, 0u, 1u };
 
 			for (deInt32 i = 0; i < defaultSize; i += defaultFourthSize)
 			{
@@ -6602,6 +6632,37 @@ void addImageToImageAllFormatsDepthStencilTests (tcu::TestCaseGroup* group, Allo
 				const std::string testName2		= getFormatCaseName(params.src.image.format) + "_" + getFormatCaseName(params.dst.image.format) + "_separate_layouts";
 				const std::string description2	= "Copy from " + getFormatCaseName(params.src.image.format) + " to " + getFormatCaseName(params.dst.image.format) + " with separate depth/stencil layouts";
 				addTestGroup(subGroup.get(), testName2, description2, addImageToImageAllFormatsDepthStencilFormatsTests, params);
+
+				// DS Image copy
+				{
+					params.separateDepthStencilLayouts	= DE_FALSE;
+					// Clear previous vkImageCopy elements
+					params.regions.clear();
+
+					for (deInt32 i = 0; i < defaultSize; i += defaultFourthSize)
+					{
+						CopyRegion			copyRegion;
+						const VkOffset3D	srcOffset	= {0, 0, 0};
+						const VkOffset3D	dstOffset	= {i, defaultSize - i - defaultFourthSize, 0};
+						const VkExtent3D	extent		= {defaultFourthSize, defaultFourthSize, 1};
+
+						const VkImageCopy				testCopy	=
+						{
+							defaultDSSourceLayer,		// VkImageSubresourceLayers	srcSubresource;
+							srcOffset,					// VkOffset3D				srcOffset;
+							defaultDSSourceLayer,		// VkImageSubresourceLayers	dstSubresource;
+							dstOffset,					// VkOffset3D				dstOffset;
+							extent,						// VkExtent3D				extent;
+						};
+
+						copyRegion.imageCopy	= testCopy;
+						params.regions.push_back(copyRegion);
+					}
+
+					const std::string testName3		= getFormatCaseName(params.src.image.format) + "_" + getFormatCaseName(params.dst.image.format) + "_depth_stencil_aspects";
+					const std::string description3	= "Copy both depth and stencil aspects from " + getFormatCaseName(params.src.image.format) + " to " + getFormatCaseName(params.dst.image.format);
+					addTestGroup(subGroup.get(), testName3, description3, addImageToImageAllFormatsDepthStencilFormatsTests, params);
+				}
 			}
 		}
 

@@ -16,6 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.IntentUtils;
 import org.chromium.base.UserData;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.IntentHandler;
@@ -105,14 +106,14 @@ public class ReparentingTask implements UserData {
         }
         intent.setAction(Intent.ACTION_VIEW);
         if (TextUtils.isEmpty(intent.getDataString())) {
-            intent.setData(Uri.parse(mTab.getUrlString()));
+            intent.setData(Uri.parse(mTab.getUrl().getSpec()));
         }
         if (mTab.isIncognito()) {
             intent.putExtra(Browser.EXTRA_APPLICATION_ID,
                     ContextUtils.getApplicationContext().getPackageName());
             intent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, true);
         }
-        IntentHandler.addTrustedIntentExtras(intent);
+        IntentUtils.addTrustedIntentExtras(intent);
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_REPARENTING)) {
             // Add the tab to AsyncTabParamsManager before removing it from the current model to

@@ -76,6 +76,7 @@ class AppServiceAppWindowShelfController
 
   // ArcAppWindowDelegate:
   int GetActiveTaskId() const override;
+  int GetActiveSessionId() const override;
 
   // Removes an AppWindowBase from its AppWindowShelfItemController by
   // |window|.
@@ -97,9 +98,6 @@ class AppServiceAppWindowShelfController
   }
 
   AppWindowBase* GetAppWindow(aura::Window* window);
-
-  void ObserveWindow(aura::Window* window);
-  bool IsObservingWindow(aura::Window* window);
 
   std::vector<aura::Window*> GetArcWindows();
 

@@ -26,10 +26,11 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
 #if !defined(OS_IOS)
-#include "components/autofill/core/browser/payments/internal_authenticator.h"
+#include "components/webauthn/core/browser/internal_authenticator.h"
 #endif
 
 class PrefService;
@@ -64,6 +65,7 @@ class AutofillOfferManager;
 class AutofillPopupDelegate;
 class CardUnmaskDelegate;
 class CreditCard;
+enum class CreditCardFetchResult;
 class FormDataImporter;
 class FormStructure;
 class LogManager;
@@ -106,6 +108,22 @@ class AutofillClient : public RiskDataLoader {
     // Unable to connect to Payments servers. Prompt user to check internet
     // connection.
     NETWORK_ERROR,
+
+    // Request failed in retrieving virtual card information; try again.
+    VCN_RETRIEVAL_TRY_AGAIN_FAILURE,
+
+    // Request failed in retrieving virtual card information; don't try again.
+    VCN_RETRIEVAL_PERMANENT_FAILURE,
+  };
+
+  // The type of the credit card the Payments RPC fetches.
+  enum PaymentsRpcCardType {
+    // Unknown type.
+    UNKNOWN_TYPE = 0,
+    // Server card.
+    SERVER_CARD = 1,
+    // Virtual card.
+    VIRTUAL_CARD = 2,
   };
 
   enum SaveCardOfferUserDecision {
@@ -545,10 +563,18 @@ class AutofillClient : public RiskDataLoader {
   virtual void ShowOfferNotificationIfApplicable(
       const AutofillOfferData* offer);
 
-  // Indicates that the virtual card was fetched in order to allow the user to
-  // manually fill payment form with the fetched |credit_card| and |cvc|.
-  virtual void OnVirtualCardFetched(const CreditCard* credit_card,
-                                    const std::u16string& cvc);
+  // Called when the virtual card has been fetched successfully.
+  // |credit_card| and |cvc| include the information that allow the user to
+  // manually fill payment form. |card_image| is used for manual fallback
+  // bubble.
+  virtual void OnVirtualCardDataAvailable(
+      const CreditCard* credit_card,
+      const std::u16string& cvc,
+      const gfx::Image& card_image = gfx::Image());
+
+  // Called when some virtual card retrieval errors happened. Will show the
+  // error dialog with virtual card related messages.
+  virtual void ShowVirtualCardErrorDialog(bool is_permanent_error);
 
   // Returns true if the Autofill Assistant UI is currently being shown.
   virtual bool IsAutofillAssistantShowing();

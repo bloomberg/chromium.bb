@@ -12,8 +12,8 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -179,10 +179,6 @@ GLImplementationParts GetLegacySoftwareGLImplementation() {
 
 GLImplementationParts GetSoftwareGLImplementation() {
   return GLImplementationParts(ANGLEImplementation::kSwiftShader);
-}
-
-GLImplementationParts GetSoftwareGLForTestsImplementation() {
-  return GetLegacySoftwareGLImplementation();
 }
 
 bool IsSoftwareGLImplementation(GLImplementationParts implementation) {

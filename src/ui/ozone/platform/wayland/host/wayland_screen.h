@@ -16,6 +16,7 @@
 #include "ui/display/tablet_state.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/ozone/platform/wayland/common/wayland_object.h"
 #include "ui/ozone/public/platform_screen.h"
 
 namespace gfx {
@@ -25,6 +26,10 @@ class Rect;
 namespace ui {
 
 class WaylandConnection;
+
+#if defined(USE_DBUS)
+class OrgGnomeMutterIdleMonitor;
+#endif
 
 // A PlatformScreen implementation for Wayland.
 class WaylandScreen : public PlatformScreen {
@@ -58,10 +63,14 @@ class WaylandScreen : public PlatformScreen {
       const gfx::Point& point) const override;
   display::Display GetDisplayMatching(
       const gfx::Rect& match_rect) const override;
+  void SetScreenSaverSuspended(bool suspend) override;
+  bool IsScreenSaverActive() const override;
+  base::TimeDelta CalculateIdleTime() const override;
   void AddObserver(display::DisplayObserver* observer) override;
   void RemoveObserver(display::DisplayObserver* observer) override;
   base::Value GetGpuExtraInfoAsListValue(
       const gfx::GpuExtraInfo& gpu_extra_info) override;
+  void SetDeviceScaleFactor(float scale) override;
 
  private:
   void AddOrUpdateDisplay(uint32_t output_id,
@@ -76,6 +85,22 @@ class WaylandScreen : public PlatformScreen {
 
   absl::optional<gfx::BufferFormat> image_format_alpha_;
   absl::optional<gfx::BufferFormat> image_format_no_alpha_;
+
+#if defined(USE_DBUS)
+  mutable std::unique_ptr<OrgGnomeMutterIdleMonitor>
+      org_gnome_mutter_idle_monitor_;
+#endif
+
+  // Fractional part of additional scale. By default, GNOME also provides scale
+  // factor for Wayland, but it uses the biggest scale factor if multiple
+  // displays are available. In contrast, wl_output.scale sends scale factor for
+  // each of the displays and we adapt accordingly. However, wl_output.scale
+  // doesn't send fractional parts, while GNOME does send that when "Large text"
+  // feature is enabled. Thus, store only this decimal part and updates displays
+  // accordingly.
+  float additional_scale_ = 0.f;
+
+  wl::Object<zwp_idle_inhibitor_v1> idle_inhibitor_;
 
   base::WeakPtrFactory<WaylandScreen> weak_factory_;
 };

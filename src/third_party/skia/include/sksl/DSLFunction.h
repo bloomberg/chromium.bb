@@ -27,19 +27,30 @@ class DSLType;
 class DSLFunction {
 public:
     template<class... Parameters>
-    DSLFunction(const DSLType& returnType, const char* name, Parameters&... parameters) {
-        SkTArray<DSLVar*> parameterArray;
+    DSLFunction(const DSLType& returnType, skstd::string_view name, Parameters&... parameters)
+        : DSLFunction(DSLModifiers(), returnType, name, parameters...) {}
+
+    template<class... Parameters>
+    DSLFunction(DSLModifiers modifiers, const DSLType& returnType, skstd::string_view name,
+                Parameters&... parameters) {
+        SkTArray<DSLParameter*> parameterArray;
         parameterArray.reserve_back(sizeof...(parameters));
 
         // in C++17, we could just do:
         // (parameterArray.push_back(&parameters), ...);
         int unused[] = {0, (static_cast<void>(parameterArray.push_back(&parameters)), 0)...};
         static_cast<void>(unused);
-        this->init(returnType, name, std::move(parameterArray));
+        this->init(modifiers, returnType, name, std::move(parameterArray));
     }
 
-    DSLFunction(const DSLType& returnType, const char* name, SkTArray<DSLVar*> parameters) {
-        this->init(returnType, name, std::move(parameters));
+    DSLFunction(const DSLType& returnType, skstd::string_view name,
+                SkTArray<DSLParameter*> parameters) {
+        this->init(DSLModifiers(), returnType, name, std::move(parameters));
+    }
+
+    DSLFunction(DSLModifiers modifiers, const DSLType& returnType, skstd::string_view name,
+                SkTArray<DSLParameter*> parameters) {
+        this->init(modifiers, returnType, name, std::move(parameters));
     }
 
     DSLFunction(const SkSL::FunctionDeclaration* decl)
@@ -88,7 +99,8 @@ private:
         collectArgs(args, std::forward<RemainingArgs>(remaining)...);
     }
 
-    void init(const DSLType& returnType, const char* name, SkTArray<DSLVar*> params);
+    void init(DSLModifiers modifiers, const DSLType& returnType, skstd::string_view name,
+              SkTArray<DSLParameter*> params);
 
     const SkSL::FunctionDeclaration* fDecl = nullptr;
 };

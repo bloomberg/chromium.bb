@@ -25,10 +25,11 @@
 #include "src/reader/reader.h"
 #include "src/sem/type_manager.h"
 #include "src/transform/binding_remapper.h"
-#include "src/transform/bound_array_accessors.h"
 #include "src/transform/first_index_offset.h"
+#include "src/transform/fold_trivial_single_use_lets.h"
 #include "src/transform/manager.h"
 #include "src/transform/renamer.h"
+#include "src/transform/robustness.h"
 #include "src/transform/single_entry_point.h"
 #include "src/transform/vertex_pulling.h"
 #include "src/writer/writer.h"
@@ -43,7 +44,6 @@
 
 #if TINT_BUILD_SPV_WRITER
 #include "spirv-tools/libspirv.hpp"
-#include "src/transform/spirv.h"
 #include "src/writer/spirv/generator.h"
 #endif  // TINT_BUILD_SPV_WRITER
 
@@ -52,13 +52,14 @@
 #endif  // TINT_BUILD_WGSL_WRITER
 
 #if TINT_BUILD_MSL_WRITER
-#include "src/transform/msl.h"
 #include "src/writer/msl/generator.h"
 #endif  // TINT_BUILD_MSL_WRITER
 
 #if TINT_BUILD_HLSL_WRITER
-#include "src/transform/hlsl.h"
 #include "src/writer/hlsl/generator.h"
 #endif  // TINT_BUILD_HLSL_WRITER
+
+// TODO(crbug/984): Remove once Dawn builds with this flag
+#define TINT_EXPECTS_UBOS_TO_BE_MULTIPLE_OF_16
 
 #endif  // INCLUDE_TINT_TINT_H_

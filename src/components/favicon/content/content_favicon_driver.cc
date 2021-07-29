@@ -15,6 +15,7 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/page.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "ui/gfx/image/image.h"
 
@@ -50,7 +51,9 @@ GURL ContentFaviconDriver::GetActiveURL() {
 GURL ContentFaviconDriver::GetManifestURL(content::RenderFrameHost* rfh) {
   DocumentManifestData* document_data =
       DocumentManifestData::GetOrCreateForCurrentDocument(rfh);
-  return document_data->has_manifest_url ? rfh->ManifestURL() : GURL();
+  return document_data->has_manifest_url
+             ? rfh->GetPage().GetManifestUrl().value_or(GURL())
+             : GURL();
 }
 
 ContentFaviconDriver::ContentFaviconDriver(content::WebContents* web_contents,
@@ -101,7 +104,11 @@ int ContentFaviconDriver::DownloadImage(const GURL& url,
 
 void ContentFaviconDriver::DownloadManifest(const GURL& url,
                                             ManifestDownloadCallback callback) {
-  web_contents()->GetManifest(
+  // TODO(crbug.com/1201237): This appears to be reachable from pages other
+  // than the primary page. This code should likely be refactored so that either
+  // this is unreachable from other pages, or the correct page is plumbed in
+  // here.
+  web_contents()->GetPrimaryPage().GetManifest(
       base::BindOnce(&ContentFaviconDriver::OnDidDownloadManifest,
                      base::Unretained(this), std::move(callback)));
 }
@@ -171,7 +178,7 @@ void ContentFaviconDriver::DidUpdateFaviconURL(
 
 void ContentFaviconDriver::DidUpdateWebManifestURL(
     content::RenderFrameHost* rfh,
-    const absl::optional<GURL>& manifest_url) {
+    const GURL& manifest_url) {
   // Ignore the update if there is no last committed navigation entry. This can
   // occur when loading an initially blank page.
   content::NavigationEntry* entry =

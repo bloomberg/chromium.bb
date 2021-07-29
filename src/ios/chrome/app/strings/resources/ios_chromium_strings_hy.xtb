@@ -6,10 +6,12 @@
 <translation id="1257458525759135959">Պատկերները պահելու համար հպեք Կարգավորումներին և թույլատրեք Chromium-ին ավելացնել դրանք ձեր լուսանկարներին։</translation>
 <translation id="1289216811211435351">Անցեք Chromium-ին</translation>
 <translation id="1361748954329991663">Chromium-ը հնացել է։ Եթե <ph name="BEGIN_LINK" />App Store<ph name="END_LINK" />-ում թարմացում հասանելի չէ, ապա հնարավոր է՝ ձեր սարքը Chromium-ի նոր տարբերակներն այլևս չի աջակցում։</translation>
+<translation id="1370204544543370355">Chromium-ի բոլոր գործառույթներն օգտագործելու համար մտեք ձեր Google հաշիվ</translation>
 <translation id="1431818719585918472">Թույլ տվեք Chromium-ին կողպել ձեր ինկոգնիտո ներդիրները։</translation>
 <translation id="1472013873724362412">Ձեր հաշիվը չի աշխատում Chromium-ում: Մուտք գործելու համար դիմեք ձեր տիրույթի ադմինիստրատորին կամ օգտագործեք սովորական Google հաշիվ:</translation>
 <translation id="1507010443238049608">Օգնել ավելի լավը դարձնել Chromium-ի գործառույթներն ու աշխատանքը</translation>
 <translation id="1531155317299575425">Ցույց է տալիս հաղորդագրություն Chromium-ում մուտք գործելու համար։</translation>
+<translation id="1584569488888892906">Chromium-ը դարձել է ավելի հարմար, անվտանգ և արագ</translation>
 <translation id="1617663976202781617">Տվյալներ Chromium Sync-ից</translation>
 <translation id="1736662517232558588">Chromium-ի տվյալները մաքրվեցին</translation>
 <translation id="1838412507805038478">Chromium-ը հաստատել է, որ <ph name="ISSUER" />-ն է թողարկել վեբկայքի հավաստագիրը:</translation>
@@ -17,7 +19,6 @@
 <ph name="BEGIN_LINK" />Իմանալ ավելին<ph name="END_LINK" /></translation>
 <translation id="2006345422933397527">Chromium-ին չհաջողվեց ստուգել թարմացումների առկայությունը։ Ստուգեք ինտերնետ կապը։</translation>
 <translation id="2054703085270098503">Եղեք պաշտպանված Chromium-ի հետ</translation>
-<translation id="2075400798887076382">Այստեղից կարող եք աշխատել ձեր համակարգչում բացված ներդիրների հետ: Պարզապես բացեք Chromium-ը համակարգչում, անցեք ընտրացանկ և ընտրեք «Մուտք գործել Chromium…»</translation>
 <translation id="2168108852149185974">Որոշ հավելումներ առաջացնում են Chromium-ի աշխատանքի խափանում: Հեռացրեք դրանք՝</translation>
 <translation id="2178608107313874732">Այս պահին Chromium-ը չի կարող օգտագործել ձեր ֆոտոխցիկը</translation>
 <translation id="2195025571279539885">Ուզո՞ւմ եք, որ Chromium-ն այսուհետ առաջարկի թարգմանել այս կայքի <ph name="LANGUAGE_NAME" /> էջերը:</translation>
@@ -42,10 +43,8 @@
 <translation id="4585809515399340748">Այժմ հաղորդագրություններում, փաստաթղթերում և այլ հավելվածներում առկա հղումները կարող եք բացել Chromium-ում։</translation>
 <translation id="4681781466797808448">Միացրեք Chromium-ի սկաները</translation>
 <translation id="4736424910885271643">Chromium-ում պահվող ձեր բոլոր տվյալները կջնջվեն այս սարքից, քանի որ ձեր հաշիվը կառավարվում է <ph name="HOSTED_DOMAIN" /> տիրույթի կողմից</translation>
-<translation id="4787850887676698916">Ձեր մյուս սարքերում Chromium-ով բացված ներդիրները կտեսնեք այստեղ:</translation>
 <translation id="4806326830773390517">Օգնեք կատարելագործել Chromium-ը՝ Google-ին ավտոմատ ուղարկելով օգտագործման վիճակագրություն և խափանումների մասին հաշվետվություններ</translation>
 <translation id="4828317641996116749">Chromium-ին չհաջողվեց ստուգել բոլոր գաղտնաբառերը։ Փորձեք ավելի ուշ։</translation>
-<translation id="4852878756222711218">Chromium-ի բոլոր գործառույթներն օգտագործելու համար մտեք ձեր Google հաշիվ</translation>
 <translation id="4985291216379576555">Կապ չկա, Chromium-ը չի կարող ստուգել թարմացումների առկայությունը</translation>
 <translation id="4999538639245140991">Դուք դուրս եք գալիս <ph name="SIGNOUT_MANAGED_DOMAIN" /> տիրույթի ադմինիստրատորի կողմից կառավարվող հաշվից: Նկատի առեք, որ Chromium-ի տվյալները սարքից կհեռացվեն, սակայն կմնան ձեր Google հաշվում:</translation>
 <translation id="5171868502429358653">Մուտք Chromium</translation>
@@ -55,6 +54,7 @@
 <translation id="5521125884468363740">Chromium-ն օգտագործելիս ձեր բոլոր ներդիրները տեսնելու համար մտեք հաշիվ և միացրեք համաժամացումը։</translation>
 <translation id="5573014823074921752">Խորհուրդ Chromium-ից: Հպեք և պահեք գործիքագոտու «Ցուցադրել ներդիրները» կոճակը՝ այլ ընտրանքներ տեսնելու համար: Գործիքագոտին սովորաբար գտնվում է էկրանի վերևի կամ ներքևի հատվածում:</translation>
 <translation id="5700709190537129682">Chromium-ը չի կարող ստուգել ձեր գաղտնաբառերը</translation>
+<translation id="5715349567881822785">Արեք ավելին Chromium-ի օգնությամբ</translation>
 <translation id="5742135483959137648">Հղումները բացեք Chromium-ում</translation>
 <translation id="5777187867430702742">Chromium-ի էջ</translation>
 <translation id="5862307444128926510">Բարի գալուստ Chromium</translation>
@@ -69,6 +69,7 @@
 <translation id="632825460376924298">Թույլատրել մուտքը Chromium-ում</translation>
 <translation id="6337530241089703714">Հեռացնե՞լ Chromium-ի տվյալներն այս սարքից</translation>
 <translation id="6424492062988593837">Chromium-ը կատարելագործվել է: Մատչելի է նոր տարբերակ:</translation>
+<translation id="6752854822223394465">Ձեր կազմակերպությունը կարգավորում է Chromium-ը…</translation>
 <translation id="6820823224820483452">Chromium-ին չհաջողվեց ստուգել բոլոր գաղտնաբառերը։ Վաղը նորից փորձեք։</translation>
 <translation id="6827294685447036764">Ստանալով ձեր տեղադրության տվյալներն օգտագործելու թույլտվություն՝ Chromium-ը դրանք ուղարկում է ձեր կողմից թույլատրված կայքերին։ Կայքերը կարող են պահանջել ձեր տեղադրության տվյալները՝ տվյալ վայրին առնչվող տեղեկություններ ցուցադրելու համար (օրինակ՝ նորություններ կամ մոտակա խանութներ)։</translation>
 <translation id="7018284295775193585">Չհաջողվեց թարմացնել Chromium-ը</translation>

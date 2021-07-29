@@ -22,11 +22,12 @@
 
 #include "third_party/blink/renderer/core/layout/layout_text_control.h"
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
 #include "third_party/blink/renderer/core/html/forms/text_control_element.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
@@ -66,6 +67,7 @@ void LayoutTextControl::StyleDidChange(HTMLElement* inner_editor,
   LayoutBlock* inner_editor_layout_object =
       To<LayoutBlock>(inner_editor->GetLayoutObject());
   if (inner_editor_layout_object) {
+    // TODO(https://crbug.com/1101564):
     // This is necessary to update the style on the inner_editor based on the
     // changes in the input element ComputedStyle.
     // (See TextControlInnerEditorElement::CreateInnerEditorStyle()).

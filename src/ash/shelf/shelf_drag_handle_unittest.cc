@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "ash/app_list/test/app_list_test_helper.h"
-#include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/contextual_tooltip.h"
@@ -16,6 +16,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
+#include "base/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
@@ -789,7 +790,7 @@ TEST_F(DragHandleContextualNudgeTest, OverviewCancelsNudgeShow) {
   DragHandle* const drag_handle = shelf_widget->GetDragHandle();
 
   ASSERT_TRUE(drag_handle->has_show_drag_handle_timer_for_testing());
-  Shell::Get()->overview_controller()->StartOverview();
+  EnterOverview();
   ASSERT_FALSE(drag_handle->has_show_drag_handle_timer_for_testing());
 }
 
@@ -811,7 +812,7 @@ TEST_F(DragHandleContextualNudgeTest, DragHandleTapShowNudgeInOverview) {
   TabletModeControllerTestApi().LeaveTabletMode();
   TabletModeControllerTestApi().EnterTabletMode();
 
-  Shell::Get()->overview_controller()->StartOverview();
+  EnterOverview();
   ASSERT_FALSE(drag_handle->has_show_drag_handle_timer_for_testing());
 
   GetEventGenerator()->GestureTapAt(
@@ -843,8 +844,7 @@ TEST_F(DragHandleContextualNudgeTest,
 
   // Go into split view mode by first going into overview, and then snapping
   // the open window on one side.
-  OverviewController* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->StartOverview();
+  EnterOverview();
   SplitViewController* split_view_controller =
       SplitViewController::Get(shelf_widget->GetNativeWindow());
   split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
@@ -874,8 +874,7 @@ TEST_F(DragHandleContextualNudgeTest, DragHandleNudgeHiddenOnSplitScreen) {
 
   // Go into split view mode by first going into overview, and then snapping
   // the open window on one side.
-  OverviewController* overview_controller = Shell::Get()->overview_controller();
-  overview_controller->StartOverview();
+  EnterOverview();
   SplitViewController* split_view_controller =
       SplitViewController::Get(shelf_widget->GetNativeWindow());
   split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);

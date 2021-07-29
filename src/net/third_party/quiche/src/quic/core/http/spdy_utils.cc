@@ -16,7 +16,6 @@
 #include "quic/platform/api/quic_flag_utils.h"
 #include "quic/platform/api/quic_flags.h"
 #include "quic/platform/api/quic_logging.h"
-#include "quic/platform/api/quic_map_util.h"
 #include "common/quiche_text_utils.h"
 #include "spdy/core/spdy_protocol.h"
 
@@ -78,7 +77,7 @@ bool SpdyUtils::CopyAndValidateHeaders(const QuicHeaderList& header_list,
     headers->AppendValueOrAddHeader(name, p.second);
   }
 
-  if (QuicContainsKey(*headers, "content-length") &&
+  if (headers->contains("content-length") &&
       !ExtractContentLengthFromHeaders(content_length, headers)) {
     return false;
   }
@@ -155,7 +154,7 @@ bool SpdyUtils::PopulateHeaderBlockFromUrl(const std::string url,
 }
 
 // static
-absl::optional<QuicDatagramFlowId> SpdyUtils::ParseDatagramFlowIdHeader(
+absl::optional<QuicDatagramStreamId> SpdyUtils::ParseDatagramFlowIdHeader(
     const spdy::SpdyHeaderBlock& headers) {
   auto flow_id_pair = headers.find("datagram-flow-id");
   if (flow_id_pair == headers.end()) {
@@ -163,7 +162,7 @@ absl::optional<QuicDatagramFlowId> SpdyUtils::ParseDatagramFlowIdHeader(
   }
   std::vector<absl::string_view> flow_id_strings =
       absl::StrSplit(flow_id_pair->second, ',');
-  absl::optional<QuicDatagramFlowId> first_named_flow_id;
+  absl::optional<QuicDatagramStreamId> first_named_flow_id;
   for (absl::string_view flow_id_string : flow_id_strings) {
     std::vector<absl::string_view> flow_id_components =
         absl::StrSplit(flow_id_string, ';');
@@ -173,7 +172,7 @@ absl::optional<QuicDatagramFlowId> SpdyUtils::ParseDatagramFlowIdHeader(
     absl::string_view flow_id_value_string = flow_id_components[0];
     quiche::QuicheTextUtils::RemoveLeadingAndTrailingWhitespace(
         &flow_id_value_string);
-    QuicDatagramFlowId flow_id;
+    QuicDatagramStreamId flow_id;
     if (!absl::SimpleAtoi(flow_id_value_string, &flow_id)) {
       continue;
     }
@@ -191,7 +190,7 @@ absl::optional<QuicDatagramFlowId> SpdyUtils::ParseDatagramFlowIdHeader(
 
 // static
 void SpdyUtils::AddDatagramFlowIdHeader(spdy::SpdyHeaderBlock* headers,
-                                        QuicDatagramFlowId flow_id) {
+                                        QuicDatagramStreamId flow_id) {
   (*headers)["datagram-flow-id"] = absl::StrCat(flow_id);
 }
 

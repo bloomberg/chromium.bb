@@ -34,9 +34,9 @@ import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.components.externalauth.ExternalAuthUtils;
+import org.chromium.components.signin.metrics.FetchAccountCapabilitiesFromSystemLibraryResult;
 
 import java.io.IOException;
 
@@ -87,7 +87,7 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
             long startTime = SystemClock.elapsedRealtime();
             Account[] accounts =
                     mAccountManager.getAccountsByType(GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE);
-            recordElapsedTimeHistogram("Signin.AndroidGetAccountsTime_AccountManager",
+            RecordHistogram.recordTimesHistogram("Signin.AndroidGetAccountsTime_AccountManager",
                     SystemClock.elapsedRealtime() - startTime);
             return accounts;
         }
@@ -146,17 +146,13 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
         return hasFeatures(account, new String[] {feature});
     }
 
-    /**
-     * Records a histogram value for how long time an action has taken using
-     * {@link RecordHistogram#recordTimesHistogram(String, long))} if the browser
-     * process has been initialized.
-     *
-     * @param histogramName the name of the histogram.
-     * @param elapsedMs the elapsed time in milliseconds.
-     */
-    protected static void recordElapsedTimeHistogram(String histogramName, long elapsedMs) {
-        if (!LibraryLoader.getInstance().isInitialized()) return;
-        RecordHistogram.recordTimesHistogram(histogramName, elapsedMs);
+    @Override
+    public @CapabilityResponse int hasCapability(Account account, String capability) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "Signin.AccountCapabilities.GetFromSystemLibraryResult",
+                FetchAccountCapabilitiesFromSystemLibraryResult.API_NOT_AVAILABLE,
+                FetchAccountCapabilitiesFromSystemLibraryResult.MAX_VALUE + 1);
+        return CapabilityResponse.EXCEPTION;
     }
 
     // No permission is needed on 23+ and Chrome always has MANAGE_ACCOUNTS permission on lower APIs
@@ -221,8 +217,7 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
         }
     }
 
-    @Override
-    public boolean isGooglePlayServicesAvailable() {
+    protected boolean isGooglePlayServicesAvailable() {
         return ExternalAuthUtils.getInstance().canUseGooglePlayServices();
     }
 

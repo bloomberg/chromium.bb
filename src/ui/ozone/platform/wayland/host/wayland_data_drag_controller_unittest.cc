@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <linux/input.h>
 #include <wayland-server.h>
 
 #include <memory>
@@ -11,6 +12,7 @@
 #include "base/bind.h"
 #include "base/containers/flat_set.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/chromeos_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/file_info.h"
@@ -217,6 +219,15 @@ class WaylandDataDragControllerTest : public WaylandDragDropTest {
         base::Unretained(this)));
   }
 
+  void FocusAndPressLeftPointerButton(WaylandWindow* window,
+                                      MockPlatformWindowDelegate* delegate) {
+    SendPointerEnter(window, delegate);
+    SendPointerButton(window, delegate, BTN_LEFT, /*pressed=*/true);
+    Sync();
+  }
+
+  MockPlatformWindowDelegate* delegate() { return &delegate_; }
+
  protected:
   std::unique_ptr<MockDropHandler> drop_handler_;
   std::unique_ptr<MockDragHandlerDelegate> drag_handler_delegate_;
@@ -224,7 +235,7 @@ class WaylandDataDragControllerTest : public WaylandDragDropTest {
 
 TEST_P(WaylandDataDragControllerTest, StartDrag) {
   const bool restored_focus = window_->has_pointer_focus();
-  window_->SetPointerFocus(true);
+  FocusAndPressLeftPointerButton(window_.get(), &delegate_);
 
   auto test = [](WaylandDataDragControllerTest* self) {
     // Now the server can read the data and give it to our callback.
@@ -258,7 +269,7 @@ TEST_P(WaylandDataDragControllerTest, StartDrag) {
 
 TEST_P(WaylandDataDragControllerTest, StartDragWithWrongMimeType) {
   bool restored_focus = window_->has_pointer_focus();
-  window_->SetPointerFocus(true);
+  FocusAndPressLeftPointerButton(window_.get(), &delegate_);
 
   // The client starts dragging offering data with |kMimeTypeHTML|
   OSExchangeData os_exchange_data;
@@ -285,7 +296,7 @@ TEST_P(WaylandDataDragControllerTest, StartDragWithWrongMimeType) {
 
 TEST_P(WaylandDataDragControllerTest, StartDragWithText) {
   bool restored_focus = window_->has_pointer_focus();
-  window_->SetPointerFocus(true);
+  FocusAndPressLeftPointerButton(window_.get(), &delegate_);
 
   // The client starts dragging offering text mime type.
   OSExchangeData os_exchange_data;
@@ -313,7 +324,7 @@ TEST_P(WaylandDataDragControllerTest, StartDragWithText) {
 
 TEST_P(WaylandDataDragControllerTest, StartDragWithFileContents) {
   bool restored_focus = window_->has_pointer_focus();
-  window_->SetPointerFocus(true);
+  FocusAndPressLeftPointerButton(window_.get(), &delegate_);
 
   // The client starts dragging offering text mime type.
   OSExchangeData os_exchange_data;
@@ -343,7 +354,8 @@ TEST_P(WaylandDataDragControllerTest, StartDragWithFileContents) {
 }
 
 TEST_P(WaylandDataDragControllerTest, ReceiveDrag) {
-  auto* data_offer = data_device_manager_->data_device()->OnDataOffer();
+  auto* data_offer =
+      data_device_manager_->data_device()->CreateAndSendDataOffer();
   data_offer->OnOffer(kMimeTypeText,
                       ToClipboardData(std::string(kSampleTextForDragAndDrop)));
 
@@ -382,7 +394,8 @@ TEST_P(WaylandDataDragControllerTest, ReceiveDrag) {
 }
 
 TEST_P(WaylandDataDragControllerTest, DropSeveralMimeTypes) {
-  auto* data_offer = data_device_manager_->data_device()->OnDataOffer();
+  auto* data_offer =
+      data_device_manager_->data_device()->CreateAndSendDataOffer();
   data_offer->OnOffer(kMimeTypeText,
                       ToClipboardData(std::string(kSampleTextForDragAndDrop)));
   data_offer->OnOffer(
@@ -436,7 +449,8 @@ TEST_P(WaylandDataDragControllerTest, ValidateDroppedUriList) {
                  {"/home/user/file", "/home/guest/file"}}};
 
   for (const auto& kCase : kCases) {
-    auto* data_offer = data_device_manager_->data_device()->OnDataOffer();
+    auto* data_offer =
+        data_device_manager_->data_device()->CreateAndSendDataOffer();
     data_offer->OnOffer(kMimeTypeURIList, ToClipboardData(kCase.content));
 
     EXPECT_CALL(*drop_handler_, MockOnDragEnter()).Times(1);
@@ -489,7 +503,8 @@ TEST_P(WaylandDataDragControllerTest, ValidateDroppedXMozUrl) {
        "file:///files/are/ok", u"The policy allows that"}};
 
   for (const auto& kCase : kCases) {
-    auto* data_offer = data_device_manager_->data_device()->OnDataOffer();
+    auto* data_offer =
+        data_device_manager_->data_device()->CreateAndSendDataOffer();
     data_offer->OnOffer(kMimeTypeMozillaURL, ToClipboardData(kCase.content));
 
     EXPECT_CALL(*drop_handler_, MockOnDragEnter()).Times(1);
@@ -532,7 +547,7 @@ TEST_P(WaylandDataDragControllerTest, ValidateDroppedXMozUrl) {
 // started and cancelled within the same surface.
 TEST_P(WaylandDataDragControllerTest, StartAndCancel) {
   const bool restored_focus = window_->has_pointer_focus();
-  window_->SetPointerFocus(true);
+  FocusAndPressLeftPointerButton(window_.get(), &delegate_);
 
   // Schedule a wl_data_source::cancelled event to be sent asynchronously
   // once the drag session gets started.
@@ -544,7 +559,8 @@ TEST_P(WaylandDataDragControllerTest, StartAndCancel) {
 }
 
 TEST_P(WaylandDataDragControllerTest, ForeignDragHandleAskAction) {
-  auto* data_offer = data_device_manager_->data_device()->OnDataOffer();
+  auto* data_offer =
+      data_device_manager_->data_device()->CreateAndSendDataOffer();
   data_offer->OnOffer(kMimeTypeText,
                       ToClipboardData(std::string(kSampleTextForDragAndDrop)));
   data_offer->OnSourceActions(WL_DATA_DEVICE_MANAGER_DND_ACTION_MOVE |
@@ -581,7 +597,8 @@ TEST_P(WaylandDataDragControllerTest, ForeignDragHandleAskAction) {
 TEST_P(WaylandDataDragControllerTest, DestroyEnteredSurface) {
   auto* window_1 = window_.get();
   const bool restored_focus = window_1->has_pointer_focus();
-  window_1->SetPointerFocus(true);
+  FocusAndPressLeftPointerButton(window_1, &delegate_);
+
   ASSERT_EQ(PlatformWindowType::kWindow, window_1->type());
 
   auto test = [](WaylandDataDragControllerTest* self) {
@@ -642,8 +659,7 @@ TEST_P(WaylandDataDragControllerTest, DestroyOriginSurface) {
   MockPlatformWindowDelegate delegate_2;
   auto window_2 = CreateTestWindow(PlatformWindowType::kPopup,
                                    gfx::Size(80, 80), &delegate_2);
-  window_2->SetPointerFocus(true);
-  Sync();
+  FocusAndPressLeftPointerButton(window_2.get(), &delegate_);
 
   // Post test task to be performed asynchronously once the drag session gets
   // started.
@@ -670,7 +686,7 @@ TEST_P(WaylandDataDragControllerTest, DestroyOriginSurface) {
 TEST_P(WaylandDataDragControllerTest, DragToNonToplevelWindows) {
   auto* origin_window = window_.get();
   const bool restored_focus = origin_window->has_pointer_focus();
-  origin_window->SetPointerFocus(true);
+  FocusAndPressLeftPointerButton(origin_window, &delegate_);
 
   auto test = [](WaylandDataDragControllerTest* self,
                  PlatformWindowType window_type) {
@@ -719,12 +735,21 @@ TEST_P(WaylandDataDragControllerTest, DragToNonToplevelWindows) {
   origin_window->SetPointerFocus(restored_focus);
 }
 
+// TODO(crbug.com/1211689): Flaky on LaCrOS.
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_PopupRequestCreatesAuxiliaryWindow \
+  DISABLED_PopupRequestCreatesAuxiliaryWindow
+#else
+#define MAYBE_PopupRequestCreatesAuxiliaryWindow \
+  PopupRequestCreatesAuxiliaryWindow
+#endif
 // Ensures that requests to create a |PlatformWindowType::kPopup| during drag
 // sessions return wl_subsurface-backed windows.
-TEST_P(WaylandDataDragControllerTest, PopupRequestCreatesAuxiliaryWindow) {
+TEST_P(WaylandDataDragControllerTest,
+       MAYBE_PopupRequestCreatesAuxiliaryWindow) {
   auto* origin_window = window_.get();
   const bool restored_focus = origin_window->has_pointer_focus();
-  origin_window->SetPointerFocus(true);
+  FocusAndPressLeftPointerButton(origin_window, &delegate_);
 
   auto test = [](WaylandDataDragControllerTest* self) {
     MockPlatformWindowDelegate delegate;
@@ -756,7 +781,7 @@ TEST_P(WaylandDataDragControllerTest, PopupRequestCreatesAuxiliaryWindow) {
 TEST_P(WaylandDataDragControllerTest, MenuRequestCreatesPopupWindow) {
   auto* origin_window = window_.get();
   const bool restored_focus = origin_window->has_pointer_focus();
-  origin_window->SetPointerFocus(true);
+  FocusAndPressLeftPointerButton(origin_window, &delegate_);
 
   auto test = [](WaylandDataDragControllerTest* self) {
     MockPlatformWindowDelegate delegate;
@@ -781,6 +806,39 @@ TEST_P(WaylandDataDragControllerTest, MenuRequestCreatesPopupWindow) {
   RunDragLoopWithSampleData(origin_window, DragDropTypes::DRAG_COPY);
 
   origin_window->SetPointerFocus(restored_focus);
+}
+
+// Regression test for https://crbug.com/1209269.
+TEST_P(WaylandDataDragControllerTest, AsyncNoopStartDrag) {
+  const bool restored_focus = window_->has_pointer_focus();
+  OSExchangeData os_exchange_data;
+  os_exchange_data.SetString(sample_text_for_dnd());
+
+  // Override test server's data device drag delegate such that
+  // wl_data_device.start_drag no-ops.
+  struct NoopDragDeviceDelegate : public wl::TestDataDevice::DragDelegate {
+    void StartDrag(wl::TestDataSource* source,
+                   wl::MockSurface* origin,
+                   uint32_t serial) override {}
+  } noop_drag_delegate;
+  data_device_manager_->data_device()->set_drag_delegate(&noop_drag_delegate);
+
+  FocusAndPressLeftPointerButton(window_.get(), &delegate_);
+
+  // Emulate a "quick" wl_pointer.button release event being processed by the
+  // compositor, which leads to a no-op subsequent wl_data_device.start_drag.
+  // In this case, the client is expected to gracefully reset state and quit
+  // drag loop as if the drag session was cancelled as usual.
+  SendPointerButton(window_.get(), &delegate_, BTN_LEFT, /*pressed=*/false);
+  Sync();
+
+  // Attempt to start drag session and ensure it fails.
+  bool result = window_->StartDrag(
+      os_exchange_data, DragDropTypes::DRAG_COPY, /*cursor=*/{},
+      /*can_grab_pointer=*/true, drag_handler_delegate_.get());
+  EXPECT_FALSE(result);
+
+  window_->SetPointerFocus(restored_focus);
 }
 
 INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,

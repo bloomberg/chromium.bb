@@ -22,15 +22,15 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/apps/platform_apps/app_window_registry_util.h"
+#include "chrome/browser/ash/file_manager/app_id.h"
+#include "chrome/browser/ash/file_manager/fileapi_util.h"
+#include "chrome/browser/ash/file_manager/select_file_dialog_util.h"
+#include "chrome/browser/ash/file_manager/url_util.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/ui/login_web_dialog.h"
 #include "chrome/browser/ash/login/ui/webui_login_view.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/extensions/file_manager/select_file_dialog_extension_user_data.h"
-#include "chrome/browser/chromeos/file_manager/app_id.h"
-#include "chrome/browser/chromeos/file_manager/fileapi_util.h"
-#include "chrome/browser/chromeos/file_manager/select_file_dialog_util.h"
-#include "chrome/browser/chromeos/file_manager/url_util.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_view_host.h"
@@ -111,7 +111,7 @@ scoped_refptr<SelectFileDialogExtension> PendingDialog::Find(
 
 // Return the Chrome OS WebUI login WebContents, if applicable.
 content::WebContents* GetLoginWebContents() {
-  chromeos::LoginDisplayHost* host = chromeos::LoginDisplayHost::default_host();
+  auto* host = ash::LoginDisplayHost::default_host();
   return host ? host->GetOobeWebContents() : nullptr;
 }
 
@@ -457,6 +457,7 @@ void SelectFileDialogExtension::NotifyListener() {
   // outlive the dialog if it is immediately deleted by the listener.
   std::vector<ui::SelectedFileInfo> selection_files =
       std::move(selection_files_);
+  selection_files_.clear();
 
   switch (selection_type_) {
     case CANCEL:

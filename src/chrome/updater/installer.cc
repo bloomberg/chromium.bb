@@ -18,7 +18,7 @@
 #include "build/build_config.h"
 #include "chrome/updater/action_handler.h"
 #include "chrome/updater/constants.h"
-#include "chrome/updater/policy/service.h"
+#include "chrome/updater/updater_scope.h"
 #include "chrome/updater/util.h"
 #include "components/crx_file/crx_verifier.h"
 #include "components/update_client/update_client_errors.h"
@@ -26,7 +26,6 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace updater {
-
 namespace {
 
 // This task joins a process, hence .WithBaseSyncPrimitives().
@@ -37,8 +36,9 @@ static constexpr base::TaskTraits kTaskTraitsBlockWithSyncPrimitives = {
 
 // Returns the full path to the installation directory for the application
 // identified by the |app_id|.
-absl::optional<base::FilePath> GetAppInstallDir(const std::string& app_id) {
-  absl::optional<base::FilePath> app_install_dir = GetBaseDirectory();
+absl::optional<base::FilePath> GetAppInstallDir(UpdaterScope scope,
+                                                const std::string& app_id) {
+  absl::optional<base::FilePath> app_install_dir = GetBaseDirectory(scope);
   if (!app_install_dir)
     return absl::nullopt;
 
@@ -48,8 +48,12 @@ absl::optional<base::FilePath> GetAppInstallDir(const std::string& app_id) {
 }  // namespace
 
 Installer::Installer(const std::string& app_id,
+                     const std::string& target_channel,
                      scoped_refptr<PersistedData> persisted_data)
-    : app_id_(app_id), persisted_data_(persisted_data) {}
+    : updater_scope_(GetUpdaterScope()),
+      app_id_(app_id),
+      target_channel_(target_channel),
+      persisted_data_(persisted_data) {}
 
 Installer::~Installer() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -81,15 +85,8 @@ update_client::CrxComponent Installer::MakeCrxComponent() {
   component.name = app_id_;
   component.version = pv_;
   component.fingerprint = fingerprint_;
+  component.channel = target_channel_;
 
-  // In case we fail at getting the target channel, make sure that
-  // |component.channel| is an empty string. Possible failure cases are if the
-  // machine is not managed, the policy was not set or any other unexpected
-  // error.
-  if (!GetUpdaterPolicyService()->GetTargetChannel(app_id_, nullptr,
-                                                   &component.channel)) {
-    component.channel.clear();
-  }
   return component;
 }
 
@@ -98,7 +95,7 @@ void Installer::DeleteOlderInstallPaths() {
                                                 base::BlockingType::WILL_BLOCK);
 
   const absl::optional<base::FilePath> app_install_dir =
-      GetAppInstallDir(app_id_);
+      GetAppInstallDir(updater_scope_, app_id_);
   if (!app_install_dir || !base::PathExists(*app_install_dir)) {
     return;
   }
@@ -143,7 +140,7 @@ Installer::Result Installer::InstallHelper(
     return Result(update_client::InstallError::VERSION_NOT_UPGRADED);
 
   const absl::optional<base::FilePath> app_install_dir =
-      GetAppInstallDir(app_id_);
+      GetAppInstallDir(updater_scope_, app_id_);
   if (!app_install_dir)
     return Result(update_client::InstallError::NO_DIR_COMPONENT_USER);
   if (!base::CreateDirectory(*app_install_dir))
@@ -245,7 +242,8 @@ bool Installer::Uninstall() {
 absl::optional<base::FilePath> Installer::GetCurrentInstallDir() const {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::WILL_BLOCK);
-  absl::optional<base::FilePath> path = GetAppInstallDir(app_id_);
+  const absl::optional<base::FilePath> path =
+      GetAppInstallDir(updater_scope_, app_id_);
   if (!path)
     return absl::nullopt;
   return path->AppendASCII(pv_.GetString());

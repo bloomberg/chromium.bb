@@ -1420,7 +1420,7 @@ void ArCoreGl::SubscribeToHitTest(
   // Input source state information is known to ArCoreGl and not to ArCore -
   // check if we recognize the input source id.
 
-  if (native_origin_information->is_input_source_id()) {
+  if (native_origin_information->is_input_source_space_info()) {
     DVLOG(1) << __func__
              << ": ARCore device supports only transient input sources for "
                 "now. Rejecting subscription request.";
@@ -1547,13 +1547,17 @@ void ArCoreGl::ProcessFrame(
         arcore_->GetHitTestSubscriptionResults(mojo_from_viewer.ToTransform(),
                                                *frame_data->input_state);
 
-    arcore_->ProcessAnchorCreationRequests(
-        mojo_from_viewer.ToTransform(), *frame_data->input_state,
-        frame_data->time_delta + base::TimeTicks());
+    if (IsFeatureEnabled(device::mojom::XRSessionFeature::ANCHORS)) {
+      arcore_->ProcessAnchorCreationRequests(
+          mojo_from_viewer.ToTransform(), *frame_data->input_state,
+          frame_data->time_delta + base::TimeTicks());
+    }
   }
 
   // Get anchors data, including anchors created this frame.
-  frame_data->anchors_data = arcore_->GetAnchorsData();
+  if (IsFeatureEnabled(device::mojom::XRSessionFeature::ANCHORS)) {
+    frame_data->anchors_data = arcore_->GetAnchorsData();
+  }
 
   // Get planes data if it was requested.
   if (IsFeatureEnabled(device::mojom::XRSessionFeature::PLANE_DETECTION)) {

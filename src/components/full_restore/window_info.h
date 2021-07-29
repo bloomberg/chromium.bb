@@ -8,6 +8,7 @@
 #include "chromeos/ui/base/window_state_type.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/window.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace full_restore {
@@ -25,12 +26,16 @@ struct COMPONENT_EXPORT(FULL_RESTORE) WindowInfo {
 
     absl::optional<gfx::Size> maximum_size;
     absl::optional<gfx::Size> minimum_size;
+    absl::optional<std::u16string> title;
+    absl::optional<gfx::Rect> bounds_in_root;
   };
 
   WindowInfo();
   WindowInfo(const WindowInfo&) = delete;
   WindowInfo& operator=(const WindowInfo&) = delete;
   ~WindowInfo();
+
+  WindowInfo* Clone();
 
   aura::Window* window;
 
@@ -44,21 +49,16 @@ struct COMPONENT_EXPORT(FULL_RESTORE) WindowInfo {
   // Whether the |window| is visible on all workspaces.
   absl::optional<bool> visible_on_all_workspaces;
 
-  // The restored bounds in screen coordinates. Empty if the window is not
-  // snapped/maximized/minimized.
-  // TODO(sammiequon): This may not be needed as we save the restore bounds in
-  // screen coordinates into |current_bounds|. On creating the widget,
-  // |current_bounds| will be stored as restore bounds and the maximized or
-  // snapped bounds will be determined by the system. Update the comment below
-  // if this is removed.
-  absl::optional<gfx::Rect> restore_bounds;
-
   // Current bounds in screen in coordinates. If the window has restore bounds,
   // then this contains the restore bounds.
   absl::optional<gfx::Rect> current_bounds;
 
   // Window state, minimized, maximized, inactive, etc.
   absl::optional<chromeos::WindowStateType> window_state_type;
+
+  // Show state of a window before it was minimized. Empty for non-minimized
+  // windows.
+  absl::optional<ui::WindowShowState> pre_minimized_show_state_type;
 
   // Display id to launch an app.
   absl::optional<int64_t> display_id;

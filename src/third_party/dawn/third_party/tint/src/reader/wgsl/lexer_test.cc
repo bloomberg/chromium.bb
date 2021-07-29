@@ -90,7 +90,7 @@ TEST_P(FloatTest, Parse) {
   Lexer l("test.wgsl", &content);
 
   auto t = l.next();
-  EXPECT_TRUE(t.IsFloatLiteral());
+  EXPECT_TRUE(t.Is(Token::Type::kFloatLiteral));
   EXPECT_EQ(t.to_f32(), params.result);
   EXPECT_EQ(t.source().range.begin.line, 1u);
   EXPECT_EQ(t.source().range.begin.column, 1u);
@@ -126,7 +126,7 @@ TEST_P(FloatTest_Invalid, Handles) {
   Lexer l("test.wgsl", &content);
 
   auto t = l.next();
-  EXPECT_FALSE(t.IsFloatLiteral());
+  EXPECT_FALSE(t.Is(Token::Type::kFloatLiteral));
 }
 INSTANTIATE_TEST_SUITE_P(LexerTest,
                          FloatTest_Invalid,
@@ -180,7 +180,7 @@ TEST_P(IntegerTest_HexSigned, Matches) {
   Lexer l("test.wgsl", &content);
 
   auto t = l.next();
-  EXPECT_TRUE(t.IsSintLiteral());
+  EXPECT_TRUE(t.Is(Token::Type::kSintLiteral));
   EXPECT_EQ(t.source().range.begin.line, 1u);
   EXPECT_EQ(t.source().range.begin.column, 1u);
   EXPECT_EQ(t.source().range.end.line, 1u);
@@ -203,7 +203,7 @@ TEST_F(LexerTest, IntegerTest_HexSignedTooLarge) {
   Lexer l("test.wgsl", &content);
 
   auto t = l.next();
-  ASSERT_TRUE(t.IsError());
+  ASSERT_TRUE(t.Is(Token::Type::kError));
   EXPECT_EQ(t.to_str(), "i32 (0x80000000) too large");
 }
 
@@ -212,7 +212,7 @@ TEST_F(LexerTest, IntegerTest_HexSignedTooSmall) {
   Lexer l("test.wgsl", &content);
 
   auto t = l.next();
-  ASSERT_TRUE(t.IsError());
+  ASSERT_TRUE(t.Is(Token::Type::kError));
   EXPECT_EQ(t.to_str(), "i32 (-0x8000000F) too small");
 }
 
@@ -231,7 +231,7 @@ TEST_P(IntegerTest_HexUnsigned, Matches) {
   Lexer l("test.wgsl", &content);
 
   auto t = l.next();
-  EXPECT_TRUE(t.IsUintLiteral());
+  EXPECT_TRUE(t.Is(Token::Type::kUintLiteral));
   EXPECT_EQ(t.source().range.begin.line, 1u);
   EXPECT_EQ(t.source().range.begin.column, 1u);
   EXPECT_EQ(t.source().range.end.line, 1u);
@@ -257,7 +257,7 @@ TEST_F(LexerTest, IntegerTest_HexUnsignedTooLarge) {
   Lexer l("test.wgsl", &content);
 
   auto t = l.next();
-  ASSERT_TRUE(t.IsError());
+  ASSERT_TRUE(t.Is(Token::Type::kError));
   EXPECT_EQ(t.to_str(), "u32 (0xffffffffff) too large");
 }
 
@@ -276,7 +276,7 @@ TEST_P(IntegerTest_Unsigned, Matches) {
   Lexer l("test.wgsl", &content);
 
   auto t = l.next();
-  EXPECT_TRUE(t.IsUintLiteral());
+  EXPECT_TRUE(t.Is(Token::Type::kUintLiteral));
   EXPECT_EQ(t.to_u32(), params.result);
   EXPECT_EQ(t.source().range.begin.line, 1u);
   EXPECT_EQ(t.source().range.begin.column, 1u);
@@ -305,7 +305,7 @@ TEST_P(IntegerTest_Signed, Matches) {
   Lexer l("test.wgsl", &content);
 
   auto t = l.next();
-  EXPECT_TRUE(t.IsSintLiteral());
+  EXPECT_TRUE(t.Is(Token::Type::kSintLiteral));
   EXPECT_EQ(t.to_i32(), params.result);
   EXPECT_EQ(t.source().range.begin.line, 1u);
   EXPECT_EQ(t.source().range.begin.column, 1u);
@@ -328,8 +328,8 @@ TEST_P(IntegerTest_Invalid, Parses) {
   Lexer l("test.wgsl", &content);
 
   auto t = l.next();
-  EXPECT_FALSE(t.IsSintLiteral());
-  EXPECT_FALSE(t.IsUintLiteral());
+  EXPECT_FALSE(t.Is(Token::Type::kSintLiteral));
+  EXPECT_FALSE(t.Is(Token::Type::kUintLiteral));
 }
 INSTANTIATE_TEST_SUITE_P(LexerTest,
                          IntegerTest_Invalid,
@@ -387,14 +387,17 @@ INSTANTIATE_TEST_SUITE_P(
                     TokenData{"%", Token::Type::kMod},
                     TokenData{"!=", Token::Type::kNotEqual},
                     TokenData{"-", Token::Type::kMinus},
+                    TokenData{"--", Token::Type::kMinusMinus},
                     TokenData{".", Token::Type::kPeriod},
                     TokenData{"+", Token::Type::kPlus},
+                    TokenData{"++", Token::Type::kPlusPlus},
                     TokenData{"|", Token::Type::kOr},
                     TokenData{"||", Token::Type::kOrOr},
                     TokenData{"(", Token::Type::kParenLeft},
                     TokenData{")", Token::Type::kParenRight},
                     TokenData{";", Token::Type::kSemicolon},
                     TokenData{"*", Token::Type::kStar},
+                    TokenData{"~", Token::Type::kTilde},
                     TokenData{"^", Token::Type::kXor}));
 
 using KeywordTest = testing::TestWithParam<TokenData>;
@@ -423,7 +426,6 @@ INSTANTIATE_TEST_SUITE_P(
         TokenData{"bool", Token::Type::kBool},
         TokenData{"break", Token::Type::kBreak},
         TokenData{"case", Token::Type::kCase},
-        TokenData{"const", Token::Type::kConst},
         TokenData{"continue", Token::Type::kContinue},
         TokenData{"continuing", Token::Type::kContinuing},
         TokenData{"default", Token::Type::kDefault},
@@ -475,7 +477,6 @@ INSTANTIATE_TEST_SUITE_P(
         TokenData{"if", Token::Type::kIf},
         TokenData{"image", Token::Type::kImage},
         TokenData{"import", Token::Type::kImport},
-        TokenData{"in", Token::Type::kIn},
         TokenData{"let", Token::Type::kLet},
         TokenData{"loop", Token::Type::kLoop},
         TokenData{"mat2x2", Token::Type::kMat2x2},
@@ -487,7 +488,6 @@ INSTANTIATE_TEST_SUITE_P(
         TokenData{"mat4x2", Token::Type::kMat4x2},
         TokenData{"mat4x3", Token::Type::kMat4x3},
         TokenData{"mat4x4", Token::Type::kMat4x4},
-        TokenData{"out", Token::Type::kOut},
         TokenData{"private", Token::Type::kPrivate},
         TokenData{"ptr", Token::Type::kPtr},
         TokenData{"return", Token::Type::kReturn},
@@ -523,38 +523,7 @@ INSTANTIATE_TEST_SUITE_P(
         TokenData{"vec2", Token::Type::kVec2},
         TokenData{"vec3", Token::Type::kVec3},
         TokenData{"vec4", Token::Type::kVec4},
-        TokenData{"void", Token::Type::kVoid},
         TokenData{"workgroup", Token::Type::kWorkgroup}));
-
-using KeywordTest_Reserved = testing::TestWithParam<const char*>;
-TEST_P(KeywordTest_Reserved, Parses) {
-  auto* keyword = GetParam();
-  Source::FileContent content(keyword);
-  Lexer l("test.wgsl", &content);
-
-  auto t = l.next();
-  EXPECT_TRUE(t.IsReservedKeyword());
-  EXPECT_EQ(t.to_str(), keyword);
-}
-INSTANTIATE_TEST_SUITE_P(LexerTest,
-                         KeywordTest_Reserved,
-                         testing::Values("asm",
-                                         "bf16",
-                                         "do",
-                                         "enum",
-                                         "f16",
-                                         "f64",
-                                         "handle",
-                                         "i8",
-                                         "i16",
-                                         "i64",
-                                         "premerge",
-                                         "typedef",
-                                         "u8",
-                                         "u16",
-                                         "u64",
-                                         "unless",
-                                         "regardless"));
 
 }  // namespace
 }  // namespace wgsl

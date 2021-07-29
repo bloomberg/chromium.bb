@@ -122,6 +122,7 @@ if (use_system_harfbuzz) {
       "src/src/hb-ot-cff2-table.hh",
       "src/src/hb-ot-color-cbdt-table.hh",
       "src/src/hb-ot-color-colr-table.hh",
+      "src/src/hb-ot-color-colrv1-closure.hh",
       "src/src/hb-ot-color-cpal-table.hh",
       "src/src/hb-ot-face-table-list.hh",
       "src/src/hb-ot-face.cc",
@@ -265,6 +266,16 @@ if (use_system_harfbuzz) {
 
       # TODO(https://crbug.com/949962): Remove once this is fixed upstream.
       "U_DISABLE_VERSION_SUFFIX=0",
+
+      # Letting HarfBuzz enable warnings through pragmas can block compiler
+      # upgrades in situations where say a ToT compiler build adds a new
+      # stricter warning under -Wfoowarning-subgroup. HarfBuzz pragma-enables
+      # -Wfoowarning which default-enables -Wfoowarning-subgroup implicitly but
+      # HarfBuzz upstream is not yet clean of warnings produced for
+      # -Wfoowarning-subgroup. Hence disabling pragma warning control here.
+      # See also https:/crbug.com/1203071
+      "HB_NO_PRAGMA_GCC_DIAGNOSTIC_ERROR",
+      "HB_NO_PRAGMA_GCC_DIAGNOSTIC_WARNING",
     ]
 
     if (!is_win && !is_mac) {
@@ -281,10 +292,9 @@ if (use_system_harfbuzz) {
 
     if (is_component_build) {
       if (is_win) {
-        defines += [ "HB_EXTERN=__declspec (dllexport) extern" ]
+        defines += [ "HB_EXTERN=__declspec (dllexport)" ]
       } else {
-        configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
-        configs += [ "//build/config/gcc:symbol_visibility_default" ]
+        defines += [ "HB_EXTERN=__attribute__((visibility(\"default\")))" ]
 
         # Exposing symbols in component builds can cause a mixture of system
         # harfbuzz symbols and //third_party harfbuzz symbols to be loaded at

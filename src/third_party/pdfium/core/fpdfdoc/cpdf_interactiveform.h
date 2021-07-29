@@ -25,7 +25,6 @@ class CPDF_Document;
 class CPDF_Dictionary;
 class CPDF_Font;
 class CPDF_FormControl;
-class CPDF_Object;
 class CPDF_Page;
 
 class CPDF_InteractiveForm {
@@ -75,14 +74,11 @@ class CPDF_InteractiveForm {
   bool CheckRequiredFields(const std::vector<CPDF_FormField*>* fields,
                            bool bIncludeOrExclude) const;
 
-  std::unique_ptr<CFDF_Document> ExportToFDF(const WideString& pdf_path,
-                                             bool bSimpleFileSpec) const;
-
+  std::unique_ptr<CFDF_Document> ExportToFDF(const WideString& pdf_path) const;
   std::unique_ptr<CFDF_Document> ExportToFDF(
       const WideString& pdf_path,
       const std::vector<CPDF_FormField*>& fields,
-      bool bIncludeOrExclude,
-      bool bSimpleFileSpec) const;
+      bool bIncludeOrExclude) const;
 
   void ResetForm();
 

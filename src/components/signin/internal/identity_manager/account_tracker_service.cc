@@ -9,11 +9,13 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -25,9 +27,12 @@
 #include "build/chromeos_buildflags.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/signin/internal/identity_manager/account_capabilities_constants.h"
 #include "components/signin/internal/identity_manager/account_info_util.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/base/signin_switches.h"
+#include "components/signin/public/identity_manager/account_capabilities.h"
+#include "components/signin/public/identity_manager/tribool.h"
 #include "ui/gfx/image/image.h"
 
 #if defined(OS_ANDROID)
@@ -46,9 +51,13 @@ const char kAccountLocalePath[] = "locale";
 const char kAccountPictureURLPath[] = "picture_url";
 const char kLastDownloadedImageURLWithSizePath[] =
     "last_downloaded_image_url_with_size";
-const char kAccountChildAccountStatusPath[] = "is_child_account";
+const char kAccountChildAttributePath[] = "is_supervised_child";
 const char kAdvancedProtectionAccountStatusPath[] =
     "is_under_advanced_protection";
+
+// This key is deprecated since 2021/07 and should be removed after migration.
+// It was replaced by kAccountChildAttributePath.
+const char kDeprecatedChildStatusPath[] = "is_child_account";
 
 // Account folders used for storing account related data at disk.
 const base::FilePath::CharType kAccountsFolder[] =
@@ -96,6 +105,31 @@ bool SaveImage(scoped_refptr<base::RefCountedMemory> png_data,
 void RemoveImage(const base::FilePath& image_path) {
   if (!base::DeleteFile(image_path))
     LOG(ERROR) << "Failed to delete image.";
+}
+
+void SetAccountCapabilityPath(base::Value* value,
+                              base::StringPiece path,
+                              signin::Tribool state) {
+  value->SetIntPath(path, static_cast<int>(state));
+}
+
+signin::Tribool FindAccountCapabilityPath(const base::Value& value,
+                                          base::StringPiece path) {
+  absl::optional<int> capability = value.FindIntPath(path);
+  if (!capability.has_value())
+    return signin::Tribool::kUnknown;
+  switch (capability.value()) {
+    case static_cast<int>(signin::Tribool::kTrue):
+      return signin::Tribool::kTrue;
+    case static_cast<int>(signin::Tribool::kFalse):
+      return signin::Tribool::kFalse;
+    case static_cast<int>(signin::Tribool::kUnknown):
+      return signin::Tribool::kUnknown;
+    default:
+      LOG(ERROR) << "Unexpected capability value (" << capability.value()
+                 << ") for path: " << path;
+      return signin::Tribool::kUnknown;
+  }
 }
 
 }  // namespace
@@ -213,7 +247,6 @@ void AccountTrackerService::StartTrackingAccount(
     DVLOG(1) << "StartTracking " << account_id;
     AccountInfo account_info;
     account_info.account_id = account_id;
-    account_info.is_child_account = false;
     accounts_.insert(std::make_pair(account_id, account_info));
   }
 }
@@ -269,13 +302,30 @@ void AccountTrackerService::SetAccountImage(
   NotifyAccountUpdated(account_info);
 }
 
+void AccountTrackerService::SetAccountCapabilities(
+    const CoreAccountId& account_id,
+    const AccountCapabilities& account_capabilities) {
+  DCHECK(base::Contains(accounts_, account_id));
+  AccountInfo& account_info = accounts_[account_id];
+
+  bool modified = account_info.capabilities.UpdateWith(account_capabilities);
+  if (!modified)
+    return;
+
+  if (!account_info.gaia.empty())
+    NotifyAccountUpdated(account_info);
+  SaveToPrefs(account_info);
+}
+
 void AccountTrackerService::SetIsChildAccount(const CoreAccountId& account_id,
                                               bool is_child_account) {
   DCHECK(base::Contains(accounts_, account_id)) << account_id.ToString();
   AccountInfo& account_info = accounts_[account_id];
-  if (account_info.is_child_account == is_child_account)
+  signin::Tribool new_status =
+      is_child_account ? signin::Tribool::kTrue : signin::Tribool::kFalse;
+  if (account_info.is_child_account == new_status)
     return;
-  account_info.is_child_account = is_child_account;
+  account_info.is_child_account = new_status;
   if (!account_info.gaia.empty())
     NotifyAccountUpdated(account_info);
   SaveToPrefs(account_info);
@@ -501,7 +551,7 @@ void AccountTrackerService::LoadFromPrefs() {
   const base::ListValue* list = pref_service_->GetList(prefs::kAccountInfo);
   std::set<CoreAccountId> to_remove;
   for (size_t i = 0; i < list->GetSize(); ++i) {
-    const base::DictionaryValue* dict;
+    const base::DictionaryValue* dict = nullptr;
     if (list->GetDictionary(i, &dict)) {
       std::string value;
       if (dict->GetString(kAccountKeyPath, &value)) {
@@ -533,15 +583,43 @@ void AccountTrackerService::LoadFromPrefs() {
         if (dict->GetString(kLastDownloadedImageURLWithSizePath, &value))
           account_info.last_downloaded_image_url_with_size = value;
 
-        bool is_child_account = false;
-        if (dict->GetBoolean(kAccountChildAccountStatusPath, &is_child_account))
-          account_info.is_child_account = is_child_account;
+        if (absl::optional<bool> is_child_status =
+                dict->FindBoolKey(kDeprecatedChildStatusPath)) {
+          account_info.is_child_account = is_child_status.value()
+                                              ? signin::Tribool::kTrue
+                                              : signin::Tribool::kFalse;
+          // Migrate to kAccountChildAttributePath.
+          ListPrefUpdate update(pref_service_, prefs::kAccountInfo);
+          base::DictionaryValue* update_dict = nullptr;
+          update->GetDictionary(i, &update_dict);
+          DCHECK(update_dict);
+          SetAccountCapabilityPath(update_dict, kAccountChildAttributePath,
+                                   account_info.is_child_account);
+          update_dict->RemoveKey(kDeprecatedChildStatusPath);
+        } else {
+          account_info.is_child_account =
+              FindAccountCapabilityPath(*dict, kAccountChildAttributePath);
+        }
 
         bool is_under_advanced_protection = false;
         if (dict->GetBoolean(kAdvancedProtectionAccountStatusPath,
                              &is_under_advanced_protection)) {
           account_info.is_under_advanced_protection =
               is_under_advanced_protection;
+        }
+
+        switch (FindAccountCapabilityPath(
+            *dict, kCanOfferExtendedChromeSyncPromosCapabilityPrefsPath)) {
+          case signin::Tribool::kUnknown:
+            break;
+          case signin::Tribool::kTrue:
+            account_info.capabilities.set_can_offer_extended_chrome_sync_promos(
+                true);
+            break;
+          case signin::Tribool::kFalse:
+            account_info.capabilities.set_can_offer_extended_chrome_sync_promos(
+                false);
+            break;
         }
 
         if (!account_info.gaia.empty())
@@ -605,13 +683,16 @@ void AccountTrackerService::SaveToPrefs(const AccountInfo& account_info) {
   dict->SetString(kAccountGivenNamePath, account_info.given_name);
   dict->SetString(kAccountLocalePath, account_info.locale);
   dict->SetString(kAccountPictureURLPath, account_info.picture_url);
-  dict->SetBoolean(kAccountChildAccountStatusPath,
-                   account_info.is_child_account);
+  SetAccountCapabilityPath(dict, kAccountChildAttributePath,
+                           account_info.is_child_account);
   dict->SetBoolean(kAdvancedProtectionAccountStatusPath,
                    account_info.is_under_advanced_protection);
   // |kLastDownloadedImageURLWithSizePath| should only be set after the GAIA
   // picture is successufly saved to disk. Otherwise, there is no guarantee that
   // |kLastDownloadedImageURLWithSizePath| matches the picture on disk.
+  SetAccountCapabilityPath(
+      dict, kCanOfferExtendedChromeSyncPromosCapabilityPrefsPath,
+      account_info.capabilities.can_offer_extended_chrome_sync_promos());
 }
 
 void AccountTrackerService::RemoveFromPrefs(const AccountInfo& account_info) {
@@ -619,17 +700,13 @@ void AccountTrackerService::RemoveFromPrefs(const AccountInfo& account_info) {
     return;
 
   ListPrefUpdate update(pref_service_, prefs::kAccountInfo);
-  for (size_t i = 0; i < update->GetSize(); ++i) {
-    base::DictionaryValue* dict = nullptr;
-    if (update->GetDictionary(i, &dict)) {
-      std::string value;
-      if (dict->GetString(kAccountKeyPath, &value) &&
-          value == account_info.account_id.ToString()) {
-        update->Remove(i, nullptr);
-        break;
-      }
-    }
-  }
+  const std::string account_id = account_info.account_id.ToString();
+  update->EraseListValueIf([&account_id](const base::Value& value) {
+    if (!value.is_dict())
+      return false;
+    const std::string* account_key = value.FindStringKey(kAccountKeyPath);
+    return account_key && *account_key == account_id;
+  });
 }
 
 CoreAccountId AccountTrackerService::PickAccountIdForAccount(

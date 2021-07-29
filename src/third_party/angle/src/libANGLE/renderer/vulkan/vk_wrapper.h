@@ -18,6 +18,8 @@
 
 namespace rx
 {
+enum class DescriptorSetIndex : uint32_t;
+
 namespace vk
 {
 // Helper macros that apply to all the wrapped object types.
@@ -199,7 +201,7 @@ class CommandBuffer : public WrappedObject<CommandBuffer, VkCommandBuffer>
 
     void bindDescriptorSets(const PipelineLayout &layout,
                             VkPipelineBindPoint pipelineBindPoint,
-                            uint32_t firstSet,
+                            DescriptorSetIndex firstSet,
                             uint32_t descriptorSetCount,
                             const VkDescriptorSet *descriptorSets,
                             uint32_t dynamicOffsetCount,
@@ -343,6 +345,7 @@ class CommandBuffer : public WrappedObject<CommandBuffer, VkCommandBuffer>
                        const void *data);
 
     void setEvent(VkEvent event, VkPipelineStageFlags stageMask);
+    void setViewport(uint32_t firstViewport, uint32_t viewportCount, const VkViewport *viewports);
     void setScissor(uint32_t firstScissor, uint32_t scissorCount, const VkRect2D *scissors);
     VkResult reset();
     void resetEvent(VkEvent event, VkPipelineStageFlags stageMask);
@@ -369,19 +372,19 @@ class CommandBuffer : public WrappedObject<CommandBuffer, VkCommandBuffer>
                         uint32_t query);
 
     // VK_EXT_transform_feedback
-    void beginTransformFeedbackEXT(uint32_t firstCounterBuffer,
-                                   uint32_t counterBufferCount,
-                                   const VkBuffer *counterBuffers,
-                                   const VkDeviceSize *counterBufferOffsets);
-    void endTransformFeedbackEXT(uint32_t firstCounterBuffer,
-                                 uint32_t counterBufferCount,
-                                 const VkBuffer *counterBuffers,
-                                 const VkDeviceSize *counterBufferOffsets);
-    void bindTransformFeedbackBuffersEXT(uint32_t firstBinding,
-                                         uint32_t bindingCount,
-                                         const VkBuffer *buffers,
-                                         const VkDeviceSize *offsets,
-                                         const VkDeviceSize *sizes);
+    void beginTransformFeedback(uint32_t firstCounterBuffer,
+                                uint32_t counterBufferCount,
+                                const VkBuffer *counterBuffers,
+                                const VkDeviceSize *counterBufferOffsets);
+    void endTransformFeedback(uint32_t firstCounterBuffer,
+                              uint32_t counterBufferCount,
+                              const VkBuffer *counterBuffers,
+                              const VkDeviceSize *counterBufferOffsets);
+    void bindTransformFeedbackBuffers(uint32_t firstBinding,
+                                      uint32_t bindingCount,
+                                      const VkBuffer *buffers,
+                                      const VkDeviceSize *offsets,
+                                      const VkDeviceSize *sizes);
 
     // VK_EXT_debug_utils
     void beginDebugUtilsLabelEXT(const VkDebugUtilsLabelEXT &labelInfo);
@@ -922,15 +925,16 @@ ANGLE_INLINE void CommandBuffer::bindIndexBuffer(const Buffer &buffer,
 
 ANGLE_INLINE void CommandBuffer::bindDescriptorSets(const PipelineLayout &layout,
                                                     VkPipelineBindPoint pipelineBindPoint,
-                                                    uint32_t firstSet,
+                                                    DescriptorSetIndex firstSet,
                                                     uint32_t descriptorSetCount,
                                                     const VkDescriptorSet *descriptorSets,
                                                     uint32_t dynamicOffsetCount,
                                                     const uint32_t *dynamicOffsets)
 {
     ASSERT(valid() && layout.valid());
-    vkCmdBindDescriptorSets(mHandle, pipelineBindPoint, layout.getHandle(), firstSet,
-                            descriptorSetCount, descriptorSets, dynamicOffsetCount, dynamicOffsets);
+    vkCmdBindDescriptorSets(this->mHandle, pipelineBindPoint, layout.getHandle(),
+                            ToUnderlying(firstSet), descriptorSetCount, descriptorSets,
+                            dynamicOffsetCount, dynamicOffsets);
 }
 
 ANGLE_INLINE void CommandBuffer::executeCommands(uint32_t commandBufferCount,
@@ -972,6 +976,14 @@ ANGLE_INLINE void CommandBuffer::setEvent(VkEvent event, VkPipelineStageFlags st
 {
     ASSERT(valid() && event != VK_NULL_HANDLE);
     vkCmdSetEvent(mHandle, event, stageMask);
+}
+
+ANGLE_INLINE void CommandBuffer::setViewport(uint32_t firstViewport,
+                                             uint32_t viewportCount,
+                                             const VkViewport *viewports)
+{
+    ASSERT(valid() && viewports != nullptr);
+    vkCmdSetViewport(mHandle, firstViewport, viewportCount, viewports);
 }
 
 ANGLE_INLINE void CommandBuffer::setScissor(uint32_t firstScissor,
@@ -1185,10 +1197,10 @@ ANGLE_INLINE void CommandBuffer::bindVertexBuffers(uint32_t firstBinding,
     vkCmdBindVertexBuffers(mHandle, firstBinding, bindingCount, buffers, offsets);
 }
 
-ANGLE_INLINE void CommandBuffer::beginTransformFeedbackEXT(uint32_t firstCounterBuffer,
-                                                           uint32_t counterBufferCount,
-                                                           const VkBuffer *counterBuffers,
-                                                           const VkDeviceSize *counterBufferOffsets)
+ANGLE_INLINE void CommandBuffer::beginTransformFeedback(uint32_t firstCounterBuffer,
+                                                        uint32_t counterBufferCount,
+                                                        const VkBuffer *counterBuffers,
+                                                        const VkDeviceSize *counterBufferOffsets)
 {
     ASSERT(valid());
     ASSERT(vkCmdBeginTransformFeedbackEXT);
@@ -1196,10 +1208,10 @@ ANGLE_INLINE void CommandBuffer::beginTransformFeedbackEXT(uint32_t firstCounter
                                    counterBufferOffsets);
 }
 
-ANGLE_INLINE void CommandBuffer::endTransformFeedbackEXT(uint32_t firstCounterBuffer,
-                                                         uint32_t counterBufferCount,
-                                                         const VkBuffer *counterBuffers,
-                                                         const VkDeviceSize *counterBufferOffsets)
+ANGLE_INLINE void CommandBuffer::endTransformFeedback(uint32_t firstCounterBuffer,
+                                                      uint32_t counterBufferCount,
+                                                      const VkBuffer *counterBuffers,
+                                                      const VkDeviceSize *counterBufferOffsets)
 {
     ASSERT(valid());
     ASSERT(vkCmdEndTransformFeedbackEXT);
@@ -1207,11 +1219,11 @@ ANGLE_INLINE void CommandBuffer::endTransformFeedbackEXT(uint32_t firstCounterBu
                                  counterBufferOffsets);
 }
 
-ANGLE_INLINE void CommandBuffer::bindTransformFeedbackBuffersEXT(uint32_t firstBinding,
-                                                                 uint32_t bindingCount,
-                                                                 const VkBuffer *buffers,
-                                                                 const VkDeviceSize *offsets,
-                                                                 const VkDeviceSize *sizes)
+ANGLE_INLINE void CommandBuffer::bindTransformFeedbackBuffers(uint32_t firstBinding,
+                                                              uint32_t bindingCount,
+                                                              const VkBuffer *buffers,
+                                                              const VkDeviceSize *offsets,
+                                                              const VkDeviceSize *sizes)
 {
     ASSERT(valid());
     ASSERT(vkCmdBindTransformFeedbackBuffersEXT);

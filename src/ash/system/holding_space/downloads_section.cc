@@ -4,6 +4,9 @@
 
 #include "ash/system/holding_space/downloads_section.h"
 
+#include "ash/bubble/bubble_utils.h"
+#include "ash/bubble/simple_grid_layout.h"
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/holding_space/holding_space_client.h"
 #include "ash/public/cpp/holding_space/holding_space_constants.h"
 #include "ash/public/cpp/holding_space/holding_space_controller.h"
@@ -12,8 +15,6 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/holding_space/holding_space_item_chip_view.h"
-#include "ash/system/holding_space/holding_space_item_chips_container.h"
-#include "ash/system/holding_space/holding_space_util.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -21,6 +22,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -66,8 +68,8 @@ class Header : public views::Button {
         kHoldingSpaceDownloadsHeaderSpacing));
 
     // Label.
-    auto* label = AddChildView(holding_space_util::CreateLabel(
-        holding_space_util::LabelStyle::kHeader,
+    auto* label = AddChildView(bubble_utils::CreateLabel(
+        bubble_utils::LabelStyle::kHeader,
         l10n_util::GetStringUTF16(IDS_ASH_HOLDING_SPACE_DOWNLOADS_TITLE)));
     label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
     layout->SetFlexForView(label, 1);
@@ -79,7 +81,7 @@ class Header : public views::Button {
     // Focus ring.
     // Though the entirety of the header is focusable and behaves as a single
     // button, the focus ring is drawn as a circle around just the `chevron_`.
-    focus_ring()->SetPathGenerator(
+    views::FocusRing::Get(this)->SetPathGenerator(
         std::make_unique<CallbackPathGenerator>(base::BindRepeating(
             [](const views::View* chevron) {
               const float radius = chevron->width() / 2.f;
@@ -107,8 +109,9 @@ class Header : public views::Button {
             AshColorProvider::ContentLayerType::kIconColorPrimary)));
 
     // Focus ring.
-    focus_ring()->SetColor(ash_color_provider->GetControlsLayerColor(
-        AshColorProvider::ControlsLayerType::kFocusRingColor));
+    views::FocusRing::Get(this)->SetColor(
+        ash_color_provider->GetControlsLayerColor(
+            AshColorProvider::ControlsLayerType::kFocusRingColor));
   }
 
   void OnPressed() {
@@ -126,16 +129,20 @@ class Header : public views::Button {
 
 // DownloadsSection ------------------------------------------------------------
 
-DownloadsSection::DownloadsSection(HoldingSpaceItemViewDelegate* delegate)
-    : HoldingSpaceItemViewsSection(delegate,
-                                   /*supported_types=*/
-                                   {HoldingSpaceItem::Type::kArcDownload,
-                                    HoldingSpaceItem::Type::kDiagnosticsLog,
-                                    HoldingSpaceItem::Type::kDownload,
-                                    HoldingSpaceItem::Type::kLacrosDownload,
-                                    HoldingSpaceItem::Type::kNearbyShare,
-                                    HoldingSpaceItem::Type::kPrintedPdf},
-                                   /*max_count=*/kMaxDownloads) {}
+DownloadsSection::DownloadsSection(HoldingSpaceViewDelegate* delegate)
+    : HoldingSpaceItemViewsSection(
+          delegate,
+          /*supported_types=*/
+          {HoldingSpaceItem::Type::kArcDownload,
+           HoldingSpaceItem::Type::kDiagnosticsLog,
+           HoldingSpaceItem::Type::kDownload,
+           HoldingSpaceItem::Type::kLacrosDownload,
+           HoldingSpaceItem::Type::kNearbyShare,
+           HoldingSpaceItem::Type::kPrintedPdf, HoldingSpaceItem::Type::kScan},
+          /*max_count=*/
+          features::IsHoldingSpaceInProgressDownloadsIntegrationEnabled()
+              ? kMaxDownloadsWithInProgressDownloadIntegration
+              : kMaxDownloads) {}
 
 DownloadsSection::~DownloadsSection() = default;
 
@@ -151,7 +158,12 @@ std::unique_ptr<views::View> DownloadsSection::CreateHeader() {
 }
 
 std::unique_ptr<views::View> DownloadsSection::CreateContainer() {
-  return std::make_unique<HoldingSpaceItemChipsContainer>();
+  auto container = std::make_unique<views::View>();
+  container->SetLayoutManager(std::make_unique<SimpleGridLayout>(
+      kHoldingSpaceChipCountPerRow,
+      /*column_spacing=*/kHoldingSpaceSectionContainerChildSpacing,
+      /*row_spacing=*/kHoldingSpaceSectionContainerChildSpacing));
+  return container;
 }
 
 std::unique_ptr<HoldingSpaceItemView> DownloadsSection::CreateView(

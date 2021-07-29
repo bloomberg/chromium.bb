@@ -5,13 +5,13 @@
 #include "chrome/browser/component_updater/first_party_sets_component_installer.h"
 
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
-#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/version.h"
@@ -133,6 +133,10 @@ void FirstPartySetsComponentInstallerPolicy::ComponentReady(
   if (install_dir.empty())
     return;
 
+  if (component_installed_)
+    return;
+
+  component_installed_ = true;
   VLOG(1) << "First-Party Sets Component ready, version " << version.GetString()
           << " in " << install_dir.value();
 

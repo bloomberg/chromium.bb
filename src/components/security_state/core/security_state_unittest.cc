@@ -13,7 +13,6 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/security_state/core/features.h"
-#include "components/security_state/core/insecure_input_event_data.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
@@ -56,7 +55,8 @@ class TestSecurityStateHelper {
         is_error_page_(false),
         is_view_source_(false),
         has_policy_certificate_(false),
-        safety_tip_info_({security_state::SafetyTipStatus::kUnknown, GURL()}) {}
+        safety_tip_info_({security_state::SafetyTipStatus::kUnknown, GURL()}),
+        is_https_only_mode_upgraded_(false) {}
   virtual ~TestSecurityStateHelper() {}
 
   void SetCertificate(scoped_refptr<net::X509Certificate> cert) {
@@ -94,9 +94,6 @@ class TestSecurityStateHelper {
     is_view_source_ = is_view_source;
   }
 
-  void set_insecure_field_edit(bool insecure_field_edit) {
-    insecure_input_events_.insecure_field_edited = insecure_field_edit;
-  }
   void set_has_policy_certificate(bool has_policy_cert) {
     has_policy_certificate_ = has_policy_cert;
   }
@@ -105,6 +102,10 @@ class TestSecurityStateHelper {
   void set_safety_tip_status(
       security_state::SafetyTipStatus safety_tip_status) {
     safety_tip_info_.status = safety_tip_status;
+  }
+
+  void set_is_https_only_mode_upgraded(bool is_https_only_mode_upgraded) {
+    is_https_only_mode_upgraded_ = is_https_only_mode_upgraded;
   }
 
   std::unique_ptr<VisibleSecurityState> GetVisibleSecurityState() const {
@@ -120,8 +121,8 @@ class TestSecurityStateHelper {
     state->malicious_content_status = malicious_content_status_;
     state->is_error_page = is_error_page_;
     state->is_view_source = is_view_source_;
-    state->insecure_input_events = insecure_input_events_;
     state->safety_tip_info = safety_tip_info_;
+    state->is_https_only_mode_upgraded = is_https_only_mode_upgraded_;
     return state;
   }
 
@@ -146,8 +147,8 @@ class TestSecurityStateHelper {
   bool is_error_page_;
   bool is_view_source_;
   bool has_policy_certificate_;
-  InsecureInputEventData insecure_input_events_;
   security_state::SafetyTipInfo safety_tip_info_;
+  bool is_https_only_mode_upgraded_;
 };
 
 }  // namespace
@@ -312,15 +313,11 @@ TEST(SecurityStateTest, MixedContentWithPolicyCertificate) {
   EXPECT_EQ(DANGEROUS, helper.GetSecurityLevel());
 }
 
-// Tests that WARNING is set on normal http pages regardless of
-// form edits.
-TEST(SecurityStateTest, WarningOnHttpAndFormEdits) {
+// Tests that HTTP URLs cause a WARNING security level.
+TEST(SecurityStateTest, WarningOnHttp) {
   TestSecurityStateHelper helper;
   helper.SetUrl(GURL(kHttpUrl));
 
-  EXPECT_EQ(WARNING, helper.GetSecurityLevel());
-
-  helper.set_insecure_field_edit(true);
   EXPECT_EQ(WARNING, helper.GetSecurityLevel());
 }
 
@@ -477,6 +474,36 @@ TEST(SecurityStateTest, MajorCertificateErrors) {
   helper.set_cert_status(net::CERT_STATUS_SHA1_SIGNATURE_PRESENT |
                          net::CERT_STATUS_PINNED_KEY_MISSING);
   EXPECT_TRUE(helper.HasMajorCertificateError());
+}
+
+// Tests that if a page was upgraded by HTTPS-Only Mode it takes precedence
+// over net errors where connection info is not set.
+TEST(SecurityStateTest, HttpsOnlyModeOverridesNetError) {
+  TestSecurityStateHelper helper;
+  helper.SetUrl(GURL("https://nonexistent.test"));
+  helper.set_is_error_page(true);
+  helper.set_is_https_only_mode_upgraded(true);
+  EXPECT_EQ(SecurityLevel::WARNING, helper.GetSecurityLevel());
+}
+
+// Tests that if a page was upgraded by HTTPS-Only Mode it takes precedence
+// over the page having certificate errors.
+TEST(SecurityStateTest, HttpsOnlyModeOverridesCertificateError) {
+  TestSecurityStateHelper helper;
+  helper.set_cert_status(net::CERT_STATUS_SHA1_SIGNATURE_PRESENT |
+                         net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION);
+  EXPECT_TRUE(helper.HasMajorCertificateError());
+  helper.set_is_https_only_mode_upgraded(true);
+  EXPECT_EQ(SecurityLevel::WARNING, helper.GetSecurityLevel());
+}
+
+// Tests that malicious content status takes precedence over HTTPS-Only Mode.
+TEST(SecurityStateTest, MaliciousContentOverridesHttpsOnlyMode) {
+  TestSecurityStateHelper helper;
+  helper.set_malicious_content_status(
+      MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING);
+  helper.set_is_https_only_mode_upgraded(true);
+  EXPECT_EQ(DANGEROUS, helper.GetSecurityLevel());
 }
 
 }  // namespace security_state

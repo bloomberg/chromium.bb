@@ -30,7 +30,10 @@ declare_args() {
 
 component("chromeos") {
   public_deps = []
-  deps = [ "//chromeos/crosapi/mojom" ]
+  deps = [
+    "//chromeos/crosapi/mojom",
+    "//chromeos/dbus/constants",
+  ]
   sources = []
 
   if (is_chromeos_ash) {
@@ -48,7 +51,6 @@ component("chromeos") {
       "//base",
       "//base:i18n",
       "//chromeos/dbus",
-      "//chromeos/dbus/constants",
       "//google_apis",
       "//services/network/public/cpp:cpp",
       "//third_party/protobuf:protobuf_lite",
@@ -199,6 +201,7 @@ test("chromeos_unittests") {
       "//chromeos/startup:unit_tests",
       "//chromeos/timezone:unit_tests",
       "//chromeos/tpm:unit_tests",
+      "//chromeos/utils:unit_tests",
       "//components/onc",
       "//components/policy:generated",
       "//components/policy/proto",
@@ -251,8 +254,8 @@ test("chromeos_unittests") {
 
 # The following definitions only apply when building for a CrOS board (ie: not
 # linux-chromeos). See the following for reference:
-# https://chromium.googlesource.com/chromium/src/+/master/docs/chromeos_build_instructions.md
-# https://chromium.googlesource.com/chromiumos/docs/+/master/simple_chrome_workflow.md
+# https://chromium.googlesource.com/chromium/src/+/main/docs/chromeos_build_instructions.md
+# https://chromium.googlesource.com/chromiumos/docs/+/main/simple_chrome_workflow.md
 if (is_chromeos_ash && is_chromeos_device) {
   # This builds a tool that prepares a DUT or VM for testing, which can be
   # utilized by wrapping a host-side script test.
@@ -296,7 +299,7 @@ if (is_chromeos_ash && is_chromeos_device) {
     # https://codesearch.chromium.org/chromium/src/third_party/chromite/lib/chrome_util.py?l=341
     # Most of these are copy targets, for which GN doesn't add their outputs
     # as runtime-deps. See the link below for more details:
-    # https://chromium.googlesource.com/chromium/src/+/master/tools/gn/docs/reference.md#actions-and-copies
+    # https://chromium.googlesource.com/chromium/src/+/main/tools/gn/docs/reference.md#actions-and-copies
     data_deps = [
       "//chrome:xdg_mime",
       "//mojo/core:shared_library_arc32",

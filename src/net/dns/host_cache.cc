@@ -112,12 +112,12 @@ enum HostCache::EraseReason : int {
   MAX_ERASE_REASON
 };
 
-HostCache::Key::Key(const std::string& hostname,
+HostCache::Key::Key(std::string hostname,
                     DnsQueryType dns_query_type,
                     HostResolverFlags host_resolver_flags,
                     HostResolverSource host_resolver_source,
                     const NetworkIsolationKey& network_isolation_key)
-    : hostname(hostname),
+    : hostname(std::move(hostname)),
       dns_query_type(dns_query_type),
       host_resolver_flags(host_resolver_flags),
       host_resolver_source(host_resolver_source),
@@ -678,7 +678,7 @@ void HostCache::GetAsListValue(base::ListValue* entry_list,
                                bool include_staleness,
                                SerializationType serialization_type) const {
   DCHECK(entry_list);
-  entry_list->Clear();
+  entry_list->ClearList();
 
   for (const auto& pair : entries_) {
     const Key& key = pair.first;

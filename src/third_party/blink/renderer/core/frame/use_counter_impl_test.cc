@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/html_html_element.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -19,6 +20,7 @@
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 
 namespace {
 const char kExtensionFeaturesHistogramName[] =
@@ -41,7 +43,26 @@ using WebFeature = mojom::WebFeature;
 
 class UseCounterImplTest : public testing::Test {
  public:
-  UseCounterImplTest() : dummy_(std::make_unique<DummyPageHolder>()) {
+  class DummyLocalFrameClient : public EmptyLocalFrameClient {
+   public:
+    DummyLocalFrameClient() = default;
+    const std::vector<UseCounterFeature>& observed_features() const {
+      return observed_features_;
+    }
+
+   private:
+    void DidObserveNewFeatureUsage(const UseCounterFeature& feature) override {
+      observed_features_.push_back(feature);
+    }
+    std::vector<UseCounterFeature> observed_features_;
+  };
+
+  UseCounterImplTest()
+      : dummy_(std::make_unique<DummyPageHolder>(
+            /* initial_view_size= */ IntSize(),
+            /* chrome_client= */ nullptr,
+            /* local_frame_client= */
+            MakeGarbageCollected<DummyLocalFrameClient>())) {
     Page::InsertOrdinaryPageForTesting(&dummy_->GetPage());
   }
 
@@ -67,11 +88,49 @@ class UseCounterImplTest : public testing::Test {
   }
 };
 
+class UseCounterImplBrowserReportTest
+    : public UseCounterImplTest,
+      public ::testing::WithParamInterface</* URL */ const char*> {};
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         UseCounterImplBrowserReportTest,
+                         ::testing::Values("chrome-extension://dummysite/",
+                                           "file://dummyfile",
+                                           "data:;base64,",
+                                           "ftp://ftp.dummy/dummy.txt",
+                                           "http://foo.com",
+                                           "https://bar.com"));
+
+// UseCounter should not send events to browser when handling page with
+// Non HTTP Family URLs, as these events will be discarded on the browser side
+// in |MetricsWebContentsObserver::DoesTimingUpdateHaveError|.
+TEST_P(UseCounterImplBrowserReportTest, ReportOnlyHTTPFamily) {
+  KURL url = url_test_helpers::ToKURL(GetParam());
+  SetURL(url);
+  UseCounterImpl use_counter;
+  use_counter.DidCommitLoad(GetFrame());
+
+  // Count every feature types in UseCounterFeatureType.
+  use_counter.Count(mojom::WebFeature::kFetch, GetFrame());
+  use_counter.Count(CSSPropertyID::kHeight,
+                    UseCounterImpl::CSSPropertyType::kDefault, GetFrame());
+  use_counter.Count(CSSPropertyID::kHeight,
+                    UseCounterImpl::CSSPropertyType::kAnimation, GetFrame());
+
+  auto* dummy_client =
+      static_cast<UseCounterImplBrowserReportTest::DummyLocalFrameClient*>(
+          GetFrame()->Client());
+
+  EXPECT_EQ(!dummy_client->observed_features().empty(),
+            url.ProtocolIsInHTTPFamily());
+}
+
 TEST_F(UseCounterImplTest, RecordingExtensions) {
   const std::string histogram = kExtensionFeaturesHistogramName;
   constexpr auto item = mojom::WebFeature::kFetch;
   constexpr auto second_item = WebFeature::kFetchBodyStream;
   const std::string url = kExtensionUrl;
+  SchemeRegistry::RegisterURLSchemeAsExtension("chrome-extension");
   UseCounterImpl::Context context = UseCounterImpl::kExtensionContext;
   int page_visits_bucket = GetPageVisitsBucketforHistogram(histogram);
 
@@ -113,6 +172,7 @@ TEST_F(UseCounterImplTest, RecordingExtensions) {
   EXPECT_TRUE(use_counter1.IsCounted(item));
   histogram_tester_.ExpectBucketCount(histogram, static_cast<int>(item), 2);
   histogram_tester_.ExpectTotalCount(histogram, 4);
+  SchemeRegistry::RemoveURLSchemeAsExtension("chrome-extension");
 }
 
 TEST_F(UseCounterImplTest, CSSSelectorPseudoWhere) {
@@ -204,100 +264,6 @@ TEST_F(UseCounterImplTest, CSSGridLayoutPercentageColumnIndefiniteWidth) {
   EXPECT_FALSE(document.IsUseCounted(feature));
 }
 
-TEST_F(UseCounterImplTest, CSSGridLayoutPercentageRowIndefiniteHeight1) {
-  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
-  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
-  Document& document = dummy_page_holder->GetDocument();
-  WebFeature feature = WebFeature::kGridRowTrackPercentIndefiniteHeight;
-  EXPECT_FALSE(document.IsUseCounted(feature));
-  document.documentElement()->setInnerHTML(
-      "<div style='display: inline-grid; grid-template-rows: 50%;'>"
-      "</div>");
-  UpdateAllLifecyclePhases(document);
-  EXPECT_TRUE(document.IsUseCounted(feature));
-}
-
-TEST_F(UseCounterImplTest, CSSGridLayoutPercentageRowIndefiniteHeight2) {
-  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
-  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
-  Document& document = dummy_page_holder->GetDocument();
-  WebFeature feature = WebFeature::kGridRowTrackPercentIndefiniteHeight;
-  EXPECT_FALSE(document.IsUseCounted(feature));
-  document.documentElement()->setInnerHTML(
-      "<div style='display: inline-grid; grid-template-rows: 50% 50%;'>"
-      "</div>");
-  UpdateAllLifecyclePhases(document);
-  EXPECT_TRUE(document.IsUseCounted(feature));
-}
-
-TEST_F(UseCounterImplTest, CSSGridLayoutPercentageRowIndefiniteHeight3) {
-  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
-  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
-  Document& document = dummy_page_holder->GetDocument();
-  WebFeature feature = WebFeature::kGridRowTrackPercentIndefiniteHeight;
-  EXPECT_FALSE(document.IsUseCounted(feature));
-  document.documentElement()->setInnerHTML(
-      "<div style='display: inline-grid; grid-template-rows: 100% 100%;'>"
-      "</div>");
-  UpdateAllLifecyclePhases(document);
-  EXPECT_TRUE(document.IsUseCounted(feature));
-}
-
-TEST_F(UseCounterImplTest, CSSGridLayoutPercentageRowIndefiniteHeight4) {
-  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
-  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
-  Document& document = dummy_page_holder->GetDocument();
-  WebFeature feature = WebFeature::kGridRowTrackPercentIndefiniteHeight;
-  EXPECT_FALSE(document.IsUseCounted(feature));
-  document.documentElement()->setInnerHTML(
-      "<div style='display: inline-grid; grid-template-rows: minmax(50%, "
-      "100%);'>"
-      "</div>");
-  UpdateAllLifecyclePhases(document);
-  EXPECT_TRUE(document.IsUseCounted(feature));
-}
-
-TEST_F(UseCounterImplTest, CSSGridLayoutPercentageRowIndefiniteHeight5) {
-  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
-  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
-  Document& document = dummy_page_holder->GetDocument();
-  WebFeature feature = WebFeature::kGridRowTrackPercentIndefiniteHeight;
-  EXPECT_FALSE(document.IsUseCounted(feature));
-  document.documentElement()->setInnerHTML(
-      "<div style='display: inline-grid; max-height: 0; grid-template-rows: "
-      "100%;'>"
-      "</div>");
-  UpdateAllLifecyclePhases(document);
-  EXPECT_TRUE(document.IsUseCounted(feature));
-}
-
-TEST_F(UseCounterImplTest, CSSGridLayoutPercentageRowIndefiniteHeight6) {
-  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
-  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
-  Document& document = dummy_page_holder->GetDocument();
-  WebFeature feature = WebFeature::kGridRowTrackPercentIndefiniteHeight;
-  EXPECT_FALSE(document.IsUseCounted(feature));
-  document.documentElement()->setInnerHTML(
-      "<div style='display: inline-grid; grid-template-rows: 100%;'>"
-      "</div>");
-  UpdateAllLifecyclePhases(document);
-  EXPECT_FALSE(document.IsUseCounted(feature));
-}
-
-TEST_F(UseCounterImplTest, CSSGridLayoutPercentageRowIndefiniteHeight7) {
-  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
-  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
-  Document& document = dummy_page_holder->GetDocument();
-  WebFeature feature = WebFeature::kGridRowTrackPercentIndefiniteHeight;
-  EXPECT_FALSE(document.IsUseCounted(feature));
-  document.documentElement()->setInnerHTML(
-      "<div style='display: inline-grid; grid-template-rows: minmax(100%, "
-      "100%);'>"
-      "</div>");
-  UpdateAllLifecyclePhases(document);
-  EXPECT_FALSE(document.IsUseCounted(feature));
-}
-
 TEST_F(UseCounterImplTest, CSSFlexibleBox) {
   auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
@@ -333,6 +299,43 @@ TEST_F(UseCounterImplTest, CSSFlexibleBoxButton) {
   document.documentElement()->setInnerHTML("<button>button</button>");
   UpdateAllLifecyclePhases(document);
   EXPECT_FALSE(document.IsUseCounted(feature));
+}
+
+TEST_F(UseCounterImplTest, HTMLRootContained) {
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
+  Document& document = dummy_page_holder->GetDocument();
+  WebFeature feature = WebFeature::kHTMLRootContained;
+  EXPECT_FALSE(document.IsUseCounted(feature));
+
+  document.documentElement()->SetInlineStyleProperty(CSSPropertyID::kDisplay,
+                                                     "none");
+  document.documentElement()->SetInlineStyleProperty(CSSPropertyID::kContain,
+                                                     "paint");
+  UpdateAllLifecyclePhases(document);
+  EXPECT_FALSE(document.IsUseCounted(feature));
+
+  document.documentElement()->SetInlineStyleProperty(CSSPropertyID::kDisplay,
+                                                     "block");
+  UpdateAllLifecyclePhases(document);
+  EXPECT_TRUE(document.IsUseCounted(feature));
+}
+
+TEST_F(UseCounterImplTest, HTMLBodyContained) {
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
+  Document& document = dummy_page_holder->GetDocument();
+  WebFeature feature = WebFeature::kHTMLBodyContained;
+  EXPECT_FALSE(document.IsUseCounted(feature));
+
+  document.body()->SetInlineStyleProperty(CSSPropertyID::kDisplay, "none");
+  document.body()->SetInlineStyleProperty(CSSPropertyID::kContain, "paint");
+  UpdateAllLifecyclePhases(document);
+  EXPECT_FALSE(document.IsUseCounted(feature));
+
+  document.body()->SetInlineStyleProperty(CSSPropertyID::kDisplay, "block");
+  UpdateAllLifecyclePhases(document);
+  EXPECT_TRUE(document.IsUseCounted(feature));
 }
 
 class DeprecationTest : public testing::Test {

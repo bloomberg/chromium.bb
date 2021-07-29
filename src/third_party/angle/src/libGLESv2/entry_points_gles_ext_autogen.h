@@ -916,6 +916,8 @@ ANGLE_EXPORT void GL_APIENTRY GL_ReadnPixelsEXT(GLint x,
 
 // GL_EXT_sRGB
 
+// GL_EXT_sRGB_write_control
+
 // GL_EXT_semaphore
 ANGLE_EXPORT void GL_APIENTRY GL_DeleteSemaphoresEXT(GLsizei n, const GLuint *semaphores);
 ANGLE_EXPORT void GL_APIENTRY GL_GenSemaphoresEXT(GLsizei n, GLuint *semaphores);
@@ -1347,6 +1349,12 @@ ANGLE_EXPORT void GL_APIENTRY GL_RenderbufferStorageOES(GLenum target,
                                                         GLenum internalformat,
                                                         GLsizei width,
                                                         GLsizei height);
+
+// GL_OES_geometry_shader
+ANGLE_EXPORT void GL_APIENTRY GL_FramebufferTextureOES(GLenum target,
+                                                       GLenum attachment,
+                                                       GLuint texture,
+                                                       GLint level);
 
 // GL_OES_get_program_binary
 ANGLE_EXPORT void GL_APIENTRY GL_GetProgramBinaryOES(GLuint program,
@@ -2366,6 +2374,11 @@ ANGLE_EXPORT void GL_APIENTRY GL_FramebufferTextureMultiviewOVRContextANGLE(GLeg
                                                                             GLint level,
                                                                             GLint baseViewIndex,
                                                                             GLsizei numViews);
+ANGLE_EXPORT void GL_APIENTRY GL_FramebufferTextureOESContextANGLE(GLeglContext ctx,
+                                                                   GLenum target,
+                                                                   GLenum attachment,
+                                                                   GLuint texture,
+                                                                   GLint level);
 ANGLE_EXPORT void GL_APIENTRY GL_FrontFaceContextANGLE(GLeglContext ctx, GLenum mode);
 ANGLE_EXPORT void GL_APIENTRY GL_FrustumfContextANGLE(GLeglContext ctx,
                                                       GLfloat l,

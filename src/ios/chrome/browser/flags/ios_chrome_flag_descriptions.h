@@ -68,11 +68,6 @@ extern const char kSyntheticCrashReportsForUteDescription[];
 extern const char kBreakpadNoDelayInitialUploadName[];
 extern const char kBreakpadNoDelayInitialUploadDescription[];
 
-// Title and description for the flag to control if change password url should
-// be obtained by affiliation service.
-extern const char kChangePasswordAffiliationInfoName[];
-extern const char kChangePasswordAffiliationInfoDescription[];
-
 // Title and description for the flag to control which crash generation tool
 // is used.
 extern const char kCrashpadIOSName[];
@@ -134,6 +129,10 @@ extern const char kDetectMainThreadFreezeDescription[];
 extern const char kDiscoverFeedInNtpName[];
 extern const char kDiscoverFeedInNtpDescription[];
 
+// Title and description for the flag to enable .mobileconfig file downloads.
+extern const char kDownloadMobileConfigFileName[];
+extern const char kDownloadMobileConfigFileDescription[];
+
 // Title and description for the flag to enable kEditPasswordsInSettings flag on
 // iOS.
 extern const char kEditPasswordsInSettingsName[];
@@ -146,14 +145,36 @@ extern const char kRestoreSessionFromCacheDescription[];
 extern const char kEnableAutofillAccountWalletStorageName[];
 extern const char kEnableAutofillAccountWalletStorageDescription[];
 
+// Title and description for the flag to enable address verification support in
+// autofill address save prompts.
+extern const char kEnableAutofillAddressSavePromptAddressVerificationName[];
+extern const char
+    kEnableAutofillAddressSavePromptAddressVerificationDescription[];
+
 // Title and description for the flag to enable autofill address save prompts.
 extern const char kEnableAutofillAddressSavePromptName[];
 extern const char kEnableAutofillAddressSavePromptDescription[];
+
+// Title and description for the flag to enable account indication in the save
+// card dialog.
+extern const char kEnableAutofillSaveCardInfoBarAccountIndicationFooterName[];
+extern const char
+    kEnableAutofillSaveCardInfoBarAccountIndicationFooterDescription[];
 
 // Title and description for the flag to enable the confirmational action sheet
 // for the tab grid "Close All" action.
 extern const char kEnableCloseAllTabsConfirmationName[];
 extern const char kEnableCloseAllTabsConfirmationDescription[];
+
+// Title and description for the flag to enable the discover feed live preview
+// in long-press feed context menu.
+extern const char kEnableDiscoverFeedPreviewName[];
+extern const char kEnableDiscoverFeedPreviewDescription[];
+
+// Title and description for the flag to enable reading the extended sync promo
+// account capability from IdentityKit libraries.
+extern const char kEnableExtendedSyncPromosCapabilityName[];
+extern const char kEnableExtendedSyncPromosCapabilityDescription[];
 
 // Title and description for the flag to enable FRE UI module.
 extern const char kEnableFREUIModuleIOSName[];
@@ -186,6 +207,10 @@ extern const char kExpandedTabStripDescription[];
 // websites.
 extern const char kFillingAcrossAffiliatedWebsitesName[];
 extern const char kFillingAcrossAffiliatedWebsitesDescription[];
+
+// Title and description for the flag to disable all extended sync promos.
+extern const char kForceDisableExtendedSyncPromosName[];
+extern const char kForceDisableExtendedSyncPromosDescription[];
 
 // Title and description for the flag to trigger the startup sign-in promo.
 extern const char kForceStartupSigninPromoName[];
@@ -254,6 +279,11 @@ extern const char kLocationPermissionsPromptDescription[];
 extern const char kLockBottomToolbarName[];
 extern const char kLockBottomToolbarDescription[];
 
+// Title and description for the flag that controls sending metrickit crash
+// reports.
+extern const char kMetrickitCrashReportName[];
+extern const char kMetrickitCrashReportDescription[];
+
 // Title and description for the flag to enable MICE web sign-in.
 extern const char kMICEWebSignInName[];
 extern const char kMICEWebSignInDescription[];
@@ -307,6 +337,10 @@ extern const char kOmniboxNewImplementationDescription[];
 // detection.
 extern const char kPasswordReuseDetectionName[];
 extern const char kPasswordReuseDetectionDescription[];
+
+// Title and description for the flag to enable the Reading List Messages.
+extern const char kReadingListMessagesName[];
+extern const char kReadingListMessagesDescription[];
 
 // Title and description for the flag that enables the refactored new tab page.
 extern const char kRefactoredNTPName[];
@@ -371,6 +405,21 @@ extern const char kStartSurfaceDescription[];
 extern const char kSyncSandboxName[];
 extern const char kSyncSandboxDescription[];
 
+// Title and description for the flag to control if Chrome Sync should support
+// trusted vault RPC.
+extern const char kSyncTrustedVaultPassphraseiOSRPCName[];
+extern const char kSyncTrustedVaultPassphraseiOSRPCDescription[];
+
+// Title and description for the flag to control if Chrome Sync should support
+// trusted vault passphrase promos.
+extern const char kSyncTrustedVaultPassphrasePromoName[];
+extern const char kSyncTrustedVaultPassphrasePromoDescription[];
+
+// Title and description for the flag to control if Chrome Sync should support
+// trusted vault passphrase type with improved recovery.
+extern const char kSyncTrustedVaultPassphraseRecoveryName[];
+extern const char kSyncTrustedVaultPassphraseRecoveryDescription[];
+
 // Title and description for the flag to enable context menu in the Tab grid.
 extern const char kTabGridContextMenuName[];
 extern const char kTabGridContextMenuDescription[];
@@ -397,10 +446,6 @@ extern const char kURLBlocklistIOSDescription[];
 // Title and description for the flag to enable the new error page workflow.
 extern const char kUseJSForErrorPageName[];
 extern const char kUseJSForErrorPageDescription[];
-
-// Title and description for the flag to enable use of hash affiliation service.
-extern const char kUseOfHashAffiliationFetcherName[];
-extern const char kUseOfHashAffiliationFetcherDescription[];
 
 // Title and description for the flag to control if Google Payments API calls
 // should use the sandbox servers.

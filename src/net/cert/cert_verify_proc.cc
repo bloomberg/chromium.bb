@@ -12,7 +12,6 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -250,31 +249,6 @@ void BestEffortCheckOCSP(const std::string& raw_response,
   verify_result->revocation_status =
       CheckOCSP(raw_response, cert_der, issuer_der, base::Time::Now(),
                 kMaxRevocationLeafUpdateAge, &verify_result->response_status);
-}
-
-// Records histograms indicating whether the certificate |cert|, which
-// is assumed to have been validated chaining to a private root,
-// contains the TLS Feature Extension (https://tools.ietf.org/html/rfc7633) and
-// has valid OCSP information stapled.
-void RecordTLSFeatureExtensionWithPrivateRoot(
-    X509Certificate* cert,
-    const OCSPVerifyResult& ocsp_result) {
-  // This checks only for the presence of the TLS Feature Extension, but
-  // does not check the feature list, and in particular does not verify that
-  // its value is 'status_request' or 'status_request2'. In practice the
-  // only use of the TLS feature extension is for OCSP stapling, so
-  // don't bother to check the value.
-  bool has_extension = asn1::HasTLSFeatureExtension(
-      x509_util::CryptoBufferAsStringPiece(cert->cert_buffer()));
-
-  UMA_HISTOGRAM_BOOLEAN("Net.Certificate.TLSFeatureExtensionWithPrivateRoot",
-                        has_extension);
-  if (!has_extension)
-    return;
-
-  UMA_HISTOGRAM_BOOLEAN(
-      "Net.Certificate.TLSFeatureExtensionWithPrivateRootHasOCSP",
-      (ocsp_result.response_status != OCSPVerifyResult::MISSING));
 }
 
 // Records details about the most-specific trust anchor in |hashes|, which is
@@ -682,11 +656,6 @@ int CertVerifyProc::Verify(X509Certificate* cert,
     if (rv == OK)
       rv = MapCertStatusToNetError(verify_result->cert_status);
   }
-
-  // Record a histogram for the presence of the TLS feature extension in
-  // a certificate chaining to a private root.
-  if (rv == OK && !verify_result->is_issued_by_known_root)
-    RecordTLSFeatureExtensionWithPrivateRoot(cert, verify_result->ocsp_result);
 
   // Record a histogram for per-verification usage of root certs.
   if (rv == OK) {

@@ -74,7 +74,7 @@
 #define CPU_TYPE_ARM64 (static_cast<cpu_type_t>(16777228))
 #endif  // CPU_TYPE_ARM64
 
-using dwarf2reader::ByteReader;
+using google_breakpad::ByteReader;
 using google_breakpad::DwarfCUToModule;
 using google_breakpad::DwarfLineToModule;
 using google_breakpad::DwarfRangeListHandler;
@@ -315,36 +315,36 @@ string DumpSymbols::Identifier() {
 }
 
 // A range handler that accepts rangelist data parsed by
-// dwarf2reader::RangeListReader and populates a range vector (typically
+// RangeListReader and populates a range vector (typically
 // owned by a function) with the results.
 class DumpSymbols::DumperRangesHandler:
       public DwarfCUToModule::RangesHandler {
  public:
-  DumperRangesHandler(dwarf2reader::ByteReader* reader) :
+  DumperRangesHandler(ByteReader* reader) :
       reader_(reader) { }
 
   bool ReadRanges(
-      enum dwarf2reader::DwarfForm form, uint64_t data,
-      dwarf2reader::RangeListReader::CURangesInfo* cu_info,
+      enum DwarfForm form, uint64_t data,
+      RangeListReader::CURangesInfo* cu_info,
       vector<Module::Range>* ranges) {
     DwarfRangeListHandler handler(ranges);
-    dwarf2reader::RangeListReader range_list_reader(reader_, cu_info,
+    RangeListReader range_list_reader(reader_, cu_info,
                                                     &handler);
     return range_list_reader.ReadRanges(form, data);
   }
 
  private:
-  dwarf2reader::ByteReader* reader_;
+  ByteReader* reader_;
 };
 
 // A line-to-module loader that accepts line number info parsed by
-// dwarf2reader::LineInfo and populates a Module and a line vector
+// LineInfo and populates a Module and a line vector
 // with the results.
 class DumpSymbols::DumperLineToModule:
       public DwarfCUToModule::LineToModuleHandler {
  public:
   // Create a line-to-module converter using BYTE_READER.
-  DumperLineToModule(dwarf2reader::ByteReader* byte_reader)
+  DumperLineToModule(ByteReader* byte_reader)
       : byte_reader_(byte_reader) { }
 
   void StartCompilationUnit(const string& compilation_dir) {
@@ -358,13 +358,13 @@ class DumpSymbols::DumperLineToModule:
                    uint64_t line_string_section_length,
                    Module* module, vector<Module::Line>* lines) {
     DwarfLineToModule handler(module, compilation_dir_, lines);
-    dwarf2reader::LineInfo parser(program, length, byte_reader_,
+    LineInfo parser(program, length, byte_reader_,
                                   nullptr, 0, nullptr, 0, &handler);
     parser.Start();
   }
  private:
   string compilation_dir_;
-  dwarf2reader::ByteReader* byte_reader_;  // WEAK
+  ByteReader* byte_reader_;  // WEAK
 };
 
 bool DumpSymbols::CreateEmptyModule(scoped_ptr<Module>& module) {
@@ -430,15 +430,15 @@ void DumpSymbols::ReadDwarf(google_breakpad::Module* module,
                             bool handle_inter_cu_refs) const {
   // Build a byte reader of the appropriate endianness.
   ByteReader byte_reader(macho_reader.big_endian()
-                         ? dwarf2reader::ENDIANNESS_BIG
-                         : dwarf2reader::ENDIANNESS_LITTLE);
+                         ? ENDIANNESS_BIG
+                         : ENDIANNESS_LITTLE);
 
   // Construct a context for this file.
   DwarfCUToModule::FileContext file_context(selected_object_name_,
                                             module,
                                             handle_inter_cu_refs);
 
-  // Build a dwarf2reader::SectionMap from our mach_o::SectionMap.
+  // Build a SectionMap from our mach_o::SectionMap.
   for (mach_o::SectionMap::const_iterator it = dwarf_sections.begin();
        it != dwarf_sections.end(); ++it) {
     file_context.AddSectionToSectionMap(
@@ -448,7 +448,7 @@ void DumpSymbols::ReadDwarf(google_breakpad::Module* module,
   }
 
   // Find the __debug_info section.
-  dwarf2reader::SectionMap::const_iterator debug_info_entry =
+  SectionMap::const_iterator debug_info_entry =
       file_context.section_map().find("__debug_info");
   // There had better be a __debug_info section!
   if (debug_info_entry == file_context.section_map().end()) {
@@ -475,9 +475,9 @@ void DumpSymbols::ReadDwarf(google_breakpad::Module* module,
     DwarfCUToModule root_handler(&file_context, &line_to_module,
                                  &ranges_handler, &reporter);
     // Make a Dwarf2Handler that drives our DIEHandler.
-    dwarf2reader::DIEDispatcher die_dispatcher(&root_handler);
+    DIEDispatcher die_dispatcher(&root_handler);
     // Make a DWARF parser for the compilation unit at OFFSET.
-    dwarf2reader::CompilationUnit dwarf_reader(selected_object_name_,
+    CompilationUnit dwarf_reader(selected_object_name_,
                                                file_context.section_map(),
                                                offset,
                                                &byte_reader,
@@ -530,18 +530,18 @@ bool DumpSymbols::ReadCFI(google_breakpad::Module* module,
   DwarfCFIToModule::Reporter module_reporter(selected_object_name_,
                                              section.section_name);
   DwarfCFIToModule handler(module, register_names, &module_reporter);
-  dwarf2reader::ByteReader byte_reader(macho_reader.big_endian() ?
-                                       dwarf2reader::ENDIANNESS_BIG :
-                                       dwarf2reader::ENDIANNESS_LITTLE);
+  ByteReader byte_reader(macho_reader.big_endian() ?
+                                       ENDIANNESS_BIG :
+                                       ENDIANNESS_LITTLE);
   byte_reader.SetAddressSize(macho_reader.bits_64() ? 8 : 4);
   // At the moment, according to folks at Apple and some cursory
   // investigation, Mac OS X only uses DW_EH_PE_pcrel-based pointers, so
   // this is the only base address the CFI parser will need.
   byte_reader.SetCFIDataBase(section.address, cfi);
 
-  dwarf2reader::CallFrameInfo::Reporter dwarf_reporter(selected_object_name_,
+  CallFrameInfo::Reporter dwarf_reporter(selected_object_name_,
                                                        section.section_name);
-  dwarf2reader::CallFrameInfo parser(cfi, cfi_size,
+  CallFrameInfo parser(cfi, cfi_size,
                                      &byte_reader, &handler, &dwarf_reporter,
                                      eh_frame);
   parser.Start();

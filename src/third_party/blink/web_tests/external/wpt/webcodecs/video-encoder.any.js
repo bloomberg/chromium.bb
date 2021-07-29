@@ -8,17 +8,20 @@ const defaultConfig = {
   height: 480
 };
 
+let bitmap_blob = null;
+
 async function generateBitmap(width, height) {
-  const src = "pattern.png";
+  if (!bitmap_blob) {
+    let response = await fetch("pattern.png");
+    bitmap_blob = await response.blob();
+  }
 
   var size = {
     resizeWidth: width,
     resizeHeight: height
   };
 
-  return fetch(src)
-      .then(response => response.blob())
-      .then(blob => createImageBitmap(blob, size));
+  return createImageBitmap(bitmap_blob, size);
 }
 
 async function createVideoFrame(width, height, timestamp) {
@@ -76,6 +79,40 @@ promise_test(async t => {
   }
 
   let encoder = new VideoEncoder(codecInit);
+  encoder.configure(encoderConfig);
+
+  let frame1 = await createVideoFrame(640, 480, 0);
+  let frame2 = await createVideoFrame(640, 480, 33333);
+
+  encoder.encode(frame1);
+  encoder.encode(frame2);
+
+  await encoder.flush();
+
+  // Decoder config should be given with the first chunk
+  assert_not_equals(decoderConfig, null);
+  assert_equals(decoderConfig.codec, encoderConfig.codec);
+  assert_equals(decoderConfig.codedHeight, encoderConfig.height);
+  assert_equals(decoderConfig.codedWidth, encoderConfig.width);
+  assert_equals(decoderConfig.displayAspectHeight, encoderConfig.displayHeight);
+  assert_equals(decoderConfig.displayAspectWidth, encoderConfig.displayWidth);
+
+  assert_equals(output_chunks.length, 2);
+  assert_equals(output_chunks[0].timestamp, frame1.timestamp);
+  assert_equals(output_chunks[1].timestamp, frame2.timestamp);
+}, 'Test successful configure(), encode(), and flush()');
+
+promise_test(async t => {
+  let codecInit = getDefaultCodecInit(t);
+  let encoderConfig = {
+    codec: 'vp8',
+    width: 320,
+    height: 200
+  };
+
+  codecInit.output = (chunk, metadata) => {}
+
+  let encoder = new VideoEncoder(codecInit);
 
   // No encodes yet.
   assert_equals(encoder.encodeQueueSize, 0);
@@ -85,38 +122,35 @@ promise_test(async t => {
   // Still no encodes.
   assert_equals(encoder.encodeQueueSize, 0);
 
-  let frame1 = await createVideoFrame(640, 480, 0);
-  let frame2 = await createVideoFrame(640, 480, 33333);
+  const frames_count = 100;
+  let frames = [];
+  for (let i = 0; i < frames_count; i++) {
+    let frame = await createVideoFrame(320, 200, i * 16000);
+    frames.push(frame);
+  }
 
-  encoder.encode(frame1);
-  encoder.encode(frame2);
+  for (let frame of frames)
+    encoder.encode(frame);
 
-  // Could be 0, 1, or 2. We can't guarantee this check runs before the UA has
-  // processed the encodes.
-  assert_true(encoder.encodeQueueSize >= 0 && encoder.encodeQueueSize <= 2)
+  // Some encodes should have already started being processed, but not all
+  // 100 of them.
+  assert_greater_than(encoder.encodeQueueSize, 0);
+  assert_less_than(encoder.encodeQueueSize, frames_count);
 
   await encoder.flush();
-
-  // Decoder config should be given with the first chunk
-  assert_not_equals(decoderConfig, null);
-  assert_not_equals(decoderConfig.visibleRegion, null);
-  assert_equals(decoderConfig.codedHeight, encoderConfig.height);
-  assert_equals(decoderConfig.codedWidth, encoderConfig.width);
-  assert_equals(decoderConfig.visibleRegion.top, 0);
-  assert_equals(decoderConfig.visibleRegion.left, 0);
-  assert_equals(decoderConfig.visibleRegion.height, encoderConfig.height);
-  assert_equals(decoderConfig.visibleRegion.width, encoderConfig.width);
-  assert_equals(decoderConfig.codec, encoderConfig.codec);
-  assert_equals(decoderConfig.displayHeight, encoderConfig.displayHeight);
-  assert_equals(decoderConfig.displayWidth, encoderConfig.displayWidth);
-
   // We can guarantee that all encodes are processed after a flush.
   assert_equals(encoder.encodeQueueSize, 0);
 
-  assert_equals(output_chunks.length, 2);
-  assert_equals(output_chunks[0].timestamp, frame1.timestamp);
-  assert_equals(output_chunks[1].timestamp, frame2.timestamp);
-}, 'Test successful configure(), encode(), and flush()');
+  for (let frame of frames) {
+    encoder.encode(frame);
+    frame.close();
+  }
+
+  assert_greater_than(encoder.encodeQueueSize, 0);
+  encoder.reset();
+  assert_equals(encoder.encodeQueueSize, 0);
+}, 'encodeQueueSize test');
+
 
 promise_test(async t => {
   let timestamp = 0;
@@ -211,20 +245,9 @@ promise_test(async t => {
   // We can guarantee that all encodes are processed after a flush.
   assert_equals(encoder.encodeQueueSize, 0);
 
-  // The first frame may have been dropped when reconfiguring.
-  // This shouldn't happen, and should be fixed/called out in the spec, but
-  // this is preptively added to prevent flakiness.
-  // TODO: Remove these checks when implementations handle this correctly.
-  assert_true(output_chunks.length == 1 || output_chunks.length == 2);
-
-  if (output_chunks.length == 1) {
-    // If we only have one chunk frame, make sure we droped the frame that was
-    // in flight when we reconfigured.
-    assert_equals(output_chunks[0].timestamp, frame2.timestamp);
-  } else {
-    assert_equals(output_chunks[0].timestamp, frame1.timestamp);
-    assert_equals(output_chunks[1].timestamp, frame2.timestamp);
-  }
+  assert_true(output_chunks.length == 2);
+  assert_equals(output_chunks[0].timestamp, frame1.timestamp);
+  assert_equals(output_chunks[1].timestamp, frame2.timestamp);
 
   output_chunks = [];
 
@@ -291,5 +314,5 @@ promise_test(async t => {
   encoder.close();
   assert_equals(output_chunks.length, 1);
   assert_equals(output_chunks[0].timestamp, -10000, "first chunk timestamp");
-  assert_greater_than(output_chunks[0].data.byteLength, 0);
+  assert_greater_than(output_chunks[0].byteLength, 0);
 }, 'Encode video with negative timestamp');

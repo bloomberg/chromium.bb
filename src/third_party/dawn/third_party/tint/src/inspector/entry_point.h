@@ -19,6 +19,7 @@
 #include <tuple>
 #include <vector>
 
+#include "src/ast/interpolate_decoration.h"
 #include "src/ast/pipeline_stage.h"
 
 namespace tint {
@@ -32,17 +33,65 @@ enum class ComponentType {
   kSInt,
 };
 
+/// Composition of components of a stage variable.
+enum class CompositionType {
+  kUnknown = -1,
+  kScalar,
+  kVec2,
+  kVec3,
+  kVec4,
+};
+
+/// Type of interpolation of a stage variable.
+enum class InterpolationType { kUnknown = -1, kPerspective, kLinear, kFlat };
+
+/// Type of interpolation sampling of a stage variable.
+enum class InterpolationSampling {
+  kUnknown = -1,
+  kNone,
+  kCenter,
+  kCentroid,
+  kSample
+};
+
 /// Reflection data about an entry point input or output.
 struct StageVariable {
   /// Name of the variable in the shader.
   std::string name;
   /// Is Location Decoration present
-  bool has_location_decoration;
+  bool has_location_decoration = false;
   /// Value of Location Decoration, only valid if |has_location_decoration| is
   /// true.
   uint32_t location_decoration;
   /// Scalar type that the variable is composed of.
-  ComponentType component_type;
+  ComponentType component_type = ComponentType::kUnknown;
+  /// How the scalars are composed for the variable.
+  CompositionType composition_type = CompositionType::kUnknown;
+  /// Interpolation type of the variable.
+  InterpolationType interpolation_type = InterpolationType::kUnknown;
+  /// Interpolation sampling of the variable.
+  InterpolationSampling interpolation_sampling =
+      InterpolationSampling::kUnknown;
+};
+
+/// Convert from internal ast::InterpolationType to public ::InterpolationType.
+/// @param ast_type internal value to convert from
+/// @returns the publicly visible equivalent
+InterpolationType ASTToInspectorInterpolationType(
+    ast::InterpolationType ast_type);
+
+/// Convert from internal ast::InterpolationSampling to public
+/// ::InterpolationSampling
+/// @param sampling internal value to convert from
+/// @returns the publicly visible equivalent
+InterpolationSampling ASTToInspectorInterpolationSampling(
+    ast::InterpolationSampling sampling);
+
+/// Reflection data about a pipeline overridable constant referenced by an entry
+/// point
+struct OverridableConstant {
+  /// Name of the constant
+  std::string name;
 };
 
 /// Reflection data for an entry point in the shader.
@@ -62,15 +111,19 @@ struct EntryPoint {
   /// The entry point stage
   ast::PipelineStage stage = ast::PipelineStage::kNone;
   /// The workgroup x size
-  uint32_t workgroup_size_x;
+  uint32_t workgroup_size_x = 0;
   /// The workgroup y size
-  uint32_t workgroup_size_y;
+  uint32_t workgroup_size_y = 0;
   /// The workgroup z size
-  uint32_t workgroup_size_z;
+  uint32_t workgroup_size_z = 0;
   /// List of the input variable accessed via this entry point.
   std::vector<StageVariable> input_variables;
   /// List of the output variable accessed via this entry point.
   std::vector<StageVariable> output_variables;
+  /// List of the pipeline overridable constants accessed via this entry point.
+  std::vector<OverridableConstant> overridable_constants;
+  /// Does the entry point use the sample_mask builtin
+  bool sample_mask_used = false;
 
   /// @returns the size of the workgroup in {x,y,z} format
   std::tuple<uint32_t, uint32_t, uint32_t> workgroup_size() {

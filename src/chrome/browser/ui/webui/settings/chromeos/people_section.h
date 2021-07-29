@@ -5,14 +5,13 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_PEOPLE_SECTION_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_PEOPLE_SECTION_H_
 
-#include "ash/components/account_manager/account_manager.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/values.h"
-#include "chrome/browser/ash/kerberos/kerberos_credentials_manager.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_section.h"
 #include "components/account_manager_core/account.h"
 #include "components/account_manager_core/account_manager_facade.h"
+#include "components/account_manager_core/chromeos/account_manager.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/sync/driver/sync_service_observer.h"
 
@@ -41,19 +40,17 @@ class SearchTagRegistry;
 // Provides UI strings and search tags for People settings. Search tags are only
 // added for non-guest sessions.
 //
-// Kerberos, Fingerprint, and Parental Controls search tags are only shown if
-// they are allowed by policy/flags. Different sets of Sync tags are shown
-// depending on whether the feature is enabed or disabled.
+// Fingerprint and Parental Controls search tags are only shown if they are
+// allowed by policy/flags. Different sets of Sync tags are shown depending on
+// whether the feature is enabed or disabled.
 class PeopleSection : public OsSettingsSection,
                       public account_manager::AccountManagerFacade::Observer,
-                      public syncer::SyncServiceObserver,
-                      public KerberosCredentialsManager::Observer {
+                      public syncer::SyncServiceObserver {
  public:
   PeopleSection(Profile* profile,
                 SearchTagRegistry* search_tag_registry,
                 syncer::SyncService* sync_service,
                 SupervisedUserService* supervised_user_service,
-                KerberosCredentialsManager* kerberos_credentials_manager,
                 signin::IdentityManager* identity_manager,
                 PrefService* pref_service);
   ~PeopleSection() override;
@@ -76,20 +73,16 @@ class PeopleSection : public OsSettingsSection,
   // syncer::SyncServiceObserver:
   void OnStateChanged(syncer::SyncService* sync_service) override;
 
-  // KerberosCredentialsManager::Observer:
-  void OnKerberosEnabledStateChanged() override;
-
   bool AreFingerprintSettingsAllowed();
   void FetchAccounts();
   void UpdateAccountManagerSearchTags(
       const std::vector<::account_manager::Account>& accounts);
   void UpdateRemoveFingerprintSearchTags();
 
-  AccountManager* account_manager_ = nullptr;
+  account_manager::AccountManager* account_manager_ = nullptr;
   account_manager::AccountManagerFacade* account_manager_facade_ = nullptr;
   syncer::SyncService* sync_service_;
   SupervisedUserService* supervised_user_service_;
-  KerberosCredentialsManager* kerberos_credentials_manager_;
   signin::IdentityManager* identity_manager_;
   PrefService* pref_service_;
   PrefChangeRegistrar fingerprint_pref_change_registrar_;

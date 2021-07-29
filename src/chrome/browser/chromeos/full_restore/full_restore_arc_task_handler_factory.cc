@@ -4,11 +4,12 @@
 
 #include "chrome/browser/chromeos/full_restore/full_restore_arc_task_handler_factory.h"
 
-#include "ash/public/cpp/ash_features.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/chromeos/full_restore/full_restore_arc_task_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
+#include "components/full_restore/features.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 namespace chromeos {
@@ -33,11 +34,12 @@ FullRestoreArcTaskHandlerFactory::FullRestoreArcTaskHandlerFactory()
           "FullRestoreArcTaskHandler",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(ArcAppListPrefsFactory::GetInstance());
+  DependsOn(apps::AppServiceProxyFactory::GetInstance());
 }
 
 KeyedService* FullRestoreArcTaskHandlerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  if (!ash::features::IsFullRestoreEnabled())
+  if (!::full_restore::features::IsFullRestoreEnabled())
     return nullptr;
 
   if (!arc::IsArcAllowedForProfile(Profile::FromBrowserContext(context)))

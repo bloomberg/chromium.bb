@@ -32,6 +32,8 @@
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_registry.h"
+#include "storage/browser/file_system/external_mount_points.h"
+#include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/test/fake_blob.h"
 #include "storage/browser/test/fake_progress_client.h"
 #include "storage/browser/test/mock_blob_registry_delegate.h"
@@ -70,15 +72,15 @@ class BlobRegistryImplTest : public testing::Test {
         data_dir_.GetPath(), data_dir_.GetPath(),
         base::ThreadPool::CreateTaskRunner({base::MayBlock()}));
     auto storage_policy = base::MakeRefCounted<MockSpecialStoragePolicy>();
-    file_system_context_ = base::MakeRefCounted<FileSystemContext>(
-        base::ThreadTaskRunnerHandle::Get().get(),
-        base::ThreadTaskRunnerHandle::Get().get(),
-        nullptr /* external_mount_points */, storage_policy.get(),
-        nullptr /* quota_manager_proxy */,
+    file_system_context_ = FileSystemContext::Create(
+        base::ThreadTaskRunnerHandle::Get(),
+        base::ThreadTaskRunnerHandle::Get(),
+        /*external_mount_points=*/nullptr, std::move(storage_policy),
+        /*quota_manager_proxy=*/nullptr,
         std::vector<std::unique_ptr<FileSystemBackend>>(),
         std::vector<URLRequestAutoMountHandler>(), data_dir_.GetPath(),
         FileSystemOptions(FileSystemOptions::PROFILE_MODE_INCOGNITO,
-                          false /* force_in_memory */,
+                          /*force_in_memory=*/false,
                           std::vector<std::string>()));
     registry_impl_ = std::make_unique<BlobRegistryImpl>(
         context_->AsWeakPtr(), url_registry_.AsWeakPtr(), file_system_context_);
@@ -525,6 +527,55 @@ TEST_F(BlobRegistryImplTest, Register_ValidBlobReferences) {
   EXPECT_EQ(0u, BlobsUnderConstruction());
 }
 
+TEST_F(BlobRegistryImplTest, Register_BlobReferencingPendingBlob) {
+  // Create a blob that is pending population of its data.
+  const std::string kId1 = "id1";
+  const std::string kBlob1Data = "foobar";
+  auto builder = std::make_unique<BlobDataBuilder>(kId1);
+  builder->set_content_type("text/plain");
+  BlobDataBuilder::FutureData future_data =
+      builder->AppendFutureData(kBlob1Data.length());
+  std::unique_ptr<BlobDataHandle> handle =
+      context_->BuildBlob(std::move(builder), base::DoNothing());
+
+  mojo::PendingRemote<blink::mojom::Blob> blob1_remote;
+  mojo::MakeSelfOwnedReceiver(std::make_unique<FakeBlob>(kId1),
+                              blob1_remote.InitWithNewPipeAndPassReceiver());
+
+  // Now create a blob referencing the pending blob above.
+  std::vector<blink::mojom::DataElementPtr> elements;
+  elements.push_back(
+      blink::mojom::DataElement::NewBlob(blink::mojom::DataElementBlob::New(
+          std::move(blob1_remote), 0, kBlob1Data.length())));
+
+  mojo::PendingRemote<blink::mojom::Blob> final_blob;
+  const std::string kId2 = "id2";
+  EXPECT_TRUE(registry_->Register(final_blob.InitWithNewPipeAndPassReceiver(),
+                                  kId2, "", "", std::move(elements)));
+
+  // Run the runloop to make sure registration of blob kId2 gets far enough
+  // before blob kId1 is populated.
+  base::RunLoop().RunUntilIdle();
+
+  // Populate the data for the first blob.
+  future_data.Populate(base::as_bytes(base::make_span(kBlob1Data)));
+  context_->NotifyTransportComplete(kId1);
+
+  // Wait for kId2 to also complete.
+  std::unique_ptr<BlobDataHandle> handle2 = context_->GetBlobDataFromUUID(kId2);
+  WaitForBlobCompletion(handle2.get());
+
+  // Make sure blob was constructed correctly.
+  EXPECT_FALSE(handle2->IsBroken());
+  ASSERT_EQ(BlobStatus::DONE, handle2->GetBlobStatus());
+  BlobDataBuilder expected_blob_data(kId2);
+  expected_blob_data.AppendData(kBlob1Data);
+  EXPECT_EQ(expected_blob_data, *handle2->CreateSnapshot());
+
+  // And make sure we're not leaking any under construction blobs.
+  EXPECT_EQ(0u, BlobsUnderConstruction());
+}
+
 TEST_F(BlobRegistryImplTest, Register_UnreadableFile) {
   delegate_ptr_->can_read_file_result = false;
 
@@ -599,7 +650,7 @@ TEST_F(BlobRegistryImplTest, Register_FileSystemFile_InvalidScheme) {
   EXPECT_EQ(0u, BlobsUnderConstruction());
 }
 
-TEST_F(BlobRegistryImplTest, Register_FileSystemFile_UnreadablFile) {
+TEST_F(BlobRegistryImplTest, Register_FileSystemFile_UnreadableFile) {
   delegate_ptr_->can_read_file_system_file_result = false;
 
   const std::string kId = "id";

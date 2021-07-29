@@ -457,7 +457,8 @@ void InProcessUtilityThreadHelper::BrowserChildProcessHostDisconnected(
 }
 
 RenderFrameDeletedObserver::RenderFrameDeletedObserver(RenderFrameHost* rfh)
-    : WebContentsObserver(WebContents::FromRenderFrameHost(rfh)), rfh_(rfh) {
+    : WebContentsObserver(WebContents::FromRenderFrameHost(rfh)),
+      routing_id_(rfh->GetGlobalId()) {
   DCHECK(rfh);
 }
 
@@ -465,8 +466,8 @@ RenderFrameDeletedObserver::~RenderFrameDeletedObserver() = default;
 
 void RenderFrameDeletedObserver::RenderFrameDeleted(
     RenderFrameHost* render_frame_host) {
-  if (render_frame_host == rfh_) {
-    rfh_ = nullptr;
+  if (render_frame_host->GetGlobalId() == routing_id_) {
+    routing_id_ = GlobalRenderFrameHostId();
 
     if (runner_.get())
       runner_->Quit();
@@ -474,7 +475,7 @@ void RenderFrameDeletedObserver::RenderFrameDeleted(
 }
 
 bool RenderFrameDeletedObserver::deleted() const {
-  return !rfh_;
+  return routing_id_ == GlobalRenderFrameHostId();
 }
 
 void RenderFrameDeletedObserver::WaitUntilDeleted() {
@@ -484,6 +485,41 @@ void RenderFrameDeletedObserver::WaitUntilDeleted() {
   runner_ = std::make_unique<base::RunLoop>();
   runner_->Run();
   runner_.reset();
+}
+
+RenderFrameHostWrapper::RenderFrameHostWrapper(RenderFrameHost* rfh)
+    : routing_id_(rfh->GetGlobalId()),
+      deleted_observer_(std::make_unique<RenderFrameDeletedObserver>(rfh)) {}
+
+RenderFrameHostWrapper::RenderFrameHostWrapper(RenderFrameHostWrapper&& rfhft) =
+    default;
+RenderFrameHostWrapper::~RenderFrameHostWrapper() = default;
+
+RenderFrameHost* RenderFrameHostWrapper::get() const {
+  return RenderFrameHost::FromID(routing_id_);
+}
+
+bool RenderFrameHostWrapper::IsDestroyed() const {
+  return get() == nullptr;
+}
+
+// See RenderFrameDeletedObserver for notes on the difference between
+// RenderFrame being deleted and RenderFrameHost being destroyed.
+void RenderFrameHostWrapper::WaitUntilRenderFrameDeleted() {
+  deleted_observer_->WaitUntilDeleted();
+}
+bool RenderFrameHostWrapper::IsRenderFrameDeleted() const {
+  return deleted_observer_->deleted();
+}
+
+RenderFrameHost& RenderFrameHostWrapper::operator*() const {
+  DCHECK(get());
+  return *get();
+}
+
+RenderFrameHost* RenderFrameHostWrapper::operator->() const {
+  DCHECK(get());
+  return get();
 }
 
 WebContentsDestroyedWatcher::WebContentsDestroyedWatcher(

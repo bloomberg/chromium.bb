@@ -599,21 +599,6 @@ TEST(SecurityStateContentUtilsTest, HTTPWarning) {
   EXPECT_EQ(0u, explanations.neutral_explanations.size());
 }
 
-// Tests that a security level of DANGEROUS on an HTTP page with insecure form
-// edits produces blink::SecurityStyleInsecure and an explanation.
-TEST(SecurityStateContentUtilsTest, HTTPDangerous) {
-  security_state::VisibleSecurityState visible_security_state;
-  visible_security_state.url = GURL("http://scheme-is-not-cryptographic.test");
-  content::SecurityStyleExplanations explanations;
-  visible_security_state.insecure_input_events.insecure_field_edited = true;
-  blink::SecurityStyle security_style = GetSecurityStyle(
-      security_state::DANGEROUS, visible_security_state, &explanations);
-  // Verify that the security style was downgraded and an explanation shown
-  // because a form was edited.
-  EXPECT_EQ(blink::SecurityStyle::kInsecureBroken, security_style);
-  EXPECT_EQ(1u, explanations.insecure_explanations.size());
-}
-
 // Tests that an explanation is provided if a certificate is missing a
 // subjectAltName extension containing a domain name or IP address.
 TEST(SecurityStateContentUtilsTest, SubjectAltNameWarning) {
@@ -783,8 +768,8 @@ scoped_refptr<net::X509Certificate> CreateFakeCert(
           base::Time::Now() + time_until_expiration, &unused_key, &cert_der)) {
     return nullptr;
   }
-  return net::X509Certificate::CreateFromBytes(cert_der.data(),
-                                               cert_der.size());
+  return net::X509Certificate::CreateFromBytes(
+      base::as_bytes(base::make_span(cert_der)));
 }
 
 // Tests that an info explanation is provided only if the certificate is

@@ -13,6 +13,7 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/geo/state_names.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill_assistant/browser/generic_ui.pb.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "third_party/re2/src/re2/stringpiece.h"
@@ -45,6 +46,39 @@ std::map<std::string, std::string> CreateFormGroupMappings(
                          autofill::AutofillType(field), locale)));
   }
   return mappings;
+}
+
+void GetNameAndAbbreviationViaAlternativeStateNameMap(
+    const std::string& country_code,
+    const std::u16string& state_from_profile,
+    std::u16string* name,
+    std::u16string* abbreviation) {
+  absl::optional<autofill::StateEntry> state_entry =
+      autofill::AlternativeStateNameMap::GetInstance()->GetEntry(
+          autofill::AlternativeStateNameMap::CountryCode(country_code),
+          autofill::AlternativeStateNameMap::StateName(state_from_profile));
+  if (!state_entry) {
+    // Name and abbreviation are already prefilled.
+    return;
+  }
+  if (state_entry->has_canonical_name() &&
+      !state_entry->canonical_name().empty()) {
+    std::u16string full = base::ASCIIToUTF16(state_entry->canonical_name());
+    std::u16string abbr;
+    size_t curr_min_abbr_size = INT_MAX;
+    for (const auto& it_abbr : state_entry->abbreviations()) {
+      if (!it_abbr.empty() && it_abbr.size() < curr_min_abbr_size) {
+        abbr = base::ASCIIToUTF16(it_abbr);
+        curr_min_abbr_size = it_abbr.size();
+      }
+    }
+    if (name) {
+      name->swap(full);
+    }
+    if (abbreviation) {
+      abbreviation->swap(abbr);
+    }
+  }
 }
 
 }  // namespace
@@ -142,6 +176,12 @@ CreateAutofillMappings<autofill::AutofillProfile>(
     const std::string& locale) {
   auto mappings = CreateFormGroupMappings(profile, locale);
 
+  std::string country_code =
+      base::UTF16ToUTF8(profile.GetRawInfo(autofill::ADDRESS_HOME_COUNTRY));
+  if (!country_code.empty()) {
+    mappings[base::NumberToString(static_cast<int>(
+        AutofillFormatProto::ADDRESS_HOME_COUNTRY_CODE))] = country_code;
+  }
   auto state = profile.GetInfo(
       autofill::AutofillType(autofill::ADDRESS_HOME_STATE), locale);
   if (!state.empty()) {
@@ -149,13 +189,20 @@ CreateAutofillMappings<autofill::AutofillProfile>(
     std::u16string abbreviation;
     autofill::state_names::GetNameAndAbbreviation(state, &full_name,
                                                   &abbreviation);
+    DCHECK(!full_name.empty());
+    full_name = full_name.length() > 1
+                    ? base::StrCat({base::i18n::ToUpper(full_name.substr(0, 1)),
+                                    full_name.substr(1)})
+                    : base::i18n::ToUpper(full_name);
+    if (abbreviation.empty() && !country_code.empty() &&
+        base::FeatureList::IsEnabled(
+            autofill::features::kAutofillUseAlternativeStateNameMap)) {
+      GetNameAndAbbreviationViaAlternativeStateNameMap(
+          country_code, state, &full_name, &abbreviation);
+    }
     mappings[base::NumberToString(
         static_cast<int>(AutofillFormatProto::ADDRESS_HOME_STATE_NAME))] =
-        base::UTF16ToUTF8(
-            full_name.length() > 1
-                ? base::StrCat({base::i18n::ToUpper(full_name.substr(0, 1)),
-                                full_name.substr(1)})
-                : base::i18n::ToUpper(full_name));
+        base::UTF16ToUTF8(full_name);
     if (abbreviation.empty()) {
       mappings.erase(
           base::NumberToString(static_cast<int>(autofill::ADDRESS_HOME_STATE)));
@@ -165,7 +212,6 @@ CreateAutofillMappings<autofill::AutofillProfile>(
           base::UTF16ToUTF8(base::i18n::ToUpper(abbreviation));
     }
   }
-
   return mappings;
 }
 

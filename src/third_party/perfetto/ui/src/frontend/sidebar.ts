@@ -18,12 +18,11 @@ import {assertExists, assertTrue} from '../base/logging';
 import {Actions} from '../common/actions';
 import {TRACE_SUFFIX} from '../common/constants';
 import {ConversionJobStatus} from '../common/conversion_jobs';
-import {QueryResponse} from '../common/queries';
 import {EngineMode, TraceArrayBufferSource} from '../common/state';
 import * as version from '../gen/perfetto_version';
 
 import {Animation} from './animation';
-import {copyToClipboard} from './clipboard';
+import {onClickCopy} from './clipboard';
 import {globals} from './globals';
 import {toggleHelp} from './help_modal';
 import {
@@ -32,6 +31,11 @@ import {
 } from './legacy_trace_viewer';
 import {showModal} from './modal';
 import {isDownloadable, isShareable} from './trace_attrs';
+import {
+  convertToJson,
+  convertTraceToJsonAndDownload,
+  convertTraceToSystraceAndDownload
+} from './trace_converter';
 
 const ALL_PROCESSES_QUERY = 'select name, pid from process order by name;';
 
@@ -311,34 +315,24 @@ const SECTIONS: Section[] = [
 
 ];
 
-const vidSection = {
-  title: 'Video',
-  summary: 'Open a screen recording',
-  expanded: true,
-  items: [
-    {t: 'Open video file', a: popupVideoSelectionDialog, i: 'folder_open'},
-  ],
-};
-
 function openHelp(e: Event) {
   e.preventDefault();
   toggleHelp();
 }
 
 function getFileElement(): HTMLInputElement {
-  return document.querySelector('input[type=file]')! as HTMLInputElement;
+  return assertExists(
+      document.querySelector<HTMLInputElement>('input[type=file]'));
 }
 
 function popupFileSelectionDialog(e: Event) {
   e.preventDefault();
   delete getFileElement().dataset['useCatapultLegacyUi'];
-  delete getFileElement().dataset['video'];
   getFileElement().click();
 }
 
 function popupFileSelectionDialogOldUI(e: Event) {
   e.preventDefault();
-  delete getFileElement().dataset['video'];
   getFileElement().dataset['useCatapultLegacyUi'] = '1';
   getFileElement().click();
 }
@@ -365,7 +359,7 @@ function downloadTraceFromUrl(url: string): Promise<File> {
   });
 }
 
-async function getCurrentTrace(): Promise<Blob> {
+export async function getCurrentTrace(): Promise<Blob> {
   // Caller must check engine exists.
   const engine = assertExists(Object.values(globals.state.engines)[0]);
   const src = engine.source;
@@ -401,7 +395,7 @@ function convertTraceToSystrace(e: Event) {
   if (!isTraceLoaded) return;
   getCurrentTrace()
       .then(file => {
-        globals.dispatch(Actions.convertTraceToSystraceAndDownload({file}));
+        convertTraceToSystraceAndDownload(file);
       })
       .catch(error => {
         throw new Error(`Failed to get current trace ${error}`);
@@ -415,7 +409,7 @@ function convertTraceToJson(e: Event) {
   if (!isTraceLoaded) return;
   getCurrentTrace()
       .then(file => {
-        globals.dispatch(Actions.convertTraceToJsonAndDownload({file}));
+        convertTraceToJsonAndDownload(file);
       })
       .catch(error => {
         throw new Error(`Failed to get current trace ${error}`);
@@ -425,13 +419,6 @@ function convertTraceToJson(e: Event) {
 function isTraceLoaded(): boolean {
   const engine = Object.values(globals.state.engines)[0];
   return engine !== undefined;
-}
-
-function popupVideoSelectionDialog(e: Event) {
-  e.preventDefault();
-  delete getFileElement().dataset['useCatapultLegacyUi'];
-  getFileElement().dataset['video'] = '1';
-  getFileElement().click();
 }
 
 function openTraceUrl(url: string): (e: Event) => void {
@@ -459,27 +446,6 @@ function onInputElementFileSelectionChanged(e: Event) {
     return;
   }
 
-  if (e.target.dataset['video'] === '1') {
-    // TODO(hjd): Update this to use a controller and publish.
-    globals.dispatch(Actions.executeQuery({
-      engineId: '0', queryId: 'command',
-      query: `select ts from slices where name = 'first_frame' union ` +
-             `select start_ts from trace_bounds`}));
-    setTimeout(() => {
-      const resp = globals.queryResults.get('command') as QueryResponse;
-      // First value is screenrecord trace event timestamp
-      // and second value is trace boundary's start timestamp
-      const offset = (Number(resp.rows[1]['ts'].toString()) -
-                      Number(resp.rows[0]['ts'].toString())) /
-          1e9;
-      globals.queryResults.delete('command');
-      globals.rafScheduler.scheduleFullRedraw();
-      globals.dispatch(Actions.deleteQuery({queryId: 'command'}));
-      globals.dispatch(Actions.setVideoOffset({offset}));
-    }, 1000);
-    globals.dispatch(Actions.openVideoFromFile({file}));
-    return;
-  }
   globals.logging.logEvent('Trace Actions', 'Open trace from file');
   globals.dispatch(Actions.openTraceFromFile({file}));
 }
@@ -497,7 +463,7 @@ async function openWithLegacyUi(file: File) {
 function openInOldUIWithSizeCheck(trace: Blob) {
   // Perfetto traces smaller than 50mb can be safely opened in the legacy UI.
   if (trace.size < 1024 * 1024 * 50) {
-    globals.dispatch(Actions.convertTraceToJson({file: trace}));
+    convertToJson(trace);
     return;
   }
 
@@ -525,7 +491,7 @@ function openInOldUIWithSizeCheck(trace: Blob) {
         primary: false,
         id: 'open',
         action: () => {
-          globals.dispatch(Actions.convertTraceToJson({file: trace}));
+          convertToJson(trace);
         }
       },
       {
@@ -533,8 +499,7 @@ function openInOldUIWithSizeCheck(trace: Blob) {
         primary: true,
         id: 'truncate-start',
         action: () => {
-          globals.dispatch(
-              Actions.convertTraceToJson({file: trace, truncate: 'start'}));
+          convertToJson(trace, /*truncate*/ 'start');
         }
       },
       {
@@ -542,8 +507,7 @@ function openInOldUIWithSizeCheck(trace: Blob) {
         primary: true,
         id: 'truncate-end',
         action: () => {
-          globals.dispatch(
-              Actions.convertTraceToJson({file: trace, truncate: 'end'}));
+          convertToJson(trace, /*truncate*/ 'end');
         }
       }
 
@@ -892,32 +856,6 @@ export class Sidebar implements m.ClassComponent {
               m('h2', section.summary)),
             m('.section-content', m('ul', vdomItems))));
     }
-    if (globals.state.videoEnabled) {
-      const videoVdomItems = [];
-      for (const item of vidSection.items) {
-        videoVdomItems.push(
-          m('li',
-            m(`a`,
-              {
-                onclick: typeof item.a === 'function' ? item.a : null,
-                href: typeof item.a === 'string' ? item.a : '#',
-              },
-              m('i.material-icons', item.i),
-              item.t)));
-      }
-      vdomSections.push(
-        m(`section${vidSection.expanded ? '.expanded' : ''}`,
-          m('.section-header',
-            {
-              onclick: () => {
-                vidSection.expanded = !vidSection.expanded;
-                globals.rafScheduler.scheduleFullRedraw();
-              }
-            },
-            m('h1', vidSection.title),
-            m('h2', vidSection.summary), ),
-          m('.section-content', m('ul', videoVdomItems))));
-    }
     return m(
         'nav.sidebar',
         {
@@ -944,7 +882,8 @@ export class Sidebar implements m.ClassComponent {
                 },
                 'menu')),
             ),
-        m('input[type=file]', {onchange: onInputElementFileSelectionChanged}),
+        m('input.trace_file[type=file]',
+          {onchange: onInputElementFileSelectionChanged}),
         m('.sidebar-scroll',
           m(
               '.sidebar-scroll-container',
@@ -963,14 +902,7 @@ function createTraceLink(title: string, url: string) {
     href: url,
     title: 'Click to copy the URL',
     target: '_blank',
-    onclick: (e: Event) => {
-      e.preventDefault();
-      copyToClipboard(url);
-      globals.dispatch(Actions.updateStatus({
-        msg: 'Link copied into the clipboard',
-        timestamp: Date.now() / 1000,
-      }));
-    },
+    onclick: onClickCopy(url)
   };
   return m('a.trace-file-name', linkProps, title);
 }

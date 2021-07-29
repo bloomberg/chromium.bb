@@ -16,7 +16,6 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -346,11 +345,11 @@ bool ZeroSuggestProvider::UpdateResults(const std::string& json_data) {
 
     // If we received an empty result list, we should update the display, as it
     // may be showing cached results that should not be shown.
-    const base::ListValue* root_list = nullptr;
-    const base::ListValue* results_list = nullptr;
-    const bool non_empty_parsed_list = data->GetAsList(&root_list) &&
-                                       root_list->GetList(1, &results_list) &&
-                                       !results_list->empty();
+    //
+    // `data->GetList()[1]` is the results list.
+    const bool non_empty_parsed_list =
+        data->is_list() && data->GetList().size() >= 2u &&
+        data->GetList()[1].is_list() && !data->GetList()[1].GetList().empty();
     const bool non_empty_cache = !results_.suggest_results.empty() ||
                                  !results_.navigation_results.empty();
     if (non_empty_parsed_list && non_empty_cache)
@@ -573,9 +572,15 @@ ZeroSuggestProvider::ResultType ZeroSuggestProvider::TypeOfResultToRun(
   if (current_page_classification == OmniboxEventProto::CHROMEOS_APP_LIST)
     return REMOTE_NO_URL;
 
+  const bool context_eligible_for_web_contextual_suggestions =
+      (current_page_classification == OmniboxEventProto::OTHER) ||
+      (current_page_classification ==
+           OmniboxEventProto::SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT &&
+       base::FeatureList::IsEnabled(
+           omnibox::kOnFocusSuggestionsContextualWebAllowSRP));
+
   // Contextual Open Web - (same client side behavior for multiple variants).
-  if (current_page_classification == OmniboxEventProto::OTHER &&
-      can_send_current_url) {
+  if (context_eligible_for_web_contextual_suggestions && can_send_current_url) {
     if (input.focus_type() == OmniboxFocusType::ON_FOCUS &&
         (base::FeatureList::IsEnabled(
              omnibox::kOnFocusSuggestionsContextualWeb) ||

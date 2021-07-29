@@ -7,8 +7,6 @@ import("//build/config/android/rules.gni")
 
 source_set("gfx") {
   sources = [
-    "aw_attaching_to_window_recorder.cc",
-    "aw_attaching_to_window_recorder.h",
     "aw_draw_fn_impl.cc",
     "aw_draw_fn_impl.h",
     "aw_gl_functor.cc",
@@ -36,6 +34,8 @@ source_set("gfx") {
     "deferred_gpu_command_service.h",
     "display_scheduler_webview.cc",
     "display_scheduler_webview.h",
+    "display_webview.cc",
+    "display_webview.h",
     "gpu_service_webview.cc",
     "gpu_service_webview.h",
     "hardware_renderer.cc",

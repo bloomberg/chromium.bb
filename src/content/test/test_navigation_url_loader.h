@@ -10,7 +10,6 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/loader/navigation_url_loader.h"
 #include "content/browser/renderer_host/navigation_request_info.h"
-#include "content/common/navigation_params.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
 
 namespace net {
@@ -32,6 +31,7 @@ class TestNavigationURLLoader
                           NavigationURLLoader::LoaderType loader_type);
 
   // NavigationURLLoader implementation.
+  void Start() override;
   void FollowRedirect(
       const std::vector<std::string>& removed_headers,
       const net::HttpRequestHeaders& modified_headers,

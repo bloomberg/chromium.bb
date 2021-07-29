@@ -18,6 +18,7 @@
 #include <utility>
 
 #include "src/ast/call_statement.h"
+#include "src/ast/disable_validation_decoration.h"
 #include "src/program_builder.h"
 #include "src/sem/block_statement.h"
 #include "src/sem/call.h"
@@ -27,6 +28,7 @@
 #include "src/utils/get_or_create.h"
 #include "src/utils/hash.h"
 
+TINT_INSTANTIATE_TYPEINFO(tint::transform::CalculateArrayLength);
 TINT_INSTANTIATE_TYPEINFO(
     tint::transform::CalculateArrayLength::BufferSizeIntrinsic);
 
@@ -56,7 +58,7 @@ CalculateArrayLength::BufferSizeIntrinsic::BufferSizeIntrinsic(
     ProgramID program_id)
     : Base(program_id) {}
 CalculateArrayLength::BufferSizeIntrinsic::~BufferSizeIntrinsic() = default;
-std::string CalculateArrayLength::BufferSizeIntrinsic::Name() const {
+std::string CalculateArrayLength::BufferSizeIntrinsic::InternalName() const {
   return "intrinsic_buffer_size";
 }
 
@@ -69,10 +71,7 @@ CalculateArrayLength::BufferSizeIntrinsic::Clone(CloneContext* ctx) const {
 CalculateArrayLength::CalculateArrayLength() = default;
 CalculateArrayLength::~CalculateArrayLength() = default;
 
-Output CalculateArrayLength::Run(const Program* in, const DataMap&) {
-  ProgramBuilder out;
-  CloneContext ctx(&out, in);
-
+void CalculateArrayLength::Run(CloneContext& ctx, const DataMap&, DataMap&) {
   auto& sem = ctx.src->Sem();
 
   // get_buffer_size_intrinsic() emits the function decorated with
@@ -84,6 +83,10 @@ Output CalculateArrayLength::Run(const Program* in, const DataMap&) {
       auto name = ctx.dst->Sym();
       auto* buffer_typename =
           ctx.dst->ty.type_name(ctx.Clone(buffer_type->Declaration()->name()));
+      auto* disable_validation =
+          ctx.dst->ASTNodes().Create<ast::DisableValidationDecoration>(
+              ctx.dst->ID(),
+              ast::DisabledValidation::kIgnoreConstructibleFunctionParameter);
       auto* func = ctx.dst->create<ast::Function>(
           name,
           ast::VariableList{
@@ -91,7 +94,8 @@ Output CalculateArrayLength::Run(const Program* in, const DataMap&) {
               // in order for HLSL to emit this as a ByteAddressBuffer.
               ctx.dst->create<ast::Variable>(
                   ctx.dst->Sym("buffer"), ast::StorageClass::kStorage,
-                  buffer_typename, true, nullptr, ast::DecorationList{}),
+                  ast::Access::kUndefined, buffer_typename, true, nullptr,
+                  ast::DecorationList{disable_validation}),
               ctx.dst->Param("result",
                              ctx.dst->ty.pointer(ctx.dst->ty.u32(),
                                                  ast::StorageClass::kFunction)),
@@ -118,24 +122,32 @@ Output CalculateArrayLength::Run(const Program* in, const DataMap&) {
         if (intrinsic->Type() == sem::IntrinsicType::kArrayLength) {
           // We're dealing with an arrayLength() call
 
-          // https://gpuweb.github.io/gpuweb/wgsl.html#array-types states:
+          // https://gpuweb.github.io/gpuweb/wgsl/#array-types states:
           //
           // * The last member of the structure type defining the store type for
           //   a variable in the storage storage class may be a runtime-sized
           //   array.
           // * A runtime-sized array must not be used as the store type or
           //   contained within a store type in any other cases.
-          // * The type of an expression must not be a runtime-sized array type.
-          //   arrayLength()
+          // * An expression must not evaluate to a runtime-sized array type.
           //
           // We can assume that the arrayLength() call has a single argument of
-          // the form: arrayLength(X.Y) where X is an expression that resolves
+          // the form: arrayLength(&X.Y) where X is an expression that resolves
           // to the storage buffer structure, and Y is the runtime sized array.
-          auto* array_expr = call_expr->params()[0];
+          auto* arg = call_expr->params()[0];
+          auto* address_of = arg->As<ast::UnaryOpExpression>();
+          if (!address_of || address_of->op() != ast::UnaryOp::kAddressOf) {
+            TINT_ICE(Transform, ctx.dst->Diagnostics())
+                << "arrayLength() expected pointer to member access, got "
+                << address_of->TypeInfo().name;
+          }
+          auto* array_expr = address_of->expr();
+
           auto* accessor = array_expr->As<ast::MemberAccessorExpression>();
           if (!accessor) {
-            TINT_ICE(ctx.dst->Diagnostics())
-                << "arrayLength() expected ast::MemberAccessorExpression, got "
+            TINT_ICE(Transform, ctx.dst->Diagnostics())
+                << "arrayLength() expected pointer to member access, got "
+                   "pointer to "
                 << array_expr->TypeInfo().name;
             break;
           }
@@ -149,7 +161,7 @@ Output CalculateArrayLength::Run(const Program* in, const DataMap&) {
           auto buffer_size = get_buffer_size_intrinsic(storage_buffer_type);
 
           if (!storage_buffer_type) {
-            TINT_ICE(ctx.dst->Diagnostics())
+            TINT_ICE(Transform, ctx.dst->Diagnostics())
                 << "arrayLength(X.Y) expected X to be sem::Struct, got "
                 << storage_buffer_type->FriendlyName(ctx.src->Symbols());
             break;
@@ -181,14 +193,15 @@ Output CalculateArrayLength::Run(const Program* in, const DataMap&) {
                     ctx.dst->Var(ctx.dst->Sym(), ctx.dst->ty.u32(),
                                  ast::StorageClass::kNone, ctx.dst->Expr(0u)));
 
-                // Call storage_buffer.GetDimensions(buffer_size_result)
+                // Call storage_buffer.GetDimensions(&buffer_size_result)
                 auto* call_get_dims =
                     ctx.dst->create<ast::CallStatement>(ctx.dst->Call(
                         // BufferSizeIntrinsic(X, ARGS...) is
                         // translated to:
                         //  X.GetDimensions(ARGS..) by the writer
                         buffer_size, ctx.Clone(storage_buffer_expr),
-                        buffer_size_result->variable()->symbol()));
+                        ctx.dst->AddressOf(ctx.dst->Expr(
+                            buffer_size_result->variable()->symbol()))));
 
                 // Calculate actual array length
                 //                total_storage_buffer_size - array_offset
@@ -222,8 +235,6 @@ Output CalculateArrayLength::Run(const Program* in, const DataMap&) {
   }
 
   ctx.Clone();
-
-  return Output{Program(std::move(out))};
 }
 
 }  // namespace transform

@@ -39,7 +39,8 @@
 #include "core/fxge/cfx_unicodeencoding.h"
 #include "core/fxge/fx_font.h"
 #include "third_party/base/check.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/containers/contains.h"
+#include "third_party/base/cxx17_backports.h"
 
 namespace {
 
@@ -326,7 +327,6 @@ RetainPtr<CPDF_ColorSpace> CPDF_DocPageData::GetColorSpaceInternal(
 }
 
 RetainPtr<CPDF_Pattern> CPDF_DocPageData::GetPattern(CPDF_Object* pPatternObj,
-                                                     bool bShading,
                                                      const CFX_Matrix& matrix) {
   if (!pPatternObj)
     return nullptr;
@@ -335,27 +335,37 @@ RetainPtr<CPDF_Pattern> CPDF_DocPageData::GetPattern(CPDF_Object* pPatternObj,
   if (it != m_PatternMap.end() && it->second)
     return pdfium::WrapRetain(it->second.Get());
 
+  CPDF_Dictionary* pDict = pPatternObj->GetDict();
+  if (!pDict)
+    return nullptr;
+
   RetainPtr<CPDF_Pattern> pPattern;
-  if (bShading) {
+  int type = pDict->GetIntegerFor("PatternType");
+  if (type == CPDF_Pattern::kTiling) {
+    pPattern = pdfium::MakeRetain<CPDF_TilingPattern>(GetDocument(),
+                                                      pPatternObj, matrix);
+  } else if (type == CPDF_Pattern::kShading) {
     pPattern = pdfium::MakeRetain<CPDF_ShadingPattern>(
-        GetDocument(), pPatternObj, true, matrix);
+        GetDocument(), pPatternObj, false, matrix);
   } else {
-    CPDF_Dictionary* pDict = pPatternObj->GetDict();
-    if (!pDict)
-      return nullptr;
-
-    int type = pDict->GetIntegerFor("PatternType");
-    if (type == CPDF_Pattern::kTiling) {
-      pPattern = pdfium::MakeRetain<CPDF_TilingPattern>(GetDocument(),
-                                                        pPatternObj, matrix);
-    } else if (type == CPDF_Pattern::kShading) {
-      pPattern = pdfium::MakeRetain<CPDF_ShadingPattern>(
-          GetDocument(), pPatternObj, false, matrix);
-    } else {
-      return nullptr;
-    }
+    return nullptr;
   }
+  m_PatternMap[pPatternObj].Reset(pPattern.Get());
+  return pPattern;
+}
 
+RetainPtr<CPDF_ShadingPattern> CPDF_DocPageData::GetShading(
+    CPDF_Object* pPatternObj,
+    const CFX_Matrix& matrix) {
+  if (!pPatternObj)
+    return nullptr;
+
+  auto it = m_PatternMap.find(pPatternObj);
+  if (it != m_PatternMap.end() && it->second)
+    return pdfium::WrapRetain(it->second->AsShadingPattern());
+
+  auto pPattern = pdfium::MakeRetain<CPDF_ShadingPattern>(
+      GetDocument(), pPatternObj, true, matrix);
   m_PatternMap[pPatternObj].Reset(pPattern.Get());
   return pPattern;
 }
@@ -450,7 +460,9 @@ RetainPtr<CPDF_Font> CPDF_DocPageData::AddStandardFont(
     const ByteString& fontName,
     const CPDF_FontEncoding* pEncoding) {
   ByteString mutable_name(fontName);
-  if (!CFX_FontMapper::GetStandardFontName(&mutable_name))
+  Optional<CFX_FontMapper::StandardFont> font_id =
+      CFX_FontMapper::GetStandardFontName(&mutable_name);
+  if (!font_id.has_value())
     return nullptr;
   return GetStandardFont(mutable_name, pEncoding);
 }
@@ -507,8 +519,7 @@ RetainPtr<CPDF_Font> CPDF_DocPageData::AddFont(std::unique_ptr<CFX_Font> pFont,
         });
   }
   int italicangle = pFont->GetSubstFontItalicAngle();
-  FX_RECT bbox;
-  pFont->GetBBox(&bbox);
+  FX_RECT bbox = pFont->GetBBox().value_or(FX_RECT());
   auto pBBox = pdfium::MakeRetain<CPDF_Array>();
   pBBox->AppendNew<CPDF_Number>(bbox.left);
   pBBox->AppendNew<CPDF_Number>(bbox.bottom);

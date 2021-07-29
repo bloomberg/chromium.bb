@@ -9,15 +9,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <memory>
 #include <set>
 #include <utility>
-#include <vector>
 
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/build_time.h"
 #include "base/command_line.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/pattern.h"
@@ -25,7 +24,6 @@
 #include "base/system/sys_info.h"
 #include "base/trace_event/trace_event.h"
 #include "base/version.h"
-#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/language/core/browser/locale_util.h"
 #include "components/metrics/metrics_state_manager.h"
@@ -149,7 +147,6 @@ Study::CpuArchitecture GetCurrentCpuArchitecture() {
 }  // namespace
 
 VariationsFieldTrialCreator::VariationsFieldTrialCreator(
-    PrefService* local_state,
     VariationsServiceClient* client,
     std::unique_ptr<VariationsSeedStore> seed_store,
     const UIStringOverrider& ui_string_overrider)
@@ -186,6 +183,10 @@ bool VariationsFieldTrialCreator::SetupFieldTrials(
     PlatformFieldTrials* platform_field_trials,
     SafeSeedManager* safe_seed_manager,
     absl::optional<int> low_entropy_source_value) {
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  MaybeExtendVariationsSafeMode(metrics_state_manager);
+#endif
+
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kEnableBenchmarking) ||
@@ -355,7 +356,7 @@ std::string VariationsFieldTrialCreator::LoadPermanentConsistencyCountry(
   std::string stored_country;
 
   // Determine if the saved pref value is present and valid.
-  const bool is_pref_empty = list_value->empty();
+  const bool is_pref_empty = list_value->GetList().empty();
   const bool is_pref_valid = list_value->GetSize() == 2 &&
                              list_value->GetString(0, &stored_version_string) &&
                              list_value->GetString(1, &stored_country) &&
@@ -478,21 +479,21 @@ bool VariationsFieldTrialCreator::LoadSeed(VariationsSeed* seed,
   return true;
 }
 
-bool VariationsFieldTrialCreator::LoadSafeSeed(
+LoadSeedResult VariationsFieldTrialCreator::LoadSafeSeed(
     VariationsSeed* seed,
     ClientFilterableState* client_state) {
   base::Time safe_seed_fetch_time;
-  if (!GetSeedStore()->LoadSafeSeed(seed, client_state, &safe_seed_fetch_time))
-    return false;
+  LoadSeedResult result =
+      GetSeedStore()->LoadSafeSeed(seed, client_state, &safe_seed_fetch_time);
 
-  // Record the safe seed's age. Note, however, that the safe seed fetch time
-  // pref was added about a milestone later than most of the other safe seed
-  // prefs, so it might be absent. If it's absent, don't attempt to guess what
-  // value to record; just skip recording the metric.
+  // Record the safe seed's age unless it's null. The safe seed fetch time may
+  // be null because the pref was added about a milestone later than most of the
+  // other safe seed prefs. Alternatively, the fetch time may be null because
+  // loading the safe seed failed.
   if (!safe_seed_fetch_time.is_null())
     RecordSeedFreshness(base::Time::Now() - safe_seed_fetch_time);
 
-  return true;
+  return result;
 }
 
 bool VariationsFieldTrialCreator::CreateTrialsFromSeed(
@@ -518,8 +519,21 @@ bool VariationsFieldTrialCreator::CreateTrialsFromSeed(
                                 client_filterable_state->policy_restriction);
 
   VariationsSeed seed;
-  bool run_in_safe_mode = safe_seed_manager->ShouldRunInSafeMode() &&
-                          LoadSafeSeed(&seed, client_filterable_state.get());
+  bool run_in_safe_mode = safe_seed_manager->ShouldRunInSafeMode();
+  if (run_in_safe_mode) {
+    LoadSeedResult result = LoadSafeSeed(&seed, client_filterable_state.get());
+    if (result != LoadSeedResult::kSuccess &&
+        result != LoadSeedResult::kEmpty) {
+      // If Chrome should run in safe mode, but the safe seed is corrupted or
+      // has an invalid signature, fall back to the client-side defaults.
+      return false;
+    }
+    if (result == LoadSeedResult::kEmpty) {
+      // If the safe seed is empty, attempt to run with the most recent seed
+      // instead of falling back to client-side defaults.
+      run_in_safe_mode = false;
+    }
+  }
 
   std::string seed_data;
   std::string base64_seed_signature;
@@ -581,5 +595,41 @@ Study::Platform VariationsFieldTrialCreator::GetPlatform() {
     return platform_override_;
   return ClientFilterableState::GetCurrentPlatform();
 }
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+void VariationsFieldTrialCreator::MaybeExtendVariationsSafeMode(
+    metrics::MetricsStateManager* metrics_state_manager) const {
+  version_info::Channel channel = client_->GetChannelForVariations();
+  if (channel != version_info::Channel::CANARY &&
+      channel != version_info::Channel::DEV &&
+      channel != version_info::Channel::BETA) {
+    return;
+  }
+
+  int default_group;
+  scoped_refptr<base::FieldTrial> trial(
+      base::FieldTrialList::FactoryGetFieldTrial(
+          "ExtendedVariationsSafeMode", 100, "Default",
+          base::FieldTrial::ONE_TIME_RANDOMIZED, &default_group));
+
+  const int control_group = trial->AppendGroup("Control", 33);
+  trial->AppendGroup("WritePrefs", 33);
+  const int signal_early_and_write_prefs_group =
+      trial->AppendGroup("SignalEarlyAndWritePrefs", 33);
+  const int assigned_group = trial->group();
+
+  if (assigned_group == default_group || assigned_group == control_group)
+    return;
+
+  if (assigned_group == signal_early_and_write_prefs_group)
+    metrics_state_manager->LogHasSessionShutdownCleanly(false);
+
+  // Time the write for two experiment groups: the group which only writes prefs
+  // and the group which updates and writes prefs.
+  SCOPED_UMA_HISTOGRAM_TIMER_MICROS(
+      "Variations.ExtendedSafeMode.WritePrefsTime");
+  seed_store_->local_state()->CommitPendingWriteSynchronously();
+}
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
 }  // namespace variations

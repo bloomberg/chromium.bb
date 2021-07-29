@@ -13,7 +13,7 @@
 #include "base/callback_forward.h"
 #include "base/component_export.h"
 #include "base/observer_list_types.h"
-#include "chromeos/dbus/cros_disks_client.h"
+#include "chromeos/dbus/cros_disks/cros_disks_client.h"
 
 namespace chromeos {
 namespace disks {
@@ -258,5 +258,12 @@ class COMPONENT_EXPORT(CHROMEOS_DISKS) DiskMountManager {
 
 }  // namespace disks
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove when chromeos/disks is moved to ash.
+namespace ash {
+namespace disks {
+using ::chromeos::disks::DiskMountManager;
+}  // namespace disks
+}  // namespace ash
 
 #endif  // CHROMEOS_DISKS_DISK_MOUNT_MANAGER_H_

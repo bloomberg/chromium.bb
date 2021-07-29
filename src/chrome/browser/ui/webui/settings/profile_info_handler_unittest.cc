@@ -114,18 +114,17 @@ class ProfileInfoHandlerTest : public testing::Test {
 };
 
 TEST_F(ProfileInfoHandlerTest, GetProfileInfo) {
-  base::ListValue list_args;
-  list_args.AppendString("get-profile-info-callback-id");
-  handler()->HandleGetProfileInfo(&list_args);
+  base::Value list_args(base::Value::Type::LIST);
+  list_args.Append("get-profile-info-callback-id");
+  handler()->HandleGetProfileInfo(&base::Value::AsListValue(list_args));
 
   EXPECT_EQ(1U, web_ui()->call_data().size());
 
   const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
   EXPECT_EQ("cr.webUIResponse", data.function_name());
 
-  std::string callback_id;
-  ASSERT_TRUE(data.arg1()->GetAsString(&callback_id));
-  EXPECT_EQ("get-profile-info-callback-id", callback_id);
+  ASSERT_TRUE(data.arg1()->is_string());
+  EXPECT_EQ("get-profile-info-callback-id", data.arg1()->GetString());
 
   ASSERT_TRUE(data.arg2()->is_bool());
   EXPECT_TRUE(data.arg2()->GetBool());
@@ -143,9 +142,9 @@ TEST_F(ProfileInfoHandlerTest, PushProfileInfo) {
   const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
   EXPECT_EQ("cr.webUIListenerCallback", data.function_name());
 
-  std::string event_id;
-  ASSERT_TRUE(data.arg1()->GetAsString(&event_id));
-  EXPECT_EQ(ProfileInfoHandler::kProfileInfoChangedEventName, event_id);
+  ASSERT_TRUE(data.arg1()->is_string());
+  EXPECT_EQ(ProfileInfoHandler::kProfileInfoChangedEventName,
+            data.arg1()->GetString());
 
   VerifyProfileInfo(data.arg2());
 }

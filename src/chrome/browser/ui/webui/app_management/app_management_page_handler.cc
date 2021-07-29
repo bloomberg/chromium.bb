@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/app_management/app_management.mojom.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
+#include "components/services/app_service/public/cpp/intent_filter_util.h"
 #include "components/services/app_service/public/cpp/preferred_apps_list.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
@@ -32,6 +33,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "components/arc/session/connection_holder.h"
 #endif
 
 using apps::mojom::OptionalBool;
@@ -175,6 +177,16 @@ void AppManagementPageHandler::SetPermission(
       app_id, std::move(permission));
 }
 
+void AppManagementPageHandler::SetResizeLocked(const std::string& app_id,
+                                               bool locked) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  apps::AppServiceProxyFactory::GetForProfile(profile_)->SetResizeLocked(
+      app_id, locked ? OptionalBool::kTrue : OptionalBool::kFalse);
+#else
+  NOTREACHED();
+#endif
+}
+
 void AppManagementPageHandler::Uninstall(const std::string& app_id) {
   apps::AppServiceProxyFactory::GetForProfile(profile_)->Uninstall(
       app_id, apps::mojom::UninstallSource::kAppManagement,
@@ -184,6 +196,44 @@ void AppManagementPageHandler::Uninstall(const std::string& app_id) {
 void AppManagementPageHandler::OpenNativeSettings(const std::string& app_id) {
   apps::AppServiceProxyFactory::GetForProfile(profile_)->OpenNativeSettings(
       app_id);
+}
+
+void AppManagementPageHandler::SetPreferredApp(const std::string& app_id,
+                                               bool is_preferred_app) {
+  if (is_preferred_app &&
+      !preferred_apps_list_.IsPreferredAppForSupportedLinks(app_id)) {
+    // Only deal with overlapping links if we actually changed the permission
+    // to true.
+    apps::AppServiceProxyFactory::GetForProfile(profile_)
+        ->AppRegistryCache()
+        .ForOneApp(app_id, [this](const apps::AppUpdate& update) {
+          if (update.Readiness() == apps::mojom::Readiness::kReady) {
+            for (auto& filter : update.IntentFilters()) {
+              if (apps_util::IsSupportedLink(filter)) {
+                this->preferred_apps_list_.AddPreferredApp(update.AppId(),
+                                                           filter);
+              }
+            }
+          }
+        });
+  } else if (!is_preferred_app &&
+             preferred_apps_list_.IsPreferredAppForSupportedLinks(app_id)) {
+    // If changed to false, remove all of the filters for that app.
+    // Only deal with overlapping links if we actually changed the permission
+    // to true.
+    apps::AppServiceProxyFactory::GetForProfile(profile_)
+        ->AppRegistryCache()
+        .ForOneApp(app_id, [this](const apps::AppUpdate& update) {
+          if (update.Readiness() == apps::mojom::Readiness::kReady) {
+            for (auto& filter : update.IntentFilters()) {
+              if (apps_util::IsSupportedLink(filter)) {
+                this->preferred_apps_list_.DeletePreferredApp(update.AppId(),
+                                                              filter);
+              }
+            }
+          }
+        });
+  }
 }
 
 app_management::mojom::AppPtr AppManagementPageHandler::CreateUIAppPtr(
@@ -217,6 +267,9 @@ app_management::mojom::AppPtr AppManagementPageHandler::CreateUIAppPtr(
   app->is_policy_pinned = shelf_delegate_.IsPolicyPinned(update.AppId())
                               ? OptionalBool::kTrue
                               : OptionalBool::kFalse;
+  app->resize_locked = update.ResizeLocked() == OptionalBool::kTrue;
+  app->hide_resize_locked =
+      update.ResizeLocked() == apps::mojom::OptionalBool::kUnknown;
 #endif
   app->is_preferred_app =
       preferred_apps_list_.IsPreferredAppForSupportedLinks(update.AppId());
@@ -224,8 +277,35 @@ app_management::mojom::AppPtr AppManagementPageHandler::CreateUIAppPtr(
   app->hide_pin_to_shelf =
       update.ShowInShelf() == apps::mojom::OptionalBool::kFalse ||
       ShouldHidePinToShelf(app->id);
+  app->window_mode = update.WindowMode();
+  app->supported_links = GetSupportedLinksList(app->id);
 
   return app;
+}
+
+std::vector<std::string> AppManagementPageHandler::GetSupportedLinksList(
+    const std::string& app_id) {
+  std::vector<std::string> links;
+  apps::AppServiceProxyFactory::GetForProfile(profile_)
+      ->AppRegistryCache()
+      .ForOneApp(app_id, [&links](const apps::AppUpdate& update) {
+        if (update.Readiness() == apps::mojom::Readiness::kReady) {
+          std::set<std::string> seen;
+          for (const auto& filter : update.IntentFilters()) {
+            if (apps_util::IsSupportedLink(filter)) {
+              for (const auto& link :
+                   apps_util::AppManagementGetSupportedLinks(filter)) {
+                // Add link to list if it hasn't already been seen.
+                if (seen.find(link) == seen.end()) {
+                  links.emplace_back(link);
+                  seen.insert(link);
+                }
+              }
+            }
+          }
+        }
+      });
+  return links;
 }
 
 void AppManagementPageHandler::OnAppUpdate(const apps::AppUpdate& update) {

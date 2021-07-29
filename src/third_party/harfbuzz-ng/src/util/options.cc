@@ -454,7 +454,7 @@ shape_options_t::add_options (option_parser_t *parser)
     {"cluster-level",	0, 0, G_OPTION_ARG_INT,		&this->cluster_level,		"Cluster merging level (default: 0)",	"0/1/2"},
     {"normalize-glyphs",0, 0, G_OPTION_ARG_NONE,	&this->normalize_glyphs,	"Rearrange glyph clusters in nominal order",	nullptr},
     {"verify",		0, 0, G_OPTION_ARG_NONE,	&this->verify,			"Perform sanity checks on shaping results",	nullptr},
-    {"num-iterations", 'n', 0, G_OPTION_ARG_INT,		&this->num_iterations,		"Run shaper N times (default: 1)",	"N"},
+    {"num-iterations", 'n', 0, G_OPTION_ARG_INT,	&this->num_iterations,		"Run shaper N times (default: 1)",	"N"},
     {nullptr}
   };
   parser->add_group (entries,
@@ -696,10 +696,10 @@ font_options_t::get_font () const
 #endif
   }
 
-  blob = hb_blob_create_from_file (font_path);
+  blob = hb_blob_create_from_file_or_fail (font_path);
 
-  if (blob == hb_blob_get_empty ())
-    fail (false, "Couldn't read or find %s, or it was empty.", font_path);
+  if (!blob)
+    fail (false, "%s: Failed reading file", font_path);
 
   /* Create the face */
   hb_face_t *face = hb_face_create (blob, face_index);

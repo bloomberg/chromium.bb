@@ -4,12 +4,14 @@
 
 import {assert, assertString} from '../chrome_util.js';
 import {reportError} from '../error.js';
+import {I18nString} from '../i18n_string.js';
 import * as loadTimeData from '../models/load_time_data.js';
 import {DeviceOperator} from '../mojo/device_operator.js';
 import * as toast from '../toast.js';
 // eslint-disable-next-line no-unused-vars
 import {ErrorLevel, ErrorType, Facing, VideoConfig} from '../type.js';
 import {WaitableEvent} from '../waitable_event.js';
+
 import {Camera3DeviceInfo} from './camera3_device_info.js';
 
 /**
@@ -218,7 +220,7 @@ export class StreamManager {
     try {
       return await this.camera3DevicesInfo_;
     } catch (e) {
-      console.error(e);
+      reportError(ErrorType.DEVICE_INFO_UPDATE_FAILURE, ErrorLevel.ERROR, e);
     }
     return null;
   }
@@ -246,11 +248,11 @@ export class StreamManager {
 
     let isRealDeviceChange = false;
     for (const added of this.getDifference_(realDevices, this.realDevices_)) {
-      toast.speak('status_msg_camera_plugged', added.v1Info.label);
+      toast.speak(I18nString.STATUS_MSG_CAMERA_PLUGGED, added.v1Info.label);
       isRealDeviceChange = true;
     }
     for (const removed of this.getDifference_(this.realDevices_, realDevices)) {
-      toast.speak('status_msg_camera_unplugged', removed.v1Info.label);
+      toast.speak(I18nString.STATUS_MSG_CAMERA_UNPLUGGED, removed.v1Info.label);
       isRealDeviceChange = true;
     }
     if (isRealDeviceChange) {
@@ -279,7 +281,11 @@ export class StreamManager {
   async enumerateDevices_() {
     const devices = (await navigator.mediaDevices.enumerateDevices())
                         .filter((device) => device.kind === 'videoinput');
-    if (devices.length === 0) {
+
+    const deviceType = loadTimeData.getDeviceType();
+    const shouldHaveBuiltinCamera =
+        deviceType === 'chromebook' || deviceType === 'chromebase';
+    if (devices.length === 0 && shouldHaveBuiltinCamera) {
       throw new Error('Device list empty.');
     }
     return devices;
@@ -324,19 +330,7 @@ export class StreamManager {
       this.virtualMap_ = null;
     }
     const deviceOperator = await DeviceOperator.getInstance();
-    try {
-      // Mojo connection may be disconnected when closing CCA.
-      // It causes the disabling multiple streams request failed.
-      // Since camera HAL will disable all virtual devices when CCA is closed,
-      // we can bypass the error for this case.
-      // TODO(b/186179072): Remove the workaround when CCA does nothing after
-      // closing mojo connection.
-      await deviceOperator.setMultipleStreamsEnabled(deviceId, enabled);
-    } catch (e) {
-      if (enabled || e.message !== 'Message pipe closed.') {
-        throw e;
-      }
-    }
+    await deviceOperator.setMultipleStreamsEnabled(deviceId, enabled);
     await this.deviceUpdate();
     if (enabled) {
       try {

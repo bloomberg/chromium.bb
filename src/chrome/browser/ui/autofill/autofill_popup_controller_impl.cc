@@ -20,6 +20,8 @@
 #include "components/autofill/core/browser/ui/autofill_popup_delegate.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
+#include "components/password_manager/content/browser/content_password_manager_driver.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -28,6 +30,7 @@
 #include "ui/accessibility/ax_tree_id.h"
 #include "ui/accessibility/ax_tree_manager_map.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/text_elider.h"
@@ -133,13 +136,18 @@ void AutofillPopupControllerImpl::Show(
       return;
   }
 
-  static_cast<ContentAutofillDriver*>(delegate_->GetAutofillDriver())
-      ->RegisterKeyPressHandler(base::BindRepeating(
-          [](base::WeakPtr<AutofillPopupControllerImpl> weak_this,
-             const content::NativeWebKeyboardEvent& event) {
-            return weak_this && weak_this->HandleKeyPressEvent(event);
-          },
-          weak_this));
+  absl::visit(
+      [&](auto* driver) {
+        driver->SetKeyPressHandler(base::BindRepeating(
+            // Cannot bind HandleKeyPressEvent() directly because of its
+            // return value.
+            [](base::WeakPtr<AutofillPopupControllerImpl> weak_this,
+               const content::NativeWebKeyboardEvent& event) {
+              return weak_this && weak_this->HandleKeyPressEvent(event);
+            },
+            weak_this));
+      },
+      GetDriver());
 
   delegate_->OnPopupShown();
 }
@@ -214,8 +222,8 @@ void AutofillPopupControllerImpl::Hide(PopupHidingReason reason) {
   if (delegate_) {
     delegate_->ClearPreviewedForm();
     delegate_->OnPopupHidden();
-    static_cast<ContentAutofillDriver*>(delegate_->GetAutofillDriver())
-        ->RemoveKeyPressHandler();
+    absl::visit([](auto* driver) { driver->UnsetKeyPressHandler(); },
+                GetDriver());
   }
 
   HideViewAndDie();
@@ -294,7 +302,7 @@ void AutofillPopupControllerImpl::AcceptSuggestion(int index) {
   mf_controller->Hide();
 #endif
   delegate_->DidAcceptSuggestion(suggestion.value, suggestion.frontend_id,
-                                 index);
+                                 suggestion.backend_id, index);
 }
 
 gfx::NativeView AutofillPopupControllerImpl::container_view() const {
@@ -330,9 +338,21 @@ const Suggestion& AutofillPopupControllerImpl::GetSuggestionAt(int row) const {
   return suggestions_[row];
 }
 
-const std::u16string& AutofillPopupControllerImpl::GetSuggestionValueAt(
+std::u16string AutofillPopupControllerImpl::GetSuggestionMainTextAt(
     int row) const {
-  return suggestions_[row].value;
+  return suggestions_[row].frontend_id ==
+                 POPUP_ITEM_ID_VIRTUAL_CREDIT_CARD_ENTRY
+             ? l10n_util::GetStringUTF16(
+                   IDS_AUTOFILL_VIRTUAL_CARD_SUGGESTION_OPTION_VALUE)
+             : suggestions_[row].value;
+}
+
+std::u16string AutofillPopupControllerImpl::GetSuggestionMinorTextAt(
+    int row) const {
+  return suggestions_[row].frontend_id ==
+                 POPUP_ITEM_ID_VIRTUAL_CREDIT_CARD_ENTRY
+             ? suggestions_[row].value
+             : std::u16string();
 }
 
 const std::u16string& AutofillPopupControllerImpl::GetSuggestionLabelAt(
@@ -512,13 +532,33 @@ void AutofillPopupControllerImpl::HideViewAndDie() {
   delete this;
 }
 
+absl::variant<ContentAutofillDriver*,
+              password_manager::ContentPasswordManagerDriver*>
+AutofillPopupControllerImpl::GetDriver() {
+  using PasswordManagerDriver = password_manager::PasswordManagerDriver;
+  using ContentPasswordManagerDriver =
+      password_manager::ContentPasswordManagerDriver;
+  absl::variant<AutofillDriver*, PasswordManagerDriver*> driver =
+      delegate_->GetDriver();
+  DCHECK(absl::holds_alternative<AutofillDriver*>(driver) ||
+         absl::holds_alternative<PasswordManagerDriver*>(driver));
+  if (absl::holds_alternative<AutofillDriver*>(driver)) {
+    return static_cast<ContentAutofillDriver*>(
+        absl::get<AutofillDriver*>(driver));
+  } else {
+    return static_cast<ContentPasswordManagerDriver*>(
+        absl::get<PasswordManagerDriver*>(driver));
+  }
+}
+
 void AutofillPopupControllerImpl::FireControlsChangedEvent(bool is_show) {
   if (!accessibility_state_utils::IsScreenReaderEnabled())
     return;
   DCHECK(view_);
 
   // Retrieve the ax tree id associated with the current web contents.
-  ui::AXTreeID tree_id = delegate_->GetAutofillDriver()->GetAxTreeId();
+  ui::AXTreeID tree_id = absl::visit(
+      [](auto* driver) { return driver->GetAxTreeId(); }, GetDriver());
 
   // Retrieve the ax node id associated with the current web contents' element
   // that has a controller relation to the current autofill popup.

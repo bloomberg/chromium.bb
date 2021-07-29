@@ -18,6 +18,8 @@
 #include "base/timer/timer.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
+#include "third_party/blink/public/mojom/service_worker/navigation_preload_state.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "url/gurl.h"
 
@@ -72,12 +74,13 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   // tests.
   ServiceWorkerRegistration(
       const blink::mojom::ServiceWorkerRegistrationOptions& options,
+      const blink::StorageKey& key,
       int64_t registration_id,
       base::WeakPtr<ServiceWorkerContextCore> context);
 
   int64_t id() const { return registration_id_; }
   const GURL& scope() const { return scope_; }
-  const url::Origin& origin() const { return origin_; }
+  const blink::StorageKey& key() const { return key_; }
   blink::mojom::ServiceWorkerUpdateViaCache update_via_cache() const {
     return update_via_cache_;
   }
@@ -257,7 +260,7 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   };
 
   const GURL scope_;
-  const url::Origin origin_;
+  const blink::StorageKey key_;
   blink::mojom::ServiceWorkerUpdateViaCache update_via_cache_;
   const int64_t registration_id_;
   Status status_;

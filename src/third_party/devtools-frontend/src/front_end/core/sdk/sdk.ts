@@ -20,6 +20,8 @@ import * as CookieModel from './CookieModel.js';
 import * as CookieParser from './CookieParser.js';
 import * as CPUProfileDataModel from './CPUProfileDataModel.js';
 import * as CPUProfilerModel from './CPUProfilerModel.js';
+import * as CPUThrottlingManager from './CPUThrottlingManager.js';
+import * as CSSContainerQuery from './CSSContainerQuery.js';
 import * as CSSFontFace from './CSSFontFace.js';
 import * as CSSMatchedStyles from './CSSMatchedStyles.js';
 import * as CSSMedia from './CSSMedia.js';
@@ -27,6 +29,7 @@ import * as CSSMetadata from './CSSMetadata.js';
 import * as CSSModel from './CSSModel.js';
 import * as CSSProperty from './CSSProperty.js';
 import * as CSSPropertyParser from './CSSPropertyParser.js';
+import * as CSSQuery from './CSSQuery.js';
 import * as CSSRule from './CSSRule.js';
 import * as CSSStyleDeclaration from './CSSStyleDeclaration.js';
 import * as CSSStyleSheetHeader from './CSSStyleSheetHeader.js';
@@ -65,6 +68,8 @@ import * as ServiceWorkerCacheModel from './ServiceWorkerCacheModel.js';
 import * as ServiceWorkerManager from './ServiceWorkerManager.js';
 import * as SourceMap from './SourceMap.js';
 import * as SourceMapManager from './SourceMapManager.js';
+import * as Target from './Target.js';
+import * as TargetManager from './TargetManager.js';
 import * as TracingManager from './TracingManager.js';
 import * as TracingModel from './TracingModel.js';
 import * as WebAuthnModel from './WebAuthnModel.js';
@@ -80,6 +85,8 @@ export {
   CookieParser,
   CPUProfileDataModel,
   CPUProfilerModel,
+  CPUThrottlingManager,
+  CSSContainerQuery,
   CSSFontFace,
   CSSMatchedStyles,
   CSSMedia,
@@ -87,6 +94,7 @@ export {
   CSSModel,
   CSSProperty,
   CSSPropertyParser,
+  CSSQuery,
   CSSRule,
   CSSStyleDeclaration,
   CSSStyleSheetHeader,
@@ -125,6 +133,8 @@ export {
   ServiceWorkerManager,
   SourceMap,
   SourceMapManager,
+  Target,
+  TargetManager,
   TracingManager,
   TracingModel,
   WebAuthnModel,

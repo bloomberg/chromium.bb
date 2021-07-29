@@ -340,8 +340,6 @@ Microsoft::WRL::ComPtr<ID3D11Texture2D> SwapChainPresenter::UploadVideoImages(
     copy_texture_.Reset();
     HRESULT hr =
         d3d11_device_->CreateTexture2D(&desc, nullptr, &staging_texture_);
-    base::UmaHistogramSparse(
-        "GPU.DirectComposition.UploadVideoImages.CreateStagingTexture", hr);
     if (FAILED(hr)) {
       DLOG(ERROR) << "Creating D3D11 video staging texture failed: " << std::hex
                   << hr;
@@ -400,8 +398,6 @@ Microsoft::WRL::ComPtr<ID3D11Texture2D> SwapChainPresenter::UploadVideoImages(
     desc.BindFlags = D3D11_BIND_DECODER;
     desc.CPUAccessFlags = 0;
     HRESULT hr = d3d11_device_->CreateTexture2D(&desc, nullptr, &copy_texture_);
-    base::UmaHistogramSparse(
-        "GPU.DirectComposition.UploadVideoImages.CreateCopyTexture", hr);
     if (FAILED(hr)) {
       DLOG(ERROR) << "Creating D3D11 video upload texture failed: " << std::hex
                   << hr;
@@ -443,9 +439,9 @@ void SwapChainPresenter::AdjustSwapChainToFullScreenSizeIfNeeded(
     gfx::Size* swap_chain_size,
     gfx::Transform* transform,
     gfx::Rect* clip_rect) {
-  gfx::Rect onscreen_rect = overlay_onscreen_rect;
-  if (params.clip_rect)
-    onscreen_rect.Intersect(*clip_rect);
+  gfx::Rect clipped_onscreen_rect = overlay_onscreen_rect;
+  if (params.clip_rect.has_value())
+    clipped_onscreen_rect.Intersect(*clip_rect);
 
   // Because of the rounding when converting between pixels and DIPs, a
   // fullscreen video can become slightly larger than the monitor - e.g. on
@@ -458,8 +454,8 @@ void SwapChainPresenter::AdjustSwapChainToFullScreenSizeIfNeeded(
   constexpr int kFullScreenMargin = 5;
 
   // The overlay must be positioned at (0, 0) in fullscreen mode.
-  if (std::abs(onscreen_rect.x()) >= kFullScreenMargin ||
-      std::abs(onscreen_rect.y()) >= kFullScreenMargin) {
+  if (std::abs(clipped_onscreen_rect.x()) >= kFullScreenMargin ||
+      std::abs(clipped_onscreen_rect.y()) >= kFullScreenMargin) {
     // Not fullscreen mode.
     return;
   }
@@ -474,22 +470,40 @@ void SwapChainPresenter::AdjustSwapChainToFullScreenSizeIfNeeded(
   // dynamic refresh rates (24hz/48hz). Note: The DWM optimizations works for
   // both hardware and software overlays.
   // If no, do nothing.
-  if (std::abs(onscreen_rect.width() - monitor_size.width()) >=
+  if (std::abs(clipped_onscreen_rect.width() - monitor_size.width()) >=
           kFullScreenMargin ||
-      std::abs(onscreen_rect.height() - monitor_size.height()) >=
+      std::abs(clipped_onscreen_rect.height() - monitor_size.height()) >=
           kFullScreenMargin) {
     // Not fullscreen mode.
     return;
   }
 
+  // For most video playbacks, |clip_rect| is the same as
+  // |overlay_onscreen_rect| or close to it. If |clipped_onscreen_rect| has the
+  // size of the monitor but |overlay_onscreen_rect| is much bigger than the
+  // monitor size, we don't get the benefit of this optimization in this case.
+  // We should do nothing here. e.g. |overlay_onscreen_rect| is ~7680 x 4320 and
+  // it's clipped to ~3840 x 2160 to fit the monitor. Check
+  // |overlay_onscreen_rect| only if it's different from |clipped_onscreen_rect|
+  // when clipping is enabled. https://crbug.com/1213035
+  if (params.clip_rect.has_value()) {
+    if (std::abs(overlay_onscreen_rect.width() - monitor_size.width()) >=
+            kFullScreenMargin ||
+        std::abs(overlay_onscreen_rect.height() - monitor_size.height()) >=
+            kFullScreenMargin) {
+      return;
+    }
+  }
+
   // Adjust the clip rect.
-  if (params.clip_rect) {
+  if (params.clip_rect.has_value()) {
     *clip_rect = gfx::Rect(monitor_size);
   }
 
   // Adjust the swap chain size.
-  // The swap chain is either the size of onscreen_rect or min(onscreen_rect,
-  // content_rect). It might not need to update if it has the content size.
+  // The swap chain is either the size of overlay_onscreen_rect or
+  // min(overlay_onscreen_rect, content_rect). It might not need to update if it
+  // has the content size.
   if (std::abs(swap_chain_size->width() - monitor_size.width()) <
           kFullScreenMargin &&
       std::abs(swap_chain_size->height() - monitor_size.height()) <
@@ -499,8 +513,8 @@ void SwapChainPresenter::AdjustSwapChainToFullScreenSizeIfNeeded(
 
   // Adjust the transform matrix.
   auto& transform_matrix = transform->matrix();
-  float dx = -onscreen_rect.x();
-  float dy = -onscreen_rect.y();
+  float dx = -clipped_onscreen_rect.x();
+  float dy = -clipped_onscreen_rect.y();
   transform_matrix.postTranslate(dx, dy, 0);
 
   float scale_x = monitor_size.width() * 1.0f / swap_chain_size->width();
@@ -599,7 +613,7 @@ void SwapChainPresenter::UpdateVisuals(const ui::DCRendererLayerParams& params,
     Microsoft::WRL::ComPtr<IDCompositionMatrixTransform> dcomp_transform;
     dcomp_device_->CreateMatrixTransform(&dcomp_transform);
     DCHECK(dcomp_transform);
-    // SkMatrix44 is column-major, but D2D_MATRIX_3x2_F is row-major.
+    // skia::Matrix44 is column-major, but D2D_MATRIX_3x2_F is row-major.
     D2D_MATRIX_3X2_F d2d_matrix = {
         {{transform.matrix().get(0, 0), transform.matrix().get(1, 0),
           transform.matrix().get(0, 1), transform.matrix().get(1, 1),
@@ -610,14 +624,14 @@ void SwapChainPresenter::UpdateVisuals(const ui::DCRendererLayerParams& params,
 
   if (visual_info_.clip_rect.has_value() != params.clip_rect.has_value() ||
       visual_info_.clip_rect != clip_rect) {
-    if (params.clip_rect) {
+    if (params.clip_rect.has_value()) {
       visual_info_.clip_rect = clip_rect;
     }
     layer_tree_->SetNeedsRebuildVisualTree();
     // DirectComposition clips happen in the pre-transform visual space, while
     // cc/ clips happen post-transform. So the clip needs to go on a separate
     // parent visual that's untransformed.
-    if (params.clip_rect) {
+    if (params.clip_rect.has_value()) {
       Microsoft::WRL::ComPtr<IDCompositionRectangleClip> clip;
       dcomp_device_->CreateRectangleClip(&clip);
       DCHECK(clip);
@@ -838,21 +852,12 @@ bool SwapChainPresenter::PresentToDecodeSwapChain(
   }
 
   swap_chain_size_ = swap_chain_size;
-  if (swap_chain_format_ == DXGI_FORMAT_NV12) {
-    frames_since_color_space_change_++;
-  } else {
-    UMA_HISTOGRAM_COUNTS_1000(
-        "GPU.DirectComposition.FramesSinceColorSpaceChange",
-        frames_since_color_space_change_);
-    frames_since_color_space_change_ = 0;
-  }
   swap_chain_format_ = DXGI_FORMAT_NV12;
   RecordPresentationStatistics();
   return true;
 }
 
-bool SwapChainPresenter::PresentToSwapChain(
-    const ui::DCRendererLayerParams& params) {
+bool SwapChainPresenter::PresentToSwapChain(ui::DCRendererLayerParams& params) {
   GLImageDXGI* image_dxgi =
       GLImageDXGI::FromGLImage(params.images[kNV12ImageIndex].get());
   GLImageD3D* image_d3d =
@@ -868,6 +873,13 @@ bool SwapChainPresenter::PresentToSwapChain(
   if (swap_chain_image && !swap_chain_image->swap_chain())
     swap_chain_image = nullptr;
 
+  // Ensure release CB is called at exit.
+  std::array<base::ScopedClosureRunner, ui::DCRendererLayerParams::kNumImages>
+      release_runners;
+  for (unsigned int i = 0; i < ui::DCRendererLayerParams::kNumImages; i++) {
+    release_runners[i] =
+        base::ScopedClosureRunner(std::move(params.release_image_cb[i]));
+  }
   if (!image_dxgi && !image_d3d && (!y_image_memory || !uv_image_memory) &&
       !swap_chain_image) {
     DLOG(ERROR) << "Video GLImages are missing";
@@ -1085,7 +1097,6 @@ bool SwapChainPresenter::PresentToSwapChain(
     return false;
   }
   last_presented_images_ = params.images;
-  frames_since_color_space_change_++;
   RecordPresentationStatistics();
   return true;
 }
@@ -1130,8 +1141,9 @@ void SwapChainPresenter::RecordPresentationStatistics() {
     HRESULT hr = swap_chain_media->GetFrameStatisticsMedia(&stats);
     int mode = -1;
     if (SUCCEEDED(hr)) {
-      base::UmaHistogramSparse("GPU.DirectComposition.CompositionMode",
-                               stats.CompositionMode);
+      base::UmaHistogramSparse(
+          "GPU.DirectComposition.CompositionMode2.VideoOrCanvas",
+          stats.CompositionMode);
       if (frame_rate_ != 0) {
         // [1ms, 10s] covers the fps between [0.1hz, 1000hz].
         base::UmaHistogramTimes("GPU.DirectComposition.ApprovedPresentDuration",
@@ -1335,15 +1347,7 @@ bool SwapChainPresenter::ReallocateSwapChain(
 
   DCHECK(!swap_chain_size.IsEmpty());
   swap_chain_size_ = swap_chain_size;
-
   protected_video_type_ = protected_video_type;
-
-  if (swap_chain_format_ != swap_chain_format) {
-    UMA_HISTOGRAM_COUNTS_1000(
-        "GPU.DirectComposition.FramesSinceColorSpaceChange",
-        frames_since_color_space_change_);
-    frames_since_color_space_change_ = 0;
-  }
 
   ReleaseSwapChainResources();
 

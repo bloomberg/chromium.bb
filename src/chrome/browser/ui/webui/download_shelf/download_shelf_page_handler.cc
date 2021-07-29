@@ -32,13 +32,24 @@ DownloadShelfPageHandler::DownloadShelfPageHandler(
 
 DownloadShelfPageHandler::~DownloadShelfPageHandler() = default;
 
+void DownloadShelfPageHandler::DoShowAll() {
+  download_shelf_ui_->DoShowAll();
+}
+
 void DownloadShelfPageHandler::DoClose() {
   download_shelf_ui_->DoClose();
 }
 
+void DownloadShelfPageHandler::DiscardDownload(uint32_t download_id) {
+  download_shelf_ui_->DiscardDownload(download_id);
+}
+
+void DownloadShelfPageHandler::KeepDownload(uint32_t download_id) {
+  download_shelf_ui_->KeepDownload(download_id);
+}
+
 void DownloadShelfPageHandler::GetDownloads(GetDownloadsCallback callback) {
-  TRACE_EVENT0("browser",
-               "custom_metric:DownloadShelfPageHandler:GetDownloads");
+  TRACE_EVENT0("browser", "DownloadShelfPageHandler:GetDownloads");
   std::vector<download_shelf::mojom::DownloadItemPtr> download_items;
   for (DownloadUIModel* download_model : download_shelf_ui_->GetDownloads())
     download_items.push_back(GetDownloadItemFromUIModel(download_model));
@@ -64,8 +75,16 @@ void DownloadShelfPageHandler::ShowContextMenu(uint32_t download_id,
           start_time));
 }
 
+void DownloadShelfPageHandler::OpenDownload(uint32_t download_id) {
+  download_shelf_ui_->OpenDownload(download_id);
+}
+
 void DownloadShelfPageHandler::DoShowDownload(DownloadUIModel* download_model) {
   page_->OnNewDownload(GetDownloadItemFromUIModel(download_model));
+}
+
+void DownloadShelfPageHandler::OnDownloadOpened(uint32_t download_id) {
+  page_->OnDownloadOpened(download_id);
 }
 
 void DownloadShelfPageHandler::OnDownloadUpdated(

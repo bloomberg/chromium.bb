@@ -82,7 +82,7 @@ crbug.com/923134 [ android ] ContextLost_WebGL2Blocked [ Skip ]
 # Flaking on Nexus 5X
 crbug.com/965268 [ android android-nexus-5x ] ContextLost_WebGLBlockedAfterJSNavigation [ Skip ]
 crbug.com/965268 [ android android-nexus-5x ] ContextLost_WebGLUnblockedAfterUserInitiatedReload [ Skip ]
-crbug.com/880078 [ android android-nexus-5x ] ContextLost_WorkerRAFAfterGPUCrash [ RetryOnFailure ]
+crbug.com/1210594 [ android android-nexus-5x ] ContextLost_WorkerRAFAfterGPUCrash [ Skip ]
 crbug.com/1064853 [ android android-nexus-5x ] ContextLost_WebGLContextLostFromSelectElement [ Skip ]
 
 # Nexus 6
@@ -118,7 +118,7 @@ crbug.com/1078566 [ android ] GpuNormalTermination_NewWebGLNotBlocked [ Skip ]
 # Flaky on Fuchsia.
 crbug.com/1122373 [ fuchsia ] ContextLost_WebGLContextLostFromQuantity [ Failure ]
 
-# WebGPU disabled on release branch.
+# WebGPU is disabled on release branch.
 crbug.com/985142 ContextLost_WebGPUContextLostFromGPUProcessExit [ Skip ]
 
 # Flakily not getting WebGL blocked on context loss
@@ -133,8 +133,9 @@ crbug.com/1154047 [ fuchsia ] GpuCrash_InfoForHardwareGpu [ Skip ]
 crbug.com/1161570 [ mac nvidia debug ] GpuCrash_InfoForHardwareGpu [ Skip ]
 crbug.com/1161570 [ mac nvidia debug ] GpuCrash_InfoForDualHardwareGpus [ Skip ]
 
-# Flaky on dual GPU Mac - right now, too flaky to even run the test.
-crbug.com/1164647 [ mac amd ] GpuCrash_InfoForDualHardwareGpus [ Skip ]
-
 # Flaky for LaCrOS
 crbug.com/1205899 [ linux display-server-wayland ] ContextLost_WebGLBlockedAfterJSNavigation [ RetryOnFailure ]
+
+#######################################################################
+# Automated Entries After This Point - Do Not Manually Add Below Here #
+#######################################################################

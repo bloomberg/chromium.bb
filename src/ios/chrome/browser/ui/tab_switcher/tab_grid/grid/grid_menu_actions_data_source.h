@@ -13,7 +13,7 @@
 // actions.
 @protocol GridMenuActionsDataSource
 
-// Asks the delegate for the GridItem object representing the the grid cell with
+// Asks the delegate for the GridItem object representing the grid cell with
 // |identifier|.
 - (GridItem*)gridItemForCellIdentifier:(NSString*)identifier;
 

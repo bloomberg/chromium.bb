@@ -10,6 +10,7 @@
 #include <iostream>
 #include <memory>
 #include <sstream>
+#include <utility>
 #include <vector>
 
 #include "absl/strings/ascii.h"
@@ -427,7 +428,6 @@ AstNode* ParseGroupChoice(Parser* p) {
       return nullptr;
     }
   }
-  return nullptr;
 }
 
 AstNode* ParseGroup(Parser* p) {
@@ -974,7 +974,7 @@ ParseResult ParseCddl(absl::string_view data) {
   if (data[0] == 0) {
     return {nullptr, {}};
   }
-  Parser p{(char*)data.data()};
+  Parser p{data.data()};
 
   SkipWhitespace(&p);
   AstNode* root = nullptr;

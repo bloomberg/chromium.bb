@@ -10,6 +10,7 @@ import("//build/config/ui.gni")
 import("//build/config/win/console_app.gni")
 import("//build/config/win/manifest.gni")
 import("//components/spellcheck/spellcheck_build_features.gni")
+import("//device/vr/buildflags/buildflags.gni")
 import("//gpu/vulkan/features.gni")
 import("//media/media_options.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
@@ -139,6 +140,8 @@ source_set("weblayer_lib_base") {
     "app/main.cc",
     "browser/autofill_client_impl.cc",
     "browser/autofill_client_impl.h",
+    "browser/background_download_service_factory.cc",
+    "browser/background_download_service_factory.h",
     "browser/background_fetch/background_fetch_delegate_factory.cc",
     "browser/background_fetch/background_fetch_delegate_factory.h",
     "browser/background_fetch/background_fetch_delegate_impl.cc",
@@ -184,8 +187,6 @@ source_set("weblayer_lib_base") {
     "browser/download_impl.h",
     "browser/download_manager_delegate_impl.cc",
     "browser/download_manager_delegate_impl.h",
-    "browser/download_service_factory.cc",
-    "browser/download_service_factory.h",
     "browser/favicon/favicon_backend_wrapper.cc",
     "browser/favicon/favicon_backend_wrapper.h",
     "browser/favicon/favicon_fetcher_impl.cc",
@@ -385,7 +386,6 @@ source_set("weblayer_lib_base") {
     "//base/third_party/dynamic_annotations",
     "//build:chromeos_buildflags",
     "//cc",
-    "//components/android_autofill/browser",
     "//components/autofill/content/browser",
     "//components/autofill/content/renderer",
     "//components/autofill/core/browser",
@@ -432,7 +432,6 @@ source_set("weblayer_lib_base") {
     "//components/language/core/browser",
     "//components/leveldb_proto",
     "//components/metrics",
-    "//components/metrics:content",
     "//components/network_time",
     "//components/no_state_prefetch/browser",
     "//components/no_state_prefetch/common",
@@ -444,6 +443,7 @@ source_set("weblayer_lib_base") {
     "//components/page_load_metrics/browser/observers/ad_metrics",
     "//components/page_load_metrics/renderer",
     "//components/password_manager/content/browser",
+    "//components/payments/content:content",
     "//components/payments/core",
     "//components/performance_manager",
     "//components/permissions",
@@ -455,8 +455,8 @@ source_set("weblayer_lib_base") {
     "//components/safe_browsing/content/common:interfaces",
     "//components/safe_browsing/content/renderer:throttles",
     "//components/safe_browsing/content/renderer/phishing_classifier",
-    "//components/safe_browsing/core:features",
-    "//components/safe_browsing/core/db:database_manager",
+    "//components/safe_browsing/core/browser/db:database_manager",
+    "//components/safe_browsing/core/common",
     "//components/security_interstitials/content:security_interstitial_page",
     "//components/security_interstitials/content/renderer:security_interstitial_page_controller",
     "//components/security_interstitials/core",
@@ -503,6 +503,8 @@ source_set("weblayer_lib_base") {
     "//content/public/common",
     "//content/public/renderer",
     "//content/public/utility",
+    "//device/base:base",
+    "//device/vr/buildflags",
     "//gpu/config",
     "//net",
     "//net:net_resources",
@@ -543,6 +545,18 @@ source_set("weblayer_lib_base") {
       "browser/captive_portal_service_factory.h",
     ]
     deps += [ "//components/captive_portal/content" ]
+  }
+
+  if (enable_arcore) {
+    assert(is_android)
+    sources += [
+      "browser/xr/xr_integration_client_impl.cc",
+      "browser/xr/xr_integration_client_impl.h",
+    ]
+    deps += [
+      "//components/webxr/android",
+      "//device/vr/android/arcore",
+    ]
   }
 
   if (use_browser_spellchecker) {
@@ -665,7 +679,8 @@ source_set("weblayer_lib_base") {
     deps += [
       "//android_webview:generate_aw_resources",
       "//android_webview:generate_aw_strings",
-      "//components/android_autofill/android",
+      "//components/android_autofill/browser",
+      "//components/android_autofill/browser:android",
       "//components/android_system_error_page",
       "//components/browser_ui/client_certificate/android",
       "//components/browser_ui/contacts_picker/android",
@@ -681,7 +696,6 @@ source_set("weblayer_lib_base") {
       "//components/embedder_support/android:context_menu",
       "//components/embedder_support/android:util",
       "//components/embedder_support/android:web_contents_delegate",
-      "//components/embedder_support/android/common:url_constants",
       "//components/embedder_support/android/metrics",
       "//components/external_intents/android",
       "//components/favicon/android",
@@ -699,21 +713,18 @@ source_set("weblayer_lib_base") {
       "//components/resources:android_resources",
       "//components/safe_browsing/android:remote_database_manager",
       "//components/safe_browsing/android:safe_browsing_api_handler",
-      "//components/safe_browsing/content",
       "//components/safe_browsing/content/browser",
       "//components/safe_browsing/content/browser:client_side_model_loader",
-      "//components/safe_browsing/core:client_model_proto",
-      "//components/safe_browsing/core:csd_proto",
-      "//components/safe_browsing/core:ping_manager",
-      "//components/safe_browsing/core:verdict_cache_manager",
       "//components/safe_browsing/core/browser",
-      "//components/safe_browsing/core/browser:network_context",
       "//components/safe_browsing/core/browser:token_fetcher",
+      "//components/safe_browsing/core/browser:verdict_cache_manager",
+      "//components/safe_browsing/core/browser/db:allowlist_checker_client",
+      "//components/safe_browsing/core/browser/db:database_manager",
+      "//components/safe_browsing/core/browser/realtime:policy_engine",
+      "//components/safe_browsing/core/browser/realtime:url_lookup_service",
       "//components/safe_browsing/core/common",
-      "//components/safe_browsing/core/db:allowlist_checker_client",
-      "//components/safe_browsing/core/db:database_manager",
-      "//components/safe_browsing/core/realtime:policy_engine",
-      "//components/safe_browsing/core/realtime:url_lookup_service",
+      "//components/safe_browsing/core/common/proto:client_model_proto",
+      "//components/safe_browsing/core/common/proto:csd_proto",
       "//components/security_interstitials/content:security_interstitial_page",
       "//components/security_interstitials/core:unsafe_resource",
       "//components/security_interstitials/core/",
@@ -722,6 +733,7 @@ source_set("weblayer_lib_base") {
       "//components/translate/content/android",
       "//components/version_info/android:channel_getter",
       "//components/webauthn/android",
+      "//google_apis",
       "//services/resource_coordinator/public/cpp/memory_instrumentation:browser",
       "//ui/android",
       "//url:gurl_android",
@@ -864,7 +876,7 @@ if (is_android) {
     deps = [
       ":weblayer_lib_webview_test",
       "//base",
-      "//components/android_autofill/android/test_support:component_autofill_provider_native_test_support",
+      "//components/android_autofill/browser/test_support:component_autofill_provider_native_test_support",
       "//content/public/app",
       "//weblayer/browser/java:test_weblayer_jni_registration",
     ]

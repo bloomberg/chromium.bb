@@ -6,6 +6,8 @@
 <translation id="1430915738399379752">Печат</translation>
 <translation id="1467231725790366244">Устройството <ph name="CAMERA" /> е изключено.</translation>
 <translation id="1473110567575736769">Таймер за 3 секунди</translation>
+<translation id="1478594628797167447">Скенер</translation>
+<translation id="1545749641540134597">Сканирайте код за бърза реакция</translation>
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">Нищо не е записано</translation>
@@ -19,6 +21,8 @@
 <translation id="2050339315714019657">Вертикално</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> е активна</translation>
 <translation id="2144806332417375165">Персонализирани параметри на видеото</translation>
+<translation id="2175927920773552910">Код за бърза реакция</translation>
+<translation id="2268107369530950373">Превключване към режима за сканиране</translation>
 <translation id="229579744168541441">Експортиране към диска</translation>
 <translation id="2320741269052147773">Панорамно придвижване наляво</translation>
 <translation id="2501278716633472235">Назад</translation>
@@ -38,6 +42,7 @@
 <translation id="3227137524299004712">Микрофон</translation>
 <translation id="3240426699337459095">Връзката е копирана</translation>
 <translation id="3259149966178251584">Разделителна способност на камерата</translation>
+<translation id="3448774564454087943">Видеоклипът не е запазен, тъй като е прекалено кратък</translation>
 <translation id="3517926952904427380">Не може да се направи вертикална снимка</translation>
 <translation id="3569311554794739032">Наистина ли искате да премахнете „<ph name="FILE" />“?</translation>
 <translation id="3733597664308256288">Налице са допълнителни контроли за камерата. За достъп натиснете клавиша „търсене“ + стрелката за надясно.</translation>
@@ -56,11 +61,14 @@
 <translation id="4628948037717959914">Снимка</translation>
 <translation id="4649291346448517080">Файлът не може да бъде запазен</translation>
 <translation id="4890010094662541459">3 x 3</translation>
+<translation id="491895758387112773">Записва се видеоклип за много потоци</translation>
 <translation id="5057360777601936059">Понастоящем няма достъп до камерата ви.
         Моля, проверете дали камерата е свързана правилно.</translation>
 <translation id="5152121255775685072">Към галерията</translation>
+<translation id="5268823927180092501">Активиране на режима за документи за всички камери</translation>
 <translation id="5422455049771430511">Снимките и видеоклиповете ви имат нов дом</translation>
 <translation id="5671277269877808209">Квадрат</translation>
+<translation id="5753488212459587150">Активиране на експертния режим</translation>
 <translation id="5775960006311140197">Експертен режим</translation>
 <translation id="5869546221129391014">Таблица</translation>
 <translation id="5975083100439434680">Намаляване на мащаба</translation>

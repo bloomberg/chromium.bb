@@ -4,9 +4,15 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
+import android.net.Uri;
+
+import androidx.annotation.Nullable;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import org.chromium.base.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,9 +22,14 @@ import java.util.List;
  * UI.
  */
 class RelatedSearchesList {
+    private static final String TAG = "ContextualSearch";
+    /** JSON keys sent by the server. */
     private static final String CONTENT_SUGGESTIONS = "content";
+    private static final String SELECTION_SUGGESTIONS = "selection";
     private static final String TITLE = "title";
+    private static final String SEARCH_URL = "searchUrl";
 
+    /** The parsed Json suggestions. */
     private final JSONObject mJsonSuggestions;
 
     /**
@@ -30,7 +41,8 @@ class RelatedSearchesList {
         try {
             suggestions = new JSONObject(jsonString);
         } catch (JSONException e) {
-            // TODO(donnd): log an error
+            Log.w(TAG,
+                    "RelatedSearchesList cannot parse JSON: " + jsonString + "\n" + e.getMessage());
             suggestions = new JSONObject();
         }
         mJsonSuggestions = suggestions;
@@ -40,18 +52,64 @@ class RelatedSearchesList {
      * Returns a list of queries. This implementation may change based on whether we're showing
      * suggestions in more than one place or not. This just returns the "default" list with
      * the current interpretation of that concept.
+     * @param isInBarSuggestion Whether the query should be displayed in the Bar or content area
+     *                          of the Panel.
      * @return A {@code List<String>} of search suggestions.
      */
-    List<String> getQueries() {
+    List<String> getQueries(boolean isInBarSuggestion) {
         List<String> results = new ArrayList<String>();
-        try {
-            JSONArray suggestions = mJsonSuggestions.getJSONArray(CONTENT_SUGGESTIONS);
-            for (int i = 0; i < suggestions.length(); i++) {
+        JSONArray suggestions = getSuggestions(isInBarSuggestion);
+        if (suggestions == null) return results;
+        for (int i = 0; i < suggestions.length(); i++) {
+            try {
                 results.add(suggestions.getJSONObject(i).getString(TITLE));
+            } catch (JSONException e) {
+                Log.w(TAG,
+                        "RelatedSearchesList cannot find a query with a title at suggestion "
+                                + "index: " + i + "\n" + e.getMessage());
             }
-        } catch (JSONException e) {
-            // TODO(donnd): log an error
         }
         return results;
+    }
+
+    /**
+     * Returns the URI for the search request for the given suggestion.
+     * @param suggestionIndex Which suggestion to get, zero-based from the list sent by the server.
+     * @param isInBarSuggestion Whether the query should be displayed in the Bar or content area
+     *                        of the Panel.
+     * @return A URI that can be used to load the SERP in the Panel, or {@code null} in case of an
+     *         error.
+     */
+    @Nullable
+    Uri getSearchUri(int suggestionIndex, boolean isInBarSuggestion) {
+        JSONArray suggestions = getSuggestions(isInBarSuggestion);
+        if (suggestions == null) return null;
+        try {
+            String searchUrl = suggestions.getJSONObject(suggestionIndex).getString(SEARCH_URL);
+            Uri searchUri = Uri.parse(searchUrl);
+            return RelatedSearchesStamp.updateUriForSuggestionPosition(searchUri, suggestionIndex);
+        } catch (JSONException e) {
+            Log.w(TAG,
+                    "RelatedSearchesList cannot find a searchUrl in suggestion " + suggestionIndex
+                            + "\n" + e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Returns the suggestions array to show in the panel, or {@code null} if none.
+     * @param isInBarSuggestion Whether the query should be displayed in the Bar or content area
+     *                        of the Panel.
+     * @return A {@link JSONArray} of suggestions, or {@code null} in case of an error.
+     */
+    @Nullable
+    JSONArray getSuggestions(boolean isInBarSuggestion) {
+        try {
+            return mJsonSuggestions.getJSONArray(
+                    isInBarSuggestion ? SELECTION_SUGGESTIONS : CONTENT_SUGGESTIONS);
+        } catch (JSONException e) {
+            Log.w(TAG, "No suggestions found!\n" + e.getMessage());
+            return null;
+        }
     }
 }

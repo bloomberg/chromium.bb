@@ -38,6 +38,7 @@ bool IsNexus9();
 bool IsPixelXL();
 bool IsPixel2();
 bool IsPixel2XL();
+bool IsPixel4();
 bool IsNVIDIAShield();
 
 // GPU vendors.
@@ -165,6 +166,11 @@ struct CombinedPrintToStringParamName
 #define ANGLE_INSTANTIATE_TEST_ES2(testName)                                         \
     const PlatformParameters testName##params[] = {ANGLE_ALL_TEST_PLATFORMS_ES2};    \
     INSTANTIATE_TEST_SUITE_P(, testName, ANGLE_INSTANTIATE_TEST_PLATFORMS(testName), \
+                             testing::PrintToStringParamName())
+
+#define ANGLE_INSTANTIATE_TEST_ES2_AND(testName, ...)                                          \
+    const PlatformParameters testName##params[] = {ANGLE_ALL_TEST_PLATFORMS_ES2, __VA_ARGS__}; \
+    INSTANTIATE_TEST_SUITE_P(, testName, ANGLE_INSTANTIATE_TEST_PLATFORMS(testName),           \
                              testing::PrintToStringParamName())
 
 // Instantiate the test once for each GLES3 platform

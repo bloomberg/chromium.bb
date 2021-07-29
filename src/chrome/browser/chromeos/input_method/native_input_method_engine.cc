@@ -13,13 +13,16 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_offset_string_conversions.h"
+#include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/input_method/autocorrect_manager.h"
+#include "chrome/browser/chromeos/input_method/grammar_service_client.h"
 #include "chrome/browser/chromeos/input_method/suggestions_service_client.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/services/ime/public/mojom/input_method.mojom.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
@@ -29,6 +32,8 @@
 namespace chromeos {
 
 namespace {
+
+namespace mojom = ime::mojom;
 
 // Returns the current input context. This may change during the session, even
 // if the IME engine does not change.
@@ -73,15 +78,6 @@ std::string NormalizeRuleBasedEngineId(const std::string engine_id) {
     return "m17n:" + engine_id.substr(4);
   }
   return engine_id;
-}
-
-std::u16string ConvertToUtf16AndNormalize(const std::string& str) {
-  // TODO(https://crbug.com/1185629): Add a new helper in
-  // base/i18n/icu_string_conversions.h that does the conversion directly
-  // without a redundant UTF16->UTF8 conversion.
-  std::string normalized_str;
-  base::ConvertToUtf8AndNormalize(str, base::kCodepageUTF8, &normalized_str);
-  return base::UTF8ToUTF16(normalized_str);
 }
 
 ime::mojom::ModifierStatePtr ModifierStateFromEvent(const ui::KeyEvent& event) {
@@ -140,14 +136,245 @@ void LogEvent(ImeServiceEvent event) {
   UMA_HISTOGRAM_ENUMERATION("InputMethod.Mojo.Extension.Event", event);
 }
 
-ime::mojom::PhysicalKeyEventPtr CreatePhysicalKeyEventFromKeyEvent(
+// Not using a EnumTraits here because the mapping is not 1:1.
+mojom::DomCode DomCodeToMojom(const ui::DomCode code) {
+  switch (code) {
+    case ui::DomCode::BACKQUOTE:
+      return mojom::DomCode::kBackquote;
+    case ui::DomCode::BACKSLASH:
+      return mojom::DomCode::kBackslash;
+    case ui::DomCode::BRACKET_LEFT:
+      return mojom::DomCode::kBracketLeft;
+    case ui::DomCode::BRACKET_RIGHT:
+      return mojom::DomCode::kBracketRight;
+    case ui::DomCode::COMMA:
+      return mojom::DomCode::kComma;
+    case ui::DomCode::DIGIT0:
+      return mojom::DomCode::kDigit0;
+    case ui::DomCode::DIGIT1:
+      return mojom::DomCode::kDigit1;
+    case ui::DomCode::DIGIT2:
+      return mojom::DomCode::kDigit2;
+    case ui::DomCode::DIGIT3:
+      return mojom::DomCode::kDigit3;
+    case ui::DomCode::DIGIT4:
+      return mojom::DomCode::kDigit4;
+    case ui::DomCode::DIGIT5:
+      return mojom::DomCode::kDigit5;
+    case ui::DomCode::DIGIT6:
+      return mojom::DomCode::kDigit6;
+    case ui::DomCode::DIGIT7:
+      return mojom::DomCode::kDigit7;
+    case ui::DomCode::DIGIT8:
+      return mojom::DomCode::kDigit8;
+    case ui::DomCode::DIGIT9:
+      return mojom::DomCode::kDigit9;
+    case ui::DomCode::EQUAL:
+      return mojom::DomCode::kEqual;
+    case ui::DomCode::INTL_BACKSLASH:
+      return mojom::DomCode::kIntlBackslash;
+    case ui::DomCode::INTL_RO:
+      return mojom::DomCode::kIntlRo;
+    case ui::DomCode::INTL_YEN:
+      return mojom::DomCode::kIntlYen;
+    case ui::DomCode::US_A:
+      return mojom::DomCode::kKeyA;
+    case ui::DomCode::US_B:
+      return mojom::DomCode::kKeyB;
+    case ui::DomCode::US_C:
+      return mojom::DomCode::kKeyC;
+    case ui::DomCode::US_D:
+      return mojom::DomCode::kKeyD;
+    case ui::DomCode::US_E:
+      return mojom::DomCode::kKeyE;
+    case ui::DomCode::US_F:
+      return mojom::DomCode::kKeyF;
+    case ui::DomCode::US_G:
+      return mojom::DomCode::kKeyG;
+    case ui::DomCode::US_H:
+      return mojom::DomCode::kKeyH;
+    case ui::DomCode::US_I:
+      return mojom::DomCode::kKeyI;
+    case ui::DomCode::US_J:
+      return mojom::DomCode::kKeyJ;
+    case ui::DomCode::US_K:
+      return mojom::DomCode::kKeyK;
+    case ui::DomCode::US_L:
+      return mojom::DomCode::kKeyL;
+    case ui::DomCode::US_M:
+      return mojom::DomCode::kKeyM;
+    case ui::DomCode::US_N:
+      return mojom::DomCode::kKeyN;
+    case ui::DomCode::US_O:
+      return mojom::DomCode::kKeyO;
+    case ui::DomCode::US_P:
+      return mojom::DomCode::kKeyP;
+    case ui::DomCode::US_Q:
+      return mojom::DomCode::kKeyQ;
+    case ui::DomCode::US_R:
+      return mojom::DomCode::kKeyR;
+    case ui::DomCode::US_S:
+      return mojom::DomCode::kKeyS;
+    case ui::DomCode::US_T:
+      return mojom::DomCode::kKeyT;
+    case ui::DomCode::US_U:
+      return mojom::DomCode::kKeyU;
+    case ui::DomCode::US_V:
+      return mojom::DomCode::kKeyV;
+    case ui::DomCode::US_W:
+      return mojom::DomCode::kKeyW;
+    case ui::DomCode::US_X:
+      return mojom::DomCode::kKeyX;
+    case ui::DomCode::US_Y:
+      return mojom::DomCode::kKeyY;
+    case ui::DomCode::US_Z:
+      return mojom::DomCode::kKeyZ;
+    case ui::DomCode::MINUS:
+      return mojom::DomCode::kMinus;
+    case ui::DomCode::PERIOD:
+      return mojom::DomCode::kPeriod;
+    case ui::DomCode::QUOTE:
+      return mojom::DomCode::kQuote;
+    case ui::DomCode::SEMICOLON:
+      return mojom::DomCode::kSemicolon;
+    case ui::DomCode::SLASH:
+      return mojom::DomCode::kSlash;
+    case ui::DomCode::BACKSPACE:
+      return mojom::DomCode::kBackspace;
+    case ui::DomCode::ENTER:
+      return mojom::DomCode::kEnter;
+    case ui::DomCode::SPACE:
+      return mojom::DomCode::kSpace;
+    case ui::DomCode::ALT_LEFT:
+      return mojom::DomCode::kAltLeft;
+    case ui::DomCode::ALT_RIGHT:
+      return mojom::DomCode::kAltRight;
+    case ui::DomCode::SHIFT_LEFT:
+      return mojom::DomCode::kShiftLeft;
+    case ui::DomCode::SHIFT_RIGHT:
+      return mojom::DomCode::kShiftRight;
+    case ui::DomCode::CONTROL_LEFT:
+      return mojom::DomCode::kControlLeft;
+    case ui::DomCode::CONTROL_RIGHT:
+      return mojom::DomCode::kControlRight;
+    case ui::DomCode::CAPS_LOCK:
+      return mojom::DomCode::kCapsLock;
+    default:
+      return mojom::DomCode::kOther;
+  }
+}
+
+// Not using an EnumTraits here because the mapping is not 1:1.
+absl::optional<mojom::NamedDomKey> NamedDomKeyToMojom(
+    const ui::DomKey::Base& key) {
+  switch (key) {
+    case ui::DomKey::ALT:
+      return mojom::NamedDomKey::kAlt;
+    case ui::DomKey::ALT_GRAPH:
+      return mojom::NamedDomKey::kAltGraph;
+    case ui::DomKey::CAPS_LOCK:
+      return mojom::NamedDomKey::kCapsLock;
+    case ui::DomKey::CONTROL:
+      return mojom::NamedDomKey::kControl;
+    case ui::DomKey::SHIFT:
+      return mojom::NamedDomKey::kShift;
+    case ui::DomKey::ENTER:
+      return mojom::NamedDomKey::kEnter;
+    case ui::DomKey::BACKSPACE:
+      return mojom::NamedDomKey::kBackspace;
+    default:
+      return absl::nullopt;
+  }
+}
+
+// Returns nullptr if it's not convertible.
+// Not using a UnionTraits here because the mapping is not 1:1.
+mojom::DomKeyPtr DomKeyToMojom(const ui::DomKey& key) {
+  // `IsCharacter` may return true for named keys like Enter because they have a
+  // Unicode representation. Hence, try to convert the key into a named key
+  // first before trying to convert it to a character key.
+  if (ui::KeycodeConverter::IsDomKeyNamed(key)) {
+    absl::optional<mojom::NamedDomKey> named_key = NamedDomKeyToMojom(key);
+    return named_key ? mojom::DomKey::NewNamedKey(*named_key) : nullptr;
+  }
+  if (key.IsCharacter()) {
+    return mojom::DomKey::NewCodepoint(key.ToCharacter());
+  }
+  return nullptr;
+}
+
+// Returns nullptr if it's not convertible.
+// Not using a StructTraits here because the mapping is not 1:1.
+mojom::PhysicalKeyEventPtr CreatePhysicalKeyEventFromKeyEvent(
     const ui::KeyEvent& event) {
+  mojom::DomKeyPtr key = DomKeyToMojom(event.GetDomKey());
+  if (!key) {
+    return nullptr;
+  }
+
   return ime::mojom::PhysicalKeyEvent::New(
       event.type() == ui::ET_KEY_PRESSED ? ime::mojom::KeyEventType::kKeyDown
                                          : ime::mojom::KeyEventType::kKeyUp,
-      ui::KeycodeConverter::DomCodeToCodeString(event.code()),
-      ui::KeycodeConverter::DomKeyToKeyString(event.GetDomKey()),
+      std::move(key), DomCodeToMojom(event.code()),
       ModifierStateFromEvent(event));
+}
+
+uint32_t Utf8ToCodepoint(const std::string& str) {
+  int32_t index = 0;
+  uint32_t codepoint = 0;
+  base::ReadUnicodeCharacter(str.data(), str.length(), &index, &codepoint);
+
+  // Should only contain a single codepoint.
+  DCHECK_EQ(index, str.length() - 1);
+  return codepoint;
+}
+
+uint32_t Utf16ToCodepoint(const std::u16string& str) {
+  int32_t index = 0;
+  uint32_t codepoint = 0;
+  base::ReadUnicodeCharacter(str.data(), str.length(), &index, &codepoint);
+
+  // Should only contain a single codepoint.
+  DCHECK_EQ(index, str.length() - 1);
+  return codepoint;
+}
+
+ui::ImeTextSpan::Thickness GetCompositionSpanThickness(
+    const ime::mojom::CompositionSpanStyle& style) {
+  switch (style) {
+    case ime::mojom::CompositionSpanStyle::kNone:
+      return ui::ImeTextSpan::Thickness::kNone;
+    case ime::mojom::CompositionSpanStyle::kDefault:
+      return ui::ImeTextSpan::Thickness::kThin;
+  }
+}
+
+// Not using a StructTraits here because the mapping is not 1:1.
+ui::ImeTextSpan CompositionSpanToImeTextSpan(
+    const ime::mojom::CompositionSpan& span) {
+  return ui::ImeTextSpan(ui::ImeTextSpan::Type::kComposition, span.start,
+                         span.end, GetCompositionSpanThickness(span.style),
+                         span.style == ime::mojom::CompositionSpanStyle::kNone
+                             ? ui::ImeTextSpan::UnderlineStyle::kNone
+                             : ui::ImeTextSpan::UnderlineStyle::kSolid);
+}
+
+void OnConnected(bool bound) {
+  LogEvent(bound ? ImeServiceEvent::kActivateImeSuccess
+                 : ImeServiceEvent::kActivateImeFailed);
+}
+
+void OnError(base::Time start) {
+  LOG(ERROR) << "IME Service connection error";
+
+  // If the Mojo pipe disconnection happens in 1000 ms after the service
+  // is initialized, we consider it as a failure. Normally it's caused
+  // by the Mojo service itself or misconfigured on Chrome OS.
+  if (base::Time::Now() - start < base::TimeDelta::FromMilliseconds(1000)) {
+    LogEvent(ImeServiceEvent::kInitFailed);
+  } else {
+    LogEvent(ImeServiceEvent::kServiceDisconnected);
+  }
 }
 
 }  // namespace
@@ -169,12 +396,12 @@ void NativeInputMethodEngine::Initialize(
   autocorrect_manager_ = autocorrect_manager.get();
 
   auto suggestions_service_client =
-      base::FeatureList::IsEnabled(chromeos::features::kAssistMultiWord)
+      chromeos::features::IsAssistiveMultiWordEnabled()
           ? std::make_unique<SuggestionsServiceClient>()
           : nullptr;
 
   auto suggestions_collector =
-      base::FeatureList::IsEnabled(chromeos::features::kAssistMultiWord)
+      chromeos::features::IsAssistiveMultiWordEnabled()
           ? std::make_unique<SuggestionsCollector>(
                 assistive_suggester_, std::move(suggestions_service_client))
           : nullptr;
@@ -188,7 +415,9 @@ void NativeInputMethodEngine::Initialize(
       std::make_unique<chromeos::NativeInputMethodEngine::ImeObserver>(
           profile->GetPrefs(), std::move(observer),
           std::move(assistive_suggester), std::move(autocorrect_manager),
-          std::move(suggestions_collector), std::make_unique<GrammarManager>());
+          std::move(suggestions_collector),
+          std::make_unique<GrammarManager>(
+              profile, std::make_unique<GrammarServiceClient>(), this));
   InputMethodEngine::Initialize(std::move(native_observer), extension_id,
                                 profile);
 }
@@ -235,7 +464,6 @@ NativeInputMethodEngine::ImeObserver::ImeObserver(
     std::unique_ptr<GrammarManager> grammar_manager)
     : prefs_(prefs),
       ime_base_observer_(std::move(ime_base_observer)),
-      receiver_from_engine_(this),
       assistive_suggester_(std::move(assistive_suggester)),
       autocorrect_manager_(std::move(autocorrect_manager)),
       suggestions_collector_(std::move(suggestions_collector)),
@@ -250,8 +478,8 @@ void NativeInputMethodEngine::ImeObserver::OnActivate(
   if (ShouldRouteToFstMojoEngine(engine_id) &&
       !IsPhysicalKeyboardAutocorrectEnabled(prefs_, engine_id)) {
     remote_manager_.reset();
-    remote_to_engine_.reset();
-    receiver_from_engine_.reset();
+    input_method_.reset();
+    host_receiver_.reset();
     return;
   }
 
@@ -260,24 +488,21 @@ void NativeInputMethodEngine::ImeObserver::OnActivate(
       auto* ime_manager = input_method::InputMethodManager::Get();
       ime_manager->ConnectInputEngineManager(
           remote_manager_.BindNewPipeAndPassReceiver());
-      remote_manager_.set_disconnect_handler(base::BindOnce(
-          &ImeObserver::OnError, base::Unretained(this), base::Time::Now()));
+      remote_manager_.set_disconnect_handler(
+          base::BindOnce(&OnError, base::Time::Now()));
       LogEvent(ImeServiceEvent::kInitSuccess);
     }
 
     const auto new_engine_id = NormalizeRuleBasedEngineId(engine_id);
 
     // Deactivate any existing engine.
-    remote_to_engine_.reset();
-    receiver_from_engine_.reset();
+    input_method_.reset();
+    host_receiver_.reset();
 
-    // Pass an extra parameter to indicate that this connection is from
-    // NativeInputMethodEngine.
-    remote_manager_->ConnectToImeEngine(
-        new_engine_id, remote_to_engine_.BindNewPipeAndPassReceiver(),
-        receiver_from_engine_.BindNewPipeAndPassRemote(), /*extra=*/{0},
-        base::BindOnce(&ImeObserver::OnConnected, base::Unretained(this),
-                       base::Time::Now(), new_engine_id));
+    remote_manager_->ConnectToInputMethod(
+        new_engine_id, input_method_.BindNewPipeAndPassReceiver(),
+        host_receiver_.BindNewPipeAndPassRemote(),
+        base::BindOnce(&OnConnected));
 
     // Notify the virtual keyboard extension that the IME has changed.
     ime_base_observer_->OnActivate(engine_id);
@@ -286,40 +511,28 @@ void NativeInputMethodEngine::ImeObserver::OnActivate(
       auto* ime_manager = input_method::InputMethodManager::Get();
       ime_manager->ConnectInputEngineManager(
           remote_manager_.BindNewPipeAndPassReceiver());
-      remote_manager_.set_disconnect_handler(base::BindOnce(
-          &ImeObserver::OnError, base::Unretained(this), base::Time::Now()));
+      remote_manager_.set_disconnect_handler(
+          base::BindOnce(&OnError, base::Time::Now()));
       LogEvent(ImeServiceEvent::kInitSuccess);
     }
 
     // Deactivate any existing engine.
-    remote_to_engine_.reset();
-    receiver_from_engine_.reset();
+    input_method_.reset();
+    host_receiver_.reset();
 
-    remote_manager_->ConnectToImeEngine(
-        engine_id, remote_to_engine_.BindNewPipeAndPassReceiver(),
-        receiver_from_engine_.BindNewPipeAndPassRemote(), /*extra=*/{0},
-        base::BindOnce(&ImeObserver::OnConnected, base::Unretained(this),
-                       base::Time::Now(), engine_id));
-
-    // `ConnectToImeEngine` doesn't actually activate the IME in the IME
-    // service. We must call `OnInputMethodChanged` as well.
-    remote_to_engine_->OnInputMethodChanged(engine_id);
+    remote_manager_->ConnectToInputMethod(
+        engine_id, input_method_.BindNewPipeAndPassReceiver(),
+        host_receiver_.BindNewPipeAndPassRemote(),
+        base::BindOnce(&OnConnected));
   } else {
     // Release the IME service.
     // TODO(b/147709499): A better way to cleanup all.
     remote_manager_.reset();
-    remote_to_engine_.reset();
-    receiver_from_engine_.reset();
+    input_method_.reset();
+    host_receiver_.reset();
 
     ime_base_observer_->OnActivate(engine_id);
   }
-}
-void NativeInputMethodEngine::ImeObserver::ProcessMessage(
-    const std::vector<uint8_t>& message,
-    ProcessMessageCallback callback) {
-  // NativeInputMethodEngine doesn't use binary messages, but it must run the
-  // callback to avoid dropping the connection.
-  std::move(callback).Run(std::vector<uint8_t>());
 }
 
 void NativeInputMethodEngine::ImeObserver::OnFocus(
@@ -331,11 +544,11 @@ void NativeInputMethodEngine::ImeObserver::OnFocus(
   }
   autocorrect_manager_->OnFocus(context_id);
   if (grammar_manager_->IsOnDeviceGrammarEnabled()) {
-    grammar_manager_->OnFocus(context_id);
+    grammar_manager_->OnFocus(context_id, context.flags);
   }
   if (ShouldRouteToFstMojoEngine(engine_id)) {
-    if (remote_to_engine_.is_bound()) {
-      remote_to_engine_->OnFocus(ime::mojom::InputFieldInfo::New(
+    if (input_method_.is_bound()) {
+      input_method_->OnFocus(ime::mojom::InputFieldInfo::New(
           TextInputTypeToMojoType(context.type),
           AutocorrectFlagsToMojoType(context.flags),
           context.should_do_learning
@@ -353,8 +566,8 @@ void NativeInputMethodEngine::ImeObserver::OnBlur(const std::string& engine_id,
     assistive_suggester_->OnBlur();
 
   if (ShouldRouteToFstMojoEngine(engine_id)) {
-    if (remote_to_engine_.is_bound()) {
-      remote_to_engine_->OnBlur();
+    if (input_method_.is_bound()) {
+      input_method_->OnBlur();
     }
   } else {
     ime_base_observer_->OnBlur(engine_id, context_id);
@@ -381,14 +594,9 @@ void NativeInputMethodEngine::ImeObserver::OnKeyEvent(
     return;
   }
 
-  if (ShouldRouteToRuleBasedEngine(engine_id) && remote_to_engine_.is_bound()) {
-    remote_to_engine_->ProcessKeypressForRulebased(
-        CreatePhysicalKeyEventFromKeyEvent(event),
-        base::BindOnce(&ImeObserver::OnRuleBasedKeyEventResponse,
-                       base::Unretained(this), base::Time::Now(),
-                       std::move(callback)));
-  } else if (ShouldRouteToFstMojoEngine(engine_id)) {
-    if (remote_to_engine_.is_bound()) {
+  if (ShouldRouteToRuleBasedEngine(engine_id) ||
+      ShouldRouteToFstMojoEngine(engine_id)) {
+    if (input_method_.is_bound()) {
       // CharacterComposer only takes KEY_PRESSED events.
       const bool filtered = event.type() == ui::ET_KEY_PRESSED &&
                             character_composer_.FilterKeyPress(event);
@@ -400,15 +608,29 @@ void NativeInputMethodEngine::ImeObserver::OnKeyEvent(
         return;
       }
 
-      auto key_event = CreatePhysicalKeyEventFromKeyEvent(event);
+      mojom::PhysicalKeyEventPtr key_event =
+          CreatePhysicalKeyEventFromKeyEvent(event);
+      if (!key_event) {
+        std::move(callback).Run(false);
+        return;
+      }
       if (filtered) {
         // TODO(b/174612548): Transform the corresponding KEY_RELEASED event to
         // use the composed character as well.
-        key_event->key =
-            base::UTF16ToUTF8(character_composer_.composed_character());
+        key_event->key = mojom::DomKey::NewCodepoint(
+            Utf16ToCodepoint(character_composer_.composed_character()));
       }
 
-      remote_to_engine_->OnKeyEvent(std::move(key_event), std::move(callback));
+      input_method_->ProcessKeyEvent(
+          std::move(key_event),
+          base::BindOnce(
+              [](ui::IMEEngineHandlerInterface::KeyEventDoneCallback
+                     original_callback,
+                 ime::mojom::KeyEventResult result) {
+                std::move(original_callback)
+                    .Run(result == ime::mojom::KeyEventResult::kConsumedByIme);
+              },
+              std::move(callback)));
     } else {
       std::move(callback).Run(false);
     }
@@ -419,11 +641,10 @@ void NativeInputMethodEngine::ImeObserver::OnKeyEvent(
 
 void NativeInputMethodEngine::ImeObserver::OnReset(
     const std::string& engine_id) {
-  if (remote_to_engine_.is_bound() && ShouldRouteToRuleBasedEngine(engine_id)) {
-    remote_to_engine_->ResetForRulebased();
-  } else if (ShouldRouteToFstMojoEngine(engine_id)) {
-    if (remote_to_engine_.is_bound()) {
-      remote_to_engine_->OnCompositionCanceled();
+  if (ShouldRouteToFstMojoEngine(engine_id) ||
+      ShouldRouteToRuleBasedEngine(engine_id)) {
+    if (input_method_.is_bound()) {
+      input_method_->OnCompositionCanceledBySystem();
     }
   } else {
     ime_base_observer_->OnReset(engine_id);
@@ -433,7 +654,7 @@ void NativeInputMethodEngine::ImeObserver::OnReset(
 void NativeInputMethodEngine::ImeObserver::OnDeactivated(
     const std::string& engine_id) {
   if (ShouldRouteToRuleBasedEngine(engine_id)) {
-    remote_to_engine_.reset();
+    input_method_.reset();
   }
   ime_base_observer_->OnDeactivated(engine_id);
 }
@@ -449,6 +670,8 @@ void NativeInputMethodEngine::ImeObserver::OnSurroundingTextChanged(
     int cursor_pos,
     int anchor_pos,
     int offset_pos) {
+  DCHECK_GE(cursor_pos, 0);
+  DCHECK_GE(anchor_pos, 0);
   assistive_suggester_->RecordAssistiveMatchMetrics(text, cursor_pos,
                                                     anchor_pos);
   if (assistive_suggester_->IsAssistiveFeatureEnabled()) {
@@ -460,8 +683,9 @@ void NativeInputMethodEngine::ImeObserver::OnSurroundingTextChanged(
     grammar_manager_->OnSurroundingTextChanged(text, cursor_pos, anchor_pos);
   }
   if (ShouldRouteToFstMojoEngine(engine_id)) {
-    if (remote_to_engine_.is_bound()) {
-      std::vector<size_t> selection_indices = {anchor_pos, cursor_pos};
+    if (input_method_.is_bound()) {
+      std::vector<size_t> selection_indices = {static_cast<size_t>(anchor_pos),
+                                               static_cast<size_t>(cursor_pos)};
       std::string utf8_text =
           base::UTF16ToUTF8AndAdjustOffsets(text, &selection_indices);
 
@@ -469,8 +693,8 @@ void NativeInputMethodEngine::ImeObserver::OnSurroundingTextChanged(
       selection->anchor = selection_indices[0];
       selection->focus = selection_indices[1];
 
-      remote_to_engine_->OnSurroundingTextChanged(
-          std::move(utf8_text), offset_pos, std::move(selection));
+      input_method_->OnSurroundingTextChanged(std::move(utf8_text), offset_pos,
+                                              std::move(selection));
     }
   } else {
     ime_base_observer_->OnSurroundingTextChanged(engine_id, text, cursor_pos,
@@ -512,9 +736,17 @@ void NativeInputMethodEngine::ImeObserver::OnAssistiveWindowButtonClicked(
       if (assistive_suggester_->IsAssistiveFeatureEnabled()) {
         assistive_suggester_->AcceptSuggestion(button.index);
       }
+      if (grammar_manager_->IsOnDeviceGrammarEnabled()) {
+        grammar_manager_->AcceptSuggestion();
+      }
       break;
     case ui::ime::ButtonId::kUndo:
       autocorrect_manager_->UndoAutocorrect();
+      break;
+    case ui::ime::ButtonId::kIgnoreSuggestion:
+      if (grammar_manager_->IsOnDeviceGrammarEnabled()) {
+        grammar_manager_->IgnoreSuggestion();
+      }
       break;
     case ui::ime::ButtonId::kAddToDictionary:
     case ui::ime::ButtonId::kNone:
@@ -551,10 +783,10 @@ void NativeInputMethodEngine::ImeObserver::OnInputMethodOptionsChanged(
 }
 
 void NativeInputMethodEngine::ImeObserver::CommitText(
-    const std::string& text,
+    const std::u16string& text,
     ime::mojom::CommitTextCursorBehavior cursor_behavior) {
   GetInputContext()->CommitText(
-      ConvertToUtf16AndNormalize(text),
+      text,
       cursor_behavior ==
               ime::mojom::CommitTextCursorBehavior::kMoveCursorBeforeText
           ? ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorBeforeText
@@ -563,23 +795,25 @@ void NativeInputMethodEngine::ImeObserver::CommitText(
 }
 
 void NativeInputMethodEngine::ImeObserver::SetComposition(
-    const std::string& text) {
+    const std::u16string& text,
+    std::vector<ime::mojom::CompositionSpanPtr> spans) {
   ui::CompositionText composition;
-  composition.text = ConvertToUtf16AndNormalize(text);
-  // TODO(b/151884011): Turn on underlining for composition-based languages.
-  composition.ime_text_spans = {ui::ImeTextSpan(
-      ui::ImeTextSpan::Type::kComposition, 0, composition.text.length(),
-      ui::ImeTextSpan::Thickness::kNone,
-      ui::ImeTextSpan::UnderlineStyle::kNone)};
+  composition.text = text;
+
+  composition.ime_text_spans.reserve(spans.size());
+  for (const auto& span : spans) {
+    composition.ime_text_spans.push_back(CompositionSpanToImeTextSpan(*span));
+  }
+
   GetInputContext()->UpdateCompositionText(
       std::move(composition), /*cursor_pos=*/composition.text.length(),
       /*visible=*/true);
 }
 
 void NativeInputMethodEngine::ImeObserver::SetCompositionRange(
-    uint32_t start_byte_index,
-    uint32_t end_byte_index) {
-  const auto ordered_range = std::minmax(start_byte_index, end_byte_index);
+    uint32_t start_index,
+    uint32_t end_index) {
+  const auto ordered_range = std::minmax(start_index, end_index);
   // TODO(b/151884011): Turn on underlining for composition-based languages.
   GetInputContext()->SetComposingRange(
       ordered_range.first, ordered_range.second,
@@ -596,19 +830,18 @@ void NativeInputMethodEngine::ImeObserver::FinishComposition() {
 }
 
 void NativeInputMethodEngine::ImeObserver::DeleteSurroundingText(
-    uint32_t num_bytes_before_cursor,
-    uint32_t num_bytes_after_cursor) {
+    uint32_t num_before_cursor,
+    uint32_t num_after_cursor) {
   GetInputContext()->DeleteSurroundingText(
-      /*offset=*/-static_cast<int>(num_bytes_before_cursor),
-      /*length=*/num_bytes_before_cursor + num_bytes_after_cursor);
+      /*offset=*/-static_cast<int>(num_before_cursor),
+      /*length=*/num_before_cursor + num_after_cursor);
 }
 
 void NativeInputMethodEngine::ImeObserver::HandleAutocorrect(
     ime::mojom::AutocorrectSpanPtr autocorrect_span) {
-  autocorrect_manager_->HandleAutocorrect(
-      autocorrect_span->autocorrect_range,
-      base::UTF8ToUTF16(autocorrect_span->original_text),
-      base::UTF8ToUTF16(autocorrect_span->current_text));
+  autocorrect_manager_->HandleAutocorrect(autocorrect_span->autocorrect_range,
+                                          autocorrect_span->original_text,
+                                          autocorrect_span->current_text);
 }
 
 void NativeInputMethodEngine::ImeObserver::RequestSuggestions(
@@ -631,60 +864,16 @@ void NativeInputMethodEngine::ImeObserver::RecordUkm(
   if (entry->is_non_compliant_api()) {
     ui::RecordUkmNonCompliantApi(
         GetInputContext()->GetClientSourceForMetrics(),
-        static_cast<int>(
-            entry->get_non_compliant_api()->non_compliant_operation));
+        entry->get_non_compliant_api()->non_compliant_operation);
   }
 }
 
 void NativeInputMethodEngine::ImeObserver::FlushForTesting() {
   remote_manager_.FlushForTesting();
-  if (remote_to_engine_.is_bound())
-    receiver_from_engine_.FlushForTesting();
-  if (remote_to_engine_.is_bound())
-    remote_to_engine_.FlushForTesting();
-}
-
-void NativeInputMethodEngine::ImeObserver::OnConnected(base::Time start,
-                                                       std::string engine_id,
-                                                       bool bound) {
-  LogEvent(bound ? ImeServiceEvent::kActivateImeSuccess
-                 : ImeServiceEvent::kActivateImeSuccess);
-}
-
-void NativeInputMethodEngine::ImeObserver::OnError(base::Time start) {
-  LOG(ERROR) << "IME Service connection error";
-
-  // If the Mojo pipe disconnection happens in 1000 ms after the service
-  // is initialized, we consider it as a failure. Normally it's caused
-  // by the Mojo service itself or misconfigured on Chrome OS.
-  if (base::Time::Now() - start < base::TimeDelta::FromMilliseconds(1000)) {
-    LogEvent(ImeServiceEvent::kInitFailed);
-  } else {
-    LogEvent(ImeServiceEvent::kServiceDisconnected);
-  }
-}
-
-void NativeInputMethodEngine::ImeObserver::OnRuleBasedKeyEventResponse(
-    base::Time start,
-    ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback,
-    ime::mojom::KeypressResponseForRulebasedPtr response) {
-  for (const auto& op : response->operations) {
-    switch (op->method) {
-      case ime::mojom::OperationMethodForRulebased::COMMIT_TEXT:
-        GetInputContext()->CommitText(
-            ConvertToUtf16AndNormalize(op->arguments),
-            ui::TextInputClient::InsertTextCursorBehavior::
-                kMoveCursorAfterText);
-        break;
-      case ime::mojom::OperationMethodForRulebased::SET_COMPOSITION:
-        ui::CompositionText composition;
-        composition.text = ConvertToUtf16AndNormalize(op->arguments);
-        GetInputContext()->UpdateCompositionText(
-            composition, composition.text.length(), /*visible=*/true);
-        break;
-    }
-  }
-  std::move(callback).Run(response->result);
+  if (host_receiver_.is_bound())
+    host_receiver_.FlushForTesting();
+  if (input_method_.is_bound())
+    input_method_.FlushForTesting();
 }
 
 void NativeInputMethodEngine::ImeObserver::OnProfileWillBeDestroyed() {

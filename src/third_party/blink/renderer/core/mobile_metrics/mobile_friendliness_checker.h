@@ -12,11 +12,11 @@
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 
 namespace blink {
+
 class LocalFrameView;
 class LayoutObject;
-struct ViewportDescription;
 
-CORE_EXPORT extern const base::Feature kBadTapTargetsRatio;
+struct ViewportDescription;
 
 // Calculates the mobile usability of current page, especially friendliness on
 // smart phone devices are checked. The calculated value will be sent as a part
@@ -33,7 +33,7 @@ class CORE_EXPORT MobileFriendlinessChecker
   const blink::MobileFriendliness& GetMobileFriendliness() const {
     return mobile_friendliness_;
   }
-  void NotifyDocumentUnload();
+  void EvaluateNow();
 
   void Trace(Visitor* visitor) const;
   struct TextAreaWithFontSize {

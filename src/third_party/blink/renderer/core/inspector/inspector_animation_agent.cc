@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_computed_effect_timing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_optional_effect_timing.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_string_unrestricteddouble.h"
 #include "third_party/blink/renderer/core/animation/animation.h"
 #include "third_party/blink/renderer/core/animation/animation_effect.h"
 #include "third_party/blink/renderer/core/animation/css/css_animation.h"
@@ -103,7 +104,7 @@ static std::unique_ptr<protocol::Animation::AnimationEffect>
 BuildObjectForAnimationEffect(KeyframeEffect* effect) {
   ComputedEffectTiming* computed_timing = effect->getComputedTiming();
   double delay = computed_timing->delay();
-  double duration = computed_timing->duration().GetAsUnrestrictedDouble();
+  double duration = computed_timing->duration()->GetAsUnrestrictedDouble();
   String easing = effect->SpecifiedTiming().timing_function->ToString();
 
   std::unique_ptr<protocol::Animation::AnimationEffect> animation_object =
@@ -331,13 +332,7 @@ blink::Animation* InspectorAnimationAgent::AnimationClone(
     id_to_animation_clone_.Set(id, clone);
     id_to_animation_.Set(String::Number(clone->SequenceNumber()), clone);
     clone->play();
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     clone->setStartTime(animation->startTime(), ASSERT_NO_EXCEPTION);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-    CSSNumberish start_time;
-    animation->startTime(start_time);
-    clone->setStartTime(start_time);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
     animation->SetEffectSuppressed(true);
   }
@@ -391,9 +386,8 @@ Response InspectorAnimationAgent::setTiming(const String& animation_id,
   NonThrowableExceptionState exception_state;
 
   OptionalEffectTiming* timing = OptionalEffectTiming::Create();
-  UnrestrictedDoubleOrString unrestricted_duration;
-  unrestricted_duration.SetUnrestrictedDouble(duration);
-  timing->setDuration(unrestricted_duration);
+  timing->setDuration(
+      MakeGarbageCollected<V8UnionStringOrUnrestrictedDouble>(duration));
   timing->setDelay(delay);
   animation->effect()->updateTiming(timing, exception_state);
   return Response::Success();
@@ -413,8 +407,7 @@ Response InspectorAnimationAgent::resolveAnimation(
       To<KeyframeEffect>(animation->effect())->EffectTarget();
   Document* document = element->ownerDocument();
   LocalFrame* frame = document ? document->GetFrame() : nullptr;
-  ScriptState* script_state =
-      frame ? ToScriptStateForMainWorld(frame) : nullptr;
+  ScriptState* script_state = ToScriptStateForMainWorld(frame);
   if (!script_state)
     return Response::ServerError("Element not associated with a document.");
 

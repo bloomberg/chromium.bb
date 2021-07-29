@@ -16,7 +16,6 @@ import '//resources/polymer/v3_0/iron-icon/iron-icon.js';
 import '//resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import './sync_account_control.js';
 import './sync_encryption_options.js';
-import '../privacy_page/personalization_options.js';
 import '../settings_shared_css.js';
 import '../settings_vars_css.js';
 // <if expr="not chromeos">
@@ -25,13 +24,16 @@ import '//resources/cr_elements/cr_toast/cr_toast.m.js';
 
 import {assert, assertNotReached} from '//resources/js/assert.m.js';
 import {focusWithoutInk} from '//resources/js/cr/ui/focus_without_ink.m.js';
-import {WebUIListenerBehavior} from '//resources/js/web_ui_listener_behavior.m.js';
-import {flush, html, Polymer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from '//resources/js/web_ui_listener_behavior.m.js';
+import {flush, html, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
 
 import {loadTimeData} from '../i18n_setup.js';
-import {Route, RouteObserverBehavior, Router} from '../router.js';
+import {SettingsPersonalizationOptionsElement} from '../privacy_page/personalization_options.js';
+import {Route, RouteObserverMixin, RouteObserverMixinInterface, Router} from '../router.js';
 
 import {PageStatus, StatusAction, SyncBrowserProxy, SyncBrowserProxyImpl, SyncPrefs, SyncStatus} from './sync_browser_proxy.js';
+import {SettingsSyncEncryptionOptionsElement} from './sync_encryption_options.js';
 
 // TODO(rbpotter): Remove this typedef when this file is no longer needed by OS
 // Settings.
@@ -55,183 +57,215 @@ function getSyncRoutes() {
  * @fileoverview
  * 'settings-sync-page' is the settings page containing sync settings.
  */
-Polymer({
-  is: 'settings-sync-page',
 
-  _template: html`{__html_template__}`,
+/**
+ * @constructor
+ * @extends {PolymerElement}
+ * @implements {I18nBehaviorInterface}
+ * @implements {RouteObserverMixinInterface}
+ * @implements {WebUIListenerBehaviorInterface}
+ */
+const SettingsSyncPageElementBase = mixinBehaviors(
+    [WebUIListenerBehavior, I18nBehavior], RouteObserverMixin(PolymerElement));
 
-  behaviors: [
-    WebUIListenerBehavior,
-    RouteObserverBehavior,
-  ],
+/** @polymer */
+export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
+  static get is() {
+    return 'settings-sync-page';
+  }
 
-  properties: {
-    /**
-     * Preferences state.
-     */
-    prefs: {
-      type: Object,
-      notify: true,
-    },
+  static get template() {
+    return html`{__html_template__}`;
+  }
 
-    /** @private {!Map<string, (string|Function)>} */
-    focusConfig: {
-      type: Object,
-      observer: 'onFocusConfigChange_',
-    },
+  static get properties() {
+    return {
+      /**
+       * Preferences state.
+       */
+      prefs: {
+        type: Object,
+        notify: true,
+      },
 
-    /** @private */
-    pages_: {
-      type: Object,
-      value: PageStatus,
-      readOnly: true,
-    },
+      /** @private {!Map<string, (string|Function)>} */
+      focusConfig: {
+        type: Object,
+        observer: 'onFocusConfigChange_',
+      },
 
-    /**
-     * The current page status. Defaults to |CONFIGURE| such that the searching
-     * algorithm can search useful content when the page is not visible to the
-     * user.
-     * @private {?PageStatus}
-     */
-    pageStatus_: {
-      type: String,
-      value: PageStatus.CONFIGURE,
-    },
+      /** @private */
+      pages_: {
+        type: Object,
+        value: PageStatus,
+        readOnly: true,
+      },
 
-    /**
-     * Dictionary defining page visibility.
-     * TODO(dpapad): Restore the type information here (PrivacyPageVisibility),
-     * when this file is no longer shared with chrome://os-settings.
-     */
-    pageVisibility: Object,
+      /**
+       * The current page status. Defaults to |CONFIGURE| such that the
+       * searching algorithm can search useful content when the page is not
+       * visible to the user.
+       * @private {?PageStatus}
+       */
+      pageStatus_: {
+        type: String,
+        value: PageStatus.CONFIGURE,
+      },
 
-    /**
-     * The current sync preferences, supplied by SyncBrowserProxy.
-     * @type {SyncPrefs|undefined}
-     */
-    syncPrefs: {
-      type: Object,
-    },
+      /**
+       * Dictionary defining page visibility.
+       * TODO(dpapad): Restore the type information here
+       * (PrivacyPageVisibility), when this file is no longer shared with
+       * chrome://os-settings.
+       */
+      pageVisibility: Object,
 
-    /** @type {SyncStatus} */
-    syncStatus: {
-      type: Object,
-    },
+      /**
+       * The current sync preferences, supplied by SyncBrowserProxy.
+       * @type {SyncPrefs|undefined}
+       */
+      syncPrefs: {
+        type: Object,
+      },
 
-    /** @private */
-    dataEncrypted_: {
-      type: Boolean,
-      computed: 'computeDataEncrypted_(syncPrefs.encryptAllData)'
-    },
+      /** @type {SyncStatus} */
+      syncStatus: {
+        type: Object,
+      },
 
-    /** @private */
-    encryptionExpanded_: {
-      type: Boolean,
-      value: false,
-    },
+      /** @private */
+      dataEncrypted_: {
+        type: Boolean,
+        computed: 'computeDataEncrypted_(syncPrefs.encryptAllData)'
+      },
 
-    /** If true, override |encryptionExpanded_| to be true. */
-    forceEncryptionExpanded: {
-      type: Boolean,
-      value: false,
-    },
+      /** @private */
+      encryptionExpanded_: {
+        type: Boolean,
+        value: false,
+      },
 
-    /**
-     * The existing passphrase input field value.
-     * @private
-     */
-    existingPassphrase_: {
-      type: String,
-      value: '',
-    },
+      /** If true, override |encryptionExpanded_| to be true. */
+      forceEncryptionExpanded: {
+        type: Boolean,
+        value: false,
+      },
 
-    /** @private */
-    signedIn_: {
-      type: Boolean,
-      value: true,
-      computed: 'computeSignedIn_(syncStatus.signedIn)',
-    },
+      /**
+       * The existing passphrase input field value.
+       * @private
+       */
+      existingPassphrase_: {
+        type: String,
+        value: '',
+      },
 
-    /** @private */
-    syncDisabledByAdmin_: {
-      type: Boolean,
-      value: false,
-      computed: 'computeSyncDisabledByAdmin_(syncStatus.managed)',
-    },
+      /** @private */
+      signedIn_: {
+        type: Boolean,
+        value: true,
+        computed: 'computeSignedIn_(syncStatus.signedIn)',
+      },
 
-    /** @private */
-    syncSectionDisabled_: {
-      type: Boolean,
-      value: false,
-      computed: 'computeSyncSectionDisabled_(' +
-          'syncStatus.signedIn, syncStatus.disabled, ' +
-          'syncStatus.hasError, syncStatus.statusAction, ' +
-          'syncPrefs.trustedVaultKeysRequired)',
-    },
+      /** @private */
+      syncDisabledByAdmin_: {
+        type: Boolean,
+        value: false,
+        computed: 'computeSyncDisabledByAdmin_(syncStatus.managed)',
+      },
 
-    /** @private */
-    showSetupCancelDialog_: {
-      type: Boolean,
-      value: false,
-    },
-  },
+      /** @private */
+      syncSectionDisabled_: {
+        type: Boolean,
+        value: false,
+        computed: 'computeSyncSectionDisabled_(' +
+            'syncStatus.signedIn, syncStatus.disabled, ' +
+            'syncStatus.hasError, syncStatus.statusAction, ' +
+            'syncPrefs.trustedVaultKeysRequired)',
+      },
 
-  observers: [
-    'expandEncryptionIfNeeded_(dataEncrypted_, forceEncryptionExpanded)',
-  ],
+      /** @private */
+      showSetupCancelDialog_: {
+        type: Boolean,
+        value: false,
+      },
 
-  /** @private {?SyncBrowserProxy} */
-  browserProxy_: null,
+      /** @private */
+      enterPassphraseLabel_: {
+        type: String,
+        computed: 'computeEnterPassphraseLabel_(syncPrefs.encryptAllData,' +
+            'syncPrefs.explicitPassphraseTime)',
+      },
 
-  /**
-   * The beforeunload callback is used to show the 'Leave site' dialog. This
-   * makes sure that the user has the chance to go back and confirm the sync
-   * opt-in before leaving.
-   *
-   * This property is non-null if the user is currently navigated on the sync
-   * settings route.
-   *
-   * @private {?Function}
-   */
-  beforeunloadCallback_: null,
+      /** @private */
+      existingPassphraseLabel_: {
+        type: String,
+        computed: 'computeExistingPassphraseLabel_(syncPrefs.encryptAllData,' +
+            'syncPrefs.explicitPassphraseTime)',
+      },
+    };
+  }
 
-  /**
-   * The unload callback is used to cancel the sync setup when the user hits
-   * the browser back button after arriving on the page.
-   * Note: Cases like closing the tab or reloading don't need to be handled,
-   * because they are already caught in |PeopleHandler::~PeopleHandler|
-   * from the C++ code.
-   *
-   * @private {?Function}
-   */
-  unloadCallback_: null,
-
-  /**
-   * Whether the initial layout for collapsible sections has been computed. It
-   * is computed only once, the first time the sync status is updated.
-   * @private {boolean}
-   */
-  collapsibleSectionsInitialized_: false,
-
-  /**
-   * Whether the user decided to abort sync.
-   * @private {boolean}
-   */
-  didAbort_: true,
-
-  /**
-   * Whether the user confirmed the cancellation of sync.
-   * @private {boolean}
-   */
-  setupCancelConfirmed_: false,
+  static get observers() {
+    return [
+      'expandEncryptionIfNeeded_(dataEncrypted_, forceEncryptionExpanded)',
+    ];
+  }
 
   /** @override */
-  created() {
+  constructor() {
+    super();
+
+    /** @private {!SyncBrowserProxy} */
     this.browserProxy_ = SyncBrowserProxyImpl.getInstance();
-  },
+
+    /**
+     * The beforeunload callback is used to show the 'Leave site' dialog. This
+     * makes sure that the user has the chance to go back and confirm the sync
+     * opt-in before leaving.
+     *
+     * This property is non-null if the user is currently navigated on the sync
+     * settings route.
+     *
+     * @private {?Function}
+     */
+    this.beforeunloadCallback_ = null;
+
+    /**
+     * The unload callback is used to cancel the sync setup when the user hits
+     * the browser back button after arriving on the page.
+     * Note = Cases like closing the tab or reloading don't need to be handled;
+     * because they are already caught in |PeopleHandler::~PeopleHandler|
+     * from the C++ code.
+     *
+     * @private {?Function}
+     */
+    this.unloadCallback_ = null;
+
+    /**
+     * Whether the initial layout for collapsible sections has been computed. It
+     * is computed only once; the first time the sync status is updated.
+     * @private {boolean}
+     */
+    this.collapsibleSectionsInitialized_ = false;
+
+    /**
+     * Whether the user decided to abort sync.
+     * @private {boolean}
+     */
+    this.didAbort_ = true;
+
+    /**
+     * Whether the user confirmed the cancellation of sync.
+     * @private {boolean}
+     */
+    this.setupCancelConfirmed_ = false;
+  }
 
   /** @override */
-  attached() {
+  connectedCallback() {
+    super.connectedCallback();
+
     this.addWebUIListener(
         'page-status-changed', this.handlePageStatusChanged_.bind(this));
     this.addWebUIListener(
@@ -241,10 +275,12 @@ Polymer({
     if (router.getCurrentRoute() === getSyncRoutes().SYNC) {
       this.onNavigateToPage_();
     }
-  },
+  }
 
   /** @override */
-  detached() {
+  disconnectedCallback() {
+    super.disconnectedCallback();
+
     const router = Router.getInstance();
     if (getSyncRoutes().SYNC.contains(router.getCurrentRoute())) {
       this.onNavigateAwayFromPage_();
@@ -258,7 +294,7 @@ Polymer({
       window.removeEventListener('unload', this.unloadCallback_);
       this.unloadCallback_ = null;
     }
-  },
+  }
 
   /**
    * Returns the encryption options SettingsSyncEncryptionOptionsElement.
@@ -266,8 +302,8 @@ Polymer({
    */
   getEncryptionOptions() {
     return /** @type {?SettingsSyncEncryptionOptionsElement} */ (
-        this.$$('settings-sync-encryption-options'));
-  },
+        this.shadowRoot.querySelector('settings-sync-encryption-options'));
+  }
 
   /**
    * Returns the encryption options SettingsPersonalizationOptionsElement.
@@ -275,8 +311,8 @@ Polymer({
    */
   getPersonalizationOptions() {
     return /** @type {?SettingsPersonalizationOptionsElement} */ (
-        this.$$('settings-personalization-options'));
-  },
+        this.shadowRoot.querySelector('settings-personalization-options'));
+  }
 
   /**
    * @return {boolean}
@@ -284,7 +320,7 @@ Polymer({
    */
   computeSignedIn_() {
     return !!this.syncStatus.signedIn;
-  },
+  }
 
   /**
    * @return {boolean}
@@ -298,7 +334,7 @@ Polymer({
               StatusAction.ENTER_PASSPHRASE &&
           this.syncStatus.statusAction !==
               StatusAction.RETRIEVE_TRUSTED_VAULT_KEYS));
-  },
+  }
 
   /**
    * @return {boolean}
@@ -306,37 +342,42 @@ Polymer({
    */
   computeSyncDisabledByAdmin_() {
     return this.syncStatus !== undefined && !!this.syncStatus.managed;
-  },
+  }
 
   /** @private */
   onFocusConfigChange_() {
     const router = Router.getInstance();
     this.focusConfig.set(getSyncRoutes().SYNC_ADVANCED.path, () => {
-      focusWithoutInk(assert(this.$$('#sync-advanced-row')));
+      focusWithoutInk(
+          assert(this.shadowRoot.querySelector('#sync-advanced-row')));
     });
-  },
+  }
 
   /** @private */
   onSetupCancelDialogBack_() {
-    /** @type {!CrDialogElement} */ (this.$$('#setupCancelDialog')).cancel();
+    /** @type {!CrDialogElement} */ (
+        this.shadowRoot.querySelector('#setupCancelDialog'))
+        .cancel();
     chrome.metricsPrivate.recordUserAction(
         'Signin_Signin_CancelCancelAdvancedSyncSettings');
-  },
+  }
 
   /** @private */
   onSetupCancelDialogConfirm_() {
     this.setupCancelConfirmed_ = true;
-    /** @type {!CrDialogElement} */ (this.$$('#setupCancelDialog')).close();
+    /** @type {!CrDialogElement} */ (
+        this.shadowRoot.querySelector('#setupCancelDialog'))
+        .close();
     const router = Router.getInstance();
     router.navigateTo(getSyncRoutes().BASIC);
     chrome.metricsPrivate.recordUserAction(
         'Signin_Signin_ConfirmCancelAdvancedSyncSettings');
-  },
+  }
 
   /** @private */
   onSetupCancelDialogClose_() {
     this.showSetupCancelDialog_ = false;
-  },
+  }
 
   /** @protected */
   currentRouteChanged() {
@@ -374,7 +415,7 @@ Polymer({
         this.showSetupCancelDialog_ = true;
         // Flush to make sure that the setup cancel dialog is attached.
         flush();
-        this.$$('#setupCancelDialog').showModal();
+        this.shadowRoot.querySelector('#setupCancelDialog').showModal();
       });
       return;
     }
@@ -383,7 +424,7 @@ Polymer({
     this.setupCancelConfirmed_ = false;
 
     this.onNavigateAwayFromPage_();
-  },
+  }
 
   /**
    * @param {!PageStatus} expectedPageStatus
@@ -392,7 +433,7 @@ Polymer({
    */
   isStatus_(expectedPageStatus) {
     return expectedPageStatus === this.pageStatus_;
-  },
+  }
 
   /** @private */
   onNavigateToPage_() {
@@ -424,7 +465,7 @@ Polymer({
 
     this.unloadCallback_ = this.onNavigateAwayFromPage_.bind(this);
     window.addEventListener('unload', this.unloadCallback_);
-  },
+  }
 
   /** @private */
   onNavigateAwayFromPage_() {
@@ -445,7 +486,7 @@ Polymer({
       window.removeEventListener('unload', this.unloadCallback_);
       this.unloadCallback_ = null;
     }
-  },
+  }
 
   /**
    * Handler for when the sync preferences are updated.
@@ -454,28 +495,19 @@ Polymer({
   handleSyncPrefsChanged_(syncPrefs) {
     this.syncPrefs = syncPrefs;
     this.pageStatus_ = PageStatus.CONFIGURE;
-
-    // Hide the new passphrase box if (a) full data encryption is enabled,
-    // (b) encrypting all data is not allowed (so far, only applies to
-    // supervised accounts), or (c) the user is a supervised account.
-    if (this.syncPrefs.encryptAllData ||
-        !this.syncPrefs.customPassphraseAllowed ||
-        (this.syncStatus && this.syncStatus.supervisedUser)) {
-      this.creatingNewPassphrase_ = false;
-    }
-  },
+  }
 
   /** @private */
   onActivityControlsClick_() {
     chrome.metricsPrivate.recordUserAction('Sync_OpenActivityControlsPage');
     this.browserProxy_.openActivityControlsUrl();
     window.open(loadTimeData.getString('activityControlsUrl'));
-  },
+  }
 
   /** @private */
   onSyncDashboardLinkClick_() {
     window.open(loadTimeData.getString('syncDashboardUrl'));
-  },
+  }
 
   /**
    * @return {boolean}
@@ -483,7 +515,49 @@ Polymer({
    */
   computeDataEncrypted_() {
     return !!this.syncPrefs && this.syncPrefs.encryptAllData;
-  },
+  }
+
+  /**
+   * @return  {string}
+   * @private
+   */
+  computeEnterPassphraseLabel_() {
+    if (!this.syncPrefs || !this.syncPrefs.encryptAllData) {
+      return '';
+    }
+
+    if (!this.syncPrefs.explicitPassphraseTime) {
+      // TODO(crbug.com/1207432): There's no reason why this dateless label
+      // shouldn't link to 'syncErrorsHelpUrl' like the other one.
+      return this.i18n('enterPassphraseLabel');
+    }
+
+    return this.i18nAdvanced('enterPassphraseLabelWithDate', {
+      tags: ['a'],
+      substitutions: [
+        loadTimeData.getString('syncErrorsHelpUrl'),
+        this.syncPrefs.explicitPassphraseTime
+      ]
+    });
+  }
+
+  /**
+   * @return {string}
+   * @private
+   */
+  computeExistingPassphraseLabel_() {
+    if (!this.syncPrefs || !this.syncPrefs.encryptAllData) {
+      return '';
+    }
+
+    if (!this.syncPrefs.explicitPassphraseTime) {
+      return this.i18n('existingPassphraseLabel');
+    }
+
+    return this.i18n(
+        'existingPassphraseLabelWithDate',
+        this.syncPrefs.explicitPassphraseTime);
+  }
 
   /**
    * Whether the encryption dropdown should be expanded by default.
@@ -498,7 +572,7 @@ Polymer({
     }
 
     this.encryptionExpanded_ = this.dataEncrypted_;
-  },
+  }
 
   /**
    * @param {!Event} event
@@ -510,7 +584,7 @@ Polymer({
       // prevents the default which will prevent the navigation to the link.
       event.stopPropagation();
     }
-  },
+  }
 
   /**
    * Sends the user-entered existing password to re-enable sync.
@@ -529,7 +603,7 @@ Polymer({
                                  PageStatus.PASSPHRASE_FAILED));
 
     this.existingPassphrase_ = '';
-  },
+  }
 
   /**
    * @private
@@ -539,7 +613,7 @@ Polymer({
     this.handlePageStatusChanged_(
         e.detail.didChange ? PageStatus.DONE :
                              PageStatus.PASSPHRASE_FAILED);
-  },
+  }
 
   /**
    * Called when the page status updates.
@@ -562,7 +636,7 @@ Polymer({
         if (this.pageStatus_ === this.pages_.CONFIGURE && this.syncPrefs &&
             this.syncPrefs.passphraseRequired) {
           const passphraseInput = /** @type {!CrInputElement} */ (
-              this.$$('#existingPassphraseInput'));
+              this.shadowRoot.querySelector('#existingPassphraseInput'));
           passphraseInput.invalid = true;
           passphraseInput.focusInput();
         }
@@ -570,7 +644,7 @@ Polymer({
     }
 
     assertNotReached();
-  },
+  }
 
   /**
    * @param {!Event} event
@@ -582,7 +656,7 @@ Polymer({
       // checkboxes or radio buttons won't change the value.
       event.stopPropagation();
     }
-  },
+  }
 
   /**
    * @return {boolean}
@@ -597,7 +671,7 @@ Polymer({
     return this.syncStatus !== undefined &&
         !!this.syncStatus.syncSystemEnabled &&
         loadTimeData.getBoolean('signinAllowed');
-  },
+  }
 
   /**
    * @return {boolean}
@@ -605,13 +679,13 @@ Polymer({
    */
   shouldShowExistingPassphraseBelowAccount_() {
     return this.syncPrefs !== undefined && !!this.syncPrefs.passphraseRequired;
-  },
+  }
 
   /** @private */
   onSyncAdvancedClick_() {
     const router = Router.getInstance();
     router.navigateTo(getSyncRoutes().SYNC_ADVANCED);
-  },
+  }
 
   /**
    * @param {!CustomEvent<boolean>} e The event passed from
@@ -630,7 +704,7 @@ Polymer({
     }
     const router = Router.getInstance();
     router.navigateTo(getSyncRoutes().BASIC);
-  },
+  }
 
   /**
    * Focuses the passphrase input element if it is available and the page is
@@ -639,10 +713,13 @@ Polymer({
    */
   focusPassphraseInput_() {
     const passphraseInput =
-        /** @type {!CrInputElement} */ (this.$$('#existingPassphraseInput'));
+        /** @type {!CrInputElement} */ (
+            this.shadowRoot.querySelector('#existingPassphraseInput'));
     const router = Router.getInstance();
     if (passphraseInput && router.getCurrentRoute() === getSyncRoutes().SYNC) {
       passphraseInput.focus();
     }
-  },
-});
+  }
+}
+
+customElements.define(SettingsSyncPageElement.is, SettingsSyncPageElement);

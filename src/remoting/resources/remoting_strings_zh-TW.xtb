@@ -24,6 +24,7 @@
 如果 [<ph name="SERVICE_SCRIPT_NAME" />] 已勾選，請先取消勾選，然後再次勾選。</translation>
 <translation id="225614027745146050">歡迎使用</translation>
 <translation id="2320166752086256636">隱藏鍵盤</translation>
+<translation id="2329392777730037872">無法在用戶端上開啟 <ph name="URL" />。</translation>
 <translation id="2333212046079545895">Copyright 2021 Google LLC。保留所有權利。</translation>
 <translation id="2359808026110333948">繼續</translation>
 <translation id="2366718077645204424">無法連線到主機，原因可能與你使用的網路設定有關。</translation>
@@ -67,6 +68,7 @@
 <translation id="4176825807642096119">存取碼</translation>
 <translation id="4227991223508142681">主機帳戶管理公用程式</translation>
 <translation id="4240294130679914010">Chromoting 主機解除安裝程式</translation>
+<translation id="4257751272692708833"><ph name="PRODUCT_NAME" />轉址工具</translation>
 <translation id="4277736576214464567">存取碼無效，請再試一次。</translation>
 <translation id="4281844954008187215">服務條款</translation>
 <translation id="4405930547258349619">核心資料庫</translation>
@@ -87,6 +89,7 @@
 <translation id="4867841927763172006">傳送 PrtScn</translation>
 <translation id="4974476491460646149">「<ph name="HOSTNAME" />」連線已中斷</translation>
 <translation id="4985296110227979402">您必須先設定電腦，才能執行遠端存取作業。</translation>
+<translation id="4987330545941822761">Chrome 遠端桌面無法決定要用哪個瀏覽器在本機上開啟網址。請從下方清單中選擇瀏覽器。</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (離線)</translation>
 <translation id="507204348399810022">您確定要停用與「<ph name="HOSTNAME" />」之間的遠端連線嗎？</translation>
 <translation id="5170982930780719864">主機 ID 無效。</translation>
@@ -121,6 +124,7 @@
 <translation id="6612717000975622067">傳送 Ctrl-Alt-Del</translation>
 <translation id="6654753848497929428">共用</translation>
 <translation id="677755392401385740">已為下列使用者啟動主機：<ph name="HOST_USERNAME" />。</translation>
+<translation id="6902524959760471898">協助在 <ph name="PRODUCT_NAME" />用戶端上開啟網址的輔助應用程式</translation>
 <translation id="6939719207673461467">顯示/隱藏鍵盤。</translation>
 <translation id="6963936880795878952">有人嘗試使用無效的 PIN 連線至遠端電腦，因此您的連線暫時遭到封鎖。請稍後再試。</translation>
 <translation id="6965382102122355670">確定</translation>
@@ -133,6 +137,7 @@
 <translation id="7144878232160441200">重試</translation>
 <translation id="7312846573060934304">主機已離線。</translation>
 <translation id="7319983568955948908">停止共用</translation>
+<translation id="7359298090707901886">所選瀏覽器無法在本機電腦上開啟網址。</translation>
 <translation id="7401733114166276557">Chrome 遠端桌面</translation>
 <translation id="7434397035092923453">用戶端遭拒絕存取：<ph name="CLIENT_USERNAME" />。</translation>
 <translation id="7444276978508498879">已連線至用戶端：<ph name="CLIENT_USERNAME" />。</translation>

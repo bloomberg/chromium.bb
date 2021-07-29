@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "ash/components/account_manager/account_manager_factory.h"
-#include "ash/constants/ash_pref_names.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
@@ -18,7 +17,10 @@
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/account_manager_core/account.h"
 #include "components/account_manager_core/account_manager_facade.h"
+#include "components/account_manager_core/chromeos/account_manager.h"
+#include "components/account_manager_core/pref_names.h"
 #include "components/signin/public/identity_manager/consent_level.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/browser_test.h"
@@ -56,8 +58,8 @@ class AccountManagerPolicyControllerTest : public InProcessBrowserTest {
     auto* identity_test_env =
         identity_test_environment_adaptor_->identity_test_env();
     const AccountInfo primary_account_info =
-        identity_test_env->MakeUnconsentedPrimaryAccountAvailable(
-            kFakePrimaryUsername);
+        identity_test_env->MakePrimaryAccountAvailable(
+            kFakePrimaryUsername, signin::ConsentLevel::kSignin);
     auto user_manager = std::make_unique<FakeChromeUserManager>();
     primary_account_id_ = AccountId::FromUserEmailGaiaId(
         primary_account_info.email, primary_account_info.gaia);
@@ -71,11 +73,12 @@ class AccountManagerPolicyControllerTest : public InProcessBrowserTest {
     account_manager_->UpsertAccount(
         ::account_manager::AccountKey{primary_account_info.gaia,
                                       account_manager::AccountType::kGaia},
-        primary_account_info.email, AccountManager::kInvalidToken);
+        primary_account_info.email,
+        account_manager::AccountManager::kInvalidToken);
     account_manager_->UpsertAccount(
         ::account_manager::AccountKey{kFakeSecondaryGaiaId,
                                       account_manager::AccountType::kGaia},
-        kFakeSecondaryUsername, AccountManager::kInvalidToken);
+        kFakeSecondaryUsername, account_manager::AccountManager::kInvalidToken);
 
     AccountManagerPolicyControllerFactory::GetForBrowserContext(profile());
   }
@@ -114,7 +117,7 @@ class AccountManagerPolicyControllerTest : public InProcessBrowserTest {
  private:
   base::ScopedTempDir temp_dir_;
   // Non-owning pointer.
-  AccountManager* account_manager_ = nullptr;
+  account_manager::AccountManager* account_manager_ = nullptr;
   // Non-owning pointer.
   account_manager::AccountManagerFacade* account_manager_facade_ = nullptr;
   std::unique_ptr<Profile> profile_;
@@ -137,7 +140,7 @@ IN_PROC_BROWSER_TEST_F(AccountManagerPolicyControllerTest,
   // Use default policy value for |kSecondaryGoogleAccountSigninAllowed|
   // (|true|).
   profile()->GetPrefs()->SetBoolean(
-      chromeos::prefs::kSecondaryGoogleAccountSigninAllowed, true);
+      ::account_manager::prefs::kSecondaryGoogleAccountSigninAllowed, true);
   ChildAccountTypeChangedUserData::GetForProfile(profile())->SetValue(false);
 
   base::RunLoop().RunUntilIdle();
@@ -157,7 +160,7 @@ IN_PROC_BROWSER_TEST_F(
 
   // Disallow secondary account sign-ins.
   profile()->GetPrefs()->SetBoolean(
-      chromeos::prefs::kSecondaryGoogleAccountSigninAllowed, false);
+      ::account_manager::prefs::kSecondaryGoogleAccountSigninAllowed, false);
 
   base::RunLoop().RunUntilIdle();
 

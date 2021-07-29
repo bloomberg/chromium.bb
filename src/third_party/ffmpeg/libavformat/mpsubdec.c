@@ -147,8 +147,8 @@ static int mpsub_read_header(AVFormatContext *s)
     if (common_factor > 1) {
         common_factor = av_gcd(pts_info.num, common_factor);
         for (i = 0; i < mpsub->q.nb_subs; i++) {
-            mpsub->q.subs[i].pts      /= common_factor;
-            mpsub->q.subs[i].duration /= common_factor;
+            mpsub->q.subs[i]->pts      /= common_factor;
+            mpsub->q.subs[i]->duration /= common_factor;
         }
         pts_info.num /= common_factor;
     }
@@ -193,7 +193,7 @@ static int mpsub_read_close(AVFormatContext *s)
     return 0;
 }
 
-AVInputFormat ff_mpsub_demuxer = {
+const AVInputFormat ff_mpsub_demuxer = {
     .name           = "mpsub",
     .long_name      = NULL_IF_CONFIG_SMALL("MPlayer subtitles"),
     .priv_data_size = sizeof(MPSubContext),

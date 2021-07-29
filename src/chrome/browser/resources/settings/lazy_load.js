@@ -10,7 +10,6 @@ import './autofill_page/passwords_device_section.js';
 import './autofill_page/payments_section.js';
 import './clear_browsing_data_dialog/clear_browsing_data_dialog.js';
 import './search_engines_page/search_engines_page.js';
-import './privacy_page/cookies_page.js';
 import './privacy_page/security_keys_subpage.js';
 import './privacy_page/security_page.js';
 import './site_settings/all_sites.js';
@@ -73,28 +72,38 @@ export {LanguagesBrowserProxy, LanguagesBrowserProxyImpl} from './languages_page
 export {LanguagesMetricsProxy, LanguagesMetricsProxyImpl, LanguagesPageInteraction} from './languages_page/languages_metrics_proxy.js';
 // </if>
 export {LanguageSettingsActionType, LanguageSettingsMetricsProxy, LanguageSettingsMetricsProxyImpl, LanguageSettingsPageImpressionType} from './languages_page/languages_settings_metrics_proxy.js';
-export {kMenuCloseDelay} from './languages_page/languages_subpage.js';
+export {kMenuCloseDelay, SettingsLanguagesSubpageElement} from './languages_page/languages_subpage.js';
 // <if expr="not chromeos">
 export {ImportDataBrowserProxyImpl, ImportDataStatus} from './people_page/import_data_browser_proxy.js';
 export {ManageProfileBrowserProxyImpl, ProfileShortcutStatus} from './people_page/manage_profile_browser_proxy.js';
 // </if>
+export {SettingsCollapseRadioButtonElement} from './privacy_page/collapse_radio_button.js';
+export {SettingsCookiesPageElement} from './privacy_page/cookies_page.js';
+export {SettingsDoNotTrackToggleElement} from './privacy_page/do_not_track_toggle.js';
 export {BioEnrollDialogPage} from './privacy_page/security_keys_bio_enroll_dialog.js';
 export {Ctap2Status, SampleStatus, SecurityKeysBioEnrollProxyImpl, SecurityKeysCredentialBrowserProxyImpl, SecurityKeysPINBrowserProxyImpl, SecurityKeysResetBrowserProxyImpl} from './privacy_page/security_keys_browser_proxy.js';
 export {CredentialManagementDialogPage} from './privacy_page/security_keys_credential_management_dialog.js';
 export {ResetDialogPage} from './privacy_page/security_keys_reset_dialog.js';
 export {SetPINDialogPage} from './privacy_page/security_keys_set_pin_dialog.js';
-export {SafeBrowsingSetting} from './privacy_page/security_page.js';
+export {SafeBrowsingSetting, SettingsSecurityPageElement} from './privacy_page/security_page.js';
+export {AddSiteDialogElement} from './site_settings/add_site_dialog.js';
 // <if expr="chromeos">
 export {AndroidInfoBrowserProxyImpl} from './site_settings/android_info_browser_proxy.js';
 // </if>
+export {CategorySettingExceptionsElement} from './site_settings/category_setting_exceptions.js';
 export {ChooserType, ContentSetting, ContentSettingsTypes, CookieControlsMode, NotificationSetting, SITE_EXCEPTION_WILDCARD, SiteSettingSource, SortMethod} from './site_settings/constants.js';
 export {CookieDetails, cookieInfo} from './site_settings/cookie_info.js';
+export {SettingsEditExceptionDialogElement} from './site_settings/edit_exception_dialog.js';
 export {LocalDataBrowserProxy, LocalDataBrowserProxyImpl, LocalDataItem} from './site_settings/local_data_browser_proxy.js';
 export {HandlerEntry, ProtocolEntry} from './site_settings/protocol_handlers.js';
-export {kControlledByLookup} from './site_settings/site_settings_behavior.js';
+export {SettingsCategoryDefaultRadioGroupElement} from './site_settings/settings_category_default_radio_group.js';
+export {SiteListElement} from './site_settings/site_list.js';
+export {kControlledByLookup} from './site_settings/site_settings_mixin.js';
 export {ContentSettingProvider, DefaultContentSetting, RawChooserException, RawSiteException, RecentSitePermissions, SiteException, SiteGroup, SiteSettingsPrefsBrowserProxy, SiteSettingsPrefsBrowserProxyImpl, ZoomLevelEntry} from './site_settings/site_settings_prefs_browser_proxy.js';
 export {WebsiteUsageBrowserProxyImpl} from './site_settings/website_usage_browser_proxy.js';
+export {SettingsRecentSitePermissionsElement} from './site_settings_page/recent_site_permissions.js';
 export {defaultSettingLabel} from './site_settings_page/site_settings_list.js';
+export {SettingsSiteSettingsPageElement} from './site_settings_page/site_settings_page.js';
 // <if expr="not chromeos and not lacros">
 export {SystemPageBrowserProxyImpl} from './system_page/system_page_browser_proxy.js';
 

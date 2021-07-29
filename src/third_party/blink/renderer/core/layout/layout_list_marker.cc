@@ -26,11 +26,11 @@
 #include "third_party/blink/renderer/core/layout/layout_list_marker.h"
 
 #include "third_party/blink/renderer/core/css/counter_style.h"
+#include "third_party/blink/renderer/core/html/html_li_element.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_analyzer.h"
 #include "third_party/blink/renderer/core/layout/layout_list_item.h"
 #include "third_party/blink/renderer/core/layout/list_marker.h"
-#include "third_party/blink/renderer/core/layout/list_marker_text.h"
 #include "third_party/blink/renderer/core/paint/list_marker_painter.h"
 #include "third_party/blink/renderer/core/style/list_style_type_data.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
@@ -73,10 +73,9 @@ LayoutSize LayoutListMarker::ImageBulletSize() const {
   // marker pseudoclass to allow control over the width and height of the
   // marker box.
   float bullet_width = font_data->GetFontMetrics().Ascent() / 2.0f;
-  return RoundedLayoutSize(
-      image_->ImageSize(GetDocument(), StyleRef().EffectiveZoom(),
-                        FloatSize(bullet_width, bullet_width),
-                        LayoutObject::ShouldRespectImageOrientation(this)));
+  return RoundedLayoutSize(image_->ImageSize(
+      StyleRef().EffectiveZoom(), FloatSize(bullet_width, bullet_width),
+      LayoutObject::ShouldRespectImageOrientation(this)));
 }
 
 void LayoutListMarker::ListStyleTypeChanged() {
@@ -186,19 +185,10 @@ void LayoutListMarker::UpdateContent() {
       break;
     case ListMarker::ListStyleCategory::kSymbol:
       // value is ignored for these types
-      if (RuntimeEnabledFeatures::CSSAtRuleCounterStyleEnabled()) {
-        text_ = GetCounterStyle().GenerateRepresentation(0);
-      } else {
-        text_ = list_marker_text::GetText(StyleRef().ListStyleType(), 0);
-      }
+      text_ = GetCounterStyle().GenerateRepresentation(0);
       break;
     case ListMarker::ListStyleCategory::kLanguage:
-      if (RuntimeEnabledFeatures::CSSAtRuleCounterStyleEnabled()) {
-        text_ = GetCounterStyle().GenerateRepresentation(ListItem()->Value());
-      } else {
-        text_ = list_marker_text::GetText(StyleRef().ListStyleType(),
-                                          ListItem()->Value());
-      }
+      text_ = GetCounterStyle().GenerateRepresentation(ListItem()->Value());
       break;
     case ListMarker::ListStyleCategory::kStaticString:
       text_ = StyleRef().ListStyleStringValue();
@@ -213,18 +203,11 @@ String LayoutListMarker::TextAlternative() const {
 
   // Return prefix, marker text and then suffix even in RTL, reflecting speech
   // order.
+  if (GetListStyleCategory() == ListMarker::ListStyleCategory::kNone)
+    return "";
 
-  if (RuntimeEnabledFeatures::CSSAtRuleCounterStyleEnabled()) {
-    if (GetListStyleCategory() == ListMarker::ListStyleCategory::kNone)
-      return "";
-
-    const CounterStyle& counter_style = GetCounterStyle();
-    return counter_style.GetPrefix() + text_ + counter_style.GetSuffix();
-  }
-
-  UChar suffix =
-      list_marker_text::Suffix(StyleRef().ListStyleType(), ListItem()->Value());
-  return text_ + suffix + ' ';
+  const CounterStyle& counter_style = GetCounterStyle();
+  return counter_style.GetPrefix() + text_ + counter_style.GetSuffix();
 }
 
 LayoutUnit LayoutListMarker::GetWidthOfText(
@@ -240,26 +223,14 @@ LayoutUnit LayoutListMarker::GetWidthOfText(
     return item_width;
   }
 
-  if (RuntimeEnabledFeatures::CSSAtRuleCounterStyleEnabled()) {
-    // This doesn't seem correct, e.g., ligatures. We don't fix it since it's
-    // legacy layout.
-    const CounterStyle& counter_style = GetCounterStyle();
-    if (counter_style.GetPrefix())
-      item_width += LayoutUnit(font.Width(TextRun(counter_style.GetPrefix())));
-    if (counter_style.GetSuffix())
-      item_width += LayoutUnit(font.Width(TextRun(counter_style.GetSuffix())));
-    return item_width;
-  }
-
-  // TODO(wkorman): Look into constructing a text run for both text and suffix
-  // and painting them together.
-  UChar suffix[2] = {
-      list_marker_text::Suffix(StyleRef().ListStyleType(), ListItem()->Value()),
-      ' '};
-  TextRun run =
-      ConstructTextRun(font, suffix, 2, StyleRef(), StyleRef().Direction());
-  LayoutUnit suffix_space_width = LayoutUnit(font.Width(run));
-  return item_width + suffix_space_width;
+  // This doesn't seem correct, e.g., ligatures. We don't fix it since it's
+  // legacy layout.
+  const CounterStyle& counter_style = GetCounterStyle();
+  if (counter_style.GetPrefix())
+    item_width += LayoutUnit(font.Width(TextRun(counter_style.GetPrefix())));
+  if (counter_style.GetSuffix())
+    item_width += LayoutUnit(font.Width(TextRun(counter_style.GetSuffix())));
+  return item_width;
 }
 
 MinMaxSizes LayoutListMarker::ComputeIntrinsicLogicalWidths() const {
@@ -351,7 +322,7 @@ ListMarker::ListStyleCategory LayoutListMarker::GetListStyleCategory() const {
 
 const CounterStyle& LayoutListMarker::GetCounterStyle() const {
   NOT_DESTROYED();
-  const ListStyleTypeData* list_style_data = StyleRef().GetListStyleType();
+  const ListStyleTypeData* list_style_data = StyleRef().ListStyleType();
   DCHECK(list_style_data);
   DCHECK(list_style_data->IsCounterStyle());
   return list_style_data->GetCounterStyle(GetDocument());

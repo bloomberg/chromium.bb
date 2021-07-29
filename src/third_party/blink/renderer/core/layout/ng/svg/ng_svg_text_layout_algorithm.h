@@ -5,17 +5,18 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_SVG_NG_SVG_TEXT_LAYOUT_ALGORITHM_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_SVG_NG_SVG_TEXT_LAYOUT_ALGORITHM_H_
 
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items_builder.h"
 
 namespace blink {
 
-struct SVGTextLengthContext;
+struct SvgTextContentRange;
 
-class NGSVGTextLayoutAlgorithm {
+class NGSvgTextLayoutAlgorithm {
   STACK_ALLOCATED();
 
  public:
-  NGSVGTextLayoutAlgorithm(NGInlineNode node, WritingMode writing_mode);
+  NGSvgTextLayoutAlgorithm(NGInlineNode node, WritingMode writing_mode);
 
   // Apply SVG specific text layout algorithm to |items|.
   // Text items in |items| will be converted to kSVGText type.
@@ -31,14 +32,9 @@ class NGSVGTextLayoutAlgorithm {
       const NGFragmentItemsBuilder::ItemWithOffsetList& items);
   void ApplyTextLengthAttribute(
       const NGFragmentItemsBuilder::ItemWithOffsetList& items);
-  Vector<SVGTextLengthContext> CollectTextLengthAncestors(
-      const NGFragmentItemsBuilder::ItemWithOffsetList& items,
-      wtf_size_t index,
-      const LayoutObject* layout_object) const;
   void ResolveTextLength(
       const NGFragmentItemsBuilder::ItemWithOffsetList& items,
-      const SVGTextLengthContext& length_context,
-      wtf_size_t j_plus_1,
+      const SvgTextContentRange& range,
       Vector<wtf_size_t>& resolved_descendant_node_starts);
   void AdjustPositionsXY(
       const NGFragmentItemsBuilder::ItemWithOffsetList& items);
@@ -58,7 +54,7 @@ class NGSVGTextLayoutAlgorithm {
   // "horizontal" flag defined in the specification.
   bool horizontal_;
 
-  struct NGSVGPerCharacterInfo {
+  struct SvgPerCharacterInfo {
     absl::optional<float> x;
     absl::optional<float> y;
     absl::optional<float> rotate;
@@ -71,11 +67,13 @@ class NGSVGTextLayoutAlgorithm {
     float baseline_shift = 0.0f;
     float inline_size = 0.0f;
     float length_adjust_scale = 1.0f;
+    float text_length_shift_x = 0.0f;
+    float text_length_shift_y = 0.0f;
     wtf_size_t item_index = WTF::kNotFound;
   };
   // This data member represents "result" defined in the specification, but it
   // contains only addressable characters.
-  Vector<NGSVGPerCharacterInfo> result_;
+  Vector<SvgPerCharacterInfo> result_;
 
   // This data member represents "CSS_positions" defined in the specification,
   // but it contains only addressable characters.

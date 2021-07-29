@@ -37,7 +37,7 @@ class ComputeDispatchTests : public DawnTest {
             };
 
             [[group(0), binding(0)]] var<uniform> input : InputBuf;
-            [[group(0), binding(1)]] var<storage> output : [[access(read_write)]] OutputBuf;
+            [[group(0), binding(1)]] var<storage, read_write> output : OutputBuf;
 
             [[stage(compute), workgroup_size(1, 1, 1)]]
             fn main([[builtin(global_invocation_id)]] GlobalInvocationID : vec3<u32>) {
@@ -54,8 +54,8 @@ class ComputeDispatchTests : public DawnTest {
             })");
 
         wgpu::ComputePipelineDescriptor csDesc;
-        csDesc.computeStage.module = module;
-        csDesc.computeStage.entryPoint = "main";
+        csDesc.compute.module = module;
+        csDesc.compute.entryPoint = "main";
         pipeline = device.CreateComputePipeline(&csDesc);
     }
 

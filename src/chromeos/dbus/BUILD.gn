@@ -19,14 +19,13 @@ component("dbus") {
     "//chromeos/dbus/concierge",
     "//chromeos/dbus/constants",
     "//chromeos/dbus/debug_daemon",
+    "//chromeos/dbus/init",
     "//chromeos/dbus/lorgnette_manager",
     "//chromeos/dbus/seneschal",
     "//chromeos/dbus/shill",
     "//dbus",
   ]
   deps = [
-    ":anomaly_detector_proto",
-    ":chunneld_proto",
     ":metrics_event_proto",
     ":oobe_config_proto",
     ":plugin_vm_service_proto",
@@ -34,10 +33,17 @@ component("dbus") {
     ":smbprovider_proto",
     ":update_engine_proto",
     ":vm_applications_apps_proto",
+    ":vm_disk_management_proto",
     ":vm_permission_service_proto",
     ":vm_plugin_dispatcher_proto",
     ":vm_sk_forwarding_proto",
     "//base",
+    "//chromeos/dbus/anomaly_detector",
+    "//chromeos/dbus/anomaly_detector:proto",
+    "//chromeos/dbus/cec_service",
+    "//chromeos/dbus/chunneld",
+    "//chromeos/dbus/chunneld:proto",
+    "//chromeos/dbus/cros_disks",
     "//components/account_id",
     "//components/device_event_log",
     "//components/policy/proto",
@@ -45,14 +51,6 @@ component("dbus") {
     "//url",
   ]
   sources = [
-    "anomaly_detector_client.cc",
-    "anomaly_detector_client.h",
-    "cec_service_client.cc",
-    "cec_service_client.h",
-    "chunneld_client.cc",
-    "chunneld_client.h",
-    "cros_disks_client.cc",
-    "cros_disks_client.h",
     "dbus_client_implementation_type.h",
     "dbus_clients_browser.cc",
     "dbus_clients_browser.h",
@@ -60,14 +58,6 @@ component("dbus") {
     "dbus_thread_manager.h",
     "easy_unlock_client.cc",
     "easy_unlock_client.h",
-    "fake_anomaly_detector_client.cc",
-    "fake_anomaly_detector_client.h",
-    "fake_cec_service_client.cc",
-    "fake_cec_service_client.h",
-    "fake_chunneld_client.cc",
-    "fake_chunneld_client.h",
-    "fake_cros_disks_client.cc",
-    "fake_cros_disks_client.h",
     "fake_easy_unlock_client.cc",
     "fake_easy_unlock_client.h",
     "fake_gnubby_client.cc",
@@ -140,7 +130,6 @@ component("common") {
     "blocking_method_caller.h",
     "dbus_client.h",
     "dbus_method_call_status.h",
-    "initialize_dbus_client.h",
     "pipe_reader.cc",
     "pipe_reader.h",
   ]
@@ -174,6 +163,8 @@ source_set("unit_tests") {
     "//chromeos/dbus/audio",
     "//chromeos/dbus/authpolicy",
     "//chromeos/dbus/biod:test_support",
+    "//chromeos/dbus/cec_service:unit_tests",
+    "//chromeos/dbus/cros_disks:unit_tests",
     "//chromeos/dbus/cryptohome",
     "//chromeos/dbus/cryptohome:attestation_proto",
     "//chromeos/dbus/dlcservice:test_support",
@@ -209,8 +200,6 @@ source_set("unit_tests") {
     "biod/biod_client_unittest.cc",
     "biod/fake_biod_client_unittest.cc",
     "blocking_method_caller_unittest.cc",
-    "cec_service_client_unittest.cc",
-    "cros_disks_client_unittest.cc",
     "dbus_thread_manager_unittest.cc",
     "fake_easy_unlock_client_unittest.cc",
     "fake_gnubby_client_unittest.cc",
@@ -226,19 +215,6 @@ source_set("unit_tests") {
     "userdataauth/userdataauth_client_unittest.cc",
     "util/version_loader_unittest.cc",
   ]
-}
-
-proto_library("anomaly_detector_proto") {
-  sources = [ "//third_party/cros_system_api/dbus/anomaly_detector/anomaly_detector.proto" ]
-
-  proto_out_dir = "chromeos/dbus/anomaly_detector"
-}
-
-proto_library("chunneld_proto") {
-  sources =
-      [ "//third_party/cros_system_api/dbus/chunneld/chunneld_service.proto" ]
-
-  proto_out_dir = "chromeos/dbus/chunneld"
 }
 
 proto_library("cicerone_proto") {
@@ -313,6 +289,12 @@ proto_library("vm_applications_apps_proto") {
   sources = [ "//third_party/cros_system_api/dbus/vm_applications/apps.proto" ]
 
   proto_out_dir = "chromeos/dbus/vm_applications"
+}
+
+proto_library("vm_disk_management_proto") {
+  sources = [ "//third_party/cros_system_api/dbus/vm_disk_management/disk_management.proto" ]
+
+  proto_out_dir = "chromeos/dbus/vm_disk_management"
 }
 
 proto_library("vm_sk_forwarding_proto") {

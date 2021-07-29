@@ -567,10 +567,10 @@ def CheckLicense(input_api, output_api, license_re=None, project_name=None,
   # The (c) is deprecated, but tolerate it until it's removed from all files.
   license_re = license_re or (
       r'.*? Copyright (\(c\) )?%(year)s The %(project)s Authors\. '
-        r'All rights reserved\.\n'
+        r'All rights reserved\.\r?\n'
       r'.*? Use of this source code is governed by a BSD-style license that '
-        r'can be\n'
-      r'.*? found in the LICENSE file\.(?: \*/)?\n'
+        r'can be\r?\n'
+      r'.*? found in the LICENSE file\.(?: \*/)?\r?\n'
   ) % {
       'year': years_re,
       'project': project_name,
@@ -579,7 +579,7 @@ def CheckLicense(input_api, output_api, license_re=None, project_name=None,
   license_re = input_api.re.compile(license_re, input_api.re.MULTILINE)
   bad_files = []
   for f in input_api.AffectedSourceFiles(source_file_filter):
-    contents = input_api.ReadFile(f, 'rb')
+    contents = input_api.ReadFile(f, 'r')
     if accept_empty_files and not contents:
       continue
     if not license_re.search(contents):
@@ -648,6 +648,7 @@ def GetUnitTestsInDirectory(input_api,
                             env=None,
                             run_on_python2=True,
                             run_on_python3=True,
+                            skip_shebang_check=False,
                             allowlist=None,
                             blocklist=None):
   """Lists all files in a directory and runs them. Doesn't recurse.
@@ -682,13 +683,17 @@ def GetUnitTestsInDirectory(input_api,
           'Out of %d files, found none that matched c=%r, s=%r in directory %s'
           % (found, files_to_check, files_to_skip, directory))
     ]
-  return GetUnitTests(
-      input_api, output_api, unit_tests, env, run_on_python2, run_on_python3)
+  return GetUnitTests(input_api, output_api, unit_tests, env, run_on_python2,
+                      run_on_python3, skip_shebang_check)
 
 
-def GetUnitTests(
-    input_api, output_api, unit_tests, env=None, run_on_python2=True,
-    run_on_python3=True):
+def GetUnitTests(input_api,
+                 output_api,
+                 unit_tests,
+                 env=None,
+                 run_on_python2=True,
+                 run_on_python3=True,
+                 skip_shebang_check=False):
   """Runs all unit tests in a directory.
 
   On Windows, sys.executable is used for unit tests ending with ".py".
@@ -721,19 +726,32 @@ def GetUnitTests(
           kwargs=kwargs,
           message=message_type))
     else:
-      if has_py3_shebang(unit_test) and run_on_python3:
+      test_run = False
+      # TODO(crbug.com/1223478): The intent for this line was to run the test
+      # on python3 if the file has a shebang OR if it was explicitly requested
+      # to run on python3. Since tests have been broken since this landed, we
+      # introduced the |skip_shebang_check| argument to work around the issue
+      # until every caller in Chromium has been fixed.
+      if (skip_shebang_check or has_py3_shebang(unit_test)) and run_on_python3:
         results.append(input_api.Command(
             name=unit_test,
             cmd=cmd,
             kwargs=kwargs,
             message=message_type,
             python3=True))
+        test_run = True
       if run_on_python2:
         results.append(input_api.Command(
             name=unit_test,
             cmd=cmd,
             kwargs=kwargs,
             message=message_type))
+        test_run = True
+      if not test_run:
+        output_api.PresubmitPromptWarning(
+            "Some python tests were not run. You may need to add\n"
+            "skip_shebang_check=True for python3 tests.",
+            items=unit_test)
   return results
 
 
@@ -743,7 +761,8 @@ def GetUnitTestsRecursively(input_api,
                             files_to_check,
                             files_to_skip,
                             run_on_python2=True,
-                            run_on_python3=True):
+                            run_on_python3=True,
+                            skip_shebang_check=False):
   """Gets all files in the directory tree (git repo) that match files_to_check.
 
   Restricts itself to only find files within the Change's source repo, not
@@ -769,9 +788,12 @@ def GetUnitTestsRecursively(input_api,
           % (found, files_to_check, files_to_skip, directory))
     ]
 
-  return GetUnitTests(input_api, output_api, tests,
+  return GetUnitTests(input_api,
+                      output_api,
+                      tests,
                       run_on_python2=run_on_python2,
-                      run_on_python3=run_on_python3)
+                      run_on_python3=run_on_python3,
+                      skip_shebang_check=skip_shebang_check)
 
 
 def GetPythonUnitTests(input_api, output_api, unit_tests):
@@ -975,6 +997,8 @@ def GetPylint(input_api,
       description += ' on %d cores' % input_api.cpu_count
 
     kwargs['stdin'] = '\n'.join(args + flist)
+    if input_api.sys.version_info.major != 2:
+      kwargs['stdin'] = kwargs['stdin'].encode('utf-8')
 
     return input_api.Command(
         name='Pylint (%s)' % description,

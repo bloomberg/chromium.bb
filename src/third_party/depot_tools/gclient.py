@@ -245,19 +245,31 @@ class Hook(object):
     if cmd[0] == 'vpython' and _detect_host_os() == 'win':
       cmd[0] += '.bat'
 
+    exit_code = 2
     try:
       start_time = time.time()
       gclient_utils.CheckCallAndFilter(
           cmd, cwd=self.effective_cwd, print_stdout=True, show_header=True,
           always_show_header=self._verbose)
+      exit_code = 0
     except (gclient_utils.Error, subprocess2.CalledProcessError) as e:
       # Use a discrete exit status code of 2 to indicate that a hook action
       # failed.  Users of this script may wish to treat hook action failures
       # differently from VC failures.
       print('Error: %s' % str(e), file=sys.stderr)
-      sys.exit(2)
+      sys.exit(exit_code)
     finally:
       elapsed_time = time.time() - start_time
+      metrics.collector.add_repeated('hooks', {
+        'action': gclient_utils.CommandToStr(cmd),
+        'name': self._name,
+        'cwd': os.path.relpath(
+            os.path.normpath(self.effective_cwd),
+            self._cwd_base),
+        'condition': self._condition,
+        'execution_time': elapsed_time,
+        'exit_code': exit_code,
+      })
       if elapsed_time > 10:
         print("Hook '%s' took %.2f secs" % (
             gclient_utils.CommandToStr(cmd), elapsed_time))
@@ -922,8 +934,25 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       options.revision = revision_override
       self._used_revision = options.revision
       self._used_scm = self.CreateSCM(out_cb=work_queue.out_cb)
-      self._got_revision = self._used_scm.RunCommand(command, options, args,
-                                                     file_list)
+      if command != 'update' or self.GetScmName() != 'git':
+        self._got_revision = self._used_scm.RunCommand(command, options, args,
+                                                       file_list)
+      else:
+        try:
+          start = time.time()
+          sync_status = metrics_utils.SYNC_STATUS_FAILURE
+          self._got_revision = self._used_scm.RunCommand(command, options, args,
+                                                         file_list)
+          sync_status = metrics_utils.SYNC_STATUS_SUCCESS
+        finally:
+          url, revision = gclient_utils.SplitUrlRevision(self.url)
+          metrics.collector.add_repeated('git_deps', {
+            'path': self.name,
+            'url': url,
+            'revision': revision,
+            'execution_time': time.time() - start,
+            'sync_status': sync_status,
+          })
 
       patch_repo = self.url.split('@')[0]
       patch_ref = patch_refs.pop(self.FuzzyMatchUrl(patch_refs), None)

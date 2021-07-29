@@ -12,7 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "components/services/app_service/public/mojom/app_service.mojom.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "ui/gfx/image/image_skia.h"
@@ -118,6 +118,10 @@ gfx::ImageSkia ConvertSquareBitmapsToImageSkia(
     IconEffects icon_effects,
     int size_hint_in_dip);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+gfx::ImageSkia ConvertIconBitmapsToImageSkia(
+    const std::map<SquareSizePx, SkBitmap>& icon_bitmaps,
+    int size_hint_in_dip);
 
 // Modifies |iv| to apply icon post-processing effects like badging and
 // desaturation to gray.

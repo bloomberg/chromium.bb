@@ -18,7 +18,6 @@
 #include "base/strings/string_piece.h"
 #include "base/time/clock.h"
 #include "base/time/tick_clock.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_store.h"
@@ -34,30 +33,7 @@ class TestingPrefServiceSimple;
 
 namespace data_reduction_proxy {
 
-class DataReductionProxyRequestOptions;
 class DataReductionProxySettings;
-
-// Test version of |DataReductionProxyRequestOptions|.
-class TestDataReductionProxyRequestOptions
-    : public DataReductionProxyRequestOptions {
- public:
-  TestDataReductionProxyRequestOptions(Client client,
-                                       const std::string& version);
-
-  // Overrides of DataReductionProxyRequestOptions.
-  std::string GetDefaultKey() const override;
-
-  using DataReductionProxyRequestOptions::GetHeaderValueForTesting;
-};
-
-// Mock version of |DataReductionProxyRequestOptions|.
-class MockDataReductionProxyRequestOptions
-    : public TestDataReductionProxyRequestOptions {
- public:
-  explicit MockDataReductionProxyRequestOptions(Client client);
-
-  ~MockDataReductionProxyRequestOptions() override;
-};
 
 
 // Test version of |DataReductionProxyService|, which permits mocking of various
@@ -72,17 +48,15 @@ class MockDataReductionProxyService : public DataReductionProxyService {
   ~MockDataReductionProxyService() override;
 
   MOCK_METHOD2(SetProxyPrefs, void(bool enabled, bool at_startup));
-  MOCK_METHOD8(
-      UpdateContentLengths,
-      void(int64_t data_used,
-           int64_t original_size,
-           bool data_reduction_proxy_enabled,
-           data_reduction_proxy::DataReductionProxyRequestType request_type,
-           const std::string& mime_type,
-           bool is_user_traffic,
-           data_use_measurement::DataUseUserData::DataUseContentType
-               content_type,
-           int32_t service_hash_code));
+  MOCK_METHOD7(UpdateContentLengths,
+               void(int64_t data_used,
+                    int64_t original_size,
+                    bool data_reduction_proxy_enabled,
+                    const std::string& mime_type,
+                    bool is_user_traffic,
+                    data_use_measurement::DataUseUserData::DataUseContentType
+                        content_type,
+                    int32_t service_hash_code));
   MOCK_METHOD3(UpdateDataUseForHost,
                void(int64_t network_bytes,
                     int64_t original_bytes,
@@ -144,9 +118,6 @@ class DataReductionProxyTestContext {
 
     ~Builder();
 
-    // The |Client| enum to use for |DataReductionProxyRequestOptions|.
-    Builder& WithClient(Client client);
-
     // Specifies the use of |MockDataReductionProxyConfig| instead of
     // |TestDataReductionProxyConfig|.
     Builder& WithMockConfig();
@@ -154,10 +125,6 @@ class DataReductionProxyTestContext {
     // Specifies the use of |MockDataReductionProxyService| instead of
     // |DataReductionProxyService|.
     Builder& WithMockDataReductionProxyService();
-
-    // Specifies the use of |MockDataReductionProxyRequestOptions| instead of
-    // |DataReductionProxyRequestOptions|.
-    Builder& WithMockRequestOptions();
 
     // Construct, but do not initialize the |DataReductionProxySettings| object.
     Builder& SkipSettingsInitialization();
@@ -169,11 +136,8 @@ class DataReductionProxyTestContext {
     std::unique_ptr<DataReductionProxyTestContext> Build();
 
    private:
-    Client client_;
-
     bool use_mock_config_;
     bool use_mock_service_;
-    bool use_mock_request_options_;
     bool skip_settings_initialization_;
     std::unique_ptr<DataReductionProxySettings> settings_;
     std::unique_ptr<data_use_measurement::DataUseMeasurement>
@@ -219,10 +183,6 @@ class DataReductionProxyTestContext {
   // Returns the underlying |MockDataReductionProxyService|. This can only
   // be called if built with WithMockDataReductionProxyService.
   MockDataReductionProxyService* mock_data_reduction_proxy_service() const;
-
-  // Returns the underlying |MockDataReductionProxyRequestOptions|. This can
-  // only be called if built with WithMockRequestOptions.
-  MockDataReductionProxyRequestOptions* mock_request_options() const;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner() const {
     return task_runner_;

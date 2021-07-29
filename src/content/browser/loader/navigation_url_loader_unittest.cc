@@ -15,7 +15,6 @@
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_request_info.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
-#include "content/common/navigation_params.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/storage_partition.h"
@@ -34,6 +33,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/navigation/navigation_params.h"
 #include "third_party/blink/public/mojom/loader/mixed_content.mojom.h"
 #include "url/origin.h"
 
@@ -56,8 +56,8 @@ class NavigationURLLoaderTest : public testing::Test {
   std::unique_ptr<NavigationURLLoader> CreateTestLoader(
       const GURL& url,
       NavigationURLLoaderDelegate* delegate) {
-    mojom::BeginNavigationParamsPtr begin_params =
-        mojom::BeginNavigationParams::New(
+    blink::mojom::BeginNavigationParamsPtr begin_params =
+        blink::mojom::BeginNavigationParams::New(
             absl::nullopt /* initiator_frame_token */,
             std::string() /* headers */, net::LOAD_NORMAL,
             false /* skip_service_worker */,
@@ -74,7 +74,7 @@ class NavigationURLLoaderTest : public testing::Test {
             base::TimeTicks() /* renderer_before_unload_start */,
             base::TimeTicks() /* renderer_before_unload_end */,
             absl::nullopt /* web_bundle_token */);
-    auto common_params = CreateCommonNavigationParams();
+    auto common_params = blink::CreateCommonNavigationParams();
     common_params->url = url;
     common_params->initiator_origin = url::Origin::Create(url);
 
@@ -117,6 +117,7 @@ TEST_F(NavigationURLLoaderTest, RequestFailedNoCertError) {
   TestNavigationURLLoaderDelegate delegate;
   std::unique_ptr<NavigationURLLoader> loader =
       MakeTestLoader(GURL("bogus:bogus"), &delegate);
+  loader->Start();
 
   // Wait for the request to fail as expected.
   delegate.WaitForRequestFailed();
@@ -136,6 +137,7 @@ TEST_F(NavigationURLLoaderTest, RequestFailedCertError) {
   TestNavigationURLLoaderDelegate delegate;
   std::unique_ptr<NavigationURLLoader> loader =
       MakeTestLoader(https_server.GetURL("/"), &delegate);
+  loader->Start();
 
   // Wait for the request to fail as expected.
   delegate.WaitForRequestFailed();
@@ -169,6 +171,7 @@ TEST_F(NavigationURLLoaderTest, RequestFailedCertErrorFatal) {
 
   TestNavigationURLLoaderDelegate delegate;
   std::unique_ptr<NavigationURLLoader> loader = MakeTestLoader(url, &delegate);
+  loader->Start();
 
   // Wait for the request to fail as expected.
   delegate.WaitForRequestFailed();

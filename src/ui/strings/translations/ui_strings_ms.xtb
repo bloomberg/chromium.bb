@@ -58,6 +58,7 @@
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="2353636109065292463">Memeriksa sambungan Internet anda</translation>
 <translation id="2388990488038464401">Panggil nombor ini daripada telefon anda?</translation>
+<translation id="2435457462613246316">Paparkan kata laluan</translation>
 <translation id="24452542372838207">Kembangkan pemberitahuan</translation>
 <translation id="2445449901874883781">Gunakan ketumpatan tinggi</translation>
 <translation id="2482878487686419369">Pemberitahuan</translation>
@@ -79,6 +80,7 @@
 <translation id="2824719307700604149">{YEARS,plural, =1{1 tahun yang lalu}other{# tahun yang lalu}}</translation>
 <translation id="2878511608894704031">Padamkan Semua</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{dalam 1h}other{dalam #h}}</translation>
+<translation id="2922712708897119705">Lajur <ph name="COLUMN_NAME" /> diisih mengikut urutan menurun.</translation>
 <translation id="2931838996092594335">klik</translation>
 <translation id="2981684127883932071">Memaparkan cadangan</translation>
 <translation id="3036649622769666520">Buka Fail</translation>
@@ -114,6 +116,7 @@
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3909791450649380159">Po&amp;tong</translation>
 <translation id="3990502903496589789">Tepi Kanan</translation>
+<translation id="3994749195054421561">Lajur <ph name="COLUMN_NAME" /> diisih mengikut urutan menaik.</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 Pemberitahuan Belum Dibaca}other{# Pemberitahuan Belum Dibaca}}</translation>
 <translation id="4202807286478387388">lompat</translation>
 <translation id="4250229828105606438">Tangkapan skrin</translation>
@@ -123,6 +126,7 @@
 <translation id="4306392492252714209">Alih keluar daripada papan keratan.</translation>
 <translation id="4316910396681052118">SEMUA APL</translation>
 <translation id="4491109536499578614">Imej</translation>
+<translation id="4565377596337484307">Sembunyikan kata laluan</translation>
 <translation id="4588090240171750605">Tatal ke Kanan</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, Rating bintang <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, Pengesyoran apl</translation>
@@ -165,6 +169,7 @@
 <translation id="6012623610530968780">Halaman <ph name="SELECTED_PAGE" /> daripada <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Kosongkan teks kotak carian</translation>
 <translation id="6040143037577758943">Tutup</translation>
+<translation id="6117103120090651229">Butang tengah</translation>
 <translation id="6119846243427417423">aktifkan</translation>
 <translation id="6129953537138746214">Ruang</translation>
 <translation id="6134259848159370930">Cari dalam peranti anda, apl, tetapan dan web.</translation>
@@ -173,6 +178,7 @@
 <translation id="6156262341071374681">Kembangkan kepada semua apl</translation>
 <translation id="6165508094623778733">Ketahui lebih lanjut</translation>
 <translation id="6166852626429024716">Cari dalam peranti anda, apl, tetapan, web...</translation>
+<translation id="6237461503717005873"><ph name="ROW_NAME" /> dipilih.</translation>
 <translation id="6264365405983206840">Pilih &amp;Semua</translation>
 <translation id="6351032674660237738">CADANGAN APL</translation>
 <translation id="6364916375976753737">Tatal Ke Kiri</translation>
@@ -213,6 +219,7 @@
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minit lagi}other{# minit lagi}}</translation>
 <translation id="7430878839542012341">Padamkan carian ini daripada sejarah anda?</translation>
+<translation id="7437971918971306061">Lajur <ph name="COLUMN_NAME" /> dinyahisih.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emoji</translation>
 <translation id="7620655452534002301">Dialih keluar.</translation>

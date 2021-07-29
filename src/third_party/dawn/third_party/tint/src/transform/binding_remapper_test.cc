@@ -28,13 +28,14 @@ TEST_F(BindingRemapperTest, NoRemappings) {
   auto* src = R"(
 [[block]]
 struct S {
+  a : f32;
 };
 
-[[group(2), binding(1)]] var<storage> a : [[access(read)]] S;
+[[group(2), binding(1)]] var<storage, read> a : S;
 
-[[group(3), binding(2)]] var<storage> b : [[access(read)]] S;
+[[group(3), binding(2)]] var<storage, read> b : S;
 
-[[stage(compute)]]
+[[stage(compute), workgroup_size(1)]]
 fn f() {
 }
 )";
@@ -53,13 +54,14 @@ TEST_F(BindingRemapperTest, RemapBindingPoints) {
   auto* src = R"(
 [[block]]
 struct S {
+  a : f32;
 };
 
-[[group(2), binding(1)]] var<storage> a : [[access(read)]] S;
+[[group(2), binding(1)]] var<storage, read> a : S;
 
-[[group(3), binding(2)]] var<storage> b : [[access(read)]] S;
+[[group(3), binding(2)]] var<storage, read> b : S;
 
-[[stage(compute)]]
+[[stage(compute), workgroup_size(1)]]
 fn f() {
 }
 )";
@@ -67,13 +69,14 @@ fn f() {
   auto* expect = R"(
 [[block]]
 struct S {
+  a : f32;
 };
 
-[[group(1), binding(2)]] var<storage> a : [[access(read)]] S;
+[[group(1), binding(2)]] var<storage, read> a : S;
 
-[[group(3), binding(2)]] var<storage> b : [[access(read)]] S;
+[[group(3), binding(2)]] var<storage, read> b : S;
 
-[[stage(compute)]]
+[[stage(compute), workgroup_size(1)]]
 fn f() {
 }
 )";
@@ -95,15 +98,16 @@ TEST_F(BindingRemapperTest, RemapAccessControls) {
   auto* src = R"(
 [[block]]
 struct S {
+  a : f32;
 };
 
-[[group(2), binding(1)]] var<storage> a : [[access(read)]] S;
+[[group(2), binding(1)]] var<storage, read> a : S;
 
-[[group(3), binding(2)]] var<storage> b : [[access(write)]] S;
+[[group(3), binding(2)]] var<storage, write> b : S;
 
-[[group(4), binding(3)]] var<storage> c : [[access(read)]] S;
+[[group(4), binding(3)]] var<storage, read> c : S;
 
-[[stage(compute)]]
+[[stage(compute), workgroup_size(1)]]
 fn f() {
 }
 )";
@@ -111,15 +115,16 @@ fn f() {
   auto* expect = R"(
 [[block]]
 struct S {
+  a : f32;
 };
 
-[[group(2), binding(1)]] var<storage> a : [[access(write)]] S;
+[[group(2), binding(1)]] var<storage, write> a : S;
 
-[[group(3), binding(2)]] var<storage> b : [[access(write)]] S;
+[[group(3), binding(2)]] var<storage, write> b : S;
 
-[[group(4), binding(3)]] var<storage> c : [[access(read)]] S;
+[[group(4), binding(3)]] var<storage, read> c : S;
 
-[[stage(compute)]]
+[[stage(compute), workgroup_size(1)]]
 fn f() {
 }
 )";
@@ -128,9 +133,9 @@ fn f() {
   data.Add<BindingRemapper::Remappings>(
       BindingRemapper::BindingPoints{},
       BindingRemapper::AccessControls{
-          {{2, 1}, ast::AccessControl::kWriteOnly},  // Modify access control
+          {{2, 1}, ast::Access::kWrite},  // Modify access control
           // Keep [[group(3), binding(2)]] as is
-          {{4, 3}, ast::AccessControl::kReadOnly},  // Add access control
+          {{4, 3}, ast::Access::kRead},  // Add access control
       });
   auto got = Run<BindingRemapper>(src, data);
 
@@ -143,11 +148,12 @@ TEST_F(BindingRemapperTest, DISABLED_RemapAccessControlsWithAliases) {
   auto* src = R"(
 [[block]]
 struct S {
+  a : f32;
 };
 
-type ReadOnlyS = [[access(read)]] S;
+type, read ReadOnlyS = S;
 
-type WriteOnlyS = [[access(write)]] S;
+type, write WriteOnlyS = S;
 
 type A = S;
 
@@ -157,7 +163,7 @@ type A = S;
 
 [[group(4), binding(3)]] var<storage> c : A;
 
-[[stage(compute)]]
+[[stage(compute), workgroup_size(1)]]
 fn f() {
 }
 )";
@@ -165,21 +171,22 @@ fn f() {
   auto* expect = R"(
 [[block]]
 struct S {
+  a : f32;
 };
 
-type ReadOnlyS = [[access(read)]] S;
+type, read ReadOnlyS = S;
 
-type WriteOnlyS = [[access(write)]] S;
+type, write WriteOnlyS = S;
 
 type A = S;
 
-[[group(2), binding(1)]] var<storage> a : [[access(write)]] S;
+[[group(2), binding(1)]] var<storage, write> a : S;
 
 [[group(3), binding(2)]] var<storage> b : WriteOnlyS;
 
-[[group(4), binding(3)]] var<storage> c : [[access(write)]] S;
+[[group(4), binding(3)]] var<storage, write> c : S;
 
-[[stage(compute)]]
+[[stage(compute), workgroup_size(1)]]
 fn f() {
 }
 )";
@@ -188,9 +195,9 @@ fn f() {
   data.Add<BindingRemapper::Remappings>(
       BindingRemapper::BindingPoints{},
       BindingRemapper::AccessControls{
-          {{2, 1}, ast::AccessControl::kWriteOnly},  // Modify access control
+          {{2, 1}, ast::Access::kWrite},  // Modify access control
           // Keep [[group(3), binding(2)]] as is
-          {{4, 3}, ast::AccessControl::kReadOnly},  // Add access control
+          {{4, 3}, ast::Access::kRead},  // Add access control
       });
   auto got = Run<BindingRemapper>(src, data);
 
@@ -201,13 +208,14 @@ TEST_F(BindingRemapperTest, RemapAll) {
   auto* src = R"(
 [[block]]
 struct S {
+  a : f32;
 };
 
-[[group(2), binding(1)]] var<storage> a : [[access(read)]] S;
+[[group(2), binding(1)]] var<storage, read> a : S;
 
-[[group(3), binding(2)]] var<storage> b : [[access(read)]] S;
+[[group(3), binding(2)]] var<storage, read> b : S;
 
-[[stage(compute)]]
+[[stage(compute), workgroup_size(1)]]
 fn f() {
 }
 )";
@@ -215,13 +223,14 @@ fn f() {
   auto* expect = R"(
 [[block]]
 struct S {
+  a : f32;
 };
 
-[[group(4), binding(5)]] var<storage> a : [[access(write)]] S;
+[[group(4), binding(5)]] var<storage, write> a : S;
 
-[[group(6), binding(7)]] var<storage> b : [[access(write)]] S;
+[[group(6), binding(7)]] var<storage, write> b : S;
 
-[[stage(compute)]]
+[[stage(compute), workgroup_size(1)]]
 fn f() {
 }
 )";
@@ -233,8 +242,8 @@ fn f() {
           {{3, 2}, {6, 7}},
       },
       BindingRemapper::AccessControls{
-          {{2, 1}, ast::AccessControl::kWriteOnly},
-          {{3, 2}, ast::AccessControl::kWriteOnly},
+          {{2, 1}, ast::Access::kWrite},
+          {{3, 2}, ast::Access::kWrite},
       });
   auto got = Run<BindingRemapper>(src, data);
 
@@ -248,15 +257,15 @@ struct S {
   i : i32;
 };
 
-[[group(2), binding(1)]] var<storage> a : [[access(read)]] S;
+[[group(2), binding(1)]] var<storage, read> a : S;
 
-[[group(3), binding(2)]] var<storage> b : [[access(read)]] S;
+[[group(3), binding(2)]] var<storage, read> b : S;
 
-[[group(4), binding(3)]] var<storage> c : [[access(read)]] S;
+[[group(4), binding(3)]] var<storage, read> c : S;
 
-[[group(5), binding(4)]] var<storage> d : [[access(read)]] S;
+[[group(5), binding(4)]] var<storage, read> d : S;
 
-[[stage(compute)]]
+[[stage(compute), workgroup_size(1)]]
 fn f() {
   let x : i32 = (((a.i + b.i) + c.i) + d.i);
 }
@@ -268,15 +277,15 @@ struct S {
   i : i32;
 };
 
-[[internal(disable_validation__binding_point_collision), group(1), binding(1)]] var<storage> a : [[access(read)]] S;
+[[internal(disable_validation__binding_point_collision), group(1), binding(1)]] var<storage, read> a : S;
 
-[[internal(disable_validation__binding_point_collision), group(1), binding(1)]] var<storage> b : [[access(read)]] S;
+[[internal(disable_validation__binding_point_collision), group(1), binding(1)]] var<storage, read> b : S;
 
-[[internal(disable_validation__binding_point_collision), group(5), binding(4)]] var<storage> c : [[access(read)]] S;
+[[internal(disable_validation__binding_point_collision), group(5), binding(4)]] var<storage, read> c : S;
 
-[[internal(disable_validation__binding_point_collision), group(5), binding(4)]] var<storage> d : [[access(read)]] S;
+[[internal(disable_validation__binding_point_collision), group(5), binding(4)]] var<storage, read> d : S;
 
-[[stage(compute)]]
+[[stage(compute), workgroup_size(1)]]
 fn f() {
   let x : i32 = (((a.i + b.i) + c.i) + d.i);
 }
@@ -302,20 +311,20 @@ struct S {
   i : i32;
 };
 
-[[group(2), binding(1)]] var<storage> a : [[access(read)]] S;
+[[group(2), binding(1)]] var<storage, read> a : S;
 
-[[group(3), binding(2)]] var<storage> b : [[access(read)]] S;
+[[group(3), binding(2)]] var<storage, read> b : S;
 
-[[group(4), binding(3)]] var<storage> c : [[access(read)]] S;
+[[group(4), binding(3)]] var<storage, read> c : S;
 
-[[group(5), binding(4)]] var<storage> d : [[access(read)]] S;
+[[group(5), binding(4)]] var<storage, read> d : S;
 
-[[stage(compute)]]
+[[stage(compute), workgroup_size(1)]]
 fn f1() {
   let x : i32 = (a.i + c.i);
 }
 
-[[stage(compute)]]
+[[stage(compute), workgroup_size(1)]]
 fn f2() {
   let x : i32 = (b.i + d.i);
 }
@@ -327,20 +336,20 @@ struct S {
   i : i32;
 };
 
-[[group(1), binding(1)]] var<storage> a : [[access(read)]] S;
+[[group(1), binding(1)]] var<storage, read> a : S;
 
-[[group(1), binding(1)]] var<storage> b : [[access(read)]] S;
+[[group(1), binding(1)]] var<storage, read> b : S;
 
-[[group(5), binding(4)]] var<storage> c : [[access(read)]] S;
+[[group(5), binding(4)]] var<storage, read> c : S;
 
-[[group(5), binding(4)]] var<storage> d : [[access(read)]] S;
+[[group(5), binding(4)]] var<storage, read> d : S;
 
-[[stage(compute)]]
+[[stage(compute), workgroup_size(1)]]
 fn f1() {
   let x : i32 = (a.i + c.i);
 }
 
-[[stage(compute)]]
+[[stage(compute), workgroup_size(1)]]
 fn f2() {
   let x : i32 = (b.i + d.i);
 }
@@ -363,16 +372,18 @@ TEST_F(BindingRemapperTest, NoData) {
   auto* src = R"(
 [[block]]
 struct S {
+  a : f32;
 };
 
-[[group(2), binding(1)]] var<storage> a : [[access(read)]] S;
-[[group(3), binding(2)]] var<storage> b : [[access(read)]] S;
+[[group(2), binding(1)]] var<storage, read> a : S;
+[[group(3), binding(2)]] var<storage, read> b : S;
 
-[[stage(compute)]]
+[[stage(compute), workgroup_size(1)]]
 fn f() {}
 )";
 
-  auto* expect = "error: BindingRemapper did not find the remapping data";
+  auto* expect =
+      "error: missing transform data for tint::transform::BindingRemapper";
 
   auto got = Run<BindingRemapper>(src);
 

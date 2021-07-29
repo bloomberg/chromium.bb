@@ -13,6 +13,7 @@
 #include "base/task/sequence_manager/task_queue_impl.h"
 #include "base/task/sequence_manager/time_domain.h"
 #include "net/base/request_priority.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/budget_pool.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/task_queue_throttler.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/agent_group_scheduler_impl.h"
@@ -181,6 +182,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue
                   "Wrong Instanstiation for kPrioritisationTypeWidthBits");
 
     QueueTraits(const QueueTraits&) = default;
+    QueueTraits& operator=(const QueueTraits&) = default;
 
     QueueTraits SetCanBeDeferred(bool value) {
       can_be_deferred = value;
@@ -489,6 +491,9 @@ class PLATFORM_EXPORT MainThreadTaskQueue
   // notify the throttler that this queue should wake immediately.
   void SetImmediateWakeUpForTest();
 
+  void SetWakeUpBudgetPool(WakeUpBudgetPool* wake_up_budget_pool);
+  WakeUpBudgetPool* GetWakeUpBudgetPool() const { return wake_up_budget_pool_; }
+
   base::WeakPtr<MainThreadTaskQueue> AsWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }
@@ -510,6 +515,9 @@ class PLATFORM_EXPORT MainThreadTaskQueue
       const TaskQueue::Spec& spec,
       const QueueCreationParams& params,
       MainThreadSchedulerImpl* main_thread_scheduler);
+
+  MainThreadTaskQueue(const MainThreadTaskQueue&) = delete;
+  MainThreadTaskQueue& operator=(const MainThreadTaskQueue&) = delete;
 
   ~MainThreadTaskQueue();
 
@@ -553,9 +561,10 @@ class PLATFORM_EXPORT MainThreadTaskQueue
   // be set to a different value afterwards (except in tests).
   FrameSchedulerImpl* frame_scheduler_;  // NOT OWNED
 
-  base::WeakPtrFactory<MainThreadTaskQueue> weak_ptr_factory_{this};
+  // The WakeUpBudgetPool for this TaskQueue, if any.
+  WakeUpBudgetPool* wake_up_budget_pool_{nullptr};  // NOT OWNED
 
-  DISALLOW_COPY_AND_ASSIGN(MainThreadTaskQueue);
+  base::WeakPtrFactory<MainThreadTaskQueue> weak_ptr_factory_{this};
 };
 
 }  // namespace scheduler

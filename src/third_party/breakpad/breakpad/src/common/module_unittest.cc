@@ -265,7 +265,7 @@ TEST(Write, NoCFI) {
                contents.c_str());
 }
 
-TEST(Construct, AddFunctions) {
+TEST(Construct, AddFunction) {
   stringstream s;
   Module m(MODULE_NAME, MODULE_OS, MODULE_ARCH, MODULE_ID);
 
@@ -287,7 +287,8 @@ TEST(Construct, AddFunctions) {
   vec.push_back(function1);
   vec.push_back(function2);
 
-  m.AddFunctions(vec.begin(), vec.end());
+  for (Module::Function* func: vec)
+    m.AddFunction(func);
 
   m.Write(s, ALL_SYMBOL_DATA);
   string contents = s.str();

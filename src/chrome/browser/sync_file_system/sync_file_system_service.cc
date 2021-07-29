@@ -16,14 +16,12 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/apps/platform_apps/api/sync_file_system/extension_sync_event_observer.h"
 #include "chrome/browser/apps/platform_apps/api/sync_file_system/sync_file_system_api_helpers.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/sync_file_system/local/local_file_sync_service.h"
 #include "chrome/browser/sync_file_system/logger.h"
 #include "chrome/browser/sync_file_system/sync_direction.h"
@@ -114,7 +112,7 @@ std::string SyncFileStatusToString(SyncFileStatus sync_file_status) {
 void DidGetFileSyncStatusForDump(
     base::ListValue* files,
     size_t* num_results,
-    base::OnceCallback<void(const base::ListValue&)>* callback,
+    SyncFileSystemService::DumpFilesCallback& callback,
     base::DictionaryValue* file,
     SyncStatusCode sync_status_code,
     SyncFileStatus sync_file_status) {
@@ -129,10 +127,10 @@ void DidGetFileSyncStatusForDump(
   if (++*num_results < files->GetSize())
     return;
 
-  // |callback| is backed by a DumpFilesCallback, which should only be called
+  // `callback` is a DumpFilesCallback, which should only be called
   // once. The callback will only be called a single time, even though
   // `DidGetFileSyncStatusForDump()` is called more than once.
-  std::move(*callback).Run(*files);
+  std::move(callback).Run(*files);
 }
 
 // We need this indirection because WeakPtr can only be bound to methods
@@ -269,10 +267,10 @@ void SyncFileSystemService::Shutdown() {
 
   remote_service_.reset();
 
-  syncer::SyncService* profile_sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
-  if (profile_sync_service)
-    profile_sync_service->RemoveObserver(this);
+  syncer::SyncService* sync_service =
+      SyncServiceFactory::GetForProfile(profile_);
+  if (sync_service)
+    sync_service->RemoveObserver(this);
 
   ExtensionRegistry::Get(profile_)->RemoveObserver(this);
 
@@ -472,11 +470,11 @@ void SyncFileSystemService::Initialize(
   local_sync_runners_.push_back(std::move(local_syncer));
   remote_sync_runners_.push_back(std::move(remote_syncer));
 
-  syncer::SyncService* profile_sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
-  if (profile_sync_service) {
-    UpdateSyncEnabledStatus(profile_sync_service);
-    profile_sync_service->AddObserver(this);
+  syncer::SyncService* sync_service =
+      SyncServiceFactory::GetForProfile(profile_);
+  if (sync_service) {
+    UpdateSyncEnabledStatus(sync_service);
+    sync_service->AddObserver(this);
   }
 
   ExtensionRegistry::Get(profile_)->AddObserver(this);
@@ -517,10 +515,6 @@ void SyncFileSystemService::DidRegisterOrigin(const GURL& app_origin,
     std::move(callback).Run(SYNC_STATUS_ABORT);
     return;
   }
-
-  UMA_HISTOGRAM_ENUMERATION("SyncFileSystem.RegisterOriginResult",
-                            remote_service_->GetCurrentState(),
-                            REMOTE_SERVICE_STATE_MAX);
 
   if (status == SYNC_STATUS_FAILED) {
     // If we got generic error return the service status information.
@@ -574,7 +568,7 @@ void SyncFileSystemService::DidDumpFiles(
   AccumulateFileSyncStatusCallback accumulate_callback = base::BindRepeating(
       &DidGetFileSyncStatusForDump, base::Owned(dump_files.release()),
       base::Owned(std::make_unique<size_t>(0)),
-      base::Owned(std::make_unique<DumpFilesCallback>(std::move(callback))));
+      base::OwnedRef(std::move(callback)));
 
   // After all metadata loaded, sync status can be added to each entry.
   for (size_t i = 0; i < files->GetSize(); ++i) {
@@ -725,12 +719,11 @@ void SyncFileSystemService::OnFileStatusChanged(
 }
 
 void SyncFileSystemService::UpdateSyncEnabledStatus(
-    syncer::SyncService* profile_sync_service) {
-  if (!profile_sync_service->GetUserSettings()->IsFirstSetupComplete())
+    syncer::SyncService* sync_service) {
+  if (!sync_service->GetUserSettings()->IsFirstSetupComplete())
     return;
   bool old_sync_enabled = sync_enabled_;
-  sync_enabled_ = profile_sync_service->GetActiveDataTypes().Has(
-      syncer::APPS);
+  sync_enabled_ = sync_service->GetActiveDataTypes().Has(syncer::APPS);
   remote_service_->SetSyncEnabled(sync_enabled_);
   if (!old_sync_enabled && sync_enabled_)
     RunForEachSyncRunners(&SyncProcessRunner::Schedule);

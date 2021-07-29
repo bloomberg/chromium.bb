@@ -25,20 +25,19 @@
 #include "chrome/browser/metrics/testing/sync_metrics_test_utils.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/secondary_account_helper.h"
+#include "chrome/browser/sync/test/integration/sync_service_impl_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/unified_consent/unified_consent_service_factory.h"
-#include "chrome/test/base/testing_profile.h"
 #include "components/metrics/demographics/demographic_metrics_provider.h"
 #include "components/metrics/demographics/demographic_metrics_test_utils.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
-#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_service_impl.h"
 #include "components/sync/driver/sync_token_status.h"
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
 #include "components/ukm/content/source_url_recorder.h"
@@ -253,9 +252,9 @@ class UkmBrowserTestBase : public SyncTest {
 #endif  // !defined(OS_ANDROID)
   }
 
-  std::unique_ptr<ProfileSyncServiceHarness> EnableSyncForProfile(
+  std::unique_ptr<SyncServiceImplHarness> EnableSyncForProfile(
       Profile* profile) {
-    std::unique_ptr<ProfileSyncServiceHarness> harness =
+    std::unique_ptr<SyncServiceImplHarness> harness =
         test::InitializeProfileForSync(profile, GetFakeServer()->AsWeakPtr());
     EXPECT_TRUE(harness->SetupSync());
 
@@ -418,7 +417,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, RegularPlusIncognitoCheck) {
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  std::unique_ptr<ProfileSyncServiceHarness> harness =
+  std::unique_ptr<SyncServiceImplHarness> harness =
       EnableSyncForProfile(profile);
 
   PlatformBrowser browser1 = CreatePlatformBrowser(profile);
@@ -463,7 +462,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, IncognitoPlusRegularCheck) {
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  std::unique_ptr<ProfileSyncServiceHarness> harness =
+  std::unique_ptr<SyncServiceImplHarness> harness =
       EnableSyncForProfile(profile);
 
   Profile* incognito_profile =
@@ -482,26 +481,14 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, IncognitoPlusRegularCheck) {
   ClosePlatformBrowser(browser);
 }
 
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-class GuestUkmBrowserTest : public UkmBrowserTest,
-                            public ::testing::WithParamInterface<bool> {
- public:
-  GuestUkmBrowserTest() {
-    TestingProfile::SetScopedFeatureListForEphemeralGuestProfiles(
-        scoped_feature_list_, GetParam());
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
 // Make sure that UKM is disabled while a guest profile's window is open.
-IN_PROC_BROWSER_TEST_P(GuestUkmBrowserTest, RegularPlusGuestCheck) {
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(UkmBrowserTest, RegularPlusGuestCheck) {
   ukm::UkmTestHelper ukm_test_helper(GetUkmService());
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  std::unique_ptr<ProfileSyncServiceHarness> harness =
+  std::unique_ptr<SyncServiceImplHarness> harness =
       EnableSyncForProfile(profile);
 
   Browser* regular_browser = CreateBrowser(profile);
@@ -521,20 +508,23 @@ IN_PROC_BROWSER_TEST_P(GuestUkmBrowserTest, RegularPlusGuestCheck) {
   harness->service()->GetUserSettings()->SetSyncRequested(false);
   CloseBrowserSynchronously(regular_browser);
 }
-
-INSTANTIATE_TEST_SUITE_P(AllGuestTypes,
-                         GuestUkmBrowserTest,
-                         /*is_ephemeral=*/testing::Bool());
 #endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 
-// Make sure that UKM is disabled while an non-sync profile's window is open.
 #if !defined(OS_ANDROID)
-IN_PROC_BROWSER_TEST_F(UkmBrowserTest, OpenNonSyncCheck) {
+
+#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+// https://crbug.com/1223061
+#define MAYBE_OpenNonSyncCheck DISABLED_OpenNonSyncCheck
+#else
+#define MAYBE_OpenNonSyncCheck OpenNonSyncCheck
+#endif
+// Make sure that UKM is disabled while an non-sync profile's window is open.
+IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MAYBE_OpenNonSyncCheck) {
   ukm::UkmTestHelper ukm_test_helper(GetUkmService());
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  std::unique_ptr<ProfileSyncServiceHarness> harness =
+  std::unique_ptr<SyncServiceImplHarness> harness =
       EnableSyncForProfile(profile);
 
   Browser* sync_browser = CreateBrowser(profile);
@@ -565,7 +555,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MetricsConsentCheck) {
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  std::unique_ptr<ProfileSyncServiceHarness> harness =
+  std::unique_ptr<SyncServiceImplHarness> harness =
       EnableSyncForProfile(profile);
 
   PlatformBrowser browser = CreatePlatformBrowser(profile);
@@ -597,7 +587,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, LogProtoData) {
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  std::unique_ptr<ProfileSyncServiceHarness> harness =
+  std::unique_ptr<SyncServiceImplHarness> harness =
       EnableSyncForProfile(profile);
 
   Browser* sync_browser = CreateBrowser(profile);
@@ -650,7 +640,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTestWithDemographics,
                                               test_birth_year, test_gender);
 
   Profile* test_profile = ProfileManager::GetActiveUserProfile();
-  std::unique_ptr<ProfileSyncServiceHarness> harness =
+  std::unique_ptr<SyncServiceImplHarness> harness =
       EnableSyncForProfile(test_profile);
 
   // Make sure that there is only one Profile to allow reporting the user's
@@ -722,7 +712,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, NetworkProviderPopulatesSystemProfile) {
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  std::unique_ptr<ProfileSyncServiceHarness> harness =
+  std::unique_ptr<SyncServiceImplHarness> harness =
       EnableSyncForProfile(profile);
 
   Browser* sync_browser = CreateBrowser(profile);
@@ -773,7 +763,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MAYBE_ConsentAddedButNoSyncCheck) {
   metrics_consent.Update(true);
   EXPECT_FALSE(ukm_test_helper.IsRecordingEnabled());
 
-  std::unique_ptr<ProfileSyncServiceHarness> harness =
+  std::unique_ptr<SyncServiceImplHarness> harness =
       EnableSyncForProfile(profile);
   g_browser_process->GetMetricsServicesManager()->UpdateUploadPermissions(true);
   EXPECT_TRUE(ukm_test_helper.IsRecordingEnabled());
@@ -790,7 +780,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, SingleDisableExtensionsSyncCheck) {
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  std::unique_ptr<ProfileSyncServiceHarness> harness =
+  std::unique_ptr<SyncServiceImplHarness> harness =
       EnableSyncForProfile(profile);
 
   Browser* sync_browser = CreateBrowser(profile);
@@ -824,7 +814,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MultiDisableExtensionsSyncCheck) {
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile1 = ProfileManager::GetActiveUserProfile();
-  std::unique_ptr<ProfileSyncServiceHarness> harness1 =
+  std::unique_ptr<SyncServiceImplHarness> harness1 =
       EnableSyncForProfile(profile1);
 
   Browser* browser1 = CreateBrowser(profile1);
@@ -833,7 +823,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MultiDisableExtensionsSyncCheck) {
   EXPECT_NE(0U, original_client_id);
 
   Profile* profile2 = CreateNonSyncProfile();
-  std::unique_ptr<ProfileSyncServiceHarness> harness2 =
+  std::unique_ptr<SyncServiceImplHarness> harness2 =
       EnableSyncForProfile(profile2);
   Browser* browser2 = CreateBrowser(profile2);
   EXPECT_TRUE(ukm_test_helper.IsRecordingEnabled());
@@ -862,7 +852,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, LogsTabId) {
   ASSERT_TRUE(embedded_test_server()->Start());
   MetricsConsentOverride metrics_consent(true);
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  std::unique_ptr<ProfileSyncServiceHarness> harness =
+  std::unique_ptr<SyncServiceImplHarness> harness =
       EnableSyncForProfile(profile);
   Browser* sync_browser = CreateBrowser(profile);
 
@@ -896,7 +886,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, LogsPreviousSourceId) {
   ASSERT_TRUE(embedded_test_server()->Start());
   MetricsConsentOverride metrics_consent(true);
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  std::unique_ptr<ProfileSyncServiceHarness> harness =
+  std::unique_ptr<SyncServiceImplHarness> harness =
       EnableSyncForProfile(profile);
   Browser* sync_browser = CreateBrowser(profile);
 
@@ -943,7 +933,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, LogsOpenerSource) {
   ASSERT_TRUE(embedded_test_server()->Start());
   MetricsConsentOverride metrics_consent(true);
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  std::unique_ptr<ProfileSyncServiceHarness> harness =
+  std::unique_ptr<SyncServiceImplHarness> harness =
       EnableSyncForProfile(profile);
   Browser* sync_browser = CreateBrowser(profile);
 
@@ -996,7 +986,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, SingleSyncSignoutCheck) {
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  std::unique_ptr<ProfileSyncServiceHarness> harness =
+  std::unique_ptr<SyncServiceImplHarness> harness =
       EnableSyncForProfile(profile);
 
   PlatformBrowser browser = CreatePlatformBrowser(profile);
@@ -1016,13 +1006,20 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, SingleSyncSignoutCheck) {
 // ChromeOS doesn't have the concept of sign-out so this test doesn't make sense
 // there. Android doesn't have multiple profiles.
 #if !BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OS_ANDROID)
+
+#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+// https://crbug.com/1223061
+#define MAYBE_MultiSyncSignoutCheck DISABLED_MultiSyncSignoutCheck
+#else
+#define MAYBE_MultiSyncSignoutCheck MultiSyncSignoutCheck
+#endif
 // Make sure that UKM is disabled when any profile signs out of Sync.
-IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MultiSyncSignoutCheck) {
+IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MAYBE_MultiSyncSignoutCheck) {
   ukm::UkmTestHelper ukm_test_helper(GetUkmService());
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile1 = ProfileManager::GetActiveUserProfile();
-  std::unique_ptr<ProfileSyncServiceHarness> harness1 =
+  std::unique_ptr<SyncServiceImplHarness> harness1 =
       EnableSyncForProfile(profile1);
 
   Browser* browser1 = CreateBrowser(profile1);
@@ -1031,7 +1028,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MultiSyncSignoutCheck) {
   EXPECT_NE(0U, original_client_id);
 
   Profile* profile2 = CreateNonSyncProfile();
-  std::unique_ptr<ProfileSyncServiceHarness> harness2 =
+  std::unique_ptr<SyncServiceImplHarness> harness2 =
       EnableSyncForProfile(profile2);
   Browser* browser2 = CreateBrowser(profile2);
   EXPECT_TRUE(ukm_test_helper.IsRecordingEnabled());
@@ -1058,7 +1055,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, ServiceListenerInitFailedCheck) {
       true);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  std::unique_ptr<ProfileSyncServiceHarness> harness =
+  std::unique_ptr<SyncServiceImplHarness> harness =
       EnableSyncForProfile(profile);
 
   Browser* sync_browser = CreateBrowser(profile);
@@ -1084,7 +1081,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MetricsReportingCheck) {
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  std::unique_ptr<ProfileSyncServiceHarness> harness =
+  std::unique_ptr<SyncServiceImplHarness> harness =
       EnableSyncForProfile(profile);
 
   Browser* sync_browser = CreateBrowser(profile);
@@ -1112,7 +1109,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MAYBE_HistoryDeleteCheck) {
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  std::unique_ptr<ProfileSyncServiceHarness> harness =
+  std::unique_ptr<SyncServiceImplHarness> harness =
       EnableSyncForProfile(profile);
 
   PlatformBrowser browser = CreatePlatformBrowser(profile);
@@ -1148,10 +1145,10 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTestWithSyncTransport,
   // setting up Sync) causes the Sync machinery to start up in standalone
   // transport mode.
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  std::unique_ptr<ProfileSyncServiceHarness> harness =
+  std::unique_ptr<SyncServiceImplHarness> harness =
       test::InitializeProfileForSync(profile, GetFakeServer()->AsWeakPtr());
   syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
+      SyncServiceFactory::GetForProfile(profile);
 
   secondary_account_helper::SignInSecondaryAccount(
       profile, &test_url_loader_factory_, "secondary_user@email.com");
@@ -1182,7 +1179,7 @@ IN_PROC_BROWSER_TEST_P(UkmConsentParamBrowserTest, GroupPolicyConsentCheck) {
   // testing directly from prefs.
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  std::unique_ptr<ProfileSyncServiceHarness> harness =
+  std::unique_ptr<SyncServiceImplHarness> harness =
       EnableSyncForProfile(profile);
 
   Browser* sync_browser = CreateBrowser(profile);
@@ -1215,7 +1212,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, EvictObsoleteSources) {
   ukm::UkmTestHelper ukm_test_helper(GetUkmService());
   MetricsConsentOverride metrics_consent(true);
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  std::unique_ptr<ProfileSyncServiceHarness> harness =
+  std::unique_ptr<SyncServiceImplHarness> harness =
       EnableSyncForProfile(profile);
   Browser* sync_browser = CreateBrowser(profile);
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -1339,7 +1336,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest,
   ukm::UkmTestHelper ukm_test_helper(GetUkmService());
   MetricsConsentOverride metrics_consent(true);
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  std::unique_ptr<ProfileSyncServiceHarness> harness =
+  std::unique_ptr<SyncServiceImplHarness> harness =
       EnableSyncForProfile(profile);
   Browser* sync_browser = CreateBrowser(profile);
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -1397,7 +1394,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, NotMarkSourcesIfNavigationNotCommitted) {
   ukm::UkmTestHelper ukm_test_helper(GetUkmService());
   MetricsConsentOverride metrics_consent(true);
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  std::unique_ptr<ProfileSyncServiceHarness> harness =
+  std::unique_ptr<SyncServiceImplHarness> harness =
       EnableSyncForProfile(profile);
   Browser* sync_browser = CreateBrowser(profile);
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -1430,7 +1427,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, DebugUiRenders) {
   MetricsConsentOverride metrics_consent(true);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  std::unique_ptr<ProfileSyncServiceHarness> harness =
+  std::unique_ptr<SyncServiceImplHarness> harness =
       EnableSyncForProfile(profile);
   PlatformBrowser browser = CreatePlatformBrowser(profile);
 

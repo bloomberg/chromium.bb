@@ -6,6 +6,8 @@
 #define MEDIA_BASE_VIDEO_ENCODER_H_
 
 #include "base/callback.h"
+#include "base/time/time.h"
+#include "media/base/bitrate.h"
 #include "media/base/media_export.h"
 #include "media/base/status.h"
 #include "media/base/video_codecs.h"
@@ -43,7 +45,7 @@ class MEDIA_EXPORT VideoEncoder {
     Options();
     Options(const Options&);
     ~Options();
-    absl::optional<uint64_t> bitrate;
+    absl::optional<Bitrate> bitrate;
     absl::optional<double> framerate;
 
     gfx::Size frame_size;

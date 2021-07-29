@@ -4,10 +4,12 @@
 
 #include "cc/paint/paint_op_buffer.h"
 
+#include <algorithm>
 #include <memory>
 #include <utility>
 #include <vector>
 
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "cc/paint/decoded_draw_image.h"
 #include "cc/paint/display_item_list.h"
@@ -23,6 +25,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/skia/include/core/SkSerialProcs.h"
+#include "third_party/skia/include/core/SkTextBlob.h"
 #include "third_party/skia/include/docs/SkPDFDocument.h"
 #include "third_party/skia/include/gpu/GrRecordingContext.h"
 #include "ui/gfx/skia_util.h"
@@ -413,7 +416,7 @@ size_t ClipPathOp::Serialize(const PaintOp* base_op,
                              const SkM44& original_ctm) {
   auto* op = static_cast<const ClipPathOp*>(base_op);
   PaintOpWriter helper(memory, size, options);
-  helper.Write(op->path);
+  helper.Write(op->path, op->use_cache);
   helper.Write(op->op);
   helper.Write(op->antialias);
   return helper.size();
@@ -629,7 +632,7 @@ size_t DrawPathOp::Serialize(const PaintOp* base_op,
   if (!flags_to_serialize)
     flags_to_serialize = &op->flags;
   helper.Write(*flags_to_serialize, current_ctm);
-  helper.Write(op->path);
+  helper.Write(op->path, op->use_cache);
   helper.Write(op->sk_path_fill_type);
   return helper.size();
 }
@@ -2432,7 +2435,7 @@ gfx::Rect PaintOp::ComputePaintRect(const PaintOp* op,
   } else {
     const PaintFlags* flags =
         op->IsPaintOpWithFlags()
-            ? &static_cast<const PaintOpWithFlags*>(op)->flags
+            ? &(static_cast<const PaintOpWithFlags*>(op)->flags)
             : nullptr;
     SkRect paint_rect = MapRect(ctm, op_rect);
     if (flags) {
@@ -3007,6 +3010,45 @@ sk_sp<PaintOpBuffer> PaintOpBuffer::MakeFromMemory(
   if (!buffer->Deserialize(input, input_size, options))
     return nullptr;
   return buffer;
+}
+
+// static
+SkRect PaintOpBuffer::GetFixedScaleBounds(const SkMatrix& ctm,
+                                          const SkRect& bounds,
+                                          int max_texture_size) {
+  SkSize scale;
+  if (!ctm.decomposeScale(&scale)) {
+    // Decomposition failed, use an approximation.
+    scale.set(SkScalarSqrt(ctm.getScaleX() * ctm.getScaleX() +
+                           ctm.getSkewX() * ctm.getSkewX()),
+              SkScalarSqrt(ctm.getScaleY() * ctm.getScaleY() +
+                           ctm.getSkewY() * ctm.getSkewY()));
+  }
+
+  SkScalar raster_width = bounds.width() * scale.width();
+  SkScalar raster_height = bounds.height() * scale.height();
+  SkScalar tile_area = raster_width * raster_height;
+  // Clamp the tile area to about 4M pixels, and per-dimension max texture size
+  // if it's provided.
+  static const SkScalar kMaxTileArea = 2048 * 2048;
+  SkScalar down_scale = 1.f;
+  if (tile_area > kMaxTileArea) {
+    down_scale = SkScalarSqrt(kMaxTileArea / tile_area);
+  }
+  if (max_texture_size > 0) {
+    // This only updates down_scale if the tile is larger than the texture size
+    // after ensuring its area is less than kMaxTileArea
+    down_scale = std::min(
+        down_scale, max_texture_size / std::max(raster_width, raster_height));
+  }
+
+  if (down_scale < 1.f) {
+    scale.set(down_scale * scale.width(), down_scale * scale.height());
+  }
+  return SkRect::MakeXYWH(
+      bounds.fLeft * scale.width(), bounds.fTop * scale.height(),
+      SkScalarCeilToInt(SkScalarAbs(scale.width() * bounds.width())),
+      SkScalarCeilToInt(SkScalarAbs(scale.height() * bounds.height())));
 }
 
 void PaintOpBuffer::ReallocBuffer(size_t new_size) {

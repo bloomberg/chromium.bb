@@ -4,11 +4,16 @@
 
 #include "chrome/browser/media/router/providers/cast/cast_media_controller.h"
 
+#include <memory>
+#include <utility>
+#include <vector>
+
 #include "base/json/json_reader.h"
 #include "chrome/browser/media/router/providers/cast/app_activity.h"
 #include "chrome/browser/media/router/providers/cast/mock_app_activity.h"
 #include "chrome/browser/media/router/test/media_router_mojo_test.h"
 #include "components/media_router/common/media_route.h"
+#include "components/media_router/common/test/test_helper.h"
 #include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -17,6 +22,7 @@
 using base::Value;
 using testing::_;
 using testing::Invoke;
+using testing::NiceMock;
 using testing::WithArg;
 
 namespace media_router {
@@ -123,8 +129,8 @@ mojom::MediaStatusPtr CreateSampleMediaStatus() {
 }
 
 std::unique_ptr<CastSession> CreateSampleSession() {
-  MediaSinkInternal sink(MediaSink("sinkId123", "name", SinkIconType::CAST),
-                         CastSinkExtraData());
+  MediaSinkInternal sink{CreateCastSink("sinkId123", "name"),
+                         CastSinkExtraData{}};
   absl::optional<Value> receiver_status = base::JSONReader::Read(R"({
     "applications": [{
       "appId": "ABCD1234",
@@ -154,7 +160,7 @@ class CastMediaControllerTest : public testing::Test {
     testing::Test::SetUp();
 
     mojo::PendingRemote<mojom::MediaStatusObserver> mojo_status_observer;
-    status_observer_ = std::make_unique<MockMediaStatusObserver>(
+    status_observer_ = std::make_unique<NiceMock<MockMediaStatusObserver>>(
         mojo_status_observer.InitWithNewPipeAndPassReceiver());
     controller_ = std::make_unique<CastMediaController>(
         &activity_, mojo_controller_.BindNewPipeAndPassReceiver(),
@@ -191,7 +197,7 @@ class CastMediaControllerTest : public testing::Test {
 
  protected:
   content::BrowserTaskEnvironment task_environment_;
-  MockAppActivity activity_;
+  NiceMock<MockAppActivity> activity_;
   std::unique_ptr<CastMediaController> controller_;
   mojo::Remote<mojom::MediaController> mojo_controller_;
   std::unique_ptr<MockMediaStatusObserver> status_observer_;

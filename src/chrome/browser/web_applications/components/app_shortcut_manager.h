@@ -10,7 +10,6 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_app_shortcut.h"
 #include "chrome/browser/web_applications/components/web_app_shortcuts_menu.h"
@@ -21,6 +20,7 @@ class Profile;
 namespace web_app {
 
 class AppIconManager;
+class WebAppRegistrar;
 struct ShortcutInfo;
 
 using ShortcutLocationCallback =
@@ -40,7 +40,7 @@ class AppShortcutManager {
   AppShortcutManager& operator=(const AppShortcutManager&) = delete;
   virtual ~AppShortcutManager();
 
-  void SetSubsystems(AppIconManager* icon_manager, AppRegistrar* registrar);
+  void SetSubsystems(AppIconManager* icon_manager, WebAppRegistrar* registrar);
 
   void Start();
   void Shutdown();
@@ -115,7 +115,7 @@ class AppShortcutManager {
                           DeleteShortcutsCallback callback,
                           bool success);
 
-  AppRegistrar* registrar() { return registrar_; }
+  WebAppRegistrar* registrar() { return registrar_; }
   Profile* profile() { return profile_; }
   bool suppress_shortcuts_for_testing() const {
     return suppress_shortcuts_for_testing_;
@@ -138,7 +138,7 @@ class AppShortcutManager {
 
   bool suppress_shortcuts_for_testing_ = false;
 
-  AppRegistrar* registrar_ = nullptr;
+  WebAppRegistrar* registrar_ = nullptr;
   AppIconManager* icon_manager_ = nullptr;
   Profile* const profile_;
 

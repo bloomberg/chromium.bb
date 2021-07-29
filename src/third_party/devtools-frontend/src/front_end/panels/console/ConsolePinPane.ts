@@ -9,8 +9,12 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
+// eslint-disable-next-line rulesdir/es_modules_import
+import objectValueStyles from '../../ui/legacy/components/object_ui/objectValue.css.js';
 import * as TextEditor from '../../ui/legacy/components/text_editor/text_editor.js';  // eslint-disable-line no-unused-vars
 import * as UI from '../../ui/legacy/legacy.js';
+
+import consolePinPaneStyles from './consolePinPane.css.js';
 
 const UIStrings = {
   /**
@@ -59,8 +63,6 @@ export class ConsolePinPane extends UI.ThrottledWidget.ThrottledWidget {
   constructor(liveExpressionButton: UI.Toolbar.ToolbarButton) {
     super(true, 250);
     this._liveExpressionButton = liveExpressionButton;
-    this.registerRequiredCSS('panels/console/consolePinPane.css', {enableLegacyPatching: false});
-    this.registerRequiredCSS('ui/legacy/components/object_ui/objectValue.css', {enableLegacyPatching: false});
     this.contentElement.classList.add('console-pins', 'monospace');
     this.contentElement.addEventListener('contextmenu', this._contextMenuEventFired.bind(this), false);
 
@@ -69,6 +71,11 @@ export class ConsolePinPane extends UI.ThrottledWidget.ThrottledWidget {
     for (const expression of this._pinsSetting.get()) {
       this.addPin(expression);
     }
+  }
+
+  wasShown(): void {
+    super.wasShown();
+    this.registerCSSFiles([consolePinPaneStyles, objectValueStyles]);
   }
 
   willHide(): void {
@@ -318,9 +325,10 @@ export class ConsolePin extends Common.ObjectWrapper.ObjectWrapper {
     const throwOnSideEffect = isEditing && text !== this._committedExpression;
     const timeout = throwOnSideEffect ? 250 : undefined;
     const executionContext = UI.Context.Context.instance().flavor(SDK.RuntimeModel.ExecutionContext);
+    const preprocessedExpression = ObjectUI.JavaScriptREPL.JavaScriptREPL.preprocessExpression(text);
     const {preview, result} = await ObjectUI.JavaScriptREPL.JavaScriptREPL.evaluateAndBuildPreview(
-        `${text}\n//# sourceURL=watch-expression-${this.consolePinNumber}.devtools`, throwOnSideEffect, timeout,
-        !isEditing /* allowErrors */, 'console');
+        `${preprocessedExpression}\n//# sourceURL=watch-expression-${this.consolePinNumber}.devtools`,
+        throwOnSideEffect, timeout, !isEditing /* allowErrors */, 'console');
     if (this._lastResult && this._lastExecutionContext) {
       this._lastExecutionContext.runtimeModel.releaseEvaluationResult(this._lastResult);
     }

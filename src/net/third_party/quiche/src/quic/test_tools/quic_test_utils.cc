@@ -1323,10 +1323,12 @@ QuicMemSliceSpan MakeSpan(QuicBufferAllocator* allocator,
 }
 
 QuicMemSlice MemSliceFromString(absl::string_view data) {
+  if (data.empty()) {
+    return QuicMemSlice();
+  }
+
   static SimpleBufferAllocator* allocator = new SimpleBufferAllocator();
-  QuicUniqueBufferPtr buffer = MakeUniqueBuffer(allocator, data.size());
-  memcpy(buffer.get(), data.data(), data.size());
-  return QuicMemSlice(std::move(buffer), data.size());
+  return QuicMemSlice(QuicBuffer::Copy(allocator, data));
 }
 
 bool TaggingEncrypter::EncryptPacket(uint64_t /*packet_number*/,

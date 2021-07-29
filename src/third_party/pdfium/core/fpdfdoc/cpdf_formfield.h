@@ -24,7 +24,7 @@ class CPDF_InteractiveForm;
 class CPDF_Object;
 class CPDF_String;
 
-enum class NotificationOption { kDoNotNotify = 0, kNotify };
+enum class NotificationOption : bool { kDoNotNotify = false, kNotify = true };
 
 enum class FormFieldType : uint8_t {
   kUnknown = 0,
@@ -98,6 +98,7 @@ class CPDF_FormField {
   WideString GetMappingName() const;
 
   uint32_t GetFieldFlags() const;
+  void SetFieldFlags(uint32_t dwFlags);
   ByteString GetDefaultStyle() const;
 
   bool IsRequired() const { return m_bRequired; }
@@ -132,7 +133,7 @@ class CPDF_FormField {
   int GetSelectedOptionIndex(int index) const;
   bool IsSelectedOption(const WideString& wsOptValue) const;
   bool IsSelectedIndex(int iOptIndex) const;
-  bool SelectOption(int iOptIndex, bool bSelected, NotificationOption notify);
+  void SelectOption(int iOptIndex);
 
   // Verifies if there is a valid selected indicies (/I) object and whether its
   // entries are consistent with the value (/V) object.

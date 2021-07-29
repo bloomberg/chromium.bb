@@ -19,6 +19,10 @@
 # Exclude to prevent PartitionAlloc<->CheckedPtr cyclical dependency.
 base/allocator/
 
+# Exclude dependences of checked_ptr.h
+base/logging.h
+base/synchronization/lock_impl.h
+
 # Exclude - deprecated and contains legacy C++ and pre-C++11 code.
 ppapi/
 
@@ -45,10 +49,6 @@ components/history_clusters/core/
 # provide a stable C ABI. Can't depend on //base.
 android_webview/public/
 
-# Exclude dependences of checked_ptr.h
-base/logging.h
-base/synchronization/lock_impl.h
-
 # Performance related exclusion based on sampling profiler data
 base/bind_internal.h
 base/message_loop/
@@ -58,26 +58,16 @@ base/timer/
 cc/
 content/browser/scheduler/responsiveness/
 
-# Exclude code that only runs inside a renderer process - renderer
-# processes are excluded for now from the MiraclePtr project scope,
-# because they are sensitive to performance regressions (to a much higher
-# degree than, say, the Browser process).
-#
-# Note that some renderer-only directories are already excluded
-# elsewhere - for example "v8/" is excluded in another part of this
-# file.
-#
-# The common/ directories must be included in the rewrite as they contain code
-# that is also used from the browser process.
-#
-# Also, note that isInThirdPartyLocation AST matcher in
-# RewriteRawPtrFields.cpp explicitly includes third_party/blink
-# (because it is in the same git repository as the rest of Chromium),
-# but we go ahead and exclude it below.
-/renderer/  # (e.g. //content/renderer/ or //components/visitedlink/renderer/).
-third_party/blink/
-!third_party/blink/public/common/
-!third_party/blink/common/
+# Performance related exclusion based on tab_search:top100:2020 profiler data
+base/observer_list.h
+base/containers/linked_list.h
+base/containers/circular_deque.h
+
+# Performance related exclusion based on speedometer2 benchmark
+third_party/blink/renderer/core/
+third_party/blink/renderer/platform/bindings/
+third_party/blink/renderer/platform/heap/
+third_party/blink/renderer/platform/wtf/
 
 # Exclude paths in separate repositories - i.e. in directories that
 # 1. Contain a ".git" subdirectory

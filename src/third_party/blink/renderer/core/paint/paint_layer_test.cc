@@ -212,7 +212,7 @@ TEST_P(PaintLayerTest, CompositedScrollingNoNeedsRepaint) {
   EXPECT_EQ(PhysicalOffset(0, 0),
             content_layer->LocationWithoutPositionOffset());
   EXPECT_EQ(
-      LayoutSize(1000, 1000),
+      IntPoint(1000, 1000),
       content_layer->ContainingLayer()->PixelSnappedScrolledContentOffset());
   EXPECT_FALSE(content_layer->SelfNeedsRepaint());
   EXPECT_FALSE(scroll_layer->SelfNeedsRepaint());
@@ -249,7 +249,7 @@ TEST_P(PaintLayerTest, NonCompositedScrollingNeedsRepaint) {
   EXPECT_EQ(PhysicalOffset(0, 0),
             content_layer->LocationWithoutPositionOffset());
   EXPECT_EQ(
-      LayoutSize(1000, 1000),
+      IntPoint(1000, 1000),
       content_layer->ContainingLayer()->PixelSnappedScrolledContentOffset());
 
   if (RuntimeEnabledFeatures::CullRectUpdateEnabled()) {
@@ -1074,44 +1074,35 @@ TEST_P(PaintLayerTest, SubsequenceCachingStackedLayers) {
   PaintLayer* grandchild1 = GetPaintLayerByElementId("grandchild1");
   PaintLayer* grandchild2 = GetPaintLayerByElementId("grandchild2");
 
-  EXPECT_FALSE(parent->SupportsSubsequenceCaching());
-  EXPECT_FALSE(child1->SupportsSubsequenceCaching());
-  EXPECT_TRUE(child2->SupportsSubsequenceCaching());
-  EXPECT_FALSE(grandchild1->SupportsSubsequenceCaching());
-  EXPECT_FALSE(grandchild2->SupportsSubsequenceCaching());
-
-  GetDocument()
-      .getElementById("grandchild1")
-      ->setAttribute(html_names::kStyleAttr, "isolation: isolate");
-  UpdateAllLifecyclePhasesForTest();
-
-  EXPECT_FALSE(parent->SupportsSubsequenceCaching());
-  EXPECT_FALSE(child1->SupportsSubsequenceCaching());
+  EXPECT_TRUE(parent->SupportsSubsequenceCaching());
+  EXPECT_TRUE(child1->SupportsSubsequenceCaching());
   EXPECT_TRUE(child2->SupportsSubsequenceCaching());
   EXPECT_TRUE(grandchild1->SupportsSubsequenceCaching());
-  EXPECT_FALSE(grandchild2->SupportsSubsequenceCaching());
+  EXPECT_TRUE(grandchild2->SupportsSubsequenceCaching());
 }
 
-TEST_P(PaintLayerTest, SubsequenceCachingSVGRoot) {
+TEST_P(PaintLayerTest, SubsequenceCachingSVG) {
   SetBodyInnerHTML(R"HTML(
-    <div id='parent' style='position: relative'>
-      <svg id='svgroot' style='position: relative'></svg>
-    </div>
+    <svg id='svgroot'>
+      <foreignObject id='foreignObject'/>
+    </svg>
   )HTML");
 
   PaintLayer* svgroot = GetPaintLayerByElementId("svgroot");
+  PaintLayer* foreign_object = GetPaintLayerByElementId("foreignObject");
   EXPECT_TRUE(svgroot->SupportsSubsequenceCaching());
+  EXPECT_TRUE(foreign_object->SupportsSubsequenceCaching());
 }
 
 TEST_P(PaintLayerTest, SubsequenceCachingMuticol) {
   SetBodyInnerHTML(R"HTML(
     <div style='columns: 2'>
-      <svg id='svgroot' style='position: relative'></svg>
+      <div id='target' style='position: relative'></div>
     </div>
   )HTML");
 
-  PaintLayer* svgroot = GetPaintLayerByElementId("svgroot");
-  EXPECT_FALSE(svgroot->SupportsSubsequenceCaching());
+  PaintLayer* target = GetPaintLayerByElementId("target");
+  EXPECT_FALSE(target->SupportsSubsequenceCaching());
 }
 
 TEST_P(PaintLayerTest, NegativeZIndexChangeToPositive) {
@@ -1635,7 +1626,7 @@ TEST_P(PaintLayerTest, FloatLayerUnderInlineLayerScrolled) {
     EXPECT_EQ(PhysicalOffset(0, 0), span->LocationWithoutPositionOffset());
     EXPECT_EQ(PhysicalOffset(0, 0),
               span->GetLayoutObject().OffsetForInFlowPosition());
-    EXPECT_EQ(LayoutSize(0, 400),
+    EXPECT_EQ(IntPoint(0, 400),
               span->ContainingLayer()->PixelSnappedScrolledContentOffset());
     EXPECT_EQ(PhysicalOffset(150, 150),
               floating->LocationWithoutPositionOffset());
@@ -1649,12 +1640,12 @@ TEST_P(PaintLayerTest, FloatLayerUnderInlineLayerScrolled) {
     EXPECT_EQ(PhysicalOffset(0, 0), span->LocationWithoutPositionOffset());
     EXPECT_EQ(PhysicalOffset(100, 100),
               span->GetLayoutObject().OffsetForInFlowPosition());
-    EXPECT_EQ(LayoutSize(0, 400),
+    EXPECT_EQ(IntPoint(0, 400),
               span->ContainingLayer()->PixelSnappedScrolledContentOffset());
     EXPECT_EQ(PhysicalOffset(0, 0), floating->LocationWithoutPositionOffset());
     EXPECT_EQ(PhysicalOffset(50, 50),
               floating->GetLayoutObject().OffsetForInFlowPosition());
-    EXPECT_EQ(LayoutSize(0, 400),
+    EXPECT_EQ(IntPoint(0, 400),
               floating->ContainingLayer()->PixelSnappedScrolledContentOffset());
     EXPECT_EQ(PhysicalOffset(-50, -50),
               floating->VisualOffsetFromAncestor(span));
@@ -1963,7 +1954,7 @@ TEST_P(PaintLayerTest, ColumnSpanLayerUnderExtraLayerScrolled) {
   EXPECT_EQ(PhysicalOffset(50, 50),
             spanner->GetLayoutObject().OffsetForInFlowPosition());
 
-  EXPECT_EQ(LayoutSize(200, 0),
+  EXPECT_EQ(IntPoint(200, 0),
             spanner->ContainingLayer()->PixelSnappedScrolledContentOffset());
   EXPECT_EQ(PhysicalOffset(0, 0), extra_layer->LocationWithoutPositionOffset());
   EXPECT_EQ(PhysicalOffset(100, 100),
@@ -2518,6 +2509,10 @@ TEST_P(PaintLayerTest, HitTestOverlayResizer) {
 }
 
 TEST_P(PaintLayerTest, BackgroundIsKnownToBeOpaqueInRectChildren) {
+  // This test doesn't apply in CompositeAfterPaint.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
   SetBodyInnerHTML(R"HTML(
     <style>
       div {
@@ -2771,8 +2766,6 @@ TEST_P(PaintLayerTest, HasNonEmptyChildLayoutObjectsZeroSizeOverflowVisible) {
   EXPECT_FALSE(layer->HasVisibleDescendant());
   EXPECT_TRUE(layer->HasNonEmptyChildLayoutObjects());
 }
-
-enum { kCompositingOptimizations = 1 << 0 };
 
 class PaintLayerOverlapTest : public RenderingTest {
  public:

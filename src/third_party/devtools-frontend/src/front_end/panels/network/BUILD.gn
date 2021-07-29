@@ -52,6 +52,7 @@ devtools_module("network") {
     "../../panels/search:bundle",
     "../../third_party/chromium/client-variations:bundle",
     "../../ui/components/expandable_list:bundle",
+    "../../ui/components/icon_button:bundle",
     "../../ui/legacy:bundle",
     "../../ui/legacy/components/cookie_table:bundle",
     "../../ui/legacy/components/data_grid:bundle",
@@ -60,7 +61,11 @@ devtools_module("network") {
     "../../ui/legacy/components/source_frame:bundle",
     "../../ui/legacy/components/utils:bundle",
     "../../ui/legacy/theme_support:bundle",
+    "../../ui/lit-html:bundle",
+    "../emulation/components:bundle",
     "./components:bundle",
+    "./forward:bundle",
+    "./utils:bundle",
   ]
 }
 
@@ -73,11 +78,10 @@ devtools_entrypoint("bundle") {
     ":*",
     "../../../test/unittests/front_end/entrypoints/missing_entrypoints/*",
     "../../entrypoints/*",
+    "../../ui/components/request_link_icon/*",
 
     # TODO(crbug.com/1202788): Remove invalid dependents
     "../application/*",
-    "../issues/*",
-    "../security/*",
   ]
 
   visibility += devtools_panels_visibility
@@ -98,6 +102,7 @@ devtools_entrypoint("meta") {
     ":bundle",
     "../../core/root:bundle",
     "../../ui/legacy:bundle",
+    "./forward:bundle",
   ]
 
   visibility = [ "../../entrypoints/*" ]

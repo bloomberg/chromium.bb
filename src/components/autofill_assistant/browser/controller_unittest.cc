@@ -15,7 +15,10 @@
 #include "base/test/gtest_util.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/task_environment.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/browser/field_types.h"
+#include "components/autofill_assistant/browser/cud_condition.pb.h"
 #include "components/autofill_assistant/browser/device_context.h"
 #include "components/autofill_assistant/browser/features.h"
 #include "components/autofill_assistant/browser/mock_client.h"
@@ -86,16 +89,13 @@ struct MockCollectUserDataOptions : public CollectUserDataOptions {
 
 }  // namespace
 
-class ControllerTest : public content::RenderViewHostTestHarness {
+class ControllerTest : public testing::Test {
  public:
-  ControllerTest()
-      : RenderViewHostTestHarness(
-            base::test::TaskEnvironment::MainThreadType::UI,
-            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
-  ~ControllerTest() override {}
+  ControllerTest() = default;
 
   void SetUp() override {
-    RenderViewHostTestHarness::SetUp();
+    web_contents_ = content::WebContentsTester::CreateTestWebContents(
+        &browser_context_, nullptr);
 
     scoped_feature_list_.InitAndEnableFeature(
         features::kAutofillAssistantChromeEntry);
@@ -145,7 +145,12 @@ class ControllerTest : public content::RenderViewHostTestHarness {
   void TearDown() override {
     controller_->RemoveObserver(&mock_observer_);
     controller_.reset();
-    RenderViewHostTestHarness::TearDown();
+  }
+
+  content::WebContents* web_contents() { return web_contents_.get(); }
+
+  content::BrowserTaskEnvironment* task_environment() {
+    return &task_environment_;
   }
 
  protected:
@@ -156,14 +161,6 @@ class ControllerTest : public content::RenderViewHostTestHarness {
     script->set_path(name_and_path);
     script->mutable_presentation()->mutable_chip()->set_text(name_and_path);
     return script;
-  }
-
-  static void RunOnce(SupportedScriptProto* proto) {
-    auto* run_once = proto->mutable_presentation()
-                         ->mutable_precondition()
-                         ->add_script_status_match();
-    run_once->set_script(proto->path());
-    run_once->set_status(SCRIPT_STATUS_NOT_RUN);
   }
 
   void SetupScripts(SupportsScriptResponseProto scripts) {
@@ -236,8 +233,18 @@ class ControllerTest : public content::RenderViewHostTestHarness {
     controller_->navigating_to_new_document_ = value;
   }
 
-  // |task_environment_| must be the first field, to make sure that everything
-  // runs in the same task environment.
+  RequiredDataPiece MakeRequiredDataPiece(autofill::ServerFieldType field) {
+    RequiredDataPiece required_data_piece;
+    required_data_piece.mutable_condition()->set_key(static_cast<int>(field));
+    required_data_piece.mutable_condition()->mutable_not_empty();
+    return required_data_piece;
+  }
+
+  content::BrowserTaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+  content::RenderViewHostTestEnabler rvh_test_enabler_;
+  content::TestBrowserContext browser_context_;
+  std::unique_ptr<content::WebContents> web_contents_;
   base::test::ScopedFeatureList scoped_feature_list_;
   base::TimeTicks now_;
   std::vector<AutofillAssistantState> states_;
@@ -310,8 +317,7 @@ void ScriptExecutorListener::OnPause(const std::string& message,
 TEST_F(ControllerTest, FetchAndRunScriptsWithChip) {
   SupportsScriptResponseProto script_response;
   AddRunnableScript(&script_response, "script1");
-  auto* script2 = AddRunnableScript(&script_response, "script2");
-  RunOnce(script2);
+  AddRunnableScript(&script_response, "script2");
   SetNextScriptResponse(script_response);
 
   testing::InSequence seq;
@@ -335,11 +341,16 @@ TEST_F(ControllerTest, FetchAndRunScriptsWithChip) {
       .WillOnce(RunOnceCallback<5>(net::HTTP_OK, ""));
   EXPECT_TRUE(controller_->PerformUserAction(1));
 
-  // Offering the remaining choice: script1 as script2 can only run once.
+  // Offering the same scripts again.
   EXPECT_EQ(AutofillAssistantState::PROMPT, controller_->GetState());
-  EXPECT_THAT(controller_->GetUserActions(),
-              ElementsAre(Property(&UserAction::chip,
-                                   Field(&Chip::text, StrEq("script1")))));
+  EXPECT_THAT(
+      controller_->GetUserActions(),
+      UnorderedElementsAre(Property(&UserAction::chip,
+                                    AllOf(Field(&Chip::text, StrEq("script1")),
+                                          Field(&Chip::type, NORMAL_ACTION))),
+                           Property(&UserAction::chip,
+                                    AllOf(Field(&Chip::text, StrEq("script2")),
+                                          Field(&Chip::type, NORMAL_ACTION)))));
 }
 
 TEST_F(ControllerTest, ReportDirectActions) {
@@ -673,8 +684,6 @@ TEST_F(ControllerTest,
   SupportsScriptResponseProto script_response;
   auto* autostart = AddRunnableScript(&script_response, "runnable");
   autostart->mutable_presentation()->set_autostart(true);
-  RunOnce(autostart);
-  SetRepeatedScriptResponse(script_response);
 
   Start("http://a.example.com/path");
   ASSERT_THAT(controller_->GetUserActions(), SizeIs(1));
@@ -691,7 +700,6 @@ TEST_F(ControllerTest,
   SupportsScriptResponseProto script_response;
   auto* autostart = AddRunnableScript(&script_response, "runnable");
   autostart->mutable_presentation()->set_autostart(true);
-  RunOnce(autostart);
   SetRepeatedScriptResponse(script_response);
 
   EXPECT_CALL(mock_observer_, OnUserActionsChanged(SizeIs(0u)))
@@ -843,47 +851,6 @@ TEST_F(ControllerTest, SetProgressStepFromUnknownIdentifier) {
   EXPECT_CALL(mock_observer_, OnProgressActiveStepChanged(_)).Times(0);
   EXPECT_FALSE(controller_->SetProgressActiveStepIdentifier("icon3"));
   EXPECT_FALSE(controller_->GetProgressActiveStep().has_value());
-}
-
-TEST_F(ControllerTest, StateChanges) {
-  EXPECT_EQ(AutofillAssistantState::INACTIVE, GetUiDelegate()->GetState());
-
-  SupportsScriptResponseProto script_response;
-  auto* script1 = AddRunnableScript(&script_response, "script1");
-  RunOnce(script1);
-  auto* script2 = AddRunnableScript(&script_response, "script2");
-  RunOnce(script2);
-  SetNextScriptResponse(script_response);
-
-  Start("http://a.example.com/path");
-  EXPECT_THAT(states_,
-              ElementsAre(AutofillAssistantState::STARTING,
-                          AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT));
-
-  // Run script1: State should become RUNNING, as there's another script, then
-  // go back to prompt to propose that script.
-  states_.clear();
-  ASSERT_THAT(controller_->GetUserActions(), SizeIs(2));
-  EXPECT_TRUE(controller_->PerformUserAction(0));
-
-  EXPECT_EQ(AutofillAssistantState::PROMPT, GetUiDelegate()->GetState());
-  EXPECT_THAT(states_, ElementsAre(AutofillAssistantState::RUNNING,
-                                   AutofillAssistantState::PROMPT));
-
-  // Run script2: State should become STOPPED, as there are no more runnable
-  // scripts.
-  states_.clear();
-  ASSERT_THAT(controller_->GetUserActions(), SizeIs(1));
-  EXPECT_TRUE(controller_->PerformUserAction(0));
-
-  EXPECT_EQ(AutofillAssistantState::STOPPED, GetUiDelegate()->GetState());
-  EXPECT_THAT(states_, ElementsAre(AutofillAssistantState::RUNNING,
-                                   AutofillAssistantState::PROMPT,
-                                   AutofillAssistantState::STOPPED));
-
-  // The cancel button is removed and the feedback chip is displayed.
-  ASSERT_THAT(controller_->GetUserActions(), SizeIs(1));
-  EXPECT_EQ(FEEDBACK_ACTION, controller_->GetUserActions().at(0).chip().type);
 }
 
 TEST_F(ControllerTest, AttachUIWhenStarting) {
@@ -2002,9 +1969,12 @@ TEST_F(ControllerTest, UserDataFormContactInfo) {
   auto options = std::make_unique<MockCollectUserDataOptions>();
   auto user_data = std::make_unique<UserData>();
 
-  options->request_payer_name = true;
-  options->request_payer_email = true;
-  options->request_payer_phone = true;
+  options->required_contact_data_pieces.push_back(
+      MakeRequiredDataPiece(autofill::ServerFieldType::NAME_FULL));
+  options->required_contact_data_pieces.push_back(
+      MakeRequiredDataPiece(autofill::ServerFieldType::EMAIL_ADDRESS));
+  options->required_contact_data_pieces.push_back(MakeRequiredDataPiece(
+      autofill::ServerFieldType::PHONE_HOME_WHOLE_NUMBER));
   options->contact_details_name = "selected_profile";
 
   testing::InSequence seq;
@@ -2099,9 +2069,12 @@ TEST_F(ControllerTest, UserDataChangesByOutOfLoopWrite) {
   auto options = std::make_unique<MockCollectUserDataOptions>();
   auto user_data = std::make_unique<UserData>();
 
-  options->request_payer_name = true;
-  options->request_payer_email = true;
-  options->request_payer_phone = true;
+  options->required_contact_data_pieces.push_back(
+      MakeRequiredDataPiece(autofill::ServerFieldType::NAME_FULL));
+  options->required_contact_data_pieces.push_back(
+      MakeRequiredDataPiece(autofill::ServerFieldType::EMAIL_ADDRESS));
+  options->required_contact_data_pieces.push_back(MakeRequiredDataPiece(
+      autofill::ServerFieldType::PHONE_HOME_WHOLE_NUMBER));
   options->contact_details_name = "selected_profile";
 
   testing::InSequence sequence;

@@ -95,29 +95,18 @@ TextInputType MockInputMethod::GetTextInputType() const {
   return TEXT_INPUT_TYPE_NONE;
 }
 
-TextInputMode MockInputMethod::GetTextInputMode() const {
-  return TEXT_INPUT_MODE_DEFAULT;
-}
-
-int MockInputMethod::GetTextInputFlags() const {
-  return 0;
-}
-
-bool MockInputMethod::CanComposeInline() const {
-  return true;
-}
-
 bool MockInputMethod::IsCandidatePopupOpen() const {
-  return false;
-}
-
-bool MockInputMethod::GetClientShouldDoLearning() {
   return false;
 }
 
 void MockInputMethod::ShowVirtualKeyboardIfEnabled() {
   for (InputMethodObserver& observer : observer_list_)
     observer.OnShowVirtualKeyboardIfEnabled();
+}
+
+void MockInputMethod::SetVirtualKeyboardVisibilityIfEnabled(bool should_show) {
+  for (InputMethodObserver& observer : observer_list_)
+    observer.OnVirtualKeyboardVisibilityChangedIfEnabled(should_show);
 }
 
 void MockInputMethod::AddObserver(InputMethodObserver* observer) {

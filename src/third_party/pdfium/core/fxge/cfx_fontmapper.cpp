@@ -17,12 +17,14 @@
 #include "core/fxcrt/fx_codepage.h"
 #include "core/fxcrt/fx_extension.h"
 #include "core/fxcrt/fx_memory_wrappers.h"
+#include "core/fxcrt/stl_util.h"
 #include "core/fxge/cfx_fontmgr.h"
 #include "core/fxge/cfx_substfont.h"
 #include "core/fxge/fx_font.h"
 #include "core/fxge/systemfontinfo_iface.h"
 #include "third_party/base/check.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/containers/contains.h"
+#include "third_party/base/cxx17_backports.h"
 
 namespace {
 
@@ -352,12 +354,12 @@ void CFX_FontMapper::LoadInstalledFonts() {
 ByteString CFX_FontMapper::MatchInstalledFonts(const ByteString& norm_name) {
   LoadInstalledFonts();
   int i;
-  for (i = pdfium::CollectionSize<int>(m_InstalledTTFonts) - 1; i >= 0; i--) {
+  for (i = fxcrt::CollectionSize<int>(m_InstalledTTFonts) - 1; i >= 0; i--) {
     ByteString norm1 = TT_NormalizeName(m_InstalledTTFonts[i].c_str());
     if (norm1 == norm_name)
       return m_InstalledTTFonts[i];
   }
-  for (i = pdfium::CollectionSize<int>(m_LocalizedTTFonts) - 1; i >= 0; i--) {
+  for (i = fxcrt::CollectionSize<int>(m_LocalizedTTFonts) - 1; i >= 0; i--) {
     ByteString norm1 = TT_NormalizeName(m_LocalizedTTFonts[i].first.c_str());
     if (norm1 == norm_name)
       return m_LocalizedTTFonts[i].second;
@@ -684,7 +686,7 @@ RetainPtr<CFX_Face> CFX_FontMapper::FindSubstFont(const ByteString& name,
 }
 
 int CFX_FontMapper::GetFaceSize() const {
-  return pdfium::CollectionSize<int>(m_FaceArray);
+  return fxcrt::CollectionSize<int>(m_FaceArray);
 }
 
 bool CFX_FontMapper::HasInstalledFont(ByteStringView name) const {

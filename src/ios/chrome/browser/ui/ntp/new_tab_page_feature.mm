@@ -15,6 +15,9 @@
 const base::Feature kRefactoredNTP{"RefactoredNTP",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kEnableDiscoverFeedPreview{
+    "EnableDiscoverFeedPreview", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kEnableNTPMemoryEnhancement{
     "EnableNTPMemoryEnhancement", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -25,4 +28,8 @@ bool IsRefactoredNTP() {
   // kRefactoredNTP enabled can lead to unexpected behavior.
   return base::FeatureList::IsEnabled(kRefactoredNTP) &&
          IsDiscoverFeedEnabled();
+}
+
+bool IsDiscoverFeedPreviewEnabled() {
+  return base::FeatureList::IsEnabled(kEnableDiscoverFeedPreview);
 }

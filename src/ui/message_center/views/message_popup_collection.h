@@ -126,6 +126,10 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   // Called with |notification_id| when a popup is marked to be removed.
   virtual void NotifyPopupRemoved(const std::string& notification_id) {}
 
+  // Called when popup animation is started/finished.
+  virtual void AnimationStarted() {}
+  virtual void AnimationFinished() {}
+
   // virtual for testing.
   virtual MessagePopupView* CreatePopup(const Notification& notification);
   virtual void RestartPopupTimers();
@@ -208,6 +212,8 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   // Return true if a popup is actually added. It may still return false when
   // HasAddedPopup() return true by the lack of work area to show popup.
   bool AddPopup();
+
+  bool AddInExistingGroup(Notification* notification);
 
   // Mark |is_animating| flag of removed popup to true for FADE_OUT animation.
   void MarkRemovedPopup();

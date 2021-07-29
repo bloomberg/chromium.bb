@@ -9,6 +9,8 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/post_task.h"
+#include "content/browser/code_cache/generated_code_cache_context.h"
+#include "content/browser/renderer_host/code_cache_host_impl.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/service_worker/service_worker_consts.h"
@@ -23,6 +25,7 @@
 #include "mojo/public/cpp/bindings/message.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom.h"
 
 namespace content {
@@ -53,6 +56,7 @@ ServiceWorkerHost::ServiceWorkerHost(
     ServiceWorkerVersion* version,
     base::WeakPtr<ServiceWorkerContextCore> context)
     : version_(version),
+      broker_(this),
       container_host_(std::make_unique<content::ServiceWorkerContainerHost>(
           std::move(context))),
       host_receiver_(container_host_.get(), std::move(host_receiver)) {
@@ -62,7 +66,8 @@ ServiceWorkerHost::ServiceWorkerHost(
   container_host_->set_service_worker_host(this);
   container_host_->UpdateUrls(
       version_->script_url(),
-      net::SiteForCookies::FromUrl(version_->script_url()), version_->origin());
+      net::SiteForCookies::FromUrl(version_->script_url()),
+      version_->key().origin());
 }
 
 ServiceWorkerHost::~ServiceWorkerHost() {
@@ -95,7 +100,7 @@ void ServiceWorkerHost::CreateWebTransportConnector(
   RunOrPostTaskOnThread(
       FROM_HERE, BrowserThread::UI,
       base::BindOnce(&CreateWebTransportConnectorImpl, worker_process_id_,
-                     version_->origin(), GetNetworkIsolationKey(),
+                     version_->key().origin(), GetNetworkIsolationKey(),
                      std::move(receiver)));
 }
 
@@ -112,7 +117,44 @@ net::NetworkIsolationKey ServiceWorkerHost::GetNetworkIsolationKey() const {
   // top-level browsing context, which shouldn't be use for ServiceWorkers used
   // in iframes.
   return net::NetworkIsolationKey::ToDoUseTopFrameOriginAsWell(
-      version_->origin());
+      version_->key().origin());
+}
+
+const base::UnguessableToken& ServiceWorkerHost::GetReportingSource() const {
+  return version_->reporting_source();
+}
+
+void ServiceWorkerHost::CreateCodeCacheHost(
+    mojo::PendingReceiver<blink::mojom::CodeCacheHost> receiver) {
+  auto embedded_worker_status = version_->embedded_worker()->status();
+  // Due to IPC races it is possible that we receive code cache host requests
+  // when the worker is stopping. For ex:
+  // 1) Browser starts trying to stop, sends the Stop() IPC.
+  // 2) Renderer sends a CreateCodeCacheHost() IPC.
+  // 3) Renderer gets the Stop() IPC and realize it should try to stop the
+  // worker.
+  // Given the worker is stopping it is safe to ignore these messages.
+  if (embedded_worker_status == EmbeddedWorkerStatus::STOPPING)
+    return;
+
+  // It is possible that the RenderProcessHost is gone but we receive a request
+  // before we had the opportunity to Detach because the disconnect handler
+  // wasn't run yet. In such cases it is is safe to ignore these messages since
+  // we are about to stop the service worker.
+  auto* process =
+      RenderProcessHost::FromID(version_->embedded_worker()->process_id());
+  if (process == nullptr)
+    return;
+
+  // Create a new CodeCacheHostImpl and bind it to the given receiver.
+  StoragePartition* storage_partition = process->GetStoragePartition();
+  if (!code_cache_host_receivers_) {
+    code_cache_host_receivers_ =
+        std::make_unique<CodeCacheHostImpl::ReceiverSet>(
+            storage_partition->GetGeneratedCodeCacheContext());
+  }
+  code_cache_host_receivers_->Add(version_->embedded_worker()->process_id(),
+                                  std::move(receiver));
 }
 
 base::WeakPtr<ServiceWorkerHost> ServiceWorkerHost::GetWeakPtr() {

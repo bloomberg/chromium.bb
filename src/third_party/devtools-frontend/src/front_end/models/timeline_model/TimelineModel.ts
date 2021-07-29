@@ -260,11 +260,11 @@ export class TimelineModelImpl {
     return {time: this._totalBlockingTime, estimated: false};
   }
 
-  targetByEvent(event: SDK.TracingModel.Event): SDK.SDKModel.Target|null {
+  targetByEvent(event: SDK.TracingModel.Event): SDK.Target.Target|null {
     // FIXME: Consider returning null for loaded traces.
     const workerId = this._workerIdByThread.get(event.thread);
-    const mainTarget = SDK.SDKModel.TargetManager.instance().mainTarget();
-    return workerId ? SDK.SDKModel.TargetManager.instance().targetById(workerId) : mainTarget;
+    const mainTarget = SDK.TargetManager.TargetManager.instance().mainTarget();
+    return workerId ? SDK.TargetManager.TargetManager.instance().targetById(workerId) : mainTarget;
   }
 
   navStartTimes(): Map<string, SDK.TracingModel.Event> {
@@ -526,7 +526,7 @@ export class TimelineModelImpl {
   }
 
   _buildGPUEvents(tracingModel: SDK.TracingModel.TracingModel): void {
-    const thread = tracingModel.threadByName('GPU Process', 'CrGpuMain');
+    const thread = tracingModel.getThreadByName('GPU Process', 'CrGpuMain');
     if (!thread) {
       return;
     }
@@ -537,7 +537,7 @@ export class TimelineModelImpl {
   }
 
   _buildLoadingEvents(tracingModel: SDK.TracingModel.TracingModel, events: SDK.TracingModel.Event[]): void {
-    const thread = tracingModel.threadByName('Renderer', 'CrRendererMain');
+    const thread = tracingModel.getThreadByName('Renderer', 'CrRendererMain');
     if (!thread) {
       return;
     }
@@ -582,7 +582,7 @@ export class TimelineModelImpl {
       SDK.CPUProfileDataModel.CPUProfileDataModel|null {
     const events = thread.events();
     let cpuProfile;
-    let target: (SDK.SDKModel.Target|null)|null = null;
+    let target: (SDK.Target.Target|null)|null = null;
 
     // Check for legacy CpuProfile event format first.
     let cpuProfileEvent: (SDK.TracingModel.Event|undefined)|SDK.TracingModel.Event = events[events.length - 1];
@@ -1072,7 +1072,7 @@ export class TimelineModelImpl {
       }
 
       case RecordType.Paint: {
-        this._invalidationTracker.didPaint(event);
+        this._invalidationTracker.didPaint = true;
         timelineData.backendNodeIds.push(eventData['nodeId']);
         // Only keep layer paint events, skip paints for subframes that get painted to the same layer as parent.
         if (!eventData['layerId']) {
@@ -1209,7 +1209,7 @@ export class TimelineModelImpl {
     }
 
     if (event.name === RecordType.ResourceWillSendRequest) {
-      const requestId = event.args['data']['requestId'];
+      const requestId = event.args?.data?.requestId;
       if (typeof requestId === 'string') {
         this._requestsFromBrowser.set(requestId, event);
       }
@@ -1401,8 +1401,8 @@ export class TimelineModelImpl {
         continue;
       }
       const id = TimelineModelImpl.globalEventId(e, 'requestId');
-      if (e.name === RecordType.ResourceSendRequest && this._requestsFromBrowser.has(e.args.data.requestId)) {
-        const requestId = e.args.data.requestId;
+      const requestId = e.args?.data?.requestId;
+      if (e.name === RecordType.ResourceSendRequest && requestId && this._requestsFromBrowser.has(requestId)) {
         const event = this._requestsFromBrowser.get(requestId);
         if (event) {
           addRequest(event, id);
@@ -1479,6 +1479,8 @@ export enum RecordType {
   XHRReadyStateChange = 'XHRReadyStateChange',
   XHRLoad = 'XHRLoad',
   CompileScript = 'v8.compile',
+  CompileCode = 'V8.CompileCode',
+  OptimizeCode = 'V8.OptimizeCode',
   EvaluateScript = 'EvaluateScript',
   CompileModule = 'v8.compileModule',
   EvaluateModule = 'v8.evaluateModule',
@@ -1987,7 +1989,7 @@ export class InvalidationTrackingEvent {
 export class InvalidationTracker {
   _lastRecalcStyle: SDK.TracingModel.Event|null;
   _lastPaintWithLayer: SDK.TracingModel.Event|null;
-  _didPaint: boolean;
+  didPaint: boolean;
   _invalidations: {
     [x: string]: InvalidationTrackingEvent[],
   };
@@ -1997,7 +1999,7 @@ export class InvalidationTracker {
   constructor() {
     this._lastRecalcStyle = null;
     this._lastPaintWithLayer = null;
-    this._didPaint = false;
+    this.didPaint = false;
     this._initializePerFrameState();
     this._invalidations = {};
     this._invalidationsByNodeId = {};
@@ -2152,10 +2154,6 @@ export class InvalidationTracker {
     }
   }
 
-  didPaint(_paintEvent: SDK.TracingModel.Event): void {
-    this._didPaint = true;
-  }
-
   _addInvalidationToEvent(event: SDK.TracingModel.Event, eventFrameId: number, invalidation: InvalidationTrackingEvent):
       void {
     if (eventFrameId !== invalidation.frame) {
@@ -2189,7 +2187,7 @@ export class InvalidationTracker {
   }
 
   _startNewFrameIfNeeded(): void {
-    if (!this._didPaint) {
+    if (!this.didPaint) {
       return;
     }
 
@@ -2202,7 +2200,7 @@ export class InvalidationTracker {
 
     this._lastRecalcStyle = null;
     this._lastPaintWithLayer = null;
-    this._didPaint = false;
+    this.didPaint = false;
   }
 }
 
@@ -2300,7 +2298,7 @@ export class TimelineData {
   warning: string|null;
   previewElement: Element|null;
   url: string|null;
-  backendNodeIds: number[];
+  backendNodeIds: Protocol.DOM.BackendNodeId[];
   stackTrace: Protocol.Runtime.CallFrame[]|null;
   picture: SDK.TracingModel.ObjectSnapshot|null;
   _initiator: SDK.TracingModel.Event|null;

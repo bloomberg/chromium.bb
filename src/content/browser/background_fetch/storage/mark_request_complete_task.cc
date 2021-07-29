@@ -8,7 +8,6 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/trace_event/trace_event.h"
-#include "components/services/storage/public/cpp/storage_key.h"
 #include "content/browser/background_fetch/background_fetch_cross_origin_filter.h"
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
@@ -22,6 +21,7 @@
 #include "services/network/public/cpp/cors/cors.h"
 #include "storage/browser/blob/blob_impl.h"
 #include "third_party/blink/public/common/cache_storage/cache_storage_utils.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 #include "third_party/blink/public/mojom/blob/serialized_blob.mojom.h"
 
@@ -100,8 +100,8 @@ void MarkRequestCompleteTask::StoreResponse(base::OnceClosure done_closure) {
 
   // TODO(crbug.com/884672): Move cross origin checks to when the response
   // headers are available.
-  BackgroundFetchCrossOriginFilter filter(registration_id_.origin(),
-                                          *request_info_);
+  BackgroundFetchCrossOriginFilter filter(
+      registration_id_.storage_key().origin(), *request_info_);
   if (!filter.CanPopulateBody()) {
     failure_reason_ = proto::BackgroundFetchRegistration::FETCH_ERROR;
     // No point writing the response to the cache since it won't be exposed.
@@ -133,7 +133,7 @@ void MarkRequestCompleteTask::DidMakeBlob(
   // the cache.
   if (request_info_->GetResponseSize()) {
     IsQuotaAvailable(
-        registration_id_.origin(), request_info_->GetResponseSize(),
+        registration_id_.storage_key(), request_info_->GetResponseSize(),
         base::BindOnce(&MarkRequestCompleteTask::DidGetIsQuotaAvailable,
                        weak_factory_.GetWeakPtr(), std::move(done_closure)));
   } else {
@@ -217,7 +217,7 @@ void MarkRequestCompleteTask::CreateAndStoreCompletedRequest(
 
   service_worker_context()->StoreRegistrationUserData(
       registration_id_.service_worker_registration_id(),
-      storage::StorageKey(registration_id_.origin()),
+      registration_id_.storage_key(),
       {{CompletedRequestKey(completed_request_.unique_id(),
                             completed_request_.request_index()),
         completed_request_.SerializeAsString()}},
@@ -272,7 +272,7 @@ void MarkRequestCompleteTask::UpdateMetadata(base::OnceClosure done_closure) {
 
   AddSubTask(std::make_unique<GetMetadataTask>(
       this, registration_id_.service_worker_registration_id(),
-      registration_id_.origin(), registration_id_.developer_id(),
+      registration_id_.storage_key(), registration_id_.developer_id(),
       base::BindOnce(&MarkRequestCompleteTask::DidGetMetadata,
                      weak_factory_.GetWeakPtr(), std::move(done_closure))));
 }
@@ -294,7 +294,7 @@ void MarkRequestCompleteTask::DidGetMetadata(
 
   service_worker_context()->StoreRegistrationUserData(
       registration_id_.service_worker_registration_id(),
-      storage::StorageKey(registration_id_.origin()),
+      registration_id_.storage_key(),
       {{RegistrationKey(registration_id_.unique_id()),
         metadata->SerializeAsString()}},
       base::BindOnce(&MarkRequestCompleteTask::DidStoreMetadata,

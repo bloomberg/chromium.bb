@@ -26,7 +26,7 @@ class DepthStencilStateTest : public DawnTest {
         DawnTest::SetUp();
 
         // TODO(crbug.com/dawn/737): Test output is wrong with D3D12 + WARP.
-        DAWN_SKIP_TEST_IF(IsD3D12() && IsWARP());
+        DAWN_SUPPRESS_TEST_IF(IsD3D12() && IsWARP());
 
         wgpu::TextureDescriptor renderTargetDescriptor;
         renderTargetDescriptor.dimension = wgpu::TextureDimension::e2D;
@@ -64,7 +64,7 @@ class DepthStencilStateTest : public DawnTest {
 
             [[stage(vertex)]]
             fn main([[builtin(vertex_index)]] VertexIndex : u32) -> [[builtin(position)]] vec4<f32> {
-                let pos : array<vec2<f32>, 6> = array<vec2<f32>, 6>(
+                var pos = array<vec2<f32>, 6>(
                         vec2<f32>(-1.0,  1.0),
                         vec2<f32>(-1.0, -1.0),
                         vec2<f32>( 1.0, -1.0), // front-facing
@@ -290,7 +290,7 @@ class DepthStencilStateTest : public DawnTest {
 
             // Create a pipeline for the triangles with the test spec's depth stencil state
 
-            utils::ComboRenderPipelineDescriptor2 descriptor;
+            utils::ComboRenderPipelineDescriptor descriptor;
             descriptor.vertex.module = vsModule;
             descriptor.cFragment.module = fsModule;
             wgpu::DepthStencilState* depthStencil = descriptor.EnableDepthStencil();
@@ -298,7 +298,7 @@ class DepthStencilStateTest : public DawnTest {
             depthStencil->format = wgpu::TextureFormat::Depth24PlusStencil8;
             descriptor.primitive.frontFace = test.frontFace;
 
-            wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&descriptor);
+            wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&descriptor);
 
             // Create a bind group for the data
             wgpu::BindGroup bindGroup = utils::MakeBindGroup(
@@ -732,12 +732,12 @@ TEST_P(DepthStencilStateTest, CreatePipelineWithAllFormats) {
     };
 
     for (wgpu::TextureFormat depthStencilFormat : kDepthStencilFormats) {
-        utils::ComboRenderPipelineDescriptor2 descriptor;
+        utils::ComboRenderPipelineDescriptor descriptor;
         descriptor.vertex.module = vsModule;
         descriptor.cFragment.module = fsModule;
         descriptor.EnableDepthStencil(depthStencilFormat);
 
-        device.CreateRenderPipeline2(&descriptor);
+        device.CreateRenderPipeline(&descriptor);
     }
 }
 

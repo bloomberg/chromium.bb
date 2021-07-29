@@ -34,7 +34,8 @@
     overscrollDelegate;
 
 // The content suggestions header, containing the fake omnibox and the doodle.
-@property(nonatomic, weak) UIViewController* headerController;
+@property(nonatomic, weak)
+    ContentSuggestionsHeaderViewController* headerController;
 
 // Delegate for actions relating to the NTP content.
 @property(nonatomic, weak) id<NewTabPageContentDelegate> ntpContentDelegate;
@@ -75,7 +76,8 @@
 // set the initial scroll position.
 - (void)setSavedContentOffset:(CGFloat)offset;
 
-// Sets the feed collection contentOffset to the top of the page.
+// Sets the feed collection contentOffset to the top of the page. Resets fake
+// omnibox back to initial state.
 - (void)setContentOffsetToTop;
 
 // Updates the ContentSuggestionsViewController and its header for the current
@@ -86,6 +88,9 @@
 
 // Returns the current height of the content suggestions content.
 - (CGFloat)contentSuggestionsContentHeight;
+
+// Scrolls up the collection view enough to focus the omnibox.
+- (void)focusFakebox;
 
 @end
 

@@ -166,10 +166,7 @@ mojom::XRAnchorsDataPtr OpenXrAnchorManager::GetCurrentAnchorsData(
     XrSpaceLocation anchor_from_mojo = {XR_TYPE_SPACE_LOCATION};
     if (FAILED(xrLocateSpace(anchor_space, mojo_space_, predicted_display_time,
                              &anchor_from_mojo)) ||
-        !(anchor_from_mojo.locationFlags &
-          XR_SPACE_LOCATION_POSITION_VALID_BIT) ||
-        !(anchor_from_mojo.locationFlags &
-          XR_SPACE_LOCATION_ORIENTATION_VALID_BIT)) {
+        !IsPoseValid(anchor_from_mojo.locationFlags)) {
       updated_anchors[index] =
           mojom::XRAnchorData::New(anchor_id.GetUnsafeValue(), absl::nullopt);
     } else {
@@ -192,7 +189,7 @@ OpenXrAnchorManager::GetXrLocationFromNativeOriginInformation(
     const gfx::Transform& native_origin_from_anchor,
     const std::vector<mojom::XRInputSourceStatePtr>& input_state) const {
   switch (native_origin_information.which()) {
-    case mojom::XRNativeOriginInformation::Tag::INPUT_SOURCE_ID:
+    case mojom::XRNativeOriginInformation::Tag::INPUT_SOURCE_SPACE_INFO:
       // Currently unimplemented as only anchors are supported and are never
       // created relative to input sources
       return absl::nullopt;
@@ -202,6 +199,7 @@ OpenXrAnchorManager::GetXrLocationFromNativeOriginInformation(
                                              native_origin_from_anchor);
     case mojom::XRNativeOriginInformation::Tag::PLANE_ID:
     case mojom::XRNativeOriginInformation::Tag::HAND_JOINT_SPACE_INFO:
+    case mojom::XRNativeOriginInformation::Tag::IMAGE_INDEX:
       // Unsupported for now
       return absl::nullopt;
     case mojom::XRNativeOriginInformation::Tag::ANCHOR_ID:

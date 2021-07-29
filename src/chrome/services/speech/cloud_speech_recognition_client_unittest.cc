@@ -27,6 +27,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/speech/speech_recognition_error.mojom.h"
@@ -68,7 +69,7 @@ class CloudSpeechRecognitionClientUnitTest : public testing::Test {
   void SetUp() override;
 
  protected:
-  void OnRecognitionEvent(const std::string& result, const bool is_final);
+  void OnRecognitionEvent(media::SpeechRecognitionResult result);
 
   void InjectDummyAudio();
 
@@ -164,10 +165,9 @@ void CloudSpeechRecognitionClientUnitTest::SetUp() {
 }
 
 void CloudSpeechRecognitionClientUnitTest::OnRecognitionEvent(
-    const std::string& result,
-    const bool is_final) {
-  results_.push(result);
-  is_final_ = is_final;
+    media::SpeechRecognitionResult result) {
+  results_.push(result.transcription);
+  is_final_ = result.is_final;
 }
 
 void CloudSpeechRecognitionClientUnitTest::InjectDummyAudio() {
@@ -321,7 +321,6 @@ void CloudSpeechRecognitionClientUnitTest::ProvideMockStringResponseDownstream(
     }
 
     FAIL() << "Mojo write failed unexpectedly with result:" << result;
-    return;
   }
 
   // Flush the mojo pipe.

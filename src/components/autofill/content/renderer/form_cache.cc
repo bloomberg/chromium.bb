@@ -11,9 +11,10 @@
 
 #include "base/check_op.h"
 #include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
-#include "base/stl_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -89,7 +90,7 @@ void LogDeprecationMessages(const WebFormControlElement& element) {
 // Determines whether the form is interesting enough to be sent to the browser
 // for further operations.
 bool IsFormInteresting(const FormData& form, size_t num_editable_elements) {
-  if (form.fields.empty())
+  if (form.fields.empty() && form.child_frames.empty())
     return false;
 
   // If the form has at least one field with an autocomplete attribute, it is a
@@ -110,7 +111,8 @@ bool IsFormInteresting(const FormData& form, size_t num_editable_elements) {
          num_editable_elements >= kMinRequiredFieldsForUpload ||
          (all_fields_are_passwords &&
           num_editable_elements >=
-              kRequiredFieldsForFormsWithOnlyPasswordFields);
+              kRequiredFieldsForFormsWithOnlyPasswordFields) ||
+         form.child_frames.size() > 0;
 }
 
 }  // namespace
@@ -139,14 +141,10 @@ std::vector<FormData> FormCache::ExtractNewForms(
                                           form_util::EXTRACT_OPTIONS);
 
   size_t num_fields_seen = 0;
+  size_t num_frames_seen = 0;
   for (const WebFormElement& form_element : document.Forms()) {
     std::vector<WebFormControlElement> control_elements =
         form_util::ExtractAutofillableElementsInForm(form_element);
-
-    size_t num_editable_elements =
-        ScanFormControlElements(control_elements, log_deprecation_messages);
-    if (num_editable_elements == 0)
-      continue;
 
     FormData form;
     if (!WebFormElementToFormData(form_element, WebFormControlElement(),
@@ -159,17 +157,33 @@ std::vector<FormData> FormCache::ExtractNewForms(
       observed_unique_renderer_ids.insert(field.unique_renderer_id);
 
     num_fields_seen += form.fields.size();
-    if (num_fields_seen > kMaxParseableFields) {
+    num_frames_seen += form.child_frames.size();
+    if (num_fields_seen > kMaxParseableFields ||
+        num_frames_seen > kMaxParseableFrames) {
       PruneInitialValueCaches(observed_unique_renderer_ids);
       return forms;
     }
 
+    size_t num_editable_elements =
+        ScanFormControlElements(control_elements, log_deprecation_messages);
+
     if (!base::Contains(parsed_forms_, form) &&
         IsFormInteresting(form, num_editable_elements)) {
       for (auto it = parsed_forms_.begin(); it != parsed_forms_.end(); ++it) {
-        if (it->SameFormAs(form)) {
-          parsed_forms_.erase(it);
-          break;
+        // We don't want to store twice forms that have the same rendererID or
+        // the same attributes/fields.
+        if (base::FeatureList::IsEnabled(
+                features::
+                    kAutofillUseOnlyFormRendererIDForOldDuplicateFormRemoval)) {
+          if (it->unique_renderer_id == form.unique_renderer_id) {
+            parsed_forms_.erase(it);
+            break;
+          }
+        } else {
+          if (it->SameFormAs(form)) {
+            parsed_forms_.erase(it);
+            break;
+          }
         }
       }
 
@@ -184,18 +198,13 @@ std::vector<FormData> FormCache::ExtractNewForms(
   std::vector<WebFormControlElement> control_elements =
       form_util::GetUnownedAutofillableFormFieldElements(document.All(),
                                                          &fieldsets);
-
-  size_t num_editable_elements =
-      ScanFormControlElements(control_elements, log_deprecation_messages);
-  if (num_editable_elements == 0) {
-    PruneInitialValueCaches(observed_unique_renderer_ids);
-    return forms;
-  }
+  std::vector<WebElement> iframe_elements =
+      form_util::GetUnownedIframeElements(document);
 
   FormData synthetic_form;
   if (!UnownedFormElementsAndFieldSetsToFormData(
-          fieldsets, control_elements, nullptr, document, field_data_manager,
-          extract_mask, &synthetic_form, nullptr)) {
+          fieldsets, control_elements, iframe_elements, nullptr, document,
+          field_data_manager, extract_mask, &synthetic_form, nullptr)) {
     PruneInitialValueCaches(observed_unique_renderer_ids);
     return forms;
   }
@@ -204,10 +213,15 @@ std::vector<FormData> FormCache::ExtractNewForms(
     observed_unique_renderer_ids.insert(field.unique_renderer_id);
 
   num_fields_seen += synthetic_form.fields.size();
-  if (num_fields_seen > kMaxParseableFields) {
+  num_frames_seen += synthetic_form.child_frames.size();
+  if (num_fields_seen > kMaxParseableFields ||
+      num_frames_seen > kMaxParseableFrames) {
     PruneInitialValueCaches(observed_unique_renderer_ids);
     return forms;
   }
+
+  size_t num_editable_elements =
+      ScanFormControlElements(control_elements, log_deprecation_messages);
 
   if (!base::Contains(parsed_forms_, synthetic_form) &&
       IsFormInteresting(synthetic_form, num_editable_elements)) {
@@ -223,6 +237,10 @@ std::vector<FormData> FormCache::ExtractNewForms(
 }
 
 void FormCache::Reset() {
+  // Record the size of |parsed_forms_| every time it reaches its peak size. The
+  // peak size is reached right before the cache is cleared.
+  UMA_HISTOGRAM_COUNTS_1000("Autofill.FormCacheSize", parsed_forms_.size());
+
   synthetic_form_ = FormData();
   parsed_forms_.clear();
   initial_select_values_.clear();
@@ -380,6 +398,10 @@ bool FormCache::ShowPredictions(const FormDataPredictions& form,
       std::string field_id =
           base::NumberToString(field_data.unique_renderer_id.value());
 
+      blink::LocalFrameToken frame_token;
+      if (auto* frame = element.GetDocument().GetFrame())
+        frame_token = frame->GetLocalFrameToken();
+
       std::string title = base::StrCat({"overall type: ",
                                         field.overall_type,
                                         "\nserver type: ",
@@ -396,10 +418,10 @@ bool FormCache::ShowPredictions(const FormDataPredictions& form,
                                         field.signature,
                                         "\nform signature: ",
                                         form.signature,
-                                        "\nform frame token: ",
-                                        form.data.host_frame.ToString(),
+                                        "\nform signature in host form: ",
+                                        field.host_form_signature,
                                         "\nfield frame token: ",
-                                        field_data.host_frame.ToString(),
+                                        frame_token.ToString(),
                                         "\nform renderer id: ",
                                         form_id,
                                         "\nfield renderer id: ",

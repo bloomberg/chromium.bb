@@ -29,6 +29,7 @@
 #include "components/feature_engagement/public/tracker.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
+#include "content/public/common/content_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/text_elider.h"
@@ -151,9 +152,10 @@ PWAConfirmationBubbleView::PWAConfirmationBubbleView(
       CreateOriginLabel(url::Origin::Create(web_app_info_->start_url))
           .release());
 
-  if (base::FeatureList::IsEnabled(features::kDesktopPWAsTabStrip)) {
+  if (base::FeatureList::IsEnabled(features::kDesktopPWAsTabStrip) &&
+      base::FeatureList::IsEnabled(features::kDesktopPWAsTabStripSettings)) {
     // This UI is only for prototyping and is not intended for shipping.
-    DCHECK_EQ(features::kDesktopPWAsTabStrip.default_state,
+    DCHECK_EQ(features::kDesktopPWAsTabStripSettings.default_state,
               base::FEATURE_DISABLED_BY_DEFAULT);
     tabbed_window_checkbox_ = labels->AddChildView(
         std::make_unique<views::Checkbox>(l10n_util::GetStringUTF16(
@@ -186,8 +188,8 @@ void PWAConfirmationBubbleView::WindowClosing() {
 
   // If |web_app_info_| is populated, then the bubble was not accepted.
   if (iph_state_ == chrome::PwaInProductHelpState::kShown && web_app_info_) {
-    web_app::AppId app_id =
-        web_app::GenerateAppIdFromURL(web_app_info_->start_url);
+    web_app::AppId app_id = web_app::GenerateAppId(web_app_info_->manifest_id,
+                                                   web_app_info_->start_url);
     UMA_HISTOGRAM_ENUMERATION("WebApp.InstallIphPromo.Result",
                               web_app::InstallIphResult::kCanceled);
     web_app::RecordInstallIphIgnored(prefs_, app_id, base::Time::Now());
@@ -206,8 +208,8 @@ bool PWAConfirmationBubbleView::Accept() {
   }
 
   if (iph_state_ == chrome::PwaInProductHelpState::kShown) {
-    web_app::AppId app_id =
-        web_app::GenerateAppIdFromURL(web_app_info_->start_url);
+    web_app::AppId app_id = web_app::GenerateAppId(web_app_info_->manifest_id,
+                                                   web_app_info_->start_url);
     UMA_HISTOGRAM_ENUMERATION("WebApp.InstallIphPromo.Result",
                               web_app::InstallIphResult::kInstalled);
     web_app::RecordInstallIphInstalled(prefs_, app_id);

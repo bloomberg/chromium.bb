@@ -31,6 +31,9 @@ class QUIC_NO_EXPORT MasqueClientSession : public QuicSpdyClientSession {
     // Notifies the owner that the client connection ID is no longer in use.
     virtual void UnregisterClientConnectionId(
         QuicConnectionId client_connection_id) = 0;
+
+    // Notifies the owner that a settings frame has been received.
+    virtual void OnSettingsReceived() = 0;
   };
   // Interface meant to be implemented by encapsulated client sessions, i.e.
   // the end-to-end QUIC client sessions that run inside MASQUE encapsulation.
@@ -75,6 +78,9 @@ class QUIC_NO_EXPORT MasqueClientSession : public QuicSpdyClientSession {
                           ConnectionCloseSource source) override;
   void OnStreamClosed(QuicStreamId stream_id) override;
 
+  // From QuicSpdySession.
+  bool OnSettingsFrame(const SettingsFrame& frame) override;
+
   // Send encapsulated packet.
   void SendPacket(QuicConnectionId client_connection_id,
                   QuicConnectionId server_connection_id,
@@ -101,7 +107,8 @@ class QUIC_NO_EXPORT MasqueClientSession : public QuicSpdyClientSession {
  private:
   // State that the MasqueClientSession keeps for each CONNECT-UDP request.
   class QUIC_NO_EXPORT ConnectUdpClientState
-      : public QuicSpdySession::Http3DatagramVisitor {
+      : public QuicSpdyStream::Http3DatagramRegistrationVisitor,
+        public QuicSpdyStream::Http3DatagramVisitor {
    public:
     // |stream| and |encapsulated_client_session| must be valid for the lifetime
     // of the ConnectUdpClientState.
@@ -109,7 +116,7 @@ class QUIC_NO_EXPORT MasqueClientSession : public QuicSpdyClientSession {
         QuicSpdyClientStream* stream,
         EncapsulatedClientSession* encapsulated_client_session,
         MasqueClientSession* masque_session,
-        QuicDatagramFlowId flow_id,
+        absl::optional<QuicDatagramContextId> context_id,
         const QuicSocketAddress& target_server_address);
 
     ~ConnectUdpClientState();
@@ -124,25 +131,37 @@ class QUIC_NO_EXPORT MasqueClientSession : public QuicSpdyClientSession {
     EncapsulatedClientSession* encapsulated_client_session() const {
       return encapsulated_client_session_;
     }
-    QuicDatagramFlowId flow_id() const {
-      QUICHE_DCHECK(flow_id_.has_value());
-      return *flow_id_;
+    absl::optional<QuicDatagramContextId> context_id() const {
+      return context_id_;
     }
     const QuicSocketAddress& target_server_address() const {
       return target_server_address_;
     }
 
-    // From QuicSpdySession::Http3DatagramVisitor.
-    void OnHttp3Datagram(QuicDatagramFlowId flow_id,
+    // From QuicSpdyStream::Http3DatagramVisitor.
+    void OnHttp3Datagram(QuicStreamId stream_id,
+                         absl::optional<QuicDatagramContextId> context_id,
                          absl::string_view payload) override;
+
+    // From QuicSpdyStream::Http3DatagramRegistrationVisitor.
+    void OnContextReceived(
+        QuicStreamId stream_id,
+        absl::optional<QuicDatagramContextId> context_id,
+        const Http3DatagramContextExtensions& extensions) override;
+    void OnContextClosed(
+        QuicStreamId stream_id,
+        absl::optional<QuicDatagramContextId> context_id,
+        const Http3DatagramContextExtensions& extensions) override;
 
    private:
     QuicSpdyClientStream* stream_;                            // Unowned.
     EncapsulatedClientSession* encapsulated_client_session_;  // Unowned.
     MasqueClientSession* masque_session_;                     // Unowned.
-    absl::optional<QuicDatagramFlowId> flow_id_;
+    absl::optional<QuicDatagramContextId> context_id_;
     QuicSocketAddress target_server_address_;
   };
+
+  bool ShouldNegotiateHttp3Datagram() override { return true; }
 
   const ConnectUdpClientState* GetOrCreateConnectUdpClientState(
       const QuicSocketAddress& target_server_address,

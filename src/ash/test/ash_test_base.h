@@ -11,10 +11,11 @@
 #include <string>
 #include <utility>
 
-#include "ash/public/cpp/app_types.h"
+#include "ash/constants/app_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/wm/desks/desks_util.h"
+#include "ash/wm/overview/overview_types.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/test/task_environment.h"
@@ -123,6 +124,9 @@ class AshTestBase : public testing::Test {
       const gfx::Rect& bounds = gfx::Rect(),
       bool show = true);
 
+  // Creates a frameless widget for testing.
+  static std::unique_ptr<views::Widget> CreateFramelessTestWidget();
+
   // Creates a widget with a visible WINDOW_TYPE_NORMAL window with the given
   // |app_type|. If |app_type| is AppType::NON_APP, this window is considered a
   // non-app window.
@@ -189,6 +193,12 @@ class AshTestBase : public testing::Test {
   // event.
   void SimulateMouseClickAt(ui::test::EventGenerator* event_generator,
                             const views::View* target_view);
+
+  // Enters/Exits overview mode with the given animation type `type`.
+  bool EnterOverview(
+      OverviewEnterExitType type = OverviewEnterExitType::kNormal);
+  bool ExitOverview(
+      OverviewEnterExitType type = OverviewEnterExitType::kNormal);
 
  protected:
   enum UserSessionBlockReason {

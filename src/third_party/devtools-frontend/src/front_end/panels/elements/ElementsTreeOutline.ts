@@ -92,7 +92,7 @@ export class ElementsTreeOutline extends UI.TreeOutline.TreeOutline {
   _visibleWidth?: number;
   _clipboardNodeData?: ClipboardData;
   _isXMLMimeType?: boolean|null;
-  _suppressRevealAndSelect?: boolean;
+  suppressRevealAndSelect: boolean = false;
   _previousHoveredElement?: UI.TreeOutline.TreeElement;
   _treeElementBeingDragged?: ElementsTreeElement;
   _dragOverTreeElement?: ElementsTreeElement;
@@ -103,8 +103,7 @@ export class ElementsTreeOutline extends UI.TreeOutline.TreeOutline {
     this.treeElementByNode = new WeakMap();
     const shadowContainer = document.createElement('div');
     this._shadowRoot = UI.Utils.createShadowRootWithCoreStyles(
-        shadowContainer,
-        {cssFile: 'panels/elements/elementsTreeOutline.css', enableLegacyPatching: false, delegatesFocus: undefined});
+        shadowContainer, {cssFile: 'panels/elements/elementsTreeOutline.css', delegatesFocus: undefined});
     const outlineDisclosureElement = this._shadowRoot.createChild('div', 'elements-disclosure');
 
     this._element = this.element;
@@ -522,15 +521,8 @@ export class ElementsTreeOutline extends UI.TreeOutline.TreeOutline {
     return treeElement ? this._showChild(treeElement, node) : null;
   }
 
-  set suppressRevealAndSelect(x: boolean) {
-    if (this._suppressRevealAndSelect === x) {
-      return;
-    }
-    this._suppressRevealAndSelect = x;
-  }
-
   _revealAndSelectNode(node: SDK.DOMModel.DOMNode|null, omitFocus: boolean): void {
-    if (this._suppressRevealAndSelect) {
+    if (this.suppressRevealAndSelect) {
       return;
     }
 
@@ -614,7 +606,7 @@ export class ElementsTreeOutline extends UI.TreeOutline.TreeOutline {
 
     this.setHoverEffect(element);
     this._highlightTreeElement(
-        (element as UI.TreeOutline.TreeElement), !UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlOrMeta(event));
+        (element as UI.TreeOutline.TreeElement), !UI.KeyboardShortcut.KeyboardShortcut.eventHasEitherCtrlOrMeta(event));
   }
 
   _highlightTreeElement(element: UI.TreeOutline.TreeElement, showInfo: boolean): void {
@@ -832,7 +824,7 @@ export class ElementsTreeOutline extends UI.TreeOutline.TreeOutline {
       return;
     }
 
-    if (UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlOrMeta(keyboardEvent) && node.parentNode) {
+    if (UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(keyboardEvent) && node.parentNode) {
       if (keyboardEvent.key === 'ArrowUp' && node.previousSibling) {
         node.moveTo(node.parentNode, node.previousSibling, this.selectNodeAfterEdit.bind(this, treeElement.expanded));
         keyboardEvent.consume(true);

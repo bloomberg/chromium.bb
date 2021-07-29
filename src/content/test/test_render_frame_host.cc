@@ -13,9 +13,10 @@
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/navigator.h"
+#include "content/browser/renderer_host/page_impl.h"
 #include "content/browser/renderer_host/render_frame_host_delegate.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/common/navigation_params.h"
+#include "content/common/frame_messages.mojom.h"
 #include "content/common/navigation_params_utils.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/common/url_constants.h"
@@ -34,12 +35,15 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
+#include "third_party/blink/public/common/navigation/navigation_params.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
+#include "third_party/blink/public/mojom/devtools/inspector_issue.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 #include "third_party/blink/public/mojom/frame/tree_scope_type.mojom.h"
 #include "third_party/blink/public/mojom/loader/mixed_content.mojom.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_container.mojom.h"
 #include "ui/base/page_transition_types.h"
 
 namespace content {
@@ -158,8 +162,7 @@ TestRenderFrameHost* TestRenderFrameHost::AppendChildWithPolicy(
       CreateStubPolicyContainerBindParams(),
       blink::mojom::TreeScopeType::kDocument, frame_name, frame_unique_name,
       false, blink::LocalFrameToken(), base::UnguessableToken::Create(),
-      blink::FramePolicy(
-          {network::mojom::WebSandboxFlags::kNone, allow, {}, false}),
+      blink::FramePolicy({network::mojom::WebSandboxFlags::kNone, allow, {}}),
       blink::mojom::FrameOwnerProperties(),
       blink::mojom::FrameOwnerElementType::kIframe);
   return static_cast<TestRenderFrameHost*>(
@@ -223,9 +226,9 @@ int TestRenderFrameHost::GetHeavyAdIssueCount(
   }
 }
 
-void TestRenderFrameHost::SimulateManifestURLUpdate(
-    const absl::optional<GURL>& manifest_url) {
-  UpdateManifestURL(manifest_url);
+void TestRenderFrameHost::SimulateManifestURLUpdate(const GURL& manifest_url) {
+  // TODO(crbug.com/1222510): Add TestPage and use it.
+  GetPage().UpdateManifestUrl(manifest_url);
 }
 
 void TestRenderFrameHost::SendNavigate(int nav_entry_id,
@@ -302,8 +305,8 @@ void TestRenderFrameHost::SendRendererInitiatedNavigationRequest(
   // initialized. Do it if it hasn't happened yet.
   InitializeRenderFrameIfNeeded();
 
-  mojom::BeginNavigationParamsPtr begin_params =
-      mojom::BeginNavigationParams::New(
+  blink::mojom::BeginNavigationParamsPtr begin_params =
+      blink::mojom::BeginNavigationParams::New(
           absl::nullopt /* initiator_frame_token */,
           std::string() /* headers */, net::LOAD_NORMAL,
           false /* skip_service_worker */,
@@ -320,13 +323,14 @@ void TestRenderFrameHost::SendRendererInitiatedNavigationRequest(
           base::TimeTicks() /* renderer_before_unload_start */,
           base::TimeTicks() /* renderer_before_unload_end */,
           absl::nullopt /* web_bundle_token */);
-  auto common_params = CreateCommonNavigationParams();
+  auto common_params = blink::CreateCommonNavigationParams();
   common_params->url = url;
   common_params->initiator_origin = GetLastCommittedOrigin();
   common_params->referrer = blink::mojom::Referrer::New(
       GURL(), network::mojom::ReferrerPolicy::kDefault);
   common_params->transition = ui::PAGE_TRANSITION_LINK;
-  common_params->navigation_type = mojom::NavigationType::DIFFERENT_DOCUMENT;
+  common_params->navigation_type =
+      blink::mojom::NavigationType::DIFFERENT_DOCUMENT;
   common_params->has_user_gesture = has_user_gesture;
 
   mojo::PendingAssociatedRemote<mojom::NavigationClient>
@@ -477,8 +481,8 @@ TestRenderFrameHost::CreateWebBluetoothServiceForTesting() {
 void TestRenderFrameHost::SendCommitNavigation(
     mojom::NavigationClient* navigation_client,
     NavigationRequest* navigation_request,
-    mojom::CommonNavigationParamsPtr common_params,
-    mojom::CommitNavigationParamsPtr commit_params,
+    blink::mojom::CommonNavigationParamsPtr common_params,
+    blink::mojom::CommitNavigationParamsPtr commit_params,
     network::mojom::URLResponseHeadPtr response_head,
     mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
@@ -500,8 +504,8 @@ void TestRenderFrameHost::SendCommitNavigation(
 void TestRenderFrameHost::SendCommitFailedNavigation(
     mojom::NavigationClient* navigation_client,
     NavigationRequest* navigation_request,
-    mojom::CommonNavigationParamsPtr common_params,
-    mojom::CommitNavigationParamsPtr commit_params,
+    blink::mojom::CommonNavigationParamsPtr common_params,
+    blink::mojom::CommitNavigationParamsPtr commit_params,
     bool has_stale_copy_in_cache,
     int32_t error_code,
     int32_t extended_error_code,
@@ -534,7 +538,8 @@ TestRenderFrameHost::BuildDidCommitParams(bool did_create_new_entry,
   } else {
     params->should_replace_current_entry |=
         (!frame_tree_node()->IsMainFrame() &&
-         !frame_tree_node()->has_committed_real_load());
+         frame_tree_node()
+             ->is_on_initial_empty_document_or_subsequent_empty_documents());
   }
   params->gesture = NavigationGestureUser;
   params->contents_mime_type = "text/html";
@@ -632,7 +637,8 @@ void TestRenderFrameHost::SimulateLoadingCompleted(
 
     DidFinishDocumentLoad();
 
-    DocumentOnLoadCompleted();
+    if (frame_tree_node_->IsMainFrame())
+      DocumentOnLoadCompleted();
 
     DidFinishLoad(GetLastCommittedURL());
   }

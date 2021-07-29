@@ -7,6 +7,7 @@ package org.chromium.chrome.features.start_surface;
 import android.app.Activity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -17,9 +18,12 @@ import com.google.android.material.appbar.AppBarLayout;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ObserverList;
+import org.chromium.base.jank_tracker.JankTracker;
 import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.feed.FeedLaunchReliabilityLoggingState;
+import org.chromium.chrome.browser.feed.FeedSwipeRefreshLayout;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
 import org.chromium.chrome.browser.init.ChromeActivityNativeDelegate;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
@@ -39,7 +43,7 @@ import org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegate.Ta
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
-import org.chromium.chrome.features.start_surface.StartSurfaceMediator.SurfaceMode;
+import org.chromium.chrome.browser.xsurface.FeedLaunchReliabilityLogger.SurfaceType;
 import org.chromium.chrome.start_surface.R;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.widget.MenuOrKeyboardActionController;
@@ -65,11 +69,11 @@ public class StartSurfaceCoordinator implements StartSurface {
     private final Activity mActivity;
     private final ScrimCoordinator mScrimCoordinator;
     private final StartSurfaceMediator mStartSurfaceMediator;
-    private final @SurfaceMode int mSurfaceMode;
+    private final boolean mIsStartSurfaceEnabled;
     private final BottomSheetController mBottomSheetController;
     private final Supplier<Tab> mParentTabSupplier;
     private final WindowAndroid mWindowAndroid;
-    private final ViewGroup mContainerView;
+    private ViewGroup mContainerView;
     private final Supplier<DynamicResourceLoader> mDynamicResourceLoaderSupplier;
     private final TabModelSelector mTabModelSelector;
     private final BrowserControlsManager mBrowserControlsManager;
@@ -133,8 +137,15 @@ public class StartSurfaceCoordinator implements StartSurface {
     private final ObserverList<ScrollListener> mScrollListeners =
             new ObserverList<ScrollListener>();
 
+    // Stores surface creation time for Feed launch reliability logging.
+    private final FeedLaunchReliabilityLoggingState mFeedLaunchReliabilityLoggingState;
+
     @Nullable
     private AppBarLayout.OnOffsetChangedListener mOffsetChangedListenerToGenerateScrollEvents;
+
+    // For pull-to-refresh.
+    @Nullable
+    private FeedSwipeRefreshLayout mSwipeRefreshLayout;
 
     private class ScrollableContainerDelegateImpl implements ScrollableContainerDelegate {
         @Override
@@ -189,6 +200,7 @@ public class StartSurfaceCoordinator implements StartSurface {
      * @param tabCreatorManager Manages {@link Tab} creation.
      * @param menuOrKeyboardActionController allows access to menu or keyboard actions.
      * @param multiWindowModeStateDispatcher Gives access to the multi window mode state.
+     * @param jankTracker Measures jank while feed or tab switcher are visible.
      */
     public StartSurfaceCoordinator(@NonNull Activity activity,
             @NonNull ScrimCoordinator scrimCoordinator,
@@ -208,10 +220,13 @@ public class StartSurfaceCoordinator implements StartSurface {
             @NonNull ActivityLifecycleDispatcher activityLifecycleDispatcher,
             @NonNull TabCreatorManager tabCreatorManager,
             @NonNull MenuOrKeyboardActionController menuOrKeyboardActionController,
-            @NonNull MultiWindowModeStateDispatcher multiWindowModeStateDispatcher) {
+            @NonNull MultiWindowModeStateDispatcher multiWindowModeStateDispatcher,
+            @NonNull JankTracker jankTracker) {
+        mFeedLaunchReliabilityLoggingState =
+                new FeedLaunchReliabilityLoggingState(SurfaceType.START_SURFACE, System.nanoTime());
         mActivity = activity;
         mScrimCoordinator = scrimCoordinator;
-        mSurfaceMode = computeSurfaceMode();
+        mIsStartSurfaceEnabled = ReturnToChromeExperimentsUtil.isStartSurfaceHomepageEnabled();
         mBottomSheetController = sheetController;
         mParentTabSupplier = parentTabSupplier;
         mWindowAndroid = windowAndroid;
@@ -231,8 +246,8 @@ public class StartSurfaceCoordinator implements StartSurface {
         mMultiWindowModeStateDispatcher = multiWindowModeStateDispatcher;
 
         boolean excludeMVTiles = StartSurfaceConfiguration.START_SURFACE_EXCLUDE_MV_TILES.getValue()
-                || mSurfaceMode == SurfaceMode.NO_START_SURFACE;
-        if (mSurfaceMode == SurfaceMode.NO_START_SURFACE) {
+                || !mIsStartSurfaceEnabled;
+        if (!mIsStartSurfaceEnabled) {
             // Create Tab switcher directly to save one layer in the view hierarchy.
             mTabSwitcher = TabManagementModuleProvider.getDelegate().createGridTabSwitcher(activity,
                     activityLifecycleDispatcher, tabModelSelector, tabContentManager,
@@ -240,18 +255,19 @@ public class StartSurfaceCoordinator implements StartSurface {
                     containerView, shareDelegateSupplier, multiWindowModeStateDispatcher,
                     scrimCoordinator, /* rootView= */ containerView);
         } else {
+            // createSwipeRefreshLayout has to be called before creating any surface.
+            createSwipeRefreshLayout();
             createAndSetStartSurface(excludeMVTiles);
         }
 
         TabSwitcher.Controller controller =
                 mTabSwitcher != null ? mTabSwitcher.getController() : mTasksSurface.getController();
-        mStartSurfaceMediator = new StartSurfaceMediator(controller, mTabModelSelector,
-                mPropertyModel,
-                mSurfaceMode == SurfaceMode.SINGLE_PANE ? this::initializeSecondaryTasksSurface
-                                                        : null,
-                mSurfaceMode, mActivity, mBrowserControlsManager,
-                this::isActivityFinishingOrDestroyed, excludeMVTiles, startSurfaceOneshotSupplier,
-                hadWarmStart);
+        mStartSurfaceMediator =
+                new StartSurfaceMediator(controller, mTabModelSelector, mPropertyModel,
+                        mIsStartSurfaceEnabled ? this::initializeSecondaryTasksSurface : null,
+                        mIsStartSurfaceEnabled, mActivity, mBrowserControlsManager,
+                        this::isActivityFinishingOrDestroyed, excludeMVTiles,
+                        startSurfaceOneshotSupplier, hadWarmStart, jankTracker);
 
         // Show feed loading image.
         if (mStartSurfaceMediator.shouldShowFeedPlaceholder()) {
@@ -338,7 +354,7 @@ public class StartSurfaceCoordinator implements StartSurface {
 
         // Set OnTabSelectingListener to the more tabs tasks surface as well if it has been
         // instantiated, otherwise remember it for the future instantiation.
-        if (mSurfaceMode == SurfaceMode.SINGLE_PANE) {
+        if (mIsStartSurfaceEnabled) {
             if (mSecondaryTasksSurface == null) {
                 mOnTabSelectingListener = listener;
             } else {
@@ -352,15 +368,16 @@ public class StartSurfaceCoordinator implements StartSurface {
         if (mIsInitializedWithNative) return;
 
         mIsInitializedWithNative = true;
-        if (mSurfaceMode == SurfaceMode.SINGLE_PANE) {
+        if (mIsStartSurfaceEnabled) {
             mExploreSurfaceCoordinator =
                     new ExploreSurfaceCoordinator(mActivity, mTasksSurface.getBodyViewContainer(),
                             mPropertyModel, true, mBottomSheetController, mParentTabSupplier,
                             new ScrollableContainerDelegateImpl(), mSnackbarManager,
-                            mShareDelegateSupplier, mWindowAndroid, mTabModelSelector);
+                            mShareDelegateSupplier, mWindowAndroid, mTabModelSelector,
+                            mFeedLaunchReliabilityLoggingState, mSwipeRefreshLayout);
         }
         mStartSurfaceMediator.initWithNative(
-                mSurfaceMode != SurfaceMode.NO_START_SURFACE ? mOmniboxStubSupplier.get() : null,
+                mIsStartSurfaceEnabled ? mOmniboxStubSupplier.get() : null,
                 mExploreSurfaceCoordinator != null
                         ? mExploreSurfaceCoordinator.getFeedSurfaceController()
                         : null,
@@ -392,12 +409,26 @@ public class StartSurfaceCoordinator implements StartSurface {
     }
 
     @Override
-    public TabSwitcher.TabListDelegate getTabListDelegate() {
-        if (mTasksSurface != null) {
-            return mTasksSurface.getTabListDelegate();
+    public TabSwitcher.TabListDelegate getGridTabListDelegate() {
+        if (mIsStartSurfaceEnabled) {
+            if (mSecondaryTasksSurface == null) {
+                mStartSurfaceMediator.setSecondaryTasksSurfaceController(
+                        initializeSecondaryTasksSurface());
+            }
+            return mSecondaryTasksSurface.getTabListDelegate();
+        } else {
+            return mTabSwitcher.getTabListDelegate();
         }
+    }
 
-        return mTabSwitcher.getTabListDelegate();
+    @Override
+    public TabSwitcher.TabListDelegate getCarouselOrSingleTabListDelegate() {
+        if (mIsStartSurfaceEnabled) {
+            assert mTasksSurface != null;
+            return mTasksSurface.getTabListDelegate();
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -449,14 +480,6 @@ public class StartSurfaceCoordinator implements StartSurface {
         mStartSurfaceMediator.getSecondaryTasksSurfaceController().showTabSelectionEditor(tabs);
     }
 
-    private @SurfaceMode int computeSurfaceMode() {
-        // Check the cached flag before getting the parameter to be consistent with the other
-        // places. Note that the cached flag may have been set before native initialization.
-        return ReturnToChromeExperimentsUtil.isStartSurfaceHomepageEnabled()
-                ? SurfaceMode.SINGLE_PANE
-                : SurfaceMode.NO_START_SURFACE;
-    }
-
     @VisibleForTesting
     public boolean isMVTilesCleanedUpForTesting() {
         return mTasksSurface.isMVTilesCleanedUp();
@@ -473,8 +496,8 @@ public class StartSurfaceCoordinator implements StartSurface {
         allProperties.addAll(Arrays.asList(StartSurfaceProperties.ALL_KEYS));
         mPropertyModel = new PropertyModel(allProperties);
 
-        int tabSwitcherType = mSurfaceMode == SurfaceMode.SINGLE_PANE ? TabSwitcherType.CAROUSEL
-                                                                      : TabSwitcherType.GRID;
+        int tabSwitcherType =
+                mIsStartSurfaceEnabled ? TabSwitcherType.CAROUSEL : TabSwitcherType.GRID;
         if (StartSurfaceConfiguration.START_SURFACE_LAST_ACTIVE_TAB_ONLY.getValue()) {
             tabSwitcherType = TabSwitcherType.SINGLE;
         }
@@ -505,7 +528,7 @@ public class StartSurfaceCoordinator implements StartSurface {
     }
 
     private TabSwitcher.Controller initializeSecondaryTasksSurface() {
-        assert mSurfaceMode == SurfaceMode.SINGLE_PANE;
+        assert mIsStartSurfaceEnabled;
         assert mSecondaryTasksSurface == null;
 
         PropertyModel propertyModel = new PropertyModel(TasksSurfaceProperties.ALL_KEYS);
@@ -554,5 +577,24 @@ public class StartSurfaceCoordinator implements StartSurface {
         // Start surface is eanbled in the fieldtrial_testing_config.json, which requires update of
         // the other browser tests.
         return finishingOrDestroyed;
+    }
+
+    /**
+     * Creates a {@link SwipeRefreshLayout} to do a pull-to-refresh.
+     */
+    private void createSwipeRefreshLayout() {
+        assert mSwipeRefreshLayout == null;
+        mSwipeRefreshLayout = FeedSwipeRefreshLayout.create(mActivity);
+
+        // If FeedSwipeRefreshLayout is not created because the feature is not enabled, don't create
+        // another layer.
+        if (mSwipeRefreshLayout == null) return;
+
+        // SwipeRefreshLayout can only support one direct child. So we have to create a FrameLayout
+        // as a container of possible more than one task views.
+        mContainerView.addView(mSwipeRefreshLayout);
+        FrameLayout directChildHolder = new FrameLayout(mActivity);
+        mSwipeRefreshLayout.addView(directChildHolder);
+        mContainerView = directChildHolder;
     }
 }

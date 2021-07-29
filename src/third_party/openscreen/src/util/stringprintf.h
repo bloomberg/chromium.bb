@@ -55,7 +55,7 @@ void PrettyPrintAsciiHex(std::ostream& os, It first, It last) {
 }
 
 // Returns a hex string representation of the given |bytes|.
-std::string HexEncode(absl::Span<const uint8_t> bytes);
+std::string HexEncode(const uint8_t* bytes, std::size_t len);
 
 }  // namespace openscreen
 

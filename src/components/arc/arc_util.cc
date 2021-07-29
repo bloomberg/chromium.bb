@@ -7,8 +7,8 @@
 #include <algorithm>
 #include <cstdio>
 
+#include "ash/constants/app_types.h"
 #include "ash/constants/ash_switches.h"
-#include "ash/public/cpp/app_types.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -250,11 +250,6 @@ bool ShouldShowOptInForTesting() {
       chromeos::switches::kArcForceShowOptInUi);
 }
 
-void SetArcAlwaysStartWithoutPlayStoreForTesting() {
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      chromeos::switches::kArcStartMode, kAlwaysStartWithNoPlayStore);
-}
-
 bool IsArcKioskAvailable() {
   const auto* command_line = base::CommandLine::ForCurrentProcess();
 
@@ -272,11 +267,6 @@ bool IsArcKioskAvailable() {
 
   // If not special kiosk device case, use general ARC check.
   return IsArcAvailable();
-}
-
-void SetArcAvailableCommandLineForTesting(base::CommandLine* command_line) {
-  command_line->AppendSwitchASCII(chromeos::switches::kArcAvailability,
-                                  kAvailabilityOfficiallySupported);
 }
 
 bool IsArcKioskMode() {
@@ -320,20 +310,48 @@ bool IsArcOptInVerificationDisabled() {
       chromeos::switches::kDisableArcOptInVerification);
 }
 
-int GetWindowTaskId(const aura::Window* window) {
+absl::optional<int> GetWindowTaskId(const aura::Window* window) {
   if (!window)
-    return kNoTaskId;
+    return absl::nullopt;
   const std::string* arc_app_id = exo::GetShellApplicationId(window);
   if (!arc_app_id)
-    return kNoTaskId;
+    return absl::nullopt;
   return GetTaskIdFromWindowAppId(*arc_app_id);
 }
 
-int GetTaskIdFromWindowAppId(const std::string& app_id) {
+absl::optional<int> GetTaskIdFromWindowAppId(const std::string& app_id) {
   int task_id;
   if (std::sscanf(app_id.c_str(), "org.chromium.arc.%d", &task_id) != 1)
-    return kNoTaskId;
+    return absl::nullopt;
   return task_id;
+}
+
+absl::optional<int> GetWindowSessionId(const aura::Window* window) {
+  if (!window)
+    return absl::nullopt;
+  const std::string* arc_app_id = exo::GetShellApplicationId(window);
+  if (!arc_app_id)
+    return absl::nullopt;
+  return GetSessionIdFromWindowAppId(*arc_app_id);
+}
+
+absl::optional<int> GetSessionIdFromWindowAppId(const std::string& app_id) {
+  int session_id;
+  if (std::sscanf(app_id.c_str(), "org.chromium.arc.session.%d", &session_id) !=
+      1) {
+    return absl::nullopt;
+  }
+  return session_id;
+}
+
+absl::optional<int> GetWindowTaskOrSessionId(const aura::Window* window) {
+  if (!window)
+    return absl::nullopt;
+  const std::string* arc_app_id = exo::GetShellApplicationId(window);
+  if (!arc_app_id)
+    return absl::nullopt;
+  auto task_id = GetTaskIdFromWindowAppId(*arc_app_id);
+  return task_id ? *task_id : GetSessionIdFromWindowAppId(*arc_app_id);
 }
 
 void SetArcCpuRestriction(CpuRestrictionState cpu_restriction_state) {

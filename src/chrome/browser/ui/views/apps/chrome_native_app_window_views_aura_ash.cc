@@ -7,9 +7,8 @@
 #include <utility>
 
 #include "apps/ui/views/app_window_frame_view.h"
+#include "ash/constants/app_types.h"
 #include "ash/frame/non_client_frame_view_ash.h"
-#include "ash/public/cpp/app_types.h"
-#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/tablet_mode.h"
@@ -39,6 +38,7 @@
 #include "extensions/common/constants.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/display/screen.h"
@@ -49,6 +49,7 @@
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/webview/webview.h"
+#include "ui/views/image_model_utils.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
@@ -173,14 +174,19 @@ ui::ModalType ChromeNativeAppWindowViewsAuraAsh::GetModalType() const {
   return ChromeNativeAppWindowViewsAura::GetModalType();
 }
 
-gfx::ImageSkia ChromeNativeAppWindowViewsAuraAsh::GetWindowIcon() {
+ui::ImageModel ChromeNativeAppWindowViewsAuraAsh::GetWindowIcon() {
   if (!base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
     return ChromeNativeAppWindowViews::GetWindowIcon();
 
-  const gfx::ImageSkia& image_skia =
-      ChromeNativeAppWindowViews::GetWindowIcon();
-  return !image_skia.isNull() ? apps::CreateStandardIconImage(image_skia)
-                              : gfx::ImageSkia();
+  const ui::ImageModel& image = ChromeNativeAppWindowViews::GetWindowIcon();
+  if (image.IsEmpty())
+    return ui::ImageModel();
+
+  DCHECK(image.IsImage());
+  const gfx::ImageSkia image_skia =
+      views::GetImageSkiaFromImageModel(image, nullptr);
+  return ui::ImageModel::FromImageSkia(
+      apps::CreateStandardIconImage(image_skia));
 }
 
 bool ChromeNativeAppWindowViewsAuraAsh::ShouldRemoveStandardFrame() {

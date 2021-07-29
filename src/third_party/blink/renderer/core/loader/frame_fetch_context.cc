@@ -34,6 +34,7 @@
 #include <memory>
 
 #include "base/feature_list.h"
+#include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "net/http/structured_headers.h"
@@ -57,6 +58,7 @@
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/css/media_values.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
 #include "third_party/blink/renderer/core/frame/ad_tracker.h"
@@ -255,6 +257,8 @@ ResourceFetcher* FrameFetchContext::CreateFetcherForCommittedDocument(
   fetcher->SetImagesEnabled(frame->GetSettings()->GetImagesEnabled());
   fetcher->SetAutoLoadImages(
       frame->GetSettings()->GetLoadsImagesAutomatically());
+  fetcher->SetEarlyHintsPreloadedResources(
+      loader.GetEarlyHintsPreloadedResources());
   return fetcher;
 }
 
@@ -472,7 +476,11 @@ void FrameFetchContext::AddClientHintsIfNecessary(
                ->navigator()
                ->SerializeLanguagesForClientHintHeader();
 
-    prefers_color_scheme = document_->InDarkMode() ? "dark" : "light";
+    MediaValues* media_values =
+        MediaValues::CreateDynamicIfFrameExists(GetFrame());
+    bool is_dark_mode = media_values->GetPreferredColorScheme() ==
+                        mojom::blink::PreferredColorScheme::kDark;
+    prefers_color_scheme = is_dark_mode ? "dark" : "light";
 
     // TODO(crbug.com/1151050): |SerializeLanguagesForClientHintHeader| getter
     // affects later calls if there is a DevTools override. The following blink
@@ -796,7 +804,16 @@ bool FrameFetchContext::SendConversionRequestInsteadOfRedirecting(
     const absl::optional<ResourceRequest::RedirectInfo>& redirect_info,
     ReportingDisposition reporting_disposition,
     const String& devtools_request_id) const {
-  if (GetResourceFetcherProperties().IsDetached())
+  const char kWellKnownConversionRegistrationPath[] =
+      "/.well-known/attribution-reporting/trigger-attribution";
+  if (url.GetPath() != kWellKnownConversionRegistrationPath)
+    return false;
+
+  const bool detached = GetResourceFetcherProperties().IsDetached();
+  UMA_HISTOGRAM_BOOLEAN("Conversions.RedirectInterceptedFrameDetached",
+                        detached);
+
+  if (detached)
     return false;
 
   if (!RuntimeEnabledFeatures::ConversionMeasurementEnabled(
@@ -809,11 +826,6 @@ bool FrameFetchContext::SendConversionRequestInsteadOfRedirecting(
       !SecurityOrigin::AreSameOrigin(url, redirect_info->previous_url)) {
     return false;
   }
-
-  const char kWellKnownConversionRegsitrationPath[] =
-      "/.well-known/attribution-reporting/trigger-attribution";
-  if (url.GetPath() != kWellKnownConversionRegsitrationPath)
-    return false;
 
   if (!document_->domWindow()->IsFeatureEnabled(
           mojom::blink::PermissionsPolicyFeature::kAttributionReporting)) {
@@ -912,6 +924,16 @@ bool FrameFetchContext::SendConversionRequestInsteadOfRedirecting(
 
     // Default invalid params to 0.
     conversion->event_source_trigger_data = is_valid_integer ? data : 0UL;
+  }
+
+  const char kPriorityParam[] = "priority";
+  if (search_params->has(kPriorityParam)) {
+    bool is_valid_integer = false;
+    int64_t priority =
+        search_params->get(kPriorityParam).ToInt64Strict(&is_valid_integer);
+
+    // Default invalid params to 0.
+    conversion->priority = is_valid_integer ? priority : 0;
   }
 
   mojo::AssociatedRemote<mojom::blink::ConversionHost> conversion_host;

@@ -99,6 +99,10 @@ const UIStrings = {
   *@description Text exposed to screen readers on checked items.
   */
   checked: 'checked',
+  /**
+   *@description Accessible text indicating an empty row is created.
+   */
+  emptyRowCreated: 'An empty table row has been created. You may double click or use context menu to edit.',
 };
 const str_ = i18n.i18n.registerUIStrings('ui/legacy/components/data_grid/DataGrid.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -166,7 +170,7 @@ export class DataGridImpl<T> extends Common.ObjectWrapper.ObjectWrapper {
     const {displayName, columns: columnsArray, editCallback, deleteCallback, refreshCallback} = dataGridParameters;
     this.element = document.createElement('div');
     this.element.classList.add('data-grid');
-    UI.Utils.appendStyle(this.element, 'ui/legacy/components/data_grid/dataGrid.css', {enableLegacyPatching: false});
+    UI.Utils.appendStyle(this.element, 'ui/legacy/components/data_grid/dataGrid.css');
     this.element.tabIndex = 0;
     this.element.addEventListener('keydown', this._keyDown.bind(this), false);
     this.element.addEventListener('contextmenu', this._contextMenu.bind(this), true);
@@ -1043,6 +1047,7 @@ export class DataGridImpl<T> extends Common.ObjectWrapper.ObjectWrapper {
       emptyData[column] = null;
     }
     this.creationNode = new CreationDataGridNode(emptyData, hasChildren);
+    UI.ARIAUtils.alert(i18nString(UIStrings.emptyRowCreated));
     this.rootNode().appendChild(this.creationNode);
   }
 
@@ -1341,7 +1346,7 @@ export class DataGridImpl<T> extends Common.ObjectWrapper.ObjectWrapper {
             const firstColumn = this.visibleColumnsArray[firstEditColumnIndex];
             if (firstColumn && firstColumn.editable) {
               contextMenu.defaultSection().appendItem(
-                  i18nString(UIStrings.editS, {PH1: firstColumn.title}),
+                  i18nString(UIStrings.editS, {PH1: String(firstColumn.title)}),
                   this._startEditingColumnOfDataGridNode.bind(this, gridNode, firstEditColumnIndex));
             }
           }
@@ -1349,7 +1354,7 @@ export class DataGridImpl<T> extends Common.ObjectWrapper.ObjectWrapper {
           const columnId = this.columnIdFromNode(target);
           if (columnId && this._columns[columnId].editable) {
             contextMenu.defaultSection().appendItem(
-                i18nString(UIStrings.editS, {PH1: this._columns[columnId].title}),
+                i18nString(UIStrings.editS, {PH1: String(this._columns[columnId].title)}),
                 this._startEditing.bind(this, target));
           }
         }
@@ -1841,7 +1846,7 @@ export class DataGridNode<T> extends Common.ObjectWrapper.ObjectWrapper {
   }
 
   createTDWithClass(className: string): HTMLElement {
-    const cell = (document.createElement('td') as HTMLElement);
+    const cell = document.createElement('td');
     if (className) {
       cell.className = className;
     }

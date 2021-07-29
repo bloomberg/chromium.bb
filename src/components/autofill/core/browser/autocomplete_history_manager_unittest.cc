@@ -9,7 +9,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -65,10 +64,12 @@ class MockSuggestionsHandler
  public:
   MockSuggestionsHandler() {}
 
-  MOCK_METHOD3(OnSuggestionsReturned,
-               void(int query_id,
-                    bool autoselect_first_suggestion,
-                    const std::vector<Suggestion>& suggestions));
+  MOCK_METHOD(void,
+              OnSuggestionsReturned,
+              (int query_id,
+               bool autoselect_first_suggestion,
+               const std::vector<Suggestion>& suggestions),
+              (override));
 
   base::WeakPtr<MockSuggestionsHandler> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();

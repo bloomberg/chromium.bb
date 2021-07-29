@@ -7,7 +7,6 @@
 
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
-#include "components/safe_browsing/core/common/test_task_environment.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -15,17 +14,16 @@ namespace safe_browsing {
 
 class SafeBrowsingPrimaryAccountTokenFetcherTest : public ::testing::Test {
  public:
-  SafeBrowsingPrimaryAccountTokenFetcherTest()
-      : task_environment_(CreateTestTaskEnvironment()) {}
+  SafeBrowsingPrimaryAccountTokenFetcherTest() {}
 
  protected:
-  std::unique_ptr<base::test::TaskEnvironment> task_environment_;
+  base::test::TaskEnvironment task_environment_;
   signin::IdentityTestEnvironment identity_test_environment_;
 };
 
 TEST_F(SafeBrowsingPrimaryAccountTokenFetcherTest, Success) {
-  identity_test_environment_.MakeUnconsentedPrimaryAccountAvailable(
-      "test@example.com");
+  identity_test_environment_.MakePrimaryAccountAvailable(
+      "test@example.com", signin::ConsentLevel::kSignin);
   std::string access_token;
   SafeBrowsingPrimaryAccountTokenFetcher fetcher(
       identity_test_environment_.identity_manager());
@@ -40,8 +38,8 @@ TEST_F(SafeBrowsingPrimaryAccountTokenFetcherTest, Success) {
 }
 
 TEST_F(SafeBrowsingPrimaryAccountTokenFetcherTest, Failure) {
-  identity_test_environment_.MakeUnconsentedPrimaryAccountAvailable(
-      "test@example.com");
+  identity_test_environment_.MakePrimaryAccountAvailable(
+      "test@example.com", signin::ConsentLevel::kSignin);
   std::string access_token;
   SafeBrowsingPrimaryAccountTokenFetcher fetcher(
       identity_test_environment_.identity_manager());
@@ -57,7 +55,8 @@ TEST_F(SafeBrowsingPrimaryAccountTokenFetcherTest, Failure) {
 
 TEST_F(SafeBrowsingPrimaryAccountTokenFetcherTest,
        SuccessWithConsentedPrimaryAccount) {
-  identity_test_environment_.MakePrimaryAccountAvailable("test@example.com");
+  identity_test_environment_.MakePrimaryAccountAvailable(
+      "test@example.com", signin::ConsentLevel::kSync);
   std::string access_token;
   SafeBrowsingPrimaryAccountTokenFetcher fetcher(
       identity_test_environment_.identity_manager());

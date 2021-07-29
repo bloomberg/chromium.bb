@@ -36,7 +36,6 @@
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/reauth_purpose.h"
 #include "components/password_manager/core/browser/test_password_store.h"
-#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/browser_task_environment.h"
@@ -67,21 +66,6 @@ constexpr char kHistogramName[] = "PasswordManager.AccessPasswordInSettings";
 
 using MockPlaintextPasswordCallback =
     base::MockCallback<PasswordsPrivateDelegate::PlaintextPasswordCallback>;
-
-scoped_refptr<TestPasswordStore> CreateAndUseTestAccountPasswordStore(
-    Profile* profile) {
-  if (!base::FeatureList::IsEnabled(
-          password_manager::features::kEnablePasswordsAccountStorage)) {
-    return nullptr;
-  }
-  return base::WrapRefCounted(static_cast<TestPasswordStore*>(
-      AccountPasswordStoreFactory::GetInstance()
-          ->SetTestingFactoryAndUse(
-              profile,
-              base::BindRepeating(&password_manager::BuildPasswordStore<
-                                  content::BrowserContext, TestPasswordStore>))
-          .get()));
-}
 
 class MockPasswordManagerClient : public ChromePasswordManagerClient {
  public:
@@ -182,6 +166,11 @@ password_manager::PasswordForm CreateSampleForm() {
   form.url = GURL("http://abc1.com");
   form.username_value = u"test@gmail.com";
   form.password_value = u"test";
+  // TODO(crbug.com/1223022): Once all places that operate changes on forms
+  // via UpdateLogin properly set |password_issues|, setting them to an empty
+  // map should be part of the default constructor.
+  form.password_issues = base::flat_map<password_manager::InsecureType,
+                                        password_manager::InsecurityMetadata>();
   return form;
 }
 

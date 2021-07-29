@@ -227,11 +227,11 @@ class ResourceLoader::CodeCacheRequest {
  public:
   CodeCacheRequest(std::unique_ptr<WebCodeCacheLoader> code_cache_loader,
                    const KURL& url,
-                   WebURLLoader::DeferType defers_loading)
+                   LoaderFreezeMode freeze_mode)
       : status_(kNoRequestSent),
         code_cache_loader_(std::move(code_cache_loader)),
         url_(url),
-        defers_loading_(defers_loading) {
+        freeze_mode_(freeze_mode) {
     DCHECK(RuntimeEnabledFeatures::IsolatedCodeCacheEnabled());
   }
 
@@ -240,7 +240,6 @@ class ResourceLoader::CodeCacheRequest {
   // Request data from code cache.
   bool FetchFromCodeCache(WebURLLoader* url_loader,
                           ResourceLoader* resource_loader);
-  bool FetchFromCodeCacheSynchronously(ResourceLoader* resource_loader);
 
   // Notifies about the response from webURLLoader. Stores the
   // resource_response_time that is used to validate responses from
@@ -253,7 +252,7 @@ class ResourceLoader::CodeCacheRequest {
   // once fetching from code cache is finished. Returns true if the
   // request is handled here and hence need not be handled by the loader.
   // Returns false otherwise.
-  bool SetDefersLoading(WebURLLoader::DeferType defers);
+  bool SetDefersLoading(LoaderFreezeMode);
 
  private:
   enum CodeCacheRequestStatus {
@@ -281,8 +280,7 @@ class ResourceLoader::CodeCacheRequest {
   CodeCacheRequestStatus status_;
   std::unique_ptr<WebCodeCacheLoader> code_cache_loader_;
   const WebURL url_;
-  WebURLLoader::DeferType defers_loading_ =
-      WebURLLoader::DeferType::kNotDeferred;
+  LoaderFreezeMode freeze_mode_ = LoaderFreezeMode::kNone;
   mojo_base::BigBuffer cached_code_;
   base::Time cached_code_response_time_;
   base::Time resource_response_time_;
@@ -302,28 +300,13 @@ bool ResourceLoader::CodeCacheRequest::FetchFromCodeCache(
   // ensure that the resource receives cached code before the response data.
   // This directly calls the WebURLLoader's SetDefersLoading without going
   // through ResourceLoader.
-  url_loader->SetDefersLoading(WebURLLoader::DeferType::kDeferred);
+  url_loader->Freeze(LoaderFreezeMode::kStrict);
 
   WebCodeCacheLoader::FetchCodeCacheCallback callback = base::BindOnce(
       &ResourceLoader::CodeCacheRequest::DidReceiveCachedCode,
       weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now(), resource_loader);
   auto cache_type = resource_loader->GetCodeCacheType();
   code_cache_loader_->FetchFromCodeCache(cache_type, url_, std::move(callback));
-  return true;
-}
-
-bool ResourceLoader::CodeCacheRequest::FetchFromCodeCacheSynchronously(
-    ResourceLoader* resource_loader) {
-  if (!code_cache_loader_)
-    return false;
-  DCHECK_EQ(status_, kNoRequestSent);
-  status_ = kPendingResponse;
-
-  base::Time response_time;
-  mojo_base::BigBuffer data;
-  code_cache_loader_->FetchFromCodeCacheSynchronously(url_, &response_time,
-                                                      &data);
-  ProcessCodeCacheResponse(response_time, std::move(data), resource_loader);
   return true;
 }
 
@@ -340,12 +323,11 @@ void ResourceLoader::CodeCacheRequest::DidReceiveResponse(
 
 // Returns true if |this| handles |defers| and therefore the callsite, i.e. the
 // loader, doesn't need to take care of it). Returns false otherwise.
-bool ResourceLoader::CodeCacheRequest::SetDefersLoading(
-    WebURLLoader::DeferType defers) {
-  defers_loading_ = defers;
+bool ResourceLoader::CodeCacheRequest::SetDefersLoading(LoaderFreezeMode mode) {
+  freeze_mode_ = mode;
   if (status_ == kPendingResponse) {
     // The flag doesn't need to be handled by the loader. The value is stored
-    // in |defers_loading_| and set once the response from the code cache is
+    // in |freeze_mode_| and set once the response from the code cache is
     // received.
     return true;
   }
@@ -362,7 +344,7 @@ void ResourceLoader::CodeCacheRequest::DidReceiveCachedCode(
   ProcessCodeCacheResponse(response_time, std::move(data), resource_loader);
   // Reset the deferred value to its original state.
   DCHECK(resource_loader);
-  resource_loader->SetDefersLoading(defers_loading_);
+  resource_loader->SetDefersLoading(freeze_mode_);
 }
 
 // This is called when a response is received from code cache. If the
@@ -470,6 +452,12 @@ void ResourceLoader::Trace(Visitor* visitor) const {
 
 bool ResourceLoader::ShouldFetchCodeCache() {
   if (!RuntimeEnabledFeatures::IsolatedCodeCacheEnabled())
+    return false;
+
+  // Since code cache requests use a per-frame interface, don't fetch cached
+  // code for keep-alive requests. These are only used for beaconing and we
+  // don't expect code cache to help there.
+  if (ShouldBeKeptAliveWhenDetached())
     return false;
 
   const ResourceRequestHead& request = resource_->GetResourceRequest();
@@ -601,7 +589,7 @@ void ResourceLoader::StartWith(const ResourceRequestHead& request) {
   DCHECK(loader_);
 
   if (resource_->Options().synchronous_policy == kRequestSynchronously &&
-      fetcher_->GetProperties().IsLoadDeferred()) {
+      fetcher_->GetProperties().FreezeMode() != LoaderFreezeMode::kNone) {
     // TODO(yuzus): Evict bfcache if necessary.
     Cancel();
     return;
@@ -609,12 +597,12 @@ void ResourceLoader::StartWith(const ResourceRequestHead& request) {
 
   is_downloading_to_blob_ = request.DownloadToBlob();
 
-  SetDefersLoading(fetcher_->GetProperties().DeferType());
+  SetDefersLoading(fetcher_->GetProperties().FreezeMode());
 
   if (ShouldFetchCodeCache()) {
     code_cache_request_ = std::make_unique<CodeCacheRequest>(
         fetcher_->CreateCodeCacheLoader(), request.Url(),
-        fetcher_->GetProperties().DeferType());
+        fetcher_->GetProperties().FreezeMode());
   }
 
   if (is_cache_aware_loading_activated_) {
@@ -651,30 +639,30 @@ void ResourceLoader::Restart(const ResourceRequestHead& request) {
   StartWith(request);
 }
 
-void ResourceLoader::SetDefersLoading(WebURLLoader::DeferType defers) {
+void ResourceLoader::SetDefersLoading(LoaderFreezeMode mode) {
   DCHECK(loader_);
-  defers_ = defers;
+  freeze_mode_ = mode;
   // If CodeCacheRequest handles this, then no need to handle here.
-  if (code_cache_request_ && code_cache_request_->SetDefersLoading(defers))
+  if (code_cache_request_ && code_cache_request_->SetDefersLoading(mode))
     return;
 
   if (response_body_loader_) {
-    if (defers != WebURLLoader::DeferType::kNotDeferred &&
+    if (mode != LoaderFreezeMode::kNone &&
         !response_body_loader_->IsSuspended()) {
-      response_body_loader_->Suspend(defers);
-      if (defers == WebURLLoader::DeferType::kDeferredWithBackForwardCache) {
+      response_body_loader_->Suspend(mode);
+      if (mode == LoaderFreezeMode::kBufferIncoming) {
         response_body_loader_
             ->EvictFromBackForwardCacheIfDrainedAsBytesConsumer();
       }
     }
-    if (defers == WebURLLoader::DeferType::kNotDeferred &&
+    if (mode == LoaderFreezeMode::kNone &&
         response_body_loader_->IsSuspended()) {
       response_body_loader_->Resume();
     }
   }
 
   if (defers_handling_data_url_) {
-    if (defers_ == WebURLLoader::DeferType::kNotDeferred) {
+    if (freeze_mode_ == LoaderFreezeMode::kNone) {
       defers_handling_data_url_ = false;
       GetLoadingTaskRunner()->PostTask(
           FROM_HERE,
@@ -682,8 +670,8 @@ void ResourceLoader::SetDefersLoading(WebURLLoader::DeferType defers) {
     }
   }
 
-  loader_->SetDefersLoading(defers);
-  if (defers != WebURLLoader::DeferType::kNotDeferred) {
+  loader_->Freeze(mode);
+  if (mode != LoaderFreezeMode::kNone) {
     resource_->VirtualTimePauser().UnpauseVirtualTime();
   } else {
     resource_->VirtualTimePauser().PauseVirtualTime();
@@ -1536,7 +1524,7 @@ ResourceLoader::CheckResponseNosniff(
 void ResourceLoader::HandleDataUrl() {
   if (!IsLoading())
     return;
-  if (defers_ != WebURLLoader::DeferType::kNotDeferred) {
+  if (freeze_mode_ != LoaderFreezeMode::kNone) {
     defers_handling_data_url_ = true;
     return;
   }

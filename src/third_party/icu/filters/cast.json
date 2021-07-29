@@ -885,7 +885,7 @@
       "rules": [
         "-/Languages",
         "-/Languages%long",
-        "-/Languages%short",
+        "-/Languages%menu",
         "-/Languages%variant",
 // Based on https://cs.chromium.org/chromium/src/third_party/icu/scripts/accept_lang.list?rcl=797b7c
         "+/*/ach",
@@ -1070,6 +1070,7 @@
         "-/Keys",
         "-/Types",
         "-/Types%short",
+        "+/Types/calendar",
         "-/characterLabelPattern",
         "-/Variants",
         "+/Variants/OXENDICT"

@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/flat_map.h"
+#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
@@ -20,7 +21,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/persistent_histogram_allocator.h"
 #include "base/metrics/persistent_memory_allocator.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
@@ -930,7 +930,7 @@ bool FileMetricsProvider::SimulateIndependentMetrics() {
 
   ListPrefUpdate list_value(pref_service_,
                             metrics::prefs::kMetricsFileMetricsMetadata);
-  if (list_value->empty())
+  if (list_value->GetList().empty())
     return false;
 
   base::Value::ListView mutable_list = list_value->GetList();

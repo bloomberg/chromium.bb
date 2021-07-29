@@ -19,9 +19,11 @@
 #include "common/Preprocessor.h"
 #include "dawn/dawn_proc_table.h"
 #include "dawn/webgpu_cpp.h"
+#include "dawn/webgpu_cpp_print.h"
 #include "dawn_native/DawnNative.h"
 #include "tests/ParamGenerator.h"
 #include "tests/ToggleParser.h"
+#include "utils/ScopedAutoreleasePool.h"
 
 #include <dawn_platform/DawnPlatform.h>
 #include <gtest/gtest.h>
@@ -37,6 +39,13 @@
 
 #define EXPECT_BUFFER(buffer, offset, size, expectation) \
     AddBufferExpectation(__FILE__, __LINE__, buffer, offset, size, expectation)
+
+#define EXPECT_BUFFER_U8_EQ(expected, buffer, offset) \
+    EXPECT_BUFFER(buffer, offset, sizeof(uint8_t), new ::detail::ExpectEq<uint8_t>(expected))
+
+#define EXPECT_BUFFER_U8_RANGE_EQ(expected, buffer, offset, count) \
+    EXPECT_BUFFER(buffer, offset, sizeof(uint8_t) * (count),       \
+                  new ::detail::ExpectEq<uint8_t>(expected, count))
 
 #define EXPECT_BUFFER_U16_EQ(expected, buffer, offset) \
     EXPECT_BUFFER(buffer, offset, sizeof(uint16_t), new ::detail::ExpectEq<uint16_t>(expected))
@@ -76,7 +85,6 @@
 #define EXPECT_PIXEL_RGBA8_BETWEEN(color0, color1, texture, x, y) \
     AddTextureBetweenColorsExpectation(__FILE__, __LINE__, color0, color1, texture, x, y)
 
-// TODO(enga): Migrate other texure expectation helpers to this common one.
 #define EXPECT_TEXTURE_EQ(...) AddTextureExpectation(__FILE__, __LINE__, __VA_ARGS__)
 
 // Should only be used to test validation of function that can't be tested by regular validation
@@ -173,6 +181,7 @@ namespace utils {
 
 namespace detail {
     class Expectation;
+    class CustomTextureExpectation;
 
     template <typename T>
     class ExpectEq;
@@ -283,6 +292,8 @@ class DawnTestBase {
     bool IsBackendValidationEnabled() const;
     bool RunSuppressedTests() const;
 
+    bool IsDXC() const;
+
     bool IsAsan() const;
 
     bool HasToggleEnabled(const char* workaround) const;
@@ -300,6 +311,18 @@ class DawnTestBase {
     dawn_native::Adapter GetAdapter() const;
 
     virtual std::unique_ptr<dawn_platform::Platform> CreateTestPlatform();
+
+    struct PrintToStringParamName {
+        PrintToStringParamName(const char* test);
+        std::string SanitizeParamName(std::string paramName, size_t index) const;
+
+        template <class ParamType>
+        std::string operator()(const ::testing::TestParamInfo<ParamType>& info) const {
+            return SanitizeParamName(::testing::PrintToStringParamName()(info), info.index);
+        }
+
+        std::string mTest;
+    };
 
   protected:
     wgpu::Device device;
@@ -348,6 +371,22 @@ class DawnTestBase {
                                          origin, {1, 1}, level, aspect, sizeof(T), bytesPerRow);
     }
 
+    template <typename E,
+              typename = typename std::enable_if<
+                  std::is_base_of<detail::CustomTextureExpectation, E>::value>::type>
+    std::ostringstream& AddTextureExpectation(const char* file,
+                                              int line,
+                                              E* expectation,
+                                              const wgpu::Texture& texture,
+                                              wgpu::Origin3D origin,
+                                              wgpu::Extent3D extent,
+                                              uint32_t level = 0,
+                                              wgpu::TextureAspect aspect = wgpu::TextureAspect::All,
+                                              uint32_t bytesPerRow = 0) {
+        return AddTextureExpectationImpl(file, line, expectation, texture, origin, extent, level,
+                                         aspect, expectation->DataSize(), bytesPerRow);
+    }
+
     template <typename T>
     std::ostringstream& AddTextureBetweenColorsExpectation(
         const char* file,
@@ -365,6 +404,66 @@ class DawnTestBase {
             level, aspect, sizeof(T), bytesPerRow);
     }
 
+    std::ostringstream& ExpectSampledFloatData(wgpu::Texture texture,
+                                               uint32_t width,
+                                               uint32_t height,
+                                               uint32_t componentCount,
+                                               uint32_t arrayLayer,
+                                               uint32_t mipLevel,
+                                               detail::Expectation* expectation);
+
+    std::ostringstream& ExpectMultisampledFloatData(wgpu::Texture texture,
+                                                    uint32_t width,
+                                                    uint32_t height,
+                                                    uint32_t componentCount,
+                                                    uint32_t sampleCount,
+                                                    uint32_t arrayLayer,
+                                                    uint32_t mipLevel,
+                                                    detail::Expectation* expectation);
+
+    std::ostringstream& ExpectSampledDepthData(wgpu::Texture depthTexture,
+                                               uint32_t width,
+                                               uint32_t height,
+                                               uint32_t arrayLayer,
+                                               uint32_t mipLevel,
+                                               detail::Expectation* expectation);
+
+    // Check depth by uploading expected data to a sampled texture, writing it out as a depth
+    // attachment, and then using the "equals" depth test to check the contents are the same.
+    // Check stencil by rendering a full screen quad and using the "equals" stencil test with
+    // a stencil reference value. Note that checking stencil checks that the entire stencil
+    // buffer is equal to the expected stencil value.
+    std::ostringstream& ExpectAttachmentDepthStencilTestData(wgpu::Texture texture,
+                                                             wgpu::TextureFormat format,
+                                                             uint32_t width,
+                                                             uint32_t height,
+                                                             uint32_t arrayLayer,
+                                                             uint32_t mipLevel,
+                                                             std::vector<float> expectedDepth,
+                                                             uint8_t* expectedStencil);
+
+    std::ostringstream& ExpectAttachmentDepthTestData(wgpu::Texture texture,
+                                                      wgpu::TextureFormat format,
+                                                      uint32_t width,
+                                                      uint32_t height,
+                                                      uint32_t arrayLayer,
+                                                      uint32_t mipLevel,
+                                                      std::vector<float> expectedDepth) {
+        return ExpectAttachmentDepthStencilTestData(texture, format, width, height, arrayLayer,
+                                                    mipLevel, std::move(expectedDepth), nullptr);
+    }
+
+    std::ostringstream& ExpectAttachmentStencilTestData(wgpu::Texture texture,
+                                                        wgpu::TextureFormat format,
+                                                        uint32_t width,
+                                                        uint32_t height,
+                                                        uint32_t arrayLayer,
+                                                        uint32_t mipLevel,
+                                                        uint8_t expectedStencil) {
+        return ExpectAttachmentDepthStencilTestData(texture, format, width, height, arrayLayer,
+                                                    mipLevel, {}, &expectedStencil);
+    }
+
     void WaitABit();
     void FlushWire();
     void WaitForAllOperations();
@@ -380,6 +479,7 @@ class DawnTestBase {
     const wgpu::AdapterProperties& GetAdapterProperties() const;
 
   private:
+    utils::ScopedAutoreleasePool mObjCAutoreleasePool;
     AdapterTestParam mParam;
     std::unique_ptr<utils::WireHelper> mWireHelper;
 
@@ -399,6 +499,14 @@ class DawnTestBase {
                                                   wgpu::TextureAspect aspect,
                                                   uint32_t dataSize,
                                                   uint32_t bytesPerRow);
+
+    std::ostringstream& ExpectSampledFloatDataImpl(wgpu::TextureView textureView,
+                                                   const char* wgslTextureType,
+                                                   uint32_t width,
+                                                   uint32_t height,
+                                                   uint32_t componentCount,
+                                                   uint32_t sampleCount,
+                                                   detail::Expectation* expectation);
 
     // MapRead buffers used to get data for the expectations
     struct ReadbackSlot {
@@ -452,11 +560,6 @@ class DawnTestBase {
             return;                                       \
         }                                                 \
     } while (0)
-
-// Skip a test when the given condition is satisfied.
-// TODO(jiawei.shao@intel.com): Replace this macro with DAWN_TEST_UNSUPPORTED_IF or
-// DAWN_SUPPRESS_TEST_IF.
-#define DAWN_SKIP_TEST_IF(condition) DAWN_SKIP_TEST_IF_BASE(condition, "skipped", condition)
 
 // Skip a test which requires an extension or a toggle to be present / not present or some WIP
 // features.
@@ -515,7 +618,7 @@ using DawnTest = DawnTestWithParams<>;
         , testName,                                                                     \
         testing::ValuesIn(::detail::GetAvailableAdapterTestParamsForBackends(           \
             testName##params, sizeof(testName##params) / sizeof(testName##params[0]))), \
-        testing::PrintToStringParamName());                                             \
+        DawnTestBase::PrintToStringParamName(#testName));                               \
     GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(testName)
 
 // Instantiate the test once for each backend provided in the first param list.
@@ -531,13 +634,13 @@ using DawnTest = DawnTestWithParams<>;
 #define DAWN_INSTANTIATE_TEST_P(testName, ...)                                                 \
     INSTANTIATE_TEST_SUITE_P(                                                                  \
         , testName, ::testing::ValuesIn(MakeParamGenerator<testName::ParamType>(__VA_ARGS__)), \
-        testing::PrintToStringParamName());                                                    \
+        DawnTestBase::PrintToStringParamName(#testName));                                      \
     GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(testName)
 
 // Implementation for DAWN_TEST_PARAM_STRUCT to declare/print struct fields.
 #define DAWN_TEST_PARAM_STRUCT_DECL_STRUCT_FIELD(Type) Type DAWN_PP_CONCATENATE(m, Type);
 #define DAWN_TEST_PARAM_STRUCT_PRINT_STRUCT_FIELD(Type) \
-    o << "__" << #Type << "_" << param.DAWN_PP_CONCATENATE(m, Type);
+    o << "; " << #Type << "=" << param.DAWN_PP_CONCATENATE(m, Type);
 
 // Usage: DAWN_TEST_PARAM_STRUCT(Foo, TypeA, TypeB, ...)
 // Generate a test param struct called Foo which extends AdapterTestParam and generated
@@ -569,7 +672,7 @@ using DawnTest = DawnTestWithParams<>;
     };                                                                                             \
     std::ostream& operator<<(std::ostream& o, const StructName& param) {                           \
         o << static_cast<const AdapterTestParam&>(param);                                          \
-        o << "_" << static_cast<const DAWN_PP_CONCATENATE(_Dawn_, StructName)&>(param);            \
+        o << "; " << static_cast<const DAWN_PP_CONCATENATE(_Dawn_, StructName)&>(param);           \
         return o;                                                                                  \
     }
 
@@ -592,13 +695,14 @@ namespace detail {
     template <typename T>
     class ExpectEq : public Expectation {
       public:
-        ExpectEq(T singleValue);
-        ExpectEq(const T* values, const unsigned int count);
+        ExpectEq(T singleValue, T tolerance = {});
+        ExpectEq(const T* values, const unsigned int count, T tolerance = {});
 
         testing::AssertionResult Check(const void* data, size_t size) override;
 
       private:
         std::vector<T> mExpected;
+        T mTolerance;
     };
     extern template class ExpectEq<uint8_t>;
     extern template class ExpectEq<int16_t>;
@@ -626,6 +730,13 @@ namespace detail {
     // each counterparts. It doesn't matter which value is higher or lower. Essentially color =
     // lerp(color0, color1, t) where t is [0,1]. But I don't want to be too strict here.
     extern template class ExpectBetweenColors<RGBA8>;
+
+    class CustomTextureExpectation : public Expectation {
+      public:
+        virtual ~CustomTextureExpectation() = default;
+        virtual uint32_t DataSize() = 0;
+    };
+
 }  // namespace detail
 
 #endif  // TESTS_DAWNTEST_H_

@@ -7,10 +7,10 @@
 #include <stddef.h>
 #include <memory>
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "ash/public/cpp/app_menu_constants.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_test_api.h"
@@ -47,8 +47,8 @@
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ash/accessibility/speech_monitor.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
+#include "chrome/browser/ash/file_manager/file_manager_test_util.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
-#include "chrome/browser/chromeos/file_manager/file_manager_test_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
@@ -83,7 +83,6 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
-#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/test/web_app_install_observer.h"
@@ -134,7 +133,7 @@ using ::ash::Shelf;
 using ::content::WebContents;
 using ::extensions::AppWindow;
 using ::extensions::Extension;
-using ::web_app::WebAppProviderBase;
+using ::web_app::WebAppProvider;
 
 ash::ShelfAction SelectItem(
     const ash::ShelfID& id,
@@ -1516,7 +1515,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, TabDragAndDrop) {
   // Detach a tab at index 1 (app1) from |tab_strip_model1| and insert it as an
   // active tab at index 1 to |tab_strip_model2|.
   std::unique_ptr<content::WebContents> detached_tab =
-      tab_strip_model1->DetachWebContentsAt(1);
+      tab_strip_model1->DetachWebContentsAtForInsertion(1);
   tab_strip_model2->InsertWebContentsAt(1, std::move(detached_tab),
                                         TabStripModel::ADD_ACTIVE);
   EXPECT_EQ(1, tab_strip_model1->count());
@@ -2386,8 +2385,7 @@ IN_PROC_BROWSER_TEST_F(ShelfWebAppBrowserTest, WindowedHostedAndWebApps) {
   // Set both apps to open in windows.
   extensions::SetLaunchType(browser()->profile(), hosted_app->id(),
                             extensions::LAUNCH_TYPE_WINDOW);
-  WebAppProviderBase* provider =
-      WebAppProviderBase::GetProviderBase(browser()->profile());
+  WebAppProvider* provider = WebAppProvider::Get(browser()->profile());
   DCHECK(provider);
   provider->registry_controller().SetAppUserDisplayMode(
       web_app_id, web_app::DisplayMode::kStandalone, /*is_user_action=*/false);
@@ -2503,7 +2501,8 @@ IN_PROC_BROWSER_TEST_F(ShelfWebAppBrowserTest, WebAppPolicy) {
 IN_PROC_BROWSER_TEST_F(ShelfWebAppBrowserTest, WebAppPolicyNonExistentApp) {
   // Don't install the web app.
   GURL app_url = GURL("https://example.org/");
-  web_app::AppId app_id = web_app::GenerateAppIdFromURL(app_url);
+  web_app::AppId app_id =
+      web_app::GenerateAppId(/*manifest_id=*/absl::nullopt, app_url);
 
   // Set policy to pin the non existent web app.
   base::DictionaryValue entry;

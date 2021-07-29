@@ -18,12 +18,62 @@
 #include "av1/common/reconinter.h"
 
 #include "av1/encoder/encoder.h"
-#include "av1/encoder/partition_strategy.h"
 #include "av1/encoder/rdopt.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#define WRITE_FEATURE_TO_FILE 0
+
+#define FEATURE_SIZE_SMS_SPLIT_FAST 6
+#define FEATURE_SIZE_SMS_SPLIT 17
+#define FEATURE_SIZE_SMS_PRUNE_PART 25
+#define FEATURE_SIZE_SMS_TERM_NONE 28
+#define FEATURE_SIZE_FP_SMS_TERM_NONE 20
+#define FEATURE_SIZE_MAX_MIN_PART_PRED 13
+#define MAX_NUM_CLASSES_MAX_MIN_PART_PRED 4
+
+#define FEATURE_SMS_NONE_FLAG 1
+#define FEATURE_SMS_SPLIT_FLAG (1 << 1)
+#define FEATURE_SMS_RECT_FLAG (1 << 2)
+
+#define FEATURE_SMS_PRUNE_PART_FLAG \
+  (FEATURE_SMS_NONE_FLAG | FEATURE_SMS_SPLIT_FLAG | FEATURE_SMS_RECT_FLAG)
+#define FEATURE_SMS_SPLIT_MODEL_FLAG \
+  (FEATURE_SMS_NONE_FLAG | FEATURE_SMS_SPLIT_FLAG)
+
+// Number of sub-partitions in rectangular partition types.
+#define SUB_PARTITIONS_RECT 2
+
+// Number of sub-partitions in split partition type.
+#define SUB_PARTITIONS_SPLIT 4
+
+// Number of sub-partitions in AB partition types.
+#define SUB_PARTITIONS_AB 3
+
+// Number of sub-partitions in 4-way partition types.
+#define SUB_PARTITIONS_PART4 4
+
+// 4part partition types.
+enum { HORZ4 = 0, VERT4, NUM_PART4_TYPES } UENUM1BYTE(PART4_TYPES);
+
+// AB partition types.
+enum {
+  HORZ_A = 0,
+  HORZ_B,
+  VERT_A,
+  VERT_B,
+  NUM_AB_PARTS
+} UENUM1BYTE(AB_PART_TYPE);
+
+// Rectangular partition types.
+enum { HORZ = 0, VERT, NUM_RECT_PARTS } UENUM1BYTE(RECT_PART_TYPE);
+
+// Structure to keep win flags for HORZ and VERT partition evaluations.
+typedef struct {
+  int rect_part_win[NUM_RECT_PARTS];
+} RD_RECT_PART_WIN_INFO;
 
 enum { PICK_MODE_RD = 0, PICK_MODE_NONRD };
 
@@ -219,47 +269,6 @@ static AOM_INLINE const FIRSTPASS_STATS *read_one_frame_stats(const TWO_PASS *p,
   return &p->stats_buf_ctx->stats_in_start[frm];
 }
 
-static BLOCK_SIZE dim_to_size(int dim) {
-  switch (dim) {
-    case 4: return BLOCK_4X4;
-    case 8: return BLOCK_8X8;
-    case 16: return BLOCK_16X16;
-    case 32: return BLOCK_32X32;
-    case 64: return BLOCK_64X64;
-    case 128: return BLOCK_128X128;
-    default: assert(0); return 0;
-  }
-}
-
-static AOM_INLINE void set_max_min_partition_size(SuperBlockEnc *sb_enc,
-                                                  AV1_COMP *cpi, MACROBLOCK *x,
-                                                  const SPEED_FEATURES *sf,
-                                                  BLOCK_SIZE sb_size,
-                                                  int mi_row, int mi_col) {
-  const AV1_COMMON *cm = &cpi->common;
-
-  sb_enc->max_partition_size =
-      AOMMIN(sf->part_sf.default_max_partition_size,
-             dim_to_size(cpi->oxcf.part_cfg.max_partition_size));
-  sb_enc->min_partition_size =
-      AOMMAX(sf->part_sf.default_min_partition_size,
-             dim_to_size(cpi->oxcf.part_cfg.min_partition_size));
-  sb_enc->max_partition_size =
-      AOMMIN(sb_enc->max_partition_size, cm->seq_params->sb_size);
-  sb_enc->min_partition_size =
-      AOMMIN(sb_enc->min_partition_size, cm->seq_params->sb_size);
-
-  if (use_auto_max_partition(cpi, sb_size, mi_row, mi_col)) {
-    float features[FEATURE_SIZE_MAX_MIN_PART_PRED] = { 0.0f };
-
-    av1_get_max_min_partition_features(cpi, x, mi_row, mi_col, features);
-    sb_enc->max_partition_size =
-        AOMMAX(AOMMIN(av1_predict_max_partition(cpi, x, features),
-                      sb_enc->max_partition_size),
-               sb_enc->min_partition_size);
-  }
-}
-
 int av1_get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
                          int mi_col, int orig_rdmult);
 
@@ -272,15 +281,15 @@ void av1_get_tpl_stats_sb(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
 
 int av1_get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
                                    int mi_row, int mi_col);
+
+int av1_get_hier_tpl_rdmult(const AV1_COMP *const cpi, MACROBLOCK *const x,
+                            const BLOCK_SIZE bsize, const int mi_row,
+                            const int mi_col, int orig_rdmult);
 #endif  // !CONFIG_REALTIME_ONLY
 
 void av1_set_ssim_rdmult(const AV1_COMP *const cpi, int *errorperbit,
                          const BLOCK_SIZE bsize, const int mi_row,
                          const int mi_col, int *const rdmult);
-
-int av1_get_hier_tpl_rdmult(const AV1_COMP *const cpi, MACROBLOCK *const x,
-                            const BLOCK_SIZE bsize, const int mi_row,
-                            const int mi_col, int orig_rdmult);
 
 void av1_update_state(const AV1_COMP *const cpi, ThreadData *td,
                       const PICK_MODE_CONTEXT *const ctx, int mi_row,
@@ -413,8 +422,7 @@ static AOM_INLINE unsigned int get_num_refs_to_disable(
         const FIRSTPASS_STATS *const this_frame_stats =
             read_one_frame_stats(&cpi->ppi->twopass, cur_frame_display_index);
         aom_clear_system_state();
-        const double coded_error_per_mb =
-            this_frame_stats->coded_error / cpi->frame_info.num_mbs;
+        const double coded_error_per_mb = this_frame_stats->coded_error;
         // Disable LAST2_FRAME if the coded error of the current frame based on
         // first pass stats is very low.
         if (coded_error_per_mb < 100.0) num_refs_to_disable++;

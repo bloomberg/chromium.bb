@@ -13,6 +13,7 @@ ch-prefers-color-scheme
 ch-rtt
 ch-ua
 ch-ua-arch
+ch-ua-bitness
 ch-ua-full-version
 ch-ua-mobile
 ch-ua-model
@@ -32,6 +33,7 @@ hid
 magnetometer
 microphone
 midi
+otp-credentials
 payment
 picture-in-picture
 publickey-credentials-get

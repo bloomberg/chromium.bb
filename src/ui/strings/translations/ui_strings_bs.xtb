@@ -58,6 +58,7 @@
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="2353636109065292463">Provjera vaše internetske veze</translation>
 <translation id="2388990488038464401">Pozvati ovaj broj s telefona?</translation>
+<translation id="2435457462613246316">Prikaži lozinku</translation>
 <translation id="24452542372838207">Proširi obavještenje</translation>
 <translation id="2445449901874883781">Koristi veću gustoću</translation>
 <translation id="2482878487686419369">Obavještenja</translation>
@@ -79,6 +80,7 @@
 <translation id="2824719307700604149">{YEARS,plural, =1{Prije godinu dana}one{Prije # godinu}few{Prije # godine}other{Prije # godina}}</translation>
 <translation id="2878511608894704031">Izbriši sve</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{Za 1 d}one{Za # d}few{Za # d}other{Za # d}}</translation>
+<translation id="2922712708897119705">Kolona <ph name="COLUMN_NAME" /> je poredana opadajućim redoslijedom.</translation>
 <translation id="2931838996092594335">kliknuti</translation>
 <translation id="2981684127883932071">Prikaz prijedloga</translation>
 <translation id="3036649622769666520">Otvori fajlove</translation>
@@ -114,6 +116,7 @@
 <translation id="3897092660631435901">Meni</translation>
 <translation id="3909791450649380159">Iz&amp;reži</translation>
 <translation id="3990502903496589789">Desna ivica</translation>
+<translation id="3994749195054421561">Kolona <ph name="COLUMN_NAME" /> je poredana rastućim redoslijedom.</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{Jedno nepročitano obavještenje}one{# nepročitano obavještenje}few{# nepročitana obavještenja}other{# nepročitanih obavještenja}}</translation>
 <translation id="4202807286478387388">preskoči</translation>
 <translation id="4250229828105606438">Snimak ekrana</translation>
@@ -123,6 +126,7 @@
 <translation id="4306392492252714209">Uklanjanje iz međumemorije.</translation>
 <translation id="4316910396681052118">SVE APLIKACIJE</translation>
 <translation id="4491109536499578614">Slika</translation>
+<translation id="4565377596337484307">Sakrij lozinku</translation>
 <translation id="4588090240171750605">Kliznite udesno</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, ocjena zvjezdicama <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, preporučena aplikacija</translation>
@@ -165,6 +169,7 @@
 <translation id="6012623610530968780">Stranica <ph name="SELECTED_PAGE" /> od <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Brisanje teksta u okviru za pretraživanje</translation>
 <translation id="6040143037577758943">Zatvori</translation>
+<translation id="6117103120090651229">Dugme Centriraj</translation>
 <translation id="6119846243427417423">aktiviraj</translation>
 <translation id="6129953537138746214">Razmaknica</translation>
 <translation id="6134259848159370930">Pretražite uređaj, aplikacije, postavke i web.</translation>
@@ -173,6 +178,7 @@
 <translation id="6156262341071374681">Proširite na sve aplikacije</translation>
 <translation id="6165508094623778733">Saznajte više</translation>
 <translation id="6166852626429024716">Pretražite uređaj, aplikacije, postavke, web...</translation>
+<translation id="6237461503717005873">Izabran je red <ph name="ROW_NAME" />.</translation>
 <translation id="6264365405983206840">Odaberi &amp;sve</translation>
 <translation id="6351032674660237738">PRIJEDLOZI APLIKACIJA</translation>
 <translation id="6364916375976753737">Pomakni se lijevo</translation>
@@ -213,6 +219,7 @@
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Još 1 minuta}one{Još # minuta}few{Još # minute}other{Još # minuta}}</translation>
 <translation id="7430878839542012341">Izbrisati ovo pretraživanje iz historije?</translation>
+<translation id="7437971918971306061">Kolona <ph name="COLUMN_NAME" /> nije poredana.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emoji sličice</translation>
 <translation id="7620655452534002301">Uklonjeno.</translation>

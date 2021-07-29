@@ -23,9 +23,7 @@ source_set("mdns_interface") {
 source_set("unittests") {
   testonly = true
 
-  sources = [
-    "domain_name_unittest.cc",
-  ]
+  sources = [ "domain_name_unittest.cc" ]
 
   deps = [
     ":mdns_interface",
@@ -38,12 +36,11 @@ source_set("unittests") {
 }
 
 executable("mdns_demo") {
-  sources = [
-    "mdns_demo.cc",
-  ]
+  sources = [ "mdns_demo.cc" ]
 
   deps = [
     ":mdns",
+    "../../../../platform:standalone_impl",
   ]
 }
 
@@ -61,7 +58,5 @@ source_set("mdns") {
     "../../../../util",
   ]
 
-  deps = [
-    "../../../../third_party/mDNSResponder:core",
-  ]
+  deps = [ "../../../../third_party/mDNSResponder:core" ]
 }

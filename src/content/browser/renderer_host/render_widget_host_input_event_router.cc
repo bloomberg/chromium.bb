@@ -9,11 +9,12 @@
 #include <memory>
 #include <vector>
 
+#include "base/containers/cxx20_erase.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/trace_event/trace_event.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/hit_test/hit_test_region_list.h"
 #include "components/viz/common/quads/surface_draw_quad.h"
@@ -27,6 +28,7 @@
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "ui/base/layout.h"
+#include "ui/compositor/compositor.h"
 #include "ui/gfx/geometry/dip_util.h"
 
 namespace {
@@ -365,7 +367,7 @@ void RenderWidgetHostInputEventRouter::OnRenderWidgetHostViewBaseDestroyed(
   if (view == mouse_capture_target_)
     mouse_capture_target_ = nullptr;
 
-  if (view == touchscreen_gesture_target_)
+  if (view == touchscreen_gesture_target_.get())
     SetTouchscreenGestureTarget(nullptr);
 
   if (view == touchpad_gesture_target_)
@@ -641,6 +643,14 @@ void RenderWidgetHostInputEventRouter::DispatchMouseEvent(
     mouse_capture_target_ = target;
   }
 
+  if (target) {
+    ui::EventType type = mouse_event.GetTypeAsUiEventType();
+    bool hovering =
+        (type ^ ui::ET_MOUSE_DRAGGED) && (type ^ ui::ET_MOUSE_PRESSED);
+    ForwardDelegatedInkPoint(target, root_view, mouse_event, mouse_event,
+                             hovering);
+  }
+
   DCHECK(target_location.has_value());
   blink::WebMouseEvent event = mouse_event;
   event.SetPositionInWidget(target_location->x(), target_location->y());
@@ -832,13 +842,9 @@ void RenderWidgetHostInputEventRouter::DispatchTouchEvent(
     if (RenderWidgetHostViewBase::IsValidRWHVBPointer(target) != 1 &&
         !has_dumped_) {
       has_dumped_ = true;
-      auto* invalid_rwhvb_ptr_string = base::debug::AllocateCrashKeyString(
-          "invalid_rwhvb_pointer_status", base::debug::CrashKeySize::Size32);
-      base::debug::ScopedCrashKeyString key(
-          invalid_rwhvb_ptr_string,
-          base::StringPrintf(
-              "Invalid RWHVB ptr: status = %d",
-              RenderWidgetHostViewBase::IsValidRWHVBPointer(target)));
+      SCOPED_CRASH_KEY_NUMBER(
+          "DispatchTouchEvent", "ptr_status",
+          RenderWidgetHostViewBase::IsValidRWHVBPointer(target));
       base::debug::DumpWithoutCrashing();
     }
     touch_target_ = target;
@@ -867,6 +873,11 @@ void RenderWidgetHostInputEventRouter::DispatchTouchEvent(
                     "View.";
     touch_target_ = nullptr;
     base::debug::DumpWithoutCrashing();
+  }
+
+  if (touch_target_) {
+    ForwardDelegatedInkPoint(touch_target_, root_view, touch_event,
+                             touch_event.touches[0], touch_event.hovering);
   }
 
   TouchEventAckQueue::TouchEventSource event_source =
@@ -1133,7 +1144,7 @@ bool RenderWidgetHostInputEventRouter::BubbleScrollEvent(
     // If target_view has unrelated gesture events in progress, do
     // not proceed. This could cause confusion between independent
     // scrolls.
-    if (target_view == touchscreen_gesture_target_ ||
+    if (target_view == touchscreen_gesture_target_.get() ||
         target_view == touchpad_gesture_target_ ||
         target_view == touch_target_) {
       return false;
@@ -1421,6 +1432,8 @@ RenderWidgetHostInputEventRouter::FindTouchscreenGestureEventTarget(
 
 bool RenderWidgetHostInputEventRouter::IsViewInMap(
     const RenderWidgetHostViewBase* view) const {
+  if (!view)
+    return false;
   DCHECK(!is_registered(view->GetFrameSinkId()) ||
          owner_map_.find(view->GetFrameSinkId())->second.get() == view);
   return is_registered(view->GetFrameSinkId());
@@ -1462,11 +1475,12 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
     const absl::optional<gfx::PointF>& target_location) {
   if (gesture_event.GetType() ==
       blink::WebInputEvent::Type::kGesturePinchBegin) {
-    if (root_view == touchscreen_gesture_target_) {
+    if (root_view == touchscreen_gesture_target_.get()) {
       // If the root view is the current gesture target, there is no need to
       // wrap the pinch events ourselves.
       touchscreen_pinch_state_.DidStartPinchInRoot();
-    } else if (IsPinchCurrentlyAllowedInTarget(touchscreen_gesture_target_)) {
+    } else if (IsPinchCurrentlyAllowedInTarget(
+                   touchscreen_gesture_target_.get())) {
       // If pinch is not allowed in the child, don't do any diverting of the
       // pinch events to the root. Have the events go to the child whose
       // TouchActionFilter will discard them.
@@ -1578,7 +1592,7 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
 
   // If we set a target and it's not in the map, we won't get notified if the
   // target goes away, so drop the target and the resulting events.
-  if (touchscreen_gesture_target_ && !IsViewInMap(touchscreen_gesture_target_))
+  if (!IsViewInMap(touchscreen_gesture_target_.get()))
     SetTouchscreenGestureTarget(nullptr);
 
   if (!touchscreen_gesture_target_) {
@@ -1614,7 +1628,7 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
   touchscreen_gesture_target_->ProcessGestureEvent(event, latency);
 
   if (gesture_event.GetType() == blink::WebInputEvent::Type::kGestureFlingStart)
-    last_fling_start_target_ = touchscreen_gesture_target_;
+    last_fling_start_target_ = touchscreen_gesture_target_.get();
 
   // If we have one of the following events, then the user has lifted their
   // last finger.
@@ -1829,7 +1843,7 @@ void RenderWidgetHostInputEventRouter::SetEventsBeingFlushed(
 void RenderWidgetHostInputEventRouter::SetTouchscreenGestureTarget(
     RenderWidgetHostViewBase* target,
     bool moved_recently) {
-  touchscreen_gesture_target_ = target;
+  touchscreen_gesture_target_ = target ? target->GetWeakPtr() : nullptr;
   touchscreen_gesture_target_moved_recently_ = moved_recently;
 }
 
@@ -1941,6 +1955,8 @@ void RenderWidgetHostInputEventRouter::SetCursor(const WebCursor& cursor) {
 
   last_device_scale_factor_ =
       last_mouse_move_root_view_->GetCurrentDeviceScaleFactor();
+  if (touch_emulator_)
+    touch_emulator_->SetDeviceScaleFactor(last_device_scale_factor_);
   if (auto* cursor_manager = last_mouse_move_root_view_->GetCursorManager()) {
     for (auto it : owner_map_) {
       if (it.second)
@@ -1988,6 +2004,73 @@ void RenderWidgetHostInputEventRouter::SetMouseCaptureTarget(
 void RenderWidgetHostInputEventRouter::SetAutoScrollInProgress(
     bool is_autoscroll_in_progress) {
   event_targeter_->SetIsAutoScrollInProgress(is_autoscroll_in_progress);
+}
+
+bool IsMoveEvent(ui::EventType type) {
+  return type == ui::ET_MOUSE_MOVED || type == ui::ET_MOUSE_DRAGGED ||
+         type == ui::ET_TOUCH_MOVED;
+}
+
+void RenderWidgetHostInputEventRouter::ForwardDelegatedInkPoint(
+    RenderWidgetHostViewBase* target_view,
+    RenderWidgetHostViewBase* root_view,
+    const blink::WebInputEvent& input_event,
+    const blink::WebPointerProperties& pointer_properties,
+    bool hovering) {
+  const absl::optional<cc::DelegatedInkBrowserMetadata>& metadata =
+      target_view->host()
+          ->render_frame_metadata_provider()
+          ->LastRenderFrameMetadata()
+          .delegated_ink_metadata;
+
+  if (IsMoveEvent(input_event.GetTypeAsUiEventType()) && metadata &&
+      hovering == metadata.value().delegated_ink_is_hovering) {
+    if (!delegated_ink_point_renderer_.is_bound()) {
+      ui::Compositor* compositor = target_view->GetCompositor();
+
+      // The remote can't be bound if the compositor is null, so bail if that
+      // is the case so we don't crash by trying to use an unbound remote.
+      if (!compositor)
+        return;
+
+      TRACE_EVENT_INSTANT0("input",
+                           "Binding mojo interface for delegated ink points.",
+                           TRACE_EVENT_SCOPE_THREAD);
+      compositor->SetDelegatedInkPointRenderer(
+          delegated_ink_point_renderer_.BindNewPipeAndPassReceiver());
+      delegated_ink_point_renderer_.reset_on_disconnect();
+    }
+
+    gfx::PointF position = pointer_properties.PositionInWidget();
+    root_view->TransformPointToRootSurface(&position);
+    position.Scale(target_view->GetDeviceScaleFactor());
+
+    gfx::DelegatedInkPoint delegated_ink_point(
+        position, input_event.TimeStamp(), pointer_properties.id);
+    TRACE_EVENT_INSTANT1("input",
+                         "Forwarding delegated ink point from browser.",
+                         TRACE_EVENT_SCOPE_THREAD, "delegated point",
+                         delegated_ink_point.ToString());
+
+    // Calling this will result in IPC calls to get |delegated_ink_point| to
+    // viz. The decision to do this here was made with the understanding that
+    // the IPC overhead will result in a minor increase in latency for getting
+    // this event to the renderer. However, by sending it here, the event is
+    // given the greatest possible chance to make it to viz before
+    // DrawAndSwap() is called, allowing more points to be drawn as part of
+    // the delegated ink trail, and thus reducing user perceived latency.
+    delegated_ink_point_renderer_->StoreDelegatedInkPoint(delegated_ink_point);
+    ended_delegated_ink_trail_ = false;
+  } else if (delegated_ink_point_renderer_.is_bound() &&
+             !ended_delegated_ink_trail_) {
+    // Let viz know that the most recent point it received from us is probably
+    // the last point the user is inking, so it shouldn't predict anything
+    // beyond it.
+    TRACE_EVENT_INSTANT0("input", "Delegated ink trail ended",
+                         TRACE_EVENT_SCOPE_THREAD);
+    delegated_ink_point_renderer_->ResetPrediction();
+    ended_delegated_ink_trail_ = true;
+  }
 }
 
 }  // namespace content

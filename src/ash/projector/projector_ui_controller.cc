@@ -4,13 +4,16 @@
 
 #include "ash/projector/projector_ui_controller.h"
 
-#include "ash/accessibility/magnifier/partial_magnification_controller.h"
+#include "ash/accessibility/magnifier/partial_magnifier_controller.h"
 #include "ash/projector/projector_controller_impl.h"
+#include "ash/projector/projector_metrics.h"
 #include "ash/projector/ui/projector_bar_view.h"
 #include "ash/public/cpp/toast_data.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/toast/toast_manager_impl.h"
+#include "ash/wm/work_area_insets.h"
 #include "base/callback_helpers.h"
 #include "components/live_caption/views/caption_bubble.h"
 #include "components/live_caption/views/caption_bubble_model.h"
@@ -63,10 +66,29 @@ void EnableMarker(bool enabled) {
 }
 
 void EnableMagnifier(bool enabled) {
-  auto* magnifier_controller = Shell::Get()->partial_magnification_controller();
+  auto* magnifier_controller = Shell::Get()->partial_magnifier_controller();
   DCHECK(magnifier_controller);
   magnifier_controller->SetEnabled(enabled);
   magnifier_controller->set_allow_mouse_following(enabled);
+}
+
+ProjectorMarkerColor GetMarkerColor(SkColor color) {
+  switch (color) {
+    case SK_ColorBLACK:
+      return ProjectorMarkerColor::kBlack;
+    case SK_ColorWHITE:
+      return ProjectorMarkerColor::kWhite;
+    case SK_ColorBLUE:
+      return ProjectorMarkerColor::kBlue;
+    default:
+      NOTREACHED();
+      return ProjectorMarkerColor::kMaxValue;
+  }
+}
+
+gfx::Rect GetScreenBounds() {
+  return WorkAreaInsets::ForWindow(Shell::GetRootWindowForNewWindows())
+      ->user_work_area_bounds();
 }
 
 }  // namespace
@@ -78,9 +100,8 @@ class ProjectorUiController::CaptionBubbleController
  public:
   explicit CaptionBubbleController(ProjectorUiController* controller)
       : controller_(controller) {
-    aura::Window* root_window = Shell::Get()->GetRootWindowForNewWindows();
     caption_bubble_model_ = std::make_unique<captions::CaptionBubbleModel>(
-        root_window->GetBoundsInScreen(), base::NullCallback());
+        GetScreenBounds(), base::NullCallback());
 
     auto* caption_bubble = new captions::CaptionBubble(
         base::NullCallback(), /* hide_on_inactivity= */ false);
@@ -90,6 +111,13 @@ class ProjectorUiController::CaptionBubbleController
     caption_bubble_widget_->AddObserver(this);
     AddExcludedWindowToFastInkController(
         caption_bubble_widget_->GetNativeWindow());
+    // Use Picture-in-Picture (PIP) window management logic for caption bubble
+    // so that
+    // a) it avoids collision with system UI such as virtual keyboards, quick
+    // settings etc.
+    // b) it is draggable in tablet mode as well.
+    caption_bubble_widget_->GetNativeWindow()->SetProperty(
+        ash::kWindowPipTypeKey, true);
   }
 
   CaptionBubbleController(const CaptionBubbleController&) = delete;
@@ -150,10 +178,10 @@ ProjectorUiController::ProjectorUiController(
   DCHECK(marker_controller);
   marker_controller_observation_.Observe(marker_controller);
 
-  auto* partial_magnification_controller =
-      Shell::Get()->partial_magnification_controller();
-  DCHECK(partial_magnification_controller);
-  partial_magnification_observation_.Observe(partial_magnification_controller);
+  auto* partial_magnifier_controller =
+      Shell::Get()->partial_magnifier_controller();
+  DCHECK(partial_magnifier_controller);
+  partial_magnification_observation_.Observe(partial_magnifier_controller);
 
   caption_bubble_ =
       std::make_unique<ProjectorUiController::CaptionBubbleController>(this);
@@ -176,6 +204,8 @@ void ProjectorUiController::ShowToolbar() {
 
   projector_bar_widget_->ShowInactive();
   model_.SetBarEnabled(true);
+
+  RecordToolbarMetrics(ProjectorToolbar::kToolbarOpened);
 }
 
 void ProjectorUiController::CloseToolbar() {
@@ -188,38 +218,52 @@ void ProjectorUiController::CloseToolbar() {
   projector_bar_widget_->Close();
   projector_bar_view_ = nullptr;
   model_.SetBarEnabled(false);
+
+  RecordToolbarMetrics(ProjectorToolbar::kToolbarClosed);
 }
 
 void ProjectorUiController::SetCaptionBubbleState(bool enabled) {
   if (enabled) {
     caption_bubble_->Open();
-    return;
+  } else {
+    caption_bubble_->Close();
   }
-
-  caption_bubble_->Close();
+  RecordToolbarMetrics(enabled ? ProjectorToolbar::kStartClosedCaptions
+                               : ProjectorToolbar::kStopClosedCaptions);
 }
 
 void ProjectorUiController::OnKeyIdeaMarked() {
   ShowToast(kMarkedKeyIdeaToastId, IDS_ASH_PROJECTOR_KEY_IDEA_MARKED,
             kToastDuration);
+  RecordToolbarMetrics(ProjectorToolbar::kKeyIdea);
 }
 
 void ProjectorUiController::OnLaserPointerPressed() {
   auto* laser_pointer_controller = Shell::Get()->laser_pointer_controller();
   DCHECK(laser_pointer_controller);
   EnableLaserPointer(!laser_pointer_controller->is_enabled());
+  RecordToolbarMetrics(ProjectorToolbar::kLaserPointer);
 }
 
 void ProjectorUiController::OnMarkerPressed() {
   auto* marker_controller = MarkerController::Get();
   DCHECK(marker_controller);
   EnableMarker(!marker_controller->is_enabled());
+  RecordToolbarMetrics(ProjectorToolbar::kMarkerTool);
 }
 
 void ProjectorUiController::OnClearAllMarkersPressed() {
   auto* marker_controller = MarkerController::Get();
   DCHECK(marker_controller);
   marker_controller->Clear();
+  RecordToolbarMetrics(ProjectorToolbar::kClearAllMarkers);
+}
+
+void ProjectorUiController::OnUndoPressed() {
+  auto* marker_controller = MarkerController::Get();
+  DCHECK(marker_controller);
+  marker_controller->UndoLastStroke();
+  RecordToolbarMetrics(ProjectorToolbar::kUndo);
 }
 
 void ProjectorUiController::OnCaptionBubbleModelStateChanged(bool opened) {
@@ -238,6 +282,8 @@ void ProjectorUiController::OnSelfieCamPressed(bool enabled) {
   // selfie cam should show instead.
   if (projector_bar_view_)
     projector_bar_view_->OnSelfieCamStateChanged(enabled);
+  RecordToolbarMetrics(enabled ? ProjectorToolbar::kStartSelfieCamera
+                               : ProjectorToolbar::kStopSelfieCamera);
 }
 
 void ProjectorUiController::OnRecordingStateChanged(bool started) {
@@ -248,12 +294,15 @@ void ProjectorUiController::OnRecordingStateChanged(bool started) {
 
 void ProjectorUiController::OnMagnifierButtonPressed(bool enabled) {
   EnableMagnifier(enabled);
+  RecordToolbarMetrics(enabled ? ProjectorToolbar::kStartMagnifier
+                               : ProjectorToolbar::kStopMagnifier);
 }
 
 void ProjectorUiController::OnChangeMarkerColorPressed(SkColor new_color) {
   auto* marker_controller = MarkerController::Get();
   DCHECK(marker_controller);
   marker_controller->ChangeColor(new_color);
+  RecordMarkerColorMetrics(GetMarkerColor(new_color));
 }
 
 bool ProjectorUiController::IsToolbarVisible() const {

@@ -71,7 +71,7 @@ class AutocompleteProviderClient {
 
   virtual scoped_refptr<network::SharedURLLoaderFactory>
   GetURLLoaderFactory() = 0;
-  virtual PrefService* GetPrefs() = 0;
+  virtual PrefService* GetPrefs() const = 0;
   virtual PrefService* GetLocalState() = 0;
   virtual const AutocompleteSchemeClassifier& GetSchemeClassifier() const = 0;
   virtual AutocompleteClassifier* GetAutocompleteClassifier() = 0;
@@ -129,6 +129,9 @@ class AutocompleteProviderClient {
 
   virtual bool IsOffTheRecord() const = 0;
   virtual bool SearchSuggestEnabled() const = 0;
+
+  // True for almost all users except ones with a specific enterprise policy.
+  virtual bool AllowDeletingBrowserHistory() const;
 
   // Returns whether personalized URL data collection is enabled.  I.e.,
   // the user has consented to have URLs recorded keyed by their Google account.

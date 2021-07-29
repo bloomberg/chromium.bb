@@ -26,17 +26,11 @@
 
 #include "third_party/blink/renderer/core/css/css_property_id_templates.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
-#include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/loader/fetch/cross_origin_attribute_value.h"
-#include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
-#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
 
-class CSSImageGeneratorValue;
-class CSSImageSetValue;
-class CSSImageValue;
 class CSSValue;
 class ComputedStyle;
 class Element;
@@ -45,9 +39,7 @@ class SVGResource;
 class StyleImage;
 
 namespace cssvalue {
-
 class CSSURIValue;
-
 }
 
 // Holds information about resources, requested by stylesheets.
@@ -63,8 +55,6 @@ class ElementStyleResources {
   ElementStyleResources& operator=(const ElementStyleResources&) = delete;
 
   StyleImage* GetStyleImage(CSSPropertyID, const CSSValue&);
-  StyleImage* CachedOrPendingFromValue(CSSPropertyID, const CSSImageValue&);
-  StyleImage* SetOrPendingFromValue(CSSPropertyID, const CSSImageSetValue&);
 
   SVGResource* GetSVGResourceFromValue(CSSPropertyID,
                                        const cssvalue::CSSURIValue&);
@@ -72,17 +62,11 @@ class ElementStyleResources {
   void LoadPendingResources(ComputedStyle&);
 
  private:
-  StyleImage* GeneratedOrPendingFromValue(CSSPropertyID,
-                                          const CSSImageGeneratorValue&);
+  bool IsPending(const CSSValue&) const;
+  StyleImage* CachedStyleImage(const CSSValue&) const;
 
   void LoadPendingSVGResources(ComputedStyle&);
   void LoadPendingImages(ComputedStyle&);
-
-  StyleImage* LoadPendingImage(
-      ComputedStyle&,
-      CSSValue&,
-      FetchParameters::ImageRequestBehavior = FetchParameters::kNone,
-      CrossOriginAttributeValue = kCrossOriginAttributeNotSet);
 
   Element& element_;
   HashSet<CSSPropertyID> pending_image_properties_;

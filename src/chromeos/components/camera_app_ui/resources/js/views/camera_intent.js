@@ -10,6 +10,7 @@ import {
 } from '../device/constraints_preferrer.js';
 // eslint-disable-next-line no-unused-vars
 import {DeviceInfoUpdater} from '../device/device_info_updater.js';
+import {I18nString} from '../i18n_string.js';
 // eslint-disable-next-line no-unused-vars
 import {Intent} from '../intent.js';
 import * as metrics from '../metrics.js';
@@ -113,7 +114,7 @@ export class CameraIntent extends Camera {
     try {
       await this.resultSaver_.savePhoto(result.blob, name);
     } catch (e) {
-      toast.show('error_msg_save_file_failed');
+      toast.show(I18nString.ERROR_MSG_SAVE_FILE_FAILED);
       throw e;
     }
   }
@@ -126,7 +127,7 @@ export class CameraIntent extends Camera {
     try {
       await this.resultSaver_.finishSaveVideo(result.videoSaver);
     } catch (e) {
-      toast.show('error_msg_save_file_failed');
+      toast.show(I18nString.ERROR_MSG_SAVE_FILE_FAILED);
       throw e;
     }
   }

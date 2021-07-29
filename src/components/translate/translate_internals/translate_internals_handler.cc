@@ -175,12 +175,12 @@ void TranslateInternalsHandler::OnRemovePrefItem(const base::ListValue* args) {
     if (!args->GetString(1, &language))
       return;
     translate_prefs->UnblockLanguage(language);
-  } else if (pref_name == "site_blacklist") {
+  } else if (pref_name == "site_blocklist") {
     std::string site;
     if (!args->GetString(1, &site))
       return;
     translate_prefs->RemoveSiteFromNeverPromptList(site);
-  } else if (pref_name == "whitelists") {
+  } else if (pref_name == "allowlists") {
     std::string from, to;
     if (!args->GetString(1, &from))
       return;
@@ -251,7 +251,8 @@ void TranslateInternalsHandler::SendPrefsToJs() {
   for (const char* key : keys) {
     const PrefService::Preference* pref = prefs->FindPreference(key);
     if (pref)
-      dict.SetKey(key, pref->GetValue()->Clone());
+      dict.SetKey(translate::TranslatePrefs::MapPreferenceName(key),
+                  pref->GetValue()->Clone());
   }
 
   SendMessageToJs("prefsUpdated", dict);
@@ -268,12 +269,12 @@ void TranslateInternalsHandler::SendSupportedLanguagesToJs() {
   base::Time last_updated =
       translate::TranslateDownloadManager::GetSupportedLanguagesLastUpdated();
 
-  auto languages_list = std::make_unique<base::ListValue>();
+  base::ListValue languages_list;
   for (const std::string& lang : languages)
-    languages_list->AppendString(lang);
+    languages_list.AppendString(lang);
 
   base::DictionaryValue dict;
-  dict.Set("languages", std::move(languages_list));
+  dict.SetKey("languages", std::move(languages_list));
   dict.SetDouble("last_updated", last_updated.ToJsTime());
   SendMessageToJs("supportedLanguagesUpdated", dict);
 }

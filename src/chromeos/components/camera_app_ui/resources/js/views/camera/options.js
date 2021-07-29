@@ -8,11 +8,11 @@ import {Camera3DeviceInfo} from '../../device/camera3_device_info.js';
 // eslint-disable-next-line no-unused-vars
 import {DeviceInfoUpdater} from '../../device/device_info_updater.js';
 import * as dom from '../../dom.js';
-import {sendBarcodeEnabledEvent} from '../../metrics.js';
+import {I18nString} from '../../i18n_string.js';
 import * as localStorage from '../../models/local_storage.js';
 import * as nav from '../../nav.js';
 import * as state from '../../state.js';
-import {Facing, Mode, PerfEvent, ViewName} from '../../type.js';
+import {Facing, PerfEvent, ViewName} from '../../type.js';
 import * as util from '../../util.js';
 
 /**
@@ -54,13 +54,6 @@ export class Options {
     this.toggleMirror_ = dom.get('#toggle-mirror', HTMLInputElement);
 
     /**
-     * @type {!HTMLInputElement}
-     * @private
-     * @const
-     */
-    this.toggleBarcode_ = dom.get('#toggle-barcode', HTMLInputElement);
-
-    /**
      * Device id of the camera device currently used or selected.
      * @type {?string}
      * @private
@@ -97,20 +90,12 @@ export class Options {
 
     this.toggleMic_.addEventListener('click', () => this.updateAudioByMic_());
     this.toggleMirror_.addEventListener('click', () => this.saveMirroring_());
-    this.toggleBarcode_.addEventListener('click', () => this.updateBarcode_());
-
-    state.addObserver(Mode.PHOTO, (inPhotoMode) => {
-      if (!inPhotoMode) {
-        this.toggleBarcode_.checked = false;
-        this.updateBarcode_();
-      }
-    });
 
     util.bindElementAriaLabelWithState({
       element: dom.get('#toggle-timer', Element),
       state: state.State.TIMER_3SEC,
-      onLabel: 'toggle_timer_3s_button',
-      offLabel: 'toggle_timer_10s_button',
+      onLabel: I18nString.TOGGLE_TIMER_3S_BUTTON,
+      offLabel: I18nString.TOGGLE_TIMER_10S_BUTTON,
     });
 
     // Restore saved mirroring states per video device.
@@ -210,17 +195,6 @@ export class Options {
   }
 
   /**
-   * Enables/disables barcode scanning according to the barcode option.
-   * @private
-   */
-  updateBarcode_() {
-    state.set(state.State.SCAN_BARCODE, this.toggleBarcode_.checked);
-    if (this.toggleBarcode_.checked) {
-      sendBarcodeEnabledEvent();
-    }
-  }
-
-  /**
    * Gets the video device ids sorted by preference.
    * @return {!Promise<!Array<?string>>} May contain null for fake cameras.
    */
@@ -258,8 +232,8 @@ export class Options {
     });
     // Prepended 'null' deviceId means there is no facing information to sort
     // device IDs and prefer the default one. Add it only when the app is
-    // launched (no video-device-id set).
-    if (!facings && this.videoDeviceId_ === null) {
+    // launched (no video-device-id set) and there is at least one device.
+    if (!facings && this.videoDeviceId_ === null && sorted.length > 0) {
       sorted.unshift(null);
     }
     return sorted;

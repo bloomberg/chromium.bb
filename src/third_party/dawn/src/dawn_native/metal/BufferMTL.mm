@@ -39,14 +39,12 @@ namespace dawn_native { namespace metal {
 
     MaybeError Buffer::Initialize(bool mappedAtCreation) {
         MTLResourceOptions storageMode;
-        if (GetUsage() & (wgpu::BufferUsage::MapRead | wgpu::BufferUsage::MapWrite)) {
+        if (GetUsage() & kMappableBufferUsages) {
             storageMode = MTLResourceStorageModeShared;
         } else {
             storageMode = MTLResourceStorageModePrivate;
         }
 
-        // TODO(cwallez@chromium.org): Have a global "zero" buffer that can do everything instead
-        // of creating a new 4-byte buffer?
         if (GetSize() > std::numeric_limits<NSUInteger>::max()) {
             return DAWN_OUT_OF_MEMORY_ERROR("Buffer allocation is too large");
         }
@@ -55,7 +53,8 @@ namespace dawn_native { namespace metal {
         // Metal validation layer requires the size of uniform buffer and storage buffer to be no
         // less than the size of the buffer block defined in shader, and the overall size of the
         // buffer must be aligned to the largest alignment of its members.
-        if (GetUsage() & (wgpu::BufferUsage::Uniform | wgpu::BufferUsage::Storage)) {
+        if (GetUsage() &
+            (wgpu::BufferUsage::Uniform | wgpu::BufferUsage::Storage | kInternalStorageBuffer)) {
             if (currentSize >
                 std::numeric_limits<NSUInteger>::max() - kMinUniformOrStorageBufferAlignment) {
                 // Alignment would overlow.
@@ -113,7 +112,7 @@ namespace dawn_native { namespace metal {
 
     bool Buffer::IsCPUWritableAtCreation() const {
         // TODO(enga): Handle CPU-visible memory on UMA
-        return (GetUsage() & (wgpu::BufferUsage::MapRead | wgpu::BufferUsage::MapWrite)) != 0;
+        return GetUsage() & kMappableBufferUsages;
     }
 
     MaybeError Buffer::MapAtCreationImpl() {

@@ -81,56 +81,48 @@ void LanguageDetectionController::StartLanguageDetection() {
   web_frame->CallJavaScriptFunction("languageDetection.detectLanguage", {});
 }
 
-void LanguageDetectionController::OnTextCaptured(
-    const base::DictionaryValue& command,
-    const GURL& url,
-    bool user_is_interacting,
-    web::WebFrame* sender_frame) {
+void LanguageDetectionController::OnTextCaptured(const base::Value& command,
+                                                 const GURL& url,
+                                                 bool user_is_interacting,
+                                                 web::WebFrame* sender_frame) {
   if (!sender_frame->IsMainFrame()) {
     // Translate is only supported on main frame.
     return;
   }
-  std::string textCapturedCommand;
-  if (!command.GetString("command", &textCapturedCommand) ||
-      textCapturedCommand != "languageDetection.textCaptured" ||
-      !command.HasKey("translationAllowed")) {
-    NOTREACHED();
+  const std::string* text_captured_command = command.FindStringKey("command");
+  if (!text_captured_command ||
+      *text_captured_command != "languageDetection.textCaptured") {
     return;
   }
-  bool translation_allowed = false;
-  command.GetBoolean("translationAllowed", &translation_allowed);
-  if (!translation_allowed) {
-    // Translation not allowed by the page. Done processing.
-    return;
-  }
-  if (!command.HasKey("captureTextTime") || !command.HasKey("htmlLang") ||
-      !command.HasKey("httpContentLanguage")) {
-    NOTREACHED();
+  absl::optional<bool> has_notranslate = command.FindBoolKey("hasNoTranslate");
+  absl::optional<double> capture_text_time =
+      command.FindDoubleKey("captureTextTime");
+  const std::string* html_lang = command.FindStringKey("htmlLang");
+  const std::string* http_content_language =
+      command.FindStringKey("httpContentLanguage");
+  if (!has_notranslate.has_value() || !capture_text_time.has_value() ||
+      !html_lang || !http_content_language) {
     return;
   }
 
-  double capture_text_time = 0;
-  command.GetDouble("captureTextTime", &capture_text_time);
   UMA_HISTOGRAM_TIMES(kTranslateCaptureText,
-                      base::TimeDelta::FromMillisecondsD(capture_text_time));
-  std::string html_lang;
-  command.GetString("htmlLang", &html_lang);
-  std::string http_content_language;
-  command.GetString("httpContentLanguage", &http_content_language);
+                      base::TimeDelta::FromMillisecondsD(*capture_text_time));
+
   // If there is no language defined in httpEquiv, use the HTTP header.
-  if (http_content_language.empty())
-    http_content_language = content_language_header_;
+  if (http_content_language->empty())
+    http_content_language = &content_language_header_;
 
   sender_frame->CallJavaScriptFunction(
       "languageDetection.retrieveBufferedTextContent", {},
       base::BindRepeating(&LanguageDetectionController::OnTextRetrieved,
-                          weak_method_factory_.GetWeakPtr(),
-                          http_content_language, html_lang, url),
+                          weak_method_factory_.GetWeakPtr(), *has_notranslate,
+                          *http_content_language, *html_lang, url),
       base::TimeDelta::FromMilliseconds(
           web::kJavaScriptFunctionCallDefaultTimeout));
 }
 
 void LanguageDetectionController::OnTextRetrieved(
+    const bool has_notranslate,
     const std::string& http_content_language,
     const std::string& html_lang,
     const GURL& url,
@@ -154,6 +146,7 @@ void LanguageDetectionController::OnTextRetrieved(
   LanguageDetectionDetails details;
   details.time = base::Time::Now();
   details.url = url;
+  details.has_notranslate = has_notranslate;
   details.content_language = http_content_language;
   details.model_detected_language = model_detected_language;
   details.is_model_reliable = is_model_reliable;

@@ -29,7 +29,7 @@ class VertexStateTest : public ValidationTest {
             }
         )");
 
-        utils::ComboRenderPipelineDescriptor2 descriptor;
+        utils::ComboRenderPipelineDescriptor descriptor;
         descriptor.vertex.module = vsModule;
         descriptor.vertex.bufferCount = state.vertexBufferCount;
         descriptor.vertex.buffers = &state.cVertexBuffers[0];
@@ -37,9 +37,9 @@ class VertexStateTest : public ValidationTest {
         descriptor.cTargets[0].format = wgpu::TextureFormat::RGBA8Unorm;
 
         if (!success) {
-            ASSERT_DEVICE_ERROR(device.CreateRenderPipeline2(&descriptor));
+            ASSERT_DEVICE_ERROR(device.CreateRenderPipeline(&descriptor));
         } else {
-            device.CreateRenderPipeline2(&descriptor);
+            device.CreateRenderPipeline(&descriptor);
         }
     }
 
@@ -199,12 +199,12 @@ TEST_F(VertexStateTest, SetInputStrideOutOfBounds) {
     // Control case, setting max input arrayStride
     utils::ComboVertexStateDescriptor state;
     state.vertexBufferCount = 1;
-    state.cVertexBuffers[0].arrayStride = kMaxVertexBufferStride;
+    state.cVertexBuffers[0].arrayStride = kMaxVertexBufferArrayStride;
     state.cVertexBuffers[0].attributeCount = 1;
     CreatePipeline(true, state, kDummyVertexShader);
 
     // Test input arrayStride OOB
-    state.cVertexBuffers[0].arrayStride = kMaxVertexBufferStride + 1;
+    state.cVertexBuffers[0].arrayStride = kMaxVertexBufferArrayStride + 1;
     CreatePipeline(false, state, kDummyVertexShader);
 }
 
@@ -283,11 +283,11 @@ TEST_F(VertexStateTest, SetAttributeOffsetOutOfBounds) {
     utils::ComboVertexStateDescriptor state;
     state.vertexBufferCount = 1;
     state.cVertexBuffers[0].attributeCount = 1;
-    state.cAttributes[0].offset = kMaxVertexBufferStride - sizeof(wgpu::VertexFormat::Float32);
+    state.cAttributes[0].offset = kMaxVertexBufferArrayStride - sizeof(wgpu::VertexFormat::Float32);
     CreatePipeline(true, state, kDummyVertexShader);
 
     // Test attribute offset out of bounds
-    state.cAttributes[0].offset = kMaxVertexBufferStride - 1;
+    state.cAttributes[0].offset = kMaxVertexBufferArrayStride - 1;
     CreatePipeline(false, state, kDummyVertexShader);
 }
 

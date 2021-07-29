@@ -75,15 +75,23 @@ cast_source_set("web_preferences") {
   ]
 }
 
+cast_source_set("named_message_port_connector_cast") {
+  sources = [
+    "named_message_port_connector_cast.cc",
+    "named_message_port_connector_cast.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chromecast/browser:public",
+    "//components/cast/message_port:message_port_cast",
+    "//components/cast/named_message_port_connector",
+    "//components/on_load_script_injector/browser",
+  ]
+}
+
 group("browser") {
   public_deps = [ ":browser_base" ]
-
-  if (chromecast_branding == "public") {
-    public_deps += [
-      ":simple_client",
-      ":simple_main_parts",
-    ]
-  }
 }
 
 cast_source_set("browser_base") {
@@ -121,6 +129,8 @@ cast_source_set("browser_base") {
     "cast_overlay_manifests.h",
     "cast_permission_manager.cc",
     "cast_permission_manager.h",
+    "cast_permission_user_data.cc",
+    "cast_permission_user_data.h",
     "cast_quota_permission_context.cc",
     "cast_quota_permission_context.h",
     "cast_renderer_block_data.cc",
@@ -188,6 +198,7 @@ cast_source_set("browser_base") {
 
   deps = [
     ":browser_buildflags",
+    ":named_message_port_connector_cast",
     ":web_preferences",
     "//base",
     "//base:i18n",
@@ -223,6 +234,7 @@ cast_source_set("browser_base") {
     "//chromecast/net",
     "//chromecast/net:connectivity_checker",
     "//chromecast/service",
+    "//components/cast/message_port:message_port_cast",
     "//components/cdm/browser",
     "//components/download/public/common:public",
     "//components/media_control/browser",
@@ -334,7 +346,7 @@ cast_source_set("browser_base") {
   }
 
   if (!is_fuchsia) {
-    # TODO(crbug.com/753619): Enable crash reporting on Fuchsia.
+    # TODO(crbug.com/1226159): Complete crash reporting integration on Fuchsia.
     deps += [
       "//components/crash/content/browser",
       "//components/crash/core/app",
@@ -360,14 +372,10 @@ cast_source_set("browser_base") {
 
   if (enable_chromecast_extensions) {
     sources += [
-      "cast_extension_host.cc",
-      "cast_extension_host.h",
       "cast_extension_message_filter.cc",
       "cast_extension_message_filter.h",
       "cast_extension_url_loader_factory.cc",
       "cast_extension_url_loader_factory.h",
-      "extension_page.cc",
-      "extension_page.h",
       "extensions/api/accessibility_private/accessibility_extension_api.cc",
       "extensions/api/accessibility_private/accessibility_extension_api.h",
       "extensions/api/automation_internal/chromecast_automation_internal_api_delegate.cc",
@@ -560,6 +568,7 @@ cast_source_set("public") {
 
   deps = [
     "//base",
+    "//chromecast/bindings/public/mojom",
     "//chromecast/graphics",
     "//chromecast/ui:back_gesture_router",
     "//chromecast/ui/mojom",
@@ -659,15 +668,19 @@ cast_source_set("unittests") {
 
   deps = [
     ":browser",
+    ":test_support",
     "//base",
     "//base/test:test_support",
     "//chromecast/base",
+    "//chromecast/bindings/public/mojom",
+    "//components/on_load_script_injector/browser",
     "//content/public/browser",
     "//content/test:test_support",
     "//net:test_support",
     "//services/network:test_support",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/blink/public/common",
     "//ui/base",
     "//ui/base:test_support",
     "//ui/events/devices:devices",

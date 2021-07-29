@@ -20,6 +20,7 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/controls/button/label_button_border.h"
@@ -46,25 +47,27 @@ class Checkbox::FocusRingHighlightPathGenerator
   }
 };
 
-Checkbox::Checkbox(const std::u16string& label, PressedCallback callback)
-    : LabelButton(std::move(callback), label) {
+Checkbox::Checkbox(const std::u16string& label,
+                   PressedCallback callback,
+                   int button_context)
+    : LabelButton(std::move(callback), label, button_context) {
   SetImageCentered(false);
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   SetRequestFocusOnPress(false);
-  ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
+  InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
   SetHasInkDropActionOnClick(true);
-  views::InkDrop::UseInkDropWithoutAutoHighlight(ink_drop(),
-                                                 /*highlight_on_hover=*/false);
-  ink_drop()->SetCreateRippleCallback(base::BindRepeating(
+  InkDrop::UseInkDropWithoutAutoHighlight(InkDrop::Get(this),
+                                          /*highlight_on_hover=*/false);
+  InkDrop::Get(this)->SetCreateRippleCallback(base::BindRepeating(
       [](Checkbox* host) {
         // The "small" size is 21dp, the large size is 1.33 * 21dp = 28dp.
-        return host->ink_drop()->CreateSquareRipple(
+        return InkDrop::Get(host)->CreateSquareRipple(
             host->image()->GetMirroredContentsBounds().CenterPoint(),
             gfx::Size(21, 21));
       },
       this));
-  ink_drop()->SetBaseColorCallback(base::BindRepeating(
+  InkDrop::Get(this)->SetBaseColorCallback(base::BindRepeating(
       [](Checkbox* host) {
         // Usually ink-drop ripples match the text color. Checkboxes use the
         // color of the unchecked, enabled icon.
@@ -79,7 +82,7 @@ Checkbox::Checkbox(const std::u16string& label, PressedCallback callback)
   // Checkboxes always have a focus ring, even when the platform otherwise
   // doesn't generally use them for buttons.
   SetInstallFocusRingOnFocus(true);
-  focus_ring()->SetPathGenerator(
+  FocusRing::Get(this)->SetPathGenerator(
       std::make_unique<FocusRingHighlightPathGenerator>());
 
   // Avoid the default ink-drop mask to allow the ripple effect to extend beyond

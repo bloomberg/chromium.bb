@@ -10,10 +10,11 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "base/timer/timer.h"
+#include "components/safe_browsing/core/browser/db/database_manager.h"
+#include "components/safe_browsing/core/common/proto/realtimeapi.pb.h"
 #include "components/safe_browsing/core/common/safe_browsing_url_checker.mojom.h"
-#include "components/safe_browsing/core/db/database_manager.h"
-#include "components/safe_browsing/core/proto/realtimeapi.pb.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/http/http_request_headers.h"
@@ -49,6 +50,22 @@ class RealTimeUrlLookupServiceBase;
 class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
                                    public SafeBrowsingDatabaseManager::Client {
  public:
+  // Interface via which a client of this class can surface relevant events in
+  // WebUI. All methods must be called on the UI thread.
+  class WebUIDelegate {
+   public:
+    virtual ~WebUIDelegate() = default;
+
+    // Adds the new ping to the set of RT lookup pings. Returns a token that can
+    // be used in |AddToRTLookupResponses| to correlate a ping and response.
+    virtual int AddToRTLookupPings(const RTLookupRequest request,
+                                   const std::string oauth_token) = 0;
+
+    // Adds the new response to the set of RT lookup pings.
+    virtual void AddToRTLookupResponses(int token,
+                                        const RTLookupResponse response) = 0;
+  };
+
   using NativeUrlCheckNotifier =
       base::OnceCallback<void(bool /* proceed */,
                               bool /* showed_interstitial */)>;
@@ -69,6 +86,8 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
   // enabled real time URL lookups for subresource URLs.
   // |real_time_lookup_enabled| must be true if |can_rt_check_subresource_url|
   // is true.
+  // |webui_delegate_| is allowed to be null. If non-null, it must outlive this
+  // object.
   SafeBrowsingUrlCheckerImpl(
       const net::HttpRequestHeaders& headers,
       int load_flags,
@@ -80,17 +99,24 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
       bool real_time_lookup_enabled,
       bool can_rt_check_subresource_url,
       bool can_check_db,
-      base::WeakPtr<RealTimeUrlLookupServiceBase> url_lookup_service_on_ui);
+      scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
+      base::WeakPtr<RealTimeUrlLookupServiceBase> url_lookup_service_on_ui,
+      WebUIDelegate* webui_delegate);
 
   // Constructor that takes only a RequestDestination, a UrlCheckerDelegate, and
   // real-time lookup-related arguments, omitting other arguments that never
   // have non-default values on iOS.
+  // TODO(crbug.com/1103222): Add an iOS-specific WebUIDelegate implementation
+  // and pass it here to log RT requests/responses on open
+  // chrome://safe-browsing pages once chrome://safe-browsing works on iOS, or
+  // else to log those requests/responses to stderr.
   SafeBrowsingUrlCheckerImpl(
       network::mojom::RequestDestination request_destination,
       scoped_refptr<UrlCheckerDelegate> url_checker_delegate,
       const base::RepeatingCallback<web::WebState*()>& web_state_getter,
       bool real_time_lookup_enabled,
       bool can_rt_check_subresource_url,
+      scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
       base::WeakPtr<RealTimeUrlLookupServiceBase> url_lookup_service_on_ui);
 
   ~SafeBrowsingUrlCheckerImpl() override;
@@ -178,7 +204,8 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
       base::WeakPtr<SafeBrowsingUrlCheckerImpl> weak_checker_on_io,
       const GURL& url,
       base::WeakPtr<RealTimeUrlLookupServiceBase> url_lookup_service_on_ui,
-      scoped_refptr<SafeBrowsingDatabaseManager> database_manager);
+      scoped_refptr<SafeBrowsingDatabaseManager> database_manager,
+      scoped_refptr<base::SequencedTaskRunner> io_task_runner);
 
   // Called when the |request| from the real-time lookup service is sent.
   void OnRTLookupRequest(std::unique_ptr<RTLookupRequest> request,
@@ -239,6 +266,7 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
     bool is_cached_safe_url;
   };
 
+  SEQUENCE_CHECKER(sequence_checker_);
   const net::HttpRequestHeaders headers_;
   const int load_flags_;
   const network::mojom::RequestDestination request_destination_;
@@ -279,9 +307,17 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
   // for this profile.
   bool can_check_db_;
 
+  // The task runner for the UI thread.
+  scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
+
   // This object is used to perform real time url check. Can only be accessed in
   // UI thread.
   base::WeakPtr<RealTimeUrlLookupServiceBase> url_lookup_service_on_ui_;
+
+  // May be null on certain platforms that don't support chrome://safe-browsing
+  // and in unit tests. If non-null, guaranteed to outlive this object by
+  // contract.
+  WebUIDelegate* webui_delegate_ = nullptr;
 
   base::WeakPtrFactory<SafeBrowsingUrlCheckerImpl> weak_factory_{this};
 

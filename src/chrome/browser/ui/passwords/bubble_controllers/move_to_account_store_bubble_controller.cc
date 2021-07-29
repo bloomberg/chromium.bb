@@ -7,7 +7,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/favicon/core/favicon_util.h"
@@ -85,13 +85,11 @@ gfx::Image MoveToAccountStoreBubbleController::GetProfileIcon(int size) {
       IdentityManagerFactory::GetForProfile(GetProfile());
   if (!identity_manager)
     return gfx::Image();
-  absl::optional<AccountInfo> primary_account_info =
-      identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
-          identity_manager->GetPrimaryAccountInfo(
-              signin::ConsentLevel::kSignin));
-  DCHECK(primary_account_info.has_value());
+  AccountInfo primary_account_info = identity_manager->FindExtendedAccountInfo(
+      identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin));
+  DCHECK(!primary_account_info.IsEmpty());
 
-  gfx::Image account_icon = primary_account_info->account_image;
+  gfx::Image account_icon = primary_account_info.account_image;
   if (account_icon.IsEmpty()) {
     account_icon = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
         profiles::GetPlaceholderAvatarIconResourceID());
@@ -109,8 +107,7 @@ void MoveToAccountStoreBubbleController::ReportInteractions() {
   metrics_util::LogMoveUIDismissalReason(
       dismissal_reason_,
       password_manager::features_util::ComputePasswordAccountStorageUserState(
-          profile->GetPrefs(),
-          ProfileSyncServiceFactory::GetForProfile(profile)));
+          profile->GetPrefs(), SyncServiceFactory::GetForProfile(profile)));
   // TODO(crbug.com/1063852): Consider recording UKM here, via:
   // metrics_recorder_->RecordUIDismissalReason(dismissal_reason_)
 }

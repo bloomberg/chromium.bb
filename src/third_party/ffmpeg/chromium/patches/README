@@ -951,9 +951,9 @@ Affects:
     configure
 
 ------------------------------------------------------------------
-commit 7c13bac566ff75ef1821adcc4f08935d84c0c5dd
+commit 4fb42ae52e7327469281d612784dd9d0e066d5ed
 Author: Matt Wolenetz <wolenetz@chromium.org>
-Date:   Mon Mar 29 16:06:42 2021 -0700
+Date:   Mon Mar 29 16:26:05 2021 -0700
 
     Always use av_realloc_array() for nal->skipped_bytes_pos
 
@@ -963,6 +963,35 @@ Date:   Mon Mar 29 16:06:42 2021 -0700
     BUG=1193797,721872
     TEST=No repro of scenario in crbug with patch applied.
 
+    Change-Id: I6ecd8a34798a3c892409877b2c42d9cdeb3fdd81
+    Reviewed-on: https://chromium-review.googlesource.com/c/chromium/third_party/ffmpeg/+/2792764
+    Reviewed-by: John Rummell <jrummell@chromium.org>
+
 Affects:
     libavcodec/h2645_parse.c
 
+------------------------------------------------------------------
+commit 45705ea1ee868ee1ebe7f0c0fb68e037c93d021a
+Author: Ted Meyer <tmathmeyer@google.com>
+Date:   Mon May 10 19:17:07 2021 -0700
+
+    Re-add rotation metadata tag in mov.c
+
+    in ffmpeg_common.c in chromium, specifically the
+    AVStreamToVideoDecoderConfig function, there's no way to get the
+    rotation matrix from the AVStream alone. FFMpeg used to set this
+    metadata tag, but it was removed in version 59. This patch just re-adds
+    it so that we don't lose our ability to render rotated videos properly.
+
+Affects:
+    libavformat/mov.c
+
+------------------------------------------------------------------
+commit aa56606640e56158e412b55eb1bde1b9af5f5770
+Author: Ted Meyer <tmathmeyer@google.com>
+Date:   Fri Jun 4 12:10:16 2021 -0700
+
+    Initialize variables to fix compilation warning
+
+Affects:
+    libavutil/x86/tx_float_init.c

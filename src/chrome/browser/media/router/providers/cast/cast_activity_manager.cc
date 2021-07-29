@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/json/json_reader.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
@@ -770,8 +771,8 @@ void CastActivityManager::NotifyOnRoutesUpdated(
     const std::vector<MediaRoute>& routes) {
   // Note: joinable_route_ids is empty as we are deprecating the join feature
   // in the Harmony UI.
-  media_router_->OnRoutesUpdated(MediaRouteProviderId::CAST, routes, source_id,
-                                 std::vector<MediaRoute::Id>());
+  media_router_->OnRoutesUpdated(mojom::MediaRouteProviderId::CAST, routes,
+                                 source_id, std::vector<MediaRoute::Id>());
 }
 
 void CastActivityManager::HandleLaunchSessionResponse(

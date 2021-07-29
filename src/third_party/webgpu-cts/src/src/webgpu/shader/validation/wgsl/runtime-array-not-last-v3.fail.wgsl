@@ -2,7 +2,6 @@
 
 type RTArr = [[stride (16)]] array<vec4<f32>>;
 
-[[stage(vertex)]]
+[[stage(fragment)]]
 fn main() {
-  var<storage> rt : RTArr;
 }

@@ -17,9 +17,9 @@
 #include "src/gpu/GrResourceProvider.h"
 #include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/SkGr.h"
+#include "src/gpu/effects/GrTextureEffect.h"
 #include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
-#include "src/gpu/ops/GrFillRectOp.h"
 #include "src/gpu/ops/GrMeshDrawOp.h"
 #include "tests/TestUtils.h"
 
@@ -37,7 +37,7 @@ public:
 
     const char* name() const override { return "TestOp"; }
 
-    void visitProxies(const VisitProxyFunc& func) const override {
+    void visitProxies(const GrVisitProxyFunc& func) const override {
         fProcessors.visitProxies(func);
     }
 
@@ -64,17 +64,18 @@ private:
     void onCreateProgramInfo(const GrCaps*,
                              SkArenaAlloc*,
                              const GrSurfaceProxyView& writeView,
+                             bool usesMSAASurface,
                              GrAppliedClip&&,
-                             const GrXferProcessor::DstProxyView&,
+                             const GrDstProxyView&,
                              GrXferBarrierFlags renderPassXferBarriers,
                              GrLoadOp colorLoadOp) override {}
     void onPrePrepareDraws(GrRecordingContext*,
                            const GrSurfaceProxyView& writeView,
                            GrAppliedClip*,
-                           const GrXferProcessor::DstProxyView&,
+                           const GrDstProxyView&,
                            GrXferBarrierFlags renderPassXferBarriers,
                            GrLoadOp colorLoadOp) override {}
-    void onPrepareDraws(Target* target) override { return; }
+    void onPrepareDraws(GrMeshDrawTarget*) override { return; }
     void onExecute(GrOpFlushState*, const SkRect&) override { return; }
 
     GrProcessorSet fProcessors;
@@ -226,28 +227,16 @@ static GrColor input_texel_color(int i, int j, SkScalar delta) {
     return color4f.premul().toBytes_RGBA();
 }
 
-void test_draw_op(GrRecordingContext* rContext,
-                  GrSurfaceDrawContext* rtc,
-                  std::unique_ptr<GrFragmentProcessor> fp) {
-    GrPaint paint;
-    paint.setColorFragmentProcessor(std::move(fp));
-    paint.setPorterDuffXPFactory(SkBlendMode::kSrc);
-
-    auto op = GrFillRectOp::MakeNonAARect(rContext, std::move(paint), SkMatrix::I(),
-                                          SkRect::MakeWH(rtc->width(), rtc->height()));
-    rtc->addDrawOp(std::move(op));
-}
-
 // The output buffer must be the same size as the render-target context.
 void render_fp(GrDirectContext* dContext,
-               GrSurfaceDrawContext* rtc,
+               GrSurfaceDrawContext* sdc,
                std::unique_ptr<GrFragmentProcessor> fp,
                GrColor* outBuffer) {
-    test_draw_op(dContext, rtc, std::move(fp));
-    std::fill_n(outBuffer, rtc->width() * rtc->height(), 0);
-    auto ii = SkImageInfo::Make(rtc->dimensions(), kRGBA_8888_SkColorType, kPremul_SkAlphaType);
-    GrPixmap resultPM(ii, outBuffer, rtc->width()*sizeof(uint32_t));
-    rtc->readPixels(dContext, resultPM, {0, 0});
+    sdc->fillWithFP(std::move(fp));
+    std::fill_n(outBuffer, sdc->width() * sdc->height(), 0);
+    auto ii = SkImageInfo::Make(sdc->dimensions(), kRGBA_8888_SkColorType, kPremul_SkAlphaType);
+    GrPixmap resultPM(ii, outBuffer, sdc->width()*sizeof(uint32_t));
+    sdc->readPixels(dContext, resultPM, {0, 0});
 }
 
 // This class is responsible for reproducibly generating a random fragment processor.
@@ -777,13 +766,13 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(ProcessorOptimizationValidationTest, repor
                       "0x%08x, processor: %s", failedPixelCount, kRenderSize * kRenderSize,
                       fpGenerator.initialSeed(), fp->dumpInfo().c_str());
                 if (!coverageMessage.isEmpty()) {
-                    INFOF(reporter, coverageMessage.c_str());
+                    INFOF(reporter, "%s", coverageMessage.c_str());
                 }
                 if (!constMessage.isEmpty()) {
-                    INFOF(reporter, constMessage.c_str());
+                    INFOF(reporter, "%s", constMessage.c_str());
                 }
                 if (!opaqueMessage.isEmpty()) {
-                    INFOF(reporter, opaqueMessage.c_str());
+                    INFOF(reporter, "%s", opaqueMessage.c_str());
                 }
                 if (!loggedFirstWarning) {
                     SkString input;

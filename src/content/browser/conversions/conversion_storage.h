@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/time/time.h"
 #include "content/browser/conversions/conversion_report.h"
 #include "content/browser/conversions/storable_conversion.h"
@@ -29,19 +30,14 @@ class ConversionStorage {
    public:
     virtual ~Delegate() = default;
 
-    // Returns the impression to attribute for a particular conversion.
-    // |impressions| is the list of all impressions which matched the
-    // conversion, and is guaranteed to be non-empty.
-    virtual const StorableImpression& GetImpressionToAttribute(
-        const std::vector<StorableImpression>& impressions) = 0;
-
-    // New conversion reports will be sent through this callback for
-    // pruning/modification before they are added to storage. This will be
-    // called during the execution of
+    // New conversion reports will be sent through this callback to determine
+    // their report time before they are added to storage. This will be called
+    // during the execution of
     // `ConversionStorage::MaybeCreateAndStoreConversionReport()`.
     // The report will be pre-populated from storage with the conversion
     // event data.
-    virtual void ProcessNewConversionReport(ConversionReport& report) = 0;
+    virtual base::Time GetReportTime(const ConversionReport& report) const
+        WARN_UNUSED_RESULT = 0;
 
     // This limit is used to determine if an impression is allowed to schedule
     // a new conversion reports. When an impression reaches this limit it is
@@ -49,7 +45,8 @@ class ConversionStorage {
     // Impressions will be checked against this limit after they schedule a new
     // report.
     virtual int GetMaxConversionsPerImpression(
-        StorableImpression::SourceType source_type) const = 0;
+        StorableImpression::SourceType source_type) const
+        WARN_UNUSED_RESULT = 0;
 
     // These limits are designed solely to avoid excessive disk / memory usage.
     // In particular, they do not correspond with any privacy parameters.
@@ -58,13 +55,20 @@ class ConversionStorage {
     //
     // Returns the maximum number of impressions that can be in storage at any
     // time for an impression top-level origin.
-    virtual int GetMaxImpressionsPerOrigin() const = 0;
+    virtual int GetMaxImpressionsPerOrigin() const WARN_UNUSED_RESULT = 0;
+
     //  Returns the maximum number of conversions that can be in storage at any
     //  time for a conversion top-level origin. Note that since reporting
     //  origins are the actual entities that invoke conversion registration, we
     //  could consider changing this limit to be keyed by a <conversion origin,
     //  reporting origin> tuple.
-    virtual int GetMaxConversionsPerOrigin() const = 0;
+    virtual int GetMaxConversionsPerOrigin() const WARN_UNUSED_RESULT = 0;
+
+    // Returns the maximum number of distinct conversion destinations that can
+    // be in storage at any time for event-source impressions with a given
+    // reporting origin.
+    virtual int GetMaxAttributionDestinationsPerEventSource() const
+        WARN_UNUSED_RESULT = 0;
 
     struct RateLimitConfig {
       base::TimeDelta time_window;
@@ -72,7 +76,19 @@ class ConversionStorage {
     };
 
     // Returns the rate limits for capping attributions per window.
-    virtual RateLimitConfig GetRateLimits() const = 0;
+    virtual RateLimitConfig GetRateLimits() const WARN_UNUSED_RESULT = 0;
+
+    // Selects how to handle the given impression; may involve RNG or other
+    // dynamic criteria.
+    virtual StorableImpression::AttributionLogic SelectAttributionLogic(
+        const StorableImpression& impression) const WARN_UNUSED_RESULT = 0;
+
+    // Returns random data for falsely attributed event sources. Only present on
+    // the delegate interface so it can be overridden to return deterministic
+    // data in tests. The data must be sanitized in the same way it would be for
+    // `ConversionPolicy::GetNoisedEventSourceTriggerData()`.
+    virtual uint64_t GetFakeEventSourceTriggerData() const
+        WARN_UNUSED_RESULT = 0;
   };
   virtual ~ConversionStorage() = default;
 
@@ -100,7 +116,7 @@ class ConversionStorage {
   // a negative number for no limit.
   virtual std::vector<ConversionReport> GetConversionsToReport(
       base::Time max_report_time,
-      int limit = -1) = 0;
+      int limit = -1) WARN_UNUSED_RESULT = 0;
 
   // Returns all active impressions in storage. Active impressions are all
   // impressions that can still convert. Impressions that: are past expiry,
@@ -108,12 +124,8 @@ class ConversionStorage {
   // converted and then superceded by a matching impression should not be
   // returned. |limit| limits the number of impressions to return; use
   // a negative number for no limit.
-  virtual std::vector<StorableImpression> GetActiveImpressions(
-      int limit = -1) = 0;
-
-  // Deletes all impressions that have expired and have no pending conversion
-  // reports. Returns the number of impressions that were deleted.
-  virtual int DeleteExpiredImpressions() = 0;
+  virtual std::vector<StorableImpression> GetActiveImpressions(int limit = -1)
+      WARN_UNUSED_RESULT = 0;
 
   // Deletes the conversion report with the given |conversion_id|. Returns
   // whether the deletion was successful.

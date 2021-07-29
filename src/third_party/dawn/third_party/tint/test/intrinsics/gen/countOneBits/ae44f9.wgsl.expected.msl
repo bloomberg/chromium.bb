@@ -1,0 +1,27 @@
+#include <metal_stdlib>
+
+using namespace metal;
+struct tint_symbol {
+  float4 value [[position]];
+};
+
+void countOneBits_ae44f9() {
+  uint res = popcount(1u);
+}
+
+vertex tint_symbol vertex_main() {
+  countOneBits_ae44f9();
+  tint_symbol const tint_symbol_1 = {.value=float4()};
+  return tint_symbol_1;
+}
+
+fragment void fragment_main() {
+  countOneBits_ae44f9();
+  return;
+}
+
+kernel void compute_main() {
+  countOneBits_ae44f9();
+  return;
+}
+

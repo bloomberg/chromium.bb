@@ -31,8 +31,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -41,6 +39,7 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Callback;
 import org.chromium.base.CollectionUtil;
+import org.chromium.base.Promise;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Criteria;
@@ -54,9 +53,10 @@ import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
+import org.chromium.chrome.browser.enterprise.util.EnterpriseInfo;
 import org.chromium.chrome.browser.firstrun.FirstRunActivityTestObserver.ScopedObserverData;
 import org.chromium.chrome.browser.locale.LocaleManager;
-import org.chromium.chrome.browser.policy.EnterpriseInfo;
+import org.chromium.chrome.browser.locale.LocaleManagerDelegate;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImpl;
@@ -105,8 +105,7 @@ public class FirstRunIntegrationTest {
     @Mock
     private AccountManagerFacade mAccountManagerFacade;
 
-    @Captor
-    private ArgumentCaptor<Callback<List<Account>>> mGetGoogleAccountsCaptor;
+    private Promise<List<Account>> mAccountsPromise;
 
     private final Set<Class> mSupportedActivities =
             CollectionUtil.newHashSet(ChromeLauncherActivity.class, FirstRunActivity.class,
@@ -323,14 +322,18 @@ public class FirstRunIntegrationTest {
     }
 
     private void blockOnFlowIsKnown() {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertNull("mAccountsPromise is already initialized!", mAccountsPromise);
+            mAccountsPromise = new Promise<>();
+        });
+        Mockito.when(mAccountManagerFacade.getAccounts()).thenReturn(mAccountsPromise);
         AccountManagerFacadeProvider.setInstanceForTests(mAccountManagerFacade);
     }
 
     private void unblockOnFlowIsKnown() {
-        Mockito.verify(mAccountManagerFacade)
-                .tryGetGoogleAccounts(mGetGoogleAccountsCaptor.capture());
+        Mockito.verify(mAccountManagerFacade).getAccounts();
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> mGetGoogleAccountsCaptor.getValue().onResult(Collections.emptyList()));
+                () -> mAccountsPromise.fulfill(Collections.emptyList()));
     }
 
     @Test
@@ -394,7 +397,7 @@ public class FirstRunIntegrationTest {
     private void runSearchEnginePromptTest(@SearchEnginePromoType final int searchPromoType)
             throws Exception {
         // Force the LocaleManager into a specific state.
-        LocaleManager mockManager = new LocaleManager() {
+        LocaleManagerDelegate mockDelegate = new LocaleManagerDelegate() {
             @Override
             public int getSearchEnginePromoShowType() {
                 return searchPromoType;
@@ -405,7 +408,8 @@ public class FirstRunIntegrationTest {
                 return TemplateUrlServiceFactory.get().getTemplateUrls();
             }
         };
-        LocaleManager.setInstanceForTest(mockManager);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> LocaleManager.getInstance().setDelegateForTest(mockDelegate));
 
         FirstRunActivity firstRunActivity = launchFirstRunActivity();
 
@@ -422,6 +426,7 @@ public class FirstRunIntegrationTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "https://crbug.com/1221647")
     public void testExitFirstRunWithPolicy() {
         skipTosDialogViaPolicy();
 

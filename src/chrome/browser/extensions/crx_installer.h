@@ -140,7 +140,7 @@ class CrxInstaller : public SandboxedUnpackerClient {
                                       const std::string& public_key,
                                       const base::FilePath& unpacked_dir);
 
-  void OnInstallPromptDone(ExtensionInstallPrompt::Result result);
+  void OnInstallPromptDone(ExtensionInstallPrompt::DoneCallbackPayload payload);
 
   void InitializeCreationFlagsForUpdate(const Extension* extension,
                                         const int initial_flags);
@@ -287,7 +287,13 @@ class CrxInstaller : public SandboxedUnpackerClient {
   void ShouldComputeHashesOnUI(scoped_refptr<const Extension> extension,
                                base::OnceCallback<void(bool)> callback);
 
+  // To provide content verifier key to the unpacker.
+  void GetContentVerifierKeyOnUI(
+      base::OnceCallback<void(ContentVerifierKey)> callback);
+
   // SandboxedUnpackerClient
+  void GetContentVerifierKey(
+      base::OnceCallback<void(ContentVerifierKey)> callback) override;
   void ShouldComputeHashesForOffWebstoreExtension(
       scoped_refptr<const Extension> extension,
       base::OnceCallback<void(bool)> callback) override;

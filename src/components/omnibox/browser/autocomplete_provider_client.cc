@@ -14,6 +14,10 @@ AutocompleteProviderClient::GetNtpMostVisitedSites() {
   return nullptr;
 }
 
+bool AutocompleteProviderClient::AllowDeletingBrowserHistory() const {
+  return true;
+}
+
 std::string AutocompleteProviderClient::ProfileUserName() const {
   return "";
 }

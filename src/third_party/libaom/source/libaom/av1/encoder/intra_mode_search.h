@@ -95,6 +95,9 @@ typedef struct IntraModeSearchState {
  * \param[out]       mode_cost_y        The cost needed to signal the current
  *                                      intra mode.
  * \param[out]       rd_y               The rdcost of the chosen mode.
+ * \param[in]        best_model_rd      Best model RD seen for this block so far
+ * \param[in]        top_intra_model_rd Top intra model RD seen for this
+ *                                      block so far.
  *
  * \return Returns 1 if a valid intra mode is found, 0 otherwise.
  * The corresponding values in x->e_mbd.mi[0], rd_stats_y, mode_cost_y, and
@@ -106,7 +109,9 @@ int av1_handle_intra_y_mode(IntraModeSearchState *intra_search_state,
                             const AV1_COMP *cpi, MACROBLOCK *x,
                             BLOCK_SIZE bsize, unsigned int ref_frame_cost,
                             const PICK_MODE_CONTEXT *ctx, RD_STATS *rd_stats_y,
-                            int64_t best_rd, int *mode_cost_y, int64_t *rd_y);
+                            int64_t best_rd, int *mode_cost_y, int64_t *rd_y,
+                            int64_t *best_model_rd,
+                            int64_t top_intra_model_rd[]);
 
 /*!\brief Search through all chroma intra-modes for inter frames.
  *
@@ -261,6 +266,29 @@ static AOM_INLINE void init_intra_mode_search_state(
   memset(intra_search_state, 0, sizeof(*intra_search_state));
   intra_search_state->rate_uv_intra = INT_MAX;
 }
+
+/*! \brief set the luma intra mode and delta angles for a given mode index.
+ * The total number of luma intra mode is LUMA_MODE_COUNT = 61.
+ * The first 13 modes are from DC_PRED to PAETH_PRED, followed by directional
+ * modes. Each of the main 8 directional modes have 6 = MAX_ANGLE_DELTA * 2
+ * delta angles.
+ * \param[in]    mode_idx           mode index in intra mode decision
+ *                                  process.
+ * \param[in]    mbmi               Pointer to structure holding
+ *                                  the mode info for the current macroblock.
+ */
+void set_y_mode_and_delta_angle(const int mode_idx, MB_MODE_INFO *const mbmi);
+
+/*! \brief prune luma intra mode    based on the model rd.
+ * \param[in]    this_model_rd      model rd for current mode.
+ * \param[in]    best_model_rd      Best model RD seen for this block so
+ *                                  far.
+ * \param[in]    top_intra_model_rd Top intra model RD seen for this
+ *                                  block so far.
+ * \param[in]    model_cnt_allowed  The number of top intra model RD allowed.
+ */
+int prune_intra_y_mode(int64_t this_model_rd, int64_t *best_model_rd,
+                       int64_t top_intra_model_rd[], int model_cnt_allowed);
 
 #ifdef __cplusplus
 }  // extern "C"

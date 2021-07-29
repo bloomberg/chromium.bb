@@ -12,6 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/timer/timer.h"
 #include "cc/input/touch_action.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 #include "third_party/blink/public/mojom/input/input_handler.mojom-blink.h"
@@ -93,6 +94,8 @@ class PLATFORM_EXPORT MainThreadEventQueue
       const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
       scheduler::WebThreadScheduler* main_thread_scheduler,
       bool allow_raf_aligned_input);
+  MainThreadEventQueue(const MainThreadEventQueue&) = delete;
+  MainThreadEventQueue& operator=(const MainThreadEventQueue&) = delete;
 
   // Type of dispatching of the event.
   enum class DispatchType { kBlocking, kNonBlocking };
@@ -190,8 +193,6 @@ class PLATFORM_EXPORT MainThreadEventQueue
   std::unique_ptr<base::OneShotTimer> raf_fallback_timer_;
 
   std::unique_ptr<InputEventPrediction> event_predictor_;
-
-  DISALLOW_COPY_AND_ASSIGN(MainThreadEventQueue);
 };
 
 }  // namespace blink

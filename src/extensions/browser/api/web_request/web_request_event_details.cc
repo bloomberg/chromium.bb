@@ -53,7 +53,7 @@ WebRequestEventDetails::WebRequestEventDetails(const WebRequestInfo& request,
       render_process_id_(content::ChildProcessHost::kInvalidUniqueID) {
   dict_.SetString(keys::kMethodKey, request.method);
   dict_.SetString(keys::kRequestIdKey, base::NumberToString(request.id));
-  dict_.SetDouble(keys::kTimeStampKey, base::Time::Now().ToDoubleT() * 1000);
+  dict_.SetDoubleKey(keys::kTimeStampKey, base::Time::Now().ToDoubleT() * 1000);
   dict_.SetString(keys::kTypeKey,
                   WebRequestResourceTypeToString(request.web_request_type));
   dict_.SetString(keys::kUrlKey, request.url.spec());
@@ -90,10 +90,10 @@ void WebRequestEventDetails::SetAuthInfo(
     dict_.SetString(keys::kSchemeKey, auth_info.scheme);
   if (!auth_info.realm.empty())
     dict_.SetString(keys::kRealmKey, auth_info.realm);
-  auto challenger = std::make_unique<base::DictionaryValue>();
-  challenger->SetString(keys::kHostKey, auth_info.challenger.host());
-  challenger->SetInteger(keys::kPortKey, auth_info.challenger.port());
-  dict_.Set(keys::kChallengerKey, std::move(challenger));
+  base::Value challenger(base::Value::Type::DICTIONARY);
+  challenger.SetStringKey(keys::kHostKey, auth_info.challenger.host());
+  challenger.SetIntKey(keys::kPortKey, auth_info.challenger.port());
+  dict_.SetKey(keys::kChallengerKey, std::move(challenger));
 }
 
 void WebRequestEventDetails::SetResponseHeaders(

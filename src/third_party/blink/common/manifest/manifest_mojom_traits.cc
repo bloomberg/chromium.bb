@@ -86,6 +86,10 @@ bool StructTraits<blink::mojom::ManifestDataView, ::blink::Manifest>::Read(
     return false;
   out->description = std::move(string.string);
 
+  if (!data.ReadId(&string))
+    return false;
+  out->id = std::move(string.string);
+
   if (!data.ReadGcmSenderId(&string))
     return false;
   out->gcm_sender_id = std::move(string.string);
@@ -142,6 +146,8 @@ bool StructTraits<blink::mojom::ManifestDataView, ::blink::Manifest>::Read(
 
   if (!data.ReadCaptureLinks(&out->capture_links))
     return false;
+
+  out->isolated_storage = data.isolated_storage();
 
   return true;
 }
@@ -299,6 +305,9 @@ bool StructTraits<blink::mojom::ManifestFileHandlerDataView,
     return false;
 
   if (!data.ReadName(&out->name))
+    return false;
+
+  if (!data.ReadIcons(&out->icons))
     return false;
 
   if (!data.ReadAccept(&out->accept))

@@ -94,6 +94,48 @@ constexpr char kValidOfferMessage[] = R"({
   }
 })";
 
+constexpr char kValidRemotingOfferMessage[] = R"({
+  "type": "OFFER",
+  "seqNum": 419,
+  "offer": {
+    "castMode": "remoting",
+    "supportedStreams": [
+      {
+        "index": 31339,
+        "type": "video_source",
+        "codecName": "REMOTE_VIDEO",
+        "rtpProfile": "cast",
+        "rtpPayloadType": 127,
+        "ssrc": 19088745,
+        "maxFrameRate": "60000/1000",
+        "timeBase": "1/90000",
+        "maxBitRate": 5432101,
+        "aesKey": "040d756791711fd3adb939066e6d8690",
+        "aesIvMask": "9ff0f022a959150e70a2d05a6c184aed",
+        "resolutions": [
+          {
+            "width": 1920,
+            "height":1080
+          }
+        ]
+      },
+      {
+        "index": 31340,
+        "type": "audio_source",
+        "codecName": "REMOTE_AUDIO",
+        "rtpProfile": "cast",
+        "rtpPayloadType": 97,
+        "ssrc": 19088747,
+        "bitRate": 125000,
+        "timeBase": "1/48000",
+        "channels": 2,
+        "aesKey": "51027e4e2347cbcb49d57ef10177aebc",
+        "aesIvMask": "7f12a19be62a36c04ae4116caaeff6d1"
+      }
+    ]
+  }
+})";
+
 constexpr char kNoAudioOfferMessage[] = R"({
   "type": "OFFER",
   "seqNum": 1337,
@@ -244,11 +286,21 @@ constexpr char kGetCapabilitiesMessage[] = R"({
   "type": "GET_CAPABILITIES"
 })";
 
+constexpr char kRpcMessage[] = R"({
+  "rpc" : "CGQQnBiCGQgSAggMGgIIBg==",
+  "seqNum" : 2,
+  "type" : "RPC"
+})";
+
 class FakeClient : public ReceiverSession::Client {
  public:
   MOCK_METHOD(void,
               OnNegotiated,
               (const ReceiverSession*, ReceiverSession::ConfiguredReceivers),
+              (override));
+  MOCK_METHOD(void,
+              OnRemotingNegotiated,
+              (const ReceiverSession*, ReceiverSession::RemotingNegotiation),
               (override));
   MOCK_METHOD(void,
               OnReceiversDestroying,
@@ -750,6 +802,324 @@ TEST_F(ReceiverSessionTest, ReturnsCapabilitiesWithRemotingPreferences) {
       testing::ElementsAre(MediaCapability::kOpus, MediaCapability::kAac,
                            MediaCapability::kH264, MediaCapability::kAudio,
                            MediaCapability::k4k));
+}
+
+TEST_F(ReceiverSessionTest, CanNegotiateRemoting) {
+  ReceiverSession::Preferences preferences;
+  preferences.remoting =
+      std::make_unique<ReceiverSession::RemotingPreferences>();
+  preferences.remoting->supports_chrome_audio_codecs = true;
+  preferences.remoting->supports_4k = true;
+  SetUpWithPreferences(std::move(preferences));
+
+  InSequence s;
+  EXPECT_CALL(client_, OnRemotingNegotiated(session_.get(), _))
+      .WillOnce([](const ReceiverSession* session_,
+                   ReceiverSession::RemotingNegotiation negotiation) {
+        const auto& cr = negotiation.receivers;
+        EXPECT_TRUE(cr.audio_receiver);
+        EXPECT_EQ(cr.audio_receiver->config().sender_ssrc, 19088747u);
+        EXPECT_EQ(cr.audio_receiver->config().receiver_ssrc, 19088748u);
+        EXPECT_EQ(cr.audio_receiver->config().channels, 2);
+        EXPECT_EQ(cr.audio_receiver->config().rtp_timebase, 48000);
+        EXPECT_EQ(cr.audio_config.codec, AudioCodec::kNotSpecified);
+
+        EXPECT_TRUE(cr.video_receiver);
+        EXPECT_EQ(cr.video_receiver->config().sender_ssrc, 19088745u);
+        EXPECT_EQ(cr.video_receiver->config().receiver_ssrc, 19088746u);
+        EXPECT_EQ(cr.video_receiver->config().channels, 1);
+        EXPECT_EQ(cr.video_receiver->config().rtp_timebase, 90000);
+        EXPECT_EQ(cr.video_config.codec, VideoCodec::kNotSpecified);
+      });
+  EXPECT_CALL(client_,
+              OnReceiversDestroying(session_.get(),
+                                    ReceiverSession::Client::kEndOfSession));
+
+  message_port_->ReceiveMessage(kValidRemotingOfferMessage);
+}
+
+TEST_F(ReceiverSessionTest, HandlesRpcMessage) {
+  ReceiverSession::Preferences preferences;
+  preferences.remoting =
+      std::make_unique<ReceiverSession::RemotingPreferences>();
+  preferences.remoting->supports_chrome_audio_codecs = true;
+  preferences.remoting->supports_4k = true;
+  SetUpWithPreferences(std::move(preferences));
+
+  message_port_->ReceiveMessage(kRpcMessage);
+  const auto& messages = message_port_->posted_messages();
+  // Nothing should happen yet, the session doesn't have a messenger.
+  ASSERT_EQ(0u, messages.size());
+
+  // We don't need to fully test that the subscription model on the RpcMessenger
+  // works, but we do want to test that the ReceiverSession has properly wired
+  // the RpcMessenger up to the backing SessionMessenger and can properly
+  // handle received RPC messages.
+  InSequence s;
+  bool received_initialize_message = false;
+  EXPECT_CALL(client_, OnRemotingNegotiated(session_.get(), _))
+      .WillOnce([this, &received_initialize_message](
+                    const ReceiverSession* session_,
+                    ReceiverSession::RemotingNegotiation negotiation) mutable {
+        negotiation.messenger->RegisterMessageReceiverCallback(
+            100, [&received_initialize_message](
+                     std::unique_ptr<RpcMessage> message) mutable {
+              ASSERT_EQ(100, message->handle());
+              ASSERT_EQ(RpcMessage::RPC_DS_INITIALIZE_CALLBACK,
+                        message->proc());
+              ASSERT_EQ(0, message->integer_value());
+              received_initialize_message = true;
+            });
+
+        message_port_->ReceiveMessage(kRpcMessage);
+      });
+  EXPECT_CALL(client_,
+              OnReceiversDestroying(session_.get(),
+                                    ReceiverSession::Client::kEndOfSession));
+
+  message_port_->ReceiveMessage(kValidRemotingOfferMessage);
+  ASSERT_TRUE(received_initialize_message);
+}
+
+TEST_F(ReceiverSessionTest, VideoLimitsIsSupersetOf) {
+  ReceiverSession::VideoLimits first{};
+  ReceiverSession::VideoLimits second = first;
+
+  EXPECT_TRUE(first.IsSupersetOf(second));
+  EXPECT_TRUE(second.IsSupersetOf(first));
+
+  first.max_pixels_per_second += 1;
+  EXPECT_TRUE(first.IsSupersetOf(second));
+  EXPECT_FALSE(second.IsSupersetOf(first));
+  first.max_pixels_per_second = second.max_pixels_per_second;
+
+  first.max_dimensions = {1921, 1090, {kDefaultFrameRate, 1}};
+  EXPECT_TRUE(first.IsSupersetOf(second));
+  EXPECT_FALSE(second.IsSupersetOf(first));
+
+  second.max_dimensions = {1921, 1090, {kDefaultFrameRate + 1, 1}};
+  EXPECT_FALSE(first.IsSupersetOf(second));
+  EXPECT_TRUE(second.IsSupersetOf(first));
+
+  second.max_dimensions = {2000, 1000, {kDefaultFrameRate, 1}};
+  EXPECT_FALSE(first.IsSupersetOf(second));
+  EXPECT_FALSE(second.IsSupersetOf(first));
+  second.max_dimensions = first.max_dimensions;
+
+  first.min_bit_rate += 1;
+  EXPECT_FALSE(first.IsSupersetOf(second));
+  EXPECT_TRUE(second.IsSupersetOf(first));
+  first.min_bit_rate = second.min_bit_rate;
+
+  first.max_bit_rate += 1;
+  EXPECT_TRUE(first.IsSupersetOf(second));
+  EXPECT_FALSE(second.IsSupersetOf(first));
+  first.max_bit_rate = second.max_bit_rate;
+
+  EXPECT_TRUE(first.IsSupersetOf(second));
+  EXPECT_TRUE(second.IsSupersetOf(first));
+
+  first.applies_to_all_codecs = true;
+  EXPECT_FALSE(first.IsSupersetOf(second));
+  EXPECT_FALSE(second.IsSupersetOf(first));
+  second.applies_to_all_codecs = true;
+  EXPECT_TRUE(first.IsSupersetOf(second));
+  EXPECT_TRUE(second.IsSupersetOf(first));
+  first.codec = VideoCodec::kVp8;
+  second.codec = VideoCodec::kVp9;
+  EXPECT_TRUE(first.IsSupersetOf(second));
+  EXPECT_TRUE(second.IsSupersetOf(first));
+  first.applies_to_all_codecs = false;
+  second.applies_to_all_codecs = false;
+  EXPECT_FALSE(first.IsSupersetOf(second));
+  EXPECT_FALSE(second.IsSupersetOf(first));
+}
+
+TEST_F(ReceiverSessionTest, AudioLimitsIsSupersetOf) {
+  ReceiverSession::AudioLimits first{};
+  ReceiverSession::AudioLimits second = first;
+
+  EXPECT_TRUE(first.IsSupersetOf(second));
+  EXPECT_TRUE(second.IsSupersetOf(first));
+
+  first.max_sample_rate += 1;
+  EXPECT_TRUE(first.IsSupersetOf(second));
+  EXPECT_FALSE(second.IsSupersetOf(first));
+  first.max_sample_rate = second.max_sample_rate;
+
+  first.max_channels += 1;
+  EXPECT_TRUE(first.IsSupersetOf(second));
+  EXPECT_FALSE(second.IsSupersetOf(first));
+  first.max_channels = second.max_channels;
+
+  first.min_bit_rate += 1;
+  EXPECT_FALSE(first.IsSupersetOf(second));
+  EXPECT_TRUE(second.IsSupersetOf(first));
+  first.min_bit_rate = second.min_bit_rate;
+
+  first.max_bit_rate += 1;
+  EXPECT_TRUE(first.IsSupersetOf(second));
+  EXPECT_FALSE(second.IsSupersetOf(first));
+  first.max_bit_rate = second.max_bit_rate;
+
+  EXPECT_TRUE(first.IsSupersetOf(second));
+  EXPECT_TRUE(second.IsSupersetOf(first));
+
+  first.applies_to_all_codecs = true;
+  EXPECT_FALSE(first.IsSupersetOf(second));
+  EXPECT_FALSE(second.IsSupersetOf(first));
+  second.applies_to_all_codecs = true;
+  EXPECT_TRUE(first.IsSupersetOf(second));
+  EXPECT_TRUE(second.IsSupersetOf(first));
+  first.codec = AudioCodec::kOpus;
+  second.codec = AudioCodec::kAac;
+  EXPECT_TRUE(first.IsSupersetOf(second));
+  EXPECT_TRUE(second.IsSupersetOf(first));
+  first.applies_to_all_codecs = false;
+  second.applies_to_all_codecs = false;
+  EXPECT_FALSE(first.IsSupersetOf(second));
+  EXPECT_FALSE(second.IsSupersetOf(first));
+}
+
+TEST_F(ReceiverSessionTest, DisplayIsSupersetOf) {
+  ReceiverSession::Display first;
+  ReceiverSession::Display second = first;
+
+  EXPECT_TRUE(first.IsSupersetOf(second));
+  EXPECT_TRUE(second.IsSupersetOf(first));
+
+  first.dimensions = {1921, 1090, {kDefaultFrameRate, 1}};
+  EXPECT_TRUE(first.IsSupersetOf(second));
+  EXPECT_FALSE(second.IsSupersetOf(first));
+
+  second.dimensions = {1921, 1090, {kDefaultFrameRate + 1, 1}};
+  EXPECT_FALSE(first.IsSupersetOf(second));
+  EXPECT_TRUE(second.IsSupersetOf(first));
+
+  second.dimensions = {2000, 1000, {kDefaultFrameRate, 1}};
+  EXPECT_FALSE(first.IsSupersetOf(second));
+  EXPECT_FALSE(second.IsSupersetOf(first));
+  second.dimensions = first.dimensions;
+
+  first.can_scale_content = true;
+  EXPECT_TRUE(first.IsSupersetOf(second));
+  EXPECT_FALSE(second.IsSupersetOf(first));
+}
+
+TEST_F(ReceiverSessionTest, RemotingPreferencesIsSupersetOf) {
+  ReceiverSession::RemotingPreferences first;
+  ReceiverSession::RemotingPreferences second = first;
+
+  EXPECT_TRUE(first.IsSupersetOf(second));
+  EXPECT_TRUE(second.IsSupersetOf(first));
+
+  first.supports_chrome_audio_codecs = true;
+  EXPECT_TRUE(first.IsSupersetOf(second));
+  EXPECT_FALSE(second.IsSupersetOf(first));
+
+  second.supports_4k = true;
+  EXPECT_FALSE(first.IsSupersetOf(second));
+  EXPECT_FALSE(second.IsSupersetOf(first));
+
+  second.supports_chrome_audio_codecs = true;
+  EXPECT_FALSE(first.IsSupersetOf(second));
+  EXPECT_TRUE(second.IsSupersetOf(first));
+}
+
+TEST_F(ReceiverSessionTest, PreferencesIsSupersetOf) {
+  ReceiverSession::Preferences first;
+  ReceiverSession::Preferences second(first);
+
+  EXPECT_TRUE(first.IsSupersetOf(second));
+  EXPECT_TRUE(second.IsSupersetOf(first));
+
+  // Modified |display_description|.
+  first.display_description = std::make_unique<ReceiverSession::Display>();
+  first.display_description->dimensions = {1920, 1080, {kDefaultFrameRate, 1}};
+  EXPECT_FALSE(first.IsSupersetOf(second));
+  EXPECT_FALSE(second.IsSupersetOf(first));
+  second = first;
+
+  first.display_description->dimensions = {192, 1080, {kDefaultFrameRate, 1}};
+  EXPECT_FALSE(first.IsSupersetOf(second));
+  EXPECT_TRUE(second.IsSupersetOf(first));
+  second = first;
+
+  // Modified |remoting|.
+  first.remoting = std::make_unique<ReceiverSession::RemotingPreferences>();
+  EXPECT_TRUE(first.IsSupersetOf(second));
+  EXPECT_FALSE(second.IsSupersetOf(first));
+  second = first;
+
+  second.remoting->supports_4k = true;
+  EXPECT_FALSE(first.IsSupersetOf(second));
+  EXPECT_TRUE(second.IsSupersetOf(first));
+  second = first;
+
+  // Modified |video_codecs|.
+  first.video_codecs = {VideoCodec::kVp8, VideoCodec::kVp9};
+  second.video_codecs = {};
+  EXPECT_TRUE(first.IsSupersetOf(second));
+  EXPECT_FALSE(second.IsSupersetOf(first));
+  second.video_codecs = {VideoCodec::kHevc};
+  EXPECT_FALSE(first.IsSupersetOf(second));
+  EXPECT_FALSE(second.IsSupersetOf(first));
+  first.video_codecs.emplace_back(VideoCodec::kHevc);
+  EXPECT_TRUE(first.IsSupersetOf(second));
+  EXPECT_FALSE(second.IsSupersetOf(first));
+  first = second;
+
+  // Modified |audio_codecs|.
+  first.audio_codecs = {AudioCodec::kOpus};
+  second.audio_codecs = {};
+  EXPECT_TRUE(first.IsSupersetOf(second));
+  EXPECT_FALSE(second.IsSupersetOf(first));
+  second.audio_codecs = {AudioCodec::kAac};
+  EXPECT_FALSE(first.IsSupersetOf(second));
+  EXPECT_FALSE(second.IsSupersetOf(first));
+  first.audio_codecs.emplace_back(AudioCodec::kAac);
+  EXPECT_TRUE(first.IsSupersetOf(second));
+  EXPECT_FALSE(second.IsSupersetOf(first));
+  first = second;
+
+  // Modified |video_limits|.
+  first.video_limits.push_back({true, VideoCodec::kVp8});
+  EXPECT_TRUE(first.IsSupersetOf(second));
+  EXPECT_TRUE(second.IsSupersetOf(first));
+  first.video_limits.front().min_bit_rate = -1;
+  EXPECT_TRUE(first.IsSupersetOf(second));
+  EXPECT_FALSE(second.IsSupersetOf(first));
+  second.video_limits.push_back({true, VideoCodec::kVp9});
+  second.video_limits.front().min_bit_rate = -1;
+  EXPECT_TRUE(first.IsSupersetOf(second));
+  EXPECT_TRUE(second.IsSupersetOf(first));
+  first.video_limits.front().applies_to_all_codecs = false;
+  first.video_limits.push_back({false, VideoCodec::kHevc, 123});
+  second.video_limits.front().applies_to_all_codecs = false;
+  EXPECT_FALSE(first.IsSupersetOf(second));
+  EXPECT_FALSE(second.IsSupersetOf(first));
+  second.video_limits.front().min_bit_rate = kDefaultVideoMinBitRate;
+  first.video_limits.front().min_bit_rate = kDefaultVideoMinBitRate;
+  EXPECT_FALSE(first.IsSupersetOf(second));
+  EXPECT_TRUE(second.IsSupersetOf(first));
+  second = first;
+
+  // Modified |audio_limits|.
+  first.audio_limits.push_back({true, AudioCodec::kOpus});
+  EXPECT_TRUE(first.IsSupersetOf(second));
+  EXPECT_TRUE(second.IsSupersetOf(first));
+  first.audio_limits.front().min_bit_rate = -1;
+  EXPECT_TRUE(first.IsSupersetOf(second));
+  EXPECT_FALSE(second.IsSupersetOf(first));
+  second.audio_limits.push_back({true, AudioCodec::kAac});
+  second.audio_limits.front().min_bit_rate = -1;
+  EXPECT_TRUE(first.IsSupersetOf(second));
+  EXPECT_TRUE(second.IsSupersetOf(first));
+  first.audio_limits.front().applies_to_all_codecs = false;
+  first.audio_limits.push_back({false, AudioCodec::kOpus, -1});
+  second.audio_limits.front().applies_to_all_codecs = false;
+  EXPECT_FALSE(first.IsSupersetOf(second));
+  EXPECT_FALSE(second.IsSupersetOf(first));
 }
 
 }  // namespace cast

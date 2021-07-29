@@ -1,9 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import js_checker
+from . import js_checker
 import json
 import os
 import sys
@@ -21,11 +21,11 @@ class JsCheckerEsLintTest(unittest.TestCase):
   def tearDown(self):
     os.remove(self._tmp_file)
 
-  def _runChecks(self, file_contents):
-    tmp_args = {'suffix': '.js', 'dir': _HERE_PATH, 'delete': False}
+  def _runChecks(self, file_contents, file_type):
+    tmp_args = {'suffix': '.' + file_type, 'dir': _HERE_PATH, 'delete': False}
     with tempfile.NamedTemporaryFile(**tmp_args) as f:
       self._tmp_file = f.name
-      f.write(file_contents)
+      f.write(file_contents.encode('utf-8'))
 
     input_api = MockInputApi()
     input_api.files = [MockFile(os.path.abspath(self._tmp_file), '')]
@@ -37,7 +37,8 @@ class JsCheckerEsLintTest(unittest.TestCase):
       return checker.RunEsLintChecks(input_api.AffectedFiles(), format='json')
     except RuntimeError as err:
       # Extract ESLint's JSON error output from the error message.
-      json_error = err.message[err.message.index('['):]
+      message = str(err)
+      json_error = message[message.index('['):]
       return json.loads(json_error)[0].get('messages')
 
   def _assertError(self, results, rule_id, line):
@@ -47,11 +48,18 @@ class JsCheckerEsLintTest(unittest.TestCase):
     self.assertEqual(line, message.get('line'))
 
   def testGetElementByIdCheck(self):
-    results = self._runChecks("const a = document.getElementById('foo');")
+    results = self._runChecks("const a = document.getElementById('foo');", 'js')
+    self._assertError(results, 'no-restricted-properties', 1)
+
+    results = self._runChecks(
+        "const a: HTMLELement = document.getElementById('foo');", 'ts')
     self._assertError(results, 'no-restricted-properties', 1)
 
   def testPrimitiveWrappersCheck(self):
-    results = self._runChecks('const a = new Number(1);')
+    results = self._runChecks('const a = new Number(1);', 'js')
+    self._assertError(results, 'no-new-wrappers', 1)
+
+    results = self._runChecks('const a: number = new Number(1);', 'ts')
     self._assertError(results, 'no-new-wrappers', 1)
 
 

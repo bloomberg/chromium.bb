@@ -14,13 +14,13 @@
 
 #include "base/base_paths.h"
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/native_library.h"
 #include "base/path_service.h"
-#include "base/stl_util.h"
 #include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -68,9 +68,9 @@ const char kWidevineCdmPlatform[] =
     "mac";
 #elif defined(OS_WIN)
     "win";
-#elif BUILDFLAG(IS_CHROMEOS_ASH)
+#elif defined(OS_CHROMEOS)
     "cros";
-#elif defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#elif defined(OS_LINUX)
     "linux";
 #else
 #error This file should only be included for supported platforms.

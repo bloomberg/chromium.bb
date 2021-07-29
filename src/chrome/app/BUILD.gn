@@ -25,17 +25,6 @@ source_set("command_ids") {
   ]
 }
 
-# TODO: put back in chrome/browser if necessary. http://crbug.com/771801.
-source_set("shutdown_signal_handlers") {
-  if (is_posix || is_fuchsia) {
-    sources = [
-      "shutdown_signal_handlers_posix.cc",
-      "shutdown_signal_handlers_posix.h",
-    ]
-  }
-  deps = [ "//base" ]
-}
-
 # On Windows, links chrome_dll.rc. On other platforms, does nothing so you can
 # unconditionally depend on it.
 source_set("chrome_dll_resources") {
@@ -58,8 +47,13 @@ source_set("chrome_dll_resources") {
   }
 }
 
+if (is_win) {
+  source_set("chrome_exe_main_exports") {
+    sources = [ "chrome_exe_main_win.h" ]
+  }
+}
+
 if (is_android) {
-  import("//build/config/android/rules.gni")
   android_generated_java_resources =
       [ "java/res/values/generated_resources.xml" ] +
       process_file_template(
@@ -121,7 +115,6 @@ static_library("test_support") {
   deps = [
     "//base",
     "//build:chromeos_buildflags",
-    "//chrome/app:shutdown_signal_handlers",
     "//chrome/browser",
     "//chrome/browser/policy:path_parser",
     "//chrome/child",
@@ -145,7 +138,7 @@ static_library("test_support") {
   ]
 
   if (!is_fuchsia) {
-    # TODO(crbug.com/753619): Enable crash reporting on Fuchsia.
+    # TODO(crbug.com/1226159): Complete crash reporting integration on Fuchsia.
     deps += [
       "//components/crash/core/app",
       "//components/crash/core/app:test_support",
@@ -167,18 +160,24 @@ static_library("test_support") {
     ]
   }
 
+  if (is_chromeos_ash || is_chromeos_lacros) {
+    deps += [ "//chromeos/dbus/constants" ]
+  }
+
   if (is_chromeos_ash) {
     deps += [
       "//ash/constants",
       "//chrome/browser/chromeos",
       "//chromeos",
-      "//chromeos/dbus/constants",
       "//chromeos/memory:memory",
     ]
   }
 
   if (is_chromeos_lacros) {
-    deps += [ "//chromeos/lacros" ]
+    deps += [
+      "//chromeos/crosapi/mojom",
+      "//chromeos/lacros",
+    ]
   }
 
   if (enable_plugins && enable_nacl) {

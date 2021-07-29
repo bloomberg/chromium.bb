@@ -1,6 +1,7 @@
 # This is the filter for browser_tests that supports pixel tests.
 *EyeDropperBrowserTest.*
 *PasswordBubbleBrowserTest.*
+AccuracyTipBubbleViewDialogBrowserTest.*
 AppInfoDialogBrowserTest.*
 AskGoogleForSuggestionsDialogTest.*
 BookmarkBubbleViewBrowserTest.*
@@ -17,7 +18,7 @@ HungRendererDialogViewBrowserTest.*
 ImportLockDialogViewBrowserTest.*
 OneTimePermissionPromptBubbleViewBrowserTest.*
 OutdatedUpgradeBubbleTest.*
-PageInfoBubbleViewDialogBrowserTest.*
+All/PageInfoBubbleViewDialogBrowserTest.*
 PasswordReuseModalWarningTest.*
 PermissionChipBrowserTest.*
 All/PermissionPromptBubbleViewBrowserTest.*

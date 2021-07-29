@@ -145,7 +145,7 @@ static int get_surface_sample_cnt(GrSurface* surf) {
 
 static bool is_resolving_msaa(GrSurface* surf) {
     auto rt = static_cast<GrMtlRenderTarget*>(surf->asRenderTarget());
-    if (rt && rt->mtlResolveTexture()) {
+    if (rt && rt->resolveAttachment()) {
         SkASSERT(rt->numSamples() > 1);
         return true;
     }
@@ -275,6 +275,7 @@ void GrMtlCaps::initGrCaps(id<MTLDevice> device) {
     // We always copy in/out of a transfer buffer so it's trivial to support row bytes.
     fReadPixelsRowBytesSupport = true;
     fWritePixelsRowBytesSupport = true;
+    fTransferPixelsToRowBytesSupport = true;
 
     // RenderTarget and Texture size
     if (this->isMac()) {
@@ -294,7 +295,8 @@ void GrMtlCaps::initGrCaps(id<MTLDevice> device) {
     fMaxPreferredRenderTargetSize = fMaxRenderTargetSize;
     fMaxTextureSize = fMaxRenderTargetSize;
 
-    fMaxPushConstantsSize = 4*1024;
+    fMaxPushConstantsSize = 0; // TODO: should be 4*1024 but disabled for now
+    fTransferBufferAlignment = 1;
 
     // Init sample counts. All devices support 1 (i.e. 0 in skia).
     fSampleCounts.push_back(1);
@@ -460,7 +462,7 @@ void GrMtlCaps::initShaderCaps() {
         shaderCaps->fDualSourceBlendingSupport = false;
     }
 
-    // TODO: Re-enable this once skbug:8720 is fixed. Will also need to remove asserts in
+    // TODO(skia:8270): Re-enable this once bug 8270 is fixed. Will also need to remove asserts in
     // GrMtlPipelineStateBuilder which assert we aren't using this feature.
 #if 0
     if (this->isIOS()) {
@@ -474,6 +476,7 @@ void GrMtlCaps::initShaderCaps() {
     shaderCaps->fIntegerSupport = true;
     shaderCaps->fNonsquareMatrixSupport = true;
     shaderCaps->fVertexIDSupport = false;
+    shaderCaps->fInfinitySupport = true;
 
     // Metal uses IEEE float and half floats so assuming those values here.
     shaderCaps->fFloatIs32Bits = true;
@@ -928,7 +931,7 @@ bool GrMtlCaps::onSurfaceSupportsWritePixels(const GrSurface* surface) const {
 GrCaps::SurfaceReadPixelsSupport GrMtlCaps::surfaceSupportsReadPixels(
         const GrSurface* surface) const {
     if (auto mtlRT = static_cast<const GrMtlRenderTarget*>(surface->asRenderTarget())) {
-        if (mtlRT->numSamples() > 1 && !mtlRT->mtlResolveTexture()) {
+        if (mtlRT->numSamples() > 1 && !mtlRT->resolveAttachment()) {
             return SurfaceReadPixelsSupport::kCopyToTexture2D;
         }
     }
@@ -1006,7 +1009,7 @@ GrSwizzle GrMtlCaps::onGetReadSwizzle(const GrBackendFormat& format, GrColorType
             return ctInfo.fReadSwizzle;
         }
     }
-    SkDEBUGFAILF("Illegal color type (%d) and format (%d) combination.", colorType,
+    SkDEBUGFAILF("Illegal color type (%d) and format (%d) combination.", (int)colorType,
                  static_cast<int>(mtlFormat));
     return {};
 }
@@ -1021,7 +1024,7 @@ GrSwizzle GrMtlCaps::getWriteSwizzle(const GrBackendFormat& format, GrColorType 
             return ctInfo.fWriteSwizzle;
         }
     }
-    SkDEBUGFAILF("Illegal color type (%d) and format (%d) combination.", colorType,
+    SkDEBUGFAILF("Illegal color type (%d) and format (%d) combination.", (int)colorType,
                  static_cast<int>(mtlFormat));
     return {};
 }

@@ -15,10 +15,10 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_canvas.h"
@@ -1876,8 +1876,7 @@ void TestRunnerBindings::SetAnimationRequiresRaster(bool do_raster) {
 }
 
 static void GetManifestReply(BoundV8Callback callback,
-                             const blink::WebURL& manifest_url,
-                             const blink::Manifest& manifest) {
+                             const blink::WebURL& manifest_url) {
   std::move(callback).Run(NoV8Args());
 }
 
@@ -2937,17 +2936,17 @@ void TestRunner::UseUnfortunateSynchronousResizeMode() {
 
 void TestRunner::SetMockScreenOrientation(blink::WebView* view,
                                           const std::string& orientation_str) {
-  blink::mojom::ScreenOrientation orientation;
+  display::mojom::ScreenOrientation orientation;
 
   if (orientation_str == "portrait-primary") {
-    orientation = blink::mojom::ScreenOrientation::kPortraitPrimary;
+    orientation = display::mojom::ScreenOrientation::kPortraitPrimary;
   } else if (orientation_str == "portrait-secondary") {
-    orientation = blink::mojom::ScreenOrientation::kPortraitSecondary;
+    orientation = display::mojom::ScreenOrientation::kPortraitSecondary;
   } else if (orientation_str == "landscape-primary") {
-    orientation = blink::mojom::ScreenOrientation::kLandscapePrimary;
+    orientation = display::mojom::ScreenOrientation::kLandscapePrimary;
   } else {
     DCHECK_EQ("landscape-secondary", orientation_str);
-    orientation = blink::mojom::ScreenOrientation::kLandscapeSecondary;
+    orientation = display::mojom::ScreenOrientation::kLandscapeSecondary;
   }
 
   bool changed =

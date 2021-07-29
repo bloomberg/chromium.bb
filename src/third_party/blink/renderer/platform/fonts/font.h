@@ -41,7 +41,7 @@
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 
-// To avoid conflicts with the CreateWindow macro from the Windows SDK...
+// To avoid conflicts with the DrawText macro from the Windows SDK...
 #undef DrawText
 
 namespace cc {
@@ -247,12 +247,6 @@ class PLATFORM_EXPORT Font {
     if (!font_fallback_list_)
       return false;
     return EnsureFontFallbackList()->ShouldSkipDrawing();
-  }
-
-  // Returns true if any of the matched @font-face rules has set a
-  // advance-override value.
-  bool HasAdvanceOverride() const {
-    return font_fallback_list_ && font_fallback_list_->HasAdvanceOverride();
   }
 
  private:

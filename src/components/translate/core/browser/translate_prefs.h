@@ -128,6 +128,12 @@ class TranslatePrefs {
 
   ~TranslatePrefs();
 
+  // Some existing preferences do not follow inclusive naming. Existing
+  // preference names cannot be renamed since values are saved client side.
+  // Map these to inclusive alternatives to reduce references to those names in
+  // the rest of the code.
+  static std::string MapPreferenceName(const std::string& pref_name);
+
   // Checks if the "offer translate" (i.e. automatic translate bubble) feature
   // is enabled.
   bool IsOfferTranslateEnabled() const;
@@ -276,6 +282,11 @@ class TranslatePrefs {
   // prompt was displayed to the user already.
   bool GetExplicitLanguageAskPromptShown() const;
   void SetExplicitLanguageAskPromptShown(bool shown);
+
+  // These methods are used to determine whether the app language prompt was
+  // displayed to the user already. Once shown it can not be unset.
+  bool GetAppLanguagePromptShown() const;
+  void SetAppLanguagePromptShown();
 #endif
 
   // Gets the full (policy-forced and user selected) language list from language
@@ -289,6 +300,8 @@ class TranslatePrefs {
                             base::StringPiece language);
   bool ShouldAutoTranslate(base::StringPiece source_language,
                            std::string* target_language);
+  // True if the detailed language settings are enabled for this user.
+  static bool IsDetailedLanguageSettingsEnabled();
 
   // Stores and retrieves the last-observed translate target language. Used to
   // determine which target language to offer in future. The translate target

@@ -66,7 +66,7 @@ IN_PROC_BROWSER_TEST_F(ScriptingAPITest, MainFrameTests) {
   OpenURLInNewTab(
       embedded_test_server()->GetURL("chromium.org", "/title2.html"));
 
-  ASSERT_TRUE(RunExtensionTest({.name = "scripting/main_frame"},
+  ASSERT_TRUE(RunExtensionTest("scripting/main_frame", {},
                                {.ignore_manifest_warnings = true}))
       << message_;
 }
@@ -97,6 +97,10 @@ IN_PROC_BROWSER_TEST_F(ScriptingAPITest, CSSInjection) {
 
 IN_PROC_BROWSER_TEST_F(ScriptingAPITest, CSSRemoval) {
   ASSERT_TRUE(RunExtensionTest("scripting/remove_css")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ScriptingAPITest, DynamicContentScripts) {
+  ASSERT_TRUE(RunExtensionTest("scripting/dynamic_scripts")) << message_;
 }
 
 }  // namespace extensions

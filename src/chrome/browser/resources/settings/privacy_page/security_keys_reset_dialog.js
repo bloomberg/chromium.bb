@@ -13,8 +13,8 @@ import 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
 import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
 import '../settings_shared_css.js';
 
-import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
-import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
+import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../i18n_setup.js';
 
@@ -31,51 +31,72 @@ export const ResetDialogPage = {
 };
 
 
-Polymer({
-  is: 'settings-security-keys-reset-dialog',
 
-  _template: html`{__html_template__}`,
+/**
+ * @constructor
+ * @extends {PolymerElement}
+ * @implements {I18nBehaviorInterface}
+ */
+const SettingsSecurityKeysResetDialogElementBase =
+    mixinBehaviors([I18nBehavior], PolymerElement);
 
-  behaviors: [I18nBehavior],
+/** @polymer */
+class SettingsSecurityKeysResetDialogElement extends
+    SettingsSecurityKeysResetDialogElementBase {
+  static get is() {
+    return 'settings-security-keys-reset-dialog';
+  }
 
-  properties: {
-    /**
-     * A CTAP error code for when the specific error was not recognised.
-     * @private
-     */
-    errorCode_: Number,
+  static get template() {
+    return html`{__html_template__}`;
+  }
 
-    /**
-     * True iff the process has completed, successfully or otherwise.
-     * @private
-     */
-    complete_: {
-      type: Boolean,
-      value: false,
-    },
+  static get properties() {
+    return {
+      /**
+       * A CTAP error code for when the specific error was not recognised.
+       * @private
+       */
+      errorCode_: Number,
 
-    /**
-     * The id of an element on the page that is currently shown.
-     * @private {!ResetDialogPage}
-     */
-    shown_: {
-      type: String,
-      value: ResetDialogPage.INITIAL,
-    },
+      /**
+       * True iff the process has completed, successfully or otherwise.
+       * @private
+       */
+      complete_: {
+        type: Boolean,
+        value: false,
+      },
 
-    /**
-     * @private
-     */
-    title_: String,
-  },
+      /**
+       * The id of an element on the page that is currently shown.
+       * @private {!ResetDialogPage}
+       */
+      shown_: {
+        type: String,
+        value: ResetDialogPage.INITIAL,
+      },
 
-  /** @private {?SecurityKeysResetBrowserProxy} */
-  browserProxy_: null,
+      /**
+       * @private
+       */
+      title_: String,
+
+    };
+  }
+
+  constructor() {
+    super();
+
+    /** @private {!SecurityKeysResetBrowserProxy} */
+    this.browserProxy_ = SecurityKeysResetBrowserProxyImpl.getInstance();
+  }
 
   /** @override */
-  attached() {
+  connectedCallback() {
+    super.connectedCallback();
+
     this.title_ = this.i18n('securityKeysResetTitle');
-    this.browserProxy_ = SecurityKeysResetBrowserProxyImpl.getInstance();
     this.$.dialog.showModal();
 
     this.browserProxy_.reset().then(code => {
@@ -105,13 +126,13 @@ Polymer({
         });
       }
     });
-  },
+  }
 
   /** @private */
   closeDialog_() {
     this.$.dialog.close();
     this.finish_();
-  },
+  }
 
   /** @private */
   finish_() {
@@ -120,7 +141,7 @@ Polymer({
     }
     this.complete_ = true;
     this.browserProxy_.close();
-  },
+  }
 
   /**
    * @param {!Event} e
@@ -130,7 +151,7 @@ Polymer({
     // Prevent this event from bubbling since it is unnecessarily triggering
     // the listener within settings-animated-pages.
     e.stopPropagation();
-  },
+  }
 
   /**
      @param {number} code CTAP error code.
@@ -143,7 +164,7 @@ Polymer({
       return '';
     }
     return this.i18n('securityKeysResetError', code.toString());
-  },
+  }
 
   /**
    * @param {boolean} complete Whether the dialog process is complete.
@@ -153,7 +174,7 @@ Polymer({
    */
   closeText_(complete) {
     return this.i18n(complete ? 'ok' : 'cancel');
-  },
+  }
 
   /**
    * @param {boolean} complete Whether the dialog process is complete.
@@ -163,5 +184,9 @@ Polymer({
    */
   maybeActionButton_(complete) {
     return complete ? 'action-button' : 'cancel-button';
-  },
-});
+  }
+}
+
+customElements.define(
+    SettingsSecurityKeysResetDialogElement.is,
+    SettingsSecurityKeysResetDialogElement);

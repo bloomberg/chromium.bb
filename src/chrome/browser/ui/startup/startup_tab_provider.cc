@@ -12,7 +12,7 @@
 #include "chrome/browser/profile_resetter/triggered_profile_resetter_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_util.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -60,7 +60,7 @@ StartupTabs StartupTabProviderImpl::GetOnboardingTabs(Profile* profile) const {
   standard_params.has_seen_welcome_page =
       prefs && prefs->GetBoolean(prefs::kHasSeenWelcomePage);
   standard_params.is_signin_allowed =
-      ProfileSyncServiceFactory::IsSyncAllowed(profile);
+      SyncServiceFactory::IsSyncAllowed(profile);
   if (auto* identity_manager = IdentityManagerFactory::GetForProfile(profile)) {
     standard_params.is_signed_in =
         identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync);
@@ -72,6 +72,7 @@ StartupTabs StartupTabProviderImpl::GetOnboardingTabs(Profile* profile) const {
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
+#if defined(OS_WIN)
 StartupTabs StartupTabProviderImpl::GetWelcomeBackTabs(
     Profile* profile,
     StartupBrowserCreator* browser_creator,
@@ -80,13 +81,14 @@ StartupTabs StartupTabProviderImpl::GetWelcomeBackTabs(
   if (!process_startup || !browser_creator)
     return tabs;
   if (browser_creator->welcome_back_page() &&
-      CanShowWelcome(ProfileSyncServiceFactory::IsSyncAllowed(profile),
+      CanShowWelcome(SyncServiceFactory::IsSyncAllowed(profile),
                      profile->IsSupervised(),
                      signin_util::IsForceSigninEnabled())) {
     tabs.emplace_back(GetWelcomePageUrl(false), false);
   }
   return tabs;
 }
+#endif  // defined(OS_WIN)
 
 StartupTabs StartupTabProviderImpl::GetDistributionFirstRunTabs(
     StartupBrowserCreator* browser_creator) const {
@@ -134,11 +136,6 @@ StartupTabs StartupTabProviderImpl::GetNewTabPageTabs(
 StartupTabs StartupTabProviderImpl::GetPostCrashTabs(
     bool has_incompatible_applications) const {
   return GetPostCrashTabsForState(has_incompatible_applications);
-}
-
-StartupTabs StartupTabProviderImpl::GetExtensionCheckupTabs(
-    bool serve_extensions_page) const {
-  return GetExtensionCheckupTabsForState(serve_extensions_page);
 }
 
 // static
@@ -239,19 +236,6 @@ StartupTabs StartupTabProviderImpl::GetPostCrashTabsForState(
   StartupTabs tabs;
   if (has_incompatible_applications)
     AddIncompatibleApplicationsUrl(&tabs);
-  return tabs;
-}
-
-// static
-StartupTabs StartupTabProviderImpl::GetExtensionCheckupTabsForState(
-    bool serve_extensions_page) {
-  StartupTabs tabs;
-  if (serve_extensions_page) {
-    tabs.emplace_back(
-        net::AppendQueryParameter(GURL(chrome::kChromeUIExtensionsURL),
-                                  "checkup", "shown"),
-        false);
-  }
   return tabs;
 }
 

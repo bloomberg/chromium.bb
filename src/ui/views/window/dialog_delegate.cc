@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/debug/alias.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -35,6 +36,9 @@
 
 namespace views {
 
+// Debug information for https://crbug.com/1215247.
+int g_instance_count = 0;
+
 ////////////////////////////////////////////////////////////////////////////////
 // DialogDelegate::Params:
 DialogDelegate::Params::Params() = default;
@@ -44,6 +48,8 @@ DialogDelegate::Params::~Params() = default;
 // DialogDelegate:
 
 DialogDelegate::DialogDelegate() {
+  ++g_instance_count;
+
   WidgetDelegate::RegisterWindowWillCloseCallback(
       base::BindOnce(&DialogDelegate::WindowWillClose, base::Unretained(this)));
   UMA_HISTOGRAM_BOOLEAN("Dialog.DialogDelegate.Create", true);
@@ -280,19 +286,19 @@ BubbleFrameView* DialogDelegate::GetBubbleFrameView() const {
 }
 
 views::LabelButton* DialogDelegate::GetOkButton() const {
-  DCHECK(GetWidget()) << "Don't call this before OnDialogInitialized";
+  DCHECK(GetWidget()) << "Don't call this before OnWidgetInitialized";
   auto* client = GetDialogClientView();
   return client ? client->ok_button() : nullptr;
 }
 
 views::LabelButton* DialogDelegate::GetCancelButton() const {
-  DCHECK(GetWidget()) << "Don't call this before OnDialogInitialized";
+  DCHECK(GetWidget()) << "Don't call this before OnWidgetInitialized";
   auto* client = GetDialogClientView();
   return client ? client->cancel_button() : nullptr;
 }
 
 views::View* DialogDelegate::GetExtraView() const {
-  DCHECK(GetWidget()) << "Don't call this before OnDialogInitialized";
+  DCHECK(GetWidget()) << "Don't call this before OnWidgetInitialized";
   auto* client = GetDialogClientView();
   return client ? client->extra_view() : nullptr;
 }
@@ -387,9 +393,21 @@ void DialogDelegate::SetButtonRowInsets(const gfx::Insets& insets) {
 }
 
 void DialogDelegate::AcceptDialog() {
+  // Copy the dialog widget name onto the stack so it appears in crash dumps.
+  DEBUG_ALIAS_FOR_CSTR(last_widget_name, GetWidget()->GetName().c_str(), 64);
+
   DCHECK(IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
   if (already_started_close_ || !Accept())
     return;
+
+  // Check for Accept() deleting `this` but returning false. Empirically the
+  // steady state instance count with no dialogs open is zero, so if it's back
+  // to zero `this` is deleted https://crbug.com/1215247
+  if (g_instance_count <= 0) {
+    // LOG(FATAL) instead of CHECK() to put the widget name into a crash key.
+    // See "Product Data" in the crash tool if a crash report shows this line.
+    LOG(FATAL) << last_widget_name;
+  }
 
   already_started_close_ = true;
   GetWidget()->CloseWithReason(
@@ -411,6 +429,7 @@ void DialogDelegate::CancelDialog() {
 DialogDelegate::~DialogDelegate() {
   UMA_HISTOGRAM_LONG_TIMES("Dialog.DialogDelegate.Duration",
                            base::TimeTicks::Now() - creation_time_);
+  --g_instance_count;
 }
 
 ax::mojom::Role DialogDelegate::GetAccessibleWindowRole() {
@@ -425,6 +444,8 @@ int DialogDelegate::GetCornerRadius() const {
   if (GetModalType() == ui::MODAL_TYPE_WINDOW)
     return 2;
 #endif
+  if (params_.corner_radius)
+    return *params_.corner_radius;
   return LayoutProvider::Get()->GetCornerRadiusMetric(views::Emphasis::kMedium);
 }
 
@@ -432,15 +453,10 @@ std::unique_ptr<View> DialogDelegate::DisownFootnoteView() {
   return std::move(footnote_view_);
 }
 
-void DialogDelegate::OnWidgetInitialized() {
-  OnDialogInitialized();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // DialogDelegateView:
 
 DialogDelegateView::DialogDelegateView() {
-  set_owned_by_client();
   SetOwnedByWidget(true);
   UMA_HISTOGRAM_BOOLEAN("Dialog.DialogDelegateView.Create", true);
 }

@@ -16,7 +16,7 @@
 #include "core/fxge/fx_font.h"
 #include "core/fxge/systemfontinfo_iface.h"
 #include "third_party/base/check.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/cxx17_backports.h"
 
 namespace {
 
@@ -171,7 +171,7 @@ Optional<pdfium::span<const uint8_t>> CFX_FontMgr::GetBuiltinFont(
     return pdfium::make_span(g_MMFonts[mm_index].m_pFontData,
                              g_MMFonts[mm_index].m_dwSize);
   }
-  return {};
+  return pdfium::nullopt;
 }
 
 bool CFX_FontMgr::FreeTypeVersionSupportsHinting() const {

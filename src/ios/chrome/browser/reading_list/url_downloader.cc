@@ -27,8 +27,10 @@
 #include "net/base/load_flags.h"
 #include "net/base/mime_sniffer.h"
 #include "net/http/http_response_headers.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/gurl.h"
 
 namespace {
@@ -300,12 +302,10 @@ void URLDownloader::DistillerCallback(
     return;
   }
 
-  std::vector<dom_distiller::DistillerViewer::ImageInfo> images_block = images;
-  std::string block_html = html;
   task_tracker_.PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE,
       base::BindOnce(&URLDownloader::SaveDistilledHTML, base::Unretained(this),
-                     page_url, images_block, block_html),
+                     page_url, images, html),
       base::BindOnce(&URLDownloader::DownloadCompletionHandler,
                      base::Unretained(this), page_url, title,
                      reading_list::OfflinePagePath(

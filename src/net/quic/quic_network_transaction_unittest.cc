@@ -12,7 +12,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -217,10 +216,9 @@ std::string ConstructDataFrameForVersion(base::StringPiece body,
   if (!version.HasIetfQuicFrames()) {
     return std::string(body);
   }
-  std::unique_ptr<char[]> buffer;
-  auto header_length =
-      quic::HttpEncoder::SerializeDataFrameHeader(body.size(), &buffer);
-  return base::StrCat({base::StringPiece(buffer.get(), header_length), body});
+  quic::QuicBuffer buffer = quic::HttpEncoder::SerializeDataFrameHeader(
+      body.size(), quic::SimpleBufferAllocator::Get());
+  return base::StrCat({base::StringPiece(buffer.data(), buffer.size()), body});
 }
 
 }  // namespace
@@ -943,11 +941,11 @@ class QuicNetworkTransactionTest
         GetNthClientInitiatedBidirectionalStreamId(n);
     EXPECT_LT(cancelled_stream_id, 63u);
 
-    const unsigned char opcode = 0x40;
+    const char opcode = 0x40;
     if (create_stream) {
-      return {0x03, opcode | static_cast<unsigned char>(cancelled_stream_id)};
+      return {0x03, static_cast<char>(opcode | cancelled_stream_id)};
     } else {
-      return {opcode | static_cast<unsigned char>(cancelled_stream_id)};
+      return {static_cast<char>(opcode | cancelled_stream_id)};
     }
   }
 
@@ -3782,7 +3780,7 @@ TEST_P(QuicNetworkTransactionTest, ResetAfterHandshakeConfirmedThenBroken) {
   if (VersionUsesHttp3(version_.transport_version)) {
     quic_data.AddWrite(
         SYNCHRONOUS,
-        client_maker_->MakeRstAckAndDataPacket(
+        client_maker_->MakeAckRstAndDataPacket(
             packet_num++, true, GetNthClientInitiatedBidirectionalStreamId(0),
             quic::QUIC_HEADERS_TOO_LARGE, 1, 1, GetQpackDecoderStreamId(),
             false, StreamCancellationQpackDecoderInstruction(0)));
@@ -4051,7 +4049,7 @@ TEST_P(QuicNetworkTransactionTest,
   if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
-        client_maker_->MakeRstAckAndDataPacket(
+        client_maker_->MakeAckRstAndDataPacket(
             packet_num++, /*include_version=*/true,
             GetNthClientInitiatedBidirectionalStreamId(1),
             quic::QUIC_HEADERS_TOO_LARGE, 3, 2, GetQpackDecoderStreamId(),
@@ -5411,7 +5409,7 @@ TEST_P(QuicNetworkTransactionTest, RstStreamBeforeHeaders) {
   if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
-        client_maker_->MakeRstAckAndDataPacket(
+        client_maker_->MakeAckRstAndDataPacket(
             packet_num++, false, GetNthClientInitiatedBidirectionalStreamId(0),
             quic::QUIC_STREAM_CANCELLED, 1, 1, GetQpackDecoderStreamId(), false,
             StreamCancellationQpackDecoderInstruction(0)));

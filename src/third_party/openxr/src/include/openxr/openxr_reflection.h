@@ -2,21 +2,9 @@
 #define OPENXR_REFLECTION_H_ 1
 
 /*
-** Copyright (c) 2017-2020 The Khronos Group Inc.
+** Copyright (c) 2017-2021, The Khronos Group Inc.
 **
-** SPDX-License-Identifier: Apache-2.0
-**
-** Licensed under the Apache License, Version 2.0 (the "License");
-** you may not use this file except in compliance with the License.
-** You may obtain a copy of the License at
-**
-**     http://www.apache.org/licenses/LICENSE-2.0
-**
-** Unless required by applicable law or agreed to in writing, software
-** distributed under the License is distributed on an "AS IS" BASIS,
-** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-** See the License for the specific language governing permissions and
-** limitations under the License.
+** SPDX-License-Identifier: Apache-2.0 OR MIT
 */
 
 /*
@@ -96,10 +84,22 @@ XR_ENUM_STR(XrResult);
     _(XR_ERROR_ACTIONSETS_ALREADY_ATTACHED, -47) \
     _(XR_ERROR_LOCALIZED_NAME_DUPLICATED, -48) \
     _(XR_ERROR_LOCALIZED_NAME_INVALID, -49) \
+    _(XR_ERROR_GRAPHICS_REQUIREMENTS_CALL_MISSING, -50) \
+    _(XR_ERROR_RUNTIME_UNAVAILABLE, -51) \
     _(XR_ERROR_ANDROID_THREAD_SETTINGS_ID_INVALID_KHR, -1000003000) \
     _(XR_ERROR_ANDROID_THREAD_SETTINGS_FAILURE_KHR, -1000003001) \
     _(XR_ERROR_CREATE_SPATIAL_ANCHOR_FAILED_MSFT, -1000039001) \
     _(XR_ERROR_SECONDARY_VIEW_CONFIGURATION_TYPE_NOT_ENABLED_MSFT, -1000053000) \
+    _(XR_ERROR_CONTROLLER_MODEL_KEY_INVALID_MSFT, -1000055000) \
+    _(XR_ERROR_REPROJECTION_MODE_UNSUPPORTED_MSFT, -1000066000) \
+    _(XR_ERROR_COMPUTE_NEW_SCENE_NOT_COMPLETED_MSFT, -1000097000) \
+    _(XR_ERROR_SCENE_COMPONENT_ID_INVALID_MSFT, -1000097001) \
+    _(XR_ERROR_SCENE_COMPONENT_TYPE_MISMATCH_MSFT, -1000097002) \
+    _(XR_ERROR_SCENE_MESH_BUFFER_ID_INVALID_MSFT, -1000097003) \
+    _(XR_ERROR_SCENE_COMPUTE_FEATURE_INCOMPATIBLE_MSFT, -1000097004) \
+    _(XR_ERROR_SCENE_COMPUTE_CONSISTENCY_MISMATCH_MSFT, -1000097005) \
+    _(XR_ERROR_DISPLAY_REFRESH_RATE_UNSUPPORTED_FB, -1000101000) \
+    _(XR_ERROR_COLOR_SPACE_UNSUPPORTED_FB, -1000108000) \
     _(XR_RESULT_MAX_ENUM, 0x7FFFFFFF)
 
 #define XR_LIST_ENUM_XrStructureType(_) \
@@ -188,6 +188,7 @@ XR_ENUM_STR(XrResult);
     _(XR_TYPE_EVENT_DATA_VISIBILITY_MASK_CHANGED_KHR, 1000031001) \
     _(XR_TYPE_SESSION_CREATE_INFO_OVERLAY_EXTX, 1000033000) \
     _(XR_TYPE_EVENT_DATA_MAIN_SESSION_VISIBILITY_CHANGED_EXTX, 1000033003) \
+    _(XR_TYPE_COMPOSITION_LAYER_COLOR_SCALE_BIAS_KHR, 1000034000) \
     _(XR_TYPE_SPATIAL_ANCHOR_CREATE_INFO_MSFT, 1000039000) \
     _(XR_TYPE_SPATIAL_ANCHOR_SPACE_CREATE_INFO_MSFT, 1000039001) \
     _(XR_TYPE_VIEW_CONFIGURATION_DEPTH_RANGE_EXT, 1000046000) \
@@ -209,7 +210,54 @@ XR_ENUM_STR(XrResult);
     _(XR_TYPE_SECONDARY_VIEW_CONFIGURATION_FRAME_END_INFO_MSFT, 1000053003) \
     _(XR_TYPE_SECONDARY_VIEW_CONFIGURATION_LAYER_INFO_MSFT, 1000053004) \
     _(XR_TYPE_SECONDARY_VIEW_CONFIGURATION_SWAPCHAIN_CREATE_INFO_MSFT, 1000053005) \
+    _(XR_TYPE_CONTROLLER_MODEL_KEY_STATE_MSFT, 1000055000) \
+    _(XR_TYPE_CONTROLLER_MODEL_NODE_PROPERTIES_MSFT, 1000055001) \
+    _(XR_TYPE_CONTROLLER_MODEL_PROPERTIES_MSFT, 1000055002) \
+    _(XR_TYPE_CONTROLLER_MODEL_NODE_STATE_MSFT, 1000055003) \
+    _(XR_TYPE_CONTROLLER_MODEL_STATE_MSFT, 1000055004) \
     _(XR_TYPE_VIEW_CONFIGURATION_VIEW_FOV_EPIC, 1000059000) \
+    _(XR_TYPE_HOLOGRAPHIC_WINDOW_ATTACHMENT_MSFT, 1000063000) \
+    _(XR_TYPE_COMPOSITION_LAYER_REPROJECTION_INFO_MSFT, 1000066000) \
+    _(XR_TYPE_COMPOSITION_LAYER_REPROJECTION_PLANE_OVERRIDE_MSFT, 1000066001) \
+    _(XR_TYPE_ANDROID_SURFACE_SWAPCHAIN_CREATE_INFO_FB, 1000070000) \
+    _(XR_TYPE_INTERACTION_PROFILE_ANALOG_THRESHOLD_VALVE, 1000079000) \
+    _(XR_TYPE_HAND_JOINTS_MOTION_RANGE_INFO_EXT, 1000080000) \
+    _(XR_TYPE_LOADER_INIT_INFO_ANDROID_KHR, 1000089000) \
+    _(XR_TYPE_VULKAN_INSTANCE_CREATE_INFO_KHR, 1000090000) \
+    _(XR_TYPE_VULKAN_DEVICE_CREATE_INFO_KHR, 1000090001) \
+    _(XR_TYPE_VULKAN_GRAPHICS_DEVICE_GET_INFO_KHR, 1000090003) \
+    _(XR_TYPE_COMPOSITION_LAYER_EQUIRECT2_KHR, 1000091000) \
+    _(XR_TYPE_SCENE_OBSERVER_CREATE_INFO_MSFT, 1000097000) \
+    _(XR_TYPE_SCENE_CREATE_INFO_MSFT, 1000097001) \
+    _(XR_TYPE_NEW_SCENE_COMPUTE_INFO_MSFT, 1000097002) \
+    _(XR_TYPE_VISUAL_MESH_COMPUTE_LOD_INFO_MSFT, 1000097003) \
+    _(XR_TYPE_SCENE_COMPONENTS_MSFT, 1000097004) \
+    _(XR_TYPE_SCENE_COMPONENTS_GET_INFO_MSFT, 1000097005) \
+    _(XR_TYPE_SCENE_COMPONENT_LOCATIONS_MSFT, 1000097006) \
+    _(XR_TYPE_SCENE_COMPONENTS_LOCATE_INFO_MSFT, 1000097007) \
+    _(XR_TYPE_SCENE_OBJECTS_MSFT, 1000097008) \
+    _(XR_TYPE_SCENE_COMPONENT_PARENT_FILTER_INFO_MSFT, 1000097009) \
+    _(XR_TYPE_SCENE_OBJECT_TYPES_FILTER_INFO_MSFT, 1000097010) \
+    _(XR_TYPE_SCENE_PLANES_MSFT, 1000097011) \
+    _(XR_TYPE_SCENE_PLANE_ALIGNMENT_FILTER_INFO_MSFT, 1000097012) \
+    _(XR_TYPE_SCENE_MESHES_MSFT, 1000097013) \
+    _(XR_TYPE_SCENE_MESH_BUFFERS_GET_INFO_MSFT, 1000097014) \
+    _(XR_TYPE_SCENE_MESH_BUFFERS_MSFT, 1000097015) \
+    _(XR_TYPE_SCENE_MESH_VERTEX_BUFFER_MSFT, 1000097016) \
+    _(XR_TYPE_SCENE_MESH_INDICES_UINT32_MSFT, 1000097017) \
+    _(XR_TYPE_SCENE_MESH_INDICES_UINT16_MSFT, 1000097018) \
+    _(XR_TYPE_SERIALIZED_SCENE_FRAGMENT_DATA_GET_INFO_MSFT, 1000098000) \
+    _(XR_TYPE_SCENE_DESERIALIZE_INFO_MSFT, 1000098001) \
+    _(XR_TYPE_EVENT_DATA_DISPLAY_REFRESH_RATE_CHANGED_FB, 1000101000) \
+    _(XR_TYPE_SYSTEM_COLOR_SPACE_PROPERTIES_FB, 1000108000) \
+    _(XR_TYPE_BINDING_MODIFICATIONS_KHR, 1000120000) \
+    _(XR_TYPE_VIEW_LOCATE_FOVEATED_RENDERING_VARJO, 1000121000) \
+    _(XR_TYPE_FOVEATED_VIEW_CONFIGURATION_VIEW_VARJO, 1000121001) \
+    _(XR_TYPE_SYSTEM_FOVEATED_RENDERING_PROPERTIES_VARJO, 1000121002) \
+    _(XR_TYPE_COMPOSITION_LAYER_DEPTH_TEST_VARJO, 1000122000) \
+    _(XR_TYPE_SWAPCHAIN_STATE_ANDROID_SURFACE_DIMENSIONS_FB, 1000161000) \
+    _(XR_TYPE_SWAPCHAIN_STATE_SAMPLER_OPENGL_ES_FB, 1000162000) \
+    _(XR_TYPE_SWAPCHAIN_STATE_SAMPLER_VULKAN_FB, 1000163000) \
     _(XR_STRUCTURE_TYPE_MAX_ENUM, 0x7FFFFFFF)
 
 #define XR_LIST_ENUM_XrFormFactor(_) \
@@ -235,6 +283,7 @@ XR_ENUM_STR(XrResult);
     _(XR_REFERENCE_SPACE_TYPE_LOCAL, 2) \
     _(XR_REFERENCE_SPACE_TYPE_STAGE, 3) \
     _(XR_REFERENCE_SPACE_TYPE_UNBOUNDED_MSFT, 1000038000) \
+    _(XR_REFERENCE_SPACE_TYPE_COMBINED_EYE_VARJO, 1000121000) \
     _(XR_REFERENCE_SPACE_TYPE_MAX_ENUM, 0x7FFFFFFF)
 
 #define XR_LIST_ENUM_XrActionType(_) \
@@ -274,6 +323,8 @@ XR_ENUM_STR(XrResult);
     _(XR_OBJECT_TYPE_DEBUG_UTILS_MESSENGER_EXT, 1000019000) \
     _(XR_OBJECT_TYPE_SPATIAL_ANCHOR_MSFT, 1000039000) \
     _(XR_OBJECT_TYPE_HAND_TRACKER_EXT, 1000051000) \
+    _(XR_OBJECT_TYPE_SCENE_OBSERVER_MSFT, 1000097000) \
+    _(XR_OBJECT_TYPE_SCENE_MSFT, 1000097001) \
     _(XR_OBJECT_TYPE_MAX_ENUM, 0x7FFFFFFF)
 
 #define XR_LIST_ENUM_XrAndroidThreadTypeKHR(_) \
@@ -361,23 +412,99 @@ XR_ENUM_STR(XrResult);
     _(XR_HAND_POSE_TYPE_REFERENCE_OPEN_PALM_MSFT, 1) \
     _(XR_HAND_POSE_TYPE_MAX_ENUM_MSFT, 0x7FFFFFFF)
 
+#define XR_LIST_ENUM_XrReprojectionModeMSFT(_) \
+    _(XR_REPROJECTION_MODE_DEPTH_MSFT, 1) \
+    _(XR_REPROJECTION_MODE_PLANAR_FROM_DEPTH_MSFT, 2) \
+    _(XR_REPROJECTION_MODE_PLANAR_MANUAL_MSFT, 3) \
+    _(XR_REPROJECTION_MODE_ORIENTATION_ONLY_MSFT, 4) \
+    _(XR_REPROJECTION_MODE_MAX_ENUM_MSFT, 0x7FFFFFFF)
+
+#define XR_LIST_ENUM_XrHandJointsMotionRangeEXT(_) \
+    _(XR_HAND_JOINTS_MOTION_RANGE_UNOBSTRUCTED_EXT, 1) \
+    _(XR_HAND_JOINTS_MOTION_RANGE_CONFORMING_TO_CONTROLLER_EXT, 2) \
+    _(XR_HAND_JOINTS_MOTION_RANGE_MAX_ENUM_EXT, 0x7FFFFFFF)
+
+#define XR_LIST_ENUM_XrSceneComputeFeatureMSFT(_) \
+    _(XR_SCENE_COMPUTE_FEATURE_PLANE_MSFT, 1) \
+    _(XR_SCENE_COMPUTE_FEATURE_PLANE_MESH_MSFT, 2) \
+    _(XR_SCENE_COMPUTE_FEATURE_VISUAL_MESH_MSFT, 3) \
+    _(XR_SCENE_COMPUTE_FEATURE_COLLIDER_MESH_MSFT, 4) \
+    _(XR_SCENE_COMPUTE_FEATURE_SERIALIZE_SCENE_MSFT, 1000098000) \
+    _(XR_SCENE_COMPUTE_FEATURE_MAX_ENUM_MSFT, 0x7FFFFFFF)
+
+#define XR_LIST_ENUM_XrSceneComputeConsistencyMSFT(_) \
+    _(XR_SCENE_COMPUTE_CONSISTENCY_SNAPSHOT_COMPLETE_MSFT, 1) \
+    _(XR_SCENE_COMPUTE_CONSISTENCY_SNAPSHOT_INCOMPLETE_FAST_MSFT, 2) \
+    _(XR_SCENE_COMPUTE_CONSISTENCY_OCCLUSION_OPTIMIZED_MSFT, 3) \
+    _(XR_SCENE_COMPUTE_CONSISTENCY_MAX_ENUM_MSFT, 0x7FFFFFFF)
+
+#define XR_LIST_ENUM_XrMeshComputeLodMSFT(_) \
+    _(XR_MESH_COMPUTE_LOD_COARSE_MSFT, 1) \
+    _(XR_MESH_COMPUTE_LOD_MEDIUM_MSFT, 2) \
+    _(XR_MESH_COMPUTE_LOD_FINE_MSFT, 3) \
+    _(XR_MESH_COMPUTE_LOD_UNLIMITED_MSFT, 4) \
+    _(XR_MESH_COMPUTE_LOD_MAX_ENUM_MSFT, 0x7FFFFFFF)
+
+#define XR_LIST_ENUM_XrSceneComponentTypeMSFT(_) \
+    _(XR_SCENE_COMPONENT_TYPE_INVALID_MSFT, -1) \
+    _(XR_SCENE_COMPONENT_TYPE_OBJECT_MSFT, 1) \
+    _(XR_SCENE_COMPONENT_TYPE_PLANE_MSFT, 2) \
+    _(XR_SCENE_COMPONENT_TYPE_VISUAL_MESH_MSFT, 3) \
+    _(XR_SCENE_COMPONENT_TYPE_COLLIDER_MESH_MSFT, 4) \
+    _(XR_SCENE_COMPONENT_TYPE_SERIALIZED_SCENE_FRAGMENT_MSFT, 1000098000) \
+    _(XR_SCENE_COMPONENT_TYPE_MAX_ENUM_MSFT, 0x7FFFFFFF)
+
+#define XR_LIST_ENUM_XrSceneObjectTypeMSFT(_) \
+    _(XR_SCENE_OBJECT_TYPE_UNCATEGORIZED_MSFT, -1) \
+    _(XR_SCENE_OBJECT_TYPE_BACKGROUND_MSFT, 1) \
+    _(XR_SCENE_OBJECT_TYPE_WALL_MSFT, 2) \
+    _(XR_SCENE_OBJECT_TYPE_FLOOR_MSFT, 3) \
+    _(XR_SCENE_OBJECT_TYPE_CEILING_MSFT, 4) \
+    _(XR_SCENE_OBJECT_TYPE_PLATFORM_MSFT, 5) \
+    _(XR_SCENE_OBJECT_TYPE_INFERRED_MSFT, 6) \
+    _(XR_SCENE_OBJECT_TYPE_MAX_ENUM_MSFT, 0x7FFFFFFF)
+
+#define XR_LIST_ENUM_XrScenePlaneAlignmentTypeMSFT(_) \
+    _(XR_SCENE_PLANE_ALIGNMENT_TYPE_NON_ORTHOGONAL_MSFT, 0) \
+    _(XR_SCENE_PLANE_ALIGNMENT_TYPE_HORIZONTAL_MSFT, 1) \
+    _(XR_SCENE_PLANE_ALIGNMENT_TYPE_VERTICAL_MSFT, 2) \
+    _(XR_SCENE_PLANE_ALIGNMENT_TYPE_MAX_ENUM_MSFT, 0x7FFFFFFF)
+
+#define XR_LIST_ENUM_XrSceneComputeStateMSFT(_) \
+    _(XR_SCENE_COMPUTE_STATE_NONE_MSFT, 0) \
+    _(XR_SCENE_COMPUTE_STATE_UPDATING_MSFT, 1) \
+    _(XR_SCENE_COMPUTE_STATE_COMPLETED_MSFT, 2) \
+    _(XR_SCENE_COMPUTE_STATE_COMPLETED_WITH_ERROR_MSFT, 3) \
+    _(XR_SCENE_COMPUTE_STATE_MAX_ENUM_MSFT, 0x7FFFFFFF)
+
+#define XR_LIST_ENUM_XrColorSpaceFB(_) \
+    _(XR_COLOR_SPACE_UNMANAGED_FB, 0) \
+    _(XR_COLOR_SPACE_REC2020_FB, 1) \
+    _(XR_COLOR_SPACE_REC709_FB, 2) \
+    _(XR_COLOR_SPACE_RIFT_CV1_FB, 3) \
+    _(XR_COLOR_SPACE_RIFT_S_FB, 4) \
+    _(XR_COLOR_SPACE_QUEST_FB, 5) \
+    _(XR_COLOR_SPACE_P3_FB, 6) \
+    _(XR_COLOR_SPACE_ADOBE_RGB_FB, 7) \
+    _(XR_COLOR_SPACE_MAX_ENUM_FB, 0x7FFFFFFF)
+
 #define XR_LIST_BITS_XrInstanceCreateFlags(_)
 
 #define XR_LIST_BITS_XrSessionCreateFlags(_)
 
 #define XR_LIST_BITS_XrSpaceVelocityFlags(_) \
     _(XR_SPACE_VELOCITY_LINEAR_VALID_BIT, 0x00000001) \
-    _(XR_SPACE_VELOCITY_ANGULAR_VALID_BIT, 0x00000002)
+    _(XR_SPACE_VELOCITY_ANGULAR_VALID_BIT, 0x00000002) \
 
 #define XR_LIST_BITS_XrSpaceLocationFlags(_) \
     _(XR_SPACE_LOCATION_ORIENTATION_VALID_BIT, 0x00000001) \
     _(XR_SPACE_LOCATION_POSITION_VALID_BIT, 0x00000002) \
     _(XR_SPACE_LOCATION_ORIENTATION_TRACKED_BIT, 0x00000004) \
-    _(XR_SPACE_LOCATION_POSITION_TRACKED_BIT, 0x00000008)
+    _(XR_SPACE_LOCATION_POSITION_TRACKED_BIT, 0x00000008) \
 
 #define XR_LIST_BITS_XrSwapchainCreateFlags(_) \
     _(XR_SWAPCHAIN_CREATE_PROTECTED_CONTENT_BIT, 0x00000001) \
-    _(XR_SWAPCHAIN_CREATE_STATIC_IMAGE_BIT, 0x00000002)
+    _(XR_SWAPCHAIN_CREATE_STATIC_IMAGE_BIT, 0x00000002) \
 
 #define XR_LIST_BITS_XrSwapchainUsageFlags(_) \
     _(XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT, 0x00000001) \
@@ -386,41 +513,49 @@ XR_ENUM_STR(XrResult);
     _(XR_SWAPCHAIN_USAGE_TRANSFER_SRC_BIT, 0x00000008) \
     _(XR_SWAPCHAIN_USAGE_TRANSFER_DST_BIT, 0x00000010) \
     _(XR_SWAPCHAIN_USAGE_SAMPLED_BIT, 0x00000020) \
-    _(XR_SWAPCHAIN_USAGE_MUTABLE_FORMAT_BIT, 0x00000040)
+    _(XR_SWAPCHAIN_USAGE_MUTABLE_FORMAT_BIT, 0x00000040) \
+    _(XR_SWAPCHAIN_USAGE_INPUT_ATTACHMENT_BIT_MND, 0x00000080) \
 
 #define XR_LIST_BITS_XrCompositionLayerFlags(_) \
     _(XR_COMPOSITION_LAYER_CORRECT_CHROMATIC_ABERRATION_BIT, 0x00000001) \
     _(XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT, 0x00000002) \
-    _(XR_COMPOSITION_LAYER_UNPREMULTIPLIED_ALPHA_BIT, 0x00000004)
+    _(XR_COMPOSITION_LAYER_UNPREMULTIPLIED_ALPHA_BIT, 0x00000004) \
 
 #define XR_LIST_BITS_XrViewStateFlags(_) \
     _(XR_VIEW_STATE_ORIENTATION_VALID_BIT, 0x00000001) \
     _(XR_VIEW_STATE_POSITION_VALID_BIT, 0x00000002) \
     _(XR_VIEW_STATE_ORIENTATION_TRACKED_BIT, 0x00000004) \
-    _(XR_VIEW_STATE_POSITION_TRACKED_BIT, 0x00000008)
+    _(XR_VIEW_STATE_POSITION_TRACKED_BIT, 0x00000008) \
 
 #define XR_LIST_BITS_XrInputSourceLocalizedNameFlags(_) \
     _(XR_INPUT_SOURCE_LOCALIZED_NAME_USER_PATH_BIT, 0x00000001) \
     _(XR_INPUT_SOURCE_LOCALIZED_NAME_INTERACTION_PROFILE_BIT, 0x00000002) \
-    _(XR_INPUT_SOURCE_LOCALIZED_NAME_COMPONENT_BIT, 0x00000004)
+    _(XR_INPUT_SOURCE_LOCALIZED_NAME_COMPONENT_BIT, 0x00000004) \
+
+#define XR_LIST_BITS_XrVulkanInstanceCreateFlagsKHR(_)
+
+#define XR_LIST_BITS_XrVulkanDeviceCreateFlagsKHR(_)
 
 #define XR_LIST_BITS_XrDebugUtilsMessageSeverityFlagsEXT(_) \
     _(XR_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT, 0x00000001) \
     _(XR_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT, 0x00000010) \
     _(XR_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT, 0x00000100) \
-    _(XR_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT, 0x00001000)
+    _(XR_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT, 0x00001000) \
 
 #define XR_LIST_BITS_XrDebugUtilsMessageTypeFlagsEXT(_) \
     _(XR_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT, 0x00000001) \
     _(XR_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT, 0x00000002) \
     _(XR_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT, 0x00000004) \
-    _(XR_DEBUG_UTILS_MESSAGE_TYPE_CONFORMANCE_BIT_EXT, 0x00000008)
+    _(XR_DEBUG_UTILS_MESSAGE_TYPE_CONFORMANCE_BIT_EXT, 0x00000008) \
 
-#define XR_LIST_BITS_XrOverlaySessionCreateFlagsEXTX(_) \
-    _(XR_OVERLAY_SESSION_CREATE_RELAXED_DISPLAY_TIME_BIT_EXTX, 0x00000001)
+#define XR_LIST_BITS_XrOverlaySessionCreateFlagsEXTX(_)
 
 #define XR_LIST_BITS_XrOverlayMainSessionFlagsEXTX(_) \
-    _(XR_OVERLAY_MAIN_SESSION_ENABLED_COMPOSITION_LAYER_INFO_DEPTH_BIT_EXTX, 0x00000001)
+    _(XR_OVERLAY_MAIN_SESSION_ENABLED_COMPOSITION_LAYER_INFO_DEPTH_BIT_EXTX, 0x00000001) \
+
+#define XR_LIST_BITS_XrAndroidSurfaceSwapchainFlagsFB(_) \
+    _(XR_ANDROID_SURFACE_SWAPCHAIN_SYNCHRONOUS_BIT_FB, 0x00000001) \
+    _(XR_ANDROID_SURFACE_SWAPCHAIN_USE_TIMESTAMPS_BIT_FB, 0x00000002) \
 
 #define XR_LIST_STRUCT_XrApiLayerProperties(_) \
     _(type) \
@@ -428,20 +563,20 @@ XR_ENUM_STR(XrResult);
     _(layerName) \
     _(specVersion) \
     _(layerVersion) \
-    _(description)
+    _(description) \
 
 #define XR_LIST_STRUCT_XrExtensionProperties(_) \
     _(type) \
     _(next) \
     _(extensionName) \
-    _(extensionVersion)
+    _(extensionVersion) \
 
 #define XR_LIST_STRUCT_XrApplicationInfo(_) \
     _(applicationName) \
     _(applicationVersion) \
     _(engineName) \
     _(engineVersion) \
-    _(apiVersion)
+    _(apiVersion) \
 
 #define XR_LIST_STRUCT_XrInstanceCreateInfo(_) \
     _(type) \
@@ -451,32 +586,32 @@ XR_ENUM_STR(XrResult);
     _(enabledApiLayerCount) \
     _(enabledApiLayerNames) \
     _(enabledExtensionCount) \
-    _(enabledExtensionNames)
+    _(enabledExtensionNames) \
 
 #define XR_LIST_STRUCT_XrInstanceProperties(_) \
     _(type) \
     _(next) \
     _(runtimeVersion) \
-    _(runtimeName)
+    _(runtimeName) \
 
 #define XR_LIST_STRUCT_XrEventDataBuffer(_) \
     _(type) \
     _(next) \
-    _(varying)
+    _(varying) \
 
 #define XR_LIST_STRUCT_XrSystemGetInfo(_) \
     _(type) \
     _(next) \
-    _(formFactor)
+    _(formFactor) \
 
 #define XR_LIST_STRUCT_XrSystemGraphicsProperties(_) \
     _(maxSwapchainImageHeight) \
     _(maxSwapchainImageWidth) \
-    _(maxLayerCount)
+    _(maxLayerCount) \
 
 #define XR_LIST_STRUCT_XrSystemTrackingProperties(_) \
     _(orientationTracking) \
-    _(positionTracking)
+    _(positionTracking) \
 
 #define XR_LIST_STRUCT_XrSystemProperties(_) \
     _(type) \
@@ -485,64 +620,64 @@ XR_ENUM_STR(XrResult);
     _(vendorId) \
     _(systemName) \
     _(graphicsProperties) \
-    _(trackingProperties)
+    _(trackingProperties) \
 
 #define XR_LIST_STRUCT_XrSessionCreateInfo(_) \
     _(type) \
     _(next) \
     _(createFlags) \
-    _(systemId)
+    _(systemId) \
 
 #define XR_LIST_STRUCT_XrVector3f(_) \
     _(x) \
     _(y) \
-    _(z)
+    _(z) \
 
 #define XR_LIST_STRUCT_XrSpaceVelocity(_) \
     _(type) \
     _(next) \
     _(velocityFlags) \
     _(linearVelocity) \
-    _(angularVelocity)
+    _(angularVelocity) \
 
 #define XR_LIST_STRUCT_XrQuaternionf(_) \
     _(x) \
     _(y) \
     _(z) \
-    _(w)
+    _(w) \
 
 #define XR_LIST_STRUCT_XrPosef(_) \
     _(orientation) \
-    _(position)
+    _(position) \
 
 #define XR_LIST_STRUCT_XrReferenceSpaceCreateInfo(_) \
     _(type) \
     _(next) \
     _(referenceSpaceType) \
-    _(poseInReferenceSpace)
+    _(poseInReferenceSpace) \
 
 #define XR_LIST_STRUCT_XrExtent2Df(_) \
     _(width) \
-    _(height)
+    _(height) \
 
 #define XR_LIST_STRUCT_XrActionSpaceCreateInfo(_) \
     _(type) \
     _(next) \
     _(action) \
     _(subactionPath) \
-    _(poseInActionSpace)
+    _(poseInActionSpace) \
 
 #define XR_LIST_STRUCT_XrSpaceLocation(_) \
     _(type) \
     _(next) \
     _(locationFlags) \
-    _(pose)
+    _(pose) \
 
 #define XR_LIST_STRUCT_XrViewConfigurationProperties(_) \
     _(type) \
     _(next) \
     _(viewConfigurationType) \
-    _(fovMutable)
+    _(fovMutable) \
 
 #define XR_LIST_STRUCT_XrViewConfigurationView(_) \
     _(type) \
@@ -552,7 +687,7 @@ XR_ENUM_STR(XrResult);
     _(recommendedImageRectHeight) \
     _(maxImageRectHeight) \
     _(recommendedSwapchainSampleCount) \
-    _(maxSwapchainSampleCount)
+    _(maxSwapchainSampleCount) \
 
 #define XR_LIST_STRUCT_XrSwapchainCreateInfo(_) \
     _(type) \
@@ -565,50 +700,50 @@ XR_ENUM_STR(XrResult);
     _(height) \
     _(faceCount) \
     _(arraySize) \
-    _(mipCount)
+    _(mipCount) \
 
 #define XR_LIST_STRUCT_XrSwapchainImageBaseHeader(_) \
     _(type) \
-    _(next)
+    _(next) \
 
 #define XR_LIST_STRUCT_XrSwapchainImageAcquireInfo(_) \
     _(type) \
-    _(next)
+    _(next) \
 
 #define XR_LIST_STRUCT_XrSwapchainImageWaitInfo(_) \
     _(type) \
     _(next) \
-    _(timeout)
+    _(timeout) \
 
 #define XR_LIST_STRUCT_XrSwapchainImageReleaseInfo(_) \
     _(type) \
-    _(next)
+    _(next) \
 
 #define XR_LIST_STRUCT_XrSessionBeginInfo(_) \
     _(type) \
     _(next) \
-    _(primaryViewConfigurationType)
+    _(primaryViewConfigurationType) \
 
 #define XR_LIST_STRUCT_XrFrameWaitInfo(_) \
     _(type) \
-    _(next)
+    _(next) \
 
 #define XR_LIST_STRUCT_XrFrameState(_) \
     _(type) \
     _(next) \
     _(predictedDisplayTime) \
     _(predictedDisplayPeriod) \
-    _(shouldRender)
+    _(shouldRender) \
 
 #define XR_LIST_STRUCT_XrFrameBeginInfo(_) \
     _(type) \
-    _(next)
+    _(next) \
 
 #define XR_LIST_STRUCT_XrCompositionLayerBaseHeader(_) \
     _(type) \
     _(next) \
     _(layerFlags) \
-    _(space)
+    _(space) \
 
 #define XR_LIST_STRUCT_XrFrameEndInfo(_) \
     _(type) \
@@ -616,38 +751,38 @@ XR_ENUM_STR(XrResult);
     _(displayTime) \
     _(environmentBlendMode) \
     _(layerCount) \
-    _(layers)
+    _(layers) \
 
 #define XR_LIST_STRUCT_XrViewLocateInfo(_) \
     _(type) \
     _(next) \
     _(viewConfigurationType) \
     _(displayTime) \
-    _(space)
+    _(space) \
 
 #define XR_LIST_STRUCT_XrViewState(_) \
     _(type) \
     _(next) \
-    _(viewStateFlags)
+    _(viewStateFlags) \
 
 #define XR_LIST_STRUCT_XrFovf(_) \
     _(angleLeft) \
     _(angleRight) \
     _(angleUp) \
-    _(angleDown)
+    _(angleDown) \
 
 #define XR_LIST_STRUCT_XrView(_) \
     _(type) \
     _(next) \
     _(pose) \
-    _(fov)
+    _(fov) \
 
 #define XR_LIST_STRUCT_XrActionSetCreateInfo(_) \
     _(type) \
     _(next) \
     _(actionSetName) \
     _(localizedActionSetName) \
-    _(priority)
+    _(priority) \
 
 #define XR_LIST_STRUCT_XrActionCreateInfo(_) \
     _(type) \
@@ -656,35 +791,35 @@ XR_ENUM_STR(XrResult);
     _(actionType) \
     _(countSubactionPaths) \
     _(subactionPaths) \
-    _(localizedActionName)
+    _(localizedActionName) \
 
 #define XR_LIST_STRUCT_XrActionSuggestedBinding(_) \
     _(action) \
-    _(binding)
+    _(binding) \
 
 #define XR_LIST_STRUCT_XrInteractionProfileSuggestedBinding(_) \
     _(type) \
     _(next) \
     _(interactionProfile) \
     _(countSuggestedBindings) \
-    _(suggestedBindings)
+    _(suggestedBindings) \
 
 #define XR_LIST_STRUCT_XrSessionActionSetsAttachInfo(_) \
     _(type) \
     _(next) \
     _(countActionSets) \
-    _(actionSets)
+    _(actionSets) \
 
 #define XR_LIST_STRUCT_XrInteractionProfileState(_) \
     _(type) \
     _(next) \
-    _(interactionProfile)
+    _(interactionProfile) \
 
 #define XR_LIST_STRUCT_XrActionStateGetInfo(_) \
     _(type) \
     _(next) \
     _(action) \
-    _(subactionPath)
+    _(subactionPath) \
 
 #define XR_LIST_STRUCT_XrActionStateBoolean(_) \
     _(type) \
@@ -692,7 +827,7 @@ XR_ENUM_STR(XrResult);
     _(currentState) \
     _(changedSinceLastSync) \
     _(lastChangeTime) \
-    _(isActive)
+    _(isActive) \
 
 #define XR_LIST_STRUCT_XrActionStateFloat(_) \
     _(type) \
@@ -700,11 +835,11 @@ XR_ENUM_STR(XrResult);
     _(currentState) \
     _(changedSinceLastSync) \
     _(lastChangeTime) \
-    _(isActive)
+    _(isActive) \
 
 #define XR_LIST_STRUCT_XrVector2f(_) \
     _(x) \
-    _(y)
+    _(y) \
 
 #define XR_LIST_STRUCT_XrActionStateVector2f(_) \
     _(type) \
@@ -712,75 +847,75 @@ XR_ENUM_STR(XrResult);
     _(currentState) \
     _(changedSinceLastSync) \
     _(lastChangeTime) \
-    _(isActive)
+    _(isActive) \
 
 #define XR_LIST_STRUCT_XrActionStatePose(_) \
     _(type) \
     _(next) \
-    _(isActive)
+    _(isActive) \
 
 #define XR_LIST_STRUCT_XrActiveActionSet(_) \
     _(actionSet) \
-    _(subactionPath)
+    _(subactionPath) \
 
 #define XR_LIST_STRUCT_XrActionsSyncInfo(_) \
     _(type) \
     _(next) \
     _(countActiveActionSets) \
-    _(activeActionSets)
+    _(activeActionSets) \
 
 #define XR_LIST_STRUCT_XrBoundSourcesForActionEnumerateInfo(_) \
     _(type) \
     _(next) \
-    _(action)
+    _(action) \
 
 #define XR_LIST_STRUCT_XrInputSourceLocalizedNameGetInfo(_) \
     _(type) \
     _(next) \
     _(sourcePath) \
-    _(whichComponents)
+    _(whichComponents) \
 
 #define XR_LIST_STRUCT_XrHapticActionInfo(_) \
     _(type) \
     _(next) \
     _(action) \
-    _(subactionPath)
+    _(subactionPath) \
 
 #define XR_LIST_STRUCT_XrHapticBaseHeader(_) \
     _(type) \
-    _(next)
+    _(next) \
 
 #define XR_LIST_STRUCT_XrBaseInStructure(_) \
     _(type) \
-    _(next)
+    _(next) \
 
 #define XR_LIST_STRUCT_XrBaseOutStructure(_) \
     _(type) \
-    _(next)
+    _(next) \
 
 #define XR_LIST_STRUCT_XrOffset2Di(_) \
     _(x) \
-    _(y)
+    _(y) \
 
 #define XR_LIST_STRUCT_XrExtent2Di(_) \
     _(width) \
-    _(height)
+    _(height) \
 
 #define XR_LIST_STRUCT_XrRect2Di(_) \
     _(offset) \
-    _(extent)
+    _(extent) \
 
 #define XR_LIST_STRUCT_XrSwapchainSubImage(_) \
     _(swapchain) \
     _(imageRect) \
-    _(imageArrayIndex)
+    _(imageArrayIndex) \
 
 #define XR_LIST_STRUCT_XrCompositionLayerProjectionView(_) \
     _(type) \
     _(next) \
     _(pose) \
     _(fov) \
-    _(subImage)
+    _(subImage) \
 
 #define XR_LIST_STRUCT_XrCompositionLayerProjection(_) \
     _(type) \
@@ -788,7 +923,7 @@ XR_ENUM_STR(XrResult);
     _(layerFlags) \
     _(space) \
     _(viewCount) \
-    _(views)
+    _(views) \
 
 #define XR_LIST_STRUCT_XrCompositionLayerQuad(_) \
     _(type) \
@@ -798,28 +933,28 @@ XR_ENUM_STR(XrResult);
     _(eyeVisibility) \
     _(subImage) \
     _(pose) \
-    _(size)
+    _(size) \
 
 #define XR_LIST_STRUCT_XrEventDataBaseHeader(_) \
     _(type) \
-    _(next)
+    _(next) \
 
 #define XR_LIST_STRUCT_XrEventDataEventsLost(_) \
     _(type) \
     _(next) \
-    _(lostEventCount)
+    _(lostEventCount) \
 
 #define XR_LIST_STRUCT_XrEventDataInstanceLossPending(_) \
     _(type) \
     _(next) \
-    _(lossTime)
+    _(lossTime) \
 
 #define XR_LIST_STRUCT_XrEventDataSessionStateChanged(_) \
     _(type) \
     _(next) \
     _(session) \
     _(state) \
-    _(time)
+    _(time) \
 
 #define XR_LIST_STRUCT_XrEventDataReferenceSpaceChangePending(_) \
     _(type) \
@@ -828,39 +963,39 @@ XR_ENUM_STR(XrResult);
     _(referenceSpaceType) \
     _(changeTime) \
     _(poseValid) \
-    _(poseInPreviousSpace)
+    _(poseInPreviousSpace) \
 
 #define XR_LIST_STRUCT_XrEventDataInteractionProfileChanged(_) \
     _(type) \
     _(next) \
-    _(session)
+    _(session) \
 
 #define XR_LIST_STRUCT_XrHapticVibration(_) \
     _(type) \
     _(next) \
     _(duration) \
     _(frequency) \
-    _(amplitude)
+    _(amplitude) \
 
 #define XR_LIST_STRUCT_XrOffset2Df(_) \
     _(x) \
-    _(y)
+    _(y) \
 
 #define XR_LIST_STRUCT_XrRect2Df(_) \
     _(offset) \
-    _(extent)
+    _(extent) \
 
 #define XR_LIST_STRUCT_XrVector4f(_) \
     _(x) \
     _(y) \
     _(z) \
-    _(w)
+    _(w) \
 
 #define XR_LIST_STRUCT_XrColor4f(_) \
     _(r) \
     _(g) \
     _(b) \
-    _(a)
+    _(a) \
 
 #define XR_LIST_STRUCT_XrCompositionLayerCubeKHR(_) \
     _(type) \
@@ -870,13 +1005,13 @@ XR_ENUM_STR(XrResult);
     _(eyeVisibility) \
     _(swapchain) \
     _(imageArrayIndex) \
-    _(orientation)
+    _(orientation) \
 
 #define XR_LIST_STRUCT_XrInstanceCreateInfoAndroidKHR(_) \
     _(type) \
     _(next) \
     _(applicationVM) \
-    _(applicationActivity)
+    _(applicationActivity) \
 
 #define XR_LIST_STRUCT_XrCompositionLayerDepthInfoKHR(_) \
     _(type) \
@@ -885,13 +1020,13 @@ XR_ENUM_STR(XrResult);
     _(minDepth) \
     _(maxDepth) \
     _(nearZ) \
-    _(farZ)
+    _(farZ) \
 
 #define XR_LIST_STRUCT_XrVulkanSwapchainFormatListCreateInfoKHR(_) \
     _(type) \
     _(next) \
     _(viewFormatCount) \
-    _(viewFormats)
+    _(viewFormats) \
 
 #define XR_LIST_STRUCT_XrCompositionLayerCylinderKHR(_) \
     _(type) \
@@ -903,7 +1038,7 @@ XR_ENUM_STR(XrResult);
     _(pose) \
     _(radius) \
     _(centralAngle) \
-    _(aspectRatio)
+    _(aspectRatio) \
 
 #define XR_LIST_STRUCT_XrCompositionLayerEquirectKHR(_) \
     _(type) \
@@ -915,13 +1050,13 @@ XR_ENUM_STR(XrResult);
     _(pose) \
     _(radius) \
     _(scale) \
-    _(bias)
+    _(bias) \
 
 #define XR_LIST_STRUCT_XrGraphicsBindingOpenGLWin32KHR(_) \
     _(type) \
     _(next) \
     _(hDC) \
-    _(hGLRC)
+    _(hGLRC) \
 
 #define XR_LIST_STRUCT_XrGraphicsBindingOpenGLXlibKHR(_) \
     _(type) \
@@ -930,7 +1065,7 @@ XR_ENUM_STR(XrResult);
     _(visualid) \
     _(glxFBConfig) \
     _(glxDrawable) \
-    _(glxContext)
+    _(glxContext) \
 
 #define XR_LIST_STRUCT_XrGraphicsBindingOpenGLXcbKHR(_) \
     _(type) \
@@ -940,41 +1075,41 @@ XR_ENUM_STR(XrResult);
     _(fbconfigid) \
     _(visualid) \
     _(glxDrawable) \
-    _(glxContext)
+    _(glxContext) \
 
 #define XR_LIST_STRUCT_XrGraphicsBindingOpenGLWaylandKHR(_) \
     _(type) \
     _(next) \
-    _(display)
+    _(display) \
 
 #define XR_LIST_STRUCT_XrSwapchainImageOpenGLKHR(_) \
     _(type) \
     _(next) \
-    _(image)
+    _(image) \
 
 #define XR_LIST_STRUCT_XrGraphicsRequirementsOpenGLKHR(_) \
     _(type) \
     _(next) \
     _(minApiVersionSupported) \
-    _(maxApiVersionSupported)
+    _(maxApiVersionSupported) \
 
 #define XR_LIST_STRUCT_XrGraphicsBindingOpenGLESAndroidKHR(_) \
     _(type) \
     _(next) \
     _(display) \
     _(config) \
-    _(context)
+    _(context) \
 
 #define XR_LIST_STRUCT_XrSwapchainImageOpenGLESKHR(_) \
     _(type) \
     _(next) \
-    _(image)
+    _(image) \
 
 #define XR_LIST_STRUCT_XrGraphicsRequirementsOpenGLESKHR(_) \
     _(type) \
     _(next) \
     _(minApiVersionSupported) \
-    _(maxApiVersionSupported)
+    _(maxApiVersionSupported) \
 
 #define XR_LIST_STRUCT_XrGraphicsBindingVulkanKHR(_) \
     _(type) \
@@ -983,51 +1118,51 @@ XR_ENUM_STR(XrResult);
     _(physicalDevice) \
     _(device) \
     _(queueFamilyIndex) \
-    _(queueIndex)
+    _(queueIndex) \
 
 #define XR_LIST_STRUCT_XrSwapchainImageVulkanKHR(_) \
     _(type) \
     _(next) \
-    _(image)
+    _(image) \
 
 #define XR_LIST_STRUCT_XrGraphicsRequirementsVulkanKHR(_) \
     _(type) \
     _(next) \
     _(minApiVersionSupported) \
-    _(maxApiVersionSupported)
+    _(maxApiVersionSupported) \
 
 #define XR_LIST_STRUCT_XrGraphicsBindingD3D11KHR(_) \
     _(type) \
     _(next) \
-    _(device)
+    _(device) \
 
 #define XR_LIST_STRUCT_XrSwapchainImageD3D11KHR(_) \
     _(type) \
     _(next) \
-    _(texture)
+    _(texture) \
 
 #define XR_LIST_STRUCT_XrGraphicsRequirementsD3D11KHR(_) \
     _(type) \
     _(next) \
     _(adapterLuid) \
-    _(minFeatureLevel)
+    _(minFeatureLevel) \
 
 #define XR_LIST_STRUCT_XrGraphicsBindingD3D12KHR(_) \
     _(type) \
     _(next) \
     _(device) \
-    _(queue)
+    _(queue) \
 
 #define XR_LIST_STRUCT_XrSwapchainImageD3D12KHR(_) \
     _(type) \
     _(next) \
-    _(texture)
+    _(texture) \
 
 #define XR_LIST_STRUCT_XrGraphicsRequirementsD3D12KHR(_) \
     _(type) \
     _(next) \
     _(adapterLuid) \
-    _(minFeatureLevel)
+    _(minFeatureLevel) \
 
 #define XR_LIST_STRUCT_XrVisibilityMaskKHR(_) \
     _(type) \
@@ -1037,14 +1172,78 @@ XR_ENUM_STR(XrResult);
     _(vertices) \
     _(indexCapacityInput) \
     _(indexCountOutput) \
-    _(indices)
+    _(indices) \
 
 #define XR_LIST_STRUCT_XrEventDataVisibilityMaskChangedKHR(_) \
     _(type) \
     _(next) \
     _(session) \
     _(viewConfigurationType) \
-    _(viewIndex)
+    _(viewIndex) \
+
+#define XR_LIST_STRUCT_XrCompositionLayerColorScaleBiasKHR(_) \
+    _(type) \
+    _(next) \
+    _(colorScale) \
+    _(colorBias) \
+
+#define XR_LIST_STRUCT_XrLoaderInitInfoBaseHeaderKHR(_) \
+    _(type) \
+    _(next) \
+
+#define XR_LIST_STRUCT_XrLoaderInitInfoAndroidKHR(_) \
+    _(type) \
+    _(next) \
+    _(applicationVM) \
+    _(applicationContext) \
+
+#define XR_LIST_STRUCT_XrVulkanInstanceCreateInfoKHR(_) \
+    _(type) \
+    _(next) \
+    _(systemId) \
+    _(createFlags) \
+    _(pfnGetInstanceProcAddr) \
+    _(vulkanCreateInfo) \
+    _(vulkanAllocator) \
+
+#define XR_LIST_STRUCT_XrVulkanDeviceCreateInfoKHR(_) \
+    _(type) \
+    _(next) \
+    _(systemId) \
+    _(createFlags) \
+    _(pfnGetInstanceProcAddr) \
+    _(vulkanPhysicalDevice) \
+    _(vulkanCreateInfo) \
+    _(vulkanAllocator) \
+
+#define XR_LIST_STRUCT_XrVulkanGraphicsDeviceGetInfoKHR(_) \
+    _(type) \
+    _(next) \
+    _(systemId) \
+    _(vulkanInstance) \
+
+#define XR_LIST_STRUCT_XrCompositionLayerEquirect2KHR(_) \
+    _(type) \
+    _(next) \
+    _(layerFlags) \
+    _(space) \
+    _(eyeVisibility) \
+    _(subImage) \
+    _(pose) \
+    _(radius) \
+    _(centralHorizontalAngle) \
+    _(upperVerticalAngle) \
+    _(lowerVerticalAngle) \
+
+#define XR_LIST_STRUCT_XrBindingModificationBaseHeaderKHR(_) \
+    _(type) \
+    _(next) \
+
+#define XR_LIST_STRUCT_XrBindingModificationsKHR(_) \
+    _(type) \
+    _(next) \
+    _(bindingModificationCount) \
+    _(bindingModifications) \
 
 #define XR_LIST_STRUCT_XrEventDataPerfSettingsEXT(_) \
     _(type) \
@@ -1052,19 +1251,19 @@ XR_ENUM_STR(XrResult);
     _(domain) \
     _(subDomain) \
     _(fromLevel) \
-    _(toLevel)
+    _(toLevel) \
 
 #define XR_LIST_STRUCT_XrDebugUtilsObjectNameInfoEXT(_) \
     _(type) \
     _(next) \
     _(objectType) \
     _(objectHandle) \
-    _(objectName)
+    _(objectName) \
 
 #define XR_LIST_STRUCT_XrDebugUtilsLabelEXT(_) \
     _(type) \
     _(next) \
-    _(labelName)
+    _(labelName) \
 
 #define XR_LIST_STRUCT_XrDebugUtilsMessengerCallbackDataEXT(_) \
     _(type) \
@@ -1075,7 +1274,7 @@ XR_ENUM_STR(XrResult);
     _(objectCount) \
     _(objects) \
     _(sessionLabelCount) \
-    _(sessionLabels)
+    _(sessionLabels) \
 
 #define XR_LIST_STRUCT_XrDebugUtilsMessengerCreateInfoEXT(_) \
     _(type) \
@@ -1083,42 +1282,42 @@ XR_ENUM_STR(XrResult);
     _(messageSeverities) \
     _(messageTypes) \
     _(userCallback) \
-    _(userData)
+    _(userData) \
 
 #define XR_LIST_STRUCT_XrSystemEyeGazeInteractionPropertiesEXT(_) \
     _(type) \
     _(next) \
-    _(supportsEyeGazeInteraction)
+    _(supportsEyeGazeInteraction) \
 
 #define XR_LIST_STRUCT_XrEyeGazeSampleTimeEXT(_) \
     _(type) \
     _(next) \
-    _(time)
+    _(time) \
 
 #define XR_LIST_STRUCT_XrSessionCreateInfoOverlayEXTX(_) \
     _(type) \
     _(next) \
     _(createFlags) \
-    _(sessionLayersPlacement)
+    _(sessionLayersPlacement) \
 
 #define XR_LIST_STRUCT_XrEventDataMainSessionVisibilityChangedEXTX(_) \
     _(type) \
     _(next) \
     _(visible) \
-    _(flags)
+    _(flags) \
 
 #define XR_LIST_STRUCT_XrSpatialAnchorCreateInfoMSFT(_) \
     _(type) \
     _(next) \
     _(space) \
     _(pose) \
-    _(time)
+    _(time) \
 
 #define XR_LIST_STRUCT_XrSpatialAnchorSpaceCreateInfoMSFT(_) \
     _(type) \
     _(next) \
     _(anchor) \
-    _(poseInAnchorSpace)
+    _(poseInAnchorSpace) \
 
 #define XR_LIST_STRUCT_XrViewConfigurationDepthRangeEXT(_) \
     _(type) \
@@ -1126,7 +1325,7 @@ XR_ENUM_STR(XrResult);
     _(recommendedNearZ) \
     _(minNearZ) \
     _(recommendedFarZ) \
-    _(maxFarZ)
+    _(maxFarZ) \
 
 #define XR_LIST_STRUCT_XrGraphicsBindingEGLMNDX(_) \
     _(type) \
@@ -1134,89 +1333,89 @@ XR_ENUM_STR(XrResult);
     _(getProcAddress) \
     _(display) \
     _(config) \
-    _(context)
+    _(context) \
 
 #define XR_LIST_STRUCT_XrSpatialGraphNodeSpaceCreateInfoMSFT(_) \
     _(type) \
     _(next) \
     _(nodeType) \
     _(nodeId) \
-    _(pose)
+    _(pose) \
 
 #define XR_LIST_STRUCT_XrSystemHandTrackingPropertiesEXT(_) \
     _(type) \
     _(next) \
-    _(supportsHandTracking)
+    _(supportsHandTracking) \
 
 #define XR_LIST_STRUCT_XrHandTrackerCreateInfoEXT(_) \
     _(type) \
     _(next) \
     _(hand) \
-    _(handJointSet)
+    _(handJointSet) \
 
 #define XR_LIST_STRUCT_XrHandJointsLocateInfoEXT(_) \
     _(type) \
     _(next) \
     _(baseSpace) \
-    _(time)
+    _(time) \
 
 #define XR_LIST_STRUCT_XrHandJointLocationEXT(_) \
     _(locationFlags) \
     _(pose) \
-    _(radius)
+    _(radius) \
 
 #define XR_LIST_STRUCT_XrHandJointVelocityEXT(_) \
     _(velocityFlags) \
     _(linearVelocity) \
-    _(angularVelocity)
+    _(angularVelocity) \
 
 #define XR_LIST_STRUCT_XrHandJointLocationsEXT(_) \
     _(type) \
     _(next) \
     _(isActive) \
     _(jointCount) \
-    _(jointLocations)
+    _(jointLocations) \
 
 #define XR_LIST_STRUCT_XrHandJointVelocitiesEXT(_) \
     _(type) \
     _(next) \
     _(jointCount) \
-    _(jointVelocities)
+    _(jointVelocities) \
 
 #define XR_LIST_STRUCT_XrSystemHandTrackingMeshPropertiesMSFT(_) \
     _(type) \
     _(next) \
     _(supportsHandTrackingMesh) \
     _(maxHandMeshIndexCount) \
-    _(maxHandMeshVertexCount)
+    _(maxHandMeshVertexCount) \
 
 #define XR_LIST_STRUCT_XrHandMeshSpaceCreateInfoMSFT(_) \
     _(type) \
     _(next) \
     _(handPoseType) \
-    _(poseInHandMeshSpace)
+    _(poseInHandMeshSpace) \
 
 #define XR_LIST_STRUCT_XrHandMeshUpdateInfoMSFT(_) \
     _(type) \
     _(next) \
     _(time) \
-    _(handPoseType)
+    _(handPoseType) \
 
 #define XR_LIST_STRUCT_XrHandMeshIndexBufferMSFT(_) \
     _(indexBufferKey) \
     _(indexCapacityInput) \
     _(indexCountOutput) \
-    _(indices)
+    _(indices) \
 
 #define XR_LIST_STRUCT_XrHandMeshVertexMSFT(_) \
     _(position) \
-    _(normal)
+    _(normal) \
 
 #define XR_LIST_STRUCT_XrHandMeshVertexBufferMSFT(_) \
     _(vertexUpdateTime) \
     _(vertexCapacityInput) \
     _(vertexCountOutput) \
-    _(vertices)
+    _(vertices) \
 
 #define XR_LIST_STRUCT_XrHandMeshMSFT(_) \
     _(type) \
@@ -1225,30 +1424,30 @@ XR_ENUM_STR(XrResult);
     _(indexBufferChanged) \
     _(vertexBufferChanged) \
     _(indexBuffer) \
-    _(vertexBuffer)
+    _(vertexBuffer) \
 
 #define XR_LIST_STRUCT_XrHandPoseTypeInfoMSFT(_) \
     _(type) \
     _(next) \
-    _(handPoseType)
+    _(handPoseType) \
 
 #define XR_LIST_STRUCT_XrSecondaryViewConfigurationSessionBeginInfoMSFT(_) \
     _(type) \
     _(next) \
     _(viewConfigurationCount) \
-    _(enabledViewConfigurationTypes)
+    _(enabledViewConfigurationTypes) \
 
 #define XR_LIST_STRUCT_XrSecondaryViewConfigurationStateMSFT(_) \
     _(type) \
     _(next) \
     _(viewConfigurationType) \
-    _(active)
+    _(active) \
 
 #define XR_LIST_STRUCT_XrSecondaryViewConfigurationFrameStateMSFT(_) \
     _(type) \
     _(next) \
     _(viewConfigurationCount) \
-    _(viewConfigurationStates)
+    _(viewConfigurationStates) \
 
 #define XR_LIST_STRUCT_XrSecondaryViewConfigurationLayerInfoMSFT(_) \
     _(type) \
@@ -1256,26 +1455,690 @@ XR_ENUM_STR(XrResult);
     _(viewConfigurationType) \
     _(environmentBlendMode) \
     _(layerCount) \
-    _(layers)
+    _(layers) \
 
 #define XR_LIST_STRUCT_XrSecondaryViewConfigurationFrameEndInfoMSFT(_) \
     _(type) \
     _(next) \
     _(viewConfigurationCount) \
-    _(viewConfigurationLayersInfo)
+    _(viewConfigurationLayersInfo) \
 
 #define XR_LIST_STRUCT_XrSecondaryViewConfigurationSwapchainCreateInfoMSFT(_) \
     _(type) \
     _(next) \
-    _(viewConfigurationType)
+    _(viewConfigurationType) \
+
+#define XR_LIST_STRUCT_XrControllerModelKeyStateMSFT(_) \
+    _(type) \
+    _(next) \
+    _(modelKey) \
+
+#define XR_LIST_STRUCT_XrControllerModelNodePropertiesMSFT(_) \
+    _(type) \
+    _(next) \
+    _(parentNodeName) \
+    _(nodeName) \
+
+#define XR_LIST_STRUCT_XrControllerModelPropertiesMSFT(_) \
+    _(type) \
+    _(next) \
+    _(nodeCapacityInput) \
+    _(nodeCountOutput) \
+    _(nodeProperties) \
+
+#define XR_LIST_STRUCT_XrControllerModelNodeStateMSFT(_) \
+    _(type) \
+    _(next) \
+    _(nodePose) \
+
+#define XR_LIST_STRUCT_XrControllerModelStateMSFT(_) \
+    _(type) \
+    _(next) \
+    _(nodeCapacityInput) \
+    _(nodeCountOutput) \
+    _(nodeStates) \
 
 #define XR_LIST_STRUCT_XrViewConfigurationViewFovEPIC(_) \
     _(type) \
     _(next) \
-    _(recommendedMutableFov) \
-    _(maxMutableFov)
+    _(recommendedFov) \
+    _(maxMutableFov) \
+
+#define XR_LIST_STRUCT_XrHolographicWindowAttachmentMSFT(_) \
+    _(type) \
+    _(next) \
+    _(holographicSpace) \
+    _(coreWindow) \
+
+#define XR_LIST_STRUCT_XrCompositionLayerReprojectionInfoMSFT(_) \
+    _(type) \
+    _(next) \
+    _(reprojectionMode) \
+
+#define XR_LIST_STRUCT_XrCompositionLayerReprojectionPlaneOverrideMSFT(_) \
+    _(type) \
+    _(next) \
+    _(position) \
+    _(normal) \
+    _(velocity) \
+
+#define XR_LIST_STRUCT_XrAndroidSurfaceSwapchainCreateInfoFB(_) \
+    _(type) \
+    _(next) \
+    _(createFlags) \
+
+#define XR_LIST_STRUCT_XrSwapchainStateBaseHeaderFB(_) \
+    _(type) \
+    _(next) \
+
+#define XR_LIST_STRUCT_XrInteractionProfileAnalogThresholdVALVE(_) \
+    _(type) \
+    _(next) \
+    _(action) \
+    _(binding) \
+    _(onThreshold) \
+    _(offThreshold) \
+    _(onHaptic) \
+    _(offHaptic) \
+
+#define XR_LIST_STRUCT_XrHandJointsMotionRangeInfoEXT(_) \
+    _(type) \
+    _(next) \
+    _(handJointsMotionRange) \
+
+#define XR_LIST_STRUCT_XrUuidMSFT(_) \
+    _(bytes) \
+
+#define XR_LIST_STRUCT_XrSceneObserverCreateInfoMSFT(_) \
+    _(type) \
+    _(next) \
+
+#define XR_LIST_STRUCT_XrSceneCreateInfoMSFT(_) \
+    _(type) \
+    _(next) \
+
+#define XR_LIST_STRUCT_XrSceneSphereBoundMSFT(_) \
+    _(center) \
+    _(radius) \
+
+#define XR_LIST_STRUCT_XrSceneOrientedBoxBoundMSFT(_) \
+    _(pose) \
+    _(extents) \
+
+#define XR_LIST_STRUCT_XrSceneFrustumBoundMSFT(_) \
+    _(pose) \
+    _(fov) \
+    _(farDistance) \
+
+#define XR_LIST_STRUCT_XrSceneBoundsMSFT(_) \
+    _(space) \
+    _(time) \
+    _(sphereCount) \
+    _(spheres) \
+    _(boxCount) \
+    _(boxes) \
+    _(frustumCount) \
+    _(frustums) \
+
+#define XR_LIST_STRUCT_XrNewSceneComputeInfoMSFT(_) \
+    _(type) \
+    _(next) \
+    _(requestedFeatureCount) \
+    _(requestedFeatures) \
+    _(consistency) \
+    _(bounds) \
+
+#define XR_LIST_STRUCT_XrVisualMeshComputeLodInfoMSFT(_) \
+    _(type) \
+    _(next) \
+    _(lod) \
+
+#define XR_LIST_STRUCT_XrSceneComponentMSFT(_) \
+    _(componentType) \
+    _(id) \
+    _(parentId) \
+    _(updateTime) \
+
+#define XR_LIST_STRUCT_XrSceneComponentsMSFT(_) \
+    _(type) \
+    _(next) \
+    _(componentCapacityInput) \
+    _(componentCountOutput) \
+    _(components) \
+
+#define XR_LIST_STRUCT_XrSceneComponentsGetInfoMSFT(_) \
+    _(type) \
+    _(next) \
+    _(componentType) \
+
+#define XR_LIST_STRUCT_XrSceneComponentLocationMSFT(_) \
+    _(flags) \
+    _(pose) \
+
+#define XR_LIST_STRUCT_XrSceneComponentLocationsMSFT(_) \
+    _(type) \
+    _(next) \
+    _(locationCount) \
+    _(locations) \
+
+#define XR_LIST_STRUCT_XrSceneComponentsLocateInfoMSFT(_) \
+    _(type) \
+    _(next) \
+    _(baseSpace) \
+    _(time) \
+    _(componentIdCount) \
+    _(componentIds) \
+
+#define XR_LIST_STRUCT_XrSceneObjectMSFT(_) \
+    _(objectType) \
+
+#define XR_LIST_STRUCT_XrSceneObjectsMSFT(_) \
+    _(type) \
+    _(next) \
+    _(sceneObjectCount) \
+    _(sceneObjects) \
+
+#define XR_LIST_STRUCT_XrSceneComponentParentFilterInfoMSFT(_) \
+    _(type) \
+    _(next) \
+    _(parentId) \
+
+#define XR_LIST_STRUCT_XrSceneObjectTypesFilterInfoMSFT(_) \
+    _(type) \
+    _(next) \
+    _(objectTypeCount) \
+    _(objectTypes) \
+
+#define XR_LIST_STRUCT_XrScenePlaneMSFT(_) \
+    _(alignment) \
+    _(size) \
+    _(meshBufferId) \
+    _(supportsIndicesUint16) \
+
+#define XR_LIST_STRUCT_XrScenePlanesMSFT(_) \
+    _(type) \
+    _(next) \
+    _(scenePlaneCount) \
+    _(scenePlanes) \
+
+#define XR_LIST_STRUCT_XrScenePlaneAlignmentFilterInfoMSFT(_) \
+    _(type) \
+    _(next) \
+    _(alignmentCount) \
+    _(alignments) \
+
+#define XR_LIST_STRUCT_XrSceneMeshMSFT(_) \
+    _(meshBufferId) \
+    _(supportsIndicesUint16) \
+
+#define XR_LIST_STRUCT_XrSceneMeshesMSFT(_) \
+    _(type) \
+    _(next) \
+    _(sceneMeshCount) \
+    _(sceneMeshes) \
+
+#define XR_LIST_STRUCT_XrSceneMeshBuffersGetInfoMSFT(_) \
+    _(type) \
+    _(next) \
+    _(meshBufferId) \
+
+#define XR_LIST_STRUCT_XrSceneMeshBuffersMSFT(_) \
+    _(type) \
+    _(next) \
+
+#define XR_LIST_STRUCT_XrSceneMeshVertexBufferMSFT(_) \
+    _(type) \
+    _(next) \
+    _(vertexCapacityInput) \
+    _(vertexCountOutput) \
+    _(vertices) \
+
+#define XR_LIST_STRUCT_XrSceneMeshIndicesUint32MSFT(_) \
+    _(type) \
+    _(next) \
+    _(indexCapacityInput) \
+    _(indexCountOutput) \
+    _(indices) \
+
+#define XR_LIST_STRUCT_XrSceneMeshIndicesUint16MSFT(_) \
+    _(type) \
+    _(next) \
+    _(indexCapacityInput) \
+    _(indexCountOutput) \
+    _(indices) \
+
+#define XR_LIST_STRUCT_XrSerializedSceneFragmentDataGetInfoMSFT(_) \
+    _(type) \
+    _(next) \
+    _(sceneFragmentId) \
+
+#define XR_LIST_STRUCT_XrDeserializeSceneFragmentMSFT(_) \
+    _(bufferSize) \
+    _(buffer) \
+
+#define XR_LIST_STRUCT_XrSceneDeserializeInfoMSFT(_) \
+    _(type) \
+    _(next) \
+    _(fragmentCount) \
+    _(fragments) \
+
+#define XR_LIST_STRUCT_XrEventDataDisplayRefreshRateChangedFB(_) \
+    _(type) \
+    _(next) \
+    _(fromDisplayRefreshRate) \
+    _(toDisplayRefreshRate) \
+
+#define XR_LIST_STRUCT_XrSystemColorSpacePropertiesFB(_) \
+    _(type) \
+    _(next) \
+    _(colorSpace) \
+
+#define XR_LIST_STRUCT_XrViewLocateFoveatedRenderingVARJO(_) \
+    _(type) \
+    _(next) \
+    _(foveatedRenderingActive) \
+
+#define XR_LIST_STRUCT_XrFoveatedViewConfigurationViewVARJO(_) \
+    _(type) \
+    _(next) \
+    _(foveatedRenderingActive) \
+
+#define XR_LIST_STRUCT_XrSystemFoveatedRenderingPropertiesVARJO(_) \
+    _(type) \
+    _(next) \
+    _(supportsFoveatedRendering) \
+
+#define XR_LIST_STRUCT_XrCompositionLayerDepthTestVARJO(_) \
+    _(type) \
+    _(next) \
+    _(depthTestRangeNearZ) \
+    _(depthTestRangeFarZ) \
+
+#define XR_LIST_STRUCT_XrSwapchainStateAndroidSurfaceDimensionsFB(_) \
+    _(type) \
+    _(next) \
+    _(width) \
+    _(height) \
+
+#define XR_LIST_STRUCT_XrSwapchainStateSamplerOpenGLESFB(_) \
+    _(type) \
+    _(next) \
+    _(minFilter) \
+    _(magFilter) \
+    _(wrapModeS) \
+    _(wrapModeT) \
+    _(swizzleRed) \
+    _(swizzleGreen) \
+    _(swizzleBlue) \
+    _(swizzleAlpha) \
+    _(maxAnisotropy) \
+    _(borderColor) \
+
+#define XR_LIST_STRUCT_XrSwapchainStateSamplerVulkanFB(_) \
+    _(type) \
+    _(next) \
+    _(minFilter) \
+    _(magFilter) \
+    _(mipmapMode) \
+    _(wrapModeS) \
+    _(wrapModeT) \
+    _(swizzleRed) \
+    _(swizzleGreen) \
+    _(swizzleBlue) \
+    _(swizzleAlpha) \
+    _(maxAnisotropy) \
+    _(borderColor) \
 
 
+
+#define XR_LIST_STRUCTURE_TYPES_CORE(_) \
+    _(XrApiLayerProperties, XR_TYPE_API_LAYER_PROPERTIES) \
+    _(XrExtensionProperties, XR_TYPE_EXTENSION_PROPERTIES) \
+    _(XrInstanceCreateInfo, XR_TYPE_INSTANCE_CREATE_INFO) \
+    _(XrInstanceProperties, XR_TYPE_INSTANCE_PROPERTIES) \
+    _(XrEventDataBuffer, XR_TYPE_EVENT_DATA_BUFFER) \
+    _(XrSystemGetInfo, XR_TYPE_SYSTEM_GET_INFO) \
+    _(XrSystemProperties, XR_TYPE_SYSTEM_PROPERTIES) \
+    _(XrSessionCreateInfo, XR_TYPE_SESSION_CREATE_INFO) \
+    _(XrSpaceVelocity, XR_TYPE_SPACE_VELOCITY) \
+    _(XrReferenceSpaceCreateInfo, XR_TYPE_REFERENCE_SPACE_CREATE_INFO) \
+    _(XrActionSpaceCreateInfo, XR_TYPE_ACTION_SPACE_CREATE_INFO) \
+    _(XrSpaceLocation, XR_TYPE_SPACE_LOCATION) \
+    _(XrViewConfigurationProperties, XR_TYPE_VIEW_CONFIGURATION_PROPERTIES) \
+    _(XrViewConfigurationView, XR_TYPE_VIEW_CONFIGURATION_VIEW) \
+    _(XrSwapchainCreateInfo, XR_TYPE_SWAPCHAIN_CREATE_INFO) \
+    _(XrSwapchainImageAcquireInfo, XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO) \
+    _(XrSwapchainImageWaitInfo, XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO) \
+    _(XrSwapchainImageReleaseInfo, XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO) \
+    _(XrSessionBeginInfo, XR_TYPE_SESSION_BEGIN_INFO) \
+    _(XrFrameWaitInfo, XR_TYPE_FRAME_WAIT_INFO) \
+    _(XrFrameState, XR_TYPE_FRAME_STATE) \
+    _(XrFrameBeginInfo, XR_TYPE_FRAME_BEGIN_INFO) \
+    _(XrFrameEndInfo, XR_TYPE_FRAME_END_INFO) \
+    _(XrViewLocateInfo, XR_TYPE_VIEW_LOCATE_INFO) \
+    _(XrViewState, XR_TYPE_VIEW_STATE) \
+    _(XrView, XR_TYPE_VIEW) \
+    _(XrActionSetCreateInfo, XR_TYPE_ACTION_SET_CREATE_INFO) \
+    _(XrActionCreateInfo, XR_TYPE_ACTION_CREATE_INFO) \
+    _(XrInteractionProfileSuggestedBinding, XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING) \
+    _(XrSessionActionSetsAttachInfo, XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO) \
+    _(XrInteractionProfileState, XR_TYPE_INTERACTION_PROFILE_STATE) \
+    _(XrActionStateGetInfo, XR_TYPE_ACTION_STATE_GET_INFO) \
+    _(XrActionStateBoolean, XR_TYPE_ACTION_STATE_BOOLEAN) \
+    _(XrActionStateFloat, XR_TYPE_ACTION_STATE_FLOAT) \
+    _(XrActionStateVector2f, XR_TYPE_ACTION_STATE_VECTOR2F) \
+    _(XrActionStatePose, XR_TYPE_ACTION_STATE_POSE) \
+    _(XrActionsSyncInfo, XR_TYPE_ACTIONS_SYNC_INFO) \
+    _(XrBoundSourcesForActionEnumerateInfo, XR_TYPE_BOUND_SOURCES_FOR_ACTION_ENUMERATE_INFO) \
+    _(XrInputSourceLocalizedNameGetInfo, XR_TYPE_INPUT_SOURCE_LOCALIZED_NAME_GET_INFO) \
+    _(XrHapticActionInfo, XR_TYPE_HAPTIC_ACTION_INFO) \
+    _(XrCompositionLayerProjectionView, XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW) \
+    _(XrCompositionLayerProjection, XR_TYPE_COMPOSITION_LAYER_PROJECTION) \
+    _(XrCompositionLayerQuad, XR_TYPE_COMPOSITION_LAYER_QUAD) \
+    _(XrEventDataEventsLost, XR_TYPE_EVENT_DATA_EVENTS_LOST) \
+    _(XrEventDataInstanceLossPending, XR_TYPE_EVENT_DATA_INSTANCE_LOSS_PENDING) \
+    _(XrEventDataSessionStateChanged, XR_TYPE_EVENT_DATA_SESSION_STATE_CHANGED) \
+    _(XrEventDataReferenceSpaceChangePending, XR_TYPE_EVENT_DATA_REFERENCE_SPACE_CHANGE_PENDING) \
+    _(XrEventDataInteractionProfileChanged, XR_TYPE_EVENT_DATA_INTERACTION_PROFILE_CHANGED) \
+    _(XrHapticVibration, XR_TYPE_HAPTIC_VIBRATION) \
+    _(XrCompositionLayerCubeKHR, XR_TYPE_COMPOSITION_LAYER_CUBE_KHR) \
+    _(XrCompositionLayerDepthInfoKHR, XR_TYPE_COMPOSITION_LAYER_DEPTH_INFO_KHR) \
+    _(XrCompositionLayerCylinderKHR, XR_TYPE_COMPOSITION_LAYER_CYLINDER_KHR) \
+    _(XrCompositionLayerEquirectKHR, XR_TYPE_COMPOSITION_LAYER_EQUIRECT_KHR) \
+    _(XrVisibilityMaskKHR, XR_TYPE_VISIBILITY_MASK_KHR) \
+    _(XrEventDataVisibilityMaskChangedKHR, XR_TYPE_EVENT_DATA_VISIBILITY_MASK_CHANGED_KHR) \
+    _(XrCompositionLayerColorScaleBiasKHR, XR_TYPE_COMPOSITION_LAYER_COLOR_SCALE_BIAS_KHR) \
+    _(XrCompositionLayerEquirect2KHR, XR_TYPE_COMPOSITION_LAYER_EQUIRECT2_KHR) \
+    _(XrBindingModificationsKHR, XR_TYPE_BINDING_MODIFICATIONS_KHR) \
+    _(XrEventDataPerfSettingsEXT, XR_TYPE_EVENT_DATA_PERF_SETTINGS_EXT) \
+    _(XrDebugUtilsObjectNameInfoEXT, XR_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT) \
+    _(XrDebugUtilsLabelEXT, XR_TYPE_DEBUG_UTILS_LABEL_EXT) \
+    _(XrDebugUtilsMessengerCallbackDataEXT, XR_TYPE_DEBUG_UTILS_MESSENGER_CALLBACK_DATA_EXT) \
+    _(XrDebugUtilsMessengerCreateInfoEXT, XR_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT) \
+    _(XrSystemEyeGazeInteractionPropertiesEXT, XR_TYPE_SYSTEM_EYE_GAZE_INTERACTION_PROPERTIES_EXT) \
+    _(XrEyeGazeSampleTimeEXT, XR_TYPE_EYE_GAZE_SAMPLE_TIME_EXT) \
+    _(XrSessionCreateInfoOverlayEXTX, XR_TYPE_SESSION_CREATE_INFO_OVERLAY_EXTX) \
+    _(XrEventDataMainSessionVisibilityChangedEXTX, XR_TYPE_EVENT_DATA_MAIN_SESSION_VISIBILITY_CHANGED_EXTX) \
+    _(XrSpatialAnchorCreateInfoMSFT, XR_TYPE_SPATIAL_ANCHOR_CREATE_INFO_MSFT) \
+    _(XrSpatialAnchorSpaceCreateInfoMSFT, XR_TYPE_SPATIAL_ANCHOR_SPACE_CREATE_INFO_MSFT) \
+    _(XrViewConfigurationDepthRangeEXT, XR_TYPE_VIEW_CONFIGURATION_DEPTH_RANGE_EXT) \
+    _(XrSpatialGraphNodeSpaceCreateInfoMSFT, XR_TYPE_SPATIAL_GRAPH_NODE_SPACE_CREATE_INFO_MSFT) \
+    _(XrSystemHandTrackingPropertiesEXT, XR_TYPE_SYSTEM_HAND_TRACKING_PROPERTIES_EXT) \
+    _(XrHandTrackerCreateInfoEXT, XR_TYPE_HAND_TRACKER_CREATE_INFO_EXT) \
+    _(XrHandJointsLocateInfoEXT, XR_TYPE_HAND_JOINTS_LOCATE_INFO_EXT) \
+    _(XrHandJointLocationsEXT, XR_TYPE_HAND_JOINT_LOCATIONS_EXT) \
+    _(XrHandJointVelocitiesEXT, XR_TYPE_HAND_JOINT_VELOCITIES_EXT) \
+    _(XrSystemHandTrackingMeshPropertiesMSFT, XR_TYPE_SYSTEM_HAND_TRACKING_MESH_PROPERTIES_MSFT) \
+    _(XrHandMeshSpaceCreateInfoMSFT, XR_TYPE_HAND_MESH_SPACE_CREATE_INFO_MSFT) \
+    _(XrHandMeshUpdateInfoMSFT, XR_TYPE_HAND_MESH_UPDATE_INFO_MSFT) \
+    _(XrHandMeshMSFT, XR_TYPE_HAND_MESH_MSFT) \
+    _(XrHandPoseTypeInfoMSFT, XR_TYPE_HAND_POSE_TYPE_INFO_MSFT) \
+    _(XrSecondaryViewConfigurationSessionBeginInfoMSFT, XR_TYPE_SECONDARY_VIEW_CONFIGURATION_SESSION_BEGIN_INFO_MSFT) \
+    _(XrSecondaryViewConfigurationStateMSFT, XR_TYPE_SECONDARY_VIEW_CONFIGURATION_STATE_MSFT) \
+    _(XrSecondaryViewConfigurationFrameStateMSFT, XR_TYPE_SECONDARY_VIEW_CONFIGURATION_FRAME_STATE_MSFT) \
+    _(XrSecondaryViewConfigurationLayerInfoMSFT, XR_TYPE_SECONDARY_VIEW_CONFIGURATION_LAYER_INFO_MSFT) \
+    _(XrSecondaryViewConfigurationFrameEndInfoMSFT, XR_TYPE_SECONDARY_VIEW_CONFIGURATION_FRAME_END_INFO_MSFT) \
+    _(XrSecondaryViewConfigurationSwapchainCreateInfoMSFT, XR_TYPE_SECONDARY_VIEW_CONFIGURATION_SWAPCHAIN_CREATE_INFO_MSFT) \
+    _(XrControllerModelKeyStateMSFT, XR_TYPE_CONTROLLER_MODEL_KEY_STATE_MSFT) \
+    _(XrControllerModelNodePropertiesMSFT, XR_TYPE_CONTROLLER_MODEL_NODE_PROPERTIES_MSFT) \
+    _(XrControllerModelPropertiesMSFT, XR_TYPE_CONTROLLER_MODEL_PROPERTIES_MSFT) \
+    _(XrControllerModelNodeStateMSFT, XR_TYPE_CONTROLLER_MODEL_NODE_STATE_MSFT) \
+    _(XrControllerModelStateMSFT, XR_TYPE_CONTROLLER_MODEL_STATE_MSFT) \
+    _(XrViewConfigurationViewFovEPIC, XR_TYPE_VIEW_CONFIGURATION_VIEW_FOV_EPIC) \
+    _(XrCompositionLayerReprojectionInfoMSFT, XR_TYPE_COMPOSITION_LAYER_REPROJECTION_INFO_MSFT) \
+    _(XrCompositionLayerReprojectionPlaneOverrideMSFT, XR_TYPE_COMPOSITION_LAYER_REPROJECTION_PLANE_OVERRIDE_MSFT) \
+    _(XrInteractionProfileAnalogThresholdVALVE, XR_TYPE_INTERACTION_PROFILE_ANALOG_THRESHOLD_VALVE) \
+    _(XrHandJointsMotionRangeInfoEXT, XR_TYPE_HAND_JOINTS_MOTION_RANGE_INFO_EXT) \
+    _(XrSceneObserverCreateInfoMSFT, XR_TYPE_SCENE_OBSERVER_CREATE_INFO_MSFT) \
+    _(XrSceneCreateInfoMSFT, XR_TYPE_SCENE_CREATE_INFO_MSFT) \
+    _(XrNewSceneComputeInfoMSFT, XR_TYPE_NEW_SCENE_COMPUTE_INFO_MSFT) \
+    _(XrVisualMeshComputeLodInfoMSFT, XR_TYPE_VISUAL_MESH_COMPUTE_LOD_INFO_MSFT) \
+    _(XrSceneComponentsMSFT, XR_TYPE_SCENE_COMPONENTS_MSFT) \
+    _(XrSceneComponentsGetInfoMSFT, XR_TYPE_SCENE_COMPONENTS_GET_INFO_MSFT) \
+    _(XrSceneComponentLocationsMSFT, XR_TYPE_SCENE_COMPONENT_LOCATIONS_MSFT) \
+    _(XrSceneComponentsLocateInfoMSFT, XR_TYPE_SCENE_COMPONENTS_LOCATE_INFO_MSFT) \
+    _(XrSceneObjectsMSFT, XR_TYPE_SCENE_OBJECTS_MSFT) \
+    _(XrSceneComponentParentFilterInfoMSFT, XR_TYPE_SCENE_COMPONENT_PARENT_FILTER_INFO_MSFT) \
+    _(XrSceneObjectTypesFilterInfoMSFT, XR_TYPE_SCENE_OBJECT_TYPES_FILTER_INFO_MSFT) \
+    _(XrScenePlanesMSFT, XR_TYPE_SCENE_PLANES_MSFT) \
+    _(XrScenePlaneAlignmentFilterInfoMSFT, XR_TYPE_SCENE_PLANE_ALIGNMENT_FILTER_INFO_MSFT) \
+    _(XrSceneMeshesMSFT, XR_TYPE_SCENE_MESHES_MSFT) \
+    _(XrSceneMeshBuffersGetInfoMSFT, XR_TYPE_SCENE_MESH_BUFFERS_GET_INFO_MSFT) \
+    _(XrSceneMeshBuffersMSFT, XR_TYPE_SCENE_MESH_BUFFERS_MSFT) \
+    _(XrSceneMeshVertexBufferMSFT, XR_TYPE_SCENE_MESH_VERTEX_BUFFER_MSFT) \
+    _(XrSceneMeshIndicesUint32MSFT, XR_TYPE_SCENE_MESH_INDICES_UINT32_MSFT) \
+    _(XrSceneMeshIndicesUint16MSFT, XR_TYPE_SCENE_MESH_INDICES_UINT16_MSFT) \
+    _(XrSerializedSceneFragmentDataGetInfoMSFT, XR_TYPE_SERIALIZED_SCENE_FRAGMENT_DATA_GET_INFO_MSFT) \
+    _(XrSceneDeserializeInfoMSFT, XR_TYPE_SCENE_DESERIALIZE_INFO_MSFT) \
+    _(XrEventDataDisplayRefreshRateChangedFB, XR_TYPE_EVENT_DATA_DISPLAY_REFRESH_RATE_CHANGED_FB) \
+    _(XrSystemColorSpacePropertiesFB, XR_TYPE_SYSTEM_COLOR_SPACE_PROPERTIES_FB) \
+    _(XrViewLocateFoveatedRenderingVARJO, XR_TYPE_VIEW_LOCATE_FOVEATED_RENDERING_VARJO) \
+    _(XrFoveatedViewConfigurationViewVARJO, XR_TYPE_FOVEATED_VIEW_CONFIGURATION_VIEW_VARJO) \
+    _(XrSystemFoveatedRenderingPropertiesVARJO, XR_TYPE_SYSTEM_FOVEATED_RENDERING_PROPERTIES_VARJO) \
+    _(XrCompositionLayerDepthTestVARJO, XR_TYPE_COMPOSITION_LAYER_DEPTH_TEST_VARJO) \
+
+
+
+
+#if defined(XR_USE_GRAPHICS_API_D3D11)
+#define XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_D3D11(_) \
+    _(XrGraphicsBindingD3D11KHR, XR_TYPE_GRAPHICS_BINDING_D3D11_KHR) \
+    _(XrSwapchainImageD3D11KHR, XR_TYPE_SWAPCHAIN_IMAGE_D3D11_KHR) \
+    _(XrGraphicsRequirementsD3D11KHR, XR_TYPE_GRAPHICS_REQUIREMENTS_D3D11_KHR) \
+
+
+#else
+#define XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_D3D11(_)
+#endif
+
+#if defined(XR_USE_GRAPHICS_API_D3D12)
+#define XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_D3D12(_) \
+    _(XrGraphicsBindingD3D12KHR, XR_TYPE_GRAPHICS_BINDING_D3D12_KHR) \
+    _(XrSwapchainImageD3D12KHR, XR_TYPE_SWAPCHAIN_IMAGE_D3D12_KHR) \
+    _(XrGraphicsRequirementsD3D12KHR, XR_TYPE_GRAPHICS_REQUIREMENTS_D3D12_KHR) \
+
+
+#else
+#define XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_D3D12(_)
+#endif
+
+#if defined(XR_USE_GRAPHICS_API_OPENGL)
+#define XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_OPENGL(_) \
+    _(XrSwapchainImageOpenGLKHR, XR_TYPE_SWAPCHAIN_IMAGE_OPENGL_KHR) \
+    _(XrGraphicsRequirementsOpenGLKHR, XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_KHR) \
+
+
+#else
+#define XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_OPENGL(_)
+#endif
+
+#if defined(XR_USE_GRAPHICS_API_OPENGL) && defined(XR_USE_PLATFORM_WAYLAND)
+#define XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_OPENGL_XR_USE_PLATFORM_WAYLAND(_) \
+    _(XrGraphicsBindingOpenGLWaylandKHR, XR_TYPE_GRAPHICS_BINDING_OPENGL_WAYLAND_KHR) \
+
+
+#else
+#define XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_OPENGL_XR_USE_PLATFORM_WAYLAND(_)
+#endif
+
+#if defined(XR_USE_GRAPHICS_API_OPENGL) && defined(XR_USE_PLATFORM_WIN32)
+#define XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_OPENGL_XR_USE_PLATFORM_WIN32(_) \
+    _(XrGraphicsBindingOpenGLWin32KHR, XR_TYPE_GRAPHICS_BINDING_OPENGL_WIN32_KHR) \
+
+
+#else
+#define XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_OPENGL_XR_USE_PLATFORM_WIN32(_)
+#endif
+
+#if defined(XR_USE_GRAPHICS_API_OPENGL) && defined(XR_USE_PLATFORM_XCB)
+#define XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_OPENGL_XR_USE_PLATFORM_XCB(_) \
+    _(XrGraphicsBindingOpenGLXcbKHR, XR_TYPE_GRAPHICS_BINDING_OPENGL_XCB_KHR) \
+
+
+#else
+#define XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_OPENGL_XR_USE_PLATFORM_XCB(_)
+#endif
+
+#if defined(XR_USE_GRAPHICS_API_OPENGL) && defined(XR_USE_PLATFORM_XLIB)
+#define XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_OPENGL_XR_USE_PLATFORM_XLIB(_) \
+    _(XrGraphicsBindingOpenGLXlibKHR, XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR) \
+
+
+#else
+#define XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_OPENGL_XR_USE_PLATFORM_XLIB(_)
+#endif
+
+#if defined(XR_USE_GRAPHICS_API_OPENGL_ES)
+#define XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_OPENGL_ES(_) \
+    _(XrSwapchainImageOpenGLESKHR, XR_TYPE_SWAPCHAIN_IMAGE_OPENGL_ES_KHR) \
+    _(XrGraphicsRequirementsOpenGLESKHR, XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_ES_KHR) \
+    _(XrSwapchainStateSamplerOpenGLESFB, XR_TYPE_SWAPCHAIN_STATE_SAMPLER_OPENGL_ES_FB) \
+
+
+#else
+#define XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_OPENGL_ES(_)
+#endif
+
+#if defined(XR_USE_GRAPHICS_API_OPENGL_ES) && defined(XR_USE_PLATFORM_ANDROID)
+#define XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_OPENGL_ES_XR_USE_PLATFORM_ANDROID(_) \
+    _(XrGraphicsBindingOpenGLESAndroidKHR, XR_TYPE_GRAPHICS_BINDING_OPENGL_ES_ANDROID_KHR) \
+
+
+#else
+#define XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_OPENGL_ES_XR_USE_PLATFORM_ANDROID(_)
+#endif
+
+#if defined(XR_USE_GRAPHICS_API_VULKAN)
+#define XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_VULKAN(_) \
+    _(XrVulkanSwapchainFormatListCreateInfoKHR, XR_TYPE_VULKAN_SWAPCHAIN_FORMAT_LIST_CREATE_INFO_KHR) \
+    _(XrGraphicsBindingVulkanKHR, XR_TYPE_GRAPHICS_BINDING_VULKAN_KHR) \
+    _(XrSwapchainImageVulkanKHR, XR_TYPE_SWAPCHAIN_IMAGE_VULKAN_KHR) \
+    _(XrGraphicsRequirementsVulkanKHR, XR_TYPE_GRAPHICS_REQUIREMENTS_VULKAN_KHR) \
+    _(XrVulkanInstanceCreateInfoKHR, XR_TYPE_VULKAN_INSTANCE_CREATE_INFO_KHR) \
+    _(XrVulkanDeviceCreateInfoKHR, XR_TYPE_VULKAN_DEVICE_CREATE_INFO_KHR) \
+    _(XrVulkanGraphicsDeviceGetInfoKHR, XR_TYPE_VULKAN_GRAPHICS_DEVICE_GET_INFO_KHR) \
+    _(XrSwapchainStateSamplerVulkanFB, XR_TYPE_SWAPCHAIN_STATE_SAMPLER_VULKAN_FB) \
+
+
+#else
+#define XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_VULKAN(_)
+#endif
+
+#if defined(XR_USE_PLATFORM_ANDROID)
+#define XR_LIST_STRUCTURE_TYPES_XR_USE_PLATFORM_ANDROID(_) \
+    _(XrInstanceCreateInfoAndroidKHR, XR_TYPE_INSTANCE_CREATE_INFO_ANDROID_KHR) \
+    _(XrLoaderInitInfoAndroidKHR, XR_TYPE_LOADER_INIT_INFO_ANDROID_KHR) \
+    _(XrAndroidSurfaceSwapchainCreateInfoFB, XR_TYPE_ANDROID_SURFACE_SWAPCHAIN_CREATE_INFO_FB) \
+    _(XrSwapchainStateAndroidSurfaceDimensionsFB, XR_TYPE_SWAPCHAIN_STATE_ANDROID_SURFACE_DIMENSIONS_FB) \
+
+
+#else
+#define XR_LIST_STRUCTURE_TYPES_XR_USE_PLATFORM_ANDROID(_)
+#endif
+
+#if defined(XR_USE_PLATFORM_EGL)
+#define XR_LIST_STRUCTURE_TYPES_XR_USE_PLATFORM_EGL(_) \
+    _(XrGraphicsBindingEGLMNDX, XR_TYPE_GRAPHICS_BINDING_EGL_MNDX) \
+
+
+#else
+#define XR_LIST_STRUCTURE_TYPES_XR_USE_PLATFORM_EGL(_)
+#endif
+
+#if defined(XR_USE_PLATFORM_WIN32)
+#define XR_LIST_STRUCTURE_TYPES_XR_USE_PLATFORM_WIN32(_) \
+    _(XrHolographicWindowAttachmentMSFT, XR_TYPE_HOLOGRAPHIC_WINDOW_ATTACHMENT_MSFT) \
+
+
+#else
+#define XR_LIST_STRUCTURE_TYPES_XR_USE_PLATFORM_WIN32(_)
+#endif
+
+#define XR_LIST_STRUCTURE_TYPES(_) \
+    XR_LIST_STRUCTURE_TYPES_CORE(_) \
+    XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_D3D11(_) \
+    XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_D3D12(_) \
+    XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_OPENGL(_) \
+    XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_OPENGL_XR_USE_PLATFORM_WAYLAND(_) \
+    XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_OPENGL_XR_USE_PLATFORM_WIN32(_) \
+    XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_OPENGL_XR_USE_PLATFORM_XCB(_) \
+    XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_OPENGL_XR_USE_PLATFORM_XLIB(_) \
+    XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_OPENGL_ES(_) \
+    XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_OPENGL_ES_XR_USE_PLATFORM_ANDROID(_) \
+    XR_LIST_STRUCTURE_TYPES_XR_USE_GRAPHICS_API_VULKAN(_) \
+    XR_LIST_STRUCTURE_TYPES_XR_USE_PLATFORM_ANDROID(_) \
+    XR_LIST_STRUCTURE_TYPES_XR_USE_PLATFORM_EGL(_) \
+    XR_LIST_STRUCTURE_TYPES_XR_USE_PLATFORM_WIN32(_) \
+
+
+#define XR_LIST_EXTENSIONS(_) \
+    _(XR_KHR_android_thread_settings, 4) \
+    _(XR_KHR_android_surface_swapchain, 5) \
+    _(XR_KHR_composition_layer_cube, 7) \
+    _(XR_KHR_android_create_instance, 9) \
+    _(XR_KHR_composition_layer_depth, 11) \
+    _(XR_KHR_vulkan_swapchain_format_list, 15) \
+    _(XR_EXT_performance_settings, 16) \
+    _(XR_EXT_thermal_query, 17) \
+    _(XR_KHR_composition_layer_cylinder, 18) \
+    _(XR_KHR_composition_layer_equirect, 19) \
+    _(XR_EXT_debug_utils, 20) \
+    _(XR_KHR_opengl_enable, 24) \
+    _(XR_KHR_opengl_es_enable, 25) \
+    _(XR_KHR_vulkan_enable, 26) \
+    _(XR_KHR_D3D11_enable, 28) \
+    _(XR_KHR_D3D12_enable, 29) \
+    _(XR_EXT_eye_gaze_interaction, 31) \
+    _(XR_KHR_visibility_mask, 32) \
+    _(XR_EXTX_overlay, 34) \
+    _(XR_KHR_composition_layer_color_scale_bias, 35) \
+    _(XR_KHR_win32_convert_performance_counter_time, 36) \
+    _(XR_KHR_convert_timespec_time, 37) \
+    _(XR_VARJO_quad_views, 38) \
+    _(XR_MSFT_unbounded_reference_space, 39) \
+    _(XR_MSFT_spatial_anchor, 40) \
+    _(XR_MND_headless, 43) \
+    _(XR_OCULUS_android_session_state_enable, 45) \
+    _(XR_EXT_view_configuration_depth_range, 47) \
+    _(XR_EXT_conformance_automation, 48) \
+    _(XR_MNDX_egl_enable, 49) \
+    _(XR_MSFT_spatial_graph_bridge, 50) \
+    _(XR_MSFT_hand_interaction, 51) \
+    _(XR_EXT_hand_tracking, 52) \
+    _(XR_MSFT_hand_tracking_mesh, 53) \
+    _(XR_MSFT_secondary_view_configuration, 54) \
+    _(XR_MSFT_first_person_observer, 55) \
+    _(XR_MSFT_controller_model, 56) \
+    _(XR_MSFT_perception_anchor_interop, 57) \
+    _(XR_EXT_win32_appcontainer_compatible, 58) \
+    _(XR_EPIC_view_configuration_fov, 60) \
+    _(XR_MSFT_holographic_window_attachment, 64) \
+    _(XR_MSFT_composition_layer_reprojection, 67) \
+    _(XR_HUAWEI_controller_interaction, 70) \
+    _(XR_FB_android_surface_swapchain_create, 71) \
+    _(XR_FB_swapchain_update_state, 72) \
+    _(XR_VALVE_analog_threshold, 80) \
+    _(XR_EXT_hand_joints_motion_range, 81) \
+    _(XR_KHR_loader_init, 89) \
+    _(XR_KHR_loader_init_android, 90) \
+    _(XR_KHR_vulkan_enable2, 91) \
+    _(XR_KHR_composition_layer_equirect2, 92) \
+    _(XR_EXT_samsung_odyssey_controller, 95) \
+    _(XR_EXT_hp_mixed_reality_controller, 96) \
+    _(XR_MND_swapchain_usage_input_attachment_bit, 97) \
+    _(XR_MSFT_scene_understanding, 98) \
+    _(XR_MSFT_scene_understanding_serialization, 99) \
+    _(XR_FB_display_refresh_rate, 102) \
+    _(XR_HTC_vive_cosmos_controller_interaction, 103) \
+    _(XR_FB_color_space, 109) \
+    _(XR_KHR_binding_modification, 121) \
+    _(XR_VARJO_foveated_rendering, 122) \
+    _(XR_VARJO_composition_layer_depth_test, 123) \
+    _(XR_VARJO_environment_depth_estimation, 124) \
+    _(XR_OCULUS_audio_device_guid, 160) \
+    _(XR_FB_swapchain_update_state_android_surface, 162) \
+    _(XR_FB_swapchain_update_state_opengl_es, 163) \
+    _(XR_FB_swapchain_update_state_vulkan, 164) \
 
 
 #endif

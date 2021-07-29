@@ -42,7 +42,7 @@ class ExtensionSyncTypeTest : public testing::Test {
     if (type == APP)
       source.SetString(keys::kApp, "true");
     if (type == THEME)
-      source.Set(keys::kTheme, std::make_unique<base::DictionaryValue>());
+      source.SetKey(keys::kTheme, base::Value(base::Value::Type::DICTIONARY));
     if (!update_url.is_empty()) {
       source.SetString(keys::kUpdateURL, update_url.spec());
     }
@@ -177,7 +177,7 @@ TEST_F(ExtensionSyncTypeTest, DisplayInXManifestProperties) {
   EXPECT_TRUE(app->ShouldDisplayInNewTabPage());
 
   // Value display_in_NTP = false only, overrides default = true.
-  manifest.Remove(keys::kDisplayInLauncher, NULL);
+  manifest.RemoveKey(keys::kDisplayInLauncher);
   manifest.SetBoolean(keys::kDisplayInNewTabPage, false);
   app = Extension::Create(base::FilePath(), mojom::ManifestLocation::kComponent,
                           manifest, 0, &error);

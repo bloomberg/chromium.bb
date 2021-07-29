@@ -11,12 +11,13 @@
 #include "content/common/content_export.h"
 #include "content/common/render_accessibility.mojom.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
-#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/accessibility/ax_event.h"
 #include "ui/accessibility/ax_mode.h"
+#include "ui/accessibility/ax_tree_id.h"
 #include "ui/accessibility/ax_tree_update.h"
 
 namespace content {
@@ -69,16 +70,17 @@ class CONTENT_EXPORT RenderAccessibilityManager
 
   // Communication with the browser process.
   void HandleAccessibilityEvents(
-      const std::vector<ui::AXTreeUpdate>& updates,
-      const std::vector<ui::AXEvent>& events,
+      mojom::AXUpdatesAndEventsPtr updates_and_events,
       int32_t reset_token,
       mojom::RenderAccessibilityHost::HandleAXEventsCallback callback);
   void HandleLocationChanges(std::vector<mojom::LocationChangesPtr> changes);
 
+  void CloseConnection();
+
  private:
   // Returns the associated remote used to send messages to the browser process,
   // lazily initializing it the first time it's used.
-  mojo::AssociatedRemote<mojom::RenderAccessibilityHost>&
+  mojo::Remote<mojom::RenderAccessibilityHost>&
   GetOrCreateRemoteRenderAccessibilityHost();
 
   // The RenderFrameImpl that owns us.
@@ -91,8 +93,7 @@ class CONTENT_EXPORT RenderAccessibilityManager
   mojo::AssociatedReceiver<mojom::RenderAccessibility> receiver_{this};
 
   // Endpoint to send messages to the browser process.
-  mojo::AssociatedRemote<mojom::RenderAccessibilityHost>
-      render_accessibility_host_;
+  mojo::Remote<mojom::RenderAccessibilityHost> render_accessibility_host_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderAccessibilityManager);
 };

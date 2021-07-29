@@ -185,6 +185,14 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
   settings.enable_elastic_overscroll = true;
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // Rasterized tiles must be overlay candidates to be forwarded.
+  // This is very similar to the line above for Apple.
+  if (features::IsDelegatedCompositingEnabled()) {
+    settings.resource_settings.use_gpu_memory_buffer_resources = true;
+  }
+#endif
+
   settings.memory_policy.bytes_limit_when_visible = 512 * 1024 * 1024;
 
   // Used to configure ui compositor memory limit for chromeos devices.
@@ -372,7 +380,7 @@ cc::AnimationTimeline* Compositor::GetAnimationTimeline() const {
   return animation_timeline_.get();
 }
 
-void Compositor::SetDisplayColorMatrix(const SkMatrix44& matrix) {
+void Compositor::SetDisplayColorMatrix(const skia::Matrix44& matrix) {
   display_color_matrix_ = matrix;
   if (display_private_)
     display_private_->SetDisplayColorMatrix(gfx::Transform(matrix));

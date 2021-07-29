@@ -8,14 +8,13 @@
 #include <vector>
 
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/browser_resources.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -94,9 +93,8 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kPinUnlockWeakPinsAllowed, true);
 
   // Register as true by default only when the feature is enabled.
-  registry->RegisterBooleanPref(
-      prefs::kPinUnlockAutosubmitEnabled,
-      features::IsPinAutosubmitFeatureEnabled());
+  registry->RegisterBooleanPref(::prefs::kPinUnlockAutosubmitEnabled,
+                                features::IsPinAutosubmitFeatureEnabled());
 }
 
 bool IsPinDisabledByPolicy(PrefService* pref_service) {
@@ -112,17 +110,7 @@ bool IsPinDisabledByPolicy(PrefService* pref_service) {
   return !enabled;
 }
 
-bool IsPinEnabled(PrefService* pref_service) {
-  if (enable_for_testing_)
-    return true;
-
-  // PIN is disabled for deprecated supervised user, but allowed to child user.
-  user_manager::User* user = user_manager::UserManager::Get()->GetActiveUser();
-  if (user && user->GetType() ==
-                  user_manager::UserType::USER_TYPE_SUPERVISED_DEPRECATED) {
-    return false;
-  }
-
+bool IsPinEnabled() {
   return true;
 }
 
@@ -158,7 +146,7 @@ bool IsFingerprintSupported() {
 
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
-  return base::FeatureList::IsEnabled(::features::kQuickUnlockFingerprint) &&
+  return base::FeatureList::IsEnabled(features::kQuickUnlockFingerprint) &&
          command_line->HasSwitch(switches::kFingerprintSensorLocation);
 }
 

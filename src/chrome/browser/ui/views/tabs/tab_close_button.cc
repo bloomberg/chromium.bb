@@ -10,7 +10,6 @@
 
 #include "base/hash/hash.h"
 #include "base/no_destructor.h"
-#include "base/stl_util.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
@@ -26,6 +25,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/animation/ink_drop.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/rect_based_targeting_utils.h"
@@ -49,14 +49,15 @@ TabCloseButton::TabCloseButton(PressedCallback pressed_callback,
   SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 
-  ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
-  ink_drop()->SetHighlightOpacity(0.16f);
-  ink_drop()->SetVisibleOpacity(0.14f);
+  views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
+  views::InkDrop::Get(this)->SetHighlightOpacity(0.16f);
+  views::InkDrop::Get(this)->SetVisibleOpacity(0.14f);
 
   // Disable animation so that the hover indicator shows up immediately to help
   // avoid mis-clicks.
   SetAnimationDuration(base::TimeDelta());
-  ink_drop()->GetInkDrop()->SetHoverHighlightFadeDuration(base::TimeDelta());
+  views::InkDrop::Get(this)->GetInkDrop()->SetHoverHighlightFadeDuration(
+      base::TimeDelta());
 
   // The ink drop highlight path is the same as the focus ring highlight path,
   // but needs to be explicitly mirrored for RTL.
@@ -75,7 +76,7 @@ TabCloseButton::TabCloseButton(PressedCallback pressed_callback,
   auto ring_highlight_path =
       std::make_unique<views::CircleHighlightPathGenerator>(gfx::Insets());
   ring_highlight_path->set_use_contents_bounds(true);
-  focus_ring()->SetPathGenerator(std::move(ring_highlight_path));
+  views::FocusRing::Get(this)->SetPathGenerator(std::move(ring_highlight_path));
 
   // Always have a value on this property so we can modify it directly without
   // a heap allocation.
@@ -98,7 +99,7 @@ void TabCloseButton::SetColors(TabStyle::TabColors colors) {
   if (colors == colors_)
     return;
   colors_ = std::move(colors);
-  ink_drop()->SetBaseColor(
+  views::InkDrop::Get(this)->SetBaseColor(
       color_utils::GetColorWithMaxContrast(colors_.background_color));
   OnPropertyChanged(&colors_, views::kPropertyEffectsPaint);
 }
@@ -155,7 +156,7 @@ gfx::Size TabCloseButton::CalculatePreferredSize() const {
 void TabCloseButton::PaintButtonContents(gfx::Canvas* canvas) {
   cc::PaintFlags flags;
   constexpr float kStrokeWidth = 1.5f;
-  float touch_scale = float{GetGlyphSize()} / kGlyphSize;
+  float touch_scale = static_cast<float>(GetGlyphSize()) / kGlyphSize;
   float size = (kGlyphSize - 8) * touch_scale - kStrokeWidth;
   gfx::RectF glyph_bounds(GetContentsBounds());
   glyph_bounds.ClampToCenteredSize(gfx::SizeF(size, size));

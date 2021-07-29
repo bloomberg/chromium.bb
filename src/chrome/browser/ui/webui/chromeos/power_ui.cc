@@ -18,8 +18,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/power/power_data_collector.h"
-#include "chrome/browser/chromeos/power/process_data_collector.h"
+#include "chrome/browser/ash/power/power_data_collector.h"
+#include "chrome/browser/ash/power/process_data_collector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
@@ -100,10 +100,11 @@ void PowerMessageHandler::OnGetBatteryChargeData(const base::ListValue* value) {
   for (size_t i = 0; i < power_supply.size(); ++i) {
     const PowerDataCollector::PowerSupplySample& sample = power_supply[i];
     std::unique_ptr<base::DictionaryValue> element(new base::DictionaryValue);
-    element->SetDouble("batteryPercent", sample.battery_percent);
-    element->SetDouble("batteryDischargeRate", sample.battery_discharge_rate);
+    element->SetDoubleKey("batteryPercent", sample.battery_percent);
+    element->SetDoubleKey("batteryDischargeRate",
+                          sample.battery_discharge_rate);
     element->SetBoolean("externalPower", sample.external_power);
-    element->SetDouble("time", sample.time.ToJsTime());
+    element->SetDoubleKey("time", sample.time.ToJsTime());
 
     js_power_supply_data.Append(std::move(element));
   }
@@ -171,7 +172,8 @@ void PowerMessageHandler::OnGetProcessUsageData(const base::ListValue* args) {
     element->SetString("cmdline", process_info.process_data.cmdline);
     element->SetInteger("type",
                         static_cast<int>(process_info.process_data.type));
-    element->SetDouble("powerUsageFraction", process_info.power_usage_fraction);
+    element->SetDoubleKey("powerUsageFraction",
+                          process_info.power_usage_fraction);
     js_process_usages.Append(std::move(element));
   }
 
@@ -186,9 +188,9 @@ void PowerMessageHandler::GetJsSystemResumedData(base::ListValue *data) {
   for (size_t i = 0; i < system_resumed.size(); ++i) {
     const PowerDataCollector::SystemResumedSample& sample = system_resumed[i];
     std::unique_ptr<base::DictionaryValue> element(new base::DictionaryValue);
-    element->SetDouble("sleepDuration",
-                       sample.sleep_duration.InMillisecondsF());
-    element->SetDouble("time", sample.time.ToJsTime());
+    element->SetDoubleKey("sleepDuration",
+                          sample.sleep_duration.InMillisecondsF());
+    element->SetDoubleKey("time", sample.time.ToJsTime());
 
     data->Append(std::move(element));
   }
@@ -205,16 +207,15 @@ void PowerMessageHandler::GetJsStateOccupancyData(
       const CpuDataCollector::StateOccupancySample& sample = sample_deque[i];
       std::unique_ptr<base::DictionaryValue> js_sample(
           new base::DictionaryValue);
-      js_sample->SetDouble("time", sample.time.ToJsTime());
+      js_sample->SetDoubleKey("time", sample.time.ToJsTime());
       js_sample->SetBoolean("cpuOnline", sample.cpu_online);
 
-      std::unique_ptr<base::DictionaryValue> state_dict(
-          new base::DictionaryValue);
+      base::DictionaryValue state_dict;
       for (size_t index = 0; index < sample.time_in_state.size(); ++index) {
-        state_dict->SetDouble(state_names[index],
-                              sample.time_in_state[index].InMillisecondsF());
+        state_dict.SetDoubleKey(state_names[index],
+                                sample.time_in_state[index].InMillisecondsF());
       }
-      js_sample->Set("timeInState", std::move(state_dict));
+      js_sample->SetKey("timeInState", std::move(state_dict));
 
       js_sample_list->Append(std::move(js_sample));
     }

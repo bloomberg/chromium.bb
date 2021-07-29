@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_BLOCK_NODE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_BLOCK_NODE_H_
 
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_input_node.h"
@@ -202,6 +203,9 @@ class CORE_EXPORT NGBlockNode : public NGLayoutInputNode {
       return block->HasLineIfEmpty();
     return false;
   }
+  LayoutUnit EmptyLineBlockSize() const {
+    return box_->LogicalHeightForEmptyLine();
+  }
 
   // After we run the layout algorithm, this function copies back the fragment
   // position to the layout box.
@@ -255,6 +259,8 @@ class CORE_EXPORT NGBlockNode : public NGLayoutInputNode {
                                      NGBoxFragmentBuilder*) const;
   LayoutUnit AtomicInlineBaselineFromLegacyLayout(
       const NGConstraintSpace&) const;
+
+  void UpdateMarginPaddingInfoIfNeeded(const NGConstraintSpace&) const;
 
   void UpdateShapeOutsideInfoIfNeeded(
       const NGLayoutResult&,

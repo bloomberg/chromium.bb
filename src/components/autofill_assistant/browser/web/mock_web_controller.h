@@ -17,7 +17,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill_assistant {
-struct RectF;
 
 class MockWebController : public WebController {
  public:
@@ -35,7 +34,18 @@ class MockWebController : public WebController {
                void(const Selector& selector,
                     ElementFinder::Callback& callback));
 
-  MOCK_METHOD3(ScrollIntoView,
+  MOCK_METHOD4(ScrollToElementPosition,
+               void(std::unique_ptr<ElementFinder::Result>,
+                    const TopPadding&,
+                    const ElementFinder::Result&,
+                    base::OnceCallback<void(const ClientStatus&)>));
+  MOCK_METHOD5(ScrollIntoView,
+               void(const std::string&,
+                    const std::string&,
+                    const std::string&,
+                    const ElementFinder::Result&,
+                    base::OnceCallback<void(const ClientStatus&)>));
+  MOCK_METHOD3(ScrollIntoViewIfNeeded,
                void(bool,
                     const ElementFinder::Result&,
                     base::OnceCallback<void(const ClientStatus&)>));
@@ -62,6 +72,10 @@ class MockWebController : public WebController {
                     base::OnceCallback<void(const ClientStatus&)> callback));
   MOCK_METHOD2(FocusField,
                void(const ElementFinder::Result& element,
+                    base::OnceCallback<void(const ClientStatus&)> callback));
+  MOCK_METHOD3(SendKeyEvent,
+               void(const KeyEvent& key_event,
+                    const ElementFinder::Result& element,
                     base::OnceCallback<void(const ClientStatus&)> callback));
   MOCK_METHOD4(SendKeyboardInput,
                void(const std::vector<UChar32>& codepoints,
@@ -116,9 +130,6 @@ class MockWebController : public WebController {
                     const std::string&,
                     const ElementFinder::Result&,
                     base::OnceCallback<void(const ClientStatus&)>));
-  MOCK_METHOD1(GetVisualViewport,
-               void(base::OnceCallback<void(const ClientStatus&, const RectF&)>
-                        callback));
   MOCK_METHOD2(GetElementRect,
                void(const ElementFinder::Result& element,
                     ElementRectGetter::ElementRectCallback callback));
@@ -128,6 +139,8 @@ class MockWebController : public WebController {
                     base::OnceCallback<void(const ClientStatus&,
                                             DocumentReadyState,
                                             base::TimeDelta)> callback));
+  MOCK_METHOD1(DispatchJsEvent,
+               void(base::OnceCallback<void(const ClientStatus&)> callback));
 
   base::WeakPtr<WebController> GetWeakPtr() const override {
     return weak_ptr_factory_.GetWeakPtr();

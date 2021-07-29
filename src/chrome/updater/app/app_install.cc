@@ -22,11 +22,13 @@
 #include "chrome/updater/constants.h"
 #include "chrome/updater/persisted_data.h"
 #include "chrome/updater/prefs.h"
+#include "chrome/updater/registration_data.h"
 #include "chrome/updater/setup.h"
 #include "chrome/updater/tag.h"
 #include "chrome/updater/update_service.h"
 #include "chrome/updater/update_service_internal.h"
 #include "chrome/updater/updater_version.h"
+#include "chrome/updater/util.h"
 #include "components/prefs/pref_service.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -143,9 +145,26 @@ void AppInstall::WakeCandidate() {
       update_service_internal, base::WrapRefCounted(this)));
 }
 
+void AppInstall::RegisterUpdater() {
+  RegistrationRequest request;
+  request.app_id = kUpdaterAppId;
+  request.version = base::Version(kUpdaterVersion);
+  // update_service is bound in the callback to ensure it is released in this
+  // sequence.
+  scoped_refptr<UpdateService> update_service = CreateUpdateService();
+  update_service->RegisterApp(
+      request, base::BindOnce(
+                   [](scoped_refptr<UpdateService> /*update_service*/,
+                      scoped_refptr<AppInstall> app_install,
+                      const RegistrationResponse& unused) {
+                     app_install->MaybeInstallApp();
+                   },
+                   update_service, base::WrapRefCounted(this)));
+}
+
 void AppInstall::MaybeInstallApp() {
-  const std::string app_id = [this]() {
-    absl::optional<tagging::TagArgs> tag_args = this->tag_args();
+  const std::string app_id = []() {
+    absl::optional<tagging::TagArgs> tag_args = GetTagArgs();
     if (tag_args && !tag_args->apps.empty()) {
       // TODO(crbug.com/1128631): support bundles. For now, assume one app.
       DCHECK_EQ(tag_args->apps.size(), size_t{1});

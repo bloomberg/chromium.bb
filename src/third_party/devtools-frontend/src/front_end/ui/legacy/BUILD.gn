@@ -72,10 +72,12 @@ devtools_module("ui") {
     "../../core/host:bundle",
     "../../core/i18n:bundle",
     "../../core/platform:bundle",
+    "../../core/root:bundle",
     "../../core/sdk:bundle",
     "../../models/text_utils:bundle",
     "../../ui/legacy/theme_support:bundle",
     "../components/helpers:bundle",
+    "../components/icon_button:bundle",
     "utils:bundle",
   ]
 }
@@ -139,8 +141,8 @@ devtools_entrypoint("bundle") {
     # TODO(crbug.com/1202788): Remove invalid dependents
     "../../models/extensions:*",
     "../../models/persistence:*",
-    "../../models/recorder:*",
     "../components/data_grid:*",
+    "../components/linear_memory_inspector:*",
     "../components/markdown_view:*",
   ]
 

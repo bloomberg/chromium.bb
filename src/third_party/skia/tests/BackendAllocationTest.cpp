@@ -14,6 +14,7 @@
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrSurfaceFillContext.h"
 #include "src/gpu/effects/GrBlendFragmentProcessor.h"
+#include "src/gpu/effects/GrTextureEffect.h"
 #include "src/image/SkImage_Base.h"
 #include "tests/Test.h"
 #include "tests/TestUtils.h"
@@ -70,8 +71,8 @@ void test_wrapping(GrDirectContext* dContext,
     // proxy instansiations may add multiple things to the cache. There would be an entry for the
     // GrTexture/GrRenderTarget and entries for one or more attachments.
     int cacheEntriesPerProxy = 1;
-    // We currently only have attachments on the vulkan backend
-    if (dContext->backend() == GrBackend::kVulkan) {
+    // We currently only have attachments on the vulkan and metal backends
+    if (dContext->backend() == GrBackend::kVulkan || dContext->backend() == GrBackend::kMetal) {
         // If we ever make a rt with multisamples this would have an additional
         // attachment as well.
         cacheEntriesPerProxy++;
@@ -410,14 +411,6 @@ static void check_mipmaps(GrDirectContext* dContext,
                                         texMatrix,
                                         kNearestNearest,
                                         *dstFillContext->caps());
-        // Our swizzles for alpha color types currently produce (a, a, a, a) in the shader. Remove
-        // this once they are correctly (0, 0, 0, a).
-        if (GrColorTypeIsAlphaOnly(colorType)) {
-            auto black = GrFragmentProcessor::MakeColor(SK_PMColor4fBLACK);
-            fp = GrBlendFragmentProcessor::Make(std::move(fp),
-                                                std::move(black),
-                                                SkBlendMode::kModulate);
-        }
         dstFillContext->fillRectWithFP(SkIRect::MakeWH(rectSize, rectSize), std::move(fp));
 
         SkImageInfo readbackII = SkImageInfo::Make(rectSize, rectSize,
@@ -740,7 +733,7 @@ DEF_GPUTEST(ColorTypeBackendAllocationTest, reporter, options) {
         if (info.directContext()->priv().caps()->writePixelsRowBytesSupport() &&
             info.directContext()->backend() == GrBackendApi::kOpenGL) {
             GrContextOptions overrideOptions = options;
-            overrideOptions.fDisallowWritePixelRowBytes = true;
+            overrideOptions.fDisallowWriteAndTransferPixelRowBytes = true;
             sk_gpu_test::GrContextFactory overrideFactory(overrideOptions);
             info = overrideFactory.getContextInfo(type);
             color_type_backend_allocation_test(info, reporter);

@@ -14,6 +14,7 @@ group("signin") {
 source_set("signin_headers") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "signin_completion_info.h",
     "signin_coordinator.h",
     "signin_utils.h",
   ]
@@ -36,6 +37,7 @@ source_set("signin_protected") {
 source_set("signin_impl") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "signin_completion_info.mm",
     "signin_coordinator.mm",
     "signin_utils.mm",
   ]
@@ -45,12 +47,15 @@ source_set("signin_impl") {
     ":signin_protected",
     "//components/policy:generated",
     "//components/policy/core/common:common_constants",
+    "//components/pref_registry",
     "//components/prefs",
     "//components/signin/ios/browser",
     "//ios/chrome/app:tests_hook",
+    "//ios/chrome/browser:pref_names",
     "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/policy:policy_util",
     "//ios/chrome/browser/signin",
+    "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/authentication/signin/add_account_signin",
     "//ios/chrome/browser/ui/authentication/signin/advanced_settings_signin",
     "//ios/chrome/browser/ui/authentication/signin/consistency_promo_signin",
@@ -71,6 +76,7 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//components/pref_registry",
+    "//components/signin/ios/browser:features",
     "//components/sync_preferences",
     "//components/sync_preferences:test_support",
     "//ios/chrome/browser/browser_state:test_support",
@@ -115,6 +121,7 @@ source_set("eg2_tests") {
     "//base/test:test_support",
     "//components/signin/ios/browser:features",
     "//components/signin/public/base",
+    "//components/strings:components_strings_grit",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui/authentication:eg_test_support+eg2",
     "//ios/chrome/browser/ui/authentication/views:views_constants",

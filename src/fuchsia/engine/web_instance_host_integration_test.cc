@@ -134,7 +134,7 @@ TEST_F(WebInstanceHostIntegrationTest, FrameHostDebugging) {
   // single page.
   GURL url = embedded_test_server_.GetURL("/defaultresponse");
   ASSERT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      frame.GetNavigationController().get(), fuchsia::web::LoadUrlParams(),
+      frame.GetNavigationController(), fuchsia::web::LoadUrlParams(),
       url.spec()));
   frame.navigation_listener().RunUntilUrlEquals(url);
   base::Value devtools_list =
@@ -153,7 +153,7 @@ TEST_F(WebInstanceHostIntegrationTest, FrameHostDebugging) {
   // and report the new page.
   GURL url2 = embedded_test_server_.GetURL("/title1.html");
   ASSERT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      frame.GetNavigationController().get(), fuchsia::web::LoadUrlParams(),
+      frame.GetNavigationController(), fuchsia::web::LoadUrlParams(),
       url2.spec()));
   frame.navigation_listener().RunUntilUrlEquals(url2);
 

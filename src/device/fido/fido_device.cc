@@ -86,4 +86,20 @@ void FidoDevice::SetDeviceInfo(AuthenticatorGetInfoResponse device_info) {
   device_info_ = std::move(device_info);
 }
 
+bool FidoDevice::NoSilentRequests() const {
+  // caBLE devices do not support silent requests.
+  const auto transport = DeviceTransport();
+  return transport == FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy ||
+         transport == FidoTransportProtocol::kAndroidAccessory;
+}
+
+// static
+bool FidoDevice::IsStatusForUnrecognisedCredentialID(
+    CtapDeviceResponseCode status) {
+  return status == CtapDeviceResponseCode::kCtap2ErrInvalidCredential ||
+         status == CtapDeviceResponseCode::kCtap2ErrNoCredentials ||
+         status == CtapDeviceResponseCode::kCtap2ErrLimitExceeded ||
+         status == CtapDeviceResponseCode::kCtap2ErrRequestTooLarge;
+}
+
 }  // namespace device

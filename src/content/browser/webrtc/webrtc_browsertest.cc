@@ -19,16 +19,23 @@
 #include "media/media_buildflags.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/network/public/cpp/features.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/peerconnection/webrtc_ip_handling_policy.h"
 
 namespace content {
 
-#if defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
+#if defined(OS_ANDROID)
+#if defined(ADDRESS_SANITIZER)
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
 #define MAYBE_WebRtcBrowserTest DISABLED_WebRtcBrowserTest
 #else
+// WebRtcBrowserTest.CanSetupVideoCallWith16To9AspectRatio fails consistently
+// on android
+#define MAYBE_WebRtcBrowserTest DISABLED_WebRtcBrowserTest
+#endif  // defined(ADDRESS_SANITIZER)
+#else
 #define MAYBE_WebRtcBrowserTest WebRtcBrowserTest
-#endif
+#endif  // defined(OS_ANDROID)
 
 // This class tests the scenario when permission to access mic or camera is
 // granted.

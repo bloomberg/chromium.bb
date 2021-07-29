@@ -65,7 +65,7 @@ Usually you need a policy when
             traditionally, and we've seen requests from organizations to
             explicitly spell out the behavior for all possible values and for
             when the policy is unset.
-    -   See [description_guidelines.md](https://chromium.googlesource.com/chromium/src/+/refs/heads/master/docs/enterprise/description_guidelines.md)
+    -   See [description_guidelines.md](https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/enterprise/description_guidelines.md)
         for additional guidelines when creating a description, including how
         various products should be referenced.
 3.  Create a preference and map the policy value to it.
@@ -83,11 +83,11 @@ Usually you need a policy when
             If the policy needs additional verification or processing, please
             implement a `ConfigurationPolicyHandler` to do so.
         3.  Test the mapping by adding policy to
-            [policy_test_cases.json](https://cs.chromium.org/chromium/src/chrome/test/data/policy/policy_test_cases.json?q=policy_test_case).
+            [policy_test_cases.json](https://cs.chromium.org/chromium/src/chrome/test/data/policy/policy_test_cases.json?q=policy_test_case) (see [instructions](https://cs.chromium.org/chromium/src/docs/enterprise/policy_pref_mapping_test.md)).
         4.  iOS platform has its own
-            [configuration_policy_handler_list_factory.mm](https://source.chromium.org/chromium/chromium/src/+/master:ios/chrome/browser/policy/configuration_policy_handler_list_factory.mm)
+            [configuration_policy_handler_list_factory.mm](https://source.chromium.org/chromium/chromium/src/+/main:ios/chrome/browser/policy/configuration_policy_handler_list_factory.mm)
             and
-            [policy_test_cases.json](https://source.chromium.org/chromium/chromium/src/+/master:ios/chrome/test/data/policy/policy_test_cases.json)
+            [policy_test_cases.json](https://source.chromium.org/chromium/chromium/src/+/main:ios/chrome/test/data/policy/policy_test_cases.json)
             file.
 4.  Disable the user setting UI when the policy is applied.
     -   If your feature can be controlled by GUI in `chrome://settings`, the
@@ -117,7 +117,7 @@ Usually you need a policy when
             `components/policy/proto/chrome_device_policy.proto`. Please note
             that all proto fields are optional.
         -   Update
-            `chrome/browser/chromeos/policy/device_policy_decoder_chromeos.{h,cc}`
+            `chrome/browser/ash/policy/core/device_policy_decoder_chromeos.{h,cc}`
             for the new policy.
 7.  Test the policy.
     -   Add a test to verify the policy. You can add a test in
@@ -215,7 +215,8 @@ If the policy was never launched, it can also be deleted from
 policy_templates.json instead of just being marked as no longer supported.
 In this case, please remember to add the deleted id to deleted_policy_ids.
 
-If you want to remove support for another reason, please reach out to someone in [ENTERPRISE_POLICY_OWNERS](https://cs.chromium.org/chromium/src/components/policy/resources/ENTERPRISE_POLICY_OWNERS)
+If you want to remove support for another reason, please reach out to someone in
+[ENTERPRISE_POLICY_OWNERS](https://cs.chromium.org/chromium/src/components/policy/resources/ENTERPRISE_POLICY_OWNERS)
 to ensure this is okay. The general preference is to leave policies as
 deprecated, but still supported.
 
@@ -226,7 +227,11 @@ if the policy skipped past the deprecation state.
 ### Steps
 1. Update policy_templates.json, marking the policy as no longer supported.
    Also marking as deprecated if not previously done.
-1. Remove the related policy_test_case.json code one milestone before support is removed.
+1. Update the related test in the `policy_test_cases.json`.
+    - If the policy is going to be removed in the current milestone, remove the
+      the test at the same time.
+    - If the policy is going to be removed in the future milestone, remove the
+      test **after** policy support ended.
 1. Remove the policy handling code.
 1. Notify chromium-enterprise@chromium.org to ensure this removal of support is
    mentioned in the enterprise release notes.

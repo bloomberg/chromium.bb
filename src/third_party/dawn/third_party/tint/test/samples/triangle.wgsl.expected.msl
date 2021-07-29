@@ -2,22 +2,23 @@
 
 using namespace metal;
 struct tint_symbol_1 {
-  int VertexIndex [[vertex_id]];
-};
-struct tint_symbol_2 {
   float4 value [[position]];
 };
-struct tint_symbol_3 {
+struct tint_array_wrapper {
+  float2 arr[3];
+};
+struct tint_symbol_2 {
   float4 value [[color(0)]];
 };
 
-constant float2 pos[3] = {float2(0.0f, 0.5f), float2(-0.5f, -0.5f), float2(0.5f, -0.5f)};
-vertex tint_symbol_2 vtx_main(tint_symbol_1 tint_symbol [[stage_in]]) {
-  int const VertexIndex = tint_symbol.VertexIndex;
-  return {float4(pos[VertexIndex], 0.0f, 1.0f)};
+vertex tint_symbol_1 vtx_main(uint VertexIndex [[vertex_id]]) {
+  tint_array_wrapper pos = {.arr={float2(0.0f, 0.5f), float2(-0.5f, -0.5f), float2(0.5f, -0.5f)}};
+  tint_symbol_1 const tint_symbol_3 = {.value=float4(pos.arr[VertexIndex], 0.0f, 1.0f)};
+  return tint_symbol_3;
 }
 
-fragment tint_symbol_3 frag_main() {
-  return {float4(1.0f, 0.0f, 0.0f, 1.0f)};
+fragment tint_symbol_2 frag_main() {
+  tint_symbol_2 const tint_symbol_4 = {.value=float4(1.0f, 0.0f, 0.0f, 1.0f)};
+  return tint_symbol_4;
 }
 

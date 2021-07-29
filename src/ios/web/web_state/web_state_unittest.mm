@@ -130,7 +130,7 @@ TEST_F(WebStateTest, OverridingWebKitObject) {
   // Add a script command handler.
   __block bool message_received = false;
   const web::WebState::ScriptCommandCallback callback = base::BindRepeating(
-      ^(const base::DictionaryValue&, const GURL&,
+      ^(const base::Value&, const GURL&,
         /*interacted*/ bool, /*is_main_frame*/ web::WebFrame*) {
         message_received = true;
       });
@@ -392,7 +392,7 @@ TEST_F(WebStateTest, MessageFromMainFrame) {
   __block bool message_from_main_frame = false;
   __block base::Value message_value;
   const web::WebState::ScriptCommandCallback callback =
-      base::BindRepeating(^(const base::DictionaryValue& value, const GURL&,
+      base::BindRepeating(^(const base::Value& value, const GURL&,
                             bool user_interacted, WebFrame* sender_frame) {
         message_received = true;
         message_from_main_frame = sender_frame->IsMainFrame();
@@ -425,7 +425,7 @@ TEST_F(WebStateTest, MessageFromIFrame) {
   __block bool message_from_main_frame = false;
   __block base::Value message_value;
   const web::WebState::ScriptCommandCallback callback =
-      base::BindRepeating(^(const base::DictionaryValue& value, const GURL&,
+      base::BindRepeating(^(const base::Value& value, const GURL&,
                             bool user_interacted, WebFrame* sender_frame) {
         message_received = true;
         message_from_main_frame = sender_frame->IsMainFrame();
@@ -657,7 +657,7 @@ TEST_F(WebStateTest, CallLoadURLWithParamsDuringSessionRestore) {
   // TODO(crbug.com/996544) On Xcode 11 beta 6 this became very slow.  This
   // appears to only affect simulator, and will hopefully be fixed in a future
   // Xcode release.  Revert this to |kWaitForPageLoadTimeout| alone when fixed.
-  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout * 5, ^{
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout * 7, ^{
     return web_state_ptr->GetLastCommittedURL() == url;
   }));
 }

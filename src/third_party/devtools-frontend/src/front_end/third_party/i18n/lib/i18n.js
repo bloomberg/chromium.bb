@@ -5,7 +5,6 @@
  */
 'use strict';
 
-const isDeepEqual = require('../../lodash-isequal/package/index');
 const MessageFormat = require('../../intl-messageformat/package/dist/umd/intl-messageformat').default;
 const LOCALES = require('./locales.js');
 
@@ -52,6 +51,13 @@ function lookupLocale(locales) {
 
   const closestLocale = lookupClosestLocale(canonicalLocales[0], LOCALES);
   return closestLocale || DEFAULT_LOCALE;
+}
+
+/**
+ * @return {!Array<!LH.Locale>} list of all supported locale codes
+ */
+function getAllSupportedLocales() {
+  return Object.keys(LOCALES);
 }
 
 /**
@@ -485,6 +491,7 @@ function isObjectOrArrayOfUnknownValues(val) {
 
 module.exports = {
   _formatPathAsString,
+  _preformatValues,
   lookupLocale,
   getRendererFormattedStrings,
   createIcuMessageFn,
@@ -496,4 +503,5 @@ module.exports = {
   registerLocaleData,
   isStringOrIcuMessage,
   idNotInMainDictionaryException,
+  getAllSupportedLocales,
 };

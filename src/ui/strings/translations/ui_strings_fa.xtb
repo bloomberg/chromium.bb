@@ -58,6 +58,7 @@
 <translation id="2297836609126180313"><ph name="QUANTITY" /> ترابایت/ثانیه</translation>
 <translation id="2353636109065292463">بررسی اتصال اینترنت</translation>
 <translation id="2388990488038464401">با این شماره از تلفنتان تماس می‌گیرید؟</translation>
+<translation id="2435457462613246316">نمایش گذرواژه</translation>
 <translation id="24452542372838207">بزرگ کردن اعلان</translation>
 <translation id="2445449901874883781">استفاده از تراکم بالا</translation>
 <translation id="2482878487686419369">اعلان‌ها</translation>
@@ -79,6 +80,7 @@
 <translation id="2824719307700604149">{YEARS,plural, =1{۱ سال قبل}one{# سال قبل}other{# سال قبل}}</translation>
 <translation id="2878511608894704031">حذف همه</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{تا ۱ روز دیگر}one{تا # روز دیگر}other{تا # روز دیگر}}</translation>
+<translation id="2922712708897119705">ستون <ph name="COLUMN_NAME" /> به‌ترتیب نزولی مرتب شد.</translation>
 <translation id="2931838996092594335">کلیک کنید</translation>
 <translation id="2981684127883932071">نمایش پیشنهادها</translation>
 <translation id="3036649622769666520">باز کردن فایل‌ها</translation>
@@ -114,6 +116,7 @@
 <translation id="3897092660631435901">منو</translation>
 <translation id="3909791450649380159">&amp;برش</translation>
 <translation id="3990502903496589789">حاشیه راست</translation>
+<translation id="3994749195054421561">ستون <ph name="COLUMN_NAME" /> به‌ترتیب صعودی مرتب شد.</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{۱ اعلان خوانده‌نشده}one{# اعلان خوانده‌نشده}other{# اعلان خوانده‌نشده}}</translation>
 <translation id="4202807286478387388">پرش</translation>
 <translation id="4250229828105606438">نماگرفت</translation>
@@ -123,6 +126,7 @@
 <translation id="4306392492252714209">برداشتن از بریده‌دان.</translation>
 <translation id="4316910396681052118">همه برنامه‌ها</translation>
 <translation id="4491109536499578614">تصویر</translation>
+<translation id="4565377596337484307">عدم نمایش گذرواژه</translation>
 <translation id="4588090240171750605">پیمایش به راست</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />، رده‌بندی با ستاره <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />، توصیه برنامه</translation>
@@ -165,6 +169,7 @@
 <translation id="6012623610530968780">صفحه <ph name="SELECTED_PAGE" /> از <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">پاک کردن نوشتار چارگوش جستجو</translation>
 <translation id="6040143037577758943">بستن</translation>
+<translation id="6117103120090651229">دکمه مرکزی</translation>
 <translation id="6119846243427417423">فعالسازی</translation>
 <translation id="6129953537138746214">فاصله</translation>
 <translation id="6134259848159370930">دستگاه، برنامه‌ها، تنظیمات، و وب را جستجو کنید.</translation>
@@ -173,6 +178,7 @@
 <translation id="6156262341071374681">بزرگ کردن برای مشاهده همه برنامه‌ها</translation>
 <translation id="6165508094623778733">بیشتر بدانید</translation>
 <translation id="6166852626429024716">جستجوی دستگاه، برنامه‌ها، تنظیمات، وب، و غیره</translation>
+<translation id="6237461503717005873"><ph name="ROW_NAME" /> انتخاب می‌شود.</translation>
 <translation id="6264365405983206840">انتخاب &amp;همه</translation>
 <translation id="6351032674660237738">پیشنهادات برنامه</translation>
 <translation id="6364916375976753737">پیمایش به چپ</translation>
@@ -213,6 +219,7 @@
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{۱ دقیقه باقی مانده است}one{# دقیقه باقی مانده است}other{# دقیقه باقی مانده است}}</translation>
 <translation id="7430878839542012341">این جستجو از سابقه‌تان حذف شود؟</translation>
+<translation id="7437971918971306061">مرتب‌سازی ستون <ph name="COLUMN_NAME" /> لغو شد.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> ترابایت</translation>
 <translation id="7507604095951736240">اموجی</translation>
 <translation id="7620655452534002301">حذف شد.</translation>

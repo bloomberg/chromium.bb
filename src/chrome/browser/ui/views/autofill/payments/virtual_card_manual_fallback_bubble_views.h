@@ -13,6 +13,10 @@ namespace content {
 class WebContents;
 }
 
+namespace views {
+class MdTextButton;
+}
+
 namespace autofill {
 
 // This class implements the desktop bubble that displays the information of the
@@ -38,10 +42,15 @@ class VirtualCardManualFallbackBubbleViews
 
   // LocationBarBubbleDelegateView:
   void Init() override;
-  void AddedToWidget() override;
+  ui::ImageModel GetWindowIcon() override;
   std::u16string GetWindowTitle() const override;
   void WindowClosing() override;
   void OnWidgetClosing(views::Widget* widget) override;
+
+  // Creates a button for the |field|. If the button is pressed, the text of it
+  // will be copied to the clipboard.
+  std::unique_ptr<views::MdTextButton> CreateRowItemButtonForField(
+      VirtualCardManualFallbackBubbleField field);
 
   VirtualCardManualFallbackBubbleController* controller_;
 

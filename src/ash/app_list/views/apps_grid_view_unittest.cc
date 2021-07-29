@@ -27,6 +27,7 @@
 #include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/expand_arrow_view.h"
 #include "ash/app_list/views/folder_background_view.h"
+#include "ash/app_list/views/paged_apps_grid_view.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/search_result_tile_item_view.h"
 #include "ash/app_list/views/suggestion_chip_container_view.h"
@@ -174,7 +175,7 @@ class TestSuggestedSearchResult : public TestSearchResult {
     set_display_type(ash::SearchResultDisplayType::kChip);
     set_is_recommendation(true);
   }
-  ~TestSuggestedSearchResult() override {}
+  ~TestSuggestedSearchResult() override = default;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestSuggestedSearchResult);
@@ -210,6 +211,7 @@ class TestAppsGridViewFolderDelegate : public AppsGridViewFolderDelegate {
 
   void HandleKeyboardReparent(AppListItemView* reparented_item,
                               ui::KeyboardCode key_code) override {}
+  void UpdateFolderBounds() override {}
 };
 
 class AppsGridViewTest : public views::ViewsTestBase {
@@ -286,18 +288,23 @@ class AppsGridViewTest : public views::ViewsTestBase {
         folder_apps_grid_view()->pagination_model());
     folder_apps_grid_view()->pagination_model()->SelectPage(target_page,
                                                             true /*animate*/);
-    while (folder_grid_test_api.HasPendingPageFlip()) {
+    while (HasPendingPageFlip(folder_apps_grid_view())) {
       page_flip_waiter.Wait();
     }
     folder_grid_test_api.LayoutToIdealBounds();
   }
 
-  void SetPageFlipDurationForTest(AppsGridView* apps_grid_view) {
+  void SetPageFlipDurationForTest(PagedAppsGridView* apps_grid_view) {
     apps_grid_view->set_page_flip_delay_for_testing(
         base::TimeDelta::FromMilliseconds(3));
     apps_grid_view->pagination_model()->SetTransitionDurations(
         base::TimeDelta::FromMilliseconds(2),
         base::TimeDelta::FromMilliseconds(1));
+  }
+
+  bool HasPendingPageFlip(PagedAppsGridView* apps_grid_view) {
+    return apps_grid_view->page_flip_timer_.IsRunning() ||
+           apps_grid_view->pagination_model()->has_transition();
   }
 
   const AppListConfig& GetAppListConfig() const {
@@ -330,7 +337,7 @@ class AppsGridViewTest : public views::ViewsTestBase {
                                           &view_origin);
         // AppListItemViews that belong to a folder views' AppsGridView also
         // need to have their x coordinate set for RTL.
-        if (grid_view->is_in_folder())
+        if (grid_view->IsInFolder())
           view_origin.set_x(grid_view->GetMirroredXInView(view_origin.x()));
       }
       if (gfx::Rect(view_origin, view->size()).Contains(point))
@@ -358,7 +365,7 @@ class AppsGridViewTest : public views::ViewsTestBase {
     return contents_view_->apps_container_view()->app_list_folder_view();
   }
 
-  AppsGridView* folder_apps_grid_view() const {
+  PagedAppsGridView* folder_apps_grid_view() const {
     return app_list_folder_view()->items_grid_view();
   }
 
@@ -411,10 +418,10 @@ class AppsGridViewTest : public views::ViewsTestBase {
     apps_grid_view_->MoveItemInModel(item_view, target);
   }
 
-  TestAppListColorProvider color_provider_;  // Needed by AppListView.
-  AppListView* app_list_view_ = nullptr;     // Owned by native widget.
-  AppsGridView* apps_grid_view_ = nullptr;   // Owned by |app_list_view_|.
-  ContentsView* contents_view_ = nullptr;    // Owned by |app_list_view_|.
+  TestAppListColorProvider color_provider_;      // Needed by AppListView.
+  AppListView* app_list_view_ = nullptr;         // Owned by native widget.
+  PagedAppsGridView* apps_grid_view_ = nullptr;  // Owned by |app_list_view_|.
+  ContentsView* contents_view_ = nullptr;        // Owned by |app_list_view_|.
   SearchResultContainerView* suggestions_container_ =
       nullptr;                                    // Owned by |apps_grid_view_|.
   ExpandArrowView* expand_arrow_view_ = nullptr;  // Owned by |apps_grid_view_|.
@@ -491,7 +498,7 @@ class AppsGridViewDragAndDropTestBase : public AppsGridViewTest {
     // Ensure that the |root_from| point is correct if RTL.
     root_from.set_x(apps_grid_view->GetMirroredXInView(root_from.x()));
 
-    apps_grid_view->InitiateDrag(view, pointer, root_from, root_from);
+    apps_grid_view->InitiateDrag(view, root_from, root_from);
     current_drag_location_ = root_from;
     // Call UpdateDrag to trigger |apps_grid_view| change to cardified_state.
     UpdateDrag(pointer, from, apps_grid_view);
@@ -573,7 +580,7 @@ class AppsGridViewDragAndDropTestBase : public AppsGridViewTest {
     page_flip_waiter_->Reset();
     UpdateDrag(AppsGridView::MOUSE, point_in_page_flip_buffer, apps_grid_view_,
                /*steps=*/10);
-    while (test_api_->HasPendingPageFlip()) {
+    while (HasPendingPageFlip(apps_grid_view_)) {
       page_flip_waiter_->Wait();
     }
     EndDrag(apps_grid_view_, false /*cancel*/);
@@ -1081,6 +1088,83 @@ TEST_F(AppsGridViewTest, FolderColsAndRows) {
   app_list_folder_view()->CloseFolderPage();
 }
 
+TEST_F(AppsGridViewTest, RemoveItemsInFolderShouldUpdateBounds) {
+  // Populate two folders with different number of apps.
+  model_->CreateAndPopulateFolderWithApps(2);
+  AppListFolderItem* folder_2 = model_->CreateAndPopulateFolderWithApps(4);
+
+  // Record the bounds of the folder view with 2 items in it.
+  AppsGridView* items_grid_view = app_list_folder_view()->items_grid_view();
+  test_api_->PressItemAt(0);
+  EXPECT_TRUE(contents_view_->apps_container_view()->IsInFolderView());
+  gfx::Rect one_row_folder_view = items_grid_view->GetBoundsInScreen();
+  app_list_folder_view()->CloseFolderPage();
+
+  // Record the bounds of the folder view with 4 items in it and keep the folder
+  // view open for further testing.
+  test_api_->PressItemAt(1);
+  EXPECT_TRUE(contents_view_->apps_container_view()->IsInFolderView());
+  gfx::Rect two_rows_folder_view = items_grid_view->GetBoundsInScreen();
+  EXPECT_NE(one_row_folder_view.size(), two_rows_folder_view.size());
+
+  // Remove one item from the folder with 4 items. The bound should stay the
+  // same as there are still two rows in the folder view.
+  model_->DeleteItem(folder_2->item_list()->item_at(0)->id());
+  EXPECT_TRUE(contents_view_->apps_container_view()->IsInFolderView());
+  items_grid_view->GetWidget()->LayoutRootViewIfNecessary();
+  EXPECT_EQ(items_grid_view->GetBoundsInScreen().size(),
+            two_rows_folder_view.size());
+
+  // Remove another item from the folder. The bound should update and become the
+  // folder view with one row.
+  model_->DeleteItem(folder_2->item_list()->item_at(0)->id());
+  EXPECT_TRUE(contents_view_->apps_container_view()->IsInFolderView());
+  items_grid_view->GetWidget()->LayoutRootViewIfNecessary();
+  EXPECT_EQ(items_grid_view->GetBoundsInScreen().size(),
+            one_row_folder_view.size());
+}
+
+TEST_F(AppsGridViewTest, AddItemsToFolderShouldUpdateBounds) {
+  // Populate two folders with different number of apps.
+  AppListFolderItem* folder_1 = model_->CreateAndPopulateFolderWithApps(2);
+  model_->CreateAndPopulateFolderWithApps(4);
+
+  // Record the bounds of the folder view with 4 items in it.
+  AppsGridView* items_grid_view = app_list_folder_view()->items_grid_view();
+  test_api_->PressItemAt(1);
+  EXPECT_TRUE(contents_view_->apps_container_view()->IsInFolderView());
+  gfx::Rect two_rows_folder_view = items_grid_view->GetBoundsInScreen();
+  app_list_folder_view()->CloseFolderPage();
+
+  // Record the bounds of the folder view with 2 items in it and keep the folder
+  // view open for further testing.
+  test_api_->PressItemAt(0);
+  EXPECT_TRUE(contents_view_->apps_container_view()->IsInFolderView());
+  gfx::Rect one_row_folder_view = items_grid_view->GetBoundsInScreen();
+  EXPECT_NE(one_row_folder_view.size(), two_rows_folder_view.size());
+
+  // Add an item to the folder so that there are two rows in the folder view.
+  model_->AddItemToFolder(model_->CreateItem("Extra 1"), folder_1->id());
+  EXPECT_TRUE(contents_view_->apps_container_view()->IsInFolderView());
+  items_grid_view->GetWidget()->LayoutRootViewIfNecessary();
+  EXPECT_EQ(items_grid_view->GetBoundsInScreen().size(),
+            two_rows_folder_view.size());
+  app_list_folder_view()->CloseFolderPage();
+
+  // Create a folder with a full page of apps. Add an item to the folder should
+  // not change the size of the folder view.
+  AppListFolderItem* folder_full = model_->CreateAndPopulateFolderWithApps(
+      GetAppListConfig().max_folder_items_per_page());
+  test_api_->PressItemAt(2);
+  EXPECT_TRUE(contents_view_->apps_container_view()->IsInFolderView());
+  gfx::Rect full_folder_view = items_grid_view->GetBoundsInScreen();
+
+  model_->AddItemToFolder(model_->CreateItem("Extra 2"), folder_full->id());
+  EXPECT_EQ(items_grid_view->GetBoundsInScreen().size(),
+            full_folder_view.size());
+  app_list_folder_view()->CloseFolderPage();
+}
+
 TEST_P(AppsGridViewRTLTest, ScrollDownShouldNotExitFolder) {
   const size_t kTotalItems = GetAppListConfig().max_folder_items_per_page();
   model_->CreateAndPopulateFolderWithApps(kTotalItems);
@@ -1305,7 +1389,7 @@ TEST_F(AppsGridViewTest, CheckFolderWithMultiplePagesContents) {
       folder_apps_grid_view()->pagination_model();
   EXPECT_EQ(1, folder_pagination_model->total_pages());
   EXPECT_EQ(0, folder_pagination_model->selected_page());
-  EXPECT_TRUE(folder_apps_grid_view()->is_in_folder());
+  EXPECT_TRUE(folder_apps_grid_view()->IsInFolder());
 }
 
 TEST_P(AppsGridViewDragAndDropTest, MouseDragItemOutOfFolderFirstPage) {
@@ -1364,7 +1448,7 @@ TEST_F(AppsGridViewTest, SwitchPageFolderItem) {
   EXPECT_EQ(1, folder_apps_grid_view()->pagination_model()->selected_page());
   EXPECT_EQ(4, folder_apps_grid_view()->cols());
   EXPECT_EQ(4, folder_apps_grid_view()->rows_per_page());
-  EXPECT_TRUE(folder_apps_grid_view()->is_in_folder());
+  EXPECT_TRUE(folder_apps_grid_view()->IsInFolder());
 }
 
 TEST_P(AppsGridViewDragAndDropTest, MouseDragItemOutOfFolderSecondPage) {
@@ -1424,7 +1508,7 @@ TEST_P(AppsGridViewDragAndDropTestNoCardifiedState,
       model_->CreateAndPopulateFolderWithApps(kTotalItems);
   test_api_->Update();
   test_api_->PressItemAt(0);
-  ASSERT_TRUE(folder_apps_grid_view()->is_in_folder());
+  ASSERT_TRUE(folder_apps_grid_view()->IsInFolder());
   // Switch to second page.
   AnimateFolderViewPageFlip(1);
   // Fill the rest of the root grid view with new app list items. Leave 1 slot
@@ -2362,7 +2446,7 @@ TEST_P(AppsGridViewDragAndDropTest, MouseDragFlipToNextPage) {
       gfx::Point(apps_grid_bounds.width() / 2, apps_grid_bounds.bottom() + 1);
   UpdateDrag(AppsGridView::MOUSE, apps_grid_bottom_center, apps_grid_view_,
              5 /*steps*/);
-  while (test_api_->HasPendingPageFlip()) {
+  while (HasPendingPageFlip(apps_grid_view_)) {
     page_flip_waiter_->Wait();
   }
 
@@ -2389,7 +2473,7 @@ TEST_P(AppsGridViewDragAndDropTest, MouseDragFlipToPreviousPage) {
                                   0);
   UpdateDrag(AppsGridView::MOUSE, apps_grid_top_center, apps_grid_view_,
              5 /*steps*/);
-  while (test_api_->HasPendingPageFlip()) {
+  while (HasPendingPageFlip(apps_grid_view_)) {
     page_flip_waiter_->Wait();
   }
 
@@ -2608,7 +2692,7 @@ TEST_F(AppsGridViewTest, PopulateAppsGridWithAFolder) {
       folder_apps_grid_view()->pagination_model();
   EXPECT_EQ(1, folder_pagination_model->total_pages());
   EXPECT_EQ(0, folder_pagination_model->selected_page());
-  EXPECT_TRUE(folder_apps_grid_view()->is_in_folder());
+  EXPECT_TRUE(folder_apps_grid_view()->IsInFolder());
 }
 
 TEST_P(AppsGridViewDragAndDropTest, MoveAnItemToNewEmptyPage) {
@@ -2881,7 +2965,7 @@ TEST_P(AppsGridViewDragAndDropTest, CreateANewPageByDraggingLogsMetrics) {
   // For fullscreen, drag to the bottom/right of bounds.
   page_flip_waiter_->Reset();
   UpdateDrag(AppsGridView::MOUSE, to, apps_grid_view_);
-  while (test_api_->HasPendingPageFlip())
+  while (HasPendingPageFlip(apps_grid_view_))
     page_flip_waiter_->Wait();
   EndDrag(apps_grid_view_, false /*cancel*/);
 
@@ -2916,6 +3000,156 @@ TEST_P(AppsGridViewCardifiedStateTest, PeekingCardOnLastPage) {
   EXPECT_EQ(2, apps_grid_view_->BackgroundCardCountForTesting());
 
   EndDrag(apps_grid_view_, false /*cancel*/);
+}
+
+TEST_P(AppsGridViewCardifiedStateTest, BackgroundCardBounds) {
+  model_->PopulateApps(30);
+
+  gfx::NativeView parent = GetContext();
+  parent->SetBounds(gfx::Rect(gfx::Point(0, 0), gfx::Size(1024, 768)));
+  app_list_view_->OnParentWindowBoundsChanged();
+  apps_grid_view_->GetWidget()->LayoutRootViewIfNecessary();
+
+  // Enter cardified state.
+  const gfx::Point from = GetItemRectOnCurrentPageAt(0, 0).CenterPoint();
+  InitiateDrag(AppsGridView::MOUSE, from, apps_grid_view_);
+  ASSERT_TRUE(apps_grid_view_->cardified_state_for_testing());
+  ASSERT_EQ(3, apps_grid_view_->BackgroundCardCountForTesting());
+
+  // Verify that all items in the current page fit within the background card.
+  gfx::Rect background_card_bounds =
+      apps_grid_view_->GetBackgroundCardBoundsForTesting(0);
+  gfx::Rect clip_rect = apps_grid_view_->layer()->clip_rect();
+  gfx::Rect first_item_bounds = GetItemRectOnCurrentPageAt(0, 0);
+
+  EXPECT_TRUE(background_card_bounds.Contains(first_item_bounds))
+      << " background card bounds " << background_card_bounds.ToString()
+      << " item bounds " << first_item_bounds.ToString();
+  EXPECT_TRUE(clip_rect.Contains(first_item_bounds))
+      << " clip rect " << clip_rect.ToString() << " item bounds "
+      << first_item_bounds.ToString();
+
+  gfx::Rect last_item_bounds = GetItemRectOnCurrentPageAt(3, 4);
+  EXPECT_TRUE(background_card_bounds.Contains(last_item_bounds))
+      << " background card bounds " << background_card_bounds.ToString()
+      << " item bounds " << last_item_bounds.ToString();
+  EXPECT_TRUE(clip_rect.Contains(last_item_bounds))
+      << " clip rect " << clip_rect.ToString() << " item bounds "
+      << last_item_bounds.ToString();
+
+  // Simulate rotation by updating the bounds of the widget in which the app
+  // list was shown.
+  parent->SetBounds(gfx::Rect(gfx::Point(0, 0), gfx::Size(768, 1024)));
+  app_list_view_->OnParentWindowBoundsChanged();
+  apps_grid_view_->GetWidget()->LayoutRootViewIfNecessary();
+
+  ASSERT_TRUE(apps_grid_view_->cardified_state_for_testing());
+  ASSERT_EQ(3, apps_grid_view_->BackgroundCardCountForTesting());
+
+  // Verify that all items in the current page fit within the background card.
+  background_card_bounds =
+      apps_grid_view_->GetBackgroundCardBoundsForTesting(0);
+  clip_rect = apps_grid_view_->layer()->clip_rect();
+  first_item_bounds = GetItemRectOnCurrentPageAt(0, 0);
+
+  EXPECT_TRUE(background_card_bounds.Contains(first_item_bounds))
+      << " background card bounds " << background_card_bounds.ToString()
+      << " item bounds " << first_item_bounds.ToString();
+  EXPECT_TRUE(clip_rect.Contains(first_item_bounds))
+      << " clip rect " << clip_rect.ToString() << " item bounds "
+      << first_item_bounds.ToString();
+
+  last_item_bounds = GetItemRectOnCurrentPageAt(4, 3);
+  EXPECT_TRUE(background_card_bounds.Contains(last_item_bounds))
+      << " background card bounds " << background_card_bounds.ToString()
+      << " item bounds " << last_item_bounds.ToString();
+  EXPECT_TRUE(clip_rect.Contains(last_item_bounds))
+      << " clip rect " << clip_rect.ToString() << " item bounds "
+      << last_item_bounds.ToString();
+
+  EndDrag(apps_grid_view_, false /*cancel*/);
+  EXPECT_EQ(gfx::Rect(), apps_grid_view_->layer()->clip_rect());
+  EXPECT_FALSE(apps_grid_view_->cardified_state_for_testing());
+  EXPECT_EQ(0, apps_grid_view_->BackgroundCardCountForTesting());
+}
+
+TEST_P(AppsGridViewCardifiedStateTest, BackgroundCardBoundsOnSecondPage) {
+  model_->PopulateApps(30);
+
+  gfx::NativeView parent = GetContext();
+  parent->SetBounds(gfx::Rect(gfx::Point(0, 0), gfx::Size(1024, 768)));
+  app_list_view_->OnParentWindowBoundsChanged();
+  apps_grid_view_->GetWidget()->LayoutRootViewIfNecessary();
+
+  // Enter cardified state, and drag the item to the second apps grid page.
+  const gfx::Point from = GetItemRectOnCurrentPageAt(0, 0).CenterPoint();
+  InitiateDrag(AppsGridView::MOUSE, from, apps_grid_view_);
+  const gfx::Point to_in_next_page =
+      test_api_->GetItemTileRectAtVisualIndex(1, 0).CenterPoint();
+  // Drag the first item to the next page to create another page.
+  UpdateDragToNeighborPage(true /* next_page */, to_in_next_page);
+
+  // Trigger cardified state again.
+  InitiateDrag(AppsGridView::MOUSE, from, apps_grid_view_);
+
+  ASSERT_TRUE(apps_grid_view_->cardified_state_for_testing());
+  ASSERT_EQ(3, apps_grid_view_->BackgroundCardCountForTesting());
+
+  // Verify that all items in the current page fit within the background card.
+  gfx::Rect background_card_bounds =
+      apps_grid_view_->GetBackgroundCardBoundsForTesting(1);
+  gfx::Rect clip_rect = apps_grid_view_->layer()->clip_rect();
+  gfx::Rect first_item_bounds = GetItemRectOnCurrentPageAt(0, 0);
+
+  EXPECT_TRUE(background_card_bounds.Contains(first_item_bounds))
+      << " background card bounds " << background_card_bounds.ToString()
+      << " item bounds " << first_item_bounds.ToString();
+  EXPECT_TRUE(clip_rect.Contains(first_item_bounds))
+      << " clip rect " << clip_rect.ToString() << " item bounds "
+      << first_item_bounds.ToString();
+
+  gfx::Rect last_item_bounds = GetItemRectOnCurrentPageAt(3, 4);
+  EXPECT_TRUE(background_card_bounds.Contains(last_item_bounds))
+      << " background card bounds " << background_card_bounds.ToString()
+      << " item bounds " << last_item_bounds.ToString();
+  EXPECT_TRUE(clip_rect.Contains(last_item_bounds))
+      << " clip rect " << clip_rect.ToString() << " item bounds "
+      << last_item_bounds.ToString();
+
+  // Simulate rotation by updating the bounds of the widget in which the app
+  // list was shown.
+  parent->SetBounds(gfx::Rect(gfx::Point(0, 0), gfx::Size(768, 1024)));
+  app_list_view_->OnParentWindowBoundsChanged();
+  apps_grid_view_->GetWidget()->LayoutRootViewIfNecessary();
+
+  ASSERT_TRUE(apps_grid_view_->cardified_state_for_testing());
+  ASSERT_EQ(3, apps_grid_view_->BackgroundCardCountForTesting());
+
+  // Verify that all items in the current page fit within the background card.
+  background_card_bounds =
+      apps_grid_view_->GetBackgroundCardBoundsForTesting(1);
+  clip_rect = apps_grid_view_->layer()->clip_rect();
+  first_item_bounds = GetItemRectOnCurrentPageAt(0, 0);
+
+  EXPECT_TRUE(background_card_bounds.Contains(first_item_bounds))
+      << " background card bounds " << background_card_bounds.ToString()
+      << " item bounds " << first_item_bounds.ToString();
+  EXPECT_TRUE(clip_rect.Contains(first_item_bounds))
+      << " clip rect " << clip_rect.ToString() << " item bounds "
+      << first_item_bounds.ToString();
+
+  last_item_bounds = GetItemRectOnCurrentPageAt(4, 3);
+  EXPECT_TRUE(background_card_bounds.Contains(last_item_bounds))
+      << " background card bounds " << background_card_bounds.ToString()
+      << " item bounds " << last_item_bounds.ToString();
+  EXPECT_TRUE(clip_rect.Contains(last_item_bounds))
+      << " clip rect " << clip_rect.ToString() << " item bounds "
+      << last_item_bounds.ToString();
+
+  EndDrag(apps_grid_view_, false /*cancel*/);
+  EXPECT_EQ(gfx::Rect(), apps_grid_view_->layer()->clip_rect());
+  EXPECT_FALSE(apps_grid_view_->cardified_state_for_testing());
+  EXPECT_EQ(0, apps_grid_view_->BackgroundCardCountForTesting());
 }
 
 TEST_P(AppsGridViewCardifiedStateTest,

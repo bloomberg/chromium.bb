@@ -7,16 +7,38 @@
 #include <memory>
 
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise/connectors/connectors_service.h"
 #include "chrome/browser/enterprise/util/affiliation.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
+#include "components/component_updater/pref_names.h"
+#include "components/policy/content/policy_blocklist_service.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/site_isolation_policy.h"
 #include "device_management_backend.pb.h"
 
 namespace enterprise_signals {
+
+namespace {
+
+bool IsURLBlocked(const GURL& url, content::BrowserContext* browser_context_) {
+  PolicyBlocklistService* service =
+      PolicyBlocklistFactory::GetForBrowserContext(browser_context_);
+
+  if (!service)
+    return false;
+
+  policy::URLBlocklist::URLBlocklistState state =
+      service->GetURLBlocklistState(url);
+
+  return state == policy::URLBlocklist::URLBlocklistState::URL_IN_BLOCKLIST;
+}
+
+}  // namespace
 
 ContextInfo::ContextInfo() = default;
 ContextInfo::ContextInfo(ContextInfo&&) = default;
@@ -56,7 +78,14 @@ void ContextInfoFetcher::Fetch(ContextInfoCallback callback) {
   info.realtime_url_check_mode = GetRealtimeUrlCheckMode();
   info.on_security_event_providers = GetOnSecurityEventProviders();
   info.browser_version = version_info::GetVersionNumber();
-
+  info.safe_browsing_protection_level = GetSafeBrowsingProtectionLevel();
+  info.site_isolation_enabled =
+      content::SiteIsolationPolicy::UseDedicatedProcessesForAllSites();
+  info.built_in_dns_client_enabled = GetBuiltInDnsClientEnabled();
+  info.password_protection_warning_trigger =
+      GetPasswordProtectionWarningTrigger();
+  info.chrome_cleanup_enabled = GetChromeCleanupEnabled();
+  info.chrome_remote_desktop_app_blocked = GetChromeRemoteDesktopAppBlocked();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), std::move(info)));
 }
@@ -87,6 +116,57 @@ ContextInfoFetcher::GetRealtimeUrlCheckMode() {
 std::vector<std::string> ContextInfoFetcher::GetOnSecurityEventProviders() {
   return connectors_service_->GetReportingServiceProviderNames(
       enterprise_connectors::ReportingConnector::SECURITY_EVENT);
+}
+
+safe_browsing::SafeBrowsingState
+ContextInfoFetcher::GetSafeBrowsingProtectionLevel() {
+  Profile* profile = Profile::FromBrowserContext(browser_context_);
+
+  bool safe_browsing_enabled =
+      profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled);
+  bool safe_browsing_enhanced_enabled =
+      profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnhanced);
+
+  if (safe_browsing_enabled) {
+    if (safe_browsing_enhanced_enabled)
+      return safe_browsing::ENHANCED_PROTECTION;
+    else
+      return safe_browsing::STANDARD_PROTECTION;
+  } else {
+    return safe_browsing::NO_SAFE_BROWSING;
+  }
+}
+
+bool ContextInfoFetcher::GetBuiltInDnsClientEnabled() {
+  return g_browser_process->local_state()->GetBoolean(
+      prefs::kBuiltInDnsClientEnabled);
+}
+
+absl::optional<safe_browsing::PasswordProtectionTrigger>
+ContextInfoFetcher::GetPasswordProtectionWarningTrigger() {
+  Profile* profile = Profile::FromBrowserContext(browser_context_);
+  if (!profile->GetPrefs()->HasPrefPath(
+          prefs::kPasswordProtectionWarningTrigger))
+    return absl::nullopt;
+  return static_cast<safe_browsing::PasswordProtectionTrigger>(
+      profile->GetPrefs()->GetInteger(
+          prefs::kPasswordProtectionWarningTrigger));
+}
+
+absl::optional<bool> ContextInfoFetcher::GetChromeCleanupEnabled() {
+#if defined(OS_WIN)
+  return g_browser_process->local_state()->GetBoolean(
+      prefs::kSwReporterEnabled);
+#else
+  return absl::nullopt;
+#endif
+}
+
+bool ContextInfoFetcher::GetChromeRemoteDesktopAppBlocked() {
+  return IsURLBlocked(GURL("https://remotedesktop.google.com"),
+                      browser_context_) ||
+         IsURLBlocked(GURL("https://remotedesktop.corp.google.com"),
+                      browser_context_);
 }
 
 }  // namespace enterprise_signals

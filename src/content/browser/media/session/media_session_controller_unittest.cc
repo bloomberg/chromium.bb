@@ -43,6 +43,7 @@ class FakeAudioFocusDelegate : public content::AudioFocusDelegate {
   const base::UnguessableToken& request_id() const override {
     return base::UnguessableToken::Null();
   }
+  void ReleaseRequestId() override {}
 
  private:
   absl::optional<media_session::mojom::AudioFocusType> audio_focus_type_;
@@ -190,8 +191,7 @@ class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
 
-    id_ =
-        MediaPlayerId(contents()->GetMainFrame()->GetGlobalFrameRoutingId(), 0);
+    id_ = MediaPlayerId(contents()->GetMainFrame()->GetGlobalId(), 0);
     controller_ = CreateController();
     media_player_ = CreateMediaPlayer(controller_.get());
 
@@ -405,7 +405,8 @@ TEST_F(MediaSessionControllerTest, Reinitialize) {
 
 TEST_F(MediaSessionControllerTest, PositionState) {
   media_session::MediaPosition expected_position(
-      0.0, base::TimeDelta::FromSeconds(10), base::TimeDelta());
+      /*playback_rate=*/0.0, /*duration=*/base::TimeDelta::FromSeconds(10),
+      /*position=*/base::TimeDelta(), /*end_of_media=*/false);
 
   controller_->OnMediaPositionStateChanged(expected_position);
 

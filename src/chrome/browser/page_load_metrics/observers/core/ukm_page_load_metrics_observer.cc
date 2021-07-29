@@ -51,6 +51,7 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
+#include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "third_party/metrics_proto/system_profile.pb.h"
 #include "ui/events/blink/blink_features.h"
@@ -58,20 +59,6 @@
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 #include "chrome/browser/offline_pages/offline_page_tab_helper.h"
 #endif
-
-namespace internal {
-
-int BucketWithOffsetAndUnit(int num, int offset, int unit) {
-  // Bucketing raw number with `offset` centered.
-  const int grid = (num - offset) / unit;
-  const int bucketed =
-      grid == 0 ? 0
-                : grid > 0 ? std::pow(2, static_cast<int>(std::log2(grid)))
-                           : -std::pow(2, static_cast<int>(std::log2(-grid)));
-  return bucketed * unit + offset;
-}
-
-}  // namespace internal
 
 namespace {
 
@@ -693,6 +680,16 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
     builder.SetInteractiveTiming_FirstScrollDelay(
         first_scroll_delay.InMilliseconds());
   }
+  if (timing.interactive_timing->first_scroll_timestamp &&
+      WasStartedInForegroundOptionalEventInForeground(
+          timing.interactive_timing->first_scroll_timestamp, GetDelegate())) {
+    base::TimeDelta first_scroll_timestamp =
+        timing.interactive_timing->first_scroll_timestamp.value();
+    builder.SetInteractiveTiming_FirstScrollTimestamp(
+        ukm::GetExponentialBucketMinForUserTiming(
+            first_scroll_timestamp.InMilliseconds()));
+  }
+
   if (timing.interactive_timing->first_input_processing_time &&
       WasStartedInForegroundOptionalEventInForeground(
           timing.interactive_timing->first_input_timestamp, GetDelegate())) {
@@ -986,23 +983,10 @@ void UkmPageLoadMetricsObserver::ReportLayoutStability() {
   if (base::FeatureList::IsEnabled(kLayoutShiftNormalizationRecordUKM) &&
       !normalized_cls_data.data_tainted) {
     builder
-        .SetLayoutInstability_MaxCumulativeShiftScore_SessionWindow_Gap1000ms(
-            page_load_metrics::LayoutShiftUkmValue(
-                normalized_cls_data.session_windows_gap1000ms_maxMax_max_cls))
         .SetLayoutInstability_MaxCumulativeShiftScore_SessionWindow_Gap1000ms_Max5000ms(
             page_load_metrics::LayoutShiftUkmValue(
                 normalized_cls_data
-                    .session_windows_gap1000ms_max5000ms_max_cls))
-        .SetLayoutInstability_MaxCumulativeShiftScore_SlidingWindow_Duration1000ms(
-            page_load_metrics::LayoutShiftUkmValue(
-                normalized_cls_data.sliding_windows_duration1000ms_max_cls))
-        .SetLayoutInstability_MaxCumulativeShiftScore_SlidingWindow_Duration300ms(
-            page_load_metrics::LayoutShiftUkmValue(
-                normalized_cls_data.sliding_windows_duration300ms_max_cls))
-        .SetLayoutInstability_AverageCumulativeShiftScore_SessionWindow_Gap5000ms(
-            page_load_metrics::LayoutShiftUkmValue(
-                normalized_cls_data
-                    .session_windows_gap5000ms_maxMax_average_cls));
+                    .session_windows_gap1000ms_max5000ms_max_cls));
     base::UmaHistogramCounts100(
         "PageLoad.LayoutInstability.MaxCumulativeShiftScore.SessionWindow."
         "Gap1000ms.Max5000ms",
@@ -1139,9 +1123,7 @@ void UkmPageLoadMetricsObserver::RecordSmoothnessMetrics() {
       .SetAboveThreshold(smoothness_data.above_threshold)
       .SetWorstCase(smoothness_data.worst_smoothness)
       .SetTimingSinceFCPWorstCase(
-          (smoothness_data.time_max_delta.InMilliseconds() > 5000)
-              ? 5000
-              : smoothness_data.time_max_delta.InMilliseconds());
+          smoothness_data.time_max_delta.InMilliseconds());
   if (smoothness_data.worst_smoothness_after1sec >= 0)
     builder.SetWorstCaseAfter1Sec(smoothness_data.worst_smoothness_after1sec);
   if (smoothness_data.worst_smoothness_after2sec >= 0)
@@ -1160,14 +1142,15 @@ void UkmPageLoadMetricsObserver::RecordSmoothnessMetrics() {
       "Graphics.Smoothness.PerSession.MaxPercentDroppedFrames_1sWindow",
       smoothness_data.worst_smoothness);
   base::UmaHistogramCustomTimes(
-      "Graphics.Smoothness.PerSession.TimeMaxPrecentDroppedFrame_1sWindow",
+      "Graphics.Smoothness.PerSession.TimeMaxPercentDroppedFrames_1sWindow",
       smoothness_data.time_max_delta, base::TimeDelta::FromMilliseconds(1),
-      base::TimeDelta::FromSeconds(5), 50);
+      base::TimeDelta::FromSeconds(25), 50);
 }
 
 void UkmPageLoadMetricsObserver::RecordMobileFriendlinessMetrics() {
   ukm::builders::MobileFriendliness builder(GetDelegate().GetPageUkmSourceId());
   const blink::MobileFriendliness& mf = GetDelegate().GetMobileFriendliness();
+
   if (mf.viewport_device_width == blink::mojom::ViewportStatus::kYes)
     builder.SetViewportDeviceWidth(true);
   else if (mf.viewport_device_width == blink::mojom::ViewportStatus::kNo)
@@ -1181,19 +1164,19 @@ void UkmPageLoadMetricsObserver::RecordMobileFriendlinessMetrics() {
   if (mf.small_text_ratio != -1)
     builder.SetSmallTextRatio(mf.small_text_ratio);
 
-  if (mf.viewport_initial_scale_x10 != -1) {
-    builder.SetViewportInitialScaleX10(internal::BucketWithOffsetAndUnit(
-        mf.viewport_initial_scale_x10, 10, 2));
-  }
+  if (mf.viewport_initial_scale_x10 != -1)
+    builder.SetViewportInitialScaleX10(
+        page_load_metrics::GetBucketedViewportInitialScale(mf));
 
-  if (mf.viewport_hardcoded_width != -1) {
-    builder.SetViewportHardcodedWidth(internal::BucketWithOffsetAndUnit(
-        mf.viewport_hardcoded_width, 500, 10));
-  }
+  if (mf.viewport_hardcoded_width != -1)
+    builder.SetViewportHardcodedWidth(
+        page_load_metrics::GetBucketedViewportHardcodedWidth(mf));
+
   if (mf.text_content_outside_viewport_percentage != -1) {
     builder.SetTextContentOutsideViewportPercentage(
         mf.text_content_outside_viewport_percentage);
   }
+
   if (mf.bad_tap_targets_ratio != -1)
     builder.SetBadTapTargetsRatio(mf.bad_tap_targets_ratio);
 

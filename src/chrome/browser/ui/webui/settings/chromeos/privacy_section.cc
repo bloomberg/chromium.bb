@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/privacy_section.h"
 
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
@@ -13,10 +14,10 @@
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_features_util.h"
 #include "chrome/browser/ui/webui/settings/chromeos/peripheral_data_access_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
+#include "chrome/browser/ui/webui/settings/settings_secure_dns_handler.h"
 #include "chrome/browser/ui/webui/settings/shared_settings_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
@@ -177,6 +178,15 @@ const std::vector<SearchConcept>& GetPrivacyGoogleChromeSearchConcepts() {
 }
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
+bool IsSecureDnsAvailable() {
+  return
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+      base::FeatureList::IsEnabled(chromeos::features::kEnableDnsProxy) &&
+      base::FeatureList::IsEnabled(::features::kDnsProxyEnableDOH) &&
+#endif
+      ::features::kDnsOverHttpsShowUiParam.Get();
+}
+
 }  // namespace
 
 PrivacySection::PrivacySection(Profile* profile,
@@ -198,7 +208,7 @@ PrivacySection::PrivacySection(Profile* profile,
 
     fingerprint_pref_change_registrar_.Init(pref_service_);
     fingerprint_pref_change_registrar_.Add(
-        ::prefs::kQuickUnlockFingerprintRecord,
+        prefs::kQuickUnlockFingerprintRecord,
         base::BindRepeating(&PrivacySection::UpdateRemoveFingerprintSearchTags,
                             base::Unretained(this)));
     UpdateRemoveFingerprintSearchTags();
@@ -214,6 +224,9 @@ PrivacySection::~PrivacySection() = default;
 void PrivacySection::AddHandlers(content::WebUI* web_ui) {
   web_ui->AddMessageHandler(
       std::make_unique<chromeos::settings::PeripheralDataAccessHandler>());
+
+  if (IsSecureDnsAvailable())
+    web_ui->AddMessageHandler(std::make_unique<::settings::SecureDnsHandler>());
 }
 
 void PrivacySection::AddLoadTimeData(content::WebUIDataSource* html_source) {
@@ -261,7 +274,10 @@ void PrivacySection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   html_source->AddBoolean("pciguardUiEnabled",
                           chromeos::features::IsPciguardUiEnabled());
 
+  html_source->AddBoolean("showSecureDnsSetting", IsSecureDnsAvailable());
+
   ::settings::AddPersonalizationOptionsStrings(html_source);
+  ::settings::AddSecureDnsStrings(html_source);
 }
 
 int PrivacySection::GetSectionNameMessageId() const {
@@ -354,7 +370,7 @@ void PrivacySection::UpdateRemoveFingerprintSearchTags() {
   // "Remove fingerprint" search tag should exist only when 1 or more
   // fingerprints are registered.
   int registered_fingerprint_count =
-      pref_service_->GetInteger(::prefs::kQuickUnlockFingerprintRecord);
+      pref_service_->GetInteger(prefs::kQuickUnlockFingerprintRecord);
   if (registered_fingerprint_count > 0) {
     updater.AddSearchTags(GetRemoveFingerprintSearchConcepts());
   }

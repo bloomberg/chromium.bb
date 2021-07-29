@@ -5,6 +5,7 @@
 import web_idl
 
 from . import name_style
+from .code_node import FormatNode
 from .code_node import Likeliness
 from .code_node import SymbolDefinitionNode
 from .code_node import SymbolNode
@@ -31,7 +32,7 @@ def blink_class_name(idl_definition):
                   (web_idl.CallbackFunction, web_idl.CallbackInterface,
                    web_idl.Enumeration, web_idl.Typedef)):
         return "V8{}".format(idl_definition.identifier)
-    elif isinstance(idl_definition, web_idl.NewUnion):
+    elif isinstance(idl_definition, web_idl.Union):
         # Technically this name is not guaranteed to be unique because
         # (X or sequence<Y or Z>) and (X or Y or sequence<Z>) have the same
         # name, but it's highly unlikely to cause a conflict in the actual use
@@ -56,7 +57,7 @@ def v8_bridge_class_name(idl_definition):
     return "V8{}".format(idl_definition.identifier)
 
 
-def blink_type_info(idl_type, use_new_union=True):
+def blink_type_info(idl_type):
     """
     Returns an object that represents the types of Blink implementation
     corresponding to the given IDL type, such as reference type, value type,
@@ -252,7 +253,10 @@ def blink_type_info(idl_type, use_new_union=True):
     if real_type.type_definition_object:
         typename = blink_class_name(real_type.type_definition_object)
         if real_type.is_enumeration:
-            return TypeInfo(typename, clear_member_var_fmt="")
+            return TypeInfo(typename,
+                            ref_fmt="{}",
+                            const_ref_fmt="{}",
+                            clear_member_var_fmt="")
         return TypeInfo(typename,
                         member_fmt="Member<{}>",
                         ref_fmt="{}*",
@@ -285,8 +289,8 @@ def blink_type_info(idl_type, use_new_union=True):
         return TypeInfo(
             "ScriptPromise", ref_fmt="{}&", const_ref_fmt="const {}&")
 
-    if real_type.is_union and use_new_union:
-        typename = blink_class_name(real_type.new_union_definition_object)
+    if real_type.is_union:
+        typename = blink_class_name(real_type.union_definition_object)
         return TypeInfo(typename,
                         member_fmt="Member<{}>",
                         ref_fmt="{}*",
@@ -294,13 +298,6 @@ def blink_type_info(idl_type, use_new_union=True):
                         value_fmt="{}*",
                         has_null_value=True,
                         is_gc_type=True)
-
-    if real_type.is_union:
-        typename = blink_class_name(real_type.union_definition_object)
-        return TypeInfo(typename,
-                        ref_fmt="{}&",
-                        const_ref_fmt="const {}&",
-                        has_null_value=True)
 
     if real_type.is_nullable:
         inner_type = blink_type_info(real_type.inner_type)
@@ -409,7 +406,7 @@ def make_blink_to_v8_value(
     assert isinstance(creation_context_script_state, str)
 
     T = TextNode
-    F = lambda *args, **kwargs: T(_format(*args, **kwargs))
+    F = FormatNode
 
     def create_definition(symbol_node):
         binds = {
@@ -431,7 +428,7 @@ def make_blink_to_v8_value(
     return SymbolNode(v8_var_name, definition_constructor=create_definition)
 
 
-def make_default_value_expr(idl_type, default_value, use_new_union=True):
+def make_default_value_expr(idl_type, default_value):
     """
     Returns a set of C++ expressions to be used for initialization with default
     values.  The returned object has the following attributes.
@@ -490,7 +487,7 @@ def make_default_value_expr(idl_type, default_value, use_new_union=True):
             self.assignment_value = assignment_value
             self.assignment_deps = tuple(assignment_deps)
 
-    if idl_type.unwrap(typedef=True).is_union and use_new_union:
+    if idl_type.unwrap(typedef=True).is_union:
         union_type = idl_type.unwrap(typedef=True)
         member_type = None
         for member_type in union_type.flattened_member_types:
@@ -500,8 +497,7 @@ def make_default_value_expr(idl_type, default_value, use_new_union=True):
         assert not (member_type is None) or default_value.idl_type.is_nullable
 
         pattern = "MakeGarbageCollected<{}>({})"
-        union_class_name = blink_class_name(
-            union_type.new_union_definition_object)
+        union_class_name = blink_class_name(union_type.union_definition_object)
 
         if default_value.idl_type.is_nullable:
             value = pattern.format(union_class_name, "nullptr")
@@ -521,39 +517,6 @@ def make_default_value_expr(idl_type, default_value, use_new_union=True):
                 is_initialization_lightweight=False,
                 assignment_value=value,
                 assignment_deps=member_default_expr.assignment_deps)
-
-    if idl_type.unwrap(typedef=True).is_union:
-        union_type = idl_type.unwrap(typedef=True)
-        member_type = None
-        for member_type in union_type.flattened_member_types:
-            if default_value.is_type_compatible_with(member_type):
-                member_type = member_type
-                break
-        assert member_type is not None
-
-        union_class_name = blink_class_name(union_type.union_definition_object)
-        member_default_expr = make_default_value_expr(member_type,
-                                                      default_value)
-        if default_value.idl_type.is_nullable:
-            initializer_expr = None
-            assignment_value = _format("{}()", union_class_name)
-        else:
-            func_name = name_style.func("From", member_type.type_name)
-            argument = member_default_expr.assignment_value
-            # TODO(peria): Remove this workaround when we support V8Enum types
-            # in Union.
-            if (member_type.is_sequence
-                    and member_type.element_type.unwrap().is_enumeration):
-                argument = "{}"
-            initializer_expr = _format("{}::{}({})", union_class_name,
-                                       func_name, argument)
-            assignment_value = initializer_expr
-        return DefaultValueExpr(
-            initializer_expr=initializer_expr,
-            initializer_deps=member_default_expr.initializer_deps,
-            is_initialization_lightweight=False,
-            assignment_value=assignment_value,
-            assignment_deps=member_default_expr.assignment_deps)
 
     type_info = blink_type_info(idl_type)
 
@@ -580,25 +543,32 @@ def make_default_value_expr(idl_type, default_value, use_new_union=True):
             initializer_deps = ["isolate"]
             assignment_value = "ScriptValue::CreateNull(${isolate})"
             assignment_deps = ["isolate"]
-        elif idl_type.unwrap().is_union and use_new_union:
+        elif idl_type.unwrap().is_union:
             initializer_expr = "nullptr"
             is_initialization_lightweight = True
             assignment_value = "nullptr"
-        elif idl_type.unwrap().is_union:
-            initializer_expr = None  # <union_type>::IsNull() by default
-            assignment_value = "{}()".format(type_info.value_t)
         else:
             assert False
     elif default_value.idl_type.is_sequence:
         initializer_expr = None  # VectorOf<T>::size() == 0 by default
         assignment_value = "{}()".format(type_info.value_t)
     elif default_value.idl_type.is_object:
-        dict_name = blink_class_name(idl_type.unwrap().type_definition_object)
-        value = _format("{}::Create(${isolate})", dict_name)
-        initializer_expr = value
-        initializer_deps = ["isolate"]
-        assignment_value = value
-        assignment_deps = ["isolate"]
+        dictionary = idl_type.unwrap().type_definition_object
+        # Currently "isolate" is the only possible dependency, so whenever
+        # .initializer_deps exists, it must be ["isolate"].
+        if any((make_default_value_expr(member.idl_type,
+                                        member.default_value).initializer_deps)
+               for member in dictionary.members if member.default_value):
+            value = _format("{}::Create(${isolate})",
+                            blink_class_name(dictionary))
+            initializer_expr = value
+            initializer_deps = ["isolate"]
+            assignment_value = value
+            assignment_deps = ["isolate"]
+        else:
+            value = _format("{}::Create()", blink_class_name(dictionary))
+            initializer_expr = value
+            assignment_value = value
     elif default_value.idl_type.is_boolean:
         value = "true" if default_value.value else "false"
         initializer_expr = value
@@ -665,7 +635,7 @@ def make_v8_to_blink_value(blink_var_name,
     assert isinstance(error_exit_return_statement, str)
 
     T = TextNode
-    F = lambda *args, **kwargs: T(_format(*args, **kwargs))
+    F = FormatNode
 
     # Use of fast path is a trade-off between speed and binary size, so apply
     # it only when it's effective.  This hack is most significant on Android.
@@ -722,7 +692,7 @@ def make_v8_to_blink_value(blink_var_name,
         else:
             default_expr = None
         exception_exit_node = CxxUnlikelyIfNode(
-            cond="${exception_state}.HadException()",
+            cond="UNLIKELY(${exception_state}.HadException())",
             body=T(error_exit_return_statement))
 
         if not (default_expr or fast_path_cond):
@@ -810,7 +780,7 @@ def make_v8_to_blink_value_variadic(blink_var_name, v8_array,
         return SymbolDefinitionNode(symbol_node, [
             TextNode(text),
             CxxUnlikelyIfNode(
-                cond="${exception_state}.HadException()",
+                cond="UNLIKELY(${exception_state}.HadException())",
                 body=TextNode("return;")),
         ])
 

@@ -22,6 +22,7 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/l10n/l10n_font_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/color/color_provider_manager.h"
 #include "ui/compositor/compositor.h"
@@ -35,6 +36,7 @@
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/focus/focus_manager_factory.h"
 #include "ui/views/focus/widget_focus_manager.h"
+#include "ui/views/image_model_utils.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/views_features.h"
 #include "ui/views/widget/any_widget_observer_singleton.h"
@@ -186,15 +188,23 @@ Widget::Widget(InitParams params) {
 Widget::~Widget() {
   if (widget_delegate_)
     widget_delegate_->WidgetDestroying();
-  DestroyRootView();
   if (ownership_ == InitParams::WIDGET_OWNS_NATIVE_WIDGET) {
     delete native_widget_;
+    DCHECK(native_widget_destroyed_);
   } else {
     // TODO(crbug.com/937381): Revert to DCHECK once we figure out the reason.
     CHECK(native_widget_destroyed_)
         << "Destroying a widget with a live native widget. "
         << "Widget probably should use WIDGET_OWNS_NATIVE_WIDGET ownership.";
   }
+  // Destroy RootView after the native widget, so in case the WidgetDelegate is
+  // a View in the RootView hierarchy it gets destroyed as a WidgetDelegate
+  // first.
+  // This makes destruction order for WidgetDelegate consistent between
+  // different Widget/NativeWidget ownership models (WidgetDelegate is always
+  // deleted before here, which may have removed it as a View from the
+  // View hierarchy).
+  DestroyRootView();
 }
 
 // static
@@ -425,10 +435,14 @@ void Widget::ShowEmojiPanel() {
 // Unconverted methods (see header) --------------------------------------------
 
 gfx::NativeView Widget::GetNativeView() const {
+  if (native_widget_destroyed_)
+    return gfx::kNullNativeView;
   return native_widget_->GetNativeView();
 }
 
 gfx::NativeWindow Widget::GetNativeWindow() const {
+  if (native_widget_destroyed_)
+    return gfx::kNullNativeWindow;
   return native_widget_->GetNativeWindow();
 }
 
@@ -469,7 +483,8 @@ void Widget::ViewHierarchyChanged(const ViewHierarchyChangedDetails& details) {
     FocusManager* focus_manager = GetFocusManager();
     if (focus_manager)
       focus_manager->ViewRemoved(details.child);
-    native_widget_->ViewRemoved(details.child);
+    if (!native_widget_destroyed_)
+      native_widget_->ViewRemoved(details.child);
   }
 }
 
@@ -480,11 +495,11 @@ void Widget::NotifyNativeViewHierarchyWillChange() {
   // to avoid these redundant steps and to avoid accessing deleted views
   // that may have been in focus.
   ClearFocusFromWidget();
-  native_widget_->OnNativeViewHierarchyChanged();
+  native_widget_->OnNativeViewHierarchyWillChange();
 }
 
 void Widget::NotifyNativeViewHierarchyChanged() {
-  native_widget_->OnNativeViewHierarchyWillChange();
+  native_widget_->OnNativeViewHierarchyChanged();
   root_view_->NotifyNativeViewHierarchyChanged();
 }
 
@@ -505,7 +520,10 @@ const Widget* Widget::GetTopLevelWidget() const {
   // property is gone after gobject gets deleted. Short circuit here
   // for toplevel so that InputMethod can remove itself from
   // focus manager.
-  return is_top_level() ? this : native_widget_->GetTopLevelWidget();
+  if (is_top_level())
+    return this;
+  return native_widget_destroyed_ ? nullptr
+                                  : native_widget_->GetTopLevelWidget();
 }
 
 Widget* Widget::GetPrimaryWindowWidget() {
@@ -769,12 +787,12 @@ bool Widget::IsMinimized() const {
   return native_widget_->IsMinimized();
 }
 
-void Widget::SetFullscreen(bool fullscreen) {
+void Widget::SetFullscreen(bool fullscreen, bool delay) {
   if (IsFullscreen() == fullscreen)
     return;
 
   auto weak_ptr = GetWeakPtr();
-  native_widget_->SetFullscreen(fullscreen);
+  native_widget_->SetFullscreen(fullscreen, delay);
   if (!weak_ptr)
     return;
 
@@ -826,15 +844,13 @@ const ui::ThemeProvider* Widget::GetThemeProvider() const {
 
 const ui::ColorProvider* Widget::GetColorProvider() const {
   auto color_scheme = GetNativeTheme()->GetDefaultSystemColorScheme();
-  auto theme_name = GetNativeTheme()->GetNativeThemeName();
   return ui::ColorProviderManager::Get().GetColorProviderFor(
       {(color_scheme == ui::NativeTheme::ColorScheme::kDark)
            ? ui::ColorProviderManager::ColorMode::kDark
            : ui::ColorProviderManager::ColorMode::kLight,
        (color_scheme == ui::NativeTheme::ColorScheme::kPlatformHighContrast)
            ? ui::ColorProviderManager::ContrastMode::kHigh
-           : ui::ColorProviderManager::ContrastMode::kNormal,
-       std::move(theme_name)});
+           : ui::ColorProviderManager::ContrastMode::kNormal});
 }
 
 FocusManager* Widget::GetFocusManager() {
@@ -895,6 +911,11 @@ void Widget::RunShellDrag(View* view,
 }
 
 void Widget::SchedulePaintInRect(const gfx::Rect& rect) {
+  // This happens when DestroyRootView removes all children from the
+  // RootView which triggers a SchedulePaint that ends up here. This happens
+  // after in ~Widget after native_widget_ is destroyed.
+  if (native_widget_destroyed_)
+    return;
   native_widget_->SchedulePaintInRect(rect);
 }
 
@@ -935,8 +956,32 @@ void Widget::UpdateWindowTitle() {
 void Widget::UpdateWindowIcon() {
   if (non_client_view_)
     non_client_view_->UpdateWindowIcon();
-  native_widget_->SetWindowIcons(widget_delegate_->GetWindowIcon(),
-                                 widget_delegate_->GetWindowAppIcon());
+
+  gfx::ImageSkia window_icon = GetImageSkiaFromImageModel(
+      widget_delegate_->GetWindowIcon(), GetNativeTheme());
+
+  // In general, icon information is read from a |widget_delegate_| and then
+  // passed to |native_widget_|. On ChromeOS, for lacros-chrome to support the
+  // initial window state as minimized state, a valid icon is added to
+  // |native_widget_| earlier stage of widget initialization. See
+  // https://crbug.com/1189981. As only lacros-chrome on ChromeOS supports this
+  // behavior other overrides of |native_widget_| will always have no icon
+  // information. This is also true for |app_icon| referred below.
+  if (window_icon.isNull()) {
+    const gfx::ImageSkia* icon = native_widget_->GetWindowIcon();
+    if (icon && !icon->isNull())
+      window_icon = *icon;
+  }
+
+  gfx::ImageSkia app_icon = GetImageSkiaFromImageModel(
+      widget_delegate_->GetWindowAppIcon(), GetNativeTheme());
+  if (app_icon.isNull()) {
+    const gfx::ImageSkia* icon = native_widget_->GetWindowAppIcon();
+    if (icon && !icon->isNull())
+      app_icon = *icon;
+  }
+
+  native_widget_->SetWindowIcons(window_icon, app_icon);
 }
 
 FocusTraversable* Widget::GetFocusTraversable() {
@@ -1009,14 +1054,20 @@ void Widget::FrameTypeChanged() {
 }
 
 const ui::Compositor* Widget::GetCompositor() const {
+  if (native_widget_destroyed_)
+    return nullptr;
   return native_widget_->GetCompositor();
 }
 
 const ui::Layer* Widget::GetLayer() const {
+  if (native_widget_destroyed_)
+    return nullptr;
   return native_widget_->GetLayer();
 }
 
 void Widget::ReorderNativeViews() {
+  if (native_widget_destroyed_)
+    return;
   native_widget_->ReorderNativeViews();
 }
 
@@ -1059,6 +1110,8 @@ bool Widget::HasCapture() {
 }
 
 TooltipManager* Widget::GetTooltipManager() {
+  if (native_widget_destroyed_)
+    return nullptr;
   return native_widget_->GetTooltipManager();
 }
 
@@ -1136,7 +1189,7 @@ void Widget::SetNativeTheme(ui::NativeTheme* native_theme) {
   native_theme_observation_.Reset();
   if (native_theme)
     native_theme_observation_.Observe(native_theme);
-  PropagateNativeThemeChanged();
+  ThemeChanged();
 }
 
 int Widget::GetX() const {
@@ -1297,6 +1350,9 @@ void Widget::OnNativeWidgetDestroyed() {
   widget_delegate_->can_delete_this_ = true;
   widget_delegate_->DeleteDelegate();
   widget_delegate_ = nullptr;
+  // TODO(pbos): Replace this with native_widget_ = nullptr; and nullptr
+  // checking. This currently breaks on reentrant calls to CloseNow() that I'm
+  // too scared to fix right now.
   native_widget_destroyed_ = true;
 }
 
@@ -1626,15 +1682,11 @@ View* Widget::GetFocusTraversableParentView() {
 
 void Widget::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
   TRACE_EVENT0("ui", "Widget::OnNativeThemeUpdated");
-  PropagateNativeThemeChanged();
+  ThemeChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, protected:
-
-void Widget::PropagateNativeThemeChanged() {
-  root_view_->PropagateThemeChanged();
-}
 
 internal::RootView* Widget::CreateRootView() {
   return new internal::RootView(this);

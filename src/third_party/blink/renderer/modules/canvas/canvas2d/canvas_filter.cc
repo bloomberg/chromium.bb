@@ -14,16 +14,10 @@ CanvasFilter::CanvasFilter(FilterOperations filter_operations)
     : filter_operations_(filter_operations) {}
 
 CanvasFilter* CanvasFilter::Create(
-    ScriptState* script_state,
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     const V8UnionCanvasFilterDictionaryOrCanvasFilterDictionaryArray* init,
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-    CanvasFilterDictionaryOrCanvasFilterDictionaryArray& init,
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     ExceptionState& exception_state) {
   HeapVector<Member<CanvasFilterDictionary>> filter_array;
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   switch (init->GetContentType()) {
     case V8UnionCanvasFilterDictionaryOrCanvasFilterDictionaryArray::
         ContentType::kCanvasFilterDictionary:
@@ -34,16 +28,10 @@ CanvasFilter* CanvasFilter::Create(
       filter_array = init->GetAsCanvasFilterDictionaryArray();
       break;
   }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  if (init.IsCanvasFilterDictionary())
-    filter_array.push_back(init.GetAsCanvasFilterDictionary());
-  else
-    filter_array = init.GetAsCanvasFilterDictionaryArray();
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   FilterOperations filter_operations =
-      CanvasFilterOperationResolver::CreateFilterOperations(
-          script_state, filter_array, exception_state);
+      CanvasFilterOperationResolver::CreateFilterOperations(filter_array,
+                                                            exception_state);
 
   return MakeGarbageCollected<CanvasFilter>(filter_operations);
 }

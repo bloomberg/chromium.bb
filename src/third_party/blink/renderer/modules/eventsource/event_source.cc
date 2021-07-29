@@ -87,13 +87,6 @@ EventSource* EventSource::Create(ExecutionContext* context,
                                  ? WebFeature::kEventSourceDocument
                                  : WebFeature::kEventSourceWorker);
 
-  if (url.IsEmpty()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kSyntaxError,
-        "Cannot open an EventSource to an empty URL.");
-    return nullptr;
-  }
-
   KURL full_url = context->CompleteURL(url);
   if (!full_url.IsValid()) {
     exception_state.ThrowDOMException(
@@ -298,7 +291,7 @@ void EventSource::DidFinishLoading(uint64_t) {
   NetworkRequestEnded();
 }
 
-void EventSource::DidFail(const ResourceError& error) {
+void EventSource::DidFail(uint64_t, const ResourceError& error) {
   DCHECK(loader_);
   if (error.IsCancellation() && state_ == kClosed) {
     NetworkRequestEnded();
@@ -321,7 +314,7 @@ void EventSource::DidFail(const ResourceError& error) {
   NetworkRequestEnded();
 }
 
-void EventSource::DidFailRedirectCheck() {
+void EventSource::DidFailRedirectCheck(uint64_t) {
   DCHECK(loader_);
 
   AbortConnectionAttempt();

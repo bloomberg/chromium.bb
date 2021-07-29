@@ -14,11 +14,11 @@
 #include "base/base_paths.h"
 #include "base/base_paths_win.h"
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/test/scoped_path_override.h"
@@ -45,6 +45,7 @@ const wchar_t kTestApplicationName[] = L"Test Application";
 const wchar_t kTestApplicationDescription[] = L"Application Description";
 const wchar_t kTestFileTypeName[] = L"Test File Type";
 const wchar_t kTestIconPath[] = L"D:\\test.ico";
+const wchar_t kTestFileTypeIconPath[] = L"D:\\test_file_type.ico";
 const wchar_t* kTestFileExtensions[] = {
     L"test1",
     L"test2",
@@ -1065,7 +1066,9 @@ TEST_F(ShellUtilShortcutTest, DontRemoveChromeShortcutIfPointsToAnotherChrome) {
 
 class ShellUtilRegistryTest : public testing::Test {
  public:
-  ShellUtilRegistryTest() {}
+  ShellUtilRegistryTest() = default;
+  ShellUtilRegistryTest(const ShellUtilRegistryTest&) = delete;
+  ShellUtilRegistryTest& operator=(const ShellUtilRegistryTest&) = delete;
 
  protected:
   void SetUp() override {
@@ -1102,15 +1105,14 @@ class ShellUtilRegistryTest : public testing::Test {
   registry_util::RegistryOverrideManager registry_overrides_;
   base::ScopedTempDir temp_dir_;
   base::FilePath chrome_exe_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShellUtilRegistryTest);
 };
 
 TEST_F(ShellUtilRegistryTest, AddFileAssociations) {
   // Create file associations.
   EXPECT_TRUE(ShellUtil::AddFileAssociations(
       kTestProgid, OpenCommand(), kTestApplicationName, kTestFileTypeName,
-      base::FilePath(kTestIconPath), FileExtensions()));
+      base::FilePath(kTestIconPath), base::FilePath(kTestFileTypeIconPath),
+      FileExtensions()));
 
   // Ensure that the registry keys have been correctly set.
   base::win::RegKey key;
@@ -1125,7 +1127,7 @@ TEST_F(ShellUtilRegistryTest, AddFileAssociations) {
             key.Open(HKEY_CURRENT_USER,
                      L"Software\\Classes\\TestApp\\DefaultIcon", KEY_READ));
   EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(L"", &value));
-  EXPECT_EQ(L"D:\\test.ico,0", value);
+  EXPECT_EQ(L"D:\\test_file_type.ico,0", value);
   ASSERT_EQ(
       ERROR_SUCCESS,
       key.Open(HKEY_CURRENT_USER,
@@ -1174,7 +1176,8 @@ TEST_F(ShellUtilRegistryTest, DeleteFileAssociations) {
   // Create file associations.
   ASSERT_TRUE(ShellUtil::AddFileAssociations(
       kTestProgid, OpenCommand(), kTestApplicationName, kTestFileTypeName,
-      base::FilePath(kTestIconPath), FileExtensions()));
+      base::FilePath(kTestIconPath), base::FilePath(kTestFileTypeIconPath),
+      FileExtensions()));
 
   // Delete them.
   EXPECT_TRUE(ShellUtil::DeleteFileAssociations(kTestProgid));
@@ -1269,7 +1272,8 @@ TEST_F(ShellUtilRegistryTest, GetFileAssociationsAndAppName) {
   // command executable name as the app_name.
   ASSERT_TRUE(ShellUtil::AddFileAssociations(
       kTestProgid, OpenCommand(), kTestApplicationName, kTestFileTypeName,
-      base::FilePath(kTestIconPath), FileExtensions()));
+      base::FilePath(kTestIconPath), base::FilePath(kTestFileTypeIconPath),
+      FileExtensions()));
   ShellUtil::FileAssociationsAndAppName file_associations_and_app_name(
       ShellUtil::GetFileAssociationsAndAppName(kTestProgid));
   EXPECT_EQ(file_associations_and_app_name.app_name, kTestApplicationName);
@@ -1431,7 +1435,8 @@ TEST_F(ShellUtilRegistryTest, GetApplicationForProgId) {
   // Create file associations.
   ASSERT_TRUE(ShellUtil::AddFileAssociations(
       kTestProgid, OpenCommand(), kTestApplicationName, kTestFileTypeName,
-      base::FilePath(kTestIconPath), FileExtensions()));
+      base::FilePath(kTestIconPath), base::FilePath(kTestFileTypeIconPath),
+      FileExtensions()));
   base::FilePath exe_path = ShellUtil::GetApplicationPathForProgId(kTestProgid);
   EXPECT_EQ(exe_path, base::FilePath(kTestOpenCommand));
 }

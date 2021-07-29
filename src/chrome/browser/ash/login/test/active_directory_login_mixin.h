@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
+#include "chrome/browser/chromeos/policy/server_backed_state/server_backed_state_keys_broker.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/policy/proto/device_management_backend.pb.h"
@@ -65,7 +65,8 @@ class ActiveDirectoryLoginMixin : public InProcessBrowserTestMixin {
   void SubmitActiveDirectoryCredentials(const std::string& username,
                                         const std::string& password);
 
-  // Sets username and password for the Active Directory login and submits it.
+  // Sets old and new passwords for the Active Directory password change and
+  // submits it.
   void SubmitActiveDirectoryPasswordChangeCredentials(
       const std::string& old_password,
       const std::string& new_password1,

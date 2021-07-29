@@ -4,8 +4,8 @@
 
 #include "ash/system/media/media_tray.h"
 
+#include "ash/constants/ash_pref_names.h"
 #include "ash/focus_cycler.h"
-#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/media_notification_provider.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
@@ -19,6 +19,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/tray/tray_utils.h"
+#include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_util.h"
 #include "components/media_message_center/media_notification_view_impl.h"
@@ -32,6 +33,7 @@
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"

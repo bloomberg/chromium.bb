@@ -313,7 +313,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // testing, intersection observer). Most other cases should use the unsnapped
   // offset from LayoutBox (for layout) or the source offset from the
   // ScrollableArea.
-  LayoutSize PixelSnappedScrolledContentOffset() const;
+  IntPoint PixelSnappedScrolledContentOffset() const;
 
   // FIXME: size() should DCHECK(!needs_position_update_) as well, but that
   // fails in some tests, for example, fast/repaint/clipped-relative.html.
@@ -407,6 +407,10 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   PaintLayer* EnclosingLayerForPaintInvalidation() const;
 
   PaintLayer* EnclosingDirectlyCompositableLayer(IncludeSelfOrNot) const;
+
+  // For CompositeAfterPaint, but not for LayoutNGBlockFragmentation.
+  const PaintLayer* EnclosingCompositedScrollingLayerUnderPagination(
+      IncludeSelfOrNot) const;
 
   // https://crbug.com/751768, this function can return nullptr sometimes.
   // Always check the result before using it, don't just DCHECK.
@@ -619,6 +623,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       PhysicalOffset&);
 
   bool PaintsWithTransparency(GlobalPaintFlags global_paint_flags) const {
+    DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
     return IsTransparent() && !PaintsIntoOwnBacking(global_paint_flags);
   }
 
@@ -990,19 +995,10 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   void DidUpdateScrollsOverflow();
 
-  void AppendSingleFragmentIgnoringPagination(
-      PaintLayerFragments&,
-      const PaintLayer* root_layer,
-      const CullRect* cull_rect,
-      OverlayScrollbarClipBehavior = kIgnoreOverlayScrollbarSize,
-      ShouldRespectOverflowClipType = kRespectOverflowClip,
-      const PhysicalOffset* offset_from_root = nullptr,
-      const PhysicalOffset& sub_pixel_accumulation = PhysicalOffset()) const;
-
   void CollectFragments(
       PaintLayerFragments&,
       const PaintLayer* root_layer,
-      const CullRect* cull_rect,
+      const CullRect* painting_cull_rect,
       OverlayScrollbarClipBehavior = kIgnoreOverlayScrollbarSize,
       ShouldRespectOverflowClipType = kRespectOverflowClip,
       const PhysicalOffset* offset_from_root = nullptr,
@@ -1184,6 +1180,10 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   void SetLastChild(PaintLayer* last) { last_ = last; }
 
   void UpdateHasSelfPaintingLayerDescendant() const;
+
+  void AppendSingleFragmentIgnoringPaginationForHitTesting(
+      PaintLayerFragments&,
+      ShouldRespectOverflowClipType) const;
 
   struct HitTestRecursionData {
     const PhysicalRect& rect;

@@ -249,7 +249,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       RenderWidgetHost::InputEventObserver* observer) override;
   void AddObserver(RenderWidgetHostObserver* observer) override;
   void RemoveObserver(RenderWidgetHostObserver* observer) override;
-  void GetScreenInfo(blink::ScreenInfo* result) override;
+  void GetScreenInfo(display::ScreenInfo* result) override;
   float GetDeviceScaleFactor() override;
   absl::optional<cc::TouchAction> GetAllowedTouchAction() override;
   void WriteIntoTrace(perfetto::TracedValue context) override;
@@ -307,6 +307,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void UpdateTooltipUnderCursor(
       const std::u16string& tooltip_text,
       base::i18n::TextDirection text_direction_hint) override;
+  void UpdateTooltipFromKeyboard(const std::u16string& tooltip_text,
+                                 base::i18n::TextDirection text_direction_hint,
+                                 const gfx::Rect& bounds) override;
   void TextInputStateChanged(ui::mojom::TextInputStatePtr state) override;
   void SelectionBoundsChanged(const gfx::Rect& anchor_rect,
                               base::i18n::TextDirection anchor_dir,
@@ -340,7 +343,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // Get info regarding all screens, including which screen is currently showing
   // this RenderWidgetHost.
-  blink::ScreenInfos GetScreenInfos();
+  display::ScreenInfos GetScreenInfos();
 
   // Forces redraw in the renderer and when the update reaches the browser.
   // grabs snapshot from the compositor.
@@ -768,7 +771,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void ForceFirstFrameAfterNavigationTimeout();
 
   void SetScreenOrientationForTesting(uint16_t angle,
-                                      blink::mojom::ScreenOrientation type);
+                                      display::mojom::ScreenOrientation type);
 
   // Requests Keyboard lock.  Note: the lock may not take effect until later.
   // If |codes| has no value then all keys will be locked, otherwise only the
@@ -902,6 +905,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
  private:
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest,
+                           DoNotAcceptPopupBoundsUntilScreenRectsAcked);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest,
                            DontPostponeInputEventAckTimeout);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, PendingUserActivationTimeout);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, RendererExitedNoDrag);
@@ -975,7 +980,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void AutoscrollStart(const gfx::PointF& position) override;
   void AutoscrollFling(const gfx::Vector2dF& velocity) override;
   void AutoscrollEnd() override;
-  void DidFirstVisuallyNonEmptyPaint() override;
   void StartDragging(blink::mojom::DragDataPtr drag_data,
                      blink::DragOperationsMask drag_operations_mask,
                      const SkBitmap& unsafe_bitmap,
@@ -1364,7 +1368,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   mojo::Remote<viz::mojom::InputTargetClient> input_target_client_;
 
   absl::optional<uint16_t> screen_orientation_angle_for_testing_;
-  absl::optional<blink::mojom::ScreenOrientation>
+  absl::optional<display::mojom::ScreenOrientation>
       screen_orientation_type_for_testing_;
 
   bool force_enable_zoom_ = false;

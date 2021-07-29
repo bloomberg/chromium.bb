@@ -20,7 +20,7 @@ export let MessageData;
  *   messageId: string,
  * }}
  */
-let SaveAttachmentDataMessageData;
+let SaveAttachmentMessageData;
 
 /**
  * @typedef {{
@@ -112,7 +112,7 @@ export class ContentController {
   /**
    * Requests that the attachment at a certain index be saved.
    * @param {number} index The index of the attachment to be saved.
-   * @return {Promise<{type: string, dataToSave: Array, messageId: string}>}
+   * @return {!Promise<!SaveAttachmentMessageData>}
    * @abstract
    */
   saveAttachment(index) {}
@@ -466,7 +466,7 @@ export class PluginController {
   async load(fileName, data) {
     const url = URL.createObjectURL(new Blob([data]));
     this.plugin_.removeAttribute('headers');
-    this.plugin_.setAttribute('stream-url', url);
+    this.plugin_.setAttribute('src', url);
     this.plugin_.setAttribute('has-edits', '');
     this.plugin_.style.display = 'block';
     try {
@@ -481,6 +481,17 @@ export class PluginController {
   unload() {
     this.plugin_.style.display = 'none';
     this.isActive = false;
+  }
+
+  /**
+   * An event handler for handling message events received from the Unseasoned
+   * PDF plugin.
+   * TODO(crbug.com/1228987): Remove this method when a permanent postMessage()
+   * bridge is implemented for the Unseasoned viewer.
+   * @param {!Event} messageEvent a message event.
+   */
+  handleMessageForUnseasoned(messageEvent) {
+    this.handlePluginMessage_(messageEvent);
   }
 
   /**

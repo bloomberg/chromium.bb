@@ -20,6 +20,7 @@
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
+#include "gpu/command_buffer/service/shared_image_backing_factory_gl_image.h"
 #include "gpu/command_buffer/service/shared_image_backing_factory_gl_texture.h"
 #include "gpu/command_buffer/service/shared_image_manager.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
@@ -61,6 +62,7 @@
 #if defined(OS_ANDROID)
 #include "base/android/android_hardware_buffer_compat.h"
 #include "base/android/scoped_hardware_buffer_fence_sync.h"
+#include "gpu/command_buffer/service/shared_image_backing_factory_egl.h"
 #include "gpu/command_buffer/service/shared_image_backing_scoped_hardware_buffer_fence_sync.h"
 #endif
 
@@ -117,11 +119,13 @@ SharedImageFactory::SharedImageFactory(
     SharedImageManager* shared_image_manager,
     ImageFactory* image_factory,
     MemoryTracker* memory_tracker,
-    bool enable_wrapped_sk_image)
+    bool enable_wrapped_sk_image,
+    bool is_for_display_compositor)
     : mailbox_manager_(mailbox_manager),
       shared_image_manager_(shared_image_manager),
       shared_context_state_(context_state),
       memory_tracker_(std::make_unique<MemoryTypeTracker>(memory_tracker)),
+      is_for_display_compositor_(is_for_display_compositor),
       gr_context_type_(context_state ? context_state->gr_context_type()
                                      : GrContextType::kGL) {
 #if defined(OS_MAC)
@@ -130,13 +134,27 @@ SharedImageFactory::SharedImageFactory(
          gr_context_type_ == GrContextType::kMetal);
 #endif
 
+  if (enable_wrapped_sk_image && context_state) {
+    auto wrapped_sk_image_factory =
+        std::make_unique<raster::WrappedSkImageFactory>(context_state);
+    factories_.push_back(std::move(wrapped_sk_image_factory));
+  }
+
   bool use_gl = gl::GetGLImplementation() != gl::kGLImplementationNone;
   if (use_gl) {
-    gl_backing_factory_ = std::make_unique<SharedImageBackingFactoryGLTexture>(
-        gpu_preferences, workarounds, gpu_feature_info, image_factory,
-        shared_image_manager->batch_access_manager(),
-        shared_context_state_ ? shared_context_state_->progress_reporter()
-                              : nullptr);
+    auto gl_texture_backing_factory =
+        std::make_unique<SharedImageBackingFactoryGLTexture>(
+            gpu_preferences, workarounds, gpu_feature_info,
+            shared_context_state_ ? shared_context_state_->progress_reporter()
+                                  : nullptr);
+    factories_.push_back(std::move(gl_texture_backing_factory));
+
+#if defined(OS_ANDROID)
+    auto egl_backing_factory = std::make_unique<SharedImageBackingFactoryEGL>(
+        gpu_preferences, workarounds, gpu_feature_info,
+        shared_image_manager->batch_access_manager());
+    factories_.push_back(std::move(egl_backing_factory));
+#endif
   }
 
   // TODO(ccameron): This block of code should be changed to a switch on
@@ -147,32 +165,37 @@ SharedImageFactory::SharedImageFactory(
     !BUILDFLAG(IS_CHROMEOS_LACROS) && !BUILDFLAG(IS_CHROMECAST)
     // Desktop Linux, not ChromeOS.
     if (ShouldUseExternalVulkanImageFactory()) {
-      interop_backing_factory_ =
+      auto external_vk_image_factory =
           std::make_unique<ExternalVkImageFactory>(context_state);
+      factories_.push_back(std::move(external_vk_image_factory));
     } else {
       LOG(ERROR) << "ERROR: gr_context_type_ is GrContextType::kVulkan and "
                     "interop_backing_factory_ is not set";
     }
 #elif defined(OS_FUCHSIA) || defined(OS_WIN)
-    interop_backing_factory_ =
+    auto external_vk_image_factory =
         std::make_unique<ExternalVkImageFactory>(context_state);
+    factories_.push_back(std::move(external_vk_image_factory));
 #elif defined(OS_ANDROID)
-    // For Android
-    external_vk_image_factory_ =
-        std::make_unique<ExternalVkImageFactory>(context_state);
     const auto& enabled_extensions = context_state->vk_context_provider()
                                          ->GetDeviceQueue()
                                          ->enabled_extensions();
     if (gfx::HasExtension(
             enabled_extensions,
             VK_ANDROID_EXTERNAL_MEMORY_ANDROID_HARDWARE_BUFFER_EXTENSION_NAME)) {
-      interop_backing_factory_ = std::make_unique<SharedImageBackingFactoryAHB>(
+      auto ahb_factory = std::make_unique<SharedImageBackingFactoryAHB>(
           workarounds, gpu_feature_info);
+      factories_.push_back(std::move(ahb_factory));
     }
+    // For Android
+    auto external_vk_image_factory =
+        std::make_unique<ExternalVkImageFactory>(context_state);
+    factories_.push_back(std::move(external_vk_image_factory));
 #endif
 #elif BUILDFLAG(IS_CHROMEOS_ASH)
-    interop_backing_factory_ =
+    auto ozone_factory =
         std::make_unique<SharedImageBackingFactoryOzone>(context_state);
+    factories_.push_back(std::move(ozone_factory));
 #else
     // Others
     LOG(ERROR) << "ERROR: gr_context_type_ is GrContextType::kVulkan and "
@@ -182,14 +205,11 @@ SharedImageFactory::SharedImageFactory(
     // gr_context_type_ != GrContextType::kVulkan
 #if defined(OS_ANDROID) && BUILDFLAG(ENABLE_VULKAN)
     if (base::AndroidHardwareBufferCompat::IsSupportAvailable()) {
-      interop_backing_factory_ = std::make_unique<SharedImageBackingFactoryAHB>(
+      auto ahb_factory = std::make_unique<SharedImageBackingFactoryAHB>(
           workarounds, gpu_feature_info);
+      factories_.push_back(std::move(ahb_factory));
     }
 #endif
-  }
-  if (enable_wrapped_sk_image && context_state) {
-    wrapped_sk_image_factory_ =
-        std::make_unique<raster::WrappedSkImageFactory>(context_state);
   }
 
 #if defined(OS_WIN)
@@ -198,9 +218,20 @@ SharedImageFactory::SharedImageFactory(
                          gles2::PassthroughCommandDecoderSupported();
   if (use_passthrough && gr_context_type_ == GrContextType::kGL) {
     // Only supported for passthrough command decoder.
-    interop_backing_factory_ = std::make_unique<SharedImageBackingFactoryD3D>();
+    auto d3d_factory = std::make_unique<SharedImageBackingFactoryD3D>();
+    d3d_backing_factory_ = d3d_factory.get();
+    factories_.push_back(std::move(d3d_factory));
   }
 #endif  // OS_WIN
+
+  if (use_gl) {
+    auto gl_image_backing_factory =
+        std::make_unique<SharedImageBackingFactoryGLImage>(
+            gpu_preferences, workarounds, gpu_feature_info, image_factory,
+            shared_context_state_ ? shared_context_state_->progress_reporter()
+                                  : nullptr);
+    factories_.push_back(std::move(gl_image_backing_factory));
+  }
 
 #if defined(OS_FUCHSIA)
   vulkan_context_provider_ = context_state->vk_context_provider();
@@ -220,7 +251,8 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
                                            gpu::SurfaceHandle surface_handle,
                                            uint32_t usage) {
   bool allow_legacy_mailbox = false;
-  auto* factory = GetFactoryByUsage(usage, format, &allow_legacy_mailbox);
+  auto* factory = GetFactoryByUsage(usage, format, &allow_legacy_mailbox,
+                                    /*is_pixel_used=*/false);
   if (!factory)
     return false;
   auto backing = factory->CreateSharedImage(
@@ -248,19 +280,13 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
     return false;
   }
 
-  // Currently we only perform data uploads via two paths,
-  // |gl_backing_factory_| for GL and |wrapped_sk_image_factory_| for Vulkan and
-  // Dawn.
-  // TODO(ericrk): Make this generic in the future.
   bool allow_legacy_mailbox = false;
   SharedImageBackingFactory* factory = nullptr;
   if (backing_factory_for_testing_) {
     factory = backing_factory_for_testing_;
-  } else if (gr_context_type_ == GrContextType::kGL) {
-    allow_legacy_mailbox = true;
-    factory = gl_backing_factory_.get();
   } else {
-    factory = wrapped_sk_image_factory_.get();
+    factory = GetFactoryByUsage(usage, format, &allow_legacy_mailbox,
+                                /*is_pixel_used=*/true, gfx::EMPTY_BUFFER);
   }
   if (!factory)
     return false;
@@ -287,8 +313,9 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
   // factory, e.g. SharedImageBackingFactoryAHB.
   bool allow_legacy_mailbox = false;
   auto resource_format = viz::GetResourceFormat(format);
-  auto* factory = GetFactoryByUsage(usage, resource_format,
-                                    &allow_legacy_mailbox, handle.type);
+  auto* factory =
+      GetFactoryByUsage(usage, resource_format, &allow_legacy_mailbox,
+                        /*is_pixel_used=*/false, handle.type);
   if (!factory)
     return false;
   auto backing = factory->CreateSharedImage(
@@ -345,11 +372,8 @@ bool SharedImageFactory::CreateSwapChain(const Mailbox& front_buffer_mailbox,
   if (!SharedImageBackingFactoryD3D::IsSwapChainSupported())
     return false;
 
-  SharedImageBackingFactoryD3D* d3d_backing_factory =
-      static_cast<SharedImageBackingFactoryD3D*>(
-          interop_backing_factory_.get());
   bool allow_legacy_mailbox = true;
-  auto backings = d3d_backing_factory->CreateSwapChain(
+  auto backings = d3d_backing_factory_->CreateSwapChain(
       front_buffer_mailbox, back_buffer_mailbox, format, size, color_space,
       surface_origin, alpha_type, usage);
   return RegisterBacking(std::move(backings.front_buffer),
@@ -433,10 +457,10 @@ bool SharedImageFactory::CreateSharedImageVideoPlanes(
     gfx::BufferFormat format,
     const gfx::Size& size,
     uint32_t usage) {
-  if (!interop_backing_factory_)
+  if (!d3d_backing_factory_)
     return false;
 
-  auto backings = interop_backing_factory_->CreateSharedImageVideoPlanes(
+  auto backings = d3d_backing_factory_->CreateSharedImageVideoPlanes(
       mailboxes, std::move(handle), format, size, usage);
 
   if (backings.size() != gfx::NumberOfPlanesForLinearBufferFormat(format))
@@ -480,124 +504,44 @@ void SharedImageFactory::RegisterSharedImageBackingFactoryForTesting(
 }
 
 bool SharedImageFactory::IsSharedBetweenThreads(uint32_t usage) {
-  // If |shared_image_manager_| is thread safe, it means the display is running
-  // on a separate thread (which uses a separate GL context or VkDeviceQueue).
-  return shared_image_manager_->display_context_on_another_thread() &&
-         (usage & SHARED_IMAGE_USAGE_DISPLAY);
-}
-
-bool SharedImageFactory::CanUseWrappedSkImage(uint32_t usage) const {
-  if (!wrapped_sk_image_factory_)
-    return false;
-
-  constexpr auto kWrappedSkImageUsage = SHARED_IMAGE_USAGE_RASTER |
-                                        SHARED_IMAGE_USAGE_OOP_RASTERIZATION |
-                                        SHARED_IMAGE_USAGE_DISPLAY;
-
-  if (gr_context_type_ != GrContextType::kGL) {
-    // For SkiaRenderer/Vulkan+Dawn use WrappedSkImage if the usage is only
-    // raster and/or display.
-    return (usage & kWrappedSkImageUsage) && !(usage & ~kWrappedSkImageUsage);
-  } else {
-    // For d SkiaRenderer/GL only use WrappedSkImages for OOP-R because
-    // CopySubTexture() doesn't use Skia. https://crbug.com/984045
-    return usage == kWrappedSkImageUsage;
-  }
+  // Ignore for mipmap usage.
+  usage &= ~SHARED_IMAGE_USAGE_MIPMAP;
+  // If |shared_image_manager_| is thread safe, it means the display is
+  // running on a separate thread (which uses a separate GL context or
+  // VkDeviceQueue).
+  const bool used_by_display_compositor_gpu_thread =
+      (usage & SHARED_IMAGE_USAGE_DISPLAY || is_for_display_compositor_) &&
+      shared_image_manager_->display_context_on_another_thread();
+  // If it has usage other than DISPLAY OR if it is not used just for display
+  // compositor, it means that it is used by the gpu main thread.
+  const bool used_by_main_gpu_thread =
+      usage & ~SHARED_IMAGE_USAGE_DISPLAY || !is_for_display_compositor_;
+  return used_by_display_compositor_gpu_thread && used_by_main_gpu_thread;
 }
 
 SharedImageBackingFactory* SharedImageFactory::GetFactoryByUsage(
     uint32_t usage,
     viz::ResourceFormat format,
     bool* allow_legacy_mailbox,
+    bool is_pixel_used,
     gfx::GpuMemoryBufferType gmb_type) {
   if (backing_factory_for_testing_)
     return backing_factory_for_testing_;
 
-  bool using_dawn = usage & SHARED_IMAGE_USAGE_WEBGPU;
-  bool vulkan_usage = gr_context_type_ == GrContextType::kVulkan &&
-                      (usage & SHARED_IMAGE_USAGE_DISPLAY);
-  bool gl_usage = usage & SHARED_IMAGE_USAGE_GLES2;
   bool share_between_threads = IsSharedBetweenThreads(usage);
-  bool share_between_gl_vulkan = gl_usage && vulkan_usage;
-  bool using_interop_factory = share_between_gl_vulkan || using_dawn ||
-                               (usage & SHARED_IMAGE_USAGE_VIDEO_DECODE) ||
-                               (share_between_threads && vulkan_usage);
-
-#if defined(OS_ANDROID)
-  // Scanout on Android requires explicit fence synchronization which is only
-  // supported by the interop factory.
-  using_interop_factory |= usage & SHARED_IMAGE_USAGE_SCANOUT;
-#elif defined(OS_MAC)
-  // On macOS, there is no separate interop factory. Any GpuMemoryBuffer-backed
-  // image can be used with both OpenGL and Metal.
-  using_interop_factory = false;
-#endif
-
-  bool using_wrapped_sk_image = !using_interop_factory &&
-                                !share_between_threads &&
-                                CanUseWrappedSkImage(usage);
-  if (using_wrapped_sk_image) {
-    if (gmb_type == gfx::EMPTY_BUFFER ||
-        wrapped_sk_image_factory_->CanImportGpuMemoryBuffer(gmb_type)) {
-      *allow_legacy_mailbox = false;
-      return wrapped_sk_image_factory_.get();
+  for (auto& factory : factories_) {
+    if (factory->IsSupported(usage, format, share_between_threads, gmb_type,
+                             gr_context_type_, allow_legacy_mailbox,
+                             is_pixel_used)) {
+      return factory.get();
     }
   }
 
-  using_interop_factory |= vulkan_usage;
-
-  if (gmb_type != gfx::EMPTY_BUFFER) {
-    bool interop_factory_supports_gmb =
-        interop_backing_factory_ &&
-        interop_backing_factory_->CanImportGpuMemoryBuffer(gmb_type);
-
-    if (using_interop_factory && !interop_backing_factory_) {
-      LOG(ERROR) << "Unable to screate SharedImage backing: no support for the "
-                    "requested GpuMemoryBufferType.";
-      return nullptr;
-    }
-
-    // If |interop_backing_factory_| supports supplied GMB type then use it
-    // instead of |gl_backing_factory_|.
-    using_interop_factory |= interop_factory_supports_gmb;
-  }
-
-  *allow_legacy_mailbox = !using_interop_factory &&
-                          gr_context_type_ == GrContextType::kGL &&
-                          !share_between_threads;
-
-  if (using_interop_factory) {
-    // TODO(crbug.com/969114): Not all shared image factory implementations
-    // support concurrent read/write usage.
-    if (usage & SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE) {
-      LOG(ERROR) << "Unable to create SharedImage backing: Interoperability is "
-                    "not supported for concurrent read/write usage";
-      return nullptr;
-    }
-
-#if defined(OS_ANDROID)
-    // On android, we sometime choose VkImage based backing factory as an
-    // interop if the format is not supported by the AHB backing factory.
-    auto* ahb_backing_factory = static_cast<SharedImageBackingFactoryAHB*>(
-        interop_backing_factory_.get());
-    if (ahb_backing_factory && ahb_backing_factory->IsFormatSupported(format))
-      return ahb_backing_factory;
-    if (share_between_threads) {
-      LOG(FATAL) << "ExternalVkImageFactory currently do not support "
-                    "cross-thread usage.";
-    }
-    *allow_legacy_mailbox = false;
-    return external_vk_image_factory_.get();
-#else   // defined(OS_ANDROID)
-    LOG_IF(ERROR, !interop_backing_factory_)
-        << "Unable to create SharedImage backing: GL / Vulkan interoperability "
-           "is not supported on this platform";
-
-    return interop_backing_factory_.get();
-#endif  // !defined(OS_ANDROID)
-  }
-
-  return gl_backing_factory_.get();
+  LOG(ERROR) << "Could not find SharedImageBackingFactory with params: usage: "
+             << usage << ", format: " << format
+             << ", share_between_threads: " << share_between_threads
+             << ", gmb_type: " << gmb_type;
+  return nullptr;
 }
 
 bool SharedImageFactory::RegisterBacking(
@@ -667,8 +611,9 @@ SharedImageRepresentationFactory::ProduceSkia(
 
 std::unique_ptr<SharedImageRepresentationDawn>
 SharedImageRepresentationFactory::ProduceDawn(const Mailbox& mailbox,
-                                              WGPUDevice device) {
-  return manager_->ProduceDawn(mailbox, tracker_.get(), device);
+                                              WGPUDevice device,
+                                              WGPUBackendType backend_type) {
+  return manager_->ProduceDawn(mailbox, tracker_.get(), device, backend_type);
 }
 
 std::unique_ptr<SharedImageRepresentationOverlay>

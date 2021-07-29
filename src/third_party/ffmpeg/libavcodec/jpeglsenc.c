@@ -282,13 +282,6 @@ static int encode_picture_ls(AVCodecContext *avctx, AVPacket *pkt,
     int i, size, ret;
     int comps;
 
-#if FF_API_PRIVATE_OPT
-FF_DISABLE_DEPRECATION_WARNINGS
-    if (avctx->prediction_method)
-        ctx->pred = avctx->prediction_method;
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
-
     if (avctx->pix_fmt == AV_PIX_FMT_GRAY8 ||
         avctx->pix_fmt == AV_PIX_FMT_GRAY16)
         comps = 1;
@@ -420,26 +413,6 @@ FF_ENABLE_DEPRECATION_WARNINGS
     return 0;
 }
 
-static av_cold int encode_init_ls(AVCodecContext *ctx)
-{
-#if FF_API_CODED_FRAME
-FF_DISABLE_DEPRECATION_WARNINGS
-    ctx->coded_frame->pict_type = AV_PICTURE_TYPE_I;
-    ctx->coded_frame->key_frame = 1;
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
-
-    if (ctx->pix_fmt != AV_PIX_FMT_GRAY8  &&
-        ctx->pix_fmt != AV_PIX_FMT_GRAY16 &&
-        ctx->pix_fmt != AV_PIX_FMT_RGB24  &&
-        ctx->pix_fmt != AV_PIX_FMT_BGR24) {
-        av_log(ctx, AV_LOG_ERROR,
-               "Only grayscale and RGB24/BGR24 images are supported\n");
-        return -1;
-    }
-    return 0;
-}
-
 #define OFFSET(x) offsetof(JPEGLSContext, x)
 #define VE AV_OPT_FLAG_VIDEO_PARAM | AV_OPT_FLAG_ENCODING_PARAM
 static const AVOption options[] = {
@@ -458,14 +431,13 @@ static const AVClass jpegls_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVCodec ff_jpegls_encoder = {
+const AVCodec ff_jpegls_encoder = {
     .name           = "jpegls",
     .long_name      = NULL_IF_CONFIG_SMALL("JPEG-LS"),
     .type           = AVMEDIA_TYPE_VIDEO,
     .id             = AV_CODEC_ID_JPEGLS,
     .priv_data_size = sizeof(JPEGLSContext),
     .priv_class     = &jpegls_class,
-    .init           = encode_init_ls,
     .capabilities   = AV_CODEC_CAP_FRAME_THREADS,
     .encode2        = encode_picture_ls,
     .pix_fmts       = (const enum AVPixelFormat[]) {

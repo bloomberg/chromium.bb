@@ -564,8 +564,8 @@ class DistWtdCompAvgTest
   void CheckCompAvg() {
     for (int j = 0; j < 2; ++j) {
       for (int i = 0; i < 4; ++i) {
-        jcp_param_.fwd_offset = quant_dist_lookup_table[j][i][0];
-        jcp_param_.bck_offset = quant_dist_lookup_table[j][i][1];
+        jcp_param_.fwd_offset = quant_dist_lookup_table[i][j];
+        jcp_param_.bck_offset = quant_dist_lookup_table[i][1 - j];
 
         ReferenceDistWtdCompAvg(0);
         dist_wtd_comp_avg(0);
@@ -632,8 +632,8 @@ class DistWtdSADavgTest
   void CheckSAD() {
     for (int j = 0; j < 2; ++j) {
       for (int i = 0; i < 4; ++i) {
-        jcp_param_.fwd_offset = quant_dist_lookup_table[j][i][0];
-        jcp_param_.bck_offset = quant_dist_lookup_table[j][i][1];
+        jcp_param_.fwd_offset = quant_dist_lookup_table[i][j];
+        jcp_param_.bck_offset = quant_dist_lookup_table[i][1 - j];
 
         const unsigned int reference_sad = ReferenceDistWtdSADavg(0);
         const unsigned int exp_sad = dist_wtd_SAD_avg(0);

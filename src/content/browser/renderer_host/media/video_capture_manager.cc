@@ -13,12 +13,11 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/elapsed_timer.h"
@@ -28,6 +27,7 @@
 #include "content/browser/screenlock_monitor/screenlock_monitor.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_media_id.h"
+#include "content/public/common/content_features.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_facing.h"
@@ -41,10 +41,10 @@ void LogVideoCaptureError(media::VideoCaptureError error) {
 }
 
 const base::UnguessableToken& FakeSessionId() {
-  static const base::NoDestructor<base::UnguessableToken> fake_session_id(
+  static const base::UnguessableToken fake_session_id(
       base::UnguessableToken::Deserialize(0xFFFFFFFFFFFFFFFFU,
                                           0xFFFFFFFFFFFFFFFFU));
-  return *fake_session_id;
+  return fake_session_id;
 }
 
 }  // namespace
@@ -217,6 +217,7 @@ void VideoCaptureManager::QueueStartDevice(
     VideoCaptureController* controller,
     const media::VideoCaptureParams& params) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(lock_time_.is_null());
   device_start_request_queue_.push_back(
       CaptureDeviceStartRequest(controller, session_id, params));
   if (device_start_request_queue_.size() == 1)
@@ -402,8 +403,10 @@ void VideoCaptureManager::ConnectClient(
     return;
   }
 
-  // First client starts the device.
-  if (!controller->HasActiveClient() && !controller->HasPausedClient()) {
+  // First client starts the device. Device can't be started while the screen is
+  // locked.
+  if (!controller->HasActiveClient() && !controller->HasPausedClient() &&
+      lock_time_.is_null()) {
     std::ostringstream string_stream;
     string_stream
         << "VideoCaptureManager queueing device start for device_id = "
@@ -411,6 +414,7 @@ void VideoCaptureManager::ConnectClient(
     EmitLogMessage(string_stream.str(), 1);
     QueueStartDevice(session_id, controller, params);
   }
+
   // Run the callback first, as AddClient() may trigger OnFrameInfo().
   std::move(done_cb).Run(controller->GetWeakPtrForIOThread());
   controller->AddClient(client_id, client_handler, session_id, params);
@@ -869,6 +873,7 @@ void VideoCaptureManager::OnApplicationStateChange(
     application_state_has_running_activities_ = false;
   }
 }
+#endif
 
 void VideoCaptureManager::ReleaseDevices() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -911,7 +916,6 @@ void VideoCaptureManager::ResumeDevices() {
     }
   }
 }
-#endif  // defined(OS_ANDROID)
 
 void VideoCaptureManager::OnScreenLocked() {
 #if !defined(OS_ANDROID)
@@ -931,6 +935,11 @@ void VideoCaptureManager::OnScreenLocked() {
   if (!locked_sessions_.empty()) {
     DCHECK(lock_time_.is_null());
     lock_time_ = base::TimeTicks::Now();
+
+    if (base::FeatureList::IsEnabled(features::kStopVideoCaptureOnScreenLock)) {
+      idle_close_timer_.Start(FROM_HERE, idle_close_timeout_, this,
+                              &VideoCaptureManager::ReleaseDevices);
+    }
   }
 
   for (auto session_id : desktopcapture_session_ids) {
@@ -940,11 +949,17 @@ void VideoCaptureManager::OnScreenLocked() {
 }
 
 void VideoCaptureManager::OnScreenUnlocked() {
+  EmitLogMessage("VideoCaptureManager::OnScreenUnlocked", 1);
   if (lock_time_.is_null())
     return;
 
   DCHECK(!locked_sessions_.empty());
   RecordDeviceSessionLockDuration();
+
+  if (base::FeatureList::IsEnabled(features::kStopVideoCaptureOnScreenLock)) {
+    idle_close_timer_.Stop();
+    ResumeDevices();
+  }
 }
 
 void VideoCaptureManager::RecordDeviceSessionLockDuration() {

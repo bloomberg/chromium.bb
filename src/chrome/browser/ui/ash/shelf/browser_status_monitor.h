@@ -31,16 +31,17 @@ class BrowserStatusMonitor : public BrowserListObserver,
   explicit BrowserStatusMonitor(ChromeShelfController* shelf_controller);
   ~BrowserStatusMonitor() override;
 
-  // Do the initialization work. Note: This function should not be called in the
-  // constructor function because the virtual member function AddV1AppToShelf()
-  // is called inside this function.
+  // Do the initialization work. Note: the init phase is separate from
+  // construction because this function will make callbacks to
+  // ChromeShelfController and ChromeShelfController creates an instance of this
+  // class in its own constructor and may not be fully initialized yet.
   void Initialize();
 
   // A function which gets called when the current user has changed.
   // Note that this function is called by the ChromeShelfController to be
   // able to do the activation in a proper order - rather then setting an
   // observer.
-  virtual void ActiveUserChanged(const std::string& user_email) {}
+  void ActiveUserChanged(const std::string& user_email);
 
   // A shortcut to call the ChromeShelfController's UpdateAppState().
   void UpdateAppItemState(content::WebContents* contents, bool remove);
@@ -59,25 +60,17 @@ class BrowserStatusMonitor : public BrowserListObserver,
       const TabStripModelChange& change,
       const TabStripSelectionChange& selection) override;
 
-  // Called from our own |LocalWebContentsObserver| when web contents did go
-  // away without any other notification. This might happen in case of
-  // application uninstalls, page crashes, ...).
-  void WebContentsDestroyed(content::WebContents* web_contents);
-
- protected:
-  // Add a V1 application to the shelf. This can get overwritten for multi
-  // profile implementations.
-  virtual void AddV1AppToShelf(Browser* browser);
-
-  // Remove a V1 application from the shelf. This can get overwritten for multi
-  // profile implementations.
-  virtual void RemoveV1AppFromShelf(Browser* browser);
-
-  // Check if a V1 application is currently in the shelf by browser or app id.
-  bool IsV1AppInShelf(Browser* browser);
-  bool IsV1AppInShelfWithAppId(const std::string& app_id);
-
  private:
+  // Add a windowed browser-based app to the shelf.
+  void AddAppBrowserToShelf(Browser* browser);
+
+  // Remove a windowed browser-based app from the shelf.
+  void RemoveAppBrowserFromShelf(Browser* browser);
+
+  // Check if an application is currently in the shelf by browser or app id.
+  bool IsAppBrowserInShelf(Browser* browser);
+  bool IsAppBrowserInShelfWithAppId(const std::string& app_id);
+
   class LocalWebContentsObserver;
 
   // Called by TabStripModelChanged()
@@ -89,6 +82,12 @@ class BrowserStatusMonitor : public BrowserListObserver,
   void OnTabInserted(TabStripModel* tab_strip_model,
                      content::WebContents* contents);
   void OnTabClosing(content::WebContents* contents);
+  // Tab is moved between browsers
+  void OnTabMoved(TabStripModel* tab_strip_model,
+                  content::WebContents* contents);
+
+  // Called by LocalWebContentsObserver.
+  void OnTabNavigationFinished(content::WebContents* contents);
 
   // Create LocalWebContentsObserver for |contents|.
   void AddWebContentsObserver(content::WebContents* contents);
@@ -116,6 +115,9 @@ class BrowserStatusMonitor : public BrowserListObserver,
   // Used to validate that OnBrowserAdded() is invoked before
   // OnTabStripModelChanged().
   std::set<Browser*> known_browsers_;
+  // Tabs that are removed from one browser and are getting reinserted into
+  // another.
+  std::set<content::WebContents*> tabs_in_transit_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(BrowserStatusMonitor);

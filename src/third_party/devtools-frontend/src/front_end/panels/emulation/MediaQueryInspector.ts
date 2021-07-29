@@ -22,7 +22,7 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/emulation/MediaQueryInspector.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class MediaQueryInspector extends UI.Widget.Widget implements
-    SDK.SDKModel.SDKModelObserver<SDK.CSSModel.CSSModel> {
+    SDK.TargetManager.SDKModelObserver<SDK.CSSModel.CSSModel> {
   _mediaThrottler: Common.Throttler.Throttler;
   _getWidthCallback: () => number;
   _setWidthCallback: (arg0: number) => void;
@@ -34,7 +34,7 @@ export class MediaQueryInspector extends UI.Widget.Widget implements
 
   constructor(getWidthCallback: () => number, setWidthCallback: (arg0: number) => void) {
     super(true);
-    this.registerRequiredCSS('panels/emulation/mediaQueryInspector.css', {enableLegacyPatching: false});
+    this.registerRequiredCSS('panels/emulation/mediaQueryInspector.css');
     this.contentElement.classList.add('media-inspector-view');
     this.contentElement.addEventListener('click', this._onMediaQueryClicked.bind(this), false);
     this.contentElement.addEventListener('contextmenu', this._onContextMenu.bind(this), false);
@@ -47,7 +47,7 @@ export class MediaQueryInspector extends UI.Widget.Widget implements
     this.elementsToMediaQueryModel = new WeakMap();
     this.elementsToCSSLocations = new WeakMap();
 
-    SDK.SDKModel.TargetManager.instance().observeModels(SDK.CSSModel.CSSModel, this);
+    SDK.TargetManager.TargetManager.instance().observeModels(SDK.CSSModel.CSSModel, this);
     UI.ZoomManager.ZoomManager.instance().addEventListener(
         UI.ZoomManager.Events.ZoomChanged, this._renderMediaQueries.bind(this), this);
   }
@@ -267,6 +267,7 @@ export class MediaQueryInspector extends UI.Widget.Widget implements
   }
 
   wasShown(): void {
+    super.wasShown();
     this._scheduleMediaQueriesUpdate();
   }
 

@@ -14,6 +14,12 @@ class NoteProperties {
     /** The view type used by the recycler view to show the notes. */
     public static final int NOTE_VIEW_TYPE = 1;
 
+    /** Whether this note is the first one. */
+    static final WritableObjectPropertyKey<Boolean> IS_FIRST = new WritableObjectPropertyKey<>();
+
+    /** Whether this note is the last one. */
+    static final WritableObjectPropertyKey<Boolean> IS_LAST = new WritableObjectPropertyKey<>();
+
     /** The template definition.*/
     static final WritableObjectPropertyKey<NoteTemplate> TEMPLATE =
             new WritableObjectPropertyKey<>();
@@ -21,5 +27,5 @@ class NoteProperties {
     /** The Typeface instance that has been loaded for the associated template. */
     static final WritableObjectPropertyKey<Typeface> TYPEFACE = new WritableObjectPropertyKey<>();
 
-    static final PropertyKey[] ALL_KEYS = new PropertyKey[] {TEMPLATE, TYPEFACE};
+    static final PropertyKey[] ALL_KEYS = new PropertyKey[] {IS_FIRST, IS_LAST, TEMPLATE, TYPEFACE};
 }

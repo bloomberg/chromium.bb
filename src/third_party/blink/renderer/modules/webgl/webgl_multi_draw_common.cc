@@ -4,8 +4,9 @@
 
 #include "third_party/blink/renderer/modules/webgl/webgl_multi_draw_common.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/v8_union_int32array_longsequence.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_union_uint32array_unsignedlongsequence.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_int32arrayallowshared_longsequence.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_uint32arrayallowshared_unsignedlongsequence.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.h"
 
 namespace blink {
 
@@ -45,45 +46,35 @@ bool WebGLMultiDrawCommon::ValidateArray(WebGLExtensionScopedContext* scoped,
   return true;
 }
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 // static
 base::span<const int32_t> WebGLMultiDrawCommon::MakeSpan(
-    const V8UnionInt32ArrayOrLongSequence* array) {
+    const V8UnionInt32ArrayAllowSharedOrLongSequence* array) {
   DCHECK(array);
   switch (array->GetContentType()) {
-    case V8UnionInt32ArrayOrLongSequence::ContentType::kInt32Array:
-      return base::span<const int32_t>(array->GetAsInt32Array()->Data(),
-                                       array->GetAsInt32Array()->length());
-    case V8UnionInt32ArrayOrLongSequence::ContentType::kLongSequence:
+    case V8UnionInt32ArrayAllowSharedOrLongSequence::ContentType::
+        kInt32ArrayAllowShared:
+      return base::span<const int32_t>(
+          array->GetAsInt32ArrayAllowShared()->DataMaybeShared(),
+          array->GetAsInt32ArrayAllowShared()->length());
+    case V8UnionInt32ArrayAllowSharedOrLongSequence::ContentType::kLongSequence:
       return base::span<const int32_t>(array->GetAsLongSequence().data(),
                                        array->GetAsLongSequence().size());
   }
   NOTREACHED();
   return {};
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-// static
-base::span<const int32_t> WebGLMultiDrawCommon::MakeSpan(
-    const Int32ArrayOrLongSequence& array) {
-  if (array.IsInt32Array()) {
-    return base::span<const int32_t>(array.GetAsInt32Array()->Data(),
-                                     array.GetAsInt32Array()->length());
-  }
-  return base::span<const int32_t>(array.GetAsLongSequence().data(),
-                                   array.GetAsLongSequence().size());
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 // static
 base::span<const uint32_t> WebGLMultiDrawCommon::MakeSpan(
-    const V8UnionUint32ArrayOrUnsignedLongSequence* array) {
+    const V8UnionUint32ArrayAllowSharedOrUnsignedLongSequence* array) {
   DCHECK(array);
   switch (array->GetContentType()) {
-    case V8UnionUint32ArrayOrUnsignedLongSequence::ContentType::kUint32Array:
-      return base::span<const uint32_t>(array->GetAsUint32Array()->Data(),
-                                        array->GetAsUint32Array()->length());
-    case V8UnionUint32ArrayOrUnsignedLongSequence::ContentType::
+    case V8UnionUint32ArrayAllowSharedOrUnsignedLongSequence::ContentType::
+        kUint32ArrayAllowShared:
+      return base::span<const uint32_t>(
+          array->GetAsUint32ArrayAllowShared()->DataMaybeShared(),
+          array->GetAsUint32ArrayAllowShared()->length());
+    case V8UnionUint32ArrayAllowSharedOrUnsignedLongSequence::ContentType::
         kUnsignedLongSequence:
       return base::span<const uint32_t>(
           array->GetAsUnsignedLongSequence().data(),
@@ -92,17 +83,5 @@ base::span<const uint32_t> WebGLMultiDrawCommon::MakeSpan(
   NOTREACHED();
   return {};
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-// static
-base::span<const uint32_t> WebGLMultiDrawCommon::MakeSpan(
-    const Uint32ArrayOrUnsignedLongSequence& array) {
-  if (array.IsUint32Array()) {
-    return base::span<const uint32_t>(array.GetAsUint32Array()->Data(),
-                                      array.GetAsUint32Array()->length());
-  }
-  return base::span<const uint32_t>(array.GetAsUnsignedLongSequence().data(),
-                                    array.GetAsUnsignedLongSequence().size());
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 }  // namespace blink

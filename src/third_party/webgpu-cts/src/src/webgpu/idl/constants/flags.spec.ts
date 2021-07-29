@@ -2,7 +2,6 @@ export const description = `
 Test the values of flags interfaces (e.g. GPUTextureUsage).
 `;
 
-import { poptions } from '../../../common/framework/params_builder.js';
 import { makeTestGroup } from '../../../common/framework/test_group.js';
 import { IDLTest } from '../idl_test.js';
 
@@ -24,7 +23,7 @@ g.test('BufferUsage,count').fn(t => {
   t.assertMemberCount(GPUBufferUsage, kBufferUsageExp);
 });
 g.test('BufferUsage,values')
-  .params(poptions('key', Object.keys(kBufferUsageExp)))
+  .params(u => u.combine('key', Object.keys(kBufferUsageExp)))
   .fn(t => {
     const { key } = t.params;
     t.assertMember(GPUBufferUsage, kBufferUsageExp, key);
@@ -41,7 +40,7 @@ g.test('TextureUsage,count').fn(t => {
   t.assertMemberCount(GPUTextureUsage, kTextureUsageExp);
 });
 g.test('TextureUsage,values')
-  .params(poptions('key', Object.keys(kTextureUsageExp)))
+  .params(u => u.combine('key', Object.keys(kTextureUsageExp)))
   .fn(t => {
     const { key } = t.params;
     t.assertMember(GPUTextureUsage, kTextureUsageExp, key);
@@ -58,7 +57,7 @@ g.test('ColorWrite,count').fn(t => {
   t.assertMemberCount(GPUColorWrite, kColorWriteExp);
 });
 g.test('ColorWrite,values')
-  .params(poptions('key', Object.keys(kColorWriteExp)))
+  .params(u => u.combine('key', Object.keys(kColorWriteExp)))
   .fn(t => {
     const { key } = t.params;
     t.assertMember(GPUColorWrite, kColorWriteExp, key);
@@ -73,7 +72,7 @@ g.test('ShaderStage,count').fn(t => {
   t.assertMemberCount(GPUShaderStage, kShaderStageExp);
 });
 g.test('ShaderStage,values')
-  .params(poptions('key', Object.keys(kShaderStageExp)))
+  .params(u => u.combine('key', Object.keys(kShaderStageExp)))
   .fn(t => {
     const { key } = t.params;
     t.assertMember(GPUShaderStage, kShaderStageExp, key);

@@ -3,17 +3,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// entry_points_cl_utils.h:
-//   These helpers are used in CL entry point routines.
+// entry_points_cl_utils.h: These helpers are used in CL entry point routines.
 
 #ifndef LIBGLESV2_ENTRY_POINTS_CL_UTILS_H_
 #define LIBGLESV2_ENTRY_POINTS_CL_UTILS_H_
 
+#include "libANGLE/CLBitField.h"
 #include "libANGLE/Debug.h"
+
+#include "common/PackedCLEnums_autogen.h"
 
 #include <cinttypes>
 #include <cstdio>
-#include <type_traits>
 
 #if defined(ANGLE_ENABLE_DEBUG_TRACE)
 #    define CL_EVENT(entryPoint, ...)                    \
@@ -26,22 +27,21 @@
 namespace cl
 {
 
-// First case: handling packed enums.
+// Handling packed enums
 template <typename PackedT, typename FromT>
 typename std::enable_if_t<std::is_enum<PackedT>::value, PackedT> PackParam(FromT from)
 {
     return FromCLenum<PackedT>(from);
 }
 
-// Cast CL object types to ANGLE CL object types
+// Handling bit fields
 template <typename PackedT, typename FromT>
-inline std::enable_if_t<
-    std::is_base_of<cl::Object, std::remove_pointer_t<std::remove_pointer_t<PackedT>>>::value,
-    PackedT>
-PackParam(FromT from)
+typename std::enable_if_t<std::is_same<PackedT, BitField>::value, PackedT> PackParam(FromT from)
 {
-    return reinterpret_cast<PackedT>(from);
+    return PackedT(from);
 }
+
+void InitBackEnds(bool isIcd);
 
 }  // namespace cl
 

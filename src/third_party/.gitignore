@@ -72,6 +72,7 @@
 /depot_tools
 /devtools-frontend/src
 /directxsdk
+/distributed_point_functions/src
 /dom_distiller_js/dist
 /eigen3/src
 /elfutils/src
@@ -175,6 +176,8 @@
 /neon_2_sse/src
 /netty-tcnative/src
 /netty4/src
+/js_code_coverage/node_modules
+/js_code_coverage/*.tar.gz
 /node/linux
 /node/mac
 /node/node_modules
@@ -238,7 +241,6 @@
 /tflite/src
 /tint/src
 /tsan/
-/turbine/src
 /turbine/*.jar
 /ub-uiautomator/lib
 /ukey2/src
@@ -249,6 +251,8 @@
 /vulkan-deps
 /vulkan_memory_allocator
 /wayland/src
+/wayland-protocols/gtk
+/wayland-protocols/kde
 /wayland-protocols/src
 /webdriver/pylib
 /webdriver/python/selenium

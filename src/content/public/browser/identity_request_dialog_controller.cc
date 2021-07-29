@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "content/public/browser/web_contents.h"
-#include "url/gurl.h"
 
 namespace content {
 
@@ -26,7 +25,7 @@ IdentityRequestAccount::IdentityRequestAccount(const std::string& sub,
                                                const std::string& email,
                                                const std::string& name,
                                                const std::string& given_name,
-                                               const std::string& picture)
+                                               const GURL& picture)
     : sub{sub},
       email{email},
       name{name},
@@ -40,6 +39,7 @@ IdentityRequestAccount::~IdentityRequestAccount() = default;
 void IdentityRequestDialogController::ShowInitialPermissionDialog(
     WebContents* rp_web_contents,
     const GURL& idp_url,
+    PermissionDialogMode mode,
     InitialApprovalCallback approval_callback) {
   std::move(approval_callback).Run(UserApproval::kDenied);
 }

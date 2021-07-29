@@ -17,6 +17,7 @@
 #include "chromeos/services/machine_learning/public/mojom/handwriting_recognizer.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/model.mojom.h"
+#include "chromeos/services/machine_learning/public/mojom/soda.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/tensor.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/text_classifier.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/text_suggester.mojom.h"
@@ -114,6 +115,7 @@ class COMPONENT_EXPORT(CHROMEOS_MLSERVICE) FakeServiceConnectionImpl
 
   void LoadTextSuggester(
       mojo::PendingReceiver<mojom::TextSuggester> receiver,
+      mojom::TextSuggesterSpecPtr spec,
       mojom::MachineLearningService::LoadTextSuggesterCallback callback)
       override;
 
@@ -287,6 +289,7 @@ class COMPONENT_EXPORT(CHROMEOS_MLSERVICE) FakeServiceConnectionImpl
       mojom::MachineLearningService::LoadSpeechRecognizerCallback callback);
   void HandleLoadTextSuggesterCall(
       mojo::PendingReceiver<mojom::TextSuggester> receiver,
+      mojom::TextSuggesterSpecPtr spec,
       mojom::MachineLearningService::LoadTextSuggesterCallback callback);
   void HandleTextSuggesterSuggestCall(
       mojom::TextSuggesterQueryPtr query,

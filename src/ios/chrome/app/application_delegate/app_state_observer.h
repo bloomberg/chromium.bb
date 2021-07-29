@@ -23,11 +23,24 @@ typedef NS_ENUM(NSUInteger, InitStage) {
   // at the InitStageSafeMode stage if safe mode is needed, or will move to the
   // next stage otherwise.
   InitStageSafeMode,
+  // The app is fetching any enterprise policies. The initialization is blocked
+  // on this because the policies might have an effect on later init stages.
+  InitStageEnterprise,
   // The app is initializing the browser objects for the background handlers.
   InitStageBrowserObjectsForBackgroundHandlers,
   // The app is initializing the browser objects for the browser UI (e.g., the
   // browser state).
   InitStageBrowserObjectsForUI,
+  // If there are connected scenes, the app is creating browsers and starting
+  // the root coordinators. The BVCs and Tab switchers are created here. This
+  // is what is considered the normal UI.
+  //
+  // The stage is no-op for regular startups (no FRE, no Safe Mode) in which
+  // case the app will continue its transition to InitStageFinal and the UI is
+  // initialized when the scene transitions to the foreground.
+  InitStageNormalUI,
+  // TODO(crbug.com/1198246): Decouple FRE from Browser views to be able to go
+  // through this stage before InitStageNormalUI.
   // The app is considering presenting the FRE UI. Will remain in that state
   // when presenting the FRE.
   InitStageFirstRun,
@@ -42,7 +55,6 @@ typedef NS_ENUM(NSUInteger, InitStage) {
 @optional
 
 // Called when a scene is connected.
-// On iOS 12, called when the mainSceneState is set.
 - (void)appState:(AppState*)appState sceneConnected:(SceneState*)sceneState;
 
 // Called when the first scene initializes its UI.

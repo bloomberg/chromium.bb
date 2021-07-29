@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import "ios/chrome/browser/ui/activity_services/activity_scenario.h"
+
 class GURL;
 
 namespace synced_sessions {
@@ -19,7 +21,10 @@ class DistantSession;
 // Tells the delegate to trigger the URL sharing flow for the given |URL| and
 // |title|, with the origin |view| representing the UI component for that URL.
 // TODO(crbug.com/1196956): Investigate removing |view| as a parameter.
-- (void)shareURL:(const GURL&)URL title:(NSString*)title fromView:(UIView*)view;
+- (void)shareURL:(const GURL&)URL
+           title:(NSString*)title
+        scenario:(ActivityScenario)scenario
+        fromView:(UIView*)view;
 
 // Tells the delegate to remove Sessions corresponding to the given the table
 // view's |sectionIdentifier|.

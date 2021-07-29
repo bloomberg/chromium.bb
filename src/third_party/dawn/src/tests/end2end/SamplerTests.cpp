@@ -57,7 +57,7 @@ class SamplerTest : public DawnTest {
         auto vsModule = utils::CreateShaderModule(device, R"(
             [[stage(vertex)]]
             fn main([[builtin(vertex_index)]] VertexIndex : u32) -> [[builtin(position)]] vec4<f32> {
-                let pos : array<vec2<f32>, 6> = array<vec2<f32>, 6>(
+                var pos = array<vec2<f32>, 6>(
                     vec2<f32>(-2.0, -2.0),
                     vec2<f32>(-2.0,  2.0),
                     vec2<f32>( 2.0, -2.0),
@@ -76,12 +76,12 @@ class SamplerTest : public DawnTest {
                 return textureSample(texture0, sampler0, FragCoord.xy / vec2<f32>(2.0, 2.0));
             })");
 
-        utils::ComboRenderPipelineDescriptor2 pipelineDescriptor;
+        utils::ComboRenderPipelineDescriptor pipelineDescriptor;
         pipelineDescriptor.vertex.module = vsModule;
         pipelineDescriptor.cFragment.module = fsModule;
         pipelineDescriptor.cTargets[0].format = mRenderPass.colorFormat;
 
-        mPipeline = device.CreateRenderPipeline2(&pipelineDescriptor);
+        mPipeline = device.CreateRenderPipeline(&pipelineDescriptor);
         mBindGroupLayout = mPipeline.GetBindGroupLayout(0);
 
         wgpu::TextureDescriptor descriptor;

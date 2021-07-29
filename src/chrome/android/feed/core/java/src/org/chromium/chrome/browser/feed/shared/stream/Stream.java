@@ -7,12 +7,14 @@ package org.chromium.chrome.browser.feed.shared.stream;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.chromium.base.Callback;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.chrome.browser.feed.FeedSurfaceMediator;
 import org.chromium.chrome.browser.feed.NtpListContentManager;
 import org.chromium.chrome.browser.feed.NtpListContentManager.FeedContent;
 import org.chromium.chrome.browser.ntp.snippets.SectionType;
+import org.chromium.chrome.browser.xsurface.FeedLaunchReliabilityLogger;
 import org.chromium.chrome.browser.xsurface.HybridListRenderer;
 import org.chromium.chrome.browser.xsurface.SurfaceScope;
 
@@ -63,7 +65,7 @@ public interface Stream {
      *
      * <p>Note: this will assume {@link RequestReason.HOST_REQUESTED}.
      */
-    void triggerRefresh();
+    void triggerRefresh(Callback<Boolean> callback);
 
     /**
      * @return Whether the placeholder is shown.
@@ -87,19 +89,9 @@ public interface Stream {
     /** Record that user tapped Learn More. */
     default void recordActionLearnMore() {}
 
-    /** @returns Whether we should be logging user activity. */
+    /** Whether activity logging is enabled for this feed. */
     default boolean isActivityLoggingEnabled() {
         return false;
-    }
-
-    /** @returns Experiment IDs applicable to this feed. */
-    default int[] getExperimentIds() {
-        return new int[0];
-    }
-
-    /** @returns The session ID to use if user is signed out. */
-    default String getSignedOutSessionId() {
-        return "";
     }
 
     /** Whether the stream has unread content */
@@ -107,6 +99,11 @@ public interface Stream {
         ObservableSupplierImpl<Boolean> result = new ObservableSupplierImpl<>();
         result.set(false);
         return result;
+    }
+
+    /** Returns the last content fetch time. */
+    default long getLastFetchTimeMs() {
+        return 0;
     }
 
     /**
@@ -120,10 +117,12 @@ public interface Stream {
      *         content.
      * @param surfaceScope The {@link SurfaceScope} that is hosting the renderer.
      * @param renderer The {@link HybridListRenderer} that is rendering the feed.
+     * @param launchReliabilityLogger Logger for timestamps and status codes related to launching
+     *         the feed.
      */
     void bind(RecyclerView view, NtpListContentManager manager,
             FeedSurfaceMediator.ScrollState savedInstanceState, SurfaceScope surfaceScope,
-            HybridListRenderer renderer);
+            HybridListRenderer renderer, FeedLaunchReliabilityLogger launchReliabilityLogger);
 
     /**
      * Unbinds the feed. Removes all views this feed has added to the previously bound

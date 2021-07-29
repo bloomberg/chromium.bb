@@ -77,7 +77,7 @@ struct GPU_EXPORT GpuPreferences {
   // Disables hardware acceleration of video decode, where available.
   bool disable_accelerated_video_decode = false;
 
-  // Disables hardware acceleration of video decode, where available.
+  // Disables hardware acceleration of video encode, where available.
   bool disable_accelerated_video_encode = false;
 
   // Causes the GPU process to display a dialog on launch.
@@ -252,9 +252,16 @@ struct GPU_EXPORT GpuPreferences {
   // Enable the WebGPU command buffer.
   bool enable_webgpu = false;
 
+  // Enable usage of SPIR-V with WebGPU. This is unsafe since SPIR-V from the
+  // renderer process isn't fully validated.
+  bool enable_webgpu_spirv = false;
+
   // Enable validation layers in Dawn backends.
   DawnBackendValidationLevel enable_dawn_backend_validation =
       DawnBackendValidationLevel::kDisabled;
+
+  // Force the use of the WebGPU/Compat (GLES) backend for all WebGPU content.
+  bool force_webgpu_compat = false;
 
   // The Dawn features(toggles) enabled on the creation of Dawn devices.
   std::vector<std::string> enabled_dawn_features_list;

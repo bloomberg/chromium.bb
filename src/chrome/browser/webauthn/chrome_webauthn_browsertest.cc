@@ -9,6 +9,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/bind.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -46,7 +47,6 @@ class WebAuthnBrowserTest : public InProcessBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
-    InProcessBrowserTest::SetUpCommandLine(command_line);
   }
 
   void SetUpOnMainThread() override {
@@ -396,7 +396,13 @@ class WebAuthnCableSecondFactor : public WebAuthnBrowserTest {
   AuthenticatorRequestDialogModel* model_ = nullptr;
 };
 
-IN_PROC_BROWSER_TEST_F(WebAuthnCableSecondFactor, Test) {
+// TODO(https://crbug.com/1219708): this test is flaky on Mac.
+#if defined(OS_MAC)
+#define MAYBE_Test DISABLED_Test
+#else
+#define MAYBE_Test Test
+#endif
+IN_PROC_BROWSER_TEST_F(WebAuthnCableSecondFactor, MAYBE_Test) {
   DelegateObserver observer(this);
   ChromeAuthenticatorRequestDelegate::SetGlobalObserverForTesting(&observer);
   content::AuthenticatorEnvironment::GetInstance()

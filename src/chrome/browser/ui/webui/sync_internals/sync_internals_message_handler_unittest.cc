@@ -10,14 +10,13 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/sync/driver/fake_sync_service.h"
 #include "components/sync/driver/sync_internals_util.h"
 #include "components/sync/driver/sync_service.h"
-#include "components/sync/js/js_test_util.h"
 #include "components/sync/model/type_entities_count.h"
 #include "components/sync_user_events/fake_user_event_service.h"
 #include "content/public/browser/site_instance.h"
@@ -54,10 +53,6 @@ class TestSyncService : public syncer::FakeSyncService {
     ++remove_observer_count_;
   }
 
-  base::WeakPtr<syncer::JsController> GetJsController() override {
-    return js_controller_.AsWeakPtr();
-  }
-
   void GetAllNodesForDebugging(
       base::OnceCallback<void(std::unique_ptr<base::ListValue>)> callback)
       override {
@@ -81,7 +76,6 @@ class TestSyncService : public syncer::FakeSyncService {
  private:
   int add_observer_count_ = 0;
   int remove_observer_count_ = 0;
-  syncer::MockJsController js_controller_;
   base::OnceCallback<void(std::unique_ptr<base::ListValue>)>
       get_all_nodes_callback_;
 };
@@ -108,7 +102,7 @@ class SyncInternalsMessageHandlerTest : public ChromeRenderViewHostTestHarness {
 
     web_ui_.set_web_contents(web_contents());
     test_sync_service_ = static_cast<TestSyncService*>(
-        ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+        SyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile(), base::BindRepeating(&BuildTestSyncService)));
     fake_user_event_service_ = static_cast<FakeUserEventService*>(
         browser_sync::UserEventServiceFactory::GetInstance()
@@ -240,7 +234,7 @@ TEST_F(SyncInternalsMessageHandlerTest, AddRemoveObserversDisallowJavascript) {
 
 TEST_F(SyncInternalsMessageHandlerTest, AddRemoveObserversSyncDisabled) {
   // Simulate completely disabling sync by flag or other mechanism.
-  ProfileSyncServiceFactory::GetInstance()->SetTestingFactory(
+  SyncServiceFactory::GetInstance()->SetTestingFactory(
       profile(), BrowserContextKeyedServiceFactory::TestingFactory());
 
   ListValue empty_list;
@@ -287,7 +281,7 @@ TEST_F(SyncInternalsMessageHandlerTest, SendAboutInfo) {
 
 TEST_F(SyncInternalsMessageHandlerTest, SendAboutInfoSyncDisabled) {
   // Simulate completely disabling sync by flag or other mechanism.
-  ProfileSyncServiceFactory::GetInstance()->SetTestingFactory(
+  SyncServiceFactory::GetInstance()->SetTestingFactory(
       profile(), BrowserContextKeyedServiceFactory::TestingFactory());
 
   handler()->AllowJavascriptForTesting();

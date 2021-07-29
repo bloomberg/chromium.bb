@@ -37,6 +37,7 @@ import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.layouts.animation.CompositorAnimationHandler;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuTestSupport;
@@ -63,7 +64,7 @@ public class TabbedAppMenuTest {
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
     @Rule
     public ChromeRenderTestRule mRenderTestRule =
-            ChromeRenderTestRule.Builder.withPublicCorpus().build();
+            ChromeRenderTestRule.Builder.withPublicCorpus().setRevision(1).build();
 
     private static final String TEST_URL = UrlUtils.encodeHtmlDataUri("<html>foo</html>");
     private static final String TEST_URL2 = UrlUtils.encodeHtmlDataUri("<html>bar</html>");
@@ -78,6 +79,8 @@ public class TabbedAppMenuTest {
     public void setUp() {
         // We need list selection; ensure we are not in touch mode.
         InstrumentationRegistry.getInstrumentation().setInTouchMode(false);
+
+        CompositorAnimationHandler.setTestingMode(true);
 
         mActivityTestRule.startMainActivityWithURL(TEST_URL);
 
@@ -96,6 +99,8 @@ public class TabbedAppMenuTest {
     @After
     public void tearDown() {
         ActivityTestUtils.clearActivityOrientation(mActivityTestRule.getActivity());
+
+        CompositorAnimationHandler.setTestingMode(false);
     }
 
     /**

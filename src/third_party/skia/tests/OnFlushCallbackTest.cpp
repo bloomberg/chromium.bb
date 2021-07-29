@@ -68,7 +68,7 @@ public:
 
     const char* name() const override { return "NonAARectOp"; }
 
-    void visitProxies(const VisitProxyFunc& func) const override {
+    void visitProxies(const GrVisitProxyFunc& func) const override {
         if (fProgramInfo) {
             fProgramInfo->visitFPProxies(func);
         } else {
@@ -101,8 +101,9 @@ private:
     void onCreateProgramInfo(const GrCaps* caps,
                              SkArenaAlloc* arena,
                              const GrSurfaceProxyView& writeView,
+                             bool usesMSAASurface,
                              GrAppliedClip&& appliedClip,
-                             const GrXferProcessor::DstProxyView& dstProxyView,
+                             const GrDstProxyView& dstProxyView,
                              GrXferBarrierFlags renderPassXferBarriers,
                              GrLoadOp colorLoadOp) override {
         using namespace GrDefaultGeoProcFactory;
@@ -124,7 +125,7 @@ private:
                                                  renderPassXferBarriers, colorLoadOp);
     }
 
-    void onPrepareDraws(Target* target) override {
+    void onPrepareDraws(GrMeshDrawTarget* target) override {
 
         // The vertex attrib order is always pos, color, local coords.
         static const int kColorOffset = sizeof(SkPoint);
@@ -388,7 +389,7 @@ public:
         //    9 refs from the 9 AtlasedRectOps
         // The backing GrSurface should have only 1 though bc there is only one proxy
         CheckSingleThreadedProxyRefs(fReporter, fAtlasView.proxy(), 10, 1);
-        auto rtc = resourceProvider->makeRenderTargetContext(
+        auto rtc = resourceProvider->makeSurfaceDrawContext(
                 fAtlasView.refProxy(), fAtlasView.origin(), GrColorType::kRGBA_8888, nullptr,
                 SkSurfaceProps());
 

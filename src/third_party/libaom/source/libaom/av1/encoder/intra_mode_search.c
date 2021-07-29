@@ -85,59 +85,6 @@ static const uint16_t av1_derived_chroma_intra_mode_used_flag[INTRA_MODES] = {
 };
 /*!\endcond */
 
-/*!\brief Calculate the rdcost of a given luma intra angle
- *
- * \ingroup intra_mode_search
- * \callergraph
- * This function runs rd calculation for a given luma intra prediction angle.
- * This is used to select the best angle delta.
- *
- * \return Returns the rdcost of the angle and updates the mbmi if the
- * new rdcost is better.
- */
-static int64_t calc_rd_given_intra_angle(
-    const AV1_COMP *const cpi, MACROBLOCK *x, BLOCK_SIZE bsize, int mode_cost,
-    int64_t best_rd_in, int8_t angle_delta, int max_angle_delta, int *rate,
-    RD_STATS *rd_stats, int *best_angle_delta, TX_SIZE *best_tx_size,
-    int64_t *best_rd, int64_t *best_model_rd, uint8_t *best_tx_type_map,
-    uint8_t *best_blk_skip, int skip_model_rd) {
-  RD_STATS tokenonly_rd_stats;
-  int64_t this_rd;
-  MACROBLOCKD *xd = &x->e_mbd;
-  MB_MODE_INFO *mbmi = xd->mi[0];
-  const int n4 = bsize_to_num_blk(bsize);
-  assert(!is_inter_block(mbmi));
-  mbmi->angle_delta[PLANE_TYPE_Y] = angle_delta;
-  if (!skip_model_rd) {
-    if (model_intra_yrd_and_prune(cpi, x, bsize, best_model_rd)) {
-      return INT64_MAX;
-    }
-  }
-  av1_pick_uniform_tx_size_type_yrd(cpi, x, &tokenonly_rd_stats, bsize,
-                                    best_rd_in);
-  if (tokenonly_rd_stats.rate == INT_MAX) return INT64_MAX;
-
-  int this_rate =
-      mode_cost + tokenonly_rd_stats.rate +
-      x->mode_costs
-          .angle_delta_cost[mbmi->mode - V_PRED][max_angle_delta + angle_delta];
-  this_rd = RDCOST(x->rdmult, this_rate, tokenonly_rd_stats.dist);
-
-  if (this_rd < *best_rd) {
-    memcpy(best_blk_skip, x->txfm_search_info.blk_skip,
-           sizeof(best_blk_skip[0]) * n4);
-    av1_copy_array(best_tx_type_map, xd->tx_type_map, n4);
-    *best_rd = this_rd;
-    *best_angle_delta = mbmi->angle_delta[PLANE_TYPE_Y];
-    *best_tx_size = mbmi->tx_size;
-    *rate = this_rate;
-    rd_stats->rate = tokenonly_rd_stats.rate;
-    rd_stats->dist = tokenonly_rd_stats.dist;
-    rd_stats->skip_txfm = tokenonly_rd_stats.skip_txfm;
-  }
-  return this_rd;
-}
-
 /*!\brief Search for the best filter_intra mode when coding intra frame.
  *
  * \ingroup intra_mode_search
@@ -291,6 +238,42 @@ void av1_count_colors_highbd(const uint8_t *src8, int stride, int rows,
     }
     *num_colors = n;
   }
+}
+
+void set_y_mode_and_delta_angle(const int mode_idx, MB_MODE_INFO *const mbmi) {
+  if (mode_idx < INTRA_MODE_END) {
+    mbmi->mode = intra_rd_search_mode_order[mode_idx];
+    mbmi->angle_delta[PLANE_TYPE_Y] = 0;
+  } else {
+    mbmi->mode = (mode_idx - INTRA_MODE_END) / (MAX_ANGLE_DELTA * 2) + V_PRED;
+    int angle_delta = (mode_idx - INTRA_MODE_END) % (MAX_ANGLE_DELTA * 2);
+    mbmi->angle_delta[PLANE_TYPE_Y] =
+        (angle_delta < 3 ? (angle_delta - 3) : (angle_delta - 2));
+  }
+}
+
+int prune_intra_y_mode(int64_t this_model_rd, int64_t *best_model_rd,
+                       int64_t top_intra_model_rd[], int model_cnt_allowed) {
+  const double thresh_best = 1.50;
+  const double thresh_top = 1.00;
+  for (int i = 0; i < model_cnt_allowed; i++) {
+    if (this_model_rd < top_intra_model_rd[i]) {
+      for (int j = model_cnt_allowed - 1; j > i; j--) {
+        top_intra_model_rd[j] = top_intra_model_rd[j - 1];
+      }
+      top_intra_model_rd[i] = this_model_rd;
+      break;
+    }
+  }
+  if (top_intra_model_rd[model_cnt_allowed - 1] != INT64_MAX &&
+      this_model_rd > thresh_top * top_intra_model_rd[model_cnt_allowed - 1])
+    return 1;
+
+  if (this_model_rd != INT64_MAX &&
+      this_model_rd > thresh_best * (*best_model_rd))
+    return 1;
+  if (this_model_rd < *best_model_rd) *best_model_rd = this_model_rd;
+  return 0;
 }
 
 // Run RD calculation with given chroma intra prediction angle., and return
@@ -633,6 +616,9 @@ int64_t av1_rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 
     if (is_diagonal_mode && !cpi->oxcf.intra_mode_cfg.enable_diagonal_intra)
       continue;
+    if (is_directional_mode &&
+        !cpi->oxcf.intra_mode_cfg.enable_directional_intra)
+      continue;
 
     if (!(cpi->sf.intra_sf.intra_uv_mode_mask[txsize_sqr_up_map[max_tx_size]] &
           (1 << mode)))
@@ -744,8 +730,7 @@ int av1_search_palette_mode(IntraModeSearchState *intra_search_state,
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *const xd = &x->e_mbd;
   int rate2 = 0;
-  int64_t distortion2 = 0, best_rd_palette = best_rd, this_rd,
-          best_model_rd_palette = INT64_MAX;
+  int64_t distortion2 = 0, best_rd_palette = best_rd, this_rd;
   int skippable = 0;
   uint8_t *const best_palette_color_map =
       x->palette_buffer->best_palette_color_map;
@@ -767,11 +752,11 @@ int av1_search_palette_mode(IntraModeSearchState *intra_search_state,
 
   RD_STATS rd_stats_y;
   av1_invalid_rd_stats(&rd_stats_y);
-  av1_rd_pick_palette_intra_sby(
-      cpi, x, bsize, intra_mode_cost[DC_PRED], &best_mbmi_palette,
-      best_palette_color_map, &best_rd_palette, &best_model_rd_palette,
-      &rd_stats_y.rate, NULL, &rd_stats_y.dist, &rd_stats_y.skip_txfm, NULL,
-      ctx, best_blk_skip, best_tx_type_map);
+  av1_rd_pick_palette_intra_sby(cpi, x, bsize, intra_mode_cost[DC_PRED],
+                                &best_mbmi_palette, best_palette_color_map,
+                                &best_rd_palette, &rd_stats_y.rate, NULL,
+                                &rd_stats_y.dist, &rd_stats_y.skip_txfm, NULL,
+                                ctx, best_blk_skip, best_tx_type_map);
   if (rd_stats_y.rate == INT_MAX || pmi->palette_size[0] == 0) {
     this_rd_cost->rdcost = INT64_MAX;
     return skippable;
@@ -877,81 +862,6 @@ static AOM_INLINE int intra_block_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
   return 0;
 }
 
-/*!\brief Search for the best angle delta for luma prediction
- *
- * \ingroup intra_mode_search
- * \callergraph
- * Given a luma directional intra prediction mode, this function will try to
- * estimate the best delta_angle.
- *
- * \return Returns the new rdcost of the best intra angle.
- */
-static int64_t rd_pick_intra_angle_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
-                                       int *rate, RD_STATS *rd_stats,
-                                       BLOCK_SIZE bsize, int mode_cost,
-                                       int64_t best_rd, int64_t *best_model_rd,
-                                       int skip_model_rd_for_zero_deg) {
-  MACROBLOCKD *xd = &x->e_mbd;
-  MB_MODE_INFO *mbmi = xd->mi[0];
-  assert(!is_inter_block(mbmi));
-
-  int best_angle_delta = 0;
-  int64_t rd_cost[2 * (MAX_ANGLE_DELTA + 2)];
-  TX_SIZE best_tx_size = mbmi->tx_size;
-  uint8_t best_blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE];
-  uint8_t best_tx_type_map[MAX_MIB_SIZE * MAX_MIB_SIZE];
-
-  for (int i = 0; i < 2 * (MAX_ANGLE_DELTA + 2); ++i) rd_cost[i] = INT64_MAX;
-
-  int first_try = 1;
-  for (int angle_delta = 0; angle_delta <= MAX_ANGLE_DELTA; angle_delta += 2) {
-    for (int i = 0; i < 2; ++i) {
-      const int64_t best_rd_in =
-          (best_rd == INT64_MAX) ? INT64_MAX
-                                 : (best_rd + (best_rd >> (first_try ? 3 : 5)));
-      const int64_t this_rd = calc_rd_given_intra_angle(
-          cpi, x, bsize, mode_cost, best_rd_in, (1 - 2 * i) * angle_delta,
-          MAX_ANGLE_DELTA, rate, rd_stats, &best_angle_delta, &best_tx_size,
-          &best_rd, best_model_rd, best_tx_type_map, best_blk_skip,
-          (skip_model_rd_for_zero_deg & !angle_delta));
-      rd_cost[2 * angle_delta + i] = this_rd;
-      if (first_try && this_rd == INT64_MAX) return best_rd;
-      first_try = 0;
-      if (angle_delta == 0) {
-        rd_cost[1] = this_rd;
-        break;
-      }
-    }
-  }
-
-  assert(best_rd != INT64_MAX);
-  for (int angle_delta = 1; angle_delta <= MAX_ANGLE_DELTA; angle_delta += 2) {
-    for (int i = 0; i < 2; ++i) {
-      int skip_search = 0;
-      const int64_t rd_thresh = best_rd + (best_rd >> 5);
-      if (rd_cost[2 * (angle_delta + 1) + i] > rd_thresh &&
-          rd_cost[2 * (angle_delta - 1) + i] > rd_thresh)
-        skip_search = 1;
-      if (!skip_search) {
-        calc_rd_given_intra_angle(
-            cpi, x, bsize, mode_cost, best_rd, (1 - 2 * i) * angle_delta,
-            MAX_ANGLE_DELTA, rate, rd_stats, &best_angle_delta, &best_tx_size,
-            &best_rd, best_model_rd, best_tx_type_map, best_blk_skip, 0);
-      }
-    }
-  }
-
-  if (rd_stats->rate != INT_MAX) {
-    mbmi->tx_size = best_tx_size;
-    mbmi->angle_delta[PLANE_TYPE_Y] = best_angle_delta;
-    const int n4 = bsize_to_num_blk(bsize);
-    memcpy(x->txfm_search_info.blk_skip, best_blk_skip,
-           sizeof(best_blk_skip[0]) * n4);
-    av1_copy_array(xd->tx_type_map, best_tx_type_map, n4);
-  }
-  return best_rd;
-}
-
 /*!\brief Search for the best filter_intra mode when coding inter frame.
  *
  * \ingroup intra_mode_search
@@ -1025,7 +935,9 @@ int av1_handle_intra_y_mode(IntraModeSearchState *intra_search_state,
                             const AV1_COMP *cpi, MACROBLOCK *x,
                             BLOCK_SIZE bsize, unsigned int ref_frame_cost,
                             const PICK_MODE_CONTEXT *ctx, RD_STATS *rd_stats_y,
-                            int64_t best_rd, int *mode_cost_y, int64_t *rd_y) {
+                            int64_t best_rd, int *mode_cost_y, int64_t *rd_y,
+                            int64_t *best_model_rd,
+                            int64_t top_intra_model_rd[]) {
   const AV1_COMMON *cm = &cpi->common;
   const SPEED_FEATURES *const sf = &cpi->sf;
   MACROBLOCKD *const xd = &x->e_mbd;
@@ -1065,18 +977,15 @@ int av1_handle_intra_y_mode(IntraModeSearchState *intra_search_state,
       intra_search_state->dir_mode_skip_mask_ready = 1;
     }
     if (intra_search_state->directional_mode_skip_mask[mode]) return 0;
-    av1_init_rd_stats(rd_stats_y);
-    rd_stats_y->rate = INT_MAX;
-    int64_t model_rd = INT64_MAX;
-    int rate_dummy;
-    rd_pick_intra_angle_sby(cpi, x, &rate_dummy, rd_stats_y, bsize, mode_cost,
-                            best_rd, &model_rd, 0);
-
-  } else {
-    av1_init_rd_stats(rd_stats_y);
-    mbmi->angle_delta[PLANE_TYPE_Y] = 0;
-    av1_pick_uniform_tx_size_type_yrd(cpi, x, rd_stats_y, bsize, best_rd);
   }
+  const TX_SIZE tx_size = AOMMIN(TX_32X32, max_txsize_lookup[bsize]);
+  const int64_t this_model_rd =
+      intra_model_rd(&cpi->common, x, 0, bsize, tx_size, /*use_hadamard=*/1);
+  if (prune_intra_y_mode(this_model_rd, best_model_rd, top_intra_model_rd,
+                         sf->intra_sf.top_intra_model_count_allowed))
+    return 0;
+  av1_init_rd_stats(rd_stats_y);
+  av1_pick_uniform_tx_size_type_yrd(cpi, x, rd_stats_y, bsize, best_rd);
 
   // Pick filter intra modes.
   if (mode == DC_PRED && av1_filter_intra_allowed_bsize(cm, bsize)) {
@@ -1227,15 +1136,23 @@ int64_t av1_rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   x->winner_mode_count = 0;
 
   // Searches the intra-modes except for intrabc, palette, and filter_intra.
-  for (int mode_idx = INTRA_MODE_START; mode_idx < INTRA_MODE_END; ++mode_idx) {
+  int64_t top_intra_model_rd[TOP_INTRA_MODEL_COUNT];
+  for (int i = 0; i < TOP_INTRA_MODEL_COUNT; i++) {
+    top_intra_model_rd[i] = INT64_MAX;
+  }
+  for (int mode_idx = INTRA_MODE_START; mode_idx < LUMA_MODE_COUNT;
+       ++mode_idx) {
+    set_y_mode_and_delta_angle(mode_idx, mbmi);
     RD_STATS this_rd_stats;
     int this_rate, this_rate_tokenonly, s;
     int is_diagonal_mode;
     int64_t this_distortion, this_rd;
-    mbmi->mode = intra_rd_search_mode_order[mode_idx];
 
     is_diagonal_mode = av1_is_diagonal_mode(mbmi->mode);
     if (is_diagonal_mode && !cpi->oxcf.intra_mode_cfg.enable_diagonal_intra)
+      continue;
+    if (av1_is_directional_mode(mbmi->mode) &&
+        !cpi->oxcf.intra_mode_cfg.enable_directional_intra)
       continue;
 
     // The smooth prediction mode appears to be more frequently picked
@@ -1259,7 +1176,6 @@ int64_t av1_rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     if (!cpi->oxcf.intra_mode_cfg.enable_paeth_intra &&
         mbmi->mode == PAETH_PRED)
       continue;
-    mbmi->angle_delta[PLANE_TYPE_Y] = 0;
 
     // Skip the evaluation of modes that do not match with the winner mode in
     // x->mb_mode_cache.
@@ -1267,24 +1183,27 @@ int64_t av1_rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 
     is_directional_mode = av1_is_directional_mode(mbmi->mode);
     if (is_directional_mode && directional_mode_skip_mask[mbmi->mode]) continue;
-    if (is_directional_mode && av1_use_angle_delta(bsize) &&
-        cpi->oxcf.intra_mode_cfg.enable_angle_delta) {
-      // Searches through the best angle_delta if this option is available.
-      this_rd_stats.rate = INT_MAX;
-      rd_pick_intra_angle_sby(cpi, x, &this_rate, &this_rd_stats, bsize,
-                              bmode_costs[mbmi->mode], best_rd, &best_model_rd,
-                              1);
-    } else {
-      if (model_intra_yrd_and_prune(cpi, x, bsize, &best_model_rd)) {
-        continue;
-      }
+    if (is_directional_mode && av1_use_angle_delta(bsize) == 0 &&
+        mbmi->angle_delta[PLANE_TYPE_Y] != 0)
+      continue;
 
-      // Builds the actual prediction. The prediction from
-      // model_intra_yrd_and_prune was just an estimation that did not take into
-      // account the effect of txfm pipeline, so we need to redo it for real
-      // here.
-      av1_pick_uniform_tx_size_type_yrd(cpi, x, &this_rd_stats, bsize, best_rd);
-    }
+    // Use intra_y_mode_mask speed feature to skip intra mode evaluation.
+    if (!(cpi->sf.intra_sf.intra_y_mode_mask[max_txsize_lookup[bsize]] &
+          (1 << mbmi->mode)))
+      continue;
+
+    const TX_SIZE tx_size = AOMMIN(TX_32X32, max_txsize_lookup[bsize]);
+    const int64_t this_model_rd =
+        intra_model_rd(&cpi->common, x, 0, bsize, tx_size, /*use_hadamard=*/1);
+    if (prune_intra_y_mode(this_model_rd, &best_model_rd, top_intra_model_rd,
+                           cpi->sf.intra_sf.top_intra_model_count_allowed))
+      continue;
+
+    // Builds the actual prediction. The prediction from
+    // model_intra_yrd_and_prune was just an estimation that did not take into
+    // account the effect of txfm pipeline, so we need to redo it for real
+    // here.
+    av1_pick_uniform_tx_size_type_yrd(cpi, x, &this_rd_stats, bsize, best_rd);
     this_rate_tokenonly = this_rd_stats.rate;
     this_distortion = this_rd_stats.dist;
     s = this_rd_stats.skip_txfm;
@@ -1327,8 +1246,8 @@ int64_t av1_rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   if (try_palette) {
     av1_rd_pick_palette_intra_sby(
         cpi, x, bsize, bmode_costs[DC_PRED], &best_mbmi, best_palette_color_map,
-        &best_rd, &best_model_rd, rate, rate_tokenonly, distortion, skippable,
-        &beat_best_rd, ctx, ctx->blk_skip, ctx->tx_type_map);
+        &best_rd, rate, rate_tokenonly, distortion, skippable, &beat_best_rd,
+        ctx, ctx->blk_skip, ctx->tx_type_map);
   }
 
   // Searches filter_intra

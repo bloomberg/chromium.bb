@@ -6,6 +6,7 @@
 
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_constants.h"
+#import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_app_interface.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_constants.h"
@@ -130,9 +131,10 @@ void CloseSigninManagedAccountDialogIfAny(FakeChromeIdentity* fakeIdentity) {
 
 + (void)tapSettingsLink {
   [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kAdvancedSigninSettingsLinkIdentifier)]
-      performAction:grey_tap()];
+      selectElementWithMatcher:grey_allOf(grey_accessibilityLabel(@"settings"),
+                                          grey_accessibilityTrait(
+                                              UIAccessibilityTraitLink),
+                                          nil)] performAction:grey_tap()];
 }
 
 + (void)tapSigninConfirmationDialog {
@@ -155,12 +157,6 @@ void CloseSigninManagedAccountDialogIfAny(FakeChromeIdentity* fakeIdentity) {
       assertWithMatcher:chrome_test_util::ContentViewSmallerThanScrollView()
                   error:&error];
   if (error) {
-    // If the consent is bigger than the scroll view, the primary button should
-    // be "MORE".
-    [[EarlGrey selectElementWithMatcher:
-                   chrome_test_util::ButtonWithAccessibilityLabelId(
-                       IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_SCROLL_BUTTON)]
-        assertWithMatcher:grey_notNil()];
     [[EarlGrey selectElementWithMatcher:confirmationScrollViewMatcher]
         performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
   }
@@ -257,6 +253,17 @@ void CloseSigninManagedAccountDialogIfAny(FakeChromeIdentity* fakeIdentity) {
       performAction:grey_tap()];
 }
 
++ (void)openMyGoogleDialogWithFakeIdentity:(FakeChromeIdentity*)fakeIdentity {
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(
+                                          fakeIdentity.userEmail)]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:
+                 ButtonWithAccessibilityLabel(l10n_util::GetNSString(
+                     IDS_IOS_MANAGE_YOUR_GOOGLE_ACCOUNT_TITLE))]
+      performAction:grey_tap()];
+  [ChromeEarlGreyUI waitForAppToIdle];
+}
+
 + (void)tapRemoveAccountFromDeviceWithFakeIdentity:
     (FakeChromeIdentity*)fakeIdentity {
   [self openRemoveAccountConfirmationDialogWithFakeIdentity:fakeIdentity];
@@ -301,6 +308,14 @@ void CloseSigninManagedAccountDialogIfAny(FakeChromeIdentity* fakeIdentity) {
                          kRecentTabsTableViewControllerAccessibilityIdentifier),
                      grey_sufficientlyVisible(), nil)]
       performAction:grey_tap()];
+}
+
++ (void)verifyWebSigninIsVisible:(BOOL)isVisible {
+  id<GREYMatcher> visibilityMatcher =
+      isVisible ? grey_sufficientlyVisible() : grey_notVisible();
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kWebSigninAccessibilityIdentifier)]
+      assertWithMatcher:visibilityMatcher];
 }
 
 #pragma mark - Private

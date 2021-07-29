@@ -7,12 +7,13 @@
 #include <string>
 #include <utility>
 
-#include "ash/public/cpp/app_types.h"
+#include "ash/public/cpp/app_types_util.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
@@ -36,6 +37,10 @@ constexpr base::TimeDelta kUmaMinTime = base::TimeDelta::FromMilliseconds(1);
 constexpr base::TimeDelta kUmaMaxTime = base::TimeDelta::FromSeconds(60);
 constexpr int kUmaNumBuckets = 50;
 constexpr int kUmaPriAbiMigMaxFailedAttempts = 10;
+constexpr int kUmaFixupDirectoriesCountMin = 0;
+constexpr int kUmaFixupDirectoriesCountMax = 5000000;
+constexpr int kUmaFixupAppsCountMin = 0;
+constexpr int kUmaFixupAppsCountMax = 10000;
 
 constexpr base::TimeDelta kRequestProcessListPeriod =
     base::TimeDelta::FromMinutes(5);
@@ -53,6 +58,13 @@ constexpr char kAppTypePlayStore[] = "PlayStore";
 constexpr char kAppTypeSystemServer[] = "SystemServer";
 constexpr char kAppTypeSystem[] = "SystemApp";
 constexpr char kAppTypeOther[] = "Other";
+
+// Logs UMA enum values to facilitate finding feedback reports in Xamine.
+template <typename T>
+void LogStabilityUmaEnum(const std::string& name, T sample) {
+  base::UmaHistogramEnumeration(name, sample);
+  VLOG(1) << name << ": " << static_cast<std::underlying_type_t<T>>(sample);
+}
 
 std::string AnrSourceToTableName(mojom::AnrSource value) {
   switch (value) {
@@ -88,6 +100,20 @@ std::string BootTypeToString(mojom::BootType boot_type) {
       return ".FirstBootAfterUpdate";
     case mojom::BootType::REGULAR_BOOT:
       return ".RegularBoot";
+  }
+  NOTREACHED();
+  return "";
+}
+
+const char* LowLatencyStylusLibraryTypeToString(
+    mojom::LowLatencyStylusLibraryType library_type) {
+  switch (library_type) {
+    case mojom::LowLatencyStylusLibraryType::kUnsupported:
+      break;
+    case mojom::LowLatencyStylusLibraryType::kCPU:
+      return ".CPU";
+    case mojom::LowLatencyStylusLibraryType::kGPU:
+      return ".GPU";
   }
   NOTREACHED();
   return "";
@@ -343,7 +369,7 @@ void ArcMetricsService::NotifyOOMKillCount(unsigned long count) {
 void ArcMetricsService::ReportArcCorePriAbiMigEvent(
     mojom::ArcCorePriAbiMigEvent event_type) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  UMA_HISTOGRAM_ENUMERATION("Arc.AbiMigration.Event", event_type);
+  LogStabilityUmaEnum("Arc.AbiMigration.Event", event_type);
 }
 
 void ArcMetricsService::ReportArcCorePriAbiMigFailedTries(
@@ -397,6 +423,16 @@ void ArcMetricsService::ReportArcCorePriAbiMigBootTime(
                      weak_ptr_factory_.GetWeakPtr(), durationTicks));
 }
 
+void ArcMetricsService::ReportArcSystemHealthUpgrade(base::TimeDelta duration,
+                                                     bool packages_deleted) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  base::UmaHistogramCustomTimes("Arc.SystemHealth.Upgrade.TimeDelta", duration,
+                                kUmaMinTime, kUmaMaxTime, kUmaNumBuckets);
+
+  base::UmaHistogramBoolean("Arc.SystemHealth.Upgrade.PackagesDeleted",
+                            packages_deleted);
+}
+
 void ArcMetricsService::ReportClipboardDragDropEvent(
     mojom::ArcClipboardDragDropEvent event_type) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -406,9 +442,48 @@ void ArcMetricsService::ReportClipboardDragDropEvent(
 void ArcMetricsService::ReportAnr(mojom::AnrPtr anr) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   base::UmaHistogramEnumeration("Arc.Anr.Overall", anr->type);
+  LogStabilityUmaEnum("Arc.Anr." + AnrSourceToTableName(anr->source),
+                      anr->type);
+}
 
-  base::UmaHistogramEnumeration("Arc.Anr." + AnrSourceToTableName(anr->source),
-                                anr->type);
+void ArcMetricsService::ReportLowLatencyStylusLibApiUsage(
+    mojom::LowLatencyStylusLibApiId api_id) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  UMA_HISTOGRAM_ENUMERATION("Arc.LowLatencyStylusLibraryApisCounter", api_id);
+}
+
+void ArcMetricsService::ReportLowLatencyStylusLibPredictionTarget(
+    mojom::LowLatencyStylusLibPredictionTargetPtr prediction_target) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  base::UmaHistogramCounts100(
+      base::StrCat(
+          {"Arc.LowLatencyStylusLibrary.PredictionTarget",
+           LowLatencyStylusLibraryTypeToString(prediction_target->type)}),
+      prediction_target->target);
+}
+
+void ArcMetricsService::ReportEntireFixupMetrics(base::TimeDelta duration,
+                                                 uint32_t number_of_directories,
+                                                 uint32_t number_of_failures) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  base::UmaHistogramLongTimes("Arc.Fixup.Entire.Duration", duration);
+  base::UmaHistogramCustomCounts("Arc.Fixup.Entire.Directories",
+                                 number_of_directories,
+                                 kUmaFixupDirectoriesCountMin,
+                                 kUmaFixupDirectoriesCountMax, kUmaNumBuckets);
+  base::UmaHistogramCustomCounts("Arc.Fixup.Entire.Failures",
+                                 number_of_failures, kUmaFixupAppsCountMin,
+                                 kUmaFixupAppsCountMax, kUmaNumBuckets);
+}
+void ArcMetricsService::ReportPerAppFixupMetrics(
+    base::TimeDelta duration,
+    uint32_t number_of_directories) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  base::UmaHistogramLongTimes("Arc.Fixup.PerApp.Duration", duration);
+  base::UmaHistogramCustomCounts("Arc.Fixup.PerApp.Directories",
+                                 number_of_directories,
+                                 kUmaFixupDirectoriesCountMin,
+                                 kUmaFixupDirectoriesCountMax, kUmaNumBuckets);
 }
 
 void ArcMetricsService::OnWindowActivated(
@@ -524,9 +599,9 @@ ArcMetricsService::IntentHelperObserver::~IntentHelperObserver() = default;
 void ArcMetricsService::IntentHelperObserver::OnConnectionClosed() {
   // Ignore closed connections due to the container shutting down.
   if (!arc_bridge_service_observer_->arc_bridge_closing_) {
-    base::UmaHistogramEnumeration(arc_metrics_service_->histogram_namer_.Run(
-                                      "Arc.Session.MojoDisconnection"),
-                                  MojoConnectionType::INTENT_HELPER);
+    LogStabilityUmaEnum(arc_metrics_service_->histogram_namer_.Run(
+                            "Arc.Session.MojoDisconnection"),
+                        MojoConnectionType::INTENT_HELPER);
   }
 }
 
@@ -541,9 +616,9 @@ ArcMetricsService::AppLauncherObserver::~AppLauncherObserver() = default;
 void ArcMetricsService::AppLauncherObserver::OnConnectionClosed() {
   // Ignore closed connections due to the container shutting down.
   if (!arc_bridge_service_observer_->arc_bridge_closing_) {
-    base::UmaHistogramEnumeration(arc_metrics_service_->histogram_namer_.Run(
-                                      "Arc.Session.MojoDisconnection"),
-                                  MojoConnectionType::APP_LAUNCHER);
+    LogStabilityUmaEnum(arc_metrics_service_->histogram_namer_.Run(
+                            "Arc.Session.MojoDisconnection"),
+                        MojoConnectionType::APP_LAUNCHER);
   }
 }
 

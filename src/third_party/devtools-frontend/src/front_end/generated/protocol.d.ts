@@ -15,13 +15,15 @@ declare namespace Protocol {
     /** Returns an error message if the request failed. */
     getError(): string|undefined;
   }
+  type OpaqueType<Tag extends string> = {protocolOpaqueTypeTag: Tag};
+  type OpaqueIdentifier<RepresentationType, Tag extends string> = RepresentationType&OpaqueType<Tag>;
 
   export namespace Accessibility {
 
     /**
      * Unique accessibility node identifier.
      */
-    export type AXNodeId = string;
+    export type AXNodeId = OpaqueIdentifier<string, 'Protocol.Accessibility.AXNodeId'>;
 
     /**
      * Enum of possible property types.
@@ -744,6 +746,7 @@ declare namespace Protocol {
       ExcludeSameSiteNoneInsecure = 'ExcludeSameSiteNoneInsecure',
       ExcludeSameSiteLax = 'ExcludeSameSiteLax',
       ExcludeSameSiteStrict = 'ExcludeSameSiteStrict',
+      ExcludeInvalidSameParty = 'ExcludeInvalidSameParty',
     }
 
     export const enum SameSiteCookieWarningReason {
@@ -768,7 +771,14 @@ declare namespace Protocol {
      * information without the cookie.
      */
     export interface SameSiteCookieIssueDetails {
-      cookie: AffectedCookie;
+      /**
+       * If AffectedCookie is not set then rawCookieLine contains the raw
+       * Set-Cookie header string. This hints at a problem where the
+       * cookie line is syntactically or semantically malformed in a way
+       * that no valid cookie could be created.
+       */
+      cookie?: AffectedCookie;
+      rawCookieLine?: string;
       cookieWarningReasons: SameSiteCookieWarningReason[];
       cookieExclusionReasons: SameSiteCookieExclusionReason[];
       /**
@@ -1028,6 +1038,18 @@ declare namespace Protocol {
       loaderId: Network.LoaderId;
     }
 
+    export interface NavigatorUserAgentIssueDetails {
+      url: string;
+      location?: SourceCodeLocation;
+    }
+
+    export interface WasmCrossOriginModuleSharingIssueDetails {
+      wasmModuleUrl: string;
+      sourceOrigin: string;
+      targetOrigin: string;
+      isWarning: boolean;
+    }
+
     /**
      * A unique identifier for the type of issue. Each type may use one of the
      * optional fields in InspectorIssueDetails to convey more specific
@@ -1045,6 +1067,8 @@ declare namespace Protocol {
       CorsIssue = 'CorsIssue',
       AttributionReportingIssue = 'AttributionReportingIssue',
       QuirksModeIssue = 'QuirksModeIssue',
+      NavigatorUserAgentIssue = 'NavigatorUserAgentIssue',
+      WasmCrossOriginModuleSharingIssue = 'WasmCrossOriginModuleSharingIssue',
     }
 
     /**
@@ -1064,7 +1088,15 @@ declare namespace Protocol {
       corsIssueDetails?: CorsIssueDetails;
       attributionReportingIssueDetails?: AttributionReportingIssueDetails;
       quirksModeIssueDetails?: QuirksModeIssueDetails;
+      navigatorUserAgentIssueDetails?: NavigatorUserAgentIssueDetails;
+      wasmCrossOriginModuleSharingIssue?: WasmCrossOriginModuleSharingIssueDetails;
     }
+
+    /**
+     * A unique id for a DevTools inspector issue. Allows other entities (e.g.
+     * exceptions, CDP message, console messages, etc.) to reference an issue.
+     */
+    export type IssueId = string;
 
     /**
      * An inspector issue reported from the back-end.
@@ -1072,6 +1104,11 @@ declare namespace Protocol {
     export interface InspectorIssue {
       code: InspectorIssueCode;
       details: InspectorIssueDetails;
+      /**
+       * A unique id for this issue. May be omitted if no other entity (e.g.
+       * exception, CDP message, etc.) is referencing this issue.
+       */
+      issueId?: IssueId;
     }
 
     export const enum GetEncodedResponseRequestEncoding {
@@ -1734,7 +1771,9 @@ declare namespace Protocol {
        */
       frameId: Page.FrameId;
       /**
-       * Stylesheet resource URL.
+       * Stylesheet resource URL. Empty if this is a constructed stylesheet created using
+       * new CSSStyleSheet() (but non-empty if this is a constructed sylesheet imported
+       * as a CSS module script).
        */
       sourceURL: string;
       /**
@@ -1774,7 +1813,8 @@ declare namespace Protocol {
        */
       isMutable: boolean;
       /**
-       * Whether this stylesheet is a constructed stylesheet (created using new CSSStyleSheet()).
+       * True if this stylesheet is created through new CSSStyleSheet() or imported as a
+       * CSS module script.
        */
       isConstructed: boolean;
       /**
@@ -1825,6 +1865,11 @@ declare namespace Protocol {
        * starting with the innermost one, going outwards.
        */
       media?: CSSMedia[];
+      /**
+       * Container query list array (for rules involving container queries).
+       * The array enumerates container queries starting with the innermost one, going outwards.
+       */
+      containerQueries?: CSSContainerQuery[];
     }
 
     /**
@@ -2042,6 +2087,29 @@ declare namespace Protocol {
        * Computed length of media query expression (if applicable).
        */
       computedLength?: number;
+    }
+
+    /**
+     * CSS container query rule descriptor.
+     */
+    export interface CSSContainerQuery {
+      /**
+       * Container query text.
+       */
+      text: string;
+      /**
+       * The associated rule header range in the enclosing stylesheet (if
+       * available).
+       */
+      range?: SourceRange;
+      /**
+       * Identifier of the stylesheet containing this object (if exists).
+       */
+      styleSheetId?: StyleSheetId;
+      /**
+       * Optional name for the container.
+       */
+      name?: string;
     }
 
     /**
@@ -2400,6 +2468,19 @@ declare namespace Protocol {
       media: CSSMedia;
     }
 
+    export interface SetContainerQueryTextRequest {
+      styleSheetId: StyleSheetId;
+      range: SourceRange;
+      text: string;
+    }
+
+    export interface SetContainerQueryTextResponse extends ProtocolResponseWithError {
+      /**
+       * The resulting CSS container query rule after modification.
+       */
+      containerQuery: CSSContainerQuery;
+    }
+
     export interface SetRuleSelectorRequest {
       styleSheetId: StyleSheetId;
       range: SourceRange;
@@ -2499,7 +2580,7 @@ declare namespace Protocol {
     /**
      * Unique identifier of the Cache object.
      */
-    export type CacheId = string;
+    export type CacheId = OpaqueIdentifier<string, 'Protocol.CacheStorage.CacheId'>;
 
     /**
      * type of HTTP response cached
@@ -2733,13 +2814,13 @@ declare namespace Protocol {
     /**
      * Unique DOM node identifier.
      */
-    export type NodeId = integer;
+    export type NodeId = OpaqueIdentifier<integer, 'Protocol.DOM.NodeId'>;
 
     /**
      * Unique DOM node identifier used to reference a node that may not have been pushed to the
      * front-end.
      */
-    export type BackendNodeId = integer;
+    export type BackendNodeId = OpaqueIdentifier<integer, 'Protocol.DOM.BackendNodeId'>;
 
     /**
      * Backend node with a friendly name.
@@ -2770,6 +2851,7 @@ declare namespace Protocol {
       TargetText = 'target-text',
       SpellingError = 'spelling-error',
       GrammarError = 'grammar-error',
+      Highlight = 'highlight',
       FirstLineInherited = 'first-line-inherited',
       Scrollbar = 'scrollbar',
       ScrollbarThumb = 'scrollbar-thumb',
@@ -2788,6 +2870,15 @@ declare namespace Protocol {
       UserAgent = 'user-agent',
       Open = 'open',
       Closed = 'closed',
+    }
+
+    /**
+     * Document compatibility mode.
+     */
+    export const enum CompatibilityMode {
+      QuirksMode = 'QuirksMode',
+      LimitedQuirksMode = 'LimitedQuirksMode',
+      NoQuirksMode = 'NoQuirksMode',
     }
 
     /**
@@ -2911,6 +3002,7 @@ declare namespace Protocol {
        * Whether the node is SVG.
        */
       isSVG?: boolean;
+      compatibilityMode?: CompatibilityMode;
     }
 
     /**
@@ -3674,6 +3766,18 @@ declare namespace Protocol {
       backendNodeId: BackendNodeId;
       /**
        * Id of the node at given coordinates, only when enabled and requested document.
+       */
+      nodeId?: NodeId;
+    }
+
+    export interface GetContainerForNodeRequest {
+      nodeId: NodeId;
+      containerName?: string;
+    }
+
+    export interface GetContainerForNodeResponse extends ProtocolResponseWithError {
+      /**
+       * The container node for the given node, or null if not found.
        */
       nodeId?: NodeId;
     }
@@ -6585,7 +6689,7 @@ declare namespace Protocol {
     /**
      * Unique request identifier.
      */
-    export type RequestId = string;
+    export type RequestId = OpaqueIdentifier<string, 'Protocol.Network.RequestId'>;
 
     /**
      * Unique intercepted request identifier.
@@ -6836,6 +6940,11 @@ declare namespace Protocol {
        * passed by the developer (e.g. via "fetch") as understood by the backend.
        */
       trustTokenParams?: TrustTokenParams;
+      /**
+       * True if this resource request is considered to be the 'same site' as the
+       * request correspondinfg to the main frame.
+       */
+      isSameSite?: boolean;
     }
 
     /**
@@ -7710,7 +7819,7 @@ declare namespace Protocol {
 
     export const enum CrossOriginEmbedderPolicyValue {
       None = 'None',
-      CorsOrCredentialless = 'CorsOrCredentialless',
+      Credentialless = 'Credentialless',
       RequireCorp = 'RequireCorp',
     }
 
@@ -8096,17 +8205,6 @@ declare namespace Protocol {
        * Cookies to be set.
        */
       cookies: CookieParam[];
-    }
-
-    export interface SetDataSizeLimitsForTestRequest {
-      /**
-       * Maximum total buffer size.
-       */
-      maxTotalSize: integer;
-      /**
-       * Maximum per-resource size.
-       */
-      maxResourceSize: integer;
     }
 
     export interface SetExtraHTTPHeadersRequest {
@@ -8744,6 +8842,80 @@ declare namespace Protocol {
        */
       issuedTokenCount?: integer;
     }
+
+    /**
+     * Fired once when parsing the .wbn file has succeeded.
+     * The event contains the information about the web bundle contents.
+     */
+    export interface SubresourceWebBundleMetadataReceivedEvent {
+      /**
+       * Request identifier. Used to match this information to another event.
+       */
+      requestId: RequestId;
+      /**
+       * A list of URLs of resources in the subresource Web Bundle.
+       */
+      urls: string[];
+    }
+
+    /**
+     * Fired once when parsing the .wbn file has failed.
+     */
+    export interface SubresourceWebBundleMetadataErrorEvent {
+      /**
+       * Request identifier. Used to match this information to another event.
+       */
+      requestId: RequestId;
+      /**
+       * Error message
+       */
+      errorMessage: string;
+    }
+
+    /**
+     * Fired when handling requests for resources within a .wbn file.
+     * Note: this will only be fired for resources that are requested by the webpage.
+     */
+    export interface SubresourceWebBundleInnerResponseParsedEvent {
+      /**
+       * Request identifier of the subresource request
+       */
+      innerRequestId: RequestId;
+      /**
+       * URL of the subresource resource.
+       */
+      innerRequestURL: string;
+      /**
+       * Bundle request identifier. Used to match this information to another event.
+       * This made be absent in case when the instrumentation was enabled only
+       * after webbundle was parsed.
+       */
+      bundleRequestId?: RequestId;
+    }
+
+    /**
+     * Fired when request for resources within a .wbn file failed.
+     */
+    export interface SubresourceWebBundleInnerResponseErrorEvent {
+      /**
+       * Request identifier of the subresource request
+       */
+      innerRequestId: RequestId;
+      /**
+       * URL of the subresource resource.
+       */
+      innerRequestURL: string;
+      /**
+       * Error message
+       */
+      errorMessage: string;
+      /**
+       * Bundle request identifier. Used to match this information to another event.
+       * This made be absent in case when the instrumentation was enabled only
+       * after webbundle was parsed.
+       */
+      bundleRequestId?: RequestId;
+    }
   }
 
   /**
@@ -9022,6 +9194,10 @@ declare namespace Protocol {
        * The contrast algorithm to use for the contrast ratio (default: aa).
        */
       contrastAlgorithm?: ContrastAlgorithm;
+      /**
+       * The container query container highlight configuration (default: all transparent).
+       */
+      containerQueryContainerHighlightConfig?: ContainerQueryContainerHighlightConfig;
     }
 
     export const enum ColorFormat {
@@ -9101,6 +9277,24 @@ declare namespace Protocol {
        * The content box highlight outline color (default: transparent).
        */
       outlineColor?: DOM.RGBA;
+    }
+
+    export interface ContainerQueryHighlightConfig {
+      /**
+       * A descriptor for the highlight appearance of container query containers.
+       */
+      containerQueryContainerHighlightConfig: ContainerQueryContainerHighlightConfig;
+      /**
+       * Identifier of the container node to highlight.
+       */
+      nodeId: DOM.NodeId;
+    }
+
+    export interface ContainerQueryContainerHighlightConfig {
+      /**
+       * The style of the container border
+       */
+      containerBorder?: LineStyle;
     }
 
     export const enum InspectMode {
@@ -9329,6 +9523,13 @@ declare namespace Protocol {
       scrollSnapHighlightConfigs: ScrollSnapHighlightConfig[];
     }
 
+    export interface SetShowContainerQueryOverlaysRequest {
+      /**
+       * An array of node identifiers and descriptors for the highlight appearance.
+       */
+      containerQueryHighlightConfigs: ContainerQueryHighlightConfig[];
+    }
+
     export interface SetShowPaintRectsRequest {
       /**
        * True for showing paint rectangles
@@ -9423,6 +9624,20 @@ declare namespace Protocol {
       Root = 'root',
     }
 
+    export const enum AdFrameExplanation {
+      ParentIsAd = 'ParentIsAd',
+      CreatedByAdScript = 'CreatedByAdScript',
+      MatchedBlockingRule = 'MatchedBlockingRule',
+    }
+
+    /**
+     * Indicates whether a frame has been identified as an ad and why.
+     */
+    export interface AdFrameStatus {
+      adFrameType: AdFrameType;
+      explanations?: AdFrameExplanation[];
+    }
+
     /**
      * Indicates whether the frame is a secure context and why it is the case.
      */
@@ -9451,11 +9666,12 @@ declare namespace Protocol {
 
     /**
      * All Permissions Policy features. This enum should match the one defined
-     * in renderer/core/feature_policy/feature_policy_features.json5.
+     * in third_party/blink/renderer/core/permissions_policy/permissions_policy_features.json5.
      */
     export const enum PermissionsPolicyFeature {
       Accelerometer = 'accelerometer',
       AmbientLightSensor = 'ambient-light-sensor',
+      AttributionReporting = 'attribution-reporting',
       Autoplay = 'autoplay',
       Camera = 'camera',
       ChDpr = 'ch-dpr',
@@ -9463,9 +9679,11 @@ declare namespace Protocol {
       ChDownlink = 'ch-downlink',
       ChEct = 'ch-ect',
       ChLang = 'ch-lang',
+      ChPrefersColorScheme = 'ch-prefers-color-scheme',
       ChRtt = 'ch-rtt',
       ChUa = 'ch-ua',
       ChUaArch = 'ch-ua-arch',
+      ChUaBitness = 'ch-ua-bitness',
       ChUaPlatform = 'ch-ua-platform',
       ChUaModel = 'ch-ua-model',
       ChUaMobile = 'ch-ua-mobile',
@@ -9475,7 +9693,6 @@ declare namespace Protocol {
       ChWidth = 'ch-width',
       ClipboardRead = 'clipboard-read',
       ClipboardWrite = 'clipboard-write',
-      ConversionMeasurement = 'conversion-measurement',
       CrossOriginIsolated = 'cross-origin-isolated',
       DirectSockets = 'direct-sockets',
       DisplayCapture = 'display-capture',
@@ -9508,6 +9725,7 @@ declare namespace Protocol {
       Usb = 'usb',
       VerticalScroll = 'vertical-scroll',
       WebShare = 'web-share',
+      WindowPlacement = 'window-placement',
       XrSpatialTracking = 'xr-spatial-tracking',
     }
 
@@ -9636,9 +9854,9 @@ declare namespace Protocol {
        */
       unreachableUrl?: string;
       /**
-       * Indicates whether this frame was tagged as an ad.
+       * Indicates whether this frame was tagged as an ad and why.
        */
-      adFrameType?: AdFrameType;
+      adFrameStatus?: AdFrameStatus;
       /**
        * Indicates whether the main document is a secure context and explains why that is the case.
        */
@@ -10063,6 +10281,124 @@ declare namespace Protocol {
       BackForwardCacheRestore = 'BackForwardCacheRestore',
     }
 
+    /**
+     * List of not restored reasons for back-forward cache.
+     */
+    export const enum BackForwardCacheNotRestoredReason {
+      NotMainFrame = 'NotMainFrame',
+      BackForwardCacheDisabled = 'BackForwardCacheDisabled',
+      RelatedActiveContentsExist = 'RelatedActiveContentsExist',
+      HTTPStatusNotOK = 'HTTPStatusNotOK',
+      SchemeNotHTTPOrHTTPS = 'SchemeNotHTTPOrHTTPS',
+      Loading = 'Loading',
+      WasGrantedMediaAccess = 'WasGrantedMediaAccess',
+      DisableForRenderFrameHostCalled = 'DisableForRenderFrameHostCalled',
+      DomainNotAllowed = 'DomainNotAllowed',
+      HTTPMethodNotGET = 'HTTPMethodNotGET',
+      SubframeIsNavigating = 'SubframeIsNavigating',
+      Timeout = 'Timeout',
+      CacheLimit = 'CacheLimit',
+      JavaScriptExecution = 'JavaScriptExecution',
+      RendererProcessKilled = 'RendererProcessKilled',
+      RendererProcessCrashed = 'RendererProcessCrashed',
+      GrantedMediaStreamAccess = 'GrantedMediaStreamAccess',
+      SchedulerTrackedFeatureUsed = 'SchedulerTrackedFeatureUsed',
+      ConflictingBrowsingInstance = 'ConflictingBrowsingInstance',
+      CacheFlushed = 'CacheFlushed',
+      ServiceWorkerVersionActivation = 'ServiceWorkerVersionActivation',
+      SessionRestored = 'SessionRestored',
+      ServiceWorkerPostMessage = 'ServiceWorkerPostMessage',
+      EnteredBackForwardCacheBeforeServiceWorkerHostAdded = 'EnteredBackForwardCacheBeforeServiceWorkerHostAdded',
+      RenderFrameHostReused_SameSite = 'RenderFrameHostReused_SameSite',
+      RenderFrameHostReused_CrossSite = 'RenderFrameHostReused_CrossSite',
+      ServiceWorkerClaim = 'ServiceWorkerClaim',
+      IgnoreEventAndEvict = 'IgnoreEventAndEvict',
+      HaveInnerContents = 'HaveInnerContents',
+      TimeoutPuttingInCache = 'TimeoutPuttingInCache',
+      BackForwardCacheDisabledByLowMemory = 'BackForwardCacheDisabledByLowMemory',
+      BackForwardCacheDisabledByCommandLine = 'BackForwardCacheDisabledByCommandLine',
+      NetworkRequestDatAPIpeDrainedAsBytesConsumer = 'NetworkRequestDatapipeDrainedAsBytesConsumer',
+      NetworkRequestRedirected = 'NetworkRequestRedirected',
+      NetworkRequestTimeout = 'NetworkRequestTimeout',
+      NetworkExceedsBufferLimit = 'NetworkExceedsBufferLimit',
+      NavigationCancelledWhileRestoring = 'NavigationCancelledWhileRestoring',
+      NotMostRecentNavigationEntry = 'NotMostRecentNavigationEntry',
+      BackForwardCacheDisabledForPrerender = 'BackForwardCacheDisabledForPrerender',
+      UserAgentOverrideDiffers = 'UserAgentOverrideDiffers',
+      ForegroundCacheLimit = 'ForegroundCacheLimit',
+      BrowsingInstanceNotSwapped = 'BrowsingInstanceNotSwapped',
+      BackForwardCacheDisabledForDelegate = 'BackForwardCacheDisabledForDelegate',
+      OptInUnloadHeaderNotPresent = 'OptInUnloadHeaderNotPresent',
+      UnloadHandlerExistsInSubFrame = 'UnloadHandlerExistsInSubFrame',
+      ServiceWorkerUnregistration = 'ServiceWorkerUnregistration',
+      WebSocket = 'WebSocket',
+      WebRTC = 'WebRTC',
+      MainResourceHasCacheControlNoStore = 'MainResourceHasCacheControlNoStore',
+      MainResourceHasCacheControlNoCache = 'MainResourceHasCacheControlNoCache',
+      SubresourceHasCacheControlNoStore = 'SubresourceHasCacheControlNoStore',
+      SubresourceHasCacheControlNoCache = 'SubresourceHasCacheControlNoCache',
+      ContainsPlugins = 'ContainsPlugins',
+      DocumentLoaded = 'DocumentLoaded',
+      DedicatedWorkerOrWorklet = 'DedicatedWorkerOrWorklet',
+      OutstandingNetworkRequestOthers = 'OutstandingNetworkRequestOthers',
+      OutstandingIndexedDBTransaction = 'OutstandingIndexedDBTransaction',
+      RequestedGeolocationPermission = 'RequestedGeolocationPermission',
+      RequestedNotificationsPermission = 'RequestedNotificationsPermission',
+      RequestedMIDIPermission = 'RequestedMIDIPermission',
+      RequestedAudioCapturePermission = 'RequestedAudioCapturePermission',
+      RequestedVideoCapturePermission = 'RequestedVideoCapturePermission',
+      RequestedBackForwardCacheBlockedSensors = 'RequestedBackForwardCacheBlockedSensors',
+      RequestedBackgroundWorkPermission = 'RequestedBackgroundWorkPermission',
+      BroadcastChannel = 'BroadcastChannel',
+      IndexedDBConnection = 'IndexedDBConnection',
+      WebXR = 'WebXR',
+      SharedWorker = 'SharedWorker',
+      WebLocks = 'WebLocks',
+      WebHID = 'WebHID',
+      WebShare = 'WebShare',
+      RequestedStorageAccessGrant = 'RequestedStorageAccessGrant',
+      WebNfc = 'WebNfc',
+      WebFileSystem = 'WebFileSystem',
+      OutstandingNetworkRequestFetch = 'OutstandingNetworkRequestFetch',
+      OutstandingNetworkRequestXHR = 'OutstandingNetworkRequestXHR',
+      AppBanner = 'AppBanner',
+      Printing = 'Printing',
+      WebDatabase = 'WebDatabase',
+      PictureInPicture = 'PictureInPicture',
+      Portal = 'Portal',
+      SpeechRecognizer = 'SpeechRecognizer',
+      IdleManager = 'IdleManager',
+      PaymentManager = 'PaymentManager',
+      SpeechSynthesis = 'SpeechSynthesis',
+      KeyboardLock = 'KeyboardLock',
+      WebOTPService = 'WebOTPService',
+      OutstandingNetworkRequestDirectSocket = 'OutstandingNetworkRequestDirectSocket',
+      IsolatedWorldScript = 'IsolatedWorldScript',
+      InjectedStyleSheet = 'InjectedStyleSheet',
+      MediaSessionImplOnServiceCreated = 'MediaSessionImplOnServiceCreated',
+      Unknown = 'Unknown',
+    }
+
+    /**
+     * Types of not restored reasons for back-forward cache.
+     */
+    export const enum BackForwardCacheNotRestoredReasonType {
+      SupportPending = 'SupportPending',
+      PageSupportNeeded = 'PageSupportNeeded',
+      Circumstantial = 'Circumstantial',
+    }
+
+    export interface BackForwardCacheNotRestoredExplanation {
+      /**
+       * Type of the reason
+       */
+      type: BackForwardCacheNotRestoredReasonType;
+      /**
+       * Not restored reason
+       */
+      reason: BackForwardCacheNotRestoredReason;
+    }
+
     export interface AddScriptToEvaluateOnLoadRequest {
       scriptSource: string;
     }
@@ -10099,6 +10435,7 @@ declare namespace Protocol {
     export const enum CaptureScreenshotRequestFormat {
       Jpeg = 'jpeg',
       Png = 'png',
+      Webp = 'webp',
     }
 
     export interface CaptureScreenshotRequest {
@@ -11022,6 +11359,10 @@ declare namespace Protocol {
        * The frame id of the associated frame.
        */
       frameId: FrameId;
+      /**
+       * Array of reasons why the page could not be cached. This must not be empty.
+       */
+      notRestoredExplanations: BackForwardCacheNotRestoredExplanation[];
     }
 
     export interface LoadEventFiredEvent {
@@ -12715,12 +13056,12 @@ declare namespace Protocol {
     /**
      * Unique request identifier.
      */
-    export type RequestId = string;
+    export type RequestId = OpaqueIdentifier<string, 'Protocol.Fetch.RequestId'>;
 
     /**
      * Stages of the request to handle. Request will intercept before the request is
      * sent. Response will intercept after the response is received (but before response
-     * body is received.
+     * body is received).
      */
     export const enum RequestStage {
       Request = 'Request',
@@ -13735,7 +14076,7 @@ declare namespace Protocol {
     export interface EnableRequest {
       /**
        * The maximum size in bytes of collected scripts (not referenced by other heap objects)
-       * the debugger can hold. Puts no limit if paramter is omitted.
+       * the debugger can hold. Puts no limit if parameter is omitted.
        */
       maxScriptsCacheSize?: number;
     }
@@ -14527,7 +14868,7 @@ declare namespace Protocol {
        */
       reportProgress?: boolean;
       /**
-       * If true, a raw snapshot without artifical roots will be generated
+       * If true, a raw snapshot without artificial roots will be generated
        */
       treatGlobalObjectsAsRoots?: boolean;
       /**
@@ -14878,7 +15219,7 @@ declare namespace Protocol {
      * Reports coverage delta since the last poll (either from an event like this, or from
      * `takePreciseCoverage` for the current isolate. May only be sent if precise code
      * coverage has been started. This event can be trigged by the embedder to, for example,
-     * trigger collection of coverage data immediatelly at a certain point in time.
+     * trigger collection of coverage data immediately at a certain point in time.
      */
     export interface PreciseCoverageDeltaUpdateEvent {
       /**
@@ -14888,7 +15229,7 @@ declare namespace Protocol {
       /**
        * Identifier for distinguishing coverage events.
        */
-      occassion: string;
+      occasion: string;
       /**
        * Coverage data for the current isolate.
        */
@@ -15271,7 +15612,7 @@ declare namespace Protocol {
        */
       name: string;
       /**
-       * A system-unique execution context identifier. Unlike the id, this is unique accross
+       * A system-unique execution context identifier. Unlike the id, this is unique across
        * multiple processes, so can be reliably used to identify specific context while backend
        * performs a cross-process navigation.
        */
@@ -15323,6 +15664,12 @@ declare namespace Protocol {
        * Identifier of the context where exception happened.
        */
       executionContextId?: ExecutionContextId;
+      /**
+       * Dictionary with entries of meta data that the client associated
+       * with this exception, such as information about associated network
+       * requests, etc.
+       */
+      exceptionMetaData?: any;
     }
 
     /**
@@ -15471,6 +15818,10 @@ declare namespace Protocol {
        * specified and objectId is, objectGroup will be inherited from object.
        */
       objectGroup?: string;
+      /**
+       * Whether to throw an exception if side effect cannot be ruled out during evaluation.
+       */
+      throwOnSideEffect?: boolean;
     }
 
     export interface CallFunctionOnResponse extends ProtocolResponseWithError {
@@ -15586,9 +15937,9 @@ declare namespace Protocol {
       allowUnsafeEvalBlockedByCSP?: boolean;
       /**
        * An alternative way to specify the execution context to evaluate in.
-       * Compared to contextId that may be reused accross processes, this is guaranteed to be
+       * Compared to contextId that may be reused across processes, this is guaranteed to be
        * system-unique, so it can be used to prevent accidental evaluation of the expression
-       * in context different than intended (e.g. as a result of navigation accross process
+       * in context different than intended (e.g. as a result of navigation across process
        * boundaries).
        * This is mutually exclusive with `contextId`.
        */

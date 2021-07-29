@@ -53,6 +53,11 @@ void RegisterBrowserPrefs(PrefRegistrySimple* registry) {
               .InMilliseconds()));
   registry->RegisterDictionaryPref(prefs::kRelaunchWindow);
 #endif  // !defined(OS_ANDROID)
+
+#if defined(OS_MAC)
+  registry->RegisterIntegerPref(
+      prefs::kMacRestoreLocationPermissionsExperimentCount, 0);
+#endif  // defined(OS_MAC)
 }
 
 void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -151,4 +156,8 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kAccessibilityFocusHighlightEnabled,
                                 false);
 #endif
+
+  registry->RegisterBooleanPref(
+      prefs::kHttpsOnlyModeEnabled, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }

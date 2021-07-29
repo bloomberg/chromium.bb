@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/externally_managed_app_manager.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/os_integration_manager.h"
@@ -17,8 +16,10 @@
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/system_web_apps/test/test_system_web_app_manager.h"
+#include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 
 namespace web_app {
 
@@ -61,7 +62,8 @@ void TestWebAppProvider::SetRunSubsystemStartupTasks(
   run_subsystem_startup_tasks_ = run_subsystem_startup_tasks;
 }
 
-void TestWebAppProvider::SetRegistrar(std::unique_ptr<AppRegistrar> registrar) {
+void TestWebAppProvider::SetRegistrar(
+    std::unique_ptr<WebAppRegistrar> registrar) {
   CheckNotStarted();
   registrar_ = std::move(registrar);
 }
@@ -118,6 +120,17 @@ void TestWebAppProvider::SetOsIntegrationManager(
 void TestWebAppProvider::SkipAwaitingExtensionSystem() {
   CheckNotStarted();
   skip_awaiting_extension_system_ = true;
+}
+
+WebAppRegistrarMutable& TestWebAppProvider::GetRegistrarMutable() const {
+  DCHECK(registrar_);
+  return *static_cast<WebAppRegistrarMutable*>(registrar_.get());
+}
+
+WebAppIconManager& TestWebAppProvider::GetIconManager() const {
+  DCHECK(icon_manager_);
+  DCHECK(icon_manager_->AsWebAppIconManager());
+  return *icon_manager_->AsWebAppIconManager();
 }
 
 void TestWebAppProvider::CheckNotStarted() const {

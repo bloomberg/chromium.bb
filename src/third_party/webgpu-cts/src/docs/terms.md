@@ -141,8 +141,8 @@ It may represent multiple _test cases_, each of which runs the same Test Functio
 Parameters.
 
 A test is named using `TestGroup.test()`, which returns a `TestBuilder`.
-`TestBuilder.cases()` and `TestBuilder.subcases()` can optionally be used to parametrically
-generate instances of the test.
+`TestBuilder.params()`/`.paramsSimple()`/`.paramsSubcasesOnly()`
+can optionally be used to parametrically generate instances (cases and subcases) of the test.
 Finally, `TestBuilder.fn()` provides the Test Function
 (or, a test can be marked unimplemented with `TestBuilder.unimplemented()`).
 
@@ -160,7 +160,8 @@ A single case of a test. It is identified by a `TestCaseID`: a test name, and it
 Each case appears as an individual item (tree leaf) in `/standalone/`,
 and as an individual "step" in WPT.
 
-If `TestBuilder.cases()` is not used, there is exactly one case.
+If `TestBuilder.params()`/`.paramsSimple()`/`.paramsSubcasesOnly()` are not used,
+there is exactly one case with one subcase, with parameters `{}`.
 
 **Type:** During test run time, a case is encapsulated as a `RunCase`.
 
@@ -172,12 +173,12 @@ not all contexts allow subdividing cases into subcases.
 All of the subcases of a case will run _inside_ the case, essentially as a for-loop wrapping the
 test function. They do _not_ appear individually in `/standalone/` or WPT.
 
-If `TestBuilder.subcases()` is not used, there is exactly one subcase.
+If `CaseParamsBuilder.beginSubcases()` is not used, there is exactly one subcase per case.
 
-## Parameters / Params
+## Test Parameters / Params
 
-Each Test Subcase has a (possibly empty) set of Parameters.
-The parameters are available to the Test Function `f(t)` via `t.params`.
+Each Test Subcase has a (possibly empty) set of Test Parameters,
+The parameters are passed to the Test Function `f(t)` via `t.params`.
 
 A set of Public Parameters identifies a Test Case or Test Subcase within a Test.
 
@@ -185,7 +186,7 @@ There are also Private Parameters: any parameter name beginning with an undersco
 These parameters are not part of the Test Case identification, but are still passed into
 the Test Function. They can be used, e.g., to manually specify expected results.
 
-**Type:** `CaseParams`
+**Type:** `TestParams`
 
 ## Test Fixture / Fixture
 

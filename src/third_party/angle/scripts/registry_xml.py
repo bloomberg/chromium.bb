@@ -98,6 +98,7 @@ gles_extensions = [
     "GL_EXT_shader_framebuffer_fetch_non_coherent",
     "GL_EXT_shader_io_blocks",
     "GL_EXT_sRGB",
+    "GL_EXT_sRGB_write_control",
     "GL_EXT_tessellation_shader",
     "GL_EXT_texture_border_clamp",
     "GL_EXT_texture_buffer",
@@ -124,6 +125,7 @@ gles_extensions = [
     "GL_OES_draw_buffers_indexed",
     "GL_OES_draw_elements_base_vertex",
     "GL_OES_EGL_image",
+    "GL_OES_geometry_shader",
     "GL_OES_get_program_binary",
     "GL_OES_mapbuffer",
     "GL_OES_sample_shading",
@@ -195,8 +197,24 @@ supported_egl_extensions = [
 ]
 
 supported_cl_extensions = [
+    # Since OpenCL 1.1
+    "cl_khr_byte_addressable_store",
+    "cl_khr_global_int32_base_atomics",
+    "cl_khr_global_int32_extended_atomics",
+    "cl_khr_local_int32_base_atomics",
+    "cl_khr_local_int32_extended_atomics",
+
+    # OpenCL 2.0 - 2.2
+    "cl_khr_3d_image_writes",
+    "cl_khr_depth_images",
+    "cl_khr_image2d_from_buffer",
+
+    # Optional
     "cl_khr_extended_versioning",
+    "cl_khr_fp64",
     "cl_khr_icd",
+    "cl_khr_int64_base_atomics",
+    "cl_khr_int64_extended_atomics",
 ]
 
 # Strip these suffixes from Context entry point names. NV is excluded (for now).

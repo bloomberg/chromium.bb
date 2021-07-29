@@ -31,7 +31,7 @@ class DeprecationTests : public DawnTest {
     void SetUp() override {
         DawnTest::SetUp();
         // Skip when validation is off because warnings might be emitted during validation calls
-        DAWN_SKIP_TEST_IF(HasToggleEnabled("skip_validation"));
+        DAWN_TEST_UNSUPPORTED_IF(HasToggleEnabled("skip_validation"));
     }
 };
 
@@ -85,112 +85,56 @@ TEST_P(DeprecationTests, SetAttachmentDescriptorAttachment) {
     pass.EndPass();
 }
 
-// Test that BindGroupLayoutEntry cannot have a type if buffer, sampler, texture, or storageTexture
-// are defined.
-TEST_P(DeprecationTests, BindGroupLayoutEntryTypeConflict) {
-    wgpu::BindGroupLayoutEntry binding;
-    binding.binding = 0;
-    binding.visibility = wgpu::ShaderStage::Vertex;
+// Test that setting computeStage in a ComputePipelineDescriptor is deprecated.
+TEST_P(DeprecationTests, ComputeStage) {
+    wgpu::ComputePipelineDescriptor csDesc;
+    csDesc.computeStage.module = utils::CreateShaderModule(device, R"(
+        [[stage(compute), workgroup_size(1)]] fn main() {
+        })");
+    csDesc.computeStage.entryPoint = "main";
 
-    wgpu::BindGroupLayoutDescriptor descriptor;
-    descriptor.entryCount = 1;
-    descriptor.entries = &binding;
-
-    // Succeeds with only a type.
-    binding.type = wgpu::BindingType::UniformBuffer;
-    EXPECT_DEPRECATION_WARNING(device.CreateBindGroupLayout(&descriptor));
-
-    binding.type = wgpu::BindingType::Undefined;
-
-    // Succeeds with only a buffer.type.
-    binding.buffer.type = wgpu::BufferBindingType::Uniform;
-    device.CreateBindGroupLayout(&descriptor);
-    // Fails when both type and a buffer.type are specified.
-    binding.type = wgpu::BindingType::UniformBuffer;
-    ASSERT_DEVICE_ERROR(device.CreateBindGroupLayout(&descriptor));
-
-    binding.buffer.type = wgpu::BufferBindingType::Undefined;
-    binding.type = wgpu::BindingType::Undefined;
-
-    // Succeeds with only a sampler.type.
-    binding.sampler.type = wgpu::SamplerBindingType::Filtering;
-    device.CreateBindGroupLayout(&descriptor);
-    // Fails when both type and a sampler.type are specified.
-    binding.type = wgpu::BindingType::Sampler;
-    ASSERT_DEVICE_ERROR(device.CreateBindGroupLayout(&descriptor));
-
-    binding.sampler.type = wgpu::SamplerBindingType::Undefined;
-    binding.type = wgpu::BindingType::Undefined;
-
-    // Succeeds with only a texture.sampleType.
-    binding.texture.sampleType = wgpu::TextureSampleType::Float;
-    device.CreateBindGroupLayout(&descriptor);
-    // Fails when both type and a texture.sampleType are specified.
-    binding.type = wgpu::BindingType::SampledTexture;
-    ASSERT_DEVICE_ERROR(device.CreateBindGroupLayout(&descriptor));
-
-    binding.texture.sampleType = wgpu::TextureSampleType::Undefined;
-    binding.type = wgpu::BindingType::Undefined;
-
-    // Succeeds with only a storageTexture.access.
-    binding.storageTexture.access = wgpu::StorageTextureAccess::ReadOnly;
-    binding.storageTexture.format = wgpu::TextureFormat::RGBA8Unorm;
-    device.CreateBindGroupLayout(&descriptor);
-    // Fails when both type and a storageTexture.access are specified.
-    binding.type = wgpu::BindingType::ReadonlyStorageTexture;
-    ASSERT_DEVICE_ERROR(device.CreateBindGroupLayout(&descriptor));
+    wgpu::ComputePipeline pipeline;
+    EXPECT_DEPRECATION_WARNING(pipeline = device.CreateComputePipeline(&csDesc));
 }
 
-// Test that the deprecated BGLEntry path correctly handles the defaulting of viewDimension.
-// This is a regression test for crbug.com/dawn/620
-TEST_P(DeprecationTests, BindGroupLayoutEntryViewDimensionDefaulting) {
-    wgpu::BindGroupLayoutEntry binding;
-    binding.binding = 0;
-    binding.visibility = wgpu::ShaderStage::Vertex;
-    binding.type = wgpu::BindingType::SampledTexture;
+// Test that StoreOp::Clear is deprecated.
+TEST_P(DeprecationTests, StoreOpClear) {
+    utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, 1, 1);
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+    wgpu::RenderPassEncoder pass;
 
-    wgpu::BindGroupLayoutDescriptor bglDesc;
-    bglDesc.entryCount = 1;
-    bglDesc.entries = &binding;
+    // Check that a storeOp of Clear for color attachments raises a validation warning.
+    renderPass.renderPassInfo.cColorAttachments[0].storeOp = wgpu::StoreOp::Clear;
 
-    wgpu::BindGroupLayout bgl;
+    EXPECT_DEPRECATION_WARNING(pass = encoder.BeginRenderPass(&renderPass.renderPassInfo));
+    pass.EndPass();
 
-    // Check that the default viewDimension is 2D.
-    {
-        binding.viewDimension = wgpu::TextureViewDimension::Undefined;
-        EXPECT_DEPRECATION_WARNING(bgl = device.CreateBindGroupLayout(&bglDesc));
+    // Check that a storeOp of Clear for depth/stencil attachments raises a validation warning.
+    wgpu::TextureDescriptor descriptor;
+    descriptor.dimension = wgpu::TextureDimension::e2D;
+    descriptor.size = {1, 1, 1};
+    descriptor.sampleCount = 1;
+    descriptor.format = wgpu::TextureFormat::Depth24PlusStencil8;
+    descriptor.mipLevelCount = 1;
+    descriptor.usage = wgpu::TextureUsage::RenderAttachment;
+    wgpu::Texture depthStencil = device.CreateTexture(&descriptor);
 
-        wgpu::TextureDescriptor desc;
-        desc.usage = wgpu::TextureUsage::Sampled;
-        desc.size = {1, 1, 1};
-        desc.format = wgpu::TextureFormat::RGBA8Unorm;
-        desc.dimension = wgpu::TextureDimension::e2D;
-        wgpu::Texture texture = device.CreateTexture(&desc);
+    wgpu::RenderPassDepthStencilAttachmentDescriptor* depthAttachment =
+        &renderPass.renderPassInfo.cDepthStencilAttachmentInfo;
+    renderPass.renderPassInfo.depthStencilAttachment = depthAttachment;
+    depthAttachment->view = depthStencil.CreateView();
 
-        // Success, the default is 2D and we give it a 2D view.
-        utils::MakeBindGroup(device, bgl, {{0, texture.CreateView()}});
-    }
+    renderPass.renderPassInfo.cColorAttachments[0].storeOp = wgpu::StoreOp::Discard;
+    depthAttachment->depthStoreOp = wgpu::StoreOp::Clear;
 
-    // Check that setting a non-default viewDimension works.
-    {
-        binding.viewDimension = wgpu::TextureViewDimension::e2DArray;
-        EXPECT_DEPRECATION_WARNING(bgl = device.CreateBindGroupLayout(&bglDesc));
+    EXPECT_DEPRECATION_WARNING(pass = encoder.BeginRenderPass(&renderPass.renderPassInfo));
+    pass.EndPass();
 
-        wgpu::TextureDescriptor desc;
-        desc.usage = wgpu::TextureUsage::Sampled;
-        desc.size = {1, 1, 4};
-        desc.format = wgpu::TextureFormat::RGBA8Unorm;
-        desc.dimension = wgpu::TextureDimension::e2D;
-        wgpu::Texture texture = device.CreateTexture(&desc);
+    depthAttachment->depthStoreOp = wgpu::StoreOp::Discard;
+    depthAttachment->stencilStoreOp = wgpu::StoreOp::Clear;
 
-        // Success, the view will be 2DArray and the BGL expects a 2DArray.
-        utils::MakeBindGroup(device, bgl, {{0, texture.CreateView()}});
-    }
-}
-
-// Test that fences are deprecated.
-TEST_P(DeprecationTests, CreateFence) {
-    EXPECT_DEPRECATION_WARNING(queue.CreateFence());
+    EXPECT_DEPRECATION_WARNING(pass = encoder.BeginRenderPass(&renderPass.renderPassInfo));
+    pass.EndPass();
 }
 
 DAWN_INSTANTIATE_TEST(DeprecationTests,
@@ -219,72 +163,6 @@ class ImageCopyBufferDeprecationTests : public DeprecationTests {
     wgpu::Extent3D copySize = {1, 1, 1};
 };
 
-// Tests that deprecated vertex formats properly raise a deprecation warning when used
-class VertexFormatDeprecationTests : public DeprecationTests {
-  protected:
-    // Runs the test
-    void DoTest(const wgpu::VertexFormat vertexFormat, bool deprecated) {
-        std::string attribute = "[[location(0)]] a : ";
-        attribute += dawn::GetWGSLVertexFormatType(vertexFormat);
-
-        std::string attribAccess = dawn::VertexFormatNumComponents(vertexFormat) > 1
-                                       ? "vec4<f32>(f32(a.x), 0.0, 0.0, 1.0)"
-                                       : "vec4<f32>(f32(a), 0.0, 0.0, 1.0)";
-
-        wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, (R"(
-                [[stage(vertex)]] fn main()" + attribute + R"() -> [[builtin(position)]] vec4<f32> {
-                    return )" + attribAccess + R"(;
-                }
-            )")
-                                                                            .c_str());
-        wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
-                [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
-                    return vec4<f32>(1.0, 1.0, 1.0, 1.0);
-                }
-            )");
-
-        utils::ComboRenderPipelineDescriptor2 descriptor;
-        descriptor.vertex.module = vsModule;
-        descriptor.cFragment.module = fsModule;
-        descriptor.primitive.topology = wgpu::PrimitiveTopology::PointList;
-        descriptor.vertex.bufferCount = 1;
-        descriptor.cBuffers[0].arrayStride = 32;
-        descriptor.cBuffers[0].attributeCount = 1;
-        descriptor.cAttributes[0].format = vertexFormat;
-        descriptor.cAttributes[0].offset = 0;
-        descriptor.cAttributes[0].shaderLocation = 0;
-        descriptor.cTargets[0].format = utils::BasicRenderPass::kDefaultColorFormat;
-
-        if (deprecated) {
-            EXPECT_DEPRECATION_WARNING(device.CreateRenderPipeline2(&descriptor));
-        } else {
-            device.CreateRenderPipeline2(&descriptor);
-        }
-    }
-};
-
-TEST_P(VertexFormatDeprecationTests, NewVertexFormats) {
-    // Using the new vertex formats does not emit a warning.
-    for (auto& format : dawn::kAllVertexFormats) {
-        DoTest(format, false);
-    }
-}
-
-TEST_P(VertexFormatDeprecationTests, DeprecatedVertexFormats) {
-    // Using deprecated vertex formats does emit a warning.
-    for (auto& format : dawn::kAllDeprecatedVertexFormats) {
-        DoTest(format, true);
-    }
-}
-
-DAWN_INSTANTIATE_TEST(VertexFormatDeprecationTests,
-                      D3D12Backend(),
-                      MetalBackend(),
-                      NullBackend(),
-                      OpenGLBackend(),
-                      OpenGLESBackend(),
-                      VulkanBackend());
-
 // Tests that deprecated blend factors properly raise a deprecation warning when used
 class BlendFactorDeprecationTests : public DeprecationTests {
   protected:
@@ -301,40 +179,40 @@ class BlendFactorDeprecationTests : public DeprecationTests {
                 }
             )");
 
-        utils::ComboRenderPipelineDescriptor2 descriptor;
+        utils::ComboRenderPipelineDescriptor descriptor;
         descriptor.vertex.module = vsModule;
         descriptor.cFragment.module = fsModule;
         descriptor.cTargets[0].blend = &descriptor.cBlends[0];
 
         descriptor.cBlends[0].color.srcFactor = blendFactor;
         if (deprecated) {
-            EXPECT_DEPRECATION_WARNING(device.CreateRenderPipeline2(&descriptor));
+            EXPECT_DEPRECATION_WARNING(device.CreateRenderPipeline(&descriptor));
         } else {
-            device.CreateRenderPipeline2(&descriptor);
+            device.CreateRenderPipeline(&descriptor);
         }
         descriptor.cBlends[0].color.srcFactor = wgpu::BlendFactor::One;
 
         descriptor.cBlends[0].color.dstFactor = blendFactor;
         if (deprecated) {
-            EXPECT_DEPRECATION_WARNING(device.CreateRenderPipeline2(&descriptor));
+            EXPECT_DEPRECATION_WARNING(device.CreateRenderPipeline(&descriptor));
         } else {
-            device.CreateRenderPipeline2(&descriptor);
+            device.CreateRenderPipeline(&descriptor);
         }
         descriptor.cBlends[0].color.dstFactor = wgpu::BlendFactor::Zero;
 
         descriptor.cBlends[0].alpha.srcFactor = blendFactor;
         if (deprecated) {
-            EXPECT_DEPRECATION_WARNING(device.CreateRenderPipeline2(&descriptor));
+            EXPECT_DEPRECATION_WARNING(device.CreateRenderPipeline(&descriptor));
         } else {
-            device.CreateRenderPipeline2(&descriptor);
+            device.CreateRenderPipeline(&descriptor);
         }
         descriptor.cBlends[0].alpha.srcFactor = wgpu::BlendFactor::One;
 
         descriptor.cBlends[0].alpha.dstFactor = blendFactor;
         if (deprecated) {
-            EXPECT_DEPRECATION_WARNING(device.CreateRenderPipeline2(&descriptor));
+            EXPECT_DEPRECATION_WARNING(device.CreateRenderPipeline(&descriptor));
         } else {
-            device.CreateRenderPipeline2(&descriptor);
+            device.CreateRenderPipeline(&descriptor);
         }
         descriptor.cBlends[0].alpha.dstFactor = wgpu::BlendFactor::Zero;
     }

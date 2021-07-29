@@ -7,12 +7,12 @@
 
 #include <memory>
 
-#include "base/atomicops.h"
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "media/base/audio_parameters.h"
 #include "media/webrtc/audio_delay_stats_reporter.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -26,12 +26,7 @@
 
 namespace media {
 class AudioBus;
-class AudioParameters;
 }  // namespace media
-
-namespace webrtc {
-class TypingDetection;
-}
 
 namespace blink {
 
@@ -152,7 +147,7 @@ class MODULES_EXPORT MediaStreamAudioProcessor
   // WebRtcPlayoutDataSource::Sink implementation.
   void OnPlayoutData(media::AudioBus* audio_bus,
                      int sample_rate,
-                     int audio_delay_milliseconds) override;
+                     base::TimeDelta audio_delay) override;
   void OnPlayoutDataSourceChanged() override;
   void OnRenderThreadChanged() override;
 
@@ -199,7 +194,7 @@ class MODULES_EXPORT MediaStreamAudioProcessor
 
   // Cached value for the render delay latency. This member is accessed by
   // both the capture audio thread and the render audio thread.
-  base::subtle::Atomic32 render_delay_ms_;
+  std::atomic<base::TimeDelta> render_delay_;
 
   // For reporting audio delay stats.
   media::AudioDelayStatsReporter audio_delay_stats_reporter_;
@@ -240,12 +235,6 @@ class MODULES_EXPORT MediaStreamAudioProcessor
 
   // Flag to enable stereo channel mirroring.
   bool audio_mirroring_;
-
-  // Typing detector. |typing_detected_| is used to show the result of typing
-  // detection. It can be accessed by the capture audio thread and by the
-  // libjingle thread which calls GetStats().
-  std::unique_ptr<webrtc::TypingDetection> typing_detector_;
-  base::subtle::Atomic32 typing_detected_;
 
   // Communication with browser for AEC dump.
   std::unique_ptr<AecDumpAgentImpl> aec_dump_agent_impl_;

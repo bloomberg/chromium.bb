@@ -18,6 +18,7 @@ class RecordingHttp2Visitor : public Http2VisitorInterface {
   using EventSequence = std::list<Event>;
 
   // From Http2VisitorInterface
+  ssize_t OnReadyToSend(absl::string_view serialized) override;
   void OnConnectionError() override;
   void OnFrameHeader(Http2StreamId stream_id,
                      size_t length,
@@ -28,9 +29,9 @@ class RecordingHttp2Visitor : public Http2VisitorInterface {
   void OnSettingsEnd() override;
   void OnSettingsAck() override;
   void OnBeginHeadersForStream(Http2StreamId stream_id) override;
-  void OnHeaderForStream(Http2StreamId stream_id,
-                         absl::string_view name,
-                         absl::string_view value) override;
+  OnHeaderResult OnHeaderForStream(Http2StreamId stream_id,
+                                   absl::string_view name,
+                                   absl::string_view value) override;
   void OnEndHeadersForStream(Http2StreamId stream_id) override;
   void OnBeginDataForStream(Http2StreamId stream_id,
                             size_t payload_length) override;
@@ -51,6 +52,11 @@ class RecordingHttp2Visitor : public Http2VisitorInterface {
                 Http2ErrorCode error_code,
                 absl::string_view opaque_data) override;
   void OnWindowUpdate(Http2StreamId stream_id, int window_increment) override;
+  int OnBeforeFrameSent(uint8_t frame_type, Http2StreamId stream_id,
+                        size_t length, uint8_t flags) override;
+  int OnFrameSent(uint8_t frame_type, Http2StreamId stream_id, size_t length,
+                  uint8_t flags, uint32_t error_code) override;
+  bool OnInvalidFrame(Http2StreamId stream_id, int error_code) override;
   void OnReadyToSendDataForStream(Http2StreamId stream_id,
                                   char* destination_buffer,
                                   size_t length,
@@ -64,7 +70,8 @@ class RecordingHttp2Visitor : public Http2VisitorInterface {
                                 size_t payload_length) override;
   void OnMetadataForStream(Http2StreamId stream_id,
                            absl::string_view metadata) override;
-  void OnMetadataEndForStream(Http2StreamId stream_id) override;
+  bool OnMetadataEndForStream(Http2StreamId stream_id) override;
+  void OnErrorDebug(absl::string_view message) override;
 
   const EventSequence& GetEventSequence() const { return events_; }
   void Clear() { events_.clear(); }

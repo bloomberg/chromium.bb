@@ -9,10 +9,10 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_compute_pressure_observer_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_compute_pressure_observer_update.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/modules/compute_pressure/compute_pressure_observer_options.h"
-#include "third_party/blink/renderer/modules/compute_pressure/compute_pressure_observer_update.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -160,12 +160,12 @@ void ComputePressureObserver::stop(ScriptState* script_state) {
 }
 
 void ComputePressureObserver::Trace(blink::Visitor* visitor) const {
-  ScriptWrappable::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
   visitor->Trace(observer_callback_);
   visitor->Trace(normalized_options_);
   visitor->Trace(compute_pressure_host_);
   visitor->Trace(receiver_);
+  ScriptWrappable::Trace(visitor);
+  ExecutionContextLifecycleStateObserver::Trace(visitor);
 }
 
 void ComputePressureObserver::OnUpdate(

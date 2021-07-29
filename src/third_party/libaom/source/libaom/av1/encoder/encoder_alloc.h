@@ -85,7 +85,7 @@ static AOM_INLINE void alloc_compressor_data(AV1_COMP *cpi) {
   CHECK_MEM_ERROR(cm, cpi->td.mb.dv_costs,
                   (IntraBCMVCosts *)aom_malloc(sizeof(*cpi->td.mb.dv_costs)));
 
-  av1_setup_shared_coeff_buffer(&cpi->common, &cpi->td.shared_coeff_buf);
+  av1_setup_shared_coeff_buffer(&cpi->ppi->error, &cpi->td.shared_coeff_buf);
   av1_setup_sms_tree(cpi, &cpi->td);
   cpi->td.firstpass_ctx =
       av1_alloc_pmc(cpi, BLOCK_16X16, &cpi->td.shared_coeff_buf);
@@ -112,20 +112,20 @@ static AOM_INLINE void realloc_segmentation_maps(AV1_COMP *cpi) {
                   aom_calloc(mi_params->mi_rows * mi_params->mi_cols, 1));
 }
 
-static AOM_INLINE void alloc_obmc_buffers(OBMCBuffer *obmc_buffer,
-                                          AV1_COMMON *cm) {
-  CHECK_MEM_ERROR(
-      cm, obmc_buffer->wsrc,
+static AOM_INLINE void alloc_obmc_buffers(
+    OBMCBuffer *obmc_buffer, struct aom_internal_error_info *error) {
+  AOM_CHECK_MEM_ERROR(
+      error, obmc_buffer->wsrc,
       (int32_t *)aom_memalign(16, MAX_SB_SQUARE * sizeof(*obmc_buffer->wsrc)));
-  CHECK_MEM_ERROR(
-      cm, obmc_buffer->mask,
+  AOM_CHECK_MEM_ERROR(
+      error, obmc_buffer->mask,
       (int32_t *)aom_memalign(16, MAX_SB_SQUARE * sizeof(*obmc_buffer->mask)));
-  CHECK_MEM_ERROR(
-      cm, obmc_buffer->above_pred,
+  AOM_CHECK_MEM_ERROR(
+      error, obmc_buffer->above_pred,
       (uint8_t *)aom_memalign(
           16, MAX_MB_PLANE * MAX_SB_SQUARE * sizeof(*obmc_buffer->above_pred)));
-  CHECK_MEM_ERROR(
-      cm, obmc_buffer->left_pred,
+  AOM_CHECK_MEM_ERROR(
+      error, obmc_buffer->left_pred,
       (uint8_t *)aom_memalign(
           16, MAX_MB_PLANE * MAX_SB_SQUARE * sizeof(*obmc_buffer->left_pred)));
 }
@@ -143,22 +143,22 @@ static AOM_INLINE void release_obmc_buffers(OBMCBuffer *obmc_buffer) {
 }
 
 static AOM_INLINE void alloc_compound_type_rd_buffers(
-    AV1_COMMON *const cm, CompoundTypeRdBuffers *const bufs) {
-  CHECK_MEM_ERROR(
-      cm, bufs->pred0,
+    struct aom_internal_error_info *error, CompoundTypeRdBuffers *const bufs) {
+  AOM_CHECK_MEM_ERROR(
+      error, bufs->pred0,
       (uint8_t *)aom_memalign(16, 2 * MAX_SB_SQUARE * sizeof(*bufs->pred0)));
-  CHECK_MEM_ERROR(
-      cm, bufs->pred1,
+  AOM_CHECK_MEM_ERROR(
+      error, bufs->pred1,
       (uint8_t *)aom_memalign(16, 2 * MAX_SB_SQUARE * sizeof(*bufs->pred1)));
-  CHECK_MEM_ERROR(
-      cm, bufs->residual1,
+  AOM_CHECK_MEM_ERROR(
+      error, bufs->residual1,
       (int16_t *)aom_memalign(32, MAX_SB_SQUARE * sizeof(*bufs->residual1)));
-  CHECK_MEM_ERROR(
-      cm, bufs->diff10,
+  AOM_CHECK_MEM_ERROR(
+      error, bufs->diff10,
       (int16_t *)aom_memalign(32, MAX_SB_SQUARE * sizeof(*bufs->diff10)));
-  CHECK_MEM_ERROR(cm, bufs->tmp_best_mask_buf,
-                  (uint8_t *)aom_malloc(2 * MAX_SB_SQUARE *
-                                        sizeof(*bufs->tmp_best_mask_buf)));
+  AOM_CHECK_MEM_ERROR(error, bufs->tmp_best_mask_buf,
+                      (uint8_t *)aom_malloc(2 * MAX_SB_SQUARE *
+                                            sizeof(*bufs->tmp_best_mask_buf)));
 }
 
 static AOM_INLINE void release_compound_type_rd_buffers(
@@ -285,6 +285,9 @@ static AOM_INLINE void dealloc_compressor_data(AV1_COMP *cpi) {
     aom_free(cpi->consec_zero_mv);
     cpi->consec_zero_mv = NULL;
   }
+
+  aom_free(cpi->mb_wiener_variance);
+  cpi->mb_wiener_variance = NULL;
 }
 
 static AOM_INLINE void variance_partition_alloc(AV1_COMP *cpi) {

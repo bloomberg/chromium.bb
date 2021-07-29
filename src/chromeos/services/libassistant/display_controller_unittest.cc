@@ -7,6 +7,7 @@
 #include "base/test/task_environment.h"
 #include "chromeos/assistant/internal/test_support/fake_assistant_manager_internal.h"
 #include "chromeos/assistant/test_support/expect_utils.h"
+#include "chromeos/services/libassistant/grpc/assistant_client.h"
 #include "chromeos/services/libassistant/public/mojom/speech_recognition_observer.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,6 +23,28 @@ using chromeos::assistant::InteractionInfo;
 constexpr int kSampleInteractionId = 123;
 constexpr char kSampleUserId[] = "user-id";
 constexpr char kSamplePackageName[] = "app.test";
+
+class AssistantClientMock : public AssistantClient {
+ public:
+  AssistantClientMock(
+      std::unique_ptr<assistant_client::AssistantManager> assistant_manager,
+      assistant_client::AssistantManagerInternal* assistant_manager_internal)
+      : AssistantClient(std::move(assistant_manager),
+                        assistant_manager_internal) {}
+  ~AssistantClientMock() override = default;
+
+  // AssistantClient:
+  MOCK_METHOD(bool, StartGrpcServices, ());
+  MOCK_METHOD(void,
+              AddExperimentIds,
+              (const std::vector<std::string>& exp_ids));
+  MOCK_METHOD(void,
+              SendVoicelessInteraction,
+              (const ::assistant::api::Interaction& interaction,
+               const std::string& description,
+               const ::assistant::api::VoicelessOptions& options,
+               base::OnceCallback<void(bool)> on_done));
+};
 
 class AssistantManagerInternalMock
     : public assistant::FakeAssistantManagerInternal {
@@ -59,8 +82,7 @@ class DisplayControllerTest : public ::testing::Test {
   }
 
   void StartLibassistant() {
-    controller_->OnAssistantManagerCreated(nullptr,
-                                           &assistant_manager_internal_);
+    controller_->OnAssistantClientCreated(&assistant_client_);
   }
 
   DisplayController* controller() { return controller_.get(); }
@@ -69,12 +91,15 @@ class DisplayControllerTest : public ::testing::Test {
     return assistant_manager_internal_;
   }
 
+  AssistantClientMock& assistant_client_mock() { return assistant_client_; }
+
  private:
   base::test::SingleThreadTaskEnvironment environment_;
   mojo::RemoteSet<mojom::SpeechRecognitionObserver>
       speech_recognition_observers_;
   std::unique_ptr<DisplayController> controller_;
   AssistantManagerInternalMock assistant_manager_internal_;
+  AssistantClientMock assistant_client_{nullptr, &assistant_manager_internal_};
 };
 
 TEST_F(DisplayControllerTest, ShouldSetDisplayConnection) {
@@ -92,7 +117,7 @@ TEST_F(DisplayControllerTest,
   app_info.package_name = kSamplePackageName;
   InteractionInfo interaction = {kSampleInteractionId, kSampleUserId};
 
-  EXPECT_CALL(assistant_manager_internal_mock(), SendVoicelessInteraction);
+  EXPECT_CALL(assistant_client_mock(), SendVoicelessInteraction);
   controller()->OnVerifyAndroidApp({app_info}, interaction);
 }
 

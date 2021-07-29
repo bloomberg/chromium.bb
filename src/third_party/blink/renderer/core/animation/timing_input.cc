@@ -4,19 +4,20 @@
 
 #include "third_party/blink/renderer/core/animation/timing_input.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/unrestricted_double_or_keyframe_animation_options.h"
-#include "third_party/blink/renderer/bindings/core/v8/unrestricted_double_or_keyframe_effect_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_effect_timing.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_keyframe_animation_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_keyframe_effect_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_optional_effect_timing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_keyframeanimationoptions_unrestricteddouble.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_keyframeeffectoptions_unrestricteddouble.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_string_unrestricteddouble.h"
 #include "third_party/blink/renderer/core/animation/animation_effect.h"
 #include "third_party/blink/renderer/core/animation/animation_input_helpers.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
 namespace {
+
 Timing::PlaybackDirection ConvertPlaybackDirection(const String& direction) {
   if (direction == "reverse")
     return Timing::PlaybackDirection::REVERSE;
@@ -29,10 +30,10 @@ Timing::PlaybackDirection ConvertPlaybackDirection(const String& direction) {
 }
 
 absl::optional<AnimationTimeDelta> ConvertIterationDuration(
-    const UnrestrictedDoubleOrString& duration) {
-  if (duration.IsUnrestrictedDouble()) {
+    const V8UnionStringOrUnrestrictedDouble* duration) {
+  if (duration->IsUnrestrictedDouble()) {
     return AnimationTimeDelta::FromMillisecondsD(
-        duration.GetAsUnrestrictedDouble());
+        duration->GetAsUnrestrictedDouble());
   }
   return absl::nullopt;
 }
@@ -59,7 +60,6 @@ bool UpdateValueIfChanged(V& lhs, const V& rhs) {
 
 }  // namespace
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 Timing TimingInput::Convert(
     const V8UnionKeyframeEffectOptionsOrUnrestrictedDouble* options,
     Document* document,
@@ -81,7 +81,7 @@ Timing TimingInput::Convert(
       //   their default values and duration set to options.
       EffectTiming* timing_input = EffectTiming::Create();
       timing_input->setDuration(
-          UnrestrictedDoubleOrString::FromUnrestrictedDouble(
+          MakeGarbageCollected<V8UnionStringOrUnrestrictedDouble>(
               options->GetAsUnrestrictedDouble()));
       return ConvertEffectTiming(timing_input, document, exception_state);
     }
@@ -89,34 +89,7 @@ Timing TimingInput::Convert(
   NOTREACHED();
   return Timing();
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-Timing TimingInput::Convert(
-    const UnrestrictedDoubleOrKeyframeEffectOptions& options,
-    Document* document,
-    ExceptionState& exception_state) {
-  if (options.IsNull()) {
-    return Timing();
-  }
 
-  if (options.IsKeyframeEffectOptions()) {
-    return ConvertEffectTiming(options.GetAsKeyframeEffectOptions(), document,
-                               exception_state);
-  }
-
-  DCHECK(options.IsUnrestrictedDouble());
-
-  // https://drafts.csswg.org/web-animations-1/#dom-keyframeeffect-keyframeeffect
-  // If options is a double,
-  //   Let timing input be a new EffectTiming object with all members set to
-  //   their default values and duration set to options.
-  EffectTiming* timing_input = EffectTiming::Create();
-  timing_input->setDuration(UnrestrictedDoubleOrString::FromUnrestrictedDouble(
-      options.GetAsUnrestrictedDouble()));
-  return ConvertEffectTiming(timing_input, document, exception_state);
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 Timing TimingInput::Convert(
     const V8UnionKeyframeAnimationOptionsOrUnrestrictedDouble* options,
     Document* document,
@@ -138,7 +111,7 @@ Timing TimingInput::Convert(
       //   their default values and duration set to options.
       EffectTiming* timing_input = EffectTiming::Create();
       timing_input->setDuration(
-          UnrestrictedDoubleOrString::FromUnrestrictedDouble(
+          MakeGarbageCollected<V8UnionStringOrUnrestrictedDouble>(
               options->GetAsUnrestrictedDouble()));
       return ConvertEffectTiming(timing_input, document, exception_state);
     }
@@ -146,31 +119,6 @@ Timing TimingInput::Convert(
   NOTREACHED();
   return Timing();
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-Timing TimingInput::Convert(
-    const UnrestrictedDoubleOrKeyframeAnimationOptions& options,
-    Document* document,
-    ExceptionState& exception_state) {
-  if (options.IsNull())
-    return Timing();
-
-  if (options.IsKeyframeAnimationOptions()) {
-    return ConvertEffectTiming(options.GetAsKeyframeAnimationOptions(),
-                               document, exception_state);
-  }
-
-  DCHECK(options.IsUnrestrictedDouble());
-
-  // https://drafts.csswg.org/web-animations-1/#dom-keyframeeffect-keyframeeffect
-  // If options is a double,
-  //   Let timing input be a new EffectTiming object with all members set to
-  //   their default values and duration set to options.
-  EffectTiming* timing_input = EffectTiming::Create();
-  timing_input->setDuration(UnrestrictedDoubleOrString::FromUnrestrictedDouble(
-      options.GetAsUnrestrictedDouble()));
-  return ConvertEffectTiming(timing_input, document, exception_state);
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 template <class InputTiming>
 bool TimingInput::Update(Timing& timing,
@@ -199,15 +147,22 @@ bool TimingInput::Update(Timing& timing,
   // https://github.com/w3c/csswg-drafts/issues/247 .
   if (input->hasDuration()) {
     const char* error_message = "duration must be non-negative or auto";
-    if (input->duration().IsUnrestrictedDouble()) {
-      double duration = input->duration().GetAsUnrestrictedDouble();
-      if (std::isnan(duration) || duration < 0) {
-        exception_state.ThrowTypeError(error_message);
-        return false;
+    switch (input->duration()->GetContentType()) {
+      case V8UnionStringOrUnrestrictedDouble::ContentType::kString:
+        if (input->duration()->GetAsString() != "auto") {
+          exception_state.ThrowTypeError(error_message);
+          return false;
+        }
+        break;
+      case V8UnionStringOrUnrestrictedDouble::ContentType::
+          kUnrestrictedDouble: {
+        double duration = input->duration()->GetAsUnrestrictedDouble();
+        if (std::isnan(duration) || duration < 0) {
+          exception_state.ThrowTypeError(error_message);
+          return false;
+        }
+        break;
       }
-    } else if (input->duration().GetAsString() != "auto") {
-      exception_state.ThrowTypeError(error_message);
-      return false;
     }
   }
 

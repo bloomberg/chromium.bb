@@ -6,6 +6,7 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -18,13 +19,28 @@ class ClipboardUtilMacTest : public PlatformTest {
  public:
   ClipboardUtilMacTest() { }
 
-  NSDictionary* DictionaryFromPasteboard(NSPasteboard* pboard) {
-    NSArray* types = [pboard types];
-    NSMutableDictionary* data = [NSMutableDictionary dictionary];
-    for (NSString* type in types) {
-      data[type] = [pboard dataForType:type];
+  // Given a pasteboard, returns a dictionary of the contents of the pasteboard
+  // for use in deep comparisons. This fully unpacks any plist-encoded items.
+  NSDictionary* DictionaryFromPasteboardForDeepComparisons(
+      NSPasteboard* pboard) {
+    NSMutableDictionary* result = [NSMutableDictionary dictionary];
+    for (NSString* type in [pboard types]) {
+      NSData* data = [pboard dataForType:type];
+      // Try to unpack the data as a plist, and if it succeeds, use that in the
+      // resulting dictionary rather than the raw NSData. This is needed because
+      // plists have multiple encodings, and the comparison should be made on
+      // the underlying data rather than the specific encoding used by the OS.
+      NSDictionary* unpacked_data = [NSPropertyListSerialization
+          propertyListWithData:data
+                       options:NSPropertyListImmutable
+                        format:nil
+                         error:nil];
+      if (unpacked_data)
+        result[type] = unpacked_data;
+      else
+        result[type] = data;
     }
-    return data;
+    return result;
   }
 };
 
@@ -126,8 +142,10 @@ TEST_F(ClipboardUtilMacTest, CompareToWriteToPasteboard) {
   scoped_refptr<UniquePasteboard> pboard = new UniquePasteboard;
   [pboard->get() setDataForURL:urlString title:urlString];
 
-  NSDictionary* data1 = DictionaryFromPasteboard(pasteboard->get());
-  NSDictionary* data2 = DictionaryFromPasteboard(pboard->get());
+  NSDictionary* data1 =
+      DictionaryFromPasteboardForDeepComparisons(pasteboard->get());
+  NSDictionary* data2 =
+      DictionaryFromPasteboardForDeepComparisons(pboard->get());
   EXPECT_NSEQ(data1, data2);
 }
 

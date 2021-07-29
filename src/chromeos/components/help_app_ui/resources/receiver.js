@@ -6,6 +6,10 @@
  * @fileoverview
  * A script for the app inside the iframe. Implements a delegate.
  */
+import './sandboxed_load_time_data.js';
+
+import {MessagePipe} from './message_pipe.m.js';
+import {Message} from './message_types.js';
 
 /** A pipe through which we can send messages to the parent frame. */
 const parentMessagePipe = new MessagePipe('chrome://help-app', window.parent);
@@ -38,11 +42,13 @@ const DELEGATE = {
   /**
    * @override
    * @param {string} query
+   * @param {number=} maxResults Maximum number of search results. Default 50.
    * @return {!Promise<!helpApp.FindResponse>}
    */
-  findInSearchIndex(query) {
+  findInSearchIndex(query, maxResults) {
     return /** @type {!Promise<!helpApp.FindResponse>} */ (
-        parentMessagePipe.sendMessage(Message.FIND_IN_SEARCH_INDEX, {query}));
+        parentMessagePipe.sendMessage(
+            Message.FIND_IN_SEARCH_INDEX, {query, maxResults}));
   },
   closeBackgroundPage() {
     parentMessagePipe.sendMessage(Message.CLOSE_BACKGROUND_PAGE);
@@ -58,9 +64,15 @@ const DELEGATE = {
   async maybeShowDiscoverNotification() {
     await parentMessagePipe.sendMessage(
         Message.MAYBE_SHOW_DISCOVER_NOTIFICATION);
+  },
+  async maybeShowReleaseNotesNotification() {
+    await parentMessagePipe.sendMessage(
+        Message.MAYBE_SHOW_RELEASE_NOTES_NOTIFICATION);
   }
 };
 
 window.customLaunchData = {
   delegate: DELEGATE,
 };
+
+export const TEST_ONLY = {parentMessagePipe};

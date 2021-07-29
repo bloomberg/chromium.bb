@@ -16,7 +16,9 @@
 #include "base/callback.h"
 #include "base/check.h"
 #include "base/check_op.h"
+#include "base/containers/contains.h"
 #include "base/containers/fixed_flat_map.h"
+#include "base/containers/flat_set.h"
 #include "base/containers/span.h"
 #include "base/feature_list.h"
 #include "base/i18n/time_formatting.h"
@@ -26,7 +28,9 @@
 #include "base/notreached.h"
 #include "base/numerics/ranges.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -34,6 +38,7 @@
 #include "net/base/escape.h"
 #include "pdf/accessibility.h"
 #include "pdf/accessibility_structs.h"
+#include "pdf/buildflags.h"
 #include "pdf/content_restriction.h"
 #include "pdf/document_layout.h"
 #include "pdf/document_metadata.h"
@@ -41,6 +46,7 @@
 #include "pdf/pdf_features.h"
 #include "pdf/pdfium/pdfium_engine.h"
 #include "pdf/ppapi_migration/image.h"
+#include "pdf/ppapi_migration/result_codes.h"
 #include "pdf/ppapi_migration/url_loader.h"
 #include "pdf/ui/document_properties.h"
 #include "pdf/ui/file_name.h"
@@ -49,6 +55,7 @@
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/common/input/web_touch_event.h"
+#include "third_party/blink/public/web/web_print_preset_options.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/text/bytes_formatting.h"
@@ -72,6 +79,15 @@ constexpr double kMinZoom = 0.01;
 constexpr base::TimeDelta kAccessibilityPageDelay =
     base::TimeDelta::FromMilliseconds(100);
 
+constexpr char kChromePrintHost[] = "chrome://print/";
+constexpr char kChromeExtensionHost[] =
+    "chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai";
+
+// Same value as printing::COMPLETE_PREVIEW_DOCUMENT_INDEX.
+constexpr int kCompletePDFIndex = -1;
+// A different negative value to differentiate itself from `kCompletePDFIndex`.
+constexpr int kInvalidPDFIndex = -2;
+
 // Enumeration of pinch states.
 // This should match PinchPhase enum in chrome/browser/resources/pdf/viewport.js
 enum class PinchPhase {
@@ -90,13 +106,32 @@ base::Value PrepareReplyMessage(base::StringPiece reply_type,
                                 const base::Value& message) {
   DCHECK_EQ(reply_type, *message.FindStringKey("type") + "Reply");
 
-  const std::string* message_id = message.FindStringKey("messageId");
-  CHECK(message_id);
-
   base::Value reply(base::Value::Type::DICTIONARY);
   reply.SetStringKey("type", reply_type);
-  reply.SetStringKey("messageId", *message_id);
+  reply.SetStringKey("messageId", *message.FindStringKey("messageId"));
   return reply;
+}
+
+int ExtractPrintPreviewPageIndex(base::StringPiece src_url) {
+  // Sample `src_url` format: chrome://print/id/page_index/print.pdf
+  // The page_index is zero-based, but can be negative with special meanings.
+  std::vector<base::StringPiece> url_substr =
+      base::SplitStringPiece(src_url.substr(strlen(kChromePrintHost)), "/",
+                             base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  if (url_substr.size() != 3)
+    return kInvalidPDFIndex;
+
+  if (url_substr[2] != "print.pdf")
+    return kInvalidPDFIndex;
+
+  int page_index = 0;
+  if (!base::StringToInt(url_substr[1], &page_index))
+    return kInvalidPDFIndex;
+  return page_index;
+}
+
+bool IsPreviewingPDF(int print_preview_page_count) {
+  return print_preview_page_count == 0;
 }
 
 }  // namespace
@@ -250,6 +285,19 @@ void PdfViewPluginBase::Email(const std::string& to,
   SendMessage(std::move(message));
 }
 
+void PdfViewPluginBase::Print() {
+  if (!engine_)
+    return;
+
+  const bool can_print =
+      engine_->HasPermission(PDFEngine::PERMISSION_PRINT_LOW_QUALITY) ||
+      engine_->HasPermission(PDFEngine::PERMISSION_PRINT_HIGH_QUALITY);
+  if (!can_print)
+    return;
+
+  InvokePrintDialog();
+}
+
 std::unique_ptr<UrlLoader> PdfViewPluginBase::CreateUrlLoader() {
   if (full_frame_) {
     DidStartLoading();
@@ -288,17 +336,7 @@ void PdfViewPluginBase::DocumentLoadComplete() {
     return;
 
   DidStopLoading();
-
-  int content_restrictions = kContentRestrictionCut | kContentRestrictionPaste;
-  if (!engine()->HasPermission(PDFEngine::PERMISSION_COPY))
-    content_restrictions |= kContentRestrictionCopy;
-
-  if (!engine()->HasPermission(PDFEngine::PERMISSION_PRINT_LOW_QUALITY) &&
-      !engine()->HasPermission(PDFEngine::PERMISSION_PRINT_HIGH_QUALITY)) {
-    content_restrictions |= kContentRestrictionPrint;
-  }
-
-  SetContentRestrictions(content_restrictions);
+  SetContentRestrictions(GetContentRestrictions());
 }
 
 void PdfViewPluginBase::DocumentLoadFailed() {
@@ -313,6 +351,21 @@ void PdfViewPluginBase::DocumentLoadFailed() {
   DidStopLoading();
 
   paint_manager_.InvalidateRect(gfx::Rect(plugin_rect_.size()));
+}
+
+void PdfViewPluginBase::DocumentHasUnsupportedFeature(
+    const std::string& feature) {
+  DCHECK(!feature.empty());
+  const std::string metric = "PDF_Unsupported_" + feature;
+  bool inserted = unsupported_features_reported_.insert(metric).second;
+  if (inserted)
+    UserMetricsRecordAction(metric);
+
+  if (!full_frame() || notified_browser_about_unsupported_feature_)
+    return;
+
+  NotifyUnsupportedFeature();
+  notified_browser_about_unsupported_feature_ = true;
 }
 
 void PdfViewPluginBase::DocumentLoadProgress(uint32_t available,
@@ -350,6 +403,10 @@ void PdfViewPluginBase::FormTextFieldFocusChange(bool in_focus) {
   SetFormFieldInFocus(in_focus);
 }
 
+bool PdfViewPluginBase::IsPrintPreview() {
+  return is_print_preview_;
+}
+
 SkColor PdfViewPluginBase::GetBackgroundColor() {
   return background_color_;
 }
@@ -361,11 +418,50 @@ void PdfViewPluginBase::SetIsSelecting(bool is_selecting) {
   SendMessage(std::move(message));
 }
 
+void PdfViewPluginBase::SelectionChanged(const gfx::Rect& left,
+                                         const gfx::Rect& right) {
+  const gfx::Rect left_with_offset = left + plugin_rect_.OffsetFromOrigin();
+  const gfx::Rect right_with_offset = right + plugin_rect_.OffsetFromOrigin();
+
+  gfx::PointF left_point(left_with_offset.x() + available_area_.x(),
+                         left_with_offset.y());
+  gfx::PointF right_point(right_with_offset.x() + available_area_.x(),
+                          right_with_offset.y());
+
+  const float inverse_scale = 1.0f / device_scale_;
+  left_point.Scale(inverse_scale);
+  right_point.Scale(inverse_scale);
+
+  NotifySelectionChanged(left_point, left_with_offset.height(), right_point,
+                         right_with_offset.height());
+
+  if (accessibility_state_ == AccessibilityState::kLoaded)
+    PrepareAndSetAccessibilityViewportInfo();
+}
+
+void PdfViewPluginBase::EnteredEditMode() {
+  edit_mode_ = true;
+  SetPluginCanSave(true);
+
+  base::Value message(base::Value::Type::DICTIONARY);
+  message.SetStringKey("type", "setIsEditing");
+  SendMessage(std::move(message));
+}
+
 void PdfViewPluginBase::DocumentFocusChanged(bool document_has_focus) {
   base::Value message(base::Value::Type::DICTIONARY);
   message.SetStringKey("type", "documentFocusChanged");
   message.SetBoolKey("hasFocus", document_has_focus);
   SendMessage(std::move(message));
+}
+
+void PdfViewPluginBase::SetLinkUnderCursor(
+    const std::string& link_under_cursor) {
+  if (link_under_cursor_ == link_under_cursor)
+    return;
+
+  link_under_cursor_ = link_under_cursor;
+  NotifyLinkUnderCursor();
 }
 
 // TODO(crbug.com/1191817): Add tests for input events. Unit testing should be
@@ -410,9 +506,15 @@ void PdfViewPluginBase::HandleMessage(const base::Value& message) {
            &PdfViewPluginBase::HandleGetPasswordCompleteMessage},
           {"getSelectedText", &PdfViewPluginBase::HandleGetSelectedTextMessage},
           {"getThumbnail", &PdfViewPluginBase::HandleGetThumbnailMessage},
+          {"print", &PdfViewPluginBase::HandlePrintMessage},
+          {"loadPreviewPage", &PdfViewPluginBase::HandleLoadPreviewPageMessage},
+          {"resetPrintPreviewMode",
+           &PdfViewPluginBase::HandleResetPrintPreviewModeMessage},
           {"rotateClockwise", &PdfViewPluginBase::HandleRotateClockwiseMessage},
           {"rotateCounterclockwise",
            &PdfViewPluginBase::HandleRotateCounterclockwiseMessage},
+          {"save", &PdfViewPluginBase::HandleSaveMessage},
+          {"saveAttachment", &PdfViewPluginBase::HandleSaveAttachmentMessage},
           {"selectAll", &PdfViewPluginBase::HandleSelectAllMessage},
           {"setBackgroundColor",
            &PdfViewPluginBase::HandleSetBackgroundColorMessage},
@@ -423,18 +525,7 @@ void PdfViewPluginBase::HandleMessage(const base::Value& message) {
           {"viewport", &PdfViewPluginBase::HandleViewportMessage},
       });
 
-  const std::string* type = message.FindStringKey("type");
-  CHECK(type);
-
-  // TODO(crbug.com/1109796): Use `fixed_flat_map<>::at()` when migration is
-  // complete to CHECK out-of-bounds lookups.
-  const auto* it = kMessageHandlers.find(*type);
-  if (it == kMessageHandlers.end()) {
-    NOTIMPLEMENTED() << message;
-    return;
-  }
-
-  MessageHandler handler = it->second;
+  MessageHandler handler = kMessageHandlers.at(*message.FindStringKey("type"));
   (this->*handler)(message);
 }
 
@@ -452,7 +543,7 @@ void PdfViewPluginBase::SaveToBuffer(const std::string& token) {
     if (IsSaveDataSizeValid(data.size()))
       data_to_save = base::Value(std::move(data));
   } else {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(ENABLE_INK)
     uint32_t length = engine()->GetLoadedByteSize();
     if (IsSaveDataSizeValid(length)) {
       base::Value::BlobStorage data(length);
@@ -461,7 +552,7 @@ void PdfViewPluginBase::SaveToBuffer(const std::string& token) {
     }
 #else
     NOTREACHED();
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(ENABLE_INK)
   }
 
   message.SetKey("dataToSave", std::move(data_to_save));
@@ -497,6 +588,38 @@ void PdfViewPluginBase::OnPaint(const std::vector<gfx::Rect>& paint_rects,
   DoPaint(paint_rects, ready, pending);
 }
 
+void PdfViewPluginBase::PreviewDocumentLoadComplete() {
+  if (preview_document_load_state_ != DocumentLoadState::kLoading ||
+      preview_pages_info_.empty()) {
+    return;
+  }
+
+  preview_document_load_state_ = DocumentLoadState::kComplete;
+
+  int dest_page_index = preview_pages_info_.front().second;
+  DCHECK_GT(dest_page_index, 0);
+  preview_pages_info_.pop();
+  DCHECK(preview_engine_);
+  engine()->AppendPage(preview_engine_.get(), dest_page_index);
+
+  ++print_preview_loaded_page_count_;
+  LoadNextPreviewPage();
+}
+
+void PdfViewPluginBase::PreviewDocumentLoadFailed() {
+  UserMetricsRecordAction("PDF.PreviewDocumentLoadFailure");
+  if (preview_document_load_state_ != DocumentLoadState::kLoading ||
+      preview_pages_info_.empty()) {
+    return;
+  }
+
+  // Even if a print preview page failed to load, keep going.
+  preview_document_load_state_ = DocumentLoadState::kFailed;
+  preview_pages_info_.pop();
+  ++print_preview_loaded_page_count_;
+  LoadNextPreviewPage();
+}
+
 void PdfViewPluginBase::EnableAccessibility() {
   if (accessibility_state_ == AccessibilityState::kLoaded)
     return;
@@ -513,13 +636,49 @@ void PdfViewPluginBase::HandleAccessibilityAction(
   engine_->HandleAccessibilityAction(action_data);
 }
 
-void PdfViewPluginBase::InitializeEngine(
-    PDFiumFormFiller::ScriptOption script_option) {
-  engine_ = std::make_unique<PDFiumEngine>(this, script_option);
+int PdfViewPluginBase::GetContentRestrictions() const {
+  int content_restrictions = kContentRestrictionCut | kContentRestrictionPaste;
+  if (!engine()->HasPermission(PDFEngine::PERMISSION_COPY))
+    content_restrictions |= kContentRestrictionCopy;
+
+  if (!engine()->HasPermission(PDFEngine::PERMISSION_PRINT_LOW_QUALITY) &&
+      !engine()->HasPermission(PDFEngine::PERMISSION_PRINT_HIGH_QUALITY)) {
+    content_restrictions |= kContentRestrictionPrint;
+  }
+
+  return content_restrictions;
+}
+
+AccessibilityDocInfo PdfViewPluginBase::GetAccessibilityDocInfo() const {
+  AccessibilityDocInfo doc_info;
+  doc_info.page_count = engine()->GetNumberOfPages();
+  doc_info.text_accessible =
+      engine()->HasPermission(PDFEngine::PERMISSION_COPY_ACCESSIBLE);
+  doc_info.text_copyable = engine()->HasPermission(PDFEngine::PERMISSION_COPY);
+  return doc_info;
+}
+
+bool PdfViewPluginBase::UnsupportedFeatureIsReportedForTesting(
+    const std::string& feature) const {
+  return base::Contains(unsupported_features_reported_, feature);
+}
+
+void PdfViewPluginBase::InitializeEngine(std::unique_ptr<PDFiumEngine> engine) {
+  DCHECK(engine);
+  engine_ = std::move(engine);
 }
 
 void PdfViewPluginBase::DestroyEngine() {
   engine_.reset();
+}
+
+void PdfViewPluginBase::DestroyPreviewEngine() {
+  preview_engine_.reset();
+}
+
+void PdfViewPluginBase::ValidateDocumentUrl(base::StringPiece document_url) {
+  CHECK(base::StartsWith(document_url, kChromeExtensionHost) ||
+        IsPrintPreview());
 }
 
 void PdfViewPluginBase::LoadUrl(const std::string& url, bool is_print_preview) {
@@ -556,6 +715,49 @@ void PdfViewPluginBase::OnGeometryChanged(double old_zoom,
     PrepareAndSetAccessibilityViewportInfo();
 }
 
+blink::WebPrintPresetOptions PdfViewPluginBase::GetPrintPresetOptions() {
+  blink::WebPrintPresetOptions options;
+  options.is_scaling_disabled = !engine_->GetPrintScaling();
+  options.copies = engine_->GetCopiesToPrint();
+  options.duplex_mode = engine_->GetDuplexMode();
+  options.uniform_page_size = engine_->GetUniformPageSizePoints();
+  return options;
+}
+
+int PdfViewPluginBase::PrintBegin(const blink::WebPrintParams& print_params) {
+  // The returned value is always equal to the number of pages in the PDF
+  // document irrespective of the printable area.
+  int32_t ret = engine()->GetNumberOfPages();
+  if (!ret)
+    return 0;
+
+  const bool can_print =
+      engine()->HasPermission(PDFEngine::PERMISSION_PRINT_HIGH_QUALITY) ||
+      (print_params.rasterize_pdf &&
+       engine()->HasPermission(PDFEngine::PERMISSION_PRINT_LOW_QUALITY));
+
+  if (!can_print)
+    return 0;
+
+  print_params_ = print_params;
+  engine()->PrintBegin();
+  return ret;
+}
+
+std::vector<uint8_t> PdfViewPluginBase::PrintPages(
+    const std::vector<int>& page_numbers) {
+  print_pages_called_ = true;
+  return engine()->PrintPages(page_numbers, print_params_.value());
+}
+
+void PdfViewPluginBase::PrintEnd() {
+  if (print_pages_called_)
+    UserMetricsRecordAction("PDF.PrintPage");
+  print_pages_called_ = false;
+  print_params_.reset();
+  engine_->PrintEnd();
+}
+
 void PdfViewPluginBase::UpdateGeometryOnViewChanged(
     const gfx::Rect& new_view_rect,
     float new_device_scale) {
@@ -572,7 +774,7 @@ void PdfViewPluginBase::UpdateGeometryOnViewChanged(
   plugin_rect_ = new_plugin_rect;
   plugin_dip_size_ = new_view_rect.size();
 
-  paint_manager().SetSize(plugin_rect_.size(), device_scale_);
+  paint_manager_.SetSize(plugin_rect_.size(), device_scale_);
 
   // Initialize the image data buffer if the context size changes.
   const gfx::Size old_image_size = gfx::SkISizeToSize(image_data_.dimensions());
@@ -662,11 +864,13 @@ void PdfViewPluginBase::UpdateScroll() {
 
 gfx::PointF PdfViewPluginBase::BoundScrollPositionToDocument(
     const gfx::PointF& scroll_position) {
-  float max_x = std::max(
-      document_size_.width() * float{zoom_} - plugin_dip_size_.width(), 0.0f);
+  float max_x = std::max(document_size_.width() * static_cast<float>(zoom_) -
+                             plugin_dip_size_.width(),
+                         0.0f);
   float x = base::ClampToRange(scroll_position.x(), 0.0f, max_x);
-  float max_y = std::max(
-      document_size_.height() * float{zoom_} - plugin_dip_size_.height(), 0.0f);
+  float max_y = std::max(document_size_.height() * static_cast<float>(zoom_) -
+                             plugin_dip_size_.height(),
+                         0.0f);
   float y = base::ClampToRange(scroll_position.y(), 0.0f, max_y);
   return gfx::PointF(x, y);
 }
@@ -731,6 +935,11 @@ void PdfViewPluginBase::SetZoom(double scale) {
   OnGeometryChanged(old_zoom, device_scale_);
 }
 
+// static
+bool PdfViewPluginBase::IsPrintPreviewUrl(base::StringPiece url) {
+  return base::StartsWith(url, kChromePrintHost);
+}
+
 void PdfViewPluginBase::HandleDisplayAnnotationsMessage(
     const base::Value& message) {
   engine()->DisplayAnnotations(message.FindBoolKey("display").value());
@@ -738,12 +947,8 @@ void PdfViewPluginBase::HandleDisplayAnnotationsMessage(
 
 void PdfViewPluginBase::HandleGetNamedDestinationMessage(
     const base::Value& message) {
-  const std::string* destination_name =
-      message.FindStringKey("namedDestination");
-  CHECK(destination_name);
-
   absl::optional<PDFEngine::NamedDestination> named_destination =
-      engine()->GetNamedDestination(*destination_name);
+      engine()->GetNamedDestination(*message.FindStringKey("namedDestination"));
 
   const int page_number = named_destination.has_value()
                               ? base::checked_cast<int>(named_destination->page)
@@ -770,10 +975,8 @@ void PdfViewPluginBase::HandleGetNamedDestinationMessage(
 
 void PdfViewPluginBase::HandleGetPasswordCompleteMessage(
     const base::Value& message) {
-  const std::string* password = message.FindStringKey("password");
-  CHECK(password);
-  DCHECK(!password_callback_.is_null());
-  std::move(password_callback_).Run(*password);
+  DCHECK(password_callback_);
+  std::move(password_callback_).Run(*message.FindStringKey("password"));
 }
 
 void PdfViewPluginBase::HandleGetSelectedTextMessage(
@@ -796,6 +999,59 @@ void PdfViewPluginBase::HandleGetThumbnailMessage(const base::Value& message) {
                                             GetWeakPtr(), std::move(reply)));
 }
 
+void PdfViewPluginBase::HandleLoadPreviewPageMessage(
+    const base::Value& message) {
+  const std::string& url = *message.FindStringKey("url");
+  int index = message.FindIntKey("index").value();
+
+  // For security reasons, crash if `url` is not for Print Preview.
+  CHECK(IsPrintPreview());
+  CHECK(IsPrintPreviewUrl(url));
+  ProcessPreviewPageInfo(url, index);
+}
+
+void PdfViewPluginBase::HandlePrintMessage(const base::Value& /*message*/) {
+  Print();
+}
+
+void PdfViewPluginBase::HandleResetPrintPreviewModeMessage(
+    const base::Value& message) {
+  const std::string& url = *message.FindStringKey("url");
+  bool is_grayscale = message.FindBoolKey("grayscale").value();
+  int print_preview_page_count = message.FindIntKey("pageCount").value();
+
+  // For security reasons, crash if `url` is not for Print Preview.
+  CHECK(IsPrintPreview());
+  CHECK(IsPrintPreviewUrl(url));
+  DCHECK_GE(print_preview_page_count, 0);
+
+  // The page count is zero if the print preview source is a PDF. In which
+  // case, the page index for `url` should be at `kCompletePDFIndex`.
+  // When the page count is not zero, then the source is not PDF. In which
+  // case, the page index for `url` should be non-negative.
+  bool is_previewing_pdf = IsPreviewingPDF(print_preview_page_count);
+  int page_index = ExtractPrintPreviewPageIndex(url);
+  if (is_previewing_pdf)
+    DCHECK_EQ(page_index, kCompletePDFIndex);
+  else
+    DCHECK_GE(page_index, 0);
+
+  print_preview_page_count_ = print_preview_page_count;
+  print_preview_loaded_page_count_ = 0;
+  url_ = url;
+  preview_pages_info_ = base::queue<PreviewPageInfo>();
+  preview_document_load_state_ = DocumentLoadState::kComplete;
+  document_load_state_ = DocumentLoadState::kLoading;
+  LoadUrl(GetURL(), /*is_print_preview=*/false);
+  preview_engine_.reset();
+  InitializeEngine(std::make_unique<PDFiumEngine>(
+      this, PDFiumFormFiller::ScriptOption::kNoJavaScript));
+  engine()->SetGrayscale(is_grayscale);
+  engine()->New(GetURL().c_str(), /*headers=*/nullptr);
+
+  paint_manager_.InvalidateRect(gfx::Rect(plugin_rect().size()));
+}
+
 void PdfViewPluginBase::HandleRotateClockwiseMessage(
     const base::Value& /*message*/) {
   engine()->RotateClockwise();
@@ -804,6 +1060,54 @@ void PdfViewPluginBase::HandleRotateClockwiseMessage(
 void PdfViewPluginBase::HandleRotateCounterclockwiseMessage(
     const base::Value& /*message*/) {
   engine()->RotateCounterclockwise();
+}
+
+void PdfViewPluginBase::HandleSaveMessage(const base::Value& message) {
+  const std::string& token = *message.FindStringKey("token");
+  int request_type = message.FindIntKey("saveRequestType").value();
+  DCHECK_GE(request_type, static_cast<int>(SaveRequestType::kAnnotation));
+  DCHECK_LE(request_type, static_cast<int>(SaveRequestType::kEdited));
+
+  switch (static_cast<SaveRequestType>(request_type)) {
+    case SaveRequestType::kAnnotation:
+#if BUILDFLAG(ENABLE_INK)
+      // In annotation mode, assume the user will make edits and prefer saving
+      // using the plugin data.
+      SetPluginCanSave(true);
+      SaveToBuffer(token);
+#else
+      NOTREACHED();
+#endif  // BUILDFLAG(ENABLE_INK)
+      break;
+    case SaveRequestType::kOriginal:
+      SetPluginCanSave(false);
+      SaveToFile(token);
+      SetPluginCanSave(edit_mode_);
+      break;
+    case SaveRequestType::kEdited:
+      SaveToBuffer(token);
+      break;
+  }
+}
+
+void PdfViewPluginBase::HandleSaveAttachmentMessage(
+    const base::Value& message) {
+  const int index = message.FindIntKey("attachmentIndex").value();
+
+  const std::vector<DocumentAttachmentInfo>& list =
+      engine()->GetDocumentAttachmentInfoList();
+  DCHECK_GE(index, 0);
+  DCHECK_LT(static_cast<size_t>(index), list.size());
+  DCHECK(list[index].is_readable);
+  DCHECK(IsSaveDataSizeValid(list[index].size_bytes));
+
+  std::vector<uint8_t> data = engine()->GetAttachmentData(index);
+  base::Value data_to_save(
+      IsSaveDataSizeValid(data.size()) ? data : std::vector<uint8_t>());
+
+  base::Value reply = PrepareReplyMessage("saveAttachmentReply", message);
+  reply.SetKey("dataToSave", std::move(data_to_save));
+  SendMessage(std::move(reply));
 }
 
 void PdfViewPluginBase::HandleSelectAllMessage(const base::Value& /*message*/) {
@@ -818,7 +1122,6 @@ void PdfViewPluginBase::HandleSetBackgroundColorMessage(
 }
 
 void PdfViewPluginBase::HandleSetReadOnlyMessage(const base::Value& message) {
-  DCHECK(base::FeatureList::IsEnabled(features::kPdfViewerPresentationMode));
   engine()->SetReadOnly(message.FindBoolKey("enableReadOnly").value());
 }
 
@@ -923,9 +1226,9 @@ void PdfViewPluginBase::HandleViewportMessage(const base::Value& message) {
                          scroll_position_at_last_raster_.y() * zoom_ratio));
     }
 
-    paint_manager().SetTransform(zoom_ratio, pinch_center,
-                                 pinch_vector + paint_offset + scroll_delta,
-                                 true);
+    paint_manager_.SetTransform(zoom_ratio, pinch_center,
+                                pinch_vector + paint_offset + scroll_delta,
+                                true);
     needs_reraster_ = false;
     return;
   }
@@ -936,7 +1239,7 @@ void PdfViewPluginBase::HandleViewportMessage(const base::Value& message) {
     // that appear after zooming out.
     // On pinch end the scale is again 1.f and we request a reraster
     // in the new position.
-    paint_manager().ClearTransform();
+    paint_manager_.ClearTransform();
     last_bitmap_smaller_ = false;
     needs_reraster_ = true;
 
@@ -954,6 +1257,28 @@ void PdfViewPluginBase::HandleViewportMessage(const base::Value& message) {
   scroll_position = BoundScrollPositionToDocument(scroll_position);
   engine()->ScrolledToXPosition(scroll_position.x() * device_scale_);
   engine()->ScrolledToYPosition(scroll_position.y() * device_scale_);
+}
+
+void PdfViewPluginBase::DidStartLoading() {
+  if (did_call_start_loading_)
+    return;
+
+  PluginDidStartLoading();
+  did_call_start_loading_ = true;
+}
+
+void PdfViewPluginBase::DidStopLoading() {
+  if (!did_call_start_loading_)
+    return;
+
+  PluginDidStopLoading();
+  did_call_start_loading_ = false;
+}
+
+void PdfViewPluginBase::SaveToFile(const std::string& token) {
+  engine()->KillFormFocus();
+  ConsumeSaveToken(token);
+  SaveAs();
 }
 
 void PdfViewPluginBase::DoPaint(const std::vector<gfx::Rect>& paint_rects,
@@ -1152,17 +1477,12 @@ void PdfViewPluginBase::SendThumbnail(base::Value reply, Thumbnail thumbnail) {
 
 void PdfViewPluginBase::LoadAccessibility() {
   accessibility_state_ = AccessibilityState::kLoaded;
-  AccessibilityDocInfo doc_info;
-  doc_info.page_count = engine_->GetNumberOfPages();
-  doc_info.text_accessible =
-      engine_->HasPermission(PDFEngine::PERMISSION_COPY_ACCESSIBLE);
-  doc_info.text_copyable = engine_->HasPermission(PDFEngine::PERMISSION_COPY);
 
   // A new document layout will trigger the creation of a new accessibility
   // tree, so `next_accessibility_page_index_` should be reset to ignore
   // outdated asynchronous calls of PrepareAndSetAccessibilityPageInfo().
   next_accessibility_page_index_ = 0;
-  SetAccessibilityDocInfo(doc_info);
+  SetAccessibilityDocInfo(GetAccessibilityDocInfo());
 
   // If the document contents isn't accessible, don't send anything more.
   if (!(engine_->HasPermission(PDFEngine::PERMISSION_COPY) ||
@@ -1229,6 +1549,75 @@ void PdfViewPluginBase::HistogramCustomCounts(const char* name,
   if (IsPrintPreview())
     return;
   base::UmaHistogramCustomCounts(name, sample, min, max, bucket_count);
+}
+
+void PdfViewPluginBase::DidOpenPreview(std::unique_ptr<UrlLoader> loader,
+                                       int32_t result) {
+  DCHECK_EQ(result, Result::kSuccess);
+  preview_client_ = std::make_unique<PreviewModeClient>(this);
+  preview_engine_ = std::make_unique<PDFiumEngine>(
+      preview_client_.get(), PDFiumFormFiller::ScriptOption::kNoJavaScript);
+  preview_engine_->HandleDocumentLoad(std::move(loader));
+}
+
+void PdfViewPluginBase::OnPrintPreviewLoaded() {
+  // Scroll location is retained across document loads in print preview mode, so
+  // there's no need to override the scroll position by scrolling again.
+  if (IsPreviewingPDF(print_preview_page_count_)) {
+    SendPrintPreviewLoadedNotification();
+  } else {
+    DCHECK_EQ(0, print_preview_loaded_page_count_);
+    print_preview_loaded_page_count_ = 1;
+    AppendBlankPrintPreviewPages();
+  }
+  OnGeometryChanged(0, 0);
+}
+
+void PdfViewPluginBase::AppendBlankPrintPreviewPages() {
+  engine()->AppendBlankPages(print_preview_page_count_);
+  LoadNextPreviewPage();
+}
+
+void PdfViewPluginBase::ProcessPreviewPageInfo(const std::string& url,
+                                               int dest_page_index) {
+  DCHECK(IsPrintPreview());
+  DCHECK_GE(dest_page_index, 0);
+  DCHECK_LT(dest_page_index, print_preview_page_count_);
+
+  // Print Preview JS will send the loadPreviewPage message for every page,
+  // including the first page in the print preview, which has already been
+  // loaded when handing the resetPrintPreviewMode message. Just ignore it.
+  if (dest_page_index == 0)
+    return;
+
+  int src_page_index = ExtractPrintPreviewPageIndex(url);
+  DCHECK_GE(src_page_index, 0);
+
+  preview_pages_info_.push(std::make_pair(url, dest_page_index));
+  LoadAvailablePreviewPage();
+}
+
+void PdfViewPluginBase::LoadAvailablePreviewPage() {
+  if (preview_pages_info_.empty() ||
+      document_load_state() != DocumentLoadState::kComplete ||
+      preview_document_load_state_ == DocumentLoadState::kLoading) {
+    return;
+  }
+
+  preview_document_load_state_ = DocumentLoadState::kLoading;
+  const std::string& url = preview_pages_info_.front().first;
+  LoadUrl(url, /*is_print_preview=*/true);
+}
+
+void PdfViewPluginBase::LoadNextPreviewPage() {
+  if (!preview_pages_info_.empty()) {
+    DCHECK_LT(print_preview_loaded_page_count_, print_preview_page_count_);
+    LoadAvailablePreviewPage();
+    return;
+  }
+
+  if (print_preview_loaded_page_count_ == print_preview_page_count_)
+    SendPrintPreviewLoadedNotification();
 }
 
 }  // namespace chrome_pdf

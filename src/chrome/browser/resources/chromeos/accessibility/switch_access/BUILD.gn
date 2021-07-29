@@ -108,6 +108,7 @@ js2gtest("switch_access_extjs_tests") {
   test_type = "extension"
   sources = [
     "auto_scan_manager_test.js",
+    "focus_ring_manager_test.js",
     "item_scan_manager_test.js",
     "nodes/basic_node_test.js",
     "nodes/desktop_node_test.js",
@@ -115,6 +116,7 @@ js2gtest("switch_access_extjs_tests") {
     "nodes/tab_node_test.js",
     "point_scan_manager_test.js",
     "switch_access_predicate_test.js",
+    "switch_access_test.js",
     "text_navigation_manager_test.js",
   ]
   gen_include_files = [

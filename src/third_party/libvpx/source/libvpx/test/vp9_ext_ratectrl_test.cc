@@ -8,6 +8,7 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
+#include <cstdint>
 #include <new>
 
 #include "test/codec_factory.h"
@@ -20,7 +21,7 @@
 namespace {
 
 constexpr int kModelMagicNumber = 51396;
-constexpr unsigned int PrivMagicNumber = 5566;
+constexpr uintptr_t PrivMagicNumber = 5566;
 constexpr int kFrameNum = 5;
 constexpr int kLosslessCodingIndex = 2;
 
@@ -128,6 +129,7 @@ vpx_rc_status_t rc_get_encodeframe_decision(
   } else {
     frame_decision->q_index = 100;
   }
+  frame_decision->max_frame_size = 0;
   return VPX_RC_OK;
 }
 
@@ -142,6 +144,11 @@ vpx_rc_status_t rc_update_encodeframe_result(
   EXPECT_EQ(encode_frame_result->pixel_count, ref_pixel_count);
   if (toy_rate_ctrl->coding_index == kLosslessCodingIndex) {
     EXPECT_EQ(encode_frame_result->sse, 0);
+  }
+  if (toy_rate_ctrl->coding_index == kLosslessCodingIndex) {
+    EXPECT_EQ(encode_frame_result->actual_encoding_qindex, 0);
+  } else {
+    EXPECT_EQ(encode_frame_result->actual_encoding_qindex, 100);
   }
   return VPX_RC_OK;
 }

@@ -5,18 +5,23 @@
 #include "components/full_restore/full_restore_read_handler.h"
 
 #include <cstdint>
+#include <memory>
 #include <utility>
 
-#include "ash/public/cpp/app_types.h"
+#include "ash/constants/app_types.h"
 #include "base/bind.h"
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/full_restore/app_launch_info.h"
+#include "components/full_restore/desk_template_read_handler.h"
 #include "components/full_restore/full_restore_file_handler.h"
 #include "components/full_restore/full_restore_info.h"
+#include "components/full_restore/full_restore_save_handler.h"
 #include "components/full_restore/restore_data.h"
 #include "components/full_restore/window_info.h"
 #include "components/sessions/core/session_id.h"
+#include "extensions/common/constants.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -47,13 +52,7 @@ void FullRestoreReadHandler::OnWindowInitialized(aura::Window* window) {
     if (window_id == kParentToHiddenContainer ||
         arc_read_handler_->HasRestoreData(window_id)) {
       observed_windows_.AddObservation(window);
-
-      // If |window| is added to a hidden container, that means the ARC task is
-      // not created yet, so add |window| to |arc_window_candidates_| to wait
-      // the task to be created.
-      if (window_id == kParentToHiddenContainer)
-        arc_read_handler_->AddArcWindowCandidate(window);
-
+      arc_read_handler_->AddArcWindowCandidate(window);
       FullRestoreInfo::GetInstance()->OnWindowInitialized(window);
     }
     return;
@@ -90,6 +89,11 @@ void FullRestoreReadHandler::SetActiveProfilePath(
   active_profile_path_ = profile_path;
 }
 
+void FullRestoreReadHandler::SetCheckRestoreData(
+    const base::FilePath& profile_path) {
+  should_check_restore_data_.insert(profile_path);
+}
+
 void FullRestoreReadHandler::OnTaskCreated(const std::string& app_id,
                                            int32_t task_id,
                                            int32_t session_id) {
@@ -104,6 +108,23 @@ void FullRestoreReadHandler::OnTaskDestroyed(int32_t task_id) {
 
 void FullRestoreReadHandler::ReadFromFile(const base::FilePath& profile_path,
                                           Callback callback) {
+  auto it = profile_path_to_restore_data_.find(profile_path);
+  if (it != profile_path_to_restore_data_.end()) {
+    // If the restore data has been read from the file, just use it, and don't
+    // need to read it again.
+    //
+    // We must use post task here, because FullRestoreAppLaunchHandler calls
+    // ReadFromFile in FullRestoreService construct function, and the callback
+    // in FullRestoreAppLaunchHandler calls the init function of
+    // FullRestoreService. If we don't use post task, and call the callback
+    // function directly, it could cause deadloop.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback),
+                       (it->second ? it->second->Clone() : nullptr)));
+    return;
+  }
+
   auto file_handler =
       base::MakeRefCounted<FullRestoreFileHandler>(profile_path);
   file_handler->owning_task_runner()->PostTaskAndReplyWithResult(
@@ -144,9 +165,28 @@ void FullRestoreReadHandler::RemoveAppRestoreData(
   it->second->RemoveAppRestoreData(app_id, restore_window_id);
 }
 
-bool FullRestoreReadHandler::HasWindowInfo(int32_t restore_window_id) {
-  if (!SessionID::IsValidValue(restore_window_id))
+bool FullRestoreReadHandler::HasAppTypeBrowser(
+    const base::FilePath& profile_path) {
+  auto it = profile_path_to_restore_data_.find(profile_path);
+  if (it == profile_path_to_restore_data_.end())
     return false;
+
+  return it->second->HasAppTypeBrowser();
+}
+
+bool FullRestoreReadHandler::HasBrowser(const base::FilePath& profile_path) {
+  auto it = profile_path_to_restore_data_.find(profile_path);
+  if (it == profile_path_to_restore_data_.end())
+    return false;
+
+  return it->second->HasBrowser();
+}
+
+bool FullRestoreReadHandler::HasWindowInfo(int32_t restore_window_id) {
+  if (!SessionID::IsValidValue(restore_window_id) ||
+      !base::Contains(should_check_restore_data_, active_profile_path_)) {
+    return false;
+  }
 
   auto it = window_id_to_app_restore_info_.find(restore_window_id);
   if (it == window_id_to_app_restore_info_.end())
@@ -173,6 +213,14 @@ std::unique_ptr<WindowInfo> FullRestoreReadHandler::GetWindowInfo(
   return GetWindowInfo(restore_window_id);
 }
 
+std::unique_ptr<AppLaunchInfo> FullRestoreReadHandler::GetArcAppLaunchInfo(
+    const std::string& app_id,
+    int32_t session_id) {
+  return arc_read_handler_
+             ? arc_read_handler_->GetArcAppLaunchInfo(app_id, session_id)
+             : nullptr;
+}
+
 int32_t FullRestoreReadHandler::FetchRestoreWindowId(
     const std::string& app_id) {
   auto it = profile_path_to_restore_data_.find(active_profile_path_);
@@ -182,11 +230,20 @@ int32_t FullRestoreReadHandler::FetchRestoreWindowId(
   return it->second->FetchRestoreWindowId(app_id);
 }
 
-int32_t FullRestoreReadHandler::GetArcRestoreWindowId(int32_t task_id) {
+int32_t FullRestoreReadHandler::GetArcRestoreWindowIdForTaskId(
+    int32_t task_id) {
   if (!arc_read_handler_)
     return 0;
 
-  return arc_read_handler_->GetArcRestoreWindowId(task_id);
+  return arc_read_handler_->GetArcRestoreWindowIdForTaskId(task_id);
+}
+
+int32_t FullRestoreReadHandler::GetArcRestoreWindowIdForSessionId(
+    int32_t session_id) {
+  if (!arc_read_handler_)
+    return 0;
+
+  return arc_read_handler_->GetArcRestoreWindowIdForSessionId(session_id);
 }
 
 void FullRestoreReadHandler::ModifyWidgetParams(
@@ -203,24 +260,21 @@ void FullRestoreReadHandler::ModifyWidgetParams(
                       ? arc_read_handler_->GetWindowInfo(restore_window_id)
                       : nullptr;
   } else {
-    window_info = GetWindowInfo(restore_window_id);
+    // `DeskTemplateReadHandler::GetWindowInfo()` will return nullptr if full
+    // restore is running.
+    // TODO(sammiequon): Separate full restore and desk templates logic.
+    window_info = DeskTemplateReadHandler::GetInstance()->GetWindowInfo(
+        restore_window_id);
+    if (!window_info &&
+        base::Contains(should_check_restore_data_, active_profile_path_)) {
+      window_info = GetWindowInfo(restore_window_id);
+    }
   }
   if (!window_info)
     return;
 
-  if (window_info->activation_index) {
-    const int32_t index = *window_info->activation_index;
-    // kActivationIndexKey is owned, which allows for passing in this raw
-    // pointer.
-    out_params->init_properties_container.SetProperty(kActivationIndexKey,
-                                                      new int32_t(index));
-    // Windows opened from full restore should not be activated. Widgets that
-    // are shown are activated by default. Force the widget to not be
-    // activatable; the activation will be restored in ash once the window is
-    // launched.
-    out_params->init_properties_container.SetProperty(
-        kLaunchedFromFullRestoreKey, true);
-  }
+  ApplyProperties(window_info.get(), &out_params->init_properties_container);
+
   if (window_info->desk_id)
     out_params->workspace = base::NumberToString(*window_info->desk_id);
   out_params->visible_on_all_workspaces =
@@ -255,6 +309,64 @@ void FullRestoreReadHandler::SetArcSessionIdForWindowId(int32_t arc_session_id,
                                                         int32_t window_id) {
   DCHECK(arc_read_handler_);
   arc_read_handler_->SetArcSessionIdForWindowId(arc_session_id, window_id);
+}
+
+void FullRestoreReadHandler::ApplyProperties(
+    WindowInfo* window_info,
+    ui::PropertyHandler* property_handler) {
+  DCHECK(window_info);
+  DCHECK(property_handler);
+
+  // Create a clone so `property_handler` can have complete ownership of a copy
+  // of WindowInfo.
+  WindowInfo* window_info_clone = window_info->Clone();
+  property_handler->SetProperty(kWindowInfoKey, window_info_clone);
+
+  if (window_info->activation_index) {
+    const int32_t index = *window_info->activation_index;
+    // kActivationIndexKey is owned, which allows for passing in this raw
+    // pointer.
+    property_handler->SetProperty(kActivationIndexKey, new int32_t(index));
+    // Windows opened from full restore should not be activated. Widgets that
+    // are shown are activated by default. Force the widget to not be
+    // activatable; the activation will be restored in ash once the window is
+    // launched.
+    property_handler->SetProperty(kLaunchedFromFullRestoreKey, true);
+  }
+  if (window_info->pre_minimized_show_state_type) {
+    property_handler->SetProperty(aura::client::kPreMinimizedShowStateKey,
+                                  *window_info->pre_minimized_show_state_type);
+  }
+}
+
+void FullRestoreReadHandler::AddChromeBrowserLaunchInfoForTesting(
+    const base::FilePath& profile_path) {
+  auto session_id = SessionID::NewUnique();
+  auto app_launch_info = std::make_unique<AppLaunchInfo>(
+      extension_misc::kChromeAppId, session_id.id());
+  app_launch_info->app_type_browser = true;
+
+  if (profile_path_to_restore_data_.find(profile_path) ==
+      profile_path_to_restore_data_.end()) {
+    profile_path_to_restore_data_[profile_path] =
+        std::make_unique<RestoreData>();
+  }
+
+  profile_path_to_restore_data_[profile_path]->AddAppLaunchInfo(
+      std::move(app_launch_info));
+  window_id_to_app_restore_info_[session_id.id()] =
+      std::make_pair(profile_path, extension_misc::kChromeAppId);
+}
+
+std::unique_ptr<AppLaunchInfo> FullRestoreReadHandler::GetAppLaunchInfo(
+    const base::FilePath& profile_path,
+    const std::string& app_id,
+    int32_t restore_window_id) {
+  auto it = profile_path_to_restore_data_.find(profile_path);
+  if (it == profile_path_to_restore_data_.end())
+    return nullptr;
+
+  return it->second->GetAppLaunchInfo(app_id, restore_window_id);
 }
 
 std::unique_ptr<WindowInfo> FullRestoreReadHandler::GetWindowInfo(
@@ -306,9 +418,18 @@ void FullRestoreReadHandler::OnGetRestoreData(
         }
       }
     }
+  } else {
+    profile_path_to_restore_data_[profile_path] = nullptr;
   }
 
   std::move(callback).Run(std::move(restore_data));
+
+  // Call FullRestoreSaveHandler to start a timer to clear the restore data
+  // after reading the restore data. Otherwise, if the user doesn't select
+  // restore, and never launch a new app, the restore data is not cleared. So
+  // when the system is reboot, the restore process could restore the previous
+  // record before the last reboot.
+  FullRestoreSaveHandler::GetInstance()->ClearRestoreData(profile_path);
 }
 
 void FullRestoreReadHandler::RemoveAppRestoreData(int32_t window_id) {

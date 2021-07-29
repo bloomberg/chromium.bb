@@ -10,6 +10,7 @@
 #include "ash/system/media/unified_media_controls_controller.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
+#include "base/bind.h"
 #include "base/containers/contains.h"
 #include "components/media_message_center/media_notification_util.h"
 #include "components/vector_icons/vector_icons.h"
@@ -20,6 +21,7 @@
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -139,8 +141,9 @@ void UnifiedMediaControlsView::MediaActionButton::SetAction(
 void UnifiedMediaControlsView::MediaActionButton::OnThemeChanged() {
   views::ImageButton::OnThemeChanged();
   UpdateVectorIcon();
-  focus_ring()->SetColor(AshColorProvider::Get()->GetControlsLayerColor(
-      AshColorProvider::ControlsLayerType::kFocusRingColor));
+  views::FocusRing::Get(this)->SetColor(
+      AshColorProvider::Get()->GetControlsLayerColor(
+          AshColorProvider::ControlsLayerType::kFocusRingColor));
 }
 
 void UnifiedMediaControlsView::MediaActionButton::UpdateVectorIcon() {
@@ -301,7 +304,7 @@ void UnifiedMediaControlsView::UpdateActionButtonAvailability(
 void UnifiedMediaControlsView::OnThemeChanged() {
   views::Button::OnThemeChanged();
   auto* color_provider = AshColorProvider::Get();
-  focus_ring()->SetColor(color_provider->GetControlsLayerColor(
+  views::FocusRing::Get(this)->SetColor(color_provider->GetControlsLayerColor(
       AshColorProvider::ControlsLayerType::kFocusRingColor));
   background()->SetNativeControlColor(GetBackgroundColor());
   title_label_->SetEnabledColor(color_provider->GetContentLayerColor(

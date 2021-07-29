@@ -22,26 +22,27 @@ namespace {
 using WgslGeneratorImplTest = TestHelper;
 
 TEST_F(WgslGeneratorImplTest, EmitAlias_F32) {
-  auto* alias = ty.alias("a", ty.f32());
+  auto* alias = Alias("a", ty.f32());
+
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitConstructedType(alias)) << gen.error();
+  ASSERT_TRUE(gen.EmitTypeDecl(alias)) << gen.error();
   EXPECT_EQ(gen.result(), R"(type a = f32;
 )");
 }
 
-TEST_F(WgslGeneratorImplTest, EmitConstructedType_Struct) {
+TEST_F(WgslGeneratorImplTest, EmitTypeDecl_Struct) {
   auto* s = Structure("A", {
                                Member("a", ty.f32()),
                                Member("b", ty.i32()),
                            });
 
-  auto* alias = ty.alias("B", s);
+  auto* alias = Alias("B", ty.Of(s));
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitConstructedType(s)) << gen.error();
-  ASSERT_TRUE(gen.EmitConstructedType(alias)) << gen.error();
+  ASSERT_TRUE(gen.EmitTypeDecl(s)) << gen.error();
+  ASSERT_TRUE(gen.EmitTypeDecl(alias)) << gen.error();
   EXPECT_EQ(gen.result(), R"(struct A {
   a : f32;
   b : i32;
@@ -56,11 +57,11 @@ TEST_F(WgslGeneratorImplTest, EmitAlias_ToStruct) {
                                Member("b", ty.i32()),
                            });
 
-  auto* alias = ty.alias("B", s);
+  auto* alias = Alias("B", ty.Of(s));
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitConstructedType(alias)) << gen.error();
+  ASSERT_TRUE(gen.EmitTypeDecl(alias)) << gen.error();
   EXPECT_EQ(gen.result(), R"(type B = A;
 )");
 }

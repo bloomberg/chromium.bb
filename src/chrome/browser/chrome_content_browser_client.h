@@ -51,6 +51,7 @@ class WebUsbService;
 namespace web_pref {
 struct WebPreferences;
 }  // namespace web_pref
+class StorageKey;
 class URLLoaderThrottle;
 }  // namespace blink
 
@@ -71,10 +72,6 @@ class UrlCheckerDelegate;
 namespace sandbox {
 class SeatbeltExecClient;
 }  // namespace sandbox
-
-namespace storage {
-class StorageKey;
-}  // namespace storage
 
 namespace ui {
 class NativeTheme;
@@ -190,7 +187,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool CanCommitURL(content::RenderProcessHost* process_host,
                     const GURL& url) override;
   void OverrideNavigationParams(
-      content::WebContents* web_contents,
       content::SiteInstance* site_instance,
       ui::PageTransition* transition,
       bool* is_renderer_initiated,
@@ -255,7 +251,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                          const GURL& site_for_cookies,
                          const absl::optional<url::Origin>& top_frame_origin,
                          const std::string& name,
-                         const storage::StorageKey& storage_key,
+                         const blink::StorageKey& storage_key,
                          content::BrowserContext* context,
                          int render_process_id,
                          int render_frame_id) override;
@@ -265,20 +261,21 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void AllowWorkerFileSystem(
       const GURL& url,
       content::BrowserContext* browser_context,
-      const std::vector<content::GlobalFrameRoutingId>& render_frames,
+      const std::vector<content::GlobalRenderFrameHostId>& render_frames,
       base::OnceCallback<void(bool)> callback) override;
-  bool AllowWorkerIndexedDB(
-      const GURL& url,
-      content::BrowserContext* browser_context,
-      const std::vector<content::GlobalFrameRoutingId>& render_frames) override;
+  bool AllowWorkerIndexedDB(const GURL& url,
+                            content::BrowserContext* browser_context,
+                            const std::vector<content::GlobalRenderFrameHostId>&
+                                render_frames) override;
   bool AllowWorkerCacheStorage(
       const GURL& url,
       content::BrowserContext* browser_context,
-      const std::vector<content::GlobalFrameRoutingId>& render_frames) override;
-  bool AllowWorkerWebLocks(
-      const GURL& url,
-      content::BrowserContext* browser_context,
-      const std::vector<content::GlobalFrameRoutingId>& render_frames) override;
+      const std::vector<content::GlobalRenderFrameHostId>& render_frames)
+      override;
+  bool AllowWorkerWebLocks(const GURL& url,
+                           content::BrowserContext* browser_context,
+                           const std::vector<content::GlobalRenderFrameHostId>&
+                               render_frames) override;
   AllowWebBluetoothResult AllowWebBluetooth(
       content::BrowserContext* browser_context,
       const url::Origin& requesting_origin,
@@ -287,8 +284,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool IsInterestGroupAPIAllowed(content::BrowserContext* browser_context,
                                  const url::Origin& top_frame_origin,
                                  const GURL& api_url) override;
-  bool IsConversionMeasurementAllowed(
-      content::BrowserContext* browser_context) override;
   bool IsConversionMeasurementOperationAllowed(
       content::BrowserContext* browser_context,
       ConversionMeasurementOperation operation,
@@ -417,6 +412,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                      ChildSpawnFlags flags) override;
   std::wstring GetAppContainerSidForSandboxType(
       sandbox::policy::SandboxType sandbox_type) override;
+  std::wstring GetLPACCapabilityNameForNetworkService() override;
   bool IsUtilityCetCompatible(const std::string& utility_sub_type) override;
   bool IsRendererCodeIntegrityEnabled() override;
   void SessionEnding() override;
@@ -569,6 +565,11 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   std::unique_ptr<content::AuthenticatorRequestClientDelegate>
   GetWebAuthenticationRequestDelegate(
       content::RenderFrameHost* render_frame_host) override;
+  void ShowDirectSocketsConnectionDialog(
+      content::RenderFrameHost* owner,
+      const std::string& address,
+      base::OnceCallback<void(bool, const std::string&, const std::string&)>
+          callback) override;
 #endif
   bool ShowPaymentHandlerWindow(
       content::BrowserContext* browser_context,
@@ -587,7 +588,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       LoginAuthRequiredCallback auth_required_callback) override;
   bool HandleExternalProtocol(
       const GURL& url,
-      content::WebContents::OnceGetter web_contents_getter,
+      content::WebContents::Getter web_contents_getter,
       int child_id,
       int frame_tree_node_id,
       content::NavigationUIData* navigation_data,
@@ -671,7 +672,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 #if !defined(OS_ANDROID)
   base::OnceClosure FetchRemoteSms(
       content::WebContents* web_contents,
-      const url::Origin& origin,
+      const std::vector<url::Origin>& origin_list,
       base::OnceCallback<void(absl::optional<std::vector<url::Origin>>,
                               absl::optional<std::string>,
                               absl::optional<content::SmsFetchFailureType>)>
@@ -706,6 +707,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool ShouldAllowInsecurePrivateNetworkRequests(
       content::BrowserContext* browser_context,
       const url::Origin& origin) override;
+  bool IsJitDisabledForSite(content::BrowserContext* browser_context,
+                            const GURL& site_url) override;
   ukm::UkmService* GetUkmService() override;
 
   void OnKeepaliveRequestStarted(
@@ -764,14 +767,14 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 
   void FileSystemAccessed(
       const GURL& url,
-      const std::vector<content::GlobalFrameRoutingId>& render_frames,
+      const std::vector<content::GlobalRenderFrameHostId>& render_frames,
       base::OnceCallback<void(bool)> callback,
       bool allow);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   void GuestPermissionRequestHelper(
       const GURL& url,
-      const std::vector<content::GlobalFrameRoutingId>& render_frames,
+      const std::vector<content::GlobalRenderFrameHostId>& render_frames,
       base::OnceCallback<void(bool)> callback,
       bool allow);
 #endif

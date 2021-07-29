@@ -255,8 +255,9 @@ std::unique_ptr<base::DictionaryValue> UnlockKeyToDictionary(
                            DeviceTypeStringToEnum(device.device_type()));
   }
 
-  dictionary->Set(kExternalDeviceKeyBeaconSeeds,
-                  BeaconSeedsToListValue(device.beacon_seeds()));
+  dictionary->SetKey(kExternalDeviceKeyBeaconSeeds,
+                     base::Value::FromUniquePtrValue(
+                         BeaconSeedsToListValue(device.beacon_seeds())));
 
   if (device.has_arc_plus_plus()) {
     dictionary->SetBoolean(kExternalDeviceKeyArcPlusPlus,
@@ -284,11 +285,13 @@ std::unique_ptr<base::DictionaryValue> UnlockKeyToDictionary(
   bool legacy_mobile_hotspot_supported =
       device.has_mobile_hotspot_supported() &&
       device.mobile_hotspot_supported();
-  dictionary->Set(kDictionaryKeySoftwareFeatures,
-                  SupportedAndEnabledSoftwareFeaturesToDictionaryValue(
-                      device.supported_software_features(),
-                      device.enabled_software_features(), legacy_unlock_key,
-                      legacy_mobile_hotspot_supported));
+  dictionary->SetKey(
+      kDictionaryKeySoftwareFeatures,
+      base::Value::FromUniquePtrValue(
+          SupportedAndEnabledSoftwareFeaturesToDictionaryValue(
+              device.supported_software_features(),
+              device.enabled_software_features(), legacy_unlock_key,
+              legacy_mobile_hotspot_supported)));
 
   return dictionary;
 }
@@ -345,7 +348,7 @@ void AddSoftwareFeaturesToExternalDevice(
     cryptauth::ExternalDeviceInfo* external_device,
     bool old_unlock_key_value_from_prefs,
     bool old_mobile_hotspot_supported_from_prefs) {
-  for (const auto& it : software_features_dictionary.DictItems()) {
+  for (const auto it : software_features_dictionary.DictItems()) {
     std::string software_feature = it.first;
     if (SoftwareFeatureStringToEnum(software_feature) ==
         cryptauth::SoftwareFeature::UNKNOWN_FEATURE) {

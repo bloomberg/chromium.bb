@@ -196,7 +196,7 @@ locale.  The strings in this file are specific to iOS.
         Sync your passwords, history &amp; more on all devices
       </message>
       <message name="IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SYNC_SUBTITLE" desc="Subtitle of the sync description section on the sync consent dialog to explain why sync can be useful for the user. [iOS only]">
-        Google may use your history to personalize Search, ads, and other Google services.
+        Google may use your history to personalize Search and other Google services.
       </message>
       <message name="IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SETTINGS" desc="Explination text on the sync consent dialog to explain the user they can customize sync settings. [iOS only]">
         You can always choose what to sync in <ph name="BEGIN_LINK">BEGIN_LINK</ph>settings<ph name="END_LINK">END_LINK</ph>.
@@ -336,8 +336,8 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_AUTOFILL_SAVE_CARD_BADGE_HINT" desc="Accessibility Hint for the Save Card button which presents the current options to Save a Card. This is spoken by VoiceOver.   [Length:Unlimited] [iOS only]">
         Options to Save Card
       </message>
-      <message name="IDS_IOS_AUTOFILL_HONORIFIC_PREFIX" desc="Title of the field of a profile address representing the title that can be auto-filled by Chrome. [iOS only]" meaning="A 'Title' field in a web form could be a prefix like Ms., Mx., or Dr. or a position held, like Captain or Rabbi. [Length: 15em]">
-           Title
+      <message name="IDS_IOS_AUTOFILL_HONORIFIC_PREFIX" desc="Title of the field of a profile address representing the title that can be auto-filled by Chrome. A 'Title' field in a web form could be a prefix like Ms., Mx., or Dr. or a position held, like Captain or Rabbi. [Length: 15em] [iOS only]" meaning="Honorific">
+        Title
       </message>
       <message name="IDS_IOS_AUTOFILL_FULLNAME" desc="Title of the field of a profile address representing the full name of the addressee. [Length: 15em] [iOS only]">
         Full Name
@@ -364,7 +364,7 @@ locale.  The strings in this file are specific to iOS.
         To use passwords, you must first set a passcode on your device.
       </message>
       <message name="IDS_IOS_CONSISTENCY_PROMO_ADD_ACCOUNT" desc="Button to add an account to the device.">
-        Add account...
+        Add Account…
       </message>
       <message name="IDS_IOS_CONSISTENCY_PROMO_CHOOSE_ACCOUNT" desc="Presents the list of account on the device and invites the user to choose an account to sign-in.">
         Choose an Account
@@ -507,9 +507,6 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_BOOKMARK_NEW_ZERO_ITEM_LABEL" desc="Text that indicates that a user has selected zero bookmarks for editing. [Length: 30em.]">
         0 selected
       </message>
-      <message name="IDS_IOS_BOOKMARK_NO_BOOKMARKS_LABEL" desc="The label shown on the bookmark collection background when the user has no bookmarks on the selected folder. [Length: 30em.] [iOS only]">
-        No bookmarks here
-      </message>
       <message name="IDS_IOS_BOOKMARK_NO_ITEM_COUNT" desc="Displayed when there are no items in a bookmark folder [Length: 30em.]">
         No items
       </message>
@@ -551,6 +548,27 @@ locale.  The strings in this file are specific to iOS.
       </message>
       <message name="IDS_IOS_CLEAR_BROWSING_DATA_FOOTER_ACCOUNT_AND_HISTORY" desc="Footer message in the settings to clear browsing data that informs the user that clearing browsing data will not sign them out of Chrome and that other forms of history will still be available.">
         You won't be signed out of your Google Account. Your Google Account may have other forms of browsing history at <ph name="BEGIN_LINK">BEGIN_LINK</ph>history.google.com<ph name="END_LINK">END_LINK</ph>.
+      </message>
+      <message name="IDS_IOS_CLEAR_BROWSING_DATA_FOOTER_GOOGLE_DSE" desc="Footer message in the settings to clear browsing data that informs the user they can seperately delete their search history and/or other account info at the 2 links provided.">
+        <ph name="BEGIN_LINK">BEGIN_LINK</ph>Search history<ph name="END_LINK">END_LINK</ph> and <ph name="BEGIN_LINK">BEGIN_LINK</ph>other forms of activity<ph name="END_LINK">END_LINK</ph> may be saved in your Google Account when you’re signed in. You can delete them anytime.
+      </message>
+      <message name="IDS_IOS_CLEAR_BROWSING_DATA_FOOTER_KNOWN_DSE_SIGNED_IN" desc="Footer message in the settings to clear browsing data that informs a signed in user that they will need to look up instructions to delete their search history from their DSE, as well as that they won't be signed out and where to delete other account data.">
+        You won't be signed out of your Google Account. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Other forms of activity<ph name="END_LINK">END_LINK</ph> may be saved in your Google Account when you’re signed in. You can delete them anytime.
+
+        
+Your search engine is <ph name="DSE_NAME">$1<ex>DuckDuckGo</ex></ph>. See their instructions for deleting your search history, if applicable.
+      </message>
+      <message name="IDS_IOS_CLEAR_BROWSING_DATA_FOOTER_KNOWN_DSE_SIGNED_OUT" desc="Footer message in the settings to clear browsing data that informs the user that they will need to look up instructions to delete their search history from their DSE.">
+        Your search engine is <ph name="DSE_NAME">$1<ex>DuckDuckGo</ex></ph>. See their instructions for deleting your search history, if applicable.
+      </message>
+      <message name="IDS_IOS_CLEAR_BROWSING_DATA_FOOTER_UNKOWN_DSE_SIGNED_IN" desc="Footer message in the settings to clear browsing data that informs a signed in user that they will need to look up instructions to delete their search history from a DSE that is not well known to Google, as well as that they won't be signed out and where to delete other account data.">
+        You won't be signed out of your Google Account. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Other forms of activity<ph name="END_LINK">END_LINK</ph> may be saved in your Google Account when you’re signed in. You can delete them anytime.
+
+
+See your search engine’s instructions for deleting your search history, if applicable.
+      </message>
+      <message name="IDS_IOS_CLEAR_BROWSING_DATA_FOOTER_UNKOWN_DSE_SIGNED_OUT" desc="Footer message in the settings to clear browsing data that informs the user that they will need to look up instructions to delete their search history from a DSE that is not well known to Google.">
+        See your search engine’s instructions for deleting your search history, if applicable.
       </message>
       <message name="IDS_IOS_CLEAR_BROWSING_DATA_FOOTER_CLEAR_SYNC_AND_SAVED_SITE_DATA" desc="Footer message in the settings to clear browsing data that informs the user the synced data will be cleared on all devices and that saved site settings will not be deleted.">
         This clears synced data from all devices. Saved site settings will not be deleted and may reflect your browsing habits. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
@@ -855,6 +873,15 @@ Because your account is managed by <ph name="HOSTED_DOMAIN">$1<ex>google.com</ex
       <message name="IDS_IOS_DOWNLOAD_MANAGER_GOOGLE_DRIVE" desc="Button for installing Google Drive app. Google Drive is a product name and should use the correct localized version of the product name. [Length: 25em] [iOS only]">
         Google Drive
       </message>
+      <message name="IDS_IOS_DOWNLOAD_MOBILECONFIG_CONTINUE" desc="Text in the confirmation dialog button that let the user download a .mobileconfig file.[iOS only]">
+          Continue
+      </message>
+      <message name="IDS_IOS_DOWNLOAD_MOBILECONFIG_FILE_WARNING_MESSAGE" desc="Warning message displayed inside an alert before downloading a .mobileconfig file.[iOS only]">
+          This website is trying to download a configuration profile.
+      </message>
+      <message name="IDS_IOS_DOWNLOAD_MOBILECONFIG_FILE_WARNING_TITLE" desc="Title of the alert displaying a warning message before downloading a .mobileconfig file.[iOS only]">
+          Configuration Profile Available
+      </message>
       <message name="IDS_IOS_FACETIME_BUTTON" desc="Text in the confirmation dialog button that will initiate a FaceTime call for the presented number. [Length: 10em] [iOS only]">
         FaceTime
       </message>
@@ -874,10 +901,10 @@ Because your account is managed by <ph name="HOSTED_DOMAIN">$1<ex>google.com</ex
         Sign In…
       </message>
       <message name="IDS_IOS_FIRST_RUN_SYNC_SCREEN_CONTENT" desc="Content string on the sync screen presented to the user on First Run [iOS only]">
-        Google may use your history to personalize Search, ads, and other Google services
-      </message>
-      <message name="IDS_IOS_FIRST_RUN_SYNC_SCREEN_CONTENT_MINOR_MODE" desc="Content string on the sync screen presented to the user on First Run for minor and family link users [iOS only]">
         Google may use your history to personalize Search and other Google services
+      </message>
+      <message name="IDS_IOS_FIRST_RUN_SYNC_SCREEN_ADVANCE_SETTINGS" desc="Label of the button which open advance sync settings screen [iOS only]">
+        Choose What to Sync
       </message>
       <message name="IDS_IOS_FIRST_RUN_SYNC_SCREEN_PRIMARY_ACTION" desc="The primary action string on the sync screen presented to the user on First Run [iOS only]">
         Turn on Sync
@@ -889,7 +916,7 @@ Because your account is managed by <ph name="HOSTED_DOMAIN">$1<ex>google.com</ex
         Sync your passwords, history, and more on all your devices
       </message>
       <message name="IDS_IOS_FIRST_RUN_SYNC_SCREEN_TITLE" desc="Title on the sync screen presented to the user on First Run [iOS only]">
-          Keep Your Devices in Sync
+        Keep Your Devices in Sync
       </message>
       <message name="IDS_IOS_FIRST_RUN_WELCOME_SCREEN_ACCEPT_BUTTON" desc="The label on the continue button of the welcome screen presented to the user on First Run [iOS only]">
         Accept and Continue
@@ -902,6 +929,9 @@ Because your account is managed by <ph name="HOSTED_DOMAIN">$1<ex>google.com</ex
       </message>
       <message name="IDS_IOS_FIRST_RUN_WELCOME_SCREEN_TITLE_IPHONE" desc="The title of the welcome screen presented to the user on First Run when on iPhone [iOS only]">
         Built for your iPhone
+      </message>
+      <message name="IDS_IOS_FIRST_RUN_WELCOME_SCREEN_MANAGED" desc="The disclaimer that the browser is managed on the welcome screen presented to the user on First Run when the browser is managed [iOS only]">
+        Your administrator has control over Chrome and can access its data
       </message>
       <message name="IDS_IOS_FIRSTRUN_BROWSER_MANAGED" desc="Label explaining that the app is managed by an organization. This is shown on the Welcome screen presented to the user on First Run. Only shown if some enterprise policies are set. [iOS only]">
         Your browser is managed by your organization. Some features may be disabled.
@@ -977,6 +1007,12 @@ Because your account is managed by <ph name="HOSTED_DOMAIN">$1<ex>google.com</ex
       </message>
       <message name="IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_ENCRYPTION_FIX_NOW" desc="Title button to ask the user to reauthenticate. Syncing of encrypted types (e.g. passwords) is blocked until the user completes the reauth flow.">
         Verify it's you
+      </message>
+      <message name="IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_FIX_RECOVERABILITY_DEGRADED_FOR_EVERYTHING" desc="Title button to ask the user to reauthenticate, in order to add recovery options, affecting all sync data.">
+        To make sure you can always access your sync data, verify it's you
+      </message>
+      <message name="IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_FIX_RECOVERABILITY_DEGRADED_FOR_PASSWORDS" desc="Title button to ask the user to reauthenticate, in order to add recovery options, affecting passwords only.">
+        To make sure you can always access your saved passwords, verify it's you
       </message>
       <message name="IDS_IOS_HELP_ACCESSIBILITY_LABEL" desc="Used as the accessibility label read by screen readers for a Help button. [iOS only]">
         Help
@@ -1157,7 +1193,7 @@ Because your account is managed by <ph name="HOSTED_DOMAIN">$1<ex>google.com</ex
         Google Activity Controls
       </message>
       <message name="IDS_IOS_MANAGE_SYNC_GOOGLE_ACTIVITY_CONTROLS_DESCRIPTION" desc="Subtitle for the cell to open 'Google Activity Controls' dialog.">
-        Control how your browsing history is used to personalize Search, ads and more
+        Control how your browsing history is used to personalize Search and more
       </message>
       <message name="IDS_IOS_MANAGE_SYNC_DATA_FROM_CHROME_SYNC_DESCRIPTION" desc="Subtitle for the cell to open 'Data from Chromium sync' web page where the user can control all their data data from sync.">
         Manage synced data on Google Dashboard
@@ -1166,10 +1202,10 @@ Because your account is managed by <ph name="HOSTED_DOMAIN">$1<ex>google.com</ex
         Clear
       </message>
       <message name="IDS_IOS_MANAGED_SIGNIN_ACCEPT_BUTTON" desc="The title of the Accept button of the Sign in to a managed account dialog. [40em]">
-        Accept and sign in
+        Accept and Sign in
       </message>
       <message name="IDS_IOS_MANAGED_SIGNIN_TITLE" desc="The title of the Sign in to a managed account dialog. [40em]">
-        Sign in with managed account
+        Sign in With Managed Account
       </message>
       <message name="IDS_IOS_MANAGED_SWITCH_ACCEPT_BUTTON" desc="The title of the Accept button of the Switch from a managed account dialog. [40em]">
         Accept and switch accounts
@@ -1299,9 +1335,6 @@ Because your account is managed by <ph name="HOSTED_DOMAIN">$1<ex>google.com</ex
       </message>
       <message name="IDS_IOS_OPEN_SOURCE_LICENSES" desc="The label to access the open source licenses, displayed in the application settings [Length: 30em] [iOS only]">
         Open Source Licenses
-      </message>
-      <message name="IDS_IOS_OPEN_TABS_ENABLE_SYNC_MOBILE" desc="Button label to enable Sync for user. [Length: 30em]">
-        Enable sync
       </message>
       <message name="IDS_IOS_RECENT_TABS_SYNC_IN_PROGRESS" desc="Section header subtitle label while loading tabs in other devices. [Length: 30em] [iOS only]">
         Syncing...
@@ -1636,6 +1669,27 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       </message>
       <message name="IDS_IOS_READING_LIST_CANCEL_BUTTON" desc="Label of the button to stop editing the reading list entries (delete, mark as read/unread) [Length: 25em]" meaning="Stop editing. [Length: 25em]">
         Cancel
+      </message>
+      <message name="IDS_IOS_READING_LIST_MESSAGES_BANNER_SUBTITLE" desc="Subtitle of the banner indicating the estimated time to read of the page [iOS only]">
+          <ph name="TIME">$1</ph> minute read
+      </message>
+      <message name="IDS_IOS_READING_LIST_MESSAGES_BANNER_TITLE" desc="Title of the banner asking the user to add the current page to Reading List [iOS only]">
+          Add to Reading List for Later?
+      </message>
+      <message name="IDS_IOS_READING_LIST_MESSAGES_MAIN_ACTION" desc="Button text to indicate the user to add this page to Reading List [iOS only]">
+        Add
+      </message>
+      <message name="IDS_IOS_READING_LIST_MESSAGES_MODAL_DESCRIPTION" desc="Informational text explaining the utility of Reading List. [iOS only]">
+          You can save pages to read later or offline. Chrome will ask if you want to save long pages.
+        </message>
+      <message name="IDS_IOS_READING_LIST_MESSAGES_MODAL_NEVER_ASK" desc="Button text to indicate the user wants to be never shown the Add to Reading List prompt [iOS only]">
+        Never Ask
+      </message>
+      <message name="IDS_IOS_READING_LIST_MESSAGES_MODAL_TITLE" desc="Title of the Add to Reading List Messages Modal [Length: 25em] [iOS only]">
+        Add to Reading List
+      </message>
+      <message name="IDS_IOS_READING_LIST_MESSAGES_SETTING_TITLE" desc="Title of the setting to toggle the Add to Reading List Messages prompt on and off [iOS only]">
+        Ask to Add to Reading List
       </message>
       <message name="IDS_IOS_SCANNER_ALERT_CANCEL" desc="Title for a button to cancel a Scanner error dialog. The dialog will be dismissed and no action will be taken. [Length: 20em] [iOS only]" meaning="A button to cancel a Scanner error dialog.">
         Cancel
@@ -2241,9 +2295,6 @@ Try to use a unique password for every site.
       <message name="IDS_IOS_SIGN_IN_DISMISS" desc="Title displayed when there is an unknown failure in sign-in and the user needs to attempt to sign in again. [Length: 20em] [iOS only]">
        Dismiss 
       </message>
-      <message name="IDS_IOS_SIGN_IN_WRONG_CREDENTIALS" desc="Message displayed when the user's existing credentials are incorrect and should be updated. [iOS only]">
-        Your stored sign-in info might be out of date.
-      </message>
       <message name="IDS_IOS_SIGN_IN_AUTH_FAILURE" desc="Message displayed when the user attempts to sign in, but the authentication step fails for an unknown reason. [iOS only]">
         Something went wrong during sign-in.
       </message>
@@ -2280,14 +2331,11 @@ Try to use a unique password for every site.
       <message name="IDS_IOS_SIGNOUT_DIALOG_KEEP_DATA_BUTTON" desc="This button signs the user out and all its data stays on the device. Related to IDS_IOS_SIGNOUT_DIALOG_TITLE [iOS only].">
         Keep Data
       </message>
-      <message name="IDS_IOS_SIGNOUT_DIALOG_TITLE_WITHOUT_SYNC" desc="The signout dialog title. This dialog is used when the user have a gmail account and sync is turned on. Related to IDS_IOS_SIGNOUT_DIALOG_MESSAGE [iOS only].">
-        Sign Out?
-      </message>
       <message name="IDS_IOS_SIGNOUT_DIALOG_SIGN_OUT_BUTTON" desc="This button signs the user out. Related to IDS_IOS_SIGNOUT_DIALOG_TITLE [iOS only].">
         Sign Out
       </message>
       <message name="IDS_IOS_SIGNOUT_DIALOG_MESSAGE_WITH_SYNC" desc="The text describes that sync will be off when user signs out [iOS only].">
-        This will turn off sync.
+        Signing out turns off sync.
       </message>
       <message name="IDS_IOS_SPOTLIGHT_KEYWORD_EIGHT" desc="Keyword used in Spotlight that will be linked to the Chrome App. [iOS only]">
         Online
@@ -2412,6 +2460,9 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       <message name="IDS_IOS_SYNC_PASSWORDS_ERROR_TITLE" desc="Title of the error message shown for sync errors when it affects passwords only. [iOS only]">
         Password Sync Isn't Working
       </message>
+      <message name="IDS_SYNC_NEEDS_VERIFICATION_TITLE" desc="Title of the error message shown when sync needs to verify the user. [iOS only]">
+        Sync Needs To Verify It's You
+      </message>
       <message name="IDS_IOS_SYNC_SETTINGS_NOT_CONFIRMED" desc="The error message to display when sign-in was interrupted and the user didn't review the sync settings.">
         Initial sync setup was not finished. Sync is off.
       </message>
@@ -2458,6 +2509,17 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       <message name="IDS_IOS_TAB_GRID_ADD_TO_BUTTON" desc="Title of the button in the tab grid UI that when tapped, will provide the user with a menu to add selected tabs to bookmarks or to the reading list. [iOS only]">
         Add To...
       </message>
+      <message name="IDS_IOS_TAB_GRID_SELECT_ALL_BUTTON" desc="Title of the button in the tab grid UI selection mode, when tapped it will mark all tabs selected.">
+          Select All
+          </message>
+      <message name="IDS_IOS_TAB_GRID_SELECT_TABS_TITLE" desc="Title shown in the tab grid selection mode when no tab is selected. [iOS only]">
+              Select Tabs
+      </message>
+      <message name="IDS_IOS_TAB_GRID_SELECTED_TABS_TITLE" desc="Title shown in the tab grid selection mode to indicate the number of selected tabs. count refers to the number of tabs selected. According to its value, the string goes from singular to plural. [iOS only]">
+        {count, plural,
+          =1 {{count} Tab}
+          other {{count} Tabs}}
+      </message>
       <message name="IDS_IOS_TAB_GRID_INCOGNITO_TABS_TITLE" desc="The accessibility label of the Incognito Tabs page in the tab grid UI. [iOS only]">
         Incognito Tabs
       </message>
@@ -2466,9 +2528,6 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       </message>
       <message name="IDS_IOS_TAB_GRID_REMOTE_TABS_TITLE" desc="The accessibility label of the Remote Tabs page in the tab grid UI. [iOS only]">
         Tabs from other devices
-      </message>
-      <message name="IDS_IOS_TAB_GRID_INCOGNITO_TABS_EMPTY_STATE_TITLE" desc="Title shown in the Incognito Tabs page when the grid is empty. [iOS only]">
-        No Incognito Tabs
       </message>
       <message name="IDS_IOS_TAB_GRID_INCOGNITO_TABS_EMPTY_MESSAGE" desc="Message shown in the Incognito Tabs page when the grid is empty, explaining that the user can open a new tab.">
         To browse the web privately, add a new tab
@@ -2489,15 +2548,6 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       </message>
       <message name="IDS_IOS_TAB_GRID_RECENT_TABS_UNAVAILABLE_TITLE" desc="Title shown above a message in the Recent Tabs page of the tab grid when the IncognitoModeAvailability enterprise policy is set to forced. [iOS only]">
         Recent Tabs are Unavailable
-      </message>
-      <message name="IDS_IOS_TAB_GRID_REGULAR_TABS_EMPTY_STATE_TITLE" desc="Title shown in the Regular Tabs page (as opposed to the Incognito Tabs page) when the grid is empty. [iOS only]">
-        No Open Tabs
-      </message>
-      <message name="IDS_IOS_TAB_GRID_INCOGNITO_TABS_EMPTY_STATE_BODY" desc="Text body shown in the Incognito Tabs page when the grid is empty, explaining that the user can open a new tab. [iOS only]">
-        To browse the web privately, add a new tab.
-      </message>
-      <message name="IDS_IOS_TAB_GRID_REGULAR_TABS_EMPTY_STATE_BODY" desc="Text body shown in the Regular Tabs page (as opposed to the Incognito Tabs page) when the grid is empty, explaining that the user can open a new tab. [iOS only]">
-        To browse the web, add a new tab.
       </message>
       <message name="IDS_IOS_TAB_GRID_REGULAR_TABS_EMPTY_TITLE" desc="Title shown above a message on the regular tab switcher when there are no tabs. [iOS only]">
         You'll find your tabs here
@@ -2918,6 +2968,9 @@ New Search
         {count, plural,
           =1 {Now showing 1 Chrome window}
           other {Now showing {count} Chrome windows}}
+      </message>
+      <message name="IDS_IOS_CARD_WILL_BE_SAVED_TO_ACCOUNT" desc="A message to inform the user that a credit card will be saved to their Google Account.">
+        Cards are saved to your Google Account.
       </message>
     </messages>
   </release>

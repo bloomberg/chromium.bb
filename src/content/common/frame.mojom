@@ -8,7 +8,6 @@ import "cc/mojom/browser_controls_state.mojom";
 import "content/common/frame_messages.mojom";
 import "content/common/native_types.mojom";
 import "content/common/navigation_client.mojom";
-import "content/common/navigation_params.mojom";
 import "content/common/web_ui.mojom";
 import "content/public/common/window_container_type.mojom";
 import "ipc/constants.mojom";
@@ -17,6 +16,7 @@ import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "mojo/public/mojom/base/values.mojom";
+import "skia/public/mojom/skcolor.mojom";
 import "services/network/public/mojom/content_security_policy.mojom";
 import "services/network/public/mojom/url_loader.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
@@ -27,6 +27,7 @@ import "services/viz/public/mojom/compositing/surface_id.mojom";
 import "third_party/blink/public/mojom/blob/blob_url_store.mojom";
 import "third_party/blink/public/mojom/browser_interface_broker.mojom";
 import "third_party/blink/public/mojom/commit_result/commit_result.mojom";
+import "third_party/blink/public/mojom/conversions/conversions.mojom";
 import "third_party/blink/public/mojom/devtools/console_message.mojom";
 import "third_party/blink/public/mojom/frame/frame.mojom";
 import "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom";
@@ -40,6 +41,7 @@ import "third_party/blink/public/mojom/loader/referrer.mojom";
 import "third_party/blink/public/mojom/loader/resource_load_info.mojom";
 import "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom";
 import "third_party/blink/public/mojom/messaging/transferable_message.mojom";
+import "third_party/blink/public/mojom/navigation/navigation_params.mojom";
 import "third_party/blink/public/mojom/page/page.mojom";
 import "third_party/blink/public/mojom/page/widget.mojom";
 import "third_party/blink/public/mojom/portal/portal.mojom";
@@ -107,6 +109,9 @@ struct CreateViewParams {
   // Whether the RenderView should initially be hidden.
   bool hidden;
 
+  // Prerender2: Whether the RenderView is for a prerendered page.
+  bool is_prerendering;
+
   // When true, all RenderWidgets under this RenderView will never be shown to
   // the user, and thus never composited, and will not need to produce pixels
   // for display. This allows the renderer to optimize and avoid resources used
@@ -127,6 +132,9 @@ struct CreateViewParams {
 
   // Endpoint for any messages that are broadcast to all views in a WebContents.
   pending_associated_receiver<blink.mojom.PageBroadcast> blink_page_broadcast;
+
+  // Base background color of this view. Only used by a local main frame.
+  skia.mojom.SkColor? base_background_color;
 };
 
 // A union to distinguish between parameters specific to local main frame
@@ -230,6 +238,8 @@ struct CreateFrameParams {
   int32 previous_sibling_routing_id;
 
   pending_remote<blink.mojom.BrowserInterfaceBroker> interface_broker;
+
+  blink.mojom.TreeScopeType tree_scope_type;
 
   // When the new frame has a parent, |replication_state| holds the new frame's
   // properties replicated from the process rendering the parent frame, such as
@@ -336,8 +346,8 @@ interface Frame {
   // restart the navigation if it is no-longer same-document, which can happen
   // if the renderer committed another navigation in the meantime.
   CommitSameDocumentNavigation(
-      CommonNavigationParams common_params,
-      CommitNavigationParams request_params)
+      blink.mojom.CommonNavigationParams common_params,
+      blink.mojom.CommitNavigationParams request_params)
       => (blink.mojom.CommitResult commit_result);
 
   // Provides the renderer an updated |subresource_loader_factories|.
@@ -512,7 +522,7 @@ struct CreateNewWindowParams {
 
   // The impression associated with the navigation in the new window, if
   // one is specified.
-  Impression? impression;
+  blink.mojom.Impression? impression;
 };
 
 // Operation result when the renderer asks the browser to create a new window.
@@ -659,6 +669,12 @@ interface FrameHost {
       DidCommitProvisionalLoadParams params,
       DidCommitSameDocumentNavigationParams same_document_params);
 
+  // Sent by the renderer to indicate that the document input stream has
+  // been updated using document.open() and that the URL for the current
+  // document in the frame should be updated to `url` per step 12 of
+  // https://whatwg.org/C/dynamic-markup-insertion.html#document-open-steps.
+  DidOpenDocumentInputStream(url.mojom.Url url);
+
   // Sent by the renderer to request a navigation.
   // |blob_url_token| should be non-null when this is a navigation to a blob:
   // URL. The token will then be used to look up the blob associated with the
@@ -681,8 +697,8 @@ interface FrameHost {
   // TODO(ahemery): |navigation_client| should not be optional. Make it
   // mandatory.
   BeginNavigation(
-      CommonNavigationParams common_params,
-      BeginNavigationParams begin_params,
+      blink.mojom.CommonNavigationParams common_params,
+      blink.mojom.BeginNavigationParams begin_params,
       pending_remote<blink.mojom.BlobURLToken>? blob_url_token,
       pending_associated_remote<NavigationClient>? navigation_client,
       pending_remote<blink.mojom.PolicyContainerHostKeepAliveHandle>?

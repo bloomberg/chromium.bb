@@ -15,6 +15,7 @@
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_source.h"
+#include "components/enterprise/common/proto/download_item_reroute_info.pb.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -90,6 +91,7 @@ class FakeDownloadItem : public download::DownloadItem {
   void DeleteFile(base::OnceCallback<void(bool)> callback) override;
   download::DownloadFile* GetDownloadFile() override;
   download::DownloadItemRenameHandler* GetRenameHandler() override;
+  const download::DownloadItemRerouteInfo& GetRerouteInfo() const override;
   bool IsDangerous() const override;
   bool IsMixedContent() const override;
   download::DownloadDangerType GetDangerType() const override;
@@ -128,10 +130,13 @@ class FakeDownloadItem : public download::DownloadItem {
       download::DownloadDangerType danger_type) override;
   void OnDownloadScheduleChanged(
       absl::optional<download::DownloadSchedule> schedule) override;
+
   bool removed() const { return removed_; }
+
   void NotifyDownloadDestroyed();
   void NotifyDownloadRemoved();
   void NotifyDownloadUpdated();
+
   void SetId(uint32_t id);
   void SetGuid(const std::string& guid);
   void SetURL(const GURL& url);
@@ -155,6 +160,8 @@ class FakeDownloadItem : public download::DownloadItem {
   void SetETag(const std::string& etag);
   void SetLastModifiedTime(const std::string& last_modified_time);
   void SetHash(const std::string& hash);
+  void SetPercentComplete(int percent_complete);
+  void SetDummyFilePath(const base::FilePath& dummy_file_path);
 
  private:
   base::ObserverList<Observer>::Unchecked observers_;
@@ -186,6 +193,9 @@ class FakeDownloadItem : public download::DownloadItem {
   std::string last_modified_time_;
   std::string hash_;
   absl::optional<download::DownloadSchedule> download_schedule_;
+  int percent_complete_ = 0;
+  download::DownloadItemRerouteInfo reroute_info_;
+  bool open_when_complete_ = false;
 
   // The members below are to be returned by methods, which return by reference.
   std::string dummy_string;

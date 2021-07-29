@@ -24,6 +24,7 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/controls/button/button.h"
@@ -55,9 +56,9 @@ class PageSwitcherButton : public views::Button {
       : is_root_app_grid_page_switcher_(is_root_app_grid_page_switcher),
         background_color_(background_color) {
     SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY);
-    ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
-    views::InkDrop::UseInkDropForFloodFillRipple(ink_drop());
-    ink_drop()->SetCreateHighlightCallback(base::BindRepeating(
+    views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
+    views::InkDrop::UseInkDropForFloodFillRipple(views::InkDrop::Get(this));
+    views::InkDrop::Get(this)->SetCreateHighlightCallback(base::BindRepeating(
         [](PageSwitcherButton* host) {
           const AppListColorProvider* const color_provider =
               AppListColorProvider::Get();
@@ -71,7 +72,7 @@ class PageSwitcherButton : public views::Button {
           return highlight;
         },
         this));
-    ink_drop()->SetCreateRippleCallback(base::BindRepeating(
+    views::InkDrop::Get(this)->SetCreateRippleCallback(base::BindRepeating(
         [](PageSwitcherButton* host) -> std::unique_ptr<views::InkDropRipple> {
           const gfx::Point center = host->GetLocalBounds().CenterPoint();
           const int max_radius =
@@ -84,7 +85,7 @@ class PageSwitcherButton : public views::Button {
               AppListColorProvider::Get();
           return std::make_unique<views::FloodFillInkDropRipple>(
               host->size(), host->GetLocalBounds().InsetsFrom(bounds),
-              host->ink_drop()->GetInkDropCenterBasedOnLastEvent(),
+              views::InkDrop::Get(host)->GetInkDropCenterBasedOnLastEvent(),
               color_provider->GetRippleAttributesBaseColor(
                   host->background_color_),
               color_provider->GetRippleAttributesInkDropOpacity(
@@ -128,7 +129,7 @@ class PageSwitcherButton : public views::Button {
   // views::Button:
   void NotifyClick(const ui::Event& event) override {
     Button::NotifyClick(event);
-    ink_drop()->GetInkDrop()->AnimateToState(
+    views::InkDrop::Get(this)->GetInkDrop()->AnimateToState(
         views::InkDropState::ACTION_TRIGGERED);
   }
 
@@ -298,10 +299,14 @@ void PageSwitcher::TotalPagesChanged(int previous_page_count,
 }
 
 void PageSwitcher::SelectedPageChanged(int old_selected, int new_selected) {
-  if (old_selected >= 0 && size_t{old_selected} < buttons_->children().size())
-    GetButtonByIndex(buttons_, size_t{old_selected})->SetSelected(false);
-  if (new_selected >= 0 && size_t{new_selected} < buttons_->children().size())
-    GetButtonByIndex(buttons_, size_t{new_selected})->SetSelected(true);
+  if (old_selected >= 0 &&
+      static_cast<size_t>(old_selected) < buttons_->children().size())
+    GetButtonByIndex(buttons_, static_cast<size_t>(old_selected))
+        ->SetSelected(false);
+  if (new_selected >= 0 &&
+      static_cast<size_t>(new_selected) < buttons_->children().size())
+    GetButtonByIndex(buttons_, static_cast<size_t>(new_selected))
+        ->SetSelected(true);
 }
 
 }  // namespace ash

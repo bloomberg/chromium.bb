@@ -23,9 +23,9 @@
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/version_updater/version_updater.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
-#include "chrome/browser/chromeos/policy/device_policy_builder.h"
-#include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
-#include "chrome/browser/chromeos/policy/minimum_version_policy_test_helpers.h"
+#include "chrome/browser/ash/policy/core/device_policy_builder.h"
+#include "chrome/browser/ash/policy/core/device_policy_cros_browser_test.h"
+#include "chrome/browser/ash/policy/handlers/minimum_version_policy_test_helpers.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -94,7 +94,7 @@ constexpr char kCellularServicePath[] = "/service/cellular1";
 constexpr char kDemoEolMessage[] = "Please return your device.";
 
 chromeos::OobeUI* GetOobeUI() {
-  auto* host = chromeos::LoginDisplayHost::default_host();
+  auto* host = LoginDisplayHost::default_host();
   return host ? host->GetOobeUI() : nullptr;
 }
 

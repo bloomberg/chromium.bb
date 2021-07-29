@@ -61,7 +61,7 @@ export class CSSShadowEditor extends UI.Widget.VBox {
   _changedElement?: HTMLInputElement|null;
   constructor() {
     super(true);
-    this.registerRequiredCSS('ui/legacy/components/inline_editor/cssShadowEditor.css', {enableLegacyPatching: false});
+    this.registerRequiredCSS('ui/legacy/components/inline_editor/cssShadowEditor.css');
     this.contentElement.tabIndex = 0;
     this.setDefaultFocusedElement(this.contentElement);
 
@@ -335,7 +335,7 @@ export class CSSShadowEditor extends UI.Widget.VBox {
       if (!event.altKey) {
         this._model.setOffsetX(new CSSLength(newX, this._model.offsetX().unit || defaultUnit));
       }
-      if (!UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlOrMeta(event)) {
+      if (!UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(event)) {
         this._model.setOffsetY(new CSSLength(newY, this._model.offsetY().unit || defaultUnit));
       }
     }

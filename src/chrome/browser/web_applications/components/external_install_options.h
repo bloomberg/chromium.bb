@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_EXTERNAL_INSTALL_OPTIONS_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_EXTERNAL_INSTALL_OPTIONS_H_
 
-#include <iosfwd>
 #include <string>
 #include <vector>
 
+#include "base/values.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
@@ -34,6 +34,8 @@ struct ExternalInstallOptions {
   ExternalInstallOptions& operator=(const ExternalInstallOptions& other);
 
   bool operator==(const ExternalInstallOptions& other) const;
+
+  base::Value AsDebugValue() const;
 
   GURL install_url;
   DisplayMode user_display_mode;
@@ -179,10 +181,11 @@ struct ExternalInstallOptions {
   // Whether the app was installed by an OEM and should be placed in a special
   // OEM folder in the app launcher. Only used on Chrome OS.
   bool oem_installed = false;
-};
 
-std::ostream& operator<<(std::ostream& out,
-                         const ExternalInstallOptions& install_options);
+  // Whether this should be installed on devices without a touch screen with
+  // stylus support.
+  bool disable_if_touchscreen_with_stylus_not_supported = false;
+};
 
 InstallManager::InstallParams ConvertExternalInstallOptionsToParams(
     const ExternalInstallOptions& install_options);

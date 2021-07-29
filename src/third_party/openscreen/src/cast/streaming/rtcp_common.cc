@@ -43,14 +43,12 @@ void RtcpCommonHeader::AppendFields(absl::Span<uint8_t>* buffer) const {
           break;
         default:
           OSP_NOTREACHED();
-          break;
       }
       break;
     case RtcpPacketType::kExtendedReports:
       break;
     case RtcpPacketType::kNull:
       OSP_NOTREACHED();
-      break;
   }
   AppendField<uint8_t>(byte0, buffer);
 

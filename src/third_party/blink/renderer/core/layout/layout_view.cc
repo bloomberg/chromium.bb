@@ -25,9 +25,9 @@
 
 #include "build/build_config.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/common/widget/screen_info.h"
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/html/plugin_document.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
+#include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_counter.h"
@@ -61,6 +62,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "ui/display/screen_info.h"
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
@@ -566,8 +568,7 @@ bool LayoutView::MapToVisualRectInAncestorSpaceInternal(
 
 PhysicalOffset LayoutView::OffsetForFixedPosition() const {
   NOT_DESTROYED();
-  return IsScrollContainer() ? PhysicalOffset(ScrolledContentOffset())
-                             : PhysicalOffset();
+  return IsScrollContainer() ? ScrolledContentOffset() : PhysicalOffset();
 }
 
 PhysicalOffset LayoutView::PixelSnappedOffsetForFixedPosition() const {
@@ -778,11 +779,6 @@ LayoutUnit LayoutView::ViewLogicalHeightForPercentages() const {
   if (ShouldUsePrintingLayout())
     return PageLogicalHeight();
   return LayoutUnit(ViewLogicalHeight());
-}
-
-float LayoutView::ZoomFactor() const {
-  NOT_DESTROYED();
-  return frame_view_->GetFrame().PageZoomFactor();
 }
 
 const LayoutBox& LayoutView::RootBox() const {

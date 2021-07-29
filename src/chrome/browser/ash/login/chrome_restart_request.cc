@@ -12,15 +12,13 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
-#include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/ash_switches.h"
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/launch.h"
-#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
@@ -148,6 +146,7 @@ void DeriveCommandLine(const GURL& start_url,
     ::switches::kV,
     ::switches::kVModule,
     ::switches::kVideoCaptureUseGpuMemoryBuffer,
+    ::switches::kEnableWebGLDeveloperExtensions,
     ::switches::kEnableWebGLDraftExtensions,
     ::switches::kDisableWebGLImageChromium,
     ::switches::kEnableWebGLImageChromium,
@@ -233,9 +232,7 @@ void DeriveCommandLine(const GURL& start_url,
 
   for (base::DictionaryValue::Iterator it(new_switches); !it.IsAtEnd();
        it.Advance()) {
-    std::string value;
-    CHECK(it.value().GetAsString(&value));
-    command_line->AppendSwitchASCII(it.key(), value);
+    command_line->AppendSwitchASCII(it.key(), it.value().GetString());
   }
 }
 

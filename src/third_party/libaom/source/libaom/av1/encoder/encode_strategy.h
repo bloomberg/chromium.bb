@@ -44,6 +44,7 @@ extern "C" {
  * \param[out]   time_stamp  Time stamp of the frame
  * \param[out]   time_end    Time end
  * \param[in]    timestamp_ratio Time base
+ * \param[in]    pop_lookahead Decide to pop the source frame from queue
  * \param[in]    flush       Decide to encode one frame or the rest of frames
  *
  * \return Returns a value to indicate if the encoding is done successfully.
@@ -55,7 +56,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
                         uint8_t *const dest, unsigned int *frame_flags,
                         int64_t *const time_stamp, int64_t *const time_end,
                         const aom_rational64_t *const timestamp_ratio,
-                        int flush);
+                        int *const pop_lookahead, int flush);
 
 /*!\cond */
 // Set individual buffer update flags based on frame reference type.
@@ -63,20 +64,24 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
 // refresh_*_frame flags to be set, because we refresh all buffers in this case.
 void av1_configure_buffer_updates(
     AV1_COMP *const cpi, RefreshFrameFlagsInfo *const refresh_frame_flags,
-    const FRAME_UPDATE_TYPE type, const FRAME_TYPE frame_type,
+    const FRAME_UPDATE_TYPE type, const REFBUF_STATE refbuf_state,
     int force_refresh_all);
 
 int av1_get_refresh_frame_flags(const AV1_COMP *const cpi,
                                 const EncodeFrameParams *const frame_params,
                                 FRAME_UPDATE_TYPE frame_update_type,
+                                int gf_index,
+#if CONFIG_FRAME_PARALLEL_ENCODE
+                                int cur_disp_order,
+                                RefFrameMapPair ref_frame_map_pairs[REF_FRAMES],
+#endif  // CONFIG_FRAME_PARALLEL_ENCODE
                                 const RefBufferStack *const ref_buffer_stack);
 
 int av1_get_refresh_ref_frame_map(int refresh_frame_flags);
 
 void av1_update_ref_frame_map(AV1_COMP *cpi,
                               FRAME_UPDATE_TYPE frame_update_type,
-                              FRAME_TYPE frame_type, int show_existing_frame,
-                              int ref_map_index,
+                              REFBUF_STATE refbuf_state, int ref_map_index,
                               RefBufferStack *ref_buffer_stack);
 
 /*!\brief Obtain indices of reference frames from reference frame buffer stacks
@@ -92,11 +97,52 @@ void av1_update_ref_frame_map(AV1_COMP *cpi,
  *                                 in AV1Common.
  */
 void av1_get_ref_frames(const RefBufferStack *ref_buffer_stack,
+#if CONFIG_FRAME_PARALLEL_ENCODE
+                        AV1_COMP *cpi,
+                        RefFrameMapPair ref_frame_map_pairs[REF_FRAMES],
+                        int cur_frame_disp,
+#if CONFIG_FRAME_PARALLEL_ENCODE_2
+                        int gf_index,
+#endif  // CONFIG_FRAME_PARALLEL_ENCODE_2
+#endif  // CONFIG_FRAME_PARALLEL_ENCODE
                         int remapped_ref_idx[REF_FRAMES]);
 
 int is_forced_keyframe_pending(struct lookahead_ctx *lookahead,
                                const int up_to_index,
                                const COMPRESSOR_STAGE compressor_stage);
+
+static AOM_INLINE int is_frame_droppable(
+    const SVC *const svc,
+    const ExtRefreshFrameFlagsInfo *const ext_refresh_frame_flags) {
+  // Droppable frame is only used by external refresh flags. VoD setting won't
+  // trigger its use case.
+  if (svc->set_ref_frame_config)
+    return svc->non_reference_frame;
+  else if (ext_refresh_frame_flags->update_pending)
+    return !(ext_refresh_frame_flags->alt_ref_frame ||
+             ext_refresh_frame_flags->alt2_ref_frame ||
+             ext_refresh_frame_flags->bwd_ref_frame ||
+             ext_refresh_frame_flags->golden_frame ||
+             ext_refresh_frame_flags->last_frame);
+  else
+    return 0;
+}
+
+static AOM_INLINE int get_current_frame_ref_type(const AV1_COMP *const cpi) {
+  // We choose the reference "type" of this frame from the flags which indicate
+  // which reference frames will be refreshed by it.  More than one  of these
+  // flags may be set, so the order here implies an order of precedence. This is
+  // just used to choose the primary_ref_frame (as the most recent reference
+  // buffer of the same reference-type as the current frame)
+
+  switch (cpi->ppi->gf_group.layer_depth[cpi->gf_frame_index]) {
+    case 0: return 0;
+    case 1: return 1;
+    case MAX_ARF_LAYERS:
+    case MAX_ARF_LAYERS + 1: return 4;
+    default: return 7;
+  }
+}
 /*!\endcond */
 #ifdef __cplusplus
 }  // extern "C"

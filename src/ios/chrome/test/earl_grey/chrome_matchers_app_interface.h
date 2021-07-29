@@ -23,6 +23,10 @@
 // test will have consecutive numbers.
 + (id<GREYMatcher>)windowWithNumber:(int)windowNumber;
 
+// Same as above, but for the blocking window which only appears when a blocking
+// UI is shown in another window.
++ (id<GREYMatcher>)blockerWindowWithNumber:(int)windowNumber;
+
 // Matcher for element with accessibility label corresponding to |label| and
 // accessibility trait UIAccessibilityTraitButton.
 + (id<GREYMatcher>)buttonWithAccessibilityLabel:(NSString*)label;
@@ -154,8 +158,8 @@
 + (id<GREYMatcher>)openLinkInNewTabButton;
 
 // Matcher for the Open in Incognito option in the context menu when long
-// pressing a link. |useNewString| determines which string to use.
-+ (id<GREYMatcher>)openLinkInIncognitoButtonWithUseNewString:(BOOL)useNewString;
+// pressing a link.
++ (id<GREYMatcher>)openLinkInIncognitoButton;
 
 // Matcher for the Open in New Window option in the context menu when long
 // pressing a link.
@@ -360,17 +364,20 @@
 // Returns matcher for the copy button on the system selection callout.
 + (id<GREYMatcher>)systemSelectionCalloutCopyButton;
 
+// Returns matcher for the system selection callout overflow button to show more
+// menu items.
++ (id<GREYMatcher>)systemSelectionCalloutOverflowButton;
+
 // Matcher for a Copy button, such as the one in the Activity View. This matcher
 // is very broad and will look for any button with a matching string.
-+ (id<GREYMatcher>)copyActivityButton API_AVAILABLE(ios(13));
++ (id<GREYMatcher>)copyActivityButton;
 
 // Matcher for the Copy Link option in the updated context menus when long
-// pressing on a link. |useNewString| determines which string to use.
-+ (id<GREYMatcher>)copyLinkButtonWithUseNewString:(BOOL)useNewString;
+// pressing on a link.
++ (id<GREYMatcher>)copyLinkButton;
 
-// Matcher for the Edit option on the updated context menus. |useNewString|
-// determines which string to use.
-+ (id<GREYMatcher>)editButtonWithUseNewString:(BOOL)useNewString;
+// Matcher for the Edit option on the context menus.
++ (id<GREYMatcher>)editButton;
 
 // Matcher for the Move option on the updated context menus.
 + (id<GREYMatcher>)moveButton;
@@ -404,6 +411,11 @@
 
 // Returns a matcher for the current WebState's scroll view.
 + (id<GREYMatcher>)webStateScrollViewMatcher;
+
+// Returns a matcher for the current WebState's scroll view in the given
+// |windowNumber|.
++ (id<GREYMatcher>)webStateScrollViewMatcherInWindowWithNumber:
+    (int)windowNumber;
 
 // Returns a matcher for the Clear Browsing Data button in the History UI.
 + (id<GREYMatcher>)historyClearBrowsingDataButton;
@@ -571,6 +583,20 @@
 
 // Returns a matcher for the button to accept the generated password.
 + (id<GREYMatcher>)useSuggestedPasswordMatcher;
+
+#pragma mark - Tab Grid Edit Mode
+
+// Returns a matcher for the button to enter the tab grid tab edit mode.
++ (id<GREYMatcher>)tabGridEditButton;
+
+// Returns a matcher for the button to act on the selected tabs.
++ (id<GREYMatcher>)tabGridEditAddToButton;
+
+// Returns a matcher for the button to close the selected tabs.
++ (id<GREYMatcher>)tabGridEditCloseTabsButton;
+
+// Returns a matcher for the button to select all tabs.
++ (id<GREYMatcher>)tabGridEditSelectAllButton;
 
 @end
 

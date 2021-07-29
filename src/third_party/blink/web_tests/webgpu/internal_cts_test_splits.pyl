@@ -21,18 +21,21 @@
   'wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,copyTextureToTexture:color_textures,non_compressed,array:format="rgba8unorm";*',
   'wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,copyTextureToTexture:color_textures,non_compressed,non_array:format="rgba8unorm";*',
 
-  'wpt_internal/webgpu/cts.html?q=webgpu:api,operation,resource_init,texture_zero:uninitialized_texture_is_zero:readMethod="CopyToBuffer";format="rgba8unorm";*',
-  'wpt_internal/webgpu/cts.html?q=webgpu:api,operation,resource_init,texture_zero:uninitialized_texture_is_zero:readMethod="CopyToTexture";format="rgba8unorm";*',
-  'wpt_internal/webgpu/cts.html?q=webgpu:api,operation,resource_init,texture_zero:uninitialized_texture_is_zero:readMethod="Sample";format="rgba8unorm";*',
+  'wpt_internal/webgpu/cts.html?q=webgpu:api,operation,resource_init,texture_zero:uninitialized_texture_is_zero:dimension="2d";readMethod="CopyToBuffer";format="rgba8unorm";*',
+  'wpt_internal/webgpu/cts.html?q=webgpu:api,operation,resource_init,texture_zero:uninitialized_texture_is_zero:dimension="3d";readMethod="CopyToBuffer";format="rgba8unorm";*',
+  'wpt_internal/webgpu/cts.html?q=webgpu:api,operation,resource_init,texture_zero:uninitialized_texture_is_zero:dimension="2d";readMethod="CopyToTexture";format="rgba8unorm";*',
+  'wpt_internal/webgpu/cts.html?q=webgpu:api,operation,resource_init,texture_zero:uninitialized_texture_is_zero:dimension="3d";readMethod="CopyToTexture";format="rgba8unorm";*',
+  'wpt_internal/webgpu/cts.html?q=webgpu:api,operation,resource_init,texture_zero:uninitialized_texture_is_zero:dimension="2d";readMethod="Sample";format="rgba8unorm";*',
+  'wpt_internal/webgpu/cts.html?q=webgpu:api,operation,resource_init,texture_zero:uninitialized_texture_is_zero:dimension="3d";readMethod="Sample";format="rgba8unorm";*',
 
   'wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,robust_access_vertex:vertexAccess:indexed=false;indirect=false;*',
   'wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,robust_access_vertex:vertexAccess:indexed=true;indirect=false;*',
 
-  'wpt_internal/webgpu/cts.html?q=webgpu:shader,validation,variable_and_const:v_0033:variableOrConstant="var";lhsContainerType="_undef_";*',
-  'wpt_internal/webgpu/cts.html?q=webgpu:shader,validation,variable_and_const:v_0033:variableOrConstant="const";lhsContainerType="_undef_";*',
-  'wpt_internal/webgpu/cts.html?q=webgpu:shader,validation,variable_and_const:v_0038:storageClass="in";containerType="_undef_";*',
-  'wpt_internal/webgpu/cts.html?q=webgpu:shader,validation,variable_and_const:v_0038:storageClass="out";containerType="_undef_";*',
-  'wpt_internal/webgpu/cts.html?q=webgpu:shader,validation,variable_and_const:v_0038:storageClass="private";containerType="_undef_";*',
+  'wpt_internal/webgpu/cts.html?q=webgpu:shader,validation,variable_and_const:initializer_type:variableOrConstant="var";lhsContainerType="_undef_";*',
+  'wpt_internal/webgpu/cts.html?q=webgpu:shader,validation,variable_and_const:initializer_type:variableOrConstant="const";lhsContainerType="_undef_";*',
+  'wpt_internal/webgpu/cts.html?q=webgpu:shader,validation,variable_and_const:io_shareable_type:storageClass="in";containerType="_undef_";*',
+  'wpt_internal/webgpu/cts.html?q=webgpu:shader,validation,variable_and_const:io_shareable_type:storageClass="out";containerType="_undef_";*',
+  'wpt_internal/webgpu/cts.html?q=webgpu:shader,validation,variable_and_const:io_shareable_type:storageClass="private";containerType="_undef_";*',
 
   'wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createTexture:sampleCount,valid_sampleCount_with_other_parameter_varies:dimension="1d";*',
 
@@ -41,11 +44,23 @@
   'wpt_internal/webgpu/cts.html?q=webgpu:api,operation,rendering,draw:arguments:first=0;count=0;*',
   'wpt_internal/webgpu/cts.html?q=webgpu:api,operation,rendering,draw:arguments:first=3;count=0;*',
 
-  'wpt_internal/webgpu/cts.html?q=webgpu:api,operation,resource_init,texture_zero:uninitialized_texture_is_zero:readMethod="DepthTest";format="depth32float";*',
+  'wpt_internal/webgpu/cts.html?q=webgpu:api,operation,resource_init,texture_zero:uninitialized_texture_is_zero:dimension="2d";readMethod="DepthTest";format="depth32float";*',
 
   'wpt_internal/webgpu/cts.html?q=webgpu:api,operation,rendering,blending:GPUBlendComponent:component="color";srcFactor="zero";*',
   'wpt_internal/webgpu/cts.html?q=webgpu:api,operation,rendering,blending:GPUBlendComponent:component="alpha";srcFactor="zero";*',
 
   'wpt_internal/webgpu/cts.html?q=webgpu:api,validation,resource_usages,texture,in_pass_encoder:subresources_and_binding_types_combination_for_aspect:compute=false;binding0InBundle=false;*',
   'wpt_internal/webgpu/cts.html?q=webgpu:api,validation,resource_usages,texture,in_pass_encoder:subresources_and_binding_types_combination_for_aspect:compute=true;binding0InBundle=false;*',
+
+  'wpt_internal/webgpu/cts.html?q=webgpu:api,operation,vertex_state,correctness:setVertexBufferOffset_and_attributeOffset:format="uint8x2";*',
+
+  'wpt_internal/webgpu/cts.html?q=webgpu:api,operation,vertex_state,correctness:nonZeroArrayStride_and_attributeOffset:format="uint8x2";*',
+
+  'wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,robust_access:linear_memory:storageClass="storage";storageMode="read";access="read";atomic=false;baseType="i32";*',
+  'wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,robust_access:linear_memory:storageClass="storage";storageMode="read";access="read";atomic=false;baseType="u32";*',
+  'wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,robust_access:linear_memory:storageClass="storage";storageMode="read";access="read";atomic=false;baseType="f32";*',
+  'wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,robust_access:linear_memory:storageClass="storage";storageMode="read_write";access="read";atomic=false;baseType="i32";*',
+  'wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,robust_access:linear_memory:storageClass="storage";storageMode="read_write";access="read";atomic=false;baseType="u32";*',
+  'wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,robust_access:linear_memory:storageClass="storage";storageMode="read_write";access="read";atomic=false;baseType="f32";*',
+  'wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,robust_access:linear_memory:storageClass="storage";storageMode="read_write";access="read";atomic=true;*',
 ]

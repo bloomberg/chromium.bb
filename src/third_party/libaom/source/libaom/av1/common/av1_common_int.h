@@ -30,7 +30,6 @@
 #include "av1/common/tile_common.h"
 #include "av1/common/timing.h"
 #include "av1/common/odintrin.h"
-#include "av1/encoder/hash_motion.h"
 #include "aom_dsp/grain_synthesis.h"
 #include "aom_dsp/grain_table.h"
 #ifdef __cplusplus
@@ -135,7 +134,10 @@ typedef struct RefCntBuffer {
   // distance when a very old frame is used as a reference.
   unsigned int display_order_hint;
   unsigned int ref_display_order_hint[INTER_REFS_PER_FRAME];
-
+#if CONFIG_FRAME_PARALLEL_ENCODE
+  // Frame's level within the hierarchical structure.
+  unsigned int pyramid_level;
+#endif  // CONFIG_FRAME_PARALLEL_ENCODE
   MV_REF *mvs;
   uint8_t *seg_map;
   struct segmentation seg;
@@ -151,6 +153,8 @@ typedef struct RefCntBuffer {
   aom_film_grain_t film_grain_params;
   aom_codec_frame_buffer_t raw_frame_buffer;
   YV12_BUFFER_CONFIG buf;
+  int temporal_id;  // Temporal layer ID of the frame
+  int spatial_id;   // Spatial layer ID of the frame
   FRAME_TYPE frame_type;
 
   // This is only used in the encoder but needs to be indexed per ref frame
@@ -340,6 +344,10 @@ typedef struct {
 
   unsigned int order_hint;
   unsigned int display_order_hint;
+#if CONFIG_FRAME_PARALLEL_ENCODE
+  // Frame's level within the hierarchical structure.
+  unsigned int pyramid_level;
+#endif  // CONFIG_FRAME_PARALLEL_ENCODE
   unsigned int frame_number;
   SkipModeInfo skip_mode_info;
   int refresh_frame_flags;  // Which ref frames are overwritten by this frame
@@ -1052,10 +1060,6 @@ typedef struct AV1Common {
   int64_t txcoeff_cost_timer;
   int64_t txcoeff_cost_count;
 #endif  // TXCOEFF_COST_TIMER
-
-#if CONFIG_LPF_MASK
-  int is_decoding;
-#endif  // CONFIG_LPF_MASK
 } AV1_COMMON;
 
 /*!\cond */

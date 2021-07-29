@@ -32,6 +32,10 @@
 
 namespace dawn_native { namespace metal {
 
+    namespace {
+        struct KalmanInfo;
+    }
+
     class Device : public DeviceBase {
       public:
         static ResultOrError<Device*> Create(AdapterBase* adapter,
@@ -91,7 +95,7 @@ namespace dawn_native { namespace metal {
         ResultOrError<Ref<QuerySetBase>> CreateQuerySetImpl(
             const QuerySetDescriptor* descriptor) override;
         ResultOrError<Ref<RenderPipelineBase>> CreateRenderPipelineImpl(
-            const RenderPipelineDescriptor2* descriptor) override;
+            const RenderPipelineDescriptor* descriptor) override;
         ResultOrError<Ref<SamplerBase>> CreateSamplerImpl(
             const SamplerDescriptor* descriptor) override;
         ResultOrError<Ref<ShaderModuleBase>> CreateShaderModuleImpl(
@@ -108,6 +112,10 @@ namespace dawn_native { namespace metal {
         ResultOrError<Ref<TextureViewBase>> CreateTextureViewImpl(
             TextureBase* texture,
             const TextureViewDescriptor* descriptor) override;
+        void CreateComputePipelineAsyncImpl(const ComputePipelineDescriptor* descriptor,
+                                            size_t blueprintHash,
+                                            WGPUCreateComputePipelineAsyncCallback callback,
+                                            void* userdata) override;
 
         void InitTogglesFromDriver();
         void ShutDownImpl() override;
@@ -127,6 +135,15 @@ namespace dawn_native { namespace metal {
         // a different thread so we guard access to it with a mutex.
         std::mutex mLastSubmittedCommandsMutex;
         NSPRef<id<MTLCommandBuffer>> mLastSubmittedCommands;
+
+        // The current estimation of timestamp period
+        float mTimestampPeriod = 1.0f;
+        // The base of CPU timestamp and GPU timestamp to measure the linear regression between GPU
+        // and CPU timestamps.
+        MTLTimestamp mCpuTimestamp API_AVAILABLE(macos(10.15), ios(14.0)) = 0;
+        MTLTimestamp mGpuTimestamp API_AVAILABLE(macos(10.15), ios(14.0)) = 0;
+        // The parameters for kalman filter
+        std::unique_ptr<KalmanInfo> mKalmanInfo;
     };
 
 }}  // namespace dawn_native::metal

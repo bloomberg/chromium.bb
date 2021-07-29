@@ -31,19 +31,28 @@ Polymer({
     },
 
     /**
-     * Title key of the screen.
-     */
-    titleKey_: {
-      type: String,
-      value: 'assistantRelatedInfoTitle',
-    },
-
-    /**
      * Whether activity control consent is skipped.
      */
     skipActivityControl_: {
       type: Boolean,
       value: false,
+    },
+
+    /**
+     * Indicates whether to use same design for accept/decline buttons.
+     */
+    equalWeightButtons_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * The given name of the user, if a child account is in use; otherwise,
+     * this is an empty string.
+     */
+    childName_: {
+      type: String,
+      value: '',
     },
   },
 
@@ -216,12 +225,8 @@ Polymer({
    * Reload the page with the given consent string text data.
    */
   reloadContent(data) {
-    if (data['activityControlNeeded']) {
-      this.titleKey_ = 'assistantRelatedInfoTitle';
-    } else {
-      this.titleKey_ = 'assistantRelatedInfoReturnedUserTitle';
-    }
     this.skipActivityControl_ = !data['activityControlNeeded'];
+    this.childName_ = data['childName'];
     this.$.zippy.setAttribute(
         'icon-src',
         'data:text/html;charset=utf-8,' +
@@ -229,6 +234,8 @@ Polymer({
                 'https://www.gstatic.com/images/icons/material/system/2x/' +
                     'info_outline_grey600_24dp.png',
                 this.i18n('assistantScreenContextTitle'))));
+    this.equalWeightButtons_ = data['equalWeightButtons'];
+
     this.consentStringLoaded_ = true;
     if (this.webViewLoaded_) {
       this.onPageLoaded();
@@ -284,16 +291,22 @@ Polymer({
   },
 
   /**
-   * Returns the text for subtitle.
-   */
-  getSubtitleMessage_(locale) {
-    return this.i18nAdvanced('assistantRelatedInfoMessage');
-  },
-
-  /**
    * Returns the webview animation container.
    */
   getAnimationContainer() {
     return this.$['animation-container'];
+  },
+
+  /**
+   * Returns the title of the dialog.
+   */
+  getDialogTitle_(locale, skipActivityControl, childName) {
+    if (skipActivityControl) {
+      return this.i18n('assistantRelatedInfoReturnedUserTitle');
+    } else {
+      return childName ?
+          this.i18n('assistantRelatedInfoTitleForChild', childName) :
+          this.i18n('assistantRelatedInfoTitle');
+    }
   },
 });

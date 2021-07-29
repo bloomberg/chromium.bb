@@ -41,7 +41,6 @@
 #include "base/auto_reset.h"
 #include "base/containers/contains.h"
 #include "base/debug/dump_without_crashing.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "cc/input/overscroll_behavior.h"
@@ -66,20 +65,17 @@
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/css/preferred_color_scheme.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
-#include "third_party/blink/public/mojom/insecure_input/insecure_input_service.mojom-blink.h"
 #include "third_party/blink/public/mojom/page_state/page_state.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_theme_engine.h"
 #include "third_party/blink/public/web/web_print_page_description.h"
-#include "third_party/blink/renderer/bindings/core/v8/html_script_element_or_svg_script_element.h"
 #include "third_party/blink/renderer/bindings/core/v8/isolated_world_csp.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
-#include "third_party/blink/renderer/bindings/core/v8/string_or_element_creation_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_element_creation_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_element_registration_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_interest_cohort.h"
@@ -103,6 +99,7 @@
 #include "third_party/blink/renderer/core/css/invalidation/style_invalidator.h"
 #include "third_party/blink/renderer/core/css/media_query_list.h"
 #include "third_party/blink/renderer/core/css/media_query_matcher.h"
+#include "third_party/blink/renderer/core/css/media_values.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css/property_registry.h"
@@ -164,6 +161,7 @@
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
+#include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/editing/serializers/serialization.h"
 #include "third_party/blink/renderer/core/events/before_unload_event.h"
 #include "third_party/blink/renderer/core/events/event_factory.h"
@@ -183,6 +181,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/renderer/core/frame/local_frame_ukm_aggregator.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/page_dismissal_scope.h"
 #include "third_party/blink/renderer/core/frame/performance_monitor.h"
@@ -312,6 +311,7 @@
 #include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/fonts/font_matching_metrics.h"
+#include "third_party/blink/renderer/platform/fonts/font_performance.h"
 #include "third_party/blink/renderer/platform/geometry/length_functions.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
@@ -743,7 +743,6 @@ Document::Document(const DocumentInit& initializer,
               ? kAllowDeferredParsing
               : kAllowAsynchronousParsing),
       node_count_(0),
-      logged_field_edit_(false),
       // Use the source id from the document initializer if it is available.
       // Otherwise, generate a new source id to cover any cases that don't
       // receive a valid source id, this for example includes but is not limited
@@ -819,7 +818,7 @@ Document::Document(const DocumentInit& initializer,
   // |fetcher_|.
   style_engine_ = MakeGarbageCollected<StyleEngine>(*this);
 
-  UpdateForcedColors();
+  UpdateThemeColorCache();
 
   // The parent's parser should be suspended together with all the other
   // objects, else this new Document would have a new ExecutionContext which
@@ -1045,7 +1044,6 @@ Element* Document::CreateElementForBinding(const AtomicString& name,
       QualifiedName(g_null_atom, name, g_null_atom), this);
 }
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 AtomicString GetTypeExtension(
     Document* document,
     const V8UnionElementCreationOptionsOrString* string_or_options) {
@@ -1068,48 +1066,15 @@ AtomicString GetTypeExtension(
   NOTREACHED();
   return AtomicString();
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-AtomicString GetTypeExtension(
-    Document* document,
-    const StringOrElementCreationOptions& string_or_options) {
-  if (string_or_options.IsNull())
-    return AtomicString();
-
-  if (string_or_options.IsString()) {
-    UseCounter::Count(document,
-                      WebFeature::kDocumentCreateElement2ndArgStringHandling);
-    return AtomicString(string_or_options.GetAsString());
-  }
-
-  if (string_or_options.IsElementCreationOptions()) {
-    const ElementCreationOptions& options =
-        *string_or_options.GetAsElementCreationOptions();
-    if (options.hasIs())
-      return AtomicString(options.is());
-  }
-
-  return AtomicString();
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 // https://dom.spec.whatwg.org/#dom-document-createelement
 Element* Document::CreateElementForBinding(
     const AtomicString& local_name,
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     const V8UnionElementCreationOptionsOrString* string_or_options,
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-    const StringOrElementCreationOptions& string_or_options,
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     ExceptionState& exception_state) {
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   if (!string_or_options) {
     return CreateElementForBinding(local_name, exception_state);
   }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  if (string_or_options.IsNull()) {
-    return CreateElementForBinding(local_name, exception_state);
-  }
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   // 1. If localName does not match Name production, throw InvalidCharacterError
   if (!IsValidElementName(this, local_name)) {
@@ -1126,22 +1091,13 @@ Element* Document::CreateElementForBinding(
                            ? html_names::xhtmlNamespaceURI
                            : g_null_atom);
 
-#if !defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  bool create_builtin = string_or_options.IsElementCreationOptions() ||
-                        string_or_options.IsString();
-#endif  // !defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-
   // 3.
   const AtomicString& is = GetTypeExtension(this, string_or_options);
 
   // 5. Let element be the result of creating an element given ...
   Element* element =
       CreateElement(q_name, CreateElementFlags::ByCreateElement(),
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
                     is
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-                    create_builtin ? is : g_null_atom
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
       );
 
   return element;
@@ -1187,29 +1143,15 @@ Element* Document::createElementNS(const AtomicString& namespace_uri,
 Element* Document::createElementNS(
     const AtomicString& namespace_uri,
     const AtomicString& qualified_name,
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     const V8UnionElementCreationOptionsOrString* string_or_options,
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-    const StringOrElementCreationOptions& string_or_options,
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     ExceptionState& exception_state) {
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   DCHECK(string_or_options);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  if (string_or_options.IsNull())
-    return createElementNS(namespace_uri, qualified_name, exception_state);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   // 1. Validate and extract
   QualifiedName q_name(
       CreateQualifiedName(namespace_uri, qualified_name, exception_state));
   if (q_name == QualifiedName::Null())
     return nullptr;
-
-#if !defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  bool create_builtin = string_or_options.IsElementCreationOptions() ||
-                        string_or_options.IsString();
-#endif  // !defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   // 2.
   const AtomicString& is = GetTypeExtension(this, string_or_options);
@@ -1225,11 +1167,7 @@ Element* Document::createElementNS(
   // 3. Let element be the result of creating an element
   Element* element =
       CreateElement(q_name, CreateElementFlags::ByCreateElement(),
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
                     is
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-                    create_builtin ? is : g_null_atom
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
       );
 
   return element;
@@ -1593,8 +1531,6 @@ Element* Document::scrollingElement() {
 Element* Document::ScrollingElementNoLayout() {
   if (RuntimeEnabledFeatures::ScrollTopLeftInteropEnabled()) {
     if (InQuirksMode()) {
-      DCHECK(!IsActive() || InStyleRecalc() ||
-             lifecycle_.GetState() >= DocumentLifecycle::kStyleClean);
       HTMLBodyElement* body = FirstBodyElement();
       if (body && body->GetLayoutObject() &&
           body->GetLayoutObject()->IsScrollContainer())
@@ -1894,9 +1830,24 @@ TreeWalker* Document::createTreeWalker(Node* root,
 }
 
 bool Document::NeedsLayoutTreeUpdate() const {
+  return NeedsLayoutTreeUpdateForThisDocument() ||
+         ParentFrameNeedsLayoutTreeUpdate();
+}
+
+bool Document::NeedsFullLayoutTreeUpdate() const {
+  return NeedsFullLayoutTreeUpdateForThisDocument() ||
+         ParentFrameNeedsLayoutTreeUpdate();
+}
+
+bool Document::ParentFrameNeedsLayoutTreeUpdate() const {
+  HTMLFrameOwnerElement* owner = LocalOwner();
+  return owner && owner->GetDocument().NeedsLayoutTreeUpdate();
+}
+
+bool Document::NeedsLayoutTreeUpdateForThisDocument() const {
   if (!IsActive() || !View())
     return false;
-  if (NeedsFullLayoutTreeUpdate())
+  if (NeedsFullLayoutTreeUpdateForThisDocument())
     return true;
   if (style_engine_->NeedsStyleRecalc())
     return true;
@@ -1916,7 +1867,7 @@ bool Document::NeedsLayoutTreeUpdate() const {
   return false;
 }
 
-bool Document::NeedsFullLayoutTreeUpdate() const {
+bool Document::NeedsFullLayoutTreeUpdateForThisDocument() const {
   // This method returns true if we cannot decide which specific elements need
   // to have its style or layout tree updated on the next lifecycle update. If
   // this method returns false, we typically use that to walk up the ancestor
@@ -2048,10 +1999,21 @@ void Document::UpdateStyleAndLayoutTree() {
   HTMLFrameOwnerElement::PluginDisposeSuspendScope suspend_plugin_dispose;
   ScriptForbiddenScope forbid_script;
 
-  if (HTMLFrameOwnerElement* owner = LocalOwner())
-    owner->GetDocument().UpdateStyleAndLayoutTree();
+  if (HTMLFrameOwnerElement* owner = LocalOwner()) {
+    if (GetStyleEngine().HasViewportDependentMediaQueries()) {
+      // TODO(andruud): Provide a better reason.
+      owner->GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kUnknown);
+    } else {
+      owner->GetDocument().UpdateStyleAndLayoutTree();
+    }
+  }
 
   UpdateStyleAndLayoutTreeForThisDocument();
+
+  if (GetStyleEngine().UsesContainerQueries()) {
+    // TODO(crbug.com/1145970): Provide a better reason.
+    UpdateStyleAndLayout(DocumentUpdateReason::kUnknown);
+  }
 }
 
 void Document::UpdateStyleAndLayoutTreeForThisDocument() {
@@ -2072,8 +2034,12 @@ void Document::UpdateStyleAndLayoutTreeForThisDocument() {
   }
 #endif
 
+  SCOPED_UMA_AND_UKM_TIMER(View()->EnsureUkmAggregator(),
+                           LocalFrameUkmAggregator::kStyle);
+  FontPerformance::StyleScope font_performance_scope;
+
   // RecalcSlotAssignments should be done before checking
-  // NeedsLayoutTreeUpdate().
+  // NeedsLayoutTreeUpdateForThisDocument().
   GetSlotAssignmentEngine().RecalcSlotAssignments();
 
   // We can call FlatTreeTraversal::AssertFlatTreeNodeDataUpdated just after
@@ -2083,20 +2049,26 @@ void Document::UpdateStyleAndLayoutTreeForThisDocument() {
 
   SlotAssignmentRecalcForbiddenScope forbid_slot_recalc(*this);
 
-  if (!NeedsLayoutTreeUpdate()) {
+  if (!NeedsLayoutTreeUpdateForThisDocument()) {
     if (Lifecycle().GetState() < DocumentLifecycle::kStyleClean) {
-      // needsLayoutTreeUpdate may change to false without any actual layout
-      // tree update.  For example, needsAnimationTimingUpdate may change to
-      // false when time elapses.  Advance lifecycle to StyleClean because style
-      // is actually clean now.
+      // NeedsLayoutTreeUpdateForThisDocument may change to false without any
+      // actual layout tree update.  For example, NeedsAnimationTimingUpdate
+      // may change to false when time elapses.  Advance lifecycle to
+      // StyleClean because style is actually clean now.
       Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
       Lifecycle().AdvanceTo(DocumentLifecycle::kStyleClean);
     }
+    // If we insert <object> elements into display:none subtrees, we might not
+    // need a layout tree update, but need to make sure they are not blocking
+    // the load event.
+    UnblockLoadEventAfterLayoutTreeUpdate();
     return;
   }
 
-  if (InStyleRecalc())
+  if (InStyleRecalc()) {
+    NOTREACHED() << "We should not re-enter style recalc for the same document";
     return;
+  }
 
 #if DCHECK_IS_ON()
   int assigned_nodes_in_slot_count = 0;
@@ -2151,6 +2123,8 @@ void Document::UpdateStyleAndLayoutTreeForThisDocument() {
   // Make sure that document.fonts.ready fires, if appropriate.
   FontFaceSetDocument::DidLayout(*this);
 
+  UnblockLoadEventAfterLayoutTreeUpdate();
+
   TRACE_EVENT_END1("blink,devtools.timeline", "UpdateLayoutTree",
                    "elementCount", element_count);
 
@@ -2166,10 +2140,26 @@ void Document::InvalidateStyleAndLayoutForFontUpdates() {
 }
 
 void Document::UpdateStyle() {
+  UpdateStyleInternal();
+  DCHECK_EQ(lifecycle_.GetState(), DocumentLifecycle::kStyleClean);
+
+  if (RuntimeEnabledFeatures::CSSIsolatedAnimationUpdatesEnabled()) {
+    GetDocumentAnimations().ApplyPendingElementUpdates();
+    if (lifecycle_.GetState() < DocumentLifecycle::kStyleClean) {
+      DocumentAnimations::AllowAnimationUpdatesScope allow_updates(
+          GetDocumentAnimations(), false);
+      UpdateStyleInternal();
+    }
+  }
+}
+
+void Document::UpdateStyleInternal() {
   DCHECK(!View()->ShouldThrottleRendering());
   TRACE_EVENT_BEGIN0("blink,blink_style", "Document::updateStyle");
   RUNTIME_CALL_TIMER_SCOPE(V8PerIsolateData::MainThreadIsolate(),
                            RuntimeCallStats::CounterId::kUpdateStyle);
+  DocumentAnimations::AllowAnimationUpdatesScope allow_updates(
+      GetDocumentAnimations(), true);
 
   unsigned initial_element_count = GetStyleEngine().StyleForElementCount();
 
@@ -2685,6 +2675,7 @@ void Document::Initialize() {
   DCHECK_EQ(lifecycle_.GetState(), DocumentLifecycle::kInactive);
   DCHECK(!ax_object_cache_ || this != &AXObjectCacheOwner());
 
+  UpdateForcedColors();
   layout_view_ = new LayoutView(this);
   SetLayoutObject(layout_view_);
 
@@ -2770,8 +2761,8 @@ void Document::Shutdown() {
 
   markers_->PrepareForDestruction();
 
-  if (GetFrame()->GetTextFragmentSelectorGenerator())
-    GetFrame()->GetTextFragmentSelectorGenerator()->ClearSelection();
+  if (TextFragmentHandler* handler = GetFrame()->GetTextFragmentHandler())
+    handler->DidDetachDocumentOrFrame();
 
   GetPage()->DocumentDetached(this);
 
@@ -3096,7 +3087,7 @@ void Document::open(LocalDOMWindow* entered_window,
       new_url.SetFragmentIdentifier(String());
     SetURL(new_url);
     if (Loader())
-      Loader()->UpdateUrlForDocumentOpen(new_url);
+      Loader()->DidOpenDocumentInputStream(new_url);
 
     if (dom_window_ != entered_window) {
       // We inherit the sandbox flags of the entered document, so mask on
@@ -3345,21 +3336,37 @@ Element* Document::ViewportDefiningElement() const {
   // If a BODY element sets non-visible overflow, it is to be propagated to the
   // viewport, as long as the following conditions are all met:
   // (1) The root element is HTML.
-  // (2) It is the primary BODY element (we only assert for this, expecting
-  //     callers to behave).
+  // (2) It is the primary BODY element.
   // (3) The root element has visible overflow.
+  // (4) The root or BODY elements do not apply any containment.
   // Otherwise it's the root element's properties that are to be propagated.
+
+  // This method is called in the middle of a lifecycle update, for instance
+  // from a LayoutObject which is created but not yet inserted into the box
+  // tree, which is why we have to do the decision based on the ComputedStyle
+  // and not the LayoutObject style and the containment checks below also.
+
   Element* root_element = documentElement();
-  HTMLBodyElement* body_element = FirstBodyElement();
   if (!root_element)
     return nullptr;
   const ComputedStyle* root_style = root_element->GetComputedStyle();
   if (!root_style || root_style->IsEnsuredInDisplayNone())
     return nullptr;
-  if (body_element && root_style->IsOverflowVisibleAlongBothAxes() &&
-      IsA<HTMLHtmlElement>(root_element))
-    return body_element;
-  return root_element;
+  if (!root_style->IsOverflowVisibleAlongBothAxes())
+    return root_element;
+  HTMLBodyElement* body_element = FirstBodyElement();
+  if (!body_element)
+    return root_element;
+  const ComputedStyle* body_style = body_element->GetComputedStyle();
+  if (!body_style || body_style->IsEnsuredInDisplayNone())
+    return root_element;
+  if (RuntimeEnabledFeatures::CSSContainedBodyPropagationEnabled()) {
+    if (root_style->ShouldApplyAnyContainment(*root_element) ||
+        body_style->ShouldApplyAnyContainment(*body_element)) {
+      return root_element;
+    }
+  }
+  return body_element;
 }
 
 Document* Document::open(v8::Isolate* isolate,
@@ -3477,7 +3484,8 @@ void Document::ImplicitClose() {
 
   fetcher_->ScheduleWarnUnusedPreloads();
 
-  UpdateStyleAndLayout(DocumentUpdateReason::kUnknown);
+  if (GetStyleEngine().HaveRenderBlockingStylesheetsLoaded())
+    UpdateStyleAndLayout(DocumentUpdateReason::kUnknown);
 
   load_event_progress_ = kLoadEventCompleted;
 
@@ -3786,7 +3794,7 @@ void Document::DispatchUnloadEvents(
 
   GetFrame()->Loader().SaveScrollAnchor();
   if (auto* mf_checker = View()->GetMobileFriendlinessChecker())
-    mf_checker->NotifyDocumentUnload();
+    mf_checker->EvaluateNow();
 
   // TODO(crbug.com/1161996): Remove this VLOG once the investigation is done.
   VLOG(1) << "Actually dispatching an UnloadEvent: URL = " << Url();
@@ -4582,6 +4590,8 @@ void Document::LayoutViewportWasResized() {
       load_event_progress_ == kLoadEventInProgress) {
     EnqueueResizeEvent();
     EnqueueVisualViewportResizeEvent();
+    if (GetFrame()->IsMainFrame() && !Printing())
+      probe::DidResizeMainFrame(GetFrame());
   }
   if (!HasViewportUnits())
     return;
@@ -5275,17 +5285,6 @@ const OriginAccessEntry& Document::AccessEntryFromURL() {
         Url(), network::mojom::CorsDomainMatchMode::kAllowRegistrableDomains);
   }
   return *access_entry_from_url_;
-}
-
-void Document::SendDidEditFieldInInsecureContext() {
-  if (!GetFrame())
-    return;
-
-  mojo::Remote<mojom::blink::InsecureInputService> insecure_input_service;
-  GetFrame()->GetBrowserInterfaceBroker().GetInterface(
-      insecure_input_service.BindNewPipeAndPassReceiver());
-
-  insecure_input_service->DidEditFieldInInsecureContext();
 }
 
 void Document::RegisterEventFactory(
@@ -6337,7 +6336,6 @@ KURL Document::OpenSearchDescriptionURL() {
   return KURL();
 }
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 V8HTMLOrSVGScriptElement* Document::currentScriptForBinding() const {
   if (current_script_stack_.IsEmpty())
     return nullptr;
@@ -6346,15 +6344,6 @@ V8HTMLOrSVGScriptElement* Document::currentScriptForBinding() const {
     return nullptr;
   return script_element_base->AsV8HTMLOrSVGScriptElement();
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-void Document::currentScriptForBinding(
-    HTMLScriptElementOrSVGScriptElement& script_element) const {
-  if (!current_script_stack_.IsEmpty()) {
-    if (ScriptElementBase* script_element_base = current_script_stack_.back())
-      script_element_base->SetScriptElementForBinding(script_element);
-  }
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 void Document::PushCurrentScript(ScriptElementBase* new_current_script) {
   current_script_stack_.push_back(new_current_script);
@@ -6654,12 +6643,17 @@ void Document::FinishedParsing() {
     // the window load event too early.  To avoid this we force the styles to be
     // up to date before calling FrameLoader::finishedParsing().  See
     // https://bugs.webkit.org/show_bug.cgi?id=36864 starting around comment 35.
-    if (!is_initial_empty_document_)
+    if (!is_initial_empty_document_ &&
+        GetStyleEngine().HaveRenderBlockingStylesheetsLoaded()) {
       UpdateStyleAndLayoutTree();
+    }
 
     BeginLifecycleUpdatesIfRenderingReady();
 
     frame->Loader().FinishedParsing();
+
+    if (frame->GetFrameScheduler())
+      frame->GetFrameScheduler()->OnDomContentLoaded();
 
     DEVTOOLS_TIMELINE_TRACE_EVENT_INSTANT(
         "MarkDOMContent", inspector_mark_load_event::Data, frame);
@@ -6781,17 +6775,35 @@ Vector<IconURL> Document::IconURLs(int icon_types_mask) {
   return icon_urls;
 }
 
-absl::optional<Color> Document::ThemeColor() const {
+void Document::UpdateThemeColorCache() {
+  meta_theme_color_elements_.clear();
   auto* root_element = documentElement();
   if (!root_element)
-    return absl::nullopt;
+    return;
+
   for (HTMLMetaElement& meta_element :
        Traversal<HTMLMetaElement>::DescendantsOf(*root_element)) {
+    if (EqualIgnoringASCIICase(meta_element.GetName(), "theme-color"))
+      meta_theme_color_elements_.push_back(meta_element);
+  }
+}
+
+absl::optional<Color> Document::ThemeColor() {
+  // Returns the color of the first meta[name=theme-color] element in
+  // tree order that matches and is valid.
+  // https://html.spec.whatwg.org/multipage/semantics.html#meta-theme-color
+  for (auto& element : meta_theme_color_elements_) {
+    if (!element->Media().IsEmpty()) {
+      auto* media_query = GetMediaQueryMatcher().MatchMedia(
+          element->Media().GetString().StripWhiteSpace());
+      if (!media_query->matches())
+        continue;
+    }
     Color color;
-    if (EqualIgnoringASCIICase(meta_element.GetName(), "theme-color") &&
-        CSSParser::ParseColor(
-            color, meta_element.Content().GetString().StripWhiteSpace(), true))
+    if (CSSParser::ParseColor(
+            color, element->Content().GetString().StripWhiteSpace(), true)) {
       return color;
+    }
   }
   return absl::nullopt;
 }
@@ -7791,25 +7803,6 @@ PropertyRegistry& Document::EnsurePropertyRegistry() {
   return *property_registry_;
 }
 
-void Document::MaybeQueueSendDidEditFieldInInsecureContext() {
-  if (logged_field_edit_ || sensitive_input_edited_task_.IsActive() ||
-      execution_context_->IsSecureContext()) {
-    // Send a message on the first edit; the browser process doesn't care
-    // about the presence of additional edits.
-    //
-    // The browser process only cares about editing fields on pages where the
-    // top-level URL is not secure. Secure contexts must have a top-level URL
-    // that is secure, so there is no need to send notifications for editing
-    // in secure contexts.
-    return;
-  }
-  logged_field_edit_ = true;
-  sensitive_input_edited_task_ = PostCancellableTask(
-      *GetTaskRunner(TaskType::kUserInteraction), FROM_HERE,
-      WTF::Bind(&Document::SendDidEditFieldInInsecureContext,
-                WrapWeakPersistent(this)));
-}
-
 DocumentResourceCoordinator* Document::GetResourceCoordinator() {
   if (!resource_coordinator_ && GetFrame()) {
     resource_coordinator_ = DocumentResourceCoordinator::MaybeCreate(
@@ -7929,6 +7922,7 @@ void Document::Trace(Visitor* visitor) const {
   visitor->Trace(font_preload_manager_);
   visitor->Trace(find_in_page_active_match_node_);
   visitor->Trace(data_);
+  visitor->Trace(meta_theme_color_elements_);
   Supplementable<Document>::Trace(visitor);
   TreeScope::Trace(visitor);
   ContainerNode::Trace(visitor);
@@ -8073,6 +8067,12 @@ void Document::ColorSchemeChanged() {
   UpdateForcedColors();
   GetStyleEngine().ColorSchemeChanged();
   MediaQueryAffectingValueChanged(MediaValueChange::kOther);
+  MediaValues* media_values =
+      MediaValues::CreateDynamicIfFrameExists(GetFrame());
+  if (GetFrame()) {
+    GetFrame()->GetLocalFrameHostRemote().DidUpdatePreferredColorScheme(
+        media_values->GetPreferredColorScheme());
+  }
 }
 
 void Document::VisionDeficiencyChanged() {
@@ -8177,15 +8177,8 @@ const Node* Document::GetFindInPageActiveMatchNode() const {
   return find_in_page_active_match_node_;
 }
 
-void Document::ActivateForPrerendering() {
-  DCHECK(RuntimeEnabledFeatures::Prerender2Enabled());
-
-  // For subframes, this can be called before the navigation commit, and this
-  // document may be the initial empty one with `is_prerendering_` being false.
-  if (is_initial_empty_document_) {
-    DCHECK(!is_prerendering_);
-    return;
-  }
+void Document::ActivateForPrerendering(base::TimeTicks activation_start) {
+  DCHECK(features::IsPrerender2Enabled());
 
   // TODO(bokan): Portals will change this assumption since they mean an active
   // document can be "adopted" into a portal.
@@ -8193,7 +8186,7 @@ void Document::ActivateForPrerendering() {
   is_prerendering_ = false;
 
   if (DocumentLoader* loader = Loader())
-    loader->NotifyPrerenderingDocumentActivated();
+    loader->NotifyPrerenderingDocumentActivated(activation_start);
 
   Vector<base::OnceClosure> callbacks;
   callbacks.swap(will_dispatch_prerenderingchange_callbacks_);
@@ -8203,7 +8196,15 @@ void Document::ActivateForPrerendering() {
 
   // https://jeremyroman.github.io/alternate-loading-modes/#prerendering-browsing-context-activate
   // Step 8.3.4 "Fire an event named prerenderingchange at doc."
-  DispatchEvent(*Event::Create(event_type_names::kPrerenderingchange));
+  if (RuntimeEnabledFeatures::Prerender2Enabled(GetExecutionContext())) {
+    DispatchEvent(*Event::Create(event_type_names::kPrerenderingchange));
+  } else {
+    AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kJavaScript,
+        mojom::blink::ConsoleMessageLevel::kWarning,
+        "Failed to dispatch 'prerenderingchange' event: Prerender2 feature is "
+        "not enabled on the document."));
+  }
 
   // Step 8.3.5 "For each steps in doc’s post-prerendering activation steps
   // list:"
@@ -8234,6 +8235,20 @@ void Document::RunPostPrerenderingActivationSteps() {
 bool Document::InStyleRecalc() const {
   return lifecycle_.GetState() == DocumentLifecycle::kInStyleRecalc ||
          style_engine_->InContainerQueryStyleRecalc();
+}
+
+void Document::DelayLoadEventUntilLayoutTreeUpdate() {
+  if (delay_load_event_until_layout_tree_update_)
+    return;
+  delay_load_event_until_layout_tree_update_ = true;
+  IncrementLoadEventDelayCount();
+}
+
+void Document::UnblockLoadEventAfterLayoutTreeUpdate() {
+  if (delay_load_event_until_layout_tree_update_) {
+    delay_load_event_until_layout_tree_update_ = false;
+    DecrementLoadEventDelayCount();
+  }
 }
 
 Document::PaintPreviewScope::PaintPreviewScope(Document& document,

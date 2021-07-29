@@ -6,6 +6,8 @@
 <translation id="1430915738399379752">印刷</translation>
 <translation id="1467231725790366244"><ph name="CAMERA" /> が外されました。</translation>
 <translation id="1473110567575736769">3 秒タイマー</translation>
+<translation id="1478594628797167447">スキャナ</translation>
+<translation id="1545749641540134597">QR コードをスキャンします</translation>
 <translation id="1620510694547887537">カメラ</translation>
 <translation id="1627744224761163218">4x4</translation>
 <translation id="1664224225747386870">何も記録されていません</translation>
@@ -19,6 +21,8 @@
 <translation id="2050339315714019657">縦</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" />（有効）</translation>
 <translation id="2144806332417375165">カスタム動画パラメータ</translation>
+<translation id="2175927920773552910">QR コード</translation>
+<translation id="2268107369530950373">スキャナモードに切り替え</translation>
 <translation id="229579744168541441">ディスクに書き出し</translation>
 <translation id="2320741269052147773">左にパン</translation>
 <translation id="2501278716633472235">戻る</translation>
@@ -38,6 +42,7 @@
 <translation id="3227137524299004712">マイク</translation>
 <translation id="3240426699337459095">リンクをコピーしました</translation>
 <translation id="3259149966178251584">カメラの解像度</translation>
+<translation id="3448774564454087943">短すぎるため動画は保存されません</translation>
 <translation id="3517926952904427380">縦向きの写真を撮影できません</translation>
 <translation id="3569311554794739032"><ph name="FILE" /> を削除してもよろしいですか？</translation>
 <translation id="3733597664308256288">カメラの設定が追加されました。アクセスするには検索+右矢印キーを押します。</translation>
@@ -56,11 +61,14 @@
 <translation id="4628948037717959914">写真</translation>
 <translation id="4649291346448517080">ファイルを保存できません</translation>
 <translation id="4890010094662541459">3x3</translation>
+<translation id="491895758387112773">マルチストリーム動画の録画</translation>
 <translation id="5057360777601936059">カメラを使用できません。
         カメラが正しく接続されているかご確認ください。</translation>
 <translation id="5152121255775685072">ギャラリーに移動</translation>
+<translation id="5268823927180092501">すべてのカメラでドキュメント モードを有効にする</translation>
 <translation id="5422455049771430511">画像と動画の保存先が変わりました</translation>
 <translation id="5671277269877808209">スクエア</translation>
+<translation id="5753488212459587150">エキスパート モードを有効にする</translation>
 <translation id="5775960006311140197">エキスパート モード</translation>
 <translation id="5869546221129391014">グリッド</translation>
 <translation id="5975083100439434680">縮小する</translation>

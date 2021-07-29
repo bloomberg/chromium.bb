@@ -4,7 +4,7 @@
 
 #include <memory>
 
-#include "ash/accessibility/magnifier/docked_magnifier_controller_impl.h"
+#include "ash/accessibility/magnifier/docked_magnifier_controller.h"
 #include "ash/accessibility/magnifier/magnifier_glass.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/capture_mode/capture_mode_bar_view.h"
@@ -23,13 +23,14 @@
 #include "ash/capture_mode/stop_recording_button_tray.h"
 #include "ash/capture_mode/test_capture_mode_delegate.h"
 #include "ash/capture_mode/video_recording_watcher.h"
+#include "ash/constants/ash_features.h"
 #include "ash/display/cursor_window_controller.h"
 #include "ash/display/output_protection_delegate.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/capture_mode_test_api.h"
 #include "ash/root_window_controller.h"
+#include "ash/services/recording/recording_service_test_api.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/test/ash_test_base.h"
@@ -41,9 +42,11 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -59,6 +62,8 @@
 #include "ui/aura/window_tracker.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
+#include "ui/base/cursor/cursor_factory.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -69,10 +74,12 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/image/image_unittest_util.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
+#include "ui/ozone/public/ozone_platform.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget_observer.h"
@@ -625,7 +632,7 @@ TEST_F(CaptureModeTest, VideoRecordingUiBehavior) {
 // Tests the behavior of repositioning a region with capture mode.
 TEST_F(CaptureModeTest, CaptureRegionRepositionBehavior) {
   // Use a set display size as we will be choosing points in this test.
-  UpdateDisplay("800x800");
+  UpdateDisplay("800x700");
 
   auto* controller = StartImageRegionCapture();
 
@@ -654,7 +661,7 @@ TEST_F(CaptureModeTest, CaptureRegionRepositionBehavior) {
 // drag affordances.
 TEST_F(CaptureModeTest, CaptureRegionCornerResizeBehavior) {
   // Use a set display size as we will be choosing points in this test.
-  UpdateDisplay("800x800");
+  UpdateDisplay("800x700");
 
   auto* controller = StartImageRegionCapture();
   // Create the initial region.
@@ -717,7 +724,7 @@ TEST_F(CaptureModeTest, CaptureRegionCornerResizeBehavior) {
 // affordances.
 TEST_F(CaptureModeTest, CaptureRegionEdgeResizeBehavior) {
   // Use a set display size as we will be choosing points in this test.
-  UpdateDisplay("800x800");
+  UpdateDisplay("800x700");
 
   auto* controller = StartImageRegionCapture();
   // Create the initial region.
@@ -809,7 +816,7 @@ TEST_F(CaptureModeTest, CaptureRegionResetsOnClickOutside) {
 // Tests that buttons on the capture mode bar still work when a region is
 // "covering" them.
 TEST_F(CaptureModeTest, CaptureRegionCoversCaptureModeBar) {
-  UpdateDisplay("800x800");
+  UpdateDisplay("800x700");
 
   auto* controller = StartImageRegionCapture();
 
@@ -838,7 +845,7 @@ TEST_F(CaptureModeTest, CaptureRegionCoversCaptureModeBar) {
 // and that the cursor is hidden if the magnifying glass is present.
 TEST_F(CaptureModeTest, CaptureRegionMagnifierWhenFineTuning) {
   const gfx::Vector2d kDragDelta(50, 50);
-  UpdateDisplay("800x800");
+  UpdateDisplay("800x700");
 
   // Start Capture Mode in a region in image mode.
   StartImageRegionCapture();
@@ -915,7 +922,7 @@ TEST_F(CaptureModeTest, CaptureRegionMagnifierWhenFineTuning) {
 
 // Tests that the dimensions label properly renders for capture regions.
 TEST_F(CaptureModeTest, CaptureRegionDimensionsLabelLocation) {
-  UpdateDisplay("800x800");
+  UpdateDisplay("900x800");
 
   // Start Capture Mode in a region in image mode.
   StartImageRegionCapture();
@@ -955,10 +962,10 @@ TEST_F(CaptureModeTest, CaptureRegionDimensionsLabelLocation) {
   // Create a new capture region close to the right side of the screen such that
   // if the label was centered it would extend out of the screen.
   // The right (x + width) of the label should be the right edge of the screen
-  // (800).
-  capture_region.SetRect(796, 100, 2, 100);
+  // (900).
+  capture_region.SetRect(896, 100, 2, 100);
   SelectRegion(capture_region, /*release_mouse=*/false);
-  EXPECT_EQ(800, GetDimensionsLabelWindow()->bounds().right());
+  EXPECT_EQ(900, GetDimensionsLabelWindow()->bounds().right());
   generator->ReleaseLeftButton();
   EXPECT_EQ(nullptr, GetDimensionsLabelWindow());
 
@@ -974,7 +981,7 @@ TEST_F(CaptureModeTest, CaptureRegionDimensionsLabelLocation) {
 }
 
 TEST_F(CaptureModeTest, CaptureRegionCaptureButtonLocation) {
-  UpdateDisplay("800x800");
+  UpdateDisplay("900x800");
 
   auto* controller = StartImageRegionCapture();
 
@@ -1014,7 +1021,7 @@ TEST_F(CaptureModeTest, CaptureRegionCaptureButtonLocation) {
 // capture bar and end up unclickable since it is stacked below the capture bar.
 // Regression test for https://crbug.com/1186462.
 TEST_F(CaptureModeTest, CaptureRegionCaptureButtonDoesNotIntersectCaptureBar) {
-  UpdateDisplay("800x800");
+  UpdateDisplay("800x700");
 
   StartImageRegionCapture();
 
@@ -1101,7 +1108,7 @@ TEST_F(CaptureModeTest, WindowCapture) {
 // Tests that the capture bar is located on the root with the cursor when
 // starting capture mode.
 TEST_F(CaptureModeTest, MultiDisplayCaptureBarInitialLocation) {
-  UpdateDisplay("800x800,801+0-800x800");
+  UpdateDisplay("800x700,801+0-800x700");
 
   auto* event_generator = GetEventGenerator();
   MoveMouseToAndUpdateCursorDisplay(gfx::Point(1000, 500), event_generator);
@@ -1119,7 +1126,7 @@ TEST_F(CaptureModeTest, MultiDisplayCaptureBarInitialLocation) {
 
 // Tests behavior of a capture mode session if the active display is removed.
 TEST_F(CaptureModeTest, DisplayRemoval) {
-  UpdateDisplay("800x800,801+0-800x800");
+  UpdateDisplay("800x700,801+0-800x700");
 
   // Start capture mode on the secondary display.
   MoveMouseToAndUpdateCursorDisplay(gfx::Point(1000, 500), GetEventGenerator());
@@ -1140,7 +1147,7 @@ TEST_F(CaptureModeTest, DisplayRemoval) {
 // Tests that using fullscreen or window source, moving the mouse across
 // displays will change the root window of the capture session.
 TEST_F(CaptureModeTest, MultiDisplayFullscreenOrWindowSourceRootWindow) {
-  UpdateDisplay("800x800,801+0-800x800");
+  UpdateDisplay("800x700,801+0-800x700");
   ASSERT_EQ(2u, Shell::GetAllRootWindows().size());
 
   auto* event_generator = GetEventGenerator();
@@ -1169,7 +1176,7 @@ TEST_F(CaptureModeTest, MultiDisplayFullscreenOrWindowSourceRootWindow) {
 // Tests that in region mode, moving the mouse across displays will not change
 // the root window of the capture session, but clicking on a new display will.
 TEST_F(CaptureModeTest, MultiDisplayRegionSourceRootWindow) {
-  UpdateDisplay("800x800,801+0-800x800");
+  UpdateDisplay("800x700,801+0-800x700");
   ASSERT_EQ(2u, Shell::GetAllRootWindows().size());
 
   auto* event_generator = GetEventGenerator();
@@ -1200,7 +1207,7 @@ TEST_F(CaptureModeTest, MultiDisplayRegionSourceRootWindow) {
 // Tests that using touch on multi display setups works as intended. Regression
 // test for https://crbug.com/1159512.
 TEST_F(CaptureModeTest, MultiDisplayTouch) {
-  UpdateDisplay("800x800,801+0-800x800");
+  UpdateDisplay("800x700,801+0-800x700");
   ASSERT_EQ(2u, Shell::GetAllRootWindows().size());
 
   auto* controller = StartImageRegionCapture();
@@ -1712,7 +1719,7 @@ TEST_F(CaptureModeTest, WindowChangesDuringCountdown) {
   // Activation changes (such as opening overview) should not terminate the
   // countdown.
   start_countdown();
-  Shell::Get()->overview_controller()->StartOverview();
+  EnterOverview();
   EXPECT_TRUE(controller->IsActive());
   EXPECT_FALSE(controller->is_recording_in_progress());
 
@@ -1800,27 +1807,31 @@ TEST_F(CaptureModeTest, VideoNotificationThumbnail) {
                                          CaptureModeType::kVideo);
   controller->StartVideoRecordingImmediatelyForTesting();
   EXPECT_TRUE(controller->is_recording_in_progress());
+  CaptureModeTestApi().FlushRecordingServiceForTesting();
 
   auto* test_delegate =
       static_cast<TestCaptureModeDelegate*>(controller->delegate_for_testing());
 
-  // Use a random bitmap as the fake thumbnail.
-  SkBitmap thumbnail;
-  thumbnail.allocN32Pixels(400, 300);
-  EXPECT_FALSE(thumbnail.drawsNothing());
-  test_delegate->SetVideoThumbnail(
-      gfx::ImageSkia::CreateFrom1xBitmap(thumbnail));
+  // Request and wait for a video frame so that the recording service can use it
+  // to create a video thumbnail.
+  test_delegate->RequestAndWaitForVideoFrame();
+  SkBitmap service_thumbnail =
+      gfx::Image(test_delegate->GetVideoThumbnail()).AsBitmap();
+  EXPECT_FALSE(service_thumbnail.drawsNothing());
 
   CaptureNotificationWaiter waiter;
   controller->EndVideoRecording(EndRecordingReason::kStopRecordingButton);
   EXPECT_FALSE(controller->is_recording_in_progress());
   waiter.Wait();
 
+  // Verify that the service's thumbnail is the same image shown in the
+  // notification shown when recording ends.
   const message_center::Notification* notification = GetPreviewNotification();
   EXPECT_TRUE(notification);
   EXPECT_FALSE(notification->image().IsEmpty());
-  const SkBitmap actual_thumbnail = notification->image().AsBitmap();
-  EXPECT_TRUE(gfx::test::AreBitmapsEqual(actual_thumbnail, thumbnail));
+  const SkBitmap notification_thumbnail = notification->image().AsBitmap();
+  EXPECT_TRUE(
+      gfx::test::AreBitmapsEqual(notification_thumbnail, service_thumbnail));
 }
 
 TEST_F(CaptureModeTest, WindowRecordingCaptureId) {
@@ -1934,7 +1945,7 @@ TEST_F(CaptureModeTest, DimmingWithDesks) {
 }
 
 TEST_F(CaptureModeTest, DimmingWithDisplays) {
-  UpdateDisplay("400x400,401+0-800x800");
+  UpdateDisplay("500x400,401+0-800x700");
   auto recorded_window = CreateAppWindow(gfx::Rect(250, 100));
   auto* controller = StartSessionAndRecordWindow(recorded_window.get());
   auto* recording_watcher = controller->video_recording_watcher_for_testing();
@@ -1959,7 +1970,7 @@ TEST_F(CaptureModeTest, DimmingWithDisplays) {
 }
 
 TEST_F(CaptureModeTest, MultiDisplayWindowRecording) {
-  UpdateDisplay("400x400,401+0-800x800");
+  UpdateDisplay("500x400,401+0-800x700");
   auto roots = Shell::GetAllRootWindows();
   ASSERT_EQ(2u, roots.size());
 
@@ -2010,7 +2021,7 @@ TEST_F(CaptureModeTest, MultiDisplayWindowRecording) {
 }
 
 TEST_F(CaptureModeTest, WindowResizing) {
-  UpdateDisplay("600x600");
+  UpdateDisplay("700x600");
   auto window = CreateTestWindow(gfx::Rect(200, 200));
   auto* controller =
       StartCaptureSession(CaptureModeSource::kWindow, CaptureModeType::kVideo);
@@ -2025,7 +2036,7 @@ TEST_F(CaptureModeTest, WindowResizing) {
   CaptureModeTestApi test_api;
   test_api.FlushRecordingServiceForTesting();
   EXPECT_EQ(gfx::Size(200, 200), test_delegate->GetCurrentVideoSize());
-  EXPECT_EQ(gfx::Size(600, 600), test_delegate->GetCurrentFrameSinkSize());
+  EXPECT_EQ(gfx::Size(700, 600), test_delegate->GetCurrentFrameSinkSize());
 
   // Multiple resize events should be throttled.
   window->SetBounds(gfx::Rect(250, 250));
@@ -2045,7 +2056,7 @@ TEST_F(CaptureModeTest, WindowResizing) {
   recording_watcher->SendThrottledWindowSizeChangedNowForTesting();
   test_api.FlushRecordingServiceForTesting();
   EXPECT_EQ(gfx::Size(300, 300), test_delegate->GetCurrentVideoSize());
-  EXPECT_EQ(gfx::Size(600, 600), test_delegate->GetCurrentFrameSinkSize());
+  EXPECT_EQ(gfx::Size(700, 600), test_delegate->GetCurrentFrameSinkSize());
 
   // Maximizing a window changes its size, and is pushed to the service with
   // throttling.
@@ -2085,6 +2096,106 @@ TEST_F(CaptureModeTest, RotateDisplayWhileRecording) {
   test_api.FlushRecordingServiceForTesting();
   EXPECT_EQ(gfx::Size(800, 600), test_delegate->GetCurrentFrameSinkSize());
   EXPECT_EQ(gfx::Size(100, 200), test_delegate->GetCurrentVideoSize());
+}
+
+// Tests that the video frames delivered to the service for recorded windows are
+// valid (i.e. they have the correct size, and suffer from no letterboxing, even
+// when the window gets resized).
+// This is a regression test for https://crbug.com/1214023.
+TEST_F(CaptureModeTest, VerifyWindowRecordingVideoFrames) {
+  auto window = CreateTestWindow(gfx::Rect(100, 50, 200, 200));
+  StartCaptureSession(CaptureModeSource::kWindow, CaptureModeType::kVideo);
+
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseToCenterOf(window.get());
+  auto* controller = CaptureModeController::Get();
+  controller->StartVideoRecordingImmediatelyForTesting();
+  EXPECT_TRUE(controller->is_recording_in_progress());
+  CaptureModeTestApi test_api;
+  test_api.FlushRecordingServiceForTesting();
+
+  bool is_video_frame_valid = false;
+  std::string failures;
+  auto verify_video_frame = [&](const media::VideoFrame& frame,
+                                const gfx::Rect& content_rect) {
+    is_video_frame_valid = true;
+    failures.clear();
+
+    // Having the content positioned at (0,0) with a size that matches the
+    // current window's size means that there is no letterboxing.
+    if (gfx::Point() != content_rect.origin()) {
+      is_video_frame_valid = false;
+      failures =
+          base::StringPrintf("content_rect is not at (0,0), instead at: %s\n",
+                             content_rect.origin().ToString().c_str());
+    }
+
+    const gfx::Size window_size = window->bounds().size();
+    if (window_size != content_rect.size()) {
+      is_video_frame_valid = false;
+      failures += base::StringPrintf(
+          "content_rect doesn't match the window size:\n"
+          "  content_rect.size(): %s\n"
+          "  window_size: %s\n",
+          content_rect.size().ToString().c_str(),
+          window_size.ToString().c_str());
+    }
+
+    // The video frame contents should match the bounds of the video frame.
+    if (frame.visible_rect() != content_rect) {
+      is_video_frame_valid = false;
+      failures += base::StringPrintf(
+          "content_rect doesn't match the frame's visible_rect:\n"
+          "  content_rect: %s\n"
+          "  visible_rect: %s\n",
+          content_rect.ToString().c_str(),
+          frame.visible_rect().ToString().c_str());
+    }
+
+    if (frame.coded_size() != window_size) {
+      is_video_frame_valid = false;
+      failures += base::StringPrintf(
+          "the frame's coded size doesn't match the window size:\n"
+          "  frame.coded_size(): %s\n"
+          "  window_size: %s\n",
+          frame.coded_size().ToString().c_str(),
+          window_size.ToString().c_str());
+    }
+  };
+
+  auto* test_delegate =
+      static_cast<TestCaptureModeDelegate*>(controller->delegate_for_testing());
+  ASSERT_TRUE(test_delegate->recording_service());
+  {
+    SCOPED_TRACE("Initial window size");
+    test_delegate->recording_service()->RequestAndWaitForVideoFrame(
+        base::BindLambdaForTesting(verify_video_frame));
+    EXPECT_TRUE(is_video_frame_valid) << failures;
+  }
+
+  // Even when the window is resized and the throttled size reaches the service,
+  // new video frames should still be valid.
+  window->SetBounds(gfx::Rect(120, 60, 600, 500));
+  auto* recording_watcher = controller->video_recording_watcher_for_testing();
+  recording_watcher->SendThrottledWindowSizeChangedNowForTesting();
+  test_api.FlushRecordingServiceForTesting();
+  {
+    SCOPED_TRACE("After window resizing");
+    // A video frame is produced on the Viz side when a CopyOutputRequest is
+    // fulfilled. Those CopyOutputRequests could have been placed before the
+    // window's layer resize results in a new resized render pass in Viz. But
+    // eventually this must happen, and a valid frame must be delivered.
+    int remaining_attempts = 2;
+    do {
+      --remaining_attempts;
+      test_delegate->recording_service()->RequestAndWaitForVideoFrame(
+          base::BindLambdaForTesting(verify_video_frame));
+    } while (!is_video_frame_valid && remaining_attempts);
+    EXPECT_TRUE(is_video_frame_valid) << failures;
+  }
+
+  controller->EndVideoRecording(EndRecordingReason::kStopRecordingButton);
+  EXPECT_FALSE(controller->is_recording_in_progress());
 }
 
 // Tests the behavior of screen recording with the presence of HDCP secure
@@ -2216,7 +2327,7 @@ TEST_P(CaptureModeHdcpTest, WindowBecomesProtectedBeforeRecording) {
 }
 
 TEST_P(CaptureModeHdcpTest, ProtectedWindowInMultiDisplay) {
-  UpdateDisplay("400x400,401+0-400x400");
+  UpdateDisplay("500x400,401+0-500x400");
   auto roots = Shell::GetAllRootWindows();
   ASSERT_EQ(2u, roots.size());
   protection_delegate_->SetProtection(display::CONTENT_PROTECTION_METHOD_HDCP,
@@ -2290,7 +2401,7 @@ TEST_F(CaptureModeTest, ClosingWindowBeingRecorded) {
 }
 
 TEST_F(CaptureModeTest, DetachDisplayWhileWindowRecording) {
-  UpdateDisplay("400x400,401+0-400x400");
+  UpdateDisplay("500x400,401+0-500x400");
   // Create a window on the second display.
   auto window = CreateTestWindow(gfx::Rect(450, 20, 200, 200));
   auto roots = Shell::GetAllRootWindows();
@@ -2394,7 +2505,7 @@ TEST_F(CaptureModeTest, SwitchUsersAfterCountdownStarts) {
 }
 
 TEST_F(CaptureModeTest, ClosingDisplayBeingFullscreenRecorded) {
-  UpdateDisplay("400x400,401+0-400x400");
+  UpdateDisplay("500x400,401+0-500x400");
   auto roots = Shell::GetAllRootWindows();
   ASSERT_EQ(2u, roots.size());
   StartCaptureSession(CaptureModeSource::kFullscreen, CaptureModeType::kVideo);
@@ -2551,7 +2662,7 @@ TEST_F(CaptureModeTest, NumberOfCaptureRegionAdjustmentsHistogram) {
   constexpr char kTabletHistogram[] =
       "Ash.CaptureModeController.CaptureRegionAdjusted.TabletMode";
   base::HistogramTester histogram_tester;
-  UpdateDisplay("800x800");
+  UpdateDisplay("800x700");
 
   auto* controller = StartImageRegionCapture();
   // Create the initial region.
@@ -2656,7 +2767,7 @@ TEST_F(CaptureModeTest, ScreenshotConfigurationHistogram) {
       "Ash.CaptureModeController.CaptureConfiguration.TabletMode";
   base::HistogramTester histogram_tester;
   // Use a set display size as we will be choosing points in this test.
-  UpdateDisplay("800x800");
+  UpdateDisplay("800x700");
 
   // Create a window for window captures later.
   std::unique_ptr<aura::Window> window1(
@@ -2777,20 +2888,20 @@ TEST_F(CaptureModeTest, DisplayBoundsChange) {
 
   // Shrink the display. The capture region should shrink, and the capture bar
   // should be adjusted to be centered.
-  UpdateDisplay("600x600");
-  EXPECT_EQ(gfx::Rect(600, 400), controller->user_capture_region());
-  EXPECT_EQ(300,
+  UpdateDisplay("700x600");
+  EXPECT_EQ(gfx::Rect(700, 400), controller->user_capture_region());
+  EXPECT_EQ(350,
             GetCaptureModeBarView()->GetBoundsInScreen().CenterPoint().x());
 }
 
 TEST_F(CaptureModeTest, ReenterOnSmallerDisplay) {
-  UpdateDisplay("1200x600,1201+0-600x600");
+  UpdateDisplay("1200x600,1201+0-700x600");
 
   // Start off with the primary display as the targeted display. Create a region
   // that fits the primary display but would be too big for the secondary
   // display.
   auto* event_generator = GetEventGenerator();
-  MoveMouseToAndUpdateCursorDisplay(gfx::Point(600, 300), event_generator);
+  MoveMouseToAndUpdateCursorDisplay(gfx::Point(700, 300), event_generator);
   auto* controller = StartImageRegionCapture();
   SelectRegion(gfx::Rect(1200, 400));
   EXPECT_EQ(gfx::Rect(1200, 400), controller->user_capture_region());
@@ -2800,7 +2911,7 @@ TEST_F(CaptureModeTest, ReenterOnSmallerDisplay) {
   // shrunk to fit the display.
   MoveMouseToAndUpdateCursorDisplay(gfx::Point(1500, 300), event_generator);
   StartImageRegionCapture();
-  EXPECT_EQ(gfx::Rect(600, 400), controller->user_capture_region());
+  EXPECT_EQ(gfx::Rect(700, 400), controller->user_capture_region());
 }
 
 // Tests tabbing when in capture window mode.
@@ -3168,11 +3279,11 @@ TEST_F(CaptureModeMockTimeTest, ConsecutiveScreenshotsHistograms) {
 
 // Tests that the user capture region will be cleared up after a period of time.
 TEST_F(CaptureModeMockTimeTest, ClearUserCaptureRegionBetweenSessions) {
-  UpdateDisplay("800x800");
+  UpdateDisplay("900x800");
   auto* controller = StartImageRegionCapture();
   EXPECT_EQ(gfx::Rect(), controller->user_capture_region());
 
-  const gfx::Rect capture_region(100, 100, 600, 600);
+  const gfx::Rect capture_region(100, 100, 600, 700);
   SelectRegion(capture_region);
   EXPECT_EQ(capture_region, controller->user_capture_region());
   controller->PerformCapture();
@@ -3197,7 +3308,7 @@ TEST_F(CaptureModeMockTimeTest, ClearUserCaptureRegionBetweenSessions) {
 
 // Tests that in Region mode, the capture bar hides and shows itself correctly.
 TEST_F(CaptureModeTest, CaptureBarOpacity) {
-  UpdateDisplay("800x800");
+  UpdateDisplay("800x700");
 
   auto* event_generator = GetEventGenerator();
   auto* controller = StartImageRegionCapture();
@@ -3359,7 +3470,7 @@ TEST_F(CaptureModeTest, SettingsMenuVisibilityBasic) {
 // the bar/menu, on other buttons) affects whether the settings menu should
 // close or not.
 TEST_F(CaptureModeTest, SettingsMenuVisibilityClicking) {
-  UpdateDisplay("800x800");
+  UpdateDisplay("800x700");
 
   auto* event_generator = GetEventGenerator();
   auto* controller = StartImageRegionCapture();
@@ -3411,7 +3522,7 @@ TEST_F(CaptureModeTest, SettingsMenuVisibilityClicking) {
 
 // Tests the settings menu functionality when in region mode.
 TEST_F(CaptureModeTest, SettingsMenuVisibilityDrawingRegion) {
-  UpdateDisplay("800x800");
+  UpdateDisplay("800x700");
 
   auto* event_generator = GetEventGenerator();
   auto* controller = StartImageRegionCapture();
@@ -3690,7 +3801,7 @@ TEST_F(CaptureModeCursorOverlayTest, CursorInFullscreenScreenshot) {
 // (crbug.com/1186652).
 TEST_F(CaptureModeCursorOverlayTest, CursorInPartialRegionScreenshot) {
   // Use a set display size as we will be choosing points in this test.
-  UpdateDisplay("800x800");
+  UpdateDisplay("800x700");
 
   auto* cursor_manager = Shell::Get()->cursor_manager();
   EXPECT_FALSE(cursor_manager->IsCursorLocked());
@@ -3778,6 +3889,72 @@ TEST_F(CaptureModeCursorOverlayTest, OverlayHidesWhenOutOfBounds) {
   generator->ClickLeftButton();
   FlushOverlay();
   EXPECT_TRUE(fake_overlay()->IsHidden());
+}
+
+// Verifies that the cursor overlay bounds calculation takes into account the
+// cursor image scale factor. https://crbug.com/1222494.
+TEST_F(CaptureModeCursorOverlayTest, OverlayBoundsAccountForCursorScaleFactor) {
+  UpdateDisplay("500x400");
+  StartRecordingAndSetupFakeOverlay(CaptureModeSource::kFullscreen);
+  EXPECT_FALSE(fake_overlay()->IsHidden());
+
+  auto* cursor_manager = Shell::Get()->cursor_manager();
+  auto set_cursor = [cursor_manager](const gfx::Size& cursor_image_size,
+                                     float cursor_image_scale_factor) {
+    const auto cursor_type = ui::mojom::CursorType::kCustom;
+    gfx::NativeCursor cursor{cursor_type};
+    SkBitmap cursor_image;
+    cursor_image.allocN32Pixels(cursor_image_size.width(),
+                                cursor_image_size.height());
+    cursor.set_image_scale_factor(cursor_image_scale_factor);
+    cursor.set_custom_bitmap(cursor_image);
+    auto* platform_cursor_factory =
+        ui::OzonePlatform::GetInstance()->GetCursorFactory();
+    cursor.SetPlatformCursor(platform_cursor_factory->CreateImageCursor(
+        cursor_type, cursor_image, cursor.custom_hotspot()));
+    cursor_manager->SetCursor(cursor);
+  };
+
+  struct {
+    gfx::Size cursor_size;
+    float cursor_image_scale_factor;
+  } kTestCases[] = {
+      {
+          gfx::Size(50, 50),
+          /*cursor_image_scale_factor=*/2.f,
+      },
+      {
+          gfx::Size(25, 25),
+          /*cursor_image_scale_factor=*/1.f,
+      },
+  };
+
+  // Both of the above test cases should yield the same cursor overlay relative
+  // bounds when the cursor is at the center of the screen.
+  // Origin is 0.5f (center)
+  // Size is 25 (cursor image dip size) / {500,400} = {0.05f, 0.0625f}
+  const gfx::RectF expected_overlay_bounds{0.5f, 0.5f, 0.05f, 0.0625f};
+
+  const gfx::Point screen_center =
+      window()->GetRootWindow()->bounds().CenterPoint();
+  auto* generator = GetEventGenerator();
+
+  for (const auto& test_case : kTestCases) {
+    set_cursor(test_case.cursor_size, test_case.cursor_image_scale_factor);
+    // Lock the cursor to prevent mouse events from changing it back to a
+    // default kPointer cursor type.
+    cursor_manager->LockCursor();
+
+    // Generate a click event to overcome throttling.
+    generator->MoveMouseTo(screen_center);
+    generator->ClickLeftButton();
+    FlushOverlay();
+    EXPECT_FALSE(fake_overlay()->IsHidden());
+    EXPECT_EQ(expected_overlay_bounds, fake_overlay()->last_bounds());
+
+    // Unlock the cursor back.
+    cursor_manager->UnlockCursor();
+  }
 }
 
 // TODO(afakhry): Add more cursor overlay tests.

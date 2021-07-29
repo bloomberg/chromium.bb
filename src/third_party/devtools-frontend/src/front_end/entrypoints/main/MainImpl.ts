@@ -46,7 +46,6 @@ import * as Extensions from '../../models/extensions/extensions.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as Logs from '../../models/logs/logs.js';
 import * as Persistence from '../../models/persistence/persistence.js';
-import * as Recorder from '../../models/recorder/recorder.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as Snippets from '../../panels/snippets/snippets.js';
 import * as Timeline from '../../panels/timeline/timeline.js';
@@ -171,17 +170,19 @@ export class MainImpl {
       },
     });
 
-    const localePromises = [i18n.i18n.fetchAndRegisterLocaleData(devToolsLocale.locale)];
     if (devToolsLocale.locale !== 'en-US') {
       // Always load en-US locale data as a fallback. This is important, newly added
-      // strings won't have a translation.
-      localePromises.push(i18n.i18n.fetchAndRegisterLocaleData('en-US'));
+      // strings won't have a translation. If fetching en-US.json fails, something
+      // is seriously wrong and the exception should bubble up.
+      await i18n.i18n.fetchAndRegisterLocaleData('en-US');
     }
 
     try {
-      await Promise.all(localePromises);
+      await i18n.i18n.fetchAndRegisterLocaleData(devToolsLocale.locale);
     } catch (error) {
       console.error(error);
+      // Loading the actual locale data failed, tell DevTools to use 'en-US'.
+      devToolsLocale.forceFallbackLocale();
     }
   }
 
@@ -220,7 +221,7 @@ export class MainImpl {
   }
 
   _initializeExperiments(): void {
-    Root.Runtime.experiments.register('applyCustomStylesheet', 'Allow custom UI themes');
+    Root.Runtime.experiments.register('applyCustomStylesheet', 'Allow extensions to load custom stylesheets');
     Root.Runtime.experiments.register('captureNodeCreationStacks', 'Capture node creation stacks');
     Root.Runtime.experiments.register('sourcesPrettyPrint', 'Automatically pretty print in the Sources Panel');
     Root.Runtime.experiments.register('backgroundServices', 'Background web platform feature events', true);
@@ -235,13 +236,18 @@ export class MainImpl {
         'blackboxJSFramesOnTimeline', 'Ignore List for JavaScript frames on Timeline', true);
     Root.Runtime.experiments.register(
         'ignoreListJSFramesOnTimeline', 'Ignore List for JavaScript frames on Timeline', true);
-    Root.Runtime.experiments.register('cssOverview', 'CSS Overview');
+    Root.Runtime.experiments.register(
+        'cssOverview', 'CSS Overview', undefined, 'https://developer.chrome.com/blog/new-in-devtools-87/#css-overview');
     Root.Runtime.experiments.register('emptySourceMapAutoStepping', 'Empty sourcemap auto-stepping');
     Root.Runtime.experiments.register('inputEventsOnTimelineOverview', 'Input events on Timeline overview', true);
     Root.Runtime.experiments.register('liveHeapProfile', 'Live heap profile', true);
-    Root.Runtime.experiments.register('protocolMonitor', 'Protocol Monitor');
+    Root.Runtime.experiments.register(
+        'protocolMonitor', 'Protocol Monitor', undefined,
+        'https://developer.chrome.com/blog/new-in-devtools-92/#protocol-monitor');
     Root.Runtime.experiments.register('developerResourcesView', 'Show developer resources view');
-    Root.Runtime.experiments.register('cspViolationsView', 'Show CSP Violations view');
+    Root.Runtime.experiments.register(
+        'cspViolationsView', 'Show CSP Violations view', undefined,
+        'https://developer.chrome.com/blog/new-in-devtools-89/#csp');
     Root.Runtime.experiments.register(
         'recordCoverageWithPerformanceTracing', 'Record coverage while performance tracing');
     Root.Runtime.experiments.register('samplingHeapProfilerTimeline', 'Sampling heap profiler timeline', true);
@@ -249,11 +255,13 @@ export class MainImpl {
         'showOptionToNotTreatGlobalObjectsAsRoots',
         'Show option to take heap snapshot where globals are not treated as root');
     Root.Runtime.experiments.register('sourceDiff', 'Source diff');
-    Root.Runtime.experiments.register('sourceOrderViewer', 'Source order viewer');
-    Root.Runtime.experiments.register('spotlight', 'Spotlight', true);
+    Root.Runtime.experiments.register(
+        'sourceOrderViewer', 'Source order viewer', undefined,
+        'https://developer.chrome.com/blog/new-in-devtools-92/#source-order');
     Root.Runtime.experiments.register('webauthnPane', 'WebAuthn Pane');
-    Root.Runtime.experiments.register('keyboardShortcutEditor', 'Enable keyboard shortcut editor', true);
-    Root.Runtime.experiments.register('recorder', 'Recorder');
+    Root.Runtime.experiments.register(
+        'keyboardShortcutEditor', 'Enable keyboard shortcut editor', true,
+        'https://developer.chrome.com/blog/new-in-devtools-88/#keyboard-shortcuts');
 
     // Back-forward cache
     Root.Runtime.experiments.register('bfcacheDebugging', 'Enable back-forward cache debugging support');
@@ -266,27 +274,36 @@ export class MainImpl {
         'timelineV8RuntimeCallStats', 'Timeline: V8 Runtime Call Stats on Timeline', true);
     Root.Runtime.experiments.register('timelineWebGL', 'Timeline: WebGL-based flamechart');
     Root.Runtime.experiments.register('timelineReplayEvent', 'Timeline: Replay input events', true);
-    Root.Runtime.experiments.register('wasmDWARFDebugging', 'WebAssembly Debugging: Enable DWARF support');
+    Root.Runtime.experiments.register(
+        'wasmDWARFDebugging', 'WebAssembly Debugging: Enable DWARF support', undefined,
+        'https://developer.chrome.com/blog/wasm-debugging-2020/');
 
     // Dual-screen
-    Root.Runtime.experiments.register('dualScreenSupport', 'Emulation: Support dual screen mode');
+    Root.Runtime.experiments.register(
+        'dualScreenSupport', 'Emulation: Support dual screen mode', undefined,
+        'https://developer.chrome.com/blog/new-in-devtools-89#dual-screen');
     Root.Runtime.experiments.setEnabled('dualScreenSupport', true);
 
     // Advanced Perceptual Contrast Algorithm.
     Root.Runtime.experiments.register(
         'APCA',
-        'Enable new Advanced Perceptual Contrast Algorithm (APCA) replacing previous contrast ratio and AA/AAA guidelines');
+        'Enable new Advanced Perceptual Contrast Algorithm (APCA) replacing previous contrast ratio and AA/AAA guidelines',
+        undefined, 'https://developer.chrome.com/blog/new-in-devtools-89/#apca');
 
     // Full Accessibility Tree
     Root.Runtime.experiments.register(
-        'fullAccessibilityTree', 'Enable full accessibility tree view in the Elements panel');
+        'fullAccessibilityTree', 'Enable full accessibility tree view in the Elements panel', undefined,
+        'https://developer.chrome.com/blog/new-in-devtools-90/#accesibility-tree');
 
     // Font Editor
-    Root.Runtime.experiments.register('fontEditor', 'Enable new Font Editor tool within the Styles Pane.');
+    Root.Runtime.experiments.register(
+        'fontEditor', 'Enable new Font Editor tool within the Styles Pane.', undefined,
+        'https://developer.chrome.com/blog/new-in-devtools-89/#font');
 
     // Contrast issues reported via the Issues panel.
     Root.Runtime.experiments.register(
-        'contrastIssues', 'Enable automatic contrast issue reporting via the Issues panel');
+        'contrastIssues', 'Enable automatic contrast issue reporting via the Issues panel', undefined,
+        'https://developer.chrome.com/blog/new-in-devtools-90/#low-contrast');
 
     // New cookie features.
     Root.Runtime.experiments.register('experimentalCookieFeatures', 'Enable experimental cookie features');
@@ -382,8 +399,8 @@ export class MainImpl {
     self.SDK.multitargetNetworkManager = SDK.NetworkManager.MultitargetNetworkManager.instance({forceNew: true});
     // @ts-ignore layout test global
     self.SDK.domDebuggerManager = SDK.DOMDebuggerModel.DOMDebuggerManager.instance({forceNew: true});
-    SDK.SDKModel.TargetManager.instance().addEventListener(
-        SDK.SDKModel.Events.SuspendStateChanged, this._onSuspendStateChanged.bind(this));
+    SDK.TargetManager.TargetManager.instance().addEventListener(
+        SDK.TargetManager.Events.SuspendStateChanged, this._onSuspendStateChanged.bind(this));
 
     // @ts-ignore layout test global
     self.Workspace.fileManager = Workspace.FileManager.FileManager.instance({forceNew: true});
@@ -395,27 +412,27 @@ export class MainImpl {
     // @ts-ignore layout test global
     self.Bindings.resourceMapping = Bindings.ResourceMapping.ResourceMapping.instance({
       forceNew: true,
-      targetManager: SDK.SDKModel.TargetManager.instance(),
+      targetManager: SDK.TargetManager.TargetManager.instance(),
       workspace: Workspace.Workspace.WorkspaceImpl.instance(),
     });
     new Bindings.PresentationConsoleMessageHelper.PresentationConsoleMessageManager();
     // @ts-ignore layout test global
     self.Bindings.cssWorkspaceBinding = Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance({
       forceNew: true,
-      targetManager: SDK.SDKModel.TargetManager.instance(),
+      targetManager: SDK.TargetManager.TargetManager.instance(),
       workspace: Workspace.Workspace.WorkspaceImpl.instance(),
     });
     // @ts-ignore layout test global
     self.Bindings.debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
       forceNew: true,
-      targetManager: SDK.SDKModel.TargetManager.instance(),
+      targetManager: SDK.TargetManager.TargetManager.instance(),
       workspace: Workspace.Workspace.WorkspaceImpl.instance(),
     });
     // @ts-ignore layout test global
     self.Bindings.breakpointManager = Bindings.BreakpointManager.BreakpointManager.instance({
       forceNew: true,
       workspace: Workspace.Workspace.WorkspaceImpl.instance(),
-      targetManager: SDK.SDKModel.TargetManager.instance(),
+      targetManager: SDK.TargetManager.TargetManager.instance(),
       debuggerWorkspaceBinding: Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance(),
     });
     // @ts-ignore layout test global
@@ -428,12 +445,6 @@ export class MainImpl {
         // @ts-ignore https://github.com/microsoft/TypeScript/issues/41397
         'snippet://', new Snippets.ScriptSnippetFileSystem.SnippetFileSystem());
 
-    if (Root.Runtime.experiments.isEnabled('recorder')) {
-      Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance().addPlatformFileSystem(
-          // @ts-ignore https://github.com/microsoft/TypeScript/issues/41397
-          'recording://', new Recorder.RecordingFileSystem.RecordingFileSystem());
-    }
-
     // @ts-ignore layout test global
     self.Persistence.persistence = Persistence.Persistence.PersistenceImpl.instance({
       forceNew: true,
@@ -445,7 +456,7 @@ export class MainImpl {
         Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance(
             {forceNew: true, workspace: Workspace.Workspace.WorkspaceImpl.instance()});
 
-    new ExecutionContextSelector(SDK.SDKModel.TargetManager.instance(), UI.Context.Context.instance());
+    new ExecutionContextSelector(SDK.TargetManager.TargetManager.instance(), UI.Context.Context.instance());
     // @ts-ignore layout test global
     self.Bindings.ignoreListManager = Bindings.IgnoreListManager.IgnoreListManager.instance({
       forceNew: true,
@@ -523,7 +534,10 @@ export class MainImpl {
     MainImpl.time('Main._lateInitialization');
     Extensions.ExtensionServer.ExtensionServer.instance().initializeExtensions();
     const promises: Promise<void>[] =
-        Common.Runnable.lateInitializationRunnables().map(runnableInstance => runnableInstance().run());
+        Common.Runnable.lateInitializationRunnables().map(async lateInitializationLoader => {
+          const runnable = await lateInitializationLoader();
+          return runnable.run();
+        });
     if (Root.Runtime.experiments.isEnabled('liveHeapProfile')) {
       const setting = 'memoryLiveHeapProfile';
       if (Common.Settings.Settings.instance().moduleSetting(setting).get()) {
@@ -618,7 +632,7 @@ export class MainImpl {
   }
 
   _onSuspendStateChanged(): void {
-    const suspended = SDK.SDKModel.TargetManager.instance().allTargetsSuspended();
+    const suspended = SDK.TargetManager.TargetManager.instance().allTargetsSuspended();
     UI.InspectorView.InspectorView.instance().onSuspendStateChanged(suspended);
   }
 
@@ -733,6 +747,7 @@ export class MainMenuItem implements UI.Toolbar.Provider {
       dockItemElement.classList.add('flex-centered');
       dockItemElement.classList.add('flex-auto');
       dockItemElement.tabIndex = -1;
+      UI.ARIAUtils.setAccessibleName(dockItemElement, UIStrings.dockSide);
       const titleElement = dockItemElement.createChild('span', 'flex-auto');
       titleElement.textContent = i18nString(UIStrings.dockSide);
       const toggleDockSideShorcuts =
@@ -802,8 +817,8 @@ export class MainMenuItem implements UI.Toolbar.Provider {
     }
 
     if (UI.DockController.DockController.instance().dockSide() === UI.DockController.State.Undocked) {
-      const mainTarget = SDK.SDKModel.TargetManager.instance().mainTarget();
-      if (mainTarget && mainTarget.type() === SDK.SDKModel.Type.Frame) {
+      const mainTarget = SDK.TargetManager.TargetManager.instance().mainTarget();
+      if (mainTarget && mainTarget.type() === SDK.Target.Type.Frame) {
         contextMenu.defaultSection().appendAction('inspector_main.focus-debuggee', i18nString(UIStrings.focusDebuggee));
       }
     }
@@ -879,23 +894,24 @@ export class SettingsButtonProvider implements UI.Toolbar.Provider {
 
 export class PauseListener {
   constructor() {
-    SDK.SDKModel.TargetManager.instance().addModelListener(
+    SDK.TargetManager.TargetManager.instance().addModelListener(
         SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.DebuggerPaused, this._debuggerPaused, this);
   }
 
   _debuggerPaused(event: Common.EventTarget.EventTargetEvent): void {
-    SDK.SDKModel.TargetManager.instance().removeModelListener(
+    SDK.TargetManager.TargetManager.instance().removeModelListener(
         SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.DebuggerPaused, this._debuggerPaused, this);
     const debuggerModel = (event.data as SDK.DebuggerModel.DebuggerModel);
     const debuggerPausedDetails = debuggerModel.debuggerPausedDetails();
-    UI.Context.Context.instance().setFlavor(SDK.SDKModel.Target, debuggerModel.target());
+    UI.Context.Context.instance().setFlavor(SDK.Target.Target, debuggerModel.target());
     Common.Revealer.reveal(debuggerPausedDetails);
   }
 }
 
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function sendOverProtocol(method: string, params: Object|null): Promise<any[]|null> {
+export function sendOverProtocol(
+    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    method: ProtocolClient.InspectorBackend.QualifiedName, params: Object|null): Promise<any[]|null> {
   return new Promise((resolve, reject) => {
     const sendRawMessage = ProtocolClient.InspectorBackend.test.sendRawMessage;
     if (!sendRawMessage) {

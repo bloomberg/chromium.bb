@@ -448,6 +448,10 @@ using Group = GroupSse2Impl;
 using Group = GroupPortableImpl;
 #endif
 
+// The number of cloned control bytes that we copy from the beginning to the
+// end of the control bytes array.
+constexpr size_t NumClonedBytes() { return Group::kWidth - 1; }
+
 template <class Policy, class Hash, class Eq, class Alloc>
 class raw_hash_set;
 
@@ -496,6 +500,22 @@ inline size_t GrowthToLowerboundCapacity(size_t growth) {
     return 8;
   }
   return growth + static_cast<size_t>((static_cast<int64_t>(growth) - 1) / 7);
+}
+
+template <class InputIter>
+size_t SelectBucketCountForIterRange(InputIter first, InputIter last,
+                                     size_t bucket_count) {
+  if (bucket_count != 0) {
+    return bucket_count;
+  }
+  using InputIterCategory =
+      typename std::iterator_traits<InputIter>::iterator_category;
+  if (std::is_base_of<std::random_access_iterator_tag,
+                      InputIterCategory>::value) {
+    return GrowthToLowerboundCapacity(
+        static_cast<size_t>(std::distance(first, last)));
+  }
+  return 0;
 }
 
 inline void AssertIsFull(ctrl_t* ctrl) {
@@ -564,7 +584,7 @@ inline FindInfo find_first_non_full(ctrl_t* ctrl, size_t hash,
       return {seq.offset(mask.LowestBitSet()), seq.index()};
     }
     seq.next();
-    assert(seq.index() < capacity && "full table!");
+    assert(seq.index() <= capacity && "full table!");
   }
 }
 
@@ -628,7 +648,9 @@ class raw_hash_set {
 
   static Layout MakeLayout(size_t capacity) {
     assert(IsValidCapacity(capacity));
-    return Layout(capacity + Group::kWidth + 1, capacity);
+    // The extra control bytes are for 1 sentinel byte followed by
+    // NumClonedBytes() bytes that are cloned from the beginning.
+    return Layout(capacity + 1 + NumClonedBytes(), capacity);
   }
 
   using AllocTraits = absl::allocator_traits<allocator_type>;
@@ -814,7 +836,8 @@ class raw_hash_set {
   raw_hash_set(InputIter first, InputIter last, size_t bucket_count = 0,
                const hasher& hash = hasher(), const key_equal& eq = key_equal(),
                const allocator_type& alloc = allocator_type())
-      : raw_hash_set(bucket_count, hash, eq, alloc) {
+      : raw_hash_set(SelectBucketCountForIterRange(first, last, bucket_count),
+                     hash, eq, alloc) {
     insert(first, last);
   }
 
@@ -1378,7 +1401,7 @@ class raw_hash_set {
       }
       if (ABSL_PREDICT_TRUE(g.MatchEmpty())) return end();
       seq.next();
-      assert(seq.index() < capacity_ && "full table!");
+      assert(seq.index() <= capacity_ && "full table!");
     }
   }
   template <class K = key_type>
@@ -1551,7 +1574,7 @@ class raw_hash_set {
     auto layout = MakeLayout(capacity_);
     char* mem = static_cast<char*>(
         Allocate<Layout::Alignment()>(&alloc_ref(), layout.AllocSize()));
-    ctrl_ = reinterpret_cast<ctrl_t*>(layout.template Pointer<0>(mem));
+    ctrl_ = layout.template Pointer<0>(mem);
     slots_ = layout.template Pointer<1>(mem);
     reset_ctrl();
     reset_growth_left();
@@ -1696,7 +1719,7 @@ class raw_hash_set {
       }
       if (ABSL_PREDICT_TRUE(g.MatchEmpty())) return false;
       seq.next();
-      assert(seq.index() < capacity_ && "full table!");
+      assert(seq.index() <= capacity_ && "full table!");
     }
     return false;
   }
@@ -1728,7 +1751,7 @@ class raw_hash_set {
       }
       if (ABSL_PREDICT_TRUE(g.MatchEmpty())) break;
       seq.next();
-      assert(seq.index() < capacity_ && "full table!");
+      assert(seq.index() <= capacity_ && "full table!");
     }
     return {prepare_insert(hash), true};
   }
@@ -1782,8 +1805,8 @@ class raw_hash_set {
     growth_left() = CapacityToGrowth(capacity()) - size_;
   }
 
-  // Sets the control byte, and if `i < Group::kWidth`, set the cloned byte at
-  // the end too.
+  // Sets the control byte, and if `i < Group::kWidth - 1`, set the cloned byte
+  // at the end too.
   void set_ctrl(size_t i, ctrl_t h) {
     assert(i < capacity_);
 
@@ -1794,8 +1817,8 @@ class raw_hash_set {
     }
 
     ctrl_[i] = h;
-    ctrl_[((i - Group::kWidth) & capacity_) + 1 +
-          ((Group::kWidth - 1) & capacity_)] = h;
+    ctrl_[((i - NumClonedBytes()) & capacity_) +
+          (NumClonedBytes() & capacity_)] = h;
   }
 
   size_t& growth_left() { return settings_.template get<0>(); }
@@ -1814,10 +1837,10 @@ class raw_hash_set {
   // TODO(alkis): Investigate removing some of these fields:
   // - ctrl/slots can be derived from each other
   // - size can be moved into the slot array
-  ctrl_t* ctrl_ = EmptyGroup();    // [(capacity + 1) * ctrl_t]
-  slot_type* slots_ = nullptr;     // [capacity * slot_type]
-  size_t size_ = 0;                // number of full slots
-  size_t capacity_ = 0;            // total number of slots
+  ctrl_t* ctrl_ = EmptyGroup();  // [(capacity + 1 + NumClonedBytes()) * ctrl_t]
+  slot_type* slots_ = nullptr;   // [capacity * slot_type]
+  size_t size_ = 0;              // number of full slots
+  size_t capacity_ = 0;          // total number of slots
   absl::container_internal::CompressedTuple<size_t /* growth_left */,
                                             HashtablezInfoHandle, hasher,
                                             key_equal, allocator_type>

@@ -187,7 +187,8 @@ suite('SettingsToggleButton', () => {
   });
 
   test('shows controlled indicator when pref is controlled', () => {
-    assertFalse(!!testElement.$$('cr-policy-pref-indicator'));
+    assertFalse(
+        !!testElement.shadowRoot.querySelector('cr-policy-pref-indicator'));
 
     const pref = {
       key: 'test',
@@ -200,11 +201,13 @@ suite('SettingsToggleButton', () => {
     testElement.set('pref', pref);
     flush();
 
-    assertTrue(!!testElement.$$('cr-policy-pref-indicator'));
+    assertTrue(
+        !!testElement.shadowRoot.querySelector('cr-policy-pref-indicator'));
   });
 
   test('no indicator with no-extension-indicator flag', () => {
-    assertFalse(!!testElement.$$('cr-policy-pref-indicator'));
+    assertFalse(
+        !!testElement.shadowRoot.querySelector('cr-policy-pref-indicator'));
 
     testElement.noExtensionIndicator = true;
     const pref = {
@@ -218,7 +221,8 @@ suite('SettingsToggleButton', () => {
     testElement.set('pref', pref);
     flush();
 
-    assertFalse(!!testElement.$$('cr-policy-pref-indicator'));
+    assertFalse(
+        !!testElement.shadowRoot.querySelector('cr-policy-pref-indicator'));
   });
 
   test('user control disabled pref', () => {
@@ -234,4 +238,60 @@ suite('SettingsToggleButton', () => {
     flush();
     assertTrue(testElement.$.control.disabled);
   });
+
+  test('click on learn more link should not toggle the button', () => {
+    let learnMoreLink = testElement.shadowRoot.querySelector('#learn-more');
+    assertFalse(!!learnMoreLink);
+    testElement.set('learnMoreUrl', 'www.google.com');
+    flush();
+
+    learnMoreLink = testElement.shadowRoot.querySelector('#learn-more');
+    assertTrue(!!learnMoreLink);
+
+    assertTrue(testElement.checked);
+    flush();
+
+    learnMoreLink.click();
+    assertTrue(testElement.checked);
+  });
+
+  // <if expr="chromeos">
+  test('click on sub label link should not toggle the button', () => {
+    let subLabelTextWithLink =
+        testElement.shadowRoot.querySelector('#sub-label-text-with-link');
+    assertFalse(!!subLabelTextWithLink);
+    testElement.set('subLabelWithLink', `<a href="#"></a>`);
+    flush();
+
+    subLabelTextWithLink =
+        testElement.shadowRoot.querySelector('#sub-label-text-with-link');
+    assertTrue(!!subLabelTextWithLink);
+    const link = subLabelTextWithLink.querySelector('a');
+    assertTrue(!!link);
+
+    assertTrue(testElement.checked);
+    flush();
+
+    link.click();
+    assertTrue(testElement.checked);
+  });
+
+  test('click on sub label with link text should toggle the button', () => {
+    let subLabelTextWithLink =
+        testElement.shadowRoot.querySelector('#sub-label-text-with-link');
+    assertFalse(!!subLabelTextWithLink);
+    testElement.set('subLabelWithLink', `<a href="#"></a>`);
+    flush();
+
+    subLabelTextWithLink =
+        testElement.shadowRoot.querySelector('#sub-label-text-with-link');
+    assertTrue(!!subLabelTextWithLink);
+
+    assertTrue(testElement.checked);
+    flush();
+
+    subLabelTextWithLink.click();
+    assertFalse(testElement.checked);
+  });
+  // </if>
 });

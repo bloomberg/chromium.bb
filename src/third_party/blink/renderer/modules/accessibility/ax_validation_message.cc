@@ -4,12 +4,12 @@
 
 #include "third_party/blink/renderer/modules/accessibility/ax_validation_message.h"
 
+#include "skia/ext/skia_matrix_44.h"
 #include "third_party/blink/renderer/core/html/forms/listed_element.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
-#include "third_party/skia/include/core/SkMatrix44.h"
 
 namespace blink {
 
@@ -25,10 +25,11 @@ bool AXValidationMessage::ComputeAccessibilityIsIgnored(
 
 // TODO(accessibility) Currently we return the bounds of the focused form
 // control. If this becomes an issue, return the bounds of the alert itself.
-void AXValidationMessage::GetRelativeBounds(AXObject** out_container,
-                                            FloatRect& out_bounds_in_container,
-                                            SkMatrix44& out_container_transform,
-                                            bool* clips_children) const {
+void AXValidationMessage::GetRelativeBounds(
+    AXObject** out_container,
+    FloatRect& out_bounds_in_container,
+    skia::Matrix44& out_container_transform,
+    bool* clips_children) const {
   DCHECK(out_container);
   *out_container = nullptr;
   out_bounds_in_container = FloatRect();
@@ -57,7 +58,10 @@ bool AXValidationMessage::IsOffScreen() const {
 }
 
 bool AXValidationMessage::IsVisible() const {
-  return RelatedFormControlIfVisible();
+  bool is_visible = RelatedFormControlIfVisible();
+  DCHECK(!is_visible || CachedParentObject() == AXObjectCache().Root())
+      << "A visible validation message's parent must be the root object'.";
+  return is_visible;
 }
 
 const AtomicString& AXValidationMessage::LiveRegionStatus() const {
@@ -99,7 +103,7 @@ ListedElement* AXValidationMessage::RelatedFormControlIfVisible() const {
 
 String AXValidationMessage::TextAlternative(
     bool recursive,
-    bool in_aria_labelled_by_traversal,
+    const AXObject* aria_label_or_description_root,
     AXObjectSet& visited,
     ax::mojom::NameFrom& name_from,
     AXRelatedObjectVector* related_objects,

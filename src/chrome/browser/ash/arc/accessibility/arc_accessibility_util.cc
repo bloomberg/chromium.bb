@@ -4,18 +4,64 @@
 
 #include "chrome/browser/ash/arc/accessibility/arc_accessibility_util.h"
 
-#include "ash/public/cpp/app_types.h"
+#include "ash/public/cpp/app_types_util.h"
 #include "base/containers/contains.h"
 #include "chrome/browser/ash/arc/accessibility/accessibility_info_data_wrapper.h"
+#include "chrome/browser/ash/arc/accessibility/accessibility_node_info_data_wrapper.h"
+#include "components/arc/arc_util.h"
 #include "components/arc/mojom/accessibility_helper.mojom.h"
+#include "components/exo/shell_surface_base.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_tree_host.h"
+#include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/widget/widget.h"
 
 namespace arc {
 
+namespace {
+
+aura::Window* FindWindowToParent(bool (*predicate)(const aura::Window*),
+                                 aura::Window* window) {
+  while (window) {
+    if (predicate(window))
+      return window;
+    window = window->parent();
+  }
+  return nullptr;
+}
+
+// Perform a depth-first search of a window from a specified AXTreeID.
+aura::Window* FindWindowWithChildAXTreeId(aura::Window* window,
+                                          const ui::AXTreeID& ax_tree_id) {
+  if (!window)
+    return nullptr;
+  if (ash::IsArcWindow(window)) {
+    if (views::Widget* widget =
+            views::Widget::GetWidgetForNativeWindow(window)) {
+      const ui::AXTreeID& tree_id =
+          static_cast<exo::ShellSurfaceBase*>(widget->widget_delegate())
+              ->GetViewAccessibility()
+              .GetChildTreeID();
+      if (tree_id == ax_tree_id)
+        return window;
+    }
+  }
+  for (aura::Window* child : window->children()) {
+    aura::Window* found = FindWindowWithChildAXTreeId(child, ax_tree_id);
+    if (found)
+      return found;
+  }
+  return nullptr;
+}
+
+}  // namespace
+
 using AXBooleanProperty = mojom::AccessibilityBooleanProperty;
 using AXEventIntProperty = mojom::AccessibilityEventIntProperty;
+using AXIntProperty = mojom::AccessibilityIntProperty;
 using AXNodeInfoData = mojom::AccessibilityNodeInfoData;
 
 absl::optional<ax::mojom::Event> FromContentChangeTypesToAXEvent(
@@ -65,6 +111,28 @@ ax::mojom::Event ToAXEvent(
             FromContentChangeTypesToAXEvent(arc_content_change_types.value());
         if (event_or_null.has_value()) {
           return event_or_null.value();
+        }
+      }
+      int live_region_type_int;
+      if (source_node && source_node->GetNode() &&
+          GetProperty(source_node->GetNode()->int_properties,
+                      AXIntProperty::LIVE_REGION, &live_region_type_int)) {
+        mojom::AccessibilityLiveRegionType live_region_type =
+            static_cast<mojom::AccessibilityLiveRegionType>(
+                live_region_type_int);
+        if (live_region_type != mojom::AccessibilityLiveRegionType::NONE) {
+          // Dispatch a kLiveRegionChanged event to ensure that all liveregions
+          // (inc. snackbar) will get announced. It is currently difficult to
+          // determine when liveregions need to be announced, in particular
+          // differentiaiting between when they first appear (vs text changed).
+          // This case is made evident with snackbar handling, which needs to be
+          // announced when it appears.
+          // TODO(b/187465133): Revisit this liveregion handling logic, once
+          // the talkback spec has been clarified. There is a proposal to write
+          // an API to expose attributes similar to aria-relevant, which will
+          // eventually allow liveregions to be handled similar to how it gets
+          // handled on the web.
+          return ax::mojom::Event::kLiveRegionChanged;
         }
       }
       return ax::mojom::Event::kLayoutComplete;
@@ -154,6 +222,67 @@ absl::optional<mojom::AccessibilityActionType> ConvertToAndroidAction(
   }
 }
 
+ax::mojom::Action ConvertToChromeAction(
+    const mojom::AccessibilityActionType action) {
+  switch (action) {
+    case arc::mojom::AccessibilityActionType::CLICK:
+      return ax::mojom::Action::kDoDefault;
+    case arc::mojom::AccessibilityActionType::ACCESSIBILITY_FOCUS:
+      // TODO: there are multiple actions converted to ACCESSIBILITY_FOCUS.
+      //  Consider if this is appropriate.
+      return ax::mojom::Action::kSetSequentialFocusNavigationStartingPoint;
+    case arc::mojom::AccessibilityActionType::SHOW_ON_SCREEN:
+      return ax::mojom::Action::kScrollToMakeVisible;
+    case arc::mojom::AccessibilityActionType::SCROLL_BACKWARD:
+      return ax::mojom::Action::kScrollBackward;
+    case arc::mojom::AccessibilityActionType::SCROLL_FORWARD:
+      return ax::mojom::Action::kScrollForward;
+    case arc::mojom::AccessibilityActionType::SCROLL_UP:
+      return ax::mojom::Action::kScrollUp;
+    case arc::mojom::AccessibilityActionType::SCROLL_DOWN:
+      return ax::mojom::Action::kScrollDown;
+    case arc::mojom::AccessibilityActionType::SCROLL_LEFT:
+      return ax::mojom::Action::kScrollLeft;
+    case arc::mojom::AccessibilityActionType::SCROLL_RIGHT:
+      return ax::mojom::Action::kScrollRight;
+    case arc::mojom::AccessibilityActionType::CUSTOM_ACTION:
+      return ax::mojom::Action::kCustomAction;
+    case arc::mojom::AccessibilityActionType::CLEAR_ACCESSIBILITY_FOCUS:
+      return ax::mojom::Action::kClearAccessibilityFocus;
+    case arc::mojom::AccessibilityActionType::GET_TEXT_LOCATION:
+      return ax::mojom::Action::kGetTextLocation;
+    case arc::mojom::AccessibilityActionType::SHOW_TOOLTIP:
+      return ax::mojom::Action::kShowTooltip;
+    case arc::mojom::AccessibilityActionType::HIDE_TOOLTIP:
+      return ax::mojom::Action::kHideTooltip;
+    case arc::mojom::AccessibilityActionType::COLLAPSE:
+      return ax::mojom::Action::kCollapse;
+    case arc::mojom::AccessibilityActionType::EXPAND:
+      return ax::mojom::Action::kExpand;
+    case arc::mojom::AccessibilityActionType::LONG_CLICK:
+      return ax::mojom::Action::kShowContextMenu;
+    // Below are actions not mapped in ConvertToAndroidAction().
+    case arc::mojom::AccessibilityActionType::FOCUS:
+    case arc::mojom::AccessibilityActionType::CLEAR_FOCUS:
+    case arc::mojom::AccessibilityActionType::SELECT:
+    case arc::mojom::AccessibilityActionType::CLEAR_SELECTION:
+    case arc::mojom::AccessibilityActionType::NEXT_AT_MOVEMENT_GRANULARITY:
+    case arc::mojom::AccessibilityActionType::PREVIOUS_AT_MOVEMENT_GRANULARITY:
+    case arc::mojom::AccessibilityActionType::NEXT_HTML_ELEMENT:
+    case arc::mojom::AccessibilityActionType::PREVIOUS_HTML_ELEMENT:
+    case arc::mojom::AccessibilityActionType::COPY:
+    case arc::mojom::AccessibilityActionType::PASTE:
+    case arc::mojom::AccessibilityActionType::CUT:
+    case arc::mojom::AccessibilityActionType::SET_SELECTION:
+    case arc::mojom::AccessibilityActionType::DISMISS:
+    case arc::mojom::AccessibilityActionType::SET_TEXT:
+    case arc::mojom::AccessibilityActionType::CONTEXT_CLICK:
+    case arc::mojom::AccessibilityActionType::SCROLL_TO_POSITION:
+    case arc::mojom::AccessibilityActionType::SET_PROGRESS:
+      return ax::mojom::Action::kNone;
+  }
+}
+
 AccessibilityInfoDataWrapper* GetSelectedNodeInfoFromAdapterViewEvent(
     const mojom::AccessibilityEventData& event_data,
     AccessibilityInfoDataWrapper* source_node) {
@@ -207,7 +336,7 @@ AccessibilityInfoDataWrapper* GetSelectedNodeInfoFromAdapterViewEvent(
 std::string ToLiveStatusString(mojom::AccessibilityLiveRegionType type) {
   switch (type) {
     case mojom::AccessibilityLiveRegionType::NONE:
-      return "none";
+      return "off";
     case mojom::AccessibilityLiveRegionType::POLITE:
       return "polite";
     case mojom::AccessibilityLiveRegionType::ASSERTIVE:
@@ -218,11 +347,27 @@ std::string ToLiveStatusString(mojom::AccessibilityLiveRegionType type) {
   return std::string();  // Placeholder.
 }
 
+bool IsArcOrGhostWindow(const aura::Window* window) {
+  return window && (ash::IsArcWindow(window) ||
+                    arc::GetWindowTaskOrSessionId(window).has_value());
+}
+
 aura::Window* FindArcWindow(aura::Window* window) {
-  while (window) {
-    if (ash::IsArcWindow(window))
+  return FindWindowToParent(ash::IsArcWindow, window);
+}
+
+aura::Window* FindArcOrGhostWindow(aura::Window* window) {
+  return FindWindowToParent(IsArcOrGhostWindow, window);
+}
+
+aura::Window* FindWindowFromChildAXTreeId(const ui::AXTreeID& tree_id) {
+  // TODO(hirokisato): Consider to have a map from AXTreeId to a pointer to
+  // aura::Window in ArcAccessibilityTreeTracker, instead of searching all
+  // windows every time.
+  for (auto* host : aura::Env::GetInstance()->window_tree_hosts()) {
+    aura::Window* window = FindWindowWithChildAXTreeId(host->window(), tree_id);
+    if (window)
       return window;
-    window = window->parent();
   }
   return nullptr;
 }

@@ -103,6 +103,7 @@ component("views") {
     "bubble/info_bubble.h",
     "bubble/tooltip_icon.h",
     "button_drag_utils.h",
+    "cascading_property.h",
     "color_chooser/color_chooser_listener.h",
     "context_menu_controller.h",
     "controls/button/button.h",
@@ -118,7 +119,6 @@ component("views") {
     "controls/button/menu_button_controller.h",
     "controls/button/radio_button.h",
     "controls/button/toggle_button.h",
-    "controls/color_tracking_icon_view.h",
     "controls/combobox/combobox.h",
     "controls/combobox/combobox_util.h",
     "controls/dot_indicator.h",
@@ -324,6 +324,7 @@ component("views") {
     "bubble/info_bubble.cc",
     "bubble/tooltip_icon.cc",
     "button_drag_utils.cc",
+    "cascading_property.cc",
     "context_menu_controller.cc",
     "controls/button/button.cc",
     "controls/button/button_controller.cc",
@@ -337,7 +338,6 @@ component("views") {
     "controls/button/menu_button_controller.cc",
     "controls/button/radio_button.cc",
     "controls/button/toggle_button.cc",
-    "controls/color_tracking_icon_view.cc",
     "controls/combobox/combobox.cc",
     "controls/combobox/combobox_util.cc",
     "controls/combobox/empty_combobox_model.cc",
@@ -527,6 +527,7 @@ component("views") {
     "//ui/base/dragdrop:types",
     "//ui/base/dragdrop/mojom:mojom_headers",
     "//ui/base/ime/init",
+    "//ui/base/metadata",
     "//ui/compositor",
     "//ui/display",
     "//ui/events",
@@ -977,20 +978,6 @@ source_set("test_support") {
     "views_test_suite.h",
   ]
 
-  if (is_mac) {
-    sources += [
-      "test/desktop_test_views_delegate_mac.mm",
-      "test/event_generator_delegate_mac.h",
-      "test/event_generator_delegate_mac.mm",
-      "test/scoped_views_test_helper_cocoa.mm",
-      "test/test_views_delegate_mac.mm",
-      "test/views_test_base_mac.mm",
-      "test/views_test_helper_mac.h",
-      "test/views_test_helper_mac.mm",
-      "test/widget_test_mac.mm",
-    ]
-  }
-
   configs += [ "//build/config:precompiled_headers" ]
 
   deps = [
@@ -1027,7 +1014,22 @@ source_set("test_support") {
     ]
   }
   if (is_mac) {
-    deps += [ "//components/remote_cocoa/app_shim" ]
+    sources += [
+      "test/desktop_test_views_delegate_mac.mm",
+      "test/event_generator_delegate_mac.h",
+      "test/event_generator_delegate_mac.mm",
+      "test/scoped_views_test_helper_cocoa.mm",
+      "test/test_views_delegate_mac.mm",
+      "test/views_test_base_mac.mm",
+      "test/views_test_helper_mac.h",
+      "test/views_test_helper_mac.mm",
+      "test/widget_test_mac.mm",
+    ]
+
+    deps += [
+      "//components/remote_cocoa/app_shim",
+      "//ui/display:test_support",
+    ]
   }
 
   if (use_aura) {
@@ -1393,8 +1395,8 @@ test("views_unittests") {
 
   if (use_ozone) {
     deps += [
-      "//ui/ozone",
       "//ui/events/ozone/layout:test_support",
+      "//ui/ozone",
     ]
   }
 
@@ -1443,6 +1445,7 @@ source_set("views_interactive_ui_tests") {
 
   if (use_aura) {
     sources += [
+      "bubble/bubble_dialog_delegate_view_interactive_uitest_aura.cc",
       "corewm/desktop_capture_controller_unittest.cc",
       "widget/native_widget_aura_interactive_uitest.cc",
     ]

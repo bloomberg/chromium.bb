@@ -23,10 +23,12 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace content {
@@ -114,6 +116,10 @@ class PhishingClassifier {
 
   // Called to extract the visual features of the current page.
   void ExtractVisualFeatures();
+
+  // Callback when off-thread playback of the recorded paint operations is
+  // complete.
+  void OnPlaybackDone(std::unique_ptr<SkBitmap> bitmap);
 
   // Callback when visual feature extraction is complete.
   // If it was successful, computes a score and runs the DoneCallback.

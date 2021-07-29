@@ -9,7 +9,7 @@
 #include <string>
 #include <utility>
 
-#include "base/stl_util.h"
+#include "base/containers/cxx20_erase.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/bookmarks/bookmarks_message_handler.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
@@ -72,6 +72,8 @@ content::WebUIDataSource* CreateBookmarksUIHTMLSource(Profile* profile) {
       {"emptyList", IDS_BOOKMARK_MANAGER_EMPTY_LIST},
       {"emptyUnmodifiableList", IDS_BOOKMARK_MANAGER_EMPTY_UNMODIFIABLE_LIST},
       {"folderLabel", IDS_BOOKMARK_MANAGER_FOLDER_LABEL},
+      {"importBegan", IDS_BOOKMARK_MANAGER_MENU_IMPORT_BEGAN},
+      {"importEnded", IDS_BOOKMARK_MANAGER_MENU_IMPORT_ENDED},
       {"itemsSelected", IDS_BOOKMARK_MANAGER_ITEMS_SELECTED},
       {"itemsUnselected", IDS_BOOKMARK_MANAGER_ITEMS_UNSELECTED},
       {"listAxLabel", IDS_BOOKMARK_MANAGER_LIST_AX_LABEL},
@@ -158,7 +160,7 @@ BookmarksUI::BookmarksUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
 // static
 base::RefCountedMemory* BookmarksUI::GetFaviconResourceBytes(
-    ui::ScaleFactor scale_factor) {
+    ui::ResourceScaleFactor scale_factor) {
   return ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
       IDR_BOOKMARKS_FAVICON, scale_factor);
 }

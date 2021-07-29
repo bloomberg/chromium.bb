@@ -19,7 +19,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
@@ -142,7 +141,7 @@ bool IsRemovalPermitted(uint64_t removal_mask, PrefService* prefs) {
 
 // Returns true if Sync is currently running (i.e. enabled and not in error).
 bool IsSyncRunning(Profile* profile) {
-  return sync_ui_util::GetStatus(profile) == sync_ui_util::SYNCED;
+  return GetSyncStatusMessageType(profile) == SyncStatusMessageType::kSynced;
 }
 }  // namespace
 
@@ -191,7 +190,8 @@ ExtensionFunction::ResponseAction BrowsingDataSettingsFunction::Run() {
   std::unique_ptr<base::DictionaryValue> options(new base::DictionaryValue);
   options->Set(extension_browsing_data_api_constants::kOriginTypesKey,
                std::move(origin_types));
-  options->SetDouble(extension_browsing_data_api_constants::kSinceKey, since);
+  options->SetDoubleKey(extension_browsing_data_api_constants::kSinceKey,
+                        since);
 
   // Fill dataToRemove and dataRemovalPermitted.
   std::unique_ptr<base::DictionaryValue> selected(new base::DictionaryValue);

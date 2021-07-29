@@ -7,8 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "ash/public/cpp/ash_switches.h"
-#include "ash/public/cpp/login_constants.h"
+#include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/shutdown_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
@@ -730,15 +729,14 @@ TEST_P(LockStateControllerAnimationTest, CancelShouldResetWallpaperBlur) {
                              ->wallpaper_widget_controller()
                              ->wallpaper_view();
 
-  auto* overview_controller = Shell::Get()->overview_controller();
   // Enter Overview and verify wallpaper properties.
-  overview_controller->StartOverview();
+  EnterOverview();
   EXPECT_EQ(wallpaper_constants::kOverviewBlur, wallpaper_view->blur_sigma());
 
   // Start lock animation and verify wallpaper properties.
   PressLockButton();
   ExpectPreLockAnimationStarted("2");
-  EXPECT_EQ(login_constants::kBlurSigma, wallpaper_view->blur_sigma());
+  EXPECT_EQ(wallpaper_constants::kLockLoginBlur, wallpaper_view->blur_sigma());
 
   // Cancel lock animation.
   AdvancePartially(SessionStateAnimator::ANIMATION_SPEED_UNDOABLE, 0.5f);

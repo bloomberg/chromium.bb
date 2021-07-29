@@ -30,7 +30,7 @@ var (
 )
 
 func (g *gen) writeBuiltinCall(b *buffer, n *a.Expr, sideEffectsOnly bool, depth uint32) error {
-	if n.Operator() != t.IDOpenParen {
+	if n.Operator() != a.ExprOperatorCall {
 		return errNoSuchBuiltin
 	}
 	method := n.LHS().AsExpr()
@@ -308,6 +308,7 @@ func (g *gen) writeBuiltinIOWriter(b *buffer, recv *a.Expr, method t.ID, args []
 
 	switch method {
 	case t.IDLimitedCopyU32FromHistory,
+		t.IDLimitedCopyU32FromHistory8ByteChunksDistance1Fast,
 		t.IDLimitedCopyU32FromHistory8ByteChunksFast,
 		t.IDLimitedCopyU32FromHistoryFast:
 		b.printf("wuffs_base__io_writer__%s(\n&%s%s, %s%s, %s%s",
@@ -451,7 +452,8 @@ func (g *gen) writeBuiltinCPUArch(b *buffer, recv *a.Expr, method t.ID, args []*
 		return g.writeBuiltinCPUArchARMCRC32(b, recv, method, args, sideEffectsOnly, depth)
 	case id.IsBuiltInCPUArchARMNeon():
 		return g.writeBuiltinCPUArchARMNeon(b, recv, method, args, sideEffectsOnly, depth)
-	case id == t.IDX86SSE42Utility, id == t.IDX86M128I:
+	case id == t.IDX86SSE42Utility, id == t.IDX86M128I,
+		id == t.IDX86AVX2Utility, id == t.IDX86M256I:
 		return g.writeBuiltinCPUArchX86(b, recv, method, args, sideEffectsOnly, depth)
 	}
 	return fmt.Errorf("internal error: unsupported cpu_arch method %s.%s",
@@ -629,6 +631,27 @@ func (g *gen) writeBuiltinCPUArchX86(b *buffer, recv *a.Expr, method t.ID, args 
 			fName, tName, ptr = "_mm_lddqu_si128", "const __m128i*)(const void*", true
 		case "make_m128i_zeroes":
 			fName, tName = "_mm_setzero_si128", ""
+
+		case "make_m256i_multiple_u8":
+			fName, tName = "_mm256_set_epi8", "int8_t"
+		case "make_m256i_multiple_u16":
+			fName, tName = "_mm256_set_epi16", "int16_t"
+		case "make_m256i_multiple_u32":
+			fName, tName = "_mm256_set_epi32", "int32_t"
+		case "make_m256i_multiple_u64":
+			fName, tName = "_mm256_set_epi64x", "int64_t"
+		case "make_m256i_repeat_u8":
+			fName, tName = "_mm256_set1_epi8", "int8_t"
+		case "make_m256i_repeat_u16":
+			fName, tName = "_mm256_set1_epi16", "int16_t"
+		case "make_m256i_repeat_u32":
+			fName, tName = "_mm256_set1_epi32", "int32_t"
+		case "make_m256i_repeat_u64":
+			fName, tName = "_mm256_set1_epi64x", "int64_t"
+		case "make_m256i_slice256":
+			fName, tName, ptr = "_mm256_lddqu_si256", "const __m256i*)(const void*", true
+		case "make_m256i_zeroes":
+			fName, tName = "_mm256_setzero_si256", ""
 		default:
 			return fmt.Errorf("internal error: unsupported cpu_arch method %q", methodStr)
 		}
@@ -728,16 +751,16 @@ func (g *gen) writeBuiltinCPUArchX86(b *buffer, recv *a.Expr, method t.ID, args 
 }
 
 func (g *gen) writeExprDotPtr(b *buffer, n *a.Expr, sideEffectsOnly bool, depth uint32) error {
-	if n.Operator() == t.IDDotDot {
-		if err := g.writeExpr(b, n.LHS().AsExpr(), sideEffectsOnly, depth); err != nil {
+	if arrayOrSlice, lo, _, ok := n.IsSlice(); ok {
+		if err := g.writeExpr(b, arrayOrSlice, sideEffectsOnly, depth); err != nil {
 			return err
 		}
-		if n.LHS().AsExpr().MType().IsSliceType() {
+		if arrayOrSlice.MType().IsSliceType() {
 			b.writes(".ptr")
 		}
-		if n.MHS() != nil {
+		if lo != nil {
 			b.writes(" + ")
-			if err := g.writeExpr(b, n.MHS().AsExpr(), sideEffectsOnly, depth); err != nil {
+			if err := g.writeExpr(b, lo, sideEffectsOnly, depth); err != nil {
 				return err
 			}
 		}
@@ -969,13 +992,8 @@ func (g *gen) writeBuiltinSliceCopyFromSlice8(b *buffer, recv *a.Expr, method t.
 // matchFooIndexIndexPlus8 matches n with "foo[index .. index + 8]" or "foo[..
 // 8]". It returns a nil foo if there isn't a match.
 func matchFooIndexIndexPlus8(n *a.Expr) (foo *a.Expr, index *a.Expr) {
-	if n.Operator() != t.IDDotDot {
-		return nil, nil
-	}
-	foo = n.LHS().AsExpr()
-	index = n.MHS().AsExpr()
-	rhs := n.RHS().AsExpr()
-	if rhs == nil {
+	foo, index, rhs, ok := n.IsSlice()
+	if !ok || (rhs == nil) {
 		return nil, nil
 	}
 
@@ -1048,7 +1066,7 @@ func (g *gen) writeArgs(b *buffer, args []*a.Node, depth uint32) error {
 
 func (g *gen) writeBuiltinQuestionCall(b *buffer, n *a.Expr, depth uint32) error {
 	// TODO: also handle (or reject??) being on the RHS of an =? operator.
-	if (n.Operator() != t.IDOpenParen) || (!n.Effect().Coroutine()) {
+	if (n.Operator() != a.ExprOperatorCall) || (!n.Effect().Coroutine()) {
 		return errNoSuchBuiltin
 	}
 	method := n.LHS().AsExpr()

@@ -19,8 +19,8 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.chrome.browser.ShortcutHelper;
+import org.chromium.base.IntentUtils;
+import org.chromium.chrome.browser.browserservices.intents.WebappConstants;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.notifications.NotificationIntentInterceptor;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
@@ -103,7 +103,6 @@ public class PriceDropNotificationManager {
      * @param url of the tab which triggered the notification.
      */
     public void onNotificationClicked(String url) {
-        mContext.startActivity(getNotificationClickIntent(url));
         NotificationUmaTracker.getInstance().onNotificationContentClick(
                 NotificationUmaTracker.SystemNotificationType.PRICE_DROP_ALERTS,
                 NotificationIntentInterceptor.INVALID_CREATE_TIME);
@@ -118,13 +117,13 @@ public class PriceDropNotificationManager {
      */
     public void onNotificationActionClicked(String actionId, String url, @Nullable String offerId) {
         if (actionId.equals(ACTION_ID_VISIT_SITE)) {
-            mContext.startActivity(getNotificationClickIntent(url));
             NotificationUmaTracker.getInstance().onNotificationActionClick(
                     NotificationUmaTracker.ActionType.PRICE_DROP_VISIT_SITE,
                     NotificationUmaTracker.SystemNotificationType.PRICE_DROP_ALERTS,
                     NotificationIntentInterceptor.INVALID_CREATE_TIME);
         } else if (actionId.equals(ACTION_ID_TURN_OFF_ALERT)) {
             if (offerId == null) return;
+            // TODO(xingliu): Ensure native is loaded. Or it may crash.
             SubscriptionsManagerImpl subscriptionsManager =
                     (new CommerceSubscriptionsServiceFactory())
                             .getForLastUsedProfile()
@@ -146,7 +145,6 @@ public class PriceDropNotificationManager {
      *
      * @param url of the tab which triggered the notification.
      */
-    @VisibleForTesting
     public Intent getNotificationClickIntent(String url) {
         Intent intent =
                 new Intent()
@@ -155,9 +153,19 @@ public class PriceDropNotificationManager {
                         .setClass(mContext, ChromeLauncherActivity.class)
                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT)
                         .putExtra(Browser.EXTRA_APPLICATION_ID, mContext.getPackageName())
-                        .putExtra(ShortcutHelper.REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB, true);
-        IntentHandler.addTrustedIntentExtras(intent);
+                        .putExtra(WebappConstants.REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB, true);
+        IntentUtils.addTrustedIntentExtras(intent);
         return intent;
+    }
+
+    /**
+     * Gets the notification action click intents.
+     *
+     * @param actionId the id used to identify certain action.
+     * @param url of the tab which triggered the notification.
+     */
+    public Intent getNotificationActionClickIntent(String actionId, String url) {
+        return actionId.equals(ACTION_ID_VISIT_SITE) ? getNotificationClickIntent(url) : null;
     }
 
     /**

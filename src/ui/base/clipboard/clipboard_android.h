@@ -14,7 +14,6 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/callback_forward.h"
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/time/time.h"
 
 namespace ui {
@@ -24,6 +23,9 @@ class ClipboardAndroid : public Clipboard {
   // Callback called whenever the clipboard is modified.  The parameter
   // represents the time of the modification.
   using ModifiedCallback = base::RepeatingCallback<void(base::Time)>;
+
+  ClipboardAndroid(const ClipboardAndroid&) = delete;
+  ClipboardAndroid& operator=(const ClipboardAndroid&) = delete;
 
   // Called by Java when the Java Clipboard is notified that the clipboard has
   // changed.
@@ -109,12 +111,9 @@ class ClipboardAndroid : public Clipboard {
                 std::string* result) const override;
   base::Time GetLastModifiedTime() const override;
   void ClearLastModifiedTime() override;
-  void WritePortableRepresentations(
+  void WritePortableAndPlatformRepresentations(
       ClipboardBuffer buffer,
       const ObjectMap& objects,
-      std::unique_ptr<DataTransferEndpoint> data_src) override;
-  void WritePlatformRepresentations(
-      ClipboardBuffer buffer,
       std::vector<Clipboard::PlatformRepresentation> platform_representations,
       std::unique_ptr<DataTransferEndpoint> data_src) override;
   void WriteText(const char* text_data, size_t text_len) override;
@@ -134,8 +133,6 @@ class ClipboardAndroid : public Clipboard {
   void WriteData(const ClipboardFormatType& format,
                  const char* data_data,
                  size_t data_len) override;
-
-  DISALLOW_COPY_AND_ASSIGN(ClipboardAndroid);
 };
 
 }  // namespace ui

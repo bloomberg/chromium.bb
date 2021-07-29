@@ -16,7 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "components/safe_browsing/core/db/database_manager.h"
+#include "components/safe_browsing/core/browser/db/database_manager.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "url/gurl.h"
 
@@ -52,6 +52,7 @@ class RemoteSafeBrowsingDatabaseManager : public SafeBrowsingDatabaseManager {
   bool CheckResourceUrl(const GURL& url, Client* client) override;
   AsyncMatch CheckUrlForHighConfidenceAllowlist(const GURL& url,
                                                 Client* client) override;
+  bool CheckUrlForAccuracyTips(const GURL& url, Client* client) override;
   bool CheckUrlForSubresourceFilter(const GURL& url, Client* client) override;
   bool MatchDownloadAllowlistString(const std::string& str) override;
   bool MatchDownloadAllowlistUrl(const GURL& url) override;

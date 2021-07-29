@@ -14,7 +14,7 @@
 #include "base/callback.h"
 #include "base/hash/hash.h"
 #include "base/macros.h"
-#include "base/util/type_safety/id_type.h"
+#include "base/types/id_type.h"
 #include "cc/base/list_container.h"
 #include "cc/paint/filter_operations.h"
 #include "components/viz/common/quads/draw_quad.h"
@@ -23,8 +23,10 @@
 #include "components/viz/common/quads/render_pass_internal.h"
 #include "components/viz/common/surfaces/subtree_capture_id.h"
 #include "components/viz/common/viz_common_export.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/display_color_spaces.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/rrect_f.h"
 #include "ui/gfx/transform.h"
 
@@ -41,7 +43,7 @@ class DrawQuad;
 class CompositorRenderPass;
 class CompositorRenderPassDrawQuad;
 
-using CompositorRenderPassId = util::IdTypeU64<CompositorRenderPass>;
+using CompositorRenderPassId = base::IdTypeU64<CompositorRenderPass>;
 
 // This class represents a render pass that is submitted from the UI or renderer
 // compositor to viz. It is mojo-serializable and typically has a unique
@@ -69,10 +71,12 @@ class VIZ_COMMON_EXPORT CompositorRenderPass : public RenderPassInternal {
               const cc::FilterOperations& backdrop_filters,
               const absl::optional<gfx::RRectF>& backdrop_filter_bounds,
               SubtreeCaptureId subtree_capture_id,
+              gfx::Size subtree_size,
               bool has_transparent_background,
               bool cache_render_pass,
               bool has_damage_from_contributing_content,
-              bool generate_mipmap);
+              bool generate_mipmap,
+              bool has_per_quad_damage);
 
   void AsValueInto(base::trace_event::TracedValue* dict) const;
 
@@ -90,6 +94,17 @@ class VIZ_COMMON_EXPORT CompositorRenderPass : public RenderPassInternal {
   // A unique ID that identifies a layer subtree which produces this render
   // pass, so that it can be captured by a FrameSinkVideoCapturer.
   SubtreeCaptureId subtree_capture_id;
+
+  // A clip size in pixels indicating what subsection of the |output_rect|
+  // should be copied when |subtree_capture_id| is valid. Must be smaller or
+  // equal to |output_rect|. If empty, then the full |output_rect| should be
+  // copied.
+  gfx::Size subtree_size;
+
+  // Set to true if at least one of the quads in the |quad_list| contains damage
+  // that is not contained in |damage_rect|. Only the root render pass in a
+  // CompositorFrame should have per quad damage.
+  bool has_per_quad_damage = false;
 
   // For testing functions.
   // TODO(vmpstr): See if we can clean these up by moving the tests to use

@@ -64,6 +64,7 @@
 #include "services/network/public/cpp/initiator_lock_compatibility.h"
 #include "services/network/public/cpp/load_info_util.h"
 #include "services/network/public/cpp/network_switches.h"
+#include "services/network/public/cpp/parsed_headers.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
 #include "services/network/url_loader.h"
 
@@ -83,6 +84,8 @@
 #endif
 
 #if BUILDFLAG(IS_CT_SUPPORTED)
+#include "components/certificate_transparency/ct_features.h"
+#include "services/network/ct_log_list_distributor.h"
 #include "services/network/sct_auditing/sct_auditing_cache.h"
 #endif
 
@@ -325,6 +328,10 @@ void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params,
   http_auth_cache_copier_ = std::make_unique<HttpAuthCacheCopier>();
 
   crl_set_distributor_ = std::make_unique<CRLSetDistributor>();
+
+#if BUILDFLAG(IS_CT_SUPPORTED)
+  ct_log_list_distributor_ = std::make_unique<CtLogListDistributor>();
+#endif
 
   doh_probe_activator_ = std::make_unique<DelayedDohProbeActivator>(this);
 
@@ -698,6 +705,13 @@ void NetworkService::SetTrustTokenKeyCommitments(
   std::move(done).Run();
 }
 
+void NetworkService::ParseHeaders(
+    const GURL& url,
+    const scoped_refptr<net::HttpResponseHeaders>& headers,
+    ParseHeadersCallback callback) {
+  std::move(callback).Run(PopulateParsedHeaders(headers.get(), url));
+}
+
 #if BUILDFLAG(IS_CT_SUPPORTED)
 void NetworkService::ClearSCTAuditingCache() {
   sct_auditing_cache_->ClearCache();
@@ -715,7 +729,37 @@ void NetworkService::ConfigureSCTAuditing(
   sct_auditing_cache_->set_traffic_annotation(traffic_annotation);
   sct_auditing_cache_->set_url_loader_factory(std::move(factory));
 }
-#endif
+
+void NetworkService::UpdateCtLogList(std::vector<mojom::CTLogInfoPtr> log_list,
+                                     base::Time update_time) {
+  log_list_ = std::move(log_list);
+  ct_log_list_update_time_ = update_time;
+
+  if (base::FeatureList::IsEnabled(
+          certificate_transparency::features::
+              kCertificateTransparencyComponentUpdater)) {
+    ct_log_list_distributor_->OnNewCtConfig(log_list_);
+    for (auto* context : network_contexts_) {
+      context->OnCTLogListUpdated(log_list_, update_time);
+      context->url_request_context()
+          ->transport_security_state()
+          ->SetCTLogListUpdateTime(update_time);
+    }
+  }
+}
+
+void NetworkService::SetCtEnforcementEnabled(bool enabled) {
+  DCHECK(base::FeatureList::IsEnabled(
+      certificate_transparency::features::
+          kCertificateTransparencyComponentUpdater));
+  for (auto* context : network_contexts_) {
+    context->url_request_context()
+        ->transport_security_state()
+        ->SetCTEmergencyDisabled(!enabled);
+  }
+}
+
+#endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
 #if defined(OS_ANDROID)
 void NetworkService::DumpWithoutCrashing(base::Time dump_request_time) {

@@ -27,7 +27,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/password_manager/password_reuse_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -64,7 +64,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
-#include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/password_reuse_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/about_signin_internals.h"
 #include "components/signin/public/base/signin_metrics.h"
@@ -187,20 +187,21 @@ void LogHistogramValue(signin_metrics::AccessPointAction action) {
 }
 
 void SetProfileLocked(const base::FilePath profile_path, bool locked) {
-  if (!profile_path.empty()) {
-    ProfileManager* profile_manager = g_browser_process->profile_manager();
-    if (profile_manager) {
-      ProfileAttributesEntry* entry =
-          profile_manager->GetProfileAttributesStorage()
-              .GetProfileAttributesWithPath(profile_path);
-      if (entry) {
-        if (locked)
-          entry->LockForceSigninProfile(true);
-        else
-          entry->SetIsSigninRequired(false);
-      }
-    }
-  }
+  if (profile_path.empty())
+    return;
+
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  if (!profile_manager)
+    return;
+
+  ProfileAttributesEntry* entry =
+      profile_manager->GetProfileAttributesStorage()
+          .GetProfileAttributesWithPath(profile_path);
+  if (!entry)
+    return;
+
+  if (signin_util::IsForceSigninEnabled())
+    entry->LockForceSigninProfile(locked);
 }
 
 void UnlockProfileAndHideLoginUI(const base::FilePath profile_path,
@@ -226,10 +227,9 @@ void OnSyncSetupComplete(Profile* profile,
   bool has_primary_account =
       identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync);
   if (has_primary_account && !password.empty()) {
-    scoped_refptr<password_manager::PasswordStore> password_store =
-        PasswordStoreFactory::GetForProfile(profile,
-                                            ServiceAccessType::EXPLICIT_ACCESS);
-    password_store->SaveGaiaPasswordHash(
+    password_manager::PasswordReuseManager* reuse_manager =
+        PasswordReuseManagerFactory::GetForProfile(profile);
+    reuse_manager->SaveGaiaPasswordHash(
         username, base::UTF8ToUTF16(password),
         /*is_primary_account_=*/true,
         password_manager::metrics_util::GaiaPasswordHashChange::
@@ -239,13 +239,12 @@ void OnSyncSetupComplete(Profile* profile,
   if (has_primary_account && is_force_sign_in_with_usermanager) {
     CoreAccountInfo primary_account =
         identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSync);
-    absl::optional<AccountInfo> primary_account_info =
-        identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
-            primary_account);
+    AccountInfo primary_account_info =
+        identity_manager->FindExtendedAccountInfo(primary_account);
     std::u16string profile_name;
-    if (primary_account_info.has_value()) {
+    if (!primary_account_info.IsEmpty()) {
       profile_name =
-          profiles::GetDefaultNameForNewSignedInProfile(*primary_account_info);
+          profiles::GetDefaultNameForNewSignedInProfile(primary_account_info);
     } else {
       profile_name =
           profiles::GetDefaultNameForNewSignedInProfileWithIncompleteInfo(
@@ -383,11 +382,10 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
           .email;
 
   if (!password_.empty()) {
-    scoped_refptr<password_manager::PasswordStore> password_store =
-        PasswordStoreFactory::GetForProfile(profile_,
-                                            ServiceAccessType::EXPLICIT_ACCESS);
-    if (password_store) {
-      password_store->SaveGaiaPasswordHash(
+    password_manager::PasswordReuseManager* reuse_manager =
+        PasswordReuseManagerFactory::GetForProfile(profile_);
+    if (reuse_manager) {
+      reuse_manager->SaveGaiaPasswordHash(
           primary_email, base::UTF8ToUTF16(password_), !primary_email.empty(),
           password_manager::metrics_util::GaiaPasswordHashChange::
               SAVED_ON_CHROME_SIGNIN);

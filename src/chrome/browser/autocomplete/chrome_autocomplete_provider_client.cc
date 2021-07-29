@@ -9,7 +9,7 @@
 #include <algorithm>
 
 #include "base/callback_helpers.h"
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
@@ -36,7 +36,7 @@
 #include "chrome/browser/query_tiles/tile_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/history/core/browser/history_service.h"
@@ -64,10 +64,10 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "chrome/android/chrome_jni_headers/ChromeAutocompleteProviderClient_jni.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/tab_android_user_data.h"
 #include "chrome/browser/flags/android/chrome_session_state.h"
+#include "chrome/browser/ui/android/omnibox/jni_headers/ChromeAutocompleteProviderClient_jni.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_jni_bridge.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
@@ -188,10 +188,9 @@ ChromeAutocompleteProviderClient::ChromeAutocompleteProviderClient(
     Profile* profile)
     : profile_(profile),
       scheme_classifier_(profile),
-      url_consent_helper_(
-          unified_consent::UrlKeyedDataCollectionConsentHelper::
-              NewPersonalizedDataCollectionConsentHelper(
-                  ProfileSyncServiceFactory::GetForProfile(profile_))),
+      url_consent_helper_(unified_consent::UrlKeyedDataCollectionConsentHelper::
+                              NewPersonalizedDataCollectionConsentHelper(
+                                  SyncServiceFactory::GetForProfile(profile_))),
       storage_partition_(nullptr),
       omnibox_triggered_feature_service_(
           std::make_unique<OmniboxTriggeredFeatureService>()) {
@@ -212,7 +211,7 @@ ChromeAutocompleteProviderClient::GetURLLoaderFactory() {
       ->GetURLLoaderFactoryForBrowserProcess();
 }
 
-PrefService* ChromeAutocompleteProviderClient::GetPrefs() {
+PrefService* ChromeAutocompleteProviderClient::GetPrefs() const {
   return profile_->GetPrefs();
 }
 
@@ -396,6 +395,10 @@ bool ChromeAutocompleteProviderClient::SearchSuggestEnabled() const {
   return profile_->GetPrefs()->GetBoolean(prefs::kSearchSuggestEnabled);
 }
 
+bool ChromeAutocompleteProviderClient::AllowDeletingBrowserHistory() const {
+  return profile_->GetPrefs()->GetBoolean(prefs::kAllowDeletingBrowserHistory);
+}
+
 bool ChromeAutocompleteProviderClient::IsPersonalizedUrlDataCollectionActive()
     const {
   return url_consent_helper_->IsEnabled();
@@ -409,8 +412,7 @@ bool ChromeAutocompleteProviderClient::IsAuthenticated() const {
 }
 
 bool ChromeAutocompleteProviderClient::IsSyncActive() const {
-  syncer::SyncService* sync =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
+  syncer::SyncService* sync = SyncServiceFactory::GetForProfile(profile_);
   return sync && sync->IsSyncFeatureActive();
 }
 
@@ -501,7 +503,7 @@ bool ChromeAutocompleteProviderClient::IsTabOpenWithURL(
 }
 
 bool ChromeAutocompleteProviderClient::IsIncognitoModeAvailable() const {
-  if (profile_->IsGuestSession() || profile_->IsEphemeralGuestProfile()) {
+  if (profile_->IsGuestSession()) {
     return false;
   }
   return IncognitoModePrefs::GetAvailability(profile_->GetPrefs()) !=

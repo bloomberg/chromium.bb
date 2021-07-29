@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/feed/core/v2/web_feed_subscriptions/fetch_recommended_web_feeds_task.h"
+#include "components/feed/core/proto/v2/wire/web_feeds.pb.h"
 #include "components/feed/core/v2/feed_network.h"
 #include "components/feed/core/v2/feed_stream.h"
 #include "components/feed/core/v2/web_feed_subscriptions/wire_to_store.h"
@@ -21,21 +22,23 @@ FetchRecommendedWebFeedsTask::Result::operator=(Result&&) = default;
 FetchRecommendedWebFeedsTask::FetchRecommendedWebFeedsTask(
     FeedStream* stream,
     base::OnceCallback<void(Result)> callback)
-    : stream_(stream), callback_(std::move(callback)) {}
+    : stream_(*stream), callback_(std::move(callback)) {}
 FetchRecommendedWebFeedsTask::~FetchRecommendedWebFeedsTask() = default;
 
 void FetchRecommendedWebFeedsTask::Run() {
-  if (stream_->ClearAllInProgress()) {
+  if (stream_.ClearAllInProgress()) {
     Done(WebFeedRefreshStatus::kAbortFetchWebFeedPendingClearAll);
     return;
   }
-  if (!stream_->GetRequestThrottler()->RequestQuota(
+  if (!stream_.GetRequestThrottler().RequestQuota(
           ListRecommendedWebFeedDiscoverApi::kRequestType)) {
     Done(WebFeedRefreshStatus::kNetworkRequestThrottled);
     return;
   }
-  stream_->GetNetwork()->SendApiRequest<ListRecommendedWebFeedDiscoverApi>(
-      {}, stream_->GetSyncSignedInGaia(),
+  feedwire::webfeed::ListRecommendedWebFeedsRequest request;
+  SetConsistencyToken(request, stream_.GetMetadata().consistency_token());
+  stream_.GetNetwork().SendApiRequest<ListRecommendedWebFeedDiscoverApi>(
+      request, stream_.GetSyncSignedInGaia(),
       base::BindOnce(&FetchRecommendedWebFeedsTask::RequestComplete,
                      base::Unretained(this)));
 }

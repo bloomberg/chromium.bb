@@ -32,12 +32,12 @@
 #include "chrome/browser/ash/login/session/user_session_manager.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash_factory.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_chromeos.h"
+#include "chrome/browser/ash/policy/core/device_local_account.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/extensions/external_cache_impl.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/extensions/external_loader.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -417,7 +417,7 @@ bool KioskAppManager::IsAutoLaunchRequested() const {
   // consent through UI.
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  if (connector->IsEnterpriseManaged())
+  if (connector->IsDeviceEnterpriseManaged())
     return false;
 
   return GetAutoLoginState() == AutoLoginState::kRequested;
@@ -431,7 +431,7 @@ bool KioskAppManager::IsAutoLaunchEnabled() const {
   // consent through UI.
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  if (connector->IsEnterpriseManaged())
+  if (connector->IsDeviceEnterpriseManaged())
     return true;
 
   return GetAutoLoginState() == AutoLoginState::kApproved;
@@ -795,17 +795,17 @@ void KioskAppManager::UpdateExternalCachePrefs() {
   // Request external_cache_ to download new apps and update the existing apps.
   std::unique_ptr<base::DictionaryValue> prefs(new base::DictionaryValue);
   for (size_t i = 0; i < apps_.size(); ++i) {
-    std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
+    base::DictionaryValue entry;
 
     if (apps_[i]->update_url().is_valid()) {
-      entry->SetString(extensions::ExternalProviderImpl::kExternalUpdateUrl,
-                       apps_[i]->update_url().spec());
+      entry.SetString(extensions::ExternalProviderImpl::kExternalUpdateUrl,
+                      apps_[i]->update_url().spec());
     } else {
-      entry->SetString(extensions::ExternalProviderImpl::kExternalUpdateUrl,
-                       extension_urls::GetWebstoreUpdateUrl().spec());
+      entry.SetString(extensions::ExternalProviderImpl::kExternalUpdateUrl,
+                      extension_urls::GetWebstoreUpdateUrl().spec());
     }
 
-    prefs->Set(apps_[i]->app_id(), std::move(entry));
+    prefs->SetPath(apps_[i]->app_id(), std::move(entry));
   }
   external_cache_->UpdateExtensionsList(std::move(prefs));
 }

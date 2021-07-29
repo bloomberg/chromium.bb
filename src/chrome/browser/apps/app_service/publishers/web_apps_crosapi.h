@@ -65,6 +65,9 @@ class WebAppsCrosapi : public KeyedService,
                     apps::mojom::MenuType menu_type,
                     int64_t display_id,
                     GetMenuModelCallback callback) override;
+  void PauseApp(const std::string& app_id) override;
+  void UnpauseApp(const std::string& app_id) override;
+  void OpenNativeSettings(const std::string& app_id) override;
 
   // crosapi::mojom::AppPublisher overrides.
   void OnApps(std::vector<apps::mojom::AppPtr> deltas) override;
@@ -76,9 +79,17 @@ class WebAppsCrosapi : public KeyedService,
   void OnCrosapiDisconnected();
   void OnControllerDisconnected();
 
+  void OnGetMenuModelFromCrosapi(
+      const std::string& app_id,
+      apps::mojom::MenuType menu_type,
+      apps::mojom::MenuItemsPtr menu_items,
+      GetMenuModelCallback callback,
+      crosapi::mojom::MenuItemsPtr crosapi_menu_items);
+
   mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;
   mojo::Receiver<crosapi::mojom::AppPublisher> receiver_{this};
   mojo::Remote<crosapi::mojom::AppController> controller_;
+  Profile* const profile_;
   base::WeakPtrFactory<WebAppsCrosapi> weak_factory_{this};
 };
 

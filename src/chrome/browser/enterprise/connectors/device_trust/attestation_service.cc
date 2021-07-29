@@ -9,22 +9,62 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise/connectors/device_trust/crypto_utility.h"
 #include "chrome/browser/enterprise/connectors/device_trust/device_trust_key_pair.h"
+#include "chrome/browser/policy/chrome_browser_policy_connector.h"
+#include "components/enterprise/browser/controller/browser_dm_token_storage.h"
+#include "components/policy/core/common/cloud/machine_level_user_cloud_policy_manager.h"
+#include "components/policy/core/common/cloud/machine_level_user_cloud_policy_store.h"
+#include "crypto/random.h"
 
 namespace enterprise_connectors {
 
+namespace {
+
+// Size of nonce for challenge response.
+const size_t kChallengResponseNonceBytesSize = 32;
+
+}  // namespace
+
 AttestationService::AttestationService() {
-#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MAC)
-  key_pair_ = std::make_unique<enterprise_connectors::DeviceTrustKeyPair>();
-  key_pair_->Init();
-#endif  // defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MAC)
+  key_pair_ = std::make_unique<DeviceTrustKeyPair>();
+  if (!key_pair_->Init())
+    LOG(ERROR) << "Error while initializing the key pair.";
 }
 
 AttestationService::~AttestationService() = default;
+
+void AttestationService::FillValuesForCBCM() {
+  if (public_key_.empty())
+    public_key_ = ExportPublicKey();
+  if (device_id_.empty())
+    device_id_ = policy::BrowserDMTokenStorage::Get()->RetrieveClientId();
+  if (customer_id_.empty())
+    MayGetCustomerId();
+}
+
+void AttestationService::MayGetCustomerId() {
+  policy::ChromeBrowserPolicyConnector* browser_policy_connector =
+      g_browser_process->browser_policy_connector();
+  if (!browser_policy_connector)
+    return;
+  policy::MachineLevelUserCloudPolicyManager*
+      machine_level_user_cloud_policy_manager =
+          browser_policy_connector->machine_level_user_cloud_policy_manager();
+  // Check that we can retrieve the customer id.
+  if (!machine_level_user_cloud_policy_manager ||
+      !machine_level_user_cloud_policy_manager->store() ||
+      !machine_level_user_cloud_policy_manager->store()->has_policy())
+    return;
+  customer_id_ = machine_level_user_cloud_policy_manager->store()
+                     ->policy()
+                     ->obfuscated_customer_id();
+}
 
 bool AttestationService::ChallengeComesFromVerifiedAccess(
     const std::string& serialized_signed_data,
@@ -32,7 +72,7 @@ bool AttestationService::ChallengeComesFromVerifiedAccess(
   SignedData signed_challenge;
   signed_challenge.ParseFromString(serialized_signed_data);
   // Verify challenge signature.
-  return enterprise_connector::CryptoUtility::VerifySignatureUsingHexKey(
+  return CryptoUtility::VerifySignatureUsingHexKey(
       public_key_modulus_hex, signed_challenge.data(),
       signed_challenge.signature());
 }
@@ -50,10 +90,13 @@ std::string AttestationService::JsonChallengeToProtobufChallenge(
       !data.value().FindPath("challenge.signature"))
     return std::string();
 
-  base::Base64Decode(data.value().FindPath("challenge.data")->GetString(),
-                     signed_challenge.mutable_data());
-  base::Base64Decode(data.value().FindPath("challenge.signature")->GetString(),
-                     signed_challenge.mutable_signature());
+  if (!base::Base64Decode(data.value().FindPath("challenge.data")->GetString(),
+                          signed_challenge.mutable_data()))
+    LOG(ERROR) << "Error during decoding base64 challenge data.";
+  if (!base::Base64Decode(
+          data.value().FindPath("challenge.signature")->GetString(),
+          signed_challenge.mutable_signature()))
+    LOG(ERROR) << "Error during decoding base64 challenge signature.";
 
   std::string serialized_signed_challenge;
   if (!signed_challenge.SerializeToString(&serialized_signed_challenge)) {
@@ -67,15 +110,14 @@ std::string AttestationService::ProtobufChallengeToJsonChallenge(
     const std::string& challenge_response) {
   base::Value signed_data(base::Value::Type::DICTIONARY);
 
+  SignedData signed_data_proto;
+  signed_data_proto.ParseFromString(challenge_response);
   std::string encoded;
-  base::Base64Encode(challenge_response, &encoded);
+  base::Base64Encode(signed_data_proto.data(), &encoded);
   signed_data.SetKey("data", base::Value(encoded));
 
-#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MAC)
-  std::string signature;
-  key_pair_->GetSignatureInBase64(challenge_response, &signature);
-  signed_data.SetKey("signature", base::Value(signature));
-#endif  // defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MAC)
+  base::Base64Encode(signed_data_proto.signature(), &encoded);
+  signed_data.SetKey("signature", base::Value(encoded));
 
   base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetKey("challengeResponse", std::move(signed_data));
@@ -85,70 +127,11 @@ std::string AttestationService::ProtobufChallengeToJsonChallenge(
   return json;
 }
 
-#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MAC)
-std::string AttestationService::ExportPEMPublicKey() {
-  return key_pair_->ExportPEMPublicKey();
-}
-#endif  // defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MAC)
-
-void AttestationService::SignEnterpriseChallenge(
-    const SignEnterpriseChallengeRequest& request,
-    SignEnterpriseChallengeReply* result) {
-  SignEnterpriseChallengeTask(request, result);
-}
-
-void AttestationService::SignEnterpriseChallengeTask(
-    const SignEnterpriseChallengeRequest& request,
-    SignEnterpriseChallengeReply* result) {
-  // Validate that the challenge is coming from the expected source.
-  SignedData signed_challenge;
-  if (!signed_challenge.ParseFromString(request.challenge())) {
-    LOG(ERROR) << __func__ << ": Failed to parse signed challenge.";
-    result->set_status(STATUS_INVALID_PARAMETER);
-    return;
-  }
-
-  KeyInfo key_info;
-  // Set the public key so VA can verify the client.
-#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MAC)
-  key_info.set_signed_public_key_and_challenge(ExportPEMPublicKey());
-#endif  // defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MAC)
-
-  ChallengeResponse response_pb;
-  *response_pb.mutable_challenge() = signed_challenge;
-  // TODO(b/185459013): Encrypt `key_info` and add it to `response_pb`.
-
-  // Serialize and sign the response protobuf.
-  std::string serialized;
-  if (!response_pb.SerializeToString(&serialized)) {
-    result->set_status(STATUS_UNEXPECTED_DEVICE_ERROR);
-    return;
-  }
-  // Sign data using the client generated key pair.
-  if (!SignChallengeData(serialized, result->mutable_challenge_response())) {
-    result->clear_challenge_response();
-    result->set_status(STATUS_UNEXPECTED_DEVICE_ERROR);
-    return;
-  }
-}
-
-bool AttestationService::SignChallengeData(const std::string& data,
-                                           std::string* response) {
-  std::string signature;
-#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MAC)
-  if (!key_pair_->GetSignatureInBase64(data, &signature)) {
-    LOG(ERROR) << __func__ << ": Failed to sign data.";
-    return false;
-  }
-#endif  // defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MAC)
-  SignedData signed_data;
-  signed_data.set_data(data);
-  signed_data.set_signature(signature);
-  if (!signed_data.SerializeToString(response)) {
-    LOG(ERROR) << __func__ << ": Failed to serialize signed data.";
-    return false;
-  }
-  return true;
+std::string AttestationService::ExportPublicKey() {
+  std::vector<uint8_t> public_key_info;
+  if (!key_pair_->ExportPublicKey(&public_key_info))
+    return std::string();
+  return std::string(public_key_info.begin(), public_key_info.end());
 }
 
 void AttestationService::BuildChallengeResponseForVAChallenge(
@@ -156,11 +139,14 @@ void AttestationService::BuildChallengeResponseForVAChallenge(
     AttestationCallback callback) {
   std::string serialized_signed_data =
       JsonChallengeToProtobufChallenge(challenge);
+  // If one of this values is missing then attestation flow won't succeed.
+  FillValuesForCBCM();
+  if (device_id_.empty() || public_key_.empty() || customer_id_.empty())
+    LOG(ERROR) << "There are missing values for the attestation flow.";
 
   AttestationCallback reply = base::BindOnce(
       &AttestationService::PaserChallengeResponseAndRunCallback,
       weak_factory_.GetWeakPtr(), challenge, std::move(callback));
-
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindOnce(
@@ -183,6 +169,7 @@ std::string AttestationService::VerifyChallengeAndMaybeCreateChallengeResponse(
   SignEnterpriseChallengeRequest request;
   SignEnterpriseChallengeReply result;
   request.set_challenge(serialized_signed_data);
+  request.set_va_type(VAType::DEFAULT_VA);
   SignEnterpriseChallenge(request, &result);
   return result.challenge_response();
 }
@@ -200,6 +187,100 @@ void AttestationService::PaserChallengeResponseAndRunCallback(
     // Make challenge response
     std::move(callback).Run("");
   }
+}
+
+void AttestationService::SignEnterpriseChallenge(
+    const SignEnterpriseChallengeRequest& request,
+    SignEnterpriseChallengeReply* result) {
+  SignEnterpriseChallengeTask(request, result);
+}
+
+void AttestationService::SignEnterpriseChallengeTask(
+    const SignEnterpriseChallengeRequest& request,
+    SignEnterpriseChallengeReply* result) {
+  // Validate that the challenge is coming from the expected source.
+  SignedData signed_challenge;
+  if (!signed_challenge.ParseFromString(request.challenge())) {
+    LOG(ERROR) << __func__ << ": Failed to parse signed challenge.";
+    result->set_status(STATUS_INVALID_PARAMETER_ERROR);
+    return;
+  }
+  KeyInfo key_info;
+  // Fill `key_info` out for Chrome Browser.
+  key_info.set_key_type(CBCM);
+  key_info.set_browser_instance_public_key(public_key_);
+  key_info.set_device_id(device_id_);
+  key_info.set_customer_id(customer_id_);
+
+  ChallengeResponse response_pb;
+  *response_pb.mutable_challenge() = signed_challenge;
+
+  crypto::RandBytes(base::WriteInto(response_pb.mutable_nonce(),
+                                    kChallengResponseNonceBytesSize + 1),
+                    kChallengResponseNonceBytesSize);
+  if (!EncryptEnterpriseKeyInfo(request.va_type(), key_info,
+                                response_pb.mutable_encrypted_key_info())) {
+    LOG(ERROR) << __func__ << ": Failed to encrypt KeyInfo.";
+    result->set_status(STATUS_UNEXPECTED_DEVICE_ERROR);
+    return;
+  }
+
+  // Serialize and sign the response protobuf.
+  std::string serialized;
+  if (!response_pb.SerializeToString(&serialized)) {
+    result->set_status(STATUS_UNEXPECTED_DEVICE_ERROR);
+    return;
+  }
+  // Sign data using the client generated key pair.
+  if (!SignChallengeData(serialized, result->mutable_challenge_response())) {
+    result->clear_challenge_response();
+    result->set_status(STATUS_UNEXPECTED_DEVICE_ERROR);
+    return;
+  }
+}
+
+bool AttestationService::EncryptEnterpriseKeyInfo(
+    VAType va_type,
+    const KeyInfo& key_info,
+    EncryptedData* encrypted_data) {
+  std::string serialized;
+  if (!key_info.SerializeToString(&serialized)) {
+    LOG(ERROR) << "Failed to serialize key info.";
+    return false;
+  }
+
+  std::string key;
+  if (!CryptoUtility::EncryptWithSeed(serialized, encrypted_data, key)) {
+    LOG(ERROR) << "EncryptWithSeed failed.";
+    return false;
+  }
+  bssl::UniquePtr<RSA> rsa(CryptoUtility::GetRSA(
+      google_keys_.va_encryption_key(va_type).modulus_in_hex()));
+  if (!rsa)
+    return false;
+  if (!CryptoUtility::WrapKeyOAEP(
+          key, rsa.get(), google_keys_.va_encryption_key(va_type).key_id(),
+          encrypted_data)) {
+    encrypted_data->Clear();
+    return false;
+  }
+  return true;
+}
+
+bool AttestationService::SignChallengeData(const std::string& data,
+                                           std::string* response) {
+  SignedData signed_data;
+  signed_data.set_data(data);
+  std::string signature;
+  if (!key_pair_->SignMessage(data, signed_data.mutable_signature())) {
+    LOG(ERROR) << __func__ << ": Failed to sign data.";
+    return false;
+  }
+  if (!signed_data.SerializeToString(response)) {
+    LOG(ERROR) << __func__ << ": Failed to serialize signed data.";
+    return false;
+  }
+  return true;
 }
 
 }  // namespace enterprise_connectors

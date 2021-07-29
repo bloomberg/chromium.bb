@@ -24,8 +24,10 @@
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
+#include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -58,21 +60,22 @@ std::vector<int> OpenFileFds(const base::FilePath& base,
 
 using OnLoadedTestCallBack =
     base::OnceCallback<void(const base::Version&,
-                            const base::flat_map<std::string, int>&,
+                            base::flat_map<std::string, base::ScopedFD>&,
                             std::unique_ptr<base::DictionaryValue>)>;
+using OnFailedTestCallBack = base::OnceCallback<void(ComponentLoadError)>;
 
 class MockLoaderPolicy : public ComponentLoaderPolicy {
  public:
   explicit MockLoaderPolicy(OnLoadedTestCallBack on_loaded,
-                            base::OnceClosure on_failed)
+                            OnFailedTestCallBack on_failed)
       : on_loaded_(std::move(on_loaded)), on_failed_(std::move(on_failed)) {}
 
   MockLoaderPolicy()
       : on_loaded_(
             base::DoNothing::Once<const base::Version&,
-                                  const base::flat_map<std::string, int>&,
+                                  base::flat_map<std::string, base::ScopedFD>&,
                                   std::unique_ptr<base::DictionaryValue>>()),
-        on_failed_(base::DoNothing::Once()) {}
+        on_failed_(base::DoNothing::Once<ComponentLoadError>()) {}
 
   ~MockLoaderPolicy() override = default;
 
@@ -81,23 +84,25 @@ class MockLoaderPolicy : public ComponentLoaderPolicy {
 
   void ComponentLoaded(
       const base::Version& version,
-      const base::flat_map<std::string, int>& fd_map,
+      base::flat_map<std::string, base::ScopedFD>& fd_map,
       std::unique_ptr<base::DictionaryValue> manifest) override {
     std::move(on_loaded_).Run(version, fd_map, std::move(manifest));
   }
 
-  void ComponentLoadFailed() override { std::move(on_failed_).Run(); }
+  void ComponentLoadFailed(ComponentLoadError error) override {
+    std::move(on_failed_).Run(error);
+  }
 
   void GetHash(std::vector<uint8_t>* hash) const override { GetPkHash(hash); }
 
  private:
   OnLoadedTestCallBack on_loaded_;
-  base::OnceClosure on_failed_;
+  OnFailedTestCallBack on_failed_;
 };
 
 void VerifyComponentLoaded(base::OnceClosure on_done,
                            const base::Version& version,
-                           const base::flat_map<std::string, int>& fd_map,
+                           base::flat_map<std::string, base::ScopedFD>& fd_map,
                            std::unique_ptr<base::DictionaryValue> manifest) {
   EXPECT_EQ(version.GetString(), "123.456.789");
   EXPECT_EQ(fd_map.size(), 2u);
@@ -154,7 +159,7 @@ TEST_F(AndroidComponentLoaderPolicyTest, TestValidManifest) {
   auto* android_policy =
       new AndroidComponentLoaderPolicy(std::make_unique<MockLoaderPolicy>(
           base::BindOnce(&VerifyComponentLoaded, run_loop.QuitClosure()),
-          base::BindOnce([]() { FAIL(); })));
+          base::BindOnce([](ComponentLoadError) { FAIL(); })));
 
   android_policy->ComponentLoaded(
       env_, base::android::ToJavaArrayOfStrings(env_, files_),
@@ -172,9 +177,12 @@ TEST_F(AndroidComponentLoaderPolicyTest, TestMissingManifest) {
       new AndroidComponentLoaderPolicy(std::make_unique<MockLoaderPolicy>(
           base::BindOnce(
               [](const base::Version& version,
-                 const base::flat_map<std::string, int>& fd_map,
+                 base::flat_map<std::string, base::ScopedFD>& fd_map,
                  std::unique_ptr<base::DictionaryValue> manifest) { FAIL(); }),
-          run_loop.QuitClosure()));
+          base::BindLambdaForTesting([&](ComponentLoadError error) {
+            ASSERT_EQ(error, ComponentLoadError::kMissingManifest);
+            run_loop.Quit();
+          })));
 
   android_policy->ComponentLoaded(
       env_, base::android::ToJavaArrayOfStrings(env_, files_),
@@ -194,9 +202,12 @@ TEST_F(AndroidComponentLoaderPolicyTest, TestInvalidVersion) {
       new AndroidComponentLoaderPolicy(std::make_unique<MockLoaderPolicy>(
           base::BindOnce(
               [](const base::Version& version,
-                 const base::flat_map<std::string, int>& fd_map,
+                 base::flat_map<std::string, base::ScopedFD>& fd_map,
                  std::unique_ptr<base::DictionaryValue> manifest) { FAIL(); }),
-          run_loop.QuitClosure()));
+          base::BindLambdaForTesting([&](ComponentLoadError error) {
+            ASSERT_EQ(error, ComponentLoadError::kInvalidVersion);
+            run_loop.Quit();
+          })));
 
   android_policy->ComponentLoaded(
       env_, base::android::ToJavaArrayOfStrings(env_, files_),
@@ -215,9 +226,12 @@ TEST_F(AndroidComponentLoaderPolicyTest, TestInvalidManifest) {
       new AndroidComponentLoaderPolicy(std::make_unique<MockLoaderPolicy>(
           base::BindOnce(
               [](const base::Version& version,
-                 const base::flat_map<std::string, int>& fd_map,
+                 base::flat_map<std::string, base::ScopedFD>& fd_map,
                  std::unique_ptr<base::DictionaryValue> manifest) { FAIL(); }),
-          run_loop.QuitClosure()));
+          base::BindLambdaForTesting([&](ComponentLoadError error) {
+            ASSERT_EQ(error, ComponentLoadError::kMalformedManifest);
+            run_loop.Quit();
+          })));
 
   android_policy->ComponentLoaded(
       env_, base::android::ToJavaArrayOfStrings(env_, files_),

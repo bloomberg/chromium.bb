@@ -196,6 +196,12 @@ void LoginScreenClientImpl::ShowGaiaSignin(const AccountId& prefilled_account) {
   }
 }
 
+void LoginScreenClientImpl::ShowOsInstallScreen() {
+  if (ash::LoginDisplayHost::default_host()) {
+    ash::LoginDisplayHost::default_host()->ShowOsInstallScreen();
+  }
+}
+
 void LoginScreenClientImpl::OnRemoveUserWarningShown() {
   ProfileMetrics::LogProfileDeleteUser(
       ProfileMetrics::DELETE_PROFILE_USER_MANAGER_SHOW_WARNING);
@@ -206,8 +212,8 @@ void LoginScreenClientImpl::RemoveUser(const AccountId& account_id) {
       ProfileMetrics::DELETE_PROFILE_USER_MANAGER);
   user_manager::UserManager::Get()->RemoveUser(account_id,
                                                nullptr /*delegate*/);
-  if (chromeos::LoginDisplayHost::default_host())
-    chromeos::LoginDisplayHost::default_host()->UpdateAddUserButtonStatus();
+  if (ash::LoginDisplayHost::default_host())
+    ash::LoginDisplayHost::default_host()->UpdateAddUserButtonStatus();
 }
 
 void LoginScreenClientImpl::LaunchPublicSession(
@@ -229,8 +235,8 @@ void LoginScreenClientImpl::RequestPublicSessionKeyboardLayouts(
 
 void LoginScreenClientImpl::HandleAccelerator(
     ash::LoginAcceleratorAction action) {
-  if (chromeos::LoginDisplayHost::default_host())
-    chromeos::LoginDisplayHost::default_host()->HandleAccelerator(action);
+  if (ash::LoginDisplayHost::default_host())
+    ash::LoginDisplayHost::default_host()->HandleAccelerator(action);
 }
 
 void LoginScreenClientImpl::ShowAccountAccessHelpApp(
@@ -240,10 +246,11 @@ void LoginScreenClientImpl::ShowAccountAccessHelpApp(
       ->ShowHelpTopic(chromeos::HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
 }
 
-void LoginScreenClientImpl::ShowParentAccessHelpApp(
-    gfx::NativeWindow parent_window) {
+void LoginScreenClientImpl::ShowParentAccessHelpApp() {
+  // Don't pass in a parent window so that the size of the help dialog is not
+  // bounded by its parent window.
   scoped_refptr<chromeos::HelpAppLauncher>(
-      new chromeos::HelpAppLauncher(parent_window))
+      new chromeos::HelpAppLauncher(/*parent_window=*/nullptr))
       ->ShowHelpTopic(chromeos::HelpAppLauncher::HELP_PARENT_ACCESS_CODE);
 }
 
@@ -273,7 +280,7 @@ void LoginScreenClientImpl::LoadWallpaper(const AccountId& account_id) {
 }
 
 void LoginScreenClientImpl::SignOutUser() {
-  chromeos::ScreenLocker::default_screen_locker()->Signout();
+  ash::ScreenLocker::default_screen_locker()->Signout();
 }
 
 void LoginScreenClientImpl::CancelAddUser() {
@@ -281,13 +288,12 @@ void LoginScreenClientImpl::CancelAddUser() {
 }
 
 void LoginScreenClientImpl::LoginAsGuest() {
-  DCHECK(!chromeos::ScreenLocker::default_screen_locker());
-  if (chromeos::LoginDisplayHost::default_host()) {
-    chromeos::LoginDisplayHost::default_host()
-        ->GetExistingUserController()
-        ->Login(chromeos::UserContext(user_manager::USER_TYPE_GUEST,
-                                      user_manager::GuestAccountId()),
-                chromeos::SigninSpecifics());
+  DCHECK(!ash::ScreenLocker::default_screen_locker());
+  if (ash::LoginDisplayHost::default_host()) {
+    ash::LoginDisplayHost::default_host()->GetExistingUserController()->Login(
+        chromeos::UserContext(user_manager::USER_TYPE_GUEST,
+                              user_manager::GuestAccountId()),
+        chromeos::SigninSpecifics());
   }
 }
 
@@ -327,8 +333,8 @@ void LoginScreenClientImpl::SetPublicSessionKeyboardLayout(
 }
 
 void LoginScreenClientImpl::OnUserActivity() {
-  if (chromeos::LoginDisplayHost::default_host()) {
-    chromeos::LoginDisplayHost::default_host()
+  if (ash::LoginDisplayHost::default_host()) {
+    ash::LoginDisplayHost::default_host()
         ->GetExistingUserController()
         ->ResetAutoLoginTimer();
   }
@@ -343,9 +349,8 @@ void LoginScreenClientImpl::OnParentAccessValidation(
 
 void LoginScreenClientImpl::ShowGaiaSigninInternal(
     const AccountId& prefilled_account) {
-  if (chromeos::LoginDisplayHost::default_host()) {
-    chromeos::LoginDisplayHost::default_host()->ShowGaiaDialog(
-        prefilled_account);
+  if (ash::LoginDisplayHost::default_host()) {
+    ash::LoginDisplayHost::default_host()->ShowGaiaDialog(prefilled_account);
   } else {
     const user_manager::User* user =
         user_manager::UserManager::Get()->FindUser(prefilled_account);

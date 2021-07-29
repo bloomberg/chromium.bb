@@ -5,8 +5,8 @@
 #include "ash/public/cpp/accelerators.h"
 
 #include "base/callback.h"
+#include "base/cxx17_backports.h"
 #include "base/no_destructor.h"
-#include "base/stl_util.h"
 
 namespace ash {
 
@@ -220,6 +220,10 @@ const AcceleratorData kAcceleratorData[] = {
 
     // TODO(yusukes): Handle VKEY_MEDIA_STOP, and
     // VKEY_MEDIA_LAUNCH_MAIL.
+
+    // ARC-specific shortcut.
+    {true, ui::VKEY_C, ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN,
+     TOGGLE_RESIZE_LOCK_MENU},
 };
 
 const size_t kAcceleratorDataLength = base::size(kAcceleratorData);

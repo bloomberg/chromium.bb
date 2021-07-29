@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/autofill/popup_controller_common.h"
 #include "components/autofill/core/browser/ui/popup_types.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 
@@ -26,6 +27,10 @@ namespace content {
 struct NativeWebKeyboardEvent;
 class WebContents;
 }  // namespace content
+
+namespace password_manager {
+class ContentPasswordManagerDriver;
+}
 
 namespace ui {
 class AXPlatformNode;
@@ -35,6 +40,7 @@ namespace autofill {
 
 class AutofillPopupDelegate;
 class AutofillPopupView;
+class ContentAutofillDriver;
 
 // This class is a controller for an AutofillPopupView. It implements
 // AutofillPopupController to allow calls from AutofillPopupView. The
@@ -105,7 +111,8 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   void AcceptSuggestion(int index) override;
   int GetLineCount() const override;
   const Suggestion& GetSuggestionAt(int row) const override;
-  const std::u16string& GetSuggestionValueAt(int row) const override;
+  std::u16string GetSuggestionMainTextAt(int row) const override;
+  std::u16string GetSuggestionMinorTextAt(int row) const override;
   const std::u16string& GetSuggestionLabelAt(int row) const override;
   bool GetRemovalConfirmationText(int list_index,
                                   std::u16string* title,
@@ -158,6 +165,12 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
 
   // Hides |view_| unless it is null and then deletes |this|.
   void HideViewAndDie();
+
+  // Casts `delegate_->GetDriver->` to ContentAutofillDriver or
+  // ContentPasswordManagerDriver, respectively.
+  absl::variant<ContentAutofillDriver*,
+                password_manager::ContentPasswordManagerDriver*>
+  GetDriver();
 
   friend class AutofillPopupControllerUnitTest;
   friend class AutofillPopupControllerAccessibilityUnitTest;

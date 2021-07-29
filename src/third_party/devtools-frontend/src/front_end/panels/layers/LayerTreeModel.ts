@@ -44,7 +44,7 @@ export class LayerTreeModel extends SDK.SDKModel.SDKModel {
   _enabled?: boolean;
   _lastPaintRectByLayerId?: Map<string, Protocol.DOM.Rect>;
 
-  constructor(target: SDK.SDKModel.Target) {
+  constructor(target: SDK.Target.Target) {
     super(target);
     this._layerTreeAgent = target.layerTreeAgent();
     target.registerLayerTreeDispatcher(new LayerTreeDispatcher(this));
@@ -142,7 +142,7 @@ export class LayerTreeModel extends SDK.SDKModel.SDKModel {
   }
 }
 
-SDK.SDKModel.SDKModel.register(LayerTreeModel, {capabilities: SDK.SDKModel.Capability.DOM, autostart: false});
+SDK.SDKModel.SDKModel.register(LayerTreeModel, {capabilities: SDK.Target.Capability.DOM, autostart: false});
 
 // TODO(crbug.com/1167717): Make this a const enum again
 // eslint-disable-next-line rulesdir/const_enum
@@ -164,7 +164,7 @@ export class AgentLayerTree extends SDK.LayerTreeBase.LayerTreeBase {
       this._innerSetLayers(payload);
       return;
     }
-    const idsToResolve = new Set<number>();
+    const idsToResolve = new Set<Protocol.DOM.BackendNodeId>();
     for (let i = 0; i < payload.length; ++i) {
       const backendNodeId = payload[i].backendNodeId;
       if (!backendNodeId || this.backendNodeIdToNode().has(backendNodeId)) {

@@ -100,8 +100,9 @@ class RequestPinExceptFirstQuotaBucketMapper final
       const RequestPinExceptFirstQuotaBucketMapper&) = delete;
   ~RequestPinExceptFirstQuotaBucketMapper() override = default;
 
-  void GetBucketsForArgs(const base::ListValue* args,
+  void GetBucketsForArgs(const base::Value* args,
                          QuotaLimitHeuristic::BucketList* buckets) override {
+    DCHECK(args->is_list());
     if (args->GetList().empty())
       return;
     const base::Value& details = args->GetList()[0];
@@ -147,9 +148,7 @@ scoped_refptr<net::X509Certificate> ParseCertificateDer(
   net::X509Certificate::UnsafeCreateOptions options;
   options.printable_string_is_utf8 = true;
   scoped_refptr<net::X509Certificate> certificate =
-      net::X509Certificate::CreateFromBytesUnsafeOptions(
-          reinterpret_cast<const char*>(cert_der.data()), cert_der.size(),
-          options);
+      net::X509Certificate::CreateFromBytesUnsafeOptions(cert_der, options);
   if (!certificate) {
     *out_error_message = kCertificateProviderErrorInvalidX509Cert;
     return nullptr;

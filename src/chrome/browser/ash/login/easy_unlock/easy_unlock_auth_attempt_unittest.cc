@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "base/command_line.h"
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "build/build_config.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_key_manager.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
@@ -92,7 +92,7 @@ class TestLockHandler : public proximity_auth::ScreenlockBridge::LockHandler {
 
   void ShowUserPodCustomIcon(
       const AccountId& account_id,
-      const proximity_auth::ScreenlockBridge::UserPodCustomIconOptions& icon)
+      const proximity_auth::ScreenlockBridge::UserPodCustomIconInfo& icon_info)
       override {
     ADD_FAILURE() << "Should not be reached.";
   }

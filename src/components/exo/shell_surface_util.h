@@ -26,7 +26,7 @@ class TimeDelta;
 namespace ui {
 class LocatedEvent;
 class KeyEvent;
-}
+}  // namespace ui
 
 namespace exo {
 
@@ -95,6 +95,10 @@ Surface* GetTargetSurfaceForKeyboardFocus(aura::Window* focused_window);
 // any existing permission.
 void GrantPermissionToActivate(aura::Window* window, base::TimeDelta timeout);
 
+// Allows the |window| to activate itself indefinitely. Revokes any existing
+// permission.
+void GrantPermissionToActivateIndefinitely(aura::Window* window);
+
 // Revokes the permission for |window| to activate itself.
 void RevokePermissionToActivate(aura::Window* window);
 
@@ -103,6 +107,9 @@ bool HasPermissionToActivate(aura::Window* window);
 
 // Returns true if event is/will be consumed by IME.
 bool ConsumedByIme(aura::Window* window, const ui::KeyEvent& event);
+
+// Set aura::client::kSkipImeProcessing to all Surface descendants.
+void SetSkipImeProcessingToDescendentSurfaces(aura::Window* window, bool value);
 
 }  // namespace exo
 

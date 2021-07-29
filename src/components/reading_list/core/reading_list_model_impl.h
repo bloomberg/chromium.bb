@@ -67,6 +67,11 @@ class ReadingListModelImpl : public ReadingListModel,
 
   bool IsUrlSupported(const GURL& url) override;
 
+  const ReadingListEntry& AddEntry(
+      const GURL& url,
+      const std::string& title,
+      reading_list::EntrySource source,
+      base::TimeDelta estimated_read_time) override;
   const ReadingListEntry& AddEntry(const GURL& url,
                                    const std::string& title,
                                    reading_list::EntrySource source) override;
@@ -74,6 +79,8 @@ class ReadingListModelImpl : public ReadingListModel,
   void SetReadStatus(const GURL& url, bool read) override;
 
   void SetEntryTitle(const GURL& url, const std::string& title) override;
+  void SetEstimatedReadTime(const GURL& url,
+                            base::TimeDelta estimated_read_time) override;
   void SetEntryDistilledState(
       const GURL& url,
       ReadingListEntry::DistillationState state) override;

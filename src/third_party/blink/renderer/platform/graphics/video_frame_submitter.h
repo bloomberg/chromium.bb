@@ -47,6 +47,8 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   VideoFrameSubmitter(WebContextProviderCallback,
                       cc::VideoPlaybackRoughnessReporter::ReportingCallback,
                       std::unique_ptr<VideoFrameResourceProvider>);
+  VideoFrameSubmitter(const VideoFrameSubmitter&) = delete;
+  VideoFrameSubmitter& operator=(const VideoFrameSubmitter&) = delete;
   ~VideoFrameSubmitter() override;
 
   // cc::VideoFrameProvider::Client implementation.
@@ -58,7 +60,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
 
   // WebVideoFrameSubmitter implementation.
   void Initialize(cc::VideoFrameProvider*, bool is_media_stream) override;
-  void SetRotation(media::VideoRotation) override;
+  void SetTransform(media::VideoTransformation) override;
   void EnableSubmission(viz::SurfaceId) override;
   void SetIsSurfaceVisible(bool is_visible) override;
   void SetIsPageVisible(bool is_visible) override;
@@ -130,7 +132,8 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   viz::CompositorFrame CreateCompositorFrame(
       uint32_t frame_token,
       const viz::BeginFrameAck& begin_frame_ack,
-      scoped_refptr<media::VideoFrame> video_frame);
+      scoped_refptr<media::VideoFrame> video_frame,
+      media::VideoTransformation transform);
 
   cc::VideoFrameProvider* video_frame_provider_ = nullptr;
   bool is_media_stream_ = false;
@@ -164,7 +167,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
 
   // Needs to be initialized in implementation because media isn't a public_dep
   // of blink/platform.
-  media::VideoRotation rotation_;
+  media::VideoTransformation transform_;
 
   viz::FrameSinkId frame_sink_id_;
 
@@ -201,8 +204,6 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   THREAD_CHECKER(thread_checker_);
 
   base::WeakPtrFactory<VideoFrameSubmitter> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(VideoFrameSubmitter);
 };
 
 }  // namespace blink

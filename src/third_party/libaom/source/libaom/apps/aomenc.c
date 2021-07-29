@@ -229,6 +229,8 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
 #endif
                                         AV1E_SET_DV_COST_UPD_FREQ,
                                         AV1E_SET_PARTITION_INFO_PATH,
+                                        AV1E_SET_ENABLE_DIRECTIONAL_INTRA,
+                                        AV1E_SET_ENABLE_TX_SIZE_SEARCH,
                                         0 };
 
 const arg_def_t *main_args[] = { &g_av1_codec_arg_defs.help,
@@ -426,10 +428,14 @@ const arg_def_t *av1_ctrl_args[] = {
 #endif
   &g_av1_codec_arg_defs.dv_cost_upd_freq,
   &g_av1_codec_arg_defs.partition_info_path,
+  &g_av1_codec_arg_defs.enable_directional_intra,
+  &g_av1_codec_arg_defs.enable_tx_size_search,
   NULL,
 };
 
 const arg_def_t *av1_key_val_args[] = {
+  &g_av1_codec_arg_defs.passes,
+  &g_av1_codec_arg_defs.fwd_kf_dist,
   NULL,
 };
 
@@ -596,12 +602,12 @@ static void parse_global_config(struct AvxEncoderConfig *global, char ***argv) {
     } else if (arg_match(&arg, &g_av1_codec_arg_defs.passes, argi)) {
       global->passes = arg_parse_uint(&arg);
 
-      if (global->passes < 1 || global->passes > 2)
+      if (global->passes < 1 || global->passes > 3)
         die("Error: Invalid number of passes (%d)\n", global->passes);
     } else if (arg_match(&arg, &g_av1_codec_arg_defs.pass_arg, argi)) {
       global->pass = arg_parse_uint(&arg);
 
-      if (global->pass < 1 || global->pass > 2)
+      if (global->pass < 1 || global->pass > 3)
         die("Error: Invalid pass selected (%d)\n", global->pass);
     } else if (arg_match(&arg,
                          &g_av1_codec_arg_defs.input_chroma_sample_position,
@@ -1088,9 +1094,14 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
       const int fixed_qp_offset_count = arg_parse_list(
           &arg, config->cfg.fixed_qp_offsets, FIXED_QP_OFFSET_COUNT);
       if (fixed_qp_offset_count < FIXED_QP_OFFSET_COUNT) {
-        die("Option --fixed_qp_offsets requires %d comma-separated values, but "
-            "only %d values were provided.\n",
-            FIXED_QP_OFFSET_COUNT, fixed_qp_offset_count);
+        if (fixed_qp_offset_count < 2) {
+          die("Option --fixed_qp_offsets requires at least 2 comma-separated "
+              "values for kf and arf, but only %d were provided.\n",
+              fixed_qp_offset_count);
+        }
+        for (int k = fixed_qp_offset_count; k < FIXED_QP_OFFSET_COUNT; ++k)
+          config->cfg.fixed_qp_offsets[k] =
+              (config->cfg.fixed_qp_offsets[k - 1] + 1) / 2;
       }
       config->cfg.use_fixed_qp_offsets = 1;
     } else if (global->usage == AOM_USAGE_REALTIME &&
@@ -1143,6 +1154,21 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
       config->cfg.kf_max_dist = 0;
     }
   }
+
+  // set the passes field using key & val API
+  if (config->arg_key_val_cnt >= ARG_KEY_VAL_CNT_MAX) {
+    die("Not enough buffer for the key & value API.");
+  }
+  config->arg_key_vals[config->arg_key_val_cnt][0] = "passes";
+  switch (global->passes) {
+    case 0: config->arg_key_vals[config->arg_key_val_cnt][1] = "0"; break;
+    case 1: config->arg_key_vals[config->arg_key_val_cnt][1] = "1"; break;
+    case 2: config->arg_key_vals[config->arg_key_val_cnt][1] = "2"; break;
+    case 3: config->arg_key_vals[config->arg_key_val_cnt][1] = "3"; break;
+    default: die("Invalid value of --passes.");
+  }
+  config->arg_key_val_cnt++;
+
   return eos_mark_found;
 }
 
@@ -1397,9 +1423,17 @@ static void setup_pass(struct stream_state *stream,
       fatal("Failed to open statistics store");
   }
 
-  stream->config.cfg.g_pass = global->passes == 2
-                                  ? pass ? AOM_RC_LAST_PASS : AOM_RC_FIRST_PASS
-                                  : AOM_RC_ONE_PASS;
+  if (global->passes == 1) {
+    stream->config.cfg.g_pass = AOM_RC_ONE_PASS;
+  } else {
+    switch (pass) {
+      case 0: stream->config.cfg.g_pass = AOM_RC_FIRST_PASS; break;
+      case 1: stream->config.cfg.g_pass = AOM_RC_SECOND_PASS; break;
+      case 2: stream->config.cfg.g_pass = AOM_RC_THIRD_PASS; break;
+      default: fatal("Failed to set pass");
+    }
+  }
+
   if (pass) {
     stream->config.cfg.rc_twopass_stats_in = stats_get(&stream->stats);
   }
@@ -2104,7 +2138,10 @@ int main(int argc, const char **argv_) {
     /* Ensure that --passes and --pass are consistent. If --pass is set and
      * --passes=2, ensure --fpf was set.
      */
-    if (global.pass && global.passes == 2) {
+    // TODO(bohanli): with passes == 3 and pass == 3, we could use either
+    // fpf or second pass bitstream. This should be updated when that option
+    // is added.
+    if (global.pass && global.passes >= 2) {
       FOREACH_STREAM(stream, streams) {
         if (!stream->config.stats_fn)
           die("Stream %d: Must specify --fpf when --pass=%d"

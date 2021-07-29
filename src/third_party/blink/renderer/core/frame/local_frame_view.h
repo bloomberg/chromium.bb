@@ -32,7 +32,7 @@
 #include "base/dcheck_is_on.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
-#include "third_party/blink/public/mojom/frame/viewport_intersection_state.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/viewport_intersection_state.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/document_transition/document_transition.h"
@@ -48,10 +48,8 @@
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_size.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
-#include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
-#include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 #include "third_party/blink/renderer/platform/graphics/paint_invalidation_reason.h"
 #include "third_party/blink/renderer/platform/graphics/subtree_paint_property_update_reason.h"
 #include "third_party/blink/renderer/platform/timer.h"
@@ -94,6 +92,8 @@ class LayoutView;
 class LocalFrame;
 class MobileFriendlinessChecker;
 class Page;
+class PaintArtifactCompositor;
+class PaintController;
 class PaintLayer;
 class PaintLayerScrollableArea;
 class PaintTimingDetector;
@@ -111,6 +111,9 @@ struct IntrinsicSizingInfo;
 struct MobileFriendliness;
 struct PhysicalOffset;
 struct PhysicalRect;
+struct PreCompositedLayerInfo;
+
+enum class PaintBenchmarkMode;
 
 typedef uint64_t DOMTimeStamp;
 using LayerTreeFlags = unsigned;
@@ -181,6 +184,9 @@ class CORE_EXPORT LocalFrameView final
   void LayoutOrthogonalWritingModeRoots();
   void ScheduleOrthogonalWritingModeRootsForLayout();
   void MarkOrthogonalWritingModeRootsForLayout();
+
+  // Returns true if commits will be deferred for first contentful paint.
+  bool WillDoPaintHoldingForFCP() const;
 
   unsigned LayoutCountForTesting() const { return layout_count_for_testing_; }
   unsigned LifecycleUpdateCountForTesting() const {
@@ -801,11 +807,7 @@ class CORE_EXPORT LocalFrameView final
   friend class AllowThrottlingScope;
   friend class DisallowThrottlingScope;
 
-  PaintController& EnsurePaintController() {
-    if (!paint_controller_)
-      paint_controller_ = std::make_unique<PaintController>();
-    return *paint_controller_;
-  }
+  PaintController& EnsurePaintController();
 
   // A paint preview is a copy of the visual contents of a webpage recorded as
   // a set of SkPictures. This sends an IPC to the browser to trigger a
@@ -852,7 +854,7 @@ class CORE_EXPORT LocalFrameView final
       DocumentLifecycle::LifecycleState target_state);
   bool RunPrePaintLifecyclePhase(
       DocumentLifecycle::LifecycleState target_state);
-  void RunPaintLifecyclePhase(PaintBenchmarkMode = PaintBenchmarkMode::kNormal);
+  void RunPaintLifecyclePhase(PaintBenchmarkMode);
 
   void UpdateStyleAndLayoutIfNeededRecursive();
   bool UpdateStyleAndLayoutInternal();
@@ -926,7 +928,9 @@ class CORE_EXPORT LocalFrameView final
   template <typename Function>
   void ForAllRemoteFrameViews(const Function&);
 
-  bool UpdateViewportIntersectionsForSubtree(unsigned parent_flags) override;
+  bool UpdateViewportIntersectionsForSubtree(
+      unsigned parent_flags,
+      absl::optional<base::TimeTicks>& monotonic_time) override;
   void DeliverSynchronousIntersectionObservations();
 
   bool RunScrollTimelineSteps();
@@ -944,7 +948,9 @@ class CORE_EXPORT LocalFrameView final
   bool RunPostLayoutIntersectionObserverSteps();
   // This is a recursive helper for determining intersection observations which
   // need to happen in post-layout.
-  void ComputePostLayoutIntersections(unsigned parent_flags);
+  void ComputePostLayoutIntersections(
+      unsigned parent_flags,
+      absl::optional<base::TimeTicks>& monotonic_time);
 
   // Returns true if the root object was laid out. Returns false if the layout
   // was prevented (e.g. by ancestor display-lock) or not needed.

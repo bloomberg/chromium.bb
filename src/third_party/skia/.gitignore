@@ -30,6 +30,7 @@ platform_tools/android/apps/*/*/src/main/libs
 platform_tools/android/apps/*.hprof
 platform_tools/android/apps/*/.externalNativeBuild
 
+/mskps
 /skps
 /svgs
 tools/skp/page_sets/data/*.json
@@ -45,6 +46,7 @@ bin/clang-format
 bin/clang-format.exe
 bin/sk
 bin/sk.exe
+bin/sk.version
 
 node_modules
 tools/lottiecap/filmstrip.png

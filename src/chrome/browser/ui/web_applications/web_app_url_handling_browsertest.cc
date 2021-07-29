@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/ui/web_applications/test/web_app_navigation_browsertest.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
@@ -56,8 +57,8 @@ class WebAppUrlHandlingBrowserTest : public WebAppNavigationBrowserTest {
     return app_id;
   }
 
-  WebAppProviderBase& provider() {
-    auto* provider = WebAppProviderBase::GetProviderBase(browser()->profile());
+  WebAppProvider& provider() {
+    auto* provider = WebAppProvider::Get(browser()->profile());
     DCHECK(provider);
     return *provider;
   }

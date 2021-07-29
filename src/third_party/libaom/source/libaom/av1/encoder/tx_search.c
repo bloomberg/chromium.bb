@@ -2026,8 +2026,13 @@ get_tx_mask(const AV1_COMP *cpi, MACROBLOCK *x, int plane, int block,
     int num_allowed = 0;
     const FRAME_UPDATE_TYPE update_type =
         get_frame_update_type(&cpi->ppi->gf_group, cpi->gf_frame_index);
-    const int *tx_type_probs =
-        cpi->frame_probs.tx_type_probs[update_type][tx_size];
+    int *tx_type_probs;
+#if CONFIG_FRAME_PARALLEL_ENCODE
+    tx_type_probs =
+        (int *)cpi->ppi->temp_frame_probs.tx_type_probs[update_type][tx_size];
+#else
+    tx_type_probs = (int *)cpi->frame_probs.tx_type_probs[update_type][tx_size];
+#endif
     int i;
 
     if (cpi->sf.tx_sf.tx_type_search.prune_tx_type_using_stats) {
@@ -3068,6 +3073,10 @@ static AOM_INLINE void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
     init_depth = get_search_init_depth(mi_size_wide[bs], mi_size_high[bs],
                                        is_inter_block(mbmi), &cpi->sf,
                                        txfm_params->tx_size_search_method);
+    if (init_depth == MAX_TX_DEPTH && !cpi->oxcf.txfm_cfg.enable_tx64 &&
+        txsize_sqr_up_map[start_tx] == TX_64X64) {
+      start_tx = sub_tx_size_map[start_tx];
+    }
   } else {
     const TX_SIZE chosen_tx_size =
         tx_size_from_tx_mode(bs, txfm_params->tx_mode_search_type);

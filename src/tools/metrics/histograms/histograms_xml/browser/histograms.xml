@@ -22,9 +22,43 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histograms>
 
 <variants name="ContinuousSearchExperiment">
-  <variant name=".Discover"/>
+  <variant name=".Discover">
+    <obsolete>
+      Deprecated as of 2021-06.
+    </obsolete>
+  </variant>
   <variant name=".News"/>
   <variant name=".Organic"/>
+</variants>
+
+<variants name="TabSwitchingType">
+  <variant name=".NoSavedFrames"
+      summary="The time from the input timestamp on a tab switch, until the
+               frame is presented on the screen when there is no saved frame
+               in the cache."/>
+  <variant name=".NoSavedFrames_Loaded"
+      summary="Same as NoSavedFrames with the destination tab being loaded
+               (frozen or not frozen)"/>
+  <variant name=".NoSavedFrames_Loaded_Frozen"
+      summary="Same as NoSavedFrames with the destination tab being loaded and
+               frozen.">
+    <obsolete>
+      Frozen is no longer a supported state.
+    </obsolete>
+  </variant>
+  <variant name=".NoSavedFrames_Loaded_NotFrozen"
+      summary="Same as NoSavedFrames with the destination tab being loaded and
+               not frozen.">
+    <obsolete>
+      Frozen is no longer a supported state.
+    </obsolete>
+  </variant>
+  <variant name=".NoSavedFrames_NotLoaded"
+      summary="Same as WithSavedFrames with the destination tab being
+               unloaded."/>
+  <variant name=".WithSavedFrames"
+      summary="There is a saved frame in the cache when the tab switch
+               starts."/>
 </variants>
 
 <histogram name="Browser.AnyWindowHasName" enum="Boolean"
@@ -38,7 +72,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Browser.BitmapFetcher.Decode" units="ms"
-    expires_after="2021-10-31">
+    expires_after="2022-01-02">
   <owner>manukh@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -46,7 +80,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Browser.BitmapFetcher.Fetch" units="ms"
-    expires_after="2021-10-31">
+    expires_after="2022-01-02">
   <owner>manukh@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -56,7 +90,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Browser.ChromeOS.HatsStatus" enum="HatsStatus"
-    expires_after="2021-10-01">
+    expires_after="2021-12-05">
   <owner>aalsum@chromium.org</owner>
   <owner>malaykeshav@chromium.org</owner>
   <summary>
@@ -70,10 +104,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="Browser.ContinuousSearch.BackNavigationToSrp{ExperimentCategory}"
-    units="count" expires_after="2021-06-20">
+    units="count" expires_after="2021-09-20">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
-  <owner>mahmoudi@chromium.org</owner>
   <owner>yashard@chromium.org</owner>
   <summary>
     Records the number of back navigations to the Google search result page
@@ -93,11 +126,23 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </token>
 </histogram>
 
-<histogram name="Browser.ContinuousSearch.NumberOfSearchResultsExtracted"
-    units="count" expires_after="2021-06-20">
+<histogram name="Browser.ContinuousSearch.DismissalCount" units="count"
+    expires_after="2021-12-12">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
-  <owner>mahmoudi@chromium.org</owner>
+  <owner>yashard@chromium.org</owner>
+  <summary>
+    Records the number of dismissals of the Continuous Search feature. It is
+    emitted when the Continuous Search UI is dismissed via the dismiss button.
+    This metric is only emitted if permanent dismissal is enabled and the UI is
+    not permanently dismissed.
+  </summary>
+</histogram>
+
+<histogram name="Browser.ContinuousSearch.NumberOfSearchResultsExtracted"
+    units="count" expires_after="2021-12-12">
+  <owner>ckitagawa@chromium.org</owner>
+  <owner>fredmello@chromium.org</owner>
   <owner>yashard@chromium.org</owner>
   <summary>
     Records the number of search results extracted. It is emitted when results
@@ -107,10 +152,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Browser.ContinuousSearch.SearchResultExtractionStatus"
-    enum="SearchResultExtractorClientStatus" expires_after="2021-06-20">
+    enum="SearchResultExtractorClientStatus" expires_after="2021-09-20">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
-  <owner>mahmoudi@chromium.org</owner>
   <owner>yashard@chromium.org</owner>
   <summary>
     Records the status of the search result extraction. It is emitted when
@@ -120,11 +164,30 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram
-    name="Browser.ContinuousSearch.UI.CarouselScrolled{ExperimentCategory}"
-    enum="Boolean" expires_after="2021-06-20">
+    name="Browser.ContinuousSearch.UI.CarouselScrolled2{ExperimentCategory}"
+    enum="Boolean" expires_after="2021-09-20">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
-  <owner>mahmoudi@chromium.org</owner>
+  <owner>yashard@chromium.org</owner>
+  <summary>
+    Records whether the UI was scrolled while being shown. It is emmited when
+    the CSN session is considered ended. Actions that can end the session
+    include closing the tab, navigating away from the CSN url list or dismissing
+    the UI.
+  </summary>
+  <token key="ExperimentCategory" variants="ContinuousSearchExperiment"/>
+</histogram>
+
+<histogram
+    name="Browser.ContinuousSearch.UI.CarouselScrolled{ExperimentCategory}"
+    enum="Boolean" expires_after="2021-09-20">
+  <obsolete>
+    Obsoleted as of 2021-07. It is replaced by
+    Browser.ContinuousSearch.UI.CarouselScrolled2 as the emission method has
+    changed.
+  </obsolete>
+  <owner>ckitagawa@chromium.org</owner>
+  <owner>fredmello@chromium.org</owner>
   <owner>yashard@chromium.org</owner>
   <summary>
     Records whether the UI was scrolled while being shown. It it emmited when
@@ -135,14 +198,43 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="Browser.ContinuousSearch.UI.ClickedItemPosition{ExperimentCategory}"
-    units="position" expires_after="2021-06-20">
+    units="position" expires_after="2021-09-20">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
-  <owner>mahmoudi@chromium.org</owner>
   <owner>yashard@chromium.org</owner>
   <summary>
     Records the 0-indexed position of list item in the UI when the user clicks
     on the item.
+  </summary>
+  <token key="ExperimentCategory" variants="ContinuousSearchExperiment"/>
+</histogram>
+
+<histogram
+    name="Browser.ContinuousSearch.UI.DismissButtonClicked{ExperimentCategory}"
+    enum="Boolean" expires_after="2021-09-20">
+  <owner>ckitagawa@chromium.org</owner>
+  <owner>fredmello@chromium.org</owner>
+  <owner>yashard@chromium.org</owner>
+  <summary>
+    Records whether the UI dismiss button was pressed while UI was being shown.
+    It is emmited when the CSN session is considered ended. Actions that can end
+    the session include closing the tab, navigating away from the CSN url list
+    or dismissing the UI.
+  </summary>
+  <token key="ExperimentCategory" variants="ContinuousSearchExperiment"/>
+</histogram>
+
+<histogram
+    name="Browser.ContinuousSearch.UI.ProviderButtonClicked{ExperimentCategory}"
+    enum="Boolean" expires_after="2021-09-20">
+  <owner>ckitagawa@chromium.org</owner>
+  <owner>fredmello@chromium.org</owner>
+  <owner>yashard@chromium.org</owner>
+  <summary>
+    Records whether the provider button was pressed while UI was being shown. It
+    is emmited when the CSN session is considered ended. Actions that can end
+    the session include closing the tab, navigating away from the CSN url list
+    or dismissing the UI.
   </summary>
   <token key="ExperimentCategory" variants="ContinuousSearchExperiment"/>
 </histogram>
@@ -158,7 +250,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Browser.PaintPreview.Capture.CompressedOnDiskSize" units="KB"
-    expires_after="2021-10-31">
+    expires_after="2022-01-02">
   <owner>ckitagawa@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
@@ -169,7 +261,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Browser.PaintPreview.Capture.NumberOfFramesCaptured"
-    units="units" expires_after="2021-10-31">
+    units="units" expires_after="2022-01-02">
   <owner>ckitagawa@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
@@ -179,7 +271,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Browser.PaintPreview.Capture.Success" enum="BooleanSuccess"
-    expires_after="2021-10-31">
+    expires_after="2022-01-02">
   <owner>ckitagawa@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
@@ -189,7 +281,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Browser.PaintPreview.Capture.TotalCaptureDuration" units="ms"
-    expires_after="2021-10-31">
+    expires_after="2022-01-02">
   <owner>ckitagawa@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
@@ -200,7 +292,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Browser.PaintPreview.Capture.UncompressedOnDiskSize"
-    units="KB" expires_after="2021-06-27">
+    units="KB" expires_after="2021-10-31">
   <owner>ckitagawa@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
@@ -241,7 +333,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Browser.PaintPreview.Player.CompositorProcessStartedCorrectly"
-    units="BooleanSuccess" expires_after="2021-10-31">
+    units="BooleanSuccess" expires_after="2022-01-02">
   <owner>ckitagawa@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
@@ -251,7 +343,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Browser.PaintPreview.Player.CompositorProcessStartupTime"
-    units="ms" expires_after="2021-10-31">
+    units="ms" expires_after="2022-01-02">
   <owner>ckitagawa@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
@@ -261,7 +353,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Browser.PaintPreview.Player.LinkClicked"
-    units="BooleanSuccess" expires_after="2021-10-31">
+    units="BooleanSuccess" expires_after="2022-01-02">
   <owner>ckitagawa@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
@@ -269,7 +361,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Browser.PaintPreview.Player.TimeToFirstBitmap" units="ms"
-    expires_after="2021-10-31">
+    expires_after="2022-01-02">
   <owner>ckitagawa@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
@@ -280,7 +372,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Browser.PaintPreview.TabbedPlayer.CompositorFailureReason"
-    enum="TabbedPaintPreviewCompositorFailureReason" expires_after="2021-10-31">
+    enum="TabbedPaintPreviewCompositorFailureReason" expires_after="2022-01-02">
   <owner>ckitagawa@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
@@ -292,7 +384,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Browser.PaintPreview.TabbedPlayer.ExitCause"
-    enum="TabbedPaintPreviewExitCause" expires_after="2021-10-31">
+    enum="TabbedPaintPreviewExitCause" expires_after="2022-01-02">
   <owner>ckitagawa@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
@@ -303,7 +395,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Browser.PaintPreview.TabbedPlayer.FirstPaintBeforeTabLoad"
-    units="Boolean" expires_after="2021-11-07">
+    units="Boolean" expires_after="2022-01-09">
   <owner>ckitagawa@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
@@ -314,7 +406,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Browser.PaintPreview.TabbedPlayer.HadCapture" units="Boolean"
-    expires_after="2021-10-31">
+    expires_after="2022-01-02">
   <owner>ckitagawa@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
@@ -326,7 +418,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Browser.PaintPreview.TabbedPlayer.SnackbarCount" units="units"
-    expires_after="2021-10-31">
+    expires_after="2022-01-02">
   <owner>ckitagawa@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
@@ -337,7 +429,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Browser.PaintPreview.TabbedPlayer.TimeToFirstBitmap"
-    units="ms" expires_after="2021-10-31">
+    units="ms" expires_after="2022-01-02">
   <owner>ckitagawa@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
@@ -347,19 +439,41 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram base="true" name="Browser.PaintPreview.TabbedPlayer.UpTime"
-    units="ms" expires_after="2021-10-31">
+<histogram
+    name="Browser.PaintPreview.TabbedPlayer.UpTime{TabbedPaintPreviewPlayerUptime}"
+    units="ms" expires_after="2022-01-02">
   <owner>ckitagawa@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <summary>
     Records the length of the time that a session of TabbedPaintPreviewPlayer
     lasts. Recorded when paint preview is removed.
+    {TabbedPaintPreviewPlayerUptime}
   </summary>
+  <token key="TabbedPaintPreviewPlayerUptime">
+    <variant name="">
+      <obsolete>
+        Base histogram. Use suffixes of this histogram instead.
+      </obsolete>
+    </variant>
+    <variant name=".RemovedByCompositorFailure"
+        summary="Removed by compositor failure"/>
+    <variant name=".RemovedByLinkClick" summary="Removed by link click"/>
+    <variant name=".RemovedByNavigation" summary="Removed by navigation"/>
+    <variant name=".RemovedByPullToRefresh"
+        summary="Removed by pull to refresh"/>
+    <variant name=".RemovedBySnackBar" summary="Removed by SnackBar"/>
+    <variant name=".RemovedOnAccessibilityNotSupported"
+        summary="Removed on accessibility not supported"/>
+    <variant name=".RemovedOnLoad" summary="Removed on load"/>
+    <variant name=".RemovedOnOfflineAvailable"
+        summary="Removed on offline page available"/>
+    <variant name=".RemovedOnTabDestroy" summary="Removed on tab destroy"/>
+  </token>
 </histogram>
 
 <histogram name="Browser.PaintPreview.TabService.DiskUsageAtStartup" units="KB"
-    expires_after="2021-10-31">
+    expires_after="2022-01-02">
   <owner>ckitagawa@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
@@ -370,7 +484,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Browser.Responsiveness.IOJanksTotalPerMinute" units="janks"
-    expires_after="2021-10-10">
+    expires_after="2021-12-12">
   <owner>gab@chromium.org</owner>
   <owner>olivierli@chromium.org</owner>
   <summary>
@@ -384,7 +498,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Browser.Responsiveness.IOJankyIntervalsPerMinute"
-    units="janks" expires_after="2021-10-10">
+    units="janks" expires_after="2021-12-12">
   <owner>gab@chromium.org</owner>
   <owner>olivierli@chromium.org</owner>
   <summary>
@@ -402,47 +516,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="Browser.Responsiveness.JankyIntervalsPerThirtySeconds"
-    units="janks" expires_after="never">
-<!-- expires-never: guiding metric (internal: go/chrome-browser-guiding-metrics) -->
-
-  <owner>erikchen@chromium.org</owner>
-  <owner>chrome-analysis-team@google.com</owner>
-  <summary>
-    This metric is emitted every 30 seconds [when there is user activity]. Each
-    30 second duration is divided into 100ms intervals. This metric counts the
-    number of these intervals that were &quot;janky&quot;. See
-    https://docs.google.com/document/d/1vDSGFvJblh7yJ3U3RVB_7qZLubyfTbQdQjuN1GoUNkc/edit
-    for more details.
-
-    On desktop platforms, this metric measures native events, as well as tasks
-    posted to the UI and IO threads of the browser process. On Android, this
-    metric only measures tasks posted to the UI and IO threads.
-
-    Update (October 27th 2019): The responsiveness::Watcher emitting this metric
-    previously started observation before the main message loop was running,
-    this resulted in the 99th percentile being mostly comprised of slow startups
-    (before the message loop gets to run). This was fixed and a fake-improvement
-    in the high percentiles is expected when the fix goes live.
-
-    Update (M82 March 2020): Stopped recording background intervals on Android.
-
-    Due to a bug, this metric does not measure long queueing time as jankiness.
-    It only measures jankiness as individual tasks taking a long time to run.
-    Given that it's a long-standing bug, this metric will not be modified. We
-    are testing a new metric
-    Browser.Responsiveness.JankyIntervalsPerThirtySeconds2 that correctly
-    accounts for queueing time. See
-    https://groups.google.com/a/google.com/forum/#!topic/chrome-scheduler/X32gKl6fW2A
-    for more details.
-
-    This histogram is of special interest to the chrome-analysis-team@. Do not
-    change its semantics or retire it without talking to them first.
-  </summary>
-</histogram>
-
 <histogram name="Browser.Responsiveness.JankyIntervalsPerThirtySeconds2"
-    units="janks" expires_after="2021-11-07">
+    units="janks" expires_after="2022-01-09">
 <!-- JankyIntervalsPerThirtySeconds3 is on probation to replace this -->
 
   <owner>erikchen@chromium.org</owner>
@@ -487,20 +562,115 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram base="true" name="Browser.Tabs.InputEventToSelectionTime"
-    units="microseconds" expires_after="2019-08-31">
-<!-- Name completed by histogram_suffixes name="TabSwitchInputLatency" -->
+<histogram
+    name="Browser.Responsiveness.JankyIntervalsPerThirtySeconds{JankyIntervalsPerThirtySeconds}"
+    units="janks" expires_after="never">
+<!-- expires-never: guiding metric (internal: go/chrome-browser-guiding-metrics) -->
 
+  <owner>erikchen@chromium.org</owner>
+  <owner>chrome-analysis-team@google.com</owner>
+  <summary>
+    This metric is emitted every 30 seconds [when there is user activity]. Each
+    30 second duration is divided into 100ms intervals. This metric counts the
+    number of these intervals that were &quot;janky&quot;. See
+    https://docs.google.com/document/d/1vDSGFvJblh7yJ3U3RVB_7qZLubyfTbQdQjuN1GoUNkc/edit
+    for more details.
+
+    On desktop platforms, this metric measures native events, as well as tasks
+    posted to the UI and IO threads of the browser process. On Android, this
+    metric only measures tasks posted to the UI and IO threads.
+
+    Update (October 27th 2019): The responsiveness::Watcher emitting this metric
+    previously started observation before the main message loop was running,
+    this resulted in the 99th percentile being mostly comprised of slow startups
+    (before the message loop gets to run). This was fixed and a fake-improvement
+    in the high percentiles is expected when the fix goes live.
+
+    Update (M82 March 2020): Stopped recording background intervals on Android.
+
+    Due to a bug, this metric does not measure long queueing time as jankiness.
+    It only measures jankiness as individual tasks taking a long time to run.
+    Given that it's a long-standing bug, this metric will not be modified. We
+    are testing a new metric
+    Browser.Responsiveness.JankyIntervalsPerThirtySeconds2 that correctly
+    accounts for queueing time. See
+    https://groups.google.com/a/google.com/forum/#!topic/chrome-scheduler/X32gKl6fW2A
+    for more details.
+
+    This histogram is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
+    {JankyIntervalsPerThirtySeconds}
+  </summary>
+  <token key="JankyIntervalsPerThirtySeconds">
+    <variant name=""/>
+    <variant name=".NonStartup"
+        summary="Does not include jank in the first 30 seconds [startup].">
+      <obsolete>
+        This metric is now only recorded after the main message loop starts and
+        no longer distinguishes the first 30 seconds as &quot;startup&quot;.
+        Startup.BrowserMessageLoopStartTime can be used for the startup phase
+        (before the loop is running) and Startup.FirstWebContents.NonEmptyPaint3
+        can be used for the user-visible startup performance.
+      </obsolete>
+    </variant>
+    <variant name=".NoSuspend"
+        summary="Only counts jank without power suspend/resume.">
+      <obsolete>
+        This metric is now only recorded after the main message loop starts and
+        no longer distinguishes the first 30 seconds as &quot;startup&quot;.
+        Startup.BrowserMessageLoopStartTime can be used for the startup phase
+        (before the loop is running) and Startup.FirstWebContents.NonEmptyPaint3
+        can be used for the user-visible startup performance.
+      </obsolete>
+    </variant>
+    <variant name=".Startup"
+        summary="Only counts jank in the first 30 seconds [startup].">
+      <obsolete>
+        This metric is now only recorded after the main message loop starts and
+        no longer distinguishes the first 30 seconds as &quot;startup&quot;.
+        Startup.BrowserMessageLoopStartTime can be used for the startup phase
+        (before the loop is running) and Startup.FirstWebContents.NonEmptyPaint3
+        can be used for the user-visible startup performance.
+      </obsolete>
+    </variant>
+  </token>
+</histogram>
+
+<histogram name="Browser.Tabs.InputEventToSelectionTime{TabSwitchInputLatency}"
+    units="microseconds" expires_after="2019-08-31">
   <owner>ejoe@google.com</owner>
   <owner>jonross@chromium.org</owner>
   <summary>
     The time between input event timestamp for tab switch and when the
-    TabStripModel begins processing the switch.
+    TabStripModel begins processing the switch. {TabSwitchInputLatency}
   </summary>
+  <token key="TabSwitchInputLatency">
+    <variant name="">
+      <obsolete>
+        Base histogram. Use suffixes of this histogram instead.
+      </obsolete>
+    </variant>
+    <variant name=".Keyboard"
+        summary="The time it takes from receiving a keyboard input event that
+                 leads to the active tab changing to just before the TabStrip
+                 notifies its observers of the change."/>
+    <variant name=".Mouse"
+        summary="The time it takes from receiving a mouse input event that
+                 leads to the active tab changing to just before the TabStrip
+                 notifies its observers of the change."/>
+    <variant name=".Touch"
+        summary="The time it takes from receiving a touch input event that
+                 leads to the active tab changing to just before the TabStrip
+                 notifies its observers of the change."/>
+    <variant name=".Wheel"
+        summary="The time it takes from receiving a mouse scroll event that
+                 leads to the active tab changing to just before the TabStrip
+                 notifies its observers of the change."/>
+  </token>
 </histogram>
 
 <histogram name="Browser.Tabs.SelectionToVisibilityRequestTime"
-    units="microseconds" expires_after="2021-10-17">
+    units="microseconds" expires_after="2021-12-19">
   <owner>sadrul@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <summary>
@@ -513,40 +683,57 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram base="true" name="Browser.Tabs.TabSwitchResult"
+<histogram name="Browser.Tabs.TabSwitchResult{TabSwitchingType}"
     enum="TabSwitchResult" expires_after="2021-11-14">
-<!-- Name completed by histogram_suffixes name="TabSwitchingType" -->
-
   <owner>fdoray@chromium.org</owner>
-  <summary>Whether a frame was presented after a tab switch event.</summary>
+  <summary>
+    Whether a frame was presented after a tab switch event. {TabSwitchingType}
+  </summary>
+  <token key="TabSwitchingType" variants="TabSwitchingType">
+    <variant name="">
+      <obsolete>
+        Base histogram. Use suffixes of this histogram instead.
+      </obsolete>
+    </variant>
+  </token>
 </histogram>
 
-<histogram base="true" name="Browser.Tabs.TotalIncompleteSwitchDuration"
+<histogram name="Browser.Tabs.TotalIncompleteSwitchDuration{TabSwitchingType}"
     units="ms" expires_after="2021-08-09">
-<!-- Name completed by histogram_suffixes name="TabSwitchingType" -->
-
   <owner>fdoray@chromium.org</owner>
   <owner>jonross@chromium.org</owner>
   <summary>
     The time between a tab switch input event timestamp and when the tab is
-    hidden, if no frame is presented in the meantime.
+    hidden, if no frame is presented in the meantime. {TabSwitchingType}
   </summary>
+  <token key="TabSwitchingType" variants="TabSwitchingType">
+    <variant name="">
+      <obsolete>
+        Base histogram. Use suffixes of this histogram instead.
+      </obsolete>
+    </variant>
+  </token>
 </histogram>
 
-<histogram base="true" name="Browser.Tabs.TotalSwitchDuration" units="ms"
-    expires_after="2021-10-31">
-<!-- Name completed by histogram_suffixes name="TabSwitchingType" -->
-
+<histogram name="Browser.Tabs.TotalSwitchDuration{TabSwitchingType}" units="ms"
+    expires_after="2022-01-02">
   <owner>ejoe@google.com</owner>
   <owner>jonross@chromium.org</owner>
   <summary>
     The time between the input event timestamp and the frame presentation time
-    on a tab switch.
+    on a tab switch. {TabSwitchingType}
   </summary>
+  <token key="TabSwitchingType" variants="TabSwitchingType">
+    <variant name="">
+      <obsolete>
+        Base histogram. Use suffixes of this histogram instead.
+      </obsolete>
+    </variant>
+  </token>
 </histogram>
 
 <histogram name="Browser.WindowCount.Guest" units="units"
-    expires_after="2021-10-04">
+    expires_after="2021-12-05">
   <owner>rhalavati@chromium.org</owner>
   <owner>chrome-privacy-core@google.com</owner>
   <summary>
@@ -558,7 +745,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Browser.WindowCount.Incognito" units="units"
-    expires_after="2021-10-04">
+    expires_after="2021-12-05">
   <owner>rhalavati@chromium.org</owner>
   <owner>chrome-privacy-core@google.com</owner>
   <summary>
@@ -566,18 +753,6 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     incognito window is created. Please note that this metric double counts the
     lower numbers, meaning that if user opens three windows (without closing any
     in between), then buckets 1, 2, and 3 will all be incremented in turn.
-  </summary>
-</histogram>
-
-<histogram name="BrowserDialogs.ExternalProtocol.HandleState"
-    enum="HandleStateType" expires_after="2021-08-09">
-  <owner>dominickn@chromium.org</owner>
-  <owner>meacer@chromium.org</owner>
-  <summary>
-    Whether or not the user checked the option in the external protocol dialog
-    to remember their choice of opening or not opening the specified app.
-    Recorded each time the user interacts with the External Protocol Dialog,
-    when making a decision.
   </summary>
 </histogram>
 
@@ -686,7 +861,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="BrowserRenderProcessHost.SpareProcessMaybeTakeAction"
-    enum="SpareProcessMaybeTakeAction" expires_after="2021-10-31">
+    enum="SpareProcessMaybeTakeAction" expires_after="2022-01-02">
   <owner>alexmos@chromium.org</owner>
   <owner>lukasza@chromium.org</owner>
   <summary>
@@ -751,7 +926,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="BrowserServices.VerificationResult"
-    enum="BrowserServicesVerificationResult" expires_after="2021-08-09">
+    enum="BrowserServicesVerificationResult" expires_after="M98">
   <owner>peconn@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -827,7 +1002,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="BrowserSwitcher.Decision" enum="BooleanBrowserSwitch"
-    expires_after="2021-10-04">
+    expires_after="2021-12-12">
   <owner>nicolaso@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
@@ -901,7 +1076,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="BrowserSwitcher.LaunchSuccess" enum="BooleanSuccess"
-    expires_after="2021-10-04">
+    expires_after="2021-12-19">
   <owner>nicolaso@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
@@ -911,7 +1086,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="BrowserSwitcher.LaunchTime" units="ms"
-    expires_after="2021-10-04">
+    expires_after="2021-12-05">
   <owner>nicolaso@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>

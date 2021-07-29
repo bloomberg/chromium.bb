@@ -72,8 +72,9 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   void TakeFocus(mojom::blink::FocusType) override;
   void SetKeyboardFocusURL(Element* new_focus_element) override;
   void BeginLifecycleUpdates(LocalFrame& main_frame) override;
-  void StartDeferringCommits(LocalFrame& main_frame,
-                             base::TimeDelta timeout) override;
+  bool StartDeferringCommits(LocalFrame& main_frame,
+                             base::TimeDelta timeout,
+                             cc::PaintHoldingReason reason) override;
   void StopDeferringCommits(LocalFrame& main_frame,
                             cc::PaintHoldingCommitTrigger) override;
   void StartDragging(LocalFrame*,
@@ -136,8 +137,8 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   IntRect ViewportToScreen(const IntRect&,
                            const LocalFrameView*) const override;
   float WindowToViewportScalar(LocalFrame*, const float) const override;
-  const ScreenInfo& GetScreenInfo(LocalFrame&) const override;
-  const ScreenInfos& GetScreenInfos(LocalFrame&) const override;
+  const display::ScreenInfo& GetScreenInfo(LocalFrame&) const override;
+  const display::ScreenInfos& GetScreenInfos(LocalFrame&) const override;
   void OverrideVisibleRectForMainFrame(LocalFrame& frame,
                                        IntRect* paint_rect) const override;
   float InputEventsScaleForEmulation() const override;

@@ -506,11 +506,6 @@ GpuDataManagerImplPrivate::~GpuDataManagerImplPrivate() {
 #if defined(OS_MAC)
   CGDisplayRemoveReconfigurationCallback(DisplayReconfigCallback, owner_);
 #endif
-
-#if defined(OS_WIN)
-  if (display::Screen::GetScreen())
-    display::Screen::GetScreen()->RemoveObserver(owner_);
-#endif
 }
 
 void GpuDataManagerImplPrivate::StartUmaTimer() {
@@ -587,6 +582,10 @@ gpu::GPUInfo GpuDataManagerImplPrivate::GetGPUInfoForHardwareGpu() const {
   return gpu_info_for_hardware_gpu_;
 }
 
+std::vector<std::string> GpuDataManagerImplPrivate::GetDawnInfoList() const {
+  return dawn_info_list_;
+}
+
 bool GpuDataManagerImplPrivate::GpuAccessAllowed(std::string* reason) const {
   switch (gpu_mode_) {
     case gpu::GpuMode::HARDWARE_GL:
@@ -624,19 +623,22 @@ bool GpuDataManagerImplPrivate::GpuAccessAllowedForHardwareGpu(
 }
 
 void GpuDataManagerImplPrivate::RequestDxdiagDx12VulkanGpuInfoIfNeeded(
-    GpuInfoRequest request,
+    GpuDataManagerImpl::GpuInfoRequest request,
     bool delayed) {
-  if (request & kGpuInfoRequestDxDiag) {
+  if (request & GpuDataManagerImpl::kGpuInfoRequestDxDiag) {
     // Delay is not supported in DxDiag request
     DCHECK(!delayed);
     RequestDxDiagNodeData();
   }
 
-  if (request & kGpuInfoRequestDx12)
+  if (request & GpuDataManagerImpl::kGpuInfoRequestDx12)
     RequestGpuSupportedDx12Version(delayed);
 
-  if (request & kGpuInfoRequestVulkan)
+  if (request & GpuDataManagerImpl::kGpuInfoRequestVulkan)
     RequestGpuSupportedVulkanVersion(delayed);
+
+  if (request & GpuDataManagerImpl::kGpuInfoRequestDawnInfo)
+    RequestDawnInfo();
 }
 
 void GpuDataManagerImplPrivate::RequestDxDiagNodeData() {
@@ -729,6 +731,7 @@ void GpuDataManagerImplPrivate::RequestGpuSupportedDx12Version(bool delayed) {
         host->info_collection_gpu_service()
             ->GetGpuSupportedDx12VersionAndDevicePerfInfo(
                 base::BindOnce([](uint32_t d3d12_feature_level,
+                                  uint32_t highest_shader_model_version,
                                   const gpu::DevicePerfInfo& device_perf_info) {
                   GpuDataManagerImpl* manager =
                       GpuDataManagerImpl::GetInstance();
@@ -739,7 +742,7 @@ void GpuDataManagerImplPrivate::RequestGpuSupportedDx12Version(bool delayed) {
                   manager->UpdateDevicePerfInfo(device_perf_info);
                   manager->TerminateInfoCollectionGpuProcess();
                   gpu::RecordGpuSupportedDx12VersionHistograms(
-                      d3d12_feature_level);
+                      d3d12_feature_level, highest_shader_model_version);
                 }));
       },
       delta);
@@ -801,6 +804,30 @@ void GpuDataManagerImplPrivate::RequestGpuSupportedVulkanVersion(bool delayed) {
                          : GetIOThreadTaskRunner({});
   task_runner->PostDelayedTask(FROM_HERE, std::move(task), delta);
 #endif
+}
+
+void GpuDataManagerImplPrivate::RequestDawnInfo() {
+  if (gpu_info_dawn_toggles_requested_)
+    return;
+  gpu_info_dawn_toggles_requested_ = true;
+
+  base::OnceClosure task = base::BindOnce([]() {
+    GpuProcessHost* host = GpuProcessHost::Get(GPU_PROCESS_KIND_SANDBOXED,
+                                               false /* force_create */);
+    if (!host)
+      return;
+
+    host->gpu_service()->GetDawnInfo(
+        base::BindOnce([](const std::vector<std::string>& dawn_info_list) {
+          GpuDataManagerImpl* manager = GpuDataManagerImpl::GetInstance();
+          manager->UpdateDawnInfo(dawn_info_list);
+        }));
+  });
+
+  auto task_runner = base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                         ? GetUIThreadTaskRunner({})
+                         : GetIOThreadTaskRunner({});
+  task_runner->PostTask(FROM_HERE, std::move(task));
 }
 
 bool GpuDataManagerImplPrivate::IsEssentialGpuInfoAvailable() const {
@@ -1037,19 +1064,19 @@ void GpuDataManagerImplPrivate::PostCreateThreads() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kNoDelayForDX12VulkanInfoCollection)) {
     // This is for the info collection test of the gpu integration tests.
-    RequestDxdiagDx12VulkanGpuInfoIfNeeded(kGpuInfoRequestDx12Vulkan,
-                                           /*delayed=*/false);
+    RequestDxdiagDx12VulkanGpuInfoIfNeeded(
+        GpuDataManagerImpl::kGpuInfoRequestDx12Vulkan,
+        /*delayed=*/false);
   } else {
     // Launch the info collection GPU process to collect DX12 support
     // information for UMA at the start of the browser.
     // Not to affect Chrome startup, this is done in a delayed mode,  i.e., 120
     // seconds after Chrome startup.
-    RequestDxdiagDx12VulkanGpuInfoIfNeeded(kGpuInfoRequestDx12,
-                                           /*delayed=*/true);
+    RequestDxdiagDx12VulkanGpuInfoIfNeeded(
+        GpuDataManagerImpl::kGpuInfoRequestDx12, /*delayed=*/true);
   }
   // Observer for display change.
-  if (display::Screen::GetScreen())
-    display::Screen::GetScreen()->AddObserver(owner_);
+  display_observer_.emplace(owner_);
 
   // Initialization for HDR status update.
   HDRProxy::Initialize();
@@ -1081,8 +1108,14 @@ void GpuDataManagerImplPrivate::TerminateInfoCollectionGpuProcess() {
   if (host)
     host->ForceShutdown();
 }
-
 #endif
+
+void GpuDataManagerImplPrivate::UpdateDawnInfo(
+    const std::vector<std::string>& dawn_info_list) {
+  dawn_info_list_ = dawn_info_list;
+
+  NotifyGpuInfoUpdate();
+}
 
 void GpuDataManagerImplPrivate::UpdateGpuFeatureInfo(
     const gpu::GpuFeatureInfo& gpu_feature_info,
@@ -1187,9 +1220,11 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
       use_gl = browser_command_line->GetSwitchValueASCII(switches::kUseGL);
       break;
     case gpu::GpuMode::SWIFTSHADER: {
-      // This setting makes WebGL run on legacy SwiftShader GL when true and
-      // SwANGLE when false.
       bool legacy_software_gl = true;
+#if (defined(OS_LINUX) && !defined(USE_OZONE)) || defined(OS_WIN)
+      // This setting makes WebGL run on SwANGLE instead of SwiftShader GL.
+      legacy_software_gl = false;
+#endif
       gl::SetSoftwareWebGLCommandLineSwitches(command_line, legacy_software_gl);
     } break;
     default:
@@ -1204,10 +1239,10 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
   if (browser_command_line->HasSwitch(switches::kHeadless)) {
     if (command_line->HasSwitch(switches::kUseGL)) {
       use_gl = command_line->GetSwitchValueASCII(switches::kUseGL);
-      // Don't append kOverrideUseSoftwareGLForTests when we need to enable GPU
-      // hardware for headless chromium.
+      // Don't append kOverrideUseSoftwareGLForHeadless when we need to enable
+      // GPU hardware for headless chromium.
       if (use_gl != gl::kGLImplementationEGLName)
-        command_line->AppendSwitch(switches::kOverrideUseSoftwareGLForTests);
+        command_line->AppendSwitch(switches::kOverrideUseSoftwareGLForHeadless);
     }
   }
 #endif  // !OS_MAC
